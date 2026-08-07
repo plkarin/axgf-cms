@@ -25,6 +25,12 @@ pub struct Config {
     /// random token printed once to stderr at startup.
     #[arg(long, value_name = "TOKEN", env = ADMIN_TOKEN_ENV)]
     pub admin_token: Option<String>,
+
+    /// Seed a *new* bundle with the built-in demonstration family instead of
+    /// creating an empty one. Ignored when the bundle already exists, so this
+    /// is safe to leave set permanently and safe to run twice.
+    #[arg(long)]
+    pub seed_sample: bool,
 }
 
 impl Config {
@@ -59,6 +65,7 @@ mod tests {
             bundle: PathBuf::from("/tmp/x.axgf"),
             bind: "127.0.0.1:8080".parse().unwrap(),
             admin_token: token.map(str::to_string),
+            seed_sample: false,
         }
     }
 

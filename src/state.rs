@@ -94,6 +94,16 @@ fn bundle_from_data(data: &Value) -> Option<&Value> {
 impl AppState {
     /// Load the bundle at `path`, creating an empty one if the file is absent.
     pub fn load_or_create(path: &Path, admin_token: String) -> Result<Self> {
+        Self::load_or_seed(path, admin_token, None)
+    }
+
+    /// Load the bundle at `path`, seeding it from `seed` when the file does
+    /// not exist.
+    ///
+    /// Seeding only ever happens when there is no bundle, which is what makes
+    /// `bootstrap.sh --with-sample` safe to run twice: an existing bundle is
+    /// loaded untouched and the seed is ignored.
+    pub fn load_or_seed(path: &Path, admin_token: String, seed: Option<&[u8]>) -> Result<Self> {
         let flat = if path.exists() {
             let bytes =
                 fs::read(path).with_context(|| format!("reading bundle {}", path.display()))?;
@@ -101,9 +111,21 @@ impl AppState {
             envelope_into_data(env)
                 .with_context(|| format!("importing bundle {}", path.display()))?
         } else {
-            tracing::info!(path = %path.display(), "no bundle found; creating an empty one");
-            let env = axgf_rs::create_bundle(None);
-            let flat = envelope_into_data(env).context("creating an empty bundle")?;
+            let flat = match seed {
+                Some(bytes) => {
+                    tracing::info!(path = %path.display(), "seeding a new bundle");
+                    let env = axgf_rs::import_bundle(bytes);
+                    envelope_into_data(env).context("importing the seed bundle")?
+                }
+                None => {
+                    tracing::info!(
+                        path = %path.display(),
+                        "no bundle found; creating an empty one"
+                    );
+                    let env = axgf_rs::create_bundle(None);
+                    envelope_into_data(env).context("creating an empty bundle")?
+                }
+            };
             if let Some(parent) = path.parent() {
                 if !parent.as_os_str().is_empty() {
                     fs::create_dir_all(parent).with_context(|| {
@@ -111,7 +133,7 @@ impl AppState {
                     })?;
                 }
             }
-            write_bundle(path, &flat).context("writing the initial empty bundle")?;
+            write_bundle(path, &flat).context("writing the initial bundle")?;
             flat
         };
 

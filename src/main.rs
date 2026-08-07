@@ -19,8 +19,9 @@ async fn main() -> Result<()> {
     let cfg = Config::parse();
     let (token, generated) = cfg.resolve_admin_token();
 
+    let seed = cfg.seed_sample.then_some(axgf_cms::SAMPLE_BUNDLE);
     let state = Arc::new(
-        AppState::load_or_create(&cfg.bundle, token.clone())
+        AppState::load_or_seed(&cfg.bundle, token.clone(), seed)
             .context("initialising application state")?,
     );
 

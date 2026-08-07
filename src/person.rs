@@ -255,11 +255,12 @@ pub fn build(flat: &Value, id: &str) -> Option<PersonView> {
         ));
     }
     if !occupations.is_empty() {
-        showcase_notes.push(format!(
-            "{} occupation{} recorded as spans rather than events",
-            occupations.len(),
-            if occupations.len() == 1 { "" } else { "s" }
-        ));
+        let n = occupations.len();
+        showcase_notes.push(if n == 1 {
+            "an occupation recorded as a span rather than an event".to_string()
+        } else {
+            format!("{n} occupations recorded as spans rather than events")
+        });
     }
     for (noun, f) in [("birth", &birth), ("death", &death)] {
         if f.present && matches!(f.date.kind, "range" | "approximate" | "preserved") {

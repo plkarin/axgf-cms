@@ -126,7 +126,11 @@ fn showcase_highlights(flat: &Value) -> Vec<Value> {
         }
         if preserved > 0 {
             out.push(json!({
-                "title": format!("{preserved} unparseable dates kept verbatim"),
+                "title": if preserved == 1 {
+                    "an unparseable date kept verbatim".to_string()
+                } else {
+                    format!("{preserved} unparseable dates kept verbatim")
+                },
                 "detail": "Text no converter could interpret survives as a note \
                            instead of being silently dropped.",
                 "example_id": Value::Null,

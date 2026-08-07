@@ -33,6 +33,13 @@ use anyhow::Result;
 pub use routes::router;
 pub use state::AppState;
 
+/// The demonstration bundle written by `--seed-sample`.
+///
+/// Embedded so a binary downloaded from GitHub Releases can seed itself with
+/// no extra files. It is the converted `deploy/sample.ged` plus the
+/// AXGF-native facts GEDCOM cannot carry — see `tests/sample_bundle.rs`.
+pub const SAMPLE_BUNDLE: &[u8] = include_bytes!("../deploy/sample.axgf");
+
 /// Build a router over the bundle at `path`, creating it if absent.
 ///
 /// This is the single wiring point shared by the binary and the tests.

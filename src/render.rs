@@ -33,6 +33,11 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "person.html",
     "convert.html",
     "convert_result.html",
+    "admin_login.html",
+    "admin_dashboard.html",
+    "admin_list.html",
+    "admin_form.html",
+    "admin_result.html",
     "_macros.html"
 ];
 

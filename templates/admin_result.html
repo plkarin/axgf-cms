@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ title }} — axgf-cms{% endblock %}
+{% block content %}
+
+<h1>{{ title }}</h1>
+<div class="notice {% if applied %}ok{% else %}error{% endif %}">
+  <p>{{ summary }}</p>
+</div>
+
+{% if diagnostics %}
+<h2>Diagnostics</h2>
+<p class="small muted">
+  Every diagnostic the library returned, including warnings that did not block
+  the operation. None are filtered out.
+</p>
+{{ m.diagnostics(diagnostics) }}
+{% else %}
+<p class="muted small">The library returned no diagnostics.</p>
+{% endif %}
+
+<p style="margin-top:1.5rem">
+  <a class="btn" href="{{ back }}">Continue</a>
+  <a class="btn" href="/admin">Dashboard</a>
+</p>
+{% endblock %}

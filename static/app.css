@@ -624,3 +624,38 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 @media (max-width: 700px) {
   .tl-row { grid-template-columns: 1fr; }
 }
+
+/* ---------- admin ---------- */
+
+.filter-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.filter-row input[type="text"] { max-width: 22rem; }
+.filter-row .spacer { flex: 1 1 auto; }
+
+.small-btn { padding: 0.15rem 0.5rem; font-size: 0.82rem; }
+
+.delete-row { background: var(--bg); }
+.policy-list { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.6rem 0; }
+.policy-list label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.policy-list strong { color: var(--ink); }
+
+label.inline { display: flex; align-items: center; gap: 0.45rem; }
+label.inline input[type="checkbox"] { width: auto; margin: 0; }
+
+input[type="range"] { width: 100%; max-width: 22rem; accent-color: var(--accent); }
+
+.pager { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; }
+
+a.stat:hover { border-color: var(--accent); }

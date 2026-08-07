@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Admin — axgf-cms{% endblock %}
+{% block content %}
+
+<h1>Admin</h1>
+<p class="lede">
+  Editing <code>{{ bundle_path }}</code> — {{ total }} entities.
+  Every change is written atomically; a refused change leaves the file untouched.
+</p>
+
+<h2>Entities</h2>
+<div class="grid cols-4">
+  {% for c in counts %}
+  <a class="stat {% if c.n == 0 %}zero{% endif %}" href="/admin/{{ c.singular }}"
+     style="text-decoration:none;color:inherit;display:block">
+    <div class="n">{{ c.n }}</div>
+    <div class="k">{{ c.kind }}</div>
+  </a>
+  {% endfor %}
+</div>
+
+<h2>Create</h2>
+<div class="cta-row">
+  {% for k in kinds %}<a class="btn" href="/admin/{{ k }}/new">New {{ k }}</a>{% endfor %}
+</div>
+
+<h2>Operations</h2>
+<div class="cta-row">
+  <form method="post" action="/admin/validate" style="display:inline">
+    <button class="btn" type="submit">Validate</button>
+  </form>
+  <form method="post" action="/admin/dedup" style="display:inline"
+        onsubmit="return confirm('Deduplicate merges entities and rewrites the bundle. Continue?')">
+    <button class="btn" type="submit">Deduplicate</button>
+  </form>
+  <a class="btn" href="/admin/export">Export bundle</a>
+</div>
+
+<h2>Last validation</h2>
+{% if validation %}
+<p class="small muted">
+  {{ validation.errors }} errors, {{ validation.warnings }} warnings,
+  {{ validation.infos }} notes.
+  Warnings never block — they are information, not gates.
+</p>
+{% endif %}
+{% if diagnostics %}
+  {{ m.diagnostics(diagnostics) }}
+{% else %}
+  <div class="notice ok"><p>The validator reported nothing.</p></div>
+{% endif %}
+
+{% endblock %}

@@ -16,6 +16,7 @@
 
 pub mod auth;
 pub mod config;
+pub mod person;
 pub mod render;
 pub mod routes;
 pub mod state;

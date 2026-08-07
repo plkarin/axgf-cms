@@ -1,0 +1,100 @@
+{# Shared rendering for the two showcase primitives: confidence and dates.
+   Defined once so every page states uncertainty the same way. #}
+
+{% macro conf_bar(c) %}
+  {%- if c -%}
+  <span class="conf-inline" title="{{ c.description }}">
+    <span class="conf-bar" data-band="{{ c.band }}" role="img"
+          aria-label="{{ c.description }}"><i style="width:{{ c.percent }}%"></i></span>
+    <span class="conf-pct">{{ c.percent }}%</span>
+  </span>
+  {%- endif -%}
+{% endmacro %}
+
+{% macro conf_dot(c) %}
+  {%- if c -%}
+  <i class="conf-dot" data-band="{{ c.band }}" title="{{ c.description }}"
+     role="img" aria-label="{{ c.description }}"></i>
+  {%- endif -%}
+{% endmacro %}
+
+{# A date, rendered at whatever precision the source actually supports. The
+   data-kind attribute is what makes an approximate date look approximate. #}
+{% macro date(d, show_note=true) %}
+  {%- if d -%}
+  <span class="date" data-kind="{{ d.kind }}">{{ d.text }}</span>
+  {%- if d.calendar %}<span class="cal-tag">{{ d.calendar }}</span>{% endif -%}
+  {%- if d.confidence %} {{ conf_dot(d.confidence) }}{% endif -%}
+  {%- if show_note and d.note and d.kind != "preserved" %}
+    <span class="date-note">{{ d.note }}</span>
+  {%- endif -%}
+  {%- if d.alternatives %}
+    <span class="date-note">also recorded as
+      {% for a in d.alternatives %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+  {%- endif -%}
+  {%- endif -%}
+{% endmacro %}
+
+{# A person reference. An id the bundle does not contain renders as plain
+   text, never as a link into a 404. #}
+{% macro person_link(p) %}
+  {%- if p.known -%}
+    <a href="/person/{{ p.id }}">{{ p.name }}</a>
+  {%- else -%}
+    <span class="muted" title="Referenced by this bundle but not present in it">{{ p.name }}</span>
+  {%- endif -%}
+{% endmacro %}
+
+{% macro relation(p) %}
+  <li class="rel">
+    {{ person_link(p) }}
+    {%- if p.detail %} <span class="small muted">{{ p.detail }}</span>{% endif %}
+    {%- if p.confidence %} {{ conf_bar(p.confidence) }}{% endif %}
+  </li>
+{% endmacro %}
+
+{# A source, badged with its reliability. Which evidence a fact rests on is
+   part of the fact. #}
+{% macro source_chip(s) %}
+  {%- if s -%}
+  <span class="src-chip" data-rank="{{ s.reliability_rank }}"
+        title="{{ s.reliability_label }}{% if s.repository %} — {{ s.repository }}{% endif %}">
+    <span class="src-rel">{{ s.reliability }}</span>
+    <span class="src-title">{{ s.title }}</span>
+  </span>
+  {%- endif -%}
+{% endmacro %}
+
+{% macro place(p) %}
+  {%- if p -%}
+    {%- if p.known -%}
+      {{ p.name }}
+      {%- if p.place_type %} <span class="small muted">({{ p.place_type }})</span>{% endif -%}
+      {%- if p.country_history %}
+        <span class="date-note">
+          Borders moved: {% for h in p.country_history %}{{ h }}{% if not loop.last %} → {% endif %}{% endfor %}
+        </span>
+      {%- elif p.country_current %}
+        <span class="small muted">, {{ p.country_current }}</span>
+      {%- endif -%}
+    {%- else -%}
+      <span class="muted">{{ p.name }}</span>
+    {%- endif -%}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro diagnostics(diags) %}
+  {% if diags %}
+  <div class="diag">
+    {% for d in diags %}
+    <div class="diag-row" data-sev="{{ d.severity }}">
+      <div>
+        <span class="diag-code">{{ d.code }}</span>
+        {% if d.entity_ref %}<span class="diag-ref">{{ d.entity_ref }}</span>{% endif %}
+      </div>
+      <div>{{ d.message }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endmacro %}

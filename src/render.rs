@@ -25,7 +25,14 @@ macro_rules! templates {
 }
 
 /// Every template, embedded at compile time.
-const TEMPLATES: &[(&str, &str)] = templates!["base.html", "home.html", "error.html", "tree.html"];
+const TEMPLATES: &[(&str, &str)] = templates![
+    "base.html",
+    "home.html",
+    "error.html",
+    "tree.html",
+    "person.html",
+    "_macros.html"
+];
 
 static ENV: OnceLock<Environment<'static>> = OnceLock::new();
 

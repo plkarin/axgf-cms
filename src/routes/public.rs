@@ -1,6 +1,6 @@
 //! Public, read-only pages.
 
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -193,6 +193,32 @@ pub async fn tree(State(state): State<Shared>, headers: HeaderMap) -> Response {
             layout,
         },
     )
+}
+
+/// `GET /person/:id` — everything known about one person.
+pub async fn person(
+    State(state): State<Shared>,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+) -> Response {
+    let is_admin = auth::is_admin(&headers, state.admin_token());
+    let view = state.read(|flat| crate::person::build(flat, &id));
+
+    match view {
+        Some(p) => render::page(
+            "person.html",
+            context! {
+                nav => "tree",
+                is_admin,
+                p,
+            },
+        ),
+        None => render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such person",
+            "This bundle contains no person with that id.",
+        ),
+    }
 }
 
 /// `GET /static/tree.js`

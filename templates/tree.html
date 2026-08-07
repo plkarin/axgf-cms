@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Tree — axgf-cms{% endblock %}
+{% block main_class %}wide{% endblock %}
+
+{% block content %}
+
+<div class="tree-head">
+  <div>
+    <h1>The whole tree</h1>
+    <p class="lede">
+      Oldest at the bottom, youngest at the top — scroll upward through time.
+      Connector opacity is the relationship's confidence: a faint line is a
+      claim the record is not sure of.
+    </p>
+  </div>
+  <form class="tree-search" onsubmit="return false">
+    <label for="tree-filter">Filter by name</label>
+    <input type="text" id="tree-filter" placeholder="Type a name…" autocomplete="off" spellcheck="false">
+    <span id="tree-filter-count" class="small muted"></span>
+  </form>
+</div>
+
+<div class="tree-legend small">
+  <span class="muted">Confidence:</span>
+  <span class="lg"><i class="conf-dot" data-band="certain"></i> certain</span>
+  <span class="lg"><i class="conf-dot" data-band="high"></i> high</span>
+  <span class="lg"><i class="conf-dot" data-band="medium"></i> medium</span>
+  <span class="lg"><i class="conf-dot" data-band="low"></i> speculative</span>
+  <span class="muted" style="margin-left:auto">
+    {{ layout.person_count }} people · {{ layout.generation_count }} generations
+    {%- if layout.unplaced_count %} · {{ layout.unplaced_count }} unplaced{% endif %}
+  </span>
+</div>
+
+{% if layout.truncated %}
+<div class="notice warn">
+  <p>
+    <strong>Parentage cycle detected.</strong> Someone in this bundle is
+    recorded as their own ancestor, so generation assignment stopped early and
+    some rows may be wrong. Run the validator from the admin dashboard to find
+    the loop.
+  </p>
+</div>
+{% endif %}
+
+{% if layout.person_count == 0 %}
+  <div class="notice">
+    <p>This bundle has no people yet. <a href="/convert">Convert a GEDCOM</a> to fill it.</p>
+  </div>
+{% else %}
+
+<div class="tree-scroll">
+  <div id="tree-canvas" class="tree-canvas"
+       style="width:{{ layout.width }}px;height:{{ layout.height }}px">
+
+    <svg class="tree-wires" width="{{ layout.width }}" height="{{ layout.height }}"
+         viewBox="0 0 {{ layout.width }} {{ layout.height }}" aria-hidden="true">
+      {% for e in layout.edges %}
+      <path d="{{ e.d }}" class="wire wire-{{ e.kind }}" data-band="{{ e.band }}"
+            style="opacity:{{ e.opacity }}"><title>{{ e.title }}</title></path>
+      {% endfor %}
+    </svg>
+
+    {% for band in layout.bands %}
+      <div class="band-label {% if band.unplaced %}unplaced{% endif %}"
+           style="top:{{ band.y }}px">
+        <strong>{{ band.label }}</strong>
+        <span class="muted">{{ band.sublabel }}</span>
+      </div>
+      {% for c in band.cards %}
+      <a class="tcard" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
+         href="/person/{{ c.id }}"
+         style="left:{{ c.x }}px;top:{{ c.y }}px">
+        <span class="tname">{{ c.name }}</span>
+        <span class="tdates">
+          {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
+          {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
+              title="{{ c.conf_label }}"></i>{% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    {% endfor %}
+
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/tree.js"></script>
+{% endblock %}

@@ -19,6 +19,7 @@ pub mod config;
 pub mod render;
 pub mod routes;
 pub mod state;
+pub mod tree;
 pub mod view;
 
 use std::path::Path;

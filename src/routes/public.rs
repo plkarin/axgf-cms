@@ -172,6 +172,41 @@ fn showcase_highlights(flat: &Value) -> Vec<Value> {
     out
 }
 
+/// `GET /tree` — the whole bundle in one scrollable page.
+pub async fn tree(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let is_admin = auth::is_admin(&headers, state.admin_token());
+    let started = std::time::Instant::now();
+    let layout = state.read(crate::tree::layout);
+    let elapsed = started.elapsed();
+    tracing::debug!(
+        people = layout.person_count,
+        edges = layout.edges.len(),
+        ms = elapsed.as_secs_f64() * 1000.0,
+        "tree laid out"
+    );
+
+    render::page(
+        "tree.html",
+        context! {
+            nav => "tree",
+            is_admin,
+            layout,
+        },
+    )
+}
+
+/// `GET /static/tree.js`
+pub async fn tree_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::TREE_JS,
+    )
+        .into_response()
+}
+
 /// `GET /health` — liveness plus entity counts.
 pub async fn health(State(state): State<Shared>) -> Response {
     let counts = state.counts();

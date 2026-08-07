@@ -15,6 +15,9 @@ use serde::Serialize;
 /// The stylesheet, served at `/static/app.css`.
 pub const APP_CSS: &str = include_str!("../static/app.css");
 
+/// The tree page's client-side name filter, served at `/static/tree.js`.
+pub const TREE_JS: &str = include_str!("../static/tree.js");
+
 macro_rules! templates {
     ($($name:literal),* $(,)?) => {
         &[ $( ($name, include_str!(concat!("../templates/", $name))) ),* ]
@@ -22,7 +25,7 @@ macro_rules! templates {
 }
 
 /// Every template, embedded at compile time.
-const TEMPLATES: &[(&str, &str)] = templates!["base.html", "home.html", "error.html"];
+const TEMPLATES: &[(&str, &str)] = templates!["base.html", "home.html", "error.html", "tree.html"];
 
 static ENV: OnceLock<Environment<'static>> = OnceLock::new();
 

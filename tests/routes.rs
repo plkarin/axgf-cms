@@ -76,6 +76,81 @@ async fn unknown_paths_render_a_404_page_not_a_panic() {
 }
 
 #[tokio::test]
+async fn tree_renders_for_an_empty_bundle() {
+    let (app, _p) = app_with_empty_bundle("tree-empty");
+    let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
+    assert!(
+        body.contains("no people yet"),
+        "an empty tree should say so, not render a blank page"
+    );
+}
+
+#[tokio::test]
+async fn tree_shows_confidence_as_line_opacity_and_a_legend() {
+    // Two children of one parent with very different parentage confidence.
+    let (app, path) = app_with_empty_bundle("tree-conf");
+    drop(app);
+
+    let flat = serde_json::json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {
+            "aaaaaaaa-0000-4000-8000-000000000000": {
+                "id": "aaaaaaaa-0000-4000-8000-000000000000", "type": "person",
+                "axgf_version": "1.0", "identity": {"name": {"display": "Parent"}}},
+            "bbbbbbbb-0000-4000-8000-000000000000": {
+                "id": "bbbbbbbb-0000-4000-8000-000000000000", "type": "person",
+                "axgf_version": "1.0", "identity": {"name": {"display": "Sure Child"}}},
+            "cccccccc-0000-4000-8000-000000000000": {
+                "id": "cccccccc-0000-4000-8000-000000000000", "type": "person",
+                "axgf_version": "1.0", "identity": {"name": {"display": "Doubtful Child"}}}
+        },
+        "families": {
+            "dddddddd-0000-4000-8000-000000000000": {
+                "id": "dddddddd-0000-4000-8000-000000000000", "type": "family",
+                "axgf_version": "1.0",
+                "union": {"type": "marriage", "persons": [
+                    {"person_id": "aaaaaaaa-0000-4000-8000-000000000000", "role": "spouse"}]},
+                "children": [
+                    {"person_id": "bbbbbbbb-0000-4000-8000-000000000000", "confidence": 0.99},
+                    {"person_id": "cccccccc-0000-4000-8000-000000000000", "confidence": 0.35}]
+            }
+        },
+        "events": {}, "links": {}, "occupations": {},
+        "sources": {}, "places": {}, "documents": {}
+    });
+    let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
+    std::fs::write(&path, bytes).expect("write");
+
+    let app = axgf_cms::app(&path, TOKEN).expect("rebuild app");
+    let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
+
+    // The two parentage lines must carry visibly different opacity.
+    let ops: Vec<f64> = body
+        .match_indices("opacity:")
+        .filter_map(|(i, _)| {
+            body[i + 8..]
+                .split(['"', ';'])
+                .next()
+                .and_then(|s| s.parse::<f64>().ok())
+        })
+        .collect();
+    assert!(ops.len() >= 2, "expected parentage lines, found {ops:?}");
+    let (lo, hi) = (
+        ops.iter().cloned().fold(f64::MAX, f64::min),
+        ops.iter().cloned().fold(0.0, f64::max),
+    );
+    assert!(
+        hi - lo > 0.3,
+        "a 0.35 parentage must look clearly fainter than a 0.99 one ({lo} vs {hi})"
+    );
+    assert!(lo > 0.0, "a speculative link is faint, never invisible");
+    assert!(
+        body.contains("speculative"),
+        "the legend explains the scale"
+    );
+}
+
+#[tokio::test]
 async fn an_empty_bundle_is_created_on_first_start() {
     let (_app, path) = app_with_empty_bundle("create");
     assert!(

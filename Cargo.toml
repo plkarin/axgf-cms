@@ -1,0 +1,42 @@
+[package]
+name = "axgf-cms"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Reference showcase application for the Axiom Genealogy Format (AXGF): browse and edit one .axgf bundle from a single binary."
+license = "Apache-2.0"
+repository = "https://github.com/plkarin/axgf-cms"
+homepage = "https://github.com/plkarin/axgf-spec"
+readme = "README.md"
+keywords = ["axgf", "genealogy", "gedcom", "family-tree", "cms"]
+categories = ["web-programming", "visualization"]
+
+[dependencies]
+# All genealogy logic lives here. This crate contains none of its own.
+axgf-rs = { version = "0.2", default-features = false, features = ["gedcom"] }
+
+anyhow = "1"
+axum = { version = "0.7", features = ["multipart"] }
+base64 = "0.21"
+clap = { version = "4", features = ["derive", "env"] }
+minijinja = { version = "2", features = ["loader"] }
+serde = { version = "1", features = ["derive"] }
+# `preserve_order` keeps object key order stable so the admin raw-JSON editor
+# round-trips an entity without silently reordering its fields. axgf-rs enables
+# this too; declaring it here makes the dependency explicit rather than
+# inherited by feature unification.
+serde_json = { version = "1", features = ["preserve_order"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "fs"] }
+tower-http = { version = "0.5", features = ["fs", "limit", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+http-body-util = "0.1"
+tower = { version = "0.4", features = ["util"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

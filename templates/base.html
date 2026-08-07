@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}axgf-cms{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='14'>&#127795;</text></svg>">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="/">axgf<span>-cms</span></a>
+    <nav>
+      <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>Tree</a>
+      <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>Convert GEDCOM</a>
+    </nav>
+    <span class="spacer"></span>
+    <nav>
+      {% if is_admin %}
+        <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>Admin</a>
+        <form method="post" action="/admin/logout" style="display:inline">
+          <button class="btn" style="padding:0.1rem 0.5rem;font-size:0.85rem">Sign out</button>
+        </form>
+      {% else %}
+        <a href="/admin/login">Sign in</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="{% block main_class %}{% endblock %}">
+{% block content %}{% endblock %}
+</main>
+
+<footer>
+  <p>
+    Served from a single <code>.axgf</code> bundle by
+    <a href="https://github.com/plkarin/axgf-cms">axgf-cms</a>.
+    All genealogy logic lives in
+    <a href="https://github.com/plkarin/axgf-lib">axgf-rs</a>;
+    the format is specified at
+    <a href="https://github.com/plkarin/axgf-spec">axgf-spec</a>.
+  </p>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

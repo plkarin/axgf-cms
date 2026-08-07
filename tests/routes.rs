@@ -163,3 +163,52 @@ async fn an_empty_bundle_is_created_on_first_start() {
     // the extension.
     assert_eq!(&bytes[..2], b"PK", "bundle should be a ZIP archive");
 }
+
+#[tokio::test]
+async fn binary_attachments_survive_a_mutation() {
+    // A bundle's document payloads are not entities; they ride along in the
+    // flat JSON's `attachments` map. Every write re-exports the whole bundle,
+    // so a mutation must not quietly drop them.
+    let (app, path) = app_with_empty_bundle("attach");
+    drop(app);
+
+    let flat = serde_json::json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {}, "families": {}, "events": {}, "links": {},
+        "occupations": {}, "sources": {}, "places": {},
+        "documents": {
+            "dddddddd-0000-4000-8000-000000000000": {
+                "id": "dddddddd-0000-4000-8000-000000000000", "type": "document",
+                "axgf_version": "1.0", "filename": "scan.bin",
+                "mime_type": "application/octet-stream",
+                "document_type": "other", "status": "present",
+                "file": {"path": "documents/files/scan.bin"}}
+        },
+        // "hello payload" in base64.
+        "attachments": {"documents/files/scan.bin": "aGVsbG8gcGF5bG9hZA=="}
+    });
+    let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
+    std::fs::write(&path, bytes).expect("write");
+
+    let app = axgf_cms::app(&path, TOKEN).expect("reopen");
+
+    // Any mutation rewrites the whole file.
+    let resp = post_form(
+        &app,
+        "/admin/person",
+        "identity.name.display=Someone&raw_json=",
+        true,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+
+    // The payload must still be in the file afterwards.
+    let written = std::fs::read(&path).expect("read back");
+    let env = axgf_rs::import_bundle(&written);
+    let payload = env.data["attachments"]["documents/files/scan.bin"].as_str();
+    assert_eq!(
+        payload,
+        Some("aGVsbG8gcGF5bG9hZA=="),
+        "a mutation must not drop document payloads"
+    );
+}

@@ -49,6 +49,9 @@ pub struct AppState {
     inner: RwLock<Value>,
     /// Shared admin token. V1 auth is a single token, not a user system.
     admin_token: String,
+    /// Converted bundles awaiting download. Deliberately separate from the
+    /// served bundle: conversion is a utility and must never write over it.
+    conversions: crate::convert::ConversionCache,
 }
 
 /// Outcome of a mutation attempt.
@@ -116,12 +119,18 @@ impl AppState {
             bundle_path: path.to_path_buf(),
             inner: RwLock::new(flat),
             admin_token,
+            conversions: crate::convert::ConversionCache::default(),
         })
     }
 
     /// The configured admin token.
     pub fn admin_token(&self) -> &str {
         &self.admin_token
+    }
+
+    /// Short-lived store of converted bundles awaiting download.
+    pub fn conversions(&self) -> &crate::convert::ConversionCache {
+        &self.conversions
     }
 
     /// Path of the live bundle.

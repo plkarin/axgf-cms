@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Convert GEDCOM — axgf-cms{% endblock %}
+
+{% block content %}
+
+<h1>Convert a GEDCOM file</h1>
+<p class="lede">
+  Upload a GEDCOM 5.5.1 file and get an <code>.axgf</code> bundle back. Nothing
+  is stored and the bundle this site serves is not touched — conversion here is
+  a standalone utility.
+</p>
+
+<form method="post" action="/convert/gedcom" enctype="multipart/form-data" class="card">
+  <div class="field">
+    <label for="file">GEDCOM file (.ged)</label>
+    <input type="file" id="file" name="file" accept=".ged,.GED,text/plain" required>
+    <div class="hint">Up to {{ max_mb }} MB. A 767-person file is about 320 KB.</div>
+  </div>
+
+  <div class="field">
+    <label for="confidence">Default confidence — <output id="confval">0.8</output></label>
+    <input type="range" id="confidence" name="confidence"
+           min="0" max="1" step="0.05" value="0.8"
+           oninput="document.getElementById('confval').textContent = this.value">
+    <div class="hint">
+      GEDCOM does not record how sure a genealogist was, so every imported fact
+      needs a starting confidence. This is that value — the honest reading is
+      “this came from a GEDCOM and has not been reviewed since”.
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="lang">Language for place names</label>
+    <input type="text" id="lang" name="lang" value="en" size="8" maxlength="35">
+    <div class="hint">
+      A BCP 47 tag such as <code>en</code>, <code>fr</code> or <code>pl</code>.
+      AXGF places carry names in several languages; this tags the ones the
+      GEDCOM supplies.
+    </div>
+  </div>
+
+  <button class="btn primary" type="submit">Convert</button>
+</form>
+
+<section class="why" style="margin-top:1.5rem">
+  <h2>What you get that the GEDCOM did not have</h2>
+  <p>
+    Every imported fact gains a confidence score, so later editing can record
+    doubt instead of discarding it. Dates keep their shape: <em>circa 1500</em>,
+    <em>before 1430</em> and <em>between 1920 and 1925</em> stay distinct
+    statements, and a date string no converter could parse is preserved verbatim
+    as a note rather than dropped. Occupations become spans with a start and an
+    end. Places become reusable entities that can carry border history.
+  </p>
+  <p class="small">
+    Converting back to GEDCOM is not offered. GEDCOM has nowhere to put
+    confidence, non-family relationships, occupation spans or preserved
+    uncertainty, so the trip back is lossy by nature and is not a goal of this
+    project.
+  </p>
+</section>
+
+{% endblock %}

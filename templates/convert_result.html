@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Conversion result — axgf-cms{% endblock %}
+
+{% block content %}
+
+{% if not ok %}
+
+  <h1>Conversion failed</h1>
+  <div class="notice error">
+    <p>{{ error }}</p>
+  </div>
+  {{ m.diagnostics(diagnostics) }}
+  <p><a class="btn" href="/convert">Try another file</a></p>
+
+{% else %}
+
+  <h1>Converted {{ filename }}</h1>
+  <p class="lede">
+    {{ total }} entities, {{ size_kb }} KB. Imported at confidence
+    {{ confidence }} with place names tagged <code>{{ lang }}</code>.
+    The bundle this site serves was not modified.
+  </p>
+
+  <h2>What the conversion produced</h2>
+  <div class="grid cols-4">
+    {% for c in counts %}
+    <div class="stat {% if c.n == 0 %}zero{% endif %}">
+      <div class="n">{{ c.n }}</div>
+      <div class="k">{{ c.kind }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if skipped %}
+  <h2>Tags that carried no usable data ({{ skipped | length }})</h2>
+  <p class="small muted">
+    These GEDCOM tags were skipped because there was nothing in them AXGF could
+    represent. They are listed rather than swallowed: knowing exactly what was
+    left behind is the difference between a conversion you can trust and one you
+    cannot.
+  </p>
+  {{ m.diagnostics(skipped) }}
+  {% endif %}
+
+  {% if others %}
+  <h2>Other diagnostics ({{ others | length }})</h2>
+  {{ m.diagnostics(others) }}
+  {% endif %}
+
+  {% if not skipped and not others %}
+  <div class="notice ok">
+    <p>The converter reported nothing — every tag in the file mapped cleanly.</p>
+  </div>
+  {% endif %}
+
+  <h2>Download</h2>
+  <p>
+    <a class="btn primary" href="/convert/download/{{ download_id }}">
+      Download {{ download_name }}
+    </a>
+  </p>
+  <p class="small muted">
+    Held for fifteen minutes, then discarded. To browse this data on a site
+    like this one, point <code>--bundle</code> at the downloaded file and
+    restart, or replace the live bundle from the admin panel.
+  </p>
+
+  <p style="margin-top:2rem"><a class="btn" href="/convert">Convert another file</a></p>
+
+{% endif %}
+
+{% endblock %}

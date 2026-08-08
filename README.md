@@ -97,7 +97,7 @@ Public, read-only:
 |---|---|
 | `GET /` | Why AXGF, what is in this bundle, entry points |
 | `GET /tree` | A focused subtree around one person, oldest generation at the bottom. `?root=<id>` centres it, `?depth=<n>` sets how many generations each way (default 3), `?all=1` draws the whole bundle |
-| `GET /person/:id` | Everything known about one person |
+| `GET /person/:id` | The whole record for one person, in sections: identity and every recorded name, a chronological life timeline, family, non-family relationships, occupations, places, sources and documents, notes, and the entity's raw JSON. A section with no content is omitted |
 | `GET /convert` | GEDCOM → AXGF conversion |
 | `POST /convert/gedcom` | Convert an upload, report what it carried against what AXGF holds, and offer the result |
 | `GET /health` | `200` with entity counts |

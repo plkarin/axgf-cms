@@ -86,6 +86,11 @@ pub struct DateDisplay {
     /// A short year-ish string for compact contexts (tree cards). Empty when
     /// no year can be stated honestly.
     pub short: String,
+    /// Sort key as `YYYYMMDD`, from the earliest moment the date can refer to.
+    /// `None` when the record gives nothing to order by — which is why this is
+    /// an `Option` rather than a zero: an undated fact must sort *after* every
+    /// dated one on a timeline, not before the year 1.
+    pub sort: Option<i64>,
     /// Non-Gregorian calendar name, when the date declares one.
     pub calendar: Option<String>,
     /// Alternative renderings in other calendars.
@@ -104,6 +109,7 @@ impl DateDisplay {
             kind: "unknown",
             is_uncertain: true,
             short: String::new(),
+            sort: None,
             calendar: None,
             alternatives: Vec::new(),
             note: None,
@@ -162,6 +168,7 @@ pub fn render_date(raw: &Value) -> DateDisplay {
         kind: "unknown",
         is_uncertain: true,
         short: String::new(),
+        sort: None,
         calendar,
         alternatives,
         note: date.note.clone().filter(|n| !n.trim().is_empty()),
@@ -176,16 +183,19 @@ pub fn render_date(raw: &Value) -> DateDisplay {
             (Some(a), Some(b)) => {
                 out.text = format!("between {a} and {b}");
                 out.short = format!("{}–{}", year_of(&a), year_of(&b));
+                out.sort = range.earliest.as_deref().and_then(sort_key_of);
             }
             // Plain characters, not HTML entities: templates autoescape, so an
             // entity here would render literally as "&gt;".
             (Some(a), None) => {
                 out.text = format!("after {a}");
                 out.short = format!(">{}", year_of(&a));
+                out.sort = range.earliest.as_deref().and_then(sort_key_of);
             }
             (None, Some(b)) => {
                 out.text = format!("before {b}");
                 out.short = format!("<{}", year_of(&b));
+                out.sort = range.latest.as_deref().and_then(sort_key_of);
             }
             (None, None) => {}
         }
@@ -205,6 +215,7 @@ pub fn render_date(raw: &Value) -> DateDisplay {
         let circa = date.circa.unwrap_or(false);
         out.text = if circa { format!("circa {body}") } else { body };
         out.short = year_of(v);
+        out.sort = sort_key(v);
         out.is_uncertain = circa || precision != "exact";
         out.kind = if circa {
             "approximate"
@@ -235,6 +246,19 @@ pub fn render_date_field(obj: &Value, key: &str) -> DateDisplay {
         Some(v) => render_date(v),
         None => DateDisplay::absent(),
     }
+}
+
+/// The sort key of a nested range bound.
+fn sort_key_of(d: &AxgfDate) -> Option<i64> {
+    d.value.as_deref().and_then(sort_key)
+}
+
+/// `YYYYMMDD` for an ISO-ish value, padding the parts the source omits with
+/// zeroes so "1923" sorts before "1923-04-12" rather than after it.
+fn sort_key(value: &str) -> Option<i64> {
+    let (y, m, d) = split_ymd(value);
+    let y = y?;
+    Some(y * 10_000 + i64::from(m.unwrap_or(0)) * 100 + i64::from(d.unwrap_or(0)))
 }
 
 /// Render a nested range bound to prose, if it says anything at all.

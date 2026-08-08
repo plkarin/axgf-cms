@@ -8,6 +8,17 @@
 //!
 //! A referenced person who is not in the bundle becomes `[Unknown]` with no
 //! link, never a broken page.
+//!
+//! # What the page is for
+//!
+//! The identity page is the argument for the format, so it shows the whole
+//! record rather than a summary of it: every name with the period it was used
+//! and the source behind it, every event the person took part in — including
+//! the ones they did not own, because standing witness at a marriage is a fact
+//! about you — every relationship in both directions, every place, every
+//! source, and the entity's own JSON at the bottom. A section with nothing in
+//! it is omitted rather than shown empty, so the shape of the page is itself a
+//! readout of what the bundle carries.
 
 use serde::Serialize;
 use serde_json::Value;
@@ -22,13 +33,18 @@ pub struct PersonRef {
     /// False when the id is referenced but absent from the bundle.
     pub known: bool,
     pub confidence: Option<Confidence>,
-    /// Extra context: a role, a birth order, a note.
+    /// Extra context: a role, a union type, a note.
     pub detail: Option<String>,
+    /// Birth order within the family, when the record states one.
+    pub birth_order: Option<i64>,
+    /// Lifespan in brief, e.g. "1881–1962", for the family lists.
+    pub lifespan: Option<String>,
 }
 
 /// A place, resolved with its historical country context.
 #[derive(Debug, Clone, Serialize)]
 pub struct PlaceView {
+    pub id: String,
     pub name: String,
     pub known: bool,
     pub place_type: Option<String>,
@@ -37,6 +53,14 @@ pub struct PlaceView {
     /// say that a town changed hands.
     pub country_history: Vec<String>,
     pub note: Option<String>,
+}
+
+/// A place together with everything on this page that happened there.
+#[derive(Debug, Clone, Serialize)]
+pub struct PlaceUse {
+    pub place: PlaceView,
+    /// "Born", "Married", "Occupation: Schoolteacher" — one line per use.
+    pub uses: Vec<String>,
 }
 
 /// A dated fact such as birth or death.
@@ -63,19 +87,35 @@ pub struct SourceView {
     pub confidence: Option<Confidence>,
     pub status: Option<String>,
     pub repository: Option<String>,
+    pub note: Option<String>,
     pub known: bool,
+    /// Which facts on this page rest on this source. Filled in only for the
+    /// evidence section; empty on the chips shown next to individual facts.
+    pub used_for: Vec<String>,
 }
 
-/// An alternative name with its own validity period and source.
+/// One recorded name, with the period it was used and where it came from.
 #[derive(Debug, Clone, Serialize)]
 pub struct NameView {
     pub display: String,
+    /// The Latin transliteration, when the record carries one that differs
+    /// from `display`. Showing both side by side is the clearest thing AXGF
+    /// does that GEDCOM cannot: one field, one script, take it or leave it.
+    pub latin: Option<String>,
     pub kind: String,
-    pub valid_from: Option<String>,
-    pub valid_until: Option<String>,
+    /// True for `identity.name` — the name the rest of the site uses.
+    pub is_primary: bool,
+    pub culture: Option<String>,
+    pub direction: Option<String>,
+    pub reading: Option<String>,
+    pub reading_system: Option<String>,
+    /// "1920–1945", "from 1920", "until 1945" — empty when always applicable.
+    pub period: Option<String>,
     pub confidence: Option<Confidence>,
     pub source: Option<SourceView>,
     pub note: Option<String>,
+    /// "given name: Laura", in the order the record states.
+    pub components: Vec<String>,
 }
 
 /// A non-family link: godparent, employer, witness, mentor.
@@ -124,24 +164,69 @@ pub struct OccupationView {
 pub struct DocumentView {
     pub id: String,
     pub filename: String,
+    pub mime_type: Option<String>,
     pub document_type: String,
     pub status: String,
     pub caption: Option<String>,
+    pub note: Option<String>,
     pub role: Option<String>,
     pub known: bool,
+    /// True when the bundle actually carries the bytes, so the page may offer
+    /// a download. A `referenced` document names a file that lives elsewhere.
+    pub has_payload: bool,
+    /// True when the payload is an image and can be shown in the gallery.
+    pub is_image: bool,
+    pub size_bytes: Option<u64>,
+    /// "1.4 MB", or `None` when the record does not state a size.
+    pub size_human: Option<String>,
 }
 
-/// An event this person took part in.
+/// One entry on the life timeline: a vital fact or an event.
 #[derive(Debug, Clone, Serialize)]
-pub struct EventView {
-    pub category: String,
-    pub subcategory: Option<String>,
+pub struct TimelineEntry {
+    /// "Born", "Died", "Marriage", "Baptism".
+    pub label: String,
+    /// `birth`, `death` or `event`, for styling the marker.
+    pub kind: &'static str,
     pub date: DateDisplay,
     pub place: Option<PlaceView>,
+    /// This person's part in it: spouse, witness, subject.
     pub role: Option<String>,
     pub description: Option<String>,
+    pub cause: Option<String>,
     pub confidence: Option<Confidence>,
     pub source: Option<SourceView>,
+    /// Sort position; `None` sorts last, after everything dated.
+    pub sort: Option<i64>,
+}
+
+/// One union this person was part of, with its own children.
+#[derive(Debug, Clone, Serialize)]
+pub struct UnionView {
+    /// `None` when the bundle records only one partner in the union.
+    pub spouse: Option<PersonRef>,
+    /// "married", "civil union", "cohabited".
+    pub kind: Option<String>,
+    /// "ongoing", "ended by divorce", "ended by the death of a spouse".
+    pub status: String,
+    pub start: Option<DateDisplay>,
+    pub start_place: Option<PlaceView>,
+    pub end: Option<DateDisplay>,
+    pub end_note: Option<String>,
+    pub confidence: Option<Confidence>,
+    pub source: Option<SourceView>,
+    /// Children of this union, in birth order where the record states one.
+    pub children: Vec<PersonRef>,
+}
+
+/// A block of free text.
+#[derive(Debug, Clone, Serialize)]
+pub struct NoteView {
+    pub label: String,
+    pub text: String,
+    /// True when this is text a converter could not interpret and kept
+    /// verbatim rather than dropping.
+    pub verbatim: bool,
 }
 
 /// Everything the identity page shows.
@@ -149,23 +234,29 @@ pub struct EventView {
 pub struct PersonView {
     pub id: String,
     pub name: String,
+    /// The primary name first, then every alternative.
     pub names: Vec<NameView>,
     pub gender: Option<String>,
     pub gender_note: Option<String>,
     pub is_living: bool,
+    pub visibility: Option<String>,
     pub birth: FactView,
     pub death: FactView,
-    pub bio: Option<String>,
-    pub notes: Option<String>,
+    /// Birth and death merged with every event, in date order.
+    pub timeline: Vec<TimelineEntry>,
     pub parents: Vec<PersonRef>,
-    pub spouses: Vec<PersonRef>,
     pub siblings: Vec<PersonRef>,
-    pub children: Vec<PersonRef>,
+    pub unions: Vec<UnionView>,
     pub links: Vec<LinkView>,
     pub occupations: Vec<OccupationView>,
-    pub events: Vec<EventView>,
+    pub places: Vec<PlaceUse>,
     pub sources: Vec<SourceView>,
     pub documents: Vec<DocumentView>,
+    /// Images among `documents`, for the gallery.
+    pub images: Vec<DocumentView>,
+    pub notes: Vec<NoteView>,
+    /// The entity exactly as the bundle holds it, pretty-printed.
+    pub raw_json: String,
     /// Timeline axis labels for the occupation chart.
     pub timeline_from: i64,
     pub timeline_to: i64,
@@ -209,42 +300,28 @@ pub fn build(flat: &Value, id: &str) -> Option<PersonView> {
         .and_then(Value::as_bool)
         .unwrap_or(false);
 
-    // Alternative names, each with its own validity window and source.
-    let names: Vec<NameView> = identity
-        .and_then(|i| i.get("names"))
-        .and_then(Value::as_array)
-        .map(|arr| {
-            arr.iter()
-                .map(|n| NameView {
-                    display: n
-                        .get("display")
-                        .and_then(Value::as_str)
-                        .unwrap_or("[Unnamed]")
-                        .to_string(),
-                    kind: n
-                        .get("type")
-                        .and_then(Value::as_str)
-                        .unwrap_or("other")
-                        .replace('_', " "),
-                    valid_from: str_field(n, "valid_from"),
-                    valid_until: str_field(n, "valid_until"),
-                    confidence: Confidence::from_field(n, "confidence"),
-                    source: ctx.source_of(n),
-                    note: str_field(n, "note"),
-                })
-                .collect::<Vec<_>>()
-        })
-        .unwrap_or_default();
+    let names = ctx.names_of(identity);
 
     let birth = ctx.fact(person, "birth", "Born");
     let death = ctx.fact(person, "death", "Died");
 
-    let (parents, spouses, siblings, children) = ctx.relations(id);
+    let (parents, siblings, unions) = ctx.relations(id);
     let links = ctx.links_for(id);
     let (occupations, timeline_from, timeline_to, has_timeline) = ctx.occupations_for(id);
     let events = ctx.events_for(id);
+    let timeline = build_timeline(&birth, &death, events);
     let documents = ctx.documents_for(id, person);
-    let sources = ctx.sources_for(&birth, &death, &names, &links, &occupations, &events);
+    let images: Vec<DocumentView> = documents
+        .iter()
+        .filter(|d| d.is_image && d.has_payload)
+        .cloned()
+        .collect();
+    let places = ctx.places_for(&birth, &death, &timeline, &occupations, &unions);
+    let sources = ctx.sources_for(&timeline, &names, &links, &occupations, &unions);
+    let notes = collect_notes(person, &birth, &death, &timeline);
+
+    let raw_json =
+        serde_json::to_string_pretty(person).unwrap_or_else(|_| "<unserializable>".into());
 
     let mut showcase_notes = Vec::new();
     if !links.is_empty() {
@@ -270,7 +347,21 @@ pub fn build(flat: &Value, id: &str) -> Option<PersonView> {
         }
     }
     if names.len() > 1 {
-        showcase_notes.push(format!("{} recorded names", names.len() + 1));
+        showcase_notes.push(format!("{} recorded names", names.len()));
+    }
+    if names.iter().any(|n| n.latin.is_some()) {
+        showcase_notes
+            .push("a name in its own script beside its Latin transliteration".to_string());
+    }
+    let witnessed = timeline
+        .iter()
+        .filter(|t| t.kind == "event" && t.role.as_deref() == Some("witness"))
+        .count();
+    if witnessed > 0 {
+        showcase_notes.push(format!(
+            "{witnessed} event{} they witnessed rather than owned",
+            if witnessed == 1 { "" } else { "s" }
+        ));
     }
 
     Some(PersonView {
@@ -280,19 +371,23 @@ pub fn build(flat: &Value, id: &str) -> Option<PersonView> {
         gender,
         gender_note,
         is_living,
+        visibility: identity
+            .and_then(|i| str_field(i, "visibility"))
+            .map(|v| v.replace('_', " ")),
         birth,
         death,
-        bio: str_field(person, "bio"),
-        notes: str_field(person, "notes"),
+        timeline,
         parents,
-        spouses,
         siblings,
-        children,
+        unions,
         links,
         occupations,
-        events,
+        places,
         sources,
         documents,
+        images,
+        notes,
+        raw_json,
         timeline_from,
         timeline_to,
         has_timeline,
@@ -307,6 +402,118 @@ fn str_field(v: &Value, key: &str) -> Option<String> {
         .map(str::trim)
         .filter(|s| !s.is_empty())
         .map(str::to_string)
+}
+
+/// Merge the vitals and the events into one chronological list.
+///
+/// Undated entries sort last rather than first: a fact with no date is not a
+/// fact that happened before everything else.
+fn build_timeline(
+    birth: &FactView,
+    death: &FactView,
+    events: Vec<TimelineEntry>,
+) -> Vec<TimelineEntry> {
+    let mut out: Vec<TimelineEntry> = Vec::new();
+    for (fact, kind) in [(birth, "birth"), (death, "death")] {
+        if !fact.present {
+            continue;
+        }
+        out.push(TimelineEntry {
+            label: fact.label.to_string(),
+            kind,
+            date: fact.date.clone(),
+            place: fact.place.clone(),
+            role: None,
+            description: None,
+            cause: fact.cause.clone(),
+            confidence: fact.confidence.clone(),
+            source: fact.source.clone(),
+            sort: fact.date.sort,
+        });
+    }
+    out.extend(events);
+    out.sort_by(|a, b| match (a.sort, b.sort) {
+        (Some(x), Some(y)) => x.cmp(&y).then_with(|| a.label.cmp(&b.label)),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => a.label.cmp(&b.label),
+    });
+    out
+}
+
+/// Gather every piece of free text, marking the ones a converter preserved
+/// because it could not parse them.
+fn collect_notes(
+    person: &Value,
+    birth: &FactView,
+    death: &FactView,
+    timeline: &[TimelineEntry],
+) -> Vec<NoteView> {
+    let mut out = Vec::new();
+    if let Some(bio) = str_field(person, "bio") {
+        out.push(NoteView {
+            label: "Biography".into(),
+            text: bio,
+            verbatim: false,
+        });
+    }
+    if let Some(n) = str_field(person, "notes") {
+        out.push(NoteView {
+            label: "Notes".into(),
+            text: n,
+            verbatim: false,
+        });
+    }
+    // A date the converter could not interpret is kept as text on the date
+    // itself. It belongs on the page: it is the evidence that the conversion
+    // dropped nothing, and it is often the only thing the record says.
+    for (label, fact) in [
+        ("Birth date, as recorded", birth),
+        ("Death date, as recorded", death),
+    ] {
+        if let Some(note) = fact.date.note.clone() {
+            out.push(NoteView {
+                label: label.into(),
+                text: note,
+                verbatim: true,
+            });
+        }
+    }
+    for entry in timeline {
+        if entry.kind == "event" {
+            if let Some(note) = entry.date.note.clone() {
+                out.push(NoteView {
+                    label: format!("{} date, as recorded", entry.label),
+                    text: note,
+                    verbatim: true,
+                });
+            }
+        }
+    }
+    out
+}
+
+/// Format a byte count the way a file listing would.
+fn human_size(bytes: u64) -> String {
+    const UNITS: [(&str, u64); 3] = [("MB", 1024 * 1024), ("KB", 1024), ("bytes", 1)];
+    for (unit, scale) in UNITS {
+        if bytes >= scale {
+            return if scale == 1 {
+                format!("{bytes} bytes")
+            } else {
+                format!("{:.1} {unit}", bytes as f64 / scale as f64)
+            };
+        }
+    }
+    "0 bytes".into()
+}
+
+/// One entry of a family's `children[]`, read out before it is resolved.
+struct ChildEntry<'a> {
+    id: &'a str,
+    confidence: Option<f64>,
+    note: Option<String>,
+    birth_order: Option<i64>,
 }
 
 /// Lookup helpers bound to one bundle.
@@ -330,6 +537,8 @@ impl Ctx<'_> {
             known: found.is_some(),
             confidence: confidence.map(Confidence::new),
             detail,
+            birth_order: None,
+            lifespan: found.and_then(lifespan_of),
         }
     }
 
@@ -340,6 +549,7 @@ impl Ctx<'_> {
         let found = self.collection("places").and_then(|m| m.get(id));
         let Some(p) = found else {
             return Some(PlaceView {
+                id: id.to_string(),
                 name: "[Unknown place]".into(),
                 known: false,
                 place_type: None,
@@ -372,6 +582,7 @@ impl Ctx<'_> {
             .unwrap_or_default();
 
         Some(PlaceView {
+            id: id.to_string(),
             name: view::place_name(p),
             known: true,
             place_type: str_field(p, "place_type").map(|t| t.replace('_', " ")),
@@ -400,7 +611,9 @@ impl Ctx<'_> {
                 confidence: None,
                 status: None,
                 repository: None,
+                note: None,
                 known: false,
+                used_for: Vec::new(),
             };
         };
         let reliability = s
@@ -422,7 +635,96 @@ impl Ctx<'_> {
                 .and_then(|r| r.get("name"))
                 .and_then(Value::as_str)
                 .map(str::to_string),
+            note: str_field(s, "note"),
             known: true,
+            used_for: Vec::new(),
+        }
+    }
+
+    /// The primary name followed by every alternative, each with its period
+    /// and provenance.
+    fn names_of(&self, identity: Option<&Value>) -> Vec<NameView> {
+        let mut out = Vec::new();
+        let Some(identity) = identity else {
+            return out;
+        };
+        if let Some(primary) = identity.get("name") {
+            out.push(self.name_view(primary, true));
+        }
+        if let Some(arr) = identity.get("names").and_then(Value::as_array) {
+            for n in arr {
+                let v = self.name_view(n, false);
+                // The converter often repeats the display name in `names[]`.
+                // Listing it twice says nothing; a differing script or period
+                // does, so only exact duplicates are folded away.
+                let dup = out.iter().any(|e: &NameView| {
+                    e.display == v.display
+                        && e.latin == v.latin
+                        && e.period.is_none()
+                        && v.period.is_none()
+                });
+                if !dup {
+                    out.push(v);
+                }
+            }
+        }
+        out
+    }
+
+    fn name_view(&self, n: &Value, is_primary: bool) -> NameView {
+        let display = str_field(n, "display").unwrap_or_else(|| "[Unnamed]".into());
+        // Only a transliteration that actually differs is worth two columns.
+        let latin = str_field(n, "display_latin").filter(|l| l != &display);
+        let from = str_field(n, "valid_from");
+        let until = str_field(n, "valid_until");
+        let period = match (from.as_deref(), until.as_deref()) {
+            (Some(a), Some(b)) => Some(format!("{a}–{b}")),
+            (Some(a), None) => Some(format!("from {a}")),
+            (None, Some(b)) => Some(format!("until {b}")),
+            (None, None) => None,
+        };
+        let components = n
+            .get("components")
+            .and_then(Value::as_array)
+            .map(|arr| {
+                let mut parts: Vec<(i64, String)> = arr
+                    .iter()
+                    .filter_map(|c| {
+                        let value = str_field(c, "value")?;
+                        let kind = str_field(c, "type")
+                            .unwrap_or_else(|| "part".into())
+                            .replace('_', " ");
+                        let order = c.get("order").and_then(Value::as_i64).unwrap_or(i64::MAX);
+                        Some((order, format!("{kind}: {value}")))
+                    })
+                    .collect();
+                parts.sort_by_key(|(order, _)| *order);
+                parts.into_iter().map(|(_, s)| s).collect()
+            })
+            .unwrap_or_default();
+
+        NameView {
+            display,
+            latin,
+            kind: str_field(n, "type")
+                .unwrap_or_else(|| {
+                    if is_primary {
+                        "primary".into()
+                    } else {
+                        "other".into()
+                    }
+                })
+                .replace('_', " "),
+            is_primary,
+            culture: str_field(n, "culture"),
+            direction: str_field(n, "direction"),
+            reading: str_field(n, "reading"),
+            reading_system: str_field(n, "reading_system").map(|r| r.replace('_', " ")),
+            period,
+            confidence: Confidence::from_field(n, "confidence"),
+            source: self.source_of(n),
+            note: str_field(n, "note"),
+            components,
         }
     }
 
@@ -451,28 +753,26 @@ impl Ctx<'_> {
         }
     }
 
-    /// Parents, spouses, siblings and children, each carrying its confidence.
-    fn relations(
-        &self,
-        id: &str,
-    ) -> (
-        Vec<PersonRef>,
-        Vec<PersonRef>,
-        Vec<PersonRef>,
-        Vec<PersonRef>,
-    ) {
+    /// Resolve one `family.children[]` entry, carrying its birth order over.
+    fn child_ref(&self, c: &ChildEntry) -> PersonRef {
+        let mut r = self.person_ref(c.id, c.confidence, c.note.clone());
+        r.birth_order = c.birth_order;
+        r
+    }
+
+    /// Parents, siblings and unions, each carrying its own confidence.
+    fn relations(&self, id: &str) -> (Vec<PersonRef>, Vec<PersonRef>, Vec<UnionView>) {
         let mut parents = Vec::new();
-        let mut spouses = Vec::new();
         let mut siblings = Vec::new();
-        let mut children = Vec::new();
+        let mut unions: Vec<UnionView> = Vec::new();
 
         let Some(families) = self.collection("families") else {
-            return (parents, spouses, siblings, children);
+            return (parents, siblings, unions);
         };
 
         for fam in families.values() {
-            let partners: Vec<(&str, Option<&str>)> = fam
-                .get("union")
+            let union = fam.get("union");
+            let partners: Vec<(&str, Option<&str>)> = union
                 .and_then(|u| u.get("persons"))
                 .and_then(Value::as_array)
                 .map(|ps| {
@@ -485,62 +785,87 @@ impl Ctx<'_> {
                 })
                 .unwrap_or_default();
 
-            let kids: Vec<(&str, Option<f64>, Option<String>)> = fam
+            let kids: Vec<ChildEntry> = fam
                 .get("children")
                 .and_then(Value::as_array)
                 .map(|cs| {
                     cs.iter()
                         .filter_map(|c| {
-                            let cid = c.get("person_id").and_then(Value::as_str)?;
-                            let conf = c.get("confidence").and_then(Value::as_f64);
-                            let note = str_field(c, "note");
-                            Some((cid, conf, note))
+                            Some(ChildEntry {
+                                id: c.get("person_id").and_then(Value::as_str)?,
+                                confidence: c.get("confidence").and_then(Value::as_f64),
+                                note: str_field(c, "note"),
+                                birth_order: c.get("birth_order").and_then(Value::as_i64),
+                            })
                         })
                         .collect()
                 })
                 .unwrap_or_default();
 
-            let union_conf = fam
-                .get("union")
-                .and_then(|u| u.get("confidence"))
-                .and_then(Value::as_f64);
-
             let is_partner = partners.iter().any(|(p, _)| *p == id);
-            let as_child = kids.iter().find(|(c, _, _)| *c == id);
+            let as_child = kids.iter().find(|c| c.id == id);
 
-            if let Some((_, conf, _)) = as_child {
+            if let Some(me) = as_child {
                 // Parents, and the confidence of *this* person's parentage.
                 for (p, role) in &partners {
-                    parents.push(self.person_ref(p, *conf, role.map(|r| r.replace('_', " "))));
+                    parents.push(self.person_ref(
+                        p,
+                        me.confidence,
+                        role.map(|r| r.replace('_', " ")),
+                    ));
                 }
-                for (c, cconf, note) in &kids {
-                    if *c != id {
-                        siblings.push(self.person_ref(c, *cconf, note.clone()));
+                for c in &kids {
+                    if c.id != id {
+                        siblings.push(self.child_ref(c));
                     }
                 }
             }
 
             if is_partner {
-                for (p, role) in &partners {
-                    if *p != id {
-                        spouses.push(self.person_ref(
-                            p,
-                            union_conf,
-                            union_type(fam).or_else(|| role.map(|r| r.replace('_', " "))),
-                        ));
-                    }
-                }
-                for (c, cconf, note) in &kids {
-                    children.push(self.person_ref(c, *cconf, note.clone()));
-                }
+                let spouse = partners.iter().find(|(p, _)| *p != id).map(|(p, role)| {
+                    self.person_ref(
+                        p,
+                        union
+                            .and_then(|u| u.get("confidence"))
+                            .and_then(Value::as_f64),
+                        role.map(|r| r.replace('_', " ")),
+                    )
+                });
+                let mut children: Vec<PersonRef> = kids.iter().map(|c| self.child_ref(c)).collect();
+                // Birth order first where the record states one; the rest keep
+                // the order the family lists them in.
+                children.sort_by_key(|c| c.birth_order.unwrap_or(i64::MAX));
+
+                unions.push(UnionView {
+                    spouse,
+                    kind: union.and_then(union_type),
+                    status: union_status(union),
+                    start: union
+                        .and_then(|u| u.get("start"))
+                        .filter(|v| !v.is_null())
+                        .map(|s| view::render_date_field(s, "date")),
+                    start_place: union
+                        .and_then(|u| u.get("start"))
+                        .and_then(|s| s.get("place_id"))
+                        .and_then(Value::as_str)
+                        .and_then(|p| self.place(Some(p))),
+                    end: union
+                        .and_then(|u| u.get("end"))
+                        .filter(|v| !v.is_null())
+                        .map(|e| view::render_date_field(e, "date")),
+                    end_note: union
+                        .and_then(|u| u.get("end"))
+                        .and_then(|e| str_field(e, "note")),
+                    confidence: union.and_then(|u| Confidence::from_field(u, "confidence")),
+                    source: union.and_then(|u| self.source_of(u)),
+                    children,
+                });
             }
         }
 
         dedup_refs(&mut parents);
-        dedup_refs(&mut spouses);
         dedup_refs(&mut siblings);
-        dedup_refs(&mut children);
-        (parents, spouses, siblings, children)
+        (parents, siblings, unions)
     }
 
     /// Non-family links, read from this person's point of view.
@@ -714,43 +1039,55 @@ impl Ctx<'_> {
         (out, axis_lo, axis_hi, has_timeline)
     }
 
-    /// Events this person participated in.
-    fn events_for(&self, id: &str) -> Vec<EventView> {
+    /// Events this person took part in, in any role.
+    ///
+    /// Being a witness at someone else's marriage is a fact about you, so the
+    /// filter is participation, not ownership.
+    fn events_for(&self, id: &str) -> Vec<TimelineEntry> {
         let Some(events) = self.collection("events") else {
             return Vec::new();
         };
-        let mut out: Vec<EventView> = events
+        events
             .values()
             .filter_map(|e| {
                 let role = e
                     .get("participants")
                     .and_then(Value::as_array)?
                     .iter()
-                    .find(|p| p.get("entity_id").and_then(Value::as_str) == Some(id))
+                    .find(|p| {
+                        p.get("entity_id").and_then(Value::as_str) == Some(id)
+                            && p.get("entity_type").and_then(Value::as_str) != Some("family")
+                    })
                     .map(|p| {
                         p.get("role")
                             .and_then(Value::as_str)
                             .unwrap_or("participant")
                             .replace('_', " ")
                     })?;
-                Some(EventView {
-                    category: e
-                        .get("category")
-                        .and_then(Value::as_str)
-                        .unwrap_or("other")
-                        .replace('_', " "),
-                    subcategory: str_field(e, "subcategory"),
-                    date: view::render_date_field(e, "date"),
+                let category = e
+                    .get("category")
+                    .and_then(Value::as_str)
+                    .unwrap_or("other")
+                    .replace('_', " ");
+                let label = match str_field(e, "subcategory") {
+                    Some(sub) => format!("{category} — {sub}"),
+                    None => capitalise(&category),
+                };
+                let date = view::render_date_field(e, "date");
+                Some(TimelineEntry {
+                    label,
+                    kind: "event",
+                    sort: date.sort,
+                    date,
                     place: self.place(e.get("place_id").and_then(Value::as_str)),
                     role: Some(role),
                     description: str_field(e, "description"),
+                    cause: None,
                     confidence: Confidence::from_field(e, "confidence"),
                     source: self.source_of(e),
                 })
             })
-            .collect();
-        out.sort_by(|a, b| a.date.short.cmp(&b.date.short));
-        out
+            .collect()
     }
 
     /// Documents attached to this person, from either direction.
@@ -766,30 +1103,52 @@ impl Ctx<'_> {
                 return;
             }
             seen.push(doc_id.to_string());
-            let found = docs.get(doc_id);
-            out.push(match found {
-                Some(d) => DocumentView {
-                    id: doc_id.to_string(),
-                    filename: str_field(d, "filename").unwrap_or_else(|| doc_id.to_string()),
-                    document_type: str_field(d, "document_type")
-                        .unwrap_or_else(|| "other".into())
-                        .replace('_', " "),
-                    status: str_field(d, "status")
-                        .unwrap_or_else(|| "unknown".into())
-                        .replace('_', " "),
-                    caption: str_field(d, "caption"),
-                    role,
-                    known: true,
-                },
-                None => DocumentView {
+            let Some(d) = docs.get(doc_id) else {
+                out.push(DocumentView {
                     id: doc_id.to_string(),
                     filename: "[Missing document]".into(),
+                    mime_type: None,
                     document_type: "unknown".into(),
                     status: "referenced".into(),
                     caption: None,
+                    note: None,
                     role,
                     known: false,
-                },
+                    has_payload: false,
+                    is_image: false,
+                    size_bytes: None,
+                    size_human: None,
+                });
+                return;
+            };
+            let mime = str_field(d, "mime_type");
+            let status = str_field(d, "status").unwrap_or_else(|| "unknown".into());
+            let size = d
+                .get("file")
+                .and_then(|f| f.get("size_bytes"))
+                .and_then(Value::as_u64);
+            out.push(DocumentView {
+                id: doc_id.to_string(),
+                filename: str_field(d, "filename").unwrap_or_else(|| doc_id.to_string()),
+                is_image: mime.as_deref().is_some_and(|m| m.starts_with("image/")),
+                mime_type: mime,
+                document_type: str_field(d, "document_type")
+                    .unwrap_or_else(|| "other".into())
+                    .replace('_', " "),
+                // Only a `present` document has bytes in the bundle; anything
+                // else names a file that lives somewhere else entirely.
+                has_payload: status == "present"
+                    && d.get("file")
+                        .and_then(|f| f.get("path"))
+                        .and_then(Value::as_str)
+                        .is_some(),
+                status: status.replace('_', " "),
+                caption: str_field(d, "caption"),
+                note: str_field(d, "note"),
+                role,
+                known: true,
+                size_bytes: size,
+                size_human: size.map(human_size),
             });
         };
 
@@ -818,37 +1177,99 @@ impl Ctx<'_> {
         out
     }
 
-    /// Every source any of this person's facts rests on, strongest first.
-    fn sources_for(
+    /// Every place this person's record touches, and what happened at each.
+    fn places_for(
         &self,
         birth: &FactView,
         death: &FactView,
+        timeline: &[TimelineEntry],
+        occupations: &[OccupationView],
+        unions: &[UnionView],
+    ) -> Vec<PlaceUse> {
+        let mut out: Vec<PlaceUse> = Vec::new();
+        let mut add = |place: &Option<PlaceView>, use_of: String| {
+            let Some(p) = place else { return };
+            match out.iter_mut().find(|e| e.place.id == p.id) {
+                Some(existing) => {
+                    if !existing.uses.contains(&use_of) {
+                        existing.uses.push(use_of);
+                    }
+                }
+                None => out.push(PlaceUse {
+                    place: p.clone(),
+                    uses: vec![use_of],
+                }),
+            }
+        };
+
+        add(&birth.place, "Born".into());
+        add(&death.place, "Died".into());
+        for e in timeline {
+            if e.kind == "event" {
+                add(&e.place, e.label.clone());
+            }
+        }
+        for o in occupations {
+            add(&o.place, format!("Worked as {}", o.title));
+        }
+        for u in unions {
+            let who = u
+                .spouse
+                .as_ref()
+                .map(|s| format!("Married {}", s.name))
+                .unwrap_or_else(|| "Married".into());
+            add(&u.start_place, who);
+        }
+        out.sort_by(|a, b| a.place.name.cmp(&b.place.name));
+        out
+    }
+
+    /// Every source any of this person's facts rests on, strongest first, each
+    /// carrying the list of facts that depend on it.
+    fn sources_for(
+        &self,
+        timeline: &[TimelineEntry],
         names: &[NameView],
         links: &[LinkView],
         occupations: &[OccupationView],
-        events: &[EventView],
+        unions: &[UnionView],
     ) -> Vec<SourceView> {
         let mut out: Vec<SourceView> = Vec::new();
-        let mut add = |s: &Option<SourceView>| {
-            if let Some(s) = s {
-                if !out.iter().any(|e| e.id == s.id) {
-                    out.push(s.clone());
+        let mut add = |s: &Option<SourceView>, used_for: String| {
+            let Some(s) = s else { return };
+            match out.iter_mut().find(|e| e.id == s.id) {
+                Some(existing) => {
+                    if !existing.used_for.contains(&used_for) {
+                        existing.used_for.push(used_for);
+                    }
+                }
+                None => {
+                    let mut copy = s.clone();
+                    copy.used_for = vec![used_for];
+                    out.push(copy);
                 }
             }
         };
-        add(&birth.source);
-        add(&death.source);
+
+        for e in timeline {
+            add(&e.source, e.label.clone());
+        }
         for n in names {
-            add(&n.source);
+            add(&n.source, format!("the name “{}”", n.display));
         }
         for l in links {
-            add(&l.source);
+            add(&l.source, format!("{} {}", l.label, l.other.name));
         }
         for o in occupations {
-            add(&o.source);
+            add(&o.source, format!("working as {}", o.title));
         }
-        for e in events {
-            add(&e.source);
+        for u in unions {
+            let who = u
+                .spouse
+                .as_ref()
+                .map(|s| format!("the union with {}", s.name))
+                .unwrap_or_else(|| "the union".into());
+            add(&u.source, who);
         }
         out.sort_by(|a, b| {
             b.reliability_rank
@@ -859,9 +1280,31 @@ impl Ctx<'_> {
     }
 }
 
+/// "1881–1962", for the family lists, or `None` when neither date is recorded.
+fn lifespan_of(person: &Value) -> Option<String> {
+    let b = view::render_date_field(person.get("birth").unwrap_or(&Value::Null), "date").short;
+    let living = person
+        .get("identity")
+        .and_then(|i| i.get("is_living"))
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let d = if living {
+        String::new()
+    } else {
+        view::render_date_field(person.get("death").unwrap_or(&Value::Null), "date").short
+    };
+    match (b.is_empty(), d.is_empty()) {
+        (true, true) => None,
+        (false, true) if living => Some(format!("b. {b}")),
+        (false, true) => Some(format!("{b}–")),
+        (true, false) => Some(format!("d. {d}")),
+        (false, false) => Some(format!("{b}–{d}")),
+    }
+}
+
 /// The union type of a family, as a readable phrase.
-fn union_type(fam: &Value) -> Option<String> {
-    let t = fam.get("union")?.get("type")?.as_str()?;
+fn union_type(union: &Value) -> Option<String> {
+    let t = union.get("type")?.as_str()?;
     Some(match t {
         "marriage" => "married".into(),
         "civil_union" => "civil union".into(),
@@ -869,6 +1312,32 @@ fn union_type(fam: &Value) -> Option<String> {
         "religious_only" => "religious union".into(),
         other => other.replace('_', " "),
     })
+}
+
+/// How a union stands: still running, or ended, and how.
+///
+/// `union.status` is preferred when present; otherwise an `end` block with a
+/// reason says the same thing. A union with neither is reported as unrecorded
+/// rather than assumed to be ongoing — the record does not say.
+fn union_status(union: Option<&Value>) -> String {
+    let Some(u) = union else {
+        return "not recorded".into();
+    };
+    if let Some(s) = str_field(u, "status") {
+        return match s.as_str() {
+            "active" => "ongoing".into(),
+            other => other.replace('_', " "),
+        };
+    }
+    let end = u.get("end").filter(|e| !e.is_null());
+    match end.and_then(|e| str_field(e, "reason")) {
+        Some(r) => match r.as_str() {
+            "death_of_spouse" => "ended by the death of a spouse".into(),
+            other => format!("ended by {}", other.replace('_', " ")),
+        },
+        None if end.is_some() => "ended".into(),
+        None => "not recorded".into(),
+    }
 }
 
 /// The first year mentioned by a `{date: …}` bound, for timeline geometry.
@@ -883,6 +1352,15 @@ fn year_of_bound(bound: Option<&Value>) -> Option<i64> {
         .split('–')
         .next()
         .and_then(|s| s.parse::<i64>().ok())
+}
+
+/// Upper-case the first character, leaving the rest alone.
+fn capitalise(s: &str) -> String {
+    let mut chars = s.chars();
+    match chars.next() {
+        Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
 }
 
 /// Drop repeats while keeping the first occurrence, which carries the richest
@@ -914,15 +1392,21 @@ mod tests {
                         "name": {"display": "Jules Meunier"},
                         "gender": {"value": "M"},
                         "is_living": false,
+                        "visibility": "public",
                         "names": [{"type": "birth", "display": "Jules Meunier",
                                    "valid_from": "1920", "confidence": 0.9,
-                                   "source_id": "s-reg"}]
+                                   "source_id": "s-reg"},
+                                  {"type": "transliteration",
+                                   "display": "Юлий Мёнье",
+                                   "display_latin": "Yuliy Myonye",
+                                   "culture": "ru"}]
                     },
                     "birth": {"date": {"value": "1920", "precision": "year"},
                               "place_id": "pl-lyon", "confidence": 0.95,
                               "source_id": "s-reg"},
                     "death": {"date": {"precision": "unknown", "note": "sometime after the war"},
                               "confidence": 0.3},
+                    "notes": "Left the village in 1946.",
                     "documents": [{"document_id": "d-photo", "role": "portrait"}]
                 },
                 "p-jean": {
@@ -931,6 +1415,17 @@ mod tests {
                 "p-dad": {
                     "id": "p-dad", "type": "person", "axgf_version": "1.0",
                     "identity": {"name": {"display": "Henri Meunier"}}},
+                "p-wife": {
+                    "id": "p-wife", "type": "person", "axgf_version": "1.0",
+                    "identity": {"name": {"display": "Adèle Roux"}},
+                    "birth": {"date": {"value": "1922", "precision": "year"}},
+                    "death": {"date": {"value": "1999", "precision": "year"}}},
+                "p-kid1": {
+                    "id": "p-kid1", "type": "person", "axgf_version": "1.0",
+                    "identity": {"name": {"display": "Second Child"}}},
+                "p-kid2": {
+                    "id": "p-kid2", "type": "person", "axgf_version": "1.0",
+                    "identity": {"name": {"display": "First Child"}}},
                 "p-sib": {
                     "id": "p-sib", "type": "person", "axgf_version": "1.0",
                     "identity": {"name": {"display": "Marie Meunier"}}}
@@ -942,7 +1437,19 @@ mod tests {
                        "children": [
                            {"person_id": "p-jules", "confidence": 0.35},
                            {"person_id": "p-sib", "confidence": 0.9},
-                           {"person_id": "p-ghost", "confidence": 0.5}]}
+                           {"person_id": "p-ghost", "confidence": 0.5}]},
+                "f2": {"id": "f2", "type": "family", "axgf_version": "1.0",
+                       "union": {"type": "marriage", "confidence": 0.9,
+                                 "persons": [{"person_id": "p-jules", "role": "spouse"},
+                                             {"person_id": "p-wife", "role": "spouse"}],
+                                 "start": {"date": {"value": "1946-05-04", "precision": "exact"},
+                                           "place_id": "pl-lyon"},
+                                 "end": {"date": {"value": "1971", "precision": "year"},
+                                         "reason": "divorce"},
+                                 "source_id": "s-reg"},
+                       "children": [
+                           {"person_id": "p-kid1", "birth_order": 2, "confidence": 0.9},
+                           {"person_id": "p-kid2", "birth_order": 1, "confidence": 0.9}]}
             },
             "links": {
                 "l1": {"id": "l1", "type": "link", "axgf_version": "1.0",
@@ -981,12 +1488,38 @@ mod tests {
                             "place_type": "city", "country_current": "France",
                             "country_history": [
                                 {"country": "Kingdom of France", "until": "1792"},
-                                {"country": "France", "from": "1792"}]}
+                                {"country": "France", "from": "1792"}]},
+                "pl-paris": {"id": "pl-paris", "type": "place", "axgf_version": "1.0",
+                             "names": [{"lang": "fr", "value": "Paris", "is_primary": true}]}
             },
-            "events": {}, "documents": {
+            "events": {
+                "e-wed": {"id": "e-wed", "type": "event", "axgf_version": "1.0",
+                          "category": "marriage",
+                          "date": {"value": "1946-05-04", "precision": "exact"},
+                          "place_id": "pl-lyon",
+                          "participants": [
+                              {"entity_type": "person", "entity_id": "p-jules", "role": "spouse"},
+                              {"entity_type": "person", "entity_id": "p-wife", "role": "spouse"}],
+                          "confidence": 0.9, "source_id": "s-reg"},
+                "e-wit": {"id": "e-wit", "type": "event", "axgf_version": "1.0",
+                          "category": "marriage", "subcategory": "civil ceremony",
+                          "date": {"value": "1953-08-11", "precision": "exact"},
+                          "place_id": "pl-paris",
+                          "participants": [
+                              {"entity_type": "person", "entity_id": "p-jean", "role": "spouse"},
+                              {"entity_type": "person", "entity_id": "p-jules", "role": "witness"}],
+                          "confidence": 0.7}
+            },
+            "documents": {
                 "d-photo": {"id": "d-photo", "type": "document", "axgf_version": "1.0",
                             "filename": "jules.jpg", "mime_type": "image/jpeg",
-                            "document_type": "photo", "status": "present"}
+                            "document_type": "photo", "status": "present",
+                            "file": {"path": "documents/files/d-photo.jpg",
+                                     "size_bytes": 20480, "sha256": "ab"}},
+                "d-ref": {"id": "d-ref", "type": "document", "axgf_version": "1.0",
+                          "filename": "parish book", "mime_type": "application/pdf",
+                          "document_type": "certificate", "status": "referenced",
+                          "linked_to": [{"entity_type": "person", "entity_id": "p-jules"}]}
             }
         })
     }
@@ -1029,6 +1562,96 @@ mod tests {
         assert!(p.country_history[0].contains("1792"));
     }
 
+    // -- identity ----------------------------------------------------------
+
+    #[test]
+    fn the_primary_name_leads_the_name_list() {
+        let v = jules();
+        assert!(v.names[0].is_primary);
+        assert_eq!(v.names[0].display, "Jules Meunier");
+    }
+
+    #[test]
+    fn a_transliteration_keeps_both_scripts() {
+        let v = jules();
+        let t = v
+            .names
+            .iter()
+            .find(|n| n.kind == "transliteration")
+            .expect("the transliterated name");
+        assert_eq!(t.display, "Юлий Мёнье");
+        assert_eq!(t.latin.as_deref(), Some("Yuliy Myonye"));
+        assert_eq!(t.culture.as_deref(), Some("ru"));
+    }
+
+    #[test]
+    fn a_name_carries_its_period_and_provenance() {
+        let v = jules();
+        let birth_name = v.names.iter().find(|n| n.kind == "birth").unwrap();
+        assert_eq!(birth_name.period.as_deref(), Some("from 1920"));
+        assert_eq!(birth_name.confidence.as_ref().unwrap().percent, 90);
+        assert_eq!(
+            birth_name.source.as_ref().unwrap().title,
+            "Lyon civil register"
+        );
+    }
+
+    #[test]
+    fn visibility_and_living_status_are_surfaced() {
+        let v = jules();
+        assert_eq!(v.visibility.as_deref(), Some("public"));
+        assert!(!v.is_living);
+    }
+
+    // -- timeline ----------------------------------------------------------
+
+    #[test]
+    fn the_timeline_merges_vitals_and_events_in_date_order() {
+        let v = jules();
+        let labels: Vec<&str> = v.timeline.iter().map(|t| t.label.as_str()).collect();
+        assert_eq!(labels[0], "Born", "1920 comes first: {labels:?}");
+        // 1946 marriage, then the 1953 one he witnessed, then the undated
+        // death, which must sort last rather than pretending to be at year 0.
+        assert_eq!(v.timeline.last().unwrap().label, "Died");
+        let years: Vec<Option<i64>> = v.timeline.iter().map(|t| t.sort).collect();
+        assert_eq!(
+            years,
+            vec![Some(19200000), Some(19460504), Some(19530811), None]
+        );
+    }
+
+    #[test]
+    fn an_event_this_person_only_witnessed_is_still_theirs() {
+        let v = jules();
+        let e = v
+            .timeline
+            .iter()
+            .find(|t| t.role.as_deref() == Some("witness"))
+            .expect("the marriage he witnessed");
+        assert!(e.label.contains("civil ceremony"));
+        assert_eq!(e.place.as_ref().unwrap().name, "Paris");
+    }
+
+    #[test]
+    fn a_family_role_in_an_event_is_not_mistaken_for_a_person() {
+        // Events name the family they created as a participant. Reading that
+        // as a person would put the family's id on someone's timeline.
+        let mut b = bundle();
+        b["events"]["e-wed"]["participants"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"entity_type": "family", "entity_id": "p-jules", "role": "created"}));
+        let v = build(&b, "p-jules").expect("builds");
+        let roles: Vec<&str> = v
+            .timeline
+            .iter()
+            .filter_map(|t| t.role.as_deref())
+            .collect();
+        assert!(!roles.contains(&"created"), "{roles:?}");
+    }
+
+    // -- family ------------------------------------------------------------
+
     #[test]
     fn relations_carry_their_own_confidence() {
         let v = jules();
@@ -1046,6 +1669,50 @@ mod tests {
         assert_eq!(ghost.name, "[Unknown]");
         assert!(!ghost.known, "the template must not link an absent person");
     }
+
+    #[test]
+    fn a_union_states_its_type_dates_and_how_it_ended() {
+        let v = jules();
+        let u = v.unions.first().expect("one union");
+        assert_eq!(u.spouse.as_ref().unwrap().name, "Adèle Roux");
+        assert_eq!(u.kind.as_deref(), Some("married"));
+        assert_eq!(u.status, "ended by divorce");
+        assert_eq!(u.start.as_ref().unwrap().text, "4 May 1946");
+        assert_eq!(u.end.as_ref().unwrap().text, "1971");
+        assert_eq!(u.start_place.as_ref().unwrap().name, "Lyon");
+        assert_eq!(u.confidence.as_ref().unwrap().percent, 90);
+    }
+
+    #[test]
+    fn children_are_listed_in_birth_order_not_alphabetically() {
+        let v = jules();
+        let kids: Vec<&str> = v.unions[0]
+            .children
+            .iter()
+            .map(|c| c.name.as_str())
+            .collect();
+        assert_eq!(kids, vec!["First Child", "Second Child"]);
+        assert_eq!(v.unions[0].children[0].birth_order, Some(1));
+    }
+
+    #[test]
+    fn a_spouse_shows_their_lifespan() {
+        let v = jules();
+        assert_eq!(
+            v.unions[0].spouse.as_ref().unwrap().lifespan.as_deref(),
+            Some("1922–1999")
+        );
+    }
+
+    #[test]
+    fn a_union_with_one_recorded_partner_has_no_spouse() {
+        let v = build(&bundle(), "p-dad").expect("Henri exists");
+        assert_eq!(v.unions.len(), 1);
+        assert!(v.unions[0].spouse.is_none());
+        assert_eq!(v.unions[0].children.len(), 3);
+    }
+
+    // -- links, occupations ------------------------------------------------
 
     #[test]
     fn an_incoming_link_reads_from_this_persons_side() {
@@ -1116,20 +1783,85 @@ mod tests {
         }
     }
 
+    // -- places, sources, documents, notes ---------------------------------
+
     #[test]
-    fn sources_are_listed_strongest_evidence_first() {
+    fn places_are_gathered_with_what_happened_at_each() {
+        let v = jules();
+        let lyon = v.places.iter().find(|p| p.place.name == "Lyon").unwrap();
+        assert!(lyon.uses.contains(&"Born".to_string()), "{:?}", lyon.uses);
+        assert!(lyon
+            .uses
+            .iter()
+            .any(|u| u.starts_with("Worked as Schoolteacher")));
+        assert!(lyon.uses.iter().any(|u| u.starts_with("Married")));
+        assert!(!lyon.place.country_history.is_empty());
+        // Paris comes only from the marriage he witnessed.
+        assert!(v.places.iter().any(|p| p.place.name == "Paris"));
+    }
+
+    #[test]
+    fn sources_are_listed_strongest_evidence_first_and_name_what_rests_on_them() {
         let v = jules();
         assert!(v.sources.len() >= 2);
         assert_eq!(v.sources[0].reliability, "primary");
-        assert!(v.sources.iter().any(|s| s.reliability == "oral"));
+        let reg = v
+            .sources
+            .iter()
+            .find(|s| s.title == "Lyon civil register")
+            .unwrap();
+        assert!(
+            reg.used_for.contains(&"Born".to_string()),
+            "{:?}",
+            reg.used_for
+        );
+        assert!(reg.used_for.iter().any(|u| u.contains("Schoolteacher")));
+        let letter = v.sources.iter().find(|s| s.reliability == "oral").unwrap();
+        assert!(letter.used_for.iter().any(|u| u.contains("Jean Boucher")));
     }
 
     #[test]
     fn documents_attached_by_the_person_are_found() {
         let v = jules();
-        assert_eq!(v.documents.len(), 1);
-        assert_eq!(v.documents[0].filename, "jules.jpg");
-        assert_eq!(v.documents[0].role.as_deref(), Some("portrait"));
+        assert_eq!(v.documents.len(), 2);
+        let photo = v
+            .documents
+            .iter()
+            .find(|d| d.filename == "jules.jpg")
+            .unwrap();
+        assert_eq!(photo.role.as_deref(), Some("portrait"));
+        assert!(photo.is_image && photo.has_payload);
+        assert_eq!(photo.size_human.as_deref(), Some("20.0 KB"));
+        assert_eq!(v.images.len(), 1, "only the image goes in the gallery");
+    }
+
+    #[test]
+    fn a_referenced_document_carries_no_payload_and_no_size() {
+        let v = jules();
+        let d = v
+            .documents
+            .iter()
+            .find(|d| d.status == "referenced")
+            .unwrap();
+        assert!(!d.has_payload, "a referenced document has no bytes here");
+        assert!(d.size_human.is_none());
+        assert!(!v.images.iter().any(|i| i.id == d.id));
+    }
+
+    #[test]
+    fn unparseable_text_is_kept_as_a_verbatim_note() {
+        let v = jules();
+        let verbatim = v.notes.iter().find(|n| n.verbatim).expect("a kept note");
+        assert!(verbatim.text.contains("sometime after the war"));
+        assert!(v.notes.iter().any(|n| n.label == "Notes" && !n.verbatim));
+    }
+
+    #[test]
+    fn the_raw_entity_is_available_verbatim() {
+        let v = jules();
+        let parsed: Value = serde_json::from_str(&v.raw_json).expect("valid JSON");
+        assert_eq!(parsed["id"], "p-jules");
+        assert!(v.raw_json.contains('\n'), "pretty-printed, not one line");
     }
 
     #[test]
@@ -1138,6 +1870,8 @@ mod tests {
         let joined = v.showcase_notes.join(" | ");
         assert!(joined.contains("non-family relationship"), "{joined}");
         assert!(joined.contains("occupation"), "{joined}");
+        assert!(joined.contains("transliteration"), "{joined}");
+        assert!(joined.contains("witnessed"), "{joined}");
     }
 
     #[test]
@@ -1149,6 +1883,19 @@ mod tests {
         let v = build(&b, "bare").expect("builds");
         assert!(!v.birth.present);
         assert_eq!(v.birth.date.text, "Not recorded");
+        // Every section is empty, so the page will show none of them.
         assert!(v.parents.is_empty() && v.links.is_empty() && v.occupations.is_empty());
+        assert!(v.timeline.is_empty() && v.places.is_empty() && v.unions.is_empty());
+        assert!(v.notes.is_empty() && v.sources.is_empty() && v.documents.is_empty());
+        // Except the raw block, which always has something to say.
+        assert!(v.raw_json.contains("Bare"));
+    }
+
+    #[test]
+    fn human_size_reads_like_a_file_listing() {
+        assert_eq!(human_size(0), "0 bytes");
+        assert_eq!(human_size(512), "512 bytes");
+        assert_eq!(human_size(2048), "2.0 KB");
+        assert_eq!(human_size(3 * 1024 * 1024 + 512 * 1024), "3.5 MB");
     }
 }

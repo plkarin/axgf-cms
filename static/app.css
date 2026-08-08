@@ -758,3 +758,119 @@ a.stat:hover { border-color: var(--accent); }
 .comp-tag.empty-tag { color: var(--ink-faint); border-color: var(--border-strong); }
 
 .date-shapes .stat .k { text-transform: none; font-weight: 600; color: var(--ink-soft); }
+
+/* ---------- identity page: sections ---------- */
+
+/* The page is long by design — it is the whole record — so it opens with an
+   index of the sections that actually have content. */
+.section-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 1.25rem 0;
+  padding: 0.6rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.86rem;
+}
+.section-index a { color: var(--ink-soft); text-decoration: none; }
+.section-index a:hover { color: var(--accent); text-decoration: underline; }
+
+main > section { scroll-margin-top: 1rem; }
+
+/* Names: the native script leads, the transliteration sits beside it. Two
+   fields, both shown, because collapsing them is the thing GEDCOM does. */
+table.names td { vertical-align: top; }
+.name-native { font-weight: 600; }
+.name-latin {
+  margin-left: 0.5rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.name-latin::before { content: "≈ "; color: var(--ink-faint); font-style: normal; }
+
+dl.facts.inline-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.5rem;
+  margin-top: 1rem;
+}
+dl.facts.inline-facts dt { margin-top: 0; }
+dl.facts.inline-facts dd { margin: 0; }
+
+/* Life timeline: one column of dates, one of what happened. */
+ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
+.life-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 15rem) 1fr;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 0 0.65rem 0.9rem;
+  border-left: 2px solid var(--border-strong);
+  position: relative;
+}
+.life-row::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 1.05rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.life-row[data-kind="birth"]::before { background: var(--conf-certain); }
+.life-row[data-kind="death"]::before { background: var(--ink-faint); }
+.life-when { display: flex; flex-direction: column; gap: 0.2rem; }
+@media (max-width: 34rem) {
+  .life-row { grid-template-columns: 1fr; }
+}
+
+/* A union is a block of its own: the partner, how it stood, its children. */
+.union {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.union-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.union h4 { margin: 0.85rem 0 0.25rem; font-size: 0.88rem; color: var(--ink-soft); }
+.union-status[data-status="ongoing"] { color: var(--conf-certain); }
+.union-status[data-status="not recorded"] { color: var(--ink-faint); }
+.birth-order {
+  display: inline-block;
+  min-width: 1.4em;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.place-card ul.plain > li { border-bottom: none; padding: 0.1rem 0; }
+
+.note-block.verbatim {
+  border-left: 2px solid var(--conf-medium);
+  padding-left: 0.85rem;
+}
+
+/* The raw entity. Costs nothing to include and makes the format's
+   readability checkable rather than asserted. */
+details.raw {
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.85rem;
+  background: var(--surface);
+}
+details.raw > summary { cursor: pointer; font-weight: 600; }
+.raw-json {
+  max-height: 32rem;
+  overflow: auto;
+  font-size: 0.8rem;
+  background: var(--bg);
+  padding: 0.75rem;
+  border-radius: var(--radius);
+}

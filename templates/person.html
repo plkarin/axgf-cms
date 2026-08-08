@@ -2,6 +2,10 @@
 {% import "_macros.html" as m %}
 {% block title %}{{ p.name }} — axgf-cms{% endblock %}
 
+{# The identity page is the whole record, not a summary of it. Every section
+   below is wrapped in a test for its own content, so the shape of the page is
+   a readout of what this bundle actually carries for this person. #}
+
 {% block content %}
 
 <div class="person-head">
@@ -11,6 +15,7 @@
       {%- if p.gender %}{{ p.gender }}{% endif -%}
       {%- if p.is_living %} · living{% elif p.death.present %} · deceased{% endif -%}
       {%- if p.gender_note %} · {{ p.gender_note }}{% endif -%}
+      {%- if p.visibility %} · visibility: {{ p.visibility }}{% endif -%}
     </p>
   </div>
   {% if is_admin %}
@@ -25,136 +30,203 @@
 </div>
 {% endif %}
 
-<div class="grid cols-2">
+{% set sections = [
+  {"id": "identity", "label": "Identity", "present": p.names or p.gender},
+  {"id": "life", "label": "Life events", "present": p.timeline},
+  {"id": "family", "label": "Family", "present": p.parents or p.siblings or p.unions},
+  {"id": "relationships", "label": "Other relationships", "present": p.links},
+  {"id": "occupations", "label": "Occupations", "present": p.occupations},
+  {"id": "places", "label": "Places", "present": p.places},
+  {"id": "evidence", "label": "Sources and documents", "present": p.sources or p.documents},
+  {"id": "notes", "label": "Notes", "present": p.notes}] %}
+<nav class="section-index" aria-label="Sections on this page">
+  {% for s in sections %}{% if s.present %}<a href="#{{ s.id }}">{{ s.label }}</a>{% endif %}{% endfor %}
+  <a href="#raw">Raw</a>
+</nav>
 
-  <section class="card">
-    <h2 style="margin-top:0">Life</h2>
-    <dl class="facts">
-      {% for f in [p.birth, p.death] %}
-      <dt>{{ f.label }}</dt>
-      <dd>
-        {% if f.present %}
-          {{ m.date(f.date) }}
-          {% if f.confidence %}{{ m.conf_bar(f.confidence) }}{% endif %}
-          {% if f.place %}<div class="small">{{ m.place(f.place) }}</div>{% endif %}
-          {% if f.cause %}<div class="small muted">Cause: {{ f.cause }}</div>{% endif %}
-          {% if f.source %}<div>{{ m.source_chip(f.source) }}</div>{% endif %}
-        {% else %}
-          <span class="muted">Not recorded</span>
-        {% endif %}
-      </dd>
-      {% endfor %}
-    </dl>
-
-    {% if p.names %}
-    <h3>Other recorded names</h3>
-    <ul class="plain">
+{# ---------------------------------------------------------------- IDENTITY #}
+{% if p.names or p.gender %}
+<section id="identity">
+  <h2>Identity</h2>
+  {% if p.names %}
+  <div class="table-wrap">
+  <table class="names">
+    <thead><tr><th>Name</th><th>Type</th><th>Used</th><th>Evidence</th></tr></thead>
+    <tbody>
       {% for n in p.names %}
-      <li>
-        <strong>{{ n.display }}</strong>
-        <span class="small muted">{{ n.kind }}</span>
-        {%- if n.valid_from or n.valid_until %}
-          <span class="small muted">
-            ({{ n.valid_from if n.valid_from else "?" }}–{{ n.valid_until if n.valid_until else "?" }})
-          </span>
-        {%- endif %}
-        {% if n.confidence %}{{ m.conf_bar(n.confidence) }}{% endif %}
-        {% if n.source %}<div>{{ m.source_chip(n.source) }}</div>{% endif %}
-        {% if n.note %}<div class="small muted">{{ n.note }}</div>{% endif %}
+      <tr>
+        <td>
+          <span class="name-native"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
+                {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</span>
+          {%- if n.latin %}
+            {# Native script and transliteration side by side: one field cannot
+               hold both, which is exactly what GEDCOM offers. #}
+            <span class="name-latin" title="Latin transliteration">{{ n.latin }}</span>
+          {%- endif %}
+          {% if n.reading %}
+            <div class="small muted">read as {{ n.reading }}{% if n.reading_system %}
+              <span class="chip small">{{ n.reading_system }}</span>{% endif %}</div>
+          {% endif %}
+          {% if n.components %}
+          <div class="small muted">{% for c in n.components %}{{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+          {% endif %}
+          {% if n.note %}<div class="small muted">{{ n.note }}</div>{% endif %}
+        </td>
+        <td class="small">
+          {{ n.kind }}
+          {%- if n.is_primary %} <span class="chip small">display name</span>{% endif %}
+          {%- if n.culture %}<div class="muted">{{ n.culture }}</div>{% endif %}
+        </td>
+        <td class="small">{{ n.period if n.period else "—" }}</td>
+        <td>
+          {% if n.confidence %}{{ m.conf_bar(n.confidence) }}{% endif %}
+          {% if n.source %}{{ m.source_chip(n.source) }}{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
+  <dl class="facts inline-facts">
+    {% if p.gender %}<dt>Gender</dt><dd>{{ p.gender }}</dd>{% endif %}
+    <dt>Living</dt><dd>{{ "yes" if p.is_living else "no" }}</dd>
+    {% if p.visibility %}<dt>Visibility</dt><dd>{{ p.visibility }}</dd>{% endif %}
+  </dl>
+</section>
+{% endif %}
+
+{# ------------------------------------------------------------- LIFE EVENTS #}
+{% if p.timeline %}
+<section id="life">
+  <h2>Life events</h2>
+  <p class="small muted">
+    Birth, death and every event this person took part in, in the order they
+    happened. Being a witness at someone else's marriage is a fact about them,
+    so it is here too. An undated fact sorts last rather than pretending to
+    come first.
+  </p>
+  <ol class="life">
+    {% for e in p.timeline %}
+    <li class="life-row" data-kind="{{ e.kind }}">
+      <div class="life-when">
+        {{ m.date(e.date) }}
+        {% if e.confidence %}{{ m.conf_bar(e.confidence) }}{% endif %}
+      </div>
+      <div class="life-what">
+        <strong>{{ e.label }}</strong>
+        {%- if e.role %} <span class="chip small">as {{ e.role }}</span>{% endif %}
+        {% if e.place %}<div class="small">{{ m.place(e.place) }}</div>{% endif %}
+        {% if e.description %}<div class="small">{{ e.description }}</div>{% endif %}
+        {% if e.cause %}<div class="small muted">Cause: {{ e.cause }}</div>{% endif %}
+        {% if e.source %}<div>{{ m.source_chip(e.source) }}</div>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+{# ------------------------------------------------------------------ FAMILY #}
+{% if p.parents or p.siblings or p.unions %}
+<section id="family">
+  <h2>Family</h2>
+  <div class="grid cols-2">
+    {% if p.parents %}
+    <div class="card">
+      <h3 style="margin-top:0">Parents</h3>
+      <ul class="plain">{% for r in p.parents %}{{ m.relation(r) }}{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if p.siblings %}
+    <div class="card">
+      <h3 style="margin-top:0">Siblings</h3>
+      <ul class="plain">{% for r in p.siblings %}{{ m.relation(r) }}{% endfor %}</ul>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for u in p.unions %}
+  <div class="union">
+    <div class="union-head">
+      <strong>
+        {%- if u.spouse %}{{ m.person_link(u.spouse) }}
+        {%- else %}<span class="muted">Partner not recorded</span>{% endif -%}
+      </strong>
+      {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
+      <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
+      {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
+    </div>
+    <div class="small">
+      {% if u.start %}From {{ m.date(u.start) }}{% endif %}
+      {% if u.start_place %}at {{ m.place(u.start_place) }}{% endif %}
+      {% if u.end %}· until {{ m.date(u.end) }}{% endif %}
+      {% if u.end_note %}<span class="muted">{{ u.end_note }}</span>{% endif %}
+    </div>
+    {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
+    {% if u.children %}
+    <h4>Children</h4>
+    <ul class="plain">
+      {% for c in u.children %}
+      <li class="rel">
+        {% if c.birth_order %}<span class="birth-order" title="birth order">{{ c.birth_order }}</span>{% endif %}
+        {{ m.person_link(c) }}
+        {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}
+        {%- if c.detail %} <span class="small muted">{{ c.detail }}</span>{% endif %}
+        {%- if c.confidence %} {{ m.conf_bar(c.confidence) }}{% endif %}
       </li>
       {% endfor %}
     </ul>
     {% endif %}
-  </section>
-
-  <section class="card">
-    <h2 style="margin-top:0">Family</h2>
-    {% if not (p.parents or p.spouses or p.siblings or p.children) %}
-      <p class="muted">No family relationships recorded.</p>
-    {% endif %}
-    {% for group in [
-        {"title": "Parents", "items": p.parents},
-        {"title": "Partners", "items": p.spouses},
-        {"title": "Siblings", "items": p.siblings},
-        {"title": "Children", "items": p.children}] %}
-      {% if group.items %}
-      <h3>{{ group.title }}</h3>
-      <ul class="plain">
-        {% for r in group.items %}{{ m.relation(r) }}{% endfor %}
-      </ul>
-      {% endif %}
-    {% endfor %}
-  </section>
-</div>
-
-{# The clearest GEDCOM gap, so it gets its own prominent section rather than
-   being folded into the family lists above. #}
-<section class="links-section">
-  <h2>Other relationships</h2>
-  {% if p.links %}
-    <p class="small muted">
-      Godparents, employers, witnesses, mentors — relationships that are not
-      blood or marriage. Each carries its own dates, source and confidence.
-      GEDCOM cannot state any of them.
-    </p>
-    <div class="grid cols-2">
-      {% for l in p.links %}
-      <div class="link-card" data-dir="{{ l.direction }}">
-        <div class="link-head">
-          <span class="link-label">{{ l.label }}</span>
-          {% if l.category %}<span class="chip small">{{ l.category }}</span>{% endif %}
-        </div>
-        <div class="link-who">{{ m.person_link(l.other) }}</div>
-        {% if l.from_date or l.until_date %}
-        <div class="small">
-          {% if l.from_date %}from {{ m.date(l.from_date) }}{% endif %}
-          {% if l.until_date %}until {{ m.date(l.until_date) }}{% endif %}
-        </div>
-        {% endif %}
-        {% if l.confidence %}<div>{{ m.conf_bar(l.confidence) }}</div>{% endif %}
-        {% if l.source %}<div>{{ m.source_chip(l.source) }}</div>{% endif %}
-        {% if l.note %}<div class="small muted">{{ l.note }}</div>{% endif %}
-      </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="muted small">
-      None recorded for this person. In AXGF these are first-class entities —
-      “X was Y's godfather from 1950, per a family letter, 85% confident” — with
-      no GEDCOM equivalent.
-    </p>
-  {% endif %}
+  </div>
+  {% endfor %}
 </section>
+{% endif %}
 
+{# --------------------------------------------------- OTHER RELATIONSHIPS #}
+{% if p.links %}
+<section class="links-section" id="relationships">
+  <h2>Other relationships</h2>
+  <p class="small muted">
+    Godparents, employers, witnesses, mentors — relationships that are not
+    blood or marriage. Each carries its own dates, source and confidence, and
+    reads from this person's side: “godfather of” and “godchild of” are the
+    same record seen from opposite ends. GEDCOM cannot state any of them.
+  </p>
+  <div class="grid cols-2">
+    {% for l in p.links %}
+    <div class="link-card" data-dir="{{ l.direction }}">
+      <div class="link-head">
+        <span class="link-label">{{ l.label }}</span>
+        {% if l.category %}<span class="chip small">{{ l.category }}</span>{% endif %}
+        <span class="small muted">{{ l.direction }}</span>
+      </div>
+      <div class="link-who">{{ m.person_link(l.other) }}</div>
+      {% if l.from_date or l.until_date %}
+      <div class="small">
+        {% if l.from_date %}from {{ m.date(l.from_date) }}{% endif %}
+        {% if l.until_date %}until {{ m.date(l.until_date) }}{% endif %}
+      </div>
+      {% endif %}
+      {% if l.confidence %}<div>{{ m.conf_bar(l.confidence) }}</div>{% endif %}
+      {% if l.source %}<div>{{ m.source_chip(l.source) }}</div>{% endif %}
+      {% if l.note %}<div class="small muted">{{ l.note }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ------------------------------------------------------------- OCCUPATIONS #}
 {% if p.occupations %}
-<section>
+<section id="occupations">
   <h2>Occupations</h2>
   {% if p.has_timeline %}
   <p class="small muted">
     An occupation is a state with a duration, not an event on a single date.
     All spans share one axis, {{ p.timeline_from }}–{{ p.timeline_to }}.
   </p>
-  {% else %}
-  <p class="small muted">
-    AXGF records an occupation as a span with a start and an end. This bundle
-    carries the titles but no dates for them — typical of a GEDCOM import,
-    which has nowhere to put them — so there is no scale to draw.
-  </p>
-  <ul class="plain">
-    {% for o in p.occupations %}
-    <li>
-      <strong>{{ o.title }}</strong>
-      {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
-      {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
-      <span class="small muted">{{ o.span }}</span>
-      {% if o.confidence %}{{ m.conf_bar(o.confidence) }}{% endif %}
-      {% if o.source %}{{ m.source_chip(o.source) }}{% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  {% if p.has_timeline %}
   <div class="timeline">
     {% for o in p.occupations %}
     <div class="tl-row">
@@ -182,85 +254,147 @@
       <span>{{ p.timeline_from }}</span><span>{{ p.timeline_to }}</span>
     </div>
   </div>
+  {% else %}
+  <p class="small muted">
+    AXGF records an occupation as a span with a start and an end. This bundle
+    carries the titles but no dates for them — typical of a GEDCOM import,
+    which has nowhere to put them — so there is no scale to draw.
+  </p>
+  <ul class="plain">
+    {% for o in p.occupations %}
+    <li>
+      <strong>{{ o.title }}</strong>
+      {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
+      {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
+      <span class="small muted">{{ o.span }}</span>
+      {% if o.confidence %}{{ m.conf_bar(o.confidence) }}{% endif %}
+      {% if o.source %}{{ m.source_chip(o.source) }}{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
   {% endif %}
 </section>
 {% endif %}
 
-{% if p.events %}
-<section>
-  <h2>Events</h2>
-  <div class="table-wrap">
-  <table>
-    <thead><tr><th>Event</th><th>Date</th><th>Place</th><th>Role</th><th>Evidence</th></tr></thead>
-    <tbody>
-      {% for e in p.events %}
-      <tr>
-        <td>{{ e.category }}{% if e.subcategory %} <span class="muted small">{{ e.subcategory }}</span>{% endif %}
-            {% if e.description %}<div class="small muted">{{ e.description }}</div>{% endif %}</td>
-        <td>{{ m.date(e.date) }}</td>
-        <td>{{ m.place(e.place) }}</td>
-        <td class="small">{{ e.role }}</td>
-        <td>{% if e.confidence %}{{ m.conf_bar(e.confidence) }}{% endif %}
-            {% if e.source %}{{ m.source_chip(e.source) }}{% endif %}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{# ------------------------------------------------------------------ PLACES #}
+{% if p.places %}
+<section id="places">
+  <h2>Places</h2>
+  <div class="grid cols-3">
+    {% for pu in p.places %}
+    <div class="card place-card">
+      <strong>{{ pu.place.name }}</strong>
+      {% if pu.place.place_type %}<span class="small muted">{{ pu.place.place_type }}</span>{% endif %}
+      <ul class="plain small">{% for u in pu.uses %}<li>{{ u }}</li>{% endfor %}</ul>
+      {% if pu.place.country_history %}
+      <div class="date-note">
+        Borders moved:
+        {% for h in pu.place.country_history %}{{ h }}{% if not loop.last %} → {% endif %}{% endfor %}
+      </div>
+      {% elif pu.place.country_current %}
+      <div class="small muted">{{ pu.place.country_current }}</div>
+      {% endif %}
+      {% if pu.place.note %}<div class="small muted">{{ pu.place.note }}</div>{% endif %}
+    </div>
+    {% endfor %}
   </div>
 </section>
 {% endif %}
 
-{% if p.sources %}
-<section>
-  <h2>Evidence</h2>
+{# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
+{% if p.sources or p.documents %}
+<section id="evidence">
+  <h2>Sources and documents</h2>
+
+  {% if p.sources %}
   <p class="small muted">
     Sources are graded, so a claim resting on a birth certificate is
-    distinguishable from one resting on family recollection.
+    distinguishable from one resting on family recollection — and each row
+    names the facts on this page that depend on it.
   </p>
   <div class="table-wrap">
   <table>
-    <thead><tr><th>Source</th><th>Type</th><th>Reliability</th><th>Status</th><th>Confidence</th></tr></thead>
+    <thead><tr><th>Source</th><th>Type</th><th>Reliability</th><th>Supports</th><th>Confidence</th></tr></thead>
     <tbody>
       {% for s in p.sources %}
       <tr>
-        <td>{{ s.title }}{% if s.repository %}<div class="small muted">{{ s.repository }}</div>{% endif %}</td>
+        <td>{{ s.title }}
+            {% if s.repository %}<div class="small muted">{{ s.repository }}</div>{% endif %}
+            {% if s.status %}<div class="small muted">{{ s.status }}</div>{% endif %}
+            {% if s.note %}<div class="small muted">{{ s.note }}</div>{% endif %}</td>
         <td class="small">{{ s.source_type if s.source_type else "—" }}</td>
         <td><span class="src-chip" data-rank="{{ s.reliability_rank }}">
               <span class="src-rel">{{ s.reliability }}</span></span></td>
-        <td class="small">{{ s.status if s.status else "—" }}</td>
+        <td class="small">
+          {% for u in s.used_for %}{{ u }}{% if not loop.last %} · {% endif %}{% endfor %}
+        </td>
         <td>{% if s.confidence %}{{ m.conf_bar(s.confidence) }}{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
   </div>
+  {% endif %}
+
+  {% if p.documents %}
+  <h3>Documents</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>File</th><th>Type</th><th>Status</th><th>Size</th></tr></thead>
+    <tbody>
+      {% for d in p.documents %}
+      <tr>
+        <td>{{ d.filename }}
+            {% if d.role %} <span class="chip small">{{ d.role }}</span>{% endif %}
+            {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
+            {% if d.note %}<div class="small muted">{{ d.note }}</div>{% endif %}
+            {% if not d.known %}<div class="small muted">Referenced by this person but absent
+              from the bundle.</div>{% endif %}</td>
+        <td class="small">{{ d.document_type }}{% if d.mime_type %}
+            <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
+        <td class="small">{{ d.status }}</td>
+        <td class="small">{{ d.size_human if d.size_human else "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
 </section>
 {% endif %}
 
-{% if p.documents %}
-<section>
-  <h2>Documents</h2>
-  <ul class="plain">
-    {% for d in p.documents %}
-    <li>
-      <strong>{{ d.filename }}</strong>
-      <span class="small muted">{{ d.document_type }} · {{ d.status }}</span>
-      {% if d.role %}<span class="chip small">{{ d.role }}</span>{% endif %}
-      {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
-    </li>
-    {% endfor %}
-  </ul>
+{# ------------------------------------------------------------------- NOTES #}
+{% if p.notes %}
+<section id="notes">
+  <h2>Notes</h2>
+  {% for n in p.notes %}
+  <div class="note-block{% if n.verbatim %} verbatim{% endif %}">
+    <h3>{{ n.label }}</h3>
+    <div class="prose{% if n.verbatim %} muted-prose{% endif %}">{{ n.text }}</div>
+    {% if n.verbatim %}
+    <p class="small muted">
+      Kept exactly as the record stated it, because no converter could
+      interpret it. Dropping it would have been the alternative.
+    </p>
+    {% endif %}
+  </div>
+  {% endfor %}
 </section>
 {% endif %}
 
-{% if p.bio or p.notes %}
-<section>
-  <h2>Biography and notes</h2>
-  {% if p.bio %}<div class="prose">{{ p.bio }}</div>{% endif %}
-  {% if p.notes %}<div class="prose muted-prose">{{ p.notes }}</div>{% endif %}
+{# --------------------------------------------------------------------- RAW #}
+<section id="raw">
+  <details class="raw">
+    <summary>Raw entity <span class="small muted">— the JSON this page was built from</span></summary>
+    <p class="small muted">
+      Nothing here is generated for display: this is the record as the bundle
+      stores it. A format worth arguing for should be readable without a tool.
+    </p>
+    <pre class="raw-json">{{ p.raw_json }}</pre>
+  </details>
 </section>
-{% endif %}
 
-<p style="margin-top:2rem"><a class="btn" href="/tree">Back to the tree</a></p>
+<p style="margin-top:2rem"><a class="btn" href="/tree?root={{ p.id }}">See this person in the tree</a></p>
 
 {% endblock %}

@@ -203,3 +203,186 @@ async fn a_referenced_but_absent_person_renders_unlinked() {
         "an absent person must not be linked into a 404"
     );
 }
+
+#[tokio::test]
+async fn a_section_with_no_data_is_omitted_rather_than_shown_empty() {
+    // The shape of the page is meant to be a readout of what the bundle holds,
+    // so an empty section is not rendered at all — no heading, no "none
+    // recorded" placeholder taking up a screen.
+    let dir = scratch("bare-src");
+    let path = dir.join("bare.axgf");
+    let flat = json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {
+            "dddddddd-1111-4111-8111-111111111111": {
+                "id": "dddddddd-1111-4111-8111-111111111111", "type": "person",
+                "axgf_version": "1.0",
+                "identity": {"name": {"display": "Nothing Recorded", "components": []},
+                             "gender": {"value": "U"}, "is_living": false}}
+        },
+        "families": {}, "links": {}, "occupations": {}, "sources": {},
+        "places": {}, "events": {}, "documents": {}
+    });
+    let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
+    std::fs::write(&path, bytes).expect("write");
+
+    let (app, _p) = app_with_bundle("bare", &path);
+    let body = expect_status(
+        get(&app, "/person/dddddddd-1111-4111-8111-111111111111").await,
+        StatusCode::OK,
+        "person with nothing recorded",
+    )
+    .await;
+
+    for absent in [
+        r#"id="life""#,
+        r#"id="family""#,
+        r#"id="relationships""#,
+        r#"id="occupations""#,
+        r#"id="places""#,
+        r#"id="evidence""#,
+        r#"id="notes""#,
+    ] {
+        assert!(!body.contains(absent), "{absent} should not be on the page");
+    }
+    // The raw block always has something to say, so it is always there.
+    assert!(body.contains(r#"id="raw""#));
+    assert!(body.contains("Nothing Recorded"));
+}
+
+#[tokio::test]
+async fn the_page_carries_the_full_record_section_by_section() {
+    let dir = scratch("full-src");
+    let path = dir.join("full.axgf");
+    let jules = "11111111-1111-4111-8111-111111111111";
+    let adele = "22222222-2222-4222-8222-222222222222";
+    let kid = "66666666-6666-4666-8666-666666666666";
+    let flat = json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {
+            jules: {
+                "id": jules, "type": "person", "axgf_version": "1.0",
+                "identity": {
+                    "name": {"display": "Bronisław Klicki", "components": []},
+                    "gender": {"value": "M"}, "is_living": false,
+                    "visibility": "public",
+                    "names": [{"type": "transliteration", "display": "Бронислав Клицкий",
+                               "display_latin": "Bronislav Klitskiy", "culture": "ru",
+                               "components": [], "valid_from": "1919"}]},
+                "birth": {"date": {"value": "1890-03-02", "precision": "exact"},
+                          "place_id": "77777777-7777-4777-8777-777777777777",
+                          "confidence": 0.9,
+                          "source_id": "44444444-4444-4444-8444-444444444444"},
+                "death": {"date": {"value": "1955", "precision": "year"}, "confidence": 0.8},
+                "notes": "Emigrated in 1921."
+            },
+            adele: {"id": adele, "type": "person", "axgf_version": "1.0",
+                    "identity": {"name": {"display": "Karolina Boddin", "components": []},
+                                 "is_living": false},
+                    "birth": {"date": {"value": "1893", "precision": "year"}},
+                    "death": {"date": {"value": "1970", "precision": "year"}}},
+            kid: {"id": kid, "type": "person", "axgf_version": "1.0",
+                  "identity": {"name": {"display": "Michał Klicki", "components": []}}}
+        },
+        "families": {
+            "88888888-8888-4888-8888-888888888888": {
+                "id": "88888888-8888-4888-8888-888888888888", "type": "family",
+                "axgf_version": "1.0",
+                "union": {"type": "marriage", "confidence": 0.95,
+                          "persons": [{"person_id": jules, "role": "spouse"},
+                                      {"person_id": adele, "role": "spouse"}],
+                          "start": {"date": {"value": "1919-06-01", "precision": "exact"},
+                                    "place_id": "77777777-7777-4777-8777-777777777777"},
+                          "end": {"date": {"value": "1955", "precision": "year"},
+                                  "reason": "death_of_spouse"}},
+                "children": [{"person_id": kid, "birth_order": 1, "confidence": 0.97}]}
+        },
+        "events": {
+            "99999999-9999-4999-8999-999999999999": {
+                "id": "99999999-9999-4999-8999-999999999999", "type": "event",
+                "axgf_version": "1.0", "category": "baptism",
+                "date": {"value": "1890-03-09", "precision": "exact"},
+                "participants": [{"entity_type": "person", "entity_id": jules,
+                                  "role": "subject"}],
+                "confidence": 0.85}
+        },
+        "links": {}, "occupations": {},
+        "sources": {
+            "44444444-4444-4444-8444-444444444444": {
+                "id": "44444444-4444-4444-8444-444444444444", "type": "source",
+                "axgf_version": "1.0", "title": "Lwów parish register",
+                "source_type": "birth_certificate", "reliability": "primary",
+                "confidence": 0.95}
+        },
+        "places": {
+            "77777777-7777-4777-8777-777777777777": {
+                "id": "77777777-7777-4777-8777-777777777777", "type": "place",
+                "axgf_version": "1.0",
+                "names": [{"lang": "pl", "value": "Lwów", "is_primary": true}],
+                "country_current": "Ukraine",
+                "country_history": [{"country": "Austria-Hungary", "until": "1918"},
+                                    {"country": "Poland", "from": "1918", "until": "1945"},
+                                    {"country": "Ukraine", "from": "1991"}]}
+        },
+        "documents": {}
+    });
+    let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
+    std::fs::write(&path, bytes).expect("write");
+
+    let (app, _p) = app_with_bundle("full", &path);
+    let body = expect_status(
+        get(&app, &format!("/person/{jules}")).await,
+        StatusCode::OK,
+        "the full record",
+    )
+    .await;
+
+    // Identity: both scripts, the period the name was used, visibility.
+    assert!(body.contains("Бронислав Клицкий"), "native script");
+    assert!(
+        body.contains("Bronislav Klitskiy"),
+        "transliteration beside it"
+    );
+    assert!(body.contains("from 1919"), "the period the name was used");
+    assert!(body.contains("visibility: public"));
+
+    // Life events: birth, the baptism a week later, then death, in that order.
+    let life = body.split(r#"id="life""#).nth(1).expect("a life section");
+    let birth_at = life.find("Born").expect("birth on the timeline");
+    let baptism_at = life.find("Baptism").expect("baptism on the timeline");
+    let death_at = life.find("Died").expect("death on the timeline");
+    assert!(
+        birth_at < baptism_at && baptism_at < death_at,
+        "the timeline must be chronological"
+    );
+    assert!(life.contains("as subject"), "the role in each event");
+
+    // Family: the union's type, how it ended, and the child's birth order.
+    assert!(body.contains("ended by the death of a spouse"));
+    assert!(body.contains("Karolina Boddin"));
+    assert!(body.contains(&format!(r#"href="/person/{kid}""#)));
+    assert!(body.contains("birth order"));
+
+    // Places, with the border history that makes the town meaningful.
+    assert!(body.contains(r#"id="places""#));
+    assert!(body.contains("Austria-Hungary"));
+
+    // Evidence names what rests on it.
+    assert!(body.contains("Lwów parish register"));
+    assert!(body.contains("Supports"));
+
+    // Notes, and the raw entity.
+    assert!(body.contains("Emigrated in 1921."));
+    // The raw block is escaped on the way out — it is data being displayed,
+    // not markup — so it is matched on the key rather than on the quoting.
+    let raw = body
+        .split(r#"<pre class="raw-json">"#)
+        .nth(1)
+        .expect("the raw JSON block");
+    assert!(raw.contains("axgf_version"));
+    assert!(raw.contains("Bronis"), "the entity itself, not a summary");
+
+    // Sections with nothing in them stay off the page.
+    assert!(!body.contains(r#"id="relationships""#));
+    assert!(!body.contains(r#"id="occupations""#));
+}

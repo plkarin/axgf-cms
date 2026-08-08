@@ -49,6 +49,25 @@ features the loaded bundle actually contains; `/tree`; `/person/:id`;
 `/convert`; `/health`; and a plain server-rendered admin panel with per-kind
 forms, paginated listings, validate, deduplicate and export.
 
+**The identity page is the whole record.** `/person/:id` is divided into
+sections, each present only when it has content, so the shape of the page is
+itself a readout of what the bundle carries: **Identity** — every recorded
+name with its type, the period it was used and the source behind it, with the
+native script and its Latin transliteration side by side where they differ,
+plus gender, living status and visibility; **Life events** — birth, death and
+every event this person participated in, in date order, each with their role,
+so a marriage they merely witnessed appears alongside their own, and an
+undated fact sorts last rather than pretending to come first; **Family** —
+parents and siblings, then each union with its type, dates, place, how it
+ended and its children in birth order; **Other relationships** — every link
+with this person at either end, read from their side, so the same record shows
+as "godfather of" from one end and "godchild of" from the other; **Occupations**
+as spans; **Places**, each listing what happened there and carrying its border
+history; **Sources and documents**, where every source names the facts on the
+page that rest on it; **Notes**, including text a converter could not parse and
+kept verbatim; and **Raw**, a collapsed block holding the entity's own JSON,
+because a format worth arguing for should be readable without a tool.
+
 **Tree view.** Oldest generation at the bottom, youngest at the top. The
 default is a focused subtree — ancestors and descendants of one person to a
 configurable depth (default 3 each way) plus their partners — because the whole

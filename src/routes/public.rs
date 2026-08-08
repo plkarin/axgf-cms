@@ -199,9 +199,10 @@ const MAX_DEPTH: usize = 8;
 /// `GET /tree` — a focused subtree by default, the whole bundle with `?all=1`.
 ///
 /// The full view is laid out correctly but is not usable on a real file: the
-/// operator's bundle puts 283 people in generation 0, which is a canvas
-/// 17,992px wide. Nobody scrolls that far to find an ancestor, so the default
-/// is a few dozen people around one person, and every card re-roots the view.
+/// operator's bundle puts 161 people in its widest generation, which is a
+/// canvas over 23,000px wide. Nobody scrolls that far to find an ancestor, so
+/// the default is a few dozen people around one person, and every card
+/// re-roots the view.
 pub async fn tree(
     State(state): State<Shared>,
     headers: HeaderMap,

@@ -42,7 +42,9 @@ pub struct Generations {
     /// Persons who appear in no family at all — neither as a partner nor as a
     /// child. They are shown in their own band rather than dropped.
     pub unplaced: Vec<String>,
-    /// True when parentage cycles forced the relaxation pass to stop early.
+    /// True when the bundle states something no assignment can satisfy — a
+    /// parentage loop, or a union between two people on one line of descent.
+    /// The rows are still drawn; some of them are knowingly wrong.
     pub truncated: bool,
 }
 
@@ -100,34 +102,52 @@ fn family_edges(flat: &Value) -> Vec<FamilyEdges> {
 
 /// Assign a generation to every person in the bundle.
 ///
-/// The rule, as specified:
+/// The rules, as specified:
 ///
-/// * a person in no family's children list is generation 0;
 /// * a child is one generation deeper than the **deepest** parent in their
 ///   family;
+/// * **two spouses share a generation**, however much of each side's ancestry
+///   happens to be written down;
 /// * anyone who appears in no family at all is unplaced, not omitted.
 ///
-/// "Deepest parent" makes this a longest-path problem, so the breadth-first
-/// pass relaxes each child upward and re-queues it whenever a deeper parent is
-/// discovered. A parentage cycle would otherwise relax forever; the pass is
-/// capped and reports `truncated` rather than hanging the page.
+/// # Why the union edge has to be a constraint
 ///
-/// # Partner alignment
+/// Deriving depth from parent-child edges alone put the operator in generation
+/// 14 — he descends from a deeply documented line — and his wife in generation
+/// 1, because her mother is where her recorded ancestry stops. Both numbers
+/// were individually correct and the pair was wrong: a generation is a social
+/// position, not a count of how much research has been done on each side.
+/// Across the whole file that reading split 236 of 287 couples onto different
+/// rows and stretched their connectors up to 17,500px.
 ///
-/// Those rules alone place every *married-in* spouse at generation 0, because
-/// someone whose own parents were never recorded is in nobody's children list.
-/// On the operator's file that split 236 of 287 couples across different rows
-/// and stretched their connectors up to 17,500px — which contradicts the other
-/// half of the specification, that partners are joined by a *horizontal*
-/// connector.
+/// # How both constraints are satisfied at once
 ///
-/// The two requirements can only both hold if partners share a row, so after
-/// the initial pass a partner who is nobody's child is pulled down to the
-/// deepest generation among their partners. Only such roots move: a person
-/// with recorded parents keeps the generation their ancestry earned, so no
-/// descendant is ever shifted out from under its parent. Moving a root can
-/// deepen the children of another family it parents, so the relaxation is
-/// re-run until the assignment stops changing.
+/// "Spouses are equal" is not something to iterate towards; it is an identity.
+/// So the pass **contracts each union into one node** ([`Couples`]) and solves
+/// the parent-child constraint on the resulting quotient graph, where it is a
+/// plain longest-path problem over a DAG. Spouses cannot come out on different
+/// rows because they are no longer separate vertices.
+///
+/// Alternating a levelling pass with a relaxation pass — the obvious reading —
+/// does not work on real data and the failure is worth recording: this file
+/// contains two unions between people already related by descent, and each one
+/// makes the two passes chase each other. Levelling raises a spouse, relaxing
+/// pushes their in-law deeper, which makes the couple unlevel again. Run to a
+/// fixed point it never converges; run to a round cap it produced generation
+/// numbers in the millions and left 203 couples still split.
+///
+/// # Pulling a married-in line down to meet its descendant
+///
+/// Contraction alone leaves the *other* half of the operator's complaint. His
+/// wife is now in generation 14, but her mother, whose ancestry is recorded no
+/// further, stays at 0 with a fourteen-row connector between them. So a second
+/// pass ([`lift_free_ancestry`]) slides such a line down until it sits directly
+/// above the descendant that anchors it. It moves a set only when that set's
+/// *only* connection to the rest of the graph is the one node being anchored
+/// to, which is what makes it a single sweep rather than another fixed point:
+/// a lift can never disturb anything it did not include. On this bundle 29
+/// lifts fire, the mother lands on 13, and her son — Laura's brother, who has
+/// no recorded descendants of his own to hold him up — travels with her.
 pub fn assign_generations(flat: &Value) -> Generations {
     let families = family_edges(flat);
     let all_persons: BTreeSet<String> = flat
@@ -136,101 +156,34 @@ pub fn assign_generations(flat: &Value) -> Generations {
         .map(|m| m.keys().cloned().collect())
         .unwrap_or_default();
 
-    // Who is a child somewhere, and who parents whom.
-    let mut is_child: BTreeSet<String> = BTreeSet::new();
+    // Everyone a family mentions, whether or not the bundle holds them.
     let mut in_a_family: BTreeSet<String> = BTreeSet::new();
-    // parent -> families they are a parent in (by index)
-    let mut parent_of: BTreeMap<String, Vec<usize>> = BTreeMap::new();
-    // child -> families they are a child in (by index)
-    let mut child_in: BTreeMap<String, Vec<usize>> = BTreeMap::new();
-
-    for (i, f) in families.iter().enumerate() {
+    let mut couples = Couples::default();
+    for f in &families {
         for p in &f.parents {
             in_a_family.insert(p.clone());
-            parent_of.entry(p.clone()).or_default().push(i);
         }
         for (c, _) in &f.children {
             in_a_family.insert(c.clone());
-            is_child.insert(c.clone());
-            child_in.entry(c.clone()).or_default().push(i);
+        }
+        // Every union member is one node. Chaining consecutive partners is
+        // enough to merge all of them, including a polygamous union's three.
+        for pair in f.parents.windows(2) {
+            couples.merge(&pair[0], &pair[1]);
         }
     }
 
-    // Roots: known to the bundle (or referenced by a family) but not a child.
-    let mut gen: BTreeMap<String, i64> = BTreeMap::new();
-    let mut queue: VecDeque<String> = VecDeque::new();
-    let candidates: BTreeSet<&String> = all_persons.iter().chain(in_a_family.iter()).collect();
-    for p in candidates {
-        if !is_child.contains(p) && in_a_family.contains(p) {
-            gen.insert(p.clone(), 0);
-            queue.push_back(p.clone());
-        }
-    }
+    let quotient = Quotient::contract(&families, &in_a_family, &mut couples);
+    let (mut level, cyclic) = quotient.longest_path();
+    lift_free_ancestry(&quotient, &mut level);
 
-    // Relaxation: a child sits one below its deepest known parent.
-    let cap = (families.len().max(1) * 64).max(10_000);
-    let mut steps = 0usize;
-    let mut truncated = false;
-
-    // A closure would need to borrow `gen` and `queue` mutably alongside the
-    // alignment pass, so the relaxation is written out per round instead.
-    for _round in 0..8 {
-        while let Some(p) = queue.pop_front() {
-            steps += 1;
-            if steps > cap {
-                truncated = true;
-                break;
-            }
-            let Some(fam_ids) = parent_of.get(&p) else {
-                continue;
-            };
-            let pg = gen.get(&p).copied().unwrap_or(0);
-            for &fi in fam_ids {
-                for (c, _) in &families[fi].children {
-                    let want = pg + 1;
-                    let cur = gen.get(c).copied();
-                    if cur.is_none_or(|g| g < want) {
-                        gen.insert(c.clone(), want);
-                        queue.push_back(c.clone());
-                    }
-                }
-            }
-        }
-        if truncated {
-            break;
-        }
-
-        // Pull root partners down to their deepest partner's row. Only people
-        // with no recorded parents move, so nobody is lifted above an ancestor.
-        let mut changed = false;
-        for f in &families {
-            let deepest = f
-                .parents
-                .iter()
-                .filter_map(|p| gen.get(p).copied())
-                .max()
-                .unwrap_or(0);
-            for p in &f.parents {
-                if is_child.contains(p) {
-                    continue; // their ancestry fixes them; leave them be
-                }
-                if gen.get(p).copied().unwrap_or(0) < deepest {
-                    gen.insert(p.clone(), deepest);
-                    queue.push_back(p.clone());
-                    changed = true;
-                }
-            }
-        }
-        if !changed {
-            break;
-        }
-    }
-
-    // A child whose parents are themselves unknown to the bundle never gets
-    // relaxed. Place it at least one below zero-depth rather than dropping it.
-    for c in child_in.keys() {
-        gen.entry(c.clone()).or_insert(1);
-    }
+    let gen: BTreeMap<String, i64> = in_a_family
+        .iter()
+        .map(|p| {
+            let g = level.get(&couples.find(p)).copied().unwrap_or(0);
+            (p.clone(), g)
+        })
+        .collect();
 
     // Unplaced: present in the bundle but in no family whatsoever.
     let unplaced: Vec<String> = all_persons
@@ -242,8 +195,236 @@ pub fn assign_generations(flat: &Value) -> Generations {
     Generations {
         gen,
         unplaced,
-        truncated,
+        truncated: cyclic || quotient.contradictions > 0,
     }
+}
+
+/// Union-find over spouses: every person maps to the couple they belong to.
+///
+/// A person in no union is their own couple, so the quotient graph covers
+/// everybody and no caller needs a special case for the unmarried.
+#[derive(Default)]
+struct Couples {
+    parent: BTreeMap<String, String>,
+}
+
+impl Couples {
+    /// The representative of `id`'s couple, with path compression.
+    fn find(&mut self, id: &str) -> String {
+        let mut root = id.to_string();
+        while let Some(next) = self.parent.get(&root) {
+            if next == &root {
+                break;
+            }
+            root = next.clone();
+        }
+        // Compress, so a long chain of merges is walked once rather than once
+        // per lookup — `find` is called for every person and every edge.
+        let mut cur = id.to_string();
+        while let Some(next) = self.parent.get(&cur).cloned() {
+            if next == cur {
+                break;
+            }
+            self.parent.insert(cur, root.clone());
+            cur = next;
+        }
+        root
+    }
+
+    /// Put `a` and `b` in the same couple.
+    fn merge(&mut self, a: &str, b: &str) {
+        let (ra, rb) = (self.find(a), self.find(b));
+        if ra != rb {
+            self.parent.insert(ra, rb);
+        }
+    }
+}
+
+/// The parent-child graph with every union contracted to a single node.
+struct Quotient {
+    nodes: BTreeSet<String>,
+    /// node -> the couples it parents.
+    kids: BTreeMap<String, BTreeSet<String>>,
+    /// node -> the couples that parent it.
+    parents: BTreeMap<String, BTreeSet<String>>,
+    /// Parent-child edges that landed inside a single couple. The bundle is
+    /// claiming someone is both spouse and descendant on one line; the edge is
+    /// dropped because no row assignment can honour it.
+    contradictions: usize,
+}
+
+impl Quotient {
+    fn contract(
+        families: &[FamilyEdges],
+        in_a_family: &BTreeSet<String>,
+        couples: &mut Couples,
+    ) -> Self {
+        let mut q = Quotient {
+            nodes: in_a_family.iter().map(|p| couples.find(p)).collect(),
+            kids: BTreeMap::new(),
+            parents: BTreeMap::new(),
+            contradictions: 0,
+        };
+        for f in families {
+            for p in &f.parents {
+                for (c, _) in &f.children {
+                    let (a, b) = (couples.find(p), couples.find(c));
+                    if a == b {
+                        q.contradictions += 1;
+                        continue;
+                    }
+                    q.kids.entry(a.clone()).or_default().insert(b.clone());
+                    q.parents.entry(b).or_default().insert(a);
+                }
+            }
+        }
+        q
+    }
+
+    fn kids_of(&self, n: &str) -> impl Iterator<Item = &String> {
+        self.kids.get(n).into_iter().flatten()
+    }
+
+    fn parents_of(&self, n: &str) -> impl Iterator<Item = &String> {
+        self.parents.get(n).into_iter().flatten()
+    }
+
+    /// Longest path from the roots, by Kahn's algorithm.
+    ///
+    /// Returns the level of every node and whether any node was left in a
+    /// cycle. A cycle cannot be scheduled at all, so those nodes are placed
+    /// one below whichever parents *were* scheduled — an arbitrary but
+    /// bounded answer, which is the point: the page renders and says so,
+    /// instead of looping.
+    fn longest_path(&self) -> (BTreeMap<String, i64>, bool) {
+        let mut level: BTreeMap<String, i64> = self.nodes.iter().map(|n| (n.clone(), 0)).collect();
+        let mut indegree: BTreeMap<&String, usize> = self
+            .nodes
+            .iter()
+            .map(|n| (n, self.parents_of(n).count()))
+            .collect();
+
+        let mut queue: VecDeque<&String> = self
+            .nodes
+            .iter()
+            .filter(|n| indegree[*n] == 0)
+            .collect::<VecDeque<_>>();
+
+        let mut scheduled = 0usize;
+        while let Some(n) = queue.pop_front() {
+            scheduled += 1;
+            let here = level.get(n).copied().unwrap_or(0);
+            for c in self.kids_of(n) {
+                let want = here + 1;
+                if level.get(c).copied().unwrap_or(0) < want {
+                    level.insert(c.clone(), want);
+                }
+                if let Some(d) = indegree.get_mut(c) {
+                    *d -= 1;
+                    if *d == 0 {
+                        queue.push_back(c);
+                    }
+                }
+            }
+        }
+
+        let cyclic = scheduled < self.nodes.len();
+        if cyclic {
+            for n in &self.nodes {
+                if indegree[n] == 0 {
+                    continue;
+                }
+                let deepest = self
+                    .parents_of(n)
+                    .filter_map(|p| level.get(p).copied())
+                    .max()
+                    .unwrap_or(-1);
+                level.insert(n.clone(), deepest + 1);
+            }
+        }
+        (level, cyclic)
+    }
+}
+
+/// Slide an ancestral line down until it sits directly above the descendant
+/// that anchors it.
+///
+/// For each node `x` and each of its parents `p` sitting more than one row
+/// above it, this finds the set `p` belongs to — everything reachable from `p`
+/// both upward and downward without passing through `x` — and moves the whole
+/// set down as one rigid block. Two properties make a single sweep enough:
+///
+/// * the set is closed under both edge directions, so the only edges crossing
+///   its boundary end at `x`, and moving it cannot disturb anything else;
+/// * the move is refused outright if the set touches a node already at or
+///   below `x`'s row, which is exactly the case where the line is anchored by
+///   something other than `x` — an intermarriage, or a shared ancestor.
+///
+/// The distance moved is bounded by the deepest member of the set that is
+/// itself a parent of `x`, so no member is ever pushed level with or below the
+/// child it parents. Nodes are visited deepest-first so that a line is pulled
+/// down to its lowest anchor rather than an intermediate one.
+fn lift_free_ancestry(q: &Quotient, level: &mut BTreeMap<String, i64>) {
+    let mut order: Vec<&String> = q.nodes.iter().collect();
+    order.sort_by_key(|n| (-level.get(*n).copied().unwrap_or(0), (*n).clone()));
+
+    for x in order {
+        let anchor = level.get(x).copied().unwrap_or(0);
+        for p in q.parents_of(x) {
+            if level.get(p).copied().unwrap_or(0) >= anchor - 1 {
+                continue; // already sitting directly above
+            }
+            let Some(block) = free_block(q, level, p, x, anchor) else {
+                continue;
+            };
+            // The deepest member that parents `x` is what sets the distance:
+            // moving further would put it level with `x`.
+            let Some(hinge) = block
+                .iter()
+                .filter(|n| q.parents.get(x).is_some_and(|ps| ps.contains(*n)))
+                .filter_map(|n| level.get(n).copied())
+                .max()
+            else {
+                continue;
+            };
+            let delta = anchor - 1 - hinge;
+            if delta <= 0 {
+                continue;
+            }
+            for n in &block {
+                *level.entry(n.clone()).or_insert(0) += delta;
+            }
+        }
+    }
+}
+
+/// Everything reachable from `start` without passing through `anchor`, or
+/// `None` when that set reaches a node at or below `ceiling` — the signal that
+/// something other than `anchor` already holds the line in place.
+fn free_block(
+    q: &Quotient,
+    level: &BTreeMap<String, i64>,
+    start: &str,
+    anchor: &str,
+    ceiling: i64,
+) -> Option<BTreeSet<String>> {
+    let mut block: BTreeSet<String> = BTreeSet::new();
+    let mut stack: Vec<String> = vec![start.to_string()];
+    while let Some(n) = stack.pop() {
+        if n == anchor || block.contains(&n) {
+            continue;
+        }
+        if level.get(&n).copied().unwrap_or(0) >= ceiling {
+            return None;
+        }
+        block.insert(n.clone());
+        for next in q.parents_of(&n).chain(q.kids_of(&n)) {
+            if next != anchor && !block.contains(next) {
+                stack.push(next.clone());
+            }
+        }
+    }
+    (!block.is_empty()).then_some(block)
 }
 
 // ---------------------------------------------------------------------------
@@ -317,10 +498,10 @@ pub struct TreeLayout {
 /// The people around one person, and how they were reached.
 ///
 /// The full tree is laid out correctly but is not usable at the operator's
-/// scale: 283 people share generation 0, which is a canvas nearly 18,000px
-/// wide. No one scrolls that far to find an ancestor. A generation that size
-/// cannot be made legible by shrinking cards either — the fix is to draw
-/// fewer people, not smaller ones.
+/// scale: its widest generation holds 161 people, which is a canvas over
+/// 23,000px wide. No one scrolls that far to find an ancestor. A generation
+/// that size cannot be made legible by shrinking cards either — the fix is to
+/// draw fewer people, not smaller ones.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Subtree {
     /// Everyone to lay out, including the root.
@@ -627,9 +808,9 @@ pub fn layout_subset(
     //
     // Two things make a row readable. Partners must sit next to each other, or
     // their connector stretches across a canvas that is tens of thousands of
-    // pixels wide — on the operator's file, generation 0 alone is 283 people.
-    // And siblings must sit under their parents, or the parent connectors
-    // cross into a thicket.
+    // pixels wide — the operator's widest generation is 161 people. And
+    // siblings must sit under their parents, or the parent connectors cross
+    // into a thicket.
     //
     // So each row is ordered as *couples first, then barycentre*: persons are
     // grouped into units by shared partnership, and the units are sorted by
@@ -1123,11 +1304,15 @@ mod tests {
         );
     }
 
+    // -- spouse levelling --------------------------------------------------
+
     #[test]
-    fn partner_alignment_never_lifts_someone_above_their_own_parents() {
-        // "b" has recorded parents putting them at generation 1, and marries
-        // "d" who sits at generation 2. Alignment must not move "b" — doing so
-        // would place them level with or above their own parent.
+    fn two_spouses_at_different_depths_converge_on_one_generation() {
+        // This is the operator's own case in miniature: "b" has one recorded
+        // parent and lands at 1, "d" descends from a longer line and lands at
+        // 2. They are married, so they belong in the same row — and it is the
+        // deeper number that survives, because that side's ancestors are all
+        // occupying rows of their own above it.
         let bd = bundle(
             &["p1", "p2", "b", "g1", "c", "d", "kid"],
             &[
@@ -1138,13 +1323,121 @@ mod tests {
             ],
         );
         let gens = assign_generations(&bd);
-        assert_eq!(g(&gens, "b"), 1, "a person with parents keeps their row");
-        assert_eq!(g(&gens, "d"), 2);
-        assert!(
-            g(&gens, "b") > g(&gens, "p1"),
-            "a child must stay below its parent"
+        assert_eq!(g(&gens, "b"), g(&gens, "d"), "spouses share a generation");
+        assert_eq!(g(&gens, "b"), 2, "the deeper ancestry sets the row");
+        assert!(!gens.truncated, "nothing here is contradictory");
+    }
+
+    #[test]
+    fn a_relevelled_spouses_parents_shift_with_them() {
+        // "b" moved from 1 to 2, so the parents whose only descendant is "b"
+        // move too. Leaving them at 0 would draw a two-row connector where the
+        // record says "mother and daughter".
+        let bd = bundle(
+            &["p1", "p2", "b", "g1", "c", "d", "kid"],
+            &[
+                (&["p1", "p2"], &["b"]),
+                (&["g1"], &["c"]),
+                (&["c"], &["d"]),
+                (&["b", "d"], &["kid"]),
+            ],
         );
-        assert_eq!(g(&gens, "kid"), 3, "still one below the deepest parent");
+        let gens = assign_generations(&bd);
+        assert_eq!(g(&gens, "p1"), 1, "the mother followed her daughter down");
+        assert_eq!(g(&gens, "p2"), 1);
+        assert_eq!(
+            g(&gens, "b") - g(&gens, "p1"),
+            1,
+            "and lands exactly one row above her"
+        );
+        // The line that anchored the couple is untouched.
+        assert_eq!(g(&gens, "g1"), 0);
+        assert_eq!(g(&gens, "c"), 1);
+    }
+
+    #[test]
+    fn a_relevelled_spouses_children_stay_below_them() {
+        // "b" has a child from an earlier union who would otherwise sit at
+        // generation 2 — level with the re-levelled "b" itself.
+        let bd = bundle(
+            &["p1", "b", "g1", "c", "d", "kid", "elder"],
+            &[
+                (&["p1"], &["b"]),
+                (&["g1"], &["c"]),
+                (&["c"], &["d"]),
+                (&["b", "d"], &["kid"]),
+                (&["b"], &["elder"]),
+            ],
+        );
+        let gens = assign_generations(&bd);
+        assert_eq!(g(&gens, "b"), 2);
+        assert!(
+            g(&gens, "elder") > g(&gens, "b"),
+            "a child of a re-levelled parent must be pushed below them, got \
+             elder={} b={}",
+            g(&gens, "elder"),
+            g(&gens, "b")
+        );
+        assert!(g(&gens, "kid") > g(&gens, "b"));
+    }
+
+    #[test]
+    fn a_person_with_no_spouse_is_left_where_their_ancestry_puts_them() {
+        // "solo" parents a child alone, in a bundle where levelling is
+        // happening elsewhere. Nothing about that may move them.
+        let b = bundle(
+            &["gp", "solo", "child", "x", "y", "z", "w"],
+            &[
+                (&["gp"], &["solo"]),
+                (&["solo"], &["child"]),
+                (&["x"], &["y"]),
+                (&["y", "z"], &["w"]),
+            ],
+        );
+        let gens = assign_generations(&b);
+        assert_eq!(g(&gens, "gp"), 0);
+        assert_eq!(g(&gens, "solo"), 1);
+        assert_eq!(g(&gens, "child"), 2);
+    }
+
+    #[test]
+    fn a_union_between_two_people_on_one_line_of_descent_does_not_hang() {
+        // The operator's file contains two of these — a father and son written
+        // into a union by the GEDCOM converter. Levelling them would put a
+        // person level with their own parent, so the parent-child edge is
+        // dropped, reported, and the page still renders.
+        let b = bundle(
+            &["gp", "dad", "son", "mum"],
+            &[
+                (&["gp"], &["dad"]),
+                (&["dad", "mum"], &["son"]),
+                (&["dad", "son"], &[]),
+            ],
+        );
+        let gens = assign_generations(&b);
+        for id in ["gp", "dad", "son", "mum"] {
+            assert!(gens.gen.contains_key(id), "{id} vanished");
+        }
+        assert!(
+            gens.truncated,
+            "a union along a line of descent cannot be honoured and must say so"
+        );
+        // And the layout still draws everyone.
+        let l = layout(&b);
+        assert_eq!(l.person_count, 4);
+    }
+
+    #[test]
+    fn a_marriage_cycle_terminates_rather_than_looping() {
+        // Two people who are each other's ancestor, and married as well: every
+        // constraint contradicts another. The pass must return.
+        let b = bundle(
+            &["a", "z"],
+            &[(&["a"], &["z"]), (&["z"], &["a"]), (&["a", "z"], &[])],
+        );
+        let gens = assign_generations(&b);
+        assert!(gens.gen.contains_key("a") && gens.gen.contains_key("z"));
+        assert!(gens.truncated);
     }
 
     #[test]

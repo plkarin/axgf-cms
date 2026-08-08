@@ -87,10 +87,11 @@
 {% if layout.truncated %}
 <div class="notice warn">
   <p>
-    <strong>Parentage cycle detected.</strong> Someone in this bundle is
-    recorded as their own ancestor, so generation assignment stopped early and
-    some rows may be wrong. Run the validator from the admin dashboard to find
-    the loop.
+    <strong>This bundle contradicts itself.</strong> Somebody is recorded as
+    their own ancestor, or two people on one line of descent are recorded as a
+    couple. No arrangement of rows can satisfy that, so the offending
+    relationship was left out of the generation numbering and some rows may be
+    wrong. Run the validator from the admin dashboard to find it.
   </p>
 </div>
 {% endif %}

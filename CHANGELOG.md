@@ -52,14 +52,26 @@ forms, paginated listings, validate, deduplicate and export.
 **Tree view.** Oldest generation at the bottom, youngest at the top. The
 default is a focused subtree — ancestors and descendants of one person to a
 configurable depth (default 3 each way) plus their partners — because the whole
-bundle in one page is 17,992px wide on a real file and nobody scrolls that far.
-Every card re-centres the view on whoever it names. `?all=1` still draws
-everything, with a warning stating the canvas width. Generation assignment is a
-breadth-first relaxation where each child sits one below its deepest parent;
-parentage cycles are capped and reported rather than hanging the page; anyone
-in no family gets a labelled band rather than being dropped. Connector opacity
-is the relationship's confidence. On the operator's 767-person, 294-family
-bundle: focused 24ms, full 14ms.
+bundle in one page is over 23,000px wide on a real file and nobody scrolls that
+far. Every card re-centres the view on whoever it names. `?all=1` still draws
+everything, with a warning stating the canvas width. Anyone in no family gets a
+labelled band rather than being dropped. Connector opacity is the
+relationship's confidence.
+
+**Generations respect marriage, not just descent.** Two spouses share a
+generation however much of each side's ancestry happens to be written down.
+Deriving depth from parent-child edges alone put the operator in generation 14
+and his wife in generation 1 — each number correct on its own, the pair wrong —
+and split 236 of the bundle's 287 couples across different rows. Each union is
+now contracted to a single node before the parent-child constraint is solved,
+so spouses cannot come out on different rows, and a married-in line with no
+further recorded ancestry is slid down to sit directly above the descendant it
+attaches to instead of stranding a parent fourteen rows from their child. A
+bundle that contradicts itself — someone recorded as their own ancestor, or two
+people on one line of descent recorded as a couple — has the offending
+relationship left out of the numbering and says so on the page. All 287 couples
+now share a row. On the operator's 767-person, 295-family bundle: focused 16ms,
+full 17ms, down from 143ms and 133ms.
 
 **Conversion.** GEDCOM 5.5.1 to AXGF, with entity counts and every diagnostic
 shown before the download link. `GEDCOM_UNRECOGNIZED_TAG` warnings are

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
+{% import "_completeness.html" as comp %}
 {% block title %}Conversion result — axgf-cms{% endblock %}
 
 {% block content %}
@@ -31,6 +32,12 @@
     </div>
     {% endfor %}
   </div>
+
+  {# Kept on one line: a multi-line literal would carry its newlines and
+     indentation straight into the rendered paragraph. #}
+  {{ comp.completeness_panel(completeness,
+       "What your GEDCOM carried, and what AXGF has room for",
+       "Counted from the file you just uploaded. Where a row below is empty, it is because GEDCOM had nowhere to put that information — not because the conversion lost it.") }}
 
   {% if skipped %}
   <h2>Tags that carried no usable data ({{ skipped | length }})</h2>

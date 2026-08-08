@@ -201,3 +201,76 @@ async fn an_expired_or_unknown_download_id_is_a_clean_404() {
     .await;
     assert!(body.contains("expired"));
 }
+
+#[tokio::test]
+async fn the_result_page_compares_the_import_against_what_axgf_holds() {
+    let (app, _p) = app_with_empty_bundle("conv-complete");
+    let ged = fixture("tree.ged");
+    let resp = post_convert(&app, multipart("tree.ged", &ged, "0.8", "pl")).await;
+    let body = expect_status(resp, StatusCode::OK, "convert for completeness").await;
+
+    assert!(body.contains("completeness"), "the panel must be present");
+    assert!(body.contains("what AXGF has room for"));
+
+    // Each of the six things the panel must report.
+    for expected in [
+        "individually judged confidence",
+        "Parent–child links with their own confidence",
+        "Non-family relationships",
+        "Occupations recorded as a span",
+        "Sources graded for reliability",
+        "Dates, by the shape they actually have",
+    ] {
+        assert!(body.contains(expected), "panel is missing: {expected}");
+    }
+
+    // Fields are named exactly, and each links its spec section.
+    for field in [
+        "family.children[].confidence",
+        "occupation.valid_from",
+        "source.reliability",
+    ] {
+        assert!(body.contains(field), "field not named: {field}");
+    }
+    assert!(
+        body.contains("axgf-spec/blob/main/SPEC_1.0.md#44-link"),
+        "links must point at the Link section of the spec"
+    );
+    assert!(body.contains("SPEC_1.0.md#8-confidence-model"));
+    assert!(body.contains("SPEC_1.0.md#542-reliability-levels"));
+
+    // A GEDCOM import genuinely has none of these, and the page says why
+    // without blaming the conversion.
+    assert!(body.contains("GEDCOM cannot express this"));
+    assert!(
+        body.contains("not because the conversion lost it"),
+        "the framing must not imply data was dropped"
+    );
+
+    // The date breakdown is real: this file has all four interesting shapes.
+    for shape in ["exact", "approximate", "ranged", "preserved"] {
+        assert!(body.contains(shape), "date shape missing: {shape}");
+    }
+}
+
+#[tokio::test]
+async fn a_rich_bundle_is_not_told_its_data_is_missing() {
+    // The honest framing has to cut both ways. Feeding the demonstration
+    // bundle through the same analysis must produce the opposite verdict.
+    let sample = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let bytes = std::fs::read(sample).expect("sample bundle");
+    let env = axgf_rs::import_bundle(&bytes);
+    let report = axgf_cms::completeness::analyse(&env.data);
+
+    assert_eq!(
+        report.empty, 0,
+        "the sample populates every field; report was: {}",
+        report.headline
+    );
+    assert!(
+        report.headline.contains("every field"),
+        "a rich bundle needs a different sentence: {}",
+        report.headline
+    );
+    assert!(report.dates.preserved > 0, "and it keeps unparsable text");
+}

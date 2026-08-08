@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
+{% import "_completeness.html" as comp %}
 {% block title %}Admin — axgf-cms{% endblock %}
 {% block content %}
 
@@ -36,6 +37,10 @@
   </form>
   <a class="btn" href="/admin/export">Export bundle</a>
 </div>
+
+{{ comp.completeness_panel(completeness,
+     "Bundle completeness",
+     "Which AXGF fields this bundle uses, and which are still empty. Validation tells you what is wrong with the data; this tells you what is worth enriching. An empty field here is not an error.") }}
 
 <h2>Last validation</h2>
 {% if validation %}

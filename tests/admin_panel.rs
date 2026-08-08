@@ -378,6 +378,45 @@ async fn the_delete_form_offers_all_three_policies_with_reject_default() {
     assert!(list.contains("with the link nulled"));
 }
 
+#[tokio::test]
+async fn the_dashboard_shows_a_bundle_completeness_readout() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("admin-complete", src);
+
+    let body = expect_status(get_admin(&app, "/admin").await, StatusCode::OK, "dashboard").await;
+
+    assert!(body.contains("Bundle completeness"));
+    assert!(body.contains("worth enriching"), "framed as a worklist");
+    for expected in [
+        "individually judged confidence",
+        "Non-family relationships",
+        "Occupations recorded as a span",
+        "Sources graded for reliability",
+        "Dates, by the shape they actually have",
+    ] {
+        assert!(
+            body.contains(expected),
+            "dashboard panel missing: {expected}"
+        );
+    }
+    // The sample populates everything, so the dashboard must not claim gaps.
+    assert!(
+        body.contains("every field below"),
+        "a complete bundle should be reported as complete"
+    );
+}
+
+#[tokio::test]
+async fn the_dashboard_readout_reflects_an_empty_bundle_honestly() {
+    let (app, _p) = app_with_empty_bundle("admin-complete-empty");
+    let body = body_string(get_admin(&app, "/admin").await).await;
+    assert!(body.contains("Bundle completeness"));
+    assert!(
+        body.contains("No dates in this bundle"),
+        "an empty bundle reports zero dates rather than an empty chart"
+    );
+}
+
 /// Pull the first person id out of an admin listing.
 ///
 /// Matching on `href="/person/` specifically: a bare `/person/` also occurs

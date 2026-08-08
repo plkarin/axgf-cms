@@ -718,3 +718,43 @@ a.stat:hover { border-color: var(--accent); }
 #depth { min-width: 5rem; }
 
 .tree-hint { margin: 0.5rem 0 0.25rem; }
+
+/* ---------- completeness readout ---------- */
+
+.completeness {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.completeness > h2 { margin-top: 0; }
+.completeness > h3 { margin-top: 1.5rem; }
+
+.comp-table td { vertical-align: top; }
+.comp-table code { font-size: 0.82em; word-break: break-word; }
+.comp-count { font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+
+/* A row the bundle populates reads as normal; an empty one is dimmed, so the
+   shape of what is missing is visible at a glance. */
+.comp-has .comp-count { color: var(--conf-certain); font-weight: 600; }
+.comp-empty { background: transparent; }
+.comp-empty .comp-count { color: var(--ink-faint); }
+
+.comp-tag {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--conf-medium);
+  border: 1px solid var(--conf-medium);
+  border-radius: 3px;
+  padding: 0 0.35em;
+  white-space: normal;
+  max-width: 11rem;
+}
+.comp-tag.empty-tag { color: var(--ink-faint); border-color: var(--border-strong); }
+
+.date-shapes .stat .k { text-transform: none; font-weight: 600; color: var(--ink-soft); }

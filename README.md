@@ -99,14 +99,14 @@ Public, read-only:
 | `GET /tree` | A focused subtree around one person, oldest generation at the bottom. `?root=<id>` centres it, `?depth=<n>` sets how many generations each way (default 3), `?all=1` draws the whole bundle |
 | `GET /person/:id` | Everything known about one person |
 | `GET /convert` | GEDCOM → AXGF conversion |
-| `POST /convert/gedcom` | Convert an upload and offer the result |
+| `POST /convert/gedcom` | Convert an upload, report what it carried against what AXGF holds, and offer the result |
 | `GET /health` | `200` with entity counts |
 
 Admin (requires the token cookie):
 
 | Route | What it does |
 |---|---|
-| `GET /admin` | Counts, validation report, operations |
+| `GET /admin` | Counts, bundle completeness, validation report, operations |
 | `GET/POST /admin/login`, `POST /admin/logout` | Session |
 | `GET /admin/:kind` | Paginated, filterable listing |
 | `GET /admin/:kind/new`, `POST /admin/:kind` | Create |

@@ -117,6 +117,8 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
     let counts = state.counts();
     let env = state.inspect_with(axgf_rs::validate);
     let diagnostics = diagnostics_json(&env.diagnostics);
+    // Validation says what is wrong; this says what is missing.
+    let completeness = state.read(crate::completeness::analyse);
 
     render::page(
         "admin_dashboard.html",
@@ -134,6 +136,7 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             validation => env.data,
             diagnostics,
             bundle_path => state.bundle_path().display().to_string(),
+            completeness,
         },
     )
 }

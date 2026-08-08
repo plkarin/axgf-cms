@@ -34,17 +34,32 @@ express.
   certificate is visibly not the same as one resting on recollection.
 - Places carry their border history, so a town that changed hands says so.
 
+**Completeness readout.** The conversion result page and the admin dashboard
+both count what the bundle in front of you records against what AXGF can hold:
+confidences that were judged individually rather than stamped by a bulk import,
+parentage confidence, non-family links, occupation spans, source reliability
+grades, and every date broken down by the shape it actually has. Each row names
+the AXGF field and links its specification section. The framing is plain — a
+GEDCOM import shows five empty rows because GEDCOM has nowhere to put any of
+it, not because the conversion lost anything — and a bundle that already
+carries rich data is told so instead.
+
 **Pages.** Home with a "Why AXGF" panel and a list of the GEDCOM-impossible
 features the loaded bundle actually contains; `/tree`; `/person/:id`;
 `/convert`; `/health`; and a plain server-rendered admin panel with per-kind
 forms, paginated listings, validate, deduplicate and export.
 
-**Tree view.** One scrollable page, oldest generation at the bottom. Generation
-assignment is a breadth-first relaxation where each child sits one below its
-deepest parent; parentage cycles are capped and reported rather than hanging
-the page; anyone in no family gets a labelled band rather than being dropped.
-Connector opacity is the relationship's confidence. Renders a 767-person,
-294-family bundle in 21ms.
+**Tree view.** Oldest generation at the bottom, youngest at the top. The
+default is a focused subtree — ancestors and descendants of one person to a
+configurable depth (default 3 each way) plus their partners — because the whole
+bundle in one page is 17,992px wide on a real file and nobody scrolls that far.
+Every card re-centres the view on whoever it names. `?all=1` still draws
+everything, with a warning stating the canvas width. Generation assignment is a
+breadth-first relaxation where each child sits one below its deepest parent;
+parentage cycles are capped and reported rather than hanging the page; anyone
+in no family gets a labelled band rather than being dropped. Connector opacity
+is the relationship's confidence. On the operator's 767-person, 294-family
+bundle: focused 24ms, full 14ms.
 
 **Conversion.** GEDCOM 5.5.1 to AXGF, with entity counts and every diagnostic
 shown before the download link. `GEDCOM_UNRECOGNIZED_TAG` warnings are

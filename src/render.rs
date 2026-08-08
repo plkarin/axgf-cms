@@ -38,7 +38,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_list.html",
     "admin_form.html",
     "admin_result.html",
-    "_macros.html"
+    "_macros.html",
+    "_completeness.html"
 ];
 
 static ENV: OnceLock<Environment<'static>> = OnceLock::new();

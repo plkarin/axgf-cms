@@ -1,0 +1,76 @@
+{# The completeness readout, shared by the conversion result and the admin
+   dashboard. Every number is a count of the bundle in front of the reader.
+
+   The spec URLs are piped through `safe`, which is the only place in this
+   project that bypasses autoescaping. It is safe here and nowhere else: every
+   one of them is built in src/completeness.rs by joining two compile-time
+   string constants, so no bundle content can reach them. Without it the
+   slashes render as `&#x2f;` and the hrefs become unreadable in source. #}
+
+{% macro completeness_panel(report, heading, intro) %}
+<section class="completeness">
+  <h2>{{ heading }}</h2>
+  <p class="small muted">{{ intro }}</p>
+  <p>{{ report.headline }}</p>
+
+  <div class="table-wrap">
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>What AXGF records</th>
+        <th class="nowrap">In this bundle</th>
+        <th>AXGF field</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in report.metrics %}
+      <tr class="{% if m.carried %}comp-has{% else %}comp-empty{% endif %}">
+        <td>
+          <strong>{{ m.title }}</strong>
+          <div class="small muted">{{ m.note }}</div>
+        </td>
+        <td class="nowrap comp-count">
+          {{ m.summary }}
+          {% if not m.carried and m.gedcom_cannot %}
+            <div class="comp-tag">GEDCOM cannot express this</div>
+          {% elif not m.carried %}
+            <div class="comp-tag empty-tag">empty</div>
+          {% endif %}
+        </td>
+        <td class="small">
+          <code>{{ m.field }}</code>
+          <div><a href="{{ m.spec_url|safe }}">spec {{ m.spec_ref }}</a></div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Dates, by the shape they actually have</h3>
+  {% if report.dates.total == 0 %}
+    <p class="small muted">No dates in this bundle.</p>
+  {% else %}
+  <p class="small muted">
+    AXGF keeps the difference between a date someone pinned down and one they
+    could not. Text no converter could read is preserved rather than dropped.
+    See <a href="{{ report.spec_url|safe }}#521-date-precision-values">spec §5.2.1</a>
+    and <a href="{{ report.spec_url|safe }}#523-date-range">§5.2.3</a>.
+  </p>
+  <div class="grid cols-4 date-shapes">
+    {% for d in [
+        {"n": report.dates.exact,       "k": "exact",       "d": "a full calendar day"},
+        {"n": report.dates.approximate, "k": "approximate", "d": "circa, or a year/decade only"},
+        {"n": report.dates.range,       "k": "ranged",      "d": "before, after, or between"},
+        {"n": report.dates.preserved,   "k": "preserved",   "d": "unparsable text, kept verbatim"},
+        {"n": report.dates.unknown,     "k": "unknown",     "d": "recorded as not known"}] %}
+    <div class="stat {% if d.n == 0 %}zero{% endif %}">
+      <div class="n">{{ d.n }}</div>
+      <div class="k">{{ d.k }}</div>
+      <div class="small muted">{{ d.d }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endmacro %}

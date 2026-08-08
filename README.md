@@ -96,7 +96,7 @@ Public, read-only:
 | Route | What it shows |
 |---|---|
 | `GET /` | Why AXGF, what is in this bundle, entry points |
-| `GET /tree` | The whole tree, oldest generation at the bottom |
+| `GET /tree` | A focused subtree around one person, oldest generation at the bottom. `?root=<id>` centres it, `?depth=<n>` sets how many generations each way (default 3), `?all=1` draws the whole bundle |
 | `GET /person/:id` | Everything known about one person |
 | `GET /convert` | GEDCOM → AXGF conversion |
 | `POST /convert/gedcom` | Convert an upload and offer the result |

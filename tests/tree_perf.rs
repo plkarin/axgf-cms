@@ -89,55 +89,101 @@ async fn tree_renders_a_full_size_bundle_well_under_a_second() {
 
     let (app, _p) = app_with_bundle("perf", &bundle);
 
-    // Warm once so the measurement is steady-state, not first-touch.
-    let _ = get(&app, "/tree").await;
+    // Both views are measured: the focused one is what a visitor lands on, and
+    // the full one is what `?all=1` still has to survive.
+    for (label, uri) in [
+        ("focused (default)", "/tree"),
+        ("full (?all=1)", "/tree?all=1"),
+    ] {
+        // Warm once so the measurement is steady-state, not first-touch.
+        let _ = get(&app, uri).await;
 
-    let mut timings = Vec::new();
-    let mut bytes = 0usize;
-    for _ in 0..5 {
-        let t = Instant::now();
-        let resp = get(&app, "/tree").await;
-        assert_eq!(resp.status(), StatusCode::OK);
-        let body = body_string(resp).await;
-        timings.push(t.elapsed());
-        bytes = body.len();
+        let mut timings = Vec::new();
+        let mut bytes = 0usize;
+        let mut cards = 0usize;
+        for _ in 0..5 {
+            let t = Instant::now();
+            let resp = get(&app, uri).await;
+            assert_eq!(resp.status(), StatusCode::OK);
+            let body = body_string(resp).await;
+            timings.push(t.elapsed());
+            bytes = body.len();
+            cards = body.matches("class=\"tcard-hit\"").count();
+        }
+        timings.sort();
+        let median = timings[timings.len() / 2];
+        let worst = *timings.last().unwrap();
+
+        eprintln!(
+            "/tree {label:18} over {}: median {:?}, worst {:?}, {} KB, {cards} cards",
+            bundle.display(),
+            median,
+            worst,
+            bytes / 1024
+        );
+
+        assert!(
+            worst < std::time::Duration::from_millis(1000),
+            "{label} must render well under a second; worst was {worst:?}"
+        );
     }
-    timings.sort();
-    let median = timings[timings.len() / 2];
-    let worst = *timings.last().unwrap();
-
-    eprintln!(
-        "/tree over {}: median {:?}, worst {:?}, {} KB of HTML",
-        bundle.display(),
-        median,
-        worst,
-        bytes / 1024
-    );
-
-    assert!(
-        worst < std::time::Duration::from_millis(1000),
-        "/tree must render well under a second; worst was {worst:?}"
-    );
 }
 
 #[tokio::test]
-async fn tree_places_every_person_somewhere() {
+async fn the_full_view_still_places_every_person() {
     let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
         Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
         _ => synthetic_bundle_path("place-src"),
     };
     let (app, _p) = app_with_bundle("place", &bundle);
-    let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
+    let body = expect_status(
+        get(&app, "/tree?all=1").await,
+        StatusCode::OK,
+        "GET /tree?all=1",
+    )
+    .await;
 
-    // Every person in the bundle must appear as a card: the tree may not
-    // silently drop anyone, placed or not.
+    // `?all=1` may not silently drop anyone, placed or not.
     let health = body_string(get(&app, "/health").await).await;
     let h: serde_json::Value = serde_json::from_str(&health).unwrap();
     let people = h["entities"]["persons"].as_u64().unwrap() as usize;
 
-    let cards = body.matches("class=\"tcard\"").count();
+    let cards = body.matches("class=\"tcard-hit\"").count();
     assert_eq!(
         cards, people,
-        "every person needs a card; {people} people but {cards} cards"
+        "every person needs a card in the full view; {people} people but {cards} cards"
     );
+}
+
+#[tokio::test]
+async fn the_default_view_is_a_small_legible_subtree() {
+    // The whole point of the focused default: a visitor must land on something
+    // they can read, not on an 18,000px canvas.
+    let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
+        Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
+        _ => synthetic_bundle_path("focus-src"),
+    };
+    let (app, _p) = app_with_bundle("focus", &bundle);
+    let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
+
+    let cards = body.matches("class=\"tcard-hit\"").count();
+    assert!(cards > 0, "the default view must draw somebody");
+    assert!(
+        cards <= 120,
+        "the default view should be a few dozen people, drew {cards}"
+    );
+
+    // And its canvas must fit a reasonable number of screens.
+    let width: f64 = body
+        .split("class=\"tree-canvas\"")
+        .nth(1)
+        .and_then(|s| s.split("width:").nth(1))
+        .and_then(|s| s.split("px").next())
+        .and_then(|s| s.trim().parse().ok())
+        .expect("a canvas width");
+    assert!(
+        width < 6000.0,
+        "the focused canvas should be scrollable, was {width}px"
+    );
+    eprintln!("focused canvas: {width}px, {cards} cards");
 }

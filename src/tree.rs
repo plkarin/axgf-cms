@@ -266,6 +266,8 @@ pub struct Card {
     /// Confidence band of the birth fact, shown as a dot on the card.
     pub conf_band: Option<&'static str>,
     pub conf_label: Option<String>,
+    /// True for the person the focused view is centred on.
+    pub is_root: bool,
 }
 
 /// A connector between two cards.
@@ -299,14 +301,307 @@ pub struct TreeLayout {
     pub edges: Vec<Edge>,
     pub width: f64,
     pub height: f64,
+    /// How many cards this layout actually drew.
     pub person_count: usize,
+    /// How many people the bundle holds, whether drawn or not.
+    pub total_person_count: usize,
     pub generation_count: usize,
     pub unplaced_count: usize,
     pub truncated: bool,
 }
 
-/// Lay the whole bundle out for `/tree`.
+// ---------------------------------------------------------------------------
+// Choosing what to draw
+// ---------------------------------------------------------------------------
+
+/// The people around one person, and how they were reached.
+///
+/// The full tree is laid out correctly but is not usable at the operator's
+/// scale: 283 people share generation 0, which is a canvas nearly 18,000px
+/// wide. No one scrolls that far to find an ancestor. A generation that size
+/// cannot be made legible by shrinking cards either — the fix is to draw
+/// fewer people, not smaller ones.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Subtree {
+    /// Everyone to lay out, including the root.
+    pub ids: BTreeSet<String>,
+    pub root: String,
+    /// Generations of ancestors requested.
+    pub up: usize,
+    /// Generations of descendants requested.
+    pub down: usize,
+    /// How many were reached going up, down, and sideways to partners.
+    pub ancestor_count: usize,
+    pub descendant_count: usize,
+    pub spouse_count: usize,
+}
+
+/// Map each person to the families they parent, and the families they are a
+/// child of. Both directions are needed to walk a subtree.
+fn family_index(
+    families: &[FamilyEdges],
+) -> (BTreeMap<String, Vec<usize>>, BTreeMap<String, Vec<usize>>) {
+    let mut parent_of: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+    let mut child_in: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+    for (i, f) in families.iter().enumerate() {
+        for p in &f.parents {
+            parent_of.entry(p.clone()).or_default().push(i);
+        }
+        for (c, _) in &f.children {
+            child_in.entry(c.clone()).or_default().push(i);
+        }
+    }
+    (parent_of, child_in)
+}
+
+/// Select the people within `up` generations above and `down` below `root`,
+/// plus the partners of everyone selected.
+///
+/// Partners are added in a single pass at the end rather than being followed
+/// recursively: a partner's own ancestors are a different family's tree, and
+/// pulling them in is how a focused view turns back into the whole bundle.
+pub fn select_subtree(flat: &Value, root: &str, up: usize, down: usize) -> Subtree {
+    let families = family_edges(flat);
+    let index = family_index(&families);
+    select_with(&families, &index, root, up, down)
+}
+
+type FamilyIndex = (BTreeMap<String, Vec<usize>>, BTreeMap<String, Vec<usize>>);
+
+/// The body of [`select_subtree`], against a prebuilt index.
+///
+/// Split out because choosing a default root evaluates every person in the
+/// bundle: re-reading the families out of JSON each time turned a scan into
+/// hundreds of redundant parses.
+fn select_with(
+    families: &[FamilyEdges],
+    (parent_of, child_in): &FamilyIndex,
+    root: &str,
+    up: usize,
+    down: usize,
+) -> Subtree {
+    let mut ids: BTreeSet<String> = BTreeSet::new();
+    ids.insert(root.to_string());
+
+    // Upward: the parents of every family this generation is a child of.
+    let mut frontier: Vec<String> = vec![root.to_string()];
+    let mut ancestor_count = 0usize;
+    for _ in 0..up {
+        let mut next: Vec<String> = Vec::new();
+        for p in &frontier {
+            for &fi in child_in.get(p).map(Vec::as_slice).unwrap_or(&[]) {
+                for parent in &families[fi].parents {
+                    if ids.insert(parent.clone()) {
+                        ancestor_count += 1;
+                        next.push(parent.clone());
+                    }
+                }
+            }
+        }
+        if next.is_empty() {
+            break;
+        }
+        frontier = next;
+    }
+
+    // Downward: the children of every family this generation parents.
+    let mut frontier: Vec<String> = vec![root.to_string()];
+    let mut descendant_count = 0usize;
+    for _ in 0..down {
+        let mut next: Vec<String> = Vec::new();
+        for p in &frontier {
+            for &fi in parent_of.get(p).map(Vec::as_slice).unwrap_or(&[]) {
+                for (child, _) in &families[fi].children {
+                    if ids.insert(child.clone()) {
+                        descendant_count += 1;
+                        next.push(child.clone());
+                    }
+                }
+            }
+        }
+        if next.is_empty() {
+            break;
+        }
+        frontier = next;
+    }
+
+    // Sideways: partners of everyone selected, so couples read as couples.
+    let selected: Vec<String> = ids.iter().cloned().collect();
+    let mut spouse_count = 0usize;
+    for p in selected {
+        for &fi in parent_of.get(&p).map(Vec::as_slice).unwrap_or(&[]) {
+            for partner in &families[fi].parents {
+                if partner != &p && ids.insert(partner.clone()) {
+                    spouse_count += 1;
+                }
+            }
+        }
+    }
+
+    Subtree {
+        ids,
+        root: root.to_string(),
+        up,
+        down,
+        ancestor_count,
+        descendant_count,
+        spouse_count,
+    }
+}
+
+/// The widest a generation row may be before the focused view stops being
+/// readable. Fourteen cards is about 2,000px — one wide screen, or a short
+/// scroll on a laptop.
+const LEGIBLE_ROW: usize = 14;
+
+/// The person whose surroundings make the best landing page.
+///
+/// Two earlier readings of "the one with the most descendants" both produced
+/// bad first screens on the operator's bundle, and the measurements are worth
+/// recording because they are not obvious:
+///
+/// * **Most descendants overall** picks someone with 118 of them — spread over
+///   thirteen further generations, so at depth 3 the view is nine cards out of
+///   767. Correct, and useless as an introduction.
+/// * **Most people shown at the depth** picks someone with a 69-child
+///   generation: 142 cards, but a 10,108px canvas. That is the same
+///   horizontal-scrolling problem the focused view exists to solve, just
+///   smaller.
+///
+/// Legibility is governed by the *widest row*, not the total, so the root is
+/// the one showing the most people while keeping every row inside
+/// [`LEGIBLE_ROW`]. If no one qualifies — every candidate has an enormous
+/// sibling group — the narrowest available view wins instead, because a
+/// cramped view still beats an unreadable one.
+///
+/// Ties break on total descendants, then name, then id, so the landing page is
+/// stable across restarts rather than depending on map iteration order.
+pub fn best_root(flat: &Value, depth: usize) -> Option<String> {
+    let families = family_edges(flat);
+    let index = family_index(&families);
+    let (parent_of, _) = &index;
+    let persons = flat.get("persons").and_then(Value::as_object)?;
+    if persons.is_empty() {
+        return None;
+    }
+    // Generation numbers come from the same pass the layout uses, so "widest
+    // row" here means exactly what it will mean on the rendered page.
+    let generations = assign_generations(flat);
+
+    let total_descendants = |id: &str| -> usize {
+        let mut seen: BTreeSet<&str> = [id].into();
+        let mut queue: VecDeque<&str> = [id].into();
+        let mut n = 0usize;
+        while let Some(p) = queue.pop_front() {
+            for &fi in parent_of.get(p).map(Vec::as_slice).unwrap_or(&[]) {
+                for (child, _) in &families[fi].children {
+                    if seen.insert(child.as_str()) {
+                        n += 1;
+                        queue.push_back(child.as_str());
+                    }
+                }
+            }
+        }
+        n
+    };
+
+    /// How a candidate root scores. Ordered best-first by `is_better`.
+    struct Score {
+        legible: bool,
+        shown: usize,
+        widest: usize,
+        total: usize,
+        name: String,
+        id: String,
+    }
+
+    let is_better = |a: &Score, b: &Score| -> bool {
+        // A view that fits wins outright over one that does not.
+        match (a.legible, b.legible) {
+            (true, false) => return true,
+            (false, true) => return false,
+            _ => {}
+        }
+        if a.legible {
+            // Both fit: show as many people as possible.
+            match a.shown.cmp(&b.shown) {
+                std::cmp::Ordering::Greater => return true,
+                std::cmp::Ordering::Less => return false,
+                std::cmp::Ordering::Equal => {}
+            }
+        } else {
+            // Neither fits: take the narrowest.
+            match a.widest.cmp(&b.widest) {
+                std::cmp::Ordering::Less => return true,
+                std::cmp::Ordering::Greater => return false,
+                std::cmp::Ordering::Equal => {}
+            }
+        }
+        match a.total.cmp(&b.total) {
+            std::cmp::Ordering::Greater => true,
+            std::cmp::Ordering::Less => false,
+            std::cmp::Ordering::Equal => a.name < b.name || (a.name == b.name && a.id < b.id),
+        }
+    };
+
+    let mut best: Option<Score> = None;
+    for id in persons.keys() {
+        let sub = select_with(&families, &index, id, depth, depth);
+
+        // Bucket the subtree by the generation the layout will put it in.
+        let mut per_row: BTreeMap<i64, usize> = BTreeMap::new();
+        let mut unplaced = 0usize;
+        for pid in &sub.ids {
+            if !persons.contains_key(pid) {
+                continue;
+            }
+            match generations.gen.get(pid) {
+                Some(g) => *per_row.entry(*g).or_default() += 1,
+                None => unplaced += 1,
+            }
+        }
+        let widest = per_row.values().copied().max().unwrap_or(0).max(unplaced);
+        let shown = per_row.values().sum::<usize>() + unplaced;
+
+        let candidate = Score {
+            legible: widest <= LEGIBLE_ROW,
+            shown,
+            widest,
+            total: total_descendants(id),
+            name: persons
+                .get(id)
+                .map(view::person_display_name)
+                .unwrap_or_default(),
+            id: id.clone(),
+        };
+        if best.as_ref().is_none_or(|b| is_better(&candidate, b)) {
+            best = Some(candidate);
+        }
+    }
+    best.map(|s| s.id)
+}
+
+/// Lay the whole bundle out for `/tree?all=1`.
 pub fn layout(flat: &Value) -> TreeLayout {
+    layout_subset(flat, None, None)
+}
+
+/// Lay out only `subtree`, for the focused default view.
+pub fn layout_focused(flat: &Value, subtree: &Subtree) -> TreeLayout {
+    layout_subset(flat, Some(&subtree.ids), Some(&subtree.root))
+}
+
+/// Lay out the bundle, optionally restricted to a set of people.
+///
+/// Restricting here rather than in a separate code path means the focused view
+/// and the full view share one implementation: generation numbers, ordering
+/// and connector geometry are computed exactly the same way, so a person sits
+/// in the same generation whichever view you reach them through.
+pub fn layout_subset(
+    flat: &Value,
+    only: Option<&BTreeSet<String>>,
+    root: Option<&str>,
+) -> TreeLayout {
     let generations = assign_generations(flat);
     let empty = serde_json::Map::new();
     let persons = flat
@@ -314,12 +609,14 @@ pub fn layout(flat: &Value) -> TreeLayout {
         .and_then(Value::as_object)
         .unwrap_or(&empty);
 
+    let wanted = |id: &String| only.is_none_or(|set| set.contains(id));
+
     // Group by generation.
     let mut by_gen: BTreeMap<i64, Vec<String>> = BTreeMap::new();
     for (id, g) in &generations.gen {
         // Only lay out persons the bundle actually contains; a family may
         // reference an id that was never imported.
-        if persons.contains_key(id) {
+        if persons.contains_key(id) && wanted(id) {
             by_gen.entry(*g).or_default().push(id.clone());
         }
     }
@@ -429,11 +726,21 @@ pub fn layout(flat: &Value) -> TreeLayout {
         }
     }
 
+    // Unplaced people appear in no family, so a subtree walk can never reach
+    // one — unless the root *is* unplaced, which is exactly the case this
+    // filter keeps working.
+    let unplaced: Vec<String> = generations
+        .unplaced
+        .iter()
+        .filter(|id| wanted(id))
+        .cloned()
+        .collect();
+
     // Canvas width is set by the widest row.
     let widest = by_gen
         .values()
         .map(|r| r.len())
-        .chain(std::iter::once(generations.unplaced.len()))
+        .chain(std::iter::once(unplaced.len()))
         .max()
         .unwrap_or(0);
     let width = MARGIN * 2.0 + (widest as f64) * (CARD_W + H_GAP) - H_GAP;
@@ -444,10 +751,10 @@ pub fn layout(flat: &Value) -> TreeLayout {
     let mut bands: Vec<Band> = Vec::new();
     let mut row_y = MARGIN;
 
-    if !generations.unplaced.is_empty() {
-        let mut ids = generations.unplaced.clone();
+    if !unplaced.is_empty() {
+        let mut ids = unplaced.clone();
         ids.sort_by_key(|id| (name_of(id), id.clone()));
-        let cards = place_row(&ids, persons, row_y, width);
+        let cards = place_row(&ids, persons, row_y, width, root);
         bands.push(Band {
             label: "Unplaced".into(),
             sublabel: format!(
@@ -469,7 +776,7 @@ pub fn layout(flat: &Value) -> TreeLayout {
         if ids.is_empty() {
             continue;
         }
-        let cards = place_row(ids, persons, row_y, width);
+        let cards = place_row(ids, persons, row_y, width, root);
         for c in &cards {
             positions.insert(c.id.clone(), (c.x, c.y));
         }
@@ -489,16 +796,22 @@ pub fn layout(flat: &Value) -> TreeLayout {
     }
 
     let height = row_y + CARD_H + MARGIN;
+    // Connectors are derived from `positions`, which only holds the people
+    // that were drawn, so an edge to someone outside the subtree is dropped
+    // rather than dangling off the canvas.
     let edges = build_edges(&families, &positions, &generations.gen, persons);
+
+    let drawn = by_gen.values().map(Vec::len).sum::<usize>() + unplaced.len();
 
     TreeLayout {
         bands,
         edges,
         width,
         height,
-        person_count: persons.len(),
+        person_count: drawn,
+        total_person_count: persons.len(),
         generation_count: by_gen.len(),
-        unplaced_count: generations.unplaced.len(),
+        unplaced_count: unplaced.len(),
         truncated: generations.truncated,
     }
 }
@@ -509,6 +822,7 @@ fn place_row(
     persons: &serde_json::Map<String, Value>,
     y: f64,
     canvas_w: f64,
+    root: Option<&str>,
 ) -> Vec<Card> {
     let row_w = (ids.len() as f64) * (CARD_W + H_GAP) - H_GAP;
     let x0 = ((canvas_w - row_w) / 2.0).max(MARGIN);
@@ -516,14 +830,14 @@ fn place_row(
         .enumerate()
         .map(|(i, id)| {
             let x = x0 + (i as f64) * (CARD_W + H_GAP);
-            card_for(id, persons.get(id), x, y)
+            card_for(id, persons.get(id), x, y, root == Some(id.as_str()))
         })
         .collect()
 }
 
 /// Build one card. A referenced-but-absent person still gets a card so the
 /// tree never silently loses someone.
-fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64) -> Card {
+fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> Card {
     let Some(p) = person else {
         return Card {
             id: id.to_string(),
@@ -536,6 +850,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64) -> Card {
             y,
             conf_band: None,
             conf_label: None,
+            is_root,
         };
     };
 
@@ -578,6 +893,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64) -> Card {
         y,
         conf_band: conf.as_ref().map(|c| c.band),
         conf_label: conf.map(|c| c.description),
+        is_root,
     }
 }
 
@@ -1000,6 +1316,289 @@ mod tests {
         let idx = |id: &str| row.iter().position(|c| c.id == id).unwrap() as i64;
         assert_eq!((idx("a1") - idx("a2")).abs(), 1, "siblings stay together");
         assert_eq!((idx("b1") - idx("b2")).abs(), 1, "siblings stay together");
+    }
+
+    // -- subtree selection -------------------------------------------------
+
+    /// A five-generation line with a married-in spouse at each level, plus an
+    /// unrelated person in no family at all.
+    fn deep_bundle() -> Value {
+        bundle(
+            &[
+                "g0", "g0s", "g1", "g1s", "g2", "g2s", "g3", "g3s", "g4", "loner",
+            ],
+            &[
+                (&["g0", "g0s"], &["g1"]),
+                (&["g1", "g1s"], &["g2"]),
+                (&["g2", "g2s"], &["g3"]),
+                (&["g3", "g3s"], &["g4"]),
+            ],
+        )
+    }
+
+    fn ids(s: &Subtree) -> Vec<&str> {
+        let mut v: Vec<&str> = s.ids.iter().map(String::as_str).collect();
+        v.sort_unstable();
+        v
+    }
+
+    #[test]
+    fn a_subtree_reaches_the_requested_depth_in_both_directions() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "g2", 1, 1);
+        // One up: g1 and (via the partner pass) g1s. One down: g3, plus g3's
+        // partner g3s. And g2's own partner g2s.
+        assert_eq!(ids(&s), vec!["g1", "g1s", "g2", "g2s", "g3", "g3s"]);
+        assert!(!s.ids.contains("g0"), "two generations up is out of range");
+        assert!(
+            !s.ids.contains("g4"),
+            "two generations down is out of range"
+        );
+    }
+
+    #[test]
+    fn depth_three_each_way_is_the_default_shape() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "g2", 3, 3);
+        assert!(s.ids.contains("g0"), "reaches the top of a 5-deep line");
+        assert!(s.ids.contains("g4"), "reaches the bottom");
+        assert!(!s.ids.contains("loner"), "never pulls in unrelated people");
+    }
+
+    #[test]
+    fn a_root_with_no_ancestors_still_selects_its_descendants() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "g0", 3, 2);
+        assert_eq!(s.ancestor_count, 0, "g0 is the top of the line");
+        assert!(s.ids.contains("g1"));
+        assert!(s.ids.contains("g2"));
+        assert!(!s.ids.contains("g3"), "only two generations down");
+        assert!(s.ids.contains("g0"), "the root is always included");
+    }
+
+    #[test]
+    fn a_root_with_no_descendants_still_selects_its_ancestors() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "g4", 2, 3);
+        assert_eq!(s.descendant_count, 0, "g4 has no children");
+        assert!(s.ids.contains("g3"));
+        assert!(s.ids.contains("g2"));
+        assert!(!s.ids.contains("g1"), "only two generations up");
+    }
+
+    #[test]
+    fn depth_zero_shows_the_root_and_their_partners_only() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "g2", 0, 0);
+        assert_eq!(s.ancestor_count, 0);
+        assert_eq!(s.descendant_count, 0);
+        // The partner pass still runs, because a couple is one unit even at
+        // depth zero.
+        assert_eq!(ids(&s), vec!["g2", "g2s"]);
+    }
+
+    #[test]
+    fn depth_zero_on_a_person_with_no_family_is_just_that_person() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "loner", 0, 0);
+        assert_eq!(ids(&s), vec!["loner"]);
+    }
+
+    #[test]
+    fn a_root_who_is_unplaced_still_lays_out() {
+        // Someone in no family at all can never be reached from another root,
+        // but they can be the root themselves — and the unplaced band is the
+        // only place they can be drawn.
+        let b = deep_bundle();
+        let s = select_subtree(&b, "loner", 3, 3);
+        assert_eq!(ids(&s), vec!["loner"]);
+
+        let l = layout_focused(&b, &s);
+        assert_eq!(l.person_count, 1, "the root is drawn");
+        assert_eq!(l.unplaced_count, 1);
+        let band = l.bands.first().expect("a band");
+        assert!(band.unplaced);
+        assert!(band.cards.iter().any(|c| c.id == "loner" && c.is_root));
+    }
+
+    #[test]
+    fn an_unknown_root_selects_only_itself_and_renders_empty() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "nobody-at-all", 3, 3);
+        assert_eq!(ids(&s), vec!["nobody-at-all"]);
+        // It is not in `persons`, so nothing is drawn — but nothing panics.
+        let l = layout_focused(&b, &s);
+        assert_eq!(l.person_count, 0);
+        assert!(l.bands.is_empty());
+    }
+
+    #[test]
+    fn a_focused_layout_draws_far_fewer_cards_than_the_full_one() {
+        let b = deep_bundle();
+        let full = layout(&b);
+        let s = select_subtree(&b, "g2", 1, 1);
+        let focused = layout_focused(&b, &s);
+
+        assert_eq!(full.person_count, 10, "everyone, including the loner");
+        assert_eq!(focused.person_count, 6);
+        assert_eq!(
+            focused.total_person_count, 10,
+            "the bundle size is still reported"
+        );
+        // Every row in this toy line is two people wide, so the canvas cannot
+        // narrow here — see the wide-generation test for that.
+        assert!(focused.width <= full.width);
+    }
+
+    #[test]
+    fn focusing_collapses_the_canvas_when_a_generation_is_wide() {
+        // This is the shape that made the full view unusable: one enormous
+        // generation. 60 siblings is a 60-card row; focusing on one of them
+        // draws that one, their partner and their parent.
+        let mut people: Vec<String> = vec!["ma".into(), "pa".into()];
+        for i in 0..60 {
+            people.push(format!("kid{i:02}"));
+        }
+        let people_refs: Vec<&str> = people.iter().map(String::as_str).collect();
+        let kids: Vec<&str> = people_refs[2..].to_vec();
+        let b = bundle(&people_refs, &[(&["ma", "pa"], &kids)]);
+
+        let full = layout(&b);
+        let s = select_subtree(&b, "kid00", 1, 1);
+        let focused = layout_focused(&b, &s);
+
+        assert_eq!(full.person_count, 62);
+        assert_eq!(focused.person_count, 3, "the kid and both parents");
+        assert!(
+            focused.width < full.width / 10.0,
+            "focusing must collapse a wide canvas: {} vs {}",
+            focused.width,
+            full.width
+        );
+    }
+
+    #[test]
+    fn focused_connectors_never_dangle_outside_the_subtree() {
+        let b = deep_bundle();
+        let s = select_subtree(&b, "g2", 1, 1);
+        let l = layout_focused(&b, &s);
+
+        // Every drawn card position must be inside the canvas, and every edge
+        // must have been built from two drawn cards.
+        for band in &l.bands {
+            for c in &band.cards {
+                assert!(c.x >= 0.0 && c.x <= l.width, "{c:?}");
+            }
+        }
+        // g4 is outside the subtree, so no connector may mention it.
+        assert!(
+            !l.edges.iter().any(|e| e.title.contains("g4")),
+            "an edge escaped the subtree: {:?}",
+            l.edges
+        );
+    }
+
+    #[test]
+    fn generation_numbers_are_the_same_in_both_views() {
+        // Focusing changes which people are drawn, never where they belong.
+        let b = deep_bundle();
+        let full = layout(&b);
+        let s = select_subtree(&b, "g2", 1, 1);
+        let focused = layout_focused(&b, &s);
+
+        let gen_of = |l: &TreeLayout, id: &str| -> Option<i64> {
+            l.bands
+                .iter()
+                .find(|band| band.cards.iter().any(|c| c.id == id))
+                .and_then(|band| band.generation)
+        };
+        for id in ["g1", "g2", "g3"] {
+            assert_eq!(
+                gen_of(&full, id),
+                gen_of(&focused, id),
+                "{id} moved between views"
+            );
+        }
+    }
+
+    // -- root selection ----------------------------------------------------
+
+    #[test]
+    fn the_default_root_maximises_what_the_first_screen_shows() {
+        // g2 sits in the middle of the five-deep line, so at depth 1 it sees
+        // both a parent and a child — more than an end of the line can.
+        let b = deep_bundle();
+        let root = best_root(&b, 1).expect("a root");
+        let shown = select_subtree(&b, &root, 1, 1).ids.len();
+        for other in ["g0", "g1", "g2", "g3", "g4"] {
+            let n = select_subtree(&b, other, 1, 1).ids.len();
+            assert!(
+                shown >= n,
+                "{root} shows {shown} but {other} would show {n}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_default_root_beats_a_long_thin_line() {
+        // This is the shape that made total-descendant-count the wrong metric:
+        // "trunk" has the most descendants overall, but they are single file,
+        // so at depth 1 it shows fewer people than a parent of six.
+        let mut people = vec!["trunk".to_string()];
+        for i in 0..8 {
+            people.push(format!("thin{i}"));
+        }
+        people.push("wide".into());
+        for i in 0..6 {
+            people.push(format!("broad{i}"));
+        }
+        let refs: Vec<&str> = people.iter().map(String::as_str).collect();
+
+        let mut fams: Vec<(Vec<&str>, Vec<&str>)> = vec![(vec!["trunk"], vec!["thin0"])];
+        for i in 0..7 {
+            fams.push((vec![&refs[1 + i]], vec![&refs[2 + i]]));
+        }
+        fams.push((vec!["wide"], (0..6).map(|i| refs[10 + i]).collect()));
+        let fam_refs: Vec<(&[&str], &[&str])> = fams
+            .iter()
+            .map(|(a, b)| (a.as_slice(), b.as_slice()))
+            .collect();
+        let b = bundle(&refs, &fam_refs);
+
+        assert_eq!(
+            best_root(&b, 1).as_deref(),
+            Some("wide"),
+            "the fullest first screen wins over the longest line"
+        );
+    }
+
+    #[test]
+    fn best_root_prefers_a_real_line_over_an_isolated_person() {
+        let b = bundle(
+            &["parent", "kid1", "kid2", "alone"],
+            &[(&["parent"], &["kid1", "kid2"])],
+        );
+        assert_eq!(best_root(&b, 3).as_deref(), Some("parent"));
+    }
+
+    #[test]
+    fn best_root_is_none_for_an_empty_bundle() {
+        let b = json!({"manifest": {"axgf": "1.0"}, "persons": {}, "families": {}});
+        assert_eq!(best_root(&b, 3), None);
+    }
+
+    #[test]
+    fn best_root_terminates_on_a_parentage_cycle() {
+        let b = bundle(&["a", "b"], &[(&["a"], &["b"]), (&["b"], &["a"])]);
+        // Nonsense data, but it must return rather than spin.
+        assert!(best_root(&b, 3).is_some());
+    }
+
+    #[test]
+    fn a_subtree_walk_terminates_on_a_parentage_cycle() {
+        let b = bundle(&["a", "b"], &[(&["a"], &["b"]), (&["b"], &["a"])]);
+        let s = select_subtree(&b, "a", 5, 5);
+        assert!(s.ids.contains("a") && s.ids.contains("b"));
     }
 
     #[test]

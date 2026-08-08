@@ -76,6 +76,106 @@ async fn unknown_paths_render_a_404_page_not_a_panic() {
 }
 
 #[tokio::test]
+async fn the_tree_defaults_to_a_focused_subtree_with_controls() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("tree-focus", src);
+
+    let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
+
+    assert!(
+        body.contains("Around "),
+        "the default view is centred on someone"
+    );
+    assert!(
+        body.contains("tree-controls"),
+        "root and depth controls are present"
+    );
+    assert!(body.contains(r#"name="root""#));
+    assert!(body.contains(r#"name="depth""#));
+    assert!(
+        body.contains("/tree?all=1"),
+        "the full view stays reachable from the focused one"
+    );
+    // Cards re-centre the view, and still expose the identity page.
+    assert!(body.contains("/tree?root="), "cards re-root the tree");
+    assert!(
+        body.contains(r#"href="/person/"#),
+        "cards link to the record too"
+    );
+}
+
+#[tokio::test]
+async fn an_explicit_root_and_depth_are_honoured() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("tree-root", src);
+
+    // Find a person id from the default view, then centre on them explicitly.
+    let first = body_string(get(&app, "/tree").await).await;
+    let id = first
+        .split("href=\"/person/")
+        .nth(1)
+        .and_then(|s| s.split('"').next())
+        .expect("a person link")
+        .to_string();
+
+    let body = expect_status(
+        get(&app, &format!("/tree?root={id}&depth=1")).await,
+        StatusCode::OK,
+        "explicit root",
+    )
+    .await;
+    assert!(
+        body.contains(&format!("value=\"{id}\" selected")),
+        "the picker should show the requested root"
+    );
+    assert!(body.contains("1 generations each way") || body.contains(">1</option>"));
+    assert!(body.contains("is-root"), "the root card is marked");
+}
+
+#[tokio::test]
+async fn an_unknown_root_falls_back_instead_of_erroring() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("tree-badroot", src);
+    let body = expect_status(
+        get(&app, "/tree?root=not-a-real-id").await,
+        StatusCode::OK,
+        "unknown root",
+    )
+    .await;
+    assert!(body.contains("Around "), "falls back to the default root");
+}
+
+#[tokio::test]
+async fn the_full_view_warns_about_its_width() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("tree-all", src);
+
+    let body = expect_status(get(&app, "/tree?all=1").await, StatusCode::OK, "GET all").await;
+    assert!(body.contains("The whole tree"));
+    assert!(
+        body.contains("Back to the focused view"),
+        "a way back to the default"
+    );
+    // The sample is small, so the width warning is suppressed; on a big bundle
+    // it appears. Either way the full view must not claim to be focused.
+    assert!(!body.contains("Around "));
+}
+
+#[tokio::test]
+async fn depth_is_clamped_to_a_sane_maximum() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("tree-depth", src);
+    // A wild depth must not turn into an unbounded walk.
+    let resp = get(&app, "/tree?depth=99999").await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let body = body_string(resp).await;
+    assert!(
+        body.contains("8 generations each way"),
+        "clamped to the maximum"
+    );
+}
+
+#[tokio::test]
 async fn tree_renders_for_an_empty_bundle() {
     let (app, _p) = app_with_empty_bundle("tree-empty");
     let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;

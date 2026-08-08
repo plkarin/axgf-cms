@@ -1,6 +1,6 @@
 //! Public, read-only pages.
 
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -176,18 +176,94 @@ fn showcase_highlights(flat: &Value) -> Vec<Value> {
     out
 }
 
-/// `GET /tree` — the whole bundle in one scrollable page.
-pub async fn tree(State(state): State<Shared>, headers: HeaderMap) -> Response {
+/// Query parameters for `/tree`.
+#[derive(serde::Deserialize)]
+pub struct TreeQuery {
+    /// Centre the view on this person. Defaults to whoever's surroundings
+    /// make the fullest first screen at the requested depth.
+    #[serde(default)]
+    root: Option<String>,
+    /// Generations shown in each direction.
+    #[serde(default)]
+    depth: Option<usize>,
+    /// Draw every person in the bundle instead of a focused subtree.
+    #[serde(default)]
+    all: Option<String>,
+}
+
+/// Depth shown above and below the root when none is requested.
+const DEFAULT_DEPTH: usize = 3;
+/// Upper bound on depth. Past this a "focused" view is the whole bundle again.
+const MAX_DEPTH: usize = 8;
+
+/// `GET /tree` — a focused subtree by default, the whole bundle with `?all=1`.
+///
+/// The full view is laid out correctly but is not usable on a real file: the
+/// operator's bundle puts 283 people in generation 0, which is a canvas
+/// 17,992px wide. Nobody scrolls that far to find an ancestor, so the default
+/// is a few dozen people around one person, and every card re-roots the view.
+pub async fn tree(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<TreeQuery>,
+) -> Response {
     let is_admin = auth::is_admin(&headers, state.admin_token());
+    let show_all = q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty());
+    let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
+
     let started = std::time::Instant::now();
-    let layout = state.read(crate::tree::layout);
+    let (layout, focus, roster) = state.read(|flat| {
+        // The root picker lists everyone by name, so it is built regardless of
+        // which view is showing.
+        let roster = person_roster(flat);
+
+        if show_all {
+            return (crate::tree::layout(flat), None, roster);
+        }
+
+        let root = q
+            .root
+            .clone()
+            .filter(|id| flat.get("persons").and_then(|p| p.get(id)).is_some())
+            .or_else(|| crate::tree::best_root(flat, depth));
+
+        match root {
+            Some(root) => {
+                let sub = crate::tree::select_subtree(flat, &root, depth, depth);
+                let l = crate::tree::layout_focused(flat, &sub);
+                let name = flat
+                    .get("persons")
+                    .and_then(|p| p.get(&root))
+                    .map(view::person_display_name)
+                    .unwrap_or_else(|| "[Unknown]".into());
+                let focus = json!({
+                    "root": root,
+                    "root_name": name,
+                    "ancestors": sub.ancestor_count,
+                    "descendants": sub.descendant_count,
+                    "spouses": sub.spouse_count,
+                });
+                (l, Some(focus), roster)
+            }
+            // An empty bundle has nobody to focus on.
+            None => (crate::tree::layout(flat), None, roster),
+        }
+    });
     let elapsed = started.elapsed();
+
     tracing::debug!(
-        people = layout.person_count,
+        drawn = layout.person_count,
+        total = layout.total_person_count,
         edges = layout.edges.len(),
         ms = elapsed.as_secs_f64() * 1000.0,
+        all = show_all,
         "tree laid out"
     );
+
+    // The warning that states the canvas width sits above the full view only,
+    // so the focused path must not pay for a second whole-bundle layout to
+    // compute a number it never shows.
+    let full_width = layout.width;
 
     render::page(
         "tree.html",
@@ -195,8 +271,29 @@ pub async fn tree(State(state): State<Shared>, headers: HeaderMap) -> Response {
             nav => "tree",
             is_admin,
             layout,
+            focus,
+            roster,
+            depth,
+            show_all,
+            max_depth => MAX_DEPTH,
+            full_width => full_width.round() as i64,
         },
     )
+}
+
+/// Every person as `{id, name}`, sorted by name, for the root picker.
+fn person_roster(flat: &Value) -> Vec<Value> {
+    let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
+        return Vec::new();
+    };
+    let mut out: Vec<(String, String)> = persons
+        .iter()
+        .map(|(id, p)| (view::person_display_name(p), id.clone()))
+        .collect();
+    out.sort();
+    out.into_iter()
+        .map(|(name, id)| json!({"id": id, "name": name}))
+        .collect()
 }
 
 /// `GET /person/:id` — everything known about one person.

@@ -1,24 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Tree — axgf-cms{% endblock %}
+{% block title %}
+  {%- if focus %}{{ focus.root_name }} — tree{% else %}Whole tree{% endif %} — axgf-cms
+{%- endblock %}
 {% block main_class %}wide{% endblock %}
 
 {% block content %}
 
 <div class="tree-head">
   <div>
-    <h1>The whole tree</h1>
-    <p class="lede">
-      Oldest at the bottom, youngest at the top — scroll upward through time.
-      Connector opacity is the relationship's confidence: a faint line is a
-      claim the record is not sure of.
-    </p>
+    {% if focus %}
+      <h1>Around {{ focus.root_name }}</h1>
+      <p class="lede">
+        {{ focus.ancestors }} ancestors, {{ focus.descendants }} descendants and
+        {{ focus.spouses }} partners, {{ depth }} generations each way. Oldest at
+        the bottom. Connector opacity is the relationship's confidence — a faint
+        line is a claim the record is not sure of.
+      </p>
+    {% else %}
+      <h1>The whole tree</h1>
+      <p class="lede">
+        Every person in the bundle. Oldest at the bottom, youngest at the top.
+        Connector opacity is the relationship's confidence.
+      </p>
+    {% endif %}
   </div>
   <form class="tree-search" onsubmit="return false">
-    <label for="tree-filter">Filter by name</label>
+    <label for="tree-filter">Filter visible cards</label>
     <input type="text" id="tree-filter" placeholder="Type a name…" autocomplete="off" spellcheck="false">
     <span id="tree-filter-count" class="small muted"></span>
   </form>
 </div>
+
+{% if roster %}
+<form class="tree-controls" method="get" action="/tree">
+  <div class="tc-field">
+    <label for="root">Centre on</label>
+    <select id="root" name="root">
+      {% for p in roster %}
+        <option value="{{ p.id }}"
+          {%- if focus and p.id == focus.root %} selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="tc-field">
+    <label for="depth">Generations each way</label>
+    <select id="depth" name="depth">
+      {% for d in range(1, max_depth + 1) %}
+        <option value="{{ d }}" {% if d == depth %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn primary" type="submit">Show</button>
+  {% if show_all %}
+    <a class="btn" href="/tree">Back to the focused view</a>
+  {% else %}
+    <a class="btn" href="/tree?all=1">Show all {{ layout.total_person_count }}</a>
+  {% endif %}
+</form>
+{% endif %}
+
+{% if show_all and layout.person_count > 40 %}
+<div class="notice warn">
+  <p>
+    <strong>This view is {{ full_width }}px wide.</strong>
+    Every generation is one row, and the widest one here sets that width — on a
+    1500px screen that is {{ (full_width / 1500) | round | int }} screens of
+    horizontal scrolling. The <a href="/tree">focused view</a> shows a few dozen
+    people around one person instead, and every card re-centres it.
+  </p>
+</div>
+{% endif %}
 
 <div class="tree-legend small">
   <span class="muted">Confidence:</span>
@@ -27,7 +78,8 @@
   <span class="lg"><i class="conf-dot" data-band="medium"></i> medium</span>
   <span class="lg"><i class="conf-dot" data-band="low"></i> speculative</span>
   <span class="muted" style="margin-left:auto">
-    {{ layout.person_count }} people · {{ layout.generation_count }} generations
+    {{ layout.person_count }} of {{ layout.total_person_count }} people ·
+    {{ layout.generation_count }} generations
     {%- if layout.unplaced_count %} · {{ layout.unplaced_count }} unplaced{% endif %}
   </span>
 </div>
@@ -43,11 +95,21 @@
 </div>
 {% endif %}
 
-{% if layout.person_count == 0 %}
+{% if layout.total_person_count == 0 %}
   <div class="notice">
     <p>This bundle has no people yet. <a href="/convert">Convert a GEDCOM</a> to fill it.</p>
   </div>
+{% elif layout.person_count == 0 %}
+  <div class="notice">
+    <p>Nobody to draw for that selection. <a href="/tree">Start from the default view</a>.</p>
+  </div>
 {% else %}
+
+{% if not show_all %}
+<p class="small muted tree-hint">
+  Click any card to re-centre the tree on that person; the ↗ opens their full record.
+</p>
+{% endif %}
 
 <div class="tree-scroll">
   <div id="tree-canvas" class="tree-canvas"
@@ -68,16 +130,21 @@
         <span class="muted">{{ band.sublabel }}</span>
       </div>
       {% for c in band.cards %}
-      <a class="tcard" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
-         href="/person/{{ c.id }}"
-         style="left:{{ c.x }}px;top:{{ c.y }}px">
+      <div class="tcard{% if c.is_root %} is-root{% endif %}"
+           data-sex="{{ c.sex }}" data-search="{{ c.search }}"
+           style="left:{{ c.x }}px;top:{{ c.y }}px">
+        {# The card body re-centres the view; the corner link opens the record. #}
+        <a class="tcard-hit" href="/tree?root={{ c.id }}&depth={{ depth }}"
+           title="Centre the tree on {{ c.name }}"><span class="sr-only">Centre on {{ c.name }}</span></a>
+        <a class="tcard-open" href="/person/{{ c.id }}"
+           title="Open {{ c.name }}'s full record">↗</a>
         <span class="tname">{{ c.name }}</span>
         <span class="tdates">
           {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
           {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
               title="{{ c.conf_label }}"></i>{% endif %}
         </span>
-      </a>
+      </div>
       {% endfor %}
     {% endfor %}
 

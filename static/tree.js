@@ -57,3 +57,49 @@
     if (first) first.scrollIntoView({ block: 'center', inline: 'center' });
   });
 })();
+
+/* Hover highlight.
+ *
+ * The static layout removes every crossing it can and colours the ones it
+ * cannot, but where two lines still meet the eye can lose the thread. Hovering
+ * a card raises that person's own connectors to full and dims the rest, which
+ * resolves the ambiguity instantly — the one interaction worth a few lines of
+ * vanilla JS. It touches opacity only; hue stays put, because the two encode
+ * different things (a raised line is the one you are looking at, a coloured one
+ * is one that crosses another). */
+(function () {
+  var canvas = document.getElementById('tree-canvas');
+  if (!canvas) return;
+  var wires = Array.prototype.slice.call(canvas.querySelectorAll('.wire'));
+  if (!wires.length) return;
+
+  function highlight(id) {
+    for (var i = 0; i < wires.length; i++) {
+      var w = wires[i];
+      var mine = w.dataset.from === id || w.dataset.to === id;
+      w.style.opacity = mine ? '1' : '0.06';
+      if (mine) {
+        w.classList.add('lit');
+      } else {
+        w.classList.remove('lit');
+      }
+    }
+  }
+  function reset() {
+    for (var i = 0; i < wires.length; i++) {
+      var w = wires[i];
+      w.style.opacity = w.dataset.base || '';
+      w.classList.remove('lit');
+    }
+  }
+
+  var cards = canvas.querySelectorAll('.tcard');
+  for (var i = 0; i < cards.length; i++) {
+    (function (card) {
+      var id = card.dataset.id;
+      if (!id) return;
+      card.addEventListener('mouseenter', function () { highlight(id); });
+      card.addEventListener('mouseleave', reset);
+    })(cards[i]);
+  }
+})();

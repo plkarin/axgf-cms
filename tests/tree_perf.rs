@@ -130,6 +130,31 @@ async fn tree_renders_a_full_size_bundle_well_under_a_second() {
 }
 
 #[tokio::test]
+async fn crossings_fall_after_ordering_on_the_real_bundle() {
+    // The point of the change, measured: how many descent edges cross before
+    // the barycentre sweeps, and how many after. Reported for both the real
+    // bundle (via AXGF_CMS_BENCH_BUNDLE) and the synthetic stand-in.
+    let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
+        Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
+        _ => synthetic_bundle_path("cross-src"),
+    };
+    let dir = scratch("cross");
+    let live = dir.join("bundle.axgf");
+    std::fs::copy(&bundle, &live).expect("copy bundle");
+    let state = axgf_cms::AppState::load_or_seed(&live, "t".into(), None).expect("load bundle");
+    let (before, after) = state.read(axgf_cms::tree::crossings_before_after);
+
+    eprintln!(
+        "crossings over {}: before {before}, after {after}",
+        bundle.display()
+    );
+    assert!(
+        after <= before,
+        "ordering must not increase crossings: {before} -> {after}"
+    );
+}
+
+#[tokio::test]
 async fn the_full_view_still_places_every_person() {
     let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
         Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),

@@ -458,10 +458,22 @@ pub struct Edge {
     pub kind: &'static str,
     /// SVG path data.
     pub d: String,
-    /// Opacity, driven by the relationship's confidence.
+    /// Opacity, driven by the relationship's confidence. Encodes *certainty*,
+    /// and nothing else — a faint edge is an uncertain claim.
     pub opacity: f64,
     pub band: &'static str,
     pub title: String,
+    /// The two person ids the edge connects: for a parent edge the anchoring
+    /// parent and the child, for a spouse edge the two partners. Drives the
+    /// hover highlight, which raises a person's own edges and dims the rest.
+    pub from: String,
+    pub to: String,
+    /// A hue from a small fixed palette, set only on the descent edges that
+    /// actually cross another. It encodes *crossing*, a different thing from
+    /// opacity's certainty, so the eye can follow one line through an
+    /// intersection. `None` leaves the edge the default ink — colour is only
+    /// meaningful because it is rare.
+    pub hue: Option<&'static str>,
 }
 
 /// One horizontal row of cards.
@@ -772,6 +784,478 @@ pub fn layout_focused(flat: &Value, subtree: &Subtree) -> TreeLayout {
     layout_subset(flat, Some(&subtree.ids), Some(&subtree.root))
 }
 
+// ---------------------------------------------------------------------------
+// Within-row ordering: barycentre with crossing minimisation
+// ---------------------------------------------------------------------------
+
+/// Hues for the residual crossings. The Okabe–Ito qualitative set: eight
+/// colours chosen to stay distinct under the common forms of colour blindness.
+/// Small on purpose — colour is a signal here, not decoration, so it has to be
+/// rare to mean anything.
+const CROSSING_HUES: [&str; 8] = [
+    "#e69f00", "#0072b2", "#009e73", "#cc79a7", "#d55e00", "#56b4e9", "#f0e442", "#000000",
+];
+
+/// A unit the ordering permutes as one: a contracted couple, or a lone person.
+/// Keeping partners inside a single unit is what guarantees they stay adjacent
+/// through every sweep.
+type Unit = Vec<String>;
+
+/// Everything the ordering pass needs about the graph, in the terms it works
+/// in: rows of units, and the drawn descent edges as (parent, child) pairs.
+struct Ordered {
+    /// Generation -> people, left to right, after minimisation.
+    rows: BTreeMap<i64, Vec<String>>,
+    /// Crossings remaining in `rows` — reported, and the test oracle.
+    crossings: usize,
+    /// The descent edges that still cross something, each given a hue so one
+    /// line can be traced through an intersection.
+    hues: BTreeMap<(String, String), &'static str>,
+}
+
+/// The anchoring parent of `child`: the parent that sits directly below it and
+/// therefore carries the drawn connector. That is the *deepest* parent present
+/// (a married-in spouse with shallower ancestry shares the couple's row, so
+/// both are equally deep; the tie breaks on id so the choice is deterministic
+/// and identical everywhere it is recomputed).
+fn anchor_parent<'a>(
+    parents: &'a [String],
+    gen: &BTreeMap<String, i64>,
+    present: &impl Fn(&str) -> bool,
+) -> Option<&'a String> {
+    parents.iter().filter(|p| present(p)).max_by(|a, b| {
+        gen.get(*a)
+            .copied()
+            .unwrap_or(0)
+            .cmp(&gen.get(*b).copied().unwrap_or(0))
+            // Equal generation: prefer the smaller id, so pick the one that
+            // sorts *greater* under reversed id comparison.
+            .then_with(|| b.cmp(a))
+    })
+}
+
+/// Column index of every person in `rows`, i.e. its left-to-right position
+/// within its own row. This is the coordinate barycentres and crossings are
+/// both measured in.
+fn column_index(rows: &BTreeMap<i64, Vec<String>>) -> BTreeMap<String, usize> {
+    let mut col = BTreeMap::new();
+    for people in rows.values() {
+        for (i, id) in people.iter().enumerate() {
+            col.insert(id.clone(), i);
+        }
+    }
+    col
+}
+
+/// Count crossings between the drawn descent edges.
+///
+/// For each pair of adjacent layers it counts *inversions*: two edges whose
+/// parents are in one horizontal order while their children are in the
+/// opposite one must cross somewhere between the rows. Summed over every
+/// adjacent pair, that is the number of intersections on the canvas — the
+/// quantity the sweeps try to reduce, and the oracle the tests assert on.
+fn count_crossings(
+    rows: &BTreeMap<i64, Vec<String>>,
+    anchor_of: &BTreeMap<String, String>,
+) -> usize {
+    let col = column_index(rows);
+    let mut total = 0usize;
+    // Bucket edges by the child's layer, so each bucket is one adjacent pair.
+    let mut by_layer: BTreeMap<i64, Vec<(usize, usize)>> = BTreeMap::new();
+    for (&g, people) in rows {
+        for child in people {
+            let Some(parent) = anchor_of.get(child) else {
+                continue;
+            };
+            let (Some(&pc), Some(&cc)) = (col.get(parent), col.get(child)) else {
+                continue;
+            };
+            by_layer.entry(g).or_default().push((pc, cc));
+        }
+    }
+    for edges in by_layer.values_mut() {
+        // Sort by parent column, then child column; the number of crossings is
+        // then the number of inversions in the child-column sequence. A Fenwick
+        // tree counts them in O(e log e), so the widest generation (161 people)
+        // does not turn every sweep into quadratic work.
+        edges.sort_unstable();
+        let width = rows.values().map(Vec::len).max().unwrap_or(0).max(1);
+        let mut seen = vec![0u32; width + 1];
+        for (placed, &(_, cc)) in edges.iter().enumerate() {
+            // Children already placed that sit to the right of this one cross it.
+            total += placed - fenwick_prefix(&seen, cc + 1);
+            fenwick_add(&mut seen, cc + 1);
+        }
+    }
+    total
+}
+
+/// Fenwick (binary indexed) tree: sum over `[1, i]`, 1-based.
+fn fenwick_prefix(tree: &[u32], mut i: usize) -> usize {
+    let mut sum = 0usize;
+    while i > 0 {
+        sum += tree[i] as usize;
+        i -= i & i.wrapping_neg();
+    }
+    sum
+}
+
+/// Fenwick (binary indexed) tree: add one at index `i`, 1-based.
+fn fenwick_add(tree: &mut [u32], mut i: usize) {
+    while i < tree.len() {
+        tree[i] += 1;
+        i += i & i.wrapping_neg();
+    }
+}
+
+/// Sort each layer once, by the mean column of its neighbours in the adjacent
+/// layer. `neighbours` yields the neighbour ids of a person on the side being
+/// swept towards (parents for a downward sweep, children for an upward one).
+/// Layers are visited in `gen_order` so the side already fixed this sweep is
+/// the side the barycentre reads.
+fn sweep(
+    rows: &mut BTreeMap<i64, Vec<String>>,
+    units_by_gen: &BTreeMap<i64, Vec<Unit>>,
+    gen_order: &[i64],
+    neighbours: &BTreeMap<String, Vec<String>>,
+    birth_key: &impl Fn(&str) -> (i64, String),
+) {
+    let mut col = column_index(rows);
+    for &g in gen_order {
+        let Some(units) = units_by_gen.get(&g) else {
+            continue;
+        };
+        let mut order = units.clone();
+        let barycentre = |unit: &Unit| -> f64 {
+            let cols: Vec<f64> = unit
+                .iter()
+                .filter_map(|id| neighbours.get(id))
+                .flatten()
+                .filter_map(|n| col.get(n))
+                .map(|c| *c as f64)
+                .collect();
+            if cols.is_empty() {
+                // No neighbour on this side: leave it where it was. f64::MAX
+                // sends it to the end, and a stable sort keeps such units in
+                // their current relative order.
+                f64::MAX
+            } else {
+                cols.iter().sum::<f64>() / cols.len() as f64
+            }
+        };
+        let unit_key = |unit: &Unit| -> (i64, String) {
+            unit.iter()
+                .map(|id| birth_key(id))
+                .min()
+                .unwrap_or((i64::MAX, String::new()))
+        };
+        order.sort_by(|a, b| {
+            barycentre(a)
+                .partial_cmp(&barycentre(b))
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| unit_key(a).cmp(&unit_key(b)))
+        });
+        let people: Vec<String> = order.into_iter().flatten().collect();
+        for (i, id) in people.iter().enumerate() {
+            col.insert(id.clone(), i);
+        }
+        rows.insert(g, people);
+    }
+}
+
+/// Give every descent edge involved in a crossing a hue, so the two lines
+/// through an intersection are told apart. This is a graph colouring: build the
+/// "these two edges cross" graph and greedily assign each edge the lowest
+/// palette colour none of its already-coloured crossing partners uses, which
+/// guarantees the pair at any single intersection differ.
+fn assign_hues(
+    rows: &BTreeMap<i64, Vec<String>>,
+    anchor_of: &BTreeMap<String, String>,
+) -> BTreeMap<(String, String), &'static str> {
+    // One drawn edge, as (parent column, child column, (parent id, child id)).
+    type LayerEdge = (usize, usize, (String, String));
+    let col = column_index(rows);
+    // Edges, bucketed by layer as in `count_crossings`.
+    let mut by_layer: BTreeMap<i64, Vec<LayerEdge>> = BTreeMap::new();
+    for (&g, people) in rows {
+        for child in people {
+            let Some(parent) = anchor_of.get(child) else {
+                continue;
+            };
+            let (Some(&pc), Some(&cc)) = (col.get(parent), col.get(child)) else {
+                continue;
+            };
+            by_layer
+                .entry(g)
+                .or_default()
+                .push((pc, cc, (parent.clone(), child.clone())));
+        }
+    }
+
+    // Which edges cross which. Keyed by (parent, child), deterministically.
+    let mut crosses: BTreeMap<(String, String), BTreeSet<(String, String)>> = BTreeMap::new();
+    for edges in by_layer.values() {
+        for i in 0..edges.len() {
+            for j in (i + 1)..edges.len() {
+                let (a, b) = (&edges[i], &edges[j]);
+                // A crossing is a pair ordered one way by parent and the other
+                // by child.
+                let inverted = (a.0 < b.0 && a.1 > b.1) || (a.0 > b.0 && a.1 < b.1);
+                if inverted {
+                    crosses.entry(a.2.clone()).or_default().insert(b.2.clone());
+                    crosses.entry(b.2.clone()).or_default().insert(a.2.clone());
+                }
+            }
+        }
+    }
+
+    let mut hues: BTreeMap<(String, String), &'static str> = BTreeMap::new();
+    for edge in crosses.keys() {
+        let used: BTreeSet<&'static str> = crosses[edge]
+            .iter()
+            .filter_map(|other| hues.get(other).copied())
+            .collect();
+        let hue = CROSSING_HUES
+            .iter()
+            .copied()
+            .find(|h| !used.contains(h))
+            .unwrap_or(CROSSING_HUES[0]);
+        hues.insert(edge.clone(), hue);
+    }
+    hues
+}
+
+/// Order the people of every generation to minimise descent-edge crossings.
+///
+/// The layer assignment is a given (the union-contracted longest-path pass);
+/// this permutes *within* each layer. It contracts each couple into one unit so
+/// spouses cannot be separated, seeds a deterministic order (birth date, then
+/// id), then alternates downward and upward barycentre sweeps — order by the
+/// mean position of parents, then of children — keeping the best ordering seen
+/// rather than the last, because the crossing count can oscillate. Ten sweeps
+/// is the cap; in practice it settles in two or three.
+fn compute_ordering(
+    persons: &serde_json::Map<String, Value>,
+    families: &[FamilyEdges],
+    gen: &BTreeMap<String, i64>,
+    only: Option<&BTreeSet<String>>,
+) -> Ordered {
+    let wanted = |id: &String| only.is_none_or(|set| set.contains(id));
+
+    // Drawn people, grouped by layer.
+    let mut by_gen: BTreeMap<i64, Vec<String>> = BTreeMap::new();
+    for (id, g) in gen {
+        if persons.contains_key(id) && wanted(id) {
+            by_gen.entry(*g).or_default().push(id.clone());
+        }
+    }
+    let present = |id: &str| {
+        gen.contains_key(id) && persons.contains_key(id) && only.is_none_or(|s| s.contains(id))
+    };
+
+    // Birth-date sort key, for a stable tie-break. A missing or unparseable
+    // year sorts last, so dated people anchor the order.
+    let birth_key = |id: &str| -> (i64, String) {
+        let year = persons
+            .get(id)
+            .and_then(|p| p.get("birth"))
+            .and_then(|b| b.get("date"))
+            .and_then(|d| d.get("value"))
+            .and_then(Value::as_str)
+            .and_then(parse_year)
+            .unwrap_or(i64::MAX);
+        (year, id.to_string())
+    };
+
+    // Partners, for grouping into units. A person who partners in several
+    // families joins the first unit encountered; a single row cannot split
+    // them across units anyway.
+    let mut partners: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for f in families {
+        for a in &f.parents {
+            for b in &f.parents {
+                if a != b {
+                    partners.entry(a.clone()).or_default().push(b.clone());
+                }
+            }
+        }
+    }
+
+    // The drawn descent edges, and both neighbour maps derived from them, so
+    // barycentres and crossings measure exactly the connectors on screen.
+    let mut anchor_of: BTreeMap<String, String> = BTreeMap::new();
+    let mut parents_side: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    let mut children_side: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for f in families {
+        for (child, _) in &f.children {
+            if !present(child) {
+                continue;
+            }
+            let Some(parent) = anchor_parent(&f.parents, gen, &present) else {
+                continue;
+            };
+            anchor_of.insert(child.clone(), parent.clone());
+            parents_side
+                .entry(child.clone())
+                .or_default()
+                .push(parent.clone());
+            children_side
+                .entry(parent.clone())
+                .or_default()
+                .push(child.clone());
+        }
+    }
+
+    // Build the units of each layer, in a deterministic seed order.
+    let mut units_by_gen: BTreeMap<i64, Vec<Unit>> = BTreeMap::new();
+    for (&g, row) in &by_gen {
+        let members: BTreeSet<&String> = row.iter().collect();
+        let mut seed = row.clone();
+        seed.sort_by_key(|a| birth_key(a));
+        let mut seen: BTreeSet<String> = BTreeSet::new();
+        let mut units: Vec<Unit> = Vec::new();
+        for id in &seed {
+            if seen.contains(id) {
+                continue;
+            }
+            let mut unit = vec![id.clone()];
+            seen.insert(id.clone());
+            if let Some(ps) = partners.get(id) {
+                for p in ps {
+                    if members.contains(p) && seen.insert(p.clone()) {
+                        unit.push(p.clone());
+                    }
+                }
+            }
+            // Deterministic order within a couple.
+            unit.sort_by_key(|a| birth_key(a));
+            units.push(unit);
+        }
+        units_by_gen.insert(g, units);
+    }
+
+    // Seed rows from the units in their deterministic order.
+    let mut rows: BTreeMap<i64, Vec<String>> = units_by_gen
+        .iter()
+        .map(|(&g, units)| (g, units.iter().flatten().cloned().collect()))
+        .collect();
+
+    let gens_up: Vec<i64> = rows.keys().copied().collect();
+    let gens_down: Vec<i64> = gens_up.iter().rev().copied().collect();
+
+    let mut best = rows.clone();
+    let mut best_c = count_crossings(&rows, &anchor_of);
+    let mut stale = 0;
+    for it in 0..10 {
+        if it % 2 == 0 {
+            // Downward: order each layer by the mean position of its parents.
+            sweep(
+                &mut rows,
+                &units_by_gen,
+                &gens_up,
+                &parents_side,
+                &birth_key,
+            );
+        } else {
+            // Upward: order each layer by the mean position of its children.
+            sweep(
+                &mut rows,
+                &units_by_gen,
+                &gens_down,
+                &children_side,
+                &birth_key,
+            );
+        }
+        let c = count_crossings(&rows, &anchor_of);
+        if c < best_c {
+            best = rows.clone();
+            best_c = c;
+            stale = 0;
+        } else {
+            stale += 1;
+        }
+        if best_c == 0 || stale >= 2 {
+            break;
+        }
+    }
+
+    let hues = assign_hues(&best, &anchor_of);
+    Ordered {
+        rows: best,
+        crossings: best_c,
+        hues,
+    }
+}
+
+/// The leading four-digit year of a date value like `1923`, `1923-04-12` or
+/// `-0044-03-15`, for ordering only.
+fn parse_year(value: &str) -> Option<i64> {
+    let neg = value.starts_with('-');
+    let digits: String = value
+        .trim_start_matches('-')
+        .chars()
+        .take_while(char::is_ascii_digit)
+        .take(4)
+        .collect();
+    if digits.is_empty() {
+        return None;
+    }
+    let y: i64 = digits.parse().ok()?;
+    Some(if neg { -y } else { y })
+}
+
+/// Crossing counts before and after minimisation, for reporting. "Before" is
+/// the deterministic seed order (couples grouped, birth-date sorted, no
+/// sweeps); "after" is the minimised ordering.
+pub fn crossings_before_after(flat: &Value) -> (usize, usize) {
+    let families = family_edges(flat);
+    let empty = serde_json::Map::new();
+    let persons = flat
+        .get("persons")
+        .and_then(Value::as_object)
+        .unwrap_or(&empty);
+    let gen = assign_generations(flat).gen;
+
+    // "Before": seed order only — build the ordering but read the crossing
+    // count of the seed rather than the swept result.
+    let mut anchor_of: BTreeMap<String, String> = BTreeMap::new();
+    let present = |id: &str| gen.contains_key(id) && persons.contains_key(id);
+    for f in &families {
+        for (child, _) in &f.children {
+            if !present(child) {
+                continue;
+            }
+            if let Some(parent) = anchor_parent(&f.parents, &gen, &present) {
+                anchor_of.insert(child.clone(), parent.clone());
+            }
+        }
+    }
+    let birth_key = |id: &str| -> (i64, String) {
+        let year = persons
+            .get(id)
+            .and_then(|p| p.get("birth"))
+            .and_then(|b| b.get("date"))
+            .and_then(|d| d.get("value"))
+            .and_then(Value::as_str)
+            .and_then(parse_year)
+            .unwrap_or(i64::MAX);
+        (year, id.to_string())
+    };
+    let mut seed: BTreeMap<i64, Vec<String>> = BTreeMap::new();
+    for (id, g) in &gen {
+        if persons.contains_key(id) {
+            seed.entry(*g).or_default().push(id.clone());
+        }
+    }
+    for row in seed.values_mut() {
+        row.sort_by_key(|a| birth_key(a));
+    }
+    let before = count_crossings(&seed, &anchor_of);
+
+    let after = compute_ordering(persons, &families, &gen, None).crossings;
+    (before, after)
+}
+
 /// Lay out the bundle, optionally restricted to a set of people.
 ///
 /// Restricting here rather than in a separate code path means the focused view
@@ -802,110 +1286,31 @@ pub fn layout_subset(
         }
     }
 
-    let max_gen = by_gen.keys().copied().max().unwrap_or(0);
-
-    // Order within a row.
+    // Order within each row to minimise crossings.
     //
     // Two things make a row readable. Partners must sit next to each other, or
     // their connector stretches across a canvas that is tens of thousands of
     // pixels wide — the operator's widest generation is 161 people. And
-    // siblings must sit under their parents, or the parent connectors cross
+    // children must sit under their parents, or the descent connectors cross
     // into a thicket.
     //
-    // So each row is ordered as *couples first, then barycentre*: persons are
-    // grouped into units by shared partnership, and the units are sorted by
-    // the mean position of their parents in the row below. One pass, cheap,
-    // and enough to make 767 people legible.
+    // Both fall out of barycentre ordering ([`compute_ordering`]): couples are
+    // contracted into units that move together, and the units are ordered by
+    // the mean position of their neighbours in the adjacent layer, sweeping
+    // down then up until the crossing count stops falling. It replaces the
+    // single downward pass that left the operator's parents' edges crossed.
     let families = family_edges(flat);
-    let mut parents_of_child: BTreeMap<String, Vec<String>> = BTreeMap::new();
-    for f in &families {
-        for (c, _) in &f.children {
-            parents_of_child
-                .entry(c.clone())
-                .or_default()
-                .extend(f.parents.iter().cloned());
-        }
+    let ordering = compute_ordering(persons, &families, &generations.gen, only);
+    for (g, people) in &ordering.rows {
+        by_gen.insert(*g, people.clone());
     }
-
+    let max_gen = by_gen.keys().copied().max().unwrap_or(0);
     let name_of = |id: &str| -> String {
         persons
             .get(id)
             .map(view::person_display_name)
             .unwrap_or_else(|| "[Unknown]".into())
     };
-
-    // Partners, for grouping. A person who partners in several families joins
-    // the first one encountered; splitting them across units is impossible in
-    // a single row anyway.
-    let mut partners: BTreeMap<String, Vec<String>> = BTreeMap::new();
-    for f in &families {
-        for a in &f.parents {
-            for b in &f.parents {
-                if a != b {
-                    partners.entry(a.clone()).or_default().push(b.clone());
-                }
-            }
-        }
-    }
-
-    let mut order_index: BTreeMap<String, usize> = BTreeMap::new();
-    for g in 0..=max_gen {
-        let Some(row) = by_gen.get_mut(&g) else {
-            continue;
-        };
-        let members: BTreeSet<&String> = row.iter().collect();
-
-        // Build units of partners who share this row.
-        let mut seen: BTreeSet<String> = BTreeSet::new();
-        let mut units: Vec<Vec<String>> = Vec::new();
-        let mut ordered: Vec<String> = row.clone();
-        ordered.sort_by_key(|id| (name_of(id), id.clone()));
-        for id in &ordered {
-            if seen.contains(id) {
-                continue;
-            }
-            let mut unit = vec![id.clone()];
-            seen.insert(id.clone());
-            if let Some(ps) = partners.get(id) {
-                for p in ps {
-                    if members.contains(p) && !seen.contains(p) {
-                        unit.push(p.clone());
-                        seen.insert(p.clone());
-                    }
-                }
-            }
-            units.push(unit);
-        }
-
-        // Sort units by the mean position of their members' parents in the
-        // row below. Units with no placed parents sort last, by name.
-        let barycentre = |unit: &Vec<String>| -> f64 {
-            let idxs: Vec<f64> = unit
-                .iter()
-                .filter_map(|id| parents_of_child.get(id))
-                .flatten()
-                .filter_map(|p| order_index.get(p))
-                .map(|i| *i as f64)
-                .collect();
-            if idxs.is_empty() {
-                f64::MAX
-            } else {
-                idxs.iter().sum::<f64>() / idxs.len() as f64
-            }
-        };
-        units.sort_by(|a, b| {
-            barycentre(a)
-                .partial_cmp(&barycentre(b))
-                .unwrap_or(std::cmp::Ordering::Equal)
-                .then_with(|| name_of(&a[0]).cmp(&name_of(&b[0])))
-                .then_with(|| a[0].cmp(&b[0]))
-        });
-
-        *row = units.into_iter().flatten().collect();
-        for (i, id) in row.iter().enumerate() {
-            order_index.insert(id.clone(), i);
-        }
-    }
 
     // Unplaced people appear in no family, so a subtree walk can never reach
     // one — unless the root *is* unplaced, which is exactly the case this
@@ -980,7 +1385,13 @@ pub fn layout_subset(
     // Connectors are derived from `positions`, which only holds the people
     // that were drawn, so an edge to someone outside the subtree is dropped
     // rather than dangling off the canvas.
-    let edges = build_edges(&families, &positions, &generations.gen, persons);
+    let edges = build_edges(
+        &families,
+        &positions,
+        &generations.gen,
+        persons,
+        &ordering.hues,
+    );
 
     let drawn = by_gen.values().map(Vec::len).sum::<usize>() + unplaced.len();
 
@@ -1090,6 +1501,7 @@ fn build_edges(
     pos: &BTreeMap<String, (f64, f64)>,
     gen: &BTreeMap<String, i64>,
     persons: &serde_json::Map<String, Value>,
+    hues: &BTreeMap<(String, String), &'static str>,
 ) -> Vec<Edge> {
     let mut edges = Vec::new();
     let name = |id: &str| -> String {
@@ -1098,6 +1510,7 @@ fn build_edges(
             .map(view::person_display_name)
             .unwrap_or_else(|| "[Unknown]".into())
     };
+    let present = |id: &str| pos.contains_key(id);
 
     for f in families {
         // Spouse connector: a horizontal line between partners in the same row.
@@ -1134,6 +1547,9 @@ fn build_edges(
                         name(&pair[1]),
                         c.description
                     ),
+                    from: pair[0].clone(),
+                    to: pair[1].clone(),
+                    hue: None,
                 });
             }
         }
@@ -1145,14 +1561,11 @@ fn build_edges(
             let Some(&(cx, cy)) = pos.get(child) else {
                 continue;
             };
-            // Anchor on the deepest parent, which is the one that set the
-            // child's generation.
-            let anchor = f
-                .parents
-                .iter()
-                .filter(|p| pos.contains_key(*p))
-                .max_by_key(|p| gen.get(*p).copied().unwrap_or(0));
-            let Some(parent) = anchor else { continue };
+            // Anchor on the deepest parent — the same choice the ordering pass
+            // made, so the coloured crossings line up with the drawn ones.
+            let Some(parent) = anchor_parent(&f.parents, gen, &present) else {
+                continue;
+            };
             let Some(&(px, py)) = pos.get(parent) else {
                 continue;
             };
@@ -1171,6 +1584,9 @@ fn build_edges(
                 opacity: opacity_for(&c),
                 band: c.band,
                 title: format!("{} → {} — {}", name(parent), name(child), c.description),
+                from: parent.clone(),
+                to: child.clone(),
+                hue: hues.get(&(parent.clone(), child.clone())).copied(),
             });
         }
     }
@@ -1892,6 +2308,166 @@ mod tests {
         let b = bundle(&["a", "b"], &[(&["a"], &["b"]), (&["b"], &["a"])]);
         let s = select_subtree(&b, "a", 5, 5);
         assert!(s.ids.contains("a") && s.ids.contains("b"));
+    }
+
+    // -- barycentre ordering / crossing minimisation -----------------------
+
+    /// Run the ordering pass over a whole bundle.
+    fn ordered(b: &Value) -> Ordered {
+        compute_ordering(
+            b["persons"].as_object().unwrap(),
+            &family_edges(b),
+            &assign_generations(b).gen,
+            None,
+        )
+    }
+
+    /// Position of `id` within its own row.
+    fn col(rows: &BTreeMap<i64, Vec<String>>, g: i64, id: &str) -> usize {
+        rows[&g].iter().position(|x| x == id).expect("id in row")
+    }
+
+    #[test]
+    fn the_operator_case_is_clean_after_ordering() {
+        // The operator's own complaint, in miniature: two couples in the
+        // parents' generation, whose children are a couple, entered so the
+        // parent edges cross. Saturnina (his mother) and Jacqueline (his
+        // wife's mother) sit in generation 0; he and his wife in generation 1.
+        let b = bundle(
+            &["saturnina", "sat_sp", "jacqueline", "jac_sp", "him", "her"],
+            &[
+                (&["saturnina", "sat_sp"], &["him"]),
+                (&["jacqueline", "jac_sp"], &["her"]),
+                (&["him", "her"], &[]),
+            ],
+        );
+        let ord = ordered(&b);
+        assert_eq!(
+            ord.crossings, 0,
+            "the two parent edges must not cross once ordered"
+        );
+
+        // Each parent sits on the same side as their own child: the affiliation
+        // is legible at a glance because the lines run straight.
+        let him_left = col(&ord.rows, 1, "him") < col(&ord.rows, 1, "her");
+        let sat_left = col(&ord.rows, 0, "saturnina") < col(&ord.rows, 0, "jacqueline");
+        assert_eq!(
+            him_left, sat_left,
+            "his mother must sit on his side, and his wife's mother on hers"
+        );
+    }
+
+    #[test]
+    fn an_unavoidable_crossing_is_kept_minimal_and_coloured() {
+        // Two couples whose children cross-marry: A's children pair with B's
+        // children in two separate unions. A is left of B, yet each has a child
+        // in the other's union — one crossing is forced and cannot be ordered
+        // away.
+        let b = bundle(
+            &["a1", "a2", "b1", "b2", "ax", "ay", "bx", "by"],
+            &[
+                (&["a1", "a2"], &["ax", "ay"]),
+                (&["b1", "b2"], &["bx", "by"]),
+                (&["ax", "bx"], &[]),
+                (&["ay", "by"], &[]),
+            ],
+        );
+        let ord = ordered(&b);
+        assert_eq!(
+            ord.crossings, 1,
+            "exactly the one forced crossing survives, not zero and not more"
+        );
+
+        // The residual crossing's two edges each get a hue, and they differ so
+        // the eye can follow one line through the intersection.
+        let hues: Vec<&'static str> = ord.hues.values().copied().collect();
+        assert_eq!(
+            hues.len(),
+            2,
+            "only the crossing pair is coloured: {:?}",
+            ord.hues
+        );
+        assert_ne!(hues[0], hues[1], "the two crossing lines get distinct hues");
+
+        // And colour is rare: no other edge is tinted.
+        let l = layout(&b);
+        let coloured = l.edges.iter().filter(|e| e.hue.is_some()).count();
+        assert_eq!(coloured, 2, "colour must stay rare to stay meaningful");
+    }
+
+    #[test]
+    fn spouses_stay_adjacent_through_every_sweep() {
+        // A five-deep line with a married-in spouse at each level, plus a
+        // sibling group, so several sweeps actually fire.
+        let b = bundle(
+            &[
+                "g0", "g0s", "g1", "g1s", "g2", "g2s", "g3", "k1", "k2", "k3",
+            ],
+            &[
+                (&["g0", "g0s"], &["g1"]),
+                (&["g1", "g1s"], &["g2"]),
+                (&["g2", "g2s"], &["g3", "k1", "k2", "k3"]),
+            ],
+        );
+        let ord = ordered(&b);
+        for (a, s) in [("g0", "g0s"), ("g1", "g1s"), ("g2", "g2s")] {
+            let g = assign_generations(&b).gen[a];
+            let da = col(&ord.rows, g, a) as i64;
+            let db = col(&ord.rows, g, s) as i64;
+            assert_eq!(
+                (da - db).abs(),
+                1,
+                "{a} and {s} are a couple and must stay adjacent"
+            );
+        }
+    }
+
+    #[test]
+    fn the_layout_is_deterministic_across_runs() {
+        // Same bundle, twice: every card must land on exactly the same spot,
+        // or the tree shifts under the reader between page loads.
+        let b = bundle(
+            &["a1", "a2", "b1", "b2", "c", "d", "e", "f"],
+            &[
+                (&["a1", "a2"], &["c", "d"]),
+                (&["b1", "b2"], &["e", "f"]),
+                (&["c", "e"], &[]),
+            ],
+        );
+        let first = layout(&b);
+        let second = layout(&b);
+        let pos = |l: &TreeLayout| -> Vec<(String, i64, i64)> {
+            let mut v: Vec<(String, i64, i64)> = l
+                .bands
+                .iter()
+                .flat_map(|band| &band.cards)
+                .map(|c| (c.id.clone(), c.x as i64, c.y as i64))
+                .collect();
+            v.sort();
+            v
+        };
+        assert_eq!(pos(&first), pos(&second), "layout must be reproducible");
+    }
+
+    #[test]
+    fn ordering_never_increases_crossings_over_the_seed() {
+        // The pass keeps the best ordering it sees, so its result can only be
+        // as good as, or better than, the deterministic seed order.
+        let b = bundle(
+            &["p1", "p2", "q1", "q2", "r1", "r2", "a", "b", "c"],
+            &[
+                (&["p1", "p2"], &["a"]),
+                (&["q1", "q2"], &["b"]),
+                (&["r1", "r2"], &["c"]),
+                (&["a", "b"], &[]),
+                (&["b", "c"], &[]),
+            ],
+        );
+        let (before, after) = crossings_before_after(&b);
+        assert!(
+            after <= before,
+            "sweeps must not make it worse: {before} -> {after}"
+        );
     }
 
     #[test]

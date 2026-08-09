@@ -402,6 +402,11 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .wire-spouse { stroke-width: 2; stroke-dasharray: none; }
 .wire[data-band="low"] { stroke-dasharray: 3 3; }
 .wire[data-band="medium"] { stroke-dasharray: 6 3; }
+/* A crossing edge carries a hue (set inline) so it can be told apart at the
+   intersection; it is drawn a touch heavier than the default ink. */
+.wire-crossing { stroke-width: 2.25; }
+/* Hover raises a person's own edges to the front of the eye. */
+.wire.lit { stroke-width: 3; }
 
 .band-label {
   position: absolute;

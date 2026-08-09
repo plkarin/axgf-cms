@@ -119,8 +119,10 @@
     <svg class="tree-wires" width="{{ layout.width }}" height="{{ layout.height }}"
          viewBox="0 0 {{ layout.width }} {{ layout.height }}" aria-hidden="true">
       {% for e in layout.edges %}
-      <path d="{{ e.d }}" class="wire wire-{{ e.kind }}" data-band="{{ e.band }}"
-            style="opacity:{{ e.opacity }}"><title>{{ e.title }}</title></path>
+      <path d="{{ e.d }}" class="wire wire-{{ e.kind }}{% if e.hue %} wire-crossing{% endif %}"
+            data-band="{{ e.band }}" data-from="{{ e.from }}" data-to="{{ e.to }}"
+            data-base="{{ e.opacity }}"
+            style="opacity:{{ e.opacity }}{% if e.hue %};stroke:{{ e.hue }}{% endif %}"><title>{{ e.title }}</title></path>
       {% endfor %}
     </svg>
 
@@ -132,7 +134,7 @@
       </div>
       {% for c in band.cards %}
       <div class="tcard{% if c.is_root %} is-root{% endif %}"
-           data-sex="{{ c.sex }}" data-search="{{ c.search }}"
+           data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
            style="left:{{ c.x }}px;top:{{ c.y }}px">
         {# The card body re-centres the view; the corner link opens the record. #}
         <a class="tcard-hit" href="/tree?root={{ c.id }}&depth={{ depth }}"

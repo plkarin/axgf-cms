@@ -313,6 +313,7 @@ pub async fn person(
                 nav => "tree",
                 is_admin,
                 p,
+                max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),
         None => render::error_page(
@@ -321,6 +322,142 @@ pub async fn person(
             "This bundle contains no person with that id.",
         ),
     }
+}
+
+/// A document entity plus the bytes the bundle holds for it, if any.
+struct StoredDocument {
+    mime: String,
+    filename: String,
+    sha256: String,
+    bytes: Vec<u8>,
+}
+
+/// Resolve a document id to its metadata and payload.
+///
+/// `None` covers both "no such document" and "the document exists but this
+/// bundle does not carry the file" — a `referenced` document names something
+/// held elsewhere, and there is nothing here to serve either way.
+fn stored_document(state: &Shared, id: &str) -> Option<StoredDocument> {
+    let (mime, filename, sha256, path) = state.read(|flat| {
+        let d = flat.get("documents")?.get(id)?;
+        let path = d.get("file")?.get("path")?.as_str()?.to_string();
+        Some((
+            d.get("mime_type")
+                .and_then(Value::as_str)
+                .unwrap_or("application/octet-stream")
+                .to_string(),
+            d.get("filename")
+                .and_then(Value::as_str)
+                .unwrap_or("document")
+                .to_string(),
+            d.get("file")
+                .and_then(|f| f.get("sha256"))
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string(),
+            path,
+        ))
+    })?;
+    let bytes = state.attachment(&path)?;
+    Some(StoredDocument {
+        mime,
+        filename,
+        sha256,
+        bytes,
+    })
+}
+
+/// `GET /document/:id/raw` — the stored bytes.
+///
+/// Served with `X-Content-Type-Options: nosniff` always, and as an attachment
+/// for everything except the raster image formats a browser draws as pixels.
+/// The exception matters: an SVG or an HTML file rendered inline from this
+/// origin would run its own script against the viewer's admin session, so
+/// only formats that cannot carry script are shown in the page.
+pub async fn document_raw(State(state): State<Shared>, Path(id): Path<String>) -> Response {
+    let Some(doc) = stored_document(&state, &id) else {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such file",
+            "This bundle has no document with that id, or the document is \
+             recorded without a file — a `referenced` document names something \
+             held somewhere else.",
+        );
+    };
+
+    let disposition = if crate::documents::serve_inline(&doc.mime) {
+        format!("inline; filename=\"{}\"", sanitize_header(&doc.filename))
+    } else {
+        format!(
+            "attachment; filename=\"{}\"",
+            sanitize_header(&doc.filename)
+        )
+    };
+
+    (
+        [
+            (header::CONTENT_TYPE, doc.mime),
+            (header::CONTENT_DISPOSITION, disposition),
+            (
+                header::HeaderName::from_static("x-content-type-options"),
+                "nosniff".to_string(),
+            ),
+            // The payload is immutable: a different file means a different
+            // document id, because uploads never overwrite in place.
+            (header::CACHE_CONTROL, "private, max-age=3600".to_string()),
+        ],
+        doc.bytes,
+    )
+        .into_response()
+}
+
+/// `GET /document/:id/thumb` — a downscaled PNG, or 404 for a non-image.
+pub async fn document_thumb(State(state): State<Shared>, Path(id): Path<String>) -> Response {
+    let Some(doc) = stored_document(&state, &id) else {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such file",
+            "This bundle has no document with that id.",
+        );
+    };
+
+    let png = state
+        .thumbs()
+        .get_or_insert(&id, &doc.sha256, || crate::documents::thumbnail(&doc.bytes));
+
+    let Some(png) = png else {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "Not an image",
+            "There is no thumbnail for this document, because it is not an \
+             image this build can decode.",
+        );
+    };
+
+    (
+        [
+            (header::CONTENT_TYPE, "image/png".to_string()),
+            (
+                header::HeaderName::from_static("x-content-type-options"),
+                "nosniff".to_string(),
+            ),
+            (header::CACHE_CONTROL, "private, max-age=3600".to_string()),
+        ],
+        png,
+    )
+        .into_response()
+}
+
+/// Strip what would let a filename break out of the `Content-Disposition`
+/// quoting or inject a second header.
+fn sanitize_header(name: &str) -> String {
+    name.chars()
+        .map(|c| match c {
+            '"' | '\\' | '\r' | '\n' | '/' => '_',
+            c if c.is_control() => '_',
+            c => c,
+        })
+        .collect()
 }
 
 /// `GET /static/tree.js`

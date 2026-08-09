@@ -92,6 +92,34 @@ relationship left out of the numbering and says so on the page. All 287 couples
 now share a row. On the operator's 767-person, 295-family bundle: focused 16ms,
 full 17ms, down from 143ms and 133ms.
 
+**Attached documents and photographs.** An AXGF bundle already carries binary
+attachments — files under `documents/files/**` inside the ZIP — and
+`import_bundle` and `export_bundle` already round-trip them, so uploading is
+wiring rather than a format change; `axgf-rs` is untouched.
+`POST /admin/person/:id/document` takes a multipart upload, hashes it, and
+writes the Document entity and the bytes in one atomic rewrite, so the picture
+travels inside the `.axgf` rather than beside it. `GET /document/:id/raw`
+serves the stored bytes and `GET /document/:id/thumb` a downscaled PNG, cached
+in memory by document id and content hash under a byte budget so a gallery
+neither re-decodes on every request nor grows without limit. Images render as a
+gallery on the identity page, everything else as a list with a download link,
+and the upload form appears only for an admin.
+
+The type of an upload is read from its own leading bytes, never from the
+filename or the `Content-Type` the client sent, and the check is an allowlist:
+images, PDF, plain text, audio and video are recognised, and anything else —
+every executable format among them — is refused because nothing matched it.
+**SVG is refused outright**, not sanitised: it is a document a browser will run
+scripts from, sanitising it means owning an XML element allowlist, and it has
+no magic number to identify it by in the first place. Any SVG that arrives
+inside a bundle authored elsewhere is served as a download. Every stored file
+is served with `X-Content-Type-Options: nosniff`, and only the raster formats a
+browser draws as pixels are served inline; everything else gets
+`Content-Disposition: attachment`. Uploads are capped at 10 MB each, and the
+admin panel reports the bundle size and warns past `--size-warn-mb`
+(default 200 MB) — the whole bundle is held in memory, so this design suits a
+family archive and not a media library, and the README says so.
+
 **Conversion.** GEDCOM 5.5.1 to AXGF, with entity counts and every diagnostic
 shown before the download link. `GEDCOM_UNRECOGNIZED_TAG` warnings are
 presented as evidence that nothing was silently dropped. Conversion never

@@ -21,6 +21,8 @@ pub fn router(state: Shared) -> Router {
         .route("/", get(public::home))
         .route("/tree", get(public::tree))
         .route("/person/:id", get(public::person))
+        .route("/document/:id/raw", get(public::document_raw))
+        .route("/document/:id/thumb", get(public::document_thumb))
         .route("/convert", get(convert::form))
         .route(
             "/convert/gedcom",
@@ -38,6 +40,14 @@ pub fn router(state: Shared) -> Router {
         .route("/admin/validate", post(admin::validate))
         .route("/admin/dedup", post(admin::dedup))
         .route("/admin/export", get(admin::export))
+        // Declared before the ":kind" routes so the literal "person" segment
+        // and the trailing "document" segment win over the parameter forms.
+        .route(
+            "/admin/person/:id/document",
+            post(admin::upload_document).layer(DefaultBodyLimit::max(
+                crate::documents::MAX_UPLOAD + 64 * 1024,
+            )),
+        )
         .route("/admin/:kind", get(admin::list).post(admin::create))
         .route("/admin/:kind/new", get(admin::new_form))
         .route("/admin/:kind/:id/edit", get(admin::edit_form))

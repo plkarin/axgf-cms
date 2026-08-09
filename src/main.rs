@@ -22,7 +22,8 @@ async fn main() -> Result<()> {
     let seed = cfg.seed_sample.then_some(axgf_cms::SAMPLE_BUNDLE);
     let state = Arc::new(
         AppState::load_or_seed(&cfg.bundle, token.clone(), seed)
-            .context("initialising application state")?,
+            .context("initialising application state")?
+            .with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024)),
     );
 
     let total: usize = state.counts().iter().map(|(_, n)| n).sum();

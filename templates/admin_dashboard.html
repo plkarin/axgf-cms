@@ -6,9 +6,24 @@
 
 <h1>Admin</h1>
 <p class="lede">
-  Editing <code>{{ bundle_path }}</code> — {{ total }} entities.
+  Editing <code>{{ bundle_path }}</code> — {{ total }} entities,
+  {{ attachment_count }} attached file{{ "" if attachment_count == 1 else "s" }},
+  {{ bundle_size }} on disk.
   Every change is written atomically; a refused change leaves the file untouched.
 </p>
+
+{% if bundle_heavy %}
+<div class="notice warn">
+  <p>
+    <strong>This bundle is {{ bundle_size }}.</strong> The whole file is read
+    into memory at startup and held there, so past about {{ size_warn }} the
+    application starts costing real memory and restarts get slow. That design
+    suits a family archive, not a media library — if the attachments are
+    growing without bound, they belong in a file store with the bundle
+    referencing them.
+  </p>
+</div>
+{% endif %}
 
 <h2>Entities</h2>
 <div class="grid cols-4">

@@ -52,6 +52,11 @@ pub struct AppState {
     /// Converted bundles awaiting download. Deliberately separate from the
     /// served bundle: conversion is a utility and must never write over it.
     conversions: crate::convert::ConversionCache,
+    /// Rendered thumbnails, bounded. Decoding a photograph per request is a
+    /// cost that only becomes visible once a gallery has a dozen pictures.
+    thumbs: crate::documents::ThumbCache,
+    /// Bundle size past which the admin panel warns. Not a limit.
+    size_warn: u64,
 }
 
 /// Outcome of a mutation attempt.
@@ -142,6 +147,8 @@ impl AppState {
             inner: RwLock::new(flat),
             admin_token,
             conversions: crate::convert::ConversionCache::default(),
+            thumbs: crate::documents::ThumbCache::default(),
+            size_warn: crate::documents::DEFAULT_SIZE_WARN,
         })
     }
 
@@ -153,6 +160,24 @@ impl AppState {
     /// Short-lived store of converted bundles awaiting download.
     pub fn conversions(&self) -> &crate::convert::ConversionCache {
         &self.conversions
+    }
+
+    /// The bounded thumbnail cache.
+    pub fn thumbs(&self) -> &crate::documents::ThumbCache {
+        &self.thumbs
+    }
+
+    /// Set the size past which the admin panel warns, before the state is
+    /// shared. Consuming `self` keeps the setting immutable once it is behind
+    /// an `Arc`, which is where every handler sees it from.
+    pub fn with_size_warn(mut self, bytes: u64) -> Self {
+        self.size_warn = bytes;
+        self
+    }
+
+    /// The configured size warning threshold, in bytes.
+    pub fn size_warn(&self) -> u64 {
+        self.size_warn
     }
 
     /// Path of the live bundle.
@@ -185,6 +210,26 @@ impl AppState {
     /// `op` receives the current flat JSON and returns the library's envelope.
     /// It must not write to disk or take the lock itself.
     pub fn mutate(&self, op: impl FnOnce(&str) -> Envelope) -> Result<MutationOutcome> {
+        self.mutate_and_adjust(op, |_, _| {})
+    }
+
+    /// Apply a mutation, then adjust the resulting bundle before it is written.
+    ///
+    /// `adjust` receives the new flat bundle and the envelope's `data`, and
+    /// runs *inside* the same write lock and before the atomic write, so what
+    /// it changes lands on disk in the same rename as the library's own
+    /// change. This exists for the one thing `axgf-rs` has no CRUD call for:
+    /// a Document entity and its bytes are two writes to two parts of the
+    /// bundle, and splitting them across two `mutate` calls would leave a
+    /// window where a Document claims a file the bundle does not carry.
+    ///
+    /// `adjust` must not fail: everything it needs was validated before the
+    /// lock was taken.
+    pub fn mutate_and_adjust(
+        &self,
+        op: impl FnOnce(&str) -> Envelope,
+        adjust: impl FnOnce(&mut Value, &Value),
+    ) -> Result<MutationOutcome> {
         // 1. take the write lock
         let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
 
@@ -212,7 +257,8 @@ impl AppState {
                 data: env.data,
             });
         };
-        let new_bundle = new_bundle.clone();
+        let mut new_bundle = new_bundle.clone();
+        adjust(&mut new_bundle, &env.data);
 
         // 4/5. persist first, then swap memory in. Writing before the swap means
         // an I/O failure leaves the in-memory bundle matching what is on disk,
@@ -235,6 +281,26 @@ impl AppState {
     pub fn inspect_with(&self, op: impl FnOnce(&str) -> Envelope) -> Envelope {
         let flat = self.flat_json();
         op(&flat)
+    }
+
+    /// Size of the bundle on disk, in bytes.
+    ///
+    /// Read from the filesystem rather than tracked, so it is the number the
+    /// operator would see in a file listing. Zero when the file has gone
+    /// missing underneath us, which is worth reporting as "unknown" rather
+    /// than failing a page render.
+    pub fn bundle_size(&self) -> u64 {
+        fs::metadata(&self.bundle_path)
+            .map(|m| m.len())
+            .unwrap_or(0)
+    }
+
+    /// The bytes of an attachment stored in the bundle, decoded from base64.
+    pub fn attachment(&self, path: &str) -> Option<Vec<u8>> {
+        self.read(|flat| {
+            let b64 = flat.get("attachments")?.get(path)?.as_str()?;
+            base64::engine::general_purpose::STANDARD.decode(b64).ok()
+        })
     }
 
     /// Per-collection entity counts, cheap enough to recompute on each request.

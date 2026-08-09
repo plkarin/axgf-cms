@@ -19,6 +19,7 @@ pub mod auth;
 pub mod completeness;
 pub mod config;
 pub mod convert;
+pub mod documents;
 pub mod person;
 pub mod render;
 pub mod routes;

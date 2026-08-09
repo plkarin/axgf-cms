@@ -83,6 +83,20 @@ pub fn page(name: &str, ctx: impl Serialize) -> Response {
 
 /// Render the shared error page with a status code.
 pub fn error_page(status: StatusCode, title: &str, detail: &str) -> Response {
+    error_page_back(status, title, detail, None)
+}
+
+/// The error page with an extra link back to where the reader came from.
+///
+/// A refusal that makes the reader navigate back by hand is a worse refusal:
+/// they were on a person's page, and that is where they want to be returned
+/// to, with the reason in front of them.
+pub fn error_page_back(
+    status: StatusCode,
+    title: &str,
+    detail: &str,
+    back: Option<(&str, &str)>,
+) -> Response {
     let body = env()
         .get_template("error.html")
         .and_then(|t| {
@@ -90,6 +104,8 @@ pub fn error_page(status: StatusCode, title: &str, detail: &str) -> Response {
                 title => title,
                 detail => detail,
                 status => status.as_u16(),
+                back => back.map(|(href, _)| href),
+                back_label => back.map(|(_, label)| label),
                 nav => MjValue::from(""),
                 is_admin => false,
             })

@@ -302,7 +302,7 @@
 {% endif %}
 
 {# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
-{% if p.sources or p.documents %}
+{% if p.sources or p.documents or is_admin %}
 <section id="evidence">
   <h2>Sources and documents</h2>
 
@@ -336,11 +336,29 @@
   </div>
   {% endif %}
 
+  {% if p.images %}
+  <h3>Photographs</h3>
+  <div class="gallery">
+    {% for d in p.images %}
+    <figure class="shot">
+      <a href="/document/{{ d.id }}/raw">
+        <img src="/document/{{ d.id }}/thumb" loading="lazy"
+             alt="{{ d.caption if d.caption else d.filename }}">
+      </a>
+      <figcaption>
+        {{ d.caption if d.caption else d.filename }}
+        <span class="small muted">{{ d.document_type }}{% if d.size_human %} · {{ d.size_human }}{% endif %}</span>
+      </figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% if p.documents %}
   <h3>Documents</h3>
   <div class="table-wrap">
   <table>
-    <thead><tr><th>File</th><th>Type</th><th>Status</th><th>Size</th></tr></thead>
+    <thead><tr><th>File</th><th>Type</th><th>Status</th><th>Size</th><th></th></tr></thead>
     <tbody>
       {% for d in p.documents %}
       <tr>
@@ -354,6 +372,14 @@
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
         <td class="small">{{ d.status }}</td>
         <td class="small">{{ d.size_human if d.size_human else "—" }}</td>
+        <td class="small">
+          {% if d.has_payload %}
+            <a href="/document/{{ d.id }}/raw">Download</a>
+          {% else %}
+            <span class="muted"
+                  title="This bundle records the document but does not carry the file">no file</span>
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -361,6 +387,35 @@
   </div>
   {% endif %}
 
+  {% if is_admin %}
+  {# The bytes go into the .axgf itself, so an attachment travels with the
+     data rather than living in a directory beside it. #}
+  <form class="upload-form" method="post" enctype="multipart/form-data"
+        action="/admin/person/{{ p.id }}/document">
+    <h3>Attach a document</h3>
+    <div class="filter-row">
+      <input type="file" name="file" required aria-label="File to attach">
+      <select name="document_type" aria-label="Document type">
+        <option value="photo">photo</option>
+        <option value="certificate">certificate</option>
+        <option value="letter">letter</option>
+        <option value="record">record</option>
+        <option value="newspaper">newspaper</option>
+        <option value="other">other</option>
+      </select>
+      <input type="text" name="caption" placeholder="Caption (optional)"
+             aria-label="Caption">
+      <button class="btn primary">Upload</button>
+    </div>
+    <p class="small muted">
+      Up to {{ max_upload_mb }} MB per file, stored inside the
+      <code>.axgf</code> bundle so it travels with the data. The type is read
+      from the file's own bytes, not from its name or what the browser claims:
+      images, PDF, plain text, audio and video are accepted. SVG is refused,
+      because an SVG can carry script.
+    </p>
+  </form>
+  {% endif %}
 </section>
 {% endif %}
 

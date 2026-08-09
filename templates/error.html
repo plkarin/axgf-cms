@@ -4,5 +4,8 @@
 {% block content %}
 <h1>{{ title }}</h1>
 <p class="lede">{{ detail }}</p>
-<p><a class="btn" href="/">Back to the start</a></p>
+<p>
+  {% if back %}<a class="btn" href="{{ back }}">{{ back_label }}</a>{% endif %}
+  <a class="btn" href="/">Back to the start</a>
+</p>
 {% endblock %}

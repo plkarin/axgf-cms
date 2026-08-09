@@ -31,8 +31,13 @@ tower-http = { version = "0.5", features = ["fs", "limit", "trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
+sha2 = "0.10"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
 
 [dev-dependencies]
+# The integration tests build real PNGs and decode the thumbnails they get
+# back, so they need the same decoder the application uses.
+axgf-rs = { version = "0.2", default-features = false }
 http-body-util = "0.1"
 tower = { version = "0.4", features = ["util"] }
 

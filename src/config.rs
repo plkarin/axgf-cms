@@ -31,6 +31,12 @@ pub struct Config {
     /// is safe to leave set permanently and safe to run twice.
     #[arg(long)]
     pub seed_sample: bool,
+
+    /// Bundle size, in megabytes, past which the admin panel starts warning
+    /// that the archive is getting heavy for a design that holds the whole
+    /// file in memory. Not a limit — the archive is the operator's.
+    #[arg(long, value_name = "MB", default_value_t = crate::documents::DEFAULT_SIZE_WARN / (1024 * 1024))]
+    pub size_warn_mb: u64,
 }
 
 impl Config {
@@ -66,6 +72,7 @@ mod tests {
             bind: "127.0.0.1:8080".parse().unwrap(),
             admin_token: token.map(str::to_string),
             seed_sample: false,
+            size_warn_mb: 200,
         }
     }
 
@@ -104,5 +111,19 @@ mod tests {
         let c = Config::parse_from(["axgf-cms", "--bundle", "/tmp/x.axgf"]);
         assert_eq!(c.bind.to_string(), "127.0.0.1:8080");
         assert!(c.bind.ip().is_loopback());
+    }
+
+    #[test]
+    fn the_size_warning_threshold_defaults_to_200_mb_and_is_settable() {
+        let c = Config::parse_from(["axgf-cms", "--bundle", "/tmp/x.axgf"]);
+        assert_eq!(c.size_warn_mb, 200);
+        let c = Config::parse_from([
+            "axgf-cms",
+            "--bundle",
+            "/tmp/x.axgf",
+            "--size-warn-mb",
+            "50",
+        ]);
+        assert_eq!(c.size_warn_mb, 50);
     }
 }

@@ -18,7 +18,9 @@ use crate::admin::{
 };
 use crate::routes::Shared;
 use crate::state::MutationOutcome;
-use crate::{auth, render, view};
+use crate::{auth, documents, render, view};
+
+use base64::Engine as _;
 
 /// Guard every admin page. Returns `Err(response)` when not signed in.
 ///
@@ -136,6 +138,13 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             validation => env.data,
             diagnostics,
             bundle_path => state.bundle_path().display().to_string(),
+            bundle_size => documents::human_size(state.bundle_size()),
+            // The bundle is read into memory whole at startup, so its size is
+            // the application's resident cost, not just a number on disk.
+            bundle_heavy => state.bundle_size() > state.size_warn(),
+            size_warn => documents::human_size(state.size_warn()),
+            attachment_count => state.read(|flat| flat.get("attachments")
+                .and_then(Value::as_object).map(|m| m.len()).unwrap_or(0)),
             completeness,
         },
     )
@@ -634,4 +643,230 @@ fn io_error(e: &anyhow::Error) -> Response {
         "The bundle could not be written",
         &format!("{e}. The previous bundle is intact."),
     )
+}
+
+// ---------------------------------------------------------------------------
+// document upload
+// ---------------------------------------------------------------------------
+
+/// Fields pulled out of the document upload form.
+#[derive(Default)]
+struct DocUpload {
+    filename: String,
+    bytes: Vec<u8>,
+    document_type: String,
+    caption: String,
+    /// Set when the body limit fired while reading, so the handler can answer
+    /// 413 instead of "no file was chosen".
+    too_large: bool,
+}
+
+/// `POST /admin/person/:id/document` — attach a file to a person.
+///
+/// The bytes go into the flat bundle's `attachments` map and the metadata into
+/// a Document entity, both inside one call to
+/// [`AppState::mutate_and_adjust`][crate::state::AppState::mutate_and_adjust]
+/// so that a single atomic write carries both. `export_bundle` then puts the
+/// file back at its ZIP path on the way out — no change to `axgf-rs` was
+/// needed for any of this.
+pub async fn upload_document(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    multipart: axum::extract::Multipart,
+) -> Response {
+    guard!(state, headers);
+
+    let person_exists = state.read(|flat| {
+        flat.get("persons")
+            .and_then(|p| p.get(&id))
+            .is_some_and(|p| !p.is_null())
+    });
+    if !person_exists {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such person",
+            "This bundle contains no person with that id, so there is nothing \
+             to attach a document to.",
+        );
+    }
+
+    let up = read_document_upload(multipart).await;
+
+    if up.too_large || up.bytes.len() > documents::MAX_UPLOAD {
+        return upload_refused(
+            &id,
+            StatusCode::PAYLOAD_TOO_LARGE,
+            &format!(
+                "That file is larger than the {} MB limit. Nothing was stored, \
+                 and the bundle is unchanged.",
+                documents::MAX_UPLOAD / (1024 * 1024)
+            ),
+        );
+    }
+    if up.bytes.is_empty() {
+        return upload_refused(
+            &id,
+            StatusCode::BAD_REQUEST,
+            "No file was uploaded. Choose a file first.",
+        );
+    }
+
+    // The filename and the client's Content-Type are both attacker-controlled,
+    // so neither is consulted: the type comes from the bytes.
+    let Some(kind) = documents::sniff(&up.bytes) else {
+        return upload_refused(
+            &id,
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            "That file is not a type this archive stores. Images, PDF, plain \
+             text, audio and video are accepted; the type is read from the \
+             file's own bytes, so renaming an executable does not get it in. \
+             SVG is refused outright, because an SVG can carry script.",
+        );
+    };
+
+    let sha256 = documents::sha256_hex(&up.bytes);
+    let size = up.bytes.len() as u64;
+    let filename = clean_filename(&up.filename, kind.ext);
+    let doc_type = if up.document_type.trim().is_empty() {
+        if kind.raster_image {
+            "photo".to_string()
+        } else {
+            "other".to_string()
+        }
+    } else {
+        up.document_type.trim().to_string()
+    };
+
+    // The Document is created without its `file.path`, because the path
+    // contains the id the library is about to mint. The adjust step fills in
+    // the path and stores the payload beside it, inside the same write.
+    let mut entity = json!({
+        "type": "document",
+        "axgf_version": "1.0",
+        "filename": filename,
+        "mime_type": kind.mime,
+        "document_type": doc_type,
+        "status": "present",
+        "file": {"size_bytes": size, "sha256": sha256},
+        "linked_to": [{"entity_type": "person", "entity_id": id, "role": "subject"}],
+    });
+    if !up.caption.trim().is_empty() {
+        entity["caption"] = json!(up.caption.trim());
+    }
+    let body = entity.to_string();
+
+    let payload = base64::engine::general_purpose::STANDARD.encode(&up.bytes);
+    let ext = kind.ext;
+
+    let out = match state.mutate_and_adjust(
+        |flat| axgf_rs::add_entity(flat, axgf_rs::EntityKind::Document, &body),
+        |bundle, data| {
+            let Some(new_id) = data.get("id").and_then(Value::as_str) else {
+                return;
+            };
+            let path = documents::attachment_path(new_id, ext);
+            if let Some(doc) = bundle
+                .get_mut("documents")
+                .and_then(|d| d.get_mut(new_id))
+                .and_then(|d| d.get_mut("file"))
+            {
+                doc["path"] = json!(path);
+            }
+            // `attachments` is skipped when empty, so a bundle that has never
+            // held a file has no such key to insert into.
+            if !bundle.get("attachments").is_some_and(Value::is_object) {
+                bundle["attachments"] = json!({});
+            }
+            bundle["attachments"][&path] = json!(payload);
+        },
+    ) {
+        Ok(o) => o,
+        Err(e) => return io_error(&e),
+    };
+
+    if !out.applied {
+        return upload_refused(
+            &id,
+            StatusCode::BAD_REQUEST,
+            &format!(
+                "The library refused the document: {}. The bundle is unchanged.",
+                crate::state::format_diagnostics(&out.diagnostics)
+            ),
+        );
+    }
+
+    Redirect::to(&format!("/person/{id}#evidence")).into_response()
+}
+
+/// Refuse an upload with a reason and a link back to the person.
+///
+/// The status carries the distinction a script needs — 413 for too big, 415
+/// for a type this archive does not store — and the body carries the sentence
+/// a person needs.
+fn upload_refused(person: &str, status: StatusCode, message: &str) -> Response {
+    render::error_page_back(
+        status,
+        "That upload was not stored",
+        message,
+        Some((&format!("/person/{person}"), "Back to this person")),
+    )
+}
+
+/// A filename safe to store and to echo back into a header.
+///
+/// Path separators and quotes are stripped rather than escaped, and the
+/// extension is forced to match what the bytes actually are, so a file called
+/// `holiday.jpg` that is really a PDF is stored as `holiday.pdf`.
+fn clean_filename(raw: &str, ext: &str) -> String {
+    let base = raw
+        .rsplit(['/', '\\'])
+        .next()
+        .unwrap_or(raw)
+        .trim()
+        .trim_matches('.');
+    let stem = base.rsplit_once('.').map(|(s, _)| s).unwrap_or(base);
+    let stem: String = stem
+        .chars()
+        .filter(|c| !c.is_control() && !matches!(c, '"' | '\\' | '/'))
+        .take(120)
+        .collect();
+    let stem = stem.trim();
+    if stem.is_empty() {
+        format!("upload.{ext}")
+    } else {
+        format!("{stem}.{ext}")
+    }
+}
+
+/// Read the upload form, tolerating fields in any order.
+async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpload {
+    let mut out = DocUpload::default();
+    loop {
+        let field = match multipart.next_field().await {
+            Ok(Some(f)) => f,
+            Ok(None) => break,
+            Err(e) => {
+                // The body-limit layer surfaces as an error here, and it is
+                // the one failure worth telling apart from a malformed body.
+                out.too_large = e.status() == StatusCode::PAYLOAD_TOO_LARGE;
+                break;
+            }
+        };
+        match field.name().unwrap_or_default().to_string().as_str() {
+            "file" => {
+                out.filename = field.file_name().unwrap_or("upload").to_string();
+                match field.bytes().await {
+                    Ok(b) => out.bytes = b.to_vec(),
+                    Err(_) => out.too_large = true,
+                }
+            }
+            "document_type" => out.document_type = field.text().await.unwrap_or_default(),
+            "caption" => out.caption = field.text().await.unwrap_or_default(),
+            _ => {
+                let _ = field.bytes().await;
+            }
+        }
+    }
+    out
 }

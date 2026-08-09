@@ -88,6 +88,7 @@ axgf-cms --bundle /var/lib/axgf-cms/family.axgf \
 | `--bind <ADDR>` | `127.0.0.1:8080` | Address to listen on. |
 | `--admin-token <TOKEN>` | `$AXGF_CMS_ADMIN_TOKEN` | Shared admin token. If neither is set, a random one is generated and printed once to stderr. |
 | `--seed-sample` | off | When creating a *new* bundle, seed it with the built-in demonstration family. Ignored if the bundle already exists. |
+| `--size-warn-mb <MB>` | `200` | Bundle size past which the admin panel warns that the archive is getting heavy. Not a limit. |
 
 ### Routes
 
@@ -100,6 +101,8 @@ Public, read-only:
 | `GET /person/:id` | The whole record for one person, in sections: identity and every recorded name, a chronological life timeline, family, non-family relationships, occupations, places, sources and documents, notes, and the entity's raw JSON. A section with no content is omitted |
 | `GET /convert` | GEDCOM → AXGF conversion |
 | `POST /convert/gedcom` | Convert an upload, report what it carried against what AXGF holds, and offer the result |
+| `GET /document/:id/raw` | The stored bytes of an attached file, with `X-Content-Type-Options: nosniff`. Raster images are served inline; everything else downloads |
+| `GET /document/:id/thumb` | A downscaled PNG of an image, `404` for anything else |
 | `GET /health` | `200` with entity counts |
 
 Admin (requires the token cookie):
@@ -112,11 +115,54 @@ Admin (requires the token cookie):
 | `GET /admin/:kind/new`, `POST /admin/:kind` | Create |
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |
 | `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy |
+| `POST /admin/person/:id/document` | Attach a file to a person — multipart upload, stored inside the bundle |
 | `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks |
 | `GET /admin/export` | Download the live bundle |
 
 `:kind` is one of `person`, `family`, `event`, `link`, `occupation`, `source`,
 `place`, `document`.
+
+---
+
+## Attached documents and photographs
+
+An AXGF bundle carries its own binary attachments: files under
+`documents/files/**` inside the ZIP, with a Document entity describing each.
+Uploading a photograph through `/admin/person/:id/document` writes both in one
+atomic rewrite of the bundle, so the picture travels with the data — copy the
+`.axgf` to another machine and the album comes with it. Images appear as a
+gallery on the identity page, everything else as a list with a download link.
+
+**The file type is read from the file, never from its name.** A client controls
+both the filename and the `Content-Type` header, so neither is evidence. The
+leading bytes are matched against an allowlist — PNG, JPEG, GIF, WebP, BMP,
+TIFF, PDF, plain text, and common audio and video containers — and anything
+unrecognised is refused. An executable renamed to `portrait.jpg` does not get
+in, because nothing in the allowlist matches an ELF header.
+
+**SVG is refused.** Not sanitised, not stripped: refused. An SVG is a document
+that can carry `<script>`, and serving one from the same origin as the admin
+session would hand an uploader script execution against that session.
+Sanitising it properly means parsing XML and maintaining an element and
+attribute allowlist — a security surface with no business in a genealogy
+viewer. It is also plain XML with no magic number, so it cannot be identified
+by the rule every other upload follows. Bitmap formats cover what a family
+archive holds. A bundle authored elsewhere may still contain an SVG; it is
+served as a download, never rendered inline.
+
+Every stored file is served with `X-Content-Type-Options: nosniff`. Only the
+raster formats a browser draws as pixels are served inline; everything else
+gets `Content-Disposition: attachment`.
+
+**This suits a family archive, not a media library.** The whole bundle is read
+into memory at startup and held there, so attachments are resident for the life
+of the process, and every write rewrites the entire ZIP. Single uploads are
+capped at 10 MB, and the admin panel warns once the bundle passes
+`--size-warn-mb` (default 200 MB). A few hundred scanned certificates and
+family photographs is what this is for. If you have gigabytes of video, put
+them in a file store and use `status: "referenced"` documents pointing at them —
+the format supports exactly that, and the identity page renders it without
+offering a download.
 
 ---
 

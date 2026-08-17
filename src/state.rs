@@ -22,13 +22,14 @@
 //! bundle at the rename — so a crash at any point before it leaves the
 //! previous bundle exactly as it was.
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
 use anyhow::{Context, Result};
-use axgf_rs::boundary::envelope::{Diagnostic, Envelope, Status};
+use axgf_rs::boundary::envelope::{Diagnostic, DiagnosticCode, Envelope, Status};
 use base64::Engine as _;
 use serde_json::Value;
 
@@ -82,9 +83,24 @@ pub struct MutationOutcome {
     pub data: Value,
 }
 
-/// Why a streaming export stopped.
+/// Why a streaming export stopped, and whether it is worth retrying.
+///
+/// `PAYLOAD_SOURCE_FAILED` is the one failure the application can act on: the
+/// bundle on disk still holds the bytes, so the cache can be rebuilt and the
+/// export tried again. Everything else — a malformed bundle, a full disk — is
+/// terminal for this call.
 struct ExportFailure {
+    source_failed: bool,
     detail: String,
+}
+
+/// The ZIP paths a flat bundle declares in `external_payloads`, which is the
+/// set `export_bundle_streaming` will ask for.
+fn declared_payloads(flat: &Value) -> Vec<String> {
+    flat.get("external_payloads")
+        .and_then(Value::as_object)
+        .map(|m| m.keys().cloned().collect())
+        .unwrap_or_default()
 }
 
 /// Pull the new flat bundle out of an envelope's `data`.
@@ -323,20 +339,75 @@ impl AppState {
     }
 
     /// Write `flat` into `dest` as a `.axgf`, supplying payloads from the cache.
+    ///
+    /// On `PAYLOAD_SOURCE_FAILED` — a cache file deleted behind the
+    /// application's back — the missing entries are rebuilt from the bundle on
+    /// disk, which is the authoritative copy, and the export is retried once.
+    /// The alternative, leaving every save permanently broken until an operator
+    /// notices, is worse than the one extra pass over the archive.
     fn write_streaming(&self, flat: &Value, dest: &Path) -> Result<()> {
-        self.try_write_streaming(flat, dest)
-            .map_err(|e| anyhow::anyhow!("{}", e.detail))
+        match self.try_write_streaming(flat, dest) {
+            Ok(()) => Ok(()),
+            Err(e) if e.source_failed => {
+                let declared = declared_payloads(flat);
+                let missing = self
+                    .payloads
+                    .missing_among(declared.iter().map(String::as_str));
+                tracing::error!(
+                    missing = missing.len(),
+                    detail = %e.detail,
+                    "the payload cache cannot supply a file this bundle declares; \
+                     axgf-rs refused to write a bundle with media missing. \
+                     Rebuilding the affected entries from {} and retrying.",
+                    self.bundle_path.display(),
+                );
+                if missing.is_empty() {
+                    // Nothing is provably absent, so a retry would fail the
+                    // same way. Report the library's own words rather than
+                    // looping.
+                    anyhow::bail!("{}", e.detail);
+                }
+                let wanted: BTreeSet<String> = missing.into_iter().collect();
+                let refilled = self
+                    .payloads
+                    .refill_from(&self.bundle_path, &wanted)
+                    .with_context(|| format!("recovering {} payload(s)", wanted.len()))?;
+                if refilled == 0 {
+                    // The bundle does not hold them either, so there is nothing
+                    // to recover from and a second export would fail
+                    // identically. This is a bundle that declares media it has
+                    // never carried, which an operator has to resolve.
+                    anyhow::bail!(
+                        "{} — and {} could not be recovered from {}, which does not carry \
+                         {} either",
+                        e.detail,
+                        wanted.len(),
+                        self.bundle_path.display(),
+                        if wanted.len() == 1 { "it" } else { "them" },
+                    );
+                }
+                tracing::warn!(
+                    refilled,
+                    "rebuilt payload cache entries from the bundle; retrying the export"
+                );
+                self.try_write_streaming(flat, dest)
+                    .map_err(|e| anyhow::anyhow!("{}", e.detail))
+            }
+            Err(e) => anyhow::bail!("{}", e.detail),
+        }
     }
 
     /// One streaming export attempt.
     fn try_write_streaming(&self, flat: &Value, dest: &Path) -> Result<(), ExportFailure> {
         let json = flat.to_string();
         let file = fs::File::create(dest).map_err(|e| ExportFailure {
+            source_failed: false,
             detail: format!("creating {}: {e}", dest.display()),
         })?;
         // The library takes `dest` by value and does not hand it back, so the
         // fsync goes through a second handle on the same file.
         let fsync_handle = file.try_clone().map_err(|e| ExportFailure {
+            source_failed: false,
             detail: format!("duplicating handle for {}: {e}", dest.display()),
         })?;
 
@@ -355,12 +426,20 @@ impl AppState {
         }
 
         if env.status == Status::Error {
+            let source_failed = env
+                .diagnostics
+                .iter()
+                .any(|d| d.code == DiagnosticCode::PayloadSourceFailed);
             let detail = format_diagnostics(&env.diagnostics);
             let _ = fs::remove_file(dest);
-            return Err(ExportFailure { detail });
+            return Err(ExportFailure {
+                source_failed,
+                detail,
+            });
         }
 
         fsync_handle.sync_all().map_err(|e| ExportFailure {
+            source_failed: false,
             detail: format!("fsyncing {}: {e}", dest.display()),
         })?;
         Ok(())

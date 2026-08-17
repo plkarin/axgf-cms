@@ -290,3 +290,48 @@ fn a_failed_streaming_export_leaves_the_previous_bundle_intact() {
         );
     });
 }
+
+/// A cache entry deleted behind the application's back used to be invisible:
+/// the export would write a bundle with that photograph silently missing. 0.3
+/// refuses instead, and the refusal is recoverable — the `.axgf` on disk is the
+/// authoritative copy, so the entry is rebuilt from it and the save goes
+/// through.
+#[test]
+fn a_cache_file_deleted_behind_our_back_is_rebuilt_from_the_bundle() {
+    let (path, png, _id, zip) = bundle_with_image("pc-recover");
+    let cache = path.parent().unwrap().join("cache");
+    let (state, report) = load(&path, &cache);
+
+    // Delete the cached payload, leaving the index still naming it — exactly
+    // what an operator clearing disk space would produce.
+    let payload_file = std::fs::read_dir(&report.cache_dir)
+        .expect("read cache dir")
+        .filter_map(Result::ok)
+        .map(|e| e.path())
+        .find(|p| p.file_name().and_then(|n| n.to_str()) != Some("index.json"))
+        .expect("a cached payload file");
+    std::fs::remove_file(&payload_file).expect("delete the cached payload");
+
+    let person = r#"{"identity":{"name":{"display":"Ada Lovelace"}}}"#;
+    let out = state
+        .mutate(|flat| axgf_rs::add_entity(flat, axgf_rs::EntityKind::Person, person))
+        .expect("the save must recover rather than fail permanently");
+    assert!(out.applied, "diagnostics: {:?}", out.diagnostics);
+
+    // The rebuilt entry is the real thing, so the written bundle still carries
+    // the photograph.
+    let env = axgf_rs::import_bundle(&std::fs::read(&path).expect("read saved"));
+    let flat = axgf_cms::state::envelope_into_data(env).expect("the saved bundle must import");
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&png);
+    assert_eq!(
+        flat.get("attachments")
+            .and_then(|x| x.get(&zip))
+            .and_then(|v| v.as_str()),
+        Some(b64.as_str()),
+        "the recovered payload must be the original bytes, not a hole"
+    );
+    assert!(
+        payload_file.exists(),
+        "the cache entry must be back on disk"
+    );
+}

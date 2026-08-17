@@ -137,7 +137,11 @@ cache through a fixed 64 KiB buffer and the resident bundle carries metadata
 and an `external_payloads` declaration rather than bytes. Saving uses
 `export_bundle_streaming`, which asks for one payload at a time and writes it
 straight into the open ZIP entry. Peak memory for a load or a save is the copy
-buffer, not the bundle and not its largest file. `GET /admin/export` streams from a
+buffer, not the bundle and not its largest file. A cache entry deleted behind
+the application's back makes the library refuse the save with
+`PAYLOAD_SOURCE_FAILED` rather than write a bundle with the file missing; the
+application reports it, rebuilds that entry from the `.axgf` on disk — which is
+the authoritative copy — and retries once. `GET /admin/export` streams from a
 temp file for the same reason, so downloading a backup costs a file handle.
 
 **Deployment.** `deploy/bootstrap.sh` takes a fresh Ubuntu LTS host to a

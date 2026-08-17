@@ -33,7 +33,7 @@
 //! the index is what the document metadata is checked against, and a
 //! disagreement between the two is reported rather than served silently.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::{self, Read as _, Write as _};
 use std::path::{Path, PathBuf};
@@ -234,6 +234,66 @@ impl PayloadCache {
                 )
             })?;
         fs::File::open(self.dir.join(&entry.file))
+    }
+
+    /// Which of `declared` this cache cannot currently serve.
+    ///
+    /// The answer to "why did the export refuse": either the index never knew
+    /// the path, or the file it names has been removed underneath us.
+    pub fn missing_among<'a>(&self, declared: impl Iterator<Item = &'a str>) -> Vec<String> {
+        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
+        declared
+            .filter(|path| match index.get(*path) {
+                Some(entry) => !self.dir.join(&entry.file).exists(),
+                None => true,
+            })
+            .map(str::to_string)
+            .collect()
+    }
+
+    /// Re-extract the named payloads from the bundle on disk.
+    ///
+    /// The `.axgf` is the authoritative copy, so a cache entry deleted behind
+    /// the application's back is recoverable as long as the bundle still holds
+    /// it. Streams the archive and reads only the wanted entries; everything
+    /// else is skipped without being decompressed.
+    pub fn refill_from(&self, bundle_path: &Path, wanted: &BTreeSet<String>) -> Result<usize> {
+        if wanted.is_empty() {
+            return Ok(0);
+        }
+        let file = fs::File::open(bundle_path)
+            .with_context(|| format!("reopening bundle {}", bundle_path.display()))?;
+
+        let mut refilled = 0usize;
+        let env = axgf_rs::import_bundle_streaming(file, |payload| {
+            if !wanted.contains(payload.path()) {
+                return Ok(());
+            }
+            let zip_path = payload.path().to_string();
+            let name = cache_filename(&zip_path);
+            let (sha, size) = copy_to_file_hashing(payload, &self.dir.join(&name))?;
+            let mut index = self.index.write().unwrap_or_else(|e| e.into_inner());
+            index.insert(
+                zip_path,
+                Entry {
+                    file: name,
+                    sha256: sha,
+                    size,
+                    crc32: payload.crc32(),
+                },
+            );
+            refilled += 1;
+            Ok(())
+        });
+        if env.status == axgf_rs::boundary::envelope::Status::Error {
+            anyhow::bail!(
+                "rebuilding the payload cache from {} failed: {}",
+                bundle_path.display(),
+                crate::state::format_diagnostics(&env.diagnostics)
+            );
+        }
+        self.flush_index()?;
+        Ok(refilled)
     }
 
     /// Read one payload's bytes from disk.

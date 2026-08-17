@@ -29,6 +29,8 @@ use axgf_rs::boundary::envelope::{Diagnostic, Envelope, Status};
 use base64::Engine as _;
 use serde_json::Value;
 
+use crate::payloads::{self, PayloadCache, PopulateReport};
+
 /// The eight collection names in a flat bundle, in the order the UI lists them.
 pub const COLLECTIONS: [&str; 8] = [
     "persons",
@@ -57,6 +59,9 @@ pub struct AppState {
     thumbs: crate::documents::ThumbCache,
     /// Bundle size past which the admin panel warns. Not a limit.
     size_warn: u64,
+    /// Binary payloads, held on disk rather than in the flat JSON. The bundle
+    /// in `inner` carries only document metadata; the bytes live here.
+    payloads: PayloadCache,
 }
 
 /// Outcome of a mutation attempt.
@@ -103,13 +108,27 @@ impl AppState {
     }
 
     /// Load the bundle at `path`, seeding it from `seed` when the file does
-    /// not exist.
+    /// not exist. Uses the default cache location and discards the extraction
+    /// report; [`AppState::load`] is the full entry point the binary uses.
+    pub fn load_or_seed(path: &Path, admin_token: String, seed: Option<&[u8]>) -> Result<Self> {
+        Self::load(path, admin_token, seed, None).map(|(state, _)| state)
+    }
+
+    /// Load the bundle, extract its binary payloads to a disk cache, and return
+    /// the state together with a report of what the extraction did.
     ///
     /// Seeding only ever happens when there is no bundle, which is what makes
     /// `bootstrap.sh --with-sample` safe to run twice: an existing bundle is
-    /// loaded untouched and the seed is ignored.
-    pub fn load_or_seed(path: &Path, admin_token: String, seed: Option<&[u8]>) -> Result<Self> {
-        let flat = if path.exists() {
+    /// loaded untouched and the seed is ignored. `cache_dir` overrides the
+    /// default `<bundle_dir>/.axgf-cms-cache` base, for a machine where the
+    /// bundle sits on slow or read-only storage.
+    pub fn load(
+        path: &Path,
+        admin_token: String,
+        seed: Option<&[u8]>,
+        cache_dir: Option<&Path>,
+    ) -> Result<(Self, PopulateReport)> {
+        let mut flat = if path.exists() {
             let bytes =
                 fs::read(path).with_context(|| format!("reading bundle {}", path.display()))?;
             let env = axgf_rs::import_bundle(&bytes);
@@ -142,14 +161,33 @@ impl AppState {
             flat
         };
 
-        Ok(Self {
-            bundle_path: path.to_path_buf(),
-            inner: RwLock::new(flat),
-            admin_token,
-            conversions: crate::convert::ConversionCache::default(),
-            thumbs: crate::documents::ThumbCache::default(),
-            size_warn: crate::documents::DEFAULT_SIZE_WARN,
-        })
+        // Key the cache by a hash of the bundle so a different bundle never
+        // reads another's payloads.
+        let bundle_sha = payloads::hash_file(path)
+            .with_context(|| format!("hashing bundle {}", path.display()))?;
+        let base = match cache_dir {
+            Some(d) => d.to_path_buf(),
+            None => PayloadCache::default_base(path),
+        };
+        let cache = PayloadCache::open(&base, &bundle_sha)?;
+        // Move the payloads to disk and drop them from the resident bundle.
+        let report = cache.populate_from_flat(&mut flat)?;
+        // The base64 transient import_bundle built is now freed; hand it back to
+        // the OS so RSS reflects the resident textual data, not the media.
+        payloads::release_freed_memory();
+
+        Ok((
+            Self {
+                bundle_path: path.to_path_buf(),
+                inner: RwLock::new(flat),
+                admin_token,
+                conversions: crate::convert::ConversionCache::default(),
+                thumbs: crate::documents::ThumbCache::default(),
+                size_warn: crate::documents::DEFAULT_SIZE_WARN,
+                payloads: cache,
+            },
+            report,
+        ))
     }
 
     /// The configured admin token.
@@ -199,10 +237,60 @@ impl AppState {
         self.read(|v| v.to_string())
     }
 
+    /// Serialized size of the resident textual bundle, in bytes. With the
+    /// payloads on disk this is what the process actually holds — a proxy for
+    /// the textual footprint an operator can compare against the media size.
+    pub fn textual_bundle_bytes(&self) -> u64 {
+        self.read(|v| v.to_string().len() as u64)
+    }
+
+    /// The payload cache backing this bundle.
+    pub fn payloads(&self) -> &PayloadCache {
+        &self.payloads
+    }
+
     /// Export the current bundle to `.axgf` bytes without mutating anything.
+    ///
+    /// The payloads live on disk, so they are read back and spliced into a
+    /// throwaway clone of the flat JSON just for this call, then dropped — they
+    /// are never kept resident between requests.
     pub fn export_bytes(&self) -> Result<Vec<u8>> {
-        let flat = self.flat_json();
-        export_to_bytes(&flat)
+        self.read(|flat| self.export_flat_with_payloads(flat))
+    }
+
+    /// Export a flat bundle with the disk-cached payloads folded back in.
+    ///
+    /// `export_bundle` needs the `attachments` map fully populated to write a
+    /// complete `.axgf`, so the whole payload set is materialised here for the
+    /// duration of one call. On a media-heavy bundle that is a large transient;
+    /// see the module note on the export limitation.
+    fn export_flat_with_payloads(&self, flat: &Value) -> Result<Vec<u8>> {
+        let attachments = self.payloads.attachments_value();
+        let empty = attachments
+            .as_object()
+            .map(serde_json::Map::is_empty)
+            .unwrap_or(true);
+        if empty {
+            return export_to_bytes(&flat.to_string());
+        }
+        let mut clone = flat.clone();
+        if let Some(obj) = clone.as_object_mut() {
+            obj.insert("attachments".to_string(), attachments);
+        }
+        let json = clone.to_string();
+        drop(clone); // release the materialised payloads as early as possible
+        export_to_bytes(&json)
+    }
+
+    /// Persist a flat bundle to disk, folding the disk-cached payloads back in.
+    fn persist(&self, flat: &Value) -> Result<()> {
+        let bytes = self.export_flat_with_payloads(flat)?;
+        let result = write_bytes_atomic(&self.bundle_path, &bytes);
+        drop(bytes);
+        // The export materialised every payload as base64; give that heap back
+        // to the OS so a save does not leave the process bloated.
+        payloads::release_freed_memory();
+        result
     }
 
     /// Apply a mutation under the write lock, persisting atomically on success.
@@ -262,8 +350,9 @@ impl AppState {
 
         // 4/5. persist first, then swap memory in. Writing before the swap means
         // an I/O failure leaves the in-memory bundle matching what is on disk,
-        // so a failed write cannot strand the process with unsaved state.
-        write_bundle(&self.bundle_path, &new_bundle)?;
+        // so a failed write cannot strand the process with unsaved state. The
+        // payloads are folded back in from the disk cache for the write.
+        self.persist(&new_bundle)?;
         *guard = new_bundle;
 
         // 6. lock released on drop
@@ -295,12 +384,91 @@ impl AppState {
             .unwrap_or(0)
     }
 
-    /// The bytes of an attachment stored in the bundle, decoded from base64.
+    /// The bytes of an attachment, read from the disk payload cache.
     pub fn attachment(&self, path: &str) -> Option<Vec<u8>> {
-        self.read(|flat| {
-            let b64 = flat.get("attachments")?.get(path)?.as_str()?;
-            base64::engine::general_purpose::STANDARD.decode(b64).ok()
-        })
+        self.payloads.read(path)
+    }
+
+    /// Add a Document entity together with its payload, writing the bytes
+    /// straight to the disk cache so a new file never transits through the
+    /// in-memory bundle.
+    ///
+    /// `entity_body` is the Document JSON without its `file.path`; the path
+    /// contains the id the library is about to mint, so it is filled in here.
+    /// Returns the outcome and the new document id when applied.
+    pub fn add_document(
+        &self,
+        entity_body: &str,
+        payload: &[u8],
+        ext: &str,
+    ) -> Result<(MutationOutcome, Option<String>)> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+
+        let env = axgf_rs::add_entity(
+            &guard.to_string(),
+            axgf_rs::EntityKind::Document,
+            entity_body,
+        );
+        let diagnostics = env.diagnostics.clone();
+        if env.status == Status::Error || env.data.is_null() {
+            return Ok((
+                MutationOutcome {
+                    applied: false,
+                    diagnostics,
+                    data: Value::Null,
+                },
+                None,
+            ));
+        }
+        let Some(new_bundle) = bundle_from_data(&env.data) else {
+            return Ok((
+                MutationOutcome {
+                    applied: false,
+                    diagnostics,
+                    data: env.data,
+                },
+                None,
+            ));
+        };
+        let mut new_bundle = new_bundle.clone();
+        let new_id = env
+            .data
+            .get("id")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        let Some(new_id) = new_id else {
+            return Ok((
+                MutationOutcome {
+                    applied: false,
+                    diagnostics,
+                    data: env.data,
+                },
+                None,
+            ));
+        };
+
+        let zip_path = crate::documents::attachment_path(&new_id, ext);
+        if let Some(file) = new_bundle
+            .get_mut("documents")
+            .and_then(|d| d.get_mut(&new_id))
+            .and_then(|d| d.get_mut("file"))
+        {
+            file["path"] = Value::String(zip_path.clone());
+        }
+        // Write the payload to the cache *before* persisting, so the export that
+        // persist performs finds it and writes it into the .axgf.
+        self.payloads.put(&zip_path, payload)?;
+        self.persist(&new_bundle)?;
+        *guard = new_bundle;
+
+        Ok((
+            MutationOutcome {
+                applied: true,
+                diagnostics,
+                data: env.data,
+            },
+            Some(new_id),
+        ))
     }
 
     /// Per-collection entity counts, cheap enough to recompute on each request.
@@ -369,12 +537,18 @@ pub fn export_to_bytes(flat_json: &str) -> Result<Vec<u8>> {
 /// refuses to export, the original file is never even opened.
 pub fn write_bundle(path: &Path, flat: &Value) -> Result<()> {
     let bytes = export_to_bytes(&flat.to_string())?;
+    write_bytes_atomic(path, &bytes)
+}
 
+/// Write bytes to `path` atomically: temp sibling, fsync, rename, then a
+/// best-effort directory fsync. Shared by [`write_bundle`] and the payload-aware
+/// persist path so both get the same crash-safety guarantee.
+pub fn write_bytes_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
     let tmp = tmp_path_for(path);
     {
         let mut f = fs::File::create(&tmp)
             .with_context(|| format!("creating temp bundle {}", tmp.display()))?;
-        f.write_all(&bytes)
+        f.write_all(bytes)
             .with_context(|| format!("writing temp bundle {}", tmp.display()))?;
         f.sync_all()
             .with_context(|| format!("fsyncing temp bundle {}", tmp.display()))?;

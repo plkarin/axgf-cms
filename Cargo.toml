@@ -34,12 +34,16 @@ uuid = { version = "1", features = ["v4"] }
 sha2 = "0.10"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
 kamadak-exif = "0.6"
+tokio-util = { version = "0.7", features = ["io"] }
+libc = "0.2"
 
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get
 # back, so they need the same decoder the application uses.
 axgf-rs = { version = "0.2", default-features = false }
+base64 = "0.21"
 http-body-util = "0.1"
+serde_json = "1"
 tower = { version = "0.4", features = ["util"] }
 
 [profile.release]

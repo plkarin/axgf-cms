@@ -221,7 +221,10 @@ proxy_cookie_flags axgf_admin secure samesite=lax;
 ## Backups
 
 The bundle is the whole state. There is no database to dump and no schema to
-migrate.
+migrate. The payload cache under `<bundle_dir>/.axgf-cms-cache/` (or wherever
+`--cache-dir` points) is **derived data** — the `.axgf` holds the authoritative
+copy of every file — so it does not need backing up. Exclude it from backups;
+the next start rebuilds it from the bundle.
 
 ```sh
 sudo systemctl stop axgf-cms

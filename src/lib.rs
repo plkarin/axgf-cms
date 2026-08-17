@@ -12,7 +12,11 @@
 //! deliberate exception is *presentation*: [`view`] decides how a date the
 //! library already parsed should read in prose.
 
-#![forbid(unsafe_code)]
+// `deny`, not `forbid`, so the one justified exception — the `malloc_trim`
+// call in [`payloads::release_freed_memory`] that hands a media bundle's freed
+// heap back to the OS — can carry a scoped `#[allow(unsafe_code)]`. There is no
+// other unsafe in the crate.
+#![deny(unsafe_code)]
 
 pub mod admin;
 pub mod auth;
@@ -20,6 +24,7 @@ pub mod completeness;
 pub mod config;
 pub mod convert;
 pub mod documents;
+pub mod payloads;
 pub mod person;
 pub mod render;
 pub mod routes;

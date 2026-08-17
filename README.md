@@ -154,14 +154,24 @@ Every stored file is served with `X-Content-Type-Options: nosniff`. Only the
 raster formats a browser draws as pixels are served inline; everything else
 gets `Content-Disposition: attachment`.
 
-**This suits a family archive, not a media library.** The whole bundle is read
-into memory at startup and held there, so attachments are resident for the life
-of the process, and every write rewrites the entire ZIP. Single uploads are
-capped at 10 MB, and the admin panel warns once the bundle passes
-`--size-warn-mb` (default 200 MB). A few hundred scanned certificates and
-family photographs is what this is for. If you have gigabytes of video, put
-them in a file store and use `status: "referenced"` documents pointing at them —
-the format supports exactly that, and the identity page renders it without
+**Textual data is memory-resident; binary payloads are not.** At startup, after
+the bundle is imported, every attachment is written out to a disk cache and
+dropped from the in-memory bundle. What stays in RAM is the textual data —
+persons, families, document *metadata*, the manifest — bounded by the size of
+the tree, not by its media; on the operator's 420 MiB archive that is under a
+megabyte. Payloads are streamed from the cache on `/document/:id/raw` and
+`/thumb`, and folded back in only for the moment it takes to export a complete
+`.axgf`. Single uploads are still capped at 10 MB, and the admin panel warns
+once the *textual* bundle passes `--size-warn-mb` (default 200 MB).
+
+The cache lives at `<bundle_dir>/.axgf-cms-cache/<bundle-sha>/` by default, or
+wherever `--cache-dir` points; it is keyed by a hash of the bundle so a
+different bundle never reads another's payloads. A restart on an unchanged
+bundle verifies the cache by sha256 and skips extraction, so it is fast rather
+than a full rewrite. The cache is **derived data** — the `.axgf` is the
+authoritative copy — so it does not need backing up, and can be deleted at any
+time; the next start rebuilds it. A document whose bytes live elsewhere is still
+recorded with `status: "referenced"`, which the identity page renders without
 offering a download.
 
 ---

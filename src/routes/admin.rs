@@ -20,8 +20,6 @@ use crate::routes::Shared;
 use crate::state::MutationOutcome;
 use crate::{auth, documents, render, view};
 
-use base64::Engine as _;
-
 /// Guard every admin page. Returns `Err(response)` when not signed in.
 ///
 /// The error variant is a whole rendered `Response`, which is large; boxing it
@@ -756,31 +754,9 @@ pub async fn upload_document(
     }
     let body = entity.to_string();
 
-    let payload = base64::engine::general_purpose::STANDARD.encode(&up.bytes);
-    let ext = kind.ext;
-
-    let out = match state.mutate_and_adjust(
-        |flat| axgf_rs::add_entity(flat, axgf_rs::EntityKind::Document, &body),
-        |bundle, data| {
-            let Some(new_id) = data.get("id").and_then(Value::as_str) else {
-                return;
-            };
-            let path = documents::attachment_path(new_id, ext);
-            if let Some(doc) = bundle
-                .get_mut("documents")
-                .and_then(|d| d.get_mut(new_id))
-                .and_then(|d| d.get_mut("file"))
-            {
-                doc["path"] = json!(path);
-            }
-            // `attachments` is skipped when empty, so a bundle that has never
-            // held a file has no such key to insert into.
-            if !bundle.get("attachments").is_some_and(Value::is_object) {
-                bundle["attachments"] = json!({});
-            }
-            bundle["attachments"][&path] = json!(payload);
-        },
-    ) {
+    // The payload goes straight to the disk cache, never into the in-memory
+    // bundle; add_document mints the id, fills in the file path, and persists.
+    let (out, _new_id) = match state.add_document(&body, &up.bytes, kind.ext) {
         Ok(o) => o,
         Err(e) => return io_error(&e),
     };

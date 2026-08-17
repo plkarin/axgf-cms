@@ -20,14 +20,45 @@ async fn main() -> Result<()> {
     let (token, generated) = cfg.resolve_admin_token();
 
     let seed = cfg.seed_sample.then_some(axgf_cms::SAMPLE_BUNDLE);
-    let state = Arc::new(
-        AppState::load_or_seed(&cfg.bundle, token.clone(), seed)
-            .context("initialising application state")?
-            .with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024)),
-    );
+    let (state, payloads) =
+        AppState::load(&cfg.bundle, token.clone(), seed, cfg.cache_dir.as_deref())
+            .context("initialising application state")?;
+    let state = Arc::new(state.with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024)));
 
     let total: usize = state.counts().iter().map(|(_, n)| n).sum();
     tracing::info!(bundle = %cfg.bundle.display(), entities = total, "bundle loaded");
+
+    // State plainly what happened to the media: an operator should see at a
+    // glance that the payloads are on disk, not in RAM.
+    let textual_bytes = state.textual_bundle_bytes();
+    eprintln!("─────────────────────────────────────────────────────────");
+    if payloads.extracted == 0 && payloads.reused == 0 {
+        eprintln!("  payloads:  none in this bundle");
+    } else {
+        eprintln!(
+            "  payloads:  {} extracted, {} reused from cache{}",
+            payloads.extracted,
+            payloads.reused,
+            if payloads.mismatches > 0 {
+                format!(
+                    ", {} SHA-256 MISMATCH(ES) — see warnings above",
+                    payloads.mismatches
+                )
+            } else {
+                String::new()
+            }
+        );
+        eprintln!("  cache:     {}", payloads.cache_dir.display());
+        eprintln!(
+            "  on disk:   {} of media",
+            axgf_cms::documents::human_size(payloads.bytes_on_disk)
+        );
+    }
+    eprintln!(
+        "  in RAM:    {} of textual data (persons, families, metadata)",
+        axgf_cms::documents::human_size(textual_bytes)
+    );
+    eprintln!("─────────────────────────────────────────────────────────");
 
     let app = axgf_cms::router(state);
 

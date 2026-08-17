@@ -33,9 +33,12 @@
 //!
 //! # Scale
 //!
-//! The whole bundle is read into memory at startup and held there, so this
-//! design suits a family archive, not a media library. Uploads are capped per
-//! file, and the admin panel warns once the bundle passes a threshold.
+//! Textual data — persons, families, document *metadata*, the manifest — is
+//! memory-resident and bounded by the size of the tree, not by its media.
+//! Binary payloads live in a disk cache (see [`crate::payloads`]) and are
+//! streamed from there, so a media-heavy archive no longer sits in RAM as
+//! base64. Uploads are capped per file, and the admin panel warns once the
+//! textual bundle passes a threshold.
 
 use std::sync::Mutex;
 
@@ -44,11 +47,11 @@ use sha2::{Digest, Sha256};
 /// Largest single upload accepted, in bytes.
 pub const MAX_UPLOAD: usize = 10 * 1024 * 1024;
 
-/// Bundle size past which the admin panel starts warning, in bytes.
+/// Textual-bundle size past which the admin panel starts warning, in bytes.
 ///
 /// Not a limit — the operator's archive is theirs — but the point where the
-/// "held entirely in memory" design starts costing something they should know
-/// about.
+/// memory-resident textual data starts costing something they should know
+/// about. Binary payloads no longer count toward this: they are on disk.
 pub const DEFAULT_SIZE_WARN: u64 = 200 * 1024 * 1024;
 
 /// A file type this application is willing to store.

@@ -324,47 +324,47 @@ pub async fn person(
     }
 }
 
-/// A document entity plus the bytes the bundle holds for it, if any.
+/// A document's metadata and the ZIP path its payload is cached under.
 struct StoredDocument {
     mime: String,
     filename: String,
     sha256: String,
-    bytes: Vec<u8>,
+    /// The attachment key; the bytes live in the disk cache under it.
+    path: String,
 }
 
-/// Resolve a document id to its metadata and payload.
+/// Resolve a document id to its metadata and the key its payload is stored at.
 ///
 /// `None` covers both "no such document" and "the document exists but this
 /// bundle does not carry the file" — a `referenced` document names something
 /// held elsewhere, and there is nothing here to serve either way.
 fn stored_document(state: &Shared, id: &str) -> Option<StoredDocument> {
-    let (mime, filename, sha256, path) = state.read(|flat| {
+    let doc = state.read(|flat| {
         let d = flat.get("documents")?.get(id)?;
         let path = d.get("file")?.get("path")?.as_str()?.to_string();
-        Some((
-            d.get("mime_type")
+        Some(StoredDocument {
+            mime: d
+                .get("mime_type")
                 .and_then(Value::as_str)
                 .unwrap_or("application/octet-stream")
                 .to_string(),
-            d.get("filename")
+            filename: d
+                .get("filename")
                 .and_then(Value::as_str)
                 .unwrap_or("document")
                 .to_string(),
-            d.get("file")
+            sha256: d
+                .get("file")
                 .and_then(|f| f.get("sha256"))
                 .and_then(Value::as_str)
                 .unwrap_or_default()
                 .to_string(),
             path,
-        ))
+        })
     })?;
-    let bytes = state.attachment(&path)?;
-    Some(StoredDocument {
-        mime,
-        filename,
-        sha256,
-        bytes,
-    })
+    // Only serve when the payload is actually present in the cache.
+    state.payloads().path_of(&doc.path)?;
+    Some(doc)
 }
 
 /// `GET /document/:id/raw` — the stored bytes.
@@ -384,6 +384,13 @@ pub async fn document_raw(State(state): State<Shared>, Path(id): Path<String>) -
              held somewhere else.",
         );
     };
+    let Some(path) = state.payloads().path_of(&doc.path) else {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such file",
+            "The payload for that document is not in the cache.",
+        );
+    };
 
     let disposition = if crate::documents::serve_inline(&doc.mime) {
         format!("inline; filename=\"{}\"", sanitize_header(&doc.filename))
@@ -394,21 +401,53 @@ pub async fn document_raw(State(state): State<Shared>, Path(id): Path<String>) -
         )
     };
 
-    (
-        [
-            (header::CONTENT_TYPE, doc.mime),
-            (header::CONTENT_DISPOSITION, disposition),
-            (
-                header::HeaderName::from_static("x-content-type-options"),
-                "nosniff".to_string(),
-            ),
-            // The payload is immutable: a different file means a different
-            // document id, because uploads never overwrite in place.
-            (header::CACHE_CONTROL, "private, max-age=3600".to_string()),
-        ],
-        doc.bytes,
-    )
-        .into_response()
+    // Stream the bytes from disk rather than reading them into memory. The
+    // download is byte-identical to what is in the bundle: EXIF orientation is
+    // corrected only for display (see `document_view`), never for the original.
+    let Ok(file) = tokio::fs::File::open(&path).await else {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such file",
+            "The payload for that document could not be opened.",
+        );
+    };
+    let len = file.metadata().await.map(|m| m.len()).ok();
+    let stream = tokio_util::io::ReaderStream::new(file);
+    let body = axum::body::Body::from_stream(stream);
+
+    let mut headers = header::HeaderMap::new();
+    set_header(&mut headers, header::CONTENT_TYPE, &doc.mime);
+    set_header(&mut headers, header::CONTENT_DISPOSITION, &disposition);
+    set_header(
+        &mut headers,
+        header::HeaderName::from_static("x-content-type-options"),
+        "nosniff",
+    );
+    // The payload is immutable: a different file means a different document id,
+    // because uploads never overwrite in place.
+    set_header(&mut headers, header::CACHE_CONTROL, "private, max-age=3600");
+    if let Some(len) = len {
+        set_header(&mut headers, header::CONTENT_LENGTH, &len.to_string());
+    }
+    (headers, body).into_response()
+}
+
+/// Insert a header, silently skipping a value that cannot be a header value
+/// (e.g. a filename with bytes that are not valid in a header). The content
+/// type falls back to a safe default rather than being dropped.
+fn set_header(headers: &mut header::HeaderMap, name: header::HeaderName, value: &str) {
+    match header::HeaderValue::from_str(value) {
+        Ok(v) => {
+            headers.insert(name, v);
+        }
+        Err(_) if name == header::CONTENT_TYPE => {
+            headers.insert(
+                name,
+                header::HeaderValue::from_static("application/octet-stream"),
+            );
+        }
+        Err(_) => {}
+    }
 }
 
 /// `GET /document/:id/view` — a full-size image, EXIF-orientation corrected,
@@ -426,11 +465,14 @@ pub async fn document_view(State(state): State<Shared>, Path(id): Path<String>) 
             "This bundle has no document with that id.",
         );
     };
+    let Some(bytes) = state.attachment(&doc.path) else {
+        return render::error_page(StatusCode::NOT_FOUND, "No such file", "Payload missing.");
+    };
 
     // Only raster images are corrected; anything else is served as its stored
     // bytes inline where safe, or as an attachment otherwise.
     if crate::documents::serve_inline(&doc.mime) {
-        if let Some(png) = crate::documents::oriented_image(&doc.bytes) {
+        if let Some(png) = crate::documents::oriented_image(&bytes) {
             return (
                 [
                     (header::CONTENT_TYPE, "image/png".to_string()),
@@ -459,9 +501,11 @@ pub async fn document_thumb(State(state): State<Shared>, Path(id): Path<String>)
         );
     };
 
-    let png = state
-        .thumbs()
-        .get_or_insert(&id, &doc.sha256, || crate::documents::thumbnail(&doc.bytes));
+    let png = state.thumbs().get_or_insert(&id, &doc.sha256, || {
+        state
+            .attachment(&doc.path)
+            .and_then(|bytes| crate::documents::thumbnail(&bytes))
+    });
 
     let Some(png) = png else {
         return render::error_page(

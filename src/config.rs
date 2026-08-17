@@ -33,10 +33,18 @@ pub struct Config {
     pub seed_sample: bool,
 
     /// Bundle size, in megabytes, past which the admin panel starts warning
-    /// that the archive is getting heavy for a design that holds the whole
-    /// file in memory. Not a limit — the archive is the operator's.
+    /// that the archive is getting heavy. Textual data is memory-resident and
+    /// bounded by the tree's size; only that is measured against this. Not a
+    /// limit — the archive is the operator's.
     #[arg(long, value_name = "MB", default_value_t = crate::documents::DEFAULT_SIZE_WARN / (1024 * 1024))]
     pub size_warn_mb: u64,
+
+    /// Directory for the binary-payload cache. Defaults to
+    /// `<bundle_dir>/.axgf-cms-cache`. Override it when the bundle sits on slow
+    /// or read-only storage. It is derived data — the `.axgf` is authoritative
+    /// — and never needs backing up.
+    #[arg(long, value_name = "PATH")]
+    pub cache_dir: Option<PathBuf>,
 }
 
 impl Config {
@@ -73,6 +81,7 @@ mod tests {
             admin_token: token.map(str::to_string),
             seed_sample: false,
             size_warn_mb: 200,
+            cache_dir: None,
         }
     }
 

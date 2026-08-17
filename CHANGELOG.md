@@ -117,8 +117,8 @@ is served with `X-Content-Type-Options: nosniff`, and only the raster formats a
 browser draws as pixels are served inline; everything else gets
 `Content-Disposition: attachment`. Uploads are capped at 10 MB each, and the
 admin panel reports the bundle size and warns past `--size-warn-mb`
-(default 200 MB) — the whole bundle is held in memory, so this design suits a
-family archive and not a media library, and the README says so.
+(default 200 MB) — the *textual* bundle is what is held in memory, so that is
+what the threshold measures.
 
 **Conversion.** GEDCOM 5.5.1 to AXGF, with entity counts and every diagnostic
 shown before the download link. `GEDCOM_UNRECOGNIZED_TAG` warnings are
@@ -127,8 +127,18 @@ touches the served bundle.
 
 **Storage.** The bundle file is the database. Mutations take a write lock, call
 `axgf-rs`, and on refusal return the diagnostics with memory and file both
-untouched. Writes are atomic: export, write `.tmp`, fsync, rename. The live
-file is never truncated.
+untouched. Writes are atomic: stream the new archive into `.tmp`, fsync,
+rename. The live file is never truncated and is not touched until the rename.
+
+**Binary payloads never enter memory.** Loading uses
+`axgf-rs`'s `import_bundle_streaming`, which hands over one payload at a time
+as a live reader, so each attachment is copied from the archive into a disk
+cache through a fixed 64 KiB buffer and the resident bundle carries metadata
+and an `external_payloads` declaration rather than bytes. Saving uses
+`export_bundle_streaming`, which asks for one payload at a time and writes it
+straight into the open ZIP entry. Peak memory for a load or a save is the copy
+buffer, not the bundle and not its largest file. `GET /admin/export` streams from a
+temp file for the same reason, so downloading a backup costs a file handle.
 
 **Deployment.** `deploy/bootstrap.sh` takes a fresh Ubuntu LTS host to a
 running site in one command, and is idempotent — re-running preserves both the

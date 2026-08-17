@@ -154,25 +154,36 @@ Every stored file is served with `X-Content-Type-Options: nosniff`. Only the
 raster formats a browser draws as pixels are served inline; everything else
 gets `Content-Disposition: attachment`.
 
-**Textual data is memory-resident; binary payloads are not.** At startup, after
-the bundle is imported, every attachment is written out to a disk cache and
-dropped from the in-memory bundle. What stays in RAM is the textual data —
-persons, families, document *metadata*, the manifest — bounded by the size of
-the tree, not by its media; on the operator's 420 MiB archive that is under a
-megabyte. Payloads are streamed from the cache on `/document/:id/raw` and
-`/thumb`, and folded back in only for the moment it takes to export a complete
-`.axgf`. Single uploads are still capped at 10 MB, and the admin panel warns
-once the *textual* bundle passes `--size-warn-mb` (default 200 MB).
+**Textual data is memory-resident; binary payloads are never in memory at
+all.** The bundle is read with `axgf-rs`'s streaming boundary, which hands over
+one payload at a time as a live reader: each attachment goes from the archive
+straight into a disk cache through a fixed 64 KiB buffer, and the flat JSON
+that comes back carries document *metadata* and a per-file `external_payloads`
+entry rather than the bytes. Saving reverses it — the new archive is streamed
+into a temp file and each payload copied in from the cache — so neither
+direction ever holds a photograph, let alone all of them. What stays in RAM is
+the textual data: persons, families, document metadata, the manifest, bounded
+by the size of the tree rather than its media; on the operator's 420 MiB
+archive that is under a megabyte, and the peak while loading or saving is
+bounded by the copy buffer rather than by the largest file. Single uploads are
+still capped at 10 MB, and the admin panel warns once the *textual* bundle
+passes `--size-warn-mb` (default 200 MB).
 
 The cache lives at `<bundle_dir>/.axgf-cms-cache/<bundle-sha>/` by default, or
 wherever `--cache-dir` points; it is keyed by a hash of the bundle so a
 different bundle never reads another's payloads. A restart on an unchanged
-bundle verifies the cache by sha256 and skips extraction, so it is fast rather
-than a full rewrite. The cache is **derived data** — the `.axgf` is the
+bundle recomputes each cached file's CRC-32 and compares it against the one the
+archive's central directory records — a direct proof that the cache still holds
+this bundle's bytes — and skips extraction where it matches, so nothing is
+decompressed at all. The sha256 the document metadata records is checked
+separately, and a disagreement between a file and its record is reported rather
+than served silently. The cache is **derived data** — the `.axgf` is the
 authoritative copy — so it does not need backing up, and can be deleted at any
-time; the next start rebuilds it. A document whose bytes live elsewhere is still
-recorded with `status: "referenced"`, which the identity page renders without
-offering a download.
+time; the next start rebuilds it, and a save that finds an entry missing
+rebuilds that entry rather than writing a bundle with the file absent. A
+document whose bytes live elsewhere is still recorded with
+`status: "referenced"`, which the identity page renders without offering a
+download.
 
 ---
 
@@ -212,10 +223,10 @@ should read in prose, and how a confidence should look on screen.
 
 The server holds the bundle in memory behind a read-write lock. Every mutation
 takes the write lock, calls the library, and — if the library refuses —
-returns the diagnostics with memory and file both untouched. On success the
-bundle is exported, written to `family.axgf.tmp`, fsynced, and renamed over the
-live file. The live file is never truncated, so a crash mid-write leaves the
-previous bundle intact.
+returns the diagnostics with memory and file both untouched. On success the new
+archive is streamed into `family.axgf.tmp`, fsynced, and renamed over the live
+file. The live file is never truncated and is not touched until the rename, so
+a crash at any point during the export leaves the previous bundle intact.
 
 There is no build step. No npm, no bundler, no framework, no CDN. Templates and
 the stylesheet are ordinary files in the repository, embedded into the binary

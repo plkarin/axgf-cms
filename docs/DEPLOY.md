@@ -245,8 +245,10 @@ find /backups/axgf-cms -name 'family-*.axgf' -mtime +31 -delete
 ```
 
 You can also pull a backup over HTTP from the admin panel
-(`GET /admin/export`), which exports the in-memory bundle rather than reading
-the file.
+(`GET /admin/export`), which rebuilds the bundle from the state the process is
+serving rather than reading the file. It streams: the archive is written to a
+temp file one payload at a time and sent from there, so exporting a large
+bundle does not cost the process a copy of it.
 
 A `.axgf` bundle is a ZIP of plain JSON. To inspect a backup without this
 application:

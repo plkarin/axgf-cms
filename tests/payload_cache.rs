@@ -1,6 +1,7 @@
-//! The binary-payload disk cache (Change 4): payloads leave the in-memory
-//! bundle at load time and are streamed from disk, and the `.axgf` still
-//! round-trips byte-for-byte.
+//! The binary-payload disk cache: payloads are streamed out of the archive
+//! into the cache at load time and streamed back into a new archive on save,
+//! never passing through the in-memory bundle in either direction — and the
+//! `.axgf` still round-trips byte-for-byte.
 
 mod common;
 
@@ -111,7 +112,7 @@ fn a_second_startup_reuses_the_cache_without_re_extracting() {
 }
 
 #[test]
-fn a_corrupted_cache_file_is_detected_by_sha256() {
+fn a_corrupted_cache_file_is_detected_by_its_crc32() {
     let (path, _png, _id, _zip) = bundle_with_image("pc-corrupt");
     let cache = path.parent().unwrap().join("cache");
 
@@ -128,6 +129,9 @@ fn a_corrupted_cache_file_is_detected_by_sha256() {
     std::fs::write(&payload_file, b"corrupted not-a-png").expect("corrupt");
 
     // A fresh load must notice the mismatch and re-extract from the bundle.
+    // The archive's central directory carries the CRC-32 of every entry, so
+    // recomputing it over the cached file proves whether it is still the bytes
+    // this bundle holds — without decompressing the entry to find out.
     let (_s2, second) = load(&path, &cache);
     assert!(
         second.mismatches >= 1,
@@ -178,4 +182,111 @@ fn export_after_a_load_reproduces_the_bundle_including_payloads() {
         b.get("attachments").and_then(|x| x.get(&zip)),
         "the media payload must be byte-identical across the round-trip"
     );
+}
+
+#[test]
+fn the_bundle_declares_its_payloads_so_a_streaming_export_asks_for_them() {
+    let (path, png, _id, zip) = bundle_with_image("pc-declare");
+    let cache = path.parent().unwrap().join("cache");
+    let (state, _report) = load(&path, &cache);
+
+    state.read(|flat| {
+        let declared = flat
+            .get("external_payloads")
+            .and_then(|v| v.as_object())
+            .expect("a streamed import records what it streamed out");
+        let entry = declared.get(&zip).expect("this payload must be declared");
+        assert_eq!(
+            entry.get("size_bytes").and_then(|v| v.as_u64()),
+            Some(png.len() as u64),
+            "the declaration carries the size the archive recorded"
+        );
+    });
+}
+
+/// A streaming export builds the archive somewhere else entirely. Nothing it
+/// does can reach the live bundle, which is the first half of the atomic-write
+/// property; [`a_failed_streaming_export_leaves_the_previous_bundle_intact`] is
+/// the second half.
+#[test]
+fn a_streaming_export_never_touches_the_live_bundle() {
+    let (path, png, _id, zip) = bundle_with_image("pc-elsewhere");
+    let cache = path.parent().unwrap().join("cache");
+    let before = std::fs::read(&path).expect("read before");
+
+    let (state, _report) = load(&path, &cache);
+    let dest = path.parent().unwrap().join("copy.axgf");
+    state.export_to_file(&dest).expect("streaming export");
+
+    assert_eq!(
+        std::fs::read(&path).expect("read after"),
+        before,
+        "exporting must not write a single byte to the bundle being served"
+    );
+
+    // And what it wrote elsewhere is a complete bundle, media included.
+    let env = axgf_rs::import_bundle(&std::fs::read(&dest).expect("read copy"));
+    let flat = axgf_cms::state::envelope_into_data(env).expect("the copy must import");
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&png);
+    assert_eq!(
+        flat.get("attachments")
+            .and_then(|x| x.get(&zip))
+            .and_then(|v| v.as_str()),
+        Some(b64.as_str()),
+        "the streamed archive must carry the payload byte-for-byte"
+    );
+}
+
+/// The property the whole DRP story rests on: the new archive becomes the live
+/// bundle only at the rename, so a failure at any earlier point leaves the
+/// previous bundle exactly as it was.
+///
+/// The failure is injected where the streaming export can genuinely fail
+/// mid-archive: the bundle is made to declare a payload that neither the cache
+/// nor the `.axgf` holds, so `axgf-rs` refuses with `PAYLOAD_SOURCE_FAILED`
+/// after it has already written the manifest, the entities and the real
+/// payload into the temp file.
+#[test]
+fn a_failed_streaming_export_leaves_the_previous_bundle_intact() {
+    let (path, _png, _id, _zip) = bundle_with_image("pc-atomic");
+    let cache = path.parent().unwrap().join("cache");
+    let (state, _report) = load(&path, &cache);
+
+    let before = std::fs::read(&path).expect("read before");
+    let person = r#"{"identity":{"name":{"display":"Ada Lovelace"}}}"#;
+    let result = state.mutate_and_adjust(
+        |flat| axgf_rs::add_entity(flat, axgf_rs::EntityKind::Person, person),
+        |bundle, _| {
+            // A file the bundle claims to carry and nothing can supply.
+            bundle["external_payloads"]["documents/files/ghost.bin"] =
+                json!({"size_bytes": 4096, "crc32": 1});
+        },
+    );
+
+    assert!(
+        result.is_err(),
+        "a bundle whose media cannot be supplied must not be written"
+    );
+    assert_eq!(
+        std::fs::read(&path).expect("read after"),
+        before,
+        "a failed export must leave the previous bundle byte-identical"
+    );
+    let mut tmp = path.file_name().unwrap().to_os_string();
+    tmp.push(".tmp");
+    assert!(
+        !path.with_file_name(&tmp).exists(),
+        "a failed export must not leave its temp file behind"
+    );
+    // The write happens before the in-memory swap, so a failed save must also
+    // leave memory matching the file rather than stranding an unsaved edit.
+    state.read(|flat| {
+        assert_eq!(
+            flat.get("persons")
+                .and_then(|p| p.as_object())
+                .map(|m| m.len()),
+            Some(0),
+            "a failed save must not leave the person resident"
+        );
+    });
 }

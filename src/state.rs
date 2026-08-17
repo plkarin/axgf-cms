@@ -13,11 +13,14 @@
 //! 3. if the envelope status is `error`, release and return the diagnostics —
 //!    memory and file both unchanged
 //! 4. on success, replace the in-memory flat JSON
-//! 5. `export_bundle`, then write atomically (tmp + fsync + rename)
+//! 5. `export_bundle_streaming` into a temp file, then rename over the bundle
 //! 6. release the lock
 //!
 //! Step 5 is the reason a handler must never write the file itself: a partial
-//! write would leave the showcase's only database truncated.
+//! write would leave the showcase's only database truncated. The archive is
+//! built in the temp file, payload by payload, and only becomes the live
+//! bundle at the rename — so a crash at any point before it leaves the
+//! previous bundle exactly as it was.
 
 use std::fs;
 use std::io::Write as _;
@@ -29,7 +32,7 @@ use axgf_rs::boundary::envelope::{Diagnostic, Envelope, Status};
 use base64::Engine as _;
 use serde_json::Value;
 
-use crate::payloads::{self, PayloadCache, PopulateReport};
+use crate::payloads::{PayloadCache, PopulateReport};
 
 /// The eight collection names in a flat bundle, in the order the UI lists them.
 pub const COLLECTIONS: [&str; 8] = [
@@ -77,6 +80,11 @@ pub struct MutationOutcome {
     /// The envelope's `data`, so callers can read the extras that accompany
     /// the new bundle — `id` after a create, `merged_persons` after a dedup.
     pub data: Value,
+}
+
+/// Why a streaming export stopped.
+struct ExportFailure {
+    detail: String,
 }
 
 /// Pull the new flat bundle out of an envelope's `data`.
@@ -128,13 +136,11 @@ impl AppState {
         seed: Option<&[u8]>,
         cache_dir: Option<&Path>,
     ) -> Result<(Self, PopulateReport)> {
-        let mut flat = if path.exists() {
-            let bytes =
-                fs::read(path).with_context(|| format!("reading bundle {}", path.display()))?;
-            let env = axgf_rs::import_bundle(&bytes);
-            envelope_into_data(env)
-                .with_context(|| format!("importing bundle {}", path.display()))?
-        } else {
+        // Make sure there *is* a file, so that the one load path below is the
+        // streaming one. A seed is an embedded archive of a few hundred
+        // kilobytes, so importing it whole to write it out once costs nothing
+        // worth streaming for.
+        if !path.exists() {
             let flat = match seed {
                 Some(bytes) => {
                     tracing::info!(path = %path.display(), "seeding a new bundle");
@@ -158,23 +164,38 @@ impl AppState {
                 }
             }
             write_bundle(path, &flat).context("writing the initial bundle")?;
-            flat
-        };
+        }
 
         // Key the cache by a hash of the bundle so a different bundle never
         // reads another's payloads.
-        let bundle_sha = payloads::hash_file(path)
+        let bundle_sha = crate::payloads::hash_file(path)
             .with_context(|| format!("hashing bundle {}", path.display()))?;
         let base = match cache_dir {
             Some(d) => d.to_path_buf(),
             None => PayloadCache::default_base(path),
         };
         let cache = PayloadCache::open(&base, &bundle_sha)?;
-        // Move the payloads to disk and drop them from the resident bundle.
-        let report = cache.populate_from_flat(&mut flat)?;
-        // The base64 transient import_bundle built is now freed; hand it back to
-        // the OS so RSS reflects the resident textual data, not the media.
-        payloads::release_freed_memory();
+
+        // The whole point of 0.3: each payload goes from the archive into the
+        // cache through a fixed buffer, and the flat JSON that comes back is
+        // textual — document metadata and an `external_payloads` entry per
+        // file, no base64 anywhere. The bundle is never read into memory whole
+        // and no payload is ever a `Vec`.
+        let file =
+            fs::File::open(path).with_context(|| format!("opening bundle {}", path.display()))?;
+        let mut report = PopulateReport {
+            cache_dir: cache.dir().to_path_buf(),
+            ..Default::default()
+        };
+        let env = axgf_rs::import_bundle_streaming(file, |payload| {
+            cache.take_payload(payload, &mut report)
+        });
+        let flat = envelope_into_data(env)
+            .with_context(|| format!("importing bundle {}", path.display()))?;
+        cache.flush_index()?;
+        // The document metadata arrives with the textual half, so the sha256
+        // check happens once the payloads have already gone past.
+        cache.verify_against_metadata(&flat, &mut report);
 
         Ok((
             Self {
@@ -251,46 +272,113 @@ impl AppState {
 
     /// Export the current bundle to `.axgf` bytes without mutating anything.
     ///
-    /// The payloads live on disk, so they are read back and spliced into a
-    /// throwaway clone of the flat JSON just for this call, then dropped — they
-    /// are never kept resident between requests.
+    /// Streams the archive to a temp file first, so building it costs a file
+    /// handle rather than a copy of the media; only the finished archive is
+    /// read back. Prefer [`AppState::export_to_file`] where the bytes are
+    /// going to a file or a response body anyway — this exists for callers
+    /// that genuinely want them in hand.
     pub fn export_bytes(&self) -> Result<Vec<u8>> {
-        self.read(|flat| self.export_flat_with_payloads(flat))
+        let tmp = self.export_temp_path("export");
+        let out = self
+            .export_to_file(&tmp)
+            .and_then(|_| fs::read(&tmp).with_context(|| format!("reading {}", tmp.display())));
+        let _ = fs::remove_file(&tmp);
+        out
     }
 
-    /// Export a flat bundle with the disk-cached payloads folded back in.
+    /// Stream the current bundle into a fresh temp file beside it, and return
+    /// that path. The caller owns the file and must remove it.
+    pub fn export_to_temp_file(&self) -> Result<PathBuf> {
+        let tmp = self.export_temp_path("download");
+        match self.export_to_file(&tmp) {
+            Ok(()) => Ok(tmp),
+            Err(e) => {
+                let _ = fs::remove_file(&tmp);
+                Err(e)
+            }
+        }
+    }
+
+    /// Stream the current bundle into `dest`, one payload at a time.
     ///
-    /// `export_bundle` needs the `attachments` map fully populated to write a
-    /// complete `.axgf`, so the whole payload set is materialised here for the
-    /// duration of one call. On a media-heavy bundle that is a large transient;
-    /// see the module note on the export limitation.
-    fn export_flat_with_payloads(&self, flat: &Value) -> Result<Vec<u8>> {
-        let attachments = self.payloads.attachments_value();
-        let empty = attachments
-            .as_object()
-            .map(serde_json::Map::is_empty)
-            .unwrap_or(true);
-        if empty {
-            return export_to_bytes(&flat.to_string());
-        }
-        let mut clone = flat.clone();
-        if let Some(obj) = clone.as_object_mut() {
-            obj.insert("attachments".to_string(), attachments);
-        }
-        let json = clone.to_string();
-        drop(clone); // release the materialised payloads as early as possible
-        export_to_bytes(&json)
+    /// The archive never exists in memory: `export_bundle_streaming` writes
+    /// straight into the file and asks for each payload in turn, and each one
+    /// is copied from the cache through a fixed buffer. Peak cost is that
+    /// buffer, not the bundle.
+    pub fn export_to_file(&self, dest: &Path) -> Result<()> {
+        self.read(|flat| self.write_streaming(flat, dest))
     }
 
-    /// Persist a flat bundle to disk, folding the disk-cached payloads back in.
+    /// Path for a temp file beside the bundle, tagged with the purpose so two
+    /// concurrent uses cannot collide with each other or with the atomic
+    /// write's own `.tmp`.
+    fn export_temp_path(&self, tag: &str) -> PathBuf {
+        let mut name = self
+            .bundle_path
+            .file_name()
+            .unwrap_or_default()
+            .to_os_string();
+        name.push(format!(".{tag}-{}.tmp", uuid::Uuid::new_v4()));
+        self.bundle_path.with_file_name(name)
+    }
+
+    /// Write `flat` into `dest` as a `.axgf`, supplying payloads from the cache.
+    fn write_streaming(&self, flat: &Value, dest: &Path) -> Result<()> {
+        self.try_write_streaming(flat, dest)
+            .map_err(|e| anyhow::anyhow!("{}", e.detail))
+    }
+
+    /// One streaming export attempt.
+    fn try_write_streaming(&self, flat: &Value, dest: &Path) -> Result<(), ExportFailure> {
+        let json = flat.to_string();
+        let file = fs::File::create(dest).map_err(|e| ExportFailure {
+            detail: format!("creating {}: {e}", dest.display()),
+        })?;
+        // The library takes `dest` by value and does not hand it back, so the
+        // fsync goes through a second handle on the same file.
+        let fsync_handle = file.try_clone().map_err(|e| ExportFailure {
+            detail: format!("duplicating handle for {}: {e}", dest.display()),
+        })?;
+
+        let env = axgf_rs::export_bundle_streaming(&json, file, |slot| {
+            // `slot.path()` is the ZIP path, which is exactly how the cache is
+            // keyed — no translation between the two naming schemes.
+            let src = self.payloads.open_for_read(slot.path())?;
+            slot.write_all_from(src)?;
+            Ok(())
+        });
+
+        for d in &env.diagnostics {
+            if d.severity != axgf_rs::boundary::envelope::Severity::Info {
+                tracing::warn!(code = d.code.as_str(), message = %d.message, "export diagnostic");
+            }
+        }
+
+        if env.status == Status::Error {
+            let detail = format_diagnostics(&env.diagnostics);
+            let _ = fs::remove_file(dest);
+            return Err(ExportFailure { detail });
+        }
+
+        fsync_handle.sync_all().map_err(|e| ExportFailure {
+            detail: format!("fsyncing {}: {e}", dest.display()),
+        })?;
+        Ok(())
+    }
+
+    /// Persist a flat bundle to disk, streaming the disk-cached payloads in.
+    ///
+    /// The archive is built in a sibling temp file and renamed over the bundle
+    /// only once it is complete and fsynced, so the live file is never
+    /// partially written. A failure at any stage removes the temp file and
+    /// leaves the previous bundle byte-identical.
     fn persist(&self, flat: &Value) -> Result<()> {
-        let bytes = self.export_flat_with_payloads(flat)?;
-        let result = write_bytes_atomic(&self.bundle_path, &bytes);
-        drop(bytes);
-        // The export materialised every payload as base64; give that heap back
-        // to the OS so a save does not leave the process bloated.
-        payloads::release_freed_memory();
-        result
+        let tmp = tmp_path_for(&self.bundle_path);
+        if let Err(e) = self.write_streaming(flat, &tmp) {
+            let _ = fs::remove_file(&tmp);
+            return Err(e);
+        }
+        rename_and_sync(&tmp, &self.bundle_path)
     }
 
     /// Apply a mutation under the write lock, persisting atomically on success.
@@ -455,9 +543,25 @@ impl AppState {
         {
             file["path"] = Value::String(zip_path.clone());
         }
-        // Write the payload to the cache *before* persisting, so the export that
-        // persist performs finds it and writes it into the .axgf.
-        self.payloads.put(&zip_path, payload)?;
+        // Write the payload to the cache *before* persisting, so the export
+        // that persist performs finds it and writes it into the .axgf — and
+        // declare it in `external_payloads` in the same breath, because a
+        // streaming export only asks for the paths the bundle declares. A
+        // cached payload the bundle does not name would be silently absent
+        // from the file.
+        let declaration = self.payloads.put(&zip_path, payload)?;
+        if let Some(obj) = new_bundle.as_object_mut() {
+            match obj
+                .entry("external_payloads")
+                .or_insert_with(|| Value::Object(Default::default()))
+                .as_object_mut()
+            {
+                Some(m) => {
+                    m.insert(zip_path.clone(), declaration);
+                }
+                None => anyhow::bail!("external_payloads is not an object"),
+            }
+        }
         self.persist(&new_bundle)?;
         *guard = new_bundle;
 
@@ -541,8 +645,9 @@ pub fn write_bundle(path: &Path, flat: &Value) -> Result<()> {
 }
 
 /// Write bytes to `path` atomically: temp sibling, fsync, rename, then a
-/// best-effort directory fsync. Shared by [`write_bundle`] and the payload-aware
-/// persist path so both get the same crash-safety guarantee.
+/// best-effort directory fsync. Used for the payload-free initial write; the
+/// streaming persist path reaches the same guarantee by building the archive in
+/// the temp file and calling [`rename_and_sync`].
 pub fn write_bytes_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
     let tmp = tmp_path_for(path);
     {
@@ -553,8 +658,17 @@ pub fn write_bytes_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
         f.sync_all()
             .with_context(|| format!("fsyncing temp bundle {}", tmp.display()))?;
     }
+    rename_and_sync(&tmp, path)
+}
 
-    fs::rename(&tmp, path)
+/// Rename a fully written, fsynced temp file over `path` and make the rename
+/// itself durable.
+///
+/// This is the moment the new bundle becomes the live one. Everything before it
+/// touched only the temp file, so a crash at any earlier point leaves the
+/// previous bundle intact.
+fn rename_and_sync(tmp: &Path, path: &Path) -> Result<()> {
+    fs::rename(tmp, path)
         .with_context(|| format!("renaming {} over {}", tmp.display(), path.display()))?;
 
     // Best-effort: fsync the directory so the rename itself is durable. A

@@ -131,6 +131,47 @@ pub fn bundle_download(filename: &str, bytes: Vec<u8>) -> Response {
         .into_response()
 }
 
+/// A `.axgf` download streamed from a file the response takes ownership of.
+///
+/// The file is unlinked as soon as it is open: on a POSIX filesystem the bytes
+/// survive until the handle closes, so the temp file cannot outlive the
+/// response even if the client disconnects halfway through or the process is
+/// killed.
+pub async fn bundle_download_from(filename: &str, path: std::path::PathBuf) -> Response {
+    let file = match tokio::fs::File::open(&path).await {
+        Ok(f) => f,
+        Err(e) => {
+            let _ = tokio::fs::remove_file(&path).await;
+            return error_page(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Could not read the exported bundle",
+                &e.to_string(),
+            );
+        }
+    };
+    let _ = tokio::fs::remove_file(&path).await;
+    let len = file.metadata().await.map(|m| m.len()).ok();
+
+    let mut headers = header::HeaderMap::new();
+    headers.insert(
+        header::CONTENT_TYPE,
+        header::HeaderValue::from_static("application/vnd.axgf+zip"),
+    );
+    if let Ok(v) = header::HeaderValue::from_str(&format!(
+        "attachment; filename=\"{}\"",
+        sanitize_filename(filename)
+    )) {
+        headers.insert(header::CONTENT_DISPOSITION, v);
+    }
+    if let Some(len) = len {
+        if let Ok(v) = header::HeaderValue::from_str(&len.to_string()) {
+            headers.insert(header::CONTENT_LENGTH, v);
+        }
+    }
+    let body = axum::body::Body::from_stream(tokio_util::io::ReaderStream::new(file));
+    (headers, body).into_response()
+}
+
 /// Strip characters that would let a filename break out of the
 /// `Content-Disposition` quoting.
 fn sanitize_filename(name: &str) -> String {

@@ -3,10 +3,13 @@
 //!
 //! # The bundle already carries files
 //!
-//! `import_bundle` decodes everything under `documents/files/**` into the flat
-//! JSON's `attachments` map as base64, and `export_bundle` writes it back at
-//! the same ZIP path. Nothing in `axgf-rs` needed changing for uploads to
-//! work; this module is the CMS end of an existing capability.
+//! Everything under `documents/files/**` is a payload the bundle already
+//! carries. `import_bundle_streaming` hands each one over as a live reader and
+//! `export_bundle_streaming` asks for it back at the same ZIP path, so an
+//! upload is a file in the payload cache plus a Document entity — the bytes
+//! never pass through the in-memory bundle in either direction. Nothing in
+//! `axgf-rs` needed changing for uploads to work; this module is the CMS end
+//! of an existing capability.
 //!
 //! # Why the filename is not consulted
 //!

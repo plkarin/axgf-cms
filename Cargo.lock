@@ -119,10 +119,10 @@ dependencies = [
  "axum",
  "base64",
  "clap",
+ "crc32fast",
  "http-body-util",
  "image",
  "kamadak-exif",
- "libc",
  "minijinja",
  "serde",
  "serde_json",
@@ -138,9 +138,9 @@ dependencies = [
 
 [[package]]
 name = "axgf-rs"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d91fdc554ba8f3da1e6a168f16fafa9a379f19e346aa78ba64a70282dd56fa4"
+checksum = "04e97b5f2a0a3930884bb619cfa3b60e60d91a84728549ec3929543af8a226c4"
 dependencies = [
  "base64",
  "jsonschema",

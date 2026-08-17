@@ -12,11 +12,12 @@
 //! deliberate exception is *presentation*: [`view`] decides how a date the
 //! library already parsed should read in prose.
 
-// `deny`, not `forbid`, so the one justified exception — the `malloc_trim`
-// call in [`payloads::release_freed_memory`] that hands a media bundle's freed
-// heap back to the OS — can carry a scoped `#[allow(unsafe_code)]`. There is no
-// other unsafe in the crate.
-#![deny(unsafe_code)]
+// Nothing in this crate needs `unsafe`, and `forbid` is what says so in a way
+// that cannot be locally waived. The one exception this file used to carry —
+// a `malloc_trim` call to hand back the heap `import_bundle`'s base64 forced
+// into being — went away with the streaming boundary: with no payload ever
+// materialised, there is no transient heap to return.
+#![forbid(unsafe_code)]
 
 pub mod admin;
 pub mod auth;

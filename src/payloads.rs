@@ -1,43 +1,55 @@
 //! Binary payloads on disk, so a media-heavy bundle is not held in RAM.
 //!
-//! `import_bundle` decodes every attachment under `documents/files/**` into the
-//! flat JSON's `attachments` map as base64. On the operator's 420 MiB archive
-//! that is roughly 560 MiB resident before a single request is served — the
-//! "held entirely in memory" design has crossed the line it was warned about.
+//! A bundle's media never belongs in the process. `axgf-rs` 0.3's streaming
+//! boundary is what makes that literal: [`axgf_rs::import_bundle_streaming`]
+//! hands over one payload at a time as a live reader, so each one goes from
+//! the archive to a file in this cache through a fixed 64 KiB buffer and is
+//! never a `Vec` at all. What stays resident is the textual data — persons,
+//! families, document *metadata*, the manifest — which is under a megabyte and
+//! is what every page render touches.
 //!
-//! So at load time this module writes each attachment out to a disk cache as a
-//! real file and drops it from the in-memory flat JSON. What stays resident is
-//! the textual data — persons, families, document *metadata*, the manifest —
-//! which is under a megabyte and is what every page render touches. Payloads
-//! are streamed from disk on `GET /document/:id/raw` and re-materialised, only
-//! for the duration of one call, when a `.axgf` has to be exported.
+//! The reverse direction matches: [`axgf_rs::export_bundle_streaming`] asks
+//! for one payload at a time and writes it straight into the open ZIP entry,
+//! so writing the bundle back costs a file handle rather than a copy of the
+//! media. Nothing here ever base64-encodes a payload.
 //!
 //! # Cache location and lifecycle
 //!
 //! Default `<bundle_dir>/.axgf-cms-cache/<bundle-sha>/`, overridable with
 //! `--cache-dir`. Keying the directory by a hash of the bundle means a
 //! different bundle can never read another's payloads, and an unchanged bundle
-//! restarts against an already-populated cache without rewriting 420 MiB. Every
-//! extraction is verified against the sha256 in the document metadata; a
-//! mismatch is reported loudly rather than served silently. The cache is
-//! derived data — the `.axgf` holds the authoritative copy — so it never needs
-//! backing up, and it is never written inside the bundle file itself.
+//! restarts against an already-populated cache without rewriting 420 MiB. The
+//! cache is derived data — the `.axgf` holds the authoritative copy — so it
+//! never needs backing up, it is never written inside the bundle file itself,
+//! and anything missing from it can be rebuilt from the bundle.
+//!
+//! # What proves a cached payload is still the right bytes
+//!
+//! The ZIP central directory carries each entry's uncompressed size and CRC-32,
+//! and a streaming import reports both *before* decompressing anything. So a
+//! warm restart re-reads the cached file, computes its CRC-32, and reuses it
+//! only when that matches the archive — which is a direct proof that the cache
+//! holds the bundle's bytes, not merely an intact file. The sha256 recorded in
+//! the index is what the document metadata is checked against, and a
+//! disagreement between the two is reported rather than served silently.
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::io::{Read as _, Write as _};
+use std::io::{self, Read as _, Write as _};
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
 use anyhow::{Context, Result};
-use base64::Engine as _;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use crate::documents::sha256_hex;
+use sha2::{Digest, Sha256};
 
 /// Name of the manifest kept inside a cache directory.
 const INDEX_FILE: &str = "index.json";
+
+/// Copy buffer for moving a payload between the archive and the cache. Matches
+/// the size `axgf-rs` uses internally, so neither side is the bottleneck.
+const COPY_BUF: usize = 64 * 1024;
 
 /// One extracted payload: the cache filename plus what verifies it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,6 +58,11 @@ struct Entry {
     file: String,
     sha256: String,
     size: u64,
+    /// CRC-32 of the bytes, as the source archive declared them. `0` means an
+    /// index written before this was recorded; such an entry cannot be proven
+    /// to match the archive, so it is re-extracted once and then carries it.
+    #[serde(default)]
+    crc32: u32,
 }
 
 /// What one populate pass did, for the startup report.
@@ -99,86 +116,124 @@ impl PayloadCache {
         &self.dir
     }
 
-    /// Move every attachment in `flat` to disk and drop the `attachments` map.
+    /// Take one payload straight from a streaming import into the cache.
     ///
-    /// A payload already cached with a matching sha256 is reused rather than
-    /// rewritten, so a restart on an unchanged bundle is fast. Each extraction
-    /// is verified against the document metadata's sha256, and a mismatch is
-    /// counted and logged loudly.
-    pub fn populate_from_flat(&self, flat: &mut Value) -> Result<PopulateReport> {
-        let mut report = PopulateReport {
-            cache_dir: self.dir.clone(),
-            ..Default::default()
-        };
-        let expected = expected_shas(flat);
-        // Take the attachments map out of the bundle by value rather than
-        // cloning it: on a 420 MiB archive the clone alone would be another
-        // ~560 MiB of transient base64. Removing it here is also what drops the
-        // payloads from the resident bundle — what stays in RAM is the textual
-        // data, not the media.
-        let attachments = flat
-            .as_object_mut()
-            .and_then(|o| o.remove("attachments"))
-            .and_then(|v| match v {
-                Value::Object(m) => Some(m),
-                _ => None,
-            });
-
+    /// Called once per payload by [`crate::state::AppState::load`], from inside
+    /// `import_bundle_streaming`'s callback. The bytes move through a fixed
+    /// buffer, so the cost of the largest photograph in the bundle is the
+    /// buffer, not the photograph.
+    ///
+    /// A cached file whose CRC-32 already matches the archive's is left alone
+    /// and the payload is not read at all — `axgf-rs` skips the entry when the
+    /// callback returns without consuming it, so a warm restart never
+    /// decompresses anything.
+    pub fn take_payload(
+        &self,
+        payload: &mut axgf_rs::boundary::stream::Payload<'_>,
+        report: &mut PopulateReport,
+    ) -> io::Result<()> {
+        let zip_path = payload.path().to_string();
         let mut index = self.index.write().unwrap_or_else(|e| e.into_inner());
-        if let Some(map) = attachments {
-            for (zip_path, b64v) in map {
-                let Some(b64) = b64v.as_str() else { continue };
 
-                // Warm reuse: an existing cache file that still verifies, and
-                // agrees with the metadata, is not decoded or rewritten.
-                if let Some(entry) = index.get(&zip_path) {
-                    let cached = self.dir.join(&entry.file);
-                    if let Ok(bytes) = fs::read(&cached) {
-                        let ok_self = sha256_hex(&bytes) == entry.sha256;
-                        let ok_meta = expected.get(&zip_path).is_none_or(|s| s == &entry.sha256);
-                        if ok_self && ok_meta {
-                            report.reused += 1;
-                            report.bytes_on_disk += entry.size;
-                            continue;
-                        }
-                        tracing::warn!(path = %zip_path,
-                            "cached payload failed verification — re-extracting");
-                        report.mismatches += 1;
-                    }
+        if let Some(entry) = index.get(&zip_path) {
+            match self.verify_cached(entry, payload.size(), payload.crc32()) {
+                Verdict::Good => {
+                    report.reused += 1;
+                    report.bytes_on_disk += entry.size;
+                    return Ok(());
                 }
-
-                // Cold, or an invalid cache entry: decode, verify, write.
-                let bytes = base64::engine::general_purpose::STANDARD
-                    .decode(b64)
-                    .with_context(|| format!("decoding attachment {zip_path}"))?;
-                let sha = sha256_hex(&bytes);
-                if let Some(exp) = expected.get(&zip_path) {
-                    if exp != &sha {
-                        report.mismatches += 1;
-                        tracing::warn!(path = %zip_path, expected = %exp, actual = %sha,
-                            "payload sha256 does not match the bundle metadata — \
-                             the file and its record disagree");
-                    }
+                Verdict::Absent => {}
+                Verdict::Stale => {
+                    tracing::warn!(path = %zip_path,
+                        "cached payload does not match the bundle — re-extracting");
+                    report.mismatches += 1;
                 }
-                let file = cache_filename(&zip_path);
-                write_atomic(&self.dir.join(&file), &bytes)?;
-                let size = bytes.len() as u64;
-                index.insert(
-                    zip_path,
-                    Entry {
-                        file,
-                        sha256: sha,
-                        size,
-                    },
-                );
-                report.extracted += 1;
-                report.bytes_on_disk += size;
             }
         }
 
-        write_index(&self.dir, &index)?;
-        drop(index);
-        Ok(report)
+        // Cold, or a cache entry that could not be proven: stream the archive
+        // entry into a temp file, hashing as it passes, then rename into place.
+        let file = cache_filename(&zip_path);
+        let dest = self.dir.join(&file);
+        let (sha, size) = copy_to_file_hashing(payload, &dest)?;
+        index.insert(
+            zip_path,
+            Entry {
+                file,
+                sha256: sha,
+                size,
+                crc32: payload.crc32(),
+            },
+        );
+        report.extracted += 1;
+        report.bytes_on_disk += size;
+        Ok(())
+    }
+
+    /// Whether a cached file can be proven to be the archive entry described by
+    /// `size` and `crc32`.
+    fn verify_cached(&self, entry: &Entry, size: u64, crc32: u32) -> Verdict {
+        let cached = self.dir.join(&entry.file);
+        let Ok(meta) = fs::metadata(&cached) else {
+            return Verdict::Absent;
+        };
+        // An entry written before CRC-32 was recorded cannot be tied to this
+        // archive, so it is re-extracted once and carries the proof afterwards.
+        if entry.crc32 == 0 || entry.crc32 != crc32 || entry.size != size || meta.len() != size {
+            return Verdict::Stale;
+        }
+        match crc32_of_file(&cached) {
+            Ok(actual) if actual == crc32 => Verdict::Good,
+            _ => Verdict::Stale,
+        }
+    }
+
+    /// Persist the index after a streaming import has filled it.
+    pub fn flush_index(&self) -> Result<()> {
+        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
+        write_index(&self.dir, &index)
+    }
+
+    /// Check every cached payload against the sha256 the document metadata
+    /// records for it, counting and logging each disagreement.
+    ///
+    /// Run after a streaming import, because the metadata arrives with the
+    /// textual half — that is, after the payloads have already gone past. The
+    /// bytes are the archive's either way; what this reports is a bundle whose
+    /// file and whose record of that file do not agree.
+    pub fn verify_against_metadata(&self, flat: &Value, report: &mut PopulateReport) {
+        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
+        for (zip_path, expected) in expected_shas(flat) {
+            let Some(entry) = index.get(&zip_path) else {
+                continue;
+            };
+            if entry.sha256 != expected {
+                report.mismatches += 1;
+                tracing::warn!(path = %zip_path, expected = %expected, actual = %entry.sha256,
+                    "payload sha256 does not match the bundle metadata — \
+                     the file and its record disagree");
+            }
+        }
+    }
+
+    /// Open one payload for reading, for a streaming export to pull from.
+    ///
+    /// An `Err` here is what turns into `PAYLOAD_SOURCE_FAILED`: `axgf-rs`
+    /// refuses the export rather than writing a bundle with that file missing.
+    pub fn open_for_read(&self, zip_path: &str) -> io::Result<fs::File> {
+        let entry = self
+            .index
+            .read()
+            .unwrap_or_else(|e| e.into_inner())
+            .get(zip_path)
+            .cloned()
+            .ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::NotFound,
+                    format!("payload {zip_path} is not in the cache index"),
+                )
+            })?;
+        fs::File::open(self.dir.join(&entry.file))
     }
 
     /// Read one payload's bytes from disk.
@@ -206,36 +261,28 @@ impl PayloadCache {
 
     /// Store a payload straight to the cache. Used by uploads, so a new file
     /// never transits through the in-memory bundle.
-    pub fn put(&self, zip_path: &str, bytes: &[u8]) -> Result<()> {
+    ///
+    /// Returns the `external_payloads` entry the bundle must declare for this
+    /// path, so the caller can record it in the same write that adds the
+    /// Document. A payload the cache holds but the bundle does not declare
+    /// would be silently absent from the next export.
+    pub fn put(&self, zip_path: &str, bytes: &[u8]) -> Result<Value> {
         let file = cache_filename(zip_path);
         write_atomic(&self.dir.join(&file), bytes)?;
+        let crc32 = crc32fast::hash(bytes);
+        let size = bytes.len() as u64;
         let mut index = self.index.write().unwrap_or_else(|e| e.into_inner());
         index.insert(
             zip_path.to_string(),
             Entry {
                 file,
-                sha256: sha256_hex(bytes),
-                size: bytes.len() as u64,
+                sha256: crate::documents::sha256_hex(bytes),
+                size,
+                crc32,
             },
         );
-        write_index(&self.dir, &index)
-    }
-
-    /// Build the `attachments` map for one export call: ZIP path -> base64,
-    /// read from disk. Meant to be spliced into a flat clone for the export and
-    /// dropped immediately after — never kept resident between requests.
-    pub fn attachments_value(&self) -> Value {
-        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
-        let mut map = serde_json::Map::new();
-        for (zip_path, entry) in index.iter() {
-            if let Ok(bytes) = fs::read(self.dir.join(&entry.file)) {
-                map.insert(
-                    zip_path.clone(),
-                    Value::String(base64::engine::general_purpose::STANDARD.encode(&bytes)),
-                );
-            }
-        }
-        Value::Object(map)
+        write_index(&self.dir, &index)?;
+        Ok(external_payload_value(size, crc32))
     }
 
     /// True when no payloads are cached.
@@ -279,29 +326,67 @@ fn cache_filename(zip_path: &str) -> String {
         .collect()
 }
 
-/// Return freed heap memory to the operating system.
+/// What a cached file is worth against the archive entry it claims to be.
+enum Verdict {
+    /// Provably the same bytes: reuse without decompressing anything.
+    Good,
+    /// The cache file is gone; extract it.
+    Absent,
+    /// Present but unproven or contradicted; extract over it.
+    Stale,
+}
+
+/// One `external_payloads` entry as the flat bundle carries it.
+fn external_payload_value(size: u64, crc32: u32) -> Value {
+    serde_json::json!({ "size_bytes": size, "crc32": crc32 })
+}
+
+/// Copy a reader into `dest` atomically, hashing as the bytes pass.
 ///
-/// `import_bundle` materialises every payload as base64 (~560 MiB on the
-/// operator's archive) before this module writes them to disk and drops them.
-/// The Rust allocations are freed, but glibc's allocator keeps that freed heap
-/// mapped by default, so the process RSS stays high even though the live data
-/// is about a megabyte. `malloc_trim` hands the top of the heap back to the
-/// kernel, so RSS reflects what is actually resident. A no-op off glibc.
-#[allow(unsafe_code)]
-pub fn release_freed_memory() {
-    #[cfg(target_env = "gnu")]
-    // SAFETY: malloc_trim takes an integer pad and only releases already-free
-    // memory back to the OS; it cannot invalidate or move any live allocation,
-    // so no Rust reference is affected.
-    unsafe {
-        libc::malloc_trim(0);
+/// Nothing is buffered beyond [`COPY_BUF`], so a 200 MiB photograph costs 64
+/// KiB. Returns the sha256 and the byte count. Written to a temp sibling and
+/// renamed, so an interrupted copy never leaves a half-file the next run would
+/// trust.
+fn copy_to_file_hashing(src: &mut impl io::Read, dest: &Path) -> io::Result<(String, u64)> {
+    let tmp = tmp_sibling(dest);
+    let mut hasher = Sha256::new();
+    let mut size = 0u64;
+    {
+        let mut out = fs::File::create(&tmp)?;
+        let mut buf = vec![0u8; COPY_BUF];
+        loop {
+            let n = src.read(&mut buf)?;
+            if n == 0 {
+                break;
+            }
+            hasher.update(&buf[..n]);
+            out.write_all(&buf[..n])?;
+            size += n as u64;
+        }
+        out.sync_all()?;
     }
+    fs::rename(&tmp, dest)?;
+    Ok((hex(&hasher.finalize()), size))
+}
+
+/// CRC-32 of a file's contents, read through a fixed buffer.
+fn crc32_of_file(path: &Path) -> io::Result<u32> {
+    let mut f = fs::File::open(path)?;
+    let mut hasher = crc32fast::Hasher::new();
+    let mut buf = vec![0u8; COPY_BUF];
+    loop {
+        let n = f.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hasher.finalize())
 }
 
 /// Stream-hash a file to a lowercase hex sha256, without reading it all into
 /// memory — the bundle can be hundreds of megabytes.
 pub fn hash_file(path: &Path) -> Result<String> {
-    use sha2::{Digest, Sha256};
     let mut f = fs::File::open(path).with_context(|| format!("opening {}", path.display()))?;
     let mut hasher = Sha256::new();
     let mut buf = vec![0u8; 1 << 20];
@@ -314,13 +399,17 @@ pub fn hash_file(path: &Path) -> Result<String> {
         }
         hasher.update(&buf[..n]);
     }
-    let digest = hasher.finalize();
-    let mut out = String::with_capacity(64);
-    for b in digest {
-        use std::fmt::Write as _;
+    Ok(hex(&hasher.finalize()))
+}
+
+/// Lowercase hex of a digest.
+fn hex(bytes: &[u8]) -> String {
+    use std::fmt::Write as _;
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
         let _ = write!(out, "{b:02x}");
     }
-    Ok(out)
+    out
 }
 
 fn read_index(dir: &Path) -> Option<BTreeMap<String, Entry>> {
@@ -333,11 +422,17 @@ fn write_index(dir: &Path, index: &BTreeMap<String, Entry>) -> Result<()> {
     write_atomic(&dir.join(INDEX_FILE), &bytes)
 }
 
-/// Write a file atomically: temp sibling, then rename.
-fn write_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
+/// The `.tmp` sibling a file is staged at before being renamed into place.
+/// Same directory, so the rename stays on one filesystem and stays atomic.
+fn tmp_sibling(path: &Path) -> PathBuf {
     let mut tmp = path.as_os_str().to_os_string();
     tmp.push(".tmp");
-    let tmp = PathBuf::from(tmp);
+    PathBuf::from(tmp)
+}
+
+/// Write a file atomically: temp sibling, then rename.
+fn write_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
+    let tmp = tmp_sibling(path);
     {
         let mut f =
             fs::File::create(&tmp).with_context(|| format!("creating {}", tmp.display()))?;

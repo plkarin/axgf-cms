@@ -137,11 +137,14 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             diagnostics,
             bundle_path => state.bundle_path().display().to_string(),
             bundle_size => documents::human_size(state.bundle_size()),
-            // The bundle is read into memory whole at startup, so its size is
-            // the application's resident cost, not just a number on disk.
+            // Size on disk is no longer the resident cost — payloads are
+            // streamed in and out and never held — but it is still what an
+            // operator sizes a host and a backup against.
             bundle_heavy => state.bundle_size() > state.size_warn(),
             size_warn => documents::human_size(state.size_warn()),
-            attachment_count => state.read(|flat| flat.get("attachments")
+            // The payloads live outside the flat JSON, so what the bundle
+            // declares in `external_payloads` is the count of attached files.
+            attachment_count => state.read(|flat| flat.get("external_payloads")
                 .and_then(Value::as_object).map(|m| m.len()).unwrap_or(0)),
             completeness,
         },
@@ -455,19 +458,22 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
 }
 
 /// `GET /admin/export`
+///
+/// Streams the bundle rather than building it in memory: the archive is written
+/// to a temp file one payload at a time, then sent from that file. Downloading a
+/// 400 MiB bundle costs a file handle, not 400 MiB of process.
 pub async fn export(State(state): State<Shared>, headers: HeaderMap) -> Response {
     guard!(state, headers);
-    match state.export_bytes() {
-        Ok(bytes) => {
-            let name = state
-                .bundle_path()
-                .file_name()
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_else(|| "family.axgf".into());
-            render::bundle_download(&name, bytes)
-        }
-        Err(e) => io_error(&e),
-    }
+    let tmp = match state.export_to_temp_file() {
+        Ok(t) => t,
+        Err(e) => return io_error(&e),
+    };
+    let name = state
+        .bundle_path()
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "family.axgf".into());
+    render::bundle_download_from(&name, tmp).await
 }
 
 // ---------------------------------------------------------------------------

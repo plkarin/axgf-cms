@@ -22,6 +22,7 @@ pub fn router(state: Shared) -> Router {
         .route("/tree", get(public::tree))
         .route("/person/:id", get(public::person))
         .route("/document/:id/raw", get(public::document_raw))
+        .route("/document/:id/view", get(public::document_view))
         .route("/document/:id/thumb", get(public::document_thumb))
         .route("/convert", get(convert::form))
         .route(

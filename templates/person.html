@@ -341,7 +341,9 @@
   <div class="gallery">
     {% for d in p.images %}
     <figure class="shot">
-      <a href="/document/{{ d.id }}/raw">
+      {# /view, not /raw: the gallery shows the image the right way up, while
+         the Download link below still hands over the untouched original. #}
+      <a href="/document/{{ d.id }}/view">
         <img src="/document/{{ d.id }}/thumb" loading="lazy"
              alt="{{ d.caption if d.caption else d.filename }}">
       </a>

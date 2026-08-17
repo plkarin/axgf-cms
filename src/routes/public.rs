@@ -411,6 +411,44 @@ pub async fn document_raw(State(state): State<Shared>, Path(id): Path<String>) -
         .into_response()
 }
 
+/// `GET /document/:id/view` — a full-size image, EXIF-orientation corrected,
+/// for display in the page. Non-images and images already upright stream their
+/// stored bytes unchanged; a rotated image is re-encoded so it shows upright.
+///
+/// This is deliberately distinct from `/raw`: `/raw` is the byte-identical
+/// original a reader downloads, while `/view` is what the gallery opens, where
+/// a sideways phone photo must appear the right way up.
+pub async fn document_view(State(state): State<Shared>, Path(id): Path<String>) -> Response {
+    let Some(doc) = stored_document(&state, &id) else {
+        return render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such file",
+            "This bundle has no document with that id.",
+        );
+    };
+
+    // Only raster images are corrected; anything else is served as its stored
+    // bytes inline where safe, or as an attachment otherwise.
+    if crate::documents::serve_inline(&doc.mime) {
+        if let Some(png) = crate::documents::oriented_image(&doc.bytes) {
+            return (
+                [
+                    (header::CONTENT_TYPE, "image/png".to_string()),
+                    (
+                        header::HeaderName::from_static("x-content-type-options"),
+                        "nosniff".to_string(),
+                    ),
+                    (header::CACHE_CONTROL, "private, max-age=3600".to_string()),
+                ],
+                png,
+            )
+                .into_response();
+        }
+    }
+    // Fallback: hand off to the byte-identical path.
+    document_raw(State(state), Path(id)).await
+}
+
 /// `GET /document/:id/thumb` — a downscaled PNG, or 404 for a non-image.
 pub async fn document_thumb(State(state): State<Shared>, Path(id): Path<String>) -> Response {
     let Some(doc) = stored_document(&state, &id) else {

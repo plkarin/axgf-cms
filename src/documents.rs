@@ -250,15 +250,72 @@ pub fn attachment_path(doc_id: &str, ext: &str) -> String {
 /// Longest edge of a generated thumbnail, in pixels.
 pub const THUMB_EDGE: u32 = 320;
 
-/// Render a downscaled PNG of an image, or `None` when the bytes are not an
-/// image this build can decode.
+/// The EXIF orientation tag, 1–8. A phone writes the sensor orientation here
+/// rather than rotating the pixels, so an image that looks upright in a file
+/// browser renders sideways when the tag is ignored. `1` (or absent) means the
+/// pixels are already upright.
+///
+/// The `image` crate does not read this, so it is parsed with `kamadak-exif`.
+pub fn exif_orientation(bytes: &[u8]) -> u32 {
+    let mut cursor = std::io::Cursor::new(bytes);
+    let reader = exif::Reader::new();
+    let Ok(exif) = reader.read_from_container(&mut cursor) else {
+        return 1;
+    };
+    exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)
+        .and_then(|f| f.value.get_uint(0))
+        .filter(|v| (1..=8).contains(v))
+        .unwrap_or(1)
+}
+
+/// Apply an EXIF orientation to a decoded image. All eight values are handled,
+/// not just the two common rotations: the four flips occur on scanned material
+/// and mirrored front-camera shots.
+pub fn apply_orientation(img: image::DynamicImage, orientation: u32) -> image::DynamicImage {
+    use image::DynamicImage as D;
+    match orientation {
+        2 => img.fliph(),
+        3 => img.rotate180(),
+        4 => img.flipv(),
+        5 => D::ImageRgba8(img.rotate90().fliph().to_rgba8()),
+        6 => img.rotate90(),
+        7 => D::ImageRgba8(img.rotate270().fliph().to_rgba8()),
+        8 => img.rotate270(),
+        // 1, and anything unexpected, leave untouched.
+        _ => img,
+    }
+}
+
+/// Decode an image and apply its EXIF orientation.
+fn decode_upright(bytes: &[u8]) -> Option<image::DynamicImage> {
+    let img = image::load_from_memory(bytes).ok()?;
+    Some(apply_orientation(img, exif_orientation(bytes)))
+}
+
+/// Render a downscaled PNG of an image, oriented per its EXIF tag, or `None`
+/// when the bytes are not an image this build can decode.
 pub fn thumbnail(bytes: &[u8]) -> Option<Vec<u8>> {
     // Guessing the format from the bytes rather than trusting the stored MIME
     // keeps this consistent with how the file was admitted in the first place.
-    let img = image::load_from_memory(bytes).ok()?;
+    let img = decode_upright(bytes)?;
     let thumb = img.thumbnail(THUMB_EDGE, THUMB_EDGE);
     let mut out = std::io::Cursor::new(Vec::new());
     thumb.write_to(&mut out, image::ImageFormat::Png).ok()?;
+    Some(out.into_inner())
+}
+
+/// A full-size PNG of an image with its EXIF orientation applied, or `None`
+/// when no correction is needed (orientation 1) or the bytes are not a
+/// decodable image — in which case the caller serves the stored bytes as they
+/// are. The stored original is never modified; only the displayed copy is
+/// corrected.
+pub fn oriented_image(bytes: &[u8]) -> Option<Vec<u8>> {
+    if exif_orientation(bytes) == 1 {
+        return None;
+    }
+    let img = decode_upright(bytes)?;
+    let mut out = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut out, image::ImageFormat::Png).ok()?;
     Some(out.into_inner())
 }
 
@@ -504,6 +561,110 @@ mod tests {
     #[test]
     fn a_pdf_has_no_thumbnail_rather_than_a_broken_one() {
         assert!(thumbnail(b"%PDF-1.7\nnot an image").is_none());
+    }
+
+    /// A minimal JPEG carrying a single EXIF orientation tag, so the parser and
+    /// every transform can be exercised without a real photograph.
+    fn jpeg_with_orientation(o: u16) -> Vec<u8> {
+        // A 2x1 red/blue JPEG, then an APP1/EXIF segment inserted after SOI
+        // declaring the orientation. Building the TIFF header by hand keeps the
+        // test self-contained.
+        let base = {
+            let img = image::RgbImage::from_fn(2, 1, |x, _| {
+                if x == 0 {
+                    image::Rgb([200, 0, 0])
+                } else {
+                    image::Rgb([0, 0, 200])
+                }
+            });
+            let mut out = std::io::Cursor::new(Vec::new());
+            image::DynamicImage::ImageRgb8(img)
+                .write_to(&mut out, image::ImageFormat::Jpeg)
+                .unwrap();
+            out.into_inner()
+        };
+        // Little-endian TIFF with one IFD entry: Orientation (0x0112), SHORT.
+        let mut tiff = Vec::new();
+        tiff.extend_from_slice(b"II\x2a\x00");
+        tiff.extend_from_slice(&8u32.to_le_bytes()); // IFD offset
+        tiff.extend_from_slice(&1u16.to_le_bytes()); // one entry
+        tiff.extend_from_slice(&0x0112u16.to_le_bytes());
+        tiff.extend_from_slice(&3u16.to_le_bytes()); // SHORT
+        tiff.extend_from_slice(&1u32.to_le_bytes()); // count
+        tiff.extend_from_slice(&(o as u32).to_le_bytes());
+        tiff.extend_from_slice(&0u32.to_le_bytes()); // next IFD
+        let mut app1 = Vec::new();
+        app1.extend_from_slice(b"Exif\x00\x00");
+        app1.extend_from_slice(&tiff);
+        let mut out = Vec::new();
+        out.extend_from_slice(&base[..2]); // SOI
+        out.push(0xff);
+        out.push(0xe1); // APP1
+        out.extend_from_slice(&((app1.len() + 2) as u16).to_be_bytes());
+        out.extend_from_slice(&app1);
+        out.extend_from_slice(&base[2..]);
+        out
+    }
+
+    #[test]
+    fn exif_orientation_is_read_for_all_eight_values() {
+        for o in 1..=8u16 {
+            let bytes = jpeg_with_orientation(o);
+            assert_eq!(
+                exif_orientation(&bytes),
+                o as u32,
+                "orientation {o} must be read back"
+            );
+        }
+        // No EXIF at all reads as upright.
+        let plain = tiny_png();
+        assert_eq!(exif_orientation(&plain), 1);
+    }
+
+    #[test]
+    fn every_orientation_transform_yields_an_image() {
+        // The four 90° rotations swap the axes; the flips do not. Checking the
+        // dimensions confirms each of the eight branches ran rather than
+        // silently falling through.
+        let img = image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
+            4,
+            2,
+            image::Rgb([1, 2, 3]),
+        ));
+        for o in 1..=8u32 {
+            let out = apply_orientation(img.clone(), o);
+            let swaps = matches!(o, 5..=8);
+            if swaps {
+                assert_eq!((out.width(), out.height()), (2, 4), "o={o} swaps axes");
+            } else {
+                assert_eq!((out.width(), out.height()), (4, 2), "o={o} keeps axes");
+            }
+        }
+    }
+
+    #[test]
+    fn an_upright_image_needs_no_correction_and_a_rotated_one_does() {
+        // orientation 1 → nothing to correct, so the caller streams the stored
+        // bytes unchanged; a rotated one yields a corrected PNG.
+        assert!(oriented_image(&tiny_png()).is_none());
+        let rotated = jpeg_with_orientation(6);
+        let corrected = oriented_image(&rotated).expect("a corrected image");
+        assert!(image::load_from_memory(&corrected).is_ok());
+    }
+
+    #[test]
+    fn a_thumbnail_of_a_rotated_photo_is_upright() {
+        // A 4-wide, 2-tall image tagged as rotated 90° (orientation 6) must come
+        // back taller than it is wide once the tag is honoured.
+        let bytes = jpeg_with_orientation(6);
+        let png = thumbnail(&bytes).expect("a thumbnail");
+        let decoded = image::load_from_memory(&png).expect("valid png");
+        assert!(
+            decoded.height() > decoded.width(),
+            "a 90°-rotated landscape thumbnail must end up portrait, got {}x{}",
+            decoded.width(),
+            decoded.height()
+        );
     }
 
     #[test]

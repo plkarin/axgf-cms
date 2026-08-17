@@ -28,7 +28,12 @@ use crate::view::{self, Confidence};
 // Card geometry. Positions are computed server-side because the SVG
 // connectors must line up with the cards without a layout pass in the browser.
 const CARD_W: f64 = 132.0;
-const CARD_H: f64 = 58.0;
+// Tall enough for a two-line name plus the dates line. Polish given-name
+// chains run long ("Alfons Władysław Antoni Wierzbięta"); at 58px the clamped
+// second line, ellipsis and all, was clipped by the card's own overflow, so a
+// name read as a truncated fragment. The connector geometry and row pitch are
+// both derived from this, so raising it keeps cards and wires aligned.
+const CARD_H: f64 = 66.0;
 const H_GAP: f64 = 14.0;
 const V_GAP: f64 = 78.0;
 const ROW_PITCH: f64 = CARD_H + V_GAP;

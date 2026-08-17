@@ -427,7 +427,10 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .tcard {
   position: absolute;
   width: 132px;
-  height: 58px;
+  /* Fixed height for every card, so a two-line name never makes a row ragged.
+     Tall enough to show both clamped lines plus the dates without the card's
+     own overflow clipping the ellipsis. Matches CARD_H in tree.rs. */
+  height: 66px;
   box-sizing: border-box;
   padding: 0.35rem 0.45rem;
   border: 1px solid var(--sex-u-line);

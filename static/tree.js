@@ -103,3 +103,93 @@
     })(cards[i]);
   }
 })();
+
+/* The side panel.
+ *
+ * A card click is the primary action and it loads that person's record into
+ * the panel over a small fragment fetch, so the tree itself never reloads. The
+ * URL is updated with pushState so the back button walks the selection history
+ * and the current selection is copy-pasteable; re-centring the tree is a
+ * separate, explicit control inside the panel. With scripting off every card
+ * is still a plain link to the standalone /person/:id page, so nothing here is
+ * load-bearing for the content — only for keeping it on one page. */
+(function () {
+  var panel = document.getElementById('tree-panel');
+  var canvas = document.getElementById('tree-canvas');
+  if (!panel || !canvas) return; // the ?all=1 view has no panel
+
+  var depth = panel.dataset.depth || '3';
+  var root = panel.dataset.root || '';
+
+  function markSelected(id) {
+    var cards = canvas.querySelectorAll('.tcard');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].classList.toggle('is-selected', cards[i].dataset.id === id);
+    }
+  }
+
+  /* A modified click (new tab, middle button) is left to the browser, so a
+   * card and every person link stay openable as ordinary permalinks. */
+  function plainClick(e) {
+    return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+  }
+
+  function loadPerson(id, push) {
+    fetch('/tree/panel/' + encodeURIComponent(id))
+      .then(function (r) { if (!r.ok) throw new Error('fetch'); return r.text(); })
+      .then(function (html) {
+        panel.innerHTML = html;
+        markSelected(id);
+        panel.scrollTop = 0;
+        if (push) {
+          var url = '/tree?root=' + encodeURIComponent(root) +
+                    '&depth=' + encodeURIComponent(depth) +
+                    '&sel=' + encodeURIComponent(id);
+          history.pushState({ sel: id }, '', url);
+        }
+      })
+      .catch(function () {
+        // Network or server error: fall back to the standalone page.
+        window.location.href = '/person/' + encodeURIComponent(id);
+      });
+  }
+
+  // Card click → load into the panel.
+  canvas.addEventListener('click', function (e) {
+    var card = e.target.closest && e.target.closest('.tcard');
+    if (!card || !plainClick(e)) return;
+    var id = card.dataset.id;
+    if (!id) return;
+    e.preventDefault();
+    loadPerson(id, true);
+  });
+
+  // Inside the panel: person links walk the family without leaving the page;
+  // "Centre the tree here" re-roots; "Open full page" is a real navigation.
+  panel.addEventListener('click', function (e) {
+    var centre = e.target.closest && e.target.closest('[data-centre]');
+    if (centre) {
+      e.preventDefault();
+      var cid = centre.getAttribute('data-centre');
+      window.location.href = '/tree?root=' + encodeURIComponent(cid) +
+                             '&depth=' + encodeURIComponent(depth) +
+                             '&sel=' + encodeURIComponent(cid);
+      return;
+    }
+    var link = e.target.closest && e.target.closest('a[href^="/person/"]');
+    if (link && plainClick(e) && !link.classList.contains('panel-open-full')) {
+      e.preventDefault();
+      var pid = decodeURIComponent(
+        link.getAttribute('href').slice('/person/'.length).split(/[?#]/)[0]
+      );
+      if (pid) loadPerson(pid, true);
+    }
+  });
+
+  // The back/forward buttons walk the selection history.
+  window.addEventListener('popstate', function (ev) {
+    var params = new URLSearchParams(window.location.search);
+    var id = (ev.state && ev.state.sel) || params.get('sel') || root;
+    if (id) loadPerson(id, false);
+  });
+})();

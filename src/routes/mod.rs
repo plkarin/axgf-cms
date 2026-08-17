@@ -20,6 +20,7 @@ pub fn router(state: Shared) -> Router {
     Router::new()
         .route("/", get(public::home))
         .route("/tree", get(public::tree))
+        .route("/tree/panel/:id", get(public::tree_panel))
         .route("/person/:id", get(public::person))
         .route("/document/:id/raw", get(public::document_raw))
         .route("/document/:id/view", get(public::document_view))

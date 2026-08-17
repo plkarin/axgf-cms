@@ -1,0 +1,35 @@
+{# The tree side panel: a person's whole record beside the tree. The record
+   sections come from _person_detail.html, the same partial the standalone
+   /person/:id page uses; only this chrome — the header and its controls — is
+   particular to the panel.
+
+   Rendered both server-side into the initial tree page and, on its own, by the
+   /tree/panel/:id fragment endpoint the card click fetches. Needs `p` (a
+   PersonView) and `is_admin`. #}
+{% if p %}
+<div class="panel-inner" data-person="{{ p.id }}">
+  <div class="panel-head">
+    <div>
+      <h2 class="panel-name">{{ p.name }}</h2>
+      <p class="lede small">
+        {%- if p.gender %}{{ p.gender }}{% endif -%}
+        {%- if p.is_living %} · living{% elif p.death.present %} · deceased{% endif -%}
+        {%- if p.visibility %} · {{ p.visibility }}{% endif -%}
+      </p>
+    </div>
+    <div class="panel-actions">
+      <button type="button" class="btn small" data-centre="{{ p.id }}"
+              title="Move the tree to centre on this person">Centre the tree here</button>
+      <a class="btn small panel-open-full" href="/person/{{ p.id }}"
+         title="Open the standalone, shareable page">Open full page ↗</a>
+      {% if is_admin %}<a class="btn small" href="/admin/person/{{ p.id }}/edit">Edit</a>{% endif %}
+    </div>
+  </div>
+
+  {% include "_person_detail.html" %}
+</div>
+{% else %}
+<div class="panel-inner panel-empty">
+  <p class="muted">Select a card to see that person's full record here.</p>
+</div>
+{% endif %}

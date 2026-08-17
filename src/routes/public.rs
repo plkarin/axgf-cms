@@ -189,6 +189,11 @@ pub struct TreeQuery {
     /// Draw every person in the bundle instead of a focused subtree.
     #[serde(default)]
     all: Option<String>,
+    /// Person whose record is shown in the side panel. Defaults to the root.
+    /// Kept distinct from `root` so opening a record in the panel does not move
+    /// the tree — re-centring is an explicit action.
+    #[serde(default)]
+    sel: Option<String>,
 }
 
 /// Depth shown above and below the root when none is requested.
@@ -213,13 +218,13 @@ pub async fn tree(
     let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
 
     let started = std::time::Instant::now();
-    let (layout, focus, roster) = state.read(|flat| {
+    let (layout, focus, roster, panel, selected) = state.read(|flat| {
         // The root picker lists everyone by name, so it is built regardless of
         // which view is showing.
         let roster = person_roster(flat);
 
         if show_all {
-            return (crate::tree::layout(flat), None, roster);
+            return (crate::tree::layout(flat), None, roster, None, None);
         }
 
         let root = q
@@ -244,10 +249,18 @@ pub async fn tree(
                     "descendants": sub.descendant_count,
                     "spouses": sub.spouse_count,
                 });
-                (l, Some(focus), roster)
+                // The panel opens on the selection, or the root if none was
+                // asked for. Selecting a person never moves the tree.
+                let sel = q
+                    .sel
+                    .clone()
+                    .filter(|id| flat.get("persons").and_then(|p| p.get(id)).is_some())
+                    .unwrap_or_else(|| root.clone());
+                let panel = crate::person::build(flat, &sel);
+                (l, Some(focus), roster, panel, Some(sel))
             }
             // An empty bundle has nobody to focus on.
-            None => (crate::tree::layout(flat), None, roster),
+            None => (crate::tree::layout(flat), None, roster, None, None),
         }
     });
     let elapsed = started.elapsed();
@@ -278,8 +291,40 @@ pub async fn tree(
             show_all,
             max_depth => MAX_DEPTH,
             full_width => full_width.round() as i64,
+            p => panel,
+            selected,
+            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
         },
     )
+}
+
+/// `GET /tree/panel/:id` — the side-panel fragment for one person.
+///
+/// Returns just the panel markup, not a whole page, so a card click can swap it
+/// in without reloading the tree. It renders the same `_panel.html` (and thus
+/// the same record sections) the initial server-rendered panel uses.
+pub async fn tree_panel(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let is_admin = auth::is_admin(&headers, state.admin_token());
+    let panel = state.read(|flat| crate::person::build(flat, &id));
+    match panel {
+        Some(p) => render::page(
+            "_panel.html",
+            context! {
+                p,
+                is_admin,
+                max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            },
+        ),
+        None => render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such person",
+            "This bundle contains no person with that id.",
+        ),
+    }
 }
 
 /// Every person as `{id, name}`, sorted by name, for the root picker.

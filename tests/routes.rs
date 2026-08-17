@@ -96,11 +96,16 @@ async fn the_tree_defaults_to_a_focused_subtree_with_controls() {
         body.contains("/tree?all=1"),
         "the full view stays reachable from the focused one"
     );
-    // Cards re-centre the view, and still expose the identity page.
-    assert!(body.contains("/tree?root="), "cards re-root the tree");
+    // A card click opens the record in the side panel; re-centring is now an
+    // explicit control inside that panel rather than the card's own click.
     assert!(
         body.contains(r#"href="/person/"#),
-        "cards link to the record too"
+        "cards link to the record permalink"
+    );
+    assert!(body.contains("tree-panel"), "the detail panel is present");
+    assert!(
+        body.contains("data-centre"),
+        "re-centring the tree is a panel control"
     );
 }
 

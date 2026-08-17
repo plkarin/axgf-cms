@@ -31,6 +31,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "error.html",
     "tree.html",
     "person.html",
+    "_person_detail.html",
+    "_panel.html",
     "convert.html",
     "convert_result.html",
     "admin_login.html",

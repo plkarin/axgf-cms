@@ -108,7 +108,7 @@ async fn tree_renders_a_full_size_bundle_well_under_a_second() {
             let body = body_string(resp).await;
             timings.push(t.elapsed());
             bytes = body.len();
-            cards = body.matches("class=\"tcard-hit\"").count();
+            cards = body.matches("data-id=\"").count();
         }
         timings.sort();
         let median = timings[timings.len() / 2];
@@ -173,7 +173,7 @@ async fn the_full_view_still_places_every_person() {
     let h: serde_json::Value = serde_json::from_str(&health).unwrap();
     let people = h["entities"]["persons"].as_u64().unwrap() as usize;
 
-    let cards = body.matches("class=\"tcard-hit\"").count();
+    let cards = body.matches("data-id=\"").count();
     assert_eq!(
         cards, people,
         "every person needs a card in the full view; {people} people but {cards} cards"
@@ -191,7 +191,7 @@ async fn the_default_view_is_a_small_legible_subtree() {
     let (app, _p) = app_with_bundle("focus", &bundle);
     let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
 
-    let cards = body.matches("class=\"tcard-hit\"").count();
+    let cards = body.matches("data-id=\"").count();
     assert!(cards > 0, "the default view must draw somebody");
     assert!(
         cards <= 120,

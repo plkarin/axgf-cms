@@ -108,10 +108,12 @@
 
 {% if not show_all %}
 <p class="small muted tree-hint">
-  Click any card to re-centre the tree on that person; the ↗ opens their full record.
+  Click any card to open that person's record in the panel; “Centre the tree
+  here” in the panel re-roots the view.
 </p>
 {% endif %}
 
+<div class="tree-split{% if show_all %} no-panel{% endif %}">
 <div class="tree-scroll">
   <div id="tree-canvas" class="tree-canvas"
        style="width:{{ layout.width }}px;height:{{ layout.height }}px">
@@ -133,25 +135,34 @@
         <span class="muted">{{ band.sublabel }}</span>
       </div>
       {% for c in band.cards %}
-      <div class="tcard{% if c.is_root %} is-root{% endif %}"
-           data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
-           style="left:{{ c.x }}px;top:{{ c.y }}px">
-        {# The card body re-centres the view; the corner link opens the record. #}
-        <a class="tcard-hit" href="/tree?root={{ c.id }}&depth={{ depth }}"
-           title="Centre the tree on {{ c.name }}"><span class="sr-only">Centre on {{ c.name }}</span></a>
-        <a class="tcard-open" href="/person/{{ c.id }}"
-           title="Open {{ c.name }}'s full record">↗</a>
+      {# The whole card is one link to the person's permalink; JS turns the
+         click into a panel load and marks the selection, falling back to the
+         standalone page when scripting is off. #}
+      <a class="tcard{% if c.is_root %} is-root{% endif %}{% if c.id == selected %} is-selected{% endif %}"
+         href="/person/{{ c.id }}"
+         data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
+         data-name="{{ c.name }}"
+         style="left:{{ c.x }}px;top:{{ c.y }}px"
+         title="{{ c.name }}">
         <span class="tname">{{ c.name }}</span>
         <span class="tdates">
           {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
           {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
               title="{{ c.conf_label }}"></i>{% endif %}
         </span>
-      </div>
+      </a>
       {% endfor %}
     {% endfor %}
 
   </div>
+</div>
+
+{% if not show_all %}
+<aside class="tree-panel" id="tree-panel" aria-label="Selected person"
+       data-depth="{{ depth }}"{% if focus %} data-root="{{ focus.root }}"{% endif %}>
+  {% include "_panel.html" %}
+</aside>
+{% endif %}
 </div>
 {% endif %}
 

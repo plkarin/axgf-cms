@@ -434,6 +434,7 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
   background: var(--sex-u);
   border-radius: 5px;
   color: var(--ink);
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -443,22 +444,9 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
   transition: box-shadow 0.1s, opacity 0.1s;
 }
 
-/* The card body re-centres the tree; the corner link opens the record. The
-   hit area is a stretched anchor so the whole card is clickable, with the
-   corner link layered above it. */
-.tcard-hit { position: absolute; inset: 0; z-index: 1; }
-.tcard-open {
-  position: absolute;
-  top: 1px; right: 3px;
-  z-index: 2;
-  font-size: 0.72rem;
-  line-height: 1;
-  padding: 2px 3px;
-  color: var(--ink-faint);
-  text-decoration: none;
-  border-radius: 3px;
-}
-.tcard-open:hover { color: var(--accent); background: var(--bg); }
+/* The card is itself the anchor now, so a click anywhere on it opens the
+   record in the panel; the text inside takes no pointer events of its own,
+   which keeps the event target the card rather than a span. */
 .tcard .tname, .tcard .tdates { pointer-events: none; }
 
 .tcard.is-root {
@@ -504,6 +492,69 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .tree-canvas.filtering .tcard.nomatch { opacity: 0.15; }
 .tree-canvas.filtering .tcard.match { box-shadow: 0 0 0 2px var(--accent); z-index: 4; }
 .tree-canvas.filtering .tree-wires { opacity: 0.25; }
+
+/* The selected card, whose record is open in the panel. Distinct from the
+   root ring so "centred here" and "showing here" read as two different things. */
+.tcard.is-selected { box-shadow: 0 0 0 3px var(--accent); z-index: 4; }
+
+/* ---- Tree + side panel -------------------------------------------------- */
+/* A scrollable tree on the left, a fixed detail panel on the right, filling
+   the space the corner-arrow layout used to waste. */
+.tree-split { display: flex; gap: 1rem; align-items: flex-start; }
+.tree-split .tree-scroll { flex: 1 1 auto; min-width: 0; }
+.tree-split.no-panel .tree-scroll { flex: 1 1 100%; }
+
+.tree-panel {
+  flex: 0 0 380px;
+  max-height: 82vh;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.9rem 1rem;
+  position: sticky;
+  top: 1rem;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+.panel-name { margin: 0; font-size: 1.2rem; line-height: 1.2; }
+.panel-head .lede { margin: 0.2rem 0 0; }
+.panel-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.btn.small { padding: 0.15rem 0.5rem; font-size: 0.8rem; }
+.panel-empty { color: var(--ink-faint); padding: 1rem 0; }
+
+/* The record sections, re-flowed for a narrow column: one column of cards,
+   comfortable spacing, tables and the gallery scrolling inside their own box
+   rather than forcing the panel wide. The confidence bars and chips are the
+   same partials, so uncertainty still reads the same way. */
+.tree-panel .rec-section { margin: 0 0 1.1rem; }
+.tree-panel .rec-section h2 { font-size: 1rem; margin-bottom: 0.4rem; }
+.tree-panel .rec-section h3 { font-size: 0.9rem; }
+.tree-panel .grid.cols-2,
+.tree-panel .grid.cols-3 { grid-template-columns: 1fr; gap: 0.6rem; }
+.tree-panel .table-wrap { overflow-x: auto; }
+.tree-panel .gallery { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+.tree-panel .raw-json { max-height: 40vh; }
+
+@media (max-width: 1000px) {
+  /* Below laptop width the two columns stop working, so stack the panel under
+     the tree rather than squeezing it into an unreadable sliver. */
+  .tree-split { flex-direction: column; }
+  .tree-panel {
+    flex-basis: auto;
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+}
 
 /* ---------- identity page ---------- */
 

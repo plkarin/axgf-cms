@@ -501,14 +501,33 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .tcard.is-selected { box-shadow: 0 0 0 3px var(--accent); z-index: 4; }
 
 /* ---- Tree + side panel -------------------------------------------------- */
-/* A scrollable tree on the left, a fixed detail panel on the right, filling
-   the space the corner-arrow layout used to waste. */
-.tree-split { display: flex; gap: 1rem; align-items: flex-start; }
-.tree-split .tree-scroll { flex: 1 1 auto; min-width: 0; }
-.tree-split.no-panel .tree-scroll { flex: 1 1 100%; }
+/* A scrollable tree on the left, a detail panel on the right, filling the
+   space the corner-arrow layout used to waste.
+
+   The panel track is clamped rather than fixed. At a flat 380px the same
+   column was a third of a 1100px laptop — squeezing the tree, the one thing
+   the page exists to show — and a thin sliver on a wide monitor, where the
+   record's tables and gallery had room to breathe and were not given it.
+   Sizing it at 26vw between a 320px floor and a 460px ceiling tracks the
+   viewport instead: the floor is the narrowest the record sections stay
+   readable at, the ceiling the point past which extra width buys nothing and
+   only costs the tree.
+
+   `minmax(0, 1fr)` on the tree track is load-bearing, not decoration. The
+   canvas carries an inline pixel width from `layout.width` (tree.rs sets it
+   from the widest generation, and on the full view that is tens of thousands
+   of pixels), so an `auto` minimum would size the track to the canvas and
+   push the panel off-screen. Pinning the minimum to 0 keeps the overflow
+   inside `.tree-scroll`, where it scrolls. */
+.tree-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 26vw, 460px);
+  gap: 1rem;
+  align-items: start;
+}
+.tree-split.no-panel { grid-template-columns: 1fr; }
 
 .tree-panel {
-  flex: 0 0 380px;
   max-height: 82vh;
   overflow: auto;
   border: 1px solid var(--border);
@@ -534,25 +553,99 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .btn.small { padding: 0.15rem 0.5rem; font-size: 0.8rem; }
 .panel-empty { color: var(--ink-faint); padding: 1rem 0; }
 
-/* The record sections, re-flowed for a narrow column: one column of cards,
-   comfortable spacing, tables and the gallery scrolling inside their own box
-   rather than forcing the panel wide. The confidence bars and chips are the
-   same partials, so uncertainty still reads the same way. */
+/* The record sections, re-flowed for a narrow column.
+ *
+ * The panel track is at most 460px, and inside its padding that is about
+ * 426px of content. Every layout below assumed a page column two to three
+ * times that: two-column grids, a date column beside an event column, a label
+ * column beside a timeline track beside a meta column, and five-column
+ * tables. None of them are wrong at page width, so none of them are changed
+ * there — each is re-declared here, scoped to the panel, as a single column.
+ *
+ * What is *shown* never changes. A fact hidden because the column is narrow
+ * would make the panel a different record from the page, and the panel is now
+ * where most reading happens.
+ */
 .tree-panel .rec-section { margin: 0 0 1.1rem; }
 .tree-panel .rec-section h2 { font-size: 1rem; margin-bottom: 0.4rem; }
 .tree-panel .rec-section h3 { font-size: 0.9rem; }
 .tree-panel .grid.cols-2,
 .tree-panel .grid.cols-3 { grid-template-columns: 1fr; gap: 0.6rem; }
-.tree-panel .table-wrap { overflow-x: auto; }
 .tree-panel .gallery { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
 .tree-panel .raw-json { max-height: 40vh; }
 
+/* A chip is `white-space: nowrap` so a label never breaks across lines. In a
+   320px column — the clamp's floor, and the narrowest the panel ever gets —
+   a long one would instead push the panel's own scrollbar sideways, so here
+   it wraps. */
+.tree-panel .chip { white-space: normal; }
+
+/* Life events: the date column is 9rem at its narrowest, which leaves under
+   270px for what happened. Stack them instead — the date reads as a heading
+   over its event, which is the order they are read in anyway. */
+.tree-panel .life-row {
+  grid-template-columns: 1fr;
+  gap: 0.15rem;
+  padding-left: 0.75rem;
+}
+.tree-panel .life-when { flex-direction: row; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+/* Occupations: label, track and meta on three lines. A 160px label column
+   here left about 150px of track, which is too little to compare spans on —
+   full width restores the one thing the chart is for. */
+.tree-panel .tl-row {
+  grid-template-columns: 1fr;
+  gap: 0.3rem;
+  align-items: stretch;
+}
+.tree-panel .tl-meta { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+
+/* Other relationships and unions: trim the box padding, which at this width
+   is a fifth of the line. */
+.tree-panel .links-section { padding: 0.8rem 0.85rem; margin: 1rem 0; }
+.tree-panel .union { padding: 0.7rem 0.8rem; }
+
+/* Sources and documents: a five-column table in a 426px column either scrolls
+   sideways or shreds every cell into one word per line. Stacked, each row
+   becomes a small card of labelled lines — the labels are the `th` text,
+   carried on `data-label`, so the two cannot disagree. */
+.tree-panel table.stackable,
+.tree-panel table.stackable tbody,
+.tree-panel table.stackable tr,
+.tree-panel table.stackable td { display: block; width: 100%; }
+.tree-panel table.stackable thead {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+.tree-panel table.stackable tr {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.tree-panel table.stackable tr:hover { background: var(--bg); }
+.tree-panel table.stackable td {
+  border-bottom: none;
+  padding: 0.15rem 0;
+}
+.tree-panel table.stackable td[data-label]::before {
+  content: attr(data-label);
+  display: block;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+
 @media (max-width: 1000px) {
   /* Below laptop width the two columns stop working, so stack the panel under
-     the tree rather than squeezing it into an unreadable sliver. */
-  .tree-split { flex-direction: column; }
+     the tree rather than squeezing it into an unreadable sliver. One column
+     also retires the clamp: the panel takes the full width it is given. */
+  .tree-split { grid-template-columns: 1fr; }
   .tree-panel {
-    flex-basis: auto;
     width: 100%;
     position: static;
     max-height: none;
@@ -594,16 +687,39 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
   white-space: nowrap;
 }
 
-dl.facts { margin: 0; }
-dl.facts dt {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ink-faint);
-  margin-top: 0.9rem;
+/* Gender, living status and visibility.
+ *
+ * These were a run of small-caps labels interleaved with their values, which
+ * at panel width read as one string — "GENDER Female LIVING yes VISIBILITY
+ * members" — because nothing separated a label from the value before it. Each
+ * fact is now a bordered box with the label stacked above the value, so the
+ * eye separates them without having to read them, and each box wraps as a
+ * unit instead of the row becoming a paragraph.
+ */
+.fact-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.9rem 0 0;
 }
-dl.facts dt:first-child { margin-top: 0; }
-dl.facts dd { margin: 0.15rem 0 0; }
+.fact-chips .fc {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 0.25rem 0.6rem;
+}
+.fact-chips dt {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+.fact-chips dd { margin: 0; font-size: 0.92rem; line-height: 1.35; }
+.fact-chips .fc.wide { flex: 1 1 100%; }
 
 ul.plain { list-style: none; padding: 0; margin: 0.25rem 0 0; }
 ul.plain > li { padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
@@ -838,6 +954,43 @@ a.stat:hover { border-color: var(--accent); }
 
 main > section { scroll-margin-top: 1rem; }
 
+/* A section heading, and where its explanation goes.
+ *
+ * The standalone page prints the explanation under the heading. The panel
+ * gives the same words a `?` next to the heading and opens them on its own
+ * line, because at 460px four lines of prose per section *are* the section.
+ */
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.sec-head h2 { margin-bottom: 0.3rem; }
+.sec-help { font-size: 0.85rem; }
+.sec-help > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: help;
+  list-style: none;
+  user-select: none;
+}
+.sec-help > summary::-webkit-details-marker { display: none; }
+.sec-help > summary:hover,
+.sec-help[open] > summary { border-color: var(--accent); color: var(--accent); }
+/* Opened, the text takes the full row rather than squeezing in beside the
+   heading. */
+.sec-help[open] { flex: 1 0 100%; }
+.sec-help p { margin: 0.3rem 0 0.2rem; }
+
 /* Names: the native script leads, the transliteration sits beside it. Two
    fields, both shown, because collapsing them is the thing GEDCOM does. */
 table.names td { vertical-align: top; }
@@ -849,14 +1002,86 @@ table.names td { vertical-align: top; }
 }
 .name-latin::before { content: "≈ "; color: var(--ink-faint); font-style: normal; }
 
-dl.facts.inline-facts {
+/* One name as a block: a heading with a small type label under it, which is
+   what a single name deserves. The four-column table said one fact in four
+   columns, three of them empty, and spent half the panel doing it. */
+.name-stack { display: flex; flex-direction: column; margin: 0.3rem 0 0; }
+.name-block > p { margin: 0.25rem 0 0; }
+.name-block > p:first-child { margin-top: 0; }
+.name-block + .name-block {
+  border-top: 1px solid var(--border);
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+}
+.nb-display {
+  font-size: 1.08rem;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+.nb-latin {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 0.95rem;
+  overflow-wrap: break-word;
+}
+.nb-latin::before { content: "≈ "; color: var(--ink-faint); font-style: normal; }
+.nb-kind {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1.5rem;
-  margin-top: 1rem;
+  align-items: baseline;
+  gap: 0.3rem;
 }
-dl.facts.inline-facts dt { margin-top: 0; }
-dl.facts.inline-facts dd { margin: 0; }
+.nb-type {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+.nb-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* The parts of a name.
+ *
+ * "given name: Laura · family name: Karin" was one text run, so a narrow
+ * column broke it wherever it ran out of room — including between a label and
+ * the value it belongs to. Each part is now its own inline-flex box with the
+ * separator inside it, so the line can only break between parts, and a
+ * separator can never begin a line. */
+.name-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.55rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+.name-part {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  max-width: 100%;
+}
+.name-part:not(:last-child)::after {
+  content: "·";
+  color: var(--ink-faint);
+}
+.np-k {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.np-v { color: var(--ink-soft); overflow-wrap: anywhere; }
+
+/* A phrase that should wrap as a whole — "From 12 June 1919", "until 1955" —
+   rather than leaving a preposition stranded on the line above its date. */
+.wrap-unit { display: inline-block; }
+.union-when { display: flex; flex-wrap: wrap; gap: 0.15rem 0.5rem; }
 
 /* Life timeline: one column of dates, one of what happened. */
 ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }

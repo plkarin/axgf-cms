@@ -98,3 +98,98 @@
   </div>
   {% endif %}
 {% endmacro %}
+
+{# A section heading, with its explanatory text placed according to how much
+   room the surface has.
+
+   On the standalone page the text sits under the heading where it belongs: the
+   page is the argument for the format, and a first-time reader needs to be
+   told why "other relationships" is a section at all. In the side panel the
+   same four lines cost more than they give — at 460px they are the section —
+   so the heading carries a small `?` and the text is one click away. Both
+   surfaces hold the same words; only their weight differs. #}
+{% macro sec(title, compact, help) %}
+<div class="sec-head">
+  <h2>{{ title }}</h2>
+  {%- if compact and help %}
+  <details class="sec-help">
+    <summary title="What this section shows" aria-label="What this section shows">?</summary>
+    <p class="small muted">{{ help }}</p>
+  </details>
+  {%- endif %}
+</div>
+{%- if not compact and help %}
+<p class="small muted">{{ help }}</p>
+{%- endif %}
+{% endmacro %}
+
+{# One recorded name as a block rather than a table row.
+
+   A single name is a heading with a small type label, not a four-column table
+   of which three columns are empty. Several names in a narrow column become a
+   stack of these blocks, which compares as well as a table without the
+   horizontal scroll. #}
+{% macro name_block(n) %}
+<div class="name-block{% if n.is_primary %} is-primary{% endif %}">
+  <p class="nb-display"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
+     {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</p>
+  {%- if n.latin %}
+  <p class="nb-latin" title="Latin transliteration">{{ n.latin }}</p>
+  {%- endif %}
+  <p class="nb-kind">
+    <span class="nb-type">{{ n.kind }}</span>
+    {%- if n.is_primary %} <span class="chip small">display name</span>{% endif -%}
+    {%- if n.culture %} <span class="chip small">{{ n.culture }}</span>{% endif -%}
+    {%- if n.period %} <span class="chip small">{{ n.period }}</span>{% endif -%}
+  </p>
+  {%- if n.reading %}
+  <p class="small muted nb-reading">read as {{ n.reading }}
+    {%- if n.reading_system %} <span class="chip small">{{ n.reading_system }}</span>{% endif %}</p>
+  {%- endif %}
+  {{ name_parts(n.components) }}
+  {%- if n.note %}<p class="small muted">{{ n.note }}</p>{% endif %}
+  {%- if n.confidence or n.source %}
+  <p class="nb-evidence">
+    {%- if n.confidence %}{{ conf_bar(n.confidence) }}{% endif %}
+    {%- if n.source %} {{ source_chip(n.source) }}{% endif -%}
+  </p>
+  {%- endif %}
+</div>
+{% endmacro %}
+
+{# The parts of a name, each an unbreakable unit.
+
+   The label and the value it belongs to are one box, so a narrow column breaks
+   between "given name: Laura" and "family name: Karin" and never inside
+   either. The separator lives in the gap, not in the text, so there is no
+   trailing "·" at the end of a wrapped line. #}
+{% macro name_parts(components) %}
+  {%- if components %}
+  <p class="name-parts">
+    {%- for c in components %}
+    <span class="name-part"><span class="np-k">{{ c.kind }}</span><span class="np-v">{{ c.value }}</span></span>
+    {%- endfor %}
+  </p>
+  {%- endif %}
+{% endmacro %}
+
+{# Gender, living status and visibility as labelled chips.
+
+   Previously a run of small-caps labels interleaved with values, which at
+   panel width read as one string: "GENDER Female LIVING yes VISIBILITY
+   members". Each fact is now a bordered box with the label above the value, so
+   the eye separates them without reading them. #}
+{% macro fact_chips(p) %}
+<dl class="fact-chips">
+  {%- if p.gender %}
+  <div class="fc"><dt>Gender</dt><dd>{{ p.gender }}</dd></div>
+  {%- endif %}
+  <div class="fc"><dt>Living</dt><dd>{{ "yes" if p.is_living else "no" }}</dd></div>
+  {%- if p.visibility %}
+  <div class="fc"><dt>Visibility</dt><dd>{{ p.visibility }}</dd></div>
+  {%- endif %}
+  {%- if p.gender_note %}
+  <div class="fc wide"><dt>Note</dt><dd>{{ p.gender_note }}</dd></div>
+  {%- endif %}
+</dl>
+{% endmacro %}

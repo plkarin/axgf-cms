@@ -293,6 +293,9 @@ pub async fn tree(
             full_width => full_width.round() as i64,
             p => panel,
             selected,
+            // The record sections inside the panel lay themselves out for a
+            // clamped column rather than a page.
+            compact => true,
             max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
         },
     )
@@ -316,6 +319,7 @@ pub async fn tree_panel(
             context! {
                 p,
                 is_admin,
+                compact => true,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),
@@ -358,6 +362,9 @@ pub async fn person(
                 nav => "tree",
                 is_admin,
                 p,
+                // The standalone page has the width for the explanatory prose
+                // and the comparison tables; the panel does not.
+                compact => false,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),

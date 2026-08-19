@@ -3,7 +3,14 @@
    so the two never drift. Every section tests for its own content, so the
    shape of what is drawn is a readout of what the bundle actually holds.
 
-   The only context this needs is `p` (a PersonView) and `is_admin`. #}
+   Context: `p` (a PersonView), `is_admin`, and `compact`.
+
+   `compact` is true when this is rendered into the tree side panel, which is a
+   clamped column of at most 460px. It never changes *what* is shown — hiding a
+   fact because the column is narrow would make the panel a different record
+   from the page — only how it is laid out: explanatory prose moves behind a
+   `?`, and the wide comparison tables become stacks. Every other difference is
+   CSS scoped to `.tree-panel`. #}
 {% import "_macros.html" as m %}
 
 {% if p.showcase_notes %}
@@ -16,64 +23,68 @@
 {# ---------------------------------------------------------------- IDENTITY #}
 {% if p.names or p.gender %}
 <section id="identity" class="rec-section">
-  <h2>Identity</h2>
+  {{ m.sec("Identity", compact, "") }}
+
   {% if p.names %}
-  <div class="table-wrap">
-  <table class="names">
-    <thead><tr><th>Name</th><th>Type</th><th>Used</th><th>Evidence</th></tr></thead>
-    <tbody>
-      {% for n in p.names %}
-      <tr>
-        <td>
-          <span class="name-native"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
-                {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</span>
-          {%- if n.latin %}
-            <span class="name-latin" title="Latin transliteration">{{ n.latin }}</span>
-          {%- endif %}
-          {% if n.reading %}
-            <div class="small muted">read as {{ n.reading }}{% if n.reading_system %}
-              <span class="chip small">{{ n.reading_system }}</span>{% endif %}</div>
-          {% endif %}
-          {% if n.components %}
-          <div class="small muted">{% for c in n.components %}{{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
-          {% endif %}
-          {% if n.note %}<div class="small muted">{{ n.note }}</div>{% endif %}
-        </td>
-        <td class="small">
-          {{ n.kind }}
-          {%- if n.is_primary %} <span class="chip small">display name</span>{% endif %}
-          {%- if n.culture %}<div class="muted">{{ n.culture }}</div>{% endif %}
-        </td>
-        <td class="small">{{ n.period if n.period else "—" }}</td>
-        <td>
-          {% if n.confidence %}{{ m.conf_bar(n.confidence) }}{% endif %}
-          {% if n.source %}{{ m.source_chip(n.source) }}{% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
+    {# One name is a heading with a small type label beside it. A table for a
+       single name spends four columns — three of them empty — to state one
+       fact. The table earns its place only when there are several names and
+       comparing them across type, period and evidence is the point, and even
+       then not in a 460px column, where it would scroll sideways. #}
+    {% if compact or p.names | length == 1 %}
+      <div class="name-stack">
+        {% for n in p.names %}{{ m.name_block(n) }}{% endfor %}
+      </div>
+    {% else %}
+    <div class="table-wrap">
+    <table class="names">
+      <thead><tr><th>Name</th><th>Type</th><th>Used</th><th>Evidence</th></tr></thead>
+      <tbody>
+        {% for n in p.names %}
+        <tr>
+          <td data-label="Name">
+            <span class="name-native"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
+                  {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</span>
+            {%- if n.latin %}
+              <span class="name-latin" title="Latin transliteration">{{ n.latin }}</span>
+            {%- endif %}
+            {% if n.reading %}
+              <div class="small muted">read as {{ n.reading }}{% if n.reading_system %}
+                <span class="chip small">{{ n.reading_system }}</span>{% endif %}</div>
+            {% endif %}
+            {{ m.name_parts(n.components) }}
+            {% if n.note %}<div class="small muted">{{ n.note }}</div>{% endif %}
+          </td>
+          <td class="small" data-label="Type">
+            {{ n.kind }}
+            {%- if n.is_primary %} <span class="chip small">display name</span>{% endif %}
+            {%- if n.culture %}<div class="muted">{{ n.culture }}</div>{% endif %}
+          </td>
+          <td class="small" data-label="Used">{{ n.period if n.period else "—" }}</td>
+          <td data-label="Evidence">
+            {% if n.confidence %}{{ m.conf_bar(n.confidence) }}{% endif %}
+            {% if n.source %}{{ m.source_chip(n.source) }}{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}
   {% endif %}
 
-  <dl class="facts inline-facts">
-    {% if p.gender %}<dt>Gender</dt><dd>{{ p.gender }}</dd>{% endif %}
-    <dt>Living</dt><dd>{{ "yes" if p.is_living else "no" }}</dd>
-    {% if p.visibility %}<dt>Visibility</dt><dd>{{ p.visibility }}</dd>{% endif %}
-  </dl>
+  {{ m.fact_chips(p) }}
 </section>
 {% endif %}
 
 {# ------------------------------------------------------------- LIFE EVENTS #}
 {% if p.timeline %}
 <section id="life" class="rec-section">
-  <h2>Life events</h2>
-  <p class="small muted">
-    Birth, death and every event this person took part in, in the order they
-    happened. Being a witness at someone else's marriage is a fact about them,
-    so it is here too. An undated fact sorts last rather than pretending to
-    come first.
-  </p>
+  {{ m.sec("Life events", compact,
+     "Birth, death and every event this person took part in, in the order they
+      happened. Being a witness at someone else's marriage is a fact about them,
+      so it is here too. An undated fact sorts last rather than pretending to
+      come first.") }}
   <ol class="life">
     {% for e in p.timeline %}
     <li class="life-row" data-kind="{{ e.kind }}">
@@ -98,7 +109,10 @@
 {# ------------------------------------------------------------------ FAMILY #}
 {% if p.parents or p.siblings or p.unions %}
 <section id="family" class="rec-section">
-  <h2>Family</h2>
+  {{ m.sec("Family", compact, "") }}
+  {# Only wrap a grid around cards that exist: an empty two-column grid still
+     takes its gap, which at panel width is visible. #}
+  {% if p.parents or p.siblings %}
   <div class="grid cols-2">
     {% if p.parents %}
     <div class="card">
@@ -113,6 +127,7 @@
     </div>
     {% endif %}
   </div>
+  {% endif %}
 
   {% for u in p.unions %}
   <div class="union">
@@ -125,11 +140,11 @@
       <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
       {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
     </div>
-    <div class="small">
-      {% if u.start %}From {{ m.date(u.start) }}{% endif %}
-      {% if u.start_place %}at {{ m.place(u.start_place) }}{% endif %}
-      {% if u.end %}· until {{ m.date(u.end) }}{% endif %}
-      {% if u.end_note %}<span class="muted">{{ u.end_note }}</span>{% endif %}
+    <div class="small union-when">
+      {% if u.start %}<span class="wrap-unit">From {{ m.date(u.start) }}</span>{% endif %}
+      {% if u.start_place %}<span class="wrap-unit">at {{ m.place(u.start_place) }}</span>{% endif %}
+      {% if u.end %}<span class="wrap-unit">until {{ m.date(u.end) }}</span>{% endif %}
+      {% if u.end_note %}<span class="muted wrap-unit">{{ u.end_note }}</span>{% endif %}
     </div>
     {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
     {% if u.children %}
@@ -154,13 +169,11 @@
 {# --------------------------------------------------- OTHER RELATIONSHIPS #}
 {% if p.links %}
 <section class="links-section rec-section" id="relationships">
-  <h2>Other relationships</h2>
-  <p class="small muted">
-    Godparents, employers, witnesses, mentors — relationships that are not
-    blood or marriage. Each carries its own dates, source and confidence, and
-    reads from this person's side: “godfather of” and “godchild of” are the
-    same record seen from opposite ends. GEDCOM cannot state any of them.
-  </p>
+  {{ m.sec("Other relationships", compact,
+     "Godparents, employers, witnesses, mentors — relationships that are not
+      blood or marriage. Each carries its own dates, source and confidence, and
+      reads from this person's side: “godfather of” and “godchild of” are the
+      same record seen from opposite ends. GEDCOM cannot state any of them.") }}
   <div class="grid cols-2">
     {% for l in p.links %}
     <div class="link-card" data-dir="{{ l.direction }}">
@@ -172,8 +185,8 @@
       <div class="link-who">{{ m.person_link(l.other) }}</div>
       {% if l.from_date or l.until_date %}
       <div class="small">
-        {% if l.from_date %}from {{ m.date(l.from_date) }}{% endif %}
-        {% if l.until_date %}until {{ m.date(l.until_date) }}{% endif %}
+        {% if l.from_date %}<span class="wrap-unit">from {{ m.date(l.from_date) }}</span>{% endif %}
+        {% if l.until_date %}<span class="wrap-unit">until {{ m.date(l.until_date) }}</span>{% endif %}
       </div>
       {% endif %}
       {% if l.confidence %}<div>{{ m.conf_bar(l.confidence) }}</div>{% endif %}
@@ -188,12 +201,10 @@
 {# ------------------------------------------------------------- OCCUPATIONS #}
 {% if p.occupations %}
 <section id="occupations" class="rec-section">
-  <h2>Occupations</h2>
   {% if p.has_timeline %}
-  <p class="small muted">
-    An occupation is a state with a duration, not an event on a single date.
-    All spans share one axis, {{ p.timeline_from }}–{{ p.timeline_to }}.
-  </p>
+  {{ m.sec("Occupations", compact,
+     "An occupation is a state with a duration, not an event on a single date.
+      All spans share one axis, " ~ p.timeline_from ~ "–" ~ p.timeline_to ~ ".") }}
   <div class="timeline">
     {% for o in p.occupations %}
     <div class="tl-row">
@@ -222,11 +233,10 @@
     </div>
   </div>
   {% else %}
-  <p class="small muted">
-    AXGF records an occupation as a span with a start and an end. This bundle
-    carries the titles but no dates for them — typical of a GEDCOM import,
-    which has nowhere to put them — so there is no scale to draw.
-  </p>
+  {{ m.sec("Occupations", compact,
+     "AXGF records an occupation as a span with a start and an end. This bundle
+      carries the titles but no dates for them — typical of a GEDCOM import,
+      which has nowhere to put them — so there is no scale to draw.") }}
   <ul class="plain">
     {% for o in p.occupations %}
     <li>
@@ -246,7 +256,7 @@
 {# ------------------------------------------------------------------ PLACES #}
 {% if p.places %}
 <section id="places" class="rec-section">
-  <h2>Places</h2>
+  {{ m.sec("Places", compact, "") }}
   <div class="grid cols-3">
     {% for pu in p.places %}
     <div class="card place-card">
@@ -271,31 +281,32 @@
 {# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
 {% if p.sources or p.documents or is_admin %}
 <section id="evidence" class="rec-section">
-  <h2>Sources and documents</h2>
+  {{ m.sec("Sources and documents", compact,
+     "Sources are graded, so a claim resting on a birth certificate is
+      distinguishable from one resting on family recollection — and each row
+      names the facts on this page that depend on it.") }}
 
   {% if p.sources %}
-  <p class="small muted">
-    Sources are graded, so a claim resting on a birth certificate is
-    distinguishable from one resting on family recollection — and each row
-    names the facts on this page that depend on it.
-  </p>
+  {# `data-label` on every cell is what lets the panel stack this table into
+     rows of labelled lines instead of scrolling it sideways. The labels are
+     the `th` text, so the two never disagree. #}
   <div class="table-wrap">
-  <table>
+  <table class="stackable">
     <thead><tr><th>Source</th><th>Type</th><th>Reliability</th><th>Supports</th><th>Confidence</th></tr></thead>
     <tbody>
       {% for s in p.sources %}
       <tr>
-        <td>{{ s.title }}
+        <td data-label="Source">{{ s.title }}
             {% if s.repository %}<div class="small muted">{{ s.repository }}</div>{% endif %}
             {% if s.status %}<div class="small muted">{{ s.status }}</div>{% endif %}
             {% if s.note %}<div class="small muted">{{ s.note }}</div>{% endif %}</td>
-        <td class="small">{{ s.source_type if s.source_type else "—" }}</td>
-        <td><span class="src-chip" data-rank="{{ s.reliability_rank }}">
+        <td class="small" data-label="Type">{{ s.source_type if s.source_type else "—" }}</td>
+        <td data-label="Reliability"><span class="src-chip" data-rank="{{ s.reliability_rank }}">
               <span class="src-rel">{{ s.reliability }}</span></span></td>
-        <td class="small">
+        <td class="small" data-label="Supports">
           {% for u in s.used_for %}{{ u }}{% if not loop.last %} · {% endif %}{% endfor %}
         </td>
-        <td>{% if s.confidence %}{{ m.conf_bar(s.confidence) }}{% endif %}</td>
+        <td data-label="Confidence">{% if s.confidence %}{{ m.conf_bar(s.confidence) }}{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -326,21 +337,23 @@
   {% if p.documents %}
   <h3>Documents</h3>
   <div class="table-wrap">
-  <table>
+  <table class="stackable">
     <thead><tr><th>File</th><th>Type</th><th>Status</th><th>Size</th><th></th></tr></thead>
     <tbody>
       {% for d in p.documents %}
       <tr>
-        <td>{{ d.filename }}
+        <td data-label="File">{{ d.filename }}
             {% if d.role %} <span class="chip small">{{ d.role }}</span>{% endif %}
             {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
             {% if d.note %}<div class="small muted">{{ d.note }}</div>{% endif %}
             {% if not d.known %}<div class="small muted">Referenced by this person but absent
               from the bundle.</div>{% endif %}</td>
-        <td class="small">{{ d.document_type }}{% if d.mime_type %}
+        <td class="small" data-label="Type">{{ d.document_type }}{% if d.mime_type %}
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
-        <td class="small">{{ d.status }}</td>
-        <td class="small">{{ d.size_human if d.size_human else "—" }}</td>
+        <td class="small" data-label="Status">{{ d.status }}</td>
+        <td class="small" data-label="Size">{{ d.size_human if d.size_human else "—" }}</td>
+        {# No `data-label`: an action is not a field, and a stacked row that
+           labelled it would read "FILE / Download". #}
         <td class="small">
           {% if d.has_payload %}
             <a href="/document/{{ d.id }}/raw">Download</a>
@@ -374,6 +387,7 @@
              aria-label="Caption">
       <button class="btn primary">Upload</button>
     </div>
+    {% if not compact %}
     <p class="small muted">
       Up to {{ max_upload_mb }} MB per file. The bytes are stored in a disk
       cache beside the bundle and written back into the <code>.axgf</code> on
@@ -382,6 +396,9 @@
       plain text, audio and video are accepted. SVG is refused, because an SVG
       can carry script.
     </p>
+    {% else %}
+    <p class="small muted">Up to {{ max_upload_mb }} MB. SVG is refused.</p>
+    {% endif %}
   </form>
   {% endif %}
 </section>
@@ -390,7 +407,7 @@
 {# ------------------------------------------------------------------- NOTES #}
 {% if p.notes %}
 <section id="notes" class="rec-section">
-  <h2>Notes</h2>
+  {{ m.sec("Notes", compact, "") }}
   {% for n in p.notes %}
   <div class="note-block{% if n.verbatim %} verbatim{% endif %}">
     <h3>{{ n.label }}</h3>
@@ -410,10 +427,12 @@
 <section id="raw" class="rec-section">
   <details class="raw">
     <summary>Raw entity <span class="small muted">— the JSON this page was built from</span></summary>
+    {% if not compact %}
     <p class="small muted">
       Nothing here is generated for display: this is the record as the bundle
       stores it. A format worth arguing for should be readable without a tool.
     </p>
+    {% endif %}
     <pre class="raw-json">{{ p.raw_json }}</pre>
   </details>
 </section>

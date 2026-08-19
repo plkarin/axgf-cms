@@ -5,16 +5,19 @@
 
    Rendered both server-side into the initial tree page and, on its own, by the
    /tree/panel/:id fragment endpoint the card click fetches. Needs `p` (a
-   PersonView) and `is_admin`. #}
+   PersonView) and `is_admin`; sets `compact` for the sections it includes, so
+   they lay themselves out for a 460px column. #}
 {% if p %}
 <div class="panel-inner" data-person="{{ p.id }}">
   <div class="panel-head">
     <div>
       <h2 class="panel-name">{{ p.name }}</h2>
+      {# Gender and living status only. Visibility is a labelled chip in the
+         Identity section below, and saying it twice in a narrow column is how
+         a header turns into a run-on string. #}
       <p class="lede small">
         {%- if p.gender %}{{ p.gender }}{% endif -%}
         {%- if p.is_living %} · living{% elif p.death.present %} · deceased{% endif -%}
-        {%- if p.visibility %} · {{ p.visibility }}{% endif -%}
       </p>
     </div>
     <div class="panel-actions">

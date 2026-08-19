@@ -114,8 +114,22 @@ pub struct NameView {
     pub confidence: Option<Confidence>,
     pub source: Option<SourceView>,
     pub note: Option<String>,
-    /// "given name: Laura", in the order the record states.
-    pub components: Vec<String>,
+    /// The name's parts, in the order the record states, each kept as a
+    /// label/value pair rather than a pre-joined string. A joined
+    /// "given name: Laura · family name: Karin" is one long text run, and a
+    /// narrow column breaks it wherever it likes — including between "given"
+    /// and "name", and between a label and the value it belongs to. Keeping
+    /// the pair intact lets the template make each one an unbreakable box.
+    pub components: Vec<NameComponent>,
+}
+
+/// One part of a name: what kind of part it is, and what it says.
+#[derive(Debug, Clone, Serialize)]
+pub struct NameComponent {
+    /// "given name", "family name", "patronymic" — the schema's component
+    /// type, with underscores made readable.
+    pub kind: String,
+    pub value: String,
 }
 
 /// A non-family link: godparent, employer, witness, mentor.
@@ -687,7 +701,7 @@ impl Ctx<'_> {
             .get("components")
             .and_then(Value::as_array)
             .map(|arr| {
-                let mut parts: Vec<(i64, String)> = arr
+                let mut parts: Vec<(i64, NameComponent)> = arr
                     .iter()
                     .filter_map(|c| {
                         let value = str_field(c, "value")?;
@@ -695,11 +709,11 @@ impl Ctx<'_> {
                             .unwrap_or_else(|| "part".into())
                             .replace('_', " ");
                         let order = c.get("order").and_then(Value::as_i64).unwrap_or(i64::MAX);
-                        Some((order, format!("{kind}: {value}")))
+                        Some((order, NameComponent { kind, value }))
                     })
                     .collect();
                 parts.sort_by_key(|(order, _)| *order);
-                parts.into_iter().map(|(_, s)| s).collect()
+                parts.into_iter().map(|(_, c)| c).collect()
             })
             .unwrap_or_default();
 

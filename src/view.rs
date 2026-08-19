@@ -19,6 +19,18 @@ use minijinja::Environment;
 use serde::Serialize;
 use serde_json::Value;
 
+/// The current UTC instant as an ISO 8601 string, e.g. `2026-08-19T20:48:03Z`.
+///
+/// The same shape AXGF timestamps use, so an account's `created_at` and a
+/// journal entry read like the bundle's own fields rather than like a
+/// different system's.
+pub fn now_iso8601() -> String {
+    time::OffsetDateTime::now_utc()
+        .format(&time::format_description::well_known::Rfc3339)
+        .unwrap_or_else(|_| "1970-01-01T00:00:00Z".into())
+        .replace("+00:00", "Z")
+}
+
 // ---------------------------------------------------------------------------
 // Confidence
 // ---------------------------------------------------------------------------

@@ -1,12 +1,28 @@
-//! V1 authentication: one shared token in a cookie.
+//! Resolving who is asking.
 //!
-//! This is deliberately not a user system. There are no accounts, no roles and
-//! no per-entity visibility — anyone holding the token can edit everything.
-//! That is why the server binds to localhost by default. Per-user accounts are
-//! V1.2; until then the honest deployment story is "reverse proxy, or don't
-//! expose it".
+//! The shared token is on its way out: it still grants admin, but it is now
+//! the *emergency* path rather than the authentication system, and this module
+//! is what turns a request's headers into an [`Viewer`](crate::access::Viewer)
+//! that the read paths can measure entities against. Accounts and sessions
+//! replace it in [`crate::session`].
 
 use axum::http::header::{HeaderMap, COOKIE};
+
+use crate::access::Viewer;
+
+/// Who is asking, from the request's cookies.
+///
+/// Resolved once at the top of a handler and passed down; nothing below this
+/// looks at headers again. Today the only credential is the shared token,
+/// which grants admin for the request; every other request is anonymous and
+/// reads at the `public` ceiling.
+pub fn viewer(headers: &HeaderMap, admin_token: &str) -> Viewer {
+    if is_admin(headers, admin_token) {
+        Viewer::emergency_admin()
+    } else {
+        Viewer::anonymous()
+    }
+}
 
 /// Name of the cookie carrying the admin token.
 pub const COOKIE_NAME: &str = "axgf_admin";

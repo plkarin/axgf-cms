@@ -34,6 +34,7 @@
 //! publishing the dead is what genealogy is for.
 
 use std::collections::BTreeSet;
+use std::sync::Arc;
 
 use serde_json::Value;
 
@@ -50,7 +51,12 @@ pub enum Visible {
     /// Every person in the bundle.
     All,
     /// Only these person ids.
-    Only(BTreeSet<String>),
+    ///
+    /// Behind an [`Arc`] so that [`AppState`](crate::state::AppState) can hand
+    /// the same resolved set to every request at that ceiling. Cloning a
+    /// `Visible` is then a refcount bump rather than 866 string allocations,
+    /// which is what makes memoising it worth doing at all.
+    Only(Arc<BTreeSet<String>>),
 }
 
 impl Visible {
@@ -142,7 +148,112 @@ pub fn visible_persons(flat: &Value, ceiling: Visibility) -> Visible {
     if hidden == 0 {
         Visible::All
     } else {
-        Visible::Only(allowed)
+        Visible::Only(Arc::new(allowed))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// the request-scoped lens
+// ---------------------------------------------------------------------------
+
+/// What one request may read, resolved once and threaded through every builder.
+///
+/// # Existence is disclosed; data is not
+///
+/// A person the requester may not read is *redacted*, not omitted: their card
+/// still occupies its place in the tree and they still count as a parent, but
+/// they carry no name, no dates, no gender and no link. Two reasons, and the
+/// first is the one that decides it:
+///
+/// 1. Omission is a false statement. A record that lists one parent where the
+///    bundle holds two asserts something about the genealogy that is not true.
+///    For an application whose whole argument is that a format should preserve
+///    what it actually knows, silently dropping a relationship is the one
+///    behaviour it cannot have. Redaction says "there is something here you may
+///    not see", which is true.
+/// 2. With the `is_living` default, omission would make every converted bundle
+///    look as though the family died out two generations ago — every living
+///    person is `members`, so a signed-out visitor would see a tree that simply
+///    stops. That reads as a broken import, not as a privacy control.
+///
+/// The consequence is deliberate and worth stating plainly: an anonymous
+/// visitor can learn that a hidden person *exists*, that they sit in a given
+/// generation, and how they connect. They learn nothing else — not a name, not
+/// a date, not a gender, and no way to reach the record.
+#[derive(Debug, Clone)]
+pub struct Lens {
+    persons: Visible,
+    ceiling: Visibility,
+}
+
+impl Lens {
+    /// Resolve the lens for `ceiling` over `flat`. One scan, at the top of the
+    /// request, and never again inside it.
+    pub fn resolve(flat: &Value, ceiling: Visibility) -> Self {
+        Self {
+            persons: visible_persons(flat, ceiling),
+            ceiling,
+        }
+    }
+
+    /// Build a lens from an already-resolved set. Used by
+    /// [`AppState::read_as`](crate::state::AppState::read_as), which memoises
+    /// the set per bundle version.
+    pub fn from_parts(persons: Visible, ceiling: Visibility) -> Self {
+        Self { persons, ceiling }
+    }
+
+    /// A lens that hides nothing — an admin, or a context with no reader to
+    /// filter for, such as the conversion preview of an uploaded GEDCOM.
+    pub fn unrestricted() -> Self {
+        Self {
+            persons: Visible::All,
+            ceiling: Visibility::Private,
+        }
+    }
+
+    /// Whether this request may read `id`'s data.
+    pub fn sees_person(&self, id: &str) -> bool {
+        self.persons.allows(id)
+    }
+
+    /// Whether an entity carrying its own `visibility` field may be read.
+    ///
+    /// Used for the collections that are not persons — links above all, where
+    /// the *relationship* can be more sensitive than either endpoint.
+    pub fn sees_entity(&self, entity: &Value) -> bool {
+        link_visibility(entity) <= self.ceiling
+    }
+
+    /// The permitted set, or `None` when nothing is hidden.
+    pub fn set(&self) -> Option<&BTreeSet<String>> {
+        self.persons.set()
+    }
+
+    /// Whether this lens hides nothing at all.
+    pub fn is_all(&self) -> bool {
+        self.persons.is_all()
+    }
+
+    /// The visibility ceiling behind this lens.
+    pub fn ceiling(&self) -> Visibility {
+        self.ceiling
+    }
+
+    /// How many of `total` persons are readable.
+    pub fn count(&self, total: usize) -> usize {
+        self.persons.count(total)
+    }
+
+    /// The underlying set, for the layout's `only` parameter.
+    pub fn visible(&self) -> &Visible {
+        &self.persons
+    }
+}
+
+impl Default for Lens {
+    fn default() -> Self {
+        Self::unrestricted()
     }
 }
 
@@ -160,7 +271,15 @@ pub fn may_read_document(flat: &Value, vis: &Visible, signed_in: bool, document_
     let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
         return signed_in;
     };
+    let documents = flat.get("documents").and_then(Value::as_object);
+
     let mut referenced = false;
+    let mut check = |person_id: &str| -> bool {
+        referenced = true;
+        vis.allows(person_id)
+    };
+
+    // Direction one: the person lists the document.
     for (id, p) in persons {
         let attaches = p
             .get("documents")
@@ -169,13 +288,37 @@ pub fn may_read_document(flat: &Value, vis: &Visible, signed_in: bool, document_
                 arr.iter()
                     .any(|d| d.get("document_id").and_then(Value::as_str) == Some(document_id))
             });
-        if attaches {
-            referenced = true;
-            if vis.allows(id) {
+        if attaches && check(id) {
+            return true;
+        }
+    }
+
+    // Direction two: the document lists the person. Both directions exist in
+    // AXGF and `person::documents_for` reads both, so a check that read only
+    // one would disagree with the page it is meant to be protecting — in the
+    // safe direction for an upload (which writes this one), and in the unsafe
+    // direction for any bundle that carries the other.
+    if let Some(links) = documents
+        .and_then(|d| d.get(document_id))
+        .and_then(|d| d.get("linked_to"))
+        .and_then(Value::as_array)
+    {
+        for l in links {
+            if l.get("entity_type").and_then(Value::as_str) != Some("person") {
+                continue;
+            }
+            let Some(pid) = l.get("entity_id").and_then(Value::as_str) else {
+                continue;
+            };
+            if !persons.contains_key(pid) {
+                continue;
+            }
+            if check(pid) {
                 return true;
             }
         }
     }
+
     if referenced {
         false
     } else {
@@ -268,6 +411,11 @@ impl Viewer {
     /// The persons this requester may read in `flat`.
     pub fn visible(&self, flat: &Value) -> Visible {
         visible_persons(flat, self.ceiling())
+    }
+
+    /// The read lens for this requester, resolved once per request.
+    pub fn lens(&self, flat: &Value) -> Lens {
+        Lens::resolve(flat, self.ceiling())
     }
 
     /// The persons this requester may *edit*, or `None` for the whole tree.

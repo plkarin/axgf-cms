@@ -38,7 +38,9 @@
 {# A person reference. An id the bundle does not contain renders as plain
    text, never as a link into a 404. #}
 {% macro person_link(p) %}
-  {%- if p.known -%}
+  {%- if p.restricted -%}
+    <span class="restricted" title="This person's record is not visible to you">{{ p.name }}</span>
+  {%- elif p.known -%}
     <a href="/person/{{ p.id }}">{{ p.name }}</a>
   {%- else -%}
     <span class="muted" title="Referenced by this bundle but not present in it">{{ p.name }}</span>

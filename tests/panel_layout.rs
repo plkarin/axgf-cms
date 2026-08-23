@@ -68,9 +68,13 @@ fn bundle(tag: &str) -> std::path::PathBuf {
 /// Everything between the panel's opening `<div class="panel-inner"` and its
 /// end, so an assertion about the panel cannot accidentally be satisfied by
 /// the surrounding tree page.
+/// Read as an admin throughout. The fixture's living person is `members` on
+/// purpose — that is what a real record of a living relative looks like — so
+/// an anonymous fetch would now be refused, and these tests are about how the
+/// record *lays out*, not about who may read it. Visibility has its own file.
 async fn panel(app: &axum::Router, id: &str) -> String {
     let body = expect_status(
-        get(app, &format!("/tree/panel/{id}")).await,
+        get_admin(app, &format!("/tree/panel/{id}")).await,
         StatusCode::OK,
         "panel fragment",
     )
@@ -81,7 +85,7 @@ async fn panel(app: &axum::Router, id: &str) -> String {
 
 async fn page(app: &axum::Router, id: &str) -> String {
     expect_status(
-        get(app, &format!("/person/{id}")).await,
+        get_admin(app, &format!("/person/{id}")).await,
         StatusCode::OK,
         "person page",
     )

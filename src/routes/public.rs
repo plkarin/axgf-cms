@@ -13,7 +13,8 @@ use crate::{auth, render, view};
 
 /// `GET /` — why AXGF, what is in this bundle, entry points.
 pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    let is_admin = auth::is_admin(&headers, state.admin_token());
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let is_admin = viewer.is_admin();
     let counts = state.counts();
     let total: usize = counts.iter().map(|(_, n)| n).sum();
 
@@ -28,7 +29,7 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
             .to_string()
     });
 
-    let showcase = state.read(showcase_highlights);
+    let showcase = state.read_as(viewer.ceiling(), showcase_highlights);
 
     render::page(
         "home.html",
@@ -49,22 +50,28 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
 /// Work out which GEDCOM-impossible features this particular bundle actually
 /// contains, so the home page points at real examples instead of advertising
 /// features the data does not exercise.
-fn showcase_highlights(flat: &Value) -> Vec<Value> {
+fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
     let mut out = Vec::new();
 
     let obj = |key: &str| flat.get(key).and_then(Value::as_object);
 
+    // Every count here is a count of what *this* reader can reach, and every
+    // "example_id" is a link, so it has to lead somewhere they may open. A
+    // showcase advertising 40 relationships and linking to a wall reading
+    // "Private" would be worse than not advertising them.
     if let Some(links) = obj("links") {
-        if !links.is_empty() {
-            let example = links.values().next().and_then(|l| {
+        let readable: Vec<&Value> = links.values().filter(|l| lens.sees_entity(l)).collect();
+        if !readable.is_empty() {
+            let example = readable.iter().find_map(|l| {
                 l.get("from")
                     .filter(|f| f.get("entity_type").and_then(Value::as_str) == Some("person"))
                     .and_then(|f| f.get("entity_id"))
                     .and_then(Value::as_str)
+                    .filter(|id| lens.sees_person(id))
                     .map(str::to_string)
             });
             out.push(json!({
-                "title": format!("{} non-family relationships", links.len()),
+                "title": format!("{} non-family relationships", readable.len()),
                 "detail": "Godparents, employers, witnesses and mentors, each with \
                            its own dates, source and confidence. GEDCOM has no way \
                            to state these at all.",
@@ -74,15 +81,23 @@ fn showcase_highlights(flat: &Value) -> Vec<Value> {
     }
 
     if let Some(occs) = obj("occupations") {
-        if !occs.is_empty() {
-            let example = occs
-                .values()
-                .next()
-                .and_then(|o| o.get("person_id"))
+        let readable: Vec<&Value> = occs
+            .values()
+            .filter(|o| lens.sees_entity(o))
+            .filter(|o| {
+                o.get("person_id")
+                    .and_then(Value::as_str)
+                    .is_some_and(|id| lens.sees_person(id))
+            })
+            .collect();
+        if !readable.is_empty() {
+            let example = readable
+                .iter()
+                .find_map(|o| o.get("person_id"))
                 .and_then(Value::as_str)
                 .map(str::to_string);
             out.push(json!({
-                "title": format!("{} occupations recorded as spans", occs.len()),
+                "title": format!("{} occupations recorded as spans", readable.len()),
                 "detail": "“Schoolteacher, 1948–1978” is a state with a duration, \
                            rendered as a timeline bar rather than flattened into a \
                            dated event.",
@@ -99,6 +114,9 @@ fn showcase_highlights(flat: &Value) -> Vec<Value> {
         let mut preserved = 0usize;
         let mut example: Option<String> = None;
         for (id, p) in persons.iter() {
+            if !lens.sees_person(id) {
+                continue;
+            }
             for key in ["birth", "death"] {
                 let Some(ev) = p.get(key) else { continue };
                 let d = view::render_date_field(ev, "date");
@@ -213,56 +231,99 @@ pub async fn tree(
     headers: HeaderMap,
     Query(q): Query<TreeQuery>,
 ) -> Response {
-    let is_admin = auth::is_admin(&headers, state.admin_token());
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let is_admin = viewer.is_admin();
     let show_all = q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty());
     let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
 
     let started = std::time::Instant::now();
-    let (layout, focus, roster, panel, selected) = state.read(|flat| {
-        // The root picker lists everyone by name, so it is built regardless of
-        // which view is showing.
-        let roster = person_roster(flat);
+    let (layout, focus, roster, panel, selected, hidden) =
+        state.read_as(viewer.ceiling(), |flat, lens| {
+            // The lens arrives resolved and memoised per bundle version, under the
+            // same read lock as the bundle — so it can never describe a different
+            // version than the one being read.
+            // The root picker lists only people this reader can actually open;
+            // an entry that leads to "Private" is not a destination.
+            let roster = person_roster(flat, lens);
+            let hidden = flat
+                .get("persons")
+                .and_then(Value::as_object)
+                .map(|p| p.len().saturating_sub(lens.count(p.len())))
+                .unwrap_or(0);
 
-        if show_all {
-            return (crate::tree::layout(flat), None, roster, None, None);
-        }
-
-        let root = q
-            .root
-            .clone()
-            .filter(|id| flat.get("persons").and_then(|p| p.get(id)).is_some())
-            .or_else(|| crate::tree::best_root(flat, depth));
-
-        match root {
-            Some(root) => {
-                let sub = crate::tree::select_subtree(flat, &root, depth, depth);
-                let l = crate::tree::layout_focused(flat, &sub);
-                let name = flat
-                    .get("persons")
-                    .and_then(|p| p.get(&root))
-                    .map(view::person_display_name)
-                    .unwrap_or_else(|| "[Unknown]".into());
-                let focus = json!({
-                    "root": root,
-                    "root_name": name,
-                    "ancestors": sub.ancestor_count,
-                    "descendants": sub.descendant_count,
-                    "spouses": sub.spouse_count,
-                });
-                // The panel opens on the selection, or the root if none was
-                // asked for. Selecting a person never moves the tree.
-                let sel = q
-                    .sel
-                    .clone()
-                    .filter(|id| flat.get("persons").and_then(|p| p.get(id)).is_some())
-                    .unwrap_or_else(|| root.clone());
-                let panel = crate::person::build(flat, &sel);
-                (l, Some(focus), roster, panel, Some(sel))
+            if show_all {
+                let mut l = crate::tree::layout(flat);
+                crate::tree::redact(&mut l, lens.set());
+                return (l, None, roster, None, None, hidden);
             }
-            // An empty bundle has nobody to focus on.
-            None => (crate::tree::layout(flat), None, roster, None, None),
-        }
-    });
+
+            // Choosing a root evaluates every candidate's whole subtree, so it
+            // is the most expensive thing on this path and must happen exactly
+            // once. When the reader may read nobody — every signed-out visitor
+            // to a bundle that marks its family `members`, which is not a rare
+            // case — searching readable candidates first would scan all 866
+            // people to find none and then scan them all again unrestricted.
+            // Ask only the question that can be answered.
+            let candidates = lens.set();
+            let restricted_search = candidates.is_some_and(|set| !set.is_empty());
+            let root = q
+                .root
+                .clone()
+                .filter(|id| flat.get("persons").and_then(|p| p.get(id)).is_some())
+                .or_else(|| {
+                    if restricted_search {
+                        crate::tree::best_root_among(flat, depth, candidates)
+                    } else {
+                        // Nobody readable: the tree still draws its shape, all
+                        // of it redacted, centred where an admin would land.
+                        crate::tree::best_root(flat, depth)
+                    }
+                });
+
+            match root {
+                Some(root) => {
+                    let sub = crate::tree::select_subtree(flat, &root, depth, depth);
+                    let mut l = crate::tree::layout_focused(flat, &sub);
+                    crate::tree::redact(&mut l, lens.set());
+                    let name = if lens.sees_person(&root) {
+                        flat.get("persons")
+                            .and_then(|p| p.get(&root))
+                            .map(view::person_display_name)
+                            .unwrap_or_else(|| "[Unknown]".into())
+                    } else {
+                        crate::person::RESTRICTED_NAME.to_string()
+                    };
+                    let focus = json!({
+                        "root": root,
+                        "root_name": name,
+                        "ancestors": sub.ancestor_count,
+                        "descendants": sub.descendant_count,
+                        "spouses": sub.spouse_count,
+                    });
+                    // The panel opens on the selection, or the root if none was
+                    // asked for. Selecting a person never moves the tree.
+                    let sel = q
+                        .sel
+                        .clone()
+                        .filter(|id| flat.get("persons").and_then(|p| p.get(id)).is_some())
+                        .unwrap_or_else(|| root.clone());
+                    // A selection the reader may not read opens no panel at all,
+                    // rather than a panel of blanks.
+                    let panel = if lens.sees_person(&sel) {
+                        crate::person::build(flat, &sel, lens)
+                    } else {
+                        None
+                    };
+                    (l, Some(focus), roster, panel, Some(sel), hidden)
+                }
+                // An empty bundle has nobody to focus on.
+                None => {
+                    let mut l = crate::tree::layout(flat);
+                    crate::tree::redact(&mut l, lens.set());
+                    (l, None, roster, None, None, hidden)
+                }
+            }
+        });
     let elapsed = started.elapsed();
 
     tracing::debug!(
@@ -293,6 +354,10 @@ pub async fn tree(
             full_width => full_width.round() as i64,
             p => panel,
             selected,
+            // How many people this reader is not being shown. Stated rather
+            // than hidden: a tree with silent gaps looks like a broken import.
+            hidden,
+            signed_in => viewer.signed_in(),
             // The record sections inside the panel lay themselves out for a
             // clamped column rather than a page.
             compact => true,
@@ -311,10 +376,26 @@ pub async fn tree_panel(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Response {
-    let is_admin = auth::is_admin(&headers, state.admin_token());
-    let panel = state.read(|flat| crate::person::build(flat, &id));
-    match panel {
-        Some(p) => render::page(
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let is_admin = viewer.is_admin();
+    // The panel fetch is a read path like any other, and it is the one most
+    // easily forgotten: it returns a fragment rather than a page, so a
+    // template-level check would never have covered it. It resolves its own
+    // lens and refuses on its own.
+    let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
+        if flat.get("persons").and_then(|p| p.get(&id)).is_none() {
+            return Reading::Absent;
+        }
+        if !lens.sees_person(&id) {
+            return Reading::Restricted;
+        }
+        match crate::person::build(flat, &id, lens) {
+            Some(p) => Reading::Ok(Box::new(p)),
+            None => Reading::Absent,
+        }
+    });
+    match outcome {
+        Reading::Ok(p) => render::page(
             "_panel.html",
             context! {
                 p,
@@ -323,7 +404,8 @@ pub async fn tree_panel(
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),
-        None => render::error_page(
+        Reading::Restricted => restricted_page(viewer.signed_in()),
+        Reading::Absent => render::error_page(
             StatusCode::NOT_FOUND,
             "No such person",
             "This bundle contains no person with that id.",
@@ -331,13 +413,44 @@ pub async fn tree_panel(
     }
 }
 
-/// Every person as `{id, name}`, sorted by name, for the root picker.
-fn person_roster(flat: &Value) -> Vec<Value> {
+/// The three answers a read of one entity can have.
+///
+/// "Absent" and "restricted" are kept apart deliberately. Collapsing them into
+/// a 404 is the reflex, but it buys nothing here: the tree already shows that a
+/// hidden person exists, so a 404 would be a lie that protects nothing while
+/// telling a legitimate reader — a family member who is simply signed out —
+/// that the record they were sent is missing rather than closed to them.
+enum Reading {
+    Ok(Box<crate::person::PersonView>),
+    Restricted,
+    Absent,
+}
+
+/// The page shown for a record this reader may not read.
+fn restricted_page(signed_in: bool) -> Response {
+    let detail = if signed_in {
+        "This record's visibility puts it above what your account may read.          An administrator can change either the record's visibility or your          role."
+    } else {
+        "This record is not public. Sign in to see whether your account may          read it."
+    };
+    render::error_page(StatusCode::FORBIDDEN, "Not visible to you", detail)
+}
+
+/// Every readable person as `{id, name}`, sorted by name, for the root picker.
+///
+/// Hidden people are left out entirely rather than redacted, which is the one
+/// place this application omits rather than redacts — and for a reason that
+/// does not apply anywhere else. The roster is a *destination list*: every
+/// entry is somewhere the reader can go. A row reading "Private" leads
+/// nowhere, and a searchable list of them would also be the one surface where
+/// existence turns into an enumerable index.
+fn person_roster(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
     let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
         return Vec::new();
     };
     let mut out: Vec<(String, String)> = persons
         .iter()
+        .filter(|(id, _)| lens.sees_person(id))
         .map(|(id, p)| (view::person_display_name(p), id.clone()))
         .collect();
     out.sort();
@@ -352,11 +465,23 @@ pub async fn person(
     Path(id): Path<String>,
     headers: HeaderMap,
 ) -> Response {
-    let is_admin = auth::is_admin(&headers, state.admin_token());
-    let view = state.read(|flat| crate::person::build(flat, &id));
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let is_admin = viewer.is_admin();
+    let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
+        if flat.get("persons").and_then(|p| p.get(&id)).is_none() {
+            return Reading::Absent;
+        }
+        if !lens.sees_person(&id) {
+            return Reading::Restricted;
+        }
+        match crate::person::build(flat, &id, lens) {
+            Some(p) => Reading::Ok(Box::new(p)),
+            None => Reading::Absent,
+        }
+    });
 
-    match view {
-        Some(p) => render::page(
+    match outcome {
+        Reading::Ok(p) => render::page(
             "person.html",
             context! {
                 nav => "tree",
@@ -368,7 +493,8 @@ pub async fn person(
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),
-        None => render::error_page(
+        Reading::Restricted => restricted_page(viewer.signed_in()),
+        Reading::Absent => render::error_page(
             StatusCode::NOT_FOUND,
             "No such person",
             "This bundle contains no person with that id.",
@@ -390,8 +516,19 @@ struct StoredDocument {
 /// `None` covers both "no such document" and "the document exists but this
 /// bundle does not carry the file" — a `referenced` document names something
 /// held elsewhere, and there is nothing here to serve either way.
-fn stored_document(state: &Shared, id: &str) -> Option<StoredDocument> {
-    let doc = state.read(|flat| {
+fn stored_document(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    id: &str,
+) -> Option<StoredDocument> {
+    let doc = state.read_as(viewer.ceiling(), |flat, lens| {
+        // A document is reached through the person who attaches it, so that is
+        // what governs its bytes. Checked here rather than in each of the three
+        // handlers, because /raw, /view and /thumb are three doors into the
+        // same file and a check on two of them is a check on none.
+        if !crate::access::may_read_document(flat, lens.visible(), viewer.signed_in(), id) {
+            return None;
+        }
         let d = flat.get("documents")?.get(id)?;
         let path = d.get("file")?.get("path")?.as_str()?.to_string();
         Some(StoredDocument {
@@ -426,8 +563,13 @@ fn stored_document(state: &Shared, id: &str) -> Option<StoredDocument> {
 /// The exception matters: an SVG or an HTML file rendered inline from this
 /// origin would run its own script against the viewer's admin session, so
 /// only formats that cannot carry script are shown in the page.
-pub async fn document_raw(State(state): State<Shared>, Path(id): Path<String>) -> Response {
-    let Some(doc) = stored_document(&state, &id) else {
+pub async fn document_raw(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page(
             StatusCode::NOT_FOUND,
             "No such file",
@@ -509,8 +651,13 @@ fn set_header(headers: &mut header::HeaderMap, name: header::HeaderName, value: 
 /// This is deliberately distinct from `/raw`: `/raw` is the byte-identical
 /// original a reader downloads, while `/view` is what the gallery opens, where
 /// a sideways phone photo must appear the right way up.
-pub async fn document_view(State(state): State<Shared>, Path(id): Path<String>) -> Response {
-    let Some(doc) = stored_document(&state, &id) else {
+pub async fn document_view(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page(
             StatusCode::NOT_FOUND,
             "No such file",
@@ -540,12 +687,17 @@ pub async fn document_view(State(state): State<Shared>, Path(id): Path<String>) 
         }
     }
     // Fallback: hand off to the byte-identical path.
-    document_raw(State(state), Path(id)).await
+    document_raw(State(state), headers, Path(id)).await
 }
 
 /// `GET /document/:id/thumb` — a downscaled PNG, or 404 for a non-image.
-pub async fn document_thumb(State(state): State<Shared>, Path(id): Path<String>) -> Response {
-    let Some(doc) = stored_document(&state, &id) else {
+pub async fn document_thumb(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let viewer = auth::viewer(&headers, state.admin_token());
+    let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page(
             StatusCode::NOT_FOUND,
             "No such file",
@@ -606,12 +758,37 @@ pub async fn tree_js() -> Response {
         .into_response()
 }
 
-/// `GET /health` — liveness plus entity counts.
-pub async fn health(State(state): State<Shared>) -> Response {
+/// `GET /health` — liveness, plus the entity counts this requester may see.
+///
+/// The only JSON endpoint the application serves, and therefore the one a
+/// visibility rule is easiest to forget on: nothing here renders through a
+/// template, so nothing here would have been covered by a template-level
+/// check.
+///
+/// `persons` is the count this requester may *read*, not the count the bundle
+/// holds. It stays unauthenticated: the endpoint's job is liveness, monitors
+/// are not signed in, and the number it now reports is one the tree page
+/// already states in words — "17 people are shown without their details" — so
+/// withholding it here would protect nothing and break the monitor.
+pub async fn health(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let viewer = auth::viewer(&headers, state.admin_token());
     let counts = state.counts();
-    let total: usize = counts.iter().map(|(_, n)| n).sum();
+    let persons_visible = state.read_as(viewer.ceiling(), |flat, lens| {
+        flat.get("persons")
+            .and_then(Value::as_object)
+            .map(|p| lens.count(p.len()))
+    });
     let mut entities = serde_json::Map::new();
+    let mut total = 0usize;
     for (k, n) in &counts {
+        // Persons are the one collection with a per-entity ceiling, so they
+        // are the one collection whose count depends on who is asking.
+        let n = if *k == "persons" {
+            persons_visible.unwrap_or(*n)
+        } else {
+            *n
+        };
+        total += n;
         entities.insert((*k).to_string(), json!(n));
     }
     Json(json!({

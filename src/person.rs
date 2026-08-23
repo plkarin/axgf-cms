@@ -32,6 +32,10 @@ pub struct PersonRef {
     pub name: String,
     /// False when the id is referenced but absent from the bundle.
     pub known: bool,
+    /// True when the person exists but this request may not read them. The
+    /// reference keeps its place — and its id, so the family shape and the
+    /// deduplication stay correct — and carries nothing else.
+    pub restricted: bool,
     pub confidence: Option<Confidence>,
     /// Extra context: a role, a union type, a note.
     pub detail: Option<String>,
@@ -282,10 +286,18 @@ pub struct PersonView {
     pub showcase_notes: Vec<String>,
 }
 
+/// What a reader is shown in place of a person they may not read.
+pub const RESTRICTED_NAME: &str = "Private";
+
 /// Build the identity view for `id`, or `None` when no such person exists.
-pub fn build(flat: &Value, id: &str) -> Option<PersonView> {
+///
+/// `lens` is the caller's read authority. It governs every *other* person this
+/// record mentions; whether `id` itself may be read is the caller's question,
+/// asked before this is called, because "absent" and "restricted" are
+/// different answers and only the route can phrase them.
+pub fn build(flat: &Value, id: &str, lens: &crate::access::Lens) -> Option<PersonView> {
     let person = flat.get("persons")?.get(id)?;
-    let ctx = Ctx { flat };
+    let ctx = Ctx { flat, lens };
 
     let identity = person.get("identity");
     let name = view::person_display_name(person);
@@ -530,9 +542,13 @@ struct ChildEntry<'a> {
     birth_order: Option<i64>,
 }
 
-/// Lookup helpers bound to one bundle.
+/// Lookup helpers bound to one bundle, and to who is reading it.
 struct Ctx<'a> {
     flat: &'a Value,
+    /// What this request may read. Every cross-reference to another person
+    /// goes through [`Ctx::person_ref`], which is where the lens is applied,
+    /// so there is one place to get this right rather than one per section.
+    lens: &'a crate::access::Lens,
 }
 
 impl Ctx<'_> {
@@ -540,15 +556,40 @@ impl Ctx<'_> {
         self.flat.get(name).and_then(Value::as_object)
     }
 
-    /// Resolve a person id to a reference, tolerating absence.
+    /// Resolve a person id to a reference, tolerating absence — and refusing
+    /// to resolve one this request may not read.
+    ///
+    /// This is the single chokepoint for every mention of another person on
+    /// the page: parents, siblings, spouses, children and the far end of every
+    /// link all arrive here. Redacting here rather than in each section is
+    /// what makes the guarantee checkable.
+    ///
+    /// What survives redaction is the shape, not the person. The confidence
+    /// stays because it grades *this* person's parentage, which is their own
+    /// record; the id stays because dropping it would collapse two hidden
+    /// parents into one and misstate the family. The name, the lifespan, the
+    /// role — "husband" names a gender — and the link do not.
     fn person_ref(&self, id: &str, confidence: Option<f64>, detail: Option<String>) -> PersonRef {
         let found = self.collection("persons").and_then(|m| m.get(id));
+        if found.is_some() && !self.lens.sees_person(id) {
+            return PersonRef {
+                id: id.to_string(),
+                name: RESTRICTED_NAME.to_string(),
+                known: false,
+                restricted: true,
+                confidence: confidence.map(Confidence::new),
+                detail: None,
+                birth_order: None,
+                lifespan: None,
+            };
+        }
         PersonRef {
             id: id.to_string(),
             name: found
                 .map(view::person_display_name)
                 .unwrap_or_else(|| "[Unknown]".into()),
             known: found.is_some(),
+            restricted: false,
             confidence: confidence.map(Confidence::new),
             detail,
             birth_order: None,
@@ -889,6 +930,15 @@ impl Ctx<'_> {
         };
         let mut out = Vec::new();
         for l in links.values() {
+            // A link carries its own `visibility`, and it is the one place
+            // where the *relationship* is more sensitive than either end: an
+            // acknowledged natural parent, a witness nobody wants named. Both
+            // people can be public and the edge between them still private, so
+            // this is checked on the link itself, not inferred from its
+            // endpoints.
+            if !self.lens.sees_entity(l) {
+                continue;
+            }
             let from_id = l
                 .get("from")
                 .filter(|f| f.get("entity_type").and_then(Value::as_str) == Some("person"))
@@ -953,6 +1003,7 @@ impl Ctx<'_> {
         let mine: Vec<&Value> = occs
             .values()
             .filter(|o| o.get("person_id").and_then(Value::as_str) == Some(id))
+            .filter(|o| self.lens.sees_entity(o))
             .collect();
         if mine.is_empty() {
             return (Vec::new(), 0, 0, false);
@@ -1063,6 +1114,7 @@ impl Ctx<'_> {
         };
         events
             .values()
+            .filter(|e| self.lens.sees_entity(e))
             .filter_map(|e| {
                 let role = e
                     .get("participants")
@@ -1396,6 +1448,13 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    /// A lens that hides nothing. These tests are about what the
+    /// builder makes of a record, not about who may read it; the
+    /// redaction rules have their own tests below.
+    fn open() -> crate::access::Lens {
+        crate::access::Lens::unrestricted()
+    }
+
     fn bundle() -> Value {
         json!({
             "manifest": {"axgf": "1.0"},
@@ -1539,12 +1598,12 @@ mod tests {
     }
 
     fn jules() -> PersonView {
-        build(&bundle(), "p-jules").expect("Jules exists")
+        build(&bundle(), "p-jules", &open()).expect("Jules exists")
     }
 
     #[test]
     fn missing_person_returns_none_rather_than_a_broken_page() {
-        assert!(build(&bundle(), "nobody").is_none());
+        assert!(build(&bundle(), "nobody", &open()).is_none());
     }
 
     #[test]
@@ -1655,7 +1714,7 @@ mod tests {
             .as_array_mut()
             .unwrap()
             .push(json!({"entity_type": "family", "entity_id": "p-jules", "role": "created"}));
-        let v = build(&b, "p-jules").expect("builds");
+        let v = build(&b, "p-jules", &open()).expect("builds");
         let roles: Vec<&str> = v
             .timeline
             .iter()
@@ -1678,7 +1737,7 @@ mod tests {
 
     #[test]
     fn a_referenced_but_absent_relative_is_unknown_and_unlinked() {
-        let v = build(&bundle(), "p-sib").expect("sibling exists");
+        let v = build(&bundle(), "p-sib", &open()).expect("sibling exists");
         let ghost = v.siblings.iter().find(|s| s.id == "p-ghost").unwrap();
         assert_eq!(ghost.name, "[Unknown]");
         assert!(!ghost.known, "the template must not link an absent person");
@@ -1720,7 +1779,7 @@ mod tests {
 
     #[test]
     fn a_union_with_one_recorded_partner_has_no_spouse() {
-        let v = build(&bundle(), "p-dad").expect("Henri exists");
+        let v = build(&bundle(), "p-dad", &open()).expect("Henri exists");
         assert_eq!(v.unions.len(), 1);
         assert!(v.unions[0].spouse.is_none());
         assert_eq!(v.unions[0].children.len(), 3);
@@ -1744,7 +1803,7 @@ mod tests {
 
     #[test]
     fn the_outgoing_side_of_a_link_uses_the_forward_label() {
-        let v = build(&bundle(), "p-jean").expect("Jean exists");
+        let v = build(&bundle(), "p-jean", &open()).expect("Jean exists");
         assert_eq!(v.links[0].label, "godfather");
         assert_eq!(v.links[0].direction, "outgoing");
     }
@@ -1779,7 +1838,7 @@ mod tests {
             "o9": {"id": "o9", "type": "occupation", "axgf_version": "1.0",
                    "person_id": "p-jules", "title": "Farmaceuta", "confidence": 0.8}
         });
-        let v = build(&b, "p-jules").expect("builds");
+        let v = build(&b, "p-jules", &open()).expect("builds");
         assert_eq!(v.occupations.len(), 1);
         assert!(
             !v.has_timeline,
@@ -1894,7 +1953,7 @@ mod tests {
                        "persons": {"bare": {"id": "bare", "type": "person",
                                             "axgf_version": "1.0",
                                             "identity": {"name": {"display": "Bare"}}}}});
-        let v = build(&b, "bare").expect("builds");
+        let v = build(&b, "bare", &open()).expect("builds");
         assert!(!v.birth.present);
         assert_eq!(v.birth.date.text, "Not recorded");
         // Every section is empty, so the page will show none of them.

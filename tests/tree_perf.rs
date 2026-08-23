@@ -162,14 +162,14 @@ async fn the_full_view_still_places_every_person() {
     };
     let (app, _p) = app_with_bundle("place", &bundle);
     let body = expect_status(
-        get(&app, "/tree?all=1").await,
+        get_admin(&app, "/tree?all=1").await,
         StatusCode::OK,
         "GET /tree?all=1",
     )
     .await;
 
     // `?all=1` may not silently drop anyone, placed or not.
-    let health = body_string(get(&app, "/health").await).await;
+    let health = body_string(get_admin(&app, "/health").await).await;
     let h: serde_json::Value = serde_json::from_str(&health).unwrap();
     let people = h["entities"]["persons"].as_u64().unwrap() as usize;
 
@@ -177,6 +177,36 @@ async fn the_full_view_still_places_every_person() {
     assert_eq!(
         cards, people,
         "every person needs a card in the full view; {people} people but {cards} cards"
+    );
+
+    // And the same number of cards for a reader who may read almost none of
+    // them. The tree's *shape* is not a permission-dependent thing: if it
+    // were, the difference between two readers' views would itself disclose
+    // who is hidden. A signed-out visitor sees every card and reads fewer.
+    let anon = expect_status(
+        get(&app, "/tree?all=1").await,
+        StatusCode::OK,
+        "GET /tree?all=1 signed out",
+    )
+    .await;
+    assert_eq!(
+        anon.matches("data-id=\"").count(),
+        cards,
+        "the canvas must not change shape according to who is looking"
+    );
+
+    let anon_health = body_string(get(&app, "/health").await).await;
+    let ah: serde_json::Value = serde_json::from_str(&anon_health).unwrap();
+    let readable = ah["entities"]["persons"].as_u64().unwrap() as usize;
+    assert!(
+        readable <= people,
+        "a signed-out reader can never be shown more people than exist"
+    );
+    assert_eq!(
+        anon.matches("is-restricted").count(),
+        people - readable,
+        "every person the reader may not read gets a redacted card, and every \
+         redacted card is one of them"
     );
 }
 

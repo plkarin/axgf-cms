@@ -94,6 +94,47 @@ does carry: an explicit value always wins, and failing that a person marked
 would publish living people the moment a bundle was imported; guessing
 `members` would blank every converted bundle for visitors and look broken.
 
+**Visibility is enforced server-side, on every read path.** Not in a template:
+markup that reaches the browser has already left the building, and a name
+hidden with CSS has been published with a note asking politely. Each request
+resolves one lens at the top of the handler and passes it down; nothing below
+that point reads a header or re-derives the answer.
+
+The paths, all of them: the tree page, the panel *fragment* (`/tree/panel/:id`
+returns no page, so no page-level check would ever have covered it), the
+standalone record, the document bytes on all three of `/raw`, `/view` and
+`/thumb`, the `/health` JSON, the root picker and the home page's showcase
+counts and example links. `tests/visibility.rs` searches raw response bodies
+for names that appear nowhere else in the fixture, so a leak is proof and not
+a coincidence; removing the enforcement fails nine of its eleven tests.
+
+**Hidden people are redacted, not omitted.** A person the reader may not read
+keeps their card in the tree and their place among the parents, and carries no
+name, no dates, no gender, no link and nothing for the client-side filter to
+match on. Two reasons, the first decisive:
+
+- Omission is a false statement. A record listing one parent where the bundle
+  holds two asserts something untrue about the genealogy, and for an
+  application whose argument is that a format should preserve what it knows,
+  silently dropping a relationship is the one behaviour it cannot have.
+- With the `is_living` default, omission would make every converted bundle look
+  as though the family died out two generations ago. That reads as a broken
+  import, not as a privacy control.
+
+The consequence is deliberate: a signed-out visitor can learn that a hidden
+person exists, sits in a given generation, and how they connect. Nothing else.
+For the same reason a withheld record answers `403`, not `404` — the tree
+already discloses that it exists, so a `404` would protect nothing while
+telling a family member who is merely signed out that their record had been
+deleted. The tree states the count in words rather than leaving silent gaps.
+The one place that omits rather than redacts is the root picker, because every
+entry there is a *destination* and a row reading "Private" leads nowhere.
+
+**A link can be private when both its endpoints are not.** The one case that
+does not reduce to person visibility — an acknowledged natural parentage, a
+witness nobody wants named — so `link.visibility` is honoured on the link
+itself rather than inferred from its ends.
+
 **Sessions.** A signed cookie — 244 bits of session id and an HMAC-SHA256
 signature under a secret generated at startup — `HttpOnly`, `SameSite=Strict`,
 and `Secure` only when the request actually arrived over TLS, since setting it

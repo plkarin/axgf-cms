@@ -467,6 +467,28 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
   white-space: nowrap;
   border: 0;
 }
+/* A person the reader may not read. Deliberately quiet rather than alarming:
+   it is a normal state of a family record, not an error. The dashed border is
+   the signal — it survives every theme and needs no colour to be read, which
+   matters because the colour-blind themes have to carry it too. */
+.tcard.is-restricted {
+  border-style: dashed;
+  background: var(--sex-u);
+  cursor: default;
+}
+.tcard.is-restricted .tname {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+.tcard.is-restricted:hover { box-shadow: none; z-index: 2; }
+
+/* The same treatment inline, where a hidden person is named as a relative. */
+.restricted {
+  color: var(--ink-soft);
+  font-style: italic;
+  border-bottom: 1px dashed var(--border-strong);
+}
+
 .tcard[data-sex="a"] { background: var(--sex-a); border-color: var(--sex-a-line); }
 .tcard[data-sex="b"] { background: var(--sex-b); border-color: var(--sex-b-line); }
 .tcard:hover { box-shadow: 0 0 0 2px var(--accent); z-index: 3; }

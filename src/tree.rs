@@ -454,6 +454,10 @@ pub struct Card {
     pub conf_label: Option<String>,
     /// True for the person the focused view is centred on.
     pub is_root: bool,
+    /// True when this person exists but the reader may not read them. The card
+    /// keeps its place and its id — the tree's shape is the same for everyone —
+    /// and carries no name, no dates, no gender and no link.
+    pub restricted: bool,
 }
 
 /// A connector between two cards.
@@ -675,6 +679,22 @@ const LEGIBLE_ROW: usize = 14;
 /// Ties break on total descendants, then name, then id, so the landing page is
 /// stable across restarts rather than depending on map iteration order.
 pub fn best_root(flat: &Value, depth: usize) -> Option<String> {
+    best_root_among(flat, depth, None)
+}
+
+/// [`best_root`], restricted to candidates the reader may actually read.
+///
+/// `only` filters the *candidates*, not the subtree each one would draw: the
+/// landing view still shows the hidden people around the root, redacted, so
+/// the tree does not change shape according to who is looking. Without this
+/// the default root on a real family bundle is almost always someone living —
+/// and therefore `members` — so every signed-out visitor would land on a
+/// panel reading "Private".
+pub fn best_root_among(
+    flat: &Value,
+    depth: usize,
+    only: Option<&BTreeSet<String>>,
+) -> Option<String> {
     let families = family_edges(flat);
     let index = family_index(&families);
     let (parent_of, _) = &index;
@@ -744,6 +764,9 @@ pub fn best_root(flat: &Value, depth: usize) -> Option<String> {
 
     let mut best: Option<Score> = None;
     for id in persons.keys() {
+        if only.is_some_and(|set| !set.contains(id)) {
+            continue;
+        }
         let sub = select_with(&families, &index, id, depth, depth);
 
         // Bucket the subtree by the generation the layout will put it in.
@@ -1448,6 +1471,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
             conf_band: None,
             conf_label: None,
             is_root,
+            restricted: false,
         };
     };
 
@@ -1491,6 +1515,64 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
         conf_band: conf.as_ref().map(|c| c.band),
         conf_label: conf.map(|c| c.description),
         is_root,
+        restricted: false,
+    }
+}
+
+/// Blank everything about the people `visible` does not admit.
+///
+/// Run *after* layout rather than folded into it, and that is the point: the
+/// geometry is identical whether or not the reader may read the names. A tree
+/// that changed shape according to who was looking would leak the very thing
+/// this is meant to withhold — the difference between two layouts is a signal,
+/// and a reader who could see both would read the hidden people out of it.
+/// Here the only difference between an admin's tree and an anonymous
+/// visitor's is which cards carry text.
+///
+/// `None` admits everyone and costs nothing, which is the common case: a
+/// bundle with nothing hidden, or an admin.
+pub fn redact(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>) {
+    let Some(visible) = visible else { return };
+    let mut hidden: BTreeSet<&str> = BTreeSet::new();
+    for band in &mut layout.bands {
+        for card in &mut band.cards {
+            if visible.contains(&card.id) {
+                continue;
+            }
+            hidden.insert(card.id.as_str());
+            card.name = crate::person::RESTRICTED_NAME.to_string();
+            // Emptied, not redacted-in-place: `search` drives the client-side
+            // filter, and a filter that still matched the real name would hand
+            // back every name in the bundle one keystroke at a time.
+            card.search = String::new();
+            card.birth = String::new();
+            card.death = String::new();
+            // "a"/"b" encode recorded sex on the card; "u" is the same thing
+            // an unrecorded gender gets, so a redacted card is not
+            // distinguishable from an incomplete one.
+            card.sex = "u";
+            // The confidence of a birth fact is a statement about a fact the
+            // reader may not see.
+            card.conf_band = None;
+            card.conf_label = None;
+            card.restricted = true;
+        }
+    }
+    if hidden.is_empty() {
+        return;
+    }
+    // An edge title names both ends. The edge itself stays — it is the shape,
+    // and the shape is not what is being withheld — but it stops saying who.
+    for edge in &mut layout.edges {
+        let a = hidden.contains(edge.from.as_str());
+        let b = hidden.contains(edge.to.as_str());
+        if !a && !b {
+            continue;
+        }
+        edge.title = match edge.kind {
+            "spouse" => "A recorded union".to_string(),
+            _ => "A recorded parentage".to_string(),
+        };
     }
 }
 

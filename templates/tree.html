@@ -24,6 +24,18 @@
       </p>
     {% endif %}
   </div>
+  {% if hidden %}
+  {# Stated, not silent. A tree with unexplained blanks reads as a broken
+     import; this says the blanks are a rule, and which rule. #}
+  <p class="notice restricted-notice" role="status">
+    {{ hidden }} {{ "person is" if hidden == 1 else "people are" }} shown without
+    their details, because
+    {%- if signed_in %} their visibility is above what your account may read.
+    {%- else %} they are not public.
+      <a href="/admin/login">Sign in</a> if you have an account.
+    {%- endif %}
+  </p>
+  {% endif %}
   <form class="tree-search" onsubmit="return false">
     <label for="tree-filter">Filter visible cards</label>
     <input type="text" id="tree-filter" placeholder="Type a name…" autocomplete="off" spellcheck="false">
@@ -135,6 +147,19 @@
         <span class="muted">{{ band.sublabel }}</span>
       </div>
       {% for c in band.cards %}
+      {% if c.restricted %}
+      {# A person this reader may not read keeps their place in the tree, so
+         the shape stays true, and carries nothing else — no name, no dates,
+         no link, and nothing for the filter to match on. A <div>, not an <a>:
+         there is no destination. #}
+      <div class="tcard is-restricted"
+           data-id="{{ c.id }}" data-sex="u" data-search=""
+           style="left:{{ c.x }}px;top:{{ c.y }}px"
+           title="This person's record is not visible to you">
+        <span class="tname">{{ c.name }}</span>
+        <span class="tdates"><span class="sep">·</span></span>
+      </div>
+      {% else %}
       {# The whole card is one link to the person's permalink; JS turns the
          click into a panel load and marks the selection, falling back to the
          standalone page when scripting is off. #}
@@ -151,6 +176,7 @@
               title="{{ c.conf_label }}"></i>{% endif %}
         </span>
       </a>
+      {% endif %}
       {% endfor %}
     {% endfor %}
 

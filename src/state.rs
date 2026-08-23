@@ -66,6 +66,16 @@ pub struct AppState {
     /// Binary payloads, held on disk rather than in the flat JSON. The bundle
     /// in `inner` carries only document metadata; the bytes live here.
     payloads: PayloadCache,
+    /// The accounts, read from the `.acl` companion beside the bundle.
+    ///
+    /// Deliberately *not* inside `inner`: the bundle is copied, mailed and
+    /// published, and a credential store that travels with it is a credential
+    /// store leaked by every share. See [`crate::acl`].
+    acl: RwLock<crate::acl::Acl>,
+    /// Where that file lives. Rewritten at mode 600 on every account change.
+    acl_path: PathBuf,
+    /// Live sessions and the login throttle, in memory for the process's life.
+    sessions: crate::session::SessionStore,
 }
 
 /// Outcome of a mutation attempt.
@@ -213,6 +223,31 @@ impl AppState {
         // check happens once the payloads have already gone past.
         cache.verify_against_metadata(&flat, &mut report);
 
+        // The accounts live beside the bundle, never inside it. An absent
+        // file is an installation with no accounts yet, not an error: the
+        // bootstrap script is what creates the first admin, and until it runs
+        // the only way in is `--admin-token`.
+        let acl_path = crate::acl::Acl::path_for(path);
+        let acl = if acl_path.exists() {
+            // A world-readable ACL is refused here rather than warned about,
+            // which is the whole reason for the separate file.
+            let acl = crate::acl::Acl::load(&acl_path)?;
+            match acl.check_binding(flat.get("manifest"), Some(&bundle_sha)) {
+                crate::acl::Binding::Ok => {}
+                crate::acl::Binding::Mismatch { expected, found } => {
+                    tracing::warn!(
+                        acl = %acl_path.display(),
+                        "the ACL was created for {expected} but this bundle is {found}. \
+                         Accounts from one family are being applied to another's tree; \
+                         check that this is what you meant."
+                    );
+                }
+            }
+            acl
+        } else {
+            crate::acl::Acl::default()
+        };
+
         Ok((
             Self {
                 bundle_path: path.to_path_buf(),
@@ -222,9 +257,41 @@ impl AppState {
                 thumbs: crate::documents::ThumbCache::default(),
                 size_warn: crate::documents::DEFAULT_SIZE_WARN,
                 payloads: cache,
+                acl: RwLock::new(acl),
+                acl_path,
+                sessions: crate::session::SessionStore::new(),
             },
             report,
         ))
+    }
+
+    /// Run `f` against the accounts under the read lock.
+    pub fn acl_read<T>(&self, f: impl FnOnce(&crate::acl::Acl) -> T) -> T {
+        let guard = self.acl.read().unwrap_or_else(|e| e.into_inner());
+        f(&guard)
+    }
+
+    /// Change the accounts and persist them, atomically at mode 600.
+    ///
+    /// The write happens under the lock, so a reader never sees a state the
+    /// file does not also hold. A failed write leaves the in-memory copy
+    /// changed and the file behind, which is why the error is returned rather
+    /// than logged: the caller must tell the operator the change did not stick.
+    pub fn acl_mutate<T>(&self, f: impl FnOnce(&mut crate::acl::Acl) -> T) -> Result<T> {
+        let mut guard = self.acl.write().unwrap_or_else(|e| e.into_inner());
+        let out = f(&mut guard);
+        guard.save(&self.acl_path)?;
+        Ok(out)
+    }
+
+    /// Where the ACL file lives.
+    pub fn acl_path(&self) -> &Path {
+        &self.acl_path
+    }
+
+    /// Live sessions and the login throttle.
+    pub fn sessions(&self) -> &crate::session::SessionStore {
+        &self.sessions
     }
 
     /// The configured admin token.

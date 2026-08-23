@@ -4,6 +4,107 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — unreleased
+
+Panel content laid out for the column it has, user accounts with roles and
+per-entity visibility, safe concurrent editing, ten interface languages and
+seven themes.
+
+### Added
+
+**The record reads in a 460px column.** `0.1.0` merged the identity view into
+`/tree` as a side panel and clamped the panel's grid track, but the content
+inside it was still written for a page column two to three times wider. At the
+clamp's 320px floor — what a 1231px viewport gives — the identity block spent
+half the panel on a four-column table stating a single fact.
+
+- A single name is a heading with its type as a small label beneath it. The
+  four-column table survives only where several names exist and comparing them
+  is the point, and even then not in the panel, where several names stack as
+  blocks instead. Nothing is dropped on either surface: every name keeps its
+  type, period, script, transliteration and evidence.
+- A name's components are label/value pairs rather than one joined string, so
+  `given name: Laura` is a single unbreakable box and the line can only break
+  between components. The separator sits inside the component it follows, so a
+  line can never begin with one.
+- Gender, living and visibility became labelled chips — label above value in a
+  bordered box — replacing small-caps labels interleaved with values that read
+  as one run-on string: `GENDER Female LIVING yes VISIBILITY members`.
+- Every other section was audited at panel width and re-declared as one column
+  there: **life events** (a 9rem date column left under 270px for the event),
+  **occupations** (a 160px label column left ~150px of timeline track, which is
+  the one thing the chart is for), **sources and documents** (five-column
+  tables now stack into labelled lines driven by a `data-label` carrying the
+  `th` text), **other relationships** and **unions** (box padding was a fifth
+  of the line), and chips, which stop being `nowrap` where nowrap would push
+  the panel sideways. **Family** no longer emits an empty two-column grid when
+  only unions are recorded. **Notes** and **places** needed no change.
+- The long section descriptions stay on `/person/:id` and move behind a `?`
+  control in the panel. Dropping them there was the alternative and would make
+  the panel a lesser record than the page it shares a partial with — the wrong
+  trade now that the panel is where most reading happens. Collapsed they cost
+  one 18px control per section instead of four lines.
+
+**Cards fit the names in them.** The two-line clamp on `.tname` was in place
+but the card was 58px tall, enough for one line plus the dates, so the second
+line and its ellipsis were cut off by the card's own overflow and a long name
+read as a truncated fragment rather than a clamped one. Polish given-name
+chains make this the common case: `Alfons Władysław Antoni Wierzbięta` lost
+everything after the first word. Cards are 66px; row pitch and the SVG
+connector geometry derive from `CARD_H` and followed automatically.
+
+### Security
+
+**Accounts live beside the bundle, never inside it.** A `.axgf` is copied,
+mailed, published and archived; password hashes in it would make every copy of
+the family tree a copy of the credential store. `family.axgf` is the genealogy
+and stays shareable; `family.acl` beside it holds the accounts at mode 600.
+Encryption at rest is left to GPG and is out of scope here.
+
+- Passwords are Argon2id at the OWASP 2024 parameters (m=19456, t=2, p=1),
+  stored in PHC form so the parameters travel with each hash. A test asserts
+  the stored parameters rather than trusting the constant, and another checks
+  that a bare SHA-256 digest never verifies — SHA-256 is a fast hash for
+  integrity, and a GPU tries billions of them per second.
+- The file is created mode 600 through the temp file it is renamed from, so
+  the hashes are never briefly world-readable. Loading refuses anything looser
+  and names both the mode it found and the `chmod` that fixes it.
+- Three roles reusing the specification's own `visibility` vocabulary, so the
+  two systems share one language: **viewer** reads `public` and `members`;
+  **contributor** adds create, update, document upload and `contributors`
+  entities; **admin** adds user management, delete, dedup, validate, export
+  and `private` entities.
+- A bundle binding of family name, manifest `created_at` and the SHA-256 at
+  creation, so one family's accounts applied to another family's tree are
+  detected. The SHA moves on the first edit, so identity falls back to the two
+  manifest fields. A genuine mismatch is reported rather than enforced: a
+  restored backup is legitimate, and refusing to start would be worse.
+- `family_scope` resolves a contributor's root person ids to a person set —
+  the roots, their descendants, and the spouses of everyone reached, spouses as
+  a leaf since following their ancestry would widen a branch scope back to the
+  whole tree.
+
+**Visibility and scope are separated at the type level.** Visibility decides
+what a request may read and comes from the entity; family scope decides what an
+account may write and comes from the account. A branch-scoped contributor still
+reads the whole tree at their ceiling. Where a record states no `visibility` at
+all — every converted GEDCOM — the default is stated on the one axis the format
+does carry: an explicit value always wins, and failing that a person marked
+`is_living` is `members` and everyone else is `public`. Guessing `public`
+would publish living people the moment a bundle was imported; guessing
+`members` would blank every converted bundle for visitors and look broken.
+
+**Sessions.** A signed cookie — 244 bits of session id and an HMAC-SHA256
+signature under a secret generated at startup — `HttpOnly`, `SameSite=Strict`,
+and `Secure` only when the request actually arrived over TLS, since setting it
+unconditionally makes the cookie undeliverable on the documented
+`http://localhost` deployment. Sessions are held in memory with a 12-hour
+expiry, so a restart signs everyone out; at one family's scale that is a mild
+inconvenience against a second persistence layer to back up and migrate.
+Failed logins are throttled per username and per client address. Disabling an
+account, lowering its role or changing its password closes every session it
+holds.
+
 ## [0.1.0] — unreleased
 
 First release. A single binary serving a browsable, editable website for one
@@ -173,13 +274,14 @@ Release workflow builds `x86_64-unknown-linux-musl` and
 
 These are deliberate omissions, not oversights.
 
-- **User accounts.** V1 authentication is one shared token, and that is the
-  whole system: no accounts, no roles, no audit trail. Anyone with the token
-  can edit or delete anything. This is why the default bind address is
-  localhost. Planned for V1.2.
-- **Per-entity visibility.** AXGF entities carry a `visibility` field. This
-  release reads it but does not enforce it — with no user accounts there is no
-  one to enforce it against. It becomes meaningful alongside accounts in V1.2.
+- **Self-registration and invitations.** Accounts are created by an admin and
+  by nobody else. For a family CMS that is sufficient, and it removes an abuse
+  surface — open registration, invitation tokens, email delivery and the
+  account-enumeration oracle each of those carries — entirely rather than
+  defending it. There is no web setup page for the same reason: the window
+  between deployment and first login is exactly when an installation is
+  unprotected, so the first admin is created by the bootstrap script, which
+  prints a generated password once to stderr.
 - **AXGF → GEDCOM export.** Not implemented and not planned. GEDCOM has nowhere
   to put confidence, non-family relationships, occupation spans, graded sources
   or preserved uncertainty, so the round trip is lossy by nature — and that loss
@@ -189,9 +291,6 @@ These are deliberate omissions, not oversights.
   partners and children, a place's border history and similar collections are
   edited through the raw JSON textarea that every admin form carries. Nothing is
   uneditable; some things are just edited as JSON.
-- **Document upload.** Document *metadata* is editable, and binary payloads
-  already in a bundle are preserved across every write, but there is no upload
-  form.
 - **Search beyond name substring.** The tree filter is a case-insensitive
   substring match over display names, client-side. No fuzzy matching, no
   full-text index.

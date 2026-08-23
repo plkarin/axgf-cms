@@ -19,6 +19,7 @@
 // materialised, there is no transient heap to return.
 #![forbid(unsafe_code)]
 
+pub mod access;
 pub mod acl;
 pub mod admin;
 pub mod auth;
@@ -30,6 +31,7 @@ pub mod payloads;
 pub mod person;
 pub mod render;
 pub mod routes;
+pub mod session;
 pub mod state;
 pub mod tree;
 pub mod view;

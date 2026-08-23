@@ -354,6 +354,10 @@ pub async fn tree(
             full_width => full_width.round() as i64,
             p => panel,
             selected,
+            history => selected
+                .as_deref()
+                .filter(|_| viewer.signed_in())
+                .map(|id| entity_history(&state, id)),
             // How many people this reader is not being shown. Stated rather
             // than hidden: a tree with silent gaps looks like a broken import.
             hidden,
@@ -400,6 +404,7 @@ pub async fn tree_panel(
             context! {
                 p,
                 is_admin,
+                history => viewer.signed_in().then(|| entity_history(&state, &id)),
                 compact => true,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
@@ -411,6 +416,25 @@ pub async fn tree_panel(
             "This bundle contains no person with that id.",
         ),
     }
+}
+
+/// One person's edit history, newest first, as the record page renders it.
+fn entity_history(state: &Shared, id: &str) -> Vec<Value> {
+    state
+        .journal()
+        .for_entity("person", id)
+        .into_iter()
+        .map(|e| {
+            json!({
+                "at": e.at,
+                "who": e.who,
+                "action": e.action,
+                "version_num": e.version_num,
+                "summary": e.summary(),
+                "changes": e.changes,
+            })
+        })
+        .collect()
 }
 
 /// The three answers a read of one entity can have.
@@ -487,6 +511,9 @@ pub async fn person(
                 nav => "tree",
                 is_admin,
                 p,
+                // The journal names editors, so it is shown to people who are
+                // signed in and to nobody else.
+                history => viewer.signed_in().then(|| entity_history(&state, &id)),
                 // The standalone page has the width for the explanatory prose
                 // and the comparison tables; the panel does not.
                 compact => false,

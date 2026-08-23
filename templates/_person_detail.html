@@ -423,6 +423,45 @@
 </section>
 {% endif %}
 
+{# --------------------------------------------------------------- HISTORY #}
+{# Only ever rendered for a signed-in reader. The journal names the family's
+   editors and quotes what each of them corrected, which is exactly why it does
+   not live in the shareable bundle — publishing it on the public record page
+   would put it back where it was kept out of. #}
+{% if history %}
+<section id="history" class="rec-section">
+  {{ m.sec("History", compact,
+     "Every saved change to this record, newest first, from the edit journal
+      beside the bundle. Who corrected what is a fact about this family's
+      editors rather than about the family, so it is kept out of the .axgf and
+      shown only to people signed in.") }}
+  <ol class="history">
+    {% for h in history %}
+    <li>
+      <strong>{{ h.who }}</strong> {{ h.summary }}
+      <span class="small muted">— {{ h.at }}{% if h.version_num %}, version {{ h.version_num }}{% endif %}</span>
+      {% if h.changes %}
+      <details>
+        <summary class="small">what changed</summary>
+        <table class="wide diff-table">
+          <tbody>
+          {% for c in h.changes %}
+            <tr>
+              <td data-label="Field"><code>{{ c.path }}</code></td>
+              <td data-label="From"><span class="diff-from">{{ c.from if c.from else "— not set —" }}</span></td>
+              <td data-label="To"><span class="diff-to">{{ c.to if c.to else "— not set —" }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </details>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
 {# --------------------------------------------------------------------- RAW #}
 <section id="raw" class="rec-section">
   <details class="raw">

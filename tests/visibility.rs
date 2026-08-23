@@ -484,8 +484,11 @@ async fn tightening_a_visibility_takes_effect_on_the_very_next_read() {
             "visibility": "private"
         }
     });
+    // `base_version` is what the edit form carries; a save fails closed
+    // without it. The fixture's people carry no `version_num`, so 0.
     let body = format!(
-        "raw_json={}",
+        "base_version=0&identity.name.display={}&raw_json={}",
+        urlencode(OPEN_NAME),
         urlencode(&serde_json::to_string(&entity).unwrap())
     );
     let resp = post_form(&app, &format!("/admin/person/{OPEN}"), &body, true).await;

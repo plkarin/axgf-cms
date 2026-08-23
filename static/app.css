@@ -1215,3 +1215,34 @@ details.raw > summary { cursor: pointer; font-weight: 600; }
 }
 .upload-form h3 { margin-top: 0; }
 .upload-form p { margin-bottom: 0; max-width: 68ch; }
+
+/* ---------------------------------------------------------------------------
+   Conflict and history
+   ---------------------------------------------------------------------------
+   A refused save has to be readable in the ten seconds before the editor
+   decides what to do with it, so the two values are set apart by weight and a
+   marker rather than by colour alone — the colour-blind themes carry these
+   tables too, and "the red one is theirs" is not a distinction that survives
+   them. */
+.diff-table td { vertical-align: top; }
+.diff-from {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--ink-soft);
+}
+.diff-to { font-weight: 600; }
+.diff-arrow { color: var(--ink-faint); padding: 0 0.3rem; }
+
+/* A field both editors touched. The left border is the signal; the tint only
+   reinforces it, so the row still reads as marked without colour. */
+.diff-table tr.contested > td {
+  background: var(--accent-soft);
+}
+.diff-table tr.contested > td:first-child {
+  border-inline-start: 3px solid var(--accent);
+}
+
+.history { margin: 0.5rem 0 1.5rem; padding-inline-start: 1.2rem; }
+.history li { margin-bottom: 0.5rem; line-height: 1.5; }
+.history details { margin-top: 0.35rem; }
+.history summary { cursor: pointer; color: var(--ink-soft); }

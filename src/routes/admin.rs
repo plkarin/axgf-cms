@@ -367,6 +367,24 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             attachment_count => state.read(|flat| flat.get("external_payloads")
                 .and_then(Value::as_object).map(|m| m.len()).unwrap_or(0)),
             completeness,
+            recent_edits => state
+                .journal()
+                .recent(15)
+                .into_iter()
+                .map(|e| json!({
+                    "at": e.at,
+                    "who": e.who,
+                    "action": e.action,
+                    "kind": e.kind,
+                    "entity_id": e.entity_id,
+                    "label": e.label,
+                    "version_num": e.version_num,
+                    "summary": e.summary(),
+                }))
+                .collect::<Vec<_>>(),
+            journal_len => state.journal().len(),
+            journal_path => state.journal().path().display().to_string(),
+            live_sessions => state.sessions().live(),
         },
     )
 }
@@ -505,8 +523,29 @@ pub async fn edit_form(
             fields => field_views(k, &entity),
             raw => serde_json::to_string_pretty(&entity).unwrap_or_else(|_| "{}".into()),
             action => format!("/admin/{kind}/{id}"),
+            base_version => crate::state::version_of(&entity),
+            history => history_json(&state, crate::state::kind_name(k), &id),
         },
     )
+}
+
+/// This entity's edit history, newest first, for the form and the record page.
+fn history_json(state: &Shared, kind: &str, id: &str) -> Vec<Value> {
+    state
+        .journal()
+        .for_entity(kind, id)
+        .into_iter()
+        .map(|e| {
+            json!({
+                "at": e.at,
+                "who": e.who,
+                "action": e.action,
+                "version_num": e.version_num,
+                "summary": e.summary(),
+                "changes": e.changes,
+            })
+        })
+        .collect()
 }
 
 /// `POST /admin/:kind` — create.
@@ -525,10 +564,16 @@ pub async fn create(
         Ok(v) => v,
         Err(msg) => return form_error(&kind, None, &msg, &form, k),
     };
-    let entity = apply_form(base, k, &form);
+    let mut entity = apply_form(base, k, &form);
     if let Err(r) = check_scope(&state, &viewer, k, &entity, None) {
         return r;
     }
+    // A new entity starts at version 1, so the first edit of it has a number
+    // to check against. The library stores whatever it is given here and does
+    // not mint one.
+    entity["version_num"] = Value::from(1u64);
+    entity["created_at"] = Value::from(view::now_iso8601());
+    entity["updated_at"] = Value::from(view::now_iso8601());
     let body = entity.to_string();
 
     let out = match state.mutate(|flat| axgf_rs::add_entity(flat, k, &body)) {
@@ -542,6 +587,19 @@ pub async fn create(
         .and_then(Value::as_str)
         .unwrap_or_default()
         .to_string();
+
+    if out.applied && !new_id.is_empty() {
+        state.journal_mutation(&crate::journal::entry_for(crate::journal::Record {
+            who: viewer.name(),
+            action: "create",
+            kind: crate::state::kind_name(k),
+            entity_id: &new_id,
+            label: label_for(k, &entity),
+            version_num: Some(1),
+            before: None,
+            after: None,
+        }));
+    }
 
     result_page(
         &kind,
@@ -587,19 +645,182 @@ pub async fn update(
     if let Err(r) = check_scope(&state, &viewer, k, &entity, stored.as_ref()) {
         return r;
     }
-    let body = entity.to_string();
 
-    let out = match state.mutate(|flat| axgf_rs::update_entity(flat, k, &body)) {
-        Ok(o) => o,
-        Err(e) => return io_error(&e),
+    // The version this form was rendered from. An absent field means a form
+    // from before this existed, or a script posting by hand; falling back to
+    // the stored version would make the check pass by default, which is the
+    // one thing it must never do. Falling back to a value that cannot match
+    // makes it fail closed and show the conflict page, which is a bad
+    // experience and a correct one.
+    let base_version: u64 = form
+        .get("base_version")
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(u64::MAX);
+
+    let label = stored.as_ref().and_then(|e| label_for(k, e));
+    let outcome =
+        match state.update_checked(k, &id, base_version, entity.clone(), viewer.name(), label) {
+            Ok(o) => o,
+            Err(e) => return io_error(&e),
+        };
+
+    match outcome {
+        crate::state::UpdateOutcome::Applied {
+            diagnostics,
+            version_num,
+            changes,
+        } => result_page(
+            &kind,
+            &format!(
+                "Saved as version {version_num} — {}",
+                crate::diff::summarise(&changes)
+            ),
+            &MutationOutcome {
+                applied: true,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/{kind}/{id}/edit")),
+        ),
+        crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
+            &kind,
+            "Not saved",
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/{kind}/{id}/edit")),
+        ),
+        crate::state::UpdateOutcome::Missing => render::error_page(
+            StatusCode::NOT_FOUND,
+            "No such entity",
+            "This bundle contains no entity with that id. It may have been \
+             deleted while you were editing it.",
+        ),
+        crate::state::UpdateOutcome::Conflict {
+            current,
+            current_version,
+            expected_version,
+        } => conflict_page(
+            &state,
+            &kind,
+            k,
+            &id,
+            stored.as_ref(),
+            &current,
+            &entity,
+            current_version,
+            expected_version,
+        ),
+    }
+}
+
+/// The page shown when somebody else changed the record first.
+///
+/// It never merges. A silent merge produces a record no human chose, and for
+/// a genealogy — where two editors disagreeing about a date usually means they
+/// are reading different sources — that is worse than asking. So this shows
+/// the three versions side by side and makes the editor decide.
+///
+/// `base` is the version the editor started from, when the bundle still has
+/// it to show. After a conflict it usually does not — the stored entity *is*
+/// the other person's version now — so the column that can always be filled is
+/// "theirs" against "yours", and the base is used to say which fields each of
+/// them actually touched.
+#[allow(clippy::too_many_arguments)]
+fn conflict_page(
+    state: &Shared,
+    kind: &str,
+    k: axgf_rs::EntityKind,
+    id: &str,
+    base: Option<&Value>,
+    current: &Value,
+    mine: &Value,
+    current_version: u64,
+    expected_version: u64,
+) -> Response {
+    // Who moved it, and when. The journal knows; the entity's own `updated_at`
+    // is the fallback for an edit made before journalling or by another tool.
+    let last = state.journal().last_touched(crate::state::kind_name(k), id);
+    let (who, when) = match &last {
+        Some(e) => (e.who.clone(), e.at.clone()),
+        None => (
+            "somebody".to_string(),
+            current
+                .get("updated_at")
+                .and_then(Value::as_str)
+                .unwrap_or("an unrecorded time")
+                .to_string(),
+        ),
     };
 
-    result_page(
-        &kind,
-        if out.applied { "Saved" } else { "Not saved" },
-        &out,
-        Some(format!("/admin/{kind}/{id}/edit")),
+    // The version this editor started from. The bundle holds only the current
+    // one, so it is reconstructed by replaying the journal backwards from
+    // `current`. Without it the page could only say "here is theirs, here is
+    // yours"; with it, it can say which of you changed what.
+    let entries = state.journal().for_entity(crate::state::kind_name(k), id);
+    let rebuilt = crate::journal::rewind(current, &entries, expected_version, current_version);
+    let base_ref = rebuilt.as_ref().or(base).unwrap_or(current);
+    let reconstructed = rebuilt.is_some();
+
+    // Three diffs, because three questions. What did they change, what did I
+    // change, and where do we actually disagree?
+    let theirs = crate::diff::diff(base_ref, current);
+    let ours = crate::diff::diff(base_ref, mine);
+    let contested: Vec<String> = theirs
+        .iter()
+        .filter(|t| ours.iter().any(|o| o.path == t.path))
+        .map(|t| t.path.clone())
+        .collect();
+
+    let mut resubmit = mine.clone();
+    // The re-apply form carries the editor's own text forward against the
+    // version that is now current, so accepting the conflict is one click and
+    // not a retype.
+    resubmit["version_num"] = Value::from(current_version);
+
+    (
+        StatusCode::CONFLICT,
+        render::page(
+            "admin_conflict.html",
+            context! {
+                nav => "admin",
+                is_admin => true,
+                kind,
+                kinds => KINDS,
+                id,
+                who,
+                when,
+                current_version,
+                expected_version,
+                theirs,
+                ours,
+                contested,
+                had_base => reconstructed,
+                mine_raw => serde_json::to_string_pretty(&resubmit)
+                    .unwrap_or_else(|_| "{}".into()),
+                current_raw => serde_json::to_string_pretty(current)
+                    .unwrap_or_else(|_| "{}".into()),
+                action => format!("/admin/{kind}/{id}"),
+                history => history_json(state, crate::state::kind_name(k), id),
+            },
+        ),
     )
+        .into_response()
+}
+
+/// A short human label for an entity, for the journal listing.
+fn label_for(kind: axgf_rs::EntityKind, entity: &Value) -> Option<String> {
+    match kind {
+        axgf_rs::EntityKind::Person => Some(view::person_display_name(entity)),
+        _ => entity
+            .get("title")
+            .or_else(|| entity.get("label"))
+            .or_else(|| entity.get("name"))
+            .and_then(Value::as_str)
+            .map(str::to_string),
+    }
 }
 
 #[derive(Deserialize)]
@@ -638,6 +859,19 @@ pub async fn delete(
         Ok(o) => o,
         Err(e) => return io_error(&e),
     };
+
+    if out.applied {
+        state.journal_mutation(&crate::journal::entry_for(crate::journal::Record {
+            who: viewer.name(),
+            action: "delete",
+            kind: crate::state::kind_name(k),
+            entity_id: &id,
+            label: stored.as_ref().and_then(|e| label_for(k, e)),
+            version_num: None,
+            before: None,
+            after: None,
+        }));
+    }
 
     result_page(
         &kind,
@@ -923,7 +1157,19 @@ pub async fn upload_document(
     Path(id): Path<String>,
     multipart: axum::extract::Multipart,
 ) -> Response {
-    guard!(state, headers);
+    let viewer = guard!(state, headers);
+    // The subject is the person the file is being attached to. Uploading a
+    // document is a write against *their* record whatever the Document entity
+    // itself says, so it is checked as one.
+    if let Err(r) = check_scope(
+        &state,
+        &viewer,
+        axgf_rs::EntityKind::Person,
+        &json!({"id": id}),
+        None,
+    ) {
+        return r;
+    }
 
     let person_exists = state.read(|flat| {
         flat.get("persons")
@@ -1006,10 +1252,26 @@ pub async fn upload_document(
 
     // The payload goes straight to the disk cache, never into the in-memory
     // bundle; add_document mints the id, fills in the file path, and persists.
-    let (out, _new_id) = match state.add_document(&body, &up.bytes, kind.ext) {
+    let (out, new_id) = match state.add_document(&body, &up.bytes, kind.ext) {
         Ok(o) => o,
         Err(e) => return io_error(&e),
     };
+
+    if out.applied {
+        // Journalled against the *person*, not the document: "Anna attached a
+        // photograph to grandmother's record" is what somebody reading the
+        // history is looking for, and a document id on its own is not that.
+        state.journal_mutation(&crate::journal::entry_for(crate::journal::Record {
+            who: viewer.name(),
+            action: "upload",
+            kind: "person",
+            entity_id: &id,
+            label: new_id.clone(),
+            version_num: None,
+            before: None,
+            after: None,
+        }));
+    }
 
     if !out.applied {
         return upload_refused(

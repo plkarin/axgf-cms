@@ -88,6 +88,8 @@ pub struct AppState {
     lenses: RwLock<LensCache>,
     /// Bumped whenever `inner` is replaced. What tells the cache it is stale.
     generation: std::sync::atomic::AtomicU64,
+    /// The append-only edit journal, beside the bundle rather than in it.
+    journal: crate::journal::Journal,
 }
 
 /// Memoised [`crate::access::Visible`] sets, keyed by the bundle version they
@@ -101,6 +103,51 @@ pub struct AppState {
 struct LensCache {
     generation: u64,
     by_ceiling: [Option<crate::access::Visible>; 4],
+}
+
+/// The `version_num` an entity carries, or 0 when it carries none.
+///
+/// A bundle written by another tool, or converted from GEDCOM, may have no
+/// `version_num` at all. Treating that as 0 makes the first edit through this
+/// application write 1, which is what a fresh entity gets anyway.
+pub fn version_of(entity: &Value) -> u64 {
+    entity
+        .get("version_num")
+        .and_then(Value::as_u64)
+        .unwrap_or(0)
+}
+
+/// The wire name of an entity kind, for the journal.
+pub fn kind_name(kind: axgf_rs::EntityKind) -> &'static str {
+    match kind {
+        axgf_rs::EntityKind::Person => "person",
+        axgf_rs::EntityKind::Family => "family",
+        axgf_rs::EntityKind::Event => "event",
+        axgf_rs::EntityKind::Link => "link",
+        axgf_rs::EntityKind::Occupation => "occupation",
+        axgf_rs::EntityKind::Source => "source",
+        axgf_rs::EntityKind::Place => "place",
+        axgf_rs::EntityKind::Document => "document",
+    }
+}
+
+/// What a version-checked update did.
+pub enum UpdateOutcome {
+    Applied {
+        diagnostics: Vec<Diagnostic>,
+        version_num: u64,
+        changes: Vec<crate::diff::Change>,
+    },
+    /// Somebody else changed it first. Nothing was written.
+    Conflict {
+        current: Box<Value>,
+        current_version: u64,
+        expected_version: u64,
+    },
+    /// The library refused the entity itself.
+    Refused { diagnostics: Vec<Diagnostic> },
+    /// The entity is not in the bundle.
+    Missing,
 }
 
 /// Outcome of a mutation attempt.
@@ -287,6 +334,7 @@ impl AppState {
                 sessions: crate::session::SessionStore::new(),
                 lenses: RwLock::new(LensCache::default()),
                 generation: std::sync::atomic::AtomicU64::new(0),
+                journal: crate::journal::Journal::new(crate::journal::Journal::path_for(path)),
             },
             report,
         ))
@@ -319,6 +367,11 @@ impl AppState {
     /// Live sessions and the login throttle.
     pub fn sessions(&self) -> &crate::session::SessionStore {
         &self.sessions
+    }
+
+    /// The edit journal.
+    pub fn journal(&self) -> &crate::journal::Journal {
+        &self.journal
     }
 
     /// The configured admin token.
@@ -624,6 +677,107 @@ impl AppState {
     ///
     /// `adjust` must not fail: everything it needs was validated before the
     /// lock was taken.
+    /// The outcome of a version-checked update.
+    ///
+    /// Three answers, not two. "Refused by the library" and "refused because
+    /// somebody else got there first" need entirely different pages: one is a
+    /// mistake in what was typed, the other is a fact about the world that the
+    /// editor has to be shown before they can decide what to do.
+    pub fn update_checked(
+        &self,
+        kind: axgf_rs::EntityKind,
+        id: &str,
+        expected_version: u64,
+        mut entity: Value,
+        who: &str,
+        label: Option<String>,
+    ) -> Result<UpdateOutcome> {
+        // Everything below happens under the write lock, and that is the whole
+        // point of the method existing. Reading the stored version in the
+        // handler and writing here would leave a window between the two in
+        // which another editor commits — precisely the race this feature is
+        // meant to close, reintroduced one layer down.
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+
+        let collection = crate::admin::collection_for(kind);
+        let stored = guard.get(collection).and_then(|c| c.get(id)).cloned();
+        let Some(stored) = stored else {
+            return Ok(UpdateOutcome::Missing);
+        };
+        let current_version = version_of(&stored);
+
+        if current_version != expected_version {
+            return Ok(UpdateOutcome::Conflict {
+                current: Box::new(stored),
+                current_version,
+                expected_version,
+            });
+        }
+
+        // The library stores `version_num` and does not increment it, so the
+        // increment is ours to do. It happens here rather than in the handler
+        // so that the number written is always exactly one past the number
+        // that was just compared, under the same lock.
+        entity["version_num"] = Value::from(current_version + 1);
+        entity["updated_at"] = Value::from(crate::view::now_iso8601());
+        if let Some(created) = stored.get("created_at") {
+            // Not the editor's to change, and a raw-JSON edit could drop it.
+            entity["created_at"] = created.clone();
+        }
+
+        let env = axgf_rs::update_entity(&guard.to_string(), kind, &entity.to_string());
+        let diagnostics = env.diagnostics.clone();
+        if env.status == Status::Error || env.data.is_null() {
+            return Ok(UpdateOutcome::Refused { diagnostics });
+        }
+        let Some(new_bundle) = bundle_from_data(&env.data) else {
+            tracing::error!("update returned ok but carried no bundle; not persisting");
+            return Ok(UpdateOutcome::Refused { diagnostics });
+        };
+        let new_bundle = new_bundle.clone();
+
+        self.persist(&new_bundle)?;
+        *guard = new_bundle;
+        self.invalidate_lenses();
+        drop(guard);
+
+        // The journal is appended after the bundle is on disk. The other order
+        // would let a failed write leave a journal claiming a change that
+        // never happened, and a history that lies is worse than one that is
+        // occasionally short.
+        let entry = crate::journal::entry_for(crate::journal::Record {
+            who,
+            action: "update",
+            kind: kind_name(kind),
+            entity_id: id,
+            label,
+            version_num: Some(current_version + 1),
+            before: Some(&stored),
+            after: Some(&entity),
+        });
+        if let Err(e) = self.journal.append(&entry) {
+            // The edit is saved and the file is written; failing the request
+            // now would tell the editor their work was lost when it was not.
+            tracing::error!(error = %e, "could not append to the edit journal");
+        }
+
+        Ok(UpdateOutcome::Applied {
+            diagnostics,
+            version_num: current_version + 1,
+            changes: entry.changes,
+        })
+    }
+
+    /// Record a mutation that is not a version-checked update.
+    ///
+    /// Creates, deletes and uploads have no prior version to check against, so
+    /// they go through the ordinary paths and are journalled here afterwards.
+    pub fn journal_mutation(&self, entry: &crate::journal::Entry) {
+        if let Err(e) = self.journal.append(entry) {
+            tracing::error!(error = %e, "could not append to the edit journal");
+        }
+    }
+
     pub fn mutate_and_adjust(
         &self,
         op: impl FnOnce(&str) -> Envelope,

@@ -53,6 +53,58 @@ chains make this the common case: `Alfons Władysław Antoni Wierzbięta` lost
 everything after the first word. Cards are 66px; row pitch and the SVG
 connector geometry derive from `CARD_H` and followed automatically.
 
+**Two people can edit the same record without one of them losing their work.**
+Until now the second save silently overwrote the first — no error, no warning,
+one person's work simply gone. That is data loss, and it is what made the CMS
+unusable by a family.
+
+Optimistic locking on the `version_num` AXGF entities already carry. The edit
+form embeds the version it was rendered from; the save compares it against the
+bundle's current value **inside the write lock**, because comparing it in the
+handler and writing afterwards would leave a window for exactly the race this
+closes. Unchanged, it applies and increments. Changed, it refuses.
+
+- The library stores `version_num` and does not increment it, so the increment
+  is the application's; it happens under the same lock as the comparison.
+- A save that declares no version at all — an old form, a script posting by
+  hand — is refused rather than allowed. Falling back to the stored version
+  would make the check pass by default, which is the one thing it must never
+  do.
+- **Nothing is ever merged automatically.** A merge produces a record no human
+  chose, and in a genealogy two editors disagreeing about a date usually means
+  they are reading different sources — a question for a person, not for a
+  program.
+
+**The conflict screen shows all three versions.** Who changed it, when, and a
+field-by-field diff between the version the editor started from, the version
+that is now current, and their own edit. Fields both editors touched are
+called out separately from fields only one of them touched, because those are
+the only ones where re-applying actually destroys something.
+
+The bundle holds only the current version, so the one the losing editor opened
+is gone — it is *reconstructed* by replaying the journal's `from`/`to` pairs
+backwards from the current document. Where the journal cannot account for
+every version in between (an edit made before journalling, or by another tool)
+the page falls back to a two-way comparison rather than presenting a confident
+reconstruction that might be wrong. The editor's own text is carried forward
+against the new version, so accepting the conflict is one click and not a
+retype.
+
+**An edit journal**, appended on every successful mutation: timestamp, user,
+entity kind and id, and the field-by-field diff. JSON Lines, mode 600, beside
+the bundle rather than inside it — for the same reason the accounts are: a
+`.axgf` is copied, mailed and published, and "grandmother's birth year was
+wrong for six months and Anna fixed it" is a fact about the family's *editors*,
+not about the family. Appending is one write on an `O_APPEND` handle, so a
+crash can lose the last line but cannot corrupt the ones before it, and a
+torn line is skipped on read rather than making the history page unreachable —
+which is exactly when somebody needs it.
+
+It is surfaced on the admin dashboard, on each entity's edit form, and as a
+**History** section on the record page — the last of those only for readers who
+are signed in, since publishing it would put the editors' names back in front
+of exactly the audience the separate file keeps them from.
+
 ### Security
 
 **Accounts live beside the bundle, never inside it.** A `.axgf` is copied,

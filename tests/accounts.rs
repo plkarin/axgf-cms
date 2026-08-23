@@ -250,7 +250,16 @@ async fn a_scoped_contributor_edits_inside_the_branch_and_nowhere_else() {
     let cookie = sign_in(&app, "sam").await;
 
     let edit =
-        |id: &str, name: &str| format!("raw_json={}", urlencode(&person(id, name).to_string()));
+        // `base_version` is what the edit form carries, and a save fails
+        // closed without it. The fixture's people have no `version_num`,
+        // which reads as version 0.
+        |id: &str, name: &str| {
+            format!(
+                "base_version=0&identity.name.display={}&raw_json={}",
+                urlencode(name),
+                urlencode(&person(id, name).to_string())
+            )
+        };
 
     // ROOT is the branch root; KID is a descendant; SPOUSE married in.
     for (id, who) in [(ROOT, "root"), (KID, "a descendant"), (SPOUSE, "a spouse")] {
@@ -338,7 +347,10 @@ async fn a_scoped_account_may_not_retarget_a_record_out_of_its_branch() {
         &app,
         &cookie,
         &format!("/admin/family/{FAMILY}"),
-        &format!("raw_json={}", urlencode(&hijacked.to_string())),
+        &format!(
+            "base_version=0&raw_json={}",
+            urlencode(&hijacked.to_string())
+        ),
     )
     .await;
     assert_eq!(
@@ -346,6 +358,73 @@ async fn a_scoped_account_may_not_retarget_a_record_out_of_its_branch() {
         StatusCode::FORBIDDEN,
         "one foot outside the branch is outside the branch"
     );
+}
+
+#[tokio::test]
+async fn a_scoped_account_may_not_attach_a_file_outside_its_branch() {
+    // Document upload is a separate route with its own handler, so it is the
+    // one most easily left out when a rule is added to the others — and it was,
+    // once, in this very release. A write against a person's record is a write
+    // against their record whatever entity the form happens to create.
+    use axgf_cms::acl::Role;
+    let app = app_with_accounts("acc-scope-upload", &[("sam", Role::Contributor, &[ROOT])]);
+    let cookie = sign_in(&app, "sam").await;
+
+    let png = {
+        use base64::Engine as _;
+        base64::engine::general_purpose::STANDARD
+            .decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+            .unwrap()
+    };
+
+    let upload = |person: &str| {
+        let boundary = "----axgfcmsscopeboundary";
+        let mut body: Vec<u8> = Vec::new();
+        body.extend_from_slice(
+            format!(
+                "--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; \
+                 filename=\"scan.png\"\r\nContent-Type: image/png\r\n\r\n"
+            )
+            .as_bytes(),
+        );
+        body.extend_from_slice(&png);
+        body.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
+        (
+            format!("/admin/person/{person}/document"),
+            format!("multipart/form-data; boundary={boundary}"),
+            body,
+        )
+    };
+
+    for (person, expect_refusal) in [(KID, false), (OUTSIDER, true)] {
+        let (uri, ct, body) = upload(person);
+        let resp = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri(&uri)
+                    .method("POST")
+                    .header(header::CONTENT_TYPE, ct)
+                    .header(header::COOKIE, &cookie)
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .expect("request");
+        if expect_refusal {
+            assert_eq!(
+                resp.status(),
+                StatusCode::FORBIDDEN,
+                "attaching a file to somebody outside the branch must be refused"
+            );
+        } else {
+            assert!(
+                resp.status().is_success() || resp.status().is_redirection(),
+                "inside the branch it must work, got {}",
+                resp.status()
+            );
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

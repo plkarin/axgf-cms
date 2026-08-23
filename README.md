@@ -86,7 +86,8 @@ axgf-cms --bundle /var/lib/axgf-cms/family.axgf \
 |---|---|---|
 | `--bundle <PATH>` | *required* | The `.axgf` file to serve. Created empty if absent. |
 | `--bind <ADDR>` | `127.0.0.1:8080` | Address to listen on. |
-| `--admin-token <TOKEN>` | `$AXGF_CMS_ADMIN_TOKEN` | Shared admin token. If neither is set, a random one is generated and printed once to stderr. |
+| `--admin-token <TOKEN>` | `$AXGF_CMS_ADMIN_TOKEN` | Emergency recovery token, granting an administrator session. Not an account. If neither is set, a random one is generated and printed once to stderr. |
+| `--create-admin <USERNAME>` | — | Create an administrator, print a generated password once to stderr, and exit without serving. How an installation gets its first account. Refuses an existing username rather than resetting it, so it is safe to re-run. |
 | `--seed-sample` | off | When creating a *new* bundle, seed it with the built-in demonstration family. Ignored if the bundle already exists. |
 | `--size-warn-mb <MB>` | `200` | Bundle size past which the admin panel warns that the archive is getting heavy. Not a limit. |
 
@@ -103,9 +104,10 @@ Public, read-only:
 | `POST /convert/gedcom` | Convert an upload, report what it carried against what AXGF holds, and offer the result |
 | `GET /document/:id/raw` | The stored bytes of an attached file, with `X-Content-Type-Options: nosniff`. Raster images are served inline; everything else downloads |
 | `GET /document/:id/thumb` | A downscaled PNG of an image, `404` for anything else |
-| `GET /health` | `200` with entity counts |
+| `GET /health` | `200` with entity counts. `persons` counts what *this* requester may read |
 
-Admin (requires the token cookie):
+Admin (requires a signed-in account; `Accounts` and the operations marked
+*admin* require the `admin` role, everything else `contributor`):
 
 | Route | What it does |
 |---|---|
@@ -114,10 +116,11 @@ Admin (requires the token cookie):
 | `GET /admin/:kind` | Paginated, filterable listing |
 | `GET /admin/:kind/new`, `POST /admin/:kind` | Create |
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |
-| `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy |
+| `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy — *admin* |
 | `POST /admin/person/:id/document` | Attach a file to a person — multipart upload, stored inside the bundle |
-| `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks |
-| `GET /admin/export` | Download the live bundle |
+| `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks — *admin* |
+| `GET /admin/export` | Download the live bundle — *admin* |
+| `GET /admin/users`, `POST /admin/users`, `POST /admin/users/:id` | Accounts: create, change a role, a branch, a status or a password — *admin* |
 
 `:kind` is one of `person`, `family`, `event`, `link`, `occupation`, `source`,
 `place`, `document`.
@@ -187,28 +190,98 @@ download.
 
 ---
 
-## Security: V1 has no user accounts
+## Accounts, roles and visibility
 
 **Read this before exposing the site.**
 
-Authentication is a single shared token in a cookie. That is the whole system.
-There are no user accounts, no roles, no per-entity visibility and no audit
-trail. Anyone who can reach the port and holds the token can edit or delete
-anything in the bundle.
+### Two files, and only one of them is shareable
 
-This is why `--bind` defaults to `127.0.0.1`. Binding to `0.0.0.0` without a
-reverse proxy in front puts an unauthenticated-by-modern-standards admin
-surface on the public internet, and the login form itself would be sent in
-clear text. If you need this reachable from elsewhere:
+    family.axgf   the genealogy — copy it, mail it, publish it, archive it
+    family.acl    the accounts  — mode 600, shared with nobody
+
+Accounts are **not** inside the bundle. A `.axgf` is meant to travel; password
+hashes in it would make every copy of the family tree a copy of the credential
+store. Passwords are Argon2id at the OWASP 2024 parameters (m=19456, t=2, p=1),
+never a fast hash. The server refuses to start if the `.acl` is readable by
+anyone but its owner, and says which `chmod` fixes it. Encryption at rest is
+GPG's job and out of scope here.
+
+### The first account
+
+There is no web setup page, deliberately: the window between deploying and the
+first login is exactly when an installation is unprotected, and a setup page is
+a door standing open for the length of it. `deploy/bootstrap.sh` creates the
+first administrator and prints its generated password once. By hand:
+
+    axgf-cms --bundle family.axgf --create-admin yourname
+
+Everyone else is created from **Admin → Accounts**. There is no
+self-registration and no invitation flow. For a family archive an administrator
+who knows everyone is sufficient, and it removes an abuse surface — open
+registration, invitation tokens, email delivery, and the account-enumeration
+oracle each of those carries — rather than defending one.
+
+### Three roles
+
+They reuse the vocabulary the AXGF specification already defines for
+`visibility`, so the two systems share one language rather than two.
+
+| Role | Reads | Also may |
+|---|---|---|
+| `viewer` | `public`, `members` | — |
+| `contributor` | plus `contributors` | create, update, upload documents |
+| `admin` | plus `private` | manage accounts, delete, dedup, validate, export |
+
+**Visibility is enforced on the server, on every read path** — the tree, the
+panel fetch, the standalone record, the document bytes and the JSON endpoint.
+Nothing hidden is rendered and then styled away.
+
+A person you may not read is **redacted, not omitted**: their card keeps its
+place in the tree and they still count among a child's parents, carrying no
+name, no dates, no gender and no link. Omitting them would be a false statement
+about the genealogy, and would also make every converted bundle look as though
+the family died out two generations ago. The trade is deliberate: a signed-out
+visitor can learn that a hidden person exists and how they connect, and nothing
+else.
+
+**A converted GEDCOM carries no `visibility` at all.** Where a record states
+none, anyone marked `is_living` is treated as `members` and everyone else as
+`public`. Check that this is what you want before publishing a converted
+bundle.
+
+### Family scope
+
+A contributor can be restricted to a branch — a list of root person ids,
+covering those people, their descendants and their spouses. It limits what they
+may **change**, never what they may read; reading is governed by visibility
+alone, and the two are kept apart on purpose.
+
+### Sessions
+
+A signed, `HttpOnly`, `SameSite=Strict` cookie, `Secure` when the request
+arrived over TLS. Sessions are held in memory, so restarting signs everyone
+out. Failed logins are throttled per username and per client address.
+Disabling an account, lowering its role or changing its password closes its
+open sessions immediately.
+
+### The emergency token
+
+`--admin-token` still opens an administrator session, and that is now its only
+job: getting back in when the `.acl` has been lost or every administrator is
+locked out. It is not an account — it owns no preferences, and the edit journal
+records it as `emergency-token`. Its use is logged as a warning. Treat it like
+a root password.
+
+### Exposing it
+
+`--bind` defaults to `127.0.0.1`. Binding to `0.0.0.0` without a reverse proxy
+sends the login form in clear text. If you need it reachable:
 
 1. keep it bound to localhost;
 2. put nginx or Caddy in front, terminating TLS
-   (snippets in [docs/DEPLOY.md](docs/DEPLOY.md));
-3. treat the admin token like a root password.
-
-Per-user accounts and per-entity visibility are V1.2. Until then the honest
-position is: this is a viewer and a personal editing tool, not a multi-user
-application.
+   (snippets in [docs/DEPLOY.md](docs/DEPLOY.md)), and make sure it sets
+   `X-Forwarded-Proto`, which is what makes the session cookie `Secure`;
+3. treat the emergency token like a root password.
 
 ---
 

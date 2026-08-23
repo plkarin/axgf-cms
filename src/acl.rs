@@ -441,6 +441,21 @@ fn argon2() -> Argon2<'static> {
 }
 
 /// Hash a password with Argon2id, returning a PHC string.
+/// A real Argon2id hash of a value nobody knows, at the same parameters as
+/// every stored hash.
+///
+/// Verifying against this when the username does not exist makes a failed
+/// login cost the same wall-clock time whether or not the account is real.
+/// Without it the difference is the whole Argon2id computation — tens of
+/// milliseconds at these parameters — which is not a subtle timing signal
+/// requiring statistics to extract, but a plainly visible one that turns the
+/// login form into a list of which accounts exist.
+/// It is a real hash produced by [`hash_password`], not a hand-written string:
+/// an invented one parses with a short salt and finishes measurably sooner,
+/// which reintroduces the very signal it exists to remove.
+pub const DUMMY_HASH: &str =
+    "$argon2id$v=19$m=19456,t=2,p=1$Ls9pMbhhjjKrffiRq/Dl6g$q3J7vjR4/zegv99IjvaT63OOmgZrq1FWmcKT+/Z2wRk";
+
 pub fn hash_password(password: &str) -> Result<String> {
     let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
     let hash = argon2()
@@ -615,6 +630,41 @@ fn child_person_ids(family: &Value) -> Vec<&str> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+#[cfg(test)]
+mod dummy_hash_tests {
+    use super::*;
+
+    #[test]
+    fn the_dummy_hash_is_a_real_hash_at_the_same_parameters() {
+        // If this ever stops parsing, `verify_password` returns immediately
+        // and an unknown username becomes tens of milliseconds faster than a
+        // known one — which is the account-enumeration oracle the constant
+        // exists to close. The assertion is that it *does* work, not that it
+        // looks right.
+        assert!(
+            !verify_password("anything at all", DUMMY_HASH),
+            "nothing may verify against it"
+        );
+        let real = hash_password("some other password").unwrap();
+        for field in ["$argon2id$", "v=19", "m=19456", "t=2", "p=1"] {
+            assert!(
+                DUMMY_HASH.contains(field),
+                "the dummy must carry {field}, as every stored hash does"
+            );
+            assert!(real.contains(field));
+        }
+        // Same shape: algorithm, version, parameters, salt and digest.
+        assert_eq!(
+            DUMMY_HASH.matches('$').count(),
+            real.matches('$').count(),
+            "a hand-written stand-in with a missing field parses faster"
+        );
+        let seg = |s: &str, n: usize| s.split('$').nth(n).unwrap().len();
+        assert_eq!(seg(DUMMY_HASH, 4), seg(&real, 4), "salt length");
+        assert_eq!(seg(DUMMY_HASH, 5), seg(&real, 5), "digest length");
+    }
 }
 
 #[cfg(test)]

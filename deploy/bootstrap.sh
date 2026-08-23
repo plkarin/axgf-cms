@@ -41,6 +41,8 @@ FROM_SOURCE=0
 VERSION=""
 BIND="127.0.0.1:8080"
 DRY_RUN=0
+# Username for the first administrator account, created on a fresh install.
+ADMIN_USER="admin"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -48,6 +50,7 @@ while [ $# -gt 0 ]; do
     --from-source) FROM_SOURCE=1 ;;
     --version) VERSION="${2:-}"; shift ;;
     --bind) BIND="${2:-}"; shift ;;
+    --admin-user) ADMIN_USER="${2:-}"; shift ;;
     --dry-run) DRY_RUN=1 ;;
     -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
@@ -65,6 +68,21 @@ run() {
     printf '  [dry-run] %s\n' "$*"
   else
     "$@"
+  fi
+}
+
+# Run a command as the service user, so anything it creates is owned by the
+# account that has to read it afterwards. The .acl is written at mode 600, and
+# a file root owns at 600 is a file the service cannot open.
+run_as_service() {
+  if [ "$DRY_RUN" = "1" ]; then
+    printf '  [dry-run] %s\n' "$*"
+    return
+  fi
+  if [ "$SKIP_PRIVILEGED" = "1" ] || [ "$(id -u)" != "0" ]; then
+    "$@"
+  else
+    runuser -u "$SERVICE_USER" -- "$@"
   fi
 }
 
@@ -253,6 +271,45 @@ elif command -v systemctl >/dev/null 2>&1; then
 fi
 
 # --------------------------------------------------------------------------
+step "First administrator"
+# --------------------------------------------------------------------------
+# The accounts live in a companion .acl file beside the bundle, never inside
+# it: a .axgf is copied, mailed and published, and password hashes in it would
+# make every copy of the family tree a copy of the credential store.
+#
+# There is deliberately no web setup page. The window between deploying and the
+# first login is exactly when an installation is unprotected, so the first
+# account is created here, from the shell, by somebody who already has the
+# host. Re-running is safe: an existing username is refused, not reset, so this
+# never silently rotates a working account's password.
+ACL_FILE="${BUNDLE%.axgf}.acl"
+ADMIN_CREATED=0
+if [ -f "$ACL_FILE" ]; then
+  say "$ACL_FILE exists — leaving the existing accounts alone"
+elif [ "$DRY_RUN" = "1" ]; then
+  say "an administrator account would be created as '${ADMIN_USER}'"
+else
+  # Stop the service first: the ACL is rewritten atomically, and a running
+  # process holds its own copy in memory.
+  if [ "$SKIP_PRIVILEGED" = "0" ] && command -v systemctl >/dev/null 2>&1; then
+    run systemctl stop axgf-cms
+  fi
+  ADMIN_OUT="$(run_as_service "$INSTALL_PATH" --bundle "$BUNDLE" \
+                 --create-admin "$ADMIN_USER" 2>&1 || true)"
+  ADMIN_PASSWORD="$(printf '%s\n' "$ADMIN_OUT" | sed -n 's/^ *password: *//p' | head -1)"
+  if [ -n "$ADMIN_PASSWORD" ]; then
+    ADMIN_CREATED=1
+    say "created administrator '${ADMIN_USER}'"
+  else
+    warn "could not create the first administrator:"
+    printf '%s\n' "$ADMIN_OUT" | sed 's/^/    /'
+  fi
+  if [ "$SKIP_PRIVILEGED" = "0" ] && command -v systemctl >/dev/null 2>&1; then
+    run systemctl start axgf-cms
+  fi
+fi
+
+# --------------------------------------------------------------------------
 step "Done"
 # --------------------------------------------------------------------------
 cat <<EOF
@@ -260,18 +317,40 @@ cat <<EOF
   axgf-cms is running.
 
     URL          http://${BIND}/
-    Admin        http://${BIND}/admin/login
-    Admin token  ${TOKEN}
+    Sign in      http://${BIND}/admin/login
 
-    Bundle       ${BUNDLE}       <- this file is the entire database; back it up
+    Bundle       ${BUNDLE}       <- the genealogy; back it up, share it freely
+    Accounts     ${ACL_FILE}       <- mode 600; back it up, share it with nobody
     Config       ${ENV_FILE}
     Logs         journalctl -u axgf-cms -f
+EOF
 
-  This token is shown once. It is stored in ${ENV_FILE} (root-readable only).
+if [ "$ADMIN_CREATED" = "1" ]; then
+cat <<EOF
 
-  SECURITY: V1 has no user accounts. Anyone who can reach ${BIND} and holds
-  the token can edit or delete anything. It binds to localhost by design. To
-  publish it, put a TLS reverse proxy in front — see docs/DEPLOY.md — and do
-  not move the bind address to 0.0.0.0 without one.
+    username     ${ADMIN_USER}
+    password     ${ADMIN_PASSWORD}
+
+  This password is shown once and is not recoverable: it is stored only as an
+  Argon2id hash. Write it down now. Sign in and create accounts for everyone
+  else from the Accounts page — there is no self-registration.
+EOF
+fi
+
+cat <<EOF
+
+  Emergency token  ${TOKEN}
+
+  Stored in ${ENV_FILE} (root-readable only). It is not an account: it grants
+  an administrator session for getting back in when ${ACL_FILE} has been lost
+  or every administrator is locked out. Its use is logged as a warning.
+
+  SECURITY: this binds to localhost by design. To publish it, put a TLS
+  reverse proxy in front — see docs/DEPLOY.md — and do not move the bind
+  address to 0.0.0.0 without one. Records marked \`private\` or \`members\` are
+  withheld from signed-out visitors, but a bundle converted from GEDCOM
+  carries no visibility at all: there, everyone recorded as living is treated
+  as \`members\` and everyone else is public. Check that this is what you want
+  before publishing.
 
 EOF

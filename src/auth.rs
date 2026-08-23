@@ -13,18 +13,51 @@ use crate::access::Viewer;
 /// Who is asking, from the request's cookies.
 ///
 /// Resolved once at the top of a handler and passed down; nothing below this
-/// looks at headers again. Today the only credential is the shared token,
-/// which grants admin for the request; every other request is anonymous and
-/// reads at the `public` ceiling.
-pub fn viewer(headers: &HeaderMap, admin_token: &str) -> Viewer {
-    if is_admin(headers, admin_token) {
-        Viewer::emergency_admin()
-    } else {
-        Viewer::anonymous()
+/// looks at a header again.
+///
+/// The session cookie is tried first and the emergency token second, so an
+/// operator who has signed in normally is not silently upgraded to admin by a
+/// stale `--admin-token` cookie left in the same browser.
+///
+/// An account that has been disabled, deleted or had its role changed since
+/// the cookie was issued is refused here and its session closed, so the
+/// change takes effect on the next request rather than whenever the cookie
+/// happens to expire. The account is re-read from the ACL on every request
+/// for exactly that reason: caching the `User` inside the session would mean
+/// caching the role, and a revoked admin would keep their rights until they
+/// chose to sign out.
+pub fn viewer(state: &crate::state::AppState, headers: &HeaderMap) -> Viewer {
+    if let Some(cookie) = crate::session::cookie_value(headers) {
+        if let Some(session) = state.sessions().resolve(&cookie) {
+            if session.emergency {
+                return Viewer::emergency_admin();
+            }
+            if let Some(id) = session.user_id.as_deref() {
+                match state.acl_read(|acl| acl.by_id(id).cloned()) {
+                    Some(user) if user.status == crate::acl::Status::Active => {
+                        return Viewer {
+                            user: Some(user),
+                            emergency: false,
+                        };
+                    }
+                    // Disabled or gone. Close it rather than merely refusing
+                    // it, so the cookie stops costing a lookup per request.
+                    _ => state.sessions().close(&cookie),
+                }
+            }
+        }
     }
+
+    // Emergency recovery. Documented as such: it is the way back in when the
+    // ACL is lost or every admin account is locked out, and it grants admin
+    // for the request without an account behind it.
+    if is_admin(headers, state.admin_token()) {
+        return Viewer::emergency_admin();
+    }
+    Viewer::anonymous()
 }
 
-/// Name of the cookie carrying the admin token.
+/// Name of the cookie carrying the emergency admin token.
 pub const COOKIE_NAME: &str = "axgf_admin";
 
 /// Whether the request carries a valid admin token.

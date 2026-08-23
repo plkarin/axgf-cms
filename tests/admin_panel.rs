@@ -55,7 +55,11 @@ async fn every_admin_page_loads_with_the_cookie() {
 }
 
 #[tokio::test]
-async fn login_sets_a_cookie_and_a_wrong_token_does_not() {
+async fn the_emergency_token_opens_a_session_and_a_wrong_one_does_not() {
+    // The shared token is no longer the authentication system; it is the way
+    // back in when the .acl is lost or every admin is locked out. It now buys
+    // a *session* like any other sign-in rather than being replayed as a
+    // credential on every request.
     let (app, _p) = app_with_empty_bundle("admin-login");
 
     let bad = post_form(&app, "/admin/login", "token=wrong", false).await;
@@ -73,13 +77,23 @@ async fn login_sets_a_cookie_and_a_wrong_token_does_not() {
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_string();
-    assert!(cookie.contains("axgf_admin="));
     assert!(
-        cookie.contains("HttpOnly"),
-        "the session cookie must be HttpOnly"
+        cookie.contains("axgf_session="),
+        "the emergency token opens a session, it is not the session: {cookie}"
+    );
+    assert!(cookie.contains("HttpOnly"));
+    assert!(
+        cookie.contains("SameSite=Strict"),
+        "every mutating route here is a form POST; Lax buys nothing"
+    );
+    assert!(
+        !cookie.contains("Secure"),
+        "the documented localhost deployment is plain http, where a Secure \
+         cookie is simply never stored"
     );
 
-    // An empty token must never be accepted.
+    // An empty token must never be accepted, and must not be treated as a
+    // token attempt at all — it falls through to the username form.
     let empty = post_form(&app, "/admin/login", "token=", false).await;
     assert_eq!(empty.status(), StatusCode::UNAUTHORIZED);
 }

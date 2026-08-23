@@ -135,6 +135,64 @@ does not reduce to person visibility — an acknowledged natural parentage, a
 witness nobody wants named — so `link.visibility` is honoured on the link
 itself rather than inferred from its ends.
 
+**The shared token is replaced by accounts.** `POST /admin/login` takes a
+username and a password. `--admin-token` survives as the *emergency recovery*
+path and nothing else: it opens an administrator session for getting back in
+when the `.acl` has been lost or every administrator is locked out, it owns no
+preferences, the edit journal records it as `emergency-token` rather than as a
+person, and its use is logged as a warning. It is now behind a disclosure on
+the sign-in page rather than being the form.
+
+- The first account is created by `--create-admin <username>`, which prints a
+  generated password once to stderr and exits without serving. There is no web
+  setup page on purpose: the window between deploying and the first login is
+  exactly when an installation is unprotected, and a setup page is a door
+  standing open for the length of it. Creating it from the shell requires
+  access to the host, which whoever is in that window does not have.
+  `deploy/bootstrap.sh` calls it on a fresh install and prints the credentials
+  in its summary. Re-running refuses an existing username rather than resetting
+  it, so a bootstrap script can run on every deploy without silently rotating a
+  working account's password.
+- Everyone else is created from **Admin → Accounts**, by an administrator. No
+  self-registration, no invitations — see *Not in this release*.
+- A failed login answers identically whether the username exists, the password
+  was wrong, or the account is disabled, and an unknown username is verified
+  against a real Argon2id hash so that it costs the same wall-clock time as a
+  known one. At these parameters the difference would otherwise be tens of
+  milliseconds — not a subtle timing signal needing statistics to extract, but
+  a plainly visible one that turns the form into a list of which accounts
+  exist.
+- The account is re-read from the ACL on every request rather than cached in
+  the session, so disabling an account, lowering its role or changing its
+  password takes effect on the next request. Each of those also closes that
+  account's open sessions. A demotion that waited for a cookie to expire would
+  be advisory.
+- The last active administrator cannot demote or disable themselves. Recovering
+  an installation with no administrator means editing the `.acl` by hand or
+  using the emergency token, and neither should be the result of a stray click.
+
+**Family scope limits writing, never reading.** A contributor restricted to a
+branch may edit those people, their descendants and their spouses. The
+accessible set is computed once per request — it is a walk of the family graph
+— and applied to every write in it.
+
+- **Every** person a record names must be inside the branch, not merely one. A
+  family with one partner from outside would otherwise be a way to rewrite that
+  person's parentage from inside the branch.
+- Both the submitted entity and the stored one are checked. Checking only the
+  submission would let a scoped contributor retarget a record they may edit at
+  people they may not; checking only the stored one would let them edit a
+  record into their branch that never belonged to it.
+- A record naming nobody — a source, a place — is refused to a scoped account.
+  There is no branch to measure it against, so allowing it would be a hole in
+  the scope rather than an exception to it.
+
+**The panel is no longer admin-only.** A contributor reaches the forms, the
+listings and document upload; delete, dedup, validate, export and account
+management stay with `admin`. A refusal states which of the two stopped it —
+a contributor landing on the account list is told their role is the reason,
+not shown a login form for the account they are already using.
+
 **Sessions.** A signed cookie — 244 bits of session id and an HMAC-SHA256
 signature under a secret generated at startup — `HttpOnly`, `SameSite=Strict`,
 and `Secure` only when the request actually arrived over TLS, since setting it

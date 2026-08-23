@@ -39,6 +39,10 @@ pub fn router(state: Shared) -> Router {
         .route("/admin", get(admin::dashboard))
         .route("/admin/login", get(admin::login_form).post(admin::login))
         .route("/admin/logout", post(admin::logout))
+        // Declared before the ":kind" routes so the literal "users" segment
+        // wins over the parameter form.
+        .route("/admin/users", get(admin::users).post(admin::create_user))
+        .route("/admin/users/:id", post(admin::update_user))
         .route("/admin/validate", post(admin::validate))
         .route("/admin/dedup", post(admin::dedup))
         .route("/admin/export", get(admin::export))

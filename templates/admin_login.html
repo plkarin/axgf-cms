@@ -2,30 +2,56 @@
 {% block title %}Sign in — axgf-cms{% endblock %}
 {% block content %}
 <h1>Sign in</h1>
-<p class="lede">The admin panel is protected by one shared token.</p>
+<p class="lede">Accounts are created by an administrator.</p>
 
 {% if error %}<div class="notice error"><p>{{ error }}</p></div>{% endif %}
 
+{% if no_accounts %}
+<div class="notice warn" style="max-width:34rem">
+  <p>
+    <strong>This installation has no accounts yet.</strong> There is
+    deliberately no setup page here — the window between deployment and the
+    first login is exactly when an installation is unprotected, so the first
+    administrator is created from the command line instead:
+  </p>
+  <p><code>axgf-cms --bundle family.axgf --create-admin yourname</code></p>
+  <p class="small">
+    It prints a generated password to stderr once and never again. Until then
+    the only way in is the emergency token below.
+  </p>
+</div>
+{% endif %}
+
 <form method="post" action="/admin/login" class="card" style="max-width:34rem">
   <div class="field">
-    <label for="token">Admin token</label>
-    <input type="password" id="token" name="token" autocomplete="current-password"
-           autofocus required>
-    <div class="hint">
-      Set with <code>--admin-token</code> or <code>AXGF_CMS_ADMIN_TOKEN</code>.
-      If neither was set, the server printed one to stderr at startup —
-      <code>journalctl -u axgf-cms</code> on a systemd install.
-    </div>
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" autocomplete="username"
+           autocapitalize="none" spellcheck="false" autofocus>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password"
+           autocomplete="current-password">
   </div>
   <button class="btn primary" type="submit">Sign in</button>
 </form>
 
-<div class="notice warn" style="max-width:34rem">
-  <p>
-    <strong>V1 has no user accounts.</strong> This is a single shared token,
-    not a login system: anyone holding it can edit or delete anything, and
-    there is no audit trail and no per-entity visibility. That is why the
-    server binds to localhost by default. Per-user accounts are V1.2.
+<details class="card" style="max-width:34rem">
+  <summary>Emergency access</summary>
+  <p class="small">
+    The shared <code>--admin-token</code> still opens an administrator session,
+    and it exists for one purpose: getting back in when the <code>.acl</code>
+    file has been lost or every administrator account is locked out. It is not
+    an account — it owns no preferences, and the edit journal records it as
+    <code>emergency-token</code> rather than as a person. Its use is logged as
+    a warning.
   </p>
-</div>
+  <form method="post" action="/admin/login">
+    <div class="field">
+      <label for="token">Emergency token</label>
+      <input type="password" id="token" name="token" autocomplete="off">
+    </div>
+    <button class="btn" type="submit">Use emergency token</button>
+  </form>
+</details>
 {% endblock %}

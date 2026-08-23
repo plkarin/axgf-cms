@@ -13,6 +13,7 @@ use minijinja::context;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
+use crate::access::Viewer;
 use crate::admin::{
     apply_form, fields_for, get_path, kind_from_str, paginate, policy_from_str, KINDS,
 };
@@ -20,38 +21,147 @@ use crate::routes::Shared;
 use crate::state::MutationOutcome;
 use crate::{auth, documents, render, view};
 
-/// Guard every admin page. Returns `Err(response)` when not signed in.
+/// Who is asking, and the response to send when they may not be here.
+///
+/// Two guards, not one, because the panel is no longer an admin-only place:
+/// a contributor creates and updates entities through the same forms. What
+/// separates them is [`guard_admin!`] on the routes that manage accounts,
+/// delete, dedup, validate and export.
 ///
 /// The error variant is a whole rendered `Response`, which is large; boxing it
 /// keeps the common `Ok` path cheap.
 #[allow(clippy::result_large_err)]
-fn require_admin(state: &Shared, headers: &HeaderMap) -> Result<(), Response> {
-    if auth::is_admin(headers, state.admin_token()) {
-        Ok(())
-    } else {
-        // 401 rather than a redirect: this is the answer an integration test
-        // and a script both need, and the body still points at the form.
-        Err((
-            StatusCode::UNAUTHORIZED,
-            render::page(
-                "admin_login.html",
-                context! {
-                    nav => "admin",
-                    is_admin => false,
-                    error => "Sign in to reach the admin panel.",
+fn require(state: &Shared, headers: &HeaderMap, need: Need) -> Result<Viewer, Response> {
+    let viewer = auth::viewer(state, headers);
+    let ok = match need {
+        Need::Write => viewer.may_write(),
+        Need::Admin => viewer.is_admin(),
+    };
+    if ok {
+        return Ok(viewer);
+    }
+    if viewer.signed_in() {
+        // Signed in, but not enough. Saying so is the useful answer: a
+        // contributor who lands on the user list should be told their role is
+        // the reason, not shown a login form for the account they are already
+        // using.
+        return Err((
+            StatusCode::FORBIDDEN,
+            render::error_page(
+                StatusCode::FORBIDDEN,
+                "Not for your role",
+                match need {
+                    Need::Admin => {
+                        "This is an administrator's page. Your \
+                         account can create and edit records, but not manage \
+                         accounts, delete entities or export the bundle."
+                    }
+                    Need::Write => {
+                        "Your account can read this bundle but not \
+                         change it. An administrator can raise your role to \
+                         contributor."
+                    }
                 },
             ),
         )
-            .into_response())
+            .into_response());
     }
+    // 401 rather than a redirect: this is the answer an integration test and a
+    // script both need, and the body still carries the form.
+    Err((
+        StatusCode::UNAUTHORIZED,
+        render::page(
+            "admin_login.html",
+            context! {
+                nav => "admin",
+                is_admin => false,
+                error => "Sign in to reach the admin panel.",
+            },
+        ),
+    )
+        .into_response())
+}
+
+/// What a route requires of the account reaching it.
+#[derive(Clone, Copy)]
+enum Need {
+    /// Contributor or admin.
+    Write,
+    /// Admin only.
+    Admin,
 }
 
 macro_rules! guard {
     ($state:expr, $headers:expr) => {
-        if let Err(r) = require_admin(&$state, &$headers) {
-            return r;
+        match require(&$state, &$headers, Need::Write) {
+            Ok(v) => v,
+            Err(r) => return r,
         }
     };
+}
+
+macro_rules! guard_admin {
+    ($state:expr, $headers:expr) => {
+        match require(&$state, &$headers, Need::Admin) {
+            Ok(v) => v,
+            Err(r) => return r,
+        }
+    };
+}
+
+/// Refuse a write that falls outside the account's branch.
+///
+/// The accessible set is computed **once per request** — it is a walk of the
+/// whole family graph, and recomputing it per entity would repeat that walk
+/// for an answer that cannot change inside one request.
+///
+/// `proposed` is the entity as submitted; `existing` is the entity as the
+/// bundle currently holds it, or `None` on a create. Both are checked, and
+/// that is the point of passing both: checking only the submitted form would
+/// let a scoped contributor retarget an in-scope record at people outside the
+/// branch, and checking only the stored one would let them edit a record into
+/// their branch that never belonged to it.
+#[allow(clippy::result_large_err)]
+fn check_scope(
+    state: &Shared,
+    viewer: &Viewer,
+    kind: axgf_rs::EntityKind,
+    proposed: &Value,
+    existing: Option<&Value>,
+) -> Result<(), Response> {
+    let Some(scope) = state.read(|flat| viewer.scope(flat)) else {
+        return Ok(()); // unscoped account: the whole tree
+    };
+    let mut subjects = crate::access::subjects_of(kind, proposed);
+    if let Some(existing) = existing {
+        subjects.extend(crate::access::subjects_of(kind, existing));
+        subjects.sort();
+        subjects.dedup();
+    }
+    match crate::access::check_write(viewer, Some(&scope), &subjects) {
+        Ok(()) => Ok(()),
+        Err(crate::access::Denied::Role) => Err(render::error_page(
+            StatusCode::FORBIDDEN,
+            "Not for your role",
+            "Your account may read this bundle but not change it.",
+        )),
+        Err(crate::access::Denied::Scope) => Err(render::error_page(
+            StatusCode::FORBIDDEN,
+            "Outside your branch",
+            if subjects.is_empty() {
+                "Your account is restricted to one branch of the tree, and \
+                 this record names nobody it could be measured against. \
+                 Sources and places are edited by accounts with access to the \
+                 whole tree."
+            } else {
+                "Your account is restricted to one branch of the tree, and \
+                 this record concerns somebody outside it. Every person a \
+                 record names has to be inside your branch — a family with one \
+                 partner from outside would otherwise be a way to rewrite that \
+                 person's parentage."
+            },
+        )),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -60,30 +170,132 @@ macro_rules! guard {
 
 /// `GET /admin/login`
 pub async fn login_form(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    if auth::is_admin(&headers, state.admin_token()) {
+    let viewer = auth::viewer(&state, &headers);
+    if viewer.may_write() {
         return Redirect::to("/admin").into_response();
     }
     render::page(
         "admin_login.html",
-        context! { nav => "admin", is_admin => false, error => "" },
+        context! {
+            nav => "admin",
+            is_admin => false,
+            error => "",
+            // A fresh installation has no accounts at all. Saying so beats a
+            // login form that cannot be satisfied.
+            no_accounts => state.acl_read(|a| a.users.is_empty()),
+        },
     )
 }
 
 #[derive(Deserialize)]
 pub struct LoginForm {
     #[serde(default)]
+    username: String,
+    #[serde(default)]
+    password: String,
+    /// The emergency shared token, on its own field.
+    #[serde(default)]
     token: String,
 }
 
 /// `POST /admin/login`
-pub async fn login(State(state): State<Shared>, Form(f): Form<LoginForm>) -> Response {
-    if !f.token.is_empty() && f.token == state.admin_token() {
-        return (
-            [(header::SET_COOKIE, auth::set_cookie(&f.token))],
-            Redirect::to("/admin"),
-        )
-            .into_response();
+///
+/// Throttled on two keys: the username, so one account cannot be ground
+/// through a dictionary, and the client address, so one client cannot grind
+/// through the accounts. Either being exhausted refuses the attempt.
+///
+/// The reply is the same for an unknown username, a wrong password and a
+/// disabled account. Distinguishing them would turn this form into an oracle
+/// for which accounts exist, and there is no self-registration here to make
+/// that knowledge harmless.
+pub async fn login(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    peer: Option<axum::extract::ConnectInfo<std::net::SocketAddr>>,
+    Form(f): Form<LoginForm>,
+) -> Response {
+    let secure = crate::session::is_tls(&headers);
+    let client = crate::session::client_key(&headers, peer.map(|c| c.0));
+
+    // The emergency token, kept as a recovery path and nothing more.
+    if !f.token.is_empty() {
+        if !state.admin_token().is_empty()
+            && crate::session::constant_time_eq(f.token.as_bytes(), state.admin_token().as_bytes())
+        {
+            let cookie = state.sessions().open(None, true);
+            tracing::warn!(
+                client = %client,
+                "emergency admin token used to open a session; this is the \
+                 recovery path, not an account"
+            );
+            return (
+                [(
+                    header::SET_COOKIE,
+                    crate::session::set_cookie(&cookie, secure),
+                )],
+                Redirect::to("/admin"),
+            )
+                .into_response();
+        }
+        state.sessions().record_failure(&client);
+        return login_refused(&state, "That token is not correct.");
     }
+
+    let username = f.username.trim().to_ascii_lowercase();
+    if state.sessions().is_throttled(&client) || state.sessions().is_throttled(&username) {
+        return login_refused(
+            &state,
+            "Too many failed attempts. Wait a few minutes and try again.",
+        );
+    }
+
+    let user = state.acl_read(|acl| acl.active(&username).cloned());
+    let ok = match &user {
+        Some(u) => crate::acl::verify_password(&f.password, &u.password_hash),
+        // Hash anyway against a throwaway so an unknown username costs the
+        // same wall-clock time as a known one. Argon2id at these parameters
+        // takes long enough that skipping it would be plainly measurable.
+        None => {
+            let _ = crate::acl::verify_password(&f.password, crate::acl::DUMMY_HASH);
+            false
+        }
+    };
+
+    let Some(user) = user.filter(|_| ok) else {
+        state.sessions().record_failure(&client);
+        if !username.is_empty() {
+            state.sessions().record_failure(&username);
+        }
+        return login_refused(&state, "That username and password do not match.");
+    };
+
+    state.sessions().clear_failures(&client);
+    state.sessions().clear_failures(&username);
+
+    let id = user.id.clone();
+    if let Err(e) = state.acl_mutate(|acl| {
+        if let Some(u) = acl.users.iter_mut().find(|u| u.id == id) {
+            u.last_login = Some(view::now_iso8601());
+        }
+    }) {
+        // The sign-in itself succeeded; only the timestamp did not persist.
+        // Refusing the login over that would be the wrong trade.
+        tracing::warn!(error = %e, "could not record last_login");
+    }
+
+    let cookie = state.sessions().open(Some(user.id.clone()), false);
+    tracing::info!(username = %user.username, role = user.role.as_str(), "signed in");
+    (
+        [(
+            header::SET_COOKIE,
+            crate::session::set_cookie(&cookie, secure),
+        )],
+        Redirect::to("/admin"),
+    )
+        .into_response()
+}
+
+fn login_refused(state: &Shared, error: &str) -> Response {
     (
         StatusCode::UNAUTHORIZED,
         render::page(
@@ -91,7 +303,8 @@ pub async fn login(State(state): State<Shared>, Form(f): Form<LoginForm>) -> Res
             context! {
                 nav => "admin",
                 is_admin => false,
-                error => "That token is not correct.",
+                error,
+                no_accounts => state.acl_read(|a| a.users.is_empty()),
             },
         ),
     )
@@ -99,9 +312,16 @@ pub async fn login(State(state): State<Shared>, Form(f): Form<LoginForm>) -> Res
 }
 
 /// `POST /admin/logout`
-pub async fn logout() -> Response {
+pub async fn logout(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    if let Some(cookie) = crate::session::cookie_value(&headers) {
+        state.sessions().close(&cookie);
+    }
     (
-        [(header::SET_COOKIE, auth::clear_cookie())],
+        [
+            (header::SET_COOKIE, crate::session::clear_cookie()),
+            // The emergency cookie too, so "sign out" means it.
+            (header::SET_COOKIE, auth::clear_cookie()),
+        ],
         Redirect::to("/"),
     )
         .into_response()
@@ -296,7 +516,7 @@ pub async fn create(
     Path(kind): Path<String>,
     Form(form): Form<HashMap<String, String>>,
 ) -> Response {
-    guard!(state, headers);
+    let viewer = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
         return unknown_kind(&kind);
     };
@@ -306,6 +526,9 @@ pub async fn create(
         Err(msg) => return form_error(&kind, None, &msg, &form, k),
     };
     let entity = apply_form(base, k, &form);
+    if let Err(r) = check_scope(&state, &viewer, k, &entity, None) {
+        return r;
+    }
     let body = entity.to_string();
 
     let out = match state.mutate(|flat| axgf_rs::add_entity(flat, k, &body)) {
@@ -343,7 +566,7 @@ pub async fn update(
     Path((kind, id)): Path<(String, String)>,
     Form(form): Form<HashMap<String, String>>,
 ) -> Response {
-    guard!(state, headers);
+    let viewer = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
         return unknown_kind(&kind);
     };
@@ -356,6 +579,14 @@ pub async fn update(
     // The id in the path is authoritative; a raw-JSON edit must not silently
     // retarget the update at a different entity.
     entity["id"] = Value::String(id.clone());
+    let stored = state.read(|flat| {
+        flat.get(crate::admin::collection_for(k))
+            .and_then(|c| c.get(&id))
+            .cloned()
+    });
+    if let Err(r) = check_scope(&state, &viewer, k, &entity, stored.as_ref()) {
+        return r;
+    }
     let body = entity.to_string();
 
     let out = match state.mutate(|flat| axgf_rs::update_entity(flat, k, &body)) {
@@ -384,10 +615,23 @@ pub async fn delete(
     Path((kind, id)): Path<(String, String)>,
     Form(f): Form<DeleteForm>,
 ) -> Response {
-    guard!(state, headers);
+    let viewer = guard_admin!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
         return unknown_kind(&kind);
     };
+    // Deleting is an admin's right, and a scope is still a scope: an admin
+    // who has one set may not delete outside it. Normally there is none, and
+    // this costs one `None` check.
+    let stored = state.read(|flat| {
+        flat.get(crate::admin::collection_for(k))
+            .and_then(|c| c.get(&id))
+            .cloned()
+    });
+    if let Some(stored) = stored.as_ref() {
+        if let Err(r) = check_scope(&state, &viewer, k, stored, None) {
+            return r;
+        }
+    }
     let policy = policy_from_str(&f.policy);
 
     let out = match state.mutate(|flat| axgf_rs::delete_entity(flat, k, &id, policy)) {
@@ -409,7 +653,7 @@ pub async fn delete(
 
 /// `POST /admin/validate`
 pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard!(state, headers);
+    guard_admin!(state, headers);
     let env = state.inspect_with(axgf_rs::validate);
     render::page(
         "admin_result.html",
@@ -428,7 +672,7 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
 
 /// `POST /admin/dedup`
 pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard!(state, headers);
+    guard_admin!(state, headers);
     let out = match state.mutate(axgf_rs::deduplicate) {
         Ok(o) => o,
         Err(e) => return io_error(&e),
@@ -463,7 +707,7 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
 /// to a temp file one payload at a time, then sent from that file. Downloading a
 /// 400 MiB bundle costs a file handle, not 400 MiB of process.
 pub async fn export(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard!(state, headers);
+    guard_admin!(state, headers);
     let tmp = match state.export_to_temp_file() {
         Ok(t) => t,
         Err(e) => return io_error(&e),
@@ -851,4 +1095,260 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
         }
     }
     out
+}
+
+// ---------------------------------------------------------------------------
+// accounts
+// ---------------------------------------------------------------------------
+
+/// `GET /admin/users` — the account list.
+///
+/// Admin-only, and the only place accounts are created: there is no
+/// self-registration and no invitation flow in this release. For a family CMS
+/// an administrator who knows everyone is sufficient, and it removes an entire
+/// abuse surface — open registration, invitation tokens, email delivery and
+/// the account-enumeration oracle each of those carries — rather than
+/// defending it.
+pub async fn users(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let viewer = guard_admin!(state, headers);
+    render_users(&state, &viewer, None, None)
+}
+
+fn render_users(
+    state: &Shared,
+    viewer: &Viewer,
+    error: Option<&str>,
+    notice: Option<&str>,
+) -> Response {
+    let roster = state.read(|flat| {
+        flat.get("persons")
+            .and_then(Value::as_object)
+            .map(|persons| {
+                let mut out: Vec<(String, String)> = persons
+                    .iter()
+                    .map(|(id, p)| (view::person_display_name(p), id.clone()))
+                    .collect();
+                out.sort();
+                out.into_iter()
+                    .map(|(name, id)| json!({"id": id, "name": name}))
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default()
+    });
+
+    let users = state.acl_read(|acl| {
+        acl.users
+            .iter()
+            .map(|u| {
+                json!({
+                    "id": u.id,
+                    "username": u.username,
+                    "email": u.email,
+                    "role": u.role.as_str(),
+                    "status": u.status.as_str(),
+                    "created_at": u.created_at,
+                    "last_login": u.last_login,
+                    "family_scope": u.family_scope,
+                    // Never the hash, not even truncated. It has no business
+                    // in a template context that a future edit might print.
+                    "is_me": Some(&u.id) == viewer.user.as_ref().map(|m| &m.id),
+                })
+            })
+            .collect::<Vec<_>>()
+    });
+    let admins = state.acl_read(|acl| acl.active_admins());
+
+    render::page(
+        "admin_users.html",
+        context! {
+            nav => "admin",
+            is_admin => true,
+            users,
+            roster,
+            admins,
+            error,
+            notice,
+            emergency => viewer.emergency,
+            acl_path => state.acl_path().display().to_string(),
+            min_password => crate::acl::MIN_PASSWORD,
+        },
+    )
+}
+
+#[derive(Deserialize)]
+pub struct NewUserForm {
+    #[serde(default)]
+    username: String,
+    #[serde(default)]
+    password: String,
+    #[serde(default)]
+    email: String,
+    #[serde(default)]
+    role: String,
+    #[serde(default)]
+    family_scope: String,
+}
+
+/// `POST /admin/users` — create an account.
+pub async fn create_user(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<NewUserForm>,
+) -> Response {
+    let viewer = guard_admin!(state, headers);
+
+    let role = match crate::acl::Role::parse(&f.role) {
+        Some(r) => r,
+        None => return render_users(&state, &viewer, Some("Pick a role."), None),
+    };
+    // A generated password when the field is left blank, so the common case —
+    // an administrator setting up a relative — never invites a weak one.
+    let generated = f.password.trim().is_empty();
+    let password = if generated {
+        crate::acl::generate_password()
+    } else {
+        f.password.clone()
+    };
+
+    let mut user = match crate::acl::new_user(&f.username, &password, role) {
+        Ok(u) => u,
+        Err(e) => return render_users(&state, &viewer, Some(&e.to_string()), None),
+    };
+    if state.acl_read(|a| a.has_username(&user.username)) {
+        return render_users(&state, &viewer, Some("That username is taken."), None);
+    }
+    let email = f.email.trim();
+    if !email.is_empty() {
+        user.email = Some(email.to_string());
+    }
+    user.family_scope = parse_scope(&f.family_scope);
+
+    let username = user.username.clone();
+    if let Err(e) = state.acl_mutate(|acl| acl.users.push(user)) {
+        return render_users(&state, &viewer, Some(&format!("Not saved: {e}")), None);
+    }
+
+    let notice = if generated {
+        format!(
+            "Created {username}. Their password is {password} — it is shown \
+             once and stored only as an Argon2id hash, so pass it on now."
+        )
+    } else {
+        format!("Created {username}.")
+    };
+    render_users(&state, &viewer, None, Some(&notice))
+}
+
+#[derive(Deserialize)]
+pub struct EditUserForm {
+    #[serde(default)]
+    role: String,
+    #[serde(default)]
+    status: String,
+    #[serde(default)]
+    email: String,
+    #[serde(default)]
+    family_scope: String,
+    /// Blank leaves the password alone.
+    #[serde(default)]
+    password: String,
+}
+
+/// `POST /admin/users/:id` — change a role, a scope, a status or a password.
+///
+/// Every one of those is a change to what a live cookie grants, so each of
+/// them closes that account's sessions. A demoted admin who kept their rights
+/// until they happened to sign out would make the demotion advisory.
+pub async fn update_user(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(f): Form<EditUserForm>,
+) -> Response {
+    let viewer = guard_admin!(state, headers);
+
+    let Some(existing) = state.acl_read(|a| a.by_id(&id).cloned()) else {
+        return render_users(&state, &viewer, Some("No such account."), None);
+    };
+    let role = crate::acl::Role::parse(&f.role).unwrap_or(existing.role);
+    let disabling = f.status == "disabled";
+
+    // The last active administrator may not remove their own way back in.
+    // Losing every admin means the .acl has to be edited by hand or the
+    // emergency token used, and neither should be the result of a stray click.
+    let lowering_last_admin = existing.role == crate::acl::Role::Admin
+        && existing.status == crate::acl::Status::Active
+        && (role != crate::acl::Role::Admin || disabling)
+        && state.acl_read(|a| a.active_admins()) <= 1;
+    if lowering_last_admin {
+        return render_users(
+            &state,
+            &viewer,
+            Some(
+                "That is the only active administrator. Promote somebody else \
+                 first — an installation with no administrator can only be \
+                 recovered by editing the .acl file or using the emergency \
+                 token.",
+            ),
+            None,
+        );
+    }
+
+    let new_password = f.password.trim().to_string();
+    if !new_password.is_empty() {
+        if let Err(e) = crate::acl::validate_password(&new_password) {
+            return render_users(&state, &viewer, Some(&e.to_string()), None);
+        }
+    }
+    let hash = if new_password.is_empty() {
+        None
+    } else {
+        match crate::acl::hash_password(&new_password) {
+            Ok(h) => Some(h),
+            Err(e) => return render_users(&state, &viewer, Some(&e.to_string()), None),
+        }
+    };
+
+    let email = f.email.trim().to_string();
+    let scope = parse_scope(&f.family_scope);
+    let id2 = id.clone();
+    if let Err(e) = state.acl_mutate(move |acl| {
+        if let Some(u) = acl.users.iter_mut().find(|u| u.id == id2) {
+            u.role = role;
+            u.status = if disabling {
+                crate::acl::Status::Disabled
+            } else {
+                crate::acl::Status::Active
+            };
+            u.email = (!email.is_empty()).then_some(email);
+            u.family_scope = scope;
+            if let Some(h) = hash {
+                u.password_hash = h;
+            }
+        }
+    }) {
+        return render_users(&state, &viewer, Some(&format!("Not saved: {e}")), None);
+    }
+
+    // Whatever changed, the cookie that was issued before it is now describing
+    // rights the account no longer has.
+    state.sessions().close_all_for(&id);
+    render_users(
+        &state,
+        &viewer,
+        None,
+        Some(&format!(
+            "Updated {}. Any session it had open has been signed out.",
+            existing.username
+        )),
+    )
+}
+
+/// Parse the scope textarea: one person id per line, blanks ignored.
+fn parse_scope(raw: &str) -> Vec<String> {
+    raw.split(['\n', ',', ' '])
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
+        .collect()
 }

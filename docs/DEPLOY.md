@@ -27,11 +27,13 @@ curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootst
 | `--from-source` | Build with cargo instead of downloading a release binary. |
 | `--version <TAG>` | Install a specific release tag rather than the latest. |
 | `--bind <ADDR>` | Address for the unit to bind (default `127.0.0.1:8080`). |
+| `--admin-user <NAME>` | Username for the administrator created on a fresh install (default `admin`). |
 | `--dry-run` | Print every action and change nothing. |
 
-The script is safe to re-run. It will not overwrite an existing bundle and will
-not regenerate an existing admin token; it prints which of those it is
-preserving. If you want to see exactly what it will do first:
+The script is safe to re-run. It will not overwrite an existing bundle, will
+not regenerate an existing emergency token, and will not touch an existing
+`.acl` — so a re-run never silently rotates a working account's password. It
+prints which of those it is preserving. If you want to see exactly what it will do first:
 
 ```sh
 sudo bash bootstrap.sh --dry-run --with-sample
@@ -42,8 +44,9 @@ What it creates:
 | Path | Purpose |
 |---|---|
 | `/usr/local/bin/axgf-cms` | The binary. Nothing else is installed. |
-| `/var/lib/axgf-cms/family.axgf` | **The database.** |
-| `/etc/axgf-cms/env` | Admin token, mode 0640, root-owned. |
+| `/var/lib/axgf-cms/family.axgf` | **The database.** The genealogy — shareable. |
+| `/var/lib/axgf-cms/family.acl` | **The accounts.** Mode 0600, owned by the service user. Never share this. |
+| `/etc/axgf-cms/env` | Emergency recovery token, mode 0640, root-owned. |
 | `/etc/systemd/system/axgf-cms.service` | The unit. |
 | user `axgf-cms` | System user, no shell, no login. |
 
@@ -139,7 +142,7 @@ Useful commands:
 
 ```sh
 sudo systemctl status axgf-cms
-sudo journalctl -u axgf-cms -f          # logs, including the generated token on first boot
+sudo journalctl -u axgf-cms -f          # logs, including emergency-token use
 sudo systemctl restart axgf-cms
 ```
 
@@ -147,10 +150,20 @@ sudo systemctl restart axgf-cms
 
 ## Reverse proxy and TLS
 
-**The service binds to localhost on purpose.** V1 has a single shared admin
-token and no user accounts, so anything that reaches the port and holds the
-token has full edit rights. Do not move `--bind` to `0.0.0.0`. Put a proxy in
-front and let it terminate TLS.
+**The service binds to localhost on purpose.** It now has real accounts, but
+it speaks plain HTTP: bound to `0.0.0.0` it would send every password across
+the network in clear text. Do not move `--bind`. Put a proxy in front and let
+it terminate TLS.
+
+Two headers matter to the application, and both appear in the snippets below:
+
+* `X-Forwarded-Proto` is how it knows the request arrived over TLS, and
+  therefore whether to set `Secure` on the session cookie. Without it the
+  cookie is issued without `Secure`.
+* `X-Forwarded-For` is what the login throttle counts attempts against.
+  Without it every request appears to come from the proxy, and one bucket is
+  shared by the whole internet — which throttles harder, not less, but will
+  lock out legitimate users.
 
 ### Caddy
 
@@ -160,8 +173,9 @@ Caddy obtains and renews a certificate automatically.
 genealogy.example.org {
     reverse_proxy 127.0.0.1:8080
 
-    # V1 has no accounts. If the site is reachable from the internet, add a
-    # second factor in front of the admin surface.
+    # Optional: a second factor in front of the admin surface. The
+    # application authenticates on its own now, so this is defence in depth
+    # rather than the only lock.
     @admin path /admin*
     basic_auth @admin {
         # caddy hash-password --plaintext 'your-password'
@@ -191,7 +205,8 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
-    # V1 has no accounts. Gate the admin surface separately.
+    # Optional second factor. The application authenticates on its own now;
+    # this is defence in depth rather than the only lock.
     location /admin {
         auth_basic           "axgf-cms admin";
         auth_basic_user_file /etc/nginx/axgf-cms.htpasswd;
@@ -305,14 +320,43 @@ bundle was modified in the meantime, restore the backup.
 
 ## Troubleshooting
 
-**I lost the admin token.** It is in `/etc/axgf-cms/env`:
+**I am locked out of every account.** The emergency token is in
+`/etc/axgf-cms/env`:
 
 ```sh
 sudo sed -n 's/^AXGF_CMS_ADMIN_TOKEN=//p' /etc/axgf-cms/env
 ```
 
-To rotate it, write a new value into that file and restart the service. Any
-existing session cookie stops working immediately.
+Enter it under "Emergency access" on the sign-in page. It opens an
+administrator session so you can reset a password from **Admin → Accounts**.
+Its use is logged as a warning. To rotate it, write a new value into that file
+and restart the service.
+
+**I forgot one user's password.** Sign in as another administrator and set a
+new one from **Admin → Accounts**. Saving it signs that account out everywhere.
+
+**The service refuses to start, complaining about the `.acl` file's mode.**
+That is deliberate: a credential store any local user can read is not a
+credential store. The message names the mode it found and the fix:
+
+```sh
+sudo chown axgf-cms:axgf-cms /var/lib/axgf-cms/family.acl
+sudo chmod 600 /var/lib/axgf-cms/family.acl
+```
+
+**I want to start the accounts over.** Stop the service, delete
+`/var/lib/axgf-cms/family.acl`, and run `--create-admin` again:
+
+```sh
+sudo systemctl stop axgf-cms
+sudo rm /var/lib/axgf-cms/family.acl
+sudo runuser -u axgf-cms -- /usr/local/bin/axgf-cms \
+     --bundle /var/lib/axgf-cms/family.axgf --create-admin yourname
+sudo systemctl start axgf-cms
+```
+
+The genealogy is untouched by any of this: the accounts live in a separate
+file precisely so that losing one does not mean losing the other.
 
 **The service will not start.** `journalctl -u axgf-cms -n 50`. The usual
 causes are the bundle not being readable by the `axgf-cms` user, or the port

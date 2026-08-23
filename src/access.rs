@@ -438,18 +438,82 @@ pub enum Denied {
     Scope,
 }
 
+/// Every person an entity is *about*, which is what a family scope is checked
+/// against.
+///
+/// A scope limits a contributor to one branch, so the question for any write
+/// is "which people does this record concern?" — and for everything except a
+/// person that means reading the entity's own references. A source or a place
+/// concerns nobody in particular and returns empty, which [`check_write`]
+/// treats as out of scope for a scoped account: there is no branch to measure
+/// it against, so permitting it would be a hole in the scope rather than an
+/// exception to it.
+pub fn subjects_of(kind: axgf_rs::EntityKind, entity: &Value) -> Vec<String> {
+    use axgf_rs::EntityKind as K;
+    let str_at = |v: &Value, k: &str| v.get(k).and_then(Value::as_str).map(str::to_string);
+    let mut out = Vec::new();
+
+    match kind {
+        K::Person => out.extend(str_at(entity, "id")),
+        K::Family => {
+            if let Some(ps) = entity
+                .get("union")
+                .and_then(|u| u.get("persons"))
+                .and_then(Value::as_array)
+            {
+                out.extend(ps.iter().filter_map(|p| str_at(p, "person_id")));
+            }
+            if let Some(cs) = entity.get("children").and_then(Value::as_array) {
+                out.extend(cs.iter().filter_map(|c| str_at(c, "person_id")));
+            }
+        }
+        K::Event => {
+            if let Some(ps) = entity.get("participants").and_then(Value::as_array) {
+                out.extend(ps.iter().filter_map(|p| {
+                    (p.get("entity_type").and_then(Value::as_str) == Some("person"))
+                        .then(|| str_at(p, "entity_id"))
+                        .flatten()
+                }));
+            }
+        }
+        K::Link => {
+            for end in ["from", "to"] {
+                if let Some(e) = entity.get(end) {
+                    if e.get("entity_type").and_then(Value::as_str) == Some("person") {
+                        out.extend(str_at(e, "entity_id"));
+                    }
+                }
+            }
+        }
+        K::Occupation => out.extend(str_at(entity, "person_id")),
+        K::Document => {
+            if let Some(ls) = entity.get("linked_to").and_then(Value::as_array) {
+                out.extend(ls.iter().filter_map(|l| {
+                    (l.get("entity_type").and_then(Value::as_str) == Some("person"))
+                        .then(|| str_at(l, "entity_id"))
+                        .flatten()
+                }));
+            }
+        }
+        // A source and a place are about evidence and geography, not people.
+        _ => {}
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
 /// Check a write against role and scope.
 ///
-/// `subject` is the person the write is about — the entity itself for a
-/// person, or the person a document is being attached to. `None` means the
-/// write is not about one person in particular (creating a place, say), which
-/// a scoped account may not do at all: there is no branch to check it
-/// against, so allowing it would be a hole in the scope rather than an
-/// exception to it.
+/// `subjects` are the people the write is about — see [`subjects_of`]. **All**
+/// of them must be inside the scope, not merely one: a family with a partner
+/// from outside the branch would otherwise be a way to rewrite that person's
+/// parentage from inside it. An empty list means the write is about no person
+/// in particular, which a scoped account may not do at all.
 pub fn check_write(
     viewer: &Viewer,
     scope: Option<&BTreeSet<String>>,
-    subject: Option<&str>,
+    subjects: &[String],
 ) -> Result<(), Denied> {
     if !viewer.may_write() {
         return Err(Denied::Role);
@@ -457,10 +521,10 @@ pub fn check_write(
     let Some(scope) = scope else {
         return Ok(()); // unscoped: the whole tree
     };
-    match subject {
-        Some(id) if scope.contains(id) => Ok(()),
-        _ => Err(Denied::Scope),
+    if subjects.is_empty() || !subjects.iter().all(|s| scope.contains(s)) {
+        return Err(Denied::Scope);
     }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -598,6 +662,10 @@ mod tests {
         assert_eq!(v.name(), "emergency-token");
     }
 
+    fn s(v: &str) -> String {
+        v.to_string()
+    }
+
     fn viewer_with(role: Role, scope: &[&str]) -> Viewer {
         let mut u = crate::acl::new_user("u", "correct horse battery", role).unwrap();
         u.family_scope = scope.iter().map(|s| s.to_string()).collect();
@@ -610,31 +678,37 @@ mod tests {
     #[test]
     fn a_viewer_may_not_write_at_all() {
         let v = viewer_with(Role::Viewer, &[]);
-        assert_eq!(check_write(&v, None, Some("anyone")), Err(Denied::Role));
+        assert_eq!(check_write(&v, None, &[s("anyone")]), Err(Denied::Role));
     }
 
     #[test]
     fn a_scoped_contributor_writes_inside_the_branch_and_nowhere_else() {
         let v = viewer_with(Role::Contributor, &["root"]);
         let scope: BTreeSet<String> = ["root", "child"].iter().map(|s| s.to_string()).collect();
-        assert_eq!(check_write(&v, Some(&scope), Some("child")), Ok(()));
+        assert_eq!(check_write(&v, Some(&scope), &[s("child")]), Ok(()));
         assert_eq!(
-            check_write(&v, Some(&scope), Some("stranger")),
+            check_write(&v, Some(&scope), &[s("stranger")]),
             Err(Denied::Scope)
         );
         assert_eq!(
-            check_write(&v, Some(&scope), None),
+            check_write(&v, Some(&scope), &[]),
             Err(Denied::Scope),
             "an edit with no person to check is a hole in the scope, not an \
              exception to it"
+        );
+        assert_eq!(
+            check_write(&v, Some(&scope), &[s("child"), s("stranger")]),
+            Err(Denied::Scope),
+            "one foot outside the branch is outside the branch: a family with \
+             an out-of-scope partner would otherwise rewrite their parentage"
         );
     }
 
     #[test]
     fn an_unscoped_contributor_writes_anywhere() {
         let v = viewer_with(Role::Contributor, &[]);
-        assert_eq!(check_write(&v, None, Some("stranger")), Ok(()));
-        assert_eq!(check_write(&v, None, None), Ok(()));
+        assert_eq!(check_write(&v, None, &[s("stranger")]), Ok(()));
+        assert_eq!(check_write(&v, None, &[]), Ok(()));
     }
 
     #[test]

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Accounts — axgf-cms{% endblock %}
+{% block content %}
+
+<h1>Accounts</h1>
+<p class="lede">
+  Stored in <code>{{ acl_path }}</code>, at mode 600, beside the bundle and
+  never inside it. A <code>.axgf</code> is copied, mailed and published;
+  password hashes in it would make every copy of the family tree a copy of the
+  credential store.
+</p>
+
+{% if error %}<div class="notice error"><p>{{ error }}</p></div>{% endif %}
+{% if notice %}<div class="notice ok"><p>{{ notice }}</p></div>{% endif %}
+
+{% if emergency %}
+<div class="notice warn">
+  <p>
+    <strong>You are signed in with the emergency token.</strong> It grants
+    administrator rights for this session but is not an account: it owns no
+    preferences, and the edit journal will record your changes as
+    <code>emergency-token</code> rather than as a person. Create yourself a
+    real account below and sign in with it.
+  </p>
+</div>
+{% endif %}
+
+<h2>Existing</h2>
+<table class="wide">
+  <thead>
+    <tr>
+      <th>Username</th><th>Role</th><th>Status</th><th>Branch</th>
+      <th>Last seen</th><th>Change</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td data-label="Username">
+        <strong>{{ u.username }}</strong>
+        {%- if u.is_me %} <span class="small muted">(you)</span>{% endif %}
+        {%- if u.email %}<div class="small muted">{{ u.email }}</div>{% endif %}
+      </td>
+      <td data-label="Role">{{ u.role }}</td>
+      <td data-label="Status">
+        {% if u.status == "active" %}active{% else %}<span class="muted">disabled</span>{% endif %}
+      </td>
+      <td data-label="Branch">
+        {% if u.family_scope %}
+          {{ u.family_scope | length }} root{{ "" if u.family_scope | length == 1 else "s" }}
+        {% else %}
+          <span class="muted">whole tree</span>
+        {% endif %}
+      </td>
+      <td data-label="Last seen">
+        {{ u.last_login if u.last_login else "never" }}
+      </td>
+      <td data-label="Change">
+        <form method="post" action="/admin/users/{{ u.id }}" class="inline-form">
+          <select name="role" aria-label="Role for {{ u.username }}">
+            {% for r in ["viewer", "contributor", "admin"] %}
+              <option value="{{ r }}" {{ "selected" if u.role == r }}>{{ r }}</option>
+            {% endfor %}
+          </select>
+          <select name="status" aria-label="Status for {{ u.username }}">
+            <option value="active" {{ "selected" if u.status == "active" }}>active</option>
+            <option value="disabled" {{ "selected" if u.status == "disabled" }}>disabled</option>
+          </select>
+          <input type="email" name="email" value="{{ u.email if u.email else '' }}"
+                 placeholder="email" aria-label="Email for {{ u.username }}">
+          <input type="password" name="password" autocomplete="new-password"
+                 placeholder="new password (blank = keep)"
+                 aria-label="New password for {{ u.username }}">
+          <textarea name="family_scope" rows="2"
+                    placeholder="branch roots, one person id per line — blank for the whole tree"
+                    aria-label="Branch for {{ u.username }}">{{ u.family_scope | join("\n") }}</textarea>
+          <button class="btn" type="submit">Save</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Add an account</h2>
+<p class="small muted">
+  There is no self-registration and no invitation flow, deliberately. For a
+  family archive an administrator who knows everyone is enough, and it removes
+  an abuse surface entirely rather than defending one.
+</p>
+
+<form method="post" action="/admin/users" class="card" style="max-width:40rem">
+  <div class="field">
+    <label for="nu-username">Username</label>
+    <input type="text" id="nu-username" name="username" required
+           autocapitalize="none" spellcheck="false">
+  </div>
+  <div class="field">
+    <label for="nu-password">Password</label>
+    <input type="password" id="nu-password" name="password"
+           autocomplete="new-password">
+    <div class="hint">
+      Leave blank and one is generated and shown once. At least
+      {{ min_password }} characters if you set it yourself.
+    </div>
+  </div>
+  <div class="field">
+    <label for="nu-email">Email <span class="small muted">(optional)</span></label>
+    <input type="email" id="nu-email" name="email">
+  </div>
+  <div class="field">
+    <label for="nu-role">Role</label>
+    <select id="nu-role" name="role">
+      <option value="viewer">viewer — reads public and members records</option>
+      <option value="contributor" selected>contributor — also creates, edits and uploads</option>
+      <option value="admin">admin — also manages accounts, deletes and exports</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="nu-scope">Branch <span class="small muted">(optional)</span></label>
+    <textarea id="nu-scope" name="family_scope" rows="3"
+              placeholder="one person id per line"></textarea>
+    <div class="hint">
+      Limits what this account may <em>edit</em> to those people, their
+      descendants and their spouses. It does not limit what they may read —
+      that is governed by each record's visibility, and the two are kept
+      separate on purpose.
+      {% if roster %}
+      <details>
+        <summary>Person ids in this bundle</summary>
+        <ul class="small" style="max-height:14rem;overflow:auto">
+          {% for p in roster %}
+            <li><code>{{ p.id }}</code> — {{ p.name }}</li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endif %}
+    </div>
+  </div>
+  <button class="btn primary" type="submit">Create account</button>
+</form>
+
+{% endblock %}

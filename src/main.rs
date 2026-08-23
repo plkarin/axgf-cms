@@ -25,6 +25,14 @@ async fn main() -> Result<()> {
             .context("initialising application state")?;
     let state = Arc::new(state.with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024)));
 
+    // --create-admin runs against the loaded state and then exits. It happens
+    // after the bundle is open, because the ACL binds to the bundle it is
+    // created beside — that binding is what detects one family's accounts
+    // being applied to another family's tree later.
+    if let Some(username) = cfg.create_admin.as_deref() {
+        return create_first_admin(&state, username);
+    }
+
     let total: usize = state.counts().iter().map(|(_, n)| n).sum();
     tracing::info!(bundle = %cfg.bundle.display(), entities = total, "bundle loaded");
 
@@ -83,20 +91,87 @@ async fn main() -> Result<()> {
     }
     if !cfg.bind.ip().is_loopback() {
         eprintln!(
-            "WARNING: bound to {}, which is not localhost. V1 has no user \
-             accounts — anyone who reaches this port and holds the token has \
-             full edit rights. Put it behind a reverse proxy with TLS.",
+            "WARNING: bound to {}, which is not localhost. This process \
+             speaks plain HTTP, so every password reaching it does so in \
+             clear text, and the session cookie is issued without `Secure` \
+             unless a proxy sets X-Forwarded-Proto. Put it behind a reverse \
+             proxy with TLS.",
             cfg.bind
         );
     }
 
     eprintln!("axgf-cms listening on http://{}", cfg.bind);
 
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
-        .await
-        .context("server error")?;
+    // `into_make_service_with_connect_info` is what makes the peer address
+    // reachable from a handler, and the login throttle's per-address bucket is
+    // useless without it: an absent `ConnectInfo` would silently collapse
+    // every anonymous attempt into one bucket keyed "unknown". Behind the
+    // documented reverse proxy the peer is the proxy, which is why
+    // `X-Forwarded-For` is preferred over it — but the direct-bind case has to
+    // work too.
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await
+    .context("server error")?;
 
+    Ok(())
+}
+
+/// Create an administrator account and print its generated password once.
+///
+/// The password is generated rather than taken as an argument, and printed to
+/// stderr rather than stdout: an argument would sit in the shell history and
+/// in `ps` output for as long as the process ran, and stdout is what a
+/// bootstrap script is most likely to be piping somewhere.
+///
+/// Re-running with an existing username is an error rather than a reset, so a
+/// bootstrap script can call this unconditionally on every deploy without
+/// silently rotating a working account's password.
+fn create_first_admin(state: &AppState, username: &str) -> Result<()> {
+    use axgf_cms::acl::{self, Role};
+
+    acl::validate_username(username)?;
+    if state.acl_read(|a| a.has_username(&username.to_ascii_lowercase())) {
+        anyhow::bail!(
+            "an account named {username:?} already exists in {}. \n\
+             This command creates accounts; it does not reset them. Sign in as \
+             another administrator to change a password, or delete the account \
+             from the .acl file if you have locked yourself out.",
+            state.acl_path().display()
+        );
+    }
+
+    let password = acl::generate_password();
+    let user = acl::new_user(username, &password, Role::Admin)?;
+    let name = user.username.clone();
+
+    // Bind the ACL to this bundle the first time an account exists, so that
+    // applying one family's accounts to another family's tree is detectable
+    // later. The manifest fields survive editing; the SHA-256 does not, which
+    // is why both are recorded.
+    let manifest = state.read(|flat| flat.get("manifest").cloned());
+    let sha = acl::file_sha256(state.bundle_path());
+
+    state.acl_mutate(|acl| {
+        if acl.users.is_empty() {
+            acl.bind_to(manifest.as_ref(), sha);
+        }
+        acl.users.push(user);
+    })?;
+
+    eprintln!("─────────────────────────────────────────────────────────");
+    eprintln!("  Administrator account created in");
+    eprintln!("  {}", state.acl_path().display());
+    eprintln!();
+    eprintln!("      username:  {name}");
+    eprintln!("      password:  {password}");
+    eprintln!();
+    eprintln!("  This password is shown once and is not recoverable — it is");
+    eprintln!("  stored only as an Argon2id hash. Write it down now.");
+    eprintln!("─────────────────────────────────────────────────────────");
     Ok(())
 }
 

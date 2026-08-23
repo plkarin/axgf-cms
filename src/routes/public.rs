@@ -13,7 +13,7 @@ use crate::{auth, render, view};
 
 /// `GET /` — why AXGF, what is in this bundle, entry points.
 pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let is_admin = viewer.is_admin();
     let counts = state.counts();
     let total: usize = counts.iter().map(|(_, n)| n).sum();
@@ -231,7 +231,7 @@ pub async fn tree(
     headers: HeaderMap,
     Query(q): Query<TreeQuery>,
 ) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let is_admin = viewer.is_admin();
     let show_all = q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty());
     let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
@@ -376,7 +376,7 @@ pub async fn tree_panel(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let is_admin = viewer.is_admin();
     // The panel fetch is a read path like any other, and it is the one most
     // easily forgotten: it returns a fragment rather than a page, so a
@@ -465,7 +465,7 @@ pub async fn person(
     Path(id): Path<String>,
     headers: HeaderMap,
 ) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let is_admin = viewer.is_admin();
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
         if flat.get("persons").and_then(|p| p.get(&id)).is_none() {
@@ -568,7 +568,7 @@ pub async fn document_raw(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page(
             StatusCode::NOT_FOUND,
@@ -656,7 +656,7 @@ pub async fn document_view(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page(
             StatusCode::NOT_FOUND,
@@ -696,7 +696,7 @@ pub async fn document_thumb(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page(
             StatusCode::NOT_FOUND,
@@ -771,7 +771,7 @@ pub async fn tree_js() -> Response {
 /// already states in words — "17 people are shown without their details" — so
 /// withholding it here would protect nothing and break the monitor.
 pub async fn health(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    let viewer = auth::viewer(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
     let counts = state.counts();
     let persons_visible = state.read_as(viewer.ceiling(), |flat, lens| {
         flat.get("persons")

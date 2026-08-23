@@ -498,6 +498,24 @@ pub fn kind_from_str(s: &str) -> Option<EntityKind> {
     })
 }
 
+/// The flat-bundle collection an entity kind lives in.
+///
+/// The inverse of [`kind_from_str`], and the one place that mapping is
+/// written down: a write path that needs the entity the bundle currently
+/// holds has to know where to look for it.
+pub fn collection_for(kind: EntityKind) -> &'static str {
+    match kind {
+        EntityKind::Person => "persons",
+        EntityKind::Family => "families",
+        EntityKind::Event => "events",
+        EntityKind::Link => "links",
+        EntityKind::Occupation => "occupations",
+        EntityKind::Source => "sources",
+        EntityKind::Place => "places",
+        EntityKind::Document => "documents",
+    }
+}
+
 /// Every kind, for navigation.
 pub const KINDS: [&str; 8] = [
     "person",

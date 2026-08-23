@@ -16,8 +16,9 @@ pub struct Config {
     #[arg(long, value_name = "PATH")]
     pub bundle: PathBuf,
 
-    /// Address to bind. Defaults to localhost: V1 has no user accounts, so the
-    /// admin surface must not reach the network by accident.
+    /// Address to bind. Defaults to localhost, and should stay there: this
+    /// process speaks plain HTTP, so bound anywhere else it sends passwords
+    /// across the network in clear text. TLS is the reverse proxy's job.
     #[arg(long, value_name = "ADDR", default_value = "127.0.0.1:8080")]
     pub bind: SocketAddr,
 
@@ -38,6 +39,21 @@ pub struct Config {
     /// limit — the archive is the operator's.
     #[arg(long, value_name = "MB", default_value_t = crate::documents::DEFAULT_SIZE_WARN / (1024 * 1024))]
     pub size_warn_mb: u64,
+
+    /// Create an administrator account with this username, print a generated
+    /// password once to stderr, and exit without serving.
+    ///
+    /// This is how an installation gets its first account. There is no web
+    /// setup page on purpose: the window between deploying and the first login
+    /// is exactly when an installation is unprotected, and a setup page is a
+    /// door standing open for the length of it. Running this needs shell
+    /// access to the host, which the attacker on the other side of that window
+    /// does not have.
+    ///
+    /// Safe to re-run: an existing username is refused rather than
+    /// overwritten, so a bootstrap script can call it unconditionally.
+    #[arg(long, value_name = "USERNAME")]
+    pub create_admin: Option<String>,
 
     /// Directory for the binary-payload cache. Defaults to
     /// `<bundle_dir>/.axgf-cms-cache`. Override it when the bundle sits on slow
@@ -81,6 +97,7 @@ mod tests {
             admin_token: token.map(str::to_string),
             seed_sample: false,
             size_warn_mb: 200,
+            create_admin: None,
             cache_dir: None,
         }
     }

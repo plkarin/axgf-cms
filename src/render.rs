@@ -60,8 +60,97 @@ pub fn env() -> &'static Environment<'static> {
                 .unwrap_or_else(|e| panic!("template {name} failed to compile: {e}"));
         }
         crate::view::register_filters(&mut env);
+        register_translate(&mut env);
         env
     })
+}
+
+/// Add `t(key, ...)` to the environment.
+///
+/// The locale is read from the render context rather than being bound into the
+/// function, because the environment is built once and shared by every request
+/// while the language changes per request. `t` therefore looks up `lang` in
+/// the template state, which every page carries from [`Chrome`].
+///
+/// Keyword arguments become Fluent variables, so `t("tree-hidden", n=17)`
+/// selects the right plural form for Polish or Arabic without this crate
+/// knowing anything about either.
+fn register_translate(env: &mut Environment<'static>) {
+    use minijinja::value::{Kwargs, Value};
+    use minijinja::{Error, ErrorKind, State};
+
+    env.add_function(
+        "t",
+        |state: &State, key: &str, kwargs: Kwargs| -> Result<Value, Error> {
+            let lang = state
+                .lookup("lang")
+                .as_ref()
+                .and_then(|v| v.as_str().map(str::to_string))
+                .unwrap_or_else(|| crate::i18n::DEFAULT.to_string());
+
+            let mut args = fluent::FluentArgs::new();
+            for name in kwargs.args() {
+                let v: Value = kwargs.get(name)?;
+                args.set(name.to_string(), to_fluent(&v));
+            }
+            kwargs.assert_all_used()?;
+
+            let has_args = args.iter().next().is_some();
+            let out = crate::i18n::translate(&lang, key, has_args.then_some(&args));
+            if out == key {
+                // Not fatal — the key renders as itself, which is visible on
+                // the page — but it is always a bug, so it should be findable
+                // in the log rather than only by looking at the page.
+                tracing::warn!(lang = %lang, key, "no message for this key in any locale");
+            }
+            let _ = ErrorKind::InvalidOperation;
+            Ok(Value::from(out))
+        },
+    );
+}
+
+/// Convert a template value to a Fluent argument.
+///
+/// Numbers stay numbers, because that is what the CLDR plural rules select on;
+/// passing "3" as a string would make every language take the `other` branch.
+fn to_fluent(v: &minijinja::value::Value) -> fluent::FluentValue<'static> {
+    if let Ok(n) = i64::try_from(v.clone()) {
+        return fluent::FluentValue::from(n);
+    }
+    if let Ok(n) = f64::try_from(v.clone()) {
+        return fluent::FluentValue::from(n);
+    }
+    fluent::FluentValue::from(v.to_string())
+}
+
+/// The per-request context every page needs: who is reading, in what language,
+/// in what direction, under what theme.
+///
+/// Assembled once per request and merged into each page's own context, so no
+/// handler has to remember to pass `dir` and none can forget to.
+#[derive(Debug, Clone, Serialize)]
+pub struct Chrome {
+    pub lang: &'static str,
+    pub dir: &'static str,
+    /// The theme actually applied, rendered into `data-theme` server-side so
+    /// there is no flash of the wrong one.
+    pub theme: String,
+    /// What the reader chose, which may be `system`.
+    pub theme_choice: String,
+    pub signed_in: bool,
+    pub may_write: bool,
+    pub is_admin: bool,
+    /// Where a preference form should return to.
+    pub back: String,
+    pub locales: Vec<serde_json::Value>,
+    pub themes: Vec<serde_json::Value>,
+    pub current_locale: serde_json::Value,
+}
+
+/// Render a page with the shared chrome merged into its own context.
+pub fn page_with(chrome: &Chrome, name: &str, ctx: impl Serialize) -> Response {
+    let merged = context! { ..MjValue::from_serialize(chrome), ..MjValue::from_serialize(&ctx) };
+    page(name, merged)
 }
 
 /// Render a template to an HTML response.

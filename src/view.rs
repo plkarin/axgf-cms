@@ -116,8 +116,13 @@ pub struct DateDisplay {
 impl DateDisplay {
     /// The rendering used when a date object is absent entirely.
     pub fn absent() -> Self {
+        Self::absent_in(crate::i18n::DEFAULT)
+    }
+
+    /// [`DateDisplay::absent`] in a given interface language.
+    pub fn absent_in(lang: &str) -> Self {
         Self {
-            text: "Not recorded".into(),
+            text: t(lang, "date-not-recorded", &[]),
             kind: "unknown",
             is_uncertain: true,
             short: String::new(),
@@ -153,6 +158,23 @@ impl DateDisplay {
 /// A range is checked before `value` because the converter emits ranged dates
 /// with `precision: "unknown"` and no top-level value.
 pub fn render_date(raw: &Value) -> DateDisplay {
+    render_date_in(raw, crate::i18n::DEFAULT)
+}
+
+/// [`render_date`] in a given interface language.
+///
+/// # What is translated and what is not
+///
+/// The *words* are translated: "circa", "between … and", "before", "after",
+/// the month names, "Date unknown". The *value* never is, and neither is the
+/// precision. `circa 1500` in French is `vers 1500` — still 1500, still circa,
+/// still a year and not a day. A partial date stays exactly as partial as the
+/// source made it.
+///
+/// This matters more here than in most applications. A genealogical date is a
+/// claim about what a record actually supports, and "helpfully" completing or
+/// re-precising it would be inventing evidence.
+pub fn render_date_in(raw: &Value, lang: &str) -> DateDisplay {
     if raw.is_null() {
         return DateDisplay::absent();
     }
@@ -189,23 +211,27 @@ pub fn render_date(raw: &Value) -> DateDisplay {
 
     // 1. A range is a statement about bounds, not a point.
     if let Some(range) = &date.range {
-        let lo = range.earliest.as_deref().and_then(point_text);
-        let hi = range.latest.as_deref().and_then(point_text);
+        let lo = range.earliest.as_deref().and_then(|d| point_text(d, lang));
+        let hi = range.latest.as_deref().and_then(|d| point_text(d, lang));
         match (lo, hi) {
             (Some(a), Some(b)) => {
-                out.text = format!("between {a} and {b}");
+                out.text = t(
+                    lang,
+                    "date-between",
+                    &[("from", a.clone().into()), ("to", b.clone().into())],
+                );
                 out.short = format!("{}–{}", year_of(&a), year_of(&b));
                 out.sort = range.earliest.as_deref().and_then(sort_key_of);
             }
             // Plain characters, not HTML entities: templates autoescape, so an
             // entity here would render literally as "&gt;".
             (Some(a), None) => {
-                out.text = format!("after {a}");
+                out.text = t(lang, "date-after", &[("date", a.clone().into())]);
                 out.short = format!(">{}", year_of(&a));
                 out.sort = range.earliest.as_deref().and_then(sort_key_of);
             }
             (None, Some(b)) => {
-                out.text = format!("before {b}");
+                out.text = t(lang, "date-before", &[("date", b.clone().into())]);
                 out.short = format!("<{}", year_of(&b));
                 out.sort = range.latest.as_deref().and_then(sort_key_of);
             }
@@ -223,9 +249,13 @@ pub fn render_date(raw: &Value) -> DateDisplay {
     // 2. A point value, formatted at whatever precision the source supports.
     if let Some(v) = date.value.as_deref().filter(|v| !v.trim().is_empty()) {
         let precision = date.precision.as_deref().unwrap_or("exact");
-        let body = format_point(v, precision);
+        let body = format_point(v, precision, lang);
         let circa = date.circa.unwrap_or(false);
-        out.text = if circa { format!("circa {body}") } else { body };
+        out.text = if circa {
+            t(lang, "date-circa", &[("date", body.clone().into())])
+        } else {
+            body
+        };
         out.short = year_of(v);
         out.sort = sort_key(v);
         out.is_uncertain = circa || precision != "exact";
@@ -241,22 +271,27 @@ pub fn render_date(raw: &Value) -> DateDisplay {
 
     // 3. Text the converter could not parse, kept rather than discarded.
     if let Some(note) = &out.note {
-        out.text = format!("recorded as “{note}”");
+        out.text = t(lang, "date-preserved", &[("text", note.clone().into())]);
         out.kind = "preserved";
         return out;
     }
 
     // 4. Genuinely unknown.
-    out.text = "Date unknown".into();
+    out.text = t(lang, "date-unknown", &[]);
     out.kind = "unknown";
     out
 }
 
 /// Convenience: render `obj[key]` as a date, or the absent rendering.
 pub fn render_date_field(obj: &Value, key: &str) -> DateDisplay {
+    render_date_field_in(obj, key, crate::i18n::DEFAULT)
+}
+
+/// [`render_date_field`] in a given interface language.
+pub fn render_date_field_in(obj: &Value, key: &str, lang: &str) -> DateDisplay {
     match obj.get(key) {
-        Some(v) => render_date(v),
-        None => DateDisplay::absent(),
+        Some(v) => render_date_in(v, lang),
+        None => DateDisplay::absent_in(lang),
     }
 }
 
@@ -274,12 +309,12 @@ fn sort_key(value: &str) -> Option<i64> {
 }
 
 /// Render a nested range bound to prose, if it says anything at all.
-fn point_text(d: &AxgfDate) -> Option<String> {
+fn point_text(d: &AxgfDate, lang: &str) -> Option<String> {
     if let Some(v) = d.value.as_deref().filter(|v| !v.trim().is_empty()) {
         let p = d.precision.as_deref().unwrap_or("year");
-        let body = format_point(v, p);
+        let body = format_point(v, p, lang);
         return Some(if d.circa.unwrap_or(false) {
-            format!("circa {body}")
+            t(lang, "date-circa", &[("date", body.clone().into())])
         } else {
             body
         });
@@ -292,17 +327,33 @@ fn point_text(d: &AxgfDate) -> Option<String> {
 /// Degrades gracefully: a value with fewer parts than the precision claims is
 /// rendered at the precision it actually has, never padded into a date the
 /// source never asserted.
-fn format_point(value: &str, precision: &str) -> String {
+fn format_point(value: &str, precision: &str, lang: &str) -> String {
     let v = value.trim();
     match precision {
         "exact" => match split_ymd(v) {
-            (Some(y), Some(m), Some(d)) => format!("{d} {} {y}", month_name(m)),
-            (Some(y), Some(m), None) => format!("{} {y}", month_name(m)),
+            (Some(y), Some(m), Some(d)) => t(
+                lang,
+                "date-day-month-year",
+                &[
+                    ("day", d.into()),
+                    ("month", month_name(m, lang).into()),
+                    ("year", y.into()),
+                ],
+            ),
+            (Some(y), Some(m), None) => t(
+                lang,
+                "date-month-year",
+                &[("month", month_name(m, lang).into()), ("year", y.into())],
+            ),
             (Some(y), None, None) => y.to_string(),
             _ => v.to_string(),
         },
         "month" => match split_ymd(v) {
-            (Some(y), Some(m), _) => format!("{} {y}", month_name(m)),
+            (Some(y), Some(m), _) => t(
+                lang,
+                "date-month-year",
+                &[("month", month_name(m, lang).into()), ("year", y.into())],
+            ),
             (Some(y), None, _) => y.to_string(),
             _ => v.to_string(),
         },
@@ -311,24 +362,29 @@ fn format_point(value: &str, precision: &str) -> String {
             _ => v.to_string(),
         },
         "decade" => match split_ymd(v) {
-            (Some(y), _, _) => format!("the {}s", (y / 10) * 10),
-            _ => format!("the {v}s"),
+            (Some(y), _, _) => t(lang, "date-decade", &[("decade", ((y / 10) * 10).into())]),
+            _ => t(lang, "date-decade", &[("decade", v.into())]),
         },
         "quarter_century" => match split_ymd(v) {
             (Some(y), _, _) => {
                 let century = y / 100 + 1;
-                let quarter = ((y % 100) / 25) as usize;
-                let names = ["first", "second", "third", "fourth"];
-                format!(
-                    "the {} quarter of the {} century",
-                    names[quarter.min(3)],
-                    ordinal(century)
+                let quarter = ((y % 100) / 25) as usize + 1;
+                // The quarter and the century go through as numbers so that a
+                // locale can order and inflect them as its own grammar needs,
+                // rather than being handed a pre-built English phrase.
+                t(
+                    lang,
+                    "date-quarter-century",
+                    &[
+                        ("quarter", (quarter.min(4) as i64).into()),
+                        ("century", century.into()),
+                    ],
                 )
             }
             _ => v.to_string(),
         },
         "century" => match split_ymd(v) {
-            (Some(y), _, _) => format!("the {} century", ordinal(y / 100 + 1)),
+            (Some(y), _, _) => t(lang, "date-century", &[("century", (y / 100 + 1).into())]),
             _ => v.to_string(),
         },
         // "unknown" with a value present is contradictory; show the value
@@ -377,25 +433,28 @@ fn year_of(v: &str) -> String {
     best
 }
 
-fn month_name(m: u32) -> &'static str {
-    const MONTHS: [&str; 12] = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
-    MONTHS
-        .get(m.saturating_sub(1) as usize)
-        .copied()
-        .unwrap_or("")
+/// The month's name in the interface language.
+///
+/// A month name is interface text, not data: the *date* is 1923-04-12
+/// whatever language is showing it, and "April" is only this application's way
+/// of saying `04` out loud.
+fn month_name(m: u32, lang: &str) -> String {
+    if !(1..=12).contains(&m) {
+        return String::new();
+    }
+    t(lang, &format!("month-{m}"), &[])
+}
+
+/// Shorthand for a translation with arguments.
+fn t(lang: &str, key: &str, pairs: &[(&str, fluent::FluentValue<'_>)]) -> String {
+    if pairs.is_empty() {
+        return crate::i18n::translate(lang, key, None);
+    }
+    let mut args = fluent::FluentArgs::new();
+    for (k, v) in pairs {
+        args.set(*k, v.clone());
+    }
+    crate::i18n::translate(lang, key, Some(&args))
 }
 
 fn ordinal(n: i64) -> String {

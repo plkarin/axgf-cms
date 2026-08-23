@@ -1,0 +1,64 @@
+{# The language and theme selectors.
+   Plain GET forms with a submit button, so they work with scripting off — the
+   whole application does, and a preference control that needed JavaScript
+   would be the first thing to break it. Both post back to the page the reader
+   is on, so choosing a language does not also lose their place. #}
+
+{% macro selector() %}
+<details class="prefs">
+  <summary title="{{ t('prefs-title') }}" aria-label="{{ t('prefs-title') }}">
+    <span aria-hidden="true">🌐</span>
+    <span class="prefs-current">{{ current_locale.native_name }}</span>
+  </summary>
+  <div class="prefs-panel">
+
+    <form method="post" action="/prefs/language">
+      <input type="hidden" name="back" value="{{ back }}">
+      <fieldset>
+        <legend>{{ t("prefs-language") }}</legend>
+        <p class="hint">{{ t("prefs-language-note") }}</p>
+        <ul class="lang-list">
+          {% for l in locales %}
+          <li>
+            <label class="inline">
+              <input type="radio" name="lang" value="{{ l.tag }}"
+                     {{ "checked" if l.tag == lang }}>
+              <span lang="{{ l.tag }}" dir="{{ l.dir }}">{{ l.native_name }}</span>
+              <span class="small muted">{{ l.english_name }}</span>
+              {% if l.reviewed %}
+                <span class="badge reviewed">{{ t("prefs-reviewed") }}</span>
+              {% else %}
+                <span class="badge machine"
+                      title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine", coverage=l.coverage) }}</span>
+              {% endif %}
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+      </fieldset>
+    </form>
+
+    <form method="post" action="/prefs/theme">
+      <input type="hidden" name="back" value="{{ back }}">
+      <fieldset>
+        <legend>{{ t("prefs-theme") }}</legend>
+        <ul class="theme-list">
+          {% for th in themes %}
+          <li>
+            <label class="inline">
+              <input type="radio" name="theme" value="{{ th.id }}"
+                     {{ "checked" if th.id == theme_choice }}>
+              <span>{{ t(th.key) }}</span>
+              {% if th.note_key %}<span class="small muted">{{ t(th.note_key) }}</span>{% endif %}
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+      </fieldset>
+    </form>
+
+  </div>
+</details>
+{% endmacro %}

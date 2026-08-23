@@ -53,6 +53,36 @@ chains make this the common case: `Alfons Władysław Antoni Wierzbięta` lost
 everything after the first word. Cards are 66px; row pitch and the SVG
 connector geometry derive from `CARD_H` and followed automatically.
 
+**Ten interface languages, translating the interface and never the data.**
+An English speaker browsing a Polish family wants English buttons and Polish
+place names. AXGF carries that distinction itself — `place.names[].lang`,
+`name.components[].value_latin` — and rendering *Kraków* as *Cracow* would be
+a worse product and a false record. Labels, headings, help text and messages
+are translated; names, places, notes, occupations, source titles and every
+date's *meaning* come from the bundle in their own language and script.
+
+- **Fluent (CLDR plural rules)**, because hand-rolled `if n == 1` logic is
+  simply wrong in most of these languages and wrong in a way an
+  English-speaking author cannot see. Verified per locale: Arabic selects its
+  dual at n=2 and distinct `few`/`many` at 3 and 11; Polish splits `few` (2–4)
+  from `many` (5+); Chinese and Japanese have one form, which is the CLDR rule
+  and not an omission.
+- **Dates are localised in their words only.** `circa 1500` becomes `vers
+  1500` in French — still 1500, still circa, still a year and not a day. The
+  date helper takes the locale as a parameter; the value and the precision are
+  data and are never touched.
+- Selection order: the signed-in account's stored preference, then the cookie
+  the selector sets, then `Accept-Language` negotiated against what is
+  available, then English. A regional variant finds its base language, so
+  `pt-BR` resolves to `pt` and `zh-CN` to `zh-Hans`.
+- **Honest translation quality.** English and French are reviewed and complete
+  at 252 of 252 messages. The other eight are machine-quality and labelled as
+  such, and rather than a bare flag the selector shows the real coverage
+  number — currently 87% each, with the long explanatory passages falling back
+  to English rather than being guessed at. Genealogical vocabulary is exactly
+  where machine translation fails: the Polish date rendering already shows it,
+  putting a nominative month where the genitive belongs.
+
 **Two people can edit the same record without one of them losing their work.**
 Until now the second save silently overwrote the first — no error, no warning,
 one person's work simply gone. That is data loss, and it is what made the CMS

@@ -43,6 +43,9 @@ crc32fast = "1"
 argon2 = { version = "0.5.3", features = ["std"] }
 hmac = "0.12"
 time = { version = "0.3.55", default-features = false, features = ["formatting", "macros", "std"] }
+fluent = "0.17.0"
+unic-langid = "0.9.6"
+intl-memoizer = "0.5.3"
 
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get

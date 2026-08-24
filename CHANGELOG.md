@@ -12,6 +12,42 @@ seven themes.
 
 ### Added
 
+**Admin listings name what they list.** `/admin/family` showed 331 rows
+reading `(unnamed family, 1 children)` beside a UUID — a count, not a list. A
+family entity from a conversion carries no `name` of its own, so its label is
+now derived from the people in it:
+
+| | Label |
+|---|---|
+| both partners | `Leonard Kasprzyk & Janina Kasprzyk — 2 children` |
+| one partner | `Eugenia Oktawia Zboiński & [Unknown] — one child` |
+| children only | `Florian Klicki and 3 siblings — parents not recorded` |
+| nothing recorded | `Family with nobody recorded` |
+
+An explicit `name` still wins where one exists. The children-only case names
+the **eldest child** rather than saying "children of [unknown]", because every
+such family would otherwise carry identical words — which is the failure being
+fixed, not a smaller version of it — and a child's name is the one thing an
+administrator can search for.
+
+`1 children` is gone: counts go through Fluent's plural rules like everything
+else, so the same label is correct in Polish's three forms and Arabic's six.
+
+The same treatment reached the other listings whose summary named no people:
+
+- **event** — was `marriage — 24 August 1991` for all 141 rows; now
+  `Marriage — Adam Filip Pendzych & Katarzyna Elżbieta Grzybowski, 1820`.
+- **occupation** — was the title alone, and titles repeat across a family;
+  now `Adam Bochenek — lekarz, anatom, histolog, antropolog`.
+- **link** — was `godfather of → godchild of`, naming the relationship twice
+  and neither of the people; now `godfather of: Leonard → Janina`.
+- **source** — dropped the `(unknown)` that followed every title, and the
+  reliability now reads as words rather than an enum.
+- **document** — `document_type` reads as words, and a file with no filename
+  falls back to its caption before its id.
+
+**person** and **place** already carried a real name and were left alone.
+
 **The record reads in a 460px column.** `0.1.0` merged the identity view into
 `/tree` as a side panel and clamped the panel's grid track, but the content
 inside it was still written for a page column two to three times wider. At the

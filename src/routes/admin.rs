@@ -425,7 +425,7 @@ pub async fn list(
             .map(|(id, e)| {
                 json!({
                     "id": id,
-                    "summary": summarize(k, e),
+                    "summary": summarize(flat, chrome.lang, k, e),
                     "confidence": e.get("confidence").and_then(Value::as_f64)
                                    .map(view::Confidence::new),
                 })
@@ -1002,34 +1002,280 @@ fn field_views(kind: axgf_rs::EntityKind, entity: &Value) -> Vec<Value> {
 }
 
 /// A one-line human summary of an entity, for listings.
-fn summarize(kind: axgf_rs::EntityKind, e: &Value) -> String {
+/// A one-line label for a row in an admin listing.
+///
+/// # Why this needs the whole bundle
+///
+/// The listing's job is to let an administrator tell one row from its
+/// neighbours, and most of these entities carry no name of their own — a
+/// family, an event, an occupation and a link are all *about* people whose
+/// names live elsewhere in the bundle. Labelling them from their own fields
+/// produced 331 rows reading "(unnamed family, 1 children)", which is not a
+/// listing so much as a count.
+///
+/// So the resolver takes `flat` and looks the members up. That costs a map
+/// lookup per reference, which at this scale is nothing next to the render
+/// that follows.
+fn summarize(flat: &Value, lang: &str, kind: axgf_rs::EntityKind, e: &Value) -> String {
     use axgf_rs::EntityKind as K;
     let s = |k: &str| e.get(k).and_then(Value::as_str).unwrap_or("");
+    let t = |key: &str, args: &[(&str, fluent::FluentValue<'_>)]| -> String {
+        let mut a = fluent::FluentArgs::new();
+        for (k, v) in args {
+            a.set(*k, v.clone());
+        }
+        crate::i18n::translate(lang, key, Some(&a))
+    };
+    let unknown = || crate::i18n::translate(lang, crate::person::UNKNOWN_KEY, None);
+    let person = |id: &str| -> Option<String> {
+        flat.get("persons")
+            .and_then(|p| p.get(id))
+            .map(view::person_display_name)
+    };
+    let named = |id: &str| person(id).unwrap_or_else(unknown);
+
     match kind {
         K::Person => view::person_display_name(e),
-        K::Family => {
-            let n = s("name");
-            if n.is_empty() {
-                let kids = e
-                    .get("children")
-                    .and_then(Value::as_array)
-                    .map(|a| a.len())
-                    .unwrap_or(0);
-                format!("(unnamed family, {kids} children)")
-            } else {
-                n.to_string()
+        K::Family => family_label(flat, lang, e),
+
+        // An event is a thing that happened *to people*. The category and the
+        // date alone gave 141 rows that mostly read "marriage — <date>".
+        K::Event => {
+            let category = crate::i18n::vocab(lang, "event-category", s("category"));
+            let people: Vec<String> = e
+                .get("participants")
+                .and_then(Value::as_array)
+                .map(|ps| {
+                    ps.iter()
+                        .filter(|p| p.get("entity_type").and_then(Value::as_str) == Some("person"))
+                        .filter_map(|p| p.get("entity_id").and_then(Value::as_str))
+                        .filter_map(person)
+                        .collect()
+                })
+                .unwrap_or_default();
+            let date = view::render_date_field_in(e, "date", lang).text;
+            let who = match people.len() {
+                0 => None,
+                1 => Some(people[0].clone()),
+                2 => Some(t(
+                    "event-two-people",
+                    &[
+                        ("a", people[0].clone().into()),
+                        ("b", people[1].clone().into()),
+                    ],
+                )),
+                n => Some(t(
+                    "event-more-people",
+                    &[
+                        ("a", people[0].clone().into()),
+                        ("b", people[1].clone().into()),
+                        ("others", ((n - 2) as i64).into()),
+                    ],
+                )),
+            };
+            match who {
+                Some(who) => t(
+                    "event-label",
+                    &[
+                        ("category", category.into()),
+                        ("who", who.into()),
+                        ("date", date.into()),
+                    ],
+                ),
+                None => t(
+                    "event-label-nobody",
+                    &[("category", category.into()), ("date", date.into())],
+                ),
             }
         }
-        K::Event => {
-            let c = s("category");
-            let d = view::render_date_field(e, "date");
-            format!("{c} — {}", d.text)
+
+        // "godfather of → godchild of" named the relationship twice and
+        // neither of the people it holds.
+        K::Link => {
+            let end = |k: &str| {
+                e.get(k)
+                    .filter(|v| v.get("entity_type").and_then(Value::as_str) == Some("person"))
+                    .and_then(|v| v.get("entity_id"))
+                    .and_then(Value::as_str)
+                    .map(named)
+                    .unwrap_or_else(unknown)
+            };
+            t(
+                "link-label",
+                &[
+                    ("label", s("label").into()),
+                    ("from", end("from").into()),
+                    ("to", end("to").into()),
+                ],
+            )
         }
-        K::Link => format!("{} → {}", s("label"), s("label_reverse")),
-        K::Occupation => s("title").to_string(),
-        K::Source => format!("{} ({})", s("title"), s("reliability")),
+
+        // Occupation titles repeat across a family — several people are a
+        // "rolnik" — so the title alone does not identify the row.
+        K::Occupation => {
+            let who = s("person_id");
+            let title = s("title");
+            if who.is_empty() {
+                return title.to_string();
+            }
+            t(
+                "occupation-label",
+                &[("who", named(who).into()), ("title", title.into())],
+            )
+        }
+
+        K::Source => {
+            let title = s("title");
+            let rel = s("reliability");
+            // "(unknown)" after every title is noise, not information.
+            if rel.is_empty() || rel == "unknown" {
+                t("source-label-plain", &[("title", title.into())])
+            } else {
+                t(
+                    "source-label",
+                    &[
+                        ("title", title.into()),
+                        (
+                            "reliability",
+                            crate::i18n::vocab(lang, "reliability", rel).into(),
+                        ),
+                    ],
+                )
+            }
+        }
+
         K::Place => view::place_name(e),
-        K::Document => format!("{} — {}", s("filename"), s("document_type")),
+
+        K::Document => {
+            let kind_name = crate::i18n::vocab(lang, "document-type", s("document_type"));
+            let filename = s("filename").trim();
+            let caption = s("caption").trim();
+            let shown = if !filename.is_empty() {
+                filename
+            } else {
+                caption
+            };
+            if shown.is_empty() {
+                t("document-label-untitled", &[("type", kind_name.into())])
+            } else {
+                t(
+                    "document-label",
+                    &[("filename", shown.into()), ("type", kind_name.into())],
+                )
+            }
+        }
+    }
+}
+
+/// A family's label, derived from the people in it.
+///
+/// A family entity in a converted bundle carries a `union` and a `children`
+/// list and nothing else — no name, no dates. The rule, in order:
+///
+/// 1. both partners known — "Leonard Kasprzyk & Janina Kasprzyk";
+/// 2. one partner — the other reads as unknown rather than being omitted,
+///    because "married to somebody we have not recorded" is a fact;
+/// 3. no partners at all — name the **eldest child** and count the rest.
+///    "Children of [unknown] (4)" was the alternative and it is the wrong
+///    one: every such family would carry identical words, which is exactly
+///    the failure this function exists to fix. A child's name is the one
+///    thing an administrator can actually search for.
+/// 4. nothing recorded — say so, and let the id column identify the row.
+fn family_label(flat: &Value, lang: &str, e: &Value) -> String {
+    let t = |key: &str, args: &[(&str, fluent::FluentValue<'_>)]| -> String {
+        let mut a = fluent::FluentArgs::new();
+        for (k, v) in args {
+            a.set(*k, v.clone());
+        }
+        crate::i18n::translate(lang, key, Some(&a))
+    };
+    // An explicit name always wins: if somebody troubled to write one, it is
+    // better than anything derived.
+    if let Some(name) = e
+        .get("name")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|n| !n.is_empty())
+    {
+        return name.to_string();
+    }
+
+    let person = |id: &str| -> Option<String> {
+        flat.get("persons")
+            .and_then(|p| p.get(id))
+            .map(view::person_display_name)
+    };
+    let partners: Vec<String> = e
+        .get("union")
+        .and_then(|u| u.get("persons"))
+        .and_then(Value::as_array)
+        .map(|ps| {
+            ps.iter()
+                .filter_map(|p| p.get("person_id").and_then(Value::as_str))
+                .filter_map(person)
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let children = e.get("children").and_then(Value::as_array);
+    let child_count = children.map(|c| c.len()).unwrap_or(0) as i64;
+
+    match partners.len() {
+        0 => {}
+        1 => {
+            return t(
+                "family-label-half",
+                &[
+                    ("a", partners[0].clone().into()),
+                    (
+                        "unknown",
+                        crate::i18n::translate(lang, crate::person::UNKNOWN_KEY, None).into(),
+                    ),
+                    ("children", child_count.into()),
+                ],
+            )
+        }
+        _ => {
+            return t(
+                "family-label-couple",
+                &[
+                    ("a", partners[0].clone().into()),
+                    ("b", partners[1].clone().into()),
+                    ("children", child_count.into()),
+                ],
+            )
+        }
+    }
+
+    // No partners. Name a child — the eldest the record can identify, so the
+    // same family always labels itself the same way.
+    let eldest = children.and_then(|cs| {
+        let mut ordered: Vec<(i64, String)> = cs
+            .iter()
+            .filter_map(|c| {
+                let id = c.get("person_id").and_then(Value::as_str)?;
+                let order = c
+                    .get("birth_order")
+                    .and_then(Value::as_i64)
+                    .unwrap_or(i64::MAX);
+                Some((order, id.to_string()))
+            })
+            .collect();
+        // Birth order where stated, then the bundle's own order, so the label
+        // does not move when the map is iterated differently.
+        ordered.sort_by_key(|a| a.0);
+        ordered.into_iter().find_map(|(_, id)| person(&id))
+    });
+
+    match eldest {
+        Some(first) => t(
+            "family-label-children",
+            &[
+                ("first", first.into()),
+                ("others", (child_count - 1).max(0).into()),
+            ],
+        ),
+        None => crate::i18n::translate(lang, "family-label-empty", None),
     }
 }
 

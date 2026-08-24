@@ -731,3 +731,65 @@ visibility-public = public
 visibility-members = membres
 visibility-contributors = contributeurs
 visibility-private = privé
+
+## Résumés des listes d'administration
+
+family-label-couple = { $children ->
+        [0] { $a } & { $b }
+        [one] { $a } & { $b } — un enfant
+       *[other] { $a } & { $b } — { $children } enfants
+    }
+family-label-half = { $children ->
+        [0] { $a } & { $unknown }
+        [one] { $a } & { $unknown } — un enfant
+       *[other] { $a } & { $unknown } — { $children } enfants
+    }
+family-label-children = { $others ->
+        [0] { $first } — parents non enregistrés
+        [one] { $first } et un frère ou une sœur — parents non enregistrés
+       *[other] { $first } et { $others } frères et sœurs — parents non enregistrés
+    }
+family-label-empty = Famille sans personne enregistrée
+
+event-label = { $category } — { $who }, { $date }
+event-label-nobody = { $category } — { $date }
+event-two-people = { $a } & { $b }
+event-more-people = { $a } & { $b } et { $others ->
+        [one] une autre personne
+       *[other] { $others } autres personnes
+    }
+
+link-label = { $label } : { $from } → { $to }
+occupation-label = { $who } — { $title }
+source-label = { $title } — { $reliability }
+source-label-plain = { $title }
+document-label = { $filename } — { $type }
+document-label-untitled = { $type } sans titre
+list-unnamed = { $kind } sans nom
+
+event-category-birth = Naissance
+event-category-death = Décès
+event-category-marriage = Mariage
+event-category-divorce = Divorce
+event-category-baptism = Baptême
+event-category-burial = Inhumation
+event-category-immigration = Immigration
+event-category-emigration = Émigration
+event-category-census = Recensement
+event-category-residence = Résidence
+event-category-military = Service militaire
+event-category-education = Études
+event-category-other = Événement
+
+reliability-primary = source primaire
+reliability-secondary = source secondaire
+reliability-tertiary = source tertiaire
+reliability-recollection = souvenir
+reliability-unknown = fiabilité inconnue
+
+document-type-photo = photographie
+document-type-certificate = acte
+document-type-letter = lettre
+document-type-record = registre
+document-type-newspaper = coupure de presse
+document-type-other = document

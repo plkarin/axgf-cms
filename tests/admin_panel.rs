@@ -4,6 +4,7 @@ mod common;
 
 use axum::http::StatusCode;
 use common::*;
+use serde_json::Value;
 
 const ADMIN_GETS: [&str; 11] = [
     "/admin",
@@ -461,4 +462,114 @@ fn urlencode(s: &str) -> String {
         }
     }
     out
+}
+
+/// A listing row must tell itself apart from its neighbours.
+///
+/// The bundle here is shaped after what a GEDCOM conversion actually produces:
+/// families with no `name` of their own, carrying only a union and a children
+/// list. Before this, all four rows read "(unnamed family, N children)" and
+/// the id column was a UUID, so the page was a count rather than a list.
+#[tokio::test]
+async fn a_family_is_labelled_by_the_people_in_it() {
+    use serde_json::json;
+
+    let dir = scratch("labels-src");
+    let path = dir.join("l.axgf");
+    let p = |id: &str, name: &str| {
+        json!({
+            "id": id, "type": "person", "axgf_version": "1.0",
+            "identity": {
+                "name": {"display": name, "components": [
+                    {"type": "given_name", "value": name, "order": 1}]},
+                "gender": {"value": "F"}, "is_living": false,
+                "visibility": "public"}
+        })
+    };
+    let ids: Vec<String> = (1..=8)
+        .map(|n| format!("{n}{n}111111-1111-4111-8111-111111111111"))
+        .collect();
+    let names = [
+        "Leonard Kasprzyk",
+        "Janina Kasprzyk",
+        "Marek Kasprzyk",
+        "Zofia Kasprzyk",
+        "Halina Nowak",
+        "Piotr Nowak",
+        "Ewa Nowak",
+        "Adam Nowak",
+    ];
+    let mut persons = serde_json::Map::new();
+    for (id, name) in ids.iter().zip(names) {
+        persons.insert(id.clone(), p(id, name));
+    }
+
+    let fam = |n: u8, partners: &[&String], kids: &[&String]| {
+        json!({
+            "id": format!("f{n}111111-1111-4111-8111-111111111111"),
+            "type": "family", "axgf_version": "1.0",
+            "union": {"type": "marriage",
+                      "persons": partners.iter().map(|id| json!({"person_id": id}))
+                                 .collect::<Vec<_>>()},
+            "children": kids.iter().enumerate()
+                          .map(|(i, id)| json!({"person_id": id, "birth_order": i + 1}))
+                          .collect::<Vec<_>>()
+        })
+    };
+    let flat = json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": Value::Object(persons),
+        "families": {
+            // both partners, two children
+            "f1111111-1111-4111-8111-111111111111":
+                fam(1, &[&ids[0], &ids[1]], &[&ids[2], &ids[3]]),
+            // both partners, exactly one child — "1 children" was the bug
+            "f2111111-1111-4111-8111-111111111111":
+                fam(2, &[&ids[4], &ids[5]], &[&ids[6]]),
+            // one partner only
+            "f3111111-1111-4111-8111-111111111111":
+                fam(3, &[&ids[7]], &[]),
+            // no partners: children alone
+            "f4111111-1111-4111-8111-111111111111":
+                fam(4, &[], &[&ids[2], &ids[3], &ids[6]])
+        },
+        "events": {}, "links": {}, "occupations": {},
+        "sources": {}, "places": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    let (app, _p) = app_with_bundle("labels", &path);
+
+    let body = body_string(get_admin(&app, "/admin/family").await).await;
+
+    assert!(
+        body.contains("Leonard Kasprzyk &amp; Janina Kasprzyk — 2 children"),
+        "both partners are named: {body}"
+    );
+    assert!(
+        body.contains("Halina Nowak &amp; Piotr Nowak — one child"),
+        "and the plural comes from the catalogue, not from an `s`: {body}"
+    );
+    assert!(
+        !body.contains("1 children"),
+        "\"1 children\" is the bug this fixes"
+    );
+    assert!(
+        body.contains("Adam Nowak &amp; [Unknown]"),
+        "a missing partner is stated, not omitted — being married to somebody \
+         unrecorded is itself a fact: {body}"
+    );
+    assert!(
+        body.contains("Marek Kasprzyk and 2 siblings"),
+        "a family with no recorded parents is named by its eldest child, \
+         because \"children of [unknown]\" would read the same on every such \
+         row: {body}"
+    );
+    assert!(
+        !body.contains("unnamed family"),
+        "no row falls back to the placeholder when members are known"
+    );
 }

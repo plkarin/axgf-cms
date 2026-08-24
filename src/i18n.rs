@@ -361,6 +361,21 @@ fn lookup(tag: &str, key: &str, args: Option<&FluentArgs>) -> Option<String> {
     Some(out.into_owned())
 }
 
+/// Render one of the specification's enum values in the reader's language.
+///
+/// A value with no message falls back to itself with underscores opened up.
+/// That is deliberate: AXGF's vocabularies are open, and a bundle using a term
+/// this build has never seen should still render something true rather than a
+/// message id or a blank.
+pub fn vocab(lang: &str, family: &str, value: &str) -> String {
+    let key = format!("{family}-{value}");
+    let (text, fell_back) = translate_marked(lang, &key, None);
+    if text == key || (fell_back && !has_message(DEFAULT, &key)) {
+        return value.replace('_', " ");
+    }
+    text
+}
+
 /// Whether `tag` defines `key` itself, rather than inheriting it.
 pub fn has_message(tag: &str, key: &str) -> bool {
     catalog()

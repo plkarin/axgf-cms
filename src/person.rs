@@ -415,7 +415,7 @@ pub fn build_in(
         is_living,
         visibility: identity
             .and_then(|i| str_field(i, "visibility"))
-            .map(|v| vocab(lang, "visibility", &v)),
+            .map(|v| crate::i18n::vocab(lang, "visibility", &v)),
         birth,
         death,
         timeline,
@@ -435,21 +435,6 @@ pub fn build_in(
         has_timeline,
         showcase_notes,
     })
-}
-
-/// Render one of the specification's enum values in the reader's language.
-///
-/// A value with no message falls back to itself with underscores opened up.
-/// That is deliberate: AXGF's vocabularies are open, and a bundle using a term
-/// this build has never seen should still render something true rather than a
-/// message id or a blank.
-fn vocab(lang: &str, family: &str, value: &str) -> String {
-    let key = format!("{family}-{value}");
-    let (text, fell_back) = crate::i18n::translate_marked(lang, &key, None);
-    if text == key || (fell_back && !crate::i18n::has_message(crate::i18n::DEFAULT, &key)) {
-        return value.replace('_', " ");
-    }
-    text
 }
 
 /// Read a non-empty string field.
@@ -781,7 +766,7 @@ impl Ctx<'_> {
                     .iter()
                     .filter_map(|c| {
                         let value = str_field(c, "value")?;
-                        let kind = vocab(
+                        let kind = crate::i18n::vocab(
                             self.lang,
                             "name-part",
                             &str_field(c, "type").unwrap_or_else(|| "part".into()),
@@ -798,7 +783,7 @@ impl Ctx<'_> {
         NameView {
             display,
             latin,
-            kind: vocab(
+            kind: crate::i18n::vocab(
                 self.lang,
                 "name-type",
                 &str_field(n, "type").unwrap_or_else(|| {

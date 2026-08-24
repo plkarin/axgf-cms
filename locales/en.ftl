@@ -759,3 +759,80 @@ visibility-public = public
 visibility-members = members
 visibility-contributors = contributors
 visibility-private = private
+
+## Admin list summaries
+#
+# A row in these listings has to be told apart from its neighbours at a
+# glance. A family entity usually has no `name` of its own — the converter
+# does not invent one — so its label is derived from the people in it. Each
+# label is one whole message rather than fragments joined in code, because
+# word order and the placement of a count are a translator's decision.
+
+family-label-couple = { $children ->
+        [0] { $a } & { $b }
+        [one] { $a } & { $b } — one child
+       *[other] { $a } & { $b } — { $children } children
+    }
+family-label-half = { $children ->
+        [0] { $a } & { $unknown }
+        [one] { $a } & { $unknown } — one child
+       *[other] { $a } & { $unknown } — { $children } children
+    }
+# Naming the eldest child rather than saying "children of [unknown]": the
+# point of the label is to tell one row from another, and every childless-
+# parent family would otherwise carry the same words.
+family-label-children = { $others ->
+        [0] { $first } — parents not recorded
+        [one] { $first } and one sibling — parents not recorded
+       *[other] { $first } and { $others } siblings — parents not recorded
+    }
+family-label-empty = Family with nobody recorded
+
+event-label = { $category } — { $who }, { $date }
+event-label-nobody = { $category } — { $date }
+event-two-people = { $a } & { $b }
+event-more-people = { $a } & { $b } and { $others ->
+        [one] one other
+       *[other] { $others } others
+    }
+
+link-label = { $label }: { $from } → { $to }
+occupation-label = { $who } — { $title }
+source-label = { $title } — { $reliability }
+source-label-plain = { $title }
+document-label = { $filename } — { $type }
+document-label-untitled = Untitled { $type }
+list-unnamed = Unnamed { $kind }
+
+## Specification vocabularies used in listings
+#
+# Open vocabularies: a value with no message here renders as itself with its
+# underscores opened, so a bundle using a term this build has not seen still
+# reads as something true.
+
+event-category-birth = Birth
+event-category-death = Death
+event-category-marriage = Marriage
+event-category-divorce = Divorce
+event-category-baptism = Baptism
+event-category-burial = Burial
+event-category-immigration = Immigration
+event-category-emigration = Emigration
+event-category-census = Census
+event-category-residence = Residence
+event-category-military = Military service
+event-category-education = Education
+event-category-other = Event
+
+reliability-primary = primary source
+reliability-secondary = secondary source
+reliability-tertiary = tertiary source
+reliability-recollection = recollection
+reliability-unknown = reliability unknown
+
+document-type-photo = photograph
+document-type-certificate = certificate
+document-type-letter = letter
+document-type-record = record
+document-type-newspaper = newspaper clipping
+document-type-other = document

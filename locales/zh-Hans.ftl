@@ -53,8 +53,6 @@ tree-filter-placeholder = 输入姓名…
 tree-centre-on = 以此人为中心
 tree-depth = 上下各几代
 tree-show = 显示
-tree-whole-tree = 整棵家谱
-tree-focused = 聚焦视图
 tree-hidden-notice = { $n ->
        *[other] 有 { $n } 人只显示轮廓，不显示详情
     }
@@ -64,9 +62,6 @@ tree-hidden-sign-in = 如果您有账户，请登录。
 tree-restricted-card = 此人的记录对您不可见
 tree-empty = 此文件中没有可绘制的人物。
 tree-unplaced = 不属于任何已记录的家庭
-tree-legend-confidence = 线条的不透明度表示确信程度
-tree-recentre = 以此为中心重排家谱
-tree-open-record = 打开完整记录
 
 record-identity = 身份
 record-life-events = 生平事件
@@ -91,27 +86,19 @@ record-no = 否
 record-name-type = 姓名类型
 record-name-used = 使用期间
 record-name-evidence = 证据
-record-name-primary = 主要姓名
 record-transliteration = 拉丁转写
 record-born = 出生
 record-died = 去世
 record-parents = 父母
 record-siblings = 兄弟姐妹
 record-children = 子女
-record-spouse = 配偶
-record-union-ended = 结束
-record-no-date = 日期不详
 record-unknown-person = [不详]
 record-restricted-person = 不公开
 record-restricted-title = 此人的记录对您不可见
 record-absent-person-title = 此文件提及但未收录此人
 record-confidence = 确信程度
 record-source = 来源
-record-role = 身份
 record-download = 下载
-record-attach-file = 附加文件
-record-attach-hint = 最大 { $mb } MB。图像显示在图库中；其余以列表加下载链接呈现。
-record-no-documents = 此记录未附任何文件。
 
 access-restricted-title = 对您不可见
 access-restricted-anonymous = 此记录并非公开。请登录以确认您的账户是否可以读取。
@@ -168,18 +155,15 @@ admin-cancel = 取消
 admin-delete = 删除
 admin-not-set = — 未设置 —
 admin-edit = 编辑
-admin-search = 搜索
 admin-page-of = 第 { $page } 页，共 { $pages } 页
 admin-previous = 上一页
 admin-next = 下一页
-admin-nothing-here = 此文件中尚无此类记录。
 admin-saved = 已保存为版本 { $version } — { $summary }
 admin-not-saved = 未保存
 admin-created = 已创建
 admin-not-created = 未创建
 admin-deleted = 已删除
 admin-not-deleted = 未删除 — 文件未改动
-admin-delete-policy = 引用完整性
 admin-what-changed = 改动内容
 admin-field = 字段
 admin-from = 原值
@@ -236,25 +220,14 @@ conflict-discard = 放弃我的修改并重新开始
 conflict-their-version = { $who } 的版本，即文件当前所存
 conflict-history-of = 此记录（{ $kind }）的修改历史
 
-home-lede = { $family } — 一个 .axgf 文件中的 { $total ->
-       *[other] { $total } 条记录
-    }。
 home-why-title = 为何选择 AXGF
-home-what-this-bundle-has = 此文件实际包含的内容
-home-browse-tree = 浏览家谱
-home-convert-gedcom = 转换一个 GEDCOM
-home-see-example = 查看示例
 
 convert-title = 将 GEDCOM 转换为 AXGF
-convert-choose-file = GEDCOM 文件
 convert-submit = 转换
 convert-result-title = 转换结果
 convert-download = 下载 .axgf 文件
-convert-diagnostics = 转换器的报告
-convert-unchanged-note = 转换绝不会改动本站正在提供的文件。
 
 completeness-title = 文件完整度
-completeness-recorded = 已记录
 completeness-empty = 空白
 completeness-spec-field = AXGF 字段
 

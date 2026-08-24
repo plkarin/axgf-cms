@@ -242,16 +242,12 @@ pub async fn login(
                 .into_response();
         }
         state.sessions().record_failure(&client);
-        return login_refused(&state, &chrome, "That token is not correct.");
+        return login_refused(&state, &chrome, &chrome.t("login-token-wrong"));
     }
 
     let username = f.username.trim().to_ascii_lowercase();
     if state.sessions().is_throttled(&client) || state.sessions().is_throttled(&username) {
-        return login_refused(
-            &state,
-            &chrome,
-            "Too many failed attempts. Wait a few minutes and try again.",
-        );
+        return login_refused(&state, &chrome, &chrome.t("login-throttled"));
     }
 
     let user = state.acl_read(|acl| acl.active(&username).cloned());
@@ -271,7 +267,7 @@ pub async fn login(
         if !username.is_empty() {
             state.sessions().record_failure(&username);
         }
-        return login_refused(&state, &chrome, "That username and password do not match.");
+        return login_refused(&state, &chrome, &chrome.t("login-wrong"));
     };
 
     state.sessions().clear_failures(&client);
@@ -610,11 +606,11 @@ pub async fn create(
     result_page(
         &chrome,
         &kind,
-        if out.applied {
-            "Created"
+        &chrome.t(if out.applied {
+            "admin-created"
         } else {
-            "Not created"
-        },
+            "admin-not-created"
+        }),
         &out,
         if out.applied && !new_id.is_empty() {
             Some(format!("/admin/{kind}/{new_id}/edit"))
@@ -679,9 +675,12 @@ pub async fn update(
         } => result_page(
             &chrome,
             &kind,
-            &format!(
-                "Saved as version {version_num} — {}",
-                crate::diff::summarise(&changes)
+            &chrome.t_args(
+                "admin-saved",
+                &[
+                    ("version", (version_num as i64).into()),
+                    ("summary", crate::diff::summarise(&changes).into()),
+                ],
             ),
             &MutationOutcome {
                 applied: true,
@@ -693,7 +692,7 @@ pub async fn update(
         crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
             &chrome,
             &kind,
-            "Not saved",
+            &chrome.t("admin-not-saved"),
             &MutationOutcome {
                 applied: false,
                 diagnostics,
@@ -887,11 +886,11 @@ pub async fn delete(
     result_page(
         &chrome,
         &kind,
-        if out.applied {
-            "Deleted"
+        &chrome.t(if out.applied {
+            "admin-deleted"
         } else {
-            "Not deleted — the bundle is unchanged"
-        },
+            "admin-not-deleted"
+        }),
         &out,
         Some(format!("/admin/{kind}")),
     )
@@ -906,7 +905,7 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
         "admin_result.html",
         context! {
             nav => "admin",
-            title => "Validation report",
+            title => chrome.t("admin-validation-report"),
             summary => summary_line(&env.data, &[
                 ("errors", "error"), ("warnings", "warning"), ("infos", "note")]),
             diagnostics => diagnostics_json(&env.diagnostics),
@@ -938,7 +937,11 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
         "admin_result.html",
         context! {
             nav => "admin",
-            title => if out.applied { "Deduplication complete" } else { "Deduplication refused" },
+            title => chrome.t(if out.applied {
+                "admin-dedup-complete"
+            } else {
+                "admin-dedup-refused"
+            }),
             summary,
             diagnostics => diagnostics_json(&out.diagnostics),
             back => "/admin",
@@ -1498,7 +1501,15 @@ pub async fn create_user(
 
     let role = match crate::acl::Role::parse(&f.role) {
         Some(r) => r,
-        None => return render_users(&state, &chrome, &viewer, Some("Pick a role."), None),
+        None => {
+            return render_users(
+                &state,
+                &chrome,
+                &viewer,
+                Some(&chrome.t("accounts-pick-role")),
+                None,
+            )
+        }
     };
     // A generated password when the field is left blank, so the common case —
     // an administrator setting up a relative — never invites a weak one.
@@ -1518,7 +1529,7 @@ pub async fn create_user(
             &state,
             &chrome,
             &viewer,
-            Some("That username is taken."),
+            Some(&chrome.t("accounts-username-taken")),
             None,
         );
     }
@@ -1534,18 +1545,21 @@ pub async fn create_user(
             &state,
             &chrome,
             &viewer,
-            Some(&format!("Not saved: {e}")),
+            Some(&chrome.t_args("accounts-not-saved", &[("error", e.to_string().into())])),
             None,
         );
     }
 
     let notice = if generated {
-        format!(
-            "Created {username}. Their password is {password} — it is shown \
-             once and stored only as an Argon2id hash, so pass it on now."
+        chrome.t_args(
+            "accounts-created-with-password",
+            &[
+                ("username", username.clone().into()),
+                ("password", password.clone().into()),
+            ],
         )
     } else {
-        format!("Created {username}.")
+        chrome.t_args("accounts-created", &[("username", username.clone().into())])
     };
     render_users(&state, &chrome, &viewer, None, Some(&notice))
 }
@@ -1579,7 +1593,13 @@ pub async fn update_user(
     let (viewer, chrome) = guard_admin!(state, headers);
 
     let Some(existing) = state.acl_read(|a| a.by_id(&id).cloned()) else {
-        return render_users(&state, &chrome, &viewer, Some("No such account."), None);
+        return render_users(
+            &state,
+            &chrome,
+            &viewer,
+            Some(&chrome.t("accounts-no-such")),
+            None,
+        );
     };
     let role = crate::acl::Role::parse(&f.role).unwrap_or(existing.role);
     let disabling = f.status == "disabled";
@@ -1596,12 +1616,7 @@ pub async fn update_user(
             &state,
             &chrome,
             &viewer,
-            Some(
-                "That is the only active administrator. Promote somebody else \
-                 first — an installation with no administrator can only be \
-                 recovered by editing the .acl file or using the emergency \
-                 token.",
-            ),
+            Some(&chrome.t("accounts-last-admin")),
             None,
         );
     }
@@ -1643,7 +1658,7 @@ pub async fn update_user(
             &state,
             &chrome,
             &viewer,
-            Some(&format!("Not saved: {e}")),
+            Some(&chrome.t_args("accounts-not-saved", &[("error", e.to_string().into())])),
             None,
         );
     }
@@ -1656,9 +1671,9 @@ pub async fn update_user(
         &chrome,
         &viewer,
         None,
-        Some(&format!(
-            "Updated {}. Any session it had open has been signed out.",
-            existing.username
+        Some(&chrome.t_args(
+            "accounts-updated",
+            &[("username", existing.username.clone().into())],
         )),
     )
 }

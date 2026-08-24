@@ -54,8 +54,6 @@ tree-filter-placeholder = Escreva um nome…
 tree-centre-on = Centrar em
 tree-depth = Gerações para cada lado
 tree-show = Mostrar
-tree-whole-tree = Árvore inteira
-tree-focused = Vista centrada
 tree-hidden-notice = { $n ->
         [one] Uma pessoa é mostrada sem os seus dados
        *[other] { $n } pessoas são mostradas sem os seus dados
@@ -66,9 +64,6 @@ tree-hidden-sign-in = Entre se tiver uma conta.
 tree-restricted-card = A ficha desta pessoa não lhe é visível
 tree-empty = Este ficheiro não contém ninguém para desenhar.
 tree-unplaced = Em nenhuma família registada
-tree-legend-confidence = A opacidade da linha indica a certeza
-tree-recentre = Centrar a árvore aqui
-tree-open-record = Abrir a ficha completa
 
 record-identity = Identidade
 record-life-events = Acontecimentos da vida
@@ -93,27 +88,19 @@ record-no = não
 record-name-type = Tipo de nome
 record-name-used = Usado
 record-name-evidence = Prova
-record-name-primary = nome principal
 record-transliteration = Transliteração latina
 record-born = Nascido/a
 record-died = Falecido/a
 record-parents = Pais
 record-siblings = Irmãos
 record-children = Filhos
-record-spouse = Parceiro
-record-union-ended = Terminada
-record-no-date = Data desconhecida
 record-unknown-person = [Desconhecido]
 record-restricted-person = Privado
 record-restricted-title = A ficha desta pessoa não lhe é visível
 record-absent-person-title = Mencionado por este ficheiro mas dele ausente
 record-confidence = Certeza
 record-source = Fonte
-record-role = Papel
 record-download = Descarregar
-record-attach-file = Anexar um ficheiro
-record-attach-hint = Até { $mb } MB. As imagens são mostradas na galeria; tudo o resto é listado com uma ligação para descarregar.
-record-no-documents = Não há ficheiros anexados a esta ficha.
 
 access-restricted-title = Não visível para si
 access-restricted-anonymous = Esta ficha não é pública. Entre para ver se a sua conta a pode ler.
@@ -171,18 +158,15 @@ admin-cancel = Cancelar
 admin-delete = Eliminar
 admin-not-set = — não definido —
 admin-edit = Editar
-admin-search = Procurar
 admin-page-of = Página { $page } de { $pages }
 admin-previous = Anterior
 admin-next = Seguinte
-admin-nothing-here = Ainda não há nada deste tipo registado neste ficheiro.
 admin-saved = Guardado como versão { $version } — { $summary }
 admin-not-saved = Não guardado
 admin-created = Criado
 admin-not-created = Não criado
 admin-deleted = Eliminado
 admin-not-deleted = Não eliminado — o ficheiro está inalterado
-admin-delete-policy = Integridade referencial
 admin-what-changed = o que mudou
 admin-field = Campo
 admin-from = De
@@ -240,26 +224,14 @@ conflict-discard = Descartar a minha e recomeçar
 conflict-their-version = A versão de { $who }, tal como o ficheiro a contém agora
 conflict-history-of = Histórico desta entidade ({ $kind })
 
-home-lede = { $family } — { $total ->
-        [one] uma entidade
-       *[other] { $total } entidades
-    } num único ficheiro .axgf.
 home-why-title = Porquê AXGF
-home-what-this-bundle-has = O que este ficheiro contém realmente
-home-browse-tree = Percorrer a árvore
-home-convert-gedcom = Converter um GEDCOM
-home-see-example = Ver um exemplo
 
 convert-title = Converter GEDCOM em AXGF
-convert-choose-file = Ficheiro GEDCOM
 convert-submit = Converter
 convert-result-title = Resultado da conversão
 convert-download = Descarregar o ficheiro .axgf
-convert-diagnostics = O que o conversor comunicou
-convert-unchanged-note = A conversão nunca toca no ficheiro servido por este sítio.
 
 completeness-title = Completude do ficheiro
-completeness-recorded = registado
 completeness-empty = vazio
 completeness-spec-field = Campo AXGF
 

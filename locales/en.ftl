@@ -64,8 +64,6 @@ tree-filter-placeholder = Type a name…
 tree-centre-on = Centre on
 tree-depth = Generations each way
 tree-show = Show
-tree-whole-tree = Whole tree
-tree-focused = Focused
 tree-hidden-notice = { $n ->
         [one] One person is shown without their details
        *[other] { $n } people are shown without their details
@@ -74,12 +72,8 @@ tree-hidden-because-role = , because their visibility is above what your account
 tree-hidden-because-anonymous = , because they are not public.
 tree-hidden-sign-in = Sign in if you have an account.
 tree-restricted-card = This person's record is not visible to you
-tree-width-warning = This canvas is { $width } pixels wide. Nobody scrolls that far to find an ancestor — the focused view exists for this reason.
 tree-empty = This bundle contains nobody to draw.
 tree-unplaced = In no recorded family
-tree-legend-confidence = Line opacity is confidence
-tree-recentre = Centre the tree here
-tree-open-record = Open the full record
 
 ## The record
 
@@ -115,27 +109,19 @@ record-no = no
 record-name-type = Name type
 record-name-used = Used
 record-name-evidence = Evidence
-record-name-primary = primary name
 record-transliteration = Latin transliteration
 record-born = Born
 record-died = Died
 record-parents = Parents
 record-siblings = Siblings
 record-children = Children
-record-spouse = Partner
-record-union-ended = Ended
-record-no-date = Date unknown
 record-unknown-person = [Unknown]
 record-restricted-person = Private
 record-restricted-title = This person's record is not visible to you
 record-absent-person-title = Referenced by this bundle but not present in it
 record-confidence = Confidence
 record-source = Source
-record-role = Role
 record-download = Download
-record-attach-file = Attach a file
-record-attach-hint = Up to { $mb } MB. Images are shown in the gallery; everything else is listed with a download link.
-record-no-documents = No files are attached to this record.
 
 ## Access
 
@@ -221,18 +207,15 @@ admin-cancel = Cancel
 admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit
-admin-search = Search
 admin-page-of = Page { $page } of { $pages }
 admin-previous = Previous
 admin-next = Next
-admin-nothing-here = Nothing of this kind is recorded in this bundle yet.
 admin-saved = Saved as version { $version } — { $summary }
 admin-not-saved = Not saved
 admin-created = Created
 admin-not-created = Not created
 admin-deleted = Deleted
 admin-not-deleted = Not deleted — the bundle is unchanged
-admin-delete-policy = Referential integrity
 admin-what-changed = what changed
 admin-field = Field
 admin-from = From
@@ -307,30 +290,18 @@ conflict-history-of = This { $kind }'s history
 
 ## Home
 
-home-lede = { $family } — { $total ->
-        [one] one entity
-       *[other] { $total } entities
-    } in one .axgf bundle.
 home-why-title = Why AXGF
-home-what-this-bundle-has = What this bundle actually contains
-home-browse-tree = Browse the tree
-home-convert-gedcom = Convert a GEDCOM
-home-see-example = See an example
 
 ## Conversion
 
 convert-title = Convert GEDCOM to AXGF
-convert-choose-file = GEDCOM file
 convert-submit = Convert
 convert-result-title = Conversion result
 convert-download = Download the .axgf bundle
-convert-diagnostics = What the converter reported
-convert-unchanged-note = Conversion never touches the bundle this site is serving.
 
 ## Completeness
 
 completeness-title = Bundle completeness
-completeness-recorded = recorded
 completeness-empty = empty
 completeness-spec-field = AXGF field
 
@@ -397,8 +368,6 @@ error-unknown-kind-detail = “{ $kind }” is not an entity kind. This bundle h
 error-io-title = Could not write the bundle
 error-io-detail = { $error }. The bundle on disk is unchanged.
 error-upload-too-large = That file is larger than the { $mb } MB limit. Nothing was stored, and the bundle is unchanged.
-error-upload-empty = That upload carried no bytes. Nothing was stored.
-error-upload-type = This archive does not store files of that type. Nothing was stored.
 error-upload-refused = The library refused the document: { $reason }. The bundle is unchanged.
 error-back-to-person = Back to the record
 error-no-such-person-to-attach = This bundle contains no person with that id, so there is nothing to attach a document to.
@@ -436,10 +405,6 @@ tree-no-people-cta = Convert a GEDCOM to fill it.
 tree-nobody-selected = Nobody to draw for that selection.
 tree-nobody-selected-cta = Start from the default view.
 tree-click-hint = Click any card to open that person's record in the panel; “Centre the tree here” in the panel re-roots the view.
-tree-filter-matches = { $n ->
-        [one] one match
-       *[other] { $n } matches
-    }
 tree-edge-union = A recorded union
 tree-edge-parentage = A recorded parentage
 
@@ -654,3 +619,143 @@ completeness-shape-preserved = preserved
 completeness-shape-preserved-note = unparsable text, kept verbatim
 completeness-shape-unknown = unknown
 completeness-shape-unknown-note = recorded as not known
+
+## Conversion page
+
+convert-page-title = Convert a GEDCOM file
+convert-lede = Upload a GEDCOM 5.5.1 file and get an .axgf bundle back. Nothing is stored and the bundle this site serves is not touched — conversion here is a standalone utility.
+convert-file-label = GEDCOM file (.ged)
+convert-file-hint = Up to { $mb } MB. A 767-person file is about 320 KB.
+convert-confidence-label = Default confidence
+convert-confidence-hint = GEDCOM does not record how sure a genealogist was, so every imported fact needs a starting confidence. This is that value — the honest reading is “this came from a GEDCOM and has not been reviewed since”.
+convert-lang-label = Language for place names
+convert-lang-hint = A BCP 47 tag such as en, fr or pl. AXGF places carry names in several languages; this tags the ones the GEDCOM supplies.
+convert-what-you-get = What you get that the GEDCOM did not have
+convert-what-you-get-1 = Every imported fact gains a confidence score, so later editing can record doubt instead of discarding it. Dates keep their shape: circa 1500, before 1430 and between 1920 and 1925 stay distinct statements, and a date string no converter could parse is preserved verbatim as a note rather than dropped. Occupations become spans with a start and an end. Places become reusable entities that can carry border history.
+convert-no-way-back = Converting back to GEDCOM is not offered. GEDCOM has nowhere to put confidence, non-family relationships, occupation spans or preserved uncertainty, so the trip back is lossy by nature and is not a goal of this project.
+
+## Conversion result
+
+convert-failed = Conversion failed
+convert-try-another = Try another file
+convert-converted = Converted { $filename }
+convert-result-lede = { $total ->
+        [one] One entity
+       *[other] { $total } entities
+    }, { $size } KB. Imported at confidence { $confidence } with place names tagged { $lang }. The bundle this site serves was not modified.
+convert-produced = What the conversion produced
+convert-completeness-title = What your GEDCOM carried, and what AXGF has room for
+convert-completeness-note = Counted from the file you just uploaded. Where a row below is empty, it is because GEDCOM had nowhere to put that information — not because the conversion lost it.
+convert-skipped-title = { $n ->
+        [one] One tag that carried no usable data
+       *[other] { $n } tags that carried no usable data
+    }
+convert-skipped-note = These GEDCOM tags were skipped because there was nothing in them AXGF could represent. They are listed rather than swallowed: knowing exactly what was left behind is the difference between a conversion you can trust and one you cannot.
+convert-other-diagnostics = { $n ->
+        [one] One other diagnostic
+       *[other] { $n } other diagnostics
+    }
+convert-clean = The converter reported nothing — every tag in the file mapped cleanly.
+convert-download-title = Download
+convert-download-named = Download { $name }
+convert-download-note = Held for fifteen minutes, then discarded. To browse this data on a site like this one, point --bundle at the downloaded file and restart, or replace the live bundle from the admin panel.
+convert-another = Convert another file
+completeness-admin-note = Which AXGF fields this bundle uses, and which are still empty. Validation tells you what is wrong with the data; this tells you what is worth enriching. An empty field here is not an error.
+admin-history-on = on
+admin-history-meta = — { $kind }, { $at }
+admin-validation-counts = { $errors ->
+        [one] One error
+       *[other] { $errors } errors
+    }, { $warnings ->
+        [one] one warning
+       *[other] { $warnings } warnings
+    }, { $infos ->
+        [one] one note
+       *[other] { $infos } notes
+    }.
+admin-warnings-never-block = Warnings never block — they are information, not gates.
+admin-validator-clean = The validator reported nothing.
+record-occupations-help-undated = AXGF records an occupation as a span with a start and an end. This bundle carries the titles but no dates for them — typical of a GEDCOM import, which has nowhere to put them — so there is no scale to draw.
+record-occupations-help-axis = An occupation is a state with a duration, not an event on a single date. All spans share one axis, { $from }–{ $to }.
+admin-value-not-set = not set
+admin-validation-report = Validation report
+admin-dedup-complete = Deduplication complete
+admin-dedup-refused = Deduplication refused
+record-birth-order = birth order
+record-start-not-recorded = start not recorded
+record-end-not-recorded = end not recorded
+record-document-no-file = This bundle records the document but does not carry the file
+panel-selected-person = Selected person
+
+## Tree bands
+
+tree-band-generation = Generation { $g }
+tree-band-people = { $n ->
+        [one] one person
+       *[other] { $n } people
+    }
+tree-band-unplaced = Unplaced
+tree-band-unplaced-note = { $n ->
+        [one] one person in no family — shown rather than omitted
+       *[other] { $n } people in no family — shown rather than omitted
+    }
+
+## Controlled vocabulary
+#
+# These are the specification's own enum values, rendered for a reader. They
+# are interface, not data: the bundle stores `given_name`, and "given name" is
+# this application saying that value out loud. An unrecognised value falls
+# through to itself with its underscores opened up, so a bundle using a term
+# this build has never heard of still renders something true.
+
+gender-M = Male
+gender-F = Female
+gender-NB = Non-binary
+gender-unrecorded = Unrecorded
+
+name-part-given_name = given name
+name-part-family_name = family name
+name-part-patronymic = patronymic
+name-part-matronymic = matronymic
+name-part-middle_name = middle name
+name-part-nickname = nickname
+name-part-prefix = prefix
+name-part-suffix = suffix
+name-part-particle = particle
+name-part-part = part
+
+name-type-primary = primary
+name-type-other = other
+name-type-alias = alias
+name-type-birth = birth
+name-type-married = married
+name-type-religious = religious
+name-type-transliteration = transliteration
+name-type-nickname = nickname
+
+## Showcase notes on a record
+
+note-links = { $n ->
+        [one] a non-family relationship with its own dates, sources and confidence
+       *[other] { $n } non-family relationships with their own dates, sources and confidence
+    }
+note-occupations = { $n ->
+        [one] an occupation recorded as a span rather than an event
+       *[other] { $n } occupations recorded as spans rather than events
+    }
+note-birth-imprecise = a birth date the source could not pin down, shown as recorded
+note-death-imprecise = a death date the source could not pin down, shown as recorded
+note-names = { $n ->
+        [one] one recorded name
+       *[other] { $n } recorded names
+    }
+note-transliteration = a name in its own script beside its Latin transliteration
+note-witnessed = { $n ->
+        [one] an event they witnessed rather than owned
+       *[other] { $n } events they witnessed rather than owned
+    }
+
+visibility-public = public
+visibility-members = members
+visibility-contributors = contributors
+visibility-private = private

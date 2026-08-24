@@ -119,7 +119,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 .masthead .spacer { flex: 1 1 auto; }
 
 main { max-width: 1180px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
-main.wide { max-width: none; padding-left: 1rem; padding-right: 1rem; }
+main.wide { max-width: none; padding-inline: 1rem; }
 
 footer {
   max-width: 1180px;
@@ -234,7 +234,7 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
   border: 1px solid var(--border-strong);
   border-radius: 3px;
   padding: 0 0.3em;
-  margin-left: 0.35em;
+  margin-inline-start: 0.35em;
   white-space: nowrap;
 }
 
@@ -242,7 +242,7 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 
 .why {
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   background: var(--surface);
   border-radius: var(--radius);
   padding: 1.1rem 1.35rem;
@@ -290,22 +290,22 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 
 .notice {
   border: 1px solid var(--border);
-  border-left: 3px solid var(--ink-faint);
+  border-inline-start: 3px solid var(--ink-faint);
   border-radius: var(--radius);
   padding: 0.8rem 1rem;
   margin: 1rem 0;
   background: var(--surface);
 }
-.notice.warn { border-left-color: var(--conf-medium); }
-.notice.error { border-left-color: var(--conf-low); }
-.notice.ok { border-left-color: var(--conf-certain); }
+.notice.warn { border-inline-start-color: var(--conf-medium); }
+.notice.error { border-inline-start-color: var(--conf-low); }
+.notice.ok { border-inline-start-color: var(--conf-certain); }
 .notice p:first-child { margin-top: 0; }
 .notice p:last-child { margin-bottom: 0; }
 
 /* ---------- tables ---------- */
 
 table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
-th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+th, td { text-align: start; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-weight: 600; }
 tbody tr:hover { background: var(--accent-soft); }
 .table-wrap { overflow-x: auto; }
@@ -410,18 +410,18 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 
 .band-label {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   transform: translateY(-1.35rem);
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-faint);
-  padding-left: 0.5rem;
+  padding-inline-start: 0.5rem;
   white-space: nowrap;
   z-index: 1;
 }
 .band-label strong { color: var(--ink-soft); font-weight: 600; }
-.band-label span { margin-left: 0.4rem; text-transform: none; letter-spacing: 0; }
+.band-label span { margin-inline-start: 0.4rem; text-transform: none; letter-spacing: 0; }
 .band-label.unplaced strong { color: var(--conf-medium); }
 
 .tcard {
@@ -549,6 +549,35 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 .tree-split.no-panel { grid-template-columns: 1fr; }
 
+bdi.date { unicode-bidi: isolate; }
+
+/* ---------------------------------------------------------------------------
+   Right-to-left
+   ---------------------------------------------------------------------------
+   Everything above is written with logical properties, so the page mirrors on
+   its own from `dir="rtl"` alone — the grid above puts the panel on the left
+   in Arabic without being told to, because a grid's column order follows the
+   writing direction.
+
+   Two things cannot follow from logical properties, because they are drawn on
+   a coordinate system rather than laid out:
+
+   1. The tree canvas. Cards carry `inset-inline-start`, so they mirror; the
+      SVG connecting them is drawn in absolute canvas coordinates and does not.
+      Reflecting the SVG about its own centre puts every wire back under the
+      card it belongs to. The SVG carries no text, so nothing ends up
+      backwards.
+   2. The horizontal scroll position. A mirrored canvas starts at its right
+      edge, which is where an RTL reader expects the beginning to be, and the
+      browser handles that once `dir` is set on the document.
+
+   Generations still stack vertically. Time runs bottom-to-top in both
+   directions, because that is a vertical axis and mirroring is horizontal. */
+[dir="rtl"] .tree-wires {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
 .tree-panel {
   max-height: 82vh;
   overflow: auto;
@@ -608,7 +637,7 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .tree-panel .life-row {
   grid-template-columns: 1fr;
   gap: 0.15rem;
-  padding-left: 0.75rem;
+  padding-inline-start: 0.75rem;
 }
 .tree-panel .life-when { flex-direction: row; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
 
@@ -690,7 +719,7 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
   gap: 0.5rem;
   flex-wrap: wrap;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
   background: var(--surface);
   padding: 0.6rem 0.9rem;
@@ -790,12 +819,12 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .links-section > h2 { margin-top: 0; }
 .link-card {
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
   padding: 0.7rem 0.85rem;
   background: var(--bg);
 }
-.link-card[data-dir="incoming"] { border-left-style: dashed; }
+.link-card[data-dir="incoming"] { border-inline-start-style: dashed; }
 .link-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .link-label { font-weight: 650; text-transform: capitalize; }
 .link-who { margin: 0.2rem 0; }
@@ -836,8 +865,21 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 }
 /* An unrecorded bound fades out rather than asserting an end date. */
 .tl-open { position: absolute; top: 0; bottom: 0; width: 18px; }
-.tl-open-l { left: 0; background: linear-gradient(90deg, var(--surface), transparent); }
-.tl-open-r { right: 0; background: linear-gradient(270deg, var(--surface), transparent); }
+/* `-l` and `-r` are the *earlier* and *later* ends of the span, not the left
+   and right of the screen: in an RTL layout the axis runs the other way and
+   both swap with it. `to right`/`to left` in the gradient are logical in the
+   same sense — they follow the writing direction, so the fade always points
+   away from the bar. */
+.tl-open-l {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--surface), transparent);
+}
+.tl-open-r {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--surface), transparent);
+}
+[dir="rtl"] .tl-open-l { background: linear-gradient(to left, var(--surface), transparent); }
+[dir="rtl"] .tl-open-r { background: linear-gradient(to right, var(--surface), transparent); }
 .tl-meta { display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; }
 .tl-axis {
   display: flex;
@@ -920,7 +962,7 @@ a.stat:hover { border-color: var(--accent); }
 
 .completeness {
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
   background: var(--surface);
   padding: 1.1rem 1.25rem;
@@ -1018,7 +1060,7 @@ main > section { scroll-margin-top: 1rem; }
 table.names td { vertical-align: top; }
 .name-native { font-weight: 600; }
 .name-latin {
-  margin-left: 0.5rem;
+  margin-inline-start: 0.5rem;
   color: var(--ink-soft);
   font-style: italic;
 }
@@ -1111,14 +1153,15 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   display: grid;
   grid-template-columns: minmax(9rem, 15rem) 1fr;
   gap: 0.5rem 1rem;
-  padding: 0.65rem 0 0.65rem 0.9rem;
-  border-left: 2px solid var(--border-strong);
+  padding-block: 0.65rem;
+  padding-inline: 0.9rem 0;
+  border-inline-start: 2px solid var(--border-strong);
   position: relative;
 }
 .life-row::before {
   content: "";
   position: absolute;
-  left: -5px;
+  inset-inline-start: -5px;
   top: 1.05rem;
   width: 8px;
   height: 8px;
@@ -1158,8 +1201,8 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
 .place-card ul.plain > li { border-bottom: none; padding: 0.1rem 0; }
 
 .note-block.verbatim {
-  border-left: 2px solid var(--conf-medium);
-  padding-left: 0.85rem;
+  border-inline-start: 2px solid var(--conf-medium);
+  padding-inline-start: 0.85rem;
 }
 
 /* The raw entity. Costs nothing to include and makes the format's

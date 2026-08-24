@@ -326,13 +326,15 @@ pub fn build_in(
         .and_then(|g| g.get("value"))
         .and_then(Value::as_str)
         .map(|g| {
-            match g {
-                "M" => "Male",
-                "F" => "Female",
-                "NB" => "Non-binary",
-                _ => "Unrecorded",
-            }
-            .to_string()
+            // The specification's enum, said out loud in the reader's
+            // language. A value this build does not know falls through to
+            // "unrecorded" rather than being printed raw, because a bare "X"
+            // on a record reads as a defect.
+            let key = match g {
+                "M" | "F" | "NB" => format!("gender-{g}"),
+                _ => "gender-unrecorded".to_string(),
+            };
+            crate::i18n::translate(lang, &key, None)
         });
     let gender_note = identity
         .and_then(|i| i.get("gender"))
@@ -368,45 +370,40 @@ pub fn build_in(
     let raw_json =
         serde_json::to_string_pretty(person).unwrap_or_else(|_| "<unserializable>".into());
 
+    // Which GEDCOM-impossible features this person actually demonstrates.
+    // Built here rather than in the template because each one needs a count
+    // through the plural rules, and a template cannot pass a variable key.
+    let n_arg =
+        |n: usize| fluent::FluentArgs::from_iter([("n", fluent::FluentValue::from(n as i64))]);
+    let note = |key: &str, n: usize| crate::i18n::translate(lang, key, Some(&n_arg(n)));
+
     let mut showcase_notes = Vec::new();
     if !links.is_empty() {
-        showcase_notes.push(format!(
-            "{} non-family relationship{} with their own dates, sources and confidence",
-            links.len(),
-            if links.len() == 1 { "" } else { "s" }
-        ));
+        showcase_notes.push(note("note-links", links.len()));
     }
     if !occupations.is_empty() {
-        let n = occupations.len();
-        showcase_notes.push(if n == 1 {
-            "an occupation recorded as a span rather than an event".to_string()
-        } else {
-            format!("{n} occupations recorded as spans rather than events")
-        });
+        showcase_notes.push(note("note-occupations", occupations.len()));
     }
-    for (noun, f) in [("birth", &birth), ("death", &death)] {
+    for (key, f) in [
+        ("note-birth-imprecise", &birth),
+        ("note-death-imprecise", &death),
+    ] {
         if f.present && matches!(f.date.kind, "range" | "approximate" | "preserved") {
-            showcase_notes.push(format!(
-                "a {noun} date the source could not pin down, shown as recorded"
-            ));
+            showcase_notes.push(crate::i18n::translate(lang, key, None));
         }
     }
     if names.len() > 1 {
-        showcase_notes.push(format!("{} recorded names", names.len()));
+        showcase_notes.push(note("note-names", names.len()));
     }
     if names.iter().any(|n| n.latin.is_some()) {
-        showcase_notes
-            .push("a name in its own script beside its Latin transliteration".to_string());
+        showcase_notes.push(crate::i18n::translate(lang, "note-transliteration", None));
     }
     let witnessed = timeline
         .iter()
         .filter(|t| t.kind == "event" && t.role.as_deref() == Some("witness"))
         .count();
     if witnessed > 0 {
-        showcase_notes.push(format!(
-            "{witnessed} event{} they witnessed rather than owned",
-            if witnessed == 1 { "" } else { "s" }
-        ));
+        showcase_notes.push(note("note-witnessed", witnessed));
     }
 
     Some(PersonView {
@@ -418,7 +415,7 @@ pub fn build_in(
         is_living,
         visibility: identity
             .and_then(|i| str_field(i, "visibility"))
-            .map(|v| v.replace('_', " ")),
+            .map(|v| vocab(lang, "visibility", &v)),
         birth,
         death,
         timeline,
@@ -438,6 +435,21 @@ pub fn build_in(
         has_timeline,
         showcase_notes,
     })
+}
+
+/// Render one of the specification's enum values in the reader's language.
+///
+/// A value with no message falls back to itself with underscores opened up.
+/// That is deliberate: AXGF's vocabularies are open, and a bundle using a term
+/// this build has never seen should still render something true rather than a
+/// message id or a blank.
+fn vocab(lang: &str, family: &str, value: &str) -> String {
+    let key = format!("{family}-{value}");
+    let (text, fell_back) = crate::i18n::translate_marked(lang, &key, None);
+    if text == key || (fell_back && !crate::i18n::has_message(crate::i18n::DEFAULT, &key)) {
+        return value.replace('_', " ");
+    }
+    text
 }
 
 /// Read a non-empty string field.
@@ -769,9 +781,11 @@ impl Ctx<'_> {
                     .iter()
                     .filter_map(|c| {
                         let value = str_field(c, "value")?;
-                        let kind = str_field(c, "type")
-                            .unwrap_or_else(|| "part".into())
-                            .replace('_', " ");
+                        let kind = vocab(
+                            self.lang,
+                            "name-part",
+                            &str_field(c, "type").unwrap_or_else(|| "part".into()),
+                        );
                         let order = c.get("order").and_then(Value::as_i64).unwrap_or(i64::MAX);
                         Some((order, NameComponent { kind, value }))
                     })
@@ -784,15 +798,17 @@ impl Ctx<'_> {
         NameView {
             display,
             latin,
-            kind: str_field(n, "type")
-                .unwrap_or_else(|| {
+            kind: vocab(
+                self.lang,
+                "name-type",
+                &str_field(n, "type").unwrap_or_else(|| {
                     if is_primary {
                         "primary".into()
                     } else {
                         "other".into()
                     }
-                })
-                .replace('_', " "),
+                }),
+            ),
             is_primary,
             culture: str_field(n, "culture"),
             direction: str_field(n, "direction"),

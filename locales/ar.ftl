@@ -69,8 +69,6 @@ tree-filter-placeholder = اكتب اسمًا…
 tree-centre-on = التمركز حول
 tree-depth = أجيال في كل اتجاه
 tree-show = إظهار
-tree-whole-tree = الشجرة كاملة
-tree-focused = عرض مركّز
 tree-hidden-notice = { $n ->
         [zero] لا أحد مخفي
         [one] شخص واحد يظهر دون تفاصيله
@@ -85,9 +83,6 @@ tree-hidden-sign-in = سجّل الدخول إن كان لديك حساب.
 tree-restricted-card = سجل هذا الشخص غير مرئي لك
 tree-empty = لا يحتوي هذا الملف على أحد لرسمه.
 tree-unplaced = ليس ضمن أي أسرة مسجّلة
-tree-legend-confidence = تعتيم الخط يدل على درجة اليقين
-tree-recentre = اجعل الشجرة تتمركز هنا
-tree-open-record = افتح السجل الكامل
 
 record-identity = الهوية
 record-life-events = أحداث الحياة
@@ -112,27 +107,19 @@ record-no = لا
 record-name-type = نوع الاسم
 record-name-used = فترة الاستعمال
 record-name-evidence = الدليل
-record-name-primary = الاسم الأساسي
 record-transliteration = النقحرة اللاتينية
 record-born = وُلد
 record-died = تُوفّي
 record-parents = الوالدان
 record-siblings = الإخوة والأخوات
 record-children = الأبناء
-record-spouse = الزوج
-record-union-ended = انتهى
-record-no-date = التاريخ غير معروف
 record-unknown-person = [غير معروف]
 record-restricted-person = خاص
 record-restricted-title = سجل هذا الشخص غير مرئي لك
 record-absent-person-title = مذكور في هذا الملف لكنه غير موجود فيه
 record-confidence = درجة اليقين
 record-source = المصدر
-record-role = الدور
 record-download = تنزيل
-record-attach-file = إرفاق ملف
-record-attach-hint = حتى { $mb } ميغابايت. تُعرض الصور في المعرض، وما عداها يُدرج مع رابط للتنزيل.
-record-no-documents = لا ملفات مرفقة بهذا السجل.
 
 access-restricted-title = غير مرئي لك
 access-restricted-anonymous = هذا السجل ليس علنيًا. سجّل الدخول لتعرف إن كان حسابك يستطيع قراءته.
@@ -194,18 +181,15 @@ admin-cancel = إلغاء
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير
-admin-search = بحث
 admin-page-of = صفحة { $page } من { $pages }
 admin-previous = السابق
 admin-next = التالي
-admin-nothing-here = لا شيء من هذا النوع مسجّل في هذا الملف بعد.
 admin-saved = حُفظ بوصفه الإصدار { $version } — { $summary }
 admin-not-saved = لم يُحفظ
 admin-created = أُنشئ
 admin-not-created = لم يُنشأ
 admin-deleted = حُذف
 admin-not-deleted = لم يُحذف — الملف كما هو
-admin-delete-policy = التكامل المرجعي
 admin-what-changed = ما الذي تغيّر
 admin-field = الحقل
 admin-from = من
@@ -267,30 +251,14 @@ conflict-discard = اطرح نسختي وابدأ من جديد
 conflict-their-version = نسخة { $who } كما يحملها الملف الآن
 conflict-history-of = سجل تعديلات هذا السجل ({ $kind })
 
-home-lede = { $family } — { $total ->
-        [zero] لا سجلات
-        [one] سجل واحد
-        [two] سجلان
-        [few] { $total } سجلات
-        [many] { $total } سجلًا
-       *[other] { $total } سجل
-    } في ملف ‎.axgf‎ واحد.
 home-why-title = لماذا AXGF
-home-what-this-bundle-has = ما يحتويه هذا الملف فعلًا
-home-browse-tree = تصفّح الشجرة
-home-convert-gedcom = حوّل ملف GEDCOM
-home-see-example = انظر مثالًا
 
 convert-title = تحويل GEDCOM إلى AXGF
-convert-choose-file = ملف GEDCOM
 convert-submit = تحويل
 convert-result-title = نتيجة التحويل
 convert-download = نزّل ملف ‎.axgf‎
-convert-diagnostics = ما أبلغ عنه المحوّل
-convert-unchanged-note = التحويل لا يمس أبدًا الملف الذي يقدّمه هذا الموقع.
 
 completeness-title = اكتمال الملف
-completeness-recorded = مسجَّل
 completeness-empty = فارغ
 completeness-spec-field = حقل AXGF
 
@@ -320,3 +288,161 @@ month-9 = سبتمبر
 month-10 = أكتوبر
 month-11 = نوفمبر
 month-12 = ديسمبر
+
+## بطاقات الشجرة
+
+tree-band-generation = الجيل { $g }
+tree-band-people = { $n ->
+        [zero] لا أحد
+        [one] شخص واحد
+        [two] شخصان
+        [few] { $n } أشخاص
+        [many] { $n } شخصًا
+       *[other] { $n } شخص
+    }
+tree-band-unplaced = بلا موضع
+tree-band-unplaced-note = { $n ->
+        [zero] لا أحد خارج الأسر
+        [one] شخص واحد لا ينتمي إلى أسرة — معروض بدل أن يُحذف
+        [two] شخصان لا ينتميان إلى أسرة — معروضان بدل أن يُحذفا
+        [few] { $n } أشخاص لا ينتمون إلى أسرة — معروضون بدل أن يُحذفوا
+        [many] { $n } شخصًا لا ينتمون إلى أسرة — معروضون بدل أن يُحذفوا
+       *[other] { $n } شخص لا ينتمون إلى أسرة — معروضون بدل أن يُحذفوا
+    }
+
+## بقية نصوص الشجرة
+
+tree-show-all = عرض الكل ({ $n })
+tree-back-to-focused = العودة إلى العرض المركّز
+tree-confidence-label = درجة اليقين:
+tree-band-certain = مؤكَّد
+tree-band-high = عالٍ
+tree-band-medium = متوسط
+tree-band-low = ظنّي
+tree-counts = { $drawn } من أصل { $total } شخصًا · { $generations ->
+        [one] جيل واحد
+        [two] جيلان
+        [few] { $generations } أجيال
+        [many] { $generations } جيلًا
+       *[other] { $generations } جيل
+    }
+tree-unplaced-count = { $n } بلا موضع
+tree-no-people = لا أشخاص في هذا الملف بعد.
+tree-no-people-cta = حوّل ملف GEDCOM لملئه.
+tree-nobody-selected = لا أحد لرسمه بهذا الاختيار.
+tree-nobody-selected-cta = ابدأ من العرض الافتراضي.
+tree-click-hint = انقر أي بطاقة لفتح سجل ذلك الشخص في اللوحة؛ و«اجعل الشجرة تتمركز هنا» في اللوحة يعيد تجذير العرض.
+tree-edge-union = اقتران مسجَّل
+tree-edge-parentage = بنوّة مسجَّلة
+tree-title-suffix = الشجرة
+
+## بقية نصوص السجل
+
+record-centre-tree-here = اجعل الشجرة تتمركز هنا
+record-centre-tree-title = حرّك الشجرة لتتمركز على هذا الشخص
+record-open-full-page = افتح الصفحة الكاملة ↗
+record-open-full-title = افتح الصفحة المستقلة القابلة للمشاركة
+record-edit = تحرير
+record-living-yes = على قيد الحياة
+record-deceased = متوفّى
+record-display-name = الاسم المعروض
+record-read-as = يُقرأ
+record-also-recorded-as = مسجَّل أيضًا بوصفه
+record-borders-moved = تغيّرت الحدود:
+record-note = ملاحظة
+record-gedcom-would-lose = ما كان GEDCOM ليفقده هنا:
+record-name = الاسم
+record-type = النوع
+record-cause = السبب:
+record-as = بصفة
+record-partner-not-recorded = الزوج غير مسجَّل
+record-union-from = من
+record-union-at = في
+record-union-until = حتى
+record-occupation-from = من
+record-occupation-until = إلى
+record-source-reliability = الموثوقية
+record-source-supports = يدعم
+record-photographs = الصور
+record-documents = الوثائق
+record-file = الملف
+record-status = الحالة
+record-size = الحجم
+record-no-file = لا ملف
+record-attach-document = إرفاق وثيقة
+record-upload = رفع
+panel-empty = اختر بطاقة لترى هنا السجل الكامل لذلك الشخص.
+panel-selected-person = الشخص المختار
+person-see-in-tree = انظر هذا الشخص في الشجرة
+person-visibility-inline = الظهور:
+person-sections-label = أقسام هذه الصفحة
+
+## المفردات المضبوطة
+
+gender-M = ذكر
+gender-F = أنثى
+gender-NB = غير ثنائي
+gender-unrecorded = غير مسجَّل
+
+name-part-given_name = الاسم الأول
+name-part-family_name = اسم العائلة
+name-part-patronymic = اسم الأب
+name-part-matronymic = اسم الأم
+name-part-middle_name = الاسم الأوسط
+name-part-nickname = اللقب
+name-part-prefix = سابقة
+name-part-suffix = لاحقة
+name-part-particle = أداة
+name-part-part = جزء
+
+name-type-primary = أساسي
+name-type-other = آخر
+name-type-alias = كنية
+name-type-birth = عند الولادة
+name-type-married = بعد الزواج
+name-type-religious = ديني
+name-type-transliteration = نقحرة
+name-type-nickname = لقب
+
+## ملاحظات العرض
+
+note-links = { $n ->
+        [zero] لا علاقات خارج الأسرة
+        [one] علاقة واحدة خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
+        [two] علاقتان خارج الأسرة بتواريخهما ومصادرهما ودرجة يقينهما
+        [few] { $n } علاقات خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
+        [many] { $n } علاقة خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
+       *[other] { $n } علاقة خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
+    }
+note-occupations = { $n ->
+        [zero] لا مهن
+        [one] مهنة واحدة مسجَّلة كمدة لا كحدث
+        [two] مهنتان مسجَّلتان كمدة لا كحدث
+        [few] { $n } مهن مسجَّلة كمدد لا كأحداث
+        [many] { $n } مهنة مسجَّلة كمدد لا كأحداث
+       *[other] { $n } مهنة مسجَّلة كمدد لا كأحداث
+    }
+note-birth-imprecise = تاريخ ميلاد لم تستطع المصادر تحديده، معروض كما سُجّل
+note-death-imprecise = تاريخ وفاة لم تستطع المصادر تحديده، معروض كما سُجّل
+note-names = { $n ->
+        [zero] لا أسماء مسجَّلة
+        [one] اسم واحد مسجَّل
+        [two] اسمان مسجَّلان
+        [few] { $n } أسماء مسجَّلة
+        [many] { $n } اسمًا مسجَّلًا
+       *[other] { $n } اسم مسجَّل
+    }
+note-transliteration = اسم بخطّه الأصلي إلى جانب نقحرته اللاتينية
+note-witnessed = { $n ->
+        [zero] لا أحداث شهدها
+        [one] حدث واحد شهده دون أن يكون صاحبه
+        [two] حدثان شهدهما دون أن يكون صاحبهما
+        [few] { $n } أحداث شهدها دون أن يكون صاحبها
+        [many] { $n } حدثًا شهدها دون أن يكون صاحبها
+       *[other] { $n } حدث شهدها دون أن يكون صاحبها
+    }
+
+visibility-public = علني
+visibility-members = الأعضاء
+visibility-contributors = المساهمون
+visibility-private = خاص

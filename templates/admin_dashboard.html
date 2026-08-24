@@ -1,31 +1,20 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
 {% import "_completeness.html" as comp %}
-{% block title %}Admin — axgf-cms{% endblock %}
+{% block title %}{{ t("admin-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 
-<h1>Admin</h1>
-<p class="lede">
-  Editing <code>{{ bundle_path }}</code> — {{ total }} entities,
-  {{ attachment_count }} attached file{{ "" if attachment_count == 1 else "s" }},
-  {{ bundle_size }} on disk.
-  Every change is written atomically; a refused change leaves the file untouched.
-</p>
+<h1>{{ t("admin-title") }}</h1>
+<p class="lede">{{ t("admin-lede", path=bundle_path, total=total,
+     files=attachment_count, size=bundle_size) }}</p>
 
 {% if bundle_heavy %}
 <div class="notice warn">
-  <p>
-    <strong>This bundle is {{ bundle_size }}.</strong> The whole file is read
-    into memory at startup and held there, so past about {{ size_warn }} the
-    application starts costing real memory and restarts get slow. That design
-    suits a family archive, not a media library — if the attachments are
-    growing without bound, they belong in a file store with the bundle
-    referencing them.
-  </p>
+  <p>{{ t("admin-bundle-heavy", size=bundle_size, warn=size_warn) }}</p>
 </div>
 {% endif %}
 
-<h2>Entities</h2>
+<h2>{{ t("admin-entities") }}</h2>
 <div class="grid cols-4">
   {% for c in counts %}
   <a class="stat {% if c.n == 0 %}zero{% endif %}" href="/admin/{{ c.singular }}"
@@ -36,76 +25,68 @@
   {% endfor %}
 </div>
 
-<h2>Create</h2>
+<h2>{{ t("admin-create") }}</h2>
 <div class="cta-row">
-  {% for k in kinds %}<a class="btn" href="/admin/{{ k }}/new">New {{ k }}</a>{% endfor %}
+  {% for k in kinds %}<a class="btn" href="/admin/{{ k }}/new">{{ t("admin-new-kind", kind=t("kind-" ~ k)) }}</a>{% endfor %}
 </div>
 
-<h2>Operations</h2>
+<h2>{{ t("admin-operations") }}</h2>
 <div class="cta-row">
   <form method="post" action="/admin/validate" style="display:inline">
-    <button class="btn" type="submit">Validate</button>
+    <button class="btn" type="submit">{{ t("admin-validate") }}</button>
   </form>
   <form method="post" action="/admin/dedup" style="display:inline"
-        onsubmit="return confirm('Deduplicate merges entities and rewrites the bundle. Continue?')">
-    <button class="btn" type="submit">Deduplicate</button>
+        onsubmit="return confirm('{{ t("admin-dedup-confirm") }}')">
+    <button class="btn" type="submit">{{ t("admin-deduplicate") }}</button>
   </form>
-  <a class="btn" href="/admin/export">Export bundle</a>
-  <a class="btn" href="/admin/users">Accounts</a>
+  <a class="btn" href="/admin/export">{{ t("admin-export") }}</a>
+  <a class="btn" href="/admin/users">{{ t("admin-accounts") }}</a>
 </div>
-<p class="small muted">
-  Validate, deduplicate, export, delete and account management are
-  administrator-only. A contributor reaches every other page here.
-</p>
+<p class="small muted">{{ t("admin-roles-note") }}</p>
 
-{{ comp.completeness_panel(completeness,
-     "Bundle completeness",
-     "Which AXGF fields this bundle uses, and which are still empty. Validation tells you what is wrong with the data; this tells you what is worth enriching. An empty field here is not an error.") }}
+{{ comp.completeness_panel(completeness, t,
+     t("completeness-title"), t("completeness-admin-note")) }}
 
-<h2>Recent changes</h2>
+<h2>{{ t("admin-recent-changes") }}</h2>
 {% if recent_edits %}
 <p class="small muted">
-  The last {{ recent_edits | length }} of {{ journal_len }} recorded
-  {{ "change" if journal_len == 1 else "changes" }}, from
-  <code>{{ journal_path }}</code>. The journal lives beside the bundle, not
-  inside it: a <code>.axgf</code> is copied and published, and who corrected
-  what is a fact about this family's editors rather than about the family.
-  {% if live_sessions %}{{ live_sessions }} session{{ "" if live_sessions == 1 else "s" }} open now.{% endif %}
+  {{ t("admin-recent-note", shown=recent_edits | length, total=journal_len,
+        path=journal_path) }}
+  {% if live_sessions %}{{ t("admin-sessions-open", n=live_sessions) }}{% endif %}
 </p>
 <ol class="history">
   {% for e in recent_edits %}
   <li>
-    <strong>{{ e.who }}</strong> {{ e.summary }} on
+    <strong>{{ e.who }}</strong> {{ e.summary }} {{ t("admin-history-on") }}
     {% if e.kind == "person" %}
       <a href="/person/{{ e.entity_id }}">{{ e.label if e.label else e.entity_id }}</a>
     {% else %}
       <a href="/admin/{{ e.kind }}/{{ e.entity_id }}/edit">{{ e.label if e.label else e.entity_id }}</a>
     {% endif %}
     <span class="small muted">
-      — {{ e.kind }}, {{ e.at }}{% if e.version_num %}, version {{ e.version_num }}{% endif %}
+      {{ t("admin-history-meta", kind=t("kind-" ~ e.kind), at=e.at) }}
+      {%- if e.version_num %}{{ t("record-history-entry-version",
+           version=t("admin-version", version=e.version_num)) }}{% endif %}
     </span>
   </li>
   {% endfor %}
 </ol>
 {% else %}
-<p class="muted">
-  Nothing has been changed through this application yet. Every save from here
-  on is recorded in <code>{{ journal_path }}</code>.
-</p>
+<p class="muted">{{ t("admin-no-changes-yet", path=journal_path) }}</p>
 {% endif %}
 
-<h2>Last validation</h2>
+<h2>{{ t("admin-last-validation") }}</h2>
 {% if validation %}
 <p class="small muted">
-  {{ validation.errors }} errors, {{ validation.warnings }} warnings,
-  {{ validation.infos }} notes.
-  Warnings never block — they are information, not gates.
+  {{ t("admin-validation-counts", errors=validation.errors,
+        warnings=validation.warnings, infos=validation.infos) }}
+  {{ t("admin-warnings-never-block") }}
 </p>
 {% endif %}
 {% if diagnostics %}
   {{ m.diagnostics(diagnostics) }}
 {% else %}
-  <div class="notice ok"><p>The validator reported nothing.</p></div>
+  <div class="notice ok"><p>{{ t("admin-validator-clean") }}</p></div>
 {% endif %}
 
 {% endblock %}

@@ -256,6 +256,7 @@ pub async fn tree(
 
             if show_all {
                 let mut l = crate::tree::layout(flat);
+                crate::tree::localise(&mut l, chrome.lang);
                 crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                 return (l, None, roster, None, None, hidden);
             }
@@ -287,6 +288,7 @@ pub async fn tree(
                 Some(root) => {
                     let sub = crate::tree::select_subtree(flat, &root, depth, depth);
                     let mut l = crate::tree::layout_focused(flat, &sub);
+                    crate::tree::localise(&mut l, chrome.lang);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     let name = if lens.sees_person(&root) {
                         flat.get("persons")
@@ -322,6 +324,7 @@ pub async fn tree(
                 // An empty bundle has nobody to focus on.
                 None => {
                     let mut l = crate::tree::layout(flat);
+                    crate::tree::localise(&mut l, chrome.lang);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     (l, None, roster, None, None, hidden)
                 }

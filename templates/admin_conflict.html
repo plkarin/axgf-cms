@@ -1,74 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Someone else changed this — axgf-cms{% endblock %}
+{% block title %}{{ t("conflict-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 
-<h1>Someone else changed this first</h1>
-<p class="lede">
-  <strong>{{ who }}</strong> saved a change to this {{ kind }} at
-  {{ when }}, after you opened it. Your edit has <strong>not</strong> been
-  saved, and nothing has been overwritten.
-</p>
+<h1>{{ t("conflict-title") }}</h1>
+<p class="lede">{{ t("conflict-lede", who=who, kind=t("kind-" ~ kind), when=when) }}</p>
 
 <div class="notice warn">
-  <p>
-    Nothing is merged automatically here. A merge of two people's edits
-    produces a record neither of them chose, and in a genealogy two editors
-    disagreeing about a date usually means they are reading different sources
-    — which is a question for a person, not for a program. Compare the two
-    below and decide.
-  </p>
+  <p>{{ t("conflict-no-merge") }}</p>
 </div>
 
-<p class="small muted">
-  You started from version {{ expected_version }}; the bundle now holds
-  version {{ current_version }}.
-</p>
+<p class="small muted">{{ t("conflict-versions", expected=expected_version,
+     current=current_version) }}</p>
 
 {% if contested %}
-<h2>You both changed these</h2>
+<h2>{{ t("conflict-both-changed") }}</h2>
 <div class="notice error">
-  <p>
-    These fields were edited by both of you. Whatever you save will replace
-    what {{ who }} put there:
-  </p>
+  <p>{{ t("conflict-both-changed-detail", who=who) }}</p>
   <ul>
     {% for path in contested %}<li><code>{{ path }}</code></li>{% endfor %}
   </ul>
 </div>
 {% elif had_base %}
 <div class="notice ok">
-  <p>
-    You changed different fields, so nothing of {{ who }}'s work is contested
-    — but re-applying still writes your whole entity over theirs. Check the
-    two columns before you save.
-  </p>
+  <p>{{ t("conflict-different-fields", who=who) }}</p>
 </div>
 {% endif %}
 
-<h2>Field by field</h2>
+<h2>{{ t("conflict-field-by-field") }}</h2>
 <table class="wide diff-table">
   <thead>
     <tr>
-      <th>Field</th>
-      <th>What {{ who }} changed it to</th>
-      <th>What you changed it to</th>
+      <th>{{ t("admin-field") }}</th>
+      <th>{{ t("conflict-theirs", who=who) }}</th>
+      <th>{{ t("conflict-yours") }}</th>
     </tr>
   </thead>
   <tbody>
     {% for c in theirs %}
     <tr {% if c.path in contested %}class="contested"{% endif %}>
-      <td data-label="Field"><code>{{ c.path }}</code></td>
-      <td data-label="Theirs">
-        <span class="diff-from">{{ c.from if c.from else "— not set —" }}</span>
+      <td data-label="{{ t('admin-field') }}"><code>{{ c.path }}</code></td>
+      <td data-label="{{ t('conflict-theirs', who=who) }}">
+        <span class="diff-from">{{ c.from if c.from else t("admin-not-set") }}</span>
         <span class="diff-arrow">→</span>
-        <span class="diff-to">{{ c.to if c.to else "— not set —" }}</span>
+        <span class="diff-to">{{ c.to if c.to else t("admin-not-set") }}</span>
       </td>
-      <td data-label="Yours">
+      <td data-label="{{ t('conflict-yours') }}">
         {% set my = ours | selectattr("path", "eq", c.path) | first %}
         {% if my %}
-          <span class="diff-to">{{ my.to if my.to else "— not set —" }}</span>
+          <span class="diff-to">{{ my.to if my.to else t("admin-not-set") }}</span>
         {% else %}
-          <span class="muted">unchanged by you</span>
+          <span class="muted">{{ t("conflict-unchanged-by-you") }}</span>
         {% endif %}
       </td>
     </tr>
@@ -77,12 +58,12 @@
     {% for c in ours %}
       {% if not (theirs | selectattr("path", "eq", c.path) | first) %}
       <tr>
-        <td data-label="Field"><code>{{ c.path }}</code></td>
-        <td data-label="Theirs"><span class="muted">unchanged by them</span></td>
-        <td data-label="Yours">
-          <span class="diff-from">{{ c.from if c.from else "— not set —" }}</span>
+        <td data-label="{{ t('admin-field') }}"><code>{{ c.path }}</code></td>
+        <td data-label="{{ t('conflict-theirs', who=who) }}"><span class="muted">{{ t("conflict-unchanged-by-them") }}</span></td>
+        <td data-label="{{ t('conflict-yours') }}">
+          <span class="diff-from">{{ c.from if c.from else t("admin-not-set") }}</span>
           <span class="diff-arrow">→</span>
-          <span class="diff-to">{{ c.to if c.to else "— not set —" }}</span>
+          <span class="diff-to">{{ c.to if c.to else t("admin-not-set") }}</span>
         </td>
       </tr>
       {% endif %}
@@ -91,44 +72,39 @@
 </table>
 
 {% if not theirs and not ours %}
-<p class="muted">
-  Neither version differs from the one you started from in any field this page
-  shows. The version number moved, so somebody saved the record without
-  changing anything it records.
-</p>
+<p class="muted">{{ t("conflict-nothing-differs") }}</p>
 {% endif %}
 
-<h2>What now</h2>
+<h2>{{ t("conflict-what-now") }}</h2>
 
 <form method="post" action="{{ action }}">
   <input type="hidden" name="base_version" value="{{ current_version }}">
   <fieldset>
-    <legend>Re-apply your version on top of theirs</legend>
-    <p class="hint" style="margin-top:0">
-      This is your edit, carried forward against version
-      {{ current_version }}. Edit it here to keep any of {{ who }}'s work you
-      want, then save. Their version is shown below to copy from.
-    </p>
+    <legend>{{ t("conflict-reapply") }}</legend>
+    <p class="hint" style="margin-top:0">{{ t("conflict-reapply-hint",
+       version=current_version, who=who) }}</p>
     <textarea name="raw_json" rows="18" spellcheck="false">{{ mine_raw }}</textarea>
   </fieldset>
   <div class="cta-row">
-    <button class="btn primary" type="submit">Save this over theirs</button>
-    <a class="btn" href="/admin/{{ kind }}/{{ id }}/edit">Discard mine and start again</a>
+    <button class="btn primary" type="submit">{{ t("conflict-save-over") }}</button>
+    <a class="btn" href="/admin/{{ kind }}/{{ id }}/edit">{{ t("conflict-discard") }}</a>
   </div>
 </form>
 
 <details class="card">
-  <summary>{{ who }}'s version, as the bundle currently holds it</summary>
+  <summary>{{ t("conflict-their-version", who=who) }}</summary>
   <pre class="raw">{{ current_raw }}</pre>
 </details>
 
 {% if history %}
-<h2>This {{ kind }}'s history</h2>
+<h2>{{ t("conflict-history-of", kind=t("kind-" ~ kind)) }}</h2>
 <ol class="history">
   {% for h in history %}
   <li>
     <strong>{{ h.who }}</strong> {{ h.summary }}
-    <span class="small muted">— {{ h.at }}{% if h.version_num %}, version {{ h.version_num }}{% endif %}</span>
+    <span class="small muted">{{ t("record-history-entry-meta", at=h.at) }}
+    {%- if h.version_num %}{{ t("record-history-entry-version",
+         version=t("admin-version", version=h.version_num)) }}{% endif %}</span>
   </li>
   {% endfor %}
 </ol>

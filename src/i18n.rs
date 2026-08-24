@@ -321,15 +321,32 @@ pub fn message_ids(source: &str) -> Vec<String> {
 /// page, which is ugly and unmistakable, where a blank would silently look
 /// like a design choice.
 pub fn translate(tag: &str, key: &str, args: Option<&FluentArgs>) -> String {
+    let (text, fell_back) = translate_marked(tag, key, args);
+    // A message that fell back to English inside a right-to-left page is a
+    // left-to-right run in a right-to-left paragraph, and the bidirectional
+    // algorithm will reorder its neutral characters: "9 of 10 people" comes
+    // out as "of 10 people 9". Isolating it keeps it readable as what it is —
+    // visibly untranslated, but not scrambled. The characters are U+2066
+    // LEFT-TO-RIGHT ISOLATE and U+2069 POP DIRECTIONAL ISOLATE, which need no
+    // markup and so survive HTML escaping.
+    if fell_back && Locale::get(tag).is_rtl() {
+        return format!("\u{2066}{text}\u{2069}");
+    }
+    text
+}
+
+/// [`translate`], also reporting whether the message came from the requested
+/// locale or from the English fallback.
+pub fn translate_marked(tag: &str, key: &str, args: Option<&FluentArgs>) -> (String, bool) {
     if let Some(s) = lookup(tag, key, args) {
-        return s;
+        return (s, false);
     }
     if tag != DEFAULT {
         if let Some(s) = lookup(DEFAULT, key, args) {
-            return s;
+            return (s, true);
         }
     }
-    key.to_string()
+    (key.to_string(), true)
 }
 
 fn lookup(tag: &str, key: &str, args: Option<&FluentArgs>) -> Option<String> {

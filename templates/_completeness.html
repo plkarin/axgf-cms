@@ -7,7 +7,9 @@
    string constants, so no bundle content can reach them. Without it the
    slashes render as `&#x2f;` and the hrefs become unreadable in source. #}
 
-{% macro completeness_panel(report, heading, intro) %}
+{# `t` is passed in because an imported macro does not see the including
+   template's context in minijinja, and `t` is bound at render time. #}
+{% macro completeness_panel(report, t, heading, intro) %}
 <section class="completeness">
   <h2>{{ heading }}</h2>
   <p class="small muted">{{ intro }}</p>

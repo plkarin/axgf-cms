@@ -136,10 +136,10 @@
          there is no destination. #}
       <div class="tcard is-restricted"
            data-id="{{ c.id }}" data-sex="u" data-search=""
-           style="left:{{ c.x }}px;top:{{ c.y }}px"
+           style="inset-inline-start:{{ c.x }}px;top:{{ c.y }}px"
            title="{{ t('tree-restricted-card') }}">
-        <span class="tname">{{ c.name }}</span>
-        <span class="tdates"><span class="sep">·</span></span>
+        <span class="tname"><bdi>{{ c.name }}</bdi></span>
+        <span class="tdates" dir="ltr"><span class="sep">·</span></span>
       </div>
       {% else %}
       {# The whole card is one link to the person's permalink; JS turns the
@@ -149,10 +149,10 @@
          href="/person/{{ c.id }}"
          data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
          data-name="{{ c.name }}"
-         style="left:{{ c.x }}px;top:{{ c.y }}px"
+         style="inset-inline-start:{{ c.x }}px;top:{{ c.y }}px"
          title="{{ c.name }}">
-        <span class="tname">{{ c.name }}</span>
-        <span class="tdates">
+        <span class="tname"><bdi>{{ c.name }}</bdi></span>
+        <span class="tdates" dir="ltr">
           {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
           {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
               title="{{ c.conf_label }}"></i>{% endif %}
@@ -166,7 +166,7 @@
 </div>
 
 {% if not show_all %}
-<aside class="tree-panel" id="tree-panel" aria-label="Selected person"
+<aside class="tree-panel" id="tree-panel" aria-label="{{ t('panel-selected-person') }}"
        data-depth="{{ depth }}"{% if focus %} data-root="{{ focus.root }}"{% endif %}>
   {% include "_panel.html" %}
 </aside>

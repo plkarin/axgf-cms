@@ -93,13 +93,40 @@ date's *meaning* come from the bundle in their own language and script.
   the selector sets, then `Accept-Language` negotiated against what is
   available, then English. A regional variant finds its base language, so
   `pt-BR` resolves to `pt` and `zh-CN` to `zh-Hans`.
+- **Right-to-left is a layout, not a translation detail.** Arabic is served
+  with `dir="rtl"` rendered server-side, and the stylesheet is written in
+  logical properties, so the page mirrors without a second stylesheet: the
+  panel moves to the left, the tree to the right, sibling order reverses.
+  Generations still stack vertically, because mirroring is horizontal. Two
+  things needed explicit handling — the SVG that connects the tree's cards is
+  drawn in absolute coordinates and is reflected with `transform: scaleX(-1)`,
+  and dates are wrapped in `<bdi>` because the bidirectional algorithm
+  reorders neutral characters and was turning `>1930` into `1930<`, which is a
+  different claim. A message that falls back to English inside an RTL page is
+  wrapped in Unicode isolates for the same reason.
+- **Verified by rendering, not by reasoning.** The layout was measured in a
+  real browser at 1920, 1440, 1280 and 900px, in both directions: no
+  horizontal page overflow anywhere, the panel and tree swap sides, and every
+  connector's endpoint lands on the centre of the card it names in both
+  directions. Rendering the Arabic page found three bugs that reading the CSS
+  had not — the reordered dates, untranslated band labels coming from Rust
+  rather than a template, and an English fallback scrambling inside an RTL
+  paragraph.
 - **Honest translation quality.** English and French are reviewed and complete
-  at 252 of 252 messages. The other eight are machine-quality and labelled as
-  such, and rather than a bare flag the selector shows the real coverage
-  number — currently 87% each, with the long explanatory passages falling back
-  to English rather than being guessed at. Genealogical vocabulary is exactly
-  where machine translation fails: the Polish date rendering already shows it,
-  putting a nominative month where the genitive belongs.
+  at 505 of 505 messages. The other eight are machine-quality, labelled as
+  such, and rather than a bare flag the selector shows each one's real coverage
+  — Arabic 61%, the rest 43% — with everything else falling back to English
+  rather than being guessed at. `CONTRIBUTING.md` states where each language
+  stands and how to correct one. Genealogical vocabulary is exactly where
+  machine translation fails, and the Polish date rendering demonstrates it:
+  it puts a nominative month where the genitive belongs, writing
+  "12 kwiecień 1923" for what a Polish speaker writes "12 kwietnia 1923".
+- **A linter keeps it translated.** Four tests fail on a literal English string
+  in a template, one passed into a macro, one in a `title`/`aria-label`
+  attribute, or a key a template asks for and no locale defines. Translating an
+  application once is easy; the next person writes `<h2>Sources</h2>` without
+  thinking, and nothing complains until a reader of Polish finds an English
+  heading in their page.
 
 **Two people can edit the same record without one of them losing their work.**
 Until now the second save silently overwrote the first — no error, no warning,

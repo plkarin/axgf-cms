@@ -488,8 +488,11 @@ pub struct Edge {
 /// One horizontal row of cards.
 #[derive(Debug, Clone, Serialize)]
 pub struct Band {
+    /// Filled by [`localise`]; empty as the layout leaves it.
     pub label: String,
     pub sublabel: String,
+    /// How many people this row holds, so the label can be built later.
+    pub count: usize,
     pub generation: Option<i64>,
     pub cards: Vec<Card>,
     pub y: f64,
@@ -1370,12 +1373,12 @@ pub fn layout_subset(
         ids.sort_by_key(|id| (name_of(id), id.clone()));
         let cards = place_row(&ids, persons, row_y, width, root);
         bands.push(Band {
-            label: "Unplaced".into(),
-            sublabel: format!(
-                "{} {} in no family — shown rather than omitted",
-                ids.len(),
-                if ids.len() == 1 { "person" } else { "people" }
-            ),
+            // Left blank; `localise` fills both in the reader's language.
+            // The layout itself stays language-neutral so that geometry — what
+            // the tests and the cache care about — cannot vary with a header.
+            label: String::new(),
+            sublabel: String::new(),
+            count: ids.len(),
             generation: None,
             cards,
             y: row_y,
@@ -1395,12 +1398,9 @@ pub fn layout_subset(
             positions.insert(c.id.clone(), (c.x, c.y));
         }
         bands.push(Band {
-            label: format!("Generation {g}"),
-            sublabel: format!(
-                "{} {}",
-                ids.len(),
-                if ids.len() == 1 { "person" } else { "people" }
-            ),
+            label: String::new(),
+            sublabel: String::new(),
+            count: ids.len(),
             generation: Some(g),
             cards,
             y: row_y,
@@ -1453,6 +1453,30 @@ fn place_row(
             card_for(id, persons.get(id), x, y, root == Some(id.as_str()))
         })
         .collect()
+}
+
+/// Write each band's label in the reader's language.
+///
+/// Separate from the layout because a band label is interface text and the
+/// layout is geometry. Keeping them apart means the expensive part does not
+/// vary with an `Accept-Language` header, and the tests that assert on
+/// positions do not have to care what language they are running in.
+pub fn localise(layout: &mut TreeLayout, lang: &str) {
+    let n_arg =
+        |n: usize| fluent::FluentArgs::from_iter([("n", fluent::FluentValue::from(n as i64))]);
+    for band in &mut layout.bands {
+        if band.unplaced {
+            band.label = crate::i18n::translate(lang, "tree-band-unplaced", None);
+            band.sublabel =
+                crate::i18n::translate(lang, "tree-band-unplaced-note", Some(&n_arg(band.count)));
+        } else {
+            let g = band.generation.unwrap_or(0);
+            let args = fluent::FluentArgs::from_iter([("g", fluent::FluentValue::from(g))]);
+            band.label = crate::i18n::translate(lang, "tree-band-generation", Some(&args));
+            band.sublabel =
+                crate::i18n::translate(lang, "tree-band-people", Some(&n_arg(band.count)));
+        }
+    }
 }
 
 /// Build one card. A referenced-but-absent person still gets a card so the

@@ -55,8 +55,6 @@ tree-filter-placeholder = Namen eingeben…
 tree-centre-on = Zentrieren auf
 tree-depth = Generationen in jede Richtung
 tree-show = Anzeigen
-tree-whole-tree = Ganzer Stammbaum
-tree-focused = Ausschnitt
 tree-hidden-notice = { $n ->
         [one] Eine Person wird ohne ihre Angaben gezeigt
        *[other] { $n } Personen werden ohne ihre Angaben gezeigt
@@ -67,9 +65,6 @@ tree-hidden-sign-in = Melden Sie sich an, wenn Sie ein Konto haben.
 tree-restricted-card = Der Eintrag dieser Person ist für Sie nicht sichtbar
 tree-empty = Diese Datei enthält niemanden zum Zeichnen.
 tree-unplaced = In keiner erfassten Familie
-tree-legend-confidence = Die Deckkraft der Linie zeigt die Sicherheit
-tree-recentre = Stammbaum hier zentrieren
-tree-open-record = Vollständigen Eintrag öffnen
 
 record-identity = Identität
 record-life-events = Lebensereignisse
@@ -94,27 +89,19 @@ record-no = nein
 record-name-type = Namensart
 record-name-used = Geführt
 record-name-evidence = Beleg
-record-name-primary = Hauptname
 record-transliteration = Lateinische Umschrift
 record-born = Geboren
 record-died = Gestorben
 record-parents = Eltern
 record-siblings = Geschwister
 record-children = Kinder
-record-spouse = Partner
-record-union-ended = Beendet
-record-no-date = Datum unbekannt
 record-unknown-person = [Unbekannt]
 record-restricted-person = Privat
 record-restricted-title = Der Eintrag dieser Person ist für Sie nicht sichtbar
 record-absent-person-title = In dieser Datei erwähnt, aber nicht darin enthalten
 record-confidence = Sicherheit
 record-source = Quelle
-record-role = Rolle
 record-download = Herunterladen
-record-attach-file = Datei anhängen
-record-attach-hint = Bis zu { $mb } MB. Bilder erscheinen in der Galerie; alles andere wird mit einem Download-Link aufgeführt.
-record-no-documents = An diesen Eintrag sind keine Dateien angehängt.
 
 access-restricted-title = Für Sie nicht sichtbar
 access-restricted-anonymous = Dieser Eintrag ist nicht öffentlich. Melden Sie sich an, um zu sehen, ob Ihr Konto ihn lesen darf.
@@ -172,18 +159,15 @@ admin-cancel = Abbrechen
 admin-delete = Löschen
 admin-not-set = — nicht gesetzt —
 admin-edit = Bearbeiten
-admin-search = Suchen
 admin-page-of = Seite { $page } von { $pages }
 admin-previous = Zurück
 admin-next = Weiter
-admin-nothing-here = Von dieser Art ist in dieser Datei noch nichts erfasst.
 admin-saved = Als Fassung { $version } gespeichert — { $summary }
 admin-not-saved = Nicht gespeichert
 admin-created = Angelegt
 admin-not-created = Nicht angelegt
 admin-deleted = Gelöscht
 admin-not-deleted = Nicht gelöscht — die Datei ist unverändert
-admin-delete-policy = Referenzielle Integrität
 admin-what-changed = was sich geändert hat
 admin-field = Feld
 admin-from = Von
@@ -241,26 +225,14 @@ conflict-discard = Meine verwerfen und neu beginnen
 conflict-their-version = Die Fassung von { $who }, so wie die Datei sie derzeit enthält
 conflict-history-of = Verlauf dieses Eintrags ({ $kind })
 
-home-lede = { $family } — { $total ->
-        [one] ein Eintrag
-       *[other] { $total } Einträge
-    } in einer einzigen .axgf-Datei.
 home-why-title = Warum AXGF
-home-what-this-bundle-has = Was diese Datei tatsächlich enthält
-home-browse-tree = Stammbaum durchsehen
-home-convert-gedcom = Ein GEDCOM umwandeln
-home-see-example = Ein Beispiel ansehen
 
 convert-title = GEDCOM in AXGF umwandeln
-convert-choose-file = GEDCOM-Datei
 convert-submit = Umwandeln
 convert-result-title = Ergebnis der Umwandlung
 convert-download = Die .axgf-Datei herunterladen
-convert-diagnostics = Was der Umwandler gemeldet hat
-convert-unchanged-note = Die Umwandlung rührt die Datei, die diese Seite ausliefert, niemals an.
 
 completeness-title = Vollständigkeit der Datei
-completeness-recorded = erfasst
 completeness-empty = leer
 completeness-spec-field = AXGF-Feld
 

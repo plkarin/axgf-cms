@@ -22,7 +22,12 @@
    data-kind attribute is what makes an approximate date look approximate. #}
 {% macro date(d, show_note=true) %}
   {%- if d -%}
-  <span class="date" data-kind="{{ d.kind }}">{{ d.text }}</span>
+  {#- `bdi` because a rendered date mixes translated words with digits and
+      neutral marks — "avant 1430", "<1930", "1826–1830". In a right-to-left
+      page the bidirectional algorithm would reorder the neutrals and turn
+      ">1930" into "1930<", which is a different claim. Isolating the run
+      keeps the date reading the way the record states it. -#}
+  <bdi class="date" data-kind="{{ d.kind }}">{{ d.text }}</bdi>
   {%- if d.calendar %}<span class="cal-tag">{{ d.calendar }}</span>{% endif -%}
   {%- if d.confidence %} {{ conf_dot(d.confidence) }}{% endif -%}
   {%- if show_note and d.note and d.kind != "preserved" %}
@@ -39,11 +44,11 @@
    text, never as a link into a 404. #}
 {% macro person_link(p) %}
   {%- if p.restricted -%}
-    <span class="restricted" title="This person's record is not visible to you">{{ p.name }}</span>
+    <span class="restricted" title="{{ t('record-restricted-title') }}">{{ p.name }}</span>
   {%- elif p.known -%}
-    <a href="/person/{{ p.id }}">{{ p.name }}</a>
+    <a href="/person/{{ p.id }}"><bdi>{{ p.name }}</bdi></a>
   {%- else -%}
-    <span class="muted" title="Referenced by this bundle but not present in it">{{ p.name }}</span>
+    <span class="muted" title="{{ t('record-absent-person-title') }}"><bdi>{{ p.name }}</bdi></span>
   {%- endif -%}
 {% endmacro %}
 
@@ -110,12 +115,17 @@
    same four lines cost more than they give — at 460px they are the section —
    so the heading carries a small `?` and the text is one click away. Both
    surfaces hold the same words; only their weight differs. #}
-{% macro sec(title, compact, help) %}
+{# `title` and `help` arrive already translated: the caller resolves them, so
+   this macro never sees a key and cannot be given an English sentence by
+   accident. `t` is passed in because an imported macro does not inherit the
+   including template's context. #}
+{% macro sec(t, title, compact, help) %}
 <div class="sec-head">
   <h2>{{ title }}</h2>
   {%- if compact and help %}
   <details class="sec-help">
-    <summary title="What this section shows" aria-label="What this section shows">?</summary>
+    <summary title="{{ t('record-help-toggle') }}"
+             aria-label="{{ t('record-help-toggle') }}">?</summary>
     <p class="small muted">{{ help }}</p>
   </details>
   {%- endif %}
@@ -136,7 +146,7 @@
   <p class="nb-display"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
      {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</p>
   {%- if n.latin %}
-  <p class="nb-latin" title="Latin transliteration">{{ n.latin }}</p>
+  <p class="nb-latin" title="{{ t('record-transliteration') }}">{{ n.latin }}</p>
   {%- endif %}
   <p class="nb-kind">
     <span class="nb-type">{{ n.kind }}</span>

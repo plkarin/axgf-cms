@@ -61,8 +61,6 @@ tree-filter-placeholder = Saisissez un nom…
 tree-centre-on = Centrer sur
 tree-depth = Générations de chaque côté
 tree-show = Afficher
-tree-whole-tree = Arbre entier
-tree-focused = Vue centrée
 tree-hidden-notice = { $n ->
         [one] Une personne est affichée sans ses informations
        *[other] { $n } personnes sont affichées sans leurs informations
@@ -71,12 +69,8 @@ tree-hidden-because-role = , car leur visibilité dépasse ce que votre compte p
 tree-hidden-because-anonymous = , car elles ne sont pas publiques.
 tree-hidden-sign-in = Connectez-vous si vous avez un compte.
 tree-restricted-card = La fiche de cette personne ne vous est pas visible
-tree-width-warning = Cette zone de dessin fait { $width } pixels de large. Personne ne fait défiler autant pour retrouver un ancêtre — c'est la raison d'être de la vue centrée.
 tree-empty = Ce fichier ne contient personne à dessiner.
 tree-unplaced = Dans aucune famille enregistrée
-tree-legend-confidence = L'opacité du trait indique le degré de certitude
-tree-recentre = Centrer l'arbre ici
-tree-open-record = Ouvrir la fiche complète
 
 ## La fiche
 
@@ -112,27 +106,19 @@ record-no = non
 record-name-type = Type de nom
 record-name-used = Porté
 record-name-evidence = Preuve
-record-name-primary = nom principal
 record-transliteration = Translittération latine
 record-born = Né(e)
 record-died = Décédé(e)
 record-parents = Parents
 record-siblings = Fratrie
 record-children = Enfants
-record-spouse = Conjoint
-record-union-ended = Fin
-record-no-date = Date inconnue
 record-unknown-person = [Inconnu]
 record-restricted-person = Privé
 record-restricted-title = La fiche de cette personne ne vous est pas visible
 record-absent-person-title = Cité par ce fichier mais absent de celui-ci
 record-confidence = Degré de certitude
 record-source = Source
-record-role = Rôle
 record-download = Télécharger
-record-attach-file = Joindre un fichier
-record-attach-hint = Jusqu'à { $mb } Mo. Les images sont affichées dans la galerie ; tout le reste est listé avec un lien de téléchargement.
-record-no-documents = Aucun fichier n'est joint à cette fiche.
 
 ## Accès
 
@@ -218,18 +204,15 @@ admin-cancel = Annuler
 admin-delete = Supprimer
 admin-not-set = — non renseigné —
 admin-edit = Modifier
-admin-search = Rechercher
 admin-page-of = Page { $page } sur { $pages }
 admin-previous = Précédent
 admin-next = Suivant
-admin-nothing-here = Rien de ce type n'est encore enregistré dans ce fichier.
 admin-saved = Enregistré en version { $version } — { $summary }
 admin-not-saved = Non enregistré
 admin-created = Créé
 admin-not-created = Non créé
 admin-deleted = Supprimé
 admin-not-deleted = Non supprimé — le fichier est inchangé
-admin-delete-policy = Intégrité référentielle
 admin-what-changed = ce qui a changé
 admin-field = Champ
 admin-from = De
@@ -304,30 +287,18 @@ conflict-history-of = Historique de cette entité ({ $kind })
 
 ## Accueil
 
-home-lede = { $family } — { $total ->
-        [one] une entité
-       *[other] { $total } entités
-    } dans un seul fichier .axgf.
 home-why-title = Pourquoi AXGF
-home-what-this-bundle-has = Ce que ce fichier contient réellement
-home-browse-tree = Parcourir l'arbre
-home-convert-gedcom = Convertir un GEDCOM
-home-see-example = Voir un exemple
 
 ## Conversion
 
 convert-title = Convertir un GEDCOM en AXGF
-convert-choose-file = Fichier GEDCOM
 convert-submit = Convertir
 convert-result-title = Résultat de la conversion
 convert-download = Télécharger le fichier .axgf
-convert-diagnostics = Ce que le convertisseur a signalé
-convert-unchanged-note = La conversion ne touche jamais au fichier servi par ce site.
 
 ## Complétude
 
 completeness-title = Complétude du fichier
-completeness-recorded = renseigné
 completeness-empty = vide
 completeness-spec-field = Champ AXGF
 
@@ -369,3 +340,394 @@ month-9 = septembre
 month-10 = octobre
 month-11 = novembre
 month-12 = décembre
+
+## Erreurs, suite
+
+error-back-to-start = Retour à l'accueil
+error-payload-missing-title = Fichier introuvable
+error-payload-missing-detail = Le contenu de ce document n'est pas dans le cache.
+error-payload-unopenable-detail = Le contenu de ce document n'a pas pu être ouvert.
+error-no-such-document-detail = Ce fichier ne comporte aucun document avec cet identifiant.
+error-bad-preference-title = Ce n'est pas un des choix proposés
+error-bad-preference-detail = Ce n'est ni une langue ni un thème que ce site propose. Rien n'a été modifié.
+error-unknown-kind-title = Type inconnu
+error-unknown-kind-detail = « { $kind } » n'est pas un type d'entité. Ce fichier contient : { $kinds }.
+error-io-title = Le fichier n'a pas pu être écrit
+error-io-detail = { $error }. Le fichier sur le disque est inchangé.
+error-upload-too-large = Ce fichier dépasse la limite de { $mb } Mo. Rien n'a été enregistré et le fichier est inchangé.
+error-upload-refused = La bibliothèque a refusé le document : { $reason }. Le fichier est inchangé.
+error-back-to-person = Retour à la fiche
+error-no-such-person-to-attach = Ce fichier ne contient aucune personne avec cet identifiant, il n'y a donc rien à quoi joindre un document.
+error-upload-title = Ce téléversement n'a pas été enregistré
+error-download-expired-title = Ce téléchargement a expiré
+error-download-expired-detail = Les fichiers convertis sont conservés quinze minutes. Relancez la conversion.
+error-upload-none = Aucun fichier n'a été envoyé. Choisissez-en un d'abord.
+error-upload-unsupported = Ce type de fichier n'est pas conservé par cette archive. Les images, les PDF, le texte brut, l'audio et la vidéo sont acceptés ; le type est déterminé d'après les octets du fichier lui-même, si bien que renommer un exécutable ne le fait pas passer. Le SVG est refusé sans exception, car un SVG peut porter du script.
+error-export-unreadable-title = Le fichier exporté n'a pas pu être lu
+error-export-unreadable-detail = { $error }
+
+## Arbre, suite
+
+tree-title-suffix = arbre
+tree-back-to-focused = Revenir à la vue centrée
+tree-show-all = Afficher les { $n }
+tree-width-notice = Cette vue fait { $width } px de large. Chaque génération occupe une ligne, et c'est la plus large qui fixe cette largeur — sur un écran de 1500 px cela représente { $screens ->
+        [one] un écran
+       *[other] { $screens } écrans
+    } de défilement horizontal. La vue centrée montre plutôt quelques dizaines de personnes autour d'une seule, et chaque fiche la recentre.
+tree-confidence-label = Degré de certitude :
+tree-band-certain = certain
+tree-band-high = élevé
+tree-band-medium = moyen
+tree-band-low = spéculatif
+tree-counts = { $drawn } personnes sur { $total } · { $generations ->
+        [one] une génération
+       *[other] { $generations } générations
+    }
+tree-unplaced-count = { $n } sans place
+tree-contradicts-title = Ce fichier se contredit.
+tree-contradicts-detail = Quelqu'un y est enregistré comme son propre ancêtre, ou deux personnes d'une même ligne de descendance y forment un couple. Aucune disposition des lignes ne peut satisfaire cela : la relation fautive a donc été écartée de la numérotation des générations et certaines lignes peuvent être erronées. Lancez le validateur depuis le tableau de bord pour la trouver.
+tree-no-people = Ce fichier ne contient encore aucune personne.
+tree-no-people-cta = Convertissez un GEDCOM pour le remplir.
+tree-nobody-selected = Personne à dessiner pour cette sélection.
+tree-nobody-selected-cta = Repartir de la vue par défaut.
+tree-click-hint = Cliquez sur une fiche pour ouvrir la personne dans le panneau ; « Centrer l'arbre ici », dans le panneau, redéfinit la racine de la vue.
+tree-edge-union = Une union enregistrée
+tree-edge-parentage = Une filiation enregistrée
+
+## Accueil, suite
+
+home-empty = Ce fichier est vide. Convertissez un GEDCOM pour voir ce qu'AXGF enregistre et que GEDCOM laisse tomber.
+home-count = { $total ->
+        [one] Une entité
+       *[other] { $total } entités
+    } dans un seul fichier .axgf — sans base de données ni service externe.
+home-browse = Parcourir l'arbre
+home-convert = Convertir un fichier GEDCOM
+home-why-1 = GEDCOM enregistre ce qu'un généalogiste a conclu. AXGF enregistre aussi à quel point il en était sûr, et pourquoi. Chaque fait de ce fichier porte un degré de certitude de 0,0 à 1,0, et ce site le rend visible : une date de naissance à 98 % et une filiation spéculative à 35 % ne se ressemblent nulle part ici.
+home-why-2 = AXGF conserve également la forme de ce que la source disait vraiment. « vers 1500 », « avant 1430 » et « entre 1920 et 1925 » subsistent comme des affirmations distinctes au lieu de se réduire à un champ vide, et le texte qu'aucun convertisseur n'a su interpréter est conservé plutôt que supprimé. Les relations hors du sang et du mariage — parrain, employeur, témoin, mentor — sont des entités à part entière, avec leurs propres dates, sources et degré de certitude. Les métiers sont des périodes avec une durée, non des événements à date unique.
+home-why-spec = Lire la spécification sur github.com/plkarin/axgf-spec.
+home-in-this-bundle = Ce que contient ce fichier
+home-showcase-title = Ce que ce fichier contient et qu'AXGF seul permet
+home-showcase-note = Voici ce que ces données expriment et qu'un export GEDCOM ne pourrait pas transporter.
+home-showcase-example = Voir un exemple →
+home-nothing-title = Rien à montrer pour l'instant.
+home-nothing-detail = Envoyez un GEDCOM sur la page de conversion pour voir ce que le format capte, ou installez avec --with-sample pour amorcer un petit fichier de démonstration.
+
+showcase-links-title = { $n ->
+        [one] Une relation hors famille
+       *[other] { $n } relations hors famille
+    }
+showcase-links-detail = Parrains, employeurs, témoins et mentors, chacun avec ses propres dates, sa source et son degré de certitude. GEDCOM n'a aucun moyen de les énoncer.
+showcase-occupations-title = { $n ->
+        [one] Un métier enregistré comme une période
+       *[other] { $n } métiers enregistrés comme des périodes
+    }
+showcase-occupations-detail = « Instituteur, 1948-1978 » est un état avec une durée, rendu comme une barre chronologique plutôt qu'aplati en un événement daté.
+showcase-uncertain-title = { $n ->
+        [one] Une date honnêtement imprécise
+       *[other] { $n } dates honnêtement imprécises
+    }
+showcase-uncertain-detail = Vers, avant, après et entre sont conservés comme des affirmations distinctes. Une date que la source n'a pas su fixer n'est pas présentée comme si elle l'était.
+showcase-preserved-title = { $n ->
+        [one] Une date illisible conservée mot pour mot
+       *[other] { $n } dates illisibles conservées mot pour mot
+    }
+showcase-preserved-detail = Le texte qu'aucun convertisseur n'a su interpréter survit comme une note au lieu d'être supprimé en silence.
+showcase-sources-title = { $n ->
+        [one] Une source classée par fiabilité
+       *[other] { $n } sources classées par fiabilité
+    }
+showcase-sources-detail = { $primary ->
+        [one] Une source primaire.
+       *[other] { $primary } primaires.
+    } Chaque fait indique sur quelle preuve il repose, et la force de cette preuve.
+showcase-places-title = { $n ->
+        [one] Un lieu avec son histoire des frontières
+       *[other] { $n } lieux avec leur histoire des frontières
+    }
+showcase-places-detail = Une ville peut appartenir à différents pays selon l'époque, et le dossier dit lequel s'appliquait quand.
+
+## Fiche, détails
+
+record-also-recorded-as = également enregistré comme
+record-borders-moved = Frontières déplacées :
+record-display-name = nom d'usage
+record-read-as = se lit
+record-note = Note
+record-living-yes = vivant
+record-deceased = décédé
+record-centre-tree-here = Centrer l'arbre ici
+record-centre-tree-title = Déplacer l'arbre pour le centrer sur cette personne
+record-open-full-page = Ouvrir la page entière ↗
+record-open-full-title = Ouvrir la page autonome et partageable
+record-edit = Modifier
+panel-empty = Sélectionnez une fiche pour voir ici le dossier complet de cette personne.
+person-see-in-tree = Voir cette personne dans l'arbre
+person-visibility-inline = visibilité :
+person-sections-label = Sections de cette page
+
+result-diagnostics = Diagnostics
+result-diagnostics-note = Tous les diagnostics renvoyés par la bibliothèque, y compris les avertissements qui n'ont pas bloqué l'opération. Aucun n'est filtré.
+result-no-diagnostics = La bibliothèque n'a renvoyé aucun diagnostic.
+result-continue = Continuer
+result-dashboard = Tableau de bord
+
+record-gedcom-would-lose = Ce que GEDCOM perdrait ici :
+record-name = Nom
+record-type = Type
+record-cause = Cause :
+record-as = comme
+record-partner-not-recorded = Conjoint non enregistré
+record-union-from = À partir de
+record-union-at = à
+record-union-until = jusqu'à
+record-occupation-from = de
+record-occupation-until = à
+record-source-reliability = Fiabilité
+record-source-supports = Étaye
+record-photographs = Photographies
+record-documents = Documents
+record-file = Fichier
+record-status = État
+record-size = Taille
+record-absent-document = Cité par cette personne mais absent du fichier.
+record-no-file = aucun fichier
+record-attach-document = Joindre un document
+record-doc-photo = photographie
+record-doc-certificate = acte
+record-doc-letter = lettre
+record-doc-record = registre
+record-doc-newspaper = journal
+record-doc-other = autre
+record-upload = Téléverser
+record-upload-help = Jusqu'à { $mb } Mo par fichier. Les octets sont conservés dans un cache sur disque à côté du fichier et réécrits dans le .axgf à l'export : une pièce jointe voyage donc avec les données sans être gardée en mémoire. Le type est déterminé d'après les octets du fichier lui-même, non d'après son nom : images, PDF, texte brut, audio et vidéo sont acceptés. Le SVG est refusé, car un SVG peut porter du script.
+record-upload-help-short = Jusqu'à { $mb } Mo. Le SVG est refusé.
+record-verbatim-note = Conservé exactement tel que le dossier l'énonçait, parce qu'aucun convertisseur n'a su l'interpréter. L'autre solution aurait été de le supprimer.
+record-file-to-attach = Fichier à joindre
+record-document-type = Type de document
+record-caption = Légende
+record-caption-placeholder = Légende (facultative)
+record-history-entry-meta = — { $at }
+record-history-entry-version = , { $version }
+record-occupations-help-undated = AXGF enregistre un métier comme une période avec un début et une fin. Ce fichier en porte les intitulés mais aucune date — ce qui est typique d'un import GEDCOM, qui n'a nulle part où les mettre — il n'y a donc pas d'échelle à dessiner.
+record-occupations-help-axis = Un métier est un état avec une durée, non un événement à date unique. Toutes les périodes partagent un même axe, { $from }-{ $to }.
+record-birth-order = ordre de naissance
+record-start-not-recorded = début non enregistré
+record-end-not-recorded = fin non enregistrée
+record-document-no-file = Ce fichier enregistre le document mais n'en porte pas le contenu
+panel-selected-person = Personne sélectionnée
+
+## Types d'entités
+
+kind-person = personne
+kind-family = famille
+kind-event = événement
+kind-link = lien
+kind-occupation = métier
+kind-source = source
+kind-place = lieu
+kind-document = document
+
+kind-person-plural = { $n ->
+        [one] personne
+       *[other] personnes
+    }
+kind-family-plural = { $n ->
+        [one] famille
+       *[other] familles
+    }
+kind-event-plural = { $n ->
+        [one] événement
+       *[other] événements
+    }
+kind-link-plural = { $n ->
+        [one] lien
+       *[other] liens
+    }
+kind-occupation-plural = { $n ->
+        [one] métier
+       *[other] métiers
+    }
+kind-source-plural = { $n ->
+        [one] source
+       *[other] sources
+    }
+kind-place-plural = { $n ->
+        [one] lieu
+       *[other] lieux
+    }
+kind-document-plural = { $n ->
+        [one] document
+       *[other] documents
+    }
+
+## Listes
+
+list-matching = { $total ->
+        [one] Un résultat
+       *[other] { $total } résultats
+    }, { $per_page } par page.
+list-filter-placeholder = Filtrer par nom ou identifiant
+list-filter = Filtrer
+list-clear = Effacer
+list-summary = Résumé
+list-id = Identifiant
+list-actions = Actions
+list-nothing = Rien ici.
+list-nothing-matching = Rien ici ne correspond à « { $q } ».
+list-delete-confirm = Supprimer ce/cette { $kind } ? Choisissez ce qu'il advient des entités qui le référencent :
+list-policy-reject = Refuser
+list-policy-reject-detail = — refuser tant que quelque chose le référence encore. Rien n'est perdu.
+list-policy-cascade = Cascade
+list-policy-cascade-detail = — le supprimer et retirer physiquement chaque référence à lui.
+list-policy-orphan = Orphelin
+list-policy-orphan-detail = — le supprimer mais conserver les dossiers qui le citent, le lien mis à null.
+
+## Complétude, suite
+
+completeness-what-axgf-records = Ce qu'AXGF enregistre
+completeness-in-this-bundle = Dans ce fichier
+completeness-gedcom-cannot = GEDCOM ne peut pas exprimer ceci
+completeness-spec = spéc.
+completeness-dates-title = Les dates, selon la forme qu'elles ont réellement
+completeness-no-dates = Aucune date dans ce fichier.
+completeness-dates-note = AXGF conserve la différence entre une date que quelqu'un a pu fixer et une date qu'il n'a pas pu fixer. Le texte qu'aucun convertisseur n'a su lire est préservé plutôt que supprimé.
+completeness-dates-see = Voir la spécification §5.2.1 et §5.2.3.
+completeness-admin-note = Quels champs AXGF ce fichier utilise, et lesquels sont encore vides. La validation dit ce qui ne va pas dans les données ; ceci dit ce qu'il vaut la peine d'enrichir. Un champ vide ici n'est pas une erreur.
+completeness-shape-exact = exacte
+completeness-shape-exact-note = un jour de calendrier complet
+completeness-shape-approximate = approximative
+completeness-shape-approximate-note = vers, ou une année ou décennie seulement
+completeness-shape-ranged = par bornes
+completeness-shape-ranged-note = avant, après ou entre
+completeness-shape-preserved = préservée
+completeness-shape-preserved-note = texte illisible, conservé mot pour mot
+completeness-shape-unknown = inconnue
+completeness-shape-unknown-note = enregistrée comme non connue
+
+## Conversion, suite
+
+convert-page-title = Convertir un fichier GEDCOM
+convert-lede = Envoyez un fichier GEDCOM 5.5.1 et récupérez un fichier .axgf. Rien n'est conservé et le fichier servi par ce site n'est pas touché — la conversion est ici un utilitaire autonome.
+convert-file-label = Fichier GEDCOM (.ged)
+convert-file-hint = Jusqu'à { $mb } Mo. Un fichier de 767 personnes fait environ 320 Ko.
+convert-confidence-label = Degré de certitude par défaut
+convert-confidence-hint = GEDCOM n'enregistre pas à quel point un généalogiste était sûr : chaque fait importé a donc besoin d'un degré de certitude initial. C'est cette valeur — dont la lecture honnête est « ceci vient d'un GEDCOM et n'a pas été revu depuis ».
+convert-lang-label = Langue des noms de lieux
+convert-lang-hint = Une étiquette BCP 47 telle que en, fr ou pl. Les lieux AXGF portent des noms dans plusieurs langues ; ceci étiquette ceux que le GEDCOM fournit.
+convert-what-you-get = Ce que vous obtenez et que le GEDCOM n'avait pas
+convert-what-you-get-1 = Chaque fait importé gagne un degré de certitude, de sorte qu'une révision ultérieure puisse enregistrer le doute au lieu de l'écarter. Les dates gardent leur forme : vers 1500, avant 1430 et entre 1920 et 1925 restent des affirmations distinctes, et une date qu'aucun convertisseur n'a su analyser est conservée mot pour mot comme une note plutôt que supprimée. Les métiers deviennent des périodes avec un début et une fin. Les lieux deviennent des entités réutilisables pouvant porter une histoire des frontières.
+convert-no-way-back = La conversion inverse vers GEDCOM n'est pas proposée. GEDCOM n'a nulle part où mettre le degré de certitude, les relations hors famille, les périodes d'activité ou l'incertitude préservée : le trajet retour est donc lacunaire par nature et n'est pas un objectif de ce projet.
+convert-failed = La conversion a échoué
+convert-try-another = Essayer un autre fichier
+convert-converted = { $filename } converti
+convert-result-lede = { $total ->
+        [one] Une entité
+       *[other] { $total } entités
+    }, { $size } Ko. Importé avec un degré de certitude de { $confidence } et des noms de lieux étiquetés { $lang }. Le fichier servi par ce site n'a pas été modifié.
+convert-produced = Ce que la conversion a produit
+convert-completeness-title = Ce que votre GEDCOM portait, et ce qu'AXGF peut accueillir
+convert-completeness-note = Compté à partir du fichier que vous venez d'envoyer. Là où une ligne ci-dessous est vide, c'est que GEDCOM n'avait nulle part où mettre cette information — non que la conversion l'ait perdue.
+convert-skipped-title = { $n ->
+        [one] Une balise ne portant aucune donnée exploitable
+       *[other] { $n } balises ne portant aucune donnée exploitable
+    }
+convert-skipped-note = Ces balises GEDCOM ont été écartées parce qu'elles ne contenaient rien qu'AXGF puisse représenter. Elles sont listées plutôt qu'avalées : savoir exactement ce qui a été laissé de côté fait la différence entre une conversion à laquelle on peut se fier et une autre.
+convert-other-diagnostics = { $n ->
+        [one] Un autre diagnostic
+       *[other] { $n } autres diagnostics
+    }
+convert-clean = Le convertisseur n'a rien signalé — chaque balise du fichier a été traduite proprement.
+convert-download-title = Téléchargement
+convert-download-named = Télécharger { $name }
+convert-download-note = Conservé quinze minutes, puis supprimé. Pour parcourir ces données sur un site comme celui-ci, faites pointer --bundle vers le fichier téléchargé et redémarrez, ou remplacez le fichier servi depuis le panneau d'administration.
+convert-another = Convertir un autre fichier
+
+## Administration, suite
+
+admin-history-on = sur
+admin-history-meta = — { $kind }, { $at }
+admin-validation-counts = { $errors ->
+        [one] Une erreur
+       *[other] { $errors } erreurs
+    }, { $warnings ->
+        [one] un avertissement
+       *[other] { $warnings } avertissements
+    }, { $infos ->
+        [one] une note
+       *[other] { $infos } notes
+    }.
+admin-warnings-never-block = Les avertissements ne bloquent jamais — ce sont des informations, pas des barrières.
+admin-validator-clean = Le validateur n'a rien signalé.
+admin-validation-report = Rapport de validation
+admin-dedup-complete = Dédoublonnage terminé
+admin-dedup-refused = Dédoublonnage refusé
+admin-value-not-set = non renseigné
+
+## Bandes de l'arbre
+
+tree-band-generation = Génération { $g }
+tree-band-people = { $n ->
+        [one] une personne
+       *[other] { $n } personnes
+    }
+tree-band-unplaced = Sans place
+tree-band-unplaced-note = { $n ->
+        [one] une personne dans aucune famille — affichée plutôt qu'omise
+       *[other] { $n } personnes dans aucune famille — affichées plutôt qu'omises
+    }
+
+## Vocabulaire contrôlé
+
+gender-M = Masculin
+gender-F = Féminin
+gender-NB = Non binaire
+gender-unrecorded = Non renseigné
+
+name-part-given_name = prénom
+name-part-family_name = nom de famille
+name-part-patronymic = patronyme
+name-part-matronymic = matronyme
+name-part-middle_name = deuxième prénom
+name-part-nickname = surnom
+name-part-prefix = particule initiale
+name-part-suffix = suffixe
+name-part-particle = particule
+name-part-part = élément
+
+name-type-primary = principal
+name-type-other = autre
+name-type-alias = alias
+name-type-birth = de naissance
+name-type-married = d'épouse
+name-type-religious = de religion
+name-type-transliteration = translittération
+name-type-nickname = surnom
+
+## Notes de mise en avant
+
+note-links = { $n ->
+        [one] une relation hors famille avec ses propres dates, sources et degré de certitude
+       *[other] { $n } relations hors famille avec leurs propres dates, sources et degré de certitude
+    }
+note-occupations = { $n ->
+        [one] un métier enregistré comme une période et non comme un événement
+       *[other] { $n } métiers enregistrés comme des périodes et non comme des événements
+    }
+note-birth-imprecise = une date de naissance que la source n'a pas su fixer, montrée telle qu'enregistrée
+note-death-imprecise = une date de décès que la source n'a pas su fixer, montrée telle qu'enregistrée
+note-names = { $n ->
+        [one] un nom enregistré
+       *[other] { $n } noms enregistrés
+    }
+note-transliteration = un nom dans son écriture d'origine à côté de sa translittération latine
+note-witnessed = { $n ->
+        [one] un événement dont elle a été témoin sans en être le sujet
+       *[other] { $n } événements dont elle a été témoin sans en être le sujet
+    }
+
+visibility-public = public
+visibility-members = membres
+visibility-contributors = contributeurs
+visibility-private = privé

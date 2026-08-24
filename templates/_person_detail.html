@@ -23,7 +23,7 @@
 {# ---------------------------------------------------------------- IDENTITY #}
 {% if p.names or p.gender %}
 <section id="identity" class="rec-section">
-  {{ m.sec("Identity", compact, "") }}
+  {{ m.sec(t, t("record-identity"), compact, t("record-identity-help")) }}
 
   {% if p.names %}
     {# One name is a heading with a small type label beside it. A table for a
@@ -47,7 +47,7 @@
             <span class="name-native"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
                   {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</span>
             {%- if n.latin %}
-              <span class="name-latin" title="Latin transliteration">{{ n.latin }}</span>
+              <span class="name-latin" title="{{ t('record-transliteration') }}">{{ n.latin }}</span>
             {%- endif %}
             {% if n.reading %}
               <div class="small muted">{{ t("record-read-as") }} {{ n.reading }}{% if n.reading_system %}
@@ -81,11 +81,7 @@
 {# ------------------------------------------------------------- LIFE EVENTS #}
 {% if p.timeline %}
 <section id="life" class="rec-section">
-  {{ m.sec("Life events", compact,
-     "Birth, death and every event this person took part in, in the order they
-      happened. Being a witness at someone else's marriage is a fact about them,
-      so it is here too. An undated fact sorts last rather than pretending to
-      come first.") }}
+  {{ m.sec(t, t("record-life-events"), compact, t("record-life-events-help")) }}
   <ol class="life">
     {% for e in p.timeline %}
     <li class="life-row" data-kind="{{ e.kind }}">
@@ -110,7 +106,7 @@
 {# ------------------------------------------------------------------ FAMILY #}
 {% if p.parents or p.siblings or p.unions %}
 <section id="family" class="rec-section">
-  {{ m.sec("Family", compact, "") }}
+  {{ m.sec(t, t("record-family"), compact, t("record-family-help")) }}
   {# Only wrap a grid around cards that exist: an empty two-column grid still
      takes its gap, which at panel width is visible. #}
   {% if p.parents or p.siblings %}
@@ -153,7 +149,7 @@
     <ul class="plain">
       {% for c in u.children %}
       <li class="rel">
-        {% if c.birth_order %}<span class="birth-order" title="birth order">{{ c.birth_order }}</span>{% endif %}
+        {% if c.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ c.birth_order }}</span>{% endif %}
         {{ m.person_link(c) }}
         {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}
         {%- if c.detail %} <span class="small muted">{{ c.detail }}</span>{% endif %}
@@ -170,11 +166,7 @@
 {# --------------------------------------------------- OTHER RELATIONSHIPS #}
 {% if p.links %}
 <section class="links-section rec-section" id="relationships">
-  {{ m.sec("Other relationships", compact,
-     "Godparents, employers, witnesses, mentors — relationships that are not
-      blood or marriage. Each carries its own dates, source and confidence, and
-      reads from this person's side: “godfather of” and “godchild of” are the
-      same record seen from opposite ends. GEDCOM cannot state any of them.") }}
+  {{ m.sec(t, t("record-other-relationships"), compact, t("record-other-relationships-help")) }}
   <div class="grid cols-2">
     {% for l in p.links %}
     <div class="link-card" data-dir="{{ l.direction }}">
@@ -203,9 +195,8 @@
 {% if p.occupations %}
 <section id="occupations" class="rec-section">
   {% if p.has_timeline %}
-  {{ m.sec("Occupations", compact,
-     "An occupation is a state with a duration, not an event on a single date.
-      All spans share one axis, " ~ p.timeline_from ~ "–" ~ p.timeline_to ~ ".") }}
+  {{ m.sec(t, t("record-occupations"), compact,
+     t("record-occupations-help-axis", from=p.timeline_from, to=p.timeline_to)) }}
   <div class="timeline">
     {% for o in p.occupations %}
     <div class="tl-row">
@@ -217,10 +208,14 @@
       </div>
       <div class="tl-track">
         <div class="tl-bar" data-band="{{ o.confidence.band if o.confidence else 'medium' }}"
-             style="left:{{ o.bar_left }}%;width:{{ o.bar_width }}%"
+             {#- A chronological axis mirrors with the text direction: in an
+                 RTL layout the earlier date belongs on the right. Using the
+                 logical property rather than `left` is what makes that happen
+                 without a second stylesheet or a second set of numbers. -#}
+             style="inset-inline-start:{{ o.bar_left }}%;width:{{ o.bar_width }}%"
              title="{{ o.title }}, {{ o.span }}{% if o.confidence %} — {{ o.confidence.description }}{% endif %}">
-          {%- if o.open_start %}<span class="tl-open tl-open-l" title="start not recorded"></span>{% endif -%}
-          {%- if o.open_end %}<span class="tl-open tl-open-r" title="end not recorded"></span>{% endif -%}
+          {%- if o.open_start %}<span class="tl-open tl-open-l" title="{{ t('record-start-not-recorded') }}"></span>{% endif -%}
+          {%- if o.open_end %}<span class="tl-open tl-open-r" title="{{ t('record-end-not-recorded') }}"></span>{% endif -%}
         </div>
       </div>
       <div class="tl-meta">
@@ -234,10 +229,7 @@
     </div>
   </div>
   {% else %}
-  {{ m.sec("Occupations", compact,
-     "AXGF records an occupation as a span with a start and an end. This bundle
-      carries the titles but no dates for them — typical of a GEDCOM import,
-      which has nowhere to put them — so there is no scale to draw.") }}
+  {{ m.sec(t, t("record-occupations"), compact, t("record-occupations-help-undated")) }}
   <ul class="plain">
     {% for o in p.occupations %}
     <li>
@@ -257,7 +249,7 @@
 {# ------------------------------------------------------------------ PLACES #}
 {% if p.places %}
 <section id="places" class="rec-section">
-  {{ m.sec("Places", compact, "") }}
+  {{ m.sec(t, t("record-places"), compact, t("record-places-help")) }}
   <div class="grid cols-3">
     {% for pu in p.places %}
     <div class="card place-card">
@@ -282,10 +274,7 @@
 {# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
 {% if p.sources or p.documents or is_admin %}
 <section id="evidence" class="rec-section">
-  {{ m.sec("Sources and documents", compact,
-     "Sources are graded, so a claim resting on a birth certificate is
-      distinguishable from one resting on family recollection — and each row
-      names the facts on this page that depend on it.") }}
+  {{ m.sec(t, t("record-sources-documents"), compact, t("record-sources-documents-help")) }}
 
   {% if p.sources %}
   {# `data-label` on every cell is what lets the panel stack this table into
@@ -361,7 +350,7 @@
             <a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a>
           {% else %}
             <span class="muted"
-                  title="This bundle records the document but does not carry the file">{{ t("record-no-file") }}</span>
+                  title="{{ t('record-document-no-file') }}">{{ t("record-no-file") }}</span>
           {% endif %}
         </td>
       </tr>
@@ -402,7 +391,7 @@
 {# ------------------------------------------------------------------- NOTES #}
 {% if p.notes %}
 <section id="notes" class="rec-section">
-  {{ m.sec("Notes", compact, "") }}
+  {{ m.sec(t, t("record-notes"), compact, t("record-notes-help")) }}
   {% for n in p.notes %}
   <div class="note-block{% if n.verbatim %} verbatim{% endif %}">
     <h3>{{ n.label }}</h3>
@@ -422,11 +411,7 @@
    would put it back where it was kept out of. #}
 {% if history %}
 <section id="history" class="rec-section">
-  {{ m.sec("History", compact,
-     "Every saved change to this record, newest first, from the edit journal
-      beside the bundle. Who corrected what is a fact about this family's
-      editors rather than about the family, so it is kept out of the .axgf and
-      shown only to people signed in.") }}
+  {{ m.sec(t, t("record-history"), compact, t("record-history-help")) }}
   <ol class="history">
     {% for h in history %}
     <li>
@@ -441,8 +426,8 @@
           {% for c in h.changes %}
             <tr>
               <td data-label="Field"><code>{{ c.path }}</code></td>
-              <td data-label="From"><span class="diff-from">{{ c.from if c.from else "— not set —" }}</span></td>
-              <td data-label="To"><span class="diff-to">{{ c.to if c.to else "— not set —" }}</span></td>
+              <td data-label="From"><span class="diff-from">{{ c.from if c.from else t("admin-not-set") }}</span></td>
+              <td data-label="To"><span class="diff-to">{{ c.to if c.to else t("admin-not-set") }}</span></td>
             </tr>
           {% endfor %}
           </tbody>

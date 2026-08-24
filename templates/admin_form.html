@@ -1,8 +1,14 @@
 {% extends "base.html" %}
-{% block title %}{% if creating %}New {{ kind }}{% else %}Edit {{ kind }}{% endif %} — axgf-cms{% endblock %}
+{% block title %}
+  {%- if creating %}{{ t("admin-new-kind", kind=t("kind-" ~ kind)) }}
+  {%- else %}{{ t("admin-edit") }} {{ t("kind-" ~ kind) }}{% endif %} — {{ t("app-name") }}
+{%- endblock %}
 {% block content %}
 
-<h1>{% if creating %}New {{ kind }}{% else %}Edit {{ kind }}{% endif %}</h1>
+<h1>
+  {%- if creating %}{{ t("admin-new-kind", kind=t("kind-" ~ kind)) }}
+  {%- else %}{{ t("admin-edit") }} {{ t("kind-" ~ kind) }}{% endif -%}
+</h1>
 {% if not creating %}<p class="lede mono small">{{ id }}</p>{% endif %}
 
 {% if error %}<div class="notice error"><p>{{ error }}</p></div>{% endif %}
@@ -18,7 +24,7 @@
   {% endif %}
 
   <fieldset>
-    <legend>Fields</legend>
+    <legend>{{ t("admin-fields") }}</legend>
     {% for f in fields %}
     <div class="field">
       {% if f.kind == "bool" %}
@@ -32,14 +38,14 @@
         <select id="{{ f.path }}" name="{{ f.path }}">
           {% for o in f.options %}
           <option value="{{ o }}" {% if o == f.value %}selected{% endif %}>
-            {{ o if o else "— not set —" }}
+            {{ o if o else t("admin-not-set") }}
           </option>
           {% endfor %}
         </select>
 
       {% elif f.kind == "confidence" %}
         <label for="{{ f.path }}">
-          {{ f.label }} — <output id="out-{{ loop.index }}">{{ f.value if f.value else "not set" }}</output>
+          {{ f.label }} — <output id="out-{{ loop.index }}">{{ f.value if f.value else t("admin-value-not-set") }}</output>
         </label>
         <input type="range" id="{{ f.path }}" name="{{ f.path }}"
                min="0" max="1" step="0.05" value="{{ f.value if f.value else '' }}"
@@ -60,49 +66,39 @@
   </fieldset>
 
   <fieldset>
-    <legend>Raw JSON</legend>
-    <p class="hint" style="margin-top:0">
-      The whole entity, so nothing is uneditable — lists such as a family's
-      partners and children, or a place's border history, live here. This is
-      the starting document; the fields above are then written over the paths
-      they own, so edit a value in one place or the other, not both.
-      It must parse as JSON or nothing is saved.
-    </p>
+    <legend>{{ t("admin-raw-json") }}</legend>
+    <p class="hint" style="margin-top:0">{{ t("admin-raw-json-help") }}</p>
     <textarea name="raw_json" rows="16" spellcheck="false">{{ raw }}</textarea>
   </fieldset>
 
   <div class="cta-row">
     <button class="btn primary" type="submit">
-      {% if creating %}Create{% else %}Save{% endif %}
+      {% if creating %}{{ t("admin-create") }}{% else %}{{ t("admin-save") }}{% endif %}
     </button>
-    <a class="btn" href="/admin/{{ kind }}">Cancel</a>
+    <a class="btn" href="/admin/{{ kind }}">{{ t("admin-cancel") }}</a>
   </div>
 </form>
 
 
 {% if history %}
-<h2>History</h2>
-<p class="small muted">
-  Every saved change to this {{ kind }}, newest first. Kept in the edit
-  journal beside the bundle, never inside it — the bundle is shared, and who
-  corrected what is a fact about the family's editors rather than about the
-  family.
-</p>
+<h2>{{ t("record-history") }}</h2>
+<p class="small muted">{{ t("record-history-help") }}</p>
 <ol class="history">
   {% for h in history %}
   <li>
     <strong>{{ h.who }}</strong> {{ h.summary }}
-    <span class="small muted">— {{ h.at }}{% if h.version_num %}, version {{ h.version_num }}{% endif %}</span>
+    <span class="small muted">{{ t("record-history-entry-meta", at=h.at) }}
+      {%- if h.version_num %}{{ t("record-history-entry-version", version=t("admin-version", version=h.version_num)) }}{% endif %}</span>
     {% if h.changes %}
     <details>
-      <summary class="small">what changed</summary>
+      <summary class="small">{{ t("admin-what-changed") }}</summary>
       <table class="wide diff-table">
         <tbody>
         {% for c in h.changes %}
           <tr>
-            <td data-label="Field"><code>{{ c.path }}</code></td>
-            <td data-label="From"><span class="diff-from">{{ c.from if c.from else "— not set —" }}</span></td>
-            <td data-label="To"><span class="diff-to">{{ c.to if c.to else "— not set —" }}</span></td>
+            <td data-label="{{ t('admin-field') }}"><code>{{ c.path }}</code></td>
+            <td data-label="{{ t('admin-from') }}"><span class="diff-from">{{ c.from if c.from else t("admin-not-set") }}</span></td>
+            <td data-label="{{ t('admin-to') }}"><span class="diff-to">{{ c.to if c.to else t("admin-not-set") }}</span></td>
           </tr>
         {% endfor %}
         </tbody>

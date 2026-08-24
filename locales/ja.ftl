@@ -55,8 +55,6 @@ tree-filter-placeholder = 名前を入力…
 tree-centre-on = 中心にする人物
 tree-depth = 上下それぞれの世代数
 tree-show = 表示
-tree-whole-tree = 家系図全体
-tree-focused = 絞り込み表示
 tree-hidden-notice = { $n ->
        *[other] { $n } 名は詳細を伏せて表示されています
     }
@@ -66,9 +64,6 @@ tree-hidden-sign-in = アカウントをお持ちならサインインしてく�
 tree-restricted-card = この人物の記録は閲覧できません
 tree-empty = このファイルには描画できる人物がいません。
 tree-unplaced = 記録された家族に属さない
-tree-legend-confidence = 線の濃さは確からしさを表します
-tree-recentre = ここを中心に描き直す
-tree-open-record = 全記録を開く
 
 record-identity = 身元
 record-life-events = 生涯の出来事
@@ -93,27 +88,19 @@ record-no = いいえ
 record-name-type = 名前の種類
 record-name-used = 使用時期
 record-name-evidence = 証拠
-record-name-primary = 主たる名前
 record-transliteration = ラテン文字転写
 record-born = 生誕
 record-died = 死去
 record-parents = 両親
 record-siblings = きょうだい
 record-children = 子
-record-spouse = 配偶者
-record-union-ended = 終了
-record-no-date = 日付不明
 record-unknown-person = [不明]
 record-restricted-person = 非公開
 record-restricted-title = この人物の記録は閲覧できません
 record-absent-person-title = このファイルに言及はあるが収録されていない
 record-confidence = 確からしさ
 record-source = 出典
-record-role = 役割
 record-download = ダウンロード
-record-attach-file = ファイルを添付
-record-attach-hint = { $mb } MB まで。画像はギャラリーに表示され、それ以外はダウンロードリンク付きで一覧されます。
-record-no-documents = この記録に添付されたファイルはありません。
 
 access-restricted-title = 閲覧できません
 access-restricted-anonymous = この記録は公開されていません。お使いのアカウントで閲覧できるかはサインインしてご確認ください。
@@ -170,18 +157,15 @@ admin-cancel = 取消
 admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集
-admin-search = 検索
 admin-page-of = { $pages } ページ中 { $page } ページ目
 admin-previous = 前へ
 admin-next = 次へ
-admin-nothing-here = この種の記録はこのファイルにまだありません。
 admin-saved = バージョン { $version } として保存しました — { $summary }
 admin-not-saved = 保存されませんでした
 admin-created = 作成しました
 admin-not-created = 作成されませんでした
 admin-deleted = 削除しました
 admin-not-deleted = 削除されませんでした — ファイルは変更されていません
-admin-delete-policy = 参照整合性
 admin-what-changed = 変更内容
 admin-field = 項目
 admin-from = 変更前
@@ -238,25 +222,14 @@ conflict-discard = 自分の版を破棄してやり直す
 conflict-their-version = ファイルが現在保持している { $who } の版
 conflict-history-of = この記録（{ $kind }）の変更履歴
 
-home-lede = { $family } — 単一の .axgf ファイル内の { $total ->
-       *[other] { $total } 件の記録
-    }。
 home-why-title = なぜ AXGF か
-home-what-this-bundle-has = このファイルが実際に含むもの
-home-browse-tree = 家系図を見る
-home-convert-gedcom = GEDCOM を変換する
-home-see-example = 例を見る
 
 convert-title = GEDCOM を AXGF に変換
-convert-choose-file = GEDCOM ファイル
 convert-submit = 変換
 convert-result-title = 変換結果
 convert-download = .axgf ファイルをダウンロード
-convert-diagnostics = 変換器の報告
-convert-unchanged-note = 変換がこのサイトの配信しているファイルに触れることはありません。
 
 completeness-title = ファイルの充足度
-completeness-recorded = 記録あり
 completeness-empty = 空
 completeness-spec-field = AXGF 項目
 

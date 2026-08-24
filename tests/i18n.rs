@@ -46,6 +46,12 @@ fn visible_text(src: &str) -> Vec<(usize, String)> {
     // statements, so it is removed by name rather than by guessing at which
     // single words are safe.
     let mut text = blank_class_blocks(src);
+    // A command, a filename or a field path is the same in every language.
+    // `<code>` and `<pre>` mark exactly that, so their contents are not prose
+    // — while the sentence around them still is, and is still checked.
+    for (open, close) in [("<code>", "</code>"), ("<pre", "</pre>")] {
+        text = blank_between(&text, open, close);
+    }
     for (open, close) in [("{#", "#}"), ("{%", "%}"), ("{{", "}}"), ("<", ">")] {
         text = blank_between(&text, open, close);
     }
@@ -202,9 +208,6 @@ fn is_prose(text: &str) -> bool {
 }
 
 #[test]
-#[ignore = "translation is mid-migration: ~200 template strings and the French \
-            backfill are still outstanding. Run with --ignored to see the worklist; \
-            the ignore comes off in the commit that finishes it."]
 fn no_template_carries_a_hardcoded_english_string() {
     let mut offences: Vec<String> = Vec::new();
     for path in templates() {
@@ -233,9 +236,6 @@ fn ids_of(path: &Path) -> BTreeSet<String> {
 }
 
 #[test]
-#[ignore = "translation is mid-migration: ~200 template strings and the French \
-            backfill are still outstanding. Run with --ignored to see the worklist; \
-            the ignore comes off in the commit that finishes it."]
 fn every_key_a_template_asks_for_exists_in_english() {
     // English is the fallback for every other locale, so a key missing *there*
     // renders as the key itself on every page in every language.
@@ -285,7 +285,14 @@ fn keys_in(line: &str) -> Vec<String> {
         };
         let after = &rest[1..];
         if let Some(end) = after.find(quote) {
-            out.push(after[..end].to_string());
+            // `t("kind-" ~ kind)` builds its key at render time, so the
+            // literal here is a prefix and not a message id. Those families
+            // are checked by expansion in
+            // `every_dynamic_key_family_is_fully_defined` instead.
+            let tail = after[end + 1..].trim_start();
+            if !tail.starts_with('~') {
+                out.push(after[..end].to_string());
+            }
         }
     }
     out
@@ -312,9 +319,6 @@ fn no_locale_defines_a_key_english_does_not() {
 }
 
 #[test]
-#[ignore = "translation is mid-migration: ~200 template strings and the French \
-            backfill are still outstanding. Run with --ignored to see the worklist; \
-            the ignore comes off in the commit that finishes it."]
 fn the_coverage_number_the_selector_shows_is_the_real_one() {
     // The whole honesty claim rests on this number, so it is checked against
     // the files rather than trusted.
@@ -338,4 +342,193 @@ fn the_coverage_number_the_selector_shows_is_the_real_one() {
             );
         }
     }
+}
+
+#[test]
+fn every_dynamic_key_family_is_fully_defined() {
+    // A template that builds its key — `t("kind-" ~ kind)` — cannot be checked
+    // by reading the source, so the families are enumerated here. The cost of
+    // this list is that it has to be kept in step; the cost of not having it
+    // is a page that renders `kind-family` to the reader.
+    let english = ids_of(&repo_root().join("locales/en.ftl"));
+    let mut expected: Vec<String> = Vec::new();
+
+    for kind in [
+        "person",
+        "family",
+        "event",
+        "link",
+        "occupation",
+        "source",
+        "place",
+        "document",
+    ] {
+        expected.push(format!("kind-{kind}"));
+        expected.push(format!("kind-{kind}-plural"));
+    }
+    for shape in ["exact", "approximate", "ranged", "preserved", "unknown"] {
+        expected.push(format!("completeness-shape-{shape}"));
+        expected.push(format!("completeness-shape-{shape}-note"));
+    }
+    for role in ["viewer", "contributor", "admin"] {
+        expected.push(format!("accounts-role-{role}"));
+    }
+    for theme in axgf_cms::theme::THEMES {
+        expected.push(theme.key.to_string());
+        if let Some(note) = theme.note_key {
+            expected.push(note.to_string());
+        }
+    }
+    for m in 1..=12 {
+        expected.push(format!("month-{m}"));
+    }
+
+    let missing: Vec<&String> = expected.iter().filter(|k| !english.contains(*k)).collect();
+    assert!(missing.is_empty(), "English is missing {missing:?}");
+}
+
+#[test]
+fn no_template_passes_a_literal_sentence_into_an_expression() {
+    // The first version of this file only looked at text *between* tags, and
+    // so missed `{{ m.sec("Sources and documents", …) }}` — seven section
+    // headings and their help paragraphs, sitting in plain sight inside an
+    // expression. Anything a template hands to a macro is just as visible to a
+    // reader as anything it prints directly.
+    let mut offences: Vec<String> = Vec::new();
+    for path in templates() {
+        let src = std::fs::read_to_string(&path).expect("read template");
+        let name = path.file_name().unwrap().to_string_lossy().to_string();
+        // Line numbers survive because the comment blanking keeps newlines.
+        let scrubbed = blank_between(&src, "{#", "#}");
+        for (i, line) in scrubbed.lines().enumerate() {
+            for literal in string_literals(line) {
+                if is_sentence(&literal) && !keys_in(line).contains(&literal) {
+                    offences.push(format!("  {name}:{}  {literal:?}", i + 1));
+                }
+            }
+        }
+    }
+    assert!(
+        offences.is_empty(),
+        "{} literal sentence(s) passed into a template expression. A string \
+         handed to a macro reaches the reader exactly like one printed \
+         directly, so it has to come from a locale file too:\n{}",
+        offences.len(),
+        offences.join("\n")
+    );
+}
+
+/// Whether a literal inside an expression is a sentence rather than an
+/// identifier.
+///
+/// Stricter than [`is_prose`], because an expression legitimately contains
+/// template names, message-key prefixes, filter arguments and comparison
+/// values — `"base.html"`, `"kind-"`, `"eq"`, `"preserved"`. What none of
+/// those are is *two words*, so that is the line: two or more runs of at least
+/// two letters, separated by space.
+fn is_sentence(text: &str) -> bool {
+    text.split_whitespace()
+        .filter(|w| w.chars().filter(|c| c.is_alphabetic()).count() >= 2)
+        .count()
+        >= 2
+        && is_prose(text)
+}
+
+/// Every quoted string inside a `{{ … }}` or `{% … %}` on this line.
+///
+/// Attribute values are *not* included: this reads only what is inside
+/// template constructs, because `class="lede"` is markup and `"Identity"` in
+/// an expression is a sentence.
+fn string_literals(line: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for (open, close) in [("{{", "}}"), ("{%", "%}")] {
+        let mut from = 0;
+        while let Some(i) = line[from..].find(open) {
+            let start = from + i + open.len();
+            let end = line[start..]
+                .find(close)
+                .map(|j| start + j)
+                .unwrap_or(line.len());
+            let expr = &line[start..end];
+            let mut rest = expr;
+            while let Some(q) = rest.find(['"', '\'']) {
+                let quote = rest.as_bytes()[q] as char;
+                let after = &rest[q + 1..];
+                match after.find(quote) {
+                    Some(e) => {
+                        out.push(after[..e].to_string());
+                        rest = &after[e + 1..];
+                    }
+                    None => break,
+                }
+            }
+            from = end;
+        }
+    }
+    out
+}
+
+#[test]
+fn no_template_carries_a_hardcoded_attribute() {
+    // The third blind spot, after text between tags and literals inside
+    // expressions: `title="This person's record is not visible to you"` is
+    // read aloud by a screen reader and shown on hover, and was sitting in
+    // English while everything around it was translated. Attributes that a
+    // reader perceives are checked; `class` and `href` are not.
+    const PERCEIVED: [&str; 4] = ["title", "aria-label", "placeholder", "alt"];
+    let mut offences: Vec<String> = Vec::new();
+
+    for path in templates() {
+        let src = std::fs::read_to_string(&path).expect("read template");
+        let name = path.file_name().unwrap().to_string_lossy().to_string();
+        let scrubbed = blank_between(&src, "{#", "#}");
+        for (i, line) in scrubbed.lines().enumerate() {
+            for attr in PERCEIVED {
+                for value in attribute_values(line, attr) {
+                    // Whatever the value builds from expressions and
+                    // statements is already going through the catalogue; only
+                    // what is left as literal text is a hardcoded string.
+                    let bare = blank_between(&value, "{{", "}}");
+                    let bare = blank_between(&bare, "{%", "%}");
+                    if is_prose(bare.trim()) {
+                        offences.push(format!("  {name}:{}  {attr}={value:?}", i + 1));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        offences.is_empty(),
+        "{} hardcoded attribute(s). A title or an aria-label is text a reader \
+         hears or hovers, so it comes from a locale file too:\n{}",
+        offences.len(),
+        offences.join("\n")
+    );
+}
+
+/// Every `attr="…"` value on this line.
+fn attribute_values(line: &str, attr: &str) -> Vec<String> {
+    let needle = format!("{attr}=\"");
+    let mut out = Vec::new();
+    let mut from = 0;
+    while let Some(i) = line[from..].find(&needle) {
+        let at = from + i;
+        // Not the tail of another attribute name: `data-title=` is not
+        // `title=`.
+        let ok = at == 0 || {
+            let c = line.as_bytes()[at - 1] as char;
+            c.is_whitespace()
+        };
+        let start = at + needle.len();
+        match line[start..].find('"') {
+            Some(j) => {
+                if ok {
+                    out.push(line[start..start + j].to_string());
+                }
+                from = start + j + 1;
+            }
+            None => break,
+        }
+    }
+    out
 }

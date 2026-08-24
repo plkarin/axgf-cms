@@ -46,10 +46,22 @@ fn every_theme_redefines_every_colour_root_defines() {
     // palette. One forgotten line is then a light-coloured element sitting in
     // a dark page, and it will be found by a reader rather than by us.
     let css = css();
+    // Geometry, typography and timing are the same in every theme by design:
+    // a theme changes what the interface looks like, not how fast it moves or
+    // how round its corners are. Everything else is a colour, and a theme that
+    // misses one inherits the light palette's.
+    const NOT_A_COLOUR: &[&str] = &[
+        "--radius",
+        "--radius-sm",
+        "--radius-lg",
+        "--mono",
+        "--tempo",
+        "--ease",
+        "--shadow-a",
+    ];
     let root: BTreeSet<String> = block_vars(&css, ":root {")
         .into_iter()
-        // Not colours: these are the same in every theme by design.
-        .filter(|v| v != "--radius" && v != "--mono")
+        .filter(|v| !NOT_A_COLOUR.contains(&v.as_str()))
         .collect();
 
     for sel in THEME_SELECTORS {

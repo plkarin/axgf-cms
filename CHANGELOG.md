@@ -12,6 +12,63 @@ seven themes.
 
 ### Added
 
+**A visual pass over the controls.** A refinement of what was there, not a
+redesign: no framework, no build step, one binary and a static directory as
+before.
+
+- **Buttons and form controls** share one height, one radius and one
+  transition, so a row of them lines up on its centres instead of drifting by
+  a padding value. Hover fills rather than fades — dropping opacity would take
+  the label's contrast down with it, and several of these pairs have no margin
+  to give away. Pressing moves the control one pixel: enough to feel, not
+  enough to shift what is around it. The primary action reads as primary
+  through weight and fill rather than size, so it does not break the rhythm of
+  the row it sits in.
+- **The language selector** had no rules at all and rendered as the browser's
+  default disclosure triangle beside an emoji — `▸ 🌐 English`. It is now a
+  control with a chevron that turns, opening a positioned panel so the
+  masthead does not change height and shift the page under the pointer. Each
+  language is listed in its own script with its English name and its real
+  coverage. The globe is an inline SVG in `currentColor` rather than an emoji,
+  which is a font dependency that renders as a replacement box wherever that
+  font is missing and cannot take the theme's ink.
+- **Tables** got taller rows — 0.5rem put the lines close enough that the eye
+  lost its place scanning a column — a sticky header, a hover state, and
+  tabular figures so a column of numbers compares digit by digit.
+- **Cards, notices and the panel** carry a soft elevation composed from two
+  per-theme tokens rather than a literal shadow each, with the high-contrast
+  theme setting its strength to zero: that theme wants crisp edges, not soft
+  ones.
+- **Motion** runs at one duration and one easing across the interface, so it
+  has a single tempo rather than one per component. The panel animates when a
+  fragment fetch replaces its content — the swap was instantaneous and it was
+  not obvious anything had happened. Every transition and animation collapses
+  to 0.01ms under `prefers-reduced-motion`, verified by rendering the page
+  under both settings.
+
+Both constraints from `0.2.0` survive, re-measured rather than assumed:
+
+| Theme | Worst required pair | Before | After |
+|---|---|---|---|
+| light | tree card border | 3.09 | 3.09 |
+| dark | select border | 3.13 | 3.13 |
+| high-contrast | small muted text → primary button label | 17.4 | 11.22 |
+| sepia | select border | 3.04 | 3.04 |
+| deuteranopia | tree card border | 3.05 | 3.05 |
+| protanopia | tree card border | 3.05 | 3.05 |
+| tritanopia | tree card border | 3.07 | 3.07 |
+
+The restyle introduced new colour pairs, so those were measured too rather
+than assumed to be safe: the hovered button (accent on accent-soft) is
+5.82–9.30:1, the selector badges 6.44–21:1, the hovered row and selector
+10.25–17.42:1. High-contrast's worst pair moved only because a new one — the
+primary button's label at 11.22:1 — is now the lowest of a set that no longer
+includes anything marginal.
+
+Confidence still reads without colour: the strip at 98/82/62/45/12% was
+re-rendered under each theme, through the dichromacy matrices and fully
+desaturated. Bar length and pie fill are untouched by the restyle.
+
 **The split follows the tree.** The panel's track was clamped but the split
 was still a fixed ratio, so a three-generation view — about 620px of cards —
 was given 1412px of a 1920px page and left an 809px band of nothing between

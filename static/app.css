@@ -62,7 +62,19 @@
   --hue-7: #1f7a8c;
   --hue-8: #8c3b3b;
 
-  --radius: 6px;
+  /* Elevation. Composed from a colour and a strength rather than a literal
+     shadow per theme, so a theme states two values instead of six. */
+  --shadow-rgb: 35 32 28;
+  --shadow-a: 0.07;
+
+  --radius: 7px;
+  --radius-sm: 5px;
+  --radius-lg: 11px;
+  /* One duration for everything that moves, so the interface has a single
+     tempo rather than a different one per component. Short enough that it
+     never delays a click. */
+  --tempo: 130ms;
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -136,6 +148,9 @@
     --hue-6: #d6b656;
     --hue-7: #6fc0d0;
     --hue-8: #d78a8a;
+
+    --shadow-rgb: 0 0 0;
+    --shadow-a: 0.45;
   }
 }
 
@@ -172,6 +187,9 @@
   --hue-6: #d6b656;
   --hue-7: #6fc0d0;
   --hue-8: #d78a8a;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.45;
 }
 
 /* --- high contrast ------------------------------------------------------- */
@@ -211,6 +229,9 @@
   --hue-6: #664400;
   --hue-7: #004466;
   --hue-8: #660000;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0;
 }
 
 /* --- sepia --------------------------------------------------------------- */
@@ -247,6 +268,9 @@
   --hue-6: #7a5f16;
   --hue-7: #2f6060;
   --hue-8: #6b2f2f;
+
+  --shadow-rgb: 74 58 34;
+  --shadow-a: 0.10;
 }
 
 /* --- colour-blind themes ------------------------------------------------- */
@@ -292,6 +316,9 @@
   --hue-6: #a06a2c;
   --hue-7: #00506e;
   --hue-8: #6b3a00;
+
+  --shadow-rgb: 20 28 38;
+  --shadow-a: 0.08;
 }
 
 /* Tritanopia is blue-yellow, so blue and yellow are the pair to avoid. The
@@ -330,6 +357,9 @@
   --hue-6: #2f8a8a;
   --hue-7: #7a1540;
   --hue-8: #005f66;
+
+  --shadow-rgb: 38 20 26;
+  --shadow-a: 0.08;
 }
 
 
@@ -403,9 +433,12 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.3rem;
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
 }
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
 
 .grid { display: grid; gap: 1rem; }
 .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
@@ -558,23 +591,87 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 
 .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0; }
 
-.btn {
-  display: inline-block;
+/* One control height across buttons, inputs and selects, so a row of them
+   lines up on its centres instead of drifting by a padding value. */
+.btn,
+input[type="text"], input[type="password"], input[type="email"],
+input[type="search"], input[type="file"], select, textarea {
+  border-radius: var(--radius);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.94rem;
+  font-family: inherit;
+  line-height: 1.35;
   border: 1px solid var(--border-strong);
   background: var(--surface);
   color: var(--ink);
-  border-radius: var(--radius);
-  padding: 0.45rem 0.9rem;
-  font-size: 0.94rem;
+  transition: background-color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease),
+              color var(--tempo) var(--ease),
+              box-shadow var(--tempo) var(--ease),
+              transform var(--tempo) var(--ease);
+}
+textarea { line-height: 1.5; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding-inline: 0.95rem;
   text-decoration: none;
   cursor: pointer;
-  font-family: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 1px 1px rgb(var(--shadow-rgb) / var(--shadow-a));
 }
-.btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.btn.primary:hover { opacity: 0.9; color: var(--on-accent); }
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+/* Pressing moves the control a single pixel. Enough to feel, not enough to
+   shift what is around it. */
+.btn:active { transform: translateY(1px); box-shadow: none; }
+
+/* The primary action reads as primary through weight and fill, not through
+   size — it sits in a row with the others and must not break the rhythm. */
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
+}
+.btn.primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  /* Lift rather than fade: dropping opacity would take the label's contrast
+     down with it, and this pair has no margin to give away. */
+  box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
+}
 .btn.danger { color: var(--conf-low); border-color: var(--conf-low); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.danger:hover {
+  color: var(--conf-low);
+  border-color: var(--conf-low);
+  background: var(--surface);
+  box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
+}
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-compact { padding: 0.3rem 0.65rem; font-size: 0.86rem; }
+.small-btn { padding: 0.3rem 0.6rem; font-size: 0.85rem; border-radius: var(--radius-sm); }
+
+select {
+  cursor: pointer;
+  /* Room for the native arrow so the value never sits under it. */
+  padding-inline-end: 1.8rem;
+}
+input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 
 /* ---------- notices ---------- */
 
@@ -595,9 +692,38 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 /* ---------- tables ---------- */
 
 table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
-th, td { text-align: start; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-weight: 600; }
+th, td {
+  text-align: start;
+  /* Taller rows: a listing is scanned down a column, and 0.5rem put the
+     lines close enough that the eye kept losing its place. */
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+  border-bottom-width: 2px;
+}
+th {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  font-weight: 600;
+  white-space: nowrap;
+}
+tbody tr { transition: background-color var(--tempo) var(--ease); }
 tbody tr:hover { background: var(--accent-soft); }
+tbody tr:last-child td { border-bottom: none; }
+/* A column of numbers is compared digit by digit, so it is aligned to its
+   end and set in figures of one width. */
+td.num, th.num, .conf-pct, .tdates {
+  font-variant-numeric: tabular-nums;
+}
+td.num, th.num { text-align: end; }
 .table-wrap { overflow-x: auto; }
 
 /* ---------- forms ---------- */
@@ -1664,4 +1790,204 @@ input:focus-visible, select:focus-visible,
 textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   The language and theme selector
+   ---------------------------------------------------------------------------
+   It was a `<details>` with no rules at all, so it rendered as the browser's
+   default disclosure triangle beside an emoji: "▸ 🌐 English". A `<details>`
+   is still the right element — it opens without script, which the rest of the
+   application also insists on — but it needs to read as a control.
+
+   The panel is positioned rather than in flow, so opening it does not push the
+   masthead's height around and shift the page under the pointer. */
+.prefs { position: relative; }
+
+.prefs > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  list-style: none;
+  user-select: none;
+  transition: background-color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease),
+              color var(--tempo) var(--ease);
+}
+/* The default marker, removed in both dialects. */
+.prefs > summary::-webkit-details-marker { display: none; }
+.prefs > summary::marker { content: ""; }
+
+.prefs > summary:hover {
+  background: var(--accent-soft);
+  border-color: var(--border);
+  color: var(--ink);
+}
+.prefs[open] > summary {
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+.prefs-current { font-weight: 500; }
+.prefs-globe { flex: none; opacity: 0.85; }
+.prefs-chevron {
+  flex: none;
+  opacity: 0.7;
+  transition: transform var(--tempo) var(--ease);
+}
+.prefs[open] .prefs-chevron { transform: rotate(180deg); }
+
+.prefs-panel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 0.4rem);
+  z-index: 60;
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: min(30rem, calc(100vh - 6rem));
+  overflow-y: auto;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 24px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 2.2));
+  text-align: start;
+  animation: prefs-open var(--tempo) var(--ease);
+}
+@keyframes prefs-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.prefs-panel fieldset { border: 0; padding: 0; margin: 0; }
+.prefs-panel fieldset + form { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
+.prefs-panel legend {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.4rem;
+}
+.prefs-panel .hint { margin: 0 0 0.6rem; }
+.prefs-panel .btn { margin-top: 0.7rem; width: 100%; }
+
+.lang-list, .theme-list { list-style: none; margin: 0; padding: 0; }
+.lang-list > li, .theme-list > li { margin: 0; }
+/* The whole row is the target, not the 13px radio in it. */
+.lang-list label, .theme-list label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--tempo) var(--ease);
+}
+.lang-list label:hover, .theme-list label:hover { background: var(--accent-soft); }
+.lang-list input, .theme-list input { flex: none; margin: 0; accent-color: var(--accent); }
+/* Each language named in itself, which is what a speaker of it looks for. */
+.lang-list label > span:nth-of-type(1) { font-weight: 500; color: var(--ink); }
+.lang-list label > span:nth-of-type(2) { margin-inline-start: auto; }
+
+.badge {
+  flex: none;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--ink-soft);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.badge.reviewed { border-color: var(--conf-certain); color: var(--conf-certain); }
+
+/* ---------------------------------------------------------------------------
+   Masthead
+   --------------------------------------------------------------------------- */
+.masthead-inner { align-items: center; }
+.chrome-nav { display: flex; align-items: center; gap: 0.75rem; }
+.masthead nav a {
+  padding: 0.3rem 0.15rem;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  transition: color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease);
+}
+.masthead nav a:hover { border-bottom-color: var(--border-strong); }
+.masthead nav a[aria-current="page"] {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   Panels and elevation
+   --------------------------------------------------------------------------- */
+.tree-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / var(--shadow-a));
+}
+/* The panel's content is replaced by a fragment fetch. Without a cue the swap
+   is instantaneous and it is not obvious anything happened; with one, the eye
+   is told where to look. The animation is on the inserted element, so it runs
+   on every replacement without a class having to be toggled. */
+.tree-panel .panel-inner { animation: panel-swap 180ms var(--ease); }
+@keyframes panel-swap {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.tcard {
+  box-shadow: 0 1px 1px rgb(var(--shadow-rgb) / var(--shadow-a));
+  transition: box-shadow var(--tempo) var(--ease),
+              transform var(--tempo) var(--ease),
+              opacity var(--tempo) var(--ease);
+}
+a.tcard:hover {
+  box-shadow: 0 0 0 2px var(--accent),
+              0 3px 10px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.8));
+  z-index: 3;
+}
+
+.notice {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
+}
+
+/* Chips and section controls pick up the same tempo as everything else. */
+.chip, .src-chip {
+  border-radius: 999px;
+  transition: background-color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease);
+}
+.sec-help > summary {
+  cursor: pointer;
+  border-radius: 999px;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  list-style: none;
+  transition: background-color var(--tempo) var(--ease),
+              color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease);
+}
+.sec-help > summary::-webkit-details-marker { display: none; }
+.sec-help > summary::marker { content: ""; }
+.sec-help > summary:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
 }

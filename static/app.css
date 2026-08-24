@@ -825,31 +825,62 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .tcard.is-selected { box-shadow: 0 0 0 3px var(--accent); z-index: 4; }
 
 /* ---- Tree + side panel -------------------------------------------------- */
-/* A scrollable tree on the left, a detail panel on the right, filling the
-   space the corner-arrow layout used to waste.
+/* A scrollable tree beside a detail panel.
+   ---------------------------------------------------------------------------
+   The split follows what the tree actually needs rather than a fixed ratio.
+   A three-generation view draws about 620px of cards; giving its column a
+   flat `1fr` of a 1920px page handed it 1412px and left an 809px band of
+   nothing between the drawing and the panel — on the widest screen, where
+   there was most to give away.
 
-   The panel track is clamped rather than fixed. At a flat 380px the same
-   column was a third of a 1100px laptop — squeezing the tree, the one thing
-   the page exists to show — and a thin sliver on a wide monitor, where the
-   record's tables and gallery had room to breathe and were not given it.
-   Sizing it at 26vw between a 320px floor and a 460px ceiling tracks the
-   viewport instead: the floor is the narrowest the record sections stay
-   readable at, the ceiling the point past which extra width buys nothing and
-   only costs the tree.
+   The canvas width is something the server already knows, so it comes through
+   as `--tree-width`: the same figure that sets the canvas's own inline width,
+   one number from one source.
 
-   `minmax(0, 1fr)` on the tree track is load-bearing, not decoration. The
-   canvas carries an inline pixel width from `layout.width` (tree.rs sets it
-   from the widest generation, and on the full view that is tens of thousands
-   of pixels), so an `auto` minimum would size the track to the canvas and
-   push the panel off-screen. Pinning the minimum to 0 keeps the overflow
-   inside `.tree-scroll`, where it scrolls. */
+   The panel's width is then *computed from the tree's* rather than left to
+   the grid's own free-space distribution, and that is the part that matters.
+   Grid shares free space equally between tracks until each reaches its
+   growth limit, so a panel allowed to grow to 560px reaches it before a
+   2000px-wide tree has taken anything — at 1280px that left the tree 656px
+   when it wanted 2078 and could have had 899. Writing the panel as
+
+       clamp(min, container − tree − gap, max)
+
+   states the priority instead of hoping for it: the tree takes what it can
+   use, the panel takes what is genuinely left, and neither can starve the
+   other. Percentages in a track size resolve against the grid container, so
+   `100%` here is the split's own width.
+
+   `minmax(0, …)` on the tree keeps its *minimum* at zero. On the full view
+   the canvas is tens of thousands of pixels wide, and an `auto` minimum would
+   size the track to it and push the panel off the screen. Pinned to zero, the
+   overflow stays inside `.tree-scroll`, where it scrolls.
+
+   The third track absorbs whatever is over once the panel has reached its
+   ceiling, so the surplus on an ultrawide screen sits at the outside edge
+   rather than reopening the band in the middle.
+
+   The fallback in `var(--tree-width, 1fr)` is what a page renders with if the
+   template ever stops passing the width: the previous behaviour, not a broken
+   one. */
 .tree-split {
+  --panel-min: clamp(320px, 26vw, 460px);
+  /* Past this, a line of the record's prose is uncomfortable to read. */
+  --panel-max: 560px;
+  --split-gap: 1rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 26vw, 460px);
-  gap: 1rem;
+  grid-template-columns:
+    minmax(0, var(--tree-width, 1fr))
+    clamp(
+      var(--panel-min),
+      calc(100% - var(--tree-width, 0px) - var(--split-gap)),
+      var(--panel-max)
+    )
+    minmax(0, 1fr);
+  gap: var(--split-gap);
   align-items: start;
 }
-.tree-split.no-panel { grid-template-columns: 1fr; }
+.tree-split.no-panel { grid-template-columns: minmax(0, 1fr); }
 
 bdi.date { unicode-bidi: isolate; }
 

@@ -107,7 +107,12 @@
 <p class="small muted tree-hint">{{ t("tree-click-hint") }}</p>
 {% endif %}
 
-<div class="tree-split{% if show_all %} no-panel{% endif %}">
+{# The canvas width reaches the stylesheet as a custom property so the
+   grid can cap the tree's column at what the tree actually draws. It is
+   the same figure the canvas itself uses below — one number, one
+   source. #}
+<div class="tree-split{% if show_all %} no-panel{% endif %}"
+     style="--tree-width:{{ layout.width }}px">
 <div class="tree-scroll">
   <div id="tree-canvas" class="tree-canvas"
        style="width:{{ layout.width }}px;height:{{ layout.height }}px">

@@ -12,6 +12,42 @@ seven themes.
 
 ### Added
 
+**The split follows the tree.** The panel's track was clamped but the split
+was still a fixed ratio, so a three-generation view — about 620px of cards —
+was given 1412px of a 1920px page and left an 809px band of nothing between
+the drawing and the panel. On the widest screen, where there was most to give
+away.
+
+The canvas width is something the server already computes, so it now reaches
+the stylesheet as `--tree-width`: the same figure that sets the canvas's own
+inline width. The tree's column caps there, and the panel takes what is left
+between its floor and a 560px ceiling — past which a line of the record's
+prose stops being comfortable.
+
+The panel is *computed from* the tree's width rather than left to the grid's
+free-space sharing, and that is the part that matters. Grid distributes free
+space equally until each track reaches its growth limit, so a panel merely
+allowed to reach 560px got there before a 2078px-wide tree had taken anything;
+at 1280px that left the tree 656px where it could have had 883. Writing the
+panel as `clamp(min, 100% − tree − gap, max)` states the priority instead of
+hoping for it.
+
+Measured in a browser, band being the space between the drawn tree and the
+panel:
+
+| Tree | Viewport | Band before | Band after |
+|---|---|---|---|
+| 618px (3 generations) | 1920 | 809px | 15px |
+| 618px | 1440 | 415px | 15px |
+| 618px | 1280 | 296px | 15px |
+
+15px is the grid gap itself — the deliberate separation, with nothing left
+over. Where the tree is wider than its column it still scrolls inside it and
+the panel falls back to its minimum: on the operator's bundle a 2078px tree
+gives the panel 460/374/333px at those three widths and takes 1396/1002/883px
+for itself. `?all=1` at 24,124px is unchanged, and no width in either text
+direction scrolls the page body.
+
 **Admin listings name what they list.** `/admin/family` showed 331 rows
 reading `(unnamed family, 1 children)` beside a UUID — a count, not a list. A
 family entity from a conversion carries no `name` of its own, so its label is

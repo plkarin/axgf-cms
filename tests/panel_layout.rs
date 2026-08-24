@@ -279,3 +279,64 @@ async fn the_panel_and_the_page_state_the_same_facts() {
         assert!(page.contains(fact), "page is missing {fact}");
     }
 }
+
+/// The split follows the tree's real width rather than a fixed ratio.
+///
+/// Measured in a browser rather than reasoned about — the numbers are in the
+/// release notes — but the *structure* those measurements depend on is pinned
+/// here, because it is the part a later edit could quietly undo: the width has
+/// to travel from the layout into the stylesheet, and the panel has to be
+/// derived from it rather than left to the grid's own free-space sharing.
+#[test]
+fn the_tree_width_reaches_the_stylesheet_and_the_panel_is_derived_from_it() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let html = std::fs::read_to_string(root.join("templates/tree.html")).expect("tree.html");
+    let css = std::fs::read_to_string(root.join("static/app.css")).expect("app.css");
+
+    assert!(
+        html.contains("--tree-width:{{ layout.width }}px"),
+        "the split must carry the canvas width the layout computed"
+    );
+    assert!(
+        html.contains("width:{{ layout.width }}px"),
+        "and it must be the same figure the canvas itself uses — one number, \
+         one source"
+    );
+
+    let rule = css
+        .split(".tree-split {")
+        .nth(1)
+        .expect("a .tree-split rule")
+        .split("\n}")
+        .next()
+        .unwrap();
+
+    assert!(
+        rule.contains("minmax(0, var(--tree-width"),
+        "the tree track caps at the drawing and floors at zero, or a full \
+         view pushes the panel off the screen:\n{rule}"
+    );
+    assert!(
+        rule.contains("100% - var(--tree-width"),
+        "the panel takes what the tree leaves. Grid shares free space equally \
+         until each track hits its growth limit, so a panel merely *allowed* \
+         to reach its maximum gets there before a wide tree has taken \
+         anything — which at 1280px left the tree 656px where it could have \
+         had 883:\n{rule}"
+    );
+    assert!(
+        rule.contains("var(--panel-min)") && rule.contains("var(--panel-max)"),
+        "the panel stays bounded at both ends:\n{rule}"
+    );
+    // The subtraction has to use the same gap the grid draws, or the panel is
+    // out by however far the two drift. Both references, one variable.
+    assert!(
+        rule.contains("gap: var(--split-gap)"),
+        "the drawn gap must come from the variable:\n{rule}"
+    );
+    assert!(
+        rule.matches("var(--split-gap)").count() >= 2,
+        "the gap subtracted from the panel must be the gap the grid draws, \
+         not a second number that can drift from it:\n{rule}"
+    );
+}

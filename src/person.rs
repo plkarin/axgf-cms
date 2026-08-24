@@ -70,7 +70,7 @@ pub struct PlaceUse {
 /// A dated fact such as birth or death.
 #[derive(Debug, Clone, Serialize)]
 pub struct FactView {
-    pub label: &'static str,
+    pub label: String,
     pub date: DateDisplay,
     pub place: Option<PlaceView>,
     pub confidence: Option<Confidence>,
@@ -286,8 +286,17 @@ pub struct PersonView {
     pub showcase_notes: Vec<String>,
 }
 
-/// What a reader is shown in place of a person they may not read.
-pub const RESTRICTED_NAME: &str = "Private";
+/// The locale key for what a reader is shown in place of a person they may
+/// not read.
+///
+/// A key rather than a string: this word appears on a tree card and in a
+/// family list, which are interface, not data. A reader who set the interface
+/// to Japanese and sees an English "Private" among Japanese labels has been
+/// told the translation is incomplete in the one place it is least excusable.
+pub const RESTRICTED_KEY: &str = "record-restricted-person";
+
+/// The locale key for a person referenced but absent from the bundle.
+pub const UNKNOWN_KEY: &str = "record-unknown-person";
 
 /// Build the identity view for `id`, or `None` when no such person exists.
 ///
@@ -296,8 +305,18 @@ pub const RESTRICTED_NAME: &str = "Private";
 /// asked before this is called, because "absent" and "restricted" are
 /// different answers and only the route can phrase them.
 pub fn build(flat: &Value, id: &str, lens: &crate::access::Lens) -> Option<PersonView> {
+    build_in(flat, id, lens, crate::i18n::DEFAULT)
+}
+
+/// [`build`] in a given interface language.
+pub fn build_in(
+    flat: &Value,
+    id: &str,
+    lens: &crate::access::Lens,
+    lang: &str,
+) -> Option<PersonView> {
     let person = flat.get("persons")?.get(id)?;
-    let ctx = Ctx { flat, lens };
+    let ctx = Ctx { flat, lens, lang };
 
     let identity = person.get("identity");
     let name = view::person_display_name(person);
@@ -328,8 +347,8 @@ pub fn build(flat: &Value, id: &str, lens: &crate::access::Lens) -> Option<Perso
 
     let names = ctx.names_of(identity);
 
-    let birth = ctx.fact(person, "birth", "Born");
-    let death = ctx.fact(person, "death", "Died");
+    let birth = ctx.fact(person, "birth", "record-born");
+    let death = ctx.fact(person, "death", "record-died");
 
     let (parents, siblings, unions) = ctx.relations(id);
     let links = ctx.links_for(id);
@@ -545,6 +564,10 @@ struct ChildEntry<'a> {
 /// Lookup helpers bound to one bundle, and to who is reading it.
 struct Ctx<'a> {
     flat: &'a Value,
+    /// The interface language. Only ever used for text this application is
+    /// *saying* — "Private", "[Unknown]", a date's words — never for anything
+    /// the bundle recorded.
+    lang: &'a str,
     /// What this request may read. Every cross-reference to another person
     /// goes through [`Ctx::person_ref`], which is where the lens is applied,
     /// so there is one place to get this right rather than one per section.
@@ -574,7 +597,7 @@ impl Ctx<'_> {
         if found.is_some() && !self.lens.sees_person(id) {
             return PersonRef {
                 id: id.to_string(),
-                name: RESTRICTED_NAME.to_string(),
+                name: crate::i18n::translate(self.lang, RESTRICTED_KEY, None),
                 known: false,
                 restricted: true,
                 confidence: confidence.map(Confidence::new),
@@ -587,7 +610,7 @@ impl Ctx<'_> {
             id: id.to_string(),
             name: found
                 .map(view::person_display_name)
-                .unwrap_or_else(|| "[Unknown]".into()),
+                .unwrap_or_else(|| crate::i18n::translate(self.lang, UNKNOWN_KEY, None)),
             known: found.is_some(),
             restricted: false,
             confidence: confidence.map(Confidence::new),
@@ -784,12 +807,13 @@ impl Ctx<'_> {
     }
 
     /// Build a birth/death fact.
-    fn fact(&self, person: &Value, key: &str, label: &'static str) -> FactView {
+    fn fact(&self, person: &Value, key: &str, label_key: &str) -> FactView {
+        let label = crate::i18n::translate(self.lang, label_key, None);
         let holder = person.get(key);
         let Some(h) = holder.filter(|v| !v.is_null()) else {
             return FactView {
                 label,
-                date: DateDisplay::absent(),
+                date: DateDisplay::absent_in(self.lang),
                 place: None,
                 confidence: None,
                 source: None,
@@ -799,7 +823,7 @@ impl Ctx<'_> {
         };
         FactView {
             label,
-            date: view::render_date_field(h, "date"),
+            date: view::render_date_field_in(h, "date", self.lang),
             place: self.place(h.get("place_id").and_then(Value::as_str)),
             confidence: Confidence::from_field(h, "confidence"),
             source: self.source_of(h),
@@ -898,7 +922,7 @@ impl Ctx<'_> {
                     start: union
                         .and_then(|u| u.get("start"))
                         .filter(|v| !v.is_null())
-                        .map(|s| view::render_date_field(s, "date")),
+                        .map(|s| view::render_date_field_in(s, "date", self.lang)),
                     start_place: union
                         .and_then(|u| u.get("start"))
                         .and_then(|s| s.get("place_id"))
@@ -907,7 +931,7 @@ impl Ctx<'_> {
                     end: union
                         .and_then(|u| u.get("end"))
                         .filter(|v| !v.is_null())
-                        .map(|e| view::render_date_field(e, "date")),
+                        .map(|e| view::render_date_field_in(e, "date", self.lang)),
                     end_note: union
                         .and_then(|u| u.get("end"))
                         .and_then(|e| str_field(e, "note")),
@@ -981,11 +1005,11 @@ impl Ctx<'_> {
                 from_date: l
                     .get("valid_from")
                     .filter(|v| !v.is_null())
-                    .map(|v| view::render_date_field(v, "date")),
+                    .map(|v| view::render_date_field_in(v, "date", self.lang)),
                 until_date: l
                     .get("valid_until")
                     .filter(|v| !v.is_null())
-                    .map(|v| view::render_date_field(v, "date")),
+                    .map(|v| view::render_date_field_in(v, "date", self.lang)),
                 confidence: Confidence::from_field(l, "confidence"),
                 source: self.source_of(l),
                 note: str_field(l, "note"),
@@ -1043,11 +1067,11 @@ impl Ctx<'_> {
                 let from = o
                     .get("valid_from")
                     .filter(|v| !v.is_null())
-                    .map(|v| view::render_date_field(v, "date"));
+                    .map(|v| view::render_date_field_in(v, "date", self.lang));
                 let until = o
                     .get("valid_until")
                     .filter(|v| !v.is_null())
-                    .map(|v| view::render_date_field(v, "date"));
+                    .map(|v| view::render_date_field_in(v, "date", self.lang));
 
                 let y0 = year_of_bound(o.get("valid_from"));
                 let y1 = year_of_bound(o.get("valid_until"));
@@ -1139,7 +1163,7 @@ impl Ctx<'_> {
                     Some(sub) => format!("{category} — {sub}"),
                     None => capitalise(&category),
                 };
-                let date = view::render_date_field(e, "date");
+                let date = view::render_date_field_in(e, "date", self.lang);
                 Some(TimelineEntry {
                     label,
                     kind: "event",

@@ -36,6 +36,7 @@ pub mod render;
 pub mod routes;
 pub mod session;
 pub mod state;
+pub mod theme;
 pub mod tree;
 pub mod view;
 

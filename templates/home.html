@@ -1,46 +1,30 @@
 {% extends "base.html" %}
-{% block title %}{{ family_name }} — axgf-cms{% endblock %}
+{% block title %}{{ family_name }} — {{ t("app-name") }}{% endblock %}
 
 {% block content %}
 
 <h1>{{ family_name }}</h1>
 <p class="lede">
-  {% if total == 0 %}
-    This bundle is empty. Convert a GEDCOM file to see what AXGF records that GEDCOM discards.
-  {% else %}
-    {{ total }} entities in one <code>.axgf</code> file — no database, no external services.
-  {% endif %}
+  {% if total == 0 %}{{ t("home-empty") }}
+  {% else %}{{ t("home-count", total=total) }}{% endif %}
 </p>
 
 <div class="cta-row">
-  <a class="btn primary" href="/tree">Browse the tree</a>
-  <a class="btn" href="/convert">Convert a GEDCOM file</a>
-  {% if is_admin %}<a class="btn" href="/admin">Admin</a>{% endif %}
+  <a class="btn primary" href="/tree">{{ t("home-browse") }}</a>
+  <a class="btn" href="/convert">{{ t("home-convert") }}</a>
+  {% if may_write %}<a class="btn" href="/admin">{{ t("nav-admin") }}</a>{% endif %}
 </div>
 
 <section class="why">
-  <h2>Why AXGF</h2>
+  <h2>{{ t("home-why-title") }}</h2>
+  <p>{{ t("home-why-1") }}</p>
+  <p>{{ t("home-why-2") }}</p>
   <p>
-    GEDCOM records what a genealogist concluded. AXGF also records how sure they were,
-    and why. Every fact in this bundle carries a confidence from 0.0 to 1.0, and this
-    site renders that confidence visually — a birth date recorded at 98% and a
-    speculative parentage at 35% do not look alike anywhere on this site.
-  </p>
-  <p>
-    AXGF also keeps the shape of what a source actually said. “circa 1500”, “before
-    1430” and “between 1920 and 1925” survive as distinct statements instead of
-    collapsing into one blank field, and text no converter could parse is preserved
-    rather than dropped. Relationships beyond blood — godparent, employer, witness,
-    mentor — are first-class entities with their own dates, sources and confidence.
-    Occupations are spans with a duration, not events with a single date.
-  </p>
-  <p>
-    Read the specification at
-    <a href="https://github.com/plkarin/axgf-spec">github.com/plkarin/axgf-spec</a>.
+    <a href="https://github.com/plkarin/axgf-spec">{{ t("home-why-spec") }}</a>
   </p>
 </section>
 
-<h2>What is in this bundle</h2>
+<h2>{{ t("home-in-this-bundle") }}</h2>
 <div class="grid cols-4">
   {% for c in counts %}
   <div class="stat {% if c.n == 0 %}zero{% endif %}">
@@ -51,17 +35,15 @@
 </div>
 
 {% if showcase %}
-<h2>AXGF-only features present in this bundle</h2>
-<p class="small muted">
-  These are the things this data expresses that a GEDCOM export could not carry.
-</p>
+<h2>{{ t("home-showcase-title") }}</h2>
+<p class="small muted">{{ t("home-showcase-note") }}</p>
 <div class="grid cols-2">
   {% for s in showcase %}
   <div class="card">
     <h3 style="margin-top:0">{{ s.title }}</h3>
     <p class="small muted" style="margin-bottom:0.5rem">{{ s.detail }}</p>
     {% if s.example_id %}
-      <a class="small" href="/person/{{ s.example_id }}">See an example →</a>
+      <a class="small" href="/person/{{ s.example_id }}">{{ t("home-showcase-example") }}</a>
     {% endif %}
   </div>
   {% endfor %}
@@ -71,10 +53,8 @@
 {% if total == 0 %}
 <div class="notice">
   <p>
-    <strong>Nothing to show yet.</strong>
-    Upload a GEDCOM on the <a href="/convert">conversion page</a> to see what the
-    format captures, or install with <code>--with-sample</code> to seed a small
-    demonstration bundle.
+    <strong>{{ t("home-nothing-title") }}</strong>
+    {{ t("home-nothing-detail") }}
   </p>
 </div>
 {% endif %}

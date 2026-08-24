@@ -27,6 +27,7 @@ macro_rules! templates {
 /// Every template, embedded at compile time.
 const TEMPLATES: &[(&str, &str)] = templates![
     "base.html",
+    "_prefs.html",
     "home.html",
     "error.html",
     "tree.html",
@@ -127,24 +128,99 @@ fn to_fluent(v: &minijinja::value::Value) -> fluent::FluentValue<'static> {
 /// in what direction, under what theme.
 ///
 /// Assembled once per request and merged into each page's own context, so no
-/// handler has to remember to pass `dir` and none can forget to.
+/// handler has to remember to pass `dir` and none can forget to. That is the
+/// point of it existing rather than each handler passing its own: the day one
+/// page forgets `dir`, Arabic breaks on that page only, and nobody notices
+/// until a reader of Arabic does.
 #[derive(Debug, Clone, Serialize)]
 pub struct Chrome {
     pub lang: &'static str,
     pub dir: &'static str,
-    /// The theme actually applied, rendered into `data-theme` server-side so
-    /// there is no flash of the wrong one.
-    pub theme: String,
-    /// What the reader chose, which may be `system`.
-    pub theme_choice: String,
+    /// The `data-theme` attribute value, empty for `system` so the
+    /// stylesheet's `prefers-color-scheme` queries decide.
+    pub theme: &'static str,
+    /// What the reader chose, which may be `system`. Distinct from `theme`
+    /// because the selector has to show `system` as ticked.
+    pub theme_choice: &'static str,
     pub signed_in: bool,
     pub may_write: bool,
     pub is_admin: bool,
-    /// Where a preference form should return to.
+    /// Where a preference form should return the reader to.
     pub back: String,
     pub locales: Vec<serde_json::Value>,
     pub themes: Vec<serde_json::Value>,
     pub current_locale: serde_json::Value,
+}
+
+impl Chrome {
+    /// Resolve the chrome for one request.
+    pub fn resolve(
+        viewer: &crate::access::Viewer,
+        headers: &axum::http::HeaderMap,
+        back: &str,
+    ) -> Self {
+        let locale = crate::i18n::negotiate(
+            viewer.language(),
+            crate::session::named_cookie(headers, crate::i18n::COOKIE_NAME).as_deref(),
+            headers
+                .get(axum::http::header::ACCEPT_LANGUAGE)
+                .and_then(|v| v.to_str().ok()),
+        );
+        let theme = crate::theme::negotiate(
+            viewer.theme(),
+            crate::session::named_cookie(headers, crate::theme::COOKIE_NAME).as_deref(),
+        );
+        Self {
+            lang: locale.tag,
+            dir: locale.dir.as_str(),
+            theme: theme.attribute().unwrap_or(""),
+            theme_choice: theme.id,
+            signed_in: viewer.signed_in(),
+            may_write: viewer.may_write(),
+            is_admin: viewer.is_admin(),
+            back: safe_back(back),
+            locales: crate::i18n::selector_entries(),
+            themes: crate::theme::selector_entries(),
+            current_locale: serde_json::json!({
+                "tag": locale.tag,
+                "native_name": locale.native_name,
+                "english_name": locale.english_name,
+                "reviewed": locale.reviewed,
+                "coverage": locale.coverage_percent(),
+            }),
+        }
+    }
+
+    /// The interface language, for code that needs to translate outside a
+    /// template — an error page's title, a flash message.
+    pub fn t(&self, key: &str) -> String {
+        crate::i18n::translate(self.lang, key, None)
+    }
+
+    /// Translate with arguments.
+    pub fn t_args(&self, key: &str, pairs: &[(&str, fluent::FluentValue<'_>)]) -> String {
+        let mut args = fluent::FluentArgs::new();
+        for (k, v) in pairs {
+            args.set(*k, v.clone());
+        }
+        crate::i18n::translate(self.lang, key, Some(&args))
+    }
+}
+
+/// Sanitise the `back` value a preference form will post.
+///
+/// It is reflected into a `Location` header after the form submits, so an
+/// unchecked value is an open redirect: `?back=https://elsewhere.example` would
+/// turn the language selector into a way of bouncing a reader off the site.
+/// Only a same-site absolute path is accepted, and a protocol-relative `//host`
+/// is rejected along with everything else.
+fn safe_back(raw: &str) -> String {
+    let candidate = raw.trim();
+    if candidate.starts_with('/') && !candidate.starts_with("//") && !candidate.contains('\\') {
+        candidate.to_string()
+    } else {
+        "/".to_string()
+    }
 }
 
 /// Render a page with the shared chrome merged into its own context.
@@ -174,9 +250,30 @@ pub fn page(name: &str, ctx: impl Serialize) -> Response {
     }
 }
 
-/// Render the shared error page with a status code.
-pub fn error_page(status: StatusCode, title: &str, detail: &str) -> Response {
-    error_page_back(status, title, detail, None)
+/// Render the shared error page, in the reader's language.
+///
+/// `title_key` and `detail_key` are locale message ids, not sentences. An
+/// error page is the one screen a reader is *most* likely to need in a
+/// language they read fluently, so it is the last place to leave English
+/// hardcoded.
+pub fn error_page_in(
+    chrome: &Chrome,
+    status: StatusCode,
+    title_key: &str,
+    detail_key: &str,
+) -> Response {
+    error_page_full(chrome, status, title_key, detail_key, &[], None)
+}
+
+/// The error page with arguments for the detail message.
+pub fn error_page_args(
+    chrome: &Chrome,
+    status: StatusCode,
+    title_key: &str,
+    detail_key: &str,
+    args: &[(&str, fluent::FluentValue<'_>)],
+) -> Response {
+    error_page_full(chrome, status, title_key, detail_key, args, None)
 }
 
 /// The error page with an extra link back to where the reader came from.
@@ -184,25 +281,42 @@ pub fn error_page(status: StatusCode, title: &str, detail: &str) -> Response {
 /// A refusal that makes the reader navigate back by hand is a worse refusal:
 /// they were on a person's page, and that is where they want to be returned
 /// to, with the reason in front of them.
-pub fn error_page_back(
+pub fn error_page_back_in(
+    chrome: &Chrome,
     status: StatusCode,
-    title: &str,
-    detail: &str,
+    title_key: &str,
+    detail_key: &str,
+    args: &[(&str, fluent::FluentValue<'_>)],
     back: Option<(&str, &str)>,
 ) -> Response {
+    error_page_full(chrome, status, title_key, detail_key, args, back)
+}
+
+fn error_page_full(
+    chrome: &Chrome,
+    status: StatusCode,
+    title_key: &str,
+    detail_key: &str,
+    args: &[(&str, fluent::FluentValue<'_>)],
+    back: Option<(&str, &str)>,
+) -> Response {
+    let title = chrome.t(title_key);
+    let detail = chrome.t_args(detail_key, args);
+    let ctx = context! {
+        title => title.clone(),
+        detail => detail.clone(),
+        status => status.as_u16(),
+        back => back.map(|(href, _)| href),
+        back_label => back.map(|(_, label)| chrome.t(label)),
+        nav => MjValue::from(""),
+    };
+    let merged = context! { ..MjValue::from_serialize(chrome), ..MjValue::from_serialize(&ctx) };
     let body = env()
         .get_template("error.html")
-        .and_then(|t| {
-            t.render(context! {
-                title => title,
-                detail => detail,
-                status => status.as_u16(),
-                back => back.map(|(href, _)| href),
-                back_label => back.map(|(_, label)| label),
-                nav => MjValue::from(""),
-                is_admin => false,
-            })
-        })
+        .and_then(|t| t.render(merged))
+        // The fallback is deliberately plain: if the template itself is
+        // broken, the reader still gets the sentence explaining what went
+        // wrong rather than a second error about the first one.
         .unwrap_or_else(|_| format!("<h1>{title}</h1><p>{detail}</p>"));
     (status, Html(body)).into_response()
 }
@@ -228,15 +342,21 @@ pub fn bundle_download(filename: &str, bytes: Vec<u8>) -> Response {
 /// survive until the handle closes, so the temp file cannot outlive the
 /// response even if the client disconnects halfway through or the process is
 /// killed.
-pub async fn bundle_download_from(filename: &str, path: std::path::PathBuf) -> Response {
+pub async fn bundle_download_from(
+    chrome: &Chrome,
+    filename: &str,
+    path: std::path::PathBuf,
+) -> Response {
     let file = match tokio::fs::File::open(&path).await {
         Ok(f) => f,
         Err(e) => {
             let _ = tokio::fs::remove_file(&path).await;
-            return error_page(
+            return error_page_args(
+                chrome,
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "Could not read the exported bundle",
-                &e.to_string(),
+                "error-export-unreadable-title",
+                "error-export-unreadable-detail",
+                &[("error", e.to_string().into())],
             );
         }
     };

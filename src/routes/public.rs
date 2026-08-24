@@ -14,7 +14,7 @@ use crate::{auth, render, view};
 /// `GET /` — why AXGF, what is in this bundle, entry points.
 pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let is_admin = viewer.is_admin();
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
     let counts = state.counts();
     let total: usize = counts.iter().map(|(_, n)| n).sum();
 
@@ -29,13 +29,15 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
             .to_string()
     });
 
-    let showcase = state.read_as(viewer.ceiling(), showcase_highlights);
+    let showcase = state.read_as(viewer.ceiling(), |flat, lens| {
+        showcase_highlights(flat, lens, chrome.lang)
+    });
 
-    render::page(
+    render::page_with(
+        &chrome,
         "home.html",
         context! {
             nav => "home",
-            is_admin,
             family_name,
             total,
             counts => counts
@@ -50,10 +52,17 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
 /// Work out which GEDCOM-impossible features this particular bundle actually
 /// contains, so the home page points at real examples instead of advertising
 /// features the data does not exercise.
-fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
+fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> Vec<Value> {
+    use fluent::FluentValue as F;
     let mut out = Vec::new();
-
     let obj = |key: &str| flat.get(key).and_then(Value::as_object);
+    let t = |key: &str, args: &[(&str, F<'_>)]| -> String {
+        let mut a = fluent::FluentArgs::new();
+        for (k, v) in args {
+            a.set(*k, v.clone());
+        }
+        crate::i18n::translate(lang, key, Some(&a))
+    };
 
     // Every count here is a count of what *this* reader can reach, and every
     // "example_id" is a link, so it has to lead somewhere they may open. A
@@ -71,10 +80,8 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
                     .map(str::to_string)
             });
             out.push(json!({
-                "title": format!("{} non-family relationships", readable.len()),
-                "detail": "Godparents, employers, witnesses and mentors, each with \
-                           its own dates, source and confidence. GEDCOM has no way \
-                           to state these at all.",
+                "title": t("showcase-links-title", &[("n", (readable.len() as i64).into())]),
+                "detail": t("showcase-links-detail", &[]),
                 "example_id": example,
             }));
         }
@@ -97,17 +104,15 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
                 .and_then(Value::as_str)
                 .map(str::to_string);
             out.push(json!({
-                "title": format!("{} occupations recorded as spans", readable.len()),
-                "detail": "“Schoolteacher, 1948–1978” is a state with a duration, \
-                           rendered as a timeline bar rather than flattened into a \
-                           dated event.",
+                "title": t("showcase-occupations-title", &[("n", (readable.len() as i64).into())]),
+                "detail": t("showcase-occupations-detail", &[]),
                 "example_id": example,
             }));
         }
     }
 
-    // Count persons whose birth or death date is anything other than a pinned
-    // calendar day — the population that GEDCOM would render as a blank or a
+    // Persons whose birth or death date is anything other than a pinned
+    // calendar day — the population GEDCOM would render as a blank or a
     // fabricated precision.
     if let Some(persons) = obj("persons") {
         let mut uncertain = 0usize;
@@ -119,6 +124,9 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
             }
             for key in ["birth", "death"] {
                 let Some(ev) = p.get(key) else { continue };
+                // English deliberately: this is classifying the date's shape,
+                // not showing it, and the classification must not change with
+                // the interface language.
                 let d = view::render_date_field(ev, "date");
                 match d.kind {
                     "range" | "approximate" => {
@@ -135,22 +143,15 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
         }
         if uncertain > 0 {
             out.push(json!({
-                "title": format!("{uncertain} dates that are honestly imprecise"),
-                "detail": "Circa, before, after and between are preserved as \
-                           distinct statements. A date the source could not pin \
-                           down is not shown as if it were.",
+                "title": t("showcase-uncertain-title", &[("n", (uncertain as i64).into())]),
+                "detail": t("showcase-uncertain-detail", &[]),
                 "example_id": example,
             }));
         }
         if preserved > 0 {
             out.push(json!({
-                "title": if preserved == 1 {
-                    "an unparseable date kept verbatim".to_string()
-                } else {
-                    format!("{preserved} unparseable dates kept verbatim")
-                },
-                "detail": "Text no converter could interpret survives as a note \
-                           instead of being silently dropped.",
+                "title": t("showcase-preserved-title", &[("n", (preserved as i64).into())]),
+                "detail": t("showcase-preserved-detail", &[]),
                 "example_id": Value::Null,
             }));
         }
@@ -163,10 +164,8 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
                 .filter(|s| s.get("reliability").and_then(Value::as_str) == Some("primary"))
                 .count();
             out.push(json!({
-                "title": format!("{} sources graded by reliability", sources.len()),
-                "detail": format!(
-                    "{primary} primary. Every fact shows which evidence it rests \
-                     on, and how strong that evidence is."),
+                "title": t("showcase-sources-title", &[("n", (sources.len() as i64).into())]),
+                "detail": t("showcase-sources-detail", &[("primary", (primary as i64).into())]),
                 "example_id": Value::Null,
             }));
         }
@@ -183,9 +182,8 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
             .count();
         if with_history > 0 {
             out.push(json!({
-                "title": format!("{with_history} places with border history"),
-                "detail": "A town can belong to different countries at different \
-                           times, and the record says which one applied when.",
+                "title": t("showcase-places-title", &[("n", (with_history as i64).into())]),
+                "detail": t("showcase-places-detail", &[]),
                 "example_id": Value::Null,
             }));
         }
@@ -229,10 +227,15 @@ const MAX_DEPTH: usize = 8;
 pub async fn tree(
     State(state): State<Shared>,
     headers: HeaderMap,
+    // The whole URI, query string included, so that changing the language
+    // returns the reader to the person they were looking at rather than to a
+    // bare /tree. `Chrome::resolve` rejects anything that is not a same-site
+    // path, so this is not a way to smuggle a redirect in.
+    axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
     Query(q): Query<TreeQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let is_admin = viewer.is_admin();
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
     let show_all = q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty());
     let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
 
@@ -253,7 +256,7 @@ pub async fn tree(
 
             if show_all {
                 let mut l = crate::tree::layout(flat);
-                crate::tree::redact(&mut l, lens.set());
+                crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                 return (l, None, roster, None, None, hidden);
             }
 
@@ -284,14 +287,14 @@ pub async fn tree(
                 Some(root) => {
                     let sub = crate::tree::select_subtree(flat, &root, depth, depth);
                     let mut l = crate::tree::layout_focused(flat, &sub);
-                    crate::tree::redact(&mut l, lens.set());
+                    crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     let name = if lens.sees_person(&root) {
                         flat.get("persons")
                             .and_then(|p| p.get(&root))
                             .map(view::person_display_name)
                             .unwrap_or_else(|| "[Unknown]".into())
                     } else {
-                        crate::person::RESTRICTED_NAME.to_string()
+                        crate::i18n::translate(chrome.lang, crate::person::RESTRICTED_KEY, None)
                     };
                     let focus = json!({
                         "root": root,
@@ -310,7 +313,7 @@ pub async fn tree(
                     // A selection the reader may not read opens no panel at all,
                     // rather than a panel of blanks.
                     let panel = if lens.sees_person(&sel) {
-                        crate::person::build(flat, &sel, lens)
+                        crate::person::build_in(flat, &sel, lens, chrome.lang)
                     } else {
                         None
                     };
@@ -319,7 +322,7 @@ pub async fn tree(
                 // An empty bundle has nobody to focus on.
                 None => {
                     let mut l = crate::tree::layout(flat);
-                    crate::tree::redact(&mut l, lens.set());
+                    crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     (l, None, roster, None, None, hidden)
                 }
             }
@@ -340,11 +343,11 @@ pub async fn tree(
     // compute a number it never shows.
     let full_width = layout.width;
 
-    render::page(
+    render::page_with(
+        &chrome,
         "tree.html",
         context! {
             nav => "tree",
-            is_admin,
             layout,
             focus,
             roster,
@@ -381,7 +384,7 @@ pub async fn tree_panel(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let is_admin = viewer.is_admin();
+    let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/tree?sel={id}"));
     // The panel fetch is a read path like any other, and it is the one most
     // easily forgotten: it returns a fragment rather than a page, so a
     // template-level check would never have covered it. It resolves its own
@@ -393,27 +396,28 @@ pub async fn tree_panel(
         if !lens.sees_person(&id) {
             return Reading::Restricted;
         }
-        match crate::person::build(flat, &id, lens) {
+        match crate::person::build_in(flat, &id, lens, chrome.lang) {
             Some(p) => Reading::Ok(Box::new(p)),
             None => Reading::Absent,
         }
     });
     match outcome {
-        Reading::Ok(p) => render::page(
+        Reading::Ok(p) => render::page_with(
+            &chrome,
             "_panel.html",
             context! {
                 p,
-                is_admin,
                 history => viewer.signed_in().then(|| entity_history(&state, &id)),
                 compact => true,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),
-        Reading::Restricted => restricted_page(viewer.signed_in()),
-        Reading::Absent => render::error_page(
+        Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
+        Reading::Absent => render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such person",
-            "This bundle contains no person with that id.",
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
         ),
     }
 }
@@ -451,13 +455,20 @@ enum Reading {
 }
 
 /// The page shown for a record this reader may not read.
-fn restricted_page(signed_in: bool) -> Response {
+fn restricted_page(chrome: &render::Chrome, signed_in: bool) -> Response {
+    // Two different sentences, because two different readers: one can do
+    // something about it by signing in, the other needs an administrator.
     let detail = if signed_in {
-        "This record's visibility puts it above what your account may read.          An administrator can change either the record's visibility or your          role."
+        "access-restricted-signed-in"
     } else {
-        "This record is not public. Sign in to see whether your account may          read it."
+        "access-restricted-anonymous"
     };
-    render::error_page(StatusCode::FORBIDDEN, "Not visible to you", detail)
+    render::error_page_in(
+        chrome,
+        StatusCode::FORBIDDEN,
+        "access-restricted-title",
+        detail,
+    )
 }
 
 /// Every readable person as `{id, name}`, sorted by name, for the root picker.
@@ -490,7 +501,7 @@ pub async fn person(
     headers: HeaderMap,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let is_admin = viewer.is_admin();
+    let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/person/{id}"));
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
         if flat.get("persons").and_then(|p| p.get(&id)).is_none() {
             return Reading::Absent;
@@ -498,18 +509,18 @@ pub async fn person(
         if !lens.sees_person(&id) {
             return Reading::Restricted;
         }
-        match crate::person::build(flat, &id, lens) {
+        match crate::person::build_in(flat, &id, lens, chrome.lang) {
             Some(p) => Reading::Ok(Box::new(p)),
             None => Reading::Absent,
         }
     });
 
     match outcome {
-        Reading::Ok(p) => render::page(
+        Reading::Ok(p) => render::page_with(
+            &chrome,
             "person.html",
             context! {
                 nav => "tree",
-                is_admin,
                 p,
                 // The journal names editors, so it is shown to people who are
                 // signed in and to nobody else.
@@ -520,11 +531,12 @@ pub async fn person(
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
         ),
-        Reading::Restricted => restricted_page(viewer.signed_in()),
-        Reading::Absent => render::error_page(
+        Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
+        Reading::Absent => render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such person",
-            "This bundle contains no person with that id.",
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
         ),
     }
 }
@@ -596,20 +608,21 @@ pub async fn document_raw(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
     let Some(doc) = stored_document(&state, &viewer, &id) else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such file",
-            "This bundle has no document with that id, or the document is \
-             recorded without a file — a `referenced` document names something \
-             held somewhere else.",
+            "error-no-such-file-title",
+            "error-no-such-file-detail",
         );
     };
     let Some(path) = state.payloads().path_of(&doc.path) else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such file",
-            "The payload for that document is not in the cache.",
+            "error-payload-missing-title",
+            "error-payload-missing-detail",
         );
     };
 
@@ -626,10 +639,11 @@ pub async fn document_raw(
     // download is byte-identical to what is in the bundle: EXIF orientation is
     // corrected only for display (see `document_view`), never for the original.
     let Ok(file) = tokio::fs::File::open(&path).await else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such file",
-            "The payload for that document could not be opened.",
+            "error-payload-missing-title",
+            "error-payload-unopenable-detail",
         );
     };
     let len = file.metadata().await.map(|m| m.len()).ok();
@@ -684,15 +698,22 @@ pub async fn document_view(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
     let Some(doc) = stored_document(&state, &viewer, &id) else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such file",
-            "This bundle has no document with that id.",
+            "error-no-such-file-title",
+            "error-no-such-document-detail",
         );
     };
     let Some(bytes) = state.attachment(&doc.path) else {
-        return render::error_page(StatusCode::NOT_FOUND, "No such file", "Payload missing.");
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-payload-missing-title",
+            "error-payload-missing-detail",
+        );
     };
 
     // Only raster images are corrected; anything else is served as its stored
@@ -724,11 +745,13 @@ pub async fn document_thumb(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
     let Some(doc) = stored_document(&state, &viewer, &id) else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such file",
-            "This bundle has no document with that id.",
+            "error-no-such-file-title",
+            "error-no-such-document-detail",
         );
     };
 
@@ -739,11 +762,11 @@ pub async fn document_thumb(
     });
 
     let Some(png) = png else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "Not an image",
-            "There is no thumbnail for this document, because it is not an \
-             image this build can decode.",
+            "error-not-an-image-title",
+            "error-not-an-image-detail",
         );
     };
 
@@ -840,10 +863,15 @@ pub async fn css() -> Response {
 }
 
 /// Fallback for unmatched paths.
-pub async fn not_found() -> Response {
-    render::error_page(
+pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    // Even a 404 is rendered in the reader's language and theme. It is a page
+    // like any other, and it is one of the more likely ones to be seen.
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    render::error_page_in(
+        &chrome,
         StatusCode::NOT_FOUND,
-        "Not found",
-        "That page does not exist in this bundle.",
+        "error-not-found-title",
+        "error-not-found-detail",
     )
 }

@@ -4,7 +4,10 @@
    would be the first thing to break it. Both post back to the page the reader
    is on, so choosing a language does not also lose their place. #}
 
-{% macro selector() %}
+{# The arguments are passed explicitly because an imported macro does not see
+   the including template's context in minijinja — including `t`, which is a
+   function bound at render time and not a global. #}
+{% macro selector(t, lang, dir, theme_choice, back, locales, themes, current_locale) %}
 <details class="prefs">
   <summary title="{{ t('prefs-title') }}" aria-label="{{ t('prefs-title') }}">
     <span aria-hidden="true">🌐</span>

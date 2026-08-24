@@ -13,12 +13,13 @@ use crate::{auth, render};
 
 /// `GET /convert` — the upload form.
 pub async fn form(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    let is_admin = auth::is_admin(&headers, state.admin_token());
-    render::page(
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
+    render::page_with(
+        &chrome,
         "convert.html",
         context! {
             nav => "convert",
-            is_admin,
             max_mb => MAX_UPLOAD / (1024 * 1024),
         },
     )
@@ -39,23 +40,24 @@ pub async fn gedcom(
     headers: HeaderMap,
     multipart: Multipart,
 ) -> Response {
-    let is_admin = auth::is_admin(&headers, state.admin_token());
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
 
     let upload = match read_upload(multipart).await {
         Ok(u) => u,
-        Err((status, msg)) => return fail(is_admin, status, &msg),
+        Err((status, msg)) => return fail(&chrome, status, &msg),
     };
 
     if upload.bytes.is_empty() {
         return fail(
-            is_admin,
+            &chrome,
             StatusCode::OK,
             "No file was uploaded. Choose a .ged file first.",
         );
     }
     if upload.bytes.len() > MAX_UPLOAD {
         return fail(
-            is_admin,
+            &chrome,
             StatusCode::PAYLOAD_TOO_LARGE,
             &format!(
                 "That file is {:.1} MB. The limit is {} MB. Nothing was converted.",
@@ -66,7 +68,7 @@ pub async fn gedcom(
     }
     if !looks_like_gedcom(&upload.bytes) {
         return fail(
-            is_admin,
+            &chrome,
             StatusCode::OK,
             "That does not look like a GEDCOM file. A GEDCOM 5.5.1 file starts \
              with a `0 HEAD` line. Nothing was converted.",
@@ -80,12 +82,12 @@ pub async fn gedcom(
     let data = match envelope_into_data(env) {
         Ok(d) => d,
         Err(_) => {
-            return render::page(
+            return render::page_with(
+                &chrome,
                 "convert_result.html",
                 context! {
                     nav => "convert",
-                    is_admin,
-                    ok => false,
+                            ok => false,
                     error => "The converter refused this file. The diagnostics below \
                               say why. The served bundle was not touched.",
                     diagnostics,
@@ -108,7 +110,7 @@ pub async fn gedcom(
         Ok(b) => b,
         Err(e) => {
             return fail(
-                is_admin,
+                &chrome,
                 StatusCode::INTERNAL_SERVER_ERROR,
                 &format!("The bundle converted but could not be packaged: {e}"),
             )
@@ -132,11 +134,11 @@ pub async fn gedcom(
         .cloned()
         .collect();
 
-    render::page(
+    render::page_with(
+        &chrome,
         "convert_result.html",
         context! {
             nav => "convert",
-            is_admin,
             ok => true,
             filename => upload.filename,
             download_id => id,
@@ -155,13 +157,20 @@ pub async fn gedcom(
 }
 
 /// `GET /convert/download/:id` — the converted bundle.
-pub async fn download(State(state): State<Shared>, Path(id): Path<String>) -> Response {
+pub async fn download(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
     match state.conversions().get(&id) {
         Some((name, bytes)) => render::bundle_download(&name, bytes),
-        None => render::error_page(
+        None => render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "That download has expired",
-            "Converted bundles are held for fifteen minutes. Convert the file again.",
+            "error-download-expired-title",
+            "error-download-expired-detail",
         ),
     }
 }
@@ -251,12 +260,12 @@ fn render_diagnostics(diags: &[axgf_rs::boundary::envelope::Diagnostic]) -> Vec<
 }
 
 /// Render the result page in its failure shape, with a fitting status.
-fn fail(is_admin: bool, status: StatusCode, message: &str) -> Response {
-    let mut resp = render::page(
+fn fail(chrome: &render::Chrome, status: StatusCode, message: &str) -> Response {
+    let mut resp = render::page_with(
+        &chrome,
         "convert_result.html",
         context! {
             nav => "convert",
-            is_admin,
             ok => false,
             error => message,
             diagnostics => Vec::<Value>::new(),

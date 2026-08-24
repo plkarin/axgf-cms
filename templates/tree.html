@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}
-  {%- if focus %}{{ focus.root_name }} — tree{% else %}Whole tree{% endif %} — axgf-cms
+  {%- if focus %}{{ focus.root_name }} — {{ t("tree-title-suffix") }}
+  {%- else %}{{ t("tree-title-whole") }}{% endif %} — {{ t("app-name") }}
 {%- endblock %}
 {% block main_class %}wide{% endblock %}
 
@@ -9,36 +10,31 @@
 <div class="tree-head">
   <div>
     {% if focus %}
-      <h1>Around {{ focus.root_name }}</h1>
+      <h1>{{ t("tree-title-around", name=focus.root_name) }}</h1>
       <p class="lede">
-        {{ focus.ancestors }} ancestors, {{ focus.descendants }} descendants and
-        {{ focus.spouses }} partners, {{ depth }} generations each way. Oldest at
-        the bottom. Connector opacity is the relationship's confidence — a faint
-        line is a claim the record is not sure of.
+        {{ t("tree-lede-focused", ancestors=focus.ancestors,
+              descendants=focus.descendants, spouses=focus.spouses, depth=depth) }}
       </p>
     {% else %}
-      <h1>The whole tree</h1>
-      <p class="lede">
-        Every person in the bundle. Oldest at the bottom, youngest at the top.
-        Connector opacity is the relationship's confidence.
-      </p>
+      <h1>{{ t("tree-title-whole") }}</h1>
+      <p class="lede">{{ t("tree-lede-whole") }}</p>
     {% endif %}
   </div>
   {% if hidden %}
   {# Stated, not silent. A tree with unexplained blanks reads as a broken
      import; this says the blanks are a rule, and which rule. #}
   <p class="notice restricted-notice" role="status">
-    {{ hidden }} {{ "person is" if hidden == 1 else "people are" }} shown without
-    their details, because
-    {%- if signed_in %} their visibility is above what your account may read.
-    {%- else %} they are not public.
-      <a href="/admin/login">Sign in</a> if you have an account.
+    {{ t("tree-hidden-notice", n=hidden) }}
+    {%- if signed_in %}{{ t("tree-hidden-because-role") }}
+    {%- else %}{{ t("tree-hidden-because-anonymous") }}
+      <a href="/admin/login">{{ t("tree-hidden-sign-in") }}</a>
     {%- endif %}
   </p>
   {% endif %}
   <form class="tree-search" onsubmit="return false">
-    <label for="tree-filter">Filter visible cards</label>
-    <input type="text" id="tree-filter" placeholder="Type a name…" autocomplete="off" spellcheck="false">
+    <label for="tree-filter">{{ t("tree-filter-label") }}</label>
+    <input type="text" id="tree-filter" placeholder="{{ t('tree-filter-placeholder') }}"
+           autocomplete="off" spellcheck="false">
     <span id="tree-filter-count" class="small muted"></span>
   </form>
 </div>
@@ -46,7 +42,7 @@
 {% if roster %}
 <form class="tree-controls" method="get" action="/tree">
   <div class="tc-field">
-    <label for="root">Centre on</label>
+    <label for="root">{{ t("tree-centre-on") }}</label>
     <select id="root" name="root">
       {% for p in roster %}
         <option value="{{ p.id }}"
@@ -55,74 +51,60 @@
     </select>
   </div>
   <div class="tc-field">
-    <label for="depth">Generations each way</label>
+    <label for="depth">{{ t("tree-depth") }}</label>
     <select id="depth" name="depth">
       {% for d in range(1, max_depth + 1) %}
         <option value="{{ d }}" {% if d == depth %}selected{% endif %}>{{ d }}</option>
       {% endfor %}
     </select>
   </div>
-  <button class="btn primary" type="submit">Show</button>
+  <button class="btn primary" type="submit">{{ t("tree-show") }}</button>
   {% if show_all %}
-    <a class="btn" href="/tree">Back to the focused view</a>
+    <a class="btn" href="/tree">{{ t("tree-back-to-focused") }}</a>
   {% else %}
-    <a class="btn" href="/tree?all=1">Show all {{ layout.total_person_count }}</a>
+    <a class="btn" href="/tree?all=1">{{ t("tree-show-all", n=layout.total_person_count) }}</a>
   {% endif %}
 </form>
 {% endif %}
 
 {% if show_all and layout.person_count > 40 %}
 <div class="notice warn">
-  <p>
-    <strong>This view is {{ full_width }}px wide.</strong>
-    Every generation is one row, and the widest one here sets that width — on a
-    1500px screen that is {{ (full_width / 1500) | round | int }} screens of
-    horizontal scrolling. The <a href="/tree">focused view</a> shows a few dozen
-    people around one person instead, and every card re-centres it.
-  </p>
+  <p>{{ t("tree-width-notice", width=full_width,
+           screens=(full_width / 1500) | round | int) }}</p>
 </div>
 {% endif %}
 
 <div class="tree-legend small">
-  <span class="muted">Confidence:</span>
-  <span class="lg"><i class="conf-dot" data-band="certain"></i> certain</span>
-  <span class="lg"><i class="conf-dot" data-band="high"></i> high</span>
-  <span class="lg"><i class="conf-dot" data-band="medium"></i> medium</span>
-  <span class="lg"><i class="conf-dot" data-band="low"></i> speculative</span>
-  <span class="muted" style="margin-left:auto">
-    {{ layout.person_count }} of {{ layout.total_person_count }} people ·
-    {{ layout.generation_count }} generations
-    {%- if layout.unplaced_count %} · {{ layout.unplaced_count }} unplaced{% endif %}
+  <span class="muted">{{ t("tree-confidence-label") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="certain"></i> {{ t("tree-band-certain") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="high"></i> {{ t("tree-band-high") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="medium"></i> {{ t("tree-band-medium") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="low"></i> {{ t("tree-band-low") }}</span>
+  <span class="muted tree-legend-counts">
+    {{ t("tree-counts", drawn=layout.person_count, total=layout.total_person_count,
+          generations=layout.generation_count) }}
+    {%- if layout.unplaced_count %} · {{ t("tree-unplaced-count", n=layout.unplaced_count) }}{% endif %}
   </span>
 </div>
 
 {% if layout.truncated %}
 <div class="notice warn">
-  <p>
-    <strong>This bundle contradicts itself.</strong> Somebody is recorded as
-    their own ancestor, or two people on one line of descent are recorded as a
-    couple. No arrangement of rows can satisfy that, so the offending
-    relationship was left out of the generation numbering and some rows may be
-    wrong. Run the validator from the admin dashboard to find it.
-  </p>
+  <p><strong>{{ t("tree-contradicts-title") }}</strong> {{ t("tree-contradicts-detail") }}</p>
 </div>
 {% endif %}
 
 {% if layout.total_person_count == 0 %}
   <div class="notice">
-    <p>This bundle has no people yet. <a href="/convert">Convert a GEDCOM</a> to fill it.</p>
+    <p>{{ t("tree-no-people") }} <a href="/convert">{{ t("tree-no-people-cta") }}</a></p>
   </div>
 {% elif layout.person_count == 0 %}
   <div class="notice">
-    <p>Nobody to draw for that selection. <a href="/tree">Start from the default view</a>.</p>
+    <p>{{ t("tree-nobody-selected") }} <a href="/tree">{{ t("tree-nobody-selected-cta") }}</a></p>
   </div>
 {% else %}
 
 {% if not show_all %}
-<p class="small muted tree-hint">
-  Click any card to open that person's record in the panel; “Centre the tree
-  here” in the panel re-roots the view.
-</p>
+<p class="small muted tree-hint">{{ t("tree-click-hint") }}</p>
 {% endif %}
 
 <div class="tree-split{% if show_all %} no-panel{% endif %}">
@@ -155,7 +137,7 @@
       <div class="tcard is-restricted"
            data-id="{{ c.id }}" data-sex="u" data-search=""
            style="left:{{ c.x }}px;top:{{ c.y }}px"
-           title="This person's record is not visible to you">
+           title="{{ t('tree-restricted-card') }}">
         <span class="tname">{{ c.name }}</span>
         <span class="tdates"><span class="sep">·</span></span>
       </div>

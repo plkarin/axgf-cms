@@ -365,7 +365,12 @@ async fn an_unknown_entity_kind_is_a_clean_404() {
         "unknown kind",
     )
     .await;
-    assert!(body.contains("Unknown entity kind"));
+    // The refusal names what was asked for and what is actually on offer —
+    // both come from the locale catalogue now, so this also pins that the
+    // error page's arguments reach it.
+    assert!(body.contains("Unknown kind"), "{body}");
+    assert!(body.contains("wombat"), "it echoes what was asked for");
+    assert!(body.contains("person"), "and lists the kinds that do exist");
 }
 
 #[tokio::test]

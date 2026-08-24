@@ -1,9 +1,13 @@
-<!doctype html>
-<html lang="en">
+{% import "_prefs.html" as prefs %}<!doctype html>
+{# `lang`, `dir` and `data-theme` are rendered server-side from what this
+   request negotiated. Doing it in a script after load would guarantee a flash
+   of the wrong theme on every page, and would flip Arabic from left to right
+   in front of the reader. #}
+<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}axgf-cms{% endblock %}</title>
+<title>{% block title %}{{ t("app-name") }}{% endblock %}</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='14'>&#127795;</text></svg>">
 </head>
@@ -13,18 +17,21 @@
   <div class="masthead-inner">
     <a class="brand" href="/">axgf<span>-cms</span></a>
     <nav>
-      <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>Tree</a>
-      <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>Convert GEDCOM</a>
+      <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
+      <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>
     </nav>
     <span class="spacer"></span>
-    <nav>
-      {% if is_admin %}
-        <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>Admin</a>
+    <nav class="chrome-nav">
+      {{ prefs.selector(t, lang, dir, theme_choice, back, locales, themes, current_locale) }}
+      {% if signed_in %}
+        {% if may_write %}
+          <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
+        {% endif %}
         <form method="post" action="/admin/logout" style="display:inline">
-          <button class="btn" style="padding:0.1rem 0.5rem;font-size:0.85rem">Sign out</button>
+          <button class="btn btn-compact">{{ t("nav-sign-out") }}</button>
         </form>
       {% else %}
-        <a href="/admin/login">Sign in</a>
+        <a href="/admin/login">{{ t("nav-sign-in") }}</a>
       {% endif %}
     </nav>
   </div>
@@ -35,13 +42,11 @@
 </main>
 
 <footer>
-  <p>
-    Served from a single <code>.axgf</code> bundle by
-    <a href="https://github.com/plkarin/axgf-cms">axgf-cms</a>.
-    All genealogy logic lives in
-    <a href="https://github.com/plkarin/axgf-lib">axgf-rs</a>;
-    the format is specified at
-    <a href="https://github.com/plkarin/axgf-spec">axgf-spec</a>.
+  <p>{{ t("footer-served-from") }}</p>
+  <p class="small">
+    <a href="https://github.com/plkarin/axgf-cms">axgf-cms</a> ·
+    <a href="https://github.com/plkarin/axgf-lib">axgf-rs</a> ·
+    <a href="https://github.com/plkarin/axgf-spec">axgf-spec</a>
   </p>
 </footer>
 

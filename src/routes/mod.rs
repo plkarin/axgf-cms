@@ -2,6 +2,7 @@
 
 mod admin;
 mod convert;
+mod prefs;
 mod public;
 
 use std::sync::Arc;
@@ -34,6 +35,10 @@ pub fn router(state: Shared) -> Router {
         )
         .route("/convert/download/:id", get(convert::download))
         .route("/health", get(public::health))
+        // Preferences are POSTs so that choosing a language is not something a
+        // link or a crawler can do to a reader.
+        .route("/prefs/language", post(prefs::language))
+        .route("/prefs/theme", post(prefs::theme))
         // Static admin segments are declared alongside the ":kind" routes;
         // the router matches literal segments in preference to a parameter.
         .route("/admin", get(admin::dashboard))

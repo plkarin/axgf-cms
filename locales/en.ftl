@@ -382,3 +382,118 @@ month-9 = September
 month-10 = October
 month-11 = November
 month-12 = December
+
+## More error pages
+
+error-back-to-start = Back to the start
+error-payload-missing-title = No such file
+error-payload-missing-detail = The payload for that document is not in the cache.
+error-payload-unopenable-detail = The payload for that document could not be opened.
+error-no-such-document-detail = This bundle has no document with that id.
+error-bad-preference-title = Not one of the choices
+error-bad-preference-detail = That is not a language or theme this site offers. Nothing was changed.
+error-unknown-kind-title = Unknown kind
+error-unknown-kind-detail = “{ $kind }” is not an entity kind. This bundle holds: { $kinds }.
+error-io-title = Could not write the bundle
+error-io-detail = { $error }. The bundle on disk is unchanged.
+error-upload-too-large = That file is larger than the { $mb } MB limit. Nothing was stored, and the bundle is unchanged.
+error-upload-empty = That upload carried no bytes. Nothing was stored.
+error-upload-type = This archive does not store files of that type. Nothing was stored.
+error-upload-refused = The library refused the document: { $reason }. The bundle is unchanged.
+error-back-to-person = Back to the record
+error-no-such-person-to-attach = This bundle contains no person with that id, so there is nothing to attach a document to.
+error-upload-title = That upload was not stored
+error-download-expired-title = That download has expired
+error-download-expired-detail = Converted bundles are held for fifteen minutes. Convert the file again.
+error-upload-none = No file was uploaded. Choose a file first.
+error-upload-unsupported = That file is not a type this archive stores. Images, PDF, plain text, audio and video are accepted; the type is read from the file's own bytes, so renaming an executable does not get it in. SVG is refused outright, because an SVG can carry script.
+error-export-unreadable-title = Could not read the exported bundle
+error-export-unreadable-detail = { $error }
+
+## Tree page, continued
+
+tree-title-suffix = tree
+tree-back-to-focused = Back to the focused view
+tree-show-all = Show all { $n }
+tree-width-notice = This view is { $width }px wide. Every generation is one row, and the widest one here sets that width — on a 1500px screen that is { $screens ->
+        [one] one screen
+       *[other] { $screens } screens
+    } of horizontal scrolling. The focused view shows a few dozen people around one person instead, and every card re-centres it.
+tree-confidence-label = Confidence:
+tree-band-certain = certain
+tree-band-high = high
+tree-band-medium = medium
+tree-band-low = speculative
+tree-counts = { $drawn } of { $total } people · { $generations ->
+        [one] one generation
+       *[other] { $generations } generations
+    }
+tree-unplaced-count = { $n } unplaced
+tree-contradicts-title = This bundle contradicts itself.
+tree-contradicts-detail = Somebody is recorded as their own ancestor, or two people on one line of descent are recorded as a couple. No arrangement of rows can satisfy that, so the offending relationship was left out of the generation numbering and some rows may be wrong. Run the validator from the admin dashboard to find it.
+tree-no-people = This bundle has no people yet.
+tree-no-people-cta = Convert a GEDCOM to fill it.
+tree-nobody-selected = Nobody to draw for that selection.
+tree-nobody-selected-cta = Start from the default view.
+tree-click-hint = Click any card to open that person's record in the panel; “Centre the tree here” in the panel re-roots the view.
+tree-filter-matches = { $n ->
+        [one] one match
+       *[other] { $n } matches
+    }
+tree-edge-union = A recorded union
+tree-edge-parentage = A recorded parentage
+
+## Home page
+
+home-empty = This bundle is empty. Convert a GEDCOM file to see what AXGF records that GEDCOM discards.
+home-count = { $total ->
+        [one] One entity
+       *[other] { $total } entities
+    } in one .axgf file — no database, no external services.
+home-browse = Browse the tree
+home-convert = Convert a GEDCOM file
+home-why-1 = GEDCOM records what a genealogist concluded. AXGF also records how sure they were, and why. Every fact in this bundle carries a confidence from 0.0 to 1.0, and this site renders that confidence visually — a birth date recorded at 98% and a speculative parentage at 35% do not look alike anywhere on this site.
+home-why-2 = AXGF also keeps the shape of what a source actually said. “circa 1500”, “before 1430” and “between 1920 and 1925” survive as distinct statements instead of collapsing into one blank field, and text no converter could parse is preserved rather than dropped. Relationships beyond blood — godparent, employer, witness, mentor — are first-class entities with their own dates, sources and confidence. Occupations are spans with a duration, not events with a single date.
+home-why-spec = Read the specification at github.com/plkarin/axgf-spec.
+home-in-this-bundle = What is in this bundle
+home-showcase-title = AXGF-only features present in this bundle
+home-showcase-note = These are the things this data expresses that a GEDCOM export could not carry.
+home-showcase-example = See an example →
+home-nothing-title = Nothing to show yet.
+home-nothing-detail = Upload a GEDCOM on the conversion page to see what the format captures, or install with --with-sample to seed a small demonstration bundle.
+
+## Showcase cards
+
+showcase-links-title = { $n ->
+        [one] One non-family relationship
+       *[other] { $n } non-family relationships
+    }
+showcase-links-detail = Godparents, employers, witnesses and mentors, each with its own dates, source and confidence. GEDCOM has no way to state these at all.
+showcase-occupations-title = { $n ->
+        [one] One occupation recorded as a span
+       *[other] { $n } occupations recorded as spans
+    }
+showcase-occupations-detail = “Schoolteacher, 1948–1978” is a state with a duration, rendered as a timeline bar rather than flattened into a dated event.
+showcase-uncertain-title = { $n ->
+        [one] One date that is honestly imprecise
+       *[other] { $n } dates that are honestly imprecise
+    }
+showcase-uncertain-detail = Circa, before, after and between are preserved as distinct statements. A date the source could not pin down is not shown as if it were.
+showcase-preserved-title = { $n ->
+        [one] An unparseable date kept verbatim
+       *[other] { $n } unparseable dates kept verbatim
+    }
+showcase-preserved-detail = Text no converter could interpret survives as a note instead of being silently dropped.
+showcase-sources-title = { $n ->
+        [one] One source graded by reliability
+       *[other] { $n } sources graded by reliability
+    }
+showcase-sources-detail = { $primary ->
+        [one] One primary source.
+       *[other] { $primary } primary.
+    } Every fact shows which evidence it rests on, and how strong that evidence is.
+showcase-places-title = { $n ->
+        [one] One place with border history
+       *[other] { $n } places with border history
+    }
+showcase-places-detail = A town can belong to different countries at different times, and the record says which one applied when.

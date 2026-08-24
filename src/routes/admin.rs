@@ -31,14 +31,21 @@ use crate::{auth, documents, render, view};
 /// The error variant is a whole rendered `Response`, which is large; boxing it
 /// keeps the common `Ok` path cheap.
 #[allow(clippy::result_large_err)]
-fn require(state: &Shared, headers: &HeaderMap, need: Need) -> Result<Viewer, Response> {
+fn require(
+    state: &Shared,
+    headers: &HeaderMap,
+    need: Need,
+) -> Result<(Viewer, render::Chrome), Response> {
     let viewer = auth::viewer(state, headers);
+    // Resolved even on the refusal path, because a refusal is a page too and
+    // it has to be in the reader's language and theme like any other.
+    let chrome = render::Chrome::resolve(&viewer, headers, "/admin");
     let ok = match need {
         Need::Write => viewer.may_write(),
         Need::Admin => viewer.is_admin(),
     };
     if ok {
-        return Ok(viewer);
+        return Ok((viewer, chrome));
     }
     if viewer.signed_in() {
         // Signed in, but not enough. Saying so is the useful answer: a
@@ -47,20 +54,13 @@ fn require(state: &Shared, headers: &HeaderMap, need: Need) -> Result<Viewer, Re
         // using.
         return Err((
             StatusCode::FORBIDDEN,
-            render::error_page(
+            render::error_page_in(
+                &chrome,
                 StatusCode::FORBIDDEN,
-                "Not for your role",
+                "access-role-title",
                 match need {
-                    Need::Admin => {
-                        "This is an administrator's page. Your \
-                         account can create and edit records, but not manage \
-                         accounts, delete entities or export the bundle."
-                    }
-                    Need::Write => {
-                        "Your account can read this bundle but not \
-                         change it. An administrator can raise your role to \
-                         contributor."
-                    }
+                    Need::Admin => "access-role-admin",
+                    Need::Write => "access-role-write",
                 },
             ),
         )
@@ -70,12 +70,13 @@ fn require(state: &Shared, headers: &HeaderMap, need: Need) -> Result<Viewer, Re
     // script both need, and the body still carries the form.
     Err((
         StatusCode::UNAUTHORIZED,
-        render::page(
+        render::page_with(
+            &chrome,
             "admin_login.html",
             context! {
                 nav => "admin",
-                is_admin => false,
-                error => "Sign in to reach the admin panel.",
+                error => chrome.t("login-sign-in-prompt"),
+                no_accounts => state.acl_read(|a| a.users.is_empty()),
             },
         ),
     )
@@ -91,6 +92,7 @@ enum Need {
     Admin,
 }
 
+/// Bind `(viewer, chrome)` or return the refusal page.
 macro_rules! guard {
     ($state:expr, $headers:expr) => {
         match require(&$state, &$headers, Need::Write) {
@@ -124,6 +126,7 @@ macro_rules! guard_admin {
 #[allow(clippy::result_large_err)]
 fn check_scope(
     state: &Shared,
+    chrome: &render::Chrome,
     viewer: &Viewer,
     kind: axgf_rs::EntityKind,
     proposed: &Value,
@@ -140,25 +143,20 @@ fn check_scope(
     }
     match crate::access::check_write(viewer, Some(&scope), &subjects) {
         Ok(()) => Ok(()),
-        Err(crate::access::Denied::Role) => Err(render::error_page(
+        Err(crate::access::Denied::Role) => Err(render::error_page_in(
+            chrome,
             StatusCode::FORBIDDEN,
-            "Not for your role",
-            "Your account may read this bundle but not change it.",
+            "access-role-title",
+            "access-role-write",
         )),
-        Err(crate::access::Denied::Scope) => Err(render::error_page(
+        Err(crate::access::Denied::Scope) => Err(render::error_page_in(
+            chrome,
             StatusCode::FORBIDDEN,
-            "Outside your branch",
+            "access-scope-title",
             if subjects.is_empty() {
-                "Your account is restricted to one branch of the tree, and \
-                 this record names nobody it could be measured against. \
-                 Sources and places are edited by accounts with access to the \
-                 whole tree."
+                "access-scope-unnamed"
             } else {
-                "Your account is restricted to one branch of the tree, and \
-                 this record concerns somebody outside it. Every person a \
-                 record names has to be inside your branch — a family with one \
-                 partner from outside would otherwise be a way to rewrite that \
-                 person's parentage."
+                "access-scope-named"
             },
         )),
     }
@@ -171,14 +169,15 @@ fn check_scope(
 /// `GET /admin/login`
 pub async fn login_form(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/admin/login");
     if viewer.may_write() {
         return Redirect::to("/admin").into_response();
     }
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_login.html",
         context! {
             nav => "admin",
-            is_admin => false,
             error => "",
             // A fresh installation has no accounts at all. Saying so beats a
             // login form that cannot be satisfied.
@@ -216,6 +215,11 @@ pub async fn login(
 ) -> Response {
     let secure = crate::session::is_tls(&headers);
     let client = crate::session::client_key(&headers, peer.map(|c| c.0));
+    // Nobody is signed in yet by definition, so the chrome here comes from the
+    // cookie and Accept-Language alone — which is exactly right: the sign-in
+    // page should already be in the reader's language before they have an
+    // account to store it on.
+    let chrome = render::Chrome::resolve(&auth::viewer(&state, &headers), &headers, "/admin/login");
 
     // The emergency token, kept as a recovery path and nothing more.
     if !f.token.is_empty() {
@@ -238,13 +242,14 @@ pub async fn login(
                 .into_response();
         }
         state.sessions().record_failure(&client);
-        return login_refused(&state, "That token is not correct.");
+        return login_refused(&state, &chrome, "That token is not correct.");
     }
 
     let username = f.username.trim().to_ascii_lowercase();
     if state.sessions().is_throttled(&client) || state.sessions().is_throttled(&username) {
         return login_refused(
             &state,
+            &chrome,
             "Too many failed attempts. Wait a few minutes and try again.",
         );
     }
@@ -266,7 +271,7 @@ pub async fn login(
         if !username.is_empty() {
             state.sessions().record_failure(&username);
         }
-        return login_refused(&state, "That username and password do not match.");
+        return login_refused(&state, &chrome, "That username and password do not match.");
     };
 
     state.sessions().clear_failures(&client);
@@ -295,14 +300,14 @@ pub async fn login(
         .into_response()
 }
 
-fn login_refused(state: &Shared, error: &str) -> Response {
+fn login_refused(state: &Shared, chrome: &render::Chrome, error: &str) -> Response {
     (
         StatusCode::UNAUTHORIZED,
-        render::page(
+        render::page_with(
+            &chrome,
             "admin_login.html",
             context! {
                 nav => "admin",
-                is_admin => false,
                 error,
                 no_accounts => state.acl_read(|a| a.users.is_empty()),
             },
@@ -333,18 +338,18 @@ pub async fn logout(State(state): State<Shared>, headers: HeaderMap) -> Response
 
 /// `GET /admin`
 pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard!(state, headers);
+    let (_viewer, chrome) = guard!(state, headers);
     let counts = state.counts();
     let env = state.inspect_with(axgf_rs::validate);
     let diagnostics = diagnostics_json(&env.diagnostics);
     // Validation says what is wrong; this says what is missing.
     let completeness = state.read(crate::completeness::analyse);
 
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_dashboard.html",
         context! {
             nav => "admin",
-            is_admin => true,
             kinds => KINDS,
             // COLLECTIONS and KINDS are the same eight in the same order, so
             // each tile can link to its singular admin listing.
@@ -407,9 +412,9 @@ pub async fn list(
     Path(kind): Path<String>,
     Query(q): Query<ListQuery>,
 ) -> Response {
-    guard!(state, headers);
+    let (_viewer, chrome) = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
-        return unknown_kind(&kind);
+        return unknown_kind(&chrome, &kind);
     };
 
     let needle = q.q.trim().to_lowercase();
@@ -448,11 +453,11 @@ pub async fn list(
     });
 
     let page = paginate(rows, q.page);
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_list.html",
         context! {
             nav => "admin",
-            is_admin => true,
             kind,
             kinds => KINDS,
             rows => page.items,
@@ -472,15 +477,15 @@ pub async fn new_form(
     headers: HeaderMap,
     Path(kind): Path<String>,
 ) -> Response {
-    guard!(state, headers);
+    let (_viewer, chrome) = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
-        return unknown_kind(&kind);
+        return unknown_kind(&chrome, &kind);
     };
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_form.html",
         context! {
             nav => "admin",
-            is_admin => true,
             kind,
             kinds => KINDS,
             creating => true,
@@ -498,24 +503,25 @@ pub async fn edit_form(
     headers: HeaderMap,
     Path((kind, id)): Path<(String, String)>,
 ) -> Response {
-    guard!(state, headers);
+    let (_viewer, chrome) = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
-        return unknown_kind(&kind);
+        return unknown_kind(&chrome, &kind);
     };
     let entity = state.read(|flat| flat.get(k.collection()).and_then(|c| c.get(&id)).cloned());
     let Some(entity) = entity else {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such entity",
-            "This bundle contains no entity with that id.",
+            "error-no-such-entity-title",
+            "error-no-such-entity-detail",
         );
     };
 
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_form.html",
         context! {
             nav => "admin",
-            is_admin => true,
             kind,
             kinds => KINDS,
             creating => false,
@@ -555,17 +561,17 @@ pub async fn create(
     Path(kind): Path<String>,
     Form(form): Form<HashMap<String, String>>,
 ) -> Response {
-    let viewer = guard!(state, headers);
+    let (viewer, chrome) = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
-        return unknown_kind(&kind);
+        return unknown_kind(&chrome, &kind);
     };
 
     let base = match base_from_raw(&form) {
         Ok(v) => v,
-        Err(msg) => return form_error(&kind, None, &msg, &form, k),
+        Err(msg) => return form_error(&chrome, &kind, None, &msg, &form, k),
     };
     let mut entity = apply_form(base, k, &form);
-    if let Err(r) = check_scope(&state, &viewer, k, &entity, None) {
+    if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, None) {
         return r;
     }
     // A new entity starts at version 1, so the first edit of it has a number
@@ -578,7 +584,7 @@ pub async fn create(
 
     let out = match state.mutate(|flat| axgf_rs::add_entity(flat, k, &body)) {
         Ok(o) => o,
-        Err(e) => return io_error(&e),
+        Err(e) => return io_error(&chrome, &e),
     };
 
     let new_id = out
@@ -602,6 +608,7 @@ pub async fn create(
     }
 
     result_page(
+        &chrome,
         &kind,
         if out.applied {
             "Created"
@@ -624,14 +631,14 @@ pub async fn update(
     Path((kind, id)): Path<(String, String)>,
     Form(form): Form<HashMap<String, String>>,
 ) -> Response {
-    let viewer = guard!(state, headers);
+    let (viewer, chrome) = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
-        return unknown_kind(&kind);
+        return unknown_kind(&chrome, &kind);
     };
 
     let base = match base_from_raw(&form) {
         Ok(v) => v,
-        Err(msg) => return form_error(&kind, Some(&id), &msg, &form, k),
+        Err(msg) => return form_error(&chrome, &kind, Some(&id), &msg, &form, k),
     };
     let mut entity = apply_form(base, k, &form);
     // The id in the path is authoritative; a raw-JSON edit must not silently
@@ -642,7 +649,7 @@ pub async fn update(
             .and_then(|c| c.get(&id))
             .cloned()
     });
-    if let Err(r) = check_scope(&state, &viewer, k, &entity, stored.as_ref()) {
+    if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, stored.as_ref()) {
         return r;
     }
 
@@ -661,7 +668,7 @@ pub async fn update(
     let outcome =
         match state.update_checked(k, &id, base_version, entity.clone(), viewer.name(), label) {
             Ok(o) => o,
-            Err(e) => return io_error(&e),
+            Err(e) => return io_error(&chrome, &e),
         };
 
     match outcome {
@@ -670,6 +677,7 @@ pub async fn update(
             version_num,
             changes,
         } => result_page(
+            &chrome,
             &kind,
             &format!(
                 "Saved as version {version_num} — {}",
@@ -683,6 +691,7 @@ pub async fn update(
             Some(format!("/admin/{kind}/{id}/edit")),
         ),
         crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
+            &chrome,
             &kind,
             "Not saved",
             &MutationOutcome {
@@ -692,11 +701,11 @@ pub async fn update(
             },
             Some(format!("/admin/{kind}/{id}/edit")),
         ),
-        crate::state::UpdateOutcome::Missing => render::error_page(
+        crate::state::UpdateOutcome::Missing => render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such entity",
-            "This bundle contains no entity with that id. It may have been \
-             deleted while you were editing it.",
+            "error-no-such-entity-title",
+            "error-deleted-while-editing",
         ),
         crate::state::UpdateOutcome::Conflict {
             current,
@@ -704,6 +713,7 @@ pub async fn update(
             expected_version,
         } => conflict_page(
             &state,
+            &chrome,
             &kind,
             k,
             &id,
@@ -731,6 +741,7 @@ pub async fn update(
 #[allow(clippy::too_many_arguments)]
 fn conflict_page(
     state: &Shared,
+    chrome: &render::Chrome,
     kind: &str,
     k: axgf_rs::EntityKind,
     id: &str,
@@ -782,11 +793,11 @@ fn conflict_page(
 
     (
         StatusCode::CONFLICT,
-        render::page(
+        render::page_with(
+            &chrome,
             "admin_conflict.html",
             context! {
                 nav => "admin",
-                is_admin => true,
                 kind,
                 kinds => KINDS,
                 id,
@@ -836,9 +847,9 @@ pub async fn delete(
     Path((kind, id)): Path<(String, String)>,
     Form(f): Form<DeleteForm>,
 ) -> Response {
-    let viewer = guard_admin!(state, headers);
+    let (viewer, chrome) = guard_admin!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
-        return unknown_kind(&kind);
+        return unknown_kind(&chrome, &kind);
     };
     // Deleting is an admin's right, and a scope is still a scope: an admin
     // who has one set may not delete outside it. Normally there is none, and
@@ -849,7 +860,7 @@ pub async fn delete(
             .cloned()
     });
     if let Some(stored) = stored.as_ref() {
-        if let Err(r) = check_scope(&state, &viewer, k, stored, None) {
+        if let Err(r) = check_scope(&state, &chrome, &viewer, k, stored, None) {
             return r;
         }
     }
@@ -857,7 +868,7 @@ pub async fn delete(
 
     let out = match state.mutate(|flat| axgf_rs::delete_entity(flat, k, &id, policy)) {
         Ok(o) => o,
-        Err(e) => return io_error(&e),
+        Err(e) => return io_error(&chrome, &e),
     };
 
     if out.applied {
@@ -874,6 +885,7 @@ pub async fn delete(
     }
 
     result_page(
+        &chrome,
         &kind,
         if out.applied {
             "Deleted"
@@ -887,13 +899,13 @@ pub async fn delete(
 
 /// `POST /admin/validate`
 pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard_admin!(state, headers);
+    let (_viewer, chrome) = guard_admin!(state, headers);
     let env = state.inspect_with(axgf_rs::validate);
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_result.html",
         context! {
             nav => "admin",
-            is_admin => true,
             title => "Validation report",
             summary => summary_line(&env.data, &[
                 ("errors", "error"), ("warnings", "warning"), ("infos", "note")]),
@@ -906,10 +918,10 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
 
 /// `POST /admin/dedup`
 pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard_admin!(state, headers);
+    let (_viewer, chrome) = guard_admin!(state, headers);
     let out = match state.mutate(axgf_rs::deduplicate) {
         Ok(o) => o,
-        Err(e) => return io_error(&e),
+        Err(e) => return io_error(&chrome, &e),
     };
 
     let summary = summary_line(
@@ -921,11 +933,11 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
         ],
     );
 
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_result.html",
         context! {
             nav => "admin",
-            is_admin => true,
             title => if out.applied { "Deduplication complete" } else { "Deduplication refused" },
             summary,
             diagnostics => diagnostics_json(&out.diagnostics),
@@ -941,17 +953,17 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
 /// to a temp file one payload at a time, then sent from that file. Downloading a
 /// 400 MiB bundle costs a file handle, not 400 MiB of process.
 pub async fn export(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    guard_admin!(state, headers);
+    let (_viewer, chrome) = guard_admin!(state, headers);
     let tmp = match state.export_to_temp_file() {
         Ok(t) => t,
-        Err(e) => return io_error(&e),
+        Err(e) => return io_error(&chrome, &e),
     };
     let name = state
         .bundle_path()
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "family.axgf".into());
-    render::bundle_download_from(&name, tmp).await
+    render::bundle_download_from(&chrome, &name, tmp).await
 }
 
 // ---------------------------------------------------------------------------
@@ -1059,12 +1071,18 @@ fn summary_line(data: &Value, fields: &[(&str, &str)]) -> String {
 }
 
 /// The page shown after a mutation.
-fn result_page(kind: &str, title: &str, out: &MutationOutcome, back: Option<String>) -> Response {
-    render::page(
+fn result_page(
+    chrome: &render::Chrome,
+    kind: &str,
+    title: &str,
+    out: &MutationOutcome,
+    back: Option<String>,
+) -> Response {
+    render::page_with(
+        &chrome,
         "admin_result.html",
         context! {
             nav => "admin",
-            is_admin => true,
             title,
             summary => if out.applied {
                 "The bundle was written to disk."
@@ -1080,6 +1098,7 @@ fn result_page(kind: &str, title: &str, out: &MutationOutcome, back: Option<Stri
 
 /// Re-render a form after a client-side error, keeping what was typed.
 fn form_error(
+    chrome: &render::Chrome,
     kind: &str,
     id: Option<&str>,
     message: &str,
@@ -1088,11 +1107,11 @@ fn form_error(
 ) -> Response {
     let raw = form.get("raw_json").cloned().unwrap_or_else(|| "{}".into());
     let entity = serde_json::from_str::<Value>(&raw).unwrap_or(Value::Object(Default::default()));
-    let mut resp = render::page(
+    let mut resp = render::page_with(
+        &chrome,
         "admin_form.html",
         context! {
             nav => "admin",
-            is_admin => true,
             kind,
             kinds => KINDS,
             creating => id.is_none(),
@@ -1110,20 +1129,24 @@ fn form_error(
     resp
 }
 
-fn unknown_kind(kind: &str) -> Response {
-    render::error_page(
+fn unknown_kind(chrome: &render::Chrome, kind: &str) -> Response {
+    render::error_page_args(
+        chrome,
         StatusCode::NOT_FOUND,
-        "Unknown entity kind",
-        &format!("“{kind}” is not one of: {}.", KINDS.join(", ")),
+        "error-unknown-kind-title",
+        "error-unknown-kind-detail",
+        &[("kind", kind.into()), ("kinds", KINDS.join(", ").into())],
     )
 }
 
-fn io_error(e: &anyhow::Error) -> Response {
+fn io_error(chrome: &render::Chrome, e: &anyhow::Error) -> Response {
     tracing::error!(error = %e, "admin operation failed");
-    render::error_page(
+    render::error_page_args(
+        chrome,
         StatusCode::INTERNAL_SERVER_ERROR,
-        "The bundle could not be written",
-        &format!("{e}. The previous bundle is intact."),
+        "error-io-title",
+        "error-io-detail",
+        &[("error", e.to_string().into())],
     )
 }
 
@@ -1157,12 +1180,13 @@ pub async fn upload_document(
     Path(id): Path<String>,
     multipart: axum::extract::Multipart,
 ) -> Response {
-    let viewer = guard!(state, headers);
+    let (viewer, chrome) = guard!(state, headers);
     // The subject is the person the file is being attached to. Uploading a
     // document is a write against *their* record whatever the Document entity
     // itself says, so it is checked as one.
     if let Err(r) = check_scope(
         &state,
+        &chrome,
         &viewer,
         axgf_rs::EntityKind::Person,
         &json!({"id": id}),
@@ -1177,11 +1201,11 @@ pub async fn upload_document(
             .is_some_and(|p| !p.is_null())
     });
     if !person_exists {
-        return render::error_page(
+        return render::error_page_in(
+            &chrome,
             StatusCode::NOT_FOUND,
-            "No such person",
-            "This bundle contains no person with that id, so there is nothing \
-             to attach a document to.",
+            "error-no-such-person-title",
+            "error-no-such-person-to-attach",
         );
     }
 
@@ -1189,20 +1213,23 @@ pub async fn upload_document(
 
     if up.too_large || up.bytes.len() > documents::MAX_UPLOAD {
         return upload_refused(
+            &chrome,
             &id,
             StatusCode::PAYLOAD_TOO_LARGE,
-            &format!(
-                "That file is larger than the {} MB limit. Nothing was stored, \
-                 and the bundle is unchanged.",
-                documents::MAX_UPLOAD / (1024 * 1024)
-            ),
+            "error-upload-too-large",
+            &[(
+                "mb",
+                ((documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
+            )],
         );
     }
     if up.bytes.is_empty() {
         return upload_refused(
+            &chrome,
             &id,
             StatusCode::BAD_REQUEST,
-            "No file was uploaded. Choose a file first.",
+            "error-upload-none",
+            &[],
         );
     }
 
@@ -1210,12 +1237,11 @@ pub async fn upload_document(
     // so neither is consulted: the type comes from the bytes.
     let Some(kind) = documents::sniff(&up.bytes) else {
         return upload_refused(
+            &chrome,
             &id,
             StatusCode::UNSUPPORTED_MEDIA_TYPE,
-            "That file is not a type this archive stores. Images, PDF, plain \
-             text, audio and video are accepted; the type is read from the \
-             file's own bytes, so renaming an executable does not get it in. \
-             SVG is refused outright, because an SVG can carry script.",
+            "error-upload-unsupported",
+            &[],
         );
     };
 
@@ -1254,7 +1280,7 @@ pub async fn upload_document(
     // bundle; add_document mints the id, fills in the file path, and persists.
     let (out, new_id) = match state.add_document(&body, &up.bytes, kind.ext) {
         Ok(o) => o,
-        Err(e) => return io_error(&e),
+        Err(e) => return io_error(&chrome, &e),
     };
 
     if out.applied {
@@ -1275,12 +1301,14 @@ pub async fn upload_document(
 
     if !out.applied {
         return upload_refused(
+            &chrome,
             &id,
             StatusCode::BAD_REQUEST,
-            &format!(
-                "The library refused the document: {}. The bundle is unchanged.",
-                crate::state::format_diagnostics(&out.diagnostics)
-            ),
+            "error-upload-refused",
+            &[(
+                "reason",
+                crate::state::format_diagnostics(&out.diagnostics).into(),
+            )],
         );
     }
 
@@ -1292,12 +1320,20 @@ pub async fn upload_document(
 /// The status carries the distinction a script needs — 413 for too big, 415
 /// for a type this archive does not store — and the body carries the sentence
 /// a person needs.
-fn upload_refused(person: &str, status: StatusCode, message: &str) -> Response {
-    render::error_page_back(
+fn upload_refused(
+    chrome: &render::Chrome,
+    person: &str,
+    status: StatusCode,
+    message_key: &str,
+    args: &[(&str, fluent::FluentValue<'_>)],
+) -> Response {
+    render::error_page_back_in(
+        chrome,
         status,
-        "That upload was not stored",
-        message,
-        Some((&format!("/person/{person}"), "Back to this person")),
+        "error-upload-title",
+        message_key,
+        args,
+        Some((&format!("/person/{person}"), "error-back-to-person")),
     )
 }
 
@@ -1372,12 +1408,13 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
 /// the account-enumeration oracle each of those carries — rather than
 /// defending it.
 pub async fn users(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    let viewer = guard_admin!(state, headers);
-    render_users(&state, &viewer, None, None)
+    let (viewer, chrome) = guard_admin!(state, headers);
+    render_users(&state, &chrome, &viewer, None, None)
 }
 
 fn render_users(
     state: &Shared,
+    chrome: &render::Chrome,
     viewer: &Viewer,
     error: Option<&str>,
     notice: Option<&str>,
@@ -1420,11 +1457,11 @@ fn render_users(
     });
     let admins = state.acl_read(|acl| acl.active_admins());
 
-    render::page(
+    render::page_with(
+        &chrome,
         "admin_users.html",
         context! {
             nav => "admin",
-            is_admin => true,
             users,
             roster,
             admins,
@@ -1457,11 +1494,11 @@ pub async fn create_user(
     headers: HeaderMap,
     Form(f): Form<NewUserForm>,
 ) -> Response {
-    let viewer = guard_admin!(state, headers);
+    let (viewer, chrome) = guard_admin!(state, headers);
 
     let role = match crate::acl::Role::parse(&f.role) {
         Some(r) => r,
-        None => return render_users(&state, &viewer, Some("Pick a role."), None),
+        None => return render_users(&state, &chrome, &viewer, Some("Pick a role."), None),
     };
     // A generated password when the field is left blank, so the common case —
     // an administrator setting up a relative — never invites a weak one.
@@ -1474,10 +1511,16 @@ pub async fn create_user(
 
     let mut user = match crate::acl::new_user(&f.username, &password, role) {
         Ok(u) => u,
-        Err(e) => return render_users(&state, &viewer, Some(&e.to_string()), None),
+        Err(e) => return render_users(&state, &chrome, &viewer, Some(&e.to_string()), None),
     };
     if state.acl_read(|a| a.has_username(&user.username)) {
-        return render_users(&state, &viewer, Some("That username is taken."), None);
+        return render_users(
+            &state,
+            &chrome,
+            &viewer,
+            Some("That username is taken."),
+            None,
+        );
     }
     let email = f.email.trim();
     if !email.is_empty() {
@@ -1487,7 +1530,13 @@ pub async fn create_user(
 
     let username = user.username.clone();
     if let Err(e) = state.acl_mutate(|acl| acl.users.push(user)) {
-        return render_users(&state, &viewer, Some(&format!("Not saved: {e}")), None);
+        return render_users(
+            &state,
+            &chrome,
+            &viewer,
+            Some(&format!("Not saved: {e}")),
+            None,
+        );
     }
 
     let notice = if generated {
@@ -1498,7 +1547,7 @@ pub async fn create_user(
     } else {
         format!("Created {username}.")
     };
-    render_users(&state, &viewer, None, Some(&notice))
+    render_users(&state, &chrome, &viewer, None, Some(&notice))
 }
 
 #[derive(Deserialize)]
@@ -1527,10 +1576,10 @@ pub async fn update_user(
     Path(id): Path<String>,
     Form(f): Form<EditUserForm>,
 ) -> Response {
-    let viewer = guard_admin!(state, headers);
+    let (viewer, chrome) = guard_admin!(state, headers);
 
     let Some(existing) = state.acl_read(|a| a.by_id(&id).cloned()) else {
-        return render_users(&state, &viewer, Some("No such account."), None);
+        return render_users(&state, &chrome, &viewer, Some("No such account."), None);
     };
     let role = crate::acl::Role::parse(&f.role).unwrap_or(existing.role);
     let disabling = f.status == "disabled";
@@ -1545,6 +1594,7 @@ pub async fn update_user(
     if lowering_last_admin {
         return render_users(
             &state,
+            &chrome,
             &viewer,
             Some(
                 "That is the only active administrator. Promote somebody else \
@@ -1559,7 +1609,7 @@ pub async fn update_user(
     let new_password = f.password.trim().to_string();
     if !new_password.is_empty() {
         if let Err(e) = crate::acl::validate_password(&new_password) {
-            return render_users(&state, &viewer, Some(&e.to_string()), None);
+            return render_users(&state, &chrome, &viewer, Some(&e.to_string()), None);
         }
     }
     let hash = if new_password.is_empty() {
@@ -1567,7 +1617,7 @@ pub async fn update_user(
     } else {
         match crate::acl::hash_password(&new_password) {
             Ok(h) => Some(h),
-            Err(e) => return render_users(&state, &viewer, Some(&e.to_string()), None),
+            Err(e) => return render_users(&state, &chrome, &viewer, Some(&e.to_string()), None),
         }
     };
 
@@ -1589,7 +1639,13 @@ pub async fn update_user(
             }
         }
     }) {
-        return render_users(&state, &viewer, Some(&format!("Not saved: {e}")), None);
+        return render_users(
+            &state,
+            &chrome,
+            &viewer,
+            Some(&format!("Not saved: {e}")),
+            None,
+        );
     }
 
     // Whatever changed, the cookie that was issued before it is now describing
@@ -1597,6 +1653,7 @@ pub async fn update_user(
     state.sessions().close_all_for(&id);
     render_users(
         &state,
+        &chrome,
         &viewer,
         None,
         Some(&format!(

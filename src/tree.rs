@@ -1532,6 +1532,11 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
 /// `None` admits everyone and costs nothing, which is the common case: a
 /// bundle with nothing hidden, or an admin.
 pub fn redact(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>) {
+    redact_in(layout, visible, crate::i18n::DEFAULT)
+}
+
+/// [`redact`], labelling the withheld cards in the reader's language.
+pub fn redact_in(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>, lang: &str) {
     let Some(visible) = visible else { return };
     let mut hidden: BTreeSet<&str> = BTreeSet::new();
     for band in &mut layout.bands {
@@ -1540,7 +1545,7 @@ pub fn redact(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>) {
                 continue;
             }
             hidden.insert(card.id.as_str());
-            card.name = crate::person::RESTRICTED_NAME.to_string();
+            card.name = crate::i18n::translate(lang, crate::person::RESTRICTED_KEY, None);
             // Emptied, not redacted-in-place: `search` drives the client-side
             // filter, and a filter that still matched the real name would hand
             // back every name in the bundle one keystroke at a time.
@@ -1569,10 +1574,14 @@ pub fn redact(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>) {
         if !a && !b {
             continue;
         }
-        edge.title = match edge.kind {
-            "spouse" => "A recorded union".to_string(),
-            _ => "A recorded parentage".to_string(),
-        };
+        edge.title = crate::i18n::translate(
+            lang,
+            match edge.kind {
+                "spouse" => "tree-edge-union",
+                _ => "tree-edge-parentage",
+            },
+            None,
+        );
     }
 }
 

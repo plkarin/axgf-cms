@@ -304,7 +304,7 @@ fn login_refused(state: &Shared, chrome: &render::Chrome, error: &str) -> Respon
     (
         StatusCode::UNAUTHORIZED,
         render::page_with(
-            &chrome,
+            chrome,
             "admin_login.html",
             context! {
                 nav => "admin",
@@ -794,7 +794,7 @@ fn conflict_page(
     (
         StatusCode::CONFLICT,
         render::page_with(
-            &chrome,
+            chrome,
             "admin_conflict.html",
             context! {
                 nav => "admin",
@@ -1079,7 +1079,7 @@ fn result_page(
     back: Option<String>,
 ) -> Response {
     render::page_with(
-        &chrome,
+        chrome,
         "admin_result.html",
         context! {
             nav => "admin",
@@ -1108,7 +1108,7 @@ fn form_error(
     let raw = form.get("raw_json").cloned().unwrap_or_else(|| "{}".into());
     let entity = serde_json::from_str::<Value>(&raw).unwrap_or(Value::Object(Default::default()));
     let mut resp = render::page_with(
-        &chrome,
+        chrome,
         "admin_form.html",
         context! {
             nav => "admin",
@@ -1458,7 +1458,7 @@ fn render_users(
     let admins = state.acl_read(|acl| acl.active_admins());
 
     render::page_with(
-        &chrome,
+        chrome,
         "admin_users.html",
         context! {
             nav => "admin",

@@ -262,7 +262,7 @@ fn render_diagnostics(diags: &[axgf_rs::boundary::envelope::Diagnostic]) -> Vec<
 /// Render the result page in its failure shape, with a fitting status.
 fn fail(chrome: &render::Chrome, status: StatusCode, message: &str) -> Response {
     let mut resp = render::page_with(
-        &chrome,
+        chrome,
         "convert_result.html",
         context! {
             nav => "convert",

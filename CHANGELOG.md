@@ -71,6 +71,73 @@ not require it, no default is defined for its absence, and the three converters
 in circulation each answer differently — `tools/gedcom2axgf.py` writes
 `members` unconditionally, `tools/webtrees2axgf.py` and `axgf-rs` write nothing.
 
+**Seven themes**, chosen by the reader and stored on the account, falling back
+to a cookie and then to `prefers-color-scheme`: light, dark, high-contrast,
+sepia, deuteranopia, protanopia and tritanopia. Every colour is a custom
+property, and a theme is one block redefining them under a `data-theme`
+attribute rendered *server-side* — a script that set it after load would flash
+the wrong theme on every page, worst for exactly the reader who chose
+high-contrast. A test fails if any rule outside the theme blocks hardcodes a
+colour, because a literal is one no theme can override.
+
+**Confidence survives without colour, in every theme.** Colour is precisely
+what disappears under colour blindness and confidence is this product's
+argument, so it is carried four ways over:
+
+- a bar's **length** is the value, and length survives everything;
+- the dot is a **pie filled to the value** rather than a disc tinted by band.
+  It used to distinguish `certain`, `high` and `medium` by hue alone — and the
+  dot is what the tree cards and the dense lists use, so that was the one place
+  the whole argument leaked out;
+- the **numeric percentage** is printed beside the bar and is in the accessible
+  name of both, so a screen reader hears "0.35" rather than "orange";
+- the three colour-blind themes drop hue from the ramp altogether and use a
+  **lightness ramp** of one safe hue, because lightness is the one channel no
+  form of colour blindness takes away.
+
+Verified by rendering, not by reasoning: a strip of indicators at 98/82/62/45/12%
+was rendered under each theme, then again through a dichromacy matrix, then
+again fully desaturated. At every step the shorter bar and the emptier pie
+still read as less certain.
+
+**Residual edge-crossing hues are paired with dash patterns.** The marker is
+now an index the stylesheet turns into both a hue and a rhythm, so two lines
+that converge in hue under a colour-blind theme are still one dashed and one
+dotted. A test asserts all eight patterns differ.
+
+**WCAG AA, measured rather than asserted.** Every pair was read from
+`getComputedStyle` in a real browser across two pages and seven themes. The
+worst *required* pair per theme:
+
+| Theme | Worst required pair | Ratio | Needs |
+|---|---|---|---|
+| light | tree card border | 3.09 | 3.0 |
+| dark | select border | 3.13 | 3.0 |
+| high-contrast | small muted text | 17.4 | 4.5 |
+| sepia | select border | 3.04 | 3.0 |
+| deuteranopia | tree card border | 3.05 | 3.0 |
+| protanopia | tree card border | 3.05 | 3.0 |
+| tritanopia | tree card border | 3.07 | 3.0 |
+
+The sweep found four real defects that reading the stylesheet had not:
+form controls inherited the user agent's black text, giving **1.26:1 in dark
+mode** — an unreadable input; `--border-strong` was 1.7–2.1:1 where a control
+boundary needs 3:1; the tree card outlines were 2.1–2.5:1; and the confidence
+bar's track was `--border`, which under high-contrast is pure black, so a 12%
+bar rendered as a mostly-dark bar and looked *more* certain than a 98% one —
+inverting the signal in the theme that needs it most. The track has its own
+variable now.
+
+Muted secondary text is where dark palettes usually fail, so it was measured
+first: it clears 4.5:1 in every theme (5.2–5.8, and 17.4 in high-contrast).
+Purely decorative separators are reported alongside but not failed — WCAG
+1.4.11 exempts them, and the lowest is 1.0–1.4:1.
+
+**`prefers-reduced-motion` is respected.** A medical setting, not a taste: the
+tree's hover transitions fire hundreds of times as a pointer crosses a canvas
+of cards. Durations go to 0.01ms rather than 0, because a zero-length
+transition never fires `transitionend` and anything awaiting it would hang.
+
 **Ten interface languages, translating the interface and never the data.**
 An English speaker browsing a Polish family wants English buttons and Polish
 place names. AXGF carries that distinction itself — `place.names[].lang`,

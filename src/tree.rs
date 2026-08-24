@@ -452,6 +452,9 @@ pub struct Card {
     /// Confidence band of the birth fact, shown as a dot on the card.
     pub conf_band: Option<&'static str>,
     pub conf_label: Option<String>,
+    /// The confidence as a whole percentage, so the card's dot can be filled
+    /// to the value rather than merely tinted by its band.
+    pub conf_pct: Option<u8>,
     /// True for the person the focused view is centred on.
     pub is_root: bool,
     /// True when this person exists but the reader may not read them. The card
@@ -477,12 +480,16 @@ pub struct Edge {
     /// hover highlight, which raises a person's own edges and dims the rest.
     pub from: String,
     pub to: String,
-    /// A hue from a small fixed palette, set only on the descent edges that
-    /// actually cross another. It encodes *crossing*, a different thing from
-    /// opacity's certainty, so the eye can follow one line through an
-    /// intersection. `None` leaves the edge the default ink — colour is only
-    /// meaningful because it is rare.
-    pub hue: Option<&'static str>,
+    /// Which crossing marker this edge carries, 1..=8, set only on the descent
+    /// edges that actually cross another. It encodes *crossing*, a different
+    /// thing from opacity's certainty, so the eye can follow one line through
+    /// an intersection. `None` leaves the edge the default ink — a marker is
+    /// only meaningful because it is rare.
+    ///
+    /// An index rather than a colour, because the stylesheet pairs each index
+    /// with a dash pattern as well as a hue: under a colour-blind theme the
+    /// dash is what carries the distinction.
+    pub hue: Option<u8>,
 }
 
 /// One horizontal row of cards.
@@ -823,9 +830,14 @@ pub fn layout_focused(flat: &Value, subtree: &Subtree) -> TreeLayout {
 /// colours chosen to stay distinct under the common forms of colour blindness.
 /// Small on purpose — colour is a signal here, not decoration, so it has to be
 /// rare to mean anything.
-const CROSSING_HUES: [&str; 8] = [
-    "#e69f00", "#0072b2", "#009e73", "#cc79a7", "#d55e00", "#56b4e9", "#f0e442", "#000000",
-];
+/// How many distinct crossing markers exist.
+///
+/// The marker is an *index*, not a colour. The stylesheet turns each index
+/// into both a hue and a dash pattern, which is what lets the colour-blind
+/// themes keep the distinction: two lines that look identical in hue are still
+/// one dashed and one dotted. Hardcoding hex here would have made that
+/// impossible without a second set of numbers in Rust.
+const CROSSING_MARKERS: u8 = 8;
 
 /// A unit the ordering permutes as one: a contracted couple, or a lone person.
 /// Keeping partners inside a single unit is what guarantees they stay adjacent
@@ -841,7 +853,7 @@ struct Ordered {
     crossings: usize,
     /// The descent edges that still cross something, each given a hue so one
     /// line can be traced through an intersection.
-    hues: BTreeMap<(String, String), &'static str>,
+    hues: BTreeMap<(String, String), u8>,
 }
 
 /// The anchoring parent of `child`: the parent that sits directly below it and
@@ -1002,7 +1014,7 @@ fn sweep(
 fn assign_hues(
     rows: &BTreeMap<i64, Vec<String>>,
     anchor_of: &BTreeMap<String, String>,
-) -> BTreeMap<(String, String), &'static str> {
+) -> BTreeMap<(String, String), u8> {
     // One drawn edge, as (parent column, child column, (parent id, child id)).
     type LayerEdge = (usize, usize, (String, String));
     let col = column_index(rows);
@@ -1040,18 +1052,16 @@ fn assign_hues(
         }
     }
 
-    let mut hues: BTreeMap<(String, String), &'static str> = BTreeMap::new();
+    let mut hues: BTreeMap<(String, String), u8> = BTreeMap::new();
     for edge in crosses.keys() {
-        let used: BTreeSet<&'static str> = crosses[edge]
+        let used: BTreeSet<u8> = crosses[edge]
             .iter()
             .filter_map(|other| hues.get(other).copied())
             .collect();
-        let hue = CROSSING_HUES
-            .iter()
-            .copied()
-            .find(|h| !used.contains(h))
-            .unwrap_or(CROSSING_HUES[0]);
-        hues.insert(edge.clone(), hue);
+        let marker = (1..=CROSSING_MARKERS)
+            .find(|m| !used.contains(m))
+            .unwrap_or(1);
+        hues.insert(edge.clone(), marker);
     }
     hues
 }
@@ -1494,6 +1504,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
             y,
             conf_band: None,
             conf_label: None,
+            conf_pct: None,
             is_root,
             restricted: false,
         };
@@ -1537,6 +1548,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
         x,
         y,
         conf_band: conf.as_ref().map(|c| c.band),
+        conf_pct: conf.as_ref().map(|c| c.percent),
         conf_label: conf.map(|c| c.description),
         is_root,
         restricted: false,
@@ -1584,6 +1596,7 @@ pub fn redact_in(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>, la
             // reader may not see.
             card.conf_band = None;
             card.conf_label = None;
+            card.conf_pct = None;
             card.restricted = true;
         }
     }
@@ -1621,7 +1634,7 @@ fn build_edges(
     pos: &BTreeMap<String, (f64, f64)>,
     gen: &BTreeMap<String, i64>,
     persons: &serde_json::Map<String, Value>,
-    hues: &BTreeMap<(String, String), &'static str>,
+    hues: &BTreeMap<(String, String), u8>,
 ) -> Vec<Edge> {
     let mut edges = Vec::new();
     let name = |id: &str| -> String {
@@ -2498,21 +2511,30 @@ mod tests {
             "exactly the one forced crossing survives, not zero and not more"
         );
 
-        // The residual crossing's two edges each get a hue, and they differ so
-        // the eye can follow one line through the intersection.
-        let hues: Vec<&'static str> = ord.hues.values().copied().collect();
+        // The residual crossing's two edges each get a marker, and they differ
+        // so the eye can follow one line through the intersection. The marker
+        // is an index: the stylesheet gives it both a hue and a dash pattern,
+        // so the two lines stay distinguishable under a colour-blind theme.
+        let markers: Vec<u8> = ord.hues.values().copied().collect();
         assert_eq!(
-            hues.len(),
+            markers.len(),
             2,
-            "only the crossing pair is coloured: {:?}",
+            "only the crossing pair is marked: {:?}",
             ord.hues
         );
-        assert_ne!(hues[0], hues[1], "the two crossing lines get distinct hues");
+        assert_ne!(
+            markers[0], markers[1],
+            "the two crossing lines get distinct markers"
+        );
+        assert!(
+            markers.iter().all(|m| (1..=CROSSING_MARKERS).contains(m)),
+            "every marker has a stylesheet rule: {markers:?}"
+        );
 
-        // And colour is rare: no other edge is tinted.
+        // And a marker is rare: no other edge carries one.
         let l = layout(&b);
-        let coloured = l.edges.iter().filter(|e| e.hue.is_some()).count();
-        assert_eq!(coloured, 2, "colour must stay rare to stay meaningful");
+        let marked = l.edges.iter().filter(|e| e.hue.is_some()).count();
+        assert_eq!(marked, 2, "a marker must stay rare to stay meaningful");
     }
 
     #[test]

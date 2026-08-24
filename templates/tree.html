@@ -76,10 +76,10 @@
 
 <div class="tree-legend small">
   <span class="muted">{{ t("tree-confidence-label") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="certain"></i> {{ t("tree-band-certain") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="high"></i> {{ t("tree-band-high") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="medium"></i> {{ t("tree-band-medium") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="low"></i> {{ t("tree-band-low") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="certain" style="--conf-pct:97"></i> {{ t("tree-band-certain") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="high" style="--conf-pct:82"></i> {{ t("tree-band-high") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="medium" style="--conf-pct:62"></i> {{ t("tree-band-medium") }}</span>
+  <span class="lg"><i class="conf-dot" data-band="low" style="--conf-pct:30"></i> {{ t("tree-band-low") }}</span>
   <span class="muted tree-legend-counts">
     {{ t("tree-counts", drawn=layout.person_count, total=layout.total_person_count,
           generations=layout.generation_count) }}
@@ -116,9 +116,10 @@
          viewBox="0 0 {{ layout.width }} {{ layout.height }}" aria-hidden="true">
       {% for e in layout.edges %}
       <path d="{{ e.d }}" class="wire wire-{{ e.kind }}{% if e.hue %} wire-crossing{% endif %}"
+            {%- if e.hue %} data-hue="{{ e.hue }}"{% endif %}
             data-band="{{ e.band }}" data-from="{{ e.from }}" data-to="{{ e.to }}"
             data-base="{{ e.opacity }}"
-            style="opacity:{{ e.opacity }}{% if e.hue %};stroke:{{ e.hue }}{% endif %}"><title>{{ e.title }}</title></path>
+            style="opacity:{{ e.opacity }}"><title>{{ e.title }}</title></path>
       {% endfor %}
     </svg>
 
@@ -155,7 +156,9 @@
         <span class="tdates" dir="ltr">
           {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
           {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
-              title="{{ c.conf_label }}"></i>{% endif %}
+              style="--conf-pct:{{ c.conf_pct }}"
+              title="{{ c.conf_label }} — {{ c.conf_pct }}%"
+              role="img" aria-label="{{ c.conf_label }} — {{ c.conf_pct }}%"></i>{% endif %}
         </span>
       </a>
       {% endif %}

@@ -3,9 +3,9 @@
 
 {% macro conf_bar(c) %}
   {%- if c -%}
-  <span class="conf-inline" title="{{ c.description }}">
+  <span class="conf-inline" title="{{ c.description }} — {{ c.percent }}%">
     <span class="conf-bar" data-band="{{ c.band }}" role="img"
-          aria-label="{{ c.description }}"><i style="width:{{ c.percent }}%"></i></span>
+          aria-label="{{ c.description }} — {{ c.percent }}%"><i style="width:{{ c.percent }}%"></i></span>
     <span class="conf-pct">{{ c.percent }}%</span>
   </span>
   {%- endif -%}
@@ -13,8 +13,12 @@
 
 {% macro conf_dot(c) %}
   {%- if c -%}
-  <i class="conf-dot" data-band="{{ c.band }}" title="{{ c.description }}"
-     role="img" aria-label="{{ c.description }}"></i>
+  {#- The pie is filled from the same number the accessible name states, so
+      what a sighted reader sees and what a screen reader hears cannot drift. -#}
+  <i class="conf-dot" data-band="{{ c.band }}"
+     style="--conf-pct:{{ c.percent }}"
+     title="{{ c.description }} — {{ c.percent }}%"
+     role="img" aria-label="{{ c.description }} — {{ c.percent }}%"></i>
   {%- endif -%}
 {% endmacro %}
 

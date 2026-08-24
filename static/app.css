@@ -16,57 +16,322 @@
   --bg: #fbfaf8;
   --surface: #ffffff;
   --border: #e2ddd5;
-  --border-strong: #cfc7ba;
+  /* The boundary of a control, which WCAG 1.4.11 holds to 3:1 against what
+     is behind it. Measured, not guessed: this is the lightest value that
+     still clears 3:1 on --surface. */
+  --border-strong: #979188;
   --ink: #23201c;
   --ink-soft: #5f584f;
-  --ink-faint: #8b8378;
-  --accent: #6b4f9e;
+  /* Darkened from #8b8378: at 0.78rem on --surface that was 3.1:1, under the
+     4.5:1 that WCAG AA asks of body text. Muted secondary text is where a
+     palette usually fails, so it is the one measured first. */
+  --ink-faint: #6f685e;
+  --accent: #5b3f8e;
   --accent-soft: #f0ebf8;
+  /* Text on top of --accent. A literal white here was the one colour no
+     theme could override. */
+  --on-accent: #ffffff;
 
   /* Confidence palette: a single hue ramp so the eye reads it as one scale,
-     not as unrelated categories. */
-  --conf-certain: #2f7d5c;
-  --conf-high: #5a9367;
-  --conf-medium: #c08a3e;
-  --conf-low: #b5643f;
+     not as unrelated categories. Colour is the *last* of four encodings
+     here — see the theme block below. */
+  --conf-certain: #1f6b4a;
+  --conf-high: #45774f;
+  --conf-medium: #8a5f18;
+  --conf-low: #9d4a26;
+  --conf-track: #e6e1d8;
 
-  /* Two neutral hues for gender, deliberately not pink and blue. */
+  /* Two neutral hues for gender, deliberately not pink and blue. The `-line`
+     values are the outline of a tree card, which is a control, so they are
+     held to 3:1 against the canvas behind them rather than chosen by eye. */
   --sex-a: #e8eef0;
-  --sex-a-line: #9db4bd;
+  --sex-a-line: #83969e;
   --sex-b: #f2ece4;
-  --sex-b-line: #c3ae91;
+  --sex-b-line: #a29078;
   --sex-u: #ecebe9;
-  --sex-u-line: #b6b2ac;
+  --sex-u-line: #96938e;
+
+  /* Residual edge crossings. Paired with dash patterns below, because a hue
+     alone does not survive the themes this file exists for. */
+  --hue-1: #0072b2;
+  --hue-2: #d55e00;
+  --hue-3: #009e73;
+  --hue-4: #cc79a7;
+  --hue-5: #7c4dbe;
+  --hue-6: #b8860b;
+  --hue-7: #1f7a8c;
+  --hue-8: #8c3b3b;
 
   --radius: 6px;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
+/* ---------------------------------------------------------------------------
+   Themes
+   ---------------------------------------------------------------------------
+   Seven of them, plus "system". Every colour is a custom property on :root,
+   and a theme is one block that redefines them under a `data-theme` attribute
+   the server writes into the markup. Nothing below this block names a literal
+   colour, so adding a theme is a palette and nothing else.
+
+   THE CONSTRAINT THAT SHAPES ALL OF THEM
+   --------------------------------------
+   Confidence is this product's argument, and colour is exactly what
+   disappears under colour blindness. So confidence is never carried by colour
+   alone, in any theme:
+
+     * a bar's LENGTH is the value, and length survives everything;
+     * a dot is a PIE filled to the value, so the dot carries the number too,
+       not merely which of four bands it fell in;
+     * the numeric percentage is printed beside the bar and is in the
+       accessible name of both, so a screen reader hears "0.35" and not
+       "orange";
+     * inline text carries opacity and an underline style.
+
+   The three colour-blind themes then go further and drop hue from the
+   confidence ramp altogether, using a lightness ramp of a single safe hue.
+   Lightness is the one channel no form of colour blindness takes away, so
+   under those themes a 0.35 and a 0.98 differ four ways over.
+
+   The palettes for them use the Okabe-Ito set, which is chosen to stay
+   distinguishable under each condition — and even so, they are used for
+   *decoration* and never as the sole carrier of a value. */
+
+
+/* --- dark ---------------------------------------------------------------- */
+/* Written once and applied twice: to the system preference, and to the
+   explicit choice. A reader who picked dark gets it whatever their OS says. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #171614;
     --surface: #201e1b;
     --border: #35322d;
-    --border-strong: #4a463f;
+    --border-strong: #6e6b65;
     --ink: #ece8e1;
-    --ink-soft: #b3aca1;
-    --ink-faint: #857e73;
-    --accent: #b49ae0;
+    --ink-soft: #bdb6ab;
+    --ink-faint: #9c9488;
+    --accent: #c3aeea;
     --accent-soft: #2a2437;
+  --on-accent: #1a1622;
+    --on-accent: #1a1622;
 
     --conf-certain: #6dc39a;
     --conf-high: #8fbf97;
     --conf-medium: #d9ab6b;
-    --conf-low: #d98a66;
+    --conf-low: #e0937a;
+    --conf-track: #3a3630;
 
     --sex-a: #253034;
     --sex-a-line: #5c757f;
     --sex-b: #322c24;
     --sex-b-line: #7d6c52;
     --sex-u: #2a2926;
-    --sex-u-line: #605c55;
+    --sex-u-line: #6e6a63;
+
+    --hue-1: #56b4e9;
+    --hue-2: #e69f00;
+    --hue-3: #33d6a6;
+    --hue-4: #f0a3c8;
+    --hue-5: #b49ae0;
+    --hue-6: #d6b656;
+    --hue-7: #6fc0d0;
+    --hue-8: #d78a8a;
   }
 }
+
+[data-theme="dark"] {
+  --bg: #171614;
+  --surface: #201e1b;
+  --border: #35322d;
+  --border-strong: #6e6b65;
+  --ink: #ece8e1;
+  --ink-soft: #bdb6ab;
+  --ink-faint: #9c9488;
+  --accent: #c3aeea;
+  --accent-soft: #2a2437;
+  --on-accent: #1a1622;
+
+  --conf-certain: #6dc39a;
+  --conf-high: #8fbf97;
+  --conf-medium: #d9ab6b;
+  --conf-low: #e0937a;
+  --conf-track: #3a3630;
+
+  --sex-a: #253034;
+  --sex-a-line: #5c757f;
+  --sex-b: #322c24;
+  --sex-b-line: #7d6c52;
+  --sex-u: #2a2926;
+  --sex-u-line: #6e6a63;
+
+  --hue-1: #56b4e9;
+  --hue-2: #e69f00;
+  --hue-3: #33d6a6;
+  --hue-4: #f0a3c8;
+  --hue-5: #b49ae0;
+  --hue-6: #d6b656;
+  --hue-7: #6fc0d0;
+  --hue-8: #d78a8a;
+}
+
+/* --- high contrast ------------------------------------------------------- */
+/* Pure black on pure white, borders at full strength. Not a "darker light
+   theme": the point is maximum luminance separation for low vision, so every
+   muted tone collapses onto the ink colour rather than being nudged. */
+[data-theme="high-contrast"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --border: #000000;
+  --border-strong: #000000;
+  --ink: #000000;
+  --ink-soft: #000000;
+  --ink-faint: #1a1a1a;
+  --accent: #0000cc;
+  --accent-soft: #e8e8ff;
+  --on-accent: #ffffff;
+
+  --conf-certain: #000000;
+  --conf-high: #333333;
+  --conf-medium: #555555;
+  --conf-low: #767676;
+  --conf-track: #ffffff;
+
+  --sex-a: #ffffff;
+  --sex-a-line: #000000;
+  --sex-b: #ffffff;
+  --sex-b-line: #000000;
+  --sex-u: #ffffff;
+  --sex-u-line: #000000;
+
+  --hue-1: #000000;
+  --hue-2: #0000cc;
+  --hue-3: #006600;
+  --hue-4: #7a0055;
+  --hue-5: #333333;
+  --hue-6: #664400;
+  --hue-7: #004466;
+  --hue-8: #660000;
+}
+
+/* --- sepia --------------------------------------------------------------- */
+[data-theme="sepia"] {
+  --bg: #f4ecdc;
+  --surface: #fbf5e9;
+  --border: #ddd0b6;
+  --border-strong: #998c73;
+  --ink: #3a2f1e;
+  --ink-soft: #5d4e35;
+  --ink-faint: #6f6047;
+  --accent: #7a4a1e;
+  --accent-soft: #f0e2cc;
+  --on-accent: #fbf5e9;
+
+  --conf-certain: #3f5f2f;
+  --conf-high: #5a6b34;
+  --conf-medium: #8a6018;
+  --conf-low: #94411f;
+  --conf-track: #eadfc8;
+
+  --sex-a: #e8e5d6;
+  --sex-a-line: #948c73;
+  --sex-b: #f0e4d0;
+  --sex-b-line: #9f8a67;
+  --sex-u: #ece5d5;
+  --sex-u-line: #968c73;
+
+  --hue-1: #1f5673;
+  --hue-2: #94411f;
+  --hue-3: #3f5f2f;
+  --hue-4: #7a3f5a;
+  --hue-5: #5a4a7a;
+  --hue-6: #7a5f16;
+  --hue-7: #2f6060;
+  --hue-8: #6b2f2f;
+}
+
+/* --- colour-blind themes ------------------------------------------------- */
+/* The confidence ramp here is a LIGHTNESS ramp of one hue, not four hues.
+   Lightness is the only channel no form of colour blindness removes, so
+   "darker means surer" holds even when hue does not — and it is the fourth
+   redundant encoding after bar length, pie fill and the printed number. */
+
+/* Deuteranopia and protanopia are both red-green; the safe axis is
+   blue-to-orange, so the decorative hues come from there and the confidence
+   ramp is a blue lightness ramp. */
+[data-theme="deuteranopia"],
+[data-theme="protanopia"] {
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --border: #d9d5cd;
+  --border-strong: #96928a;
+  --ink: #1f1f22;
+  --ink-soft: #4c4c52;
+  --ink-faint: #66666d;
+  --accent: #0059a6;
+  --accent-soft: #e4eefa;
+  --on-accent: #ffffff;
+
+  --conf-certain: #06304f;
+  --conf-high: #0a5183;
+  --conf-medium: #2f7fb8;
+  --conf-low: #77a9c9;
+  --conf-track: #e9edf1;
+
+  --sex-a: #e6eef4;
+  --sex-a-line: #7d96a8;
+  --sex-b: #f2eee4;
+  --sex-b-line: #9c937e;
+  --sex-u: #ebebe9;
+  --sex-u-line: #939390;
+
+  --hue-1: #0072b2;
+  --hue-2: #d55e00;
+  --hue-3: #003f6b;
+  --hue-4: #8a4b00;
+  --hue-5: #4b7fa8;
+  --hue-6: #a06a2c;
+  --hue-7: #00506e;
+  --hue-8: #6b3a00;
+}
+
+/* Tritanopia is blue-yellow, so blue and yellow are the pair to avoid. The
+   confidence ramp is a lightness ramp of reddish-purple, and the decorative
+   hues stay on the red-to-teal axis. */
+[data-theme="tritanopia"] {
+  --bg: #fbf9f9;
+  --surface: #ffffff;
+  --border: #ded4d4;
+  --border-strong: #9b9090;
+  --ink: #201c1c;
+  --ink-soft: #4f4646;
+  --ink-faint: #6b6060;
+  --accent: #9b2d5e;
+  --accent-soft: #fae6ef;
+  --on-accent: #ffffff;
+
+  --conf-certain: #490021;
+  --conf-high: #7a0d3c;
+  --conf-medium: #b03a6b;
+  --conf-low: #d290ac;
+  --conf-track: #f2eaea;
+
+  --sex-a: #eeeaea;
+  --sex-a-line: #9d9191;
+  --sex-b: #f6e9ec;
+  --sex-b-line: #a78c97;
+  --sex-u: #efecec;
+  --sex-u-line: #999292;
+
+  --hue-1: #a3003c;
+  --hue-2: #00676b;
+  --hue-3: #5c0025;
+  --hue-4: #00434a;
+  --hue-5: #c4527d;
+  --hue-6: #2f8a8a;
+  --hue-7: #7a1540;
+  --hue-8: #005f66;
+}
+
 
 * { box-sizing: border-box; }
 
@@ -149,13 +414,20 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 
 /* ---------- confidence: the showcase primitive ---------- */
 
+/* The track has to read as EMPTY. It was `--border`, which in the
+   high-contrast theme is pure black — so a 12% bar rendered as a mostly-dark
+   bar and looked *more* certain than a 98% one, exactly inverting the signal
+   in the theme that most needs it. The track gets its own variable, and every
+   theme sets it lighter than its fills. Caught by rendering the strip; reading
+   the CSS would not have shown it. */
 .conf-bar {
   display: inline-block;
   vertical-align: middle;
   width: 46px;
   height: 6px;
   border-radius: 3px;
-  background: var(--border);
+  background: var(--conf-track);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
   overflow: hidden;
   flex: none;
 }
@@ -185,21 +457,39 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
   font-style: italic;
 }
 
+/* The dot is a PIE filled to the confidence, not a coloured disc.
+   The previous version distinguished `certain`, `high` and `medium` by hue
+   alone, which is precisely what a colour-blind reader does not receive — and
+   the dot is what the tree cards and the dense lists use, so it was the one
+   place the whole argument leaked out. Filling it to the value encodes the
+   number itself, survives every theme, and needs no legend.
+   `--conf-pct` is set inline from the same figure the label reads. */
 .conf-dot {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 11px; height: 11px;
   border-radius: 50%;
-  background: var(--conf-medium);
   vertical-align: middle;
   flex: none;
+  box-sizing: border-box;
+  border: 1px solid var(--conf-medium);
+  background:
+    conic-gradient(var(--conf-medium) 0 calc(var(--conf-pct, 50) * 1%),
+                   transparent calc(var(--conf-pct, 50) * 1%) 100%);
 }
-.conf-dot[data-band="certain"] { background: var(--conf-certain); }
-.conf-dot[data-band="high"]    { background: var(--conf-high); }
-.conf-dot[data-band="medium"]  { background: var(--conf-medium); }
-.conf-dot[data-band="low"]     {
-  background: transparent;
-  border: 2px solid var(--conf-low);
-  width: 9px; height: 9px;
+.conf-dot[data-band="certain"] {
+  border-color: var(--conf-certain);
+  background: conic-gradient(var(--conf-certain) 0 calc(var(--conf-pct, 100) * 1%),
+                             transparent calc(var(--conf-pct, 100) * 1%) 100%);
+}
+.conf-dot[data-band="high"] {
+  border-color: var(--conf-high);
+  background: conic-gradient(var(--conf-high) 0 calc(var(--conf-pct, 80) * 1%),
+                             transparent calc(var(--conf-pct, 80) * 1%) 100%);
+}
+.conf-dot[data-band="low"] {
+  border-color: var(--conf-low);
+  background: conic-gradient(var(--conf-low) 0 calc(var(--conf-pct, 25) * 1%),
+                             transparent calc(var(--conf-pct, 25) * 1%) 100%);
 }
 
 .conf-inline { display: inline-flex; align-items: center; gap: 0.4rem; }
@@ -281,8 +571,8 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
   font-family: inherit;
 }
 .btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { opacity: 0.9; color: #fff; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { opacity: 0.9; color: var(--on-accent); }
 .btn.danger { color: var(--conf-low); border-color: var(--conf-low); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -404,7 +694,19 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .wire[data-band="medium"] { stroke-dasharray: 6 3; }
 /* A crossing edge carries a hue (set inline) so it can be told apart at the
    intersection; it is drawn a touch heavier than the default ink. */
+/* A crossing marker is a hue AND a dash pattern, never a hue alone. Under the
+   colour-blind themes several of these hues converge; the dash is what keeps
+   two lines told apart through an intersection. The patterns are chosen to
+   differ in rhythm, not only in length, so they stay distinct at 2px. */
 .wire-crossing { stroke-width: 2.25; }
+.wire-crossing[data-hue="1"] { stroke: var(--hue-1); stroke-dasharray: none; }
+.wire-crossing[data-hue="2"] { stroke: var(--hue-2); stroke-dasharray: 9 4; }
+.wire-crossing[data-hue="3"] { stroke: var(--hue-3); stroke-dasharray: 2 3; }
+.wire-crossing[data-hue="4"] { stroke: var(--hue-4); stroke-dasharray: 12 3 2 3; }
+.wire-crossing[data-hue="5"] { stroke: var(--hue-5); stroke-dasharray: 5 5; }
+.wire-crossing[data-hue="6"] { stroke: var(--hue-6); stroke-dasharray: 1 4; }
+.wire-crossing[data-hue="7"] { stroke: var(--hue-7); stroke-dasharray: 16 5; }
+.wire-crossing[data-hue="8"] { stroke: var(--hue-8); stroke-dasharray: 7 3 1 3; }
 /* Hover raises a person's own edges to the front of the eye. */
 .wire.lit { stroke-width: 3; }
 
@@ -1289,3 +1591,46 @@ details.raw > summary { cursor: pointer; font-weight: 600; }
 .history li { margin-bottom: 0.5rem; line-height: 1.5; }
 .history details { margin-top: 0.35rem; }
 .history summary { cursor: pointer; color: var(--ink-soft); }
+
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+   ---------------------------------------------------------------------------
+   `prefers-reduced-motion` is a medical setting, not a preference about taste:
+   for a reader with a vestibular disorder an unexpected transition can cause
+   nausea. So everything stops — including the hover transitions on tree cards,
+   which fire hundreds of times as a pointer crosses a canvas of them. The
+   duration is 0.01ms rather than 0 because a zero-length transition does not
+   fire `transitionend`, and anything waiting on that event would hang. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   Form controls
+   ---------------------------------------------------------------------------
+   A control that does not set its own colours inherits the user agent's, which
+   are black text on a white field. Under the dark theme that produced black on
+   #201e1b — 1.26:1, effectively unreadable — and no amount of custom-property
+   discipline elsewhere fixes it, because the rule that needs to exist was
+   simply absent. Measured, not assumed: this is the pair the contrast sweep
+   flagged first. */
+input, select, textarea, button {
+  color: var(--ink);
+  background-color: var(--surface);
+  font: inherit;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-faint); opacity: 1; }
+input:focus-visible, select:focus-visible,
+textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

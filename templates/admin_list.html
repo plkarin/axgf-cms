@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}{{ kind }}s — axgf-cms{% endblock %}
+{% block title %}{{ t("kind-" ~ kind ~ "-plural", n=total) }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 
-<h1>{{ kind }}s</h1>
-<p class="lede">{{ total }} matching, {{ per_page }} per page.</p>
+<h1>{{ t("kind-" ~ kind ~ "-plural", n=total) }}</h1>
+<p class="lede">{{ t("list-matching", total=total, per_page=per_page) }}</p>
 
 <div class="cta-row">
   {% for k in kinds %}
@@ -13,22 +13,25 @@
 </div>
 
 <form method="get" action="/admin/{{ kind }}" class="filter-row">
-  <input type="text" name="q" value="{{ q }}" placeholder="Filter by name or id"
+  <input type="text" name="q" value="{{ q }}" placeholder="{{ t('list-filter-placeholder') }}"
          autocomplete="off">
-  <button class="btn" type="submit">Filter</button>
-  {% if q %}<a class="btn" href="/admin/{{ kind }}">Clear</a>{% endif %}
+  <button class="btn" type="submit">{{ t("list-filter") }}</button>
+  {% if q %}<a class="btn" href="/admin/{{ kind }}">{{ t("list-clear") }}</a>{% endif %}
   <span class="spacer"></span>
-  <a class="btn primary" href="/admin/{{ kind }}/new">New {{ kind }}</a>
+  <a class="btn primary" href="/admin/{{ kind }}/new">{{ t("admin-new-kind", kind=t("kind-" ~ kind)) }}</a>
 </form>
 
 {% if not rows %}
-  <div class="notice"><p>Nothing here{% if q %} matching “{{ q }}”{% endif %}.</p></div>
+  <div class="notice"><p>
+    {%- if q %}{{ t("list-nothing-matching", q=q) }}{% else %}{{ t("list-nothing") }}{% endif -%}
+  </p></div>
 {% else %}
 
 <div class="table-wrap">
 <table>
   <thead>
-    <tr><th>Summary</th><th>Id</th><th>Confidence</th><th style="width:1%">Actions</th></tr>
+    <tr><th>{{ t("list-summary") }}</th><th>{{ t("list-id") }}</th>
+      <th>{{ t("record-confidence") }}</th><th style="width:1%">{{ t("list-actions") }}</th></tr>
   </thead>
   <tbody>
     {% for r in rows %}
@@ -40,27 +43,26 @@
       <td class="mono small muted">{{ r.id }}</td>
       <td>{% if r.confidence %}{{ m.conf_bar(r.confidence) }}{% endif %}</td>
       <td class="nowrap">
-        <a class="btn small-btn" href="/admin/{{ kind }}/{{ r.id }}/edit">Edit</a>
+        <a class="btn small-btn" href="/admin/{{ kind }}/{{ r.id }}/edit">{{ t("admin-edit") }}</a>
         <button class="btn small-btn danger" type="button"
                 onclick="document.getElementById('del-{{ r.id }}').hidden = !document.getElementById('del-{{ r.id }}').hidden">
-          Delete
+          {{ t("admin-delete") }}
         </button>
       </td>
     </tr>
     <tr id="del-{{ r.id }}" hidden>
       <td colspan="4" class="delete-row">
         <form method="post" action="/admin/{{ kind }}/{{ r.id }}/delete">
-          <strong>Delete this {{ kind }}?</strong> Choose what happens to entities that
-          reference it:
+          <strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong>
           <div class="policy-list">
             <label><input type="radio" name="policy" value="reject" checked>
-              <strong>Reject</strong> — refuse if anything still references it. Nothing is lost.</label>
+              <strong>{{ t("list-policy-reject") }}</strong> {{ t("list-policy-reject-detail") }}</label>
             <label><input type="radio" name="policy" value="cascade">
-              <strong>Cascade</strong> — delete it and physically remove every reference to it.</label>
+              <strong>{{ t("list-policy-cascade") }}</strong> {{ t("list-policy-cascade-detail") }}</label>
             <label><input type="radio" name="policy" value="orphan">
-              <strong>Orphan</strong> — delete it but keep the referring records, with the link nulled.</label>
+              <strong>{{ t("list-policy-orphan") }}</strong> {{ t("list-policy-orphan-detail") }}</label>
           </div>
-          <button class="btn danger" type="submit">Delete</button>
+          <button class="btn danger" type="submit">{{ t("admin-delete") }}</button>
         </form>
       </td>
     </tr>
@@ -72,11 +74,11 @@
 {% if pages > 1 %}
 <nav class="pager">
   {% if page > 1 %}
-    <a class="btn" href="/admin/{{ kind }}?page={{ page - 1 }}&q={{ q }}">Previous</a>
+    <a class="btn" href="/admin/{{ kind }}?page={{ page - 1 }}&q={{ q }}">{{ t("admin-previous") }}</a>
   {% endif %}
-  <span class="muted small">Page {{ page }} of {{ pages }}</span>
+  <span class="muted small">{{ t("admin-page-of", page=page, pages=pages) }}</span>
   {% if page < pages %}
-    <a class="btn" href="/admin/{{ kind }}?page={{ page + 1 }}&q={{ q }}">Next</a>
+    <a class="btn" href="/admin/{{ kind }}?page={{ page + 1 }}&q={{ q }}">{{ t("admin-next") }}</a>
   {% endif %}
 </nav>
 {% endif %}

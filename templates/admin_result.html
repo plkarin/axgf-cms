@@ -9,18 +9,17 @@
 </div>
 
 {% if diagnostics %}
-<h2>Diagnostics</h2>
+<h2>{{ t("result-diagnostics") }}</h2>
 <p class="small muted">
-  Every diagnostic the library returned, including warnings that did not block
-  the operation. None are filtered out.
+  {{ t("result-diagnostics-note") }}
 </p>
 {{ m.diagnostics(diagnostics) }}
 {% else %}
-<p class="muted small">The library returned no diagnostics.</p>
+<p class="muted small">{{ t("result-no-diagnostics") }}</p>
 {% endif %}
 
 <p style="margin-top:1.5rem">
-  <a class="btn" href="{{ back }}">Continue</a>
-  <a class="btn" href="/admin">Dashboard</a>
+  <a class="btn" href="{{ back }}">{{ t("result-continue") }}</a>
+  <a class="btn" href="/admin">{{ t("result-dashboard") }}</a>
 </p>
 {% endblock %}

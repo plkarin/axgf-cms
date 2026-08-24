@@ -17,9 +17,9 @@
   <table class="comp-table">
     <thead>
       <tr>
-        <th>What AXGF records</th>
-        <th class="nowrap">In this bundle</th>
-        <th>AXGF field</th>
+        <th>{{ t("completeness-what-axgf-records") }}</th>
+        <th class="nowrap">{{ t("completeness-in-this-bundle") }}</th>
+        <th>{{ t("completeness-spec-field") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -32,14 +32,14 @@
         <td class="nowrap comp-count">
           {{ m.summary }}
           {% if not m.carried and m.gedcom_cannot %}
-            <div class="comp-tag">GEDCOM cannot express this</div>
+            <div class="comp-tag">{{ t("completeness-gedcom-cannot") }}</div>
           {% elif not m.carried %}
-            <div class="comp-tag empty-tag">empty</div>
+            <div class="comp-tag empty-tag">{{ t("completeness-empty") }}</div>
           {% endif %}
         </td>
         <td class="small">
           <code>{{ m.field }}</code>
-          <div><a href="{{ m.spec_url|safe }}">spec {{ m.spec_ref }}</a></div>
+          <div><a href="{{ m.spec_url|safe }}">{{ t("completeness-spec") }} {{ m.spec_ref }}</a></div>
         </td>
       </tr>
       {% endfor %}
@@ -47,27 +47,25 @@
   </table>
   </div>
 
-  <h3>Dates, by the shape they actually have</h3>
+  <h3>{{ t("completeness-dates-title") }}</h3>
   {% if report.dates.total == 0 %}
-    <p class="small muted">No dates in this bundle.</p>
+    <p class="small muted">{{ t("completeness-no-dates") }}</p>
   {% else %}
   <p class="small muted">
-    AXGF keeps the difference between a date someone pinned down and one they
-    could not. Text no converter could read is preserved rather than dropped.
-    See <a href="{{ report.spec_url|safe }}#521-date-precision-values">spec §5.2.1</a>
-    and <a href="{{ report.spec_url|safe }}#523-date-range">§5.2.3</a>.
+    {{ t("completeness-dates-note") }}
+    <a href="{{ report.spec_url|safe }}#521-date-precision-values">{{ t("completeness-dates-see") }}</a>
   </p>
   <div class="grid cols-4 date-shapes">
     {% for d in [
-        {"n": report.dates.exact,       "k": "exact",       "d": "a full calendar day"},
-        {"n": report.dates.approximate, "k": "approximate", "d": "circa, or a year/decade only"},
-        {"n": report.dates.range,       "k": "ranged",      "d": "before, after, or between"},
-        {"n": report.dates.preserved,   "k": "preserved",   "d": "unparsable text, kept verbatim"},
-        {"n": report.dates.unknown,     "k": "unknown",     "d": "recorded as not known"}] %}
+        {"n": report.dates.exact,       "k": "exact"},
+        {"n": report.dates.approximate, "k": "approximate"},
+        {"n": report.dates.range,       "k": "ranged"},
+        {"n": report.dates.preserved,   "k": "preserved"},
+        {"n": report.dates.unknown,     "k": "unknown"}] %}
     <div class="stat {% if d.n == 0 %}zero{% endif %}">
       <div class="n">{{ d.n }}</div>
-      <div class="k">{{ d.k }}</div>
-      <div class="small muted">{{ d.d }}</div>
+      <div class="k">{{ t("completeness-shape-" ~ d.k) }}</div>
+      <div class="small muted">{{ t("completeness-shape-" ~ d.k ~ "-note") }}</div>
     </div>
     {% endfor %}
   </div>

@@ -29,7 +29,7 @@
     <span class="date-note">{{ d.note }}</span>
   {%- endif -%}
   {%- if d.alternatives %}
-    <span class="date-note">also recorded as
+    <span class="date-note">{{ t("record-also-recorded-as") }}
       {% for a in d.alternatives %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
   {%- endif -%}
   {%- endif -%}
@@ -74,7 +74,7 @@
       {%- if p.place_type %} <span class="small muted">({{ p.place_type }})</span>{% endif -%}
       {%- if p.country_history %}
         <span class="date-note">
-          Borders moved: {% for h in p.country_history %}{{ h }}{% if not loop.last %} → {% endif %}{% endfor %}
+          {{ t("record-borders-moved") }} {% for h in p.country_history %}{{ h }}{% if not loop.last %} → {% endif %}{% endfor %}
         </span>
       {%- elif p.country_current %}
         <span class="small muted">, {{ p.country_current }}</span>
@@ -140,12 +140,12 @@
   {%- endif %}
   <p class="nb-kind">
     <span class="nb-type">{{ n.kind }}</span>
-    {%- if n.is_primary %} <span class="chip small">display name</span>{% endif -%}
+    {%- if n.is_primary %} <span class="chip small">{{ t("record-display-name") }}</span>{% endif -%}
     {%- if n.culture %} <span class="chip small">{{ n.culture }}</span>{% endif -%}
     {%- if n.period %} <span class="chip small">{{ n.period }}</span>{% endif -%}
   </p>
   {%- if n.reading %}
-  <p class="small muted nb-reading">read as {{ n.reading }}
+  <p class="small muted nb-reading">{{ t("record-read-as") }} {{ n.reading }}
     {%- if n.reading_system %} <span class="chip small">{{ n.reading_system }}</span>{% endif %}</p>
   {%- endif %}
   {{ name_parts(n.components) }}
@@ -184,14 +184,14 @@
 {% macro fact_chips(p) %}
 <dl class="fact-chips">
   {%- if p.gender %}
-  <div class="fc"><dt>Gender</dt><dd>{{ p.gender }}</dd></div>
+  <div class="fc"><dt>{{ t("record-gender") }}</dt><dd>{{ p.gender }}</dd></div>
   {%- endif %}
-  <div class="fc"><dt>Living</dt><dd>{{ "yes" if p.is_living else "no" }}</dd></div>
+  <div class="fc"><dt>{{ t("record-living") }}</dt><dd>{{ t("record-yes") if p.is_living else t("record-no") }}</dd></div>
   {%- if p.visibility %}
-  <div class="fc"><dt>Visibility</dt><dd>{{ p.visibility }}</dd></div>
+  <div class="fc"><dt>{{ t("record-visibility") }}</dt><dd>{{ p.visibility }}</dd></div>
   {%- endif %}
   {%- if p.gender_note %}
-  <div class="fc wide"><dt>Note</dt><dd>{{ p.gender_note }}</dd></div>
+  <div class="fc wide"><dt>{{ t("record-note") }}</dt><dd>{{ p.gender_note }}</dd></div>
   {%- endif %}
 </dl>
 {% endmacro %}

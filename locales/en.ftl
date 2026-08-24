@@ -497,3 +497,160 @@ showcase-places-title = { $n ->
        *[other] { $n } places with border history
     }
 showcase-places-detail = A town can belong to different countries at different times, and the record says which one applied when.
+
+## Record details
+
+record-also-recorded-as = also recorded as
+record-borders-moved = Borders moved:
+record-display-name = display name
+record-read-as = read as
+record-note = Note
+record-living-yes = living
+record-deceased = deceased
+record-centre-tree-here = Centre the tree here
+record-centre-tree-title = Move the tree to centre on this person
+record-open-full-page = Open full page ↗
+record-open-full-title = Open the standalone, shareable page
+record-edit = Edit
+panel-empty = Select a card to see that person's full record here.
+person-see-in-tree = See this person in the tree
+person-visibility-inline = visibility:
+
+## Operation results
+
+result-diagnostics = Diagnostics
+result-diagnostics-note = Every diagnostic the library returned, including warnings that did not block the operation. None are filtered out.
+result-no-diagnostics = The library returned no diagnostics.
+result-continue = Continue
+result-dashboard = Dashboard
+person-sections-label = Sections on this page
+
+## Record sections, detail
+
+record-gedcom-would-lose = What GEDCOM would lose here:
+record-name = Name
+record-type = Type
+record-cause = Cause:
+record-as = as
+record-partner-not-recorded = Partner not recorded
+record-union-from = From
+record-union-at = at
+record-union-until = until
+record-occupation-from = from
+record-occupation-until = until
+record-source-reliability = Reliability
+record-source-supports = Supports
+record-photographs = Photographs
+record-documents = Documents
+record-file = File
+record-status = Status
+record-size = Size
+record-absent-document = Referenced by this person but absent from the bundle.
+record-no-file = no file
+record-attach-document = Attach a document
+record-doc-photo = photo
+record-doc-certificate = certificate
+record-doc-letter = letter
+record-doc-record = record
+record-doc-newspaper = newspaper
+record-doc-other = other
+record-upload = Upload
+record-upload-help = Up to { $mb } MB per file. The bytes are stored in a disk cache beside the bundle and written back into the .axgf on export, so an attachment travels with the data without being held in RAM. The type is read from the file's own bytes, not its name: images, PDF, plain text, audio and video are accepted. SVG is refused, because an SVG can carry script.
+record-upload-help-short = Up to { $mb } MB. SVG is refused.
+record-verbatim-note = Kept exactly as the record stated it, because no converter could interpret it. Dropping it would have been the alternative.
+record-file-to-attach = File to attach
+record-document-type = Document type
+record-caption = Caption
+record-caption-placeholder = Caption (optional)
+record-history-entry-meta = — { $at }
+record-history-entry-version = , { $version }
+
+## Entity kinds
+#
+# Plural forms are per-kind messages rather than "{ $kind }s", which produced
+# "familys" in English and would be meaningless in most other languages.
+
+kind-person = person
+kind-family = family
+kind-event = event
+kind-link = link
+kind-occupation = occupation
+kind-source = source
+kind-place = place
+kind-document = document
+
+kind-person-plural = { $n ->
+        [one] person
+       *[other] persons
+    }
+kind-family-plural = { $n ->
+        [one] family
+       *[other] families
+    }
+kind-event-plural = { $n ->
+        [one] event
+       *[other] events
+    }
+kind-link-plural = { $n ->
+        [one] link
+       *[other] links
+    }
+kind-occupation-plural = { $n ->
+        [one] occupation
+       *[other] occupations
+    }
+kind-source-plural = { $n ->
+        [one] source
+       *[other] sources
+    }
+kind-place-plural = { $n ->
+        [one] place
+       *[other] places
+    }
+kind-document-plural = { $n ->
+        [one] document
+       *[other] documents
+    }
+
+## Listings
+
+list-matching = { $total ->
+        [one] One match
+       *[other] { $total } matching
+    }, { $per_page } per page.
+list-filter-placeholder = Filter by name or id
+list-filter = Filter
+list-clear = Clear
+list-summary = Summary
+list-id = Id
+list-actions = Actions
+list-nothing = Nothing here.
+list-nothing-matching = Nothing here matching “{ $q }”.
+list-delete-confirm = Delete this { $kind }? Choose what happens to entities that reference it:
+list-policy-reject = Reject
+list-policy-reject-detail = — refuse if anything still references it. Nothing is lost.
+list-policy-cascade = Cascade
+list-policy-cascade-detail = — delete it and physically remove every reference to it.
+list-policy-orphan = Orphan
+list-policy-orphan-detail = — delete it but keep the referring records, with the link nulled.
+
+## Completeness
+
+completeness-what-axgf-records = What AXGF records
+completeness-in-this-bundle = In this bundle
+completeness-gedcom-cannot = GEDCOM cannot express this
+completeness-spec = spec
+completeness-dates-title = Dates, by the shape they actually have
+completeness-no-dates = No dates in this bundle.
+completeness-dates-note = AXGF keeps the difference between a date someone pinned down and one they could not. Text no converter could read is preserved rather than dropped.
+completeness-dates-see = See spec §5.2.1 and §5.2.3.
+completeness-shape-exact = exact
+completeness-shape-exact-note = a full calendar day
+completeness-shape-approximate = approximate
+completeness-shape-approximate-note = circa, or a year/decade only
+completeness-shape-ranged = ranged
+completeness-shape-ranged-note = before, after, or between
+completeness-shape-preserved = preserved
+completeness-shape-preserved-note = unparsable text, kept verbatim
+completeness-shape-unknown = unknown
+completeness-shape-unknown-note = recorded as not known

@@ -17,15 +17,16 @@
          a header turns into a run-on string. #}
       <p class="lede small">
         {%- if p.gender %}{{ p.gender }}{% endif -%}
-        {%- if p.is_living %} · living{% elif p.death.present %} · deceased{% endif -%}
+        {%- if p.is_living %} · {{ t("record-living-yes") }}
+        {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
       </p>
     </div>
     <div class="panel-actions">
       <button type="button" class="btn small" data-centre="{{ p.id }}"
-              title="Move the tree to centre on this person">Centre the tree here</button>
+              title="{{ t('record-centre-tree-title') }}">{{ t("record-centre-tree-here") }}</button>
       <a class="btn small panel-open-full" href="/person/{{ p.id }}"
-         title="Open the standalone, shareable page">Open full page ↗</a>
-      {% if is_admin %}<a class="btn small" href="/admin/person/{{ p.id }}/edit">Edit</a>{% endif %}
+         title="{{ t('record-open-full-title') }}">{{ t("record-open-full-page") }}</a>
+      {% if may_write %}<a class="btn small" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>{% endif %}
     </div>
   </div>
 
@@ -33,6 +34,6 @@
 </div>
 {% else %}
 <div class="panel-inner panel-empty">
-  <p class="muted">Select a card to see that person's full record here.</p>
+  <p class="muted">{{ t("panel-empty") }}</p>
 </div>
 {% endif %}

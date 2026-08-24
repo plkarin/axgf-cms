@@ -15,7 +15,7 @@
 
 {% if p.showcase_notes %}
 <div class="showcase-strip">
-  <strong>What GEDCOM would lose here:</strong>
+  <strong>{{ t("record-gedcom-would-lose") }}</strong>
   {% for n in p.showcase_notes %}<span class="chip">{{ n }}</span>{% endfor %}
 </div>
 {% endif %}
@@ -38,7 +38,8 @@
     {% else %}
     <div class="table-wrap">
     <table class="names">
-      <thead><tr><th>Name</th><th>Type</th><th>Used</th><th>Evidence</th></tr></thead>
+      <thead><tr><th>{{ t("record-name") }}</th><th>{{ t("record-name-type") }}</th>
+        <th>{{ t("record-name-used") }}</th><th>{{ t("record-name-evidence") }}</th></tr></thead>
       <tbody>
         {% for n in p.names %}
         <tr>
@@ -49,7 +50,7 @@
               <span class="name-latin" title="Latin transliteration">{{ n.latin }}</span>
             {%- endif %}
             {% if n.reading %}
-              <div class="small muted">read as {{ n.reading }}{% if n.reading_system %}
+              <div class="small muted">{{ t("record-read-as") }} {{ n.reading }}{% if n.reading_system %}
                 <span class="chip small">{{ n.reading_system }}</span>{% endif %}</div>
             {% endif %}
             {{ m.name_parts(n.components) }}
@@ -57,7 +58,7 @@
           </td>
           <td class="small" data-label="Type">
             {{ n.kind }}
-            {%- if n.is_primary %} <span class="chip small">display name</span>{% endif %}
+            {%- if n.is_primary %} <span class="chip small">{{ t("record-display-name") }}</span>{% endif %}
             {%- if n.culture %}<div class="muted">{{ n.culture }}</div>{% endif %}
           </td>
           <td class="small" data-label="Used">{{ n.period if n.period else "—" }}</td>
@@ -94,10 +95,10 @@
       </div>
       <div class="life-what">
         <strong>{{ e.label }}</strong>
-        {%- if e.role %} <span class="chip small">as {{ e.role }}</span>{% endif %}
+        {%- if e.role %} <span class="chip small">{{ t("record-as") }} {{ e.role }}</span>{% endif %}
         {% if e.place %}<div class="small">{{ m.place(e.place) }}</div>{% endif %}
         {% if e.description %}<div class="small">{{ e.description }}</div>{% endif %}
-        {% if e.cause %}<div class="small muted">Cause: {{ e.cause }}</div>{% endif %}
+        {% if e.cause %}<div class="small muted">{{ t("record-cause") }} {{ e.cause }}</div>{% endif %}
         {% if e.source %}<div>{{ m.source_chip(e.source) }}</div>{% endif %}
       </div>
     </li>
@@ -116,13 +117,13 @@
   <div class="grid cols-2">
     {% if p.parents %}
     <div class="card">
-      <h3 style="margin-top:0">Parents</h3>
+      <h3 style="margin-top:0">{{ t("record-parents") }}</h3>
       <ul class="plain">{% for r in p.parents %}{{ m.relation(r) }}{% endfor %}</ul>
     </div>
     {% endif %}
     {% if p.siblings %}
     <div class="card">
-      <h3 style="margin-top:0">Siblings</h3>
+      <h3 style="margin-top:0">{{ t("record-siblings") }}</h3>
       <ul class="plain">{% for r in p.siblings %}{{ m.relation(r) }}{% endfor %}</ul>
     </div>
     {% endif %}
@@ -134,21 +135,21 @@
     <div class="union-head">
       <strong>
         {%- if u.spouse %}{{ m.person_link(u.spouse) }}
-        {%- else %}<span class="muted">Partner not recorded</span>{% endif -%}
+        {%- else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif -%}
       </strong>
       {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
       <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
       {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
     </div>
     <div class="small union-when">
-      {% if u.start %}<span class="wrap-unit">From {{ m.date(u.start) }}</span>{% endif %}
-      {% if u.start_place %}<span class="wrap-unit">at {{ m.place(u.start_place) }}</span>{% endif %}
-      {% if u.end %}<span class="wrap-unit">until {{ m.date(u.end) }}</span>{% endif %}
+      {% if u.start %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}
+      {% if u.start_place %}<span class="wrap-unit">{{ t("record-union-at") }} {{ m.place(u.start_place) }}</span>{% endif %}
+      {% if u.end %}<span class="wrap-unit">{{ t("record-union-until") }} {{ m.date(u.end) }}</span>{% endif %}
       {% if u.end_note %}<span class="muted wrap-unit">{{ u.end_note }}</span>{% endif %}
     </div>
     {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
     {% if u.children %}
-    <h4>Children</h4>
+    <h4>{{ t("record-children") }}</h4>
     <ul class="plain">
       {% for c in u.children %}
       <li class="rel">
@@ -185,8 +186,8 @@
       <div class="link-who">{{ m.person_link(l.other) }}</div>
       {% if l.from_date or l.until_date %}
       <div class="small">
-        {% if l.from_date %}<span class="wrap-unit">from {{ m.date(l.from_date) }}</span>{% endif %}
-        {% if l.until_date %}<span class="wrap-unit">until {{ m.date(l.until_date) }}</span>{% endif %}
+        {% if l.from_date %}<span class="wrap-unit">{{ t("record-occupation-from") }} {{ m.date(l.from_date) }}</span>{% endif %}
+        {% if l.until_date %}<span class="wrap-unit">{{ t("record-occupation-until") }} {{ m.date(l.until_date) }}</span>{% endif %}
       </div>
       {% endif %}
       {% if l.confidence %}<div>{{ m.conf_bar(l.confidence) }}</div>{% endif %}
@@ -265,7 +266,7 @@
       <ul class="plain small">{% for u in pu.uses %}<li>{{ u }}</li>{% endfor %}</ul>
       {% if pu.place.country_history %}
       <div class="date-note">
-        Borders moved:
+        {{ t("record-borders-moved") }}
         {% for h in pu.place.country_history %}{{ h }}{% if not loop.last %} → {% endif %}{% endfor %}
       </div>
       {% elif pu.place.country_current %}
@@ -292,7 +293,9 @@
      the `th` text, so the two never disagree. #}
   <div class="table-wrap">
   <table class="stackable">
-    <thead><tr><th>Source</th><th>Type</th><th>Reliability</th><th>Supports</th><th>Confidence</th></tr></thead>
+    <thead><tr><th>{{ t("record-source") }}</th><th>{{ t("record-type") }}</th>
+      <th>{{ t("record-source-reliability") }}</th><th>{{ t("record-source-supports") }}</th>
+      <th>{{ t("record-confidence") }}</th></tr></thead>
     <tbody>
       {% for s in p.sources %}
       <tr>
@@ -315,7 +318,7 @@
   {% endif %}
 
   {% if p.images %}
-  <h3>Photographs</h3>
+  <h3>{{ t("record-photographs") }}</h3>
   <div class="gallery">
     {% for d in p.images %}
     <figure class="shot">
@@ -335,10 +338,10 @@
   {% endif %}
 
   {% if p.documents %}
-  <h3>Documents</h3>
+  <h3>{{ t("record-documents") }}</h3>
   <div class="table-wrap">
   <table class="stackable">
-    <thead><tr><th>File</th><th>Type</th><th>Status</th><th>Size</th><th></th></tr></thead>
+    <thead><tr><th>{{ t("record-file") }}</th><th>{{ t("record-type") }}</th><th>{{ t("record-status") }}</th><th>{{ t("record-size") }}</th><th></th></tr></thead>
     <tbody>
       {% for d in p.documents %}
       <tr>
@@ -346,20 +349,19 @@
             {% if d.role %} <span class="chip small">{{ d.role }}</span>{% endif %}
             {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
             {% if d.note %}<div class="small muted">{{ d.note }}</div>{% endif %}
-            {% if not d.known %}<div class="small muted">Referenced by this person but absent
-              from the bundle.</div>{% endif %}</td>
+            {% if not d.known %}<div class="small muted">{{ t("record-absent-document") }}</div>{% endif %}</td>
         <td class="small" data-label="Type">{{ d.document_type }}{% if d.mime_type %}
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
         <td class="small" data-label="Status">{{ d.status }}</td>
         <td class="small" data-label="Size">{{ d.size_human if d.size_human else "—" }}</td>
         {# No `data-label`: an action is not a field, and a stacked row that
-           labelled it would read "FILE / Download". #}
+           labelled it would read "FILE / {{ t("record-download") }}". #}
         <td class="small">
           {% if d.has_payload %}
-            <a href="/document/{{ d.id }}/raw">Download</a>
+            <a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a>
           {% else %}
             <span class="muted"
-                  title="This bundle records the document but does not carry the file">no file</span>
+                  title="This bundle records the document but does not carry the file">{{ t("record-no-file") }}</span>
           {% endif %}
         </td>
       </tr>
@@ -372,32 +374,25 @@
   {% if is_admin %}
   <form class="upload-form" method="post" enctype="multipart/form-data"
         action="/admin/person/{{ p.id }}/document">
-    <h3>Attach a document</h3>
+    <h3>{{ t("record-attach-document") }}</h3>
     <div class="filter-row">
-      <input type="file" name="file" required aria-label="File to attach">
-      <select name="document_type" aria-label="Document type">
-        <option value="photo">photo</option>
-        <option value="certificate">certificate</option>
-        <option value="letter">letter</option>
-        <option value="record">record</option>
-        <option value="newspaper">newspaper</option>
-        <option value="other">other</option>
+      <input type="file" name="file" required aria-label="{{ t('record-file-to-attach') }}">
+      <select name="document_type" aria-label="{{ t('record-document-type') }}">
+        <option value="photo">{{ t("record-doc-photo") }}</option>
+        <option value="certificate">{{ t("record-doc-certificate") }}</option>
+        <option value="letter">{{ t("record-doc-letter") }}</option>
+        <option value="record">{{ t("record-doc-record") }}</option>
+        <option value="newspaper">{{ t("record-doc-newspaper") }}</option>
+        <option value="other">{{ t("record-doc-other") }}</option>
       </select>
-      <input type="text" name="caption" placeholder="Caption (optional)"
-             aria-label="Caption">
-      <button class="btn primary">Upload</button>
+      <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}"
+             aria-label="{{ t('record-caption') }}">
+      <button class="btn primary">{{ t("record-upload") }}</button>
     </div>
     {% if not compact %}
-    <p class="small muted">
-      Up to {{ max_upload_mb }} MB per file. The bytes are stored in a disk
-      cache beside the bundle and written back into the <code>.axgf</code> on
-      export, so an attachment travels with the data without being held in RAM.
-      The type is read from the file's own bytes, not its name: images, PDF,
-      plain text, audio and video are accepted. SVG is refused, because an SVG
-      can carry script.
-    </p>
+    <p class="small muted">{{ t("record-upload-help", mb=max_upload_mb) }}</p>
     {% else %}
-    <p class="small muted">Up to {{ max_upload_mb }} MB. SVG is refused.</p>
+    <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}</p>
     {% endif %}
   </form>
   {% endif %}
@@ -413,10 +408,7 @@
     <h3>{{ n.label }}</h3>
     <div class="prose{% if n.verbatim %} muted-prose{% endif %}">{{ n.text }}</div>
     {% if n.verbatim %}
-    <p class="small muted">
-      Kept exactly as the record stated it, because no converter could
-      interpret it. Dropping it would have been the alternative.
-    </p>
+    <p class="small muted">{{ t("record-verbatim-note") }}</p>
     {% endif %}
   </div>
   {% endfor %}
@@ -439,10 +431,11 @@
     {% for h in history %}
     <li>
       <strong>{{ h.who }}</strong> {{ h.summary }}
-      <span class="small muted">— {{ h.at }}{% if h.version_num %}, version {{ h.version_num }}{% endif %}</span>
+      <span class="small muted">{{ t("record-history-entry-meta", at=h.at) }}
+        {%- if h.version_num %}{{ t("record-history-entry-version", version=t("admin-version", version=h.version_num)) }}{% endif %}</span>
       {% if h.changes %}
       <details>
-        <summary class="small">what changed</summary>
+        <summary class="small">{{ t("admin-what-changed") }}</summary>
         <table class="wide diff-table">
           <tbody>
           {% for c in h.changes %}
@@ -465,12 +458,10 @@
 {# --------------------------------------------------------------------- RAW #}
 <section id="raw" class="rec-section">
   <details class="raw">
-    <summary>Raw entity <span class="small muted">— the JSON this page was built from</span></summary>
+    <summary>{{ t("record-raw") }}
+      <span class="small muted">— {{ t("record-raw-summary-note") }}</span></summary>
     {% if not compact %}
-    <p class="small muted">
-      Nothing here is generated for display: this is the record as the bundle
-      stores it. A format worth arguing for should be readable without a tool.
-    </p>
+    <p class="small muted">{{ t("record-raw-help") }}</p>
     {% endif %}
     <pre class="raw-json">{{ p.raw_json }}</pre>
   </details>

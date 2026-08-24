@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}{{ p.name }} — axgf-cms{% endblock %}
+{% block title %}{{ p.name }} — {{ t("app-name") }}{% endblock %}
 
 {# The identity page is the whole record, not a summary of it. The sections
    themselves live in _person_detail.html, shared verbatim with the tree side
@@ -14,32 +14,36 @@
     <h1>{{ p.name }}</h1>
     <p class="lede">
       {%- if p.gender %}{{ p.gender }}{% endif -%}
-      {%- if p.is_living %} · living{% elif p.death.present %} · deceased{% endif -%}
+      {%- if p.is_living %} · {{ t("record-living-yes") }}
+      {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
       {%- if p.gender_note %} · {{ p.gender_note }}{% endif -%}
-      {%- if p.visibility %} · visibility: {{ p.visibility }}{% endif -%}
+      {%- if p.visibility %} · {{ t("person-visibility-inline") }} {{ p.visibility }}{% endif -%}
     </p>
   </div>
-  {% if is_admin %}
-  <a class="btn" href="/admin/person/{{ p.id }}/edit">Edit</a>
+  {% if may_write %}
+  <a class="btn" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>
   {% endif %}
 </div>
 
+{# The index labels come from the same keys the section headings use, so the
+   two can never drift into naming the same section differently. #}
 {% set sections = [
-  {"id": "identity", "label": "Identity", "present": p.names or p.gender},
-  {"id": "life", "label": "Life events", "present": p.timeline},
-  {"id": "family", "label": "Family", "present": p.parents or p.siblings or p.unions},
-  {"id": "relationships", "label": "Other relationships", "present": p.links},
-  {"id": "occupations", "label": "Occupations", "present": p.occupations},
-  {"id": "places", "label": "Places", "present": p.places},
-  {"id": "evidence", "label": "Sources and documents", "present": p.sources or p.documents},
-  {"id": "notes", "label": "Notes", "present": p.notes}] %}
-<nav class="section-index" aria-label="Sections on this page">
-  {% for s in sections %}{% if s.present %}<a href="#{{ s.id }}">{{ s.label }}</a>{% endif %}{% endfor %}
-  <a href="#raw">Raw</a>
+  {"id": "identity", "key": "record-identity", "present": p.names or p.gender},
+  {"id": "life", "key": "record-life-events", "present": p.timeline},
+  {"id": "family", "key": "record-family", "present": p.parents or p.siblings or p.unions},
+  {"id": "relationships", "key": "record-other-relationships", "present": p.links},
+  {"id": "occupations", "key": "record-occupations", "present": p.occupations},
+  {"id": "places", "key": "record-places", "present": p.places},
+  {"id": "evidence", "key": "record-sources-documents", "present": p.sources or p.documents},
+  {"id": "notes", "key": "record-notes", "present": p.notes}] %}
+<nav class="section-index" aria-label="{{ t('person-sections-label') }}">
+  {% for s in sections %}{% if s.present %}<a href="#{{ s.id }}">{{ t(s.key) }}</a>{% endif %}{% endfor %}
+  {% if history %}<a href="#history">{{ t("record-history") }}</a>{% endif %}
+  <a href="#raw">{{ t("record-raw") }}</a>
 </nav>
 
 {% include "_person_detail.html" %}
 
-<p style="margin-top:2rem"><a class="btn" href="/tree?root={{ p.id }}">See this person in the tree</a></p>
+<p style="margin-top:2rem"><a class="btn" href="/tree?root={{ p.id }}">{{ t("person-see-in-tree") }}</a></p>
 
 {% endblock %}

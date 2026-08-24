@@ -53,6 +53,24 @@ chains make this the common case: `Alfons Władysław Antoni Wierzbięta` lost
 everything after the first word. Cards are 66px; row pitch and the SVG
 connector geometry derive from `CARD_H` and followed automatically.
 
+**The demonstration bundle declares itself public.** `deploy/sample.axgf` now
+carries an explicit `visibility: "public"` on every person, link, event and
+occupation. It was public before only by way of this application's rule for an
+absent value — every person in it happens to be dead, and the dead default to
+public — which is three coincidences deep and each of them can move. Adding one
+living person to `sample.ged`, or a converter that stamps `members` the way the
+specification's own `tools/gedcom2axgf.py` does, would have turned a fresh
+`--with-sample` install into a site showing a signed-out visitor an entirely
+redacted tree. That reads as a broken install, not as a privacy control. Two
+tests pin it: one on what the file declares, one on what a visitor with no
+account is actually served.
+
+Filed as [axgf-spec#1](https://github.com/plkarin/axgf-spec/issues/1): the
+specification says every entity carries a `visibility` field, the schema does
+not require it, no default is defined for its absence, and the three converters
+in circulation each answer differently — `tools/gedcom2axgf.py` writes
+`members` unconditionally, `tools/webtrees2axgf.py` and `axgf-rs` write nothing.
+
 **Ten interface languages, translating the interface and never the data.**
 An English speaker browsing a Polish family wants English buttons and Polish
 place names. AXGF carries that distinction itself — `place.names[].lang`,

@@ -340,6 +340,48 @@ fn enrich(bundle: &mut Value) {
     }
 }
 
+/// Declare every entity in the sample explicitly `public`.
+///
+/// # Why this is stamped rather than left to the default
+///
+/// `axgf-rs`'s converter writes no `visibility` at all, so the sample is
+/// currently public only by way of this application's rule for an absent
+/// value — every person in it happens to be dead, and the dead default to
+/// public. That is three coincidences deep, and each of them can move:
+///
+/// * the default is a local invention, not something the AXGF specification
+///   states (see plkarin/axgf-spec#1);
+/// * it keys off `is_living`, so adding one living person to `sample.ged`
+///   would silently hide them;
+/// * a future converter might stamp `members` the way the specification's own
+///   `tools/gedcom2axgf.py` does, which would blank the whole sample.
+///
+/// Any of those turns a fresh `--with-sample` install into a site that shows a
+/// signed-out visitor an entirely redacted tree — which is the exact opposite
+/// of what a demonstration bundle is for, and would look like a broken
+/// install rather than a privacy control. The sample is a showcase of
+/// invented people; saying so explicitly costs one field per entity and
+/// removes the whole class of failure.
+fn make_public(bundle: &mut Value) {
+    for collection in ["persons", "links", "events", "occupations", "documents"] {
+        let Some(entities) = bundle.get_mut(collection).and_then(Value::as_object_mut) else {
+            continue;
+        };
+        for entity in entities.values_mut() {
+            // A person carries it inside `identity`; everything else at the
+            // top level. That is the specification's shape, not a choice here.
+            let target = if collection == "persons" {
+                entity.get_mut("identity")
+            } else {
+                Some(&mut *entity)
+            };
+            if let Some(obj) = target.and_then(Value::as_object_mut) {
+                obj.insert("visibility".into(), json!("public"));
+            }
+        }
+    }
+}
+
 /// Build the sample bundle from the committed GEDCOM plus enrichment.
 fn build_sample() -> Vec<u8> {
     let ged = std::fs::read(sample_ged()).expect("deploy/sample.ged must exist");
@@ -357,6 +399,7 @@ fn build_sample() -> Vec<u8> {
         .expect("conversion returns a bundle");
 
     enrich(&mut bundle);
+    make_public(&mut bundle);
 
     axgf_cms::state::export_to_bytes(&bundle.to_string()).expect("sample must export")
 }
@@ -550,4 +593,72 @@ async fn the_sample_bundle_serves_every_page() {
         .expect("a person link");
     let page = common::body_string(common::get(&app, &format!("/person/{id}")).await).await;
     assert!(page.contains("links-section"));
+}
+
+#[test]
+fn the_sample_is_explicitly_public_so_a_fresh_install_shows_something() {
+    // A demonstration bundle that a signed-out visitor cannot read is not a
+    // demonstration. This is asserted rather than assumed because the sample
+    // would otherwise be public only through a chain of defaults — see
+    // `make_public` for the three separate things that could move.
+    let bytes = std::fs::read(sample_axgf()).expect("read sample.axgf");
+    let env = axgf_rs::import_bundle(&bytes);
+
+    let mut checked = 0usize;
+    for (collection, nested) in [
+        ("persons", true),
+        ("links", false),
+        ("events", false),
+        ("occupations", false),
+        ("documents", false),
+    ] {
+        let Some(entities) = env.data.get(collection).and_then(|c| c.as_object()) else {
+            continue;
+        };
+        for (id, entity) in entities {
+            let holder = if nested {
+                entity.get("identity").unwrap_or(entity)
+            } else {
+                entity
+            };
+            assert_eq!(
+                holder.get("visibility").and_then(|v| v.as_str()),
+                Some("public"),
+                "{collection}/{id} must say it is public, not rely on a default"
+            );
+            checked += 1;
+        }
+    }
+    assert!(checked >= 10, "the sample should have entities to check");
+}
+
+#[tokio::test]
+async fn a_signed_out_visitor_sees_the_sample_family() {
+    // The end that actually matters: not what the file declares, but what a
+    // visitor with no account is served on a fresh `--with-sample` install.
+    let dir = common::scratch("sample-anon");
+    let path = dir.join("family.axgf");
+    std::fs::write(&path, std::fs::read(sample_axgf()).expect("read sample")).expect("write");
+    let app = axgf_cms::app(&path, common::TOKEN).expect("build app");
+
+    let tree = common::body_string(common::get(&app, "/tree?all=1").await).await;
+    assert!(
+        !tree.contains("is-restricted"),
+        "no card in the demonstration bundle may be redacted for a visitor"
+    );
+    assert!(
+        !tree.contains("shown without their details"),
+        "and the page must not be apologising for hidden people"
+    );
+
+    let health: serde_json::Value =
+        serde_json::from_str(&common::body_string(common::get(&app, "/health").await).await)
+            .expect("health is json");
+    let admin: serde_json::Value =
+        serde_json::from_str(&common::body_string(common::get_admin(&app, "/health").await).await)
+            .expect("health is json");
+    assert_eq!(
+        health["entities"]["persons"], admin["entities"]["persons"],
+        "a signed-out visitor sees every person the sample holds"
+    );
 }

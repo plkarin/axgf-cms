@@ -16,11 +16,12 @@ app-name = axgf-cms
 ## Chrome
 
 nav-tree = Tree
-nav-convert = Convert GEDCOM
+nav-convert = Import
 nav-admin = Admin
 nav-sign-in = Sign in
 nav-sign-out = Sign out
-footer-served-from = Served from a single .axgf bundle. All genealogy logic lives in axgf-rs; the format is specified by axgf-spec.
+footer-open-format = Your family’s archive is one file you keep, written in an open format so it will still open long after this site is gone.
+footer-open-format-link = About the format
 
 ## Preferences
 
@@ -58,7 +59,7 @@ tree-lede-focused = { $ancestors ->
         [one] one partner
        *[other] { $spouses } partners
     }, { $depth } generations each way. Oldest at the bottom. Connector opacity is the relationship's confidence — a faint line is a claim the record is not sure of.
-tree-lede-whole = Every person in the bundle. Oldest at the bottom, youngest at the top. Connector opacity is the relationship's confidence.
+tree-lede-whole = Every person in the tree. Oldest at the bottom, youngest at the top. Connector opacity is the relationship's confidence.
 tree-filter-label = Filter visible cards
 tree-filter-placeholder = Type a name…
 tree-centre-on = Centre on
@@ -72,7 +73,7 @@ tree-hidden-because-role = , because their visibility is above what your account
 tree-hidden-because-anonymous = , because they are not public.
 tree-hidden-sign-in = Sign in if you have an account.
 tree-restricted-card = This person's record is not visible to you
-tree-empty = This bundle contains nobody to draw.
+tree-empty = There is nobody to draw yet.
 tree-unplaced = In no recorded family
 
 ## The record
@@ -97,8 +98,8 @@ record-occupations-help = Occupations as spans on one shared axis, so two posts 
 record-places-help = Every place this record touches, with what happened at each and the border history that makes a place meaningful across time.
 record-sources-documents-help = Every source names the facts on this page that rest on it, ordered by how strong the evidence is.
 record-notes-help = Notes on this record, including text a converter could not parse and kept verbatim rather than dropping.
-record-history-help = Every saved change to this record, newest first, from the edit journal beside the bundle. Who corrected what is a fact about this family's editors rather than about the family, so it is kept out of the .axgf and shown only to people signed in.
-record-raw-help = Nothing here is generated for display: this is the record as the bundle stores it. A format worth arguing for should be readable without a tool.
+record-history-help = Every saved change to this record, newest first. Who corrected what is a fact about the people keeping the tree rather than about the family in it, so it is kept out of the exported archive and shown only to relatives who are signed in.
+record-raw-help = Nothing here is generated for display: this is the record exactly as it is stored, down to the field names. If you ever need to read the archive without this site, this is what you would see.
 record-help-toggle = What this section shows
 
 record-gender = Gender
@@ -118,7 +119,7 @@ record-children = Children
 record-unknown-person = [Unknown]
 record-restricted-person = Private
 record-restricted-title = This person's record is not visible to you
-record-absent-person-title = Referenced by this bundle but not present in it
+record-absent-person-title = Named in this tree but not recorded in it
 record-confidence = Confidence
 record-source = Source
 record-download = Download
@@ -129,8 +130,8 @@ access-restricted-title = Not visible to you
 access-restricted-signed-in = This record's visibility puts it above what your account may read. An administrator can change either the record's visibility or your role.
 access-restricted-anonymous = This record is not public. Sign in to see whether your account may read it.
 access-role-title = Not for your role
-access-role-admin = This is an administrator's page. Your account can create and edit records, but not manage accounts, delete entities or export the bundle.
-access-role-write = Your account can read this bundle but not change it. An administrator can raise your role to contributor.
+access-role-admin = This is an administrator's page. Your account can create and edit records, but not manage accounts, delete records or export the archive.
+access-role-write = Your account can read this tree but not change it. An administrator can raise your role to contributor.
 access-scope-title = Outside your branch
 access-scope-named = Your account is restricted to one branch of the tree, and this record concerns somebody outside it. Every person a record names has to be inside your branch — a family with one partner from outside would otherwise be a way to rewrite that person's parentage.
 access-scope-unnamed = Your account is restricted to one branch of the tree, and this record names nobody it could be measured against. Sources and places are edited by accounts with access to the whole tree.
@@ -138,14 +139,14 @@ access-scope-unnamed = Your account is restricted to one branch of the tree, and
 ## Errors
 
 error-not-found-title = Not found
-error-not-found-detail = That page does not exist in this bundle.
+error-not-found-detail = That page does not exist here.
 error-no-such-person-title = No such person
-error-no-such-person-detail = This bundle contains no person with that id.
+error-no-such-person-detail = There is no person here with that id.
 error-no-such-entity-title = No such entity
-error-no-such-entity-detail = This bundle contains no entity with that id.
-error-deleted-while-editing = This bundle contains no entity with that id. It may have been deleted while you were editing it.
+error-no-such-entity-detail = There is no record here with that id.
+error-deleted-while-editing = There is no record here with that id. It may have been deleted while you were editing it.
 error-no-such-file-title = No such file
-error-no-such-file-detail = This bundle has no document with that id, or the document is recorded without a file — a referenced document names something held somewhere else.
+error-no-such-file-detail = There is no document here with that id, or the document is recorded without a file — a referenced document names something held somewhere else.
 error-not-an-image-title = Not an image
 error-not-an-image-detail = There is no thumbnail for this document, because it is not an image this build can decode.
 error-back = Back
@@ -182,22 +183,22 @@ admin-new-kind = New { $kind }
 admin-operations = Operations
 admin-validate = Validate
 admin-deduplicate = Deduplicate
-admin-export = Export bundle
+admin-export = Export the archive
 admin-accounts = Accounts
 admin-roles-note = Validate, deduplicate, export, delete and account management are administrator-only. A contributor reaches every other page here.
-admin-dedup-confirm = Deduplicate merges entities and rewrites the bundle. Continue?
+admin-dedup-confirm = Deduplicating merges records and rewrites the archive. Continue?
 admin-recent-changes = Recent changes
 admin-recent-note = The last { $shown } of { $total ->
         [one] one recorded change
        *[other] { $total } recorded changes
-    }, from { $path }. The journal lives beside the bundle, not inside it: a .axgf is copied and published, and who corrected what is a fact about this family's editors rather than about the family.
+    }, from { $path }. The journal is kept beside the archive rather than inside it: an archive gets copied, mailed and published, and who corrected what is a fact about the people keeping the tree rather than about the family in it.
 admin-sessions-open = { $n ->
         [one] One session open now.
        *[other] { $n } sessions open now.
     }
 admin-no-changes-yet = Nothing has been changed through this application yet. Every save from here on is recorded in { $path }.
 admin-last-validation = Last validation
-admin-bundle-heavy = This bundle is { $size }. The whole file is read into memory at startup and held there, so past about { $warn } the application starts costing real memory and restarts get slow. That design suits a family archive, not a media library — if the attachments are growing without bound, they belong in a file store with the bundle referencing them.
+admin-bundle-heavy = This archive is { $size }. The whole of it is loaded at startup and held in memory, so past about { $warn } the site starts costing real memory and restarts get slow. That suits a family archive rather than a media library — if the attachments are growing without bound, keep them in a file store and have the archive point at them.
 
 admin-fields = Fields
 admin-raw-json = Raw JSON
@@ -215,7 +216,7 @@ admin-not-saved = Not saved
 admin-created = Created
 admin-not-created = Not created
 admin-deleted = Deleted
-admin-not-deleted = Not deleted — the bundle is unchanged
+admin-not-deleted = Not deleted — nothing was changed
 admin-what-changed = what changed
 admin-field = Field
 admin-from = From
@@ -225,7 +226,7 @@ admin-version = version { $version }
 ## Accounts
 
 accounts-title = Accounts
-accounts-lede = Stored in { $path }, at mode 600, beside the bundle and never inside it. A .axgf is copied, mailed and published; password hashes in it would make every copy of the family tree a copy of the credential store.
+accounts-lede = Stored in { $path }, at mode 600, beside the archive and never inside it. An archive gets copied, mailed and published; password hashes travelling inside it would make every copy of the family tree a copy of the sign-in details.
 accounts-existing = Existing
 accounts-username = Username
 accounts-role = Role
@@ -254,7 +255,7 @@ accounts-role-contributor = contributor — also creates, edits and uploads
 accounts-role-admin = admin — also manages accounts, deletes and exports
 accounts-branch-hint = Limits what this account may edit to those people, their descendants and their spouses. It does not limit what they may read — that is governed by each record's visibility, and the two are kept separate on purpose.
 accounts-branch-placeholder = one person id per line
-accounts-ids-in-bundle = Person ids in this bundle
+accounts-ids-in-bundle = Person ids in this tree
 accounts-emergency-warning = You are signed in with the emergency token. It grants administrator rights for this session but is not an account: it owns no preferences, and the edit journal will record your changes as emergency-token rather than as a person. Create yourself a real account below and sign in with it.
 accounts-created-with-password = Created { $username }. Their password is { $password } — it is shown once and stored only as an Argon2id hash, so pass it on now.
 accounts-created = Created { $username }.
@@ -270,7 +271,7 @@ accounts-not-saved = Not saved: { $error }
 conflict-title = Someone else changed this first
 conflict-lede = { $who } saved a change to this { $kind } at { $when }, after you opened it. Your edit has not been saved, and nothing has been overwritten.
 conflict-no-merge = Nothing is merged automatically here. A merge of two people's edits produces a record neither of them chose, and in a genealogy two editors disagreeing about a date usually means they are reading different sources — which is a question for a person, not for a program. Compare the two below and decide.
-conflict-versions = You started from version { $expected }; the bundle now holds version { $current }.
+conflict-versions = You started from version { $expected }; the record now holds version { $current }.
 conflict-both-changed = You both changed these
 conflict-both-changed-detail = These fields were edited by both of you. Whatever you save will replace what { $who } put there:
 conflict-different-fields = You changed different fields, so nothing of { $who }'s work is contested — but re-applying still writes your whole entity over theirs. Check the two columns before you save.
@@ -285,25 +286,15 @@ conflict-reapply = Re-apply your version on top of theirs
 conflict-reapply-hint = This is your edit, carried forward against version { $version }. Edit it here to keep any of { $who }'s work you want, then save. Their version is shown below to copy from.
 conflict-save-over = Save this over theirs
 conflict-discard = Discard mine and start again
-conflict-their-version = { $who }'s version, as the bundle currently holds it
+conflict-their-version = { $who }'s version, as it currently stands
 conflict-history-of = This { $kind }'s history
-
-## Home
-
-home-why-title = Why AXGF
 
 ## Conversion
 
-convert-title = Convert GEDCOM to AXGF
-convert-submit = Convert
-convert-result-title = Conversion result
-convert-download = Download the .axgf bundle
-
-## Completeness
-
-completeness-title = Bundle completeness
-completeness-empty = empty
-completeness-spec-field = AXGF field
+convert-title = Import a family file
+convert-submit = Import
+convert-result-title = Import report
+convert-download = Download the archive
 
 ## Dates
 #
@@ -360,23 +351,23 @@ error-back-to-start = Back to the start
 error-payload-missing-title = No such file
 error-payload-missing-detail = The payload for that document is not in the cache.
 error-payload-unopenable-detail = The payload for that document could not be opened.
-error-no-such-document-detail = This bundle has no document with that id.
+error-no-such-document-detail = There is no document here with that id.
 error-bad-preference-title = Not one of the choices
 error-bad-preference-detail = That is not a language or theme this site offers. Nothing was changed.
 error-unknown-kind-title = Unknown kind
-error-unknown-kind-detail = “{ $kind }” is not an entity kind. This bundle holds: { $kinds }.
-error-io-title = Could not write the bundle
-error-io-detail = { $error }. The bundle on disk is unchanged.
-error-upload-too-large = That file is larger than the { $mb } MB limit. Nothing was stored, and the bundle is unchanged.
-error-upload-refused = The library refused the document: { $reason }. The bundle is unchanged.
+error-unknown-kind-detail = “{ $kind }” is not a kind of record. This archive holds: { $kinds }.
+error-io-title = Could not save
+error-io-detail = { $error }. Nothing on disk was changed.
+error-upload-too-large = That file is larger than the { $mb } MB limit. Nothing was stored, and the archive is unchanged.
+error-upload-refused = The document was refused: { $reason }. The archive is unchanged.
 error-back-to-person = Back to the record
-error-no-such-person-to-attach = This bundle contains no person with that id, so there is nothing to attach a document to.
+error-no-such-person-to-attach = There is no person here with that id, so there is nothing to attach a document to.
 error-upload-title = That upload was not stored
 error-download-expired-title = That download has expired
-error-download-expired-detail = Converted bundles are held for fifteen minutes. Convert the file again.
+error-download-expired-detail = An import is held for fifteen minutes, then discarded. Import the file again.
 error-upload-none = No file was uploaded. Choose a file first.
 error-upload-unsupported = That file is not a type this archive stores. Images, PDF, plain text, audio and video are accepted; the type is read from the file's own bytes, so renaming an executable does not get it in. SVG is refused outright, because an SVG can carry script.
-error-export-unreadable-title = Could not read the exported bundle
+error-export-unreadable-title = Could not read the exported archive
 error-export-unreadable-detail = { $error }
 
 ## Tree page, continued
@@ -398,10 +389,10 @@ tree-counts = { $drawn } of { $total } people · { $generations ->
        *[other] { $generations } generations
     }
 tree-unplaced-count = { $n } unplaced
-tree-contradicts-title = This bundle contradicts itself.
+tree-contradicts-title = This tree contradicts itself.
 tree-contradicts-detail = Somebody is recorded as their own ancestor, or two people on one line of descent are recorded as a couple. No arrangement of rows can satisfy that, so the offending relationship was left out of the generation numbering and some rows may be wrong. Run the validator from the admin dashboard to find it.
-tree-no-people = This bundle has no people yet.
-tree-no-people-cta = Convert a GEDCOM to fill it.
+tree-no-people = There is nobody in this tree yet.
+tree-no-people-cta = Import a family file, or add the first person.
 tree-nobody-selected = Nobody to draw for that selection.
 tree-nobody-selected-cta = Start from the default view.
 tree-click-hint = Click any card to open that person's record in the panel; “Centre the tree here” in the panel re-roots the view.
@@ -410,56 +401,65 @@ tree-edge-parentage = A recorded parentage
 
 ## Home page
 
-home-empty = This bundle is empty. Convert a GEDCOM file to see what AXGF records that GEDCOM discards.
+home-empty = Nothing recorded yet. Import a family file to bring an existing tree across, or add the first person by hand.
 home-count = { $total ->
-        [one] One entity
-       *[other] { $total } entities
-    } in one .axgf file — no database, no external services.
+        [one] One record
+       *[other] { $total } records
+    }, held in one file the family owns.
 home-browse = Browse the tree
-home-convert = Convert a GEDCOM file
-home-why-1 = GEDCOM records what a genealogist concluded. AXGF also records how sure they were, and why. Every fact in this bundle carries a confidence from 0.0 to 1.0, and this site renders that confidence visually — a birth date recorded at 98% and a speculative parentage at 35% do not look alike anywhere on this site.
-home-why-2 = AXGF also keeps the shape of what a source actually said. “circa 1500”, “before 1430” and “between 1920 and 1925” survive as distinct statements instead of collapsing into one blank field, and text no converter could parse is preserved rather than dropped. Relationships beyond blood — godparent, employer, witness, mentor — are first-class entities with their own dates, sources and confidence. Occupations are spans with a duration, not events with a single date.
-home-why-spec = Read the specification at github.com/plkarin/axgf-spec.
-home-in-this-bundle = What is in this bundle
-home-showcase-title = AXGF-only features present in this bundle
-home-showcase-note = These are the things this data expresses that a GEDCOM export could not carry.
+home-convert = Import a family file
+home-unnamed-family = This family tree
+home-what-title = What this does for a family
+home-what-archive-title = One place for the whole archive
+home-what-archive-body = The tree, the documents and the photographs sit together. A scan of a marriage certificate hangs off the marriage itself, not in somebody’s inbox, and a photograph names the people in it.
+home-what-together-title = Several relatives, different roles
+home-what-together-body = An aunt with thirty years of notes and a cousin who only wants to correct a spelling do not need the same powers. Each relative is invited with their own role, and every change records who made it and when.
+home-what-privacy-title = Privacy decided person by person
+home-what-privacy-body = A living relative can be visible to the family and invisible to visitors, while their great-grandmother is open to anyone. The choice is made for each person, not once for the whole tree.
+home-what-languages-title = Ten languages
+home-what-languages-body = Relatives read the site in their own language, and a name can be kept in its own script beside a transliteration. Nothing has to be flattened into one alphabet for the site to work.
+home-what-export-title = The archive stays yours
+home-what-export-body = Export the whole thing as a single file whenever you like — people, relationships, documents and photographs together. If you ever decide to leave, you leave with the archive intact.
+home-in-this-tree = What the family has recorded so far
+home-showcase-title = Where this tree already says more than names and dates
+home-showcase-note = Each of these is drawn from what is actually recorded here, not from a list of things the site could do.
 home-showcase-example = See an example →
 home-nothing-title = Nothing to show yet.
-home-nothing-detail = Upload a GEDCOM on the conversion page to see what the format captures, or install with --with-sample to seed a small demonstration bundle.
+home-nothing-detail = Import a family file to bring an existing tree across, or start from nothing and add the first person yourself.
 
 ## Showcase cards
 
 showcase-links-title = { $n ->
-        [one] One non-family relationship
-       *[other] { $n } non-family relationships
+        [one] One relationship beyond the family
+       *[other] { $n } relationships beyond the family
     }
-showcase-links-detail = Godparents, employers, witnesses and mentors, each with its own dates, source and confidence. GEDCOM has no way to state these at all.
+showcase-links-detail = Godparents, employers, witnesses and mentors, each with its own dates, source and how sure you are of it.
 showcase-occupations-title = { $n ->
-        [one] One occupation recorded as a span
-       *[other] { $n } occupations recorded as spans
+        [one] One job with a start and an end
+       *[other] { $n } jobs with a start and an end
     }
-showcase-occupations-detail = “Schoolteacher, 1948–1978” is a state with a duration, rendered as a timeline bar rather than flattened into a dated event.
+showcase-occupations-detail = “Schoolteacher, 1948–1978” keeps its length, and is drawn as a bar across the years rather than as a single dated line.
 showcase-uncertain-title = { $n ->
-        [one] One date that is honestly imprecise
-       *[other] { $n } dates that are honestly imprecise
+        [one] One date left as uncertain as it was given
+       *[other] { $n } dates left as uncertain as they were given
     }
-showcase-uncertain-detail = Circa, before, after and between are preserved as distinct statements. A date the source could not pin down is not shown as if it were.
+showcase-uncertain-detail = Circa, before, after and between stay four different statements. A date the source could not pin down is never shown as though it had been.
 showcase-preserved-title = { $n ->
-        [one] An unparseable date kept verbatim
-       *[other] { $n } unparseable dates kept verbatim
+        [one] One date kept in the words it was written in
+       *[other] { $n } dates kept in the words they were written in
     }
-showcase-preserved-detail = Text no converter could interpret survives as a note instead of being silently dropped.
+showcase-preserved-detail = Wording nobody could read as a date is kept exactly as written, rather than quietly discarded.
 showcase-sources-title = { $n ->
-        [one] One source graded by reliability
-       *[other] { $n } sources graded by reliability
+        [one] One source with its reliability recorded
+       *[other] { $n } sources with their reliability recorded
     }
 showcase-sources-detail = { $primary ->
         [one] One primary source.
        *[other] { $primary } primary.
     } Every fact shows which evidence it rests on, and how strong that evidence is.
 showcase-places-title = { $n ->
-        [one] One place with border history
-       *[other] { $n } places with border history
+        [one] One place whose borders moved
+       *[other] { $n } places whose borders moved
     }
 showcase-places-detail = A town can belong to different countries at different times, and the record says which one applied when.
 
@@ -492,7 +492,7 @@ person-sections-label = Sections on this page
 
 ## Record sections, detail
 
-record-gedcom-would-lose = What GEDCOM would lose here:
+record-notes-title = Notes on this record:
 record-name = Name
 record-type = Type
 record-cause = Cause:
@@ -510,7 +510,7 @@ record-documents = Documents
 record-file = File
 record-status = Status
 record-size = Size
-record-absent-document = Referenced by this person but absent from the bundle.
+record-absent-document = Named by this person but not held here.
 record-no-file = no file
 record-attach-document = Attach a document
 record-doc-photo = photo
@@ -520,7 +520,7 @@ record-doc-record = record
 record-doc-newspaper = newspaper
 record-doc-other = other
 record-upload = Upload
-record-upload-help = Up to { $mb } MB per file. The bytes are stored in a disk cache beside the bundle and written back into the .axgf on export, so an attachment travels with the data without being held in RAM. The type is read from the file's own bytes, not its name: images, PDF, plain text, audio and video are accepted. SVG is refused, because an SVG can carry script.
+record-upload-help = Up to { $mb } MB per file. Attachments are held beside the tree and written back into the archive when you export, so a photograph travels with the family it belongs to. The kind of file is read from its own contents rather than its name: images, PDF, plain text, audio and video are accepted. SVG is refused, because an SVG can carry a script.
 record-upload-help-short = Up to { $mb } MB. SVG is refused.
 record-verbatim-note = Kept exactly as the record stated it, because no converter could interpret it. Dropping it would have been the alternative.
 record-file-to-attach = File to attach
@@ -601,14 +601,9 @@ list-policy-orphan-detail = — delete it but keep the referring records, with t
 
 ## Completeness
 
-completeness-what-axgf-records = What AXGF records
-completeness-in-this-bundle = In this bundle
-completeness-gedcom-cannot = GEDCOM cannot express this
-completeness-spec = spec
 completeness-dates-title = Dates, by the shape they actually have
-completeness-no-dates = No dates in this bundle.
-completeness-dates-note = AXGF keeps the difference between a date someone pinned down and one they could not. Text no converter could read is preserved rather than dropped.
-completeness-dates-see = See spec §5.2.1 and §5.2.3.
+completeness-no-dates = No dates recorded yet.
+completeness-dates-note = A date somebody pinned to a day and a date somebody could only place in a decade are different claims, and both are kept as they were given. Text that could not be read as a date at all is preserved word for word rather than dropped.
 completeness-shape-exact = exact
 completeness-shape-exact-note = a full calendar day
 completeness-shape-approximate = approximate
@@ -622,45 +617,42 @@ completeness-shape-unknown-note = recorded as not known
 
 ## Conversion page
 
-convert-page-title = Convert a GEDCOM file
-convert-lede = Upload a GEDCOM 5.5.1 file and get an .axgf bundle back. Nothing is stored and the bundle this site serves is not touched — conversion here is a standalone utility.
-convert-file-label = GEDCOM file (.ged)
-convert-file-hint = Up to { $mb } MB. A 767-person file is about 320 KB.
-convert-confidence-label = Default confidence
-convert-confidence-hint = GEDCOM does not record how sure a genealogist was, so every imported fact needs a starting confidence. This is that value — the honest reading is “this came from a GEDCOM and has not been reviewed since”.
-convert-lang-label = Language for place names
-convert-lang-hint = A BCP 47 tag such as en, fr or pl. AXGF places carry names in several languages; this tags the ones the GEDCOM supplies.
-convert-what-you-get = What you get that the GEDCOM did not have
-convert-what-you-get-1 = Every imported fact gains a confidence score, so later editing can record doubt instead of discarding it. Dates keep their shape: circa 1500, before 1430 and between 1920 and 1925 stay distinct statements, and a date string no converter could parse is preserved verbatim as a note rather than dropped. Occupations become spans with a start and an end. Places become reusable entities that can carry border history.
-convert-no-way-back = Converting back to GEDCOM is not offered. GEDCOM has nowhere to put confidence, non-family relationships, occupation spans or preserved uncertainty, so the trip back is lossy by nature and is not a goal of this project.
+convert-page-title = Import a family file
+convert-lede = Bring an existing tree across from a GEDCOM file — the export most genealogy programs produce. You get an archive back to keep. Nothing is stored here, and the tree this site already shows is left exactly as it was.
+convert-file-label = Family file (.ged)
+convert-file-hint = Up to { $mb } MB. A tree of 767 people is about 320 KB.
+convert-confidence-label = How sure these facts are, to begin with
+convert-confidence-hint = The file being imported does not say how certain anyone was, so every fact needs a starting point. Set it low for a tree assembled quickly, higher for one worked from documents. The honest reading of this number is “imported, and not checked by anyone since” — you can raise or lower any fact afterwards, one at a time.
+convert-lang-label = Language of the place names
+convert-lang-hint = A tag such as en, fr or pl. A place can hold its name in several languages; this says which language the names in your file are written in.
+convert-what-you-get = What the import adds
+convert-what-you-get-1 = Every fact gains a level of certainty you can adjust later, so a doubt can be written down instead of thrown away. Dates keep their shape: circa 1500, before 1430 and between 1920 and 1925 stay three different statements, and wording nobody could read as a date is kept word for word. A job becomes a length of time with a start and an end. Each place becomes an entry of its own, so a town that changed country keeps that history.
+convert-no-way-back = Writing a .ged file back out is not offered. That format has nowhere to put how sure a fact is, a relationship outside the family, the length of a job, or a date nobody could pin down — so the return trip would quietly drop them. Your archive exports whole instead, as a single file.
 
 ## Conversion result
 
-convert-failed = Conversion failed
+convert-failed = The import did not go through
 convert-try-another = Try another file
-convert-converted = Converted { $filename }
+convert-converted = Imported { $filename }
 convert-result-lede = { $total ->
-        [one] One entity
-       *[other] { $total } entities
-    }, { $size } KB. Imported at confidence { $confidence } with place names tagged { $lang }. The bundle this site serves was not modified.
-convert-produced = What the conversion produced
-convert-completeness-title = What your GEDCOM carried, and what AXGF has room for
-convert-completeness-note = Counted from the file you just uploaded. Where a row below is empty, it is because GEDCOM had nowhere to put that information — not because the conversion lost it.
+        [one] One record
+       *[other] { $total } records
+    }, { $size } KB. Everything came in at a certainty of { $confidence }, with place names read as { $lang }. The tree this site shows was not touched.
+convert-produced = What came across
 convert-skipped-title = { $n ->
-        [one] One tag that carried no usable data
-       *[other] { $n } tags that carried no usable data
+        [one] One entry that could not be read
+       *[other] { $n } entries that could not be read
     }
-convert-skipped-note = These GEDCOM tags were skipped because there was nothing in them AXGF could represent. They are listed rather than swallowed: knowing exactly what was left behind is the difference between a conversion you can trust and one you cannot.
+convert-skipped-note = These entries held nothing that could be brought across. They are listed rather than swallowed: knowing exactly what was left behind is the difference between an import you can trust and one you cannot.
 convert-other-diagnostics = { $n ->
-        [one] One other diagnostic
-       *[other] { $n } other diagnostics
+        [one] One other thing worth knowing
+       *[other] { $n } other things worth knowing
     }
-convert-clean = The converter reported nothing — every tag in the file mapped cleanly.
+convert-clean = Nothing was left behind — every entry in the file came across.
 convert-download-title = Download
 convert-download-named = Download { $name }
-convert-download-note = Held for fifteen minutes, then discarded. To browse this data on a site like this one, point --bundle at the downloaded file and restart, or replace the live bundle from the admin panel.
-convert-another = Convert another file
-completeness-admin-note = Which AXGF fields this bundle uses, and which are still empty. Validation tells you what is wrong with the data; this tells you what is worth enriching. An empty field here is not an error.
+convert-download-note = Kept here for fifteen minutes and then discarded, so download it now. That one file is the whole tree; keep it somewhere safe.
+convert-another = Import another file
 admin-history-on = on
 admin-history-meta = — { $kind }, { $at }
 admin-validation-counts = { $errors ->
@@ -675,7 +667,7 @@ admin-validation-counts = { $errors ->
     }.
 admin-warnings-never-block = Warnings never block — they are information, not gates.
 admin-validator-clean = The validator reported nothing.
-record-occupations-help-undated = AXGF records an occupation as a span with a start and an end. This bundle carries the titles but no dates for them — typical of a GEDCOM import, which has nowhere to put them — so there is no scale to draw.
+record-occupations-help-undated = A job is recorded with a start and an end, so several can be compared along one timeline. This archive has the job titles but no dates for them — usual after an import, since most family files have nowhere to keep them — so there is no scale to draw yet.
 record-occupations-help-axis = An occupation is a state with a duration, not an event on a single date. All spans share one axis, { $from }–{ $to }.
 admin-value-not-set = not set
 admin-validation-report = Validation report
@@ -684,7 +676,7 @@ admin-dedup-refused = Deduplication refused
 record-birth-order = birth order
 record-start-not-recorded = start not recorded
 record-end-not-recorded = end not recorded
-record-document-no-file = This bundle records the document but does not carry the file
+record-document-no-file = The document is recorded here, but the file itself is not held
 panel-selected-person = Selected person
 
 ## Tree bands
@@ -736,12 +728,12 @@ name-type-nickname = nickname
 ## Showcase notes on a record
 
 note-links = { $n ->
-        [one] a non-family relationship with its own dates, sources and confidence
-       *[other] { $n } non-family relationships with their own dates, sources and confidence
+        [one] a relationship outside the family, with its own dates and sources
+       *[other] { $n } relationships outside the family, with their own dates and sources
     }
 note-occupations = { $n ->
-        [one] an occupation recorded as a span rather than an event
-       *[other] { $n } occupations recorded as spans rather than events
+        [one] a job recorded with a start and an end
+       *[other] { $n } jobs recorded with a start and an end
     }
 note-birth-imprecise = a birth date the source could not pin down, shown as recorded
 note-death-imprecise = a death date the source could not pin down, shown as recorded
@@ -836,3 +828,64 @@ document-type-letter = letter
 document-type-record = record
 document-type-newspaper = newspaper clipping
 document-type-other = document
+
+## What this record could say more about
+#
+# This readout used to be an argument about a file format: "these rows are
+# empty because GEDCOM cannot express them", with links into a specification.
+# For a family it is more useful as a to-do list — here is where the record is
+# thin, and here is why filling it in is worth the trouble.
+
+completeness-title = Where this tree could say more
+completeness-intro = What is recorded and what is still blank. Nothing here is an error: a blank row is somewhere the record could grow, not something that has gone wrong.
+completeness-import-title = What the import brought over
+completeness-import-intro = Counted from the file you just uploaded. A blank row is something the original file did not record — it is not something the import lost.
+
+completeness-headline-full = Every kind of detail below is recorded somewhere in this tree.
+completeness-headline-empty = { $total ->
+        [one] The one kind of detail below is not recorded anywhere yet.
+       *[other] None of the { $total } kinds of detail below are recorded yet.
+    } Each is somewhere the record could say more.
+completeness-headline-partial = { $carried ->
+        [one] One kind of detail below is recorded
+       *[other] { $carried } kinds of detail below are recorded
+    }; { $empty ->
+        [one] one is still blank
+       *[other] { $empty } are still blank
+    }.
+
+completeness-metric-confidence = How sure each fact is
+completeness-metric-confidence-none = None of the { $slots } facts here says how sure it is. A date somebody read off a certificate and one somebody guessed look the same until they do.
+completeness-metric-confidence-uniform = { $with } of { $slots } facts carry a score and every one is the same number ({ $modal }). That is what a bulk import leaves behind: a placeholder nobody has revisited. None has been judged individually yet.
+completeness-metric-confidence-some = { $with } of { $slots } facts carry a score. { $modal_count } share one value ({ $modal }); { $assessed } differ from it and so have been looked at one at a time.
+completeness-metric-confidence-many = { $with } of { $slots } facts carry a score, { $assessed } of them differing from the commonest value ({ $modal }) across { $distinct } distinct levels. This tree records real, varying uncertainty.
+
+completeness-metric-parentage = How sure each parent–child link is
+completeness-metric-parentage-none = No parentage here says how sure it is. Adoptions, disputed lines and reconstructions from a single mention are exactly where a family needs to record doubt — and the tree draws a less certain link as a fainter line.
+completeness-metric-parentage-some = { $n ->
+        [one] One parentage carries its own score
+       *[other] { $n } parentages carry their own score
+    }, so a speculative line is visibly weaker than a documented one.
+
+completeness-metric-links = Relationships beyond blood and marriage
+completeness-metric-links-none = Godparents, employers, witnesses, mentors, guardians. None are recorded yet. Each can carry its own dates, its source and how sure you are.
+completeness-metric-links-some = { $n ->
+        [one] One recorded, with its own dates, source and how sure you are.
+       *[other] { $n } recorded, each with its own dates, source and how sure you are.
+    }
+
+completeness-metric-occupations = Work recorded with a start and an end
+completeness-metric-occupations-none = No occupations recorded. A trade held for thirty years says more about a life than a single dated entry.
+completeness-metric-occupations-undated = { $total ->
+        [one] One occupation is recorded, without dates
+       *[other] { $total } occupations are recorded, without dates
+    }. Add a start and an end and they can be compared side by side on one timeline.
+completeness-metric-occupations-some = { $span } of { $total } have a start or an end, so they can be compared side by side on one timeline.
+
+completeness-metric-sources = Sources graded for how reliable they are
+completeness-metric-sources-none = No sources recorded. Naming where a fact came from is what lets a relative check it later — or disagree with it and say why.
+completeness-metric-sources-some = { $graded } of { $total } say how strong they are, so a claim resting on a birth certificate is visibly not the same as one resting on a recollection.
+
+completeness-what-is-recorded = What the record can say
+completeness-in-this-tree = In this tree
+completeness-not-yet = not yet recorded

@@ -84,8 +84,8 @@ async fn converting_a_real_gedcom_reports_counts_diagnostics_and_a_download() {
     let resp = post_convert(&app, multipart("small.ged", &ged, "0.75", "fr")).await;
     let body = expect_status(resp, StatusCode::OK, "convert small.ged").await;
 
-    assert!(body.contains("Converted small.ged"));
-    assert!(body.contains("What the conversion produced"));
+    assert!(body.contains("Imported small.ged"));
+    assert!(body.contains("What came across"));
     assert!(body.contains("persons"), "counts by kind must be shown");
     assert!(
         body.contains("/convert/download/"),
@@ -121,12 +121,18 @@ async fn unrecognized_tags_are_presented_as_a_feature_not_hidden() {
     let resp = post_convert(&app, multipart("tree.ged", &ged, "0.8", "pl")).await;
     let body = expect_status(resp, StatusCode::OK, "convert tree.ged").await;
 
-    // The real webtrees export contains tags AXGF has nowhere to put. They
-    // must be listed, with the framing that nothing was silently dropped.
+    // The real webtrees export contains entries with nothing importable in
+    // them. They must be listed, with the framing that nothing was silently
+    // dropped — an import report that hides what it could not read is worse
+    // than no report.
     if body.contains("GEDCOM_UNRECOGNIZED_TAG") {
         assert!(
-            body.contains("carried no usable data"),
-            "skipped tags need the explanatory framing"
+            body.contains("could not be read"),
+            "skipped entries need the explanatory framing"
+        );
+        assert!(
+            body.contains("listed rather than swallowed"),
+            "and the reason they are shown at all"
         );
     }
     assert!(body.contains("/convert/download/"));
@@ -161,7 +167,7 @@ async fn a_non_gedcom_upload_is_refused_clearly_not_by_panicking() {
     let resp = post_convert(&app, multipart("data.json", junk, "0.8", "en")).await;
     let body = expect_status(resp, StatusCode::OK, "non-gedcom upload").await;
 
-    assert!(body.contains("Conversion failed"));
+    assert!(body.contains("The import did not go through"));
     assert!(
         body.contains("does not look like a GEDCOM"),
         "the message must say what was wrong"
@@ -203,49 +209,43 @@ async fn an_expired_or_unknown_download_id_is_a_clean_404() {
 }
 
 #[tokio::test]
-async fn the_result_page_compares_the_import_against_what_axgf_holds() {
+async fn the_result_page_reports_what_the_import_brought_over() {
     let (app, _p) = app_with_empty_bundle("conv-complete");
     let ged = fixture("tree.ged");
     let resp = post_convert(&app, multipart("tree.ged", &ged, "0.8", "pl")).await;
     let body = expect_status(resp, StatusCode::OK, "convert for completeness").await;
 
     assert!(body.contains("completeness"), "the panel must be present");
-    assert!(body.contains("what AXGF has room for"));
+    assert!(body.contains("What the import brought over"));
 
-    // Each of the six things the panel must report.
+    // Each of the six things the report must account for.
     for expected in [
-        "individually judged confidence",
-        "Parent–child links with their own confidence",
-        "Non-family relationships",
-        "Occupations recorded as a span",
-        "Sources graded for reliability",
+        "How sure each fact is",
+        "How sure each parent–child link is",
+        "Relationships beyond blood and marriage",
+        "Work recorded with a start and an end",
+        "Sources graded for how reliable they are",
         "Dates, by the shape they actually have",
     ] {
-        assert!(body.contains(expected), "panel is missing: {expected}");
+        assert!(body.contains(expected), "report is missing: {expected}");
     }
 
-    // Fields are named exactly, and each links its spec section.
-    for field in [
-        "family.children[].confidence",
-        "occupation.valid_from",
-        "source.reliability",
-    ] {
-        assert!(body.contains(field), "field not named: {field}");
-    }
+    // A blank row is a fact about the file that was imported, and the page
+    // says so without blaming the import or arguing about file formats.
     assert!(
-        body.contains("axgf-spec/blob/main/SPEC_1.0.md#44-link"),
-        "links must point at the Link section of the spec"
+        body.contains("the original file did not record"),
+        "a blank row must be explained as absent from the source"
     );
-    assert!(body.contains("SPEC_1.0.md#8-confidence-model"));
-    assert!(body.contains("SPEC_1.0.md#542-reliability-levels"));
-
-    // A GEDCOM import genuinely has none of these, and the page says why
-    // without blaming the conversion.
-    assert!(body.contains("GEDCOM cannot express this"));
     assert!(
-        body.contains("not because the conversion lost it"),
+        body.contains("not something the import lost"),
         "the framing must not imply data was dropped"
     );
+    for absent in ["SPEC_1.0.md", "GEDCOM cannot express", "AXGF field"] {
+        assert!(
+            !body.contains(absent),
+            "the import report must not argue about the format: {absent}"
+        );
+    }
 
     // The date breakdown is real: this file has all four interesting shapes.
     for shape in ["exact", "approximate", "ranged", "preserved"] {
@@ -260,15 +260,15 @@ async fn a_rich_bundle_is_not_told_its_data_is_missing() {
     let sample = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
     let bytes = std::fs::read(sample).expect("sample bundle");
     let env = axgf_rs::import_bundle(&bytes);
-    let report = axgf_cms::completeness::analyse(&env.data);
+    let report = axgf_cms::completeness::analyse(&env.data, "en");
 
     assert_eq!(
         report.empty, 0,
-        "the sample populates every field; report was: {}",
+        "the sample populates every kind of detail; report was: {}",
         report.headline
     );
     assert!(
-        report.headline.contains("every field"),
+        report.headline.contains("recorded somewhere"),
         "a rich bundle needs a different sentence: {}",
         report.headline
     );

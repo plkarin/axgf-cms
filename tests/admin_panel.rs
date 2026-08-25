@@ -405,13 +405,16 @@ async fn the_dashboard_shows_a_bundle_completeness_readout() {
 
     let body = expect_status(get_admin(&app, "/admin").await, StatusCode::OK, "dashboard").await;
 
-    assert!(body.contains("Bundle completeness"));
-    assert!(body.contains("worth enriching"), "framed as a worklist");
+    assert!(body.contains("Where this tree could say more"));
+    assert!(
+        body.contains("somewhere the record could grow"),
+        "framed as room to grow, not as a fault"
+    );
     for expected in [
-        "individually judged confidence",
-        "Non-family relationships",
-        "Occupations recorded as a span",
-        "Sources graded for reliability",
+        "How sure each fact is",
+        "Relationships beyond blood and marriage",
+        "Work recorded with a start and an end",
+        "Sources graded for how reliable they are",
         "Dates, by the shape they actually have",
     ] {
         assert!(
@@ -421,7 +424,7 @@ async fn the_dashboard_shows_a_bundle_completeness_readout() {
     }
     // The sample populates everything, so the dashboard must not claim gaps.
     assert!(
-        body.contains("every field below"),
+        body.contains("recorded somewhere in this tree"),
         "a complete bundle should be reported as complete"
     );
 }
@@ -430,9 +433,9 @@ async fn the_dashboard_shows_a_bundle_completeness_readout() {
 async fn the_dashboard_readout_reflects_an_empty_bundle_honestly() {
     let (app, _p) = app_with_empty_bundle("admin-complete-empty");
     let body = body_string(get_admin(&app, "/admin").await).await;
-    assert!(body.contains("Bundle completeness"));
+    assert!(body.contains("Where this tree could say more"));
     assert!(
-        body.contains("No dates in this bundle"),
+        body.contains("No dates recorded yet"),
         "an empty bundle reports zero dates rather than an empty chart"
     );
 }

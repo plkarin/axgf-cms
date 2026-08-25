@@ -14,11 +14,9 @@
 app-name = axgf-cms
 
 nav-tree = الشجرة
-nav-convert = تحويل GEDCOM
 nav-admin = الإدارة
 nav-sign-in = تسجيل الدخول
 nav-sign-out = تسجيل الخروج
-footer-served-from = يُقدَّم من ملف ‎.axgf‎ واحد. منطق الأنساب كله في axgf-rs، والصيغة يحدّدها axgf-spec.
 
 prefs-title = اللغة والمظهر
 prefs-language = اللغة
@@ -251,17 +249,6 @@ conflict-discard = اطرح نسختي وابدأ من جديد
 conflict-their-version = نسخة { $who } كما يحملها الملف الآن
 conflict-history-of = سجل تعديلات هذا السجل ({ $kind })
 
-home-why-title = لماذا AXGF
-
-convert-title = تحويل GEDCOM إلى AXGF
-convert-submit = تحويل
-convert-result-title = نتيجة التحويل
-convert-download = نزّل ملف ‎.axgf‎
-
-completeness-title = اكتمال الملف
-completeness-empty = فارغ
-completeness-spec-field = حقل AXGF
-
 ## Dates
 
 date-unknown = التاريخ غير معروف
@@ -328,7 +315,6 @@ tree-counts = { $drawn } من أصل { $total } شخصًا · { $generations ->
     }
 tree-unplaced-count = { $n } بلا موضع
 tree-no-people = لا أشخاص في هذا الملف بعد.
-tree-no-people-cta = حوّل ملف GEDCOM لملئه.
 tree-nobody-selected = لا أحد لرسمه بهذا الاختيار.
 tree-nobody-selected-cta = ابدأ من العرض الافتراضي.
 tree-click-hint = انقر أي بطاقة لفتح سجل ذلك الشخص في اللوحة؛ و«اجعل الشجرة تتمركز هنا» في اللوحة يعيد تجذير العرض.
@@ -350,7 +336,6 @@ record-read-as = يُقرأ
 record-also-recorded-as = مسجَّل أيضًا بوصفه
 record-borders-moved = تغيّرت الحدود:
 record-note = ملاحظة
-record-gedcom-would-lose = ما كان GEDCOM ليفقده هنا:
 record-name = الاسم
 record-type = النوع
 record-cause = السبب:
@@ -406,22 +391,6 @@ name-type-nickname = لقب
 
 ## ملاحظات العرض
 
-note-links = { $n ->
-        [zero] لا علاقات خارج الأسرة
-        [one] علاقة واحدة خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
-        [two] علاقتان خارج الأسرة بتواريخهما ومصادرهما ودرجة يقينهما
-        [few] { $n } علاقات خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
-        [many] { $n } علاقة خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
-       *[other] { $n } علاقة خارج الأسرة بتواريخها ومصادرها ودرجة يقينها
-    }
-note-occupations = { $n ->
-        [zero] لا مهن
-        [one] مهنة واحدة مسجَّلة كمدة لا كحدث
-        [two] مهنتان مسجَّلتان كمدة لا كحدث
-        [few] { $n } مهن مسجَّلة كمدد لا كأحداث
-        [many] { $n } مهنة مسجَّلة كمدد لا كأحداث
-       *[other] { $n } مهنة مسجَّلة كمدد لا كأحداث
-    }
 note-birth-imprecise = تاريخ ميلاد لم تستطع المصادر تحديده، معروض كما سُجّل
 note-death-imprecise = تاريخ وفاة لم تستطع المصادر تحديده، معروض كما سُجّل
 note-names = { $n ->

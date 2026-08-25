@@ -12,11 +12,9 @@
 app-name = axgf-cms
 
 nav-tree = Árbol
-nav-convert = Convertir GEDCOM
 nav-admin = Administración
 nav-sign-in = Iniciar sesión
 nav-sign-out = Cerrar sesión
-footer-served-from = Servido desde un único archivo .axgf. Toda la lógica genealógica reside en axgf-rs; el formato lo especifica axgf-spec.
 
 prefs-title = Idioma y apariencia
 prefs-language = Idioma
@@ -224,17 +222,6 @@ conflict-save-over = Guardar esto sobre la suya
 conflict-discard = Descartar la mía y empezar de nuevo
 conflict-their-version = La versión de { $who }, tal como el archivo la contiene ahora
 conflict-history-of = Historial de esta entidad ({ $kind })
-
-home-why-title = Por qué AXGF
-
-convert-title = Convertir GEDCOM a AXGF
-convert-submit = Convertir
-convert-result-title = Resultado de la conversión
-convert-download = Descargar el archivo .axgf
-
-completeness-title = Integridad del archivo
-completeness-empty = vacío
-completeness-spec-field = Campo AXGF
 
 ## Dates
 

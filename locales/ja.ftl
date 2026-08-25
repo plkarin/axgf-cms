@@ -15,11 +15,9 @@
 app-name = axgf-cms
 
 nav-tree = 家系図
-nav-convert = GEDCOM を変換
 nav-admin = 管理
 nav-sign-in = サインイン
 nav-sign-out = サインアウト
-footer-served-from = 単一の .axgf ファイルから配信されています。系譜のロジックはすべて axgf-rs にあり、形式は axgf-spec が定めています。
 
 prefs-title = 言語と外観
 prefs-language = 言語
@@ -221,17 +219,6 @@ conflict-save-over = これで相手の版を上書きする
 conflict-discard = 自分の版を破棄してやり直す
 conflict-their-version = ファイルが現在保持している { $who } の版
 conflict-history-of = この記録（{ $kind }）の変更履歴
-
-home-why-title = なぜ AXGF か
-
-convert-title = GEDCOM を AXGF に変換
-convert-submit = 変換
-convert-result-title = 変換結果
-convert-download = .axgf ファイルをダウンロード
-
-completeness-title = ファイルの充足度
-completeness-empty = 空
-completeness-spec-field = AXGF 項目
 
 ## Dates
 

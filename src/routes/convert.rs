@@ -101,7 +101,7 @@ pub async fn gedcom(
     let counts = counts_of(&bundle);
     // Counted from the file the visitor just uploaded, so the argument for the
     // format is made with their own data rather than a curated demo.
-    let completeness = crate::completeness::analyse(&bundle);
+    let completeness = crate::completeness::analyse(&bundle, chrome.lang);
     let total: usize = counts.iter().map(|(_, n)| n).sum();
 
     // Export to the bytes the visitor will download. The served bundle is

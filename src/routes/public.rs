@@ -11,23 +11,26 @@ use crate::routes::Shared;
 use crate::state::COLLECTIONS;
 use crate::{auth, render, view};
 
-/// `GET /` — why AXGF, what is in this bundle, entry points.
+/// `GET /` — what the site does for a family, what this tree holds, entry points.
 pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, "/");
     let counts = state.counts();
     let total: usize = counts.iter().map(|(_, n)| n).sum();
 
-    let family_name = state.read(|flat| {
-        flat.get("manifest")
-            .and_then(|m| m.get("family"))
-            .and_then(|f| f.get("name"))
-            .and_then(Value::as_str)
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .unwrap_or("This bundle")
-            .to_string()
-    });
+    // The largest words on the page. An archive that has not been named yet
+    // says so in the reader's own language rather than naming the file.
+    let family_name = state
+        .read(|flat| {
+            flat.get("manifest")
+                .and_then(|m| m.get("family"))
+                .and_then(|f| f.get("name"))
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+        })
+        .unwrap_or_else(|| crate::i18n::translate(chrome.lang, "home-unnamed-family", None));
 
     let showcase = state.read_as(viewer.ceiling(), |flat, lens| {
         showcase_highlights(flat, lens, chrome.lang)
@@ -49,9 +52,9 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
     )
 }
 
-/// Work out which GEDCOM-impossible features this particular bundle actually
-/// contains, so the home page points at real examples instead of advertising
-/// features the data does not exercise.
+/// Work out which of the richer kinds of detail this tree actually holds, so
+/// the home page points at real examples instead of advertising what the data
+/// does not exercise.
 fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> Vec<Value> {
     use fluent::FluentValue as F;
     let mut out = Vec::new();
@@ -112,8 +115,8 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
     }
 
     // Persons whose birth or death date is anything other than a pinned
-    // calendar day — the population GEDCOM would render as a blank or a
-    // fabricated precision.
+    // calendar day — the ones another program would show as a blank or as a
+    // precision nobody actually claimed.
     if let Some(persons) = obj("persons") {
         let mut uncertain = 0usize;
         let mut preserved = 0usize;

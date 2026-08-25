@@ -6,18 +6,42 @@ use axum::http::StatusCode;
 use common::*;
 
 #[tokio::test]
-async fn home_renders_and_pitches_the_format() {
+async fn home_says_what_the_product_does_for_a_family() {
     let (app, _p) = app_with_empty_bundle("home");
     let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
 
-    assert!(body.contains("Why AXGF"), "home must carry the pitch panel");
-    assert!(
-        body.contains("github.com/plkarin/axgf-spec"),
-        "the pitch must link to the specification"
-    );
-    assert!(
-        body.contains("confidence"),
-        "the pitch must mention confidence"
+    assert!(body.contains("What this does for a family"));
+    // The five promises, each phrased for a relative rather than a developer.
+    for promise in [
+        "One place for the whole archive",
+        "Several relatives, different roles",
+        "Privacy decided person by person",
+        "Ten languages",
+        "The archive stays yours",
+    ] {
+        assert!(body.contains(promise), "home is missing: {promise}");
+    }
+    // And none of it argues about the file format.
+    for jargon in ["Why AXGF", "GEDCOM records what", "specification", "Rust"] {
+        assert!(
+            !body.contains(jargon),
+            "home still pitches the format: {jargon}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn the_open_format_is_acknowledged_once_in_the_footer() {
+    // The licence asks for the acknowledgement and it stays; what it must not
+    // do is become the product's pitch. One discreet line, on every page.
+    let (app, _p) = app_with_empty_bundle("home-footer");
+    let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
+
+    assert!(body.contains("written in an open format"));
+    assert_eq!(
+        body.matches("github.com/plkarin/axgf-spec").count(),
+        1,
+        "exactly one link to the format, and it lives in the footer"
     );
 }
 
@@ -185,7 +209,7 @@ async fn tree_renders_for_an_empty_bundle() {
     let (app, _p) = app_with_empty_bundle("tree-empty");
     let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
     assert!(
-        body.contains("no people yet"),
+        body.contains("nobody in this tree yet"),
         "an empty tree should say so, not render a blank page"
     );
 }

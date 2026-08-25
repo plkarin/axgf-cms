@@ -13,11 +13,9 @@
 app-name = axgf-cms
 
 nav-tree = 家谱图
-nav-convert = 转换 GEDCOM
 nav-admin = 管理
 nav-sign-in = 登录
 nav-sign-out = 退出
-footer-served-from = 由单个 .axgf 文件提供。全部族谱逻辑位于 axgf-rs；格式由 axgf-spec 规定。
 
 prefs-title = 语言与外观
 prefs-language = 语言
@@ -219,17 +217,6 @@ conflict-save-over = 以此覆盖对方的版本
 conflict-discard = 放弃我的修改并重新开始
 conflict-their-version = { $who } 的版本，即文件当前所存
 conflict-history-of = 此记录（{ $kind }）的修改历史
-
-home-why-title = 为何选择 AXGF
-
-convert-title = 将 GEDCOM 转换为 AXGF
-convert-submit = 转换
-convert-result-title = 转换结果
-convert-download = 下载 .axgf 文件
-
-completeness-title = 文件完整度
-completeness-empty = 空白
-completeness-spec-field = AXGF 字段
 
 ## Dates
 

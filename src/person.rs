@@ -1966,8 +1966,11 @@ mod tests {
     fn showcase_notes_name_what_this_person_demonstrates() {
         let v = jules();
         let joined = v.showcase_notes.join(" | ");
-        assert!(joined.contains("non-family relationship"), "{joined}");
-        assert!(joined.contains("occupation"), "{joined}");
+        assert!(joined.contains("outside the family"), "{joined}");
+        assert!(
+            joined.contains("recorded with a start and an end"),
+            "{joined}"
+        );
         assert!(joined.contains("transliteration"), "{joined}");
         assert!(joined.contains("witnessed"), "{joined}");
     }

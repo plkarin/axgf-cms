@@ -15,16 +15,19 @@
   {% if may_write %}<a class="btn" href="/admin">{{ t("nav-admin") }}</a>{% endif %}
 </div>
 
-<section class="why">
-  <h2>{{ t("home-why-title") }}</h2>
-  <p>{{ t("home-why-1") }}</p>
-  <p>{{ t("home-why-2") }}</p>
-  <p>
-    <a href="https://github.com/plkarin/axgf-spec">{{ t("home-why-spec") }}</a>
-  </p>
-</section>
+<h2>{{ t("home-what-title") }}</h2>
+<div class="grid cols-2">
+  {# One card per promise. Nothing here describes the file format; each line is
+     something a relative would notice using the site. #}
+  {% for f in ["archive", "together", "privacy", "languages", "export"] %}
+  <div class="card">
+    <h3 style="margin-top:0">{{ t("home-what-" ~ f ~ "-title") }}</h3>
+    <p class="small" style="margin-bottom:0">{{ t("home-what-" ~ f ~ "-body") }}</p>
+  </div>
+  {% endfor %}
+</div>
 
-<h2>{{ t("home-in-this-bundle") }}</h2>
+<h2>{{ t("home-in-this-tree") }}</h2>
 <div class="grid cols-4">
   {% for c in counts %}
   <div class="stat {% if c.n == 0 %}zero{% endif %}">

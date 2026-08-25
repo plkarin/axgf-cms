@@ -33,7 +33,7 @@
   {# Kept on one line: a multi-line literal would carry its newlines and
      indentation straight into the rendered paragraph. #}
   {{ comp.completeness_panel(completeness, t,
-       t("convert-completeness-title"), t("convert-completeness-note")) }}
+       t("completeness-import-title"), t("completeness-import-intro")) }}
 
   {% if skipped %}
   <h2>{{ t("convert-skipped-title", n=skipped | length) }}</h2>

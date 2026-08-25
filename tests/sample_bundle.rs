@@ -579,10 +579,10 @@ async fn the_sample_bundle_serves_every_page() {
         );
     }
 
-    // The home page should advertise the features the sample actually has.
+    // The home page should name what the sample actually holds.
     let home = common::body_string(common::get(&app, "/").await).await;
-    assert!(home.contains("non-family relationships"), "{home}");
-    assert!(home.contains("occupations recorded as spans"));
+    assert!(home.contains("relationships beyond the family"), "{home}");
+    assert!(home.contains("jobs with a start and an end"));
 
     // And a person page should show a link section with real content.
     let tree = common::body_string(common::get(&app, "/tree").await).await;

@@ -42,12 +42,11 @@
 </main>
 
 <footer>
-  <p>{{ t("footer-served-from") }}</p>
-  <p class="small">
-    <a href="https://github.com/plkarin/axgf-cms">axgf-cms</a> ·
-    <a href="https://github.com/plkarin/axgf-lib">axgf-rs</a> ·
-    <a href="https://github.com/plkarin/axgf-spec">axgf-spec</a>
-  </p>
+  {# The acknowledgement the licence asks for, kept to one line: honest about
+     what the archive is written in, without turning the footer into a
+     developer index. #}
+  <p class="small">{{ t("footer-open-format") }}
+    <a href="https://github.com/plkarin/axgf-spec">{{ t("footer-open-format-link") }}</a></p>
 </footer>
 
 {% block scripts %}{% endblock %}

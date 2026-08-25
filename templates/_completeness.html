@@ -1,13 +1,7 @@
-{# The completeness readout, shared by the conversion result and the admin
-   dashboard. Every number is a count of the bundle in front of the reader.
+{# The completeness readout, shared by the import result and the admin
+   dashboard. Every number is a count of the tree in front of the reader.
 
-   The spec URLs are piped through `safe`, which is the only place in this
-   project that bypasses autoescaping. It is safe here and nowhere else: every
-   one of them is built in src/completeness.rs by joining two compile-time
-   string constants, so no bundle content can reach them. Without it the
-   slashes render as `&#x2f;` and the hrefs become unreadable in source. #}
-
-{# `t` is passed in because an imported macro does not see the including
+   `t` is passed in because an imported macro does not see the including
    template's context in minijinja, and `t` is bound at render time. #}
 {% macro completeness_panel(report, t, heading, intro) %}
 <section class="completeness">
@@ -19,9 +13,8 @@
   <table class="comp-table">
     <thead>
       <tr>
-        <th>{{ t("completeness-what-axgf-records") }}</th>
-        <th class="nowrap">{{ t("completeness-in-this-bundle") }}</th>
-        <th>{{ t("completeness-spec-field") }}</th>
+        <th>{{ t("completeness-what-is-recorded") }}</th>
+        <th class="nowrap">{{ t("completeness-in-this-tree") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -33,15 +26,9 @@
         </td>
         <td class="nowrap comp-count">
           {{ m.summary }}
-          {% if not m.carried and m.gedcom_cannot %}
-            <div class="comp-tag">{{ t("completeness-gedcom-cannot") }}</div>
-          {% elif not m.carried %}
-            <div class="comp-tag empty-tag">{{ t("completeness-empty") }}</div>
+          {% if not m.carried %}
+            <div class="comp-tag empty-tag">{{ t("completeness-not-yet") }}</div>
           {% endif %}
-        </td>
-        <td class="small">
-          <code>{{ m.field }}</code>
-          <div><a href="{{ m.spec_url|safe }}">{{ t("completeness-spec") }} {{ m.spec_ref }}</a></div>
         </td>
       </tr>
       {% endfor %}
@@ -55,7 +42,6 @@
   {% else %}
   <p class="small muted">
     {{ t("completeness-dates-note") }}
-    <a href="{{ report.spec_url|safe }}#521-date-precision-values">{{ t("completeness-dates-see") }}</a>
   </p>
   <div class="grid cols-4 date-shapes">
     {% for d in [

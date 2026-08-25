@@ -6,11 +6,64 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.2.0] — unreleased
 
-Panel content laid out for the column it has, user accounts with roles and
+A product for families rather than a demonstration of a file format, panel
+content laid out for the column it has, user accounts with roles and
 per-entity visibility, safe concurrent editing, ten interface languages and
 seven themes.
 
 ### Added
+
+**The site speaks to a family, not about a file format.** Every public page
+argued for AXGF: the home page opened with a "Why AXGF" panel comparing the
+format against GEDCOM, the completeness readout explained each empty row as
+something "GEDCOM cannot express" and linked the specification section that
+defines the field, and the conversion page sold the format rather than
+reporting the import. A family paying for somewhere to keep their tree was
+being handed a specification argument.
+
+What the product does for them is now what the home page says: the tree, the
+documents and the photographs in one place; several relatives contributing
+under their own roles, with every change attributed; privacy decided per
+person rather than per tree; ten interface languages, with names kept in their
+own script; and the whole archive exportable as a single file the family owns.
+
+Removed: the "Why AXGF" panel and its GEDCOM comparison, the seven
+specification links and the `AXGF field` column from the completeness table,
+`gedcom_cannot` from every metric, and the three-repository link row in the
+footer.
+
+Rewritten rather than removed:
+
+- The strip on a person's record was headed *What GEDCOM would lose here* —
+  a claim about a competitor stapled to somebody's grandmother. It is now
+  **Notes on this record**, and each chip states a fact about the record:
+  *a job recorded with a start and an end*, *a birth date the source could not
+  pin down, shown as recorded*.
+- The completeness panel keeps every count and both framings — *Where this
+  tree could say more* on the dashboard, *What the import brought over* after
+  an import — and says a blank row is "somewhere the record could grow, not
+  something that has gone wrong" instead of blaming a file format for it.
+- The conversion page is an **import report**: what came across, what could
+  not be read and why it is listed rather than swallowed. It still refuses to
+  write GEDCOM back out and still says why, because that is a genealogist's
+  question about their own data, not an argument about formats.
+- `bundle` left the interface. It is the word for the file on disk, not for
+  what a family calls their record: *This bundle contains nobody to draw*
+  became *There is nobody to draw yet*, and the home page's fallback heading —
+  the largest words on the page — went from **This bundle** to a translated
+  *This family tree*.
+
+The attribution stays where the licence puts it. `LICENSE` and `README.md` are
+untouched, and one discreet line sits in the footer of every page: *Your
+family's archive is one file you keep, written in an open format so it will
+still open long after this site is gone.* It carries the single link to the
+specification that remains anywhere in the interface.
+
+Every string went through Fluent. English and French are complete at 563 keys.
+The eight machine-quality locales lost the entries whose *claim* changed —
+a Polish reader is better served by reviewed English than by a fluent
+translation of a promise the product no longer makes — so they fall from 40%
+to 36% (Arabic 56% to 51%), which the language selector reports honestly.
 
 **A visual pass over the controls.** A refinement of what was there, not a
 redesign: no framework, no build step, one binary and a static directory as

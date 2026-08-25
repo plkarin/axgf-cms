@@ -1,55 +1,40 @@
-//! What a bundle records, against what AXGF can hold.
+//! Where a family's record could say more.
 //!
 //! # Why this exists
 //!
-//! The visitor's most likely first action — convert my GEDCOM, look at it — is
-//! the path that shows the format at its weakest. Measured on the operator's
-//! real 767-person file, a GEDCOM import produces:
+//! A tree is never finished, and the useful question is not "is this correct"
+//! but "what is thin". This counts the kinds of detail a record can carry —
+//! how sure each fact is, how sure each parentage is, relationships beyond
+//! blood and marriage, work with a start and an end, sources graded for
+//! reliability — and says which of them this family's tree actually uses.
 //!
-//! * every fact at the same confidence, because the converter stamps one value
-//!   on everything and GEDCOM carried none;
-//! * no parentage confidence at all;
-//! * zero links, because GEDCOM cannot express a godparent;
-//! * occupations with titles and no dates, so no span exists to draw.
-//!
-//! A hand-authored demo does not answer that, because a sceptical reader
-//! assumes a curated demo is curated. What answers it is the visitor's own
-//! data, counted honestly: here is what your file carried, here is the field
-//! it would live in, and here is why it is empty.
-//!
-//! Nothing here is marketing. Every number is a count of the bundle in front
-//! of the reader, and when a bundle *does* carry rich data the report says so
-//! rather than manufacturing a gap.
+//! It is a to-do list, not a report card. A blank row is somewhere the record
+//! could grow, and the copy says so; nothing here is an error and nothing here
+//! is manufactured. Every number is a count of the tree in front of the
+//! reader, and where a tree already carries rich detail the readout says that
+//! instead of inventing a gap.
 
 use serde::Serialize;
 use serde_json::Value;
 
 use crate::view;
 
-/// Where a field is defined in the specification.
-const SPEC: &str = "https://github.com/plkarin/axgf-spec/blob/main/SPEC_1.0.md";
-
-/// One field of AXGF, and how much of it this bundle uses.
+/// One kind of detail a record can carry, and how much of it this tree uses.
 #[derive(Debug, Clone, Serialize)]
 pub struct Metric {
     /// Plain description of what is being counted.
     pub title: String,
-    /// The AXGF field itself, named exactly as it appears in a bundle.
+    /// A stable key for the row, for tests and for anything that needs to
+    /// address one metric without matching on its prose.
     pub field: &'static str,
-    /// Link into the specification section that defines it.
-    pub spec_url: String,
-    /// Section label, e.g. "§4.4".
-    pub spec_ref: &'static str,
     pub present: usize,
     pub total: usize,
     /// `present of total`, or just `present` when a total is meaningless.
     pub summary: String,
-    /// One plain sentence about what the numbers mean here.
+    /// One plain sentence about what the numbers mean here, and why filling
+    /// the gap would be worth the trouble.
     pub note: String,
-    /// True when GEDCOM has no way to express this at all, so an import can
-    /// only ever produce zero.
-    pub gedcom_cannot: bool,
-    /// True when this bundle populates the field at all.
+    /// True when this tree records this kind of detail at all.
     pub carried: bool,
 }
 
@@ -75,7 +60,6 @@ pub struct Report {
     pub carried: usize,
     /// How many are empty.
     pub empty: usize,
-    pub spec_url: String,
 }
 
 fn obj<'a>(flat: &'a Value, key: &str) -> Option<&'a serde_json::Map<String, Value>> {
@@ -204,8 +188,17 @@ fn modal(values: &[f64]) -> Option<(f64, usize)> {
         .map(|(k, n)| (k as f64 / 100.0, n))
 }
 
-/// Analyse a flat bundle.
-pub fn analyse(flat: &Value) -> Report {
+/// Analyse a flat bundle in the reader's language.
+pub fn analyse(flat: &Value, lang: &str) -> Report {
+    use fluent::FluentValue as F;
+    let t = |key: &str, args: &[(&str, F<'_>)]| -> String {
+        let mut a = fluent::FluentArgs::new();
+        for (k, v) in args {
+            a.set(*k, v.clone());
+        }
+        crate::i18n::translate(lang, key, Some(&a))
+    };
+    let n = |v: usize| F::from(v as i64);
     let mut metrics = Vec::new();
 
     // --- 1. Confidence that was assessed, not stamped ---------------------
@@ -219,49 +212,57 @@ pub fn analyse(flat: &Value) -> Report {
     };
     let (modal_value, modal_count) = modal(&values).unwrap_or((0.0, 0));
     let assessed = with_conf.saturating_sub(modal_count);
+    // Two decimals, formatted here rather than by Fluent: this is a confidence
+    // score, and its precision is part of what it says.
+    let modal_str = format!("{modal_value:.2}");
 
     let conf_note = if with_conf == 0 {
-        format!(
-            "None of the {slots} facts here carries a confidence score at all. \
-             AXGF treats a fact without one as incomplete."
+        t(
+            "completeness-metric-confidence-none",
+            &[("slots", n(slots))],
         )
     } else if distinct <= 1 {
-        format!(
-            "{with_conf} of {slots} facts carry a score, and every one of them is \
-             the same number ({modal_value:.2}). That is what a bulk import \
-             writes: the converter had to put something there, because the GEDCOM \
-             said nothing about how sure anyone was. None has been judged \
-             individually yet."
+        t(
+            "completeness-metric-confidence-uniform",
+            &[
+                ("with", n(with_conf)),
+                ("slots", n(slots)),
+                ("modal", modal_str.clone().into()),
+            ],
         )
     } else if assessed * 4 < with_conf {
-        format!(
-            "{with_conf} of {slots} facts carry a score. {modal_count} share one \
-             value ({modal_value:.2}), which is the mark of a bulk import; \
-             {assessed} differ from it and so have been looked at individually."
+        t(
+            "completeness-metric-confidence-some",
+            &[
+                ("with", n(with_conf)),
+                ("slots", n(slots)),
+                ("modal_count", n(modal_count)),
+                ("modal", modal_str.clone().into()),
+                ("assessed", n(assessed)),
+            ],
         )
     } else {
-        format!(
-            "{with_conf} of {slots} facts carry a score, {assessed} of them \
-             differing from the commonest value ({modal_value:.2}) across \
-             {distinct} distinct levels. This bundle records genuine, varying \
-             uncertainty."
+        t(
+            "completeness-metric-confidence-many",
+            &[
+                ("with", n(with_conf)),
+                ("slots", n(slots)),
+                ("assessed", n(assessed)),
+                ("modal", modal_str.clone().into()),
+                ("distinct", n(distinct)),
+            ],
         )
     };
 
     metrics.push(Metric {
-        title: "Facts with an individually judged confidence".into(),
+        title: t("completeness-metric-confidence", &[]),
         field: "confidence",
-        spec_url: format!("{SPEC}#8-confidence-model"),
-        spec_ref: "§8",
         present: assessed,
         // Measured against the facts that carry a score at all: a score that
-        // is simply the import default is not a judgement about that fact.
+        // is simply an import's default is not a judgement about that fact.
         total: with_conf,
         summary: format!("{assessed} of {with_conf}"),
         note: conf_note,
-        // GEDCOM has no confidence field, but a converter can stamp a default,
-        // so this is not a hard zero.
-        gedcom_cannot: false,
         carried: assessed > 0,
     });
 
@@ -281,48 +282,35 @@ pub fn analyse(flat: &Value) -> Report {
         }
     }
     metrics.push(Metric {
-        title: "Parent–child links with their own confidence".into(),
+        title: t("completeness-metric-parentage", &[]),
         field: "family.children[].confidence",
-        spec_url: format!("{SPEC}#42-family"),
-        spec_ref: "§4.2",
         present: child_conf,
         total: child_slots,
         summary: format!("{child_conf} of {child_slots}"),
         note: if child_conf == 0 {
-            "In GEDCOM a person is a child of a family or they are not; there is \
-             nowhere to say the connection is only probable. AXGF scores each \
-             parentage separately, and the tree draws a less certain one as a \
-             fainter line."
-                .into()
+            t("completeness-metric-parentage-none", &[])
         } else {
-            format!(
-                "{child_conf} parentages carry their own score, so a speculative \
-                 line is visibly weaker than a documented one."
+            t(
+                "completeness-metric-parentage-some",
+                &[("n", n(child_conf))],
             )
         },
-        gedcom_cannot: true,
         carried: child_conf > 0,
     });
 
-    // --- 3. Non-family links ----------------------------------------------
+    // --- 3. Relationships beyond blood and marriage -----------------------
     let links = obj(flat, "links").map(|m| m.len()).unwrap_or(0);
     metrics.push(Metric {
-        title: "Non-family relationships".into(),
+        title: t("completeness-metric-links", &[]),
         field: "links",
-        spec_url: format!("{SPEC}#44-link"),
-        spec_ref: "§4.4",
         present: links,
         total: links,
         summary: format!("{links}"),
         note: if links == 0 {
-            "Godparent, employer, witness, mentor, guardian. GEDCOM has no record \
-             type for any of them, so an import can only ever produce none. In \
-             AXGF each is an entity with its own dates, source and confidence."
-                .into()
+            t("completeness-metric-links-none", &[])
         } else {
-            format!("{links} recorded, each with its own dates, source and confidence.")
+            t("completeness-metric-links-some", &[("n", n(links))])
         },
-        gedcom_cannot: true,
         carried: links > 0,
     });
 
@@ -345,28 +333,24 @@ pub fn analyse(flat: &Value) -> Report {
             .count();
     }
     metrics.push(Metric {
-        title: "Occupations recorded as a span".into(),
+        title: t("completeness-metric-occupations", &[]),
         field: "occupation.valid_from / valid_until",
-        spec_url: format!("{SPEC}#45-occupation"),
-        spec_ref: "§4.5",
         present: occ_span,
         total: occ_total,
         summary: format!("{occ_span} of {occ_total}"),
         note: if occ_total == 0 {
-            "No occupations in this bundle.".into()
+            t("completeness-metric-occupations-none", &[])
         } else if occ_span == 0 {
-            "GEDCOM's OCCU carries a title and at most one date, so these arrived \
-             as bare titles. An AXGF occupation is a state with a start and an \
-             end — “schoolteacher, 1948–1978” — which is what lets it be drawn as \
-             a bar rather than a bullet point."
-                .into()
+            t(
+                "completeness-metric-occupations-undated",
+                &[("total", n(occ_total))],
+            )
         } else {
-            format!(
-                "{occ_span} of {occ_total} have both bounds, so they render as \
-                 comparable bars on one timeline."
+            t(
+                "completeness-metric-occupations-some",
+                &[("span", n(occ_span)), ("total", n(occ_total))],
             )
         },
-        gedcom_cannot: false,
         carried: occ_span > 0,
     });
 
@@ -385,27 +369,19 @@ pub fn analyse(flat: &Value) -> Report {
             .count();
     }
     metrics.push(Metric {
-        title: "Sources graded for reliability".into(),
+        title: t("completeness-metric-sources", &[]),
         field: "source.reliability",
-        spec_url: format!("{SPEC}#542-reliability-levels"),
-        spec_ref: "§5.4.2",
         present: src_graded,
         total: src_total,
         summary: format!("{src_graded} of {src_total}"),
-        note: if src_total == 0 {
-            "No sources in this bundle. GEDCOM's SOUR records carry a title, but \
-             nothing that distinguishes a birth certificate from a family story."
-                .into()
-        } else if src_graded == 0 {
-            "These sources have titles but no grade. AXGF asks whether a source is \
-             primary, secondary, derivative, authored, oral or DNA, so a claim \
-             resting on a certificate is visibly not the same as one resting on \
-             recollection."
-                .into()
+        note: if src_graded == 0 {
+            t("completeness-metric-sources-none", &[])
         } else {
-            format!("{src_graded} of {src_total} declare how strong they are.")
+            t(
+                "completeness-metric-sources-some",
+                &[("graded", n(src_graded)), ("total", n(src_total))],
+            )
         },
-        gedcom_cannot: false,
         carried: src_graded > 0,
     });
 
@@ -414,21 +390,16 @@ pub fn analyse(flat: &Value) -> Report {
     let empty = metrics.len() - carried;
 
     let headline = if empty == 0 {
-        "This bundle populates every field below. Nothing here is empty — the \
-         data already uses what the format offers."
-            .to_string()
+        t("completeness-headline-full", &[])
     } else if carried == 0 {
-        format!(
-            "None of the {} fields below carry data. That is the normal result of \
-             a GEDCOM import: the format it came from has nowhere to put any of \
-             it.",
-            metrics.len()
+        t(
+            "completeness-headline-empty",
+            &[("total", n(metrics.len()))],
         )
     } else {
-        format!(
-            "This bundle carries {carried} of the {} fields below; {empty} are \
-             empty.",
-            metrics.len()
+        t(
+            "completeness-headline-partial",
+            &[("carried", n(carried)), ("empty", n(empty))],
         )
     };
 
@@ -438,7 +409,6 @@ pub fn analyse(flat: &Value) -> Report {
         headline,
         carried,
         empty,
-        spec_url: SPEC.to_string(),
     }
 }
 
@@ -493,7 +463,7 @@ mod tests {
 
     #[test]
     fn an_imported_bundle_reports_every_gap() {
-        let r = analyse(&imported());
+        let r = analyse(&imported(), "en");
 
         // A single stamped confidence is not an assessment.
         let c = metric(&r, "confidence");
@@ -515,35 +485,46 @@ mod tests {
 
         assert_eq!(r.carried, 0);
         assert_eq!(r.empty, r.metrics.len());
-        assert!(r.headline.contains("GEDCOM import"), "{}", r.headline);
+        // Stated as somewhere to grow, not as a verdict on a file format.
+        assert!(
+            r.headline.contains("could say more"),
+            "an empty readout is a to-do list, not a report card: {}",
+            r.headline
+        );
     }
 
     #[test]
-    fn every_metric_names_a_field_and_links_the_spec() {
-        let r = analyse(&imported());
+    fn every_metric_carries_a_key_a_title_and_a_sentence() {
+        let r = analyse(&imported(), "en");
         for m in &r.metrics {
-            assert!(!m.field.is_empty(), "a metric must name its AXGF field");
-            assert!(
-                m.spec_url
-                    .starts_with("https://github.com/plkarin/axgf-spec"),
-                "{} has no spec link",
-                m.field
-            );
-            assert!(m.spec_url.contains('#'), "{} links no section", m.field);
-            assert!(m.spec_ref.starts_with('§'));
-            assert!(!m.note.is_empty());
+            assert!(!m.field.is_empty(), "a metric must have a stable key");
+            assert!(!m.title.is_empty(), "{} has no title", m.field);
+            assert!(!m.note.is_empty(), "{} says nothing", m.field);
         }
     }
 
     #[test]
-    fn the_gedcom_impossible_fields_are_marked_as_such() {
-        let r = analyse(&imported());
-        // These two can only ever be zero after an import.
-        assert!(metric(&r, "links").gedcom_cannot);
-        assert!(metric(&r, "family.children[].confidence").gedcom_cannot);
-        // These can be populated by a converter, so they are not "impossible".
-        assert!(!metric(&r, "source.reliability").gedcom_cannot);
-        assert!(!metric(&r, "occupation.valid_from / valid_until").gedcom_cannot);
+    fn nothing_in_the_readout_argues_about_a_file_format() {
+        // The readout is a to-do list for a family, not a comparison with
+        // GEDCOM. It used to tag empty rows "GEDCOM cannot express this" and
+        // link each one into a specification; both are gone, and this is what
+        // stops them coming back a sentence at a time.
+        let r = analyse(&imported(), "en");
+        let mut prose = vec![r.headline.clone()];
+        for m in &r.metrics {
+            prose.push(m.title.clone());
+            prose.push(m.note.clone());
+        }
+        for line in prose {
+            let lower = line.to_lowercase();
+            for word in ["gedcom", "axgf", "the format", "specification", "§"] {
+                assert!(
+                    !lower.contains(word),
+                    "the readout speaks to a genealogist, not about a format: \
+                     {line:?} contains {word:?}"
+                );
+            }
+        }
     }
 
     #[test]
@@ -564,19 +545,15 @@ mod tests {
         b["occupations"]["o1"]["valid_until"] = json!({"date": {"value": "1955"}});
         b["sources"]["s1"]["reliability"] = json!("primary");
 
-        let r = analyse(&b);
+        let r = analyse(&b, "en");
         assert_eq!(r.empty, 0, "nothing should be reported as missing");
         assert!(
-            r.headline.contains("every field"),
+            r.headline.contains("recorded somewhere"),
             "a rich bundle deserves a different sentence: {}",
             r.headline
         );
         let c = metric(&r, "confidence");
-        assert!(
-            c.note.contains("genuine, varying uncertainty"),
-            "{}",
-            c.note
-        );
+        assert!(c.note.contains("real, varying uncertainty"), "{}", c.note);
     }
 
     #[test]
@@ -589,7 +566,7 @@ mod tests {
         b["persons"]["p2"]["death"] =
             json!({"date": {"precision": "unknown", "note": "Michaelmas"}});
 
-        let d = analyse(&b).dates;
+        let d = analyse(&b, "en").dates;
         assert_eq!(d.exact, 1, "p2's birth is a full calendar day");
         assert_eq!(d.approximate, 1, "circa 1500");
         assert_eq!(d.range, 1, "before 1560");
@@ -600,7 +577,7 @@ mod tests {
     #[test]
     fn an_empty_bundle_reports_zeroes_without_panicking() {
         let b = json!({"manifest": {"axgf": "1.0"}});
-        let r = analyse(&b);
+        let r = analyse(&b, "en");
         assert_eq!(r.carried, 0);
         assert_eq!(r.dates.total, 0);
         assert!(!r.metrics.is_empty(), "the fields are still named");

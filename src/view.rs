@@ -327,6 +327,13 @@ fn point_text(d: &AxgfDate, lang: &str) -> Option<String> {
 /// Degrades gracefully: a value with fewer parts than the precision claims is
 /// rendered at the precision it actually has, never padded into a date the
 /// source never asserted.
+///
+/// The month goes out as a *number*, and the locale's own date pattern decides
+/// how — or whether — to spell it. Polish needs the genitive inside a full date
+/// (`12 kwietnia 1923`) and the nominative on its own (`kwiecień 1923`), which
+/// a single table of month names cannot supply; Japanese and Chinese never
+/// spell it at all, because `1923年4月12日` is a numeric structure rather than
+/// a translated name. Both fall out of letting the pattern hold the table.
 fn format_point(value: &str, precision: &str, lang: &str) -> String {
     let v = value.trim();
     match precision {
@@ -334,16 +341,12 @@ fn format_point(value: &str, precision: &str, lang: &str) -> String {
             (Some(y), Some(m), Some(d)) => t(
                 lang,
                 "date-day-month-year",
-                &[
-                    ("day", d.into()),
-                    ("month", month_name(m, lang).into()),
-                    ("year", y.into()),
-                ],
+                &[("day", d.into()), ("month", m.into()), ("year", y.into())],
             ),
             (Some(y), Some(m), None) => t(
                 lang,
                 "date-month-year",
-                &[("month", month_name(m, lang).into()), ("year", y.into())],
+                &[("month", m.into()), ("year", y.into())],
             ),
             (Some(y), None, None) => y.to_string(),
             _ => v.to_string(),
@@ -352,7 +355,7 @@ fn format_point(value: &str, precision: &str, lang: &str) -> String {
             (Some(y), Some(m), _) => t(
                 lang,
                 "date-month-year",
-                &[("month", month_name(m, lang).into()), ("year", y.into())],
+                &[("month", m.into()), ("year", y.into())],
             ),
             (Some(y), None, _) => y.to_string(),
             _ => v.to_string(),
@@ -431,18 +434,6 @@ fn year_of(v: &str) -> String {
         best = cur;
     }
     best
-}
-
-/// The month's name in the interface language.
-///
-/// A month name is interface text, not data: the *date* is 1923-04-12
-/// whatever language is showing it, and "April" is only this application's way
-/// of saying `04` out loud.
-fn month_name(m: u32, lang: &str) -> String {
-    if !(1..=12).contains(&m) {
-        return String::new();
-    }
-    t(lang, &format!("month-{m}"), &[])
 }
 
 /// Shorthand for a translation with arguments.
@@ -570,6 +561,34 @@ mod tests {
         assert_eq!(r.kind, "exact");
         assert!(!r.is_uncertain);
         assert_eq!(r.short, "1923");
+    }
+
+    #[test]
+    fn a_full_date_inflects_its_month_where_the_language_does() {
+        // The bug this guards: a month table shared between "April 1923" and
+        // "12 April 1923" renders "12 kwiecień 1923", which is not Polish. The
+        // genitive belongs to the full-date pattern and the nominative to the
+        // month-year one, so each locale carries both.
+        for (lang, full, alone) in [
+            ("en", "12 April 1923", "April 1923"),
+            ("pl", "12 kwietnia 1923", "kwiecień 1923"),
+            ("ru", "12 апреля 1923", "апрель 1923"),
+        ] {
+            assert_eq!(format_point("1923-04-12", "exact", lang), full, "{lang}");
+            assert_eq!(format_point("1923-04", "month", lang), alone, "{lang}");
+        }
+    }
+
+    #[test]
+    fn a_date_with_no_month_name_is_built_from_numbers() {
+        // Japanese and Chinese write 1923年4月12日: a numeric structure, not a
+        // translated month. Nothing here should look up a month's name.
+        for lang in ["ja", "zh-Hans"] {
+            let full = format_point("1923-04-12", "exact", lang);
+            assert!(full.contains("1923"), "{lang}: {full}");
+            assert!(full.contains('4'), "{lang}: {full}");
+            assert!(full.contains("12"), "{lang}: {full}");
+        }
     }
 
     #[test]

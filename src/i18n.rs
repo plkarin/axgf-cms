@@ -117,6 +117,14 @@ pub const LOCALES: &[Locale] = &[
         source: include_str!("../locales/pl.ftl"),
     },
     Locale {
+        tag: "ru",
+        english_name: "Russian",
+        native_name: "Русский",
+        dir: Dir::Ltr,
+        reviewed: false,
+        source: include_str!("../locales/ru.ftl"),
+    },
+    Locale {
         tag: "de",
         english_name: "German",
         native_name: "Deutsch",
@@ -203,6 +211,16 @@ impl Locale {
         let total = counts.get(DEFAULT).copied().unwrap_or(0);
         let mine = counts.get(self.tag).copied().unwrap_or(0);
         (mine, total)
+    }
+
+    /// Whether this locale defines every message English does.
+    ///
+    /// Complete is not the same as reviewed, and the selector says both: a
+    /// finished machine translation is still a machine translation, and a
+    /// bare "100%" would read as a quality score rather than as a count.
+    pub fn is_complete(&self) -> bool {
+        let (mine, total) = self.coverage();
+        total > 0 && mine >= total
     }
 
     /// Coverage as a whole-number percentage.
@@ -476,6 +494,7 @@ pub fn selector_entries() -> Vec<serde_json::Value> {
                 "native_name": l.native_name,
                 "dir": l.dir.as_str(),
                 "reviewed": l.reviewed,
+                "complete": l.is_complete(),
                 "coverage": l.coverage_percent(),
             })
         })
@@ -606,6 +625,182 @@ mod tests {
                     l.tag
                 );
             }
+        }
+    }
+}
+
+/// Plural-category checking, for the test below and for anyone adding a locale.
+///
+/// Lives here rather than in `tests/` because it needs the same Fluent stack
+/// the application runs on: the categories a language requires are CLDR's
+/// answer, and asking the bundle is the only way to get *this build's* answer
+/// rather than a table that drifts from it.
+#[cfg(test)]
+pub(crate) mod plurals {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    /// The six CLDR cardinal categories, in CLDR's own order.
+    pub const CATEGORIES: [&str; 6] = ["zero", "one", "two", "few", "many", "other"];
+
+    /// Which categories `tag` can actually reach.
+    ///
+    /// Determined by running numbers through a probe message rather than from
+    /// a hardcoded table: Polish needs one/few/many/other and Arabic all six,
+    /// but which build of CLDR says so is a property of the dependency tree,
+    /// not of this file.
+    pub fn required(tag: &str) -> BTreeSet<String> {
+        let langid: LanguageIdentifier = tag.parse().expect("valid tag");
+        let mut bundle = Bundle::new_concurrent(vec![langid]);
+        bundle.set_use_isolating(false);
+        let src = CATEGORIES
+            .iter()
+            .map(|c| {
+                if *c == "other" {
+                    format!("       *[{c}] {c}\n")
+                } else {
+                    format!("        [{c}] {c}\n")
+                }
+            })
+            .collect::<String>();
+        let res = FluentResource::try_new(format!("probe = {{ $n ->\n{src}    }}\n"))
+            .expect("probe parses");
+        bundle.add_resource(res).expect("probe loads");
+        let msg = bundle.get_message("probe").expect("probe present");
+        let pattern = msg.value().expect("probe has a value");
+
+        // 0..=200 covers every integer rule any CLDR language distinguishes;
+        // the large values catch the "many" bucket some languages reserve for
+        // them, and the fractions catch rules that test the decimal part.
+        let mut ns: Vec<f64> = (0..=200).map(f64::from).collect();
+        ns.extend([
+            1_000.0,
+            1_001.0,
+            10_000.0,
+            100_000.0,
+            1_000_000.0,
+            1e9,
+            0.5,
+            1.5,
+        ]);
+
+        ns.into_iter()
+            .map(|n| {
+                let mut args = FluentArgs::new();
+                args.set("n", n);
+                let mut errors = vec![];
+                bundle
+                    .format_pattern(pattern, Some(&args), &mut errors)
+                    .into_owned()
+            })
+            .collect()
+    }
+
+    /// Every message in one `.ftl` source that selects on a plural category,
+    /// paired with the category names it supplies.
+    ///
+    /// A selector keyed only on numbers — `date-century` picking `[1]`, `[2]`,
+    /// `[21]` — is not a plural selector and is left alone. What marks a
+    /// message as plural-bearing is a category name other than `other`, since
+    /// `*[other]` is just Fluent's word for "the default variant".
+    pub fn selectors(source: &str) -> Vec<(String, BTreeSet<String>)> {
+        let mut out: Vec<(String, BTreeSet<String>)> = Vec::new();
+        let mut current: Option<(String, BTreeSet<String>)> = None;
+        for line in source.lines() {
+            if let Some((id, _)) = line.split_once(" = ") {
+                if !id.starts_with([' ', '\t', '#', '[', '*']) && !id.is_empty() {
+                    if let Some(found) = current.take() {
+                        out.push(found);
+                    }
+                    current = Some((id.trim().to_string(), BTreeSet::new()));
+                }
+            }
+            let trimmed = line.trim_start();
+            let variant = trimmed
+                .strip_prefix('*')
+                .unwrap_or(trimmed)
+                .strip_prefix('[')
+                .and_then(|rest| rest.split_once(']'))
+                .map(|(key, _)| key.trim().to_string());
+            if let (Some(key), Some((_, found))) = (variant, current.as_mut()) {
+                if CATEGORIES.contains(&key.as_str()) {
+                    found.insert(key);
+                }
+            }
+        }
+        if let Some(found) = current {
+            out.push(found);
+        }
+        out.retain(|(_, cats)| cats.iter().any(|c| c != "other"));
+        out
+    }
+}
+
+#[cfg(test)]
+mod plural_tests {
+    use super::plurals::*;
+    use super::*;
+
+    #[test]
+    fn no_catalogue_is_missing_a_plural_category() {
+        // The failure this exists to catch is silent and remote: drop `[few]`
+        // from a Polish message and Fluent quietly falls through to `*[other]`,
+        // so "3 osób" renders where "3 osoby" belongs. Nothing errors, no test
+        // that reads English notices, and the only person who can see it does
+        // not work on this project.
+        let mut wrong: Vec<String> = Vec::new();
+        for locale in LOCALES {
+            let need = required(locale.tag);
+            for (id, have) in selectors(locale.source) {
+                let missing: Vec<&String> = need.difference(&have).collect();
+                if !missing.is_empty() {
+                    wrong.push(format!(
+                        "{}: {id} supplies {have:?} but {} needs {missing:?}",
+                        locale.tag, locale.tag
+                    ));
+                }
+            }
+        }
+        assert!(
+            wrong.is_empty(),
+            "{} plural message(s) short of a category CLDR requires:\n  {}",
+            wrong.len(),
+            wrong.join("\n  ")
+        );
+    }
+
+    #[test]
+    fn every_plural_message_english_has_is_translated_as_one() {
+        // The mirror of the above: a locale that renders a count through a
+        // flat sentence, with no selector at all, is also wrong — it just
+        // fails without a missing category to point at.
+        let english: std::collections::BTreeSet<String> = selectors(Locale::get("en").source)
+            .into_iter()
+            .map(|(id, _)| id)
+            .collect();
+        for locale in LOCALES {
+            if locale.tag == "en" || required(locale.tag).len() == 1 {
+                continue; // Japanese and Chinese select on nothing, correctly.
+            }
+            let mine: std::collections::BTreeSet<String> = selectors(locale.source)
+                .into_iter()
+                .map(|(id, _)| id)
+                .collect();
+            // Only messages this locale actually defines. One it has not
+            // translated yet falls back to English, selector and all, and is
+            // the coverage number's business rather than this test's.
+            let defined: std::collections::BTreeSet<String> =
+                message_ids(locale.source).into_iter().collect();
+            let flattened: Vec<&String> = english
+                .intersection(&defined)
+                .filter(|id| !mine.contains(*id))
+                .collect();
+            assert!(
+                flattened.is_empty(),
+                "{} renders {:?} without a plural selector, which English has one for",
+                locale.tag,
+                flattened
+            );
         }
     }
 }

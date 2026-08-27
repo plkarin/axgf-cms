@@ -263,19 +263,6 @@ date-month-year = { $month } { $year }
 date-decade = عقد { $decade }
 date-century = القرن { $century }
 
-month-1 = يناير
-month-2 = فبراير
-month-3 = مارس
-month-4 = أبريل
-month-5 = مايو
-month-6 = يونيو
-month-7 = يوليو
-month-8 = أغسطس
-month-9 = سبتمبر
-month-10 = أكتوبر
-month-11 = نوفمبر
-month-12 = ديسمبر
-
 ## بطاقات الشجرة
 
 tree-band-generation = الجيل { $g }
@@ -307,6 +294,7 @@ tree-band-high = عالٍ
 tree-band-medium = متوسط
 tree-band-low = ظنّي
 tree-counts = { $drawn } من أصل { $total } شخصًا · { $generations ->
+        [zero] لا أجيال
         [one] جيل واحد
         [two] جيلان
         [few] { $generations } أجيال

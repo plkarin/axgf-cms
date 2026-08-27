@@ -379,10 +379,6 @@ fn every_dynamic_key_family_is_fully_defined() {
             expected.push(note.to_string());
         }
     }
-    for m in 1..=12 {
-        expected.push(format!("month-{m}"));
-    }
-
     let missing: Vec<&String> = expected.iter().filter(|k| !english.contains(*k)).collect();
     assert!(missing.is_empty(), "English is missing {missing:?}");
 }

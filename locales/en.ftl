@@ -32,7 +32,8 @@ prefs-theme = Appearance
 prefs-apply = Apply
 prefs-reviewed = reviewed
 prefs-machine = machine, { $coverage }%
-prefs-machine-title = Translated without review by a native speaker. Genealogical vocabulary especially may be wrong. Corrections are welcome — see CONTRIBUTING.md.
+prefs-machine-complete = complete, not yet reviewed
+prefs-machine-title = Translated without review by a native speaker. Genealogical vocabulary especially may be wrong — the words for a union, a godparent or a primary source differ by national record-keeping tradition. Corrections are welcome, and CONTRIBUTING.md says where to start.
 
 theme-light = Light
 theme-dark = Dark
@@ -309,8 +310,36 @@ date-between = between { $from } and { $to }
 date-before = before { $date }
 date-after = after { $date }
 date-preserved = recorded as “{ $text }”
-date-day-month-year = { $day } { $month } { $year }
-date-month-year = { $month } { $year }
+date-day-month-year = { $day } { $month ->
+        [1] January
+        [2] February
+        [3] March
+        [4] April
+        [5] May
+        [6] June
+        [7] July
+        [8] August
+        [9] September
+        [10] October
+        [11] November
+        [12] December
+        *[other] { $month }
+    } { $year }
+date-month-year = { $month ->
+        [1] January
+        [2] February
+        [3] March
+        [4] April
+        [5] May
+        [6] June
+        [7] July
+        [8] August
+        [9] September
+        [10] October
+        [11] November
+        [12] December
+        *[other] { $month }
+    } { $year }
 date-decade = the { $decade }s
 date-century = the { $century ->
         [1] 1st
@@ -331,19 +360,6 @@ date-quarter-century = the { $quarter ->
         [21] 21st
        *[other] { $century }th
     } century
-
-month-1 = January
-month-2 = February
-month-3 = March
-month-4 = April
-month-5 = May
-month-6 = June
-month-7 = July
-month-8 = August
-month-9 = September
-month-10 = October
-month-11 = November
-month-12 = December
 
 ## More error pages
 
@@ -416,8 +432,8 @@ home-what-together-title = Several relatives, different roles
 home-what-together-body = An aunt with thirty years of notes and a cousin who only wants to correct a spelling do not need the same powers. Each relative is invited with their own role, and every change records who made it and when.
 home-what-privacy-title = Privacy decided person by person
 home-what-privacy-body = A living relative can be visible to the family and invisible to visitors, while their great-grandmother is open to anyone. The choice is made for each person, not once for the whole tree.
-home-what-languages-title = Ten languages
-home-what-languages-body = Relatives read the site in their own language, and a name can be kept in its own script beside a transliteration. Nothing has to be flattened into one alphabet for the site to work.
+home-what-languages-title = Eleven languages
+home-what-languages-body = Relatives read the site in their own language — including Russian, which is the language the civil registers of half of Central and Eastern Europe were kept in. A name stays in its own script beside a transliteration; nothing has to be flattened into one alphabet for the site to work.
 home-what-export-title = The archive stays yours
 home-what-export-body = Export the whole thing as a single file whenever you like — people, relationships, documents and photographs together. If you ever decide to leave, you leave with the archive intact.
 home-in-this-tree = What the family has recorded so far

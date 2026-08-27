@@ -237,15 +237,3 @@ date-month-year = { $month } de { $year }
 date-decade = los años { $decade }
 date-century = el siglo { $century }
 
-month-1 = enero
-month-2 = febrero
-month-3 = marzo
-month-4 = abril
-month-5 = mayo
-month-6 = junio
-month-7 = julio
-month-8 = agosto
-month-9 = septiembre
-month-10 = octubre
-month-11 = noviembre
-month-12 = diciembre

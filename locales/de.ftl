@@ -1,32 +1,54 @@
 # axgf-cms — Oberflächentexte, Deutsch.
 #
-# MASCHINELLE QUALITÄT — nicht von einer Person mit deutscher Muttersprache
-# geprüft. Gerade genealogisches Fachvokabular („union", „affiliation",
-# „confidence") hat etablierte Entsprechungen, die sich je nach
-# Archivtradition unterscheiden. Korrekturen willkommen — siehe CONTRIBUTING.md.
+# MASCHINENQUALITÄT — nicht von einer Person mit Deutsch als Muttersprache
+# geprüft. Gerade das genealogische Vokabular hat feste Entsprechungen, die je
+# nach Archivtradition abweichen, und diese Übersetzung kann falsch sein.
+# Korrekturen sind willkommen — siehe CONTRIBUTING.md.
+#
+# Gewählte Entsprechungen (von Muttersprachlern gern zu bestreiten):
+#   union → Verbindung · link → Beziehung · confidence → Sicherheit
+#   reliability → Zuverlässigkeit · source → Quelle
+#   primary source → Primärquelle · occupation → Beruf · record → Eintrag
+#   archive → Archiv · godparent → Pate · witness → Zeuge
+#   speculative → vermutet
+#
+# Plural: CLDR-Regeln one / other. Niemals durch eine eigene „eins oder mehr“-
+# Logik ersetzen.
+#
+# Datum: „12. April 1923“ — Tag mit Punkt, Monat ausgeschrieben, Jahr ohne
+# Komma. Die Monatstabelle steht im Datumsmuster selbst.
 #
 # REGEL: Diese Datei übersetzt nur die Oberfläche. Namen, Orte, Notizen und
-# Berufe stammen aus der .axgf-Datei und bleiben in ihrer eigenen Sprache und
+# Berufsbezeichnungen kommen aus dem Archiv und bleiben in ihrer Sprache und
 # Schrift.
 
 app-name = axgf-cms
 
+## Kopf- und Fußzeile
+
 nav-tree = Stammbaum
+nav-convert = Import
 nav-admin = Verwaltung
 nav-sign-in = Anmelden
 nav-sign-out = Abmelden
+footer-open-format = Das Archiv Ihrer Familie ist eine einzige Datei, die bei Ihnen bleibt, in einem offenen Format geschrieben — sie lässt sich noch lange öffnen, wenn es diese Website nicht mehr gibt.
+footer-open-format-link = Über das Format
+
+## Einstellungen
 
 prefs-title = Sprache und Darstellung
 prefs-language = Sprache
-prefs-language-note = Dies ändert nur die Oberfläche. Namen, Orte und Notizen erscheinen stets in ihrer eigenen Sprache und Schrift.
+prefs-language-note = Das ändert nur die Oberfläche. Namen, Orte und Notizen erscheinen immer in ihrer eigenen Sprache und Schrift.
 prefs-theme = Darstellung
 prefs-apply = Übernehmen
 prefs-reviewed = geprüft
 prefs-machine = maschinell, { $coverage } %
+prefs-machine-complete = vollständig, noch ungeprüft
+prefs-machine-title = Ohne Prüfung durch eine Person mit dieser Muttersprache übersetzt. Besonders das genealogische Vokabular kann falsch sein — die Wörter für eine Verbindung, einen Paten oder eine Primärquelle unterscheiden sich je nach Archivtradition des Landes. Korrekturen sind willkommen, und CONTRIBUTING.md sagt, wo man anfängt.
 
 theme-light = Hell
 theme-dark = Dunkel
-theme-system = Systemeinstellung folgen
+theme-system = Wie im System
 theme-high-contrast = Hoher Kontrast
 theme-sepia = Sepia
 theme-deuteranopia = Deuteranopie
@@ -35,21 +57,23 @@ theme-tritanopia = Tritanopie
 theme-colour-blind-note = farbfehlsichtigkeitssicher
 theme-contrast-note = maximaler Kontrast
 
+## Stammbaum
+
 tree-title-around = Rund um { $name }
 tree-title-whole = Der ganze Stammbaum
 tree-lede-focused = { $ancestors ->
-        [one] Ein Vorfahre
+        [one] Ein Vorfahr
        *[other] { $ancestors } Vorfahren
     }, { $descendants ->
-        [one] ein Nachkomme
-       *[other] { $descendants } Nachkommen
+        [one] ein Nachfahre
+       *[other] { $descendants } Nachfahren
     } und { $spouses ->
         [one] ein Partner
        *[other] { $spouses } Partner
-    }, { $depth } Generationen in jede Richtung. Die Ältesten unten. Die Deckkraft der Verbindungslinien zeigt die Sicherheit der Beziehung — eine blasse Linie ist eine Aussage, deren sich die Aufzeichnung nicht sicher ist.
-tree-lede-whole = Alle Personen der Datei. Die Ältesten unten, die Jüngsten oben. Die Deckkraft der Verbindungslinien zeigt die Sicherheit der Beziehung.
+    }, { $depth } Generationen in jede Richtung. Die Ältesten unten. Die Deckkraft einer Linie ist die Sicherheit der Beziehung — eine blasse Linie ist eine Aussage, deren der Eintrag sich nicht sicher ist.
+tree-lede-whole = Alle Personen im Stammbaum. Die Ältesten unten, die Jüngsten oben. Die Deckkraft einer Linie ist die Sicherheit der Beziehung.
 tree-filter-label = Sichtbare Karten filtern
-tree-filter-placeholder = Namen eingeben…
+tree-filter-placeholder = Namen eingeben …
 tree-centre-on = Zentrieren auf
 tree-depth = Generationen in jede Richtung
 tree-show = Anzeigen
@@ -60,32 +84,43 @@ tree-hidden-notice = { $n ->
 tree-hidden-because-role = , weil ihre Sichtbarkeit über dem liegt, was Ihr Konto lesen darf.
 tree-hidden-because-anonymous = , weil sie nicht öffentlich sind.
 tree-hidden-sign-in = Melden Sie sich an, wenn Sie ein Konto haben.
-tree-restricted-card = Der Eintrag dieser Person ist für Sie nicht sichtbar
-tree-empty = Diese Datei enthält niemanden zum Zeichnen.
+tree-restricted-card = Dieser Eintrag ist für Sie nicht sichtbar
+tree-empty = Es gibt noch niemanden zu zeichnen.
 tree-unplaced = In keiner erfassten Familie
 
+## Der Eintrag
+
 record-identity = Identität
-record-life-events = Lebensereignisse
+record-life-events = Ereignisse im Leben
 record-family = Familie
 record-other-relationships = Weitere Beziehungen
 record-occupations = Berufe
 record-places = Orte
 record-sources-documents = Quellen und Dokumente
 record-notes = Notizen
-record-history = Verlauf
+record-history = Änderungsverlauf
 record-raw = Rohdaten
-record-raw-summary-note = das JSON, aus dem diese Seite erzeugt wurde
-record-sources-documents-help = Jede Quelle nennt die Aussagen auf dieser Seite, die auf ihr beruhen, geordnet nach der Stärke des Belegs.
-record-notes-help = Notizen zu diesem Eintrag, einschließlich Text, den kein Umwandler deuten konnte und der wörtlich bewahrt statt verworfen wurde.
+record-raw-summary-note = das JSON, aus dem diese Seite gebaut wurde
+
+record-identity-help = Jeder erfasste Name mit seiner Art, dem Zeitraum seiner Verwendung und der Quelle dahinter, mit der eigenen Schrift neben der lateinischen Umschrift, wo beide sich unterscheiden, dazu Geschlecht, Lebensstatus und Sichtbarkeit.
+record-life-events-help = Geburt, Tod und jedes Ereignis, an dem diese Person beteiligt war, nach Datum geordnet, jeweils mit ihrer Rolle — so steht eine Hochzeit, bei der sie nur Zeuge war, neben ihrer eigenen. Eine Angabe ohne Datum steht zuletzt, statt so zu tun, als käme sie zuerst.
+record-family-help = Eltern und Geschwister, dann jede Verbindung mit Art, Daten, Ort, Ende und Kindern in der Reihenfolge ihrer Geburt.
+record-other-relationships-help = Jede Beziehung mit dieser Person an einem der Enden, von ihrer Seite gelesen — derselbe Eintrag erscheint am einen Ende als „Pate von“ und am anderen als „Patenkind von“.
+record-occupations-help = Berufe als Zeiträume auf einer gemeinsamen Achse, damit zwei Stellen sich mit dem Auge vergleichen lassen; wo eine Grenze fehlt, bleibt der Balken offen.
+record-places-help = Jeder Ort, den dieser Eintrag berührt, mit dem, was dort geschah, und mit der Grenzgeschichte, die einen Ort über die Zeit hinweg erst verständlich macht.
+record-sources-documents-help = Jede Quelle nennt die Angaben dieser Seite, die auf ihr beruhen, geordnet nach der Stärke des Belegs.
+record-notes-help = Notizen zu diesem Eintrag, einschließlich Text, den kein Konverter deuten konnte und der wörtlich erhalten blieb, statt verworfen zu werden.
+record-history-help = Jede gespeicherte Änderung an diesem Eintrag, die neueste zuerst. Wer was korrigiert hat, ist eine Tatsache über die Personen, die den Stammbaum pflegen, nicht über die Familie darin — deshalb bleibt sie außerhalb des ausgegebenen Archivs und wird nur angemeldeten Verwandten gezeigt.
+record-raw-help = Nichts hier ist für die Anzeige erzeugt: Das ist der Eintrag genau so, wie er gespeichert ist, bis hin zu den Feldnamen. Müssten Sie das Archiv je ohne diese Website lesen, sähen Sie genau das.
 record-help-toggle = Was dieser Abschnitt zeigt
 
 record-gender = Geschlecht
-record-living = Lebend
+record-living = Lebt
 record-visibility = Sichtbarkeit
 record-yes = ja
 record-no = nein
 record-name-type = Namensart
-record-name-used = Geführt
+record-name-used = Verwendet
 record-name-evidence = Beleg
 record-transliteration = Lateinische Umschrift
 record-born = Geboren
@@ -95,63 +130,91 @@ record-siblings = Geschwister
 record-children = Kinder
 record-unknown-person = [Unbekannt]
 record-restricted-person = Privat
-record-restricted-title = Der Eintrag dieser Person ist für Sie nicht sichtbar
-record-absent-person-title = In dieser Datei erwähnt, aber nicht darin enthalten
+record-restricted-title = Dieser Eintrag ist für Sie nicht sichtbar
+record-absent-person-title = In diesem Stammbaum genannt, aber nicht darin erfasst
 record-confidence = Sicherheit
 record-source = Quelle
 record-download = Herunterladen
 
+## Zugriff
+
 access-restricted-title = Für Sie nicht sichtbar
+access-restricted-signed-in = Die Sichtbarkeit dieses Eintrags liegt über dem, was Ihr Konto lesen darf. Eine Verwaltung kann entweder die Sichtbarkeit des Eintrags oder Ihre Rolle ändern.
 access-restricted-anonymous = Dieser Eintrag ist nicht öffentlich. Melden Sie sich an, um zu sehen, ob Ihr Konto ihn lesen darf.
 access-role-title = Nicht für Ihre Rolle
-access-role-write = Ihr Konto darf diese Datei lesen, aber nicht ändern. Ein Administrator kann Ihre Rolle auf Beitragende anheben.
+access-role-admin = Das ist eine Seite der Verwaltung. Ihr Konto kann Einträge anlegen und bearbeiten, aber keine Konten verwalten, keine Einträge löschen und das Archiv nicht ausgeben.
+access-role-write = Ihr Konto darf diesen Stammbaum lesen, aber nicht ändern. Eine Verwaltung kann Ihre Rolle auf Mitwirkende anheben.
 access-scope-title = Außerhalb Ihres Zweigs
+access-scope-named = Ihr Konto ist auf einen Zweig des Stammbaums beschränkt, und dieser Eintrag betrifft jemanden außerhalb davon. Jede in einem Eintrag genannte Person muss innerhalb Ihres Zweigs liegen — eine Familie mit einem Partner von außen wäre sonst ein Weg, die Abstammung dieser Person umzuschreiben.
+access-scope-unnamed = Ihr Konto ist auf einen Zweig des Stammbaums beschränkt, und dieser Eintrag nennt niemanden, an dem er sich messen ließe. Quellen und Orte bearbeiten Konten mit Zugriff auf den ganzen Stammbaum.
+
+## Fehler
 
 error-not-found-title = Nicht gefunden
-error-not-found-detail = Diese Seite gibt es in dieser Datei nicht.
+error-not-found-detail = Diese Seite gibt es hier nicht.
 error-no-such-person-title = Keine solche Person
-error-no-such-person-detail = Diese Datei enthält keine Person mit dieser Kennung.
-error-no-such-entity-title = Kein solcher Eintrag
-error-no-such-entity-detail = Diese Datei enthält keinen Eintrag mit dieser Kennung.
-error-deleted-while-editing = Diese Datei enthält keinen Eintrag mit dieser Kennung. Er wurde möglicherweise gelöscht, während Sie ihn bearbeitet haben.
+error-no-such-person-detail = Hier gibt es keine Person mit dieser Kennung.
+error-no-such-entity-title = Kein solcher Datensatz
+error-no-such-entity-detail = Hier gibt es keinen Eintrag mit dieser Kennung.
+error-deleted-while-editing = Hier gibt es keinen Eintrag mit dieser Kennung. Möglicherweise wurde er gelöscht, während Sie ihn bearbeitet haben.
 error-no-such-file-title = Keine solche Datei
+error-no-such-file-detail = Hier gibt es kein Dokument mit dieser Kennung, oder das Dokument ist ohne Datei erfasst — ein verwiesenes Dokument benennt etwas, das anderswo liegt.
 error-not-an-image-title = Kein Bild
-error-not-an-image-detail = Für dieses Dokument gibt es keine Vorschau, da es kein Bild ist, das diese Fassung lesen kann.
+error-not-an-image-detail = Für dieses Dokument gibt es kein Vorschaubild, weil es kein Bild ist, das dieser Stand entschlüsseln kann.
 error-back = Zurück
 
+## Anmeldung
+
 login-title = Anmelden
-login-lede = Konten werden von einem Administrator angelegt.
+login-lede = Konten legt die Verwaltung an.
 login-username = Benutzername
 login-password = Passwort
 login-submit = Anmelden
 login-wrong = Benutzername und Passwort passen nicht zusammen.
 login-token-wrong = Dieses Token ist nicht richtig.
-login-throttled = Zu viele Fehlversuche. Warten Sie einige Minuten und versuchen Sie es erneut.
+login-throttled = Zu viele Fehlversuche. Warten Sie ein paar Minuten und versuchen Sie es erneut.
 login-no-accounts-title = Diese Installation hat noch keine Konten.
+login-no-accounts-detail = Eine Einrichtungsseite gibt es hier bewusst nicht — die Lücke zwischen Inbetriebnahme und erster Anmeldung ist genau der Moment, in dem eine Installation ungeschützt ist, deshalb wird die erste Verwaltung auf der Kommandozeile angelegt.
+login-no-accounts-note = Sie gibt ein erzeugtes Passwort einmal auf stderr aus und nie wieder. Bis dahin ist der einzige Weg hinein das Notfall-Token unten.
 login-emergency-summary = Notzugang
-login-emergency-label = Not-Token
-login-emergency-submit = Not-Token verwenden
-login-sign-in-prompt = Melden Sie sich an, um die Verwaltung zu erreichen.
+login-emergency-detail = Das gemeinsame Token öffnet weiterhin eine Verwaltungssitzung und existiert zu einem einzigen Zweck: wieder hineinzukommen, wenn die .acl-Datei verloren ist oder alle Verwaltungen ausgesperrt sind. Es ist kein Konto — es hat keine eigenen Einstellungen, und das Änderungsjournal führt es als emergency-token statt als Person. Seine Verwendung wird als Warnung protokolliert.
+login-emergency-label = Notfall-Token
+login-emergency-submit = Notfall-Token verwenden
+login-sign-in-prompt = Melden Sie sich an, um in die Verwaltung zu gelangen.
+
+## Verwaltung
 
 admin-title = Verwaltung
-admin-entities = Einträge
+admin-lede = Bearbeitet wird { $path } — { $total } Datensätze, { $files ->
+        [one] eine angehängte Datei
+       *[other] { $files } angehängte Dateien
+    }, { $size } auf der Festplatte. Jede Änderung wird in einem Zug geschrieben; eine abgelehnte Änderung lässt die Datei unberührt.
+admin-entities = Datensätze
 admin-create = Anlegen
 admin-new-kind = Neu: { $kind }
 admin-operations = Vorgänge
 admin-validate = Prüfen
-admin-deduplicate = Duplikate zusammenführen
-admin-export = Datei exportieren
+admin-deduplicate = Doppelte zusammenführen
+admin-export = Archiv ausgeben
 admin-accounts = Konten
-admin-dedup-confirm = Das Zusammenführen von Duplikaten verschmilzt Einträge und schreibt die Datei neu. Fortfahren?
+admin-roles-note = Prüfen, Zusammenführen, Ausgeben, Löschen und Kontenverwaltung sind allein der Verwaltung vorbehalten. Mitwirkende erreichen jede andere Seite hier.
+admin-dedup-confirm = Das Zusammenführen verschmilzt Einträge und schreibt das Archiv neu. Fortfahren?
 admin-recent-changes = Letzte Änderungen
+admin-recent-note = Die letzten { $shown } von { $total ->
+        [one] einer erfassten Änderung
+       *[other] { $total } erfassten Änderungen
+    }, aus { $path }. Das Journal liegt neben dem Archiv statt darin: Ein Archiv wird kopiert, verschickt und veröffentlicht, und wer was korrigiert hat, ist eine Tatsache über die Personen, die den Stammbaum pflegen, nicht über die Familie darin.
 admin-sessions-open = { $n ->
-        [one] Eine Sitzung ist derzeit offen.
-       *[other] { $n } Sitzungen sind derzeit offen.
+        [one] Eine Sitzung ist gerade offen.
+       *[other] { $n } Sitzungen sind gerade offen.
     }
-admin-no-changes-yet = Über diese Anwendung wurde noch nichts geändert. Jede Speicherung ab jetzt wird in { $path } festgehalten.
+admin-no-changes-yet = Über diese Anwendung wurde noch nichts geändert. Jede Speicherung von jetzt an wird in { $path } festgehalten.
 admin-last-validation = Letzte Prüfung
+admin-bundle-heavy = Dieses Archiv ist { $size } groß. Es wird beim Start vollständig geladen und im Speicher gehalten, also kostet die Website ab etwa { $warn } echten Speicher, und Neustarts werden langsam. Das passt zu einem Familienarchiv, nicht zu einer Mediathek — wenn die Anhänge unbegrenzt wachsen, legen Sie sie in einen Dateispeicher und lassen Sie das Archiv darauf verweisen.
+
 admin-fields = Felder
 admin-raw-json = Roh-JSON
+admin-raw-json-help = Der ganze Datensatz, damit nichts unbearbeitbar ist — Listen wie die Partner und Kinder einer Familie oder die Grenzgeschichte eines Ortes stehen genau hier. Das ist das Ausgangsdokument; die Felder darüber werden anschließend über die ihnen gehörenden Pfade geschrieben, bearbeiten Sie einen Wert also an der einen oder der anderen Stelle, nicht an beiden. Es muss sich als JSON lesen lassen, sonst wird nichts gespeichert.
 admin-save = Speichern
 admin-cancel = Abbrechen
 admin-delete = Löschen
@@ -160,19 +223,22 @@ admin-edit = Bearbeiten
 admin-page-of = Seite { $page } von { $pages }
 admin-previous = Zurück
 admin-next = Weiter
-admin-saved = Als Fassung { $version } gespeichert — { $summary }
+admin-saved = Gespeichert als Fassung { $version } — { $summary }
 admin-not-saved = Nicht gespeichert
 admin-created = Angelegt
 admin-not-created = Nicht angelegt
 admin-deleted = Gelöscht
-admin-not-deleted = Nicht gelöscht — die Datei ist unverändert
+admin-not-deleted = Nicht gelöscht — nichts wurde geändert
 admin-what-changed = was sich geändert hat
 admin-field = Feld
 admin-from = Von
 admin-to = Auf
 admin-version = Fassung { $version }
 
+## Konten
+
 accounts-title = Konten
+accounts-lede = Gespeichert in { $path }, mit Rechten 600, neben dem Archiv und niemals darin. Ein Archiv wird kopiert, verschickt und veröffentlicht; Passwort-Hashes darin würden jede Kopie des Stammbaums zu einer Kopie der Zugangsdaten machen.
 accounts-existing = Vorhanden
 accounts-username = Benutzername
 accounts-role = Rolle
@@ -190,40 +256,59 @@ accounts-roots = { $n ->
        *[other] { $n } Wurzeln
     }
 accounts-add = Konto hinzufügen
-accounts-password-hint = Leer lassen, dann wird eines erzeugt und einmalig angezeigt. Mindestens { $min } Zeichen, wenn Sie es selbst festlegen.
-accounts-new-password-placeholder = neues Passwort (leer = unverändert)
+accounts-no-registration = Es gibt bewusst weder Selbstregistrierung noch Einladungen. Für ein Familienarchiv genügt eine Verwaltung, die alle kennt, und das nimmt eine Angriffsfläche ganz weg, statt sie zu verteidigen.
+accounts-password-hint = Leer lassen, dann wird eines erzeugt und einmal angezeigt. Mindestens { $min } Zeichen, wenn Sie es selbst setzen.
+accounts-new-password-placeholder = neues Passwort (leer = beibehalten)
 accounts-email = E-Mail
 accounts-optional = (optional)
 accounts-create = Konto anlegen
-accounts-role-viewer = Leser — liest öffentliche und Mitglieder-Einträge
-accounts-role-contributor = Beitragende — legt zudem an, bearbeitet und lädt hoch
-accounts-role-admin = Administrator — verwaltet zudem Konten, löscht und exportiert
+accounts-role-viewer = Lesend — liest öffentliche Einträge und die der Familie
+accounts-role-contributor = Mitwirkend — legt außerdem an, bearbeitet und lädt hoch
+accounts-role-admin = Verwaltung — verwaltet außerdem Konten, löscht und gibt aus
+accounts-branch-hint = Beschränkt, was dieses Konto bearbeiten darf, auf diese Personen, ihre Nachfahren und ihre Ehepartner. Es beschränkt nicht, was sie lesen dürfen — das regelt die Sichtbarkeit jedes Eintrags, und beides wird absichtlich getrennt gehalten.
 accounts-branch-placeholder = eine Personenkennung je Zeile
-accounts-ids-in-bundle = Personenkennungen in dieser Datei
+accounts-ids-in-bundle = Personenkennungen in diesem Stammbaum
+accounts-emergency-warning = Sie sind mit dem Notfall-Token angemeldet. Es gewährt für diese Sitzung Verwaltungsrechte, ist aber kein Konto: Es hat keine eigenen Einstellungen, und das Änderungsjournal führt Ihre Änderungen als emergency-token statt als Person. Legen Sie sich unten ein richtiges Konto an und melden Sie sich damit an.
+accounts-created-with-password = { $username } angelegt. Das Passwort lautet { $password } — es wird einmal gezeigt und nur als Argon2id-Hash gespeichert, geben Sie es also jetzt weiter.
 accounts-created = { $username } angelegt.
-accounts-updated = { $username } geändert. Alle offenen Sitzungen wurden abgemeldet.
+accounts-updated = { $username } aktualisiert. Alle offenen Sitzungen dieses Kontos wurden beendet.
 accounts-username-taken = Dieser Benutzername ist vergeben.
 accounts-pick-role = Wählen Sie eine Rolle.
-accounts-no-such = Kein solches Konto.
+accounts-no-such = Dieses Konto gibt es nicht.
+accounts-last-admin = Das ist die einzige aktive Verwaltung. Befördern Sie zuerst jemand anderen — eine Installation ohne Verwaltung lässt sich nur durch Bearbeiten der .acl-Datei oder mit dem Notfall-Token zurückholen.
 accounts-not-saved = Nicht gespeichert: { $error }
 
-conflict-title = Jemand anderes hat dies zuerst geändert
-conflict-versions = Sie sind von Fassung { $expected } ausgegangen; die Datei enthält nun Fassung { $current }.
+## Konflikte
+
+conflict-title = Jemand anderes war zuerst
+conflict-lede = { $who } hat um { $when } eine Änderung an diesem Datensatz ({ $kind }) gespeichert, nachdem Sie ihn geöffnet hatten. Ihre Bearbeitung wurde nicht gespeichert, und nichts wurde überschrieben.
+conflict-no-merge = Hier wird nichts automatisch zusammengeführt. Das Verschmelzen der Bearbeitungen zweier Menschen ergibt einen Eintrag, den keiner von beiden gewählt hat, und in der Genealogie heißt Streit zweier Bearbeiter über ein Datum meist, dass sie verschiedene Quellen lesen — und das ist eine Frage an einen Menschen, nicht an ein Programm. Vergleichen Sie beide unten und entscheiden Sie.
+conflict-versions = Sie sind von Fassung { $expected } ausgegangen; der Eintrag steht jetzt auf Fassung { $current }.
 conflict-both-changed = Das haben Sie beide geändert
-conflict-both-changed-detail = Diese Felder wurden von Ihnen beiden bearbeitet. Was Sie speichern, ersetzt, was { $who } dort eingetragen hat:
+conflict-both-changed-detail = Diese Felder haben Sie beide bearbeitet. Was Sie auch speichern, es ersetzt das, was { $who } dort eingetragen hat:
+conflict-different-fields = Sie haben verschiedene Felder geändert, es steht also nichts von der Arbeit von { $who } in Frage — aber ein erneutes Anwenden schreibt trotzdem Ihren ganzen Datensatz über den ihren. Prüfen Sie beide Spalten vor dem Speichern.
 conflict-field-by-field = Feld für Feld
 conflict-theirs = Worauf { $who } es geändert hat
 conflict-yours = Worauf Sie es geändert haben
-conflict-unchanged-by-you = von Ihnen unverändert
-conflict-unchanged-by-them = von ihnen unverändert
+conflict-unchanged-by-you = von Ihnen nicht geändert
+conflict-unchanged-by-them = von ihnen nicht geändert
+conflict-nothing-differs = Keine der beiden Fassungen unterscheidet sich in einem auf dieser Seite gezeigten Feld von der, mit der Sie begonnen haben. Die Fassungsnummer ist weitergerückt, jemand hat den Eintrag also gespeichert, ohne etwas daran zu ändern.
 conflict-what-now = Wie weiter
-conflict-reapply = Ihre Fassung auf ihre anwenden
-conflict-save-over = Dies über ihre speichern
-conflict-discard = Meine verwerfen und neu beginnen
-conflict-their-version = Die Fassung von { $who }, so wie die Datei sie derzeit enthält
-conflict-history-of = Verlauf dieses Eintrags ({ $kind })
+conflict-reapply = Ihre Fassung auf die ihre anwenden
+conflict-reapply-hint = Das ist Ihre Bearbeitung, übertragen auf Fassung { $version }. Passen Sie sie hier an, um von der Arbeit von { $who } zu behalten, was Sie wollen, und speichern Sie dann. Deren Fassung steht unten zum Abschreiben.
+conflict-save-over = Das über die ihre speichern
+conflict-discard = Meine verwerfen und neu anfangen
+conflict-their-version = Die Fassung von { $who }, so wie sie jetzt steht
+conflict-history-of = Verlauf dieses Datensatzes ({ $kind })
 
-## Dates
+## Import
+
+convert-title = Familiendatei importieren
+convert-submit = Importieren
+convert-result-title = Importbericht
+convert-download = Archiv herunterladen
+
+## Datum
 
 date-unknown = Datum unbekannt
 date-not-recorded = Nicht erfasst
@@ -232,20 +317,559 @@ date-between = zwischen { $from } und { $to }
 date-before = vor { $date }
 date-after = nach { $date }
 date-preserved = erfasst als „{ $text }“
-date-day-month-year = { $day }. { $month } { $year }
-date-month-year = { $month } { $year }
+date-day-month-year = { $day }. { $month ->
+        [1] Januar
+        [2] Februar
+        [3] März
+        [4] April
+        [5] Mai
+        [6] Juni
+        [7] Juli
+        [8] August
+        [9] September
+        [10] Oktober
+        [11] November
+        [12] Dezember
+        *[other] { $month }
+    } { $year }
+date-month-year = { $month ->
+        [1] Januar
+        [2] Februar
+        [3] März
+        [4] April
+        [5] Mai
+        [6] Juni
+        [7] Juli
+        [8] August
+        [9] September
+        [10] Oktober
+        [11] November
+        [12] Dezember
+        *[other] { $month }
+    } { $year }
 date-decade = die { $decade }er Jahre
 date-century = das { $century }. Jahrhundert
+date-quarter-century = das { $quarter ->
+        [1] erste
+        [2] zweite
+        [3] dritte
+       *[other] vierte
+    } Viertel des { $century }. Jahrhunderts
 
-month-1 = Januar
-month-2 = Februar
-month-3 = März
-month-4 = April
-month-5 = Mai
-month-6 = Juni
-month-7 = Juli
-month-8 = August
-month-9 = September
-month-10 = Oktober
-month-11 = November
-month-12 = Dezember
+## Weitere Fehlerseiten
+
+error-back-to-start = Zurück zum Anfang
+error-payload-missing-title = Keine solche Datei
+error-payload-missing-detail = Der Inhalt dieses Dokuments liegt nicht im Zwischenspeicher.
+error-payload-unopenable-detail = Der Inhalt dieses Dokuments ließ sich nicht öffnen.
+error-no-such-document-detail = Hier gibt es kein Dokument mit dieser Kennung.
+error-bad-preference-title = Nicht eine der Möglichkeiten
+error-bad-preference-detail = Das ist weder eine Sprache noch eine Darstellung, die diese Website anbietet. Nichts wurde geändert.
+error-unknown-kind-title = Unbekannte Art
+error-unknown-kind-detail = „{ $kind }“ ist keine Art von Eintrag. Dieses Archiv enthält: { $kinds }.
+error-io-title = Speichern nicht möglich
+error-io-detail = { $error }. Auf der Festplatte wurde nichts geändert.
+error-upload-too-large = Diese Datei ist größer als die Grenze von { $mb } MB. Nichts wurde gespeichert, und das Archiv ist unverändert.
+error-upload-refused = Das Dokument wurde abgelehnt: { $reason }. Das Archiv ist unverändert.
+error-back-to-person = Zurück zum Eintrag
+error-no-such-person-to-attach = Hier gibt es keine Person mit dieser Kennung, also gibt es auch nichts, woran ein Dokument gehängt werden könnte.
+error-upload-title = Dieser Upload wurde nicht gespeichert
+error-download-expired-title = Dieser Download ist abgelaufen
+error-download-expired-detail = Ein Import wird fünfzehn Minuten aufbewahrt und dann verworfen. Importieren Sie die Datei erneut.
+error-upload-none = Es wurde keine Datei hochgeladen. Wählen Sie zuerst eine Datei.
+error-upload-unsupported = Diese Art von Datei bewahrt das Archiv nicht auf. Angenommen werden Bilder, PDF, einfacher Text, Ton und Video; die Art wird aus den Bytes der Datei selbst gelesen, das Umbenennen eines ausführbaren Programms hilft also nicht. SVG wird rundheraus abgelehnt, weil ein SVG ein Skript enthalten kann.
+error-export-unreadable-title = Das ausgegebene Archiv ließ sich nicht lesen
+error-export-unreadable-detail = { $error }
+
+## Stammbaumseite, Fortsetzung
+
+tree-title-suffix = Stammbaum
+tree-back-to-focused = Zurück zur Ansicht um eine Person
+tree-show-all = Alle { $n } anzeigen
+tree-width-notice = Diese Ansicht ist { $width } Pixel breit. Jede Generation ist eine Zeile, und die breiteste davon bestimmt diese Breite — auf einem Bildschirm mit 1500 Pixeln sind das { $screens ->
+        [one] ein Bildschirm
+       *[other] { $screens } Bildschirme
+    } waagerechtes Scrollen. Die Ansicht um eine Person zeigt stattdessen ein paar Dutzend Menschen um sie herum, und jede Karte rückt sie neu in die Mitte.
+tree-confidence-label = Sicherheit:
+tree-band-certain = sicher
+tree-band-high = hoch
+tree-band-medium = mittel
+tree-band-low = vermutet
+tree-counts = { $drawn } von { $total } Personen · { $generations ->
+        [one] eine Generation
+       *[other] { $generations } Generationen
+    }
+tree-unplaced-count = { $n } ohne Platz
+tree-contradicts-title = Dieser Stammbaum widerspricht sich selbst.
+tree-contradicts-detail = Jemand ist als eigener Vorfahr erfasst, oder zwei Personen einer Abstammungslinie sind als Paar erfasst. Keine Anordnung von Zeilen kann das erfüllen, deshalb blieb die betreffende Beziehung bei der Nummerierung der Generationen außen vor und einige Zeilen können falsch sein. Führen Sie die Prüfung aus der Verwaltung aus, um sie zu finden.
+tree-no-people = In diesem Stammbaum ist noch niemand.
+tree-no-people-cta = Importieren Sie eine Familiendatei oder legen Sie die erste Person an.
+tree-nobody-selected = Für diese Auswahl gibt es niemanden zu zeichnen.
+tree-nobody-selected-cta = Beginnen Sie mit der Standardansicht.
+tree-click-hint = Klicken Sie eine beliebige Karte an, um den Eintrag dieser Person in der Seitenspalte zu öffnen; „Stammbaum hier zentrieren“ in der Seitenspalte setzt die Wurzel der Ansicht neu.
+tree-edge-union = Eine erfasste Verbindung
+tree-edge-parentage = Eine erfasste Abstammung
+
+## Startseite
+
+home-empty = Noch nichts erfasst. Importieren Sie eine Familiendatei, um einen vorhandenen Stammbaum zu übernehmen, oder legen Sie die erste Person von Hand an.
+home-count = { $total ->
+        [one] Ein Eintrag
+       *[other] { $total } Einträge
+    }, in einer Datei, die der Familie gehört.
+home-browse = Stammbaum ansehen
+home-convert = Familiendatei importieren
+home-unnamed-family = Dieser Stammbaum
+home-what-title = Was das einer Familie bringt
+home-what-archive-title = Ein Ort für das ganze Archiv
+home-what-archive-body = Der Stammbaum, die Dokumente und die Fotografien liegen beieinander. Der Scan einer Heiratsurkunde hängt an der Heirat selbst und nicht im Postfach von irgendwem, und eine Fotografie benennt die Menschen darauf.
+home-what-together-title = Mehrere Verwandte, verschiedene Rollen
+home-what-together-body = Eine Tante mit dreißig Jahren an Aufzeichnungen und ein Cousin, der nur eine Schreibweise berichtigen möchte, brauchen nicht dieselben Rechte. Jede und jeder Verwandte wird mit einer eigenen Rolle eingeladen, und jede Änderung hält fest, wer sie wann gemacht hat.
+home-what-privacy-title = Sichtbarkeit, Person für Person entschieden
+home-what-privacy-body = Ein lebender Verwandter kann für die Familie sichtbar und für Besucher unsichtbar sein, während seine Urgroßmutter für alle offen steht. Die Entscheidung fällt für jede Person einzeln, nicht einmal für den ganzen Stammbaum.
+home-what-languages-title = Elf Sprachen
+home-what-languages-body = Verwandte lesen die Website in ihrer eigenen Sprache — auch auf Russisch, der Sprache, in der die Personenstandsregister der halben Mitte und des Ostens Europas geführt wurden. Ein Name bleibt in seiner eigenen Schrift neben der Umschrift stehen; nichts muss auf ein einziges Alphabet eingeebnet werden, damit die Website funktioniert.
+home-what-export-title = Das Archiv bleibt Ihres
+home-what-export-body = Geben Sie jederzeit alles als eine einzige Datei aus — Personen, Beziehungen, Dokumente und Fotografien zusammen. Sollten Sie eines Tages gehen, gehen Sie mit dem vollständigen Archiv.
+home-in-this-tree = Was die Familie bisher erfasst hat
+home-showcase-title = Wo dieser Stammbaum bereits mehr sagt als Namen und Daten
+home-showcase-note = Jeder dieser Punkte stammt aus dem, was hier tatsächlich erfasst ist, und nicht aus einer Liste dessen, was die Website könnte.
+home-showcase-example = Ein Beispiel ansehen →
+home-nothing-title = Noch nichts zu zeigen.
+home-nothing-detail = Importieren Sie eine Familiendatei, um einen vorhandenen Stammbaum zu übernehmen, oder fangen Sie bei null an und legen Sie die erste Person selbst an.
+
+## Übersichtskarten
+
+showcase-links-title = { $n ->
+        [one] Eine Beziehung außerhalb der Familie
+       *[other] { $n } Beziehungen außerhalb der Familie
+    }
+showcase-links-detail = Paten, Arbeitgeber, Zeugen und Mentoren, jede mit eigenen Daten, eigener Quelle und Ihrer Sicherheit.
+showcase-occupations-title = { $n ->
+        [one] Ein Beruf mit Anfang und Ende
+       *[other] { $n } Berufe mit Anfang und Ende
+    }
+showcase-occupations-detail = „Lehrerin, 1948–1978“ behält ihre Dauer und wird als Balken über die Jahre gezeichnet statt als einzelne datierte Zeile.
+showcase-uncertain-title = { $n ->
+        [one] Ein Datum, so ungenau belassen, wie es überliefert ist
+       *[other] { $n } Daten, so ungenau belassen, wie sie überliefert sind
+    }
+showcase-uncertain-detail = Um, vor, nach und zwischen bleiben vier verschiedene Aussagen. Ein Datum, das die Quelle nicht festlegen konnte, wird nie so gezeigt, als hätte sie es gekonnt.
+showcase-preserved-title = { $n ->
+        [one] Ein Datum, in den Worten bewahrt, in denen es geschrieben stand
+       *[other] { $n } Daten, in den Worten bewahrt, in denen sie geschrieben standen
+    }
+showcase-preserved-detail = Eine Formulierung, die niemand als Datum lesen konnte, bleibt genau so stehen, wie sie geschrieben ist, statt stillschweigend verworfen zu werden.
+showcase-sources-title = { $n ->
+        [one] Eine Quelle mit erfasster Zuverlässigkeit
+       *[other] { $n } Quellen mit erfasster Zuverlässigkeit
+    }
+showcase-sources-detail = { $primary ->
+        [one] Eine Primärquelle.
+       *[other] { $primary } Primärquellen.
+    } Jede Angabe zeigt, auf welchem Beleg sie ruht und wie stark dieser Beleg ist.
+showcase-places-title = { $n ->
+        [one] Ein Ort, dessen Grenzen sich verschoben haben
+       *[other] { $n } Orte, deren Grenzen sich verschoben haben
+    }
+showcase-places-detail = Eine Stadt kann zu verschiedenen Zeiten zu verschiedenen Staaten gehören, und der Eintrag sagt, welcher wann galt.
+
+## Einzelheiten des Eintrags
+
+record-also-recorded-as = auch erfasst als
+record-borders-moved = Grenzen verschoben:
+record-display-name = Anzeigename
+record-read-as = gelesen als
+record-note = Notiz
+record-living-yes = lebend
+record-deceased = verstorben
+record-centre-tree-here = Stammbaum hier zentrieren
+record-centre-tree-title = Den Stammbaum auf diese Person zentrieren
+record-open-full-page = Ganze Seite öffnen ↗
+record-open-full-title = Die eigenständige, teilbare Seite öffnen
+record-edit = Bearbeiten
+panel-empty = Wählen Sie eine Karte, um hier den vollständigen Eintrag dieser Person zu sehen.
+person-see-in-tree = Diese Person im Stammbaum ansehen
+person-visibility-inline = Sichtbarkeit:
+
+## Ergebnisse von Vorgängen
+
+result-diagnostics = Meldungen
+result-diagnostics-note = Jede Meldung, die die Bibliothek zurückgegeben hat, auch Warnungen, die den Vorgang nicht aufgehalten haben. Nichts wird herausgefiltert.
+result-no-diagnostics = Die Bibliothek hat keine Meldungen zurückgegeben.
+result-continue = Weiter
+result-dashboard = Übersicht
+person-sections-label = Abschnitte dieser Seite
+
+## Abschnitte des Eintrags, Einzelheiten
+
+record-notes-title = Anmerkungen zu diesem Eintrag:
+record-name = Name
+record-type = Art
+record-cause = Ursache:
+record-as = als
+record-partner-not-recorded = Partner nicht erfasst
+record-union-from = Ab
+record-union-at = in
+record-union-until = bis
+record-occupation-from = ab
+record-occupation-until = bis
+record-source-reliability = Zuverlässigkeit
+record-source-supports = Stützt
+record-photographs = Fotografien
+record-documents = Dokumente
+record-file = Datei
+record-status = Status
+record-size = Größe
+record-absent-document = Von dieser Person genannt, aber hier nicht vorhanden.
+record-no-file = keine Datei
+record-attach-document = Dokument anhängen
+record-doc-photo = Foto
+record-doc-certificate = Urkunde
+record-doc-letter = Brief
+record-doc-record = Aufzeichnung
+record-doc-newspaper = Zeitung
+record-doc-other = sonstiges
+record-upload = Hochladen
+record-upload-help = Bis zu { $mb } MB je Datei. Anhänge liegen neben dem Stammbaum und werden beim Ausgeben wieder ins Archiv geschrieben, so reist eine Fotografie mit der Familie, zu der sie gehört. Die Art der Datei wird aus ihrem eigenen Inhalt gelesen, nicht aus ihrem Namen: Bilder, PDF, einfacher Text, Ton und Video werden angenommen. SVG wird abgelehnt, weil ein SVG ein Skript enthalten kann.
+record-upload-help-short = Bis zu { $mb } MB. SVG wird abgelehnt.
+record-verbatim-note = Genau so bewahrt, wie der Eintrag es angab, weil kein Konverter es deuten konnte. Die Alternative wäre gewesen, es zu verwerfen.
+record-file-to-attach = Anzuhängende Datei
+record-document-type = Art des Dokuments
+record-caption = Bildunterschrift
+record-caption-placeholder = Bildunterschrift (optional)
+record-history-entry-meta = — { $at }
+record-history-entry-version = , { $version }
+
+## Arten von Datensätzen
+
+kind-person = Person
+kind-family = Familie
+kind-event = Ereignis
+kind-link = Beziehung
+kind-occupation = Beruf
+kind-source = Quelle
+kind-place = Ort
+kind-document = Dokument
+
+kind-person-plural = { $n ->
+        [one] Person
+       *[other] Personen
+    }
+kind-family-plural = { $n ->
+        [one] Familie
+       *[other] Familien
+    }
+kind-event-plural = { $n ->
+        [one] Ereignis
+       *[other] Ereignisse
+    }
+kind-link-plural = { $n ->
+        [one] Beziehung
+       *[other] Beziehungen
+    }
+kind-occupation-plural = { $n ->
+        [one] Beruf
+       *[other] Berufe
+    }
+kind-source-plural = { $n ->
+        [one] Quelle
+       *[other] Quellen
+    }
+kind-place-plural = { $n ->
+        [one] Ort
+       *[other] Orte
+    }
+kind-document-plural = { $n ->
+        [one] Dokument
+       *[other] Dokumente
+    }
+
+## Listen
+
+list-matching = { $total ->
+        [one] Ein Treffer
+       *[other] { $total } Treffer
+    }, { $per_page } je Seite.
+list-filter-placeholder = Nach Name oder Kennung filtern
+list-filter = Filtern
+list-clear = Zurücksetzen
+list-summary = Beschreibung
+list-id = Kennung
+list-actions = Aktionen
+list-nothing = Hier ist nichts.
+list-nothing-matching = Hier passt nichts zu „{ $q }“.
+list-delete-confirm = Diesen Datensatz ({ $kind }) löschen? Wählen Sie, was mit Datensätzen geschieht, die auf ihn verweisen:
+list-policy-reject = Ablehnen
+list-policy-reject-detail = — ablehnen, solange noch etwas darauf verweist. Nichts geht verloren.
+list-policy-cascade = Durchreichen
+list-policy-cascade-detail = — ihn löschen und jeden Verweis darauf tatsächlich entfernen.
+list-policy-orphan = Verwaisen lassen
+list-policy-orphan-detail = — ihn löschen, aber die verweisenden Einträge behalten, mit geleertem Verweis.
+
+## Vollständigkeit
+
+completeness-dates-title = Daten nach der Form, die sie wirklich haben
+completeness-no-dates = Noch keine Daten erfasst.
+completeness-dates-note = Ein Datum, das jemand auf den Tag festlegen konnte, und eines, das jemand nur einem Jahrzehnt zuordnen konnte, sind zwei verschiedene Aussagen, und beide bleiben so erhalten, wie sie überliefert sind. Text, der sich überhaupt nicht als Datum lesen ließ, wird Wort für Wort bewahrt statt verworfen.
+completeness-shape-exact = genau
+completeness-shape-exact-note = ein vollständiger Kalendertag
+completeness-shape-approximate = ungefähr
+completeness-shape-approximate-note = um, oder nur ein Jahr beziehungsweise Jahrzehnt
+completeness-shape-ranged = eingegrenzt
+completeness-shape-ranged-note = vor, nach oder zwischen
+completeness-shape-preserved = wörtlich
+completeness-shape-preserved-note = nicht deutbarer Text, unverändert bewahrt
+completeness-shape-unknown = unbekannt
+completeness-shape-unknown-note = als unbekannt erfasst
+
+## Importseite
+
+convert-page-title = Familiendatei importieren
+convert-lede = Übernehmen Sie einen vorhandenen Stammbaum aus einer GEDCOM-Datei — der Ausgabe, die die meisten Genealogieprogramme erzeugen. Sie erhalten ein Archiv zurück, das Sie behalten. Hier wird nichts gespeichert, und der Stammbaum, den diese Website bereits zeigt, bleibt genau so, wie er war.
+convert-file-label = Familiendatei (.ged)
+convert-file-hint = Bis zu { $mb } MB. Ein Stammbaum mit 767 Personen ist etwa 320 KB groß.
+convert-confidence-label = Wie sicher diese Angaben zu Beginn sind
+convert-confidence-hint = Die eingelesene Datei sagt nicht, wie sicher sich jemand war, deshalb braucht jede Angabe einen Ausgangspunkt. Setzen Sie ihn niedrig für einen rasch zusammengetragenen Stammbaum, höher für einen aus Dokumenten erarbeiteten. Ehrlich gelesen heißt diese Zahl „eingelesen und seither von niemandem geprüft“ — Sie können jede Angabe später einzeln anheben oder senken.
+convert-lang-label = Sprache der Ortsnamen
+convert-lang-hint = Ein Kürzel wie en, fr oder de. Ein Ort kann seinen Namen in mehreren Sprachen führen; dies sagt, in welcher Sprache die Namen in Ihrer Datei geschrieben sind.
+convert-what-you-get = Was der Import hinzufügt
+convert-what-you-get-1 = Jede Angabe erhält ein Maß an Sicherheit, das Sie später anpassen können, damit ein Zweifel festgehalten statt weggeworfen wird. Daten behalten ihre Form: um 1500, vor 1430 und zwischen 1920 und 1925 bleiben drei verschiedene Aussagen, und eine Formulierung, die niemand als Datum lesen konnte, bleibt Wort für Wort erhalten. Ein Beruf wird zu einer Zeitspanne mit Anfang und Ende. Jeder Ort wird zu einem eigenen Eintrag, sodass eine Stadt, die den Staat gewechselt hat, diese Geschichte behält.
+convert-no-way-back = Das Zurückschreiben in eine .ged-Datei wird nicht angeboten. Jenes Format hat keinen Platz dafür, wie sicher eine Angabe ist, für eine Beziehung außerhalb der Familie, für die Dauer eines Berufs oder für ein Datum, das niemand festlegen konnte — der Rückweg würde sie stillschweigend verlieren. Ihr Archiv wird stattdessen vollständig ausgegeben, als eine einzige Datei.
+
+## Importbericht
+
+convert-failed = Der Import ist nicht durchgegangen
+convert-try-another = Eine andere Datei versuchen
+convert-converted = { $filename } importiert
+convert-result-lede = { $total ->
+        [one] Ein Eintrag
+       *[other] { $total } Einträge
+    }, { $size } KB. Alles kam mit einer Sicherheit von { $confidence } herein, die Ortsnamen wurden als { $lang } gelesen. Der Stammbaum, den diese Website zeigt, blieb unberührt.
+convert-produced = Was herübergekommen ist
+convert-skipped-title = { $n ->
+        [one] Ein Eintrag, der sich nicht lesen ließ
+       *[other] { $n } Einträge, die sich nicht lesen ließen
+    }
+convert-skipped-note = In diesen Einträgen stand nichts, was sich hätte übernehmen lassen. Sie werden aufgeführt statt verschluckt: genau zu wissen, was zurückblieb, ist der Unterschied zwischen einem Import, dem man trauen kann, und einem, dem man nicht trauen kann.
+convert-other-diagnostics = { $n ->
+        [one] Eine weitere Sache, die man wissen sollte
+       *[other] { $n } weitere Dinge, die man wissen sollte
+    }
+convert-clean = Nichts blieb zurück — jeder Eintrag der Datei kam herüber.
+convert-download-title = Herunterladen
+convert-download-named = { $name } herunterladen
+convert-download-note = Wird hier fünfzehn Minuten aufbewahrt und dann verworfen, laden Sie es also jetzt herunter. Diese eine Datei ist der ganze Stammbaum; bewahren Sie sie sicher auf.
+convert-another = Eine weitere Datei importieren
+admin-history-on = am
+admin-history-meta = — { $kind }, { $at }
+admin-validation-counts = { $errors ->
+        [one] Ein Fehler
+       *[other] { $errors } Fehler
+    }, { $warnings ->
+        [one] eine Warnung
+       *[other] { $warnings } Warnungen
+    }, { $infos ->
+        [one] ein Hinweis
+       *[other] { $infos } Hinweise
+    }.
+admin-warnings-never-block = Warnungen halten nie auf — sie sind Auskunft, keine Schranke.
+admin-validator-clean = Die Prüfung hat nichts gemeldet.
+record-occupations-help-undated = Ein Beruf wird mit Anfang und Ende erfasst, damit sich mehrere auf einer Zeitachse vergleichen lassen. Dieses Archiv hat die Berufsbezeichnungen, aber keine Daten dazu — nach einem Import üblich, weil die meisten Familiendateien keinen Platz dafür haben —, es gibt also noch keine Skala zu zeichnen.
+record-occupations-help-axis = Ein Beruf ist ein Zustand mit Dauer, kein Ereignis an einem einzelnen Datum. Alle Zeitspannen teilen eine Achse, { $from }–{ $to }.
+admin-value-not-set = nicht gesetzt
+admin-validation-report = Prüfbericht
+admin-dedup-complete = Zusammenführen abgeschlossen
+admin-dedup-refused = Zusammenführen abgelehnt
+record-birth-order = Geburtenfolge
+record-start-not-recorded = Anfang nicht erfasst
+record-end-not-recorded = Ende nicht erfasst
+record-document-no-file = Das Dokument ist hier erfasst, die Datei selbst liegt aber nicht vor
+panel-selected-person = Gewählte Person
+
+## Generationenbänder
+
+tree-band-generation = Generation { $g }
+tree-band-people = { $n ->
+        [one] eine Person
+       *[other] { $n } Personen
+    }
+tree-band-unplaced = Ohne Platz
+tree-band-unplaced-note = { $n ->
+        [one] eine Person ohne Familie — gezeigt statt weggelassen
+       *[other] { $n } Personen ohne Familie — gezeigt statt weggelassen
+    }
+
+## Kontrolliertes Vokabular
+
+gender-M = Männlich
+gender-F = Weiblich
+gender-NB = Nichtbinär
+gender-unrecorded = Nicht erfasst
+
+name-part-given_name = Vorname
+name-part-family_name = Familienname
+name-part-patronymic = Vatersname
+name-part-matronymic = Muttersname
+name-part-middle_name = zweiter Vorname
+name-part-nickname = Beiname
+name-part-prefix = Präfix
+name-part-suffix = Suffix
+name-part-particle = Namenszusatz
+name-part-part = Bestandteil
+
+name-type-primary = Hauptname
+name-type-other = anderer
+name-type-alias = Rufname
+name-type-birth = Geburtsname
+name-type-married = Ehename
+name-type-religious = Ordensname
+name-type-transliteration = Umschrift
+name-type-nickname = Beiname
+
+## Anmerkungen zum Eintrag
+
+note-links = { $n ->
+        [one] eine Beziehung außerhalb der Familie, mit eigenen Daten und Quellen
+       *[other] { $n } Beziehungen außerhalb der Familie, mit eigenen Daten und Quellen
+    }
+note-occupations = { $n ->
+        [one] ein Beruf mit Anfang und Ende erfasst
+       *[other] { $n } Berufe mit Anfang und Ende erfasst
+    }
+note-birth-imprecise = ein Geburtsdatum, das die Quelle nicht festlegen konnte, so gezeigt, wie es erfasst ist
+note-death-imprecise = ein Sterbedatum, das die Quelle nicht festlegen konnte, so gezeigt, wie es erfasst ist
+note-names = { $n ->
+        [one] ein erfasster Name
+       *[other] { $n } erfasste Namen
+    }
+note-transliteration = ein Name in eigener Schrift neben seiner lateinischen Umschrift
+note-witnessed = { $n ->
+        [one] ein Ereignis, bei dem sie Zeuge waren statt Beteiligte
+       *[other] { $n } Ereignisse, bei denen sie Zeugen waren statt Beteiligte
+    }
+
+visibility-public = öffentlich
+visibility-members = Familienmitglieder
+visibility-contributors = Mitwirkende
+visibility-private = privat
+
+## Zeilenbeschriftungen in den Verwaltungslisten
+
+family-label-couple = { $children ->
+        [0] { $a } & { $b }
+        [one] { $a } & { $b } — ein Kind
+       *[other] { $a } & { $b } — { $children } Kinder
+    }
+family-label-half = { $children ->
+        [0] { $a } & { $unknown }
+        [one] { $a } & { $unknown } — ein Kind
+       *[other] { $a } & { $unknown } — { $children } Kinder
+    }
+family-label-children = { $others ->
+        [0] { $first } — Eltern nicht erfasst
+        [one] { $first } und ein Geschwister — Eltern nicht erfasst
+       *[other] { $first } und { $others } Geschwister — Eltern nicht erfasst
+    }
+family-label-empty = Familie ohne erfasste Personen
+
+event-label = { $category } — { $who }, { $date }
+event-label-nobody = { $category } — { $date }
+event-two-people = { $a } & { $b }
+event-more-people = { $a } & { $b } und { $others ->
+        [one] ein weiterer
+       *[other] { $others } weitere
+    }
+
+link-label = { $label }: { $from } → { $to }
+occupation-label = { $who } — { $title }
+source-label = { $title } — { $reliability }
+source-label-plain = { $title }
+document-label = { $filename } — { $type }
+document-label-untitled = { $type } ohne Titel
+list-unnamed = { $kind } ohne Namen
+
+## Vokabulare der Spezifikation in den Listen
+
+event-category-birth = Geburt
+event-category-death = Tod
+event-category-marriage = Heirat
+event-category-divorce = Scheidung
+event-category-baptism = Taufe
+event-category-burial = Bestattung
+event-category-immigration = Einwanderung
+event-category-emigration = Auswanderung
+event-category-census = Volkszählung
+event-category-residence = Wohnsitz
+event-category-military = Militärdienst
+event-category-education = Ausbildung
+event-category-other = Ereignis
+
+reliability-primary = Primärquelle
+reliability-secondary = Sekundärquelle
+reliability-tertiary = Tertiärquelle
+reliability-recollection = Erinnerung
+reliability-unknown = Zuverlässigkeit unbekannt
+
+document-type-photo = Fotografie
+document-type-certificate = Urkunde
+document-type-letter = Brief
+document-type-record = Aufzeichnung
+document-type-newspaper = Zeitungsausschnitt
+document-type-other = Dokument
+
+## Wo dieser Eintrag mehr sagen könnte
+
+completeness-title = Wo dieser Stammbaum mehr sagen könnte
+completeness-intro = Was erfasst ist und was noch leer ist. Nichts davon ist ein Fehler: Eine leere Zeile ist eine Stelle, an der der Eintrag wachsen kann, und nicht etwas, das schiefgegangen ist.
+completeness-import-title = Was der Import mitgebracht hat
+completeness-import-intro = Gezählt aus der Datei, die Sie gerade hochgeladen haben. Eine leere Zeile ist etwas, das die ursprüngliche Datei nicht erfasst hat — nicht etwas, das der Import verloren hat.
+
+completeness-headline-full = Jede Art von Angabe unten ist irgendwo in diesem Stammbaum erfasst.
+completeness-headline-empty = { $total ->
+        [one] Die eine Art von Angabe unten ist noch nirgends erfasst.
+       *[other] Keine der { $total } Arten von Angaben unten ist bisher erfasst.
+    } Jede ist eine Stelle, an der der Eintrag mehr sagen könnte.
+completeness-headline-partial = { $carried ->
+        [one] Eine Art von Angabe unten ist erfasst
+       *[other] { $carried } Arten von Angaben unten sind erfasst
+    }; { $empty ->
+        [one] eine ist noch leer
+       *[other] { $empty } sind noch leer
+    }.
+
+completeness-metric-confidence = Wie sicher jede Angabe ist
+completeness-metric-confidence-none = Keine der { $slots } Angaben hier sagt, wie sicher sie ist. Ein Datum, das jemand von einer Urkunde abgelesen hat, und eines, das jemand geraten hat, sehen gleich aus — bis sie es nicht mehr tun.
+completeness-metric-confidence-uniform = { $with } von { $slots } Angaben tragen einen Wert, und jeder davon ist dieselbe Zahl ({ $modal }). Genau das hinterlässt ein Masseneinlesen: ein Platzhalter, zu dem niemand zurückgekehrt ist. Keine ist bisher einzeln beurteilt worden.
+completeness-metric-confidence-some = { $with } von { $slots } Angaben tragen einen Wert. { $modal_count } teilen sich einen Wert ({ $modal }); { $assessed } weichen davon ab und wurden also einzeln angesehen.
+completeness-metric-confidence-many = { $with } von { $slots } Angaben tragen einen Wert, davon weichen { $assessed } vom häufigsten Wert ({ $modal }) ab, über { $distinct } verschiedene Stufen. Dieser Stammbaum erfasst echte, abgestufte Unsicherheit.
+
+completeness-metric-parentage = Wie sicher jede Eltern-Kind-Beziehung ist
+completeness-metric-parentage-none = Keine Abstammung hier sagt, wie sicher sie ist. Adoptionen, umstrittene Linien und Rekonstruktionen aus einer einzigen Erwähnung sind genau die Stellen, an denen eine Familie Zweifel festhalten muss — und der Stammbaum zeichnet eine weniger sichere Beziehung als blassere Linie.
+completeness-metric-parentage-some = { $n ->
+        [one] Eine Abstammung trägt einen eigenen Wert
+       *[other] { $n } Abstammungen tragen einen eigenen Wert
+    }, sodass eine vermutete Linie sichtbar schwächer ist als eine belegte.
+
+completeness-metric-links = Beziehungen jenseits von Blut und Ehe
+completeness-metric-links-none = Paten, Arbeitgeber, Zeugen, Mentoren, Vormunde. Bisher ist keine erfasst. Jede kann eigene Daten, ihre Quelle und Ihre Sicherheit tragen.
+completeness-metric-links-some = { $n ->
+        [one] Eine erfasst, mit eigenen Daten, eigener Quelle und Ihrer Sicherheit.
+       *[other] { $n } erfasst, jede mit eigenen Daten, eigener Quelle und Ihrer Sicherheit.
+    }
+
+completeness-metric-occupations = Berufe mit Anfang und Ende erfasst
+completeness-metric-occupations-none = Keine Berufe erfasst. Ein Handwerk, das jemand dreißig Jahre lang ausübte, sagt mehr über ein Leben als ein einzelner datierter Eintrag.
+completeness-metric-occupations-undated = { $total ->
+        [one] Ein Beruf ist erfasst, ohne Daten
+       *[other] { $total } Berufe sind erfasst, ohne Daten
+    }. Fügen Sie Anfang und Ende hinzu, dann lassen sie sich auf einer Zeitachse nebeneinander vergleichen.
+completeness-metric-occupations-some = { $span } von { $total } haben einen Anfang oder ein Ende, lassen sich also auf einer Zeitachse nebeneinander vergleichen.
+
+completeness-metric-sources = Quellen mit Angabe ihrer Zuverlässigkeit
+completeness-metric-sources-none = Keine Quellen erfasst. Zu benennen, woher eine Angabe stammt, ist das, was einem Verwandten erlaubt, sie später zu prüfen — oder ihr zu widersprechen und zu sagen, warum.
+completeness-metric-sources-some = { $graded } von { $total } sagen, wie stark sie sind, sodass eine Aussage, die auf einer Geburtsurkunde ruht, sichtbar nicht dasselbe ist wie eine, die auf einer Erinnerung ruht.
+
+completeness-what-is-recorded = Was der Eintrag sagen kann
+completeness-in-this-tree = In diesem Stammbaum
+completeness-not-yet = noch nicht erfasst

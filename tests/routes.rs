@@ -16,7 +16,7 @@ async fn home_says_what_the_product_does_for_a_family() {
         "One place for the whole archive",
         "Several relatives, different roles",
         "Privacy decided person by person",
-        "Ten languages",
+        "Eleven languages",
         "The archive stays yours",
     ] {
         assert!(body.contains(promise), "home is missing: {promise}");

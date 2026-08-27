@@ -45,8 +45,15 @@
                      {{ "checked" if l.tag == lang }}>
               <span lang="{{ l.tag }}" dir="{{ l.dir }}">{{ l.native_name }}</span>
               <span class="small muted">{{ l.english_name }}</span>
+              {#- Three states, not two. "Reviewed" is a person's judgement;
+                  "complete, not yet reviewed" is a finished machine
+                  translation, which a bare 100% would flatter into sounding
+                  like a quality score. -#}
               {% if l.reviewed %}
                 <span class="badge reviewed">{{ t("prefs-reviewed") }}</span>
+              {% elif l.complete %}
+                <span class="badge machine"
+                      title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine-complete") }}</span>
               {% else %}
                 <span class="badge machine"
                       title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine", coverage=l.coverage) }}</span>

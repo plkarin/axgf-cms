@@ -27,7 +27,7 @@ prefs-theme = Apparence
 prefs-apply = Appliquer
 prefs-reviewed = relu
 prefs-machine = automatique, { $coverage } %
-prefs-machine-title = Traduit sans relecture par une personne dont c'est la langue maternelle. Le vocabulaire généalogique en particulier peut être erroné. Les corrections sont bienvenues — voir CONTRIBUTING.md.
+prefs-machine-title = Traduit sans relecture par une personne dont c’est la langue maternelle. Le vocabulaire généalogique en particulier peut être fautif — les mots pour une union, un parrain ou une source primaire varient selon la tradition archivistique de chaque pays. Les corrections sont bienvenues ; CONTRIBUTING.md indique par où commencer.
 
 theme-light = Clair
 theme-dark = Sombre
@@ -300,8 +300,36 @@ date-between = entre { $from } et { $to }
 date-before = avant { $date }
 date-after = après { $date }
 date-preserved = enregistré tel quel : « { $text } »
-date-day-month-year = { $day } { $month } { $year }
-date-month-year = { $month } { $year }
+date-day-month-year = { $day } { $month ->
+        [1] janvier
+        [2] février
+        [3] mars
+        [4] avril
+        [5] mai
+        [6] juin
+        [7] juillet
+        [8] août
+        [9] septembre
+        [10] octobre
+        [11] novembre
+        [12] décembre
+        *[other] { $month }
+    } { $year }
+date-month-year = { $month ->
+        [1] janvier
+        [2] février
+        [3] mars
+        [4] avril
+        [5] mai
+        [6] juin
+        [7] juillet
+        [8] août
+        [9] septembre
+        [10] octobre
+        [11] novembre
+        [12] décembre
+        *[other] { $month }
+    } { $year }
 date-decade = les années { $decade }
 date-century = le { $century ->
         [1] Ier
@@ -316,19 +344,6 @@ date-quarter-century = le { $quarter ->
         [1] Ier
        *[other] { $century }e
     } siècle
-
-month-1 = janvier
-month-2 = février
-month-3 = mars
-month-4 = avril
-month-5 = mai
-month-6 = juin
-month-7 = juillet
-month-8 = août
-month-9 = septembre
-month-10 = octobre
-month-11 = novembre
-month-12 = décembre
 
 ## Erreurs, suite
 
@@ -833,10 +848,11 @@ home-what-together-title = Plusieurs proches, des rôles différents
 home-what-together-body = Une tante qui tient ses notes depuis trente ans et un cousin qui veut seulement corriger une orthographe n’ont pas besoin des mêmes pouvoirs. Chaque proche est invité avec son propre rôle, et chaque modification garde le nom de son auteur et sa date.
 home-what-privacy-title = La confidentialité, personne par personne
 home-what-privacy-body = Un proche vivant peut être visible pour la famille et invisible pour les visiteurs, tandis que son arrière-grand-mère reste ouverte à tous. Le choix se fait pour chaque personne, et non une fois pour tout l’arbre.
-home-what-languages-title = Dix langues
-home-what-languages-body = Chaque proche lit le site dans sa langue, et un nom peut être conservé dans son écriture d’origine à côté de sa transcription. Rien n’a besoin d’être ramené à un seul alphabet pour que le site fonctionne.
+home-what-languages-title = Onze langues
+home-what-languages-body = Chaque proche lit le site dans sa langue — y compris le russe, langue dans laquelle ont été tenus les registres d’état civil de la moitié de l’Europe centrale et orientale. Un nom reste dans son écriture d’origine à côté de sa transcription ; rien n’a besoin d’être ramené à un seul alphabet pour que le site fonctionne.
 home-what-export-title = L’archive reste la vôtre
 home-what-export-body = Exportez l’ensemble en un seul fichier quand vous le voulez — personnes, relations, documents et photographies réunis. Si vous décidez un jour de partir, vous partez avec l’archive entière.
 home-in-this-tree = Ce que la famille a enregistré jusqu’ici
 record-notes-title = À noter sur cette fiche :
 home-unnamed-family = Cet arbre familial
+prefs-machine-complete = complète, pas encore relue

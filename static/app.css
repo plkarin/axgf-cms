@@ -1848,7 +1848,7 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
   inset-inline-end: 0;
   top: calc(100% + 0.4rem);
   z-index: 60;
-  width: min(26rem, calc(100vw - 2rem));
+  width: min(28rem, calc(100vw - 2rem));
   max-height: min(30rem, calc(100vh - 6rem));
   overflow-y: auto;
   padding: 0.9rem 1rem;
@@ -1862,6 +1862,26 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 @keyframes prefs-open {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: none; }
+}
+/* Below about 30rem the masthead wraps, so the control it hangs from is no
+   longer near the right edge — and a 22rem panel anchored to it hung off the
+   left of the page instead. Making the masthead the containing block turns it
+   into a full-width sheet under the header, which is where a reader expects a
+   menu on a small screen anyway. Measured, not assumed: at 390px the panel was
+   starting at x = -223. */
+@media (max-width: 30rem) {
+  .masthead { position: sticky; }
+  .masthead-inner { position: relative; }
+  .prefs { position: static; }
+  .prefs-panel {
+    inset-inline: 0.75rem;
+    width: auto;
+    top: calc(100% + 0.25rem);
+  }
+  /* At this width no row fits its badge on one line, and letting some wrap
+     and not others reads as ragged rather than as a list. Every badge takes
+     its own line, so all eleven rows are the same shape. */
+  .lang-list label .badge { flex-basis: 100%; }
 }
 
 .prefs-panel fieldset { border: 0; padding: 0; margin: 0; }
@@ -1891,6 +1911,12 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
   transition: background-color var(--tempo) var(--ease);
 }
 .lang-list label:hover, .theme-list label:hover { background: var(--accent-soft); }
+/* Eleven languages, and one of them is "简体中文 · Chinese (Simplified)" beside
+   a badge reading "complete, not yet reviewed". That row does not fit on one
+   line in any interface language, so it wraps rather than overflowing, and the
+   badge keeps its place at the end of whichever line it lands on. */
+.lang-list label { flex-wrap: wrap; }
+.lang-list label .badge { margin-inline-start: auto; }
 .lang-list input, .theme-list input { flex: none; margin: 0; accent-color: var(--accent); }
 /* Each language named in itself, which is what a speaker of it looks for. */
 .lang-list label > span:nth-of-type(1) { font-weight: 500; color: var(--ink); }

@@ -8,10 +8,84 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 A product for families rather than a demonstration of a file format, panel
 content laid out for the column it has, user accounts with roles and
-per-entity visibility, safe concurrent editing, ten interface languages and
-seven themes.
+per-entity visibility, safe concurrent editing, eleven complete interface
+languages and seven themes.
 
 ### Added
+
+**Eleven complete catalogues, two of them reviewed.** Nine languages sat at
+36% — Arabic at 51% — so two thirds of the interface fell back to English and
+a reader in Warsaw got a mixture that reads as unfinished rather than as
+multilingual. All eleven are now complete at 553 messages each.
+
+Russian is new, and it is here for the domain rather than for the count: the
+civil and parish registers of the former Russian Empire were kept in Russian,
+so a researcher working on Polish, Lithuanian, Ukrainian or Belarusian records
+is reading Russian documents. Its vocabulary follows those registers —
+`восприемник` rather than the modern `крёстный` for a godparent, `первичный
+источник`, `род занятий` for an occupation as a period rather than a post.
+
+Complete is not reviewed, and the selector now says both. A finished machine
+translation is still a machine translation; a bare "100%" would read as a
+quality score rather than as a count, so the badge reads **complete, not yet
+reviewed**. CONTRIBUTING.md carries what that labelling promises: where the
+files are, what review means, how to submit a correction, and a table of the
+terms most likely to be wrong — union, godparent, confidence against
+reliability, primary source, occupation-as-a-period — as the place to start.
+Every catalogue's header states the choices it made so a native speaker has
+something specific to disagree with.
+
+**Month names moved into each locale's date pattern.** One shared table cannot
+be right for every language at once. Polish and Russian inflect the month
+inside a full date, so a single table rendered `12 kwiecień 1923` where a
+Polish speaker writes `12 kwietnia 1923` — the nominative where the genitive
+belongs. Spanish and Portuguese need their prepositions (`12 de abril de
+1923`), German its point after the day (`12. April 1923`), and Chinese and
+Japanese need no month name at all, because `1923年4月12日` is a numeric
+structure rather than a translated word.
+
+The application now hands the pattern a day, a month **number** and a year,
+and each locale spells it, inflects it, or ignores it. That retires the
+`month-N` family and the `month-in-date-N` family that briefly replaced it: 24
+keys per catalogue, which the two CJK locales would have carried without ever
+rendering one.
+
+**A test that plural categories cannot go missing.** This is the guard for all
+of the above. Drop `[few]` from a Polish message and Fluent falls through to
+`*[other]` in silence: no error, no failing test that reads English, and the
+only person who can see "3 osób" where "3 osoby" belongs does not work on this
+project. `no_catalogue_is_missing_a_plural_category` asks the running Fluent
+stack which categories a language needs — this build's CLDR answer rather than
+a table that drifts from it — and checks every plural-bearing message against
+it. A companion test catches the opposite failure: a locale that renders a
+count as a flat sentence where English has a selector.
+
+It found a real one on its first run: `ar/tree-counts` was missing `[zero]`.
+It also taught us something. Arabic's six categories made three family labels
+look short, but they open with a literal `[0]` variant, and Arabic's `zero`
+holds n = 0 and nothing else — so the literal already says everything the
+category could. The test now asks whether a category holds any number the
+literal does not, and only then demands it; Polish's `[2]` earns no such
+exemption, because `few` also holds 3, 4 and 22.
+
+**Two layout defects the eleven-language render pass found.** Every page was
+rendered in all eleven languages at 1280, 768 and 390px and measured for a
+body that scrolls sideways and for elements whose text spills past their box.
+Nothing overflowed — the prose reflows, and German and Russian ledes simply
+take three lines where English takes two, which is what they should do.
+
+The selector was another matter. At 390px the masthead wraps, so the control
+the panel hangs from is no longer near the right edge, and a 22rem panel
+anchored to it started at x = -223: entirely off the left of the page, in
+every language including English. Below 30rem the masthead is now the
+containing block and the panel is a full-width sheet beneath the header.
+
+The second was caused by this release: the badge went from "machine, 36%" to
+"complete, not yet reviewed", which pushed the longest row — 简体中文 ·
+Chinese (Simplified) · badge — onto two lines while its neighbours stayed on
+one. The panel is 2rem wider, which fits every row at desktop widths, and
+below 30rem every badge takes its own line so all eleven rows are the same
+shape rather than some wrapping and some not.
 
 **The site speaks to a family, not about a file format.** Every public page
 argued for AXGF: the home page opened with a "Why AXGF" panel comparing the
@@ -24,7 +98,7 @@ being handed a specification argument.
 What the product does for them is now what the home page says: the tree, the
 documents and the photographs in one place; several relatives contributing
 under their own roles, with every change attributed; privacy decided per
-person rather than per tree; ten interface languages, with names kept in their
+person rather than per tree; eleven interface languages, with names kept in their
 own script; and the whole archive exportable as a single file the family owns.
 
 Removed: the "Why AXGF" panel and its GEDCOM comparison, the seven
@@ -320,7 +394,7 @@ tree's hover transitions fire hundreds of times as a pointer crosses a canvas
 of cards. Durations go to 0.01ms rather than 0, because a zero-length
 transition never fires `transitionend` and anything awaiting it would hang.
 
-**Ten interface languages, translating the interface and never the data.**
+**Eleven interface languages, translating the interface and never the data.**
 An English speaker browsing a Polish family wants English buttons and Polish
 place names. AXGF carries that distinction itself — `place.names[].lang`,
 `name.components[].value_latin` — and rendering *Kraków* as *Cracow* would be

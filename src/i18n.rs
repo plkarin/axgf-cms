@@ -650,6 +650,22 @@ pub(crate) mod plurals {
     /// but which build of CLDR says so is a property of the dependency tree,
     /// not of this file.
     pub fn required(tag: &str) -> BTreeSet<String> {
+        probe(tag, None)
+    }
+
+    /// The category `n` falls into under `tag`'s rules.
+    ///
+    /// An exact variant covers a category outright when every number in that
+    /// category is spelled out: Arabic's `zero` is n = 0 and nothing else, so
+    /// a message with a literal `[0]` has said everything `[zero]` could.
+    pub fn category_of(tag: &str, n: f64) -> String {
+        probe(tag, Some(n))
+            .into_iter()
+            .next()
+            .unwrap_or_else(|| "other".to_string())
+    }
+
+    fn probe(tag: &str, only: Option<f64>) -> BTreeSet<String> {
         let langid: LanguageIdentifier = tag.parse().expect("valid tag");
         let mut bundle = Bundle::new_concurrent(vec![langid]);
         bundle.set_use_isolating(false);
@@ -672,17 +688,23 @@ pub(crate) mod plurals {
         // 0..=200 covers every integer rule any CLDR language distinguishes;
         // the large values catch the "many" bucket some languages reserve for
         // them, and the fractions catch rules that test the decimal part.
-        let mut ns: Vec<f64> = (0..=200).map(f64::from).collect();
-        ns.extend([
-            1_000.0,
-            1_001.0,
-            10_000.0,
-            100_000.0,
-            1_000_000.0,
-            1e9,
-            0.5,
-            1.5,
-        ]);
+        let ns: Vec<f64> = match only {
+            Some(n) => vec![n],
+            None => {
+                let mut ns: Vec<f64> = (0..=200).map(f64::from).collect();
+                ns.extend([
+                    1_000.0,
+                    1_001.0,
+                    10_000.0,
+                    100_000.0,
+                    1_000_000.0,
+                    1e9,
+                    0.5,
+                    1.5,
+                ]);
+                ns
+            }
+        };
 
         ns.into_iter()
             .map(|n| {
@@ -696,6 +718,20 @@ pub(crate) mod plurals {
             .collect()
     }
 
+    /// Whether `n` is the *only* number in its category under `tag`.
+    ///
+    /// Arabic's `zero` holds n = 0 alone, so a literal `[0]` says everything a
+    /// `[zero]` variant could. Polish's `few` holds 2, 3, 4, 22 … , so a
+    /// literal `[2]` says nothing about the rest and the category is still
+    /// required.
+    pub fn required_holds_only(tag: &str, category: &str, n: f64) -> bool {
+        let mut probes: Vec<f64> = (0..=200).map(f64::from).collect();
+        probes.extend([1_000.0, 1_001.0, 1_000_000.0, 0.5, 1.5]);
+        !probes
+            .into_iter()
+            .any(|m| m != n && category_of(tag, m) == category)
+    }
+
     /// Every message in one `.ftl` source that selects on a plural category,
     /// paired with the category names it supplies.
     ///
@@ -704,15 +740,24 @@ pub(crate) mod plurals {
     /// message as plural-bearing is a category name other than `other`, since
     /// `*[other]` is just Fluent's word for "the default variant".
     pub fn selectors(source: &str) -> Vec<(String, BTreeSet<String>)> {
-        let mut out: Vec<(String, BTreeSet<String>)> = Vec::new();
-        let mut current: Option<(String, BTreeSet<String>)> = None;
+        selectors_with_literals(source)
+            .into_iter()
+            .map(|(id, cats, _)| (id, cats))
+            .collect()
+    }
+
+    /// As [`selectors`], also returning the literal numbers a message matches
+    /// exactly — `[0]`, `[1]` — which can stand in for a category.
+    pub fn selectors_with_literals(source: &str) -> Vec<(String, BTreeSet<String>, Vec<f64>)> {
+        let mut out: Vec<(String, BTreeSet<String>, Vec<f64>)> = Vec::new();
+        let mut current: Option<(String, BTreeSet<String>, Vec<f64>)> = None;
         for line in source.lines() {
             if let Some((id, _)) = line.split_once(" = ") {
                 if !id.starts_with([' ', '\t', '#', '[', '*']) && !id.is_empty() {
                     if let Some(found) = current.take() {
                         out.push(found);
                     }
-                    current = Some((id.trim().to_string(), BTreeSet::new()));
+                    current = Some((id.trim().to_string(), BTreeSet::new(), Vec::new()));
                 }
             }
             let trimmed = line.trim_start();
@@ -722,16 +767,18 @@ pub(crate) mod plurals {
                 .strip_prefix('[')
                 .and_then(|rest| rest.split_once(']'))
                 .map(|(key, _)| key.trim().to_string());
-            if let (Some(key), Some((_, found))) = (variant, current.as_mut()) {
+            if let (Some(key), Some((_, found, literals))) = (variant, current.as_mut()) {
                 if CATEGORIES.contains(&key.as_str()) {
                     found.insert(key);
+                } else if let Ok(n) = key.parse::<f64>() {
+                    literals.push(n);
                 }
             }
         }
         if let Some(found) = current {
             out.push(found);
         }
-        out.retain(|(_, cats)| cats.iter().any(|c| c != "other"));
+        out.retain(|(_, cats, _)| cats.iter().any(|c| c != "other"));
         out
     }
 }
@@ -751,7 +798,17 @@ mod plural_tests {
         let mut wrong: Vec<String> = Vec::new();
         for locale in LOCALES {
             let need = required(locale.tag);
-            for (id, have) in selectors(locale.source) {
+            for (id, mut have, literals) in selectors_with_literals(locale.source) {
+                // A literal variant covers its category when that category
+                // holds nothing else. Arabic's `zero` is n = 0 alone, so
+                // `[0] { $a } & { $b }` leaves nothing for `[zero]` to say.
+                for n in literals {
+                    let category = category_of(locale.tag, n);
+                    let alone = required_holds_only(locale.tag, &category, n);
+                    if alone {
+                        have.insert(category);
+                    }
+                }
                 let missing: Vec<&String> = need.difference(&have).collect();
                 if !missing.is_empty() {
                     wrong.push(format!(

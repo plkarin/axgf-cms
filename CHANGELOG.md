@@ -68,6 +68,25 @@ category could. The test now asks whether a category holds any number the
 literal does not, and only then demands it; Polish's `[2]` earns no such
 exemption, because `few` also holds 3, 4 and 22.
 
+**Memory, stated rather than buried.** Eleven complete catalogues cost
+**3.7 MB of resident memory**: 42.2 MB before, 45.9 MB after, measured with
+both builds serving `/tmp/wt-full.axgf` at once and requests alternating
+between them. The catalogue sources grew from 182 KB to 560 KB, and parsed
+Fluent resources expand that roughly tenfold — every locale is parsed at
+startup and held for the life of the process.
+
+Render time did not move: `/tree` went 16.64 ms → 16.26 ms and `?all=1`
+20.96 ms → 20.32 ms, both inside the noise of the same window. Translation
+happens per message lookup against an already-parsed bundle, and there are no
+more lookups than before.
+
+3.7 MB on a 42 MB baseline is not a problem today, and it is worth naming what
+would fix it if it becomes one: catalogues are parsed eagerly because there
+are eleven of them and a family server serves a handful of readers. Parsing a
+locale on first use instead would trade a few milliseconds on the first
+request in each language for most of that memory back. Nothing in the design
+prevents it; it simply is not worth the complexity yet.
+
 **Two layout defects the eleven-language render pass found.** Every page was
 rendered in all eleven languages at 1280, 768 and 390px and measured for a
 body that scrolls sideways and for elements whose text spills past their box.

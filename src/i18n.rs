@@ -861,3 +861,52 @@ mod plural_tests {
         }
     }
 }
+
+#[cfg(test)]
+mod vocab_tests {
+    use super::*;
+
+    #[test]
+    fn every_controlled_value_the_real_data_uses_is_translated() {
+        // The values the operator's own bundles actually contain. Each one was
+        // rendering as its raw English enum in the other ten languages: a
+        // Japanese timeline read "Marriage · spouse_1", and a source chip read
+        // "authored". An unrecognised value must still read as something true
+        // rather than as a message id.
+        let cases: &[(&str, &str)] = &[
+            ("event-category", "marriage"),
+            ("event-category", "birth"),
+            ("role", "spouse"),
+            ("role", "spouse_1"),
+            ("role", "spouse_2"),
+            ("reliability", "primary"),
+            ("reliability", "authored"),
+            ("reliability", "oral"),
+            ("visibility", "members"),
+        ];
+        for locale in LOCALES {
+            for (family, value) in cases {
+                let out = vocab(locale.tag, family, value);
+                assert!(
+                    !out.starts_with(&format!("{family}-")),
+                    "{}: {family}-{value} rendered as its own id",
+                    locale.tag
+                );
+                if locale.tag != "en" {
+                    assert_ne!(
+                        out, *value,
+                        "{}: {family}/{value} is still the raw English value",
+                        locale.tag
+                    );
+                }
+            }
+            // A value no build has heard of opens its underscores and stops.
+            assert_eq!(
+                vocab(locale.tag, "role", "chief_mourner"),
+                "chief mourner",
+                "{}",
+                locale.tag
+            );
+        }
+    }
+}

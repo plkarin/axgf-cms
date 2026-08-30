@@ -656,6 +656,9 @@ reliability-primary = 原始史料
 reliability-secondary = 二手史料
 reliability-tertiary = 三手史料
 reliability-recollection = 口述回忆
+reliability-derivative = 衍生著作
+reliability-authored = 著述作品
+reliability-oral = 口述传统
 reliability-unknown = 可靠性不详
 
 document-type-photo = 照片
@@ -702,3 +705,15 @@ completeness-metric-sources-some = { $total }条中有{ $graded }条说明了自
 completeness-what-is-recorded = 记录能说明什么
 completeness-in-this-tree = 在这棵家谱中
 completeness-not-yet = 尚未记录
+
+## 事件参与者的身份
+
+role-spouse = 配偶
+role-spouse_1 = 第一配偶
+role-spouse_2 = 第二配偶
+role-subject = 当事人
+role-participant = 参与者
+role-witness = 见证人
+role-officiant = 主礼人
+role-informant = 申报人
+role-godparent = 教父母

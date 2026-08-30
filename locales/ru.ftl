@@ -949,6 +949,9 @@ reliability-primary = первичный источник
 reliability-secondary = вторичный источник
 reliability-tertiary = обобщающая работа
 reliability-recollection = устное свидетельство
+reliability-derivative = производная работа
+reliability-authored = авторская работа
+reliability-oral = устное предание
 reliability-unknown = достоверность неизвестна
 
 document-type-photo = фотография
@@ -1025,3 +1028,15 @@ completeness-metric-sources-some = { $graded } из { $total } говорят, �
 completeness-what-is-recorded = Что запись может сказать
 completeness-in-this-tree = В этом древе
 completeness-not-yet = пока не записано
+
+## Роли участника события
+
+role-spouse = супруг
+role-spouse_1 = первый супруг
+role-spouse_2 = второй супруг
+role-subject = лицо, о котором запись
+role-participant = участник
+role-witness = свидетель
+role-officiant = совершающий обряд
+role-informant = заявитель
+role-godparent = восприемник

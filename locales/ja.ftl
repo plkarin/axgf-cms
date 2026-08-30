@@ -657,6 +657,9 @@ reliability-primary = 一次資料
 reliability-secondary = 二次資料
 reliability-tertiary = 三次資料
 reliability-recollection = 口述
+reliability-derivative = 二次的著作
+reliability-authored = 著述資料
+reliability-oral = 口承
 reliability-unknown = 信頼度不明
 
 document-type-photo = 写真
@@ -702,3 +705,15 @@ completeness-metric-sources-some = { $total }件のうち{ $graded }件が自ら
 completeness-what-is-recorded = 記録が語りうること
 completeness-in-this-tree = この家系図では
 completeness-not-yet = まだ記録なし
+
+## 出来事における参加者の立場
+
+role-spouse = 配偶者
+role-spouse_1 = 第一配偶者
+role-spouse_2 = 第二配偶者
+role-subject = 当事者
+role-participant = 参加者
+role-witness = 証人
+role-officiant = 司式者
+role-informant = 届出人
+role-godparent = 代父母

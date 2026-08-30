@@ -32,7 +32,7 @@
   {% for c in counts %}
   <div class="stat {% if c.n == 0 %}zero{% endif %}">
     <div class="n">{{ c.n }}</div>
-    <div class="k">{{ c.kind }}</div>
+    <div class="k">{{ t("kind-" ~ c.singular ~ "-plural", n=c.n) }}</div>
   </div>
   {% endfor %}
 </div>

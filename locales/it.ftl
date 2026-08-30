@@ -807,6 +807,9 @@ reliability-primary = fonte primaria
 reliability-secondary = fonte secondaria
 reliability-tertiary = fonte terziaria
 reliability-recollection = testimonianza orale
+reliability-derivative = opera derivata
+reliability-authored = opera d’autore
+reliability-oral = tradizione orale
 reliability-unknown = affidabilità ignota
 
 document-type-photo = fotografia
@@ -871,3 +874,15 @@ completeness-metric-sources-some = { $graded } su { $total } dicono quanto sono 
 completeness-what-is-recorded = Che cosa la scheda può dire
 completeness-in-this-tree = In quest'albero
 completeness-not-yet = non ancora registrato
+
+## Ruoli di un partecipante in un evento
+
+role-spouse = coniuge
+role-spouse_1 = primo coniuge
+role-spouse_2 = secondo coniuge
+role-subject = persona interessata
+role-participant = partecipante
+role-witness = testimone
+role-officiant = celebrante
+role-informant = dichiarante
+role-godparent = padrino o madrina

@@ -973,6 +973,9 @@ reliability-primary = مصدر أوّلي
 reliability-secondary = مصدر ثانوي
 reliability-tertiary = مصدر ثالثي
 reliability-recollection = رواية شفوية
+reliability-derivative = عمل مشتق
+reliability-authored = عمل مؤلَّف
+reliability-oral = رواية شفوية متوارثة
 reliability-unknown = الموثوقية مجهولة
 
 document-type-photo = صورة فوتوغرافية
@@ -1061,3 +1064,15 @@ completeness-metric-sources-some = { $graded } من { $total } تقول ما ق�
 completeness-what-is-recorded = ما يستطيع السجل قوله
 completeness-in-this-tree = في هذه الشجرة
 completeness-not-yet = لم يُسجَّل بعد
+
+## أدوار المشارك في واقعة
+
+role-spouse = الزوج
+role-spouse_1 = الزوج الأول
+role-spouse_2 = الزوج الثاني
+role-subject = صاحب السجل
+role-participant = مشارك
+role-witness = شاهد
+role-officiant = عاقد
+role-informant = مُبلِّغ
+role-godparent = عرّاب

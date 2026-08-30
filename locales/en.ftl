@@ -836,6 +836,9 @@ reliability-primary = primary source
 reliability-secondary = secondary source
 reliability-tertiary = tertiary source
 reliability-recollection = recollection
+reliability-derivative = derivative work
+reliability-authored = authored work
+reliability-oral = oral tradition
 reliability-unknown = reliability unknown
 
 document-type-photo = photograph
@@ -905,3 +908,18 @@ completeness-metric-sources-some = { $graded } of { $total } say how strong they
 completeness-what-is-recorded = What the record can say
 completeness-in-this-tree = In this tree
 completeness-not-yet = not yet recorded
+
+## Roles a participant holds in an event
+#
+# Open, like the other vocabularies: an unrecognised value renders as itself
+# with its underscores opened rather than as a message id.
+
+role-spouse = spouse
+role-spouse_1 = first spouse
+role-spouse_2 = second spouse
+role-subject = subject
+role-participant = participant
+role-witness = witness
+role-officiant = officiant
+role-informant = informant
+role-godparent = godparent

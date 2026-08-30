@@ -70,7 +70,7 @@
   {%- if s -%}
   <span class="src-chip" data-rank="{{ s.reliability_rank }}"
         title="{{ s.reliability_label }}{% if s.repository %} — {{ s.repository }}{% endif %}">
-    <span class="src-rel">{{ s.reliability }}</span>
+    <span class="src-rel">{{ s.reliability_label }}</span>
     <span class="src-title">{{ s.title }}</span>
   </span>
   {%- endif -%}

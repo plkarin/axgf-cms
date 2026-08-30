@@ -13,6 +13,40 @@ languages and seven themes.
 
 ### Added
 
+**Three vocabularies that were never translated, found by looking.** A CJK
+font was installed and Chinese and Japanese were rendered at 1280, 768 and
+390px — the inspection the previous release could not do, because the headless
+browser had no CJK font and both languages came out as tofu.
+
+The typography was fine: full-width punctuation throughout, no English
+punctuation carried across, correct line breaking with no line beginning on a
+prohibited character, and dates in the numeric form — `1848年6月15日`, beside
+`15. Juni 1848`, `15 июня 1848`, `15 czerwca 1848`, `15 de junio de 1848` and
+`15 يونيو 1848`.
+
+What the inspection did find was three places where a controlled vocabulary
+never reached Fluent at all, so it rendered as its raw English enum value in
+all ten other languages. Geometry could not have caught any of them, and they
+were on the most-visited pages:
+
+- **The count tiles** on the home page, the import report and the admin
+  dashboard printed the collection's own key — `persons`, `families`,
+  `events` — which is how the bundle spells it, not how a reader says it.
+  They now go through `kind-*-plural`, which already existed.
+- **The timeline label and participant role** were built with a
+  `capitalise()` over the raw value, so a Japanese record read
+  `Marriage · spouse`. Both now go through `vocab`, and `role-*` is a new
+  vocabulary in all eleven catalogues.
+- **Source reliability** was a hardcoded English `match` in Rust. Worse, the
+  catalogues' `reliability-*` keys used words the specification does not —
+  `tertiary`, `recollection` — so `derivative`, `authored` and `oral` had no
+  message at all and appeared verbatim. All three are added everywhere.
+
+`every_controlled_value_the_real_data_uses_is_translated` pins the values the
+operator's own bundles actually contain, in every locale, and checks that an
+unrecognised value still opens its underscores rather than rendering a message
+id.
+
 **Eleven complete catalogues, two of them reviewed.** Nine languages sat at
 36% — Arabic at 51% — so two thirds of the interface fell back to English and
 a reader in Warsaw got a mixture that reads as unfinished rather than as

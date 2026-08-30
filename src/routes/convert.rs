@@ -145,7 +145,8 @@ pub async fn gedcom(
             download_name,
             size_kb => size / 1024,
             total,
-            counts => counts.iter().map(|(k, n)| json!({"kind": k, "n": n}))
+            counts => counts.iter().zip(crate::admin::KINDS.iter())
+                            .map(|((_, n), singular)| json!({"singular": singular, "n": n}))
                             .collect::<Vec<_>>(),
             skipped,
             others,

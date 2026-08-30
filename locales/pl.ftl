@@ -942,6 +942,9 @@ reliability-primary = źródło pierwotne
 reliability-secondary = źródło wtórne
 reliability-tertiary = opracowanie
 reliability-recollection = relacja ustna
+reliability-derivative = opracowanie wtórne
+reliability-authored = opracowanie autorskie
+reliability-oral = przekaz ustny
 reliability-unknown = wiarygodność nieznana
 
 document-type-photo = fotografia
@@ -1018,3 +1021,15 @@ completeness-metric-sources-some = { $graded } z { $total } mówi, jak są mocne
 completeness-what-is-recorded = Co zapis może powiedzieć
 completeness-in-this-tree = W tym drzewie
 completeness-not-yet = jeszcze niezapisane
+
+## Role uczestnika wydarzenia
+
+role-spouse = małżonek
+role-spouse_1 = pierwszy małżonek
+role-spouse_2 = drugi małżonek
+role-subject = osoba, której dotyczy
+role-participant = uczestnik
+role-witness = świadek
+role-officiant = celebrans
+role-informant = zgłaszający
+role-godparent = rodzic chrzestny

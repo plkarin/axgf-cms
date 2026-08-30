@@ -294,7 +294,7 @@
             {% if s.note %}<div class="small muted">{{ s.note }}</div>{% endif %}</td>
         <td class="small" data-label="Type">{{ s.source_type if s.source_type else "—" }}</td>
         <td data-label="Reliability"><span class="src-chip" data-rank="{{ s.reliability_rank }}">
-              <span class="src-rel">{{ s.reliability }}</span></span></td>
+              <span class="src-rel">{{ s.reliability_label }}</span></span></td>
         <td class="small" data-label="Supports">
           {% for u in s.used_for %}{{ u }}{% if not loop.last %} · {% endif %}{% endfor %}
         </td>

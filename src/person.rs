@@ -86,7 +86,7 @@ pub struct SourceView {
     pub title: String,
     pub source_type: Option<String>,
     pub reliability: String,
-    pub reliability_label: &'static str,
+    pub reliability_label: String,
     pub reliability_rank: u8,
     pub confidence: Option<Confidence>,
     pub status: Option<String>,
@@ -681,7 +681,7 @@ impl Ctx<'_> {
                 title: "[Unknown source]".into(),
                 source_type: None,
                 reliability: "unknown".into(),
-                reliability_label: view::reliability_label("unknown"),
+                reliability_label: view::reliability_label(self.lang, "unknown"),
                 reliability_rank: 0,
                 confidence: None,
                 status: None,
@@ -700,7 +700,7 @@ impl Ctx<'_> {
             id: id.to_string(),
             title: str_field(s, "title").unwrap_or_else(|| "[Untitled source]".into()),
             source_type: str_field(s, "source_type").map(|t| t.replace('_', " ")),
-            reliability_label: view::reliability_label(&reliability),
+            reliability_label: view::reliability_label(self.lang, &reliability),
             reliability_rank: view::reliability_rank(&reliability),
             reliability,
             confidence: Confidence::from_field(s, "confidence"),
@@ -1150,19 +1150,23 @@ impl Ctx<'_> {
                             && p.get("entity_type").and_then(Value::as_str) != Some("family")
                     })
                     .map(|p| {
-                        p.get("role")
+                        let raw = p
+                            .get("role")
                             .and_then(Value::as_str)
-                            .unwrap_or("participant")
-                            .replace('_', " ")
+                            .unwrap_or("participant");
+                        crate::i18n::vocab(self.lang, "role", raw)
                     })?;
-                let category = e
-                    .get("category")
-                    .and_then(Value::as_str)
-                    .unwrap_or("other")
-                    .replace('_', " ");
+                // Both of these are the specification's own vocabularies, and
+                // both were rendering as their raw English enum value in every
+                // other language: a Japanese timeline read "Marriage · spouse".
+                // `vocab` falls back to the value with its underscores opened,
+                // so a term this build has never seen still reads as something
+                // true rather than as a message id.
+                let raw_category = e.get("category").and_then(Value::as_str).unwrap_or("other");
+                let category = crate::i18n::vocab(self.lang, "event-category", raw_category);
                 let label = match str_field(e, "subcategory") {
                     Some(sub) => format!("{category} — {sub}"),
-                    None => capitalise(&category),
+                    None => category,
                 };
                 let date = view::render_date_field_in(e, "date", self.lang);
                 Some(TimelineEntry {
@@ -1445,15 +1449,6 @@ fn year_of_bound(bound: Option<&Value>) -> Option<i64> {
         .and_then(|s| s.parse::<i64>().ok())
 }
 
-/// Upper-case the first character, leaving the rest alone.
-fn capitalise(s: &str) -> String {
-    let mut chars = s.chars();
-    match chars.next() {
-        Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
-        None => String::new(),
-    }
-}
-
 /// Drop repeats while keeping the first occurrence, which carries the richest
 /// detail. The same person can appear through more than one family.
 fn dedup_refs(v: &mut Vec<PersonRef>) {
@@ -1639,7 +1634,7 @@ mod tests {
         assert_eq!(v.birth.confidence.as_ref().unwrap().band, "certain");
         assert_eq!(
             v.birth.source.as_ref().unwrap().reliability_label,
-            "Primary source"
+            "primary source"
         );
     }
 

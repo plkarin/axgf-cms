@@ -809,6 +809,9 @@ reliability-primary = Primärquelle
 reliability-secondary = Sekundärquelle
 reliability-tertiary = Tertiärquelle
 reliability-recollection = Erinnerung
+reliability-derivative = abgeleitete Arbeit
+reliability-authored = verfasstes Werk
+reliability-oral = mündliche Überlieferung
 reliability-unknown = Zuverlässigkeit unbekannt
 
 document-type-photo = Fotografie
@@ -873,3 +876,15 @@ completeness-metric-sources-some = { $graded } von { $total } sagen, wie stark s
 completeness-what-is-recorded = Was der Eintrag sagen kann
 completeness-in-this-tree = In diesem Stammbaum
 completeness-not-yet = noch nicht erfasst
+
+## Rollen, die ein Beteiligter in einem Ereignis hat
+
+role-spouse = Ehepartner
+role-spouse_1 = erster Ehepartner
+role-spouse_2 = zweiter Ehepartner
+role-subject = betroffene Person
+role-participant = Beteiligter
+role-witness = Zeuge
+role-officiant = Amtsperson
+role-informant = Anzeigender
+role-godparent = Pate

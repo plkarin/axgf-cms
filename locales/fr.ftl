@@ -776,6 +776,9 @@ reliability-primary = source primaire
 reliability-secondary = source secondaire
 reliability-tertiary = source tertiaire
 reliability-recollection = souvenir
+reliability-derivative = travail dérivé
+reliability-authored = ouvrage d’auteur
+reliability-oral = tradition orale
 reliability-unknown = fiabilité inconnue
 
 document-type-photo = photographie
@@ -856,3 +859,15 @@ home-in-this-tree = Ce que la famille a enregistré jusqu’ici
 record-notes-title = À noter sur cette fiche :
 home-unnamed-family = Cet arbre familial
 prefs-machine-complete = complète, pas encore relue
+
+## Rôles tenus par un participant dans un événement
+
+role-spouse = époux
+role-spouse_1 = premier époux
+role-spouse_2 = second époux
+role-subject = personne concernée
+role-participant = participant
+role-witness = témoin
+role-officiant = officiant
+role-informant = déclarant
+role-godparent = parrain ou marraine

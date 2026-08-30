@@ -43,9 +43,13 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
             nav => "home",
             family_name,
             total,
+            // The tile's label is a translated plural, not the collection's
+            // own key: "persons" is how the bundle spells it, not how a
+            // reader says it in Japanese.
             counts => counts
                 .iter()
-                .map(|(k, n)| json!({"kind": k, "n": n}))
+                .zip(crate::admin::KINDS.iter())
+                .map(|((_, n), singular)| json!({"singular": singular, "n": n}))
                 .collect::<Vec<_>>(),
             showcase,
         },

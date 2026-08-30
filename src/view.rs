@@ -511,16 +511,18 @@ pub fn place_name(place: &Value) -> String {
         .to_string()
 }
 
-/// Human label for a source reliability level.
-pub fn reliability_label(r: &str) -> &'static str {
-    match r {
-        "primary" => "Primary source",
-        "secondary" => "Secondary source",
-        "derivative" => "Derivative",
-        "authored" => "Authored work",
-        "oral" => "Oral tradition",
-        _ => "Reliability unknown",
-    }
+/// Human label for a source reliability level, in the reader's language.
+///
+/// These are the specification's own levels, and they were a hardcoded English
+/// match: a Japanese record showed a chip reading "authored". Like the other
+/// vocabularies they go through Fluent, and an unrecognised level falls back
+/// to itself with its underscores opened rather than to a message id.
+pub fn reliability_label(lang: &str, r: &str) -> String {
+    let known = matches!(
+        r,
+        "primary" | "secondary" | "derivative" | "authored" | "oral"
+    );
+    crate::i18n::vocab(lang, "reliability", if known { r } else { "unknown" })
 }
 
 /// How much weight a reliability level carries, for styling. Higher is
@@ -799,9 +801,20 @@ mod tests {
     #[test]
     fn reliability_ranks_primary_above_oral() {
         assert!(reliability_rank("primary") > reliability_rank("oral"));
+        // Every level the specification defines has a message, in every
+        // language — a chip reading "authored" on a Japanese record was the
+        // bug this replaced.
+        for level in ["primary", "secondary", "derivative", "authored", "oral"] {
+            for lang in ["en", "ja", "pl"] {
+                let out = reliability_label(lang, level);
+                assert_ne!(out, level, "{lang} renders {level} untranslated");
+                assert!(!out.starts_with("reliability-"), "{lang}/{level}: {out}");
+            }
+        }
+        // And a level no build has heard of still says something true.
         assert_eq!(
-            reliability_label("dna_unknown_value"),
-            "Reliability unknown"
+            reliability_label("en", "dna_unknown_value"),
+            "reliability unknown"
         );
     }
 

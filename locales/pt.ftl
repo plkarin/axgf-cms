@@ -22,7 +22,7 @@
 # REGRA: este ficheiro traduz apenas a interface. Nomes, lugares, notas e
 # ofícios vêm do arquivo familiar e ficam na sua língua e na sua escrita.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Cabeçalho e rodapé
 

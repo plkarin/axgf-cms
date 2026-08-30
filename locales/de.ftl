@@ -22,7 +22,7 @@
 # Berufsbezeichnungen kommen aus dem Archiv und bleiben in ihrer Sprache und
 # Schrift.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Kopf- und Fußzeile
 

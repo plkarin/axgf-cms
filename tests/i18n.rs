@@ -528,3 +528,49 @@ fn attribute_values(line: &str, attr: &str) -> Vec<String> {
     }
     out
 }
+
+#[test]
+fn the_product_name_is_one_name_in_every_language() {
+    // A product name is a proper noun, so every catalogue carries the same
+    // value and the fallback never fires. The failure this guards is not the
+    // number of edits a rename costs — it is a rename that reaches ten
+    // catalogues out of eleven and leaves the product with two names.
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    for locale in axgf_cms::i18n::LOCALES {
+        let name = axgf_cms::i18n::translate(locale.tag, "app-name", None);
+        assert!(
+            !name.is_empty() && name != "app-name",
+            "{} has no app-name",
+            locale.tag
+        );
+        seen.insert(name);
+    }
+    assert_eq!(
+        seen.len(),
+        1,
+        "the product goes by more than one name: {seen:?}"
+    );
+}
+
+#[test]
+fn no_template_hardcodes_the_repository_name_as_the_product() {
+    // The masthead used to read `axgf<span>-cms</span>` in raw HTML, which no
+    // rename would ever have found. The crate, the binary, the unit and the
+    // paths stay axgf-cms; what a reader sees does not.
+    for path in templates() {
+        let src = std::fs::read_to_string(&path).expect("template");
+        for (n, line) in src.lines().enumerate() {
+            if !line.contains("axgf-cms") {
+                continue;
+            }
+            // A command line naming the binary is the binary's real name.
+            assert!(
+                line.contains("<code>") || line.trim_start().starts_with("{#"),
+                "{}:{} presents the repository name as the product: {}",
+                path.display(),
+                n + 1,
+                line.trim()
+            );
+        }
+    }
+}

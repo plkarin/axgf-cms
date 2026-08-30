@@ -400,11 +400,13 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 .brand {
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--ink);
   text-decoration: none;
   font-size: 1.05rem;
 }
-.brand span { color: var(--accent); }
+/* One string, one colour. The name used to be split into `axgf` + `-cms` in
+   raw HTML to tint the halves, which is exactly the sort of place a rename
+   never reaches. */
+.brand { color: var(--accent); }
 .masthead nav { display: flex; gap: 1rem; flex-wrap: wrap; }
 .masthead nav a { color: var(--ink-soft); text-decoration: none; font-size: 0.94rem; }
 .masthead nav a:hover, .masthead nav a[aria-current="page"] {

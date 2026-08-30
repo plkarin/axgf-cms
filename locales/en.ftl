@@ -11,7 +11,7 @@
 # English has two forms; Polish has three, Arabic six, Japanese one. Never
 # write `{ $n } people` and hope.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Chrome
 

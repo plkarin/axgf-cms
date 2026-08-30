@@ -8,7 +8,7 @@
 # et les métiers viennent du fichier .axgf et restent dans leur langue et leur
 # écriture d'origine.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Cadre
 

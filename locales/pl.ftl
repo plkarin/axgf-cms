@@ -20,7 +20,7 @@
 # ZASADA: ten plik tłumaczy wyłącznie interfejs. Nazwiska, miejsca, notatki
 # i zawody pochodzą z archiwum i pozostają w swoim języku i piśmie.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Nagłówek i stopka
 

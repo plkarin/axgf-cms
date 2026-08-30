@@ -15,7 +15,11 @@
 
 <header class="masthead">
   <div class="masthead-inner">
-    <a class="brand" href="/">axgf<span>-cms</span></a>
+    {#- The product's display name, and the only place it is written. It is a
+        proper noun, so every catalogue carries the same value and a test says
+        so: the failure worth guarding against is not the number of edits a
+        rename costs but a rename that reaches ten catalogues out of eleven. -#}
+    <a class="brand" href="/">{{ t("app-name") }}</a>
     <nav>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
       <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>

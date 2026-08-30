@@ -13,6 +13,29 @@ languages and seven themes.
 
 ### Added
 
+**The product is called ax-genealogy.** The masthead read `axgf-cms`, which is
+the crate, the binary, the systemd unit and the system user — none of which a
+genealogist has any reason to know. Those all keep their names. What a reader
+sees does not.
+
+The display name is a single Fluent message, `app-name`, which every page
+title already used; the two places that did not were the masthead, which was
+raw HTML reading `axgf<span>-cms</span>` so that the halves could be tinted
+separately, and the admin result page's title. Both now take the constant, and
+the brand is one string in one colour — a name split across two elements to
+style it is exactly the sort of place a rename never reaches.
+
+Two tests keep it that way: one asserts every catalogue resolves `app-name` to
+the same string, because the failure worth guarding is not the eleven edits a
+rename costs but a rename that reaches ten of them; the other fails if a
+template presents `axgf-cms` to a reader as anything other than a command line.
+The one surviving occurrence is `axgf-cms --bundle family.axgf --create-admin`
+on the empty-installation screen, which is the binary's real name and an
+operator has to type it exactly.
+
+There are no OpenGraph or Twitter card tags in this application, so there was
+nothing to miss there.
+
 **The self-contradiction banner names its people, and only editors see it.**
 It used to say "run the validator from the admin dashboard to find it" — an
 instruction a signed-out visitor cannot follow and an administrator has to

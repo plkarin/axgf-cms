@@ -20,7 +20,7 @@
 # 原则: 本文件只翻译界面。人名、地名、笔记与职业名称来自档案，保持其原有的
 # 语言和文字。
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## 页眉与页脚
 

@@ -20,7 +20,7 @@
 # REGLA: este archivo traduce solo la interfaz. Nombres, lugares, notas y
 # oficios vienen del archivo familiar y se quedan en su lengua y su escritura.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Cabecera y pie
 

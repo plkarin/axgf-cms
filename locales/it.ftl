@@ -20,7 +20,7 @@
 # REGOLA: questo file traduce solo l'interfaccia. Nomi, luoghi, note e
 # mestieri vengono dall'archivio e restano nella loro lingua e scrittura.
 
-app-name = axgf-cms
+app-name = ax-genealogy
 
 ## Testata e piè di pagina
 

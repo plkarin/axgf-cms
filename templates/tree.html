@@ -87,9 +87,27 @@
   </span>
 </div>
 
-{% if layout.truncated %}
+{# Shown only to readers who can act on it — see the note in routes/public.rs.
+   `contradictions` is null for everybody else, banner and all. #}
+{% if contradictions %}
 <div class="notice warn">
   <p><strong>{{ t("tree-contradicts-title") }}</strong> {{ t("tree-contradicts-detail") }}</p>
+  {# Empty when the contradiction is a parentage loop rather than a single
+     bad edge: the flag is set but no one pair is to blame. #}
+  <ul class="contradiction-list">
+    {% for c in contradictions.pairs %}
+    <li>{{ t("tree-contradicts-pair") }}
+      {% if c.parent.id %}<a href="/person/{{ c.parent.id }}">{{ c.parent.name }}</a>
+      {%- else %}{{ c.parent.name }}{% endif %}
+      ·
+      {% if c.child.id %}<a href="/person/{{ c.child.id }}">{{ c.child.name }}</a>
+      {%- else %}{{ c.child.name }}{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if contradictions.more %}
+  <p class="small muted">{{ t("tree-contradicts-more", n=contradictions.more) }}</p>
+  {% endif %}
 </div>
 {% endif %}
 

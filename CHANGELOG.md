@@ -13,6 +13,33 @@ languages and seven themes.
 
 ### Added
 
+**The self-contradiction banner names its people, and only editors see it.**
+It used to say "run the validator from the admin dashboard to find it" — an
+instruction a signed-out visitor cannot follow and an administrator has to
+work at. The layout already knows exactly which parent-child edge it could not
+honour, because that is where it stops; it now keeps the pair instead of
+counting it. On the operator's own data the banner reads:
+
+> Recorded both as a couple and as parent and child:
+> **Jakub Tomasz Klicki** · **Bronisław Stanisław Klicki**
+
+with a link to each record. Up to three pairs are named and the rest counted.
+A reader who may edit but may not read one of the two sees the restricted
+label rather than the name, since naming them would be a way to enumerate
+people they cannot see.
+
+A signed-out visitor is now shown none of it. That is not tidying an
+inconvenient fact away: the banner exists to prompt a correction, and a
+visitor can neither locate the error, edit either record, nor necessarily even
+see the two people involved. Against that, the cost is real — on a public
+page, in the product's own voice, "this tree contradicts itself" reads as the
+software confessing a fault, and invites a reader to distrust an entire
+family's record over one bad edge in one union. The tree already says where
+the *data* is uncertain, through confidence; somebody's data-entry slip is a
+different kind of thing and does not belong in the same channel. Contributors
+and administrators see all of it, including the case where a parentage loop
+sets the flag without any single pair being to blame.
+
 **Three vocabularies that were never translated, found by looking.** A CJK
 font was installed and Chinese and Japanese were rendered at 1280, 768 and
 390px — the inspection the previous release could not do, because the headless

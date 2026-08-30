@@ -401,7 +401,12 @@ tree-counts = { $drawn } de { $total } pessoas · { $generations ->
     }
 tree-unplaced-count = { $n } sem lugar
 tree-contradicts-title = Esta árvore contradiz-se.
-tree-contradicts-detail = Alguém está registado como antepassado de si próprio, ou duas pessoas da mesma linha de descendência estão registadas como casal. Nenhuma disposição de linhas pode satisfazer isso, por isso o parentesco em causa ficou fora da numeração das gerações e algumas linhas podem estar erradas. Corra a verificação a partir do painel de administração para o encontrar.
+tree-contradicts-detail = Nenhuma disposição de linhas pode satisfazer isso, por isso o parentesco abaixo ficou fora da numeração das gerações e alguma linha pode estar desenhada no sítio errado. Corrija aquela das duas fichas que está errada.
+tree-contradicts-pair = Registados ao mesmo tempo como casal e como progenitor e filho:
+tree-contradicts-more = { $n ->
+        [one] Outra contradição não está listada.
+       *[other] Outras { $n } contradições não estão listadas.
+    }
 tree-no-people = Nesta árvore ainda não há ninguém.
 tree-no-people-cta = Importe um ficheiro familiar, ou acrescente a primeira pessoa.
 tree-nobody-selected = Para essa selecção não há ninguém para desenhar.

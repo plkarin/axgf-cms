@@ -401,7 +401,12 @@ tree-counts = { $drawn } von { $total } Personen · { $generations ->
     }
 tree-unplaced-count = { $n } ohne Platz
 tree-contradicts-title = Dieser Stammbaum widerspricht sich selbst.
-tree-contradicts-detail = Jemand ist als eigener Vorfahr erfasst, oder zwei Personen einer Abstammungslinie sind als Paar erfasst. Keine Anordnung von Zeilen kann das erfüllen, deshalb blieb die betreffende Beziehung bei der Nummerierung der Generationen außen vor und einige Zeilen können falsch sein. Führen Sie die Prüfung aus der Verwaltung aus, um sie zu finden.
+tree-contradicts-detail = Keine Anordnung von Zeilen kann das erfüllen, deshalb blieb die Beziehung unten bei der Nummerierung der Generationen außen vor und einige Zeilen stehen womöglich falsch. Berichtigen Sie den der beiden Einträge, der falsch ist.
+tree-contradicts-pair = Zugleich als Paar und als Elternteil und Kind erfasst:
+tree-contradicts-more = { $n ->
+        [one] Ein weiterer Widerspruch ist nicht aufgeführt.
+       *[other] { $n } weitere Widersprüche sind nicht aufgeführt.
+    }
 tree-no-people = In diesem Stammbaum ist noch niemand.
 tree-no-people-cta = Importieren Sie eine Familiendatei oder legen Sie die erste Person an.
 tree-nobody-selected = Für diese Auswahl gibt es niemanden zu zeichnen.

@@ -51,6 +51,11 @@ pub struct Generations {
     /// parentage loop, or a union between two people on one line of descent.
     /// The rows are still drawn; some of them are knowingly wrong.
     pub truncated: bool,
+    /// The parent-child pairs that could not be honoured, in the order they
+    /// were found. Naming them is the difference between telling a reader
+    /// something is wrong and telling them where: "run the validator" is not
+    /// an instruction a signed-out visitor can follow.
+    pub contradictions: Vec<(String, String)>,
 }
 
 /// One family reduced to the two lists the layout cares about.
@@ -200,7 +205,8 @@ pub fn assign_generations(flat: &Value) -> Generations {
     Generations {
         gen,
         unplaced,
-        truncated: cyclic || quotient.contradictions > 0,
+        truncated: cyclic || !quotient.contradictions.is_empty(),
+        contradictions: quotient.contradictions,
     }
 }
 
@@ -254,8 +260,9 @@ struct Quotient {
     parents: BTreeMap<String, BTreeSet<String>>,
     /// Parent-child edges that landed inside a single couple. The bundle is
     /// claiming someone is both spouse and descendant on one line; the edge is
-    /// dropped because no row assignment can honour it.
-    contradictions: usize,
+    /// dropped because no row assignment can honour it. The pair is kept, not
+    /// just counted, so the page can name the two people.
+    contradictions: Vec<(String, String)>,
 }
 
 impl Quotient {
@@ -268,14 +275,14 @@ impl Quotient {
             nodes: in_a_family.iter().map(|p| couples.find(p)).collect(),
             kids: BTreeMap::new(),
             parents: BTreeMap::new(),
-            contradictions: 0,
+            contradictions: Vec::new(),
         };
         for f in families {
             for p in &f.parents {
                 for (c, _) in &f.children {
                     let (a, b) = (couples.find(p), couples.find(c));
                     if a == b {
-                        q.contradictions += 1;
+                        q.contradictions.push((p.clone(), c.clone()));
                         continue;
                     }
                     q.kids.entry(a.clone()).or_default().insert(b.clone());
@@ -520,6 +527,8 @@ pub struct TreeLayout {
     pub generation_count: usize,
     pub unplaced_count: usize,
     pub truncated: bool,
+    /// The offending parent-child pairs, so the banner can name them.
+    pub contradictions: Vec<(String, String)>,
 }
 
 // ---------------------------------------------------------------------------
@@ -1443,6 +1452,7 @@ pub fn layout_subset(
         generation_count: by_gen.len(),
         unplaced_count: unplaced.len(),
         truncated: generations.truncated,
+        contradictions: generations.contradictions.clone(),
     }
 }
 

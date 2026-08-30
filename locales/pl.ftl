@@ -468,7 +468,14 @@ tree-counts = { $drawn } z { $total } osób · { $generations ->
     }
 tree-unplaced-count = { $n } bez miejsca
 tree-contradicts-title = To drzewo samo sobie przeczy.
-tree-contradicts-detail = Ktoś jest zapisany jako własny przodek albo dwie osoby z jednej linii pochodzenia są zapisane jako para. Żaden układ rzędów tego nie spełni, więc sporna relacja została pominięta w numerowaniu pokoleń i niektóre rzędy mogą być błędne. Uruchom sprawdzanie poprawności z panelu administracyjnego, aby ją znaleźć.
+tree-contradicts-detail = Żaden układ rzędów tego nie spełni, więc poniższa relacja została pominięta w numerowaniu pokoleń i niektóre rzędy mogą być narysowane w złym miejscu. Popraw ten z dwóch wpisów, który jest błędny.
+tree-contradicts-pair = Zapisani zarazem jako para i jako rodzic z dzieckiem:
+tree-contradicts-more = { $n ->
+        [one] Jedna dalsza sprzeczność nie została wymieniona.
+        [few] { $n } dalsze sprzeczności nie zostały wymienione.
+        [many] { $n } dalszych sprzeczności nie zostało wymienionych.
+       *[other] { $n } dalszych sprzeczności nie zostało wymienionych.
+    }
 tree-no-people = W tym drzewie nie ma jeszcze nikogo.
 tree-no-people-cta = Zaimportuj plik rodzinny albo dodaj pierwszą osobę.
 tree-nobody-selected = Dla tego wyboru nie ma kogo narysować.

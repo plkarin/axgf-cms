@@ -406,7 +406,12 @@ tree-counts = { $drawn } of { $total } people · { $generations ->
     }
 tree-unplaced-count = { $n } unplaced
 tree-contradicts-title = This tree contradicts itself.
-tree-contradicts-detail = Somebody is recorded as their own ancestor, or two people on one line of descent are recorded as a couple. No arrangement of rows can satisfy that, so the offending relationship was left out of the generation numbering and some rows may be wrong. Run the validator from the admin dashboard to find it.
+tree-contradicts-detail = No arrangement of rows can satisfy that, so the relationship below was left out of the generation numbering and some rows may be drawn in the wrong place. Correct whichever of the two records is wrong.
+tree-contradicts-pair = Recorded both as a couple and as parent and child:
+tree-contradicts-more = { $n ->
+        [one] One further contradiction is not listed.
+       *[other] { $n } further contradictions are not listed.
+    }
 tree-no-people = There is nobody in this tree yet.
 tree-no-people-cta = Import a family file, or add the first person.
 tree-nobody-selected = Nobody to draw for that selection.

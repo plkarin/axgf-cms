@@ -341,3 +341,21 @@ async fn binary_attachments_survive_a_mutation() {
         "a mutation must not drop document payloads"
     );
 }
+
+#[tokio::test]
+async fn the_contradiction_banner_names_its_people_and_only_for_editors() {
+    // The operator's own data records a father and his son as a union. The
+    // banner used to say "run the validator from the admin dashboard", which
+    // a signed-out visitor cannot do; it now names the two people and links
+    // to each, and a visitor is not shown it at all.
+    let (app, _p) = common::app_with_bundle(
+        "contradiction",
+        std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf")),
+    );
+    let anon = common::body_string(common::get(&app, "/tree").await).await;
+    assert!(
+        !anon.contains("contradiction-list"),
+        "a signed-out visitor cannot act on it and is not shown it"
+    );
+    assert!(!anon.contains("contradicts itself"));
+}

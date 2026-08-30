@@ -2017,3 +2017,15 @@ a.tcard:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* The self-contradiction banner names the people it is about, so it needs a
+   list rather than a paragraph. Shown only to readers who can act on it. */
+.contradiction-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.contradiction-list li { font-size: 0.9rem; }

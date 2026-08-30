@@ -353,11 +353,67 @@ pub async fn tree(
     // compute a number it never shows.
     let full_width = layout.width;
 
+    // The self-contradiction banner, resolved to the people it is about.
+    //
+    // Two decisions here. It is named rather than merely announced: the old
+    // copy said "run the validator from the admin dashboard", which a
+    // signed-out visitor cannot do and which costs an administrator several
+    // steps to act on. And it is shown only to readers who could act on it.
+    //
+    // Hiding it from a visitor is not tidying an inconvenient fact away. The
+    // banner exists to prompt a correction, and a visitor can neither locate
+    // the error, edit either record, nor necessarily even see the two people
+    // — they may be `members`-visible. Against that, the cost is real: on a
+    // public page, in the product's own voice, "this tree contradicts itself"
+    // reads as the software confessing a fault, and invites a reader to
+    // distrust an entire family's record over one bad edge in one union. The
+    // tree already says where the *data* is uncertain, through confidence;
+    // somebody's data-entry slip is a different kind of thing and does not
+    // belong in the same channel. Contributors and admins see all of it.
+    // `truncated` rather than a non-empty pair list: a pure parentage loop
+    // sets the flag without naming an edge, and that still needs saying.
+    let contradictions = if viewer.may_write() && layout.truncated {
+        state.read_as(viewer.ceiling(), |flat, lens| {
+            let name = |id: &str| -> Value {
+                if lens.sees_person(id) {
+                    json!({
+                        "id": id,
+                        "name": flat
+                            .get("persons")
+                            .and_then(|p| p.get(id))
+                            .map(view::person_display_name)
+                            .unwrap_or_else(|| "[Unknown]".into()),
+                    })
+                } else {
+                    // Named to a reader who may edit but may not read them
+                    // would be a way to enumerate people they cannot see.
+                    json!({
+                        "name": crate::i18n::translate(
+                            chrome.lang, crate::person::RESTRICTED_KEY, None),
+                    })
+                }
+            };
+            let shown: Vec<Value> = layout
+                .contradictions
+                .iter()
+                .take(3)
+                .map(|(parent, child)| json!({"parent": name(parent), "child": name(child)}))
+                .collect();
+            json!({
+                "pairs": shown,
+                "more": layout.contradictions.len().saturating_sub(3),
+            })
+        })
+    } else {
+        Value::Null
+    };
+
     render::page_with(
         &chrome,
         "tree.html",
         context! {
             nav => "tree",
+            contradictions,
             layout,
             focus,
             roster,

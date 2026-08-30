@@ -1,49 +1,92 @@
-# axgf-cms
+# ax-genealogy
 
-A single Rust binary that serves a browsable, editable website for one
-[AXGF](https://github.com/plkarin/axgf-spec) genealogy bundle. The `.axgf`
-file *is* the database — no SQL, no cache server, no external service.
+One place for a family to keep its tree, its documents and its photographs —
+served by a single binary, with the whole archive in one file the family owns.
 
+*(The repository, the crate, the binary, the systemd unit and the system user
+are all called `axgf-cms`. `ax-genealogy` is what the site calls itself.)*
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
+  | sudo bash -s -- --with-sample
 ```
-[browser] → [axgf-cms binary] → [axgf-rs crate] → [family.axgf on disk]
-```
 
-This is the reference showcase for the format. It exists to answer one
-question for someone who has never heard of AXGF: **load a GEDCOM, and see
-immediately what AXGF expresses that GEDCOM cannot.**
+That is the whole installation on a fresh Ubuntu LTS machine. It prints a URL,
+an administrator username and a password, once.
 
 ---
 
-## Why AXGF
+## What it does
 
-GEDCOM records what a genealogist concluded. It has nowhere to record how sure
-they were, or why. A date is either there or it is not; a parent is either
-stated or absent. Everything in between — the census that narrowed a birth to
-a five-year window, the family letter that named a godfather, the entry no one
-could read — is either discarded on export or flattened into a note nobody
-parses again. AXGF is built for the in-between, because in genealogy the
-in-between is most of the evidence.
+**One archive, not a pile of files.** The tree, the scanned certificates and
+the photographs live together. A marriage certificate hangs off the marriage
+rather than sitting in somebody's inbox, and a photograph names the people in
+it.
 
-Every fact in an AXGF bundle carries a confidence from 0.0 to 1.0, and this
-site renders that visually rather than as a number in fine print. A birth date
-recorded at 98% and a speculative parentage at 35% do not look alike anywhere:
-not on the identity page, not in a list, and not on the tree, where a faint
-connector means the record is not sure of that relationship. Dates keep their
-shape — `circa 1500`, `before 1430` and `between 1920 and 1925` survive as
-distinct statements instead of collapsing into one blank field, and text no
-converter could parse is shown verbatim rather than dropped.
+**Several relatives, different roles.** An aunt with thirty years of notes and
+a cousin who wants to fix one spelling do not need the same powers. Each
+relative is invited with their own role — reader, contributor, administrator —
+and every change records who made it and when. A contributor can be confined
+to one branch of the tree.
 
-Relationships beyond blood are first-class. "Jean was Jules' godfather from
-1950, per a family letter, 85% confident" is a single entity with its own
-dates, source and confidence — a sentence GEDCOM cannot express at all, and
-one this site gives its own section. Occupations are spans with a duration
-rather than events with a date, so "schoolteacher, 1948–1978" renders as a bar
-you can compare against another. Sources are graded — primary, secondary,
-oral, DNA — so a claim resting on a birth certificate is visibly not the same
-as one resting on a relative's recollection sixty years later.
+**Privacy decided person by person.** A living relative can be visible to the
+family and invisible to visitors while their great-grandmother is open to
+anyone. The choice is per person, not one switch for the whole tree, and it is
+enforced on the server: a record you may not read is not sent to your browser
+at all.
 
-Read the specification at
-[github.com/plkarin/axgf-spec](https://github.com/plkarin/axgf-spec).
+**How sure each fact is, recorded and shown.** A date read off a certificate
+and a date somebody guessed do not look alike anywhere on the site — not in a
+list, and not on the tree, where a faint connector means the record is not sure
+of that relationship. `circa 1500`, `before 1430` and `between 1920 and 1925`
+stay three different statements. Wording nobody could read as a date is kept
+word for word rather than dropped.
+
+**Relationships beyond blood and marriage.** Godparents, employers, witnesses,
+mentors and guardians are records in their own right, each with its own dates,
+source and certainty. Work is a span with a start and an end, drawn as a bar
+across the years.
+
+**Import from what you already have.** Point it at a GEDCOM export from almost
+any genealogy program and it comes across, with an import report saying what
+arrived and what could not be read. Export gives the whole archive back as one
+file, whenever you like.
+
+**Eleven languages.** Including Russian, the language the civil registers of
+half of Central and Eastern Europe were kept in. Names stay in their own script
+beside a transliteration.
+
+> **On the translations, plainly: two of the eleven languages have been read by
+> someone who speaks them.** English and French are reviewed. The other nine —
+> Polish, Russian, German, Italian, Spanish, Portuguese, Chinese, Japanese and
+> Arabic — are complete, meaning every message is translated, but nobody has
+> checked them. Genealogical vocabulary is where that matters: the words for a
+> union, a godparent or a primary source differ by national record-keeping
+> tradition, and a plausible wrong word is worse than an English one because
+> nobody notices it. The language menu says which is which, and
+> [CONTRIBUTING.md](CONTRIBUTING.md) says where to start if you can help.
+
+---
+
+## Who can reach it
+
+**It binds to `127.0.0.1` by default, and you should leave it there.** Putting
+it on `0.0.0.0` without a reverse proxy sends the login form in clear text. To
+publish it: keep it on localhost, put nginx or Caddy in front terminating TLS
+(snippets in [docs/DEPLOY.md](docs/DEPLOY.md)), and make sure the proxy sets
+`X-Forwarded-Proto` — that is what makes the session cookie `Secure`.
+
+Two things decide who sees what. Each person's record carries a visibility —
+public, members, contributors, private — and each account carries a role whose
+ceiling it cannot read past. **A bundle converted from GEDCOM carries no
+visibility at all**, and the rule that fills the gap is that anyone recorded as
+living is treated as `members` and everyone else as public. Check that this is
+what you want before you publish a converted tree.
+
+Accounts live in a `.acl` file beside the archive and never inside it: an
+archive gets copied, mailed and published, and password hashes travelling
+inside it would make every copy of the family tree a copy of the sign-in
+details.
 
 ---
 
@@ -56,10 +99,12 @@ curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootst
   | sudo bash -s -- --with-sample
 ```
 
-That installs the binary, creates a `axgf-cms` system user with no shell, sets
-up `/var/lib/axgf-cms`, generates an admin token into `/etc/axgf-cms/env`
-(mode 0600), installs and starts a systemd unit bound to `127.0.0.1:8080`, and
-prints the token and URL once at the end.
+That installs the binary, creates an `axgf-cms` system user with no shell, sets
+up `/var/lib/axgf-cms`, generates an emergency token into `/etc/axgf-cms/env`
+(mode 0640, readable only by root and the service), creates the first
+administrator, installs and starts a systemd unit bound to `127.0.0.1:8080`,
+and prints the URL, the administrator's password and the token once at the
+end.
 
 `--with-sample` seeds a small demonstration family so a fresh install has
 something to look at. Drop it for an empty bundle.
@@ -325,11 +370,11 @@ AXGF_CMS_REGENERATE_SAMPLE=1 cargo test --test sample_bundle
 
 ## Export back to GEDCOM
 
-Not implemented, and not planned. GEDCOM has nowhere to put confidence,
-non-family relationships, occupation spans, graded sources or preserved
-uncertainty — the round trip is lossy by nature, and the loss is precisely the
-subject of this project. Use `GET /admin/export` to get your `.axgf` bundle,
-which is a ZIP of plain JSON you can read with any tool.
+Not offered, and not planned. That format has nowhere to put how sure a fact
+is, a relationship outside the family, the length of a job, or a date nobody
+could pin down — the return trip would quietly drop all of it. Your archive
+exports whole instead: `GET /admin/export` gives you the `.axgf`, which is a
+ZIP of plain JSON you can read with any tool.
 
 ---
 

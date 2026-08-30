@@ -2,7 +2,7 @@
 
 The whole application is one binary and one file. If you remember nothing else
 from this document, remember that **`family.axgf` is the entire database** —
-copy it and you have a complete backup; lose it and there is nothing else.
+copy it, together with the `.acl` beside it, and you have a complete backup.
 
 - [One-line install](#one-line-install)
 - [Manual installation](#manual-installation)
@@ -79,9 +79,18 @@ printf 'AXGF_CMS_ADMIN_TOKEN=%s\n' "$(head -c 32 /dev/urandom | od -An -tx1 | tr
   | sudo tee /etc/axgf-cms/env >/dev/null
 sudo chown root:axgf-cms /etc/axgf-cms/env
 sudo chmod 0640 /etc/axgf-cms/env
+
+# 4. The bundle and the first administrator, in one step and BEFORE the
+#    service exists. --seed-sample only acts when the bundle is absent, so
+#    this creates it; drop the flag to start from an empty tree. Doing this
+#    first is what keeps the service from racing the bundle into existence.
+sudo -u axgf-cms /usr/local/bin/axgf-cms \
+  --bundle /var/lib/axgf-cms/family.axgf --seed-sample \
+  --create-admin yourname
 ```
 
-Then install the unit below and `sudo systemctl enable --now axgf-cms`.
+The password is printed once and stored only as an Argon2id hash. Write it
+down. Then install the unit below and `sudo systemctl enable --now axgf-cms`.
 
 Or build from source:
 
@@ -235,15 +244,26 @@ proxy_cookie_flags axgf_admin secure samesite=lax;
 
 ## Backups
 
-The bundle is the whole state. There is no database to dump and no schema to
-migrate. The payload cache under `<bundle_dir>/.axgf-cms-cache/` (or wherever
+**Two files are the whole state**, and they want different handling:
+
+| File | What it is | Share it? |
+|---|---|---|
+| `family.axgf` | The genealogy — every person, relationship, document and photograph. | Freely. It is what the family owns. |
+| `family.acl` | The accounts: usernames, Argon2id hashes, roles, branch scope. | With nobody. |
+
+There is no database to dump and no schema to migrate. Back up both: restoring
+only the `.axgf` gives you the tree back with every account gone, and nobody
+able to sign in but the emergency token.
+
+The payload cache under `<bundle_dir>/.axgf-cms-cache/` (or wherever
 `--cache-dir` points) is **derived data** — the `.axgf` holds the authoritative
-copy of every file — so it does not need backing up. Exclude it from backups;
-the next start rebuilds it from the bundle.
+copy of every attached file — so it does not need backing up. Exclude it; the
+next start rebuilds it from the bundle.
 
 ```sh
 sudo systemctl stop axgf-cms
 sudo cp /var/lib/axgf-cms/family.axgf /backups/family-$(date +%F).axgf
+sudo cp /var/lib/axgf-cms/family.acl  /backups/family-$(date +%F).acl
 sudo systemctl start axgf-cms
 ```
 
@@ -256,7 +276,9 @@ Without stopping, and keeping a month of daily copies:
 ```sh
 install -d -m 0700 /backups/axgf-cms
 cp /var/lib/axgf-cms/family.axgf "/backups/axgf-cms/family-$(date +%F).axgf"
+cp /var/lib/axgf-cms/family.acl  "/backups/axgf-cms/family-$(date +%F).acl"
 find /backups/axgf-cms -name 'family-*.axgf' -mtime +31 -delete
+find /backups/axgf-cms -name 'family-*.acl'  -mtime +31 -delete
 ```
 
 You can also pull a backup over HTTP from the admin panel
@@ -284,6 +306,7 @@ user owns it, and start again:
 ```sh
 sudo systemctl stop axgf-cms
 sudo cp /backups/axgf-cms/family-2026-08-07.axgf /var/lib/axgf-cms/family.axgf
+sudo cp /backups/axgf-cms/family-2026-08-07.acl  /var/lib/axgf-cms/family.acl
 sudo chown axgf-cms:axgf-cms /var/lib/axgf-cms/family.axgf
 sudo systemctl start axgf-cms
 sudo journalctl -u axgf-cms -n 20

@@ -4,14 +4,44 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] — unreleased
+## [0.1.0] — unreleased
 
-A product for families rather than a demonstration of a file format, panel
-content laid out for the column it has, user accounts with roles and
-per-entity visibility, safe concurrent editing, eleven complete interface
-languages and seven themes.
+The first release. One binary serves a browsable, editable website for a
+single family's AXGF archive: the tree, every person's record, the documents
+and photographs, user accounts with roles and per-person privacy, safe
+concurrent editing, eleven complete interface languages and seven themes.
+
+This file was written up to here in one pass over the history, because it was
+not kept honestly along the way — several commits changed the product and
+added nothing (`eaadfe0` merged the record into the tree as a side panel,
+`17f5b1c` clamped long names, `afaadeb` rewrote payload streaming), and later
+entries caught up piecemeal. Everything below is the state of the code as it
+stands, not a diary. There is no earlier version to differ from: the entries
+are grouped by what they are rather than by when they landed.
 
 ### Added
+
+**Release documentation made honest.** The changelog carried two sections both
+marked *unreleased*, which cannot both be true when nothing has shipped; they
+are one `[0.1.0]` now, with the early work kept as a subsection and the
+handful of claims the reframing reversed corrected in place rather than left
+to contradict the entries above them. The omissions list gained the three
+things most likely to be mistaken for oversights — no database, no
+multi-tenancy, no graph queries — each with the reason.
+
+The README opened by calling itself "the reference showcase for the format".
+It now opens with what the product does for a family, the one-line install
+above the fold, who can reach it, and the translation position stated plainly:
+two of eleven languages reviewed, nine complete but unread.
+
+`docs/DEPLOY.md` had two gaps that would have bitten a real operator. The
+manual installation never created an administrator, so anyone following it
+instead of the script ended up with only the emergency token — it now includes
+the same seed-and-create-admin step the script runs, verified to produce a
+bundle with the ten sample people and a `.acl`. And the backup advice named
+only the `.axgf`: restoring from it would have given the tree back with every
+account gone. Both files are named now, with a table saying which one is safe
+to share.
 
 **bootstrap.sh was run end to end for the first time, and it was broken in
 two ways.** It had never been run against a real release because there has
@@ -792,16 +822,16 @@ Failed logins are throttled per username and per client address. Disabling an
 account, lowering its role or changing its password closes every session it
 holds.
 
-## [0.1.0] — unreleased
+### The foundations
 
-First release. A single binary serving a browsable, editable website for one
-AXGF bundle, built to demonstrate what the format records that GEDCOM
-discards.
+What the first weeks built, before accounts, translation or the reframing
+above. Where the two disagree, above wins: the completeness readout no longer
+links a specification and the home page no longer argues for a file format.
 
-### Added
+#### Added
 
-**Showcase rendering.** Every page surfaces at least one thing GEDCOM cannot
-express.
+**Record rendering.** Every page surfaces at least one thing most family trees
+flatten away.
 
 - Confidence is rendered visually — a filled bar, an inline opacity-and-underline
   treatment, or a dot — driven by four bands from a 0.0–1.0 score, so a fact at
@@ -827,15 +857,16 @@ both count what the bundle in front of you records against what AXGF can hold:
 confidences that were judged individually rather than stamped by a bulk import,
 parentage confidence, non-family links, occupation spans, source reliability
 grades, and every date broken down by the shape it actually has. Each row names
-the AXGF field and links its specification section. The framing is plain — a
-GEDCOM import shows five empty rows because GEDCOM has nowhere to put any of
-it, not because the conversion lost anything — and a bundle that already
-carries rich data is told so instead.
+what the record could say. The framing is plain — an imported tree shows five
+empty rows because the file it came from had nowhere to put any of it, not
+because the import lost anything — and a tree that already carries rich detail
+is told so instead. (The specification links this originally carried were
+removed; see the reframing above.)
 
-**Pages.** Home with a "Why AXGF" panel and a list of the GEDCOM-impossible
-features the loaded bundle actually contains; `/tree`; `/person/:id`;
-`/convert`; `/health`; and a plain server-rendered admin panel with per-kind
-forms, paginated listings, validate, deduplicate and export.
+**Pages.** Home; `/tree`; `/person/:id`; `/convert`; `/health`; and a plain
+server-rendered admin panel with per-kind forms, paginated listings, validate,
+deduplicate and export. (Home originally opened with a "Why AXGF" panel; see
+the reframing above for what replaced it.)
 
 **The identity page is the whole record.** `/person/:id` is divided into
 sections, each present only when it has content, so the shape of the page is
@@ -854,7 +885,7 @@ as spans; **Places**, each listing what happened there and carrying its border
 history; **Sources and documents**, where every source names the facts on the
 page that rest on it; **Notes**, including text a converter could not parse and
 kept verbatim; and **Raw**, a collapsed block holding the entity's own JSON,
-because a format worth arguing for should be readable without a tool.
+so the archive can be read without this site if it ever has to be.
 
 **Tree view.** Oldest generation at the bottom, youngest at the top. The
 default is a focused subtree — ancestors and descendants of one person to a
@@ -939,15 +970,17 @@ exercises every showcase feature. A hardened systemd unit binds to localhost.
 Release workflow builds `x86_64-unknown-linux-musl` and
 `aarch64-unknown-linux-gnu` behind a test, clippy and fmt gate.
 
-### Security
+#### Security
 
-- Authentication is a single shared token in an `HttpOnly`, `SameSite=Lax`
-  cookie, compared in constant time. A blank token is rejected in two places so
-  an empty `AXGF_CMS_ADMIN_TOKEN` can never become "no password required".
-- The server binds to `127.0.0.1` by default, because V1's admin surface must
+- Authentication began as a single shared token in an `HttpOnly`,
+  `SameSite=Lax` cookie, compared in constant time, with a blank token
+  rejected in two places so an empty `AXGF_CMS_ADMIN_TOKEN` could never become
+  "no password required". Named accounts in the `.acl` replaced it; the token
+  survives only as the emergency door described above.
+- The server binds to `127.0.0.1` by default, because an admin surface must
   not reach the network by accident.
 
-### Notes
+#### Notes
 
 - All genealogy logic lives in [axgf-rs](https://github.com/plkarin/axgf-lib).
   This application contains none of its own; it reads the bundle, calls a
@@ -981,5 +1014,26 @@ These are deliberate omissions, not oversights.
 - **Search beyond name substring.** The tree filter is a case-insensitive
   substring match over display names, client-side. No fuzzy matching, no
   full-text index.
+- **A database.** There is no PostgreSQL backend and no SQL of any kind. The
+  archive is one `.axgf` file read into memory at startup and written back
+  atomically; the accounts live beside it in a `.acl`, and the payload cache is
+  derived from the archive and can be deleted at any time. That suits one
+  family's tree — hundreds to low thousands of people — and it is why the whole
+  state is two files an operator can copy. It is also the ceiling: an archive
+  past roughly a gigabyte starts costing real memory, and the admin panel says
+  so on the dashboard rather than waiting for someone to find out.
+- **Multi-tenancy.** One process serves one family's archive. Two families mean
+  two processes, two bundles and two ports — which is a deployment decision, not
+  a feature to build. Nothing in the state model is keyed by a tenant, and
+  retrofitting one would touch every read path, so it is better done as a
+  different product than bolted on here.
+- **Graph queries.** No relationship solver, no "how is X related to Y", no
+  common-ancestor or path search, no cousin-degree calculation. The tree view
+  walks ancestors and descendants to a fixed depth and stops there. This is the
+  omission most likely to be mistaken for an oversight: it is genuinely useful,
+  it is genuinely absent, and it wants a considered answer to what a
+  relationship *is* when parentage carries confidence — a path through three
+  links at 0.4 is not a fact about a family, and reporting it as one would be
+  worse than not answering.
 
 [0.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.1.0

@@ -21,6 +21,14 @@ are grouped by what they are rather than by when they landed.
 
 ### Added
 
+**Performance is where it was.** `/tree` on the operator's 866-person bundle
+is 16.83 ms against a 16.80 ms baseline, `?all=1` 21.00 against 20.97, and RSS
+46.1 MB against 46.0 — measured with both builds serving at once and requests
+alternating between them, so the machine's own load falls on both arms. The
+work in this release added three Fluent lookups per timeline entry and a
+resolved name pair on a page that almost never has one; none of it is
+measurable.
+
 **Release documentation made honest.** The changelog carried two sections both
 marked *unreleased*, which cannot both be true when nothing has shipped; they
 are one `[0.1.0]` now, with the early work kept as a subsection and the

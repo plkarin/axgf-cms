@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# axgf-cms bootstrap — fresh Ubuntu LTS machine to a running site, one command.
+# ax-genealogy bootstrap — fresh Ubuntu LTS machine to a running site, one
+# command. The package, the binary, the unit and the system user are all
+# called axgf-cms; ax-genealogy is what the site calls itself.
 #
 #   curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh | sudo bash
 #
@@ -116,9 +118,14 @@ command -v systemctl >/dev/null 2>&1 || warn "systemd not found; the unit will b
 # --------------------------------------------------------------------------
 step "Installing the binary"
 # --------------------------------------------------------------------------
+# Every branch below installs to $INSTALL_PATH, so the directory is made once
+# here rather than in one of the three. /usr/local/bin exists on any normal
+# machine, which is why this went unnoticed: it only fails under a prefix, or
+# on an image minimal enough not to have it.
+run mkdir -p "$(dirname "$INSTALL_PATH")"
+
 if [ -n "$LOCAL_BINARY" ]; then
   say "installing the locally supplied binary $LOCAL_BINARY"
-  run mkdir -p "$(dirname "$INSTALL_PATH")"
   run install -m 0755 "$LOCAL_BINARY" "$INSTALL_PATH"
 elif [ "$FROM_SOURCE" = "1" ]; then
   command -v cargo >/dev/null 2>&1 || die "--from-source needs cargo on PATH"
@@ -193,7 +200,9 @@ else
     TOKEN="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
   fi
   write_file "$ENV_FILE" 0600 <<EOF
-# axgf-cms configuration. Mode 0600: this file holds the admin token.
+# axgf-cms configuration. This file holds the admin token: it is written
+# 0600, then chowned root:axgf-cms and set 0640 so the service can read it
+# and nobody else can.
 AXGF_CMS_ADMIN_TOKEN=${TOKEN}
 EOF
   if [ "$SKIP_PRIVILEGED" = "0" ]; then
@@ -223,6 +232,51 @@ else
 fi
 
 # --------------------------------------------------------------------------
+step "First administrator"
+# --------------------------------------------------------------------------
+# The accounts live in a companion .acl file beside the bundle, never inside
+# it: a .axgf is copied, mailed and published, and password hashes in it would
+# make every copy of the family tree a copy of the credential store.
+#
+# This runs BEFORE the unit is installed and started, and that ordering is
+# load-bearing. It used to run after: the service was started, began seeding
+# the sample, and was stopped again a fraction of a second later so the ACL
+# could be written. The create-admin invocation then found no bundle yet —
+# because the seed had not finished writing — and created an empty one, so a
+# fresh --with-sample install served a signed-out visitor "0 of 0 people".
+# Doing all the file creation before anything is running removes the race
+# rather than widening the window.
+#
+# There is deliberately no web setup page. The window between deploying and the
+# first login is exactly when an installation is unprotected, so the first
+# account is created here, from the shell, by somebody who already has the
+# host. Re-running is safe: an existing username is refused, not reset, so this
+# never silently rotates a working account's password.
+ACL_FILE="${BUNDLE%.axgf}.acl"
+ADMIN_CREATED=0
+if [ -f "$ACL_FILE" ]; then
+  say "$ACL_FILE exists — leaving the existing accounts alone"
+elif [ "$DRY_RUN" = "1" ]; then
+  say "an administrator account would be created as '${ADMIN_USER}'"
+else
+  # $SEED_FLAG matters here: this runs before the service exists, so it is
+  # what creates the bundle. Without it the bundle would be created empty and
+  # the sample never seeded — which is exactly what used to happen, from the
+  # other direction.
+  # shellcheck disable=SC2086
+  ADMIN_OUT="$(run_as_service "$INSTALL_PATH" --bundle "$BUNDLE" $SEED_FLAG \
+                 --create-admin "$ADMIN_USER" 2>&1 || true)"
+  ADMIN_PASSWORD="$(printf '%s\n' "$ADMIN_OUT" | sed -n 's/^ *password: *//p' | head -1)"
+  if [ -n "$ADMIN_PASSWORD" ]; then
+    ADMIN_CREATED=1
+    say "created administrator '${ADMIN_USER}'"
+  else
+    warn "could not create the first administrator:"
+    printf '%s\n' "$ADMIN_OUT" | sed 's/^/    /'
+  fi
+fi
+
+# --------------------------------------------------------------------------
 step "systemd unit"
 # --------------------------------------------------------------------------
 run mkdir -p "$(dirname "$UNIT_PATH")"
@@ -237,7 +291,7 @@ Type=exec
 User=${SERVICE_USER}
 Group=${SERVICE_USER}
 EnvironmentFile=${ENV_FILE}
-ExecStart=${INSTALL_PATH} --bundle ${BUNDLE} --bind ${BIND} ${SEED_FLAG}
+ExecStart=${INSTALL_PATH} --bundle ${BUNDLE} --bind ${BIND}
 Restart=on-failure
 RestartSec=2s
 
@@ -271,50 +325,11 @@ elif command -v systemctl >/dev/null 2>&1; then
 fi
 
 # --------------------------------------------------------------------------
-step "First administrator"
-# --------------------------------------------------------------------------
-# The accounts live in a companion .acl file beside the bundle, never inside
-# it: a .axgf is copied, mailed and published, and password hashes in it would
-# make every copy of the family tree a copy of the credential store.
-#
-# There is deliberately no web setup page. The window between deploying and the
-# first login is exactly when an installation is unprotected, so the first
-# account is created here, from the shell, by somebody who already has the
-# host. Re-running is safe: an existing username is refused, not reset, so this
-# never silently rotates a working account's password.
-ACL_FILE="${BUNDLE%.axgf}.acl"
-ADMIN_CREATED=0
-if [ -f "$ACL_FILE" ]; then
-  say "$ACL_FILE exists — leaving the existing accounts alone"
-elif [ "$DRY_RUN" = "1" ]; then
-  say "an administrator account would be created as '${ADMIN_USER}'"
-else
-  # Stop the service first: the ACL is rewritten atomically, and a running
-  # process holds its own copy in memory.
-  if [ "$SKIP_PRIVILEGED" = "0" ] && command -v systemctl >/dev/null 2>&1; then
-    run systemctl stop axgf-cms
-  fi
-  ADMIN_OUT="$(run_as_service "$INSTALL_PATH" --bundle "$BUNDLE" \
-                 --create-admin "$ADMIN_USER" 2>&1 || true)"
-  ADMIN_PASSWORD="$(printf '%s\n' "$ADMIN_OUT" | sed -n 's/^ *password: *//p' | head -1)"
-  if [ -n "$ADMIN_PASSWORD" ]; then
-    ADMIN_CREATED=1
-    say "created administrator '${ADMIN_USER}'"
-  else
-    warn "could not create the first administrator:"
-    printf '%s\n' "$ADMIN_OUT" | sed 's/^/    /'
-  fi
-  if [ "$SKIP_PRIVILEGED" = "0" ] && command -v systemctl >/dev/null 2>&1; then
-    run systemctl start axgf-cms
-  fi
-fi
-
-# --------------------------------------------------------------------------
 step "Done"
 # --------------------------------------------------------------------------
 cat <<EOF
 
-  axgf-cms is running.
+  ax-genealogy is running.
 
     URL          http://${BIND}/
     Sign in      http://${BIND}/admin/login

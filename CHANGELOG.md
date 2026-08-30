@@ -13,6 +13,41 @@ languages and seven themes.
 
 ### Added
 
+**bootstrap.sh was run end to end for the first time, and it was broken in
+two ways.** It had never been run against a real release because there has
+never been a release; both defects were on the happy path.
+
+*A fresh `--with-sample` install served a signed-out visitor "0 of 0 people".*
+The script installed the unit, started the service — which began seeding the
+demonstration family — then stopped it a fraction of a second later so the
+`.acl` could be written, and ran `--create-admin` against the same path. That
+invocation found no bundle yet, because the seed had not finished writing, and
+created an empty one. The service then came back up on the empty file. All the
+file creation now happens before anything is running: the bundle and the first
+administrator are made in one invocation that carries the seed flag, and the
+unit's `ExecStart` no longer carries `--seed-sample` at all, so there is
+nothing left to race with. A test asserts the seeded bundle actually contains
+the family and that every person in it is public, rather than asserting the
+ordering — a future reshuffle has to keep the result, not the shape.
+
+*`--from-source` could not install the binary.* It ran `install` into
+`/usr/local/bin` without creating the directory; only the local-binary branch
+did that. On a normal machine the directory already exists, which is why it
+went unnoticed, and it fails under a prefix or on a minimal image. The `mkdir`
+is hoisted out of the one branch that had it.
+
+Verified on this machine: `--from-source` clones and builds; a second run
+leaves the bundle, the `.acl` and the token byte-identical and refuses
+`--with-sample`; the privileged run creates the system user, writes the token
+file `0640 root:axgf-cms`, installs and enables the unit, and the service comes
+up listening on `127.0.0.1:8080` and serving 9 of 10 sample people to a visitor
+who is not signed in. Torn down completely afterwards.
+
+`deploy/sample.axgf` declares `identity.visibility: public` on all ten people
+explicitly, so it needed no change. The comparison worth recording: the
+operator's converted `wt-full.axgf` marks all 866 `members`, which is why that
+bundle shows a signed-out visitor an entirely redacted tree.
+
 **The product is called ax-genealogy.** The masthead read `axgf-cms`, which is
 the crate, the binary, the systemd unit and the system user — none of which a
 genealogist has any reason to know. Those all keep their names. What a reader

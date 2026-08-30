@@ -91,9 +91,14 @@ fn running_bootstrap_twice_keeps_the_token_and_the_bundle() {
     let unit = prefix.join("etc/systemd/system/axgf-cms.service");
     assert!(unit.exists(), "the unit should be installed");
     let unit_text = std::fs::read_to_string(&unit).expect("read unit");
+    // The unit must NOT carry --seed-sample. Seeding is a one-off that happens
+    // before anything is running; leaving the flag on a long-lived service is
+    // what let the service and the create-admin step race for the same file,
+    // and the empty bundle that came out of that race is the reason this
+    // assertion is inverted from what it used to say.
     assert!(
-        unit_text.contains("--seed-sample"),
-        "the seed flag is passed"
+        !unit_text.contains("--seed-sample"),
+        "seeding is done before the service starts, not by it"
     );
     assert!(unit_text.contains("Restart=on-failure"));
     assert!(unit_text.contains("127.0.0.1:8080"), "binds to localhost");
@@ -295,5 +300,53 @@ fn a_fresh_install_gets_an_administrator_and_a_second_run_does_not_rotate_it() {
     assert!(
         !again.contains("password     "),
         "a re-run prints no password, because it created no account"
+    );
+}
+
+#[test]
+fn with_sample_seeds_a_family_a_visitor_can_actually_see() {
+    // The bug this exists for: bootstrap started the service, which began
+    // seeding the sample, then stopped it a fraction of a second later so the
+    // ACL could be written. The create-admin invocation found no bundle yet
+    // and made an empty one, so a fresh --with-sample install served a
+    // signed-out visitor "0 of 0 people". Everything is created before
+    // anything runs now, and the assertion is on the bundle's contents rather
+    // than on the ordering, so a future reshuffle has to keep the result.
+    let prefix = common::scratch("boot-sample");
+    let out = run_bootstrap_for_real(&prefix, &["--with-sample"]);
+
+    let bundle = prefix.join("var/lib/axgf-cms/family.axgf");
+    assert!(bundle.exists(), "a bundle is created: {out}");
+
+    let bytes = std::fs::read(&bundle).expect("read seeded bundle");
+    let env = axgf_rs::import_bundle(&bytes);
+    let persons = env
+        .data
+        .get("persons")
+        .and_then(|p| p.as_object())
+        .map(|p| p.len())
+        .unwrap_or(0);
+    assert!(
+        persons >= 10,
+        "--with-sample must seed the demonstration family, found {persons} persons"
+    );
+
+    // And they must be visible to somebody who is not signed in, or the first
+    // impression of a fresh install is a blank page.
+    let public = env
+        .data
+        .get("persons")
+        .and_then(|p| p.as_object())
+        .map(|p| {
+            p.values()
+                .filter(|v| {
+                    axgf_cms::access::person_visibility(v) == axgf_cms::acl::Visibility::Public
+                })
+                .count()
+        })
+        .unwrap_or(0);
+    assert_eq!(
+        public, persons,
+        "every person in the sample is explicitly public; a visitor sees a tree"
     );
 }

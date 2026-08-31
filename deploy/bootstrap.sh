@@ -9,8 +9,12 @@
 # Options:
 #   --with-sample     seed a new bundle with the built-in demonstration family
 #   --from-source     build with cargo instead of downloading a release binary
-#   --version <TAG>   install a specific release tag (default: latest)
+#   --version <TAG>   install a specific release tag (default: latest stable).
+#                     /releases/latest resolves stable releases only, so a
+#                     release candidate is reachable only by tag:
+#                     --version v0.1.0-rc1
 #   --bind <ADDR>     address to bind (default: 127.0.0.1:8080)
+#   --admin-user <U>  username for the first administrator (default: admin)
 #   --dry-run         print what would happen and change nothing
 #
 # IDEMPOTENT. Running it twice must not destroy an existing bundle and must
@@ -20,6 +24,12 @@ set -euo pipefail
 
 REPO="plkarin/axgf-cms"
 BIN_NAME="axgf-cms"
+
+# Where release assets and release metadata are fetched from. Both are
+# overridable so the download path can be exercised against a local mirror
+# instead of being run for the first time by an operator.
+RELEASE_BASE="${AXGF_CMS_RELEASE_BASE:-https://github.com/${REPO}}"
+API_BASE="${AXGF_CMS_API_BASE:-https://api.github.com/repos/${REPO}}"
 
 # Every system path is prefixed by AXGF_CMS_PREFIX, normally empty. Setting it
 # installs the whole layout under a directory instead, which is what the
@@ -46,24 +56,35 @@ DRY_RUN=0
 # Username for the first administrator account, created on a fresh install.
 ADMIN_USER="admin"
 
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --with-sample) WITH_SAMPLE=1 ;;
-    --from-source) FROM_SOURCE=1 ;;
-    --version) VERSION="${2:-}"; shift ;;
-    --bind) BIND="${2:-}"; shift ;;
-    --admin-user) ADMIN_USER="${2:-}"; shift ;;
-    --dry-run) DRY_RUN=1 ;;
-    -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) echo "unknown option: $1" >&2; exit 2 ;;
-  esac
-  shift
-done
-
 say()  { printf '  %s\n' "$*"; }
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 die()  { printf '\n\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+
+# Options that take a value must be given one. Without this, a trailing
+# `--version` set the tag to the empty string and then ran off the end of the
+# argument list, which under `set -e` ends the script with no message at all.
+need_value() {
+  [ -n "${2:-}" ] || die "$1 needs a value (for example: $1 $3)"
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --with-sample) WITH_SAMPLE=1 ;;
+    --from-source) FROM_SOURCE=1 ;;
+    --version) need_value "$1" "${2:-}" "v0.1.0-rc1"; VERSION="$2"; shift ;;
+    --bind) need_value "$1" "${2:-}" "127.0.0.1:8080"; BIND="$2"; shift ;;
+    --admin-user) need_value "$1" "${2:-}" "admin"; ADMIN_USER="$2"; shift ;;
+    --dry-run) DRY_RUN=1 ;;
+    # The header comment down to the first blank line, which is the whole of
+    # it. This was a line range, and a line range goes stale the moment the
+    # header grows — adding two lines to the options list silently truncated
+    # --help below --dry-run.
+    -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) die "unknown option: $1 (try --help)" ;;
+  esac
+  shift
+done
 
 run() {
   if [ "$DRY_RUN" = "1" ]; then
@@ -98,6 +119,86 @@ write_file() {
   fi
   printf '%s\n' "$content" > "$path"
   chmod "$mode" "$path"
+}
+
+# Tags of every published release, newest first, one per line. Fails (rather
+# than printing nothing) when the API cannot be reached, so "no releases" and
+# "no network" stay distinguishable.
+published_tags() {
+  local json
+  json="$(curl -fsSL "${API_BASE}/releases")" || return 1
+  # A repository with no releases answers `[]`, and grep finding nothing there
+  # is the answer, not a failure — but `set -o pipefail` would make it one.
+  printf '%s' "$json" \
+    | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | sed 's/.*"\([^"]*\)"$/\1/' || true
+}
+
+# True when a latest *stable* release exists. /releases/latest ignores
+# prereleases, so a repository can have releases and still have no latest.
+has_latest_stable() {
+  curl -fsSL -o /dev/null "${API_BASE}/releases/latest" 2>/dev/null
+}
+
+# Why the download failed, in terms the operator can act on. This used to be a
+# single line — "No release published yet? Use --from-source." — offered for
+# every failure, including the one where a release had been published and the
+# only problem was that it was not the latest stable one. Sending somebody to a
+# ten-minute source build when `--version` would have worked is a misdiagnosis,
+# so each case now gets its own answer.
+explain_download_failure() {
+  local tags newest
+  if ! tags="$(published_tags)"; then
+    die "download failed: ${URL}
+
+  Could not reach ${API_BASE} to find out why. Check the network and the URL
+  above; if this host has no route to GitHub, build from source instead with
+  --from-source."
+  fi
+
+  if [ -n "$VERSION" ]; then
+    if printf '%s\n' "$tags" | grep -qxF -- "$VERSION"; then
+      die "release ${VERSION} exists, but publishes no asset for this machine.
+
+  Expected:  ${ASSET}
+  Machine:   ${ARCH} (${TARGET})
+
+  Build from source instead: --from-source"
+    fi
+    die "no release is tagged ${VERSION}.
+
+  Published releases:
+$(printf '%s\n' "$tags" | sed 's/^/    /')
+
+  Install one of those with --version, or build from source with --from-source."
+  fi
+
+  if [ -z "$tags" ]; then
+    die "no release has been published for ${REPO} yet, so there is nothing to
+  download.
+
+  Build from source instead: --from-source"
+  fi
+
+  newest="$(printf '%s\n' "$tags" | head -1)"
+  if has_latest_stable; then
+    die "the latest release publishes no asset for this machine.
+
+  Expected:  ${ASSET}
+  Machine:   ${ARCH} (${TARGET})
+
+  Build from source instead: --from-source"
+  fi
+
+  die "releases have been published, but none of them is a stable release, and
+  /releases/latest resolves stable releases only — which is why the default
+  install finds nothing. Every published release is a prerelease.
+
+  Install one by tag:
+
+    --version ${newest}
+
+  ...or build from source with --from-source."
 }
 
 if [ "$DRY_RUN" = "0" ] && [ "$SKIP_PRIVILEGED" = "0" ] && [ "$(id -u)" != "0" ]; then
@@ -135,16 +236,20 @@ elif [ "$FROM_SOURCE" = "1" ]; then
   run env -C "$SRC/src" cargo build --release --locked
   run install -m 0755 "$SRC/src/target/release/${BIN_NAME}" "$INSTALL_PATH"
 else
+  ASSET="${BIN_NAME}-${TARGET}.tar.gz"
   if [ -n "$VERSION" ]; then
-    URL="https://github.com/${REPO}/releases/download/${VERSION}/${BIN_NAME}-${VERSION}-${TARGET}.tar.gz"
+    # A tagged asset carries its tag in the filename, and this is the only way
+    # to reach a release that is not the latest stable one — a release
+    # candidate, or an older version being pinned.
+    ASSET="${BIN_NAME}-${VERSION}-${TARGET}.tar.gz"
+    URL="${RELEASE_BASE}/releases/download/${VERSION}/${ASSET}"
   else
-    URL="https://github.com/${REPO}/releases/latest/download/${BIN_NAME}-${TARGET}.tar.gz"
+    URL="${RELEASE_BASE}/releases/latest/download/${ASSET}"
   fi
   say "downloading $URL"
   TMP="$(mktemp -d)"
   if [ "$DRY_RUN" = "0" ]; then
-    curl -fsSL "$URL" -o "$TMP/pkg.tar.gz" \
-      || die "download failed. No release published yet? Use --from-source."
+    curl -fsSL "$URL" -o "$TMP/pkg.tar.gz" || explain_download_failure
     # Verify the checksum when the release publishes one.
     if curl -fsSL "${URL}.sha256" -o "$TMP/pkg.sha256" 2>/dev/null; then
       ( cd "$TMP" && sed "s#\([a-f0-9]\{64\}\).*#\1  pkg.tar.gz#" pkg.sha256 | sha256sum -c - ) \

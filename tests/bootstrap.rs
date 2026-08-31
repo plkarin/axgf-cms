@@ -350,3 +350,290 @@ fn with_sample_seeds_a_family_a_visitor_can_actually_see() {
         "every person in the sample is explicitly public; a visitor sees a tree"
     );
 }
+
+// ---------------------------------------------------------------------------
+// The download path.
+//
+// Until now nothing exercised it: every test above hands the script a binary
+// through AXGF_CMS_LOCAL_BINARY, so the branch that fetches a release had only
+// ever been read, never run. These tests point AXGF_CMS_RELEASE_BASE and
+// AXGF_CMS_API_BASE at a staged file:// mirror and run it for real.
+// ---------------------------------------------------------------------------
+
+/// The release target triple the script derives from `uname -m`.
+fn target_triple() -> &'static str {
+    match std::env::consts::ARCH {
+        "x86_64" => "x86_64-unknown-linux-musl",
+        "aarch64" => "aarch64-unknown-linux-gnu",
+        other => panic!("unsupported test architecture {other}"),
+    }
+}
+
+struct Outcome {
+    ok: bool,
+    out: String,
+}
+
+impl Outcome {
+    fn says(&self, needle: &str) -> bool {
+        self.out.contains(needle)
+    }
+}
+
+/// Run bootstrap.sh against a staged mirror, letting it fail.
+fn run_against_mirror(prefix: &Path, mirror: &Path, api: &Path, extra: &[&str]) -> Outcome {
+    let out = Command::new("bash")
+        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .args(extra)
+        .env("AXGF_CMS_PREFIX", prefix)
+        .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
+        .env(
+            "AXGF_CMS_RELEASE_BASE",
+            format!("file://{}", mirror.display()),
+        )
+        .env("AXGF_CMS_API_BASE", format!("file://{}", api.display()))
+        // Explicitly empty: this is the branch under test.
+        .env("AXGF_CMS_LOCAL_BINARY", "")
+        .output()
+        .expect("run bootstrap.sh");
+    Outcome {
+        ok: out.status.success(),
+        out: String::from_utf8_lossy(&out.stdout).into_owned()
+            + &String::from_utf8_lossy(&out.stderr),
+    }
+}
+
+/// Stage `api/releases` holding `json`, the way the GitHub API would answer.
+fn stage_api(prefix: &Path, json: &str) -> PathBuf {
+    let api = prefix.join("api");
+    std::fs::create_dir_all(&api).expect("mkdir api");
+    std::fs::write(api.join("releases"), json).expect("write releases");
+    api
+}
+
+/// Stage a release asset for `tag`, packaged exactly as the workflow packages
+/// it: `axgf-cms-<tag>-<target>.tar.gz` with a `.sha256` sidecar beside it.
+fn stage_release(prefix: &Path, tag: &str) -> PathBuf {
+    let mirror = prefix.join("mirror");
+    let dir = mirror.join("releases/download").join(tag);
+    std::fs::create_dir_all(&dir).expect("mkdir release dir");
+
+    let stage = prefix.join(format!("axgf-cms-{tag}-{}", target_triple()));
+    std::fs::create_dir_all(&stage).expect("mkdir stage");
+    std::fs::write(stage.join("axgf-cms"), "#!/bin/sh\nexit 0\n").expect("write binary");
+
+    let name = format!("axgf-cms-{tag}-{}.tar.gz", target_triple());
+    let sh = format!(
+        "set -eu; cd {p}; tar -czf {d}/{n} {s}; cd {d}; sha256sum {n} > {n}.sha256",
+        p = prefix.display(),
+        d = dir.display(),
+        n = name,
+        s = stage.file_name().unwrap().to_string_lossy(),
+    );
+    let st = Command::new("bash")
+        .arg("-c")
+        .arg(&sh)
+        .status()
+        .expect("package the staged release");
+    assert!(st.success(), "packaging failed");
+    mirror
+}
+
+/// A dry run with no locally supplied binary, so the download branch is the
+/// one that reports what it would fetch.
+fn dry_run_download(prefix: &Path, extra: &[&str]) -> String {
+    let mut args = vec!["--dry-run"];
+    args.extend_from_slice(extra);
+    let out = Command::new("bash")
+        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .args(&args)
+        .env("AXGF_CMS_PREFIX", prefix)
+        .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
+        .env("AXGF_CMS_LOCAL_BINARY", "")
+        .output()
+        .expect("run bootstrap.sh");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    String::from_utf8_lossy(&out.stdout).into_owned()
+}
+
+#[test]
+fn the_default_asks_for_latest_and_a_tag_asks_for_that_tag() {
+    // The URL is the whole of the fix: /releases/latest resolves stable
+    // releases only, so a release candidate is unreachable without --version.
+    let prefix = common::scratch("boot-url");
+    let out = dry_run_download(&prefix, &[]);
+    assert!(
+        out.contains(&format!(
+            "releases/latest/download/axgf-cms-{}.tar.gz",
+            target_triple()
+        )),
+        "the default is still latest: {out}"
+    );
+
+    let prefix = common::scratch("boot-url-tag");
+    let out = dry_run_download(&prefix, &["--version", "v0.1.0-rc1"]);
+    assert!(
+        out.contains(&format!(
+            "releases/download/v0.1.0-rc1/axgf-cms-v0.1.0-rc1-{}.tar.gz",
+            target_triple()
+        )),
+        "--version addresses the tagged asset: {out}"
+    );
+}
+
+#[test]
+fn help_lists_every_option_the_script_accepts() {
+    // --help printed a fixed line range of the header comment, so growing the
+    // header truncated it. Every option the parser accepts has to appear.
+    let out = Command::new("bash")
+        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .arg("--help")
+        .output()
+        .expect("run bootstrap.sh --help");
+    assert!(out.status.success());
+    let help = String::from_utf8_lossy(&out.stdout);
+    for option in [
+        "--with-sample",
+        "--from-source",
+        "--version",
+        "--bind",
+        "--admin-user",
+        "--dry-run",
+    ] {
+        assert!(
+            help.contains(option),
+            "--help does not mention {option}:\n{help}"
+        );
+    }
+    assert!(
+        help.contains("IDEMPOTENT"),
+        "the help runs to the end of the header:\n{help}"
+    );
+}
+
+#[test]
+fn a_version_with_no_tag_is_refused_rather_than_silently_meaning_latest() {
+    let prefix = common::scratch("boot-noval");
+    let out = Command::new("bash")
+        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .args(["--dry-run", "--version"])
+        .env("AXGF_CMS_PREFIX", &prefix)
+        .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
+        .output()
+        .expect("run bootstrap.sh");
+    let text = String::from_utf8_lossy(&out.stderr);
+    assert!(!out.status.success(), "an empty tag must not be accepted");
+    assert!(text.contains("--version needs a value"), "{text}");
+}
+
+#[test]
+fn a_tagged_release_is_downloaded_and_its_checksum_verified() {
+    let prefix = common::scratch("boot-dl");
+    let mirror = stage_release(&prefix, "v0.1.0-rc1");
+    let api = stage_api(
+        &prefix,
+        r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#,
+    );
+
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v0.1.0-rc1"]);
+    assert!(r.ok, "install should succeed:\n{}", r.out);
+    assert!(r.says("checksum verified"), "{}", r.out);
+    assert!(
+        prefix.join("usr/local/bin/axgf-cms").exists(),
+        "the downloaded binary is installed:\n{}",
+        r.out
+    );
+}
+
+#[test]
+fn a_download_that_does_not_match_its_checksum_is_refused() {
+    let prefix = common::scratch("boot-badsum");
+    let mirror = stage_release(&prefix, "v0.1.0-rc1");
+    let api = stage_api(
+        &prefix,
+        r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#,
+    );
+
+    // Corrupt the archive, leaving the sidecar describing what it used to be.
+    let asset = mirror
+        .join("releases/download/v0.1.0-rc1")
+        .join(format!("axgf-cms-v0.1.0-rc1-{}.tar.gz", target_triple()));
+    std::fs::write(&asset, b"not the bytes that were signed for").expect("corrupt asset");
+
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v0.1.0-rc1"]);
+    assert!(
+        !r.ok,
+        "a mismatched checksum must stop the install:\n{}",
+        r.out
+    );
+    assert!(r.says("checksum mismatch"), "{}", r.out);
+    assert!(
+        !prefix.join("usr/local/bin/axgf-cms").exists(),
+        "and nothing is installed:\n{}",
+        r.out
+    );
+}
+
+#[test]
+fn no_release_at_all_and_a_prerelease_only_repository_are_told_apart() {
+    // The defect: both answered "No release published yet? Use --from-source."
+    // The second is not that, and --from-source is not the shortest way out of
+    // it — the release is there, it just is not the latest stable one.
+    let empty = common::scratch("boot-none");
+    let mirror = empty.join("mirror");
+    std::fs::create_dir_all(&mirror).expect("mkdir mirror");
+    let api = stage_api(&empty, "[]");
+    let r = run_against_mirror(&empty, &mirror, &api, &[]);
+    assert!(!r.ok);
+    assert!(
+        r.says("no release has been published"),
+        "an empty repository is named as such: {}",
+        r.out
+    );
+    assert!(r.says("--from-source"), "{}", r.out);
+    assert!(
+        !r.says("--version"),
+        "there is no tag to suggest when nothing is published: {}",
+        r.out
+    );
+
+    let pre = common::scratch("boot-pre");
+    let mirror = pre.join("mirror");
+    std::fs::create_dir_all(&mirror).expect("mkdir mirror");
+    let api = stage_api(&pre, r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#);
+    let r = run_against_mirror(&pre, &mirror, &api, &[]);
+    assert!(!r.ok);
+    assert!(
+        !r.says("no release has been published"),
+        "a release WAS published; saying otherwise is the misdiagnosis: {}",
+        r.out
+    );
+    assert!(
+        r.says("--version v0.1.0-rc1"),
+        "the way in is named, with the tag: {}",
+        r.out
+    );
+}
+
+#[test]
+fn an_unknown_tag_says_what_is_published_instead() {
+    let prefix = common::scratch("boot-badtag");
+    let mirror = stage_release(&prefix, "v0.1.0-rc1");
+    let api = stage_api(
+        &prefix,
+        r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#,
+    );
+
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v9.9.9"]);
+    assert!(!r.ok);
+    assert!(r.says("no release is tagged v9.9.9"), "{}", r.out);
+    assert!(
+        r.says("v0.1.0-rc1"),
+        "and lists what there is instead: {}",
+        r.out
+    );
+}

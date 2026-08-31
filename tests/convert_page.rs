@@ -52,15 +52,16 @@ async fn post_convert(app: &axum::Router, body: Vec<u8>) -> axum::http::Response
 }
 
 fn fixture(name: &str) -> Vec<u8> {
-    // The axgf-rs fixtures are the most realistic GEDCOM available; fall back
-    // to a minimal inline file when the sibling checkout is absent.
-    let p = std::path::Path::new("/home/cbrain/axgf-lib/tests/fixtures").join(name);
-    std::fs::read(&p).unwrap_or_else(|_| {
-        b"0 HEAD\n1 GEDC\n2 VERS 5.5.1\n1 CHAR UTF-8\n\
-          0 @I1@ INDI\n1 NAME Test /Person/\n1 SEX M\n1 BIRT\n2 DATE 1900\n\
-          0 TRLR\n"
-            .to_vec()
-    })
+    // Committed to this repository, not read out of a sibling checkout. It used
+    // to be loaded from an absolute path into axgf-rs, with a one-person inline
+    // GEDCOM as a silent fallback when that path was absent. On this machine the
+    // path resolved and the realistic file was used; on CI it never did, so the
+    // fallback ran and the assertions about plural counts failed there and only
+    // there. A fixture a test depends on belongs beside the test.
+    let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures")
+        .join(name);
+    std::fs::read(&p).unwrap_or_else(|e| panic!("read fixture {}: {e}", p.display()))
 }
 
 #[tokio::test]
@@ -117,24 +118,34 @@ async fn converting_a_real_gedcom_reports_counts_diagnostics_and_a_download() {
 #[tokio::test]
 async fn unrecognized_tags_are_presented_as_a_feature_not_hidden() {
     let (app, _p) = app_with_empty_bundle("conv-tags");
-    let ged = fixture("tree.ged");
-    let resp = post_convert(&app, multipart("tree.ged", &ged, "0.8", "pl")).await;
-    let body = expect_status(resp, StatusCode::OK, "convert tree.ged").await;
+    // A real webtrees export contains entries with nothing importable in them:
+    // FAM stubs left behind by deletions, empty tags, records private to the
+    // exporter. This fixture carries one of each. It used to be the operator's
+    // own 866-person export, read from outside the repository, so on CI the
+    // file was absent, the fallback GEDCOM had nothing unimportable in it, and
+    // the assertions below — guarded by an `if` on the diagnostic being
+    // present — asserted nothing at all. The guard is gone: the fixture is
+    // chosen so the diagnostic must appear, and the test fails if it does not.
+    let ged = fixture("stray-records.ged");
+    let resp = post_convert(&app, multipart("stray-records.ged", &ged, "0.8", "pl")).await;
+    let body = expect_status(resp, StatusCode::OK, "convert stray-records.ged").await;
 
-    // The real webtrees export contains entries with nothing importable in
-    // them. They must be listed, with the framing that nothing was silently
-    // dropped — an import report that hides what it could not read is worse
-    // than no report.
-    if body.contains("GEDCOM_UNRECOGNIZED_TAG") {
-        assert!(
-            body.contains("could not be read"),
-            "skipped entries need the explanatory framing"
-        );
-        assert!(
-            body.contains("listed rather than swallowed"),
-            "and the reason they are shown at all"
-        );
-    }
+    assert!(
+        body.contains("GEDCOM_UNRECOGNIZED_TAG"),
+        "the fixture must produce something the importer cannot read, or this \
+         test proves nothing"
+    );
+    // They must be listed, with the framing that nothing was silently dropped
+    // — an import report that hides what it could not read is worse than no
+    // report.
+    assert!(
+        body.contains("could not be read"),
+        "skipped entries need the explanatory framing"
+    );
+    assert!(
+        body.contains("listed rather than swallowed"),
+        "and the reason they are shown at all"
+    );
     assert!(body.contains("/convert/download/"));
 }
 
@@ -211,8 +222,8 @@ async fn an_expired_or_unknown_download_id_is_a_clean_404() {
 #[tokio::test]
 async fn the_result_page_reports_what_the_import_brought_over() {
     let (app, _p) = app_with_empty_bundle("conv-complete");
-    let ged = fixture("tree.ged");
-    let resp = post_convert(&app, multipart("tree.ged", &ged, "0.8", "pl")).await;
+    let ged = fixture("small.ged");
+    let resp = post_convert(&app, multipart("small.ged", &ged, "0.8", "pl")).await;
     let body = expect_status(resp, StatusCode::OK, "convert for completeness").await;
 
     assert!(body.contains("completeness"), "the panel must be present");

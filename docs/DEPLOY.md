@@ -25,7 +25,7 @@ curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootst
 |---|---|
 | `--with-sample` | Seed a *new* bundle with the demonstration family. Ignored if a bundle already exists. |
 | `--from-source` | Build with cargo instead of downloading a release binary. |
-| `--version <TAG>` | Install a specific release tag rather than the latest. |
+| `--version <TAG>` | Install a specific release tag, e.g. `--version v0.1.0-rc1`. The default resolves `/releases/latest`, which is the latest *stable* release — a release candidate is published as a prerelease and is reachable only by tag. |
 | `--bind <ADDR>` | Address for the unit to bind (default `127.0.0.1:8080`). |
 | `--admin-user <NAME>` | Username for the administrator created on a fresh install (default `admin`). |
 | `--dry-run` | Print every action and change nothing. |

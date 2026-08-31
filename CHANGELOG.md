@@ -86,6 +86,92 @@ explicitly, so it needed no change. The comparison worth recording: the
 operator's converted `wt-full.axgf` marks all 866 `members`, which is why that
 bundle shows a signed-out visitor an entirely redacted tree.
 
+**The first release test found that there was no release.** The `v0.1.0-rc1`
+tag was pushed and the workflow ran and went red: `cargo test` failed on CI at
+`converting_a_real_gedcom_reports_counts_diagnostics_and_a_download`, so the
+build and publish jobs were skipped and no release was ever created. The 404
+from `/releases/latest` was therefore not a prerelease being skipped over —
+there was nothing published at all.
+
+The test read its GEDCOM from an absolute path into a sibling checkout,
+`/home/cbrain/axgf-lib/tests/fixtures`, and silently fell back to a
+one-person inline GEDCOM when that path did not resolve. On this machine the
+path resolved and the realistic fixture was used; on CI it never did, so the
+fallback ran and the assertion that counts are shown by kind — plural — failed
+there and only there. A fixture a test depends on belongs beside the test, so
+`small.ged` is committed to this repository and read from
+`CARGO_MANIFEST_DIR`, and the fallback is gone: a missing fixture is now a
+panic naming the path, not a quietly different test.
+
+Removing the fallback exposed two more tests reading the same way, both of
+which had been passing on CI without testing anything. They took the
+operator's own 866-person `tree.ged` — real genealogy about living relatives,
+which is not going into a public repository — and one of them,
+`unrecognized_tags_are_presented_as_a_feature_not_hidden`, wrapped its
+assertions in `if body.contains("GEDCOM_UNRECOGNIZED_TAG")`, so on CI, where
+the file was absent and the fallback had nothing unimportable in it, the test
+asserted nothing at all. What it is actually about is the shape of a real
+export rather than its size: stray `FAM` stubs left by deletions, empty tags,
+records private to the exporter. `tests/fixtures/stray-records.ged` carries one
+of each, and the `if` is gone — the diagnostic must appear now, or the test
+fails and says why. The other moved to `small.ged`, which exercises the
+completeness report it asserts on.
+
+**Release candidates are prereleases, and `--version` is how you install one.**
+The workflow published every tag the same way, so `v0.1.0-rc1` would have
+become the latest release and the advertised one-line install would have handed
+every new operator a release candidate. Tags carrying a semver prerelease
+suffix are published with `--prerelease` now; stable tags are published with
+`--latest` explicitly rather than by default.
+
+That makes `/releases/latest` resolve stable releases only, which is what the
+`--version <TAG>` flag is for. The flag has been in the script since it was
+written and had never been used, because there was no release to point it at.
+It works, and there are now tests that say so: the default asks for
+`releases/latest/download/axgf-cms-<target>.tar.gz` and a tag asks for
+`releases/download/<TAG>/axgf-cms-<TAG>-<target>.tar.gz`. A trailing
+`--version` with no tag used to set the tag to the empty string and then run
+off the end of the argument list, which under `set -e` ended the script with no
+message at all; `--version`, `--bind` and `--admin-user` all require a value
+now and say so. `--help` printed a fixed line range of the header comment, so
+documenting the flag properly pushed `--dry-run` and the idempotency note off
+the bottom of it; it prints the header down to its first blank line now, and a
+test fails if an option the parser accepts is not listed.
+
+*The download failure said the wrong thing.* Every failure got the same line —
+"download failed. No release published yet? Use `--from-source`." — including
+the case where a release had been published and the only problem was that it
+was not the latest stable one. Sending somebody to a ten-minute source build
+when `--version` would have worked is a misdiagnosis, so the script now asks
+the API what is actually published and answers the case it finds: nothing
+published at all (build from source); releases published but every one of them
+a prerelease, so `/releases/latest` resolves none of them (install by tag, with
+the newest tag named in the message); a latest release that publishes no asset
+for this architecture; an unknown tag, listing the tags that do exist; and the
+API being unreachable, which is none of the above and no longer claims to be.
+
+*The download path had never been executed.* Every bootstrap test supplied a
+binary through `AXGF_CMS_LOCAL_BINARY`, so the branch that fetches a release
+had only ever been read. Two more test hooks alongside the existing ones,
+`AXGF_CMS_RELEASE_BASE` and `AXGF_CMS_API_BASE`, point the script at a staged
+mirror, and six tests now run it: the two URLs, the refused empty tag, a real
+download whose checksum verifies and installs, a corrupted archive that is
+refused and installs nothing, the two failure diagnoses told apart, and the
+unknown tag.
+
+Verified end to end against `v0.1.0-rc1` on this machine, from the release
+artefacts packaged exactly as the workflow packages them and served over HTTP
+with `/releases/latest` returning 404 the way a prerelease-only repository
+does. With no `--version` the script names the tag to use instead of blaming a
+missing release. With `--version v0.1.0-rc1` the fresh privileged install
+downloads the tarball, verifies its SHA-256, installs a binary byte-identical
+to the built one, creates the system user, writes the token `0640
+root:axgf-cms`, seeds the sample and creates the administrator, and the service
+comes up on `127.0.0.1:8080` serving 9 of 10 sample people to a visitor who is
+not signed in. A second run keeps the bundle, the `.acl` and the token
+byte-identical, refuses `--with-sample`, and prints no password. Torn down
+completely afterwards.
+
 **The product is called ax-genealogy.** The masthead read `axgf-cms`, which is
 the crate, the binary, the systemd unit and the system user — none of which a
 genealogist has any reason to know. Those all keep their names. What a reader

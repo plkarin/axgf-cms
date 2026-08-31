@@ -1,0 +1,22 @@
+0 HEAD
+1 SOUR ax-genealogy-test
+1 GEDC
+2 VERS 5.5.1
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Jean /Pierre-Léonard/
+1 SEX M
+1 BIRT
+2 DATE 1923
+1 OCCU
+2 DATE 1948
+0 @I2@ INDI
+1 NAME Marie /Bernard/
+1 SEX F
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+0 @F2@ FAM
+0 @_LOOM@ _CUSTOM
+1 NOTE An exporter-specific record with no GEDCOM meaning.
+0 TRLR

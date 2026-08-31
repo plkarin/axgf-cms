@@ -129,6 +129,18 @@ jobs:
         run: |
           set -euo pipefail
           tag="${GITHUB_REF#refs/tags/}"
+
+          # A semver prerelease tag (v0.1.0-rc1) must not become the latest
+          # release: /releases/latest is what the advertised one-line install
+          # resolves, and pointing it at a release candidate would hand every
+          # new operator one. Marked prerelease, it stays reachable — but only
+          # to somebody who asks for it by name, with bootstrap.sh --version.
+          case "$tag" in
+            *-*) prerelease=(--prerelease) ;;
+            *)   prerelease=(--latest) ;;
+          esac
+
           gh release create "$tag" dist/* \
             --title "$tag" \
-            --generate-notes
+            --generate-notes \
+            "${prerelease[@]}"

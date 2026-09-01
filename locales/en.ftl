@@ -27,7 +27,6 @@ footer-open-format-link = About the format
 
 prefs-title = Language and appearance
 prefs-language = Language
-prefs-language-note = This changes the interface only. Names, places and notes are always shown in their own language and script.
 prefs-theme = Appearance
 prefs-apply = Apply
 prefs-reviewed = reviewed
@@ -59,8 +58,7 @@ tree-lede-focused = { $ancestors ->
     } and { $spouses ->
         [one] one partner
        *[other] { $spouses } partners
-    }, { $depth } generations each way. Oldest at the bottom. Connector opacity is the relationship's confidence — a faint line is a claim the record is not sure of.
-tree-lede-whole = Every person in the tree. Oldest at the bottom, youngest at the top. Connector opacity is the relationship's confidence.
+    }, { $depth } generations each way.
 tree-filter-label = Filter visible cards
 tree-filter-placeholder = Type a name…
 tree-centre-on = Centre on
@@ -192,7 +190,7 @@ admin-recent-changes = Recent changes
 admin-recent-note = The last { $shown } of { $total ->
         [one] one recorded change
        *[other] { $total } recorded changes
-    }, from { $path }. The journal is kept beside the archive rather than inside it: an archive gets copied, mailed and published, and who corrected what is a fact about the people keeping the tree rather than about the family in it.
+    }, from { $path }.
 admin-sessions-open = { $n ->
         [one] One session open now.
        *[other] { $n } sessions open now.
@@ -254,7 +252,8 @@ accounts-create = Create account
 accounts-role-viewer = viewer — reads public and members records
 accounts-role-contributor = contributor — also creates, edits and uploads
 accounts-role-admin = admin — also manages accounts, deletes and exports
-accounts-branch-hint = Limits what this account may edit to those people, their descendants and their spouses. It does not limit what they may read — that is governed by each record's visibility, and the two are kept separate on purpose.
+accounts-branch-hint = Limits what this account may edit to those people, their descendants and their spouses.
+accounts-branch-reading = It does not limit what they may read — that is governed by each record's visibility, and the two are kept separate on purpose.
 accounts-branch-placeholder = one person id per line
 accounts-ids-in-bundle = Person ids in this tree
 accounts-emergency-warning = You are signed in with the emergency token. It grants administrator rights for this session but is not an account: it owns no preferences, and the edit journal will record your changes as emergency-token rather than as a person. Create yourself a real account below and sign in with it.
@@ -391,10 +390,10 @@ error-export-unreadable-detail = { $error }
 tree-title-suffix = tree
 tree-back-to-focused = Back to the focused view
 tree-show-all = Show all { $n }
-tree-width-notice = This view is { $width }px wide. Every generation is one row, and the widest one here sets that width — on a 1500px screen that is { $screens ->
+tree-width-notice = This view is { $width }px wide — on a 1500px screen, { $screens ->
         [one] one screen
        *[other] { $screens } screens
-    } of horizontal scrolling. The focused view shows a few dozen people around one person instead, and every card re-centres it.
+    } of horizontal scrolling.
 tree-confidence-label = Confidence:
 tree-band-certain = certain
 tree-band-high = high
@@ -416,7 +415,6 @@ tree-no-people = There is nobody in this tree yet.
 tree-no-people-cta = Import a family file, or add the first person.
 tree-nobody-selected = Nobody to draw for that selection.
 tree-nobody-selected-cta = Start from the default view.
-tree-click-hint = Click any card to open that person's record in the panel; “Centre the tree here” in the panel re-roots the view.
 tree-edge-union = A recorded union
 tree-edge-parentage = A recorded parentage
 
@@ -430,20 +428,8 @@ home-count = { $total ->
 home-browse = Browse the tree
 home-convert = Import a family file
 home-unnamed-family = This family tree
-home-what-title = What this does for a family
-home-what-archive-title = One place for the whole archive
-home-what-archive-body = The tree, the documents and the photographs sit together. A scan of a marriage certificate hangs off the marriage itself, not in somebody’s inbox, and a photograph names the people in it.
-home-what-together-title = Several relatives, different roles
-home-what-together-body = An aunt with thirty years of notes and a cousin who only wants to correct a spelling do not need the same powers. Each relative is invited with their own role, and every change records who made it and when.
-home-what-privacy-title = Privacy decided person by person
-home-what-privacy-body = A living relative can be visible to the family and invisible to visitors, while their great-grandmother is open to anyone. The choice is made for each person, not once for the whole tree.
-home-what-languages-title = Eleven languages
-home-what-languages-body = Relatives read the site in their own language — including Russian, which is the language the civil registers of half of Central and Eastern Europe were kept in. A name stays in its own script beside a transliteration; nothing has to be flattened into one alphabet for the site to work.
-home-what-export-title = The archive stays yours
-home-what-export-body = Export the whole thing as a single file whenever you like — people, relationships, documents and photographs together. If you ever decide to leave, you leave with the archive intact.
 home-in-this-tree = What the family has recorded so far
 home-showcase-title = Where this tree already says more than names and dates
-home-showcase-note = Each of these is drawn from what is actually recorded here, not from a list of things the site could do.
 home-showcase-example = See an example →
 home-nothing-title = Nothing to show yet.
 home-nothing-detail = Import a family file to bring an existing tree across, or start from nothing and add the first person yourself.
@@ -543,7 +529,7 @@ record-doc-other = other
 record-upload = Upload
 record-upload-help = Up to { $mb } MB per file. Attachments are held beside the tree and written back into the archive when you export, so a photograph travels with the family it belongs to. The kind of file is read from its own contents rather than its name: images, PDF, plain text, audio and video are accepted. SVG is refused, because an SVG can carry a script.
 record-upload-help-short = Up to { $mb } MB. SVG is refused.
-record-verbatim-note = Kept exactly as the record stated it, because no converter could interpret it. Dropping it would have been the alternative.
+record-verbatim-note = Kept exactly as the record stated it, because no converter could interpret it.
 record-file-to-attach = File to attach
 record-document-type = Document type
 record-caption = Caption
@@ -639,16 +625,13 @@ completeness-shape-unknown-note = recorded as not known
 ## Conversion page
 
 convert-page-title = Import a family file
-convert-lede = Bring an existing tree across from a GEDCOM file — the export most genealogy programs produce. You get an archive back to keep. Nothing is stored here, and the tree this site already shows is left exactly as it was.
+convert-lede = Bring an existing tree across from a GEDCOM file — the export most genealogy programs produce. Nothing is stored here, and the tree this site already shows is left exactly as it was.
 convert-file-label = Family file (.ged)
 convert-file-hint = Up to { $mb } MB. A tree of 767 people is about 320 KB.
 convert-confidence-label = How sure these facts are, to begin with
 convert-confidence-hint = The file being imported does not say how certain anyone was, so every fact needs a starting point. Set it low for a tree assembled quickly, higher for one worked from documents. The honest reading of this number is “imported, and not checked by anyone since” — you can raise or lower any fact afterwards, one at a time.
 convert-lang-label = Language of the place names
-convert-lang-hint = A tag such as en, fr or pl. A place can hold its name in several languages; this says which language the names in your file are written in.
-convert-what-you-get = What the import adds
-convert-what-you-get-1 = Every fact gains a level of certainty you can adjust later, so a doubt can be written down instead of thrown away. Dates keep their shape: circa 1500, before 1430 and between 1920 and 1925 stay three different statements, and wording nobody could read as a date is kept word for word. A job becomes a length of time with a start and an end. Each place becomes an entry of its own, so a town that changed country keeps that history.
-convert-no-way-back = Writing a .ged file back out is not offered. That format has nowhere to put how sure a fact is, a relationship outside the family, the length of a job, or a date nobody could pin down — so the return trip would quietly drop them. Your archive exports whole instead, as a single file.
+convert-lang-hint = A tag such as en, fr or pl.
 
 ## Conversion result
 
@@ -664,7 +647,7 @@ convert-skipped-title = { $n ->
         [one] One entry that could not be read
        *[other] { $n } entries that could not be read
     }
-convert-skipped-note = These entries held nothing that could be brought across. They are listed rather than swallowed: knowing exactly what was left behind is the difference between an import you can trust and one you cannot.
+convert-skipped-note = These entries held nothing that could be brought across.
 convert-other-diagnostics = { $n ->
         [one] One other thing worth knowing
        *[other] { $n } other things worth knowing
@@ -672,7 +655,7 @@ convert-other-diagnostics = { $n ->
 convert-clean = Nothing was left behind — every entry in the file came across.
 convert-download-title = Download
 convert-download-named = Download { $name }
-convert-download-note = Kept here for fifteen minutes and then discarded, so download it now. That one file is the whole tree; keep it somewhere safe.
+convert-download-note = Kept here for fifteen minutes and then discarded, so download it now.
 convert-another = Import another file
 admin-history-on = on
 admin-history-meta = — { $kind }, { $at }
@@ -861,7 +844,7 @@ document-type-other = document
 # thin, and here is why filling it in is worth the trouble.
 
 completeness-title = Where this tree could say more
-completeness-intro = What is recorded and what is still blank. Nothing here is an error: a blank row is somewhere the record could grow, not something that has gone wrong.
+completeness-intro = What is recorded and what is still blank.
 completeness-import-title = What the import brought over
 completeness-import-intro = Counted from the file you just uploaded. A blank row is something the original file did not record — it is not something the import lost.
 

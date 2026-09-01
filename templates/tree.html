@@ -17,7 +17,6 @@
       </p>
     {% else %}
       <h1>{{ t("tree-title-whole") }}</h1>
-      <p class="lede">{{ t("tree-lede-whole") }}</p>
     {% endif %}
   </div>
   {% if hidden %}
@@ -120,10 +119,6 @@
     <p>{{ t("tree-nobody-selected") }} <a href="/tree">{{ t("tree-nobody-selected-cta") }}</a></p>
   </div>
 {% else %}
-
-{% if not show_all %}
-<p class="small muted tree-hint">{{ t("tree-click-hint") }}</p>
-{% endif %}
 
 {# The canvas's width and height reach the stylesheet as custom properties.
    The width caps the tree's grid column at what the tree actually draws; the

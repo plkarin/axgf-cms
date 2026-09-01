@@ -40,6 +40,43 @@ drawn around each column were the edge of a scroll region, and there is no
 scroll region left to draw. The surface belongs to the split now, once, so the
 tree and the record read as one page rather than two windows side by side.
 
+### Removed
+
+**The interface no longer explains itself.** Eighteen strings whose subject was
+the software rather than the family are gone, ten more are trimmed to the fact
+they opened with, and what genuinely needed saying moved behind the small `?`
+the record sections already used.
+
+Off the tree page: the sentence teaching the reader what a faint connector
+means (the confidence legend is on the same page, three inches away, and a
+legend is a key rather than a lesson), and the one telling them that clicking a
+card opens the panel — a gesture they have already made by the time they can
+read about it. The record summary above them stays: how many ancestors,
+descendants and partners are drawn is a fact about the family.
+
+Off the person page: the ten section descriptions. They were printed under the
+heading on the standalone page and folded behind a `?` only in the narrow
+panel; they are behind the `?` on both surfaces now. The words are unchanged
+and one click away.
+
+Off the home page: the five cards headed "What this does for a family". That is
+the product's argument, the README makes it already, and a family opening its
+own front page does not need to be sold the software it is looking at. The
+family's name, what it has recorded, and where the tree says more than names
+and dates are what is left.
+
+Off the import page: the paragraph on what the import adds, and the note that
+there is no way back to `.ged` — the README carries the latter under its own
+heading. The confidence slider's four-sentence rationale is behind a `?`. So
+are the raw-JSON edit form's merge rules and the fact that a contributor's
+branch limits writing but not reading: both are traps rather than tutorials, so
+they were kept rather than dropped.
+
+What stays: the confidence legend, the record summary, the self-contradiction
+banner, every diagnostic and error, and the import report — including which
+entries were left behind, though no longer the sentence congratulating the
+importer for listing them.
+
 ## [0.1.0] — 2026-08-XX
 
 The first release. One binary serves a browsable, editable website for a

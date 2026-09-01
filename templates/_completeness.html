@@ -41,7 +41,11 @@
     <p class="small muted">{{ t("completeness-no-dates") }}</p>
   {% else %}
   <p class="small muted">
-    {{ t("completeness-dates-note") }}
+    <details class="sec-help">
+      <summary title="{{ t('record-help-toggle') }}"
+               aria-label="{{ t('record-help-toggle') }}">?</summary>
+      <span>{{ t("completeness-dates-note") }}</span>
+    </details>
   </p>
   <div class="grid cols-4 date-shapes">
     {% for d in [

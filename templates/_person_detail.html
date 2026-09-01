@@ -378,11 +378,13 @@
              aria-label="{{ t('record-caption') }}">
       <button class="btn primary">{{ t("record-upload") }}</button>
     </div>
-    {% if not compact %}
-    <p class="small muted">{{ t("record-upload-help", mb=max_upload_mb) }}</p>
-    {% else %}
-    <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}</p>
-    {% endif %}
+    <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}
+      <details class="sec-help">
+        <summary title="{{ t('record-help-toggle') }}"
+                 aria-label="{{ t('record-help-toggle') }}">?</summary>
+        <span class="small muted">{{ t("record-upload-help", mb=max_upload_mb) }}</span>
+      </details>
+    </p>
   </form>
   {% endif %}
 </section>
@@ -445,9 +447,7 @@
   <details class="raw">
     <summary>{{ t("record-raw") }}
       <span class="small muted">— {{ t("record-raw-summary-note") }}</span></summary>
-    {% if not compact %}
     <p class="small muted">{{ t("record-raw-help") }}</p>
-    {% endif %}
     <pre class="raw-json">{{ p.raw_json }}</pre>
   </details>
 </section>

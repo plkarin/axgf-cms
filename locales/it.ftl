@@ -36,7 +36,6 @@ footer-open-format-link = Sul formato
 
 prefs-title = Lingua e aspetto
 prefs-language = Lingua
-prefs-language-note = Questo cambia solo l'interfaccia. Nomi, luoghi e note appaiono sempre nella loro lingua e scrittura.
 prefs-theme = Aspetto
 prefs-apply = Applica
 prefs-reviewed = riletta
@@ -68,8 +67,7 @@ tree-lede-focused = { $ancestors ->
     } e { $spouses ->
         [one] un partner
        *[other] { $spouses } partner
-    }, { $depth } generazioni per parte. I più antichi in basso. L'opacità di una linea è la certezza del legame: una linea pallida è un'affermazione di cui la scheda non è sicura.
-tree-lede-whole = Tutte le persone dell'albero. I più antichi in basso, i più recenti in alto. L'opacità di una linea è la certezza del legame.
+    }, { $depth } generazioni per parte.
 tree-filter-label = Filtra le schede visibili
 tree-filter-placeholder = Digita un nome…
 tree-centre-on = Centra su
@@ -201,7 +199,7 @@ admin-recent-changes = Modifiche recenti
 admin-recent-note = Le ultime { $shown } di { $total ->
         [one] una modifica registrata
        *[other] { $total } modifiche registrate
-    }, da { $path }. Il registro sta accanto all'archivio e non dentro: un archivio si copia, si spedisce e si pubblica, e chi ha corretto cosa è un fatto sulle persone che tengono l'albero, non sulla famiglia che vi si trova.
+    }, da { $path }.
 admin-sessions-open = { $n ->
         [one] Una sessione aperta adesso.
        *[other] { $n } sessioni aperte adesso.
@@ -263,7 +261,8 @@ accounts-create = Crea l'account
 accounts-role-viewer = lettore — legge le schede pubbliche e quelle di famiglia
 accounts-role-contributor = collaboratore — inoltre crea, modifica e carica file
 accounts-role-admin = amministratore — inoltre gestisce gli account, elimina ed esporta
-accounts-branch-hint = Limita ciò che questo account può modificare a quelle persone, ai loro discendenti e ai loro coniugi. Non limita ciò che può leggere: quello lo governa la visibilità di ogni scheda, e le due cose restano separate di proposito.
+accounts-branch-hint = Limita ciò che questo account può modificare a quelle persone, ai loro discendenti e ai loro coniugi.
+accounts-branch-reading = Non limita ciò che può leggere: quello lo governa la visibilità di ogni scheda, e le due cose restano separate di proposito.
 accounts-branch-placeholder = un identificativo di persona per riga
 accounts-ids-in-bundle = Identificativi delle persone in quest'albero
 accounts-emergency-warning = Siete entrati con il token d'emergenza. Concede i diritti d'amministratore per questa sessione ma non è un account: non ha preferenze proprie, e il registro annoterà le vostre modifiche come emergency-token invece che come persona. Createvi qui sotto un account vero ed entrate con quello.
@@ -384,10 +383,10 @@ error-export-unreadable-detail = { $error }
 tree-title-suffix = albero
 tree-back-to-focused = Torna alla vista attorno a una persona
 tree-show-all = Mostra tutte e { $n }
-tree-width-notice = Questa vista è larga { $width } pixel. Ogni generazione è una riga, e la più larga fissa quella misura: su uno schermo da 1500 pixel fa { $screens ->
+tree-width-notice = Questa vista è larga { $width } pixel: su uno schermo da 1500 pixel fa { $screens ->
         [one] uno schermo
        *[other] { $screens } schermi
-    } di scorrimento orizzontale. La vista attorno a una persona mostra invece qualche decina di persone intorno a lei, e ogni scheda la ricentra.
+    } di scorrimento orizzontale.
 tree-confidence-label = Certezza:
 tree-band-certain = certo
 tree-band-high = alta
@@ -409,7 +408,6 @@ tree-no-people = In quest'albero non c'è ancora nessuno.
 tree-no-people-cta = Importate un file di famiglia, oppure aggiungete la prima persona.
 tree-nobody-selected = Per questa selezione non c'è nessuno da disegnare.
 tree-nobody-selected-cta = Cominciate dalla vista predefinita.
-tree-click-hint = Fate clic su una scheda qualsiasi per aprire nella colonna laterale la scheda di quella persona; «Centra l'albero qui» nella colonna sposta la radice della vista.
 tree-edge-union = Un'unione registrata
 tree-edge-parentage = Una discendenza registrata
 
@@ -423,20 +421,8 @@ home-count = { $total ->
 home-browse = Sfoglia l'albero
 home-convert = Importa un file di famiglia
 home-unnamed-family = Quest'albero di famiglia
-home-what-title = Che cosa dà questo a una famiglia
-home-what-archive-title = Un solo posto per tutto l'archivio
-home-what-archive-body = L'albero, i documenti e le fotografie stanno insieme. La scansione di un atto di matrimonio pende dal matrimonio stesso, non dalla posta di qualcuno, e una fotografia nomina le persone che vi compaiono.
-home-what-together-title = Più parenti, ruoli diversi
-home-what-together-body = Una zia con trent'anni di appunti e un cugino che vuole soltanto correggere una grafia non hanno bisogno degli stessi poteri. Ogni parente è invitato con un ruolo proprio, e ogni modifica registra chi l'ha fatta e quando.
-home-what-privacy-title = Riservatezza decisa persona per persona
-home-what-privacy-body = Un parente vivo può essere visibile alla famiglia e invisibile ai visitatori, mentre la sua bisnonna è aperta a chiunque. La scelta si fa per ogni persona, non una volta sola per tutto l'albero.
-home-what-languages-title = Undici lingue
-home-what-languages-body = I parenti leggono il sito nella propria lingua — russo compreso, la lingua in cui furono tenuti i registri di stato civile di mezza Europa centrale e orientale. Un nome resta nella propria scrittura accanto alla traslitterazione; non serve appiattire nulla su un solo alfabeto perché il sito funzioni.
-home-what-export-title = L'archivio resta vostro
-home-what-export-body = Esportate tutto quanto in un solo file quando volete: persone, relazioni, documenti e fotografie insieme. Se un giorno decidete di andarvene, ve ne andate con l'archivio intero.
 home-in-this-tree = Che cosa ha registrato finora la famiglia
 home-showcase-title = Dove quest'albero dice già più di nomi e date
-home-showcase-note = Ognuno di questi punti viene da ciò che qui è davvero registrato, non da un elenco di ciò che il sito saprebbe fare.
 home-showcase-example = Vedi un esempio →
 home-nothing-title = Ancora nulla da mostrare.
 home-nothing-detail = Importate un file di famiglia per portare qui un albero già esistente, oppure partite da zero e aggiungete voi stessi la prima persona.
@@ -536,7 +522,7 @@ record-doc-other = altro
 record-upload = Carica
 record-upload-help = Fino a { $mb } MB per file. Gli allegati stanno accanto all'albero e vengono riscritti nell'archivio all'esportazione, così una fotografia viaggia insieme alla famiglia a cui appartiene. Il tipo di file si legge dal suo contenuto e non dal nome: si accettano immagini, PDF, testo semplice, audio e video. L'SVG è rifiutato, perché un SVG può contenere uno script.
 record-upload-help-short = Fino a { $mb } MB. L'SVG è rifiutato.
-record-verbatim-note = Conservato esattamente come lo dava la scheda, perché nessun convertitore ha saputo interpretarlo. L'alternativa sarebbe stata scartarlo.
+record-verbatim-note = Conservato esattamente come lo dava la scheda, perché nessun convertitore ha saputo interpretarlo.
 record-file-to-attach = File da allegare
 record-document-type = Tipo di documento
 record-caption = Didascalia
@@ -629,16 +615,13 @@ completeness-shape-unknown-note = registrata come non nota
 ## Pagina d'importazione
 
 convert-page-title = Importa un file di famiglia
-convert-lede = Portate qui un albero già esistente da un file GEDCOM, l'esportazione che produce la maggior parte dei programmi di genealogia. Ne riavete indietro un archivio da conservare. Qui non si conserva nulla, e l'albero che questo sito già mostra resta esattamente com'era.
+convert-lede = Portate qui un albero già esistente da un file GEDCOM, l'esportazione che produce la maggior parte dei programmi di genealogia. Qui non si conserva nulla, e l'albero che questo sito già mostra resta esattamente com'era.
 convert-file-label = File di famiglia (.ged)
 convert-file-hint = Fino a { $mb } MB. Un albero di 767 persone pesa circa 320 KB.
 convert-confidence-label = Quanto sono certi questi fatti, per cominciare
 convert-confidence-hint = Il file che state importando non dice quanto qualcuno fosse sicuro, perciò ogni fatto ha bisogno di un punto di partenza. Mettetelo basso per un albero messo insieme in fretta, più alto per uno lavorato sui documenti. La lettura onesta di questo numero è «importato, e da allora non controllato da nessuno»: potrete poi alzare o abbassare ogni fatto, uno alla volta.
 convert-lang-label = Lingua dei nomi di luogo
-convert-lang-hint = Una sigla come en, fr o it. Un luogo può portare il proprio nome in più lingue; questo dice in quale lingua sono scritti i nomi nel vostro file.
-convert-what-you-get = Che cosa aggiunge l'importazione
-convert-what-you-get-1 = Ogni fatto riceve un grado di certezza che potrete correggere in seguito, così un dubbio si scrive invece di buttarlo via. Le date conservano la loro forma: circa 1500, prima del 1430 e fra il 1920 e il 1925 restano tre affermazioni diverse, e una formulazione che nessuno ha saputo leggere come data resta parola per parola. Un mestiere diventa un tratto di tempo con un inizio e una fine. Ogni luogo diventa una voce a sé, così una città che ha cambiato stato conserva quella storia.
-convert-no-way-back = Riscrivere un file .ged non è previsto. Quel formato non ha dove mettere quanto un fatto sia certo, una relazione fuori dalla famiglia, la durata di un mestiere o una data che nessuno ha saputo fissare: il viaggio di ritorno le perderebbe in silenzio. Il vostro archivio si esporta invece intero, come un solo file.
+convert-lang-hint = Una sigla come en, fr o it.
 
 ## Rapporto d'importazione
 
@@ -654,7 +637,7 @@ convert-skipped-title = { $n ->
         [one] Una voce che non si è potuta leggere
        *[other] { $n } voci che non si sono potute leggere
     }
-convert-skipped-note = Queste voci non contenevano nulla che si potesse portare qui. Sono elencate invece che inghiottite: sapere esattamente che cosa è rimasto indietro è la differenza fra un'importazione di cui fidarsi e una di cui non fidarsi.
+convert-skipped-note = Queste voci non contenevano nulla che si potesse portare qui.
 convert-other-diagnostics = { $n ->
         [one] Un'altra cosa da sapere
        *[other] Altre { $n } cose da sapere
@@ -662,7 +645,7 @@ convert-other-diagnostics = { $n ->
 convert-clean = Non è rimasto indietro nulla: ogni voce del file è passata.
 convert-download-title = Scaricamento
 convert-download-named = Scarica { $name }
-convert-download-note = Conservato qui quindici minuti e poi scartato, quindi scaricatelo adesso. Quell'unico file è l'albero intero; tenetelo al sicuro.
+convert-download-note = Conservato qui quindici minuti e poi scartato, quindi scaricatelo adesso.
 convert-another = Importa un altro file
 admin-history-on = il
 admin-history-meta = — { $kind }, { $at }
@@ -827,7 +810,7 @@ document-type-other = documento
 ## Dove questa scheda potrebbe dire di più
 
 completeness-title = Dove quest'albero potrebbe dire di più
-completeness-intro = Che cosa è registrato e che cosa è ancora vuoto. Niente qui è un errore: una riga vuota è un punto in cui la scheda può crescere, non qualcosa che è andato storto.
+completeness-intro = Che cosa è registrato e che cosa è ancora vuoto.
 completeness-import-title = Che cosa ha portato l'importazione
 completeness-import-intro = Contato sul file che avete appena caricato. Una riga vuota è qualcosa che il file di partenza non registrava — non qualcosa che l'importazione ha perso.
 

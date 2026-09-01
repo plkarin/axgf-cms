@@ -405,10 +405,15 @@ async fn the_dashboard_shows_a_bundle_completeness_readout() {
 
     let body = expect_status(get_admin(&app, "/admin").await, StatusCode::OK, "dashboard").await;
 
+    // Framed as room to grow rather than as a fault — by the heading, which is
+    // where that framing belongs. The sentence under it that used to spell the
+    // same thing out ("Nothing here is an error: a blank row is somewhere the
+    // record could grow…") was the table explaining the table, and it went
+    // with the rest of the instructional copy.
     assert!(body.contains("Where this tree could say more"));
     assert!(
-        body.contains("somewhere the record could grow"),
-        "framed as room to grow, not as a fault"
+        !body.contains("Nothing here is an error"),
+        "the readout states what is blank; it does not reassure the reader about it"
     );
     for expected in [
         "How sure each fact is",

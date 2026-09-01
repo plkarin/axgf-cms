@@ -205,31 +205,106 @@ async fn gender_living_and_visibility_are_labelled_chips_not_a_run_on_string() {
     );
 }
 
+/// Section prose is one click away on both surfaces.
+///
+/// It used to be printed under the heading on the standalone page and folded
+/// behind a `?` only in the narrow panel. Printed, it is the page explaining
+/// itself above content that says it better; the words are still there for
+/// whoever wants them.
 #[tokio::test]
-async fn section_prose_is_on_the_page_and_behind_a_question_mark_in_the_panel() {
+async fn section_prose_is_behind_a_question_mark_on_both_surfaces() {
     let (app, _p) = app_with_bundle("panel-help", &bundle("panel-help-src"));
     let opening = "Birth, death and every event this person took part in";
 
-    let page = page(&app, SOLO).await;
+    for (surface, body) in [
+        ("the standalone page", page(&app, SOLO).await),
+        ("the panel", panel(&app, SOLO).await),
+    ] {
+        assert!(
+            body.contains("sec-help"),
+            "{surface} puts the explanation behind a small affordance"
+        );
+        assert!(
+            body.contains(opening),
+            "…without dropping the words: {surface} must not be a lesser record"
+        );
+        // The prose is inside the collapsed <details>, not loose in the
+        // section. Anchored on `sec-help` because the full page's first
+        // disclosure is the masthead's preferences menu, which the panel
+        // fragment does not carry.
+        let after_summary = body
+            .split("class=\"sec-help\"")
+            .nth(1)
+            .expect("a section disclosure")
+            .split("</summary>")
+            .nth(1)
+            .unwrap_or("");
+        assert!(
+            after_summary
+                .trim_start()
+                .starts_with("<p class=\"small muted\">"),
+            "on {surface} the text must live inside the disclosure, not beside \
+             it:\n{after_summary:.120}"
+        );
+    }
+}
+
+/// The tree page is a record, not a manual.
+///
+/// Two sentences taught the reader how to work the interface — what a faint
+/// connector meant, and that clicking a card opens the panel. The confidence
+/// legend on the same page is the key to the first, and the second described a
+/// gesture the reader had already made by the time they could read it.
+#[test]
+fn the_tree_page_does_not_explain_how_to_use_it() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let en = std::fs::read_to_string(root.join("locales/en.ftl")).expect("en.ftl");
+    let html = std::fs::read_to_string(root.join("templates/tree.html")).expect("tree.html");
+
+    for key in ["tree-click-hint", "tree-lede-whole"] {
+        assert!(
+            !en.contains(&format!("\n{key} =")),
+            "{key} is a tutorial and was removed; it must not come back"
+        );
+        assert!(
+            !html.contains(key),
+            "{key} is still asked for by the template"
+        );
+    }
+
+    // The counts survive: how many ancestors, descendants and partners are
+    // drawn is a fact about the family, not about the software.
     assert!(
-        page.contains(opening) && !page.contains("sec-help"),
-        "the standalone page prints the explanation under the heading"
+        en.contains("\ntree-lede-focused ="),
+        "the record summary stays"
+    );
+    let lede = en
+        .split("\ntree-lede-focused =")
+        .nth(1)
+        .unwrap()
+        .split("\ntree-")
+        .next()
+        .unwrap();
+    assert!(
+        !lede.contains("opacity") && !lede.contains("Oldest at the bottom"),
+        "…without the lesson in how to read the drawing:\n{lede}"
     );
 
-    let panel = panel(&app, SOLO).await;
+    // The legend is a key, not a tutorial, and the encoding needs one.
+    for key in [
+        "tree-confidence-label",
+        "tree-band-certain",
+        "tree-band-low",
+    ] {
+        assert!(
+            en.contains(&format!("\n{key} =")),
+            "{key} is the legend, kept"
+        );
+    }
+    // So is the banner that reports a defect in the data.
     assert!(
-        panel.contains("sec-help"),
-        "the panel puts it behind a small affordance"
-    );
-    assert!(
-        panel.contains(opening),
-        "…without dropping the words: the panel must not be a lesser record"
-    );
-    // The prose is inside the collapsed <details>, not loose in the section.
-    let after_summary = panel.split("</summary>").nth(1).unwrap_or("");
-    assert!(
-        after_summary.starts_with("\n    <p class=\"small muted\">"),
-        "the text must live inside the disclosure, not beside it"
+        en.contains("\ntree-contradicts-title ="),
+        "the self-contradiction banner names a data defect and stays"
     );
 }
 

@@ -5,22 +5,43 @@ mod common;
 use axum::http::StatusCode;
 use common::*;
 
+/// Home is the family's front page, not the product's.
+///
+/// It used to carry five cards headed "What this does for a family" — one
+/// place for the whole archive, roles, per-person privacy, eleven languages,
+/// the archive stays yours. Every one of them has the software as its subject,
+/// and every one of them is already in the README, which is where an argument
+/// for the software belongs. What is left is the family: its name, what it has
+/// recorded, and where its tree already says more than names and dates.
 #[tokio::test]
-async fn home_says_what_the_product_does_for_a_family() {
+async fn home_states_what_the_family_has_recorded_not_what_the_product_does() {
     let (app, _p) = app_with_empty_bundle("home");
     let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
 
-    assert!(body.contains("What this does for a family"));
-    // The five promises, each phrased for a relative rather than a developer.
-    for promise in [
+    for pitch in [
+        "What this does for a family",
         "One place for the whole archive",
         "Several relatives, different roles",
         "Privacy decided person by person",
         "Eleven languages",
         "The archive stays yours",
     ] {
-        assert!(body.contains(promise), "home is missing: {promise}");
+        assert!(
+            !body.contains(pitch),
+            "home is still selling the software: {pitch}"
+        );
     }
+
+    // What the family has is still stated, and so is the way in.
+    assert!(
+        body.contains("What the family has recorded so far"),
+        "the counts keep their heading"
+    );
+    assert!(
+        body.contains("/tree"),
+        "and the tree is still one click away"
+    );
+
     // And none of it argues about the file format.
     for jargon in ["Why AXGF", "GEDCOM records what", "specification", "Rust"] {
         assert!(

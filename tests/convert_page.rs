@@ -142,9 +142,14 @@ async fn unrecognized_tags_are_presented_as_a_feature_not_hidden() {
         body.contains("could not be read"),
         "skipped entries need the explanatory framing"
     );
+    // What is *not* there any more is the import arguing for itself — "they
+    // are listed rather than swallowed: knowing exactly what was left behind
+    // is the difference between an import you can trust and one you cannot".
+    // The list is the argument. The sentence was the software talking about
+    // the software.
     assert!(
-        body.contains("listed rather than swallowed"),
-        "and the reason they are shown at all"
+        !body.contains("listed rather than swallowed"),
+        "the report shows what was left behind; it does not praise itself for it"
     );
     assert!(body.contains("/convert/download/"));
 }

@@ -38,7 +38,6 @@ footer-open-format-link = Über das Format
 
 prefs-title = Sprache und Darstellung
 prefs-language = Sprache
-prefs-language-note = Das ändert nur die Oberfläche. Namen, Orte und Notizen erscheinen immer in ihrer eigenen Sprache und Schrift.
 prefs-theme = Darstellung
 prefs-apply = Übernehmen
 prefs-reviewed = geprüft
@@ -70,8 +69,7 @@ tree-lede-focused = { $ancestors ->
     } und { $spouses ->
         [one] ein Partner
        *[other] { $spouses } Partner
-    }, { $depth } Generationen in jede Richtung. Die Ältesten unten. Die Deckkraft einer Linie ist die Sicherheit der Beziehung — eine blasse Linie ist eine Aussage, deren der Eintrag sich nicht sicher ist.
-tree-lede-whole = Alle Personen im Stammbaum. Die Ältesten unten, die Jüngsten oben. Die Deckkraft einer Linie ist die Sicherheit der Beziehung.
+    }, { $depth } Generationen in jede Richtung.
 tree-filter-label = Sichtbare Karten filtern
 tree-filter-placeholder = Namen eingeben …
 tree-centre-on = Zentrieren auf
@@ -203,7 +201,7 @@ admin-recent-changes = Letzte Änderungen
 admin-recent-note = Die letzten { $shown } von { $total ->
         [one] einer erfassten Änderung
        *[other] { $total } erfassten Änderungen
-    }, aus { $path }. Das Journal liegt neben dem Archiv statt darin: Ein Archiv wird kopiert, verschickt und veröffentlicht, und wer was korrigiert hat, ist eine Tatsache über die Personen, die den Stammbaum pflegen, nicht über die Familie darin.
+    }, aus { $path }.
 admin-sessions-open = { $n ->
         [one] Eine Sitzung ist gerade offen.
        *[other] { $n } Sitzungen sind gerade offen.
@@ -265,7 +263,8 @@ accounts-create = Konto anlegen
 accounts-role-viewer = Lesend — liest öffentliche Einträge und die der Familie
 accounts-role-contributor = Mitwirkend — legt außerdem an, bearbeitet und lädt hoch
 accounts-role-admin = Verwaltung — verwaltet außerdem Konten, löscht und gibt aus
-accounts-branch-hint = Beschränkt, was dieses Konto bearbeiten darf, auf diese Personen, ihre Nachfahren und ihre Ehepartner. Es beschränkt nicht, was sie lesen dürfen — das regelt die Sichtbarkeit jedes Eintrags, und beides wird absichtlich getrennt gehalten.
+accounts-branch-hint = Beschränkt, was dieses Konto bearbeiten darf, auf diese Personen, ihre Nachfahren und ihre Ehepartner.
+accounts-branch-reading = Es beschränkt nicht, was sie lesen dürfen — das regelt die Sichtbarkeit jedes Eintrags, und beides wird absichtlich getrennt gehalten.
 accounts-branch-placeholder = eine Personenkennung je Zeile
 accounts-ids-in-bundle = Personenkennungen in diesem Stammbaum
 accounts-emergency-warning = Sie sind mit dem Notfall-Token angemeldet. Es gewährt für diese Sitzung Verwaltungsrechte, ist aber kein Konto: Es hat keine eigenen Einstellungen, und das Änderungsjournal führt Ihre Änderungen als emergency-token statt als Person. Legen Sie sich unten ein richtiges Konto an und melden Sie sich damit an.
@@ -386,10 +385,10 @@ error-export-unreadable-detail = { $error }
 tree-title-suffix = Stammbaum
 tree-back-to-focused = Zurück zur Ansicht um eine Person
 tree-show-all = Alle { $n } anzeigen
-tree-width-notice = Diese Ansicht ist { $width } Pixel breit. Jede Generation ist eine Zeile, und die breiteste davon bestimmt diese Breite — auf einem Bildschirm mit 1500 Pixeln sind das { $screens ->
+tree-width-notice = Diese Ansicht ist { $width } Pixel breit — auf einem Bildschirm mit 1500 Pixeln sind das { $screens ->
         [one] ein Bildschirm
        *[other] { $screens } Bildschirme
-    } waagerechtes Scrollen. Die Ansicht um eine Person zeigt stattdessen ein paar Dutzend Menschen um sie herum, und jede Karte rückt sie neu in die Mitte.
+    } waagerechtes Scrollen.
 tree-confidence-label = Sicherheit:
 tree-band-certain = sicher
 tree-band-high = hoch
@@ -411,7 +410,6 @@ tree-no-people = In diesem Stammbaum ist noch niemand.
 tree-no-people-cta = Importieren Sie eine Familiendatei oder legen Sie die erste Person an.
 tree-nobody-selected = Für diese Auswahl gibt es niemanden zu zeichnen.
 tree-nobody-selected-cta = Beginnen Sie mit der Standardansicht.
-tree-click-hint = Klicken Sie eine beliebige Karte an, um den Eintrag dieser Person in der Seitenspalte zu öffnen; „Stammbaum hier zentrieren“ in der Seitenspalte setzt die Wurzel der Ansicht neu.
 tree-edge-union = Eine erfasste Verbindung
 tree-edge-parentage = Eine erfasste Abstammung
 
@@ -425,20 +423,8 @@ home-count = { $total ->
 home-browse = Stammbaum ansehen
 home-convert = Familiendatei importieren
 home-unnamed-family = Dieser Stammbaum
-home-what-title = Was das einer Familie bringt
-home-what-archive-title = Ein Ort für das ganze Archiv
-home-what-archive-body = Der Stammbaum, die Dokumente und die Fotografien liegen beieinander. Der Scan einer Heiratsurkunde hängt an der Heirat selbst und nicht im Postfach von irgendwem, und eine Fotografie benennt die Menschen darauf.
-home-what-together-title = Mehrere Verwandte, verschiedene Rollen
-home-what-together-body = Eine Tante mit dreißig Jahren an Aufzeichnungen und ein Cousin, der nur eine Schreibweise berichtigen möchte, brauchen nicht dieselben Rechte. Jede und jeder Verwandte wird mit einer eigenen Rolle eingeladen, und jede Änderung hält fest, wer sie wann gemacht hat.
-home-what-privacy-title = Sichtbarkeit, Person für Person entschieden
-home-what-privacy-body = Ein lebender Verwandter kann für die Familie sichtbar und für Besucher unsichtbar sein, während seine Urgroßmutter für alle offen steht. Die Entscheidung fällt für jede Person einzeln, nicht einmal für den ganzen Stammbaum.
-home-what-languages-title = Elf Sprachen
-home-what-languages-body = Verwandte lesen die Website in ihrer eigenen Sprache — auch auf Russisch, der Sprache, in der die Personenstandsregister der halben Mitte und des Ostens Europas geführt wurden. Ein Name bleibt in seiner eigenen Schrift neben der Umschrift stehen; nichts muss auf ein einziges Alphabet eingeebnet werden, damit die Website funktioniert.
-home-what-export-title = Das Archiv bleibt Ihres
-home-what-export-body = Geben Sie jederzeit alles als eine einzige Datei aus — Personen, Beziehungen, Dokumente und Fotografien zusammen. Sollten Sie eines Tages gehen, gehen Sie mit dem vollständigen Archiv.
 home-in-this-tree = Was die Familie bisher erfasst hat
 home-showcase-title = Wo dieser Stammbaum bereits mehr sagt als Namen und Daten
-home-showcase-note = Jeder dieser Punkte stammt aus dem, was hier tatsächlich erfasst ist, und nicht aus einer Liste dessen, was die Website könnte.
 home-showcase-example = Ein Beispiel ansehen →
 home-nothing-title = Noch nichts zu zeigen.
 home-nothing-detail = Importieren Sie eine Familiendatei, um einen vorhandenen Stammbaum zu übernehmen, oder fangen Sie bei null an und legen Sie die erste Person selbst an.
@@ -538,7 +524,7 @@ record-doc-other = sonstiges
 record-upload = Hochladen
 record-upload-help = Bis zu { $mb } MB je Datei. Anhänge liegen neben dem Stammbaum und werden beim Ausgeben wieder ins Archiv geschrieben, so reist eine Fotografie mit der Familie, zu der sie gehört. Die Art der Datei wird aus ihrem eigenen Inhalt gelesen, nicht aus ihrem Namen: Bilder, PDF, einfacher Text, Ton und Video werden angenommen. SVG wird abgelehnt, weil ein SVG ein Skript enthalten kann.
 record-upload-help-short = Bis zu { $mb } MB. SVG wird abgelehnt.
-record-verbatim-note = Genau so bewahrt, wie der Eintrag es angab, weil kein Konverter es deuten konnte. Die Alternative wäre gewesen, es zu verwerfen.
+record-verbatim-note = Genau so bewahrt, wie der Eintrag es angab, weil kein Konverter es deuten konnte.
 record-file-to-attach = Anzuhängende Datei
 record-document-type = Art des Dokuments
 record-caption = Bildunterschrift
@@ -631,16 +617,13 @@ completeness-shape-unknown-note = als unbekannt erfasst
 ## Importseite
 
 convert-page-title = Familiendatei importieren
-convert-lede = Übernehmen Sie einen vorhandenen Stammbaum aus einer GEDCOM-Datei — der Ausgabe, die die meisten Genealogieprogramme erzeugen. Sie erhalten ein Archiv zurück, das Sie behalten. Hier wird nichts gespeichert, und der Stammbaum, den diese Website bereits zeigt, bleibt genau so, wie er war.
+convert-lede = Übernehmen Sie einen vorhandenen Stammbaum aus einer GEDCOM-Datei — der Ausgabe, die die meisten Genealogieprogramme erzeugen. Hier wird nichts gespeichert, und der Stammbaum, den diese Website bereits zeigt, bleibt genau so, wie er war.
 convert-file-label = Familiendatei (.ged)
 convert-file-hint = Bis zu { $mb } MB. Ein Stammbaum mit 767 Personen ist etwa 320 KB groß.
 convert-confidence-label = Wie sicher diese Angaben zu Beginn sind
 convert-confidence-hint = Die eingelesene Datei sagt nicht, wie sicher sich jemand war, deshalb braucht jede Angabe einen Ausgangspunkt. Setzen Sie ihn niedrig für einen rasch zusammengetragenen Stammbaum, höher für einen aus Dokumenten erarbeiteten. Ehrlich gelesen heißt diese Zahl „eingelesen und seither von niemandem geprüft“ — Sie können jede Angabe später einzeln anheben oder senken.
 convert-lang-label = Sprache der Ortsnamen
-convert-lang-hint = Ein Kürzel wie en, fr oder de. Ein Ort kann seinen Namen in mehreren Sprachen führen; dies sagt, in welcher Sprache die Namen in Ihrer Datei geschrieben sind.
-convert-what-you-get = Was der Import hinzufügt
-convert-what-you-get-1 = Jede Angabe erhält ein Maß an Sicherheit, das Sie später anpassen können, damit ein Zweifel festgehalten statt weggeworfen wird. Daten behalten ihre Form: um 1500, vor 1430 und zwischen 1920 und 1925 bleiben drei verschiedene Aussagen, und eine Formulierung, die niemand als Datum lesen konnte, bleibt Wort für Wort erhalten. Ein Beruf wird zu einer Zeitspanne mit Anfang und Ende. Jeder Ort wird zu einem eigenen Eintrag, sodass eine Stadt, die den Staat gewechselt hat, diese Geschichte behält.
-convert-no-way-back = Das Zurückschreiben in eine .ged-Datei wird nicht angeboten. Jenes Format hat keinen Platz dafür, wie sicher eine Angabe ist, für eine Beziehung außerhalb der Familie, für die Dauer eines Berufs oder für ein Datum, das niemand festlegen konnte — der Rückweg würde sie stillschweigend verlieren. Ihr Archiv wird stattdessen vollständig ausgegeben, als eine einzige Datei.
+convert-lang-hint = Ein Kürzel wie en, fr oder de.
 
 ## Importbericht
 
@@ -656,7 +639,7 @@ convert-skipped-title = { $n ->
         [one] Ein Eintrag, der sich nicht lesen ließ
        *[other] { $n } Einträge, die sich nicht lesen ließen
     }
-convert-skipped-note = In diesen Einträgen stand nichts, was sich hätte übernehmen lassen. Sie werden aufgeführt statt verschluckt: genau zu wissen, was zurückblieb, ist der Unterschied zwischen einem Import, dem man trauen kann, und einem, dem man nicht trauen kann.
+convert-skipped-note = In diesen Einträgen stand nichts, was sich hätte übernehmen lassen.
 convert-other-diagnostics = { $n ->
         [one] Eine weitere Sache, die man wissen sollte
        *[other] { $n } weitere Dinge, die man wissen sollte
@@ -664,7 +647,7 @@ convert-other-diagnostics = { $n ->
 convert-clean = Nichts blieb zurück — jeder Eintrag der Datei kam herüber.
 convert-download-title = Herunterladen
 convert-download-named = { $name } herunterladen
-convert-download-note = Wird hier fünfzehn Minuten aufbewahrt und dann verworfen, laden Sie es also jetzt herunter. Diese eine Datei ist der ganze Stammbaum; bewahren Sie sie sicher auf.
+convert-download-note = Wird hier fünfzehn Minuten aufbewahrt und dann verworfen, laden Sie es also jetzt herunter.
 convert-another = Eine weitere Datei importieren
 admin-history-on = am
 admin-history-meta = — { $kind }, { $at }
@@ -829,7 +812,7 @@ document-type-other = Dokument
 ## Wo dieser Eintrag mehr sagen könnte
 
 completeness-title = Wo dieser Stammbaum mehr sagen könnte
-completeness-intro = Was erfasst ist und was noch leer ist. Nichts davon ist ein Fehler: Eine leere Zeile ist eine Stelle, an der der Eintrag wachsen kann, und nicht etwas, das schiefgegangen ist.
+completeness-intro = Was erfasst ist und was noch leer ist.
 completeness-import-title = Was der Import mitgebracht hat
 completeness-import-intro = Gezählt aus der Datei, die Sie gerade hochgeladen haben. Eine leere Zeile ist etwas, das die ursprüngliche Datei nicht erfasst hat — nicht etwas, das der Import verloren hat.
 

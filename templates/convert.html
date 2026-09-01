@@ -18,7 +18,13 @@
     <input type="range" id="confidence" name="confidence"
            min="0" max="1" step="0.05" value="0.8"
            oninput="document.getElementById('confval').textContent = this.value">
-    <div class="hint">{{ t("convert-confidence-hint") }}</div>
+    <div class="hint">
+      <details class="sec-help">
+        <summary title="{{ t('record-help-toggle') }}"
+                 aria-label="{{ t('record-help-toggle') }}">?</summary>
+        <span>{{ t("convert-confidence-hint") }}</span>
+      </details>
+    </div>
   </div>
 
   <div class="field">
@@ -29,11 +35,5 @@
 
   <button class="btn primary" type="submit">{{ t("convert-submit") }}</button>
 </form>
-
-<section class="why" style="margin-top:1.5rem">
-  <h2>{{ t("convert-what-you-get") }}</h2>
-  <p>{{ t("convert-what-you-get-1") }}</p>
-  <p class="small">{{ t("convert-no-way-back") }}</p>
-</section>
 
 {% endblock %}

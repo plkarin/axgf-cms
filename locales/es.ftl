@@ -36,7 +36,6 @@ footer-open-format-link = Sobre el formato
 
 prefs-title = Idioma y apariencia
 prefs-language = Idioma
-prefs-language-note = Esto cambia solo la interfaz. Los nombres, los lugares y las notas se muestran siempre en su propia lengua y escritura.
 prefs-theme = Apariencia
 prefs-apply = Aplicar
 prefs-reviewed = revisada
@@ -68,8 +67,7 @@ tree-lede-focused = { $ancestors ->
     } y { $spouses ->
         [one] una pareja
        *[other] { $spouses } parejas
-    }, { $depth } generaciones a cada lado. Los más antiguos abajo. La opacidad de una línea es la certeza del parentesco: una línea pálida es una afirmación de la que la ficha no está segura.
-tree-lede-whole = Todas las personas del árbol. Los más antiguos abajo, los más recientes arriba. La opacidad de una línea es la certeza del parentesco.
+    }, { $depth } generaciones a cada lado.
 tree-filter-label = Filtrar las fichas visibles
 tree-filter-placeholder = Escriba un nombre…
 tree-centre-on = Centrar en
@@ -201,7 +199,7 @@ admin-recent-changes = Cambios recientes
 admin-recent-note = Los últimos { $shown } de { $total ->
         [one] un cambio registrado
        *[other] { $total } cambios registrados
-    }, desde { $path }. El diario se guarda junto al archivo y no dentro: un archivo se copia, se envía y se publica, y quién corrigió qué es un hecho sobre las personas que llevan el árbol, no sobre la familia que está en él.
+    }, desde { $path }.
 admin-sessions-open = { $n ->
         [one] Una sesión abierta ahora mismo.
        *[other] { $n } sesiones abiertas ahora mismo.
@@ -263,7 +261,8 @@ accounts-create = Crear la cuenta
 accounts-role-viewer = lectura — lee las fichas públicas y las de la familia
 accounts-role-contributor = colaborador — además crea, edita y sube ficheros
 accounts-role-admin = administrador — además gestiona cuentas, borra y exporta
-accounts-branch-hint = Limita lo que esta cuenta puede editar a esas personas, sus descendientes y sus cónyuges. No limita lo que puede leer: eso lo gobierna la visibilidad de cada ficha, y las dos cosas se mantienen separadas a propósito.
+accounts-branch-hint = Limita lo que esta cuenta puede editar a esas personas, sus descendientes y sus cónyuges.
+accounts-branch-reading = No limita lo que puede leer: eso lo gobierna la visibilidad de cada ficha, y las dos cosas se mantienen separadas a propósito.
 accounts-branch-placeholder = un identificador de persona por línea
 accounts-ids-in-bundle = Identificadores de personas en este árbol
 accounts-emergency-warning = Ha entrado con el testigo de emergencia. Concede derechos de administrador durante esta sesión pero no es una cuenta: no tiene preferencias propias, y el diario anotará sus cambios como emergency-token en lugar de como persona. Créese abajo una cuenta de verdad y entre con ella.
@@ -384,10 +383,10 @@ error-export-unreadable-detail = { $error }
 tree-title-suffix = árbol
 tree-back-to-focused = Volver a la vista alrededor de una persona
 tree-show-all = Mostrar las { $n }
-tree-width-notice = Esta vista mide { $width } píxeles de ancho. Cada generación es una fila, y la más ancha fija esa medida: en una pantalla de 1500 píxeles son { $screens ->
+tree-width-notice = Esta vista mide { $width } píxeles de ancho: en una pantalla de 1500 píxeles son { $screens ->
         [one] una pantalla
        *[other] { $screens } pantallas
-    } de desplazamiento horizontal. La vista alrededor de una persona muestra en cambio unas decenas de personas junto a ella, y cada ficha la vuelve a centrar.
+    } de desplazamiento horizontal.
 tree-confidence-label = Certeza:
 tree-band-certain = seguro
 tree-band-high = alta
@@ -409,7 +408,6 @@ tree-no-people = En este árbol todavía no hay nadie.
 tree-no-people-cta = Importe un fichero familiar, o añada a la primera persona.
 tree-nobody-selected = Para esa selección no hay a quién dibujar.
 tree-nobody-selected-cta = Empiece por la vista por omisión.
-tree-click-hint = Pulse cualquier ficha para abrir en la columna lateral la ficha de esa persona; «Centrar el árbol aquí» en la columna mueve la raíz de la vista.
 tree-edge-union = Una unión registrada
 tree-edge-parentage = Una filiación registrada
 
@@ -423,20 +421,8 @@ home-count = { $total ->
 home-browse = Recorrer el árbol
 home-convert = Importar un fichero familiar
 home-unnamed-family = Este árbol familiar
-home-what-title = Qué le da esto a una familia
-home-what-archive-title = Un solo sitio para todo el archivo
-home-what-archive-body = El árbol, los documentos y las fotografías están juntos. El escaneo de un acta de matrimonio cuelga del matrimonio mismo, no del correo de alguien, y una fotografía nombra a las personas que salen en ella.
-home-what-together-title = Varios parientes, papeles distintos
-home-what-together-body = Una tía con treinta años de apuntes y un primo que solo quiere corregir una grafía no necesitan los mismos permisos. A cada pariente se le invita con un papel propio, y cada cambio registra quién lo hizo y cuándo.
-home-what-privacy-title = La privacidad se decide persona por persona
-home-what-privacy-body = Un pariente vivo puede ser visible para la familia e invisible para los visitantes, mientras su bisabuela está abierta a cualquiera. La decisión se toma para cada persona, no una sola vez para todo el árbol.
-home-what-languages-title = Once idiomas
-home-what-languages-body = Los parientes leen el sitio en su propio idioma — incluido el ruso, la lengua en que se llevaron los registros civiles de media Europa central y oriental. Un nombre se queda en su propia escritura junto a la transliteración; no hace falta aplanar nada a un solo alfabeto para que el sitio funcione.
-home-what-export-title = El archivo sigue siendo suyo
-home-what-export-body = Exporte todo en un solo fichero cuando quiera: personas, relaciones, documentos y fotografías juntos. Si algún día decide marcharse, se marcha con el archivo entero.
 home-in-this-tree = Lo que la familia ha registrado hasta ahora
 home-showcase-title = Donde este árbol dice ya más que nombres y fechas
-home-showcase-note = Cada uno de estos puntos sale de lo que aquí está de verdad registrado, no de una lista de lo que el sitio sabría hacer.
 home-showcase-example = Ver un ejemplo →
 home-nothing-title = Todavía no hay nada que mostrar.
 home-nothing-detail = Importe un fichero familiar para traer un árbol ya existente, o empiece de cero y añada usted mismo a la primera persona.
@@ -536,7 +522,7 @@ record-doc-other = otro
 record-upload = Subir
 record-upload-help = Hasta { $mb } MB por fichero. Los adjuntos se guardan junto al árbol y se vuelven a escribir en el archivo al exportar, así que una fotografía viaja con la familia a la que pertenece. La clase de fichero se lee de su propio contenido y no de su nombre: se aceptan imágenes, PDF, texto sencillo, audio y vídeo. El SVG se rechaza, porque un SVG puede llevar un script.
 record-upload-help-short = Hasta { $mb } MB. El SVG se rechaza.
-record-verbatim-note = Conservado tal como lo daba la ficha, porque ningún convertidor supo interpretarlo. La alternativa habría sido tirarlo.
+record-verbatim-note = Conservado tal como lo daba la ficha, porque ningún convertidor supo interpretarlo.
 record-file-to-attach = Fichero que adjuntar
 record-document-type = Tipo de documento
 record-caption = Pie
@@ -629,16 +615,13 @@ completeness-shape-unknown-note = registrada como no sabida
 ## Página de importación
 
 convert-page-title = Importar un fichero familiar
-convert-lede = Traiga un árbol ya existente desde un fichero GEDCOM, la exportación que produce la mayoría de los programas de genealogía. Recibe de vuelta un archivo que se queda con usted. Aquí no se guarda nada, y el árbol que este sitio ya muestra se queda exactamente como estaba.
+convert-lede = Traiga un árbol ya existente desde un fichero GEDCOM, la exportación que produce la mayoría de los programas de genealogía. Aquí no se guarda nada, y el árbol que este sitio ya muestra se queda exactamente como estaba.
 convert-file-label = Fichero familiar (.ged)
 convert-file-hint = Hasta { $mb } MB. Un árbol de 767 personas pesa unos 320 KB.
 convert-confidence-label = Qué certeza tienen estos hechos, para empezar
 convert-confidence-hint = El fichero que se importa no dice cuánta seguridad tenía nadie, así que cada hecho necesita un punto de partida. Póngalo bajo para un árbol reunido deprisa, más alto para uno trabajado sobre documentos. La lectura honrada de este número es «importado, y desde entonces nadie lo ha comprobado»: podrá subir o bajar cada hecho después, de uno en uno.
 convert-lang-label = Idioma de los nombres de lugar
-convert-lang-hint = Una etiqueta como en, fr o es. Un lugar puede llevar su nombre en varios idiomas; esto dice en qué idioma están escritos los nombres de su fichero.
-convert-what-you-get = Qué añade la importación
-convert-what-you-get-1 = Cada hecho recibe un grado de certeza que podrá ajustar después, de modo que una duda se escribe en lugar de tirarse. Las fechas conservan su forma: hacia 1500, antes de 1430 y entre 1920 y 1925 siguen siendo tres afirmaciones distintas, y una formulación que nadie supo leer como fecha se queda palabra por palabra. Un oficio pasa a ser un tramo de tiempo con principio y final. Cada lugar pasa a ser una entrada propia, así que una ciudad que cambió de estado conserva esa historia.
-convert-no-way-back = Volver a escribir un fichero .ged no se ofrece. Ese formato no tiene dónde poner cuánta certeza tiene un hecho, una relación fuera de la familia, cuánto duró un oficio o una fecha que nadie supo fijar: el viaje de vuelta las perdería en silencio. Su archivo se exporta en cambio entero, como un solo fichero.
+convert-lang-hint = Una etiqueta como en, fr o es.
 
 ## Informe de importación
 
@@ -654,7 +637,7 @@ convert-skipped-title = { $n ->
         [one] Una entrada que no se pudo leer
        *[other] { $n } entradas que no se pudieron leer
     }
-convert-skipped-note = Estas entradas no contenían nada que se pudiera traer. Se enumeran en lugar de tragárselas: saber exactamente qué quedó atrás es la diferencia entre una importación de la que fiarse y una de la que no.
+convert-skipped-note = Estas entradas no contenían nada que se pudiera traer.
 convert-other-diagnostics = { $n ->
         [one] Otra cosa que conviene saber
        *[other] Otras { $n } cosas que conviene saber
@@ -662,7 +645,7 @@ convert-other-diagnostics = { $n ->
 convert-clean = No quedó nada atrás: todas las entradas del fichero pasaron.
 convert-download-title = Descarga
 convert-download-named = Descargar { $name }
-convert-download-note = Se guarda aquí quince minutos y luego se descarta, así que descárguelo ahora. Ese único fichero es el árbol entero; guárdelo en sitio seguro.
+convert-download-note = Se guarda aquí quince minutos y luego se descarta, así que descárguelo ahora.
 convert-another = Importar otro fichero
 admin-history-on = el
 admin-history-meta = — { $kind }, { $at }
@@ -827,7 +810,7 @@ document-type-other = documento
 ## Dónde esta ficha podría decir más
 
 completeness-title = Dónde este árbol podría decir más
-completeness-intro = Qué está registrado y qué sigue en blanco. Nada de esto es un error: una fila en blanco es un sitio por donde la ficha puede crecer, no algo que haya salido mal.
+completeness-intro = Qué está registrado y qué sigue en blanco.
 completeness-import-title = Qué trajo la importación
 completeness-import-intro = Contado sobre el fichero que acaba de subir. Una fila en blanco es algo que el fichero de origen no registraba, no algo que la importación haya perdido.
 

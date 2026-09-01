@@ -108,6 +108,13 @@
               placeholder="{{ t('accounts-branch-placeholder') }}"></textarea>
     <div class="hint">
       {{ t("accounts-branch-hint") }}
+      {# A scope limits writing, not reading. That is the one thing an
+         administrator can get wrong here, so it stays — on demand. #}
+      <details class="sec-help">
+        <summary title="{{ t('record-help-toggle') }}"
+                 aria-label="{{ t('record-help-toggle') }}">?</summary>
+        <span>{{ t("accounts-branch-reading") }}</span>
+      </details>
       {% if roster %}
       <details>
         <summary>{{ t("accounts-ids-in-bundle") }}</summary>

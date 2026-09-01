@@ -110,15 +110,14 @@
   {% endif %}
 {% endmacro %}
 
-{# A section heading, with its explanatory text placed according to how much
-   room the surface has.
+{# A section heading, with its explanation one click away on both surfaces.
 
-   On the standalone page the text sits under the heading where it belongs: the
-   page is the argument for the format, and a first-time reader needs to be
-   told why "other relationships" is a section at all. In the side panel the
-   same four lines cost more than they give — at 460px they are the section —
-   so the heading carries a small `?` and the text is one click away. Both
-   surfaces hold the same words; only their weight differs. #}
+   The prose used to be printed under the heading on the standalone page and
+   folded behind a `?` only in the narrow panel. That was the page explaining
+   itself: four lines telling the reader what "other relationships" is, above
+   the relationships, which say it better. The heading names the section and
+   the record fills it; the sentence is there for whoever wants it and costs
+   nothing to whoever does not. #}
 {# `title` and `help` arrive already translated: the caller resolves them, so
    this macro never sees a key and cannot be given an English sentence by
    accident. `t` is passed in because an imported macro does not inherit the
@@ -126,7 +125,7 @@
 {% macro sec(t, title, compact, help) %}
 <div class="sec-head">
   <h2>{{ title }}</h2>
-  {%- if compact and help %}
+  {%- if help %}
   <details class="sec-help">
     <summary title="{{ t('record-help-toggle') }}"
              aria-label="{{ t('record-help-toggle') }}">?</summary>
@@ -134,9 +133,6 @@
   </details>
   {%- endif %}
 </div>
-{%- if not compact and help %}
-<p class="small muted">{{ help }}</p>
-{%- endif %}
 {% endmacro %}
 
 {# One recorded name as a block rather than a table row.

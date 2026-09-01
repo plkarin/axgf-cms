@@ -67,7 +67,16 @@
 
   <fieldset>
     <legend>{{ t("admin-raw-json") }}</legend>
-    <p class="hint" style="margin-top:0">{{ t("admin-raw-json-help") }}</p>
+    {# How the raw document and the fields above combine is a genuine trap —
+       edit a value twice and one write silently loses. It is kept, one click
+       away, rather than printed over the form every time. #}
+    <p class="hint" style="margin-top:0">
+      <details class="sec-help">
+        <summary title="{{ t('record-help-toggle') }}"
+                 aria-label="{{ t('record-help-toggle') }}">?</summary>
+        <span>{{ t("admin-raw-json-help") }}</span>
+      </details>
+    </p>
     <textarea name="raw_json" rows="16" spellcheck="false">{{ raw }}</textarea>
   </fieldset>
 

@@ -36,7 +36,6 @@ footer-open-format-link = O formacie
 
 prefs-title = Język i wygląd
 prefs-language = Język
-prefs-language-note = Zmienia to tylko interfejs. Nazwiska, miejsca i notatki są zawsze pokazywane w swoim języku i piśmie.
 prefs-theme = Wygląd
 prefs-apply = Zastosuj
 prefs-reviewed = przejrzane
@@ -74,8 +73,7 @@ tree-lede-focused = { $ancestors ->
         [few] { $spouses } partnerzy
         [many] { $spouses } partnerów
        *[other] { $spouses } partnerów
-    }, po { $depth } pokoleń w każdą stronę. Najstarsi na dole. Przezroczystość linii to pewność relacji — blada linia oznacza twierdzenie, którego zapis nie jest pewien.
-tree-lede-whole = Wszystkie osoby w drzewie. Najstarsi na dole, najmłodsi na górze. Przezroczystość linii to pewność relacji.
+    }, po { $depth } pokoleń w każdą stronę.
 tree-filter-label = Filtruj widoczne karty
 tree-filter-placeholder = Wpisz nazwisko…
 tree-centre-on = Wyśrodkuj na
@@ -213,7 +211,7 @@ admin-recent-note = Ostatnie { $shown } z { $total ->
         [few] { $total } zapisanych zmian
         [many] { $total } zapisanych zmian
        *[other] { $total } zapisanych zmian
-    }, z { $path }. Dziennik trzymany jest obok archiwum, a nie w środku: archiwum się kopiuje, wysyła i publikuje, a kto co poprawił, to fakt o osobach prowadzących drzewo, a nie o rodzinie w nim zapisanej.
+    }, z { $path }.
 admin-sessions-open = { $n ->
         [one] Otwarta jedna sesja.
         [few] Otwarte { $n } sesje.
@@ -279,7 +277,8 @@ accounts-create = Utwórz konto
 accounts-role-viewer = czytelnik — czyta wpisy publiczne i rodzinne
 accounts-role-contributor = współtwórca — także tworzy, edytuje i wysyła pliki
 accounts-role-admin = administrator — także zarządza kontami, usuwa i eksportuje
-accounts-branch-hint = Ogranicza to, co konto może edytować, do tych osób, ich potomków i małżonków. Nie ogranicza tego, co mogą czytać — o tym decyduje widoczność każdego wpisu, a te dwie rzeczy są celowo rozdzielone.
+accounts-branch-hint = Ogranicza to, co konto może edytować, do tych osób, ich potomków i małżonków.
+accounts-branch-reading = Nie ogranicza tego, co mogą czytać — o tym decyduje widoczność każdego wpisu, a te dwie rzeczy są celowo rozdzielone.
 accounts-branch-placeholder = jeden identyfikator osoby w wierszu
 accounts-ids-in-bundle = Identyfikatory osób w tym drzewie
 accounts-emergency-warning = Jesteś zalogowany tokenem awaryjnym. Daje on prawa administratora na tę sesję, ale nie jest kontem: nie ma własnych ustawień, a dziennik zmian zapisze Twoje zmiany jako emergency-token, a nie jako osobę. Załóż sobie poniżej prawdziwe konto i zaloguj się na nie.
@@ -449,12 +448,12 @@ error-export-unreadable-detail = { $error }
 tree-title-suffix = drzewo
 tree-back-to-focused = Wróć do widoku skupionego
 tree-show-all = Pokaż wszystkie: { $n }
-tree-width-notice = Ten widok ma { $width } pikseli szerokości. Każde pokolenie to jeden rząd, a najszerszy z nich wyznacza tę szerokość — na ekranie 1500 pikseli to { $screens ->
+tree-width-notice = Ten widok ma { $width } pikseli szerokości — na ekranie 1500 pikseli to { $screens ->
         [one] jeden ekran
         [few] { $screens } ekrany
         [many] { $screens } ekranów
        *[other] { $screens } ekranów
-    } przewijania w poziomie. Widok skupiony pokazuje zamiast tego kilkadziesiąt osób wokół jednej, a każda karta wyśrodkowuje go na nowo.
+    } przewijania w poziomie.
 tree-confidence-label = Pewność:
 tree-band-certain = pewne
 tree-band-high = wysoka
@@ -480,7 +479,6 @@ tree-no-people = W tym drzewie nie ma jeszcze nikogo.
 tree-no-people-cta = Zaimportuj plik rodzinny albo dodaj pierwszą osobę.
 tree-nobody-selected = Dla tego wyboru nie ma kogo narysować.
 tree-nobody-selected-cta = Zacznij od widoku domyślnego.
-tree-click-hint = Kliknij dowolną kartę, aby otworzyć wpis tej osoby w panelu; „Wyśrodkuj drzewo tutaj” w panelu przestawia korzeń widoku.
 tree-edge-union = Zapisany związek
 tree-edge-parentage = Zapisane pochodzenie
 
@@ -496,20 +494,8 @@ home-count = { $total ->
 home-browse = Przeglądaj drzewo
 home-convert = Zaimportuj plik rodzinny
 home-unnamed-family = To drzewo rodzinne
-home-what-title = Co to daje rodzinie
-home-what-archive-title = Jedno miejsce na całe archiwum
-home-what-archive-body = Drzewo, dokumenty i fotografie leżą razem. Skan aktu ślubu wisi przy samym ślubie, a nie w czyjejś skrzynce pocztowej, a fotografia wymienia osoby, które są na niej widoczne.
-home-what-together-title = Kilkoro krewnych, różne role
-home-what-together-body = Ciotka z trzydziestoletnimi notatkami i kuzyn, który chce tylko poprawić literówkę, nie potrzebują tych samych uprawnień. Każdy krewny dostaje zaproszenie z własną rolą, a każda zmiana zapisuje, kto i kiedy jej dokonał.
-home-what-privacy-title = Prywatność ustalana osoba po osobie
-home-what-privacy-body = Żyjący krewny może być widoczny dla rodziny i niewidoczny dla odwiedzających, podczas gdy jego prababka jest otwarta dla wszystkich. Wybór podejmuje się dla każdej osoby, a nie raz dla całego drzewa.
-home-what-languages-title = Jedenaście języków
-home-what-languages-body = Krewni czytają stronę we własnym języku — w tym po rosyjsku, czyli w języku, w którym prowadzono księgi metrykalne i akta stanu cywilnego połowy Europy Środkowo-Wschodniej. Nazwisko zostaje w swoim piśmie obok transliteracji; nic nie musi być sprowadzane do jednego alfabetu, żeby strona działała.
-home-what-export-title = Archiwum zostaje Twoje
-home-what-export-body = Wyeksportuj całość jako jeden plik, kiedy tylko chcesz — osoby, relacje, dokumenty i fotografie razem. Jeśli kiedyś zdecydujesz się odejść, odchodzisz z całym archiwum.
 home-in-this-tree = Co rodzina zapisała do tej pory
 home-showcase-title = Tam, gdzie to drzewo mówi już więcej niż imiona i daty
-home-showcase-note = Każdy z tych punktów pochodzi z tego, co jest tutaj naprawdę zapisane, a nie z listy tego, co strona potrafiłaby zrobić.
 home-showcase-example = Zobacz przykład →
 home-nothing-title = Nie ma jeszcze czego pokazać.
 home-nothing-detail = Zaimportuj plik rodzinny, aby przenieść istniejące drzewo, albo zacznij od zera i sam dodaj pierwszą osobę.
@@ -623,7 +609,7 @@ record-doc-other = inne
 record-upload = Wyślij
 record-upload-help = Do { $mb } MB na plik. Załączniki trzymane są obok drzewa i zapisywane z powrotem do archiwum przy eksporcie, więc fotografia podróżuje razem z rodziną, do której należy. Rodzaj pliku odczytywany jest z jego własnej zawartości, a nie z nazwy: przyjmowane są obrazy, PDF, zwykły tekst, dźwięk i wideo. SVG jest odrzucany, ponieważ SVG może nieść skrypt.
 record-upload-help-short = Do { $mb } MB. SVG jest odrzucany.
-record-verbatim-note = Zachowane dokładnie tak, jak podawał to zapis, ponieważ żaden konwerter nie potrafił tego zinterpretować. Alternatywą byłoby usunięcie.
+record-verbatim-note = Zachowane dokładnie tak, jak podawał to zapis, ponieważ żaden konwerter nie potrafił tego zinterpretować.
 record-file-to-attach = Plik do dołączenia
 record-document-type = Typ dokumentu
 record-caption = Podpis
@@ -734,16 +720,13 @@ completeness-shape-unknown-note = zapisana jako nieznana
 ## Strona importu
 
 convert-page-title = Importuj plik rodzinny
-convert-lede = Przenieś istniejące drzewo z pliku GEDCOM — to eksport, który tworzy większość programów genealogicznych. Dostajesz z powrotem archiwum do zachowania. Nic nie jest tu przechowywane, a drzewo, które ta strona już pokazuje, zostaje dokładnie takie, jakie było.
+convert-lede = Przenieś istniejące drzewo z pliku GEDCOM — to eksport, który tworzy większość programów genealogicznych. Nic nie jest tu przechowywane, a drzewo, które ta strona już pokazuje, zostaje dokładnie takie, jakie było.
 convert-file-label = Plik rodzinny (.ged)
 convert-file-hint = Do { $mb } MB. Drzewo 767 osób to około 320 KB.
 convert-confidence-label = Jak pewne są te fakty na początek
 convert-confidence-hint = Importowany plik nie mówi, jak pewny był ktokolwiek, więc każdy fakt potrzebuje punktu wyjścia. Ustaw nisko dla drzewa złożonego pospiesznie, wyżej dla opracowanego na podstawie dokumentów. Uczciwe odczytanie tej liczby brzmi „zaimportowane i przez nikogo od tamtej pory niesprawdzone” — każdy fakt możesz później podnieść lub obniżyć, po jednym.
 convert-lang-label = Język nazw miejscowości
-convert-lang-hint = Oznaczenie takie jak en, fr czy pl. Miejsce może przechowywać swoją nazwę w kilku językach; to mówi, w jakim języku zapisane są nazwy w Twoim pliku.
-convert-what-you-get = Co dodaje import
-convert-what-you-get-1 = Każdy fakt zyskuje stopień pewności, który możesz później zmienić, więc wątpliwość da się zapisać zamiast wyrzucić. Daty zachowują swój kształt: około 1500, przed 1430 i między 1920 a 1925 pozostają trzema różnymi twierdzeniami, a sformułowanie, którego nikt nie potrafił odczytać jako daty, zostaje słowo w słowo. Zawód staje się odcinkiem czasu z początkiem i końcem. Każde miejsce staje się osobnym wpisem, więc miasto, które zmieniło państwo, zachowuje tę historię.
-convert-no-way-back = Zapis z powrotem do pliku .ged nie jest oferowany. Tamten format nie ma gdzie umieścić stopnia pewności faktu, relacji spoza rodziny, długości trwania zawodu ani daty, której nikt nie potrafił ustalić — droga powrotna po cichu by je porzuciła. Twoje archiwum eksportuje się zamiast tego w całości, jako jeden plik.
+convert-lang-hint = Oznaczenie takie jak en, fr czy pl.
 
 ## Raport z importu
 
@@ -763,7 +746,7 @@ convert-skipped-title = { $n ->
         [many] { $n } wpisów, których nie dało się odczytać
        *[other] { $n } wpisów, których nie dało się odczytać
     }
-convert-skipped-note = Te wpisy nie zawierały nic, co dałoby się przenieść. Są wymienione, a nie połknięte: wiedza o tym, co dokładnie zostało z tyłu, to różnica między importem, któremu można ufać, a takim, któremu nie można.
+convert-skipped-note = Te wpisy nie zawierały nic, co dałoby się przenieść.
 convert-other-diagnostics = { $n ->
         [one] Jedna inna rzecz warta uwagi
         [few] { $n } inne rzeczy warte uwagi
@@ -773,7 +756,7 @@ convert-other-diagnostics = { $n ->
 convert-clean = Nic nie zostało z tyłu — każdy wpis z pliku przeszedł.
 convert-download-title = Pobieranie
 convert-download-named = Pobierz { $name }
-convert-download-note = Trzymane tutaj przez piętnaście minut, a potem usuwane, więc pobierz teraz. Ten jeden plik to całe drzewo; przechowaj go w bezpiecznym miejscu.
+convert-download-note = Trzymane tutaj przez piętnaście minut, a potem usuwane, więc pobierz teraz.
 convert-another = Zaimportuj kolejny plik
 admin-history-on = w
 admin-history-meta = — { $kind }, { $at }
@@ -964,7 +947,7 @@ document-type-other = dokument
 ## Gdzie ten wpis mógłby powiedzieć więcej
 
 completeness-title = Gdzie to drzewo mogłoby powiedzieć więcej
-completeness-intro = Co jest zapisane, a co wciąż puste. Nic tutaj nie jest błędem: pusty wiersz to miejsce, w którym zapis może urosnąć, a nie coś, co poszło źle.
+completeness-intro = Co jest zapisane, a co wciąż puste.
 completeness-import-title = Co przyniósł import
 completeness-import-intro = Policzone z pliku, który przed chwilą wysłałeś. Pusty wiersz to coś, czego pierwotny plik nie zapisywał — a nie coś, co import zgubił.
 

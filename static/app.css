@@ -18,8 +18,11 @@
   --border: #e2ddd5;
   /* The boundary of a control, which WCAG 1.4.11 holds to 3:1 against what
      is behind it. Measured, not guessed: this is the lightest value that
-     still clears 3:1 on --surface. */
-  --border-strong: #979188;
+     still clears 3:1 on the *darkest* ground a control can sit on, which
+     since the page wash arrived is the deepest of its gradient stops rather
+     than --surface. Darkened from #979188, which cleared 3:1 on --surface and
+     3.0 on --bg but only 2.80 against the wash. */
+  --border-strong: #908a82;
   --ink: #23201c;
   --ink-soft: #5f584f;
   /* Darkened from #8b8378: at 0.78rem on --surface that was 3.1:1, under the
@@ -66,6 +69,14 @@
      shadow per theme, so a theme states two values instead of six. */
   --shadow-rgb: 35 32 28;
   --shadow-a: 0.07;
+
+  /* The three tints the page wash is built from, mixed from this theme's own
+     background toward its own hues — nothing here is a colour the theme did
+     not already contain. Each lands 2 to 3 L* from --bg, which is felt
+     rather than seen. */
+  --wash-1: #f4f2f4;
+  --wash-2: #f0f4f3;
+  --wash-3: #f6f4f0;
 
   --radius: 7px;
   --radius-sm: 5px;
@@ -157,6 +168,11 @@
 
     --shadow-rgb: 0 0 0;
     --shadow-a: 0.45;
+
+    /* Cool and nearly imperceptible, as a dark page asks for. */
+    --wash-1: #1a1c1d;
+    --wash-2: #1d1b1c;
+    --wash-3: #181d19;
   }
 }
 
@@ -196,6 +212,11 @@
 
   --shadow-rgb: 0 0 0;
   --shadow-a: 0.45;
+
+  /* Cool and nearly imperceptible, as a dark page asks for. */
+  --wash-1: #1a1c1d;
+  --wash-2: #1d1b1c;
+  --wash-3: #181d19;
 }
 
 /* --- high contrast ------------------------------------------------------- */
@@ -238,6 +259,13 @@
 
   --shadow-rgb: 0 0 0;
   --shadow-a: 0;
+
+  /* No wash: the theme's `wash` flag says so and this is never drawn. The
+     tokens are the background itself, so a mistake shows nothing rather
+     than something. */
+  --wash-1: #ffffff;
+  --wash-2: #ffffff;
+  --wash-3: #ffffff;
 }
 
 /* --- sepia --------------------------------------------------------------- */
@@ -245,7 +273,7 @@
   --bg: #f4ecdc;
   --surface: #fbf5e9;
   --border: #ddd0b6;
-  --border-strong: #998c73;
+  --border-strong: #8c8069;
   --ink: #3a2f1e;
   --ink-soft: #5d4e35;
   --ink-faint: #6f6047;
@@ -277,6 +305,11 @@
 
   --shadow-rgb: 74 58 34;
   --shadow-a: 0.10;
+
+  /* Warm: amber, terracotta and olive off the theme's own ramp. */
+  --wash-1: #ede4d1;
+  --wash-2: #f0e4d3;
+  --wash-3: #ece6d4;
 }
 
 /* --- colour-blind themes ------------------------------------------------- */
@@ -293,7 +326,7 @@
   --bg: #fbfaf8;
   --surface: #ffffff;
   --border: #d9d5cd;
-  --border-strong: #96928a;
+  --border-strong: #8e8a82;
   --ink: #1f1f22;
   --ink-soft: #4c4c52;
   --ink-faint: #66666d;
@@ -325,6 +358,11 @@
 
   --shadow-rgb: 20 28 38;
   --shadow-a: 0.08;
+
+  /* Off the blue-orange axis these themes already use. */
+  --wash-1: #eef3f4;
+  --wash-2: #f9f1ea;
+  --wash-3: #f1f3f4;
 }
 
 /* Tritanopia is blue-yellow, so blue and yellow are the pair to avoid. The
@@ -334,7 +372,7 @@
   --bg: #fbf9f9;
   --surface: #ffffff;
   --border: #ded4d4;
-  --border-strong: #9b9090;
+  --border-strong: #928787;
   --ink: #201c1c;
   --ink-soft: #4f4646;
   --ink-faint: #6b6060;
@@ -366,14 +404,89 @@
 
   --shadow-rgb: 38 20 26;
   --shadow-a: 0.08;
+
+  /* Off the red-teal axis this theme already uses. */
+  --wash-1: #f7eff1;
+  --wash-2: #f0f2f3;
+  --wash-3: #f6f0f2;
 }
 
 
 * { box-sizing: border-box; }
 
+/* ---------------------------------------------------------------------------
+   The page wash
+   ---------------------------------------------------------------------------
+   A soft gradient behind the page, built from the three tints each theme
+   derives from its own tokens above. Three things about it are deliberate:
+
+   IT IS THE ROOT ELEMENT'S BACKGROUND, NOT A LAYER OVER THE PAGE. The first
+   version of this was a fixed pseudo-element at `z-index: -1`, which looked
+   identical and was wrong: a fixed, composited layer under the whole document
+   makes Chromium drop LCD subpixel antialiasing for every glyph on the page,
+   so turning the wash on very slightly softened all the text. Painting into
+   the root element's background instead goes into the canvas, where it costs
+   the text nothing — a screenshot of the page with the wash on and off now
+   differs only where the wash is, and not by one pixel of type.
+
+   IT DOES NOT MOVE. There is no animation and no transition on it, under
+   `prefers-reduced-motion` or otherwise. A gradient that drifts is a
+   distraction on a page somebody reads for an hour, and the reduced-motion
+   query is not the place to decide that: it is decided here, for everyone.
+
+   IT IS OFF WHEN IT SHOULD BE. `data-wash` is written by the server from the
+   theme's own flag and the reader's stored preference, already resolved
+   together, so this stylesheet needs no exception for the high-contrast theme
+   and no second copy of the rule that produces one.
+
+   Content sits on solid surfaces — the tree and record split, cards, tables,
+   forms — so no text is ever over the gradient. What the wash reaches is the
+   page behind them and the margins beside them. */
+html {
+  background-color: var(--bg);
+  background-repeat: no-repeat;
+  /* Home, and anything without a route of its own. */
+  background-image:
+    radial-gradient(68% 52% at 6% -8%, var(--wash-1), transparent 72%),
+    radial-gradient(58% 46% at 98% 6%, var(--wash-2), transparent 70%),
+    radial-gradient(90% 55% at 42% 108%, var(--wash-3), transparent 74%);
+  /* Fixed to the viewport rather than the document. The tree page can be six
+     thousand pixels tall, and a wash that scrolled with it would be a band of
+     colour at the top of a mostly flat page. iOS Safari ignores this and
+     scrolls the wash instead, which is a smaller loss than the alternative. */
+  background-attachment: fixed;
+}
+[data-wash="off"] { background-image: none; }
+
+/* Deterministic per route: the same three tints, arranged differently, so
+   moving between the tree, the import page and the admin area feels like
+   moving rather than reloading. The same page always draws the same wash —
+   nothing here is random, and nothing is per-visit. */
+[data-route="tree"] {
+  background-image:
+    radial-gradient(72% 55% at 96% -6%, var(--wash-2), transparent 72%),
+    radial-gradient(54% 44% at 4% 12%, var(--wash-3), transparent 70%),
+    radial-gradient(86% 52% at 58% 106%, var(--wash-1), transparent 74%);
+}
+[data-route="convert"] {
+  background-image:
+    radial-gradient(64% 50% at 50% -10%, var(--wash-3), transparent 72%),
+    radial-gradient(58% 48% at 2% 62%, var(--wash-1), transparent 70%),
+    radial-gradient(70% 50% at 100% 92%, var(--wash-2), transparent 72%);
+}
+[data-route="admin"] {
+  background-image:
+    radial-gradient(60% 48% at 2% -4%, var(--wash-3), transparent 70%),
+    radial-gradient(66% 52% at 100% 44%, var(--wash-1), transparent 72%),
+    radial-gradient(80% 50% at 40% 104%, var(--wash-2), transparent 72%);
+}
+/* `[data-wash="off"]` has to win over the per-route rules above, so it is
+   repeated after them rather than relying on source order alone. */
+[data-wash="off"][data-route] { background-image: none; }
+
 body {
   margin: 0;
-  background: var(--bg);
+  background: transparent;
   color: var(--ink);
   font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;

@@ -380,3 +380,76 @@ async fn the_contradiction_banner_names_its_people_and_only_for_editors() {
     );
     assert!(!anon.contains("contradicts itself"));
 }
+
+/// The wash is a preference, and every page says which way it is set.
+///
+/// `data-wash` is resolved on the server from two things — the theme's own
+/// flag and what the reader asked for — so the stylesheet needs no exception
+/// for the high-contrast theme and there is no second copy of the rule that
+/// decides it.
+#[tokio::test]
+async fn the_page_says_whether_the_wash_is_drawn() {
+    let (app, _p) = app_with_empty_bundle("wash");
+
+    let plain = body_string(get(&app, "/tree").await).await;
+    assert!(
+        plain.contains(r#"data-wash="on""#),
+        "nobody has said otherwise, so it is drawn"
+    );
+    // The route reaches the stylesheet too, which is what lets the wash vary
+    // by page without a stylesheet per page.
+    assert!(
+        plain.contains(r#"data-route="tree""#),
+        "and the page says which route it is"
+    );
+
+    // A theme that refuses it overrides the default.
+    let hc = body_string(get_with_cookie(&app, "/tree", "axgf_theme=high-contrast").await).await;
+    assert!(
+        hc.contains(r#"data-wash="off""#),
+        "high-contrast draws none of it, whatever anyone asked for"
+    );
+
+    // …and so does the reader, under a theme that would have drawn it.
+    let off = body_string(get_with_cookie(&app, "/tree", "axgf_wash=off").await).await;
+    assert!(
+        off.contains(r#"data-wash="off""#),
+        "the reader's switch is honoured"
+    );
+}
+
+/// Turning it off is a POST that sets a cookie, like the theme and the
+/// language — and an unticked checkbox posts no field at all, which is the
+/// whole of the parsing.
+#[tokio::test]
+async fn the_wash_switch_stores_both_answers() {
+    let (app, _p) = app_with_empty_bundle("wash-post");
+
+    let off = post_form(&app, "/prefs/background", "back=%2Ftree", false).await;
+    let cookie = off
+        .headers()
+        .get(axum::http::header::SET_COOKIE)
+        .expect("a cookie")
+        .to_str()
+        .unwrap()
+        .to_string();
+    assert!(
+        cookie.starts_with("axgf_wash=off"),
+        "unticked means off: {cookie}"
+    );
+
+    let on = post_form(&app, "/prefs/background", "wash=on&back=%2Ftree", false).await;
+    let cookie = on
+        .headers()
+        .get(axum::http::header::SET_COOKIE)
+        .expect("a cookie")
+        .to_str()
+        .unwrap()
+        .to_string();
+    assert!(
+        cookie.starts_with("axgf_wash=on"),
+        "ticked means on: {cookie}"
+    );
+    // A preference, not a session: it outlives the browser being closed.
+    assert!(cookie.contains("Max-Age=31536000"), "{cookie}");
+}

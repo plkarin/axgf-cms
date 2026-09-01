@@ -3,7 +3,8 @@
    request negotiated. Doing it in a script after load would guarantee a flash
    of the wrong theme on every page, and would flip Arabic from left to right
    in front of the reader. #}
-<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %}>
+<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %}
+      data-wash="{{ "on" if wash else "off" }}"{% if nav %} data-route="{{ nav }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,7 +27,7 @@
     </nav>
     <span class="spacer"></span>
     <nav class="chrome-nav">
-      {{ prefs.selector(t, lang, dir, theme_choice, back, locales, themes, current_locale) }}
+      {{ prefs.selector(t, lang, dir, theme_choice, wash_choice, back, locales, themes, current_locale) }}
       {% if signed_in %}
         {% if may_write %}
           <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>

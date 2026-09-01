@@ -28,6 +28,16 @@ pub struct LanguageForm {
 }
 
 #[derive(Deserialize)]
+pub struct WashForm {
+    /// Absent when the checkbox is unticked, which is how a checkbox reports
+    /// "off" in a form post. That is the whole of the parsing.
+    #[serde(default)]
+    wash: Option<String>,
+    #[serde(default)]
+    back: String,
+}
+
+#[derive(Deserialize)]
 pub struct ThemeForm {
     #[serde(default)]
     theme: String,
@@ -63,6 +73,23 @@ pub async fn theme(
     let viewer = auth::viewer(&state, &headers);
     store_preference(&state, &viewer, |u| u.theme = Some(theme.id.to_string()));
     respond(&headers, crate::theme::COOKIE_NAME, theme.id, &f.back)
+}
+
+/// `POST /prefs/background`
+///
+/// The wash is a preference like the theme and the language, stored the same
+/// way and in the same place, so a reader who turns it off has turned it off
+/// on every machine they sign in from.
+pub async fn background(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<WashForm>,
+) -> Response {
+    let on = f.wash.is_some();
+    let viewer = auth::viewer(&state, &headers);
+    store_preference(&state, &viewer, move |u| u.backgrounds = Some(on));
+    let value = if on { "on" } else { crate::theme::WASH_OFF };
+    respond(&headers, crate::theme::WASH_COOKIE_NAME, value, &f.back)
 }
 
 /// Persist the choice on the account, when there is one behind this request.

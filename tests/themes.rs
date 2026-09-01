@@ -241,3 +241,112 @@ fn strip_comments(src: &str) -> String {
         }
     }
 }
+
+/// The wash is a gradient, and only a gradient.
+///
+/// "No images, no external requests, no added bytes" is the whole reason a
+/// gradient was chosen over a photograph, so it is worth a test rather than a
+/// promise: a `url()` in the page background is a request the page did not
+/// used to make and a file the binary did not used to carry.
+#[test]
+fn the_page_wash_fetches_nothing() {
+    let css = css();
+    let start = css.find("html {").expect("the root background rule");
+    let end = css[start..].find("\nbody {").expect("the body rule") + start;
+    let wash = &css[start..end];
+
+    assert!(
+        !wash.contains("url("),
+        "the wash is drawn, not fetched:\n{wash}"
+    );
+    assert!(
+        wash.contains("radial-gradient"),
+        "…and it is a gradient:\n{wash}"
+    );
+    // Every colour in it comes from the theme's own tokens.
+    for stop in ["var(--wash-1)", "var(--wash-2)", "var(--wash-3)"] {
+        assert!(wash.contains(stop), "{stop} is not used in the wash");
+    }
+    assert!(
+        !css.contains("background-image: linear-gradient(#"),
+        "no rule paints a literal colour into a page background"
+    );
+}
+
+/// It does not move, and not only under `prefers-reduced-motion`.
+///
+/// A gradient that drifts is a distraction on a page somebody reads for an
+/// hour. That is a decision for every reader rather than one the motion query
+/// makes for a few, so there is nothing to disable: nothing animates.
+#[test]
+fn the_page_wash_never_animates() {
+    let css = css();
+    let start = css.find("html {").expect("the root background rule");
+    let end = css[start..].find("\nbody {").expect("the body rule") + start;
+    let wash = &css[start..end];
+
+    for moving in ["animation", "transition", "@keyframes"] {
+        assert!(
+            !wash.contains(moving),
+            "the wash must not {moving}:\n{wash}"
+        );
+    }
+}
+
+/// Turning it off leaves nothing behind, on any route.
+///
+/// The per-route rules are more specific than the plain `html` rule, so the
+/// switch has to beat them too — a reader who turned the wash off and then
+/// opened the tree must not get it back.
+#[test]
+fn the_wash_can_be_turned_off_on_every_route() {
+    let css = css();
+    assert!(
+        css.contains(r#"[data-wash="off"] { background-image: none; }"#),
+        "the plain case"
+    );
+    assert!(
+        css.contains(r#"[data-wash="off"][data-route] { background-image: none; }"#),
+        "and the routed one, which is otherwise the more specific selector"
+    );
+    // Every route that varies the wash is covered by that second rule.
+    for route in ["tree", "convert", "admin"] {
+        assert!(
+            css.contains(&format!(r#"[data-route="{route}"] {{"#)),
+            "{route} varies the wash and so must be beatable by the switch"
+        );
+    }
+}
+
+/// High-contrast carries wash tokens, and they are its own background.
+///
+/// The theme's `wash` flag is what actually stops the gradient being drawn —
+/// the server never writes `data-wash="on"` for it. These values are the
+/// second lock: if that flag were ever wrong, the gradient would still be the
+/// background painted on the background, and the page would look the same.
+#[test]
+fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
+    let css = css();
+    let start = css
+        .find(r#"[data-theme="high-contrast"] {"#)
+        .expect("the high-contrast block");
+    let end = css[start..].find("\n}").expect("its closing brace") + start;
+    let block = &css[start..end];
+
+    let bg = block
+        .lines()
+        .find_map(|l| l.trim().strip_prefix("--bg:"))
+        .expect("--bg")
+        .trim()
+        .trim_end_matches(';')
+        .to_string();
+    for n in 1..=3 {
+        let stop = block
+            .lines()
+            .find_map(|l| l.trim().strip_prefix(&format!("--wash-{n}:")))
+            .unwrap_or_else(|| panic!("--wash-{n} is missing"))
+            .trim()
+            .trim_end_matches(';');
+        assert_eq!(stop, bg, "--wash-{n} must be the background itself");
+    }
+}

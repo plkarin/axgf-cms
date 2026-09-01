@@ -7,7 +7,7 @@
 {# The arguments are passed explicitly because an imported macro does not see
    the including template's context in minijinja — including `t`, which is a
    function bound at render time and not a global. #}
-{% macro selector(t, lang, dir, theme_choice, back, locales, themes, current_locale) %}
+{% macro selector(t, lang, dir, theme_choice, wash_choice, back, locales, themes, current_locale) %}
 <details class="prefs">
   {#- An inline SVG rather than the 🌐 emoji: an emoji is a font dependency
       that renders as a replacement box wherever that font is absent, and it
@@ -81,6 +81,19 @@
           </li>
           {% endfor %}
         </ul>
+        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+      </fieldset>
+    </form>
+
+    <form method="post" action="/prefs/background">
+      <input type="hidden" name="back" value="{{ back }}">
+      <fieldset>
+        <legend>{{ t("prefs-background") }}</legend>
+        <label class="inline">
+          <input type="checkbox" name="wash" value="on"
+                 {{ "checked" if wash_choice }}>
+          <span>{{ t("prefs-background-on") }}</span>
+        </label>
         <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
       </fieldset>
     </form>

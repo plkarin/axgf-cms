@@ -40,6 +40,89 @@ drawn around each column were the edge of a scroll region, and there is no
 scroll region left to draw. The surface belongs to the split now, once, so the
 tree and the record read as one page rather than two windows side by side.
 
+### Added
+
+**A soft wash behind the page.** Low-contrast CSS gradients, one set per theme,
+mixed from that theme's own tokens toward its own hues — nothing in them is a
+colour the theme did not already contain. Each of the three tints lands two to
+three L* from its page background, which is a contrast of about 1.05:1: felt
+rather than seen. Sepia is warm (amber, terracotta, olive); dark is cool and
+nearly imperceptible, at 0.7 grey levels of mean difference across the page.
+
+Gradients rather than photographs, deliberately. A gradient is a known colour
+at every point and can be measured against the text in front of it, where
+contrast over a photograph varies pixel by pixel; and it adds no bytes to the
+binary. The rule is enforced by a test rather than left as an intention: no
+`url()` may appear in the page background.
+
+**The wash varies by route, deterministically.** The same three tints in a
+different arrangement on the tree, the import page and the admin area, so
+moving between them feels like moving rather than reloading. The same page
+always draws the same wash — nothing is random and nothing is per-visit.
+
+**Nothing moves.** There is no animation and no transition on it, and not only
+under `prefers-reduced-motion`: a gradient that drifts is a distraction on a
+page somebody reads for an hour, which is a decision for every reader rather
+than one the motion query makes for a few. A test says so.
+
+**Turning it off.** A preference stored the way the theme and the language are
+— cookie first, and on the account as well when there is one — so a reader who
+turns it off has turned it off on every machine they sign in from. The theme
+can also refuse it: `Theme::wash` is false for high-contrast, whose purpose is
+maximum luminance separation, and the server resolves the theme's flag and the
+reader's preference together into one `data-wash` attribute. The stylesheet has
+no exception for high-contrast, because it needs none, and the next theme built
+for legibility gets the same treatment by setting one boolean.
+
+Content surfaces — the tree and record split, cards, tables, forms — keep their
+solid backgrounds, so no text sits on the gradient. Measured rather than
+asserted: with the wash on and off, a rendered page differs by at most 14 of
+255 in any channel, and by not one pixel of type.
+
+### Fixed
+
+**Control borders were below WCAG 1.4.11, and had been.** The sweep that found
+it was run over four pages rather than two, and against the darkest ground a
+control can sit on rather than against `--surface`. `--border-strong` was
+chosen to clear 3:1 on `--surface`, but form controls on these pages sit on
+`--bg`, which is darker — 2.81:1 in sepia, 2.95 in tritanopia, 2.97 in the two
+red-green themes, all of them under the 3.0 the standard requires and all of
+them there before this release. Darkened in four themes, measured against each
+theme's deepest gradient stop, which is now the worst case:
+
+| Theme | Worst required pair | Before | After | Needs |
+|---|---|---|---|---|
+| light | input border | 3.00 | 3.07 | 3.0 |
+| dark | compact button border | 3.13 | 3.13 | 3.0 |
+| high-contrast | diagnostic code text | 7.46 | 7.46 | 4.5 |
+| sepia | input border | **2.81** | 3.07 | 3.0 |
+| deuteranopia | diagnostic code text | **4.33** | **4.33** | 4.5 |
+| protanopia | diagnostic code text | **4.33** | **4.33** | 4.5 |
+| tritanopia | input border | **2.95** | 3.05 | 3.0 |
+
+Confidence still reads without colour, re-measured in a browser rather than
+assumed: under the three colour-blind themes the four legend dots fall on a
+strictly increasing greyscale ramp (deuteranopia and protanopia 41/70/114/162,
+tritanopia 18/40/87/161), and in every one of the seven themes the dot's filled
+*area* still descends 87/75/61/51% against a 97/82/62/30 target — an encoding
+no form of colour blindness can take away. The wash reaches none of it: the
+dots sit on solid surfaces.
+
+### Known
+
+**Diagnostic codes are below AA in the two red-green themes, and this release
+does not fix it.** `.diag-code` colours a severity with the confidence ramp,
+and that ramp is deliberately a *lightness* ramp — under deuteranopia and
+protanopia it runs L* 19 → 33 → 51 → 67, because "darker means surer" is what
+survives colour blindness. Its light end therefore cannot carry 0.8rem text:
+`--conf-medium` is 4.33:1 against white where AA asks 4.5, and `--conf-low`
+would be 2.53:1 on a page that had an error-severity diagnostic to show. The
+defect is that severity and confidence are different scales sharing a palette,
+not that the palette is wrong, and correcting the ramp to suit the text would
+break the encoding the product rests on. Diagnostics need severity colours of
+their own; that is a change to the confidence system and does not belong in a
+commit about backgrounds.
+
 ### Removed
 
 **The interface no longer explains itself.** Eighteen strings whose subject was

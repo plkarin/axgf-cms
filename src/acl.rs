@@ -194,6 +194,12 @@ pub struct User {
     pub language: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub theme: Option<String>,
+    /// Whether the soft page background is drawn. Stored beside the theme and
+    /// the language because it is the same kind of thing: a choice about how
+    /// the interface looks that should follow the reader to another browser.
+    /// `None` means they have never said, which is not the same as `false`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub backgrounds: Option<bool>,
     /// Root person ids this account may edit under. Empty means the whole
     /// tree. Read access is governed by visibility, never by this.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -515,6 +521,7 @@ pub fn new_user(username: &str, password: &str, role: Role) -> Result<User> {
         last_login: None,
         language: None,
         theme: None,
+        backgrounds: None,
         family_scope: Vec::new(),
     })
 }

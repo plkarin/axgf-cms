@@ -68,6 +68,21 @@ pub async fn get_admin(app: &axum::Router, uri: &str) -> Response<Body> {
         .expect("request")
 }
 
+/// Issue a GET carrying an arbitrary cookie — a theme, a language, a
+/// preference — so a test can ask for a page the way a reader would.
+pub async fn get_with_cookie(app: &axum::Router, uri: &str, cookie: &str) -> Response<Body> {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .uri(uri)
+                .header(header::COOKIE, cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .expect("request")
+}
+
 /// Issue a form POST, optionally authenticated.
 pub async fn post_form(app: &axum::Router, uri: &str, body: &str, admin: bool) -> Response<Body> {
     let mut b = Request::builder()

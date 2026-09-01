@@ -142,6 +142,14 @@ pub struct Chrome {
     /// What the reader chose, which may be `system`. Distinct from `theme`
     /// because the selector has to show `system` as ticked.
     pub theme_choice: &'static str,
+    /// Whether to draw the soft page background: the theme's own flag and the
+    /// reader's preference, already resolved. The template writes it as
+    /// `data-wash`, so the stylesheet needs no exception of its own.
+    pub wash: bool,
+    /// Whether *this reader* asked for it, ignoring the theme's veto — the
+    /// selector has to show the switch as they left it even under a theme
+    /// that will not honour it.
+    pub wash_choice: bool,
     pub signed_in: bool,
     pub may_write: bool,
     pub is_admin: bool,
@@ -170,11 +178,16 @@ impl Chrome {
             viewer.theme(),
             crate::session::named_cookie(headers, crate::theme::COOKIE_NAME).as_deref(),
         );
+        let wash_cookie = crate::session::named_cookie(headers, crate::theme::WASH_COOKIE_NAME);
+        let wash_choice =
+            crate::theme::reader_wants_wash(viewer.backgrounds(), wash_cookie.as_deref());
         Self {
             lang: locale.tag,
             dir: locale.dir.as_str(),
             theme: theme.attribute().unwrap_or(""),
             theme_choice: theme.id,
+            wash: crate::theme::wash_enabled(theme, viewer.backgrounds(), wash_cookie.as_deref()),
+            wash_choice,
             signed_in: viewer.signed_in(),
             may_write: viewer.may_write(),
             is_admin: viewer.is_admin(),

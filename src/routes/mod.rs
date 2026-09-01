@@ -39,6 +39,7 @@ pub fn router(state: Shared) -> Router {
         // link or a crawler can do to a reader.
         .route("/prefs/language", post(prefs::language))
         .route("/prefs/theme", post(prefs::theme))
+        .route("/prefs/background", post(prefs::background))
         // Static admin segments are declared alongside the ":kind" routes;
         // the router matches literal segments in preference to a parameter.
         .route("/admin", get(admin::dashboard))

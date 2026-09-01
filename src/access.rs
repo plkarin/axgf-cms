@@ -408,6 +408,11 @@ impl Viewer {
         self.user.as_ref().and_then(|u| u.theme.as_deref())
     }
 
+    /// Whether the account asked for the page wash, if it ever said.
+    pub fn backgrounds(&self) -> Option<bool> {
+        self.user.as_ref().and_then(|u| u.backgrounds)
+    }
+
     /// The persons this requester may read in `flat`.
     pub fn visible(&self, flat: &Value) -> Visible {
         visible_persons(flat, self.ceiling())

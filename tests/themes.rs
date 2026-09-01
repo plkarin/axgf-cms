@@ -58,6 +58,11 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--tempo",
         "--ease",
         "--shadow-a",
+        // Where the pinned tree column comes to rest, and the strip of room
+        // kept under it for its horizontal scrollbar. Both are lengths: a
+        // theme changes what the tree looks like, not where it stops.
+        "--stick-top",
+        "--hscroll-gutter",
     ];
     let root: BTreeSet<String> = block_vars(&css, ":root {")
         .into_iter()

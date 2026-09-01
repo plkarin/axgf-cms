@@ -75,6 +75,12 @@
      never delays a click. */
   --tempo: 130ms;
   --ease: cubic-bezier(0.2, 0, 0.2, 1);
+  /* The masthead is sticky and 60px tall; anything else pinned below it
+     clears that plus a little air. */
+  --stick-top: 4.5rem;
+  /* Room under the tree for its horizontal scrollbar to sit in, so the bar
+     never lies over the oldest generation. Wider than any platform's bar. */
+  --hscroll-gutter: 1rem;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -802,16 +808,53 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 .tree-legend .lg { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--ink-soft); }
 
+/* The tree scrolls sideways and only sideways.
+ *
+ * A 2,078px focused tree and a 24,124px full view cannot be shown any other
+ * way, so the horizontal scroll stays. The vertical one is gone: the box is as
+ * tall as the canvas inside it, so the page scroll is the only vertical scroll
+ * on the page and a wheel gesture means the same thing wherever the pointer
+ * happens to be.
+ *
+ * `overflow-y: hidden` rather than `visible` because CSS does not let the two
+ * axes disagree: asking for `visible` beside an `auto` would silently compute
+ * back to `auto` and reinstate the scrollbar this change exists to remove.
+ * Nothing is clipped by it — the height is the content's, and the gutter below
+ * gives the horizontal bar somewhere to sit that is not on top of the oldest
+ * generation. */
 .tree-scroll {
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  max-height: 82vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: var(--hscroll-gutter);
   /* Painting the rows into their own layer keeps scrolling smooth on a canvas
      that can be tens of thousands of pixels wide. */
   will-change: transform;
+  /* Pinned while the record beside it scrolls — see the note on .tree-split.
+     `--tree-height` is the canvas height the template measured. While the tree
+     fits the viewport the offset is the plain one and the tree hangs below the
+     masthead; once it is taller than the viewport the second term goes
+     negative, which pins the tree's *bottom* to the bottom of the screen
+     instead of its top to the top. Either way a whole screen of tree stays in
+     view, and the horizontal scrollbar — the last thing in the box — stays
+     reachable.
+
+     There is one narrow band, a tree within about 70px of fitting, where the
+     second term lands between zero and the masthead's height and the tree's
+     top edge ends up behind it. That is the lesser of the two losses: pinning
+     such a tree by its top instead would put its bottom — and the horizontal
+     scrollbar with it — permanently below the fold for as long as it stays
+     pinned, whereas an occluded top edge is one scroll away from being read.
+     A tree that close to fitting has its cards well inside the band anyway. */
+  position: sticky;
+  top: min(
+    var(--stick-top),
+    calc(100vh - var(--tree-height, 0px) - var(--hscroll-gutter) - 0.75rem)
+  );
+  align-self: start;
 }
+/* The full view has no record beside it, so there is nothing for the tree to
+   be pinned against: it is the whole column and the page simply scrolls it. */
+.tree-split.no-panel .tree-scroll { position: static; }
 
 .tree-canvas { position: relative; }
 
@@ -991,11 +1034,18 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
    The fallback in `var(--tree-width, 1fr)` is what a page renders with if the
    template ever stops passing the width: the previous behaviour, not a broken
    one. */
+/* The tree and the record are one surface, not two windows side by side. The
+   background and the rounding live here, once, and neither column carries a
+   frame of its own: the frames that used to be there were drawing the edge of
+   a scroll region, and there is no scroll region left to draw. */
 .tree-split {
   --panel-min: clamp(320px, 26vw, 460px);
   /* Past this, a line of the record's prose is uncomfortable to read. */
   --panel-max: 560px;
-  --split-gap: 1rem;
+  --split-gap: 1.5rem;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
   display: grid;
   grid-template-columns:
     minmax(0, var(--tree-width, 1fr))
@@ -1039,15 +1089,13 @@ bdi.date { unicode-bidi: isolate; }
   transform-origin: center;
 }
 
+/* The record grows to its full height and the page scroll carries it. It is
+   the taller of the two columns on almost every person — the operator's own
+   record is 2,295px against a 978px tree — which is exactly why the *tree* is
+   the one that is pinned: pinning the panel instead would do nothing, because
+   the tallest item in a grid row has no room to move inside it. */
 .tree-panel {
-  max-height: 82vh;
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  padding: 0.9rem 1rem;
-  position: sticky;
-  top: 1rem;
+  min-width: 0;
 }
 .panel-head {
   display: flex;
@@ -1157,11 +1205,10 @@ bdi.date { unicode-bidi: isolate; }
      the tree rather than squeezing it into an unreadable sliver. One column
      also retires the clamp: the panel takes the full width it is given. */
   .tree-split { grid-template-columns: 1fr; }
-  .tree-panel {
-    width: 100%;
-    position: static;
-    max-height: none;
-  }
+  .tree-panel { width: 100%; }
+  /* Stacked, the tree is above the record rather than beside it, and a pinned
+     tree would take the whole screen and leave nowhere to read. */
+  .tree-scroll { position: static; }
 }
 
 /* ---------- identity page ---------- */
@@ -1959,8 +2006,10 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 /* ---------------------------------------------------------------------------
    Panels and elevation
    --------------------------------------------------------------------------- */
-.tree-panel {
-  border-radius: var(--radius-lg);
+/* The elevation belongs to the whole surface, not to the record half of it:
+   a shadow around the panel alone is the frame this pass removed, redrawn in
+   grey. */
+.tree-split {
   box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / var(--shadow-a));
 }
 /* The panel's content is replaced by a fragment fetch. Without a cue the swap

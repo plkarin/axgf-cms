@@ -340,3 +340,103 @@ fn the_tree_width_reaches_the_stylesheet_and_the_panel_is_derived_from_it() {
          not a second number that can drift from it:\n{rule}"
     );
 }
+
+/// One page scroll, not three.
+///
+/// The tree page used to nest three scrollable regions: the page, the tree
+/// column inside its own fixed box, and the record panel inside its own. Which
+/// one a wheel gesture drove depended on where the pointer happened to be. The
+/// browser sweep in CONTRIBUTING.md is what proves the result at each viewport;
+/// what is asserted here is the source-level shape that produces it, so a
+/// `max-height` cannot quietly come back.
+#[test]
+fn neither_the_tree_nor_the_panel_scrolls_inside_itself() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let css = std::fs::read_to_string(root.join("static/app.css")).expect("app.css");
+    let html = std::fs::read_to_string(root.join("templates/tree.html")).expect("tree.html");
+
+    let rule = |selector: &str| -> String {
+        css.split(selector)
+            .nth(1)
+            .unwrap_or_else(|| panic!("{selector} is not in the stylesheet"))
+            .split("\n}")
+            .next()
+            .unwrap()
+            .to_string()
+    };
+
+    let tree = rule(".tree-scroll {");
+    assert!(
+        !tree.contains("max-height"),
+        "the tree column grows to its content; a ceiling here is a second \
+         vertical scrollbar:\n{tree}"
+    );
+    assert!(
+        tree.contains("overflow-x: auto") && tree.contains("overflow-y: hidden"),
+        "sideways only — and stated on both axes, because a lone `overflow-x` \
+         computes the other one back to `auto`:\n{tree}"
+    );
+
+    let panel = rule(".tree-panel {");
+    assert!(
+        !panel.contains("max-height") && !panel.contains("overflow"),
+        "the record grows with the page rather than scrolling inside itself:\n{panel}"
+    );
+
+    // The tree is the pinned column, not the panel: the panel is the taller of
+    // the two on almost every person, and the tallest item in a grid row has
+    // no room to move inside it.
+    assert!(
+        tree.contains("position: sticky"),
+        "the tree stays on screen while the record beside it scrolls:\n{tree}"
+    );
+    assert!(
+        !panel.contains("position: sticky"),
+        "pinning the panel is the thing that does not work:\n{panel}"
+    );
+
+    // Pinning by the bottom edge when the tree is too tall needs the height,
+    // and it has to be the same figure the canvas is drawn at.
+    assert!(
+        html.contains("--tree-height:{{ layout.height }}px")
+            && html.contains("height:{{ layout.height }}px"),
+        "the canvas height reaches the stylesheet, from the one source"
+    );
+    assert!(
+        tree.contains("var(--tree-height"),
+        "and the sticky offset is derived from it:\n{tree}"
+    );
+}
+
+/// The frames are gone, and the surface they used to divide is one surface.
+#[test]
+fn the_tree_and_the_record_read_as_one_surface() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let css = std::fs::read_to_string(root.join("static/app.css")).expect("app.css");
+
+    let block = |selector: &str| -> String {
+        css.split(selector)
+            .nth(1)
+            .unwrap_or_else(|| panic!("{selector} is not in the stylesheet"))
+            .split("\n}")
+            .next()
+            .unwrap()
+            .to_string()
+    };
+
+    for selector in [".tree-scroll {", ".tree-panel {"] {
+        let rule = block(selector);
+        assert!(
+            !rule.contains("border:") && !rule.contains("background:"),
+            "{selector} draws no frame of its own — those borders were the edge \
+             of a scroll region that no longer exists:\n{rule}"
+        );
+    }
+
+    let split = block(".tree-split {");
+    assert!(
+        split.contains("background: var(--surface)"),
+        "the surface belongs to the split, once, so the two columns read as \
+         one:\n{split}"
+    );
+}

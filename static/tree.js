@@ -140,7 +140,21 @@
       .then(function (html) {
         panel.innerHTML = html;
         markSelected(id);
-        panel.scrollTop = 0;
+        /* The panel no longer scrolls inside itself, so there is no scrollTop
+         * to reset. What can happen instead is that the reader is far down a
+         * long record when they pick someone from the pinned tree, and the new
+         * record starts above them. Bring its top back into view — but only
+         * when it is actually off the top of the screen, so a click made while
+         * the panel head is already visible does not jerk the page. */
+        var top = panel.getBoundingClientRect().top;
+        /* Measured, not parsed: `--stick-top` is authored in rem and reading
+         * the custom property would hand back the string "4.5rem". The
+         * masthead is the thing being cleared, so ask it how tall it is. */
+        var head = document.querySelector('.masthead');
+        var stick = (head ? head.getBoundingClientRect().height : 60) + 12;
+        if (top < stick) {
+          window.scrollBy({ top: top - stick, left: 0, behavior: 'auto' });
+        }
         if (push) {
           var url = '/tree?root=' + encodeURIComponent(root) +
                     '&depth=' + encodeURIComponent(depth) +

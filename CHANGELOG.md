@@ -4,6 +4,42 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+**One scroll on the tree page, not three.** The page scrolled, the tree column
+scrolled inside its own 82vh box, and the record panel scrolled inside its own;
+which one the wheel drove depended on where the pointer sat, and the two inner
+frames cut one surface into two windows. Both inner boxes now grow to their
+content and the page scroll is the only vertical scroll on the page — verified
+in a browser at 1920, 1440, 1280 and 390px, on a three-generation view and on
+`?all=1`: one vertical scrollbar, none nested.
+
+The tree keeps its horizontal scroll, because a 2,078px focused tree and a
+24,124px full view cannot be shown any other way, and a sideways overflow in
+its own column does not compete with a vertical wheel gesture. It is declared
+on both axes (`overflow-x: auto; overflow-y: hidden`) because CSS will not let
+them disagree: a lone `overflow-x` computes the other one straight back to
+`auto`.
+
+**The tree is pinned, not the record.** Once the panel grows with the page, a
+long record — the operator's own is 2,295px against a 978px tree — pushes the
+tree above the fold and the reader has to scroll past the whole record to reach
+it again. Pinning the *panel* does nothing about that: it is the taller of the
+two columns, and the tallest item in a grid row has no room to move inside it.
+So the tree column is the one that sticks. It stays on screen for the full
+length of the record, which is also where the clicking happens. A tree taller
+than the viewport pins by its bottom edge instead of its top — the offset is
+derived from the canvas height the layout already computes — so a whole screen
+of tree stays in view either way, and the horizontal scrollbar, the last thing
+in the box, stays reachable.
+
+**The frames are gone.** The border, background and shadow that used to be
+drawn around each column were the edge of a scroll region, and there is no
+scroll region left to draw. The surface belongs to the split now, once, so the
+tree and the record read as one page rather than two windows side by side.
+
 ## [0.1.0] — 2026-08-XX
 
 The first release. One binary serves a browsable, editable website for a

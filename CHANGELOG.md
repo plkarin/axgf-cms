@@ -6,39 +6,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
-
-**One scroll on the tree page, not three.** The page scrolled, the tree column
-scrolled inside its own 82vh box, and the record panel scrolled inside its own;
-which one the wheel drove depended on where the pointer sat, and the two inner
-frames cut one surface into two windows. Both inner boxes now grow to their
-content and the page scroll is the only vertical scroll on the page — verified
-in a browser at 1920, 1440, 1280 and 390px, on a three-generation view and on
-`?all=1`: one vertical scrollbar, none nested.
-
-The tree keeps its horizontal scroll, because a 2,078px focused tree and a
-24,124px full view cannot be shown any other way, and a sideways overflow in
-its own column does not compete with a vertical wheel gesture. It is declared
-on both axes (`overflow-x: auto; overflow-y: hidden`) because CSS will not let
-them disagree: a lone `overflow-x` computes the other one straight back to
-`auto`.
-
-**The tree is pinned, not the record.** Once the panel grows with the page, a
-long record — the operator's own is 2,295px against a 978px tree — pushes the
-tree above the fold and the reader has to scroll past the whole record to reach
-it again. Pinning the *panel* does nothing about that: it is the taller of the
-two columns, and the tallest item in a grid row has no room to move inside it.
-So the tree column is the one that sticks. It stays on screen for the full
-length of the record, which is also where the clicking happens. A tree taller
-than the viewport pins by its bottom edge instead of its top — the offset is
-derived from the canvas height the layout already computes — so a whole screen
-of tree stays in view either way, and the horizontal scrollbar, the last thing
-in the box, stays reachable.
-
-**The frames are gone.** The border, background and shadow that used to be
-drawn around each column were the edge of a scroll region, and there is no
-scroll region left to draw. The surface belongs to the split now, once, so the
-tree and the record read as one page rather than two windows side by side.
 
 ### Added
 
@@ -79,7 +46,99 @@ solid backgrounds, so no text sits on the gradient. Measured rather than
 asserted: with the wash on and off, a rendered page differs by at most 14 of
 255 in any channel, and by not one pixel of type.
 
+### Changed
+
+**One scroll on the tree page, not three.** The page scrolled, the tree column
+scrolled inside its own 82vh box, and the record panel scrolled inside its own;
+which one the wheel drove depended on where the pointer sat, and the two inner
+frames cut one surface into two windows. Both inner boxes now grow to their
+content and the page scroll is the only vertical scroll on the page — verified
+in a browser at 1920, 1440, 1280 and 390px, on a three-generation view and on
+`?all=1`: one vertical scrollbar, none nested.
+
+The tree keeps its horizontal scroll, because a 2,078px focused tree and a
+24,124px full view cannot be shown any other way, and a sideways overflow in
+its own column does not compete with a vertical wheel gesture. It is declared
+on both axes (`overflow-x: auto; overflow-y: hidden`) because CSS will not let
+them disagree: a lone `overflow-x` computes the other one straight back to
+`auto`.
+
+**The tree is pinned, not the record.** Once the panel grows with the page, a
+long record — the operator's own is 2,295px against a 978px tree — pushes the
+tree above the fold and the reader has to scroll past the whole record to reach
+it again. Pinning the *panel* does nothing about that: it is the taller of the
+two columns, and the tallest item in a grid row has no room to move inside it.
+So the tree column is the one that sticks. It stays on screen for the full
+length of the record, which is also where the clicking happens. A tree taller
+than the viewport pins by its bottom edge instead of its top — the offset is
+derived from the canvas height the layout already computes — so a whole screen
+of tree stays in view either way, and the horizontal scrollbar, the last thing
+in the box, stays reachable.
+
+**The frames are gone.** The border, background and shadow that used to be
+drawn around each column were the edge of a scroll region, and there is no
+scroll region left to draw. The surface belongs to the split now, once, so the
+tree and the record read as one page rather than two windows side by side.
+
+
+**The tree fits the screen it is on.** A generation wider than the column it is
+drawn in now folds onto as many rows as it needs, inside its own band, instead
+of running off the side. On the operator's bundle the focused view was 2,078px
+wide at every screen size; it is 1,246px at 1920, 954 at 1440, 808 at 1280 and
+320 on a phone — the tree column's width in each case, so the horizontal
+scrollbar is gone from the default view at every size measured.
+
+A band is still one generation, and that is what the folding had to protect.
+Three things say so at once: the rows of one generation sit 26px apart where
+two generations sit 78px apart; the whole band has a single tinted zone behind
+it, `rows` high; and the label spans the zone rather than sitting on the first
+row. A band that had to fold also carries a bracket down its leading edge.
+Vertical position still carries generation — everything inside one zone belongs
+to one.
+
+The fold keeps the barycentre ordering rather than undoing it. Rows are filled
+left to right in the order the ordering pass produced, so reading a band is
+reading its rows top to bottom, left to right — the same sequence the single
+wide row had, and a test asserts the two orders are identical. A couple is
+never split across a break unless the two of them will not fit a row at all,
+which on a phone is any two cards.
+
+**Connectors go around a folded band, not through it.** An edge leaving a card
+on an inner row has to get past its own generation's other rows to reach the
+one above. It climbs a lane: a vertical strip with no card in it, found among
+the gaps between cards — which line up down the band, because every row of a
+band shares a left edge — and falling back to two corridors kept clear at the
+canvas edges, which always exist. Measured on the rendered paths rather than
+asserted: on the full view the number of connector segments that run across a
+card fell from 22 to 9.
+
+**A person the reader may not read is a marker, not a card.** They keep their
+place in the row — the shape of the family is not what is being withheld, and
+omitting them would make a converted bundle look as though the line died out —
+but they no longer keep a card's width. On the operator's bundle a signed-out
+visitor may read nobody at all, so this is not a handful of cards but all 866.
+Measured on its own, with folding disabled, it takes the anonymous full view
+from 24,168px to 7,998 and the anonymous focused view from 2,122px to 750.
+
+**The row width is negotiated, not guessed.** The layout is computed in Rust
+and shipped as absolute coordinates — the connectors have to meet the cards
+without a layout pass in the browser — so the width has to be chosen before the
+reader's is knowable. There is a default for the no-JavaScript case, a `?w=`
+parameter, and an `axgf_tw` cookie that `tree.js` fills in from the column it
+actually measured, in the same order the theme and the language are negotiated.
+Deliberately not a reload: re-rooting, changing the depth and following a card
+are all full navigations already, so the measured width is in use within one
+click of arriving.
+
 ### Fixed
+
+**The record column was 24px too wide, and the tree paid for it.** The grid has
+three tracks and therefore two gaps, but the panel's width subtracted one. The
+tree is the only track allowed to shrink, so it absorbed the difference: a tree
+laid out to exactly the column width it had been told about still overflowed by
+a gap. Found by folding the tree to the measured column and watching a 24px
+scrollbar survive it.
+
 
 **Control borders were below WCAG 1.4.11, and had been.** The sweep that found
 it was run over four pages rather than two, and against the darkest ground a
@@ -107,21 +166,6 @@ tritanopia 18/40/87/161), and in every one of the seven themes the dot's filled
 *area* still descends 87/75/61/51% against a 97/82/62/30 target — an encoding
 no form of colour blindness can take away. The wash reaches none of it: the
 dots sit on solid surfaces.
-
-### Known
-
-**Diagnostic codes are below AA in the two red-green themes, and this release
-does not fix it.** `.diag-code` colours a severity with the confidence ramp,
-and that ramp is deliberately a *lightness* ramp — under deuteranopia and
-protanopia it runs L* 19 → 33 → 51 → 67, because "darker means surer" is what
-survives colour blindness. Its light end therefore cannot carry 0.8rem text:
-`--conf-medium` is 4.33:1 against white where AA asks 4.5, and `--conf-low`
-would be 2.53:1 on a page that had an error-severity diagnostic to show. The
-defect is that severity and confidence are different scales sharing a palette,
-not that the palette is wrong, and correcting the ramp to suit the text would
-break the encoding the product rests on. Diagnostics need severity colours of
-their own; that is a change to the confidence system and does not belong in a
-commit about backgrounds.
 
 ### Removed
 
@@ -159,6 +203,44 @@ What stays: the confidence legend, the record summary, the self-contradiction
 banner, every diagnostic and error, and the import report — including which
 entries were left behind, though no longer the sentence congratulating the
 importer for listing them.
+
+### Known
+
+**The full view trades width for crossings, and `?all=1` still scrolls
+sideways.** 866 people across 16 generations cannot be made legible by folding.
+The widest generation holds 165, and folding it stops paying for itself long
+before it fits: a generation over 48 people folds onto at most six rows and
+then the canvas is allowed to be wider than the target. `?all=1` is 4,312px for
+an administrator at every screen size, down from 24,124 — a scrollbar of three
+screens instead of sixteen — and keeps its horizontal scrollbar, as it should.
+
+The cost is crossings. Counted geometrically from the rendered paths, the full
+view goes from 169 to 586 for an administrator and to 1,513 for a signed-out
+visitor, whose narrower canvas folds harder. That is inherent rather than a
+routing defect: folding two adjacent wide generations maps a grid onto a grid,
+and the connectors between them must interleave. The default focused view pays
+almost nothing for the same change — 0 crossings before, 0 to 3 after,
+depending on the screen.
+
+The built-in crossing counter cannot see any of this. It counts inversions
+between adjacent layers, which is a property of the ordering, and the ordering
+is untouched: 7,290 before the sweeps and 1,342 after, identical to the figure
+before this change. The geometric count above was measured separately, from the
+path data of a rendered page.
+
+
+**Diagnostic codes are below AA in the two red-green themes, and this release
+does not fix it.** `.diag-code` colours a severity with the confidence ramp,
+and that ramp is deliberately a *lightness* ramp — under deuteranopia and
+protanopia it runs L* 19 → 33 → 51 → 67, because "darker means surer" is what
+survives colour blindness. Its light end therefore cannot carry 0.8rem text:
+`--conf-medium` is 4.33:1 against white where AA asks 4.5, and `--conf-low`
+would be 2.53:1 on a page that had an error-severity diagnostic to show. The
+defect is that severity and confidence are different scales sharing a palette,
+not that the palette is wrong, and correcting the ramp to suit the text would
+break the encoding the product rests on. Diagnostics need severity colours of
+their own; that is a change to the confidence system and does not belong in a
+commit about backgrounds.
 
 ## [0.1.0] — 2026-08-XX
 

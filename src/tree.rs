@@ -35,9 +35,128 @@ const CARD_W: f64 = 132.0;
 // both derived from this, so raising it keeps cards and wires aligned.
 const CARD_H: f64 = 66.0;
 const H_GAP: f64 = 14.0;
+/// Gap between one generation and the next. A band's own rows sit `ROW_GAP`
+/// apart, which is a third of this — the difference is what tells a reader
+/// that a wrapped generation is one band rather than several.
 const V_GAP: f64 = 78.0;
-const ROW_PITCH: f64 = CARD_H + V_GAP;
 const MARGIN: f64 = 24.0;
+
+/// A person the reader may not read, drawn as a marker rather than a card.
+///
+/// The genealogical fact that survives redaction is "somebody is here", and
+/// that needs a place in the row, not a card's width. On the operator's bundle
+/// a signed-out visitor may read nobody at all, so every one of the 866 cards
+/// is a redaction: at full width that is a 24,124px canvas of the word
+/// "Private". Wide enough to stay an obvious, clickable-looking object and to
+/// hold the dash the card draws in place of dates.
+const MARK_W: f64 = 34.0;
+
+/// Vertical gap between the wrapped rows of one generation.
+///
+/// Deliberately much smaller than `V_GAP`, which separates one generation from
+/// the next. The two gaps are what tell a reader that four rows are one band
+/// and the next band is a different generation, so they must not be similar.
+const ROW_GAP: f64 = 26.0;
+
+/// A corridor kept clear at each side of the canvas.
+///
+/// When a generation wraps, an edge leaving a card on an inner row has to get
+/// past its own generation's other rows to reach the one above. It climbs a
+/// lane — a vertical strip with no card in it. Lanes between cards are used
+/// first because they are close to the edge's own path; these two are the
+/// fallback that always exists, whatever the rows happen to contain.
+const LANE: f64 = 22.0;
+
+/// A generation larger than this folds into a thicket rather than a band.
+///
+/// The number that matters for folding is not how many rows it takes but how
+/// many people are in them. Fourteen people folded onto fourteen rows of one
+/// card is a column, and on a phone it is the only thing that fits. A hundred
+/// and sixty-five people folded onto fourteen rows is a hundred and sixty-five
+/// connectors climbing past each other, and the crossings cost more than the
+/// width saved. So the row cap below applies to the second and not the first.
+const THICKET: usize = 48;
+
+/// The most rows a generation over `THICKET` will fold onto.
+///
+/// Past this the band stops reading as one generation — the label is at its
+/// top, the reader is somewhere in the middle, and there is more band above
+/// and below than there is screen. Wrapping also stops paying for itself
+/// around here: every extra row is another set of connectors that has to climb
+/// past it, and on the operator's widest generation the crossings grow faster
+/// than the width falls.
+///
+/// A generation too wide to fold into this many rows is drawn wider than the
+/// target instead, and the horizontal scrollbar comes back for that view. That
+/// is the honest outcome: 165 people in one generation cannot be made legible
+/// by folding them into a column, and pretending otherwise trades a scrollbar
+/// for a thicket.
+const MAX_BAND_ROWS: usize = 6;
+
+/// How wide a row may be when the request does not say.
+///
+/// The layout is computed in Rust and shipped as absolute coordinates, so the
+/// server has to choose a width before it can know the reader's. This is the
+/// no-JavaScript answer; `tree.js` measures the column it actually got and
+/// stores it, so the next navigation is laid out to the real one.
+pub const DEFAULT_WRAP_W: f64 = 1200.0;
+/// One card, plus the margins and lanes around it.
+///
+/// Asking for less than this cannot be honoured — a card is 132px and does not
+/// shrink — so it is the floor. On a phone the tree does become a column, and
+/// a column is the only thing that fits a phone.
+pub const MIN_WRAP_W: f64 = CARD_W + 2.0 * (MARGIN + LANE);
+/// Wider than this is not a screen anybody has; it is a way of asking the
+/// server to build an enormous canvas.
+pub const MAX_WRAP_W: f64 = 4000.0;
+
+/// How a tree should be laid out, beyond which people are in it.
+#[derive(Debug, Clone, Copy)]
+pub struct LayoutOpts<'a> {
+    /// Widest a single row of cards may be, in canvas pixels.
+    pub wrap_w: f64,
+    /// The people this reader may read. `None` means "everyone" — an
+    /// administrator, or a bundle with nothing withheld. A person outside the
+    /// set keeps their place in the row but takes a marker's width.
+    pub visible: Option<&'a BTreeSet<String>>,
+}
+
+impl Default for LayoutOpts<'_> {
+    fn default() -> Self {
+        Self {
+            wrap_w: DEFAULT_WRAP_W,
+            visible: None,
+        }
+    }
+}
+
+impl<'a> LayoutOpts<'a> {
+    /// Clamp a requested width into the range the layout will honour.
+    pub fn with_width(mut self, w: f64) -> Self {
+        self.wrap_w = w.clamp(MIN_WRAP_W, MAX_WRAP_W);
+        self
+    }
+
+    /// Restrict to what this reader may read.
+    pub fn seeing(mut self, visible: Option<&'a BTreeSet<String>>) -> Self {
+        self.visible = visible;
+        self
+    }
+
+    /// Is this person drawn as a marker rather than a card?
+    fn hidden(&self, id: &str) -> bool {
+        self.visible.is_some_and(|set| !set.contains(id))
+    }
+
+    /// The width one person's box takes in a row.
+    fn box_w(&self, id: &str) -> f64 {
+        if self.hidden(id) {
+            MARK_W
+        } else {
+            CARD_W
+        }
+    }
+}
 
 /// Where every person sits, by generation.
 #[derive(Debug, Default, PartialEq)]
@@ -456,6 +575,12 @@ pub struct Card {
     pub sex: &'static str,
     pub x: f64,
     pub y: f64,
+    /// How wide this box is. A card is `CARD_W`; a person the reader may not
+    /// read is a `MARK_W` marker, which is the whole of the second saving.
+    pub w: f64,
+    /// Which row of its own band this card sits on, counting from the band's
+    /// top. Zero for every card in a generation that did not have to wrap.
+    pub row: usize,
     /// Confidence band of the birth fact, shown as a dot on the card.
     pub conf_band: Option<&'static str>,
     pub conf_label: Option<String>,
@@ -499,17 +624,27 @@ pub struct Edge {
     pub hue: Option<u8>,
 }
 
-/// One horizontal row of cards.
+/// One generation, on one row or several.
+///
+/// A generation wider than the row it is given wraps onto as many rows as it
+/// needs, and the band is what keeps those rows one thing. Vertical position
+/// still carries generation — every card in a band belongs to the same one —
+/// so the band is drawn as a single tinted zone `rows` high, and the reader
+/// reads a band, not a row.
 #[derive(Debug, Clone, Serialize)]
 pub struct Band {
     /// Filled by [`localise`]; empty as the layout leaves it.
     pub label: String,
     pub sublabel: String,
-    /// How many people this row holds, so the label can be built later.
+    /// How many people this band holds, so the label can be built later.
     pub count: usize,
     pub generation: Option<i64>,
     pub cards: Vec<Card>,
     pub y: f64,
+    /// How many rows the generation wrapped onto. One for a band that fitted.
+    pub rows: usize,
+    /// Top to bottom, so the zone behind the cards can be drawn as one shape.
+    pub height: f64,
     pub unplaced: bool,
 }
 
@@ -823,12 +958,22 @@ pub fn best_root_among(
 
 /// Lay the whole bundle out for `/tree?all=1`.
 pub fn layout(flat: &Value) -> TreeLayout {
-    layout_subset(flat, None, None)
+    layout_with(flat, LayoutOpts::default())
+}
+
+/// [`layout`], to a stated row width and reader.
+pub fn layout_with(flat: &Value, opts: LayoutOpts<'_>) -> TreeLayout {
+    layout_subset(flat, None, None, opts)
 }
 
 /// Lay out only `subtree`, for the focused default view.
 pub fn layout_focused(flat: &Value, subtree: &Subtree) -> TreeLayout {
-    layout_subset(flat, Some(&subtree.ids), Some(&subtree.root))
+    layout_focused_with(flat, subtree, LayoutOpts::default())
+}
+
+/// [`layout_focused`], to a stated row width and reader.
+pub fn layout_focused_with(flat: &Value, subtree: &Subtree, opts: LayoutOpts<'_>) -> TreeLayout {
+    layout_subset(flat, Some(&subtree.ids), Some(&subtree.root), opts)
 }
 
 // ---------------------------------------------------------------------------
@@ -1316,6 +1461,7 @@ pub fn layout_subset(
     flat: &Value,
     only: Option<&BTreeSet<String>>,
     root: Option<&str>,
+    opts: LayoutOpts<'_>,
 ) -> TreeLayout {
     let generations = assign_generations(flat);
     let empty = serde_json::Map::new();
@@ -1372,69 +1518,122 @@ pub fn layout_subset(
         .cloned()
         .collect();
 
-    // Canvas width is set by the widest row.
-    let widest = by_gen
-        .values()
-        .map(|r| r.len())
-        .chain(std::iter::once(unplaced.len()))
-        .max()
-        .unwrap_or(0);
-    let width = MARGIN * 2.0 + (widest as f64) * (CARD_W + H_GAP) - H_GAP;
-    let width = width.max(320.0);
+    // Partners, so a couple is never split across a row break.
+    let mut partners: BTreeSet<(String, String)> = BTreeSet::new();
+    for f in &families {
+        for pair in f.parents.windows(2) {
+            partners.insert((pair[0].clone(), pair[1].clone()));
+            partners.insert((pair[1].clone(), pair[0].clone()));
+        }
+    }
+
+    // Wrap first, then size the canvas to what the wrapping produced.
+    //
+    // Two lanes are kept clear inside the margins, one at each side, for edges
+    // that have to get past their own generation's other rows. They are part
+    // of the canvas rather than of any band, so a lane is in the same place
+    // whichever band an edge is leaving.
+    let content_w = (opts.wrap_w - 2.0 * (MARGIN + LANE)).max(CARD_W);
+
+    let mut unplaced_sorted = unplaced.clone();
+    unplaced_sorted.sort_by_key(|id| (name_of(id), id.clone()));
+
+    let mut plan: Vec<(Option<i64>, Vec<Vec<String>>)> = Vec::new();
+    if !unplaced_sorted.is_empty() {
+        plan.push((
+            None,
+            wrap_rows(&unplaced_sorted, &opts, &partners, content_w),
+        ));
+    }
+    for g in (0..=max_gen).rev() {
+        let Some(ids) = by_gen.get(&g) else { continue };
+        if ids.is_empty() {
+            continue;
+        }
+        plan.push((Some(g), wrap_rows(ids, &opts, &partners, content_w)));
+    }
+
+    let widest_row = plan
+        .iter()
+        .flat_map(|(_, rows)| rows.iter())
+        .map(|r| row_width(r, &opts))
+        .fold(0.0f64, f64::max);
+    let width = (widest_row + 2.0 * (MARGIN + LANE)).max(320.0);
 
     // DOM order: unplaced band first (top), then youngest generation down to
     // the oldest.
     let mut bands: Vec<Band> = Vec::new();
+    let mut geom: Vec<BandGeom> = Vec::new();
     let mut row_y = MARGIN;
 
-    if !unplaced.is_empty() {
-        let mut ids = unplaced.clone();
-        ids.sort_by_key(|id| (name_of(id), id.clone()));
-        let cards = place_row(&ids, persons, row_y, width, root);
+    for (generation, rows) in &plan {
+        let band_widest = rows
+            .iter()
+            .map(|r| row_width(r, &opts))
+            .fold(0.0f64, f64::max);
+        let x0 = MARGIN + LANE + (widest_row - band_widest) / 2.0;
+        let cards = place_band(rows, persons, &opts, row_y, x0, root);
+        let n_rows = rows.len().max(1);
+        let height = (n_rows as f64) * CARD_H + (n_rows as f64 - 1.0) * ROW_GAP;
+
+        let mut row_spans: Vec<(f64, Vec<(f64, f64)>)> = Vec::new();
+        for r in 0..n_rows {
+            let y = row_y + (r as f64) * (CARD_H + ROW_GAP);
+            let spans = cards
+                .iter()
+                .filter(|c| c.row == r)
+                .map(|c| (c.x, c.x + c.w))
+                .collect();
+            row_spans.push((y, spans));
+        }
+        geom.push(BandGeom {
+            top: row_y,
+            bottom: row_y + height,
+            rows: row_spans,
+        });
+
         bands.push(Band {
             // Left blank; `localise` fills both in the reader's language.
             // The layout itself stays language-neutral so that geometry — what
             // the tests and the cache care about — cannot vary with a header.
             label: String::new(),
             sublabel: String::new(),
-            count: ids.len(),
-            generation: None,
+            count: rows.iter().map(Vec::len).sum(),
+            generation: *generation,
             cards,
             y: row_y,
-            unplaced: true,
+            rows: n_rows,
+            height,
+            unplaced: generation.is_none(),
         });
-        row_y += ROW_PITCH;
+        row_y += height + V_GAP;
     }
 
-    let mut positions: BTreeMap<String, (f64, f64)> = BTreeMap::new();
-    for g in (0..=max_gen).rev() {
-        let Some(ids) = by_gen.get(&g) else { continue };
-        if ids.is_empty() {
-            continue;
+    let mut placed: BTreeMap<String, Placement> = BTreeMap::new();
+    for (b, band) in bands.iter().enumerate() {
+        for c in &band.cards {
+            placed.insert(
+                c.id.clone(),
+                Placement {
+                    x: c.x,
+                    y: c.y,
+                    w: c.w,
+                    band: b,
+                    row: c.row,
+                },
+            );
         }
-        let cards = place_row(ids, persons, row_y, width, root);
-        for c in &cards {
-            positions.insert(c.id.clone(), (c.x, c.y));
-        }
-        bands.push(Band {
-            label: String::new(),
-            sublabel: String::new(),
-            count: ids.len(),
-            generation: Some(g),
-            cards,
-            y: row_y,
-            unplaced: false,
-        });
-        row_y += ROW_PITCH;
     }
 
-    let height = row_y + CARD_H + MARGIN;
-    // Connectors are derived from `positions`, which only holds the people
-    // that were drawn, so an edge to someone outside the subtree is dropped
-    // rather than dangling off the canvas.
+    let height = row_y - V_GAP + MARGIN;
+    // Connectors are derived from `placed`, which only holds the people that
+    // were drawn, so an edge to someone outside the subtree is dropped rather
+    // than dangling off the canvas.
     let edges = build_edges(
         &families,
-        &positions,
+        &placed,
+        &geom,
+        width,
         &generations.gen,
         persons,
         &ordering.hues,
@@ -1456,23 +1655,247 @@ pub fn layout_subset(
     }
 }
 
-/// Position one row of cards, centred on the canvas.
-fn place_row(
+/// Break one generation into rows no wider than `content_w`.
+///
+/// Greedy left to right, which is what keeps the ordering pass's work: the ids
+/// arrive already sorted by barycentre, so filling rows in that order puts the
+/// people whose children sit at the left of the generation below on the
+/// earlier row, at the left. Reading the band is reading its rows top to
+/// bottom, left to right, which is the same sequence the single wide row had.
+///
+/// A couple is never split across a break. Partners are adjacent in the
+/// ordering because the ordering contracts them into one unit, and separating
+/// them here would undo that and leave their connector bowing between rows.
+fn wrap_rows(
     ids: &[String],
+    opts: &LayoutOpts<'_>,
+    partners: &BTreeSet<(String, String)>,
+    content_w: f64,
+) -> Vec<Vec<String>> {
+    let mut rows: Vec<Vec<String>> = Vec::new();
+    let mut row: Vec<String> = Vec::new();
+    let mut used = 0.0f64;
+
+    for (i, id) in ids.iter().enumerate() {
+        let w = opts.box_w(id);
+        let need = if row.is_empty() { w } else { used + H_GAP + w };
+        if !row.is_empty() && need > content_w {
+            // Breaking here would separate this person from the partner just
+            // before them; move that partner down too, unless doing so would
+            // empty the row.
+            // …unless the two of them do not fit a row on their own, which on
+            // a phone is any two cards at all. A couple kept together off the
+            // side of the screen is not kept together.
+            let prev = &row[row.len() - 1];
+            let pair_fits = opts.box_w(prev) + H_GAP + w <= content_w;
+            let splits_couple =
+                row.len() > 1 && pair_fits && partners.contains(&(prev.clone(), id.clone()));
+            let carried = if splits_couple { row.pop() } else { None };
+            rows.push(std::mem::take(&mut row));
+            if let Some(c) = carried {
+                used = opts.box_w(&c);
+                row.push(c);
+                row.push(id.clone());
+                used += H_GAP + w;
+                continue;
+            }
+            used = w;
+            row.push(id.clone());
+            continue;
+        }
+        used = need;
+        row.push(id.clone());
+        let _ = i;
+    }
+    if !row.is_empty() {
+        rows.push(row);
+    }
+    if rows.is_empty() {
+        rows.push(Vec::new());
+    }
+
+    // Too many rows to still read as one generation, and enough people in them
+    // for the connectors to matter: fold it into `MAX_BAND_ROWS` of equal
+    // length instead, and let the canvas be wider than the target. A smaller
+    // generation folds as far as it needs to, down to one card a row.
+    if ids.len() > THICKET && rows.len() > MAX_BAND_ROWS {
+        let per = ids.len().div_ceil(MAX_BAND_ROWS);
+        rows = ids.chunks(per).map(<[String]>::to_vec).collect();
+        // Equal chunks land wherever they land, so mend the same seam the
+        // greedy pass mends: a couple across a break moves down together.
+        for i in 0..rows.len().saturating_sub(1) {
+            let split = match (rows[i].last(), rows[i + 1].first()) {
+                (Some(a), Some(b)) => {
+                    rows[i].len() > 1 && partners.contains(&(a.clone(), b.clone()))
+                }
+                _ => false,
+            };
+            if split {
+                let carried = rows[i].pop().expect("checked non-empty");
+                rows[i + 1].insert(0, carried);
+            }
+        }
+    }
+    rows
+}
+
+/// Width of one row of boxes.
+fn row_width(ids: &[String], opts: &LayoutOpts<'_>) -> f64 {
+    if ids.is_empty() {
+        return 0.0;
+    }
+    ids.iter().map(|id| opts.box_w(id)).sum::<f64>() + (ids.len() as f64 - 1.0) * H_GAP
+}
+
+/// Position one band's rows, all sharing a left edge.
+///
+/// Every row of a band starts at the same x. That is what makes the gaps
+/// between cards line up vertically down the whole band, and a gap that lines
+/// up is a lane an edge can climb without crossing a card — see [`free_lane`].
+/// The band as a block is centred on the canvas; its rows are ragged on the
+/// right, the way a paragraph is.
+fn place_band(
+    rows: &[Vec<String>],
     persons: &serde_json::Map<String, Value>,
-    y: f64,
-    canvas_w: f64,
+    opts: &LayoutOpts<'_>,
+    y_top: f64,
+    x0: f64,
     root: Option<&str>,
 ) -> Vec<Card> {
-    let row_w = (ids.len() as f64) * (CARD_W + H_GAP) - H_GAP;
-    let x0 = ((canvas_w - row_w) / 2.0).max(MARGIN);
-    ids.iter()
-        .enumerate()
-        .map(|(i, id)| {
-            let x = x0 + (i as f64) * (CARD_W + H_GAP);
-            card_for(id, persons.get(id), x, y, root == Some(id.as_str()))
-        })
-        .collect()
+    let mut cards = Vec::new();
+    for (r, ids) in rows.iter().enumerate() {
+        let y = y_top + (r as f64) * (CARD_H + ROW_GAP);
+        let mut x = x0;
+        for id in ids {
+            let w = opts.box_w(id);
+            let mut card = card_for(id, persons.get(id), x, y, root == Some(id.as_str()));
+            card.w = w;
+            card.row = r;
+            card.restricted = opts.hidden(id);
+            cards.push(card);
+            x += w + H_GAP;
+        }
+    }
+    cards
+}
+
+/// Where one person ended up, and in which row of which band.
+#[derive(Debug, Clone, Copy)]
+struct Placement {
+    x: f64,
+    y: f64,
+    w: f64,
+    band: usize,
+    row: usize,
+}
+
+/// The horizontal extent of every box in a band, row by row.
+///
+/// Used to find a lane: a vertical strip an edge can travel through without
+/// crossing a card.
+#[derive(Debug, Clone)]
+struct BandGeom {
+    /// Top of the band's first row.
+    top: f64,
+    /// Bottom of the band's last row.
+    bottom: f64,
+    /// Per row: its top y, and the occupied x spans left to right.
+    rows: Vec<(f64, Vec<(f64, f64)>)>,
+}
+
+impl BandGeom {
+    fn row_top(&self, r: usize) -> f64 {
+        self.rows[r].0
+    }
+
+    /// Is `x` clear of every box in rows `range`?
+    ///
+    /// Spans arrive sorted left to right — they are built in placement order —
+    /// so the row is searched rather than scanned. On the operator's widest
+    /// generation this runs about a hundred and fifty thousand times per
+    /// render, which is the difference between the search being free and being
+    /// the most expensive thing on the page.
+    fn clear(&self, range: std::ops::Range<usize>, x: f64) -> bool {
+        const CLEARANCE: f64 = 3.0;
+        for r in range {
+            let Some((_, spans)) = self.rows.get(r) else {
+                continue;
+            };
+            // The last span whose left edge is at or before x.
+            let i = spans.partition_point(|(a, _)| a - CLEARANCE <= x);
+            if i > 0 {
+                let (a, b) = spans[i - 1];
+                if x > a - CLEARANCE && x < b + CLEARANCE {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    /// A vertical strip through rows `range` with no card in it, as near to
+    /// `prefer` as one can be found.
+    ///
+    /// Candidates are the gaps between cards — which line up down the band,
+    /// because every row shares a left edge — and, always, the two lanes kept
+    /// clear at the canvas edges. The edge lanes are the reason this cannot
+    /// fail: if a band's rows leave no gap in common, the edge goes around the
+    /// band rather than through it.
+    fn free_lane(&self, range: std::ops::Range<usize>, prefer: f64, canvas_w: f64) -> f64 {
+        let mut candidates: Vec<f64> = vec![MARGIN + LANE / 2.0, canvas_w - MARGIN - LANE / 2.0];
+        for r in range.clone() {
+            let Some((_, spans)) = self.rows.get(r) else {
+                continue;
+            };
+            for pair in spans.windows(2) {
+                candidates.push((pair[0].1 + pair[1].0) / 2.0);
+            }
+            if let Some(last) = spans.last() {
+                candidates.push(last.1 + H_GAP / 2.0);
+            }
+            if let Some(first) = spans.first() {
+                candidates.push(first.0 - H_GAP / 2.0);
+            }
+        }
+        // Rows of a band share a left edge, so most of these candidates are
+        // the same x proposed by several rows. Collapsing them first is what
+        // keeps the search below proportional to the width of a row rather
+        // than to the area of the band.
+        candidates.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        candidates.dedup_by(|a, b| (*a - *b).abs() < 1.0);
+        candidates.sort_by(|a, b| {
+            (a - prefer)
+                .abs()
+                .partial_cmp(&(b - prefer).abs())
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        candidates
+            .into_iter()
+            .find(|x| self.clear(range.clone(), *x))
+            .unwrap_or(MARGIN + LANE / 2.0)
+    }
+}
+
+/// Emit an orthogonal path through `points` as SVG path data.
+///
+/// Every segment is axis-aligned, so `V` and `H` say it in a third of the
+/// characters `L` would take. On `?all=1` that is a thousand paths, and the
+/// page is already a megabyte.
+fn ortho_path(points: &[(f64, f64)]) -> String {
+    let mut out = String::new();
+    let (mut cx, mut cy) = points[0];
+    out.push_str(&format!("M {cx:.1} {cy:.1}"));
+    for &(x, y) in &points[1..] {
+        if (x - cx).abs() > 0.05 {
+            out.push_str(&format!(" H {x:.1}"));
+            cx = x;
+        }
+        if (y - cy).abs() > 0.05 {
+            out.push_str(&format!(" V {y:.1}"));
+            cy = y;
+        }
+    }
+    out
 }
 
 /// Write each band's label in the reader's language.
@@ -1512,6 +1935,8 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
             sex: "u",
             x,
             y,
+            w: CARD_W,
+            row: 0,
             conf_band: None,
             conf_label: None,
             conf_pct: None,
@@ -1557,6 +1982,8 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
         sex,
         x,
         y,
+        w: CARD_W,
+        row: 0,
         conf_band: conf.as_ref().map(|c| c.band),
         conf_pct: conf.as_ref().map(|c| c.percent),
         conf_label: conf.map(|c| c.description),
@@ -1641,7 +2068,9 @@ pub fn redact_in(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>, la
 /// the split would go here: each gap already has its own y band.
 fn build_edges(
     families: &[FamilyEdges],
-    pos: &BTreeMap<String, (f64, f64)>,
+    pos: &BTreeMap<String, Placement>,
+    geom: &[BandGeom],
+    canvas_w: f64,
     gen: &BTreeMap<String, i64>,
     persons: &serde_json::Map<String, Value>,
     hues: &BTreeMap<(String, String), u8>,
@@ -1659,15 +2088,15 @@ fn build_edges(
         // Spouse connector: a horizontal line between partners in the same row.
         if f.parents.len() >= 2 {
             for pair in f.parents.windows(2) {
-                let (Some(&(ax, ay)), Some(&(bx, by))) = (pos.get(&pair[0]), pos.get(&pair[1]))
-                else {
+                let (Some(&a), Some(&b)) = (pos.get(&pair[0]), pos.get(&pair[1])) else {
                     continue;
                 };
+                let (ax, ay, bx, by) = (a.x, a.y, b.x, b.y);
                 let c = Confidence::new(f.union_confidence.unwrap_or(0.8));
                 let (x1, x2) = if ax <= bx {
-                    (ax + CARD_W, bx)
+                    (ax + a.w, bx)
                 } else {
-                    (bx + CARD_W, ax)
+                    (bx + b.w, ax)
                 };
                 let y1 = ay + CARD_H / 2.0;
                 let y2 = by + CARD_H / 2.0;
@@ -1701,7 +2130,7 @@ fn build_edges(
         // inverted layout, so the line leaves the parent's top edge and arrives
         // at the child's bottom edge.
         for (child, conf) in &f.children {
-            let Some(&(cx, cy)) = pos.get(child) else {
+            let Some(&cp) = pos.get(child) else {
                 continue;
             };
             // Anchor on the deepest parent — the same choice the ordering pass
@@ -1709,17 +2138,63 @@ fn build_edges(
             let Some(parent) = anchor_parent(&f.parents, gen, &present) else {
                 continue;
             };
-            let Some(&(px, py)) = pos.get(parent) else {
+            let Some(&pp) = pos.get(parent) else {
                 continue;
             };
 
             let c = Confidence::new(conf.unwrap_or(0.8));
-            let x1 = px + CARD_W / 2.0;
-            let y1 = py; // parent's top edge
-            let x2 = cx + CARD_W / 2.0;
-            let y2 = cy + CARD_H; // child's bottom edge
-            let mid = (y1 + y2) / 2.0;
-            let d = format!("M {x1:.1} {y1:.1} V {mid:.1} H {x2:.1} V {y2:.1}");
+            let x1 = pp.x + pp.w / 2.0;
+            let y1 = pp.y; // parent's top edge
+            let x2 = cp.x + cp.w / 2.0;
+            let y2 = cp.y + CARD_H; // child's bottom edge
+
+            // The parent is below the child, so the line leaves the parent's
+            // band through its top and enters the child's band through its
+            // bottom. Where a generation wrapped, the rows in between are in
+            // the way, and the line climbs a lane rather than crossing them.
+            let (pg, cg) = (geom.get(pp.band), geom.get(cp.band));
+            let (band_top, band_bottom) = match (pg, cg) {
+                (Some(a), Some(b)) => (a.top, b.bottom),
+                _ => (y1, y2),
+            };
+            let mid = (band_top + band_bottom) / 2.0;
+
+            let mut points: Vec<(f64, f64)> = vec![(x1, y1)];
+
+            // Out of the parent's band. Rows 0..pp.row sit above the parent.
+            let exit_x = if pp.row > 0 {
+                if let Some(g) = pg {
+                    // The strip directly above the parent's row holds no card.
+                    let lane_y = g.row_top(pp.row) - ROW_GAP / 2.0;
+                    let lane_x = g.free_lane(0..pp.row, x1, canvas_w);
+                    points.push((x1, lane_y));
+                    points.push((lane_x, lane_y));
+                    lane_x
+                } else {
+                    x1
+                }
+            } else {
+                x1
+            };
+
+            // Across the gap between the two generations.
+            points.push((exit_x, mid));
+
+            // Into the child's band. Rows cp.row+1.. sit below the child.
+            let last = cg.map(|g| g.rows.len()).unwrap_or(1);
+            if cp.row + 1 < last {
+                if let Some(g) = cg {
+                    let lane_x = g.free_lane(cp.row + 1..last, x2, canvas_w);
+                    let lane_y = g.row_top(cp.row) + CARD_H + ROW_GAP / 2.0;
+                    points.push((lane_x, mid));
+                    points.push((lane_x, lane_y));
+                    points.push((x2, lane_y));
+                }
+            } else {
+                points.push((x2, mid));
+            }
+            points.push((x2, y2));
+            let d = ortho_path(&points);
 
             edges.push(Edge {
                 kind: "parent",
@@ -2321,11 +2796,281 @@ mod tests {
 
         assert_eq!(full.person_count, 62);
         assert_eq!(focused.person_count, 3, "the kid and both parents");
+
+        // The 60-card row is no longer 8,794px of canvas. Sixty is over
+        // `THICKET`, so it folds to `MAX_BAND_ROWS` rows rather than as far as
+        // the target width would take it — ten cards a row, not seven — and
+        // the canvas is wider than the target by exactly that much. Still a
+        // fifth of what one row cost.
         assert!(
-            focused.width < full.width / 10.0,
-            "focusing must collapse a wide canvas: {} vs {}",
+            full.width < 8794.0 / 4.0,
+            "wrapping must collapse the canvas: {}",
+            full.width
+        );
+        let kids = full.bands.iter().find(|b| b.count == 60).unwrap();
+        assert_eq!(
+            kids.rows, MAX_BAND_ROWS,
+            "a generation this size stops at the row cap"
+        );
+        assert!(
+            full.height > 2.0 * (CARD_H + V_GAP),
+            "…by becoming taller, which is where the width went: {}",
+            full.height
+        );
+        // Focusing still narrows it further — it draws three people, and three
+        // people need one short row.
+        assert!(
+            focused.width < full.width / 2.0,
+            "focusing must still collapse the canvas: {} vs {}",
             focused.width,
             full.width
+        );
+    }
+
+    #[test]
+    fn a_wide_generation_wraps_instead_of_widening_the_canvas() {
+        // 60 siblings in one generation, laid out to a row that holds seven.
+        let mut people: Vec<String> = vec!["ma".into(), "pa".into()];
+        for i in 0..60 {
+            people.push(format!("kid{i:02}"));
+        }
+        let refs: Vec<&str> = people.iter().map(String::as_str).collect();
+        let kids: Vec<&str> = refs[2..].to_vec();
+        let b = bundle(&refs, &[(&["ma", "pa"], &kids)]);
+
+        let narrow = layout_with(&b, LayoutOpts::default().with_width(1200.0));
+        let wide = layout_with(&b, LayoutOpts::default().with_width(4000.0));
+
+        // Same people either way; only the shape of the canvas differs.
+        assert_eq!(narrow.person_count, wide.person_count);
+        assert!(
+            narrow.width < wide.width,
+            "a narrower row means a narrower canvas"
+        );
+        assert!(narrow.height > wide.height, "and a taller one");
+
+        // The band is still one band: every card in it carries the same
+        // generation, and the band knows how many rows it took.
+        let kids_band = narrow
+            .bands
+            .iter()
+            .find(|b| b.count == 60)
+            .expect("the sixty siblings are one band");
+        assert!(kids_band.rows > 1, "it wrapped");
+        assert_eq!(
+            kids_band.cards.len(),
+            60,
+            "and holds all of them, on {} rows",
+            kids_band.rows
+        );
+        let rows: BTreeSet<usize> = kids_band.cards.iter().map(|c| c.row).collect();
+        assert_eq!(
+            rows.len(),
+            kids_band.rows,
+            "every row of the band actually holds cards"
+        );
+        // The band's own height covers every row it drew.
+        let lowest = kids_band.cards.iter().map(|c| c.y).fold(f64::MIN, f64::max);
+        assert!(
+            lowest + CARD_H <= kids_band.y + kids_band.height + 0.1,
+            "the band's zone contains its own cards"
+        );
+    }
+
+    #[test]
+    fn a_generation_under_the_thicket_folds_as_far_as_it_needs_to() {
+        // Twenty siblings on a phone-width row: two cards each, ten rows. The
+        // row cap is for generations big enough to turn into a thicket, and
+        // folding a small one into a near-column is the only thing that fits a
+        // phone.
+        let mut people: Vec<String> = vec!["ma".into(), "pa".into()];
+        for i in 0..20 {
+            people.push(format!("kid{i:02}"));
+        }
+        let refs: Vec<&str> = people.iter().map(String::as_str).collect();
+        let kids: Vec<&str> = refs[2..].to_vec();
+        let b = bundle(&refs, &[(&["ma", "pa"], &kids)]);
+
+        let phone = layout_with(&b, LayoutOpts::default().with_width(MIN_WRAP_W));
+        let band = phone.bands.iter().find(|b| b.count == 20).unwrap();
+        assert!(
+            band.rows > MAX_BAND_ROWS,
+            "a small generation folds past the cap: {} rows",
+            band.rows
+        );
+        // One card a row, so the canvas is at its floor — narrow enough for
+        // the tree column of a 390px phone.
+        assert!(
+            phone.width <= 320.0,
+            "…which is what lets it fit the screen: {}",
+            phone.width
+        );
+    }
+
+    #[test]
+    fn a_person_the_reader_may_not_read_takes_a_marker_not_a_card() {
+        // The shape of the family is not what is being withheld, so the person
+        // keeps their place in the row. What they do not keep is a card's
+        // width: on a bundle where a visitor may read nobody, that is the
+        // difference between a canvas of the word "Private" and a legible one.
+        let people: Vec<String> = (0..20).map(|i| format!("p{i:02}")).collect();
+        let refs: Vec<&str> = people.iter().map(String::as_str).collect();
+        let kids: Vec<&str> = refs[2..].to_vec();
+        let b = bundle(&refs, &[(&[refs[0], refs[1]], &kids)]);
+
+        let everyone = layout_with(&b, LayoutOpts::default().with_width(MAX_WRAP_W));
+
+        // Only the parents are readable.
+        let visible: BTreeSet<String> = ["p00".to_string(), "p01".to_string()].into();
+        let redacted = layout_with(
+            &b,
+            LayoutOpts::default()
+                .with_width(MAX_WRAP_W)
+                .seeing(Some(&visible)),
+        );
+
+        assert_eq!(
+            everyone.person_count, redacted.person_count,
+            "compressed, not omitted: a hidden person is still drawn"
+        );
+        assert!(
+            redacted.width < everyone.width / 2.0,
+            "and takes far less width doing it: {} vs {}",
+            redacted.width,
+            everyone.width
+        );
+
+        let marker_widths: Vec<f64> = redacted
+            .bands
+            .iter()
+            .flat_map(|b| b.cards.iter())
+            .filter(|c| c.restricted)
+            .map(|c| c.w)
+            .collect();
+        assert_eq!(marker_widths.len(), 18, "eighteen people are withheld");
+        assert!(
+            marker_widths.iter().all(|w| (*w - MARK_W).abs() < 0.01),
+            "each of them a marker's width"
+        );
+        // The two readable parents keep a card.
+        assert!(redacted
+            .bands
+            .iter()
+            .flat_map(|b| b.cards.iter())
+            .any(|c| !c.restricted && (c.w - CARD_W).abs() < 0.01));
+    }
+
+    #[test]
+    fn a_connector_out_of_a_wrapped_band_climbs_a_lane_rather_than_a_card() {
+        // The constraint the wrapping has to respect: an edge leaving a card
+        // on an inner row must get past its own generation's other rows to
+        // reach the one above, and it must go around them rather than through
+        // them.
+        let mut people: Vec<String> = vec!["ma".into(), "pa".into()];
+        for i in 0..24 {
+            people.push(format!("kid{i:02}"));
+        }
+        let refs: Vec<&str> = people.iter().map(String::as_str).collect();
+        let kids: Vec<&str> = refs[2..].to_vec();
+        // One family: ma and pa below, twenty-four children in the band above,
+        // so every child has a connector that must enter its wrapped band from
+        // underneath and get past the rows below it.
+        let b = bundle(&refs, &[(&refs[0..2], &kids[..])]);
+
+        let l = layout_with(&b, LayoutOpts::default().with_width(900.0));
+        let band = l.bands.iter().find(|b| b.count == 24).unwrap();
+        assert!(band.rows > 1, "the generation wrapped");
+
+        // Rectangles of every card, and every segment of every drawn edge.
+        let rects: Vec<(f64, f64, f64, f64)> = l
+            .bands
+            .iter()
+            .flat_map(|b| b.cards.iter())
+            .map(|c| (c.x, c.y, c.x + c.w, c.y + CARD_H))
+            .collect();
+
+        let mut through = 0;
+        for e in l.edges.iter().filter(|e| e.kind == "parent") {
+            for (p, q) in path_segments(&e.d) {
+                for r in &rects {
+                    if segment_enters(p, q, *r) {
+                        through += 1;
+                    }
+                }
+            }
+        }
+        assert_eq!(
+            through, 0,
+            "no descent connector may run across a card in a wrapped band"
+        );
+    }
+
+    /// Parse the orthogonal path data back into segments.
+    fn path_segments(d: &str) -> Vec<((f64, f64), (f64, f64))> {
+        let mut pts = Vec::new();
+        let mut cur = (0.0f64, 0.0f64);
+        let mut it = d.split_whitespace().peekable();
+        while let Some(tok) = it.next() {
+            match tok {
+                "M" => {
+                    let x: f64 = it.next().unwrap().parse().unwrap();
+                    let y: f64 = it.next().unwrap().parse().unwrap();
+                    cur = (x, y);
+                    pts.push(cur);
+                }
+                "H" => {
+                    cur.0 = it.next().unwrap().parse().unwrap();
+                    pts.push(cur);
+                }
+                "V" => {
+                    cur.1 = it.next().unwrap().parse().unwrap();
+                    pts.push(cur);
+                }
+                _ => {}
+            }
+        }
+        pts.windows(2).map(|w| (w[0], w[1])).collect()
+    }
+
+    /// Does an axis-aligned segment pass through a rectangle's interior?
+    fn segment_enters(p: (f64, f64), q: (f64, f64), r: (f64, f64, f64, f64)) -> bool {
+        let pad = 1.5;
+        let (x0, y0, x1, y1) = (r.0 + pad, r.1 + pad, r.2 - pad, r.3 - pad);
+        if (p.0 - q.0).abs() < 1e-6 {
+            let (lo, hi) = (p.1.min(q.1), p.1.max(q.1));
+            return p.0 > x0 && p.0 < x1 && hi > y0 && lo < y1;
+        }
+        if (p.1 - q.1).abs() < 1e-6 {
+            let (lo, hi) = (p.0.min(q.0), p.0.max(q.0));
+            return p.1 > y0 && p.1 < y1 && hi > x0 && lo < x1;
+        }
+        false
+    }
+
+    #[test]
+    fn wrapping_keeps_the_barycentre_order_reading_left_to_right_then_down() {
+        let mut people: Vec<String> = vec!["ma".into(), "pa".into()];
+        for i in 0..30 {
+            people.push(format!("kid{i:02}"));
+        }
+        let refs: Vec<&str> = people.iter().map(String::as_str).collect();
+        let kids: Vec<&str> = refs[2..].to_vec();
+        let b = bundle(&refs, &[(&["ma", "pa"], &kids)]);
+
+        let wide = layout_with(&b, LayoutOpts::default().with_width(4000.0));
+        let narrow = layout_with(&b, LayoutOpts::default().with_width(1200.0));
+
+        let seq = |l: &TreeLayout| -> Vec<String> {
+            let band = l.bands.iter().find(|b| b.count == 30).unwrap();
+            let mut cards: Vec<&Card> = band.cards.iter().collect();
+            // Reading order: down the rows, left to right within each.
+            cards.sort_by(|a, b| a.row.cmp(&b.row).then(a.x.partial_cmp(&b.x).unwrap()));
+            cards.iter().map(|c| c.id.clone()).collect()
+        };
+        assert_eq!(
+            seq(&wide),
+            seq(&narrow),
+            "wrapping must not reorder the generation, only fold it"
         );
     }
 

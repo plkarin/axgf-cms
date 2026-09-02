@@ -994,6 +994,34 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 /* Hover raises a person's own edges to the front of the eye. */
 .wire.lit { stroke-width: 3; }
 
+/* A generation, drawn as one thing.
+ *
+ * Vertical position carries generation, and wrapping a wide generation onto
+ * several rows would break that if the rows read as separate bands. They do
+ * not, because of three things at once: the rows of one generation sit 26px
+ * apart where two generations sit 78px apart; the whole band has a single
+ * tinted zone behind it; and the label spans the zone rather than sitting on
+ * the first row. The tint alternates so that two bands cannot be misread as
+ * one, and it is very faint — this is a grouping cue, not a colour.
+ */
+.band-zone {
+  position: absolute;
+  inset-inline: 0;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+.band-zone.wrapped {
+  /* A band that had to wrap says so with a bracket down its leading edge, so
+     the reader can see at a glance that these rows are one generation rather
+     than several. */
+  border-inline-start: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
+}
+.band-zone.unplaced {
+  background: color-mix(in srgb, var(--conf-medium) 7%, transparent);
+}
+
 .band-label {
   position: absolute;
   inset-inline-start: 0;
@@ -1012,7 +1040,9 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 
 .tcard {
   position: absolute;
-  width: 132px;
+  /* Width is written inline, per card: a full card is 132px and a person the
+     reader may not read is a 34px marker. Both come from the same layout pass
+     that positioned them, so the connectors meet them where they are. */
   /* Fixed height for every card, so a two-line name never makes a row ragged.
      Tall enough to show both clamped lines plus the dates without the card's
      own overflow clipping the ellipsis. Matches CARD_H in tree.rs. */
@@ -1061,11 +1091,16 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
   border-style: dashed;
   background: var(--sex-u);
   cursor: default;
+  /* A marker, not a card. It keeps the person's place in the row — the shape
+     of the family is not what is being withheld — but it does not keep a
+     card's width. On a bundle where a visitor may read nobody, that is the
+     difference between a 24,124px canvas of the word "Private" and a legible
+     one. The dash still reads at this size; the name never fitted anyway, and
+     the title and accessible name still say what the marker is. */
+  align-items: center;
+  padding-inline: 0.15rem;
 }
-.tcard.is-restricted .tname {
-  color: var(--ink-faint);
-  font-style: italic;
-}
+.tcard.is-restricted .tdates { justify-content: center; color: var(--ink-faint); }
 .tcard.is-restricted:hover { box-shadow: none; z-index: 2; }
 
 /* The same treatment inline, where a hidden person is named as a relative. */
@@ -1151,6 +1186,17 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
    background and the rounding live here, once, and neither column carries a
    frame of its own: the frames that used to be there were drawing the edge of
    a scroll region, and there is no scroll region left to draw. */
+/* Registered so it computes to a real length. `tree.js` has to know the
+   narrowest the record column can get in order to work out the widest the tree
+   column can get, and an unregistered custom property would hand it back the
+   string "clamp(320px, 26vw, 460px)". Registering it here keeps the number in
+   one place rather than copying it into the script. */
+@property --panel-min {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 320px;
+}
+
 .tree-split {
   --panel-min: clamp(320px, 26vw, 460px);
   /* Past this, a line of the record's prose is uncomfortable to read. */
@@ -1164,7 +1210,11 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
     minmax(0, var(--tree-width, 1fr))
     clamp(
       var(--panel-min),
-      calc(100% - var(--tree-width, 0px) - var(--split-gap)),
+      /* Two gaps, because there are three tracks. Subtracting one left the
+         panel 24px too wide, and the tree — the only track that may shrink —
+         paid for it: a tree laid out to exactly the column it was told about
+         still overflowed by the missing gap. */
+      calc(100% - var(--tree-width, 0px) - 2 * var(--split-gap)),
       var(--panel-max)
     )
     minmax(0, 1fr);

@@ -217,6 +217,33 @@ pub struct TreeQuery {
     /// the tree — re-centring is an explicit action.
     #[serde(default)]
     sel: Option<String>,
+    /// How wide a row of cards may be, in CSS pixels.
+    ///
+    /// The tree is laid out in Rust and shipped as absolute coordinates, so
+    /// the width has to be chosen before the reader's own is knowable. This is
+    /// the explicit answer; the `axgf_tw` cookie is the one `tree.js` sets from
+    /// the column it actually measured, and a default covers both being absent.
+    #[serde(default)]
+    w: Option<f64>,
+}
+
+/// Name of the cookie `tree.js` stores the measured column width in.
+pub const WIDTH_COOKIE: &str = "axgf_tw";
+
+/// The row width to lay this request's tree out to.
+///
+/// The query string wins over the cookie, because it is the more explicit of
+/// the two and is what a link can carry. Anything unparseable or out of range
+/// falls back rather than failing: a bad width is a worse-looking tree, not an
+/// error page.
+fn wrap_width(q: &TreeQuery, headers: &HeaderMap) -> f64 {
+    q.w.or_else(|| {
+        crate::session::named_cookie(headers, WIDTH_COOKIE)
+            .and_then(|v| v.trim().parse::<f64>().ok())
+    })
+    .filter(|v| v.is_finite() && *v > 0.0)
+    .map(|v| v.clamp(crate::tree::MIN_WRAP_W, crate::tree::MAX_WRAP_W))
+    .unwrap_or(crate::tree::DEFAULT_WRAP_W)
 }
 
 /// Depth shown above and below the root when none is requested.
@@ -245,6 +272,7 @@ pub async fn tree(
     let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
     let show_all = q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty());
     let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
+    let row_w = wrap_width(&q, &headers);
 
     let started = std::time::Instant::now();
     let (layout, focus, roster, panel, selected, hidden) =
@@ -261,8 +289,12 @@ pub async fn tree(
                 .map(|p| p.len().saturating_sub(lens.count(p.len())))
                 .unwrap_or(0);
 
+            let opts = crate::tree::LayoutOpts::default()
+                .with_width(row_w)
+                .seeing(lens.set());
+
             if show_all {
-                let mut l = crate::tree::layout(flat);
+                let mut l = crate::tree::layout_with(flat, opts);
                 crate::tree::localise(&mut l, chrome.lang);
                 crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                 return (l, None, roster, None, None, hidden);
@@ -294,7 +326,7 @@ pub async fn tree(
             match root {
                 Some(root) => {
                     let sub = crate::tree::select_subtree(flat, &root, depth, depth);
-                    let mut l = crate::tree::layout_focused(flat, &sub);
+                    let mut l = crate::tree::layout_focused_with(flat, &sub, opts);
                     crate::tree::localise(&mut l, chrome.lang);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     let name = if lens.sees_person(&root) {
@@ -330,7 +362,7 @@ pub async fn tree(
                 }
                 // An empty bundle has nobody to focus on.
                 None => {
-                    let mut l = crate::tree::layout(flat);
+                    let mut l = crate::tree::layout_with(flat, opts);
                     crate::tree::localise(&mut l, chrome.lang);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     (l, None, roster, None, None, hidden)

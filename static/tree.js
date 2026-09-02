@@ -104,6 +104,63 @@
   }
 })();
 
+/* Telling the server how wide the tree column actually is.
+ *
+ * The layout is computed in Rust and shipped as absolute coordinates — the SVG
+ * connectors have to line up with the cards without a layout pass in the
+ * browser — so the width a generation wraps to is chosen before the reader's
+ * own width is knowable. The server's default covers the no-JavaScript case;
+ * this measures the column that was actually rendered and stores it, so the
+ * next navigation is folded to the real one.
+ *
+ * Deliberately not a reload. A page that re-fetched itself on load would flash
+ * and would cost every reader a second request to save some of them a
+ * scrollbar. Re-rooting the tree, changing the depth and following a card are
+ * all full navigations already, so the measured width is used within one
+ * click of arriving. */
+(function () {
+  var split = document.querySelector('.tree-split');
+  var scroll = document.querySelector('.tree-scroll');
+  if (!split || !scroll) return;
+  try {
+    var cs = getComputedStyle(split);
+    var inner = split.clientWidth -
+      parseFloat(cs.paddingInlineStart || 0) - parseFloat(cs.paddingInlineEnd || 0);
+    var panel = document.getElementById('tree-panel');
+    var gap = parseFloat(cs.columnGap) || 0;
+
+    /* Is the record actually beside the tree? Below laptop width the split is
+     * one column and the record sits underneath, where it takes none of the
+     * tree's width. */
+    var beside = false;
+    if (panel && panel.getClientRects().length) {
+      var a = scroll.getBoundingClientRect(), b = panel.getBoundingClientRect();
+      beside = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0;
+    }
+
+    /* The record column's width is itself derived from the tree's — it grows
+     * into whatever the tree leaves — so measuring it now would answer a
+     * question about the layout we already have rather than the one we want.
+     * The fixed point is the narrowest the record may be: give the tree
+     * everything except that. */
+    var panelMin = parseFloat(cs.getPropertyValue('--panel-min')) || 320;
+    /* Two gaps when the record is beside the tree: tree | gap | record | gap |
+     * whatever is left over on an ultrawide screen. */
+    var avail = beside ? inner - panelMin - 2 * gap : inner;
+    avail = Math.round(avail);
+    if (!(avail > 0)) return;
+    // Round to a step so that a one-pixel scrollbar difference does not write
+    // a new cookie — and a new layout — on every navigation.
+    avail = Math.round(avail / 20) * 20;
+    var current = (document.cookie.match(/(?:^|;\s*)axgf_tw=(\d+)/) || [])[1];
+    if (current && Math.abs(parseInt(current, 10) - avail) < 20) return;
+    document.cookie = 'axgf_tw=' + avail + ';path=/;max-age=31536000;samesite=lax';
+  } catch (e) {
+    // A preference, not a feature: if anything here fails the server default
+    // is a working tree.
+  }
+})();
+
 /* The side panel.
  *
  * A card click is the primary action and it loads that person's record into

@@ -9,6 +9,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A masthead on the person page.** A photograph when the bundle carries one
+whose bytes are present, and otherwise the person's own initials on the theme's
+accent — the same size and shape, so the heading beside it does not move
+depending on whether a photograph exists. On a converted bundle most people
+have none, which makes the placeholder the common case rather than the failure
+case.
+
+Beside it: the full name, alternative names, the span rendered at the precision
+the record supports, and the age — at death, or now for someone living, and
+omitted whenever either end is missing or the arithmetic would be a guess. Then
+a line of facts placing them: born where, died where, how many children, how
+many generations of descendants the bundle records below them. Each part
+appears only when the record states it. Living status is shown to everyone; the
+visibility level only to the people who can change it.
+
+The generation count is a breadth-first walk of the family graph with a seen
+set, which is not paranoia: the operator's bundle records two people as both a
+couple and as parent and child, so the descent graph has a cycle in it.
+
+The avatar prefers a document that declares itself a portrait and falls back to
+the first present image. On a converted bundle neither of the first two ever
+matches — the converter stamps `photo` on every scan and records one role,
+`subject` — so the avatar is whichever image came first, which on the
+operator's file is as often a death notice as a face.
+
+
+
 **A soft wash behind the page.** Low-contrast CSS gradients, one set per theme,
 mixed from that theme's own tokens toward its own hues — nothing in them is a
 colour the theme did not already contain. Each of the three tints lands two to
@@ -130,7 +157,15 @@ Deliberately not a reload: re-rooting, changing the depth and following a card
 are all full navigations already, so the measured width is in use within one
 click of arriving.
 
+
 ### Fixed
+
+**An error page carried a button labelled `None`.** `Chrome` has a `back`
+field — where a preference form returns the reader to, which is the page they
+are on — and the error context reused the name for the link out. Merging the
+two contexts let the chrome's value win, so every error page grew a second
+button pointing back at the page that had just refused the reader, labelled
+with a rendered `None`.
 
 **The record column was 24px too wide, and the tree paid for it.** The grid has
 three tracks and therefore two gaps, but the panel's width subtracted one. The

@@ -9,21 +9,76 @@
 
 {% block content %}
 
-<div class="person-head">
-  <div>
+{# The masthead. Everything in it is a fact the bundle states or arithmetic on
+   two of them; nothing here is prose about the software. #}
+<header class="person-head">
+  {% if p.header.avatar %}
+  <a class="person-avatar" href="/document/{{ p.header.avatar.id }}/view"
+     aria-label="{{ t('person-portrait-of', name=p.name) }}">
+    <img src="/document/{{ p.header.avatar.id }}/thumb" alt="{{ t('person-portrait-of', name=p.name) }}"
+         width="112" height="112" loading="lazy" decoding="async">
+  </a>
+  {% else %}
+  {# Most people on a converted bundle have no photograph, so this is what a
+     reader sees most often. Initials from the name as recorded — deliberate,
+     not a broken image and not a stock silhouette of somebody else. #}
+  <span class="person-avatar is-initials" role="img"
+        aria-label="{{ t('person-no-portrait') }}" title="{{ t('person-no-portrait') }}">
+    <span aria-hidden="true">{{ p.header.initials }}</span>
+  </span>
+  {% endif %}
+
+  <div class="person-head-text">
     <h1>{{ p.name }}</h1>
-    <p class="lede">
+    {% if p.names | length > 1 %}
+    <p class="person-akas">
+      {%- for n in p.names %}{% if not loop.first %}<bdi>{{ n.display }}</bdi>
+      {%- if not loop.last %}<span class="sep"> · </span>{% endif %}{% endif %}{% endfor -%}
+    </p>
+    {% endif %}
+
+    <p class="person-vitals">
+      <span class="pv-dates">
+        {{- m.date(p.birth.date) if p.birth.present else t("date-unknown") -}}
+        <span class="sep"> – </span>
+        {%- if p.is_living %}{{ t("record-living-yes") }}
+        {%- elif p.death.present %}{{ m.date(p.death.date) }}
+        {%- else %}{{ t("date-unknown") }}{% endif -%}
+      </span>
+      {%- if p.header.age is not none %}
+      <span class="sep"> · </span>{% if p.header.age_is_current %}{{ t("person-age-now", n=p.header.age) }}
+      {%- else %}{{ t("person-age-at-death", n=p.header.age) }}{% endif %}
+      {%- endif %}
+    </p>
+
+    <p class="lede small">
       {%- if p.gender %}{{ p.gender }}{% endif -%}
       {%- if p.is_living %} · {{ t("record-living-yes") }}
       {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
       {%- if p.gender_note %} · {{ p.gender_note }}{% endif -%}
-      {%- if p.visibility %} · {{ t("person-visibility-inline") }} {{ p.visibility }}{% endif -%}
+      {# Visibility is an editing concern, so it is shown to the people who can
+         act on it and to nobody else. #}
+      {%- if p.visibility and may_write %} · {{ t("person-visibility-inline") }} {{ p.visibility }}{% endif -%}
     </p>
+
+    {# Where they were, and how the record sits in the family. Each part is
+       omitted when the bundle does not state it. #}
+    {% set placing = [] %}
+    {% if p.birth.place %}{% set placing = placing + [t("person-born-in", place=p.birth.place.name)] %}{% endif %}
+    {% if p.death.place %}{% set placing = placing + [t("person-died-in", place=p.death.place.name)] %}{% endif %}
+    {% if p.header.children %}{% set placing = placing + [t("person-children-count", n=p.header.children)] %}{% endif %}
+    {% if p.header.generations_below %}{% set placing = placing + [t("person-generations-below", n=p.header.generations_below)] %}{% endif %}
+    {% if placing %}
+    <p class="person-placing small muted">{{ placing | join(" · ") }}</p>
+    {% endif %}
   </div>
+
   {% if may_write %}
-  <a class="btn" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>
+  <div class="person-head-actions">
+    <a class="btn" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>
+  </div>
   {% endif %}
-</div>
+</header>
 
 {# The index labels come from the same keys the section headings use, so the
    two can never drift into naming the same section differently. #}

@@ -398,6 +398,14 @@ record-edit = 編集
 panel-empty = カードを選ぶと、その人の記録の全体がここに表示されます。
 person-see-in-tree = この人を家系図で見る
 person-visibility-inline = 公開範囲:
+person-age-at-death = { $n }歳で死去
+person-age-now = { $n }歳
+person-born-in = { $place }で出生
+person-died-in = { $place }で死去
+person-children-count = 子{ $n }人
+person-generations-below = 下に{ $n }世代
+person-portrait-of = { $name }の写真
+person-no-portrait = 写真の記録なし
 
 ## 操作の結果
 

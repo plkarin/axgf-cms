@@ -20,6 +20,8 @@
 //! it is omitted rather than shown empty, so the shape of the page is itself a
 //! readout of what the bundle carries.
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use serde::Serialize;
 use serde_json::Value;
 
@@ -199,6 +201,32 @@ pub struct DocumentView {
     pub size_human: Option<String>,
 }
 
+/// What the top of a record states at a glance.
+///
+/// Assembled here rather than in the template because every part of it is a
+/// fact derived from the bundle — an age is arithmetic on two dates, a count
+/// of generations is a walk of the family graph — and a template is the wrong
+/// place to do arithmetic that has to be right.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct HeaderView {
+    /// A photograph of this person, when the bundle carries one whose bytes
+    /// are actually present. `None` is the common case on a converted bundle
+    /// and is not a failure: the page draws initials instead.
+    pub avatar: Option<DocumentView>,
+    /// One or two letters for the placeholder. Taken from the name as
+    /// recorded, so a Japanese name yields a Japanese initial.
+    pub initials: String,
+    /// Age at death, or age now for someone living. `None` whenever either
+    /// end is unknown or the arithmetic would be a guess.
+    pub age: Option<i64>,
+    /// True when `age` is how old they are rather than how old they were.
+    pub age_is_current: bool,
+    /// How many children this person has across every union.
+    pub children: usize,
+    /// How many generations of descendants the bundle records below them.
+    pub generations_below: usize,
+}
+
 /// One entry on the life timeline: a vital fact or an event.
 #[derive(Debug, Clone, Serialize)]
 pub struct TimelineEntry {
@@ -252,6 +280,9 @@ pub struct NoteView {
 pub struct PersonView {
     pub id: String,
     pub name: String,
+    /// The masthead: photograph or initials, age, and how the record sits in
+    /// the family. See [`HeaderView`].
+    pub header: HeaderView,
     /// The primary name first, then every alternative.
     pub names: Vec<NameView>,
     pub gender: Option<String>,
@@ -367,6 +398,8 @@ pub fn build_in(
     let sources = ctx.sources_for(&timeline, &names, &links, &occupations, &unions);
     let notes = collect_notes(person, &birth, &death, &timeline);
 
+    let header = build_header(&ctx, &name, &images, &birth, &death, is_living, &unions, id);
+
     let raw_json =
         serde_json::to_string_pretty(person).unwrap_or_else(|_| "<unserializable>".into());
 
@@ -428,6 +461,7 @@ pub fn build_in(
         sources,
         documents,
         images,
+        header,
         notes,
         raw_json,
         timeline_from,
@@ -485,6 +519,102 @@ fn build_timeline(
 
 /// Gather every piece of free text, marking the ones a converter preserved
 /// because it could not parse them.
+/// Build the masthead. See [`HeaderView`].
+#[allow(clippy::too_many_arguments)]
+fn build_header(
+    ctx: &Ctx<'_>,
+    name: &str,
+    images: &[DocumentView],
+    birth: &FactView,
+    death: &FactView,
+    is_living: bool,
+    unions: &[UnionView],
+    id: &str,
+) -> HeaderView {
+    // A photograph the bundle actually holds. A `referenced` document names a
+    // file that lives somewhere else, and an avatar that resolves to a broken
+    // image is worse than no avatar.
+    //
+    // Preference order, most explicit first. On a converted bundle none of the
+    // first two ever match: the GEDCOM converter stamps `photo` on every scan
+    // and records one role, `subject`, so a death notice and a portrait are
+    // indistinguishable and the avatar is whichever image came first. That is
+    // a property of the data rather than of this choice — a bundle that says
+    // which image is the portrait gets the portrait.
+    let avatar = images
+        .iter()
+        .find(|d| d.role.as_deref() == Some("portrait"))
+        .or_else(|| images.iter().find(|d| d.document_type == "portrait"))
+        .or_else(|| images.first())
+        .cloned();
+
+    let children: usize = unions.iter().map(|u| u.children.len()).sum();
+
+    HeaderView {
+        avatar,
+        initials: initials_of(name),
+        age: age_between(birth, death, is_living),
+        age_is_current: is_living,
+        children,
+        generations_below: ctx.generations_below(id),
+    }
+}
+
+/// One or two letters standing in for a photograph.
+///
+/// The first character of the first word and of the last, taken from the name
+/// as recorded rather than transliterated: a Japanese name yields a Japanese
+/// initial and an Arabic one an Arabic letter. Characters, not bytes, so a
+/// multi-byte first letter survives.
+fn initials_of(name: &str) -> String {
+    let words: Vec<&str> = name
+        .split_whitespace()
+        .filter(|w| w.chars().any(char::is_alphanumeric))
+        .collect();
+    let first = words.first().and_then(|w| w.chars().next());
+    let last = if words.len() > 1 {
+        words.last().and_then(|w| w.chars().next())
+    } else {
+        None
+    };
+    match (first, last) {
+        (Some(a), Some(b)) => format!("{a}{b}").to_uppercase(),
+        (Some(a), None) => a.to_uppercase().to_string(),
+        _ => String::from("?"),
+    }
+}
+
+/// Age in whole years, or `None` when the record cannot support the sum.
+///
+/// Both ends must carry a year. A `circa` date still gives one and the answer
+/// is still worth stating — an age of "about 63" is a fact a reader wants —
+/// but a date the converter could not read at all gives nothing, and a
+/// negative or absurd span means the two records disagree rather than that
+/// somebody lived -4 years. In every one of those cases the honest output is
+/// no age at all.
+fn age_between(birth: &FactView, death: &FactView, is_living: bool) -> Option<i64> {
+    let b = birth.date.sort? / 10_000;
+    let end = if is_living {
+        current_year()
+    } else {
+        death.date.sort? / 10_000
+    };
+    let years = end - b;
+    (0..=125).contains(&years).then_some(years)
+}
+
+/// This year, for the age of somebody still living.
+fn current_year() -> i64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    // Days since the epoch over the mean Gregorian year. Good to the day,
+    // which is far more precision than an age in whole years needs.
+    1970 + (secs / 86_400) * 400 / 146_097
+}
+
 fn collect_notes(
     person: &Value,
     birth: &FactView,
@@ -1273,6 +1403,70 @@ impl Ctx<'_> {
     }
 
     /// Every place this person's record touches, and what happened at each.
+    /// How many generations of descendants the bundle records below `id`.
+    ///
+    /// A breadth-first walk of the family graph. Counts every recorded
+    /// descendant, including people this reader may not read: their existence
+    /// is already disclosed — they hold a place in the tree and appear as
+    /// "Private" in a family list — and a count that quietly skipped them
+    /// would be a different number from the one the tree draws.
+    ///
+    /// `seen` is what makes this terminate on a bundle that contradicts
+    /// itself. The operator's does: it records two people as both a couple and
+    /// as parent and child, which is a cycle in the descent graph.
+    fn generations_below(&self, id: &str) -> usize {
+        let Some(families) = self.flat.get("families").and_then(Value::as_object) else {
+            return 0;
+        };
+        // person -> the families they are a parent in
+        let mut parent_of: BTreeMap<&str, Vec<&Value>> = BTreeMap::new();
+        for fam in families.values() {
+            for pr in fam
+                .get("union")
+                .and_then(|u| u.get("persons"))
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+            {
+                if let Some(pid) = pr.get("person_id").and_then(Value::as_str) {
+                    parent_of.entry(pid).or_default().push(fam);
+                }
+            }
+        }
+
+        let mut seen: BTreeSet<String> = BTreeSet::new();
+        seen.insert(id.to_string());
+        let mut layer: Vec<String> = vec![id.to_string()];
+        let mut depth = 0usize;
+
+        while !layer.is_empty() {
+            let mut next: Vec<String> = Vec::new();
+            for person in &layer {
+                for fam in parent_of.get(person.as_str()).into_iter().flatten() {
+                    for child in fam
+                        .get("children")
+                        .and_then(Value::as_array)
+                        .into_iter()
+                        .flatten()
+                    {
+                        let Some(cid) = child.get("person_id").and_then(Value::as_str) else {
+                            continue;
+                        };
+                        if seen.insert(cid.to_string()) {
+                            next.push(cid.to_string());
+                        }
+                    }
+                }
+            }
+            if next.is_empty() {
+                break;
+            }
+            depth += 1;
+            layer = next;
+        }
+        depth
+    }
+
     fn places_for(
         &self,
         birth: &FactView,

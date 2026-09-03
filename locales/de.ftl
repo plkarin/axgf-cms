@@ -484,6 +484,20 @@ record-edit = Bearbeiten
 panel-empty = Wählen Sie eine Karte, um hier den vollständigen Eintrag dieser Person zu sehen.
 person-see-in-tree = Diese Person im Stammbaum ansehen
 person-visibility-inline = Sichtbarkeit:
+person-age-at-death = gestorben mit { $n }
+person-age-now = { $n } Jahre alt
+person-born-in = geboren in { $place }
+person-died-in = gestorben in { $place }
+person-children-count = { $n ->
+        [one] ein Kind
+       *[other] { $n } Kinder
+    }
+person-generations-below = { $n ->
+        [one] eine Generation darunter
+       *[other] { $n } Generationen darunter
+    }
+person-portrait-of = Fotografie von { $name }
+person-no-portrait = Keine Fotografie erfasst
 
 ## Ergebnisse von Vorgängen
 

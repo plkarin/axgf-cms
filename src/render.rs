@@ -319,8 +319,13 @@ fn error_page_full(
         title => title.clone(),
         detail => detail.clone(),
         status => status.as_u16(),
-        back => back.map(|(href, _)| href),
-        back_label => back.map(|(_, label)| chrome.t(label)),
+        // Deliberately not `back`: `Chrome` already carries a field of that
+        // name — where a preference form should return the reader to, which is
+        // the page they are on. Merging the two contexts let the chrome's
+        // value win, so every error page grew a second button pointing at the
+        // page that had just refused them, labelled with a rendered `None`.
+        error_back => back.map(|(href, _)| href),
+        error_back_label => back.map(|(_, label)| chrome.t(label)),
         nav => MjValue::from(""),
     };
     let merged = context! { ..MjValue::from_serialize(chrome), ..MjValue::from_serialize(&ctx) };

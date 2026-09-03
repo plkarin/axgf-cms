@@ -388,6 +388,28 @@ panel-empty = اختر بطاقة لترى هنا السجل الكامل لذل
 panel-selected-person = الشخص المختار
 person-see-in-tree = انظر هذا الشخص في الشجرة
 person-visibility-inline = الظهور:
+person-age-at-death = تُوفّي عن { $n } عامًا
+person-age-now = { $n } عامًا
+person-born-in = وُلد في { $place }
+person-died-in = تُوفّي في { $place }
+person-children-count = { $n ->
+        [zero] لا أطفال
+        [one] طفل واحد
+        [two] طفلان
+        [few] { $n } أطفال
+        [many] { $n } طفلًا
+       *[other] { $n } طفل
+    }
+person-generations-below = { $n ->
+        [zero] لا أجيال تحته
+        [one] جيل واحد تحته
+        [two] جيلان تحته
+        [few] { $n } أجيال تحته
+        [many] { $n } جيلًا تحته
+       *[other] { $n } جيل تحته
+    }
+person-portrait-of = صورة { $name }
+person-no-portrait = لا صورة مسجَّلة
 person-sections-label = أقسام هذه الصفحة
 
 ## المفردات المضبوطة

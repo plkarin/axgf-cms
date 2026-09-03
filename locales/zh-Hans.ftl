@@ -397,6 +397,14 @@ record-edit = 编辑
 panel-empty = 选择一张卡片，即可在此看到那个人的完整记录。
 person-see-in-tree = 在家谱中查看此人
 person-visibility-inline = 可见范围：
+person-age-at-death = { $n }岁去世
+person-age-now = { $n }岁
+person-born-in = 出生于{ $place }
+person-died-in = 逝世于{ $place }
+person-children-count = { $n }名子女
+person-generations-below = 下有{ $n }代
+person-portrait-of = { $name }的照片
+person-no-portrait = 未记录照片
 
 ## 操作结果
 

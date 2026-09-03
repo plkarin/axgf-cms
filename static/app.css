@@ -1376,12 +1376,81 @@ bdi.date { unicode-bidi: isolate; }
 
 /* ---------- identity page ---------- */
 
+/* The record's masthead: who this person was, at a glance.
+ *
+ * A grid rather than a flex row, so the avatar keeps its column and the text
+ * beside it wraps within its own — with `flex-wrap` a long Polish given-name
+ * chain pushed the edit button onto its own line and left the avatar orphaned
+ * beside a gap. */
 .person-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1rem 1.15rem;
+  margin-bottom: 1.25rem;
+}
+.person-head-text { min-width: 0; }
+.person-head h1 { margin: 0; line-height: 1.15; }
+.person-head-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+/* The photograph, or the initials standing in for one.
+ *
+ * Both are the same size and shape so the heading beside them sits in the same
+ * place either way — on a converted bundle most people have no photograph, and
+ * a masthead that jumped depending on whether one exists would make the
+ * commonest case look like the broken one. */
+.person-avatar {
+  inline-size: 112px;
+  block-size: 112px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  flex: none;
+}
+.person-avatar img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+.person-avatar.is-initials {
+  /* Deliberate, not a placeholder for a missing thing: the theme's own accent
+     at low strength, and the person's own initials rather than a silhouette of
+     somebody who is not them. */
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+  color: var(--accent);
+  font-size: 2.4rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: default;
+}
+.person-akas {
+  margin: 0.25rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+.person-vitals { margin: 0.35rem 0 0; font-size: 1.05rem; }
+.person-vitals .sep { color: var(--ink-faint); }
+.person-head .lede { margin: 0.3rem 0 0; }
+.person-placing {
+  margin: 0.3rem 0 0;
+  /* A converted place name can be a whole sentence — one of the operator's is
+     "Niedźwiada w Galicji, obecnie powiat ropczycki, parafia Łączki
+     Kucharskie. Ale w akcie zgonu jest Tarnów…". The masthead states where
+     somebody was born; it is not the place to print the parish clerk's note,
+     which the Places section shows in full. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  /* The actions move under the text rather than squeezing a third column into
+     a phone. */
+  .person-head { grid-template-columns: auto minmax(0, 1fr); }
+  .person-head-actions { grid-column: 1 / -1; }
+  .person-avatar { inline-size: 76px; block-size: 76px; }
+  .person-avatar.is-initials { font-size: 1.7rem; }
 }
 
 .showcase-strip {

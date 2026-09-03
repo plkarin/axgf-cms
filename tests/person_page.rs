@@ -344,7 +344,13 @@ async fn the_page_carries_the_full_record_section_by_section() {
         "transliteration beside it"
     );
     assert!(body.contains("from 1919"), "the period the name was used");
-    assert!(body.contains("visibility: public"));
+    // Visibility is an editing concern — which readers a record is exposed to
+    // — so the masthead states it to the people who can change it and to
+    // nobody else. It is still in the Identity section as a labelled chip.
+    assert!(
+        !body.contains("visibility: public"),
+        "a reader who cannot edit is not shown the visibility level"
+    );
 
     // Life events: birth, the baptism a week later, then death, in that order.
     let life = body.split(r#"id="life""#).nth(1).expect("a life section");
@@ -385,4 +391,24 @@ async fn the_page_carries_the_full_record_section_by_section() {
     // Sections with nothing in them stay off the page.
     assert!(!body.contains(r#"id="relationships""#));
     assert!(!body.contains(r#"id="occupations""#));
+}
+
+/// The masthead states who this person was, from the record.
+#[tokio::test]
+async fn the_masthead_carries_a_face_a_span_and_a_placing() {
+    let src = showcase_bundle("masthead-src");
+    let (app, _p) = app_with_bundle("masthead", &src);
+    let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+
+    // Nobody in the fixture has a photograph, so the initials placeholder is
+    // what a reader sees — the common case on a converted bundle.
+    assert!(
+        body.contains("person-avatar is-initials"),
+        "no photograph means initials, never a broken image"
+    );
+    assert!(
+        !body.contains("/thumb\""),
+        "and no request for a thumbnail that does not exist"
+    );
+    assert!(body.contains("person-vitals"), "the span is stated");
 }

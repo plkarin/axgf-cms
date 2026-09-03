@@ -489,6 +489,20 @@ record-edit = Edit
 panel-empty = Select a card to see that person's full record here.
 person-see-in-tree = See this person in the tree
 person-visibility-inline = visibility:
+person-age-at-death = died at { $n }
+person-age-now = { $n } years old
+person-born-in = born in { $place }
+person-died-in = died in { $place }
+person-children-count = { $n ->
+        [one] one child
+       *[other] { $n } children
+    }
+person-generations-below = { $n ->
+        [one] one generation below
+       *[other] { $n } generations below
+    }
+person-portrait-of = Photograph of { $name }
+person-no-portrait = No photograph recorded
 
 ## Operation results
 

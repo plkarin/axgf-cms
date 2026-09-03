@@ -576,6 +576,24 @@ record-edit = Править
 panel-empty = Выберите карточку, чтобы увидеть здесь полную запись о человеке.
 person-see-in-tree = Посмотреть этого человека в древе
 person-visibility-inline = видимость:
+person-age-at-death = умер в { $n } лет
+person-age-now = { $n } лет
+person-born-in = родился в { $place }
+person-died-in = умер в { $place }
+person-children-count = { $n ->
+        [one] один ребёнок
+        [few] { $n } ребёнка
+        [many] { $n } детей
+       *[other] { $n } детей
+    }
+person-generations-below = { $n ->
+        [one] одно поколение ниже
+        [few] { $n } поколения ниже
+        [many] { $n } поколений ниже
+       *[other] { $n } поколений ниже
+    }
+person-portrait-of = Фотография: { $name }
+person-no-portrait = Фотография не записана
 
 ## Итоги операций
 

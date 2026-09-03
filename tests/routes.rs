@@ -453,3 +453,27 @@ async fn the_wash_switch_stores_both_answers() {
     // A preference, not a session: it outlives the browser being closed.
     assert!(cookie.contains("Max-Age=31536000"), "{cookie}");
 }
+
+/// An error page offers one way out, not two, and never a link back to the
+/// page that refused.
+///
+/// `Chrome` carries a `back` field — where a preference form returns the
+/// reader to, which is the page they are on — and the error context used the
+/// same name for something else. Merging the two let the chrome's value win,
+/// so every error page grew a second button pointing at the page that had just
+/// refused them, labelled with a rendered `None`.
+#[tokio::test]
+async fn an_error_page_carries_no_stray_button() {
+    let (app, _p) = app_with_empty_bundle("error-back");
+
+    let body = body_string(get(&app, "/person/nobody-by-that-id").await).await;
+    assert!(body.contains("Back to the start"), "the way out is offered");
+    assert!(
+        !body.contains(">None<"),
+        "and nothing else is, least of all a button labelled None:\n{body}"
+    );
+    assert!(
+        !body.contains("href=\"/person/nobody-by-that-id\""),
+        "a link back to the page that just failed is not a way out"
+    );
+}

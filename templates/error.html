@@ -5,7 +5,7 @@
 <h1>{{ title }}</h1>
 <p class="lede">{{ detail }}</p>
 <p>
-  {% if back %}<a class="btn" href="{{ back }}">{{ back_label }}</a>{% endif %}
+  {% if error_back %}<a class="btn" href="{{ error_back }}">{{ error_back_label }}</a>{% endif %}
   <a class="btn" href="/">{{ t("error-back-to-start") }}</a>
 </p>
 {% endblock %}

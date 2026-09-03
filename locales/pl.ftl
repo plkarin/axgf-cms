@@ -569,6 +569,24 @@ record-edit = Edytuj
 panel-empty = Wybierz kartę, aby zobaczyć tutaj pełny wpis tej osoby.
 person-see-in-tree = Zobacz tę osobę w drzewie
 person-visibility-inline = widoczność:
+person-age-at-death = zmarł w wieku { $n } lat
+person-age-now = { $n } lat
+person-born-in = urodzony w { $place }
+person-died-in = zmarł w { $place }
+person-children-count = { $n ->
+        [one] jedno dziecko
+        [few] { $n } dzieci
+        [many] { $n } dzieci
+       *[other] { $n } dzieci
+    }
+person-generations-below = { $n ->
+        [one] jedno pokolenie poniżej
+        [few] { $n } pokolenia poniżej
+        [many] { $n } pokoleń poniżej
+       *[other] { $n } pokoleń poniżej
+    }
+person-portrait-of = Fotografia: { $name }
+person-no-portrait = Brak zapisanej fotografii
 
 ## Wyniki operacji
 

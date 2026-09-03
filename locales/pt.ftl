@@ -484,6 +484,20 @@ record-edit = Editar
 panel-empty = Escolha uma ficha para ver aqui o documento completo dessa pessoa.
 person-see-in-tree = Ver esta pessoa na árvore
 person-visibility-inline = visibilidade:
+person-age-at-death = morreu aos { $n }
+person-age-now = { $n } anos
+person-born-in = nascido em { $place }
+person-died-in = morreu em { $place }
+person-children-count = { $n ->
+        [one] um filho
+       *[other] { $n } filhos
+    }
+person-generations-below = { $n ->
+        [one] uma geração abaixo
+       *[other] { $n } gerações abaixo
+    }
+person-portrait-of = Fotografia de { $name }
+person-no-portrait = Sem fotografia registada
 
 ## Resultados das operações
 

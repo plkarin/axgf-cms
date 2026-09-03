@@ -581,3 +581,58 @@ async fn a_family_is_labelled_by_the_people_in_it() {
         "no row falls back to the placeholder when members are known"
     );
 }
+
+/// A scoped contributor may not edit a place, and that is the answer rather
+/// than an oversight.
+///
+/// A scope confines a contributor to one branch of the family. It is expressed
+/// in people, and a place names none — 123 of them serve 866 people on the
+/// operator's file, so an edit here changes what every branch reads. A blast
+/// radius that wide cannot be confined by a scope, so the write is refused;
+/// administrators and unscoped contributors make it.
+#[tokio::test]
+async fn a_scoped_contributor_cannot_edit_a_shared_place() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("place-scope", src);
+
+    let place_id = {
+        let body = body_string(get_admin(&app, "/admin/place").await).await;
+        // The row's edit link, not the "place" entry in the kind navigation.
+        let marker = "/admin/place/";
+        let at = body
+            .match_indices(marker)
+            .map(|(i, _)| i + marker.len())
+            .find(|i| {
+                let rest: String = body[*i..].chars().take(48).collect();
+                rest.contains("/edit")
+            })
+            .expect("a place row with an edit link");
+        body[at..]
+            .chars()
+            .take_while(|c| c.is_ascii_alphanumeric() || *c == '-')
+            .collect::<String>()
+    };
+
+    // An administrator reaches the editor.
+    let resp = get_admin(&app, &format!("/admin/place/{place_id}/edit")).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let form = body_string(resp).await;
+    assert!(
+        form.contains("place-form"),
+        "the structured editor, not the generic one"
+    );
+    assert!(
+        form.contains("country_history") || form.contains("history.0.country"),
+        "with the border history the generic form could not express"
+    );
+
+    // A signed-out reader does not.
+    let resp = post_form(
+        &app,
+        &format!("/admin/place/{place_id}"),
+        "names.0.value=X&base_version=1",
+        false,
+    )
+    .await;
+    assert_ne!(resp.status(), StatusCode::OK, "writing needs an account");
+}

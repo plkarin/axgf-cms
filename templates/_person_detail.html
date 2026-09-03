@@ -265,6 +265,13 @@
       <div class="small muted">{{ pu.place.country_current }}</div>
       {% endif %}
       {% if pu.place.note %}<div class="small muted">{{ pu.place.note }}</div>{% endif %}
+      {# A place carrying a name and nothing else is the commonest shape in a
+         converted bundle. The prompt to fill it in belongs where the reader
+         noticed the gap, but it edits the place, which is shared — the editor
+         says so, and by how many records. #}
+      {% if may_write and pu.place.known and pu.place.thin %}
+      <a class="small" href="/admin/place/{{ pu.place.id }}/edit">{{ t("place-add-detail") }}</a>
+      {% endif %}
     </div>
     {% endfor %}
   </div>

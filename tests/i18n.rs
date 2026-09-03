@@ -574,3 +574,71 @@ fn no_template_hardcodes_the_repository_name_as_the_product() {
         }
     }
 }
+
+/// Every catalogue is valid Fluent.
+///
+/// This is a syntax check, not a coverage one, and the two fail differently. A
+/// missing key falls back to English and the page still reads. A *malformed*
+/// message makes the parser reject the resource around it, so a single stray
+/// character can take a whole language down to fallback — and the rest of this
+/// file would not notice, because it reads the `.ftl` files as text and looks
+/// for key names rather than parsing them.
+///
+/// It is not hypothetical. A one-line `{ $n -> [one] … *[other] … }` selector
+/// is a natural thing to write and is invalid: Fluent requires the variants on
+/// their own lines. Written that way in ten catalogues at once, it cost ten
+/// languages every string they had, and every test here still passed.
+#[test]
+fn every_catalogue_parses_as_fluent() {
+    let root = repo_root();
+    let mut broken: Vec<String> = Vec::new();
+
+    for entry in std::fs::read_dir(root.join("locales")).expect("locales/") {
+        let path = entry.expect("dir entry").path();
+        if path.extension().and_then(|e| e.to_str()) != Some("ftl") {
+            continue;
+        }
+        let name = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("?")
+            .to_string();
+        let source = std::fs::read_to_string(&path).expect("read catalogue");
+
+        // The count matters as well as the fact: a resource that parses but
+        // drops half its messages is the same failure wearing a hat.
+        let declared = source
+            .lines()
+            .filter(|l| {
+                l.chars().next().is_some_and(|c| c.is_ascii_alphabetic()) && l.contains(" =")
+            })
+            .count();
+
+        match fluent::FluentResource::try_new(source) {
+            Ok(res) => {
+                let parsed = res.entries().count();
+                assert!(
+                    parsed >= declared,
+                    "{name}: {declared} messages written, {parsed} parsed — \
+                     something in between is malformed"
+                );
+            }
+            Err((_, errors)) => broken.push(format!(
+                "  {name}: {}",
+                errors
+                    .iter()
+                    .take(3)
+                    .map(|e| format!("{e:?}"))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            )),
+        }
+    }
+
+    assert!(
+        broken.is_empty(),
+        "these catalogues are not valid Fluent, so every string in them falls \
+         back to English:\n{}",
+        broken.join("\n")
+    );
+}

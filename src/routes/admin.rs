@@ -1932,3 +1932,188 @@ fn parse_scope(raw: &str) -> Vec<String> {
         .map(str::to_string)
         .collect()
 }
+
+// ---------------------------------------------------------------------------
+// The Place editor
+// ---------------------------------------------------------------------------
+
+/// `GET /admin/place/:id/edit` — the structured editor for one place.
+///
+/// A dedicated screen rather than the generic entity form because a place is
+/// mostly lists: several names each with a language, and a border history with
+/// a row per state. The generic form edits one dotted path per input and
+/// cannot express either, which is why `PLACE_FIELDS` told the reader to go
+/// and edit the raw JSON.
+pub async fn place_edit(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let Some(stored) = state.read(|flat| flat.get("places").and_then(|c| c.get(&id)).cloned())
+    else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-no-such-entity-detail",
+        );
+    };
+    let uses = state.read(|flat| crate::place::usage_count(flat, &id));
+    render_place_form(
+        &chrome,
+        &viewer,
+        crate::place::PlaceForm::from_entity(&stored),
+        uses,
+        &[],
+    )
+}
+
+/// `POST /admin/place/:id` — save the structured editor.
+pub async fn place_update(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<HashMap<String, String>>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let mut place = crate::place::PlaceForm::from_post(&form);
+    place.id = id.clone();
+
+    let stored = state.read(|flat| flat.get("places").and_then(|c| c.get(&id)).cloned());
+    let Some(stored) = stored else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-no-such-entity-detail",
+        );
+    };
+    let uses = state.read(|flat| crate::place::usage_count(flat, &id));
+
+    let problems = place.problems();
+    if !problems.is_empty() {
+        return render_place_form(&chrome, &viewer, place, uses, &problems);
+    }
+
+    let mut entity = place.apply(&stored);
+    entity["id"] = Value::String(id.clone());
+    // Kept for the conflict page, which shows the reader's version beside the
+    // one that beat it.
+    let saved = entity.clone();
+
+    // A place names no person, so `subjects_of` finds nothing and a scoped
+    // account is refused here. That is the right answer rather than an
+    // oversight: a scope exists to confine a contributor to one branch, and a
+    // place is shared by every branch — 123 of them serve 866 people on the
+    // operator's file. An edit with unbounded blast radius cannot be confined
+    // by a scope that is expressed in people, so a scoped contributor does not
+    // make it. Administrators and unscoped contributors do.
+    if let Err(r) = check_scope(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Place,
+        &entity,
+        Some(&stored),
+    ) {
+        return r;
+    }
+
+    let label = Some(place.display.clone()).filter(|s| !s.is_empty());
+    let outcome = match state.update_checked(
+        axgf_rs::EntityKind::Place,
+        &id,
+        place.version,
+        entity,
+        viewer.name(),
+        label,
+    ) {
+        Ok(o) => o,
+        Err(e) => return io_error(&chrome, &e),
+    };
+
+    match outcome {
+        crate::state::UpdateOutcome::Applied {
+            diagnostics,
+            version_num,
+            changes,
+        } => result_page(
+            &chrome,
+            "place",
+            &chrome.t_args(
+                "admin-saved",
+                &[
+                    ("version", (version_num as i64).into()),
+                    ("summary", crate::diff::summarise(&changes).into()),
+                ],
+            ),
+            &MutationOutcome {
+                applied: true,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/place/{id}/edit")),
+        ),
+        crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
+            &chrome,
+            "place",
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/place/{id}/edit")),
+        ),
+        crate::state::UpdateOutcome::Missing => render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-deleted-while-editing",
+        ),
+        crate::state::UpdateOutcome::Conflict {
+            current,
+            current_version,
+            expected_version,
+        } => conflict_page(
+            &state,
+            &chrome,
+            "place",
+            axgf_rs::EntityKind::Place,
+            &id,
+            Some(&stored),
+            &current,
+            &saved,
+            current_version,
+            expected_version,
+        ),
+    }
+}
+
+/// Render the place form, with any problems named above it.
+fn render_place_form(
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    place: crate::place::PlaceForm,
+    uses: usize,
+    problems: &[&'static str],
+) -> Response {
+    let messages: Vec<String> = problems.iter().map(|k| chrome.t(k)).collect();
+    // Part 3 turns this on; the editor is complete without it.
+    let geocoding = false;
+    render::page_with(
+        chrome,
+        "admin_place.html",
+        context! {
+            nav => "admin",
+            place,
+            uses,
+            problems => messages,
+            place_types => crate::place::PLACE_TYPES,
+            precisions => crate::place::PRECISIONS,
+            geocoding,
+            may_write => viewer.may_write(),
+        },
+    )
+}

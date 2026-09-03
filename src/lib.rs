@@ -32,6 +32,7 @@ pub mod i18n;
 pub mod journal;
 pub mod payloads;
 pub mod person;
+pub mod place;
 pub mod render;
 pub mod routes;
 pub mod session;

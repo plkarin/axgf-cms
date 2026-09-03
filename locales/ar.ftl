@@ -189,6 +189,62 @@ admin-fields = الحقول
 admin-raw-json = JSON الخام
 admin-save = حفظ
 admin-cancel = إلغاء
+place-editor-title = تحرير مكان
+place-add-detail = أضف تفاصيل لهذا المكان
+place-names = الأسماء
+place-name-primary = الاسم الأساسي
+place-name-lang = اللغة
+place-name-value = الاسم
+place-names-hint = One row per recorded name. A place administered by three empires carries three names; the primary is the one shown everywhere else.
+place-where = الموقع
+place-type = النوع
+place-region = المنطقة
+place-country-current = الدولة اليوم
+place-country-hint = ISO 3166-1 alpha-2, e.g. PL, FR, DE.
+place-country-history = تاريخ الحدود
+place-history-country = الدولة
+place-history-from = من
+place-history-until = حتى
+place-country-history-hint = Which state held this place over which period. Genealogically significant: a record written in Russian in 1880 and one written in Polish in 1930 can name the same village.
+place-coordinates = الإحداثيات
+place-lat = خط العرض
+place-lon = خط الطول
+place-precision = الدقة
+place-identifiers = المعرّفات
+place-wikidata = ويكي بيانات
+place-geonames = GeoNames
+place-used-by = يُستخدم { $name } في { $n ->
+        [zero] لا سجلات أخرى
+        [one] سجل آخر واحد
+        [two] سجلين آخرين
+        [few] { $n } سجلات أخرى
+        [many] { $n } سجلًا آخر
+       *[other] { $n } سجل آخر
+    }.
+place-error-no-name = A place needs at least one name.
+place-error-coords-pair = Latitude and longitude go together: give both, or neither.
+place-error-coords-number = Latitude and longitude must be numbers.
+place-error-coords-range = Latitude runs -90 to 90 and longitude -180 to 180.
+place-type-continent = continent
+place-type-country = country
+place-type-region = region
+place-type-department = department
+place-type-city = city
+place-type-village = village
+place-type-district = district
+place-type-street = street
+place-type-building = building
+place-type-farm = farm
+place-type-island = island
+place-type-historical = historical
+place-type-unknown = unknown
+place-precision-exact = exact
+place-precision-building = building
+place-precision-street = street
+place-precision-city_center = city centre
+place-precision-region_center = region centre
+place-precision-country_center = country centre
+place-precision-approximate = approximate
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير

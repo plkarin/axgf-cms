@@ -60,6 +60,12 @@ pub fn router(state: Shared) -> Router {
                 crate::documents::MAX_UPLOAD + 64 * 1024,
             )),
         )
+        // The structured Place editor. Declared before the ":kind" forms so
+        // the literal "place" segment wins: a place is mostly lists — several
+        // names, a border history — and the generic one-input-per-path form
+        // cannot express either.
+        .route("/admin/place/:id/edit", get(admin::place_edit))
+        .route("/admin/place/:id", post(admin::place_update))
         .route("/admin/:kind", get(admin::list).post(admin::create))
         .route("/admin/:kind/new", get(admin::new_form))
         .route("/admin/:kind/:id/edit", get(admin::edit_form))

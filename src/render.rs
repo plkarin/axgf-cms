@@ -42,6 +42,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_dashboard.html",
     "admin_list.html",
     "admin_form.html",
+    "admin_place.html",
     "admin_result.html",
     "_macros.html",
     "_completeness.html"

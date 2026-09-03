@@ -9,6 +9,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A structured editor for the Place entity.** §5.3 models a place with several
+names each in its own language and one of them primary, a type from a fixed
+vocabulary, a region and a present-day country, the states that held it over
+time, identifiers into Wikidata and GeoNames, and coordinates. Almost none of
+it survives a GEDCOM import, because GEDCOM has one field: on the operator's
+file all 123 places carry a single Polish-tagged name, none carry coordinates,
+none carry a second name, and the 26 that carry a `region` got it from the
+converter splitting the raw string on a comma — which is why one of them reads
+"dom opieki" and another "Pologne".
+
+The editor is a screen of its own rather than the generic entity form, which
+edits one dotted path per input and can express neither a list of names nor a
+border history — `PLACE_FIELDS` used to tell the reader to go and edit the raw
+JSON. Rows are numbered in the field name and the form always renders spare
+blank ones, so adding a name works with scripting off; empty rows are dropped
+rather than saved. Every field is optional and a place with one name stays
+valid, which is what the whole bundle currently looks like.
+
+It writes through `update_checked`, so validation, the version check and the
+edit journal apply exactly as to any other edit, and it starts from the stored
+entity and overwrites only what it owns — an `insee` identifier the form has
+never heard of survives being edited by it.
+
+A scoped contributor is refused. That is the answer rather than an oversight: a
+scope confines a contributor to one branch and is expressed in people, a place
+names none, and 123 places serve 866 people. An edit whose blast radius is
+every branch cannot be confined by a scope written in people, so it takes an
+administrator or an unscoped contributor.
+
 **A masthead on the person page.** A photograph when the bundle carries one
 whose bytes are present, and otherwise the person's own initials on the theme's
 accent — the same size and shape, so the heading beside it does not move
@@ -159,6 +188,15 @@ click of arriving.
 
 
 ### Fixed
+
+**A malformed catalogue took a whole language down, and the tests passed.** A
+Fluent selector written on one line — `{ $n -> [one] … *[other] … }` — is
+invalid; the variants have to be on their own lines. Written that way it makes
+the parser reject the resource around it, so ten languages lost every string
+they had and fell back to English, and every i18n test still passed: they read
+the `.ftl` files as text and look for key names rather than parsing them. There
+is now a test that parses each catalogue and compares the message count to the
+number written, and it fails on exactly this.
 
 **An error page carried a button labelled `None`.** `Chrome` has a `back`
 field — where a preference form returns the reader to, which is the page they

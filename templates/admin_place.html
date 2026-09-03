@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{{ place.display }} — {{ t("place-editor-title") }}{% endblock %}
+
+{# The structured editor for one place.
+   A place is mostly lists — several names each in its own language, and a
+   border history with a row per state — which is why it has a screen of its
+   own rather than the generic one-input-per-path entity form. #}
+
+{% block content %}
+
+<h1>{{ t("place-editor-title") }}</h1>
+<p class="lede">{{ place.display }}</p>
+
+{# A place is shared. Saying how many records name it is a fact about the data,
+   and the reason this is not an edit to one record. #}
+{% if uses %}
+<p class="notice" role="status">{{ t("place-used-by", n=uses, name=place.display) }}</p>
+{% endif %}
+
+{% if problems %}
+<div class="notice warn" role="alert">
+  <ul>{% for m in problems %}<li>{{ m }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/admin/place/{{ place.id }}" class="card place-form">
+  <input type="hidden" name="base_version" value="{{ place.version }}">
+
+  <fieldset>
+    <legend>{{ t("place-names") }}</legend>
+    <table class="wide stackable place-names">
+      <thead>
+        <tr>
+          <th scope="col">{{ t("place-name-primary") }}</th>
+          <th scope="col">{{ t("place-name-lang") }}</th>
+          <th scope="col">{{ t("place-name-value") }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {# The stored names, then two blank rows. Blank rows rather than an
+           "add" button so the form works with scripting off; empty ones are
+           dropped on save. #}
+        {% for i in range(place.names | length + 2) %}
+        {% set n = place.names[i] if i < (place.names | length) else none %}
+        <tr>
+          <td data-label="{{ t('place-name-primary') }}">
+            <input type="radio" name="primary" value="{{ i }}"
+                   {{ "checked" if n and n.is_primary }}
+                   aria-label="{{ t('place-name-primary') }}">
+          </td>
+          <td data-label="{{ t('place-name-lang') }}">
+            <input type="text" name="names.{{ i }}.lang" size="6" maxlength="35"
+                   value="{{ n.lang if n else '' }}"
+                   aria-label="{{ t('place-name-lang') }}">
+          </td>
+          <td data-label="{{ t('place-name-value') }}">
+            <input type="text" name="names.{{ i }}.value"
+                   value="{{ n.value if n else '' }}"
+                   aria-label="{{ t('place-name-value') }}">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">{{ t("place-names-hint") }}</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t("place-where") }}</legend>
+    <div class="grid cols-3">
+      <div class="field">
+        <label for="place_type">{{ t("place-type") }}</label>
+        <select id="place_type" name="place_type">
+          <option value="">{{ t("admin-not-set") }}</option>
+          {% for pt in place_types %}
+          <option value="{{ pt }}" {{ "selected" if pt == place.place_type }}>{{ t("place-type-" ~ pt) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="region">{{ t("place-region") }}</label>
+        <input type="text" id="region" name="region" value="{{ place.region }}">
+      </div>
+      <div class="field">
+        <label for="country_current">{{ t("place-country-current") }}</label>
+        <input type="text" id="country_current" name="country_current"
+               value="{{ place.country_current }}" size="8" maxlength="8">
+        <div class="hint">{{ t("place-country-hint") }}</div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t("place-country-history") }}</legend>
+    <table class="wide stackable">
+      <thead>
+        <tr>
+          <th scope="col">{{ t("place-history-country") }}</th>
+          <th scope="col">{{ t("place-history-from") }}</th>
+          <th scope="col">{{ t("place-history-until") }}</th>
+          <th scope="col">{{ t("record-note") }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in range(place.history | length + 2) %}
+        {% set h = place.history[i] if i < (place.history | length) else none %}
+        <tr>
+          <td data-label="{{ t('place-history-country') }}">
+            <input type="text" name="history.{{ i }}.country" size="8" maxlength="8"
+                   value="{{ h.country if h else '' }}"
+                   aria-label="{{ t('place-history-country') }}">
+          </td>
+          <td data-label="{{ t('place-history-from') }}">
+            <input type="text" name="history.{{ i }}.from" size="10"
+                   value="{{ h.from if h else '' }}"
+                   aria-label="{{ t('place-history-from') }}">
+          </td>
+          <td data-label="{{ t('place-history-until') }}">
+            <input type="text" name="history.{{ i }}.until" size="10"
+                   value="{{ h.until if h else '' }}"
+                   aria-label="{{ t('place-history-until') }}">
+          </td>
+          <td data-label="{{ t('record-note') }}">
+            <input type="text" name="history.{{ i }}.note"
+                   value="{{ h.note if h else '' }}"
+                   aria-label="{{ t('record-note') }}">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">{{ t("place-country-history-hint") }}</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t("place-coordinates") }}</legend>
+    <div class="grid cols-3">
+      <div class="field">
+        <label for="lat">{{ t("place-lat") }}</label>
+        <input type="text" id="lat" name="coordinates.lat" inputmode="decimal"
+               value="{{ place.coordinates.lat }}">
+      </div>
+      <div class="field">
+        <label for="lon">{{ t("place-lon") }}</label>
+        <input type="text" id="lon" name="coordinates.lon" inputmode="decimal"
+               value="{{ place.coordinates.lon }}">
+      </div>
+      <div class="field">
+        <label for="precision">{{ t("place-precision") }}</label>
+        <select id="precision" name="coordinates.precision">
+          <option value="">{{ t("admin-not-set") }}</option>
+          {% for pr in precisions %}
+          <option value="{{ pr }}" {{ "selected" if pr == place.coordinates.precision }}>{{ t("place-precision-" ~ pr) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t("place-identifiers") }}</legend>
+    <div class="grid cols-3">
+      <div class="field">
+        <label for="wikidata">{{ t("place-wikidata") }}</label>
+        <input type="text" id="wikidata" name="identifiers.wikidata"
+               value="{{ place.wikidata }}" size="12">
+      </div>
+      <div class="field">
+        <label for="geonames">{{ t("place-geonames") }}</label>
+        <input type="text" id="geonames" name="identifiers.geonames"
+               value="{{ place.geonames }}" size="12">
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="field">
+    <label for="note">{{ t("record-note") }}</label>
+    <textarea id="note" name="note" rows="3">{{ place.note }}</textarea>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit">{{ t("admin-save") }}</button>
+    <a class="btn" href="/admin/place">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+
+{% endblock %}

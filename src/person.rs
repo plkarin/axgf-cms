@@ -59,6 +59,30 @@ pub struct PlaceView {
     /// say that a town changed hands.
     pub country_history: Vec<String>,
     pub note: Option<String>,
+    /// Where it is, when the record says. `None` on every place in a bundle
+    /// that has just been converted, which is why the map has a no-coordinates
+    /// path and why that path is the one that runs.
+    pub lat: Option<f64>,
+    pub lon: Option<f64>,
+    pub precision: Option<String>,
+    /// The states that held it, as structured periods rather than the
+    /// pre-rendered strings above, so a caller can ask which one held it in a
+    /// given year.
+    pub periods: Vec<CountryPeriodView>,
+    /// True when the record carries a name and nothing else — no type, no
+    /// region, no country, no position. The commonest shape in a converted
+    /// bundle, and the prompt for an editor to fill it in.
+    pub thin: bool,
+}
+
+/// One period during which a state held a place.
+#[derive(Debug, Clone, Serialize)]
+pub struct CountryPeriodView {
+    pub country: String,
+    /// Year, when the record states one that can be read as a number.
+    pub from: Option<i64>,
+    pub until: Option<i64>,
+    pub note: Option<String>,
 }
 
 /// A place together with everything on this page that happened there.
@@ -615,6 +639,17 @@ fn current_year() -> i64 {
     1970 + (secs / 86_400) * 400 / 146_097
 }
 
+/// The leading year of a date-ish string, when there is one.
+///
+/// `country_history` bounds are dates in the specification's sense, which in
+/// practice means a year: "1772", "1918-11-11". Anything else — a phrase, an
+/// empty string — is no year, and saying so is better than guessing one.
+fn year_of(v: Option<&Value>) -> Option<i64> {
+    let s = v?.as_str()?;
+    let digits: String = s.trim().chars().take_while(char::is_ascii_digit).collect();
+    (digits.len() == 4).then(|| digits.parse().ok()).flatten()
+}
+
 fn collect_notes(
     person: &Value,
     birth: &FactView,
@@ -761,6 +796,11 @@ impl Ctx<'_> {
                 country_current: None,
                 country_history: Vec::new(),
                 note: None,
+                lat: None,
+                lon: None,
+                precision: None,
+                periods: Vec::new(),
+                thin: false,
             });
         };
         let history = p
@@ -786,6 +826,33 @@ impl Ctx<'_> {
             })
             .unwrap_or_default();
 
+        let coords = p.get("coordinates");
+        let lat = coords.and_then(|c| c.get("lat")).and_then(Value::as_f64);
+        let lon = coords.and_then(|c| c.get("lon")).and_then(Value::as_f64);
+
+        let periods: Vec<CountryPeriodView> = p
+            .get("country_history")
+            .and_then(Value::as_array)
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|h| {
+                        Some(CountryPeriodView {
+                            country: h.get("country").and_then(Value::as_str)?.to_string(),
+                            from: year_of(h.get("from")),
+                            until: year_of(h.get("until")),
+                            note: str_field(h, "note"),
+                        })
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        let names_count = p.get("names").and_then(Value::as_array).map_or(0, Vec::len);
+        let thin = lat.is_none()
+            && names_count <= 1
+            && str_field(p, "place_type").is_none()
+            && str_field(p, "country_current").is_none();
+
         Some(PlaceView {
             id: id.to_string(),
             name: view::place_name(p),
@@ -794,6 +861,11 @@ impl Ctx<'_> {
             country_current: str_field(p, "country_current"),
             country_history: history,
             note: str_field(p, "note"),
+            lat,
+            lon,
+            precision: coords.and_then(|c| str_field(c, "precision")),
+            periods,
+            thin,
         })
     }
 

@@ -906,6 +906,46 @@ pub async fn tree_js() -> Response {
         .into_response()
 }
 
+/// `GET /static/map.js` — the place-editor map, enhancement only.
+pub async fn map_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::MAP_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/vendor/leaflet.js` — the library itself, served by this
+/// binary rather than by a CDN, so a reader fetches the page's code from the
+/// same place they fetched the page.
+pub async fn leaflet_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            // Vendored at a pinned version, so it is immutable for as long as
+            // this binary is the one answering.
+            (header::CACHE_CONTROL, "public, max-age=604800, immutable"),
+        ],
+        render::LEAFLET_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/vendor/leaflet.css`
+pub async fn leaflet_css() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/css; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=604800, immutable"),
+        ],
+        render::LEAFLET_CSS,
+    )
+        .into_response()
+}
+
 /// `GET /health` — liveness, plus the entity counts this requester may see.
 ///
 /// The only JSON endpoint the application serves, and therefore the one a

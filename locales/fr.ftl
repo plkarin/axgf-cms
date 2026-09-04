@@ -263,6 +263,17 @@ place-geocode-none = Aucun résultat. Pour un village enregistré sous administr
 place-geocode-not-a-place = pas une localité
 place-geocode-use = Utiliser celui-ci
 place-geocode-attribution = Résultats d'OpenStreetMap via Nominatim, sous licence Open Database.
+
+place-paste = Coller une position
+place-paste-placeholder = un lien de carte, ou 52.0782795, 21.2508068
+place-paste-read = Lire
+place-paste-hint = Un lien Google Maps ou OpenStreetMap, une URI geo:, une paire de nombres, ou des degrés-minutes-secondes comme 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = Lu dans les champs ci-dessus. Vérifiez, puis enregistrez.
+place-paste-unreadable = Ce n'est pas une position lisible ici. Les champs ci-dessus acceptent toujours une simple paire de nombres.
+
+place-map-hint = Cliquez sur la carte pour poser le point, ou faites glisser l'épingle. Ce sont les champs ci-dessus qui font foi.
+place-map-clear = Effacer le point
+place-open-in-map = Chercher ce lieu dans OpenStreetMap, puis recoller le lien
 admin-delete = Supprimer
 admin-not-set = — non renseigné —
 admin-edit = Modifier

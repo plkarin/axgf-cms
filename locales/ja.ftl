@@ -255,6 +255,17 @@ place-geocode-none = 見つかりませんでした。ロシア・プロイセ�
 place-geocode-not-a-place = 集落ではありません
 place-geocode-use = これを使う
 place-geocode-attribution = OpenStreetMap の結果を Nominatim 経由で取得、Open Database ライセンスによる。
+
+place-paste = 位置を貼り付け
+place-paste-placeholder = 地図のリンク、または 52.0782795, 21.2508068
+place-paste-read = 読み取る
+place-paste-hint = Google マップや OpenStreetMap のリンク、geo: URI、数値の組、あるいは 52°04'41.8"N 21°15'02.9"E のような度分秒。
+place-paste-read-ok = 上の欄に読み取りました。確認してから保存してください。
+place-paste-unreadable = ここでは読み取れない位置です。上の欄には数値の組をそのまま入力できます。
+
+place-map-hint = 地図をクリックして点を置くか、ピンをドラッグしてください。記録となるのは上の欄です。
+place-map-clear = 点を消す
+place-open-in-map = この地名を OpenStreetMap で探し、リンクを貼り戻す
 admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集

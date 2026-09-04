@@ -696,11 +696,36 @@ async fn taking_a_suggestion_fills_the_fields_without_saving() {
     );
 
     // The bundle is untouched: this was a form round trip, not a write.
+    //
+    // Read the field's own value rather than searching the page for the
+    // number. The paste box's placeholder shows an example position and it is
+    // this one, so "the page mentions these coordinates" stopped being the
+    // same question as "the record holds them".
     let stored = body_string(get_admin(&app, &format!("/admin/place/{place_id}/edit")).await).await;
-    assert!(
-        !stored.contains("52.0782795"),
+    assert_eq!(
+        value_of(&stored, "coordinates.lat"),
+        "",
         "nothing reaches the bundle until the reader saves"
     );
+    assert_eq!(value_of(&stored, "coordinates.lon"), "");
+}
+
+/// The `value` attribute of one named input, or the empty string.
+fn value_of(html: &str, name: &str) -> String {
+    let needle = format!("name=\"{name}\"");
+    let Some(at) = html.find(&needle) else {
+        return String::new();
+    };
+    let rest = &html[at..];
+    let Some(end) = rest.find('>') else {
+        return String::new();
+    };
+    let tag = &rest[..end];
+    let Some(v) = tag.find("value=\"") else {
+        return String::new();
+    };
+    let after = &tag[v + 7..];
+    after[..after.find('"').unwrap_or(0)].to_string()
 }
 
 /// With no contact address there is no lookup button, and the editor is whole.
@@ -734,11 +759,18 @@ async fn without_a_contact_address_there_is_no_lookup_button() {
 
     let body = body_string(get_admin(&app, &format!("/admin/place/{place_id}/edit")).await).await;
     assert!(
-        !body.contains("/geocode"),
-        "no geocoder, no button that would call one: {body}"
+        !body.contains(r#"name="lookup""#),
+        "no contact address, no button that would call the service: {body}"
     );
     assert!(
         body.contains(r#"name="coordinates.lat""#),
         "the manual fields are there regardless — they are the ordinary path"
+    );
+    // The paste box posts to the same route and is *not* gated on a geocoder:
+    // reading a position out of pasted text is local work that contacts
+    // nobody, and it is the path this data mostly needs.
+    assert!(
+        body.contains(r#"name="paste""#),
+        "the paste box needs no third party and stays"
     );
 }

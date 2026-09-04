@@ -2366,3 +2366,53 @@ a.tcard:hover {
   text-transform: lowercase;
   white-space: nowrap;
 }
+
+/* The paste box is wide because what goes in it is a URL, not a number. */
+.paste-position { margin-top: 0.9rem; }
+.paste-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.paste-row input { flex: 1 1 22rem; min-width: 12rem; }
+
+/* ── The place map ────────────────────────────────────────────────────────
+   Sized in `rem` rather than viewport units: this sits inside a form, and a
+   map that grows with the window pushes the save button off the bottom on a
+   laptop. The pin is drawn in CSS so the binary carries no image for it. */
+.map-shell { margin-top: 0.9rem; }
+#place-map {
+  height: 20rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.map-actions {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+.map-actions .hint { margin: 0; }
+
+.place-pin span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--on-accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Leaflet paints its own controls and popups; keep them inside the palette
+   rather than letting the vendored stylesheet's defaults sit on the page. */
+.leaflet-container { font: inherit; background: var(--bg); }
+.leaflet-bar a,
+.leaflet-control-attribution {
+  background: var(--surface);
+  color: var(--ink);
+}
+.leaflet-bar a { border-bottom-color: var(--border); }
+.leaflet-bar a:hover { background: var(--accent-soft); }
+.leaflet-control-attribution { font-size: 0.7rem; }
+.leaflet-control-attribution a { color: var(--accent); }

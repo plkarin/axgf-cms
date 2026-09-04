@@ -294,6 +294,17 @@ place-geocode-none = Nic nie znaleziono. Dla wsi zapisanej pod administracją ro
 place-geocode-not-a-place = to nie miejscowość
 place-geocode-use = Użyj tego
 place-geocode-attribution = Wyniki z OpenStreetMap przez Nominatim, na licencji Open Database.
+
+place-paste = Wklej położenie
+place-paste-placeholder = odnośnik do mapy albo 52.0782795, 21.2508068
+place-paste-read = Odczytaj
+place-paste-hint = Odnośnik Google Maps lub OpenStreetMap, adres geo:, zwykła para liczb albo stopnie-minuty-sekundy, np. 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = Odczytano do pól powyżej. Sprawdź i zapisz.
+place-paste-unreadable = Tego położenia nie udało się odczytać. Pola powyżej nadal przyjmują zwykłą parę liczb.
+
+place-map-hint = Kliknij mapę, aby postawić punkt, albo przeciągnij pinezkę. Zapisem są pola powyżej.
+place-map-clear = Usuń punkt
+place-open-in-map = Znajdź to miejsce w OpenStreetMap i wklej odnośnik z powrotem
 admin-delete = Usuń
 admin-not-set = — nie ustawiono —
 admin-edit = Edytuj

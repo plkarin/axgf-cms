@@ -278,6 +278,17 @@ place-geocode-none = Nessun risultato. Per un villaggio registrato sotto amminis
 place-geocode-not-a-place = non è un centro abitato
 place-geocode-use = Usa questo
 place-geocode-attribution = Risultati da OpenStreetMap tramite Nominatim, con licenza Open Database.
+
+place-paste = Incolla una posizione
+place-paste-placeholder = un collegamento a una mappa, o 52.0782795, 21.2508068
+place-paste-read = Leggila
+place-paste-hint = Un collegamento Google Maps o OpenStreetMap, un URI geo:, una coppia di numeri, o gradi-minuti-secondi come 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = Letta nei campi qui sopra. Controllala, poi salva.
+place-paste-unreadable = Questa non è una posizione leggibile qui. I campi qui sopra accettano ancora una coppia di numeri.
+
+place-map-hint = Fai clic sulla mappa per posare il punto, oppure trascina lo spillo. Fanno fede i campi qui sopra.
+place-map-clear = Togli il punto
+place-open-in-map = Cerca questo luogo in OpenStreetMap e incolla qui il collegamento
 admin-delete = Elimina
 admin-not-set = — non impostato —
 admin-edit = Modifica

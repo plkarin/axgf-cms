@@ -78,6 +78,34 @@ pub struct Config {
     /// pacing, which exists to be kind to donated infrastructure.
     #[arg(long, value_name = "URL")]
     pub geocoder_endpoint: Option<String>,
+
+    /// Tile URL template for the place-editor map, which turns the map on.
+    ///
+    /// Off by default, and deliberately. Tiles are fetched by the reader's
+    /// browser, not by this process, so switching them on puts every editor's
+    /// address into the tile server's logs — the same objection this
+    /// application already refuses to make the reader wear for geocoding, where
+    /// the lookup goes through the server precisely so it does not happen. It
+    /// is the operator's call to make knowingly, per installation, rather than
+    /// a default somebody inherits.
+    ///
+    /// OpenStreetMap's standard layer is
+    /// `https://tile.openstreetmap.org/{z}/{x}/{y}.png`; read their tile usage
+    /// policy before pointing at it, and prefer a tile server you run or pay
+    /// for. Whatever is set here, set `--map-attribution` to match: it is a
+    /// licence condition, not decoration.
+    ///
+    /// With this unset the editor still offers a link out to a map of your
+    /// choosing, and the position pasted back from it is read by the same
+    /// parser. Nothing is lost but the click-to-place convenience.
+    #[arg(long, value_name = "URL_TEMPLATE")]
+    pub map_tiles: Option<String>,
+
+    /// Attribution shown in the map's corner. Required by every tile source
+    /// worth using, and empty by default because the correct text depends
+    /// entirely on which one `--map-tiles` names.
+    #[arg(long, value_name = "TEXT")]
+    pub map_attribution: Option<String>,
 }
 
 impl Config {
@@ -118,6 +146,8 @@ mod tests {
             cache_dir: None,
             geocoder_contact: None,
             geocoder_endpoint: None,
+            map_tiles: None,
+            map_attribution: None,
         }
     }
 

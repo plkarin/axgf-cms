@@ -300,6 +300,17 @@ place-geocode-none = Ничего не найдено. Для деревни, з
 place-geocode-not-a-place = не населённый пункт
 place-geocode-use = Взять это
 place-geocode-attribution = Результаты из OpenStreetMap через Nominatim, по лицензии Open Database.
+
+place-paste = Вставьте положение
+place-paste-placeholder = ссылка на карту или 52.0782795, 21.2508068
+place-paste-read = Разобрать
+place-paste-hint = Ссылка Google Maps или OpenStreetMap, адрес geo:, простая пара чисел либо градусы-минуты-секунды, например 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = Разобрано в поля выше. Проверьте и сохраните.
+place-paste-unreadable = Это положение здесь прочитать не удалось. Поля выше по-прежнему принимают простую пару чисел.
+
+place-map-hint = Щёлкните по карте, чтобы поставить точку, или перетащите булавку. Записью считаются поля выше.
+place-map-clear = Убрать точку
+place-open-in-map = Найти это место в OpenStreetMap и вставить ссылку обратно
 admin-delete = Удалить
 admin-not-set = — не задано —
 admin-edit = Править

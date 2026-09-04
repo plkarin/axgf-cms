@@ -9,6 +9,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A position can be pasted in whatever shape the reader has it.** The manual
+coordinate path is the common one on this data, so it stopped being two bare
+number boxes. `src/coords.rs` reads a Google Maps link, an OpenStreetMap
+permalink or `mlat`/`mlon` pair, a `geo:` URI from a phone, a plain pair, or
+degrees-minutes-seconds off a scanned map — `52°04'41.8"N 21°15'02.9"E`, with
+the hemisphere letter leading or trailing. Parsed on the server, so it works
+with scripting off like everything else in the panel.
+
+It is deliberately strict where being generous would be a lie: a string with
+three numbers in it is refused rather than having two of them guessed at, since
+that is how a zoom level becomes a longitude, and a coordinate off the earth is
+refused rather than clamped, since a clamped value is a wrong answer that looks
+like a right one.
+
+**A map in the place editor, which is an input device before it is a picture.**
+One place of 123 carries coordinates, so there is nearly nothing to display and
+a great deal to state. Click to place, drag to adjust, type in the fields to
+move the pin; the two fields are the record throughout and the map never holds
+a position they do not.
+
+**Tiles are off unless the operator asks for them.** They are fetched by the
+reader's browser, not by this process — the same objection that makes the
+geocoder go through the server, which exists so that a reader's address does
+not reach a third party because they opened an edit form. `--map-tiles` takes a
+URL template and `--map-attribution` the text its licence requires. Leaflet is
+vendored and served by this binary rather than pulled from a CDN.
+
+With no tile source the editor still offers a link that opens the place's name
+in OpenStreetMap; clicking the spot there and pasting the URL back is read by
+the same parser, so the workflow is complete without a basemap at all.
+
 **Place-name lookup, through the server, with the manual fields kept first.**
 The structured editor can now send a place's name, region and country to a
 Nominatim-compatible geocoder and offer what comes back. It is off unless the

@@ -26,6 +26,7 @@ pub mod auth;
 pub mod completeness;
 pub mod config;
 pub mod convert;
+pub mod coords;
 pub mod diff;
 pub mod documents;
 pub mod geocode;
@@ -63,4 +64,19 @@ pub const SAMPLE_BUNDLE: &[u8] = include_bytes!("../deploy/sample.axgf");
 pub fn app(path: &Path, admin_token: &str) -> Result<axum::Router> {
     let state = Arc::new(AppState::load_or_create(path, admin_token.to_string())?);
     Ok(router(state))
+}
+
+/// The same, with a basemap configured.
+///
+/// Exists for the tests, which need to see both sides of a decision the
+/// operator makes once at startup: with no tile source the place editor must
+/// pull in no map assets at all, and with one it must pull in exactly the two
+/// this binary serves itself.
+pub fn app_with_map(
+    path: &Path,
+    admin_token: &str,
+    tiles: crate::state::MapTiles,
+) -> Result<axum::Router> {
+    let state = AppState::load_or_create(path, admin_token.to_string())?;
+    Ok(router(Arc::new(state.with_map(Some(tiles)))))
 }

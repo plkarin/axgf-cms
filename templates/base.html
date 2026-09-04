@@ -10,6 +10,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ t("app-name") }}{% endblock %}</title>
 <link rel="stylesheet" href="/static/app.css">
+{# Only the pages that need it pull the map stylesheet in, so an ordinary page
+   still costs exactly one CSS request. #}
+{% block head %}{% endblock %}
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='14'>&#127795;</text></svg>">
 </head>
 <body>

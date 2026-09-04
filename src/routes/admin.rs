@@ -1966,8 +1966,7 @@ pub async fn place_edit(
         crate::place::PlaceForm::from_entity(&stored),
         uses,
         &[],
-        state.geocoder().is_some(),
-        None,
+        Assist::of(&state),
     )
 }
 
@@ -1995,8 +1994,7 @@ pub async fn place_update(
 
     let problems = place.problems();
     if !problems.is_empty() {
-        let geocoding = state.geocoder().is_some();
-        return render_place_form(&chrome, &viewer, place, uses, &problems, geocoding, None);
+        return render_place_form(&chrome, &viewer, place, uses, &problems, Assist::of(&state));
     }
 
     let mut entity = place.apply(&stored);
@@ -2095,16 +2093,54 @@ pub async fn place_update(
 }
 
 /// Render the place form, with any problems named above it.
+/// What the coordinate half of the editor needs, which is a different thing
+/// from the place being edited.
+///
+/// One type rather than three arguments because they travel together through
+/// every call site and are all answers to the same question — what help with
+/// stating a position does this installation offer?
+#[derive(Debug, Default)]
+struct Assist {
+    /// Whether a name lookup is configured at all.
+    geocoding: bool,
+    /// The result of one, when one has just run.
+    lookup: Option<Lookup>,
+    /// The basemap, when the operator turned tiles on.
+    map: Option<crate::state::MapTiles>,
+}
+
+impl Assist {
+    /// What this installation offers, with no lookup having run.
+    fn of(state: &Shared) -> Self {
+        Self {
+            geocoding: state.geocoder().is_some(),
+            lookup: None,
+            map: state.map().cloned(),
+        }
+    }
+
+    fn with(mut self, lookup: Lookup) -> Self {
+        self.lookup = Some(lookup);
+        self
+    }
+}
+
 fn render_place_form(
     chrome: &render::Chrome,
     viewer: &Viewer,
     place: crate::place::PlaceForm,
     uses: usize,
     problems: &[&'static str],
-    geocoding: bool,
-    lookup: Option<Lookup>,
+    assist: Assist,
 ) -> Response {
     let messages: Vec<String> = problems.iter().map(|k| chrome.t(k)).collect();
+    // The out-link works whether or not a basemap is configured, and is the
+    // whole workflow when one is not: open the name in a map, click the spot,
+    // copy the URL, paste it back. `crate::coords` reads what comes back.
+    let search_url = format!(
+        "https://www.openstreetmap.org/search?query={}",
+        urlencode_query(&place.display)
+    );
     render::page_with(
         chrome,
         "admin_place.html",
@@ -2115,11 +2151,28 @@ fn render_place_form(
             problems => messages,
             place_types => crate::place::PLACE_TYPES,
             precisions => crate::place::PRECISIONS,
-            geocoding,
-            lookup,
+            geocoding => assist.geocoding,
+            lookup => assist.lookup,
+            map => assist.map,
+            search_url,
             may_write => viewer.may_write(),
         },
     )
+}
+
+/// Percent-encode one query parameter for the out-link.
+fn urlencode_query(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for b in s.as_bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                out.push(*b as char)
+            }
+            b' ' => out.push('+'),
+            _ => out.push_str(&format!("%{b:02X}")),
+        }
+    }
+    out
 }
 
 /// One candidate, flattened for the template.
@@ -2154,14 +2207,28 @@ struct Lookup {
     /// True once a search has run, which is what separates "no results" from
     /// "not searched yet".
     searched: bool,
+    /// True when this came from the paste box rather than the name lookup, so
+    /// the failure can say "that is not a position I recognise" rather than
+    /// "the service found nothing".
+    pasted: bool,
 }
 
-/// `POST /admin/place/:id/geocode` — look a place up, or take a suggestion.
+/// `POST /admin/place/:id/geocode` — fill the coordinate fields, three ways.
 ///
 /// Carries the whole editor form both ways and saves nothing. A lookup in the
-/// middle of an edit must not cost the edit, and a suggestion the reader takes
-/// is a filled-in field they still have to look at and save — the geocoder
-/// proposes, the person records.
+/// middle of an edit must not cost the edit, and a coordinate that arrived
+/// here is a filled-in field the reader still has to look at and save — the
+/// machine proposes, the person records.
+///
+/// Three branches, and only the first makes a network request:
+///
+/// * a name lookup, when the operator configured a geocoder;
+/// * taking one of its suggestions, which is pure form manipulation;
+/// * **pasting a position**, which is pure too and is the one that matters
+///   most on this data. See [`crate::coords`]: the position usually arrives
+///   from some other map by way of the clipboard, and the shape it arrives in
+///   is a URL or a degrees-minutes-seconds reading rather than the two decimal
+///   numbers this form stores.
 pub async fn place_geocode(
     State(state): State<Shared>,
     headers: HeaderMap,
@@ -2172,7 +2239,39 @@ pub async fn place_geocode(
     let mut place = crate::place::PlaceForm::from_post(&form);
     place.id = id.clone();
     let uses = state.read(|flat| crate::place::usage_count(flat, &id));
-    let geocoding = state.geocoder().is_some();
+
+    // A pasted position: parsed here, not in the browser, so it works with
+    // scripting off like the rest of the panel.
+    if let Some(text) = form.get("paste").filter(|p| !p.trim().is_empty()) {
+        let mut lookup = Lookup {
+            query: text.trim().to_string(),
+            pasted: true,
+            searched: true,
+            ..Default::default()
+        };
+        match crate::coords::parse(text) {
+            Some(pos) => {
+                let (lat, lon) = pos.format();
+                place.coordinates.lat = lat;
+                place.coordinates.lon = lon;
+                // The precision is the reader's to state. A pasted pair says
+                // where, not how exactly — a rooftop pin and a village centre
+                // arrive in the clipboard looking identical.
+                if place.coordinates.precision.is_empty() {
+                    place.coordinates.precision = "approximate".to_string();
+                }
+            }
+            None => lookup.error = "unparsed".to_string(),
+        }
+        return render_place_form(
+            &chrome,
+            &viewer,
+            place,
+            uses,
+            &[],
+            Assist::of(&state).with(lookup),
+        );
+    }
 
     // Taking a suggestion: no request goes out at all.
     if let Some(pick) = form.get("pick").filter(|p| !p.is_empty()) {
@@ -2182,11 +2281,11 @@ pub async fn place_geocode(
             place.coordinates.lon = lon.to_string();
             place.coordinates.precision = parts.next().unwrap_or_default().to_string();
         }
-        return render_place_form(&chrome, &viewer, place, uses, &[], geocoding, None);
+        return render_place_form(&chrome, &viewer, place, uses, &[], Assist::of(&state));
     }
 
     let Some(geocoder) = state.geocoder() else {
-        return render_place_form(&chrome, &viewer, place, uses, &[], false, None);
+        return render_place_form(&chrome, &viewer, place, uses, &[], Assist::of(&state));
     };
 
     // The query is built from the structured fields, not from the raw name,
@@ -2226,5 +2325,12 @@ pub async fn place_geocode(
             lookup.error = e.to_string();
         }
     }
-    render_place_form(&chrome, &viewer, place, uses, &[], geocoding, Some(lookup))
+    render_place_form(
+        &chrome,
+        &viewer,
+        place,
+        uses,
+        &[],
+        Assist::of(&state).with(lookup),
+    )
 }

@@ -269,6 +269,17 @@ place-geocode-none = Nothing found. For a village recorded under Russian, Prussi
 place-geocode-not-a-place = not a settlement
 place-geocode-use = Use this
 place-geocode-attribution = Results from OpenStreetMap via Nominatim, under the Open Database Licence.
+
+place-paste = Paste a position
+place-paste-placeholder = a map link, or 52.0782795, 21.2508068
+place-paste-read = Read it
+place-paste-hint = A Google Maps or OpenStreetMap link, a geo: URI, a plain pair, or degrees-minutes-seconds such as 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = Read into the fields above. Check it, then save.
+place-paste-unreadable = That is not a position this can read. The fields above still take a plain pair of numbers.
+
+place-map-hint = Click the map to place the point, or drag the pin. The fields above are the record.
+place-map-clear = Clear the point
+place-open-in-map = Find this place in OpenStreetMap, then paste the link back
 admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit

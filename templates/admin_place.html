@@ -168,6 +168,59 @@
     </div>
     <p class="hint">{{ t("place-coordinates-hint") }}</p>
 
+    {# The map is an input device before it is a picture: one place in this
+       bundle of 123 has coordinates, so there is almost nothing to display and
+       a great deal to state. It writes to the two fields above and reads back
+       from them, and it is absent unless the operator configured a tile
+       source — tiles are fetched by this reader's browser, which is a request
+       to a third party that nobody should inherit from a default.
+
+       `hidden` until the script has a basemap to draw, so a reader with
+       scripting off sees the fields and the out-link and no empty box. #}
+    {% if map %}
+    <div class="map-shell">
+      <div id="place-map" hidden
+           data-tiles="{{ map.url }}" data-attribution="{{ map.attribution }}"></div>
+      <div class="map-actions">
+        <p class="hint">{{ t("place-map-hint") }}</p>
+        <button class="btn small" type="button" id="place-map-clear">{{ t("place-map-clear") }}</button>
+      </div>
+    </div>
+    {% endif %}
+
+    {# Works with or without a basemap, and is the whole workflow without one:
+       open the name somewhere that has a map, click the spot, copy the URL,
+       paste it into the box below. The parser reads what comes back. #}
+    <p class="hint">
+      <a href="{{ search_url }}" target="_blank" rel="noopener noreferrer">{{ t("place-open-in-map") }}</a>
+    </p>
+
+    {# Paste a position.
+
+       The position almost always arrives from somewhere else — a Google Maps
+       link, an OpenStreetMap permalink, a degrees-minutes-seconds reading off
+       a scanned military map, a geo: URI from a phone. Asking the reader to
+       convert any of those into two decimal boxes is asking them to be a
+       parser at the moment they are most likely to transpose a digit. Parsed
+       on the server, so it works with scripting off. #}
+    <div class="field paste-position">
+      <label for="paste">{{ t("place-paste") }}</label>
+      <div class="paste-row">
+        <input type="text" id="paste" name="paste" value="" autocomplete="off"
+               placeholder="{{ t('place-paste-placeholder') }}">
+        <button class="btn" type="submit"
+                formaction="/admin/place/{{ place.id }}/geocode" formmethod="post">
+          {{ t("place-paste-read") }}
+        </button>
+      </div>
+      <p class="hint">{{ t("place-paste-hint") }}</p>
+      {% if lookup and lookup.pasted and lookup.error %}
+      <p class="notice warn" role="alert">{{ t("place-paste-unreadable") }}</p>
+      {% elif lookup and lookup.pasted %}
+      <p class="notice ok" role="status">{{ t("place-paste-read-ok") }}</p>
+      {% endif %}
+    </div>
+
     {# The lookup lives inside the editor's own form and reaches a different
        route through `formaction`. One form, two destinations: every field the
        reader has touched travels with the lookup and comes back filled in, so
@@ -184,7 +237,7 @@
       <p class="hint">{{ t("place-geocode-off") }}</p>
       {% endif %}
 
-      {% if lookup and lookup.searched %}
+      {% if lookup and lookup.searched and not lookup.pasted %}
       <div class="geocode-results">
         <p class="hint">{{ t("place-geocode-query", q=lookup.query) }}</p>
 
@@ -250,4 +303,15 @@
   </div>
 </form>
 
+{% endblock %}
+
+{% block head %}
+{% if map %}<link rel="stylesheet" href="/static/vendor/leaflet.css">{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if map %}
+<script src="/static/vendor/leaflet.js"></script>
+<script src="/static/map.js"></script>
+{% endif %}
 {% endblock %}

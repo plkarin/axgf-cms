@@ -280,6 +280,17 @@ place-geocode-none = Nichts gefunden. Für ein unter russischer, preußischer od
 place-geocode-not-a-place = keine Siedlung
 place-geocode-use = Diesen übernehmen
 place-geocode-attribution = Ergebnisse von OpenStreetMap über Nominatim, unter der Open Database License.
+
+place-paste = Position einfügen
+place-paste-placeholder = ein Kartenlink oder 52.0782795, 21.2508068
+place-paste-read = Auslesen
+place-paste-hint = Ein Google-Maps- oder OpenStreetMap-Link, eine geo:-URI, ein einfaches Zahlenpaar oder Grad-Minuten-Sekunden wie 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = In die Felder oben übernommen. Prüfen Sie es und speichern Sie dann.
+place-paste-unreadable = Das ist keine Position, die sich hier lesen lässt. Die Felder oben nehmen weiterhin ein einfaches Zahlenpaar.
+
+place-map-hint = Klicken Sie in die Karte, um den Punkt zu setzen, oder ziehen Sie die Nadel. Maßgeblich sind die Felder oben.
+place-map-clear = Punkt entfernen
+place-open-in-map = Diesen Ort in OpenStreetMap suchen und den Link zurück einfügen
 admin-delete = Löschen
 admin-not-set = — nicht gesetzt —
 admin-edit = Bearbeiten

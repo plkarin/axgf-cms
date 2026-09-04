@@ -256,6 +256,17 @@ place-geocode-none = لم يُعثر على شيء. أما القرية المس
 place-geocode-not-a-place = ليس مكانًا مأهولًا
 place-geocode-use = استخدم هذا
 place-geocode-attribution = نتائج من OpenStreetMap عبر Nominatim، بترخيص Open Database.
+
+place-paste = ألصق موضعًا
+place-paste-placeholder = رابط خريطة، أو 52.0782795, 21.2508068
+place-paste-read = اقرأه
+place-paste-hint = رابط من Google Maps أو OpenStreetMap، أو معرّف geo:، أو زوج أرقام بسيط، أو درجات ودقائق وثوانٍ مثل 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = قُرئ إلى الحقول أعلاه. تحقق منه ثم احفظ.
+place-paste-unreadable = ليس هذا موضعًا يمكن قراءته هنا. ما زالت الحقول أعلاه تقبل زوجًا بسيطًا من الأرقام.
+
+place-map-hint = انقر على الخريطة لوضع النقطة، أو اسحب الدبوس. الحقول أعلاه هي السجل.
+place-map-clear = أزل النقطة
+place-open-in-map = ابحث عن هذا المكان في OpenStreetMap ثم ألصق الرابط هنا
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير

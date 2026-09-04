@@ -18,6 +18,15 @@ pub const APP_CSS: &str = include_str!("../static/app.css");
 /// The tree page's client-side name filter, served at `/static/tree.js`.
 pub const TREE_JS: &str = include_str!("../static/tree.js");
 
+/// The place-editor map. Enhancement only: the coordinate fields work without
+/// it, and it does nothing at all unless the operator configured a tile URL.
+pub const MAP_JS: &str = include_str!("../static/map.js");
+
+/// Leaflet, vendored. See `static/vendor/leaflet.css` for the one deliberate
+/// modification and why it is there.
+pub const LEAFLET_JS: &str = include_str!("../static/vendor/leaflet.js");
+pub const LEAFLET_CSS: &str = include_str!("../static/vendor/leaflet.css");
+
 macro_rules! templates {
     ($($name:literal),* $(,)?) => {
         &[ $( ($name, include_str!(concat!("../templates/", $name))) ),* ]

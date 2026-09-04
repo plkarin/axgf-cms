@@ -90,12 +90,40 @@ pub struct AppState {
     generation: std::sync::atomic::AtomicU64,
     /// The append-only edit journal, beside the bundle rather than in it.
     journal: crate::journal::Journal,
+    /// The tile source for the place-editor map, and the attribution that
+    /// licence requires beside it. `None` means no basemap, which is the
+    /// default: tiles are fetched by the reader's browser rather than by this
+    /// process, and that is the operator's decision to take deliberately.
+    map: Option<MapTiles>,
     /// The place-name lookup, when the operator supplied a contact address.
     ///
     /// `None` is the ordinary state, not a degraded one: the coordinate fields
     /// are typed by hand far more often than they are filled from a search.
     /// See [`crate::geocode`] for why that is not pessimism.
     geocoder: Option<crate::geocode::Geocoder>,
+}
+
+/// A tile source and the attribution that has to be shown with it.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct MapTiles {
+    /// A `{z}/{x}/{y}` URL template, passed to Leaflet unchanged.
+    pub url: String,
+    /// Shown in the map's corner. Every tile source worth using requires it,
+    /// and it is a licence condition rather than a courtesy — which is why it
+    /// travels with the URL in one type instead of being a separate optional
+    /// field somebody can forget.
+    pub attribution: String,
+}
+
+impl MapTiles {
+    /// Build from the two flags, or `None` when no tile URL was given.
+    pub fn new(url: Option<&str>, attribution: Option<&str>) -> Option<Self> {
+        let url = url.map(str::trim).filter(|u| !u.is_empty())?;
+        Some(Self {
+            url: url.to_string(),
+            attribution: attribution.unwrap_or_default().trim().to_string(),
+        })
+    }
 }
 
 /// Memoised [`crate::access::Visible`] sets, keyed by the bundle version they
@@ -342,6 +370,7 @@ impl AppState {
                 generation: std::sync::atomic::AtomicU64::new(0),
                 journal: crate::journal::Journal::new(crate::journal::Journal::path_for(path)),
                 geocoder: None,
+                map: None,
             },
             report,
         ))
@@ -419,6 +448,17 @@ impl AppState {
     /// The place-name lookup, if this installation has one.
     pub fn geocoder(&self) -> Option<&crate::geocode::Geocoder> {
         self.geocoder.as_ref()
+    }
+
+    /// Attach a basemap before the state is shared.
+    pub fn with_map(mut self, map: Option<MapTiles>) -> Self {
+        self.map = map;
+        self
+    }
+
+    /// The basemap, if the operator configured one.
+    pub fn map(&self) -> Option<&MapTiles> {
+        self.map.as_ref()
     }
 
     /// Path of the live bundle.

@@ -278,6 +278,17 @@ place-geocode-none = No se encontró nada. Para una aldea registrada bajo admini
 place-geocode-not-a-place = no es una población
 place-geocode-use = Usar este
 place-geocode-attribution = Resultados de OpenStreetMap mediante Nominatim, bajo la Open Database License.
+
+place-paste = Pegar una posición
+place-paste-placeholder = un enlace de mapa, o 52.0782795, 21.2508068
+place-paste-read = Leerlo
+place-paste-hint = Un enlace de Google Maps u OpenStreetMap, un URI geo:, un par de números, o grados-minutos-segundos como 52°04'41.8"N 21°15'02.9"E.
+place-paste-read-ok = Leído en los campos de arriba. Compruébelo y guarde.
+place-paste-unreadable = Esa no es una posición que se pueda leer aquí. Los campos de arriba siguen aceptando un par de números.
+
+place-map-hint = Haga clic en el mapa para poner el punto, o arrastre el alfiler. Lo que vale son los campos de arriba.
+place-map-clear = Quitar el punto
+place-open-in-map = Buscar este lugar en OpenStreetMap y pegar aquí el enlace
 admin-delete = Borrar
 admin-not-set = — sin establecer —
 admin-edit = Editar

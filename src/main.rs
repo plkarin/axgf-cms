@@ -41,7 +41,11 @@ async fn main() -> Result<()> {
     let state = Arc::new(
         state
             .with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024))
-            .with_geocoder(geocoder),
+            .with_geocoder(geocoder)
+            .with_map(axgf_cms::state::MapTiles::new(
+                cfg.map_tiles.as_deref(),
+                cfg.map_attribution.as_deref(),
+            )),
     );
 
     // --create-admin runs against the loaded state and then exits. It happens

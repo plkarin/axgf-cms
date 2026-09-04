@@ -74,6 +74,9 @@ pub fn router(state: Shared) -> Router {
         .route("/admin/:kind/:id/delete", post(admin::delete))
         .route("/static/app.css", get(public::css))
         .route("/static/tree.js", get(public::tree_js))
+        .route("/static/map.js", get(public::map_js))
+        .route("/static/vendor/leaflet.js", get(public::leaflet_js))
+        .route("/static/vendor/leaflet.css", get(public::leaflet_css))
         .fallback(public::not_found)
         .with_state(state)
 }

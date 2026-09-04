@@ -266,6 +266,13 @@ place-paste-unreadable = ここでは読み取れない位置です。上の欄�
 place-map-hint = 地図をクリックして点を置くか、ピンをドラッグしてください。記録となるのは上の欄です。
 place-map-clear = 点を消す
 place-open-in-map = この地名を OpenStreetMap で探し、リンクを貼り戻す
+
+person-tab-record = 記録
+person-tab-life = 生涯
+person-tab-media = 資料
+person-tab-tree = 系図
+person-tree-depth = 上下それぞれ { $n } 世代。系図の全体は下にあります。
+person-tree-alone = この記録には親も配偶者も子も記されていないため、まわりに描く形がありません。
 admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集

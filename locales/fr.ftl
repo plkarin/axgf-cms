@@ -274,6 +274,13 @@ place-paste-unreadable = Ce n'est pas une position lisible ici. Les champs ci-de
 place-map-hint = Cliquez sur la carte pour poser le point, ou faites glisser l'épingle. Ce sont les champs ci-dessus qui font foi.
 place-map-clear = Effacer le point
 place-open-in-map = Chercher ce lieu dans OpenStreetMap, puis recoller le lien
+
+person-tab-record = Fiche
+person-tab-life = Vie
+person-tab-media = Documents
+person-tab-tree = Arbre
+person-tree-depth = { $n } générations de chaque côté. L'arbre entier se trouve plus bas.
+person-tree-alone = Cette fiche ne nomme ni parents, ni conjoints, ni enfants : il n'y a donc aucune forme à dessiner autour d'elle.
 admin-delete = Supprimer
 admin-not-set = — non renseigné —
 admin-edit = Modifier

@@ -265,6 +265,13 @@ place-paste-unreadable = 这不是这里能读懂的位置。上面的栏位仍�
 place-map-hint = 点击地图放置该点，或拖动图钉。作准的是上面的栏位。
 place-map-clear = 清除该点
 place-open-in-map = 在 OpenStreetMap 中查找此地，再把链接粘回来
+
+person-tab-record = 记录
+person-tab-life = 生平
+person-tab-media = 材料
+person-tab-tree = 家系
+person-tree-depth = 上下各 { $n } 代。完整的家系图在下方。
+person-tree-alone = 这条记录未载父母、配偶或子女，因此周围没有可画的形状。
 admin-delete = 删除
 admin-not-set = —— 未设置 ——
 admin-edit = 编辑

@@ -311,6 +311,13 @@ place-paste-unreadable = Это положение здесь прочитать
 place-map-hint = Щёлкните по карте, чтобы поставить точку, или перетащите булавку. Записью считаются поля выше.
 place-map-clear = Убрать точку
 place-open-in-map = Найти это место в OpenStreetMap и вставить ссылку обратно
+
+person-tab-record = Запись
+person-tab-life = Жизнь
+person-tab-media = Материалы
+person-tab-tree = Древо
+person-tree-depth = По { $n } поколения в каждую сторону. Всё древо — ниже.
+person-tree-alone = В этой записи не названы ни родители, ни супруги, ни дети, так что вокруг неё нечего рисовать.
 admin-delete = Удалить
 admin-not-set = — не задано —
 admin-edit = Править

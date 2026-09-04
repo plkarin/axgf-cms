@@ -1729,6 +1729,70 @@ fn dedup_refs(v: &mut Vec<PersonRef>) {
     });
 }
 
+/// Which face of the record the reader asked for.
+///
+/// The person page used to be one scroll of eight sections with a list of
+/// anchor links above it. That index was a table of contents for a document
+/// nobody reads top to bottom: somebody opening a person wants their life, or
+/// their photographs, or where they sit in the family, and those three are
+/// different questions rather than three parts of one answer.
+///
+/// The record itself is not split. Every section still exists and still holds
+/// exactly what it held; this only decides which of them are on screen at
+/// once. The tree side panel passes no tab at all and gets all of them, which
+/// is right for a panel — see `_person_detail.html`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Tab {
+    /// Who they were: identity, family, other relationships, notes.
+    Record,
+    /// What happened: the timeline, the occupations, the places.
+    Life,
+    /// What proves it: documents, images, sources.
+    Media,
+    /// Where they sit: the family graph, rooted on them.
+    Tree,
+}
+
+/// The tabs, in the order they are shown.
+pub const TABS: &[Tab] = &[Tab::Record, Tab::Life, Tab::Media, Tab::Tree];
+
+impl Tab {
+    /// The slug used in `?tab=` and as the template's discriminator.
+    pub fn slug(self) -> &'static str {
+        match self {
+            Self::Record => "record",
+            Self::Life => "life",
+            Self::Media => "media",
+            Self::Tree => "tree",
+        }
+    }
+
+    /// The catalogue key for its label.
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::Record => "person-tab-record",
+            Self::Life => "person-tab-life",
+            Self::Media => "person-tab-media",
+            Self::Tree => "person-tab-tree",
+        }
+    }
+
+    /// Read a tab out of `?tab=`.
+    ///
+    /// An unknown value is the record rather than a 404. A tab is a view of a
+    /// page that exists, so a stale or mistyped link should land the reader on
+    /// the person they asked for rather than on an error about a query
+    /// parameter — the thing they wanted is right there behind it.
+    pub fn from_query(value: Option<&str>) -> Self {
+        match value.map(str::trim) {
+            Some("life") => Self::Life,
+            Some("media") => Self::Media,
+            Some("tree") => Self::Tree,
+            _ => Self::Record,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2259,5 +2323,39 @@ mod tests {
         assert_eq!(human_size(512), "512 bytes");
         assert_eq!(human_size(2048), "2.0 KB");
         assert_eq!(human_size(3 * 1024 * 1024 + 512 * 1024), "3.5 MB");
+    }
+
+    #[test]
+    fn an_unknown_tab_lands_on_the_record_rather_than_a_404() {
+        // A tab names a view of a page that exists. A stale link should show
+        // the person, not an error about a query parameter.
+        assert_eq!(Tab::from_query(None), Tab::Record);
+        assert_eq!(Tab::from_query(Some("")), Tab::Record);
+        assert_eq!(Tab::from_query(Some("nonsense")), Tab::Record);
+        assert_eq!(
+            Tab::from_query(Some("Life")),
+            Tab::Record,
+            "slugs are exact"
+        );
+        assert_eq!(
+            Tab::from_query(Some(" life ")),
+            Tab::Life,
+            "but padding is not a typo"
+        );
+    }
+
+    #[test]
+    fn every_tab_round_trips_through_its_own_slug() {
+        for tab in TABS {
+            assert_eq!(Tab::from_query(Some(tab.slug())), *tab, "{}", tab.slug());
+        }
+    }
+
+    #[test]
+    fn every_tab_has_a_distinct_slug_and_key() {
+        let slugs: std::collections::BTreeSet<_> = TABS.iter().map(|t| t.slug()).collect();
+        let keys: std::collections::BTreeSet<_> = TABS.iter().map(|t| t.key()).collect();
+        assert_eq!(slugs.len(), TABS.len());
+        assert_eq!(keys.len(), TABS.len());
     }
 }

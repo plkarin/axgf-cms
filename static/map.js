@@ -96,3 +96,65 @@
     });
   }
 })();
+
+/* The person page's places map.
+ *
+ * Read-only, and present only when the record locates at least one place. It
+ * shows where a life happened; the cards beside it remain the record, and a
+ * place with no coordinates is not missing from the page, only from the map. */
+(function () {
+  var host = document.getElementById('places-map');
+  if (!host || typeof L === 'undefined') return;
+
+  var tiles = host.getAttribute('data-tiles');
+  if (!tiles) return;
+
+  var points;
+  try {
+    points = JSON.parse(host.getAttribute('data-points') || '[]');
+  } catch (e) {
+    return; /* Malformed data is a bug, not something to half-draw. */
+  }
+  if (!points.length) return;
+
+  host.hidden = false;
+  var map = L.map(host, { scrollWheelZoom: false });
+  L.tileLayer(tiles, {
+    attribution: host.getAttribute('data-attribution') || '',
+    maxZoom: 18
+  }).addTo(map);
+
+  var icon = L.divIcon({
+    className: 'place-pin',
+    html: '<span></span>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  });
+
+  var bounds = [];
+  for (var i = 0; i < points.length; i++) {
+    var pt = points[i];
+    var ll = [pt.lat, pt.lon];
+    bounds.push(ll);
+    /* The popup names the place and what happened there, which is the whole
+     * reason a pin is worth clicking: "Kraków" alone is on the card already. */
+    var label = document.createElement('div');
+    var strong = document.createElement('strong');
+    strong.textContent = pt.name;
+    label.appendChild(strong);
+    if (pt.uses && pt.uses.length) {
+      var ul = document.createElement('ul');
+      ul.className = 'plain small';
+      for (var u = 0; u < pt.uses.length; u++) {
+        var li = document.createElement('li');
+        li.textContent = pt.uses[u];
+        ul.appendChild(li);
+      }
+      label.appendChild(ul);
+    }
+    L.marker(ll, { icon: icon, title: pt.name }).addTo(map).bindPopup(label);
+  }
+
+  if (bounds.length === 1) map.setView(bounds[0], 11);
+  else map.fitBounds(bounds, { padding: [28, 28], maxZoom: 12 });
+})();

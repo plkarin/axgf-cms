@@ -83,13 +83,27 @@ async fn panel(app: &axum::Router, id: &str) -> String {
     body
 }
 
+/// The standalone page, all of it.
+///
+/// The page is four tabs now, and every test in this file is about the
+/// relationship between the page and the tree side panel — whether the two
+/// state the same facts, whether either is a lesser record than the other.
+/// That question is about the page as a whole, so this reads every tab and
+/// joins them. The panel names no tab and renders every section in one
+/// response, which is what makes it the right thing to compare against.
 async fn page(app: &axum::Router, id: &str) -> String {
-    expect_status(
-        get_admin(app, &format!("/person/{id}")).await,
-        StatusCode::OK,
-        "person page",
-    )
-    .await
+    let mut out = String::new();
+    for tab in ["", "?tab=life", "?tab=media"] {
+        out.push_str(
+            &expect_status(
+                get_admin(app, &format!("/person/{id}{tab}")).await,
+                StatusCode::OK,
+                "person page",
+            )
+            .await,
+        );
+    }
+    out
 }
 
 #[tokio::test]

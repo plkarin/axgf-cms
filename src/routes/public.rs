@@ -236,6 +236,15 @@ pub const WIDTH_COOKIE: &str = "axgf_tw";
 /// the two and is what a link can carry. Anything unparseable or out of range
 /// falls back rather than failing: a bad width is a worse-looking tree, not an
 /// error page.
+/// The remembered row width, for a page with no tree query of its own.
+fn wrap_width_from(headers: &HeaderMap) -> f64 {
+    crate::session::named_cookie(headers, WIDTH_COOKIE)
+        .and_then(|v| v.trim().parse::<f64>().ok())
+        .filter(|v| v.is_finite() && *v > 0.0)
+        .map(|v| v.clamp(crate::tree::MIN_WRAP_W, crate::tree::MAX_WRAP_W))
+        .unwrap_or(crate::tree::DEFAULT_WRAP_W)
+}
+
 fn wrap_width(q: &TreeQuery, headers: &HeaderMap) -> f64 {
     q.w.or_else(|| {
         crate::session::named_cookie(headers, WIDTH_COOKIE)
@@ -592,14 +601,36 @@ fn person_roster(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
         .collect()
 }
 
+/// How deep the person page's tree tab reaches in each direction.
+///
+/// Three is grandparents to grandchildren, which is the span a reader means by
+/// "where does this person sit". Deeper turns the tab into the tree page,
+/// which already exists and is one link away.
+const PERSON_TREE_DEPTH: usize = 3;
+
+/// `?tab=` on the person page.
+#[derive(Debug, serde::Deserialize)]
+pub struct PersonQuery {
+    #[serde(default)]
+    tab: Option<String>,
+}
+
 /// `GET /person/:id` — everything known about one person.
 pub async fn person(
     State(state): State<Shared>,
     Path(id): Path<String>,
     headers: HeaderMap,
+    Query(q): Query<PersonQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/person/{id}"));
+    let tab = crate::person::Tab::from_query(q.tab.as_deref());
+    // The tab travels in the path Chrome remembers, so switching language on
+    // the media tab comes back to the media tab.
+    let here = match tab {
+        crate::person::Tab::Record => format!("/person/{id}"),
+        other => format!("/person/{id}?tab={}", other.slug()),
+    };
+    let chrome = render::Chrome::resolve(&viewer, &headers, &here);
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
         if flat.get("persons").and_then(|p| p.get(&id)).is_none() {
             return Reading::Absent;
@@ -614,21 +645,82 @@ pub async fn person(
     });
 
     match outcome {
-        Reading::Ok(p) => render::page_with(
-            &chrome,
-            "person.html",
-            context! {
-                nav => "tree",
-                p,
-                // The journal names editors, so it is shown to people who are
-                // signed in and to nobody else.
-                history => viewer.signed_in().then(|| entity_history(&state, &id)),
-                // The standalone page has the width for the explanatory prose
-                // and the comparison tables; the panel does not.
-                compact => false,
-                max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
-            },
-        ),
+        Reading::Ok(p) => {
+            // The tree is laid out only for the tab that draws it. It is by a
+            // wide margin the most expensive thing this page can do, and most
+            // visits to a person never ask for it.
+            let layout = (tab == crate::person::Tab::Tree).then(|| {
+                state.read_as(viewer.ceiling(), |flat, lens| {
+                    let subtree = crate::tree::select_subtree(
+                        flat,
+                        &id,
+                        PERSON_TREE_DEPTH,
+                        PERSON_TREE_DEPTH,
+                    );
+                    let opts = crate::tree::LayoutOpts::default()
+                        .with_width(wrap_width_from(&headers))
+                        .seeing(lens.set());
+                    let mut l = crate::tree::layout_focused_with(flat, &subtree, opts);
+                    crate::tree::localise(&mut l, chrome.lang);
+                    // A person this reader may not see keeps their place and
+                    // loses everything else, exactly as on the tree page. The
+                    // shape of a family is not a secret; the names in it can
+                    // be.
+                    crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
+                    l
+                })
+            });
+            // The places this person's record actually locates. Usually
+            // none: on a converted bundle one place in 123 carries a position,
+            // so the map appears when there is something to put on it and is
+            // absent otherwise rather than drawing an empty world.
+            let place_points: Vec<Value> = p
+                .places
+                .iter()
+                .filter_map(|pu| {
+                    let (lat, lon) = (pu.place.lat?, pu.place.lon?);
+                    Some(json!({
+                        "name": pu.place.name,
+                        "lat": lat,
+                        "lon": lon,
+                        "uses": pu.uses,
+                        "href": pu.place.known.then(|| format!("/admin/place/{}/edit", pu.place.id)),
+                    }))
+                })
+                .collect();
+            render::page_with(
+                &chrome,
+                "person.html",
+                context! {
+                    nav => "tree",
+                    p,
+                    // The journal names editors, so it is shown to people who
+                    // are signed in and to nobody else.
+                    history => viewer.signed_in().then(|| entity_history(&state, &id)),
+                    // The standalone page has the width for the explanatory
+                    // prose and the comparison tables; the panel does not.
+                    compact => false,
+                    max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                    tab => tab.slug(),
+                    tabs => crate::person::TABS
+                        .iter()
+                        .map(|t| json!({"slug": t.slug(), "key": t.key()}))
+                        .collect::<Vec<_>>(),
+                    layout,
+                    // The canvas partial marks the selected card; on this page
+                    // that is always the person whose record it is.
+                    selected => id,
+                    tree_depth => PERSON_TREE_DEPTH,
+                    map => state.map().cloned(),
+                    // Serialised here rather than by a template filter: the
+                    // attribute holds one JSON document, and building it in
+                    // Rust is what makes that a fact rather than a hope.
+                    place_points_json => serde_json::to_string(&place_points)
+                        .unwrap_or_else(|_| "[]".to_string()),
+                    place_points,
+                },
+            )
+        }
         Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
         Reading::Absent => render::error_page_in(
             &chrome,

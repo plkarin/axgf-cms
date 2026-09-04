@@ -80,25 +80,57 @@
   {% endif %}
 </header>
 
-{# The index labels come from the same keys the section headings use, so the
-   two can never drift into naming the same section differently. #}
-{% set sections = [
-  {"id": "identity", "key": "record-identity", "present": p.names or p.gender},
-  {"id": "life", "key": "record-life-events", "present": p.timeline},
-  {"id": "family", "key": "record-family", "present": p.parents or p.siblings or p.unions},
-  {"id": "relationships", "key": "record-other-relationships", "present": p.links},
-  {"id": "occupations", "key": "record-occupations", "present": p.occupations},
-  {"id": "places", "key": "record-places", "present": p.places},
-  {"id": "evidence", "key": "record-sources-documents", "present": p.sources or p.documents},
-  {"id": "notes", "key": "record-notes", "present": p.notes}] %}
-<nav class="section-index" aria-label="{{ t('person-sections-label') }}">
-  {% for s in sections %}{% if s.present %}<a href="#{{ s.id }}">{{ t(s.key) }}</a>{% endif %}{% endfor %}
-  {% if history %}<a href="#history">{{ t("record-history") }}</a>{% endif %}
-  <a href="#raw">{{ t("record-raw") }}</a>
+{# The tabs.
+
+   Four real links, not four panels behind a script: each is a URL somebody can
+   send to somebody else, the back button goes back a tab, and the page works
+   with scripting off exactly as the rest of the panel does. `aria-current` is
+   what tells a screen reader which one is open, and it is on the link rather
+   than on a wrapper because the link is the thing that is current.
+
+   The record is not split by this. Every section still holds what it held —
+   see `_person_detail.html`, which draws all of them when no tab is named,
+   which is what the tree side panel asks for. #}
+<nav class="person-tabs" aria-label="{{ t('person-sections-label') }}">
+  {% for tb in tabs %}
+  <a href="/person/{{ p.id }}{% if tb.slug != 'record' %}?tab={{ tb.slug }}{% endif %}"
+     class="person-tab{% if tb.slug == tab %} is-current{% endif %}"
+     {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}</a>
+  {% endfor %}
 </nav>
 
-{% include "_person_detail.html" %}
+{% if tab == "tree" %}
+  {# Rooted on this person rather than on whoever makes the best first screen,
+     and shallow: three generations each way is what "where does this person
+     sit" means. The whole tree is one link away and says so. #}
+  {% if layout and layout.bands %}
+  <div class="person-tree" style="--tree-width:{{ layout.width }}px;--tree-height:{{ layout.height }}px">
+    <div class="tree-scroll">
+      {% include "_tree_canvas.html" %}
+    </div>
+  </div>
+  <p class="hint">{{ t("person-tree-depth", n=tree_depth) }}</p>
+  {% else %}
+  {# A person with no recorded parents, partners or children is not an error.
+     It is most of a converted bundle's edges, and saying so plainly beats
+     drawing an empty box. #}
+  <p class="notice" role="status">{{ t("person-tree-alone") }}</p>
+  {% endif %}
+{% else %}
+  {% include "_person_detail.html" %}
+{% endif %}
 
 <p style="margin-top:2rem"><a class="btn" href="/tree?root={{ p.id }}">{{ t("person-see-in-tree") }}</a></p>
 
+{% endblock %}
+
+{% block head %}
+{% if map and place_points %}<link rel="stylesheet" href="/static/vendor/leaflet.css">{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if map and place_points %}
+<script src="/static/vendor/leaflet.js"></script>
+<script src="/static/map.js"></script>
+{% endif %}
 {% endblock %}

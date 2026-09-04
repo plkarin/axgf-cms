@@ -345,7 +345,7 @@ async fn a_document_with_no_payload_renders_without_breaking() {
 
     let (app, _p) = app_with_bundle("referenced", &path);
     let body = expect_status(
-        get(&app, &format!("/person/{PERSON}")).await,
+        get(&app, &format!("/person/{PERSON}?tab=media")).await,
         StatusCode::OK,
         "person with a referenced document",
     )
@@ -375,10 +375,10 @@ async fn the_upload_form_is_only_offered_to_an_admin() {
     let src = one_person_bundle("upload-form-src");
     let (app, _p) = app_with_bundle("upload-form", &src);
 
-    let anon = body_string(get(&app, &format!("/person/{PERSON}")).await).await;
+    let anon = body_string(get(&app, &format!("/person/{PERSON}?tab=media")).await).await;
     assert!(!anon.contains("Attach a document"));
 
-    let admin = body_string(get_admin(&app, &format!("/person/{PERSON}")).await).await;
+    let admin = body_string(get_admin(&app, &format!("/person/{PERSON}?tab=media")).await).await;
     assert!(admin.contains("Attach a document"));
     assert!(admin.contains(&format!("/admin/person/{PERSON}/document")));
 }
@@ -398,7 +398,7 @@ async fn an_uploaded_photograph_appears_in_the_gallery() {
     .await;
 
     let doc_id = document_ids(&path).into_iter().next().expect("a document");
-    let body = body_string(get(&app, &format!("/person/{PERSON}")).await).await;
+    let body = body_string(get(&app, &format!("/person/{PERSON}?tab=media")).await).await;
     assert!(body.contains("Photographs"));
     assert!(body.contains(&format!("/document/{doc_id}/thumb")));
     assert!(body.contains(&format!("/document/{doc_id}/raw")));

@@ -280,6 +280,13 @@ place-paste-unreadable = That is not a position this can read. The fields above 
 place-map-hint = Click the map to place the point, or drag the pin. The fields above are the record.
 place-map-clear = Clear the point
 place-open-in-map = Find this place in OpenStreetMap, then paste the link back
+
+person-tab-record = Record
+person-tab-life = Life
+person-tab-media = Media
+person-tab-tree = Tree
+person-tree-depth = { $n } generations either way. The whole tree is below.
+person-tree-alone = This record names no parents, partners or children, so there is no shape to draw around it.
 admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit

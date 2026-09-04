@@ -9,6 +9,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**The person page is four tabs.** It was one scroll of eight sections behind a
+list of anchor links — a table of contents for a document nobody reads top to
+bottom. Somebody opening a person wants their life, or their photographs, or
+where they sit in the family, and those are three questions rather than three
+parts of one answer. Record holds identity, family, other relationships and
+notes; Life holds the timeline, occupations and places; Media holds sources and
+documents; Tree draws the family around them.
+
+Each tab is a real link — `/person/:id?tab=life` — so it works with scripting
+off, can be sent to somebody, and the back button goes back a tab. An unknown
+tab shows the record rather than a 404: a tab names a view of a page that
+exists, and a stale link should land on the person.
+
+The record is not split by this, and a test enforces that. The tree side panel
+names no tab and still renders every section in one response, which is right for
+a panel; `every_section_lands_on_exactly_one_tab` derives the whole record from
+that render and asserts the union of the tabs equals it, so a section can be
+moved between tabs but cannot be dropped.
+
+**The Life tab maps the places a life happened in** — when the record locates
+any of them, and not otherwise. On a converted bundle that is almost never: one
+place in 123 carries a position, so an always-present map would be an empty
+world on nearly every person, which is a picture of the software rather than of
+the family. The cards below it are the record either way.
+
+**The Tree tab draws the family around this person**, rooted on them rather than
+on whoever makes the best first screen, three generations each way. It shares
+`_tree_canvas.html` with the tree page rather than keeping a second copy that
+would drift, and it is laid out only for the tab that draws it — it is by a wide
+margin the most expensive thing the page can do, and most visits never ask for
+it. A person with no recorded parents, partners or children gets a sentence
+saying so instead of an empty box.
+
 **A position can be pasted in whatever shape the reader has it.** The manual
 coordinate path is the common one on this data, so it stopped being two bare
 number boxes. `src/coords.rs` reads a Google Maps link, an OpenStreetMap

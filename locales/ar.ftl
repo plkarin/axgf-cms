@@ -267,6 +267,13 @@ place-paste-unreadable = ليس هذا موضعًا يمكن قراءته هنا
 place-map-hint = انقر على الخريطة لوضع النقطة، أو اسحب الدبوس. الحقول أعلاه هي السجل.
 place-map-clear = أزل النقطة
 place-open-in-map = ابحث عن هذا المكان في OpenStreetMap ثم ألصق الرابط هنا
+
+person-tab-record = السجل
+person-tab-life = الحياة
+person-tab-media = المواد
+person-tab-tree = الشجرة
+person-tree-depth = { $n } أجيال في كل اتجاه. الشجرة كاملةً في الأسفل.
+person-tree-alone = لا يسمّي هذا السجل والدين ولا أزواجًا ولا أبناء، فليس حوله شكل يُرسم.
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير

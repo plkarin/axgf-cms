@@ -3,7 +3,13 @@
    so the two never drift. Every section tests for its own content, so the
    shape of what is drawn is a readout of what the bundle actually holds.
 
-   Context: `p` (a PersonView), `is_admin`, and `compact`.
+   Context: `p` (a PersonView), `is_admin`, `compact`, and `tab`.
+
+   `tab` names which face of the record to draw: "record", "life" or "media".
+   When it is undefined every section is drawn, which is what the tree side
+   panel wants — a panel is one glance at a whole person, not a place to
+   navigate. Nothing is ever *dropped* by a tab; the sections are the same
+   sections and each still tests for its own content.
 
    `compact` is true when this is rendered into the tree side panel, which is a
    clamped column of at most 460px. It never changes *what* is shown — hiding a
@@ -13,7 +19,7 @@
    CSS scoped to `.tree-panel`. #}
 {% import "_macros.html" as m %}
 
-{% if p.showcase_notes %}
+{% if p.showcase_notes and (tab is undefined or tab == "record") %}
 <div class="showcase-strip">
   <strong>{{ t("record-notes-title") }}</strong>
   {% for n in p.showcase_notes %}<span class="chip">{{ n }}</span>{% endfor %}
@@ -21,7 +27,7 @@
 {% endif %}
 
 {# ---------------------------------------------------------------- IDENTITY #}
-{% if p.names or p.gender %}
+{% if (tab is undefined or tab == "record") and (p.names or p.gender) %}
 <section id="identity" class="rec-section">
   {{ m.sec(t, t("record-identity"), compact, t("record-identity-help")) }}
 
@@ -79,7 +85,7 @@
 {% endif %}
 
 {# ------------------------------------------------------------- LIFE EVENTS #}
-{% if p.timeline %}
+{% if (tab is undefined or tab == "life") and (p.timeline) %}
 <section id="life" class="rec-section">
   {{ m.sec(t, t("record-life-events"), compact, t("record-life-events-help")) }}
   <ol class="life">
@@ -104,7 +110,7 @@
 {% endif %}
 
 {# ------------------------------------------------------------------ FAMILY #}
-{% if p.parents or p.siblings or p.unions %}
+{% if (tab is undefined or tab == "record") and (p.parents or p.siblings or p.unions) %}
 <section id="family" class="rec-section">
   {{ m.sec(t, t("record-family"), compact, t("record-family-help")) }}
   {# Only wrap a grid around cards that exist: an empty two-column grid still
@@ -164,7 +170,7 @@
 {% endif %}
 
 {# --------------------------------------------------- OTHER RELATIONSHIPS #}
-{% if p.links %}
+{% if (tab is undefined or tab == "record") and (p.links) %}
 <section class="links-section rec-section" id="relationships">
   {{ m.sec(t, t("record-other-relationships"), compact, t("record-other-relationships-help")) }}
   <div class="grid cols-2">
@@ -192,7 +198,7 @@
 {% endif %}
 
 {# ------------------------------------------------------------- OCCUPATIONS #}
-{% if p.occupations %}
+{% if (tab is undefined or tab == "life") and (p.occupations) %}
 <section id="occupations" class="rec-section">
   {% if p.has_timeline %}
   {{ m.sec(t, t("record-occupations"), compact,
@@ -247,9 +253,25 @@
 {% endif %}
 
 {# ------------------------------------------------------------------ PLACES #}
-{% if p.places %}
+{% if (tab is undefined or tab == "life") and (p.places) %}
 <section id="places" class="rec-section">
   {{ m.sec(t, t("record-places"), compact, t("record-places-help")) }}
+
+  {# The map appears when the record locates at least one of these places, and
+     not otherwise. On a freshly converted bundle that is almost never: one
+     place in 123 carries a position, so an always-present map would be an
+     empty world on nearly every person — a picture of the software rather than
+     of the family. The cards below are the record either way.
+
+     Not drawn in the side panel, which is 460px of column and has no room for
+     a map that would have to be scrolled to be read. #}
+  {% if map and place_points and not compact %}
+  <div class="places-map-shell">
+    <div id="places-map" hidden
+         data-tiles="{{ map.url }}" data-attribution="{{ map.attribution }}"
+         data-points="{{ place_points_json }}"></div>
+  </div>
+  {% endif %}
   <div class="grid cols-3">
     {% for pu in p.places %}
     <div class="card place-card">
@@ -279,7 +301,7 @@
 {% endif %}
 
 {# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
-{% if p.sources or p.documents or is_admin %}
+{% if (tab is undefined or tab == "media") and (p.sources or p.documents or is_admin) %}
 <section id="evidence" class="rec-section">
   {{ m.sec(t, t("record-sources-documents"), compact, t("record-sources-documents-help")) }}
 
@@ -398,7 +420,7 @@
 {% endif %}
 
 {# ------------------------------------------------------------------- NOTES #}
-{% if p.notes %}
+{% if (tab is undefined or tab == "record") and (p.notes) %}
 <section id="notes" class="rec-section">
   {{ m.sec(t, t("record-notes"), compact, t("record-notes-help")) }}
   {% for n in p.notes %}
@@ -418,7 +440,7 @@
    editors and quotes what each of them corrected, which is exactly why it does
    not live in the shareable bundle — publishing it on the public record page
    would put it back where it was kept out of. #}
-{% if history %}
+{% if history and (tab is undefined or tab == "record") %}
 <section id="history" class="rec-section">
   {{ m.sec(t, t("record-history"), compact, t("record-history-help")) }}
   <ol class="history">
@@ -450,6 +472,7 @@
 {% endif %}
 
 {# --------------------------------------------------------------------- RAW #}
+{% if tab is undefined or tab == "record" %}
 <section id="raw" class="rec-section">
   <details class="raw">
     <summary>{{ t("record-raw") }}
@@ -458,3 +481,4 @@
     <pre class="raw-json">{{ p.raw_json }}</pre>
   </details>
 </section>
+{% endif %}

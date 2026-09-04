@@ -79,12 +79,23 @@ const JULES: &str = "11111111-1111-4111-8111-111111111111";
 async fn person_page_surfaces_every_gedcom_gap() {
     let src = showcase_bundle("person-src");
     let (app, _p) = app_with_bundle("person", &src);
-    let body = expect_status(
+    // The gaps this test is about are spread across the record and the life
+    // tab, and the question — does the page state what the source could not
+    // pin down — is about the page rather than about any one tab. So it reads
+    // both and asserts against the pair.
+    let record = expect_status(
         get(&app, &format!("/person/{JULES}")).await,
         StatusCode::OK,
         "person page",
     )
     .await;
+    let life = expect_status(
+        get(&app, &format!("/person/{JULES}?tab=life")).await,
+        StatusCode::OK,
+        "life tab",
+    )
+    .await;
+    let body = format!("{record}{life}");
 
     // Date honesty: circa and preserved-unparseable both stated as such.
     assert!(body.contains("circa 1500"), "circa must be stated");
@@ -330,12 +341,29 @@ async fn the_page_carries_the_full_record_section_by_section() {
     std::fs::write(&path, bytes).expect("write");
 
     let (app, _p) = app_with_bundle("full", &path);
-    let body = expect_status(
+    // "The full record, section by section" is now a claim about the page as a
+    // whole rather than about one response: the sections are dealt across four
+    // tabs. Both halves are read and the assertions run against the pair, with
+    // the life tab kept separately for the ordering check below.
+    let record = expect_status(
         get(&app, &format!("/person/{jules}")).await,
         StatusCode::OK,
         "the full record",
     )
     .await;
+    let life_body = expect_status(
+        get(&app, &format!("/person/{jules}?tab=life")).await,
+        StatusCode::OK,
+        "the life tab",
+    )
+    .await;
+    let media_body = expect_status(
+        get(&app, &format!("/person/{jules}?tab=media")).await,
+        StatusCode::OK,
+        "the media tab",
+    )
+    .await;
+    let body = format!("{record}{life_body}{media_body}");
 
     // Identity: both scripts, the period the name was used, visibility.
     assert!(body.contains("Бронислав Клицкий"), "native script");
@@ -353,7 +381,10 @@ async fn the_page_carries_the_full_record_section_by_section() {
     );
 
     // Life events: birth, the baptism a week later, then death, in that order.
-    let life = body.split(r#"id="life""#).nth(1).expect("a life section");
+    let life = life_body
+        .split(r#"id="life""#)
+        .nth(1)
+        .expect("a life section");
     let birth_at = life.find("Born").expect("birth on the timeline");
     let baptism_at = life.find("Baptism").expect("baptism on the timeline");
     let death_at = life.find("Died").expect("death on the timeline");
@@ -411,4 +442,145 @@ async fn the_masthead_carries_a_face_a_span_and_a_placing() {
         "and no request for a thumbnail that does not exist"
     );
     assert!(body.contains("person-vitals"), "the span is stated");
+}
+
+/// Sections are dealt to tabs, and no section is lost in the dealing.
+///
+/// The page used to be one scroll of eight sections behind a list of anchor
+/// links. Splitting it into four views is only defensible if the union of the
+/// views is still the whole record — a tab system that quietly drops a section
+/// is a record that quietly drops a fact.
+#[tokio::test]
+async fn every_section_lands_on_exactly_one_tab() {
+    let src = showcase_bundle("tabs-src");
+    let (app, _p) = app_with_bundle("tabs", &src);
+
+    // What the whole record holds, taken from the one render that names no
+    // tab: the tree side panel. Deriving the expectation rather than writing
+    // it down means this test keeps working when a section is added, and
+    // still fails when one is dropped.
+    let whole =
+        sections_in(&body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await);
+    assert!(
+        whole.len() >= 4,
+        "the fixture is too thin to test with: {whole:?}"
+    );
+
+    let mut seen: Vec<String> = Vec::new();
+    for tab in ["", "?tab=life", "?tab=media"] {
+        let body = body_string(get_admin(&app, &format!("/person/{JULES}{tab}")).await).await;
+        for id in sections_in(&body) {
+            assert!(
+                !seen.contains(&id),
+                "{id} appears on more than one tab: {seen:?}"
+            );
+            seen.push(id);
+        }
+    }
+
+    for id in &whole {
+        assert!(
+            seen.contains(id),
+            "{id} is on no tab at all — it was dropped, not moved: {seen:?}"
+        );
+    }
+}
+
+/// The `id` of every `<section>` in a rendered record, in order.
+fn sections_in(html: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for part in html.split("<section id=\"").skip(1) {
+        if let Some(end) = part.find('"') {
+            let id = &part[..end];
+            // `raw` is the JSON dump and `history` the journal; neither is a
+            // section of the record in the sense this is counting.
+            if id != "raw" && id != "history" {
+                out.push(id.to_string());
+            }
+        }
+    }
+    out
+}
+
+/// A tab is a link, so it survives having no scripting and being sent to
+/// somebody else.
+#[tokio::test]
+async fn a_tab_is_a_url_and_an_unknown_one_is_the_record() {
+    let src = showcase_bundle("tab-url-src");
+    let (app, _p) = app_with_bundle("tab-url", &src);
+
+    let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+    assert!(
+        body.contains(&format!("href=\"/person/{JULES}?tab=life\"")),
+        "the tabs are real links: {body}"
+    );
+    assert!(
+        body.matches("aria-current=\"page\"").count() >= 1,
+        "the open tab says so to a screen reader"
+    );
+
+    // A stale or mistyped tab shows the person, not an error about a query
+    // parameter: the thing the reader wanted is right there behind it.
+    let resp = get_admin(&app, &format!("/person/{JULES}?tab=nonsense")).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let body = body_string(resp).await;
+    assert!(
+        body.contains("<section id=\"identity\""),
+        "an unknown tab falls back to the record"
+    );
+}
+
+/// The tree tab is rooted on this person, and is not laid out for the others.
+#[tokio::test]
+async fn the_tree_tab_is_rooted_on_this_person() {
+    let src = showcase_bundle("tab-tree-src");
+    let (app, _p) = app_with_bundle("tab-tree", &src);
+
+    let body = body_string(get_admin(&app, &format!("/person/{JULES}?tab=tree")).await).await;
+    assert!(
+        body.contains("tree-canvas"),
+        "the tree tab draws the canvas: {body}"
+    );
+    assert!(
+        body.contains(&format!("data-id=\"{JULES}\"")),
+        "and this person is on it"
+    );
+    assert!(
+        !body.contains("<section id=\"identity\""),
+        "the record sections are not also drawn underneath"
+    );
+
+    // The other tabs pay nothing for a tree they do not draw.
+    let record = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+    assert!(
+        !record.contains("tree-canvas"),
+        "no tree is laid out for the record tab"
+    );
+}
+
+/// The side panel is not a tabbed page and still shows everything.
+///
+/// `_person_detail.html` renders every section when no tab is named. That is
+/// what the panel asks for: it is one glance at a whole person inside the
+/// tree, not somewhere to navigate.
+#[tokio::test]
+async fn the_tree_panel_still_shows_the_whole_record() {
+    let src = showcase_bundle("panel-src");
+    let (app, _p) = app_with_bundle("panel", &src);
+
+    let panel =
+        sections_in(&body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await);
+    let record =
+        sections_in(&body_string(get_admin(&app, &format!("/person/{JULES}")).await).await);
+    assert!(
+        panel.len() > record.len(),
+        "the panel names no tab and so shows more than any single tab does: \
+         panel {panel:?} vs record tab {record:?}"
+    );
+    for id in ["identity", "life"] {
+        assert!(
+            panel.iter().any(|s| s == id),
+            "{id} is missing from the panel, which names no tab: {panel:?}"
+        );
+    }
 }

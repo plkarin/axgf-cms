@@ -1,0 +1,76 @@
+{# The tree canvas: the wires, the generation bands, and one card per person.
+
+   Extracted from tree.html so the person page's tree tab draws the same
+   picture from the same source rather than a second copy that drifts. Both
+   callers supply `layout`; `selected` marks a card and may be undefined, which
+   is what the tree page passes when nothing is selected and what the person
+   page passes as the person themselves.
+
+   The canvas is positioned absolutely inside a box the caller sizes, so the
+   caller owns the scroll container and this owns everything inside it. #}
+  <div id="tree-canvas" class="tree-canvas"
+       style="width:{{ layout.width }}px;height:{{ layout.height }}px">
+
+    <svg class="tree-wires" width="{{ layout.width }}" height="{{ layout.height }}"
+         viewBox="0 0 {{ layout.width }} {{ layout.height }}" aria-hidden="true">
+      {% for e in layout.edges %}
+      <path d="{{ e.d }}" class="wire wire-{{ e.kind }}{% if e.hue %} wire-crossing{% endif %}"
+            {%- if e.hue %} data-hue="{{ e.hue }}"{% endif %}
+            data-band="{{ e.band }}" data-from="{{ e.from }}" data-to="{{ e.to }}"
+            data-base="{{ e.opacity }}"
+            style="opacity:{{ e.opacity }}"><title>{{ e.title }}</title></path>
+      {% endfor %}
+    </svg>
+
+    {% for band in layout.bands %}
+      {# A generation that wraps is still one generation, so it is drawn as one
+         zone: a tinted block the height of every row it took, with the label
+         spanning it. The tint alternates so two adjacent bands cannot be read
+         as one, and the gap between bands is three times the gap between rows
+         inside a band — that difference is what says "these four rows are the
+         same generation, and the next block is not". #}
+      <div class="band-zone{% if band.unplaced %} unplaced{% endif %}{% if band.rows > 1 %} wrapped{% endif %}"
+           style="top:{{ band.y }}px;height:{{ band.height }}px"
+           data-rows="{{ band.rows }}" aria-hidden="true"></div>
+      <div class="band-label {% if band.unplaced %}unplaced{% endif %}"
+           style="top:{{ band.y }}px">
+        <strong>{{ band.label }}</strong>
+        <span class="muted">{{ band.sublabel }}</span>
+      </div>
+      {% for c in band.cards %}
+      {% if c.restricted %}
+      {# A person this reader may not read keeps their place in the tree, so
+         the shape stays true, and carries nothing else — no name, no dates,
+         no link, and nothing for the filter to match on. A <div>, not an <a>:
+         there is no destination. #}
+      <div class="tcard is-restricted"
+           data-id="{{ c.id }}" data-sex="u" data-search=""
+           style="inset-inline-start:{{ c.x }}px;top:{{ c.y }}px;width:{{ c.w }}px"
+           title="{{ t('tree-restricted-card') }}"
+           role="img" aria-label="{{ t('tree-restricted-card') }}">
+        <span class="tdates" dir="ltr"><span class="sep">·</span></span>
+      </div>
+      {% else %}
+      {# The whole card is one link to the person's permalink; JS turns the
+         click into a panel load and marks the selection, falling back to the
+         standalone page when scripting is off. #}
+      <a class="tcard{% if c.is_root %} is-root{% endif %}{% if c.id == selected %} is-selected{% endif %}"
+         href="/person/{{ c.id }}"
+         data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
+         data-name="{{ c.name }}"
+         style="inset-inline-start:{{ c.x }}px;top:{{ c.y }}px;width:{{ c.w }}px"
+         title="{{ c.name }}">
+        <span class="tname"><bdi>{{ c.name }}</bdi></span>
+        <span class="tdates" dir="ltr">
+          {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
+          {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
+              style="--conf-pct:{{ c.conf_pct }}"
+              title="{{ c.conf_label }} — {{ c.conf_pct }}%"
+              role="img" aria-label="{{ c.conf_label }} — {{ c.conf_pct }}%"></i>{% endif %}
+        </span>
+      </a>
+      {% endif %}
+      {% endfor %}
+    {% endfor %}
+
+  </div>

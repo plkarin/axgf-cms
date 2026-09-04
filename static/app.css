@@ -1739,8 +1739,61 @@ a.stat:hover { border-color: var(--accent); }
 
 /* ---------- identity page: sections ---------- */
 
-/* The page is long by design — it is the whole record — so it opens with an
-   index of the sections that actually have content. */
+/* The tabs.
+ *
+ * The page used to open with an index of anchor links — a table of contents
+ * for a document nobody reads top to bottom. Somebody opening a person wants
+ * their life, or their photographs, or where they sit in the family; those are
+ * three questions, not three parts of one answer.
+ *
+ * A row of links, so a tab is a URL and the back button works. The current one
+ * is marked by weight and a rule under it rather than by colour alone, because
+ * colour alone is not a distinction every reader can make. */
+.person-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  margin: 1.25rem 0 0;
+  border-bottom: 1px solid var(--border);
+}
+.person-tab {
+  padding: 0.5rem 0.9rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius) var(--radius) 0 0;
+  font-size: 0.95rem;
+  /* The label is bolder when current. Reserving the bold metrics up front
+     stops the row from reflowing as the reader moves between tabs. */
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.person-tab:hover { color: var(--accent); background: var(--accent-soft); }
+.person-tab.is-current {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  background: var(--surface);
+}
+.person-tabs + * { margin-top: 1.25rem; }
+
+/* The tree tab: the same canvas the tree page draws, in a box that scrolls
+   rather than one that pushes the rest of the page sideways. */
+.person-tree {
+  position: relative;
+  margin: 1.25rem 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.person-tree .tree-scroll {
+  overflow: auto;
+  max-height: 34rem;
+  padding: 0.5rem;
+}
+
+/* Kept for the tree side panel, which still lists its sections. */
 .section-index {
   display: flex;
   flex-wrap: wrap;
@@ -2416,3 +2469,14 @@ a.tcard:hover {
 .leaflet-bar a:hover { background: var(--accent-soft); }
 .leaflet-control-attribution { font-size: 0.7rem; }
 .leaflet-control-attribution a { color: var(--accent); }
+
+/* The person page's places map. Shorter than the editor's: this one is read,
+   not aimed at, and it sits inside a section rather than being the task. */
+.places-map-shell { margin: 0.75rem 0 1rem; }
+#places-map {
+  height: 16rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+#places-map .leaflet-popup-content strong { display: block; margin-bottom: 0.2rem; }

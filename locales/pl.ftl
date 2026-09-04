@@ -305,6 +305,13 @@ place-paste-unreadable = Tego położenia nie udało się odczytać. Pola powyż
 place-map-hint = Kliknij mapę, aby postawić punkt, albo przeciągnij pinezkę. Zapisem są pola powyżej.
 place-map-clear = Usuń punkt
 place-open-in-map = Znajdź to miejsce w OpenStreetMap i wklej odnośnik z powrotem
+
+person-tab-record = Zapis
+person-tab-life = Życie
+person-tab-media = Materiały
+person-tab-tree = Drzewo
+person-tree-depth = Po { $n } pokolenia w każdą stronę. Całe drzewo jest niżej.
+person-tree-alone = Ten zapis nie wymienia rodziców, małżonków ani dzieci, więc nie ma wokół czego rysować kształtu.
 admin-delete = Usuń
 admin-not-set = — nie ustawiono —
 admin-edit = Edytuj

@@ -132,18 +132,29 @@
     <p class="hint">{{ t("place-country-history-hint") }}</p>
   </fieldset>
 
+  {# Coordinates.
+
+     Typed by hand is the ordinary path, not the fallback, and the layout says
+     so: the fields come first and the lookup sits under them. That ordering is
+     measured rather than assumed. Ten of the operator's place names were put
+     through Nominatim; five returned nothing at all, and two of the five that
+     did return something returned the wrong kind of object — a bus stop for a
+     hamlet, a street in Vilnius for a historical region. Names recorded under
+     Russian or Austrian administration mostly are not findable under a modern
+     search, so a screen that treats the search as the main event and the
+     fields as the consolation prize would be designed against its own data. #}
   <fieldset>
     <legend>{{ t("place-coordinates") }}</legend>
     <div class="grid cols-3">
       <div class="field">
         <label for="lat">{{ t("place-lat") }}</label>
         <input type="text" id="lat" name="coordinates.lat" inputmode="decimal"
-               value="{{ place.coordinates.lat }}">
+               value="{{ place.coordinates.lat }}" autocomplete="off">
       </div>
       <div class="field">
         <label for="lon">{{ t("place-lon") }}</label>
         <input type="text" id="lon" name="coordinates.lon" inputmode="decimal"
-               value="{{ place.coordinates.lon }}">
+               value="{{ place.coordinates.lon }}" autocomplete="off">
       </div>
       <div class="field">
         <label for="precision">{{ t("place-precision") }}</label>
@@ -154,6 +165,61 @@
           {% endfor %}
         </select>
       </div>
+    </div>
+    <p class="hint">{{ t("place-coordinates-hint") }}</p>
+
+    {# The lookup lives inside the editor's own form and reaches a different
+       route through `formaction`. One form, two destinations: every field the
+       reader has touched travels with the lookup and comes back filled in, so
+       searching in the middle of an edit never costs the edit. No script is
+       involved, which is the same bargain the rest of the panel makes. #}
+    <div class="geocode">
+      {% if geocoding %}
+      <button class="btn" type="submit" name="lookup" value="1"
+              formaction="/admin/place/{{ place.id }}/geocode" formmethod="post">
+        {{ t("place-geocode-search") }}
+      </button>
+      <p class="hint">{{ t("place-geocode-hint") }}</p>
+      {% else %}
+      <p class="hint">{{ t("place-geocode-off") }}</p>
+      {% endif %}
+
+      {% if lookup and lookup.searched %}
+      <div class="geocode-results">
+        <p class="hint">{{ t("place-geocode-query", q=lookup.query) }}</p>
+
+        {% if lookup.error %}
+        <p class="notice warn" role="status">{{ t("place-geocode-error") }}</p>
+        {% elif not lookup.suggestions %}
+        <p class="notice" role="status">{{ t("place-geocode-none") }}</p>
+        {% else %}
+        <ul class="suggestions">
+          {% for s in lookup.suggestions %}
+          <li{{ " class=off-target" if not s.settlement }}>
+            <div class="suggestion-what">
+              <span class="place-name">{{ s.display_name }}</span>
+              <span class="tag"><code>{{ s.what }}</code></span>
+              {# A result that is not a settlement is the failure mode that
+                 actually occurs, and it is invisible in the name alone. #}
+              {% if not s.settlement %}
+              <strong class="warn-tag">{{ t("place-geocode-not-a-place") }}</strong>
+              {% endif %}
+            </div>
+            <div class="suggestion-take">
+              <code>{{ s.lat }}, {{ s.lon }}</code>
+              <span class="tag">{{ t("place-precision-" ~ s.precision) }}</span>
+              <button class="btn small" type="submit" name="pick" value="{{ s.pick }}"
+                      formaction="/admin/place/{{ place.id }}/geocode" formmethod="post">
+                {{ t("place-geocode-use") }}
+              </button>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        <p class="hint">{{ t("place-geocode-attribution") }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
   </fieldset>
 

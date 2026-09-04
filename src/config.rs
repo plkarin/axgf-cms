@@ -61,6 +61,23 @@ pub struct Config {
     /// — and never needs backing up.
     #[arg(long, value_name = "PATH")]
     pub cache_dir: Option<PathBuf>,
+
+    /// Contact address to send to the geocoder, which turns place-name lookup
+    /// on.
+    ///
+    /// Nominatim's usage policy requires a User-Agent identifying the
+    /// application *and how to reach whoever runs it*. Without this there is no
+    /// lookup button at all — an anonymous automated caller is exactly what the
+    /// policy asks operators not to be, and the manual coordinate fields work
+    /// with no third party involved. An email address or a URL both do.
+    #[arg(long, value_name = "EMAIL_OR_URL")]
+    pub geocoder_contact: Option<String>,
+
+    /// A Nominatim-compatible `/search` endpoint to use instead of the public
+    /// service. Point this at a self-hosted instance to lift the one-per-second
+    /// pacing, which exists to be kind to donated infrastructure.
+    #[arg(long, value_name = "URL")]
+    pub geocoder_endpoint: Option<String>,
 }
 
 impl Config {
@@ -99,6 +116,8 @@ mod tests {
             size_warn_mb: 200,
             create_admin: None,
             cache_dir: None,
+            geocoder_contact: None,
+            geocoder_endpoint: None,
         }
     }
 

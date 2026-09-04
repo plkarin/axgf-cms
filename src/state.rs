@@ -90,6 +90,12 @@ pub struct AppState {
     generation: std::sync::atomic::AtomicU64,
     /// The append-only edit journal, beside the bundle rather than in it.
     journal: crate::journal::Journal,
+    /// The place-name lookup, when the operator supplied a contact address.
+    ///
+    /// `None` is the ordinary state, not a degraded one: the coordinate fields
+    /// are typed by hand far more often than they are filled from a search.
+    /// See [`crate::geocode`] for why that is not pessimism.
+    geocoder: Option<crate::geocode::Geocoder>,
 }
 
 /// Memoised [`crate::access::Visible`] sets, keyed by the bundle version they
@@ -335,6 +341,7 @@ impl AppState {
                 lenses: RwLock::new(LensCache::default()),
                 generation: std::sync::atomic::AtomicU64::new(0),
                 journal: crate::journal::Journal::new(crate::journal::Journal::path_for(path)),
+                geocoder: None,
             },
             report,
         ))
@@ -400,6 +407,18 @@ impl AppState {
     /// The configured size warning threshold, in bytes.
     pub fn size_warn(&self) -> u64 {
         self.size_warn
+    }
+
+    /// Attach a geocoder before the state is shared. Consuming `self` for the
+    /// same reason [`Self::with_size_warn`] does.
+    pub fn with_geocoder(mut self, geocoder: Option<crate::geocode::Geocoder>) -> Self {
+        self.geocoder = geocoder;
+        self
+    }
+
+    /// The place-name lookup, if this installation has one.
+    pub fn geocoder(&self) -> Option<&crate::geocode::Geocoder> {
+        self.geocoder.as_ref()
     }
 
     /// Path of the live bundle.

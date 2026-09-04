@@ -9,6 +9,47 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Place-name lookup, through the server, with the manual fields kept first.**
+The structured editor can now send a place's name, region and country to a
+Nominatim-compatible geocoder and offer what comes back. It is off unless the
+operator starts the server with `--geocoder-contact`, because Nominatim's usage
+policy requires a User-Agent identifying the application *and* how to reach
+whoever runs it, and an installation that will not say who it is should not be
+making automated calls to donated infrastructure. `--geocoder-endpoint` points
+the same code at a self-hosted instance. Requests go through the server rather
+than the browser, at a hard one per second shared by every reader of the
+process, with no bulk button — 123 places at one a second is two minutes of
+hammering someone else's service to produce 123 unreviewed guesses.
+
+The search and the save are separate routes and the lookup writes nothing. The
+whole editor form travels with the request through `formaction`, so searching
+in the middle of an edit cannot cost the edit, and a suggestion the reader
+takes lands in the coordinate fields for them to look at before saving.
+
+**The manual coordinate fields come first, and that ordering is measured.**
+Ten of the operator's place names were put through the live service. Five
+returned nothing. Two of the five that returned something returned the wrong
+kind of object: "Bałtów Magonie", a hamlet, returned four **bus stops** named
+Magonie, and "Litwa Kowieńska", a historical region, returned eight segments of
+*Kauno gatvė*, a street in Vilnius. Both sit confidently at the head of the
+list and neither is distinguishable from a real match by its name alone. So the
+suggestion list shows what OSM says each object actually is, and marks anything
+that is not a settlement or an administrative area — the warning fires on all
+twelve of those rows. Names recorded under Russian, Prussian or Austrian
+administration are largely not findable by a modern search, which makes typing
+the position by hand the ordinary path rather than the fallback.
+
+### Fixed
+
+**The geocoder read the wrong key and would have recorded a bus stop as a town
+centre.** Nominatim's `jsonv2` format names the OSM category `category`; only
+the older `json` format calls it `class`. Read under the wrong name the field
+is silently empty rather than an error, and it takes the precision mapping with
+it, so every result — a road, a bus stop, a building — would have been stored
+as `city_center`. The response shape is now pinned by a test built from a real
+captured response, and precision falls back to Nominatim's own `place_rank`
+when the category vocabulary does not settle it.
+
 **A structured editor for the Place entity.** §5.3 models a place with several
 names each in its own language and one of them primary, a type from a fixed
 vocabulary, a region and a present-day country, the states that held it over

@@ -258,6 +258,17 @@ place-precision-city_center = city centre
 place-precision-region_center = region centre
 place-precision-country_center = country centre
 place-precision-approximate = approximate
+
+place-coordinates-hint = Typed by hand is the usual way. Many places recorded under a former administration cannot be found by a modern search at all.
+place-geocode-search = Look this name up
+place-geocode-hint = Sends the name, region and country to the geocoding service, one place at a time. Nothing is saved until you save it.
+place-geocode-off = Name lookup is off. It needs a contact address the service can identify this installation by; start the server with --geocoder-contact to turn it on.
+place-geocode-query = Searched for: { $q }
+place-geocode-error = The lookup service could not be reached. The coordinate fields above still work.
+place-geocode-none = Nothing found. For a village recorded under Russian, Prussian or Austrian administration this is the ordinary result; enter the position by hand.
+place-geocode-not-a-place = not a settlement
+place-geocode-use = Use this
+place-geocode-attribution = Results from OpenStreetMap via Nominatim, under the Open Database Licence.
 admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit

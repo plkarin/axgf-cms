@@ -245,6 +245,17 @@ place-precision-city_center = city centre
 place-precision-region_center = region centre
 place-precision-country_center = country centre
 place-precision-approximate = approximate
+
+place-coordinates-hint = الإدخال اليدوي هو الطريق المعتاد. كثير من الأماكن المسجَّلة تحت إدارة سابقة لا يعثر عليها البحث الحديث أصلًا.
+place-geocode-search = ابحث عن هذا الاسم
+place-geocode-hint = يرسل الاسم والمنطقة والبلد إلى خدمة الترميز الجغرافي، مكانًا واحدًا في كل مرة. لا يُحفظ شيء حتى تحفظ أنت.
+place-geocode-off = البحث عن الأسماء متوقف. يحتاج إلى عنوان اتصال تتعرف به الخدمة على هذا التنصيب؛ شغِّل الخادم مع ‎--geocoder-contact‎ لتشغيله.
+place-geocode-query = بُحث عن: { $q }
+place-geocode-error = تعذّر الوصول إلى خدمة البحث. حقول الإحداثيات أعلاه ما زالت تعمل.
+place-geocode-none = لم يُعثر على شيء. أما القرية المسجَّلة تحت الإدارة الروسية أو البروسية أو النمساوية فهذه نتيجتها المعتادة؛ أدخل الموضع يدويًا.
+place-geocode-not-a-place = ليس مكانًا مأهولًا
+place-geocode-use = استخدم هذا
+place-geocode-attribution = نتائج من OpenStreetMap عبر Nominatim، بترخيص Open Database.
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير

@@ -289,6 +289,17 @@ place-precision-city_center = city centre
 place-precision-region_center = region centre
 place-precision-country_center = country centre
 place-precision-approximate = approximate
+
+place-coordinates-hint = Обычно их вводят вручную. Многие места, записанные при прежней администрации, современный поиск не находит вовсе.
+place-geocode-search = Найти это название
+place-geocode-hint = Отправляет название, регион и страну службе геокодирования, по одному месту за раз. Ничего не сохраняется, пока вы не сохраните.
+place-geocode-off = Поиск названий выключен. Ему нужен контактный адрес, по которому служба опознает эту установку; запустите сервер с --geocoder-contact, чтобы включить его.
+place-geocode-query = Искали: { $q }
+place-geocode-error = Служба поиска недоступна. Поля координат выше по-прежнему работают.
+place-geocode-none = Ничего не найдено. Для деревни, записанной при российской, прусской или австрийской администрации это обычный исход; введите положение вручную.
+place-geocode-not-a-place = не населённый пункт
+place-geocode-use = Взять это
+place-geocode-attribution = Результаты из OpenStreetMap через Nominatim, по лицензии Open Database.
 admin-delete = Удалить
 admin-not-set = — не задано —
 admin-edit = Править

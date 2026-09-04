@@ -636,3 +636,109 @@ async fn a_scoped_contributor_cannot_edit_a_shared_place() {
     .await;
     assert_ne!(resp.status(), StatusCode::OK, "writing needs an account");
 }
+
+/// Taking a suggestion fills the coordinate fields and saves nothing.
+///
+/// The lookup and the save are deliberately different routes. A reader who
+/// searches in the middle of an edit must not lose the edit, and a coordinate
+/// the geocoder proposed must not reach the bundle until a person has looked
+/// at it — the service is confidently wrong often enough on this bundle's
+/// place names that "found" and "correct" are different claims.
+///
+/// No geocoder is configured here, and none is needed: the pick path never
+/// makes a request. That is the point of it being a separate branch.
+#[tokio::test]
+async fn taking_a_suggestion_fills_the_fields_without_saving() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("place-geocode-pick", src);
+
+    let place_id = {
+        let body = body_string(get_admin(&app, "/admin/place").await).await;
+        // The row's edit link, not the "place" entry in the kind navigation.
+        let marker = "/admin/place/";
+        let at = body
+            .match_indices(marker)
+            .map(|(i, _)| i + marker.len())
+            .find(|i| {
+                let rest: String = body[*i..].chars().take(48).collect();
+                rest.contains("/edit")
+            })
+            .expect("a place row with an edit link");
+        body[at..]
+            .chars()
+            .take_while(|c| c.is_ascii_alphanumeric() || *c == '-')
+            .collect::<String>()
+    };
+
+    let form = "names.0.value=Karczew&names.0.lang=pl&names.0.primary=0\
+                &base_version=1&note=half-typed&pick=52.0782795%7C21.2508068%7Ccity_center";
+    let resp = post_form(
+        &app,
+        &format!("/admin/place/{place_id}/geocode"),
+        form,
+        true,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let body = body_string(resp).await;
+
+    assert!(
+        body.contains("52.0782795") && body.contains("21.2508068"),
+        "the picked position is in the form: {body}"
+    );
+    assert!(
+        body.contains(r#"<option value="city_center" selected>"#),
+        "and so is the precision the result honestly supports"
+    );
+    assert!(
+        body.contains("half-typed"),
+        "an unsaved edit elsewhere on the form survives the round trip"
+    );
+
+    // The bundle is untouched: this was a form round trip, not a write.
+    let stored = body_string(get_admin(&app, &format!("/admin/place/{place_id}/edit")).await).await;
+    assert!(
+        !stored.contains("52.0782795"),
+        "nothing reaches the bundle until the reader saves"
+    );
+}
+
+/// With no contact address there is no lookup button, and the editor is whole.
+///
+/// Nominatim's policy asks for a User-Agent naming the application and how to
+/// reach whoever runs it. An installation that will not say does not make
+/// automated calls from here — and loses nothing but a button, because the
+/// coordinates are typed by hand in the ordinary case anyway.
+#[tokio::test]
+async fn without_a_contact_address_there_is_no_lookup_button() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("place-geocode-off", src);
+
+    let place_id = {
+        let body = body_string(get_admin(&app, "/admin/place").await).await;
+        // The row's edit link, not the "place" entry in the kind navigation.
+        let marker = "/admin/place/";
+        let at = body
+            .match_indices(marker)
+            .map(|(i, _)| i + marker.len())
+            .find(|i| {
+                let rest: String = body[*i..].chars().take(48).collect();
+                rest.contains("/edit")
+            })
+            .expect("a place row with an edit link");
+        body[at..]
+            .chars()
+            .take_while(|c| c.is_ascii_alphanumeric() || *c == '-')
+            .collect::<String>()
+    };
+
+    let body = body_string(get_admin(&app, &format!("/admin/place/{place_id}/edit")).await).await;
+    assert!(
+        !body.contains("/geocode"),
+        "no geocoder, no button that would call one: {body}"
+    );
+    assert!(
+        body.contains(r#"name="coordinates.lat""#),
+        "the manual fields are there regardless — they are the ordinary path"
+    );
+}

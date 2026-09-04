@@ -2311,3 +2311,58 @@ a.tcard:hover {
   gap: 0.3rem;
 }
 .contradiction-list li { font-size: 0.9rem; }
+
+/* ── Place lookup ──────────────────────────────────────────────────────────
+   The suggestion list is deliberately not a tidy row of equal options. Half
+   of what the geocoder returns for a nineteenth-century Polish village is the
+   wrong kind of object — a bus stop named after the hamlet, a street in the
+   wrong country — and a list that renders those identically to a real match
+   is a list that invites the wrong click. The off-target rows keep their
+   position (relevance is the service's to rank) and lose their confidence. */
+.geocode { margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
+.geocode-results { margin-top: 0.8rem; }
+
+.suggestions {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.suggestions li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--conf-certain);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.suggestions li.off-target {
+  border-inline-start-color: var(--conf-medium);
+  background: var(--bg);
+}
+.suggestion-what { display: flex; align-items: baseline; gap: 0.45rem; flex-wrap: wrap; min-width: 14rem; flex: 1 1 20rem; }
+.suggestion-what .place-name { font-weight: 600; }
+.suggestion-take { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.suggestion-take code { font-size: 0.85rem; color: var(--ink-soft); }
+
+.suggestions .tag {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+  white-space: nowrap;
+}
+.suggestions .tag code { font-size: 0.75rem; color: inherit; background: none; padding: 0; }
+.warn-tag {
+  font-size: 0.75rem;
+  color: var(--conf-medium);
+  text-transform: lowercase;
+  white-space: nowrap;
+}

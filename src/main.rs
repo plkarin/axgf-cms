@@ -23,7 +23,26 @@ async fn main() -> Result<()> {
     let (state, payloads) =
         AppState::load(&cfg.bundle, token.clone(), seed, cfg.cache_dir.as_deref())
             .context("initialising application state")?;
-    let state = Arc::new(state.with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024)));
+    // No contact address means no geocoder, which is a supported way to run
+    // rather than a missing feature: the coordinate fields are typed by hand
+    // either way, and an installation that will not identify itself does not
+    // make automated calls to someone else's donated service.
+    let geocoder = axgf_cms::geocode::Geocoder::new(
+        cfg.geocoder_endpoint.as_deref(),
+        cfg.geocoder_contact.as_deref(),
+    );
+    if let Some(g) = geocoder.as_ref() {
+        tracing::info!(
+            endpoint = g.endpoint(),
+            user_agent = g.user_agent(),
+            "geocoder ready"
+        );
+    }
+    let state = Arc::new(
+        state
+            .with_size_warn(cfg.size_warn_mb.saturating_mul(1024 * 1024))
+            .with_geocoder(geocoder),
+    );
 
     // --create-admin runs against the loaded state and then exits. It happens
     // after the bundle is open, because the ACL binds to the bundle it is

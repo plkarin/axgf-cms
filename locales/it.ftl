@@ -267,6 +267,17 @@ place-precision-city_center = city centre
 place-precision-region_center = region centre
 place-precision-country_center = country centre
 place-precision-approximate = approximate
+
+place-coordinates-hint = Inserirle a mano è la via consueta. Molti luoghi registrati sotto un'amministrazione passata non si trovano affatto con una ricerca moderna.
+place-geocode-search = Cerca questo nome
+place-geocode-hint = Invia nome, regione e paese al servizio di geocodifica, un luogo per volta. Nulla viene salvato finché non salvi tu.
+place-geocode-off = La ricerca dei nomi è disattivata. Richiede un indirizzo di contatto con cui il servizio identifichi questa installazione; avvia il server con --geocoder-contact per attivarla.
+place-geocode-query = Cercato: { $q }
+place-geocode-error = Il servizio di ricerca non è raggiungibile. I campi delle coordinate qui sopra funzionano ancora.
+place-geocode-none = Nessun risultato. Per un villaggio registrato sotto amministrazione russa, prussiana o austriaca questo è l'esito ordinario; inserisci la posizione a mano.
+place-geocode-not-a-place = non è un centro abitato
+place-geocode-use = Usa questo
+place-geocode-attribution = Risultati da OpenStreetMap tramite Nominatim, con licenza Open Database.
 admin-delete = Elimina
 admin-not-set = — non impostato —
 admin-edit = Modifica

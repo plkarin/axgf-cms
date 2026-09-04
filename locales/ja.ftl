@@ -244,6 +244,17 @@ place-precision-city_center = city centre
 place-precision-region_center = region centre
 place-precision-country_center = country centre
 place-precision-approximate = approximate
+
+place-coordinates-hint = 手で入力するのが通常の方法です。旧行政区分のもとで記録された地名は、現代の検索では見つからないものが少なくありません。
+place-geocode-search = この地名を検索
+place-geocode-hint = 地名・地域・国をジオコーディングサービスへ、一件ずつ送ります。保存するまで何も記録されません。
+place-geocode-off = 地名検索は無効です。サービスがこの設置を識別するための連絡先が必要です。--geocoder-contact を付けてサーバーを起動すると有効になります。
+place-geocode-query = 検索した語: { $q }
+place-geocode-error = 検索サービスに接続できませんでした。上の座標欄はそのまま使えます。
+place-geocode-none = 見つかりませんでした。ロシア・プロイセン・オーストリア統治下で記録された村では、これが通常の結果です。位置は手で入力してください。
+place-geocode-not-a-place = 集落ではありません
+place-geocode-use = これを使う
+place-geocode-attribution = OpenStreetMap の結果を Nominatim 経由で取得、Open Database ライセンスによる。
 admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集

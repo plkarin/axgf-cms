@@ -66,6 +66,7 @@ pub fn router(state: Shared) -> Router {
         // cannot express either.
         .route("/admin/place/:id/edit", get(admin::place_edit))
         .route("/admin/place/:id", post(admin::place_update))
+        .route("/admin/place/:id/geocode", post(admin::place_geocode))
         .route("/admin/:kind", get(admin::list).post(admin::create))
         .route("/admin/:kind/new", get(admin::new_form))
         .route("/admin/:kind/:id/edit", get(admin::edit_form))

@@ -28,6 +28,7 @@ pub mod config;
 pub mod convert;
 pub mod diff;
 pub mod documents;
+pub mod geocode;
 pub mod i18n;
 pub mod journal;
 pub mod payloads;

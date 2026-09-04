@@ -1966,6 +1966,8 @@ pub async fn place_edit(
         crate::place::PlaceForm::from_entity(&stored),
         uses,
         &[],
+        state.geocoder().is_some(),
+        None,
     )
 }
 
@@ -1993,7 +1995,8 @@ pub async fn place_update(
 
     let problems = place.problems();
     if !problems.is_empty() {
-        return render_place_form(&chrome, &viewer, place, uses, &problems);
+        let geocoding = state.geocoder().is_some();
+        return render_place_form(&chrome, &viewer, place, uses, &problems, geocoding, None);
     }
 
     let mut entity = place.apply(&stored);
@@ -2098,10 +2101,10 @@ fn render_place_form(
     place: crate::place::PlaceForm,
     uses: usize,
     problems: &[&'static str],
+    geocoding: bool,
+    lookup: Option<Lookup>,
 ) -> Response {
     let messages: Vec<String> = problems.iter().map(|k| chrome.t(k)).collect();
-    // Part 3 turns this on; the editor is complete without it.
-    let geocoding = false;
     render::page_with(
         chrome,
         "admin_place.html",
@@ -2113,7 +2116,115 @@ fn render_place_form(
             place_types => crate::place::PLACE_TYPES,
             precisions => crate::place::PRECISIONS,
             geocoding,
+            lookup,
             may_write => viewer.may_write(),
         },
     )
+}
+
+/// One candidate, flattened for the template.
+#[derive(Debug, serde::Serialize)]
+struct Suggestion {
+    display_name: String,
+    lat: String,
+    lon: String,
+    precision: String,
+    /// What OSM says this object is — "place / village", "highway / bus_stop".
+    /// Shown because it is what distinguishes a village from a bus stop that
+    /// shares its name, and that distinction is not visible in the name.
+    what: String,
+    /// False for anything that is not a settlement or an administrative area.
+    /// Drives a warning beside the row rather than removing it.
+    settlement: bool,
+    /// The value the pick button carries: lat, lon and precision in one
+    /// string, because a button submits one value.
+    pick: String,
+}
+
+/// The result of one lookup, for the template.
+#[derive(Debug, Default, serde::Serialize)]
+struct Lookup {
+    /// What was actually sent, so the reader can see the query they got.
+    query: String,
+    suggestions: Vec<Suggestion>,
+    /// Set when the service failed or was unreachable. Rendered as a note
+    /// beside the manual fields, not as a page-level error: a failed lookup
+    /// leaves the editor perfectly usable.
+    error: String,
+    /// True once a search has run, which is what separates "no results" from
+    /// "not searched yet".
+    searched: bool,
+}
+
+/// `POST /admin/place/:id/geocode` — look a place up, or take a suggestion.
+///
+/// Carries the whole editor form both ways and saves nothing. A lookup in the
+/// middle of an edit must not cost the edit, and a suggestion the reader takes
+/// is a filled-in field they still have to look at and save — the geocoder
+/// proposes, the person records.
+pub async fn place_geocode(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<HashMap<String, String>>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let mut place = crate::place::PlaceForm::from_post(&form);
+    place.id = id.clone();
+    let uses = state.read(|flat| crate::place::usage_count(flat, &id));
+    let geocoding = state.geocoder().is_some();
+
+    // Taking a suggestion: no request goes out at all.
+    if let Some(pick) = form.get("pick").filter(|p| !p.is_empty()) {
+        let mut parts = pick.splitn(3, '|');
+        if let (Some(lat), Some(lon)) = (parts.next(), parts.next()) {
+            place.coordinates.lat = lat.to_string();
+            place.coordinates.lon = lon.to_string();
+            place.coordinates.precision = parts.next().unwrap_or_default().to_string();
+        }
+        return render_place_form(&chrome, &viewer, place, uses, &[], geocoding, None);
+    }
+
+    let Some(geocoder) = state.geocoder() else {
+        return render_place_form(&chrome, &viewer, place, uses, &[], false, None);
+    };
+
+    // The query is built from the structured fields, not from the raw name,
+    // which is the whole reason the structured editor came first.
+    let query = crate::geocode::query_for(
+        &place.display,
+        Some(place.region.as_str()),
+        Some(place.country_current.as_str()),
+    );
+    let mut lookup = Lookup {
+        query: query.clone(),
+        searched: true,
+        ..Default::default()
+    };
+    match geocoder.search(&query).await {
+        Ok(found) => {
+            lookup.suggestions = found
+                .into_iter()
+                .map(|c| Suggestion {
+                    precision: c.precision().to_string(),
+                    what: match (c.category.as_str(), c.kind.as_str()) {
+                        ("", "") => c.addresstype.clone(),
+                        (cat, "") => cat.to_string(),
+                        ("", k) => k.to_string(),
+                        (cat, k) => format!("{cat} / {k}"),
+                    },
+                    settlement: c.is_settlement(),
+                    pick: format!("{}|{}|{}", c.lat, c.lon, c.precision()),
+                    display_name: c.display_name,
+                    lat: c.lat,
+                    lon: c.lon,
+                })
+                .collect();
+        }
+        Err(e) => {
+            tracing::warn!(query = %query, "geocoder lookup failed: {e}");
+            lookup.error = e.to_string();
+        }
+    }
+    render_place_form(&chrome, &viewer, place, uses, &[], geocoding, Some(lookup))
 }

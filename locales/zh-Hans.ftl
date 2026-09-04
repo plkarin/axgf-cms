@@ -243,6 +243,17 @@ place-precision-city_center = city centre
 place-precision-region_center = region centre
 place-precision-country_center = country centre
 place-precision-approximate = approximate
+
+place-coordinates-hint = 手工填写是常规做法。许多在旧政权治下记录的地名，用今天的检索根本查不到。
+place-geocode-search = 检索该地名
+place-geocode-hint = 把地名、地区和国家发给地理编码服务，一次一处。在你保存之前不会写入任何内容。
+place-geocode-off = 地名检索已关闭。它需要一个联系地址，供该服务识别本次部署；用 --geocoder-contact 启动服务器即可开启。
+place-geocode-query = 检索词： { $q }
+place-geocode-error = 无法连接检索服务。上面的坐标栏仍然可用。
+place-geocode-none = 未找到。对于在俄国、普鲁士或奥地利治下记录的村庄，这是常见结果；请手工填写位置。
+place-geocode-not-a-place = 不是聚落
+place-geocode-use = 采用此项
+place-geocode-attribution = 结果来自 OpenStreetMap，经由 Nominatim 提供，采用 Open Database 许可。
 admin-delete = 删除
 admin-not-set = —— 未设置 ——
 admin-edit = 编辑

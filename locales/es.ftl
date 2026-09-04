@@ -296,6 +296,9 @@ person-tab-media = Materiales
 person-tab-tree = Árbol
 person-tree-depth = { $n } generaciones a cada lado. El árbol entero está más abajo.
 person-tree-alone = Esta ficha no nombra padres, parejas ni hijos, así que no hay forma alguna que dibujar a su alrededor.
+
+record-no-evidence = A esta ficha no hay nada adjunto: ni fuente ni documento. Es el estado corriente de un archivo convertido, no un defecto suyo: el GEDCOM se lleva los hechos y deja atrás lo que los probaba.
+record-no-evidence-signed-out = Inicie sesión para adjuntar algo.
 admin-delete = Borrar
 admin-not-set = — sin establecer —
 admin-edit = Editar

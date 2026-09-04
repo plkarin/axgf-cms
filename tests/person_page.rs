@@ -584,3 +584,86 @@ async fn the_tree_panel_still_shows_the_whole_record() {
         );
     }
 }
+
+/// A tab the reader clicked is a question, and a blank page is not an answer.
+///
+/// Everywhere else a section with no content is omitted, and that is right —
+/// it makes the page a readout of what the bundle holds. A tab is different.
+/// Before this, a signed-out reader opening Media on a person with no
+/// documents got an entirely empty page: the section rendered only for an
+/// administrator, because only they had the upload form to put in it. Most
+/// people on a converted bundle have no documents, so that was the common
+/// case, not the edge one.
+#[tokio::test]
+async fn an_empty_media_tab_explains_itself_instead_of_being_blank() {
+    // A person with nothing attached, which is what most of a converted
+    // bundle looks like — the showcase fixture is deliberately the opposite.
+    let dir = scratch("media-empty-src");
+    let path = dir.join("bare.axgf");
+    let flat = json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {
+            JULES: {
+                "id": JULES, "type": "person", "axgf_version": "1.0",
+                "identity": {"name": {"display": "Anna Bare", "components": []}},
+                "visibility": "public"
+            }
+        },
+        "families": {}, "events": {}, "links": {}, "occupations": {},
+        "sources": {}, "places": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    let (app, _p) = app_with_bundle("media-empty", &path);
+
+    // Signed out: no upload form, and previously nothing else either.
+    let body = body_string(get(&app, &format!("/person/{JULES}?tab=media")).await).await;
+    assert!(
+        body.contains("<section id=\"evidence\""),
+        "the tab renders its section even with nothing in it: {body}"
+    );
+    assert!(
+        body.contains("Nothing is attached to this record"),
+        "and says so in words"
+    );
+    assert!(
+        !body.contains("/document"),
+        "without offering an upload to somebody who may not upload"
+    );
+
+    // Signed in: the same sentence, plus the form.
+    let admin = body_string(get_admin(&app, &format!("/person/{JULES}?tab=media")).await).await;
+    assert!(admin.contains("Nothing is attached to this record"));
+    assert!(
+        admin.contains(&format!("/admin/person/{JULES}/document")),
+        "an administrator is offered the upload"
+    );
+}
+
+/// The tabs say how much is behind them, and say nothing when it is nothing.
+#[tokio::test]
+async fn a_tab_counts_what_is_behind_it_and_omits_a_zero() {
+    let src = showcase_bundle("tab-count-src");
+    let (app, _p) = app_with_bundle("tab-count", &src);
+
+    let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+    let nav = body
+        .split(r#"<nav class="person-tabs""#)
+        .nth(1)
+        .and_then(|s| s.split("</nav>").next())
+        .expect("the tab bar");
+
+    assert!(
+        nav.contains("tab-count"),
+        "a tab with content says how much: {nav}"
+    );
+    // "Media 0" is a worse thing to read than "Media", and the tab opens and
+    // explains itself either way.
+    assert!(
+        !nav.contains(">0</span>"),
+        "a zero is omitted rather than printed: {nav}"
+    );
+}

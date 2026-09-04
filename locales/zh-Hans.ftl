@@ -272,6 +272,9 @@ person-tab-media = 材料
 person-tab-tree = 家系
 person-tree-depth = 上下各 { $n } 代。完整的家系图在下方。
 person-tree-alone = 这条记录未载父母、配偶或子女，因此周围没有可画的形状。
+
+record-no-evidence = 这条记录没有任何附件——既无来源，也无文件。对于转换而来的文件，这是常态而非缺陷：GEDCOM 带走了事实，把佐证它们的东西留在了原处。
+record-no-evidence-signed-out = 登录后可添加附件。
 admin-delete = 删除
 admin-not-set = —— 未设置 ——
 admin-edit = 编辑

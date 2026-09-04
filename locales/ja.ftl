@@ -273,6 +273,9 @@ person-tab-media = 資料
 person-tab-tree = 系図
 person-tree-depth = 上下それぞれ { $n } 世代。系図の全体は下にあります。
 person-tree-alone = この記録には親も配偶者も子も記されていないため、まわりに描く形がありません。
+
+record-no-evidence = この記録には何も添付されていません。出典も資料もありません。変換されたファイルではこれが通常の状態であり、欠陥ではありません。GEDCOM は事実を運び、それを裏づけたものを置き去りにします。
+record-no-evidence-signed-out = 添付するにはサインインしてください。
 admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集

@@ -296,6 +296,9 @@ person-tab-media = Materiali
 person-tab-tree = Albero
 person-tree-depth = { $n } generazioni per lato. L'albero intero è più sotto.
 person-tree-alone = Questa scheda non nomina genitori, coniugi né figli, quindi non c'è forma da disegnare attorno.
+
+record-no-evidence = A questa scheda non è allegato nulla: né una fonte né un documento. È lo stato ordinario di un file convertito, non un suo difetto: il GEDCOM porta con sé i fatti e lascia indietro ciò che li provava.
+record-no-evidence-signed-out = Accedi per allegarne uno.
 admin-delete = Elimina
 admin-not-set = — non impostato —
 admin-edit = Modifica

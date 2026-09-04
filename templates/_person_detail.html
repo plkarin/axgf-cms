@@ -301,9 +301,28 @@
 {% endif %}
 
 {# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
-{% if (tab is undefined or tab == "media") and (p.sources or p.documents or is_admin) %}
+
+{# On a tab this section must render even when it is empty, which is not true
+   of the others.
+
+   Everywhere else, a section with no content is omitted and the reader simply
+   never sees a heading for it — that is what makes the page a readout of what
+   the bundle holds. But a *tab* the reader has clicked is a question they
+   asked, and answering it with a blank screen is not an answer. Before this,
+   a signed-out reader opening Media on a person with no documents got an
+   entirely empty page: no heading, no sentence, nothing. Most people on a
+   converted bundle are exactly that person. #}
+{% set has_evidence = p.sources or p.documents or p.images %}
+{% if (tab is undefined and has_evidence) or (tab == "media") or (tab is undefined and is_admin) %}
 <section id="evidence" class="rec-section">
   {{ m.sec(t, t("record-sources-documents"), compact, t("record-sources-documents-help")) }}
+
+  {% if not has_evidence %}
+  <p class="notice" role="status">
+    {{ t("record-no-evidence") }}
+    {%- if not is_admin %} {{ t("record-no-evidence-signed-out") }}{% endif %}
+  </p>
+  {% endif %}
 
   {% if p.sources %}
   {# `data-label` on every cell is what lets the panel stack this table into

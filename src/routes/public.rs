@@ -704,7 +704,27 @@ pub async fn person(
                     tab => tab.slug(),
                     tabs => crate::person::TABS
                         .iter()
-                        .map(|t| json!({"slug": t.slug(), "key": t.key()}))
+                        .map(|t| {
+                            // How much is behind each tab, so a reader can
+                            // tell a full one from an empty one before
+                            // spending a page load on it. The record tab
+                            // carries no count: it is always there and
+                            // counting identity against documents would be
+                            // comparing unlike things.
+                            let count = match t {
+                                crate::person::Tab::Record => 0,
+                                crate::person::Tab::Life => {
+                                    p.timeline.len() + p.occupations.len() + p.places.len()
+                                }
+                                crate::person::Tab::Media => {
+                                    p.sources.len() + p.documents.len()
+                                }
+                                crate::person::Tab::Tree => {
+                                    p.parents.len() + p.siblings.len() + p.unions.len()
+                                }
+                            };
+                            json!({"slug": t.slug(), "key": t.key(), "count": count})
+                        })
                         .collect::<Vec<_>>(),
                     layout,
                     // The canvas partial marks the selected card; on this page

@@ -312,6 +312,9 @@ person-tab-media = Materiały
 person-tab-tree = Drzewo
 person-tree-depth = Po { $n } pokolenia w każdą stronę. Całe drzewo jest niżej.
 person-tree-alone = Ten zapis nie wymienia rodziców, małżonków ani dzieci, więc nie ma wokół czego rysować kształtu.
+
+record-no-evidence = Do tego zapisu nic nie dołączono — ani źródła, ani dokumentu. To zwykły stan pliku po konwersji, a nie jego wada: GEDCOM przenosi fakty, a zostawia to, co je potwierdzało.
+record-no-evidence-signed-out = Zaloguj się, aby coś dołączyć.
 admin-delete = Usuń
 admin-not-set = — nie ustawiono —
 admin-edit = Edytuj

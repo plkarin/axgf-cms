@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**The tabs say how much is behind them.** A small count beside Life, Media and
+Tree, so a reader can tell a full tab from an empty one without spending a page
+load on it. A zero is omitted rather than printed: "Media 0" is a worse thing to
+read than "Media", and the tab opens and explains itself either way.
+
+### Fixed
+
+**An empty Media tab was a blank page.** The evidence section rendered only when
+the record had a source or a document, or when the reader was an administrator
+with an upload form to put in it — so a signed-out reader opening Media on a
+person with nothing attached got no heading, no sentence, nothing at all. On a
+converted bundle that is the common case rather than the edge one.
+
+Elsewhere, omitting an empty section is right: it makes the page a readout of
+what the bundle actually holds. A tab is different. The reader clicked it, which
+makes it a question, and a blank screen is not an answer. The section now
+renders on its own tab whatever it holds, and says plainly that nothing is
+attached and that this is the ordinary state of a converted file — GEDCOM
+carries the facts and leaves behind whatever proved them.
+
 **The person page is four tabs.** It was one scroll of eight sections behind a
 list of anchor links — a table of contents for a document nobody reads top to
 bottom. Somebody opening a person wants their life, or their photographs, or

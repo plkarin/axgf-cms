@@ -274,6 +274,9 @@ person-tab-media = المواد
 person-tab-tree = الشجرة
 person-tree-depth = { $n } أجيال في كل اتجاه. الشجرة كاملةً في الأسفل.
 person-tree-alone = لا يسمّي هذا السجل والدين ولا أزواجًا ولا أبناء، فليس حوله شكل يُرسم.
+
+record-no-evidence = لا شيء مرفق بهذا السجل — لا مصدر ولا وثيقة. هذه هي الحال المعتادة لملف محوَّل، لا عيب فيه: يحمل GEDCOM الوقائع ويترك خلفه ما كان يثبتها.
+record-no-evidence-signed-out = سجّل الدخول لإرفاق شيء.
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير

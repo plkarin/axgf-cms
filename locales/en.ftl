@@ -287,6 +287,9 @@ person-tab-media = Media
 person-tab-tree = Tree
 person-tree-depth = { $n } generations either way. The whole tree is below.
 person-tree-alone = This record names no parents, partners or children, so there is no shape to draw around it.
+
+record-no-evidence = Nothing is attached to this record — no source and no document. That is the ordinary state of a converted file rather than a fault in it: GEDCOM carries the facts and leaves behind whatever proved them.
+record-no-evidence-signed-out = Sign in to attach one.
 admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit

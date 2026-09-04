@@ -95,7 +95,12 @@
   {% for tb in tabs %}
   <a href="/person/{{ p.id }}{% if tb.slug != 'record' %}?tab={{ tb.slug }}{% endif %}"
      class="person-tab{% if tb.slug == tab %} is-current{% endif %}"
-     {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}</a>
+     {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}
+    {#- How much is behind the tab, so the reader can tell an empty one from a
+        full one before spending a page load on it. Omitted rather than shown
+        as zero: "Media 0" is a worse thing to read than "Media", and the tab
+        still opens and still explains itself. #}
+    {%- if tb.count %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
   {% endfor %}
 </nav>
 

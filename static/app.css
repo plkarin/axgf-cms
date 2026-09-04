@@ -2480,3 +2480,13 @@ a.tcard:hover {
   background: var(--bg);
 }
 #places-map .leaflet-popup-content strong { display: block; margin-bottom: 0.2rem; }
+
+/* How much is behind a tab. Quiet: it is a hint about where to click, not a
+   number anybody came to read. */
+.tab-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+  margin-inline-start: 0.15rem;
+}
+.person-tab.is-current .tab-count { color: var(--ink-soft); }

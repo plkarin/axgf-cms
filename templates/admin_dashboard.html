@@ -14,6 +14,10 @@
 </div>
 {% endif %}
 
+{# Each heading and the content under it is a section, framed like every other
+   section in the interface. The dashboard was a run of headings on a blank
+   sheet — the same thing the record page was, and the same fix. #}
+<section class="rec-section">
 <h2>{{ t("admin-entities") }}</h2>
 <div class="grid cols-4">
   {% for c in counts %}
@@ -24,12 +28,16 @@
   </a>
   {% endfor %}
 </div>
+</section>
 
+<section class="rec-section">
 <h2>{{ t("admin-create") }}</h2>
 <div class="cta-row">
   {% for k in kinds %}<a class="btn" href="/admin/{{ k }}/new">{{ t("admin-new-kind", kind=t("kind-" ~ k)) }}</a>{% endfor %}
 </div>
+</section>
 
+<section class="rec-section">
 <h2>{{ t("admin-operations") }}</h2>
 <div class="cta-row">
   <form method="post" action="/admin/validate" style="display:inline">
@@ -43,10 +51,12 @@
   <a class="btn" href="/admin/users">{{ t("admin-accounts") }}</a>
 </div>
 <p class="small muted">{{ t("admin-roles-note") }}</p>
+</section>
 
 {{ comp.completeness_panel(completeness, t,
      t("completeness-title"), t("completeness-intro")) }}
 
+<section class="rec-section">
 <h2>{{ t("admin-recent-changes") }}</h2>
 {% if recent_edits %}
 <p class="small muted">
@@ -74,7 +84,9 @@
 {% else %}
 <p class="muted">{{ t("admin-no-changes-yet", path=journal_path) }}</p>
 {% endif %}
+</section>
 
+<section class="rec-section">
 <h2>{{ t("admin-last-validation") }}</h2>
 {% if validation %}
 <p class="small muted">
@@ -88,5 +100,6 @@
 {% else %}
   <div class="notice ok"><p>{{ t("admin-validator-clean") }}</p></div>
 {% endif %}
+</section>
 
 {% endblock %}

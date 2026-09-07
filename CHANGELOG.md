@@ -9,6 +9,58 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Sections are framed, at three visible levels.** The record page was headings
+and content running down a blank sheet: nothing marked where Identity stopped
+and Family began, so finding the third section meant reading the first two.
+Every surface now sits at one of exactly three levels — the page (`--bg` plus
+the wash), a section (`--surface`, a hairline, `--radius-lg`, a 1px shadow), and
+a block inside it (`--bg`, a hairline, the smaller radius, and no shadow).
+
+A block is **recessed rather than raised**. A shadow reads as "nearer the
+reader", so a block that sits inside a section and also appears nearer than it
+inverts the containment, and the eye reads that before it reads anything the
+layout meant. Dropping the block to the page's own background makes it a well
+in the section's surface, which is the shape the thing actually has.
+
+Each level is separated from its neighbours by three signals — fill, hairline,
+radius, plus elevation on the section — because every one of them fails
+somewhere on its own. Measured per theme: the section's fill is 1.04–1.09
+against the page and its hairline 1.30–1.42, while under high-contrast the two
+fills are *identical* (1.00) and the whole boundary is carried by a 21:1 black
+line. A design that leaned on the fill alone would have no sections at all in
+the theme that needs them most.
+
+**There is no accent bar down the leading edge**, which was the obvious option.
+An accent rule is already how a *typed* block says what type it is — a link
+card marks direction that way, a notice marks severity — and repeating it on
+every container would spend the one signal that still means something. Four
+sections down a tab would also become a row of coloured bars, which is
+decoration reading as data.
+
+`.card`, `.rec-section`, `.tree-controls`, `.stat` and `.notice` now share one
+rule rather than five sets of matching declarations, so a boundary looks the
+same on the record, the admin pages, the import report and the tree's controls.
+The admin dashboard, the entity list and the import report grew `<section>`
+wrappers to have something to frame.
+
+### Fixed
+
+**The Delete button failed WCAG AA on three themes, and had.** It took its
+colour from `--conf-low` — the lightest stop of the confidence ramp, chosen to
+be *filled into a bar*. Set as text, it put the label at **2.53:1 under
+deuteranopia and protanopia and 2.52:1 under tritanopia**, against the 4.5:1 AA
+asks; the border missed 1.4.11's 3:1 by the same margin. The variable's name
+says "low", not "unreadable", which is why reading the stylesheet never found
+it. Destructive actions and the error severity now have `--danger`, stated per
+theme and chosen for reading: 6.1–8.2:1 everywhere. Same defect the confidence
+track had in `0.2.0`, and the same fix.
+
+**A chip could escape its own strip on a phone.** A record note is a whole
+sentence — "a birth date the source could not pin down, shown as recorded" —
+and `white-space: nowrap` kept it on one line, 442px wide inside a 350px strip
+at 390px viewport. Pre-existing, and visible from the moment the strip had a
+frame for the text to escape from.
+
 **The tabs say how much is behind them.** A small count beside Life, Media and
 Tree, so a reader can tell a full tab from an empty one without spending a page
 load on it. A zero is omitted rather than printed: "Media 0" is a worse thing to

@@ -350,3 +350,88 @@ fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
         assert_eq!(stop, bg, "--wash-{n} must be the background itself");
     }
 }
+
+/// A block inside a section is recessed, and carries no elevation of its own.
+///
+/// The three levels are page, section, block. A shadow reads as "nearer the
+/// reader", so a block that sits *inside* a section and also appears nearer
+/// than it inverts the containment — the eye reads that before it reads
+/// anything the layout meant. The block is therefore dropped to the page's own
+/// `--bg`, which turns it into a well in the section's surface, and its
+/// `box-shadow` is explicitly `none` rather than merely unset.
+#[test]
+fn a_block_inside_a_section_is_recessed_rather_than_raised() {
+    let css = css();
+    let start = css
+        .find(".rec-section .card,")
+        .expect("the level-3 selector list");
+    let block = &css[start..start + css[start..].find('}').expect("the rule") + 1];
+
+    assert!(
+        block.contains("background: var(--bg)"),
+        "a block drops to the page's own background — recessed, not raised:\n{block}"
+    );
+    assert!(
+        block.contains("box-shadow: none"),
+        "…and gives up its elevation explicitly, so no other rule lends it one:\n{block}"
+    );
+    assert!(
+        block.contains("border-radius: var(--radius)") && !block.contains("var(--radius-lg)"),
+        "…and takes the smaller radius, which is the third signal:\n{block}"
+    );
+}
+
+/// Section and card are one treatment, not two that happen to look alike.
+///
+/// A boundary has to look the same wherever it appears — a record section, an
+/// admin section, the import report, the tree's controls — or the framing
+/// teaches the reader nothing. That is enforced by them literally sharing a
+/// rule rather than by matching declarations kept in step by hand.
+#[test]
+fn every_level_two_surface_is_declared_in_one_place() {
+    let css = css();
+    let start = css
+        .find(".card,\n.rec-section,")
+        .expect("the level-2 selector list");
+    let head = &css[start..start + css[start..].find('{').expect("the brace")];
+    for sel in [
+        ".card",
+        ".rec-section",
+        ".tree-controls",
+        ".stat",
+        ".notice",
+    ] {
+        assert!(
+            head.contains(sel),
+            "{sel} is not in the shared level-2 rule, so its frame can drift \
+             from every other frame in the interface:\n{head}"
+        );
+    }
+    let body = &css[start..start + css[start..].find('}').expect("the rule") + 1];
+    assert!(body.contains("background: var(--surface)"));
+    assert!(body.contains("border: 1px solid var(--border)"));
+    assert!(body.contains("box-shadow: 0 1px 2px"));
+}
+
+/// Destructive actions have a colour of their own, chosen to be read.
+///
+/// It used to borrow `--conf-low`, the lightest stop of the confidence ramp.
+/// A ramp's lightest stop exists to be filled into a bar; set as text it put
+/// the Delete label at 2.5:1 on the three colour-blind themes, against the
+/// 4.5:1 WCAG AA asks. Every theme states its own value.
+#[test]
+fn the_danger_colour_is_not_the_low_confidence_fill() {
+    let css = css();
+    assert!(
+        css.contains(".btn.danger { color: var(--danger)"),
+        "the destructive button uses the token meant for reading"
+    );
+    for theme in THEME_SELECTORS {
+        let vars = block_vars(&css, theme);
+        assert!(
+            vars.contains("--danger"),
+            "{theme} does not define --danger and would inherit a value \
+             chosen against a different background"
+        );
+    }
+}

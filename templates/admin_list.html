@@ -6,6 +6,9 @@
 <h1>{{ t("kind-" ~ kind ~ "-plural", n=total) }}</h1>
 <p class="lede">{{ t("list-matching", total=total, per_page=per_page) }}</p>
 
+{# The kind switcher and the filter are one set of controls over the table
+   below, so they are one frame — the same frame the tree's controls get. #}
+<section class="rec-section">
 <div class="cta-row">
   {% for k in kinds %}
     <a class="btn {% if k == kind %}primary{% endif %}" href="/admin/{{ k }}">{{ k }}</a>
@@ -20,6 +23,7 @@
   <span class="spacer"></span>
   <a class="btn primary" href="/admin/{{ kind }}/new">{{ t("admin-new-kind", kind=t("kind-" ~ kind)) }}</a>
 </form>
+</section>
 
 {% if not rows %}
   <div class="notice"><p>
@@ -27,6 +31,7 @@
   </p></div>
 {% else %}
 
+<section class="rec-section">
 <div class="table-wrap">
 <table>
   <thead>
@@ -70,6 +75,7 @@
   </tbody>
 </table>
 </div>
+</section>
 
 {% if pages > 1 %}
 <nav class="pager">

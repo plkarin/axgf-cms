@@ -44,6 +44,16 @@
   --conf-low: #9d4a26;
   --conf-track: #e6e1d8;
 
+  /* Destructive actions and the error severity, as a FOREGROUND.
+     The low-confidence colour used to do this job and could not, being the
+     lightest stop of the confidence ramp — chosen to be filled into a bar, and
+     the lightest stop of a ramp is exactly the wrong thing to set text in. On the three
+     colour-blind themes it put the Delete button's label at 2.5:1 against
+     4.5:1 required — a real AA failure, shipped, and invisible to a reader of
+     the stylesheet because the variable's name says "low", not "unreadable".
+     Same defect the confidence track had, same fix: its own variable. */
+  --danger: #9d4a26;
+
   /* Two neutral hues for gender, deliberately not pink and blue. The `-line`
      values are the outline of a tree card, which is a control, so they are
      held to 3:1 against the canvas behind them rather than chosen by eye. */
@@ -149,6 +159,7 @@
     --conf-medium: #d9ab6b;
     --conf-low: #e0937a;
     --conf-track: #3a3630;
+    --danger: #e0937a;
 
     --sex-a: #253034;
     --sex-a-line: #5c757f;
@@ -193,6 +204,7 @@
   --conf-medium: #d9ab6b;
   --conf-low: #e0937a;
   --conf-track: #3a3630;
+  --danger: #e0937a;
 
   --sex-a: #253034;
   --sex-a-line: #5c757f;
@@ -240,6 +252,7 @@
   --conf-medium: #555555;
   --conf-low: #767676;
   --conf-track: #ffffff;
+  --danger: #a30000;
 
   --sex-a: #ffffff;
   --sex-a-line: #000000;
@@ -286,6 +299,7 @@
   --conf-medium: #8a6018;
   --conf-low: #94411f;
   --conf-track: #eadfc8;
+  --danger: #94411f;
 
   --sex-a: #e8e5d6;
   --sex-a-line: #948c73;
@@ -339,6 +353,7 @@
   --conf-medium: #2f7fb8;
   --conf-low: #77a9c9;
   --conf-track: #e9edf1;
+  --danger: #8f3d00;
 
   --sex-a: #e6eef4;
   --sex-a-line: #7d96a8;
@@ -385,6 +400,7 @@
   --conf-medium: #b03a6b;
   --conf-low: #d290ac;
   --conf-track: #f2eaea;
+  --danger: #a41020;
 
   --sex-a: #eeeaea;
   --sex-a-line: #9d9191;
@@ -551,15 +567,99 @@ h2 { font-size: 1.18rem; margin: 2rem 0 0.75rem; letter-spacing: -0.01em; }
 h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 .lede { color: var(--ink-soft); font-size: 1.02rem; margin-top: 0; }
 
-.card {
+/* ---------------------------------------------------------------------------
+   Three levels: page, section, block
+   ---------------------------------------------------------------------------
+   The record page used to be headings and content running down a blank sheet.
+   Nothing marked where Identity stopped and Family began, so finding the third
+   section meant reading the first two. Every surface in the interface now sits
+   at one of exactly three levels, and each is separated from its neighbours by
+   more than one signal, because any single one of them fails somewhere: shadow
+   is invisible under high-contrast (--shadow-a is 0 there), and fill is
+   invisible where --bg and --surface are the same colour (high-contrast
+   again).
+
+     LEVEL 1  the page      --bg plus the wash. No border, no elevation.
+     LEVEL 2  a section     --surface fill, hairline border, --radius-lg,
+                            1.15rem padding, a 1px shadow.
+     LEVEL 3  a block       --bg fill — recessed, not raised — hairline
+                            border, the smaller --radius, and NO shadow.
+
+   WHY LEVEL 3 IS RECESSED RATHER THAN RAISED. A shadow reads as "nearer the
+   reader". A block that sits inside a section and appears nearer than the
+   section it is inside inverts the containment, and the eye notices that
+   before it notices anything you meant. Dropping the block to the page's own
+   --bg turns it into a well in the section's surface, which is the shape the
+   thing actually has. It also costs nothing under high-contrast, where the
+   two fills are identical and the black hairline carries the whole boundary
+   on its own.
+
+   WHY THERE IS NO ACCENT BAR ON EVERY SECTION. It was the obvious option and
+   it is the wrong one here: an accent rule down the leading edge is already
+   how a *typed* block says what type it is — .link-card marks direction that
+   way, .notice marks severity — and repeating it on the container as well
+   would spend the one signal that still means something. Sections are told
+   apart by their surface; blocks by their accent. Four sections down a tab
+   also become a row of coloured bars, which is decoration reading as data.
+
+   ONE RECIPE, NOT TWO. .card already carried exactly the level-2 treatment,
+   so the section grows into it rather than getting a parallel system: the
+   selector list below is the definition of "level 2" everywhere it appears —
+   record sections, admin sections, the import report, the tree's controls,
+   the dashboard's stat tiles, a notice. A boundary looks the same wherever it
+   is, which is the whole point of framing them at all. */
+.card,
+.rec-section,
+.tree-controls,
+.stat,
+.notice {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1.15rem 1.3rem;
   box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
 }
-.card > :first-child { margin-top: 0; }
-.card > :last-child { margin-bottom: 0; }
+.card,
+.rec-section {
+  padding: 1.15rem 1.3rem;
+}
+.card > :first-child,
+.rec-section > :first-child { margin-top: 0; }
+.card > :last-child,
+.rec-section > :last-child { margin-bottom: 0; }
+
+/* Sections are separated by a gap rather than by the heading's top margin,
+   which used to do the job and cannot any more: that margin is now inside the
+   box, where it pushes the heading off its own frame. */
+.rec-section { margin: 0 0 1.1rem; }
+.rec-section .sec-head h2 { margin-top: 0; }
+
+/* LEVEL 3 — a block inside a section, or inside a card.
+   Listed by what they are rather than given a shared class, because these are
+   the containers that already existed; adding a class to each template would
+   change the markup to say something the nesting already says. */
+.rec-section .card,
+.card .card,
+.rec-section .union,
+.rec-section .name-block,
+.rec-section .shot,
+.tree-controls .field-group {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  padding: 0.8rem 0.9rem;
+}
+/* .link-card and .place-card were already built this way — a recessed fill
+   and a hairline — and only need the shadow suppressed and the radius
+   aligned. They keep their accent edge: that edge is the block saying what
+   kind of block it is, which is level 3's job and not the section's. */
+.rec-section .link-card,
+.rec-section .place-card {
+  box-shadow: none;
+  border-radius: var(--radius);
+}
+.rec-section .union { margin: 0.6rem 0; }
+.rec-section .union:last-child { margin-bottom: 0; }
 
 .grid { display: grid; gap: 1rem; }
 .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
@@ -771,10 +871,10 @@ textarea { line-height: 1.5; }
      down with it, and this pair has no margin to give away. */
   box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
 }
-.btn.danger { color: var(--conf-low); border-color: var(--conf-low); }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
 .btn.danger:hover {
-  color: var(--conf-low);
-  border-color: var(--conf-low);
+  color: var(--danger);
+  border-color: var(--danger);
   background: var(--surface);
   box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
 }
@@ -805,7 +905,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   background: var(--surface);
 }
 .notice.warn { border-inline-start-color: var(--conf-medium); }
-.notice.error { border-inline-start-color: var(--conf-low); }
+.notice.error { border-inline-start-color: var(--danger); }
 .notice.ok { border-inline-start-color: var(--conf-certain); }
 .notice p:first-child { margin-top: 0; }
 .notice p:last-child { margin-bottom: 0; }
@@ -886,7 +986,7 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 .diag-row:last-child { border-bottom: none; }
 .diag-code { font-family: var(--mono); font-size: 0.8rem; }
-.diag-row[data-sev="error"]   .diag-code { color: var(--conf-low); }
+.diag-row[data-sev="error"]   .diag-code { color: var(--danger); }
 .diag-row[data-sev="warning"] .diag-code { color: var(--conf-medium); }
 .diag-row[data-sev="info"]    .diag-code { color: var(--ink-faint); }
 .diag-ref { display: block; font-size: 0.76rem; color: var(--ink-faint); font-family: var(--mono); }
@@ -2490,3 +2590,48 @@ a.tcard:hover {
   margin-inline-start: 0.15rem;
 }
 .person-tab.is-current .tab-count { color: var(--ink-soft); }
+
+/* A table fills its section edge to edge. The section already supplies the
+   frame and the padding, and a table that keeps its own inset inside that
+   reads as a block within a block that is not one. */
+.rec-section > .table-wrap { margin-inline: -1.3rem; width: calc(100% + 2.6rem); }
+.rec-section > .table-wrap > table { font-size: 0.93rem; }
+.rec-section > .table-wrap th:first-child,
+.rec-section > .table-wrap td:first-child { padding-inline-start: 1.3rem; }
+.rec-section > .table-wrap th:last-child,
+.rec-section > .table-wrap td:last-child { padding-inline-end: 1.3rem; }
+
+/* The filter row sits inside its section now, so it drops its own margin. */
+.rec-section > .filter-row:last-child,
+.rec-section > .cta-row:first-child { margin-top: 0; }
+.rec-section > .filter-row:last-child { margin-bottom: 0; }
+
+/* The panel is 460px of column, so a section's frame there is drawn tighter:
+   the same three levels, less air. Dropping the padding to 0.85rem gives back
+   roughly a word per line, which at this width is the difference between a
+   date wrapping and not. Nothing is removed — see the note above .tree-panel:
+   what is shown never changes between the panel and the page. */
+.tree-panel .rec-section { padding: 0.85rem 0.9rem; }
+.tree-panel .rec-section .card,
+.tree-panel .rec-section .union,
+.tree-panel .rec-section .name-block { padding: 0.6rem 0.7rem; }
+.tree-panel .rec-section > .table-wrap {
+  margin-inline: -0.9rem;
+  width: calc(100% + 1.8rem);
+}
+.tree-panel .rec-section > .table-wrap th:first-child,
+.tree-panel .rec-section > .table-wrap td:first-child { padding-inline-start: 0.9rem; }
+.tree-panel .rec-section > .table-wrap th:last-child,
+.tree-panel .rec-section > .table-wrap td:last-child { padding-inline-end: 0.9rem; }
+
+/* A chip holds a whole sentence on the record page — "a birth date the source
+   could not pin down, shown as recorded" — and at 390px that sentence is
+   wider than the phone. `white-space` on .chip kept it on one line and it ran
+   out of its own strip. Chips wrap internally now; the strip already wraps
+   between them. Pre-existing, and visible from the moment the strip had a
+   frame for the text to escape from. */
+.showcase-strip .chip {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}

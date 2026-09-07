@@ -20,6 +20,9 @@
   <p class="lede">{{ t("convert-result-lede", total=total, size=size_kb,
        confidence=confidence, lang=lang) }}</p>
 
+  {# The report is framed section by section like the record and the admin
+     pages: what was produced, what was skipped, what to download. #}
+  <section class="rec-section">
   <h2>{{ t("convert-produced") }}</h2>
   <div class="grid cols-4">
     {% for c in counts %}
@@ -29,6 +32,7 @@
     </div>
     {% endfor %}
   </div>
+  </section>
 
   {# Kept on one line: a multi-line literal would carry its newlines and
      indentation straight into the rendered paragraph. #}
@@ -36,14 +40,18 @@
        t("completeness-import-title"), t("completeness-import-intro")) }}
 
   {% if skipped %}
+  <section class="rec-section">
   <h2>{{ t("convert-skipped-title", n=skipped | length) }}</h2>
   <p class="small muted">{{ t("convert-skipped-note") }}</p>
   {{ m.diagnostics(skipped) }}
+  </section>
   {% endif %}
 
   {% if others %}
+  <section class="rec-section">
   <h2>{{ t("convert-other-diagnostics", n=others | length) }}</h2>
   {{ m.diagnostics(others) }}
+  </section>
   {% endif %}
 
   {% if not skipped and not others %}
@@ -52,6 +60,7 @@
   </div>
   {% endif %}
 
+  <section class="rec-section">
   <h2>{{ t("convert-download-title") }}</h2>
   <p>
     <a class="btn primary" href="/convert/download/{{ download_id }}">
@@ -59,6 +68,7 @@
     </a>
   </p>
   <p class="small muted">{{ t("convert-download-note") }}</p>
+  </section>
 
   <p style="margin-top:2rem"><a class="btn" href="/convert">{{ t("convert-another") }}</a></p>
 

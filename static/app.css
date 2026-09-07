@@ -83,10 +83,18 @@
   /* The three tints the page wash is built from, mixed from this theme's own
      background toward its own hues — nothing here is a colour the theme did
      not already contain. Each lands 2 to 3 L* from --bg, which is felt
-     rather than seen. */
-  --wash-1: #f4f2f4;
-  --wash-2: #f0f4f3;
-  --wash-3: #f6f4f0;
+     rather than seen.
+
+     Moss, stone and clay rather than the neutral greys these were: the hue
+     moved, the luminance did not. That last part is a constraint, not a
+     preference — the deepest of these three stops is the darkest ground a
+     control boundary can sit on, and --border-strong is tuned to clear 3:1
+     against exactly that. Taking wash-1 down to #eef3ea for a greener cast
+     cost 0.04 of it (3.07 to 3.03) and the value here is where that headroom
+     comes back. Re-measure this pair before changing any of the three. */
+  --wash-1: #f0f4ec;
+  --wash-2: #eff3ef;
+  --wash-3: #f7f3ea;
 
   --radius: 7px;
   --radius-sm: 5px;
@@ -181,9 +189,9 @@
     --shadow-a: 0.45;
 
     /* Cool and nearly imperceptible, as a dark page asks for. */
-    --wash-1: #1a1c1d;
-    --wash-2: #1d1b1c;
-    --wash-3: #181d19;
+    --wash-1: #181d18;
+    --wash-2: #1b1c19;
+    --wash-3: #151c1a;
   }
 }
 
@@ -226,9 +234,9 @@
   --shadow-a: 0.45;
 
   /* Cool and nearly imperceptible, as a dark page asks for. */
-  --wash-1: #1a1c1d;
-  --wash-2: #1d1b1c;
-  --wash-3: #181d19;
+  --wash-1: #181d18;
+  --wash-2: #1b1c19;
+  --wash-3: #151c1a;
 }
 
 /* --- high contrast ------------------------------------------------------- */
@@ -321,9 +329,9 @@
   --shadow-a: 0.10;
 
   /* Warm: amber, terracotta and olive off the theme's own ramp. */
-  --wash-1: #ede4d1;
-  --wash-2: #f0e4d3;
-  --wash-3: #ece6d4;
+  --wash-1: #eae5cf;
+  --wash-2: #f0e6d0;
+  --wash-3: #e9e7d2;
 }
 
 /* --- colour-blind themes ------------------------------------------------- */
@@ -375,9 +383,9 @@
   --shadow-a: 0.08;
 
   /* Off the blue-orange axis these themes already use. */
-  --wash-1: #eef3f4;
-  --wash-2: #f9f1ea;
-  --wash-3: #f1f3f4;
+  --wash-1: #eef3f1;
+  --wash-2: #f8f2e9;
+  --wash-3: #f0f3f0;
 }
 
 /* Tritanopia is blue-yellow, so blue and yellow are the pair to avoid. The
@@ -422,9 +430,9 @@
   --shadow-a: 0.08;
 
   /* Off the red-teal axis this theme already uses. */
-  --wash-1: #f7eff1;
-  --wash-2: #f0f2f3;
-  --wash-3: #f6f0f2;
+  --wash-1: #f5f1ee;
+  --wash-2: #eff3f0;
+  --wash-3: #f4f1ec;
 }
 
 
@@ -463,9 +471,10 @@ html {
   background-repeat: no-repeat;
   /* Home, and anything without a route of its own. */
   background-image:
-    radial-gradient(68% 52% at 6% -8%, var(--wash-1), transparent 72%),
-    radial-gradient(58% 46% at 98% 6%, var(--wash-2), transparent 70%),
-    radial-gradient(90% 55% at 42% 108%, var(--wash-3), transparent 74%);
+    radial-gradient(68% 52% at 6% calc(-8% + var(--drift)), var(--wash-1), transparent 72%),
+    radial-gradient(58% 46% at 98% calc(6% - var(--drift) * 1.6), var(--wash-2), transparent 70%),
+    radial-gradient(90% 55% at calc(42% + var(--drift) * 0.7) calc(108% + var(--drift) * 1.2),
+      var(--wash-3), transparent 74%);
   /* Fixed to the viewport rather than the document. The tree page can be six
      thousand pixels tall, and a wash that scrolled with it would be a band of
      colour at the top of a mostly flat page. iOS Safari ignores this and
@@ -480,25 +489,113 @@ html {
    nothing here is random, and nothing is per-visit. */
 [data-route="tree"] {
   background-image:
-    radial-gradient(72% 55% at 96% -6%, var(--wash-2), transparent 72%),
-    radial-gradient(54% 44% at 4% 12%, var(--wash-3), transparent 70%),
-    radial-gradient(86% 52% at 58% 106%, var(--wash-1), transparent 74%);
+    radial-gradient(72% 55% at 96% calc(-6% + var(--drift)), var(--wash-2), transparent 72%),
+    radial-gradient(54% 44% at 4% calc(12% - var(--drift) * 1.6), var(--wash-3), transparent 70%),
+    radial-gradient(86% 52% at calc(58% - var(--drift) * 0.7) calc(106% + var(--drift) * 1.2),
+      var(--wash-1), transparent 74%);
 }
 [data-route="convert"] {
   background-image:
-    radial-gradient(64% 50% at 50% -10%, var(--wash-3), transparent 72%),
-    radial-gradient(58% 48% at 2% 62%, var(--wash-1), transparent 70%),
-    radial-gradient(70% 50% at 100% 92%, var(--wash-2), transparent 72%);
+    radial-gradient(64% 50% at 50% calc(-10% + var(--drift)), var(--wash-3), transparent 72%),
+    radial-gradient(58% 48% at 2% calc(62% - var(--drift) * 1.6), var(--wash-1), transparent 70%),
+    radial-gradient(70% 50% at calc(100% - var(--drift) * 0.7) calc(92% + var(--drift) * 1.2),
+      var(--wash-2), transparent 72%);
 }
 [data-route="admin"] {
   background-image:
-    radial-gradient(60% 48% at 2% -4%, var(--wash-3), transparent 70%),
-    radial-gradient(66% 52% at 100% 44%, var(--wash-1), transparent 72%),
-    radial-gradient(80% 50% at 40% 104%, var(--wash-2), transparent 72%);
+    radial-gradient(60% 48% at 2% calc(-4% + var(--drift)), var(--wash-3), transparent 70%),
+    radial-gradient(66% 52% at 100% calc(44% - var(--drift) * 1.6), var(--wash-1), transparent 72%),
+    radial-gradient(80% 50% at calc(40% + var(--drift) * 0.7) calc(104% + var(--drift) * 1.2),
+      var(--wash-2), transparent 72%);
 }
 /* `[data-wash="off"]` has to win over the per-route rules above, so it is
    repeated after them rather than relying on source order alone. */
 [data-wash="off"][data-route] { background-image: none; }
+
+/* ---------------------------------------------------------------------------
+   The wash drifts with the scroll, and only with the scroll
+   ---------------------------------------------------------------------------
+   WHAT MOVES. One number, `--drift`, feeds the centre of all three gradients
+   at different rates and in different directions, so the tints slide past each
+   other rather than sliding together — the same parallax a landscape has, at a
+   scale nobody should be able to name. Nothing else on the page moves.
+
+   HOW FAR. The whole travel is 5% of the viewport, which at a 1000px window is
+   50 pixels — spread over the entire length of the document. On a record that
+   is roughly a tenth of the distance the reader scrolls; on the tree, which
+   runs to six thousand pixels, it is a fifteenth of that. It was set by
+   reading a full record at it and asking whether it was noticeable while
+   reading rather than while looking for it. The first value that passed was
+   considerably smaller than the first value that looked right in isolation, and
+   that gap is the whole hazard: a background is seen for hours, not for the ten
+   seconds you spend judging it.
+
+   IT HAS NO CLOCK. `animation-timeline: scroll(root block)` ties the keyframes
+   to the scroll position, not to time. Stop scrolling and it stops — there is
+   no loop, no autonomous motion, and nothing to notice out of the corner of an
+   eye while reading a date. That distinction is the point of the whole feature:
+   peripheral motion captures attention involuntarily, and a background that
+   moves while the reader does not is the one that becomes intolerable on the
+   thousandth view. The keyframes are uneven on purpose — the middle of a long
+   page passes through a slightly different cast than its ends — so what
+   variation there is happens because the reader travelled, not because time
+   passed.
+
+   NO SCRIPT. Not one line, and no scroll listener: the browser drives this off
+   its own compositor. `@supports` means a browser without scroll-driven
+   animations shows the static wash, which is exactly the right fallback rather
+   than a reason to reach for JavaScript.
+
+   WHEN IT DOES NOT RUN. `prefers-reduced-motion` removes the movement and
+   leaves the wash exactly where it was — a medical setting, not a taste.
+   `[data-wash="off"]` removes both, which covers the high-contrast theme
+   (whose `wash` flag is false) and any reader who turned backgrounds off,
+   because the server has already resolved those two into one attribute.
+
+   NOTHING IS UNDER TEXT. Every content surface is opaque — see the three
+   levels above. What drifts is the page behind them and the margins beside
+   them, and a screenshot with the wash on and off differs nowhere a glyph is
+   drawn. */
+@property --drift {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@keyframes wash-drift {
+  /* Uneven rather than linear: two thirds of the travel is spent in the middle
+     third of the document, so a long page has a middle that reads slightly
+     differently from its ends instead of a uniform slide. */
+  0%   { --drift: 0%; }
+  35%  { --drift: 1.2%; }
+  65%  { --drift: 3.8%; }
+  100% { --drift: 5%; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    html:not([data-wash="off"]):not([data-motion="still"]) {
+      animation: wash-drift linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+
+/* NOT ON THE TREE, AND THE REASON IS MEASURED. The tree page marks itself
+   `data-motion="still"`; `data-route` could not be used, because it carries the
+   navigation group and the person page shares "tree" with the tree page. The wash is painted into the
+   canvas with `background-attachment: fixed`, so every change to it repaints
+   the whole viewport. Scrolling the tree with the drift on cost a median
+   18.4ms per frame against 16.6ms with it off, and 24.5ms at the 95th
+   percentile against 19.2ms — frames past the 16.7ms budget, on the one page
+   that is a diagram rather than prose and where following a line while panning
+   is the actual task. Quantising the drift into steps was tried and recovered
+   about a millisecond of the median and none of the tail.
+
+   Paying dropped frames on a diagram for an effect measured at five parts in
+   255 is not a trade worth making. The record and admin pages keep it: there
+   the median cost is nil and the tail is 3ms, and scrolling is reading rather
+   than tracking. The tree keeps the static wash, which is what it had. */
 
 body {
   margin: 0;

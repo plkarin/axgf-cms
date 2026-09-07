@@ -9,6 +9,47 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**The wash is nature-toned and drifts with the scroll.** The three tints moved
+from neutral greys to moss, stone and clay — the hue moved, the luminance did
+not, because the deepest of the three is the darkest ground a control boundary
+can sit on and `--border-strong` is tuned to clear 3:1 against exactly that. A
+greener first stop cost 0.04 of that margin (3.07 to 3.03) and the shipped value
+puts it back at 3.05–3.22 across the themes.
+
+The gradients now shift as the page scrolls: one number feeds all three centres
+at different rates and directions, so the tints slide past each other rather
+than together. **It has no clock.** `animation-timeline: scroll()` ties the
+keyframes to scroll position, so stop scrolling and it stops — there is no loop
+and nothing moves while the reader is still, which is the case that becomes
+intolerable on the thousandth view. No JavaScript and no scroll listener: the
+browser drives it, and a browser without scroll timelines shows the static wash.
+
+It is off under `prefers-reduced-motion`, off when the reader turns backgrounds
+off, and off under high-contrast — the last two already resolved by the server
+into one attribute, so this needed no new switch. Every content surface is
+opaque, so a screenshot with the wash on and off differs nowhere a glyph is
+drawn: measured at 0 of 255,360 pixels inside a section.
+
+**It is not on the tree, and that is measured.** The wash is painted into the
+canvas with `background-attachment: fixed`, so every change repaints the whole
+viewport. Scrolling the tree with the drift on cost a median 18.4ms per frame
+against 16.6ms without, and 24.5ms at the 95th percentile against 19.2ms —
+frames past the 16.7ms budget on the one page that is a diagram rather than
+prose, where following a line while panning is the task. Quantising the drift
+into steps recovered about a millisecond of the median and none of the tail.
+Record and admin pages keep it, where the median cost is nil and the tail 3ms.
+
+**Honest note on how strong it is: below the threshold of perception.** Reading
+a full record top to bottom, the page margins change by about 1 part in 255; the
+largest change anywhere on any page, top to bottom, is 5. That is the brief's
+instruction — err far below what seems right in isolation — carried out, and it
+means the effect cannot distract because it cannot be seen. It also means it
+does not make the pages "feel alive". The ceiling is not the drift but the wash
+itself, which is capped at 2–3 L* from the page so that nothing sits under text
+and no boundary loses contrast; the movement can only redistribute that much.
+Making it perceptible means deepening the static wash, which is a different
+decision with contrast consequences, and is the operator's to take.
+
 **Sections are framed, at three visible levels.** The record page was headings
 and content running down a blank sheet: nothing marked where Identity stopped
 and Family began, so finding the third section meant reading the first two.

@@ -278,19 +278,70 @@ fn the_page_wash_fetches_nothing() {
 /// A gradient that drifts is a distraction on a page somebody reads for an
 /// hour. That is a decision for every reader rather than one the motion query
 /// makes for a few, so there is nothing to disable: nothing animates.
+/// The wash moves only when the reader does.
+///
+/// It used to be forbidden from moving at all, and the reason was right: a
+/// gradient that drifts on its own is a distraction on a page somebody reads
+/// for an hour, and peripheral motion captures attention involuntarily —
+/// which is the whole reason animated advertising is intolerable. What
+/// changed is not that judgement but the mechanism available to honour it.
+/// `animation-timeline: scroll()` ties the keyframes to scroll position rather
+/// than to a clock, so there is still nothing that moves while the reader is
+/// still. Stop scrolling and it stops.
+///
+/// So the rule this enforces is not "no animation" but "no clock": no
+/// `infinite`, no `alternate`, no duration in seconds, and every animation on
+/// the wash driven by a scroll timeline.
 #[test]
-fn the_page_wash_never_animates() {
+fn the_wash_moves_only_when_the_reader_does() {
     let css = css();
+    // The `html` rule itself — its own braces, not everything up to `body`,
+    // which now has the keyframes and the guarded animation between them.
     let start = css.find("html {").expect("the root background rule");
-    let end = css[start..].find("\nbody {").expect("the body rule") + start;
-    let wash = &css[start..end];
-
-    for moving in ["animation", "transition", "@keyframes"] {
+    let wash = &css[start..start + css[start..].find('}').expect("its closing brace")];
+    for forbidden in ["animation", "transition", "@keyframes"] {
         assert!(
-            !wash.contains(moving),
-            "the wash must not {moving}:\n{wash}"
+            !wash.contains(forbidden),
+            "the html rule itself still declares no motion:\n{wash}"
         );
     }
+
+    // The one animation that does exist is scroll-driven, and is the only one.
+    let n = css.matches("animation: wash-drift").count();
+    assert_eq!(n, 1, "exactly one wash animation, declared once");
+    let at = css
+        .find("animation: wash-drift")
+        .expect("the wash animation");
+    let rule = &css[at..at + css[at..].find('}').expect("its rule") + 1];
+    assert!(
+        rule.contains("animation-timeline: scroll("),
+        "it is driven by scroll position, not by a clock:\n{rule}"
+    );
+    for clock in ["infinite", "alternate", "s;", "ms;"] {
+        assert!(
+            !rule.contains(clock),
+            "a wash animation must carry no duration or repeat ({clock}):\n{rule}"
+        );
+    }
+
+    // And it is gated three ways: reduced motion, the reader's switch, and a
+    // page that has declared itself a diagram.
+    let guard_at = css[..at]
+        .rfind("@media (prefers-reduced-motion: no-preference)")
+        .expect("the reduced-motion guard wrapping it");
+    let guard = &css[guard_at..at];
+    assert!(
+        guard.contains("@supports (animation-timeline: scroll())"),
+        "…and a browser without scroll timelines gets the static wash:\n{guard}"
+    );
+    assert!(
+        css[at - 200..at].contains(r#":not([data-wash="off"])"#),
+        "…and the reader's switch turns the movement off with the wash"
+    );
+    assert!(
+        css[at - 200..at].contains(r#":not([data-motion="still"])"#),
+        "…and a page that declares itself a diagram keeps still"
+    );
 }
 
 /// Turning it off leaves nothing behind, on any route.

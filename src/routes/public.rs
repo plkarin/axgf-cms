@@ -454,6 +454,11 @@ pub async fn tree(
         "tree.html",
         context! {
             nav => "tree",
+            // This page is a diagram six thousand pixels tall, and following a
+            // line while panning it is the task. The ambient drift is held off
+            // it for that reason — see the note beside the rule in app.css,
+            // which carries the frame timings that decided it.
+            still => true,
             contradictions,
             layout,
             focus,

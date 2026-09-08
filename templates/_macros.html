@@ -205,3 +205,40 @@
   {%- endif %}
 </dl>
 {% endmacro %}
+
+{# One physical or health field: its label and every dated entry recorded for
+   it.
+
+   Several entries are a *series*, and that is the point of dating them — a
+   height at twenty and at fifty-six is two measurements of a changing body,
+   not a correction. So a field with more than one entry is drawn as a list
+   with each date leading its own line, and a field with one is drawn inline,
+   because a one-item list spends a whole block saying one thing. #}
+{% macro phys_field(t, f) %}
+<div class="phys-item{% if f.is_series %} is-series{% endif %}">
+  <span class="phys-label">{{ f.label }}</span>
+  {% if f.is_series %}
+  <ol class="phys-series">
+    {% for e in f.entries %}
+    <li>
+      <span class="phys-when">
+        {%- if e.has_date %}{{ e.date.text }}{% else %}{{ t("phys-undated") }}{% endif -%}
+      </span>
+      <span class="phys-value">{{ e.display }}</span>
+      {% if e.confidence %}{{ conf_bar(e.confidence) }}{% endif %}
+      {% if e.source %}<span class="chip small">{{ e.source }}</span>{% endif %}
+      {% if e.note %}<span class="small muted">{{ e.note }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  {% for e in f.entries %}
+  <span class="phys-value">{{ e.display }}</span>
+  {% if e.has_date %}<span class="phys-when small muted">{{ e.date.text }}</span>{% endif %}
+  {% if e.confidence %}{{ conf_bar(e.confidence) }}{% endif %}
+  {% if e.source %}<span class="chip small">{{ e.source }}</span>{% endif %}
+  {% if e.note %}<span class="small muted">{{ e.note }}</span>{% endif %}
+  {% endfor %}
+  {% endif %}
+</div>
+{% endmacro %}

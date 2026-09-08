@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("phys-editor-title") }}{% endblock %}
+
+{# The physical-and-health editor.
+
+   A screen of its own rather than the generic entity form, because every field
+   here holds a *list* of dated, sourced entries and the generic form edits one
+   dotted path per input. A height measured in 1914 and again in 1950 is two
+   facts, not one fact revised, and the shape of this form is what says so. #}
+
+{% block content %}
+
+<h1>{{ t("phys-editor-title") }}</h1>
+<p class="lede">{{ person_name }}</p>
+
+{% if problems %}
+<div class="notice warn" role="alert">
+  <ul>{% for p in problems %}<li>{{ p }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+{% macro rows_for(f, group) %}
+<fieldset class="phys-field">
+  <legend>{{ f.label }}</legend>
+  <table class="phys-rows">
+    <thead>
+      <tr>
+        <th>{{ t("phys-col-value") }}</th>
+        <th>{{ t("phys-col-date") }}</th>
+        <th>{{ t("phys-col-source") }}</th>
+        <th>{{ t("phys-col-confidence") }}</th>
+        <th>{{ t("phys-col-note") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in f.rows %}
+      <tr>
+        <td data-label="{{ t('phys-col-value') }}">
+          {% if f.kind == "closed" %}
+          <select name="{{ f.name }}.{{ loop.index0 }}.value"
+                  aria-label="{{ f.label }}">
+            <option value="">{{ t("admin-not-set") }}</option>
+            {% for term in f.terms %}
+            <option value="{{ term.value }}" {{ "selected" if term.value == r.value }}>{{ term.label }}</option>
+            {% endfor %}
+          </select>
+          {% elif f.kind == "number" %}
+          <input type="text" inputmode="numeric" size="5"
+                 name="{{ f.name }}.{{ loop.index0 }}.value" value="{{ r.value }}"
+                 aria-label="{{ f.label }}">
+          <span class="small muted">{{ f.unit }}</span>
+          {% else %}
+          <input type="text" name="{{ f.name }}.{{ loop.index0 }}.value" value="{{ r.value }}"
+                 aria-label="{{ f.label }}">
+          {% endif %}
+        </td>
+        {# A trait is measured at a moment. Without the date, a height is
+           nearly meaningless — so the column sits beside the value rather
+           than behind an "advanced" toggle. #}
+        <td data-label="{{ t('phys-col-date') }}">
+          <input type="text" size="9" name="{{ f.name }}.{{ loop.index0 }}.date"
+                 value="{{ r.date }}" placeholder="{{ t('phys-date-placeholder') }}"
+                 aria-label="{{ t('phys-col-date') }}">
+        </td>
+        <td data-label="{{ t('phys-col-source') }}">
+          <select name="{{ f.name }}.{{ loop.index0 }}.source_id"
+                  aria-label="{{ t('phys-col-source') }}">
+            <option value="">{{ t("phys-no-source") }}</option>
+            {% for s in sources %}
+            <option value="{{ s.id }}" {{ "selected" if s.id == r.source_id }}>{{ s.title }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td data-label="{{ t('phys-col-confidence') }}">
+          <input type="text" size="4" inputmode="decimal"
+                 name="{{ f.name }}.{{ loop.index0 }}.confidence" value="{{ r.confidence }}"
+                 placeholder="0.8" aria-label="{{ t('phys-col-confidence') }}">
+        </td>
+        <td data-label="{{ t('phys-col-note') }}">
+          <input type="text" name="{{ f.name }}.{{ loop.index0 }}.note" value="{{ r.note }}"
+                 aria-label="{{ t('phys-col-note') }}">
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</fieldset>
+{% endmacro %}
+
+<form method="post" action="/admin/person/{{ person_id }}/physical" class="card">
+
+  <section class="rec-section">
+    <h2>{{ t("phys-traits-title") }}</h2>
+    <p class="hint">{{ t("phys-traits-help") }}</p>
+    {% for f in traits %}{{ rows_for(f, "traits") }}{% endfor %}
+  </section>
+
+  <section class="rec-section">
+    <h2>{{ t("phys-health-title") }}</h2>
+
+    {# The warning, shown before anything is typed rather than after it is
+       saved. One sentence about whose data this is and who will be able to
+       read it — not a policy, and not a dialog somebody clicks past. #}
+    {% if is_living %}
+    <div class="notice warn" role="note">
+      <p>{{ t("phys-living-warning") }}</p>
+    </div>
+    {% else %}
+    <p class="hint">{{ t("phys-health-help") }}</p>
+    {% endif %}
+
+    {% if may_read_health %}
+    {% for f in health %}{{ rows_for(f, "health") }}{% endfor %}
+    {% else %}
+    {# Withheld rather than absent: an editor who cannot read these fields must
+       not be shown an empty form whose submission would delete them. #}
+    <p class="notice" role="status">{{ t("phys-health-withheld-editor") }}</p>
+    {% endif %}
+  </section>
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit">{{ t("admin-save") }}</button>
+    <a class="btn" href="/person/{{ person_id }}">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+
+{% endblock %}

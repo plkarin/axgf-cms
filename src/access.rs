@@ -114,6 +114,44 @@ pub fn person_visibility(person: &Value) -> Visibility {
     }
 }
 
+/// The visibility a person's **health** data carries, which is not the
+/// visibility their record carries.
+///
+/// Health data is a special category under GDPR article 9 and its equivalents,
+/// and family scale does not move it out of that category: the operator is
+/// recording conditions, operations and causes of death for a spouse, parents
+/// and children who have not necessarily been asked. So for a living person it
+/// is pinned to `private` — the most restrictive level the specification
+/// offers, admins only — no matter what the record's own visibility says. A
+/// person marked `public` still does not publish their diagnoses.
+///
+/// A deceased person follows the record's normal visibility. Article 9 governs
+/// living people; a cause of death two centuries old is the substance of
+/// genealogy, and withholding it would make the feature useless for the thing
+/// it is actually for.
+///
+/// This is deliberately *not* a method on `Lens`: it is a property of the
+/// person being read, and the single place the rule is written down. Every
+/// caller asks this rather than re-deriving "living means private", because
+/// the rule re-derived in four places is the rule wrong in one of them.
+pub fn health_visibility(person: &Value) -> Visibility {
+    let living = person
+        .get("identity")
+        .and_then(|i| i.get("is_living"))
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    if living {
+        Visibility::Private
+    } else {
+        person_visibility(person)
+    }
+}
+
+/// Whether a reader at `ceiling` may read this person's health fields.
+pub fn may_read_health(person: &Value, ceiling: Visibility) -> bool {
+    health_visibility(person) <= ceiling
+}
+
 /// The visibility a link carries. Links have no `is_living` to lean on, so an
 /// absent value is `public` — the link says nothing the endpoints do not.
 pub fn link_visibility(link: &Value) -> Visibility {

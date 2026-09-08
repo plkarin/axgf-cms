@@ -955,9 +955,20 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
 /// Streams the bundle rather than building it in memory: the archive is written
 /// to a temp file one payload at a time, then sent from that file. Downloading a
 /// 400 MiB bundle costs a file handle, not 400 MiB of process.
-pub async fn export(State(state): State<Shared>, headers: HeaderMap) -> Response {
+pub async fn export(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<ExportQuery>,
+) -> Response {
     let (_viewer, chrome) = guard_admin!(state, headers);
-    let tmp = match state.export_to_temp_file() {
+    // Excluded unless the operator asked for it, and asking is one word in the
+    // query string rather than a setting somebody configured once and forgot.
+    let health = if q.health.as_deref() == Some("include") {
+        crate::state::HealthExport::Include
+    } else {
+        crate::state::HealthExport::Exclude
+    };
+    let tmp = match state.export_to_temp_file_with(health) {
         Ok(t) => t,
         Err(e) => return io_error(&chrome, &e),
     };
@@ -972,6 +983,13 @@ pub async fn export(State(state): State<Shared>, headers: HeaderMap) -> Response
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
+
+/// `?health=` on the export.
+#[derive(Debug, serde::Deserialize)]
+pub struct ExportQuery {
+    #[serde(default)]
+    health: Option<String>,
+}
 
 /// Parse the raw-JSON textarea, if the form carried one.
 fn base_from_raw(form: &HashMap<String, String>) -> Result<Value, String> {
@@ -2332,5 +2350,245 @@ pub async fn place_geocode(
         uses,
         &[],
         Assist::of(&state).with(lookup),
+    )
+}
+
+/// `GET /admin/person/:id/physical` — the physical and health editor.
+///
+/// A screen of its own, for the same reason the Place editor is: every field
+/// holds a *list* of dated, sourced entries, and the generic one-input-per-path
+/// form can express neither a list nor the date beside each item.
+pub async fn physical_edit(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let Some(person) = state.read(|flat| flat.get("persons").and_then(|c| c.get(&id)).cloned())
+    else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
+        );
+    };
+    render_physical_form(
+        &state,
+        &chrome,
+        &viewer,
+        &id,
+        &person,
+        crate::physical::Detail::from_entity(&person),
+        &[],
+    )
+}
+
+/// `POST /admin/person/:id/physical` — save it.
+pub async fn physical_update(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<std::collections::BTreeMap<String, String>>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(&id)).cloned());
+    let Some(stored) = stored else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
+        );
+    };
+
+    let detail = crate::physical::Detail::from_post(&form);
+    let problems = detail.problems();
+    if !problems.is_empty() {
+        return render_physical_form(&state, &chrome, &viewer, &id, &stored, detail, &problems);
+    }
+
+    // A reader who may not see this person's health data may not overwrite it
+    // either. Without this, the editor renders with the health rows absent —
+    // because `view_for` filtered them — and saving that form would delete a
+    // living person's medical history by submitting a page that never showed
+    // it. The write is refused rather than merged: merging would mean guessing
+    // which absences were edits.
+    let may_read_health = crate::access::may_read_health(&stored, viewer.ceiling());
+    if !may_read_health && crate::physical::has_health(&stored) {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::FORBIDDEN,
+            "phys-health-locked-title",
+            "phys-health-locked-detail",
+        );
+    }
+
+    let mut entity = detail.apply(&stored);
+    entity["id"] = Value::String(id.clone());
+
+    if let Err(r) = check_scope(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Person,
+        &entity,
+        Some(&stored),
+    ) {
+        return r;
+    }
+
+    let version = crate::state::version_of(&stored);
+    let label = Some(crate::view::person_display_name(&stored)).filter(|s| !s.is_empty());
+    let outcome = match state.update_checked(
+        axgf_rs::EntityKind::Person,
+        &id,
+        version,
+        entity,
+        viewer.name(),
+        label,
+    ) {
+        Ok(o) => o,
+        Err(e) => return io_error(&chrome, &e),
+    };
+
+    match outcome {
+        crate::state::UpdateOutcome::Applied {
+            diagnostics,
+            version_num,
+            changes,
+        } => result_page(
+            &chrome,
+            "person",
+            &chrome.t_args(
+                "admin-saved",
+                &[
+                    ("version", (version_num as i64).into()),
+                    ("summary", crate::diff::summarise(&changes).into()),
+                ],
+            ),
+            &MutationOutcome {
+                applied: true,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/person/{id}")),
+        ),
+        crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
+            &chrome,
+            "person",
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/person/{id}/physical")),
+        ),
+        crate::state::UpdateOutcome::Missing => render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-deleted-while-editing",
+        ),
+        crate::state::UpdateOutcome::Conflict { .. } => render::error_page_in(
+            &chrome,
+            StatusCode::CONFLICT,
+            "admin-conflict-title",
+            "admin-conflict-detail",
+        ),
+    }
+}
+
+/// Render the editor, with a blank spare row per field so adding an entry
+/// works with scripting off.
+fn render_physical_form(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    id: &str,
+    person: &Value,
+    detail: crate::physical::Detail,
+    problems: &[&'static str],
+) -> Response {
+    use crate::physical::{Field, Kind, FIELDS};
+
+    let may_read_health = crate::access::may_read_health(person, viewer.ceiling());
+    let is_living = person
+        .get("identity")
+        .and_then(|i| i.get("is_living"))
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+
+    let sources: Vec<Value> = state.read(|flat| {
+        flat.get("sources")
+            .and_then(Value::as_object)
+            .map(|m| {
+                m.iter()
+                    .map(|(sid, s)| {
+                        json!({
+                            "id": sid,
+                            "title": s.get("title").and_then(Value::as_str).unwrap_or(sid),
+                        })
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    });
+
+    let build_group = |group: crate::physical::Group| -> Vec<Value> {
+        FIELDS
+            .iter()
+            .filter(|f: &&Field| f.group == group)
+            .map(|f| {
+                let mut rows: Vec<Value> = detail
+                    .entries
+                    .get(f.name)
+                    .map(|rows| rows.iter().map(|r| json!(r)).collect())
+                    .unwrap_or_default();
+                // One spare row, always.
+                rows.push(json!(crate::physical::Entry::default()));
+                json!({
+                    "name": f.name,
+                    "label": chrome.t(&f.label_key()),
+                    "kind": match f.kind {
+                        Kind::Number => "number",
+                        Kind::Closed(_) => "closed",
+                        Kind::Text => "text",
+                    },
+                    "unit": match f.name {
+                        "height_cm" => chrome.t("phys-unit-cm-short"),
+                        "weight_kg" => chrome.t("phys-unit-kg-short"),
+                        _ => String::new(),
+                    },
+                    "terms": match f.kind {
+                        Kind::Closed(v) => v.iter()
+                            .map(|t| json!({"value": t, "label": chrome.t(&f.term_key(t))}))
+                            .collect::<Vec<_>>(),
+                        _ => Vec::new(),
+                    },
+                    "rows": rows,
+                })
+            })
+            .collect()
+    };
+
+    let messages: Vec<String> = problems.iter().map(|k| chrome.t(k)).collect();
+    render::page_with(
+        chrome,
+        "admin_physical.html",
+        context! {
+            nav => "admin",
+            person_id => id,
+            person_name => crate::view::person_display_name(person),
+            traits => build_group(crate::physical::Group::Traits),
+            health => build_group(crate::physical::Group::Health),
+            may_read_health,
+            is_living,
+            has_health => crate::physical::has_health(person),
+            sources,
+            problems => messages,
+            may_write => viewer.may_write(),
+        },
     )
 }

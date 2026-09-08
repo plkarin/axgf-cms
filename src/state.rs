@@ -103,6 +103,36 @@ pub struct AppState {
     geocoder: Option<crate::geocode::Geocoder>,
 }
 
+/// Whether an export carries special-category data.
+///
+/// A named type rather than a `bool`, because `export_to_temp_file_with(true)`
+/// at a call site does not say which way `true` points, and this is a decision
+/// where getting the direction wrong mails somebody's medical history to a
+/// relative.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HealthExport {
+    /// Everything the bundle holds. The operator's own backup.
+    Include,
+    /// Every person, minus the health extension. The shareable copy.
+    Exclude,
+}
+
+/// A copy of the bundle with every person's health extension removed.
+///
+/// Walks persons only: the extension is only ever written onto a person, and
+/// walking every collection would be a slower way to reach the same answer
+/// while implying the data might be somewhere it never is.
+fn without_health(flat: &Value) -> Value {
+    let mut out = flat.clone();
+    let Some(persons) = out.get_mut("persons").and_then(Value::as_object_mut) else {
+        return out;
+    };
+    for (_, person) in persons.iter_mut() {
+        *person = crate::physical::strip_health(person);
+    }
+    out
+}
+
 /// A tile source and the attribution that has to be shown with it.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct MapTiles {
@@ -561,8 +591,28 @@ impl AppState {
     /// Stream the current bundle into a fresh temp file beside it, and return
     /// that path. The caller owns the file and must remove it.
     pub fn export_to_temp_file(&self) -> Result<PathBuf> {
+        self.export_to_temp_file_with(HealthExport::Exclude)
+    }
+
+    /// The same, saying whether special-category data travels with it.
+    ///
+    /// [`HealthExport::Exclude`] is the default everywhere, including the
+    /// zero-argument form above, and that direction is deliberate: a bundle is
+    /// something the operator mails to a cousin, and the failure mode of
+    /// including a living relative's medical history in a file that then sits
+    /// in somebody's downloads folder is unrecoverable. Excluding it by
+    /// accident costs one re-export.
+    pub fn export_to_temp_file_with(&self, health: HealthExport) -> Result<PathBuf> {
         let tmp = self.export_temp_path("download");
-        match self.export_to_file(&tmp) {
+        let result = match health {
+            HealthExport::Include => self.export_to_file(&tmp),
+            // Stripped from a *copy* of the bundle, under the read lock, so
+            // the live tree is never the thing being edited.
+            HealthExport::Exclude => {
+                self.read(|flat| self.write_streaming(&without_health(flat), &tmp))
+            }
+        };
+        match result {
             Ok(()) => Ok(tmp),
             Err(e) => {
                 let _ = fs::remove_file(&tmp);

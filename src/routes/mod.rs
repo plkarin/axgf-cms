@@ -64,6 +64,12 @@ pub fn router(state: Shared) -> Router {
         // the literal "place" segment wins: a place is mostly lists — several
         // names, a border history — and the generic one-input-per-path form
         // cannot express either.
+        // The physical-and-health editor, for the same reason: every field
+        // holds a list of dated, sourced entries.
+        .route(
+            "/admin/person/:id/physical",
+            get(admin::physical_edit).post(admin::physical_update),
+        )
         .route("/admin/place/:id/edit", get(admin::place_edit))
         .route("/admin/place/:id", post(admin::place_update))
         .route("/admin/place/:id/geocode", post(admin::place_geocode))

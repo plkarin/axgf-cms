@@ -2732,3 +2732,81 @@ a.tcard:hover {
   overflow-wrap: anywhere;
   max-width: 100%;
 }
+
+/* ── Body and health ──────────────────────────────────────────────────────
+   A field with one entry is a line; a field with several is a series, and the
+   difference is the whole reason the entries are dated. A height at twenty and
+   a height at fifty-six are two measurements of a changing body, so the series
+   leads with its dates and lets the values line up under each other. */
+.phys-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.phys-item {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+}
+.phys-item.is-series { display: block; }
+.phys-label {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  min-width: 9rem;
+}
+.phys-value { font-weight: 600; }
+.phys-series {
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  /* The rule sits on the leading edge and mirrors in RTL with the rest. */
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 0.7rem;
+}
+.phys-series li {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.phys-series .phys-when {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  min-width: 6.5rem;
+}
+.phys-item:not(.is-series) .phys-when { color: var(--ink-faint); }
+
+/* The editor: one table per field, a row per dated entry, a spare row at the
+   end so adding one works with scripting off. */
+.phys-field { margin: 0 0 1rem; }
+.phys-field > legend { font-size: 0.85rem; color: var(--ink-soft); padding-inline: 0.3rem; }
+.phys-rows { width: 100%; font-size: 0.9rem; }
+.phys-rows th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  text-align: start;
+  font-weight: 600;
+}
+.phys-rows input[type="text"] { width: 100%; box-sizing: border-box; }
+.phys-rows td { vertical-align: top; padding: 0.2rem 0.3rem; }
+
+@media (max-width: 720px) {
+  /* At phone width the five columns become five labelled lines, the same way
+     every other wide table in this file stacks. */
+  .phys-rows thead { display: none; }
+  .phys-rows, .phys-rows tbody, .phys-rows tr, .phys-rows td { display: block; width: 100%; }
+  .phys-rows tr { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem; margin-bottom: 0.5rem; }
+  .phys-rows td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+  .phys-label { min-width: 0; }
+}

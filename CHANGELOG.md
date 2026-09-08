@@ -9,6 +9,65 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Body and health: fifteen fields, every entry dated, sourced and rated.** The
+specification models identity, vitals, events and documents and has no field
+for how tall somebody was or what they died of. Rather than invent one, this
+uses `extensions`, which exists for the case — under **two** namespaced keys,
+and that split is the load-bearing decision:
+
+* `axgf-cms:traits/v1` — height, weight, eye and hair colour, build,
+  handedness, distinguishing features, military service, languages. What a
+  passport or a conscription register writes down. Not medical data.
+* `axgf-cms:health/v1` — conditions, operations and injuries, blood group,
+  cause of death, and **religion or affiliations**, which GDPR article 9 lists
+  in the same breath as health and which genealogists record constantly without
+  thinking of it that way.
+
+Keeping them apart is what lets the second be withheld, redacted and excluded
+from an export as a unit without also hiding somebody's height. One combined
+object would have forced a choice between over-restricting a passport detail
+and under-restricting a diagnosis. The version sits in the key, so a later
+first-class specification field can supersede it by being read first.
+
+Every field holds a *list* of entries, each with its own date, source and
+confidence. A height measured at twenty and again at fifty-six is two facts,
+not one revised, and the record draws them as a small series with the dates
+leading. `axgf-spec` is unchanged: if this proves itself, proposing it upstream
+is a separate conversation.
+
+### Security
+
+**A living person's health data is pinned to `private`, whatever their record
+says.** `access::health_visibility` is the one place the rule is written: living
+means admins only, deceased follows the record's normal visibility. It is
+deliberately independent of the person's own setting — a person marked `public`
+still does not publish their diagnoses, and the test that proves it is a
+*public living person* whose height is shown and whose condition is not.
+
+Enforced server-side at one chokepoint, `person::build_in`, so the page, the
+life tab, the tree panel fragment and the tree page are all covered by the same
+check. The one that mattered most was the **raw-JSON dump**: it is shown to
+every reader, not only to administrators, so it was the shortest path from a
+stored diagnosis to a stranger's screen. The entity is stripped before it is
+serialised rather than filtered afterwards, because a redaction performed on a
+string is a redaction waiting to be defeated by a line break.
+
+An editor who may not read the health rows is refused the write rather than
+merged, because merging would mean guessing which absences were edits.
+
+**The export leaves health out by default.** `/admin/export` produces a
+shareable bundle; `?health=include` produces the operator's own backup. Two
+buttons rather than a checkbox: which one is wanted depends on who the file is
+for, and a checkbox remembers the last answer while "who is this for" changes
+every time. The default direction is deliberate — a bundle mailed to a cousin
+with a living relative's medical history in it cannot be recalled, and
+excluding it by accident costs one re-export.
+
+**Mutation-tested, four ways.** Removing the living-person rule fails 4 of 8
+tests; printing the raw dump unstripped fails 2; defaulting the export to
+include fails 1; making `strip_health` a no-op fails 3. Each was applied to the
+source, run, and reverted.
+
 **The wash is nature-toned and drifts with the scroll.** The three tints moved
 from neutral greys to moss, stone and clay — the hue moved, the luminance did
 not, because the deepest of the three is the darkest ground a control boundary

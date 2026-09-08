@@ -47,10 +47,16 @@
         onsubmit="return confirm('{{ t("admin-dedup-confirm") }}')">
     <button class="btn" type="submit">{{ t("admin-deduplicate") }}</button>
   </form>
+  {# Two buttons rather than one with a checkbox: which of these the operator
+     wants is decided by who the file is for, and a checkbox remembers the last
+     answer while "who is this for" changes every time. The shareable one is
+     first and is the plain "Export". #}
   <a class="btn" href="/admin/export">{{ t("admin-export") }}</a>
+  <a class="btn" href="/admin/export?health=include">{{ t("admin-export-with-health") }}</a>
   <a class="btn" href="/admin/users">{{ t("admin-accounts") }}</a>
 </div>
 <p class="small muted">{{ t("admin-roles-note") }}</p>
+<p class="small muted">{{ t("admin-export-health-note") }}</p>
 </section>
 
 {{ comp.completeness_panel(completeness, t,

@@ -252,6 +252,47 @@
 </section>
 {% endif %}
 
+{# ------------------------------------------------- PHYSICAL AND HEALTH #}
+
+{# On the Life tab: what a body was and what happened to it belong beside the
+   timeline, not beside the names.
+
+   Health is already filtered by the time it reaches here — `view_for` drops
+   the fields this reader may not see and sets `health_withheld` instead, so
+   this template cannot leak by forgetting a condition. What it must do is say
+   that something is being withheld rather than render nothing, because a
+   record that shows nothing where a diagnosis exists reads as a record with
+   nothing in it. #}
+{% if (tab is undefined or tab == "life") and (not p.physical.is_empty) %}
+<section id="physical" class="rec-section">
+  {{ m.sec(t, t("phys-section-title"), compact, t("phys-section-help")) }}
+
+  {% if p.physical.traits %}
+  <div class="phys-list">
+    {% for f in p.physical.traits %}{{ m.phys_field(t, f) }}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if p.physical.health %}
+  <h3>{{ t("phys-health-title") }}</h3>
+  {% if p.physical.subject_is_living %}
+  <p class="small muted">{{ t("phys-living-shown-note") }}</p>
+  {% endif %}
+  <div class="phys-list">
+    {% for f in p.physical.health %}{{ m.phys_field(t, f) }}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if p.physical.health_withheld %}
+  <p class="notice" role="status">{{ t("phys-health-withheld") }}</p>
+  {% endif %}
+
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/physical">{{ t("phys-edit-link") }}</a></p>
+  {% endif %}
+</section>
+{% endif %}
+
 {# ------------------------------------------------------------------ PLACES #}
 {% if (tab is undefined or tab == "life") and (p.places) %}
 <section id="places" class="rec-section">

@@ -339,6 +339,9 @@ pub struct PersonView {
     pub has_timeline: bool,
     /// Which GEDCOM-impossible features this person actually demonstrates.
     pub showcase_notes: Vec<String>,
+    /// Physical traits and health, already filtered for this reader. See
+    /// [`crate::physical`].
+    pub physical: crate::physical::DetailView,
 }
 
 /// The locale key for what a reader is shown in place of a person they may
@@ -424,8 +427,25 @@ pub fn build_in(
 
     let header = build_header(&ctx, &name, &images, &birth, &death, is_living, &unions, id);
 
-    let raw_json =
-        serde_json::to_string_pretty(person).unwrap_or_else(|_| "<unserializable>".into());
+    // Health, and the raw dump, both go through the same permission.
+    //
+    // The raw-JSON section is shown to every reader who may open the record,
+    // not only to an administrator — so it is the shortest path from a stored
+    // diagnosis to a stranger's screen, and pretty-printing the entity
+    // untouched would have defeated every other check in this file. The
+    // entity is stripped *before* it is serialised rather than filtered
+    // afterwards, because a redaction done on a string is a redaction waiting
+    // to be defeated by a line break.
+    let may_read_health = crate::access::may_read_health(person, lens.ceiling());
+    let physical = crate::physical::view_for(person, flat, lang, may_read_health);
+    let raw_json = {
+        let shown = if may_read_health {
+            std::borrow::Cow::Borrowed(person)
+        } else {
+            std::borrow::Cow::Owned(crate::physical::strip_health(person))
+        };
+        serde_json::to_string_pretty(shown.as_ref()).unwrap_or_else(|_| "<unserializable>".into())
+    };
 
     // Which GEDCOM-impossible features this person actually demonstrates.
     // Built here rather than in the template because each one needs a count
@@ -492,6 +512,7 @@ pub fn build_in(
         timeline_to,
         has_timeline,
         showcase_notes,
+        physical,
     })
 }
 

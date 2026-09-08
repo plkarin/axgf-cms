@@ -518,3 +518,196 @@ async fn a_filename_cannot_escape_its_directory_or_the_header_quoting() {
         .unwrap();
     assert_eq!(disposition.matches('"').count(), 2, "{disposition}");
 }
+
+/// Attach two images and return their ids in link order.
+async fn two_images(app: &axum::Router, path: &std::path::Path) -> Vec<String> {
+    for (name, w, h) in [("first.png", 40, 30), ("second.png", 30, 40)] {
+        let r = upload(app, PERSON, name, "image/png", &png(w, h), true).await;
+        assert!(
+            r.status().is_success() || r.status().is_redirection(),
+            "upload {name} failed: {}",
+            r.status()
+        );
+    }
+    // The link lives on the *document* — `linked_to` — not on the person, so
+    // that is where the pair is read back from.
+    let bytes = std::fs::read(path).expect("read bundle");
+    let flat = axgf_rs::import_bundle(&bytes).data;
+    flat["documents"]
+        .as_object()
+        .map(|m| {
+            m.iter()
+                .filter(|(_, d)| {
+                    d["linked_to"]
+                        .as_array()
+                        .is_some_and(|l| l.iter().any(|e| e["entity_id"] == PERSON))
+                })
+                .map(|(k, _)| k.clone())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Which document the page is currently using as the avatar, if any.
+fn avatar_in(body: &str) -> Option<String> {
+    let at = body.find("person-avatar")?;
+    let rest = &body[at..];
+    let t = rest.find("/document/")?;
+    let tail = &rest[at_offset(t)..];
+    let id: String = tail.chars().take_while(|c| *c != '/').collect();
+    (!id.is_empty()).then_some(id)
+}
+
+/// `"/document/".len()`, named so the slice above reads as what it is.
+fn at_offset(found: usize) -> usize {
+    found + "/document/".len()
+}
+
+/// The avatar is chosen, not guessed, and the choice survives.
+///
+/// On a converted bundle the heuristic cannot work: every scan carries
+/// `document_type: photo` and role `subject`, so a death notice and a portrait
+/// are the same shape and the avatar is whichever was linked first. These
+/// assert the override, not the heuristic.
+#[tokio::test]
+async fn a_chosen_avatar_beats_the_automatic_pick() {
+    let src = one_person_bundle("avatar-pick-src");
+    let (app, path) = app_with_bundle("avatar-pick", &src);
+    let ids = two_images(&app, &path).await;
+
+    assert_eq!(ids.len(), 2, "two images are attached: {ids:?}");
+
+    // Whatever the heuristic picks, choose the other one — the property under
+    // test is that the choice wins, not which way the heuristic leans.
+    let before = body_string(get_admin(&app, &format!("/person/{PERSON}")).await).await;
+    let picked = avatar_in(&before).expect("the heuristic picks something");
+    let other = ids
+        .iter()
+        .find(|i| **i != picked)
+        .expect("the other image")
+        .clone();
+
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{PERSON}/avatar"),
+        &format!("choice={other}&focal_x=0.25&focal_y=0.15"),
+        true,
+    )
+    .await;
+    assert!(resp.status().is_redirection() || resp.status() == StatusCode::OK);
+
+    let after = body_string(get_admin(&app, &format!("/person/{PERSON}")).await).await;
+    assert_eq!(
+        avatar_in(&after).as_deref(),
+        Some(other.as_str()),
+        "the choice wins over the heuristic"
+    );
+    assert!(
+        after.contains("object-position: 25.0% 15.0%"),
+        "and the focal point reaches the crop: {after}"
+    );
+
+    // It is stored by document id, under a namespaced key, so it survives a
+    // round trip through the file rather than depending on list order.
+    let bytes = std::fs::read(&path).expect("read bundle");
+    let flat = axgf_rs::import_bundle(&bytes).data;
+    let ext = &flat["persons"][PERSON]["extensions"]["axgf-cms:avatar/v1"];
+    assert_eq!(ext["document_id"], serde_json::json!(other));
+}
+
+/// Choosing "no picture" is a decision, and different from not having chosen.
+#[tokio::test]
+async fn choosing_no_picture_shows_the_initials() {
+    let src = one_person_bundle("avatar-none-src");
+    let (app, p) = app_with_bundle("avatar-none", &src);
+    let _ = two_images(&app, &p).await;
+
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{PERSON}/avatar"),
+        "choice=none",
+        true,
+    )
+    .await;
+    assert!(resp.status().is_redirection() || resp.status() == StatusCode::OK);
+
+    let body = body_string(get_admin(&app, &format!("/person/{PERSON}")).await).await;
+    assert!(
+        body.contains("person-avatar is-initials"),
+        "the initials placeholder is shown: {body}"
+    );
+    assert!(!body.contains("/thumb"), "and no image is requested");
+}
+
+/// A document that is not this person's cannot be made their face.
+#[tokio::test]
+async fn an_unrelated_document_is_refused_as_an_avatar() {
+    let src = one_person_bundle("avatar-foreign-src");
+    let (app, p) = app_with_bundle("avatar-foreign", &src);
+    let _ = two_images(&app, &p).await;
+
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{PERSON}/avatar"),
+        "choice=99999999-9999-4999-8999-999999999999",
+        true,
+    )
+    .await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::FORBIDDEN,
+        "a record cannot be pointed at any file in the bundle"
+    );
+}
+
+/// The picker is a write, so a signed-out reader does not get it.
+#[tokio::test]
+async fn the_picker_needs_an_account() {
+    let src = one_person_bundle("avatar-anon-src");
+    let (app, _p) = app_with_bundle("avatar-anon", &src);
+    let resp = get(&app, &format!("/admin/person/{PERSON}/avatar")).await;
+    assert_eq!(resp.status(), StatusCode::UNAUTHORIZED);
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{PERSON}/avatar"),
+        "choice=none",
+        false,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::UNAUTHORIZED);
+}
+
+/// A choice pointing at a document that no longer exists falls back silently.
+#[tokio::test]
+async fn a_deleted_document_falls_back_rather_than_breaking_the_page() {
+    let src = one_person_bundle("avatar-gone-src");
+    let (app, p) = app_with_bundle("avatar-gone", &src);
+    let ids = two_images(&app, &p).await;
+
+    let chosen = ids[0].clone();
+    post_form(
+        &app,
+        &format!("/admin/person/{PERSON}/avatar"),
+        &format!("choice={chosen}"),
+        true,
+    )
+    .await;
+    let del = post_form(
+        &app,
+        &format!("/admin/document/{chosen}/delete"),
+        "policy=cascade",
+        true,
+    )
+    .await;
+    assert!(del.status().is_success() || del.status().is_redirection());
+
+    let body = body_string(get_admin(&app, &format!("/person/{PERSON}")).await).await;
+    assert!(
+        !body.contains(&format!("/document/{chosen}/thumb")),
+        "the page does not ask for a file that is gone: {body}"
+    );
+    assert!(
+        avatar_in(&body).is_some() || body.contains("person-avatar is-initials"),
+        "…it falls back to the automatic pick instead of breaking"
+    );
+}

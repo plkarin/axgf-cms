@@ -16,7 +16,8 @@
   <a class="person-avatar" href="/document/{{ p.header.avatar.id }}/view"
      aria-label="{{ t('person-portrait-of', name=p.name) }}">
     <img src="/document/{{ p.header.avatar.id }}/thumb" alt="{{ t('person-portrait-of', name=p.name) }}"
-         width="112" height="112" loading="lazy" decoding="async">
+         width="112" height="112" loading="lazy" decoding="async"
+         {%- if p.header.avatar.focal %} style="object-position: {{ p.header.avatar.focal }}"{% endif %}>
   </a>
   {% else %}
   {# Most people on a converted bundle have no photograph, so this is what a
@@ -76,6 +77,10 @@
   {% if may_write %}
   <div class="person-head-actions">
     <a class="btn" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>
+    {# Only for people who may edit. The automatic pick puts a newspaper
+       clipping on a record as readily as a portrait, and until somebody says
+       which is which there is no way for the software to know. #}
+    <a class="btn" href="/admin/person/{{ p.id }}/avatar">{{ t("avatar-choose-link") }}</a>
   </div>
   {% endif %}
 </header>

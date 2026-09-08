@@ -23,6 +23,7 @@ pub mod access;
 pub mod acl;
 pub mod admin;
 pub mod auth;
+pub mod avatar;
 pub mod completeness;
 pub mod config;
 pub mod convert;

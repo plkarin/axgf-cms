@@ -22,6 +22,9 @@ pub const TREE_JS: &str = include_str!("../static/tree.js");
 /// it, and it does nothing at all unless the operator configured a tile URL.
 pub const MAP_JS: &str = include_str!("../static/map.js");
 
+/// The avatar picker's focal-point control. Enhancement only.
+pub const AVATAR_JS: &str = include_str!("../static/avatar.js");
+
 /// Leaflet, vendored. See `static/vendor/leaflet.css` for the one deliberate
 /// modification and why it is there.
 pub const LEAFLET_JS: &str = include_str!("../static/vendor/leaflet.js");
@@ -54,6 +57,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_form.html",
     "admin_place.html",
     "admin_physical.html",
+    "admin_avatar.html",
     "admin_result.html",
     "_macros.html",
     "_completeness.html"

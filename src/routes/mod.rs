@@ -70,6 +70,11 @@ pub fn router(state: Shared) -> Router {
             "/admin/person/:id/physical",
             get(admin::physical_edit).post(admin::physical_update),
         )
+        // Choosing which picture stands for a person.
+        .route(
+            "/admin/person/:id/avatar",
+            get(admin::avatar_picker).post(admin::avatar_set),
+        )
         .route("/admin/place/:id/edit", get(admin::place_edit))
         .route("/admin/place/:id", post(admin::place_update))
         .route("/admin/place/:id/geocode", post(admin::place_geocode))
@@ -81,6 +86,7 @@ pub fn router(state: Shared) -> Router {
         .route("/static/app.css", get(public::css))
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/map.js", get(public::map_js))
+        .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))
         .fallback(public::not_found)

@@ -1035,6 +1035,18 @@ pub async fn map_js() -> Response {
         .into_response()
 }
 
+/// `GET /static/avatar.js` — the picker's focal-point control.
+pub async fn avatar_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::AVATAR_JS,
+    )
+        .into_response()
+}
+
 /// `GET /static/vendor/leaflet.js` — the library itself, served by this
 /// binary rather than by a CDN, so a reader fetches the page's code from the
 /// same place they fetched the page.

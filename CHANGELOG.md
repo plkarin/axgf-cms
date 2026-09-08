@@ -9,6 +9,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**The avatar is chosen rather than guessed.** It was picked automatically: the
+first document with role `portrait`, else type `portrait`, else the first image.
+On the operator's bundle none of the first two ever match — the GEDCOM converter
+stamps `photo` on every scan and records one role, `subject`, for all 406 — so a
+death notice, a land deed and a studio portrait are the same shape and the
+avatar is whichever was linked first. That is how a newspaper clipping became
+Wincenty's face. No heuristic recovers from it, because the answer is not in the
+data.
+
+A picker at `/admin/person/:id/avatar`, offered only to readers who may edit,
+shows every image linked to the person with the current choice marked. The
+choice is stored in `extensions["axgf-cms:avatar/v1"]` **by document id**, not
+by position, so it survives export, re-import and any reordering of the document
+list. Three states, and the third is not the first: automatic (no extension at
+all), a named document, or `none` — because "show initials instead" is a real
+decision for a record whose only images are documents, and different from "nobody
+has chosen yet".
+
+An optional **focal point** rides with the choice. An avatar is square and most
+scans are not, so a face in the corner of a group photograph would otherwise be
+cropped out; one click on the picture records a point as two fractions of the
+image, rendered as `object-position`. Not a crop editor with handles — the only
+thing that has to be said is where the face is, and a click says it. Stored only
+when it is not the centre, so the record says what somebody decided rather than
+repeating what the renderer would have done anyway.
+
+Upload-and-use is one step, reusing the existing upload path with one extra
+field rather than a second one. If the avatar write fails the upload still
+stands: losing somebody's photograph because a preference could not be recorded
+would be the worse answer.
+
+**Deleted or unreadable, it falls back silently.** A choice pointing at a
+document that is gone — or at one this particular reader may not see, which is
+indistinguishable at the point of rendering — returns to the automatic pick
+rather than drawing a broken image or disclosing that a restricted document
+exists. The picker is built through the same lens as the record, so a
+contributor is not offered a document they cannot read, and setting one is
+refused server-side as well; `family_scope` governs the write like every other.
+
 **Body and health: fifteen fields, every entry dated, sourced and rated.** The
 specification models identity, vitals, events and documents and has no field
 for how tall somebody was or what they died of. Rather than invent one, this

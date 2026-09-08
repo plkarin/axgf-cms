@@ -1431,6 +1431,10 @@ struct DocUpload {
     /// Set when the body limit fired while reading, so the handler can answer
     /// 413 instead of "no file was chosen".
     too_large: bool,
+    /// "Upload this and make it the avatar", from the picker's own form. The
+    /// upload path is reused rather than duplicated: this is one extra field
+    /// on the multipart body and one extra write after it succeeds.
+    set_avatar: bool,
 }
 
 /// `POST /admin/person/:id/document` — attach a file to a person.
@@ -1579,6 +1583,31 @@ pub async fn upload_document(
         );
     }
 
+    // Upload and choose, in one step, because "attach a photograph" and "use
+    // it as the face" are one intention. A failure here is deliberately not
+    // fatal to the upload: the file is stored and journalled either way, and
+    // telling somebody their photograph was lost because the avatar could not
+    // be recorded would be a worse answer than a picture they can set by hand.
+    if up.set_avatar {
+        // `add_document` mints the id; without one there is nothing to point
+        // the choice at, and the upload itself has already succeeded.
+        let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(&id)).cloned());
+        if let (Some(stored), Some(doc_id)) = (stored, new_id.clone()) {
+            let choice = crate::avatar::Choice::Document {
+                id: doc_id.clone(),
+                focal: crate::avatar::Focal::default(),
+            };
+            if set_avatar_choice(&state, &chrome, &viewer, &id, &stored, &choice).is_err() {
+                tracing::warn!(
+                    person = %id,
+                    document = %doc_id,
+                    "the file was stored but the avatar choice was not"
+                );
+            }
+        }
+        return Redirect::to(&format!("/admin/person/{id}/avatar")).into_response();
+    }
+
     Redirect::to(&format!("/person/{id}#evidence")).into_response()
 }
 
@@ -1654,6 +1683,9 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
             }
             "document_type" => out.document_type = field.text().await.unwrap_or_default(),
             "caption" => out.caption = field.text().await.unwrap_or_default(),
+            "set_avatar" => {
+                out.set_avatar = !field.text().await.unwrap_or_default().trim().is_empty()
+            }
             _ => {
                 let _ = field.bytes().await;
             }
@@ -2591,4 +2623,178 @@ fn render_physical_form(
             may_write => viewer.may_write(),
         },
     )
+}
+
+/// `GET /admin/person/:id/avatar` — the picker.
+///
+/// Every image linked to this person, thumbnailed, with the current choice
+/// marked. Built through [`crate::person::build_in`] with the *viewer's* lens
+/// rather than from the raw document list, so a contributor who may not read a
+/// restricted document does not see it here either — the picker is a read like
+/// any other and gets the same filter without a second rule to keep in step.
+pub async fn avatar_picker(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let view = state.read_as(viewer.ceiling(), |flat, lens| {
+        if !lens.sees_person(&id) {
+            return None;
+        }
+        crate::person::build_in(flat, &id, lens, chrome.lang)
+    });
+    let Some(view) = view else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
+        );
+    };
+
+    let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(&id)).cloned());
+    let choice = stored
+        .as_ref()
+        .map(crate::avatar::read)
+        .unwrap_or(crate::avatar::Choice::Auto);
+    let (chosen_id, focal) = match &choice {
+        crate::avatar::Choice::Document { id, focal } => (Some(id.clone()), *focal),
+        _ => (None, crate::avatar::Focal::default()),
+    };
+
+    render::page_with(
+        &chrome,
+        "admin_avatar.html",
+        context! {
+            nav => "admin",
+            person_id => id,
+            person_name => view.name,
+            images => view.images,
+            initials => view.header.initials,
+            current => view.header.avatar,
+            chosen_id,
+            mode => match choice {
+                crate::avatar::Choice::Auto => "auto",
+                crate::avatar::Choice::None => "none",
+                crate::avatar::Choice::Document { .. } => "document",
+            },
+            focal_x => focal.x,
+            focal_y => focal.y,
+            max_upload_mb => documents::MAX_UPLOAD / (1024 * 1024),
+        },
+    )
+}
+
+/// The picker's form.
+#[derive(Debug, Deserialize)]
+pub struct AvatarForm {
+    /// `auto`, `none`, or a document id.
+    #[serde(default)]
+    choice: String,
+    /// Fractions of the image, from the click-on-the-picture control. Absent
+    /// when scripting is off, which is why they are optional and why the
+    /// default is centred rather than an error.
+    #[serde(default)]
+    focal_x: Option<String>,
+    #[serde(default)]
+    focal_y: Option<String>,
+}
+
+/// `POST /admin/person/:id/avatar` — record the choice.
+pub async fn avatar_set(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(f): Form<AvatarForm>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(&id)).cloned());
+    let Some(stored) = stored else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
+        );
+    };
+
+    let choice = match f.choice.trim() {
+        "" | "auto" => crate::avatar::Choice::Auto,
+        "none" => crate::avatar::Choice::None,
+        doc => {
+            // The chosen document must be one this viewer can actually read
+            // and one that is linked to this person. Without the first check a
+            // contributor could set a restricted document as the avatar and
+            // read it back off the person page; without the second they could
+            // point a record at any file in the bundle.
+            let ok = state.read_as(viewer.ceiling(), |flat, lens| {
+                crate::person::build_in(flat, &id, lens, chrome.lang)
+                    .is_some_and(|v| v.images.iter().any(|d| d.id == doc))
+            });
+            if !ok {
+                return render::error_page_in(
+                    &chrome,
+                    StatusCode::FORBIDDEN,
+                    "avatar-not-available-title",
+                    "avatar-not-available-detail",
+                );
+            }
+            let parse = |v: &Option<String>| v.as_deref().and_then(|s| s.parse::<f64>().ok());
+            let focal = match (parse(&f.focal_x), parse(&f.focal_y)) {
+                (Some(x), Some(y)) => crate::avatar::Focal::new(x, y),
+                _ => crate::avatar::Focal::default(),
+            };
+            crate::avatar::Choice::Document {
+                id: doc.to_string(),
+                focal,
+            }
+        }
+    };
+
+    if let Err(r) = set_avatar_choice(&state, &chrome, &viewer, &id, &stored, &choice) {
+        return r;
+    }
+    Redirect::to(&format!("/person/{id}")).into_response()
+}
+
+/// Write an avatar choice through the checked update path.
+///
+/// Shared by the picker and by upload-and-set, so the scope check, the version
+/// check and the journal entry happen once rather than in two places that can
+/// drift apart.
+#[allow(clippy::result_large_err)]
+fn set_avatar_choice(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    id: &str,
+    stored: &Value,
+    choice: &crate::avatar::Choice,
+) -> Result<(), Response> {
+    let mut entity = crate::avatar::apply(stored, choice);
+    entity["id"] = Value::String(id.to_string());
+
+    check_scope(
+        state,
+        chrome,
+        viewer,
+        axgf_rs::EntityKind::Person,
+        &entity,
+        Some(stored),
+    )?;
+
+    let version = crate::state::version_of(stored);
+    let label = Some(crate::view::person_display_name(stored)).filter(|s| !s.is_empty());
+    match state.update_checked(
+        axgf_rs::EntityKind::Person,
+        id,
+        version,
+        entity,
+        viewer.name(),
+        label,
+    ) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(io_error(chrome, &e)),
+    }
 }

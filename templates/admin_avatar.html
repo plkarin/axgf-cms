@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ person_name }} — {{ t("avatar-picker-title") }}{% endblock %}
+
+{# Choosing which picture stands for a person.
+
+   The automatic pick cannot be fixed on a converted bundle: every scan carries
+   document_type "photo" and role "subject", so a death notice and a portrait
+   are the same shape and the avatar is whichever was linked first. The answer
+   is not in the data, so somebody has to say it. #}
+
+{% block content %}
+
+<h1>{{ t("avatar-picker-title") }}</h1>
+<p class="lede">{{ person_name }}</p>
+
+<form method="post" action="/admin/person/{{ person_id }}/avatar" class="rec-section">
+  <h2>{{ t("avatar-choose") }}</h2>
+
+  {# The two non-picture answers first, because "no picture" is a real choice
+     and burying it under a grid of thumbnails would hide it. #}
+  <ul class="avatar-modes">
+    <li>
+      <label>
+        <input type="radio" name="choice" value="auto" {{ "checked" if mode == "auto" }}>
+        <span>{{ t("avatar-mode-auto") }}</span>
+        <span class="small muted">{{ t("avatar-mode-auto-note") }}</span>
+      </label>
+    </li>
+    <li>
+      <label>
+        <input type="radio" name="choice" value="none" {{ "checked" if mode == "none" }}>
+        <span class="avatar-initials-chip" aria-hidden="true">{{ initials }}</span>
+        <span>{{ t("avatar-mode-none") }}</span>
+        <span class="small muted">{{ t("avatar-mode-none-note") }}</span>
+      </label>
+    </li>
+  </ul>
+
+  {% if images %}
+  <div class="avatar-grid">
+    {% for d in images %}
+    <label class="avatar-option{% if d.id == chosen_id %} is-chosen{% endif %}">
+      <input type="radio" name="choice" value="{{ d.id }}" {{ "checked" if d.id == chosen_id }}>
+      {# The click target for the focal point is the picture itself. A crop
+         editor with handles would be a bigger interface than the decision it
+         serves: the only thing that has to be said is where the face is. #}
+      <span class="avatar-frame" data-focal-target>
+        <img src="/document/{{ d.id }}/thumb" alt="{{ d.caption if d.caption else d.filename }}"
+             loading="lazy" decoding="async">
+        <span class="avatar-pin" hidden aria-hidden="true"></span>
+      </span>
+      <span class="small">{{ d.caption if d.caption else d.filename }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  <p class="hint">{{ t("avatar-focal-hint") }}</p>
+  {% else %}
+  <p class="notice" role="status">{{ t("avatar-no-images") }}</p>
+  {% endif %}
+
+  {# Carried whether or not scripting is on. With it off these keep whatever
+     was already stored, so saving does not silently recentre a crop somebody
+     set earlier. #}
+  <input type="hidden" name="focal_x" id="focal-x" value="{{ focal_x }}">
+  <input type="hidden" name="focal_y" id="focal-y" value="{{ focal_y }}">
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit">{{ t("admin-save") }}</button>
+    <a class="btn" href="/person/{{ person_id }}">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+
+{# Upload and choose in one step: attaching a photograph and using it as the
+   face is one intention. The upload path is the existing one, with one extra
+   field on the body. #}
+<form method="post" action="/admin/person/{{ person_id }}/document"
+      enctype="multipart/form-data" class="rec-section">
+  <h2>{{ t("avatar-upload-title") }}</h2>
+  <input type="hidden" name="set_avatar" value="1">
+  <input type="hidden" name="document_type" value="portrait">
+  <div class="field">
+    <input type="file" name="file" accept="image/*" required>
+  </div>
+  <div class="field">
+    <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}">
+  </div>
+  <div class="cta-row">
+    <button class="btn" type="submit">{{ t("avatar-upload-button") }}</button>
+  </div>
+  <p class="hint">{{ t("record-upload-help-short", mb=max_upload_mb) }}</p>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/avatar.js"></script>
+{% endblock %}

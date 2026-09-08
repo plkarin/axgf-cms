@@ -220,6 +220,11 @@ pub struct DocumentView {
     pub has_payload: bool,
     /// True when the payload is an image and can be shown in the gallery.
     pub is_image: bool,
+    /// `object-position` for the avatar crop, when this document is the chosen
+    /// avatar and a focal point was recorded. `None` everywhere else, so the
+    /// gallery is unaffected.
+    #[serde(default)]
+    pub focal: Option<String>,
     pub size_bytes: Option<u64>,
     /// "1.4 MB", or `None` when the record does not state a size.
     pub size_human: Option<String>,
@@ -425,7 +430,9 @@ pub fn build_in(
     let sources = ctx.sources_for(&timeline, &names, &links, &occupations, &unions);
     let notes = collect_notes(person, &birth, &death, &timeline);
 
-    let header = build_header(&ctx, &name, &images, &birth, &death, is_living, &unions, id);
+    let header = build_header(
+        &ctx, &name, &images, &birth, &death, is_living, &unions, id, person,
+    );
 
     // Health, and the raw dump, both go through the same permission.
     //
@@ -575,6 +582,7 @@ fn build_header(
     is_living: bool,
     unions: &[UnionView],
     id: &str,
+    person: &Value,
 ) -> HeaderView {
     // A photograph the bundle actually holds. A `referenced` document names a
     // file that lives somewhere else, and an avatar that resolves to a broken
@@ -586,12 +594,28 @@ fn build_header(
     // indistinguishable and the avatar is whichever image came first. That is
     // a property of the data rather than of this choice — a bundle that says
     // which image is the portrait gets the portrait.
-    let avatar = images
-        .iter()
-        .find(|d| d.role.as_deref() == Some("portrait"))
-        .or_else(|| images.iter().find(|d| d.document_type == "portrait"))
-        .or_else(|| images.first())
-        .cloned();
+    // A stored choice wins over the heuristic. See [`crate::avatar`] for why
+    // the heuristic cannot be fixed on a converted bundle.
+    //
+    // `images` has already been through the lens, so a document this reader may
+    // not see is not in it — and a choice pointing at one falls back to the
+    // heuristic here, silently, rather than rendering a broken image or
+    // disclosing that a restricted document exists. The same fallback covers
+    // the document simply having been deleted, which is the case the brief
+    // asks for and is indistinguishable from this one at this point.
+    let avatar = match crate::avatar::read(person) {
+        crate::avatar::Choice::None => None,
+        crate::avatar::Choice::Document { ref id, focal } => images
+            .iter()
+            .find(|d| &d.id == id)
+            .cloned()
+            .map(|mut d| {
+                d.focal = Some(focal.css());
+                d
+            })
+            .or_else(|| auto_avatar(images)),
+        crate::avatar::Choice::Auto => auto_avatar(images),
+    };
 
     let children: usize = unions.iter().map(|u| u.children.len()).sum();
 
@@ -603,6 +627,19 @@ fn build_header(
         children,
         generations_below: ctx.generations_below(id),
     }
+}
+
+/// The heuristic, used when nobody has chosen.
+///
+/// Right for a bundle that says which image is the portrait, and useless for
+/// one that does not — which is every bundle a GEDCOM converter produced.
+fn auto_avatar(images: &[DocumentView]) -> Option<DocumentView> {
+    images
+        .iter()
+        .find(|d| d.role.as_deref() == Some("portrait"))
+        .or_else(|| images.iter().find(|d| d.document_type == "portrait"))
+        .or_else(|| images.first())
+        .cloned()
 }
 
 /// One or two letters standing in for a photograph.
@@ -1434,6 +1471,7 @@ impl Ctx<'_> {
                     known: false,
                     has_payload: false,
                     is_image: false,
+                    focal: None,
                     size_bytes: None,
                     size_human: None,
                 });
@@ -1449,6 +1487,7 @@ impl Ctx<'_> {
                 id: doc_id.to_string(),
                 filename: str_field(d, "filename").unwrap_or_else(|| doc_id.to_string()),
                 is_image: mime.as_deref().is_some_and(|m| m.starts_with("image/")),
+                focal: None,
                 mime_type: mime,
                 document_type: str_field(d, "document_type")
                     .unwrap_or_else(|| "other".into())

@@ -38,6 +38,31 @@
 //! product does. "Diabetes" with no source is a rumour; the shape of the data
 //! is what makes that visible rather than a matter of discipline.
 
+//! # Why there is no "also recorded for a parent" note
+//!
+//! A hereditary condition is worth more than the individual, and a link from a
+//! record to the same condition on a parent or a child would be the obvious way
+//! to say so. It was considered and is deliberately absent, for a reason about
+//! the data rather than about the effort.
+//!
+//! `conditions` and `cause_of_death` are [`Kind::Text`], because what a record
+//! says cannot be anticipated. Matching them across people therefore means
+//! matching free text — and "diabetes", "diabetes mellitus", "cukrzyca" and
+//! "sugar sickness" are one condition written four ways, while "none" and
+//! "unknown" are two records agreeing about nothing. A note driven by string
+//! equality would be silent almost always and wrong occasionally, which is the
+//! worst pair of properties a hint can have. Making it useful needs coded
+//! terms, and coding a diagnosis is a different product.
+//!
+//! There is a second reason, and it is the one this application has already
+//! learned the hard way: a cross-record note is a disclosure surface. Saying
+//! "also recorded for Anna" on somebody else's page states something about
+//! Anna's health, so it would have to be gated on `may_read_health` for each
+//! relative separately, and the history of this feature is that health leaks
+//! through the surfaces nobody was thinking about rather than the ones they
+//! were. A researcher who wants to know whether a condition runs in a family
+//! opens the two records, which are one click apart in the family list.
+
 use std::collections::BTreeMap;
 
 use serde::Serialize;

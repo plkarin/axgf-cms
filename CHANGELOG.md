@@ -126,6 +126,32 @@ not one revised, and the record draws them as a small series with the dates
 leading. `axgf-spec` is unchanged: if this proves itself, proposing it upstream
 is a separate conversation.
 
+### Fixed
+
+**A warning code was below WCAG AA, and had been.** The contrast sweep run for
+the figure found it in code the figure does not touch: `--conf-medium`, the
+middle stop of the confidence ramp, was also the foreground of the warning
+severity — a diagnostic code at 0.8rem, a `.warn-tag` and an unplaced band
+label at 0.75rem, and the second-rank source chip. Measured at **4.33:1** on
+the deuteranopia and protanopia themes and **4.41** against the sepia wash,
+against the 4.5 AA asks of body text.
+
+Exactly the defect this file has already recorded twice — the confidence track
+borrowing `--border`, and the delete button borrowing `--conf-low` — and the
+same fix, which the file itself names: its own variable. A ramp stop is chosen
+to be filled into a bar, and a bar only has to clear the 3:1 of a graphic; the
+name says "medium", not "unreadable", so nobody reading the stylesheet would
+see it. `--warning` is now a foreground in its own right, held to 4.5:1
+against the *darkest ground it can sit on* — a wash stop rather than
+`--surface`, which is where the sepia value was failing while passing on
+white. Five text rules moved to it; the borders that also use `--conf-medium`
+stayed, being boundaries and correctly held to 3:1.
+
+Values are unchanged on four themes, where the stop already cleared 4.5 as
+text: only sepia (`#8a6018` to `#865d17`) and the two red-green themes
+(`#2f7fb8` to `#2a72a6`) moved, each by the smallest step along its own hue
+that reaches 4.6.
+
 ### Security
 
 **The edit journal was printing back the diagnosis the record withheld.** Found

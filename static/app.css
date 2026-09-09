@@ -54,6 +54,17 @@
      Same defect the confidence track had, same fix: its own variable. */
   --danger: #9d4a26;
 
+  /* The warning severity, as a FOREGROUND, for the same reason --danger has
+     its own variable: --conf-medium is a ramp stop, chosen to be filled into
+     a bar, and a bar fill only has to clear the 3:1 of a graphic. Set in
+     0.7–0.8rem text it was measured at 4.33:1 on the two red-green themes and
+     4.41 against the sepia wash, both under the 4.5 AA asks of body text —
+     shipped, and invisible to a reader of this file because the variable's
+     name says "medium", not "unreadable". Same defect the confidence track
+     and the delete button had, same fix. Held to 4.5:1 against the darkest
+     ground it can sit on, which is a wash stop rather than --surface. */
+  --warning: #8a5f18;
+
   /* Two neutral hues for gender, deliberately not pink and blue. The `-line`
      values are the outline of a tree card, which is a control, so they are
      held to 3:1 against the canvas behind them rather than chosen by eye. */
@@ -168,6 +179,7 @@
     --conf-low: #e0937a;
     --conf-track: #3a3630;
     --danger: #e0937a;
+    --warning: #d9ab6b;
 
     --sex-a: #253034;
     --sex-a-line: #5c757f;
@@ -213,6 +225,7 @@
   --conf-low: #e0937a;
   --conf-track: #3a3630;
   --danger: #e0937a;
+  --warning: #d9ab6b;
 
   --sex-a: #253034;
   --sex-a-line: #5c757f;
@@ -261,6 +274,7 @@
   --conf-low: #767676;
   --conf-track: #ffffff;
   --danger: #a30000;
+  --warning: #555555;
 
   --sex-a: #ffffff;
   --sex-a-line: #000000;
@@ -308,6 +322,7 @@
   --conf-low: #94411f;
   --conf-track: #eadfc8;
   --danger: #94411f;
+  --warning: #865d17;
 
   --sex-a: #e8e5d6;
   --sex-a-line: #948c73;
@@ -362,6 +377,7 @@
   --conf-low: #77a9c9;
   --conf-track: #e9edf1;
   --danger: #8f3d00;
+  --warning: #2a72a6;
 
   --sex-a: #e6eef4;
   --sex-a-line: #7d96a8;
@@ -409,6 +425,7 @@
   --conf-low: #d290ac;
   --conf-track: #f2eaea;
   --danger: #a41020;
+  --warning: #b03a6b;
 
   --sex-a: #eeeaea;
   --sex-a-line: #9d9191;
@@ -1084,7 +1101,7 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .diag-row:last-child { border-bottom: none; }
 .diag-code { font-family: var(--mono); font-size: 0.8rem; }
 .diag-row[data-sev="error"]   .diag-code { color: var(--danger); }
-.diag-row[data-sev="warning"] .diag-code { color: var(--conf-medium); }
+.diag-row[data-sev="warning"] .diag-code { color: var(--warning); }
 .diag-row[data-sev="info"]    .diag-code { color: var(--ink-faint); }
 .diag-ref { display: block; font-size: 0.76rem; color: var(--ink-faint); font-family: var(--mono); }
 
@@ -1233,7 +1250,7 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 .band-label strong { color: var(--ink-soft); font-weight: 600; }
 .band-label span { margin-inline-start: 0.4rem; text-transform: none; letter-spacing: 0; }
-.band-label.unplaced strong { color: var(--conf-medium); }
+.band-label.unplaced strong { color: var(--warning); }
 
 .tcard {
   position: absolute;
@@ -1806,7 +1823,7 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .src-chip[data-rank="3"] { border-color: var(--conf-high); }
 .src-chip[data-rank="3"] .src-rel { color: var(--conf-high); }
 .src-chip[data-rank="2"] { border-color: var(--conf-medium); }
-.src-chip[data-rank="2"] .src-rel { color: var(--conf-medium); }
+.src-chip[data-rank="2"] .src-rel { color: var(--warning); }
 .src-chip[data-rank="1"] { border-color: var(--conf-low); }
 .src-chip[data-rank="1"] .src-rel { color: var(--conf-low); }
 .src-title { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1990,7 +2007,7 @@ a.stat:hover { border-color: var(--accent); }
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--conf-medium);
+  color: var(--warning);
   border: 1px solid var(--conf-medium);
   border-radius: 3px;
   padding: 0 0.35em;
@@ -2688,7 +2705,7 @@ a.tcard:hover {
 .suggestions .tag code { font-size: 0.75rem; color: inherit; background: none; padding: 0; }
 .warn-tag {
   font-size: 0.75rem;
-  color: var(--conf-medium);
+  color: var(--warning);
   text-transform: lowercase;
   white-space: nowrap;
 }

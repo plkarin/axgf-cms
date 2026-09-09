@@ -1280,3 +1280,18 @@ avatar-not-available-title = هذه الصورة غير متاحة
 avatar-not-available-detail = الملف المختار غير مرتبط بهذا الشخص، أو ليس لك أن تقرأه.
 
 record-history-withheld = محجوب عنك
+
+## الشكل المولَّد بجانب السجل
+#
+# ليس صورة شخصية. كل الرسائل التالية موجودة كي يبقى ذلك بلا التباس.
+
+silhouette-label = عمر وطول مسجّلان، لا هيئة
+silhouette-not-a-likeness = ليس صورة شخصية: لا شيء فيه مأخوذ من صورة فوتوغرافية.
+silhouette-proportions-infant = نسب رضيع، نحو أربعة أطوال رأس.
+silhouette-proportions-child = نسب طفل صغير، نحو ستة أطوال رأس.
+silhouette-proportions-adolescent = نسب مراهق، نحو سبعة أطوال رأس.
+silhouette-proportions-adult = نسب بالغ، نحو سبعة أطوال رأس ونصف.
+silhouette-proportions-elderly = نسب بالغ، وهي تتوقف عن التغيّر عند العشرين تقريبًا: لا يميّز الشكل المسنّ من بالغ أصغر سنًّا، والتواريخ أعلاه تميّزه.
+silhouette-to-scale = رُسم بمقياس الرسم قياسًا على خط مرجعي عند { $ref } سم.
+silhouette-no-height = لا طول مسجّل، فرُسم الشكل بحجم اسمي يناسب فئته العمرية لا بمقياس الرسم.
+silhouette-several-heights = سُجّل أكثر من طول واحد؛ يرسم الشكل أحدثها.

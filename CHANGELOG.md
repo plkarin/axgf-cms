@@ -9,6 +9,58 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A figure beside the record, drawn from the record and from nothing else.**
+Server-generated SVG: about 1.4 KB, no client library, nothing to rotate. It
+encodes three things and refuses the rest.
+
+* **Age band as proportion**, from the birth and death dates — the same age
+  the masthead prints, so the drawing and the heading above it cannot
+  disagree. An infant is four head-heights, a young child six, an adolescent
+  seven, an adult seven and a half. That ratio is the whole mechanism: it is
+  what makes an infant read as an infant with the caption covered up, and it
+  is measurable rather than a matter of taste — drawn at the same overall
+  height, an infant's head comes out nearly twice an adult's.
+* **Height**, when the record states one, to scale against a fixed 170 cm
+  reference line, so two people can be held side by side across two screens.
+  With several heights recorded the latest is drawn and the caption says so;
+  the full dated series stays in the section below, which is where a series
+  belongs. With no height at all the figure is drawn at a nominal size for its
+  band and the caption says *that* — a figure silently drawn at an average
+  height is a measurement nobody took.
+* **Build**, when the record states one, as the width of the torso.
+
+**Five bands, four figures, and that is not an oversight.** Elderly draws the
+same figure as adult, because the proportion that separates the other bands —
+how much of a person is head — stops changing at about twenty. What does
+change with age is stature, and stature is height: if the record states one
+the figure already shows it, and if it does not then drawing an elderly person
+shorter would invent the measurement this whole thing exists to avoid
+inventing. A stoop would be worse still, because posture is not in the record.
+The caption names the band and says why the drawing does not.
+
+**No dates, no figure.** Not a default adult: 388 of the operator's 866 people
+have no usable dates, and a generic figure standing in for each of them would
+be a false statement made in pictures, which is harder to argue with than one
+made in words and therefore worse. An absent figure is the honest output.
+
+**It is not a portrait and the page says so twice** — in a heading beside it
+that reads "Recorded age and height, not an appearance", and in the caption's
+closing sentence. No face, no hair, no clothing, no period: each would be a
+claim the record does not make. Nothing in it derives from the photograph,
+which stays in the avatar untouched.
+
+**It says nothing in colour**, which is what makes it survive the three
+colour-blind themes and a monochrome printer alike: one flat fill, two rules,
+and every distinction carried by geometry. The fill is `--ink-soft` and the
+rules `--ink-faint`, both already held to 4.5:1 as body text in every theme —
+no new pair to measure in seven places. `--border-strong` was the obvious
+choice for the rules and the wrong one: it is tuned to the 3:1 a control
+boundary needs, the sweep put the ground line at 3.05 on the light theme, and
+a reference line is not a boundary. It is the mark a height is read against.
+
+Static under every motion preference, because a figure that carries no more
+information moving than still has nothing to animate.
+
 **The avatar is chosen rather than guessed.** It was picked automatically: the
 first document with role `portrait`, else type `portrait`, else the first image.
 On the operator's bundle none of the first two ever match — the GEDCOM converter

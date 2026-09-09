@@ -893,3 +893,19 @@ avatar-not-available-title = その画像は利用できません
 avatar-not-available-detail = 選ばれたファイルはこの人に結び付けられていないか、閲覧が許されていません。
 
 record-history-withheld = あなたには表示されません
+
+## 記録の横に生成される人型の図
+#
+# これは肖像ではありません。以下のメッセージはすべて、その点をあいまいに
+# しないために存在します。
+
+silhouette-label = 記録された年齢と身長であり、外見ではありません
+silhouette-not-a-likeness = 肖像ではありません。写真から取った部分はありません。
+silhouette-proportions-infant = 乳児の比率、およそ4頭身です。
+silhouette-proportions-child = 幼児の比率、およそ6頭身です。
+silhouette-proportions-adolescent = 青少年の比率、およそ7頭身です。
+silhouette-proportions-adult = 成人の比率、およそ7.5頭身です。
+silhouette-proportions-elderly = 成人の比率です。頭身は二十歳ごろで変わらなくなるため、この図は高齢者と若い成人を描き分けません。それを示すのは上の日付です。
+silhouette-to-scale = { $ref } cm の基準線に対して、実寸比で描いています。
+silhouette-no-height = 身長が記録されていないため、実寸比ではなく年齢帯に応じた仮の大きさで描いています。
+silhouette-several-heights = 身長は複数記録されています。図は最も新しいものです。

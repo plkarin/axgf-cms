@@ -1113,3 +1113,21 @@ avatar-not-available-detail = The chosen file is not linked to this person, or i
 # The value of a recorded change this reader may not see. It sits in a
 # table cell, so it is a phrase rather than a sentence.
 record-history-withheld = withheld from you
+
+## The generated figure beside a record
+#
+# It is not a portrait. Every message here exists to keep that unambiguous:
+# the figure states an age band as proportion and a recorded height to scale,
+# and it states nothing else. Translate "head-heights" with whatever term your
+# language's drawing tradition uses for the head-to-body ratio.
+
+silhouette-label = Recorded age and height, not an appearance
+silhouette-not-a-likeness = Not a portrait: nothing in it is taken from a photograph.
+silhouette-proportions-infant = Infant proportions, about four head-heights.
+silhouette-proportions-child = Young child's proportions, about six head-heights.
+silhouette-proportions-adolescent = Adolescent proportions, about seven head-heights.
+silhouette-proportions-adult = Adult proportions, about seven and a half head-heights.
+silhouette-proportions-elderly = Adult proportions, which stop changing at about twenty: the figure does not tell an elderly person from a younger adult, and the dates above do.
+silhouette-to-scale = Drawn to scale against a reference line at { $ref } cm.
+silhouette-no-height = No height is recorded, so the figure is drawn at a nominal size for its age band rather than to scale.
+silhouette-several-heights = More than one height is recorded; the figure draws the most recent.

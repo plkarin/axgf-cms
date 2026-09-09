@@ -1076,3 +1076,19 @@ avatar-not-available-title = Dieses Bild steht nicht zur Verfügung
 avatar-not-available-detail = Die gewählte Datei ist nicht mit dieser Person verknüpft oder Sie dürfen sie nicht lesen.
 
 record-history-withheld = Ihnen nicht gezeigt
+
+## Die erzeugte Figur neben einem Eintrag
+#
+# Sie ist kein Porträt. Alle folgenden Meldungen sind dafür da, dass das
+# unmissverständlich bleibt.
+
+silhouette-label = Erfasstes Alter und erfasste Größe, kein Aussehen
+silhouette-not-a-likeness = Kein Porträt: nichts daran stammt aus einer Fotografie.
+silhouette-proportions-infant = Proportionen eines Säuglings, etwa vier Kopfhöhen.
+silhouette-proportions-child = Proportionen eines kleinen Kindes, etwa sechs Kopfhöhen.
+silhouette-proportions-adolescent = Proportionen eines Jugendlichen, etwa sieben Kopfhöhen.
+silhouette-proportions-adult = Proportionen eines Erwachsenen, etwa siebeneinhalb Kopfhöhen.
+silhouette-proportions-elderly = Proportionen eines Erwachsenen, die sich ab etwa zwanzig nicht mehr ändern: die Figur unterscheidet einen alten Menschen nicht von einem jüngeren erwachsenen, die Daten darüber schon.
+silhouette-to-scale = Maßstäblich gezeichnet, gegen eine Bezugslinie bei { $ref } cm.
+silhouette-no-height = Es ist keine Größe erfasst, daher ist die Figur in einer nominellen Größe für ihre Altersgruppe gezeichnet und nicht maßstäblich.
+silhouette-several-heights = Es ist mehr als eine Größe erfasst; die Figur zeichnet die jüngste.

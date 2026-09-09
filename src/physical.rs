@@ -302,6 +302,32 @@ impl Detail {
         self.entries.values().all(|v| v.is_empty())
     }
 
+    /// How many entries one field carries.
+    pub fn count(&self, field: &str) -> usize {
+        self.entries.get(field).map_or(0, Vec::len)
+    }
+
+    /// The entry a single-figure summary should stand on: the latest dated
+    /// one, and failing that the first undated one.
+    ///
+    /// Latest rather than first because a trait measured twice is a trait
+    /// measured again, not a trait corrected — a height at twenty and a height
+    /// at fifty-six are both true and the later one is the one a figure of
+    /// somebody at the end of their life should be drawn from. The full series
+    /// is still rendered beside it, dates leading, so nothing is hidden by the
+    /// choice; only one of them can be drawn.
+    ///
+    /// Dates compare as strings, which is exactly right for the shape the
+    /// specification stores them in: `1914` sorts before `1914-08` sorts
+    /// before `1950`.
+    pub fn latest(&self, field: &str) -> Option<&Entry> {
+        let rows = self.entries.get(field)?;
+        rows.iter()
+            .filter(|r| !r.date.trim().is_empty())
+            .max_by(|a, b| a.date.cmp(&b.date))
+            .or_else(|| rows.first())
+    }
+
     /// Read the editor's POST body.
     ///
     /// Rows are numbered in the field name — `height_cm.0.value` — and the form

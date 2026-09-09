@@ -379,6 +379,23 @@ fn every_dynamic_key_family_is_fully_defined() {
             expected.push(note.to_string());
         }
     }
+    // The figure beside a record names its band's sentence by building the
+    // key, so nothing in the templates points at these and only this list
+    // stands between a missing one and a reader seeing
+    // `silhouette-proportions-adolescent` printed on the page.
+    for band in axgf_cms::silhouette::BANDS {
+        expected.push(band.key());
+    }
+    // The same for the vocabularies `physical` renders by name: the section
+    // and the figure both build `phys-<field>-<term>` at run time.
+    for field in axgf_cms::physical::FIELDS {
+        expected.push(field.label_key());
+        if let axgf_cms::physical::Kind::Closed(vocab) = field.kind {
+            for term in vocab {
+                expected.push(field.term_key(term));
+            }
+        }
+    }
     let missing: Vec<&String> = expected.iter().filter(|k| !english.contains(*k)).collect();
     assert!(missing.is_empty(), "English is missing {missing:?}");
 }

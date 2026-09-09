@@ -1076,3 +1076,19 @@ avatar-not-available-title = Essa imagem não está disponível
 avatar-not-available-detail = O ficheiro escolhido não está ligado a esta pessoa, ou não o pode ler.
 
 record-history-withheld = não lhe é mostrado
+
+## A figura gerada ao lado de um registo
+#
+# Não é um retrato. Todas as mensagens que se seguem existem para que isso
+# fique sem ambiguidade.
+
+silhouette-label = Idade e altura registadas, não uma aparência
+silhouette-not-a-likeness = Não é um retrato: nada nela vem de uma fotografia.
+silhouette-proportions-infant = Proporções de um bebé, cerca de quatro alturas de cabeça.
+silhouette-proportions-child = Proporções de uma criança pequena, cerca de seis alturas de cabeça.
+silhouette-proportions-adolescent = Proporções de um adolescente, cerca de sete alturas de cabeça.
+silhouette-proportions-adult = Proporções de um adulto, cerca de sete alturas de cabeça e meia.
+silhouette-proportions-elderly = Proporções de um adulto, que deixam de mudar por volta dos vinte anos: a figura não distingue uma pessoa idosa de uma adulta mais nova, e as datas acima distinguem.
+silhouette-to-scale = Desenhada à escala, contra uma linha de referência a { $ref } cm.
+silhouette-no-height = Não há altura registada, por isso a figura é desenhada num tamanho nominal para o seu escalão etário e não à escala.
+silhouette-several-heights = Está registada mais do que uma altura; a figura desenha a mais recente.

@@ -1642,6 +1642,67 @@ bdi.date { unicode-bidi: isolate; }
 }
 
 
+/* The generated figure, and the caption that says what it is.
+ *
+ * See `src/silhouette.rs` for what it encodes and, more to the point, what it
+ * refuses to. Nothing here is a portrait: it is age band as proportion, a
+ * recorded height drawn to scale against a fixed reference line, and a
+ * recorded build as the width of a torso.
+ *
+ * Its own row under the masthead rather than a fourth column. At 390px there
+ * is no fourth column, and a caption whose job is to say "this is not a
+ * likeness" needs a line to say it on rather than a 76px gutter.
+ *
+ * It introduces no colour. The fill is --ink-soft and the two rules are
+ * --ink-faint, both of which every theme already holds to 4.5:1 as body text.
+ * --border-strong was the obvious choice for the rules and is the wrong one:
+ * it is tuned to the 3:1 that WCAG 1.4.11 asks of a control boundary, the
+ * sweep measured the ground line at 3.05 on the light theme, and the
+ * reference line is not a boundary — it is the 170 cm mark the height is read
+ * against, which is a statement and should be held to what a statement is
+ * held to. A new pair would be a new pair to measure in seven themes, for a
+ * shape that says nothing in hue anyway: the bands are told apart by how much
+ * of the figure is head, which survives every colour-blind theme and
+ * greyscale printing alike. */
+.person-figure {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+.figure-art { flex: none; }
+.silhouette {
+  display: block;
+  block-size: 190px;
+  inline-size: auto;
+  /* Static, and not because a preference asked for it: a figure that carries
+     no more information moving than still has nothing to animate. */
+}
+.sil-body { fill: var(--ink-soft); }
+.sil-ground { stroke: var(--ink-faint); stroke-width: 1.5; }
+/* The 170 cm mark. Dashed rather than tinted, so it reads as a measurement
+   line and not as part of the figure, in every theme and in monochrome. */
+.sil-ref { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 5 5; }
+.person-figure figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-inline-size: 0;
+  /* Capped, so the caption reads as a note beside a figure rather than as a
+     paragraph of the record. Uncapped it stretched the full content width and
+     competed with the heading above it. */
+  max-inline-size: 52ch;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+.person-figure .sep { color: var(--ink-faint); }
+.figure-label { color: var(--ink); }
+.figure-key { color: var(--ink-faint); }
+
 @media (max-width: 640px) {
   /* The actions move under the text rather than squeezing a third column into
      a phone. */
@@ -1649,6 +1710,11 @@ bdi.date { unicode-bidi: isolate; }
   .person-head-actions { grid-column: 1 / -1; }
   .person-avatar { inline-size: 76px; block-size: 76px; }
   .person-avatar.is-initials { font-size: 1.7rem; }
+  /* The figure shrinks rather than the caption wrapping to twelve lines: on a
+     phone the words are the part that has to stay readable. */
+  .silhouette { block-size: 132px; }
+  .person-figure { gap: 0.8rem; }
+  .person-figure figcaption { font-size: 0.78rem; }
 }
 
 .showcase-strip {

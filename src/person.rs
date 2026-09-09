@@ -347,6 +347,10 @@ pub struct PersonView {
     /// Physical traits and health, already filtered for this reader. See
     /// [`crate::physical`].
     pub physical: crate::physical::DetailView,
+    /// The drawn figure, or `None` when the record cannot support one. See
+    /// [`crate::silhouette`] — it is not a portrait and does not derive from
+    /// the photograph, which stays in [`HeaderView::avatar`] untouched.
+    pub silhouette: Option<crate::silhouette::View>,
 }
 
 /// The locale key for what a reader is shown in place of a person they may
@@ -444,7 +448,16 @@ pub fn build_in(
     // afterwards, because a redaction done on a string is a redaction waiting
     // to be defeated by a line break.
     let may_read_health = crate::access::may_read_health(person, lens.ceiling());
+    let detail = crate::physical::Detail::from_entity(person);
     let physical = crate::physical::view_for(person, flat, lang, may_read_health);
+
+    // The figure beside the record. It is built from `header.age` — the same
+    // number the masthead prints — so the drawing and the heading above it
+    // cannot disagree about how old somebody was, and from the *traits* half
+    // of the extension data, which is not special-category and is not filtered
+    // by `may_read_health`. A figure that changed shape when an administrator
+    // signed in would be a health disclosure drawn as a picture.
+    let silhouette = crate::silhouette::view_for(header.age, &detail, lang);
     let raw_json = {
         let shown = if may_read_health {
             std::borrow::Cow::Borrowed(person)
@@ -520,6 +533,7 @@ pub fn build_in(
         has_timeline,
         showcase_notes,
         physical,
+        silhouette,
     })
 }
 

@@ -40,6 +40,7 @@ pub mod place;
 pub mod render;
 pub mod routes;
 pub mod session;
+pub mod silhouette;
 pub mod state;
 pub mod theme;
 pub mod tree;

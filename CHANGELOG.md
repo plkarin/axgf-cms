@@ -76,6 +76,67 @@ is a separate conversation.
 
 ### Security
 
+**The edit journal was printing back the diagnosis the record withheld.** Found
+on the operator's own bundle, by reading a real contributor's page rather than
+by reading the code. The record page withheld a living person's condition and
+the history section two headings below it rendered the same string out of the
+change diff — a recorded change carries the value that changed, and the first
+edit to add any of this to a person records the whole `extensions` object in
+one row. The same rows appear in the tree side panel, on the tree page and in
+the entity editor, all of them open to every signed-in relative.
+
+Three more surfaces went with it, all on the pages only writers reach and so
+all missed by a sweep that looked at what readers see:
+
+* The **entity editor's raw-document textarea** is the whole person in a box.
+  It is the record page's raw dump again, on the page where somebody can also
+  change it.
+* The **conflict page** shown when two people edit at once prints the *stored*
+  entity and a diff against it, both of which are the health of a person this
+  editor may not read it for.
+* The conflict page's **resubmit box**, which by then holds the health the
+  write path had just restored into the submission, and would have handed it
+  back in a textarea.
+
+All four now go through `physical::changes_for_reader` and `strip_health` at
+the same `may_read_health` chokepoint as everything else. A change that can
+carry health keeps its row and loses its values rather than vanishing: a
+reader told "this field changed and you may not see how" has been told the
+truth, and a diff with a row silently missing is a diff that is wrong.
+
+**What the editor was never shown, the editor cannot delete.** Handing a
+contributor a stripped document created a second problem immediately —
+`update_entity` replaces the stored entity outright, so saving that form would
+have erased a diagnosis by way of an absence that was never an edit. The
+stored half is put back on the way in. Not a refusal, unlike the health form
+itself: that form *is* the health form and an editor who may not read it has
+no business submitting it, while refusing the general one would stop a
+contributor correcting a spelling on a living relative for as long as they
+live.
+
+**Erasure works, and is now pinned by a test.** Article 9 arrives with article
+17 attached. Emptying the last row of a health field removes the whole key,
+which the library's replace-don't-merge update then persists. The edit journal
+is the exception and stays one: it keeps the old value in its `from` column,
+because a history that quietly rewrites itself is not a history. That file is
+never exported, is readable only by signed-in family, and now renders that
+column withheld to anybody who may not read the health — but the value is on
+disk beside the bundle, and an operator acting on an erasure request has to
+deal with that file too. Said here rather than left to be discovered.
+
+**Mutation-tested, eleven ways.** Each was applied to the source, run, and
+reverted: dropping the living-person rule fails 7 of 13 tests; neutering
+`strip_health` fails 6; leaving the editor's raw document unstripped fails 4;
+printing the record's raw dump whole fails 3; and each of `changes_for_reader`
+ignoring the rule, `change_touches_health` always answering no, either history
+builder ignoring the reader, the conflict page unredacted, `restore_health`
+made a no-op and the export defaulting to include fails 1 or 2.
+
+**A hardcoded `Field` / `From` / `To` in the record's history table.** Three
+`data-label` attributes, which the stacked-table stylesheet renders as visible
+column labels on a narrow screen. English, in every language. The keys already
+existed; the two other diff tables were using them.
+
 **A living person's health data is pinned to `private`, whatever their record
 says.** `access::health_visibility` is the one place the rule is written: living
 means admins only, deceased follows the record's normal visibility. It is

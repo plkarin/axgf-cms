@@ -516,9 +516,9 @@
           <tbody>
           {% for c in h.changes %}
             <tr>
-              <td data-label="Field"><code>{{ c.path }}</code></td>
-              <td data-label="From"><span class="diff-from">{{ c.from if c.from else t("admin-not-set") }}</span></td>
-              <td data-label="To"><span class="diff-to">{{ c.to if c.to else t("admin-not-set") }}</span></td>
+              <td data-label="{{ t('admin-field') }}"><code>{{ c.path }}</code></td>
+              <td data-label="{{ t('admin-from') }}">{{ m.diff_val(t, c, c.from, "diff-from") }}</td>
+              <td data-label="{{ t('admin-to') }}">{{ m.diff_val(t, c, c.to, "diff-to") }}</td>
             </tr>
           {% endfor %}
           </tbody>

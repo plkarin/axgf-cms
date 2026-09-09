@@ -488,6 +488,98 @@ pub fn strip_health(entity: &Value) -> Value {
     out
 }
 
+/// Whether one recorded change can carry special-category data.
+///
+/// Three shapes reach this and each has to be answered differently.
+///
+/// * A path that walks into the health object names it outright.
+/// * A change to `extensions` as a whole carries the object verbatim, health
+///   and all. That is not an edge case: it is what the *first* edit to record
+///   any of this on a person produces, because a field going from absent to
+///   present is one change with the whole value in it.
+/// * A value the diff had to truncate cannot be examined, so it is treated as
+///   though it did. `serde_json` is built here with `preserve_order`, so which
+///   half of the object survives a truncation depends on the order somebody
+///   happened to write the keys in — which is not a thing to hang a disclosure
+///   rule on.
+pub fn change_touches_health(c: &crate::diff::Change) -> bool {
+    let under = format!("extensions.{HEALTH_KEY}");
+    if c.path == under || c.path.starts_with(&format!("{under}.")) {
+        return true;
+    }
+    if c.path.is_empty() || c.path == "extensions" {
+        return [c.from.as_deref(), c.to.as_deref()]
+            .into_iter()
+            .flatten()
+            .any(|v| v.contains(HEALTH_KEY) || v.ends_with('\u{2026}'));
+    }
+    false
+}
+
+/// Recorded changes as this reader may see them.
+///
+/// The edit journal was the surface this application forgot. Everything a
+/// reader is shown *of the record* goes through the health rule, and then the
+/// history section beside it printed the same diagnosis back out of the diff
+/// — one shared with every signed-in relative, on the person page, in the tree
+/// panel, on the tree page and in the editor. A redaction that covers the
+/// record and not the account of how the record got that way is not a
+/// redaction.
+///
+/// A change that can carry health keeps its row and loses its values, rather
+/// than being dropped: a reader told "this field changed and you may not see
+/// how" has been told the truth, and one shown a diff with a row silently
+/// missing has been shown a diff that is wrong. It is the same choice
+/// [`DetailView::health_withheld`] makes for the section itself.
+pub fn changes_for_reader(changes: &[crate::diff::Change], may_read_health: bool) -> Vec<Value> {
+    changes
+        .iter()
+        .map(|c| {
+            let withheld = !may_read_health && change_touches_health(c);
+            json!({
+                "path": c.path,
+                "from": (!withheld).then(|| c.from.clone()).flatten(),
+                "to": (!withheld).then(|| c.to.clone()).flatten(),
+                "withheld": withheld,
+            })
+        })
+        .collect()
+}
+
+/// Put the special-category half back onto an entity that was edited without
+/// it.
+///
+/// The counterpart of [`strip_health`], for the form that was *given* a
+/// stripped document: an absence in what comes back from such a form is the
+/// redaction returning, not somebody deleting a diagnosis. Whatever the
+/// submission says about the health key is discarded and the stored value put
+/// back, so a hand-crafted POST cannot write one either.
+pub fn restore_health(entity: Value, stored: &Value) -> Value {
+    let mut out = entity;
+    let Some(obj) = out.as_object_mut() else {
+        return out;
+    };
+    let mut ext = obj
+        .get("extensions")
+        .and_then(Value::as_object)
+        .cloned()
+        .unwrap_or_default();
+    ext.remove(HEALTH_KEY);
+    if let Some(kept) = stored
+        .get("extensions")
+        .and_then(|e| e.get(HEALTH_KEY))
+        .cloned()
+    {
+        ext.insert(HEALTH_KEY.to_string(), kept);
+    }
+    if ext.is_empty() {
+        obj.remove("extensions");
+    } else {
+        obj.insert("extensions".into(), Value::Object(ext));
+    }
+    out
+}
+
 /// Whether an entity carries any special-category data at all.
 pub fn has_health(entity: &Value) -> bool {
     entity

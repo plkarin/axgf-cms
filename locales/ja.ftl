@@ -891,3 +891,5 @@ avatar-upload-title = 画像をアップロードして使う
 avatar-upload-button = アップロードして画像にする
 avatar-not-available-title = その画像は利用できません
 avatar-not-available-detail = 選ばれたファイルはこの人に結び付けられていないか、閲覧が許されていません。
+
+record-history-withheld = あなたには表示されません

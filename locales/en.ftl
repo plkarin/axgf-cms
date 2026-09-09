@@ -1109,3 +1109,7 @@ avatar-upload-title = Upload a picture and use it
 avatar-upload-button = Upload and use as picture
 avatar-not-available-title = That picture is not available
 avatar-not-available-detail = The chosen file is not linked to this person, or is not one you may read.
+
+# The value of a recorded change this reader may not see. It sits in a
+# table cell, so it is a phrase rather than a sentence.
+record-history-withheld = withheld from you

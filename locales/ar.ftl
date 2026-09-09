@@ -1278,3 +1278,5 @@ avatar-upload-title = ارفع صورة واستعملها
 avatar-upload-button = ارفع واجعلها الصورة
 avatar-not-available-title = هذه الصورة غير متاحة
 avatar-not-available-detail = الملف المختار غير مرتبط بهذا الشخص، أو ليس لك أن تقرأه.
+
+record-history-withheld = محجوب عنك

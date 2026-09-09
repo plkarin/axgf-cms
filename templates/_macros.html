@@ -242,3 +242,15 @@
   {% endif %}
 </div>
 {% endmacro %}
+
+{# One side of a recorded change.
+
+   A row whose value this reader may not see keeps its place and loses its
+   contents: a diff with a row silently missing is a diff that is wrong, and
+   the withheld marker is the same answer the record's own health section
+   gives. `withheld` is decided server-side in `physical::changes_for_reader`;
+   nothing here is a filter, and the value is simply not in the response. #}
+{% macro diff_val(t, c, v, cls) %}
+  {%- if c.withheld %}<span class="diff-withheld">{{ t("record-history-withheld") }}</span>
+  {%- else %}<span class="{{ cls }}">{{ v if v else t("admin-not-set") }}</span>{% endif -%}
+{% endmacro %}

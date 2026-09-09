@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_macros.html" as m %}
 {% block title %}
   {%- if creating %}{{ t("admin-new-kind", kind=t("kind-" ~ kind)) }}
   {%- else %}{{ t("admin-edit") }} {{ t("kind-" ~ kind) }}{% endif %} — {{ t("app-name") }}
@@ -106,8 +107,8 @@
         {% for c in h.changes %}
           <tr>
             <td data-label="{{ t('admin-field') }}"><code>{{ c.path }}</code></td>
-            <td data-label="{{ t('admin-from') }}"><span class="diff-from">{{ c.from if c.from else t("admin-not-set") }}</span></td>
-            <td data-label="{{ t('admin-to') }}"><span class="diff-to">{{ c.to if c.to else t("admin-not-set") }}</span></td>
+            <td data-label="{{ t('admin-from') }}">{{ m.diff_val(t, c, c.from, "diff-from") }}</td>
+            <td data-label="{{ t('admin-to') }}">{{ m.diff_val(t, c, c.to, "diff-to") }}</td>
           </tr>
         {% endfor %}
         </tbody>

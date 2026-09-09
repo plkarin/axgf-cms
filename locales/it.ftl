@@ -1072,3 +1072,5 @@ avatar-upload-title = Carica un'immagine e usala
 avatar-upload-button = Carica e usa come immagine
 avatar-not-available-title = Quell'immagine non è disponibile
 avatar-not-available-detail = Il file scelto non è collegato a questa persona, oppure non ti è dato leggerlo.
+
+record-history-withheld = non mostrato a te

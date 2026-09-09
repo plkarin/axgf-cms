@@ -98,6 +98,28 @@ pub async fn post_form(app: &axum::Router, uri: &str, body: &str, admin: bool) -
         .expect("request")
 }
 
+/// Issue a form POST carrying an arbitrary cookie — a session, a preference —
+/// so a test can act as somebody other than the emergency token.
+pub async fn post_form_as(
+    app: &axum::Router,
+    cookie: &str,
+    uri: &str,
+    body: &str,
+) -> Response<Body> {
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .uri(uri)
+                .method("POST")
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .header(header::COOKIE, cookie)
+                .body(Body::from(body.to_string()))
+                .unwrap(),
+        )
+        .await
+        .expect("request")
+}
+
 /// Collect a response body into a string.
 pub async fn body_string(resp: Response<Body>) -> String {
     let bytes = resp.into_body().collect().await.expect("body").to_bytes();

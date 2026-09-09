@@ -891,3 +891,5 @@ avatar-upload-title = 上传一张图片并使用
 avatar-upload-button = 上传并用作图片
 avatar-not-available-title = 该图片不可用
 avatar-not-available-detail = 所选文件未与此人相连，或你无权读取。
+
+record-history-withheld = 对你不显示

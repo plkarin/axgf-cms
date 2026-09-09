@@ -1234,3 +1234,5 @@ avatar-upload-title = Загрузить изображение и исполь�
 avatar-upload-button = Загрузить и сделать изображением
 avatar-not-available-title = Это изображение недоступно
 avatar-not-available-detail = Выбранный файл не связан с этим человеком либо вам не разрешено его читать.
+
+record-history-withheld = не показано вам

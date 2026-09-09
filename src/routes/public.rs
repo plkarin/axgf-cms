@@ -472,7 +472,7 @@ pub async fn tree(
             history => selected
                 .as_deref()
                 .filter(|_| viewer.signed_in())
-                .map(|id| entity_history(&state, id)),
+                .map(|id| entity_history(&state, id, viewer.ceiling())),
             // How many people this reader is not being shown. Stated rather
             // than hidden: a tree with silent gaps looks like a broken import.
             hidden,
@@ -519,7 +519,7 @@ pub async fn tree_panel(
             "_panel.html",
             context! {
                 p,
-                history => viewer.signed_in().then(|| entity_history(&state, &id)),
+                history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling())),
                 compact => true,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
@@ -535,7 +535,20 @@ pub async fn tree_panel(
 }
 
 /// One person's edit history, newest first, as the record page renders it.
-fn entity_history(state: &Shared, id: &str) -> Vec<Value> {
+///
+/// `ceiling` is the reader's authority, and it is here for one reason: a
+/// recorded change carries the value that changed, so a diff of the health
+/// extension is the diagnosis itself, printed back out beside a record that
+/// withheld it. See [`crate::physical::changes_for_reader`].
+fn entity_history(state: &Shared, id: &str, ceiling: crate::acl::Visibility) -> Vec<Value> {
+    let may_read_health = state.read(|flat| {
+        flat.get("persons")
+            .and_then(|c| c.get(id))
+            .map(|p| crate::access::may_read_health(p, ceiling))
+            // No such person: nothing to disclose, and the journal for an id
+            // that is not in the bundle is somebody's deleted record.
+            .unwrap_or(false)
+    });
     state
         .journal()
         .for_entity("person", id)
@@ -547,7 +560,7 @@ fn entity_history(state: &Shared, id: &str) -> Vec<Value> {
                 "action": e.action,
                 "version_num": e.version_num,
                 "summary": e.summary(),
-                "changes": e.changes,
+                "changes": crate::physical::changes_for_reader(&e.changes, may_read_health),
             })
         })
         .collect()
@@ -701,7 +714,7 @@ pub async fn person(
                     p,
                     // The journal names editors, so it is shown to people who
                     // are signed in and to nobody else.
-                    history => viewer.signed_in().then(|| entity_history(&state, &id)),
+                    history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling())),
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
                     compact => false,

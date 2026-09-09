@@ -1074,3 +1074,5 @@ avatar-upload-title = Ein Bild hochladen und verwenden
 avatar-upload-button = Hochladen und als Bild verwenden
 avatar-not-available-title = Dieses Bild steht nicht zur Verfügung
 avatar-not-available-detail = Die gewählte Datei ist nicht mit dieser Person verknüpft oder Sie dürfen sie nicht lesen.
+
+record-history-withheld = Ihnen nicht gezeigt

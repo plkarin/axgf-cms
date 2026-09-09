@@ -1227,3 +1227,5 @@ avatar-upload-title = Prześlij zdjęcie i użyj go
 avatar-upload-button = Prześlij i ustaw jako zdjęcie
 avatar-not-available-title = To zdjęcie jest niedostępne
 avatar-not-available-detail = Wybrany plik nie jest powiązany z tą osobą albo nie masz prawa go odczytać.
+
+record-history-withheld = nieudostępnione

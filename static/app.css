@@ -1641,6 +1641,7 @@ bdi.date { unicode-bidi: isolate; }
   overflow: hidden;
 }
 
+
 @media (max-width: 640px) {
   /* The actions move under the text rather than squeezing a third column into
      a phone. */
@@ -2261,6 +2262,15 @@ details.raw > summary { cursor: pointer; font-weight: 600; }
   text-decoration: line-through;
   text-decoration-thickness: 1px;
   color: var(--ink-soft);
+}
+
+/* A recorded change whose value this reader may not see. Italic and muted so
+   it reads as a statement about the row rather than as the row's value — the
+   one thing it must never look like is a field whose contents are the word
+   "withheld". */
+.diff-withheld {
+  font-style: italic;
+  color: var(--ink-faint);
 }
 .diff-to { font-weight: 600; }
 .diff-arrow { color: var(--ink-faint); padding: 0 0.3rem; }

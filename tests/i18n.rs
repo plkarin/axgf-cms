@@ -488,7 +488,11 @@ fn no_template_carries_a_hardcoded_attribute() {
     // read aloud by a screen reader and shown on hover, and was sitting in
     // English while everything around it was translated. Attributes that a
     // reader perceives are checked; `class` and `href` are not.
-    const PERCEIVED: [&str; 4] = ["title", "aria-label", "placeholder", "alt"];
+    // `data-label` is here because the stacked-table stylesheet renders it
+    // with `content: attr(data-label)`: below 640px it *is* the column
+    // heading, so a hardcoded one is English text on every phone. Four of
+    // them were sitting in the record's own name and source tables.
+    const PERCEIVED: [&str; 5] = ["title", "aria-label", "placeholder", "alt", "data-label"];
     let mut offences: Vec<String> = Vec::new();
 
     for path in templates() {

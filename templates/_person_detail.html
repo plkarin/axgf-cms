@@ -49,7 +49,7 @@
       <tbody>
         {% for n in p.names %}
         <tr>
-          <td data-label="Name">
+          <td data-label="{{ t('record-name') }}">
             <span class="name-native"{% if n.direction %} dir="{{ n.direction }}"{% endif %}
                   {%- if n.culture %} lang="{{ n.culture }}"{% endif %}>{{ n.display }}</span>
             {%- if n.latin %}
@@ -62,13 +62,13 @@
             {{ m.name_parts(n.components) }}
             {% if n.note %}<div class="small muted">{{ n.note }}</div>{% endif %}
           </td>
-          <td class="small" data-label="Type">
+          <td class="small" data-label="{{ t('record-name-type') }}">
             {{ n.kind }}
             {%- if n.is_primary %} <span class="chip small">{{ t("record-display-name") }}</span>{% endif %}
             {%- if n.culture %}<div class="muted">{{ n.culture }}</div>{% endif %}
           </td>
-          <td class="small" data-label="Used">{{ n.period if n.period else "—" }}</td>
-          <td data-label="Evidence">
+          <td class="small" data-label="{{ t('record-name-used') }}">{{ n.period if n.period else "—" }}</td>
+          <td data-label="{{ t('record-name-evidence') }}">
             {% if n.confidence %}{{ m.conf_bar(n.confidence) }}{% endif %}
             {% if n.source %}{{ m.source_chip(n.source) }}{% endif %}
           </td>
@@ -81,6 +81,9 @@
   {% endif %}
 
   {{ m.fact_chips(p) }}
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/identity">{{ t("identity-edit-link") }}</a></p>
+  {% endif %}
 </section>
 {% endif %}
 
@@ -377,17 +380,17 @@
     <tbody>
       {% for s in p.sources %}
       <tr>
-        <td data-label="Source">{{ s.title }}
+        <td data-label="{{ t('record-source') }}">{{ s.title }}
             {% if s.repository %}<div class="small muted">{{ s.repository }}</div>{% endif %}
             {% if s.status %}<div class="small muted">{{ s.status }}</div>{% endif %}
             {% if s.note %}<div class="small muted">{{ s.note }}</div>{% endif %}</td>
-        <td class="small" data-label="Type">{{ s.source_type if s.source_type else "—" }}</td>
-        <td data-label="Reliability"><span class="src-chip" data-rank="{{ s.reliability_rank }}">
+        <td class="small" data-label="{{ t('record-type') }}">{{ s.source_type if s.source_type else "—" }}</td>
+        <td data-label="{{ t('record-source-reliability') }}"><span class="src-chip" data-rank="{{ s.reliability_rank }}">
               <span class="src-rel">{{ s.reliability_label }}</span></span></td>
-        <td class="small" data-label="Supports">
+        <td class="small" data-label="{{ t('record-source-supports') }}">
           {% for u in s.used_for %}{{ u }}{% if not loop.last %} · {% endif %}{% endfor %}
         </td>
-        <td data-label="Confidence">{% if s.confidence %}{{ m.conf_bar(s.confidence) }}{% endif %}</td>
+        <td data-label="{{ t('record-confidence') }}">{% if s.confidence %}{{ m.conf_bar(s.confidence) }}{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -423,15 +426,15 @@
     <tbody>
       {% for d in p.documents %}
       <tr>
-        <td data-label="File">{{ d.filename }}
+        <td data-label="{{ t('record-file') }}">{{ d.filename }}
             {% if d.role %} <span class="chip small">{{ d.role }}</span>{% endif %}
             {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
             {% if d.note %}<div class="small muted">{{ d.note }}</div>{% endif %}
             {% if not d.known %}<div class="small muted">{{ t("record-absent-document") }}</div>{% endif %}</td>
-        <td class="small" data-label="Type">{{ d.document_type }}{% if d.mime_type %}
+        <td class="small" data-label="{{ t('record-type') }}">{{ d.document_type }}{% if d.mime_type %}
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
-        <td class="small" data-label="Status">{{ d.status }}</td>
-        <td class="small" data-label="Size">{{ d.size_human if d.size_human else "—" }}</td>
+        <td class="small" data-label="{{ t('record-status') }}">{{ d.status }}</td>
+        <td class="small" data-label="{{ t('record-size') }}">{{ d.size_human if d.size_human else "—" }}</td>
         {# No `data-label`: an action is not a field, and a stacked row that
            labelled it would read "FILE / {{ t("record-download") }}". #}
         <td class="small">

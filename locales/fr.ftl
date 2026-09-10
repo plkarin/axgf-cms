@@ -536,6 +536,18 @@ showcase-places-title = { $n ->
     }
 showcase-places-detail = Une ville peut appartenir à différents pays selon l'époque, et le dossier dit lequel s'appliquait quand.
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = nasab (filiation)
+name-part-laqab = laqab (épithète)
+name-part-kunya = kunya (téknonyme)
+name-part-nisbah = nisbah (origine)
+name-part-alias = alias
+name-part-religious_name = nom religieux
+name-part-pen_name = nom de plume
+name-type-pen_name = nom de plume
+gender-U = Non renseigné
+
 ## Fiche, détails
 
 record-also-recorded-as = également enregistré comme
@@ -1087,3 +1099,32 @@ silhouette-proportions-elderly = Proportions d'un adulte, qui cessent de changer
 silhouette-to-scale = Dessinée à l'échelle, par rapport à une ligne de référence à { $ref } cm.
 silhouette-no-height = Aucune taille n'est enregistrée : la figure est dessinée à une taille nominale pour sa tranche d'âge, et non à l'échelle.
 silhouette-several-heights = Plusieurs tailles sont enregistrées ; la figure dessine la plus récente.
+
+## The identity editor
+
+identity-editor-title = Noms et identité
+identity-primary-name = Le nom affiché partout
+identity-primary-help = Ce qu'utilisent la carte de l'arbre, le titre et toutes les listes. Les autres noms ci-dessous sont ceux qu'une source a employés à un autre moment.
+identity-display = Nom
+identity-display-latin = En écriture latine
+identity-culture = Langue
+identity-direction = Sens d'écriture
+identity-direction-ltr = de gauche à droite
+identity-direction-rtl = de droite à gauche
+identity-direction-auto = selon le texte
+identity-components = Parties du nom
+identity-components-help = Quelle partie est le prénom et laquelle le nom de famille, dans l'ordre où ils s'écrivent. Une fiche sans parties s'affiche quand même : les parties sont ce sur quoi une recherche peut porter.
+identity-part = Partie
+identity-value = Texte
+identity-other-names = Autres noms
+identity-other-help = Un nom d'épouse, un nom religieux, un nom employé par une fiche plus tardive. Chacun porte sa période d'usage et la source qui l'atteste.
+identity-name-type = Type de nom
+identity-valid-from = En usage depuis
+identity-valid-until = En usage jusqu'à
+identity-about = À propos de la personne
+identity-living-help = C'est l'indicateur posé par la source. La page présume par ailleurs un décès quand la naissance est trop ancienne, et cette présomption ne modifie jamais cette case ni l'archive.
+identity-error-no-display = Une fiche a besoin d'un nom pour être affichée. Rien n'a été enregistré.
+editor-blank-to-remove = Videz le nom pour supprimer cette entrée.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = fr
+identity-edit-link = Modifier les noms et l'identité

@@ -1601,6 +1601,111 @@ bdi.date { unicode-bidi: isolate; }
   .tree-scroll { position: static; }
 }
 
+/* The structured editors.
+ *
+ * A record's lists — names, partners, children, participants, attachments —
+ * edited as rows rather than through the raw-JSON box. The shape is the same
+ * everywhere so that learning one form teaches the rest: a bordered group per
+ * subject, a grid of labelled fields inside it, and one spare blank row at the
+ * end because adding an entry has to work with scripting off. */
+.editor { max-inline-size: 62rem; }
+.ed-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 1rem 1.1rem 1.1rem;
+  margin: 0 0 1.1rem;
+}
+.ed-group > legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+  color: var(--ink);
+}
+.ed-group h3 {
+  margin: 1.1rem 0 0.2rem;
+  font-size: 0.95rem;
+}
+.ed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.55rem 0.9rem;
+  align-items: end;
+}
+.ed-grid > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  min-inline-size: 0;
+}
+.ed-grid > label.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+.ed-grid > label.wide { grid-column: 1 / -1; }
+.ed-grid input, .ed-grid select, .ed-grid textarea { inline-size: 100%; }
+.ed-grid > label.inline input { inline-size: auto; }
+/* One entry in a list of them. The rule between rows is what stops eight
+   fields of one name reading as one field of eight names. */
+.ed-row {
+  padding: 0.7rem 0 0.75rem;
+  border-block-start: 1px solid var(--border);
+}
+.ed-row:first-of-type { border-block-start: 0; }
+.ed-row .hint { margin: 0.35rem 0 0; }
+.ed-rows { inline-size: 100%; }
+.ed-rows th {
+  text-align: start;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding-block-end: 0.3rem;
+}
+.ed-rows td { padding: 0.15rem 0.4rem 0.15rem 0; vertical-align: top; }
+/* The type column has to fit "religious name" without the value column
+   collapsing the select to two characters, which is what happened when the
+   last column simply claimed everything. */
+.ed-rows td:first-child { inline-size: 12rem; }
+.ed-rows td:last-child { padding-inline-end: 0; inline-size: 100%; }
+.ed-rows input, .ed-rows select { inline-size: 100%; }
+.ed-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-block-start: 0.4rem;
+}
+/* Where an edit actually lands, when it is not this record. Removing a spouse
+   changes the family both people share, and the other person's page with it;
+   saying so beside the control is cheaper than a support question. */
+.ed-elsewhere {
+  border-inline-start: 3px solid var(--accent);
+  padding: 0.5rem 0 0.5rem 0.7rem;
+  margin: 0.6rem 0 0.9rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 640px) {
+  .ed-rows, .ed-rows tbody, .ed-rows tr, .ed-rows td { display: block; inline-size: 100%; }
+  .ed-rows thead { display: none; }
+  .ed-rows td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+  .ed-rows tr { padding-block: 0.4rem; border-block-start: 1px solid var(--border); }
+}
+
 /* ---------- identity page ---------- */
 
 /* The record's masthead: who this person was, at a glance.

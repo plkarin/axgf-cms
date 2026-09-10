@@ -30,6 +30,7 @@ pub mod convert;
 pub mod coords;
 pub mod diff;
 pub mod documents;
+pub mod forms;
 pub mod geocode;
 pub mod i18n;
 pub mod journal;

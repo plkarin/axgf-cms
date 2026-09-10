@@ -590,6 +590,18 @@ result-continue = Avanti
 result-dashboard = Quadro generale
 person-sections-label = Sezioni di questa pagina
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = nasab (discendenza)
+name-part-laqab = laqab (epiteto)
+name-part-kunya = kunya (teknonimo)
+name-part-nisbah = nisbah (origine)
+name-part-alias = alias
+name-part-religious_name = nome religioso
+name-part-pen_name = pseudonimo
+name-type-pen_name = pseudonimo
+gender-U = Non registrato
+
 ## Sezioni della scheda, dettagli
 
 record-notes-title = Da notare su questa scheda:
@@ -1102,3 +1114,32 @@ silhouette-proportions-elderly = Proporzioni di un adulto, che smettono di cambi
 silhouette-to-scale = Disegnata in scala rispetto a una linea di riferimento a { $ref } cm.
 silhouette-no-height = Nessuna statura è registrata, perciò la figura è disegnata a una dimensione nominale per la sua fascia d'età e non in scala.
 silhouette-several-heights = È registrata più di una statura; la figura disegna la più recente.
+
+## The identity editor
+
+identity-editor-title = Nomi e identità
+identity-primary-name = Il nome mostrato ovunque
+identity-primary-help = Quello che usano la scheda dell'albero, il titolo e ogni elenco. Gli altri nomi sotto sono quelli con cui una fonte ha chiamato questa persona in un altro momento.
+identity-display = Nome
+identity-display-latin = In caratteri latini
+identity-culture = Lingua
+identity-direction = Direzione
+identity-direction-ltr = da sinistra a destra
+identity-direction-rtl = da destra a sinistra
+identity-direction-auto = dal testo
+identity-components = Parti del nome
+identity-components-help = Quale parte è il nome e quale il cognome, nell'ordine in cui si scrivono. Una scheda senza parti si mostra lo stesso: le parti sono ciò su cui una ricerca può agire.
+identity-part = Parte
+identity-value = Testo
+identity-other-names = Altri nomi
+identity-other-help = Un cognome da coniugata, un nome religioso, un nome usato da una scheda più tarda. Ciascuno porta il periodo d'uso e la fonte che lo attesta.
+identity-name-type = Tipo di nome
+identity-valid-from = In uso dal
+identity-valid-until = In uso fino al
+identity-about = Sulla persona
+identity-living-help = Questo è il contrassegno posto dalla fonte. La pagina presume separatamente un decesso quando la nascita è troppo lontana, e quella presunzione non cambia mai questa casella né l'archivio.
+identity-error-no-display = Una scheda ha bisogno di un nome con cui mostrarsi. Non è stato salvato nulla.
+editor-blank-to-remove = Svuota il nome per rimuovere questa voce.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = it
+identity-edit-link = Modifica nomi e identità

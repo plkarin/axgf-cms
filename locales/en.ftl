@@ -597,6 +597,18 @@ result-continue = Continue
 result-dashboard = Dashboard
 person-sections-label = Sections on this page
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = nasab (lineage)
+name-part-laqab = laqab (epithet)
+name-part-kunya = kunya (teknonym)
+name-part-nisbah = nisbah (origin)
+name-part-alias = alias
+name-part-religious_name = religious name
+name-part-pen_name = pen name
+name-type-pen_name = pen name
+gender-U = Unrecorded
+
 ## Record sections, detail
 
 record-notes-title = Notes on this record:
@@ -1143,3 +1155,32 @@ silhouette-proportions-elderly = Adult proportions, which stop changing at about
 silhouette-to-scale = Drawn to scale against a reference line at { $ref } cm.
 silhouette-no-height = No height is recorded, so the figure is drawn at a nominal size for its age band rather than to scale.
 silhouette-several-heights = More than one height is recorded; the figure draws the most recent.
+
+## The identity editor
+
+identity-editor-title = Names and identity
+identity-primary-name = The name shown everywhere
+identity-primary-help = What the tree card, the heading and every list use. The other names below are what a source called this person at some other time.
+identity-display = Name
+identity-display-latin = In Latin script
+identity-culture = Language
+identity-direction = Direction
+identity-direction-ltr = left to right
+identity-direction-rtl = right to left
+identity-direction-auto = from the text
+identity-components = Parts of the name
+identity-components-help = Which part is the given name and which the family name, in the order they are written. A record with no parts still renders: the parts are what a search can match against.
+identity-part = Part
+identity-value = Text
+identity-other-names = Other names
+identity-other-help = A married name, a religious name, a name a later record used. Each carries when it was in use and which source says so.
+identity-name-type = Kind of name
+identity-valid-from = In use from
+identity-valid-until = In use until
+identity-about = About the person
+identity-living-help = This is the flag the source set. The page separately presumes a death when a birth is too long ago, and that presumption never changes this box or the bundle.
+identity-error-no-display = A record needs a name to be shown by. Nothing was saved.
+editor-blank-to-remove = Clear the name to remove this entry.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = en
+identity-edit-link = Edit names and identity

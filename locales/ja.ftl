@@ -497,6 +497,18 @@ result-continue = 続ける
 result-dashboard = ダッシュボード
 person-sections-label = このページの節
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = ナサブ（系譜）
+name-part-laqab = ラカブ（称号）
+name-part-kunya = クンヤ（従子名）
+name-part-nisbah = ニスバ（出自）
+name-part-alias = 別名
+name-part-religious_name = 修道名
+name-part-pen_name = 筆名
+name-type-pen_name = 筆名
+gender-U = 記録なし
+
 ## 記録の各節（細目）
 
 record-notes-title = この記録について特筆すべき点:
@@ -921,3 +933,32 @@ silhouette-proportions-elderly = 成人の比率です。頭身は二十歳ご�
 silhouette-to-scale = { $ref } cm の基準線に対して、実寸比で描いています。
 silhouette-no-height = 身長が記録されていないため、実寸比ではなく年齢帯に応じた仮の大きさで描いています。
 silhouette-several-heights = 身長は複数記録されています。図は最も新しいものです。
+
+## The identity editor
+
+identity-editor-title = 名前と身元
+identity-primary-name = どこにでも表示される名前
+identity-primary-help = 家系図のカード、見出し、すべての一覧で使う名前です。下のほかの名前は、別の時期に出典がこの人を呼んでいた名前です。
+identity-display = 名前
+identity-display-latin = ラテン文字表記
+identity-culture = 言語
+identity-direction = 書字方向
+identity-direction-ltr = 左から右
+identity-direction-rtl = 右から左
+identity-direction-auto = 文字から判断
+identity-components = 名前の構成要素
+identity-components-help = どの部分が名でどの部分が姓か、書く順に並べます。部分がなくても記録は表示されます。部分は検索が照合できるものです。
+identity-part = 要素
+identity-value = 文字
+identity-other-names = ほかの名前
+identity-other-help = 婚姻後の姓、修道名、後年の記録が使った名前。それぞれに使用期間と出典が付きます。
+identity-name-type = 名前の種類
+identity-valid-from = 使用開始
+identity-valid-until = 使用終了
+identity-about = この人について
+identity-living-help = これは出典が設定した印です。ページは出生が古すぎる場合に別途死亡を推定しますが、その推定がこの欄やアーカイブを変えることはありません。
+identity-error-no-display = 記録には表示するための名前が必要です。何も保存していません。
+editor-blank-to-remove = 名前を空にするとこの項目を削除します。
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = ja
+identity-edit-link = 名前と身元を編集

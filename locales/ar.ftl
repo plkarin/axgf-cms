@@ -438,6 +438,18 @@ tree-edge-union = اقتران مسجَّل
 tree-edge-parentage = بنوّة مسجَّلة
 tree-title-suffix = الشجرة
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = نسب
+name-part-laqab = لقب
+name-part-kunya = كنية
+name-part-nisbah = نسبة
+name-part-alias = كنية بديلة
+name-part-religious_name = اسم ديني
+name-part-pen_name = اسم مستعار أدبي
+name-type-pen_name = اسم مستعار أدبي
+gender-U = غير مسجّل
+
 ## بقية نصوص السجل
 
 record-centre-tree-here = اجعل الشجرة تتمركز هنا
@@ -1307,3 +1319,32 @@ silhouette-proportions-elderly = نسب بالغ، وهي تتوقف عن الت
 silhouette-to-scale = رُسم بمقياس الرسم قياسًا على خط مرجعي عند { $ref } سم.
 silhouette-no-height = لا طول مسجّل، فرُسم الشكل بحجم اسمي يناسب فئته العمرية لا بمقياس الرسم.
 silhouette-several-heights = سُجّل أكثر من طول واحد؛ يرسم الشكل أحدثها.
+
+## The identity editor
+
+identity-editor-title = الأسماء والهوية
+identity-primary-name = الاسم المعروض في كل مكان
+identity-primary-help = ما تستعمله بطاقة الشجرة والعنوان وكل قائمة. الأسماء الأخرى أدناه هي ما سمّى به مصدرٌ هذا الشخص في وقت آخر.
+identity-display = الاسم
+identity-display-latin = بالحروف اللاتينية
+identity-culture = اللغة
+identity-direction = اتجاه الكتابة
+identity-direction-ltr = من اليسار إلى اليمين
+identity-direction-rtl = من اليمين إلى اليسار
+identity-direction-auto = من النص
+identity-components = أجزاء الاسم
+identity-components-help = أي جزء هو الاسم الشخصي وأيّها اسم العائلة، بترتيب كتابتهما. السجل بلا أجزاء يُعرض على أي حال: الأجزاء هي ما يمكن للبحث مطابقته.
+identity-part = الجزء
+identity-value = النص
+identity-other-names = أسماء أخرى
+identity-other-help = اسم بعد الزواج، اسم ديني، اسم استعمله سجل لاحق. لكل واحد مدة استعماله والمصدر الذي يذكره.
+identity-name-type = نوع الاسم
+identity-valid-from = مستعمل منذ
+identity-valid-until = مستعمل حتى
+identity-about = عن الشخص
+identity-living-help = هذه العلامة التي وضعها المصدر. تفترض الصفحة الوفاة على حدة حين تكون الولادة قديمة جدًا، ولا يغيّر ذلك الافتراض هذا المربع ولا الأرشيف.
+identity-error-no-display = يحتاج السجل إلى اسم يُعرض به. لم يُحفظ شيء.
+editor-blank-to-remove = امسح الاسم لحذف هذا المُدخَل.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = ar
+identity-edit-link = حرّر الأسماء والهوية

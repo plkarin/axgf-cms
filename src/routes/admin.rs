@@ -31,7 +31,7 @@ use crate::{auth, documents, render, view};
 /// The error variant is a whole rendered `Response`, which is large; boxing it
 /// keeps the common `Ok` path cheap.
 #[allow(clippy::result_large_err)]
-fn require(
+pub(super) fn require(
     state: &Shared,
     headers: &HeaderMap,
     need: Need,
@@ -85,7 +85,7 @@ fn require(
 
 /// What a route requires of the account reaching it.
 #[derive(Clone, Copy)]
-enum Need {
+pub(super) enum Need {
     /// Contributor or admin.
     Write,
     /// Admin only.
@@ -124,7 +124,7 @@ macro_rules! guard_admin {
 /// branch, and checking only the stored one would let them edit a record into
 /// their branch that never belonged to it.
 #[allow(clippy::result_large_err)]
-fn check_scope(
+pub(super) fn check_scope(
     state: &Shared,
     chrome: &render::Chrome,
     viewer: &Viewer,
@@ -803,7 +803,7 @@ pub async fn update(
 /// "theirs" against "yours", and the base is used to say which fields each of
 /// them actually touched.
 #[allow(clippy::too_many_arguments)]
-fn conflict_page(
+pub(super) fn conflict_page(
     state: &Shared,
     chrome: &render::Chrome,
     kind: &str,
@@ -1418,7 +1418,103 @@ fn summary_line(data: &Value, fields: &[(&str, &str)]) -> String {
 }
 
 /// The page shown after a mutation.
-fn result_page(
+/// Save one entity: scope, version check, journal, and the right page after.
+///
+/// Every structured editor ends here, which is the point. Each of them builds
+/// a different shape and none of them decides who may write it, whether
+/// somebody else got there first, or what to show when they did — those three
+/// answers have to be the same for all of them or they are wrong in whichever
+/// one got them last.
+///
+/// `retry` is where a refusal sends the editor back to; `back` is where a
+/// success sends them. They differ: a refused form should reopen with what was
+/// typed still in front of them, and a saved one should return to the record.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn save_entity(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    kind: axgf_rs::EntityKind,
+    id: &str,
+    entity: Value,
+    stored: Option<&Value>,
+    back: &str,
+    retry: &str,
+) -> Response {
+    if let Err(r) = check_scope(state, chrome, viewer, kind, &entity, stored) {
+        return r;
+    }
+    let base_version = stored.map(crate::state::version_of).unwrap_or(0);
+    let label = stored.and_then(|e| label_for(kind, e));
+    let kind_name = crate::state::kind_name(kind);
+    let outcome =
+        match state.update_checked(kind, id, base_version, entity.clone(), viewer.name(), label) {
+            Ok(o) => o,
+            Err(e) => return io_error(chrome, &e),
+        };
+    match outcome {
+        crate::state::UpdateOutcome::Applied {
+            diagnostics,
+            version_num,
+            changes,
+        } => result_page(
+            chrome,
+            kind_name,
+            &chrome.t_args(
+                "admin-saved",
+                &[
+                    ("version", (version_num as i64).into()),
+                    ("summary", crate::diff::summarise(&changes).into()),
+                ],
+            ),
+            &MutationOutcome {
+                applied: true,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(back.to_string()),
+        ),
+        crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
+            chrome,
+            kind_name,
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(retry.to_string()),
+        ),
+        crate::state::UpdateOutcome::Missing => render::error_page_in(
+            chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-deleted-while-editing",
+        ),
+        // The real conflict screen rather than an apology: it is the only page
+        // that can show what the other editor changed beside what this one
+        // did, which is the whole of what somebody needs to decide.
+        crate::state::UpdateOutcome::Conflict {
+            current,
+            current_version,
+            expected_version,
+        } => conflict_page(
+            state,
+            chrome,
+            kind_name,
+            kind,
+            id,
+            stored,
+            &current,
+            &entity,
+            current_version,
+            expected_version,
+            viewer.ceiling(),
+        ),
+    }
+}
+
+pub(super) fn result_page(
     chrome: &render::Chrome,
     kind: &str,
     title: &str,
@@ -1486,7 +1582,7 @@ fn unknown_kind(chrome: &render::Chrome, kind: &str) -> Response {
     )
 }
 
-fn io_error(chrome: &render::Chrome, e: &anyhow::Error) -> Response {
+pub(super) fn io_error(chrome: &render::Chrome, e: &anyhow::Error) -> Response {
     tracing::error!(error = %e, "admin operation failed");
     render::error_page_args(
         chrome,

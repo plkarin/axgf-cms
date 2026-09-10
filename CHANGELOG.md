@@ -7,6 +7,52 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 
+### Added
+
+**A real editor, part one: names and identity.** The generic form maps one
+input to one dotted path, which is right for a scalar and cannot express a
+list — and nearly everything a record actually holds is a list. A converted
+bundle gives most people two or three names: the one a register wrote, the one
+a later record used, and the placeholder the converter emitted for a name it
+could not parse. Editing those meant the raw-JSON box, which is a text editor
+with a schema behind it.
+
+`/admin/person/:id/identity` edits the name shown everywhere, its parts, and
+every other name the person was known by, each with its kind, its script and
+language, its transliteration, the period it was in use, and the source and
+confidence behind it. Gender, the recorded living flag and visibility sit
+under it.
+
+Two decisions worth stating. The parts of a name are numbered by the order the
+form draws them, because that is what the specification's `order` means and a
+form that renders them in order already knows it. And an alternative name
+keeps the parsed components this form has no input for, carried across the
+save by the row's stored index — losing data to a user interface is still
+losing data.
+
+The save starts from the entity the bundle holds and replaces one key, so
+birth, death, notes and the health extension this form never showed come
+through untouched. That is why the identity editor cannot become the fourth
+place a diagnosis leaks out of.
+
+Under it: `forms.rs`, which every structured editor shares. Rows numbered in
+the field name so adding and removing entries works with scripting off, one
+date builder so eight forms produce the same shape, and a person picker that
+is a native `<datalist>` search over the bundle rather than a UUID field — no
+script, no build step, and a plain text field when scripting is off.
+`admin::save_entity` is the single tail every editor ends at: `family_scope`,
+the version check, the journal, and the real conflict screen rather than an
+apology.
+
+### Fixed
+
+**Nine hardcoded English column labels, on every phone.** The stacked-table
+stylesheet renders `data-label` with `content: attr(data-label)`, so below
+640px the attribute *is* the column heading — and nine of them were English
+text in the record's name, source and document tables whatever language the
+reader had chosen. The i18n linter now checks `data-label` alongside `title`,
+`aria-label`, `placeholder` and `alt`, which is what found them.
+
 ### Changed
 
 **A living person cannot be 226 years old.** GEDCOM has no way to record

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("identity-editor-title") }}{% endblock %}
+
+{# The identity editor.
+
+   A record's names are a *list*, and the generic form edits one dotted path
+   per input. A converted bundle gives nearly everybody two or three: the name
+   the register wrote, the name a later record used, and the placeholder the
+   converter emitted for a name it could not parse. Editing those in the
+   raw-JSON box is a text editor with a schema behind it. #}
+
+{% block content %}
+<h1>{{ t("identity-editor-title") }}</h1>
+<p class="lede"><bdi>{{ person_name }}</bdi></p>
+
+{% if problem %}
+<div class="notice warn" role="alert"><p>{{ t(problem) }}</p></div>
+{% endif %}
+
+<form method="post" action="/admin/person/{{ id }}/identity" class="editor">
+  <input type="hidden" name="base_version" value="{{ base_version }}">
+
+  <fieldset class="ed-group">
+    <legend>{{ t("identity-primary-name") }}</legend>
+    <p class="hint">{{ t("identity-primary-help") }}</p>
+    <div class="ed-grid">
+      <label>{{ t("identity-display") }}
+        <input type="text" name="name.display" value="{{ name.display }}" required></label>
+      <label>{{ t("identity-display-latin") }}
+        <input type="text" name="name.display_latin" value="{{ name.display_latin }}"></label>
+      <label>{{ t("identity-culture") }}
+        <input type="text" name="name.culture" value="{{ name.culture }}" size="8"
+               placeholder="{{ t('identity-culture-placeholder') }}"></label>
+      <label>{{ t("identity-direction") }}
+        <select name="name.direction">
+          {% for d in directions %}
+          <option value="{{ d }}" {{ "selected" if d == name.direction }}>
+            {{- t("identity-direction-" ~ d) if d else t("admin-not-set") -}}</option>
+          {% endfor %}
+        </select></label>
+    </div>
+
+    {# Components: which part of the name is the given name, which the family
+       name. `order` is the row's position, so a form that renders them in
+       order already knows it and does not ask. #}
+    <h3>{{ t("identity-components") }}</h3>
+    <p class="hint">{{ t("identity-components-help") }}</p>
+    <table class="ed-rows">
+      <thead><tr>
+        <th>{{ t("identity-part") }}</th><th>{{ t("identity-value") }}</th>
+      </tr></thead>
+      <tbody>
+        {% for c in components %}
+        <tr>
+          <td data-label="{{ t('identity-part') }}">
+            <select name="comp.{{ loop.index0 }}.type" aria-label="{{ t('identity-part') }}">
+              {% for ct in component_types %}
+              <option value="{{ ct }}" {{ "selected" if ct == c.type }}>{{ t("name-part-" ~ ct) }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td data-label="{{ t('identity-value') }}">
+            <input type="text" name="comp.{{ loop.index0 }}.value" value="{{ c.value }}"
+                   aria-label="{{ t('identity-value') }}">
+          </td>
+        </tr>
+        {% endfor %}
+        {# One spare row, so adding a part works with scripting off. #}
+        <tr>
+          <td data-label="{{ t('identity-part') }}">
+            <select name="comp.{{ components | length }}.type" aria-label="{{ t('identity-part') }}">
+              {% for ct in component_types %}<option value="{{ ct }}">{{ t("name-part-" ~ ct) }}</option>{% endfor %}
+            </select>
+          </td>
+          <td data-label="{{ t('identity-value') }}">
+            <input type="text" name="comp.{{ components | length }}.value"
+                   aria-label="{{ t('identity-value') }}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </fieldset>
+
+  <fieldset class="ed-group">
+    <legend>{{ t("identity-other-names") }}</legend>
+    <p class="hint">{{ t("identity-other-help") }}</p>
+    {% for a in alts %}
+    {{ m.alt_name_row(t, loop.index0, a, name_types, directions, sources) }}
+    {% endfor %}
+    {{ m.alt_name_row(t, alts | length, none, name_types, directions, sources) }}
+  </fieldset>
+
+  <fieldset class="ed-group">
+    <legend>{{ t("identity-about") }}</legend>
+    <div class="ed-grid">
+      <label>{{ t("record-gender") }}
+        <select name="gender.value">
+          {% for g in genders %}
+          <option value="{{ g }}" {{ "selected" if g == gender_value }}>{{ t("gender-" ~ g) }}</option>
+          {% endfor %}
+        </select></label>
+      <label>{{ t("record-note") }}
+        <input type="text" name="gender.note" value="{{ gender_note }}"></label>
+      <label>{{ t("record-visibility") }}
+        <select name="visibility">
+          {% for v in visibilities %}
+          <option value="{{ v }}" {{ "selected" if v == visibility }}>
+            {{- t("visibility-" ~ v) if v else t("admin-not-set") -}}</option>
+          {% endfor %}
+        </select></label>
+      <label class="inline">
+        <input type="checkbox" name="is_living" value="on" {{ "checked" if is_living }}>
+        {{ t("record-living") }}</label>
+    </div>
+    {# The plausibility rule is a display rule and this is the recorded flag it
+       does not touch, so an editor has to be told which one they are setting. #}
+    <p class="hint">{{ t("identity-living-help") }}</p>
+  </fieldset>
+
+  <div class="ed-actions">
+    <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+    <a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+{% endblock %}

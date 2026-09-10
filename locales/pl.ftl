@@ -683,6 +683,18 @@ result-continue = Dalej
 result-dashboard = Pulpit
 person-sections-label = Sekcje na tej stronie
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = nasab (rodowód)
+name-part-laqab = lakab (przydomek)
+name-part-kunya = kunja (teknonim)
+name-part-nisbah = nisba (pochodzenie)
+name-part-alias = alias
+name-part-religious_name = imię zakonne
+name-part-pen_name = pseudonim literacki
+name-type-pen_name = pseudonim literacki
+gender-U = Nie zapisano
+
 ## Sekcje wpisu, szczegóły
 
 record-notes-title = Uwagi do tego wpisu:
@@ -1257,3 +1269,32 @@ silhouette-proportions-elderly = Proporcje osoby dorosłej, które przestają si
 silhouette-to-scale = Narysowano w skali względem linii odniesienia na wysokości { $ref } cm.
 silhouette-no-height = Wzrost nie jest zapisany, więc figura ma wielkość umowną dla swojego przedziału wieku, a nie rzeczywistą skalę.
 silhouette-several-heights = Zapisano więcej niż jeden wzrost; rysunek przedstawia najnowszy.
+
+## The identity editor
+
+identity-editor-title = Nazwiska i tożsamość
+identity-primary-name = Nazwa pokazywana wszędzie
+identity-primary-help = To, czego używa karta drzewa, nagłówek i każda lista. Pozostałe nazwy poniżej to te, których źródło używało w innym czasie.
+identity-display = Nazwa
+identity-display-latin = Zapis łaciński
+identity-culture = Język
+identity-direction = Kierunek pisma
+identity-direction-ltr = od lewej do prawej
+identity-direction-rtl = od prawej do lewej
+identity-direction-auto = z tekstu
+identity-components = Części nazwy
+identity-components-help = Która część jest imieniem, a która nazwiskiem, w kolejności zapisu. Zapis bez części i tak się wyświetli: części służą do wyszukiwania.
+identity-part = Część
+identity-value = Tekst
+identity-other-names = Inne nazwy
+identity-other-help = Nazwisko po ślubie, imię zakonne, nazwa użyta w późniejszym zapisie. Każda ma okres używania i źródło, które o tym mówi.
+identity-name-type = Rodzaj nazwy
+identity-valid-from = Używane od
+identity-valid-until = Używane do
+identity-about = O osobie
+identity-living-help = To znacznik ustawiony przez źródło. Strona osobno domniemywa zgon, gdy urodzenie jest zbyt dawne, a to domniemanie nigdy nie zmienia tego pola ani archiwum.
+identity-error-no-display = Zapis potrzebuje nazwy, pod którą będzie pokazywany. Nic nie zapisano.
+editor-blank-to-remove = Wyczyść nazwę, aby usunąć ten wpis.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = pl
+identity-edit-link = Edytuj nazwy i tożsamość

@@ -496,6 +496,18 @@ result-continue = 继续
 result-dashboard = 概览
 person-sections-label = 本页的各节
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = 纳萨布（世系）
+name-part-laqab = 拉卡布（称号）
+name-part-kunya = 库尼耶（从子名）
+name-part-nisbah = 尼斯拜（出身）
+name-part-alias = 别名
+name-part-religious_name = 教名
+name-part-pen_name = 笔名
+name-type-pen_name = 笔名
+gender-U = 未记录
+
 ## 记录各节（细目）
 
 record-notes-title = 关于这条记录值得一提的是：
@@ -920,3 +932,32 @@ silhouette-proportions-elderly = 成年人的比例。头身比例在二十岁�
 silhouette-to-scale = 按比例绘制，参照 { $ref } 厘米处的基准线。
 silhouette-no-height = 未记录身高，因此图形按其年龄段的名义大小绘制，并非按实际比例。
 silhouette-several-heights = 记录了不止一个身高；图中绘制的是最近的一个。
+
+## The identity editor
+
+identity-editor-title = 姓名与身份
+identity-primary-name = 到处显示的名字
+identity-primary-help = 家谱卡片、标题和所有列表使用的名字。下面的其他名字是某个来源在其他时候对这个人的称呼。
+identity-display = 名字
+identity-display-latin = 拉丁字母写法
+identity-culture = 语言
+identity-direction = 书写方向
+identity-direction-ltr = 从左到右
+identity-direction-rtl = 从右到左
+identity-direction-auto = 由文本决定
+identity-components = 名字的组成部分
+identity-components-help = 哪部分是名、哪部分是姓，按书写顺序排列。没有分部的记录照样显示：分部是搜索可以匹配的内容。
+identity-part = 部分
+identity-value = 文字
+identity-other-names = 其他名字
+identity-other-help = 婚后姓、教名、后来的记录使用的名字。每一个都带有使用时间和依据的来源。
+identity-name-type = 名字类型
+identity-valid-from = 使用自
+identity-valid-until = 使用至
+identity-about = 关于此人
+identity-living-help = 这是来源设置的标志。当出生年代过久时，页面会另行推定死亡，而该推定绝不会改变这个复选框或档案。
+identity-error-no-display = 记录需要一个用于显示的名字。未保存任何内容。
+editor-blank-to-remove = 清空名字即可删除此条目。
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = zh-Hans
+identity-edit-link = 编辑姓名与身份

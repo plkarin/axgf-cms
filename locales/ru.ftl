@@ -690,6 +690,18 @@ result-continue = Дальше
 result-dashboard = Панель
 person-sections-label = Разделы этой страницы
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = насаб (родословная)
+name-part-laqab = лакаб (прозвание)
+name-part-kunya = кунья (текноним)
+name-part-nisbah = нисба (происхождение)
+name-part-alias = псевдоним
+name-part-religious_name = церковное имя
+name-part-pen_name = литературный псевдоним
+name-type-pen_name = литературный псевдоним
+gender-U = Не записано
+
 ## Разделы записи, подробности
 
 record-notes-title = Что стоит отметить об этой записи:
@@ -1264,3 +1276,32 @@ silhouette-proportions-elderly = Пропорции взрослого, кото
 silhouette-to-scale = Нарисовано в масштабе относительно опорной линии на { $ref } см.
 silhouette-no-height = Рост не записан, поэтому фигура нарисована в условном размере для своей возрастной группы, а не в масштабе.
 silhouette-several-heights = Записано больше одного роста; фигура показывает последний по времени.
+
+## The identity editor
+
+identity-editor-title = Имена и личность
+identity-primary-name = Имя, показываемое везде
+identity-primary-help = То, что используют карточка дерева, заголовок и все списки. Другие имена ниже — это те, которыми источник называл человека в другое время.
+identity-display = Имя
+identity-display-latin = Латиницей
+identity-culture = Язык
+identity-direction = Направление письма
+identity-direction-ltr = слева направо
+identity-direction-rtl = справа налево
+identity-direction-auto = по тексту
+identity-components = Части имени
+identity-components-help = Какая часть — имя, а какая — фамилия, в порядке записи. Запись без частей всё равно отображается: части нужны для поиска.
+identity-part = Часть
+identity-value = Текст
+identity-other-names = Другие имена
+identity-other-help = Фамилия по браку, церковное имя, имя из более позднего документа. У каждого — время употребления и источник.
+identity-name-type = Вид имени
+identity-valid-from = Употреблялось с
+identity-valid-until = Употреблялось до
+identity-about = О человеке
+identity-living-help = Это признак, поставленный источником. Страница отдельно предполагает смерть, если рождение слишком давнее, и это предположение никогда не меняет ни это поле, ни архив.
+identity-error-no-display = Записи нужно имя, под которым она отображается. Ничего не сохранено.
+editor-blank-to-remove = Очистите имя, чтобы удалить эту запись.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = ru
+identity-edit-link = Изменить имена и личность

@@ -2,6 +2,7 @@
 
 mod admin;
 mod convert;
+mod editors;
 mod prefs;
 mod public;
 
@@ -66,6 +67,12 @@ pub fn router(state: Shared) -> Router {
         // cannot express either.
         // The physical-and-health editor, for the same reason: every field
         // holds a list of dated, sourced entries.
+        // Identity: several names with type, script, transliteration, period
+        // of use and source, none of which a one-input-per-path form can hold.
+        .route(
+            "/admin/person/:id/identity",
+            get(editors::identity_edit).post(editors::identity_update),
+        )
         .route(
             "/admin/person/:id/physical",
             get(admin::physical_edit).post(admin::physical_update),

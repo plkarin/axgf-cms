@@ -258,3 +258,52 @@
   {%- if c.withheld %}<span class="diff-withheld">{{ t("record-history-withheld") }}</span>
   {%- else %}<span class="{{ cls }}">{{ v if v else t("admin-not-set") }}</span>{% endif -%}
 {% endmacro %}
+
+{# One alternative name: everything the specification lets a name carry that
+   the primary one does not — what kind of name it was, when it was in use,
+   and which source says so. `ci` is its position in the stored array, carried
+   so that parsed components survive a form with no input for them. #}
+{% macro alt_name_row(t, i, a, name_types, directions, sources) %}
+<div class="ed-row">
+  {% if a %}<input type="hidden" name="alt.{{ i }}.ci" value="{{ a.ci }}">{% endif %}
+  <div class="ed-grid">
+    <label>{{ t("identity-display") }}
+      <input type="text" name="alt.{{ i }}.display" value="{{ a.display if a }}"></label>
+    <label>{{ t("identity-name-type") }}
+      <select name="alt.{{ i }}.type">
+        <option value="">{{ t("admin-not-set") }}</option>
+        {% for nt in name_types %}
+        <option value="{{ nt }}" {{ "selected" if a and nt == a.type }}>{{ t("name-type-" ~ nt) }}</option>
+        {% endfor %}
+      </select></label>
+    <label>{{ t("identity-display-latin") }}
+      <input type="text" name="alt.{{ i }}.display_latin" value="{{ a.display_latin if a }}"></label>
+    <label>{{ t("identity-culture") }}
+      <input type="text" name="alt.{{ i }}.culture" value="{{ a.culture if a }}" size="8"></label>
+    <label>{{ t("identity-direction") }}
+      <select name="alt.{{ i }}.direction">
+        {% for d in directions %}
+        <option value="{{ d }}" {{ "selected" if a and d == a.direction }}>
+          {{- t("identity-direction-" ~ d) if d else t("admin-not-set") -}}</option>
+        {% endfor %}
+      </select></label>
+    <label>{{ t("identity-valid-from") }}
+      <input type="text" name="alt.{{ i }}.valid_from" value="{{ a.valid_from if a }}" size="10"></label>
+    <label>{{ t("identity-valid-until") }}
+      <input type="text" name="alt.{{ i }}.valid_until" value="{{ a.valid_until if a }}" size="10"></label>
+    <label>{{ t("phys-col-source") }}
+      <select name="alt.{{ i }}.source_id">
+        <option value="">{{ t("phys-no-source") }}</option>
+        {% for s in sources %}
+        <option value="{{ s.id }}" {{ "selected" if a and s.id == a.source_id }}>{{ s.label }}</option>
+        {% endfor %}
+      </select></label>
+    <label>{{ t("phys-col-confidence") }}
+      <input type="text" inputmode="decimal" size="4" name="alt.{{ i }}.confidence"
+             value="{{ a.confidence if a }}"></label>
+    <label class="wide">{{ t("phys-col-note") }}
+      <input type="text" name="alt.{{ i }}.note" value="{{ a.note if a }}"></label>
+  </div>
+  <p class="hint small">{{ t("editor-blank-to-remove") }}</p>
+</div>
+{% endmacro %}

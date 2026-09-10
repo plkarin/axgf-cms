@@ -592,6 +592,18 @@ result-continue = Weiter
 result-dashboard = Übersicht
 person-sections-label = Abschnitte dieser Seite
 
+## Vocabulary the structured editors offer
+
+name-part-nasab = Nasab (Abstammung)
+name-part-laqab = Laqab (Beiname)
+name-part-kunya = Kunya (Teknonym)
+name-part-nisbah = Nisba (Herkunft)
+name-part-alias = Alias
+name-part-religious_name = Ordensname
+name-part-pen_name = Künstlername
+name-type-pen_name = Künstlername
+gender-U = Nicht erfasst
+
 ## Abschnitte des Eintrags, Einzelheiten
 
 record-notes-title = Anmerkungen zu diesem Eintrag:
@@ -1104,3 +1116,32 @@ silhouette-proportions-elderly = Proportionen eines Erwachsenen, die sich ab etw
 silhouette-to-scale = Maßstäblich gezeichnet, gegen eine Bezugslinie bei { $ref } cm.
 silhouette-no-height = Es ist keine Größe erfasst, daher ist die Figur in einer nominellen Größe für ihre Altersgruppe gezeichnet und nicht maßstäblich.
 silhouette-several-heights = Es ist mehr als eine Größe erfasst; die Figur zeichnet die jüngste.
+
+## The identity editor
+
+identity-editor-title = Namen und Identität
+identity-primary-name = Der überall gezeigte Name
+identity-primary-help = Was die Baumkarte, die Überschrift und jede Liste verwenden. Die anderen Namen unten sind die, mit denen eine Quelle diese Person zu anderer Zeit bezeichnet hat.
+identity-display = Name
+identity-display-latin = In lateinischer Schrift
+identity-culture = Sprache
+identity-direction = Schreibrichtung
+identity-direction-ltr = von links nach rechts
+identity-direction-rtl = von rechts nach links
+identity-direction-auto = aus dem Text
+identity-components = Namensbestandteile
+identity-components-help = Welcher Teil der Vorname ist und welcher der Familienname, in der Schreibreihenfolge. Ein Eintrag ohne Teile wird trotzdem angezeigt: die Teile sind das, wonach eine Suche greifen kann.
+identity-part = Teil
+identity-value = Text
+identity-other-names = Weitere Namen
+identity-other-help = Ein Ehename, ein Ordensname, ein Name aus einem späteren Dokument. Jeder trägt seine Gebrauchszeit und die Quelle, die es sagt.
+identity-name-type = Art des Namens
+identity-valid-from = In Gebrauch ab
+identity-valid-until = In Gebrauch bis
+identity-about = Zur Person
+identity-living-help = Das ist das Kennzeichen, das die Quelle gesetzt hat. Die Seite vermutet davon getrennt einen Tod, wenn die Geburt zu lange zurückliegt, und diese Vermutung ändert weder dieses Feld noch das Archiv.
+identity-error-no-display = Ein Eintrag braucht einen Namen, unter dem er angezeigt wird. Nichts wurde gespeichert.
+editor-blank-to-remove = Namen leeren, um diesen Eintrag zu entfernen.
+# A BCP 47 tag, shown as an example in the language field.
+identity-culture-placeholder = de
+identity-edit-link = Namen und Identität bearbeiten

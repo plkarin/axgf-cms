@@ -17,7 +17,8 @@
          a header turns into a run-on string. #}
       <p class="lede small">
         {%- if p.gender %}{{ p.gender }}{% endif -%}
-        {%- if p.is_living %} · {{ t("record-living-yes") }}
+        {%- if p.living_presumed %} · {{ t("record-presumed-deceased") }}
+        {%- elif p.is_living %} · {{ t("record-living-yes") }}
         {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
       </p>
     </div>

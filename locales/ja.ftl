@@ -894,6 +894,17 @@ avatar-not-available-detail = 選ばれたファイルはこの人に結び付�
 
 record-history-withheld = あなたには表示されません
 
+## A death nobody wrote down
+#
+# GEDCOM cannot say "died, date unknown", so a converter marks those
+# people living. These three say that the page worked it out rather than
+# read it, which is a distinction this product does not blur.
+
+record-status = 状態
+record-presumed-deceased = 死亡と推定
+record-presumed-short = 推定
+record-presumed-why = 死亡が記録されておらず、出生は { $years } 年より前です。この記録は正しくありえません。アーカイブは変更していません。これはページの推定であり、出典の記述ではありません。
+
 ## 記録の横に生成される人型の図
 #
 # これは肖像ではありません。以下のメッセージはすべて、その点をあいまいに

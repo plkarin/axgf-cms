@@ -203,7 +203,9 @@ async fn gender_living_and_visibility_are_labelled_chips_not_a_run_on_string() {
     );
     for want in [
         "<div class=\"fc\"><dt>Gender</dt><dd>Female</dd></div>",
-        "<div class=\"fc\"><dt>Living</dt><dd>yes</dd></div>",
+        // Three answers now, so a labelled yes/no cannot hold them: see
+        // `crate::living`. "Status: living", not "Living: yes".
+        "<div class=\"fc\"><dt>Status</dt><dd>living</dd></div>",
         "<div class=\"fc\"><dt>Visibility</dt><dd>members</dd></div>",
     ] {
         assert!(

@@ -40,6 +40,24 @@ pub struct Config {
     #[arg(long, value_name = "MB", default_value_t = crate::documents::DEFAULT_SIZE_WARN / (1024 * 1024))]
     pub size_warn_mb: u64,
 
+    /// Years after a birth beyond which a person marked living is presumed
+    /// deceased, whatever the record says.
+    ///
+    /// GEDCOM cannot record "died, date unknown", so a converter marks
+    /// everybody whose death was never written down as alive. Without this,
+    /// the operator's own bundle renders a woman born in 1898 as living, which
+    /// is a claim that she is 128.
+    ///
+    /// It is a *display* rule and it never touches the bundle. It also never
+    /// touches permissions: a living person's health data stays withheld on
+    /// the recorded flag, not the presumed one, because a plausibility rule
+    /// that widens access is a privacy hole with arithmetic in front of it.
+    ///
+    /// `0` switches it off, for an operator whose bundle records deaths
+    /// properly or who disagrees with the number.
+    #[arg(long, value_name = "YEARS", default_value_t = crate::living::DEFAULT_MAX_AGE_YEARS)]
+    pub presume_deceased_after: i64,
+
     /// Create an administrator account with this username, print a generated
     /// password once to stderr, and exit without serving.
     ///
@@ -142,6 +160,7 @@ mod tests {
             admin_token: token.map(str::to_string),
             seed_sample: false,
             size_warn_mb: 200,
+            presume_deceased_after: crate::living::DEFAULT_MAX_AGE_YEARS,
             create_admin: None,
             cache_dir: None,
             geocoder_contact: None,

@@ -1077,6 +1077,17 @@ avatar-not-available-detail = Die gewählte Datei ist nicht mit dieser Person ve
 
 record-history-withheld = Ihnen nicht gezeigt
 
+## A death nobody wrote down
+#
+# GEDCOM cannot say "died, date unknown", so a converter marks those
+# people living. These three say that the page worked it out rather than
+# read it, which is a distinction this product does not blur.
+
+record-status = Status
+record-presumed-deceased = mutmaßlich verstorben
+record-presumed-short = mutmaßl.
+record-presumed-why = Es ist kein Tod erfasst und die Geburt liegt mehr als { $years } Jahre zurück, also kann dieser Eintrag nicht stimmen. Das Archiv bleibt unverändert: das ist die Folgerung der Seite, nicht die Aussage der Quelle.
+
 ## Die erzeugte Figur neben einem Eintrag
 #
 # Sie ist kein Porträt. Alle folgenden Meldungen sind dafür da, dass das

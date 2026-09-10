@@ -593,6 +593,10 @@ pub struct Card {
     /// keeps its place and its id — the tree's shape is the same for everyone —
     /// and carries no name, no dates, no gender and no link.
     pub restricted: bool,
+    /// True when the death side of the card is an inference rather than a
+    /// record. See [`crate::living`]: the card must not print a bare `?` that
+    /// reads as "not looked up yet" for a person the arithmetic has answered.
+    pub presumed_deceased: bool,
 }
 
 /// A connector between two cards.
@@ -1942,6 +1946,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
             conf_pct: None,
             is_root,
             restricted: false,
+            presumed_deceased: false,
         };
     };
 
@@ -1949,11 +1954,10 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
     let birth = view::render_date_field(p.get("birth").unwrap_or(&Value::Null), "date");
     let death = view::render_date_field(p.get("death").unwrap_or(&Value::Null), "date");
 
-    let is_living = p
-        .get("identity")
-        .and_then(|i| i.get("is_living"))
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
+    // Shown-as-living, not recorded-as-living. A converted bundle marks
+    // everyone whose death was never written down as alive, and a card reading
+    // `1898–—` says the person is 128. See [`crate::living`].
+    let living = crate::living::status(p);
 
     let sex = match p
         .get("identity")
@@ -1978,7 +1982,11 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
         name: name.clone(),
         search: name.to_lowercase(),
         birth: birth.short,
-        death: if is_living { "—".into() } else { death.short },
+        death: if living.shown_as_living() {
+            "—".into()
+        } else {
+            death.short
+        },
         sex,
         x,
         y,
@@ -1989,6 +1997,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
         conf_label: conf.map(|c| c.description),
         is_root,
         restricted: false,
+        presumed_deceased: living.is_presumed(),
     }
 }
 

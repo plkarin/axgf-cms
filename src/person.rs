@@ -316,7 +316,14 @@ pub struct PersonView {
     pub names: Vec<NameView>,
     pub gender: Option<String>,
     pub gender_note: Option<String>,
+    /// Whether to *show* this person as living. Not what a reader may read:
+    /// see [`crate::living`] for why those are two questions.
     pub is_living: bool,
+    /// True when the record says living and the arithmetic says otherwise, so
+    /// the page can mark an inference as one.
+    pub living_presumed: bool,
+    /// The catalogue key for the status said out loud.
+    pub living_key: &'static str,
     pub visibility: Option<String>,
     pub birth: FactView,
     pub death: FactView,
@@ -409,10 +416,17 @@ pub fn build_in(
         .and_then(Value::as_str)
         .map(str::to_string);
 
-    let is_living = identity
-        .and_then(|i| i.get("is_living"))
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
+    // How this person is *shown*. A converter that had no way to record "died,
+    // date unknown" marked half this bundle living, so a record whose birth is
+    // further back than anybody has lived is presumed deceased and says so.
+    //
+    // What a reader may *read* is a different question with a different
+    // answer, and `crate::living` explains at length why the two must not be
+    // joined up: health visibility keys on the recorded flag, and routing it
+    // through here would publish a living person's diagnoses the moment the
+    // arithmetic decided they were old enough.
+    let living = crate::living::status(person);
+    let is_living = living.shown_as_living();
 
     let names = ctx.names_of(identity);
 
@@ -510,6 +524,8 @@ pub fn build_in(
         gender,
         gender_note,
         is_living,
+        living_presumed: living.is_presumed(),
+        living_key: living.key(),
         visibility: identity
             .and_then(|i| str_field(i, "visibility"))
             .map(|v| crate::i18n::vocab(lang, "visibility", &v)),

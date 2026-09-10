@@ -174,6 +174,11 @@ pub struct Chrome {
     pub locales: Vec<serde_json::Value>,
     pub themes: Vec<serde_json::Value>,
     pub current_locale: serde_json::Value,
+    /// The operator's plausibility limit, for the sentence that explains a
+    /// presumed death. On the chrome rather than passed per page because four
+    /// templates need it and one of them is a tree card drawn a thousand times
+    /// a page. See [`crate::living`].
+    pub presume_after: i64,
 }
 
 impl Chrome {
@@ -217,6 +222,7 @@ impl Chrome {
                 "reviewed": locale.reviewed,
                 "coverage": locale.coverage_percent(),
             }),
+            presume_after: crate::living::max_age_years(),
         }
     }
 

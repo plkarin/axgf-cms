@@ -1105,6 +1105,19 @@ legend { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; 
 .diag-row[data-sev="info"]    .diag-code { color: var(--ink-faint); }
 .diag-ref { display: block; font-size: 0.76rem; color: var(--ink-faint); font-family: var(--mono); }
 
+/* An inference, marked as one.
+ *
+ * A dotted underline rather than a colour or an icon: it survives every theme,
+ * it survives greyscale, and it is the typographic convention for "there is
+ * more behind this word" that a reader already knows. The distinction between
+ * what a source recorded and what this page worked out is the argument of the
+ * whole product, so it is never carried by tone alone. */
+.presumed {
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+}
+abbr.presumed { text-decoration: none; }
+
 .muted { color: var(--ink-faint); }
 .small { font-size: 0.85rem; }
 .nowrap { white-space: nowrap; }

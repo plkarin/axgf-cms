@@ -295,6 +295,37 @@ pub fn render_date_field_in(obj: &Value, key: &str, lang: &str) -> DateDisplay {
     }
 }
 
+/// The **latest** year `obj[key]` could be, or `None` when nothing bounds it.
+///
+/// Latest rather than earliest, and the difference is the whole point of the
+/// function. Its caller is [`crate::living`], which presumes a death from how
+/// long ago a birth was, and a presumption must be made from the reading of
+/// the evidence least likely to support it. A birth recorded as *no later
+/// than 1510* puts the person at 516 at the youngest, so the presumption is
+/// safe. A birth recorded as *no earlier than 1880* bounds nothing: they could
+/// have been born in 1990, and answering 1880 would declare a thirty-six year
+/// old dead.
+///
+/// So an `earliest`-only range answers `None`, which reads as "no year", which
+/// is the correct input to a rule that needs one.
+///
+/// Here rather than in the caller because the shapes a date can take are this
+/// module's business: a plain value, a range with either bound, or a note the
+/// converter could not parse. A second implementation elsewhere would read the
+/// first of those and quietly answer `None` for the rest, which on a converted
+/// bundle is a great many of them.
+pub fn latest_year_of_field(obj: &Value, key: &str) -> Option<i64> {
+    let raw = obj.get(key)?.get("date").or_else(|| obj.get(key))?;
+    let date: AxgfDate = serde_json::from_value(raw.clone()).ok()?;
+    let year = |d: &AxgfDate| sort_key_of(d).map(|k| k / 10_000);
+    year(&date).or_else(|| {
+        date.range
+            .as_ref()
+            .and_then(|r| r.latest.as_ref())
+            .and_then(|b| year(b))
+    })
+}
+
 /// The sort key of a nested range bound.
 fn sort_key_of(d: &AxgfDate) -> Option<i64> {
     d.value.as_deref().and_then(sort_key)

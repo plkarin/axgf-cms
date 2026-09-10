@@ -17,6 +17,9 @@ async fn main() -> Result<()> {
         .init();
 
     let cfg = Config::parse();
+    // Before anything renders: the plausibility limit is fixed for the life of
+    // the process, and every page asks for it.
+    axgf_cms::living::set_max_age_years(cfg.presume_deceased_after);
     let (token, generated) = cfg.resolve_admin_token();
 
     let seed = cfg.seed_sample.then_some(axgf_cms::SAMPLE_BUNDLE);

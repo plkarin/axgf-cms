@@ -1114,6 +1114,17 @@ avatar-not-available-detail = The chosen file is not linked to this person, or i
 # table cell, so it is a phrase rather than a sentence.
 record-history-withheld = withheld from you
 
+## A death nobody wrote down
+#
+# GEDCOM cannot say "died, date unknown", so a converter marks those
+# people living. These three say that the page worked it out rather than
+# read it, which is a distinction this product does not blur.
+
+record-status = Status
+record-presumed-deceased = presumed deceased
+record-presumed-short = presumed
+record-presumed-why = No death is recorded and the birth is more than { $years } years ago, so this record cannot be right. The bundle is unchanged: this is what the page infers, not what the source says.
+
 ## The generated figure beside a record
 #
 # It is not a portrait. Every message here exists to keep that unambiguous:

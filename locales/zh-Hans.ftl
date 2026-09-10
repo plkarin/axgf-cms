@@ -894,6 +894,17 @@ avatar-not-available-detail = 所选文件未与此人相连，或你无权读�
 
 record-history-withheld = 对你不显示
 
+## A death nobody wrote down
+#
+# GEDCOM cannot say "died, date unknown", so a converter marks those
+# people living. These three say that the page worked it out rather than
+# read it, which is a distinction this product does not blur.
+
+record-status = 状态
+record-presumed-deceased = 推定已故
+record-presumed-short = 推定
+record-presumed-why = 没有记录死亡，而出生已在 { $years } 年以前，因此这条记录不可能正确。档案未被更改：这是本页的推断，不是来源所述。
+
 ## 记录旁边生成的人形图
 #
 # 它不是肖像。下面这些消息的存在就是为了让这一点毫不含糊。

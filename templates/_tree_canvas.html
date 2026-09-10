@@ -62,7 +62,10 @@
          title="{{ c.name }}">
         <span class="tname"><bdi>{{ c.name }}</bdi></span>
         <span class="tdates" dir="ltr">
-          {{ c.birth if c.birth else "?" }}<span class="sep">–</span>{{ c.death if c.death else "?" }}
+          {{ c.birth if c.birth else "?" }}<span class="sep">–</span>
+          {%- if c.presumed_deceased %}<abbr class="presumed"
+              title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-short") }}</abbr>
+          {%- else %}{{ c.death if c.death else "?" }}{% endif %}
           {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
               style="--conf-pct:{{ c.conf_pct }}"
               title="{{ c.conf_label }} — {{ c.conf_pct }}%"

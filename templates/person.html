@@ -44,6 +44,12 @@
         <span class="sep"> – </span>
         {%- if p.is_living %}{{ t("record-living-yes") }}
         {%- elif p.death.present %}{{ m.date(p.death.date) }}
+        {#- An inference, and marked as one. The bare "Date unknown" that used
+            to sit here reads as a gap somebody has not filled in, which is a
+            different statement from "the record says living and the record
+            cannot be right". #}
+        {%- elif p.living_presumed %}<span class="presumed"
+            title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
         {%- else %}{{ t("date-unknown") }}{% endif -%}
       </span>
       {%- if p.header.age is not none %}
@@ -55,6 +61,8 @@
     <p class="lede small">
       {%- if p.gender %}{{ p.gender }}{% endif -%}
       {%- if p.is_living %} · {{ t("record-living-yes") }}
+      {%- elif p.living_presumed %} · <span class="presumed"
+          title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
       {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
       {%- if p.gender_note %} · {{ p.gender_note }}{% endif -%}
       {# Visibility is an editing concern, so it is shown to the people who can

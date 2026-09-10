@@ -1281,6 +1281,17 @@ avatar-not-available-detail = الملف المختار غير مرتبط بهذ
 
 record-history-withheld = محجوب عنك
 
+## A death nobody wrote down
+#
+# GEDCOM cannot say "died, date unknown", so a converter marks those
+# people living. These three say that the page worked it out rather than
+# read it, which is a distinction this product does not blur.
+
+record-status = الحالة
+record-presumed-deceased = وفاة مفترضة
+record-presumed-short = مفترضة
+record-presumed-why = لا وفاة مسجّلة والولادة قبل أكثر من { $years } سنة، فلا يمكن أن يكون هذا السجل صحيحًا. الأرشيف لم يُغيَّر: هذا استنتاج الصفحة لا ما يقوله المصدر.
+
 ## الشكل المولَّد بجانب السجل
 #
 # ليس صورة شخصية. كل الرسائل التالية موجودة كي يبقى ذلك بلا التباس.

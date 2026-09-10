@@ -9,6 +9,61 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+**A living person cannot be 226 years old.** GEDCOM has no way to record
+"died, date unknown", so a converter marks everybody whose death was never
+written down as alive, and this application repeated it: a woman born in 1898
+rendered as `1898 – living`. The converter is not at fault and cannot be
+fixed, because the answer is not in the file.
+
+A person whose birth is more than **120 years** ago is now presumed deceased,
+whatever the record says. On the operator's bundle that is **111 of 866**. Of
+the 570 marked living, 378 have no usable birth year and stay living because a
+presumption needs evidence, and 81 were born inside the limit.
+
+120 rather than 115 or 125: the oldest verified human lifespan is 122, and the
+number belongs just under the limit of the possible rather than at the edge of
+the probable. `--presume-deceased-after YEARS` moves it and `0` switches it
+off, for an operator whose bundle records deaths properly or who disagrees
+with the arithmetic.
+
+**Presumed, and the page says which.** The bundle is never touched. The raw
+JSON still reads `is_living: true`, an export still carries the file the
+operator was given, and the interface prints "presumed deceased" with a dotted
+underline and a sentence behind it rather than the bare "Date unknown" that
+used to sit there — which reads as a gap somebody has not filled in, a
+different statement from "the record cannot be right". The masthead, the lede,
+the tree card, the side panel and the identity chip all say it. That chip was
+"Living: yes/no" and is now "Status: living / deceased / presumed deceased",
+because three answers do not fit in a yes and a no.
+
+No age is stated for a presumed death, and the figure beside the record
+disappears with it: there is no death year, so there is no span, and nobody
+knows what age to draw. Before this, a person born in 1903 was rendered as
+123 years old.
+
+A ranged birth is read from its **latest** bound. "No later than 1510" puts
+somebody at 516 at the youngest and the presumption is safe; "no earlier than
+1880" bounds nothing, because they could have been born in 1990, and reading
+that bound would declare a thirty-six year old dead.
+
+### Security
+
+**The presumption is a display rule and permissions do not use it.** A living
+person's health data is withheld from everybody but an administrator, and that
+rule keys on living status — so a presumption reaching it would publish 111
+people's conditions, causes of death and religions in the same instant, and
+the change would look like a tidy-up. The same is true of the visibility a
+record defaults to when none is set: living means `members`, deceased means
+`public`.
+
+`access` reads `identity.is_living` directly and deliberately. Two tests exist
+for no other purpose than to fail if that stops being true, and both were
+mutation-tested by routing the permission through the presumption: doing it to
+`health_visibility` fails 2 of 15 health tests, and doing it to
+`person_visibility` fails 1 there and 1 more in the visibility suite.
+
+### Changed
+
 **The figure moved into the header, and its caption behind a `?`.** It had a
 band of its own under the masthead with three paragraphs of caption beside it,
 which is how a secondary illustration ended up the largest thing on the page.

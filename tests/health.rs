@@ -21,11 +21,15 @@ use serde_json::{json, Value};
 
 const LIVING: &str = "11111111-1111-4111-8111-111111111111";
 const DEAD: &str = "22222222-2222-4222-8222-222222222222";
+/// Recorded living, born long enough ago that the page presumes otherwise.
+const PRESUMED: &str = "33333333-3333-4333-8333-333333333333";
 
 /// Strings that exist nowhere else.
 const CONDITION: &str = "Sarcoidosis";
 const RELIGION: &str = "Old Believer";
 const CAUSE: &str = "Diphtheria";
+/// Only on the presumed-deceased person, so finding it anywhere is proof.
+const PRESUMED_CONDITION: &str = "Kuru";
 const HEIGHT: &str = "187";
 
 fn bundle(tag: &str) -> std::path::PathBuf {
@@ -72,6 +76,25 @@ fn bundle(tag: &str) -> std::path::PathBuf {
                 "death": {"date": {"value": "1899", "precision": "year"}},
                 "extensions": {
                     "axgf-cms:health/v1": {"cause_of_death": [{"value": CAUSE}]}
+                }
+            },
+            // The case the plausibility rule creates. Recorded living, born in
+            // 1890, and so shown as presumed deceased — while remaining, for
+            // every purpose that decides what a reader may read, a living
+            // person. Public, so again nothing else is hiding anything.
+            PRESUMED: {
+                "id": PRESUMED, "type": "person", "axgf_version": "1.0", "version_num": 1,
+                "identity": {
+                    "name": {"display": "Pelagia Zaleska", "components": []},
+                    "is_living": true,
+                    "visibility": "public"
+                },
+                "birth": {"date": {"value": "1890", "precision": "year"}},
+                "extensions": {
+                    "axgf-cms:traits/v1": traits("164"),
+                    "axgf-cms:health/v1": {
+                        "conditions": [{"value": PRESUMED_CONDITION}]
+                    }
                 }
             }
         },
@@ -538,4 +561,74 @@ async fn an_administrator_can_erase_a_recorded_condition() {
         !after.contains(CAUSE),
         "the cause of death is gone:\n{after}"
     );
+}
+
+// ---------------------------------------------------------------------------
+// The plausibility rule, and the line it must not cross
+// ---------------------------------------------------------------------------
+
+/// A presumption is a display rule. It must not open a record.
+///
+/// GEDCOM cannot say "died, date unknown", so a converter marks those people
+/// living and this application presumes otherwise for anybody born more than
+/// `living::DEFAULT_MAX_AGE_YEARS` ago — 111 of the operator's 866. Every one
+/// of those people is, as far as the file is concerned, alive: if the
+/// presumption reached `access`, their conditions, their cause of death and
+/// their religion would be published to every reader in the same instant, and
+/// the change would look like a tidy-up.
+///
+/// So this is the test whose whole job is to fail if somebody ever routes the
+/// permission through `living::status`. Protection follows the recorded value.
+#[tokio::test]
+async fn a_presumed_death_does_not_unlock_a_living_persons_health() {
+    let (app, _p) = app_with_bundle("health-presumed", &bundle("health-presumed-src"));
+
+    // The page really does presume: without this the test would pass by the
+    // rule never having fired.
+    let admin = body_string(get_admin(&app, &format!("/person/{PRESUMED}")).await).await;
+    assert!(
+        admin.contains("presumed"),
+        "the fixture is not being presumed deceased at all:\n{admin}"
+    );
+
+    for (name, body) in surfaces(&app, PRESUMED).await {
+        assert!(
+            !body.contains(PRESUMED_CONDITION),
+            "{name} published a presumed-deceased person's condition"
+        );
+    }
+    // And the trait half still shows, exactly as it does for anybody living:
+    // the rule changed nothing about what may be read, in either direction.
+    let life = body_string(get(&app, &format!("/person/{PRESUMED}?tab=life")).await).await;
+    assert!(life.contains("164"), "the height is not health data");
+    // An administrator still reads it, so it is withheld rather than absent.
+    let admin_life =
+        body_string(get_admin(&app, &format!("/person/{PRESUMED}?tab=life")).await).await;
+    assert!(admin_life.contains(PRESUMED_CONDITION));
+}
+
+/// The other door the presumption could have opened.
+///
+/// `access::person_visibility` defaults an *absent* visibility from the living
+/// flag: living means `members`, deceased means `public`. A presumption
+/// reaching that function would turn a record signed-in family could read into
+/// one anybody could, without anyone touching a setting.
+#[tokio::test]
+async fn a_presumed_death_does_not_widen_a_record_with_no_visibility_set() {
+    use axgf_cms::acl::Visibility as V;
+
+    let presumed = json!({
+        "identity": {"is_living": true},
+        "birth": {"date": {"value": "1850", "precision": "year"}}
+    });
+    // The page presumes …
+    assert!(axgf_cms::living::status(&presumed).is_presumed());
+    // … and the lens does not.
+    assert_eq!(
+        axgf_cms::access::person_visibility(&presumed),
+        V::Members,
+        "an absent visibility must still default from the recorded flag"
+    );
+    assert!(!axgf_cms::access::may_read_health(&presumed, V::Members));
+    assert!(axgf_cms::access::may_read_health(&presumed, V::Private));
 }

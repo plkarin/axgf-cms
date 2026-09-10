@@ -971,6 +971,11 @@ pub fn view_for(person: &Value, flat: &Value, lang: &str, may_read_health: bool)
         traits,
         health,
         health_withheld,
+        // The *recorded* flag, deliberately, not the presumption
+        // `crate::living` makes for display. This drives the sentence telling
+        // an administrator that they are looking at a living person's health,
+        // and that sentence has to agree with the rule that withheld it from
+        // everybody else — which reads the record. See `crate::living`.
         subject_is_living: person
             .get("identity")
             .and_then(|i| i.get("is_living"))

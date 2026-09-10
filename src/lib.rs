@@ -33,6 +33,7 @@ pub mod documents;
 pub mod geocode;
 pub mod i18n;
 pub mod journal;
+pub mod living;
 pub mod payloads;
 pub mod person;
 pub mod physical;

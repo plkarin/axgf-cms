@@ -2627,6 +2627,9 @@ fn render_physical_form(
     use crate::physical::{Field, Kind, FIELDS};
 
     let may_read_health = crate::access::may_read_health(person, viewer.ceiling());
+    // Recorded, not presumed: the warning this drives has to agree with the
+    // rule that decides who may read the rows, and that rule reads the record.
+    // See `crate::living` for the line and why it is drawn there.
     let is_living = person
         .get("identity")
         .and_then(|i| i.get("is_living"))

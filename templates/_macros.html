@@ -196,7 +196,11 @@
   {%- if p.gender %}
   <div class="fc"><dt>{{ t("record-gender") }}</dt><dd>{{ p.gender }}</dd></div>
   {%- endif %}
-  <div class="fc"><dt>{{ t("record-living") }}</dt><dd>{{ t("record-yes") if p.is_living else t("record-no") }}</dd></div>
+  {#- "Status: presumed deceased" rather than "Living: no". There are three
+      answers now and a yes/no can hold two of them, so the label changed with
+      the values: "no" for a person the record calls living and the arithmetic
+      calls dead throws away the one interesting thing about that record. #}
+  <div class="fc"><dt>{{ t("record-status") }}</dt><dd>{{ t(p.living_key) }}</dd></div>
   {%- if p.visibility %}
   <div class="fc"><dt>{{ t("record-visibility") }}</dt><dd>{{ p.visibility }}</dd></div>
   {%- endif %}

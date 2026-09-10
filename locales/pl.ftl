@@ -1235,6 +1235,7 @@ record-history-withheld = nieudostępnione
 # To nie jest portret. Wszystkie poniższe komunikaty istnieją po to, by nie
 # było co do tego wątpliwości.
 
+silhouette-help-toggle = Co pokazuje ten rysunek
 silhouette-label = Zapisany wiek i wzrost, a nie wygląd
 silhouette-not-a-likeness = To nie jest portret: nic w nim nie pochodzi ze zdjęcia.
 silhouette-proportions-infant = Proporcje niemowlęcia, około czterech wysokości głowy.

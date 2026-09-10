@@ -1082,6 +1082,7 @@ record-history-withheld = não lhe é mostrado
 # Não é um retrato. Todas as mensagens que se seguem existem para que isso
 # fique sem ambiguidade.
 
+silhouette-help-toggle = O que esta figura mostra
 silhouette-label = Idade e altura registadas, não uma aparência
 silhouette-not-a-likeness = Não é um retrato: nada nela vem de uma fotografia.
 silhouette-proportions-infant = Proporções de um bebé, cerca de quatro alturas de cabeça.

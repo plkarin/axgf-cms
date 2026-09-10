@@ -899,6 +899,7 @@ record-history-withheld = あなたには表示されません
 # これは肖像ではありません。以下のメッセージはすべて、その点をあいまいに
 # しないために存在します。
 
+silhouette-help-toggle = この図に表示される内容
 silhouette-label = 記録された年齢と身長であり、外見ではありません
 silhouette-not-a-likeness = 肖像ではありません。写真から取った部分はありません。
 silhouette-proportions-infant = 乳児の比率、およそ4頭身です。

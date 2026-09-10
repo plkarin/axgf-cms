@@ -1602,7 +1602,22 @@ bdi.date { unicode-bidi: isolate; }
   align-items: start;
   gap: 1rem 1.15rem;
   margin-bottom: 1.25rem;
+  /* The containing block for the figure's help panel, which hangs below the
+     whole header rather than below the 55px column it is anchored to. */
+  position: relative;
 }
+/* With a figure there are four columns and the document order is not the
+   visual order — the figure is written last so that a reader working down the
+   page by ear reaches the name before a note about a drawing — so every item
+   is placed rather than flowed. Without one the three fall into three columns
+   on their own, which is why the modifier exists at all: an empty track still
+   costs a gap, and the masthead of a record with no dates would have sat
+   1.15rem further right than every other. */
+.person-head.has-figure { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+.person-head.has-figure > .person-avatar { grid-column: 1; grid-row: 1; }
+.person-head.has-figure > .person-figure { grid-column: 2; grid-row: 1; }
+.person-head.has-figure > .person-head-text { grid-column: 3; grid-row: 1; }
+.person-head.has-figure > .person-head-actions { grid-column: 4; grid-row: 1; }
 .person-head-text { min-width: 0; }
 .person-head h1 { margin: 0; line-height: 1.15; }
 .person-head-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
@@ -1659,16 +1674,18 @@ bdi.date { unicode-bidi: isolate; }
 }
 
 
-/* The generated figure, and the caption that says what it is.
+/* The generated figure.
  *
  * See `src/silhouette.rs` for what it encodes and, more to the point, what it
  * refuses to. Nothing here is a portrait: it is age band as proportion, a
  * recorded height drawn to scale against a fixed reference line, and a
  * recorded build as the width of a torso.
  *
- * Its own row under the masthead rather than a fourth column. At 390px there
- * is no fourth column, and a caption whose job is to say "this is not a
- * likeness" needs a line to say it on rather than a 76px gutter.
+ * Beside the photograph at the photograph's own height, and no wider than the
+ * canvas needs — about 59px against the avatar's 112. It had a band of its own
+ * under the masthead with three paragraphs of caption beside it, which made a
+ * secondary illustration the largest thing on the page. The explanation is
+ * still all there, behind the `?` the sections already use.
  *
  * It introduces no colour. The fill is --ink-soft and the two rules are
  * --ink-faint, both of which every theme already holds to 4.5:1 as body text.
@@ -1677,46 +1694,82 @@ bdi.date { unicode-bidi: isolate; }
  * sweep measured the ground line at 3.05 on the light theme, and the
  * reference line is not a boundary — it is the 170 cm mark the height is read
  * against, which is a statement and should be held to what a statement is
- * held to. A new pair would be a new pair to measure in seven themes, for a
- * shape that says nothing in hue anyway: the bands are told apart by how much
- * of the figure is head, which survives every colour-blind theme and
- * greyscale printing alike. */
+ * held to. */
 .person-figure {
-  grid-column: 1 / -1;
   display: flex;
-  align-items: flex-end;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
   margin: 0;
-  padding-top: 0.9rem;
-  border-top: 1px solid var(--border);
 }
 .figure-art { flex: none; }
 .silhouette {
   display: block;
-  block-size: 190px;
+  /* Sized so the ground line lands on the bottom edge of the photograph
+     rather than 11px below it: the canvas keeps 10 of its 260 units under the
+     ground for the rule's own width, so the box is the avatar's 112px plus
+     that tenth. The two read as a pair standing on the same line. */
+  block-size: 117px;
   inline-size: auto;
   /* Static, and not because a preference asked for it: a figure that carries
      no more information moving than still has nothing to animate. */
 }
 .sil-body { fill: var(--ink-soft); }
-.sil-ground { stroke: var(--ink-faint); stroke-width: 1.5; }
+/* Non-scaling: the canvas is 260 units tall and is drawn at 128px, so a rule
+   of 1.5 user units would land at two thirds of a pixel and render as a grey
+   suggestion. The stroke widths below are pixels on the screen at whatever
+   size the figure is shown. */
+.sil-ground,
+.sil-ref { stroke: var(--ink-faint); vector-effect: non-scaling-stroke; }
+.sil-ground { stroke-width: 1.25; }
 /* The 170 cm mark. Dashed rather than tinted, so it reads as a measurement
    line and not as part of the figure, in every theme and in monochrome. */
-.sil-ref { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 5 5; }
-.person-figure figcaption {
+.sil-ref { stroke-width: 1; stroke-dasharray: 4 4; }
+
+/* The explanation, behind the same `?` a section heading carries. Its panel
+   hangs off the masthead rather than off the 55px column the `?` sits in, so
+   it is a readable width at 1920 and the full row at 390 without a second
+   rule for either. */
+.fig-help { font-size: 0.85rem; }
+.fig-help > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: help;
+  list-style: none;
+  user-select: none;
+}
+.fig-help > summary::-webkit-details-marker { display: none; }
+.fig-help > summary::marker { content: ""; }
+.fig-help > summary:hover,
+.fig-help[open] > summary { border-color: var(--accent); color: var(--accent); }
+.fig-help-panel {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 0.25rem);
+  z-index: 40;
+  width: min(34rem, 100%);
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  min-inline-size: 0;
-  /* Capped, so the caption reads as a note beside a figure rather than as a
-     paragraph of the record. Uncapped it stretched the full content width and
-     competed with the heading above it. */
-  max-inline-size: 52ch;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 24px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 2.2));
   font-size: 0.82rem;
   line-height: 1.4;
   color: var(--ink-soft);
+  text-align: start;
 }
-.person-figure .sep { color: var(--ink-faint); }
+.fig-help-panel .sep { color: var(--ink-faint); }
 .figure-label { color: var(--ink); }
 .figure-key { color: var(--ink-faint); }
 
@@ -1727,11 +1780,14 @@ bdi.date { unicode-bidi: isolate; }
   .person-head-actions { grid-column: 1 / -1; }
   .person-avatar { inline-size: 76px; block-size: 76px; }
   .person-avatar.is-initials { font-size: 1.7rem; }
-  /* The figure shrinks rather than the caption wrapping to twelve lines: on a
-     phone the words are the part that has to stay readable. */
-  .silhouette { block-size: 132px; }
-  .person-figure { gap: 0.8rem; }
-  .person-figure figcaption { font-size: 0.78rem; }
+  /* Three columns do not fit beside a name at 390px, so the row wraps rather
+     than crushing it: the figure drops under the avatar in the avatar's own
+     column, which is wide enough for it, and the name keeps the rest. */
+  .person-head.has-figure { grid-template-columns: auto minmax(0, 1fr); }
+  .person-head.has-figure > .person-figure { grid-column: 1; grid-row: 2; }
+  .person-head.has-figure > .person-head-text { grid-column: 2; grid-row: 1 / span 2; }
+  .person-head.has-figure > .person-head-actions { grid-column: 1 / -1; grid-row: 3; }
+  .silhouette { block-size: 96px; }
 }
 
 .showcase-strip {

@@ -1065,6 +1065,7 @@ record-history-withheld = non communiqué
 # Ce n'est pas un portrait. Tous les messages qui suivent existent pour que
 # cela reste sans ambiguïté.
 
+silhouette-help-toggle = Ce que montre cette figure
 silhouette-label = Âge et taille relevés, non une apparence
 silhouette-not-a-likeness = Ce n'est pas un portrait : rien n'en est tiré d'une photographie.
 silhouette-proportions-infant = Proportions d'un nourrisson, environ quatre hauteurs de tête.

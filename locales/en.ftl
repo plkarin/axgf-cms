@@ -1121,6 +1121,7 @@ record-history-withheld = withheld from you
 # and it states nothing else. Translate "head-heights" with whatever term your
 # language's drawing tradition uses for the head-to-body ratio.
 
+silhouette-help-toggle = What this figure shows
 silhouette-label = Recorded age and height, not an appearance
 silhouette-not-a-likeness = Not a portrait: nothing in it is taken from a photograph.
 silhouette-proportions-infant = Infant proportions, about four head-heights.

@@ -7,6 +7,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 
+### Changed
+
+**The figure moved into the header, and its caption behind a `?`.** It had a
+band of its own under the masthead with three paragraphs of caption beside it,
+which is how a secondary illustration ended up the largest thing on the page.
+It now stands next to the photograph at the photograph's own height, about
+54px wide against the avatar's 112, and the explanation sits behind the same
+`?` the section headings use.
+
+Sized so the ground line lands on the bottom edge of the photograph rather
+than 11px below it, because the canvas keeps a tenth of its height under the
+ground for the rule's own width. The two read as a pair standing on one line.
+The rules are `vector-effect: non-scaling-stroke` now: at 117px a canvas 260
+units tall drew a 1.5-unit rule at two thirds of a pixel, which is a grey
+suggestion rather than a line.
+
+The header carries four things and any of them can be missing, so the layout
+is placed rather than flowed. With a figure it is four columns and the figure
+is written *last* in the document and placed second in the grid, so a reader
+working down the page by ear reaches the name before a note about a drawing.
+Without one it is three columns and the three fall into them on their own: an
+empty track still costs its gap, and a record with no dates would otherwise
+have had its masthead sit 1.15rem further right than every other. At 390px the
+row wraps rather than crushing the name — the figure drops under the avatar in
+the avatar's own column, which is already wide enough for it.
+
 ### Added
 
 **A figure beside the record, drawn from the record and from nothing else.**

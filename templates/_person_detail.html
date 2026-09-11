@@ -169,6 +169,9 @@
     {% endif %}
   </div>
   {% endfor %}
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/family">{{ t("family-edit-link") }}</a></p>
+  {% endif %}
 </section>
 {% endif %}
 
@@ -197,6 +200,9 @@
     </div>
     {% endfor %}
   </div>
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/links">{{ t("links-edit-link") }}</a></p>
+  {% endif %}
 </section>
 {% endif %}
 
@@ -251,6 +257,9 @@
     </li>
     {% endfor %}
   </ul>
+  {% endif %}
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/occupations">{{ t("occupations-edit-link") }}</a></p>
   {% endif %}
 </section>
 {% endif %}

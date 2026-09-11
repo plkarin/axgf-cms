@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("links-editor-title") }}{% endblock %}
+
+{# Links: the relationships that are not family. A godparent, an employer, a
+   witness, a regiment. Each is an entity of its own naming two records, so
+   editing one here changes what the other record shows as well. #}
+
+{% block content %}
+<h1>{{ t("links-editor-title") }}</h1>
+<p class="lede"><bdi>{{ person_name }}</bdi></p>
+<p class="hint">{{ t("links-editor-help") }}</p>
+
+{% if problem %}<div class="notice warn" role="alert"><p>{{ t(problem) }}</p></div>{% endif %}
+
+<datalist id="entities">
+  {% for e in entities %}<option value="{{ e.label }}"></option>{% endfor %}
+</datalist>
+
+{% if not links %}<p class="muted">{{ t("links-none") }}</p>{% endif %}
+
+{% for l in links %}
+<form method="post" action="/admin/person/{{ id }}/links/{{ l.id }}" class="editor">
+  <input type="hidden" name="base_version" value="{{ l.version }}">
+  <fieldset class="ed-group">
+    <legend>{{ l.label }}</legend>
+    {% if l.reversed %}<p class="ed-elsewhere">{{ t("links-reversed") }}</p>{% endif %}
+    {{ m.link_fields(t, l, categories, precisions, sources) }}
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+    </div>
+    {{ m.delete_block(t, "link", l.id, t("links-remove")) }}
+  </fieldset>
+</form>
+{% endfor %}
+
+<form method="post" action="/admin/person/{{ id }}/links" class="editor">
+  <fieldset class="ed-group">
+    <legend>{{ t("links-new") }}</legend>
+    {{ m.link_fields(t, none, categories, precisions, sources) }}
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("links-create") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
+{% endblock %}

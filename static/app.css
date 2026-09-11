@@ -1674,6 +1674,20 @@ bdi.date { unicode-bidi: isolate; }
 .ed-rows td:first-child { inline-size: 12rem; }
 .ed-rows td:last-child { padding-inline-end: 0; inline-size: 100%; }
 .ed-rows input, .ed-rows select { inline-size: 100%; }
+/* Removing something, behind a disclosure rather than a button that toggles a
+   hidden row with script: the same three policies the admin list explains, and
+   it opens with scripting off. */
+.ed-delete { margin-block-start: 0.8rem; }
+.ed-delete > summary { display: inline-block; list-style: none; cursor: pointer; }
+.ed-delete > summary::-webkit-details-marker { display: none; }
+.ed-delete > summary::marker { content: ""; }
+.ed-delete form {
+  margin-block-start: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+}
+
 .ed-actions {
   display: flex;
   gap: 0.5rem;

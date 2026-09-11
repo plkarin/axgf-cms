@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("occupations-editor-title") }}{% endblock %}
+
+{# An occupation is a period with a start and an end, not a job title, and it
+   is an entity of its own so that it can carry its own dates and its own
+   source. #}
+
+{% block content %}
+<h1>{{ t("occupations-editor-title") }}</h1>
+<p class="lede"><bdi>{{ person_name }}</bdi></p>
+<p class="hint">{{ t("occupations-editor-help") }}</p>
+
+{% if problem %}<div class="notice warn" role="alert"><p>{{ t(problem) }}</p></div>{% endif %}
+
+{% if not occupations %}<p class="muted">{{ t("occupations-none") }}</p>{% endif %}
+
+{% for o in occupations %}
+<form method="post" action="/admin/person/{{ id }}/occupations/{{ o.id }}" class="editor">
+  <input type="hidden" name="base_version" value="{{ o.version }}">
+  <fieldset class="ed-group">
+    <legend>{{ o.title }}</legend>
+    {{ m.occupation_fields(t, o, precisions, places, sources) }}
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+    </div>
+    {{ m.delete_block(t, "occupation", o.id, t("occupations-remove")) }}
+  </fieldset>
+</form>
+{% endfor %}
+
+<form method="post" action="/admin/person/{{ id }}/occupations" class="editor">
+  <fieldset class="ed-group">
+    <legend>{{ t("occupations-new") }}</legend>
+    {{ m.occupation_fields(t, none, precisions, places, sources) }}
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("occupations-create") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
+{% endblock %}

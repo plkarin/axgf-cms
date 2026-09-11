@@ -370,3 +370,121 @@
     </select></label>
 </div>
 {% endmacro %}
+
+{# A date, as the three inputs a form shows it as. #}
+{% macro date_fields(t, prefix, title, v, precisions) %}
+<label>{{ title }}
+  <input type="text" name="{{ prefix }}.date" value="{{ v.date if v }}" size="12"></label>
+<label>{{ t("record-precision") }}
+  <select name="{{ prefix }}.precision">
+    {% for p in precisions %}
+    <option value="{{ p }}" {{ "selected" if v and p == v.precision }}>
+      {{- t("precision-" ~ p) if p else t("admin-not-set") -}}</option>
+    {% endfor %}
+  </select></label>
+<label class="inline">
+  <input type="checkbox" name="{{ prefix }}.circa" value="on" {{ "checked" if v and v.circa }}>
+  {{ t("record-approximate") }}</label>
+{% endmacro %}
+
+{# One link. The far end is one field over a datalist of every person, family
+   and event: a type select feeding a dependent picker cannot swap its options
+   without script, and the kind comes back out of which collection holds the
+   id anyway. #}
+{% macro link_fields(t, l, categories, precisions, sources) %}
+<div class="ed-grid">
+  <label>{{ t("links-other-end") }}
+    <input type="text" name="to" list="entities" autocomplete="off"
+           value="{{ l.to if l }}"></label>
+  <label>{{ t("links-label") }}
+    <input type="text" name="label" value="{{ l.label if l }}" required></label>
+  <label>{{ t("links-label-reverse") }}
+    <input type="text" name="label_reverse" value="{{ l.label_reverse if l }}"></label>
+  <label>{{ t("links-category") }}
+    <select name="category">
+      {% for c in categories %}
+      <option value="{{ c }}" {{ "selected" if l and c == l.category }}>
+        {{- t("link-category-" ~ c) if c else t("admin-not-set") -}}</option>
+      {% endfor %}
+    </select></label>
+  {{ date_fields(t, "from", t("links-from"), l.from_date if l else none, precisions) }}
+  {{ date_fields(t, "until", t("links-until"), l.until_date if l else none, precisions) }}
+  <label>{{ t("phys-col-confidence") }}
+    <input type="text" inputmode="decimal" name="confidence"
+           value="{{ l.confidence if l and l.confidence is not none }}"></label>
+  <label>{{ t("phys-col-source") }}
+    <select name="source_id">
+      <option value="">{{ t("phys-no-source") }}</option>
+      {% for s in sources %}
+      <option value="{{ s.id }}" {{ "selected" if l and s.id == l.source_id }}>{{ s.label }}</option>
+      {% endfor %}
+    </select></label>
+  <label class="inline">
+    <input type="checkbox" name="bidirectional" value="on" {{ "checked" if l and l.bidirectional }}>
+    {{ t("links-bidirectional") }}</label>
+  <label class="wide">{{ t("phys-col-note") }}
+    <input type="text" name="note" value="{{ l.note if l }}"></label>
+</div>
+{% endmacro %}
+
+{# One occupation: what somebody did, for whom, where, and between when. #}
+{% macro occupation_fields(t, o, precisions, places, sources) %}
+<div class="ed-grid">
+  <label>{{ t("occupations-title") }}
+    <input type="text" name="title" value="{{ o.title if o }}" required></label>
+  <label>{{ t("identity-display-latin") }}
+    <input type="text" name="title_latin" value="{{ o.title_latin if o }}"></label>
+  <label>{{ t("occupations-employer") }}
+    <input type="text" name="employer.name" value="{{ o.employer_name if o }}"></label>
+  <label>{{ t("occupations-employer-place") }}
+    <select name="employer.place_id">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for pl in places %}
+      <option value="{{ pl.id }}" {{ "selected" if o and pl.id == o.employer_place }}>{{ pl.label }}</option>
+      {% endfor %}
+    </select></label>
+  <label>{{ t("record-place") }}
+    <select name="place_id">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for pl in places %}
+      <option value="{{ pl.id }}" {{ "selected" if o and pl.id == o.place_id }}>{{ pl.label }}</option>
+      {% endfor %}
+    </select></label>
+  {{ date_fields(t, "from", t("occupations-from"), o.from_date if o else none, precisions) }}
+  {{ date_fields(t, "until", t("occupations-until"), o.until_date if o else none, precisions) }}
+  <label>{{ t("phys-col-confidence") }}
+    <input type="text" inputmode="decimal" name="confidence"
+           value="{{ o.confidence if o and o.confidence is not none }}"></label>
+  <label>{{ t("phys-col-source") }}
+    <select name="source_id">
+      <option value="">{{ t("phys-no-source") }}</option>
+      {% for s in sources %}
+      <option value="{{ s.id }}" {{ "selected" if o and s.id == o.source_id }}>{{ s.label }}</option>
+      {% endfor %}
+    </select></label>
+  <label class="wide">{{ t("phys-col-note") }}
+    <input type="text" name="note" value="{{ o.note if o }}"></label>
+</div>
+{% endmacro %}
+
+{# Removing an entity, with the three referential-integrity policies the admin
+   list already explains. A `details` rather than a button that toggles a
+   hidden row with script: the same words, and it opens with scripting off. #}
+{% macro delete_block(t, kind, id, label) %}
+<details class="ed-delete">
+  <summary class="btn danger small-btn">{{ label }}</summary>
+  <form method="post" action="/admin/{{ kind }}/{{ id }}/delete">
+    <p><strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong></p>
+    <div class="policy-list">
+      <label><input type="radio" name="policy" value="reject" checked>
+        <strong>{{ t("list-policy-reject") }}</strong> {{ t("list-policy-reject-detail") }}</label>
+      <label><input type="radio" name="policy" value="cascade">
+        <strong>{{ t("list-policy-cascade") }}</strong> {{ t("list-policy-cascade-detail") }}</label>
+      <label><input type="radio" name="policy" value="orphan">
+        <strong>{{ t("list-policy-orphan") }}</strong> {{ t("list-policy-orphan-detail") }}</label>
+    </div>
+    <button class="btn danger" type="submit">{{ t("admin-delete") }}</button>
+  </form>
+</details>
+{% endmacro %}
+

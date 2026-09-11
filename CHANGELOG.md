@@ -9,6 +9,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A real editor, part three: links and occupations.**
+`/admin/person/:id/links` edits the relationships that are not family — a
+godparent, an employer, a witness, a regiment — each with its label, the label
+read the other way, a category, the period it held, confidence and source. A
+link drawn from the other record is editable from this side too, and says so.
+
+The far end is **one field over a datalist of every person, family and event**.
+A type select feeding a dependent picker cannot swap its options without
+script, and the kind comes back out of which collection holds the id anyway, so
+the reader picks a thing and the type looks after itself.
+
+`/admin/person/:id/occupations` edits what somebody did, for whom, where, and
+between when, with its own confidence and source. An occupation is a period
+with a start and an end rather than a job title, which is why it is an entity
+of its own and why the form is shaped around two dates.
+
+Removal on both goes to the existing delete route with its three
+referential-integrity policies, behind a disclosure rather than a button that
+toggles a hidden row with script — the same words, and it opens with scripting
+off.
+
+### Added
+
 **A real editor, part two: unions, children and parents.**
 `/admin/person/:id/family` edits every union this person is in — partners and
 their roles, the kind of union and how it stands, when and where it started

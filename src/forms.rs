@@ -236,6 +236,94 @@ impl PickError {
     }
 }
 
+/// Every entity a Link may point at, as picker options.
+///
+/// One list rather than one per kind, and one input rather than a type select
+/// feeding a dependent picker: without script a dependent picker cannot swap
+/// its options, and with script it is a widget this application does not want.
+/// The kind comes back out of which collection holds the id, so the reader
+/// picks a thing and the type looks after itself.
+pub fn linkable_options(flat: &Value, lens: &crate::access::Lens) -> Vec<PersonOption> {
+    let mut out = person_options(flat, lens);
+    for (collection, label) in [
+        ("families", family_brief as fn(&Value, &Value) -> String),
+        ("events", event_brief as fn(&Value, &Value) -> String),
+    ] {
+        let Some(map) = flat.get(collection).and_then(Value::as_object) else {
+            continue;
+        };
+        for (id, e) in map {
+            out.push(PersonOption {
+                label: format!("{} · #{}", label(flat, e), short_id(id)),
+                id: id.clone(),
+            });
+        }
+    }
+    out.sort_by(|a, b| a.label.cmp(&b.label));
+    out
+}
+
+/// A family said briefly: the partners' names, which is how anybody knows it.
+fn family_brief(flat: &Value, fam: &Value) -> String {
+    let names: Vec<String> = fam
+        .pointer("/union/persons")
+        .and_then(Value::as_array)
+        .map(|ps| {
+            ps.iter()
+                .filter_map(|p| p.get("person_id").and_then(Value::as_str))
+                .map(|pid| match flat.get("persons").and_then(|c| c.get(pid)) {
+                    Some(p) => crate::view::person_display_name(p),
+                    None => short_id(pid).to_string(),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    names.join(" + ")
+}
+
+/// An event said briefly: what kind it was and when.
+fn event_brief(_flat: &Value, ev: &Value) -> String {
+    let cat = ev
+        .get("category")
+        .and_then(Value::as_str)
+        .unwrap_or("event")
+        .replace('_', " ");
+    match crate::view::latest_year_of_field(ev, "date") {
+        Some(y) => format!("{cat} {y}"),
+        None => cat,
+    }
+}
+
+/// Read an entity id back out of a picker field, with the kind it turned out
+/// to be. See [`resolve_person`] for how the three input shapes are handled.
+pub fn resolve_linkable(input: &str, flat: &Value) -> Result<(&'static str, String), PickError> {
+    let input = input.trim();
+    if input.is_empty() {
+        return Err(PickError::Empty);
+    }
+    let candidate = input.rsplit('#').next().unwrap_or(input).trim();
+    let mut hits: Vec<(&'static str, String)> = Vec::new();
+    for (collection, kind) in [
+        ("persons", "person"),
+        ("families", "family"),
+        ("events", "event"),
+    ] {
+        let Some(map) = flat.get(collection).and_then(Value::as_object) else {
+            continue;
+        };
+        for id in map.keys() {
+            if id == input || (!candidate.is_empty() && id.starts_with(candidate)) {
+                hits.push((kind, id.clone()));
+            }
+        }
+    }
+    match hits.len() {
+        1 => Ok(hits.remove(0)),
+        0 => resolve_person(input, flat).map(|id| ("person", id)),
+        _ => Err(PickError::Ambiguous),
+    }
+}
+
 /// Options for a `<select>` over an entity collection, sorted by label.
 pub fn entity_options(flat: &Value, collection: &str, label: fn(&Value) -> String) -> Vec<Value> {
     let Some(map) = flat.get(collection).and_then(Value::as_object) else {

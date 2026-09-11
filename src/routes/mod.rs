@@ -84,6 +84,20 @@ pub fn router(state: Shared) -> Router {
             post(editors::family_update),
         )
         .route("/admin/person/:id/parents", post(editors::parents_attach))
+        // Links and occupations: entities of their own that name a person.
+        .route(
+            "/admin/person/:id/links",
+            get(editors::links_edit).post(editors::links_create),
+        )
+        .route("/admin/person/:id/links/:lid", post(editors::links_update))
+        .route(
+            "/admin/person/:id/occupations",
+            get(editors::occupations_edit).post(editors::occupations_create),
+        )
+        .route(
+            "/admin/person/:id/occupations/:oid",
+            post(editors::occupations_update),
+        )
         .route(
             "/admin/person/:id/physical",
             get(admin::physical_edit).post(admin::physical_update),

@@ -889,6 +889,463 @@ fn family_options(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
         .collect()
 }
 
+// ---------------------------------------------------------------------------
+// links and occupations
+// ---------------------------------------------------------------------------
+//
+// Both are entities in their own right that happen to name a person, so both
+// pages are a list of small forms plus one to add another. Neither writes the
+// person: a Link is a fact about two records and an Occupation is a fact with
+// its own dates and its own source.
+
+const LINK_CATEGORIES: &[&str] = &[
+    "",
+    "spiritual",
+    "professional",
+    "social",
+    "legal",
+    "medical",
+    "educational",
+    "conflict",
+    "other",
+];
+
+/// `GET /admin/person/:id/links`
+pub async fn links_edit(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    render_links(&state, &chrome, &viewer, &id, &person, None)
+}
+
+/// `POST /admin/person/:id/links` — a new link from this person.
+pub async fn links_create(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    let flat = state.read(|f| f.clone());
+    let mut entity = match build_link(&form, &Value::Null, &flat) {
+        Ok(v) => v,
+        Err(key) => return render_links(&state, &chrome, &viewer, &id, &person, Some(key)),
+    };
+    // The near end is always this person: the page is theirs, and letting the
+    // form retarget it would make "add a link here" mean something else.
+    entity["from"] = json!({"entity_type": "person", "entity_id": id});
+    add_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Link,
+        entity,
+        &format!("/admin/person/{id}/links"),
+    )
+}
+
+/// `POST /admin/person/:id/links/:lid`
+pub async fn links_update(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((id, lid)): Path<(String, String)>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    let Some(stored) = state.read(|f| f.get("links").and_then(|c| c.get(&lid)).cloned()) else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-no-such-entity-detail",
+        );
+    };
+    let flat = state.read(|f| f.clone());
+    let mut entity = match build_link(&form, &stored, &flat) {
+        Ok(v) => v,
+        Err(key) => return render_links(&state, &chrome, &viewer, &id, &person, Some(key)),
+    };
+    entity["id"] = Value::String(lid.clone());
+    save_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Link,
+        &lid,
+        entity,
+        Some(&stored),
+        submitted_version(&form),
+        &format!("/admin/person/{id}/links"),
+        &format!("/admin/person/{id}/links"),
+    )
+}
+
+/// Build one Link from its form.
+fn build_link(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'static str> {
+    let label = form
+        .get("label")
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .ok_or("link-error-no-label")?;
+    let other = form
+        .get("to")
+        .map(String::as_str)
+        .ok_or("pick-error-empty")?;
+    let (kind, other_id) = forms::resolve_linkable(other, flat).map_err(|e| e.key())?;
+
+    let mut out = if stored.is_object() {
+        stored.clone()
+    } else {
+        json!({"type": "link", "axgf_version": "1.0"})
+    };
+    out["to"] = json!({"entity_type": kind, "entity_id": other_id});
+    out["label"] = json!(label);
+
+    for (key, field) in [
+        ("label_reverse", "label_reverse"),
+        ("note", "note"),
+        ("source_id", "source_id"),
+    ] {
+        match form.get(field).map(|s| s.trim()).filter(|s| !s.is_empty()) {
+            Some(v) => out[key] = json!(v),
+            None => {
+                out.as_object_mut().map(|o| o.remove(key));
+            }
+        }
+    }
+    match form
+        .get("category")
+        .map(String::as_str)
+        .filter(|c| !c.is_empty() && LINK_CATEGORIES.contains(c))
+    {
+        Some(c) => out["category"] = json!(c),
+        None => {
+            out.as_object_mut().map(|o| o.remove("category"));
+        }
+    }
+    out["bidirectional"] = json!(matches!(
+        form.get("bidirectional").map(String::as_str),
+        Some("on" | "true" | "1")
+    ));
+    match forms::confidence(&as_row(form, "confidence"), "confidence") {
+        Some(c) => out["confidence"] = c,
+        None => {
+            out.as_object_mut().map(|o| o.remove("confidence"));
+        }
+    }
+    for (key, prefix) in [("valid_from", "from"), ("valid_until", "until")] {
+        let d = forms::date_object(
+            form.get(&format!("{prefix}.date")).map(String::as_str),
+            form.get(&format!("{prefix}.precision")).map(String::as_str),
+            matches!(
+                form.get(&format!("{prefix}.circa")).map(String::as_str),
+                Some("on" | "true" | "1")
+            ),
+        );
+        match d {
+            Some(d) => out[key] = json!({"date": d}),
+            None => {
+                out.as_object_mut().map(|o| o.remove(key));
+            }
+        }
+    }
+    Ok(out)
+}
+
+fn render_links(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    id: &str,
+    person: &Value,
+    problem: Option<&'static str>,
+) -> Response {
+    let (links, entities, sources) = state.read_as(viewer.ceiling(), |flat, lens| {
+        let mut out = Vec::new();
+        if let Some(map) = flat.get("links").and_then(Value::as_object) {
+            for (lid, l) in map {
+                let ends = |k: &str| l.pointer(&format!("/{k}/entity_id")).and_then(Value::as_str);
+                if ends("from") != Some(id) && ends("to") != Some(id) {
+                    continue;
+                }
+                // The far end is whichever of the two is not this person, so a
+                // link drawn from somewhere else still edits from here.
+                let far = if ends("from") == Some(id) {
+                    ends("to")
+                } else {
+                    ends("from")
+                };
+                out.push(json!({
+                    "id": lid,
+                    "version": crate::state::version_of(l),
+                    "label": l.get("label").and_then(Value::as_str).unwrap_or_default(),
+                    "label_reverse": l.get("label_reverse").and_then(Value::as_str).unwrap_or_default(),
+                    "category": l.get("category").and_then(Value::as_str).unwrap_or_default(),
+                    "bidirectional": l.get("bidirectional").and_then(Value::as_bool).unwrap_or(false),
+                    "confidence": l.get("confidence").and_then(Value::as_f64),
+                    "source_id": l.get("source_id").and_then(Value::as_str).unwrap_or_default(),
+                    "note": l.get("note").and_then(Value::as_str).unwrap_or_default(),
+                    "reversed": ends("from") != Some(id),
+                    "to": far.map(|f| linkable_label(flat, lens, f)).unwrap_or_default(),
+                    "from_date": date_fields(l.pointer("/valid_from/date")),
+                    "until_date": date_fields(l.pointer("/valid_until/date")),
+                }));
+            }
+        }
+        (
+            out,
+            crate::forms::linkable_options(flat, lens),
+            crate::forms::entity_options(flat, "sources", crate::forms::source_label),
+        )
+    });
+
+    render::page_with(
+        chrome,
+        "admin_links.html",
+        context! {
+            nav => "admin",
+            id,
+            person_name => crate::view::person_display_name(person),
+            links,
+            entities,
+            sources,
+            problem,
+            categories => LINK_CATEGORIES,
+            precisions => PRECISIONS,
+        },
+    )
+}
+
+/// One entity as a picker label, whatever kind it turns out to be.
+fn linkable_label(flat: &Value, lens: &crate::access::Lens, id: &str) -> String {
+    if let Some(p) = flat.get("persons").and_then(|c| c.get(id)) {
+        return if lens.sees_person(id) {
+            crate::forms::person_label(id, p)
+        } else {
+            id.to_string()
+        };
+    }
+    for c in ["families", "events"] {
+        if flat.get(c).and_then(|m| m.get(id)).is_some() {
+            return id.to_string();
+        }
+    }
+    id.to_string()
+}
+
+/// A date split into the three inputs a form shows it as.
+fn date_fields(d: Option<&Value>) -> Value {
+    json!({
+        "date": d.and_then(|x| x.get("value")).and_then(Value::as_str).unwrap_or_default(),
+        "precision": d.and_then(|x| x.get("precision")).and_then(Value::as_str).unwrap_or_default(),
+        "circa": d.and_then(|x| x.get("circa")).and_then(Value::as_bool).unwrap_or(false),
+        "place_id": "",
+    })
+}
+
+/// `GET /admin/person/:id/occupations`
+pub async fn occupations_edit(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    render_occupations(&state, &chrome, &viewer, &id, &person, None)
+}
+
+/// `POST /admin/person/:id/occupations` — a new one.
+pub async fn occupations_create(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    let mut entity = match build_occupation(&form, &Value::Null) {
+        Ok(v) => v,
+        Err(key) => return render_occupations(&state, &chrome, &viewer, &id, &person, Some(key)),
+    };
+    entity["person_id"] = Value::String(id.clone());
+    add_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Occupation,
+        entity,
+        &format!("/admin/person/{id}/occupations"),
+    )
+}
+
+/// `POST /admin/person/:id/occupations/:oid`
+pub async fn occupations_update(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((id, oid)): Path<(String, String)>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    let Some(stored) = state.read(|f| f.get("occupations").and_then(|c| c.get(&oid)).cloned())
+    else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-no-such-entity-detail",
+        );
+    };
+    let mut entity = match build_occupation(&form, &stored) {
+        Ok(v) => v,
+        Err(key) => return render_occupations(&state, &chrome, &viewer, &id, &person, Some(key)),
+    };
+    entity["id"] = Value::String(oid.clone());
+    entity["person_id"] = Value::String(id.clone());
+    save_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Occupation,
+        &oid,
+        entity,
+        Some(&stored),
+        submitted_version(&form),
+        &format!("/admin/person/{id}/occupations"),
+        &format!("/admin/person/{id}/occupations"),
+    )
+}
+
+/// Build one Occupation from its form.
+fn build_occupation(form: &Body, stored: &Value) -> Result<Value, &'static str> {
+    let title = form
+        .get("title")
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .ok_or("occupation-error-no-title")?;
+    let mut out = if stored.is_object() {
+        stored.clone()
+    } else {
+        json!({"type": "occupation", "axgf_version": "1.0"})
+    };
+    out["title"] = json!(title);
+    for (key, field) in [
+        ("title_latin", "title_latin"),
+        ("place_id", "place_id"),
+        ("source_id", "source_id"),
+        ("note", "note"),
+    ] {
+        match form.get(field).map(|s| s.trim()).filter(|s| !s.is_empty()) {
+            Some(v) => out[key] = json!(v),
+            None => {
+                out.as_object_mut().map(|o| o.remove(key));
+            }
+        }
+    }
+    let employer_name = form
+        .get("employer.name")
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty());
+    let employer_place = form
+        .get("employer.place_id")
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty());
+    if employer_name.is_some() || employer_place.is_some() {
+        let mut e = Map::new();
+        if let Some(n) = employer_name {
+            e.insert("name".into(), json!(n));
+        }
+        if let Some(p) = employer_place {
+            e.insert("place_id".into(), json!(p));
+        }
+        out["employer"] = Value::Object(e);
+    } else {
+        out.as_object_mut().map(|o| o.remove("employer"));
+    }
+    match forms::confidence(&as_row(form, "confidence"), "confidence") {
+        Some(c) => out["confidence"] = c,
+        None => {
+            out.as_object_mut().map(|o| o.remove("confidence"));
+        }
+    }
+    for (key, prefix) in [("valid_from", "from"), ("valid_until", "until")] {
+        let d = forms::date_object(
+            form.get(&format!("{prefix}.date")).map(String::as_str),
+            form.get(&format!("{prefix}.precision")).map(String::as_str),
+            matches!(
+                form.get(&format!("{prefix}.circa")).map(String::as_str),
+                Some("on" | "true" | "1")
+            ),
+        );
+        match d {
+            Some(d) => out[key] = json!({"date": d}),
+            None => {
+                out.as_object_mut().map(|o| o.remove(key));
+            }
+        }
+    }
+    Ok(out)
+}
+
+fn render_occupations(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    id: &str,
+    person: &Value,
+    problem: Option<&'static str>,
+) -> Response {
+    let (occupations, places, sources) = state.read_as(viewer.ceiling(), |flat, _lens| {
+        let mut out = Vec::new();
+        if let Some(map) = flat.get("occupations").and_then(Value::as_object) {
+            for (oid, o) in map {
+                if o.get("person_id").and_then(Value::as_str) != Some(id) {
+                    continue;
+                }
+                out.push(json!({
+                    "id": oid,
+                    "version": crate::state::version_of(o),
+                    "title": o.get("title").and_then(Value::as_str).unwrap_or_default(),
+                    "title_latin": o.get("title_latin").and_then(Value::as_str).unwrap_or_default(),
+                    "employer_name": o.pointer("/employer/name").and_then(Value::as_str).unwrap_or_default(),
+                    "employer_place": o.pointer("/employer/place_id").and_then(Value::as_str).unwrap_or_default(),
+                    "place_id": o.get("place_id").and_then(Value::as_str).unwrap_or_default(),
+                    "confidence": o.get("confidence").and_then(Value::as_f64),
+                    "source_id": o.get("source_id").and_then(Value::as_str).unwrap_or_default(),
+                    "note": o.get("note").and_then(Value::as_str).unwrap_or_default(),
+                    "from_date": date_fields(o.pointer("/valid_from/date")),
+                    "until_date": date_fields(o.pointer("/valid_until/date")),
+                }));
+            }
+        }
+        (
+            out,
+            crate::forms::entity_options(flat, "places", crate::forms::place_label),
+            crate::forms::entity_options(flat, "sources", crate::forms::source_label),
+        )
+    });
+
+    render::page_with(
+        chrome,
+        "admin_occupations.html",
+        context! {
+            nav => "admin",
+            id,
+            person_name => crate::view::person_display_name(person),
+            occupations,
+            places,
+            sources,
+            problem,
+            precisions => PRECISIONS,
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

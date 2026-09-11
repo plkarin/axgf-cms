@@ -1455,3 +1455,28 @@ link-category-other = أخرى
 links-edit-link = حرّر الروابط
 occupations-edit-link = حرّر المِهَن
 family-edit-link = حرّر الأسرة والعلاقات
+
+## Events and documents
+
+events-editor-title = الأحداث
+events-editor-help = الحدث يسمّي عدة أشخاص دفعة واحدة — زواج، عمادة، إحصاء — فكلٌّ منها سجل قائم بذاته يظهر في كل صفحة يسمّيها.
+events-none = لا حدث يسمّي هذا الشخص.
+events-new = حدث جديد
+events-new-help = يُضاف هذا الشخص موضوعًا للحدث إن لم تسمِّ غيره. حدثٌ بلا أحد ليس إلا تاريخًا.
+events-create = أنشئ الحدث
+events-remove = احذف هذا الحدث
+events-category = ماذا حدث
+events-subcategory = بدقة أكبر
+events-description = الوصف
+events-participants = من كان حاضرًا
+events-participants-help = الحفظ يغيّر سجل الحدث، وهو ما يعرضه كل شخص آخر مذكور فيه.
+events-who = من
+event-error-no-category = يجب أن يقول الحدث ماذا جرى. لم يُحفظ شيء.
+documents-editor-title = الوثائق
+documents-editor-help = إلى أي ملفات يشير هذا السجل وما كلٌّ منها بالنسبة إليه. مسح صف يفصل الملف: تبقى الوثيقة وبياناتها في الأرشيف.
+documents-attached = مرفقة بهذا السجل
+documents-upload = ارفع ملفًا
+documents-upload-help = حتى { $mb } ميغابايت. يُحفظ الملف في الأرشيف ويُرفق بهذا السجل.
+documents-caption = التعليق
+documents-edit-link = أرفق الوثائق وافصلها
+events-edit-link = حرّر الأحداث

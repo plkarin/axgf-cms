@@ -1235,3 +1235,28 @@ link-category-other = autre
 links-edit-link = Modifier les liens
 occupations-edit-link = Modifier les professions
 family-edit-link = Modifier la famille et les relations
+
+## Events and documents
+
+events-editor-title = Événements
+events-editor-help = Un événement nomme plusieurs personnes à la fois — un mariage, un baptême, un recensement — c'est donc une fiche à part, qui apparaît sur chaque page qu'elle nomme.
+events-none = Aucun événement ne nomme cette personne.
+events-new = Un nouvel événement
+events-new-help = Cette personne y est ajoutée comme sujet si vous n'en nommez aucune autre. Un événement sans personne n'est qu'une date.
+events-create = Créer l'événement
+events-remove = Supprimer cet événement
+events-category = Ce qui s'est passé
+events-subcategory = Plus précisément
+events-description = Description
+events-participants = Qui était présent
+events-participants-help = Enregistrer modifie la fiche de l'événement, que toutes les autres personnes nommées affichent aussi.
+events-who = Qui
+event-error-no-category = Un événement doit dire ce qui s'est passé. Rien n'a été enregistré.
+documents-editor-title = Documents
+documents-editor-help = Quels fichiers cette fiche désigne, et ce que chacun est pour elle. Vider une ligne détache le fichier : le document et ses octets restent dans l'archive.
+documents-attached = Attachés à cette fiche
+documents-upload = Téléverser un fichier
+documents-upload-help = Jusqu'à { $mb } Mo. Le fichier est rangé dans l'archive et attaché à cette fiche.
+documents-caption = Légende
+documents-edit-link = Attacher et détacher des documents
+events-edit-link = Modifier les événements

@@ -488,3 +488,80 @@
 </details>
 {% endmacro %}
 
+{# What an event was, when and where. #}
+{% macro event_fields(t, e, categories, precisions, places, sources) %}
+<div class="ed-grid">
+  <label>{{ t("events-category") }}
+    <select name="category" required>
+      {% for c in categories %}
+      <option value="{{ c }}" {{ "selected" if e and c == e.category }}>{{ t("event-category-" ~ c) }}</option>
+      {% endfor %}
+    </select></label>
+  <label>{{ t("events-subcategory") }}
+    <input type="text" name="subcategory" value="{{ e.subcategory if e }}"></label>
+  {{ date_fields(t, "", t("phys-col-date"), e.date if e else none, precisions) }}
+  <label>{{ t("record-place") }}
+    <select name="place_id">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for pl in places %}
+      <option value="{{ pl.id }}" {{ "selected" if e and pl.id == e.place_id }}>{{ pl.label }}</option>
+      {% endfor %}
+    </select></label>
+  <label>{{ t("phys-col-confidence") }}
+    <input type="text" inputmode="decimal" name="confidence"
+           value="{{ e.confidence if e and e.confidence is not none }}"></label>
+  <label>{{ t("phys-col-source") }}
+    <select name="source_id">
+      <option value="">{{ t("phys-no-source") }}</option>
+      {% for s in sources %}
+      <option value="{{ s.id }}" {{ "selected" if e and s.id == e.source_id }}>{{ s.label }}</option>
+      {% endfor %}
+    </select></label>
+  <label class="wide">{{ t("events-description") }}
+    <input type="text" name="description" value="{{ e.description if e }}"></label>
+</div>
+{% endmacro %}
+
+{# One participant. The picker is the same datalist the links editor uses, so
+   an event can name a family or another event as readily as a person. #}
+{% macro participant_row(t, i, w, roles) %}
+<tr>
+  <td data-label="{{ t('events-who') }}">
+    <input type="text" name="who.{{ i }}.entity" list="entities" autocomplete="off"
+           value="{{ w.entity if w }}" aria-label="{{ t('events-who') }}"></td>
+  <td data-label="{{ t('family-role') }}">
+    <select name="who.{{ i }}.role" aria-label="{{ t('family-role') }}">
+      {% for r in roles %}
+      <option value="{{ r }}" {{ "selected" if w and r == w.role }}>{{ t("role-" ~ r) }}</option>
+      {% endfor %}
+    </select></td>
+  <td data-label="{{ t('phys-col-confidence') }}">
+    <input type="text" inputmode="decimal" size="4" name="who.{{ i }}.confidence"
+           value="{{ w.confidence if w and w.confidence is not none }}"
+           aria-label="{{ t('phys-col-confidence') }}"></td>
+</tr>
+{% endmacro %}
+
+{# One attached document. Clearing the file detaches it; the Document entity
+   and its bytes are untouched either way. #}
+{% macro document_row(t, i, d, all_docs) %}
+<tr>
+  <td data-label="{{ t('record-file') }}">
+    <select name="doc.{{ i }}.document_id" aria-label="{{ t('record-file') }}">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for o in all_docs %}
+      <option value="{{ o.id }}" {{ "selected" if d and o.id == d.document_id }}>{{ o.label }}</option>
+      {% endfor %}
+    </select></td>
+  <td data-label="{{ t('family-role') }}">
+    <input type="text" name="doc.{{ i }}.role" value="{{ d.role if d }}"
+           aria-label="{{ t('family-role') }}"></td>
+  <td data-label="{{ t('phys-col-date') }}">
+    <input type="text" size="10" name="doc.{{ i }}.date" value="{{ d.date if d }}"
+           aria-label="{{ t('phys-col-date') }}"></td>
+  <td data-label="{{ t('phys-col-note') }}">
+    <input type="text" name="doc.{{ i }}.note" value="{{ d.note if d }}"
+           aria-label="{{ t('phys-col-note') }}"></td>
+</tr>
+{% endmacro %}
+

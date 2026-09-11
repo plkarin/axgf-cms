@@ -1250,3 +1250,28 @@ link-category-other = altro
 links-edit-link = Modifica i collegamenti
 occupations-edit-link = Modifica le occupazioni
 family-edit-link = Modifica famiglia e relazioni
+
+## Events and documents
+
+events-editor-title = Eventi
+events-editor-help = Un evento nomina più persone insieme — un matrimonio, un battesimo, un censimento — quindi ciascuno è una scheda a sé e compare su ogni pagina che nomina.
+events-none = Nessun evento nomina questa persona.
+events-new = Un nuovo evento
+events-new-help = Questa persona vi è aggiunta come soggetto se non ne nomini altre. Un evento senza nessuno è solo una data.
+events-create = Crea l'evento
+events-remove = Rimuovi questo evento
+events-category = Che cosa è successo
+events-subcategory = Più precisamente
+events-description = Descrizione
+events-participants = Chi c'era
+events-participants-help = Salvare modifica la scheda dell'evento, che mostra anche ogni altra persona nominata.
+events-who = Chi
+event-error-no-category = Un evento deve dire che cosa è successo. Non è stato salvato nulla.
+documents-editor-title = Documenti
+documents-editor-help = A quali file punta questa scheda e che cosa è ciascuno per essa. Svuotare una riga stacca il file: il documento e i suoi byte restano nell'archivio.
+documents-attached = Allegati a questa scheda
+documents-upload = Carica un file
+documents-upload-help = Fino a { $mb } MB. Il file è riposto nell'archivio e allegato a questa scheda.
+documents-caption = Didascalia
+documents-edit-link = Allega e stacca documenti
+events-edit-link = Modifica gli eventi

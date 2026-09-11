@@ -1252,3 +1252,28 @@ link-category-other = sonstige
 links-edit-link = Verknüpfungen bearbeiten
 occupations-edit-link = Tätigkeiten bearbeiten
 family-edit-link = Familie und Beziehungen bearbeiten
+
+## Events and documents
+
+events-editor-title = Ereignisse
+events-editor-help = Ein Ereignis nennt mehrere Personen zugleich — eine Hochzeit, eine Taufe, eine Zählung — also ist jedes ein eigener Eintrag und erscheint auf jeder Seite, die es nennt.
+events-none = Kein Ereignis nennt diese Person.
+events-new = Ein neues Ereignis
+events-new-help = Diese Person wird als Gegenstand eingetragen, wenn Sie niemanden sonst nennen. Ein Ereignis ohne Personen ist nur ein Datum.
+events-create = Ereignis anlegen
+events-remove = Dieses Ereignis entfernen
+events-category = Was geschah
+events-subcategory = Genauer
+events-description = Beschreibung
+events-participants = Wer dabei war
+events-participants-help = Das Speichern ändert den Ereigniseintrag, den auch jede andere darin genannte Person zeigt.
+events-who = Wer
+event-error-no-category = Ein Ereignis muss sagen, was geschah. Nichts wurde gespeichert.
+documents-editor-title = Dokumente
+documents-editor-help = Auf welche Dateien dieser Eintrag zeigt und was jede für ihn ist. Eine Zeile zu leeren löst die Datei: Dokument und Bytes bleiben im Archiv.
+documents-attached = An diesen Eintrag angehängt
+documents-upload = Datei hochladen
+documents-upload-help = Bis { $mb } MB. Die Datei wird im Archiv abgelegt und an diesen Eintrag gehängt.
+documents-caption = Bildunterschrift
+documents-edit-link = Dokumente anhängen und lösen
+events-edit-link = Ereignisse bearbeiten

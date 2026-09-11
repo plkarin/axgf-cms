@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("documents-editor-title") }}{% endblock %}
+
+{# Attaching and detaching documents. The list is rewritten from the form, so
+   clearing a row's document detaches it — the same rule every other list on
+   every other one of these forms follows. Detaching never deletes the file:
+   the Document entity stays, and so do its bytes. #}
+
+{% block content %}
+<h1>{{ t("documents-editor-title") }}</h1>
+<p class="lede"><bdi>{{ person_name }}</bdi></p>
+<p class="hint">{{ t("documents-editor-help") }}</p>
+
+{% if problem %}<div class="notice warn" role="alert"><p>{{ t(problem) }}</p></div>{% endif %}
+
+<form method="post" action="/admin/person/{{ id }}/documents" class="editor">
+  <input type="hidden" name="base_version" value="{{ base_version }}">
+  <fieldset class="ed-group">
+    <legend>{{ t("documents-attached") }}</legend>
+    <table class="ed-rows">
+      <thead><tr>
+        <th>{{ t("record-file") }}</th><th>{{ t("family-role") }}</th>
+        <th>{{ t("phys-col-date") }}</th><th>{{ t("phys-col-note") }}</th>
+      </tr></thead>
+      <tbody>
+        {% for d in rows %}{{ m.document_row(t, loop.index0, d, all_docs) }}{% endfor %}
+        {{ m.document_row(t, rows | length, none, all_docs) }}
+      </tbody>
+    </table>
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<form method="post" action="/admin/person/{{ id }}/document" enctype="multipart/form-data" class="editor">
+  <fieldset class="ed-group">
+    <legend>{{ t("documents-upload") }}</legend>
+    <p class="hint">{{ t("documents-upload-help", mb=max_upload_mb) }}</p>
+    <div class="ed-grid">
+      <label>{{ t("record-file") }}<input type="file" name="file" required></label>
+      <label>{{ t("documents-caption") }}<input type="text" name="caption"></label>
+      <label class="inline">
+        <input type="checkbox" name="as_avatar" value="on"> {{ t("avatar-upload-button") }}</label>
+    </div>
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("documents-upload") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<p><a class="btn" href="/person/{{ id }}?tab=media">{{ t("admin-cancel") }}</a></p>
+{% endblock %}

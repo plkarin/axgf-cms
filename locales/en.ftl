@@ -1291,3 +1291,28 @@ link-category-other = other
 links-edit-link = Edit links
 occupations-edit-link = Edit occupations
 family-edit-link = Edit family and relationships
+
+## Events and documents
+
+events-editor-title = Events
+events-editor-help = An event names several people at once — a marriage, a baptism, a census — so each one is a record of its own and appears on every page it names.
+events-none = No event names this person.
+events-new = A new event
+events-new-help = This person is added as its subject if you name nobody else. An event with nobody in it is just a date.
+events-create = Create the event
+events-remove = Remove this event
+events-category = What happened
+events-subcategory = More precisely
+events-description = Description
+events-participants = Who was there
+events-participants-help = Saving this changes the event record, which every other person named in it shows too.
+events-who = Who
+event-error-no-category = An event has to say what happened. Nothing was saved.
+documents-editor-title = Documents
+documents-editor-help = Which files this record points at, and what each is to it. Clearing a row detaches the file: the document and its bytes stay in the archive.
+documents-attached = Attached to this record
+documents-upload = Upload a file
+documents-upload-help = Up to { $mb } MB. The file is stored in the archive and attached to this record.
+documents-caption = Caption
+documents-edit-link = Attach and detach documents
+events-edit-link = Edit events

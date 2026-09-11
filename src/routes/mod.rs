@@ -98,6 +98,19 @@ pub fn router(state: Shared) -> Router {
             "/admin/person/:id/occupations/:oid",
             post(editors::occupations_update),
         )
+        // Events and attachments.
+        .route(
+            "/admin/person/:id/events",
+            get(editors::events_edit).post(editors::events_create),
+        )
+        .route(
+            "/admin/person/:id/events/:eid",
+            post(editors::events_update),
+        )
+        .route(
+            "/admin/person/:id/documents",
+            get(editors::documents_edit).post(editors::documents_update),
+        )
         .route(
             "/admin/person/:id/physical",
             get(admin::physical_edit).post(admin::physical_update),

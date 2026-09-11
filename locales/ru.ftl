@@ -1412,3 +1412,28 @@ link-category-other = другая
 links-edit-link = Изменить связи
 occupations-edit-link = Изменить занятия
 family-edit-link = Изменить семью и связи
+
+## Events and documents
+
+events-editor-title = События
+events-editor-help = Событие называет сразу нескольких человек — венчание, крещение, перепись, — поэтому каждое является отдельной записью и появляется на каждой названной странице.
+events-none = Ни одно событие не называет этого человека.
+events-new = Новое событие
+events-new-help = Этот человек будет добавлен как субъект, если вы не назовёте никого другого. Событие без людей — это просто дата.
+events-create = Создать событие
+events-remove = Удалить событие
+events-category = Что произошло
+events-subcategory = Точнее
+events-description = Описание
+events-participants = Кто участвовал
+events-participants-help = Сохранение изменит запись события, которую показывает и каждый другой названный человек.
+events-who = Кто
+event-error-no-category = Событие должно говорить, что произошло. Ничего не сохранено.
+documents-editor-title = Документы
+documents-editor-help = На какие файлы указывает эта запись и чем каждый для неё является. Очистка строки отсоединяет файл: документ и его содержимое остаются в архиве.
+documents-attached = Прикреплено к этой записи
+documents-upload = Загрузить файл
+documents-upload-help = До { $mb } МБ. Файл сохраняется в архиве и прикрепляется к этой записи.
+documents-caption = Подпись
+documents-edit-link = Прикрепить и открепить документы
+events-edit-link = Изменить события

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("events-editor-title") }}{% endblock %}
+
+{# Events. An event names several people, so adding a participant is a search
+   over the bundle rather than a UUID field. #}
+
+{% block content %}
+<h1>{{ t("events-editor-title") }}</h1>
+<p class="lede"><bdi>{{ person_name }}</bdi></p>
+<p class="hint">{{ t("events-editor-help") }}</p>
+
+{% if problem %}<div class="notice warn" role="alert"><p>{{ t(problem) }}</p></div>{% endif %}
+
+<datalist id="entities">
+  {% for e in entities %}<option value="{{ e.label }}"></option>{% endfor %}
+</datalist>
+
+{% if not events %}<p class="muted">{{ t("events-none") }}</p>{% endif %}
+
+{% for e in events %}
+<form method="post" action="/admin/person/{{ id }}/events/{{ e.id }}" class="editor">
+  <input type="hidden" name="base_version" value="{{ e.version }}">
+  <fieldset class="ed-group">
+    <legend>{{ t("event-category-" ~ e.category) }}</legend>
+    {{ m.event_fields(t, e, categories, precisions, places, sources) }}
+    <h3>{{ t("events-participants") }}</h3>
+    <p class="ed-elsewhere">{{ t("events-participants-help") }}</p>
+    <table class="ed-rows">
+      <thead><tr>
+        <th>{{ t("events-who") }}</th><th>{{ t("family-role") }}</th>
+        <th>{{ t("phys-col-confidence") }}</th>
+      </tr></thead>
+      <tbody>
+        {% for w in e.who %}{{ m.participant_row(t, loop.index0, w, roles) }}{% endfor %}
+        {{ m.participant_row(t, e.who | length, none, roles) }}
+      </tbody>
+    </table>
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+    </div>
+    {{ m.delete_block(t, "event", e.id, t("events-remove")) }}
+  </fieldset>
+</form>
+{% endfor %}
+
+<form method="post" action="/admin/person/{{ id }}/events" class="editor">
+  <fieldset class="ed-group">
+    <legend>{{ t("events-new") }}</legend>
+    <p class="hint">{{ t("events-new-help") }}</p>
+    {{ m.event_fields(t, none, categories, precisions, places, sources) }}
+    <table class="ed-rows">
+      <thead><tr>
+        <th>{{ t("events-who") }}</th><th>{{ t("family-role") }}</th>
+        <th>{{ t("phys-col-confidence") }}</th>
+      </tr></thead>
+      <tbody>{{ m.participant_row(t, 0, none, roles) }}</tbody>
+    </table>
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("events-create") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
+{% endblock %}

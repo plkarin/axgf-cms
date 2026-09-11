@@ -1346,6 +1346,400 @@ fn render_occupations(
     )
 }
 
+// ---------------------------------------------------------------------------
+// events
+// ---------------------------------------------------------------------------
+//
+// An event names several people, so adding one is a search over the bundle
+// rather than a UUID field — the same datalist the links editor uses, over
+// people, families and events alike.
+
+const EVENT_CATEGORIES: &[&str] = &[
+    "birth",
+    "death",
+    "marriage",
+    "divorce",
+    "adoption",
+    "migration",
+    "naturalization",
+    "military",
+    "incarceration",
+    "name_change",
+    "census",
+    "legal",
+    "religious",
+    "social",
+    "historical",
+    "other",
+];
+
+const ROLES: &[&str] = &[
+    "subject",
+    "participant",
+    "spouse",
+    "spouse_1",
+    "spouse_2",
+    "witness",
+    "officiant",
+    "informant",
+    "godparent",
+];
+
+/// `GET /admin/person/:id/events`
+pub async fn events_edit(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    render_events(&state, &chrome, &viewer, &id, &person, None)
+}
+
+/// `POST /admin/person/:id/events` — a new one, with this person in it.
+pub async fn events_create(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    let flat = state.read(|f| f.clone());
+    let mut entity = match build_event(&form, &Value::Null, &flat) {
+        Ok(v) => v,
+        Err(key) => return render_events(&state, &chrome, &viewer, &id, &person, Some(key)),
+    };
+    // An event with nobody in it is a date. This person goes in by default, so
+    // that creating one from their page means what it looks like it means.
+    if entity
+        .get("participants")
+        .and_then(Value::as_array)
+        .is_none_or(|p| p.is_empty())
+    {
+        entity["participants"] =
+            json!([{"entity_type": "person", "entity_id": id, "role": "subject"}]);
+    }
+    add_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Event,
+        entity,
+        &format!("/admin/person/{id}/events"),
+    )
+}
+
+/// `POST /admin/person/:id/events/:eid`
+pub async fn events_update(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((id, eid)): Path<(String, String)>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    let Some(stored) = state.read(|f| f.get("events").and_then(|c| c.get(&eid)).cloned()) else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-no-such-entity-detail",
+        );
+    };
+    let flat = state.read(|f| f.clone());
+    let mut entity = match build_event(&form, &stored, &flat) {
+        Ok(v) => v,
+        Err(key) => return render_events(&state, &chrome, &viewer, &id, &person, Some(key)),
+    };
+    entity["id"] = Value::String(eid.clone());
+    save_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Event,
+        &eid,
+        entity,
+        Some(&stored),
+        submitted_version(&form),
+        &format!("/admin/person/{id}/events"),
+        &format!("/admin/person/{id}/events"),
+    )
+}
+
+/// Build one Event from its form.
+fn build_event(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'static str> {
+    let category = form
+        .get("category")
+        .map(String::as_str)
+        .filter(|c| EVENT_CATEGORIES.contains(c))
+        .ok_or("event-error-no-category")?;
+    let mut out = if stored.is_object() {
+        stored.clone()
+    } else {
+        json!({"type": "event", "axgf_version": "1.0"})
+    };
+    out["category"] = json!(category);
+    match forms::date_object(
+        form.get("date").map(String::as_str),
+        form.get("precision").map(String::as_str),
+        matches!(
+            form.get("circa").map(String::as_str),
+            Some("on" | "true" | "1")
+        ),
+    ) {
+        Some(d) => out["date"] = d,
+        None => {
+            out.as_object_mut().map(|o| o.remove("date"));
+        }
+    }
+    for (key, field) in [
+        ("subcategory", "subcategory"),
+        ("place_id", "place_id"),
+        ("description", "description"),
+        ("source_id", "source_id"),
+    ] {
+        match form.get(field).map(|s| s.trim()).filter(|s| !s.is_empty()) {
+            Some(v) => out[key] = json!(v),
+            None => {
+                out.as_object_mut().map(|o| o.remove(key));
+            }
+        }
+    }
+    match forms::confidence(&as_row(form, "confidence"), "confidence") {
+        Some(c) => out["confidence"] = c,
+        None => {
+            out.as_object_mut().map(|o| o.remove("confidence"));
+        }
+    }
+    let mut participants = Vec::new();
+    for r in forms::rows(form, "who") {
+        let Some(raw) = forms::field(&r, "entity") else {
+            continue;
+        };
+        let (kind, eid) = forms::resolve_linkable(raw, flat).map_err(|e| e.key())?;
+        let mut p = Map::new();
+        p.insert("entity_type".into(), json!(kind));
+        p.insert("entity_id".into(), json!(eid));
+        p.insert(
+            "role".into(),
+            json!(forms::field(&r, "role").unwrap_or("participant")),
+        );
+        if let Some(c) = forms::confidence(&r, "confidence") {
+            p.insert("confidence".into(), c);
+        }
+        participants.push(Value::Object(p));
+    }
+    if participants.is_empty() {
+        out.as_object_mut().map(|o| o.remove("participants"));
+    } else {
+        out["participants"] = json!(participants);
+    }
+    Ok(out)
+}
+
+fn render_events(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    id: &str,
+    person: &Value,
+    problem: Option<&'static str>,
+) -> Response {
+    let (events, entities, places, sources) = state.read_as(viewer.ceiling(), |flat, lens| {
+        let mut out = Vec::new();
+        if let Some(map) = flat.get("events").and_then(Value::as_object) {
+            for (eid, e) in map {
+                let mine = e
+                    .get("participants")
+                    .and_then(Value::as_array)
+                    .is_some_and(|ps| {
+                        ps.iter()
+                            .any(|p| p.get("entity_id").and_then(Value::as_str) == Some(id))
+                    });
+                if !mine {
+                    continue;
+                }
+                let who: Vec<Value> = e
+                    .get("participants")
+                    .and_then(Value::as_array)
+                    .cloned()
+                    .unwrap_or_default()
+                    .iter()
+                    .filter_map(|p| {
+                        let pid = p.get("entity_id").and_then(Value::as_str)?;
+                        Some(json!({
+                            "entity": linkable_label(flat, lens, pid),
+                            "role": p.get("role").and_then(Value::as_str).unwrap_or("participant"),
+                            "confidence": p.get("confidence").and_then(Value::as_f64),
+                        }))
+                    })
+                    .collect();
+                out.push(json!({
+                    "id": eid,
+                    "version": crate::state::version_of(e),
+                    "category": e.get("category").and_then(Value::as_str).unwrap_or_default(),
+                    "subcategory": e.get("subcategory").and_then(Value::as_str).unwrap_or_default(),
+                    "description": e.get("description").and_then(Value::as_str).unwrap_or_default(),
+                    "place_id": e.get("place_id").and_then(Value::as_str).unwrap_or_default(),
+                    "source_id": e.get("source_id").and_then(Value::as_str).unwrap_or_default(),
+                    "confidence": e.get("confidence").and_then(Value::as_f64),
+                    "date": date_fields(e.get("date")),
+                    "who": who,
+                }));
+            }
+        }
+        (
+            out,
+            crate::forms::linkable_options(flat, lens),
+            crate::forms::entity_options(flat, "places", crate::forms::place_label),
+            crate::forms::entity_options(flat, "sources", crate::forms::source_label),
+        )
+    });
+
+    render::page_with(
+        chrome,
+        "admin_events.html",
+        context! {
+            nav => "admin",
+            id,
+            person_name => crate::view::person_display_name(person),
+            events, entities, places, sources, problem,
+            categories => EVENT_CATEGORIES,
+            roles => ROLES,
+            precisions => PRECISIONS,
+        },
+    )
+}
+
+// ---------------------------------------------------------------------------
+// documents
+// ---------------------------------------------------------------------------
+
+/// `GET /admin/person/:id/documents`
+pub async fn documents_edit(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let person = person!(state, chrome, id);
+    render_documents(&state, &chrome, &viewer, &id, &person, None)
+}
+
+/// `POST /admin/person/:id/documents` — attach, detach and re-label.
+///
+/// A person's `documents` is a list of references, so the whole list is
+/// rewritten from the form: a row whose document is cleared is a detachment,
+/// which is the same rule every other list on every other one of these forms
+/// follows.
+pub async fn documents_update(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Form(form): Form<Body>,
+) -> Response {
+    let (viewer, chrome) = writer!(state, headers);
+    let stored = person!(state, chrome, id);
+
+    let mut links = Vec::new();
+    for r in forms::rows(&form, "doc") {
+        let Some(did) = forms::field(&r, "document_id") else {
+            continue;
+        };
+        let mut d = Map::new();
+        d.insert("document_id".into(), json!(did));
+        for (key, field) in [("role", "role"), ("note", "note"), ("date", "date")] {
+            if let Some(v) = forms::field(&r, field) {
+                d.insert(key.into(), json!(v));
+            }
+        }
+        links.push(Value::Object(d));
+    }
+
+    let mut entity = stored.clone();
+    if links.is_empty() {
+        entity.as_object_mut().map(|o| o.remove("documents"));
+    } else {
+        entity["documents"] = json!(links);
+    }
+    entity["id"] = Value::String(id.clone());
+
+    save_entity(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Person,
+        &id,
+        entity,
+        Some(&stored),
+        submitted_version(&form),
+        &format!("/person/{id}?tab=media"),
+        &format!("/admin/person/{id}/documents"),
+    )
+}
+
+fn render_documents(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    id: &str,
+    person: &Value,
+    problem: Option<&'static str>,
+) -> Response {
+    let attached: Vec<Value> = person
+        .get("documents")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let (rows, all_docs) = state.read_as(viewer.ceiling(), |flat, lens| {
+        let name_of = |did: &str| {
+            flat.get("documents")
+                .and_then(|c| c.get(did))
+                .and_then(|d| d.get("filename"))
+                .and_then(Value::as_str)
+                .unwrap_or(did)
+                .to_string()
+        };
+        let rows: Vec<Value> = attached
+            .iter()
+            .filter_map(|d| {
+                let did = d.get("document_id").and_then(Value::as_str)?;
+                Some(json!({
+                    "document_id": did,
+                    "filename": name_of(did),
+                    "role": d.get("role").and_then(Value::as_str).unwrap_or_default(),
+                    "note": d.get("note").and_then(Value::as_str).unwrap_or_default(),
+                    "date": d.get("date").and_then(Value::as_str).unwrap_or_default(),
+                }))
+            })
+            .collect();
+        let _ = lens;
+        let all = crate::forms::entity_options(flat, "documents", |d| {
+            d.get("filename")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string()
+        });
+        (rows, all)
+    });
+
+    render::page_with(
+        chrome,
+        "admin_documents.html",
+        context! {
+            nav => "admin",
+            id,
+            person_name => crate::view::person_display_name(person),
+            rows,
+            all_docs,
+            problem,
+            base_version => crate::state::version_of(person),
+            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

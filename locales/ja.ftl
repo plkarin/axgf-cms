@@ -1069,3 +1069,28 @@ link-category-other = その他
 links-edit-link = つながりを編集
 occupations-edit-link = 職業を編集
 family-edit-link = 家族と関係を編集
+
+## Events and documents
+
+events-editor-title = 出来事
+events-editor-help = 出来事は同時に複数の人を挙げます。婚礼、洗礼、国勢調査など。ですからそれぞれが独立した記録で、挙げられたすべての記録に現れます。
+events-none = この人を挙げる出来事はありません。
+events-new = 新しい出来事
+events-new-help = ほかに誰も挙げなければ、この人が対象として加わります。誰もいない出来事はただの日付です。
+events-create = 出来事を作る
+events-remove = この出来事を削除
+events-category = 何があったか
+events-subcategory = より詳しく
+events-description = 説明
+events-participants = 関わった人
+events-participants-help = 保存すると出来事の記録が変わり、そこに挙げられたほかの人の記録にも反映されます。
+events-who = 誰
+event-error-no-category = 出来事には何があったかを記す必要があります。何も保存していません。
+documents-editor-title = 資料
+documents-editor-help = この記録がどのファイルを指し、それぞれが何であるか。行を空にすると切り離されます。資料とその中身は書庫に残ります。
+documents-attached = この記録に添付
+documents-upload = ファイルをアップロード
+documents-upload-help = { $mb } MB まで。ファイルは書庫に収められ、この記録に添付されます。
+documents-caption = 説明
+documents-edit-link = 資料の添付と取り外し
+events-edit-link = 出来事を編集

@@ -1405,3 +1405,28 @@ link-category-other = inna
 links-edit-link = Edytuj powiązania
 occupations-edit-link = Edytuj zajęcia
 family-edit-link = Edytuj rodzinę i relacje
+
+## Events and documents
+
+events-editor-title = Wydarzenia
+events-editor-help = Wydarzenie wymienia naraz kilka osób — ślub, chrzest, spis — więc każde jest osobnym zapisem i pojawia się na każdej wymienionej stronie.
+events-none = Żadne wydarzenie nie wymienia tej osoby.
+events-new = Nowe wydarzenie
+events-new-help = Ta osoba zostanie dodana jako podmiot, jeśli nie wskażesz nikogo innego. Wydarzenie bez nikogo to tylko data.
+events-create = Utwórz wydarzenie
+events-remove = Usuń to wydarzenie
+events-category = Co się wydarzyło
+events-subcategory = Dokładniej
+events-description = Opis
+events-participants = Kto brał udział
+events-participants-help = Zapis zmienia zapis wydarzenia, który pokazuje też każda inna wymieniona osoba.
+events-who = Kto
+event-error-no-category = Wydarzenie musi mówić, co się stało. Nic nie zapisano.
+documents-editor-title = Dokumenty
+documents-editor-help = Na jakie pliki wskazuje ten zapis i czym każdy z nich dla niego jest. Wyczyszczenie wiersza odłącza plik: dokument i jego zawartość zostają w archiwum.
+documents-attached = Dołączone do tego zapisu
+documents-upload = Prześlij plik
+documents-upload-help = Do { $mb } MB. Plik trafia do archiwum i zostaje dołączony do tego zapisu.
+documents-caption = Podpis
+documents-edit-link = Dołącz i odłącz dokumenty
+events-edit-link = Edytuj wydarzenia

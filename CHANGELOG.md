@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A real editor, part four: events and documents.** That completes it.
+`/admin/person/:id/events` creates and edits the events this person is named
+in, with their category, date, place, description, confidence and source, and
+the participants with their roles. **Adding a participant is a search over the
+bundle**, the same datalist the links editor uses, so an event can name a
+family or another event as readily as a person. Creating one from a person's
+page puts that person in it as its subject, because an event with nobody in it
+is a date.
+
+`/admin/person/:id/documents` attaches and detaches files and says what each is
+to this record. Clearing a row detaches: the Document entity and its bytes stay
+in the archive, which is the difference between "this record does not point at
+that photograph" and "that photograph is gone". Uploading reuses the path that
+already existed rather than a second one.
+
+Every record section now carries its own edit link, so the six editors are
+reached from the thing they edit rather than from a menu.
+
+### Added
+
 **A real editor, part three: links and occupations.**
 `/admin/person/:id/links` edits the relationships that are not family — a
 godparent, an employer, a witness, a regiment — each with its label, the label

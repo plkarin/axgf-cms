@@ -1250,3 +1250,28 @@ link-category-other = otra
 links-edit-link = Editar vínculos
 occupations-edit-link = Editar ocupaciones
 family-edit-link = Editar familia y relaciones
+
+## Events and documents
+
+events-editor-title = Sucesos
+events-editor-help = Un suceso nombra a varias personas a la vez — una boda, un bautizo, un censo — así que cada uno es un registro propio y aparece en cada página que nombra.
+events-none = Ningún suceso nombra a esta persona.
+events-new = Un suceso nuevo
+events-new-help = Esta persona se añade como sujeto si no nombras a nadie más. Un suceso sin nadie es sólo una fecha.
+events-create = Crear el suceso
+events-remove = Eliminar este suceso
+events-category = Qué ocurrió
+events-subcategory = Más concretamente
+events-description = Descripción
+events-participants = Quién estuvo
+events-participants-help = Guardar modifica el registro del suceso, que también muestra cada otra persona nombrada.
+events-who = Quién
+event-error-no-category = Un suceso tiene que decir qué ocurrió. No se guardó nada.
+documents-editor-title = Documentos
+documents-editor-help = A qué archivos apunta este registro y qué es cada uno para él. Vaciar una fila desvincula el archivo: el documento y sus bytes siguen en el archivo general.
+documents-attached = Adjuntos a este registro
+documents-upload = Subir un archivo
+documents-upload-help = Hasta { $mb } MB. El archivo se guarda en el archivo general y se adjunta a este registro.
+documents-caption = Pie
+documents-edit-link = Adjuntar y desvincular documentos
+events-edit-link = Editar sucesos

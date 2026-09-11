@@ -1252,3 +1252,28 @@ link-category-other = outra
 links-edit-link = Editar ligações
 occupations-edit-link = Editar ocupações
 family-edit-link = Editar família e relações
+
+## Events and documents
+
+events-editor-title = Acontecimentos
+events-editor-help = Um acontecimento nomeia várias pessoas ao mesmo tempo — um casamento, um baptizado, um recenseamento — por isso cada um é um registo próprio e aparece em cada página que nomeia.
+events-none = Nenhum acontecimento nomeia esta pessoa.
+events-new = Um novo acontecimento
+events-new-help = Esta pessoa é acrescentada como sujeito se não nomear mais ninguém. Um acontecimento sem ninguém é apenas uma data.
+events-create = Criar o acontecimento
+events-remove = Remover este acontecimento
+events-category = O que aconteceu
+events-subcategory = Mais precisamente
+events-description = Descrição
+events-participants = Quem esteve
+events-participants-help = Guardar altera o registo do acontecimento, que todas as outras pessoas nomeadas também mostram.
+events-who = Quem
+event-error-no-category = Um acontecimento tem de dizer o que aconteceu. Nada foi guardado.
+documents-editor-title = Documentos
+documents-editor-help = A que ficheiros este registo aponta e o que cada um é para ele. Limpar uma linha desliga o ficheiro: o documento e os seus bytes ficam no arquivo.
+documents-attached = Anexados a este registo
+documents-upload = Carregar um ficheiro
+documents-upload-help = Até { $mb } MB. O ficheiro é guardado no arquivo e anexado a este registo.
+documents-caption = Legenda
+documents-edit-link = Anexar e desligar documentos
+events-edit-link = Editar acontecimentos

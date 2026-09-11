@@ -1068,3 +1068,28 @@ link-category-other = 其他
 links-edit-link = 编辑关联
 occupations-edit-link = 编辑职业
 family-edit-link = 编辑家庭与关系
+
+## Events and documents
+
+events-editor-title = 事件
+events-editor-help = 一个事件会同时涉及多人——婚礼、洗礼、人口普查——所以每个事件都是独立记录，并出现在它提到的每个页面上。
+events-none = 没有事件提到此人。
+events-new = 新的事件
+events-new-help = 若不指定其他人，此人将作为主体加入。没有人的事件只是一个日期。
+events-create = 创建事件
+events-remove = 删除此事件
+events-category = 发生了什么
+events-subcategory = 更具体地
+events-description = 描述
+events-participants = 参与者
+events-participants-help = 保存将修改事件记录，其中提到的每个人都会随之改变。
+events-who = 何人
+event-error-no-category = 事件必须说明发生了什么。未保存任何内容。
+documents-editor-title = 文件
+documents-editor-help = 本记录指向哪些文件，以及每个文件对它意味着什么。清空一行即解除关联：文档及其内容仍留在档案中。
+documents-attached = 已关联到本记录
+documents-upload = 上传文件
+documents-upload-help = 最大 { $mb } MB。文件将存入档案并关联到本记录。
+documents-caption = 说明文字
+documents-edit-link = 关联与解除文件
+events-edit-link = 编辑事件

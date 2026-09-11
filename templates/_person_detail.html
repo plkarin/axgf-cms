@@ -109,6 +109,9 @@
     </li>
     {% endfor %}
   </ol>
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/events">{{ t("events-edit-link") }}</a></p>
+  {% endif %}
 </section>
 {% endif %}
 
@@ -487,6 +490,9 @@
       </details>
     </p>
   </form>
+  {% endif %}
+  {% if may_write %}
+  <p><a class="small" href="/admin/person/{{ p.id }}/documents">{{ t("documents-edit-link") }}</a></p>
   {% endif %}
 </section>
 {% endif %}

@@ -1145,3 +1145,69 @@ editor-blank-to-remove = Namen leeren, um diesen Eintrag zu entfernen.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = de
 identity-edit-link = Namen und Identität bearbeiten
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = Ehe
+union-type-civil_union = eingetragene Partnerschaft
+union-type-cohabitation = Lebensgemeinschaft
+union-type-religious_only = kirchliche Ehe
+union-type-polygamous = polygam
+union-type-unknown = nicht erfasst
+union-status-active = bestehend
+union-status-ended_by_death = durch Tod beendet
+union-status-ended_by_divorce = durch Scheidung beendet
+union-status-ended_by_separation = durch Trennung beendet
+union-status-annulled = annulliert
+union-status-unknown = nicht erfasst
+union-status-ended = beendet
+union-status-ended-by = beendet durch { $reason }
+union-reason-death_of_spouse = den Tod eines Ehepartners
+precision-exact = auf den Tag
+precision-year = auf das Jahr
+precision-month = auf den Monat
+precision-decade = auf das Jahrzehnt
+precision-century = auf das Jahrhundert
+precision-unknown = unbekannt
+record-precision = Genauigkeit
+record-approximate = Ungefähr
+record-place = Ort
+
+## The relationships editor
+
+family-editor-title = Familie und Beziehungen
+family-unions = Verbindungen
+family-no-unions = Für diese Person ist keine Verbindung erfasst.
+family-union-legend = Verbindung { $n }
+family-writes-family = Das Speichern ändert den Familieneintrag #{ $id }, den beide teilen. Die Seite der anderen Person ändert sich mit.
+family-partners = Partner
+family-partner = Partner
+family-role = Rolle
+family-children = Kinder
+family-children-help = Die Geburtsreihenfolge ist die Aussage des Eintrags selbst. Leer gelassen sagt sie nichts: eine Zahl aus der Zeilenposition wäre eine Tatsache, die niemand aufgeschrieben hat.
+family-child = Kind
+family-birth-order = Geburtsreihenfolge
+family-the-union = Die Verbindung selbst
+family-type = Art der Verbindung
+family-status = Stand
+family-started = Beginn
+family-ended = Ende
+family-leave = Diese Person aus dieser Verbindung nehmen
+family-open-entity = Familieneintrag öffnen
+family-new-union = Eine neue Verbindung
+family-new-union-help = Das legt einen neuen Familieneintrag mit dieser Person an. Ein Partner ist freiwillig: ein Elternteil, den der Eintrag ohne Partner nennt, ist eine Verbindung von einem.
+family-create-union = Verbindung anlegen
+family-parents = Eltern
+family-no-parents = Diese Person ist als Kind keiner Familie erfasst.
+family-child-of = Kind dieser Familie
+family-detach-child = Diese Person aus dieser Familie nehmen
+family-attach-parents = An Eltern anhängen
+family-attach-help = Wählen Sie die Familie, deren Kind diese Person ist. Das trägt sie in deren Eintrag ein, also erscheint es auch auf den Seiten der Eltern.
+family-the-family = Die Familie
+family-attach = Anhängen
+family-error-last-partner = Eine Verbindung braucht mindestens eine Person. Löschen Sie stattdessen den Familieneintrag; dabei wird gefragt, was mit allem geschehen soll, was darauf verweist.
+family-error-no-family = Es wurde keine Familie gewählt. Nichts wurde gespeichert.
+family-error-already-child = Diese Person ist bereits Kind dieser Familie.
+pick-error-empty = Es wurde keine Person genannt. Nichts wurde gespeichert.
+pick-error-not-found = In diesem Archiv gibt es niemanden dieses Namens. Nichts wurde gespeichert.
+pick-error-ambiguous = Darauf hört mehr als eine Person. Wählen Sie eine aus der Liste, damit der Eintrag sagt welche. Nichts wurde gespeichert.

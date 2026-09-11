@@ -1298,3 +1298,69 @@ editor-blank-to-remove = Wyczyść nazwę, aby usunąć ten wpis.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = pl
 identity-edit-link = Edytuj nazwy i tożsamość
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = małżeństwo
+union-type-civil_union = związek cywilny
+union-type-cohabitation = konkubinat
+union-type-religious_only = związek religijny
+union-type-polygamous = poligamiczny
+union-type-unknown = nie zapisano
+union-status-active = trwa
+union-status-ended_by_death = zakończony śmiercią
+union-status-ended_by_divorce = zakończony rozwodem
+union-status-ended_by_separation = zakończony separacją
+union-status-annulled = unieważniony
+union-status-unknown = nie zapisano
+union-status-ended = zakończony
+union-status-ended-by = zakończony: { $reason }
+union-reason-death_of_spouse = śmierć małżonka
+precision-exact = co do dnia
+precision-year = co do roku
+precision-month = co do miesiąca
+precision-decade = co do dekady
+precision-century = co do wieku
+precision-unknown = nieznana
+record-precision = Dokładność
+record-approximate = Przybliżona
+record-place = Miejsce
+
+## The relationships editor
+
+family-editor-title = Rodzina i relacje
+family-unions = Związki
+family-no-unions = Dla tej osoby nie zapisano żadnego związku.
+family-union-legend = Związek { $n }
+family-writes-family = Zapis zmienia zapis rodziny #{ $id }, wspólny dla obu osób. Strona drugiej osoby też się zmieni.
+family-partners = Partnerzy
+family-partner = Partner
+family-role = Rola
+family-children = Dzieci
+family-children-help = Kolejność urodzenia to własne twierdzenie zapisu. Pozostawiona pusta, nie twierdzi nic: numer wzięty z pozycji wiersza byłby faktem, którego nikt nie zapisał.
+family-child = Dziecko
+family-birth-order = Kolejność urodzenia
+family-the-union = Sam związek
+family-type = Rodzaj związku
+family-status = Stan
+family-started = Początek
+family-ended = Koniec
+family-leave = Usuń tę osobę z tego związku
+family-open-entity = Otwórz zapis rodziny
+family-new-union = Nowy związek
+family-new-union-help = Tworzy to nowy zapis rodziny z tą osobą. Partner jest opcjonalny: rodzic wymieniony bez żadnego partnera to związek jednoosobowy.
+family-create-union = Utwórz związek
+family-parents = Rodzice
+family-no-parents = Ta osoba nie jest zapisana jako dziecko żadnej rodziny.
+family-child-of = Dziecko tej rodziny
+family-detach-child = Usuń tę osobę z tej rodziny
+family-attach-parents = Przypisz do rodziców
+family-attach-help = Wybierz rodzinę, której dzieckiem jest ta osoba. Doda ją to do zapisu tej rodziny, więc pojawi się także na stronach rodziców.
+family-the-family = Rodzina
+family-attach = Przypisz
+family-error-last-partner = Związek musi zawierać co najmniej jedną osobę. Usuń zamiast tego zapis rodziny — zapyta, co zrobić ze wszystkim, co się do niego odwołuje.
+family-error-no-family = Nie wybrano rodziny. Nic nie zapisano.
+family-error-already-child = Ta osoba jest już dzieckiem tej rodziny.
+pick-error-empty = Nie wskazano osoby. Nic nie zapisano.
+pick-error-not-found = W tym archiwum nie ma osoby o tej nazwie. Nic nie zapisano.
+pick-error-ambiguous = Odpowiada temu więcej niż jedna osoba. Wybierz jedną z listy, aby zapis wskazywał którą. Nic nie zapisano.

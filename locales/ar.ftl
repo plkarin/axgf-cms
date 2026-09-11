@@ -1348,3 +1348,69 @@ editor-blank-to-remove = امسح الاسم لحذف هذا المُدخَل.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = ar
 identity-edit-link = حرّر الأسماء والهوية
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = زواج
+union-type-civil_union = اقتران مدني
+union-type-cohabitation = معاشرة
+union-type-religious_only = اقتران ديني
+union-type-polygamous = تعدد
+union-type-unknown = غير مسجّل
+union-status-active = قائم
+union-status-ended_by_death = انتهى بوفاة
+union-status-ended_by_divorce = انتهى بطلاق
+union-status-ended_by_separation = انتهى بانفصال
+union-status-annulled = مُبطَل
+union-status-unknown = غير مسجّل
+union-status-ended = انتهى
+union-status-ended-by = انتهى بـ { $reason }
+union-reason-death_of_spouse = وفاة الزوج
+precision-exact = إلى اليوم
+precision-year = إلى السنة
+precision-month = إلى الشهر
+precision-decade = إلى العقد
+precision-century = إلى القرن
+precision-unknown = غير معروفة
+record-precision = الدقة
+record-approximate = تقريبي
+record-place = المكان
+
+## The relationships editor
+
+family-editor-title = الأسرة والعلاقات
+family-unions = الاقترانات
+family-no-unions = لا اقتران مسجّل لهذا الشخص.
+family-union-legend = اقتران { $n }
+family-writes-family = الحفظ يغيّر سجل الأسرة #{ $id } الذي يتشاركه الشخصان، وتتغيّر معه صفحة الشخص الآخر.
+family-partners = الشريكان
+family-partner = الشريك
+family-role = الدور
+family-children = الأبناء
+family-children-help = ترتيب الولادة هو ما يقوله السجل نفسه. إن تُرك فارغًا فلا يقول شيئًا: رقم مأخوذ من موضع الصف سيكون واقعة لم يكتبها أحد.
+family-child = الابن
+family-birth-order = ترتيب الولادة
+family-the-union = الاقتران نفسه
+family-type = نوع الاقتران
+family-status = الحالة
+family-started = البداية
+family-ended = النهاية
+family-leave = أخرج هذا الشخص من هذا الاقتران
+family-open-entity = افتح سجل الأسرة
+family-new-union = اقتران جديد
+family-new-union-help = ينشئ هذا سجل أسرة جديدًا يضم هذا الشخص. الشريك اختياري: والدٌ يسمّيه السجل بلا شريك هو اقتران من واحد.
+family-create-union = أنشئ الاقتران
+family-parents = الوالدان
+family-no-parents = هذا الشخص غير مسجّل ابنًا لأي أسرة.
+family-child-of = ابن هذه الأسرة
+family-detach-child = أخرج هذا الشخص من هذه الأسرة
+family-attach-parents = اربط بالوالدين
+family-attach-help = اختر الأسرة التي هذا الشخص ابنٌ فيها. يُضاف إلى سجل تلك الأسرة، فيظهر في صفحتي الوالدين أيضًا.
+family-the-family = الأسرة
+family-attach = اربط
+family-error-last-partner = الاقتران يحتاج إلى شخص واحد على الأقل. احذف سجل الأسرة بدلًا من ذلك، فيسأل عمّا يشير إليه.
+family-error-no-family = لم تُختَر أسرة. لم يُحفظ شيء.
+family-error-already-child = هذا الشخص ابنٌ في تلك الأسرة أصلًا.
+pick-error-empty = لم يُسمَّ أي شخص. لم يُحفظ شيء.
+pick-error-not-found = لا شخص بهذا الاسم في هذا الأرشيف. لم يُحفظ شيء.
+pick-error-ambiguous = أكثر من شخص ينطبق عليه ذلك. اختر واحدًا من القائمة ليقول السجل أيّهم. لم يُحفظ شيء.

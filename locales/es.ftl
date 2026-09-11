@@ -1143,3 +1143,69 @@ editor-blank-to-remove = Borra el nombre para eliminar esta entrada.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = es
 identity-edit-link = Editar nombres e identidad
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = matrimonio
+union-type-civil_union = unión civil
+union-type-cohabitation = convivencia
+union-type-religious_only = unión religiosa
+union-type-polygamous = polígamo
+union-type-unknown = sin registrar
+union-status-active = en curso
+union-status-ended_by_death = terminada por fallecimiento
+union-status-ended_by_divorce = terminada por divorcio
+union-status-ended_by_separation = terminada por separación
+union-status-annulled = anulada
+union-status-unknown = sin registrar
+union-status-ended = terminada
+union-status-ended-by = terminada por { $reason }
+union-reason-death_of_spouse = el fallecimiento de un cónyuge
+precision-exact = al día
+precision-year = al año
+precision-month = al mes
+precision-decade = a la década
+precision-century = al siglo
+precision-unknown = desconocida
+record-precision = Precisión
+record-approximate = Aproximado
+record-place = Lugar
+
+## The relationships editor
+
+family-editor-title = Familia y relaciones
+family-unions = Uniones
+family-no-unions = No hay ninguna unión registrada para esta persona.
+family-union-legend = Unión { $n }
+family-writes-family = Guardar modifica el registro de familia #{ $id }, que ambas personas comparten. La página de la otra persona cambia también.
+family-partners = Miembros de la pareja
+family-partner = Pareja
+family-role = Papel
+family-children = Hijos
+family-children-help = El orden de nacimiento es lo que afirma el propio registro. Dejado en blanco no afirma nada: un número tomado de la posición de la fila sería un hecho que nadie escribió.
+family-child = Hijo
+family-birth-order = Orden de nacimiento
+family-the-union = La unión en sí
+family-type = Tipo de unión
+family-status = Estado
+family-started = Inicio
+family-ended = Fin
+family-leave = Sacar a esta persona de esta unión
+family-open-entity = Abrir el registro de familia
+family-new-union = Una unión nueva
+family-new-union-help = Esto crea un registro de familia nuevo con esta persona. La pareja es opcional: un progenitor que el registro nombra sin pareja alguna es una unión de uno.
+family-create-union = Crear la unión
+family-parents = Padres
+family-no-parents = Esta persona no está registrada como hijo de ninguna familia.
+family-child-of = Hijo de esta familia
+family-detach-child = Sacar a esta persona de esta familia
+family-attach-parents = Vincular a unos padres
+family-attach-help = Elige la familia de la que esta persona es hijo. Se la añade a ese registro de familia, así que aparece también en las páginas de los padres.
+family-the-family = La familia
+family-attach = Vincular
+family-error-last-partner = Una unión necesita al menos una persona. Elimina en su lugar el registro de familia, que pregunta qué hacer con todo lo que lo referencia.
+family-error-no-family = No se eligió ninguna familia. No se guardó nada.
+family-error-already-child = Esta persona ya es hijo de esa familia.
+pick-error-empty = No se nombró a ninguna persona. No se guardó nada.
+pick-error-not-found = No hay ninguna persona con ese nombre en este archivo. No se guardó nada.
+pick-error-ambiguous = Más de una persona responde a eso. Elige una de la lista para que el registro diga cuál. No se guardó nada.

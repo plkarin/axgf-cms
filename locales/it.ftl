@@ -1143,3 +1143,69 @@ editor-blank-to-remove = Svuota il nome per rimuovere questa voce.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = it
 identity-edit-link = Modifica nomi e identità
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = matrimonio
+union-type-civil_union = unione civile
+union-type-cohabitation = convivenza
+union-type-religious_only = unione religiosa
+union-type-polygamous = poligamo
+union-type-unknown = non registrato
+union-status-active = in corso
+union-status-ended_by_death = terminata per decesso
+union-status-ended_by_divorce = terminata per divorzio
+union-status-ended_by_separation = terminata per separazione
+union-status-annulled = annullata
+union-status-unknown = non registrato
+union-status-ended = terminata
+union-status-ended-by = terminata per { $reason }
+union-reason-death_of_spouse = il decesso di un coniuge
+precision-exact = al giorno
+precision-year = all'anno
+precision-month = al mese
+precision-decade = al decennio
+precision-century = al secolo
+precision-unknown = non nota
+record-precision = Precisione
+record-approximate = Approssimativo
+record-place = Luogo
+
+## The relationships editor
+
+family-editor-title = Famiglia e relazioni
+family-unions = Unioni
+family-no-unions = Per questa persona non è registrata alcuna unione.
+family-union-legend = Unione { $n }
+family-writes-family = Salvare modifica la scheda di famiglia #{ $id }, condivisa dalle due persone. Anche la pagina dell'altra cambia.
+family-partners = Partner
+family-partner = Partner
+family-role = Ruolo
+family-children = Figli
+family-children-help = L'ordine di nascita è l'affermazione della scheda stessa. Lasciato vuoto non afferma nulla: un numero preso dalla posizione della riga sarebbe un fatto che nessuno ha scritto.
+family-child = Figlio
+family-birth-order = Ordine di nascita
+family-the-union = L'unione stessa
+family-type = Tipo di unione
+family-status = Stato
+family-started = Inizio
+family-ended = Fine
+family-leave = Togli questa persona da questa unione
+family-open-entity = Apri la scheda di famiglia
+family-new-union = Una nuova unione
+family-new-union-help = Questo crea una nuova scheda di famiglia con questa persona. Il partner è facoltativo: un genitore che la scheda nomina senza alcun partner è un'unione di uno.
+family-create-union = Crea l'unione
+family-parents = Genitori
+family-no-parents = Questa persona non è registrata come figlio di alcuna famiglia.
+family-child-of = Figlio di questa famiglia
+family-detach-child = Togli questa persona da questa famiglia
+family-attach-parents = Collega ai genitori
+family-attach-help = Scegli la famiglia di cui questa persona è figlio. La aggiunge a quella scheda di famiglia, quindi compare anche sulle pagine dei genitori.
+family-the-family = La famiglia
+family-attach = Collega
+family-error-last-partner = Un'unione ha bisogno di almeno una persona. Elimina invece la scheda di famiglia, che chiede cosa fare di tutto ciò che vi si riferisce.
+family-error-no-family = Non è stata scelta alcuna famiglia. Non è stato salvato nulla.
+family-error-already-child = Questa persona è già figlio di quella famiglia.
+pick-error-empty = Non è stata indicata alcuna persona. Non è stato salvato nulla.
+pick-error-not-found = In questo archivio non c'è nessuna persona con quel nome. Non è stato salvato nulla.
+pick-error-ambiguous = Più di una persona corrisponde. Scegline una dall'elenco perché la scheda dica quale. Non è stato salvato nulla.

@@ -9,6 +9,49 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A real editor, part two: unions, children and parents.**
+`/admin/person/:id/family` edits every union this person is in — partners and
+their roles, the kind of union and how it stands, when and where it started
+and ended, confidence and source — and the children of each, with the birth
+order the record claims. It attaches the person to a family as a child, starts
+a new union, and takes them out of either.
+
+Every form on it writes a **Family** entity, never the person whose page it
+hangs off, and each one says so beside its controls: removing a spouse changes
+the family both people share, and the other person's record changes with it.
+That is the thing an editor most needs told, and it is cheaper said than
+discovered.
+
+Two refusals rather than guesses. A union needs at least one person in it, so
+taking out the last partner is refused and points at deleting the family, which
+is a different operation with a referential-integrity policy attached. And a
+typed name that matches two people is refused rather than resolved: this bundle
+has eight people called Simla, and picking one of them on somebody's behalf is
+not a thing a genealogy application should do.
+
+Birth order is left blank when nobody stated it. A number taken from the row's
+position would be a fact the source never wrote down.
+
+### Fixed
+
+**Optimistic locking was not actually applied to the structured editors.** The
+shared save helper computed the base version from the entity it had just read
+instead of from the submitted form, so the check compared a number with itself
+and passed by definition. A stale form saved over somebody else's work
+silently. It now reads `base_version` out of the submission and fails closed
+when the field is absent, which is what the generic form has always done; a
+stale save gets the conflict screen and its diff. Found by posting an old
+version on purpose, not by reading the code.
+
+**Two more English strings assembled in Rust.** `union_type` and
+`union_status` were `match` arms returning "married", "ongoing" and "ended by
+the death of a spouse" — rendered on the record page in all eleven languages,
+and invisible to the hardcoded-string linter because that walks templates. Both
+now go through the catalogue, with the same fall-back to the raw value that
+they had for a term they did not recognise.
+
+### Added
+
 **A real editor, part one: names and identity.** The generic form maps one
 input to one dotted path, which is right for a scalar and cannot express a
 list — and nearly everything a record actually holds is a list. A converted

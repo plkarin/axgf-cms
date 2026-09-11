@@ -1184,3 +1184,69 @@ editor-blank-to-remove = Clear the name to remove this entry.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = en
 identity-edit-link = Edit names and identity
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = married
+union-type-civil_union = civil union
+union-type-cohabitation = cohabited
+union-type-religious_only = religious union
+union-type-polygamous = polygamous
+union-type-unknown = not recorded
+union-status-active = ongoing
+union-status-ended_by_death = ended by a death
+union-status-ended_by_divorce = ended by divorce
+union-status-ended_by_separation = ended by separation
+union-status-annulled = annulled
+union-status-unknown = not recorded
+union-status-ended = ended
+union-status-ended-by = ended by { $reason }
+union-reason-death_of_spouse = the death of a spouse
+precision-exact = to the day
+precision-year = to the year
+precision-month = to the month
+precision-decade = to the decade
+precision-century = to the century
+precision-unknown = not known
+record-precision = Precision
+record-approximate = Approximate
+record-place = Place
+
+## The relationships editor
+
+family-editor-title = Family and relationships
+family-unions = Unions
+family-no-unions = No union is recorded for this person.
+family-union-legend = Union { $n }
+family-writes-family = Saving this changes the family record #{ $id }, which both people share. The other person's page changes with it.
+family-partners = Partners
+family-partner = Partner
+family-role = Role
+family-children = Children
+family-children-help = Birth order is the record's own claim about who came first. Left blank, nothing is stated: a number taken from the row position would be a fact nobody wrote down.
+family-child = Child
+family-birth-order = Birth order
+family-the-union = The union itself
+family-type = Kind of union
+family-status = How it stands
+family-started = It started
+family-ended = It ended
+family-leave = Take this person out of this union
+family-open-entity = Open the family record
+family-new-union = A new union
+family-new-union-help = This creates a new family record with this person in it. A partner is optional: a parent the record names with no partner at all is a union of one.
+family-create-union = Create the union
+family-parents = Parents
+family-no-parents = This person is not recorded as a child of any family.
+family-child-of = A child of this family
+family-detach-child = Take this person out of this family
+family-attach-parents = Attach to parents
+family-attach-help = Choose the family this person is a child of. This adds them to that family's record, so it appears on the parents' pages too.
+family-the-family = The family
+family-attach = Attach
+family-error-last-partner = A union needs at least one person in it. Delete the family record instead, which asks what to do about everything that refers to it.
+family-error-no-family = No family was chosen. Nothing was saved.
+family-error-already-child = This person is already a child of that family.
+pick-error-empty = No person was named. Nothing was saved.
+pick-error-not-found = No person of that name is in this archive. Nothing was saved.
+pick-error-ambiguous = More than one person answers to that. Pick one from the list so the record says which. Nothing was saved.

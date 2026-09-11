@@ -1145,3 +1145,69 @@ editor-blank-to-remove = Limpe o nome para remover esta entrada.
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = pt
 identity-edit-link = Editar nomes e identidade
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = casamento
+union-type-civil_union = união civil
+union-type-cohabitation = união de facto
+union-type-religious_only = união religiosa
+union-type-polygamous = polígamo
+union-type-unknown = sem registo
+union-status-active = em curso
+union-status-ended_by_death = terminada por óbito
+union-status-ended_by_divorce = terminada por divórcio
+union-status-ended_by_separation = terminada por separação
+union-status-annulled = anulada
+union-status-unknown = sem registo
+union-status-ended = terminada
+union-status-ended-by = terminada por { $reason }
+union-reason-death_of_spouse = o óbito de um cônjuge
+precision-exact = ao dia
+precision-year = ao ano
+precision-month = ao mês
+precision-decade = à década
+precision-century = ao século
+precision-unknown = desconhecida
+record-precision = Precisão
+record-approximate = Aproximado
+record-place = Lugar
+
+## The relationships editor
+
+family-editor-title = Família e relações
+family-unions = Uniões
+family-no-unions = Não há nenhuma união registada para esta pessoa.
+family-union-legend = União { $n }
+family-writes-family = Guardar altera o registo de família #{ $id }, partilhado pelas duas pessoas. A página da outra pessoa muda também.
+family-partners = Parceiros
+family-partner = Parceiro
+family-role = Papel
+family-children = Filhos
+family-children-help = A ordem de nascimento é a afirmação do próprio registo. Deixada em branco não afirma nada: um número tirado da posição da linha seria um facto que ninguém escreveu.
+family-child = Filho
+family-birth-order = Ordem de nascimento
+family-the-union = A união em si
+family-type = Tipo de união
+family-status = Estado
+family-started = Início
+family-ended = Fim
+family-leave = Retirar esta pessoa desta união
+family-open-entity = Abrir o registo de família
+family-new-union = Uma nova união
+family-new-union-help = Isto cria um novo registo de família com esta pessoa. O parceiro é opcional: um progenitor que o registo nomeia sem parceiro nenhum é uma união de um.
+family-create-union = Criar a união
+family-parents = Pais
+family-no-parents = Esta pessoa não está registada como filho de nenhuma família.
+family-child-of = Filho desta família
+family-detach-child = Retirar esta pessoa desta família
+family-attach-parents = Ligar a pais
+family-attach-help = Escolha a família de que esta pessoa é filho. Acrescenta-a a esse registo de família, por isso aparece também nas páginas dos pais.
+family-the-family = A família
+family-attach = Ligar
+family-error-last-partner = Uma união precisa de pelo menos uma pessoa. Elimine antes o registo de família, que pergunta o que fazer a tudo o que lhe faz referência.
+family-error-no-family = Não foi escolhida nenhuma família. Nada foi guardado.
+family-error-already-child = Esta pessoa já é filho dessa família.
+pick-error-empty = Não foi indicada nenhuma pessoa. Nada foi guardado.
+pick-error-not-found = Não há ninguém com esse nome neste arquivo. Nada foi guardado.
+pick-error-ambiguous = Mais do que uma pessoa corresponde. Escolha uma da lista para que o registo diga qual. Nada foi guardado.

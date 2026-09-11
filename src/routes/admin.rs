@@ -1438,13 +1438,13 @@ pub(super) fn save_entity(
     id: &str,
     entity: Value,
     stored: Option<&Value>,
+    base_version: u64,
     back: &str,
     retry: &str,
 ) -> Response {
     if let Err(r) = check_scope(state, chrome, viewer, kind, &entity, stored) {
         return r;
     }
-    let base_version = stored.map(crate::state::version_of).unwrap_or(0);
     let label = stored.and_then(|e| label_for(kind, e));
     let kind_name = crate::state::kind_name(kind);
     let outcome =
@@ -1512,6 +1512,68 @@ pub(super) fn save_entity(
             viewer.ceiling(),
         ),
     }
+}
+
+/// The version the form was rendered from.
+///
+/// An absent field means a form from before this existed, or a script posting
+/// by hand. Falling back to the stored version would make the check pass by
+/// default, which is the one thing it must never do — and is exactly what this
+/// helper did when it computed the number itself instead of reading it. Failing
+/// closed shows the conflict screen, which is a bad experience and a correct
+/// one.
+pub(super) fn submitted_version(form: &std::collections::BTreeMap<String, String>) -> u64 {
+    form.get("base_version")
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(u64::MAX)
+}
+
+/// Create one entity through the library, then send the editor onward.
+pub(super) fn add_entity(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    kind: axgf_rs::EntityKind,
+    entity: Value,
+    back: &str,
+) -> Response {
+    if let Err(r) = check_scope(state, chrome, viewer, kind, &entity, None) {
+        return r;
+    }
+    let body = entity.to_string();
+    let out = match state.mutate(|flat| axgf_rs::add_entity(flat, kind, &body)) {
+        Ok(o) => o,
+        Err(e) => return io_error(chrome, &e),
+    };
+    if out.applied {
+        let id = out
+            .data
+            .get("id")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_string();
+        state.journal_mutation(&crate::journal::entry_for(crate::journal::Record {
+            who: viewer.name(),
+            action: "create",
+            kind: crate::state::kind_name(kind),
+            entity_id: &id,
+            label: label_for(kind, &entity),
+            version_num: Some(1),
+            before: None,
+            after: None,
+        }));
+    }
+    result_page(
+        chrome,
+        crate::state::kind_name(kind),
+        &chrome.t(if out.applied {
+            "admin-created"
+        } else {
+            "admin-not-saved"
+        }),
+        &out,
+        Some(back.to_string()),
+    )
 }
 
 pub(super) fn result_page(

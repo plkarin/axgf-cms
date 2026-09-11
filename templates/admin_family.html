@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ t("family-editor-title") }}{% endblock %}
+
+{# The relationships editor.
+
+   Every form on this page writes a *Family* entity, not the person whose page
+   it hangs off. That is the thing an editor most needs told, so each group
+   says it rather than leaving it to be discovered when somebody else's record
+   changes. #}
+
+{% block content %}
+<h1>{{ t("family-editor-title") }}</h1>
+<p class="lede"><bdi>{{ person_name }}</bdi></p>
+
+{% if problem %}
+<div class="notice warn" role="alert"><p>{{ t(problem) }}</p></div>
+{% endif %}
+
+{# One datalist for every person picker on the page. Native search, no script,
+   and a plain text field when scripting is off. #}
+<datalist id="people">
+  {% for p in people %}<option value="{{ p.label }}"></option>{% endfor %}
+</datalist>
+
+<h2>{{ t("family-unions") }}</h2>
+{% if not unions %}<p class="muted">{{ t("family-no-unions") }}</p>{% endif %}
+
+{% for f in unions %}
+<form method="post" action="/admin/person/{{ id }}/family/{{ f.id }}" class="editor">
+  <input type="hidden" name="base_version" value="{{ f.version }}">
+  <fieldset class="ed-group">
+    <legend>{{ t("family-union-legend", n=loop.index) }}</legend>
+    <p class="ed-elsewhere">{{ t("family-writes-family", id=f.id) }}</p>
+
+    <h3>{{ t("family-partners") }}</h3>
+    <table class="ed-rows">
+      <thead><tr><th>{{ t("family-partner") }}</th><th>{{ t("family-role") }}</th></tr></thead>
+      <tbody>
+        {% for p in f.partners %}
+        {{ m.partner_row(t, loop.index0, p) }}
+        {% endfor %}
+        {{ m.partner_row(t, f.partners | length, none) }}
+      </tbody>
+    </table>
+
+    <h3>{{ t("family-children") }}</h3>
+    <p class="hint">{{ t("family-children-help") }}</p>
+    <table class="ed-rows">
+      <thead><tr>
+        <th>{{ t("family-child") }}</th><th>{{ t("family-birth-order") }}</th>
+        <th>{{ t("phys-col-confidence") }}</th><th>{{ t("phys-col-note") }}</th>
+      </tr></thead>
+      <tbody>
+        {% for c in f.children %}{{ m.child_row(t, loop.index0, c) }}{% endfor %}
+        {{ m.child_row(t, f.children | length, none) }}
+      </tbody>
+    </table>
+
+    <h3>{{ t("family-the-union") }}</h3>
+    <div class="ed-grid">
+      <label>{{ t("family-type") }}
+        <select name="type">
+          {% for u in union_types %}
+          <option value="{{ u }}" {{ "selected" if u == f.type }}>{{ t("union-type-" ~ u) }}</option>
+          {% endfor %}
+        </select></label>
+      <label>{{ t("family-status") }}
+        <select name="status">
+          {% for u in union_statuses %}
+          <option value="{{ u }}" {{ "selected" if u == f.status }}>
+            {{- t("union-status-" ~ u) if u else t("admin-not-set") -}}</option>
+          {% endfor %}
+        </select></label>
+      <label>{{ t("phys-col-confidence") }}
+        <input type="text" inputmode="decimal" name="confidence" value="{{ f.confidence }}"></label>
+      <label>{{ t("phys-col-source") }}
+        <select name="source_id">
+          <option value="">{{ t("phys-no-source") }}</option>
+          {% for s in sources %}
+          <option value="{{ s.id }}" {{ "selected" if s.id == f.source_id }}>{{ s.label }}</option>
+          {% endfor %}
+        </select></label>
+    </div>
+
+    {{ m.union_point(t, "start", t("family-started"), f.start, precisions, places) }}
+    {{ m.union_point(t, "end", t("family-ended"), f.end, precisions, places) }}
+
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" name="action" value="detach" class="btn">{{ t("family-leave") }}</button>
+      <a class="btn" href="/admin/family/{{ f.id }}/edit">{{ t("family-open-entity") }}</a>
+    </div>
+  </fieldset>
+</form>
+{% endfor %}
+
+<form method="post" action="/admin/person/{{ id }}/family" class="editor">
+  <fieldset class="ed-group">
+    <legend>{{ t("family-new-union") }}</legend>
+    <p class="ed-elsewhere">{{ t("family-new-union-help") }}</p>
+    <div class="ed-grid">
+      <label>{{ t("family-partner") }}
+        <input type="text" name="partner" list="people" autocomplete="off"></label>
+      <label>{{ t("family-type") }}
+        <select name="type">
+          {% for u in union_types %}<option value="{{ u }}">{{ t("union-type-" ~ u) }}</option>{% endfor %}
+        </select></label>
+    </div>
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("family-create-union") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<h2>{{ t("family-parents") }}</h2>
+{% if not parented %}<p class="muted">{{ t("family-no-parents") }}</p>{% endif %}
+{% for f in parented %}
+<form method="post" action="/admin/person/{{ id }}/family/{{ f.id }}" class="editor">
+  <input type="hidden" name="base_version" value="{{ f.version }}">
+  <fieldset class="ed-group">
+    <legend>{{ t("family-child-of") }}</legend>
+    <p class="ed-elsewhere">{{ t("family-writes-family", id=f.id) }}</p>
+    <ul class="plain">
+      {% for p in f.partners %}<li><bdi>{{ p.label }}</bdi></li>{% endfor %}
+    </ul>
+    <div class="ed-actions">
+      <button type="submit" name="action" value="detach" class="btn">{{ t("family-detach-child") }}</button>
+      <a class="btn" href="/admin/family/{{ f.id }}/edit">{{ t("family-open-entity") }}</a>
+    </div>
+  </fieldset>
+</form>
+{% endfor %}
+
+<form method="post" action="/admin/person/{{ id }}/parents" class="editor">
+  <fieldset class="ed-group">
+    <legend>{{ t("family-attach-parents") }}</legend>
+    <p class="ed-elsewhere">{{ t("family-attach-help") }}</p>
+    <div class="ed-grid">
+      <label>{{ t("family-the-family") }}
+        <select name="family_id">
+          <option value="">{{ t("admin-not-set") }}</option>
+          {% for f in families %}<option value="{{ f.id }}">{{ f.label }}</option>{% endfor %}
+        </select></label>
+    </div>
+    <div class="ed-actions">
+      <button type="submit" class="btn primary">{{ t("family-attach") }}</button>
+    </div>
+  </fieldset>
+</form>
+
+<p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
+{% endblock %}

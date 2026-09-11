@@ -1208,8 +1208,8 @@ impl Ctx<'_> {
 
                 unions.push(UnionView {
                     spouse,
-                    kind: union.and_then(union_type),
-                    status: union_status(union),
+                    kind: union.and_then(|u| union_type(u, self.lang)),
+                    status: union_status(union, self.lang),
                     start: union
                         .and_then(|u| u.get("start"))
                         .filter(|v| !v.is_null())
@@ -1753,16 +1753,16 @@ fn lifespan_of(person: &Value) -> Option<String> {
     }
 }
 
-/// The union type of a family, as a readable phrase.
-fn union_type(union: &Value) -> Option<String> {
+/// The union type of a family, as a readable phrase in the reader's language.
+///
+/// This was a `match` returning English, which is the failure mode a string
+/// assembled in Rust always has: the hardcoded-string linter walks templates,
+/// so "married" sat on a Polish page for as long as this function did. The
+/// vocabulary falls back to the raw value with its underscores opened, which
+/// is what it did before for a type it did not know.
+fn union_type(union: &Value, lang: &str) -> Option<String> {
     let t = union.get("type")?.as_str()?;
-    Some(match t {
-        "marriage" => "married".into(),
-        "civil_union" => "civil union".into(),
-        "cohabitation" => "cohabited".into(),
-        "religious_only" => "religious union".into(),
-        other => other.replace('_', " "),
-    })
+    Some(crate::i18n::vocab(lang, "union-type", t))
 }
 
 /// How a union stands: still running, or ended, and how.
@@ -1770,24 +1770,24 @@ fn union_type(union: &Value) -> Option<String> {
 /// `union.status` is preferred when present; otherwise an `end` block with a
 /// reason says the same thing. A union with neither is reported as unrecorded
 /// rather than assumed to be ongoing — the record does not say.
-fn union_status(union: Option<&Value>) -> String {
+fn union_status(union: Option<&Value>, lang: &str) -> String {
+    let unknown = || crate::i18n::translate(lang, "union-status-unknown", None);
     let Some(u) = union else {
-        return "not recorded".into();
+        return unknown();
     };
     if let Some(s) = str_field(u, "status") {
-        return match s.as_str() {
-            "active" => "ongoing".into(),
-            other => other.replace('_', " "),
-        };
+        return crate::i18n::vocab(lang, "union-status", &s);
     }
     let end = u.get("end").filter(|e| !e.is_null());
     match end.and_then(|e| str_field(e, "reason")) {
-        Some(r) => match r.as_str() {
-            "death_of_spouse" => "ended by the death of a spouse".into(),
-            other => format!("ended by {}", other.replace('_', " ")),
-        },
-        None if end.is_some() => "ended".into(),
-        None => "not recorded".into(),
+        Some(r) => {
+            let reason = crate::i18n::vocab(lang, "union-reason", &r);
+            let mut args = fluent::FluentArgs::new();
+            args.set("reason", fluent::FluentValue::from(reason));
+            crate::i18n::translate(lang, "union-status-ended-by", Some(&args))
+        }
+        None if end.is_some() => crate::i18n::translate(lang, "union-status-ended", None),
+        None => unknown(),
     }
 }
 

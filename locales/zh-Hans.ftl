@@ -961,3 +961,69 @@ editor-blank-to-remove = 清空名字即可删除此条目。
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = zh-Hans
 identity-edit-link = 编辑姓名与身份
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = 婚姻
+union-type-civil_union = 民事结合
+union-type-cohabitation = 同居
+union-type-religious_only = 宗教结合
+union-type-polygamous = 多偶
+union-type-unknown = 未记录
+union-status-active = 持续中
+union-status-ended_by_death = 因去世结束
+union-status-ended_by_divorce = 因离婚结束
+union-status-ended_by_separation = 因分居结束
+union-status-annulled = 已废除
+union-status-unknown = 未记录
+union-status-ended = 已结束
+union-status-ended-by = 因{ $reason }结束
+union-reason-death_of_spouse = 配偶去世
+precision-exact = 精确到日
+precision-year = 精确到年
+precision-month = 精确到月
+precision-decade = 精确到十年
+precision-century = 精确到世纪
+precision-unknown = 未知
+record-precision = 精确度
+record-approximate = 约略
+record-place = 地点
+
+## The relationships editor
+
+family-editor-title = 家庭与关系
+family-unions = 结合
+family-no-unions = 未记录此人的任何结合。
+family-union-legend = 结合 { $n }
+family-writes-family = 保存将修改两人共用的家庭记录 #{ $id }，另一个人的页面也会随之改变。
+family-partners = 伴侣
+family-partner = 伴侣
+family-role = 角色
+family-children = 子女
+family-children-help = 出生顺序是记录自身的说法。留空即不作任何说明：取自行序的数字会是没人写下的事实。
+family-child = 子女
+family-birth-order = 出生顺序
+family-the-union = 结合本身
+family-type = 结合类型
+family-status = 状态
+family-started = 开始
+family-ended = 结束
+family-leave = 把此人移出这个结合
+family-open-entity = 打开家庭记录
+family-new-union = 新的结合
+family-new-union-help = 这会创建一条包含此人的新家庭记录。伴侣可不填：记录中没有任何伴侣的父母，就是单人的结合。
+family-create-union = 创建结合
+family-parents = 父母
+family-no-parents = 此人未被记录为任何家庭的子女。
+family-child-of = 这个家庭的子女
+family-detach-child = 把此人移出这个家庭
+family-attach-parents = 关联到父母
+family-attach-help = 选择此人所属的家庭。这会把他加入该家庭记录，因此也会出现在父母的页面上。
+family-the-family = 家庭
+family-attach = 关联
+family-error-last-partner = 一个结合至少需要一个人。请改为删除家庭记录，那会询问如何处理引用它的一切。
+family-error-no-family = 未选择家庭。未保存任何内容。
+family-error-already-child = 此人已经是该家庭的子女。
+pick-error-empty = 未指定人物。未保存任何内容。
+pick-error-not-found = 本档案中没有此姓名的人。未保存任何内容。
+pick-error-ambiguous = 有不止一个人符合。请从列表中选择一个，让记录说明是谁。未保存任何内容。

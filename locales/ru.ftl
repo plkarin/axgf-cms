@@ -1305,3 +1305,69 @@ editor-blank-to-remove = Очистите имя, чтобы удалить эт
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = ru
 identity-edit-link = Изменить имена и личность
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = брак
+union-type-civil_union = гражданский союз
+union-type-cohabitation = сожительство
+union-type-religious_only = церковный брак
+union-type-polygamous = полигамный
+union-type-unknown = не записано
+union-status-active = продолжается
+union-status-ended_by_death = прекращён смертью
+union-status-ended_by_divorce = прекращён разводом
+union-status-ended_by_separation = прекращён раздельным проживанием
+union-status-annulled = аннулирован
+union-status-unknown = не записано
+union-status-ended = прекращён
+union-status-ended-by = прекращён: { $reason }
+union-reason-death_of_spouse = смерть супруга
+precision-exact = до дня
+precision-year = до года
+precision-month = до месяца
+precision-decade = до десятилетия
+precision-century = до века
+precision-unknown = неизвестна
+record-precision = Точность
+record-approximate = Приблизительно
+record-place = Место
+
+## The relationships editor
+
+family-editor-title = Семья и связи
+family-unions = Союзы
+family-no-unions = Для этого человека не записано ни одного союза.
+family-union-legend = Союз { $n }
+family-writes-family = Сохранение изменит запись семьи #{ $id }, общую для обоих. Страница другого человека изменится вместе с ней.
+family-partners = Партнёры
+family-partner = Партнёр
+family-role = Роль
+family-children = Дети
+family-children-help = Порядок рождения — это утверждение самой записи. Оставленный пустым, он не утверждает ничего: номер из позиции строки был бы фактом, которого никто не записывал.
+family-child = Ребёнок
+family-birth-order = Порядок рождения
+family-the-union = Сам союз
+family-type = Вид союза
+family-status = Состояние
+family-started = Начало
+family-ended = Окончание
+family-leave = Убрать этого человека из союза
+family-open-entity = Открыть запись семьи
+family-new-union = Новый союз
+family-new-union-help = Это создаст новую запись семьи с этим человеком. Партнёр необязателен: родитель, названный без партнёра, — это союз из одного.
+family-create-union = Создать союз
+family-parents = Родители
+family-no-parents = Этот человек не записан ребёнком ни в одной семье.
+family-child-of = Ребёнок в этой семье
+family-detach-child = Убрать этого человека из этой семьи
+family-attach-parents = Привязать к родителям
+family-attach-help = Выберите семью, в которой этот человек — ребёнок. Он будет добавлен в запись этой семьи, и это появится на страницах родителей.
+family-the-family = Семья
+family-attach = Привязать
+family-error-last-partner = В союзе должен быть хотя бы один человек. Удалите вместо этого запись семьи — тогда будет задан вопрос обо всём, что на неё ссылается.
+family-error-no-family = Семья не выбрана. Ничего не сохранено.
+family-error-already-child = Этот человек уже записан ребёнком в этой семье.
+pick-error-empty = Человек не указан. Ничего не сохранено.
+pick-error-not-found = В этом архиве нет человека с таким именем. Ничего не сохранено.
+pick-error-ambiguous = Этому соответствует несколько человек. Выберите одного из списка, чтобы запись указывала, кого именно. Ничего не сохранено.

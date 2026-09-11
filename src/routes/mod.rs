@@ -73,6 +73,17 @@ pub fn router(state: Shared) -> Router {
             "/admin/person/:id/identity",
             get(editors::identity_edit).post(editors::identity_update),
         )
+        // Relationships. Every write here lands on a Family entity, never on
+        // the person whose page it hangs off.
+        .route(
+            "/admin/person/:id/family",
+            get(editors::family_edit).post(editors::family_create),
+        )
+        .route(
+            "/admin/person/:id/family/:fid",
+            post(editors::family_update),
+        )
+        .route("/admin/person/:id/parents", post(editors::parents_attach))
         .route(
             "/admin/person/:id/physical",
             get(admin::physical_edit).post(admin::physical_update),

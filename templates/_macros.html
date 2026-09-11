@@ -307,3 +307,66 @@
   <p class="hint small">{{ t("editor-blank-to-remove") }}</p>
 </div>
 {% endmacro %}
+
+{# One partner in a union. The picker is a datalist over the whole bundle:
+   native search, no script, and a text field that still accepts a typed name
+   when scripting is off. #}
+{% macro partner_row(t, i, p) %}
+<tr>
+  <td data-label="{{ t('family-partner') }}">
+    <input type="text" name="partner.{{ i }}.person" list="people" autocomplete="off"
+           value="{{ p.label if p }}" aria-label="{{ t('family-partner') }}"></td>
+  <td data-label="{{ t('family-role') }}">
+    <input type="text" name="partner.{{ i }}.role" value="{{ p.role if p else '' }}"
+           aria-label="{{ t('family-role') }}"></td>
+</tr>
+{% endmacro %}
+
+{# One child of a union. `birth_order` is the record's own claim about who came
+   first and is left blank when nobody made it: a number invented from row
+   position would be a fact the source never stated. #}
+{% macro child_row(t, i, c) %}
+<tr>
+  <td data-label="{{ t('family-child') }}">
+    <input type="text" name="child.{{ i }}.person" list="people" autocomplete="off"
+           value="{{ c.label if c }}" aria-label="{{ t('family-child') }}"></td>
+  <td data-label="{{ t('family-birth-order') }}">
+    <input type="text" inputmode="numeric" size="3" name="child.{{ i }}.birth_order"
+           value="{{ c.birth_order if c and c.birth_order is not none }}"
+           aria-label="{{ t('family-birth-order') }}"></td>
+  <td data-label="{{ t('phys-col-confidence') }}">
+    <input type="text" inputmode="decimal" size="4" name="child.{{ i }}.confidence"
+           value="{{ c.confidence if c and c.confidence is not none }}"
+           aria-label="{{ t('phys-col-confidence') }}"></td>
+  <td data-label="{{ t('phys-col-note') }}">
+    <input type="text" name="child.{{ i }}.note" value="{{ c.note if c }}"
+           aria-label="{{ t('phys-col-note') }}"></td>
+</tr>
+{% endmacro %}
+
+{# When a union started or ended: a date at the precision the source supports,
+   and where. #}
+{% macro union_point(t, prefix, title, v, precisions, places) %}
+<h3>{{ title }}</h3>
+<div class="ed-grid">
+  <label>{{ t("phys-col-date") }}
+    <input type="text" name="{{ prefix }}.date" value="{{ v.date }}" size="12"></label>
+  <label>{{ t("record-precision") }}
+    <select name="{{ prefix }}.precision">
+      {% for p in precisions %}
+      <option value="{{ p }}" {{ "selected" if p == v.precision }}>
+        {{- t("precision-" ~ p) if p else t("admin-not-set") -}}</option>
+      {% endfor %}
+    </select></label>
+  <label class="inline">
+    <input type="checkbox" name="{{ prefix }}.circa" value="on" {{ "checked" if v.circa }}>
+    {{ t("record-approximate") }}</label>
+  <label>{{ t("record-place") }}
+    <select name="{{ prefix }}.place_id">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for pl in places %}
+      <option value="{{ pl.id }}" {{ "selected" if pl.id == v.place_id }}>{{ pl.label }}</option>
+      {% endfor %}
+    </select></label>
+</div>
+{% endmacro %}

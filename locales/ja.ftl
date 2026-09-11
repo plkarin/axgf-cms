@@ -962,3 +962,69 @@ editor-blank-to-remove = 名前を空にするとこの項目を削除します�
 # A BCP 47 tag, shown as an example in the language field.
 identity-culture-placeholder = ja
 identity-edit-link = 名前と身元を編集
+
+## Union types, statuses and date precision, said out loud
+
+union-type-marriage = 婚姻
+union-type-civil_union = シビル・ユニオン
+union-type-cohabitation = 同居
+union-type-religious_only = 宗教婚
+union-type-polygamous = 一夫多妻
+union-type-unknown = 記録なし
+union-status-active = 継続中
+union-status-ended_by_death = 死別
+union-status-ended_by_divorce = 離婚
+union-status-ended_by_separation = 別居
+union-status-annulled = 無効
+union-status-unknown = 記録なし
+union-status-ended = 終了
+union-status-ended-by = { $reason }により終了
+union-reason-death_of_spouse = 配偶者の死亡
+precision-exact = 日まで
+precision-year = 年まで
+precision-month = 月まで
+precision-decade = 十年単位
+precision-century = 世紀単位
+precision-unknown = 不明
+record-precision = 精度
+record-approximate = おおよそ
+record-place = 場所
+
+## The relationships editor
+
+family-editor-title = 家族と関係
+family-unions = 結びつき
+family-no-unions = この人には結びつきが記録されていません。
+family-union-legend = 結びつき { $n }
+family-writes-family = 保存すると、二人が共有する家族の記録 #{ $id } が変わります。相手の記録も一緒に変わります。
+family-partners = パートナー
+family-partner = パートナー
+family-role = 役割
+family-children = 子ども
+family-children-help = 出生順は記録自身の主張です。空欄ならば何も主張しません。行の位置から取った数字は、誰も書き残していない事実になります。
+family-child = 子ども
+family-birth-order = 出生順
+family-the-union = 結びつき自体
+family-type = 結びつきの種類
+family-status = 状態
+family-started = 開始
+family-ended = 終了
+family-leave = この人をこの結びつきから外す
+family-open-entity = 家族の記録を開く
+family-new-union = 新しい結びつき
+family-new-union-help = この人を含む新しい家族の記録を作ります。パートナーは任意です。相手のいない親も、一人の結びつきです。
+family-create-union = 結びつきを作る
+family-parents = 親
+family-no-parents = この人はどの家族の子どもとしても記録されていません。
+family-child-of = この家族の子ども
+family-detach-child = この人をこの家族から外す
+family-attach-parents = 親に結びつける
+family-attach-help = この人が子どもである家族を選びます。その家族の記録に加わるので、親の記録にも現れます。
+family-the-family = 家族
+family-attach = 結びつける
+family-error-last-partner = 結びつきには少なくとも一人が必要です。代わりに家族の記録を削除してください。参照しているものをどうするか尋ねられます。
+family-error-no-family = 家族が選ばれていません。何も保存していません。
+family-error-already-child = この人はすでにその家族の子どもです。
+pick-error-empty = 人物が指定されていません。何も保存していません。
+pick-error-not-found = この書庫にその名前の人はいません。何も保存していません。
+pick-error-ambiguous = 当てはまる人が複数います。記録がどちらかを示せるよう、一覧から選んでください。何も保存していません。

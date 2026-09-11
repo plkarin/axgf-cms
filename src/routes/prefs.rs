@@ -115,6 +115,23 @@ fn store_preference(
     }
 }
 
+/// `POST /prefs/style` — how dense the page is.
+///
+/// A separate form from the theme because it is a separate question: a reader
+/// can want sepia and want it compact, and pairing them into one control would
+/// make twenty-one choices out of ten.
+#[derive(Deserialize)]
+pub struct StyleForm {
+    style: String,
+    #[serde(default)]
+    back: String,
+}
+
+pub async fn style(headers: HeaderMap, Form(f): Form<StyleForm>) -> Response {
+    let style = crate::style::Style::get(&f.style);
+    respond(&headers, crate::style::COOKIE_NAME, style.id, &f.back)
+}
+
 /// Set the cookie and send the reader back where they were.
 fn respond(headers: &HeaderMap, name: &str, value: &str, back: &str) -> Response {
     // A year: this is a preference, not a session, and a reader who picks

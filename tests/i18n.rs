@@ -373,6 +373,10 @@ fn every_dynamic_key_family_is_fully_defined() {
     for role in ["viewer", "contributor", "admin"] {
         expected.push(format!("accounts-role-{role}"));
     }
+    for style in axgf_cms::style::STYLES {
+        expected.push(style.key.to_string());
+        expected.push(style.note_key.to_string());
+    }
     for theme in axgf_cms::theme::THEMES {
         expected.push(theme.key.to_string());
         if let Some(note) = theme.note_key {

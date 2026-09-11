@@ -1437,3 +1437,14 @@ documents-upload-help = До { $mb } МБ. Файл сохраняется в а
 documents-caption = Подпись
 documents-edit-link = Прикрепить и открепить документы
 events-edit-link = Изменить события
+
+## Presentation styles: density, never colour
+
+prefs-style = Плотность
+prefs-style-help = Сколько места занимает страница. Независимо от темы, которая отвечает только за цвет, так что любое сочетание возможно.
+style-comfortable = Просторная
+style-comfortable-note = по умолчанию, с местом для чтения
+style-compact = Плотная
+style-compact-note = больше записи на экране, чтобы просматривать несколько
+style-paper = Бумага
+style-paper-note = шрифт с засечками и линейки вместо карточек, для чтения не спеша или печати

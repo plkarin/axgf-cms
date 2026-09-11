@@ -107,6 +107,42 @@
   --wash-2: #eff3ef;
   --wash-3: #f7f3ea;
 
+  /* ---------------------------------------------------------------------
+     The presentation scale. A *style* owns these; a theme never touches them,
+     and nothing in here is a colour. That division is what keeps twenty-one
+     combinations to seven palettes: see `src/style.rs`, and the test that
+     fails the build if a `[data-style]` block ever names a hue.
+
+     The rhythm unit `step` is the root of it: everything spatial is a multiple
+     of that one value, so a style changes one number and the page keeps its
+     beat rather than drifting out of it a rule at a time. */
+  --step: 0.55rem;
+  --text: 16px;
+  --leading: 1.6;
+  --measure: 74ch;
+  --face: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  /* The typographic scale. The record page's problem was that headings,
+     labels and values sat at nearly the same size and weight, so the eye had
+     nothing to climb; these are the rungs. */
+  --h1-size: 1.75rem;
+  --h2-size: 1.2rem;
+  --h3-size: 1rem;
+  --h1-weight: 700;
+  --h2-weight: 650;
+  --label-size: 0.76rem;
+  --label-track: 0.06em;
+  --small-size: 0.85rem;
+  /* How much room a section gives its contents, and whether it is a card or a
+     ruled block. Paper sets the shadow to none and the fill to transparent,
+     which is what a printer does to a card anyway. */
+  --section-pad: 1.15rem 1.3rem;
+  --section-gap: 1.1rem;
+  --section-fill: var(--surface);
+  --section-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
+  --section-border: 1px solid var(--border);
+  --section-radius: var(--radius-lg);
+
   --radius: 7px;
   --radius-sm: 5px;
   --radius-lg: 11px;
@@ -618,8 +654,7 @@ body {
   margin: 0;
   background: transparent;
   color: var(--ink);
-  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font: var(--text) / var(--leading) var(--face);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -628,6 +663,74 @@ a:hover { text-decoration-thickness: 2px; }
 
 code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 
+/* ---------------------------------------------------------------------------
+   The three presentation styles
+   ---------------------------------------------------------------------------
+   A second axis from the theme, and strictly orthogonal to it: a style changes
+   a size, a space, a weight, a measure or a border, and never a colour. That
+   is not a convention, it is enforced — `no_style_block_names_a_colour` reads
+   this file and fails the build if one of these blocks ever contains a hex, an
+   `rgb(` or a colour custom property. Seven palettes under three geometries is
+   twenty-one combinations that stay measured; twenty-one palettes would not.
+
+   `comfortable` is the default and therefore the values already on `:root`; it
+   has no block of its own, exactly as the `system` theme has none. What
+   follows is only what the other two change. */
+
+/* Compact: for somebody working through records rather than reading one.
+   The rhythm unit drops by a quarter and everything spatial follows it, so the
+   page keeps its beat and simply gets closer together. The point is cutting
+   the scroll between the thing just read and the thing being compared. */
+[data-style="compact"] {
+  --step: 0.4rem;
+  --text: 15px;
+  --leading: 1.5;
+  --measure: 88ch;
+  --face: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --h1-size: 1.45rem;
+  --h2-size: 1.06rem;
+  --h3-size: 0.95rem;
+  --h1-weight: 700;
+  --h2-weight: 650;
+  --label-size: 0.72rem;
+  --label-track: 0.05em;
+  --small-size: 0.8rem;
+  --section-pad: 0.7rem 0.85rem;
+  --section-gap: 0.55rem;
+  --section-fill: var(--surface);
+  --section-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
+  --section-border: 1px solid var(--border);
+  --section-radius: var(--radius);
+}
+
+/* Paper: for a record read once and slowly, or printed and handed to a
+   relative. A serif face, a measure that stops prose running the width of a
+   monitor, and rules where the other two have cards — which is what a laser
+   printer does to a card anyway, so the screen stops promising an edge the
+   page will not keep. */
+[data-style="paper"] {
+  --step: 0.7rem;
+  --text: 17px;
+  --leading: 1.72;
+  --measure: 66ch;
+  --face: Iowan Old Style, "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
+  --h1-size: 2.1rem;
+  --h2-size: 1.32rem;
+  --h3-size: 1.05rem;
+  --h1-weight: 600;
+  --h2-weight: 600;
+  --label-size: 0.74rem;
+  --label-track: 0.09em;
+  --small-size: 0.88rem;
+  --section-pad: 0 0 calc(var(--step) * 2);
+  --section-gap: calc(var(--step) * 2.4);
+  --section-fill: transparent;
+  --section-shadow: none;
+  --section-border: 0;
+  --section-radius: 0;
+}
 /* ---------- layout ---------- */
 
 .masthead {
@@ -664,7 +767,16 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 }
 .masthead .spacer { flex: 1 1 auto; }
 
-main { max-width: 1180px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: calc(var(--step) * 3.2) 1.25rem calc(var(--step) * 7);
+}
+/* Prose gets a measure. A section is as wide as the page; a paragraph inside
+   it should not be, because a line of 180 characters is read by nobody. */
+.rec-section > p,
+.lede,
+.sec-help p { max-inline-size: var(--measure); }
 main.wide { max-width: none; padding-inline: 1rem; }
 
 footer {
@@ -676,10 +788,24 @@ footer {
   border-top: 1px solid var(--border);
 }
 
-h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 0.4rem; letter-spacing: -0.02em; }
-h2 { font-size: 1.18rem; margin: 2rem 0 0.75rem; letter-spacing: -0.01em; }
-h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
+/* The hierarchy, on the scale a style sets. Every vertical space here is a
+   multiple of --step, so the page keeps one beat whichever style is on. */
+h1 {
+  font-size: var(--h1-size);
+  font-weight: var(--h1-weight);
+  line-height: 1.2;
+  margin: 0 0 calc(var(--step) * 0.8);
+  letter-spacing: -0.02em;
+}
+h2 {
+  font-size: var(--h2-size);
+  font-weight: var(--h2-weight);
+  margin: calc(var(--step) * 3.6) 0 calc(var(--step) * 1.4);
+  letter-spacing: -0.01em;
+}
+h3 { font-size: var(--h3-size); margin: calc(var(--step) * 2.3) 0 var(--step); }
 .lede { color: var(--ink-soft); font-size: 1.02rem; margin-top: 0; }
+.small, .hint { font-size: var(--small-size); }
 
 /* ---------------------------------------------------------------------------
    Three levels: page, section, block
@@ -727,14 +853,14 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 .tree-controls,
 .stat,
 .notice {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
+  background: var(--section-fill);
+  border: var(--section-border);
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
 }
 .card,
 .rec-section {
-  padding: 1.15rem 1.3rem;
+  padding: var(--section-pad);
 }
 .card > :first-child,
 .rec-section > :first-child { margin-top: 0; }
@@ -744,7 +870,7 @@ h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
 /* Sections are separated by a gap rather than by the heading's top margin,
    which used to do the job and cannot any more: that margin is now inside the
    box, where it pushes the heading off its own frame. */
-.rec-section { margin: 0 0 1.1rem; }
+.rec-section { margin: 0 0 var(--section-gap); }
 .rec-section .sec-head h2 { margin-top: 0; }
 
 /* LEVEL 3 — a block inside a section, or inside a card.
@@ -1043,9 +1169,9 @@ thead th {
   border-bottom-width: 2px;
 }
 th {
-  font-size: 0.76rem;
+  font-size: var(--label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--label-track);
   color: var(--ink-faint);
   font-weight: 600;
   white-space: nowrap;
@@ -1660,9 +1786,9 @@ bdi.date { unicode-bidi: isolate; }
 .ed-rows { inline-size: 100%; }
 .ed-rows th {
   text-align: start;
-  font-size: 0.76rem;
+  font-size: var(--label-size);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--label-track);
   color: var(--ink-faint);
   font-weight: 600;
   padding-block-end: 0.3rem;
@@ -2157,9 +2283,9 @@ a.stat:hover { border-color: var(--accent); }
 .tc-field { display: flex; flex-direction: column; gap: 0.2rem; }
 .tc-field label {
   margin: 0;
-  font-size: 0.76rem;
+  font-size: var(--label-size);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--label-track);
   color: var(--ink-faint);
 }
 .tc-field select { min-width: 12rem; }
@@ -2291,7 +2417,13 @@ main > section { scroll-margin-top: 1rem; }
   flex-wrap: wrap;
   gap: 0.4rem;
 }
-.sec-head h2 { margin-bottom: 0.3rem; }
+.sec-head h2 { margin-bottom: calc(var(--step) * 0.55); }
+/* A section heading anchors its section. It was small, grey and the same
+   weight as the labels under it, so the eye had nothing to find. */
+.rec-section .sec-head h2 {
+  color: var(--ink);
+  font-weight: var(--h2-weight);
+}
 .sec-help { font-size: 0.85rem; }
 .sec-help > summary {
   display: inline-flex;
@@ -2698,9 +2830,9 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 .prefs-panel fieldset { border: 0; padding: 0; margin: 0; }
 .prefs-panel fieldset + form { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
 .prefs-panel legend {
-  font-size: 0.76rem;
+  font-size: var(--label-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--label-track);
   color: var(--ink-faint);
   font-weight: 600;
   padding: 0;
@@ -3138,4 +3270,34 @@ a.tcard:hover {
   border: 2px solid var(--on-accent);
   box-shadow: 0 0 0 2px var(--accent);
   pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Paper: the component overrides
+   ---------------------------------------------------------------------------
+   Last in the file on purpose. The token blocks near the top retune the scale,
+   which is all two of the three styles need; these two rules *replace* a
+   declaration the level-2 and level-3 sections make, and those are declared
+   several hundred lines below the tokens. A style that loses the cascade is a
+   style that does nothing. */
+/* Paper draws its sections with a rule above the heading rather than a box
+   around the contents. The border cannot come from --section-border, which is
+   all four sides; this is the one rule a style adds rather than retunes. */
+[data-style="paper"] .rec-section {
+  border-block-start: 1px solid var(--border);
+  padding-block-start: calc(var(--step) * 2);
+}
+[data-style="paper"] .rec-section:first-of-type { border-block-start: 0; }
+/* The recessed inner blocks lose their fill too: on paper a second grey box
+   inside a first is a photocopy artefact. */
+[data-style="paper"] .rec-section .card,
+[data-style="paper"] .rec-section .union,
+[data-style="paper"] .rec-section .name-block,
+[data-style="paper"] .rec-section .shot {
+  background: transparent;
+  border-inline: 0;
+  border-block-start: 0;
+  border-block-end: 1px solid var(--border);
+  border-radius: 0;
+  padding-inline: 0;
 }

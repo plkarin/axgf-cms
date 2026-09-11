@@ -1277,3 +1277,14 @@ documents-upload-help = Até { $mb } MB. O ficheiro é guardado no arquivo e ane
 documents-caption = Legenda
 documents-edit-link = Anexar e desligar documentos
 events-edit-link = Editar acontecimentos
+
+## Presentation styles: density, never colour
+
+prefs-style = Densidade
+prefs-style-help = Quanto espaço a página ocupa. Separado do tema, que é só sobre cor, por isso qualquer combinação é possível.
+style-comfortable = Confortável
+style-comfortable-note = por omissão, com espaço para ler
+style-compact = Compacta
+style-compact-note = mais registo por ecrã, para percorrer vários
+style-paper = Papel
+style-paper-note = um tipo com serifas e filetes em vez de cartões, para ler com calma ou imprimir

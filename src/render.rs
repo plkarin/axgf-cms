@@ -164,6 +164,10 @@ pub struct Chrome {
     /// What the reader chose, which may be `system`. Distinct from `theme`
     /// because the selector has to show `system` as ticked.
     pub theme_choice: &'static str,
+    /// The presentation style: how dense the page is, never what colour. A
+    /// second axis from the theme, and orthogonal to it — see [`crate::style`].
+    pub style: &'static str,
+    pub styles: Vec<serde_json::Value>,
     /// Whether to draw the soft page background: the theme's own flag and the
     /// reader's preference, already resolved. The template writes it as
     /// `data-wash`, so the stylesheet needs no exception of its own.
@@ -205,6 +209,9 @@ impl Chrome {
             viewer.theme(),
             crate::session::named_cookie(headers, crate::theme::COOKIE_NAME).as_deref(),
         );
+        let style = crate::style::negotiate(
+            crate::session::named_cookie(headers, crate::style::COOKIE_NAME).as_deref(),
+        );
         let wash_cookie = crate::session::named_cookie(headers, crate::theme::WASH_COOKIE_NAME);
         let wash_choice =
             crate::theme::reader_wants_wash(viewer.backgrounds(), wash_cookie.as_deref());
@@ -228,6 +235,8 @@ impl Chrome {
                 "reviewed": locale.reviewed,
                 "coverage": locale.coverage_percent(),
             }),
+            style: style.id,
+            styles: crate::style::selector_entries(),
             presume_after: crate::living::max_age_years(),
         }
     }

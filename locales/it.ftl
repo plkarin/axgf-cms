@@ -1275,3 +1275,14 @@ documents-upload-help = Fino a { $mb } MB. Il file è riposto nell'archivio e al
 documents-caption = Didascalia
 documents-edit-link = Allega e stacca documenti
 events-edit-link = Modifica gli eventi
+
+## Presentation styles: density, never colour
+
+prefs-style = Densità
+prefs-style-help = Quanto spazio prende la pagina. Separata dal tema, che riguarda solo il colore, quindi ogni combinazione è possibile.
+style-comfortable = Comoda
+style-comfortable-note = predefinita, con spazio per leggere
+style-compact = Compatta
+style-compact-note = più scheda per schermo, per scorrerne diverse
+style-paper = Carta
+style-paper-note = un carattere con grazie e filetti invece di schede, per leggere con calma o stampare

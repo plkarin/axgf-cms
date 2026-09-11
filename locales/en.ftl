@@ -1316,3 +1316,14 @@ documents-upload-help = Up to { $mb } MB. The file is stored in the archive and 
 documents-caption = Caption
 documents-edit-link = Attach and detach documents
 events-edit-link = Edit events
+
+## Presentation styles: density, never colour
+
+prefs-style = Density
+prefs-style-help = How much room the page takes. Separate from the theme, which is only about colour, so you can have any of these with any of those.
+style-comfortable = Comfortable
+style-comfortable-note = the default, with room to read
+style-compact = Compact
+style-compact-note = more of a record per screen, for working through several
+style-paper = Paper
+style-paper-note = a serif face and rules instead of cards, for reading once or printing

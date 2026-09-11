@@ -1480,3 +1480,14 @@ documents-upload-help = حتى { $mb } ميغابايت. يُحفظ الملف �
 documents-caption = التعليق
 documents-edit-link = أرفق الوثائق وافصلها
 events-edit-link = حرّر الأحداث
+
+## Presentation styles: density, never colour
+
+prefs-style = الكثافة
+prefs-style-help = كم تأخذ الصفحة من مساحة. مستقلة عن السمة التي تخص اللون وحده، فأي مزيج ممكن.
+style-comfortable = مريحة
+style-comfortable-note = الافتراضية، بمساحة للقراءة
+style-compact = مضغوطة
+style-compact-note = سجل أكثر في الشاشة، لمن يمرّ على عدة سجلات
+style-paper = ورق
+style-paper-note = خط بذيول وخطوط بدل البطاقات، للقراءة على مهل أو للطباعة

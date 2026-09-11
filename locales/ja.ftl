@@ -1094,3 +1094,14 @@ documents-upload-help = { $mb } MB まで。ファイルは書庫に収められ
 documents-caption = 説明
 documents-edit-link = 資料の添付と取り外し
 events-edit-link = 出来事を編集
+
+## Presentation styles: density, never colour
+
+prefs-style = 密度
+prefs-style-help = ページがどれだけ場所を取るか。色だけを扱うテーマとは別なので、どの組み合わせも選べます。
+style-comfortable = ゆったり
+style-comfortable-note = 既定。読むための余白があります
+style-compact = 詰めて
+style-compact-note = 一画面により多くを表示。何件も見ていくとき向け
+style-paper = 紙
+style-paper-note = セリフ体と罫線。じっくり読むとき、印刷するとき向け

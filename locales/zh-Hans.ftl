@@ -1093,3 +1093,14 @@ documents-upload-help = 最大 { $mb } MB。文件将存入档案并关联到本
 documents-caption = 说明文字
 documents-edit-link = 关联与解除文件
 events-edit-link = 编辑事件
+
+## Presentation styles: density, never colour
+
+prefs-style = 疏密
+prefs-style-help = 页面占用多少空间。与只关乎颜色的主题相互独立，因此可以任意搭配。
+style-comfortable = 舒适
+style-comfortable-note = 默认，留有阅读空间
+style-compact = 紧凑
+style-compact-note = 每屏显示更多内容，便于连续查阅
+style-paper = 纸面
+style-paper-note = 衬线字体、以线条代替卡片，适合细读或打印

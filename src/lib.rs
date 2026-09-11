@@ -44,6 +44,7 @@ pub mod routes;
 pub mod session;
 pub mod silhouette;
 pub mod state;
+pub mod style;
 pub mod theme;
 pub mod tree;
 pub mod view;

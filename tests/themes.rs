@@ -51,6 +51,29 @@ fn every_theme_redefines_every_colour_root_defines() {
     // how round its corners are. Everything else is a colour, and a theme that
     // misses one inherits the light palette's.
     const NOT_A_COLOUR: &[&str] = &[
+        // The presentation scale. A *style* owns these and a theme never
+        // touches them; see `src/style.rs` for why the two axes are kept
+        // apart and `no_style_block_names_a_colour` for the other half of
+        // the guarantee.
+        "--step",
+        "--text",
+        "--leading",
+        "--measure",
+        "--face",
+        "--h1-size",
+        "--h2-size",
+        "--h3-size",
+        "--h1-weight",
+        "--h2-weight",
+        "--label-size",
+        "--label-track",
+        "--small-size",
+        "--section-pad",
+        "--section-gap",
+        "--section-fill",
+        "--section-shadow",
+        "--section-border",
+        "--section-radius",
         "--radius",
         "--radius-sm",
         "--radius-lg",
@@ -458,10 +481,28 @@ fn every_level_two_surface_is_declared_in_one_place() {
              from every other frame in the interface:\n{head}"
         );
     }
+    // The frame is one declaration per property, and each now names a token
+    // the *style* axis owns rather than a literal — so a style can turn a card
+    // into a ruled block without touching the colour the theme put in it.
     let body = &css[start..start + css[start..].find('}').expect("the rule") + 1];
-    assert!(body.contains("background: var(--surface)"));
-    assert!(body.contains("border: 1px solid var(--border)"));
-    assert!(body.contains("box-shadow: 0 1px 2px"));
+    assert!(body.contains("background: var(--section-fill)"));
+    assert!(body.contains("border: var(--section-border)"));
+    assert!(body.contains("box-shadow: var(--section-shadow)"));
+
+    // And the defaults those tokens carry are the values this rule used to
+    // hold literally, so the comfortable style is the interface unchanged.
+    let root = &css[css.find(":root {").expect("the root block")..];
+    let root = &root[..root.find("\n}").expect("its close")];
+    for want in [
+        "--section-fill: var(--surface)",
+        "--section-border: 1px solid var(--border)",
+        "--section-shadow: 0 1px 2px",
+    ] {
+        assert!(
+            root.contains(want),
+            "the default for the level-2 frame moved: {want}"
+        );
+    }
 }
 
 /// Destructive actions have a colour of their own, chosen to be read.
@@ -484,5 +525,117 @@ fn the_danger_colour_is_not_the_low_confidence_fill() {
             "{theme} does not define --danger and would inherit a value \
              chosen against a different background"
         );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The second axis
+// ---------------------------------------------------------------------------
+
+/// Every style block defines every value the scale has.
+///
+/// The mirror of `every_theme_redefines_every_colour_root_defines`, and it
+/// exists for the same reason: a style that misses one value inherits the
+/// default's, and one forgotten line is a compact page with a comfortable
+/// heading on it, found by a reader rather than by us.
+#[test]
+fn every_style_redefines_every_value_the_scale_has() {
+    let css = css();
+    // These are the ones a style is expected to retune. `--section-radius`
+    // and friends are on the list; `--radius` itself is not, because it is
+    // the theme-independent geometry every style shares.
+    const SCALE: &[&str] = &[
+        "--step",
+        "--text",
+        "--leading",
+        "--measure",
+        "--face",
+        "--h1-size",
+        "--h2-size",
+        "--h3-size",
+        "--h1-weight",
+        "--h2-weight",
+        "--label-size",
+        "--label-track",
+        "--small-size",
+        "--section-pad",
+        "--section-gap",
+        "--section-fill",
+        "--section-shadow",
+        "--section-border",
+        "--section-radius",
+    ];
+    let root = block_vars(&css, ":root {");
+    for v in SCALE {
+        assert!(
+            root.contains(*v),
+            "{v} is on the scale but `:root` does not define it"
+        );
+    }
+    // `comfortable` is the values on :root and has no block, exactly as the
+    // `system` theme has none.
+    for style in axgf_cms::style::STYLES
+        .iter()
+        .filter(|s| s.id != "comfortable")
+    {
+        let sel = format!("[data-style=\"{}\"] {{", style.id);
+        let mine = block_vars(&css, &sel);
+        let missing: Vec<&&str> = SCALE.iter().filter(|v| !mine.contains(**v)).collect();
+        assert!(
+            missing.is_empty(),
+            "{sel} does not define {missing:?} and will inherit the default"
+        );
+    }
+}
+
+/// A style may change a size, a space, a weight or a border. Never a colour.
+///
+/// This is the load-bearing half of keeping twenty-one combinations to seven
+/// palettes. A hue in one of these blocks would be a colour nobody measured,
+/// under seven themes, and would not show up in the theme sweep because the
+/// theme sweep does not know styles exist.
+#[test]
+fn no_style_block_names_a_colour() {
+    let css = css();
+    for style in axgf_cms::style::STYLES {
+        let sel = format!("[data-style=\"{}\"] {{", style.id);
+        let Some(start) = css.find(&sel) else {
+            continue;
+        };
+        let open = css[start..].find('{').expect("a block") + start;
+        let end = css[open..].find("\n}").expect("a closing brace") + open;
+        let body = &css[open..end];
+        // References to the theme's own tokens are the point — `var(--surface)`
+        // is how a style stays out of the palette's business — so they are
+        // removed before looking. What must not survive is a colour *invented*
+        // here: a hex, an rgb() or an hsl() of its own.
+        let mut stripped = String::with_capacity(body.len());
+        let mut rest = body;
+        while let Some(at) = rest.find("var(") {
+            stripped.push_str(&rest[..at]);
+            match rest[at..].find(')') {
+                Some(close) => rest = &rest[at + close + 1..],
+                None => break,
+            }
+        }
+        stripped.push_str(rest);
+        // An *invented* colour is a hex or a function with numbers in it.
+        // `rgb(var(--shadow-rgb) / var(--shadow-a))` survives the strip above
+        // as `rgb( / )`, which names nothing and is the house idiom for
+        // composing a shadow out of the theme's own two values.
+        let invents = |marker: &str| {
+            stripped.match_indices(marker).any(|(at, _)| {
+                stripped[at + marker.len()..]
+                    .trim_start()
+                    .starts_with(|c: char| c.is_ascii_hexdigit())
+            })
+        };
+        for marker in ["#", "rgb(", "rgba(", "hsl(", "oklch("] {
+            assert!(
+                !invents(marker),
+                "{sel} invents a colour ({marker:?}): a style changes geometry, \
+                 not palette. Reference the theme's token instead."
+            );
+        }
     }
 }

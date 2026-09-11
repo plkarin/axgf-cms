@@ -4,7 +4,7 @@
    of the wrong theme on every page, and would flip Arabic from left to right
    in front of the reader. #}
 <html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %}
-      data-wash="{{ "on" if wash else "off" }}"{% if nav %} data-route="{{ nav }}"{% endif %}
+      data-style="{{ style }}" data-wash="{{ "on" if wash else "off" }}"{% if nav %} data-route="{{ nav }}"{% endif %}
       {#- `data-route` is the *navigation* group, not the page: the person page
           and the tree page share "tree" because they share a nav item, so it
           cannot be used to tell them apart. A page that is a large diagram

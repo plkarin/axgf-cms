@@ -85,6 +85,30 @@
       </fieldset>
     </form>
 
+    {# The second axis. A style says how dense the page is and never what
+       colour it is, so it is its own form beside the theme rather than
+       twenty-one entries in the theme's list. #}
+    <form method="post" action="/prefs/style">
+      <input type="hidden" name="back" value="{{ back }}">
+      <fieldset>
+        <legend>{{ t("prefs-style") }}</legend>
+        <p class="hint">{{ t("prefs-style-help") }}</p>
+        <ul class="theme-list">
+          {% for st in styles %}
+          <li>
+            <label class="inline">
+              <input type="radio" name="style" value="{{ st.id }}"
+                     {{ "checked" if st.id == style }}>
+              <span>{{ t(st.key) }}</span>
+              <span class="small muted">{{ t(st.note_key) }}</span>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+      </fieldset>
+    </form>
+
     <form method="post" action="/prefs/background">
       <input type="hidden" name="back" value="{{ back }}">
       <fieldset>

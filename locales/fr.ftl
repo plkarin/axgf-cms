@@ -1260,3 +1260,14 @@ documents-upload-help = Jusqu'à { $mb } Mo. Le fichier est rangé dans l'archiv
 documents-caption = Légende
 documents-edit-link = Attacher et détacher des documents
 events-edit-link = Modifier les événements
+
+## Presentation styles: density, never colour
+
+prefs-style = Densité
+prefs-style-help = L'espace que prend la page. Distinct du thème, qui ne concerne que la couleur : vous pouvez combiner l'un et l'autre librement.
+style-comfortable = Confortable
+style-comfortable-note = par défaut, avec de l'air pour lire
+style-compact = Compacte
+style-compact-note = plus de fiche par écran, pour en parcourir plusieurs
+style-paper = Papier
+style-paper-note = une police à empattements et des filets au lieu de cartes, pour lire posément ou imprimer

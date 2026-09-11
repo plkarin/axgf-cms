@@ -1275,3 +1275,14 @@ documents-upload-help = Hasta { $mb } MB. El archivo se guarda en el archivo gen
 documents-caption = Pie
 documents-edit-link = Adjuntar y desvincular documentos
 events-edit-link = Editar sucesos
+
+## Presentation styles: density, never colour
+
+prefs-style = Densidad
+prefs-style-help = Cuánto espacio ocupa la página. Aparte del tema, que sólo trata del color, así que cualquier combinación es posible.
+style-comfortable = Cómoda
+style-comfortable-note = por defecto, con espacio para leer
+style-compact = Compacta
+style-compact-note = más registro por pantalla, para revisar varios
+style-paper = Papel
+style-paper-note = una tipografía con serifas y filetes en vez de tarjetas, para leer con calma o imprimir

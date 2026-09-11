@@ -1430,3 +1430,14 @@ documents-upload-help = Do { $mb } MB. Plik trafia do archiwum i zostaje dołąc
 documents-caption = Podpis
 documents-edit-link = Dołącz i odłącz dokumenty
 events-edit-link = Edytuj wydarzenia
+
+## Presentation styles: density, never colour
+
+prefs-style = Gęstość
+prefs-style-help = Ile miejsca zajmuje strona. Niezależne od motywu, który dotyczy tylko koloru, więc każde z tych ustawień można łączyć z każdym motywem.
+style-comfortable = Wygodna
+style-comfortable-note = domyślna, z miejscem do czytania
+style-compact = Zwarta
+style-compact-note = więcej zapisu na ekranie, do przeglądania wielu
+style-paper = Papier
+style-paper-note = szeryfowy krój i linie zamiast kart, do czytania na spokojnie lub druku

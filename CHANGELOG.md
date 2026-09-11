@@ -9,6 +9,51 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Three presentation styles, orthogonal to the seven themes.** A theme answers
+what the page looks like and owns colour. How dense it is turned out to be a
+different question with a different answer, and multiplying them into the theme
+list would have made twenty-one palettes to keep in tune instead of seven. So
+they are stored separately and a reader picks one of each.
+
+* **Comfortable** is the default, and is the values already on `:root` — the
+  interface as it was designed.
+* **Compact** drops the rhythm unit by a quarter and everything spatial follows
+  it, for somebody working through records rather than reading one. The point
+  is cutting the scroll between the thing just read and the thing being
+  compared with it.
+* **Paper** is a serif face, a measure that stops prose running the width of a
+  monitor, rules instead of cards and no shadows at all — for a record read
+  once and slowly, or printed and handed to a relative. Which is also what a
+  laser printer does to a card, so the screen stops promising an edge the page
+  will not keep.
+
+**The division is enforced, not conventional.** A style may change a size, a
+space, a weight, a measure or a border. A style may never change a colour, and
+`no_style_block_names_a_colour` reads the stylesheet and fails the build if one
+invents a hex or a numeric `rgb()`. Referencing a theme's own token is how a
+style stays out of the palette's business; inventing one is not. Its sibling
+`every_style_redefines_every_value_the_scale_has` is the mirror of the theme
+test — a style that misses a value inherits the default's, and one forgotten
+line is a compact page with a comfortable heading on it.
+
+**Twenty-one combinations, swept, and the numbers do not move.** Worst text per
+combination runs 4.83 to 7.46 against the 4.5 AA asks, worst graphic 4.83 to
+17.40 against 3.0, and every one of the twenty-one is byte-identical to the
+seven before it. That is the orthogonality showing up as a measurement rather
+than as a claim. It is not a tautology either: the sweep computes WCAG's
+large-text threshold from the *computed* font size, so compact shrinking a
+heading past 18.66px bold would have moved its requirement from 3:1 to 4.5:1
+and been caught.
+
+Underneath: a presentation scale on `:root`. One rhythm unit with everything
+spatial a multiple of it, a typographic scale with real rungs — the record's
+headings, labels and values sat at nearly the same size and weight, so the eye
+had nothing to climb — and four tokens for the section frame, which is what
+lets Paper turn a card into a ruled block without touching the colour the theme
+put in it.
+
+### Added
+
 **A real editor, part four: events and documents.** That completes it.
 `/admin/person/:id/events` creates and edits the events this person is named
 in, with their category, date, place, description, confidence and source, and

@@ -1308,7 +1308,6 @@ record-presumed-why = لا وفاة مسجّلة والولادة قبل أكث�
 #
 # ليس صورة شخصية. كل الرسائل التالية موجودة كي يبقى ذلك بلا التباس.
 
-silhouette-help-toggle = ما يعرضه هذا الشكل
 silhouette-label = عمر وطول مسجّلان، لا هيئة
 silhouette-not-a-likeness = ليس صورة شخصية: لا شيء فيه مأخوذ من صورة فوتوغرافية.
 silhouette-proportions-infant = نسب رضيع، نحو أربعة أطوال رأس.

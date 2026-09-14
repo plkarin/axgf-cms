@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+**The figure in the masthead carries no control.** The `?` under it opened a
+panel over the header, which put a control in the one part of the page that
+states who somebody was — for a sentence most readers never want, and every
+reader had to look past. The header now holds the drawing and its accessible
+name and nothing that operates it.
+
+The explanation is still one step from the figure, but as text rather than as
+a button: one line in the record's identity section, beside the facts the
+figure is drawn from — the age band, the recorded height and its date, the
+build, whether it is to scale, and that it is not a portrait. Only on the page
+that draws the figure; the tree's side panel has no masthead, and a line about
+a drawing that is not there would be a line about nothing. No sentence was
+rewritten, so no catalogue gained a message: the panel's strings are the
+line's strings, and the toggle's label, which nothing names now, is gone from
+all eleven.
+
 
 ### Added
 

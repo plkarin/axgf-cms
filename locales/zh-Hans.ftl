@@ -921,7 +921,6 @@ record-presumed-why = 没有记录死亡，而出生已在 { $years } 年以前�
 #
 # 它不是肖像。下面这些消息的存在就是为了让这一点毫不含糊。
 
-silhouette-help-toggle = 这个图形显示的内容
 silhouette-label = 记录中的年龄与身高，而非相貌
 silhouette-not-a-likeness = 这不是肖像：其中没有任何部分取自照片。
 silhouette-proportions-infant = 婴儿的比例，约四个头高。

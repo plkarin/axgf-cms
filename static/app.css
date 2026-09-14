@@ -1860,9 +1860,6 @@ bdi.date { unicode-bidi: isolate; }
   align-items: start;
   gap: 1rem 1.15rem;
   margin-bottom: 1.25rem;
-  /* The containing block for the figure's help panel, which hangs below the
-     whole header rather than below the 55px column it is anchored to. */
-  position: relative;
 }
 /* With a figure there are four columns and the document order is not the
    visual order — the figure is written last so that a reader working down the
@@ -1942,8 +1939,9 @@ bdi.date { unicode-bidi: isolate; }
  * Beside the photograph at the photograph's own height, and no wider than the
  * canvas needs — about 59px against the avatar's 112. It had a band of its own
  * under the masthead with three paragraphs of caption beside it, which made a
- * secondary illustration the largest thing on the page. The explanation is
- * still all there, behind the `?` the sections already use.
+ * secondary illustration the largest thing on the page, and then a `?` under
+ * it, which put a control in the header for a sentence. The explanation is one
+ * line in the record now — `.figure-note`, below.
  *
  * It introduces no colour. The fill is --ink-soft and the two rules are
  * --ink-faint, both of which every theme already holds to 4.5:1 as body text.
@@ -1984,50 +1982,11 @@ bdi.date { unicode-bidi: isolate; }
    line and not as part of the figure, in every theme and in monochrome. */
 .sil-ref { stroke-width: 1; stroke-dasharray: 4 4; }
 
-/* The explanation, behind the same `?` a section heading carries. Its panel
-   hangs off the masthead rather than off the 55px column the `?` sits in, so
-   it is a readable width at 1920 and the full row at 390 without a second
-   rule for either. */
-.fig-help { font-size: 0.85rem; }
-.fig-help > summary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 50%;
-  color: var(--ink-faint);
-  font-size: 0.72rem;
-  line-height: 1;
-  cursor: help;
-  list-style: none;
-  user-select: none;
-}
-.fig-help > summary::-webkit-details-marker { display: none; }
-.fig-help > summary::marker { content: ""; }
-.fig-help > summary:hover,
-.fig-help[open] > summary { border-color: var(--accent); color: var(--accent); }
-.fig-help-panel {
-  position: absolute;
-  inset-inline-start: 0;
-  top: calc(100% + 0.25rem);
-  z-index: 40;
-  width: min(34rem, 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.7rem 0.9rem;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 6px 24px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 2.2));
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: var(--ink-soft);
-  text-align: start;
-}
-.fig-help-panel .sep { color: var(--ink-faint); }
+/* What the figure is drawn from, as one line in the record's identity section.
+   Muted like every other explanatory line; the label and the two field names
+   take the colours the old panel gave them, both already held to 4.5:1 as
+   body text in every theme, so there is no new pair to measure. */
+.figure-note { margin: 0.6rem 0 0; line-height: 1.5; }
 .figure-label { color: var(--ink); }
 .figure-key { color: var(--ink-faint); }
 

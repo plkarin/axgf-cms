@@ -1105,7 +1105,6 @@ record-presumed-why = Es ist kein Tod erfasst und die Geburt liegt mehr als { $y
 # Sie ist kein Porträt. Alle folgenden Meldungen sind dafür da, dass das
 # unmissverständlich bleibt.
 
-silhouette-help-toggle = Was diese Figur zeigt
 silhouette-label = Erfasstes Alter und erfasste Größe, kein Aussehen
 silhouette-not-a-likeness = Kein Porträt: nichts daran stammt aus einer Fotografie.
 silhouette-proportions-infant = Proportionen eines Säuglings, etwa vier Kopfhöhen.

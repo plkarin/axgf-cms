@@ -115,6 +115,22 @@ async fn surfaces(app: &axum::Router, id: &str) -> Vec<(&'static str, String)> {
     for (name, uri) in [
         ("record tab", format!("/person/{id}")),
         ("life tab", format!("/person/{id}?tab=life")),
+        (
+            "profile: health",
+            format!("/person/{id}?tab=profile&group=health"),
+        ),
+        (
+            "profile: belief",
+            format!("/person/{id}?tab=profile&group=belief"),
+        ),
+        (
+            "profile: death",
+            format!("/person/{id}?tab=profile&group=death"),
+        ),
+        (
+            "profile: morphology",
+            format!("/person/{id}?tab=profile&group=morphology"),
+        ),
         ("media tab", format!("/person/{id}?tab=media")),
         ("tree tab", format!("/person/{id}?tab=tree")),
         ("panel fragment", format!("/tree/panel/{id}")),
@@ -174,9 +190,16 @@ async fn the_raw_entity_dump_is_stripped_rather_than_printed_whole() {
 async fn physical_traits_are_not_swept_up_with_the_health_fields() {
     let (app, _p) = app_with_bundle("health-traits", &bundle("health-traits-src"));
 
-    let body = body_string(get(&app, &format!("/person/{LIVING}?tab=life")).await).await;
+    let body = body_string(
+        get(
+            &app,
+            &format!("/person/{LIVING}?tab=profile&group=morphology"),
+        )
+        .await,
+    )
+    .await;
     assert!(body.contains(HEIGHT), "the height is shown: {body}");
-    assert!(body.contains("blue"), "and so is the eye colour");
+    assert!(body.contains("Blue"), "and so is the eye colour");
     assert!(!body.contains(CONDITION));
 }
 
@@ -184,9 +207,10 @@ async fn physical_traits_are_not_swept_up_with_the_health_fields() {
 #[tokio::test]
 async fn a_reader_is_told_that_something_is_being_withheld() {
     let (app, _p) = app_with_bundle("health-told", &bundle("health-told-src"));
-    let body = body_string(get(&app, &format!("/person/{LIVING}?tab=life")).await).await;
+    let body =
+        body_string(get(&app, &format!("/person/{LIVING}?tab=profile&group=health")).await).await;
     assert!(
-        body.contains("recorded but withheld"),
+        body.contains("withheld from you"),
         "a record that shows nothing where a diagnosis exists reads as a \
          record with nothing in it: {body}"
     );
@@ -195,16 +219,23 @@ async fn a_reader_is_told_that_something_is_being_withheld() {
 #[tokio::test]
 async fn an_administrator_reads_it() {
     let (app, _p) = app_with_bundle("health-admin", &bundle("health-admin-src"));
-    let body = body_string(get_admin(&app, &format!("/person/{LIVING}?tab=life")).await).await;
+    let health = format!("/person/{LIVING}?tab=profile&group=health");
+    let body = body_string(get_admin(&app, &health).await).await;
     assert!(body.contains(CONDITION), "an admin sees the condition");
-    assert!(body.contains(RELIGION));
+    let belief = format!("/person/{LIVING}?tab=profile&group=belief");
+    let body = body_string(get_admin(&app, &belief).await).await;
+    assert!(
+        body.contains(RELIGION),
+        "and the religion, kept under its earlier label"
+    );
 }
 
 /// Article 9 governs living people. A cause of death from 1899 is genealogy.
 #[tokio::test]
 async fn a_deceased_persons_cause_of_death_follows_the_records_own_visibility() {
     let (app, _p) = app_with_bundle("health-dead", &bundle("health-dead-src"));
-    let body = body_string(get(&app, &format!("/person/{DEAD}?tab=life")).await).await;
+    let body =
+        body_string(get(&app, &format!("/person/{DEAD}?tab=profile&group=death")).await).await;
     assert!(
         body.contains(CAUSE),
         "a public deceased record publishes its cause of death: {body}"
@@ -269,18 +300,30 @@ async fn a_form_that_never_showed_the_health_rows_cannot_blank_them() {
     // The admin path is the positive control: it saves.
     let ok = post_form(
         &app,
-        &format!("/admin/person/{LIVING}/physical"),
-        "height_cm.0.value=190",
+        &format!("/admin/person/{LIVING}/profile/morphology"),
+        "base_version=1&morphology.height.0.ci=0&morphology.height.0.v=190\
+         &morphology.eye_colour.0.ci=0&morphology.eye_colour.0.v=blue",
         true,
     )
     .await;
     assert_eq!(ok.status(), StatusCode::OK, "an admin may edit");
 
-    // And the health survived, because the admin's form carried it — here it
-    // did not, so this also proves the write is a replacement of what the form
-    // held rather than a blind overwrite of the entity.
-    let after = body_string(get_admin(&app, &format!("/person/{LIVING}?tab=life")).await).await;
+    // And the health survived, because a group's form writes that group and
+    // nothing else: the Morphology form never carried a condition, and saving
+    // it did not read that absence as an erasure.
+    let after = body_string(
+        get_admin(
+            &app,
+            &format!("/person/{LIVING}?tab=profile&group=morphology"),
+        )
+        .await,
+    )
+    .await;
     assert!(after.contains("190"), "the new height is stored: {after}");
+    let health =
+        body_string(get_admin(&app, &format!("/person/{LIVING}?tab=profile&group=health")).await)
+            .await;
+    assert!(health.contains(CONDITION), "the condition is still there");
 }
 
 // ---------------------------------------------------------------------------
@@ -334,12 +377,17 @@ async fn sign_in(app: &axum::Router) -> String {
         .to_string()
 }
 
-/// Make an edit that records the health extension in the journal.
+/// Make an edit that records the health data in the journal: the first save
+/// through the profile editor moves it out of the extension and into AXGF 1.1's
+/// `health` block, and both halves of that move are recorded changes.
 async fn record_an_edit(app: &axum::Router) {
     let resp = post_form(
         app,
-        &format!("/admin/person/{LIVING}/physical"),
-        &format!("height_cm.0.value=191&conditions.0.value={CONDITION}"),
+        &format!("/admin/person/{LIVING}/profile/health"),
+        &format!(
+            "base_version=1&health.conditions.0.ci=0&health.conditions.0.v.description={CONDITION}\
+             &health.conditions.1.v.description={CONDITION}+relapse"
+        ),
         true,
     )
     .await;
@@ -354,7 +402,7 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
 
     for uri in [
         format!("/person/{LIVING}"),
-        format!("/person/{LIVING}?tab=life"),
+        format!("/person/{LIVING}?tab=profile&group=health"),
         format!("/tree/panel/{LIVING}"),
         format!("/tree?root={LIVING}"),
         format!("/admin/person/{LIVING}/edit"),
@@ -431,22 +479,25 @@ async fn an_editor_who_never_saw_the_health_cannot_blank_it() {
     let resp = post_form_as(&app, &cousin, &format!("/admin/person/{LIVING}"), &body).await;
     assert_eq!(resp.status(), StatusCode::OK, "the edit is accepted");
 
-    // The Life tab, not the record: the record carries the edit journal, whose
-    // "from" column holds the value as it was before this very save. Asserting
-    // there would pass whether the health survived or was deleted, which is
-    // the wrong test written convincingly.
-    let after = body_string(get_admin(&app, &format!("/person/{LIVING}?tab=life")).await).await;
+    // The profile tabs, not the record: the record carries the edit journal,
+    // whose "from" column holds the value as it was before this very save.
+    // Asserting there would pass whether the health survived or was deleted,
+    // which is the wrong test written convincingly.
+    let group = |g: &str| format!("/person/{LIVING}?tab=profile&group={g}");
+    let after = body_string(get_admin(&app, &group("morphology")).await).await;
     // The edit landed …
     assert!(
-        after.contains("green"),
+        after.contains("Green"),
         "the contributor's edit was applied"
     );
     // … and the half the form never showed came back untouched, rather than
     // being deleted by an absence that was never an edit. `update_entity`
     // replaces the stored entity outright, so without this the save would have
     // erased a diagnosis nobody asked to erase.
+    let health = body_string(get_admin(&app, &group("health")).await).await;
+    let belief = body_string(get_admin(&app, &group("belief")).await).await;
     assert!(
-        after.contains(CONDITION) && after.contains(RELIGION),
+        health.contains(CONDITION) && belief.contains(RELIGION),
         "the health this editor never saw was blanked by their save"
     );
     // And it is still a living person's health, so it is still withheld from
@@ -529,9 +580,11 @@ async fn the_conflict_page_does_not_hand_over_what_the_form_withheld() {
 /// Erasure has to work, or the protection above is just concealment.
 ///
 /// Article 9 comes with article 17 attached: an operator who records a
-/// condition must be able to take it back out. The physical editor's write is
-/// a replacement of the group rather than a merge into it, and this is what
-/// pins that — the whole health key goes when the last row in it is emptied.
+/// condition must be able to take it back out. The profile editor's write is a
+/// replacement of the group's attributes rather than a merge into them, and
+/// this is what pins that — a cause of death recorded before AXGF 1.1, lifted
+/// into `death.causes`, is gone when its row is removed, and nothing of it is
+/// left behind in the old extension either.
 ///
 /// What it does *not* clear is the edit journal, which keeps the old value in
 /// its "from" column by design, because a history that quietly rewrites itself
@@ -542,24 +595,36 @@ async fn the_conflict_page_does_not_hand_over_what_the_form_withheld() {
 #[tokio::test]
 async fn an_administrator_can_erase_a_recorded_condition() {
     let (app, _p) = app_with_bundle("health-erase", &bundle("health-erase-src"));
-    let before = body_string(get_admin(&app, &format!("/person/{DEAD}?tab=life")).await).await;
+    let death = format!("/person/{DEAD}?tab=profile&group=death");
+    let before = body_string(get_admin(&app, &death).await).await;
     assert!(before.contains(CAUSE), "the fixture records it");
 
-    // The form as somebody submits it with the row emptied.
+    // The form as somebody submits it with the row marked for removal.
     let resp = post_form(
         &app,
-        &format!("/admin/person/{DEAD}/physical"),
-        "cause_of_death.0.value=&height_cm.0.value=164",
+        &format!("/admin/person/{DEAD}/profile/death"),
+        &format!(
+            "base_version=1&death.causes.0.ci=0&death.causes.0.remove=on\
+             &death.causes.0.v.description={CAUSE}"
+        ),
         true,
     )
     .await;
     assert_eq!(resp.status(), StatusCode::OK);
 
-    let after = body_string(get_admin(&app, &format!("/person/{DEAD}?tab=life")).await).await;
-    assert!(after.contains("164"), "the rest of the edit landed");
+    let after = body_string(get_admin(&app, &death).await).await;
+    assert!(
+        after.contains("1899"),
+        "the rest of the death is still recorded"
+    );
     assert!(
         !after.contains(CAUSE),
         "the cause of death is gone:\n{after}"
+    );
+    let raw = body_string(get_admin(&app, &format!("/admin/person/{DEAD}/edit")).await).await;
+    assert!(
+        !raw.contains(r#""cause_of_death""#),
+        "and nothing of it is left in the extension it was first recorded in"
     );
 }
 
@@ -599,12 +664,13 @@ async fn a_presumed_death_does_not_unlock_a_living_persons_health() {
     }
     // And the trait half still shows, exactly as it does for anybody living:
     // the rule changed nothing about what may be read, in either direction.
-    let life = body_string(get(&app, &format!("/person/{PRESUMED}?tab=life")).await).await;
+    let body = format!("/person/{PRESUMED}?tab=profile&group=morphology");
+    let life = body_string(get(&app, &body).await).await;
     assert!(life.contains("164"), "the height is not health data");
     // An administrator still reads it, so it is withheld rather than absent.
-    let admin_life =
-        body_string(get_admin(&app, &format!("/person/{PRESUMED}?tab=life")).await).await;
-    assert!(admin_life.contains(PRESUMED_CONDITION));
+    let health = format!("/person/{PRESUMED}?tab=profile&group=health");
+    let admin_health = body_string(get_admin(&app, &health).await).await;
+    assert!(admin_health.contains(PRESUMED_CONDITION));
 }
 
 /// The other door the presumption could have opened.

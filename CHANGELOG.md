@@ -6,6 +6,66 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+**The whole AXGF 1.1 profile, read and written.** A person's record has a
+fourth tab, Profile, holding the fourteen groups the specification arranges its
+132 attributes into — identity and civil status, morphology, biometrics,
+health, genomics, death, residence and nationality, education and work,
+military service, criminal cases, belief, personality, relationships and the
+digital legacy — one strip of groups across the top, each showing only what is
+recorded, every claim with its date, its validity, its source, its confidence
+and its note. A group holding data the reader may not see says so without
+saying what; one holding nothing says that instead, and the strip counts what
+each has so nobody opens fourteen tabs to find the two with something in them.
+
+Beside every group is its editor, `/admin/person/{id}/profile/{group}`, and
+the editor is the registry rather than a page written per attribute. A closed
+vocabulary is a select — 102 of them, from eye colour to ICCS offence sections
+to the Fitzpatrick scale — free text is a textarea, a measurement is a number
+with its unit and the range the specification allows, an object is its fields
+with the required ones marked. A series has an "add another entry" row, and
+every entry carries its own date, validity, source, confidence and note, in a
+disclosure that stays shut until it holds something. Military ranks are chosen
+by their national title, grouped by category; an artefact picks one of the
+documents attached to the person rather than asking for a UUID; the
+relationships group lists the families, links and events that hold a person's
+relationships and says plainly that editing them edits those records, which
+name other people too.
+
+Each save goes through `update_entity` with the version the form was built
+from, so two editors on one record meet the conflict page rather than each
+other's silent overwrite; `family_scope` applies as it does to every write; and
+what the reader could not see is put back from the stored person before the
+entity is written, so a contributor saving the morphology group cannot empty a
+health attribute they never saw. Every problem is reported beside its field
+and nothing is written until there are none.
+
+**What this application recorded before 1.1 moves into 1.1.** Height, weight,
+eye and hair colour, build, handedness, distinguishing features, conditions,
+operations and the cause of death were kept in `axgf-cms:traits/v1` and
+`axgf-cms:health/v1`. They are read as the attributes the specification now
+has for them, and written there by the next save of the group; what 1.1 has no
+place for stays where it was, is shown under "earlier form", and can still be
+edited or removed. The old physical editor's address redirects to the profile.
+
+**Every language names every part of it.** 1,526 messages in each of the eleven
+catalogues: group titles and introductions, attributes, fields, units, every
+vocabulary term, and country and language names from CLDR. The rest of the
+interface falls back to English key by key; the profile does not, because a
+select half in English leaves the reader unable to tell which options were
+translated. `every_language_names_every_part_of_the_profile` holds all eleven
+to it.
+
+### Fixed
+
+**`record-status` was one key for two sentences.** "Status" over a document
+table and "Status" beside whether a person is living read the same in English
+and not in Polish or French, and Fluent keeps the first of two definitions, so
+the second was never shown in any language. The person's is now
+`record-life-status`, and `no_catalogue_defines_a_key_twice` fails the build
+on the next one.
+
 ### Changed
 
 **The health rule is the rule for all four sensitive classes.** AXGF 1.1 names

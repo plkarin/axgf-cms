@@ -1,0 +1,165 @@
+{# The Profile tab: what the record says about a person, attribute by
+   attribute, in the fourteen groups of AXGF 1.1.
+
+   One group on screen at a time, chosen by a real link — `?tab=profile&group=`
+   — for the same reasons the tabs above are real links: each is an address
+   somebody can send, the back button goes back a group, and nothing here
+   needs a script.
+
+   Everything drawn has already been through the reader's scopes in
+   `profile::view`. An attribute of a class this reader may not see is not in
+   `profile_group.attributes` at all; the group names the class instead, so a
+   record holding a diagnosis never reads as a record holding nothing.
+
+   Context: `p` (a PersonView) and `profile_group` (a GroupView, or none). #}
+{% import "_macros.html" as m %}
+
+<div class="profile">
+<nav class="profile-groups" aria-label="{{ t('profile-groups-label') }}">
+  {% for g in p.profile_tabs %}
+  {% set here = profile_group and g.key == profile_group.key %}
+  <a href="/person/{{ p.id }}?tab=profile&amp;group={{ g.key }}"
+     class="profile-group-link{% if here %} is-current{% endif %}{% if not g.count %} is-empty{% endif %}"
+     {%- if here %} aria-current="page"{% endif %}>{{ g.title }}
+    {%- if g.count %} <span class="tab-count">{{ g.count }}</span>{% endif %}
+    {#- A lock drawn in CSS, with its meaning in words beside it for anybody
+        not looking at the shape. -#}
+    {%- if g.withheld %} <span class="pg-withheld" aria-hidden="true"></span><span class="sr-only">{{ t("profile-group-withheld") }}</span>{% endif -%}
+  </a>
+  {% endfor %}
+</nav>
+
+{% if profile_group %}
+{% set g = profile_group %}
+<section class="rec-section profile-panel" id="profile-{{ g.key }}">
+  <div class="sec-head"><h2>{{ g.title }}{% if g.class_label %} <span class="chip small pa-class">{{ g.class_label }}</span>{% endif %}</h2></div>
+  <p class="lede small profile-intro">{{ g.intro }}</p>
+
+  {# What 1.0 already recorded for this group, drawn from the record itself so
+     it is the same fact the Record and Life tabs show. #}
+  {% set composite = false %}
+  {% if g.key == "identity" and (p.names or p.gender or p.birth.present) %}
+    {% set composite = true %}
+    <dl class="fact-chips profile-facts">
+      {% if p.names %}<div class="fc wide"><dt>{{ t("record-name") }}</dt><dd><bdi>{{ p.names[0].display }}</bdi>
+        {%- if p.names | length > 1 %} <span class="small muted">{{ t("profile-other-names", n=(p.names | length) - 1) }}</span>{% endif %}</dd></div>{% endif %}
+      {% if p.gender %}<div class="fc"><dt>{{ t("record-gender") }}</dt><dd>{{ p.gender }}</dd></div>{% endif %}
+      {% if p.birth.present %}<div class="fc"><dt>{{ t("record-born") }}</dt><dd>{{ m.date(p.birth.date) }}
+        {%- if p.birth.place %} · {{ m.place(p.birth.place) }}{% endif %}</dd></div>{% endif %}
+      <div class="fc"><dt>{{ t("record-life-status") }}</dt><dd>{{ t(p.living_key) }}</dd></div>
+    </dl>
+  {% endif %}
+
+  {% if g.key == "death" and p.death.present %}
+    {% set composite = true %}
+    <dl class="fact-chips profile-facts">
+      <div class="fc"><dt>{{ t("record-died") }}</dt><dd>{{ m.date(p.death.date) }}
+        {%- if p.death.place %} · {{ m.place(p.death.place) }}{% endif %}</dd></div>
+      {% if p.death.cause %}<div class="fc wide"><dt>{{ t("record-cause") }}</dt><dd>{{ p.death.cause }}</dd></div>{% endif %}
+    </dl>
+  {% endif %}
+
+  {% if g.key == "education" and p.occupations %}
+    {% set composite = true %}
+    <h3>{{ t("record-occupations") }}</h3>
+    <ul class="plain profile-list">
+      {% for o in p.occupations %}
+      <li><strong>{{ o.title }}</strong>
+        {%- if o.position %} <span class="chip small">{{ o.position }}</span>{% endif %}
+        {%- if o.employer %} <span class="small">{{ o.employer }}</span>{% endif %}
+        <span class="small muted">{{ o.span }}</span>
+        {%- if o.confidence %} {{ m.conf_bar(o.confidence) }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {# Relationships are not attributes of the person: they are Family and Link
+     entities that name them, and editing one changes the other people in it
+     too — which is why the editor for them is a different page. #}
+  {% if g.key == "relationships" %}
+    {% if p.parents or p.siblings or p.unions or p.links %}{% set composite = true %}{% endif %}
+    {% if p.parents %}
+    <h3>{{ t("record-parents") }}</h3>
+    <ul class="plain">
+      {% for r in p.parents %}<li class="rel">{{ m.person_link(r) }}
+        {%- if r.lineage %} <span class="chip small">{{ r.lineage }}</span>{% endif %}
+        {%- if r.detail %} <span class="small muted">{{ r.detail }}</span>{% endif %}
+        {%- if r.confidence %} {{ m.conf_bar(r.confidence) }}{% endif %}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% if p.siblings %}
+    <h3>{{ t("record-siblings") }}</h3>
+    <ul class="plain">
+      {% for r in p.siblings %}<li class="rel">
+        {%- if r.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ r.birth_order }}</span> {% endif %}
+        {{- m.person_link(r) }}
+        {%- if r.lineage %} <span class="chip small">{{ r.lineage }}</span>{% endif %}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% for u in p.unions %}
+    <div class="union">
+      <div class="union-head">
+        <strong>{% if u.spouse %}{{ m.person_link(u.spouse) }}{% else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif %}</strong>
+        {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
+        <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
+      </div>
+      <div class="small union-when">
+        {% if u.start %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}
+        {% if u.end %}<span class="wrap-unit">{{ t("record-union-until") }} {{ m.date(u.end) }}</span>{% endif %}
+      </div>
+      {% if u.children %}
+      <ul class="plain">
+        {% for c in u.children %}<li class="rel">
+          {%- if c.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ c.birth_order }}</span> {% endif %}
+          {{- m.person_link(c) }}
+          {%- if c.lineage %} <span class="chip small">{{ c.lineage }}</span>{% endif %}
+          {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}</li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% if p.links %}
+    <h3>{{ t("record-other-relationships") }}</h3>
+    <ul class="plain">
+      {% for l in p.links %}<li class="rel"><span class="link-label">{{ l.label }}</span>
+        {%- if l.relation %} <span class="chip small">{{ l.relation }}</span>{% endif %}
+        {{ m.person_link(l.other) }}
+        {%- if l.confidence %} {{ m.conf_bar(l.confidence) }}{% endif %}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  {% endif %}
+
+  {% if g.withheld %}
+  <p class="notice" role="status">{{ t("profile-withheld", classes=g.withheld | join(", ")) }}</p>
+  {% endif %}
+
+  {% if g.attributes %}
+  <dl class="profile-attrs">
+    {% for a in g.attributes %}
+    <div class="pa{% if a.is_series %} is-series{% endif %}">
+      <dt>{{ a.label }}
+        {%- if a.class_label %} <span class="chip small pa-class">{{ a.class_label }}</span>{% endif %}
+        {%- if a.earlier %} <span class="chip small pa-earlier" title="{{ t('profile-earlier-title') }}">{{ t("profile-earlier") }}</span>{% endif -%}
+      </dt>
+      <dd>
+        {% if a.is_series %}
+        <ol class="claims">{% for c in a.claims %}<li>{{ m.claim(t, c) }}</li>{% endfor %}</ol>
+        {% else %}
+        {% for c in a.claims %}{{ m.claim(t, c) }}{% endfor %}
+        {% endif %}
+      </dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% elif not composite and not g.withheld %}
+  {# An empty group is most groups on most records. Said once, plainly, with
+     the way to fill it for somebody who can. #}
+  <p class="notice profile-empty" role="status">{{ t("profile-empty") }}</p>
+  {% endif %}
+
+  {% if may_write %}
+  <p class="profile-edit"><a class="small" href="/admin/person/{{ p.id }}/profile/{{ g.key }}">{{ t("profile-edit-group", group=g.title) }}</a></p>
+  {% endif %}
+</section>
+{% endif %}
+</div>

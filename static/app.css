@@ -3265,3 +3265,93 @@ a.tcard:hover {
 .export-choice { margin-top: 0.8rem; display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem 1rem; }
 .export-choice fieldset { margin: 0; }
 .check-row { display: flex; flex-wrap: wrap; gap: 0.35rem 1.2rem; }
+
+/* ---------------------------------------------------------------- profile */
+
+/* The strip of fourteen groups: wraps rather than scrolls, because a group a
+   reader has to scroll sideways to find is a group they will not find. */
+.profile-groups {
+  display: flex; flex-wrap: wrap; gap: 0.3rem 0.35rem;
+  margin: 0.2rem 0 1rem; padding: 0; list-style: none;
+}
+.profile-group-link {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.28rem 0.6rem; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--ink); text-decoration: none; font-size: 0.9rem; line-height: 1.3;
+  background: var(--surface);
+}
+.profile-group-link:hover { border-color: var(--accent); }
+.profile-group-link.is-current {
+  border-color: var(--accent); background: var(--accent); color: var(--on-accent);
+}
+.profile-group-link.is-current .tab-count { color: inherit; }
+.profile-group-link.is-empty:not(.is-current) { color: var(--ink-soft); }
+/* A small padlock drawn with borders: a shape, not a colour, and named in
+   words beside it for anybody who does not see it. */
+.pg-withheld {
+  display: inline-block; width: 0.55rem; height: 0.45rem; margin-top: 0.25rem;
+  border: 1.5px solid currentColor; border-radius: 1px; position: relative;
+}
+.pg-withheld::before {
+  content: ""; position: absolute; left: 50%; bottom: 100%; width: 0.35rem; height: 0.3rem;
+  transform: translateX(-50%); border: 1.5px solid currentColor; border-bottom: 0;
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+.profile-intro { margin-top: -0.3rem; }
+.profile-facts { margin-bottom: 1rem; }
+.profile-attrs { margin: 0.4rem 0 0; }
+.profile-attrs .pa {
+  display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: 0.2rem 1rem;
+  padding: 0.55rem 0; border-top: 1px solid var(--border);
+}
+.profile-attrs .pa:first-child { border-top: 0; }
+.profile-attrs dt { font-weight: 600; color: var(--ink); }
+.profile-attrs dd { margin: 0; min-width: 0; }
+.profile-attrs .claims { margin: 0; padding: 0; list-style: none; }
+.profile-attrs .claims li + li { margin-top: 0.3rem; }
+.claim { display: inline; overflow-wrap: anywhere; }
+.claim > * + * { margin-inline-start: 0.35rem; }
+.claim-when { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.claim-value { font-weight: 500; }
+.claim-parts { display: inline; }
+.claim-part + .claim-part::before { content: " · "; color: var(--ink-soft); }
+.claim-part-label { color: var(--ink-soft); }
+.claim-part-label::after { content: ":"; }
+.claim-period { color: var(--ink-soft); font-size: 0.9em; }
+.pa-class, .pa-earlier { vertical-align: 0.1em; }
+.profile-empty { margin-top: 0.5rem; }
+@media (max-width: 640px) {
+  .profile-attrs .pa { grid-template-columns: 1fr; gap: 0.1rem; }
+}
+
+/* The editor. */
+.pf-attr { margin: 0 0 1rem; }
+.pf-attr > legend { font-weight: 600; }
+.pf-row { padding: 0.55rem 0 0.4rem; border-top: 1px dashed var(--border); }
+.pf-row:first-of-type { border-top: 0; }
+.pf-spare-note { margin: 0 0 0.25rem; }
+.pf-input { min-width: 0; }
+.pf-input.wide { grid-column: 1 / -1; }
+.pf-input textarea { width: 100%; min-height: 2.6rem; }
+.pf-req { color: var(--danger); margin-inline-start: 0.15rem; }
+.pf-num { display: inline-flex; align-items: center; gap: 0.3rem; }
+.pf-num input { width: 8rem; }
+.pf-unit { color: var(--ink-soft); font-size: 0.9rem; }
+.pf-prov { margin-top: 0.35rem; }
+.pf-prov-grid { display: grid; gap: 0.6rem 1.2rem; margin-top: 0.35rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
+/* A date and its precision and circa flag, side by side and nowhere else. */
+.pf-date.ed-grid { grid-template-columns: minmax(7rem, 1fr) minmax(8rem, 1fr) auto; }
+.pf-src.ed-grid { grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr); }
+.pf-note { grid-column: 1 / -1; }
+@media (max-width: 480px) {
+  .pf-date.ed-grid { grid-template-columns: 1fr 1fr; }
+  .pf-date.ed-grid > label.inline { grid-column: 1 / -1; }
+  .pf-src.ed-grid { grid-template-columns: 1fr; }
+}
+.pf-prov > summary { cursor: pointer; font-size: 0.9rem; color: var(--ink-soft); }
+.pf-prov[open] > summary { margin-bottom: 0.3rem; }
+.pf-remove { margin-top: 0.3rem; font-size: 0.9rem; }
+.pf-problems { margin: 0.2rem 0 0.4rem; padding-inline-start: 1.2rem; color: var(--ink); }
+.pf-add { margin-top: 0.4rem; }

@@ -43,6 +43,11 @@ pub struct PersonRef {
     pub detail: Option<String>,
     /// Birth order within the family, when the record states one.
     pub birth_order: Option<i64>,
+    /// How the child in this relationship is related to the family's
+    /// partners — biological, adoptive, foster, step — in the reader's
+    /// language, when AXGF 1.1's `lineage` states it. On a parent, it is the
+    /// lineage of *this* person's place in that family.
+    pub lineage: Option<String>,
     /// Lifespan in brief, e.g. "1881–1962", for the family lists.
     pub lifespan: Option<String>,
 }
@@ -174,6 +179,9 @@ pub struct LinkView {
     /// `outgoing` when this person is the `from` end, `incoming` otherwise.
     pub direction: &'static str,
     pub category: Option<String>,
+    /// AXGF 1.1's `relation` — godparent, witness, mentor — in the reader's
+    /// language.
+    pub relation: Option<String>,
     pub from_date: Option<DateDisplay>,
     pub until_date: Option<DateDisplay>,
     pub confidence: Option<Confidence>,
@@ -185,6 +193,8 @@ pub struct LinkView {
 #[derive(Debug, Clone, Serialize)]
 pub struct OccupationView {
     pub title: String,
+    /// AXGF 1.1's `position`: the post held within the occupation.
+    pub position: Option<String>,
     pub employer: Option<String>,
     pub place: Option<PlaceView>,
     pub from: Option<DateDisplay>,
@@ -351,9 +361,11 @@ pub struct PersonView {
     pub has_timeline: bool,
     /// Which GEDCOM-impossible features this person actually demonstrates.
     pub showcase_notes: Vec<String>,
-    /// Physical traits and health, already filtered for this reader. See
-    /// [`crate::physical`].
-    pub physical: crate::physical::DetailView,
+    /// The AXGF 1.1 profile groups, with what each holds for this reader —
+    /// the strip of sub-tabs on the Profile tab. See [`crate::profile`].
+    pub profile_tabs: Vec<crate::profile::view::GroupTab>,
+    /// Claims across every group that this reader can see.
+    pub profile_count: usize,
     /// The drawn figure, or `None` when the record cannot support one. See
     /// [`crate::silhouette`] — it is not a portrait and does not derive from
     /// the photograph, which stays in [`HeaderView::avatar`] untouched.
@@ -433,6 +445,16 @@ pub fn build_in(
     let birth = ctx.fact(person, "birth", "record-born");
     let death = ctx.fact(person, "death", "record-died");
 
+    // What of this person's class data this reader may read. Resolved before
+    // anything is built, because more than one section needs it: the
+    // profile, the raw dump, and 1.0's own `death.cause`, which is health data
+    // printed on the Life tab's timeline.
+    let readable = crate::access::readable_scopes(person, lens.ceiling());
+    let mut death = death;
+    if !readable.contains(crate::sensitive::Scope::Health) {
+        death.cause = None;
+    }
+
     let (parents, siblings, unions) = ctx.relations(id);
     let links = ctx.links_for(id);
     let (occupations, timeline_from, timeline_to, has_timeline) = ctx.occupations_for(id);
@@ -452,8 +474,27 @@ pub fn build_in(
         &ctx, &name, &images, &birth, &death, is_living, &unions, id, person,
     );
 
-    // Health, and the raw dump, both go through the same permission.
-    //
+    // The profile is drawn from the lifted person, so what this application
+    // recorded before AXGF 1.1 appears where 1.1 keeps it, and through the
+    // same scopes as everything else.
+    let lifted = crate::profile::lift::lift(person);
+    let withheld_documents = crate::access::withheld_documents(flat, lens.ceiling());
+    let reader = crate::profile::view::Reader {
+        flat,
+        lang,
+        readable,
+        withheld_documents: &withheld_documents,
+    };
+    let profile_tabs = crate::profile::view::tabs(&lifted, &reader);
+    let profile_count = profile_tabs.iter().map(|t| t.count).sum();
+
+    // The figure beside the record. It is built from `header.age` — the same
+    // number the masthead prints — so the drawing and the heading above it
+    // cannot disagree about how old somebody was, and from `morphology`, which
+    // is no sensitive class. A figure that changed shape when an administrator
+    // signed in would be a health disclosure drawn as a picture.
+    let silhouette = crate::silhouette::view_for(header.age, &lifted, lang);
+
     // The raw-JSON section is shown to every reader who may open the record,
     // not only to an administrator — so it is the shortest path from a stored
     // diagnosis to a stranger's screen, and pretty-printing the entity
@@ -461,18 +502,6 @@ pub fn build_in(
     // entity is stripped *before* it is serialised rather than filtered
     // afterwards, because a redaction done on a string is a redaction waiting
     // to be defeated by a line break.
-    let readable = crate::access::readable_scopes(person, lens.ceiling());
-    let may_read_health = readable.contains(crate::sensitive::Scope::Health);
-    let detail = crate::physical::Detail::from_entity(person);
-    let physical = crate::physical::view_for(person, flat, lang, may_read_health);
-
-    // The figure beside the record. It is built from `header.age` — the same
-    // number the masthead prints — so the drawing and the heading above it
-    // cannot disagree about how old somebody was, and from the *traits* half
-    // of the extension data, which is not special-category and is not filtered
-    // by `may_read_health`. A figure that changed shape when an administrator
-    // signed in would be a health disclosure drawn as a picture.
-    let silhouette = crate::silhouette::view_for(header.age, &detail, lang);
     let raw_json = {
         let shown = if readable == crate::sensitive::Scopes::EVERY {
             std::borrow::Cow::Borrowed(person)
@@ -549,9 +578,44 @@ pub fn build_in(
         timeline_to,
         has_timeline,
         showcase_notes,
-        physical,
+        profile_tabs,
+        profile_count,
         silhouette,
     })
+}
+
+/// One AXGF 1.1 profile group of one person, as this reader may see it.
+///
+/// `group` falls back to the first group that holds anything this reader can
+/// see, and to identity when none does, so a stale or absent `group=` lands
+/// on something rather than on an error. Whether `id` itself may be read is
+/// the caller's question, as it is for [`build_in`].
+pub fn profile_group(
+    flat: &Value,
+    id: &str,
+    lens: &crate::access::Lens,
+    lang: &str,
+    group: Option<&str>,
+) -> Option<crate::profile::view::GroupView> {
+    let person = flat.get("persons")?.get(id)?;
+    let lifted = crate::profile::lift::lift(person);
+    let withheld_documents = crate::access::withheld_documents(flat, lens.ceiling());
+    let reader = crate::profile::view::Reader {
+        flat,
+        lang,
+        readable: crate::access::readable_scopes(person, lens.ceiling()),
+        withheld_documents: &withheld_documents,
+    };
+    let chosen = group
+        .and_then(crate::profile::group)
+        .or_else(|| {
+            crate::profile::view::tabs(&lifted, &reader)
+                .into_iter()
+                .find(|t| t.count > 0)
+                .and_then(|t| crate::profile::group(t.key))
+        })
+        .or_else(|| crate::profile::group("identity"))?;
+    Some(crate::profile::view::group(&lifted, chosen, &reader))
 }
 
 /// Read a non-empty string field.
@@ -810,6 +874,21 @@ struct ChildEntry<'a> {
     confidence: Option<f64>,
     note: Option<String>,
     birth_order: Option<i64>,
+    lineage: Option<&'a str>,
+}
+
+/// A source as a chip beside a fact, for callers outside the record builder.
+///
+/// A source is not governed by a lens — it concerns nobody in particular — so
+/// this needs none.
+pub fn source_view(flat: &Value, id: &str, lang: &str) -> SourceView {
+    let lens = crate::access::Lens::unrestricted();
+    Ctx {
+        flat,
+        lang,
+        lens: &lens,
+    }
+    .source(id)
 }
 
 /// Lookup helpers bound to one bundle, and to who is reading it.
@@ -854,6 +933,7 @@ impl Ctx<'_> {
                 confidence: confidence.map(Confidence::new),
                 detail: None,
                 birth_order: None,
+                lineage: None,
                 lifespan: None,
             };
         }
@@ -867,6 +947,7 @@ impl Ctx<'_> {
             confidence: confidence.map(Confidence::new),
             detail,
             birth_order: None,
+            lineage: None,
             lifespan: found.and_then(lifespan_of),
         }
     }
@@ -1124,11 +1205,22 @@ impl Ctx<'_> {
         }
     }
 
-    /// Resolve one `family.children[]` entry, carrying its birth order over.
+    /// Resolve one `family.children[]` entry, carrying its birth order and
+    /// lineage over.
     fn child_ref(&self, c: &ChildEntry) -> PersonRef {
         let mut r = self.person_ref(c.id, c.confidence, c.note.clone());
         r.birth_order = c.birth_order;
+        if !r.restricted {
+            r.lineage = self.lineage(c.lineage);
+        }
         r
+    }
+
+    /// A `lineage` term in the reader's language.
+    fn lineage(&self, term: Option<&str>) -> Option<String> {
+        term.map(|t| {
+            crate::profile::term_label(self.lang, &axgf_rs::model::profile::vocab::LINEAGE, t)
+        })
     }
 
     /// Parents, siblings and unions, each carrying its own confidence.
@@ -1167,6 +1259,7 @@ impl Ctx<'_> {
                                 confidence: c.get("confidence").and_then(Value::as_f64),
                                 note: str_field(c, "note"),
                                 birth_order: c.get("birth_order").and_then(Value::as_i64),
+                                lineage: c.get("lineage").and_then(Value::as_str),
                             })
                         })
                         .collect()
@@ -1179,11 +1272,12 @@ impl Ctx<'_> {
             if let Some(me) = as_child {
                 // Parents, and the confidence of *this* person's parentage.
                 for (p, role) in &partners {
-                    parents.push(self.person_ref(
-                        p,
-                        me.confidence,
-                        role.map(|r| r.replace('_', " ")),
-                    ));
+                    let mut parent =
+                        self.person_ref(p, me.confidence, role.map(|r| r.replace('_', " ")));
+                    if !parent.restricted {
+                        parent.lineage = self.lineage(me.lineage);
+                    }
+                    parents.push(parent);
                 }
                 for c in &kids {
                     if c.id != id {
@@ -1294,6 +1388,13 @@ impl Ctx<'_> {
                 other: self.person_ref(other_id, None, None),
                 direction,
                 category: str_field(l, "category").map(|c| c.replace('_', " ")),
+                relation: str_field(l, "relation").map(|r| {
+                    crate::profile::term_label(
+                        self.lang,
+                        &axgf_rs::model::profile::vocab::LINK_RELATION,
+                        &r,
+                    )
+                }),
                 from_date: l
                     .get("valid_from")
                     .filter(|v| !v.is_null())
@@ -1391,6 +1492,7 @@ impl Ctx<'_> {
 
                 OccupationView {
                     title: str_field(o, "title").unwrap_or_else(|| "[Untitled]".into()),
+                    position: str_field(o, "position"),
                     employer: o
                         .get("employer")
                         .and_then(|e| e.get("name"))
@@ -1842,6 +1944,9 @@ pub enum Tab {
     Record,
     /// What happened: the timeline, the occupations, the places.
     Life,
+    /// What the record says about them, attribute by attribute: the fourteen
+    /// groups of AXGF 1.1, one sub-tab each.
+    Profile,
     /// What proves it: documents, images, sources.
     Media,
     /// Where they sit: the family graph, rooted on them.
@@ -1849,7 +1954,7 @@ pub enum Tab {
 }
 
 /// The tabs, in the order they are shown.
-pub const TABS: &[Tab] = &[Tab::Record, Tab::Life, Tab::Media, Tab::Tree];
+pub const TABS: &[Tab] = &[Tab::Record, Tab::Life, Tab::Profile, Tab::Media, Tab::Tree];
 
 impl Tab {
     /// The slug used in `?tab=` and as the template's discriminator.
@@ -1857,6 +1962,7 @@ impl Tab {
         match self {
             Self::Record => "record",
             Self::Life => "life",
+            Self::Profile => "profile",
             Self::Media => "media",
             Self::Tree => "tree",
         }
@@ -1867,6 +1973,7 @@ impl Tab {
         match self {
             Self::Record => "person-tab-record",
             Self::Life => "person-tab-life",
+            Self::Profile => "person-tab-profile",
             Self::Media => "person-tab-media",
             Self::Tree => "person-tab-tree",
         }
@@ -1881,6 +1988,7 @@ impl Tab {
     pub fn from_query(value: Option<&str>) -> Self {
         match value.map(str::trim) {
             Some("life") => Self::Life,
+            Some("profile") => Self::Profile,
             Some("media") => Self::Media,
             Some("tree") => Self::Tree,
             _ => Self::Record,

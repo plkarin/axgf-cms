@@ -59,6 +59,7 @@
 {% macro relation(p) %}
   <li class="rel">
     {{ person_link(p) }}
+    {%- if p.lineage %} <span class="chip small">{{ p.lineage }}</span>{% endif %}
     {%- if p.detail %} <span class="small muted">{{ p.detail }}</span>{% endif %}
     {%- if p.confidence %} {{ conf_bar(p.confidence) }}{% endif %}
   </li>
@@ -200,7 +201,7 @@
       answers now and a yes/no can hold two of them, so the label changed with
       the values: "no" for a person the record calls living and the arithmetic
       calls dead throws away the one interesting thing about that record. #}
-  <div class="fc"><dt>{{ t("record-status") }}</dt><dd>{{ t(p.living_key) }}</dd></div>
+  <div class="fc"><dt>{{ t("record-life-status") }}</dt><dd>{{ t(p.living_key) }}</dd></div>
   {%- if p.visibility %}
   <div class="fc"><dt>{{ t("record-visibility") }}</dt><dd>{{ p.visibility }}</dd></div>
   {%- endif %}
@@ -210,49 +211,78 @@
 </dl>
 {% endmacro %}
 
-{# One physical or health field: its label and every dated entry recorded for
-   it.
+{# One claim of the AXGF 1.1 profile: its value, when it was true, what says
+   so and how sure the record is.
 
-   Several entries are a *series*, and that is the point of dating them — a
-   height at twenty and at fifty-six is two measurements of a changing body,
-   not a correction. So a field with more than one entry is drawn as a list
-   with each date leading its own line, and a field with one is drawn inline,
-   because a one-item list spends a whole block saying one thing. #}
-{% macro phys_field(t, f) %}
-<div class="phys-item{% if f.is_series %} is-series{% endif %}">
-  <span class="phys-label">{{ f.label }}</span>
-  {% if f.is_series %}
-  <ol class="phys-series">
-    {% for e in f.entries %}
-    <li>
-      <span class="phys-when">
-        {%- if e.has_date %}{{ e.date.text }}{% else %}{{ t("phys-undated") }}{% endif -%}
-      </span>
-      <span class="phys-value">{{ e.display }}</span>
-      {% if e.confidence %}{{ conf_bar(e.confidence) }}{% endif %}
-      {% if e.source %}<span class="chip small">{{ e.source }}</span>{% endif %}
-      {% if e.note %}<span class="small muted">{{ e.note }}</span>{% endif %}
-    </li>
-    {% endfor %}
-  </ol>
+   The date leads, because a claim is a statement at a moment — a height at
+   twenty and at fifty-six are two measurements of a changing body, not a
+   correction — and an object value is its fields one after another, each
+   with its own label. #}
+{% macro claim(t, c) %}
+<span class="claim">
+  {%- if c.date %}<span class="claim-when">{{ date(c.date, show_note=false) }}</span>{% endif -%}
+  {%- if c.text %}<span class="claim-value">{{ c.text }}</span>{% endif -%}
+  {%- if c.document %}<span class="claim-doc">
+    {%- if c.document.known %}<a href="/document/{{ c.document.id }}/view">{{ c.document.name }}</a>
+    {%- else %}<span class="muted">{{ c.document.name }}</span>{% endif %}</span>{% endif -%}
+  {%- if c.parts %}<span class="claim-parts">
+    {%- for part in c.parts %}<span class="claim-part"><span class="claim-part-label">{{ part.label }}</span>
+      {%- if part.document and part.document.known %} <a href="/document/{{ part.document.id }}/view">{{ part.text }}</a>
+      {%- else %} {{ part.text }}{% endif %}</span>{% endfor %}</span>{% endif -%}
+  {%- if c.from or c.until %}<span class="claim-period">
+    {%- if c.from %}<span class="wrap-unit">{{ t("profile-from") }} {{ date(c.from, show_note=false) }}</span>{% endif %}
+    {%- if c.until %} <span class="wrap-unit">{{ t("profile-until") }} {{ date(c.until, show_note=false) }}</span>{% endif %}</span>{% endif -%}
+  {%- if c.confidence %} {{ conf_bar(c.confidence) }}{% endif -%}
+  {%- if c.source %} {{ source_chip(c.source) }}{% endif -%}
+  {%- if c.note %} <span class="small muted claim-note">{{ c.note }}</span>{% endif -%}
+</span>
+{% endmacro %}
+
+{# One input of a profile claim, as `profile::form` describes it.
+
+   A closed vocabulary is always a select with a blank first option, because
+   "not recorded" is an answer and a select that defaults to its first term
+   would record one nobody gave. Yes and no are a select for the same reason:
+   a checkbox cannot say "not recorded". Nothing is `required` in the HTML
+   sense — the spare row is blank by design — and a missing required field is
+   reported by the server beside the attribute instead. #}
+{% macro pf_input(t, i) %}
+<label class="pf-input{% if i.kind == 'textarea' %} wide{% endif %}">{{ i.label }}
+  {%- if i.required %}<span class="pf-req" aria-hidden="true">*</span>{% endif %}
+  {% if i.kind == "select" or i.kind == "yesno" %}
+  <select name="{{ i.name }}">
+    <option value="">{{ t("admin-not-set") }}</option>
+    {% for o in i.options %}<option value="{{ o.value }}" {{ "selected" if o.value == i.value }}>{{ o.label }}</option>{% endfor %}
+  </select>
+  {% elif i.kind == "grouped" %}
+  <select name="{{ i.name }}">
+    <option value="">{{ t("admin-not-set") }}</option>
+    {% for g in i.groups %}<optgroup label="{{ g.label }}">
+      {% for o in g.options %}<option value="{{ o.value }}" {{ "selected" if o.value == i.value }}>{{ o.label }}</option>{% endfor %}
+    </optgroup>{% endfor %}
+  </select>
+  {% elif i.kind == "textarea" %}
+  <textarea name="{{ i.name }}" rows="2">{{ i.value }}</textarea>
+  {% elif i.kind == "number" %}
+  <span class="pf-num"><input type="number" name="{{ i.name }}" value="{{ i.value }}"
+    {%- if i.min is not none %} min="{{ i.min }}"{% endif %}
+    {%- if i.max is not none %} max="{{ i.max }}"{% endif %}
+    {%- if i.step %} step="{{ i.step }}"{% endif %}>
+    {%- if i.unit %}<span class="pf-unit">{{ i.unit }}</span>{% endif %}</span>
+  {% elif i.kind == "time" %}
+  <input type="time" name="{{ i.name }}" value="{{ i.value }}" step="1">
   {% else %}
-  {% for e in f.entries %}
-  <span class="phys-value">{{ e.display }}</span>
-  {% if e.has_date %}<span class="phys-when small muted">{{ e.date.text }}</span>{% endif %}
-  {% if e.confidence %}{{ conf_bar(e.confidence) }}{% endif %}
-  {% if e.source %}<span class="chip small">{{ e.source }}</span>{% endif %}
-  {% if e.note %}<span class="small muted">{{ e.note }}</span>{% endif %}
-  {% endfor %}
+  <input type="text" name="{{ i.name }}" value="{{ i.value }}">
   {% endif %}
-</div>
+</label>
 {% endmacro %}
 
 {# One side of a recorded change.
 
    A row whose value this reader may not see keeps its place and loses its
    contents: a diff with a row silently missing is a diff that is wrong, and
-   the withheld marker is the same answer the record's own health section
-   gives. `withheld` is decided server-side in `physical::changes_for_reader`;
+   the withheld marker is the same answer the record's own profile gives.
+   `withheld` is decided server-side in `sensitive::changes_for_reader`;
    nothing here is a filter, and the value is simply not in the response. #}
 {% macro diff_val(t, c, v, cls) %}
   {%- if c.withheld %}<span class="diff-withheld">{{ t("record-history-withheld") }}</span>

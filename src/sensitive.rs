@@ -316,6 +316,19 @@ fn sub(block: &str, key: &str) -> Scopes {
         .unwrap_or(Scopes::EVERY)
 }
 
+/// The scopes of the value at `block.key` on a person — an attribute's
+/// location as the registry names it, or any other top-level key and one key
+/// inside it.
+pub fn location_scopes(block: &str, key: &str) -> Scopes {
+    match rule(block) {
+        Rule::Block => sub(block, key),
+        Rule::Extensions => extension(key),
+        Rule::Identity if key == "class_visibility" => Scopes::EVERY,
+        Rule::Identity | Rule::Open => Scopes::NONE,
+        Rule::Unknown => Scopes::EVERY,
+    }
+}
+
 /// The scopes of one entry of `identity.class_visibility`.
 fn class_entry(key: &str) -> Scopes {
     match SensitiveClass::parse(key) {

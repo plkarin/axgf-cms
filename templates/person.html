@@ -129,7 +129,7 @@
 
 {# The tabs.
 
-   Four real links, not four panels behind a script: each is a URL somebody can
+   Five real links, not five panels behind a script: each is a URL somebody can
    send to somebody else, the back button goes back a tab, and the page works
    with scripting off exactly as the rest of the panel does. `aria-current` is
    what tells a screen reader which one is open, and it is on the link rather
@@ -168,6 +168,8 @@
      drawing an empty box. #}
   <p class="notice" role="status">{{ t("person-tree-alone") }}</p>
   {% endif %}
+{% elif tab == "profile" %}
+  {% include "_profile.html" %}
 {% else %}
   {% include "_person_detail.html" %}
 {% endif %}

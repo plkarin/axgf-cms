@@ -39,6 +39,7 @@ pub mod payloads;
 pub mod person;
 pub mod physical;
 pub mod place;
+pub mod profile;
 pub mod render;
 pub mod routes;
 pub mod sensitive;

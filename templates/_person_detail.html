@@ -95,13 +95,13 @@
     <b class="figure-label">{{ t("silhouette-label") }}</b><span class="sep"> · </span>
     {{ t(p.silhouette.band_key) }}
     {%- if p.silhouette.to_scale %}
-    <span class="wrap-unit"><span class="figure-key">{{ t("phys-field-height-cm") }}</span>
-      {{ t("phys-unit-cm", n=p.silhouette.height_cm) }}
+    <span class="wrap-unit"><span class="figure-key">{{ t("pa-morphology-height") }}</span>
+      {{ t("pu-cm", n=p.silhouette.height_cm) }}
       {%- if p.silhouette.height_date %} {{ m.date(p.silhouette.height_date, show_note=false) }}{% endif -%}
     </span>
     {%- endif %}
     {%- if p.silhouette.build %}
-    <span class="wrap-unit"><span class="figure-key">{{ t("phys-field-build") }}</span> {{ p.silhouette.build }}</span>
+    <span class="wrap-unit"><span class="figure-key">{{ t("pa-morphology-build") }}</span> {{ p.silhouette.build }}</span>
     {%- endif %}
     {% if p.silhouette.to_scale %}{{ t("silhouette-to-scale", ref=p.silhouette.reference_cm) }}
     {%- else %}{{ t("silhouette-no-height") }}{% endif %}
@@ -192,6 +192,7 @@
       <li class="rel">
         {% if c.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ c.birth_order }}</span>{% endif %}
         {{ m.person_link(c) }}
+        {%- if c.lineage %} <span class="chip small">{{ c.lineage }}</span>{% endif %}
         {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}
         {%- if c.detail %} <span class="small muted">{{ c.detail }}</span>{% endif %}
         {%- if c.confidence %} {{ m.conf_bar(c.confidence) }}{% endif %}
@@ -216,6 +217,7 @@
     <div class="link-card" data-dir="{{ l.direction }}">
       <div class="link-head">
         <span class="link-label">{{ l.label }}</span>
+        {% if l.relation %}<span class="chip small">{{ l.relation }}</span>{% endif %}
         {% if l.category %}<span class="chip small">{{ l.category }}</span>{% endif %}
         <span class="small muted">{{ l.direction }}</span>
       </div>
@@ -249,6 +251,7 @@
     <div class="tl-row">
       <div class="tl-label">
         <strong>{{ o.title }}</strong>
+        {% if o.position %}<span class="chip small">{{ o.position }}</span>{% endif %}
         <span class="small muted">{{ o.span }}</span>
         {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
         {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
@@ -296,44 +299,14 @@
 </section>
 {% endif %}
 
-{# ------------------------------------------------- PHYSICAL AND HEALTH #}
+{# ------------------------------------------------------------- PROFILE #}
 
-{# On the Life tab: what a body was and what happened to it belong beside the
-   timeline, not beside the names.
-
-   Health is already filtered by the time it reaches here — `view_for` drops
-   the fields this reader may not see and sets `health_withheld` instead, so
-   this template cannot leak by forgetting a condition. What it must do is say
-   that something is being withheld rather than render nothing, because a
-   record that shows nothing where a diagnosis exists reads as a record with
-   nothing in it. #}
-{% if (tab is undefined or tab == "life") and (not p.physical.is_empty) %}
-<section id="physical" class="rec-section">
-  {{ m.sec(t, t("phys-section-title"), compact, t("phys-section-help")) }}
-
-  {% if p.physical.traits %}
-  <div class="phys-list">
-    {% for f in p.physical.traits %}{{ m.phys_field(t, f) }}{% endfor %}
-  </div>
-  {% endif %}
-
-  {% if p.physical.health %}
-  <h3>{{ t("phys-health-title") }}</h3>
-  {% if p.physical.subject_is_living %}
-  <p class="small muted">{{ t("phys-living-shown-note") }}</p>
-  {% endif %}
-  <div class="phys-list">
-    {% for f in p.physical.health %}{{ m.phys_field(t, f) }}{% endfor %}
-  </div>
-  {% endif %}
-
-  {% if p.physical.health_withheld %}
-  <p class="notice" role="status">{{ t("phys-health-withheld") }}</p>
-  {% endif %}
-
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/physical">{{ t("phys-edit-link") }}</a></p>
-  {% endif %}
+{# Only in the tree's side panel, which has no tabs: one line saying how much
+   the record's profile holds and where to read it. The panel is one glance
+   at a person, and fourteen groups of attributes are not a glance. #}
+{% if tab is undefined and p.profile_count %}
+<section id="profile-summary" class="rec-section">
+  <p class="small"><a href="/person/{{ p.id }}?tab=profile">{{ t("profile-summary-link", n=p.profile_count) }}</a></p>
 </section>
 {% endif %}
 

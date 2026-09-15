@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ person_name }} — {{ group.title }} — {{ t("app-name") }}{% endblock %}
+
+{# The profile editor: one AXGF 1.1 group at a time.
+
+   Groups are real links rather than panels behind a script, as on the record:
+   each form is its own page, its own save and its own version check, so an
+   editor who fills in Morphology and then Health makes two saves that can be
+   told apart in the history, and a conflict on one does not cost the other.
+
+   Every attribute is a fieldset of rows, one row per claim and one blank row
+   to spare, so adding an entry works with scripting off. What the rows are
+   made of — which inputs, which options — comes from the library's registry
+   by way of `profile::form`; nothing here lists an attribute.
+
+   An attribute of a class this editor may not read is not drawn at all. The
+   notice says which classes those are, and the save puts them back exactly as
+   stored. #}
+
+{% block content %}
+
+<h1>{{ t("profile-editor-title") }}</h1>
+<p class="lede"><a href="/person/{{ id }}?tab=profile&amp;group={{ group.key }}"><bdi>{{ person_name }}</bdi></a></p>
+
+<nav class="profile-groups" aria-label="{{ t('profile-groups-label') }}">
+  {% for g in tabs %}
+  <a href="/admin/person/{{ id }}/profile/{{ g.key }}"
+     class="profile-group-link{% if g.key == group.key %} is-current{% endif %}{% if not g.count %} is-empty{% endif %}"
+     {%- if g.key == group.key %} aria-current="page"{% endif %}>{{ g.title }}
+    {%- if g.count %} <span class="tab-count">{{ g.count }}</span>{% endif %}</a>
+  {% endfor %}
+</nav>
+
+<h2>{{ group.title }}{% if group.class_label %} <span class="chip small pa-class">{{ group.class_label }}</span>{% endif %}</h2>
+<p class="small muted">{{ group.intro }}</p>
+
+{% if problems %}
+<div class="notice error" role="alert"><p>{{ t("profile-problems") }}</p></div>
+{% endif %}
+
+{% if group.withheld %}
+<div class="notice" role="status"><p>{{ t("profile-editor-withheld", classes=group.withheld | join(", ")) }}</p></div>
+{% endif %}
+
+{% if holds_class and is_living %}
+<div class="notice warn"><p>{{ t("profile-living-class-note") }}</p></div>
+{% endif %}
+
+{% if group.key == "relationships" %}
+{# Nothing here is an attribute of the person. Parents, partners, children and
+   godparents are Family and Link entities that name them, and every change to
+   one changes the other people in it. #}
+<div class="card">
+  <p>{{ t("profile-relationships-elsewhere") }}</p>
+  <ul class="plain cta-row">
+    <li><a class="btn" href="/admin/person/{{ id }}/family">{{ t("family-edit-link") }}</a></li>
+    <li><a class="btn" href="/admin/person/{{ id }}/links">{{ t("links-edit-link") }}</a></li>
+    <li><a class="btn" href="/admin/person/{{ id }}/events">{{ t("events-edit-link") }}</a></li>
+  </ul>
+</div>
+{% else %}
+
+{% if group.key == "identity" %}
+<p class="small"><a href="/admin/person/{{ id }}/identity">{{ t("identity-edit-link") }}</a></p>
+{% elif group.key == "education" %}
+<p class="small"><a href="/admin/person/{{ id }}/occupations">{{ t("occupations-edit-link") }}</a></p>
+{% elif group.key in ["biometrics", "genomics", "digital_legacy", "death"] %}
+<p class="small"><a href="/admin/person/{{ id }}/documents">{{ t("profile-documents-first") }}</a></p>
+{% endif %}
+
+<form method="post" action="/admin/person/{{ id }}/profile/{{ group.key }}" class="profile-form">
+  <input type="hidden" name="base_version" value="{{ base_version }}">
+
+  {% if not group.attributes %}
+  <p class="notice" role="status">{{ t("profile-editor-nothing") }}</p>
+  {% endif %}
+
+  {% for a in group.attributes %}
+  <fieldset class="pf-attr" id="{{ a.anchor }}"
+            {%- if a.is_series %} data-series data-add-label="{{ t('profile-add-entry') }}"{% endif %}>
+    <legend>{{ a.label }}
+      {%- if a.class_label %} <span class="chip small pa-class">{{ a.class_label }}</span>{% endif %}
+      {%- if a.earlier %} <span class="chip small pa-earlier">{{ t("profile-earlier") }}</span>{% endif -%}
+    </legend>
+    {% if a.problems %}
+    <ul class="pf-problems" role="alert">{% for pr in a.problems %}<li>{{ pr }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% for r in a.rows %}
+    <div class="pf-row{% if r.spare %} is-spare{% endif %}" data-index="{{ r.index }}">
+      {% if r.ci is not none %}<input type="hidden" name="{{ a.prefix }}.{{ r.index }}.ci" value="{{ r.ci }}">{% endif %}
+      {% if r.spare and a.is_series %}<p class="pf-spare-note small muted">{{ t("profile-new-entry") }}</p>{% endif %}
+      <div class="ed-grid">
+        {% for i in r.inputs %}{{ m.pf_input(t, i) }}{% endfor %}
+      </div>
+      <details class="pf-prov"{% if r.has_provenance %} open{% endif %}>
+        <summary>{{ t("profile-provenance") }}</summary>
+        {# Each date is its three inputs on one line — value, precision,
+           circa — because a precision that wraps away from its date reads as
+           a precision of something else. #}
+        <div class="pf-prov-grid">
+          <div class="pf-date ed-grid">{{ m.date_fields(t, a.prefix ~ "." ~ r.index ~ ".d", t("phys-col-date"), r.date, precisions) }}</div>
+          <div class="pf-date ed-grid">{{ m.date_fields(t, a.prefix ~ "." ~ r.index ~ ".f", t("profile-from-date"), r.from, precisions) }}</div>
+          <div class="pf-date ed-grid">{{ m.date_fields(t, a.prefix ~ "." ~ r.index ~ ".u", t("profile-until-date"), r.until, precisions) }}</div>
+          <div class="pf-src ed-grid">
+            <label>{{ t("phys-col-source") }}
+              <select name="{{ a.prefix }}.{{ r.index }}.source_id">
+                <option value="">{{ t("phys-no-source") }}</option>
+                {% for s in sources %}
+                <option value="{{ s.id }}" {{ "selected" if s.id == r.source_id }}>{{ s.label }}</option>
+                {% endfor %}
+              </select></label>
+            <label>{{ t("phys-col-confidence") }}
+              <input type="number" min="0" max="1" step="0.05" name="{{ a.prefix }}.{{ r.index }}.confidence"
+                     value="{{ r.confidence }}"></label>
+          </div>
+          <div class="pf-note ed-grid">
+            <label class="wide">{{ t("phys-col-note") }}
+              <input type="text" name="{{ a.prefix }}.{{ r.index }}.note" value="{{ r.note }}"></label>
+          </div>
+        </div>
+      </details>
+      {% if not r.spare %}
+      <label class="inline pf-remove"><input type="checkbox" name="{{ a.prefix }}.{{ r.index }}.remove" value="on">
+        {{ t("profile-remove-entry") }}</label>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </fieldset>
+  {% endfor %}
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit">{{ t("admin-save") }}</button>
+    <a class="btn" href="/person/{{ id }}?tab=profile&amp;group={{ group.key }}">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/profile.js" defer></script>
+{% endblock %}

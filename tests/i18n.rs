@@ -394,18 +394,76 @@ fn every_dynamic_key_family_is_fully_defined() {
     for band in axgf_cms::silhouette::BANDS {
         expected.push(band.key());
     }
-    // The same for the vocabularies `physical` renders by name: the section
-    // and the figure both build `phys-<field>-<term>` at run time.
-    for field in axgf_cms::physical::FIELDS {
-        expected.push(field.label_key());
-        if let axgf_cms::physical::Kind::Closed(vocab) = field.kind {
-            for term in vocab {
-                expected.push(field.term_key(term));
-            }
-        }
+    // The fields this application recorded before AXGF 1.1, shown under their
+    // old labels for as long as a bundle still carries one.
+    for field in axgf_cms::physical::LEGACY_FIELDS {
+        expected.push(axgf_cms::physical::label_key(field));
     }
+    // Every group, attribute, field, term and unit the AXGF 1.1 profile can
+    // name, derived from the library's registry rather than listed here.
+    expected.extend(axgf_cms::profile::every_key());
     let missing: Vec<&String> = expected.iter().filter(|k| !english.contains(*k)).collect();
     assert!(missing.is_empty(), "English is missing {missing:?}");
+}
+
+#[test]
+fn no_catalogue_defines_a_key_twice() {
+    // Fluent keeps the first definition and logs the second, so two sentences
+    // that happened to share a key both render as whichever came first. It
+    // happened: "Status" over a document table and "Status" over a person's
+    // life read the same in English and not in Polish, where the second one
+    // was never shown.
+    for locale in axgf_cms::i18n::LOCALES {
+        let src = std::fs::read_to_string(repo_root().join(format!("locales/{}.ftl", locale.tag)))
+            .expect("read locale");
+        let mut seen = BTreeSet::new();
+        let twice: Vec<String> = axgf_cms::i18n::message_ids(&src)
+            .into_iter()
+            .filter(|id| !seen.insert(id.clone()))
+            .collect();
+        assert!(
+            twice.is_empty(),
+            "{} defines {twice:?} more than once",
+            locale.tag
+        );
+    }
+}
+
+#[test]
+fn every_language_names_every_part_of_the_profile() {
+    // The profile is several hundred terms a reader chooses between, and a
+    // select half in English is worse than one wholly in English: the reader
+    // cannot tell which options were translated and which were not. So unlike
+    // the rest of the interface, where a partial language falls back key by
+    // key and says so in the selector, every catalogue carries all of it.
+    // The registry's own keys, plus everything English files under the
+    // profile's prefixes: language names, the relation vocabularies the family
+    // and link editors use, and the profile's own sentences.
+    let english = ids_of(&repo_root().join("locales/en.ftl"));
+    let mut expected = axgf_cms::profile::every_key();
+    expected.extend(
+        english
+            .iter()
+            .filter(|k| {
+                ["pg-", "pa-", "pf-", "pv-", "pu-", "lang-", "profile-"]
+                    .iter()
+                    .any(|p| k.starts_with(p))
+            })
+            .cloned(),
+    );
+    expected.sort();
+    expected.dedup();
+    for locale in axgf_cms::i18n::LOCALES {
+        let mine = ids_of(&repo_root().join(format!("locales/{}.ftl", locale.tag)));
+        let missing: Vec<&String> = expected.iter().filter(|k| !mine.contains(*k)).collect();
+        assert!(
+            missing.is_empty(),
+            "{} is missing {} profile keys, first {:?}",
+            locale.tag,
+            missing.len(),
+            &missing[..missing.len().min(8)]
+        );
+    }
 }
 
 #[test]

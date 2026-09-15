@@ -237,7 +237,7 @@ pub const BANDS: &[Band] = &[
 
 /// The vocabulary term for a build, as a torso-width multiplier.
 ///
-/// The terms are [`crate::physical::BUILDS`]. A word this build does not know
+/// The terms are AXGF 1.1's `build` vocabulary. A word this build does not know
 /// draws an unmodified figure rather than guessing at where it falls.
 fn build_width(build: Option<&str>) -> f64 {
     match build {
@@ -487,31 +487,39 @@ pub struct View {
 /// somebody living — so the figure and the heading beside it can never
 /// disagree about how old this person was.
 ///
-/// Health is not consulted and cannot be: height, weight and build live in
-/// [`crate::physical::Group::Traits`], which is not special-category data and
-/// follows the record's own visibility. A figure that changed shape when an
-/// administrator signed in would be a health disclosure drawn as a picture.
-pub fn view_for(age: Option<i64>, detail: &crate::physical::Detail, lang: &str) -> Option<View> {
-    let height = detail
-        .latest("height_cm")
-        .and_then(|e| e.value.trim().parse::<u32>().ok());
-    let build_term = detail.latest("build").map(|e| e.value.clone());
+/// `person` is the record as the page draws it, lifted (see
+/// [`crate::profile::lift`]), so a height recorded before AXGF 1.1 is drawn as
+/// readily as one recorded after. Height and build are `morphology`, which is
+/// not a sensitive class and follows the record's own visibility; nothing of a
+/// class is consulted and nothing could be. A figure that changed shape when
+/// an administrator signed in would be a health disclosure drawn as a picture.
+pub fn view_for(age: Option<i64>, person: &serde_json::Value, lang: &str) -> Option<View> {
+    use serde_json::Value;
+    let heights = claims(person, "height");
+    let latest_height = latest(&heights);
+    let height = latest_height
+        .and_then(|c| c.get("value"))
+        .and_then(Value::as_f64)
+        .filter(|h| h.is_finite() && *h > 0.0)
+        .map(|h| h.round() as u32);
+    let build_term = latest(&claims(person, "build"))
+        .and_then(|c| c.get("value"))
+        .and_then(Value::as_str)
+        .map(str::to_string);
 
     let s = draw(age, height, build_term.as_deref())?;
 
-    let height_date = s.height_cm.and(detail.latest("height_cm")).and_then(|e| {
-        (!e.date.trim().is_empty()).then(|| {
-            crate::view::render_date_in(
-                &serde_json::json!({"value": e.date, "precision": precision_of(&e.date)}),
-                lang,
-            )
-        })
-    });
+    let height_date = s
+        .height_cm
+        .and(latest_height)
+        .and_then(|c| c.get("date"))
+        .filter(|d| d.is_object())
+        .map(|d| crate::view::render_date_in(d, lang));
 
     let build = build_term
         .as_deref()
-        .filter(|t| crate::physical::BUILDS.contains(t))
-        .map(|t| crate::i18n::translate(lang, &format!("phys-build-{t}"), None));
+        .filter(|t| BUILD.contains(t))
+        .map(|t| crate::profile::term_label(lang, &BUILD, t));
 
     Some(View {
         svg: s.svg,
@@ -520,23 +528,46 @@ pub fn view_for(age: Option<i64>, detail: &crate::physical::Detail, lang: &str) 
         to_scale: s.to_scale,
         height_cm: s.height_cm,
         height_date,
-        several_heights: detail.count("height_cm") > 1,
+        several_heights: heights.len() > 1,
         build,
         reference_cm: s.reference_cm,
     })
 }
 
-/// The specification's precision word for a date written as recorded.
+use axgf_rs::model::profile::vocab::BUILD;
+
+/// Every claim of one morphology series.
+fn claims<'a>(person: &'a serde_json::Value, key: &str) -> Vec<&'a serde_json::Value> {
+    person
+        .pointer(&format!("/morphology/{key}"))
+        .and_then(serde_json::Value::as_array)
+        .map(|a| a.iter().collect())
+        .unwrap_or_default()
+}
+
+/// The claim a single figure stands on: the latest dated one, and failing that
+/// the first undated one.
 ///
-/// The same rule [`crate::physical`] applies on the way in, applied again on
-/// the way out so the entry's date is drawn by the same renderer as every
-/// other date on the page.
-fn precision_of(date: &str) -> &'static str {
-    match date.chars().filter(|c| *c == '-').count() {
-        0 => "year",
-        1 => "month",
-        _ => "day",
-    }
+/// Latest rather than first because a trait measured twice is a trait measured
+/// again, not a trait corrected — a height at twenty and a height at fifty-six
+/// are both true, and the later one is the one a figure of somebody at the end
+/// of their life should be drawn from. Dates compare as strings, which is right
+/// for the shape the specification stores them in: `1914` sorts before
+/// `1914-08` sorts before `1950`.
+fn latest<'a>(claims: &[&'a serde_json::Value]) -> Option<&'a serde_json::Value> {
+    let date = |c: &serde_json::Value| {
+        c.pointer("/date/value")
+            .and_then(serde_json::Value::as_str)
+            .map(str::trim)
+            .filter(|d| !d.is_empty())
+            .map(str::to_string)
+    };
+    claims
+        .iter()
+        .copied()
+        .filter(|c| date(c).is_some())
+        .max_by(|a, b| date(a).cmp(&date(b)))
+        .or_else(|| claims.first().copied())
 }
 
 #[cfg(test)]
@@ -727,7 +758,7 @@ mod tests {
     #[test]
     fn every_build_in_the_vocabulary_draws_a_distinct_width() {
         let mut seen: Vec<(String, f64)> = Vec::new();
-        for term in crate::physical::BUILDS {
+        for term in BUILD.terms {
             let w = build_width(Some(term));
             assert!(
                 (0.7..=1.5).contains(&w),
@@ -827,33 +858,45 @@ mod tests {
 
     #[test]
     fn the_view_draws_the_latest_of_several_heights() {
-        use crate::physical::Detail;
         let stored = serde_json::json!({
-            "extensions": {"axgf-cms:traits/v1": {
-                "height_cm": [
+            "morphology": {
+                "height": [
                     {"value": 171, "date": {"value": "1914", "precision": "year"}},
-                    {"value": 168, "date": {"value": "1934", "precision": "year"}}
+                    {"value": 167.6, "date": {"value": "1934", "precision": "year"}}
                 ],
                 "build": [{"value": "sturdy"}]
-            }}
+            }
         });
-        let detail = Detail::from_entity(&stored);
-        let v = view_for(Some(70), &detail, "en").expect("a figure");
-        assert_eq!(v.height_cm, Some(168), "the later measurement");
+        let v = view_for(Some(70), &stored, "en").expect("a figure");
+        assert_eq!(
+            v.height_cm,
+            Some(168),
+            "the later measurement, to the centimetre"
+        );
         assert!(v.several_heights);
         assert_eq!(
             v.height_date.as_ref().map(|d| d.text.as_str()),
             Some("1934")
         );
-        assert_eq!(v.build.as_deref(), Some("sturdy"));
+        assert_eq!(
+            v.build.as_deref(),
+            Some("Sturdy"),
+            "the vocabulary's own label"
+        );
         assert_eq!(v.band_slug, "elderly");
     }
 
     #[test]
+    fn a_height_recorded_before_1_1_is_drawn_once_lifted() {
+        let legacy = serde_json::json!({"extensions": {"axgf-cms:traits/v1": {
+            "height_cm": [{"value": 181}]}}});
+        let v = view_for(Some(40), &crate::profile::lift::lift(&legacy), "en").expect("a figure");
+        assert_eq!(v.height_cm, Some(181));
+    }
+
+    #[test]
     fn a_height_the_record_never_states_leaves_the_view_unscaled() {
-        use crate::physical::Detail;
-        let detail = Detail::from_entity(&serde_json::json!({}));
-        let v = view_for(Some(6), &detail, "en").expect("a figure");
+        let v = view_for(Some(6), &serde_json::json!({}), "en").expect("a figure");
         assert!(!v.to_scale);
         assert!(v.height_cm.is_none() && v.height_date.is_none());
         assert!(!v.several_heights);

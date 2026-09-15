@@ -4,6 +4,7 @@ mod admin;
 mod convert;
 mod editors;
 mod prefs;
+mod profile;
 mod public;
 
 use std::sync::Arc;
@@ -66,8 +67,6 @@ pub fn router(state: Shared) -> Router {
         // the literal "place" segment wins: a place is mostly lists — several
         // names, a border history — and the generic one-input-per-path form
         // cannot express either.
-        // The physical-and-health editor, for the same reason: every field
-        // holds a list of dated, sourced entries.
         // Identity: several names with type, script, transliteration, period
         // of use and source, none of which a one-input-per-path form can hold.
         .route(
@@ -112,10 +111,17 @@ pub fn router(state: Shared) -> Router {
             "/admin/person/:id/documents",
             get(editors::documents_edit).post(editors::documents_update),
         )
+        // The AXGF 1.1 profile, one form per group. Every save is one
+        // `update_entity` on the person, through the same tail as every other
+        // editor.
+        .route("/admin/person/:id/profile", get(profile::edit_first))
         .route(
-            "/admin/person/:id/physical",
-            get(admin::physical_edit).post(admin::physical_update),
+            "/admin/person/:id/profile/:group",
+            get(profile::edit).post(profile::update),
         )
+        // The editor this one replaced, for a bookmark or a link in an old
+        // page: its fields are the profile's Morphology and Health now.
+        .route("/admin/person/:id/physical", get(profile::edit_first))
         // Choosing which picture stands for a person.
         .route(
             "/admin/person/:id/avatar",
@@ -133,6 +139,7 @@ pub fn router(state: Shared) -> Router {
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
+        .route("/static/profile.js", get(public::profile_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))
         .fallback(public::not_found)

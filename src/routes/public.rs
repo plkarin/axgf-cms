@@ -626,11 +626,13 @@ fn person_roster(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
 /// which already exists and is one link away.
 const PERSON_TREE_DEPTH: usize = 3;
 
-/// `?tab=` on the person page.
+/// `?tab=` on the person page, and `&group=` on its Profile tab.
 #[derive(Debug, serde::Deserialize)]
 pub struct PersonQuery {
     #[serde(default)]
     tab: Option<String>,
+    #[serde(default)]
+    group: Option<String>,
 }
 
 /// `GET /person/:id` — everything known about one person.
@@ -644,9 +646,12 @@ pub async fn person(
     let tab = crate::person::Tab::from_query(q.tab.as_deref());
     // The tab travels in the path Chrome remembers, so switching language on
     // the media tab comes back to the media tab.
-    let here = match tab {
-        crate::person::Tab::Record => format!("/person/{id}"),
-        other => format!("/person/{id}?tab={}", other.slug()),
+    let here = match (tab, q.group.as_deref()) {
+        (crate::person::Tab::Record, _) => format!("/person/{id}"),
+        (crate::person::Tab::Profile, Some(g)) if crate::profile::group(g).is_some() => {
+            format!("/person/{id}?tab=profile&group={g}")
+        }
+        (other, _) => format!("/person/{id}?tab={}", other.slug()),
     };
     let chrome = render::Chrome::resolve(&viewer, &headers, &here);
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
@@ -688,6 +693,21 @@ pub async fn person(
                     l
                 })
             });
+            // The one profile group on screen, built only for the tab that
+            // draws it.
+            let profile_group = (tab == crate::person::Tab::Profile)
+                .then(|| {
+                    state.read_as(viewer.ceiling(), |flat, lens| {
+                        crate::person::profile_group(
+                            flat,
+                            &id,
+                            lens,
+                            chrome.lang,
+                            q.group.as_deref(),
+                        )
+                    })
+                })
+                .flatten();
             // The places this person's record actually locates. Usually
             // none: on a converted bundle one place in 123 carries a position,
             // so the map appears when there is something to put on it and is
@@ -734,6 +754,7 @@ pub async fn person(
                                 crate::person::Tab::Life => {
                                     p.timeline.len() + p.occupations.len() + p.places.len()
                                 }
+                                crate::person::Tab::Profile => p.profile_count,
                                 crate::person::Tab::Media => {
                                     p.sources.len() + p.documents.len()
                                 }
@@ -745,6 +766,7 @@ pub async fn person(
                         })
                         .collect::<Vec<_>>(),
                     layout,
+                    profile_group,
                     // The canvas partial marks the selected card; on this page
                     // that is always the person whose record it is.
                     selected => id,
@@ -1044,6 +1066,18 @@ pub async fn map_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::MAP_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/profile.js` — the profile editor's "add another entry".
+pub async fn profile_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::PROFILE_JS,
     )
         .into_response()
 }

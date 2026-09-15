@@ -429,6 +429,7 @@ pub async fn list(
             .map(|(id, e)| {
                 json!({
                     "id": id,
+                    "version": crate::state::version_of(e),
                     "summary": summarize(flat, chrome.lang, k, e),
                     "confidence": e.get("confidence").and_then(Value::as_f64)
                                    .map(view::Confidence::new),
@@ -626,6 +627,7 @@ pub async fn create(
     entity["version_num"] = Value::from(1u64);
     entity["created_at"] = Value::from(view::now_iso8601());
     entity["updated_at"] = Value::from(view::now_iso8601());
+    crate::profile::declare_version(k, &mut entity);
     let body = entity.to_string();
 
     let out = match state.mutate(|flat| axgf_rs::add_entity(flat, k, &body)) {
@@ -919,6 +921,9 @@ fn label_for(kind: axgf_rs::EntityKind, entity: &Value) -> Option<String> {
 pub struct DeleteForm {
     #[serde(default)]
     policy: String,
+    /// The version the page offering the delete was drawn from.
+    #[serde(default)]
+    base_version: Option<String>,
 }
 
 /// `POST /admin/:kind/:id/delete`
@@ -946,9 +951,37 @@ pub async fn delete(
         }
     }
     let policy = policy_from_str(&f.policy);
+    // Absent means a page from before this existed, or a hand-made request,
+    // and fails closed exactly as a save does.
+    let expected = f
+        .base_version
+        .as_deref()
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(u64::MAX);
 
-    let out = match state.mutate(|flat| axgf_rs::delete_entity(flat, k, &id, policy)) {
-        Ok(o) => o,
+    let out = match state.delete_checked(k, &id, expected, policy) {
+        Ok(crate::state::DeleteOutcome::Done { outcome, .. }) => outcome,
+        Ok(crate::state::DeleteOutcome::Missing) => {
+            return render::error_page_in(
+                &chrome,
+                StatusCode::NOT_FOUND,
+                "error-no-such-entity-title",
+                "error-no-such-entity-detail",
+            )
+        }
+        Ok(crate::state::DeleteOutcome::Conflict { current_version }) => {
+            return render::error_page_back_in(
+                &chrome,
+                StatusCode::CONFLICT,
+                "error-delete-changed-title",
+                "error-delete-changed-detail",
+                &[("version", (current_version as i64).into())],
+                Some((
+                    &format!("/admin/{kind}/{id}/edit"),
+                    "error-delete-changed-look",
+                )),
+            )
+        }
         Err(e) => return io_error(&chrome, &e),
     };
 
@@ -1134,7 +1167,7 @@ fn field_views(kind: axgf_rs::EntityKind, entity: &Value, lang: &str) -> Vec<Val
                         "label": if o.is_empty() {
                             t("admin-not-set")
                         } else {
-                            crate::i18n::vocab(lang, f.vocab, o)
+                            t(&f.option_key(o))
                         },
                     })
                 })
@@ -1610,6 +1643,8 @@ pub(super) fn add_entity(
     if let Err(r) = check_scope(state, chrome, viewer, kind, &entity, None) {
         return r;
     }
+    let mut entity = entity;
+    crate::profile::declare_version(kind, &mut entity);
     let body = entity.to_string();
     let out = match state.mutate(|flat| axgf_rs::add_entity(flat, kind, &body)) {
         Ok(o) => o,
@@ -1747,6 +1782,9 @@ struct DocUpload {
     /// upload path is reused rather than duplicated: this is one extra field
     /// on the multipart body and one extra write after it succeeds.
     set_avatar: bool,
+    /// The person's version on the page the upload came from, for that second
+    /// write.
+    base_version: Option<u64>,
 }
 
 /// `POST /admin/person/:id/document` — attach a file to a person.
@@ -1831,37 +1869,40 @@ pub async fn upload_document(
     let sha256 = documents::sha256_hex(&up.bytes);
     let size = up.bytes.len() as u64;
     let filename = clean_filename(&up.filename, kind.ext);
-    let doc_type = if up.document_type.trim().is_empty() {
-        if kind.raster_image {
-            "photo".to_string()
-        } else {
-            "other".to_string()
-        }
-    } else {
-        up.document_type.trim().to_string()
+    // A type the schema has, or the honest default for what the bytes are: a
+    // form is not the place a Document learns a type AXGF cannot validate.
+    let doc_type = match up.document_type.trim() {
+        t if documents::DOCUMENT_TYPES.contains(&t) => t.to_string(),
+        _ if kind.raster_image => "photo".to_string(),
+        _ => "other".to_string(),
     };
 
-    // The Document is created without its `file.path`, because the path
-    // contains the id the library is about to mint. The adjust step fills in
-    // the path and stores the payload beside it, inside the same write.
+    // The id is chosen here rather than by the library, because the file's
+    // path inside the archive contains it: the Document goes to `add_entity`
+    // complete, and nothing writes into the bundle's JSON after it.
+    let doc_id = uuid::Uuid::new_v4().to_string();
     let mut entity = json!({
+        "id": doc_id,
         "type": "document",
         "axgf_version": "1.0",
         "filename": filename,
         "mime_type": kind.mime,
         "document_type": doc_type,
         "status": "present",
-        "file": {"size_bytes": size, "sha256": sha256},
+        "file": {
+            "path": documents::attachment_path(&doc_id, kind.ext),
+            "size_bytes": size,
+            "sha256": sha256,
+        },
         "linked_to": [{"entity_type": "person", "entity_id": id, "role": "subject"}],
     });
     if !up.caption.trim().is_empty() {
         entity["caption"] = json!(up.caption.trim());
     }
-    let body = entity.to_string();
 
     // The payload goes straight to the disk cache, never into the in-memory
-    // bundle; add_document mints the id, fills in the file path, and persists.
-    let (out, new_id) = match state.add_document(&body, &up.bytes, kind.ext) {
+    // bundle.
+    let (out, new_id) = match state.add_document(&entity, &up.bytes) {
         Ok(o) => o,
         Err(e) => return io_error(&chrome, &e),
     };
@@ -1896,25 +1937,34 @@ pub async fn upload_document(
     }
 
     // Upload and choose, in one step, because "attach a photograph" and "use
-    // it as the face" are one intention. A failure here is deliberately not
-    // fatal to the upload: the file is stored and journalled either way, and
-    // telling somebody their photograph was lost because the avatar could not
-    // be recorded would be a worse answer than a picture they can set by hand.
+    // it as the face" are one intention. The file is stored and journalled
+    // before the choice is attempted, so a choice that is refused — somebody
+    // changed the record since the page was drawn — loses no photograph: the
+    // page that explains the refusal is shown, and the file is on the picker
+    // when they go back to it.
     if up.set_avatar {
-        // `add_document` mints the id; without one there is nothing to point
-        // the choice at, and the upload itself has already succeeded.
         let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(&id)).cloned());
         if let (Some(stored), Some(doc_id)) = (stored, new_id.clone()) {
             let choice = crate::avatar::Choice::Document {
                 id: doc_id.clone(),
                 focal: crate::avatar::Focal::default(),
             };
-            if set_avatar_choice(&state, &chrome, &viewer, &id, &stored, &choice).is_err() {
+            let base_version = up.base_version.unwrap_or(u64::MAX);
+            if let Err(r) = set_avatar_choice(
+                &state,
+                &chrome,
+                &viewer,
+                &id,
+                &stored,
+                &choice,
+                base_version,
+            ) {
                 tracing::warn!(
                     person = %id,
                     document = %doc_id,
                     "the file was stored but the avatar choice was not"
                 );
+                return r;
             }
         }
         return Redirect::to(&format!("/admin/person/{id}/avatar")).into_response();
@@ -1997,6 +2047,9 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
             "caption" => out.caption = field.text().await.unwrap_or_default(),
             "set_avatar" => {
                 out.set_avatar = !field.text().await.unwrap_or_default().trim().is_empty()
+            }
+            "base_version" => {
+                out.base_version = field.text().await.ok().and_then(|v| v.trim().parse().ok())
             }
             _ => {
                 let _ = field.bytes().await;
@@ -2758,6 +2811,7 @@ pub async fn avatar_picker(
             focal_x => focal.x,
             focal_y => focal.y,
             max_upload_mb => documents::MAX_UPLOAD / (1024 * 1024),
+            base_version => stored.as_ref().map(crate::state::version_of).unwrap_or(0),
         },
     )
 }
@@ -2775,6 +2829,9 @@ pub struct AvatarForm {
     focal_x: Option<String>,
     #[serde(default)]
     focal_y: Option<String>,
+    /// The version of the person the picker was drawn from.
+    #[serde(default)]
+    base_version: Option<String>,
 }
 
 /// `POST /admin/person/:id/avatar` — record the choice.
@@ -2828,7 +2885,20 @@ pub async fn avatar_set(
         }
     };
 
-    if let Err(r) = set_avatar_choice(&state, &chrome, &viewer, &id, &stored, &choice) {
+    let base_version = f
+        .base_version
+        .as_deref()
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(u64::MAX);
+    if let Err(r) = set_avatar_choice(
+        &state,
+        &chrome,
+        &viewer,
+        &id,
+        &stored,
+        &choice,
+        base_version,
+    ) {
         return r;
     }
     Redirect::to(&format!("/person/{id}")).into_response()
@@ -2847,6 +2917,7 @@ fn set_avatar_choice(
     id: &str,
     stored: &Value,
     choice: &crate::avatar::Choice,
+    base_version: u64,
 ) -> Result<(), Response> {
     let mut entity = crate::avatar::apply(stored, choice);
     entity["id"] = Value::String(id.to_string());
@@ -2860,17 +2931,56 @@ fn set_avatar_choice(
         Some(stored),
     )?;
 
-    let version = crate::state::version_of(stored);
+    // The version the picker was drawn from, not the one just read: the
+    // choice was made looking at a record, and a record somebody changed since
+    // gets the conflict page like any other save. Until this checked the
+    // number it read itself, which can never differ, and ignored the outcome.
     let label = Some(crate::view::person_display_name(stored)).filter(|s| !s.is_empty());
-    match state.update_checked(
-        axgf_rs::EntityKind::Person,
-        id,
-        version,
-        entity,
-        viewer.name(),
-        label,
-    ) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(io_error(chrome, &e)),
+    let outcome = state
+        .update_checked(
+            axgf_rs::EntityKind::Person,
+            id,
+            base_version,
+            entity.clone(),
+            viewer.name(),
+            label,
+        )
+        .map_err(|e| io_error(chrome, &e))?;
+    match outcome {
+        crate::state::UpdateOutcome::Applied { .. } => Ok(()),
+        crate::state::UpdateOutcome::Conflict {
+            current,
+            current_version,
+            expected_version,
+        } => Err(conflict_page(
+            state,
+            chrome,
+            "person",
+            axgf_rs::EntityKind::Person,
+            id,
+            Some(stored),
+            &current,
+            &entity,
+            current_version,
+            expected_version,
+            viewer.ceiling(),
+        )),
+        crate::state::UpdateOutcome::Refused { diagnostics } => Err(result_page(
+            chrome,
+            "person",
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/person/{id}/avatar")),
+        )),
+        crate::state::UpdateOutcome::Missing => Err(render::error_page_in(
+            chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
+        )),
     }
 }

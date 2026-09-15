@@ -50,6 +50,44 @@ use sha2::{Digest, Sha256};
 /// Largest single upload accepted, in bytes.
 pub const MAX_UPLOAD: usize = 10 * 1024 * 1024;
 
+/// The schema's document types, in the order an upload form offers them.
+///
+/// The upload forms used to offer `certificate`, `record` and `newspaper`,
+/// and the avatar picker wrote `portrait` — none of them a type AXGF has, so
+/// every file uploaded that way made its Document fail validation.
+pub const DOCUMENT_TYPES: &[&str] = &[
+    "photo",
+    "birth_certificate",
+    "death_certificate",
+    "marriage_certificate",
+    "census_page",
+    "baptism_record",
+    "military_record",
+    "will",
+    "land_record",
+    "letter",
+    "diary",
+    "newspaper_clipping",
+    "gravestone_photo",
+    "family_tree_drawing",
+    "audio",
+    "video",
+    "other",
+];
+
+/// [`DOCUMENT_TYPES`] as a select's options, named in `lang`.
+pub fn document_type_options(lang: &str) -> Vec<serde_json::Value> {
+    DOCUMENT_TYPES
+        .iter()
+        .map(|t| {
+            serde_json::json!({
+                "value": t,
+                "label": crate::i18n::vocab(lang, "document-type", t),
+            })
+        })
+        .collect()
+}
+
 /// Textual-bundle size past which the admin panel starts warning, in bytes.
 ///
 /// Not a limit — the operator's archive is theirs — but the point where the

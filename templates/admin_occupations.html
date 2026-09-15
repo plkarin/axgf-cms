@@ -24,9 +24,11 @@
     <div class="ed-actions">
       <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
     </div>
-    {{ m.delete_block(t, "occupation", o.id, t("occupations-remove")) }}
   </fieldset>
 </form>
+{#- Outside the form above, not inside it: a form nested in a form is
+    dropped by the parser, and the delete button became a second save button. -#}
+{{ m.delete_block(t, "occupation", o.id, t("occupations-remove"), o.version) }}
 {% endfor %}
 
 <form method="post" action="/admin/person/{{ id }}/occupations" class="editor">

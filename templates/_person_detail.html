@@ -473,12 +473,7 @@
     <div class="filter-row">
       <input type="file" name="file" required aria-label="{{ t('record-file-to-attach') }}">
       <select name="document_type" aria-label="{{ t('record-document-type') }}">
-        <option value="photo">{{ t("record-doc-photo") }}</option>
-        <option value="certificate">{{ t("record-doc-certificate") }}</option>
-        <option value="letter">{{ t("record-doc-letter") }}</option>
-        <option value="record">{{ t("record-doc-record") }}</option>
-        <option value="newspaper">{{ t("record-doc-newspaper") }}</option>
-        <option value="other">{{ t("record-doc-other") }}</option>
+        {% for o in document_types %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
       </select>
       <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}"
              aria-label="{{ t('record-caption') }}">

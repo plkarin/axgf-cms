@@ -350,7 +350,7 @@
 {% macro partner_row(t, i, p) %}
 <tr>
   <td data-label="{{ t('family-partner') }}">
-    <input type="text" name="partner.{{ i }}.person" list="people" autocomplete="off"
+    <input type="text" name="partner.{{ i }}.person" list="people" autocomplete="off" dir="auto"
            value="{{ p.label if p }}" aria-label="{{ t('family-partner') }}"></td>
   <td data-label="{{ t('family-role') }}">
     <input type="text" name="partner.{{ i }}.role" value="{{ p.role if p else '' }}"
@@ -361,11 +361,16 @@
 {# One child of a union. `birth_order` is the record's own claim about who came
    first and is left blank when nobody made it: a number invented from row
    position would be a fact the source never stated. #}
-{% macro child_row(t, i, c) %}
+{% macro child_row(t, i, c, lineages) %}
 <tr>
   <td data-label="{{ t('family-child') }}">
-    <input type="text" name="child.{{ i }}.person" list="people" autocomplete="off"
+    <input type="text" name="child.{{ i }}.person" list="people" autocomplete="off" dir="auto"
            value="{{ c.label if c }}" aria-label="{{ t('family-child') }}"></td>
+  <td data-label="{{ t('family-lineage') }}">
+    <select name="child.{{ i }}.lineage" aria-label="{{ t('family-lineage') }}">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for o in lineages %}<option value="{{ o.value }}" {{ "selected" if c and c.lineage == o.value }}>{{ o.label }}</option>{% endfor %}
+    </select></td>
   <td data-label="{{ t('family-birth-order') }}">
     <input type="text" inputmode="numeric" size="3" name="child.{{ i }}.birth_order"
            value="{{ c.birth_order if c and c.birth_order is not none }}"
@@ -427,10 +432,10 @@
    and event: a type select feeding a dependent picker cannot swap its options
    without script, and the kind comes back out of which collection holds the
    id anyway. #}
-{% macro link_fields(t, l, categories, precisions, sources) %}
+{% macro link_fields(t, l, categories, relations, precisions, sources) %}
 <div class="ed-grid">
   <label>{{ t("links-other-end") }}
-    <input type="text" name="to" list="entities" autocomplete="off"
+    <input type="text" name="to" list="entities" autocomplete="off" dir="auto"
            value="{{ l.to if l }}"></label>
   <label>{{ t("links-label") }}
     <input type="text" name="label" value="{{ l.label if l }}" required></label>
@@ -442,6 +447,11 @@
       <option value="{{ c }}" {{ "selected" if l and c == l.category }}>
         {{- t("link-category-" ~ c) if c else t("admin-not-set") -}}</option>
       {% endfor %}
+    </select></label>
+  <label>{{ t("links-relation") }}
+    <select name="relation">
+      <option value="">{{ t("admin-not-set") }}</option>
+      {% for r in relations %}<option value="{{ r.value }}" {{ "selected" if l and r.value == l.relation }}>{{ r.label }}</option>{% endfor %}
     </select></label>
   {{ date_fields(t, "from", t("links-from"), l.from_date if l else none, precisions) }}
   {{ date_fields(t, "until", t("links-until"), l.until_date if l else none, precisions) }}
@@ -470,6 +480,8 @@
     <input type="text" name="title" value="{{ o.title if o }}" required></label>
   <label>{{ t("identity-display-latin") }}
     <input type="text" name="title_latin" value="{{ o.title_latin if o }}"></label>
+  <label>{{ t("occupations-position") }}
+    <input type="text" name="position" value="{{ o.position if o }}"></label>
   <label>{{ t("occupations-employer") }}
     <input type="text" name="employer.name" value="{{ o.employer_name if o }}"></label>
   <label>{{ t("occupations-employer-place") }}
@@ -506,10 +518,11 @@
 {# Removing an entity, with the three referential-integrity policies the admin
    list already explains. A `details` rather than a button that toggles a
    hidden row with script: the same words, and it opens with scripting off. #}
-{% macro delete_block(t, kind, id, label) %}
+{% macro delete_block(t, kind, id, label, version) %}
 <details class="ed-delete">
   <summary class="btn danger small-btn">{{ label }}</summary>
   <form method="post" action="/admin/{{ kind }}/{{ id }}/delete">
+    <input type="hidden" name="base_version" value="{{ version }}">
     <p><strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong></p>
     <div class="policy-list">
       <label><input type="radio" name="policy" value="reject" checked>
@@ -563,7 +576,7 @@
 {% macro participant_row(t, i, w, roles) %}
 <tr>
   <td data-label="{{ t('events-who') }}">
-    <input type="text" name="who.{{ i }}.entity" list="entities" autocomplete="off"
+    <input type="text" name="who.{{ i }}.entity" list="entities" autocomplete="off" dir="auto"
            value="{{ w.entity if w }}" aria-label="{{ t('events-who') }}"></td>
   <td data-label="{{ t('family-role') }}">
     <select name="who.{{ i }}.role" aria-label="{{ t('family-role') }}">

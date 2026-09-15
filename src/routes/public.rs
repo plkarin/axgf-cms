@@ -481,6 +481,7 @@ pub async fn tree(
             // clamped column rather than a page.
             compact => true,
             max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                document_types => crate::documents::document_type_options(chrome.lang),
         },
     )
 }
@@ -522,6 +523,7 @@ pub async fn tree_panel(
                 history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
                 compact => true,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                document_types => crate::documents::document_type_options(chrome.lang),
             },
         ),
         Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
@@ -744,6 +746,7 @@ pub async fn person(
                     // prose and the comparison tables; the panel does not.
                     compact => false,
                     max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                document_types => crate::documents::document_type_options(chrome.lang),
                     tab => tab.slug(),
                     tabs => crate::person::TABS
                         .iter()

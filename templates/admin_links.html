@@ -25,19 +25,21 @@
   <fieldset class="ed-group">
     <legend>{{ l.label }}</legend>
     {% if l.reversed %}<p class="ed-elsewhere">{{ t("links-reversed") }}</p>{% endif %}
-    {{ m.link_fields(t, l, categories, precisions, sources) }}
+    {{ m.link_fields(t, l, categories, relations, precisions, sources) }}
     <div class="ed-actions">
       <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
     </div>
-    {{ m.delete_block(t, "link", l.id, t("links-remove")) }}
   </fieldset>
 </form>
+{#- Outside the form above, not inside it: a form nested in a form is
+    dropped by the parser, and the delete button became a second save button. -#}
+{{ m.delete_block(t, "link", l.id, t("links-remove"), l.version) }}
 {% endfor %}
 
 <form method="post" action="/admin/person/{{ id }}/links" class="editor">
   <fieldset class="ed-group">
     <legend>{{ t("links-new") }}</legend>
-    {{ m.link_fields(t, none, categories, precisions, sources) }}
+    {{ m.link_fields(t, none, categories, relations, precisions, sources) }}
     <div class="ed-actions">
       <button type="submit" class="btn primary">{{ t("links-create") }}</button>
     </div>

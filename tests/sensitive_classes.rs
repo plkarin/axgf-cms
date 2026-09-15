@@ -674,3 +674,52 @@ async fn an_unreadable_class_visibility_closes_rather_than_opens() {
         "and says nothing about the other classes"
     );
 }
+
+/// The documents editor lists every file in the archive to attach, and the
+/// files already attached. A fingerprint card the reader may not open was in
+/// both: its name printed in a select, and — since the attached list is
+/// rebuilt from the form — detached by any save of a form that never showed it.
+#[tokio::test]
+async fn the_documents_editor_neither_names_nor_detaches_a_withheld_file() {
+    let app = app_with_contributor("cls-documents-editor");
+    let cousin = sign_in(&app, "cousin").await;
+    let page = body_string(
+        get_with_cookie(&app, &format!("/admin/person/{LIVING}/documents"), &cousin).await,
+    )
+    .await;
+    assert!(
+        !page.contains("card.txt") && !page.contains(DOC_FINGER),
+        "the withheld card is not offered or listed"
+    );
+
+    // The contributor saves the attachment list they were shown, which is
+    // empty. The card stays attached.
+    let resp = post_form_as(
+        &app,
+        &cousin,
+        &format!("/admin/person/{LIVING}/documents"),
+        "base_version=1",
+    )
+    .await;
+    expect_status(resp, StatusCode::OK, "the contributor's save").await;
+    let raw = body_string(get_admin(&app, &format!("/admin/person/{LIVING}/edit")).await).await;
+    assert!(
+        raw.contains(DOC_FINGER),
+        "a file the editor could not see is not detached by their save"
+    );
+
+    // A hand-made form naming the card cannot attach it to somebody else.
+    let resp = post_form_as(
+        &app,
+        &cousin,
+        &format!("/admin/person/{DEAD}/documents"),
+        &format!("base_version=1&doc.0.document_id={DOC_FINGER}"),
+    )
+    .await;
+    expect_status(resp, StatusCode::OK, "the forged save").await;
+    let raw = body_string(get_admin(&app, &format!("/admin/person/{DEAD}/edit")).await).await;
+    assert!(
+        !raw.contains(DOC_FINGER),
+        "the card was not attached by name"
+    );
+}

@@ -35,20 +35,41 @@
 </form>
 
 <form method="post" action="/admin/person/{{ id }}/document" enctype="multipart/form-data" class="editor">
+  <input type="hidden" name="base_version" value="{{ base_version }}">
   <fieldset class="ed-group">
     <legend>{{ t("documents-upload") }}</legend>
     <p class="hint">{{ t("documents-upload-help", mb=max_upload_mb) }}</p>
     <div class="ed-grid">
       <label>{{ t("record-file") }}<input type="file" name="file" required></label>
+      <label>{{ t("record-document-type") }}
+        <select name="document_type">
+          {% for o in document_types %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
+        </select></label>
       <label>{{ t("documents-caption") }}<input type="text" name="caption"></label>
       <label class="inline">
-        <input type="checkbox" name="as_avatar" value="on"> {{ t("avatar-upload-button") }}</label>
+        <input type="checkbox" name="set_avatar" value="on"> {{ t("avatar-upload-button") }}</label>
     </div>
     <div class="ed-actions">
       <button type="submit" class="btn primary">{{ t("documents-upload") }}</button>
     </div>
   </fieldset>
 </form>
+
+{% if files %}
+<section class="editor">
+  <h2>{{ t("documents-files") }}</h2>
+  <p class="hint">{{ t("documents-files-help") }}</p>
+  <ul class="ed-files">
+    {% for f in files %}
+    <li>
+      <span><bdi>{{ f.filename }}</bdi> <span class="small muted">{{ f.type }}</span></span>
+      <a class="btn small-btn" href="/admin/document/{{ f.id }}/edit">{{ t("documents-edit-details") }}</a>
+      {% if is_admin %}{{ m.delete_block(t, "document", f.id, t("documents-delete"), f.version) }}{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 
 <p><a class="btn" href="/person/{{ id }}?tab=media">{{ t("admin-cancel") }}</a></p>
 {% endblock %}

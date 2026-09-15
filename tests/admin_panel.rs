@@ -182,7 +182,7 @@ async fn delete_under_reject_leaves_the_bundle_byte_identical() {
     let resp = post_form(
         &app,
         &format!("/admin/person/{id}/delete"),
-        "policy=reject",
+        "policy=reject&base_version=1",
         true,
     )
     .await;
@@ -228,7 +228,7 @@ async fn delete_under_cascade_succeeds_where_reject_refused() {
     let resp = post_form(
         &app,
         &format!("/admin/person/{id}/delete"),
-        "policy=cascade",
+        "policy=cascade&base_version=1",
         true,
     )
     .await;

@@ -281,6 +281,19 @@ pub fn kind_name(kind: axgf_rs::EntityKind) -> &'static str {
     }
 }
 
+/// What a version-checked delete did.
+pub enum DeleteOutcome {
+    /// The library ran; `outcome.applied` says whether it deleted.
+    Done {
+        outcome: MutationOutcome,
+        stored: Box<Value>,
+    },
+    /// Somebody changed it after the editor looked. Nothing was deleted.
+    Conflict { current_version: u64 },
+    /// It is not in the bundle.
+    Missing,
+}
+
 /// What a version-checked update did.
 pub enum UpdateOutcome {
     Applied {
@@ -915,6 +928,9 @@ impl AppState {
         // that was just compared, under the same lock.
         entity["version_num"] = Value::from(current_version + 1);
         entity["updated_at"] = Value::from(crate::view::now_iso8601());
+        // An editor that adds a 1.1 attribute has changed what version the
+        // entity is, and every editor writes through here.
+        crate::profile::declare_version(kind, &mut entity);
         if let Some(created) = stored.get("created_at") {
             // Not the editor's to change, and a raw-JSON edit could drop it.
             entity["created_at"] = created.clone();
@@ -980,7 +996,49 @@ impl AppState {
     ) -> Result<MutationOutcome> {
         // 1. take the write lock
         let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        self.apply_locked(&mut guard, op, adjust)
+    }
 
+    /// Delete an entity, provided it is still the version the editor saw.
+    ///
+    /// A delete is a decision made looking at a record, and a record somebody
+    /// changed since is not the one that was decided about — least of all
+    /// under `cascade`, which takes every reference to it along. So the
+    /// version is compared under the same write lock the delete runs in, as
+    /// [`AppState::update_checked`] does for a save.
+    pub fn delete_checked(
+        &self,
+        kind: axgf_rs::EntityKind,
+        id: &str,
+        expected_version: u64,
+        policy: axgf_rs::DeletePolicy,
+    ) -> Result<DeleteOutcome> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        let collection = crate::admin::collection_for(kind);
+        let Some(stored) = guard.get(collection).and_then(|c| c.get(id)).cloned() else {
+            return Ok(DeleteOutcome::Missing);
+        };
+        let current_version = version_of(&stored);
+        if current_version != expected_version {
+            return Ok(DeleteOutcome::Conflict { current_version });
+        }
+        let out = self.apply_locked(
+            &mut guard,
+            |flat| axgf_rs::delete_entity(flat, kind, id, policy),
+            |_, _| {},
+        )?;
+        Ok(DeleteOutcome::Done {
+            outcome: out,
+            stored: Box::new(stored),
+        })
+    }
+
+    fn apply_locked(
+        &self,
+        guard: &mut std::sync::RwLockWriteGuard<'_, Value>,
+        op: impl FnOnce(&str) -> Envelope,
+        adjust: impl FnOnce(&mut Value, &Value),
+    ) -> Result<MutationOutcome> {
         // 2. call the library
         let env = op(&guard.to_string());
         let diagnostics = env.diagnostics.clone();
@@ -1013,7 +1071,7 @@ impl AppState {
         // so a failed write cannot strand the process with unsaved state. The
         // payloads are folded back in from the disk cache for the write.
         self.persist(&new_bundle)?;
-        *guard = new_bundle;
+        **guard = new_bundle;
         self.invalidate_lenses();
 
         // 6. lock released on drop
@@ -1054,86 +1112,65 @@ impl AppState {
     /// straight to the disk cache so a new file never transits through the
     /// in-memory bundle.
     ///
-    /// `entity_body` is the Document JSON without its `file.path`; the path
-    /// contains the id the library is about to mint, so it is filled in here.
-    /// Returns the outcome and the new document id when applied.
+    /// The entity arrives whole — its id and its `file.path` already chosen by
+    /// the caller — and goes to the library's `add_entity` as it is. It used
+    /// to arrive without either, and the path was written into the bundle's
+    /// JSON after the library had minted the id: the one entity write in this
+    /// application that did not go through the library. What is left to do
+    /// here is not an entity at all: the payload itself, and the bundle's
+    /// declaration that it carries one, both inside the same write lock and
+    /// the same atomic rename.
     pub fn add_document(
         &self,
-        entity_body: &str,
+        entity: &Value,
         payload: &[u8],
-        ext: &str,
     ) -> Result<(MutationOutcome, Option<String>)> {
+        let Some(id) = entity.get("id").and_then(Value::as_str).map(str::to_string) else {
+            anyhow::bail!("a document is added with its id already chosen");
+        };
+        let Some(zip_path) = entity
+            .pointer("/file/path")
+            .and_then(Value::as_str)
+            .map(str::to_string)
+        else {
+            anyhow::bail!("a document is added with its file path already chosen");
+        };
+        let body = entity.to_string();
         let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
 
-        let env = axgf_rs::add_entity(
-            &guard.to_string(),
-            axgf_rs::EntityKind::Document,
-            entity_body,
-        );
+        let env = axgf_rs::add_entity(&guard.to_string(), axgf_rs::EntityKind::Document, &body);
         let diagnostics = env.diagnostics.clone();
+        let refused = |data: Value| MutationOutcome {
+            applied: false,
+            diagnostics: diagnostics.clone(),
+            data,
+        };
         if env.status == Status::Error || env.data.is_null() {
-            return Ok((
-                MutationOutcome {
-                    applied: false,
-                    diagnostics,
-                    data: Value::Null,
-                },
-                None,
-            ));
+            return Ok((refused(Value::Null), None));
         }
         let Some(new_bundle) = bundle_from_data(&env.data) else {
-            return Ok((
-                MutationOutcome {
-                    applied: false,
-                    diagnostics,
-                    data: env.data,
-                },
-                None,
-            ));
+            return Ok((refused(env.data), None));
         };
         let mut new_bundle = new_bundle.clone();
-        let new_id = env
-            .data
-            .get("id")
-            .and_then(Value::as_str)
-            .map(str::to_string);
-        let Some(new_id) = new_id else {
-            return Ok((
-                MutationOutcome {
-                    applied: false,
-                    diagnostics,
-                    data: env.data,
-                },
-                None,
-            ));
-        };
 
-        let zip_path = crate::documents::attachment_path(&new_id, ext);
-        if let Some(file) = new_bundle
-            .get_mut("documents")
-            .and_then(|d| d.get_mut(&new_id))
-            .and_then(|d| d.get_mut("file"))
-        {
-            file["path"] = Value::String(zip_path.clone());
-        }
-        // Write the payload to the cache *before* persisting, so the export
-        // that persist performs finds it and writes it into the .axgf — and
-        // declare it in `external_payloads` in the same breath, because a
-        // streaming export only asks for the paths the bundle declares. A
-        // cached payload the bundle does not name would be silently absent
-        // from the file.
+        // The bytes go to the cache only once the library has accepted the
+        // entity that names them, and before persisting, so the export that
+        // persisting performs finds them — declared in `external_payloads` in
+        // the same breath, because a streaming export only asks for the paths
+        // the bundle declares.
         let declaration = self.payloads.put(&zip_path, payload)?;
-        if let Some(obj) = new_bundle.as_object_mut() {
-            match obj
-                .entry("external_payloads")
-                .or_insert_with(|| Value::Object(Default::default()))
-                .as_object_mut()
-            {
-                Some(m) => {
-                    m.insert(zip_path.clone(), declaration);
-                }
-                None => anyhow::bail!("external_payloads is not an object"),
+        match new_bundle
+            .as_object_mut()
+            .map(|obj| {
+                obj.entry("external_payloads")
+                    .or_insert_with(|| Value::Object(Default::default()))
+            })
+            .and_then(Value::as_object_mut)
+        {
+            Some(m) => {
+                m.insert(zip_path.clone(), declaration);
             }
+            None => anyhow::bail!("external_payloads is not an object"),
         }
         self.persist(&new_bundle)?;
         *guard = new_bundle;
@@ -1145,7 +1182,7 @@ impl AppState {
                 diagnostics,
                 data: env.data,
             },
-            Some(new_id),
+            Some(id),
         ))
     }
 

@@ -58,6 +58,7 @@
     <tr id="del-{{ r.id }}" hidden>
       <td colspan="4" class="delete-row">
         <form method="post" action="/admin/{{ kind }}/{{ r.id }}/delete">
+          <input type="hidden" name="base_version" value="{{ r.version }}">
           <strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong>
           <div class="policy-list">
             <label><input type="radio" name="policy" value="reject" checked>

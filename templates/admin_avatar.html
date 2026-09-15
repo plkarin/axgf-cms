@@ -61,6 +61,7 @@
   {# Carried whether or not scripting is on. With it off these keep whatever
      was already stored, so saving does not silently recentre a crop somebody
      set earlier. #}
+  <input type="hidden" name="base_version" value="{{ base_version }}">
   <input type="hidden" name="focal_x" id="focal-x" value="{{ focal_x }}">
   <input type="hidden" name="focal_y" id="focal-y" value="{{ focal_y }}">
 
@@ -77,7 +78,8 @@
       enctype="multipart/form-data" class="rec-section">
   <h2>{{ t("avatar-upload-title") }}</h2>
   <input type="hidden" name="set_avatar" value="1">
-  <input type="hidden" name="document_type" value="portrait">
+  <input type="hidden" name="base_version" value="{{ base_version }}">
+  <input type="hidden" name="document_type" value="photo">
   <div class="field">
     <input type="file" name="file" accept="image/*" required>
   </div>

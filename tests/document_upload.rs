@@ -592,7 +592,9 @@ async fn a_chosen_avatar_beats_the_automatic_pick() {
     let resp = post_form(
         &app,
         &format!("/admin/person/{PERSON}/avatar"),
-        &format!("choice={other}&focal_x=0.25&focal_y=0.15"),
+        // The fixture's person carries no version number, so the picker was
+        // drawn from version 0.
+        &format!("choice={other}&focal_x=0.25&focal_y=0.15&base_version=0"),
         true,
     )
     .await;
@@ -627,7 +629,7 @@ async fn choosing_no_picture_shows_the_initials() {
     let resp = post_form(
         &app,
         &format!("/admin/person/{PERSON}/avatar"),
-        "choice=none",
+        "choice=none&base_version=0",
         true,
     )
     .await;
@@ -690,14 +692,16 @@ async fn a_deleted_document_falls_back_rather_than_breaking_the_page() {
     post_form(
         &app,
         &format!("/admin/person/{PERSON}/avatar"),
-        &format!("choice={chosen}"),
+        &format!("choice={chosen}&base_version=0"),
         true,
     )
     .await;
     let del = post_form(
         &app,
         &format!("/admin/document/{chosen}/delete"),
-        "policy=cascade",
+        // An upload writes no version number, so the page offering the
+        // delete was drawn from version 0.
+        "policy=cascade&base_version=0",
         true,
     )
     .await;

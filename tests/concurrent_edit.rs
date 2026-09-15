@@ -368,3 +368,63 @@ async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
     // The record itself is still public — it is the *history* that is not.
     assert!(anonymous.contains("Alice"));
 }
+
+#[tokio::test]
+async fn a_delete_decided_on_an_older_version_is_refused() {
+    // Deleting is a decision made looking at a record. Somebody who changed
+    // it since has made it a different record, and under `cascade` the
+    // delete would take every reference to it along — so it is refused the
+    // way a stale save is, and nothing is removed.
+    let app = app("stale-delete");
+    let mut edited = person(ALICE, "Alice", 1);
+    edited["notes"] = json!("changed by the other editor");
+    let saved = save(&app, ALICE, 1, &edited).await;
+    assert!(saved.status().is_success(), "the other editor's save lands");
+
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{ALICE}/delete"),
+        "policy=cascade&base_version=1",
+        true,
+    )
+    .await;
+    let page = expect_status(resp, StatusCode::CONFLICT, "stale delete").await;
+    assert!(
+        page.contains("Changed since you looked"),
+        "the refusal says why: {page}"
+    );
+
+    let health = body_string(get(&app, "/health").await).await;
+    let v: Value = serde_json::from_str(&health).expect("health json");
+    assert_eq!(v["entities"]["persons"], 2, "nobody was deleted");
+
+    // Drawn afresh, the page carries the version it now shows, and the
+    // delete goes through.
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{ALICE}/delete"),
+        "policy=cascade&base_version=2",
+        true,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let health = body_string(get(&app, "/health").await).await;
+    let v: Value = serde_json::from_str(&health).expect("health json");
+    assert_eq!(v["entities"]["persons"], 1);
+}
+
+#[tokio::test]
+async fn a_delete_without_a_version_fails_closed() {
+    let app = app("versionless-delete");
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{BOB}/delete"),
+        "policy=reject",
+        true,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::CONFLICT);
+    let health = body_string(get(&app, "/health").await).await;
+    let v: Value = serde_json::from_str(&health).expect("health json");
+    assert_eq!(v["entities"]["persons"], 2);
+}

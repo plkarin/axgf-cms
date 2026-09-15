@@ -34,7 +34,7 @@
     <p class="ed-elsewhere">{{ t("family-writes-family", id=f.id) }}</p>
 
     <h3>{{ t("family-partners") }}</h3>
-    <table class="ed-rows">
+    <table class="ed-rows ed-people">
       <thead><tr><th>{{ t("family-partner") }}</th><th>{{ t("family-role") }}</th></tr></thead>
       <tbody>
         {% for p in f.partners %}
@@ -46,14 +46,15 @@
 
     <h3>{{ t("family-children") }}</h3>
     <p class="hint">{{ t("family-children-help") }}</p>
-    <table class="ed-rows">
+    <table class="ed-rows ed-people">
       <thead><tr>
-        <th>{{ t("family-child") }}</th><th>{{ t("family-birth-order") }}</th>
+        <th>{{ t("family-child") }}</th><th>{{ t("family-lineage") }}</th>
+        <th>{{ t("family-birth-order") }}</th>
         <th>{{ t("phys-col-confidence") }}</th><th>{{ t("phys-col-note") }}</th>
       </tr></thead>
       <tbody>
-        {% for c in f.children %}{{ m.child_row(t, loop.index0, c) }}{% endfor %}
-        {{ m.child_row(t, f.children | length, none) }}
+        {% for c in f.children %}{{ m.child_row(t, loop.index0, c, lineages) }}{% endfor %}
+        {{ m.child_row(t, f.children | length, none, lineages) }}
       </tbody>
     </table>
 

@@ -25,6 +25,7 @@ use super::Shared;
 use crate::access::Viewer;
 use crate::forms::{self, Body};
 use crate::render;
+use axgf_rs::model::profile::vocab::{LINEAGE, LINK_RELATION};
 
 /// Bind `(viewer, chrome)` or return the refusal page.
 macro_rules! writer {
@@ -689,6 +690,13 @@ fn build_family(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'st
         if let Some(n) = forms::field(&r, "note") {
             c.insert("note".into(), json!(n));
         }
+        // AXGF 1.1's `lineage`: how this child is a child of this family. A
+        // term outside the vocabulary is not stored, and a blank one is no
+        // claim at all — "biological" is a fact somebody records, not the
+        // default a form assumes.
+        if let Some(l) = forms::field(&r, "lineage").filter(|l| LINEAGE.contains(l)) {
+            c.insert("lineage".into(), json!(l));
+        }
         kids.push(Value::Object(c));
     }
     if kids.is_empty() {
@@ -787,6 +795,7 @@ fn render_family(
             union_types => UNION_TYPES,
             union_statuses => UNION_STATUSES,
             precisions => PRECISIONS,
+            lineages => crate::profile::form::vocabulary_options(chrome.lang, &LINEAGE),
         },
     )
 }
@@ -824,6 +833,7 @@ fn family_view(flat: &Value, lens: &crate::access::Lens, fid: &str, fam: &Value)
             let pid = c.get("person_id").and_then(Value::as_str)?;
             Some(json!({
                 "label": label_for_person(pid),
+                "lineage": c.get("lineage").and_then(Value::as_str).unwrap_or_default(),
                 "birth_order": c.get("birth_order").and_then(Value::as_i64),
                 "confidence": c.get("confidence").and_then(Value::as_f64),
                 "note": c.get("note").and_then(Value::as_str).unwrap_or_default(),
@@ -1028,6 +1038,20 @@ fn build_link(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'stat
             out.as_object_mut().map(|o| o.remove("category"));
         }
     }
+    // AXGF 1.1's `relation`: the kind of tie, from a closed vocabulary, where
+    // `label` is how the record words it. The two are kept apart — a
+    // "chrzestny" and a "godfather" are both `godparent` — and a blank one is
+    // no claim.
+    match form
+        .get("relation")
+        .map(String::as_str)
+        .filter(|r| LINK_RELATION.contains(r))
+    {
+        Some(r) => out["relation"] = json!(r),
+        None => {
+            out.as_object_mut().map(|o| o.remove("relation"));
+        }
+    }
     out["bidirectional"] = json!(matches!(
         form.get("bidirectional").map(String::as_str),
         Some("on" | "true" | "1")
@@ -1086,6 +1110,7 @@ fn render_links(
                     "label": l.get("label").and_then(Value::as_str).unwrap_or_default(),
                     "label_reverse": l.get("label_reverse").and_then(Value::as_str).unwrap_or_default(),
                     "category": l.get("category").and_then(Value::as_str).unwrap_or_default(),
+                    "relation": l.get("relation").and_then(Value::as_str).unwrap_or_default(),
                     "bidirectional": l.get("bidirectional").and_then(Value::as_bool).unwrap_or(false),
                     "confidence": l.get("confidence").and_then(Value::as_f64),
                     "source_id": l.get("source_id").and_then(Value::as_str).unwrap_or_default(),
@@ -1116,6 +1141,7 @@ fn render_links(
             sources,
             problem,
             categories => LINK_CATEGORIES,
+            relations => crate::profile::form::vocabulary_options(chrome.lang, &LINK_RELATION),
             precisions => PRECISIONS,
         },
     )
@@ -1234,8 +1260,11 @@ fn build_occupation(form: &Body, stored: &Value) -> Result<Value, &'static str> 
         json!({"type": "occupation", "axgf_version": "1.0"})
     };
     out["title"] = json!(title);
+    // `position` is AXGF 1.1's post held, where `title` is the occupation: a
+    // "teacher" who was the school's "headmistress".
     for (key, field) in [
         ("title_latin", "title_latin"),
+        ("position", "position"),
         ("place_id", "place_id"),
         ("source_id", "source_id"),
         ("note", "note"),
@@ -1312,6 +1341,7 @@ fn render_occupations(
                     "version": crate::state::version_of(o),
                     "title": o.get("title").and_then(Value::as_str).unwrap_or_default(),
                     "title_latin": o.get("title_latin").and_then(Value::as_str).unwrap_or_default(),
+                    "position": o.get("position").and_then(Value::as_str).unwrap_or_default(),
                     "employer_name": o.pointer("/employer/name").and_then(Value::as_str).unwrap_or_default(),
                     "employer_place": o.pointer("/employer/place_id").and_then(Value::as_str).unwrap_or_default(),
                     "place_id": o.get("place_id").and_then(Value::as_str).unwrap_or_default(),
@@ -1642,11 +1672,43 @@ pub async fn documents_update(
     let (viewer, chrome) = writer!(state, headers);
     let stored = person!(state, chrome, id);
 
+    // What this editor may not open was never on their form, so a list
+    // rebuilt from the form alone would detach it. Those entries are carried
+    // over from the stored person, in their places at the end, and a form
+    // that names one anyway — hand-made, since the page never offers it — is
+    // not allowed to attach it either.
+    let hidden: Vec<Value> = state.read_as(viewer.ceiling(), |flat, lens| {
+        stored
+            .get("documents")
+            .and_then(Value::as_array)
+            .map(|arr| {
+                arr.iter()
+                    .filter(|d| {
+                        d.get("document_id")
+                            .and_then(Value::as_str)
+                            .is_some_and(|did| {
+                                !crate::access::may_read_document(flat, lens, true, did)
+                            })
+                    })
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
+    });
+    let may_attach = |did: &str| {
+        state.read_as(viewer.ceiling(), |flat, lens| {
+            crate::access::may_read_document(flat, lens, true, did)
+        })
+    };
+
     let mut links = Vec::new();
     for r in forms::rows(&form, "doc") {
         let Some(did) = forms::field(&r, "document_id") else {
             continue;
         };
+        if !may_attach(did) {
+            continue;
+        }
         let mut d = Map::new();
         d.insert("document_id".into(), json!(did));
         for (key, field) in [("role", "role"), ("note", "note"), ("date", "date")] {
@@ -1657,6 +1719,7 @@ pub async fn documents_update(
         links.push(Value::Object(d));
     }
 
+    links.extend(hidden);
     let mut entity = stored.clone();
     if links.is_empty() {
         entity.as_object_mut().map(|o| o.remove("documents"));
@@ -1692,7 +1755,11 @@ fn render_documents(
         .and_then(Value::as_array)
         .cloned()
         .unwrap_or_default();
-    let (rows, all_docs) = state.read_as(viewer.ceiling(), |flat, lens| {
+    let (rows, all_docs, files) = state.read_as(viewer.ceiling(), |flat, lens| {
+        // Only what this reader may open: a file attached to somebody they
+        // may not read, or one a withheld class attribute refers to, is not
+        // offered, and its name is not printed.
+        let readable = |did: &str| crate::access::may_read_document(flat, lens, true, did);
         let name_of = |did: &str| {
             flat.get("documents")
                 .and_then(|c| c.get(did))
@@ -1705,6 +1772,9 @@ fn render_documents(
             .iter()
             .filter_map(|d| {
                 let did = d.get("document_id").and_then(Value::as_str)?;
+                if !readable(did) {
+                    return None;
+                }
                 Some(json!({
                     "document_id": did,
                     "filename": name_of(did),
@@ -1714,14 +1784,36 @@ fn render_documents(
                 }))
             })
             .collect();
-        let _ = lens;
-        let all = crate::forms::entity_options(flat, "documents", |d| {
+        let all: Vec<Value> = crate::forms::entity_options(flat, "documents", |d| {
             d.get("filename")
                 .and_then(Value::as_str)
                 .unwrap_or_default()
                 .to_string()
-        });
-        (rows, all)
+        })
+        .into_iter()
+        .filter(|o| o.get("id").and_then(Value::as_str).is_some_and(readable))
+        .collect();
+        // The files attached to this person, for editing their details and
+        // for deleting one outright — which is a different act from
+        // detaching it, and is offered separately.
+        let files: Vec<Value> = rows
+            .iter()
+            .filter_map(|r| {
+                let did = r.get("document_id").and_then(Value::as_str)?;
+                let d = flat.get("documents").and_then(|c| c.get(did))?;
+                Some(json!({
+                    "id": did,
+                    "filename": name_of(did),
+                    "version": crate::state::version_of(d),
+                    "type": crate::i18n::vocab(
+                        chrome.lang,
+                        "document-type",
+                        d.get("document_type").and_then(Value::as_str).unwrap_or("other"),
+                    ),
+                }))
+            })
+            .collect();
+        (rows, all, files)
     });
 
     render::page_with(
@@ -1733,9 +1825,11 @@ fn render_documents(
             person_name => crate::view::person_display_name(person),
             rows,
             all_docs,
+            files,
             problem,
             base_version => crate::state::version_of(person),
             max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            document_types => crate::documents::document_type_options(chrome.lang),
         },
     )
 }

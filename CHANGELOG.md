@@ -57,7 +57,28 @@ select half in English leaves the reader unable to tell which options were
 translated. `every_language_names_every_part_of_the_profile` holds all eleven
 to it.
 
+**The three 1.1 facts that live beside the person.** How a child is a child
+of a family — biological, adoptive, foster, step, under guardianship — is a
+select on each child of each union; the kind of tie a link is, from the
+fourteen AXGF 1.1 names, is a select beside the link's own label, which keeps
+the record's words; the post held within an occupation is a field of its own.
+All three are on the generic editors too.
+
+**Files are managed where they are attached.** The documents editor offers the
+schema's seventeen document types when uploading, lists the files attached to
+the person with a link to each file's details, and lets an administrator
+delete a file outright — separately from detaching it, which only takes it off
+this person.
+
 ### Security
+
+**The documents editor named files its reader may not open.** It offered every
+file in the archive to attach and listed every file attached, so a
+contributor could read the name of a fingerprint card or a genome file in a
+select, and a save of that form — rebuilt from what it showed — detached the
+file it had never shown. It now offers and lists only what the reader may open,
+carries the rest over from the stored person on save, and refuses to attach a
+withheld file named by a hand-made request.
 
 **The family picker named people its reader may not read.** The links and
 events editors offer families by their partners' names, and that list went
@@ -103,6 +124,42 @@ is every term the generic editor can offer — `every_dynamic_key_family_is_full
 holds English to all of them. And the place editor's hints, errors, place
 types and precisions were English copied into eight catalogues, which the
 coverage number counted as translated; they are translated.
+
+**An entity given 1.1 content kept declaring 1.0.** The library stamps a
+version when an entity is created and leaves it alone on update, and nearly
+every editor here updates — so a person given a blood group, a family given a
+child's lineage or a link given a relation came back with
+`SPEC_VERSION_MISMATCH` on every save. The single write path now raises the
+declaration to what the content needs, and never lowers it.
+
+**Delete buttons saved instead.** The delete control on each link, occupation
+and event sat inside that entity's edit form, and a form inside a form is
+dropped by the HTML parser: the "delete" button was a second save button. They
+are outside it now, and `a_delete_control_is_never_inside_the_form_it_sits_beside`
+parses every editor to keep it so.
+
+**A delete checks the version it was decided on.** A record somebody saved
+after the page offering the delete was drawn is not the record that was
+decided about — least of all under `cascade`, which takes every reference with
+it — so the delete is refused under the same write lock a save's check runs
+in, and says so. A delete that states no version fails closed, as a save does.
+
+**The avatar choice was not locked.** The picker compared the stored version
+with itself and ignored the outcome of the write. It now carries the version
+the picker was drawn from, and a stale choice meets the conflict page — also
+when it arrives with an upload, where the photograph is kept either way.
+
+**Uploads wrote Documents the schema refused.** The record page offered
+`certificate`, `record` and `newspaper`, and the avatar picker wrote
+`portrait`; none is an AXGF document type. The documents editor's "upload and
+use as picture" checkbox was named `as_avatar` for a handler reading
+`set_avatar`, so it did nothing.
+
+**An upload no longer writes into the bundle's JSON.** The Document's id was
+minted by the library and its file path written into the stored entity
+afterwards — the one entity write that bypassed `add_entity`. The id is chosen
+first and the Document goes to the library complete; what is still written
+beside it is the payload declaration, which is not an entity.
 
 **A refused generic save forgot where the editor started.** Correcting JSON
 that did not parse and saving again met the conflict page: the form came back

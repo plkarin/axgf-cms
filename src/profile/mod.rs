@@ -41,6 +41,72 @@ pub mod form;
 pub mod lift;
 pub mod view;
 
+/// Whether an entity carries anything AXGF 1.1 defines, which obliges it to
+/// declare `"1.1"` (SPEC_1.1 §2.1).
+///
+/// The library answers the same question when it validates, and reports a
+/// mismatch as `SPEC_VERSION_MISMATCH`; it only stamps a version on *create*,
+/// though, and the editors here mostly *update*. So a person given a blood
+/// group by the profile editor kept saying `"1.0"` until this existed. The
+/// test `every_write_declares_the_version_its_content_needs` saves one of
+/// each shape through the real write path and holds this to the library's
+/// own answer.
+pub fn uses_1_1(kind: axgf_rs::EntityKind, entity: &serde_json::Value) -> bool {
+    use axgf_rs::EntityKind as K;
+    use serde_json::Value;
+    match kind {
+        K::Person => {
+            // Presence, not non-null, exactly as the library tests it: a
+            // `"health": null` is still a 1.1 key, and a copy of the rule
+            // that disagreed with the validator would stamp one version and
+            // be warned about the other.
+            registry::PROFILE_BLOCKS
+                .iter()
+                .any(|b| entity.get(*b).is_some())
+                || registry::attributes()
+                    .filter(|a| matches!(a.block, "identity" | "birth" | "death"))
+                    .any(|a| entity.get(a.block).and_then(|b| b.get(a.key)).is_some())
+                || entity.pointer("/identity/class_visibility").is_some()
+        }
+        K::Family => entity
+            .get("children")
+            .and_then(Value::as_array)
+            .is_some_and(|cs| cs.iter().any(|c| c.get("lineage").is_some())),
+        K::Link => entity.get("relation").is_some(),
+        K::Occupation => entity.get("position").is_some(),
+        _ => false,
+    }
+}
+
+/// Raise an entity's declared `axgf_version` to what its content needs.
+///
+/// Only ever raised. An entity that stops carrying 1.1 content keeps saying
+/// `"1.1"`, which is still true of it and costs nothing: the manifest a
+/// version was once raised for is never lowered either. A version this build
+/// does not know is left alone — it is newer than anything this could write.
+pub fn declare_version(kind: axgf_rs::EntityKind, entity: &mut serde_json::Value) {
+    if !uses_1_1(kind, entity) {
+        return;
+    }
+    let declared = entity
+        .get("axgf_version")
+        .and_then(serde_json::Value::as_str);
+    let rank = |v: &str| {
+        axgf_rs::SUPPORTED_SPEC_VERSIONS
+            .iter()
+            .position(|s| *s == v)
+    };
+    let needs = rank("1.1");
+    let raise = match declared.map(|d| (d, rank(d))) {
+        None => true,
+        Some((_, None)) => false,
+        Some((_, known)) => known < needs,
+    };
+    if raise {
+        entity["axgf_version"] = serde_json::Value::from("1.1");
+    }
+}
+
 use axgf_rs::model::profile::registry::{self, Attribute, Group};
 use axgf_rs::model::profile::vocab::{self, Vocabulary};
 

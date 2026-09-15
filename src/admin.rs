@@ -53,6 +53,21 @@ pub struct Field {
     pub vocab: &'static str,
 }
 
+impl Field {
+    /// The message naming one option of a select.
+    ///
+    /// A 1.1 vocabulary is named the way the profile names it, with its terms'
+    /// underscores opened into dashes (`pv-link-relation-close-friend`); the
+    /// 1.0 families keep the term as the schema spells it.
+    pub fn option_key(&self, option: &str) -> String {
+        if self.vocab.starts_with("pv-") {
+            format!("{}-{}", self.vocab, option.replace('_', "-"))
+        } else {
+            format!("{}-{option}", self.vocab)
+        }
+    }
+}
+
 const NO_OPTS: &[&str] = &[];
 
 /// Fields shown for a person.
@@ -461,6 +476,30 @@ const LINK_FIELDS: &[Field] = &[
         vocab: "link-category",
     },
     Field {
+        path: "relation",
+        kind: FieldKind::Select,
+        label: "field-link-relation",
+        hint: Some("field-link-relation-hint"),
+        options: &[
+            "",
+            "godparent",
+            "godchild",
+            "witness",
+            "officiant",
+            "business_partner",
+            "employer",
+            "employee",
+            "mentor",
+            "apprentice",
+            "close_friend",
+            "neighbour",
+            "guardian",
+            "ward",
+            "other",
+        ],
+        vocab: "pv-link-relation",
+    },
+    Field {
         path: "bidirectional",
         kind: FieldKind::Bool,
         label: "field-link-bidirectional",
@@ -533,6 +572,14 @@ const OCCUPATION_FIELDS: &[Field] = &[
         kind: FieldKind::Text,
         label: "field-occupation-title-latin",
         hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "position",
+        kind: FieldKind::Text,
+        label: "field-occupation-position",
+        hint: Some("field-occupation-position-hint"),
         options: NO_OPTS,
         vocab: "",
     },
@@ -867,7 +914,7 @@ pub fn every_key() -> Vec<String> {
                 f.options
                     .iter()
                     .filter(|o| !o.is_empty())
-                    .map(|o| format!("{}-{o}", f.vocab)),
+                    .map(|o| f.option_key(o)),
             );
         }
     }

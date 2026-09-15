@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+**axgf-rs 0.4.0.** The library now reads, validates and writes AXGF 1.1, the
+extended person profile. It is not on crates.io yet, so the dependency is
+pinned to the commit 0.4.0 was released from, with `version = "0.4"` beside it
+so the pin is two keys to delete on the day it is published. Nothing in this
+application changed to take it: every test passed against it unmodified, which
+is what the library's "no content, no change" promise is for.
+
 **The figure in the masthead carries no control.** The `?` under it opened a
 panel over the header, which put a control in the one part of the page that
 states who somebody was — for a sentence most readers never want, and every

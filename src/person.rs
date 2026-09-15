@@ -219,8 +219,13 @@ pub struct DocumentView {
     pub id: String,
     pub filename: String,
     pub mime_type: Option<String>,
+    /// The schema's code (`birth_certificate`), for code that decides things.
     pub document_type: String,
+    /// The same, in the reader's language, for the page.
+    pub document_type_label: String,
+    /// The schema's code (`referenced`).
     pub status: String,
+    pub status_label: String,
     pub caption: Option<String>,
     pub note: Option<String>,
     pub role: Option<String>,
@@ -468,7 +473,7 @@ pub fn build_in(
         .collect();
     let places = ctx.places_for(&birth, &death, &timeline, &occupations, &unions);
     let sources = ctx.sources_for(&timeline, &names, &links, &occupations, &unions);
-    let notes = collect_notes(person, &birth, &death, &timeline);
+    let notes = collect_notes(&ctx, person, &birth, &death, &timeline);
 
     let header = build_header(
         &ctx, &name, &images, &birth, &death, is_living, &unions, id, person,
@@ -804,6 +809,7 @@ fn year_of(v: Option<&Value>) -> Option<i64> {
 }
 
 fn collect_notes(
+    ctx: &Ctx<'_>,
     person: &Value,
     birth: &FactView,
     death: &FactView,
@@ -812,14 +818,14 @@ fn collect_notes(
     let mut out = Vec::new();
     if let Some(bio) = str_field(person, "bio") {
         out.push(NoteView {
-            label: "Biography".into(),
+            label: ctx.tr("record-note-biography", &[]),
             text: bio,
             verbatim: false,
         });
     }
     if let Some(n) = str_field(person, "notes") {
         out.push(NoteView {
-            label: "Notes".into(),
+            label: ctx.tr("record-notes", &[]),
             text: n,
             verbatim: false,
         });
@@ -827,13 +833,13 @@ fn collect_notes(
     // A date the converter could not interpret is kept as text on the date
     // itself. It belongs on the page: it is the evidence that the conversion
     // dropped nothing, and it is often the only thing the record says.
-    for (label, fact) in [
-        ("Birth date, as recorded", birth),
-        ("Death date, as recorded", death),
+    for (key, fact) in [
+        ("record-note-birth-date-as-recorded", birth),
+        ("record-note-death-date-as-recorded", death),
     ] {
         if let Some(note) = fact.date.note.clone() {
             out.push(NoteView {
-                label: label.into(),
+                label: ctx.tr(key, &[]),
                 text: note,
                 verbatim: true,
             });
@@ -843,7 +849,10 @@ fn collect_notes(
         if entry.kind == "event" {
             if let Some(note) = entry.date.note.clone() {
                 out.push(NoteView {
-                    label: format!("{} date, as recorded", entry.label),
+                    label: ctx.tr(
+                        "record-note-event-date-as-recorded",
+                        &[("event", entry.label.clone().into())],
+                    ),
                     text: note,
                     verbatim: true,
                 });
@@ -853,19 +862,9 @@ fn collect_notes(
     out
 }
 
-/// Format a byte count the way a file listing would.
-fn human_size(bytes: u64) -> String {
-    const UNITS: [(&str, u64); 3] = [("MB", 1024 * 1024), ("KB", 1024), ("bytes", 1)];
-    for (unit, scale) in UNITS {
-        if bytes >= scale {
-            return if scale == 1 {
-                format!("{bytes} bytes")
-            } else {
-                format!("{:.1} {unit}", bytes as f64 / scale as f64)
-            };
-        }
-    }
-    "0 bytes".into()
+/// Format a byte count the way a file listing would, in `lang`.
+fn human_size(bytes: u64, lang: &str) -> String {
+    crate::documents::human_size_in(bytes, lang)
 }
 
 /// One entry of a family's `children[]`, read out before it is resolved.
@@ -909,6 +908,18 @@ impl Ctx<'_> {
         self.flat.get(name).and_then(Value::as_object)
     }
 
+    /// A sentence this page is saying, in the reader's language.
+    fn tr(&self, key: &str, args: &[(&str, fluent::FluentValue<'_>)]) -> String {
+        if args.is_empty() {
+            return crate::i18n::translate(self.lang, key, None);
+        }
+        let mut a = fluent::FluentArgs::new();
+        for (k, v) in args {
+            a.set(*k, v.clone());
+        }
+        crate::i18n::translate(self.lang, key, Some(&a))
+    }
+
     /// Resolve a person id to a reference, tolerating absence — and refusing
     /// to resolve one this request may not read.
     ///
@@ -948,7 +959,7 @@ impl Ctx<'_> {
             detail,
             birth_order: None,
             lineage: None,
-            lifespan: found.and_then(lifespan_of),
+            lifespan: found.and_then(|p| lifespan_of(p, self.lang)),
         }
     }
 
@@ -960,7 +971,7 @@ impl Ctx<'_> {
         let Some(p) = found else {
             return Some(PlaceView {
                 id: id.to_string(),
-                name: "[Unknown place]".into(),
+                name: self.tr("record-unknown-place", &[]),
                 known: false,
                 place_type: None,
                 country_current: None,
@@ -1050,7 +1061,7 @@ impl Ctx<'_> {
         let Some(s) = found else {
             return SourceView {
                 id: id.to_string(),
-                title: "[Unknown source]".into(),
+                title: self.tr("record-unknown-source", &[]),
                 source_type: None,
                 reliability: "unknown".into(),
                 reliability_label: view::reliability_label(self.lang, "unknown"),
@@ -1070,13 +1081,15 @@ impl Ctx<'_> {
             .to_string();
         SourceView {
             id: id.to_string(),
-            title: str_field(s, "title").unwrap_or_else(|| "[Untitled source]".into()),
-            source_type: str_field(s, "source_type").map(|t| t.replace('_', " ")),
+            title: str_field(s, "title").unwrap_or_else(|| self.tr("record-untitled-source", &[])),
+            source_type: str_field(s, "source_type")
+                .map(|t| crate::i18n::vocab(self.lang, "source-type", &t)),
             reliability_label: view::reliability_label(self.lang, &reliability),
             reliability_rank: view::reliability_rank(&reliability),
             reliability,
             confidence: Confidence::from_field(s, "confidence"),
-            status: str_field(s, "status").map(|t| t.replace('_', " ")),
+            status: str_field(s, "status")
+                .map(|t| crate::i18n::vocab(self.lang, "source-status", &t)),
             repository: s
                 .get("repository")
                 .and_then(|r| r.get("name"))
@@ -1119,15 +1132,15 @@ impl Ctx<'_> {
     }
 
     fn name_view(&self, n: &Value, is_primary: bool) -> NameView {
-        let display = str_field(n, "display").unwrap_or_else(|| "[Unnamed]".into());
+        let display = str_field(n, "display").unwrap_or_else(|| self.tr("record-unnamed", &[]));
         // Only a transliteration that actually differs is worth two columns.
         let latin = str_field(n, "display_latin").filter(|l| l != &display);
         let from = str_field(n, "valid_from");
         let until = str_field(n, "valid_until");
         let period = match (from.as_deref(), until.as_deref()) {
             (Some(a), Some(b)) => Some(format!("{a}–{b}")),
-            (Some(a), None) => Some(format!("from {a}")),
-            (None, Some(b)) => Some(format!("until {b}")),
+            (Some(a), None) => Some(self.tr("record-period-from", &[("date", a.into())])),
+            (None, Some(b)) => Some(self.tr("record-period-until", &[("date", b.into())])),
             (None, None) => None,
         };
         let components = n
@@ -1363,20 +1376,21 @@ impl Ctx<'_> {
             let label = l
                 .get("label")
                 .and_then(Value::as_str)
-                .unwrap_or("linked to");
+                .map(str::to_string)
+                .unwrap_or_else(|| self.tr("record-link-unlabelled", &[]));
             let reverse = l.get("label_reverse").and_then(Value::as_str);
 
             // Read the link from this person's side: outgoing uses `label`,
             // incoming prefers `label_reverse` so the sentence stays true.
             let (direction, other_id, shown_label) = if from_id == Some(id) {
-                ("outgoing", to_id, label.to_string())
+                ("outgoing", to_id, label.clone())
             } else if to_id == Some(id) {
                 (
                     "incoming",
                     from_id,
-                    reverse
-                        .map(str::to_string)
-                        .unwrap_or_else(|| format!("{label} (of)")),
+                    reverse.map(str::to_string).unwrap_or_else(|| {
+                        self.tr("record-link-reverse", &[("label", label.clone().into())])
+                    }),
                 )
             } else {
                 continue;
@@ -1387,7 +1401,8 @@ impl Ctx<'_> {
                 label: shown_label,
                 other: self.person_ref(other_id, None, None),
                 direction,
-                category: str_field(l, "category").map(|c| c.replace('_', " ")),
+                category: str_field(l, "category")
+                    .map(|c| crate::i18n::vocab(self.lang, "link-category", &c)),
                 relation: str_field(l, "relation").map(|r| {
                     crate::profile::term_label(
                         self.lang,
@@ -1485,13 +1500,13 @@ impl Ctx<'_> {
                         .filter(|s| !s.is_empty()),
                 ) {
                     (Some(a), Some(b)) => format!("{a}–{b}"),
-                    (Some(a), None) => format!("from {a}"),
-                    (None, Some(b)) => format!("until {b}"),
-                    (None, None) => "dates unrecorded".into(),
+                    (Some(a), None) => self.tr("record-period-from", &[("date", a.into())]),
+                    (None, Some(b)) => self.tr("record-period-until", &[("date", b.into())]),
+                    (None, None) => self.tr("record-dates-unrecorded", &[]),
                 };
 
                 OccupationView {
-                    title: str_field(o, "title").unwrap_or_else(|| "[Untitled]".into()),
+                    title: str_field(o, "title").unwrap_or_else(|| self.tr("record-untitled", &[])),
                     position: str_field(o, "position"),
                     employer: o
                         .get("employer")
@@ -1598,10 +1613,12 @@ impl Ctx<'_> {
             let Some(d) = docs.get(doc_id) else {
                 out.push(DocumentView {
                     id: doc_id.to_string(),
-                    filename: "[Missing document]".into(),
+                    filename: self.tr("record-missing-document", &[]),
                     mime_type: None,
-                    document_type: "unknown".into(),
+                    document_type: "other".into(),
+                    document_type_label: crate::i18n::vocab(self.lang, "document-type", "other"),
                     status: "referenced".into(),
+                    status_label: crate::i18n::vocab(self.lang, "document-status", "referenced"),
                     caption: None,
                     note: None,
                     role,
@@ -1626,9 +1643,12 @@ impl Ctx<'_> {
                 is_image: mime.as_deref().is_some_and(|m| m.starts_with("image/")),
                 focal: None,
                 mime_type: mime,
-                document_type: str_field(d, "document_type")
-                    .unwrap_or_else(|| "other".into())
-                    .replace('_', " "),
+                document_type: str_field(d, "document_type").unwrap_or_else(|| "other".into()),
+                document_type_label: crate::i18n::vocab(
+                    self.lang,
+                    "document-type",
+                    &str_field(d, "document_type").unwrap_or_else(|| "other".into()),
+                ),
                 // Only a `present` document has bytes in the bundle; anything
                 // else names a file that lives somewhere else entirely.
                 has_payload: status == "present"
@@ -1636,13 +1656,14 @@ impl Ctx<'_> {
                         .and_then(|f| f.get("path"))
                         .and_then(Value::as_str)
                         .is_some(),
-                status: status.replace('_', " "),
+                status_label: crate::i18n::vocab(self.lang, "document-status", &status),
+                status,
                 caption: str_field(d, "caption"),
                 note: str_field(d, "note"),
                 role,
                 known: true,
                 size_bytes: size,
-                size_human: size.map(human_size),
+                size_human: size.map(|b| human_size(b, self.lang)),
             });
         };
 
@@ -1760,22 +1781,33 @@ impl Ctx<'_> {
             }
         };
 
-        add(&birth.place, "Born".into());
-        add(&death.place, "Died".into());
+        add(&birth.place, self.tr("record-born", &[]));
+        add(&death.place, self.tr("record-died", &[]));
         for e in timeline {
             if e.kind == "event" {
                 add(&e.place, e.label.clone());
             }
         }
         for o in occupations {
-            add(&o.place, format!("Worked as {}", o.title));
+            add(
+                &o.place,
+                self.tr(
+                    "record-place-worked-as",
+                    &[("title", o.title.clone().into())],
+                ),
+            );
         }
         for u in unions {
             let who = u
                 .spouse
                 .as_ref()
-                .map(|s| format!("Married {}", s.name))
-                .unwrap_or_else(|| "Married".into());
+                .map(|s| {
+                    self.tr(
+                        "record-place-married-to",
+                        &[("name", s.name.clone().into())],
+                    )
+                })
+                .unwrap_or_else(|| self.tr("record-place-married", &[]));
             add(&u.start_place, who);
         }
         out.sort_by(|a, b| a.place.name.cmp(&b.place.name));
@@ -1813,20 +1845,37 @@ impl Ctx<'_> {
             add(&e.source, e.label.clone());
         }
         for n in names {
-            add(&n.source, format!("the name “{}”", n.display));
+            add(
+                &n.source,
+                self.tr(
+                    "record-source-use-name",
+                    &[("name", n.display.clone().into())],
+                ),
+            );
         }
         for l in links {
             add(&l.source, format!("{} {}", l.label, l.other.name));
         }
         for o in occupations {
-            add(&o.source, format!("working as {}", o.title));
+            add(
+                &o.source,
+                self.tr(
+                    "record-source-use-working-as",
+                    &[("title", o.title.clone().into())],
+                ),
+            );
         }
         for u in unions {
             let who = u
                 .spouse
                 .as_ref()
-                .map(|s| format!("the union with {}", s.name))
-                .unwrap_or_else(|| "the union".into());
+                .map(|s| {
+                    self.tr(
+                        "record-source-use-union-with",
+                        &[("name", s.name.clone().into())],
+                    )
+                })
+                .unwrap_or_else(|| self.tr("record-source-use-union", &[]));
             add(&u.source, who);
         }
         out.sort_by(|a, b| {
@@ -1839,7 +1888,11 @@ impl Ctx<'_> {
 }
 
 /// "1881–1962", for the family lists, or `None` when neither date is recorded.
-fn lifespan_of(person: &Value) -> Option<String> {
+fn lifespan_of(person: &Value, lang: &str) -> Option<String> {
+    let year = |key: &str, y: &str| {
+        let args = fluent::FluentArgs::from_iter([("year", fluent::FluentValue::from(y))]);
+        crate::i18n::translate(lang, key, Some(&args))
+    };
     let b = view::render_date_field(person.get("birth").unwrap_or(&Value::Null), "date").short;
     let living = person
         .get("identity")
@@ -1853,9 +1906,9 @@ fn lifespan_of(person: &Value) -> Option<String> {
     };
     match (b.is_empty(), d.is_empty()) {
         (true, true) => None,
-        (false, true) if living => Some(format!("b. {b}")),
+        (false, true) if living => Some(year("record-lifespan-born", &b)),
         (false, true) => Some(format!("{b}–")),
-        (true, false) => Some(format!("d. {d}")),
+        (true, false) => Some(year("record-lifespan-died", &d)),
         (false, false) => Some(format!("{b}–{d}")),
     }
 }
@@ -2522,10 +2575,13 @@ mod tests {
 
     #[test]
     fn human_size_reads_like_a_file_listing() {
-        assert_eq!(human_size(0), "0 bytes");
-        assert_eq!(human_size(512), "512 bytes");
-        assert_eq!(human_size(2048), "2.0 KB");
-        assert_eq!(human_size(3 * 1024 * 1024 + 512 * 1024), "3.5 MB");
+        assert_eq!(human_size(0, "en"), "0 bytes");
+        assert_eq!(human_size(1, "en"), "1 byte");
+        assert_eq!(human_size(512, "en"), "512 bytes");
+        assert_eq!(human_size(2048, "en"), "2.0 KB");
+        assert_eq!(human_size(3 * 1024 * 1024 + 512 * 1024, "en"), "3.5 MB");
+        // The separator and the word are the language's; the symbol is not.
+        assert_eq!(human_size(3 * 1024 * 1024 + 512 * 1024, "pl"), "3,5 MB");
     }
 
     #[test]

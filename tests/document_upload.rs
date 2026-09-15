@@ -352,7 +352,9 @@ async fn a_document_with_no_payload_renders_without_breaking() {
     .await;
 
     assert!(body.contains("teofila german.png"));
-    assert!(body.contains("referenced"));
+    // The state in words, not the schema's code: `referenced` is what the
+    // bundle says and "named, held elsewhere" is what a reader is told.
+    assert!(body.contains("named, held elsewhere"));
     assert!(body.contains("no file"), "it must say the file is not here");
     assert!(
         !body.contains(&format!("/document/{doc_id}/raw")),

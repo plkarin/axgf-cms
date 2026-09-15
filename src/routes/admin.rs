@@ -337,7 +337,7 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
     let (_viewer, chrome) = guard!(state, headers);
     let counts = state.counts();
     let env = state.inspect_with(axgf_rs::validate);
-    let diagnostics = diagnostics_json(&env.diagnostics);
+    let diagnostics = diagnostics_json(&env.diagnostics, chrome.lang);
     // Validation says what is wrong; this says what is missing.
     let completeness = state.read(|flat| crate::completeness::analyse(flat, chrome.lang));
 
@@ -357,12 +357,12 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             validation => env.data,
             diagnostics,
             bundle_path => state.bundle_path().display().to_string(),
-            bundle_size => documents::human_size(state.bundle_size()),
+            bundle_size => documents::human_size_in(state.bundle_size(), chrome.lang),
             // Size on disk is no longer the resident cost — payloads are
             // streamed in and out and never held — but it is still what an
             // operator sizes a host and a backup against.
             bundle_heavy => state.bundle_size() > state.size_warn(),
-            size_warn => documents::human_size(state.size_warn()),
+            size_warn => documents::human_size_in(state.size_warn(), chrome.lang),
             // The payloads live outside the flat JSON, so what the bundle
             // declares in `external_payloads` is the count of attached files.
             attachment_count => state.read(|flat| flat.get("external_payloads")
@@ -380,7 +380,7 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
                     "entity_id": e.entity_id,
                     "label": e.label,
                     "version_num": e.version_num,
-                    "summary": e.summary(),
+                    "summary": e.summary_in(chrome.lang),
                 }))
                 .collect::<Vec<_>>(),
             journal_len => state.journal().len(),
@@ -490,7 +490,7 @@ pub async fn new_form(
             kinds => KINDS,
             creating => true,
             id => "",
-            fields => field_views(k, &Value::Object(Default::default())),
+            fields => field_views(k, &Value::Object(Default::default()), chrome.lang),
             raw => "{}",
             action => format!("/admin/{kind}"),
         },
@@ -538,12 +538,12 @@ pub async fn edit_form(
             kinds => KINDS,
             creating => false,
             id,
-            fields => field_views(k, &shown),
+            fields => field_views(k, &shown, chrome.lang),
             raw => serde_json::to_string_pretty(shown.as_ref())
                 .unwrap_or_else(|_| "{}".into()),
             action => format!("/admin/{kind}/{id}"),
             base_version => crate::state::version_of(&entity),
-            history => history_json(&state, crate::state::kind_name(k), &id, viewer.ceiling()),
+            history => history_json(&state, crate::state::kind_name(k), &id, viewer.ceiling(), chrome.lang),
         },
     )
 }
@@ -571,6 +571,7 @@ fn history_json(
     kind: &str,
     id: &str,
     ceiling: crate::acl::Visibility,
+    lang: &str,
 ) -> Vec<Value> {
     let readable = if kind == "person" {
         state.read(|flat| {
@@ -592,7 +593,7 @@ fn history_json(
                 "who": e.who,
                 "action": e.action,
                 "version_num": e.version_num,
-                "summary": e.summary(),
+                "summary": e.summary_in(lang),
                 "changes": crate::sensitive::changes_for_reader(&e.changes, readable),
             })
         })
@@ -611,7 +612,7 @@ pub async fn create(
         return unknown_kind(&chrome, &kind);
     };
 
-    let base = match base_from_raw(&form) {
+    let base = match base_from_raw(&form, chrome.lang) {
         Ok(v) => v,
         Err(msg) => return form_error(&chrome, &kind, None, &msg, &form, k),
     };
@@ -681,7 +682,7 @@ pub async fn update(
         return unknown_kind(&chrome, &kind);
     };
 
-    let base = match base_from_raw(&form) {
+    let base = match base_from_raw(&form, chrome.lang) {
         Ok(v) => v,
         Err(msg) => return form_error(&chrome, &kind, Some(&id), &msg, &form, k),
     };
@@ -742,7 +743,10 @@ pub async fn update(
                 "admin-saved",
                 &[
                     ("version", (version_num as i64).into()),
-                    ("summary", crate::diff::summarise(&changes).into()),
+                    (
+                        "summary",
+                        crate::diff::saved_in(&changes, chrome.lang).into(),
+                    ),
                 ],
             ),
             &MutationOutcome {
@@ -827,12 +831,12 @@ pub(super) fn conflict_page(
     let (who, when) = match &last {
         Some(e) => (e.who.clone(), e.at.clone()),
         None => (
-            "somebody".to_string(),
+            chrome.t("conflict-someone"),
             current
                 .get("updated_at")
                 .and_then(Value::as_str)
-                .unwrap_or("an unrecorded time")
-                .to_string(),
+                .map(str::to_string)
+                .unwrap_or_else(|| chrome.t("conflict-unrecorded-time")),
         ),
     };
 
@@ -891,7 +895,7 @@ pub(super) fn conflict_page(
                     &shown_entity(current, readable))
                     .unwrap_or_else(|_| "{}".into()),
                 action => format!("/admin/{kind}/{id}"),
-                history => history_json(state, crate::state::kind_name(k), id, ceiling),
+                history => history_json(state, crate::state::kind_name(k), id, ceiling, chrome.lang),
             },
         ),
     )
@@ -984,9 +988,12 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
         context! {
             nav => "admin",
             title => chrome.t("admin-validation-report"),
-            summary => summary_line(&env.data, &[
-                ("errors", "error"), ("warnings", "warning"), ("infos", "note")]),
-            diagnostics => diagnostics_json(&env.diagnostics),
+            summary => summary_line(&chrome, &env.data, &[
+                ("errors", "validate-errors"),
+                ("warnings", "validate-warnings"),
+                ("infos", "validate-notes"),
+            ], "validate-nothing"),
+            diagnostics => diagnostics_json(&env.diagnostics, chrome.lang),
             back => "/admin",
             applied => true,
         },
@@ -1002,12 +1009,14 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
     };
 
     let summary = summary_line(
+        &chrome,
         &out.data,
         &[
-            ("merged_persons", "person merged"),
-            ("merged_families", "family merged"),
-            ("manual_review", "case left for manual review"),
+            ("merged_persons", "dedup-merged-persons"),
+            ("merged_families", "dedup-merged-families"),
+            ("manual_review", "dedup-manual-review"),
         ],
+        "dedup-nothing",
     );
 
     render::page_with(
@@ -1021,7 +1030,7 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
                 "admin-dedup-refused"
             }),
             summary,
-            diagnostics => diagnostics_json(&out.diagnostics),
+            diagnostics => diagnostics_json(&out.diagnostics, chrome.lang),
             back => "/admin",
             applied => out.applied,
         },
@@ -1093,26 +1102,49 @@ impl ExportQuery {
 }
 
 /// Parse the raw-JSON textarea, if the form carried one.
-fn base_from_raw(form: &HashMap<String, String>) -> Result<Value, String> {
+///
+/// The refusal is a sentence in the reader's language around the parser's own
+/// message, which names a line and a column and stays as the parser wrote it.
+fn base_from_raw(form: &HashMap<String, String>, lang: &str) -> Result<Value, String> {
     match form.get("raw_json").map(String::as_str).map(str::trim) {
         None | Some("") => Ok(Value::Object(Default::default())),
-        Some(s) => serde_json::from_str::<Value>(s)
-            .map_err(|e| format!("The raw JSON did not parse: {e}. Nothing was saved.")),
+        Some(s) => serde_json::from_str::<Value>(s).map_err(|e| {
+            let args = fluent::FluentArgs::from_iter([(
+                "error",
+                fluent::FluentValue::from(e.to_string()),
+            )]);
+            crate::i18n::translate(lang, "admin-raw-json-unparsed", Some(&args))
+        }),
     }
 }
 
 /// Field descriptors with their current values, for the form template.
-fn field_views(kind: axgf_rs::EntityKind, entity: &Value) -> Vec<Value> {
+fn field_views(kind: axgf_rs::EntityKind, entity: &Value, lang: &str) -> Vec<Value> {
+    let t = |key: &str| crate::i18n::translate(lang, key, None);
     fields_for(kind)
         .iter()
         .map(|f| {
             let current = get_path(entity, f.path);
+            let options: Vec<Value> = f
+                .options
+                .iter()
+                .map(|o| {
+                    json!({
+                        "value": o,
+                        "label": if o.is_empty() {
+                            t("admin-not-set")
+                        } else {
+                            crate::i18n::vocab(lang, f.vocab, o)
+                        },
+                    })
+                })
+                .collect();
             json!({
                 "path": f.path,
-                "label": f.label,
+                "label": t(f.label),
                 "kind": f.kind,
-                "hint": f.hint,
-                "options": f.options,
+                "hint": f.hint.map(t).unwrap_or_default(),
+                "options": options,
                 "value": current,
                 "checked": current == "true",
             })
@@ -1398,14 +1430,30 @@ fn family_label(flat: &Value, lang: &str, e: &Value) -> String {
     }
 }
 
-/// Diagnostics as plain JSON for the templates.
-fn diagnostics_json(diags: &[axgf_rs::boundary::envelope::Diagnostic]) -> Vec<Value> {
+/// Diagnostics as plain JSON for the templates, each with a sentence in the
+/// reader's language saying what its code means.
+///
+/// The library's own `message` stays beside it, as the library wrote it. It
+/// names paths, ids and values — the specifics somebody fixing the record
+/// needs — and it is the library's output rather than this interface's, so it
+/// is shown as a quotation of that output and marked as English for a screen
+/// reader. What the reader is *told* is the explanation.
+pub(super) fn diagnostics_json(
+    diags: &[axgf_rs::boundary::envelope::Diagnostic],
+    lang: &str,
+) -> Vec<Value> {
     diags
         .iter()
         .map(|d| {
+            let key = format!("diag-{}", d.code.as_str().to_ascii_lowercase());
+            // A code a newer library adds and this build has no sentence for
+            // shows its message alone, rather than its key.
+            let explanation = crate::i18n::has_message(crate::i18n::DEFAULT, &key)
+                .then(|| crate::i18n::translate(lang, &key, None));
             json!({
                 "code": d.code.as_str(),
                 "severity": format!("{:?}", d.severity).to_lowercase(),
+                "explanation": explanation,
                 "message": d.message,
                 "entity_ref": d.entity_ref,
             })
@@ -1413,28 +1461,26 @@ fn diagnostics_json(diags: &[axgf_rs::boundary::envelope::Diagnostic]) -> Vec<Va
         .collect()
 }
 
-/// Turn numeric fields of an envelope's data into "2 merged, 1 left" prose.
-fn summary_line(data: &Value, fields: &[(&str, &str)]) -> String {
+/// Turn numeric fields of an envelope's data into "2 people merged, 1 case
+/// left" prose. Each field names a message that takes `$n`, so the plural is
+/// the language's and not English's `s`.
+fn summary_line(
+    chrome: &render::Chrome,
+    data: &Value,
+    fields: &[(&str, &str)],
+    nothing: &str,
+) -> String {
     let parts: Vec<String> = fields
         .iter()
-        .filter_map(|(key, noun)| {
-            let n = data.get(key).and_then(Value::as_u64)?;
-            Some(format!(
-                "{n} {noun}{}",
-                if n == 1 {
-                    ""
-                } else if noun.ends_with('h') {
-                    "es"
-                } else {
-                    "s"
-                }
-            ))
+        .filter_map(|(field, key)| {
+            let n = data.get(field).and_then(Value::as_u64)?;
+            Some(chrome.t_args(key, &[("n", (n as i64).into())]))
         })
         .collect();
     if parts.is_empty() {
-        "Nothing to report.".into()
+        chrome.t(nothing)
     } else {
-        parts.join(", ")
+        parts.join(&chrome.t("list-separator"))
     }
 }
 
@@ -1485,7 +1531,10 @@ pub(super) fn save_entity(
                 "admin-saved",
                 &[
                     ("version", (version_num as i64).into()),
-                    ("summary", crate::diff::summarise(&changes).into()),
+                    (
+                        "summary",
+                        crate::diff::saved_in(&changes, chrome.lang).into(),
+                    ),
                 ],
             ),
             &MutationOutcome {
@@ -1610,12 +1659,12 @@ pub(super) fn result_page(
         context! {
             nav => "admin",
             title,
-            summary => if out.applied {
-                "The bundle was written to disk."
+            summary => chrome.t(if out.applied {
+                "result-written"
             } else {
-                "The library refused this operation. The bundle on disk is unchanged."
-            },
-            diagnostics => diagnostics_json(&out.diagnostics),
+                "result-refused"
+            }),
+            diagnostics => diagnostics_json(&out.diagnostics, chrome.lang),
             back => back.unwrap_or_else(|| format!("/admin/{kind}")),
             applied => out.applied,
         },
@@ -1642,9 +1691,13 @@ fn form_error(
             kinds => KINDS,
             creating => id.is_none(),
             id => id.unwrap_or(""),
-            fields => field_views(k, &entity),
+            fields => field_views(k, &entity, chrome.lang),
             raw,
             error => message,
+            // The version the editor started from rides through a refusal, so
+            // correcting the JSON and saving again is a save and not a
+            // conflict with themselves.
+            base_version => form.get("base_version").cloned().unwrap_or_default(),
             action => match id {
                 Some(i) => format!("/admin/{kind}/{i}"),
                 None => format!("/admin/{kind}"),
@@ -2355,7 +2408,10 @@ pub async fn place_update(
                 "admin-saved",
                 &[
                     ("version", (version_num as i64).into()),
-                    ("summary", crate::diff::summarise(&changes).into()),
+                    (
+                        "summary",
+                        crate::diff::saved_in(&changes, chrome.lang).into(),
+                    ),
                 ],
             ),
             &MutationOutcome {

@@ -57,7 +57,57 @@ select half in English leaves the reader unable to tell which options were
 translated. `every_language_names_every_part_of_the_profile` holds all eleven
 to it.
 
+### Security
+
+**The family picker named people its reader may not read.** The links and
+events editors offer families by their partners' names, and that list went
+straight to the bundle rather than through the reader's lens, so a contributor
+could read the name of a private living person off a datalist. Every other
+picker on those pages already left such a person out; the family list now
+names them by id, as the relationships editor always has.
+
 ### Fixed
+
+**English assembled in Rust reached every language.** The template linter
+reads templates, so the words built in Rust never passed in front of it — and
+there were a lot of them. The confidence sentence on every fact ("Confidence
+80% — well supported"), the tree's line titles, "Born", "Married", "Worked
+as", the notes' labels, "from" and "until", "dates unrecorded", "[Unknown
+source]", a file's size in "bytes", the calendar names, a history's "changed
+note", the conflict page's "somebody", the dedup and validation counts with
+English's `s` for a plural, the result page, the import errors, the
+completeness fractions, the language selector's English names, and the whole
+of the generic editor — every label, every hint, and raw schema values in its
+selects. All of it is now Fluent in all eleven catalogues, 240 messages, with
+plurals by each language's rules and decimal commas where a language writes
+them.
+
+This was verified by rendering rather than by reading: 103 pages — the four
+verification subjects on every tab, every profile group and editor, every
+generic list, form and editor, the tree and its panel, the dashboard — each
+drawn in English and in the other language, every text node and accessible
+name identical in both flagged unless it is recorded data, a real
+translation, or notation the library supplies. What remains in all ten
+languages is data, acronyms, endonyms, words the languages share, and the
+library's own diagnostic text.
+
+That text is kept, and no longer stands alone. Each of the library's 26 codes
+now has a sentence in the reader's language saying what it means; the
+library's message stays beneath it, marked as English, because it names the
+path, the id and the value somebody repairing the record needs.
+
+The schema's event categories, source types and states, and document types
+and states had no messages at all for most of their terms, so the events
+editor offered `event-category-migration` as an option. They are named now, as
+is every term the generic editor can offer — `every_dynamic_key_family_is_fully_defined`
+holds English to all of them. And the place editor's hints, errors, place
+types and precisions were English copied into eight catalogues, which the
+coverage number counted as translated; they are translated.
+
+**A refused generic save forgot where the editor started.** Correcting JSON
+that did not parse and saving again met the conflict page: the form came back
+without the version it was built from, and a missing version fails closed. It
+now carries it through.
 
 **`record-status` was one key for two sentences.** "Status" over a document
 table and "Status" beside whether a person is living read the same in English

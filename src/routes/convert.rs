@@ -43,26 +43,39 @@ pub async fn gedcom(
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
 
+    let limit_mb = || ((MAX_UPLOAD / (1024 * 1024)) as i64).into();
     let upload = match read_upload(multipart).await {
         Ok(u) => u,
-        Err((status, msg)) => return fail(&chrome, status, &msg),
+        Err(UploadError::TooLarge) => {
+            return fail(
+                &chrome,
+                StatusCode::PAYLOAD_TOO_LARGE,
+                &chrome.t_args("convert-error-too-large", &[("limit", limit_mb())]),
+            )
+        }
+        Err(UploadError::Unreadable(e)) => {
+            return fail(
+                &chrome,
+                StatusCode::BAD_REQUEST,
+                &chrome.t_args("convert-error-unreadable", &[("error", e.into())]),
+            )
+        }
     };
 
     if upload.bytes.is_empty() {
-        return fail(
-            &chrome,
-            StatusCode::OK,
-            "No file was uploaded. Choose a .ged file first.",
-        );
+        return fail(&chrome, StatusCode::OK, &chrome.t("convert-error-no-file"));
     }
     if upload.bytes.len() > MAX_UPLOAD {
+        let size = crate::i18n::decimal(
+            chrome.lang,
+            &format!("{:.1}", upload.bytes.len() as f64 / (1024.0 * 1024.0)),
+        );
         return fail(
             &chrome,
             StatusCode::PAYLOAD_TOO_LARGE,
-            &format!(
-                "That file is {:.1} MB. The limit is {} MB. Nothing was converted.",
-                upload.bytes.len() as f64 / (1024.0 * 1024.0),
-                MAX_UPLOAD / (1024 * 1024)
+            &chrome.t_args(
+                "convert-error-file-too-large",
+                &[("size", size.into()), ("limit", limit_mb())],
             ),
         );
     }
@@ -70,14 +83,13 @@ pub async fn gedcom(
         return fail(
             &chrome,
             StatusCode::OK,
-            "That does not look like a GEDCOM file. A GEDCOM 5.5.1 file starts \
-             with a `0 HEAD` line. Nothing was converted.",
+            &chrome.t("convert-error-not-gedcom"),
         );
     }
 
     // The library owns the conversion. This crate only reports the result.
     let env = axgf_rs::convert_gedcom(&upload.bytes, upload.confidence, &upload.lang);
-    let diagnostics = render_diagnostics(&env.diagnostics);
+    let diagnostics = super::admin::diagnostics_json(&env.diagnostics, chrome.lang);
 
     let data = match envelope_into_data(env) {
         Ok(d) => d,
@@ -112,7 +124,10 @@ pub async fn gedcom(
             return fail(
                 &chrome,
                 StatusCode::INTERNAL_SERVER_ERROR,
-                &format!("The bundle converted but could not be packaged: {e}"),
+                &chrome.t_args(
+                    "convert-error-packaging",
+                    &[("error", e.to_string().into())],
+                ),
             )
         }
     };
@@ -176,25 +191,21 @@ pub async fn download(
     }
 }
 
+/// Why an upload could not be read. Two cases, because they deserve different
+/// statuses — a body past the limit is a 413, anything else malformed a 400 —
+/// and the sentence for each is the reader's, chosen by the handler.
+enum UploadError {
+    TooLarge,
+    /// The multipart parser's own message, kept as it wrote it.
+    Unreadable(String),
+}
+
 /// Read the multipart form, tolerating fields in any order.
-///
-/// The error carries a status because the two failure modes deserve different
-/// ones: a body past the limit is a 413, anything else malformed is a 400.
-async fn read_upload(mut multipart: Multipart) -> Result<Upload, (StatusCode, String)> {
+async fn read_upload(mut multipart: Multipart) -> Result<Upload, UploadError> {
     let mut out = Upload {
         confidence: 0.8,
         lang: "en".to_string(),
         ..Default::default()
-    };
-
-    let too_large = || {
-        (
-            StatusCode::PAYLOAD_TOO_LARGE,
-            format!(
-                "That upload is larger than the {} MB limit. Nothing was converted.",
-                MAX_UPLOAD / (1024 * 1024)
-            ),
-        )
     };
 
     loop {
@@ -203,13 +214,10 @@ async fn read_upload(mut multipart: Multipart) -> Result<Upload, (StatusCode, St
             Ok(None) => break,
             // A truncated or malformed body is a user error, not a panic. The
             // body-limit layer surfaces here too, so it is separated out.
-            Err(e) if e.status() == StatusCode::PAYLOAD_TOO_LARGE => return Err(too_large()),
-            Err(e) => {
-                return Err((
-                    StatusCode::BAD_REQUEST,
-                    format!("The upload could not be read: {e}"),
-                ))
+            Err(e) if e.status() == StatusCode::PAYLOAD_TOO_LARGE => {
+                return Err(UploadError::TooLarge)
             }
+            Err(e) => return Err(UploadError::Unreadable(e.to_string())),
         };
 
         let name = field.name().unwrap_or_default().to_string();
@@ -219,7 +227,7 @@ async fn read_upload(mut multipart: Multipart) -> Result<Upload, (StatusCode, St
                 match field.bytes().await {
                     Ok(b) => out.bytes = b.to_vec(),
                     // In practice this is the body limit firing mid-field.
-                    Err(_) => return Err(too_large()),
+                    Err(_) => return Err(UploadError::TooLarge),
                 }
             }
             "confidence" => {
@@ -243,21 +251,6 @@ async fn read_upload(mut multipart: Multipart) -> Result<Upload, (StatusCode, St
         }
     }
     Ok(out)
-}
-
-/// Diagnostics as plain JSON for the template.
-fn render_diagnostics(diags: &[axgf_rs::boundary::envelope::Diagnostic]) -> Vec<Value> {
-    diags
-        .iter()
-        .map(|d| {
-            json!({
-                "code": d.code.as_str(),
-                "severity": format!("{:?}", d.severity).to_lowercase(),
-                "message": d.message,
-                "entity_ref": d.entity_ref,
-            })
-        })
-        .collect()
 }
 
 /// Render the result page in its failure shape, with a fitting status.

@@ -394,6 +394,19 @@ pub fn vocab(lang: &str, family: &str, value: &str) -> String {
     text
 }
 
+/// A decimal number as `lang` writes it: `2.5` in English, `2,5` in Polish.
+///
+/// Only the separator changes. Digits stay Western Arabic in every language
+/// this build offers — including Arabic, whose interface already writes its
+/// dates and counts that way — and no grouping is added, so a value reads back
+/// exactly as it was recorded.
+pub fn decimal(lang: &str, text: &str) -> String {
+    match lang {
+        "fr" | "pl" | "ru" | "de" | "it" | "es" | "pt" => text.replace('.', ","),
+        _ => text.to_string(),
+    }
+}
+
 /// Whether `tag` defines `key` itself, rather than inheriting it.
 pub fn has_message(tag: &str, key: &str) -> bool {
     catalog()

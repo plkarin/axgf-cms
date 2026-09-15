@@ -2752,3 +2752,273 @@ profile-error-coordinates = Des coordonnées demandent une latitude entre −90 
 profile-error-rank-country = Le grade appartient à un autre pays que celui choisi.
 record-unknown-place = [Lieu inconnu]
 record-missing-document = [Document manquant]
+
+## Interface
+
+confidence-certain = Degré de certitude { $percent } % — pratiquement certain
+confidence-high = Degré de certitude { $percent } % — bien étayé
+confidence-medium = Degré de certitude { $percent } % — plausible mais non confirmé
+confidence-low = Degré de certitude { $percent } % — hypothétique
+tree-edge-union-between = { $from } et { $to } — { $confidence }
+tree-edge-parentage-of = { $from }, parent de { $to } — { $confidence }
+record-note-biography = Biographie
+record-note-birth-date-as-recorded = Date de naissance, telle qu’enregistrée
+record-note-death-date-as-recorded = Date de décès, telle qu’enregistrée
+record-note-event-date-as-recorded = Date de « { $event } », telle qu’enregistrée
+record-unknown-source = [Source inconnue]
+record-untitled-source = [Source sans titre]
+record-unnamed = [Sans nom]
+record-untitled = [Sans intitulé]
+record-period-from = à partir de { $date }
+record-period-until = jusqu’en { $date }
+record-dates-unrecorded = dates non enregistrées
+record-link-unlabelled = lié à
+record-link-reverse = { $label } (de)
+record-place-worked-as = A travaillé comme { $title }
+record-place-married-to = Mariage avec { $name }
+record-place-married = Mariage
+record-source-use-name = le nom « { $name } »
+record-source-use-working-as = l’activité de { $title }
+record-source-use-union-with = l’union avec { $name }
+record-source-use-union = l’union
+record-lifespan-born = n. { $year }
+record-lifespan-died = déc. { $year }
+size-bytes = { $n ->
+        [one] { $n } octet
+       *[other] { $n } octets
+    }
+size-kb = { $n } Ko
+size-mb = { $n } Mo
+size-gb = { $n } Go
+calendar-gregorian = grégorien
+calendar-julian = julien
+calendar-hebrew = hébraïque
+calendar-hijri = hégirien
+calendar-persian = persan
+calendar-chinese = chinois
+calendar-ethiopian = éthiopien
+calendar-japanese_era = ère japonaise
+calendar-republican_french = républicain
+calendar-roman = romain
+diff-summary-none = aucun champ modifié
+diff-summary-one = a modifié { $a }
+diff-summary-two = a modifié { $a } et { $b }
+diff-summary-many = a modifié { $a }, { $b } et { $n ->
+        [one] un autre
+       *[other] { $n } autres
+    }
+diff-saved-none = aucun champ modifié
+diff-saved-one = { $a } modifié
+diff-saved-two = { $a } et { $b } modifiés
+diff-saved-many = { $a }, { $b } et { $n ->
+        [one] un autre champ modifiés
+       *[other] { $n } autres champs modifiés
+    }
+history-created = a créé
+history-deleted = a supprimé
+history-attached = a joint un fichier
+admin-raw-json-unparsed = Le JSON brut n’a pas pu être lu ({ $error }). Rien n’a été enregistré.
+conflict-someone = Quelqu’un
+conflict-unrecorded-time = un moment que personne n’a noté
+dedup-merged-persons = { $n ->
+        [one] une personne fusionnée
+       *[other] { $n } personnes fusionnées
+    }
+dedup-merged-families = { $n ->
+        [one] une famille fusionnée
+       *[other] { $n } familles fusionnées
+    }
+dedup-manual-review = { $n ->
+        [one] un cas laissé à l’examen d’une personne
+       *[other] { $n } cas laissés à l’examen d’une personne
+    }
+dedup-nothing = Rien à signaler.
+validate-errors = { $n ->
+        [one] une erreur
+       *[other] { $n } erreurs
+    }
+validate-warnings = { $n ->
+        [one] un avertissement
+       *[other] { $n } avertissements
+    }
+validate-notes = { $n ->
+        [one] une remarque
+       *[other] { $n } remarques
+    }
+validate-nothing = Rien à signaler.
+list-separator = { ", " }
+result-written = L’archive a été écrite sur le disque.
+result-refused = La bibliothèque a refusé cette opération. L’archive sur le disque est inchangée.
+convert-error-no-file = Aucun fichier n’a été envoyé. Choisissez d’abord un fichier .ged.
+convert-error-file-too-large = Ce fichier pèse { $size } Mo et la limite est de { $limit } Mo. Rien n’a été converti.
+convert-error-too-large = Cet envoi dépasse la limite de { $limit } Mo. Rien n’a été converti.
+convert-error-unreadable = L’envoi n’a pas pu être lu ({ $error }). Rien n’a été converti.
+convert-error-not-gedcom = Ce fichier ne ressemble pas à un fichier GEDCOM : un fichier GEDCOM 5.5.1 commence par une ligne « 0 HEAD ». Rien n’a été converti.
+convert-error-packaging = Le fichier a été converti mais n’a pas pu être empaqueté ({ $error }).
+completeness-fraction = { $part } sur { $whole }
+event-category-adoption = Adoption
+event-category-migration = Migration
+event-category-naturalization = Naturalisation
+event-category-incarceration = Emprisonnement
+event-category-name_change = Changement de nom
+event-category-legal = Affaire judiciaire
+event-category-religious = Événement religieux
+event-category-social = Événement social
+event-category-historical = Événement historique
+precision-quarter_century = au quart de siècle près
+source-type-birth_certificate = acte de naissance
+source-type-death_certificate = acte de décès
+source-type-marriage_certificate = acte de mariage
+source-type-census = recensement
+source-type-baptism_record = acte de baptême
+source-type-burial_record = acte de sépulture
+source-type-will = testament
+source-type-land_record = acte foncier
+source-type-military_record = registre militaire
+source-type-immigration_record = registre d’immigration
+source-type-naturalization = dossier de naturalisation
+source-type-passport = passeport
+source-type-photograph = photographie
+source-type-letter = lettre
+source-type-diary = journal intime
+source-type-newspaper = journal
+source-type-oral_tradition = tradition orale
+source-type-dna = test ADN
+source-type-family_bible = bible familiale
+source-type-gravestone = pierre tombale
+source-type-published_genealogy = généalogie publiée
+source-type-other = autre source
+source-status-verified = vérifiée sur l’original
+source-status-unverified = pas encore vérifiée
+source-status-lost = perdue
+source-status-known_missing = connue pour manquer
+document-type-birth_certificate = acte de naissance
+document-type-death_certificate = acte de décès
+document-type-marriage_certificate = acte de mariage
+document-type-census_page = page de recensement
+document-type-baptism_record = acte de baptême
+document-type-military_record = registre militaire
+document-type-will = testament
+document-type-land_record = acte foncier
+document-type-diary = journal intime
+document-type-newspaper_clipping = coupure de presse
+document-type-gravestone_photo = photographie de pierre tombale
+document-type-family_tree_drawing = arbre généalogique dessiné
+document-type-audio = enregistrement sonore
+document-type-video = enregistrement vidéo
+document-status-present = conservé ici
+document-status-referenced = cité, conservé ailleurs
+document-status-known_missing = connu pour manquer
+document-status-lost = perdu
+document-status-unknown = emplacement inconnu
+diag-unsupported_spec_version = L’archive déclare une version d’AXGF que cette version du logiciel ne sait pas lire.
+diag-invalid_json = Un contenu qui devrait être du JSON ne peut pas être lu.
+diag-invalid_bundle_structure = L’archive n’est pas organisée comme AXGF l’exige.
+diag-schema_validation_failed = Un enregistrement ne correspond pas au schéma AXGF.
+diag-dangling_reference = Un enregistrement renvoie à un autre qui ne figure pas dans l’archive.
+diag-duplicate_entity_id = Deux enregistrements partagent le même identifiant.
+diag-duplicate_unique_ref = Deux enregistrements revendiquent la même référence, qui devrait être unique.
+diag-cycle_detected = Les liens familiaux tournent en rond : quelqu’un serait son propre ancêtre.
+diag-chronology_conflict = Des dates se contredisent, par exemple un enfant né avant son parent.
+diag-out_of_vocabulary = Une valeur ne fait pas partie des termes que sa liste autorise.
+diag-claim_inconsistent = Une affirmation se contredit ou contredit une autre affirmation sur le même point.
+diag-spec_version_mismatch = La version d’AXGF déclarée par un enregistrement ne correspond pas à son contenu.
+diag-unknown_attribute = Un enregistrement porte un attribut qu’AXGF ne définit pas.
+diag-entity_not_found = L’enregistrement à modifier ne figure pas dans l’archive.
+diag-entity_already_exists = Un enregistrement portant cet identifiant existe déjà.
+diag-unknown_entity_kind = Ce n’est pas un type d’enregistrement qu’AXGF connaît.
+diag-delete_blocked_by_reference = L’enregistrement ne peut pas être supprimé tant que d’autres y renvoient.
+diag-manual_review_required = Une personne doit examiner ce point ; il n’a pas été modifié automatiquement.
+diag-zip_read_error = Le fichier d’archive n’a pas pu être lu.
+diag-zip_write_error = Le fichier d’archive n’a pas pu être écrit.
+diag-payloads_external = Les fichiers joints sont conservés hors des données de l’archive.
+diag-payload_source_failed = Un fichier joint n’a pas pu être lu.
+diag-payload_sink_failed = Un fichier joint n’a pas pu être écrit.
+diag-gedcom_parse_error = Une ligne du fichier GEDCOM n’a pas pu être comprise.
+diag-gedcom_unrecognized_tag = Le fichier GEDCOM utilise une balise que l’import ne connaît pas ; cette entrée n’a pas été reprise.
+diag-internal = Une erreur s’est produite à l’intérieur de la bibliothèque.
+field-person-display-name = Nom affiché
+field-person-display-name-hint = Le nom montré partout sur le site.
+field-person-gender = Genre
+field-person-living = En vie
+field-person-birth-date = Date de naissance
+field-date-value-hint = Une année, une année et un mois, ou une date complète : 1923, 1923-04 ou 1923-04-12. Laissez vide si personne ne la connaît.
+field-person-birth-precision = Précision de la naissance
+field-precision-hint = Avec quelle précision la source l’établit.
+field-person-birth-circa = Naissance approximative
+field-circa-hint = Affiché « vers 1923 » plutôt que comme une affirmation exacte.
+field-person-birth-place = Identifiant du lieu de naissance
+field-person-birth-confidence = Certitude de la naissance
+field-person-confidence-hint = À quel point vous en êtes sûr. C’est ce que le site dessine.
+field-person-death-date = Date de décès
+field-person-death-precision = Précision du décès
+field-person-death-circa = Décès approximatif
+field-person-death-place = Identifiant du lieu de décès
+field-person-death-confidence = Certitude du décès
+field-person-death-cause = Cause du décès
+field-person-bio = Biographie
+field-notes = Notes
+field-family-name = Nom de la famille
+field-description = Description
+field-family-union-type = Type d’union
+field-family-union-status = État de l’union
+field-family-union-confidence = Certitude de l’union
+field-family-union-confidence-hint = Règle l’intensité du trait entre les partenaires dans l’arbre.
+field-family-union-start = Début de l’union
+field-family-union-end = Fin de l’union
+field-family-notes-hint = Les partenaires et les enfants sont des listes : modifiez-les dans le JSON brut ci-dessous, ou sur la page des relations de la personne.
+field-category = Catégorie
+field-required-hint = Obligatoire.
+field-event-subcategory = Sous-catégorie
+field-date = Date
+field-event-date-hint = Exigée par le schéma.
+field-precision = Précision
+field-circa = Approximative
+field-place-id = Identifiant du lieu
+field-confidence = Degré de certitude
+field-source-id = Identifiant de la source
+field-link-from-type = Type au départ
+field-link-from-id = Identifiant au départ
+field-link-to-type = Type à l’arrivée
+field-link-to-id = Identifiant à l’arrivée
+field-link-label = Intitulé
+field-link-label-hint = Se lit dans le sens du lien : « parrain », « employeur », « témoin ». Obligatoire.
+field-link-label-reverse = Intitulé inverse
+field-link-label-reverse-hint = Comment il se lit depuis l’autre bout : « filleul », « employé ».
+field-link-bidirectional = Se lit pareil dans les deux sens
+field-valid-from = Valable à partir de
+field-link-valid-from-hint = Quand la relation a commencé.
+field-valid-until = Valable jusqu’à
+field-link-confidence-hint = « Sûr à 85 %, d’après une lettre de famille » — ce que GEDCOM ne sait pas dire.
+field-note = Note
+field-occupation-person-id = Identifiant de la personne
+field-occupation-title = Activité
+field-occupation-title-hint = Obligatoire, par exemple Instituteur.
+field-occupation-title-latin = Activité (écriture latine)
+field-occupation-employer = Employeur
+field-occupation-from = Depuis
+field-occupation-from-hint = Une activité est une période. Donner ses deux bornes permet de la dessiner comme une barre.
+field-occupation-until = Jusqu’à
+field-source-title = Titre
+field-source-type = Type de source
+field-source-reliability = Fiabilité
+field-source-reliability-hint = Obligatoire. Affichée en pastille à côté de chaque fait qui repose sur cette source.
+field-source-status = État de la source
+field-source-repository = Lieu de conservation
+field-source-repository-reference = Cote dans le lieu de conservation
+field-source-transcription = Transcription
+field-place-name = Nom principal
+field-place-name-lang = Langue du nom
+field-place-name-lang-hint = Une étiquette de langue, par exemple en, fr ou pl.
+field-place-type = Type de lieu
+field-place-region = Région
+field-place-country-current = Pays actuel
+field-place-country-current-hint = L’histoire de ses frontières est une liste : modifiez-la dans le JSON brut ci-dessous.
+field-document-filename = Nom du fichier
+field-document-mime-type = Type de média
+field-document-mime-type-hint = Obligatoire, par exemple image/jpeg.
+field-document-type = Type de document
+field-document-status = État du fichier
+field-document-url = Adresse web
+field-document-caption = Légende
+lang-zh-Hans = Chinois simplifié

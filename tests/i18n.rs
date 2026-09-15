@@ -402,6 +402,51 @@ fn every_dynamic_key_family_is_fully_defined() {
     // Every group, attribute, field, term and unit the AXGF 1.1 profile can
     // name, derived from the library's registry rather than listed here.
     expected.extend(axgf_cms::profile::every_key());
+    // Words that used to be assembled in Rust, where the template linter
+    // could not see them: the confidence sentence on every fact, the
+    // calendars, the generic editor's labels, hints and options, the size of
+    // a file, a history line, a language's name in the selector, and what each
+    // of the library's diagnostic codes means.
+    for band in ["certain", "high", "medium", "low"] {
+        expected.push(format!("confidence-{band}"));
+    }
+    for c in axgf_cms::view::CALENDARS {
+        expected.push(format!("calendar-{c}"));
+    }
+    expected.extend(axgf_cms::admin::every_key());
+    for family in ["diff-summary", "diff-saved"] {
+        for n in ["none", "one", "two", "many"] {
+            expected.push(format!("{family}-{n}"));
+        }
+    }
+    for key in [
+        "size-bytes",
+        "size-kb",
+        "size-mb",
+        "size-gb",
+        "history-created",
+        "history-deleted",
+        "history-attached",
+        "list-separator",
+    ] {
+        expected.push(key.to_string());
+    }
+    for status in ["present", "referenced", "known_missing", "lost", "unknown"] {
+        expected.push(format!("document-status-{status}"));
+    }
+    for status in ["verified", "unverified", "lost", "known_missing"] {
+        expected.push(format!("source-status-{status}"));
+    }
+    for locale in axgf_cms::i18n::LOCALES {
+        expected.push(format!("lang-{}", locale.tag));
+    }
+    for code in DIAGNOSTIC_CODES {
+        assert!(
+            axgf_rs::boundary::envelope::DiagnosticCode::from_wire(code).is_some(),
+            "{code} is not a code the library has"
+        );
+        expected.push(format!("diag-{}", code.to_ascii_lowercase()));
+    }
     let missing: Vec<&String> = expected.iter().filter(|k| !english.contains(*k)).collect();
     assert!(missing.is_empty(), "English is missing {missing:?}");
 }
@@ -465,6 +510,37 @@ fn every_language_names_every_part_of_the_profile() {
         );
     }
 }
+
+/// Every diagnostic code the library reports, each of which the interface
+/// explains in the reader's language.
+const DIAGNOSTIC_CODES: &[&str] = &[
+    "UNSUPPORTED_SPEC_VERSION",
+    "INVALID_JSON",
+    "INVALID_BUNDLE_STRUCTURE",
+    "SCHEMA_VALIDATION_FAILED",
+    "DANGLING_REFERENCE",
+    "DUPLICATE_ENTITY_ID",
+    "DUPLICATE_UNIQUE_REF",
+    "CYCLE_DETECTED",
+    "CHRONOLOGY_CONFLICT",
+    "OUT_OF_VOCABULARY",
+    "CLAIM_INCONSISTENT",
+    "SPEC_VERSION_MISMATCH",
+    "UNKNOWN_ATTRIBUTE",
+    "ENTITY_NOT_FOUND",
+    "ENTITY_ALREADY_EXISTS",
+    "UNKNOWN_ENTITY_KIND",
+    "DELETE_BLOCKED_BY_REFERENCE",
+    "MANUAL_REVIEW_REQUIRED",
+    "ZIP_READ_ERROR",
+    "ZIP_WRITE_ERROR",
+    "PAYLOADS_EXTERNAL",
+    "PAYLOAD_SOURCE_FAILED",
+    "PAYLOAD_SINK_FAILED",
+    "GEDCOM_PARSE_ERROR",
+    "GEDCOM_UNRECOGNIZED_TAG",
+    "INTERNAL",
+];
 
 #[test]
 fn no_template_passes_a_literal_sentence_into_an_expression() {

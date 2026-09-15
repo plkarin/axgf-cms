@@ -55,13 +55,18 @@ pub struct Entry {
 }
 
 impl Entry {
-    /// A one-line summary for a listing.
+    /// A one-line summary for a listing, in English.
     pub fn summary(&self) -> String {
+        self.summary_in(crate::i18n::DEFAULT)
+    }
+
+    /// [`Entry::summary`] in `lang`.
+    pub fn summary_in(&self, lang: &str) -> String {
         match self.action.as_str() {
-            "create" => "created".to_string(),
-            "delete" => "deleted".to_string(),
-            "upload" => "attached a file".to_string(),
-            _ => crate::diff::summarise(&self.changes),
+            "create" => crate::i18n::translate(lang, "history-created", None),
+            "delete" => crate::i18n::translate(lang, "history-deleted", None),
+            "upload" => crate::i18n::translate(lang, "history-attached", None),
+            _ => crate::diff::summarise_in(&self.changes, lang),
         }
     }
 }

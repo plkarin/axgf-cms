@@ -31,126 +31,204 @@ pub enum FieldKind {
 }
 
 /// One editable field.
+///
+/// Every word the form shows comes from the catalogue: `label` and `hint` are
+/// message keys, and each option of a select is named by its vocabulary's own
+/// message (`vocab` is the family, so `union-type` names `marriage` through
+/// `union-type-marriage`). The table used to carry the English, and a Polish
+/// reader editing a record met a form in English with raw schema values in
+/// its selects — invisible to the template linter, because the words never
+/// passed through a template.
 #[derive(Debug, Clone, Serialize)]
 pub struct Field {
     /// Form input name, and the dotted path into the entity JSON.
     pub path: &'static str,
-    pub label: &'static str,
     pub kind: FieldKind,
-    pub hint: &'static str,
+    /// The label's message key.
+    pub label: &'static str,
+    /// The hint's message key, for a field that has one.
+    pub hint: Option<&'static str>,
     pub options: &'static [&'static str],
+    /// The vocabulary family naming the options; empty for anything else.
+    pub vocab: &'static str,
 }
 
 const NO_OPTS: &[&str] = &[];
 
-const PRECISION: &[&str] = &[
-    "",
-    "exact",
-    "month",
-    "year",
-    "decade",
-    "quarter_century",
-    "century",
-    "unknown",
-];
-
-const fn f(path: &'static str, label: &'static str, kind: FieldKind) -> Field {
-    Field {
-        path,
-        label,
-        kind,
-        hint: "",
-        options: NO_OPTS,
-    }
-}
-
-const fn fh(path: &'static str, label: &'static str, kind: FieldKind, hint: &'static str) -> Field {
-    Field {
-        path,
-        label,
-        kind,
-        hint,
-        options: NO_OPTS,
-    }
-}
-
-const fn fs(
-    path: &'static str,
-    label: &'static str,
-    options: &'static [&'static str],
-    hint: &'static str,
-) -> Field {
-    Field {
-        path,
-        label,
-        kind: FieldKind::Select,
-        hint,
-        options,
-    }
-}
-
 /// Fields shown for a person.
 const PERSON_FIELDS: &[Field] = &[
-    fh(
-        "identity.name.display",
-        "Display name",
-        FieldKind::Text,
-        "The name shown everywhere on the site.",
-    ),
-    fs(
-        "identity.gender.value",
-        "Gender",
-        &["", "M", "F", "NB", "U"],
-        "",
-    ),
-    f("identity.is_living", "Living", FieldKind::Bool),
-    fh(
-        "birth.date.value",
-        "Birth date",
-        FieldKind::Text,
-        "ISO-ish: 1923, 1923-04 or 1923-04-12. Leave blank if unknown.",
-    ),
-    fs(
-        "birth.date.precision",
-        "Birth precision",
-        PRECISION,
-        "How precisely the source pins this down.",
-    ),
-    fh(
-        "birth.date.circa",
-        "Birth is approximate",
-        FieldKind::Bool,
-        "Renders as “circa 1923” rather than an exact claim.",
-    ),
-    f("birth.place_id", "Birth place id", FieldKind::Text),
-    fh(
-        "birth.confidence",
-        "Birth confidence",
-        FieldKind::Confidence,
-        "How sure you are. This is what the site renders visually.",
-    ),
-    fh("death.date.value", "Death date", FieldKind::Text, ""),
-    fs("death.date.precision", "Death precision", PRECISION, ""),
-    f("death.date.circa", "Death is approximate", FieldKind::Bool),
-    f("death.place_id", "Death place id", FieldKind::Text),
-    f(
-        "death.confidence",
-        "Death confidence",
-        FieldKind::Confidence,
-    ),
-    f("death.cause", "Cause of death", FieldKind::Text),
-    f("bio", "Biography", FieldKind::LongText),
-    f("notes", "Notes", FieldKind::LongText),
+    Field {
+        path: "identity.name.display",
+        kind: FieldKind::Text,
+        label: "field-person-display-name",
+        hint: Some("field-person-display-name-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "identity.gender.value",
+        kind: FieldKind::Select,
+        label: "field-person-gender",
+        hint: None,
+        options: &["", "M", "F", "NB", "U"],
+        vocab: "gender",
+    },
+    Field {
+        path: "identity.is_living",
+        kind: FieldKind::Bool,
+        label: "field-person-living",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "birth.date.value",
+        kind: FieldKind::Text,
+        label: "field-person-birth-date",
+        hint: Some("field-date-value-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "birth.date.precision",
+        kind: FieldKind::Select,
+        label: "field-person-birth-precision",
+        hint: Some("field-precision-hint"),
+        options: &[
+            "",
+            "exact",
+            "month",
+            "year",
+            "decade",
+            "quarter_century",
+            "century",
+            "unknown",
+        ],
+        vocab: "precision",
+    },
+    Field {
+        path: "birth.date.circa",
+        kind: FieldKind::Bool,
+        label: "field-person-birth-circa",
+        hint: Some("field-circa-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "birth.place_id",
+        kind: FieldKind::Text,
+        label: "field-person-birth-place",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "birth.confidence",
+        kind: FieldKind::Confidence,
+        label: "field-person-birth-confidence",
+        hint: Some("field-person-confidence-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "death.date.value",
+        kind: FieldKind::Text,
+        label: "field-person-death-date",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "death.date.precision",
+        kind: FieldKind::Select,
+        label: "field-person-death-precision",
+        hint: None,
+        options: &[
+            "",
+            "exact",
+            "month",
+            "year",
+            "decade",
+            "quarter_century",
+            "century",
+            "unknown",
+        ],
+        vocab: "precision",
+    },
+    Field {
+        path: "death.date.circa",
+        kind: FieldKind::Bool,
+        label: "field-person-death-circa",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "death.place_id",
+        kind: FieldKind::Text,
+        label: "field-person-death-place",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "death.confidence",
+        kind: FieldKind::Confidence,
+        label: "field-person-death-confidence",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "death.cause",
+        kind: FieldKind::Text,
+        label: "field-person-death-cause",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "bio",
+        kind: FieldKind::LongText,
+        label: "field-person-bio",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "notes",
+        kind: FieldKind::LongText,
+        label: "field-notes",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a family.
 const FAMILY_FIELDS: &[Field] = &[
-    f("name", "Family name", FieldKind::Text),
-    f("description", "Description", FieldKind::LongText),
-    fs(
-        "union.type",
-        "Union type",
-        &[
+    Field {
+        path: "name",
+        kind: FieldKind::Text,
+        label: "field-family-name",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "description",
+        kind: FieldKind::LongText,
+        label: "field-description",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "union.type",
+        kind: FieldKind::Select,
+        label: "field-family-union-type",
+        hint: None,
+        options: &[
             "",
             "marriage",
             "civil_union",
@@ -159,12 +237,14 @@ const FAMILY_FIELDS: &[Field] = &[
             "polygamous",
             "unknown",
         ],
-        "",
-    ),
-    fs(
-        "union.status",
-        "Union status",
-        &[
+        vocab: "union-type",
+    },
+    Field {
+        path: "union.status",
+        kind: FieldKind::Select,
+        label: "field-family-union-status",
+        hint: None,
+        options: &[
             "",
             "active",
             "ended_by_death",
@@ -173,30 +253,50 @@ const FAMILY_FIELDS: &[Field] = &[
             "annulled",
             "unknown",
         ],
-        "",
-    ),
-    fh(
-        "union.confidence",
-        "Union confidence",
-        FieldKind::Confidence,
-        "Drives the opacity of the spouse connector on the tree.",
-    ),
-    fh("union.start.date.value", "Union start", FieldKind::Text, ""),
-    fh("union.end.date.value", "Union end", FieldKind::Text, ""),
-    fh(
-        "notes",
-        "Notes",
-        FieldKind::LongText,
-        "Partners and children are lists — edit them in the raw JSON below.",
-    ),
+        vocab: "union-status",
+    },
+    Field {
+        path: "union.confidence",
+        kind: FieldKind::Confidence,
+        label: "field-family-union-confidence",
+        hint: Some("field-family-union-confidence-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "union.start.date.value",
+        kind: FieldKind::Text,
+        label: "field-family-union-start",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "union.end.date.value",
+        kind: FieldKind::Text,
+        label: "field-family-union-end",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "notes",
+        kind: FieldKind::LongText,
+        label: "field-notes",
+        hint: Some("field-family-notes-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a event.
 const EVENT_FIELDS: &[Field] = &[
-    fs(
-        "category",
-        "Category",
-        &[
+    Field {
+        path: "category",
+        kind: FieldKind::Select,
+        label: "field-category",
+        hint: Some("field-required-hint"),
+        options: &[
             "",
             "birth",
             "death",
@@ -215,55 +315,139 @@ const EVENT_FIELDS: &[Field] = &[
             "historical",
             "other",
         ],
-        "Required.",
-    ),
-    f("subcategory", "Subcategory", FieldKind::Text),
-    fh(
-        "date.value",
-        "Date",
-        FieldKind::Text,
-        "Required by the schema.",
-    ),
-    fs("date.precision", "Precision", PRECISION, ""),
-    f("date.circa", "Approximate", FieldKind::Bool),
-    f("place_id", "Place id", FieldKind::Text),
-    f("description", "Description", FieldKind::LongText),
-    f("confidence", "Confidence", FieldKind::Confidence),
-    f("source_id", "Source id", FieldKind::Text),
+        vocab: "event-category",
+    },
+    Field {
+        path: "subcategory",
+        kind: FieldKind::Text,
+        label: "field-event-subcategory",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "date.value",
+        kind: FieldKind::Text,
+        label: "field-date",
+        hint: Some("field-event-date-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "date.precision",
+        kind: FieldKind::Select,
+        label: "field-precision",
+        hint: None,
+        options: &[
+            "",
+            "exact",
+            "month",
+            "year",
+            "decade",
+            "quarter_century",
+            "century",
+            "unknown",
+        ],
+        vocab: "precision",
+    },
+    Field {
+        path: "date.circa",
+        kind: FieldKind::Bool,
+        label: "field-circa",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "place_id",
+        kind: FieldKind::Text,
+        label: "field-place-id",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "description",
+        kind: FieldKind::LongText,
+        label: "field-description",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "confidence",
+        kind: FieldKind::Confidence,
+        label: "field-confidence",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "source_id",
+        kind: FieldKind::Text,
+        label: "field-source-id",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a link.
 const LINK_FIELDS: &[Field] = &[
-    fs(
-        "from.entity_type",
-        "From type",
-        &["person", "family", "event"],
-        "",
-    ),
-    fh("from.entity_id", "From id", FieldKind::Text, "Required."),
-    fs(
-        "to.entity_type",
-        "To type",
-        &["person", "family", "event"],
-        "",
-    ),
-    fh("to.entity_id", "To id", FieldKind::Text, "Required."),
-    fh(
-        "label",
-        "Label",
-        FieldKind::Text,
-        "Reads forward: “godfather”, “employer”, “witness”. Required.",
-    ),
-    fh(
-        "label_reverse",
-        "Reverse label",
-        FieldKind::Text,
-        "How it reads from the other end: “godson”, “employee”.",
-    ),
-    fs(
-        "category",
-        "Category",
-        &[
+    Field {
+        path: "from.entity_type",
+        kind: FieldKind::Select,
+        label: "field-link-from-type",
+        hint: None,
+        options: &["person", "family", "event"],
+        vocab: "kind",
+    },
+    Field {
+        path: "from.entity_id",
+        kind: FieldKind::Text,
+        label: "field-link-from-id",
+        hint: Some("field-required-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "to.entity_type",
+        kind: FieldKind::Select,
+        label: "field-link-to-type",
+        hint: None,
+        options: &["person", "family", "event"],
+        vocab: "kind",
+    },
+    Field {
+        path: "to.entity_id",
+        kind: FieldKind::Text,
+        label: "field-link-to-id",
+        hint: Some("field-required-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "label",
+        kind: FieldKind::Text,
+        label: "field-link-label",
+        hint: Some("field-link-label-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "label_reverse",
+        kind: FieldKind::Text,
+        label: "field-link-label-reverse",
+        hint: Some("field-link-label-reverse-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "category",
+        kind: FieldKind::Select,
+        label: "field-category",
+        hint: None,
+        options: &[
             "",
             "spiritual",
             "professional",
@@ -274,57 +458,158 @@ const LINK_FIELDS: &[Field] = &[
             "conflict",
             "other",
         ],
-        "",
-    ),
-    f("bidirectional", "Bidirectional", FieldKind::Bool),
-    fh(
-        "valid_from.date.value",
-        "Valid from",
-        FieldKind::Text,
-        "When the relationship started.",
-    ),
-    f("valid_until.date.value", "Valid until", FieldKind::Text),
-    fh(
-        "confidence",
-        "Confidence",
-        FieldKind::Confidence,
-        "“85% confident, per a family letter” — the thing GEDCOM cannot say.",
-    ),
-    f("source_id", "Source id", FieldKind::Text),
-    f("note", "Note", FieldKind::LongText),
+        vocab: "link-category",
+    },
+    Field {
+        path: "bidirectional",
+        kind: FieldKind::Bool,
+        label: "field-link-bidirectional",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "valid_from.date.value",
+        kind: FieldKind::Text,
+        label: "field-valid-from",
+        hint: Some("field-link-valid-from-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "valid_until.date.value",
+        kind: FieldKind::Text,
+        label: "field-valid-until",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "confidence",
+        kind: FieldKind::Confidence,
+        label: "field-confidence",
+        hint: Some("field-link-confidence-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "source_id",
+        kind: FieldKind::Text,
+        label: "field-source-id",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "note",
+        kind: FieldKind::LongText,
+        label: "field-note",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a occupation.
 const OCCUPATION_FIELDS: &[Field] = &[
-    fh("person_id", "Person id", FieldKind::Text, "Required."),
-    fh(
-        "title",
-        "Title",
-        FieldKind::Text,
-        "Required. e.g. Schoolteacher.",
-    ),
-    f("title_latin", "Title (Latin script)", FieldKind::Text),
-    f("employer.name", "Employer", FieldKind::Text),
-    f("place_id", "Place id", FieldKind::Text),
-    fh(
-        "valid_from.date.value",
-        "From",
-        FieldKind::Text,
-        "An occupation is a span. Giving both bounds is what makes it a bar.",
-    ),
-    f("valid_until.date.value", "Until", FieldKind::Text),
-    f("confidence", "Confidence", FieldKind::Confidence),
-    f("source_id", "Source id", FieldKind::Text),
-    f("note", "Note", FieldKind::LongText),
+    Field {
+        path: "person_id",
+        kind: FieldKind::Text,
+        label: "field-occupation-person-id",
+        hint: Some("field-required-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "title",
+        kind: FieldKind::Text,
+        label: "field-occupation-title",
+        hint: Some("field-occupation-title-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "title_latin",
+        kind: FieldKind::Text,
+        label: "field-occupation-title-latin",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "employer.name",
+        kind: FieldKind::Text,
+        label: "field-occupation-employer",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "place_id",
+        kind: FieldKind::Text,
+        label: "field-place-id",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "valid_from.date.value",
+        kind: FieldKind::Text,
+        label: "field-occupation-from",
+        hint: Some("field-occupation-from-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "valid_until.date.value",
+        kind: FieldKind::Text,
+        label: "field-occupation-until",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "confidence",
+        kind: FieldKind::Confidence,
+        label: "field-confidence",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "source_id",
+        kind: FieldKind::Text,
+        label: "field-source-id",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "note",
+        kind: FieldKind::LongText,
+        label: "field-note",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a source.
 const SOURCE_FIELDS: &[Field] = &[
-    fh("title", "Title", FieldKind::Text, "Required."),
-    fs(
-        "source_type",
-        "Type",
-        &[
+    Field {
+        path: "title",
+        kind: FieldKind::Text,
+        label: "field-source-title",
+        hint: Some("field-required-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "source_type",
+        kind: FieldKind::Select,
+        label: "field-source-type",
+        hint: Some("field-required-hint"),
+        options: &[
             "birth_certificate",
             "death_certificate",
             "marriage_certificate",
@@ -348,12 +633,14 @@ const SOURCE_FIELDS: &[Field] = &[
             "published_genealogy",
             "other",
         ],
-        "Required.",
-    ),
-    fs(
-        "reliability",
-        "Reliability",
-        &[
+        vocab: "source-type",
+    },
+    Field {
+        path: "reliability",
+        kind: FieldKind::Select,
+        label: "field-source-reliability",
+        hint: Some("field-source-reliability-hint"),
+        options: &[
             "primary",
             "secondary",
             "derivative",
@@ -361,43 +648,82 @@ const SOURCE_FIELDS: &[Field] = &[
             "oral",
             "unknown",
         ],
-        "Required. Shown as a badge next to every fact resting on this source.",
-    ),
-    fs(
-        "status",
-        "Status",
-        &["", "verified", "unverified", "lost", "known_missing"],
-        "",
-    ),
-    f("confidence", "Confidence", FieldKind::Confidence),
-    f("repository.name", "Repository", FieldKind::Text),
-    f(
-        "repository.reference",
-        "Repository reference",
-        FieldKind::Text,
-    ),
-    f("transcription", "Transcription", FieldKind::LongText),
-    f("note", "Note", FieldKind::LongText),
+        vocab: "reliability",
+    },
+    Field {
+        path: "status",
+        kind: FieldKind::Select,
+        label: "field-source-status",
+        hint: None,
+        options: &["", "verified", "unverified", "lost", "known_missing"],
+        vocab: "source-status",
+    },
+    Field {
+        path: "confidence",
+        kind: FieldKind::Confidence,
+        label: "field-confidence",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "repository.name",
+        kind: FieldKind::Text,
+        label: "field-source-repository",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "repository.reference",
+        kind: FieldKind::Text,
+        label: "field-source-repository-reference",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "transcription",
+        kind: FieldKind::LongText,
+        label: "field-source-transcription",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "note",
+        kind: FieldKind::LongText,
+        label: "field-note",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a place.
 const PLACE_FIELDS: &[Field] = &[
-    fh(
-        "names.0.value",
-        "Primary name",
-        FieldKind::Text,
-        "Required.",
-    ),
-    fh(
-        "names.0.lang",
-        "Language",
-        FieldKind::Text,
-        "BCP 47, e.g. en, fr, pl.",
-    ),
-    fs(
-        "place_type",
-        "Type",
-        &[
+    Field {
+        path: "names.0.value",
+        kind: FieldKind::Text,
+        label: "field-place-name",
+        hint: Some("field-required-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "names.0.lang",
+        kind: FieldKind::Text,
+        label: "field-place-name-lang",
+        hint: Some("field-place-name-lang-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "place_type",
+        kind: FieldKind::Select,
+        label: "field-place-type",
+        hint: None,
+        options: &[
             "",
             "continent",
             "country",
@@ -413,31 +739,58 @@ const PLACE_FIELDS: &[Field] = &[
             "historical",
             "unknown",
         ],
-        "",
-    ),
-    f("region", "Region", FieldKind::Text),
-    fh(
-        "country_current",
-        "Country today",
-        FieldKind::Text,
-        "Border history is a list — edit it in the raw JSON below.",
-    ),
-    f("note", "Note", FieldKind::LongText),
+        vocab: "place-type",
+    },
+    Field {
+        path: "region",
+        kind: FieldKind::Text,
+        label: "field-place-region",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "country_current",
+        kind: FieldKind::Text,
+        label: "field-place-country-current",
+        hint: Some("field-place-country-current-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "note",
+        kind: FieldKind::LongText,
+        label: "field-note",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
 
 /// Fields shown for a document.
 const DOCUMENT_FIELDS: &[Field] = &[
-    fh("filename", "Filename", FieldKind::Text, "Required."),
-    fh(
-        "mime_type",
-        "MIME type",
-        FieldKind::Text,
-        "Required, e.g. image/jpeg.",
-    ),
-    fs(
-        "document_type",
-        "Type",
-        &[
+    Field {
+        path: "filename",
+        kind: FieldKind::Text,
+        label: "field-document-filename",
+        hint: Some("field-required-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "mime_type",
+        kind: FieldKind::Text,
+        label: "field-document-mime-type",
+        hint: Some("field-document-mime-type-hint"),
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "document_type",
+        kind: FieldKind::Select,
+        label: "field-document-type",
+        hint: Some("field-required-hint"),
+        options: &[
             "photo",
             "birth_certificate",
             "death_certificate",
@@ -456,18 +809,72 @@ const DOCUMENT_FIELDS: &[Field] = &[
             "video",
             "other",
         ],
-        "Required.",
-    ),
-    fs(
-        "status",
-        "Status",
-        &["present", "referenced", "known_missing", "lost", "unknown"],
-        "Required.",
-    ),
-    f("url", "URL", FieldKind::Text),
-    f("caption", "Caption", FieldKind::Text),
-    f("note", "Note", FieldKind::LongText),
+        vocab: "document-type",
+    },
+    Field {
+        path: "status",
+        kind: FieldKind::Select,
+        label: "field-document-status",
+        hint: Some("field-required-hint"),
+        options: &["present", "referenced", "known_missing", "lost", "unknown"],
+        vocab: "document-status",
+    },
+    Field {
+        path: "url",
+        kind: FieldKind::Text,
+        label: "field-document-url",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "caption",
+        kind: FieldKind::Text,
+        label: "field-document-caption",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
+    Field {
+        path: "note",
+        kind: FieldKind::LongText,
+        label: "field-note",
+        hint: None,
+        options: NO_OPTS,
+        vocab: "",
+    },
 ];
+
+/// Every message key the generic form can ask for: each label, each hint,
+/// and each option of each select through its vocabulary family.
+pub fn every_key() -> Vec<String> {
+    let kinds = [
+        EntityKind::Person,
+        EntityKind::Family,
+        EntityKind::Event,
+        EntityKind::Link,
+        EntityKind::Occupation,
+        EntityKind::Source,
+        EntityKind::Place,
+        EntityKind::Document,
+    ];
+    let mut out: Vec<String> = Vec::new();
+    for kind in kinds {
+        for f in fields_for(kind) {
+            out.push(f.label.to_string());
+            out.extend(f.hint.map(str::to_string));
+            out.extend(
+                f.options
+                    .iter()
+                    .filter(|o| !o.is_empty())
+                    .map(|o| format!("{}-{o}", f.vocab)),
+            );
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
 
 /// The fields shown for each entity kind.
 pub fn fields_for(kind: EntityKind) -> &'static [Field] {

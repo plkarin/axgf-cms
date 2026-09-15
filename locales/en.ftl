@@ -2808,3 +2808,273 @@ profile-error-coordinates = Coordinates need both a latitude between −90 and 9
 profile-error-rank-country = The rank belongs to a different country from the one chosen.
 record-unknown-place = [Unknown place]
 record-missing-document = [Missing document]
+
+## Interface
+
+confidence-certain = Confidence { $percent }% — effectively certain
+confidence-high = Confidence { $percent }% — well supported
+confidence-medium = Confidence { $percent }% — plausible but unconfirmed
+confidence-low = Confidence { $percent }% — speculative
+tree-edge-union-between = { $from } and { $to } — { $confidence }
+tree-edge-parentage-of = { $from }, parent of { $to } — { $confidence }
+record-note-biography = Biography
+record-note-birth-date-as-recorded = Birth date, as recorded
+record-note-death-date-as-recorded = Death date, as recorded
+record-note-event-date-as-recorded = Date of { $event }, as recorded
+record-unknown-source = [Unknown source]
+record-untitled-source = [Untitled source]
+record-unnamed = [Unnamed]
+record-untitled = [Untitled]
+record-period-from = from { $date }
+record-period-until = until { $date }
+record-dates-unrecorded = dates unrecorded
+record-link-unlabelled = linked to
+record-link-reverse = { $label } (of)
+record-place-worked-as = Worked as { $title }
+record-place-married-to = Married { $name }
+record-place-married = Married
+record-source-use-name = the name “{ $name }”
+record-source-use-working-as = working as { $title }
+record-source-use-union-with = the union with { $name }
+record-source-use-union = the union
+record-lifespan-born = b. { $year }
+record-lifespan-died = d. { $year }
+size-bytes = { $n ->
+        [one] { $n } byte
+       *[other] { $n } bytes
+    }
+size-kb = { $n } KB
+size-mb = { $n } MB
+size-gb = { $n } GB
+calendar-gregorian = Gregorian
+calendar-julian = Julian
+calendar-hebrew = Hebrew
+calendar-hijri = Hijri
+calendar-persian = Persian
+calendar-chinese = Chinese
+calendar-ethiopian = Ethiopian
+calendar-japanese_era = Japanese era
+calendar-republican_french = French Republican
+calendar-roman = Roman
+diff-summary-none = no field changed
+diff-summary-one = changed { $a }
+diff-summary-two = changed { $a } and { $b }
+diff-summary-many = changed { $a }, { $b } and { $n ->
+        [one] one more
+       *[other] { $n } more
+    }
+diff-saved-none = no field changed
+diff-saved-one = changed { $a }
+diff-saved-two = changed { $a } and { $b }
+diff-saved-many = changed { $a }, { $b } and { $n ->
+        [one] one more
+       *[other] { $n } more
+    }
+history-created = created
+history-deleted = deleted
+history-attached = attached a file
+admin-raw-json-unparsed = The raw JSON did not parse ({ $error }). Nothing was saved.
+conflict-someone = Someone
+conflict-unrecorded-time = a time nobody recorded
+dedup-merged-persons = { $n ->
+        [one] one person merged
+       *[other] { $n } people merged
+    }
+dedup-merged-families = { $n ->
+        [one] one family merged
+       *[other] { $n } families merged
+    }
+dedup-manual-review = { $n ->
+        [one] one case left for a person to review
+       *[other] { $n } cases left for a person to review
+    }
+dedup-nothing = Nothing to report.
+validate-errors = { $n ->
+        [one] one error
+       *[other] { $n } errors
+    }
+validate-warnings = { $n ->
+        [one] one warning
+       *[other] { $n } warnings
+    }
+validate-notes = { $n ->
+        [one] one note
+       *[other] { $n } notes
+    }
+validate-nothing = Nothing to report.
+list-separator = { ", " }
+result-written = The archive was written to disk.
+result-refused = The library refused this operation. The archive on disk is unchanged.
+convert-error-no-file = No file was uploaded. Choose a .ged file first.
+convert-error-file-too-large = That file is { $size } MB and the limit is { $limit } MB. Nothing was converted.
+convert-error-too-large = That upload is larger than the { $limit } MB limit. Nothing was converted.
+convert-error-unreadable = The upload could not be read ({ $error }). Nothing was converted.
+convert-error-not-gedcom = That does not look like a GEDCOM file: a GEDCOM 5.5.1 file starts with a “0 HEAD” line. Nothing was converted.
+convert-error-packaging = The file was converted but could not be packaged ({ $error }).
+completeness-fraction = { $part } of { $whole }
+event-category-adoption = Adoption
+event-category-migration = Migration
+event-category-naturalization = Naturalisation
+event-category-incarceration = Imprisonment
+event-category-name_change = Change of name
+event-category-legal = Legal matter
+event-category-religious = Religious event
+event-category-social = Social event
+event-category-historical = Historical event
+precision-quarter_century = to the quarter century
+source-type-birth_certificate = birth certificate
+source-type-death_certificate = death certificate
+source-type-marriage_certificate = marriage certificate
+source-type-census = census
+source-type-baptism_record = baptism record
+source-type-burial_record = burial record
+source-type-will = will
+source-type-land_record = land record
+source-type-military_record = military record
+source-type-immigration_record = immigration record
+source-type-naturalization = naturalisation record
+source-type-passport = passport
+source-type-photograph = photograph
+source-type-letter = letter
+source-type-diary = diary
+source-type-newspaper = newspaper
+source-type-oral_tradition = oral tradition
+source-type-dna = DNA test
+source-type-family_bible = family Bible
+source-type-gravestone = gravestone
+source-type-published_genealogy = published genealogy
+source-type-other = other source
+source-status-verified = checked against the original
+source-status-unverified = not yet checked
+source-status-lost = lost
+source-status-known_missing = known to be missing
+document-type-birth_certificate = birth certificate
+document-type-death_certificate = death certificate
+document-type-marriage_certificate = marriage certificate
+document-type-census_page = census page
+document-type-baptism_record = baptism record
+document-type-military_record = military record
+document-type-will = will
+document-type-land_record = land record
+document-type-diary = diary
+document-type-newspaper_clipping = newspaper clipping
+document-type-gravestone_photo = photograph of a gravestone
+document-type-family_tree_drawing = drawn family tree
+document-type-audio = sound recording
+document-type-video = video recording
+document-status-present = held here
+document-status-referenced = named, held elsewhere
+document-status-known_missing = known to be missing
+document-status-lost = lost
+document-status-unknown = whereabouts unknown
+diag-unsupported_spec_version = The archive declares a version of AXGF this build cannot read.
+diag-invalid_json = Something that should be JSON does not parse.
+diag-invalid_bundle_structure = The archive is not laid out the way AXGF requires.
+diag-schema_validation_failed = A record does not match the AXGF schema.
+diag-dangling_reference = A record points at another record that is not in the archive.
+diag-duplicate_entity_id = Two records share one id.
+diag-duplicate_unique_ref = Two records claim the same reference that should be unique.
+diag-cycle_detected = The family links go round in a circle: someone would be their own ancestor.
+diag-chronology_conflict = Dates contradict each other, such as a child born before a parent.
+diag-out_of_vocabulary = A value is not one of the terms its list allows.
+diag-claim_inconsistent = A claim contradicts itself or another claim about the same thing.
+diag-spec_version_mismatch = A record's declared AXGF version does not fit what it contains.
+diag-unknown_attribute = A record carries an attribute AXGF does not define.
+diag-entity_not_found = The record to change is not in the archive.
+diag-entity_already_exists = A record with this id already exists.
+diag-unknown_entity_kind = This is not a kind of record AXGF has.
+diag-delete_blocked_by_reference = The record cannot be deleted while other records still point at it.
+diag-manual_review_required = A person needs to look at this; it was not changed automatically.
+diag-zip_read_error = The archive file could not be read.
+diag-zip_write_error = The archive file could not be written.
+diag-payloads_external = The attached files are kept outside the archive's own data.
+diag-payload_source_failed = An attached file could not be read.
+diag-payload_sink_failed = An attached file could not be written.
+diag-gedcom_parse_error = A line of the GEDCOM file could not be understood.
+diag-gedcom_unrecognized_tag = The GEDCOM file uses a tag the importer does not know, so that entry was not brought across.
+diag-internal = Something went wrong inside the library.
+field-person-display-name = Display name
+field-person-display-name-hint = The name shown everywhere on the site.
+field-person-gender = Gender
+field-person-living = Living
+field-person-birth-date = Birth date
+field-date-value-hint = A year, a year and month, or a whole date: 1923, 1923-04 or 1923-04-12. Leave it blank when nobody knows.
+field-person-birth-precision = Birth precision
+field-precision-hint = How precisely the source pins this down.
+field-person-birth-circa = Birth is approximate
+field-circa-hint = Shown as “circa 1923” rather than as an exact claim.
+field-person-birth-place = Birth place id
+field-person-birth-confidence = Birth confidence
+field-person-confidence-hint = How sure you are. This is what the site draws.
+field-person-death-date = Death date
+field-person-death-precision = Death precision
+field-person-death-circa = Death is approximate
+field-person-death-place = Death place id
+field-person-death-confidence = Death confidence
+field-person-death-cause = Cause of death
+field-person-bio = Biography
+field-notes = Notes
+field-family-name = Family name
+field-description = Description
+field-family-union-type = Union type
+field-family-union-status = Union status
+field-family-union-confidence = Union confidence
+field-family-union-confidence-hint = Sets how strongly the line between the partners is drawn on the tree.
+field-family-union-start = Union start
+field-family-union-end = Union end
+field-family-notes-hint = Partners and children are lists — edit them in the raw JSON below, or on the person's relationships page.
+field-category = Category
+field-required-hint = Required.
+field-event-subcategory = Subcategory
+field-date = Date
+field-event-date-hint = Required by the schema.
+field-precision = Precision
+field-circa = Approximate
+field-place-id = Place id
+field-confidence = Confidence
+field-source-id = Source id
+field-link-from-type = From type
+field-link-from-id = From id
+field-link-to-type = To type
+field-link-to-id = To id
+field-link-label = Label
+field-link-label-hint = Reads forward: “godfather”, “employer”, “witness”. Required.
+field-link-label-reverse = Reverse label
+field-link-label-reverse-hint = How it reads from the other end: “godson”, “employee”.
+field-link-bidirectional = Reads the same both ways
+field-valid-from = Valid from
+field-link-valid-from-hint = When the relationship started.
+field-valid-until = Valid until
+field-link-confidence-hint = “85% sure, per a family letter” — the thing GEDCOM cannot say.
+field-note = Note
+field-occupation-person-id = Person id
+field-occupation-title = Occupation
+field-occupation-title-hint = Required, for example Schoolteacher.
+field-occupation-title-latin = Occupation (Latin script)
+field-occupation-employer = Employer
+field-occupation-from = From
+field-occupation-from-hint = An occupation is a span. Giving both ends is what draws it as a bar.
+field-occupation-until = Until
+field-source-title = Title
+field-source-type = Kind of source
+field-source-reliability = Reliability
+field-source-reliability-hint = Required. Shown as a badge beside every fact that rests on this source.
+field-source-status = State of the source
+field-source-repository = Repository
+field-source-repository-reference = Reference in the repository
+field-source-transcription = Transcription
+field-place-name = Primary name
+field-place-name-lang = Language of the name
+field-place-name-lang-hint = A language tag, for example en, fr or pl.
+field-place-type = Kind of place
+field-place-region = Region
+field-place-country-current = Country today
+field-place-country-current-hint = The history of its borders is a list — edit it in the raw JSON below.
+field-document-filename = File name
+field-document-mime-type = Media type
+field-document-mime-type-hint = Required, for example image/jpeg.
+field-document-type = Kind of document
+field-document-status = State of the file
+field-document-url = Web address
+field-document-caption = Caption
+lang-zh-Hans = Simplified Chinese

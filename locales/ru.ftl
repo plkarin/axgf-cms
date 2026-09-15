@@ -241,17 +241,17 @@ place-names = Названия
 place-name-primary = Основное
 place-name-lang = Язык
 place-name-value = Название
-place-names-hint = One row per recorded name. A place administered by three empires carries three names; the primary is the one shown everywhere else.
+place-names-hint = Одна строка на каждое записанное название. Место, которым управляли три империи, носит три названия; основное показывается везде.
 place-where = Расположение
 place-type = Тип
 place-region = Регион
 place-country-current = Страна сегодня
-place-country-hint = ISO 3166-1 alpha-2, e.g. PL, FR, DE.
+place-country-hint = ISO 3166-1 alpha-2, например PL, FR, DE.
 place-country-history = История границ
 place-history-country = Государство
 place-history-from = С
 place-history-until = По
-place-country-history-hint = Which state held this place over which period. Genealogically significant: a record written in Russian in 1880 and one written in Polish in 1930 can name the same village.
+place-country-history-hint = Какое государство владело этим местом и в какой период. Это важно для генеалогии: запись 1880 года на русском и запись 1930 года на польском могут называть одну и ту же деревню.
 place-coordinates = Координаты
 place-lat = Широта
 place-lon = Долгота
@@ -265,30 +265,30 @@ place-used-by = { $name } используется в { $n ->
         [many] ещё { $n } записях
        *[other] ещё { $n } записях
     }.
-place-error-no-name = A place needs at least one name.
-place-error-coords-pair = Latitude and longitude go together: give both, or neither.
-place-error-coords-number = Latitude and longitude must be numbers.
-place-error-coords-range = Latitude runs -90 to 90 and longitude -180 to 180.
-place-type-continent = continent
-place-type-country = country
-place-type-region = region
-place-type-department = department
-place-type-city = city
-place-type-village = village
-place-type-district = district
-place-type-street = street
-place-type-building = building
-place-type-farm = farm
-place-type-island = island
-place-type-historical = historical
-place-type-unknown = unknown
-place-precision-exact = exact
-place-precision-building = building
-place-precision-street = street
-place-precision-city_center = city centre
-place-precision-region_center = region centre
-place-precision-country_center = country centre
-place-precision-approximate = approximate
+place-error-no-name = У места должно быть хотя бы одно название.
+place-error-coords-pair = Широта и долгота идут вместе: укажите обе или ни одной.
+place-error-coords-number = Широта и долгота должны быть числами.
+place-error-coords-range = Широта — от -90 до 90, долгота — от -180 до 180.
+place-type-continent = континент
+place-type-country = государство
+place-type-region = регион
+place-type-department = округ
+place-type-city = город
+place-type-village = деревня
+place-type-district = район
+place-type-street = улица
+place-type-building = здание
+place-type-farm = хутор
+place-type-island = остров
+place-type-historical = историческое
+place-type-unknown = неизвестно
+place-precision-exact = точно
+place-precision-building = здание
+place-precision-street = улица
+place-precision-city_center = центр города
+place-precision-region_center = центр региона
+place-precision-country_center = центр страны
+place-precision-approximate = приблизительно
 
 place-coordinates-hint = Обычно их вводят вручную. Многие места, записанные при прежней администрации, современный поиск не находит вовсе.
 place-geocode-search = Найти это название
@@ -2933,3 +2933,291 @@ profile-error-coordinates = Для координат нужны широта о
 profile-error-rank-country = Звание относится к другой стране, чем выбранная.
 record-unknown-place = [Неизвестное место]
 record-missing-document = [Документ отсутствует]
+
+## Interface
+
+confidence-certain = Уверенность { $percent }% — практически несомненно
+confidence-high = Уверенность { $percent }% — хорошо подтверждено
+confidence-medium = Уверенность { $percent }% — правдоподобно, но не подтверждено
+confidence-low = Уверенность { $percent }% — предположение
+tree-edge-union-between = { $from } и { $to } — { $confidence }
+tree-edge-parentage-of = { $from }, родитель: { $to } — { $confidence }
+record-note-biography = Биография
+record-note-birth-date-as-recorded = Дата рождения, как она записана
+record-note-death-date-as-recorded = Дата смерти, как она записана
+record-note-event-date-as-recorded = Дата события «{ $event }», как она записана
+record-unknown-source = [Неизвестный источник]
+record-untitled-source = [Источник без названия]
+record-unnamed = [Без имени]
+record-untitled = [Без названия]
+record-period-from = с { $date }
+record-period-until = до { $date }
+record-dates-unrecorded = даты не записаны
+record-link-unlabelled = связь с
+record-link-reverse = { $label } (для)
+record-place-worked-as = Работал(а): { $title }
+record-place-married-to = Брак с { $name }
+record-place-married = Брак
+record-source-use-name = имя «{ $name }»
+record-source-use-working-as = занятие: { $title }
+record-source-use-union-with = союз с { $name }
+record-source-use-union = союз
+record-lifespan-born = род. { $year }
+record-lifespan-died = ум. { $year }
+size-bytes = { $n ->
+        [one] { $n } байт
+        [few] { $n } байта
+        [many] { $n } байт
+       *[other] { $n } байта
+    }
+size-kb = { $n } КБ
+size-mb = { $n } МБ
+size-gb = { $n } ГБ
+calendar-gregorian = григорианский
+calendar-julian = юлианский
+calendar-hebrew = еврейский
+calendar-hijri = хиджры
+calendar-persian = персидский
+calendar-chinese = китайский
+calendar-ethiopian = эфиопский
+calendar-japanese_era = японские эры
+calendar-republican_french = французский республиканский
+calendar-roman = римский
+diff-summary-none = не изменил(а) ни одного поля
+diff-summary-one = изменил(а) { $a }
+diff-summary-two = изменил(а) { $a } и { $b }
+diff-summary-many = изменил(а) { $a }, { $b } и { $n ->
+        [one] ещё одно поле
+        [few] ещё { $n } поля
+        [many] ещё { $n } полей
+       *[other] ещё { $n } поля
+    }
+diff-saved-none = ни одно поле не изменилось
+diff-saved-one = изменено { $a }
+diff-saved-two = изменены { $a } и { $b }
+diff-saved-many = изменены { $a }, { $b } и { $n ->
+        [one] ещё одно поле
+        [few] ещё { $n } поля
+        [many] ещё { $n } полей
+       *[other] ещё { $n } поля
+    }
+history-created = создал(а)
+history-deleted = удалил(а)
+history-attached = приложил(а) файл
+admin-raw-json-unparsed = Исходный JSON не удалось прочитать ({ $error }). Ничего не сохранено.
+conflict-someone = Кто-то
+conflict-unrecorded-time = незаписанное время
+dedup-merged-persons = { $n ->
+        [one] объединён один человек
+        [few] объединено { $n } человека
+        [many] объединено { $n } человек
+       *[other] объединено { $n } человека
+    }
+dedup-merged-families = { $n ->
+        [one] объединена одна семья
+        [few] объединено { $n } семьи
+        [many] объединено { $n } семей
+       *[other] объединено { $n } семьи
+    }
+dedup-manual-review = { $n ->
+        [one] один случай оставлен для проверки человеком
+        [few] { $n } случая оставлено для проверки человеком
+        [many] { $n } случаев оставлено для проверки человеком
+       *[other] { $n } случая оставлено для проверки человеком
+    }
+dedup-nothing = Сообщать не о чем.
+validate-errors = { $n ->
+        [one] одна ошибка
+        [few] { $n } ошибки
+        [many] { $n } ошибок
+       *[other] { $n } ошибки
+    }
+validate-warnings = { $n ->
+        [one] одно предупреждение
+        [few] { $n } предупреждения
+        [many] { $n } предупреждений
+       *[other] { $n } предупреждения
+    }
+validate-notes = { $n ->
+        [one] одно замечание
+        [few] { $n } замечания
+        [many] { $n } замечаний
+       *[other] { $n } замечания
+    }
+validate-nothing = Сообщать не о чем.
+list-separator = { ", " }
+result-written = Архив записан на диск.
+result-refused = Библиотека отказалась выполнить эту операцию. Архив на диске не изменён.
+convert-error-no-file = Файл не загружен. Сначала выберите файл .ged.
+convert-error-file-too-large = Этот файл весит { $size } МБ, а предел — { $limit } МБ. Ничего не преобразовано.
+convert-error-too-large = Загрузка больше предела в { $limit } МБ. Ничего не преобразовано.
+convert-error-unreadable = Загрузку не удалось прочитать ({ $error }). Ничего не преобразовано.
+convert-error-not-gedcom = Это не похоже на файл GEDCOM: файл GEDCOM 5.5.1 начинается со строки «0 HEAD». Ничего не преобразовано.
+convert-error-packaging = Файл преобразован, но упаковать его не удалось ({ $error }).
+completeness-fraction = { $part } из { $whole }
+event-category-adoption = Усыновление
+event-category-migration = Переселение
+event-category-naturalization = Натурализация
+event-category-incarceration = Заключение
+event-category-name_change = Смена имени
+event-category-legal = Судебное дело
+event-category-religious = Религиозное событие
+event-category-social = Общественное событие
+event-category-historical = Историческое событие
+precision-quarter_century = до четверти века
+source-type-birth_certificate = свидетельство о рождении
+source-type-death_certificate = свидетельство о смерти
+source-type-marriage_certificate = свидетельство о браке
+source-type-census = перепись
+source-type-baptism_record = запись о крещении
+source-type-burial_record = запись о погребении
+source-type-will = завещание
+source-type-land_record = земельная запись
+source-type-military_record = военный документ
+source-type-immigration_record = иммиграционный документ
+source-type-naturalization = документ о натурализации
+source-type-passport = паспорт
+source-type-photograph = фотография
+source-type-letter = письмо
+source-type-diary = дневник
+source-type-newspaper = газета
+source-type-oral_tradition = устное предание
+source-type-dna = ДНК-тест
+source-type-family_bible = семейная Библия
+source-type-gravestone = надгробие
+source-type-published_genealogy = опубликованная родословная
+source-type-other = другой источник
+source-status-verified = сверено с оригиналом
+source-status-unverified = ещё не сверено
+source-status-lost = утрачен
+source-status-known_missing = известно, что отсутствует
+document-type-birth_certificate = свидетельство о рождении
+document-type-death_certificate = свидетельство о смерти
+document-type-marriage_certificate = свидетельство о браке
+document-type-census_page = страница переписи
+document-type-baptism_record = запись о крещении
+document-type-military_record = военный документ
+document-type-will = завещание
+document-type-land_record = земельная запись
+document-type-diary = дневник
+document-type-newspaper_clipping = газетная вырезка
+document-type-gravestone_photo = фотография надгробия
+document-type-family_tree_drawing = нарисованное родословное древо
+document-type-audio = звукозапись
+document-type-video = видеозапись
+document-status-present = хранится здесь
+document-status-referenced = упомянут, хранится в другом месте
+document-status-known_missing = известно, что отсутствует
+document-status-lost = утрачен
+document-status-unknown = местонахождение неизвестно
+diag-unsupported_spec_version = Архив объявляет версию AXGF, которую эта программа прочитать не может.
+diag-invalid_json = То, что должно быть JSON, не читается.
+diag-invalid_bundle_structure = Архив устроен не так, как требует AXGF.
+diag-schema_validation_failed = Запись не соответствует схеме AXGF.
+diag-dangling_reference = Запись ссылается на другую запись, которой нет в архиве.
+diag-duplicate_entity_id = У двух записей один и тот же идентификатор.
+diag-duplicate_unique_ref = Две записи претендуют на одну ссылку, которая должна быть единственной.
+diag-cycle_detected = Семейные связи замыкаются в круг: кто-то оказался бы собственным предком.
+diag-chronology_conflict = Даты противоречат друг другу, например ребёнок родился раньше родителя.
+diag-out_of_vocabulary = Значение не входит в число терминов, допустимых его списком.
+diag-claim_inconsistent = Утверждение противоречит себе или другому утверждению о том же.
+diag-spec_version_mismatch = Объявленная в записи версия AXGF не соответствует её содержимому.
+diag-unknown_attribute = В записи есть атрибут, которого AXGF не определяет.
+diag-entity_not_found = Записи, которую нужно изменить, нет в архиве.
+diag-entity_already_exists = Запись с этим идентификатором уже существует.
+diag-unknown_entity_kind = Такого вида записей в AXGF нет.
+diag-delete_blocked_by_reference = Запись нельзя удалить, пока на неё ссылаются другие записи.
+diag-manual_review_required = Это должен посмотреть человек; автоматически ничего не изменено.
+diag-zip_read_error = Файл архива не удалось прочитать.
+diag-zip_write_error = Файл архива не удалось записать.
+diag-payloads_external = Приложенные файлы хранятся вне данных архива.
+diag-payload_source_failed = Приложенный файл не удалось прочитать.
+diag-payload_sink_failed = Приложенный файл не удалось записать.
+diag-gedcom_parse_error = Строку файла GEDCOM не удалось понять.
+diag-gedcom_unrecognized_tag = Файл GEDCOM использует тег, неизвестный импорту, поэтому эта запись не перенесена.
+diag-internal = Внутри библиотеки что-то пошло не так.
+field-person-display-name = Отображаемое имя
+field-person-display-name-hint = Имя, которое показывается везде на сайте.
+field-person-gender = Пол
+field-person-living = Жив(а)
+field-person-birth-date = Дата рождения
+field-date-value-hint = Год, год и месяц или полная дата: 1923, 1923-04 или 1923-04-12. Оставьте пустым, если никто не знает.
+field-person-birth-precision = Точность даты рождения
+field-precision-hint = Насколько точно это устанавливает источник.
+field-person-birth-circa = Дата рождения приблизительна
+field-circa-hint = Показывается как «около 1923», а не как точное утверждение.
+field-person-birth-place = Идентификатор места рождения
+field-person-birth-confidence = Уверенность в рождении
+field-person-confidence-hint = Насколько вы уверены. Именно это рисует сайт.
+field-person-death-date = Дата смерти
+field-person-death-precision = Точность даты смерти
+field-person-death-circa = Дата смерти приблизительна
+field-person-death-place = Идентификатор места смерти
+field-person-death-confidence = Уверенность в смерти
+field-person-death-cause = Причина смерти
+field-person-bio = Биография
+field-notes = Заметки
+field-family-name = Название семьи
+field-description = Описание
+field-family-union-type = Вид союза
+field-family-union-status = Состояние союза
+field-family-union-confidence = Уверенность в союзе
+field-family-union-confidence-hint = Определяет, насколько отчётливо в древе рисуется линия между партнёрами.
+field-family-union-start = Начало союза
+field-family-union-end = Конец союза
+field-family-notes-hint = Партнёры и дети — это списки: редактируйте их в исходном JSON ниже или на странице родственных связей человека.
+field-category = Категория
+field-required-hint = Обязательно.
+field-event-subcategory = Подкатегория
+field-date = Дата
+field-event-date-hint = Требуется схемой.
+field-precision = Точность
+field-circa = Приблизительно
+field-place-id = Идентификатор места
+field-confidence = Уверенность
+field-source-id = Идентификатор источника
+field-link-from-type = Вид начала
+field-link-from-id = Идентификатор начала
+field-link-to-type = Вид конца
+field-link-to-id = Идентификатор конца
+field-link-label = Название
+field-link-label-hint = Читается по направлению связи: «крёстный», «работодатель», «свидетель». Обязательно.
+field-link-label-reverse = Название в обратную сторону
+field-link-label-reverse-hint = Как читается с другого конца: «крестник», «работник».
+field-link-bidirectional = Читается одинаково в обе стороны
+field-valid-from = Действует с
+field-link-valid-from-hint = Когда начались отношения.
+field-valid-until = Действует до
+field-link-confidence-hint = «Уверенность 85%, по семейному письму» — то, чего GEDCOM сказать не может.
+field-note = Примечание
+field-occupation-person-id = Идентификатор человека
+field-occupation-title = Занятие
+field-occupation-title-hint = Обязательно, например Учитель.
+field-occupation-title-latin = Занятие (латиницей)
+field-occupation-employer = Работодатель
+field-occupation-from = С
+field-occupation-from-hint = Занятие — это период. Оба конца нужны, чтобы нарисовать его полосой.
+field-occupation-until = По
+field-source-title = Название
+field-source-type = Вид источника
+field-source-reliability = Надёжность
+field-source-reliability-hint = Обязательно. Показывается значком рядом с каждым фактом, опирающимся на этот источник.
+field-source-status = Состояние источника
+field-source-repository = Место хранения
+field-source-repository-reference = Шифр в месте хранения
+field-source-transcription = Расшифровка
+field-place-name = Основное название
+field-place-name-lang = Язык названия
+field-place-name-lang-hint = Код языка, например en, fr или pl.
+field-place-type = Вид места
+field-place-region = Регион
+field-place-country-current = Нынешнее государство
+field-place-country-current-hint = История его границ — это список: редактируйте её в исходном JSON ниже.
+field-document-filename = Имя файла
+field-document-mime-type = Тип данных
+field-document-mime-type-hint = Обязательно, например image/jpeg.
+field-document-type = Вид документа
+field-document-status = Состояние файла
+field-document-url = Веб-адрес
+field-document-caption = Подпись
+lang-zh-Hans = Китайский, упрощенное письмо

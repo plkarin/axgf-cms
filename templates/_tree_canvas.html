@@ -68,8 +68,8 @@
           {%- else %}{{ c.death if c.death else "?" }}{% endif %}
           {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
               style="--conf-pct:{{ c.conf_pct }}"
-              title="{{ c.conf_label }} — {{ c.conf_pct }}%"
-              role="img" aria-label="{{ c.conf_label }} — {{ c.conf_pct }}%"></i>{% endif %}
+              title="{{ c.conf_label }}"
+              role="img" aria-label="{{ c.conf_label }}"></i>{% endif %}
         </span>
       </a>
       {% endif %}

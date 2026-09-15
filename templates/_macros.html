@@ -3,9 +3,10 @@
 
 {% macro conf_bar(c) %}
   {%- if c -%}
-  <span class="conf-inline" title="{{ c.description }} — {{ c.percent }}%">
+  {%- set said = t("confidence-" ~ c.band, percent=c.percent) %}
+  <span class="conf-inline" title="{{ said }}">
     <span class="conf-bar" data-band="{{ c.band }}" role="img"
-          aria-label="{{ c.description }} — {{ c.percent }}%"><i style="width:{{ c.percent }}%"></i></span>
+          aria-label="{{ said }}"><i style="width:{{ c.percent }}%"></i></span>
     <span class="conf-pct">{{ c.percent }}%</span>
   </span>
   {%- endif -%}
@@ -17,8 +18,8 @@
       what a sighted reader sees and what a screen reader hears cannot drift. -#}
   <i class="conf-dot" data-band="{{ c.band }}"
      style="--conf-pct:{{ c.percent }}"
-     title="{{ c.description }} — {{ c.percent }}%"
-     role="img" aria-label="{{ c.description }} — {{ c.percent }}%"></i>
+     title="{{ t('confidence-' ~ c.band, percent=c.percent) }}"
+     role="img" aria-label="{{ t('confidence-' ~ c.band, percent=c.percent) }}"></i>
   {%- endif -%}
 {% endmacro %}
 
@@ -104,7 +105,12 @@
         <span class="diag-code">{{ d.code }}</span>
         {% if d.entity_ref %}<span class="diag-ref">{{ d.entity_ref }}</span>{% endif %}
       </div>
-      <div>{{ d.message }}</div>
+      <div>
+        {%- if d.explanation %}<p class="diag-explanation">{{ d.explanation }}</p>{% endif %}
+        {#- The library's own words, kept whole: they name the path, the id and
+            the value, which is what somebody repairing the record needs. #}
+        <p class="diag-message mono small" lang="en" dir="ltr">{{ d.message }}</p>
+      </div>
     </div>
     {% endfor %}
   </div>

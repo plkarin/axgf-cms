@@ -1099,7 +1099,7 @@ fn render_links(
         }
         (
             out,
-            crate::forms::linkable_options(flat, lens),
+            crate::forms::linkable_options(flat, lens, chrome.lang),
             crate::forms::entity_options(flat, "sources", crate::forms::source_label),
         )
     });
@@ -1591,7 +1591,7 @@ fn render_events(
         }
         (
             out,
-            crate::forms::linkable_options(flat, lens),
+            crate::forms::linkable_options(flat, lens, chrome.lang),
             crate::forms::entity_options(flat, "places", crate::forms::place_label),
             crate::forms::entity_options(flat, "sources", crate::forms::source_label),
         )

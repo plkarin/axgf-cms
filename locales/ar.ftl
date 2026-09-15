@@ -195,17 +195,17 @@ place-names = الأسماء
 place-name-primary = الاسم الأساسي
 place-name-lang = اللغة
 place-name-value = الاسم
-place-names-hint = One row per recorded name. A place administered by three empires carries three names; the primary is the one shown everywhere else.
+place-names-hint = سطر لكل اسم مسجَّل. المكان الذي حكمته ثلاث إمبراطوريات يحمل ثلاثة أسماء؛ والرئيسي هو الظاهر في كل مكان آخر.
 place-where = الموقع
 place-type = النوع
 place-region = المنطقة
 place-country-current = الدولة اليوم
-place-country-hint = ISO 3166-1 alpha-2, e.g. PL, FR, DE.
+place-country-hint = ISO 3166-1 alpha-2، مثل PL وFR وDE.
 place-country-history = تاريخ الحدود
 place-history-country = الدولة
 place-history-from = من
 place-history-until = حتى
-place-country-history-hint = Which state held this place over which period. Genealogically significant: a record written in Russian in 1880 and one written in Polish in 1930 can name the same village.
+place-country-history-hint = أي دولة ملكت هذا المكان وفي أي مدة. وهذا مهم في الأنساب: سجل كُتب بالروسية سنة 1880 وآخر كُتب بالبولندية سنة 1930 قد يسمّيان القرية نفسها.
 place-coordinates = الإحداثيات
 place-lat = خط العرض
 place-lon = خط الطول
@@ -221,30 +221,30 @@ place-used-by = يُستخدم { $name } في { $n ->
         [many] { $n } سجلًا آخر
        *[other] { $n } سجل آخر
     }.
-place-error-no-name = A place needs at least one name.
-place-error-coords-pair = Latitude and longitude go together: give both, or neither.
-place-error-coords-number = Latitude and longitude must be numbers.
-place-error-coords-range = Latitude runs -90 to 90 and longitude -180 to 180.
-place-type-continent = continent
-place-type-country = country
-place-type-region = region
-place-type-department = department
-place-type-city = city
-place-type-village = village
-place-type-district = district
-place-type-street = street
-place-type-building = building
-place-type-farm = farm
-place-type-island = island
-place-type-historical = historical
-place-type-unknown = unknown
-place-precision-exact = exact
-place-precision-building = building
-place-precision-street = street
-place-precision-city_center = city centre
-place-precision-region_center = region centre
-place-precision-country_center = country centre
-place-precision-approximate = approximate
+place-error-no-name = يحتاج المكان إلى اسم واحد على الأقل.
+place-error-coords-pair = خط العرض وخط الطول متلازمان: اذكرهما معًا أو لا تذكر أيًّا منهما.
+place-error-coords-number = يجب أن يكون خط العرض وخط الطول رقمين.
+place-error-coords-range = خط العرض من ‎-90 إلى 90، وخط الطول من ‎-180 إلى 180.
+place-type-continent = قارة
+place-type-country = دولة
+place-type-region = منطقة
+place-type-department = مقاطعة
+place-type-city = مدينة
+place-type-village = قرية
+place-type-district = حيّ
+place-type-street = شارع
+place-type-building = مبنى
+place-type-farm = مزرعة
+place-type-island = جزيرة
+place-type-historical = تاريخي
+place-type-unknown = غير معروف
+place-precision-exact = دقيق
+place-precision-building = مبنى
+place-precision-street = شارع
+place-precision-city_center = وسط المدينة
+place-precision-region_center = وسط المنطقة
+place-precision-country_center = وسط البلد
+place-precision-approximate = تقريبي
 
 place-coordinates-hint = الإدخال اليدوي هو الطريق المعتاد. كثير من الأماكن المسجَّلة تحت إدارة سابقة لا يعثر عليها البحث الحديث أصلًا.
 place-geocode-search = ابحث عن هذا الاسم
@@ -2980,3 +2980,309 @@ profile-error-coordinates = تحتاج الإحداثيات إلى خط عرض �
 profile-error-rank-country = الرتبة تابعة لبلد غير البلد المختار.
 record-unknown-place = [مكان غير معروف]
 record-missing-document = [وثيقة مفقودة]
+
+## Interface
+
+confidence-certain = درجة اليقين { $percent }٪ — شبه مؤكد
+confidence-high = درجة اليقين { $percent }٪ — مدعوم جيدًا
+confidence-medium = درجة اليقين { $percent }٪ — مرجَّح لكنه غير مؤكد
+confidence-low = درجة اليقين { $percent }٪ — تخمين
+tree-edge-union-between = { $from } و{ $to } — { $confidence }
+tree-edge-parentage-of = { $from }، والد أو والدة { $to } — { $confidence }
+record-note-biography = السيرة
+record-note-birth-date-as-recorded = تاريخ الميلاد كما سُجِّل
+record-note-death-date-as-recorded = تاريخ الوفاة كما سُجِّل
+record-note-event-date-as-recorded = تاريخ «{ $event }» كما سُجِّل
+record-unknown-source = [مصدر مجهول]
+record-untitled-source = [مصدر بلا عنوان]
+record-unnamed = [بلا اسم]
+record-untitled = [بلا عنوان]
+record-period-from = منذ { $date }
+record-period-until = حتى { $date }
+record-dates-unrecorded = التواريخ غير مسجلة
+record-link-unlabelled = مرتبط بـ
+record-link-reverse = { $label } (لـ)
+record-place-worked-as = عمل بصفة { $title }
+record-place-married-to = الزواج من { $name }
+record-place-married = الزواج
+record-source-use-name = الاسم «{ $name }»
+record-source-use-working-as = العمل بصفة { $title }
+record-source-use-union-with = الارتباط بـ{ $name }
+record-source-use-union = الارتباط
+record-lifespan-born = وُلد { $year }
+record-lifespan-died = تُوفّي { $year }
+size-bytes = { $n ->
+        [zero] { $n } بايت
+        [one] بايت واحد
+        [two] بايتان
+        [few] { $n } بايتات
+        [many] { $n } بايتًا
+       *[other] { $n } بايت
+    }
+size-kb = { $n } ك.ب
+size-mb = { $n } م.ب
+size-gb = { $n } ج.ب
+calendar-gregorian = ميلادي
+calendar-julian = يولياني
+calendar-hebrew = عبري
+calendar-hijri = هجري
+calendar-persian = فارسي
+calendar-chinese = صيني
+calendar-ethiopian = إثيوبي
+calendar-japanese_era = العصور اليابانية
+calendar-republican_french = الجمهوري الفرنسي
+calendar-roman = روماني
+diff-summary-none = لم يغيّر أي حقل
+diff-summary-one = غيّر { $a }
+diff-summary-two = غيّر { $a } و{ $b }
+diff-summary-many = غيّر { $a } و{ $b } { $n ->
+        [zero] ولا حقل آخر
+        [one] وحقلًا آخر
+        [two] وحقلين آخرين
+        [few] و{ $n } حقول أخرى
+        [many] و{ $n } حقلًا آخر
+       *[other] و{ $n } حقل آخر
+    }
+diff-saved-none = لم يتغيّر أي حقل
+diff-saved-one = تغيّر { $a }
+diff-saved-two = تغيّر { $a } و{ $b }
+diff-saved-many = تغيّر { $a } و{ $b } { $n ->
+        [zero] ولا حقل آخر
+        [one] وحقل آخر
+        [two] وحقلان آخران
+        [few] و{ $n } حقول أخرى
+        [many] و{ $n } حقلًا آخر
+       *[other] و{ $n } حقل آخر
+    }
+history-created = أنشأ
+history-deleted = حذف
+history-attached = أرفق ملفًا
+admin-raw-json-unparsed = تعذّرت قراءة JSON الخام ({ $error }). لم يُحفظ شيء.
+conflict-someone = شخص ما
+conflict-unrecorded-time = وقت لم يسجّله أحد
+dedup-merged-persons = { $n ->
+        [zero] لم يُدمج أي شخص
+        [one] دُمج شخص واحد
+        [two] دُمج شخصان
+        [few] دُمج { $n } أشخاص
+        [many] دُمج { $n } شخصًا
+       *[other] دُمج { $n } شخص
+    }
+dedup-merged-families = { $n ->
+        [zero] لم تُدمج أي عائلة
+        [one] دُمجت عائلة واحدة
+        [two] دُمجت عائلتان
+        [few] دُمجت { $n } عائلات
+        [many] دُمجت { $n } عائلةً
+       *[other] دُمجت { $n } عائلة
+    }
+dedup-manual-review = { $n ->
+        [zero] لا حالات متروكة لمراجعة بشرية
+        [one] حالة واحدة متروكة لمراجعة بشرية
+        [two] حالتان متروكتان لمراجعة بشرية
+        [few] { $n } حالات متروكة لمراجعة بشرية
+        [many] { $n } حالةً متروكة لمراجعة بشرية
+       *[other] { $n } حالة متروكة لمراجعة بشرية
+    }
+dedup-nothing = لا شيء يستحق الذكر.
+validate-errors = { $n ->
+        [zero] لا أخطاء
+        [one] خطأ واحد
+        [two] خطآن
+        [few] { $n } أخطاء
+        [many] { $n } خطأً
+       *[other] { $n } خطأ
+    }
+validate-warnings = { $n ->
+        [zero] لا تحذيرات
+        [one] تحذير واحد
+        [two] تحذيران
+        [few] { $n } تحذيرات
+        [many] { $n } تحذيرًا
+       *[other] { $n } تحذير
+    }
+validate-notes = { $n ->
+        [zero] لا ملاحظات
+        [one] ملاحظة واحدة
+        [two] ملاحظتان
+        [few] { $n } ملاحظات
+        [many] { $n } ملاحظةً
+       *[other] { $n } ملاحظة
+    }
+validate-nothing = لا شيء يستحق الذكر.
+list-separator = { "، " }
+result-written = كُتب الأرشيف على القرص.
+result-refused = رفضت المكتبة هذه العملية. الأرشيف على القرص لم يتغيّر.
+convert-error-no-file = لم يُرفع أي ملف. اختر ملف ‎.ged أولًا.
+convert-error-file-too-large = حجم هذا الملف { $size } م.ب والحد { $limit } م.ب. لم يُحوَّل شيء.
+convert-error-too-large = الملف المرفوع أكبر من حد { $limit } م.ب. لم يُحوَّل شيء.
+convert-error-unreadable = تعذّرت قراءة الملف المرفوع ({ $error }). لم يُحوَّل شيء.
+convert-error-not-gedcom = لا يبدو هذا ملف GEDCOM: ملف GEDCOM 5.5.1 يبدأ بسطر «0 HEAD». لم يُحوَّل شيء.
+convert-error-packaging = حُوِّل الملف لكن تعذّر تحزيمه ({ $error }).
+completeness-fraction = { $part } من { $whole }
+event-category-adoption = تبنٍّ
+event-category-migration = هجرة
+event-category-naturalization = تجنُّس
+event-category-incarceration = سجن
+event-category-name_change = تغيير الاسم
+event-category-legal = مسألة قانونية
+event-category-religious = واقعة دينية
+event-category-social = واقعة اجتماعية
+event-category-historical = واقعة تاريخية
+precision-quarter_century = إلى ربع القرن
+source-type-birth_certificate = شهادة ميلاد
+source-type-death_certificate = شهادة وفاة
+source-type-marriage_certificate = عقد زواج
+source-type-census = تعداد سكاني
+source-type-baptism_record = سجل معمودية
+source-type-burial_record = سجل دفن
+source-type-will = وصية
+source-type-land_record = سجل عقاري
+source-type-military_record = سجل عسكري
+source-type-immigration_record = سجل هجرة
+source-type-naturalization = ملف تجنُّس
+source-type-passport = جواز سفر
+source-type-photograph = صورة فوتوغرافية
+source-type-letter = رسالة
+source-type-diary = يوميات
+source-type-newspaper = صحيفة
+source-type-oral_tradition = رواية شفهية
+source-type-dna = فحص الحمض النووي
+source-type-family_bible = كتاب مقدس عائلي
+source-type-gravestone = شاهد قبر
+source-type-published_genealogy = شجرة نسب منشورة
+source-type-other = مصدر آخر
+source-status-verified = رُوجع على الأصل
+source-status-unverified = لم يُراجَع بعد
+source-status-lost = مفقود
+source-status-known_missing = معروف أنه ناقص
+document-type-birth_certificate = شهادة ميلاد
+document-type-death_certificate = شهادة وفاة
+document-type-marriage_certificate = عقد زواج
+document-type-census_page = صفحة تعداد سكاني
+document-type-baptism_record = سجل معمودية
+document-type-military_record = سجل عسكري
+document-type-will = وصية
+document-type-land_record = سجل عقاري
+document-type-diary = يوميات
+document-type-newspaper_clipping = قصاصة صحفية
+document-type-gravestone_photo = صورة شاهد قبر
+document-type-family_tree_drawing = شجرة عائلة مرسومة
+document-type-audio = تسجيل صوتي
+document-type-video = تسجيل مرئي
+document-status-present = محفوظ هنا
+document-status-referenced = مذكور، محفوظ في مكان آخر
+document-status-known_missing = معروف أنه ناقص
+document-status-lost = مفقود
+document-status-unknown = مكانه مجهول
+diag-unsupported_spec_version = يعلن الأرشيف إصدارًا من AXGF لا يستطيع هذا البرنامج قراءته.
+diag-invalid_json = شيء ينبغي أن يكون JSON لا تمكن قراءته.
+diag-invalid_bundle_structure = الأرشيف غير مرتّب على النحو الذي يشترطه AXGF.
+diag-schema_validation_failed = سجل لا يطابق مخطط AXGF.
+diag-dangling_reference = سجل يشير إلى سجل آخر غير موجود في الأرشيف.
+diag-duplicate_entity_id = سجلان يشتركان في المعرّف نفسه.
+diag-duplicate_unique_ref = سجلان يدّعيان المرجع نفسه الذي ينبغي أن يكون فريدًا.
+diag-cycle_detected = روابط العائلة تدور في حلقة: سيكون أحدهم جدًّا لنفسه.
+diag-chronology_conflict = التواريخ متناقضة، كطفل وُلد قبل أحد والديه.
+diag-out_of_vocabulary = قيمة ليست من المصطلحات التي تسمح بها قائمتها.
+diag-claim_inconsistent = ادعاء يناقض نفسه أو يناقض ادعاءً آخر عن الأمر نفسه.
+diag-spec_version_mismatch = إصدار AXGF الذي يعلنه سجل لا يوافق ما يحتويه.
+diag-unknown_attribute = سجل يحمل سمة لا يعرّفها AXGF.
+diag-entity_not_found = السجل المطلوب تغييره غير موجود في الأرشيف.
+diag-entity_already_exists = يوجد سجل بهذا المعرّف بالفعل.
+diag-unknown_entity_kind = هذا ليس نوع سجل يعرفه AXGF.
+diag-delete_blocked_by_reference = لا يمكن حذف السجل ما دامت سجلات أخرى تشير إليه.
+diag-manual_review_required = يحتاج هذا إلى نظر إنسان؛ لم يُغيَّر تلقائيًا.
+diag-zip_read_error = تعذّرت قراءة ملف الأرشيف.
+diag-zip_write_error = تعذّرت كتابة ملف الأرشيف.
+diag-payloads_external = الملفات المرفقة محفوظة خارج بيانات الأرشيف.
+diag-payload_source_failed = تعذّرت قراءة ملف مرفق.
+diag-payload_sink_failed = تعذّرت كتابة ملف مرفق.
+diag-gedcom_parse_error = تعذّر فهم سطر من ملف GEDCOM.
+diag-gedcom_unrecognized_tag = يستخدم ملف GEDCOM وسمًا لا يعرفه الاستيراد، فلم يُنقل ذلك المُدخل.
+diag-internal = حدث خطأ داخل المكتبة.
+field-person-display-name = الاسم المعروض
+field-person-display-name-hint = الاسم الظاهر في كل مكان من الموقع.
+field-person-gender = الجنس
+field-person-living = على قيد الحياة
+field-person-birth-date = تاريخ الميلاد
+field-date-value-hint = سنة، أو سنة وشهر، أو تاريخ كامل: 1923 أو 1923-04 أو 1923-04-12. اتركه فارغًا إن لم يعرفه أحد.
+field-person-birth-precision = دقة تاريخ الميلاد
+field-precision-hint = مدى الدقة التي يحدد بها المصدر ذلك.
+field-person-birth-circa = الميلاد تقريبي
+field-circa-hint = يُعرض بصيغة «نحو 1923» لا بوصفه تاريخًا دقيقًا.
+field-person-birth-place = معرّف مكان الميلاد
+field-person-birth-confidence = درجة اليقين في الميلاد
+field-person-confidence-hint = مدى تأكدك. وهذا ما يرسمه الموقع.
+field-person-death-date = تاريخ الوفاة
+field-person-death-precision = دقة تاريخ الوفاة
+field-person-death-circa = الوفاة تقريبية
+field-person-death-place = معرّف مكان الوفاة
+field-person-death-confidence = درجة اليقين في الوفاة
+field-person-death-cause = سبب الوفاة
+field-person-bio = السيرة
+field-notes = ملاحظات
+field-family-name = اسم العائلة
+field-description = الوصف
+field-family-union-type = نوع الارتباط
+field-family-union-status = حالة الارتباط
+field-family-union-confidence = درجة اليقين في الارتباط
+field-family-union-confidence-hint = تحدد مدى وضوح الخط المرسوم بين الزوجين في الشجرة.
+field-family-union-start = بداية الارتباط
+field-family-union-end = نهاية الارتباط
+field-family-notes-hint = الزوجان والأبناء قوائم: حرّرها في JSON الخام أدناه، أو في صفحة علاقات الشخص.
+field-category = الفئة
+field-required-hint = إلزامي.
+field-event-subcategory = الفئة الفرعية
+field-date = التاريخ
+field-event-date-hint = يشترطه المخطط.
+field-precision = الدقة
+field-circa = تقريبي
+field-place-id = معرّف المكان
+field-confidence = درجة اليقين
+field-source-id = معرّف المصدر
+field-link-from-type = نوع البداية
+field-link-from-id = معرّف البداية
+field-link-to-type = نوع النهاية
+field-link-to-id = معرّف النهاية
+field-link-label = اسم الصلة
+field-link-label-hint = يُقرأ في اتجاه الصلة: «العرّاب»، «صاحب العمل»، «الشاهد». إلزامي.
+field-link-label-reverse = الاسم في الاتجاه المعاكس
+field-link-label-reverse-hint = كيف يُقرأ من الطرف الآخر: «الابن بالمعمودية»، «الموظف».
+field-link-bidirectional = يُقرأ نفسه في الاتجاهين
+field-valid-from = سارٍ منذ
+field-link-valid-from-hint = متى بدأت العلاقة.
+field-valid-until = سارٍ حتى
+field-link-confidence-hint = «متأكد بنسبة 85٪ بحسب رسالة عائلية» — ما لا يستطيع GEDCOM قوله.
+field-note = ملاحظة
+field-occupation-person-id = معرّف الشخص
+field-occupation-title = العمل
+field-occupation-title-hint = إلزامي، مثل: معلّم.
+field-occupation-title-latin = العمل (بالحروف اللاتينية)
+field-occupation-employer = صاحب العمل
+field-occupation-from = من
+field-occupation-from-hint = العمل مدة زمنية. ذكر طرفيها هو ما يتيح رسمها شريطًا.
+field-occupation-until = إلى
+field-source-title = العنوان
+field-source-type = نوع المصدر
+field-source-reliability = الموثوقية
+field-source-reliability-hint = إلزامي. تُعرض شارةً بجانب كل واقعة تستند إلى هذا المصدر.
+field-source-status = حالة المصدر
+field-source-repository = جهة الحفظ
+field-source-repository-reference = رقم الحفظ لدى الجهة
+field-source-transcription = النسخ
+field-place-name = الاسم الرئيسي
+field-place-name-lang = لغة الاسم
+field-place-name-lang-hint = رمز لغة، مثل en أو fr أو pl.
+field-place-type = نوع المكان
+field-place-region = المنطقة
+field-place-country-current = الدولة اليوم
+field-place-country-current-hint = تاريخ حدوده قائمة: حرّره في JSON الخام أدناه.
+field-document-filename = اسم الملف
+field-document-mime-type = نوع الوسائط
+field-document-mime-type-hint = إلزامي، مثل image/jpeg.
+field-document-type = نوع الوثيقة
+field-document-status = حالة الملف
+field-document-url = عنوان الويب
+field-document-caption = التعليق
+lang-zh-Hans = الصينية المبسطة

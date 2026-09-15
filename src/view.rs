@@ -36,18 +36,21 @@ pub fn now_iso8601() -> String {
 // ---------------------------------------------------------------------------
 
 /// A confidence score prepared for display.
+///
+/// Numbers and a band, and no words: the sentence a reader sees — "Confidence
+/// 85% — well supported" — is `confidence-<band>` in their catalogue, built
+/// where the language is known. It used to be assembled here in English, which
+/// put an English tooltip on every fact of every page in ten other languages
+/// where no template linter could see it.
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Confidence {
     /// The raw score, 0.0–1.0.
     pub value: f64,
     /// Percentage 0–100, for bar widths and `aria-valuenow`.
     pub percent: u8,
-    /// CSS band: `certain`, `high`, `medium`, `low`.
+    /// CSS band, and the catalogue key's suffix: `certain`, `high`, `medium`,
+    /// `low`.
     pub band: &'static str,
-    /// Short human label, e.g. "85% confident".
-    pub label: String,
-    /// Longer text for `title`/screen readers.
-    pub description: String,
 }
 
 impl Confidence {
@@ -60,19 +63,26 @@ impl Confidence {
             0.0
         };
         let percent = (v * 100.0).round() as u8;
-        let (band, adjective) = match v {
-            x if x >= 0.90 => ("certain", "effectively certain"),
-            x if x >= 0.75 => ("high", "well supported"),
-            x if x >= 0.50 => ("medium", "plausible but unconfirmed"),
-            _ => ("low", "speculative"),
+        let band = match v {
+            x if x >= 0.90 => "certain",
+            x if x >= 0.75 => "high",
+            x if x >= 0.50 => "medium",
+            _ => "low",
         };
         Self {
             value: v,
             percent,
             band,
-            label: format!("{percent}% confident"),
-            description: format!("Confidence {percent}% — {adjective}"),
         }
+    }
+
+    /// The sentence for `title` and screen readers, in `lang`.
+    pub fn describe(&self, lang: &str) -> String {
+        let args = fluent::FluentArgs::from_iter([(
+            "percent",
+            fluent::FluentValue::from(i64::from(self.percent)),
+        )]);
+        crate::i18n::translate(lang, &format!("confidence-{}", self.band), Some(&args))
     }
 
     /// Read a confidence from an object field, if present and numeric.
@@ -190,11 +200,11 @@ pub fn render_date_in(raw: &Value, lang: &str) -> DateDisplay {
         .calendar
         .as_deref()
         .filter(|c| !c.eq_ignore_ascii_case("gregorian"))
-        .map(pretty_calendar);
+        .map(|c| calendar_name(c, lang));
     let alternatives = date
         .alternatives
         .iter()
-        .map(|a| format!("{} ({})", a.value, pretty_calendar(&a.calendar)))
+        .map(|a| format!("{} ({})", a.value, calendar_name(&a.calendar, lang)))
         .collect::<Vec<_>>();
 
     let mut out = DateDisplay {
@@ -490,20 +500,23 @@ fn ordinal(n: i64) -> String {
     format!("{n}{suffix}")
 }
 
-fn pretty_calendar(c: &str) -> String {
-    match c {
-        "gregorian" => "Gregorian".into(),
-        "julian" => "Julian".into(),
-        "hebrew" => "Hebrew".into(),
-        "hijri" => "Hijri".into(),
-        "persian" => "Persian".into(),
-        "chinese" => "Chinese".into(),
-        "ethiopian" => "Ethiopian".into(),
-        "japanese_era" => "Japanese era".into(),
-        "republican_french" => "French Republican".into(),
-        "roman" => "Roman".into(),
-        other => other.replace('_', " "),
-    }
+/// The calendars AXGF names, each with a `calendar-<name>` message.
+pub const CALENDARS: &[&str] = &[
+    "gregorian",
+    "julian",
+    "hebrew",
+    "hijri",
+    "persian",
+    "chinese",
+    "ethiopian",
+    "japanese_era",
+    "republican_french",
+    "roman",
+];
+
+/// A calendar's name in `lang`; one this build does not know reads as itself.
+fn calendar_name(c: &str, lang: &str) -> String {
+    crate::i18n::vocab(lang, "calendar", c)
 }
 
 // ---------------------------------------------------------------------------
@@ -519,17 +532,27 @@ pub fn person_display_name(person: &Value) -> String {
         .and_then(Value::as_str)
         .map(str::trim)
         .filter(|s| !s.is_empty());
+    // A schema-valid person always has a display name. One without it is a
+    // broken record, and what an editor needs to find it is its id — which
+    // also reads the same in every language, where "[Unnamed]" did not.
     match display {
         Some(d) => d.to_string(),
-        None => "[Unnamed]".to_string(),
+        None => id_mark(person),
     }
+}
+
+/// `#1a2b3c4d`: the start of an entity's id, for a record with nothing else
+/// to call it by.
+fn id_mark(entity: &Value) -> String {
+    let id = entity.get("id").and_then(Value::as_str).unwrap_or_default();
+    format!("#{}", id.chars().take(8).collect::<String>())
 }
 
 /// The primary name of a place, preferring the flagged primary, then any name.
 pub fn place_name(place: &Value) -> String {
     let names = place.get("names").and_then(Value::as_array);
     let Some(names) = names else {
-        return "[Unknown place]".into();
+        return id_mark(place);
     };
     let pick = names
         .iter()
@@ -538,8 +561,8 @@ pub fn place_name(place: &Value) -> String {
     pick.and_then(|n| n.get("value"))
         .and_then(Value::as_str)
         .filter(|s| !s.trim().is_empty())
-        .unwrap_or("[Unknown place]")
-        .to_string()
+        .map(str::to_string)
+        .unwrap_or_else(|| id_mark(place))
 }
 
 /// Human label for a source reliability level, in the reader's language.
@@ -814,8 +837,13 @@ mod tests {
             person_display_name(&json!({"identity":{"name":{"display":"Ada"}}})),
             "Ada"
         );
-        assert_eq!(person_display_name(&json!({"identity":{}})), "[Unnamed]");
-        assert_eq!(person_display_name(&json!({})), "[Unnamed]");
+        // A broken record is named by its id, which reads the same in every
+        // language and is what an editor needs to go and find it.
+        assert_eq!(
+            person_display_name(&json!({"id": "1a2b3c4d-0000", "identity": {}})),
+            "#1a2b3c4d"
+        );
+        assert_eq!(person_display_name(&json!({})), "#");
     }
 
     #[test]
@@ -826,7 +854,7 @@ mod tests {
         assert_eq!(place_name(&p), "Warsaw");
         let q = json!({"names":[{"lang":"pl","value":"Kraków"}]});
         assert_eq!(place_name(&q), "Kraków");
-        assert_eq!(place_name(&json!({})), "[Unknown place]");
+        assert_eq!(place_name(&json!({"id": "9f8e7d6c-1"})), "#9f8e7d6c");
     }
 
     #[test]

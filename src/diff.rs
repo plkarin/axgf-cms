@@ -123,19 +123,48 @@ fn compact(v: &Value) -> String {
     s
 }
 
-/// A one-line summary, for the journal listing and the dashboard.
+/// A one-line summary, for the journal listing and the dashboard, in English.
 pub fn summarise(changes: &[Change]) -> String {
-    match changes.len() {
-        0 => "no field changed".to_string(),
-        1 => format!("changed {}", changes[0].path),
-        2 => format!("changed {} and {}", changes[0].path, changes[1].path),
-        n => format!(
-            "changed {}, {} and {} more",
-            changes[0].path,
-            changes[1].path,
-            n - 2
+    summarise_in(changes, crate::i18n::DEFAULT)
+}
+
+/// [`summarise`] in `lang`, as it reads after the editor's name in a history:
+/// "Anna changed note". The field paths are identifiers and stay as they are;
+/// the sentence around them is the reader's.
+pub fn summarise_in(changes: &[Change], lang: &str) -> String {
+    summarise_as(changes, lang, "diff-summary")
+}
+
+/// The same summary standing on its own, after "Saved as version 3 —".
+///
+/// Two families rather than one because a sentence that follows a name is not
+/// the same sentence as one that follows a dash in most of these languages: a
+/// Polish or Russian past tense agrees with the person who acted, and on the
+/// saved banner there is no person in the sentence to agree with.
+pub fn saved_in(changes: &[Change], lang: &str) -> String {
+    summarise_as(changes, lang, "diff-saved")
+}
+
+fn summarise_as(changes: &[Change], lang: &str, family: &str) -> String {
+    use fluent::{FluentArgs, FluentValue};
+    let path = |i: usize| FluentValue::from(changes[i].path.clone());
+    let (suffix, args) = match changes.len() {
+        0 => ("none", FluentArgs::new()),
+        1 => ("one", FluentArgs::from_iter([("a", path(0))])),
+        2 => (
+            "two",
+            FluentArgs::from_iter([("a", path(0)), ("b", path(1))]),
         ),
-    }
+        n => (
+            "many",
+            FluentArgs::from_iter([
+                ("a", path(0)),
+                ("b", path(1)),
+                ("n", FluentValue::from((n - 2) as i64)),
+            ]),
+        ),
+    };
+    crate::i18n::translate(lang, &format!("{family}-{suffix}"), Some(&args))
 }
 
 #[cfg(test)]

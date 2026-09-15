@@ -261,7 +261,10 @@ pub fn analyse(flat: &Value, lang: &str) -> Report {
         // Measured against the facts that carry a score at all: a score that
         // is simply an import's default is not a judgement about that fact.
         total: with_conf,
-        summary: format!("{assessed} of {with_conf}"),
+        summary: t(
+            "completeness-fraction",
+            &[("part", n(assessed)), ("whole", n(with_conf))],
+        ),
         note: conf_note,
         carried: assessed > 0,
     });
@@ -286,7 +289,10 @@ pub fn analyse(flat: &Value, lang: &str) -> Report {
         field: "family.children[].confidence",
         present: child_conf,
         total: child_slots,
-        summary: format!("{child_conf} of {child_slots}"),
+        summary: t(
+            "completeness-fraction",
+            &[("part", n(child_conf)), ("whole", n(child_slots))],
+        ),
         note: if child_conf == 0 {
             t("completeness-metric-parentage-none", &[])
         } else {
@@ -337,7 +343,10 @@ pub fn analyse(flat: &Value, lang: &str) -> Report {
         field: "occupation.valid_from / valid_until",
         present: occ_span,
         total: occ_total,
-        summary: format!("{occ_span} of {occ_total}"),
+        summary: t(
+            "completeness-fraction",
+            &[("part", n(occ_span)), ("whole", n(occ_total))],
+        ),
         note: if occ_total == 0 {
             t("completeness-metric-occupations-none", &[])
         } else if occ_span == 0 {
@@ -373,7 +382,10 @@ pub fn analyse(flat: &Value, lang: &str) -> Report {
         field: "source.reliability",
         present: src_graded,
         total: src_total,
-        summary: format!("{src_graded} of {src_total}"),
+        summary: t(
+            "completeness-fraction",
+            &[("part", n(src_graded)), ("whole", n(src_total))],
+        ),
         note: if src_graded == 0 {
             t("completeness-metric-sources-none", &[])
         } else {

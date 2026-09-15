@@ -472,7 +472,7 @@ pub async fn tree(
             history => selected
                 .as_deref()
                 .filter(|_| viewer.signed_in())
-                .map(|id| entity_history(&state, id, viewer.ceiling())),
+                .map(|id| entity_history(&state, id, viewer.ceiling(), chrome.lang)),
             // How many people this reader is not being shown. Stated rather
             // than hidden: a tree with silent gaps looks like a broken import.
             hidden,
@@ -519,7 +519,7 @@ pub async fn tree_panel(
             "_panel.html",
             context! {
                 p,
-                history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling())),
+                history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
                 compact => true,
                 max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             },
@@ -540,7 +540,12 @@ pub async fn tree_panel(
 /// recorded change carries the value that changed, so a diff of a class
 /// attribute is the diagnosis itself, printed back out beside a record that
 /// withheld it. See [`crate::sensitive::changes_for_reader`].
-fn entity_history(state: &Shared, id: &str, ceiling: crate::acl::Visibility) -> Vec<Value> {
+fn entity_history(
+    state: &Shared,
+    id: &str,
+    ceiling: crate::acl::Visibility,
+    lang: &str,
+) -> Vec<Value> {
     let readable = state.read(|flat| {
         flat.get("persons")
             .and_then(|c| c.get(id))
@@ -559,7 +564,7 @@ fn entity_history(state: &Shared, id: &str, ceiling: crate::acl::Visibility) -> 
                 "who": e.who,
                 "action": e.action,
                 "version_num": e.version_num,
-                "summary": e.summary(),
+                "summary": e.summary_in(lang),
                 "changes": crate::sensitive::changes_for_reader(&e.changes, readable),
             })
         })
@@ -734,7 +739,7 @@ pub async fn person(
                     p,
                     // The journal names editors, so it is shown to people who
                     // are signed in and to nobody else.
-                    history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling())),
+                    history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
                     compact => false,

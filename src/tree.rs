@@ -583,6 +583,8 @@ pub struct Card {
     pub row: usize,
     /// Confidence band of the birth fact, shown as a dot on the card.
     pub conf_band: Option<&'static str>,
+    /// The dot's accessible name, in the reader's language. Empty from the
+    /// layout and written by [`localise`], like every other word on the tree.
     pub conf_label: Option<String>,
     /// The confidence as a whole percentage, so the card's dot can be filled
     /// to the value rather than merely tinted by its band.
@@ -597,6 +599,10 @@ pub struct Card {
     /// record. See [`crate::living`]: the card must not print a bare `?` that
     /// reads as "not looked up yet" for a person the arithmetic has answered.
     pub presumed_deceased: bool,
+    /// False for a person a family names and the bundle does not hold. The
+    /// card is still drawn, so the tree never silently loses someone; its
+    /// name is the catalogue's "unknown person", written by [`localise`].
+    pub known: bool,
 }
 
 /// A connector between two cards.
@@ -610,6 +616,10 @@ pub struct Edge {
     /// and nothing else — a faint edge is an uncertain claim.
     pub opacity: f64,
     pub band: &'static str,
+    /// The relationship's confidence as a whole percentage, for the title.
+    pub pct: u8,
+    /// Who the edge joins and how sure the record is, in the reader's
+    /// language. Empty from the layout; written by [`localise`].
     pub title: String,
     /// The two person ids the edge connects: for a parent edge the anchoring
     /// parent and the child, for a spouse edge the two partners. Drives the
@@ -1505,11 +1515,12 @@ pub fn layout_subset(
         by_gen.insert(*g, people.clone());
     }
     let max_gen = by_gen.keys().copied().max().unwrap_or(0);
+    // A sort key only; nothing here is shown.
     let name_of = |id: &str| -> String {
         persons
             .get(id)
             .map(view::person_display_name)
-            .unwrap_or_else(|| "[Unknown]".into())
+            .unwrap_or_default()
     };
 
     // Unplaced people appear in no family, so a subtree walk can never reach
@@ -1639,7 +1650,6 @@ pub fn layout_subset(
         &geom,
         width,
         &generations.gen,
-        persons,
         &ordering.hues,
     );
 
@@ -1909,8 +1919,43 @@ fn ortho_path(points: &[(f64, f64)]) -> String {
 /// vary with an `Accept-Language` header, and the tests that assert on
 /// positions do not have to care what language they are running in.
 pub fn localise(layout: &mut TreeLayout, lang: &str) {
-    let n_arg =
-        |n: usize| fluent::FluentArgs::from_iter([("n", fluent::FluentValue::from(n as i64))]);
+    use fluent::{FluentArgs, FluentValue};
+    let n_arg = |n: usize| FluentArgs::from_iter([("n", FluentValue::from(n as i64))]);
+    let confidence = |band: &str, pct: u8| {
+        let args = FluentArgs::from_iter([("percent", FluentValue::from(i64::from(pct)))]);
+        crate::i18n::translate(lang, &format!("confidence-{band}"), Some(&args))
+    };
+    let mut names: BTreeMap<String, String> = BTreeMap::new();
+    for card in layout.bands.iter_mut().flat_map(|b| b.cards.iter_mut()) {
+        if !card.known {
+            card.name = crate::i18n::translate(lang, crate::person::UNKNOWN_KEY, None);
+        }
+        if let (Some(band), Some(pct)) = (card.conf_band, card.conf_pct) {
+            card.conf_label = Some(confidence(band, pct));
+        }
+        names.insert(card.id.clone(), card.name.clone());
+    }
+    for edge in &mut layout.edges {
+        let name = |id: &str| {
+            names
+                .get(id)
+                .cloned()
+                .unwrap_or_else(|| crate::i18n::translate(lang, crate::person::UNKNOWN_KEY, None))
+        };
+        let args = FluentArgs::from_iter([
+            ("from", FluentValue::from(name(&edge.from))),
+            ("to", FluentValue::from(name(&edge.to))),
+            (
+                "confidence",
+                FluentValue::from(confidence(edge.band, edge.pct)),
+            ),
+        ]);
+        let key = match edge.kind {
+            "spouse" => "tree-edge-union-between",
+            _ => "tree-edge-parentage-of",
+        };
+        edge.title = crate::i18n::translate(lang, key, Some(&args));
+    }
     for band in &mut layout.bands {
         if band.unplaced {
             band.label = crate::i18n::translate(lang, "tree-band-unplaced", None);
@@ -1932,8 +1977,8 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
     let Some(p) = person else {
         return Card {
             id: id.to_string(),
-            name: "[Unknown]".into(),
-            search: "[unknown]".into(),
+            name: String::new(),
+            search: String::new(),
             birth: String::new(),
             death: String::new(),
             sex: "u",
@@ -1947,6 +1992,7 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
             is_root,
             restricted: false,
             presumed_deceased: false,
+            known: false,
         };
     };
 
@@ -1994,10 +2040,11 @@ fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root: bool) -> 
         row: 0,
         conf_band: conf.as_ref().map(|c| c.band),
         conf_pct: conf.as_ref().map(|c| c.percent),
-        conf_label: conf.map(|c| c.description),
+        conf_label: None,
         is_root,
         restricted: false,
         presumed_deceased: living.is_presumed(),
+        known: true,
     }
 }
 
@@ -2081,16 +2128,9 @@ fn build_edges(
     geom: &[BandGeom],
     canvas_w: f64,
     gen: &BTreeMap<String, i64>,
-    persons: &serde_json::Map<String, Value>,
     hues: &BTreeMap<(String, String), u8>,
 ) -> Vec<Edge> {
     let mut edges = Vec::new();
-    let name = |id: &str| -> String {
-        persons
-            .get(id)
-            .map(view::person_display_name)
-            .unwrap_or_else(|| "[Unknown]".into())
-    };
     let present = |id: &str| pos.contains_key(id);
 
     for f in families {
@@ -2122,12 +2162,8 @@ fn build_edges(
                     d,
                     opacity: opacity_for(&c),
                     band: c.band,
-                    title: format!(
-                        "{} and {} — {}",
-                        name(&pair[0]),
-                        name(&pair[1]),
-                        c.description
-                    ),
+                    pct: c.percent,
+                    title: String::new(),
                     from: pair[0].clone(),
                     to: pair[1].clone(),
                     hue: None,
@@ -2210,7 +2246,8 @@ fn build_edges(
                 d,
                 opacity: opacity_for(&c),
                 band: c.band,
-                title: format!("{} → {} — {}", name(parent), name(child), c.description),
+                pct: c.percent,
+                title: String::new(),
                 from: parent.clone(),
                 to: child.clone(),
                 hue: hues.get(&(parent.clone(), child.clone())).copied(),

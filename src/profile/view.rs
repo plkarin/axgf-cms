@@ -394,9 +394,10 @@ fn render(
         Shape::Text | Shape::Pattern(_) | Shape::TimeOfDay | Shape::CurrencyCode => {
             (scalar(v), None)
         }
-        Shape::Number { unit, .. } | Shape::Integer { unit, .. } => {
-            (super::with_unit(lang, unit, &scalar(v)), None)
-        }
+        Shape::Number { unit, .. } | Shape::Integer { unit, .. } => (
+            super::with_unit(lang, unit, &crate::i18n::decimal(lang, &scalar(v))),
+            None,
+        ),
         Shape::Boolean => (
             crate::i18n::translate(
                 lang,

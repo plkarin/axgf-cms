@@ -38,9 +38,7 @@
         <label for="{{ f.path }}">{{ f.label }}</label>
         <select id="{{ f.path }}" name="{{ f.path }}">
           {% for o in f.options %}
-          <option value="{{ o }}" {% if o == f.value %}selected{% endif %}>
-            {{ o if o else t("admin-not-set") }}
-          </option>
+          <option value="{{ o.value }}" {% if o.value == f.value %}selected{% endif %}>{{ o.label }}</option>
           {% endfor %}
         </select>
 

@@ -263,7 +263,7 @@
                  logical property rather than `left` is what makes that happen
                  without a second stylesheet or a second set of numbers. -#}
              style="inset-inline-start:{{ o.bar_left }}%;width:{{ o.bar_width }}%"
-             title="{{ o.title }}, {{ o.span }}{% if o.confidence %} — {{ o.confidence.description }}{% endif %}">
+             title="{{ o.title }}, {{ o.span }}{% if o.confidence %} — {{ t('confidence-' ~ o.confidence.band, percent=o.confidence.percent) }}{% endif %}">
           {%- if o.open_start %}<span class="tl-open tl-open-l" title="{{ t('record-start-not-recorded') }}"></span>{% endif -%}
           {%- if o.open_end %}<span class="tl-open tl-open-r" title="{{ t('record-end-not-recorded') }}"></span>{% endif -%}
         </div>
@@ -425,7 +425,7 @@
       </a>
       <figcaption>
         {{ d.caption if d.caption else d.filename }}
-        <span class="small muted">{{ d.document_type }}{% if d.size_human %} · {{ d.size_human }}{% endif %}</span>
+        <span class="small muted">{{ d.document_type_label }}{% if d.size_human %} · {{ d.size_human }}{% endif %}</span>
       </figcaption>
     </figure>
     {% endfor %}
@@ -445,9 +445,9 @@
             {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
             {% if d.note %}<div class="small muted">{{ d.note }}</div>{% endif %}
             {% if not d.known %}<div class="small muted">{{ t("record-absent-document") }}</div>{% endif %}</td>
-        <td class="small" data-label="{{ t('record-type') }}">{{ d.document_type }}{% if d.mime_type %}
+        <td class="small" data-label="{{ t('record-type') }}">{{ d.document_type_label }}{% if d.mime_type %}
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
-        <td class="small" data-label="{{ t('record-status') }}">{{ d.status }}</td>
+        <td class="small" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
         <td class="small" data-label="{{ t('record-size') }}">{{ d.size_human if d.size_human else "—" }}</td>
         {# No `data-label`: an action is not a field, and a stacked row that
            labelled it would read "FILE / {{ t("record-download") }}". #}

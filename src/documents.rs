@@ -413,17 +413,31 @@ impl ThumbCache {
     }
 }
 
-/// Format a byte count for the admin panel.
+/// Format a byte count for the operator's console, which speaks English.
 pub fn human_size(bytes: u64) -> String {
-    if bytes >= 1024 * 1024 * 1024 {
-        format!("{:.1} GB", bytes as f64 / (1024.0 * 1024.0 * 1024.0))
-    } else if bytes >= 1024 * 1024 {
-        format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
-    } else if bytes >= 1024 {
-        format!("{:.1} KB", bytes as f64 / 1024.0)
-    } else {
-        format!("{bytes} bytes")
+    human_size_in(bytes, crate::i18n::DEFAULT)
+}
+
+/// Format a byte count for a page, in `lang`.
+///
+/// The unit symbols are the same everywhere; the word for "bytes", its plural
+/// and the decimal separator are not, so all three come from the catalogue.
+pub fn human_size_in(bytes: u64, lang: &str) -> String {
+    use fluent::{FluentArgs, FluentValue};
+    const SCALES: [(&str, u64); 3] = [
+        ("size-gb", 1024 * 1024 * 1024),
+        ("size-mb", 1024 * 1024),
+        ("size-kb", 1024),
+    ];
+    for (key, scale) in SCALES {
+        if bytes >= scale {
+            let n = crate::i18n::decimal(lang, &format!("{:.1}", bytes as f64 / scale as f64));
+            let args = FluentArgs::from_iter([("n", FluentValue::from(n))]);
+            return crate::i18n::translate(lang, key, Some(&args));
+        }
     }
+    let args = FluentArgs::from_iter([("n", FluentValue::from(bytes as i64))]);
+    crate::i18n::translate(lang, "size-bytes", Some(&args))
 }
 
 #[cfg(test)]

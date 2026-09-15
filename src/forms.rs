@@ -243,18 +243,20 @@ impl PickError {
 /// its options, and with script it is a widget this application does not want.
 /// The kind comes back out of which collection holds the id, so the reader
 /// picks a thing and the type looks after itself.
-pub fn linkable_options(flat: &Value, lens: &crate::access::Lens) -> Vec<PersonOption> {
+pub fn linkable_options(flat: &Value, lens: &crate::access::Lens, lang: &str) -> Vec<PersonOption> {
     let mut out = person_options(flat, lens);
-    for (collection, label) in [
-        ("families", family_brief as fn(&Value, &Value) -> String),
-        ("events", event_brief as fn(&Value, &Value) -> String),
-    ] {
+    for (collection, is_family) in [("families", true), ("events", false)] {
         let Some(map) = flat.get(collection).and_then(Value::as_object) else {
             continue;
         };
         for (id, e) in map {
+            let brief = if is_family {
+                family_brief(flat, lens, e)
+            } else {
+                event_brief(e, lang)
+            };
             out.push(PersonOption {
-                label: format!("{} · #{}", label(flat, e), short_id(id)),
+                label: format!("{brief} · #{}", short_id(id)),
                 id: id.clone(),
             });
         }
@@ -264,7 +266,12 @@ pub fn linkable_options(flat: &Value, lens: &crate::access::Lens) -> Vec<PersonO
 }
 
 /// A family said briefly: the partners' names, which is how anybody knows it.
-fn family_brief(flat: &Value, fam: &Value) -> String {
+///
+/// Through the lens, like every other name on a picker: a partner this reader
+/// may not read is their id, exactly as `person_options` leaves them out. The
+/// family list was the one picker that printed every partner's name to any
+/// editor.
+fn family_brief(flat: &Value, lens: &crate::access::Lens, fam: &Value) -> String {
     let names: Vec<String> = fam
         .pointer("/union/persons")
         .and_then(Value::as_array)
@@ -272,8 +279,8 @@ fn family_brief(flat: &Value, fam: &Value) -> String {
             ps.iter()
                 .filter_map(|p| p.get("person_id").and_then(Value::as_str))
                 .map(|pid| match flat.get("persons").and_then(|c| c.get(pid)) {
-                    Some(p) => crate::view::person_display_name(p),
-                    None => short_id(pid).to_string(),
+                    Some(p) if lens.sees_person(pid) => crate::view::person_display_name(p),
+                    _ => short_id(pid).to_string(),
                 })
                 .collect()
         })
@@ -281,13 +288,15 @@ fn family_brief(flat: &Value, fam: &Value) -> String {
     names.join(" + ")
 }
 
-/// An event said briefly: what kind it was and when.
-fn event_brief(_flat: &Value, ev: &Value) -> String {
-    let cat = ev
-        .get("category")
-        .and_then(Value::as_str)
-        .unwrap_or("event")
-        .replace('_', " ");
+/// An event said briefly: what kind it was and when, in `lang`.
+fn event_brief(ev: &Value, lang: &str) -> String {
+    let cat = crate::i18n::vocab(
+        lang,
+        "event-category",
+        ev.get("category")
+            .and_then(Value::as_str)
+            .unwrap_or("other"),
+    );
     match crate::view::latest_year_of_field(ev, "date") {
         Some(y) => format!("{cat} {y}"),
         None => cat,

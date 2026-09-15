@@ -440,6 +440,16 @@ fn every_dynamic_key_family_is_fully_defined() {
     for locale in axgf_cms::i18n::LOCALES {
         expected.push(format!("lang-{}", locale.tag));
     }
+    // The charts name themselves and their axes by building the key.
+    for (chart, axes) in axgf_cms::radar::AXES {
+        expected.push(format!("radar-{chart}"));
+        for axis in axes {
+            expected.push(format!("radar-axis-{axis}"));
+        }
+    }
+    for direction in ["outgoing", "incoming"] {
+        expected.push(format!("record-link-{direction}"));
+    }
     for code in DIAGNOSTIC_CODES {
         assert!(
             axgf_rs::boundary::envelope::DiagnosticCode::from_wire(code).is_some(),

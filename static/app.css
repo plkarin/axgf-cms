@@ -1863,6 +1863,151 @@ bdi.date { unicode-bidi: isolate; }
   .ed-rows.ed-people td:last-child { inline-size: 100%; min-inline-size: 0; }
 }
 
+/* ---------- charts ---------- */
+
+/* Three charts at the foot of the record. Confidence is carried three ways at
+ * once — the bar along each spoke, the marker's shape, the band's colour — and
+ * the table under each chart says it in words, so no single channel carries
+ * it alone and none of the colour-blind themes loses it. Nothing here moves:
+ * there is no animation to reduce. */
+.radar-cards {
+  display: grid;
+  gap: calc(var(--step) * 2.25);
+}
+.radar-card {
+  margin: 0;
+  padding: calc(var(--step) * 1.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  min-width: 0;
+}
+.radar-card h3 { margin: 0 0 0.4rem; }
+/* The chart beside its table where there is room for both, the table under
+   it where there is not. A chart the width of a phone and a table the width of
+   a third of a desktop were both illegible. */
+.radar-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(var(--step) * 1.5);
+  align-items: start;
+}
+@media (min-width: 60rem) {
+  .radar-body { grid-template-columns: minmax(18rem, 25rem) minmax(0, 1fr); }
+  .radar-body .radar-empty { grid-column: 1; }
+  .radar-body .radar-table { grid-column: 2; grid-row: 1 / span 2; }
+}
+.radar-box {
+  position: relative;
+  aspect-ratio: 460 / 360;
+  max-width: 100%;
+  margin-block: 0.6rem 0.4rem;
+}
+.radar-box svg.radar {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  overflow: visible;
+}
+.radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
+.radar-spoke { stroke: var(--border); stroke-width: 1; }
+.radar-spoke.radar-absent {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+.radar-area { fill: var(--accent); fill-opacity: 0.14; stroke: none; }
+.radar-outline { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.radar-band { stroke-width: 7; stroke-linecap: round; stroke: var(--conf-medium); }
+.radar-band[data-band="certain"] { stroke: var(--conf-certain); }
+.radar-band[data-band="high"] { stroke: var(--conf-high); }
+.radar-band[data-band="low"] { stroke: var(--conf-low); }
+.radar-point { stroke: var(--ink); stroke-width: 2; fill: none; }
+.radar-point[data-band="certain"] { fill: var(--ink); }
+.radar-point[data-band="low"] { stroke-dasharray: 2.4 2; }
+.radar-point-core { fill: var(--ink); stroke: none; }
+
+.radar-label {
+  position: absolute;
+  max-width: 8.5rem;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+.radar-label[data-side="top"] { transform: translate(-50%, -100%); text-align: center; }
+.radar-label[data-side="bottom"] { transform: translate(-50%, 0); text-align: center; }
+/* Physical, not logical: a label to the right of the chart grows rightwards
+   in Arabic too, because the chart does not mirror. */
+.radar-label[data-side="right"] { transform: translate(0, -50%); text-align: left; }
+.radar-label[data-side="left"] { transform: translate(-100%, -50%); text-align: right; }
+.radar-label[data-absent] { color: var(--ink-faint); font-style: italic; }
+.radar-num {
+  display: inline-block;
+  min-width: 1.2em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+.radar-score { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.radar-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-top: 0.4rem; }
+.radar-table td, .radar-table th { overflow-wrap: anywhere; }
+.radar-table th, .radar-table td {
+  text-align: start;
+  vertical-align: top;
+  padding: 0.35rem 0.4rem 0.35rem 0;
+  border-block-start: 1px solid var(--border);
+}
+.radar-table thead th {
+  border-block-start: none;
+  font-size: var(--label-size, 0.72rem);
+  text-transform: uppercase;
+  letter-spacing: var(--label-track, 0.04em);
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+.radar-table tbody th { font-weight: 600; }
+.radar-table tr[data-absent] th { color: var(--ink-faint); font-weight: 500; }
+.radar-conf { display: block; font-size: 0.8rem; color: var(--ink-soft); }
+.radar-facts { margin: 0; padding: 0; list-style: none; }
+.radar-facts li + li { margin-top: 0.2rem; }
+.radar-fact-label { color: var(--ink-soft); }
+.radar-fact-label::after { content: ":"; }
+/* The marker again, in the table: the same four shapes, drawn in CSS. */
+.radar-mark {
+  display: inline-block;
+  width: 0.7rem; height: 0.7rem;
+  margin-inline-end: 0.3rem;
+  vertical-align: -0.05rem;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid var(--ink);
+}
+.radar-mark[data-band="certain"] { background: var(--ink); }
+.radar-mark[data-band="high"] { background: radial-gradient(circle, var(--ink) 0 32%, transparent 34%); }
+.radar-mark[data-band="low"] { border-style: dashed; }
+
+.radar-fold > summary {
+  cursor: pointer;
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--ink);
+}
+.radar-fold[open] > summary { margin-bottom: 0.4rem; }
+
+@media (max-width: 34rem) {
+  /* At phone width the names go to the table beneath; the chart keeps each
+     axis's number and score, which is what fits beside a spoke. */
+  .radar-label .radar-name { display: none; }
+  .radar-table thead { display: none; }
+  .radar-table, .radar-table tbody, .radar-table tr,
+  .radar-table th, .radar-table td { display: block; width: 100%; }
+  .radar-table tr { border-block-start: 1px solid var(--border); padding-block: 0.3rem; }
+  .radar-table th, .radar-table td { border: none; padding: 0.1rem 0; }
+}
+
 /* ---------- identity page ---------- */
 
 /* The record's masthead: who this person was, at a glance.

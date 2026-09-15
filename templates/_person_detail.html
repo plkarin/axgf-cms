@@ -219,7 +219,7 @@
         <span class="link-label">{{ l.label }}</span>
         {% if l.relation %}<span class="chip small">{{ l.relation }}</span>{% endif %}
         {% if l.category %}<span class="chip small">{{ l.category }}</span>{% endif %}
-        <span class="small muted">{{ l.direction }}</span>
+        <span class="small muted">{{ t("record-link-" ~ l.direction) }}</span>
       </div>
       <div class="link-who">{{ m.person_link(l.other) }}</div>
       {% if l.from_date or l.until_date %}
@@ -239,6 +239,12 @@
   {% endif %}
 </section>
 {% endif %}
+
+{# ------------------------------------------------------------- CHARTS #}
+{# At the foot of the record tab, and only there: the side panel is one glance
+   at a whole person in a narrow column, which is not where six-axis charts and
+   their tables belong. #}
+{% if tab == "record" %}{% include "_radar.html" %}{% endif %}
 
 {# ------------------------------------------------------------- OCCUPATIONS #}
 {% if (tab is undefined or tab == "life") and (p.occupations) %}

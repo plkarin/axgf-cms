@@ -766,3 +766,84 @@ async fn the_figure_has_no_control_in_the_header_and_explains_itself_in_the_reco
         "and it is a line in the record tab"
     );
 }
+
+/// The record tab ends with three charts. A record with nothing to read into
+/// them still draws them, every axis absent and saying so — never a middling
+/// score standing in for a fact nobody recorded.
+#[tokio::test]
+async fn the_record_ends_with_three_charts_and_nothing_is_scored_from_nothing() {
+    let src = showcase_bundle("charts-empty-src");
+    let (app, _p) = app_with_bundle("charts-empty", &src);
+    let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+    assert_eq!(body.matches("class=\"radar-card\"").count(), 3);
+    assert_eq!(
+        body.matches("<span class=\"muted\">no score</span>")
+            .count(),
+        18,
+        "all eighteen axes are absent"
+    );
+    assert!(
+        !body.contains("radar-outline"),
+        "no shape is drawn from nothing"
+    );
+    assert!(!body.contains("radar-point"), "and no point is placed");
+    // Only on the record tab, and not in the narrow side panel.
+    let life = body_string(get_admin(&app, &format!("/person/{JULES}?tab=life")).await).await;
+    assert!(!life.contains("radar-card"));
+    let panel = body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await;
+    assert!(!panel.contains("radar-card"));
+}
+
+/// A living person's temperament chart is folded shut even for a reader who
+/// may open it, and a reader who may not read it gets the withheld notice and
+/// no scores.
+#[tokio::test]
+async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
+    let dir = scratch("charts-living-src");
+    let path = dir.join("living.axgf");
+    let id = "44444444-4444-4444-8444-444444444444";
+    let flat = json!({
+        "manifest": {"axgf": "1.1"},
+        "persons": {id: {
+            "id": id, "type": "person", "axgf_version": "1.1",
+            "identity": {"name": {"display": "Irena Wolska", "components": []},
+                         "is_living": true, "visibility": "public"},
+            "morphology": {"posture": [{"value": "ideal", "confidence": 0.9}]},
+            "personality": {"big_five": [{"value": {"openness": 81, "conscientiousness": 64,
+                "extraversion": 38, "agreeableness": 55, "neuroticism": 41}}]}
+        }},
+        "families": {}, "events": {}, "links": {}, "occupations": {},
+        "sources": {}, "places": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    let (app, _p) = app_with_bundle("charts-living", &path);
+
+    let admin = body_string(get_admin(&app, &format!("/person/{id}")).await).await;
+    assert!(
+        admin.contains("<details class=\"radar-fold\">"),
+        "folded for the admin"
+    );
+    assert!(admin.contains("Openness</span> <bdi>") || admin.contains("Openness 81"));
+
+    let public = body_string(get(&app, &format!("/person/{id}")).await).await;
+    assert!(
+        !public.contains("radar-fold"),
+        "nothing to unfold for the public"
+    );
+    assert!(
+        !public.contains("Openness 81"),
+        "no temperament score reaches the public"
+    );
+    assert!(
+        public.contains("withheld from you"),
+        "and the chart says something is withheld"
+    );
+    assert!(
+        public.contains("Posture: Ideal") || public.contains("Ideal"),
+        "the open physique still reads"
+    );
+}

@@ -8,6 +8,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Three charts at the foot of the record.** Physique (stature, build, lean
+mass, posture, gait, teeth), temperament and mind (the five factors and
+cognition) and health and vitality (circulation, breathing, metabolism,
+freedom from illness, senses, sleep and mood), each axis 0–100. Every number
+is worked out in `crate::radar` by rules written down in its module
+documentation — no language model, nothing that cannot show its working — on
+every render, and nothing is ever written to the bundle.
+
+An axis with nothing to read is drawn absent, a dotted spoke and "none",
+never 50; a record with nothing at all still gets its three charts, saying so.
+Every score lists the facts it was read from, in the reader's language and
+with their dates. Every score carries its confidence three ways at once — a
+bar along the spoke as long as the uncertainty, a marker whose shape is the
+band (filled, ringed, hollow, broken) and the band's colour — and the table
+beside the chart says it in words, so no colour-blind theme loses it and a
+screen reader is told all of it.
+
+The charts read the person through the same class access as everything else,
+so a class the reader may not read is simply absent, with the profile's
+withheld notice beside the chart. A living person's temperament chart is
+folded shut even for a reader who may open it. Hearing and sight are health
+data in AXGF 1.1, though they sit in the biometrics block, and are governed so.
+Every chart element was swept in all 21 theme and style combinations: bands
+4.33–7.86, outlines 6.84–11.22, markers 12.05–21.00, absent spokes
+3.13–21.00 against 3:1, and chart text 5.50–17.40 against 4.5:1. Nothing
+moves.
+
 **The whole AXGF 1.1 profile, read and written.** A person's record has a
 fourth tab, Profile, holding the fourteen groups the specification arranges its
 132 attributes into — identity and civil status, morphology, biometrics,
@@ -131,6 +158,10 @@ every editor here updates — so a person given a blood group, a family given a
 child's lineage or a link given a relation came back with
 `SPEC_VERSION_MISMATCH` on every save. The single write path now raises the
 declaration to what the content needs, and never lowers it.
+
+**A link's direction was printed in English.** "outgoing" and "incoming",
+from the code, beside every link on every record in every language. They are
+"from this person" and "to this person" now, in all eleven.
 
 **Delete buttons saved instead.** The delete control on each link, occupation
 and event sat inside that entity's edit form, and a form inside a form is

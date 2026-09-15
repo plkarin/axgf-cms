@@ -369,6 +369,8 @@ pub struct PersonView {
     /// The AXGF 1.1 profile groups, with what each holds for this reader —
     /// the strip of sub-tabs on the Profile tab. See [`crate::profile`].
     pub profile_tabs: Vec<crate::profile::view::GroupTab>,
+    /// The three charts at the foot of the record tab. See [`crate::radar`].
+    pub radars: Vec<crate::radar::Chart>,
     /// Claims across every group that this reader can see.
     pub profile_count: usize,
     /// The drawn figure, or `None` when the record cannot support one. See
@@ -493,6 +495,22 @@ pub fn build_in(
     let profile_tabs = crate::profile::view::tabs(&lifted, &reader);
     let profile_count = profile_tabs.iter().map(|t| t.count).sum();
 
+    // The three charts read the same record through the same scopes, and the
+    // *recorded* living status folds the temperament chart — a presumption
+    // is not what governs a class, and it does not govern this either.
+    let recorded_living = person
+        .pointer("/identity/is_living")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let radars = crate::radar::charts(
+        flat,
+        person,
+        readable,
+        &withheld_documents,
+        lang,
+        recorded_living,
+    );
+
     // The figure beside the record. It is built from `header.age` — the same
     // number the masthead prints — so the drawing and the heading above it
     // cannot disagree about how old somebody was, and from `morphology`, which
@@ -585,6 +603,7 @@ pub fn build_in(
         showcase_notes,
         profile_tabs,
         profile_count,
+        radars,
         silhouette,
     })
 }

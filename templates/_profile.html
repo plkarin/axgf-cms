@@ -130,7 +130,7 @@
   {% endif %}
 
   {% if g.withheld %}
-  <p class="notice" role="status">{{ t("profile-withheld", classes=g.withheld | join(", ")) }}</p>
+  <p class="notice" role="status">{{ t("profile-withheld", classes=g.withheld | join(t("list-separator"))) }}</p>
   {% endif %}
 
   {% if g.attributes %}

@@ -1,0 +1,82 @@
+{#- The three charts at the foot of the record tab. See `crate::radar` for how
+    every number is reached; the table under each chart is the drawing said
+    in words, and is what a screen reader is given in its place.
+
+    An absent axis is a dotted spoke and "none", never a middling score, and a
+    chart with nothing to read is still drawn: an empty chart that says so is a
+    true statement about the record, where leaving it out would be silence. -#}
+{% import "_macros.html" as m %}
+<section id="charts" class="rec-section radar-section">
+  {{ m.sec(t, t("radar-section"), compact, t("radar-section-help")) }}
+  <div class="radar-cards">
+  {% for c in p.radars %}
+    <figure class="radar-card" aria-labelledby="radar-{{ c.key }}-title" data-chart="{{ c.key }}">
+      <h3 id="radar-{{ c.key }}-title">{{ t("radar-" ~ c.key) }}</h3>
+      {% if c.withheld %}
+      <p class="notice small" role="status">{{ t("profile-withheld", classes=c.withheld | join(t("list-separator"))) }}</p>
+      {% endif %}
+
+      {% if c.folded %}
+      {#- Folded, not hidden: a reader who may read a living person's
+          behavioural profile can open it, and the page does not show it to
+          somebody who did not ask. -#}
+      <details class="radar-fold">
+        <summary>{{ t("radar-folded-open") }}</summary>
+        <p class="hint">{{ t("radar-folded-why") }}</p>
+      {% endif %}
+
+      <div class="radar-body">
+      <div class="radar-box">
+        {{ c.svg | safe }}
+        {% for a in c.axes %}
+        <span class="radar-label" data-side="{{ a.label_side }}"{% if a.score is none %} data-absent{% endif %}
+              style="left:{{ a.label_x }}%;top:{{ a.label_y }}%" aria-hidden="true">
+          <span class="radar-num">{{ a.number }}</span>
+          <span class="radar-name">{{ t("radar-axis-" ~ a.key) }}</span>
+          {%- if a.score is not none %} <span class="radar-score">{{ a.score }}</span>{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+      {% if c.present == 0 %}<p class="muted small radar-empty">{{ t("radar-empty") }}</p>{% endif %}
+
+      <table class="radar-table">
+        <caption class="sr-only">{{ t("radar-table-caption", chart=t("radar-" ~ c.key)) }}</caption>
+        <thead><tr>
+          <th scope="col">{{ t("radar-col-axis") }}</th>
+          <th scope="col">{{ t("radar-col-score") }}</th>
+          <th scope="col">{{ t("radar-col-from") }}</th>
+        </tr></thead>
+        <tbody>
+        {% for a in c.axes %}
+          <tr{% if a.score is none %} data-absent{% endif %}>
+            <th scope="row"><span class="radar-num">{{ a.number }}</span> {{ t("radar-axis-" ~ a.key) }}</th>
+            <td data-label="{{ t('radar-col-score') }}">
+              {%- if a.score is not none -%}
+              <strong>{{ a.score }}</strong>
+              <span class="radar-conf" data-band="{{ a.confidence.band }}">
+                <i class="radar-mark" data-band="{{ a.confidence.band }}" aria-hidden="true"></i>
+                {{ t("confidence-" ~ a.confidence.band, percent=a.confidence.percent) }}</span>
+              {%- else -%}
+              <span class="muted">{{ t("radar-no-score") }}</span>
+              {%- endif -%}
+            </td>
+            <td data-label="{{ t('radar-col-from') }}">
+              {%- if a.facts -%}
+              <ul class="radar-facts">
+                {% for f in a.facts %}<li><span class="radar-fact-label">{{ f.label }}</span> <bdi>{{ f.text }}</bdi>{% if f.date %} <span class="muted small">{{ f.date }}</span>{% endif %}</li>{% endfor %}
+              </ul>
+              {%- else -%}
+              <span class="muted">{{ t("radar-from-none") }}</span>
+              {%- endif -%}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+
+      {% if c.folded %}</details>{% endif %}
+    </figure>
+  {% endfor %}
+  </div>
+</section>

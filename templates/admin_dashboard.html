@@ -47,15 +47,30 @@
         onsubmit="return confirm('{{ t("admin-dedup-confirm") }}')">
     <button class="btn" type="submit">{{ t("admin-deduplicate") }}</button>
   </form>
-  {# Two buttons rather than one with a checkbox: which of these the operator
-     wants is decided by who the file is for, and a checkbox remembers the last
-     answer while "who is this for" changes every time. The shareable one is
-     first and is the plain "Export". #}
+  {# The plain "Export" is the shareable one, carries no sensitive class, and
+     is first: it is what a tired operator clicks. #}
   <a class="btn" href="/admin/export">{{ t("admin-export") }}</a>
-  <a class="btn" href="/admin/export?health=include">{{ t("admin-export-with-health") }}</a>
   <a class="btn" href="/admin/users">{{ t("admin-accounts") }}</a>
 </div>
 <p class="small muted">{{ t("admin-roles-note") }}</p>
+
+{# Each class chosen on its own, because who a file is for decides which of
+   them it may carry — a cousin researching a hereditary condition may be sent
+   the health record and not the genome. A GET form, so the choice is in the
+   address rather than in a setting, and `autocomplete="off"` so a browser does
+   not tick last time's boxes when somebody comes back to this page to send a
+   different file to a different person. Nothing is ticked on arrival. #}
+<form class="export-choice" method="get" action="/admin/export" autocomplete="off">
+  <fieldset>
+    <legend>{{ t("admin-export-choose") }}</legend>
+    <div class="check-row">
+      {% for s in export_scopes %}
+      <label class="inline"><input type="checkbox" name="{{ s }}" value="include"> {{ t("scope-" ~ s) }}</label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <button class="btn" type="submit">{{ t("admin-export-with-chosen") }}</button>
+</form>
 <p class="small muted">{{ t("admin-export-health-note") }}</p>
 </section>
 

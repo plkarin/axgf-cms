@@ -461,7 +461,8 @@ pub fn build_in(
     // entity is stripped *before* it is serialised rather than filtered
     // afterwards, because a redaction done on a string is a redaction waiting
     // to be defeated by a line break.
-    let may_read_health = crate::access::may_read_health(person, lens.ceiling());
+    let readable = crate::access::readable_scopes(person, lens.ceiling());
+    let may_read_health = readable.contains(crate::sensitive::Scope::Health);
     let detail = crate::physical::Detail::from_entity(person);
     let physical = crate::physical::view_for(person, flat, lang, may_read_health);
 
@@ -473,10 +474,10 @@ pub fn build_in(
     // signed in would be a health disclosure drawn as a picture.
     let silhouette = crate::silhouette::view_for(header.age, &detail, lang);
     let raw_json = {
-        let shown = if may_read_health {
+        let shown = if readable == crate::sensitive::Scopes::EVERY {
             std::borrow::Cow::Borrowed(person)
         } else {
-            std::borrow::Cow::Owned(crate::physical::strip_health(person))
+            std::borrow::Cow::Owned(crate::sensitive::strip(person, readable))
         };
         serde_json::to_string_pretty(shown.as_ref()).unwrap_or_else(|_| "<unserializable>".into())
     };
@@ -1482,9 +1483,13 @@ impl Ctx<'_> {
         };
         let mut out: Vec<DocumentView> = Vec::new();
         let mut seen: Vec<String> = Vec::new();
+        // A document that class data this reader may not read refers to — a
+        // fingerprint card, a genome file — is not listed at all. Its filename
+        // and type say what it is, and the bytes behind it are refused anyway.
+        let withheld = crate::access::withheld_documents(self.flat, self.lens.ceiling());
 
         let mut push = |doc_id: &str, role: Option<String>| {
-            if seen.iter().any(|s| s == doc_id) {
+            if seen.iter().any(|s| s == doc_id) || withheld.contains(doc_id) {
                 return;
             }
             seen.push(doc_id.to_string());

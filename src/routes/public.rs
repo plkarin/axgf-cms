@@ -537,17 +537,17 @@ pub async fn tree_panel(
 /// One person's edit history, newest first, as the record page renders it.
 ///
 /// `ceiling` is the reader's authority, and it is here for one reason: a
-/// recorded change carries the value that changed, so a diff of the health
-/// extension is the diagnosis itself, printed back out beside a record that
-/// withheld it. See [`crate::physical::changes_for_reader`].
+/// recorded change carries the value that changed, so a diff of a class
+/// attribute is the diagnosis itself, printed back out beside a record that
+/// withheld it. See [`crate::sensitive::changes_for_reader`].
 fn entity_history(state: &Shared, id: &str, ceiling: crate::acl::Visibility) -> Vec<Value> {
-    let may_read_health = state.read(|flat| {
+    let readable = state.read(|flat| {
         flat.get("persons")
             .and_then(|c| c.get(id))
-            .map(|p| crate::access::may_read_health(p, ceiling))
+            .map(|p| crate::access::readable_scopes(p, ceiling))
             // No such person: nothing to disclose, and the journal for an id
             // that is not in the bundle is somebody's deleted record.
-            .unwrap_or(false)
+            .unwrap_or_default()
     });
     state
         .journal()
@@ -560,7 +560,7 @@ fn entity_history(state: &Shared, id: &str, ceiling: crate::acl::Visibility) -> 
                 "action": e.action,
                 "version_num": e.version_num,
                 "summary": e.summary(),
-                "changes": crate::physical::changes_for_reader(&e.changes, may_read_health),
+                "changes": crate::sensitive::changes_for_reader(&e.changes, readable),
             })
         })
         .collect()
@@ -793,7 +793,7 @@ fn stored_document(
         // what governs its bytes. Checked here rather than in each of the three
         // handlers, because /raw, /view and /thumb are three doors into the
         // same file and a check on two of them is a check on none.
-        if !crate::access::may_read_document(flat, lens.visible(), viewer.signed_in(), id) {
+        if !crate::access::may_read_document(flat, lens, viewer.signed_in(), id) {
             return None;
         }
         let d = flat.get("documents")?.get(id)?;

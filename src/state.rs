@@ -103,32 +103,118 @@ pub struct AppState {
     geocoder: Option<crate::geocode::Geocoder>,
 }
 
-/// Whether an export carries special-category data.
+/// A copy of the bundle carrying only the sensitive scopes in `include`.
 ///
-/// A named type rather than a `bool`, because `export_to_temp_file_with(true)`
-/// at a call site does not say which way `true` points, and this is a decision
-/// where getting the direction wrong mails somebody's medical history to a
-/// relative.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HealthExport {
-    /// Everything the bundle holds. The operator's own backup.
-    Include,
-    /// Every person, minus the health extension. The shareable copy.
-    Exclude,
-}
-
-/// A copy of the bundle with every person's health extension removed.
+/// Walks persons, because only a person carries class data, and then the
+/// documents that data refers to: a genome file or a fingerprint card is the
+/// attribute's data in another form, and an export that dropped the genomics
+/// block and kept the genome would have withheld nothing. Such a document goes
+/// with its class — the entity, its payload, and every reference to it — even
+/// when a person also attaches it somewhere open.
 ///
-/// Walks persons only: the extension is only ever written onto a person, and
-/// walking every collection would be a slower way to reach the same answer
-/// while implying the data might be somewhere it never is.
-fn without_health(flat: &Value) -> Value {
+/// The behavioural profile is withheld from living people only (SPEC_1.1
+/// §4.6); a deceased person's hobbies are the family's history.
+///
+/// Every specification class that was actually withheld is listed in
+/// `manifest.privacy.withheld_classes`, so whoever opens the file can tell "no
+/// health data" from "health data left out" (§4.5). A class with nothing to
+/// withhold is not listed: it was not left out, there was none — and listing
+/// it would make every shared copy of a 1.0 archive a 1.1 one.
+pub fn export_copy(flat: &Value, include: crate::sensitive::Scopes) -> Value {
+    use crate::sensitive::{self, Scope};
     let mut out = flat.clone();
-    let Some(persons) = out.get_mut("persons").and_then(Value::as_object_mut) else {
+    if include == sensitive::Scopes::EVERY {
         return out;
-    };
-    for (_, person) in persons.iter_mut() {
-        *person = crate::physical::strip_health(person);
+    }
+    let mut withheld = sensitive::Scopes::NONE;
+    let mut dropped: BTreeSet<String> = BTreeSet::new();
+    if let Some(persons) = out.get_mut("persons").and_then(Value::as_object_mut) {
+        for person in persons.values_mut() {
+            let living = person
+                .pointer("/identity/is_living")
+                .and_then(Value::as_bool)
+                .unwrap_or(false);
+            let keep = if living {
+                include
+            } else {
+                include.with(Scope::Behaviour)
+            };
+            let lost = sensitive::present(person).without(keep);
+            if lost.is_empty() {
+                continue;
+            }
+            dropped.extend(
+                sensitive::documents_referenced(person)
+                    .into_iter()
+                    .filter(|(_, scopes)| !scopes.within(keep))
+                    .map(|(doc, _)| doc),
+            );
+            *person = sensitive::strip(person, keep);
+            withheld = withheld.union(lost);
+        }
+    }
+
+    if !dropped.is_empty() {
+        let mut paths = Vec::new();
+        if let Some(docs) = out.get_mut("documents").and_then(Value::as_object_mut) {
+            for id in &dropped {
+                if let Some(doc) = docs.remove(id) {
+                    if let Some(p) = doc.pointer("/file/path").and_then(Value::as_str) {
+                        paths.push(p.to_string());
+                    }
+                }
+            }
+        }
+        for store in ["external_payloads", "attachments"] {
+            if let Some(m) = out.get_mut(store).and_then(Value::as_object_mut) {
+                for p in &paths {
+                    m.remove(p);
+                }
+            }
+        }
+        if let Some(persons) = out.get_mut("persons").and_then(Value::as_object_mut) {
+            for person in persons.values_mut() {
+                if let Some(list) = person.get_mut("documents").and_then(Value::as_array_mut) {
+                    list.retain(|d| {
+                        d.get("document_id")
+                            .and_then(Value::as_str)
+                            .is_none_or(|id| !dropped.contains(id))
+                    });
+                }
+            }
+        }
+    }
+
+    let classes = withheld.class_names();
+    if !classes.is_empty() {
+        if let Some(manifest) = out.get_mut("manifest").and_then(Value::as_object_mut) {
+            let privacy = manifest
+                .entry("privacy")
+                .or_insert_with(|| Value::Object(Default::default()));
+            if let Some(privacy) = privacy.as_object_mut() {
+                // A bundle that arrived with classes already withheld keeps
+                // saying so: this copy is missing them too.
+                let mut all: BTreeSet<String> = privacy
+                    .get("withheld_classes")
+                    .and_then(Value::as_array)
+                    .map(|a| {
+                        a.iter()
+                            .filter_map(Value::as_str)
+                            .map(str::to_string)
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                all.extend(classes.iter().map(|c| c.to_string()));
+                // In the specification's order, which is the order a reader
+                // of the manifest has seen them listed in everywhere else.
+                let ordered: Vec<&str> = Scope::CLASSES
+                    .iter()
+                    .map(|s| s.as_str())
+                    .filter(|c| all.contains(*c))
+                    .collect();
+                privacy.insert("withheld_classes".into(), serde_json::json!(ordered));
+            }
+        }
     }
     out
 }
@@ -591,26 +677,26 @@ impl AppState {
     /// Stream the current bundle into a fresh temp file beside it, and return
     /// that path. The caller owns the file and must remove it.
     pub fn export_to_temp_file(&self) -> Result<PathBuf> {
-        self.export_to_temp_file_with(HealthExport::Exclude)
+        self.export_to_temp_file_with(crate::sensitive::Scopes::NONE)
     }
 
-    /// The same, saying whether special-category data travels with it.
+    /// The same, saying which sensitive scopes travel with it.
     ///
-    /// [`HealthExport::Exclude`] is the default everywhere, including the
-    /// zero-argument form above, and that direction is deliberate: a bundle is
-    /// something the operator mails to a cousin, and the failure mode of
-    /// including a living relative's medical history in a file that then sits
-    /// in somebody's downloads folder is unrecoverable. Excluding it by
-    /// accident costs one re-export.
-    pub fn export_to_temp_file_with(&self, health: HealthExport) -> Result<PathBuf> {
+    /// None is the default everywhere, including the zero-argument form above,
+    /// and that direction is deliberate: a bundle is something the operator
+    /// mails to a cousin, and the failure mode of including a living
+    /// relative's medical history, genome or conviction in a file that then
+    /// sits in somebody's downloads folder is unrecoverable. Excluding one by
+    /// accident costs one re-export. Each scope is chosen on its own, because
+    /// who a file is for decides which of them it may carry.
+    pub fn export_to_temp_file_with(&self, include: crate::sensitive::Scopes) -> Result<PathBuf> {
         let tmp = self.export_temp_path("download");
-        let result = match health {
-            HealthExport::Include => self.export_to_file(&tmp),
+        let result = if include == crate::sensitive::Scopes::EVERY {
+            self.export_to_file(&tmp)
+        } else {
             // Stripped from a *copy* of the bundle, under the read lock, so
             // the live tree is never the thing being edited.
-            HealthExport::Exclude => {
-                self.read(|flat| self.write_streaming(&without_health(flat), &tmp))
-            }
+            self.read(|flat| self.write_streaming(&export_copy(flat, include), &tmp))
         };
         match result {
             Ok(()) => Ok(tmp),

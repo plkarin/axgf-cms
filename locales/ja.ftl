@@ -888,8 +888,7 @@ phys-blood-group-ab-neg = AB 型 Rh 陰性
 phys-blood-group-o-pos = O 型 Rh 陽性
 phys-blood-group-o-neg = O 型 Rh 陰性
 phys-blood-group-unknown = 不明
-admin-export-with-health = 健康情報を含めて書き出す
-admin-export-health-note = 書き出しでは健康と信条の項目を除きます。親族に送るバンドルに存命の人の病歴が入らないようにするためです。二つめのボタンはそれらを含みます。自分の控え用です。
+admin-export-health-note = 通常の書き出しでは、すべての機微な区分（健康と信条、生体情報、ゲノムデータ、犯罪歴）と、存命の人の行動プロファイルを除くため、親族に送るファイルにはそのいずれも入りません。特定のファイルに含めるものにチェックを入れてください。どの区分を除いたかはアーカイブ自体に記録されます。
 avatar-picker-title = 画像を選ぶ
 avatar-choose-link = 画像を選ぶ
 avatar-choose = この人を表す画像
@@ -1104,3 +1103,13 @@ style-compact = 詰めて
 style-compact-note = 一画面により多くを表示。何件も見ていくとき向け
 style-paper = 紙
 style-paper-note = セリフ体と罫線。じっくり読むとき、印刷するとき向け
+
+## Sensitive classes
+
+admin-export-choose = この書き出しに含める
+scope-health = 健康と信条
+scope-biometrics = 生体情報
+scope-genomics = ゲノムデータ
+scope-legal = 犯罪歴
+scope-behaviour = 存命者の行動プロファイル
+admin-export-with-chosen = チェックした項目を含めて書き出す

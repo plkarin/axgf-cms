@@ -1224,8 +1224,7 @@ phys-blood-group-ab-neg = AB Rh ujemna
 phys-blood-group-o-pos = 0 Rh dodatnia
 phys-blood-group-o-neg = 0 Rh ujemna
 phys-blood-group-unknown = nieznana
-admin-export-with-health = Eksport wraz ze zdrowiem
-admin-export-health-note = Eksport pomija pola zdrowia i wyznania, aby pakiet wysłany krewnemu nie zawierał historii medycznej osoby żyjącej. Drugi przycisk je dołącza — do własnej kopii zapasowej.
+admin-export-health-note = Zwykły eksport pomija wszystkie kategorie wrażliwe — zdrowie i przekonania, dane biometryczne, dane genetyczne i karalność — oraz profil behawioralny każdej osoby żyjącej, więc plik wysłany krewnemu nie zawiera żadnej z nich. Zaznacz, co ma zawierać konkretny plik; samo archiwum zapisuje, które kategorie pominięto.
 avatar-picker-title = Wybierz zdjęcie
 avatar-choose-link = Wybierz zdjęcie
 avatar-choose = Które zdjęcie reprezentuje tę osobę
@@ -1440,3 +1439,13 @@ style-compact = Zwarta
 style-compact-note = więcej zapisu na ekranie, do przeglądania wielu
 style-paper = Papier
 style-paper-note = szeryfowy krój i linie zamiast kart, do czytania na spokojnie lub druku
+
+## Sensitive classes
+
+admin-export-choose = Dołącz do tego eksportu
+scope-health = Zdrowie i przekonania
+scope-biometrics = Dane biometryczne
+scope-genomics = Dane genetyczne
+scope-legal = Karalność
+scope-behaviour = Profile behawioralne osób żyjących
+admin-export-with-chosen = Eksportuj z zaznaczonymi

@@ -41,6 +41,7 @@ pub mod physical;
 pub mod place;
 pub mod render;
 pub mod routes;
+pub mod sensitive;
 pub mod session;
 pub mod silhouette;
 pub mod state;

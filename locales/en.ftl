@@ -1106,8 +1106,7 @@ phys-blood-group-ab-neg = AB negative
 phys-blood-group-o-pos = O positive
 phys-blood-group-o-neg = O negative
 phys-blood-group-unknown = unknown
-admin-export-with-health = Export including health
-admin-export-health-note = Export leaves out health and belief fields, so a bundle sent to a relative does not carry a living person's medical history. The second button includes them, for your own backup.
+admin-export-health-note = The plain export leaves out every sensitive class — health and belief, biometrics, genomic data and criminal records — and the behavioural profile of anyone living, so a file sent to a relative carries none of them. Tick what one particular file should carry; the archive itself records which classes were left out.
 avatar-picker-title = Choose a picture
 avatar-choose-link = Choose picture
 avatar-choose = Which picture stands for this person
@@ -1326,3 +1325,13 @@ style-compact = Compact
 style-compact-note = more of a record per screen, for working through several
 style-paper = Paper
 style-paper-note = a serif face and rules instead of cards, for reading once or printing
+
+## Sensitive classes
+
+admin-export-choose = Include in this export
+scope-health = Health and belief
+scope-biometrics = Biometrics
+scope-genomics = Genomic data
+scope-legal = Criminal records
+scope-behaviour = Behavioural profiles of living people
+admin-export-with-chosen = Export with what is ticked

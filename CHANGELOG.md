@@ -8,6 +8,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+**The health rule is the rule for all four sensitive classes.** AXGF 1.1 names
+four classes of attribute — health, biometrics, genomics and criminal records —
+and this application had one rule for one of them. `crate::sensitive` now
+applies the same rule to all four, plus the behavioural profile of a living
+person, which the specification asks to be governed like a class (SPEC_1.1
+§4.6). Each is decided on its own (`access::scope_visibility`): a living
+person's class data is private whatever the record says, a deceased person's
+follows the record, a genome is never public even of the dead, and
+`identity.class_visibility` can only tighten — an entry this build cannot read
+counts as private.
+
+Where each class lives is read from the embedded 1.1 schema rather than listed
+here, and what the schema does not describe — a misspelt attribute, a block no
+version defines, another application's extension — is treated as every class
+at once. The same three functions serve every surface class data has leaked
+through before: the record page and its raw dump, the edit history on the
+record, the tree panel and the editor, the editor's raw textarea *and the
+inputs above it* (which printed `death.cause` into a text field for any
+contributor, and were not stripped until now), the conflict page's diff and
+its copy of the stored entity, and its resubmit box. A save from a stripped
+form puts every withheld location back from the stored entity and discards
+whatever the form sent for it.
+
+Documents are governed by the class that refers to them. A fingerprint card
+or a genome file referred to from a class attribute is not listed on the
+record, not served, and not exported, however many readable people also attach
+it.
+
+**The export leaves out each class unless it is chosen.** The dashboard's
+second export button — "including health" — is now five checkboxes, one per
+class and one for the behavioural profiles of the living, none ticked on
+arrival. A class that was left out and had data to leave out is listed in
+`manifest.privacy.withheld_classes`, so the recipient can tell "none recorded"
+from "not sent"; one with nothing to leave out is not, so a shared copy of a
+1.0 archive stays 1.0. `?health=include` still means what it meant.
+
 **axgf-rs 0.4.0.** The library now reads, validates and writes AXGF 1.1, the
 extended person profile. It is not on crates.io yet, so the dependency is
 pinned to the commit 0.4.0 was released from, with `version = "0.4"` beside it

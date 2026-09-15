@@ -629,6 +629,7 @@ async fn a_presumed_death_does_not_widen_a_record_with_no_visibility_set() {
         V::Members,
         "an absent visibility must still default from the recorded flag"
     );
-    assert!(!axgf_cms::access::may_read_health(&presumed, V::Members));
-    assert!(axgf_cms::access::may_read_health(&presumed, V::Private));
+    let health = axgf_cms::sensitive::Scope::Health;
+    assert!(!axgf_cms::access::readable_scopes(&presumed, V::Members).contains(health));
+    assert!(axgf_cms::access::readable_scopes(&presumed, V::Private).contains(health));
 }

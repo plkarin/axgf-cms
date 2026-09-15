@@ -1071,8 +1071,7 @@ phys-blood-group-ab-neg = AB negativ
 phys-blood-group-o-pos = 0 positiv
 phys-blood-group-o-neg = 0 negativ
 phys-blood-group-unknown = unbekannt
-admin-export-with-health = Export mit Gesundheitsdaten
-admin-export-health-note = Der Export lässt Gesundheits- und Bekenntnisfelder weg, damit ein an Verwandte geschicktes Bündel keine Krankengeschichte eines lebenden Menschen enthält. Die zweite Schaltfläche schließt sie ein — für die eigene Sicherung.
+admin-export-health-note = Der einfache Export lässt jede sensible Kategorie weg — Gesundheit und Weltanschauung, biometrische Daten, genomische Daten und Strafregister — ebenso das Verhaltensprofil jeder lebenden Person, sodass eine an Verwandte geschickte Datei nichts davon enthält. Kreuzen Sie an, was eine bestimmte Datei enthalten soll; das Archiv selbst vermerkt, welche Kategorien weggelassen wurden.
 avatar-picker-title = Ein Bild wählen
 avatar-choose-link = Bild wählen
 avatar-choose = Welches Bild steht für diese Person
@@ -1287,3 +1286,13 @@ style-compact = Kompakt
 style-compact-note = mehr Eintrag pro Bildschirm, zum Durcharbeiten mehrerer
 style-paper = Papier
 style-paper-note = eine Serifenschrift und Linien statt Karten, zum ruhigen Lesen oder Drucken
+
+## Sensitive classes
+
+admin-export-choose = In diesen Export aufnehmen
+scope-health = Gesundheit und Weltanschauung
+scope-biometrics = Biometrische Daten
+scope-genomics = Genomische Daten
+scope-legal = Strafregister
+scope-behaviour = Verhaltensprofile lebender Personen
+admin-export-with-chosen = Mit dem Angekreuzten exportieren

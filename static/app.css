@@ -3260,3 +3260,8 @@ a.tcard:hover {
   border-radius: 0;
   padding-inline: 0;
 }
+
+/* The export's per-class choice: a row of checkboxes that wraps. */
+.export-choice { margin-top: 0.8rem; display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem 1rem; }
+.export-choice fieldset { margin: 0; }
+.check-row { display: flex; flex-wrap: wrap; gap: 0.35rem 1.2rem; }

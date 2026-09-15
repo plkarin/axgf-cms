@@ -888,8 +888,7 @@ phys-blood-group-ab-neg = AB 型 Rh 阴性
 phys-blood-group-o-pos = O 型 Rh 阳性
 phys-blood-group-o-neg = O 型 Rh 阴性
 phys-blood-group-unknown = 不详
-admin-export-with-health = 导出并包含健康数据
-admin-export-health-note = 导出会略去健康与信仰字段，使寄给亲属的档案包不携带在世者的病史。第二个按钮会包含它们，供你自己备份。
+admin-export-health-note = 普通导出会略去所有敏感类别——健康与信仰、生物特征数据、基因组数据和犯罪记录——以及任何在世者的行为画像，因此发给亲属的文件不含其中任何一项。请勾选某个文件应包含的内容；档案本身会记录哪些类别被略去。
 avatar-picker-title = 选择一张图片
 avatar-choose-link = 选择图片
 avatar-choose = 用哪张图片代表这个人
@@ -1103,3 +1102,13 @@ style-compact = 紧凑
 style-compact-note = 每屏显示更多内容，便于连续查阅
 style-paper = 纸面
 style-paper-note = 衬线字体、以线条代替卡片，适合细读或打印
+
+## Sensitive classes
+
+admin-export-choose = 包含在此次导出中
+scope-health = 健康与信仰
+scope-biometrics = 生物特征数据
+scope-genomics = 基因组数据
+scope-legal = 犯罪记录
+scope-behaviour = 在世者的行为画像
+admin-export-with-chosen = 按勾选内容导出

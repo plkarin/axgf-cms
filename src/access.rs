@@ -114,42 +114,118 @@ pub fn person_visibility(person: &Value) -> Visibility {
     }
 }
 
-/// The visibility a person's **health** data carries, which is not the
-/// visibility their record carries.
+/// The visibility one scope of a person's data carries, which is not the
+/// visibility their record carries (SPEC_1.1 §4.3–4.6).
 ///
-/// Health data is a special category under GDPR article 9 and its equivalents,
-/// and family scale does not move it out of that category: the operator is
-/// recording conditions, operations and causes of death for a spouse, parents
-/// and children who have not necessarily been asked. So for a living person it
-/// is pinned to `private` — the most restrictive level the specification
-/// offers, admins only — no matter what the record's own visibility says. A
-/// person marked `public` still does not publish their diagnoses.
+/// Health, biometrics, genomics and criminal records are special categories
+/// under GDPR articles 9 and 10 and their equivalents, and family scale does
+/// not move them out of those categories: the operator is recording diagnoses,
+/// fingerprints, DNA results and convictions for relatives who have not
+/// necessarily been asked. So, in order:
 ///
-/// A deceased person follows the record's normal visibility. Article 9 governs
-/// living people; a cause of death two centuries old is the substance of
-/// genealogy, and withholding it would make the feature useless for the thing
-/// it is actually for.
+/// 1. **A living person's class data is `private`** — administrators only —
+///    whatever the record's own visibility says. A person marked `public` does
+///    not thereby publish their diagnoses. The same holds for their
+///    behavioural profile, which the specification asks to be governed like a
+///    class for the living (§4.6).
+/// 2. **A deceased person's follows the record.** Article 9 governs the
+///    living; a cause of death two centuries old is the substance of
+///    genealogy, and withholding it would make the feature useless for the
+///    thing it is actually for.
+/// 3. **Except a genome, which is never public.** A grandmother's pathogenic
+///    variant states a risk for every living grandchild, so the deceased
+///    person's genomic data is at least `members`.
+/// 4. **`identity.class_visibility` can only tighten.** An entry that does
+///    not parse is read as `private`: a value this build cannot understand is
+///    not permission.
+///
+/// "Living" is the *recorded* flag. `crate::living` presumes very old records
+/// dead for display, and routing this rule through that presumption would
+/// publish every such person's health the moment the arithmetic decided they
+/// were old enough.
 ///
 /// This is deliberately *not* a method on `Lens`: it is a property of the
 /// person being read, and the single place the rule is written down. Every
 /// caller asks this rather than re-deriving "living means private", because
 /// the rule re-derived in four places is the rule wrong in one of them.
-pub fn health_visibility(person: &Value) -> Visibility {
+pub fn scope_visibility(person: &Value, scope: crate::sensitive::Scope) -> Visibility {
+    use crate::sensitive::Scope;
     let living = person
         .get("identity")
         .and_then(|i| i.get("is_living"))
         .and_then(Value::as_bool)
         .unwrap_or(false);
-    if living {
-        Visibility::Private
-    } else {
-        person_visibility(person)
+    let record = person_visibility(person);
+    let base = match (living, scope) {
+        (true, _) => Visibility::Private,
+        (false, Scope::Genomics) => record.max(Visibility::Members),
+        (false, _) => record,
+    };
+    let Some(class) = scope.class() else {
+        return base;
+    };
+    match person
+        .get("identity")
+        .and_then(|i| i.get("class_visibility"))
+        .and_then(|cv| cv.get(class.as_str()))
+    {
+        None | Some(Value::Null) => base,
+        Some(v) => v
+            .as_str()
+            .and_then(Visibility::parse)
+            .map_or(Visibility::Private, |tighter| base.max(tighter)),
     }
 }
 
-/// Whether a reader at `ceiling` may read this person's health fields.
-pub fn may_read_health(person: &Value, ceiling: Visibility) -> bool {
-    health_visibility(person) <= ceiling
+/// Every scope of this person a reader at `ceiling` may read.
+pub fn readable_scopes(person: &Value, ceiling: Visibility) -> crate::sensitive::Scopes {
+    crate::sensitive::Scope::ALL
+        .into_iter()
+        .filter(|s| scope_visibility(person, *s) <= ceiling)
+        .collect()
+}
+
+/// [`readable_scopes`] for an entity of any kind. Only a person carries class
+/// data, so every other kind is readable in full.
+pub fn readable_for(
+    kind: axgf_rs::EntityKind,
+    entity: &Value,
+    ceiling: Visibility,
+) -> crate::sensitive::Scopes {
+    if kind == axgf_rs::EntityKind::Person {
+        readable_scopes(entity, ceiling)
+    } else {
+        crate::sensitive::Scopes::EVERY
+    }
+}
+
+/// The documents a reader at `ceiling` may not open because class data they
+/// may not read refers to them — a fingerprint card, a genome file.
+///
+/// Governed by the class of the attribute that refers to the document,
+/// wherever else the document is attached: its bytes *are* that attribute's
+/// data. Resolved once per request by the caller.
+pub fn withheld_documents(flat: &Value, ceiling: Visibility) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    if ceiling >= Visibility::Private {
+        return out;
+    }
+    let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
+        return out;
+    };
+    for person in persons.values() {
+        let refs = crate::sensitive::documents_referenced(person);
+        if refs.is_empty() {
+            continue;
+        }
+        let readable = readable_scopes(person, ceiling);
+        for (doc, scopes) in refs {
+            if !scopes.within(readable) {
+                out.insert(doc);
+            }
+        }
+    }
+    out
 }
 
 /// The visibility a link carries. Links have no `is_living` to lean on, so an
@@ -298,11 +374,17 @@ impl Default for Lens {
 /// Which documents a request may read.
 ///
 /// A document is reached through the person it is attached to, so that is what
-/// governs it: the bytes are served when some person the requester may read
+/// governs it, after [`withheld_documents`]: the bytes are served when some person the requester may read
 /// attaches it. A document no person attaches has no owner to inherit from and
 /// is served to signed-in accounts only — it is either an orphan of an edit or
 /// something a tool put there, and neither is public by default.
-pub fn may_read_document(flat: &Value, vis: &Visible, signed_in: bool, document_id: &str) -> bool {
+pub fn may_read_document(flat: &Value, lens: &Lens, signed_in: bool, document_id: &str) -> bool {
+    // Class data first, and on its own: a document a withheld attribute refers
+    // to stays withheld however many visible people also attach it.
+    if withheld_documents(flat, lens.ceiling()).contains(document_id) {
+        return false;
+    }
+    let vis = lens.visible();
     if vis.is_all() {
         return true;
     }
@@ -662,7 +744,7 @@ mod tests {
                            "documents": [{"document_id": "shared"}, {"document_id": "secret"}]}
             }
         });
-        let vis = visible_persons(&flat, Visibility::Public);
+        let vis = Lens::resolve(&flat, Visibility::Public);
         assert!(may_read_document(&flat, &vis, false, "open"));
         assert!(
             may_read_document(&flat, &vis, false, "shared"),

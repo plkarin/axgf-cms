@@ -386,6 +386,10 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             journal_len => state.journal().len(),
             journal_path => state.journal().path().display().to_string(),
             live_sessions => state.sessions().live(),
+            export_scopes => crate::sensitive::Scope::ALL
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>(),
         },
     )
 }
@@ -513,6 +517,18 @@ pub async fn edit_form(
         );
     };
 
+    // The entity minus anything this editor may not read, for both halves of
+    // the form. The raw document is the whole entity in a textarea, so on a
+    // living person it was the shortest path from a stored diagnosis to a
+    // contributor's screen — the same defect the record page's raw dump had,
+    // on the page that is *only* reached by people who may write. The fields
+    // above it are the entity too: `death.cause` is one of them, and a health
+    // value printed into an input has been printed. What they never saw here
+    // they also cannot blank: see `update`.
+    let shown = shown_entity(
+        &entity,
+        crate::access::readable_for(k, &entity, viewer.ceiling()),
+    );
     render::page_with(
         &chrome,
         "admin_form.html",
@@ -522,15 +538,8 @@ pub async fn edit_form(
             kinds => KINDS,
             creating => false,
             id,
-            fields => field_views(k, &entity),
-            // The raw document, minus anything this editor may not read. It
-            // is the whole entity in a textarea, so on a living person it was
-            // the shortest path from a stored diagnosis to a contributor's
-            // screen — the same defect the record page's raw dump had, on the
-            // page that is *only* reached by people who may write. What they
-            // never saw here they also cannot blank: see `update`.
-            raw => serde_json::to_string_pretty(
-                &shown_entity(&entity, may_read_health_for(k, &entity, viewer.ceiling())))
+            fields => field_views(k, &shown),
+            raw => serde_json::to_string_pretty(shown.as_ref())
                 .unwrap_or_else(|_| "{}".into()),
             action => format!("/admin/{kind}/{id}"),
             base_version => crate::state::version_of(&entity),
@@ -539,47 +548,40 @@ pub async fn edit_form(
     )
 }
 
-/// Whether this editor may read the health half of one entity.
-///
-/// Only a person has one; every other kind answers yes so that a single call
-/// site can cover all of them without a match.
-fn may_read_health_for(
-    k: axgf_rs::EntityKind,
-    entity: &Value,
-    ceiling: crate::acl::Visibility,
-) -> bool {
-    k != axgf_rs::EntityKind::Person || crate::access::may_read_health(entity, ceiling)
-}
-
-/// An entity as this editor may see it.
-fn shown_entity(entity: &Value, may_read_health: bool) -> std::borrow::Cow<'_, Value> {
-    if may_read_health {
+/// An entity as this editor may see it: every scope they may not read taken
+/// out *before* it is serialised, because a redaction done on a string is a
+/// redaction waiting to be defeated by a line break.
+fn shown_entity(entity: &Value, readable: crate::sensitive::Scopes) -> std::borrow::Cow<'_, Value> {
+    if readable == crate::sensitive::Scopes::EVERY {
         std::borrow::Cow::Borrowed(entity)
     } else {
-        std::borrow::Cow::Owned(crate::physical::strip_health(entity))
+        std::borrow::Cow::Owned(crate::sensitive::strip(entity, readable))
     }
 }
 
 /// This entity's edit history, newest first, for the editor's form.
 ///
 /// `ceiling` is the editor's own authority. A contributor may open the form
-/// for a living person they may not read the health of, and a recorded change
+/// for a living person whose classes they may not read, and a recorded change
 /// carries the value that changed — so without this the diff prints back the
 /// diagnosis the rest of the application withholds. Only a person can carry
-/// it; every other kind passes through untouched.
+/// class data; every other kind passes through untouched.
 fn history_json(
     state: &Shared,
     kind: &str,
     id: &str,
     ceiling: crate::acl::Visibility,
 ) -> Vec<Value> {
-    let may_read_health = kind != "person"
-        || state.read(|flat| {
+    let readable = if kind == "person" {
+        state.read(|flat| {
             flat.get("persons")
                 .and_then(|c| c.get(id))
-                .map(|p| crate::access::may_read_health(p, ceiling))
-                .unwrap_or(false)
-        });
+                .map(|p| crate::access::readable_scopes(p, ceiling))
+                .unwrap_or_default()
+        })
+    } else {
+        crate::sensitive::Scopes::EVERY
+    };
     state
         .journal()
         .for_entity(kind, id)
@@ -591,7 +593,7 @@ fn history_json(
                 "action": e.action,
                 "version_num": e.version_num,
                 "summary": e.summary(),
-                "changes": crate::physical::changes_for_reader(&e.changes, may_read_health),
+                "changes": crate::sensitive::changes_for_reader(&e.changes, readable),
             })
         })
         .collect()
@@ -694,20 +696,17 @@ pub async fn update(
     });
 
     // What the form did not show, the form cannot delete. The raw document
-    // this editor was given had the health half stripped out of it, so an
-    // absence in what came back is not an edit — it is the redaction being
-    // submitted. The stored half is put back rather than the save being
-    // refused: refusing would stop a contributor correcting a spelling on a
-    // living relative for the rest of that relative's life, which is a
-    // different kind of wrong answer.
-    //
-    // `physical_update` refuses instead, and the difference is the point: that
-    // form *is* the health form, so an editor who may not read it has no
-    // business submitting it at all.
+    // this editor was given had every class they may not read stripped out of
+    // it, so an absence in what came back is not an edit — it is the redaction
+    // being submitted. The stored values are put back rather than the save
+    // being refused: refusing would stop a contributor correcting a spelling
+    // on a living relative for the rest of that relative's life, which is a
+    // different kind of wrong answer. Whatever the submission says about
+    // those locations is discarded, so a hand-written POST cannot write one
+    // either.
     if let Some(stored) = stored.as_ref() {
-        if !may_read_health_for(k, stored, viewer.ceiling()) {
-            entity = crate::physical::restore_health(entity, stored);
-        }
+        let readable = crate::access::readable_for(k, stored, viewer.ceiling());
+        entity = crate::sensitive::restore(&entity, stored, readable);
     }
     if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, stored.as_ref()) {
         return r;
@@ -818,11 +817,10 @@ pub(super) fn conflict_page(
 ) -> Response {
     // This page exists to show an editor what somebody else changed under
     // them, which means it prints the *stored* entity and a diff against it —
-    // both of which carry a living person's health if this editor may not read
-    // it. `mine` needs no such treatment: it is what they themselves typed,
-    // into a form that had already been stripped.
-    let may_read_health =
-        k != axgf_rs::EntityKind::Person || crate::access::may_read_health(current, ceiling);
+    // both of which carry a living person's class data if this editor may not
+    // read it. `mine` needs no such treatment: it is what they themselves
+    // typed, into a form that had already been stripped.
+    let readable = crate::access::readable_for(k, current, ceiling);
     // Who moved it, and when. The journal knows; the entity's own `updated_at`
     // is the fallback for an edit made before journalling or by another tool.
     let last = state.journal().last_touched(crate::state::kind_name(k), id);
@@ -851,8 +849,8 @@ pub(super) fn conflict_page(
     // change, and where do we actually disagree?
     let theirs_raw = crate::diff::diff(base_ref, current);
     let ours_raw = crate::diff::diff(base_ref, mine);
-    let theirs = crate::physical::changes_for_reader(&theirs_raw, may_read_health);
-    let ours = crate::physical::changes_for_reader(&ours_raw, may_read_health);
+    let theirs = crate::sensitive::changes_for_reader(&theirs_raw, readable);
+    let ours = crate::sensitive::changes_for_reader(&ours_raw, readable);
     let contested: Vec<String> = theirs_raw
         .iter()
         .filter(|t| ours_raw.iter().any(|o| o.path == t.path))
@@ -862,11 +860,11 @@ pub(super) fn conflict_page(
     // The re-apply form carries the editor's own text forward against the
     // version that is now current, so accepting the conflict is one click and
     // not a retype. Stripped again on the way out: by the time `mine` reaches
-    // here the write path has already put the stored health back into it —
-    // which is what stops the save deleting it — and handing that back in a
+    // here the write path has already put the stored class data back into it
+    // — which is what stops the save deleting it — and handing that back in a
     // textarea would disclose through the resubmit box exactly what the
     // original form withheld. What they get back is what they were given.
-    let mut resubmit = shown_entity(mine, may_read_health).into_owned();
+    let mut resubmit = shown_entity(mine, readable).into_owned();
     resubmit["version_num"] = Value::from(current_version);
 
     (
@@ -890,7 +888,7 @@ pub(super) fn conflict_page(
                 mine_raw => serde_json::to_string_pretty(&resubmit)
                     .unwrap_or_else(|_| "{}".into()),
                 current_raw => serde_json::to_string_pretty(
-                    &shown_entity(current, may_read_health))
+                    &shown_entity(current, readable))
                     .unwrap_or_else(|_| "{}".into()),
                 action => format!("/admin/{kind}/{id}"),
                 history => history_json(state, crate::state::kind_name(k), id, ceiling),
@@ -1041,14 +1039,7 @@ pub async fn export(
     Query(q): Query<ExportQuery>,
 ) -> Response {
     let (_viewer, chrome) = guard_admin!(state, headers);
-    // Excluded unless the operator asked for it, and asking is one word in the
-    // query string rather than a setting somebody configured once and forgot.
-    let health = if q.health.as_deref() == Some("include") {
-        crate::state::HealthExport::Include
-    } else {
-        crate::state::HealthExport::Exclude
-    };
-    let tmp = match state.export_to_temp_file_with(health) {
+    let tmp = match state.export_to_temp_file_with(q.include()) {
         Ok(t) => t,
         Err(e) => return io_error(&chrome, &e),
     };
@@ -1064,11 +1055,41 @@ pub async fn export(
 // helpers
 // ---------------------------------------------------------------------------
 
-/// `?health=` on the export.
-#[derive(Debug, serde::Deserialize)]
+/// `?health=include&genomics=include…` on the export.
+///
+/// One key per scope, each excluded unless it says `include`. Asking is a word
+/// in the query string rather than a setting somebody configured once and
+/// forgot, and a scope nobody named is a scope nobody chose to send.
+#[derive(Debug, Default, serde::Deserialize)]
 pub struct ExportQuery {
     #[serde(default)]
     health: Option<String>,
+    #[serde(default)]
+    biometrics: Option<String>,
+    #[serde(default)]
+    genomics: Option<String>,
+    #[serde(default)]
+    legal: Option<String>,
+    #[serde(default)]
+    behaviour: Option<String>,
+}
+
+impl ExportQuery {
+    /// The scopes this export carries.
+    fn include(&self) -> crate::sensitive::Scopes {
+        use crate::sensitive::Scope;
+        [
+            (Scope::Health, &self.health),
+            (Scope::Biometrics, &self.biometrics),
+            (Scope::Genomics, &self.genomics),
+            (Scope::Legal, &self.legal),
+            (Scope::Behaviour, &self.behaviour),
+        ]
+        .into_iter()
+        .filter(|(_, v)| v.as_deref() == Some("include"))
+        .map(|(s, _)| s)
+        .collect()
+    }
 }
 
 /// Parse the raw-JSON textarea, if the form carried one.
@@ -2685,7 +2706,8 @@ pub async fn physical_update(
     // living person's medical history by submitting a page that never showed
     // it. The write is refused rather than merged: merging would mean guessing
     // which absences were edits.
-    let may_read_health = crate::access::may_read_health(&stored, viewer.ceiling());
+    let may_read_health = crate::access::readable_scopes(&stored, viewer.ceiling())
+        .contains(crate::sensitive::Scope::Health);
     if !may_read_health && crate::physical::has_health(&stored) {
         return render::error_page_in(
             &chrome,
@@ -2784,7 +2806,8 @@ fn render_physical_form(
 ) -> Response {
     use crate::physical::{Field, Kind, FIELDS};
 
-    let may_read_health = crate::access::may_read_health(person, viewer.ceiling());
+    let may_read_health = crate::access::readable_scopes(person, viewer.ceiling())
+        .contains(crate::sensitive::Scope::Health);
     // Recorded, not presumed: the warning this drives has to agree with the
     // rule that decides who may read the rows, and that rule reads the record.
     // See `crate::living` for the line and why it is drawn there.

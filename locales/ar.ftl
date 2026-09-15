@@ -1275,8 +1275,7 @@ phys-blood-group-ab-neg = AB سالب
 phys-blood-group-o-pos = O موجب
 phys-blood-group-o-neg = O سالب
 phys-blood-group-unknown = غير معروفة
-admin-export-with-health = تصدير مع البيانات الصحية
-admin-export-health-note = يترك التصدير حقول الصحة والمعتقد جانبًا، حتى لا تحمل حزمة تُرسَل إلى قريب تاريخًا طبيًا لشخص على قيد الحياة. أما الزر الثاني فيضمّها، لنسختك الاحتياطية.
+admin-export-health-note = يستبعد التصدير العادي كل فئة حساسة — الصحة والمعتقد، والبيانات البيومترية، والبيانات الجينومية، والسجل الجنائي — وكذلك الملف السلوكي لأي شخص على قيد الحياة، فلا يحمل ملفٌّ يُرسَل إلى قريبٍ أيًّا منها. حدِّد ما ينبغي أن يحمله ملف بعينه؛ ويسجّل الملف نفسه الفئات التي استُبعدت.
 avatar-picker-title = اختر صورة
 avatar-choose-link = اختر صورة
 avatar-choose = أي صورة تمثّل هذا الشخص
@@ -1490,3 +1489,13 @@ style-compact = مضغوطة
 style-compact-note = سجل أكثر في الشاشة، لمن يمرّ على عدة سجلات
 style-paper = ورق
 style-paper-note = خط بذيول وخطوط بدل البطاقات، للقراءة على مهل أو للطباعة
+
+## Sensitive classes
+
+admin-export-choose = تضمين في هذا التصدير
+scope-health = الصحة والمعتقد
+scope-biometrics = البيانات البيومترية
+scope-genomics = البيانات الجينومية
+scope-legal = السجل الجنائي
+scope-behaviour = الملفات السلوكية للأحياء
+admin-export-with-chosen = التصدير مع ما حُدِّد

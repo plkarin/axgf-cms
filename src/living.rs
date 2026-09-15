@@ -32,7 +32,7 @@
 //! Read this before routing anything else through here.
 //!
 //! A living person's health data is withheld from everybody but an
-//! administrator — see [`crate::access::health_visibility`]. That rule keys on
+//! administrator — see [`crate::access::scope_visibility`]. That rule keys on
 //! living status, so a presumption that flips somebody to deceased would
 //! *publish* their conditions, their cause of death and their religion to
 //! every signed-in relative. The same is true of

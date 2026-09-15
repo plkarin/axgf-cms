@@ -1071,8 +1071,7 @@ phys-blood-group-ab-neg = AB negativo
 phys-blood-group-o-pos = O positivo
 phys-blood-group-o-neg = O negativo
 phys-blood-group-unknown = desconhecido
-admin-export-with-health = Exportar com a saúde
-admin-export-health-note = A exportação deixa de fora os campos de saúde e crença, para que um ficheiro enviado a um familiar não leve o historial médico de uma pessoa viva. O segundo botão inclui-os, para a sua própria cópia.
+admin-export-health-note = A exportação simples deixa de fora todas as categorias sensíveis — saúde e crenças, dados biométricos, dados genómicos e registo criminal — e também o perfil comportamental de qualquer pessoa viva, pelo que um ficheiro enviado a um familiar não contém nenhuma delas. Assinale o que um ficheiro concreto deve conter; o próprio arquivo regista que categorias foram omitidas.
 avatar-picker-title = Escolher uma imagem
 avatar-choose-link = Escolher imagem
 avatar-choose = Que imagem representa esta pessoa
@@ -1287,3 +1286,13 @@ style-compact = Compacta
 style-compact-note = mais registo por ecrã, para percorrer vários
 style-paper = Papel
 style-paper-note = um tipo com serifas e filetes em vez de cartões, para ler com calma ou imprimir
+
+## Sensitive classes
+
+admin-export-choose = Incluir nesta exportação
+scope-health = Saúde e crenças
+scope-biometrics = Dados biométricos
+scope-genomics = Dados genómicos
+scope-legal = Registo criminal
+scope-behaviour = Perfis comportamentais de pessoas vivas
+admin-export-with-chosen = Exportar com o que está assinalado

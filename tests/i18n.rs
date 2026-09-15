@@ -373,6 +373,10 @@ fn every_dynamic_key_family_is_fully_defined() {
     for role in ["viewer", "contributor", "admin"] {
         expected.push(format!("accounts-role-{role}"));
     }
+    // The export's checkboxes, and every notice that names what is withheld.
+    for scope in axgf_cms::sensitive::Scope::ALL {
+        expected.push(format!("scope-{}", scope.as_str()));
+    }
     for style in axgf_cms::style::STYLES {
         expected.push(style.key.to_string());
         expected.push(style.note_key.to_string());

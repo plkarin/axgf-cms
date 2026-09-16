@@ -2785,6 +2785,13 @@ details.raw > summary { cursor: pointer; font-weight: 600; }
    marker rather than by colour alone — the colour-blind themes carry these
    tables too, and "the red one is theirs" is not a distinction that survives
    them. */
+/* The values in a diff are whatever the record holds — a name, a date, or the
+ * whole of a 1.1 block as JSON — so the columns are fixed and the text breaks
+ * inside a word if it must. Without this the table sized itself to its longest
+ * unbroken value and hung 300px past the page on a phone, where nothing
+ * scrolled it and the end of every long value was simply gone. */
+.diff-table { table-layout: fixed; inline-size: 100%; }
+.diff-table td, .diff-table th { overflow-wrap: anywhere; }
 .diff-table td { vertical-align: top; }
 .diff-from {
   text-decoration: line-through;

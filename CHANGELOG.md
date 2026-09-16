@@ -159,6 +159,14 @@ child's lineage or a link given a relation came back with
 `SPEC_VERSION_MISMATCH` on every save. The single write path now raises the
 declaration to what the content needs, and never lowers it.
 
+**The edit history's diff table hung off the page.** Its values are whatever
+the record holds, and a whole 1.1 block arrives as JSON: the table sized itself
+to the longest unbroken one and stood ~300 px past a 390 px page, with nothing
+scrolling it, so the end of every long value was gone. Fixed columns, and text
+breaks inside a word. Found by rendering the four verification subjects at
+1920, 1440, 1280 and 390 px in English, Polish and Arabic — 144 renders, now
+with no page scrolling sideways and no element outside the viewport.
+
 **Tree crossing markers now clear 3:1 where they are drawn.** An edge is drawn at
 its confidence as opacity — 0.75 for the usual 0.8 — and the crossing hues had
 been chosen as swatches: composited at that opacity the Okabe–Ito vermilion,

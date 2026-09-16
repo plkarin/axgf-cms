@@ -24,6 +24,7 @@
 //! | conflict  | the conflict page's diff and its copy of the stored entity |
 //! | resubmit  | the conflict page's box holding the editor's own document  |
 //! | restore   | a save from a stripped form, which must not erase anything |
+//! | profile   | a save of the class's own profile group, forged entry and all |
 //! | export    | the archive, with each class left out unless chosen        |
 
 mod common;
@@ -439,6 +440,56 @@ async fn restore(class: Class) {
     );
 }
 
+/// The profile editor is the other way into a class, one group at a time. A
+/// contributor posts that class's group with a forged entry in it: nothing of
+/// it is written, and the entry already recorded is not erased by a save of a
+/// group whose class they may not read.
+///
+/// Two barriers stand here, and each alone holds: the form refuses to apply
+/// an attribute its reader may not read, and the save puts every withheld
+/// location back from the stored person. So a mutation that removes one of
+/// them is caught by nothing — it changes nothing — and only removing both
+/// fails this test. That is the defence in depth working, and the mutation
+/// table says so rather than hiding it.
+async fn profile_editor(class: Class) {
+    let app = app_with_contributor(&format!("cls-profile-{}", class.name));
+    let cousin = sign_in(&app, "cousin").await;
+    let (group, forged, witness) = match class.name {
+        "health" => ("health", "health.conditions.0.v.description=forged+by+the+form", "forged by the form"),
+        "biometrics" => ("biometrics", "biometrics.vocal_timbre.0.v=hoarse", "\"hoarse\""),
+        "genomics" => (
+            "genomics",
+            "genomics.risk_variants.0.v.variant=forged+by+the+form&genomics.risk_variants.0.v.gene=TP53",
+            "forged by the form",
+        ),
+        "legal" => ("legal", "legal.criminal_record.0.v.offence=forged+by+the+form", "forged by the form"),
+        _ => ("personality", "personality.hobbies.0.v=forged+by+the+form", "forged by the form"),
+    };
+    let resp = post_form_as(
+        &app,
+        &cousin,
+        &format!("/admin/person/{LIVING}/profile/{group}"),
+        &format!("base_version=1&{forged}"),
+    )
+    .await;
+    expect_status(resp, StatusCode::OK, "the contributor's save of the group").await;
+
+    let stored = textarea(
+        &body_string(get_admin(&app, &format!("/admin/person/{LIVING}/edit")).await).await,
+        "raw_json",
+    );
+    assert!(
+        !stored.contains(witness),
+        "a {} value was written through the profile editor by a reader who may not read it",
+        class.name
+    );
+    assert!(
+        stored.contains(class.first),
+        "the {} entry this editor never saw was erased by their save of the group",
+        class.name
+    );
+}
+
 async fn export(class: Class) {
     let app = app_with_contributor(&format!("cls-export-{}", class.name));
     let import = |bytes: Vec<u8>| -> Value { axgf_rs::import_bundle(&bytes).data };
@@ -511,6 +562,7 @@ matrix! {
     health_conflict => conflict(HEALTH),
     health_resubmit => resubmit(HEALTH),
     health_restore => restore(HEALTH),
+    health_profile => profile_editor(HEALTH),
     health_export => export(HEALTH),
 
     biometrics_record => record(BIOMETRICS),
@@ -519,6 +571,7 @@ matrix! {
     biometrics_conflict => conflict(BIOMETRICS),
     biometrics_resubmit => resubmit(BIOMETRICS),
     biometrics_restore => restore(BIOMETRICS),
+    biometrics_profile => profile_editor(BIOMETRICS),
     biometrics_export => export(BIOMETRICS),
 
     genomics_record => record(GENOMICS),
@@ -527,6 +580,7 @@ matrix! {
     genomics_conflict => conflict(GENOMICS),
     genomics_resubmit => resubmit(GENOMICS),
     genomics_restore => restore(GENOMICS),
+    genomics_profile => profile_editor(GENOMICS),
     genomics_export => export(GENOMICS),
 
     legal_record => record(LEGAL),
@@ -535,6 +589,7 @@ matrix! {
     legal_conflict => conflict(LEGAL),
     legal_resubmit => resubmit(LEGAL),
     legal_restore => restore(LEGAL),
+    legal_profile => profile_editor(LEGAL),
     legal_export => export(LEGAL),
 
     behaviour_record => record(BEHAVIOUR),
@@ -543,6 +598,7 @@ matrix! {
     behaviour_conflict => conflict(BEHAVIOUR),
     behaviour_resubmit => resubmit(BEHAVIOUR),
     behaviour_restore => restore(BEHAVIOUR),
+    behaviour_profile => profile_editor(BEHAVIOUR),
     behaviour_export => export(BEHAVIOUR),
 }
 

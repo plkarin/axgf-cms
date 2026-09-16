@@ -76,13 +76,17 @@
   --sex-u-line: #96938e;
 
   /* Residual edge crossings. Paired with dash patterns below, because a hue
-     alone does not survive the themes this file exists for. */
+     alone does not survive the themes this file exists for. Drawn at the
+     edge's confidence opacity — 0.75 for the usual 0.8 — so each is held to
+     3:1 *composited at that opacity*, not as the swatch: the Okabe–Ito
+     vermilion, green, pink and ochre as published measured 2.26–2.74 on the
+     page and are darkened just far enough to clear it. */
   --hue-1: #0072b2;
-  --hue-2: #d55e00;
-  --hue-3: #009e73;
-  --hue-4: #cc79a7;
+  --hue-2: #be5400;
+  --hue-3: #00825f;
+  --hue-4: #ba4987;
   --hue-5: #7c4dbe;
-  --hue-6: #b8860b;
+  --hue-6: #8f6809;
   --hue-7: #1f7a8c;
   --hue-8: #8c3b3b;
 
@@ -423,11 +427,11 @@
   --sex-u-line: #939390;
 
   --hue-1: #0072b2;
-  --hue-2: #d55e00;
+  --hue-2: #be5400;
   --hue-3: #003f6b;
   --hue-4: #8a4b00;
-  --hue-5: #4b7fa8;
-  --hue-6: #a06a2c;
+  --hue-5: #447398;
+  --hue-6: #966329;
   --hue-7: #00506e;
   --hue-8: #6b3a00;
 
@@ -474,8 +478,8 @@
   --hue-2: #00676b;
   --hue-3: #5c0025;
   --hue-4: #00434a;
-  --hue-5: #c4527d;
-  --hue-6: #2f8a8a;
+  --hue-5: #c14876;
+  --hue-6: #2a7b7b;
   --hue-7: #7a1540;
   --hue-8: #005f66;
 

@@ -159,6 +159,22 @@ child's lineage or a link given a relation came back with
 `SPEC_VERSION_MISMATCH` on every save. The single write path now raises the
 declaration to what the content needs, and never lowers it.
 
+**Tree crossing markers now clear 3:1 where they are drawn.** An edge is drawn at
+its confidence as opacity — 0.75 for the usual 0.8 — and the crossing hues had
+been chosen as swatches: composited at that opacity the Okabe–Ito vermilion,
+green, pink and ochre measured 2.26–2.74 against white in the light,
+deuteranopia and protanopia themes, and two hues fell short in tritanopia.
+Each failing hue is darkened just far enough to reach 3.1 at 0.75, and every
+theme's eight were checked, not only the two the sample tree happened to use.
+
+**The access matrix has a profile-editor surface.** Each sensitive class now
+also has a test that a contributor saving that class's profile group — with a
+forged entry in it — neither writes the entry nor erases what is recorded.
+Mutation testing showed it was needed: the profile editor holds the line
+twice, once refusing to apply an attribute its reader may not read and once
+restoring withheld locations on save, and removing either barrier alone
+changes nothing. Removing both now fails a test, class by class.
+
 **A link's direction was printed in English.** "outgoing" and "incoming",
 from the code, beside every link on every record in every language. They are
 "from this person" and "to this person" now, in all eleven.

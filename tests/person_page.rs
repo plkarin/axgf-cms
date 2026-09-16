@@ -809,6 +809,7 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
             "identity": {"name": {"display": "Irena Wolska", "components": []},
                          "is_living": true, "visibility": "public"},
             "morphology": {"posture": [{"value": "ideal", "confidence": 0.9}]},
+            "health": {"blood_pressure": [{"value": {"systolic": 131, "diastolic": 87}}]},
             "personality": {"big_five": [{"value": {"openness": 81, "conscientiousness": 64,
                 "extraversion": 38, "agreeableness": 55, "neuroticism": 41}}]}
         }},
@@ -837,6 +838,14 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
     assert!(
         !public.contains("Openness 81"),
         "no temperament score reaches the public"
+    );
+    assert!(
+        !public.contains("Systolic 131"),
+        "nor a living person's blood pressure, through the vitality chart"
+    );
+    assert!(
+        admin.contains("Systolic 131"),
+        "which the admin's chart reads"
     );
     assert!(
         public.contains("withheld from you"),

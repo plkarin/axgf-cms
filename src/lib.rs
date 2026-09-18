@@ -45,6 +45,7 @@ pub mod render;
 pub mod routes;
 pub mod sensitive;
 pub mod session;
+pub mod settings;
 pub mod state;
 pub mod style;
 pub mod theme;

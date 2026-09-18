@@ -31,9 +31,14 @@ nav-admin = الإدارة
 nav-sign-in = تسجيل الدخول
 nav-sign-out = تسجيل الخروج
 
-prefs-title = اللغة والمظهر
+settings-title = الإعدادات
+settings-tabs-label = أقسام الإعدادات
+settings-tab-theme = السمة
+settings-tab-language = اللغة
+settings-tab-appearance = المظهر
+settings-done = تم
 prefs-language = اللغة
-prefs-theme = المظهر
+prefs-theme = السمة
 prefs-background = الخلفية
 prefs-background-on = تدرّج لوني خفيف خلف الصفحة
 prefs-apply = تطبيق

@@ -25,9 +25,14 @@ footer-open-format-link = About the format
 
 ## Preferences
 
-prefs-title = Language and appearance
+settings-title = Settings
+settings-tabs-label = Settings sections
+settings-tab-theme = Theme
+settings-tab-language = Language
+settings-tab-appearance = Appearance
+settings-done = Done
 prefs-language = Language
-prefs-theme = Appearance
+prefs-theme = Theme
 prefs-background = Background
 prefs-background-on = A soft wash of colour behind the page
 prefs-apply = Apply

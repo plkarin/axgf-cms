@@ -39,6 +39,7 @@ pub fn router(state: Shared) -> Router {
         .route("/health", get(public::health))
         // Preferences are POSTs so that choosing a language is not something a
         // link or a crawler can do to a reader.
+        .route("/settings", get(prefs::settings))
         .route("/prefs/language", post(prefs::language))
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))

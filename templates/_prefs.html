@@ -1,131 +1,32 @@
-{# The language and theme selectors.
-   Plain GET forms with a submit button, so they work with scripting off — the
-   whole application does, and a preference control that needed JavaScript
-   would be the first thing to break it. Both post back to the page the reader
-   is on, so choosing a language does not also lose their place. #}
+{# The masthead's way in to the preferences.
+
+   It used to be the preferences: a `<details>` holding four stacked forms —
+   eleven languages, eight themes, three styles and a checkbox — so a reader
+   after any one of them read past the other twenty-two controls. They live on
+   `/settings` now, a tab each. This is the link to that page.
+
+   It names the current language rather than saying "Settings", because the
+   language is the preference a reader most often wants to *check* rather than
+   change, and a control that answers the question without being opened is
+   better than one that has to be. #}
 
 {# The arguments are passed explicitly because an imported macro does not see
    the including template's context in minijinja — including `t`, which is a
    function bound at render time and not a global. #}
-{% macro selector(t, lang, dir, theme_choice, wash_choice, back, locales, themes, current_locale) %}
-<details class="prefs">
+{% macro link(t, settings_url, current_locale) %}
+<a class="prefs-link" href="{{ settings_url }}" title="{{ t('settings-title') }}">
   {#- An inline SVG rather than the 🌐 emoji: an emoji is a font dependency
       that renders as a replacement box wherever that font is absent, and it
       cannot take the theme's ink colour. This one is drawn in currentColor
       and is decorative, so it is hidden from assistive technology and the
       control is named by its text. -#}
-  <summary title="{{ t('prefs-title') }}">
-    <svg class="prefs-globe" viewBox="0 0 20 20" width="16" height="16"
-         fill="none" stroke="currentColor" stroke-width="1.5"
-         stroke-linecap="round" aria-hidden="true" focusable="false">
-      <circle cx="10" cy="10" r="7.25"/>
-      <path d="M2.75 10h14.5"/>
-      <path d="M10 2.75c2 2.1 3 4.6 3 7.25s-1 5.15-3 7.25c-2-2.1-3-4.6-3-7.25s1-5.15 3-7.25z"/>
-    </svg>
-    <span class="prefs-current">{{ current_locale.native_name }}</span>
-    <svg class="prefs-chevron" viewBox="0 0 12 12" width="11" height="11"
-         fill="none" stroke="currentColor" stroke-width="1.6"
-         stroke-linecap="round" stroke-linejoin="round"
-         aria-hidden="true" focusable="false">
-      <path d="M2.5 4.5 6 8l3.5-3.5"/>
-    </svg>
-  </summary>
-  <div class="prefs-panel">
-
-    <form method="post" action="/prefs/language">
-      <input type="hidden" name="back" value="{{ back }}">
-      <fieldset>
-        <legend>{{ t("prefs-language") }}</legend>
-        <ul class="lang-list">
-          {% for l in locales %}
-          <li>
-            <label class="inline">
-              <input type="radio" name="lang" value="{{ l.tag }}"
-                     {{ "checked" if l.tag == lang }}>
-              <span lang="{{ l.tag }}" dir="{{ l.dir }}">{{ l.native_name }}</span>
-              {#- The language's name in the reader's own language, beside the
-                  name it gives itself: a reader who cannot read an endonym can
-                  still find their way back. Not repeated for the language on
-                  screen, whose two names are one. -#}
-              {% if l.tag != lang %}<span class="small muted">{{ t("lang-" ~ l.tag) }}</span>{% endif %}
-              {#- Three states, not two. "Reviewed" is a person's judgement;
-                  "complete, not yet reviewed" is a finished machine
-                  translation, which a bare 100% would flatter into sounding
-                  like a quality score. -#}
-              {% if l.reviewed %}
-                <span class="badge reviewed">{{ t("prefs-reviewed") }}</span>
-              {% elif l.complete %}
-                <span class="badge machine"
-                      title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine-complete") }}</span>
-              {% else %}
-                <span class="badge machine"
-                      title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine", coverage=l.coverage) }}</span>
-              {% endif %}
-            </label>
-          </li>
-          {% endfor %}
-        </ul>
-        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
-      </fieldset>
-    </form>
-
-    <form method="post" action="/prefs/theme">
-      <input type="hidden" name="back" value="{{ back }}">
-      <fieldset>
-        <legend>{{ t("prefs-theme") }}</legend>
-        <ul class="theme-list">
-          {% for th in themes %}
-          <li>
-            <label class="inline">
-              <input type="radio" name="theme" value="{{ th.id }}"
-                     {{ "checked" if th.id == theme_choice }}>
-              <span>{{ t(th.key) }}</span>
-              {% if th.note_key %}<span class="small muted">{{ t(th.note_key) }}</span>{% endif %}
-            </label>
-          </li>
-          {% endfor %}
-        </ul>
-        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
-      </fieldset>
-    </form>
-
-    {# The second axis. A style says how dense the page is and never what
-       colour it is, so it is its own form beside the theme rather than
-       twenty-one entries in the theme's list. #}
-    <form method="post" action="/prefs/style">
-      <input type="hidden" name="back" value="{{ back }}">
-      <fieldset>
-        <legend>{{ t("prefs-style") }}</legend>
-        <p class="hint">{{ t("prefs-style-help") }}</p>
-        <ul class="theme-list">
-          {% for st in styles %}
-          <li>
-            <label class="inline">
-              <input type="radio" name="style" value="{{ st.id }}"
-                     {{ "checked" if st.id == style }}>
-              <span>{{ t(st.key) }}</span>
-              <span class="small muted">{{ t(st.note_key) }}</span>
-            </label>
-          </li>
-          {% endfor %}
-        </ul>
-        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
-      </fieldset>
-    </form>
-
-    <form method="post" action="/prefs/background">
-      <input type="hidden" name="back" value="{{ back }}">
-      <fieldset>
-        <legend>{{ t("prefs-background") }}</legend>
-        <label class="inline">
-          <input type="checkbox" name="wash" value="on"
-                 {{ "checked" if wash_choice }}>
-          <span>{{ t("prefs-background-on") }}</span>
-        </label>
-        <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
-      </fieldset>
-    </form>
-
-  </div>
-</details>
+  <svg class="prefs-globe" viewBox="0 0 20 20" width="16" height="16"
+       fill="none" stroke="currentColor" stroke-width="1.5"
+       stroke-linecap="round" aria-hidden="true" focusable="false">
+    <circle cx="10" cy="10" r="7.25"/>
+    <path d="M2.75 10h14.5"/>
+    <path d="M10 2.75c2 2.1 3 4.6 3 7.25s-1 5.15-3 7.25c-2-2.1-3-4.6-3-7.25s1-5.15 3-7.25z"/>
+  </svg>
+  <span class="prefs-current">{{ current_locale.native_name }}</span>
+</a>
 {% endmacro %}

@@ -20,9 +20,14 @@ nav-sign-out = Se déconnecter
 
 ## Préférences
 
-prefs-title = Langue et apparence
+settings-title = Réglages
+settings-tabs-label = Sections des réglages
+settings-tab-theme = Thème
+settings-tab-language = Langue
+settings-tab-appearance = Apparence
+settings-done = Terminé
 prefs-language = Langue
-prefs-theme = Apparence
+prefs-theme = Thème
 prefs-background = Arrière-plan
 prefs-background-on = Un voile de couleur léger derrière la page
 prefs-apply = Appliquer

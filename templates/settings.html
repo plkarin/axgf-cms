@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ t("settings-title") }} — {{ t("app-name") }}{% endblock %}
+
+{# Three questions, three tabs. They used to be four forms stacked inside one
+   dropdown in the masthead, which put twenty-three controls behind one chevron
+   and made a reader looking for one of them read past the other twenty-two.
+
+   Real links, like the record's tabs and for the same reasons: each is a URL
+   somebody can send, the back button goes back a tab, and the page works with
+   scripting off — which is the promise least worth breaking on the screen
+   where a reader sets their language.
+
+   Every form posts `back`, which the handler has pointed at this page on this
+   tab: applying a choice shows the choice. #}
+
+{% block content %}
+<header class="settings-head">
+  <h1>{{ t("settings-title") }}</h1>
+  {% if from != "/" %}<a class="btn" href="{{ from }}">{{ t("settings-done") }}</a>{% endif %}
+</header>
+
+<nav class="person-tabs" aria-label="{{ t('settings-tabs-label') }}">
+  {% for tb in tabs %}
+  <a href="{{ tab_urls[loop.index0] }}"
+     class="person-tab{% if tb.slug == tab %} is-current{% endif %}"
+     {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}</a>
+  {% endfor %}
+</nav>
+
+{% if tab == "theme" %}
+<form method="post" action="/prefs/theme" class="settings-panel">
+  <input type="hidden" name="back" value="{{ back }}">
+  <fieldset>
+    <legend class="sr-only">{{ t("prefs-theme") }}</legend>
+    <ul class="theme-list">
+      {% for th in themes %}
+      <li>
+        <label class="inline">
+          <input type="radio" name="theme" value="{{ th.id }}"
+                 {{ "checked" if th.id == theme_choice }}>
+          <span>{{ t(th.key) }}</span>
+          {% if th.note_key %}<span class="small muted">{{ t(th.note_key) }}</span>{% endif %}
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+    <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+  </fieldset>
+</form>
+
+{% elif tab == "language" %}
+<form method="post" action="/prefs/language" class="settings-panel">
+  <input type="hidden" name="back" value="{{ back }}">
+  <fieldset>
+    <legend class="sr-only">{{ t("prefs-language") }}</legend>
+    <ul class="lang-list">
+      {% for l in locales %}
+      <li>
+        <label class="inline">
+          <input type="radio" name="lang" value="{{ l.tag }}"
+                 {{ "checked" if l.tag == lang }}>
+          <span lang="{{ l.tag }}" dir="{{ l.dir }}">{{ l.native_name }}</span>
+          {#- The language's name in the reader's own language, beside the name
+              it gives itself: a reader who cannot read an endonym can still
+              find their way back. Not repeated for the language on screen,
+              whose two names are one. -#}
+          {% if l.tag != lang %}<span class="small muted">{{ t("lang-" ~ l.tag) }}</span>{% endif %}
+          {#- Three states, not two. "Reviewed" is a person's judgement;
+              "complete, not yet reviewed" is a finished machine translation,
+              which a bare 100% would flatter into sounding like a quality
+              score. -#}
+          {% if l.reviewed %}
+            <span class="badge reviewed">{{ t("prefs-reviewed") }}</span>
+          {% elif l.complete %}
+            <span class="badge machine"
+                  title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine-complete") }}</span>
+          {% else %}
+            <span class="badge machine"
+                  title="{{ t('prefs-machine-title') }}">{{ t("prefs-machine", coverage=l.coverage) }}</span>
+          {% endif %}
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+    <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+  </fieldset>
+</form>
+
+{% else %}
+{# Density and the wash: two geometries, no colour between them. They share a
+   tab because they are the same question asked twice — how much of the page is
+   page — and neither belongs beside a palette. Two forms, because they are two
+   cookies and one submit must not silently rewrite the other. #}
+<form method="post" action="/prefs/style" class="settings-panel">
+  <input type="hidden" name="back" value="{{ back }}">
+  <fieldset>
+    <legend>{{ t("prefs-style") }}</legend>
+    <p class="hint">{{ t("prefs-style-help") }}</p>
+    <ul class="theme-list">
+      {% for st in styles %}
+      <li>
+        <label class="inline">
+          <input type="radio" name="style" value="{{ st.id }}"
+                 {{ "checked" if st.id == style }}>
+          <span>{{ t(st.key) }}</span>
+          <span class="small muted">{{ t(st.note_key) }}</span>
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+    <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+  </fieldset>
+</form>
+
+<form method="post" action="/prefs/background" class="settings-panel">
+  <input type="hidden" name="back" value="{{ back }}">
+  <fieldset>
+    <legend>{{ t("prefs-background") }}</legend>
+    <label class="inline">
+      <input type="checkbox" name="wash" value="on"
+             {{ "checked" if wash_choice }}>
+      <span>{{ t("prefs-background-on") }}</span>
+    </label>
+    <button class="btn" type="submit">{{ t("prefs-apply") }}</button>
+  </fieldset>
+</form>
+{% endif %}
+{% endblock %}

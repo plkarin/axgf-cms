@@ -34,9 +34,14 @@ footer-open-format-link = Sul formato
 
 ## Preferenze
 
-prefs-title = Lingua e aspetto
+settings-title = Impostazioni
+settings-tabs-label = Sezioni delle impostazioni
+settings-tab-theme = Tema
+settings-tab-language = Lingua
+settings-tab-appearance = Aspetto
+settings-done = Fatto
 prefs-language = Lingua
-prefs-theme = Aspetto
+prefs-theme = Tema
 prefs-background = Sfondo
 prefs-background-on = Una velatura di colore dietro la pagina
 prefs-apply = Applica

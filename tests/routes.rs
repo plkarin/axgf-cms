@@ -477,3 +477,149 @@ async fn an_error_page_carries_no_stray_button() {
         "a link back to the page that just failed is not a way out"
     );
 }
+
+/// The preferences are three tabs, and each shows only its own choices.
+///
+/// They used to be four forms stacked inside one `<details>` in the masthead:
+/// eleven languages, eight themes, three styles and a checkbox, twenty-three
+/// controls behind one chevron. A reader after any one of them read past the
+/// rest.
+#[tokio::test]
+async fn the_settings_are_three_tabs_and_a_tab_shows_only_its_own_choices() {
+    let (app, _p) = app_with_empty_bundle("settings-tabs");
+
+    let theme = expect_status(
+        get(&app, "/settings").await,
+        StatusCode::OK,
+        "GET /settings",
+    )
+    .await;
+    // The default tab is the theme, and it carries the themes.
+    assert!(
+        theme.contains(r#"name="theme""#),
+        "the theme choices: {theme}"
+    );
+    // And nothing else's.
+    assert!(
+        !theme.contains(r#"name="lang""#) && !theme.contains(r#"name="style""#),
+        "the theme tab carries only themes"
+    );
+
+    let lang = expect_status(
+        get(&app, "/settings?tab=language").await,
+        StatusCode::OK,
+        "GET /settings?tab=language",
+    )
+    .await;
+    assert!(lang.contains(r#"name="lang""#), "the languages: {lang}");
+    assert!(
+        !lang.contains(r#"name="theme""#) && !lang.contains(r#"name="style""#),
+        "the language tab carries only languages"
+    );
+    // The coverage labelling is the honest part and it stays: two reviewed,
+    // nine complete but unreviewed.
+    assert_eq!(
+        lang.matches(r#"badge reviewed">"#).count(),
+        2,
+        "two catalogues are reviewed by a person: {lang}"
+    );
+    assert_eq!(
+        lang.matches("complete, not yet reviewed").count(),
+        9,
+        "and nine are complete without review"
+    );
+
+    let appearance = expect_status(
+        get(&app, "/settings?tab=appearance").await,
+        StatusCode::OK,
+        "GET /settings?tab=appearance",
+    )
+    .await;
+    // Density and the wash: two geometries, no colour between them.
+    assert!(
+        appearance.contains(r#"name="style""#) && appearance.contains(r#"name="wash""#),
+        "the appearance tab: {appearance}"
+    );
+    assert!(
+        !appearance.contains(r#"name="theme""#) && !appearance.contains(r#"name="lang""#),
+        "and nothing about colour or language"
+    );
+
+    // Each is a real URL with a real current-tab marker, not a panel behind a
+    // script. Nothing on the page opens anything.
+    for page in [&theme, &lang, &appearance] {
+        assert!(
+            page.contains(r#"aria-current="page""#),
+            "the open tab is named"
+        );
+        assert_eq!(
+            page.matches("<details").count(),
+            0,
+            "the settings open nothing: {page}"
+        );
+    }
+
+    // An unknown tab is the theme rather than a 404: the thing the reader
+    // wanted is right there behind it.
+    let stale = expect_status(
+        get(&app, "/settings?tab=nonsense").await,
+        StatusCode::OK,
+        "a stale tab",
+    )
+    .await;
+    assert!(
+        stale.contains(r#"name="theme""#),
+        "a stale link lands on the theme"
+    );
+}
+
+/// The masthead links to the settings and carries the way back.
+#[tokio::test]
+async fn the_masthead_offers_the_settings_and_remembers_the_page() {
+    let (app, _p) = app_with_empty_bundle("settings-entry");
+    let tree = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
+    assert!(
+        tree.contains(r#"href="&#x2f;settings?from=&#x2f;tree""#),
+        "the masthead carries the way in and the way back: {tree}"
+    );
+
+    // And the settings offer the way out again.
+    let page = expect_status(
+        get(&app, "/settings?from=%2Ftree").await,
+        StatusCode::OK,
+        "settings from the tree",
+    )
+    .await;
+    assert!(
+        page.contains(r#"href="&#x2f;tree""#),
+        "the way back: {page}"
+    );
+    // Applying a choice returns the reader here, on this tab, rather than to
+    // the page they came from — so the choice is visible once it is made.
+    assert!(
+        page.contains(r#"value="&#x2f;settings?tab=theme&amp;from=&#x2f;tree""#),
+        "a form returns to this tab: {page}"
+    );
+}
+
+/// An off-site `from` is not a redirect this application will perform.
+#[tokio::test]
+async fn the_settings_will_not_carry_an_off_site_destination() {
+    let (app, _p) = app_with_empty_bundle("settings-open-redirect");
+    for hostile in [
+        "https%3A%2F%2Felsewhere.example",
+        "%2F%2Felsewhere.example",
+        "%5C%5Celsewhere.example",
+    ] {
+        let page = expect_status(
+            get(&app, &format!("/settings?from={hostile}")).await,
+            StatusCode::OK,
+            "a hostile from",
+        )
+        .await;
+        assert!(
+            !page.contains("elsewhere.example"),
+            "an off-site destination is dropped, not reflected: {page}"
+        );
+    }
+}

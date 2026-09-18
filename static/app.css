@@ -2787,100 +2787,62 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 }
 
 /* ---------------------------------------------------------------------------
-   The language and theme selector
+   The way in to the settings, and the settings surface
    ---------------------------------------------------------------------------
-   It was a `<details>` with no rules at all, so it rendered as the browser's
-   default disclosure triangle beside an emoji: "▸ 🌐 English". A `<details>`
-   is still the right element — it opens without script, which the rest of the
-   application also insists on — but it needs to read as a control.
+   The masthead used to hold the preferences themselves: a `<details>` over four
+   stacked forms, twenty-three controls behind one chevron. It holds a link now.
+   The link still names the current language, because that is the preference a
+   reader checks far more often than they change it, and a control that answers
+   the question without being opened beats one that has to be.
 
-   The panel is positioned rather than in flow, so opening it does not push the
-   masthead's height around and shift the page under the pointer. */
-.prefs { position: relative; }
-
-.prefs > summary {
+   No panel, so no positioning, no z-index, no open/closed state and no opening
+   animation — which was motion that announced a menu rather than meaning
+   anything. */
+.prefs-link {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   padding: 0.35rem 0.6rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  cursor: pointer;
   font-size: 0.9rem;
   color: var(--ink-soft);
-  list-style: none;
-  user-select: none;
+  text-decoration: none;
   transition: background-color var(--tempo) var(--ease),
               border-color var(--tempo) var(--ease),
               color var(--tempo) var(--ease);
 }
-/* The default marker, removed in both dialects. */
-.prefs > summary::-webkit-details-marker { display: none; }
-.prefs > summary::marker { content: ""; }
-
-.prefs > summary:hover {
+.prefs-link:hover {
   background: var(--accent-soft);
   border-color: var(--border);
   color: var(--ink);
 }
-.prefs[open] > summary {
-  background: var(--accent-soft);
-  border-color: var(--border-strong);
-  color: var(--ink);
-}
 .prefs-current { font-weight: 500; }
 .prefs-globe { flex: none; opacity: 0.85; }
-.prefs-chevron {
-  flex: none;
-  opacity: 0.7;
-  transition: transform var(--tempo) var(--ease);
-}
-.prefs[open] .prefs-chevron { transform: rotate(180deg); }
 
-.prefs-panel {
-  position: absolute;
-  inset-inline-end: 0;
-  top: calc(100% + 0.4rem);
-  z-index: 60;
-  width: min(28rem, calc(100vw - 2rem));
-  max-height: min(30rem, calc(100vh - 6rem));
-  overflow-y: auto;
-  padding: 0.9rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 6px 24px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 2.2));
-  text-align: start;
-  animation: prefs-open var(--tempo) var(--ease);
+/* The settings page. A heading, the way back out, and one panel per tab. */
+.settings-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
-@keyframes prefs-open {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: none; }
-}
-/* Below about 30rem the masthead wraps, so the control it hangs from is no
-   longer near the right edge — and a 22rem panel anchored to it hung off the
-   left of the page instead. Making the masthead the containing block turns it
-   into a full-width sheet under the header, which is where a reader expects a
-   menu on a small screen anyway. Measured, not assumed: at 390px the panel was
-   starting at x = -223. */
-@media (max-width: 30rem) {
-  .masthead { position: sticky; }
-  .masthead-inner { position: relative; }
-  .prefs { position: static; }
-  .prefs-panel {
-    inset-inline: 0.75rem;
-    width: auto;
-    top: calc(100% + 0.25rem);
-  }
-  /* At this width no row fits its badge on one line, and letting some wrap
-     and not others reads as ragged rather than as a list. Every badge takes
-     its own line, so all eleven rows are the same shape. */
-  .lang-list label .badge { flex-basis: 100%; }
-}
+.settings-head h1 { margin: 0; }
 
-.prefs-panel fieldset { border: 0; padding: 0; margin: 0; }
-.prefs-panel fieldset + form { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
-.prefs-panel legend {
+/* One question per tab, so the panel is a plain block rather than a menu: it
+   is the content of the page now, not something hovering over it. */
+.settings-panel {
+  max-width: 34rem;
+  margin-top: 1.25rem;
+}
+.settings-panel fieldset { border: 0; padding: 0; margin: 0; }
+.settings-panel + .settings-panel {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.settings-panel legend {
   font-size: var(--label-size);
   text-transform: uppercase;
   letter-spacing: var(--label-track);
@@ -2889,8 +2851,16 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
   padding: 0;
   margin-bottom: 0.4rem;
 }
-.prefs-panel .hint { margin: 0 0 0.6rem; }
-.prefs-panel .btn { margin-top: 0.7rem; width: 100%; }
+.settings-panel .hint { margin: 0 0 0.6rem; }
+.settings-panel .btn { margin-top: 0.9rem; }
+
+@media (max-width: 30rem) {
+  /* At this width no row fits its badge on one line, and letting some wrap and
+     not others reads as ragged rather than as a list. Every badge takes its own
+     line, so all eleven rows are the same shape. */
+  .lang-list label .badge { flex-basis: 100%; }
+  .settings-panel .btn { width: 100%; }
+}
 
 .lang-list, .theme-list { list-style: none; margin: 0; padding: 0; }
 .lang-list > li, .theme-list > li { margin: 0; }

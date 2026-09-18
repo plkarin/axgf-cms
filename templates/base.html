@@ -35,7 +35,11 @@
     </nav>
     <span class="spacer"></span>
     <nav class="chrome-nav">
-      {{ prefs.selector(t, lang, dir, theme_choice, wash_choice, back, locales, themes, current_locale) }}
+      {#- The way in to the preferences, not the preferences themselves. It
+          names the language it is currently in, so the reader can see the
+          setting without opening anything, and carries where they are so the
+          settings page can offer the way back. -#}
+      {{ prefs.link(t, settings_url, current_locale) }}
       {% if signed_in %}
         {% if may_write %}
           <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>

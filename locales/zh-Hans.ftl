@@ -34,9 +34,14 @@ footer-open-format-link = 关于该格式
 
 ## 偏好设置
 
-prefs-title = 语言与外观
+settings-title = 设置
+settings-tabs-label = 设置的各节
+settings-tab-theme = 配色
+settings-tab-language = 语言
+settings-tab-appearance = 外观
+settings-done = 完成
 prefs-language = 语言
-prefs-theme = 外观
+prefs-theme = 配色
 prefs-background = 背景
 prefs-background-on = 页面背后一层淡淡的色晕
 prefs-apply = 应用

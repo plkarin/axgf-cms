@@ -11,13 +11,62 @@
 //! costs nothing and it keeps the choice working for the rest of the session
 //! if the ACL write fails.
 
-use axum::extract::{Form, State};
+use axum::extract::{Form, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Redirect, Response};
 use serde::Deserialize;
 
+use minijinja::context;
+
 use crate::routes::Shared;
 use crate::{auth, render};
+
+/// `GET /settings` — the preferences, three tabs over three questions.
+///
+/// `from` is where the reader opened this from, carried so the way out leads
+/// back there. `back` — what each form posts and what the redirect honours —
+/// is this page on this tab, so applying a choice shows the choice rather than
+/// returning the reader to their record to go and look at it.
+pub async fn settings(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<SettingsQuery>,
+) -> Response {
+    let tab = crate::settings::Tab::from_query(q.tab.as_deref());
+    let viewer = auth::viewer(&state, &headers);
+
+    // Sanitised the same way a posted `back` is, and for the same reason: it
+    // reaches a `href` here and a `Location` header after the next submit.
+    let from = render::safe_back(q.from.as_deref().unwrap_or("/"));
+    let self_url = tab.url(&from);
+
+    // `Chrome::resolve`'s `back` is what the forms post. Pointing it at this
+    // page is the whole of "stay here after applying".
+    let chrome = render::Chrome::resolve(&viewer, &headers, &self_url);
+
+    render::page_with(
+        &chrome,
+        "settings.html",
+        context! {
+            nav => "settings",
+            tab => tab.slug(),
+            tabs => crate::settings::Tab::entries(),
+            from,
+            tab_urls => crate::settings::TABS
+                .iter()
+                .map(|t| t.url(&from))
+                .collect::<Vec<_>>(),
+        },
+    )
+}
+
+#[derive(Deserialize)]
+pub struct SettingsQuery {
+    #[serde(default)]
+    tab: Option<String>,
+    #[serde(default)]
+    from: Option<String>,
+}
 
 #[derive(Deserialize)]
 pub struct LanguageForm {

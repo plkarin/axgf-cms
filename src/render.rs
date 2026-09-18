@@ -43,6 +43,7 @@ macro_rules! templates {
 const TEMPLATES: &[(&str, &str)] = templates![
     "base.html",
     "_prefs.html",
+    "settings.html",
     "home.html",
     "error.html",
     "tree.html",
@@ -186,6 +187,10 @@ pub struct Chrome {
     pub is_admin: bool,
     /// Where a preference form should return the reader to.
     pub back: String,
+    /// The masthead's link to the settings, carrying `back` as the way out.
+    /// Built here rather than in the template because percent-encoding a path
+    /// is not a thing to do in Jinja.
+    pub settings_url: String,
     pub locales: Vec<serde_json::Value>,
     pub themes: Vec<serde_json::Value>,
     pub current_locale: serde_json::Value,
@@ -230,6 +235,7 @@ impl Chrome {
             signed_in: viewer.signed_in(),
             may_write: viewer.may_write(),
             is_admin: viewer.is_admin(),
+            settings_url: crate::settings::entry_url(&safe_back(back)),
             back: safe_back(back),
             locales: crate::i18n::selector_entries(),
             themes: crate::theme::selector_entries(),
@@ -269,7 +275,7 @@ impl Chrome {
 /// turn the language selector into a way of bouncing a reader off the site.
 /// Only a same-site absolute path is accepted, and a protocol-relative `//host`
 /// is rejected along with everything else.
-fn safe_back(raw: &str) -> String {
+pub fn safe_back(raw: &str) -> String {
     let candidate = raw.trim();
     if candidate.starts_with('/') && !candidate.starts_with("//") && !candidate.contains('\\') {
         candidate.to_string()

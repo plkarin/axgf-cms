@@ -35,9 +35,14 @@ footer-open-format-link = 形式について
 
 ## 設定
 
-prefs-title = 言語と表示
+settings-title = 設定
+settings-tabs-label = 設定の節
+settings-tab-theme = 配色
+settings-tab-language = 言語
+settings-tab-appearance = 表示
+settings-done = 完了
 prefs-language = 言語
-prefs-theme = 表示
+prefs-theme = 配色
 prefs-background = 背景
 prefs-background-on = ページの背後にごく淡い色のぼかしを敷く
 prefs-apply = 適用

@@ -137,6 +137,14 @@ say. 203 characters of English gone, and the same clause in ten other
 catalogues. The rest of the copy was reviewed against the same standard and
 kept: it says specific things.
 
+**The duplicate bracket was a card on the style that abolished cards.** Found
+by looking at the full 21-tile matrix rather than a sample of it: under `paper`
+the record's sections are rules and room, and the new bracket was a rounded box
+holding two more rounded boxes — the only thing left on that page pretending to
+be a card. In `paper` it is a rule down the inline-start edge now, which is how
+that style says "these belong together" everywhere else. Same token, so the
+sweep does not move.
+
 Nothing here touches a colour, a surface or a border, which is what the contrast
 sweep is sensitive to. Measured before and after across all 21 theme-and-style
 combinations: worst text 4.70 and worst graphic 3.13, both unchanged, no pair

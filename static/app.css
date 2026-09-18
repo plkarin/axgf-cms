@@ -2695,6 +2695,17 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   border-radius: var(--radius-lg);
 }
 .union-group.is-duplicate > .union:first-of-type { margin-top: 0; }
+/* Paper has abolished cards: a section there is a rule and some room, which is
+   what a printer does to a card anyway. A rounded box holding two more rounded
+   boxes is the one thing on that page still pretending to be a card, so the
+   bracket says the same thing in paper's own vocabulary — a rule down the
+   inline-start edge. Same token, so the contrast sweep does not move. */
+[data-style="paper"] .union-group.is-duplicate {
+  border: 0;
+  border-inline-start: 2px solid var(--border-strong);
+  border-radius: 0;
+  padding: 0 0 0 1rem;
+}
 .notice-defect { border-inline-start-color: var(--conf-medium); }
 /* The action sits under the sentence, inside the notice that explains it. */
 .notice-defect p { margin: 0; }

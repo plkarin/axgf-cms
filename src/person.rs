@@ -2011,10 +2011,23 @@ pub enum Tab {
     Media,
     /// Where they sit: the family graph, rooted on them.
     Tree,
+    /// What was corrected, by whom, and when. Metadata about the record
+    /// rather than content of it, which is why it is a tab of its own and no
+    /// longer the foot of the first one. Only ever offered to a signed-in
+    /// reader: the journal names the family's editors and quotes what each of
+    /// them changed, which is why it is kept out of the shareable bundle.
+    History,
 }
 
 /// The tabs, in the order they are shown.
-pub const TABS: &[Tab] = &[Tab::Record, Tab::Life, Tab::Profile, Tab::Media, Tab::Tree];
+pub const TABS: &[Tab] = &[
+    Tab::Record,
+    Tab::Life,
+    Tab::Profile,
+    Tab::Media,
+    Tab::Tree,
+    Tab::History,
+];
 
 impl Tab {
     /// The slug used in `?tab=` and as the template's discriminator.
@@ -2025,6 +2038,7 @@ impl Tab {
             Self::Profile => "profile",
             Self::Media => "media",
             Self::Tree => "tree",
+            Self::History => "history",
         }
     }
 
@@ -2036,6 +2050,7 @@ impl Tab {
             Self::Profile => "person-tab-profile",
             Self::Media => "person-tab-media",
             Self::Tree => "person-tab-tree",
+            Self::History => "person-tab-history",
         }
     }
 
@@ -2051,6 +2066,7 @@ impl Tab {
             Some("profile") => Self::Profile,
             Some("media") => Self::Media,
             Some("tree") => Self::Tree,
+            Some("history") => Self::History,
             _ => Self::Record,
         }
     }

@@ -402,6 +402,8 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
 
     for uri in [
         format!("/person/{LIVING}"),
+        // The history is its own tab now. The rule travelled with it.
+        format!("/person/{LIVING}?tab=history"),
         format!("/person/{LIVING}?tab=profile&group=health"),
         format!("/tree/panel/{LIVING}"),
         format!("/tree?root={LIVING}"),
@@ -413,8 +415,9 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
             "{uri} carried the condition to a contributor"
         );
         // Not merely absent: the row is still there, saying so. A diff with a
-        // row silently missing is a diff that is wrong.
-        if uri.contains("/edit") || uri == format!("/person/{LIVING}") {
+        // row silently missing is a diff that is wrong — the reader must be
+        // able to tell that something changed without being shown what.
+        if uri.contains("/edit") || uri.contains("tab=history") {
             assert!(
                 body.contains("diff-withheld"),
                 "{uri} dropped the row instead of marking it withheld"
@@ -425,7 +428,7 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
     // The positive control: an administrator reading the same history does see
     // it, so the redaction is the rule doing its job and not the journal being
     // empty.
-    let admin = body_string(get_admin(&app, &format!("/person/{LIVING}")).await).await;
+    let admin = body_string(get_admin(&app, &format!("/person/{LIVING}?tab=history")).await).await;
     assert!(admin.contains(CONDITION), "an administrator reads it");
 }
 

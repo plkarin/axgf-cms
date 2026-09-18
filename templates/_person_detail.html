@@ -489,11 +489,22 @@
 {% endif %}
 
 {# --------------------------------------------------------------- HISTORY #}
-{# Only ever rendered for a signed-in reader. The journal names the family's
-   editors and quotes what each of them corrected, which is exactly why it does
-   not live in the shareable bundle — publishing it on the public record page
-   would put it back where it was kept out of. #}
-{% if history and (tab is undefined or tab == "record") %}
+{# A tab of its own. It is metadata about the record — who corrected what, and
+   when — rather than content of the record, and it used to sit under Notes at
+   the foot of the first tab, which is the last place a reader looking for it
+   would think to scroll and the first place a reader looking for the record
+   had to scroll past.
+
+   Only ever rendered for a signed-in reader, and the tab is only offered to
+   one. The journal names the family's editors and quotes what each of them
+   corrected, which is exactly why it does not live in the shareable bundle:
+   publishing it on the public record page would put it back where it was
+   deliberately kept out of.
+
+   The panel (`tab is undefined`) still draws it inline, as it draws
+   everything: a panel is one glance at a whole person, not a place to
+   navigate. #}
+{% if history and (tab is undefined or tab == "history") %}
 <section id="history" class="rec-section">
   {{ m.sec(t, t("record-history"), compact, t("record-history-help")) }}
   <ol class="history">

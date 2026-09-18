@@ -290,6 +290,7 @@ person-tab-record = Record
 person-tab-life = Life
 person-tab-media = Media
 person-tab-tree = Tree
+person-tab-history = History
 person-tree-depth = { $n } generations either way. The whole tree is below.
 person-tree-alone = This record names no parents, partners or children, so there is no shape to draw around it.
 

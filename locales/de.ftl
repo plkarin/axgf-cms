@@ -301,6 +301,7 @@ person-tab-record = Eintrag
 person-tab-life = Leben
 person-tab-media = Medien
 person-tab-tree = Stammbaum
+person-tab-history = Verlauf
 person-tree-depth = { $n } Generationen in jede Richtung. Der ganze Baum steht darunter.
 person-tree-alone = Dieser Eintrag nennt weder Eltern noch Partner noch Kinder, also gibt es um ihn herum keine Form zu zeichnen.
 

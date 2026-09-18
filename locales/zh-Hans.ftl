@@ -275,6 +275,7 @@ person-tab-record = 记录
 person-tab-life = 生平
 person-tab-media = 材料
 person-tab-tree = 家系
+person-tab-history = 历史
 person-tree-depth = 上下各 { $n } 代。完整的家系图在下方。
 person-tree-alone = 这条记录未载父母、配偶或子女，因此周围没有可画的形状。
 

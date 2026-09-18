@@ -315,6 +315,7 @@ person-tab-record = Zapis
 person-tab-life = Życie
 person-tab-media = Materiały
 person-tab-tree = Drzewo
+person-tab-history = Historia
 person-tree-depth = Po { $n } pokolenia w każdą stronę. Całe drzewo jest niżej.
 person-tree-alone = Ten zapis nie wymienia rodziców, małżonków ani dzieci, więc nie ma wokół czego rysować kształtu.
 

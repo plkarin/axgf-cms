@@ -733,15 +733,23 @@ pub async fn person(
                     }))
                 })
                 .collect();
+            // The journal names editors, so it is shown to people who are
+            // signed in and to nobody else. Built before the tabs because the
+            // History tab is only offered when there is a reader entitled to
+            // it — an empty tab a signed-out reader cannot ever fill is worse
+            // than no tab.
+            let history = viewer
+                .signed_in()
+                .then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang));
+            let history_count = history.as_ref().map_or(0, Vec::len);
+
             render::page_with(
                 &chrome,
                 "person.html",
                 context! {
                     nav => "tree",
                     p,
-                    // The journal names editors, so it is shown to people who
-                    // are signed in and to nobody else.
-                    history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
+                    history,
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
                     compact => false,
@@ -750,6 +758,9 @@ pub async fn person(
                     tab => tab.slug(),
                     tabs => crate::person::TABS
                         .iter()
+                        // The record's edit history is a fact about the people
+                        // keeping the tree, not about the family in it.
+                        .filter(|t| **t != crate::person::Tab::History || history_count > 0)
                         .map(|t| {
                             // How much is behind each tab, so a reader can
                             // tell a full one from an empty one before
@@ -769,6 +780,7 @@ pub async fn person(
                                 crate::person::Tab::Tree => {
                                     p.parents.len() + p.siblings.len() + p.unions.len()
                                 }
+                                crate::person::Tab::History => history_count,
                             };
                             json!({"slug": t.slug(), "key": t.key(), "count": count})
                         })

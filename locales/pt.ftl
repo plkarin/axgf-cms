@@ -301,6 +301,7 @@ person-tab-record = Ficha
 person-tab-life = Vida
 person-tab-media = Materiais
 person-tab-tree = Árvore
+person-tab-history = Histórico
 person-tree-depth = { $n } gerações para cada lado. A árvore inteira está mais abaixo.
 person-tree-alone = Esta ficha não nomeia pais, cônjuges nem filhos, por isso não há forma nenhuma a desenhar à sua volta.
 

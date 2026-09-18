@@ -330,7 +330,9 @@ async fn journal(class: Class) {
     admin_adds_second_claims(&app).await;
     let cousin = sign_in(&app, "cousin").await;
     for uri in [
-        format!("/person/{LIVING}"),
+        // The record's history is its own tab; the panel and the editor still
+        // draw it inline.
+        format!("/person/{LIVING}?tab=history"),
         format!("/tree/panel/{LIVING}"),
         format!("/admin/person/{LIVING}/edit"),
     ] {
@@ -344,7 +346,9 @@ async fn journal(class: Class) {
             "{uri} dropped the row instead of marking it withheld"
         );
     }
-    let admin = histories(&body_string(get_admin(&app, &format!("/person/{LIVING}")).await).await);
+    let admin = histories(
+        &body_string(get_admin(&app, &format!("/person/{LIVING}?tab=history")).await).await,
+    );
     assert!(
         admin.contains(class.second),
         "an administrator reads {} in the history",

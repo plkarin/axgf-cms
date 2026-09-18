@@ -277,6 +277,7 @@ person-tab-record = السجل
 person-tab-life = الحياة
 person-tab-media = المواد
 person-tab-tree = الشجرة
+person-tab-history = السجل
 person-tree-depth = { $n } أجيال في كل اتجاه. الشجرة كاملةً في الأسفل.
 person-tree-alone = لا يسمّي هذا السجل والدين ولا أزواجًا ولا أبناء، فليس حوله شكل يُرسم.
 

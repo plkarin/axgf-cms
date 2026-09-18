@@ -467,7 +467,7 @@ async fn every_section_lands_on_exactly_one_tab() {
     );
 
     let mut seen: Vec<String> = Vec::new();
-    for tab in ["", "?tab=life", "?tab=media"] {
+    for tab in ["", "?tab=life", "?tab=media", "?tab=history"] {
         let body = body_string(get_admin(&app, &format!("/person/{JULES}{tab}")).await).await;
         for id in sections_in(&body) {
             assert!(
@@ -825,4 +825,48 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
         public.contains("Posture: Ideal") || public.contains("Ideal"),
         "the open physique still reads"
     );
+}
+
+/// A record nobody has edited offers no History tab and shows no empty one.
+///
+/// The history is metadata about the record — who corrected what, and when —
+/// so it is a tab of its own rather than the foot of the first one. A record
+/// with no journal has nothing to put behind that tab, and a tab that opens on
+/// nothing is worse than a tab that is not there. The positive case — the tab
+/// offered, in its place, holding what it should — is in `concurrent_edit`,
+/// where an edit actually happens.
+#[tokio::test]
+async fn an_unedited_record_offers_no_history_tab_and_hides_none_in_the_record() {
+    let src = showcase_bundle("history-tab-src");
+    let (app, _p) = app_with_bundle("history-tab", &src);
+
+    let record = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+    let nav = record
+        .split(r#"<nav class="person-tabs""#)
+        .nth(1)
+        .and_then(|s| s.split("</nav>").next())
+        .expect("the tab bar");
+
+    // The other five are all there.
+    for slug in ["life", "profile", "media", "tree"] {
+        assert!(
+            nav.contains(&format!("?tab={slug}")),
+            "the {slug} tab is offered: {nav}"
+        );
+    }
+    assert!(
+        !nav.contains("?tab=history"),
+        "nothing has been edited, so there is no history to offer: {nav}"
+    );
+
+    // And it is nowhere in the record tab either — it was moved, not hidden.
+    assert!(
+        !record.contains(r#"<section id="history""#),
+        "the record tab is the record, not its metadata: {record}"
+    );
+
+    // Asking for the tab directly is not an error: it is the record page with
+    // nothing behind that tab, which is what a stale link should get.
+    let direct = get_admin(&app, &format!("/person/{JULES}?tab=history")).await;
+    assert_eq!(direct.status(), axum::http::StatusCode::OK);
 }

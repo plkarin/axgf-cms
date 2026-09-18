@@ -350,21 +350,61 @@ async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
     e["notes"] = json!("a correction somebody made");
     assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
 
-    let signed_in = body_string(get_admin(&app, &format!("/person/{ALICE}")).await).await;
+    // It is a tab of its own now: metadata about the record, not content of
+    // it. The tab is offered to a signed-in reader...
+    let record = body_string(get_admin(&app, &format!("/person/{ALICE}")).await).await;
+    let nav = record
+        .split(r#"<nav class="person-tabs""#)
+        .nth(1)
+        .and_then(|s| s.split("</nav>").next())
+        .expect("the tab bar");
     assert!(
-        signed_in.contains("History") && signed_in.contains("changed notes"),
-        "a signed-in reader sees who changed what"
+        nav.contains("?tab=history"),
+        "a signed-in reader is offered the history: {nav}"
+    );
+    // Alongside the rest, after Tree — six tabs, not five and a footer.
+    let at = |slug: &str| nav.find(&format!("?tab={slug}")).expect(slug);
+    assert!(
+        at("life") < at("profile")
+            && at("profile") < at("media")
+            && at("media") < at("tree")
+            && at("tree") < at("history"),
+        "History sits last among the tabs: {nav}"
+    );
+    assert!(
+        !record.contains("changed notes"),
+        "and it is no longer under Notes at the foot of the record tab"
     );
 
+    // ...and it holds what it always held.
+    let signed_in =
+        body_string(get_admin(&app, &format!("/person/{ALICE}?tab=history")).await).await;
+    assert!(
+        signed_in.contains("History") && signed_in.contains("changed notes"),
+        "a signed-in reader sees who changed what: {signed_in}"
+    );
+
+    // A signed-out reader is offered no tab, and gets nothing by asking for it
+    // directly either.
     let anonymous = body_string(get(&app, &format!("/person/{ALICE}")).await).await;
     assert!(
-        !anonymous.contains("changed notes"),
-        "a signed-out reader is not shown the editors' names or their edits"
+        !anonymous.contains("?tab=history"),
+        "a signed-out reader is not offered the history: {anonymous}"
     );
-    assert!(
-        !anonymous.contains("emergency-token"),
-        "and certainly not who was signed in at the time"
-    );
+    for uri in [
+        format!("/person/{ALICE}"),
+        format!("/person/{ALICE}?tab=history"),
+    ] {
+        let page = body_string(get(&app, &uri).await).await;
+        assert!(
+            !page.contains("changed notes"),
+            "a signed-out reader is not shown the editors' names or their edits ({uri})"
+        );
+        assert!(
+            !page.contains("emergency-token"),
+            "and certainly not who was signed in at the time ({uri})"
+        );
+    }
     // The record itself is still public — it is the *history* that is not.
     assert!(anonymous.contains("Alice"));
 }

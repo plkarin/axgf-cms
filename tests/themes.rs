@@ -60,6 +60,19 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--leading",
         "--measure",
         "--face",
+        "--type-micro",
+        "--type-label",
+        "--type-small",
+        "--type-minor",
+        "--type-body",
+        "--type-sub",
+        "--type-major",
+        "--type-title",
+        "--type-display",
+        "--weight-normal",
+        "--weight-medium",
+        "--weight-semi",
+        "--weight-strong",
         "--h1-size",
         "--h2-size",
         "--h3-size",
@@ -544,20 +557,31 @@ fn every_style_redefines_every_value_the_scale_has() {
     // These are the ones a style is expected to retune. `--section-radius`
     // and friends are on the list; `--radius` itself is not, because it is
     // the theme-independent geometry every style shares.
+    //
+    // The nine `--type-*` rungs replaced `--h1-size` and friends, which are now
+    // *names for rungs* defined once on `:root` — a style retunes the scale, not
+    // each heading separately, which is what stops a style inventing a fourth
+    // size between two rungs. `--h1-weight` and `--h2-weight` stay on the list:
+    // paper genuinely wants a lighter heading, because a serif at 2.1rem does
+    // not need 700 to carry.
     const SCALE: &[&str] = &[
         "--step",
         "--text",
         "--leading",
         "--measure",
         "--face",
-        "--h1-size",
-        "--h2-size",
-        "--h3-size",
+        "--type-micro",
+        "--type-label",
+        "--type-small",
+        "--type-minor",
+        "--type-body",
+        "--type-sub",
+        "--type-major",
+        "--type-title",
+        "--type-display",
         "--h1-weight",
         "--h2-weight",
-        "--label-size",
         "--label-track",
-        "--small-size",
         "--section-pad",
         "--section-gap",
         "--section-fill",
@@ -638,4 +662,75 @@ fn no_style_block_names_a_colour() {
             );
         }
     }
+}
+
+/// Every size on the page is a rung of the scale, not a number somebody typed.
+///
+/// The scale existed before this test and almost nothing used it: 71 of the
+/// 101 `font-size` declarations set a literal, across 29 distinct values —
+/// 0.93, 0.94 and 0.95rem all appeared, and so did 0.72, 0.74 and 0.75.
+/// Differences that small are invisible as hierarchy and perfectly visible as
+/// inconsistency, which is the whole of why headings, labels and values read
+/// at one weight.
+#[test]
+fn every_font_size_outside_the_scale_is_a_rung_of_it() {
+    let css = css();
+    let src = strip_comments(&css);
+
+    // Where the rungs themselves are declared, a literal is the point.
+    let decl = src
+        .find("--type-micro:")
+        .expect("the scale is declared somewhere");
+    let layout = src
+        .find("/* ---------- layout ---------- */")
+        .unwrap_or(decl);
+    let _ = layout;
+
+    let mut offenders = Vec::new();
+    for (i, line) in src.lines().enumerate() {
+        let Some(at) = line.find("font-size:") else {
+            continue;
+        };
+        let value = &line[at + "font-size:".len()..];
+        let value = value.split(';').next().unwrap_or(value).trim();
+        // A rung, or a length relative to the parent — `code` at 0.9em is
+        // deliberately 0.9 of whatever it sits in, which no rung can express.
+        if value.starts_with("var(--") || value.ends_with("em") && !value.ends_with("rem") {
+            continue;
+        }
+        // The scale's own declarations.
+        if line.contains("--type-") {
+            continue;
+        }
+        offenders.push(format!("line {}: {}", i + 1, line.trim()));
+    }
+    assert!(
+        offenders.is_empty(),
+        "these set a size by hand instead of naming a rung:\n{}",
+        offenders.join("\n")
+    );
+}
+
+/// And every weight is one of the four, not a number that rounds differently
+/// per font. `650` was in this file and is not a weight most faces have.
+#[test]
+fn every_font_weight_is_one_of_the_four() {
+    let src = strip_comments(&css());
+    let mut offenders = Vec::new();
+    for (i, line) in src.lines().enumerate() {
+        let Some(at) = line.find("font-weight:") else {
+            continue;
+        };
+        let value = &line[at + "font-weight:".len()..];
+        let value = value.split(';').next().unwrap_or(value).trim();
+        if value.starts_with("var(--") || line.contains("--weight-") {
+            continue;
+        }
+        offenders.push(format!("line {}: {}", i + 1, line.trim()));
+    }
+    assert!(
+        offenders.is_empty(),
+        "these set a weight by hand instead of naming one of the four:\n{}",
+        offenders.join("\n")
+    );
 }

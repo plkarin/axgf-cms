@@ -115,6 +115,8 @@ record-raw-summary-note = JSON, z którego zbudowano tę stronę
 
 record-identity-help = Każde zapisane imię lub nazwisko wraz z jego typem, okresem używania i źródłem, z pismem oryginalnym obok transliteracji łacińskiej tam, gdzie się różnią, a także płeć, status żyjącej osoby i widoczność.
 record-life-events-help = Narodziny, śmierć i każde wydarzenie, w którym ta osoba brała udział, w porządku dat, każde z jej rolą — dzięki temu ślub, którego była jedynie świadkiem, stoi obok jej własnego. Fakt bez daty trafia na koniec, zamiast udawać, że był pierwszy.
+life-nothing-recorded = Dla tej osoby nie zapisano żadnego wydarzenia, zawodu ani miejsca. W pliku z konwersji to zwykła rzecz: GEDCOM niesie to, co ktoś zapisał, a większość wpisów to imię i data.
+life-add-first = Zapisz pierwsze wydarzenie
 record-family-help = Rodzice i rodzeństwo, a następnie każdy związek wraz z typem, datami, miejscem, sposobem zakończenia i dziećmi w kolejności urodzenia.
 record-other-relationships-help = Każde powiązanie, którego ta osoba jest jednym z końców, odczytane z jej strony — ten sam zapis widnieje jako „ojciec chrzestny” z jednej strony i „chrześniak” z drugiej.
 record-occupations-help = Zawody jako okresy na jednej wspólnej osi, aby dwie posady dało się porównać wzrokiem; pasek jest otwarty tam, gdzie brakuje granicy.
@@ -1227,6 +1229,10 @@ union-type-cohabitation = konkubinat
 union-type-religious_only = związek religijny
 union-type-polygamous = poligamiczny
 union-type-unknown = nie zapisano
+union-role-spouse = małżonek
+union-role-partner = partner
+union-role-husband = mąż
+union-role-wife = żona
 union-status-active = trwa
 union-status-ended_by_death = zakończony śmiercią
 union-status-ended_by_divorce = zakończony rozwodem
@@ -3223,7 +3229,7 @@ documents-delete = Usuń ten plik
 ## Charts
 
 radar-section = Wykresy z zapisu
-radar-section-help = Trzy odczyty tego, co zawiera ten zapis, każda oś od 0 do 100. Każda liczba jest wyliczana z faktów podanych obok, według reguł spisanych w dokumentacji aplikacji; nic nie jest zapisywane ani zgadywane, a oś, z której nie ma czego odczytać, zostaje pusta, zamiast dostać średnią ocenę. Znaczniki i paski mówią, jak pewna jest każda liczba: pełna kropka to praktycznie pewne, kropka w okręgu dobrze udokumentowane, okrąg prawdopodobne, przerywany okrąg przypuszczenie — a im dłuższy pasek, tym mniejsza pewność.
+radar-section-help = Trzy odczyty tego, co zawiera ten zapis, każda oś od 0 do 100. Każda liczba jest wyliczana z faktów podanych obok, według reguł spisanych w dokumentacji aplikacji; nic nie jest zapisywane ani zgadywane, a oś, z której nie ma czego odczytać, zostaje pusta, zamiast dostać średnią ocenę.
 radar-physique = Budowa ciała
 radar-mind = Temperament i umysł
 radar-vitality = Zdrowie i witalność

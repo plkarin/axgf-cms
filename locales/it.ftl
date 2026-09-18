@@ -107,6 +107,8 @@ record-raw-summary-note = il JSON da cui è costruita questa pagina
 
 record-identity-help = Ogni nome registrato con il suo tipo, il periodo in cui fu usato e la fonte che lo sostiene, con la scrittura originale accanto alla traslitterazione latina dove differiscono, più genere, stato in vita e visibilità.
 record-life-events-help = Nascita, morte e ogni evento a cui questa persona ha preso parte, in ordine di data, ciascuno con il suo ruolo — così un matrimonio a cui fece solo da testimone sta accanto al proprio. Un fatto senza data va in fondo, invece di fingere di venire per primo.
+life-nothing-recorded = Per questa persona non risultano eventi, mestieri né luoghi. In un file convertito è la norma: GEDCOM trasporta ciò che qualcuno ha annotato, e quasi tutte le voci sono un nome e una data.
+life-add-first = Registra il primo evento
 record-family-help = Genitori e fratelli, poi ogni unione con il suo tipo, le date, il luogo, il modo in cui finì e i figli in ordine di nascita.
 record-other-relationships-help = Ogni legame che ha questa persona a uno dei due capi, letto dal suo lato: la stessa scheda appare come «padrino di» da un capo e «figlioccio di» dall'altro.
 record-occupations-help = Le occupazioni come periodi su un unico asse condiviso, così due impieghi si confrontano a occhio; dove manca un estremo la barra resta aperta.
@@ -1072,6 +1074,10 @@ union-type-cohabitation = convivenza
 union-type-religious_only = unione religiosa
 union-type-polygamous = poligamo
 union-type-unknown = non registrato
+union-role-spouse = coniuge
+union-role-partner = convivente
+union-role-husband = marito
+union-role-wife = moglie
 union-status-active = in corso
 union-status-ended_by_death = terminata per decesso
 union-status-ended_by_divorce = terminata per divorzio
@@ -3046,7 +3052,7 @@ documents-delete = Elimina questo file
 ## Charts
 
 radar-section = Grafici dal record
-radar-section-help = Tre letture di ciò che contiene questo record, ogni asse da 0 a 100. Ogni numero è calcolato dai fatti elencati accanto, secondo regole scritte nella documentazione dell'applicazione; nulla viene salvato, nulla viene indovinato, e un asse da cui non c'è nulla da leggere resta vuoto invece di ricevere un punteggio medio. I segni e le barre dicono quanto è sicuro ogni numero: un punto pieno è praticamente certo, un punto cerchiato ben documentato, un cerchio plausibile, un cerchio tratteggiato un'ipotesi, e più la barra è lunga, meno è sicuro.
+radar-section-help = Tre letture di ciò che contiene questo record, ogni asse da 0 a 100. Ogni numero è calcolato dai fatti elencati accanto, secondo regole scritte nella documentazione dell'applicazione; nulla viene salvato, nulla viene indovinato, e un asse da cui non c'è nulla da leggere resta vuoto invece di ricevere un punteggio medio.
 radar-physique = Fisico
 radar-mind = Temperamento e mente
 radar-vitality = Salute e vitalità

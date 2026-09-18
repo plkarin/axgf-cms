@@ -1263,6 +1263,17 @@ impl Ctx<'_> {
         r
     }
 
+    /// A `union.persons[].role` in the reader's language.
+    ///
+    /// `role` is a free string in the schema rather than an enum, so this is
+    /// `vocab`'s pass-through case: the roles a bundle actually uses are
+    /// translated and anything else is shown as it was written, underscores
+    /// spaced out. It used to be only the second half of that, which is how
+    /// 655 union entries printed "spouse" in English on an Arabic page.
+    fn union_role(&self, role: &str) -> String {
+        crate::i18n::vocab(self.lang, "union-role", role)
+    }
+
     /// A `lineage` term in the reader's language.
     fn lineage(&self, term: Option<&str>) -> Option<String> {
         term.map(|t| {
@@ -1323,7 +1334,7 @@ impl Ctx<'_> {
                 // Parents, and the confidence of *this* person's parentage.
                 for (p, role) in &partners {
                     let mut parent =
-                        self.person_ref(p, me.confidence, role.map(|r| r.replace('_', " ")));
+                        self.person_ref(p, me.confidence, role.map(|r| self.union_role(r)));
                     if !parent.restricted {
                         parent.lineage = self.lineage(me.lineage);
                     }
@@ -1343,7 +1354,7 @@ impl Ctx<'_> {
                         union
                             .and_then(|u| u.get("confidence"))
                             .and_then(Value::as_f64),
-                        role.map(|r| r.replace('_', " ")),
+                        role.map(|r| self.union_role(r)),
                     )
                 });
                 let mut children: Vec<PersonRef> = kids.iter().map(|c| self.child_ref(c)).collect();

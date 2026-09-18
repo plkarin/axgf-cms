@@ -107,6 +107,8 @@ record-raw-summary-note = el JSON con el que se construyó esta página
 
 record-identity-help = Cada nombre registrado con su tipo, el periodo en que se usó y la fuente que lo respalda, con la escritura propia junto a la transliteración latina allí donde difieren, además del género, si vive y su visibilidad.
 record-life-events-help = Nacimiento, defunción y cada hecho en el que participó esta persona, por fecha, cada uno con su papel — así una boda de la que solo fue testigo aparece junto a la suya propia. Un dato sin fecha va al final, en lugar de fingir que viene primero.
+life-nothing-recorded = No consta ningún hecho, oficio ni lugar para esta persona. En un archivo convertido es lo corriente: GEDCOM lleva lo que alguien anotó, y la mayoría de las entradas son un nombre y una fecha.
+life-add-first = Registrar el primer hecho
 record-family-help = Padres y hermanos, luego cada unión con su tipo, sus fechas, su lugar, cómo terminó y sus hijos por orden de nacimiento.
 record-other-relationships-help = Cada vínculo con esta persona en uno de los extremos, leído desde su lado: la misma ficha aparece como «padrino de» desde un extremo y «ahijado de» desde el otro.
 record-occupations-help = Las ocupaciones como periodos sobre un mismo eje, de modo que dos empleos se comparan a ojo; donde falta un extremo la barra queda abierta.
@@ -1072,6 +1074,10 @@ union-type-cohabitation = convivencia
 union-type-religious_only = unión religiosa
 union-type-polygamous = polígamo
 union-type-unknown = sin registrar
+union-role-spouse = cónyuge
+union-role-partner = pareja
+union-role-husband = marido
+union-role-wife = esposa
 union-status-active = en curso
 union-status-ended_by_death = terminada por fallecimiento
 union-status-ended_by_divorce = terminada por divorcio
@@ -3046,7 +3052,7 @@ documents-delete = Eliminar este fichero
 ## Charts
 
 radar-section = Gráficos del registro
-radar-section-help = Tres lecturas de lo que contiene este registro, cada eje de 0 a 100. Cada número se calcula a partir de los hechos indicados al lado, según reglas escritas en la documentación de la aplicación; no se guarda nada ni se adivina nada, y un eje sin nada que leer queda vacío en lugar de recibir una puntuación intermedia. Las marcas y las barras dicen lo seguro que es cada número: un punto relleno es prácticamente seguro, un punto con aro está bien documentado, un aro es verosímil, un aro discontinuo es una conjetura, y cuanto más larga la barra, menos seguro.
+radar-section-help = Tres lecturas de lo que contiene este registro, cada eje de 0 a 100. Cada número se calcula a partir de los hechos indicados al lado, según reglas escritas en la documentación de la aplicación; no se guarda nada ni se adivina nada, y un eje sin nada que leer queda vacío en lugar de recibir una puntuación intermedia.
 radar-physique = Físico
 radar-mind = Temperamento y mente
 radar-vitality = Salud y vitalidad

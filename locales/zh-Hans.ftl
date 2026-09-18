@@ -95,6 +95,8 @@ record-raw-summary-note = 生成本页所依据的 JSON
 
 record-identity-help = 每一个已记录的姓名，连同其类别、使用的时期和支持它的来源；原文文字与拉丁转写不同的，并列显示。此外还有性别、是否在世和可见范围。
 record-life-events-help = 出生、去世，以及此人参与的每一件事，按日期排列，各自标明其身份——这样一场他只是见证的婚礼，会与他自己的婚礼并排出现。没有日期的事实排在最后，而不是假装排在最前。
+life-nothing-recorded = 此人没有记录任何事件、职业或地点。在转换而来的文件中这很常见：GEDCOM 只承载有人写下的内容，而多数条目只是姓名和日期。
+life-add-first = 记录第一件事
 record-family-help = 父母与兄弟姐妹，然后是每一段婚姻关系的类别、日期、地点、结束方式，以及按出生顺序排列的子女。
 record-other-relationships-help = 每一条以此人为一端的关联，都从他这一侧来读：同一条记录从一端看是「某人的教父」，从另一端看是「某人的教子」。
 record-occupations-help = 职业以时间段的形式落在同一根轴上，两段任职可以一眼比较；缺少端点的，条形保持开口。
@@ -891,6 +893,10 @@ union-type-cohabitation = 同居
 union-type-religious_only = 宗教结合
 union-type-polygamous = 多偶
 union-type-unknown = 未记录
+union-role-spouse = 配偶
+union-role-partner = 伴侣
+union-role-husband = 丈夫
+union-role-wife = 妻子
 union-status-active = 持续中
 union-status-ended_by_death = 因去世结束
 union-status-ended_by_divorce = 因离婚结束
@@ -2832,7 +2838,7 @@ documents-delete = 删除此文件
 ## Charts
 
 radar-section = 来自记录的图表
-radar-section-help = 对这条记录内容的三种解读，每条轴从 0 到 100。每个数字都依据旁边列出的事实，按应用文档中写明的规则计算；不保存、不猜测，没有可读内容的轴留空，而不是给一个中间分数。标记和横条表示每个数字的可信程度：实心点几乎确定，带圈的点证据充分，空心圈可能，虚线圈是推测；横条越长，越不确定。
+radar-section-help = 对这条记录内容的三种解读，每条轴从 0 到 100。每个数字都依据旁边列出的事实，按应用文档中写明的规则计算；不保存、不猜测，没有可读内容的轴留空，而不是给一个中间分数。
 radar-physique = 体格
 radar-mind = 气质与心智
 radar-vitality = 健康与活力

@@ -98,6 +98,8 @@ record-raw-summary-note = the JSON this page was built from
 
 record-identity-help = Every recorded name with its type, the period it was used and the source behind it, with the native script and its Latin transliteration side by side where they differ, plus gender, living status and visibility.
 record-life-events-help = Birth, death and every event this person took part in, in date order, each with their role — so a marriage they merely witnessed appears alongside their own. An undated fact sorts last rather than pretending to come first.
+life-nothing-recorded = No event, occupation or place is recorded for this person. On a converted file that is ordinary: GEDCOM carries what somebody wrote down, and most entries are a name and a date.
+life-add-first = Record the first event
 record-family-help = Parents and siblings, then each union with its type, dates, place, how it ended and its children in birth order.
 record-other-relationships-help = Every link with this person at either end, read from their side, so the same record shows as "godfather of" from one end and "godchild of" from the other.
 record-occupations-help = Occupations as spans on one shared axis, so two posts can be compared by eye, with open-ended bars where a bound is missing.
@@ -1111,6 +1113,10 @@ union-type-cohabitation = cohabited
 union-type-religious_only = religious union
 union-type-polygamous = polygamous
 union-type-unknown = not recorded
+union-role-spouse = spouse
+union-role-partner = partner
+union-role-husband = husband
+union-role-wife = wife
 union-status-active = ongoing
 union-status-ended_by_death = ended by a death
 union-status-ended_by_divorce = ended by divorce
@@ -3085,7 +3091,7 @@ documents-delete = Delete this file
 ## Charts
 
 radar-section = Charts from the record
-radar-section-help = Three readings of what this record holds, each axis from 0 to 100. Every number is worked out from the facts listed beside it, by rules written down in the application's documentation; nothing is stored, nothing is guessed, and an axis with nothing to read is left empty rather than given a middling score. The markers and bars say how sure each number is: a filled dot is effectively certain, a ringed dot well supported, a ring plausible, a broken ring speculative, and the longer the bar, the less certain.
+radar-section-help = Three readings of what this record holds, each axis from 0 to 100. Every number is worked out from the facts listed beside it, by rules written down in the application's documentation; nothing is stored, nothing is guessed, and an axis with nothing to read is left empty rather than given a middling score.
 radar-physique = Physique
 radar-mind = Temperament and mind
 radar-vitality = Health and vitality

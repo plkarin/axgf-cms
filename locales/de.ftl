@@ -109,6 +109,8 @@ record-raw-summary-note = das JSON, aus dem diese Seite gebaut wurde
 
 record-identity-help = Jeder erfasste Name mit seiner Art, dem Zeitraum seiner Verwendung und der Quelle dahinter, mit der eigenen Schrift neben der lateinischen Umschrift, wo beide sich unterscheiden, dazu Geschlecht, Lebensstatus und Sichtbarkeit.
 record-life-events-help = Geburt, Tod und jedes Ereignis, an dem diese Person beteiligt war, nach Datum geordnet, jeweils mit ihrer Rolle — so steht eine Hochzeit, bei der sie nur Zeuge war, neben ihrer eigenen. Eine Angabe ohne Datum steht zuletzt, statt so zu tun, als käme sie zuerst.
+life-nothing-recorded = Für diese Person sind weder Ereignis noch Beruf noch Ort verzeichnet. Bei einer konvertierten Datei ist das der Normalfall: GEDCOM trägt weiter, was jemand aufgeschrieben hat, und die meisten Einträge sind ein Name und ein Datum.
+life-add-first = Erstes Ereignis erfassen
 record-family-help = Eltern und Geschwister, dann jede Verbindung mit Art, Daten, Ort, Ende und Kindern in der Reihenfolge ihrer Geburt.
 record-other-relationships-help = Jede Beziehung mit dieser Person an einem der Enden, von ihrer Seite gelesen — derselbe Eintrag erscheint am einen Ende als „Pate von“ und am anderen als „Patenkind von“.
 record-occupations-help = Berufe als Zeiträume auf einer gemeinsamen Achse, damit zwei Stellen sich mit dem Auge vergleichen lassen; wo eine Grenze fehlt, bleibt der Balken offen.
@@ -1074,6 +1076,10 @@ union-type-cohabitation = Lebensgemeinschaft
 union-type-religious_only = kirchliche Ehe
 union-type-polygamous = polygam
 union-type-unknown = nicht erfasst
+union-role-spouse = Ehepartner
+union-role-partner = Partner
+union-role-husband = Ehemann
+union-role-wife = Ehefrau
 union-status-active = bestehend
 union-status-ended_by_death = durch Tod beendet
 union-status-ended_by_divorce = durch Scheidung beendet
@@ -3048,7 +3054,7 @@ documents-delete = Diese Datei löschen
 ## Charts
 
 radar-section = Diagramme aus dem Datensatz
-radar-section-help = Drei Lesarten dessen, was dieser Datensatz enthält, jede Achse von 0 bis 100. Jede Zahl wird aus den daneben aufgeführten Angaben berechnet, nach Regeln, die in der Dokumentation der Anwendung stehen; nichts wird gespeichert, nichts geraten, und eine Achse, aus der sich nichts lesen lässt, bleibt leer, statt einen mittleren Wert zu bekommen. Markierungen und Balken zeigen, wie sicher jede Zahl ist: ein gefüllter Punkt ist so gut wie sicher, ein umringter Punkt gut belegt, ein Ring plausibel, ein unterbrochener Ring eine Vermutung — je länger der Balken, desto unsicherer.
+radar-section-help = Drei Lesarten dessen, was dieser Datensatz enthält, jede Achse von 0 bis 100. Jede Zahl wird aus den daneben aufgeführten Angaben berechnet, nach Regeln, die in der Dokumentation der Anwendung stehen; nichts wird gespeichert, nichts geraten, und eine Achse, aus der sich nichts lesen lässt, bleibt leer, statt einen mittleren Wert zu bekommen.
 radar-physique = Körperbau
 radar-mind = Temperament und Geist
 radar-vitality = Gesundheit und Lebenskraft

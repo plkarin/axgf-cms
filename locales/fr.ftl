@@ -92,6 +92,8 @@ record-raw-summary-note = le JSON à partir duquel cette page a été construite
 
 record-identity-help = Chaque nom enregistré avec son type, la période où il a été porté et la source qui l'atteste, avec l'écriture d'origine et sa translittération latine côte à côte lorsqu'elles diffèrent, ainsi que le genre, le statut vivant et la visibilité.
 record-life-events-help = Naissance, décès et tous les événements auxquels cette personne a pris part, par ordre de date, chacun avec son rôle — de sorte qu'un mariage dont elle n'a été que témoin figure à côté du sien. Un fait non daté est classé en dernier plutôt que de prétendre venir en premier.
+life-nothing-recorded = Aucun événement, métier ni lieu n’est enregistré pour cette personne. Sur un fichier converti, c’est l’ordinaire : GEDCOM transporte ce que quelqu’un a écrit, et la plupart des entrées sont un nom et une date.
+life-add-first = Enregistrer le premier événement
 record-family-help = Parents et fratrie, puis chaque union avec son type, ses dates, son lieu, la manière dont elle a pris fin et ses enfants par ordre de naissance.
 record-other-relationships-help = Chaque lien dont cette personne est l'une des extrémités, lu de son côté, de sorte que la même relation se lit « parrain de » d'un côté et « filleul de » de l'autre.
 record-occupations-help = Les métiers sous forme de périodes sur un axe commun, afin que deux postes puissent être comparés d'un coup d'œil, avec des barres ouvertes lorsqu'une borne manque.
@@ -1057,6 +1059,10 @@ union-type-cohabitation = concubinage
 union-type-religious_only = union religieuse
 union-type-polygamous = polygame
 union-type-unknown = non renseigné
+union-role-spouse = conjoint
+union-role-partner = partenaire
+union-role-husband = mari
+union-role-wife = épouse
 union-status-active = en cours
 union-status-ended_by_death = terminée par un décès
 union-status-ended_by_divorce = terminée par un divorce
@@ -3031,7 +3037,7 @@ documents-delete = Supprimer ce fichier
 ## Charts
 
 radar-section = Graphiques tirés de la fiche
-radar-section-help = Trois lectures de ce que contient cette fiche, chaque axe de 0 à 100. Chaque nombre est calculé à partir des faits indiqués à côté, selon des règles écrites dans la documentation de l’application ; rien n’est enregistré, rien n’est deviné, et un axe sans rien à lire reste vide au lieu de recevoir une note moyenne. Les marques et les barres disent à quel point chaque nombre est sûr : un point plein est pratiquement certain, un point cerclé bien étayé, un cercle plausible, un cercle pointillé hypothétique, et plus la barre est longue, moins c’est sûr.
+radar-section-help = Trois lectures de ce que contient cette fiche, chaque axe de 0 à 100. Chaque nombre est calculé à partir des faits indiqués à côté, selon des règles écrites dans la documentation de l’application ; rien n’est enregistré, rien n’est deviné, et un axe sans rien à lire reste vide au lieu de recevoir une note moyenne.
 radar-physique = Physique
 radar-mind = Tempérament et esprit
 radar-vitality = Santé et vitalité

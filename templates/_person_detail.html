@@ -147,9 +147,12 @@
   {% for g in p.unions %}
   <div class="union-group{% if g.duplicate %} is-duplicate{% endif %}">
     {% if g.duplicate %}
-    <p class="notice notice-defect" role="status">
-      <strong>{{ t("record-union-duplicate") }}</strong>
-      {{ t("record-union-duplicate-detail") }}
+    {#- A `div` and not a `p`: the merge form below is block-level, and a
+        browser closes an open `<p>` when one starts. The button then rendered
+        outside the notice it belongs to. -#}
+    <div class="notice notice-defect" role="status">
+      <p><strong>{{ t("record-union-duplicate") }}</strong>
+      {{ t("record-union-duplicate-detail") }}</p>
       {#- A mutation, so a form and not a link. It calls the library's
           deduplicate(); this application holds no merging logic of its own.
           The confirmation says what it runs over, because the library's
@@ -162,7 +165,7 @@
         <button class="btn btn-compact" type="submit">{{ t("record-union-duplicate-action") }}</button>
       </form>
       {% endif %}
-    </p>
+    </div>
     {% endif %}
 
     {% for u in g.records %}
@@ -361,6 +364,30 @@
     </div>
     {% endfor %}
   </div>
+</section>
+{% endif %}
+
+{# ---------------------------------------------------------- AN EMPTY LIFE #}
+
+{# The Life tab, for a record that has none of it.
+
+   Media learned this lesson already, a release ago: a tab the reader has
+   clicked is a question they asked, and answering it with a blank screen is
+   not an answer. Life had not learned it. On this bundle 388 people of 866
+   have no timeline, no occupation and no recorded place, and every one of them
+   got a Life tab that rendered a heading-less, sentence-less void — thirty
+   characters of markup, all of it the button at the foot of the page.
+
+   It says what is missing, in the three names the tab is made of, so the
+   answer is specific rather than a shrug. An administrator is told where to
+   put the first one; a reader is not offered a door they cannot open. #}
+{% if tab == "life" and not (p.timeline or p.occupations or p.places) %}
+<section id="life-empty" class="rec-section">
+  {{ m.sec(t, t("record-life-events"), compact, t("record-life-events-help")) }}
+  <p class="notice" role="status">{{ t("life-nothing-recorded") }}</p>
+  {% if may_write %}
+  <p class="small"><a href="/admin/person/{{ p.id }}/events">{{ t("life-add-first") }}</a></p>
+  {% endif %}
 </section>
 {% endif %}
 

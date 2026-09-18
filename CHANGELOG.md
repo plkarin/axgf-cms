@@ -97,6 +97,51 @@ the person with a link to each file's details, and lets an administrator
 delete a file outright — separately from detaching it, which only takes it off
 this person.
 
+**A typographic scale that the stylesheet actually uses.** There was a scale
+before this — `--h1-size`, `--h2-size`, `--label-size` — and almost nothing
+used it: 71 of the 101 `font-size` declarations set a literal, across 29
+distinct values. 0.93, 0.94 and 0.95rem all appeared; so did 0.72, 0.74 and
+0.75. Differences that small are invisible as hierarchy and perfectly visible
+as inconsistency, which is the whole of why headings, labels and values read at
+one weight.
+
+Nine rungs now — `--type-micro` through `--type-display` — tight at the bottom
+where a dense record needs to separate a label from a value from an aside, wider
+at the top where the eye is climbing. Every size on the page is one of them, and
+two tests fail the build on the next hand-typed number or weight. A style
+retunes all nine rather than each heading separately, so a style can no longer
+invent a fourth size between two rungs; `--h1-size` and friends are names for
+rungs now, not separate knobs.
+
+Four weights, the same four everywhere. `650` was in this file and is not a
+weight most faces have — it rounds to 700 in some and 600 in others, so the same
+heading was bolder on one machine than another.
+
+**h3 and h4 were bolder than the h2 above them.** Neither set a weight, so both
+took the user agent's `bold` — 700 — while h2 is 600. The ladder ran 700, 600,
+700: a subheading heavier than its heading, which is the "everything at one
+weight" complaint with the sign flipped. It descends now.
+
+**The Life tab said nothing at all.** Media learned this a release ago — a tab
+the reader has clicked is a question they asked, and a blank screen is not an
+answer — and Life had not. On this bundle 388 people of 866 have no timeline, no
+occupation and no recorded place, and every one of them got a Life tab that
+rendered thirty characters, all of it the button at the foot of the page. It
+now names what is missing and says why a converted file usually lacks it, and
+offers an administrator somewhere to put the first one.
+
+**The radar's legend, stated three times, is now stated twice.** Its help text
+spelled out what a filled dot, a ringed dot, a ring and a broken ring mean —
+which the marker beside each row already shows and the row's own words already
+say. 203 characters of English gone, and the same clause in ten other
+catalogues. The rest of the copy was reviewed against the same standard and
+kept: it says specific things.
+
+Nothing here touches a colour, a surface or a border, which is what the contrast
+sweep is sensitive to. Measured before and after across all 21 theme-and-style
+combinations: worst text 4.70 and worst graphic 3.13, both unchanged, no pair
+under AA in any combination.
+
 ### Security
 
 **The documents editor named files its reader may not open.** It offered every
@@ -115,6 +160,23 @@ picker on those pages already left such a person out; the family list now
 names them by id, as the relationships editor always has.
 
 ### Fixed
+
+**Two strings Rust assembled never went through Fluent.** The template scanner
+reads the .html files, and by the time a value Rust built arrives there it is a
+value like any other — so both of these had been on every page in every language
+and neither test could see them. Found by rendering the pages in Arabic and
+reading them.
+
+`union.persons[].role` went straight through with its underscores spaced out
+and nothing else, so 655 union entries on the operator's bundle printed
+"spouse" in English, mid-sentence, in an RTL page. It goes through
+`i18n::vocab` now, which translates the roles a bundle actually writes and
+passes anything else through unchanged — `role` is a free string in the schema,
+not an enum.
+
+A referenced person missing from the bundle fell back to a literal
+`"[Unknown]"` in two places in `routes::public`, while `record-unknown-person`
+sat in all eleven catalogues unused by them.
 
 **Every admin result page sent the reader back to the dashboard.** The
 Continue button took `back` from the template context, and `render::Chrome`

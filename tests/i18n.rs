@@ -808,3 +808,36 @@ fn every_catalogue_parses_as_fluent() {
         broken.join("\n")
     );
 }
+
+/// A vocabulary value Rust looked up reaches the page in the reader's
+/// language, not in English.
+///
+/// This is the gap the template scanner cannot see. `no_template_carries_a_
+/// hardcoded_english_string` reads the .html files, and by the time a value
+/// Rust assembled arrives there it is a value like any other. `union.persons[]
+/// .role` went straight to the page with its underscores spaced out and
+/// nothing else, so 655 union entries on the operator's bundle printed
+/// "spouse" in English — including on the Arabic page, mid-sentence, in the
+/// wrong script and the wrong direction.
+#[test]
+fn a_role_reaches_the_page_in_the_readers_language() {
+    for (lang, want) in [
+        ("en", "spouse"),
+        ("fr", "conjoint"),
+        ("pl", "małżonek"),
+        ("ar", "زوج"),
+    ] {
+        assert_eq!(
+            axgf_cms::i18n::vocab(lang, "union-role", "spouse"),
+            want,
+            "the role a union records must read in {lang}"
+        );
+    }
+    // A role no catalogue names is still readable rather than blank or a key:
+    // `role` is a free string in the schema, so this is the ordinary case for
+    // anything a converter invents.
+    assert_eq!(
+        axgf_cms::i18n::vocab("fr", "union-role", "co_habitant"),
+        "co habitant"
+    );
+}

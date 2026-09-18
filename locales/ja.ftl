@@ -96,6 +96,8 @@ record-raw-summary-note = このページの元になった JSON
 
 record-identity-help = 記録されたすべての名前と、その種別、使われた期間、裏づけとなる出典。原文の文字とラテン文字転写が異なる場合は並べて示します。性別、存命かどうか、公開範囲も含みます。
 record-life-events-help = 出生、死亡、そしてこの人が関わったすべての出来事を日付順に、それぞれの立場とともに示します。証人として立ち会っただけの結婚も、本人の結婚と並びます。日付のない事実は先頭を装わず、末尾に置かれます。
+life-nothing-recorded = この人物には出来事も職業も場所も記録されていません。変換されたファイルでは珍しくありません。GEDCOM は誰かが書き留めたものを運ぶだけで、その多くは名前と日付です。
+life-add-first = 最初の出来事を記録する
 record-family-help = 両親ときょうだい、続いて各婚姻関係の種別、日付、場所、終わり方、そして出生順の子どもたち。
 record-other-relationships-help = この人が一方の端にあるすべての関連を、その人の側から読んだもの。同じ記録が一方から見れば「〜の代父」、他方から見れば「〜の代子」となります。
 record-occupations-help = 職業を一本の共通軸の上の期間として示すので、二つの勤めを目で比べられます。端が不明なものは棒が開いたままになります。
@@ -891,6 +893,10 @@ union-type-cohabitation = 同居
 union-type-religious_only = 宗教婚
 union-type-polygamous = 一夫多妻
 union-type-unknown = 記録なし
+union-role-spouse = 配偶者
+union-role-partner = パートナー
+union-role-husband = 夫
+union-role-wife = 妻
 union-status-active = 継続中
 union-status-ended_by_death = 死別
 union-status-ended_by_divorce = 離婚
@@ -2832,7 +2838,7 @@ documents-delete = このファイルを削除
 ## Charts
 
 radar-section = 記録から描いたグラフ
-radar-section-help = この記録にある事柄の三つの読み方で、各軸は 0 から 100 です。どの数値も、横に挙げた事実から、アプリケーションの文書に書かれた規則で計算しています。保存も推測もしません。読み取るものがない軸は、中間の値を与えずに空けておきます。印と帯は各数値の確かさを表します。塗りつぶした点はほぼ確実、輪で囲んだ点は十分な裏づけあり、輪はありうる、破線の輪は推測で、帯が長いほど不確かです。
+radar-section-help = この記録にある事柄の三つの読み方で、各軸は 0 から 100 です。どの数値も、横に挙げた事実から、アプリケーションの文書に書かれた規則で計算しています。保存も推測もしません。読み取るものがない軸は、中間の値を与えずに空けておきます。
 radar-physique = 体格
 radar-mind = 気質と知性
 radar-vitality = 健康と活力

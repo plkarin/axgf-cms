@@ -342,7 +342,13 @@ pub async fn tree(
                         flat.get("persons")
                             .and_then(|p| p.get(&root))
                             .map(view::person_display_name)
-                            .unwrap_or_else(|| "[Unknown]".into())
+                            // `record-unknown-person`, not the English of it:
+                            // this is a word the interface says, and it was
+                            // reaching a Polish and an Arabic page as
+                            // "[Unknown]".
+                            .unwrap_or_else(|| {
+                                crate::i18n::translate(chrome.lang, "record-unknown-person", None)
+                            })
                     } else {
                         crate::i18n::translate(chrome.lang, crate::person::RESTRICTED_KEY, None)
                     };
@@ -423,7 +429,13 @@ pub async fn tree(
                             .get("persons")
                             .and_then(|p| p.get(id))
                             .map(view::person_display_name)
-                            .unwrap_or_else(|| "[Unknown]".into()),
+                            .unwrap_or_else(|| {
+                                crate::i18n::translate(
+                                    chrome.lang,
+                                    "record-unknown-person",
+                                    None,
+                                )
+                            }),
                     })
                 } else {
                     // Named to a reader who may edit but may not read them

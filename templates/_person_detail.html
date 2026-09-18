@@ -139,39 +139,67 @@
   </div>
   {% endif %}
 
-  {% for u in p.unions %}
-  <div class="union">
-    <div class="union-head">
-      <strong>
-        {%- if u.spouse %}{{ m.person_link(u.spouse) }}
-        {%- else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif -%}
-      </strong>
-      {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
-      <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
-      {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
-    </div>
-    <div class="small union-when">
-      {% if u.start %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}
-      {% if u.start_place %}<span class="wrap-unit">{{ t("record-union-at") }} {{ m.place(u.start_place) }}</span>{% endif %}
-      {% if u.end %}<span class="wrap-unit">{{ t("record-union-until") }} {{ m.date(u.end) }}</span>{% endif %}
-      {% if u.end_note %}<span class="muted wrap-unit">{{ u.end_note }}</span>{% endif %}
-    </div>
-    {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
-    {% if u.children %}
-    <h4>{{ t("record-children") }}</h4>
-    <ul class="plain">
-      {% for c in u.children %}
-      <li class="rel">
-        {% if c.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ c.birth_order }}</span>{% endif %}
-        {{ m.person_link(c) }}
-        {%- if c.lineage %} <span class="chip small">{{ c.lineage }}</span>{% endif %}
-        {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}
-        {%- if c.detail %} <span class="small muted">{{ c.detail }}</span>{% endif %}
-        {%- if c.confidence %} {{ m.conf_bar(c.confidence) }}{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
+  {# One group per couple. Normally one record in it; more than one means the
+     bundle holds two Family entities for the same two people, which is a
+     defect and not two marriages. Saying so is the whole point of the group:
+     two unexplained blocks with the same spouse in both read as a second
+     union, which is the wrong reading and the one a reader reaches first. #}
+  {% for g in p.unions %}
+  <div class="union-group{% if g.duplicate %} is-duplicate{% endif %}">
+    {% if g.duplicate %}
+    <p class="notice notice-defect" role="status">
+      <strong>{{ t("record-union-duplicate") }}</strong>
+      {{ t("record-union-duplicate-detail") }}
+      {#- A mutation, so a form and not a link. It calls the library's
+          deduplicate(); this application holds no merging logic of its own.
+          The confirmation says what it runs over, because the library's
+          deduplication is whole-bundle and this button cannot narrow it. -#}
+      {% if is_admin %}
+      <form method="post" action="/admin/dedup" class="inline-form"
+            onsubmit="return confirm('{{ t("record-union-duplicate-confirm") }}')">
+        <input type="hidden" name="families" value="{{ g.family_ids | join(",") }}">
+        <input type="hidden" name="back" value="/person/{{ p.id }}">
+        <button class="btn btn-compact" type="submit">{{ t("record-union-duplicate-action") }}</button>
+      </form>
+      {% endif %}
+    </p>
     {% endif %}
+
+    {% for u in g.records %}
+    <div class="union">
+      <div class="union-head">
+        <strong>
+          {%- if u.spouse %}{{ m.person_link(u.spouse) }}
+          {%- else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif -%}
+        </strong>
+        {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
+        <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
+        {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
+      </div>
+      <div class="small union-when">
+        {% if u.start %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}
+        {% if u.start_place %}<span class="wrap-unit">{{ t("record-union-at") }} {{ m.place(u.start_place) }}</span>{% endif %}
+        {% if u.end %}<span class="wrap-unit">{{ t("record-union-until") }} {{ m.date(u.end) }}</span>{% endif %}
+        {% if u.end_note %}<span class="muted wrap-unit">{{ u.end_note }}</span>{% endif %}
+      </div>
+      {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
+      {% if u.children %}
+      <h4>{{ t("record-children") }}</h4>
+      <ul class="plain">
+        {% for c in u.children %}
+        <li class="rel">
+          {% if c.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ c.birth_order }}</span>{% endif %}
+          {{ m.person_link(c) }}
+          {%- if c.lineage %} <span class="chip small">{{ c.lineage }}</span>{% endif %}
+          {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}
+          {%- if c.detail %} <span class="small muted">{{ c.detail }}</span>{% endif %}
+          {%- if c.confidence %} {{ m.conf_bar(c.confidence) }}{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
   </div>
   {% endfor %}
   {% if may_write %}

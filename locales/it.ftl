@@ -2832,6 +2832,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } casi lasciati all'esame di una persona
     }
 dedup-nothing = Niente da segnalare.
+record-union-duplicate = Una coppia, più di una scheda.
+record-union-duplicate-detail = Il pacchetto conserva schede Famiglia distinte per queste due persone. È un difetto dei dati, non una seconda unione.
+record-union-duplicate-action = Unisci i duplicati
+record-union-duplicate-confirm = Deduplicare l’intero pacchetto? Ogni coppia che la libreria può unire verrà unita; le altre verranno segnalate.
+dedup-pair-merged = La coppia in questione è ora una sola scheda.
+dedup-pair-refused = La coppia in questione non è stata unita: la libreria l’ha rifiutata e l’ha lasciata all’esame di una persona.
+
 validate-errors = { $n ->
         [one] un errore
        *[other] { $n } errori

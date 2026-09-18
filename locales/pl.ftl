@@ -3003,6 +3003,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } przypadku zostawiono do przejrzenia przez człowieka
     }
 dedup-nothing = Nie ma nic do zgłoszenia.
+record-union-duplicate = Jedna para, więcej niż jeden zapis.
+record-union-duplicate-detail = Pakiet przechowuje osobne rekordy Rodziny dla tych dwojga ludzi. To błąd w danych, a nie drugi związek.
+record-union-duplicate-action = Scal duplikaty
+record-union-duplicate-confirm = Zdeduplikować cały pakiet? Każda para, którą biblioteka potrafi scalić, zostanie scalona; pozostałe zostaną zgłoszone.
+dedup-pair-merged = Wskazana para to teraz jeden zapis.
+dedup-pair-refused = Wskazana para nie została scalona: biblioteka odmówiła i pozostawiła ją do przejrzenia przez człowieka.
+
 validate-errors = { $n ->
         [one] jeden błąd
         [few] { $n } błędy

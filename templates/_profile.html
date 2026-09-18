@@ -96,7 +96,14 @@
         {%- if r.lineage %} <span class="chip small">{{ r.lineage }}</span>{% endif %}</li>{% endfor %}
     </ul>
     {% endif %}
-    {% for u in p.unions %}
+    {% for g in p.unions %}
+    {% if g.duplicate %}
+    <p class="notice notice-defect" role="status">
+      <strong>{{ t("record-union-duplicate") }}</strong>
+      {{ t("record-union-duplicate-detail") }}
+    </p>
+    {% endif %}
+    {% for u in g.records %}
     <div class="union">
       <div class="union-head">
         <strong>{% if u.spouse %}{{ m.person_link(u.spouse) }}{% else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif %}</strong>
@@ -117,6 +124,7 @@
       </ul>
       {% endif %}
     </div>
+    {% endfor %}
     {% endfor %}
     {% if p.links %}
     <h3>{{ t("record-other-relationships") }}</h3>

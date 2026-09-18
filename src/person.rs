@@ -309,6 +309,29 @@ pub struct UnionView {
     pub children: Vec<PersonRef>,
 }
 
+/// The Family records describing one couple — normally exactly one.
+///
+/// AXGF identifies a family by the set of people in its union, so two Family
+/// entities naming the same two spouses are two records of one couple. That is
+/// a defect in the bundle and never two marriages: the validator reports it as
+/// `DUPLICATE_UNIQUE_REF`, and the operator's bundle holds three.
+///
+/// Rendering them as two unrelated blocks left a reader to work out for
+/// themselves why the same spouse appeared twice with different details — and
+/// the likeliest reading, that these were two separate unions, is the wrong
+/// one. They are grouped so the page can say what they are.
+#[derive(Debug, Clone, Serialize)]
+pub struct UnionGroup {
+    /// The records. More than one is the defect.
+    pub records: Vec<UnionView>,
+    /// The families behind them, so an administrator can act on the pair.
+    pub family_ids: Vec<String>,
+    /// True when more than one record describes this couple. A field rather
+    /// than a length test in the template, because it is the *claim* the page
+    /// makes and it should be named where it is decided.
+    pub duplicate: bool,
+}
+
 /// A block of free text.
 #[derive(Debug, Clone, Serialize)]
 pub struct NoteView {
@@ -346,7 +369,7 @@ pub struct PersonView {
     pub timeline: Vec<TimelineEntry>,
     pub parents: Vec<PersonRef>,
     pub siblings: Vec<PersonRef>,
-    pub unions: Vec<UnionView>,
+    pub unions: Vec<UnionGroup>,
     pub links: Vec<LinkView>,
     pub occupations: Vec<OccupationView>,
     pub places: Vec<PlaceUse>,
@@ -687,7 +710,7 @@ fn build_header(
     birth: &FactView,
     death: &FactView,
     is_living: bool,
-    unions: &[UnionView],
+    unions: &[UnionGroup],
     id: &str,
     person: &Value,
 ) -> HeaderView {
@@ -724,7 +747,11 @@ fn build_header(
         crate::avatar::Choice::Auto => auto_avatar(images),
     };
 
-    let children: usize = unions.iter().map(|u| u.children.len()).sum();
+    let children: usize = unions
+        .iter()
+        .flat_map(|g| &g.records)
+        .map(|u| u.children.len())
+        .sum();
 
     HeaderView {
         avatar,
@@ -1244,16 +1271,19 @@ impl Ctx<'_> {
     }
 
     /// Parents, siblings and unions, each carrying its own confidence.
-    fn relations(&self, id: &str) -> (Vec<PersonRef>, Vec<PersonRef>, Vec<UnionView>) {
+    fn relations(&self, id: &str) -> (Vec<PersonRef>, Vec<PersonRef>, Vec<UnionGroup>) {
         let mut parents = Vec::new();
         let mut siblings = Vec::new();
-        let mut unions: Vec<UnionView> = Vec::new();
+        // Each union with the family it came from and the sorted set of people
+        // in it — the signature AXGF identifies a family by, and so the thing
+        // two records of one couple share.
+        let mut unions: Vec<(Vec<String>, String, UnionView)> = Vec::new();
 
         let Some(families) = self.collection("families") else {
-            return (parents, siblings, unions);
+            return (parents, siblings, group_unions(unions));
         };
 
-        for fam in families.values() {
+        for (fam_id, fam) in families {
             let union = fam.get("union");
             let partners: Vec<(&str, Option<&str>)> = union
                 .and_then(|u| u.get("persons"))
@@ -1321,7 +1351,7 @@ impl Ctx<'_> {
                 // the order the family lists them in.
                 children.sort_by_key(|c| c.birth_order.unwrap_or(i64::MAX));
 
-                unions.push(UnionView {
+                let view = UnionView {
                     spouse,
                     kind: union.and_then(|u| union_type(u, self.lang)),
                     status: union_status(union, self.lang),
@@ -1344,13 +1374,18 @@ impl Ctx<'_> {
                     confidence: union.and_then(|u| Confidence::from_field(u, "confidence")),
                     source: union.and_then(|u| self.source_of(u)),
                     children,
-                });
+                };
+                let mut signature: Vec<String> =
+                    partners.iter().map(|(p, _)| (*p).to_string()).collect();
+                signature.sort();
+                signature.dedup();
+                unions.push((signature, fam_id.clone(), view));
             }
         }
 
         dedup_refs(&mut parents);
         dedup_refs(&mut siblings);
-        (parents, siblings, unions)
+        (parents, siblings, group_unions(unions))
     }
 
     /// Non-family links, read from this person's point of view.
@@ -1770,7 +1805,7 @@ impl Ctx<'_> {
         death: &FactView,
         timeline: &[TimelineEntry],
         occupations: &[OccupationView],
-        unions: &[UnionView],
+        unions: &[UnionGroup],
     ) -> Vec<PlaceUse> {
         let mut out: Vec<PlaceUse> = Vec::new();
         let mut add = |place: &Option<PlaceView>, use_of: String| {
@@ -1804,7 +1839,7 @@ impl Ctx<'_> {
                 ),
             );
         }
-        for u in unions {
+        for u in unions.iter().flat_map(|g| &g.records) {
             let who = u
                 .spouse
                 .as_ref()
@@ -1829,7 +1864,7 @@ impl Ctx<'_> {
         names: &[NameView],
         links: &[LinkView],
         occupations: &[OccupationView],
-        unions: &[UnionView],
+        unions: &[UnionGroup],
     ) -> Vec<SourceView> {
         let mut out: Vec<SourceView> = Vec::new();
         let mut add = |s: &Option<SourceView>, used_for: String| {
@@ -1872,7 +1907,7 @@ impl Ctx<'_> {
                 ),
             );
         }
-        for u in unions {
+        for u in unions.iter().flat_map(|g| &g.records) {
             let who = u
                 .spouse
                 .as_ref()
@@ -1970,6 +2005,44 @@ fn year_of_bound(bound: Option<&Value>) -> Option<i64> {
         .split('–')
         .next()
         .and_then(|s| s.parse::<i64>().ok())
+}
+
+/// Collect the unions into one group per couple.
+///
+/// The signature is the sorted set of people in the union, which is what AXGF
+/// identifies a family by — so two families sharing it are two records of one
+/// couple rather than two unions. Grouping is what lets the page say that
+/// instead of leaving a reader to infer a second marriage from a repeated
+/// name.
+///
+/// Order is preserved: a group takes the position of its first record, so a
+/// bundle with no duplicates renders exactly as it did before this existed.
+fn group_unions(unions: Vec<(Vec<String>, String, UnionView)>) -> Vec<UnionGroup> {
+    let mut out: Vec<(Vec<String>, UnionGroup)> = Vec::new();
+    for (signature, family_id, view) in unions {
+        // An empty signature is a union that names nobody, which cannot be
+        // said to describe the same couple as any other. Each stays its own
+        // group rather than all of them collapsing into one.
+        let existing = (!signature.is_empty())
+            .then(|| out.iter_mut().find(|(sig, _)| *sig == signature))
+            .flatten();
+        match existing {
+            Some((_, group)) => {
+                group.records.push(view);
+                group.family_ids.push(family_id);
+                group.duplicate = true;
+            }
+            None => out.push((
+                signature,
+                UnionGroup {
+                    records: vec![view],
+                    family_ids: vec![family_id],
+                    duplicate: false,
+                },
+            )),
+        }
+    }
+    out.into_iter().map(|(_, g)| g).collect()
 }
 
 /// Drop repeats while keeping the first occurrence, which carries the richest
@@ -2375,7 +2448,7 @@ mod tests {
     #[test]
     fn a_union_states_its_type_dates_and_how_it_ended() {
         let v = jules();
-        let u = v.unions.first().expect("one union");
+        let u = &v.unions.first().expect("one union").records[0];
         assert_eq!(u.spouse.as_ref().unwrap().name, "Adèle Roux");
         assert_eq!(u.kind.as_deref(), Some("married"));
         assert_eq!(u.status, "ended by divorce");
@@ -2388,21 +2461,86 @@ mod tests {
     #[test]
     fn children_are_listed_in_birth_order_not_alphabetically() {
         let v = jules();
-        let kids: Vec<&str> = v.unions[0]
+        let kids: Vec<&str> = v.unions[0].records[0]
             .children
             .iter()
             .map(|c| c.name.as_str())
             .collect();
         assert_eq!(kids, vec!["First Child", "Second Child"]);
-        assert_eq!(v.unions[0].children[0].birth_order, Some(1));
+        assert_eq!(v.unions[0].records[0].children[0].birth_order, Some(1));
     }
 
     #[test]
     fn a_spouse_shows_their_lifespan() {
         let v = jules();
         assert_eq!(
-            v.unions[0].spouse.as_ref().unwrap().lifespan.as_deref(),
+            v.unions[0].records[0]
+                .spouse
+                .as_ref()
+                .unwrap()
+                .lifespan
+                .as_deref(),
             Some("1922–1999")
+        );
+    }
+
+    /// Two Family records for the same two people are one couple, grouped and
+    /// named as a defect — never two unions.
+    ///
+    /// This is `DUPLICATE_UNIQUE_REF`, which the validator reports and the
+    /// operator's bundle holds three of. Rendered as two unrelated blocks it
+    /// reads as a second marriage, which is the wrong reading and the first
+    /// one a reader reaches.
+    #[test]
+    fn two_families_for_one_couple_are_one_group_and_say_so() {
+        let mut b = bundle();
+        // The same spouse set as f2, entered a second time: no type, no dates,
+        // which is exactly the shape the operator's bundle carries.
+        b["families"]["f2b"] = json!({
+            "id": "f2b", "type": "family", "axgf_version": "1.0",
+            "union": {"type": "unknown", "confidence": 0.8,
+                      "persons": [{"person_id": "p-wife", "role": "spouse"},
+                                  {"person_id": "p-jules", "role": "spouse"}]},
+            "children": [{"person_id": "p-kid1", "confidence": 0.8}]
+        });
+        let v = build(&b, "p-jules", &open()).expect("Jules exists");
+
+        // One group, not two blocks — and the order of the people in the union
+        // does not matter, because a family is identified by the *set*.
+        assert_eq!(v.unions.len(), 1, "one couple, so one group");
+        let g = &v.unions[0];
+        assert!(g.duplicate, "and the group says it is a duplicate");
+        assert_eq!(g.records.len(), 2, "both records are kept and shown");
+        assert_eq!(
+            g.family_ids,
+            vec!["f2".to_string(), "f2b".to_string()],
+            "both families are named, so an administrator can act on the pair"
+        );
+
+        // Nothing is hidden by the grouping: the richer record keeps its
+        // dates, and the thin one still says what little it says.
+        assert_eq!(g.records[0].kind.as_deref(), Some("married"));
+        assert!(g.records[0].start.is_some());
+        assert!(g.records[1].start.is_none());
+    }
+
+    /// A person with two genuinely different partners has two groups, and
+    /// neither is a defect.
+    #[test]
+    fn two_different_partners_are_two_groups_and_neither_is_flagged() {
+        let mut b = bundle();
+        b["families"]["f3"] = json!({
+            "id": "f3", "type": "family", "axgf_version": "1.0",
+            "union": {"type": "marriage", "confidence": 0.8,
+                      "persons": [{"person_id": "p-jules", "role": "spouse"},
+                                  {"person_id": "p-sib", "role": "spouse"}]},
+            "children": []
+        });
+        let v = build(&b, "p-jules", &open()).expect("Jules exists");
+        assert_eq!(v.unions.len(), 2, "two couples, two groups");
+        assert!(
+            v.unions.iter().all(|g| !g.duplicate),
+            "two partners is not a data defect"
         );
     }
 
@@ -2410,8 +2548,9 @@ mod tests {
     fn a_union_with_one_recorded_partner_has_no_spouse() {
         let v = build(&bundle(), "p-dad", &open()).expect("Henri exists");
         assert_eq!(v.unions.len(), 1);
-        assert!(v.unions[0].spouse.is_none());
-        assert_eq!(v.unions[0].children.len(), 3);
+        assert!(!v.unions[0].duplicate, "one record, so no defect to report");
+        assert!(v.unions[0].records[0].spouse.is_none());
+        assert_eq!(v.unions[0].records[0].children.len(), 3);
     }
 
     // -- links, occupations ------------------------------------------------

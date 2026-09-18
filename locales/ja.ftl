@@ -2627,6 +2627,13 @@ dedup-merged-persons = { $n } 人を統合
 dedup-merged-families = { $n } 家族を統合
 dedup-manual-review = { $n } 件を人による確認のために残しました
 dedup-nothing = 報告することはありません。
+record-union-duplicate = 一組の夫婦に、複数の記録。
+record-union-duplicate-detail = この二人について、別々の家族記録が保存されています。データの不備であり、二度目の関係ではありません。
+record-union-duplicate-action = 重複を統合
+record-union-duplicate-confirm = パッケージ全体の重複を解消しますか。ライブラリが統合できる組はすべて統合され、残りは報告されます。
+dedup-pair-merged = 対象の組は一つの記録になりました。
+dedup-pair-refused = 対象の組は統合されませんでした。ライブラリが拒否し、人の判断に委ねました。
+
 validate-errors = エラー { $n } 件
 validate-warnings = 警告 { $n } 件
 validate-notes = 注記 { $n } 件

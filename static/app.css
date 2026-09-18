@@ -2620,6 +2620,28 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
+/* Two Family records for one couple.
+
+   The bracket is what makes the two blocks one thing: without it they are two
+   union cards with the same spouse in both, which reads as a second marriage —
+   the wrong reading, and the first one a reader reaches. The notice inside it
+   says what they actually are.
+
+   Every value here is an existing token. `--border-strong` is the one tuned to
+   the 3:1 WCAG 1.4.11 asks of a boundary, and this is a boundary; the notice
+   takes `--conf-medium`, which `.notice.warn` already uses and the sweep
+   already measures. Nothing new to measure. */
+.union-group.is-duplicate {
+  margin-top: 1rem;
+  padding: 0.25rem 0.85rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+.union-group.is-duplicate > .union:first-of-type { margin-top: 0; }
+.notice-defect { border-inline-start-color: var(--conf-medium); }
+/* The action sits with the sentence rather than under it. */
+.notice-defect .inline-form { display: inline-block; margin-inline-start: 0.5rem; }
+
 .union-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .union h4 { margin: 0.85rem 0 0.25rem; font-size: 0.88rem; color: var(--ink-soft); }
 .union-status[data-status="ongoing"] { color: var(--conf-certain); }

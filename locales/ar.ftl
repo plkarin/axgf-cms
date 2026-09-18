@@ -3070,6 +3070,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } حالة متروكة لمراجعة بشرية
     }
 dedup-nothing = لا شيء يستحق الذكر.
+record-union-duplicate = زوجان واحدان، أكثر من سجل.
+record-union-duplicate-detail = تحتفظ الحزمة بسجلَّي عائلة منفصلين لهذين الشخصين. هذا خلل في البيانات، وليس ارتباطًا ثانيًا.
+record-union-duplicate-action = دمج المكرَّر
+record-union-duplicate-confirm = إزالة التكرار من الحزمة كلها؟ سيُدمج كل زوج تستطيع المكتبة دمجه، ويُبلَّغ عن الباقي.
+dedup-pair-merged = صار الزوج المقصود سجلًّا واحدًا.
+dedup-pair-refused = لم يُدمج الزوج المقصود: رفضت المكتبة دمجه وتركته لمراجعة إنسان.
+
 validate-errors = { $n ->
         [zero] لا أخطاء
         [one] خطأ واحد

@@ -2627,6 +2627,13 @@ dedup-merged-persons = 合并了 { $n } 个人物
 dedup-merged-families = 合并了 { $n } 个家庭
 dedup-manual-review = { $n } 个情况留待人工审阅
 dedup-nothing = 没有需要报告的内容。
+record-union-duplicate = 一对夫妻，多条记录。
+record-union-duplicate-detail = 存档为这两人保存了不同的家庭记录。这是数据缺陷，而非第二段结合。
+record-union-duplicate-action = 合并重复项
+record-union-duplicate-confirm = 对整个存档去重？库能合并的每一对都会合并，其余将予报告。
+dedup-pair-merged = 所指的一对现已合并为一条记录。
+dedup-pair-refused = 所指的一对未被合并：库拒绝合并，留待人工审核。
+
 validate-errors = { $n } 个错误
 validate-warnings = { $n } 个警告
 validate-notes = { $n } 条提示

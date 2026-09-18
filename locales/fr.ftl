@@ -2817,6 +2817,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } cas laissés à l’examen d’une personne
     }
 dedup-nothing = Rien à signaler.
+record-union-duplicate = Un seul couple, plusieurs fiches.
+record-union-duplicate-detail = Le paquet conserve des fiches Famille distinctes pour ces deux personnes. C’est un défaut des données, non une seconde union.
+record-union-duplicate-action = Fusionner les doublons
+record-union-duplicate-confirm = Dédupliquer tout le paquet ? Chaque paire que la bibliothèque peut fusionner le sera ; les autres seront signalées.
+dedup-pair-merged = La paire concernée ne forme plus qu’une fiche.
+dedup-pair-refused = La paire concernée n’a pas été fusionnée : la bibliothèque a refusé et l’a laissée à l’examen d’une personne.
+
 validate-errors = { $n ->
         [one] une erreur
        *[other] { $n } erreurs

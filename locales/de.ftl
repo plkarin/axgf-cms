@@ -2834,6 +2834,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } Fälle zur Prüfung durch einen Menschen offen
     }
 dedup-nothing = Nichts zu melden.
+record-union-duplicate = Ein Paar, mehrere Einträge.
+record-union-duplicate-detail = Das Bündel führt für diese beiden Personen getrennte Familieneinträge. Das ist ein Datenfehler, keine zweite Verbindung.
+record-union-duplicate-action = Duplikate zusammenführen
+record-union-duplicate-confirm = Das gesamte Bündel entdoppeln? Jedes Paar, das die Bibliothek zusammenführen kann, wird zusammengeführt; der Rest wird gemeldet.
+dedup-pair-merged = Das betreffende Paar ist jetzt ein Eintrag.
+dedup-pair-refused = Das betreffende Paar wurde nicht zusammengeführt: Die Bibliothek hat abgelehnt und es einer Person zur Prüfung überlassen.
+
 validate-errors = { $n ->
         [one] ein Fehler
        *[other] { $n } Fehler

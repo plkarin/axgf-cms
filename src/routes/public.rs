@@ -778,7 +778,12 @@ pub async fn person(
                                     p.sources.len() + p.documents.len()
                                 }
                                 crate::person::Tab::Tree => {
-                                    p.parents.len() + p.siblings.len() + p.unions.len()
+                                    p.parents.len()
+                                        + p.siblings.len()
+                                        // A group is a couple; the count is of
+                                        // unions, so two records of one couple
+                                        // still count what the reader sees.
+                                        + p.unions.iter().map(|g| g.records.len()).sum::<usize>()
                                 }
                                 crate::person::Tab::History => history_count,
                             };

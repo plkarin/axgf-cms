@@ -2832,6 +2832,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } casos pendientes de revisión por una persona
     }
 dedup-nothing = Nada que señalar.
+record-union-duplicate = Una pareja, más de una ficha.
+record-union-duplicate-detail = El paquete guarda fichas de Familia separadas para estas dos personas. Es un defecto de los datos, no una segunda unión.
+record-union-duplicate-action = Fusionar duplicados
+record-union-duplicate-confirm = ¿Deduplicar todo el paquete? Se fusionará cada par que la biblioteca pueda fusionar; el resto se informará.
+dedup-pair-merged = El par en cuestión es ahora una sola ficha.
+dedup-pair-refused = El par en cuestión no se fusionó: la biblioteca lo rechazó y lo dejó para que lo revise una persona.
+
 validate-errors = { $n ->
         [one] un error
        *[other] { $n } errores

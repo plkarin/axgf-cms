@@ -2834,6 +2834,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } casos deixados para revisão por uma pessoa
     }
 dedup-nothing = Nada a assinalar.
+record-union-duplicate = Um casal, mais do que um registo.
+record-union-duplicate-detail = O pacote guarda registos de Família distintos para estas duas pessoas. É um defeito dos dados, não uma segunda união.
+record-union-duplicate-action = Fundir duplicados
+record-union-duplicate-confirm = Desduplicar todo o pacote? Cada par que a biblioteca conseguir fundir será fundido; os restantes serão comunicados.
+dedup-pair-merged = O par em questão é agora um único registo.
+dedup-pair-refused = O par em questão não foi fundido: a biblioteca recusou e deixou-o para revisão por uma pessoa.
+
 validate-errors = { $n ->
         [one] um erro
        *[other] { $n } erros

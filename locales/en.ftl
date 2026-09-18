@@ -2871,6 +2871,13 @@ dedup-manual-review = { $n ->
        *[other] { $n } cases left for a person to review
     }
 dedup-nothing = Nothing to report.
+record-union-duplicate = One couple, more than one record.
+record-union-duplicate-detail = The bundle keeps separate Family records for these two people. That is a defect in the data, not a second union.
+record-union-duplicate-action = Merge duplicates
+record-union-duplicate-confirm = Deduplicate the whole bundle? Every pair the library can merge is merged; the rest are reported.
+dedup-pair-merged = The pair you asked about is now one record.
+dedup-pair-refused = The pair you asked about was not merged: the library refused it and left it for a person to review.
+
 validate-errors = { $n ->
         [one] one error
        *[other] { $n } errors

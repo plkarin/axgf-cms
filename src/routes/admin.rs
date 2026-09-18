@@ -1027,21 +1027,42 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
                 ("infos", "validate-notes"),
             ], "validate-nothing"),
             diagnostics => diagnostics_json(&env.diagnostics, chrome.lang),
-            back => "/admin",
+            result_back => "/admin",
             applied => true,
         },
     )
 }
 
 /// `POST /admin/dedup`
-pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response {
+pub async fn dedup(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<DedupForm>,
+) -> Response {
     let (_viewer, chrome) = guard_admin!(state, headers);
+
+    // The pair a reader asked about, when they came from a record rather than
+    // from the dashboard. Only used to *report* on it: the merging itself is
+    // the library's, whole-bundle, and this crate does not do genealogy.
+    let asked: Vec<String> = f
+        .families
+        .split(',')
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
+        .collect();
+
+    // How many of them were there to begin with. Asked *before* the mutation,
+    // because "is the pair gone" and "was there a pair at all" are different
+    // questions and only the second one can still be answered afterwards.
+    let present_before = count_families(&state, &asked);
+
     let out = match state.mutate(axgf_rs::deduplicate) {
         Ok(o) => o,
         Err(e) => return io_error(&chrome, &e),
     };
 
-    let summary = summary_line(
+    let mut summary = summary_line(
         &chrome,
         &out.data,
         &[
@@ -1051,6 +1072,23 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
         ],
         "dedup-nothing",
     );
+
+    // Whether the pair in front of the reader is actually gone. Answering
+    // "1 family merged" to somebody who asked about *these two* is not an
+    // answer: the one that merged may have been a different pair entirely.
+    //
+    // Only said when there really was a pair. A bundle that never held these
+    // families has not merged them, and reporting a merge because two ids are
+    // absent would be a false statement built out of a stale link.
+    if present_before > 1 {
+        let left = count_families(&state, &asked);
+        summary.push_str(&chrome.t("list-separator"));
+        summary.push_str(&chrome.t(if left > 1 {
+            "dedup-pair-refused"
+        } else {
+            "dedup-pair-merged"
+        }));
+    }
 
     render::page_with(
         &chrome,
@@ -1064,10 +1102,36 @@ pub async fn dedup(State(state): State<Shared>, headers: HeaderMap) -> Response 
             }),
             summary,
             diagnostics => diagnostics_json(&out.diagnostics, chrome.lang),
-            back => "/admin",
+            result_back => if f.back.is_empty() {
+                "/admin".to_string()
+            } else {
+                render::safe_back(&f.back)
+            },
             applied => out.applied,
         },
     )
+}
+
+/// How many of `ids` the bundle currently holds as families.
+fn count_families(state: &Shared, ids: &[String]) -> usize {
+    state.read(|flat| {
+        flat.get("families")
+            .and_then(Value::as_object)
+            .map_or(0, |fams| {
+                ids.iter().filter(|id| fams.contains_key(*id)).count()
+            })
+    })
+}
+
+/// What a merge action posts: the pair it is about, and where it came from.
+///
+/// Both optional — the dashboard's whole-bundle button posts neither.
+#[derive(Deserialize, Default)]
+pub struct DedupForm {
+    #[serde(default)]
+    families: String,
+    #[serde(default)]
+    back: String,
 }
 
 /// `GET /admin/export`
@@ -1700,7 +1764,7 @@ pub(super) fn result_page(
                 "result-refused"
             }),
             diagnostics => diagnostics_json(&out.diagnostics, chrome.lang),
-            back => back.unwrap_or_else(|| format!("/admin/{kind}")),
+            result_back => back.unwrap_or_else(|| format!("/admin/{kind}")),
             applied => out.applied,
         },
     )

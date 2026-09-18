@@ -116,6 +116,13 @@ names them by id, as the relationships editor always has.
 
 ### Fixed
 
+**Every admin result page sent the reader back to the dashboard.** The
+Continue button took `back` from the template context, and `render::Chrome`
+carries a field of that name — where a preference form should return the reader
+to — which wins the merge in `page_with`. So the value each handler passed was
+discarded and every result page pointed at `/admin`. It is `result_back` now,
+the same way the error page's own link is `error_back` for exactly this reason.
+
 **English assembled in Rust reached every language.** The template linter
 reads templates, so the words built in Rust never passed in front of it — and
 there were a lot of them. The confidence sentence on every fact ("Confidence
@@ -227,6 +234,30 @@ and not in Polish or French, and Fluent keeps the first of two definitions, so
 the second was never shown in any language. The person's is now
 `record-life-status`, and `no_catalogue_defines_a_key_twice` fails the build
 on the next one.
+
+**One couple entered twice is shown as one couple entered twice.** AXGF
+identifies a family by the set of people in its union, so two Family entities
+naming the same two spouses are two records of one couple — the validator's
+`DUPLICATE_UNIQUE_REF`, and the operator's bundle holds three. They rendered as
+two unrelated union blocks with the same spouse in both, which reads as a
+second marriage: the wrong reading, and the first one a reader reaches.
+
+The records for one couple are now one group, bracketed, saying what they are
+and ruling out the wrong reading. An administrator gets a merge action beside
+it; a reader who may not edit is still told the records disagree but is offered
+no button they cannot press. The merge calls the library's `deduplicate()` and
+reports what happened to *that pair* rather than a bundle-wide total, because
+"one family merged" does not answer "what about these two".
+
+On this bundle the library refuses the operator's own pair, and the page says
+so. `is_ambiguous_family_group` treats `union.type: "unknown"` as a union type
+that disagrees with `"marriage"`, but `unknown` is the absence of a recorded
+type — and since the schema makes `union.type` required with `unknown` in its
+enum, it is the only way a conforming bundle can express that absence. No
+workaround was added here: all genealogy logic lives in axgf-rs, and merging
+two families is genealogy. `docs/DEDUP-UPSTREAM.md` is the report, including
+the finding that the obvious one-line fix would silently drop the marriage
+date and must not ship alone.
 
 ### Removed
 

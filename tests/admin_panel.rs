@@ -774,3 +774,169 @@ async fn without_a_contact_address_there_is_no_lookup_button() {
         "the paste box needs no third party and stays"
     );
 }
+
+/// A bundle holding one couple entered twice — the shape the operator's
+/// bundle carries: one record with a type and a date, one with the `unknown`
+/// sentinel and nothing else, the same two spouses, the same child.
+fn duplicate_family_app(tag: &str) -> (axum::Router, std::path::PathBuf) {
+    use serde_json::json;
+    const A: &str = "aaaaaaaa-1111-4111-8111-111111111111";
+    const B: &str = "bbbbbbbb-2222-4222-8222-222222222222";
+    const KID: &str = "cccccccc-3333-4333-8333-333333333333";
+
+    let dir = scratch(&format!("{tag}-src"));
+    let path = dir.join("dup.axgf");
+    let person = |id: &str, name: &str| {
+        json!({"id": id, "type": "person", "axgf_version": "1.0",
+               "identity": {"name": {"display": name, "components": []},
+                            "is_living": false, "visibility": "public"},
+               "birth": {"date": {"value": "1950", "precision": "year"}},
+               "death": {"date": {"value": "2010", "precision": "year"}}})
+    };
+    let flat = json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {A: person(A, "Janusz Kowalski"), B: person(B, "Maria Kowalska"),
+                    KID: person(KID, "Ewa Kowalska")},
+        "families": {
+            "fam-thin": {"id": "fam-thin", "type": "family", "axgf_version": "1.0",
+                "union": {"type": "unknown", "confidence": 0.8,
+                          "persons": [{"person_id": A, "role": "spouse"},
+                                      {"person_id": B, "role": "spouse"}]},
+                "children": [{"person_id": KID, "confidence": 0.8}]},
+            "fam-full": {"id": "fam-full", "type": "family", "axgf_version": "1.0",
+                "union": {"type": "marriage", "confidence": 0.8,
+                          // Reversed order: a family is identified by the set.
+                          "persons": [{"person_id": B, "role": "spouse"},
+                                      {"person_id": A, "role": "spouse"}],
+                          "start": {"date": {"value": "1991-08-24", "precision": "exact"}}},
+                "children": [{"person_id": KID, "confidence": 0.8}]}
+        },
+        "events": {}, "links": {}, "occupations": {},
+        "sources": {}, "places": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    app_with_bundle(tag, &path)
+}
+
+/// Two Family records for one couple are shown as one thing that says what it
+/// is, with a way for an administrator to act on it.
+///
+/// Rendered as two unrelated blocks with the same spouse in both, the likeliest
+/// reading is a second marriage — and that is the wrong reading. This is
+/// `DUPLICATE_UNIQUE_REF`, which the validator reports; the operator's bundle
+/// holds three of them.
+#[tokio::test]
+async fn a_couple_entered_twice_is_grouped_named_and_actionable() {
+    const A: &str = "aaaaaaaa-1111-4111-8111-111111111111";
+    let (app, _p) = duplicate_family_app("dup-family");
+
+    let page = body_string(get_admin(&app, &format!("/person/{A}")).await).await;
+
+    // One group holding both records, not two loose blocks.
+    assert_eq!(
+        page.matches(r#"class="union-group is-duplicate""#).count(),
+        1,
+        "the two records are one group: {page}"
+    );
+    assert_eq!(
+        page.matches(r#"<div class="union">"#).count(),
+        2,
+        "and both records are still shown in full"
+    );
+
+    // And it says plainly what they are.
+    assert!(
+        page.contains("One couple, more than one record."),
+        "the page names the defect: {page}"
+    );
+    assert!(
+        page.contains("not a second union"),
+        "and rules out the wrong reading"
+    );
+
+    // With a way to act on it, naming both families.
+    assert!(
+        page.contains(r#"action="/admin/dedup""#),
+        "an administrator is offered the merge: {page}"
+    );
+    assert!(
+        page.contains("fam-full,fam-thin") || page.contains("fam-thin,fam-full"),
+        "and it names the pair: {page}"
+    );
+
+    // A reader who cannot edit is told what the page holds but offered no
+    // button they may not press.
+    let public = body_string(get(&app, &format!("/person/{A}")).await).await;
+    assert!(
+        public.contains("One couple, more than one record."),
+        "a reader is still told the records disagree"
+    );
+    assert!(
+        !public.contains(r#"action="/admin/dedup""#),
+        "but is offered no action they cannot take"
+    );
+}
+
+/// The merge action calls the library, and reports what the library did to
+/// *this* pair rather than a bundle-wide total.
+///
+/// On this shape the library refuses: `is_ambiguous_family_group` treats the
+/// `unknown` sentinel in `union.type` as a union type that disagrees with
+/// `marriage`, so the pair is left for a person to review. The CMS reports
+/// that refusal rather than working around it — all genealogy logic lives in
+/// axgf-rs, and merging two families here would be genealogy.
+#[tokio::test]
+async fn the_merge_action_reports_what_happened_to_the_pair_it_was_given() {
+    let (app, _p) = duplicate_family_app("dedup-pair-report");
+
+    let body = body_string(
+        post_form(
+            &app,
+            "/admin/dedup",
+            "families=fam-thin,fam-full&back=%2Ftree",
+            true,
+        )
+        .await,
+    )
+    .await;
+
+    // The library refuses this pair, so the page must say so rather than
+    // reporting "nothing to report" and leaving the reader to wonder.
+    assert!(
+        body.contains("was not merged"),
+        "the refusal is reported: {body}"
+    );
+    assert!(
+        !body.contains("is now one record"),
+        "and nothing claims a merge that did not happen"
+    );
+    // And it returns the reader where they came from.
+    assert!(
+        body.contains(r#"href="&#x2f;tree""#),
+        "the way back: {body}"
+    );
+
+    // Both families are still there, which is what "refused" means.
+    let page = body_string(get_admin(&app, "/admin/family").await).await;
+    assert!(page.contains("fam-thin") && page.contains("fam-full"));
+}
+
+/// A pair of ids that names nothing is not reported as a merge.
+///
+/// A stale link should not produce "the pair you asked about is now one
+/// record" out of two ids the bundle never held.
+#[tokio::test]
+async fn ids_that_name_no_family_are_not_reported_as_merged() {
+    let (app, _p) = app_with_empty_bundle("dedup-pair-absent");
+    let body =
+        body_string(post_form(&app, "/admin/dedup", "families=no-such-a,no-such-b", true).await)
+            .await;
+    assert!(
+        !body.contains("The pair you asked about"),
+        "nothing is claimed about a pair that was never there: {body}"
+    );
+}

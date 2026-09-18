@@ -1031,22 +1031,6 @@ record-presumed-deceased = mutmaßlich verstorben
 record-presumed-short = mutmaßl.
 record-presumed-why = Es ist kein Tod erfasst und die Geburt liegt mehr als { $years } Jahre zurück, also kann dieser Eintrag nicht stimmen. Das Archiv bleibt unverändert: das ist die Folgerung der Seite, nicht die Aussage der Quelle.
 
-## Die erzeugte Figur neben einem Eintrag
-#
-# Sie ist kein Porträt. Alle folgenden Meldungen sind dafür da, dass das
-# unmissverständlich bleibt.
-
-silhouette-label = Erfasstes Alter und erfasste Größe, kein Aussehen
-silhouette-not-a-likeness = Kein Porträt: nichts daran stammt aus einer Fotografie.
-silhouette-proportions-infant = Proportionen eines Säuglings, etwa vier Kopfhöhen.
-silhouette-proportions-child = Proportionen eines kleinen Kindes, etwa sechs Kopfhöhen.
-silhouette-proportions-adolescent = Proportionen eines Jugendlichen, etwa sieben Kopfhöhen.
-silhouette-proportions-adult = Proportionen eines Erwachsenen, etwa siebeneinhalb Kopfhöhen.
-silhouette-proportions-elderly = Proportionen eines Erwachsenen, die sich ab etwa zwanzig nicht mehr ändern: die Figur unterscheidet einen alten Menschen nicht von einem jüngeren erwachsenen, die Daten darüber schon.
-silhouette-to-scale = Maßstäblich gezeichnet, gegen eine Bezugslinie bei { $ref } cm.
-silhouette-no-height = Es ist keine Größe erfasst, daher ist die Figur in einer nominellen Größe für ihre Altersgruppe gezeichnet und nicht maßstäblich.
-silhouette-several-heights = Es ist mehr als eine Größe erfasst; die Figur zeichnet die jüngste.
-
 ## The identity editor
 
 identity-editor-title = Namen und Identität

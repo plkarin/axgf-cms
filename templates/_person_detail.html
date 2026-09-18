@@ -82,34 +82,6 @@
 
   {{ m.fact_chips(p) }}
 
-  {# What the figure in the masthead is drawn from, as one line beside the
-     facts it is drawn from. It used to sit behind a `?` under the figure,
-     which put a control in the header for a sentence. Only on the page that
-     draws the figure: the side panel has no masthead, and a line explaining a
-     drawing that is not there would be a line about nothing.
-
-     Each clause is a whole sentence in its own catalogue entry, so ten other
-     languages are not handed English grammar to fill in. #}
-  {% if p.silhouette and not compact %}
-  <p class="figure-note small muted">
-    <b class="figure-label">{{ t("silhouette-label") }}</b><span class="sep"> · </span>
-    {{ t(p.silhouette.band_key) }}
-    {%- if p.silhouette.to_scale %}
-    <span class="wrap-unit"><span class="figure-key">{{ t("pa-morphology-height") }}</span>
-      {{ t("pu-cm", n=p.silhouette.height_cm) }}
-      {%- if p.silhouette.height_date %} {{ m.date(p.silhouette.height_date, show_note=false) }}{% endif -%}
-    </span>
-    {%- endif %}
-    {%- if p.silhouette.build %}
-    <span class="wrap-unit"><span class="figure-key">{{ t("pa-morphology-build") }}</span> {{ p.silhouette.build }}</span>
-    {%- endif %}
-    {% if p.silhouette.to_scale %}{{ t("silhouette-to-scale", ref=p.silhouette.reference_cm) }}
-    {%- else %}{{ t("silhouette-no-height") }}{% endif %}
-    {%- if p.silhouette.several_heights %} {{ t("silhouette-several-heights") }}{% endif %}
-    {{ t("silhouette-not-a-likeness") }}
-  </p>
-  {% endif %}
-
   {% if may_write %}
   <p><a class="small" href="/admin/person/{{ p.id }}/identity">{{ t("identity-edit-link") }}</a></p>
   {% endif %}

@@ -668,16 +668,14 @@ async fn a_tab_counts_what_is_behind_it_and_omits_a_zero() {
     );
 }
 
-/// The figure in the masthead carries no control, and what it is drawn from is
-/// one line in the record instead.
+/// No figure is drawn, on a record that carries everything one was drawn from.
 ///
-/// It used to have a `?` under it that opened a panel over the header. That is
-/// a control in the one part of the page that states who somebody was, for a
-/// sentence most readers never want — so the header keeps the drawing and its
-/// accessible name, and the explanation moves beside the facts it is drawn
-/// from, where a reader who does want it finds it without opening anything.
+/// The generated figure is gone: height, build and age band are data, and the
+/// profile tab states them as data. This fixture records a height and a build
+/// and has both dates — it is exactly the record that used to draw one — so a
+/// figure reappearing anywhere fails here rather than in a reader's browser.
 #[tokio::test]
-async fn the_figure_has_no_control_in_the_header_and_explains_itself_in_the_record() {
+async fn no_figure_is_drawn_and_the_record_carries_no_caption_for_one() {
     const OTYLIA: &str = "66666666-6666-4666-8666-666666666666";
     let dir = scratch("figure-src");
     let path = dir.join("figure.axgf");
@@ -713,57 +711,29 @@ async fn the_figure_has_no_control_in_the_header_and_explains_itself_in_the_reco
         .and_then(|s| s.split("</header>").next())
         .expect("the masthead");
 
-    // The fixture draws a figure, so the assertions below are about something.
-    assert!(
-        header.contains("person-figure"),
-        "a figure is drawn: {header}"
-    );
-    assert!(
-        !header.contains("<details") && !header.contains("<summary"),
-        "the masthead carries no disclosure: {header}"
-    );
-    assert!(
-        !header.contains(">?</summary>"),
-        "and no `?` under the figure: {header}"
-    );
-    // A screen reader still hears what the drawing claims, because the SVG
-    // itself is hidden from it.
-    assert!(
-        header.contains(
-            r#"<figcaption class="sr-only">Recorded age and height, not an appearance</figcaption>"#
-        ),
-        "the figure keeps its accessible name: {header}"
-    );
+    // Nothing in the masthead draws one, and no stylesheet hook survives for
+    // one to hang from.
+    for hook in ["person-figure", "figure-art", "silhouette", "has-figure"] {
+        assert!(
+            !header.contains(hook),
+            "masthead still carries {hook}: {header}"
+        );
+    }
 
-    // The explanation is on the record, once, with the facts in it.
-    let note = page
-        .split(r#"<p class="figure-note"#)
-        .nth(1)
-        .and_then(|s| s.split("</p>").next())
-        .expect("one line in the record explaining the figure");
-    assert_eq!(page.matches(r#"class="figure-note"#).count(), 1);
-    assert!(note.contains("Adult proportions"), "the band: {note}");
-    assert!(note.contains("164"), "the height it is drawn to: {note}");
-    assert!(
-        note.contains("Drawn to scale"),
-        "and what that means: {note}"
-    );
-    assert!(
-        note.contains("Not a portrait"),
-        "and what it is not: {note}"
-    );
+    // And the record carries no caption for a drawing that is not there.
+    for hook in ["figure-note", "figure-label", "Not a portrait"] {
+        assert!(
+            !page.contains(hook),
+            "the record still explains a figure: {hook}"
+        );
+    }
 
-    // Only where the figure is. The side panel has no masthead, so a sentence
-    // about a drawing would be a sentence about nothing.
-    let panel = body_string(get(&app, &format!("/tree/panel/{OTYLIA}")).await).await;
+    // The facts themselves are untouched — they are data, and they are on the
+    // profile tab, stated rather than drawn.
+    let profile = body_string(get(&app, &format!("/person/{OTYLIA}?tab=profile")).await).await;
     assert!(
-        !panel.contains("figure-note"),
-        "the panel draws no figure and explains none"
-    );
-    let life = body_string(get(&app, &format!("/person/{OTYLIA}?tab=life")).await).await;
-    assert!(
-        !life.contains("figure-note"),
-        "and it is a line in the record tab"
+        profile.contains("164"),
+        "the recorded height is still shown: {profile}"
     );
 }
 

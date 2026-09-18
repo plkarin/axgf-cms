@@ -373,10 +373,6 @@ pub struct PersonView {
     pub radars: Vec<crate::radar::Chart>,
     /// Claims across every group that this reader can see.
     pub profile_count: usize,
-    /// The drawn figure, or `None` when the record cannot support one. See
-    /// [`crate::silhouette`] — it is not a portrait and does not derive from
-    /// the photograph, which stays in [`HeaderView::avatar`] untouched.
-    pub silhouette: Option<crate::silhouette::View>,
 }
 
 /// The locale key for what a reader is shown in place of a person they may
@@ -511,13 +507,6 @@ pub fn build_in(
         recorded_living,
     );
 
-    // The figure beside the record. It is built from `header.age` — the same
-    // number the masthead prints — so the drawing and the heading above it
-    // cannot disagree about how old somebody was, and from `morphology`, which
-    // is no sensitive class. A figure that changed shape when an administrator
-    // signed in would be a health disclosure drawn as a picture.
-    let silhouette = crate::silhouette::view_for(header.age, &lifted, lang);
-
     // The raw-JSON section is shown to every reader who may open the record,
     // not only to an administrator — so it is the shortest path from a stored
     // diagnosis to a stranger's screen, and pretty-printing the entity
@@ -604,7 +593,6 @@ pub fn build_in(
         profile_tabs,
         profile_count,
         radars,
-        silhouette,
     })
 }
 

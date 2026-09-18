@@ -848,21 +848,6 @@ record-presumed-deceased = 推定已故
 record-presumed-short = 推定
 record-presumed-why = 没有记录死亡，而出生已在 { $years } 年以前，因此这条记录不可能正确。档案未被更改：这是本页的推断，不是来源所述。
 
-## 记录旁边生成的人形图
-#
-# 它不是肖像。下面这些消息的存在就是为了让这一点毫不含糊。
-
-silhouette-label = 记录中的年龄与身高，而非相貌
-silhouette-not-a-likeness = 这不是肖像：其中没有任何部分取自照片。
-silhouette-proportions-infant = 婴儿的比例，约四个头高。
-silhouette-proportions-child = 幼儿的比例，约六个头高。
-silhouette-proportions-adolescent = 青少年的比例，约七个头高。
-silhouette-proportions-adult = 成年人的比例，约七个半头高。
-silhouette-proportions-elderly = 成年人的比例。头身比例在二十岁前后不再变化，因此这个图形不区分老年人与较年轻的成年人；上方的日期才区分。
-silhouette-to-scale = 按比例绘制，参照 { $ref } 厘米处的基准线。
-silhouette-no-height = 未记录身高，因此图形按其年龄段的名义大小绘制，并非按实际比例。
-silhouette-several-heights = 记录了不止一个身高；图中绘制的是最近的一个。
-
 ## The identity editor
 
 identity-editor-title = 姓名与身份

@@ -387,13 +387,6 @@ fn every_dynamic_key_family_is_fully_defined() {
             expected.push(note.to_string());
         }
     }
-    // The figure beside a record names its band's sentence by building the
-    // key, so nothing in the templates points at these and only this list
-    // stands between a missing one and a reader seeing
-    // `silhouette-proportions-adolescent` printed on the page.
-    for band in axgf_cms::silhouette::BANDS {
-        expected.push(band.key());
-    }
     // The fields this application recorded before AXGF 1.1, shown under their
     // old labels for as long as a bundle still carries one.
     for field in axgf_cms::physical::LEGACY_FIELDS {

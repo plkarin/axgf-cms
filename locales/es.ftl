@@ -1029,22 +1029,6 @@ record-presumed-deceased = fallecimiento presunto
 record-presumed-short = presunto
 record-presumed-why = No hay defunción registrada y el nacimiento fue hace más de { $years } años, así que este registro no puede ser correcto. El archivo no se modifica: esto es lo que deduce la página, no lo que dice la fuente.
 
-## La figura generada junto a un registro
-#
-# No es un retrato. Todos los mensajes que siguen existen para que eso quede
-# sin ambigüedad.
-
-silhouette-label = Edad y estatura registradas, no un aspecto
-silhouette-not-a-likeness = No es un retrato: nada en ella procede de una fotografía.
-silhouette-proportions-infant = Proporciones de un lactante, unas cuatro alturas de cabeza.
-silhouette-proportions-child = Proporciones de un niño pequeño, unas seis alturas de cabeza.
-silhouette-proportions-adolescent = Proporciones de un adolescente, unas siete alturas de cabeza.
-silhouette-proportions-adult = Proporciones de un adulto, unas siete alturas y media de cabeza.
-silhouette-proportions-elderly = Proporciones de un adulto, que dejan de cambiar hacia los veinte años: la figura no distingue a una persona mayor de una adulta más joven, y las fechas de arriba sí.
-silhouette-to-scale = Dibujada a escala frente a una línea de referencia a { $ref } cm.
-silhouette-no-height = No hay estatura registrada, así que la figura se dibuja a un tamaño nominal para su franja de edad y no a escala.
-silhouette-several-heights = Hay más de una estatura registrada; la figura dibuja la más reciente.
-
 ## The identity editor
 
 identity-editor-title = Nombres e identidad

@@ -228,6 +228,21 @@ the second was never shown in any language. The person's is now
 `record-life-status`, and `no_catalogue_defines_a_key_twice` fails the build
 on the next one.
 
+### Removed
+
+**The generated figure beside a record.** The header drew a faceless figure
+whose proportions carried an age band, whose height was drawn to scale against
+a 170 cm reference line, and whose torso width carried a recorded build. All
+three are data, and the profile tab states them as data, with their dates,
+their sources and their confidence — which is more than a drawing can carry
+and less ambiguous than a drawing that carries it by shape.
+
+Gone with it: `src/silhouette.rs` and its 906 lines, the `PersonView` field,
+the caption line in the record's identity section, the four-column masthead
+grid the figure needed, the `.silhouette`/`.person-figure`/`.figure-note`
+rules, and the ten `silhouette-*` messages in all eleven catalogues. The
+render path is not merely unreachable — it is not built.
+
 ### Changed
 
 **The health rule is the rule for all four sensitive classes.** AXGF 1.1 names

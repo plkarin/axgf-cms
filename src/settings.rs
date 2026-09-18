@@ -85,6 +85,43 @@ impl Tab {
     }
 }
 
+/// The settings page on one tab, carrying where the reader came from.
+pub fn url(slug: &str, from: &str) -> String {
+    if from == "/" {
+        format!("/settings?tab={slug}")
+    } else {
+        format!("/settings?tab={slug}&from={}", urlencode(from))
+    }
+}
+
+/// The way in from the masthead: the default tab, carrying the way back.
+pub fn entry_url(from: &str) -> String {
+    if from == "/" {
+        "/settings".to_string()
+    } else {
+        format!("/settings?from={}", urlencode(from))
+    }
+}
+
+/// Percent-encode a same-site path for use as a query value.
+///
+/// Small and local rather than a dependency. The input is always a path that
+/// has already been through [`crate::render::safe_back`], so what is left to
+/// encode is the handful of characters that would otherwise end the query
+/// value or start another parameter.
+fn urlencode(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 8);
+    for b in s.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' | b'/' => {
+                out.push(b as char)
+            }
+            _ => out.push_str(&format!("%{b:02X}")),
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,41 +167,4 @@ mod tests {
         assert_eq!(slugs.len(), TABS.len());
         assert_eq!(keys.len(), TABS.len());
     }
-}
-
-/// The settings page on one tab, carrying where the reader came from.
-pub fn url(slug: &str, from: &str) -> String {
-    if from == "/" {
-        format!("/settings?tab={slug}")
-    } else {
-        format!("/settings?tab={slug}&from={}", urlencode(from))
-    }
-}
-
-/// The way in from the masthead: the default tab, carrying the way back.
-pub fn entry_url(from: &str) -> String {
-    if from == "/" {
-        "/settings".to_string()
-    } else {
-        format!("/settings?from={}", urlencode(from))
-    }
-}
-
-/// Percent-encode a same-site path for use as a query value.
-///
-/// Small and local rather than a dependency. The input is always a path that
-/// has already been through [`crate::render::safe_back`], so what is left to
-/// encode is the handful of characters that would otherwise end the query
-/// value or start another parameter.
-fn urlencode(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() + 8);
-    for b in s.bytes() {
-        match b {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' | b'/' => {
-                out.push(b as char)
-            }
-            _ => out.push_str(&format!("%{b:02X}")),
-        }
-    }
-    out
 }

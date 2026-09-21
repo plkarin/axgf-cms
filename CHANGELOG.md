@@ -8,6 +8,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Backups, and the proof that they restore.** The whole state is three things
+— the `.axgf`, the `.acl` and the edit journal — and until now nothing backed
+up any of them. `axgf-cms backup --dest <dir>` writes one timestamped ZIP
+holding all three, taken under the same write lock a save takes so the files
+in it agree with each other, and a systemd timer installed by `bootstrap.sh`
+runs it daily.
+
+Every archive is read back before it is given its final name: the ZIP's CRCs,
+the SHA-256 of each member against the manifest, the bundle re-imported with
+the library and validated, and the ACL parsed. One that fails any of those is
+deleted rather than left in the backup directory, because a file called
+`axgf-backup-….zip` is the most confidently believed claim an installation
+makes about itself. Retention keeps the last 7 daily, 4 weekly and 12 monthly
+archives and prunes the rest; all three numbers are flags.
+
+`axgf-cms restore <archive>` puts one back. It refuses while a server is
+attached to the bundle or while anything holds the write lock, verifies the
+archive completely before moving a single file, and moves the current three
+files into a timestamped directory beside the bundle rather than deleting
+them — restoring the wrong archive at three in the morning has to be
+reversible. `axgf-cms verify <archive>` does the checking and nothing else.
+
+The archive is an ordinary ZIP, on purpose: the day a backup is needed is the
+worst possible day to discover that reading it requires this program.
+
+**One writer at a time, across processes.** `AppState`'s `RwLock` ordered the
+handlers of one server against each other and said nothing about a second
+process — which is exactly what the backup command is. Saves and account
+changes now take an `flock` on `<bundle>.lock` for the moment they write, and
+the backup holds it across all three copies, so an archive can never hold a
+bundle from after a save and an ACL from before it. A server also holds
+`<bundle>.instance` for its whole life, which refuses a second server over one
+bundle — two processes each holding their own copy of the tree would take
+turns silently undoing each other — and is what lets `restore` tell that an
+instance is running.
+
+**Free space is checked before a write starts.** Every write that grows the
+bundle rebuilds the whole archive beside itself, so saving a corrected birth
+year on a 435 MB bundle needs 870 MB free. That is now refused up front, with
+the shortfall named, instead of discovered part-way through.
+
+**`/health` answers what an operator needs.** Four checks — the bundle loads
+and validates, free disk against a threshold, the age of the newest backup,
+and whether the payload cache still holds every file the bundle declares —
+and the HTTP status is the worst of them, so an uptime monitor that knows
+nothing about AXGF catches a full disk and a backup timer that stopped firing.
+A warning answers 200 and a failure 503: nobody should be woken at midnight
+over a stale backup.
+
+**`bootstrap.sh --upgrade`.** Takes a backup with the binary that is known to
+work, keeps that binary aside, installs the new one, restarts, and asks
+`/health` whether it can read the family's data. If it cannot, the previous
+binary goes back automatically and the site comes up again.
+
 **Three charts at the foot of the record.** Physique (stature, build, lean
 mass, posture, gait, teeth), temperament and mind (the five factors and
 cognition) and health and vitality (circulation, breathing, metabolism,

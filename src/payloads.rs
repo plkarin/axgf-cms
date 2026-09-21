@@ -116,6 +116,73 @@ impl PayloadCache {
         &self.dir
     }
 
+    /// Bytes this cache holds, as its index records them.
+    ///
+    /// What a save has to be able to write again: the export copies every
+    /// payload out of here and into the new archive, so the archive is at
+    /// least this large.
+    pub fn bytes_on_disk(&self) -> u64 {
+        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
+        index.values().map(|e| e.size).sum()
+    }
+
+    /// Delete every cache generation under `base` except `keep`.
+    ///
+    /// The cache is keyed by the bundle's SHA-256, so every save produces a new
+    /// key and leaves the previous generation behind complete. That is
+    /// deliberate — a restart after a save that did not finish finds the old
+    /// one still warm — but nothing ever removed them, and on the machine this
+    /// was written for five generations of one bundle had accumulated to 2.1 GB
+    /// of media nothing would read again. The disk they fill is the disk the
+    /// bundle is saved to.
+    ///
+    /// Only the *previous* generation is worth keeping, and only for as long as
+    /// the process that might roll back to it is running, so a sweep at startup
+    /// keeping the live one is the whole policy. Best-effort: a generation that
+    /// will not delete is logged and left.
+    pub fn sweep_stale_generations(base: &Path, keep: &Path) -> (usize, u64) {
+        let Ok(entries) = fs::read_dir(base) else {
+            return (0, 0);
+        };
+        let keep = keep.canonicalize().ok();
+        let mut removed = 0usize;
+        let mut freed = 0u64;
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !path.is_dir() {
+                continue;
+            }
+            // A generation directory is named by a 64-character hex digest.
+            // Anything else in here belongs to somebody else.
+            let is_generation = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .map(|n| n.len() == 64 && n.bytes().all(|b| b.is_ascii_hexdigit()))
+                .unwrap_or(false);
+            if !is_generation || path.canonicalize().ok() == keep {
+                continue;
+            }
+            let size = dir_bytes(&path);
+            match fs::remove_dir_all(&path) {
+                Ok(()) => {
+                    removed += 1;
+                    freed += size;
+                    tracing::info!(
+                        path = %path.display(),
+                        bytes = size,
+                        "removed a stale payload cache generation"
+                    );
+                }
+                Err(e) => tracing::warn!(
+                    path = %path.display(),
+                    error = %e,
+                    "could not remove a stale payload cache generation"
+                ),
+            }
+        }
+        (removed, freed)
+    }
+
     /// Take one payload straight from a streaming import into the cache.
     ///
     /// Called once per payload by [`crate::state::AppState::load`], from inside
@@ -505,6 +572,21 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
         .with_context(|| format!("renaming {} to {}", tmp.display(), path.display()))
 }
 
+/// Bytes a directory's immediate files occupy. The cache is flat, so this does
+/// not recurse.
+fn dir_bytes(dir: &Path) -> u64 {
+    fs::read_dir(dir)
+        .map(|entries| {
+            entries
+                .flatten()
+                .filter_map(|e| e.metadata().ok())
+                .filter(|m| m.is_file())
+                .map(|m| m.len())
+                .sum()
+        })
+        .unwrap_or(0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -524,7 +606,7 @@ mod tests {
 
     #[test]
     fn round_trips_a_payload_through_the_cache() {
-        let base = std::env::temp_dir().join(format!("axgf-pc-{}", std::process::id()));
+        let base = crate::scratch::Dir::new("payloads");
         let cache = PayloadCache::open(&base, "deadbeef").expect("open");
         cache.put("documents/files/x.txt", b"hello").expect("put");
         assert_eq!(
@@ -532,6 +614,5 @@ mod tests {
             Some(&b"hello"[..])
         );
         assert!(cache.path_of("documents/files/x.txt").is_some());
-        let _ = fs::remove_dir_all(&base);
     }
 }

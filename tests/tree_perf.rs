@@ -14,7 +14,7 @@ use serde_json::json;
 
 /// Build a synthetic bundle of roughly the operator's shape: 767 persons in
 /// ~295 families, spread over several generations.
-fn synthetic_bundle_path(tag: &str) -> std::path::PathBuf {
+fn synthetic_bundle_path(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("synthetic.axgf");
 
@@ -77,13 +77,15 @@ fn synthetic_bundle_path(tag: &str) -> std::path::PathBuf {
 
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export synthetic");
     std::fs::write(&path, bytes).expect("write synthetic bundle");
-    path
+    dir.pointing_at(path)
 }
 
 #[tokio::test]
 async fn tree_renders_a_full_size_bundle_well_under_a_second() {
     let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
-        Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
+        Ok(p) if std::path::Path::new(&p).exists() => {
+            common::Scratch::external(std::path::Path::new(&p))
+        }
         _ => synthetic_bundle_path("perf-src"),
     };
 
@@ -135,7 +137,9 @@ async fn crossings_fall_after_ordering_on_the_real_bundle() {
     // the barycentre sweeps, and how many after. Reported for both the real
     // bundle (via AXGF_CMS_BENCH_BUNDLE) and the synthetic stand-in.
     let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
-        Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
+        Ok(p) if std::path::Path::new(&p).exists() => {
+            common::Scratch::external(std::path::Path::new(&p))
+        }
         _ => synthetic_bundle_path("cross-src"),
     };
     let dir = scratch("cross");
@@ -157,7 +161,9 @@ async fn crossings_fall_after_ordering_on_the_real_bundle() {
 #[tokio::test]
 async fn the_full_view_still_places_every_person() {
     let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
-        Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
+        Ok(p) if std::path::Path::new(&p).exists() => {
+            common::Scratch::external(std::path::Path::new(&p))
+        }
         _ => synthetic_bundle_path("place-src"),
     };
     let (app, _p) = app_with_bundle("place", &bundle);
@@ -215,7 +221,9 @@ async fn the_default_view_is_a_small_legible_subtree() {
     // The whole point of the focused default: a visitor must land on something
     // they can read, not on an 18,000px canvas.
     let bundle = match std::env::var("AXGF_CMS_BENCH_BUNDLE") {
-        Ok(p) if std::path::Path::new(&p).exists() => std::path::PathBuf::from(p),
+        Ok(p) if std::path::Path::new(&p).exists() => {
+            common::Scratch::external(std::path::Path::new(&p))
+        }
         _ => synthetic_bundle_path("focus-src"),
     };
     let (app, _p) = app_with_bundle("focus", &bundle);

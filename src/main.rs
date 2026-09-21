@@ -3,29 +3,61 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use axgf_cms::config::{self, Config};
+use axgf_cms::config::{self, Command, Config};
 use axgf_cms::state::AppState;
 use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "axgf_cms=info,tower_http=warn".into()),
-        )
-        .init();
+    init_logging();
 
     let cfg = Config::parse();
+
+    // The three commands that are not "serve" run and exit. Each of them is a
+    // thing an operator does at a shell or a timer does at four in the
+    // morning, and none of them needs a listening socket.
+    match &cfg.command {
+        Some(Command::Backup {
+            dest,
+            keep_daily,
+            keep_weekly,
+            keep_monthly,
+        }) => {
+            return run_backup(
+                &cfg,
+                dest.as_deref(),
+                *keep_daily,
+                *keep_weekly,
+                *keep_monthly,
+            )
+        }
+        Some(Command::Restore { archive, force }) => return run_restore(&cfg, archive, *force),
+        Some(Command::Verify { archive }) => return run_verify(archive),
+        None => {}
+    }
     // Before anything renders: the plausibility limit is fixed for the life of
     // the process, and every page asks for it.
     axgf_cms::living::set_max_age_years(cfg.presume_deceased_after);
     let (token, generated) = cfg.resolve_admin_token();
 
+    let bundle = cfg.bundle()?.clone();
+
+    // Claim the bundle for the life of this process, before it is read.
+    //
+    // Two things depend on this. A second server over the same bundle is
+    // refused rather than allowed to take turns overwriting the first one's
+    // edits; and `axgf-cms restore` can tell that an instance is attached and
+    // refuse to swap the files out from under it. The lock is released by the
+    // kernel when this process ends, however it ends.
+    //
+    // Held in `main` rather than in `AppState`, because a library caller — the
+    // test suite, chiefly — opens the same bundle more than once on purpose,
+    // and the claim being made is specifically "a server is serving this".
+    let _instance = axgf_cms::lockfile::InstanceLock::acquire(&bundle)?;
+
     let seed = cfg.seed_sample.then_some(axgf_cms::SAMPLE_BUNDLE);
-    let (state, payloads) =
-        AppState::load(&cfg.bundle, token.clone(), seed, cfg.cache_dir.as_deref())
-            .context("initialising application state")?;
+    let (state, payloads) = AppState::load(&bundle, token.clone(), seed, cfg.cache_dir.as_deref())
+        .context("initialising application state")?;
     // No contact address means no geocoder, which is a supported way to run
     // rather than a missing feature: the coordinate fields are typed by hand
     // either way, and an installation that will not identify itself does not
@@ -48,7 +80,8 @@ async fn main() -> Result<()> {
             .with_map(axgf_cms::state::MapTiles::new(
                 cfg.map_tiles.as_deref(),
                 cfg.map_attribution.as_deref(),
-            )),
+            ))
+            .with_backup_dir(cfg.backup_dir.clone()),
     );
 
     // --create-admin runs against the loaded state and then exits. It happens
@@ -60,7 +93,7 @@ async fn main() -> Result<()> {
     }
 
     let total: usize = state.counts().iter().map(|(_, n)| n).sum();
-    tracing::info!(bundle = %cfg.bundle.display(), entities = total, "bundle loaded");
+    tracing::info!(bundle = %bundle.display(), entities = total, "bundle loaded");
 
     // State plainly what happened to the media: an operator should see at a
     // glance that the payloads are on disk, not in RAM.
@@ -94,7 +127,7 @@ async fn main() -> Result<()> {
     );
     eprintln!("─────────────────────────────────────────────────────────");
 
-    let app = axgf_cms::router(state);
+    let app = axgf_cms::router(Arc::clone(&state));
 
     let listener = tokio::net::TcpListener::bind(cfg.bind)
         .await
@@ -126,6 +159,13 @@ async fn main() -> Result<()> {
         );
     }
 
+    // Say out loud, once, what the health endpoint would say — an operator
+    // reading `journalctl -u axgf-cms` after a restart should not have to curl
+    // anything to find out that the backups stopped a fortnight ago.
+    for check in state.health().problems() {
+        tracing::warn!(check = check.name, "{}", check.detail);
+    }
+
     eprintln!("axgf-cms listening on http://{}", cfg.bind);
 
     // `into_make_service_with_connect_info` is what makes the peer address
@@ -143,6 +183,140 @@ async fn main() -> Result<()> {
     .await
     .context("server error")?;
 
+    Ok(())
+}
+
+/// Structured logs, to journald when systemd is running this process.
+///
+/// Under systemd, stderr goes to the journal already, so what matters is not
+/// *where* the lines go but what they look like when they get there: one field
+/// per fact rather than a sentence with values inlined, so `journalctl -o json`
+/// and anything reading it can filter on them.
+///
+/// `info` by default and not `debug`: a family's installation writes a handful
+/// of lines a day at `info` and several per request at `debug`, and a journal
+/// that has rotated away the week something went wrong is no journal. `RUST_LOG`
+/// still overrides it for the afternoon somebody is debugging.
+fn init_logging() {
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| "axgf_cms=info,tower_http=warn".into());
+    let under_systemd = std::env::var_os("INVOCATION_ID").is_some();
+    let builder = tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_target(true);
+    if under_systemd {
+        // systemd stamps every line itself, so a second timestamp is noise;
+        // ANSI colour in a journal is worse than noise.
+        builder.with_ansi(false).without_time().init();
+    } else {
+        builder.init();
+    }
+}
+
+/// `axgf-cms backup --dest <dir>`
+fn run_backup(
+    cfg: &Config,
+    dest: Option<&std::path::Path>,
+    daily: usize,
+    weekly: usize,
+    monthly: usize,
+) -> Result<()> {
+    let bundle = cfg.bundle()?;
+    let dest = dest
+        .or(cfg.backup_dir.as_deref())
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "no destination. Say where the archive goes:\n\n\
+                 \x20 axgf-cms backup --bundle {} --dest /srv/backups\n\n\
+                 or set {} for this machine.",
+                bundle.display(),
+                config::BACKUP_DIR_ENV
+            )
+        })?
+        .to_path_buf();
+
+    let retention = axgf_cms::backup::Retention {
+        daily,
+        weekly,
+        monthly,
+    };
+    let report = axgf_cms::backup::run(bundle, &dest, retention)?;
+
+    let m = &report.manifest;
+    eprintln!("─────────────────────────────────────────────────────────");
+    eprintln!("  backup written and verified");
+    eprintln!();
+    eprintln!("    archive    {}", report.archive.display());
+    eprintln!(
+        "    size       {}",
+        axgf_cms::documents::human_size(report.bytes)
+    );
+    eprintln!("    entities   {}", m.entities.values().sum::<usize>());
+    eprintln!("    accounts   {}", m.accounts);
+    eprintln!("    journal    {} lines", m.journal_lines);
+    eprintln!("    saves held {} ms", report.lock_held_ms);
+    if !report.pruned.is_empty() {
+        eprintln!();
+        eprintln!(
+            "    retention removed {} older archive(s):",
+            report.pruned.len()
+        );
+        for p in &report.pruned {
+            eprintln!(
+                "      {}",
+                p.file_name().unwrap_or_default().to_string_lossy()
+            );
+        }
+    }
+    eprintln!();
+    eprintln!("  An archive on the same disk as the bundle does not survive that");
+    eprintln!("  disk. Copy it off the machine — see docs/OPERATOR.md.");
+    eprintln!("─────────────────────────────────────────────────────────");
+    Ok(())
+}
+
+/// `axgf-cms restore <archive>`
+fn run_restore(cfg: &Config, archive: &std::path::Path, force: bool) -> Result<()> {
+    let bundle = cfg.bundle()?;
+    let plan = axgf_cms::backup::restore(archive, bundle, force)?;
+    let v = &plan.verified;
+    eprintln!("─────────────────────────────────────────────────────────");
+    eprintln!("  restored {}", archive.display());
+    eprintln!();
+    eprintln!("    taken      {}", v.manifest.created_at);
+    eprintln!("    bundle     {}", plan.files.bundle.display());
+    for (kind, n) in &v.entities {
+        if *n > 0 {
+            eprintln!("    {kind:<10} {n}");
+        }
+    }
+    eprintln!("    accounts   {}", v.accounts);
+    eprintln!("    journal    {} lines", v.journal_lines);
+    eprintln!();
+    eprintln!("  The state that was there is not deleted. It is in");
+    eprintln!("    {}", plan.aside.display());
+    eprintln!("  If this was the wrong archive, move those files back.");
+    eprintln!("─────────────────────────────────────────────────────────");
+    Ok(())
+}
+
+/// `axgf-cms verify <archive>`
+fn run_verify(archive: &std::path::Path) -> Result<()> {
+    let v = axgf_cms::backup::verify(archive)?;
+    eprintln!("─────────────────────────────────────────────────────────");
+    eprintln!("  {} is a readable backup", archive.display());
+    eprintln!();
+    eprintln!("    taken      {}", v.manifest.created_at);
+    eprintln!("    written by {}", v.manifest.written_by);
+    eprintln!("    of         {}", v.manifest.source_bundle);
+    for (kind, n) in &v.entities {
+        if *n > 0 {
+            eprintln!("    {kind:<10} {n}");
+        }
+    }
+    eprintln!("    accounts   {}", v.accounts);
+    eprintln!("    journal    {} lines", v.journal_lines);
+    eprintln!("─────────────────────────────────────────────────────────");
     Ok(())
 }
 

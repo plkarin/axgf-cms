@@ -35,7 +35,7 @@ fn person(id: &str, name: &str) -> Value {
     })
 }
 
-fn app(tag: &str) -> (axum::Router, std::path::PathBuf) {
+fn app(tag: &str) -> (axum::Router, common::Scratch) {
     let dir = scratch(&format!("{tag}-src"));
     let path = dir.join("rel.axgf");
     let flat = json!({

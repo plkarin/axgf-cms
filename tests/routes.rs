@@ -72,7 +72,12 @@ async fn health_reports_entity_counts() {
     let body = expect_status(get(&app, "/health").await, StatusCode::OK, "GET /health").await;
 
     let v: serde_json::Value = serde_json::from_str(&body).expect("health returns JSON");
-    assert_eq!(v["status"], "ok");
+    // `warn`, not `ok`: this installation has no backup directory configured,
+    // which is a true and useful thing to be told. 200 all the same — a
+    // warning is not an outage. See `tests/operational_health.rs` for the
+    // status codes.
+    assert_eq!(v["status"], "warn");
+    assert_eq!(v["checks"]["bundle"]["status"], "ok");
     assert_eq!(v["total_entities"], 0);
     // Every collection is reported, including the empty ones.
     for k in [

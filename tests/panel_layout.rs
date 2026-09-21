@@ -16,7 +16,7 @@ const SOLO: &str = "11111111-1111-4111-8111-111111111111";
 const MANY: &str = "22222222-2222-4222-8222-222222222222";
 
 /// One person with a single name, one with four, both with evidence.
-fn bundle(tag: &str) -> std::path::PathBuf {
+fn bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("panel.axgf");
     let flat = json!({
@@ -62,7 +62,7 @@ fn bundle(tag: &str) -> std::path::PathBuf {
     });
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
     std::fs::write(&path, bytes).expect("write");
-    path
+    dir.pointing_at(path)
 }
 
 /// Everything between the panel's opening `<div class="panel-inner"` and its

@@ -16,13 +16,38 @@
 //! means `tail`, `grep` and `wc -l` work on it, which matters for a file whose
 //! whole job is to be inspectable when something has gone wrong.
 //!
-//! Nothing prunes it. At a family's edit rate — a few hundred changes a year —
-//! it stays smaller than one photograph for a lifetime, and a journal that
-//! silently drops history is not one.
+//! # Rotated, never pruned
+//!
+//! Nothing deletes a line, and nothing ever will: the conflict screen
+//! reconstructs the version an editor started from by replaying this file
+//! backwards, and a restore is only as good as the history that came with it.
+//! A journal that silently drops history is not one.
+//!
+//! What was wrong with leaving it as a single growing file was not the disk —
+//! a family writes a few hundred lines a year — but that *every read was a
+//! read of the whole thing*. The admin dashboard asked for the last fifteen
+//! entries and for the total count on every render, and both parsed every line
+//! ever written. At a hundred thousand lines that is the slowest thing on the
+//! page, for two numbers.
+//!
+//! So the live file rotates at [`ROTATE_AT`] into `family.journal.1`, the
+//! previous `.1` becoming `.2`, and so on without limit. Reads span every
+//! segment oldest-first, so [`Journal::read_all`], [`Journal::for_entity`] and
+//! [`rewind`] see exactly what they saw before rotation existed; but
+//! [`Journal::recent`] walks newest segment first and stops as soon as it has
+//! enough, and a backup carries every segment.
 
 use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
+
+/// Size at which the live journal is rotated.
+///
+/// Eight mebibytes is roughly a hundred thousand entries — a century of a
+/// family's editing, or a week of a script gone wrong. Small enough that
+/// parsing one segment is instant, large enough that an ordinary installation
+/// never rotates at all.
+pub const ROTATE_AT: u64 = 8 * 1024 * 1024;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
@@ -95,6 +120,7 @@ impl Journal {
     /// Mode 600 like the ACL: the journal names people and quotes the values
     /// they changed, which is not less sensitive than the accounts are.
     pub fn append(&self, entry: &Entry) -> Result<()> {
+        self.rotate_if_large();
         let line = serde_json::to_string(entry).context("serialising a journal entry")?;
         let mut opts = OpenOptions::new();
         opts.create(true).append(true);
@@ -114,25 +140,82 @@ impl Journal {
         Ok(())
     }
 
-    /// Read the whole journal, oldest first.
+    /// Every segment of this journal, oldest first: `…journal.3`, `.2`, `.1`,
+    /// then the live file.
+    ///
+    /// Rotation is the only thing that creates the numbered files, and it only
+    /// ever renames upwards, so the sequence has no gaps. A gap would be
+    /// somebody having deleted a segment by hand, and the scan stops there
+    /// rather than pretending the older ones are contiguous with the newer.
+    pub fn segments(&self) -> Vec<PathBuf> {
+        let mut older = Vec::new();
+        let mut n = 1u32;
+        loop {
+            let p = self.segment(n);
+            if !p.exists() {
+                break;
+            }
+            older.push(p);
+            n += 1;
+        }
+        older.reverse(); // oldest first
+        older.push(self.path.clone());
+        older
+    }
+
+    /// The path of rotated segment `n`. `1` is the most recent rotation.
+    fn segment(&self, n: u32) -> PathBuf {
+        let mut name = self.path.file_name().unwrap_or_default().to_os_string();
+        name.push(format!(".{n}"));
+        self.path.with_file_name(name)
+    }
+
+    /// Rotate when the live file has grown past [`ROTATE_AT`].
+    ///
+    /// Renames only: `…journal.2` → `…journal.3`, `.1` → `.2`, live → `.1`.
+    /// Every rename is atomic and within one directory, so an interruption at
+    /// any point leaves every line in exactly one file. A failure is logged
+    /// and the append proceeds into the un-rotated file: a journal that is too
+    /// big is a far smaller problem than an edit that was not recorded.
+    fn rotate_if_large(&self) {
+        let Ok(meta) = std::fs::metadata(&self.path) else {
+            return;
+        };
+        if meta.len() < ROTATE_AT {
+            return;
+        }
+        let mut highest = 0u32;
+        while self.segment(highest + 1).exists() {
+            highest += 1;
+        }
+        // Downwards, so nothing is ever overwritten.
+        for n in (1..=highest).rev() {
+            if let Err(e) = std::fs::rename(self.segment(n), self.segment(n + 1)) {
+                tracing::warn!(error = %e, "journal rotation stopped; nothing was lost");
+                return;
+            }
+        }
+        match std::fs::rename(&self.path, self.segment(1)) {
+            Ok(()) => tracing::info!(
+                journal = %self.path.display(),
+                bytes = meta.len(),
+                segment = %self.segment(1).display(),
+                "rotated the edit journal; every line is still read back"
+            ),
+            Err(e) => tracing::warn!(error = %e, "could not rotate the edit journal"),
+        }
+    }
+
+    /// Read the whole journal, oldest first, across every segment.
     ///
     /// A line that does not parse is skipped rather than failing the read: a
     /// truncated last line from a crash must not make the history page
     /// unreachable, which is exactly when somebody needs it.
     pub fn read_all(&self) -> Vec<Entry> {
-        let Ok(f) = std::fs::File::open(&self.path) else {
-            return Vec::new();
-        };
         let mut out = Vec::new();
         let mut skipped = 0usize;
-        for line in BufReader::new(f).lines().map_while(Result::ok) {
-            if line.trim().is_empty() {
-                continue;
-            }
-            match serde_json::from_str::<Entry>(&line) {
-                Ok(e) => out.push(e),
-                Err(_) => skipped += 1,
-            }
+        for seg in self.segments() {
+            read_segment(&seg, &mut out, &mut skipped);
         }
         if skipped > 0 {
             tracing::warn!(
@@ -145,11 +228,26 @@ impl Journal {
     }
 
     /// The most recent `n` entries, newest first.
+    ///
+    /// Walks the newest segment first and stops as soon as it has `n`, so the
+    /// dashboard's fifteen rows cost one segment rather than the whole history.
     pub fn recent(&self, n: usize) -> Vec<Entry> {
-        let mut all = self.read_all();
-        all.reverse();
-        all.truncate(n);
-        all
+        if n == 0 {
+            return Vec::new();
+        }
+        let mut out = Vec::new();
+        let mut skipped = 0usize;
+        for seg in self.segments().into_iter().rev() {
+            let mut batch = Vec::new();
+            read_segment(&seg, &mut batch, &mut skipped);
+            batch.reverse();
+            out.extend(batch);
+            if out.len() >= n {
+                break;
+            }
+        }
+        out.truncate(n);
+        out
     }
 
     /// Every entry for one entity, newest first.
@@ -173,13 +271,45 @@ impl Journal {
         self.for_entity(kind, id).into_iter().next()
     }
 
-    /// How many entries the journal holds.
+    /// How many entries the journal holds, across every segment.
+    ///
+    /// Counts newlines instead of parsing entries: the admin dashboard asks for
+    /// this on every render and never looks at the objects.
     pub fn len(&self) -> usize {
-        self.read_all().len()
+        self.segments()
+            .iter()
+            .map(|seg| {
+                std::fs::File::open(seg)
+                    .map(|f| {
+                        BufReader::new(f)
+                            .lines()
+                            .map_while(Result::ok)
+                            .filter(|l| !l.trim().is_empty())
+                            .count()
+                    })
+                    .unwrap_or(0)
+            })
+            .sum()
     }
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+}
+
+/// Parse one segment's lines onto `out`, counting what would not parse.
+fn read_segment(path: &Path, out: &mut Vec<Entry>, skipped: &mut usize) {
+    let Ok(f) = std::fs::File::open(path) else {
+        return;
+    };
+    for line in BufReader::new(f).lines().map_while(Result::ok) {
+        if line.trim().is_empty() {
+            continue;
+        }
+        match serde_json::from_str::<Entry>(&line) {
+            Ok(e) => out.push(e),
+            Err(_) => *skipped += 1,
+        }
     }
 }
 
@@ -354,18 +484,12 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    fn scratch(tag: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!(
-            "axgf-journal-{}-{}-{}",
-            std::process::id(),
-            tag,
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        std::fs::create_dir_all(&dir).unwrap();
-        dir.join("family.journal")
+    /// A scratch directory, and the journal path inside it. The guard has to
+    /// be held by the test: dropping it takes the directory with it.
+    fn scratch(tag: &str) -> (crate::scratch::Dir, PathBuf) {
+        let dir = crate::scratch::Dir::new(tag);
+        let path = dir.join("family.journal");
+        (dir, path)
     }
 
     fn entry(who: &str, id: &str) -> Entry {
@@ -391,7 +515,8 @@ mod tests {
 
     #[test]
     fn entries_round_trip_in_the_order_they_were_written() {
-        let j = Journal::new(scratch("order"));
+        let (_dir, path) = scratch("order");
+        let j = Journal::new(path);
         for i in 0..5 {
             j.append(&entry("ada", &format!("p{i}"))).unwrap();
         }
@@ -404,7 +529,8 @@ mod tests {
 
     #[test]
     fn an_entry_records_who_what_and_the_field_that_changed() {
-        let j = Journal::new(scratch("fields"));
+        let (_dir, path) = scratch("fields");
+        let j = Journal::new(path);
         j.append(&entry("karin", "p1")).unwrap();
         let e = &j.read_all()[0];
         assert_eq!(e.who, "karin");
@@ -422,7 +548,7 @@ mod tests {
     #[test]
     fn a_torn_last_line_does_not_make_the_history_unreadable() {
         // A crash mid-append is exactly when somebody wants to read this.
-        let path = scratch("torn");
+        let (_dir, path) = scratch("torn");
         let j = Journal::new(path.clone());
         j.append(&entry("ada", "p1")).unwrap();
         j.append(&entry("ada", "p2")).unwrap();
@@ -438,7 +564,8 @@ mod tests {
 
     #[test]
     fn history_is_filtered_per_entity_newest_first() {
-        let j = Journal::new(scratch("per-entity"));
+        let (_dir, path) = scratch("per-entity");
+        let j = Journal::new(path);
         j.append(&entry("ada", "p1")).unwrap();
         j.append(&entry("bob", "p2")).unwrap();
         let mut third = entry("cleo", "p1");
@@ -457,7 +584,8 @@ mod tests {
     fn an_absent_journal_reads_as_empty_rather_than_failing() {
         // A fresh installation has never written one, and every page that
         // shows history has to work on the day it is installed.
-        let j = Journal::new(scratch("absent").with_file_name("never-written.journal"));
+        let (_dir, path) = scratch("absent");
+        let j = Journal::new(path.with_file_name("never-written.journal"));
         assert!(j.read_all().is_empty());
         assert!(j.is_empty());
         assert!(j.last_touched("person", "p1").is_none());
@@ -467,7 +595,7 @@ mod tests {
     #[test]
     fn the_journal_is_created_at_mode_600() {
         use std::os::unix::fs::PermissionsExt as _;
-        let path = scratch("mode");
+        let (_dir, path) = scratch("mode");
         let j = Journal::new(path.clone());
         j.append(&entry("ada", "p1")).unwrap();
         let mode = std::fs::metadata(&path).unwrap().permissions().mode() & 0o777;

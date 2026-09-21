@@ -32,7 +32,7 @@ const CAUSE: &str = "Diphtheria";
 const PRESUMED_CONDITION: &str = "Kuru";
 const HEIGHT: &str = "187";
 
-fn bundle(tag: &str) -> std::path::PathBuf {
+fn bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("health.axgf");
 
@@ -106,7 +106,7 @@ fn bundle(tag: &str) -> std::path::PathBuf {
         axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
     )
     .expect("write");
-    path
+    dir.pointing_at(path)
 }
 
 /// Every surface a signed-out reader can reach, for one person.
@@ -344,7 +344,7 @@ async fn a_form_that_never_showed_the_health_rows_cannot_blank_them() {
 const PASSWORD: &str = "correct-horse-battery-staple";
 
 /// An app over the health fixture with one contributor account.
-fn app_with_contributor(tag: &str) -> axum::Router {
+fn app_with_contributor(tag: &str) -> (axum::Router, common::Scratch) {
     let src = bundle(&format!("{tag}-src"));
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
@@ -357,7 +357,8 @@ fn app_with_contributor(tag: &str) -> axum::Router {
     );
     acl.save(&axgf_cms::acl::Acl::path_for(&path))
         .expect("save acl");
-    axgf_cms::app(&path, TOKEN).expect("build app")
+    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    (app, dir.pointing_at(path))
 }
 
 async fn sign_in(app: &axum::Router) -> String {
@@ -396,7 +397,7 @@ async fn record_an_edit(app: &axum::Router) {
 
 #[tokio::test]
 async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld() {
-    let app = app_with_contributor("health-journal");
+    let (app, _scratch) = app_with_contributor("health-journal");
     record_an_edit(&app).await;
     let cousin = sign_in(&app).await;
 
@@ -434,7 +435,7 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
 
 #[tokio::test]
 async fn the_entity_editor_hands_a_contributor_a_stripped_document() {
-    let app = app_with_contributor("health-editor");
+    let (app, _scratch) = app_with_contributor("health-editor");
     let cousin = sign_in(&app).await;
 
     let form =
@@ -455,7 +456,7 @@ async fn the_entity_editor_hands_a_contributor_a_stripped_document() {
 
 #[tokio::test]
 async fn an_editor_who_never_saw_the_health_cannot_blank_it() {
-    let app = app_with_contributor("health-editor-blank");
+    let (app, _scratch) = app_with_contributor("health-editor-blank");
     let cousin = sign_in(&app).await;
 
     // The whole round trip rather than a hand-written body: take the document
@@ -545,7 +546,7 @@ fn form_encode(s: &str) -> String {
 /// a diff against it, which is the same disclosure by another route.
 #[tokio::test]
 async fn the_conflict_page_does_not_hand_over_what_the_form_withheld() {
-    let app = app_with_contributor("health-conflict");
+    let (app, _scratch) = app_with_contributor("health-conflict");
     let cousin = sign_in(&app).await;
 
     // Take the document the form gives this contributor, then let somebody

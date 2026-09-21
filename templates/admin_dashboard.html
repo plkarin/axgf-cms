@@ -44,7 +44,7 @@
     <button class="btn" type="submit">{{ t("admin-validate") }}</button>
   </form>
   <form method="post" action="/admin/dedup" style="display:inline"
-        onsubmit="return confirm('{{ t("admin-dedup-confirm") }}')">
+        data-confirm="{{ t("admin-dedup-confirm") }}">
     <button class="btn" type="submit">{{ t("admin-deduplicate") }}</button>
   </form>
   {# The plain "Export" is the shareable one, carries no sensitive class, and

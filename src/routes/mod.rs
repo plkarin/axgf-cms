@@ -10,16 +10,123 @@ mod public;
 use std::sync::Arc;
 
 use axum::extract::DefaultBodyLimit;
+use axum::http::{header, HeaderValue};
 use axum::routing::{get, post};
 use axum::Router;
+use tower_http::compression::predicate::{NotForContentType, Predicate as _, SizeAbove};
+use tower_http::compression::CompressionLayer;
+use tower_http::set_header::SetResponseHeaderLayer;
 
 use crate::state::AppState;
 
 /// Shared handler state.
 pub type Shared = Arc<AppState>;
 
+/// The Content-Security-Policy every response carries.
+///
+/// Read directive by directive, because each one is a decision:
+///
+/// * `default-src 'self'` — nothing loads from anywhere else by default.
+/// * `script-src 'self'` — **no `unsafe-inline`**. The six inline `onclick`
+///   and `oninput` handlers the templates used to carry are in
+///   `/static/ui.js` now precisely so this directive could be written without
+///   it. Script injection is the attack this whole header is for; allowing
+///   inline script back would give most of it away.
+/// * `style-src 'self' 'unsafe-inline'` — inline *styles* stay. Dozens of
+///   places compute a width, an offset or a colour from the data and write it
+///   into a `style` attribute, and the worst an injected style can do here is
+///   make a page ugly. Buying `style-src 'self'` would cost a rewrite of the
+///   tree canvas and the radar charts for no meaningful gain.
+/// * `img-src 'self' data:` — avatars and the silhouette are data URIs. A
+///   configured basemap adds its tile host and nothing else.
+/// * `frame-ancestors 'none'` — this application is never framed, which is
+///   what stops a clickjacked admin form. `X-Frame-Options: DENY` says the
+///   same to browsers too old to read CSP.
+/// * `form-action 'self'` — a form cannot be made to post somewhere else.
+/// * `base-uri 'none'` — an injected `<base>` cannot re-point every relative
+///   URL on the page, including the ones the scripts fetch.
+/// * `object-src 'none'` — no plugins, ever.
+fn content_security_policy(state: &AppState) -> String {
+    // A basemap is fetched by the reader's browser from whatever host the
+    // operator configured, so that host — and only that host — is named.
+    let tiles = state
+        .map()
+        .and_then(|m| tile_origin(&m.url))
+        .map(|o| format!(" {o}"))
+        .unwrap_or_default();
+    format!(
+        "default-src 'self';          script-src 'self';          style-src 'self' 'unsafe-inline';          img-src 'self' data:{tiles};          font-src 'self';          connect-src 'self'{tiles};          form-action 'self';          frame-ancestors 'none';          base-uri 'none';          object-src 'none'"
+    )
+}
+
+/// `https://tile.example/{z}/{x}/{y}.png` → `https://tile.example`.
+///
+/// Only the origin, because that is all CSP wants, and a template with `{z}`
+/// in it is not a URL any parser will take whole.
+fn tile_origin(template: &str) -> Option<String> {
+    let (scheme, rest) = template.split_once("://")?;
+    let host = rest.split('/').next()?;
+    if host.is_empty() {
+        return None;
+    }
+    Some(format!("{scheme}://{host}"))
+}
+
 /// Build the application router.
 pub fn router(state: Shared) -> Router {
+    let csp = content_security_policy(&state);
+    security_headers(routes(state), &csp)
+}
+
+/// The security headers, and why each one is here.
+fn security_headers(router: Router, csp: &str) -> Router {
+    let fixed = |name: header::HeaderName, value: &'static str| {
+        SetResponseHeaderLayer::overriding(name, HeaderValue::from_static(value))
+    };
+    router
+        .layer(SetResponseHeaderLayer::overriding(
+            header::CONTENT_SECURITY_POLICY,
+            HeaderValue::from_str(csp)
+                .unwrap_or_else(|_| HeaderValue::from_static("default-src 'self'")),
+        ))
+        // A browser that guesses a response is HTML when the server said it
+        // was text/plain is how an uploaded "note" becomes a script. The
+        // document routes set this themselves as well; belt and braces.
+        .layer(fixed(header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
+        // `frame-ancestors` above is the modern form. This is the one every
+        // browser has understood for fifteen years.
+        .layer(fixed(header::X_FRAME_OPTIONS, "DENY"))
+        // A family tree's URLs name people — `/person/<id>` and the search
+        // query alongside it. `same-origin` keeps them off every outbound
+        // link, while leaving them on internal navigation where they are
+        // needed for the back button and the active-nav highlight.
+        .layer(fixed(header::REFERRER_POLICY, "same-origin"))
+        // Nothing here uses a camera, a microphone or a location, and saying
+        // so costs one header.
+        .layer(fixed(
+            header::HeaderName::from_static("permissions-policy"),
+            "geolocation=(), camera=(), microphone=(), payment=(), usb=()",
+        ))
+        // Text responses are mostly HTML built from one large stylesheet and
+        // repetitive markup, and gzip takes roughly nine tenths off both.
+        // Already-compressed payloads — photographs, PDFs, a downloaded
+        // bundle — are excluded: re-compressing them spends CPU to make them
+        // very slightly larger.
+        .layer(
+            CompressionLayer::new().gzip(true).compress_when(
+                SizeAbove::new(512)
+                    .and(NotForContentType::IMAGES)
+                    .and(NotForContentType::GRPC)
+                    .and(NotForContentType::const_new("application/zip"))
+                    .and(NotForContentType::const_new("application/pdf"))
+                    .and(NotForContentType::const_new("audio/"))
+                    .and(NotForContentType::const_new("video/")),
+            ),
+        )
+}
+
+/// Every route, before the middleware is wrapped around it.
+fn routes(state: Shared) -> Router {
     Router::new()
         .route("/", get(public::home))
         .route("/tree", get(public::tree))
@@ -141,6 +248,7 @@ pub fn router(state: Shared) -> Router {
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))
+        .route("/static/ui.js", get(public::ui_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))
         .fallback(public::not_found)

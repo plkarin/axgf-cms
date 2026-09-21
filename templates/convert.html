@@ -17,7 +17,7 @@
     <label for="confidence">{{ t("convert-confidence-label") }} — <output id="confval">0.8</output></label>
     <input type="range" id="confidence" name="confidence"
            min="0" max="1" step="0.05" value="0.8"
-           oninput="document.getElementById('confval').textContent = this.value">
+           data-output="confval">
     <div class="hint">
       <details class="sec-help">
         <summary title="{{ t('record-help-toggle') }}"

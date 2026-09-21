@@ -110,7 +110,7 @@ fn living_person() -> Value {
     p
 }
 
-fn bundle(tag: &str) -> std::path::PathBuf {
+fn bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("classes.axgf");
     let card = b"fingerprint card scan".to_vec();
@@ -155,12 +155,12 @@ fn bundle(tag: &str) -> std::path::PathBuf {
         axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
     )
     .expect("write");
-    path
+    dir.pointing_at(path)
 }
 
 /// An app over the fixture with one contributor, who may write but may not
 /// read a living person's class data.
-fn app_with_contributor(tag: &str) -> axum::Router {
+fn app_with_contributor(tag: &str) -> (axum::Router, common::Scratch) {
     let src = bundle(&format!("{tag}-src"));
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
@@ -175,7 +175,8 @@ fn app_with_contributor(tag: &str) -> axum::Router {
     );
     acl.save(&axgf_cms::acl::Acl::path_for(&path))
         .expect("save acl");
-    axgf_cms::app(&path, TOKEN).expect("build app")
+    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    (app, dir.pointing_at(path))
 }
 
 async fn sign_in(app: &axum::Router, who: &str) -> String {
@@ -298,7 +299,7 @@ fn assert_absent(page: &str, class: &Class, surface: &str) {
 // ---------------------------------------------------------------------------
 
 async fn record(class: Class) {
-    let app = app_with_contributor(&format!("cls-record-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-record-{}", class.name));
     let cousin = sign_in(&app, "cousin").await;
     for tab in ["", "?tab=life", "?tab=media", "?tab=tree", "?tab=profile"] {
         let uri = format!("/person/{LIVING}{tab}");
@@ -326,7 +327,7 @@ async fn record(class: Class) {
 }
 
 async fn journal(class: Class) {
-    let app = app_with_contributor(&format!("cls-journal-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-journal-{}", class.name));
     admin_adds_second_claims(&app).await;
     let cousin = sign_in(&app, "cousin").await;
     for uri in [
@@ -357,7 +358,7 @@ async fn journal(class: Class) {
 }
 
 async fn raw(class: Class) {
-    let app = app_with_contributor(&format!("cls-raw-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-raw-{}", class.name));
     let cousin = sign_in(&app, "cousin").await;
     let form =
         body_string(get_with_cookie(&app, &format!("/admin/person/{LIVING}/edit"), &cousin).await)
@@ -372,7 +373,7 @@ async fn raw(class: Class) {
 
 /// Load the editor, let the administrator move the record, then save.
 async fn conflict_page(class: Class, tag: &str) -> String {
-    let app = app_with_contributor(&format!("cls-{tag}-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-{tag}-{}", class.name));
     let cousin = sign_in(&app, "cousin").await;
     let form =
         body_string(get_with_cookie(&app, &format!("/admin/person/{LIVING}/edit"), &cousin).await)
@@ -409,7 +410,7 @@ async fn resubmit(class: Class) {
 }
 
 async fn restore(class: Class) {
-    let app = app_with_contributor(&format!("cls-restore-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-restore-{}", class.name));
     let cousin = sign_in(&app, "cousin").await;
     let form =
         body_string(get_with_cookie(&app, &format!("/admin/person/{LIVING}/edit"), &cousin).await)
@@ -456,7 +457,7 @@ async fn restore(class: Class) {
 /// fails this test. That is the defence in depth working, and the mutation
 /// table says so rather than hiding it.
 async fn profile_editor(class: Class) {
-    let app = app_with_contributor(&format!("cls-profile-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-profile-{}", class.name));
     let cousin = sign_in(&app, "cousin").await;
     let (group, forged, witness) = match class.name {
         "health" => ("health", "health.conditions.0.v.description=forged+by+the+form", "forged by the form"),
@@ -495,7 +496,7 @@ async fn profile_editor(class: Class) {
 }
 
 async fn export(class: Class) {
-    let app = app_with_contributor(&format!("cls-export-{}", class.name));
+    let (app, _scratch) = app_with_contributor(&format!("cls-export-{}", class.name));
     let import = |bytes: Vec<u8>| -> Value { axgf_rs::import_bundle(&bytes).data };
 
     let plain = import(body_bytes(get_admin(&app, "/admin/export").await).await);
@@ -614,7 +615,7 @@ matrix! {
 /// is never public, and a class the family tightened.
 #[tokio::test]
 async fn a_deceased_record_publishes_its_history_but_never_its_genome() {
-    let app = app_with_contributor("cls-deceased");
+    let (app, _scratch) = app_with_contributor("cls-deceased");
     let uri = format!("/person/{DEAD}");
 
     let anon = body_string(get(&app, &uri).await).await;
@@ -657,7 +658,7 @@ async fn a_deceased_record_publishes_its_history_but_never_its_genome() {
 /// Documents a class attribute refers to are that attribute's data.
 #[tokio::test]
 async fn a_fingerprint_card_is_withheld_with_the_class_that_refers_to_it() {
-    let app = app_with_contributor("cls-document");
+    let (app, _scratch) = app_with_contributor("cls-document");
     let uri = format!("/document/{DOC_FINGER}/raw");
     let cousin = sign_in(&app, "cousin").await;
     for (who, resp) in [
@@ -741,7 +742,7 @@ async fn an_unreadable_class_visibility_closes_rather_than_opens() {
 /// rebuilt from the form — detached by any save of a form that never showed it.
 #[tokio::test]
 async fn the_documents_editor_neither_names_nor_detaches_a_withheld_file() {
-    let app = app_with_contributor("cls-documents-editor");
+    let (app, _scratch) = app_with_contributor("cls-documents-editor");
     let cousin = sign_in(&app, "cousin").await;
     let page = body_string(
         get_with_cookie(&app, &format!("/admin/person/{LIVING}/documents"), &cousin).await,

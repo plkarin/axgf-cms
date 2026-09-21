@@ -48,7 +48,7 @@
         </label>
         <input type="range" id="{{ f.path }}" name="{{ f.path }}"
                min="0" max="1" step="0.05" value="{{ f.value if f.value else '' }}"
-               oninput="document.getElementById('out-{{ loop.index }}').textContent = this.value">
+               data-output="out-{{ loop.index }}">
 
       {% elif f.kind == "longtext" %}
         <label for="{{ f.path }}">{{ f.label }}</label>

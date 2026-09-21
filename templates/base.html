@@ -66,6 +66,10 @@
     <a href="https://github.com/plkarin/axgf-spec">{{ t("footer-open-format-link") }}</a></p>
 </footer>
 
+{# Loaded on every page: it is 1 kB and it is what lets the
+   Content-Security-Policy say `script-src 'self'` with no `unsafe-inline`.
+   `defer` because none of it touches the document before load. #}
+<script src="/static/ui.js" defer></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

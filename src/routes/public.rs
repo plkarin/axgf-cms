@@ -1119,6 +1119,18 @@ pub async fn profile_js() -> Response {
         .into_response()
 }
 
+/// `GET /static/ui.js` — the delegated handlers every page carries.
+pub async fn ui_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::UI_JS,
+    )
+        .into_response()
+}
+
 /// `GET /static/avatar.js` — the picker's focal-point control.
 pub async fn avatar_js() -> Response {
     (
@@ -1192,13 +1204,27 @@ pub async fn health(State(state): State<Shared>, headers: HeaderMap) -> Response
         total += n;
         entities.insert((*k).to_string(), json!(n));
     }
-    Json(json!({
-        "status": "ok",
-        "total_entities": total,
-        "entities": Value::Object(entities),
-        "collections": COLLECTIONS,
-    }))
-    .into_response()
+
+    // The operational half. `status` is the worst of the checks rather than a
+    // constant "ok", and the HTTP status follows it, so a monitor that
+    // understands nothing about this application still catches a full disk and
+    // a backup timer that stopped firing.
+    let report = state.health();
+    let mut body = report.to_json();
+    if let Some(obj) = body.as_object_mut() {
+        obj.insert("total_entities".into(), json!(total));
+        obj.insert("entities".into(), Value::Object(entities));
+        obj.insert("collections".into(), json!(COLLECTIONS));
+    }
+
+    // A monitor polls this every minute for years; a cached 200 from when the
+    // disk was fine is the one answer that must never be given.
+    (
+        report.http_status(),
+        [(header::CACHE_CONTROL, "no-store, no-cache, must-revalidate")],
+        Json(body),
+    )
+        .into_response()
 }
 
 /// `GET /static/app.css`

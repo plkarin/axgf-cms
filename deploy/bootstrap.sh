@@ -15,6 +15,12 @@
 #                     --version v0.1.0-rc1
 #   --bind <ADDR>     address to bind (default: 127.0.0.1:8080)
 #   --admin-user <U>  username for the first administrator (default: admin)
+#   --backup-dir <D>  where daily archives go (default: /var/lib/axgf-cms/backups)
+#   --backup-at <T>   when the daily backup runs, as a systemd OnCalendar
+#                     expression (default: 03:30, with a random delay)
+#   --upgrade         install a newer binary over a working installation:
+#                     backup, replace, restart, check /health, and put the old
+#                     binary back automatically if the check fails
 #   --dry-run         print what would happen and change nothing
 #
 # IDEMPOTENT. Running it twice must not destroy an existing bundle and must
@@ -47,12 +53,20 @@ CONF_DIR="${PREFIX}/etc/axgf-cms"
 ENV_FILE="${CONF_DIR}/env"
 BUNDLE="${DATA_DIR}/family.axgf"
 UNIT_PATH="${PREFIX}/etc/systemd/system/axgf-cms.service"
+BACKUP_SERVICE_PATH="${PREFIX}/etc/systemd/system/axgf-cms-backup.service"
+BACKUP_TIMER_PATH="${PREFIX}/etc/systemd/system/axgf-cms-backup.timer"
+# Where the daily archives go. On the same disk as the bundle by default,
+# because that is the only location this script can know exists — and that is
+# exactly why the closing notes insist on copying them off the machine.
+BACKUP_DIR="${AXGF_CMS_BACKUP_DIR:-${DATA_DIR}/backups}"
 
 WITH_SAMPLE=0
 FROM_SOURCE=0
 VERSION=""
 BIND="127.0.0.1:8080"
 DRY_RUN=0
+UPGRADE=0
+BACKUP_AT="03:30"
 # Username for the first administrator account, created on a fresh install.
 ADMIN_USER="admin"
 
@@ -75,6 +89,9 @@ while [ $# -gt 0 ]; do
     --version) need_value "$1" "${2:-}" "v0.1.0-rc1"; VERSION="$2"; shift ;;
     --bind) need_value "$1" "${2:-}" "127.0.0.1:8080"; BIND="$2"; shift ;;
     --admin-user) need_value "$1" "${2:-}" "admin"; ADMIN_USER="$2"; shift ;;
+    --backup-dir) need_value "$1" "${2:-}" "/srv/backups"; BACKUP_DIR="$2"; shift ;;
+    --backup-at) need_value "$1" "${2:-}" "03:30"; BACKUP_AT="$2"; shift ;;
+    --upgrade) UPGRADE=1 ;;
     --dry-run) DRY_RUN=1 ;;
     # The header comment down to the first blank line, which is the whole of
     # it. This was a line range, and a line range goes stale the moment the
@@ -217,8 +234,11 @@ say "architecture $ARCH -> $TARGET"
 command -v systemctl >/dev/null 2>&1 || warn "systemd not found; the unit will be installed but not started"
 
 # --------------------------------------------------------------------------
-step "Installing the binary"
+# Installing the binary
 # --------------------------------------------------------------------------
+# A function rather than a straight-line block, because `--upgrade` needs
+# exactly the same three ways of getting a binary and must not drift from them.
+install_binary() {
 # Every branch below installs to $INSTALL_PATH, so the directory is made once
 # here rather than in one of the three. /usr/local/bin exists on any normal
 # machine, which is why this went unnoticed: it only fails under a prefix, or
@@ -266,6 +286,118 @@ else
   fi
 fi
 say "installed $INSTALL_PATH"
+}
+
+# Wait for the service to answer /health with a bundle it can actually read.
+#
+# The bundle check is what decides, not the overall status. A brand-new
+# installation on a disk that is 92 % full answers 503 for a reason that has
+# nothing to do with the binary that was just installed, and rolling back over
+# it would be a misdiagnosis with a rollback attached. "Can this binary serve
+# this family's data" is `checks.bundle`, and nothing else.
+wait_for_health() {
+  local url="http://${BIND}/health" body i
+  for i in $(seq 1 30); do
+    if body="$(curl -fsS --max-time 3 "$url" 2>/dev/null)" \
+       || body="$(curl -sS --max-time 3 "$url" 2>/dev/null)"; then
+      case "$body" in
+        *'"bundle"'*'"status":"ok"'*) printf '%s' "$body"; return 0 ;;
+        *'"bundle":{"status":"ok"'*)  printf '%s' "$body"; return 0 ;;
+      esac
+    fi
+    sleep 1
+  done
+  printf '%s' "${body:-<no response from ${url}>}"
+  return 1
+}
+
+if [ "$UPGRADE" = "1" ]; then
+  # ------------------------------------------------------------------------
+  step "Upgrading"
+  # ------------------------------------------------------------------------
+  [ -x "$INSTALL_PATH" ] || die "nothing is installed at ${INSTALL_PATH}, so there is \
+nothing to upgrade. Run this script without --upgrade to install."
+  [ -f "$BUNDLE" ] || die "no bundle at ${BUNDLE}. This does not look like an \
+installation of axgf-cms."
+
+  OLD_VERSION="$("$INSTALL_PATH" --version 2>/dev/null || echo unknown)"
+  say "currently installed: ${OLD_VERSION}"
+
+  # 1. A backup FIRST, taken by the binary that is known to work. If the
+  #    upgrade goes wrong in a way the rollback cannot undo — a new binary
+  #    that wrote the bundle before failing — this archive is what is left.
+  step "Backing up before anything is replaced"
+  run mkdir -p "$BACKUP_DIR"
+  if [ "$DRY_RUN" = "0" ]; then
+    run_as_service "$INSTALL_PATH" backup --bundle "$BUNDLE" --dest "$BACKUP_DIR" \
+      || die "the pre-upgrade backup failed, so the upgrade stopped before it \
+started. Nothing was changed. Fix the backup first: an upgrade without one is \
+the single most expensive thing that can go wrong here."
+  else
+    printf '  [dry-run] axgf-cms backup --bundle %s --dest %s\n' "$BUNDLE" "$BACKUP_DIR"
+  fi
+
+  # 2. Keep the working binary where the rollback can find it.
+  PREVIOUS="${INSTALL_PATH}.previous"
+  run cp -p "$INSTALL_PATH" "$PREVIOUS"
+  say "kept the working binary as ${PREVIOUS}"
+
+  # 3. Replace it.
+  step "Installing the new binary"
+  install_binary
+  NEW_VERSION="$("$INSTALL_PATH" --version 2>/dev/null || echo unknown)"
+  say "now installed: ${NEW_VERSION}"
+
+  # 4. Restart and ask it whether it can read the family's data.
+  step "Restarting and checking /health"
+  if [ "$SKIP_PRIVILEGED" = "1" ] || [ "$DRY_RUN" = "1" ]; then
+    say "skipping restart and health check"
+  elif systemctl restart axgf-cms && HEALTH="$(wait_for_health)"; then
+    say "healthy: ${HEALTH}"
+    step "Done"
+    cat <<EOF
+
+  Upgraded ${OLD_VERSION} -> ${NEW_VERSION}.
+
+  The previous binary is kept at ${PREVIOUS}. The pre-upgrade backup is the
+  newest archive in ${BACKUP_DIR}.
+
+EOF
+    exit 0
+  else
+    # 5. Roll back. Automatically, without asking, because the alternative is
+    #    a family's site being down while somebody reads documentation.
+    warn "the new binary did not come up healthy:"
+    printf '%s\n' "${HEALTH:-<no response>}" | sed 's/^/    /'
+    step "Rolling back"
+    run install -m 0755 "$PREVIOUS" "$INSTALL_PATH"
+    run systemctl restart axgf-cms
+    if HEALTH="$(wait_for_health)"; then
+      die "the upgrade to ${NEW_VERSION} failed its health check and was rolled back.
+  ${OLD_VERSION} is running again and the site is up.
+
+  Nothing was lost: the pre-upgrade backup is in ${BACKUP_DIR}, and the bundle
+  was never touched by the new binary.
+
+  Report the version that failed before trying again."
+    fi
+    die "the upgrade to ${NEW_VERSION} failed, AND the rollback to ${OLD_VERSION}
+  did not come up either. The site is down.
+
+  Last response from /health:
+$(printf '%s\n' "${HEALTH:-<none>}" | sed 's/^/    /')
+
+  Restore from the pre-upgrade backup:
+
+    sudo systemctl stop axgf-cms
+    sudo -u ${SERVICE_USER} ${INSTALL_PATH} restore --bundle ${BUNDLE} \\
+      ${BACKUP_DIR}/<newest archive>
+    sudo systemctl start axgf-cms"
+  fi
+fi
+
+step "Installing the binary"
+install_binary
 
 # --------------------------------------------------------------------------
 step "Creating the service user"
@@ -283,12 +415,15 @@ fi
 step "Preparing directories"
 # --------------------------------------------------------------------------
 if [ "$SKIP_PRIVILEGED" = "1" ]; then
-  run mkdir -p "$DATA_DIR" "$CONF_DIR"
+  run mkdir -p "$DATA_DIR" "$CONF_DIR" "$BACKUP_DIR"
 else
   run install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0750 "$DATA_DIR"
   run install -d -o root -g "$SERVICE_USER" -m 0750 "$CONF_DIR"
+  # The archives hold the accounts file, so this directory is no more public
+  # than the ACL is.
+  run install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0700 "$BACKUP_DIR"
 fi
-say "$DATA_DIR and $CONF_DIR ready"
+say "$DATA_DIR, $CONF_DIR and $BACKUP_DIR ready"
 
 # --------------------------------------------------------------------------
 step "Admin token"
@@ -396,7 +531,10 @@ Type=exec
 User=${SERVICE_USER}
 Group=${SERVICE_USER}
 EnvironmentFile=${ENV_FILE}
-ExecStart=${INSTALL_PATH} --bundle ${BUNDLE} --bind ${BIND}
+# --backup-dir is what lets /health and the admin dashboard say how old the
+# newest backup is. Without it an installation whose timer stopped firing looks
+# exactly like one whose timer is working.
+ExecStart=${INSTALL_PATH} --bundle ${BUNDLE} --bind ${BIND} --backup-dir ${BACKUP_DIR}
 Restart=on-failure
 RestartSec=2s
 
@@ -409,7 +547,7 @@ ProtectHome=yes
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
-ReadWritePaths=${DATA_DIR}
+ReadWritePaths=${DATA_DIR} ${BACKUP_DIR}
 RestrictAddressFamilies=AF_INET AF_INET6
 RestrictNamespaces=yes
 LockPersonality=yes
@@ -420,13 +558,68 @@ WantedBy=multi-user.target
 EOF
 say "wrote $UNIT_PATH"
 
+# --------------------------------------------------------------------------
+step "Daily backup"
+# --------------------------------------------------------------------------
+# A timer rather than a cron line: it survives a machine that was switched off
+# at half past three (Persistent=true catches up on the next boot), it is
+# visible in `systemctl list-timers` beside everything else, and its output
+# goes to the journal where the rest of this service's output already is.
+write_file "$BACKUP_SERVICE_PATH" 0644 <<EOF
+[Unit]
+Description=axgf-cms — verified backup of the bundle, accounts and journal
+Documentation=https://github.com/${REPO}
+# Not After=axgf-cms.service: the backup is deliberately safe to run against a
+# live instance. It takes the same write lock a save takes, so the three files
+# in the archive agree with each other.
+
+[Service]
+Type=oneshot
+User=${SERVICE_USER}
+Group=${SERVICE_USER}
+ExecStart=${INSTALL_PATH} backup --bundle ${BUNDLE} --dest ${BACKUP_DIR}
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=${DATA_DIR} ${BACKUP_DIR}
+RestrictAddressFamilies=
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+EOF
+say "wrote $BACKUP_SERVICE_PATH"
+
+write_file "$BACKUP_TIMER_PATH" 0644 <<EOF
+[Unit]
+Description=axgf-cms — daily backup
+Documentation=https://github.com/${REPO}
+
+[Timer]
+OnCalendar=${BACKUP_AT}
+# Up to an hour of jitter, so a fleet of these does not all wake at once and
+# so the archive's timestamp is not a reliable statement about when somebody
+# is asleep.
+RandomizedDelaySec=1h
+# Catch up after a machine that was switched off at the appointed hour. This
+# is a family's computer, not a datacentre.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+say "wrote $BACKUP_TIMER_PATH"
+
 if [ "$SKIP_PRIVILEGED" = "1" ]; then
   say "skipping systemctl (AXGF_CMS_SKIP_PRIVILEGED)"
 elif command -v systemctl >/dev/null 2>&1; then
   run systemctl daemon-reload
   run systemctl enable axgf-cms
   run systemctl restart axgf-cms
-  say "service enabled and started"
+  run systemctl enable --now axgf-cms-backup.timer
+  say "service enabled and started; daily backup timer enabled"
 fi
 
 # --------------------------------------------------------------------------
@@ -439,10 +632,12 @@ cat <<EOF
     URL          http://${BIND}/
     Sign in      http://${BIND}/admin/login
 
-    Bundle       ${BUNDLE}       <- the genealogy; back it up, share it freely
-    Accounts     ${ACL_FILE}       <- mode 600; back it up, share it with nobody
+    Bundle       ${BUNDLE}       <- the genealogy; share it freely
+    Accounts     ${ACL_FILE}       <- mode 600; share it with nobody
+    Backups      ${BACKUP_DIR}       <- one verified archive a day, at ${BACKUP_AT}
     Config       ${ENV_FILE}
     Logs         journalctl -u axgf-cms -f
+    Health       curl -s http://${BIND}/health
 EOF
 
 if [ "$ADMIN_CREATED" = "1" ]; then
@@ -464,6 +659,18 @@ cat <<EOF
   Stored in ${ENV_FILE} (root-readable only). It is not an account: it grants
   an administrator session for getting back in when ${ACL_FILE} has been lost
   or every administrator is locked out. Its use is logged as a warning.
+
+  BACKUPS: one verified archive a day lands in
+
+    ${BACKUP_DIR}
+
+  That is the same disk as the bundle, so it does not survive that disk.
+  Copy the archives somewhere else — a nightly
+
+    rsync -a --delete ${BACKUP_DIR}/ user@another-machine:/srv/axgf-backups/
+
+  is enough, and docs/OPERATOR.md has the rclone version for a cloud bucket.
+  Until you do this, you have a backup of a mistake, not of a disk failure.
 
   SECURITY: this binds to localhost by design. To publish it, put a TLS
   reverse proxy in front — see docs/DEPLOY.md — and do not move the bind

@@ -155,8 +155,23 @@ fn bootstrap_reports_the_accounts_and_the_security_position() {
     assert!(out.contains(&token), "the token is printed once at the end");
     assert!(out.contains("/admin/login"), "the sign-in URL is printed");
     assert!(
-        out.contains("back it up"),
+        out.contains("the genealogy; share it freely"),
         "the operator is told what the bundle is"
+    );
+    // Backups are no longer an instruction in a one-line summary but an
+    // installed timer, and the summary has to say where the archives land and
+    // that leaving them there is not enough.
+    assert!(
+        out.contains("Backups"),
+        "the backup directory is named: {out}"
+    );
+    assert!(
+        out.contains("does not survive that disk"),
+        "an archive beside the bundle is not a backup, and this has to say so: {out}"
+    );
+    assert!(
+        out.contains("rsync -a"),
+        "with a command the operator can actually copy: {out}"
     );
 
     // The two files, and which of them may be shared. Getting this the wrong
@@ -215,6 +230,105 @@ fn the_unit_confines_the_service_to_its_data_directory() {
             "unit is missing {directive}:\n{unit}"
         );
     }
+}
+
+#[test]
+fn a_daily_backup_timer_is_installed_beside_the_service() {
+    // An installation with no backups is one disk failure from losing years of
+    // somebody's research, and "remember to run the backup command" is not a
+    // backup strategy. The timer is part of the install, not an extra step.
+    let prefix = common::scratch("boot-timer");
+    run_bootstrap(&prefix, &[]);
+
+    let timer = std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms-backup.timer"))
+        .expect("the timer is installed");
+    assert!(timer.contains("OnCalendar=03:30"), "{timer}");
+    assert!(
+        timer.contains("Persistent=true"),
+        "a machine switched off at half past three must catch up: {timer}"
+    );
+    assert!(
+        timer.contains("RandomizedDelaySec="),
+        "and not all wake at the same instant: {timer}"
+    );
+
+    let service =
+        std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms-backup.service"))
+            .expect("the timer's service is installed");
+    assert!(service.contains("Type=oneshot"), "{service}");
+    assert!(service.contains(" backup --bundle "), "{service}");
+    assert!(service.contains("--dest "), "{service}");
+    assert!(
+        service.contains("User=axgf-cms"),
+        "the archive holds the ACL; it is written by the service user: {service}"
+    );
+    // Confined the way the server is. A backup job has even less business
+    // reaching the rest of the filesystem than the server does.
+    for directive in [
+        "NoNewPrivileges=yes",
+        "ProtectSystem=strict",
+        "ProtectHome=yes",
+        "RestrictAddressFamilies=",
+    ] {
+        assert!(
+            service.contains(directive),
+            "missing {directive}:\n{service}"
+        );
+    }
+}
+
+#[test]
+fn the_service_is_told_where_the_backups_are_so_health_can_say_how_old_they_are() {
+    let prefix = common::scratch("boot-backupdir");
+    // Somewhere other than the default, and writable by this test: an operator
+    // would give an absolute path on another volume, which is the whole point
+    // of the option.
+    let elsewhere = prefix.join("srv-elsewhere");
+    run_bootstrap(&prefix, &["--backup-dir", elsewhere.to_str().unwrap()]);
+    let unit = std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms.service"))
+        .expect("read unit");
+    assert!(
+        unit.contains(&format!("--backup-dir {}", elsewhere.display())),
+        "an installation whose timer stopped firing must not look identical to \
+         one whose timer is working:\n{unit}"
+    );
+    assert!(
+        unit.lines()
+            .any(|l| l.starts_with("ReadWritePaths=") && l.contains("srv-elsewhere")),
+        "and the sandbox has to let it write them:\n{unit}"
+    );
+    assert!(
+        elsewhere.is_dir(),
+        "the directory is created by the install"
+    );
+}
+
+#[test]
+fn the_backup_hour_is_the_operators_to_choose() {
+    let prefix = common::scratch("boot-at");
+    run_bootstrap(&prefix, &["--backup-at", "Mon *-*-* 04:15:00"]);
+    let timer = std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms-backup.timer"))
+        .expect("read timer");
+    assert!(timer.contains("OnCalendar=Mon *-*-* 04:15:00"), "{timer}");
+}
+
+#[test]
+fn upgrading_something_that_is_not_installed_is_refused_rather_than_installed() {
+    let prefix = common::scratch("boot-upgrade-none");
+    let script = repo_root().join("deploy/bootstrap.sh");
+    let out = Command::new("bash")
+        .arg(&script)
+        .arg("--upgrade")
+        .env("AXGF_CMS_PREFIX", &prefix)
+        .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
+        .output()
+        .expect("run bootstrap.sh");
+    let text = String::from_utf8_lossy(&out.stderr);
+    assert!(!out.status.success(), "there is nothing to upgrade");
+    assert!(
+        text.contains("nothing to upgrade") || text.contains("nothing is installed"),
+        "{text}"
+    );
 }
 
 /// Run bootstrap.sh with the *real* binary rather than the stand-in, so the

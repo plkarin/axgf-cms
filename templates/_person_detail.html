@@ -159,7 +159,7 @@
           deduplication is whole-bundle and this button cannot narrow it. -#}
       {% if is_admin %}
       <form method="post" action="/admin/dedup" class="inline-form"
-            onsubmit="return confirm('{{ t("record-union-duplicate-confirm") }}')">
+            data-confirm="{{ t("record-union-duplicate-confirm") }}">
         <input type="hidden" name="families" value="{{ g.family_ids | join(",") }}">
         <input type="hidden" name="back" value="/person/{{ p.id }}">
         <button class="btn btn-compact" type="submit">{{ t("record-union-duplicate-action") }}</button>

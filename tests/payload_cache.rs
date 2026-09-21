@@ -5,7 +5,7 @@
 
 mod common;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use axum::http::StatusCode;
 use base64::Engine as _;
@@ -24,7 +24,7 @@ fn png_bytes() -> Vec<u8> {
 
 /// Write a `.axgf` carrying one present document and its payload. Returns the
 /// path, the payload bytes, the document id and its ZIP path.
-fn bundle_with_image(tag: &str) -> (PathBuf, Vec<u8>, String, String) {
+fn bundle_with_image(tag: &str) -> (common::Scratch, Vec<u8>, String, String) {
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
     let png = png_bytes();
@@ -51,7 +51,7 @@ fn bundle_with_image(tag: &str) -> (PathBuf, Vec<u8>, String, String) {
 
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export bundle");
     std::fs::write(&path, bytes).expect("write bundle");
-    (path, png, doc_id, zip_path)
+    (dir.pointing_at(path), png, doc_id, zip_path)
 }
 
 /// Load the bundle with an explicit cache directory under the same scratch dir.

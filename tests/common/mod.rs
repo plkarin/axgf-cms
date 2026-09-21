@@ -5,6 +5,7 @@
 
 #![allow(dead_code)]
 
+use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -17,33 +18,139 @@ pub const TOKEN: &str = "test-token-abc123";
 
 static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
-/// A unique scratch directory for one test.
-pub fn scratch(tag: &str) -> PathBuf {
-    let base = option_env!("CARGO_TARGET_TMPDIR")
+/// The base every test directory is made under.
+///
+/// `CARGO_TARGET_TMPDIR` is `target/tmp`, and cargo never touches it again:
+/// whatever a test leaves there stays there until somebody notices. On the
+/// machine this was written for that was 8.6 GB of extracted photographs, on
+/// the same filesystem the application saves its bundle to — so the test suite
+/// was, slowly, arranging for the product to run out of disk.
+pub fn scratch_base() -> PathBuf {
+    option_env!("CARGO_TARGET_TMPDIR")
         .map(PathBuf::from)
-        .unwrap_or_else(std::env::temp_dir);
+        .unwrap_or_else(std::env::temp_dir)
+}
+
+/// A scratch directory that deletes itself.
+///
+/// Dropped at the end of the test that made it, including when that test
+/// panics — the unwind runs destructors, which is exactly the case the old
+/// `remove_dir_all` at the end of a test body did not cover, and a failing
+/// test is the one most likely to have written a lot.
+///
+/// It dereferences to a path so that call sites read as they did when this was
+/// a `PathBuf`: `dir.join("x")`, `fs::read(&path)`, `path.display()`.
+#[derive(Debug)]
+pub struct Scratch {
+    dir: PathBuf,
+    /// What the value points at: the directory itself, or the bundle inside it.
+    subject: PathBuf,
+}
+
+impl Scratch {
+    /// The directory, whatever this value points at.
+    pub fn dir(&self) -> &Path {
+        &self.dir
+    }
+
+    /// The same scratch, now pointing at `subject`.
+    ///
+    /// What a fixture helper returns: the guard keeps the directory alive for
+    /// as long as the caller holds it, and the value reads as the bundle path.
+    pub fn pointing_at(mut self, subject: PathBuf) -> Self {
+        // Taking the directory out of the old value is what stops its `Drop`
+        // from deleting the very directory being handed on: `Drop` returns
+        // early on an empty one.
+        let dir = std::mem::take(&mut self.dir);
+        Self { dir, subject }
+    }
+
+    /// A path this harness did not create and must never delete.
+    ///
+    /// For the benchmark that runs against the operator's real bundle when
+    /// `AXGF_CMS_BENCH_BUNDLE` points at one: the same code path has to accept
+    /// both a throwaway fixture and a file worth 435 MB of somebody's family.
+    pub fn external(path: &Path) -> Self {
+        Self {
+            dir: PathBuf::new(),
+            subject: path.to_path_buf(),
+        }
+    }
+
+    /// Give up ownership: the directory is no longer removed on drop.
+    ///
+    /// For the two tests that deliberately outlive their files — a restore
+    /// that has to still be there afterwards, a leak check that inspects the
+    /// wreckage.
+    pub fn keep(mut self) -> PathBuf {
+        let dir = std::mem::take(&mut self.dir);
+        std::mem::forget(self);
+        dir
+    }
+}
+
+impl Deref for Scratch {
+    type Target = Path;
+    fn deref(&self) -> &Path {
+        &self.subject
+    }
+}
+
+impl AsRef<Path> for Scratch {
+    fn as_ref(&self) -> &Path {
+        &self.subject
+    }
+}
+
+/// So a scratch path can be handed straight to `Command::env`, which wants an
+/// `OsStr` and does not see through `Deref`.
+impl AsRef<std::ffi::OsStr> for Scratch {
+    fn as_ref(&self) -> &std::ffi::OsStr {
+        self.subject.as_os_str()
+    }
+}
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        if self.dir.as_os_str().is_empty() {
+            return;
+        }
+        // Best-effort: a test that has arranged for a directory to be
+        // unremovable has bigger news than this.
+        let _ = std::fs::remove_dir_all(&self.dir);
+    }
+}
+
+/// A unique scratch directory for one test, removed when the value is dropped.
+pub fn scratch(tag: &str) -> Scratch {
     let n = COUNTER.fetch_add(1, Ordering::SeqCst);
-    let dir = base.join(format!("axgf-cms-it-{}-{}-{}", std::process::id(), tag, n));
+    let dir = scratch_base().join(format!("axgf-cms-it-{}-{}-{}", std::process::id(), tag, n));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).expect("create scratch dir");
-    dir
+    Scratch {
+        subject: dir.clone(),
+        dir,
+    }
 }
 
 /// Build an app over a fresh empty bundle, returning the router and the path.
-pub fn app_with_empty_bundle(tag: &str) -> (axum::Router, PathBuf) {
+///
+/// The second value owns the directory: hold it for as long as the app is
+/// used, which every caller does anyway because it is the bundle path.
+pub fn app_with_empty_bundle(tag: &str) -> (axum::Router, Scratch) {
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
     let app = axgf_cms::app(&path, TOKEN).expect("build app");
-    (app, path)
+    (app, dir.pointing_at(path))
 }
 
 /// Build an app over a copy of an existing bundle file.
-pub fn app_with_bundle(tag: &str, source: &Path) -> (axum::Router, PathBuf) {
+pub fn app_with_bundle(tag: &str, source: &Path) -> (axum::Router, Scratch) {
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
     std::fs::copy(source, &path).expect("copy source bundle");
     let app = axgf_cms::app(&path, TOKEN).expect("build app");
-    (app, path)
+    (app, dir.pointing_at(path))
 }
 
 /// Issue a GET and return the response.

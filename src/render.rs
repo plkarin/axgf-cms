@@ -28,6 +28,11 @@ pub const AVATAR_JS: &str = include_str!("../static/avatar.js");
 /// The profile editor's "add another entry", enhancement only.
 pub const PROFILE_JS: &str = include_str!("../static/profile.js");
 
+/// The six behaviours that were inline `onclick`/`oninput`/`onsubmit`
+/// attributes until the Content-Security-Policy stopped allowing inline
+/// script. Loaded on every page; enhancement only.
+pub const UI_JS: &str = include_str!("../static/ui.js");
+
 /// Leaflet, vendored. See `static/vendor/leaflet.css` for the one deliberate
 /// modification and why it is there.
 pub const LEAFLET_JS: &str = include_str!("../static/vendor/leaflet.js");

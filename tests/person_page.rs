@@ -7,7 +7,7 @@ use common::*;
 use serde_json::json;
 
 /// A bundle exercising every showcase feature at once.
-fn showcase_bundle(tag: &str) -> std::path::PathBuf {
+fn showcase_bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("showcase.axgf");
     let flat = json!({
@@ -70,7 +70,7 @@ fn showcase_bundle(tag: &str) -> std::path::PathBuf {
     });
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
     std::fs::write(&path, bytes).expect("write");
-    path
+    dir.pointing_at(path)
 }
 
 const JULES: &str = "11111111-1111-4111-8111-111111111111";

@@ -16,7 +16,7 @@ use tower::ServiceExt;
 const PERSON: &str = "11111111-1111-4111-8111-111111111111";
 
 /// A bundle with one person and nothing else.
-fn one_person_bundle(tag: &str) -> std::path::PathBuf {
+fn one_person_bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("upload.axgf");
     let flat = json!({
@@ -32,7 +32,7 @@ fn one_person_bundle(tag: &str) -> std::path::PathBuf {
     });
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
     std::fs::write(&path, bytes).expect("write");
-    path
+    dir.pointing_at(path)
 }
 
 /// A real PNG, so the image decoder has something genuine to work on.

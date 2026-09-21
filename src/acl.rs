@@ -679,11 +679,8 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    fn tmpdir(tag: &str) -> PathBuf {
-        let d = std::env::temp_dir().join(format!("axgf-acl-{}-{tag}", std::process::id()));
-        let _ = fs::remove_dir_all(&d);
-        fs::create_dir_all(&d).unwrap();
-        d
+    fn tmpdir(tag: &str) -> crate::scratch::Dir {
+        crate::scratch::Dir::new(tag)
     }
 
     #[test]

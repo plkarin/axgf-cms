@@ -52,7 +52,7 @@ fn person(id: &str, display: &str, visibility: Option<&str>, living: bool) -> se
 
 /// A family where a public child has one public and one hidden parent, plus a
 /// private person off to the side, a private link and two documents.
-fn bundle(tag: &str) -> std::path::PathBuf {
+fn bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("vis.axgf");
 
@@ -97,12 +97,12 @@ fn bundle(tag: &str) -> std::path::PathBuf {
     });
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
     std::fs::write(&path, bytes).expect("write");
-    path
+    dir.pointing_at(path)
 }
 
-fn app(tag: &str) -> axum::Router {
+fn app(tag: &str) -> (axum::Router, common::Scratch) {
     let src = bundle(&format!("{tag}-src"));
-    app_with_bundle(tag, &src).0
+    app_with_bundle(tag, &src)
 }
 
 /// Assert that none of `secrets` appears anywhere in `body`.
@@ -119,7 +119,7 @@ fn no_leak(surface: &str, body: &str, secrets: &[&str]) {
 
 #[tokio::test]
 async fn a_signed_out_reader_gets_no_hidden_name_on_any_surface() {
-    let app = app("vis-surfaces");
+    let (app, _scratch) = app("vis-surfaces");
     let secrets = [MEMBERS_NAME, PRIVATE_NAME];
 
     // The tree page draws every card, including the hidden ones.
@@ -164,7 +164,7 @@ async fn a_signed_out_reader_gets_no_hidden_name_on_any_surface() {
 
 #[tokio::test]
 async fn an_admin_reads_everything_the_bundle_holds() {
-    let app = app("vis-admin");
+    let (app, _scratch) = app("vis-admin");
     for id in [MEMBERS, PRIVATE] {
         let body = expect_status(
             get_admin(&app, &format!("/person/{id}")).await,
@@ -187,7 +187,7 @@ async fn a_hidden_parent_keeps_their_place_in_the_family() {
     // Redaction, not omission. A record that showed one parent where the
     // bundle holds two would be a false statement about the genealogy — and
     // for this application that is the one unacceptable failure mode.
-    let app = app("vis-shape");
+    let (app, _scratch) = app("vis-shape");
     let child = body_string(get(&app, &format!("/person/{CHILD}")).await).await;
     assert!(
         child.contains("Private"),
@@ -210,7 +210,7 @@ async fn a_redacted_card_carries_nothing_for_the_filter_to_match() {
     // still carried the real name there would hand back every hidden name in
     // the bundle, one keystroke at a time — a leak through a feature nobody
     // would think to check.
-    let app = app("vis-filter");
+    let (app, _scratch) = app("vis-filter");
     let tree = body_string(get(&app, "/tree?all=1").await).await;
     assert_eq!(
         tree.matches("class=\"tcard is-restricted\"").count(),
@@ -241,7 +241,7 @@ async fn a_link_can_be_private_when_both_its_endpoints_are_not() {
     // acknowledged natural parentage between two public people. The
     // relationship is the sensitive fact, so the link carries its own
     // visibility and it has to be honoured on its own.
-    let app = app("vis-link");
+    let (app, _scratch) = app("vis-link");
     let anon = body_string(get(&app, &format!("/person/{CHILD}")).await).await;
     assert!(
         !anon.contains("acknowledged natural"),
@@ -259,7 +259,7 @@ async fn a_document_is_governed_by_the_person_who_attaches_it() {
     // The payloads are uploaded rather than declared, because a document whose
     // bytes are not in the cache 404s for everybody — which would make this
     // test pass whether or not the permission check existed.
-    let app = app("vis-doc");
+    let (app, _scratch) = app("vis-doc");
     let png = tiny_png();
     for person in [OPEN, MEMBERS] {
         let resp = upload_as_admin(&app, person, &png).await;
@@ -371,7 +371,7 @@ async fn attached_document(app: &axum::Router, person: &str) -> String {
 
 #[tokio::test]
 async fn the_root_picker_lists_only_reachable_people() {
-    let app = app("vis-roster");
+    let (app, _scratch) = app("vis-roster");
     let tree = body_string(get(&app, "/tree").await).await;
     let options: Vec<&str> = tree
         .split("<option value=\"")
@@ -387,7 +387,7 @@ async fn the_root_picker_lists_only_reachable_people() {
 
 #[tokio::test]
 async fn health_counts_what_the_reader_may_read() {
-    let app = app("vis-health");
+    let (app, _scratch) = app("vis-health");
     let anon: serde_json::Value =
         serde_json::from_str(&body_string(get(&app, "/health").await).await).unwrap();
     assert_eq!(
@@ -405,7 +405,7 @@ async fn an_absent_record_and_a_withheld_one_are_different_answers() {
     // already shows that a hidden person exists, so a 404 would protect
     // nothing while telling a family member who is merely signed out that the
     // record they were sent has been deleted.
-    let app = app("vis-404");
+    let (app, _scratch) = app("vis-404");
     assert_eq!(
         get(&app, "/person/00000000-0000-4000-8000-000000000000")
             .await
@@ -465,7 +465,7 @@ async fn tightening_a_visibility_takes_effect_on_the_very_next_read() {
     // into a vulnerability when its invalidation is wrong: a stale set would
     // keep publishing a record for as long as the process lived after somebody
     // marked it private. So the invalidation is pinned here, not assumed.
-    let app = app("vis-invalidate");
+    let (app, _scratch) = app("vis-invalidate");
 
     // The public person is visible to a signed-out reader.
     assert_eq!(

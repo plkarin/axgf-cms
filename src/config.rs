@@ -3,18 +3,77 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 /// Environment variable consulted when `--admin-token` is absent.
 pub const ADMIN_TOKEN_ENV: &str = "AXGF_CMS_ADMIN_TOKEN";
+
+/// Environment variable naming the backup directory.
+pub const BACKUP_DIR_ENV: &str = "AXGF_CMS_BACKUP_DIR";
+
+/// What to do instead of serving.
+///
+/// Serving stays the default with no subcommand, so every existing invocation
+/// — the systemd unit's, the bootstrap script's, an operator's shell history —
+/// keeps working unchanged.
+#[derive(Debug, Subcommand)]
+pub enum Command {
+    /// Write one verified archive of the bundle, the accounts and the journal.
+    ///
+    /// Safe to run against a live installation: it takes the same write lock a
+    /// save takes, so the three files in the archive agree with each other.
+    Backup {
+        /// Directory to write the archive into. Created if absent. Defaults to
+        /// --backup-dir, then to AXGF_CMS_BACKUP_DIR.
+        #[arg(long, value_name = "DIR")]
+        dest: Option<PathBuf>,
+        /// Daily archives to keep.
+        #[arg(long, value_name = "N", default_value_t = 7)]
+        keep_daily: usize,
+        /// Weekly archives to keep.
+        #[arg(long, value_name = "N", default_value_t = 4)]
+        keep_weekly: usize,
+        /// Monthly archives to keep.
+        #[arg(long, value_name = "N", default_value_t = 12)]
+        keep_monthly: usize,
+    },
+    /// Put a backup archive back, keeping the current state aside first.
+    ///
+    /// Refuses to run while an instance is serving the bundle. Stop the
+    /// service, restore, start it again.
+    Restore {
+        /// The archive to restore.
+        #[arg(value_name = "ARCHIVE")]
+        archive: PathBuf,
+        /// Restore even though something appears to be running against the
+        /// bundle. Almost never right; the running process would write its own
+        /// copy back over the restored one at its next save.
+        #[arg(long)]
+        force: bool,
+    },
+    /// Read an archive and say what is in it, changing nothing.
+    Verify {
+        /// The archive to check.
+        #[arg(value_name = "ARCHIVE")]
+        archive: PathBuf,
+    },
+}
 
 /// Browse and edit one AXGF bundle.
 #[derive(Debug, Parser)]
 #[command(name = "axgf-cms", version, about, long_about = None)]
 pub struct Config {
+    /// What to do. Absent means serve.
+    #[command(subcommand)]
+    pub command: Option<Command>,
+
     /// Path to the .axgf bundle. Created empty if it does not exist.
-    #[arg(long, value_name = "PATH")]
-    pub bundle: PathBuf,
+    ///
+    /// Global, so it reads the same before or after a subcommand:
+    /// `axgf-cms --bundle X backup --dest Y` and
+    /// `axgf-cms backup --bundle X --dest Y` are the same command.
+    #[arg(long, value_name = "PATH", global = true)]
+    pub bundle: Option<PathBuf>,
 
     /// Address to bind. Defaults to localhost, and should stay there: this
     /// process speaks plain HTTP, so bound anywhere else it sends passwords
@@ -124,9 +183,33 @@ pub struct Config {
     /// entirely on which one `--map-tiles` names.
     #[arg(long, value_name = "TEXT")]
     pub map_attribution: Option<String>,
+
+    /// Directory where backup archives are written and looked for.
+    ///
+    /// Serving with this set is what lets `/health` and the admin dashboard say
+    /// how old the newest backup is — the single most useful thing an operator
+    /// can be told, because a backup that silently stopped running looks
+    /// exactly like one that is working.
+    #[arg(long, value_name = "DIR", env = BACKUP_DIR_ENV, global = true)]
+    pub backup_dir: Option<PathBuf>,
 }
 
 impl Config {
+    /// The bundle path, or an error saying how to supply one.
+    ///
+    /// `--bundle` is global rather than required because a required global is
+    /// reported by clap as a usage error on the *subcommand*, which reads as
+    /// though `backup` is at fault. This says the one thing that helps.
+    pub fn bundle(&self) -> anyhow::Result<&PathBuf> {
+        self.bundle.as_ref().ok_or_else(|| {
+            anyhow::anyhow!(
+                "no bundle was named. Every command works on one .axgf file:\n\n\
+                 \x20 axgf-cms --bundle /var/lib/axgf-cms/family.axgf\n\
+                 \x20 axgf-cms backup --bundle /var/lib/axgf-cms/family.axgf --dest /srv/backups"
+            )
+        })
+    }
+
     /// Resolve the admin token, generating one when none was supplied.
     ///
     /// Returns the token and whether it was generated, so the caller can print
@@ -155,7 +238,9 @@ mod tests {
 
     fn cfg(token: Option<&str>) -> Config {
         Config {
-            bundle: PathBuf::from("/tmp/x.axgf"),
+            command: None,
+            backup_dir: None,
+            bundle: Some(PathBuf::from("/tmp/x.axgf")),
             bind: "127.0.0.1:8080".parse().unwrap(),
             admin_token: token.map(str::to_string),
             seed_sample: false,
@@ -205,6 +290,97 @@ mod tests {
         let c = Config::parse_from(["axgf-cms", "--bundle", "/tmp/x.axgf"]);
         assert_eq!(c.bind.to_string(), "127.0.0.1:8080");
         assert!(c.bind.ip().is_loopback());
+    }
+
+    #[test]
+    fn no_subcommand_still_means_serve() {
+        // Every existing invocation — the systemd unit's, the bootstrap
+        // script's — must keep working exactly as it did.
+        let c = Config::parse_from(["axgf-cms", "--bundle", "/tmp/x.axgf"]);
+        assert!(c.command.is_none());
+        assert_eq!(c.bundle().unwrap(), &PathBuf::from("/tmp/x.axgf"));
+    }
+
+    #[test]
+    fn the_bundle_reads_the_same_on_either_side_of_a_subcommand() {
+        for args in [
+            vec![
+                "axgf-cms",
+                "--bundle",
+                "/srv/f.axgf",
+                "backup",
+                "--dest",
+                "/b",
+            ],
+            vec![
+                "axgf-cms",
+                "backup",
+                "--bundle",
+                "/srv/f.axgf",
+                "--dest",
+                "/b",
+            ],
+        ] {
+            let c = Config::parse_from(args);
+            assert_eq!(c.bundle().unwrap(), &PathBuf::from("/srv/f.axgf"));
+            match c.command {
+                Some(Command::Backup {
+                    dest, keep_daily, ..
+                }) => {
+                    assert_eq!(dest, Some(PathBuf::from("/b")));
+                    assert_eq!(keep_daily, 7);
+                }
+                other => panic!("expected a backup, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn a_missing_bundle_says_how_to_supply_one() {
+        let c = Config::parse_from(["axgf-cms", "verify", "/b/x.zip"]);
+        let err = c.bundle().expect_err("none was given");
+        assert!(format!("{err}").contains("--bundle"), "{err}");
+    }
+
+    #[test]
+    fn retention_is_configurable_from_the_command_line() {
+        let c = Config::parse_from([
+            "axgf-cms",
+            "backup",
+            "--bundle",
+            "/srv/f.axgf",
+            "--dest",
+            "/b",
+            "--keep-daily",
+            "30",
+            "--keep-weekly",
+            "0",
+            "--keep-monthly",
+            "24",
+        ]);
+        match c.command {
+            Some(Command::Backup {
+                keep_daily,
+                keep_weekly,
+                keep_monthly,
+                ..
+            }) => {
+                assert_eq!((keep_daily, keep_weekly, keep_monthly), (30, 0, 24));
+            }
+            other => panic!("{other:?}"),
+        }
+    }
+
+    #[test]
+    fn restore_refuses_by_default_and_forces_only_when_asked() {
+        let c = Config::parse_from(["axgf-cms", "restore", "/b/a.zip", "--bundle", "/srv/f.axgf"]);
+        match c.command {
+            Some(Command::Restore { archive, force }) => {
+                assert_eq!(archive, PathBuf::from("/b/a.zip"));
+                assert!(!force, "forcing is never the default");
+            }
+            other => panic!("{other:?}"),
+        }
     }
 
     #[test]

@@ -90,6 +90,9 @@ pub struct AppState {
     generation: std::sync::atomic::AtomicU64,
     /// The append-only edit journal, beside the bundle rather than in it.
     journal: crate::journal::Journal,
+    /// Where backups are expected to be, when the operator said so. Read by
+    /// `/health` and by the dashboard banner; never written to from a request.
+    backup_dir: Option<PathBuf>,
     /// The tile source for the place-editor map, and the attribution that
     /// licence requires beside it. `None` means no basemap, which is the
     /// default: tiles are fetched by the reader's browser rather than by this
@@ -500,6 +503,7 @@ impl AppState {
                 journal: crate::journal::Journal::new(crate::journal::Journal::path_for(path)),
                 geocoder: None,
                 map: None,
+                backup_dir: None,
             },
             report,
         ))
@@ -518,6 +522,16 @@ impl AppState {
     /// changed and the file behind, which is why the error is returned rather
     /// than logged: the caller must tell the operator the change did not stick.
     pub fn acl_mutate<T>(&self, f: impl FnOnce(&mut crate::acl::Acl) -> T) -> Result<T> {
+        // The same cross-process lock the bundle write takes, for the same
+        // reason: a backup copies the bundle and the accounts as one set, and
+        // an account created between the two copies would be in one file and
+        // not the other. Never held at the same time as `persist`'s — flock is
+        // per-open-file-description, so nesting them would wait on this
+        // process itself.
+        let _lock = crate::lockfile::WriteLock::acquire_for(
+            &self.bundle_path,
+            crate::lockfile::SERVER_WAIT,
+        )?;
         let mut guard = self.acl.write().unwrap_or_else(|e| e.into_inner());
         let out = f(&mut guard);
         guard.save(&self.acl_path)?;
@@ -583,6 +597,22 @@ impl AppState {
     pub fn with_map(mut self, map: Option<MapTiles>) -> Self {
         self.map = map;
         self
+    }
+
+    /// Record where backups are expected, before the state is shared.
+    pub fn with_backup_dir(mut self, dir: Option<PathBuf>) -> Self {
+        self.backup_dir = dir;
+        self
+    }
+
+    /// Where backups are expected, if the operator said.
+    pub fn backup_dir(&self) -> Option<&Path> {
+        self.backup_dir.as_deref()
+    }
+
+    /// Every operational check, for `/health` and the dashboard banner.
+    pub fn health(&self) -> crate::health::Report {
+        crate::health::report(self, self.backup_dir())
     }
 
     /// The basemap, if the operator configured one.
@@ -857,6 +887,31 @@ impl AppState {
     /// partially written. A failure at any stage removes the temp file and
     /// leaves the previous bundle byte-identical.
     fn persist(&self, flat: &Value) -> Result<()> {
+        let dir = self.bundle_path.parent().unwrap_or(Path::new("."));
+        // Refused here, before a byte is written, rather than discovered 300 MB
+        // into rebuilding the archive. The figure is the whole bundle and not
+        // the difference, because the temp file and the live file both exist
+        // between the first write and the rename.
+        let current = fs::metadata(&self.bundle_path)
+            .map(|m| m.len())
+            .unwrap_or(0);
+        crate::space::ensure_room_for(
+            dir,
+            &crate::space::Need {
+                bytes: current.saturating_add(self.payloads.bytes_on_disk()),
+                what: "the bundle",
+            },
+        )?;
+
+        // One writer at a time across processes, not merely across handlers:
+        // `axgf-cms backup` is a second process reading these same three files
+        // and it must not see a half-replaced set. Taken here and dropped at
+        // the end of the function; nothing inside it takes the lock again.
+        let _lock = crate::lockfile::WriteLock::acquire_for(
+            &self.bundle_path,
+            crate::lockfile::SERVER_WAIT,
+        )?;
+
         let tmp = tmp_path_for(&self.bundle_path);
         if let Err(e) = self.write_streaming(flat, &tmp) {
             let _ = fs::remove_file(&tmp);
@@ -1260,14 +1315,29 @@ pub fn write_bundle(path: &Path, flat: &Value) -> Result<()> {
 /// streaming persist path reaches the same guarantee by building the archive in
 /// the temp file and calling [`rename_and_sync`].
 pub fn write_bytes_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
+    let dir = path.parent().unwrap_or(Path::new("."));
+    // Both files exist between the write and the rename, so the requirement is
+    // the new bytes on top of whatever the old file already occupies.
+    let existing = fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+    crate::space::ensure_room_for(
+        dir,
+        &crate::space::Need {
+            bytes: bytes.len() as u64 + existing,
+            what: "the bundle",
+        },
+    )?;
     let tmp = tmp_path_for(path);
-    {
-        let mut f = fs::File::create(&tmp)
-            .with_context(|| format!("creating temp bundle {}", tmp.display()))?;
-        f.write_all(bytes)
-            .with_context(|| format!("writing temp bundle {}", tmp.display()))?;
+    let write = (|| -> std::io::Result<()> {
+        let mut f = fs::File::create(&tmp)?;
+        f.write_all(bytes)?;
         f.sync_all()
-            .with_context(|| format!("fsyncing temp bundle {}", tmp.display()))?;
+    })();
+    if let Err(e) = write {
+        let _ = fs::remove_file(&tmp);
+        anyhow::bail!(
+            "{}",
+            crate::space::explain_write_failure(&e, path, Some(&tmp))
+        );
     }
     rename_and_sync(&tmp, path)
 }
@@ -1279,8 +1349,20 @@ pub fn write_bytes_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
 /// touched only the temp file, so a crash at any earlier point leaves the
 /// previous bundle intact.
 fn rename_and_sync(tmp: &Path, path: &Path) -> Result<()> {
-    fs::rename(tmp, path)
-        .with_context(|| format!("renaming {} over {}", tmp.display(), path.display()))?;
+    // The message this used to produce was `renaming
+    // /var/lib/axgf-cms/family.axgf.tmp over /var/lib/axgf-cms/family.axgf`,
+    // which told the operator what the program had been doing and nothing
+    // whatever about what went wrong or what to do about it. A full disk, a
+    // wrong owner, a sticky shared directory and a bundle that has drifted
+    // onto a second filesystem all arrived looking identical, and only one of
+    // them is fixed by freeing space.
+    fs::rename(tmp, path).map_err(|e| {
+        let _ = fs::remove_file(tmp);
+        anyhow::anyhow!(
+            "{}",
+            crate::space::explain_write_failure(&e, path, Some(tmp))
+        )
+    })?;
 
     // Best-effort: fsync the directory so the rename itself is durable. A
     // failure here does not corrupt anything, so it is logged, not fatal.
@@ -1292,6 +1374,52 @@ fn rename_and_sync(tmp: &Path, path: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/// Remove temp files left beside `bundle` by a crashed write.
+///
+/// Every temp file this application creates is `<bundle name>` with something
+/// ending in `.tmp` appended, and it lives in the bundle's own directory so the
+/// final rename stays atomic. Nothing else may match that shape, which is what
+/// makes deleting them safe: a file called `family.axgf.download-<uuid>.tmp` is
+/// either an export in flight or the wreckage of one, and the write lock tells
+/// the two apart.
+///
+/// Called once at startup, with the lock held, so a temp file another process
+/// is writing this moment is never removed.
+pub fn sweep_stale_temp_files(bundle: &Path) {
+    let Some(dir) = bundle.parent() else { return };
+    let Some(stem) = bundle.file_name().and_then(|n| n.to_str()) else {
+        return;
+    };
+    let Ok(_lock) =
+        crate::lockfile::WriteLock::acquire_for(bundle, std::time::Duration::from_secs(5))
+    else {
+        tracing::debug!("another process is writing; not sweeping temp files");
+        return;
+    };
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+            continue;
+        };
+        if name == stem || !name.starts_with(stem) || !name.ends_with(".tmp") {
+            continue;
+        }
+        let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
+        match fs::remove_file(&path) {
+            Ok(()) => tracing::warn!(
+                path = %path.display(),
+                bytes = size,
+                "removed a temp file left by an interrupted write; the bundle itself \
+                 was never touched"
+            ),
+            Err(e) => tracing::warn!(path = %path.display(), error = %e, "could not remove it"),
+        }
+    }
 }
 
 /// Sibling temp path used by [`write_bundle`]. Kept in the same directory so
@@ -1306,19 +1434,8 @@ fn tmp_path_for(path: &Path) -> PathBuf {
 mod tests {
     use super::*;
 
-    fn tmpdir() -> PathBuf {
-        let base = std::env::var("CARGO_TARGET_TMPDIR")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| std::env::temp_dir());
-        let unique = format!(
-            "axgf-cms-state-{}-{:?}",
-            std::process::id(),
-            std::thread::current().id()
-        );
-        let dir = base.join(unique);
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).expect("create temp dir");
-        dir
+    fn tmpdir() -> crate::scratch::Dir {
+        crate::scratch::Dir::new("state")
     }
 
     #[test]

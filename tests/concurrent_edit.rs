@@ -29,7 +29,7 @@ fn person(id: &str, display: &str, version: u64) -> Value {
     })
 }
 
-fn app(tag: &str) -> axum::Router {
+fn app(tag: &str) -> (axum::Router, common::Scratch) {
     let dir = scratch(&format!("{tag}-src"));
     let path = dir.join("c.axgf");
     let flat = json!({
@@ -43,7 +43,7 @@ fn app(tag: &str) -> axum::Router {
         axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
     )
     .expect("write");
-    app_with_bundle(tag, &path).0
+    app_with_bundle(tag, &path)
 }
 
 /// Save `entity` for `id`, declaring that it was edited from `base_version`.
@@ -96,13 +96,13 @@ async fn stored_version(app: &axum::Router, id: &str) -> u64 {
 async fn the_edit_form_carries_the_version_it_was_rendered_from() {
     // Without this the save has nothing to compare against, and every other
     // test here would be checking a check that cannot fire.
-    let app = app("ce-form");
+    let (app, _scratch) = app("ce-form");
     assert_eq!(stored_version(&app, ALICE).await, 1);
 }
 
 #[tokio::test]
 async fn a_second_edit_from_a_stale_version_is_refused_with_a_diff() {
-    let app = app("ce-refused");
+    let (app, _scratch) = app("ce-refused");
 
     // Both editors open the record at version 1.
     let base = stored_version(&app, ALICE).await;
@@ -158,7 +158,7 @@ async fn a_second_edit_from_a_stale_version_is_refused_with_a_diff() {
 async fn edits_to_different_entities_both_succeed() {
     // The lock is per entity, not per bundle. Two people working on two
     // relatives must not block each other.
-    let app = app("ce-different");
+    let (app, _scratch) = app("ce-different");
     let mut a = person(ALICE, "Alice", 1);
     a["notes"] = json!("a note for Alice");
     let mut b = person(BOB, "Bob", 1);
@@ -177,7 +177,7 @@ async fn edits_to_different_entities_both_succeed() {
 async fn an_edit_after_reloading_the_current_version_succeeds() {
     // The way out of a conflict: reload, re-apply, save. If this did not work
     // the refusal would be a dead end rather than a detour.
-    let app = app("ce-reload");
+    let (app, _scratch) = app("ce-reload");
 
     let mut first = person(ALICE, "Alice", 1);
     first["notes"] = json!("first");
@@ -204,7 +204,7 @@ async fn an_edit_after_reloading_the_current_version_succeeds() {
 
 #[tokio::test]
 async fn a_successful_save_increments_the_version_exactly_once() {
-    let app = app("ce-increment");
+    let (app, _scratch) = app("ce-increment");
     for expected in 1..=4u64 {
         assert_eq!(stored_version(&app, ALICE).await, expected);
         let mut e = person(ALICE, "Alice", expected);
@@ -222,7 +222,7 @@ async fn a_save_that_declares_no_version_fails_closed() {
     // A form from before this existed, or a script posting by hand. Falling
     // back to the stored version would make the check pass by default, which
     // is the one thing it must never do.
-    let app = app("ce-noversion");
+    let (app, _scratch) = app("ce-noversion");
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("posted without a version");
     let body = format!("raw_json={}", urlencode(&e.to_string()));
@@ -236,7 +236,7 @@ async fn a_save_that_declares_no_version_fails_closed() {
 
 #[tokio::test]
 async fn the_conflict_page_marks_the_fields_both_editors_touched() {
-    let app = app("ce-contested");
+    let (app, _scratch) = app("ce-contested");
 
     let mut first = person(ALICE, "Alice", 1);
     first["notes"] = json!("theirs");
@@ -257,7 +257,7 @@ async fn the_conflict_page_marks_the_fields_both_editors_touched() {
 
 #[tokio::test]
 async fn every_successful_edit_lands_in_the_journal_and_the_history() {
-    let app = app("ce-journal");
+    let (app, _scratch) = app("ce-journal");
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("a corrected note");
     assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
@@ -345,7 +345,7 @@ async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
     // corrected. That is precisely why it is kept out of the shareable bundle,
     // so publishing it on the public record page would put it straight back
     // where it was kept out of.
-    let app = app("ce-history-private");
+    let (app, _scratch) = app("ce-history-private");
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("a correction somebody made");
     assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
@@ -415,7 +415,7 @@ async fn a_delete_decided_on_an_older_version_is_refused() {
     // it since has made it a different record, and under `cascade` the
     // delete would take every reference to it along — so it is refused the
     // way a stale save is, and nothing is removed.
-    let app = app("stale-delete");
+    let (app, _scratch) = app("stale-delete");
     let mut edited = person(ALICE, "Alice", 1);
     edited["notes"] = json!("changed by the other editor");
     let saved = save(&app, ALICE, 1, &edited).await;
@@ -455,7 +455,7 @@ async fn a_delete_decided_on_an_older_version_is_refused() {
 
 #[tokio::test]
 async fn a_delete_without_a_version_fails_closed() {
-    let app = app("versionless-delete");
+    let (app, _scratch) = app("versionless-delete");
     let resp = post_form(
         &app,
         &format!("/admin/person/{BOB}/delete"),

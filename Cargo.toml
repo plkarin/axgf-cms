@@ -2,7 +2,7 @@
 name = "axgf-cms"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.88"
+rust-version = "1.89"
 description = "Reference showcase application for the Axiom Genealogy Format (AXGF): browse and edit one .axgf bundle from a single binary."
 license = "Apache-2.0"
 repository = "https://github.com/plkarin/axgf-cms"
@@ -32,7 +32,7 @@ serde = { version = "1", features = ["derive"] }
 # inherited by feature unification.
 serde_json = { version = "1", features = ["preserve_order"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "fs"] }
-tower-http = { version = "0.5", features = ["fs", "limit", "trace"] }
+tower-http = { version = "0.5", features = ["compression-gzip", "fs", "limit", "set-header", "trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
@@ -52,6 +52,13 @@ fluent = "0.17.0"
 unic-langid = "0.9.6"
 intl-memoizer = "0.5.3"
 ureq = { version = "3.4.0", default-features = false, features = ["rustls", "json", "gzip"] }
+# A backup archive is an ordinary ZIP so that an operator with nothing but
+# `unzip` can get the three files out of it without this binary. Deflate only:
+# the bundle inside is already a compressed archive and goes in stored.
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+# `statvfs`, and the errno constants the rename failures are named by. The one
+# reason this crate is not `forbid(unsafe_code)` — see `src/space.rs`.
+libc = "0.2"
 
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get

@@ -778,7 +778,7 @@ async fn without_a_contact_address_there_is_no_lookup_button() {
 /// A bundle holding one couple entered twice — the shape the operator's
 /// bundle carries: one record with a type and a date, one with the `unknown`
 /// sentinel and nothing else, the same two spouses, the same child.
-fn duplicate_family_app(tag: &str) -> (axum::Router, std::path::PathBuf) {
+fn duplicate_family_app(tag: &str) -> (axum::Router, common::Scratch) {
     use serde_json::json;
     const A: &str = "aaaaaaaa-1111-4111-8111-111111111111";
     const B: &str = "bbbbbbbb-2222-4222-8222-222222222222";

@@ -35,7 +35,7 @@ fn person(id: &str, name: &str) -> serde_json::Value {
 
 /// A tree with one branch (ROOT → KID, KID married to SPOUSE) and one person
 /// standing entirely outside it.
-fn bundle(tag: &str) -> std::path::PathBuf {
+fn bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("acc.axgf");
     let flat = json!({
@@ -69,11 +69,14 @@ fn bundle(tag: &str) -> std::path::PathBuf {
         axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
     )
     .expect("write");
-    path
+    dir.pointing_at(path)
 }
 
 /// An app whose `.acl` holds the given accounts.
-fn app_with_accounts(tag: &str, users: &[(&str, axgf_cms::acl::Role, &[&str])]) -> axum::Router {
+fn app_with_accounts(
+    tag: &str,
+    users: &[(&str, axgf_cms::acl::Role, &[&str])],
+) -> (axum::Router, common::Scratch) {
     let src = bundle(&format!("{tag}-src"));
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
@@ -88,7 +91,8 @@ fn app_with_accounts(tag: &str, users: &[(&str, axgf_cms::acl::Role, &[&str])]) 
     acl.save(&axgf_cms::acl::Acl::path_for(&path))
         .expect("save acl");
 
-    axgf_cms::app(&path, TOKEN).expect("build app")
+    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    (app, dir.pointing_at(path))
 }
 
 /// Sign in and return the session cookie.
@@ -153,7 +157,7 @@ async fn post_as(
 #[tokio::test]
 async fn a_viewer_may_read_but_not_reach_the_panel_at_all() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-viewer", &[("vera", Role::Viewer, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-viewer", &[("vera", Role::Viewer, &[])]);
     let cookie = sign_in(&app, "vera").await;
 
     // Reading is fine.
@@ -183,7 +187,7 @@ async fn a_viewer_may_read_but_not_reach_the_panel_at_all() {
 #[tokio::test]
 async fn a_contributor_edits_but_may_not_delete_dedup_validate_or_export() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-contrib", &[("carl", Role::Contributor, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-contrib", &[("carl", Role::Contributor, &[])]);
     let cookie = sign_in(&app, "carl").await;
 
     assert_eq!(
@@ -229,7 +233,7 @@ async fn a_contributor_edits_but_may_not_delete_dedup_validate_or_export() {
 #[tokio::test]
 async fn an_admin_reaches_everything() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-admin", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-admin", &[("ada", Role::Admin, &[])]);
     let cookie = sign_in(&app, "ada").await;
     for uri in ["/admin", "/admin/users", "/admin/export", "/admin/person"] {
         let resp = get_as(&app, &cookie, uri).await;
@@ -246,7 +250,7 @@ async fn an_admin_reaches_everything() {
 #[tokio::test]
 async fn a_scoped_contributor_edits_inside_the_branch_and_nowhere_else() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-scope", &[("sam", Role::Contributor, &[ROOT])]);
+    let (app, _scratch) = app_with_accounts("acc-scope", &[("sam", Role::Contributor, &[ROOT])]);
     let cookie = sign_in(&app, "sam").await;
 
     let edit =
@@ -298,7 +302,8 @@ async fn a_scope_limits_writing_but_never_reading() {
     // The rule that keeps the two systems apart. A branch-scoped account reads
     // the whole tree at its ceiling; the scope is about what it may change.
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-scope-read", &[("sam", Role::Contributor, &[ROOT])]);
+    let (app, _scratch) =
+        app_with_accounts("acc-scope-read", &[("sam", Role::Contributor, &[ROOT])]);
     let cookie = sign_in(&app, "sam").await;
     let body = expect_status(
         get_as(&app, &cookie, &format!("/person/{OUTSIDER}")).await,
@@ -315,7 +320,8 @@ async fn a_scoped_account_may_not_edit_a_record_that_names_nobody() {
     // there is no branch to measure it against. Permitting it would be a hole
     // in the scope rather than an exception to it.
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-scope-source", &[("sam", Role::Contributor, &[ROOT])]);
+    let (app, _scratch) =
+        app_with_accounts("acc-scope-source", &[("sam", Role::Contributor, &[ROOT])]);
     let cookie = sign_in(&app, "sam").await;
     let src = json!({"type": "source", "axgf_version": "1.0",
                      "title": "A register", "source_type": "register"});
@@ -335,7 +341,8 @@ async fn a_scoped_account_may_not_retarget_a_record_out_of_its_branch() {
     // family they may edit and point it at somebody they may not — rewriting
     // that person's parentage from inside the branch.
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-scope-retarget", &[("sam", Role::Contributor, &[ROOT])]);
+    let (app, _scratch) =
+        app_with_accounts("acc-scope-retarget", &[("sam", Role::Contributor, &[ROOT])]);
     let cookie = sign_in(&app, "sam").await;
 
     let hijacked = json!({
@@ -367,7 +374,8 @@ async fn a_scoped_account_may_not_attach_a_file_outside_its_branch() {
     // once, in this very release. A write against a person's record is a write
     // against their record whatever entity the form happens to create.
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-scope-upload", &[("sam", Role::Contributor, &[ROOT])]);
+    let (app, _scratch) =
+        app_with_accounts("acc-scope-upload", &[("sam", Role::Contributor, &[ROOT])]);
     let cookie = sign_in(&app, "sam").await;
 
     let png = {
@@ -434,7 +442,7 @@ async fn a_scoped_account_may_not_attach_a_file_outside_its_branch() {
 #[tokio::test]
 async fn a_forged_session_cookie_is_refused() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-forge", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-forge", &[("ada", Role::Admin, &[])]);
     let real = sign_in(&app, "ada").await;
 
     // Same shape, wrong signature.
@@ -456,7 +464,7 @@ async fn a_forged_session_cookie_is_refused() {
 async fn disabling_an_account_takes_effect_on_the_next_request() {
     // A live cookie that outlived the change would make the change advisory.
     use axgf_cms::acl::Role;
-    let app = app_with_accounts(
+    let (app, _scratch) = app_with_accounts(
         "acc-disable",
         &[("ada", Role::Admin, &[]), ("carl", Role::Contributor, &[])],
     );
@@ -487,7 +495,7 @@ async fn disabling_an_account_takes_effect_on_the_next_request() {
 #[tokio::test]
 async fn the_last_administrator_cannot_lock_everyone_out() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-lastadmin", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-lastadmin", &[("ada", Role::Admin, &[])]);
     let cookie = sign_in(&app, "ada").await;
     let list = body_string(get_as(&app, &cookie, "/admin/users").await).await;
     let id = user_id_of(&list, "ada");
@@ -520,7 +528,7 @@ async fn a_wrong_password_is_indistinguishable_from_an_unknown_account() {
     // The login form must not be an oracle for which accounts exist — there is
     // no self-registration here to make that knowledge harmless.
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-oracle", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-oracle", &[("ada", Role::Admin, &[])]);
 
     let known = post_form(&app, "/admin/login", "username=ada&password=wrong", false).await;
     let unknown = post_form(
@@ -541,7 +549,7 @@ async fn a_wrong_password_is_indistinguishable_from_an_unknown_account() {
 #[tokio::test]
 async fn repeated_failures_are_throttled() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-throttle", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-throttle", &[("ada", Role::Admin, &[])]);
     let mut throttled = false;
     for _ in 0..12 {
         let body = body_string(
@@ -573,7 +581,7 @@ async fn repeated_failures_are_throttled() {
 #[tokio::test]
 async fn signing_out_ends_the_session() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-signout", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-signout", &[("ada", Role::Admin, &[])]);
     let cookie = sign_in(&app, "ada").await;
     assert_eq!(
         get_as(&app, &cookie, "/admin").await.status(),
@@ -589,7 +597,7 @@ async fn signing_out_ends_the_session() {
 #[tokio::test]
 async fn the_acl_never_carries_a_password_into_a_page() {
     use axgf_cms::acl::Role;
-    let app = app_with_accounts("acc-nohash", &[("ada", Role::Admin, &[])]);
+    let (app, _scratch) = app_with_accounts("acc-nohash", &[("ada", Role::Admin, &[])]);
     let cookie = sign_in(&app, "ada").await;
     let body = body_string(get_as(&app, &cookie, "/admin/users").await).await;
     assert!(

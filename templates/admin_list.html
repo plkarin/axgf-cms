@@ -50,7 +50,7 @@
       <td class="nowrap">
         <a class="btn small-btn" href="/admin/{{ kind }}/{{ r.id }}/edit">{{ t("admin-edit") }}</a>
         <button class="btn small-btn danger" type="button"
-                onclick="document.getElementById('del-{{ r.id }}').hidden = !document.getElementById('del-{{ r.id }}').hidden">
+                data-toggle="del-{{ r.id }}">
           {{ t("admin-delete") }}
         </button>
       </td>

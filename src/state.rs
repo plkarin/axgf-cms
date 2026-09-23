@@ -93,6 +93,16 @@ pub struct AppState {
     /// Where backups are expected to be, when the operator said so. Read by
     /// `/health` and by the dashboard banner; never written to from a request.
     backup_dir: Option<PathBuf>,
+    /// True when the emergency admin token was supplied by the operator rather
+    /// than generated at startup.
+    ///
+    /// A generated token is different on every boot and is printed once to the
+    /// journal, so it is not a standing credential. One in the environment file
+    /// is: it works forever, it is the same after a restart, and it bypasses
+    /// the account system. It is how an installation is rescued when nobody
+    /// can sign in, and it is meant to be removed once somebody can — so the
+    /// dashboard says, to whoever is signed in, that it is still there.
+    standing_admin_token: bool,
     /// The tile source for the place-editor map, and the attribution that
     /// licence requires beside it. `None` means no basemap, which is the
     /// default: tiles are fetched by the reader's browser rather than by this
@@ -526,6 +536,7 @@ impl AppState {
                 geocoder: None,
                 map: None,
                 backup_dir: None,
+                standing_admin_token: false,
             },
             report,
         ))
@@ -630,6 +641,17 @@ impl AppState {
     /// Where backups are expected, if the operator said.
     pub fn backup_dir(&self) -> Option<&Path> {
         self.backup_dir.as_deref()
+    }
+
+    /// Record whether the emergency token is a standing one, before sharing.
+    pub fn with_standing_admin_token(mut self, standing: bool) -> Self {
+        self.standing_admin_token = standing;
+        self
+    }
+
+    /// Whether the emergency admin token is a standing credential.
+    pub fn standing_admin_token(&self) -> bool {
+        self.standing_admin_token
     }
 
     /// Every operational check, for `/health` and the dashboard banner.

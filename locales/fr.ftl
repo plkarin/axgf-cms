@@ -3070,3 +3070,27 @@ radar-no-score = pas de note
 radar-from-none = rien
 record-link-outgoing = de cette personne
 record-link-incoming = vers cette personne
+# L'avertissement d'exploitation sur le tableau de bord.
+health-attention = Demande votre attention :
+health-standing-token = Un jeton d'administration d'urgence est toujours défini. Il passe outre chaque compte et chaque autorisation — c'est sa raison d'être le jour où personne ne peut se connecter, et non quelque chose à laisser en place une fois que quelqu'un peut. Retirez-le du fichier d'environnement du service et redémarrez-le.
+health-bundle-invalid = { $errors ->
+        [one] Les données familiales ne passent plus la validation : une erreur, indiquée sous « Valider » ci-dessous.
+        [many] Les données familiales ne passent plus la validation : { $errors } erreurs, indiquées sous « Valider » ci-dessous.
+       *[other] Les données familiales ne passent plus la validation : { $errors } erreurs, indiquées sous « Valider » ci-dessous.
+    }
+health-disk-unknown = L'espace libre de cette machine n'a pas pu être lu ; rien ici ne peut donc promettre que le prochain enregistrement tiendra.
+health-disk-no-room-to-save = Enregistrer est impossible : il reste { $free } libres, et reconstruire ce lot en demande { $need }. Rien n'est perdu, et rien ne peut être modifié avant qu'il y ait de la place.
+health-disk-critical = Le disque est libre à { $percent } % — { $free } restants. L'enregistrement cessera bientôt de fonctionner.
+health-disk-low = Le disque est libre à { $percent } % — { $free } restants. À traiter avant que cela devienne urgent.
+health-backup-unconfigured = Rien n'est sauvegardé. Un seul disque défaillant emporterait tous les enregistrements.
+health-backup-never = Un répertoire de sauvegarde est défini, mais aucune sauvegarde n'y a jamais été écrite.
+health-backup-stale = { $days ->
+        [one] La sauvegarde la plus récente date d'un jour. Il faudrait en écrire une chaque jour.
+        [many] La sauvegarde la plus récente date de { $days } jours. Il faudrait en écrire une chaque jour.
+       *[other] La sauvegarde la plus récente date de { $days } jours. Il faudrait en écrire une chaque jour.
+    }
+health-cache-missing = { $missing ->
+        [one] Un fichier joint sur { $declared } manque dans le cache et ne pourra être téléchargé qu'après sa reconstruction au prochain enregistrement.
+        [many] { $missing } fichiers joints sur { $declared } manquent dans le cache et ne pourront être téléchargés qu'après leur reconstruction au prochain enregistrement.
+       *[other] { $missing } fichiers joints sur { $declared } manquent dans le cache et ne pourront être téléchargés qu'après leur reconstruction au prochain enregistrement.
+    }

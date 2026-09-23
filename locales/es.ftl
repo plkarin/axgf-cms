@@ -3085,3 +3085,27 @@ radar-no-score = sin puntuación
 radar-from-none = nada
 record-link-outgoing = de esta persona
 record-link-incoming = hacia esta persona
+# El aviso de funcionamiento en el panel de administración.
+health-attention = Requiere atención:
+health-standing-token = Sigue configurado un token de administración de emergencia. Entra por delante de cualquier cuenta y cualquier permiso — para eso sirve el día en que nadie puede iniciar sesión, y no para quedarse cuando alguien ya puede. Quítelo del archivo de entorno del servicio y reinícielo.
+health-bundle-invalid = { $errors ->
+        [one] Los datos familiares ya no pasan la validación: un error, indicado más abajo en «Validar».
+        [many] Los datos familiares ya no pasan la validación: { $errors } errores, indicados más abajo en «Validar».
+       *[other] Los datos familiares ya no pasan la validación: { $errors } errores, indicados más abajo en «Validar».
+    }
+health-disk-unknown = No se pudo leer el espacio libre de esta máquina, así que nada aquí puede prometer que el próximo guardado quepa.
+health-disk-no-room-to-save = No se puede guardar: quedan { $free } libres y reconstruir este paquete necesita { $need }. No se ha perdido nada, y nada podrá cambiarse hasta que haya espacio.
+health-disk-critical = El disco está libre al { $percent } % — quedan { $free }. Guardar dejará de funcionar en breve.
+health-disk-low = El disco está libre al { $percent } % — quedan { $free }. Conviene atenderlo antes de que sea urgente.
+health-backup-unconfigured = No se está respaldando nada. Un solo disco averiado se llevaría todos los registros.
+health-backup-never = Hay un directorio de copias configurado, pero nunca se ha escrito ninguna copia en él.
+health-backup-stale = { $days ->
+        [one] La copia más reciente tiene un día. Debería escribirse una cada día.
+        [many] La copia más reciente tiene { $days } días. Debería escribirse una cada día.
+       *[other] La copia más reciente tiene { $days } días. Debería escribirse una cada día.
+    }
+health-cache-missing = { $missing ->
+        [one] Falta uno de los { $declared } archivos adjuntos en la memoria intermedia y no podrá descargarse hasta que el próximo guardado lo reconstruya.
+        [many] Faltan { $missing } de los { $declared } archivos adjuntos en la memoria intermedia y no podrán descargarse hasta que el próximo guardado los reconstruya.
+       *[other] Faltan { $missing } de los { $declared } archivos adjuntos en la memoria intermedia y no podrán descargarse hasta que el próximo guardado los reconstruya.
+    }

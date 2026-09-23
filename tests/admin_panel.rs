@@ -940,3 +940,97 @@ async fn ids_that_name_no_family_are_not_reported_as_merged() {
         "nothing is claimed about a pair that was never there: {body}"
     );
 }
+
+// ---------------------------------------------------------------------------
+// The operational banner
+//
+// `/health` is for a monitor. These three are for the household: the only
+// warning an installation with no monitor at all will ever get is the one on
+// the page somebody signs in to.
+// ---------------------------------------------------------------------------
+
+/// An app whose operational settings are the ones the banner reads.
+fn app_with_ops(
+    tag: &str,
+    backup_dir: Option<std::path::PathBuf>,
+    standing_token: bool,
+) -> (axum::Router, Scratch) {
+    let dir = scratch(tag);
+    let path = dir.join("family.axgf");
+    let app =
+        axgf_cms::app_with_operations(&path, TOKEN, backup_dir, standing_token).expect("build app");
+    (app, dir.pointing_at(path))
+}
+
+#[tokio::test]
+async fn the_dashboard_says_so_when_nothing_is_being_backed_up() {
+    let (app, _p) = app_with_ops("dash-no-backup", None, false);
+    let page = body_string(get_admin(&app, "/admin").await).await;
+    assert!(
+        page.contains("Nothing is being backed up"),
+        "the dashboard must say that nothing is backed up:\n{}",
+        &page[..page.len().min(600)]
+    );
+    assert!(page.contains("Needs attention"), "and mark it as a warning");
+}
+
+#[tokio::test]
+async fn the_dashboard_says_so_when_the_newest_backup_is_two_days_old() {
+    let backups = scratch("dash-stale-backups");
+    // The age comes from the archive's own stamp, so a stale one is a file
+    // with an old name. Three days: past the 48-hour warning threshold.
+    let then = time::OffsetDateTime::now_utc() - time::Duration::days(3);
+    let name = format!(
+        "axgf-backup-{:04}{:02}{:02}T{:02}{:02}{:02}Z.zip",
+        then.year(),
+        u8::from(then.month()),
+        then.day(),
+        then.hour(),
+        then.minute(),
+        then.second()
+    );
+    std::fs::write(backups.dir().join(&name), b"not read by the age check").expect("write");
+
+    let (app, _p) = app_with_ops("dash-stale", Some(backups.dir().to_path_buf()), false);
+    let page = body_string(get_admin(&app, "/admin").await).await;
+    assert!(
+        page.contains("The newest backup is 3 days old"),
+        "the dashboard must name the age:\n{}",
+        &page[..page.len().min(600)]
+    );
+}
+
+#[tokio::test]
+async fn the_dashboard_says_so_while_an_emergency_token_is_still_set() {
+    // The token bypasses every account. It is how an installation is rescued
+    // and it is meant to be taken out again, so the dashboard keeps asking.
+    let (app, _p) = app_with_ops("dash-token", None, true);
+    let page = body_string(get_admin(&app, "/admin").await).await;
+    assert!(
+        page.contains("emergency administrator token is still set"),
+        "the dashboard must surface a standing emergency token"
+    );
+
+    // And says nothing when the token was generated for this boot only.
+    let (app, _p) = app_with_ops("dash-token-generated", None, false);
+    let page = body_string(get_admin(&app, "/admin").await).await;
+    assert!(
+        !page.contains("emergency administrator token is still set"),
+        "a per-boot token is not a standing credential"
+    );
+}
+
+#[tokio::test]
+async fn the_banner_is_not_shown_to_a_reader_who_is_not_signed_in() {
+    // It names free space, a backup directory and whether a rescue token
+    // exists. None of that belongs on a public page.
+    let (app, _p) = app_with_ops("dash-public", None, true);
+    for path in ["/", "/tree"] {
+        let page = body_string(get(&app, path).await).await;
+        assert!(
+            !page.contains("Nothing is being backed up")
+                && !page.contains("emergency administrator token"),
+            "{path} leaked an operational warning to an anonymous reader"
+        );
+    }
+}

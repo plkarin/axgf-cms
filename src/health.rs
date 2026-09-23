@@ -56,6 +56,17 @@ impl Level {
     }
 }
 
+/// An argument for the localised half of a check.
+///
+/// Numbers stay numbers as far as Fluent, because a catalogue selects a plural
+/// form on them; a count formatted into a string on this side arrives as text
+/// and takes the `other` branch in every language.
+#[derive(Debug, Clone)]
+pub enum Arg {
+    Num(i64),
+    Text(String),
+}
+
 /// One thing that was checked.
 #[derive(Debug, Clone, Serialize)]
 pub struct Check {
@@ -64,6 +75,50 @@ pub struct Check {
     pub level: Level,
     /// One sentence, in English, for a human reading `curl /health`.
     pub detail: String,
+    /// The same fact as a catalogue key, for the dashboard.
+    ///
+    /// `detail` is written for `curl /health` — an operator at a terminal, in
+    /// English, wanting the path and the byte count. The dashboard is read by
+    /// whoever is signed in, in their own language, so it cannot show
+    /// `detail`: this is the key and the numbers that go into it. An `Ok`
+    /// check leaves it empty, because nothing is said about what is fine.
+    #[serde(skip)]
+    pub key: &'static str,
+    #[serde(skip)]
+    pub args: Vec<(&'static str, Arg)>,
+}
+
+impl Check {
+    /// A check that is fine, and therefore says nothing to the dashboard.
+    fn ok(name: &'static str, detail: String) -> Self {
+        Check {
+            name,
+            level: Level::Ok,
+            detail,
+            key: "",
+            args: Vec::new(),
+        }
+    }
+
+    /// One in the reader's language, or `None` for a check with nothing to say.
+    pub fn message(&self, lang: &str) -> Option<String> {
+        if self.key.is_empty() {
+            return None;
+        }
+        let values: Vec<(&str, fluent::FluentValue)> = self
+            .args
+            .iter()
+            .map(|(k, v)| {
+                let v = match v {
+                    Arg::Num(n) => fluent::FluentValue::from(*n),
+                    Arg::Text(t) => fluent::FluentValue::from(t.clone()),
+                };
+                (*k, v)
+            })
+            .collect();
+        let args = crate::i18n::args(&values);
+        Some(crate::i18n::translate(lang, self.key, Some(&args)))
+    }
 }
 
 /// Every check, and the worst level among them.
@@ -161,13 +216,11 @@ fn bundle_check(state: &crate::state::AppState) -> Check {
                 "the bundle is loaded but does not validate: {errors} error(s). \
                  See the admin dashboard for the diagnostics."
             ),
+            key: "health-bundle-invalid",
+            args: vec![("errors", Arg::Num(errors as i64))],
         };
     }
-    Check {
-        name: "bundle",
-        level: Level::Ok,
-        detail: format!("loaded and valid, {total} entities"),
-    }
+    Check::ok("bundle", format!("loaded and valid, {total} entities"))
 }
 
 /// Is there room to save?
@@ -184,6 +237,8 @@ fn disk_check(bundle: &Path) -> Check {
                 "could not read free space on the filesystem holding {}",
                 dir.display()
             ),
+            key: "health-disk-unknown",
+            args: Vec::new(),
         };
     };
     let fraction = if total == 0 {
@@ -213,13 +268,24 @@ fn disk_check(bundle: &Path) -> Check {
                  bundle beside itself. Saves will be refused.",
                 crate::documents::human_size(need)
             ),
+            key: "health-disk-no-room-to-save",
+            args: vec![
+                ("free", Arg::Text(crate::documents::human_size(free))),
+                ("need", Arg::Text(crate::documents::human_size(need))),
+            ],
         };
     }
+    let percent = Arg::Num((fraction * 100.0).round() as i64);
     if fraction < DISK_FAIL_FRACTION {
         return Check {
             name: "disk",
             level: Level::Fail,
             detail: format!("{human} — below {:.0}%", DISK_FAIL_FRACTION * 100.0),
+            key: "health-disk-critical",
+            args: vec![
+                ("percent", percent),
+                ("free", Arg::Text(crate::documents::human_size(free))),
+            ],
         };
     }
     if fraction < DISK_WARN_FRACTION {
@@ -227,13 +293,14 @@ fn disk_check(bundle: &Path) -> Check {
             name: "disk",
             level: Level::Warn,
             detail: format!("{human} — below {:.0}%", DISK_WARN_FRACTION * 100.0),
+            key: "health-disk-low",
+            args: vec![
+                ("percent", percent),
+                ("free", Arg::Text(crate::documents::human_size(free))),
+            ],
         };
     }
-    Check {
-        name: "disk",
-        level: Level::Ok,
-        detail: human,
-    }
+    Check::ok("disk", human)
 }
 
 /// How old is the newest verified archive?
@@ -245,6 +312,8 @@ fn backup_check(dir: Option<&Path>) -> Check {
             detail: "no backup directory is configured, so this installation is \
                      one disk failure from losing everything. Set --backup-dir."
                 .into(),
+            key: "health-backup-unconfigured",
+            args: Vec::new(),
         };
     };
     let Some(latest) = crate::backup::latest(dir) else {
@@ -256,6 +325,8 @@ fn backup_check(dir: Option<&Path>) -> Check {
                 dir.display(),
                 dir.display()
             ),
+            key: "health-backup-never",
+            args: Vec::new(),
         };
     };
     let age = time::OffsetDateTime::now_utc() - latest.taken;
@@ -276,17 +347,20 @@ fn backup_check(dir: Option<&Path>) -> Check {
     } else {
         Level::Ok
     };
-    let detail = match level {
-        Level::Ok => human,
-        _ => format!(
-            "{human} — the timer should write one a day. \
-             Check `systemctl status axgf-cms-backup.timer`."
-        ),
-    };
+    if level == Level::Ok {
+        return Check::ok("backup", human);
+    }
     Check {
         name: "backup",
         level,
-        detail,
+        detail: format!(
+            "{human} — the timer should write one a day. \
+             Check `systemctl status axgf-cms-backup.timer`."
+        ),
+        key: "health-backup-stale",
+        // Days rather than hours: at 48 hours and over, hours are arithmetic
+        // the reader has to do. The plural form is the catalogue's business.
+        args: vec![("days", Arg::Num(hours / 24))],
     }
 }
 
@@ -314,21 +388,13 @@ fn cache_check(state: &crate::state::AppState) -> Check {
             .unwrap_or_default()
     });
     if declared.is_empty() {
-        return Check {
-            name: "cache",
-            level: Level::Ok,
-            detail: "no payloads in this bundle".into(),
-        };
+        return Check::ok("cache", "no payloads in this bundle".into());
     }
     let missing = state
         .payloads()
         .missing_among(declared.iter().map(String::as_str));
     if missing.is_empty() {
-        return Check {
-            name: "cache",
-            level: Level::Ok,
-            detail: format!("{} payloads present", declared.len()),
-        };
+        return Check::ok("cache", format!("{} payloads present", declared.len()));
     }
     Check {
         name: "cache",
@@ -341,6 +407,11 @@ fn cache_check(state: &crate::state::AppState) -> Check {
             declared.len(),
             state.payloads().dir().display()
         ),
+        key: "health-cache-missing",
+        args: vec![
+            ("missing", Arg::Num(missing.len() as i64)),
+            ("declared", Arg::Num(declared.len() as i64)),
+        ],
     }
 }
 
@@ -353,6 +424,8 @@ mod tests {
             name,
             level,
             detail: String::new(),
+            key: "",
+            args: Vec::new(),
         }
     }
 

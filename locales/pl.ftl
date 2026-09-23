@@ -3262,3 +3262,30 @@ radar-no-score = brak wyniku
 radar-from-none = nic
 record-link-outgoing = od tej osoby
 record-link-incoming = do tej osoby
+# Ostrzeżenie eksploatacyjne w panelu administracyjnym.
+health-attention = Wymaga uwagi:
+health-standing-token = Awaryjny token administratora jest nadal ustawiony. Loguje z pominięciem każdego konta i każdego uprawnienia — na to jest w dniu, w którym nikt nie może się zalogować, a nie po to, by zostać, gdy już ktoś może. Usuń go z pliku środowiska usługi i uruchom ją ponownie.
+health-bundle-invalid = { $errors ->
+        [one] Dane rodzinne nie przechodzą już walidacji: jeden błąd, wypisany niżej pod „Sprawdź”.
+        [few] Dane rodzinne nie przechodzą już walidacji: { $errors } błędy, wypisane niżej pod „Sprawdź”.
+        [many] Dane rodzinne nie przechodzą już walidacji: { $errors } błędów, wypisanych niżej pod „Sprawdź”.
+       *[other] Dane rodzinne nie przechodzą już walidacji: { $errors } błędu, wypisanego niżej pod „Sprawdź”.
+    }
+health-disk-unknown = Nie udało się odczytać wolnego miejsca na tej maszynie, więc nic tutaj nie może obiecać, że następny zapis się zmieści.
+health-disk-no-room-to-save = Zapis jest niemożliwy: wolne jest { $free }, a odbudowa tej paczki potrzebuje { $need }. Nic nie zostało utracone i nic nie da się zmienić, dopóki nie będzie miejsca.
+health-disk-critical = Dysk jest wolny w { $percent } % — zostało { $free }. Zapisywanie wkrótce przestanie działać.
+health-disk-low = Dysk jest wolny w { $percent } % — zostało { $free }. Warto się tym zająć, zanim stanie się pilne.
+health-backup-unconfigured = Nic nie jest archiwizowane. Jeden uszkodzony dysk zabrałby ze sobą wszystkie zapisy.
+health-backup-never = Katalog kopii jest ustawiony, ale nigdy nie zapisano w nim żadnej kopii.
+health-backup-stale = { $days ->
+        [one] Najnowsza kopia ma jeden dzień. Powinna powstawać codziennie.
+        [few] Najnowsza kopia ma { $days } dni. Powinna powstawać codziennie.
+        [many] Najnowsza kopia ma { $days } dni. Powinna powstawać codziennie.
+       *[other] Najnowsza kopia ma { $days } dnia. Powinna powstawać codziennie.
+    }
+health-cache-missing = { $missing ->
+        [one] Jednego z { $declared } załączonych plików brakuje w pamięci podręcznej i nie da się go pobrać, dopóki następny zapis go nie odbuduje.
+        [few] Brakuje { $missing } z { $declared } załączonych plików w pamięci podręcznej i nie da się ich pobrać, dopóki następny zapis ich nie odbuduje.
+        [many] Brakuje { $missing } z { $declared } załączonych plików w pamięci podręcznej i nie da się ich pobrać, dopóki następny zapis ich nie odbuduje.
+       *[other] Brakuje { $missing } z { $declared } załączonych plików w pamięci podręcznej i nie da się ich pobrać, dopóki następny zapis ich nie odbuduje.
+    }

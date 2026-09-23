@@ -338,6 +338,23 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
     let counts = state.counts();
     let env = state.inspect_with(axgf_rs::validate);
     let diagnostics = diagnostics_json(&env.diagnostics, chrome.lang);
+    // The operational banner. `/health` answers a monitor in English; this is
+    // the same four checks for whoever is signed in, in their language, and it
+    // is the only place a household without a monitor will ever see them.
+    let health = state.health();
+    let health_problems = health
+        .problems()
+        .iter()
+        .filter_map(|c| {
+            c.message(chrome.lang).map(|text| {
+                json!({
+                    "name": c.name,
+                    "level": c.level.as_str(),
+                    "text": text,
+                })
+            })
+        })
+        .collect::<Vec<_>>();
     // Validation says what is wrong; this says what is missing.
     let completeness = state.read(|flat| crate::completeness::analyse(flat, chrome.lang));
 
@@ -368,6 +385,11 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
             attachment_count => state.read(|flat| flat.get("external_payloads")
                 .and_then(Value::as_object).map(|m| m.len()).unwrap_or(0)),
             completeness,
+            health_problems,
+            // A standing emergency token bypasses every account; it exists for
+            // the first login and for the day nobody can sign in, and it is
+            // meant to be taken out again afterwards.
+            standing_admin_token => state.standing_admin_token(),
             recent_edits => state
                 .journal()
                 .recent(15)

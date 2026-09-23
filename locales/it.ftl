@@ -3085,3 +3085,27 @@ radar-no-score = nessun punteggio
 radar-from-none = nulla
 record-link-outgoing = da questa persona
 record-link-incoming = verso questa persona
+# L'avviso operativo nel pannello di amministrazione.
+health-attention = Richiede attenzione:
+health-standing-token = Un token di amministrazione d'emergenza è ancora impostato. Accede scavalcando ogni account e ogni permesso — è ciò che serve il giorno in cui nessuno riesce ad accedere, non qualcosa da lasciare quando qualcuno ci riesce. Rimuovilo dal file di ambiente del servizio e riavvialo.
+health-bundle-invalid = { $errors ->
+        [one] I dati familiari non superano più la convalida: un errore, elencato sotto «Convalida».
+        [many] I dati familiari non superano più la convalida: { $errors } errori, elencati sotto «Convalida».
+       *[other] I dati familiari non superano più la convalida: { $errors } errori, elencati sotto «Convalida».
+    }
+health-disk-unknown = Non è stato possibile leggere lo spazio libero di questa macchina, quindi nulla qui può garantire che il prossimo salvataggio ci stia.
+health-disk-no-room-to-save = Salvare non è possibile: sono liberi { $free } e ricostruire questo pacchetto richiede { $need }. Nulla è andato perduto e nulla potrà essere modificato finché non c'è spazio.
+health-disk-critical = Il disco è libero al { $percent } % — restano { $free }. Il salvataggio smetterà di funzionare a breve.
+health-disk-low = Il disco è libero al { $percent } % — restano { $free }. Da affrontare prima che diventi urgente.
+health-backup-unconfigured = Non si sta salvando nulla. Un solo disco guasto porterebbe via ogni dato.
+health-backup-never = È impostata una cartella di backup, ma non vi è mai stato scritto alcun backup.
+health-backup-stale = { $days ->
+        [one] Il backup più recente è di un giorno. Ne va scritto uno al giorno.
+        [many] Il backup più recente è di { $days } giorni. Ne va scritto uno al giorno.
+       *[other] Il backup più recente è di { $days } giorni. Ne va scritto uno al giorno.
+    }
+health-cache-missing = { $missing ->
+        [one] Uno dei { $declared } file allegati manca dalla cache e non sarà scaricabile finché il prossimo salvataggio non lo ricostruisce.
+        [many] { $missing } dei { $declared } file allegati mancano dalla cache e non saranno scaricabili finché il prossimo salvataggio non li ricostruisce.
+       *[other] { $missing } dei { $declared } file allegati mancano dalla cache e non saranno scaricabili finché il prossimo salvataggio non li ricostruisce.
+    }

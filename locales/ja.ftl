@@ -2871,3 +2871,15 @@ radar-no-score = 値なし
 radar-from-none = なし
 record-link-outgoing = この人物から
 record-link-incoming = この人物へ
+# 管理画面の運用警告。
+health-attention = 対応が必要です:
+health-standing-token = 緊急管理トークンがまだ設定されています。これはあらゆるアカウントと権限を飛び越えて入るためのもので、誰もサインインできない日のための仕組みです。誰かがサインインできるようになった今、置いたままにするものではありません。サービスの環境ファイルから削除して再起動してください。
+health-bundle-invalid = 家族データが検証を通らなくなりました（エラー { $errors } 件）。下の「検証」に一覧があります。
+health-disk-unknown = この機械の空き容量を読み取れませんでした。次の保存が収まるとは保証できません。
+health-disk-no-room-to-save = 保存できません。空きは { $free } で、この束を作り直すには { $need } が必要です。失われたものはありませんが、空きができるまで変更はできません。
+health-disk-critical = ディスクの空きは { $percent } %（残り { $free }）。ほどなく保存できなくなります。
+health-disk-low = ディスクの空きは { $percent } %（残り { $free }）。急を要する前に対処してください。
+health-backup-unconfigured = 何もバックアップされていません。ディスクが一つ壊れれば、すべての記録が失われます。
+health-backup-never = バックアップ先は設定されていますが、一度も書き込まれていません。
+health-backup-stale = 最新のバックアップは { $days } 日前のものです。毎日作成されるべきものです。
+health-cache-missing = 添付ファイル { $declared } 件のうち { $missing } 件がキャッシュにありません。次の保存で作り直されるまでダウンロードできません。

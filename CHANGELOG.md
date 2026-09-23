@@ -71,6 +71,28 @@ nothing about AXGF catches a full disk and a backup timer that stopped firing.
 A warning answers 200 and a failure 503: nobody should be woken at midnight
 over a stale backup.
 
+**The dashboard says what `/health` says, to whoever is signed in.** A
+monitor gets the four checks as JSON and a status code; a household that has
+no monitor got nothing at all. The two failures that actually happen in a
+family's house — the disk filled last Tuesday, the backup timer stopped firing
+after the upgrade — are now a banner at the top of the admin dashboard, above
+everything else on the page, in the reader's own language and in all eleven of
+them. A failure is framed in red and a warning in amber, and the sentence says
+what to do rather than what was measured.
+
+Nothing of this is on a public page: free space, a backup directory and the
+existence of a rescue token are not facts for anonymous readers.
+
+**A standing emergency token is surfaced, every time.** The token signs in past
+every account and every permission. Generated at startup it is harmless — a
+different one each boot, printed once to the journal — but one set in the
+service's environment file works forever and survives every restart, which is
+exactly what makes it the way back in on the day nobody can sign in and
+exactly what makes it something to remove afterwards. The dashboard now says it
+is there, and keeps saying so until it is gone. It is deliberately **not** in
+`/health`: that endpoint is public, and "there is a master credential on this
+installation" is not something to publish.
+
 **`bootstrap.sh --upgrade`.** Takes a backup with the binary that is known to
 work, keeps that binary aside, installs the new one, restarts, and asks
 `/health` whether it can read the family's data. If it cannot, the previous

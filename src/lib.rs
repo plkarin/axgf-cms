@@ -96,6 +96,26 @@ pub fn app_with_map(
     Ok(router(Arc::new(state.with_map(Some(tiles)))))
 }
 
+/// The same, with the two operational settings the dashboard banner reads.
+///
+/// `backup_dir` is where archives are expected — `None` is an installation
+/// that backs nothing up, which the banner says out loud — and
+/// `standing_admin_token` is true when the operator set the emergency token
+/// rather than letting one be generated for this boot. Both are decided once
+/// at startup in `main`, so a test that wants to see the banner needs a way to
+/// decide them too.
+pub fn app_with_operations(
+    path: &Path,
+    admin_token: &str,
+    backup_dir: Option<std::path::PathBuf>,
+    standing_admin_token: bool,
+) -> Result<axum::Router> {
+    let state = AppState::load_or_create(path, admin_token.to_string())?
+        .with_backup_dir(backup_dir)
+        .with_standing_admin_token(standing_admin_token);
+    Ok(router(Arc::new(state)))
+}
+
 /// A throwaway directory for a unit test, removed when the value is dropped.
 ///
 /// The unit tests used to scatter directories through `/tmp` — a hundred and

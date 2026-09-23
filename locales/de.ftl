@@ -3087,3 +3087,24 @@ radar-no-score = kein Wert
 radar-from-none = nichts
 record-link-outgoing = von dieser Person
 record-link-incoming = zu dieser Person
+# Der Betriebshinweis im Verwaltungsbereich.
+health-attention = Erfordert Aufmerksamkeit:
+health-standing-token = Ein Notfall-Administratortoken ist weiterhin gesetzt. Es meldet sich an jedem Konto und jeder Berechtigung vorbei an — dafür ist es an dem Tag da, an dem sich niemand anmelden kann, und nicht dafür, danach liegen zu bleiben. Entfernen Sie es aus der Umgebungsdatei des Dienstes und starten Sie ihn neu.
+health-bundle-invalid = { $errors ->
+        [one] Die Familiendaten sind nicht mehr gültig: ein Fehler, unten unter „Prüfen“ aufgeführt.
+       *[other] Die Familiendaten sind nicht mehr gültig: { $errors } Fehler, unten unter „Prüfen“ aufgeführt.
+    }
+health-disk-unknown = Der freie Speicherplatz dieses Rechners konnte nicht gelesen werden; damit lässt sich nicht zusagen, dass das nächste Speichern hineinpasst.
+health-disk-no-room-to-save = Speichern ist nicht möglich: { $free } sind frei, der Neuaufbau dieses Bündels braucht { $need }. Nichts ist verloren, und nichts lässt sich ändern, bis Platz da ist.
+health-disk-critical = Die Festplatte ist zu { $percent } % frei — { $free } übrig. Speichern wird in Kürze nicht mehr funktionieren.
+health-disk-low = Die Festplatte ist zu { $percent } % frei — { $free } übrig. Sollte behoben werden, bevor es dringend wird.
+health-backup-unconfigured = Es wird nichts gesichert. Eine ausgefallene Festplatte würde jeden Datensatz mitnehmen.
+health-backup-never = Ein Sicherungsverzeichnis ist gesetzt, aber es wurde noch nie eine Sicherung darin geschrieben.
+health-backup-stale = { $days ->
+        [one] Die neueste Sicherung ist einen Tag alt. Täglich sollte eine geschrieben werden.
+       *[other] Die neueste Sicherung ist { $days } Tage alt. Täglich sollte eine geschrieben werden.
+    }
+health-cache-missing = { $missing ->
+        [one] Eine von { $declared } angehängten Dateien fehlt im Zwischenspeicher und kann erst heruntergeladen werden, wenn das nächste Speichern sie neu aufbaut.
+       *[other] { $missing } von { $declared } angehängten Dateien fehlen im Zwischenspeicher und können erst heruntergeladen werden, wenn das nächste Speichern sie neu aufbaut.
+    }

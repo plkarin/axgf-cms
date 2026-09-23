@@ -3087,3 +3087,27 @@ radar-no-score = sem pontuação
 radar-from-none = nada
 record-link-outgoing = desta pessoa
 record-link-incoming = para esta pessoa
+# O aviso operacional no painel de administração.
+health-attention = Precisa de atenção:
+health-standing-token = Um token de administração de emergência continua definido. Ele entra por cima de qualquer conta e qualquer permissão — é para isso que serve no dia em que ninguém consegue entrar, e não para ficar depois que alguém consegue. Retire-o do ficheiro de ambiente do serviço e reinicie-o.
+health-bundle-invalid = { $errors ->
+        [one] Os dados familiares já não passam a validação: um erro, indicado abaixo em «Validar».
+        [many] Os dados familiares já não passam a validação: { $errors } erros, indicados abaixo em «Validar».
+       *[other] Os dados familiares já não passam a validação: { $errors } erros, indicados abaixo em «Validar».
+    }
+health-disk-unknown = Não foi possível ler o espaço livre desta máquina, pelo que nada aqui pode prometer que a próxima gravação caiba.
+health-disk-no-room-to-save = Não é possível gravar: estão livres { $free } e reconstruir este pacote precisa de { $need }. Nada se perdeu, e nada poderá ser alterado até haver espaço.
+health-disk-critical = O disco está { $percent } % livre — restam { $free }. Gravar deixará de funcionar em breve.
+health-disk-low = O disco está { $percent } % livre — restam { $free }. Convém resolver antes que se torne urgente.
+health-backup-unconfigured = Nada está a ser salvaguardado. Um único disco avariado levaria todos os registos consigo.
+health-backup-never = Existe uma pasta de cópias definida, mas nunca lá foi escrita qualquer cópia.
+health-backup-stale = { $days ->
+        [one] A cópia mais recente tem um dia. Deveria ser escrita uma por dia.
+        [many] A cópia mais recente tem { $days } dias. Deveria ser escrita uma por dia.
+       *[other] A cópia mais recente tem { $days } dias. Deveria ser escrita uma por dia.
+    }
+health-cache-missing = { $missing ->
+        [one] Falta um dos { $declared } ficheiros anexados na cache e só poderá ser descarregado quando a próxima gravação o reconstruir.
+        [many] Faltam { $missing } dos { $declared } ficheiros anexados na cache e só poderão ser descarregados quando a próxima gravação os reconstruir.
+       *[other] Faltam { $missing } dos { $declared } ficheiros anexados na cache e só poderão ser descarregados quando a próxima gravação os reconstruir.
+    }

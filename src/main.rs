@@ -81,7 +81,10 @@ async fn main() -> Result<()> {
                 cfg.map_tiles.as_deref(),
                 cfg.map_attribution.as_deref(),
             ))
-            .with_backup_dir(cfg.backup_dir.clone()),
+            .with_backup_dir(cfg.backup_dir.clone())
+            // `generated` means a fresh token each boot, printed once and gone on
+            // restart; the opposite is one the operator set, which lasts.
+            .with_standing_admin_token(!generated),
     );
 
     // --create-admin runs against the loaded state and then exits. It happens

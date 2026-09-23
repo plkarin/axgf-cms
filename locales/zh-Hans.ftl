@@ -2871,3 +2871,15 @@ radar-no-score = 无分数
 radar-from-none = 无
 record-link-outgoing = 由此人发出
 record-link-incoming = 指向此人
+# 管理面板中的运行警告。
+health-attention = 需要处理：
+health-standing-token = 紧急管理令牌仍处于设置状态。它绕过每个账户与每项权限登录——这是为了没人能登录的那一天准备的，而不是在有人能登录之后继续留着。请从服务的环境文件中移除它并重启。
+health-bundle-invalid = 家族数据已无法通过校验：{ $errors } 个错误，列在下方“校验”中。
+health-disk-unknown = 无法读取本机的可用空间，因此无法保证下一次保存放得下。
+health-disk-no-room-to-save = 无法保存：可用 { $free }，而重建这个档案包需要 { $need }。没有任何数据丢失，但在腾出空间之前无法修改。
+health-disk-critical = 磁盘可用 { $percent } %——剩余 { $free }。保存很快将无法进行。
+health-disk-low = 磁盘可用 { $percent } %——剩余 { $free }。宜在变得紧急之前处理。
+health-backup-unconfigured = 没有任何内容被备份。一块磁盘损坏就会带走全部记录。
+health-backup-never = 已设置备份目录，但从未写入过任何备份。
+health-backup-stale = 最新备份已有 { $days } 天。应当每天写入一次。
+health-cache-missing = { $declared } 个附件中有 { $missing } 个不在缓存里，直到下一次保存重建它们之前无法下载。

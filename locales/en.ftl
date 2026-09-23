@@ -3124,3 +3124,27 @@ radar-no-score = no score
 radar-from-none = none
 record-link-outgoing = from this person
 record-link-incoming = to this person
+# The operational banner on the dashboard. `/health` answers a monitor, in
+# English; these say the same four things to whoever is signed in, in their
+# own language, and they are the only warning a household without a monitor
+# will ever get.
+health-attention = Needs attention:
+health-standing-token = An emergency administrator token is still set. It signs in past every account and every permission — which is what it is for on the day nobody can sign in, and not something to leave in place now that somebody can. Remove it from the service's environment file and restart.
+health-bundle-invalid = { $errors ->
+        [one] The family data no longer passes validation: one error, listed under Validation below.
+       *[other] The family data no longer passes validation: { $errors } errors, listed under Validation below.
+    }
+health-disk-unknown = The free space on this machine could not be read, so nothing here can promise that the next save will fit.
+health-disk-no-room-to-save = Saving is not possible: { $free } is free, and rebuilding this bundle needs { $need }. Nothing has been lost, and nothing can be changed until there is room.
+health-disk-critical = The disk is { $percent }% free — { $free } left. Saving will stop working shortly.
+health-disk-low = The disk is { $percent }% free — { $free } left. Worth attending to before it becomes urgent.
+health-backup-unconfigured = Nothing is being backed up. One failed disk would take every record with it.
+health-backup-never = A backup directory is set, but no backup has ever been written to it.
+health-backup-stale = { $days ->
+        [one] The newest backup is a day old. One should be written every day.
+       *[other] The newest backup is { $days } days old. One should be written every day.
+    }
+health-cache-missing = { $missing ->
+        [one] One of { $declared } attached files is missing from the cache and cannot be downloaded until the next save rebuilds it.
+       *[other] { $missing } of { $declared } attached files are missing from the cache and cannot be downloaded until the next save rebuilds them.
+    }

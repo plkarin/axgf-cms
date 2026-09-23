@@ -8,6 +8,22 @@
 <p class="lede">{{ t("admin-lede", path=bundle_path, total=total,
      files=attachment_count, size=bundle_size) }}</p>
 
+{# The operational banner, above everything: a disk that is nearly full or a
+   backup timer that stopped firing is the most important thing on this page,
+   whatever else it says. `/health` reports the same four checks to a monitor;
+   these are the ones that are not Ok, in the reader's own language. #}
+{% for p in health_problems %}
+<div class="notice {% if p.level == "fail" %}error{% else %}warn{% endif %}">
+  <p><strong>{{ t("health-attention") }}</strong> {{ p.text }}</p>
+</div>
+{% endfor %}
+
+{% if standing_admin_token %}
+<div class="notice warn">
+  <p>{{ t("health-standing-token") }}</p>
+</div>
+{% endif %}
+
 {% if bundle_heavy %}
 <div class="notice warn">
   <p>{{ t("admin-bundle-heavy", size=bundle_size, warn=size_warn) }}</p>

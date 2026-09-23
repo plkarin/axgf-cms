@@ -242,6 +242,21 @@ under AA in any combination.
 
 ### Security
 
+**The emergency token stopped being a credential.** `axgf_admin=<token>` on
+any request granted administrator — every request, with no attempt limit, no
+log line, and nothing a sign-out could revoke on the server. Nothing had
+issued that cookie since sessions arrived; the acceptance side had simply been
+left in place. It is gone. The token now works one way only: through the login
+form, where it is throttled, logged loudly, and exchanged for an ordinary
+12-hour session that signing out closes.
+
+**Guesses at the emergency token were counted and never refused.** The token
+branch of the login form ran *before* the throttle gate, so the eight-attempt
+limit applied to passwords and not to the one credential an operator is most
+likely to have chosen by hand. The gate moved above both branches, and a wrong
+token is now a `WARN` line naming the client.
+
+
 **The documents editor named files its reader may not open.** It offered every
 file in the archive to attach and listed every file attached, so a
 contributor could read the name of a fingerprint card or a genome file in a

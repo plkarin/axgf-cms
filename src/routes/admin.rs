@@ -516,10 +516,11 @@ pub async fn new_form(
     headers: HeaderMap,
     Path(kind): Path<String>,
 ) -> Response {
-    let (_viewer, chrome) = guard!(state, headers);
+    let (viewer, chrome) = guard!(state, headers);
     let Some(k) = kind_from_str(&kind) else {
         return unknown_kind(&chrome, &kind);
     };
+    let pickers = picker_lists(&state, &viewer, k, chrome.lang);
     render::page_with(
         &chrome,
         "admin_form.html",
@@ -529,7 +530,8 @@ pub async fn new_form(
             kinds => KINDS,
             creating => true,
             id => "",
-            fields => field_views(k, &Value::Object(Default::default()), chrome.lang),
+            fields => field_views(k, &Value::Object(Default::default()), chrome.lang, &pickers),
+            pickers,
             raw => "{}",
             action => format!("/admin/{kind}"),
         },
@@ -568,6 +570,7 @@ pub async fn edit_form(
         &entity,
         crate::access::readable_for(k, &entity, viewer.ceiling()),
     );
+    let pickers = picker_lists(&state, &viewer, k, chrome.lang);
     render::page_with(
         &chrome,
         "admin_form.html",
@@ -577,7 +580,8 @@ pub async fn edit_form(
             kinds => KINDS,
             creating => false,
             id,
-            fields => field_views(k, &shown, chrome.lang),
+            fields => field_views(k, &shown, chrome.lang, &pickers),
+            pickers,
             raw => serde_json::to_string_pretty(shown.as_ref())
                 .unwrap_or_else(|_| "{}".into()),
             action => format!("/admin/{kind}/{id}"),
@@ -651,9 +655,13 @@ pub async fn create(
         return unknown_kind(&chrome, &kind);
     };
 
+    let mut form = form;
+    if let Err(msg) = resolve_pickers(&state, k, &mut form, chrome.lang) {
+        return form_error(&state, &viewer, &chrome, &kind, None, &msg, &form, k);
+    }
     let base = match base_from_raw(&form, chrome.lang) {
         Ok(v) => v,
-        Err(msg) => return form_error(&chrome, &kind, None, &msg, &form, k),
+        Err(msg) => return form_error(&state, &viewer, &chrome, &kind, None, &msg, &form, k),
     };
     let mut entity = apply_form(base, k, &form);
     if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, None) {
@@ -722,9 +730,13 @@ pub async fn update(
         return unknown_kind(&chrome, &kind);
     };
 
+    let mut form = form;
+    if let Err(msg) = resolve_pickers(&state, k, &mut form, chrome.lang) {
+        return form_error(&state, &viewer, &chrome, &kind, Some(&id), &msg, &form, k);
+    }
     let base = match base_from_raw(&form, chrome.lang) {
         Ok(v) => v,
-        Err(msg) => return form_error(&chrome, &kind, Some(&id), &msg, &form, k),
+        Err(msg) => return form_error(&state, &viewer, &chrome, &kind, Some(&id), &msg, &form, k),
     };
     let mut entity = apply_form(base, k, &form);
     // The id in the path is authoritative; a raw-JSON edit must not silently
@@ -1254,12 +1266,92 @@ fn base_from_raw(form: &HashMap<String, String>, lang: &str) -> Result<Value, St
 }
 
 /// Field descriptors with their current values, for the form template.
-fn field_views(kind: axgf_rs::EntityKind, entity: &Value, lang: &str) -> Vec<Value> {
+/// The lists behind the generic form's pickers, by what they pick.
+///
+/// Only the groups this kind actually uses are built: an event form has no
+/// reason to carry 866 people in a datalist it does not render. Everything is
+/// read through the viewer's lens, like every other picker — a person this
+/// editor may not read is not offered to them by name.
+fn picker_lists(
+    state: &Shared,
+    viewer: &Viewer,
+    kind: axgf_rs::EntityKind,
+    lang: &str,
+) -> std::collections::BTreeMap<String, Vec<Value>> {
+    let wanted: std::collections::BTreeSet<&'static str> = fields_for(kind)
+        .iter()
+        .filter(|f| f.kind == crate::admin::FieldKind::Picker)
+        .map(|f| f.picks)
+        .collect();
+    if wanted.is_empty() {
+        return Default::default();
+    }
+    state.read_as(viewer.ceiling(), |flat, lens| {
+        let mut out: std::collections::BTreeMap<String, Vec<Value>> = Default::default();
+        for group in wanted {
+            let list: Vec<Value> = match group {
+                "person" => crate::forms::person_options(flat, lens)
+                    .into_iter()
+                    .map(|o| json!({"id": o.id, "label": o.label}))
+                    .collect(),
+                "linkable" => crate::forms::linkable_options(flat, lens, lang)
+                    .into_iter()
+                    .map(|o| json!({"id": o.id, "label": o.label}))
+                    .collect(),
+                "place" => crate::forms::entity_options(flat, "places", crate::forms::place_label),
+                "source" => {
+                    crate::forms::entity_options(flat, "sources", crate::forms::source_label)
+                }
+                _ => Vec::new(),
+            };
+            out.insert(group.to_string(), list);
+        }
+        out
+    })
+}
+
+/// What a picker shows for an id it already holds.
+///
+/// The stored value is a UUID and the field is a search box, so the form is
+/// rendered with the same label the datalist offers — the reader sees
+/// "Kraków · #6b1f…" where they used to see the UUID alone. An id the lists do
+/// not know (a reference to something deleted, or to a person this editor may
+/// not read) is shown as itself rather than silently blanked.
+fn picker_label(
+    lists: &std::collections::BTreeMap<String, Vec<Value>>,
+    group: &str,
+    id: &str,
+) -> String {
+    if id.is_empty() {
+        return String::new();
+    }
+    lists
+        .get(group)
+        .and_then(|l| {
+            l.iter()
+                .find(|o| o.get("id").and_then(Value::as_str) == Some(id))
+        })
+        .and_then(|o| o.get("label").and_then(Value::as_str))
+        .map(str::to_string)
+        .unwrap_or_else(|| id.to_string())
+}
+
+fn field_views(
+    kind: axgf_rs::EntityKind,
+    entity: &Value,
+    lang: &str,
+    lists: &std::collections::BTreeMap<String, Vec<Value>>,
+) -> Vec<Value> {
     let t = |key: &str| crate::i18n::translate(lang, key, None);
     fields_for(kind)
         .iter()
         .map(|f| {
             let current = get_path(entity, f.path);
+            let current = if f.kind == crate::admin::FieldKind::Picker {
+                picker_label(lists, f.picks, &current)
+            } else {
+                current
+            };
             let options: Vec<Value> = f
                 .options
                 .iter()
@@ -1280,6 +1372,7 @@ fn field_views(kind: axgf_rs::EntityKind, entity: &Value, lang: &str) -> Vec<Val
                 "kind": f.kind,
                 "hint": f.hint.map(t).unwrap_or_default(),
                 "options": options,
+                "picks": f.picks,
                 "value": current,
                 "checked": current == "true",
             })
@@ -1808,8 +1901,105 @@ pub(super) fn result_page(
     )
 }
 
+/// Turn what the pickers sent back into ids, in place.
+///
+/// The field is a search box over a `<datalist>`, so three shapes arrive and
+/// all three have to work: the label the browser inserted, a bare id pasted
+/// from somewhere else, and a name somebody typed. `crate::forms` already
+/// knows how to read all three — this is the generic editors finally using the
+/// same reader the structured ones do, instead of storing whatever string was
+/// in the box as if it were a UUID.
+///
+/// A value that names nothing, or names two things, is refused with the
+/// field's own label in the message rather than guessed at.
+fn resolve_pickers(
+    state: &Shared,
+    kind: axgf_rs::EntityKind,
+    form: &mut HashMap<String, String>,
+    lang: &str,
+) -> Result<(), String> {
+    let t = |key: &str| crate::i18n::translate(lang, key, None);
+    for f in fields_for(kind) {
+        if f.kind != crate::admin::FieldKind::Picker {
+            continue;
+        }
+        let Some(raw) = form.get(f.path).map(|v| v.trim().to_string()) else {
+            continue;
+        };
+        if raw.is_empty() {
+            continue;
+        }
+        let resolved = state.read(|flat| match f.picks {
+            "linkable" => crate::forms::resolve_linkable(&raw, flat).map(|(_, id)| id),
+            "person" => crate::forms::resolve_person(&raw, flat),
+            group => {
+                let collection = match group {
+                    "place" => "places",
+                    "source" => "sources",
+                    _ => return Err(crate::forms::PickError::NotFound),
+                };
+                resolve_in_collection(&raw, flat, collection)
+            }
+        });
+        match resolved {
+            Ok(id) => {
+                form.insert(f.path.to_string(), id);
+            }
+            Err(e) => {
+                return Err(format!("{} — {}", t(f.label), t(e.key())));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The way back from a picker's text to one id, for the collections that have
+/// no resolver of their own. Same three shapes, same refusal to guess.
+fn resolve_in_collection(
+    input: &str,
+    flat: &Value,
+    collection: &str,
+) -> Result<String, crate::forms::PickError> {
+    let Some(map) = flat.get(collection).and_then(Value::as_object) else {
+        return Err(crate::forms::PickError::NotFound);
+    };
+    if map.contains_key(input) {
+        return Ok(input.to_string());
+    }
+    // The label ends in " · #xxxxxxxx".
+    let candidate = input.rsplit('#').next().unwrap_or(input).trim();
+    let by_id: Vec<&String> = map
+        .keys()
+        .filter(|id| !candidate.is_empty() && id.starts_with(candidate))
+        .collect();
+    match by_id.len() {
+        1 => return Ok(by_id[0].clone()),
+        n if n > 1 => return Err(crate::forms::PickError::Ambiguous),
+        _ => {}
+    }
+    let typed = input.split(" · ").next().unwrap_or(input).trim();
+    let label = if collection == "places" {
+        crate::forms::place_label
+    } else {
+        crate::forms::source_label
+    };
+    let by_label: Vec<&String> = map
+        .iter()
+        .filter(|(_, e)| label(e) == typed)
+        .map(|(id, _)| id)
+        .collect();
+    match by_label.len() {
+        1 => Ok(by_label[0].clone()),
+        0 => Err(crate::forms::PickError::NotFound),
+        _ => Err(crate::forms::PickError::Ambiguous),
+    }
+}
+
 /// Re-render a form after a client-side error, keeping what was typed.
+#[allow(clippy::too_many_arguments)]
 fn form_error(
+    state: &Shared,
+    viewer: &Viewer,
     chrome: &render::Chrome,
     kind: &str,
     id: Option<&str>,
@@ -1819,6 +2009,13 @@ fn form_error(
 ) -> Response {
     let raw = form.get("raw_json").cloned().unwrap_or_else(|| "{}".into());
     let entity = serde_json::from_str::<Value>(&raw).unwrap_or(Value::Object(Default::default()));
+    // The fields as they were *submitted*, not as the raw document has them.
+    // The refusal is usually about one of those fields, and re-rendering the
+    // form from the raw JSON alone threw away everything typed above it —
+    // including the very value being complained about, which the reader then
+    // could not see to correct.
+    let entity = crate::admin::apply_form(entity, k, form);
+    let pickers = picker_lists(state, viewer, k, chrome.lang);
     let mut resp = render::page_with(
         chrome,
         "admin_form.html",
@@ -1828,7 +2025,8 @@ fn form_error(
             kinds => KINDS,
             creating => id.is_none(),
             id => id.unwrap_or(""),
-            fields => field_views(k, &entity, chrome.lang),
+            fields => field_views(k, &entity, chrome.lang, &pickers),
+            pickers,
             raw,
             error => message,
             // The version the editor started from rides through a refusal, so

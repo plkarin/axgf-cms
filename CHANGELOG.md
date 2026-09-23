@@ -71,6 +71,23 @@ nothing about AXGF catches a full disk and a backup timer that stopped firing.
 A warning answers 200 and a failure 503: nobody should be woken at midnight
 over a stale backup.
 
+**The generic editors ask which, instead of asking for a UUID.** Ten fields
+across five kinds — a birth place, a death place, an event's place, an
+occupation's person, three source references and both ends of a link — were
+text inputs that stored whatever was typed into them as if it were an
+identifier. They are now the same `<datalist>` pickers the structured editors
+have had all along: the places by name, the sources by title, the people
+through the reader's own lens, filtered as you type, with no script. A stored
+id renders as its label, so an event that used to show
+`6b1f8c22-…` now shows "Katedra Św Jana, Lublin".
+
+What comes back is read the way the structured editors read it — the inserted
+label, a pasted id, or a typed name — and a value that names nothing, or names
+two things, is refused with the field's own label in the message rather than
+guessed at. A refused form also keeps what was typed now: it used to
+re-render from the raw document alone and throw away the very value it was
+complaining about.
+
 **The dashboard says what `/health` says, to whoever is signed in.** A
 monitor gets the four checks as JSON and a status code; a household that has
 no monitor got nothing at all. The two failures that actually happen in a

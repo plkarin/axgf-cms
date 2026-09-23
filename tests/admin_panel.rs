@@ -1083,3 +1083,104 @@ async fn guesses_at_the_emergency_token_run_out() {
         &page[..page.len().min(400)]
     );
 }
+
+// ---------------------------------------------------------------------------
+// The generic editors ask which, not for a UUID
+// ---------------------------------------------------------------------------
+
+const LYON: &str = "8e17ae7a-762f-488a-8ded-ff4a83481652";
+
+#[tokio::test]
+async fn the_generic_editor_offers_a_picker_where_it_used_to_ask_for_a_uuid() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("pick-render", src);
+
+    let page = expect_status(
+        get_admin(&app, "/admin/event/new").await,
+        StatusCode::OK,
+        "the new-event form",
+    )
+    .await;
+
+    assert!(
+        page.contains(r#"list="pick-place""#),
+        "place_id should be a picker, not a text field"
+    );
+    assert!(
+        page.contains(r#"<datalist id="pick-place">"#),
+        "and the page should carry the list it points at"
+    );
+    assert!(
+        page.contains("Lyon, Rhone, France"),
+        "with the places in it by name"
+    );
+}
+
+#[tokio::test]
+async fn a_place_chosen_by_name_is_stored_as_its_id() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, dir) = app_with_bundle("pick-save", src);
+
+    // Exactly what the browser puts in the field when the reader picks from
+    // the datalist: the label, not the UUID.
+    let resp = post_form(
+        &app,
+        "/admin/event",
+        "category=marriage&place_id=Lyon%2C+Rhone%2C+France&raw_json=%7B%7D",
+        true,
+    )
+    .await;
+    assert!(
+        resp.status().is_success() || resp.status().is_redirection(),
+        "creating the event: {}",
+        resp.status()
+    );
+
+    // Read it back off disk: the stored value must be the id.
+    let bytes = std::fs::read(&*dir).expect("read bundle");
+    let env = axgf_rs::import_bundle(&bytes);
+    let stored: Vec<String> = env
+        .data
+        .get("events")
+        .and_then(|e| e.as_object())
+        .map(|m| {
+            m.values()
+                .filter_map(|e| e.get("place_id").and_then(|p| p.as_str()))
+                .map(str::to_string)
+                .collect()
+        })
+        .unwrap_or_default();
+    assert!(
+        stored.contains(&LYON.to_string()),
+        "the typed place name should have been stored as the id, got {stored:?}"
+    );
+}
+
+#[tokio::test]
+async fn a_picker_value_that_names_nothing_is_refused_rather_than_stored() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, _p) = app_with_bundle("pick-refuse", src);
+
+    let resp = post_form(
+        &app,
+        "/admin/event",
+        "category=marriage&place_id=Atlantis&raw_json=%7B%7D",
+        true,
+    )
+    .await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::BAD_REQUEST,
+        "it must not be saved"
+    );
+    let page = body_string(resp).await;
+    assert!(
+        page.contains("Place") || page.contains("place"),
+        "the refusal should name the field:\n{}",
+        &page[..page.len().min(400)]
+    );
+    assert!(
+        page.contains("Atlantis"),
+        "and keep what was typed so it can be corrected"
+    );
+}

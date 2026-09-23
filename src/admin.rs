@@ -28,6 +28,9 @@ pub enum FieldKind {
     Confidence,
     Bool,
     Select,
+    /// An entity reference: a search over the bundle, not a UUID typed by
+    /// hand. [`Field::picks`] says over what.
+    Picker,
 }
 
 /// One editable field.
@@ -51,6 +54,15 @@ pub struct Field {
     pub options: &'static [&'static str],
     /// The vocabulary family naming the options; empty for anything else.
     pub vocab: &'static str,
+    /// What a [`FieldKind::Picker`] picks: `person`, `place`, `source`, or
+    /// `linkable` for the far end of a link, which may be any of three kinds.
+    /// Empty for every other kind of field.
+    ///
+    /// These were plain text inputs until this existed. A form that asks an
+    /// administrator to type `3ca35cb9-a8d6-4943-9ad3-d1af333e3a50` is not
+    /// asking a question anybody can answer; the structured editors had grown
+    /// pickers for exactly this and the generic ones had not.
+    pub picks: &'static str,
 }
 
 impl Field {
@@ -79,6 +91,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: Some("field-person-display-name-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "identity.gender.value",
@@ -87,6 +100,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: &["", "M", "F", "NB", "U"],
         vocab: "gender",
+        picks: "",
     },
     Field {
         path: "identity.is_living",
@@ -95,6 +109,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "birth.date.value",
@@ -103,6 +118,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: Some("field-date-value-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "birth.date.precision",
@@ -120,6 +136,7 @@ const PERSON_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "precision",
+        picks: "",
     },
     Field {
         path: "birth.date.circa",
@@ -128,14 +145,16 @@ const PERSON_FIELDS: &[Field] = &[
         hint: Some("field-circa-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "birth.place_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-person-birth-place",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "place",
     },
     Field {
         path: "birth.confidence",
@@ -144,6 +163,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: Some("field-person-confidence-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "death.date.value",
@@ -152,6 +172,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "death.date.precision",
@@ -169,6 +190,7 @@ const PERSON_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "precision",
+        picks: "",
     },
     Field {
         path: "death.date.circa",
@@ -177,14 +199,16 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "death.place_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-person-death-place",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "place",
     },
     Field {
         path: "death.confidence",
@@ -193,6 +217,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "death.cause",
@@ -201,6 +226,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "bio",
@@ -209,6 +235,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "notes",
@@ -217,6 +244,7 @@ const PERSON_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 
@@ -229,6 +257,7 @@ const FAMILY_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "description",
@@ -237,6 +266,7 @@ const FAMILY_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "union.type",
@@ -253,6 +283,7 @@ const FAMILY_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "union-type",
+        picks: "",
     },
     Field {
         path: "union.status",
@@ -269,6 +300,7 @@ const FAMILY_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "union-status",
+        picks: "",
     },
     Field {
         path: "union.confidence",
@@ -277,6 +309,7 @@ const FAMILY_FIELDS: &[Field] = &[
         hint: Some("field-family-union-confidence-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "union.start.date.value",
@@ -285,6 +318,7 @@ const FAMILY_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "union.end.date.value",
@@ -293,6 +327,7 @@ const FAMILY_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "notes",
@@ -301,6 +336,7 @@ const FAMILY_FIELDS: &[Field] = &[
         hint: Some("field-family-notes-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 
@@ -331,6 +367,7 @@ const EVENT_FIELDS: &[Field] = &[
             "other",
         ],
         vocab: "event-category",
+        picks: "",
     },
     Field {
         path: "subcategory",
@@ -339,6 +376,7 @@ const EVENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "date.value",
@@ -347,6 +385,7 @@ const EVENT_FIELDS: &[Field] = &[
         hint: Some("field-event-date-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "date.precision",
@@ -364,6 +403,7 @@ const EVENT_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "precision",
+        picks: "",
     },
     Field {
         path: "date.circa",
@@ -372,14 +412,16 @@ const EVENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "place_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-place-id",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "place",
     },
     Field {
         path: "description",
@@ -388,6 +430,7 @@ const EVENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "confidence",
@@ -396,14 +439,16 @@ const EVENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "source_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-source-id",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "source",
     },
 ];
 
@@ -416,14 +461,16 @@ const LINK_FIELDS: &[Field] = &[
         hint: None,
         options: &["person", "family", "event"],
         vocab: "kind",
+        picks: "",
     },
     Field {
         path: "from.entity_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-link-from-id",
         hint: Some("field-required-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "linkable",
     },
     Field {
         path: "to.entity_type",
@@ -432,14 +479,16 @@ const LINK_FIELDS: &[Field] = &[
         hint: None,
         options: &["person", "family", "event"],
         vocab: "kind",
+        picks: "",
     },
     Field {
         path: "to.entity_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-link-to-id",
         hint: Some("field-required-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "linkable",
     },
     Field {
         path: "label",
@@ -448,6 +497,7 @@ const LINK_FIELDS: &[Field] = &[
         hint: Some("field-link-label-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "label_reverse",
@@ -456,6 +506,7 @@ const LINK_FIELDS: &[Field] = &[
         hint: Some("field-link-label-reverse-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "category",
@@ -474,6 +525,7 @@ const LINK_FIELDS: &[Field] = &[
             "other",
         ],
         vocab: "link-category",
+        picks: "",
     },
     Field {
         path: "relation",
@@ -498,6 +550,7 @@ const LINK_FIELDS: &[Field] = &[
             "other",
         ],
         vocab: "pv-link-relation",
+        picks: "",
     },
     Field {
         path: "bidirectional",
@@ -506,6 +559,7 @@ const LINK_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "valid_from.date.value",
@@ -514,6 +568,7 @@ const LINK_FIELDS: &[Field] = &[
         hint: Some("field-link-valid-from-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "valid_until.date.value",
@@ -522,6 +577,7 @@ const LINK_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "confidence",
@@ -530,14 +586,16 @@ const LINK_FIELDS: &[Field] = &[
         hint: Some("field-link-confidence-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "source_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-source-id",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "source",
     },
     Field {
         path: "note",
@@ -546,6 +604,7 @@ const LINK_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 
@@ -553,11 +612,12 @@ const LINK_FIELDS: &[Field] = &[
 const OCCUPATION_FIELDS: &[Field] = &[
     Field {
         path: "person_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-occupation-person-id",
         hint: Some("field-required-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "person",
     },
     Field {
         path: "title",
@@ -566,6 +626,7 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: Some("field-occupation-title-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "title_latin",
@@ -574,6 +635,7 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "position",
@@ -582,6 +644,7 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: Some("field-occupation-position-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "employer.name",
@@ -590,14 +653,16 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "place_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-place-id",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "place",
     },
     Field {
         path: "valid_from.date.value",
@@ -606,6 +671,7 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: Some("field-occupation-from-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "valid_until.date.value",
@@ -614,6 +680,7 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "confidence",
@@ -622,14 +689,16 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "source_id",
-        kind: FieldKind::Text,
+        kind: FieldKind::Picker,
         label: "field-source-id",
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "source",
     },
     Field {
         path: "note",
@@ -638,6 +707,7 @@ const OCCUPATION_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 
@@ -650,6 +720,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: Some("field-required-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "source_type",
@@ -681,6 +752,7 @@ const SOURCE_FIELDS: &[Field] = &[
             "other",
         ],
         vocab: "source-type",
+        picks: "",
     },
     Field {
         path: "reliability",
@@ -696,6 +768,7 @@ const SOURCE_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "reliability",
+        picks: "",
     },
     Field {
         path: "status",
@@ -704,6 +777,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: None,
         options: &["", "verified", "unverified", "lost", "known_missing"],
         vocab: "source-status",
+        picks: "",
     },
     Field {
         path: "confidence",
@@ -712,6 +786,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "repository.name",
@@ -720,6 +795,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "repository.reference",
@@ -728,6 +804,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "transcription",
@@ -736,6 +813,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "note",
@@ -744,6 +822,7 @@ const SOURCE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 
@@ -756,6 +835,7 @@ const PLACE_FIELDS: &[Field] = &[
         hint: Some("field-required-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "names.0.lang",
@@ -764,6 +844,7 @@ const PLACE_FIELDS: &[Field] = &[
         hint: Some("field-place-name-lang-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "place_type",
@@ -787,6 +868,7 @@ const PLACE_FIELDS: &[Field] = &[
             "unknown",
         ],
         vocab: "place-type",
+        picks: "",
     },
     Field {
         path: "region",
@@ -795,6 +877,7 @@ const PLACE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "country_current",
@@ -803,6 +886,7 @@ const PLACE_FIELDS: &[Field] = &[
         hint: Some("field-place-country-current-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "note",
@@ -811,6 +895,7 @@ const PLACE_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 
@@ -823,6 +908,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
         hint: Some("field-required-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "mime_type",
@@ -831,6 +917,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
         hint: Some("field-document-mime-type-hint"),
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "document_type",
@@ -857,6 +944,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
             "other",
         ],
         vocab: "document-type",
+        picks: "",
     },
     Field {
         path: "status",
@@ -865,6 +953,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
         hint: Some("field-required-hint"),
         options: &["present", "referenced", "known_missing", "lost", "unknown"],
         vocab: "document-status",
+        picks: "",
     },
     Field {
         path: "url",
@@ -873,6 +962,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "caption",
@@ -881,6 +971,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
     Field {
         path: "note",
@@ -889,6 +980,7 @@ const DOCUMENT_FIELDS: &[Field] = &[
         hint: None,
         options: NO_OPTS,
         vocab: "",
+        picks: "",
     },
 ];
 

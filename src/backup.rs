@@ -118,6 +118,10 @@ pub struct Report {
     /// How long the write lock was held, in milliseconds — the window in which
     /// a save would have waited.
     pub lock_held_ms: u128,
+    /// Part-written archives from interrupted runs that this run reclaimed.
+    pub swept_parts: usize,
+    /// What they were costing, in bytes.
+    pub swept_bytes: u64,
 }
 
 /// The files a backup covers, derived from the bundle path.
@@ -213,6 +217,13 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
     fs::create_dir_all(dest)
         .with_context(|| format!("creating the backup directory {}", dest.display()))?;
 
+    // A run killed between "create the .part" and "rename it into place"
+    // leaves a part-written archive behind — on the operator's bundle that is
+    // 415 MB, once per interrupted run, in the directory the daily timer
+    // writes to. Reclaimed here, before the space check, because an orphan
+    // from yesterday is precisely the room today's archive needs.
+    let (swept_parts, swept_bytes) = sweep_orphaned_parts(dest);
+
     // Up front, before the lock is taken and before a byte is written: the
     // archive is at most the three files plus a little, and a backup that
     // fails halfway leaves a part-written file in the directory an operator
@@ -229,13 +240,30 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
     let tmp = dest.join(format!("{PREFIX}{}.zip.part", stamp()));
     let final_path = dest.join(format!("{PREFIX}{}.zip", stamp()));
 
+    // Created and claimed here rather than inside `write_archive`, because the
+    // claim has to outlive the writing: between the last byte and the rename
+    // there is a verification pass over 435 MB, and a sweep running in that
+    // window would otherwise see an unlocked `.part` and take it for the
+    // wreckage of a dead run. `try_clone` shares one open file description, so
+    // both handles hold the same lock and it is released when the last of them
+    // goes — at the end of this function, after the rename.
+    let part = fs::File::create(&tmp)
+        .map_err(|e| anyhow::anyhow!("{}", space::explain_write_failure(&e, &tmp, None)))?;
+    if let Err(e) = part.try_lock() {
+        let _ = fs::remove_file(&tmp);
+        bail!("another backup is already writing {}: {e}", tmp.display());
+    }
+    let writing = part
+        .try_clone()
+        .with_context(|| format!("duplicating the handle on {}", tmp.display()))?;
+
     let started = std::time::Instant::now();
     let manifest = {
         // Everything between here and the end of this block happens with no
         // other process able to write the bundle or the accounts.
         let _lock = WriteLock::acquire(bundle)?;
         let held = std::time::Instant::now();
-        let m = write_archive(&files, &tmp).inspect_err(|_| {
+        let m = write_archive(&files, writing).inspect_err(|_| {
             let _ = fs::remove_file(&tmp);
         })?;
         tracing::debug!(ms = held.elapsed().as_millis(), "write lock released");
@@ -262,6 +290,8 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
             space::explain_write_failure(&e, &final_path, Some(&tmp))
         )
     })?;
+    // The `.part` name is gone; the claim on it has nothing left to protect.
+    drop(part);
     let bytes = fs::metadata(&final_path).map(|m| m.len()).unwrap_or(0);
 
     let pruned = prune(dest, retention)?;
@@ -280,13 +310,70 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
         pruned,
         manifest,
         lock_held_ms,
+        swept_parts,
+        swept_bytes,
     })
 }
 
-/// Stream the three files into a ZIP at `tmp` and return the manifest.
-fn write_archive(files: &StateFiles, tmp: &Path) -> Result<Manifest> {
-    let file = fs::File::create(tmp)
-        .map_err(|e| anyhow::anyhow!("{}", space::explain_write_failure(&e, tmp, None)))?;
+/// Remove part-written archives in `dest` that no process is still writing.
+///
+/// # How "no process is still writing" is decided
+///
+/// Not by age, and not by a PID in a file: by asking the kernel. A run holds
+/// an exclusive `flock` on its own `.part` for as long as it is writing it
+/// ([`write_archive`]), and that lock belongs to the open file description, so
+/// it is gone the instant the process is — including under `kill -9`, which is
+/// exactly the case this cleans up after. A `.part` that can be locked is
+/// therefore one nobody is writing.
+///
+/// The alternative, "older than an hour", would either delete a slow run's
+/// archive out from under it or leave a dead one lying for an hour. This is
+/// the same reasoning [`crate::lockfile`] gives for using flock at all.
+pub fn sweep_orphaned_parts(dest: &Path) -> (usize, u64) {
+    let Ok(entries) = fs::read_dir(dest) else {
+        return (0, 0);
+    };
+    let (mut count, mut bytes) = (0usize, 0u64);
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else { continue };
+        if !name.starts_with(PREFIX) || !name.ends_with(".zip.part") {
+            continue;
+        }
+        let Ok(file) = fs::OpenOptions::new().read(true).write(true).open(&path) else {
+            continue;
+        };
+        match file.try_lock() {
+            Ok(()) => {}
+            // Somebody is writing it this second. Leave it alone.
+            Err(_) => {
+                tracing::debug!(path = %path.display(), "a run is writing this .part; left");
+                continue;
+            }
+        }
+        let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
+        drop(file);
+        match fs::remove_file(&path) {
+            Ok(()) => {
+                count += 1;
+                bytes += size;
+                tracing::warn!(
+                    path = %path.display(),
+                    bytes = size,
+                    "removed a part-written archive left by an interrupted backup;                      it was never a backup and was never named as one"
+                );
+            }
+            Err(e) => tracing::warn!(path = %path.display(), error = %e, "could not remove it"),
+        }
+    }
+    (count, bytes)
+}
+
+/// Stream the three files into the ZIP behind `file` and return the manifest.
+///
+/// The handle is created, claimed and kept by [`run`]; this only writes.
+fn write_archive(files: &StateFiles, file: fs::File) -> Result<Manifest> {
     let mut zip = zip::ZipWriter::new(std::io::BufWriter::new(file));
 
     let mut sha256 = BTreeMap::new();

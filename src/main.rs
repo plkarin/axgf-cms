@@ -255,6 +255,15 @@ fn run_backup(
     eprintln!("    accounts   {}", m.accounts);
     eprintln!("    journal    {} lines", m.journal_lines);
     eprintln!("    saves held {} ms", report.lock_held_ms);
+    if report.swept_parts > 0 {
+        eprintln!();
+        eprintln!(
+            "    reclaimed  {} from {} part-written archive(s) left by an",
+            axgf_cms::documents::human_size(report.swept_bytes),
+            report.swept_parts
+        );
+        eprintln!("               interrupted run. They were never backups.");
+    }
     if !report.pruned.is_empty() {
         eprintln!();
         eprintln!(

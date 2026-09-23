@@ -49,6 +49,20 @@ bundle rebuilds the whole archive beside itself, so saving a corrected birth
 year on a 435 MB bundle needs 870 MB free. That is now refused up front, with
 the shortfall named, instead of discovered part-way through.
 
+**Wreckage from an interrupted write is reclaimed, and never mistaken for
+the real thing.** A save, a download and a backup all build a full second copy
+beside the original and rename it into place at the end, so a crash in the
+middle leaves a file worth hundreds of megabytes that nothing will ever read.
+Three sweeps now collect them: the bundle's own `.tmp` siblings at startup,
+orphaned payload-cache generations at startup — five of them had reached
+2.1 GB on one installation — and part-written backup archives at the start of
+the next backup, which is also the moment their space is most wanted.
+
+A part-written archive is told from one a live run is still writing by the
+kernel, not by the clock: each run holds an `flock` on its own `.part`, and
+that lock dies with the process, including under `kill -9`. Age would either
+delete a slow run's work or leave a dead run's litter lying for an hour.
+
 **`/health` answers what an operator needs.** Four checks — the bundle loads
 and validates, free disk against a threshold, the age of the newest backup,
 and whether the payload cache still holds every file the bundle declares —

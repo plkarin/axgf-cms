@@ -430,6 +430,15 @@ impl AppState {
             write_bundle(path, &flat).context("writing the initial bundle")?;
         }
 
+        // A crash between "temp file created" and "temp file renamed over the
+        // bundle" leaves the temp file behind. It was never going to be
+        // mistaken for the bundle — the path is explicit — but it is a full
+        // copy of one occupying the disk the next save needs, and on a 435 MB
+        // archive two crashed exports are most of a gigabyte nothing will ever
+        // read. Swept here, once, under the write lock, so a temp file another
+        // process is writing this instant is left alone.
+        sweep_stale_temp_files(path);
+
         // Key the cache by a hash of the bundle so a different bundle never
         // reads another's payloads.
         let bundle_sha = crate::payloads::hash_file(path)
@@ -439,6 +448,19 @@ impl AppState {
             None => PayloadCache::default_base(path),
         };
         let cache = PayloadCache::open(&base, &bundle_sha)?;
+        // Every save writes a bundle with a new SHA-256, which opens a new
+        // cache generation and orphans the previous one complete, with every
+        // photograph in it. Nothing removed them: five generations of one
+        // bundle had reached 2.1 GB on the machine this was written for, on
+        // the disk the bundle is saved to. The live one is kept; the rest go.
+        let (swept, freed) = PayloadCache::sweep_stale_generations(&base, cache.dir());
+        if swept > 0 {
+            tracing::info!(
+                generations = swept,
+                bytes = freed,
+                "swept stale payload cache generations"
+            );
+        }
 
         // The whole point of 0.3: each payload goes from the archive into the
         // cache through a fixed buffer, and the flat JSON that comes back is
@@ -709,6 +731,14 @@ impl AppState {
     /// going to a file or a response body anyway — this exists for callers
     /// that genuinely want them in hand.
     pub fn export_bytes(&self) -> Result<Vec<u8>> {
+        let dir = self.bundle_path.parent().unwrap_or(Path::new("."));
+        crate::space::ensure_room_for(
+            dir,
+            &crate::space::Need {
+                bytes: self.bundle_size(),
+                what: "a copy of the bundle",
+            },
+        )?;
         let tmp = self.export_temp_path("export");
         let out = self
             .export_to_file(&tmp)
@@ -733,6 +763,18 @@ impl AppState {
     /// accident costs one re-export. Each scope is chosen on its own, because
     /// who a file is for decides which of them it may carry.
     pub fn export_to_temp_file_with(&self, include: crate::sensitive::Scopes) -> Result<PathBuf> {
+        // A download builds a second complete copy of the archive beside the
+        // live one. On the operator's bundle that is another 415 MB, and an
+        // export that fills the disk takes the next *save* down with it — so
+        // the guard is here and not only on the paths that write the bundle.
+        let dir = self.bundle_path.parent().unwrap_or(Path::new("."));
+        crate::space::ensure_room_for(
+            dir,
+            &crate::space::Need {
+                bytes: self.bundle_size(),
+                what: "a copy of the bundle to download",
+            },
+        )?;
         let tmp = self.export_temp_path("download");
         let result = if include == crate::sensitive::Scopes::EVERY {
             self.export_to_file(&tmp)

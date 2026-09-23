@@ -766,5 +766,52 @@ fn the_header_of_every_archive_says_where_it_came_from() {
     assert_eq!(v.entities, v.manifest.entities);
 }
 
+/// A `kill -9` between "create the .part" and "rename it" leaves a full-size
+/// archive fragment behind. On the operator's bundle that is 415 MB a day, in
+/// the directory the timer writes to, and nothing used to reclaim it.
+#[test]
+fn a_part_file_left_by_a_killed_run_is_reclaimed_by_the_next_one() {
+    let bundle = seeded("br-orphan");
+    let dest = scratch("br-orphan-dest");
+
+    // Exactly what the killed run leaves: the right prefix, the right suffix,
+    // nobody holding it.
+    let orphan = dest.dir().join("axgf-backup-20200101T000000Z.zip.part");
+    std::fs::write(&orphan, vec![7u8; 4096]).expect("write the orphan");
+
+    let report = backup::run(&bundle, dest.dir(), Retention::default()).expect("backup");
+    assert!(!orphan.exists(), "the orphan should have been reclaimed");
+    assert_eq!(report.swept_parts, 1);
+    assert_eq!(report.swept_bytes, 4096);
+    assert!(report.archive.exists(), "and the new archive still written");
+}
+
+/// The other half of it: a `.part` a live run is writing must survive a sweep,
+/// which is why the test for liveness is the kernel's lock and not the clock.
+#[test]
+fn a_part_file_a_live_run_is_writing_is_left_alone() {
+    let dest = scratch("br-live-part-dest");
+
+    let live = dest.dir().join("axgf-backup-20200101T000000Z.zip.part");
+    let held = std::fs::OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .truncate(true)
+        .open(&live)
+        .expect("create");
+    held.lock().expect("hold it the way a running backup does");
+
+    let (swept, bytes) = backup::sweep_orphaned_parts(dest.dir());
+    assert_eq!((swept, bytes), (0, 0), "a claimed .part is not wreckage");
+    assert!(live.exists());
+
+    // Released — as the kernel does when a process dies — it is wreckage.
+    drop(held);
+    let (swept, _) = backup::sweep_orphaned_parts(dest.dir());
+    assert_eq!(swept, 1);
+    assert!(!live.exists());
+}
+
 /// A helper the other tests share for header assertions.
 fn _unused(_: &Request<Body>, _: header::HeaderName) {}

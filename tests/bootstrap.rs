@@ -934,9 +934,15 @@ fn uninstall_removes_the_service_and_the_binary_and_nothing_else() {
     let archive = data.join("backups/axgf-backup-20260101T000000Z.zip");
     std::fs::write(&archive, b"an archive").expect("archive");
 
+    std::fs::write(
+        prefix.join("etc/systemd/system/axgf-cms.service.previous"),
+        b"[Service]\n",
+    )
+    .expect("stage a rollback copy");
+
     let out = run_bootstrap(&prefix, &["--uninstall"]);
 
-    // Gone.
+    // Gone — including the copies an upgrade keeps for its rollback.
     for gone in [
         "etc/systemd/system/axgf-cms.service",
         "etc/systemd/system/axgf-cms-backup.service",
@@ -944,6 +950,7 @@ fn uninstall_removes_the_service_and_the_binary_and_nothing_else() {
         "etc/systemd/system/axgf-cms-verify.service",
         "etc/systemd/system/axgf-cms-verify.timer",
         "usr/local/bin/axgf-cms",
+        "etc/systemd/system/axgf-cms.service.previous",
     ] {
         assert!(
             !prefix.join(gone).exists(),

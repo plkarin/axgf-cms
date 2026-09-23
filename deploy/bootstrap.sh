@@ -323,6 +323,40 @@ wait_for_health() {
 }
 
 # --------------------------------------------------------------------------
+# Topping up the environment file
+# --------------------------------------------------------------------------
+# An installation from before the settings moved into this file has only the
+# token in it. What is missing is appended; what is there is left exactly as it
+# is, so an operator's own edits and comments survive.
+#
+# The upgrade path needs this as much as the install path does, and for a
+# sharper reason: an upgrade writes the new unit, whose ExecStart carries no
+# arguments at all. Against an env file that names no bundle, that unit starts
+# a binary with nothing to open — which is precisely what happened the first
+# time this was run against the published release.
+ensure_env_keys() {
+  [ -f "$ENV_FILE" ] || return 0
+  local line key
+  for line in \
+    "AXGF_CMS_BUNDLE=${BUNDLE}" \
+    "AXGF_CMS_BIND=${BIND}" \
+    "AXGF_CMS_BACKUP_DIR=${BACKUP_DIR}" \
+    "AXGF_CMS_CACHE_DIR=${DATA_DIR}/cache" \
+    "RUST_LOG=axgf_cms=info,tower_http=warn"
+  do
+    key="${line%%=*}"
+    if ! grep -q "^${key}=" "$ENV_FILE" 2>/dev/null; then
+      if [ "$DRY_RUN" = "1" ]; then
+        say "would add ${key} to $ENV_FILE"
+      else
+        printf '%s\n' "$line" >> "$ENV_FILE"
+        say "added ${key} to $ENV_FILE"
+      fi
+    fi
+  done
+}
+
+# --------------------------------------------------------------------------
 # Writing the units
 # --------------------------------------------------------------------------
 # A function, because an upgrade installs them too.
@@ -628,6 +662,10 @@ if [ "$UNINSTALL" = "1" ]; then
   for f in "$UNIT_PATH" "$BACKUP_SERVICE_PATH" "$BACKUP_TIMER_PATH" \
            "$VERIFY_SERVICE_PATH" "$VERIFY_TIMER_PATH"; do
     [ -e "$f" ] && run rm -f "$f"
+    # The copies an upgrade keeps for its rollback. Leaving them behind made an
+    # uninstalled machine still list five axgf-cms files in
+    # /etc/systemd/system, which is not what "removed" should look like.
+    [ -e "${f}.previous" ] && run rm -f "${f}.previous"
   done
   say "removed the unit files"
 
@@ -686,14 +724,51 @@ installation of axgf-cms."
   #    upgrade goes wrong in a way the rollback cannot undo — a new binary
   #    that wrote the bundle before failing — this archive is what is left.
   step "Backing up before anything is replaced"
-  run mkdir -p "$BACKUP_DIR"
-  if [ "$DRY_RUN" = "0" ]; then
+  # Created here for an installation from a release that had no backups at all,
+  # and owned by the service user rather than by root — a root-owned directory
+  # is one the backup unit cannot write into, which would leave the timer
+  # failing every night on a machine that had just been upgraded to have one.
+  if [ ! -d "$BACKUP_DIR" ]; then
+    if [ "$SKIP_PRIVILEGED" = "0" ]; then
+      run install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0700 "$BACKUP_DIR"
+    else
+      run mkdir -p "$BACKUP_DIR"
+    fi
+  elif [ "$SKIP_PRIVILEGED" = "0" ]; then
+    run chown "$SERVICE_USER":"$SERVICE_USER" "$BACKUP_DIR"
+  fi
+  if [ "$DRY_RUN" = "1" ]; then
+    printf '  [dry-run] axgf-cms backup --bundle %s --dest %s\n' "$BUNDLE" "$BACKUP_DIR"
+  elif "$INSTALL_PATH" backup --help >/dev/null 2>&1; then
     run_as_service "$INSTALL_PATH" backup --bundle "$BUNDLE" --dest "$BACKUP_DIR" \
       || die "the pre-upgrade backup failed, so the upgrade stopped before it \
 started. Nothing was changed. Fix the backup first: an upgrade without one is \
 the single most expensive thing that can go wrong here."
   else
-    printf '  [dry-run] axgf-cms backup --bundle %s --dest %s\n' "$BUNDLE" "$BACKUP_DIR"
+    # The installed version predates `axgf-cms backup` — which is exactly the
+    # version most installations are upgrading *from*, since backups did not
+    # exist in the first published release. Refusing to upgrade for want of a
+    # command the old binary never had would strand precisely those machines,
+    # so the three files are copied instead.
+    #
+    # The service is stopped first, and that ordering is the whole point: a
+    # copy taken from under a running server can catch a save in progress and
+    # produce a bundle and an .acl that disagree. Stopped, they cannot.
+    warn "the installed version has no backup command; copying the files instead"
+    STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+    PRE="${BACKUP_DIR}/pre-upgrade-${STAMP}"
+    if [ "$SKIP_PRIVILEGED" = "0" ] && command -v systemctl >/dev/null 2>&1; then
+      run systemctl stop axgf-cms || true
+    fi
+    run mkdir -p "$PRE"
+    for f in "$BUNDLE" "${BUNDLE%.axgf}.acl" "${BUNDLE}".journal*; do
+      [ -e "$f" ] && run cp -p "$f" "$PRE/"
+    done
+    if [ "$SKIP_PRIVILEGED" = "0" ]; then
+      run chown -R "$SERVICE_USER":"$SERVICE_USER" "$PRE" || true
+    fi
+    say "copied the bundle, the accounts and the journal into ${PRE}"
+    say "the new binary will write a real, verified archive after this"
   fi
 
   # 2. Keep the working binary where the rollback can find it.
@@ -713,7 +788,18 @@ the single most expensive thing that can go wrong here."
   #    a `Type=exec` unit that never waits for it, and how a sandbox
   #    directive added in this release never reaches the machine that most
   #    needs it. Both are written from this script, so both are upgraded.
-  step "Refreshing the units"
+  step "Refreshing the configuration and the units"
+  # The new unit's ExecStart carries no arguments, so the env file has to name
+  # the bundle before that unit is asked to start anything.
+  ensure_env_keys
+  # Keep the units that work, beside the binary that works. A rollback that
+  # restores the binary and leaves the new unit in place puts an old binary
+  # under a unit written for a new one — which is how the first rollback here
+  # failed as comprehensively as the upgrade it was undoing.
+  for u in "$UNIT_PATH" "$BACKUP_SERVICE_PATH" "$BACKUP_TIMER_PATH" \
+           "$VERIFY_SERVICE_PATH" "$VERIFY_TIMER_PATH"; do
+    [ -f "$u" ] && run cp -p "$u" "${u}.previous"
+  done
   write_units
   if [ "$SKIP_PRIVILEGED" = "0" ] && [ "$DRY_RUN" = "0" ] && command -v systemctl >/dev/null 2>&1; then
     run systemctl daemon-reload
@@ -725,6 +811,22 @@ the single most expensive thing that can go wrong here."
     say "skipping restart and health check"
   elif systemctl restart axgf-cms && HEALTH="$(wait_for_health)"; then
     say "healthy: ${HEALTH}"
+
+    # An installation upgraded from a release that had no backups has no
+    # archive at all, only the file copy taken above — and a copy is not a
+    # verified archive. The new binary can write one, so it does, now rather
+    # than at half past three.
+    case "$HEALTH" in
+      *'"backup"'*'"status":"fail"'*|*'"backup":{"status":"fail"'*)
+        step "First verified archive"
+        if systemctl start axgf-cms-backup.service; then
+          say "wrote one with the new binary"
+        else
+          warn "could not: check systemctl status axgf-cms-backup"
+        fi
+        ;;
+    esac
+
     step "Done"
     cat <<EOF
 
@@ -742,6 +844,14 @@ EOF
     printf '%s\n' "${HEALTH:-<no response>}" | sed 's/^/    /'
     step "Rolling back"
     run install -m 0755 "$PREVIOUS" "$INSTALL_PATH"
+    # Everything the upgrade replaced, not merely the binary.
+    for u in "$UNIT_PATH" "$BACKUP_SERVICE_PATH" "$BACKUP_TIMER_PATH" \
+             "$VERIFY_SERVICE_PATH" "$VERIFY_TIMER_PATH"; do
+      [ -f "${u}.previous" ] && run cp -p "${u}.previous" "$u"
+    done
+    if command -v systemctl >/dev/null 2>&1; then
+      run systemctl daemon-reload
+    fi
     run systemctl restart axgf-cms
     if HEALTH="$(wait_for_health)"; then
       die "the upgrade to ${NEW_VERSION} failed its health check and was rolled back.
@@ -810,26 +920,7 @@ step "Configuration"
 if [ -f "$ENV_FILE" ]; then
   say "$ENV_FILE exists — keeping the existing token and settings"
   TOKEN="$(sed -n 's/^AXGF_CMS_ADMIN_TOKEN=//p' "$ENV_FILE" | head -1)"
-  # An installation from before the settings moved into this file has only the
-  # token in it. Append what is missing rather than rewriting the file, so an
-  # operator's own edits survive an upgrade.
-  for line in \
-    "AXGF_CMS_BUNDLE=${BUNDLE}" \
-    "AXGF_CMS_BIND=${BIND}" \
-    "AXGF_CMS_BACKUP_DIR=${BACKUP_DIR}" \
-    "AXGF_CMS_CACHE_DIR=${DATA_DIR}/cache" \
-    "RUST_LOG=axgf_cms=info,tower_http=warn"
-  do
-    key="${line%%=*}"
-    if ! grep -q "^${key}=" "$ENV_FILE" 2>/dev/null; then
-      if [ "$DRY_RUN" = "1" ]; then
-        say "would add ${key} to $ENV_FILE"
-      else
-        printf '%s\n' "$line" >> "$ENV_FILE"
-        say "added ${key} to $ENV_FILE"
-      fi
-    fi
-  done
+  ensure_env_keys
 else
   if [ "$DRY_RUN" = "1" ]; then
     TOKEN="<generated-on-first-real-run>"

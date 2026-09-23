@@ -105,142 +105,116 @@ sudo install -m 0755 target/release/axgf-cms /usr/local/bin/axgf-cms
 
 ## systemd reference
 
-`/etc/systemd/system/axgf-cms.service`:
+`bootstrap.sh` writes five files, and they are the whole of the installation:
 
-```ini
-[Unit]
-Description=axgf-cms — AXGF genealogy showcase
-Documentation=https://github.com/plkarin/axgf-cms
-After=network.target
+| Unit | What it is |
+| --- | --- |
+| `axgf-cms.service` | The website. |
+| `axgf-cms-backup.service` + `.timer` | One verified archive a day. |
+| `axgf-cms-verify.service` + `.timer` | Reads the bundle and the newest archive back, weekly. |
 
-[Service]
-Type=exec
-User=axgf-cms
-Group=axgf-cms
-EnvironmentFile=/etc/axgf-cms/env
-ExecStart=/usr/local/bin/axgf-cms --bundle /var/lib/axgf-cms/family.axgf --bind 127.0.0.1:8080
-Restart=on-failure
-RestartSec=2s
-
-# The process needs exactly one writable directory and nothing else.
-NoNewPrivileges=yes
-PrivateTmp=yes
-PrivateDevices=yes
-ProtectSystem=strict
-ProtectHome=yes
-ProtectKernelTunables=yes
-ProtectKernelModules=yes
-ProtectControlGroups=yes
-ReadWritePaths=/var/lib/axgf-cms
-RestrictAddressFamilies=AF_INET AF_INET6
-RestrictNamespaces=yes
-LockPersonality=yes
-MemoryDenyWriteExecute=yes
-
-[Install]
-WantedBy=multi-user.target
-```
-
-`ProtectSystem=strict` with a single `ReadWritePaths` is the important part:
-the service can write to its bundle directory and nowhere else on the
-filesystem. The admin token arrives through `EnvironmentFile` so it never
-appears in the process arguments, where any local user could read it from
-`ps`.
-
-Useful commands:
+Rather than reproducing them here, where a copy goes stale the day the script
+changes, read the ones on the machine:
 
 ```sh
-sudo systemctl status axgf-cms
-sudo journalctl -u axgf-cms -f          # logs, including emergency-token use
-sudo systemctl restart axgf-cms
+systemctl cat axgf-cms
+systemctl cat axgf-cms-backup.timer
+systemctl cat axgf-cms-verify.timer
 ```
 
----
+Three things about the main unit are worth knowing before you read it.
+
+**`ExecStart` carries no arguments.** Every setting is in
+`/etc/axgf-cms/env` — the bundle, the bind address, the cache directory, the
+backup destination, the log level and the emergency token. Change one there
+and `systemctl restart axgf-cms`. There is nothing to edit in the unit, and no
+flag that can disagree with the file.
+
+**`Type=notify`.** "Started" means the bundle is loaded, validated and
+listening rather than "the process was spawned" — several seconds apart on a
+435 MB archive, and the difference between `systemctl start` returning into a
+working site and into a 502. It is also where the line under
+`systemctl status` comes from:
+
+```
+Status: "/var/lib/axgf-cms/family.axgf · 866 people · newest archive
+         axgf-backup-20260923T200223Z.zip is under an hour old"
+```
+
+**The restart backs off.** `RestartSec=2s` with `RestartSteps=5` and
+`RestartMaxDelaySec=2min`, and no start limit that would ever give up.
+Measured over five consecutive `kill -9`s: 2.1, 4.6, 10.4, 23.4, 52.9 seconds.
+The failure it is for is a full disk, where a service restarting every two
+seconds writes a journal entry every two seconds onto the disk that is full.
+
+The sandbox scores **0.9 SAFE** under `systemd-analyze security axgf-cms`
+(the backup and verify units score 0.6). The one family that could not be
+dropped is `AF_UNIX`: it is journald's socket and systemd's readiness protocol
+both, and without it the service logs nothing and never finishes starting.
+
+Day-to-day operation — including what to do when the disk fills and how to
+plug `/health` into a monitor — is in [OPERATOR.md](OPERATOR.md).
+
 
 ## Reverse proxy and TLS
 
-**The service binds to localhost on purpose.** It now has real accounts, but
-it speaks plain HTTP: bound to `0.0.0.0` it would send every password across
-the network in clear text. Do not move `--bind`. Put a proxy in front and let
-it terminate TLS.
+**The service binds 127.0.0.1 and must stay there.** It speaks plain HTTP.
+Bound wider than localhost with nothing in front of it, every password typed
+into the sign-in form crosses the network in clear text, the session cookie is
+issued without `Secure`, and a family's private records are readable by anyone
+who can reach the port. Do not change `AXGF_CMS_BIND` to `0.0.0.0`. Put a
+proxy in front and let it terminate TLS.
 
-Two headers matter to the application, and both appear in the snippets below:
+Two complete configurations are in the repository, and both have been run in
+front of a live instance rather than written from memory:
 
-* `X-Forwarded-Proto` is how it knows the request arrived over TLS, and
-  therefore whether to set `Secure` on the session cookie. Without it the
-  cookie is issued without `Secure`.
-* `X-Forwarded-For` is what the login throttle counts attempts against.
-  Without it every request appears to come from the proxy, and one bucket is
-  shared by the whole internet — which throttles harder, not less, but will
-  lock out legitimate users.
-
-### Caddy
-
-Caddy obtains and renews a certificate automatically.
-
-```caddy
-genealogy.example.org {
-    reverse_proxy 127.0.0.1:8080
-
-    # Optional: a second factor in front of the admin surface. The
-    # application authenticates on its own now, so this is defence in depth
-    # rather than the only lock.
-    @admin path /admin*
-    basic_auth @admin {
-        # caddy hash-password --plaintext 'your-password'
-        curator $2a$14$replace_this_with_a_real_bcrypt_hash
-    }
-}
+```sh
+# nginx
+sudo cp deploy/proxy/nginx-axgf-cms.conf /etc/nginx/sites-available/axgf-cms
+sudo ln -s /etc/nginx/sites-available/axgf-cms /etc/nginx/sites-enabled/
+sudo certbot --nginx -d tree.example.org
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### nginx
-
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name genealogy.example.org;
-
-    ssl_certificate     /etc/letsencrypt/live/genealogy.example.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/genealogy.example.org/privkey.pem;
-
-    # A 767-person GEDCOM is about 320 KB; the app's own ceiling is 10 MB.
-    client_max_body_size 12m;
-
-    location / {
-        proxy_pass         http://127.0.0.1:8080;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
-
-    # Optional second factor. The application authenticates on its own now;
-    # this is defence in depth rather than the only lock.
-    location /admin {
-        auth_basic           "axgf-cms admin";
-        auth_basic_user_file /etc/nginx/axgf-cms.htpasswd;
-        proxy_pass           http://127.0.0.1:8080;
-        proxy_set_header     Host $host;
-        proxy_set_header     X-Forwarded-Proto $scheme;
-    }
-}
-
-server {
-    listen 80;
-    server_name genealogy.example.org;
-    return 301 https://$host$request_uri;
-}
+```sh
+# Caddy — gets and renews the certificate itself
+sudo cp deploy/proxy/Caddyfile /etc/caddy/Caddyfile
+sudo systemctl reload caddy
 ```
 
-The application does not set `Secure` on its session cookie, because its
-documented default is plain HTTP on localhost, where a `Secure` cookie would
-never be stored. Behind TLS, have the proxy add it:
+Replace `tree.example.org` in whichever you use. What was tested, on nginx
+1.24 and Caddy 2.6, against the 435 MB bundle:
 
-```nginx
-proxy_cookie_flags axgf_admin secure samesite=lax;
-```
+| | Result |
+| --- | --- |
+| `http://` → `https://` | 301 |
+| the site over TLS | 200, HTTP/2 |
+| session cookie | `Secure` through the proxy; without it, no `Secure` |
+| security headers | exactly one of each, plus HSTS from the proxy |
+| a 9 MB photograph | accepted, 303 |
+| an 11 MB one | 413 **from the application**, with a page that explains itself |
+| a 13-second save | 200 |
+| the same save with `proxy_read_timeout 5s` | 504 at exactly 5.0 s |
 
----
+If you write your own instead, four things matter:
+
+* `X-Forwarded-Proto` — without it the session cookie is issued without
+  `Secure`, over TLS, and nothing says so.
+* `X-Forwarded-For`, **set** from the peer rather than appended to. The login
+  throttle counts per client, and a client that supplies its own value picks
+  its own bucket.
+* a body limit just above the 10 MB upload limit, so an oversized upload is
+  refused by the product's own page rather than by a bare 413.
+* a read timeout well past 60 seconds. A save rebuilds the whole archive.
+
+And one thing not to do: **do not set `Content-Security-Policy`,
+`X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options` or
+`Permissions-Policy` at the proxy.** The application sets all five on every
+response; adding them again sends two of each, and two CSP headers are
+enforced as the intersection of the two, which breaks the page in a way
+nothing reports. HSTS is the exception — only the thing terminating TLS can
+promise that, so the proxy adds it.
+
 
 ## Backups
 

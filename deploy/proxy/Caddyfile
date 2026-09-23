@@ -1,0 +1,54 @@
+# axgf-cms behind Caddy.
+#
+#   sudo cp deploy/proxy/Caddyfile /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+#
+# Replace tree.example.org with the name, and the email with yours. Caddy gets
+# the certificate itself and renews it; there is no certbot step.
+#
+# Tested as it stands, with only the site address and the TLS line changed
+# (`tls internal`, since a test cannot answer an ACME challenge) — see
+# tests/proxy.rs.
+#
+# axgf-cms speaks plain HTTP and binds 127.0.0.1 on purpose. Bound wider than
+# localhost with no proxy in front, passwords cross the network in clear text
+# and a family's records are readable by anyone who reaches the port. This file
+# is what puts TLS in front of it.
+
+{
+	email you@example.org
+}
+
+tree.example.org {
+	# Caddy redirects http:// to https:// on its own and renews the
+	# certificate on its own. Nothing here asks for either.
+
+	# The application sets Content-Security-Policy, X-Frame-Options,
+	# Referrer-Policy, X-Content-Type-Options and Permissions-Policy itself.
+	# Only the one it cannot know about is added here: HSTS is a promise about
+	# this deployment, and only the thing terminating TLS is in a position to
+	# make it.
+	header Strict-Transport-Security "max-age=31536000"
+
+	# A document upload is at most 10 MB and the application refuses anything
+	# larger with a page that explains itself. Sitting just above that limit
+	# means the reader gets the explanation rather than a bare 413.
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy 127.0.0.1:8080 {
+		# Caddy sets Host, X-Forwarded-For, X-Forwarded-Host and
+		# X-Forwarded-Proto by itself, and overwrites a client-supplied
+		# X-Forwarded-For rather than appending to it — which is what keeps
+		# the login rate limit's per-client bucket honest.
+
+		# Saving a large bundle rebuilds the whole archive. Caddy has no read
+		# timeout by default, so a long save already works; these are the
+		# bounds that keep a wedged upstream from being held open forever.
+		transport http {
+			dial_timeout 10s
+			response_header_timeout 300s
+		}
+	}
+}

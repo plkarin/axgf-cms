@@ -32,7 +32,12 @@ async fn main() -> Result<()> {
             )
         }
         Some(Command::Restore { archive, force }) => return run_restore(&cfg, archive, *force),
-        Some(Command::Verify { archive }) => return run_verify(archive),
+        Some(Command::Verify { archive }) => {
+            return match archive {
+                Some(a) => run_verify(a),
+                None => run_self_check(&cfg),
+            }
+        }
         None => {}
     }
     // Before anything renders: the plausibility limit is fixed for the life of
@@ -171,6 +176,29 @@ async fn main() -> Result<()> {
 
     eprintln!("axgf-cms listening on http://{}", cfg.bind);
 
+    // Ready means ready: the bundle is loaded, validated and listening. Until
+    // this datagram, `systemctl start` is still waiting — which on a 435 MB
+    // archive is several seconds during which a Type=exec unit would already
+    // have claimed success and a proxy in front of it would be serving 502.
+    axgf_cms::notify::ready(&status_line(&state));
+
+    // And the line `systemctl status` shows, kept current. A minute is often
+    // enough: the three facts on it — the bundle, how many people, how old the
+    // last backup is — change on the scale of an edit and a nightly timer, and
+    // an operator reading `status` wants today's answer, not the one from
+    // whenever the service last restarted.
+    {
+        let state = state.clone();
+        tokio::spawn(async move {
+            let mut tick = tokio::time::interval(std::time::Duration::from_secs(60));
+            tick.tick().await; // the immediate one; `ready` just sent it
+            loop {
+                tick.tick().await;
+                axgf_cms::notify::status(&status_line(&state));
+            }
+        });
+    }
+
     // `into_make_service_with_connect_info` is what makes the peer address
     // reachable from a handler, and the login throttle's per-address bucket is
     // useless without it: an absent `ConnectInfo` would silently collapse
@@ -182,11 +210,49 @@ async fn main() -> Result<()> {
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
-    .with_graceful_shutdown(shutdown_signal())
+    .with_graceful_shutdown(shutdown_signal(state.clone()))
     .await
     .context("server error")?;
 
+    // Every request that was in flight has returned by here — that is what
+    // `with_graceful_shutdown` waits for. What it does not wait for is a save
+    // that a *different* process started, and the one that matters is the
+    // backup timer: it holds the write lock across three files. Taking the
+    // lock is how this process says "whatever was being written has finished",
+    // and dropping it immediately afterwards is the point — the claim is the
+    // wait, not the holding.
+    match axgf_cms::lockfile::WriteLock::acquire_for(&bundle, std::time::Duration::from_secs(30)) {
+        Ok(lock) => drop(lock),
+        Err(e) => tracing::warn!(error = %e, "stopped while another process was writing"),
+    }
+    tracing::info!("stopped cleanly");
     Ok(())
+}
+
+/// The one line `systemctl status` prints under the unit.
+///
+/// Three facts, because they are the three questions somebody opens `status`
+/// to answer: which bundle is loaded, how much is in it, and whether the
+/// backups are still happening.
+fn status_line(state: &AppState) -> String {
+    let people = state
+        .counts()
+        .iter()
+        .find(|(k, _)| *k == "persons")
+        .map(|(_, n)| *n)
+        .unwrap_or(0);
+    let health = state.health();
+    let backup = health
+        .get("backup")
+        .map(|c| c.detail.clone())
+        .unwrap_or_default();
+    // The check's own sentence, shortened to the clause that carries the fact.
+    let backup = backup.split(" — ").next().unwrap_or(&backup).to_string();
+    format!(
+        "{} · {people} people · {}",
+        state.bundle_path().display(),
+        backup
+    )
 }
 
 /// Structured logs, to journald when systemd is running this process.
@@ -204,16 +270,44 @@ fn init_logging() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| "axgf_cms=info,tower_http=warn".into());
     let under_systemd = std::env::var_os("INVOCATION_ID").is_some();
-    let builder = tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_target(true);
+
     if under_systemd {
-        // systemd stamps every line itself, so a second timestamp is noise;
-        // ANSI colour in a journal is worse than noise.
-        builder.with_ansi(false).without_time().init();
-    } else {
-        builder.init();
+        // Straight to the journald socket, one journal field per tracing
+        // field. Stderr would have reached the journal too, but as a line of
+        // text: `journalctl -o json` would hand back the whole sentence as
+        // MESSAGE and nothing to filter on. This way a save is a record with
+        // BYTES and PATH on it, and an operator can ask for the record rather
+        // than grep for the wording.
+        //
+        // If the socket is not there — a container without journald, a
+        // sandbox that took AF_UNIX away — falling back to stderr is right:
+        // logs that go somewhere plain beat a process that will not start.
+        match tracing_journald::layer() {
+            Ok(journal) => {
+                use tracing_subscriber::layer::SubscriberExt as _;
+                use tracing_subscriber::util::SubscriberInitExt as _;
+                tracing_subscriber::registry()
+                    .with(filter)
+                    .with(journal)
+                    .init();
+                return;
+            }
+            Err(e) => {
+                tracing_subscriber::fmt()
+                    .with_env_filter(filter)
+                    .with_target(true)
+                    .with_ansi(false)
+                    .without_time()
+                    .init();
+                tracing::warn!(error = %e, "no journald socket; logging to stderr instead");
+                return;
+            }
+        }
     }
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_target(true)
+        .init();
 }
 
 /// `axgf-cms backup --dest <dir>`
@@ -332,6 +426,85 @@ fn run_verify(archive: &std::path::Path) -> Result<()> {
     Ok(())
 }
 
+/// `axgf-cms verify` with no archive: check this installation.
+///
+/// # Why a separate unit and not a thread in the server
+///
+/// Reading a 435 MB archive back is minutes of I/O once a week, and the
+/// failures it finds — a bundle that no longer validates, a cache that was
+/// cleaned out, an archive that will not open — are exactly the failures that
+/// must not be able to take the web service down with them. A separate unit
+/// gets its own status, its own log and its own failure; `systemctl status
+/// axgf-cms-verify` answers "did the weekly check pass" without reference to
+/// whether anybody can reach the site.
+///
+/// Exit status is the point: non-zero puts the unit in `failed`, which is what
+/// `systemctl is-failed` and every monitor already understand.
+fn run_self_check(cfg: &Config) -> Result<()> {
+    let bundle = cfg.bundle()?;
+    // Deliberately not `AppState::load`: that opens the payload cache and
+    // rewrites its index, and this runs from a unit with no writable path at
+    // all. A job that reads the data back must not change it while looking —
+    // which is not a theory: the first run of the real unit failed with
+    // "Read-only file system" on the cache index, and that is the failure this
+    // shape prevents. No instance lock either, for the same reason it takes no
+    // locks at all: the server is running and this is a reader.
+    let report = axgf_cms::health::report_offline(
+        bundle,
+        cfg.cache_dir.as_deref(),
+        cfg.backup_dir.as_deref(),
+    );
+
+    eprintln!("─────────────────────────────────────────────────────────");
+    eprintln!("  axgf-cms verify — {}", bundle.display());
+    eprintln!();
+    let mut worst = axgf_cms::health::Level::Ok;
+    for c in &report.checks {
+        eprintln!("    {:<8} {:<5} {}", c.name, c.level.as_str(), c.detail);
+        worst = worst.max(c.level);
+    }
+
+    // The newest archive, read back in full: CRCs, the SHA-256 of every
+    // member against the manifest, the bundle re-imported and validated.
+    if let Some(dir) = cfg.backup_dir.as_deref() {
+        match axgf_cms::backup::latest(dir) {
+            Some(a) => match axgf_cms::backup::verify(&a.path) {
+                Ok(v) => {
+                    eprintln!();
+                    eprintln!(
+                        "    newest archive {} — readable, {} entities, {} accounts",
+                        a.path.file_name().unwrap_or_default().to_string_lossy(),
+                        v.entities.values().sum::<usize>(),
+                        v.accounts
+                    );
+                }
+                Err(e) => {
+                    eprintln!();
+                    eprintln!("    newest archive {} — UNREADABLE", a.path.display());
+                    eprintln!("    {e:#}");
+                    worst = axgf_cms::health::Level::Fail;
+                }
+            },
+            None => eprintln!("\n    no archive in {} to read back", dir.display()),
+        }
+    }
+    eprintln!("─────────────────────────────────────────────────────────");
+
+    match worst {
+        axgf_cms::health::Level::Fail => {
+            anyhow::bail!("this installation has a failing check; see above")
+        }
+        axgf_cms::health::Level::Warn => {
+            tracing::warn!("verify finished with warnings");
+            Ok(())
+        }
+        axgf_cms::health::Level::Ok => {
+            tracing::info!("verify finished: everything readable");
+            Ok(())
+        }
+    }
+}
+
 /// Create an administrator account and print its generated password once.
 ///
 /// The password is generated rather than taken as an argument, and printed to
@@ -388,7 +561,7 @@ fn create_first_admin(state: &AppState, username: &str) -> Result<()> {
 }
 
 /// Resolve on Ctrl-C or SIGTERM so systemd restarts are clean.
-async fn shutdown_signal() {
+async fn shutdown_signal(state: std::sync::Arc<AppState>) {
     let ctrl_c = async {
         let _ = tokio::signal::ctrl_c().await;
     };
@@ -406,5 +579,11 @@ async fn shutdown_signal() {
         _ = ctrl_c => {}
         _ = term => {}
     }
-    tracing::info!("shutting down");
+    // Before anything else: tell systemd this is a shutdown in progress, not a
+    // unit that has stopped answering. `systemctl stop` then prints
+    // "deactivating" with a reason rather than sitting silent until the
+    // timeout.
+    axgf_cms::notify::stopping("finishing the write in flight");
+    tracing::info!("shutting down; finishing requests in flight");
+    let _ = state;
 }

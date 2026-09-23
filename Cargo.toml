@@ -59,6 +59,12 @@ zip = { version = "0.6", default-features = false, features = ["deflate"] }
 # `statvfs`, and the errno constants the rename failures are named by. The one
 # reason this crate is not `forbid(unsafe_code)` — see `src/space.rs`.
 libc = "0.2"
+# Logs as journal *records* rather than as lines of text in a journal. Each
+# `tracing` field becomes a journal field, so `journalctl -u axgf-cms
+# BYTES=...` works and an operator can filter on what happened rather than
+# grepping sentences. Pure Rust: it speaks the journald socket protocol
+# directly and links nothing.
+tracing-journald = "0.3"
 
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get

@@ -11,6 +11,25 @@ pub const ADMIN_TOKEN_ENV: &str = "AXGF_CMS_ADMIN_TOKEN";
 /// Environment variable naming the backup directory.
 pub const BACKUP_DIR_ENV: &str = "AXGF_CMS_BACKUP_DIR";
 
+/// Environment variable naming the bundle.
+pub const BUNDLE_ENV: &str = "AXGF_CMS_BUNDLE";
+
+/// Environment variable naming the address to bind.
+pub const BIND_ENV: &str = "AXGF_CMS_BIND";
+
+/// Environment variable naming the payload cache directory.
+pub const CACHE_DIR_ENV: &str = "AXGF_CMS_CACHE_DIR";
+
+// Why these exist at all
+//
+// A service is configured by its environment file, not by a command line
+// somebody typed once and cannot remember. `ExecStart` is the binary and
+// nothing else, `/etc/axgf-cms/env` holds every setting, and changing one is
+// an edit and a `systemctl restart` — no unit to re-read, no
+// `systemctl edit`, nothing that has to agree with a second copy of the same
+// value. The flags all still work and still win, because a one-off run from
+// a terminal is a real thing to do.
+
 /// What to do instead of serving.
 ///
 /// Serving stays the default with no subcommand, so every existing invocation
@@ -54,8 +73,15 @@ pub enum Command {
     /// Read an archive and say what is in it, changing nothing.
     Verify {
         /// The archive to check.
+        ///
+        /// Omit it to check the installation itself instead: the live bundle
+        /// is loaded and validated, the payload cache is measured against what
+        /// the bundle declares, and the newest archive in the backup directory
+        /// is read back. That is what the weekly timer runs, and it is the
+        /// only thing that turns "there is a file called a backup" into
+        /// "there is a backup".
         #[arg(value_name = "ARCHIVE")]
-        archive: PathBuf,
+        archive: Option<PathBuf>,
     },
 }
 
@@ -72,13 +98,13 @@ pub struct Config {
     /// Global, so it reads the same before or after a subcommand:
     /// `axgf-cms --bundle X backup --dest Y` and
     /// `axgf-cms backup --bundle X --dest Y` are the same command.
-    #[arg(long, value_name = "PATH", global = true)]
+    #[arg(long, value_name = "PATH", global = true, env = BUNDLE_ENV)]
     pub bundle: Option<PathBuf>,
 
     /// Address to bind. Defaults to localhost, and should stay there: this
     /// process speaks plain HTTP, so bound anywhere else it sends passwords
     /// across the network in clear text. TLS is the reverse proxy's job.
-    #[arg(long, value_name = "ADDR", default_value = "127.0.0.1:8080")]
+    #[arg(long, value_name = "ADDR", default_value = "127.0.0.1:8080", env = BIND_ENV)]
     pub bind: SocketAddr,
 
     /// Shared admin token. Falls back to AXGF_CMS_ADMIN_TOKEN, then to a
@@ -136,7 +162,7 @@ pub struct Config {
     /// `<bundle_dir>/.axgf-cms-cache`. Override it when the bundle sits on slow
     /// or read-only storage. It is derived data — the `.axgf` is authoritative
     /// — and never needs backing up.
-    #[arg(long, value_name = "PATH")]
+    #[arg(long, value_name = "PATH", env = CACHE_DIR_ENV)]
     pub cache_dir: Option<PathBuf>,
 
     /// Contact address to send to the geocoder, which turns place-name lookup

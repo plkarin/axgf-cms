@@ -195,6 +195,135 @@ pub fn report(state: &crate::state::AppState, backup_dir: Option<&Path>) -> Repo
     }
 }
 
+/// Every check, against the files on disk rather than a loaded application.
+///
+/// # Why there are two of these
+///
+/// [`report`] measures a *running* installation: the tree it has in memory,
+/// the cache it opened. The weekly verifier measures the installation on disk,
+/// from a unit with no writable path at all — because a job whose whole
+/// purpose is to read the data back must not be able to change it while
+/// looking. Loading the application would create a cache directory and rewrite
+/// its index, which on a read-only filesystem is a failure and everywhere else
+/// is a job that modified what it was auditing.
+///
+/// The disk and backup checks are the same functions; only the two that need
+/// the tree are written twice.
+pub fn report_offline(
+    bundle: &Path,
+    cache_base: Option<&Path>,
+    backup_dir: Option<&Path>,
+) -> Report {
+    let file = match std::fs::File::open(bundle) {
+        Ok(f) => f,
+        Err(e) => {
+            return Report {
+                checks: vec![
+                    Check {
+                        name: "bundle",
+                        level: Level::Fail,
+                        detail: format!("cannot be read: {e}"),
+                        key: "health-bundle-invalid",
+                        args: vec![("errors", Arg::Num(1))],
+                    },
+                    disk_check(bundle),
+                    backup_check(backup_dir),
+                ],
+            }
+        }
+    };
+    // Streamed, and with a callback that takes nothing: a 435 MB archive is not
+    // read into memory, no payload is ever a `Vec`, and nothing is written.
+    // The callback is also where the payload paths come from — `external_payloads`
+    // is built by whoever *takes* the payloads, so a reader that declines them
+    // has to note the names as they go past. Getting that wrong is how this
+    // check first reported "no payloads in this bundle" for a bundle holding
+    // 407 photographs.
+    let mut seen: Vec<String> = Vec::new();
+    let env = axgf_rs::import_bundle_streaming(file, |payload| {
+        seen.push(payload.path().to_string());
+        Ok(())
+    });
+    let flat = env.data;
+    // The library validates the serialised form, which is also what the
+    // running server hands it.
+    let flat_json = serde_json::to_string(&flat).unwrap_or_else(|_| "{}".into());
+    let verdict = axgf_rs::validate(&flat_json);
+    let errors = verdict
+        .diagnostics
+        .iter()
+        .filter(|d| d.severity == axgf_rs::boundary::envelope::Severity::Error)
+        .count();
+    let total: usize = crate::state::COLLECTIONS
+        .iter()
+        .map(|name| {
+            flat.get(name)
+                .and_then(Value::as_object)
+                .map(|m| m.len())
+                .unwrap_or(0)
+        })
+        .sum();
+    let bundle_check = if verdict.status == axgf_rs::boundary::envelope::Status::Error || errors > 0
+    {
+        Check {
+            name: "bundle",
+            level: Level::Fail,
+            detail: format!("read from disk but does not validate: {errors} error(s)"),
+            key: "health-bundle-invalid",
+            args: vec![("errors", Arg::Num(errors as i64))],
+        }
+    } else {
+        Check::ok("bundle", format!("read and valid, {total} entities"))
+    };
+
+    // The cache, read without touching it. `seen` is what the archive actually
+    // carries, which is the same set a running server declares in
+    // `external_payloads`.
+    let declared = seen;
+    let cache = if declared.is_empty() {
+        Check::ok("cache", "no payloads in this bundle".into())
+    } else {
+        let base = cache_base
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| crate::payloads::PayloadCache::default_base(bundle));
+        let sha = crate::payloads::hash_file(bundle).unwrap_or_default();
+        let missing = crate::payloads::missing_in_generation(
+            &base,
+            &sha,
+            declared.iter().map(String::as_str),
+        );
+        if missing.is_empty() {
+            Check::ok("cache", format!("{} payloads present", declared.len()))
+        } else {
+            Check {
+                name: "cache",
+                level: Level::Warn,
+                detail: format!(
+                    "{} of {} payloads are not in {}. The next save rebuilds them \
+                     from the bundle.",
+                    missing.len(),
+                    declared.len(),
+                    base.display()
+                ),
+                key: "health-cache-missing",
+                args: vec![
+                    ("missing", Arg::Num(missing.len() as i64)),
+                    ("declared", Arg::Num(declared.len() as i64)),
+                ],
+            }
+        }
+    };
+
+    Report {
+        checks: vec![
+            bundle_check,
+            disk_check(bundle),
+            backup_check(backup_dir),
+            cache,
+        ],
+    }
+}
+
 /// Does the bundle in memory still validate?
 ///
 /// Not "did it load" — it loaded, or there would be no process to ask. This is

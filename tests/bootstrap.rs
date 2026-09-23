@@ -82,7 +82,7 @@ fn running_bootstrap_twice_keeps_the_token_and_the_bundle() {
 
     // --- first run -------------------------------------------------------
     let first = run_bootstrap(&prefix, &["--with-sample"]);
-    assert!(first.contains("generated a new admin token"));
+    assert!(first.contains("with a new admin token"));
     assert!(first.contains("seeded with the demonstration family"));
 
     let token1 = token_in(&prefix);
@@ -101,7 +101,13 @@ fn running_bootstrap_twice_keeps_the_token_and_the_bundle() {
         "seeding is done before the service starts, not by it"
     );
     assert!(unit_text.contains("Restart=on-failure"));
-    assert!(unit_text.contains("127.0.0.1:8080"), "binds to localhost");
+    // The bind address is in the environment file, not in the unit — but it
+    // still has to be localhost by default, which is where that now reads.
+    let env_text = std::fs::read_to_string(prefix.join("etc/axgf-cms/env")).expect("read env");
+    assert!(
+        env_text.contains("AXGF_CMS_BIND=127.0.0.1:8080"),
+        "binds to localhost by default:\n{env_text}"
+    );
 
     // The service would create the bundle on start; simulate that, then check
     // the second run leaves it alone.
@@ -203,12 +209,69 @@ fn bootstrap_reports_the_accounts_and_the_security_position() {
 }
 
 #[test]
-fn a_custom_bind_address_reaches_the_unit() {
-    let prefix = common::scratch("boot-bind");
+fn every_setting_is_in_the_environment_file_and_none_is_on_the_command_line() {
+    // The whole contract of this install: one file holds the configuration,
+    // and `ExecStart` is the binary. An operator who moves the bundle, changes
+    // the port or turns the logging up edits one line and restarts — there is
+    // no unit to keep in step, and no flag that can disagree with the file.
+    let prefix = common::scratch("boot-envfile");
     run_bootstrap(&prefix, &["--bind", "127.0.0.1:9999"]);
+
+    let env = std::fs::read_to_string(prefix.join("etc/axgf-cms/env")).expect("read env file");
+    for key in [
+        "AXGF_CMS_BUNDLE=",
+        "AXGF_CMS_BIND=127.0.0.1:9999",
+        "AXGF_CMS_BACKUP_DIR=",
+        "AXGF_CMS_CACHE_DIR=",
+        "RUST_LOG=",
+        "AXGF_CMS_ADMIN_TOKEN=",
+    ] {
+        assert!(env.contains(key), "the env file is missing {key}:\n{env}");
+    }
+
     let unit = std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms.service"))
         .expect("read unit");
-    assert!(unit.contains("--bind 127.0.0.1:9999"), "{unit}");
+    let exec = unit
+        .lines()
+        .find(|l| l.starts_with("ExecStart="))
+        .expect("the unit starts something");
+    assert!(
+        !exec.contains("--"),
+        "ExecStart must carry no flags at all, got: {exec}"
+    );
+    assert!(
+        unit.contains("EnvironmentFile="),
+        "and it must read the environment file:\n{unit}"
+    );
+}
+
+#[test]
+fn an_older_installation_gains_the_settings_it_never_had() {
+    // An env file written before the settings moved into it holds only the
+    // token. Re-running must add what is missing and keep the token, rather
+    // than rewrite the file over somebody's own edits.
+    let prefix = common::scratch("boot-envfile-old");
+    std::fs::create_dir_all(prefix.join("etc/axgf-cms")).expect("mkdir");
+    std::fs::write(
+        prefix.join("etc/axgf-cms/env"),
+        "AXGF_CMS_ADMIN_TOKEN=an-old-token\n# an operator's own note\n",
+    )
+    .expect("write old env file");
+
+    run_bootstrap(&prefix, &[]);
+
+    let env = std::fs::read_to_string(prefix.join("etc/axgf-cms/env")).expect("read env file");
+    assert!(
+        env.contains("AXGF_CMS_ADMIN_TOKEN=an-old-token"),
+        "the token must survive:\n{env}"
+    );
+    assert!(
+        env.contains("an operator's own note"),
+        "and so must their comments:\n{env}"
+    );
+    for key in ["AXGF_CMS_BUNDLE=", "AXGF_CMS_BIND=", "RUST_LOG="] {
+        assert!(env.contains(key), "missing {key}:\n{env}");
+    }
 }
 
 #[test]
@@ -221,8 +284,29 @@ fn the_unit_confines_the_service_to_its_data_directory() {
     for directive in [
         "User=axgf-cms",
         "NoNewPrivileges=yes",
+        "PrivateTmp=yes",
+        "PrivateDevices=yes",
+        "PrivateUsers=yes",
         "ProtectSystem=strict",
         "ProtectHome=yes",
+        "ProtectKernelTunables=yes",
+        "ProtectKernelModules=yes",
+        "ProtectKernelLogs=yes",
+        "ProtectControlGroups=yes",
+        "ProtectClock=yes",
+        "ProtectHostname=yes",
+        "ProtectProc=invisible",
+        "ProcSubset=pid",
+        "RestrictNamespaces=yes",
+        "RestrictRealtime=yes",
+        "RestrictSUIDSGID=yes",
+        "RemoveIPC=yes",
+        "LockPersonality=yes",
+        "MemoryDenyWriteExecute=yes",
+        "SystemCallArchitectures=native",
+        "SystemCallFilter=@system-service",
+        "CapabilityBoundingSet=",
+        "UMask=0077",
         "ReadWritePaths=",
     ] {
         assert!(
@@ -230,6 +314,33 @@ fn the_unit_confines_the_service_to_its_data_directory() {
             "unit is missing {directive}:\n{unit}"
         );
     }
+
+    // AF_UNIX is the one that cannot be dropped: journald's socket and
+    // systemd's own readiness protocol both go through it. A unit that lists
+    // only the INET families starts, logs nothing, and hangs `systemctl start`
+    // until the timeout.
+    let families = unit
+        .lines()
+        .find(|l| l.starts_with("RestrictAddressFamilies="))
+        .expect("the unit restricts address families");
+    for family in ["AF_UNIX", "AF_INET", "AF_INET6"] {
+        assert!(families.contains(family), "{families}");
+    }
+
+    // Readiness, and a restart that backs off rather than hammering a disk
+    // that is already full.
+    // Tightened past @system-service, and refused any address but the
+    // loopback the proxy talks to it over. Both were tested by exercising the
+    // product under them, which is the only way to know a filter is not
+    // quietly breaking a save.
+    assert!(unit.contains("SystemCallFilter=~@privileged"), "{unit}");
+    assert!(unit.contains("IPAddressDeny=any"), "{unit}");
+    assert!(unit.contains("IPAddressAllow=localhost"), "{unit}");
+
+    assert!(unit.contains("Type=notify"), "{unit}");
+    assert!(unit.contains("Restart=on-failure"), "{unit}");
+    assert!(unit.contains("RestartSteps="), "{unit}");
+    assert!(unit.contains("RestartMaxDelaySec="), "{unit}");
 }
 
 #[test]
@@ -256,8 +367,18 @@ fn a_daily_backup_timer_is_installed_beside_the_service() {
         std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms-backup.service"))
             .expect("the timer's service is installed");
     assert!(service.contains("Type=oneshot"), "{service}");
-    assert!(service.contains(" backup --bundle "), "{service}");
-    assert!(service.contains("--dest "), "{service}");
+    // The same one file as the service, and the same bare command: the bundle
+    // and the destination come from the environment, so an operator who moves
+    // either does not have to remember that a second unit names them too.
+    assert!(service.contains("EnvironmentFile="), "{service}");
+    assert!(
+        service.lines().any(|l| l.trim()
+            == format!(
+                "ExecStart={}/usr/local/bin/axgf-cms backup",
+                prefix.display()
+            )),
+        "the backup command takes no flags:\n{service}"
+    );
     assert!(
         service.contains("User=axgf-cms"),
         "the archive holds the ACL; it is written by the service user: {service}"
@@ -285,13 +406,14 @@ fn the_service_is_told_where_the_backups_are_so_health_can_say_how_old_they_are(
     // of the option.
     let elsewhere = prefix.join("srv-elsewhere");
     run_bootstrap(&prefix, &["--backup-dir", elsewhere.to_str().unwrap()]);
+    let env = std::fs::read_to_string(prefix.join("etc/axgf-cms/env")).expect("read env file");
+    assert!(
+        env.contains(&format!("AXGF_CMS_BACKUP_DIR={}", elsewhere.display())),
+        "an installation whose timer stopped firing must not look identical to \
+         one whose timer is working:\n{env}"
+    );
     let unit = std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms.service"))
         .expect("read unit");
-    assert!(
-        unit.contains(&format!("--backup-dir {}", elsewhere.display())),
-        "an installation whose timer stopped firing must not look identical to \
-         one whose timer is working:\n{unit}"
-    );
     assert!(
         unit.lines()
             .any(|l| l.starts_with("ReadWritePaths=") && l.contains("srv-elsewhere")),
@@ -749,5 +871,107 @@ fn an_unknown_tag_says_what_is_published_instead() {
         r.says("v0.1.0-rc1"),
         "and lists what there is instead: {}",
         r.out
+    );
+}
+
+#[test]
+fn a_weekly_verification_timer_is_installed_too() {
+    // A backup nobody has read is a claim. This is the unit that turns it into
+    // a fact, and it is its own unit on purpose: reading 435 MB back once a
+    // week must never be able to take the web service down with it.
+    let prefix = common::scratch("boot-verify-timer");
+    run_bootstrap(&prefix, &[]);
+
+    let timer = std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms-verify.timer"))
+        .expect("the verify timer is installed");
+    assert!(timer.contains("OnCalendar=Sun"), "weekly: {timer}");
+    assert!(timer.contains("Persistent=true"), "{timer}");
+
+    let service =
+        std::fs::read_to_string(prefix.join("etc/systemd/system/axgf-cms-verify.service"))
+            .expect("the verify service is installed");
+    assert!(
+        service.lines().any(|l| l.trim()
+            == format!(
+                "ExecStart={}/usr/local/bin/axgf-cms verify",
+                prefix.display()
+            )),
+        "it verifies the installation, with no argument:\n{service}"
+    );
+    // It reads everything and writes nothing, so it names no writable path at
+    // all — the one directive the other two units need and this one must not.
+    assert!(
+        !service.contains("ReadWritePaths="),
+        "a read-only job should have nothing writable:\n{service}"
+    );
+    assert!(service.contains("PrivateNetwork=yes"), "{service}");
+    // Reading a 415 MB archive back has to extract it somewhere, and that
+    // somewhere must not be the data directory. systemd's own facility, on
+    // disk rather than in RAM, cleaned up when the unit stops.
+    assert!(
+        service.contains("CacheDirectory=axgf-cms-verify"),
+        "{service}"
+    );
+}
+
+#[test]
+fn uninstall_removes_the_service_and_the_binary_and_nothing_else() {
+    // The failure this guards against is somebody tidying up and deleting a
+    // genealogy. Every path that holds data must still be there afterwards,
+    // and the script has to say where.
+    let prefix = common::scratch("boot-uninstall");
+    run_bootstrap(&prefix, &["--with-sample"]);
+
+    // What an installation looks like once it has run: a bundle, accounts, a
+    // journal and an archive. The stand-in binary creates none of them, so
+    // they are staged here the way the service would have left them.
+    let data = prefix.join("var/lib/axgf-cms");
+    let bundle = data.join("family.axgf");
+    std::fs::write(&bundle, b"PK\x03\x04 the family").expect("bundle");
+    std::fs::write(data.join("family.acl"), b"accounts").expect("acl");
+    std::fs::write(data.join("family.axgf.journal"), b"{}\n").expect("journal");
+    std::fs::create_dir_all(data.join("backups")).expect("mkdir");
+    let archive = data.join("backups/axgf-backup-20260101T000000Z.zip");
+    std::fs::write(&archive, b"an archive").expect("archive");
+
+    let out = run_bootstrap(&prefix, &["--uninstall"]);
+
+    // Gone.
+    for gone in [
+        "etc/systemd/system/axgf-cms.service",
+        "etc/systemd/system/axgf-cms-backup.service",
+        "etc/systemd/system/axgf-cms-backup.timer",
+        "etc/systemd/system/axgf-cms-verify.service",
+        "etc/systemd/system/axgf-cms-verify.timer",
+        "usr/local/bin/axgf-cms",
+    ] {
+        assert!(
+            !prefix.join(gone).exists(),
+            "{gone} should have been removed"
+        );
+    }
+
+    // Still there, every one of them.
+    for kept in [
+        &bundle,
+        &data.join("family.acl"),
+        &data.join("family.axgf.journal"),
+        &archive,
+        &prefix.join("etc/axgf-cms/env"),
+    ] {
+        assert!(
+            kept.exists(),
+            "{} must survive an uninstall",
+            kept.display()
+        );
+    }
+
+    // And it says where they are, because an operator who uninstalled by
+    // mistake needs to know nothing was lost.
+    assert!(out.contains("Nothing else is."), "{out}");
+    assert!(out.contains(&bundle.display().to_string()), "{out}");
+    assert!(
+        out.contains("This script will not do that for you"),
+        "it offers the commands to delete the data and refuses to run them: {out}"
     );
 }

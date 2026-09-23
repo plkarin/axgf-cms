@@ -704,7 +704,34 @@ impl Drop for ScratchDir {
     }
 }
 
+/// A working directory for the extraction a verification needs.
+///
+/// Beside the archive by default, because that is certainly on a filesystem
+/// with room for a copy of the bundle. But the weekly verifier runs from a unit
+/// with *no* writable path — its whole point is that reading the data back
+/// cannot change it — so when systemd has given the unit a cache directory,
+/// that is where the scratch goes. `CacheDirectory=` is the right facility for
+/// it: real disk rather than the RAM `/run` would cost, one directory systemd
+/// creates, owns and can clean, and nothing inside the data directory.
 fn tempdir_beside(near: &Path) -> Result<ScratchDir> {
+    if let Some(given) = std::env::var_os("CACHE_DIRECTORY") {
+        let given = given.to_string_lossy().into_owned();
+        // systemd passes a colon-separated list when a unit asks for several.
+        if let Some(first) = given.split(':').find(|p| !p.trim().is_empty()) {
+            let dir = Path::new(first).join(format!(
+                "verify-{}-{}",
+                std::process::id(),
+                uuid::Uuid::new_v4().simple()
+            ));
+            fs::create_dir_all(&dir).with_context(|| {
+                format!(
+                    "creating a working directory at {} (from CACHE_DIRECTORY)",
+                    dir.display()
+                )
+            })?;
+            return Ok(ScratchDir(dir));
+        }
+    }
     let parent = near.parent().unwrap_or(Path::new("."));
     let dir = parent.join(format!(
         ".axgf-verify-{}-{}",

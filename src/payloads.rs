@@ -539,6 +539,37 @@ fn hex(bytes: &[u8]) -> String {
     out
 }
 
+/// Which of `declared` this cache generation does not hold, without opening
+/// the cache for writing.
+///
+/// # Why this exists beside `missing_among`
+///
+/// The weekly verifier runs in a unit with no writable path at all, on
+/// purpose: reading the installation back must not be able to change it. But
+/// opening a [`PayloadCache`] creates its directory and rewrites its index, so
+/// the read-only job would fail on a read-only filesystem — which is exactly
+/// what it did, the first time it ran under the real unit.
+///
+/// So this reads the index and looks for the files, and writes nothing. A
+/// missing or unreadable index means nothing is cached, which is the truth
+/// this reports rather than an error: the `.axgf` is authoritative and the next
+/// save rebuilds the cache from it.
+pub fn missing_in_generation<'a>(
+    base: &Path,
+    bundle_sha: &str,
+    declared: impl Iterator<Item = &'a str>,
+) -> Vec<String> {
+    let dir = base.join(bundle_sha);
+    let index = read_index(&dir).unwrap_or_default();
+    declared
+        .filter(|path| match index.get(*path) {
+            Some(entry) => !dir.join(&entry.file).exists(),
+            None => true,
+        })
+        .map(str::to_string)
+        .collect()
+}
+
 fn read_index(dir: &Path) -> Option<BTreeMap<String, Entry>> {
     let bytes = fs::read(dir.join(INDEX_FILE)).ok()?;
     serde_json::from_slice(&bytes).ok()

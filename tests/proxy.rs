@@ -59,7 +59,11 @@ fn the_nginx_config_forwards_what_the_application_reads() {
     // The application sets these on every response. Two CSP headers are
     // enforced as the intersection of the two, which breaks the page in a way
     // nothing reports.
-    for header in ["Content-Security-Policy", "X-Frame-Options", "Referrer-Policy"] {
+    for header in [
+        "Content-Security-Policy",
+        "X-Frame-Options",
+        "Referrer-Policy",
+    ] {
         assert!(
             !conf.contains(&format!("add_header {header}")),
             "{header} is the application's to set; adding it here duplicates it"
@@ -170,7 +174,9 @@ fn make_self_signed(dir: &Path) -> bool {
         return false;
     };
     Command::new(openssl)
-        .args(["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-subj", "/CN=test"])
+        .args([
+            "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-subj", "/CN=test",
+        ])
         .arg("-keyout")
         .arg(dir.join("key.pem"))
         .arg("-out")

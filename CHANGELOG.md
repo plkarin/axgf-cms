@@ -8,6 +8,51 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**A service, not a binary somebody launches over SSH.** The unit existed and
+had never been run. Running it is what produced everything below.
+
+Every setting moved into `/etc/axgf-cms/env` — the bundle, the bind address,
+the cache directory, the backup destination and the log level — and
+`ExecStart` became the binary and nothing else. Changing where the data lives
+is an edit and `systemctl restart`, with no unit to keep in step and no flag
+that can disagree with the file.
+
+`Type=notify`: "started" now means the bundle is loaded, validated and
+listening rather than "a process was spawned", which on a 435 MB archive is
+several seconds and the difference between `systemctl start` returning into a
+working site and into a 502. The line under `systemctl status` says which
+bundle is loaded, how many people are in it and how old the newest archive is,
+refreshed every minute.
+
+The restart backs off — 2.1, 4.6, 10.4, 23.4, 52.9 seconds over five
+consecutive `kill -9`s, to a two-minute ceiling — because the failure it
+exists for is a full disk, and a service restarting every two seconds writes a
+journal entry every two seconds onto the disk that is full.
+
+Logs reach journald as records rather than as sentences: each field is a
+journal field, so `journalctl -u axgf-cms F_CHECK=backup` selects on what
+happened.
+
+**A weekly verification, in its own unit.** `axgf-cms verify` with no argument
+loads the bundle and validates it, measures the payload cache against what the
+archive declares, and reads the newest backup back in full — every CRC, every
+member's SHA-256, the bundle inside re-imported. A timer runs it on Sundays and
+a failure fails the unit, so `systemctl is-failed axgf-cms-verify` is an
+answer. Its own unit because reading 415 MB back once a week must not be able
+to take the website down with it.
+
+**An uninstall that cannot delete a genealogy.** `bootstrap.sh --uninstall`
+removes the service, the timers and the binary, prints where the bundle, the
+accounts, the journal, the archives and the configuration were left, and
+prints — without running — the three commands that would delete them.
+
+**Tested reverse-proxy configurations.** `deploy/proxy/` now holds complete
+nginx and Caddy configurations that were run in front of a live instance:
+TLS, the `Secure` cookie that only appears when `X-Forwarded-Proto` does, a
+9 MB upload accepted and an 11 MB one refused by the product's own page rather
+than a bare 413, and a thirteen-second save that returns 200 where a five-second
+read timeout turns it into a 504.
+
 **Backups, and the proof that they restore.** The whole state is three things
 — the `.axgf`, the `.acl` and the edit journal — and until now nothing backed
 up any of them. `axgf-cms backup --dest <dir>` writes one timestamped ZIP

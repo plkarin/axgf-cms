@@ -88,7 +88,7 @@ async fn upload(
         .method("POST")
         .header(header::CONTENT_TYPE, ct);
     if admin {
-        b = b.header(header::COOKIE, format!("axgf_admin={TOKEN}"));
+        b = b.header(header::COOKIE, admin_cookie(app).await);
     }
     app.clone()
         .oneshot(b.body(Body::from(body)).unwrap())

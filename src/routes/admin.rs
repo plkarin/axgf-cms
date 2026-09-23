@@ -221,6 +221,15 @@ pub async fn login(
     // account to store it on.
     let chrome = render::Chrome::resolve(&auth::viewer(&state, &headers), &headers, "/admin/login");
 
+    // Throttled before anything is compared, and before the token branch
+    // rather than after it: the token used to be checked above this gate, so
+    // guesses at it were counted and never refused. A shared token an operator
+    // chose by hand is exactly the credential that needs the limit most.
+    if state.sessions().is_throttled(&client) {
+        tracing::warn!(client = %client, "refused a throttled sign-in attempt");
+        return login_refused(&state, &chrome, &chrome.t("login-throttled"));
+    }
+
     // The emergency token, kept as a recovery path and nothing more.
     if !f.token.is_empty() {
         if !state.admin_token().is_empty()
@@ -242,11 +251,18 @@ pub async fn login(
                 .into_response();
         }
         state.sessions().record_failure(&client);
+        // Loudly, and whether it worked or not: somebody guessing at the
+        // emergency token is the one authentication event in this application
+        // worth waking up for.
+        tracing::warn!(
+            client = %client,
+            "a wrong emergency admin token was offered"
+        );
         return login_refused(&state, &chrome, &chrome.t("login-token-wrong"));
     }
 
     let username = f.username.trim().to_ascii_lowercase();
-    if state.sessions().is_throttled(&client) || state.sessions().is_throttled(&username) {
+    if state.sessions().is_throttled(&username) {
         return login_refused(&state, &chrome, &chrome.t("login-throttled"));
     }
 

@@ -340,6 +340,7 @@ async fn upload_as_admin(
         )
         .as_bytes(),
     );
+    let cookie = admin_cookie(app).await;
     app.clone()
         .oneshot(
             axum::http::Request::builder()
@@ -349,7 +350,7 @@ async fn upload_as_admin(
                     axum::http::header::CONTENT_TYPE,
                     format!("multipart/form-data; boundary={boundary}"),
                 )
-                .header(axum::http::header::COOKIE, format!("axgf_admin={TOKEN}"))
+                .header(axum::http::header::COOKIE, cookie)
                 .body(axum::body::Body::from(body))
                 .unwrap(),
         )

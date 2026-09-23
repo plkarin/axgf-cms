@@ -161,18 +161,43 @@ pub async fn get(app: &axum::Router, uri: &str) -> Response<Body> {
         .expect("request")
 }
 
-/// Issue a GET carrying the admin cookie.
-pub async fn get_admin(app: &axum::Router, uri: &str) -> Response<Body> {
-    app.clone()
+/// Sign in with the emergency token and return the session cookie.
+///
+/// The token used to be replayed as a cookie on every request, which is how
+/// every test here used to authenticate. It is no longer a credential — it
+/// buys a session through the login form, throttled and logged like any other
+/// sign-in — so the harness does what a browser does: one POST, then the
+/// cookie that came back.
+pub async fn admin_cookie(app: &axum::Router) -> String {
+    let resp = app
+        .clone()
         .oneshot(
             Request::builder()
-                .uri(uri)
-                .header(header::COOKIE, format!("axgf_admin={TOKEN}"))
-                .body(Body::empty())
+                .uri("/admin/login")
+                .method("POST")
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .body(Body::from(format!("token={TOKEN}")))
                 .unwrap(),
         )
         .await
-        .expect("request")
+        .expect("login request");
+    assert!(
+        resp.status().is_redirection(),
+        "the emergency token should open a session, got {}",
+        resp.status()
+    );
+    let raw = resp
+        .headers()
+        .get(header::SET_COOKIE)
+        .and_then(|v| v.to_str().ok())
+        .expect("a session cookie");
+    raw.split(';').next().unwrap_or("").to_string()
+}
+
+/// Issue a GET as a signed-in administrator.
+pub async fn get_admin(app: &axum::Router, uri: &str) -> Response<Body> {
+    let cookie = admin_cookie(app).await;
+    get_with_cookie(app, uri, &cookie).await
 }
 
 /// Issue a GET carrying an arbitrary cookie — a theme, a language, a
@@ -192,13 +217,14 @@ pub async fn get_with_cookie(app: &axum::Router, uri: &str, cookie: &str) -> Res
 
 /// Issue a form POST, optionally authenticated.
 pub async fn post_form(app: &axum::Router, uri: &str, body: &str, admin: bool) -> Response<Body> {
-    let mut b = Request::builder()
+    if admin {
+        let cookie = admin_cookie(app).await;
+        return post_form_as(app, &cookie, uri, body).await;
+    }
+    let b = Request::builder()
         .uri(uri)
         .method("POST")
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
-    if admin {
-        b = b.header(header::COOKIE, format!("axgf_admin={TOKEN}"));
-    }
     app.clone()
         .oneshot(b.body(Body::from(body.to_string())).unwrap())
         .await

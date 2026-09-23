@@ -1034,3 +1034,52 @@ async fn the_banner_is_not_shown_to_a_reader_who_is_not_signed_in() {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// The emergency token is a way in, not a credential
+// ---------------------------------------------------------------------------
+
+#[tokio::test]
+async fn the_token_replayed_as_a_cookie_is_not_a_credential() {
+    // It used to be exactly that: `axgf_admin=<token>` on any request granted
+    // admin, with no attempt limit, no log line and nothing a sign-out could
+    // revoke. Nothing issues that cookie any more and nothing accepts it.
+    let (app, _p) = app_with_empty_bundle("legacy-cookie");
+    for path in ["/admin", "/admin/person", "/admin/export"] {
+        let resp = get_with_cookie(&app, path, &format!("axgf_admin={TOKEN}")).await;
+        assert_eq!(
+            resp.status(),
+            StatusCode::UNAUTHORIZED,
+            "{path} accepted the legacy token cookie"
+        );
+    }
+    // And a state-changing POST with it is refused too.
+    let resp = post_form_as(&app, &format!("axgf_admin={TOKEN}"), "/admin/validate", "").await;
+    assert_eq!(resp.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[tokio::test]
+async fn guesses_at_the_emergency_token_run_out() {
+    // The token branch of the login form used to be evaluated *before* the
+    // throttle gate, so wrong tokens were counted and never refused: an
+    // operator-chosen token could be ground through at the speed of the
+    // network. The right token is offered last, and must be refused too —
+    // the limit is on the client, not on the guess.
+    let (app, _p) = app_with_empty_bundle("token-throttle");
+    for i in 0..axgf_cms::session::MAX_ATTEMPTS {
+        let resp = post_form(&app, "/admin/login", &format!("token=wrong{i}"), false).await;
+        assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "attempt {i}");
+    }
+    let resp = post_form(&app, "/admin/login", &format!("token={TOKEN}"), false).await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::UNAUTHORIZED,
+        "the correct token should still be refused while throttled"
+    );
+    let page = body_string(resp).await;
+    assert!(
+        page.contains("Too many failed attempts"),
+        "and say why:\n{}",
+        &page[..page.len().min(400)]
+    );
+}

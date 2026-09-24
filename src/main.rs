@@ -11,7 +11,8 @@ use std::sync::Arc;
 async fn main() -> Result<()> {
     init_logging();
 
-    let cfg = Config::parse();
+    let mut cfg = Config::parse();
+    cfg.absolutize_bundle();
 
     // The three commands that are not "serve" run and exit. Each of them is a
     // thing an operator does at a shell or a timer does at four in the

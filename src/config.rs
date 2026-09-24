@@ -236,6 +236,23 @@ impl Config {
         })
     }
 
+    /// Make `--bundle` absolute, against the directory it was given in.
+    ///
+    /// `axgf-cms --bundle family.axgf`, run in the folder that holds the file,
+    /// is exactly how somebody runs this on their own computer. The bundle's
+    /// directory is then `""`, and everything that asks that directory a
+    /// question got an error back: the free-space check before a save could
+    /// not read the space and — deliberately failing open — skipped itself,
+    /// and `/health` reported the disk as unreadable. Resolved once here,
+    /// every later `parent()` is a real directory.
+    pub fn absolutize_bundle(&mut self) {
+        if let Some(b) = self.bundle.as_mut() {
+            if let Ok(abs) = std::path::absolute(&*b) {
+                *b = abs;
+            }
+        }
+    }
+
     /// Resolve the admin token, generating one when none was supplied.
     ///
     /// Returns the token and whether it was generated, so the caller can print
@@ -421,5 +438,18 @@ mod tests {
             "50",
         ]);
         assert_eq!(c.size_warn_mb, 50);
+    }
+
+    #[test]
+    fn a_bundle_named_without_a_directory_gets_one() {
+        let mut c = Config::parse_from(["axgf-cms", "--bundle", "family.axgf"]);
+        c.absolutize_bundle();
+        let b = c.bundle().unwrap();
+        assert!(b.is_absolute(), "{}", b.display());
+        assert!(
+            !b.parent().unwrap().as_os_str().is_empty(),
+            "the directory a save checks for free space"
+        );
+        assert!(b.ends_with("family.axgf"));
     }
 }

@@ -2808,6 +2808,7 @@ history-created = a créé
 history-deleted = a supprimé
 history-attached = a joint un fichier
 admin-raw-json-unparsed = Le JSON brut n’a pas pu être lu ({ $error }). Rien n’a été enregistré.
+admin-raw-json-dangling = Le JSON brut fait pointer { $field } vers { $target }, qui ne figure pas dans cette archive. Choisissez-le avec un champ ci-dessus ou corrigez l’identifiant. Rien n’a été enregistré.
 conflict-someone = Quelqu’un
 conflict-unrecorded-time = un moment que personne n’a noté
 dedup-merged-persons = { $n ->

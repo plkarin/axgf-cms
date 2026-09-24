@@ -1184,3 +1184,122 @@ async fn a_picker_value_that_names_nothing_is_refused_rather_than_stored() {
         "and keep what was typed so it can be corrected"
     );
 }
+
+/// The raw-JSON box under the pickers is free text, and it is the only way to
+/// edit what no field owns — a family's partners and children among them. A
+/// UUID typed there that names nobody used to be stored as typed: the library
+/// only warns about a dangling reference, and a warning does not refuse a save.
+#[tokio::test]
+async fn a_uuid_typed_into_the_raw_json_that_names_nothing_is_refused() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, dir) = app_with_bundle("raw-dangling", src);
+    const NOWHERE: &str = "0badc0de-0000-4000-8000-000000000000";
+    let before = count(&dir, "families");
+
+    let raw = serde_json::json!({"union": {"type": "marriage",
+        "persons": [{"person_id": NOWHERE, "role": "spouse"}]}});
+    let resp = post_form(
+        &app,
+        "/admin/family",
+        &format!("raw_json={}", url_encode(&raw.to_string())),
+        true,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::BAD_REQUEST, "it must not be saved");
+    let page = body_string(resp).await;
+    assert!(page.contains(NOWHERE), "the refusal names the id it could not find");
+    assert!(page.contains("union.persons.0.person_id"), "and where it was");
+    assert_eq!(count(&dir, "families"), before, "and nothing reached the bundle");
+}
+
+#[tokio::test]
+async fn a_uuid_typed_into_the_raw_json_that_names_a_record_is_saved() {
+    let src = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"));
+    let (app, dir) = app_with_bundle("raw-real", src);
+    let person = first_id(&dir, "persons");
+    let before = count(&dir, "families");
+
+    let raw = serde_json::json!({"union": {"type": "marriage",
+        "persons": [{"person_id": person, "role": "spouse"}]}});
+    let resp = post_form(
+        &app,
+        "/admin/family",
+        &format!("raw_json={}", url_encode(&raw.to_string())),
+        true,
+    )
+    .await;
+    assert!(
+        resp.status().is_success() || resp.status().is_redirection(),
+        "a real id is a real reference: {}",
+        resp.status()
+    );
+    assert_eq!(count(&dir, "families"), before + 1);
+}
+
+#[tokio::test]
+async fn a_reference_that_was_already_dangling_does_not_block_other_edits() {
+    // An imported bundle can arrive with these. Refusing every edit of the
+    // record until somebody repaired a field they never touched would lock it.
+    const FAM: &str = "eeeeeeee-4444-4444-8444-444444444444";
+    const GONE: &str = "dddddddd-5555-4555-8555-555555555555";
+    let src = scratch("raw-legacy-src");
+    let path = src.join("legacy.axgf");
+    let family = serde_json::json!({"id": FAM, "type": "family", "axgf_version": "1.0",
+        "version_num": 1,
+        "union": {"type": "marriage", "persons": [{"person_id": GONE, "role": "spouse"}]}});
+    let flat = serde_json::json!({
+        "manifest": {"axgf": "1.0"}, "persons": {}, "families": {FAM: family},
+        "events": {}, "links": {}, "occupations": {},
+        "sources": {}, "places": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    let (app, dir) = app_with_bundle("raw-legacy", &path);
+
+    let resp = post_form(
+        &app,
+        &format!("/admin/family/{FAM}"),
+        &format!(
+            "name=The+Nowaks&union.type=marriage&base_version=1&raw_json={}",
+            url_encode(&family.to_string())
+        ),
+        true,
+    )
+    .await;
+    let status = resp.status();
+    let page = body_string(resp).await;
+    assert!(
+        !page.contains(GONE),
+        "the stale reference was not this edit's doing, so it must not refuse it"
+    );
+    assert!(status.is_success() || status.is_redirection(), "saved: {status}");
+    let env = axgf_rs::import_bundle(&std::fs::read(&*dir).expect("read"));
+    assert_eq!(env.data["families"][FAM]["name"], "The Nowaks");
+}
+
+fn count(bundle: &std::path::Path, collection: &str) -> usize {
+    let env = axgf_rs::import_bundle(&std::fs::read(bundle).expect("read bundle"));
+    env.data[collection].as_object().map_or(0, |m| m.len())
+}
+
+fn first_id(bundle: &std::path::Path, collection: &str) -> String {
+    let env = axgf_rs::import_bundle(&std::fs::read(bundle).expect("read bundle"));
+    env.data[collection]
+        .as_object()
+        .and_then(|m| m.keys().next().cloned())
+        .expect("the sample has one")
+}
+
+fn url_encode(s: &str) -> String {
+    s.bytes()
+        .map(|b| match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (b as char).to_string()
+            }
+            _ => format!("%{b:02X}"),
+        })
+        .collect()
+}

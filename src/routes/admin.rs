@@ -664,6 +664,9 @@ pub async fn create(
         Err(msg) => return form_error(&state, &viewer, &chrome, &kind, None, &msg, &form, k),
     };
     let mut entity = apply_form(base, k, &form);
+    if let Err(msg) = refuse_new_dangling(&state, &entity, None, chrome.lang) {
+        return form_error(&state, &viewer, &chrome, &kind, None, &msg, &form, k);
+    }
     if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, None) {
         return r;
     }
@@ -760,6 +763,9 @@ pub async fn update(
     if let Some(stored) = stored.as_ref() {
         let readable = crate::access::readable_for(k, stored, viewer.ceiling());
         entity = crate::sensitive::restore(&entity, stored, readable);
+    }
+    if let Err(msg) = refuse_new_dangling(&state, &entity, stored.as_ref(), chrome.lang) {
+        return form_error(&state, &viewer, &chrome, &kind, Some(&id), &msg, &form, k);
     }
     if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, stored.as_ref()) {
         return r;
@@ -1263,6 +1269,92 @@ fn base_from_raw(form: &HashMap<String, String>, lang: &str) -> Result<Value, St
             crate::i18n::translate(lang, "admin-raw-json-unparsed", Some(&args))
         }),
     }
+}
+
+/// Refuse a save whose raw JSON points at something this archive does not
+/// hold.
+///
+/// The fields above the raw-JSON box are pickers and cannot name nothing; the
+/// box itself is free text, and a UUID typed into it by hand used to be stored
+/// as it was. The library only *warns* about a dangling reference — a warning
+/// does not refuse a save — so the record quietly pointed at nobody. This is
+/// the same rule the library's validator applies (a `*_id` key holding a
+/// UUID-shaped string), run before the save instead of after it.
+///
+/// Only references this submission *adds* are refused. One the stored record
+/// already carried is left alone: an imported bundle can arrive with them, and
+/// refusing every later edit of that record until somebody repaired a field
+/// they never touched would be a different wrong answer.
+fn refuse_new_dangling(
+    state: &Shared,
+    entity: &Value,
+    stored: Option<&Value>,
+    lang: &str,
+) -> Result<(), String> {
+    let mut had = Vec::new();
+    if let Some(stored) = stored {
+        reference_ids(stored, "", None, &mut had);
+    }
+    let mut refs = Vec::new();
+    reference_ids(entity, "", None, &mut refs);
+    let own = entity.get("id").and_then(Value::as_str);
+    let missing = state.read(|flat| {
+        refs.into_iter().find(|(_, target)| {
+            Some(target.as_str()) != own
+                && !had.iter().any(|(_, t)| t == target)
+                && !flat
+                    .as_object()
+                    .is_some_and(|c| c.values().any(|m| m.get(target).is_some()))
+        })
+    });
+    match missing {
+        None => Ok(()),
+        Some((field, target)) => {
+            let args = fluent::FluentArgs::from_iter([
+                ("field", fluent::FluentValue::from(field)),
+                ("target", fluent::FluentValue::from(target)),
+            ]);
+            Err(crate::i18n::translate(
+                lang,
+                "admin-raw-json-dangling",
+                Some(&args),
+            ))
+        }
+    }
+}
+
+/// Every `(path, id)` in `value` that the library's validator would call a
+/// reference: a UUID-shaped string whose nearest key ends in `_id`, arrays
+/// inheriting the key they sit under. `axgf_rs`'s `walk_ids`, with a path.
+fn reference_ids(value: &Value, path: &str, key: Option<&str>, out: &mut Vec<(String, String)>) {
+    match value {
+        Value::Object(map) => {
+            for (k, sub) in map {
+                if k == "id" {
+                    continue;
+                }
+                let here = if path.is_empty() {
+                    k.clone()
+                } else {
+                    format!("{path}.{k}")
+                };
+                reference_ids(sub, &here, Some(k), out);
+            }
+        }
+        Value::Array(items) => {
+            for (i, sub) in items.iter().enumerate() {
+                reference_ids(sub, &format!("{path}.{i}"), key, out);
+            }
+        }
+        Value::String(s) if key.is_some_and(|k| k.ends_with("_id")) && is_uuid(s) => {
+            out.push((path.to_string(), s.clone()));
+        }
+        _ => {}
+    }
+}
+
+fn is_uuid(s: &str) -> bool {
+    s.len() == 36 && uuid::Uuid::try_parse(s).is_ok()
 }
 
 /// Field descriptors with their current values, for the form template.

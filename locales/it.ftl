@@ -2823,6 +2823,7 @@ history-created = ha creato
 history-deleted = ha eliminato
 history-attached = ha allegato un file
 admin-raw-json-unparsed = Il JSON grezzo non si è potuto leggere ({ $error }). Non è stato salvato nulla.
+admin-raw-json-dangling = Il JSON grezzo fa puntare { $field } a { $target }, che non è in questo archivio. Sceglilo con un campo qui sopra o correggi l’identificativo. Non è stato salvato nulla.
 conflict-someone = Qualcuno
 conflict-unrecorded-time = (ora non registrata)
 dedup-merged-persons = { $n ->

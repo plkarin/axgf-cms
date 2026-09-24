@@ -2995,6 +2995,7 @@ history-created = создал(а)
 history-deleted = удалил(а)
 history-attached = приложил(а) файл
 admin-raw-json-unparsed = Исходный JSON не удалось прочитать ({ $error }). Ничего не сохранено.
+admin-raw-json-dangling = В исходном JSON поле { $field } указывает на { $target }, которого нет в этом архиве. Выберите его в поле выше или исправьте идентификатор. Ничего не сохранено.
 conflict-someone = Кто-то
 conflict-unrecorded-time = незаписанное время
 dedup-merged-persons = { $n ->

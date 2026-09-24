@@ -2627,6 +2627,7 @@ history-created = が作成
 history-deleted = が削除
 history-attached = がファイルを添付
 admin-raw-json-unparsed = 生の JSON を読み取れませんでした（{ $error }）。何も保存されていません。
+admin-raw-json-dangling = 生の JSON の { $field } が { $target } を指していますが、このアーカイブにはありません。上の欄で選ぶか、ID を訂正してください。何も保存されていません。
 conflict-someone = 誰か
 conflict-unrecorded-time = 記録のない時刻
 dedup-merged-persons = { $n } 人を統合

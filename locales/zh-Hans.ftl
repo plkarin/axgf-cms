@@ -2627,6 +2627,7 @@ history-created = 创建了此记录
 history-deleted = 删除了此记录
 history-attached = 附加了一个文件
 admin-raw-json-unparsed = 无法读取原始 JSON（{ $error }）。未保存任何内容。
+admin-raw-json-dangling = 原始 JSON 中的 { $field } 指向 { $target }，但本档案中没有它。请在上方的字段中选择，或更正该 ID。未保存任何内容。
 conflict-someone = 有人
 conflict-unrecorded-time = 未记录的时间
 dedup-merged-persons = 合并了 { $n } 个人物

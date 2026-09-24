@@ -2862,6 +2862,7 @@ history-created = created
 history-deleted = deleted
 history-attached = attached a file
 admin-raw-json-unparsed = The raw JSON did not parse ({ $error }). Nothing was saved.
+admin-raw-json-dangling = The raw JSON points { $field } at { $target }, which is not in this archive. Pick it with a field above, or correct the id. Nothing was saved.
 conflict-someone = Someone
 conflict-unrecorded-time = a time nobody recorded
 dedup-merged-persons = { $n ->

@@ -575,11 +575,11 @@ fn entity_history(
         .map(|e| {
             json!({
                 "at": e.at,
-                "who": e.who,
+                "who": crate::journal::who_in(&e.who, lang),
                 "action": e.action,
                 "version_num": e.version_num,
                 "summary": e.summary_in(lang),
-                "changes": crate::sensitive::changes_for_reader(&e.changes, readable),
+                "changes": crate::diff::for_reader(&e.changes, readable, "person", lang),
             })
         })
         .collect()

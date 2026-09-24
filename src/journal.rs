@@ -96,6 +96,19 @@ impl Entry {
     }
 }
 
+/// The editor's name as a reader of `lang` should see it.
+///
+/// The emergency token is journalled as `emergency-token` so that the file
+/// stays greppable and never mistakes it for an account. A history page is
+/// not a file, though, and that identifier reached a Chinese page as English.
+pub fn who_in(who: &str, lang: &str) -> String {
+    if who == "emergency-token" {
+        crate::i18n::translate(lang, "login-emergency-label", None)
+    } else {
+        who.to_string()
+    }
+}
+
 /// The append-only journal file.
 pub struct Journal {
     path: PathBuf,

@@ -11,7 +11,7 @@
 <section class="rec-section">
 <div class="cta-row">
   {% for k in kinds %}
-    <a class="btn {% if k == kind %}primary{% endif %}" href="/admin/{{ k }}">{{ k }}</a>
+    <a class="btn {% if k == kind %}primary{% endif %}" href="/admin/{{ k }}">{{ t("kind-" ~ k) }}</a>
   {% endfor %}
 </div>
 

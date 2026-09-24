@@ -322,6 +322,44 @@ pub fn label(kind: &str, path: &str, lang: &str) -> String {
     t("diff-section-other")
 }
 
+/// The history table's rows for a reader: values withheld where the reader's
+/// scopes stop, and every enumerated value named as its form names it.
+///
+/// `year`, `F` or `ended_by_death` in a *what changed* table are the file's
+/// codes, not words; the `<select>` that set them showed the reader a label,
+/// and the record of the change shows the same one.
+pub fn for_reader(
+    changes: &[Change],
+    readable: crate::sensitive::Scopes,
+    kind: &str,
+    lang: &str,
+) -> Vec<Value> {
+    let select = |path: &str| {
+        crate::admin::kind_from_str(kind).and_then(|k| {
+            crate::admin::fields_for(k)
+                .iter()
+                .find(|f| f.path == path && f.kind == crate::admin::FieldKind::Select)
+        })
+    };
+    let mut rows = crate::sensitive::changes_for_reader(changes, readable);
+    for (row, c) in rows.iter_mut().zip(changes) {
+        if let Some(f) = select(&c.path) {
+            for side in ["from", "to"] {
+                if let Some(v) = row.get(side).and_then(Value::as_str).map(str::to_string) {
+                    // A value outside the vocabulary — imported data can hold
+                    // anything — stays as it was recorded, not as a message id.
+                    let key = f.option_key(&v);
+                    let label = crate::i18n::translate(lang, &key, None);
+                    if label != key {
+                        row[side] = Value::String(label);
+                    }
+                }
+            }
+        }
+    }
+    rows
+}
+
 /// Sections no generic field or profile group names, most specific first.
 ///
 /// `tests/i18n.rs` holds every key here to every catalogue, so a section added

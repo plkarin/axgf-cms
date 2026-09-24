@@ -412,7 +412,7 @@ pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Respo
                 .into_iter()
                 .map(|e| json!({
                     "at": e.at,
-                    "who": e.who,
+                    "who": crate::journal::who_in(&e.who, chrome.lang),
                     "action": e.action,
                     "kind": e.kind,
                     "entity_id": e.entity_id,
@@ -633,11 +633,11 @@ fn history_json(
         .map(|e| {
             json!({
                 "at": e.at,
-                "who": e.who,
+                "who": crate::journal::who_in(&e.who, lang),
                 "action": e.action,
                 "version_num": e.version_num,
                 "summary": e.summary_in(lang),
-                "changes": crate::sensitive::changes_for_reader(&e.changes, readable),
+                "changes": crate::diff::for_reader(&e.changes, readable, kind, lang),
             })
         })
         .collect()

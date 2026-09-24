@@ -268,13 +268,13 @@ async fn every_successful_edit_lands_in_the_journal_and_the_history() {
         "the record shows its own history: {page}"
     );
     assert!(
-        page.contains("changed notes"),
+        page.contains("changed Notes"),
         "and names the field that changed: {page}"
     );
 
     let dash = body_string(get_admin(&app, "/admin").await).await;
     assert!(
-        dash.contains("changed notes"),
+        dash.contains("changed Notes"),
         "the dashboard surfaces recent edits: {dash}"
     );
 }
@@ -372,7 +372,7 @@ async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
         "History sits last among the tabs: {nav}"
     );
     assert!(
-        !record.contains("changed notes"),
+        !record.contains("changed Notes"),
         "and it is no longer under Notes at the foot of the record tab"
     );
 
@@ -380,7 +380,7 @@ async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
     let signed_in =
         body_string(get_admin(&app, &format!("/person/{ALICE}?tab=history")).await).await;
     assert!(
-        signed_in.contains("History") && signed_in.contains("changed notes"),
+        signed_in.contains("History") && signed_in.contains("changed Notes"),
         "a signed-in reader sees who changed what: {signed_in}"
     );
 
@@ -397,7 +397,7 @@ async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
     ] {
         let page = body_string(get(&app, &uri).await).await;
         assert!(
-            !page.contains("changed notes"),
+            !page.contains("changed Notes"),
             "a signed-out reader is not shown the editors' names or their edits ({uri})"
         );
         assert!(

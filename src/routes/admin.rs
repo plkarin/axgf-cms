@@ -803,7 +803,7 @@ pub async fn update(
                     ("version", (version_num as i64).into()),
                     (
                         "summary",
-                        crate::diff::saved_in(&changes, chrome.lang).into(),
+                        crate::diff::saved_in(&changes, crate::state::kind_name(k), chrome.lang).into(),
                     ),
                 ],
             ),
@@ -1853,7 +1853,7 @@ pub(super) fn save_entity(
                     ("version", (version_num as i64).into()),
                     (
                         "summary",
-                        crate::diff::saved_in(&changes, chrome.lang).into(),
+                        crate::diff::saved_in(&changes, kind_name, chrome.lang).into(),
                     ),
                 ],
             ),
@@ -2855,7 +2855,7 @@ pub async fn place_update(
                     ("version", (version_num as i64).into()),
                     (
                         "summary",
-                        crate::diff::saved_in(&changes, chrome.lang).into(),
+                        crate::diff::saved_in(&changes, "place", chrome.lang).into(),
                     ),
                 ],
             ),

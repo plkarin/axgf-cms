@@ -91,7 +91,7 @@ impl Entry {
             "create" => crate::i18n::translate(lang, "history-created", None),
             "delete" => crate::i18n::translate(lang, "history-deleted", None),
             "upload" => crate::i18n::translate(lang, "history-attached", None),
-            _ => crate::diff::summarise_in(&self.changes, lang),
+            _ => crate::diff::summarise_in(&self.changes, &self.kind, lang),
         }
     }
 }
@@ -307,7 +307,12 @@ fn read_segment(path: &Path, out: &mut Vec<Entry>, skipped: &mut usize) {
             continue;
         }
         match serde_json::from_str::<Entry>(&line) {
-            Ok(e) => out.push(e),
+            Ok(mut e) => {
+                // Read as the current diff would have written it; see
+                // `diff::expand_legacy` for what can and cannot be recovered.
+                e.changes = crate::diff::expand_legacy(e.changes);
+                out.push(e)
+            }
             Err(_) => *skipped += 1,
         }
     }
@@ -351,7 +356,11 @@ pub fn rewind(
             // A gap. Anything reconstructed past it would be a guess.
             return None;
         }
-        for c in &e.changes {
+        // Highest path first. Undoing an append of two list entries removes
+        // `names.1` and then `names.0`; the other way round, removing index 0
+        // shifted the second entry down and the removal of index 1 found
+        // nothing there, leaving it in a version that never had it.
+        for c in e.changes.iter().rev() {
             let _ = set_path(&mut doc, &c.path, c.from.as_deref());
         }
         expected = v - 1;
@@ -386,6 +395,16 @@ fn set_path(doc: &mut Value, path: &str, value: Option<&str>) -> Option<()> {
                 }
                 cur.as_object_mut()?.entry(*seg).or_insert(Value::Null)
             }
+        };
+    }
+    // The last parent needs the same treatment the loop gives the others.
+    // Without it, putting back `death.confidence` on a person whose `death`
+    // was removed found `null` where the object should be and wrote nothing —
+    // which is every rewind of a block that was removed whole.
+    if value.is_some() && cur.is_null() {
+        *cur = match last.parse::<usize>() {
+            Ok(_) => Value::Array(Vec::new()),
+            Err(_) => Value::Object(serde_json::Map::new()),
         };
     }
     match (last.parse::<usize>(), value) {
@@ -500,8 +519,8 @@ mod tests {
             entity_id: id,
             label: Some("Laura Karin".into()),
             version_num: Some(2),
-            before: Some(&json!({"note": "old"})),
-            after: Some(&json!({"note": "new"})),
+            before: Some(&json!({"notes": "old"})),
+            after: Some(&json!({"notes": "new"})),
         })
     }
 
@@ -538,10 +557,10 @@ mod tests {
         assert_eq!(e.entity_id, "p1");
         assert_eq!(e.version_num, Some(2));
         assert_eq!(e.changes.len(), 1);
-        assert_eq!(e.changes[0].path, "note");
+        assert_eq!(e.changes[0].path, "notes");
         assert_eq!(e.changes[0].from.as_deref(), Some("old"));
         assert_eq!(e.changes[0].to.as_deref(), Some("new"));
-        assert_eq!(e.summary(), "changed note");
+        assert_eq!(e.summary(), "changed Notes");
         assert!(!e.at.is_empty());
     }
 
@@ -741,5 +760,62 @@ mod tests {
             .summary(),
             "deleted"
         );
+    }
+
+    #[test]
+    fn rewinding_a_profile_group_added_whole_gives_back_the_person_without_it() {
+        let before = json!({"id": "p", "identity": {"name": {"display": "Laura"}}});
+        let mut after = before.clone();
+        after["morphology"] = json!({"height": [{"value": 193}], "weight": [{"value": 105}]});
+        let e = Entry {
+            version_num: Some(2),
+            ..entry_for(Record {
+                who: "anna",
+                action: "update",
+                kind: "person",
+                entity_id: "p",
+                label: None,
+                version_num: Some(2),
+                before: Some(&before),
+                after: Some(&after),
+            })
+        };
+        let back = rewind(&after, &[e], 1, 2).expect("complete history");
+        assert!(
+            crate::diff::diff(&back, &before).is_empty(),
+            "the rewound person differs: {:?}",
+            crate::diff::diff(&back, &before)
+        );
+    }
+
+    #[test]
+    fn rewinding_an_append_of_two_list_entries_removes_both() {
+        // Undone lowest index first, the second removal found nothing.
+        let before = json!({"names": ["one"]});
+        let after = json!({"names": ["one", "two", "three"]});
+        let e = entry_for(Record {
+            who: "anna",
+            action: "update",
+            kind: "place",
+            entity_id: "x",
+            label: None,
+            version_num: Some(2),
+            before: Some(&before),
+            after: Some(&after),
+        });
+        let back = rewind(&after, &[e], 1, 2).expect("complete history");
+        assert_eq!(back, before);
+    }
+
+    #[test]
+    fn rewinding_a_legacy_block_removal_puts_back_an_object_not_a_string() {
+        // Written by an older version: a block removed whole, as JSON text.
+        let line = r#"{"at":"2026-09-01T00:00:00Z","who":"anna","action":"update","kind":"person","entity_id":"p","version_num":2,"changes":[{"path":"death","from":"{\"confidence\":0.5}","to":null}]}"#;
+        let (_dir, path) = scratch("legacy-rewind");
+        std::fs::write(&path, format!("{line}\n")).unwrap();
+        let entries = Journal::new(path).for_entity("person", "p");
+        let current = json!({"id": "p"});
+        let back = rewind(&current, &entries, 1, 2).expect("complete history");
+        assert_eq!(back["death"], json!({"confidence": 0.5}));
     }
 }

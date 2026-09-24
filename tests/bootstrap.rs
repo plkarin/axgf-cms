@@ -630,6 +630,7 @@ fn run_against_mirror(prefix: &Path, mirror: &Path, api: &Path, extra: &[&str]) 
         .env("AXGF_CMS_API_BASE", format!("file://{}", api.display()))
         // Explicitly empty: this is the branch under test.
         .env("AXGF_CMS_LOCAL_BINARY", "")
+        .env("TMPDIR", script_tmp(prefix))
         .output()
         .expect("run bootstrap.sh");
     Outcome {
@@ -686,6 +687,7 @@ fn dry_run_download(prefix: &Path, extra: &[&str]) -> String {
         .env("AXGF_CMS_PREFIX", prefix)
         .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
         .env("AXGF_CMS_LOCAL_BINARY", "")
+        .env("TMPDIR", script_tmp(prefix))
         .output()
         .expect("run bootstrap.sh");
     assert!(
@@ -981,4 +983,65 @@ fn uninstall_removes_the_service_and_the_binary_and_nothing_else() {
         out.contains("This script will not do that for you"),
         "it offers the commands to delete the data and refuses to run them: {out}"
     );
+}
+
+/// Where the script's `mktemp` lands during a test: inside the test's own
+/// scratch directory, so the guard removes whatever the script left, and so a
+/// test can look at what it left.
+fn script_tmp(prefix: &Path) -> PathBuf {
+    let d = prefix.join("script-tmp");
+    std::fs::create_dir_all(&d).expect("mkdir script tmp");
+    d
+}
+
+fn leftovers(prefix: &Path) -> Vec<String> {
+    std::fs::read_dir(script_tmp(prefix))
+        .map(|r| {
+            r.flatten()
+                .map(|e| e.file_name().to_string_lossy().into_owned())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// The script removes its temporary directories however it exits.
+///
+/// They were removed on the success path only. A full test run left eighteen
+/// in /tmp; on an operator's machine a failed download or checksum left one
+/// each time, and `--from-source` left a clone and a release build.
+#[test]
+fn bootstrap_leaves_no_temporary_directory_however_it_exits() {
+    // Installed from a release.
+    let ok = common::scratch("boot-tmp-ok");
+    let mirror = stage_release(&ok, "v0.1.0-rc1");
+    let api = stage_api(&ok, r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#);
+    let r = run_against_mirror(&ok, &mirror, &api, &["--version", "v0.1.0-rc1"]);
+    assert!(r.ok, "the install itself should succeed:\n{}", r.out);
+    assert_eq!(leftovers(&ok), Vec::<String>::new(), "after a successful install");
+
+    // Refused on a checksum mismatch — `die`, mid-download.
+    let bad = common::scratch("boot-tmp-bad");
+    let mirror = stage_release(&bad, "v0.1.0-rc1");
+    let api = stage_api(&bad, r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#);
+    let asset = mirror
+        .join("releases/download/v0.1.0-rc1")
+        .join(format!("axgf-cms-v0.1.0-rc1-{}.tar.gz", target_triple()));
+    std::fs::write(&asset, b"not the bytes that were signed for").expect("corrupt asset");
+    let r = run_against_mirror(&bad, &mirror, &api, &["--version", "v0.1.0-rc1"]);
+    assert!(!r.ok, "a corrupt asset must be refused");
+    assert_eq!(leftovers(&bad), Vec::<String>::new(), "after a checksum refusal");
+
+    // Nothing to download at all.
+    let none = common::scratch("boot-tmp-none");
+    let mirror = none.join("mirror");
+    std::fs::create_dir_all(&mirror).expect("mkdir mirror");
+    let api = stage_api(&none, "[]");
+    let r = run_against_mirror(&none, &mirror, &api, &[]);
+    assert!(!r.ok);
+    assert_eq!(leftovers(&none), Vec::<String>::new(), "after a failed download");
+
+    // A dry run, which never downloads and used to leave an empty one.
+    let dry = common::scratch("boot-tmp-dry");
+    dry_run_download(&dry, &[]);
+    assert_eq!(leftovers(&dry), Vec::<String>::new(), "after a dry run");
 }

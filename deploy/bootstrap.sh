@@ -85,6 +85,23 @@ step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 die()  { printf '\n\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
+# Every temporary directory this script makes, removed however it exits.
+#
+# Each one used to be removed on the success path only, so a failed download,
+# a checksum mismatch or a dry run left it in /tmp — and `--from-source` left a
+# whole git clone and release build there on every run, on the machine the
+# family's data lives on. `die` exits through this trap like everything else.
+# Register a directory in the calling shell, not inside `$(...)`: a command
+# substitution is a subshell, and an append there never reaches this list.
+TMPDIRS=()
+cleanup_tmpdirs() {
+  local d
+  for d in ${TMPDIRS[@]+"${TMPDIRS[@]}"}; do
+    rm -rf -- "$d"
+  done
+}
+trap cleanup_tmpdirs EXIT
+
 # Options that take a value must be given one. Without this, a trailing
 # `--version` set the tag to the empty string and then ran off the end of the
 # argument list, which under `set -e` ends the script with no message at all.
@@ -262,7 +279,7 @@ if [ -n "$LOCAL_BINARY" ]; then
 elif [ "$FROM_SOURCE" = "1" ]; then
   command -v cargo >/dev/null 2>&1 || die "--from-source needs cargo on PATH"
   say "building from source (this takes a few minutes)"
-  SRC="$(mktemp -d)"
+  SRC="$(mktemp -d)"; TMPDIRS+=("$SRC")
   run git clone --depth 1 "https://github.com/${REPO}.git" "$SRC/src"
   run env -C "$SRC/src" cargo build --release --locked
   run install -m 0755 "$SRC/src/target/release/${BIN_NAME}" "$INSTALL_PATH"
@@ -278,7 +295,7 @@ else
     URL="${RELEASE_BASE}/releases/latest/download/${ASSET}"
   fi
   say "downloading $URL"
-  TMP="$(mktemp -d)"
+  TMP="$(mktemp -d)"; TMPDIRS+=("$TMP")
   if [ "$DRY_RUN" = "0" ]; then
     curl -fsSL "$URL" -o "$TMP/pkg.tar.gz" || explain_download_failure
     # Verify the checksum when the release publishes one.
@@ -291,7 +308,6 @@ else
     fi
     tar -xzf "$TMP/pkg.tar.gz" -C "$TMP"
     install -m 0755 "$(find "$TMP" -type f -name "$BIN_NAME" | head -1)" "$INSTALL_PATH"
-    rm -rf "$TMP"
   else
     printf '  [dry-run] download, verify sha256, install to %s\n' "$INSTALL_PATH"
   fi

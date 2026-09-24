@@ -68,13 +68,30 @@ fn send(message: &str) -> io::Result<()> {
     // NUL on the wire. systemd uses a filesystem path for system services and
     // an abstract name for some user ones; both have to work.
     if let Some(name) = path.strip_prefix('@') {
-        use std::os::linux::net::SocketAddrExt as _;
-        let addr = std::os::unix::net::SocketAddr::from_abstract_name(name.as_bytes())?;
-        sock.send_to_addr(message.as_bytes(), &addr)?;
+        send_abstract(&sock, name, message)?;
     } else {
         sock.send_to(message.as_bytes(), &path)?;
     }
     Ok(())
+}
+
+/// Abstract socket names are a Linux feature, and so is systemd.
+#[cfg(target_os = "linux")]
+fn send_abstract(sock: &UnixDatagram, name: &str, message: &str) -> io::Result<()> {
+    use std::os::linux::net::SocketAddrExt as _;
+    let addr = std::os::unix::net::SocketAddr::from_abstract_name(name.as_bytes())?;
+    sock.send_to_addr(message.as_bytes(), &addr)?;
+    Ok(())
+}
+
+/// Elsewhere — macOS — nothing sets `NOTIFY_SOCKET` to an abstract name, and
+/// the binary has to build there all the same.
+#[cfg(not(target_os = "linux"))]
+fn send_abstract(_sock: &UnixDatagram, _name: &str, _message: &str) -> io::Result<()> {
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "abstract notify sockets exist only on Linux",
+    ))
 }
 
 #[cfg(test)]

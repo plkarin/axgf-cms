@@ -10,6 +10,8 @@
 //!
 //! Where nginx is installed, `nginx -t` runs over the real file.
 
+mod common;
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -106,7 +108,9 @@ fn nginx_accepts_the_file_where_nginx_is_installed() {
     };
     // The real file, with only what a test cannot supply changed: the name,
     // the certificate, and privileged ports.
-    let dir = tempdir();
+    // A guard, not a bare path: the early returns below and a failing
+    // `assert!` both leave before any cleanup at the bottom would run.
+    let dir = common::scratch("proxy");
     let certs = dir.join("certs");
     std::fs::create_dir_all(&certs).expect("mkdir");
     if !make_self_signed(&certs) {
@@ -148,7 +152,6 @@ fn nginx_accepts_the_file_where_nginx_is_installed() {
         .expect("run nginx -t");
     let text = String::from_utf8_lossy(&out.stderr).into_owned();
     assert!(out.status.success(), "nginx rejected the config:\n{text}");
-    let _ = std::fs::remove_dir_all(&dir);
 }
 
 fn which(bin: &str) -> Option<PathBuf> {
@@ -157,16 +160,6 @@ fn which(bin: &str) -> Option<PathBuf> {
             .map(|d| d.join(bin))
             .find(|p| p.is_file())
     })
-}
-
-fn tempdir() -> PathBuf {
-    let base = std::env::var_os("CARGO_TARGET_TMPDIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(std::env::temp_dir);
-    let dir = base.join(format!("axgf-proxy-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).expect("create scratch");
-    dir
 }
 
 fn make_self_signed(dir: &Path) -> bool {

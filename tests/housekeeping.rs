@@ -159,3 +159,60 @@ fn dir_bytes(dir: &Path) -> u64 {
         })
         .sum()
 }
+
+#[test]
+fn nothing_makes_a_scratch_directory_except_the_guards() {
+    // `no_earlier_run_left_anything_behind` only recognises the prefixes it
+    // was told about, and that is exactly how the proxy test's own
+    // `axgf-proxy-<pid>` directory went unnoticed: it returned a bare path, an
+    // early `return` skipped the `remove_dir_all` at the bottom, and the leak
+    // check did not know the name. So the rule is enforced where it is
+    // broken — in the source. Only the two guard modules may ask for a
+    // temporary directory; everything else goes through them.
+    const ALLOWED: [&str; 2] = ["tests/common/mod.rs", "src/lib.rs"];
+    const NEEDLES: [&str; 3] = ["CARGO_TARGET_TMPDIR", "temp_dir()", "tempfile::"];
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut offenders = Vec::new();
+    for dir in ["src", "tests"] {
+        for file in rust_files(&root.join(dir)) {
+            let rel = file
+                .strip_prefix(root)
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/");
+            if ALLOWED.contains(&rel.as_str()) || rel == "tests/housekeeping.rs" {
+                continue;
+            }
+            let text = std::fs::read_to_string(&file).unwrap_or_default();
+            for (n, line) in text.lines().enumerate() {
+                let code = line.split("//").next().unwrap_or("");
+                if NEEDLES.iter().any(|needle| code.contains(needle)) {
+                    offenders.push(format!("  {rel}:{}: {}", n + 1, line.trim()));
+                }
+            }
+        }
+    }
+    assert!(
+        offenders.is_empty(),
+        "these make a temporary directory without a guard that removes it; \
+         use `common::scratch` (integration tests) or `crate::scratch::Dir` \
+         (unit tests):\n{}",
+        offenders.join("\n")
+    );
+}
+
+fn rust_files(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return out;
+    };
+    for entry in entries.flatten() {
+        let p = entry.path();
+        if p.is_dir() {
+            out.extend(rust_files(&p));
+        } else if p.extension().is_some_and(|e| e == "rs") {
+            out.push(p);
+        }
+    }
+    out
+}

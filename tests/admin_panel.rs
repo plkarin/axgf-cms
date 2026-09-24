@@ -1205,11 +1205,25 @@ async fn a_uuid_typed_into_the_raw_json_that_names_nothing_is_refused() {
         true,
     )
     .await;
-    assert_eq!(resp.status(), StatusCode::BAD_REQUEST, "it must not be saved");
+    assert_eq!(
+        resp.status(),
+        StatusCode::BAD_REQUEST,
+        "it must not be saved"
+    );
     let page = body_string(resp).await;
-    assert!(page.contains(NOWHERE), "the refusal names the id it could not find");
-    assert!(page.contains("union.persons.0.person_id"), "and where it was");
-    assert_eq!(count(&dir, "families"), before, "and nothing reached the bundle");
+    assert!(
+        page.contains(NOWHERE),
+        "the refusal names the id it could not find"
+    );
+    assert!(
+        page.contains("union.persons.0.person_id"),
+        "and where it was"
+    );
+    assert_eq!(
+        count(&dir, "families"),
+        before,
+        "and nothing reached the bundle"
+    );
 }
 
 #[tokio::test]
@@ -1275,7 +1289,10 @@ async fn a_reference_that_was_already_dangling_does_not_block_other_edits() {
         !page.contains(GONE),
         "the stale reference was not this edit's doing, so it must not refuse it"
     );
-    assert!(status.is_success() || status.is_redirection(), "saved: {status}");
+    assert!(
+        status.is_success() || status.is_redirection(),
+        "saved: {status}"
+    );
     let env = axgf_rs::import_bundle(&std::fs::read(&*dir).expect("read"));
     assert_eq!(env.data["families"][FAM]["name"], "The Nowaks");
 }

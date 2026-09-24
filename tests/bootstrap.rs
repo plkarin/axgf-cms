@@ -1017,7 +1017,11 @@ fn bootstrap_leaves_no_temporary_directory_however_it_exits() {
     let api = stage_api(&ok, r#"[{"tag_name": "v0.1.0-rc1", "prerelease": true}]"#);
     let r = run_against_mirror(&ok, &mirror, &api, &["--version", "v0.1.0-rc1"]);
     assert!(r.ok, "the install itself should succeed:\n{}", r.out);
-    assert_eq!(leftovers(&ok), Vec::<String>::new(), "after a successful install");
+    assert_eq!(
+        leftovers(&ok),
+        Vec::<String>::new(),
+        "after a successful install"
+    );
 
     // Refused on a checksum mismatch — `die`, mid-download.
     let bad = common::scratch("boot-tmp-bad");
@@ -1029,7 +1033,11 @@ fn bootstrap_leaves_no_temporary_directory_however_it_exits() {
     std::fs::write(&asset, b"not the bytes that were signed for").expect("corrupt asset");
     let r = run_against_mirror(&bad, &mirror, &api, &["--version", "v0.1.0-rc1"]);
     assert!(!r.ok, "a corrupt asset must be refused");
-    assert_eq!(leftovers(&bad), Vec::<String>::new(), "after a checksum refusal");
+    assert_eq!(
+        leftovers(&bad),
+        Vec::<String>::new(),
+        "after a checksum refusal"
+    );
 
     // Nothing to download at all.
     let none = common::scratch("boot-tmp-none");
@@ -1038,7 +1046,11 @@ fn bootstrap_leaves_no_temporary_directory_however_it_exits() {
     let api = stage_api(&none, "[]");
     let r = run_against_mirror(&none, &mirror, &api, &[]);
     assert!(!r.ok);
-    assert_eq!(leftovers(&none), Vec::<String>::new(), "after a failed download");
+    assert_eq!(
+        leftovers(&none),
+        Vec::<String>::new(),
+        "after a failed download"
+    );
 
     // A dry run, which never downloads and used to leave an empty one.
     let dry = common::scratch("boot-tmp-dry");

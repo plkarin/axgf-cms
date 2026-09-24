@@ -40,13 +40,38 @@ const LINK: &str = "efefefef-9999-4999-8999-999999999999";
 /// Words that are the same in every language this application speaks, or
 /// that name a thing rather than describe it.
 const UNIVERSAL: &[&str] = &[
-    "AXGF", "JSON", "UUID", "GEDCOM", "DNA", "ISO", "ISCED", "OCR", "PNG", "JPEG", "ZIP",
-    "CSV", "URL", "HTTP", "HTTPS", "TLS", "API", "GPS", "BMI",
-    "SVG", "PDF",
+    "AXGF",
+    "JSON",
+    "UUID",
+    "GEDCOM",
+    "DNA",
+    "ISO",
+    "ISCED",
+    "OCR",
+    "PNG",
+    "JPEG",
+    "ZIP",
+    "CSV",
+    "URL",
+    "HTTP",
+    "HTTPS",
+    "TLS",
+    "API",
+    "GPS",
+    "BMI",
+    "SVG",
+    "PDF",
     // The product's one name in every language (`app-name`), and services
     // and registries named as themselves.
-    "genealogy", "Leaflet", "OpenStreetMap", "contributors", "Google", "Wikidata",
-    "GeoNames", "URI", "alpha",
+    "genealogy",
+    "Leaflet",
+    "OpenStreetMap",
+    "contributors",
+    "Google",
+    "Wikidata",
+    "GeoNames",
+    "URI",
+    "alpha",
 ];
 
 fn fixture() -> (axum::Router, Scratch) {
@@ -236,9 +261,16 @@ fn english_in(html: &str) -> Vec<String> {
             if UNIVERSAL.contains(&w.as_str()) || is_identifier(&chunk, i, w.len()) {
                 continue;
             }
-            let from = chunk[..i].char_indices().rev().nth(30).map_or(0, |(j, _)| j);
+            let from = chunk[..i]
+                .char_indices()
+                .rev()
+                .nth(30)
+                .map_or(0, |(j, _)| j);
             let ctx: String = chunk[from..].chars().take(70).collect();
-            let line = format!("  {w:<16} …{}…", ctx.split_whitespace().collect::<Vec<_>>().join(" "));
+            let line = format!(
+                "  {w:<16} …{}…",
+                ctx.split_whitespace().collect::<Vec<_>>().join(" ")
+            );
             if !out.contains(&line) {
                 out.push(line);
             }

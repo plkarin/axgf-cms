@@ -107,7 +107,14 @@ pub fn expand_legacy(changes: Vec<Change>) -> Vec<Change> {
 /// object or array that parses. A free-text field that happens to begin with a
 /// brace is never one — those are prose, whatever they look like.
 fn is_legacy_block(c: &Change) -> bool {
-    const PROSE: [&str; 6] = ["bio", "notes", "note", "description", "caption", "transcription"];
+    const PROSE: [&str; 6] = [
+        "bio",
+        "notes",
+        "note",
+        "description",
+        "caption",
+        "transcription",
+    ];
     if PROSE.contains(&c.path.rsplit('.').next().unwrap_or("")) {
         return false;
     }
@@ -497,7 +504,12 @@ mod tests {
         );
         assert_eq!(
             summarise(
-                &[c("notes"), c("bio"), c("birth.date.value"), c("death.cause")],
+                &[
+                    c("notes"),
+                    c("bio"),
+                    c("birth.date.value"),
+                    c("death.cause")
+                ],
                 "person"
             ),
             "changed Notes, Biography and 2 more"
@@ -535,7 +547,8 @@ mod tests {
             ["morphology.height.0.value", "morphology.weight.0.value"]
         );
         assert!(
-            d.iter().all(|c| !c.to.as_deref().unwrap_or("").starts_with('{')),
+            d.iter()
+                .all(|c| !c.to.as_deref().unwrap_or("").starts_with('{')),
             "no change carries a block as JSON: {d:?}"
         );
         // And removed whole, the same the other way round.
@@ -561,7 +574,10 @@ mod tests {
             from: None,
             to: Some("f7f4d05f-feee-49b2-b726-63e918b25e3f".into()),
         }];
-        assert_eq!(summarise_in(&avatar, "person", "en"), "changed Portrait photo");
+        assert_eq!(
+            summarise_in(&avatar, "person", "en"),
+            "changed Portrait photo"
+        );
         assert!(!summarise_in(&avatar, "person", "pl").contains("extensions"));
     }
 
@@ -614,7 +630,11 @@ mod tests {
     fn a_legacy_block_that_was_cut_off_is_left_as_it_was() {
         // Also verbatim in shape: 197 characters and an ellipsis. The rest was
         // never written down, so there is nothing to expand it into.
-        let cut = format!("{}…", &r#"{"height":[{"value":193}],"weight":[{"value":105}],"bmi":[{"value":22}],"build":[{"value":"#[..90]);
+        let cut = format!(
+            "{}…",
+            &r#"{"height":[{"value":193}],"weight":[{"value":105}],"bmi":[{"value":22}],"build":[{"value":"#
+                [..90]
+        );
         let legacy = vec![Change {
             path: "morphology".into(),
             from: None,

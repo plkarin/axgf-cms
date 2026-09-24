@@ -779,6 +779,11 @@ async fn without_a_contact_address_there_is_no_lookup_button() {
 /// bundle carries: one record with a type and a date, one with the `unknown`
 /// sentinel and nothing else, the same two spouses, the same child.
 fn duplicate_family_app(tag: &str) -> (axum::Router, common::Scratch) {
+    duplicate_family_app_typed(tag, "unknown")
+}
+
+/// The same pair, with `thin_type` as the thin record's `union.type`.
+fn duplicate_family_app_typed(tag: &str, thin_type: &str) -> (axum::Router, common::Scratch) {
     use serde_json::json;
     const A: &str = "aaaaaaaa-1111-4111-8111-111111111111";
     const B: &str = "bbbbbbbb-2222-4222-8222-222222222222";
@@ -799,7 +804,7 @@ fn duplicate_family_app(tag: &str) -> (axum::Router, common::Scratch) {
                     KID: person(KID, "Ewa Kowalska")},
         "families": {
             "fam-thin": {"id": "fam-thin", "type": "family", "axgf_version": "1.0",
-                "union": {"type": "unknown", "confidence": 0.8,
+                "union": {"type": thin_type, "confidence": 0.8,
                           "persons": [{"person_id": A, "role": "spouse"},
                                       {"person_id": B, "role": "spouse"}]},
                 "children": [{"person_id": KID, "confidence": 0.8}]},
@@ -884,14 +889,15 @@ async fn a_couple_entered_twice_is_grouped_named_and_actionable() {
 /// The merge action calls the library, and reports what the library did to
 /// *this* pair rather than a bundle-wide total.
 ///
-/// On this shape the library refuses: `is_ambiguous_family_group` treats the
-/// `unknown` sentinel in `union.type` as a union type that disagrees with
-/// `marriage`, so the pair is left for a person to review. The CMS reports
-/// that refusal rather than working around it — all genealogy logic lives in
-/// axgf-rs, and merging two families here would be genealogy.
+/// Up to axgf-rs 0.4.0 the library refused this shape: it counted the
+/// `unknown` sentinel in `union.type` as a type that disagreed with
+/// `marriage`. 0.5.0 treats it as the absence it is and merges `union` field by
+/// field (docs/DEDUP-UPSTREAM.md), so the pair is now one record — and that
+/// record still has the marriage's date. The CMS does no merging of its own:
+/// all genealogy logic lives in axgf-rs.
 #[tokio::test]
 async fn the_merge_action_reports_what_happened_to_the_pair_it_was_given() {
-    let (app, _p) = duplicate_family_app("dedup-pair-report");
+    let (app, p) = duplicate_family_app("dedup-pair-report");
 
     let body = body_string(
         post_form(
@@ -903,9 +909,44 @@ async fn the_merge_action_reports_what_happened_to_the_pair_it_was_given() {
         .await,
     )
     .await;
+    assert!(
+        body.contains("is now one record"),
+        "the merge is reported: {body}"
+    );
+    assert!(
+        !body.contains("was not merged"),
+        "and no refusal is claimed"
+    );
+    assert!(
+        body.contains(r#"href="&#x2f;tree""#),
+        "the way back: {body}"
+    );
 
-    // The library refuses this pair, so the page must say so rather than
-    // reporting "nothing to report" and leaving the reader to wonder.
+    // One family is left, and it kept what only one of the two knew.
+    let env = axgf_rs::import_bundle(&std::fs::read(&*p).expect("read"));
+    let fams = env.data["families"].as_object().expect("families");
+    assert_eq!(fams.len(), 1, "{fams:?}");
+    let kept = fams.values().next().unwrap();
+    assert_eq!(kept["union"]["type"], "marriage");
+    assert_eq!(kept["union"]["start"]["date"]["value"], "1991-08-24");
+}
+
+/// A pair whose recorded union types genuinely disagree is refused by the
+/// library, and the page says so rather than reporting nothing.
+#[tokio::test]
+async fn a_refused_merge_is_reported_as_refused() {
+    let (app, _p) = duplicate_family_app_typed("dedup-pair-refused", "cohabitation");
+
+    let body = body_string(
+        post_form(
+            &app,
+            "/admin/dedup",
+            "families=fam-thin,fam-full&back=%2Ftree",
+            true,
+        )
+        .await,
+    )
+    .await;
     assert!(
         body.contains("was not merged"),
         "the refusal is reported: {body}"
@@ -914,12 +955,6 @@ async fn the_merge_action_reports_what_happened_to_the_pair_it_was_given() {
         !body.contains("is now one record"),
         "and nothing claims a merge that did not happen"
     );
-    // And it returns the reader where they came from.
-    assert!(
-        body.contains(r#"href="&#x2f;tree""#),
-        "the way back: {body}"
-    );
-
     // Both families are still there, which is what "refused" means.
     let page = body_string(get_admin(&app, "/admin/family").await).await;
     assert!(page.contains("fam-thin") && page.contains("fam-full"));

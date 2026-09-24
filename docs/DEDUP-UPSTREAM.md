@@ -1,5 +1,12 @@
 # `deduplicate()` refuses a duplicate couple whose type is unrecorded
 
+> **Resolved in axgf-rs 0.5.0** (`axgf-lib@a5febd0`), which this application
+> now depends on. Both changes below shipped together. On a copy of the
+> operator's bundle, 0.4.0 merged neither remaining duplicate couple and
+> refused both; 0.5.0 merges both, and the survivor of the pair below keeps
+> `marriage`, 1991-08-24, its place and its event. The report is kept as the
+> record of why.
+
 A report for `axgf-rs`, written from `axgf-cms` against
 `axgf-lib@2815e299c0aaf7a38a0daeee98fb664cf42091de` (0.4.0) and the operator's
 866-person bundle. Nothing here is worked around in the CMS: all genealogy

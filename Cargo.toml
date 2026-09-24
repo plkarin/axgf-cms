@@ -14,11 +14,12 @@ categories = ["web-programming", "visualization"]
 [dependencies]
 # All genealogy logic lives here. This crate contains none of its own.
 #
-# 0.4.0 carries AXGF 1.1 — the person profile this application edits — and is
-# not on crates.io yet, so it is pinned to the exact commit it was released
-# from. `version` stays beside it so that the day the crate is published the
-# `git` and `rev` keys can simply be deleted.
-axgf-rs = { version = "0.4", git = "https://github.com/plkarin/axgf-lib", rev = "2815e299c0aaf7a38a0daeee98fb664cf42091de", default-features = false, features = ["gedcom"] }
+# 0.5.0 is the release that merges a duplicate couple whose union type is
+# `unknown` without losing the fuller record's marriage date
+# (docs/DEDUP-UPSTREAM.md). It is not on crates.io yet, so it is pinned to the
+# exact commit; `version` stays beside it so that the day it is published the
+# `git` and `rev` keys can simply be deleted. (0.4.0 is on crates.io.)
+axgf-rs = { version = "0.5", git = "https://github.com/plkarin/axgf-lib", rev = "a5febd06d5a930bba0fedd729db56ffca87bf776", default-features = false, features = ["gedcom"] }
 
 anyhow = "1"
 axum = { version = "0.7", features = ["multipart"] }
@@ -69,7 +70,7 @@ tracing-journald = "0.3"
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get
 # back, so they need the same decoder the application uses.
-axgf-rs = { version = "0.4", git = "https://github.com/plkarin/axgf-lib", rev = "2815e299c0aaf7a38a0daeee98fb664cf42091de", default-features = false }
+axgf-rs = { version = "0.5", git = "https://github.com/plkarin/axgf-lib", rev = "a5febd06d5a930bba0fedd729db56ffca87bf776", default-features = false }
 base64 = "0.21"
 http-body-util = "0.1"
 serde_json = "1"

@@ -172,8 +172,8 @@ dependencies = [
 
 [[package]]
 name = "axgf-rs"
-version = "0.4.0"
-source = "git+https://github.com/plkarin/axgf-lib?rev=2815e299c0aaf7a38a0daeee98fb664cf42091de#2815e299c0aaf7a38a0daeee98fb664cf42091de"
+version = "0.5.0"
+source = "git+https://github.com/plkarin/axgf-lib?rev=a5febd06d5a930bba0fedd729db56ffca87bf776#a5febd06d5a930bba0fedd729db56ffca87bf776"
 dependencies = [
  "base64 0.21.7",
  "jsonschema",

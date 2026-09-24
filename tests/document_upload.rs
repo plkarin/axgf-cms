@@ -424,7 +424,7 @@ async fn the_admin_dashboard_reports_the_bundle_size() {
 async fn an_svg_is_refused_at_the_door() {
     // The documented decision is refusal, not sanitisation and not
     // store-but-download: an SVG is a program a browser runs, and the rule an
-    // operator reads in the README has to be the rule the code follows.
+    // operator reads in docs/REFERENCE.md has to be the rule the code follows.
     let src = one_person_bundle("upload-svg-src");
     let (app, path) = app_with_bundle("upload-svg", &src);
     let svg = br#"<?xml version="1.0"?>

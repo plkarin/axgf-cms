@@ -1,386 +1,256 @@
-# ax-genealogy
+# axgf-cms
 
-One place for a family to keep its tree, its documents and its photographs —
-served by a single binary, with the whole archive in one file the family owns.
+A private website for your family tree, run on your own server. The whole
+family — people, relationships, scanned certificates and photographs — lives
+in one file you own, and relatives sign in to read it or to correct it, each
+with the powers you give them. Every change records who made it, how sure
+each fact is stays visible, and living relatives can be hidden from visitors
+while their great-grandparents are open to anyone.
 
-*(The repository, the crate, the binary, the systemd unit and the system user
-are all called `axgf-cms`. `ax-genealogy` is what the site calls itself.)*
+*(The site calls itself **ax-genealogy**; the repository, the binary, the
+service and its system user are all `axgf-cms`.)*
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --with-sample
-```
+**Who this is for.** Someone in the family who is comfortable running a Linux
+server — a VPS or a machine at home — and wants to host the tree for everybody
+else. That is who most of this page is for. **If you have been sent a `.axgf`
+file and just want to look at it, skip to
+[Opening a `.axgf` file on your own computer](#opening-a-axgf-file-on-your-own-computer).**
 
-That is the whole installation on a fresh Ubuntu LTS machine. It prints a URL,
-an administrator username and a password, once.
+| The tree around one person | One person's record |
+|---|---|
+| [![The tree view: four generations around Jules Meunier, each card with dates and a confidence dot, and his record open in a panel beside it](docs/screenshots/tree.png)](docs/screenshots/tree.png) | [![A person page: Jules Meunier, 1823–1901, with tabs for Record, Life, Profile, Media and Tree](docs/screenshots/person.png)](docs/screenshots/person.png) |
 
----
-
-## What it does
-
-**One archive, not a pile of files.** The tree, the scanned certificates and
-the photographs live together. A marriage certificate hangs off the marriage
-rather than sitting in somebody's inbox, and a photograph names the people in
-it.
-
-**Several relatives, different roles.** An aunt with thirty years of notes and
-a cousin who wants to fix one spelling do not need the same powers. Each
-relative is invited with their own role — reader, contributor, administrator —
-and every change records who made it and when. A contributor can be confined
-to one branch of the tree.
-
-**Privacy decided person by person.** A living relative can be visible to the
-family and invisible to visitors while their great-grandmother is open to
-anyone. The choice is per person, not one switch for the whole tree, and it is
-enforced on the server: a record you may not read is not sent to your browser
-at all.
-
-**How sure each fact is, recorded and shown.** A date read off a certificate
-and a date somebody guessed do not look alike anywhere on the site — not in a
-list, and not on the tree, where a faint connector means the record is not sure
-of that relationship. `circa 1500`, `before 1430` and `between 1920 and 1925`
-stay three different statements. Wording nobody could read as a date is kept
-word for word rather than dropped.
-
-**Relationships beyond blood and marriage.** Godparents, employers, witnesses,
-mentors and guardians are records in their own right, each with its own dates,
-source and certainty. Work is a span with a start and an end, drawn as a bar
-across the years.
-
-**Import from what you already have.** Point it at a GEDCOM export from almost
-any genealogy program and it comes across, with an import report saying what
-arrived and what could not be read. Export gives the whole archive back as one
-file, whenever you like.
-
-**Eleven languages.** Including Russian, the language the civil registers of
-half of Central and Eastern Europe were kept in. Names stay in their own script
-beside a transliteration.
-
-> **On the translations, plainly: two of the eleven languages have been read by
-> someone who speaks them.** English and French are reviewed. The other nine —
-> Polish, Russian, German, Italian, Spanish, Portuguese, Chinese, Japanese and
-> Arabic — are complete, meaning every message is translated, but nobody has
-> checked them. Genealogical vocabulary is where that matters: the words for a
-> union, a godparent or a primary source differ by national record-keeping
-> tradition, and a plausible wrong word is worse than an English one because
-> nobody notices it. The language menu says which is which, and
-> [CONTRIBUTING.md](CONTRIBUTING.md) says where to start if you can help.
-
----
-
-## Who can reach it
-
-**It binds to `127.0.0.1` by default, and you should leave it there.** Putting
-it on `0.0.0.0` without a reverse proxy sends the login form in clear text. To
-publish it: keep it on localhost, put nginx or Caddy in front terminating TLS
-(snippets in [docs/DEPLOY.md](docs/DEPLOY.md)), and make sure the proxy sets
-`X-Forwarded-Proto` — that is what makes the session cookie `Secure`.
-
-Two things decide who sees what. Each person's record carries a visibility —
-public, members, contributors, private — and each account carries a role whose
-ceiling it cannot read past. **A bundle converted from GEDCOM carries no
-visibility at all**, and the rule that fills the gap is that anyone recorded as
-living is treated as `members` and everyone else as public. Check that this is
-what you want before you publish a converted tree.
-
-Accounts live in a `.acl` file beside the archive and never inside it: an
-archive gets copied, mailed and published, and password hashes travelling
-inside it would make every copy of the family tree a copy of the sign-in
-details.
+*Both show the demonstration family that `--with-sample` installs.*
 
 ---
 
 ## Install
 
-On a fresh Ubuntu LTS machine:
+On a fresh Ubuntu LTS server, as a user who can `sudo`:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --with-sample
+  | sudo bash -s -- --version v0.1.0-rc1 --with-sample
 ```
 
-That installs the binary, creates an `axgf-cms` system user with no shell, sets
-up `/var/lib/axgf-cms`, generates an emergency token into `/etc/axgf-cms/env`
-(mode 0640, readable only by root and the service), creates the first
-administrator, installs and starts a systemd unit bound to `127.0.0.1:8080`,
-and prints the URL, the administrator's password and the token once at the
-end.
+> **Why `--version`, for now:** no stable release has been published yet —
+> only the release candidate `v0.1.0-rc1`, from 31 August 2026 — and without
+> `--version` the script asks for the latest *stable* release, finds none, and
+> stops with a message saying exactly that. `v0.1.0-rc1` predates the extended
+> person profile (the **Profile** tab), and **it cannot open a family file
+> that uses the profile**: it reads AXGF 1.0 only, and refuses a 1.1 file with
+> `unsupported AXGF spec version "1.1"`. That is fine for a new, empty site; to
+> serve an existing 1.1 file, or to have what is on `main`, use `--from-source`
+> instead, which needs `cargo` on root's `PATH`. Once a stable release exists,
+> the command above works without `--version`.
 
-`--with-sample` seeds a small demonstration family so a fresh install has
-something to look at. Drop it for an empty bundle.
+`--with-sample` seeds the small demonstration family in the screenshots, so a
+fresh install has something to look at. Leave it out to start with an empty
+tree. At the end the script prints the address, an administrator's username
+and password, and the emergency token — **once**. Keep them.
 
-The script is idempotent: running it again will not overwrite your bundle and
-will not regenerate your token. Add `--dry-run` to see exactly what it would
-do first, or `--from-source` to build with cargo instead of downloading a
-release.
+### What the installer does
 
-Manual installation, systemd reference, reverse-proxy configuration and backup
-advice are in [docs/DEPLOY.md](docs/DEPLOY.md).
+Read it first if you like: [`deploy/bootstrap.sh`](deploy/bootstrap.sh). Add
+`--dry-run` and it prints every step without changing anything. In order, it:
+
+1. Checks the machine's architecture (x86-64 or ARM64).
+2. Downloads the release binary and its `.sha256`, refuses to go on if the
+   checksum does not match, and installs it as `/usr/local/bin/axgf-cms`.
+   (`--from-source` clones this repository and builds it instead.)
+3. Creates a system user `axgf-cms` with no login shell.
+4. Creates `/var/lib/axgf-cms` for the data, owned by that user.
+5. Writes the settings, including a generated emergency token, to
+   `/etc/axgf-cms/env`, readable only by root and the service (`0640`).
+6. Creates the family file — empty, or the demonstration family.
+7. Creates the first administrator account and generates its password.
+8. Installs and starts three systemd units: the service itself (sandboxed,
+   bound to `127.0.0.1:8080`), a **daily backup** at 03:30, and a **weekly
+   check** that reads the data and the newest backup back in full.
+9. Waits until the service answers `/health` with the family's data readable,
+   then prints what you need to sign in.
+
+Run it again at any time: it will not overwrite your family file, your
+accounts or your token. `--uninstall` removes the service and the binary and
+**never** the data.
 
 ---
 
 ## Running it
 
-```
-axgf-cms --bundle /var/lib/axgf-cms/family.axgf \
-         --bind 127.0.0.1:8080 \
-         --admin-token <token>
-```
-
-| Flag | Default | Meaning |
-|---|---|---|
-| `--bundle <PATH>` | *required* | The `.axgf` file to serve. Created empty if absent. |
-| `--bind <ADDR>` | `127.0.0.1:8080` | Address to listen on. |
-| `--admin-token <TOKEN>` | `$AXGF_CMS_ADMIN_TOKEN` | Emergency recovery token, granting an administrator session. Not an account. If neither is set, a random one is generated and printed once to stderr. |
-| `--create-admin <USERNAME>` | — | Create an administrator, print a generated password once to stderr, and exit without serving. How an installation gets its first account. Refuses an existing username rather than resetting it, so it is safe to re-run. |
-| `--seed-sample` | off | When creating a *new* bundle, seed it with the built-in demonstration family. Ignored if the bundle already exists. |
-| `--size-warn-mb <MB>` | `200` | Bundle size past which the admin panel warns that the archive is getting heavy. Not a limit. |
-
-### Routes
-
-Public, read-only:
-
-| Route | What it shows |
-|---|---|
-| `GET /` | Why AXGF, what is in this bundle, entry points |
-| `GET /tree` | A focused subtree around one person, oldest generation at the bottom. `?root=<id>` centres it, `?depth=<n>` sets how many generations each way (default 3), `?all=1` draws the whole bundle |
-| `GET /person/:id` | The whole record for one person, in sections: identity and every recorded name, a chronological life timeline, family, non-family relationships, occupations, places, sources and documents, notes, and the entity's raw JSON. A section with no content is omitted |
-| `GET /convert` | GEDCOM → AXGF conversion |
-| `POST /convert/gedcom` | Convert an upload, report what it carried against what AXGF holds, and offer the result |
-| `GET /document/:id/raw` | The stored bytes of an attached file, with `X-Content-Type-Options: nosniff`. Raster images are served inline; everything else downloads |
-| `GET /document/:id/thumb` | A downscaled PNG of an image, `404` for anything else |
-| `GET /health` | `200` with entity counts. `persons` counts what *this* requester may read |
-
-Admin (requires a signed-in account; `Accounts` and the operations marked
-*admin* require the `admin` role, everything else `contributor`):
-
-| Route | What it does |
-|---|---|
-| `GET /admin` | Counts, bundle completeness, validation report, operations |
-| `GET/POST /admin/login`, `POST /admin/logout` | Session |
-| `GET /admin/:kind` | Paginated, filterable listing |
-| `GET /admin/:kind/new`, `POST /admin/:kind` | Create |
-| `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |
-| `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy — *admin* |
-| `POST /admin/person/:id/document` | Attach a file to a person — multipart upload, stored inside the bundle |
-| `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks — *admin* |
-| `GET /admin/export` | Download the live bundle — *admin* |
-| `GET /admin/users`, `POST /admin/users`, `POST /admin/users/:id` | Accounts: create, change a role, a branch, a status or a password — *admin* |
-
-`:kind` is one of `person`, `family`, `event`, `link`, `occupation`, `source`,
-`place`, `document`.
-
----
-
-## Attached documents and photographs
-
-An AXGF bundle carries its own binary attachments: files under
-`documents/files/**` inside the ZIP, with a Document entity describing each.
-Uploading a photograph through `/admin/person/:id/document` writes both in one
-atomic rewrite of the bundle, so the picture travels with the data — copy the
-`.axgf` to another machine and the album comes with it. Images appear as a
-gallery on the identity page, everything else as a list with a download link.
-
-**The file type is read from the file, never from its name.** A client controls
-both the filename and the `Content-Type` header, so neither is evidence. The
-leading bytes are matched against an allowlist — PNG, JPEG, GIF, WebP, BMP,
-TIFF, PDF, plain text, and common audio and video containers — and anything
-unrecognised is refused. An executable renamed to `portrait.jpg` does not get
-in, because nothing in the allowlist matches an ELF header.
-
-**SVG is refused.** Not sanitised, not stripped: refused. An SVG is a document
-that can carry `<script>`, and serving one from the same origin as the admin
-session would hand an uploader script execution against that session.
-Sanitising it properly means parsing XML and maintaining an element and
-attribute allowlist — a security surface with no business in a genealogy
-viewer. It is also plain XML with no magic number, so it cannot be identified
-by the rule every other upload follows. Bitmap formats cover what a family
-archive holds. A bundle authored elsewhere may still contain an SVG; it is
-served as a download, never rendered inline.
-
-Every stored file is served with `X-Content-Type-Options: nosniff`. Only the
-raster formats a browser draws as pixels are served inline; everything else
-gets `Content-Disposition: attachment`.
-
-**Textual data is memory-resident; binary payloads are never in memory at
-all.** The bundle is read with `axgf-rs`'s streaming boundary, which hands over
-one payload at a time as a live reader: each attachment goes from the archive
-straight into a disk cache through a fixed 64 KiB buffer, and the flat JSON
-that comes back carries document *metadata* and a per-file `external_payloads`
-entry rather than the bytes. Saving reverses it — the new archive is streamed
-into a temp file and each payload copied in from the cache — so neither
-direction ever holds a photograph, let alone all of them. What stays in RAM is
-the textual data: persons, families, document metadata, the manifest, bounded
-by the size of the tree rather than its media; on the operator's 420 MiB
-archive that is under a megabyte, and the peak while loading or saving is
-bounded by the copy buffer rather than by the largest file. Single uploads are
-still capped at 10 MB, and the admin panel warns once the *textual* bundle
-passes `--size-warn-mb` (default 200 MB).
-
-The cache lives at `<bundle_dir>/.axgf-cms-cache/<bundle-sha>/` by default, or
-wherever `--cache-dir` points; it is keyed by a hash of the bundle so a
-different bundle never reads another's payloads. A restart on an unchanged
-bundle recomputes each cached file's CRC-32 and compares it against the one the
-archive's central directory records — a direct proof that the cache still holds
-this bundle's bytes — and skips extraction where it matches, so nothing is
-decompressed at all. The sha256 the document metadata records is checked
-separately, and a disagreement between a file and its record is reported rather
-than served silently. The cache is **derived data** — the `.axgf` is the
-authoritative copy — so it does not need backing up, and can be deleted at any
-time; the next start rebuilds it, and a save that finds an entry missing
-rebuilds that entry rather than writing a bundle with the file absent. A
-document whose bytes live elsewhere is still recorded with
-`status: "referenced"`, which the identity page renders without offering a
-download.
-
----
-
-## Accounts, roles and visibility
-
-**Read this before exposing the site.**
-
-### Two files, and only one of them is shareable
-
-    family.axgf   the genealogy — copy it, mail it, publish it, archive it
-    family.acl    the accounts  — mode 600, shared with nobody
-
-Accounts are **not** inside the bundle. A `.axgf` is meant to travel; password
-hashes in it would make every copy of the family tree a copy of the credential
-store. Passwords are Argon2id at the OWASP 2024 parameters (m=19456, t=2, p=1),
-never a fast hash. The server refuses to start if the `.acl` is readable by
-anyone but its owner, and says which `chmod` fixes it. Encryption at rest is
-GPG's job and out of scope here.
-
-### The first account
-
-There is no web setup page, deliberately: the window between deploying and the
-first login is exactly when an installation is unprotected, and a setup page is
-a door standing open for the length of it. `deploy/bootstrap.sh` creates the
-first administrator and prints its generated password once. By hand:
-
-    axgf-cms --bundle family.axgf --create-admin yourname
-
-Everyone else is created from **Admin → Accounts**. There is no
-self-registration and no invitation flow. For a family archive an administrator
-who knows everyone is sufficient, and it removes an abuse surface — open
-registration, invitation tokens, email delivery, and the account-enumeration
-oracle each of those carries — rather than defending one.
-
-### Three roles
-
-They reuse the vocabulary the AXGF specification already defines for
-`visibility`, so the two systems share one language rather than two.
-
-| Role | Reads | Also may |
-|---|---|---|
-| `viewer` | `public`, `members` | — |
-| `contributor` | plus `contributors` | create, update, upload documents |
-| `admin` | plus `private` | manage accounts, delete, dedup, validate, export |
-
-**Visibility is enforced on the server, on every read path** — the tree, the
-panel fetch, the standalone record, the document bytes and the JSON endpoint.
-Nothing hidden is rendered and then styled away.
-
-A person you may not read is **redacted, not omitted**: their card keeps its
-place in the tree and they still count among a child's parents, carrying no
-name, no dates, no gender and no link. Omitting them would be a false statement
-about the genealogy, and would also make every converted bundle look as though
-the family died out two generations ago. The trade is deliberate: a signed-out
-visitor can learn that a hidden person exists and how they connect, and nothing
-else.
-
-**A converted GEDCOM carries no `visibility` at all.** Where a record states
-none, anyone marked `is_living` is treated as `members` and everyone else as
-`public`. Check that this is what you want before publishing a converted
-bundle.
-
-### Family scope
-
-A contributor can be restricted to a branch — a list of root person ids,
-covering those people, their descendants and their spouses. It limits what they
-may **change**, never what they may read; reading is governed by visibility
-alone, and the two are kept apart on purpose.
-
-### Sessions
-
-A signed, `HttpOnly`, `SameSite=Strict` cookie, `Secure` when the request
-arrived over TLS. Sessions are held in memory, so restarting signs everyone
-out. Failed logins are throttled per username and per client address.
-Disabling an account, lowering its role or changing its password closes its
-open sessions immediately.
-
-### The emergency token
-
-`--admin-token` still opens an administrator session, and that is now its only
-job: getting back in when the `.acl` has been lost or every administrator is
-locked out. It is not an account — it owns no preferences, and the edit journal
-records it as `emergency-token`. Its use is logged as a warning. Treat it like
-a root password.
-
-### Exposing it
-
-`--bind` defaults to `127.0.0.1`. Binding to `0.0.0.0` without a reverse proxy
-sends the login form in clear text. If you need it reachable:
-
-1. keep it bound to localhost;
-2. put nginx or Caddy in front, terminating TLS
-   (snippets in [docs/DEPLOY.md](docs/DEPLOY.md)), and make sure it sets
-   `X-Forwarded-Proto`, which is what makes the session cookie `Secure`;
-3. treat the emergency token like a root password.
-
----
-
-## Architecture
-
-**All genealogy logic lives in [axgf-rs](https://github.com/plkarin/axgf-lib).**
-This application contains none of its own. It does not parse dates, merge
-entities, validate structure or convert GEDCOM — it reads the bundle, calls a
-library function, writes the bundle back, and renders HTML. The one thing it
-decides for itself is *presentation*: how a date the library already parsed
-should read in prose, and how a confidence should look on screen.
-
-The server holds the bundle in memory behind a read-write lock. Every mutation
-takes the write lock, calls the library, and — if the library refuses —
-returns the diagnostics with memory and file both untouched. On success the new
-archive is streamed into `family.axgf.tmp`, fsynced, and renamed over the live
-file. The live file is never truncated and is not touched until the rename, so
-a crash at any point during the export leaves the previous bundle intact.
-
-There is no build step. No npm, no bundler, no framework, no CDN. Templates and
-the stylesheet are ordinary files in the repository, embedded into the binary
-at compile time, so the deliverable is exactly one executable.
-
-### Development
+It is an ordinary systemd service:
 
 ```sh
-cargo test
-cargo clippy --all-targets -- -D warnings
-cargo fmt --check
+systemctl status axgf-cms           # is it up, what is it serving, when was the last backup
+sudo systemctl restart axgf-cms     # after editing /etc/axgf-cms/env
+sudo systemctl stop axgf-cms        # finishes any save in progress first
+journalctl -u axgf-cms -f           # what it is doing
+systemctl list-timers 'axgf-cms*'   # when the next backup and check run
 ```
 
-Rust edition 2021, MSRV 1.88 (inherited from axgf-rs).
+Relatives get their accounts from **Admin → Accounts**; there is no
+self-registration. [docs/FAMILY.md](docs/FAMILY.md) is a guide you can send
+them. Everything else an operator needs is in
+[docs/OPERATOR.md](docs/OPERATOR.md).
 
-To regenerate the demonstration bundle after editing `deploy/sample.ged`:
+## Where your data lives
+
+```
+/var/lib/axgf-cms/
+  family.axgf        the family — the only file that matters
+  family.acl         the accounts (password hashes), mode 600
+  family.journal     who changed what, and when
+  backups/           the daily archives
+  .axgf-cms-cache/   photographs unpacked for serving; rebuilt if deleted
+```
+
+**The whole family is `family.axgf`**: every person, relationship, date,
+source, scanned certificate and photograph, in one file. It is an ordinary ZIP
+of JSON files with the attachments inside, so you can copy it, keep it on a
+USB stick, or open it with any unzip tool, with or without this program. It is
+yours: **Admin → Export** downloads it at any time.
+
+The accounts and the edit history are deliberately *not* inside it. The family
+file is made to be copied and sent to people; password hashes and a record of
+who corrected what are not.
+
+## Security: it listens on localhost only
+
+**The service binds `127.0.0.1` and must stay there.** It speaks plain HTTP.
+Exposed directly — `--bind 0.0.0.0` with nothing in front of it — every
+password typed into the sign-in form crosses the network in clear text and a
+family's private records are readable by anyone who can reach the port.
+
+To put it on the internet, keep it on localhost and put a reverse proxy in
+front that terminates TLS. Two configurations ship in
+[`deploy/proxy/`](deploy/proxy/), each tested in front of a live instance:
+
+- [`Caddyfile`](deploy/proxy/Caddyfile) — Caddy obtains and renews the
+  certificate itself. Replace the site name and the email, copy it to
+  `/etc/caddy/Caddyfile`, reload Caddy.
+- [`nginx-axgf-cms.conf`](deploy/proxy/nginx-axgf-cms.conf) — for nginx with a
+  certificate from certbot.
+
+Both set the `X-Forwarded-Proto` header that makes the session cookie `Secure`,
+allow uploads up to the application's own limit, and wait long enough for a
+large save. [docs/OPERATOR.md](docs/OPERATOR.md#publishing-it-tls-and-a-reverse-proxy)
+has the details.
+
+**Before you publish a tree imported from GEDCOM:** GEDCOM records no privacy
+settings, so an imported tree has none. Until you set them person by person,
+anyone recorded as living is shown only to signed-in relatives and everybody
+else is public. Check that is what you want.
+
+## Backup and restore
+
+Backups happen on their own: one verified archive a day, kept as 7 daily,
+4 weekly and 12 monthly, in `/var/lib/axgf-cms/backups/`. Each is a plain ZIP
+holding the family file, the accounts and the edit history, and is read back
+in full before it is kept. To back up right now:
 
 ```sh
-AXGF_CMS_REGENERATE_SAMPLE=1 cargo test --test sample_bundle
+sudo systemctl start axgf-cms-backup.service
 ```
 
+**A backup on the same disk does not survive that disk.** Copy the archives
+somewhere else, for example nightly with
+`rsync -a /var/lib/axgf-cms/backups/ backup@othermachine:/srv/axgf/`.
+
+To restore, stop the service and give it an archive. What is there now is
+moved aside, not deleted:
+
+```sh
+sudo systemctl stop axgf-cms
+sudo -u axgf-cms axgf-cms restore --bundle /var/lib/axgf-cms/family.axgf \
+  /var/lib/axgf-cms/backups/axgf-backup-20260923T200223Z.zip
+sudo systemctl start axgf-cms
+```
+
+## Upgrade
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
+  | sudo bash -s -- --upgrade --version <tag>
+```
+
+It backs up first, keeps the working binary aside, installs the new one,
+restarts, and checks that the family's data is readable. If it is not, it puts
+the previous version back on its own. (Drop `--version` once stable releases
+exist.)
+
+## Languages
+
+The site speaks eleven languages. **Two of them — English and French — have
+been reviewed by someone who speaks them. The other nine — Polish, Russian,
+German, Italian, Spanish, Portuguese, Chinese, Japanese and Arabic — are
+complete but unreviewed:** every message is translated, and nobody has checked
+them. In genealogy that matters, because the right word for a union, a
+godparent or a primary source depends on each country's record-keeping
+tradition. The language menu marks which is which, and
+[CONTRIBUTING.md](CONTRIBUTING.md) says where to start if you can help.
+
 ---
 
-## Export back to GEDCOM
+## Opening a `.axgf` file on your own computer
 
-Not offered, and not planned. That format has nowhere to put how sure a fact
-is, a relationship outside the family, the length of a job, or a date nobody
-could pin down — the return trip would quietly drop all of it. Your archive
-exports whole instead: `GET /admin/export` gives you the `.axgf`, which is a
-ZIP of plain JSON you can read with any tool.
+*For a relative on Windows or a Mac who has been sent a family file. You do
+not need a server, a proxy or a certificate.*
+
+**The easiest way is not to run anything:** ask whoever looks after the family
+site for an account, and read it in your browser —
+[docs/FAMILY.md](docs/FAMILY.md) explains how. The file itself is also a
+plain ZIP, so any unzip tool shows you what is inside, as text.
+
+Running this program on your own computer is possible only on some systems
+today, and it is honest to say so up front:
+
+| Your computer | Can you run it? |
+|---|---|
+| **Linux** | **Yes, with a current build.** The only download so far, [`v0.1.0-rc1`](https://github.com/plkarin/axgf-cms/releases), opens older (AXGF 1.0) files only; a file from a site that records the extended profile is AXGF 1.1, and that release refuses it. Until the next release, build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
+| **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
+| **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
+
+On Linux, or on a Mac with a build, in a terminal, in the folder holding the
+file:
+
+```sh
+./axgf-cms --bundle family.axgf
+```
+
+It prints an **admin token** (a long string of letters and digits) and
+`listening on http://127.0.0.1:8080`. Open that address in your browser, click
+**Sign in**, open the folded *emergency token* section, and paste the token.
+You can now see everything in the file. Press **Ctrl-C** in the terminal to
+stop. Nothing leaves your computer: it only listens on `127.0.0.1`.
+
+**Edits you make go into `family.axgf` itself.** Keep an untouched copy of the
+file you were sent.
+
+What will not work away from the Linux server: the installer, the automatic
+backups and weekly checks (they are systemd timers), and logging to the system
+journal; the program writes its log to the terminal instead.
 
 ---
+
+## Built on an open format
+
+`.axgf` is the [Axiom Genealogy Format](https://github.com/plkarin/axgf-spec),
+and every read, check and change of it goes through the
+[`axgf-rs`](https://github.com/plkarin/axgf-lib) library.
+
+## More
+
+- [docs/OPERATOR.md](docs/OPERATOR.md) — running it day to day: health, disk,
+  backups off the machine, what to do when something is wrong
+- [docs/DEPLOY.md](docs/DEPLOY.md) — installing by hand, and the systemd units
+- [docs/FAMILY.md](docs/FAMILY.md) — for relatives with an account
+- [docs/REFERENCE.md](docs/REFERENCE.md) — every flag and route, attachments,
+  accounts and roles, and how it is built
+- [CONTRIBUTING.md](CONTRIBUTING.md) — development and translations
+
+Developing: `cargo test`, `cargo clippy --all-targets -- -D warnings`,
+`cargo fmt --check`.
 
 ## Licence
 
 Apache-2.0. See [LICENSE](LICENSE).
-
-- Format specification: [plkarin/axgf-spec](https://github.com/plkarin/axgf-spec)
-- Reference library: [plkarin/axgf-lib](https://github.com/plkarin/axgf-lib)

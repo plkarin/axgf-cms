@@ -8,6 +8,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**The river, at `/river`.** One person at a fixed point, ancestors flowing
+in from below and descendants out above, laid out and written as SVG on the
+server (`src/river.rs`) and complete without JavaScript. Width is recorded
+descendants in five quantised classes; the stroke is the confidence of each
+parent-child claim, in the record page's own bands; every childless line ends
+in the same open ring, living or not, and a line that leaves the frame ends in
+an arrow and a count; time runs on colour and on half-century bands, which are
+drawn only for a signed-in reader and only when the year scale rests on a
+birth year that reader may see — otherwise the river has no era and one
+neutral colour. `static/river.js` adds travel — a 560 ms slide, or a cut under
+`prefers-reduced-motion` — hover route lighting, the trail, and ↓ ↑ ←.
+Everything the river knows about a person comes through two projections in
+`access.rs`; no sensitive class reaches it, and a redacted person keeps their
+node and width and loses name, years, label and year-derived colour. `/` is
+unchanged: the river takes it once its numbers are signed off. On the
+operator's 866-person bundle a request takes about 3 ms warm; the first one in
+a process takes about 16 ms, almost all of it the interface catalogue loading
+(`tests/river_scale.rs`).
+
 **A service, not a binary somebody launches over SSH.** The unit existed and
 had never been run. Running it is what produced everything below.
 

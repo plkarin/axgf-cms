@@ -3331,3 +3331,24 @@ health-cache-missing = { $missing ->
         [many] { $missing } из { $declared } вложенных файлов отсутствуют в кеше и не могут быть скачаны, пока следующее сохранение их не восстановит.
        *[other] { $missing } из { $declared } вложенных файлов отсутствуют в кеше и не могут быть скачаны, пока следующее сохранение их не восстановит.
     }
+
+## River
+
+nav-river = Река
+river-aria = Река вокруг человека { $name }: предки внизу, потомки вверху.
+river-band-living = ЖИВЫЕ
+river-circa = ок.{" "}
+river-trail = Маршрут
+river-back = ← Назад
+river-range = Охват
+river-motion = Движение
+river-travel = переход
+river-cut = сразу
+river-legend-attested = засвидетельствовано
+river-legend-inferred = выведено
+river-legend-speculative = предположительно
+river-legend-lost = линия потеряна
+river-legend-discharge = потомки
+river-legend-direction = ↓ к истоку · ↑ к живым
+river-grid-link = Сетка
+river-legend-title = Как читать реку

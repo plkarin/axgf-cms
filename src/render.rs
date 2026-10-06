@@ -18,6 +18,10 @@ pub const APP_CSS: &str = include_str!("../static/app.css");
 /// The tree page's client-side name filter, served at `/static/tree.js`.
 pub const TREE_JS: &str = include_str!("../static/tree.js");
 
+/// The river's travel, hover and keyboard, served at `/static/river.js`. The
+/// river is complete without it.
+pub const RIVER_JS: &str = include_str!("../static/river.js");
+
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
 pub const MAP_JS: &str = include_str!("../static/map.js");
@@ -52,6 +56,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "home.html",
     "error.html",
     "tree.html",
+    "river.html",
     "person.html",
     "_person_detail.html",
     "_profile.html",

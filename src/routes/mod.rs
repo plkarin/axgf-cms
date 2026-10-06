@@ -129,6 +129,10 @@ fn security_headers(router: Router, csp: &str) -> Router {
 fn routes(state: Shared) -> Router {
     Router::new()
         .route("/", get(public::home))
+        // The river. Not the landing page yet: it takes `/` once its numbers
+        // and its contact sheets have been signed off.
+        .route("/river", get(public::river))
+        .route("/river/data", get(public::river_data))
         .route("/tree", get(public::tree))
         .route("/tree/panel/:id", get(public::tree_panel))
         .route("/person/:id", get(public::person))
@@ -245,6 +249,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/:kind/:id/delete", post(admin::delete))
         .route("/static/app.css", get(public::css))
         .route("/static/tree.js", get(public::tree_js))
+        .route("/static/river.js", get(public::river_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))

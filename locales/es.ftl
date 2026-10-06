@@ -3144,3 +3144,24 @@ health-cache-missing = { $missing ->
         [many] Faltan { $missing } de los { $declared } archivos adjuntos en la memoria intermedia y no podrán descargarse hasta que el próximo guardado los reconstruya.
        *[other] Faltan { $missing } de los { $declared } archivos adjuntos en la memoria intermedia y no podrán descargarse hasta que el próximo guardado los reconstruya.
     }
+
+## River
+
+nav-river = Río
+river-aria = El río en torno a { $name }: ascendientes abajo, descendientes arriba.
+river-band-living = VIVOS
+river-circa = h.{" "}
+river-trail = Recorrido
+river-back = ← Atrás
+river-range = Alcance
+river-motion = Movimiento
+river-travel = viaje
+river-cut = corte
+river-legend-attested = atestiguado
+river-legend-inferred = deducido
+river-legend-speculative = supuesto
+river-legend-lost = línea perdida
+river-legend-discharge = descendientes
+river-legend-direction = ↓ hacia la fuente · ↑ hacia los vivos
+river-grid-link = Vista en cuadrícula
+river-legend-title = Cómo leer el río

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ centre_name }} — {{ t("nav-river") }} — {{ t("app-name") }}{% endblock %}
+{% block main_class %}wide river-main{% endblock %}
+
+{% block content %}
+{# The river. The SVG below is the whole first paint and is correct without
+   JavaScript: every person is a link that re-centres the page on them, and
+   the range segment is three links. `static/river.js` turns those links into
+   travel, lights the route under the pointer, and adds the keyboard. #}
+{% if hidden %}
+<p class="notice restricted-notice river-notice" role="status">
+  {{ t("tree-hidden-notice", n=hidden) }}
+  {%- if signed_in %}{{ t("tree-hidden-because-role") }}
+  {%- else %}{{ t("tree-hidden-because-anonymous") }}
+    <a href="/admin/login">{{ t("tree-hidden-sign-in") }}</a>
+  {%- endif %}
+</p>
+{% endif %}
+
+<div class="river" data-base="/river" data-centre="{{ centre }}" data-n="{{ n }}">
+  <section class="rv-stage" aria-label="{{ t('nav-river') }}">
+    <div class="rv-controls">
+      <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
+      <ol class="rv-trail" aria-labelledby="rv-trail-label">
+        <li><a class="rv-chip" aria-current="page" href="/river?p={{ centre_q }}&amp;n={{ n }}">{{ centre_name }}</a></li>
+      </ol>
+      <button type="button" class="rv-btn" id="rv-back" disabled>{{ t("river-back") }}</button>
+      <div class="rv-seg" role="group" aria-label="{{ t('river-range') }}">
+        {%- for r in ranges %}
+        <a href="/river?p={{ centre_q }}&amp;n={{ r }}" data-range="{{ r }}"
+           {%- if r == n %} aria-current="true"{% endif %}>± {{ r }}</a>
+        {%- endfor %}
+      </div>
+      <div class="rv-seg" role="group" aria-label="{{ t('river-motion') }}">
+        <button type="button" data-motion="travel" aria-pressed="true">{{ t("river-travel") }}</button>
+        <button type="button" data-motion="cut" aria-pressed="false">{{ t("river-cut") }}</button>
+      </div>
+      <a class="rv-btn rv-grid" href="/tree?root={{ centre_q }}">{{ t("river-grid-link") }}</a>
+    </div>
+
+    <div class="rv-canvas" id="rv-canvas">{{ svg|safe }}</div>
+
+    <div class="rv-legend" role="note" aria-label="{{ t('river-legend-title') }}">
+      <span><i class="rv-key rv-key-a"></i>{{ t("river-legend-attested") }}</span>
+      <span><i class="rv-key rv-key-d"></i>{{ t("river-legend-inferred") }}</span>
+      <span><i class="rv-key rv-key-s"></i>{{ t("river-legend-speculative") }}</span>
+      <span><i class="rv-ring"></i>{{ t("river-legend-lost") }}</span>
+      <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
+      <span class="rv-direction">{{ t("river-legend-direction") }}</span>
+    </div>
+  </section>
+
+  <aside class="rv-record tree-panel" id="tree-panel" aria-live="polite"
+         aria-label="{{ t('panel-selected-person') }}"
+         data-private="{{ t('record-restricted-person') }}"
+         data-private-title="{{ t('record-restricted-title') }}">
+    {% include "_panel.html" %}
+  </aside>
+</div>
+
+<script type="application/json" id="rv-data">{{ payload|safe }}</script>
+{% endblock %}
+
+{% block scripts %}<script src="/static/river.js" defer></script>{% endblock %}

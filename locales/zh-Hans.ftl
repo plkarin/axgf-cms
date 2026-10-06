@@ -2918,3 +2918,24 @@ health-backup-unconfigured = 没有任何内容被备份。一块磁盘损坏就
 health-backup-never = 已设置备份目录，但从未写入过任何备份。
 health-backup-stale = 最新备份已有 { $days } 天。应当每天写入一次。
 health-cache-missing = { $declared } 个附件中有 { $missing } 个不在缓存里，直到下一次保存重建它们之前无法下载。
+
+## River
+
+nav-river = 河流
+river-aria = 以 { $name } 为中心的河流：祖先在下，后代在上。
+river-band-living = 在世
+river-circa = 约
+river-trail = 路径
+river-back = ← 返回
+river-range = 范围
+river-motion = 动画
+river-travel = 移动
+river-cut = 切换
+river-legend-attested = 有据
+river-legend-inferred = 推断
+river-legend-speculative = 推测
+river-legend-lost = 断线
+river-legend-discharge = 后代数
+river-legend-direction = ↓ 向源头 · ↑ 向在世者
+river-grid-link = 网格视图
+river-legend-title = 如何阅读河流

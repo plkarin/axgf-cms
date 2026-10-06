@@ -11,7 +11,8 @@ use crate::routes::Shared;
 use crate::state::COLLECTIONS;
 use crate::{auth, render, view};
 
-/// `GET /` — what the site does for a family, what this tree holds, entry points.
+/// `GET /` — what this tree holds, and the ways in. Also what `/river` shows
+/// for an archive with nobody in it, which has no river to draw.
 pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, "/");
@@ -1251,4 +1252,193 @@ pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Respo
         "error-not-found-title",
         "error-not-found-detail",
     )
+}
+
+// ---------------------------------------------------------------------------
+// The river
+// ---------------------------------------------------------------------------
+
+/// Query parameters for `/river` and `/river/data`.
+#[derive(serde::Deserialize)]
+pub struct RiverQuery {
+    /// The person at the fixed point. Defaults to the fullest first screen.
+    #[serde(default)]
+    p: Option<String>,
+    /// Generations each way: 2, 3 or 5.
+    #[serde(default)]
+    n: Option<usize>,
+}
+
+/// One river, resolved for one reader.
+struct RiverView {
+    svg: String,
+    payload: Value,
+    centre: String,
+    name: String,
+    n: usize,
+    panel: Option<crate::person::PersonView>,
+    hidden: usize,
+}
+
+/// The words the river draws, in `lang`.
+fn river_words(lang: &str) -> crate::river::Words {
+    crate::river::Words {
+        living_band: crate::i18n::translate(lang, "river-band-living", None),
+        circa: crate::i18n::translate(lang, "river-circa", None),
+    }
+}
+
+/// JSON safe to put inside a `<script type="application/json">`: nothing in
+/// it can close the element or open a comment.
+fn script_json(v: &impl serde::Serialize) -> String {
+    serde_json::to_string(v)
+        .unwrap_or_else(|_| "null".into())
+        .replace('<', "\\u003c")
+        .replace('>', "\\u003e")
+        .replace('&', "\\u0026")
+}
+
+/// Lay the river out for this reader. `None` for an archive with nobody in it.
+fn river_view(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    lang: &str,
+    q: &RiverQuery,
+    with_panel: bool,
+) -> Option<RiverView> {
+    let n =
+        q.n.filter(|n| crate::river::RANGES.contains(n))
+            .unwrap_or(crate::river::DEFAULT_RANGE);
+    state.read_as(viewer.ceiling(), |flat, lens| {
+        let g = crate::river::Graph::build(flat);
+        if g.is_empty() {
+            return None;
+        }
+        let centre =
+            q.p.clone()
+                .filter(|id| g.index_of(id).is_some())
+                .or_else(|| g.default_centre(lens))?;
+        let river = crate::river::build(
+            flat,
+            lens,
+            &g,
+            &centre,
+            n,
+            crate::river::Shape::default(),
+            river_words(lang),
+            viewer.signed_in(),
+        )?;
+        let name = if lens.sees_person(&centre) {
+            river
+                .shown
+                .iter()
+                .find(|s| s.id == centre)
+                .map(|s| s.names[2].clone())
+                .unwrap_or_default()
+        } else {
+            crate::i18n::translate(lang, crate::person::RESTRICTED_KEY, None)
+        };
+        let aria = {
+            let args =
+                fluent::FluentArgs::from_iter([("name", fluent::FluentValue::from(name.clone()))]);
+            crate::i18n::translate(lang, "river-aria", Some(&args))
+        };
+        let panel = (with_panel && lens.sees_person(&centre))
+            .then(|| crate::person::build_in(flat, &centre, lens, lang))
+            .flatten();
+        let hidden = g.len().saturating_sub(lens.count(g.len()));
+        Some(RiverView {
+            svg: river.svg(&aria),
+            payload: json!({"river": river.payload(), "aria": aria}),
+            centre,
+            name,
+            n,
+            panel,
+            hidden,
+        })
+    })
+}
+
+/// `GET /river` — the river, or the overview for an archive with nobody in it.
+///
+/// Server-rendered and complete without JavaScript: the SVG is the first
+/// paint, the range segment is three links, and every person is a link to
+/// the same page centred on them. `static/river.js` turns a click into
+/// travel when it can.
+pub async fn river(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
+    Query(q): Query<RiverQuery>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let started = std::time::Instant::now();
+    let Some(v) = river_view(&state, &viewer, chrome.lang, &q, true) else {
+        return home(State(state), headers).await;
+    };
+    tracing::debug!(
+        centre = %v.centre,
+        n = v.n,
+        bytes = v.svg.len(),
+        ms = started.elapsed().as_secs_f64() * 1000.0,
+        "river laid out"
+    );
+    render::page_with(
+        &chrome,
+        "river.html",
+        context! {
+            nav => "river",
+            still => true,
+            svg => v.svg,
+            payload => script_json(&v.payload),
+            centre_q => crate::river::url_component(&v.centre),
+            centre => v.centre,
+            centre_name => v.name,
+            n => v.n,
+            ranges => crate::river::RANGES,
+            p => v.panel,
+            hidden => v.hidden,
+            signed_in => viewer.signed_in(),
+            compact => true,
+            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            document_types => crate::documents::document_type_options(chrome.lang),
+        },
+    )
+}
+
+/// `GET /river/data` — one layout as JSON, for travel.
+///
+/// The client tweens between the layout it has and this one, then puts the
+/// server's own SVG in place, so a still frame is always the server's.
+pub async fn river_data(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<RiverQuery>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/river");
+    match river_view(&state, &viewer, chrome.lang, &q, false) {
+        Some(v) => {
+            let mut body = v.payload;
+            body["svg"] = Value::String(v.svg);
+            body["name"] = Value::String(v.name);
+            body["centre"] = Value::String(v.centre);
+            body["n"] = json!(v.n);
+            ([(header::CACHE_CONTROL, "no-store")], Json(body)).into_response()
+        }
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+/// `GET /static/river.js`.
+pub async fn river_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::RIVER_JS,
+    )
+        .into_response()
 }

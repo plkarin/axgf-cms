@@ -48,6 +48,7 @@ pub mod place;
 pub mod profile;
 pub mod radar;
 pub mod render;
+pub mod river;
 pub mod routes;
 pub mod sensitive;
 pub mod session;

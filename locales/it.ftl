@@ -3144,3 +3144,24 @@ health-cache-missing = { $missing ->
         [many] { $missing } dei { $declared } file allegati mancano dalla cache e non saranno scaricabili finché il prossimo salvataggio non li ricostruisce.
        *[other] { $missing } dei { $declared } file allegati mancano dalla cache e non saranno scaricabili finché il prossimo salvataggio non li ricostruisce.
     }
+
+## River
+
+nav-river = Fiume
+river-aria = Il fiume attorno a { $name }: antenati in basso, discendenti in alto.
+river-band-living = VIVENTI
+river-circa = c.{" "}
+river-trail = Percorso
+river-back = ← Indietro
+river-range = Portata
+river-motion = Movimento
+river-travel = viaggio
+river-cut = stacco
+river-legend-attested = attestato
+river-legend-inferred = dedotto
+river-legend-speculative = supposto
+river-legend-lost = linea perduta
+river-legend-discharge = discendenti
+river-legend-direction = ↓ verso la sorgente · ↑ verso i vivi
+river-grid-link = Vista a griglia
+river-legend-title = Come leggere il fiume

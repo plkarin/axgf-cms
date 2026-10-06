@@ -2918,3 +2918,24 @@ health-backup-unconfigured = 何もバックアップされていません。デ
 health-backup-never = バックアップ先は設定されていますが、一度も書き込まれていません。
 health-backup-stale = 最新のバックアップは { $days } 日前のものです。毎日作成されるべきものです。
 health-cache-missing = 添付ファイル { $declared } 件のうち { $missing } 件がキャッシュにありません。次の保存で作り直されるまでダウンロードできません。
+
+## River
+
+nav-river = 流れ
+river-aria = { $name } を中心とする流れ：祖先は下、子孫は上。
+river-band-living = 存命
+river-circa = 約
+river-trail = 経路
+river-back = ← 戻る
+river-range = 範囲
+river-motion = 動き
+river-travel = 移動
+river-cut = 切替
+river-legend-attested = 確認済み
+river-legend-inferred = 推定
+river-legend-speculative = 推測
+river-legend-lost = 途絶えた系統
+river-legend-discharge = 子孫数
+river-legend-direction = ↓ 源流へ · ↑ 存命者へ
+river-grid-link = グリッド表示
+river-legend-title = 流れの読み方

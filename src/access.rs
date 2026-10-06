@@ -371,6 +371,149 @@ impl Default for Lens {
     }
 }
 
+// ---------------------------------------------------------------------------
+// The river's two projections
+// ---------------------------------------------------------------------------
+//
+// The river (`crate::river`) reads no person field itself. Everything it knows
+// about a person comes through one of these two functions, and between them
+// they name every field it touches: the name, the birth and death dates, the
+// gender and the living flag. Nothing under `health`, `biometrics`, `genomics`,
+// `legal` or any other profile block is read, so there is nothing to strip.
+//
+// They are two functions because they answer two different questions.
+// [`river_shape`] is what the *geometry* may depend on, and it is the same for
+// every reader: a layout that moved according to who was looking would leak
+// the hidden people through the difference between two screenshots, which is
+// the rule `tree::redact` is built on too. [`river_label`] is what this reader
+// is *shown*, and it is blank for a person the lens does not admit.
+
+/// What the river's geometry may depend on. Identical for every reader.
+///
+/// Living status is deliberately not here. It once decided whether a
+/// childless line ended in a "lost" ring, and so the ring above a redacted,
+/// childless person said whether they were alive.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct RiverShape {
+    /// Year of birth, for ordering siblings. Never drawn for a redacted person.
+    pub birth_year: Option<i64>,
+    /// Which side of a couple this person stands on: 0 father, 1 mother, from
+    /// the recorded gender. `None` when the record gives neither, in which
+    /// case the union's own order decides.
+    pub slot: Option<u8>,
+}
+
+/// What one reader is shown of one person on the river.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct RiverLabel {
+    /// The person may not be read: no name, no years, no label.
+    pub redacted: bool,
+    /// Given name(s), or the whole display name when the record does not
+    /// break it into components.
+    pub given: String,
+    /// Family name, or empty.
+    pub surname: String,
+    /// The display name.
+    pub full: String,
+    pub birth_year: Option<i64>,
+    pub death_year: Option<i64>,
+    /// The birth date is approximate or a range.
+    pub circa: bool,
+    pub living: bool,
+    /// Neither a birth nor a death date is recorded: the record is thin, and
+    /// the river draws the person as an outline.
+    pub sparse: bool,
+}
+
+fn river_person<'a>(flat: &'a Value, id: &str) -> Option<&'a Value> {
+    flat.get("persons").and_then(|p| p.get(id))
+}
+
+fn river_year(person: &Value, key: &str) -> Option<i64> {
+    let fact = person.get(key)?;
+    crate::view::render_date_field(fact, "date")
+        .sort
+        .map(|k| k / 10_000)
+        .or_else(|| crate::view::latest_year_of_field(person, key))
+}
+
+/// The geometry inputs for one person.
+pub fn river_shape(flat: &Value, id: &str) -> RiverShape {
+    let Some(p) = river_person(flat, id) else {
+        return RiverShape::default();
+    };
+    let slot = match p
+        .get("identity")
+        .and_then(|i| i.get("gender"))
+        .and_then(|g| g.get("value"))
+        .and_then(Value::as_str)
+    {
+        Some("M") => Some(0),
+        Some("F") => Some(1),
+        _ => None,
+    };
+    RiverShape {
+        birth_year: river_year(p, "birth"),
+        slot,
+    }
+}
+
+/// What `lens` lets its reader see of one person.
+pub fn river_label(flat: &Value, lens: &Lens, id: &str) -> RiverLabel {
+    let Some(p) = river_person(flat, id).filter(|_| lens.sees_person(id)) else {
+        return RiverLabel {
+            redacted: true,
+            ..RiverLabel::default()
+        };
+    };
+    let full = crate::view::person_display_name(p);
+    let component = |kind: &str| -> String {
+        p.get("identity")
+            .and_then(|i| i.get("name"))
+            .and_then(|n| n.get("components"))
+            .and_then(Value::as_array)
+            .map(|cs| {
+                cs.iter()
+                    .filter(|c| c.get("type").and_then(Value::as_str) == Some(kind))
+                    .filter_map(|c| c.get("value").and_then(Value::as_str))
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            })
+            .unwrap_or_default()
+    };
+    let (mut given, surname) = (component("given_name"), component("family_name"));
+    if given.is_empty() {
+        given = full.clone();
+    }
+    // Circa is what the record says: `circa`, a range, or a precision coarser
+    // than a year. A plain year is a year, not an approximation — the view
+    // layer's "approximate" covers anything short of a day, which put "c."
+    // in front of every year on the river.
+    let circa = p.get("birth").and_then(|b| b.get("date")).is_some_and(|d| {
+        d.get("circa").and_then(Value::as_bool).unwrap_or(false)
+            || d.get("range").is_some_and(|r| !r.is_null())
+            || matches!(
+                d.get("precision").and_then(Value::as_str),
+                Some("decade" | "quarter_century" | "century")
+            )
+    });
+    let birth_year = river_year(p, "birth");
+    let death_year = river_year(p, "death");
+    RiverLabel {
+        redacted: false,
+        given,
+        surname,
+        full,
+        birth_year,
+        death_year,
+        circa,
+        living: crate::living::status(p).shown_as_living(),
+        sparse: birth_year.is_none() && death_year.is_none(),
+    }
+}
+
 /// Which documents a request may read.
 ///
 /// A document is reached through the person it is attached to, so that is what

@@ -196,6 +196,28 @@
      never lies over the oldest generation. Wider than any platform's bar. */
   --hscroll-gutter: 1rem;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* The river's type, at the sizes its design fixes in pixels. */
+  --type-rv-eyebrow: 10px;
+  --type-rv-data: 10.5px;
+  --type-rv-seg: 11.5px;
+  --type-rv-chip: 12px;
+  --type-rv-control: 12.5px;
+}
+
+/* The river's own palette (`/`), declared with the others but not on :root,
+   because it is the same under every theme by design: the water's colour ramp
+   is drawn into the SVG server-side, and the dark ground is part of how that
+   ramp reads. Time also runs on the half-century bands for exactly that
+   reason — they are what carries it in the colour-blind themes and in print.
+   A theme that ever needs to can still override these on `.river`. */
+.river {
+  --rv-ink-0: #0b110e; --rv-ink-1: #0c1310; --rv-ink-2: #0e1512; --rv-ink-3: #111a16; --rv-ink-4: #17221d;
+  --rv-chip-on: #1d2a24;
+  --rv-rule-1: #1a2520; --rv-rule-2: #22302a; --rv-rule-3: #3a4b42; --rv-rule-4: #4d6157;
+  --rv-text-1: #ece6d6; --rv-text-2: #a7b3aa; --rv-text-3: #75847b;
+  --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #f3dfae; --rv-water: #86b08f; --rv-warn: #d98068;
+  --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 }
 
 /* ---------------------------------------------------------------------------
@@ -3508,3 +3530,161 @@ a.tcard:hover {
 .pf-remove { margin-top: 0.3rem; font-size: var(--type-minor); }
 .pf-problems { margin: 0.2rem 0 0.4rem; padding-inline-start: 1.2rem; color: var(--ink); }
 .pf-add { margin-top: 0.4rem; }
+
+/* ---------------------------------------------------------------------------
+ * The river (`/`). Its palette is its own and does not follow the theme: the
+ * water's colour ramp is drawn into the SVG server-side, and the dark ground
+ * is part of how that ramp reads. Time therefore also runs on a second
+ * channel — the half-century bands — which is what survives the colour-blind
+ * themes and print. Logical properties throughout, so RTL keeps working.
+ * ------------------------------------------------------------------------- */
+.river {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  background: var(--rv-ink-0);
+  border: 1px solid var(--rv-rule-2);
+  color: var(--rv-text-1);
+}
+.river-notice { margin-block-end: 0.75rem; }
+.rv-stage {
+  flex: 1 1 520px;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--rv-ink-1);
+}
+.rv-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-block: 10px;
+  padding-inline: 16px;
+  border-block-end: 1px solid var(--rv-rule-1);
+  flex-wrap: wrap;
+}
+.rv-eyebrow {
+  font-family: var(--rv-mono);
+  font-size: var(--type-rv-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rv-text-3);
+}
+.rv-trail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1 1 260px;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rv-chip {
+  display: inline-flex;
+  align-items: center;
+  block-size: 26px;
+  padding-inline: 9px;
+  border: 1px solid var(--rv-rule-2);
+  border-radius: 2px;
+  color: var(--rv-text-2);
+  font-size: var(--type-rv-chip);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.rv-chip[aria-current] { background: var(--rv-chip-on); color: var(--rv-text-1); border-color: var(--rv-rule-4); }
+.rv-btn {
+  display: inline-flex;
+  align-items: center;
+  block-size: 28px;
+  padding-inline: 10px;
+  background: transparent;
+  border: 1px solid var(--rv-rule-3);
+  border-radius: 2px;
+  color: var(--rv-text-1);
+  font-size: var(--type-rv-control);
+  text-decoration: none;
+  cursor: pointer;
+}
+.rv-btn:hover:not(:disabled) { background: var(--rv-ink-4); }
+.rv-btn:disabled { color: var(--rv-text-3); cursor: default; }
+.rv-seg { display: flex; border: 1px solid var(--rv-rule-3); border-radius: 2px; }
+.rv-seg > a, .rv-seg > button {
+  display: inline-flex;
+  align-items: center;
+  block-size: 28px;
+  padding-inline: 10px;
+  background: transparent;
+  border: 0;
+  color: var(--rv-text-2);
+  font-family: var(--rv-mono);
+  font-size: var(--type-rv-seg);
+  text-decoration: none;
+  cursor: pointer;
+}
+.rv-seg > [aria-current], .rv-seg > [aria-pressed="true"] { background: var(--rv-text-1); color: var(--rv-ink-0); }
+.river :is(a, button):focus-visible {
+  outline: none;
+  border-color: var(--rv-accent);
+  box-shadow: 0 0 0 1px var(--rv-accent);
+}
+.rv-canvas { flex: 1 1 auto; min-block-size: 300px; }
+.rv-canvas svg { display: block; }
+.rv-canvas .rv-p { cursor: pointer; }
+.rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
+.rv-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-block: 10px 12px;
+  padding-inline: 16px;
+  border-block-start: 1px solid var(--rv-rule-1);
+  font-family: var(--rv-mono);
+  font-size: var(--type-rv-data);
+  color: var(--rv-text-2);
+}
+.rv-legend > span { display: flex; align-items: center; gap: 7px; }
+.rv-key { display: block; inline-size: 24px; border-block-start: 3px solid var(--rv-water); }
+.rv-key-d { border-block-start-style: dashed; }
+.rv-key-s { border-block-start-style: dotted; }
+.rv-ring {
+  display: block;
+  inline-size: 10px;
+  block-size: 10px;
+  border: 1.5px solid var(--rv-water);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.rv-widths { gap: 4px !important; }
+.rv-widths > i { display: block; block-size: 12px; background: var(--rv-water); }
+.rv-widths > i:last-of-type { margin-inline-end: 3px; }
+.rv-direction { margin-inline-start: auto; color: var(--rv-text-3); }
+/* The record beside the river is the ordinary record partial, which draws
+   with the theme's variables; here they are the river's, so the panel reads
+   on the river's ground whichever theme the reader chose. */
+.rv-record {
+  --bg: var(--rv-ink-3); --surface: var(--rv-ink-3); --section-fill: var(--rv-ink-2);
+  --border: var(--rv-rule-2); --border-strong: var(--rv-rule-3);
+  --ink: var(--rv-text-1); --ink-soft: var(--rv-text-2); --ink-faint: var(--rv-text-3);
+  --accent: var(--rv-accent); --accent-soft: var(--rv-ink-4); --on-accent: var(--rv-ink-0);
+  --conf-track: var(--rv-rule-2);
+  --section-border: 1px solid var(--rv-rule-2);
+  --section-shadow: none;
+  --section-radius: 2px;
+  color: var(--rv-text-1);
+  padding-block: 18px 22px;
+  padding-inline: 20px;
+  flex: 0 1 420px;
+  min-inline-size: 300px;
+  max-block-size: none;
+  background: var(--rv-ink-3);
+  border-inline-start: 1px solid var(--rv-rule-2);
+}
+@media (max-width: 860px) {
+  .rv-record { flex-basis: 100%; border-inline-start: 0; border-block-start: 1px solid var(--rv-rule-2); }
+}
+@media print {
+  .rv-controls, .rv-record { display: none; }
+}

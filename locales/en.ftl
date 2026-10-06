@@ -3183,3 +3183,24 @@ health-cache-missing = { $missing ->
         [one] One of { $declared } attached files is missing from the cache and cannot be downloaded until the next save rebuilds it.
        *[other] { $missing } of { $declared } attached files are missing from the cache and cannot be downloaded until the next save rebuilds them.
     }
+
+## River
+
+nav-river = River
+river-aria = The river around { $name }: ancestors below, descendants above.
+river-band-living = LIVING
+river-circa = c.
+river-trail = Trail
+river-back = ← Back
+river-range = Range
+river-motion = Motion
+river-travel = travel
+river-cut = cut
+river-legend-attested = attested
+river-legend-inferred = inferred
+river-legend-speculative = speculative
+river-legend-lost = line lost
+river-legend-discharge = descendants
+river-legend-direction = ↓ toward the source · ↑ toward the living
+river-grid-link = Grid view
+river-legend-title = How to read the river

@@ -3403,3 +3403,24 @@ health-cache-missing = { $missing ->
         [many] { $missing } ملفًا من { $declared } من الملفات المرفقة مفقودة من الذاكرة المؤقتة ولا يمكن تنزيلها حتى يعيد الحفظ القادم بناءها.
        *[other] { $missing } ملف من { $declared } من الملفات المرفقة مفقود من الذاكرة المؤقتة ولا يمكن تنزيله حتى يعيد الحفظ القادم بناءه.
     }
+
+## River
+
+nav-river = النهر
+river-aria = النهر حول { $name }: الأسلاف في الأسفل، والذرية في الأعلى.
+river-band-living = الأحياء
+river-circa = نحو{" "}
+river-trail = المسار
+river-back = → رجوع
+river-range = المدى
+river-motion = الحركة
+river-travel = انتقال
+river-cut = قطع
+river-legend-attested = موثّق
+river-legend-inferred = مستنتج
+river-legend-speculative = مفترض
+river-legend-lost = خط مفقود
+river-legend-discharge = الذرية
+river-legend-direction = ↓ نحو المنبع · ↑ نحو الأحياء
+river-grid-link = عرض الشبكة
+river-legend-title = كيف يُقرأ النهر

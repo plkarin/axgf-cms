@@ -157,6 +157,9 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
     let cookie = format!("{}; axgf_lang=zh-Hans", admin_cookie(&app).await);
     let pages = [
         "/".to_string(),
+        "/river".into(),
+        format!("/river?p={A}&n=5"),
+        format!("/river/data?p={KID}&n=2"),
         "/tree".into(),
         format!("/tree/panel/{A}"),
         format!("/person/{A}"),
@@ -196,7 +199,17 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
     for uri in &pages {
         let resp = get_with_cookie(&app, uri, &cookie).await;
         let status = resp.status();
-        let html = body_string(resp).await;
+        let mut html = body_string(resp).await;
+        // The river's travel endpoint is JSON; what a reader sees of it is
+        // the SVG and the label it carries.
+        if uri.starts_with("/river/data") {
+            let v: serde_json::Value = serde_json::from_str(&html).expect("river data is JSON");
+            html = format!(
+                "{}<p aria-label=\"{}\"></p>",
+                v["svg"].as_str().unwrap_or_default(),
+                v["aria"].as_str().unwrap_or_default()
+            );
+        }
         if !status.is_success() {
             report.push(format!("{uri}: {status} (not rendered, so not checked)"));
             continue;

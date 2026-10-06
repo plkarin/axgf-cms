@@ -30,6 +30,7 @@
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
     <a class="brand" href="/">{{ t("app-name") }}</a>
     <nav>
+      <a href="/river" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
       <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>
     </nav>

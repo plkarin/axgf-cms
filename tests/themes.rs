@@ -69,6 +69,13 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--type-major",
         "--type-title",
         "--type-display",
+        // The river's rungs: the sizes its design fixes, a type scale like
+        // the one above.
+        "--type-rv-eyebrow",
+        "--type-rv-data",
+        "--type-rv-seg",
+        "--type-rv-chip",
+        "--type-rv-control",
         "--weight-normal",
         "--weight-medium",
         "--weight-semi",

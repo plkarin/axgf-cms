@@ -3324,3 +3324,24 @@ health-cache-missing = { $missing ->
         [many] Brakuje { $missing } z { $declared } załączonych plików w pamięci podręcznej i nie da się ich pobrać, dopóki następny zapis ich nie odbuduje.
        *[other] Brakuje { $missing } z { $declared } załączonych plików w pamięci podręcznej i nie da się ich pobrać, dopóki następny zapis ich nie odbuduje.
     }
+
+## River
+
+nav-river = Rzeka
+river-aria = Rzeka wokół osoby { $name }: przodkowie na dole, potomkowie u góry.
+river-band-living = ŻYJĄCY
+river-circa = ok.{" "}
+river-trail = Trasa
+river-back = ← Wstecz
+river-range = Zasięg
+river-motion = Ruch
+river-travel = podróż
+river-cut = cięcie
+river-legend-attested = poświadczone
+river-legend-inferred = wywnioskowane
+river-legend-speculative = przypuszczalne
+river-legend-lost = linia urwana
+river-legend-discharge = potomkowie
+river-legend-direction = ↓ ku źródłu · ↑ ku żyjącym
+river-grid-link = Widok siatki
+river-legend-title = Jak czytać rzekę

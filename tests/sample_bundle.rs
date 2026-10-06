@@ -570,7 +570,7 @@ async fn the_sample_bundle_serves_every_page() {
     }
     let (app, _p) = common::app_with_bundle("sample-serve", Path::new(&path));
 
-    for uri in ["/", "/tree", "/convert", "/health"] {
+    for uri in ["/", "/river", "/tree", "/convert", "/health"] {
         let resp = common::get(&app, uri).await;
         assert_eq!(
             resp.status(),

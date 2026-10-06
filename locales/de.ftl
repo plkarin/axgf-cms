@@ -3143,3 +3143,24 @@ health-cache-missing = { $missing ->
         [one] Eine von { $declared } angehängten Dateien fehlt im Zwischenspeicher und kann erst heruntergeladen werden, wenn das nächste Speichern sie neu aufbaut.
        *[other] { $missing } von { $declared } angehängten Dateien fehlen im Zwischenspeicher und können erst heruntergeladen werden, wenn das nächste Speichern sie neu aufbaut.
     }
+
+## River
+
+nav-river = Fluss
+river-aria = Der Fluss um { $name }: Vorfahren unten, Nachkommen oben.
+river-band-living = LEBENDE
+river-circa = um{" "}
+river-trail = Weg
+river-back = ← Zurück
+river-range = Reichweite
+river-motion = Bewegung
+river-travel = Reise
+river-cut = Schnitt
+river-legend-attested = belegt
+river-legend-inferred = erschlossen
+river-legend-speculative = vermutet
+river-legend-lost = Linie verloren
+river-legend-discharge = Nachkommen
+river-legend-direction = ↓ zur Quelle · ↑ zu den Lebenden
+river-grid-link = Rasteransicht
+river-legend-title = So liest man den Fluss

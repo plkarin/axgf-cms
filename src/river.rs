@@ -239,6 +239,8 @@ pub struct Graph {
     born_in: Vec<Option<usize>>,
     /// Children, in the order their families record them.
     kids_of: Vec<Vec<usize>>,
+    /// Families each person is a partner in, in the order families are read.
+    partner_in: Vec<Vec<usize>>,
     desc: Vec<usize>,
     anc: Vec<usize>,
 }
@@ -322,6 +324,12 @@ impl Graph {
         let mut born_in: Vec<Option<usize>> = vec![None; n];
         let mut born_conf: Vec<f64> = vec![f64::NEG_INFINITY; n];
         let mut kids_of: Vec<Vec<usize>> = vec![Vec::new(); n];
+        let mut partner_in: Vec<Vec<usize>> = vec![Vec::new(); n];
+        for (fi, f) in fams.iter().enumerate() {
+            for &p in &f.parents {
+                partner_in[p].push(fi);
+            }
+        }
         for (fi, f) in fams.iter().enumerate() {
             for &(k, _, raw) in &f.kids {
                 let c = raw.unwrap_or(UNRATED);
@@ -346,6 +354,7 @@ impl Graph {
             fams,
             born_in,
             kids_of,
+            partner_in,
             desc: Vec::new(),
             anc: Vec::new(),
         };
@@ -395,11 +404,59 @@ impl Graph {
             .unwrap_or_default()
     }
 
-    /// Partners in families that have children, in the order those children
-    /// were born.
-    fn spouses_of(&self, i: usize) -> Vec<usize> {
+    /// Each person's children, ordered for one reader.
+    ///
+    /// A sibship — the children of one family — is sorted by birth date only
+    /// when the reader may see every child in it; undated children keep their
+    /// recorded places. If any child is hidden, the whole sibship stays in the
+    /// order the family records it and no date is read at all: sorting it
+    /// would move a visible sibling according to a hidden one's birth date,
+    /// and put two hidden siblings in the order of their ages. Families are
+    /// taken in the order they are read; a child listed in two is placed by
+    /// the first.
+    ///
+    /// The record's order is often not birth order — 57 of the 120 families
+    /// with two or more children on the operator's bundle disagree — which is
+    /// why the date is used wherever it may be.
+    pub fn order_for(&self, sees: &dyn Fn(usize) -> bool) -> Vec<Vec<usize>> {
+        (0..self.len())
+            .map(|p| {
+                let mut out: Vec<usize> = Vec::new();
+                for &f in &self.partner_in[p] {
+                    let mut kids: Vec<usize> = self.fams[f]
+                        .kids
+                        .iter()
+                        .map(|k| k.0)
+                        .filter(|&k| k != p)
+                        .collect();
+                    if kids.iter().all(|&k| sees(k)) {
+                        // Dated children, sorted, back into the slots dated
+                        // children held; undated ones stay where they were.
+                        let slots: Vec<usize> = (0..kids.len())
+                            .filter(|&i| self.shape[kids[i]].birth_sort.is_some())
+                            .collect();
+                        let mut dated: Vec<usize> = slots.iter().map(|&i| kids[i]).collect();
+                        dated.sort_by_key(|&k| self.shape[k].birth_sort);
+                        for (slot, k) in slots.into_iter().zip(dated) {
+                            kids[slot] = k;
+                        }
+                    }
+                    for k in kids {
+                        if !out.contains(&k) {
+                            out.push(k);
+                        }
+                    }
+                }
+                out
+            })
+            .collect()
+    }
+
+    /// Partners in families that have children, in the order of those
+    /// children.
+    fn spouses_of(&self, i: usize, order: &[Vec<usize>]) -> Vec<usize> {
         let mut out = Vec::new();
-        for &k in &self.kids_of[i] {
+        for &k in &order[i] {
             if let Some(f) = self.born_in[k] {
                 for &p in &self.fams[f].parents {
                     if p != i && !out.contains(&p) && self.fams[f].parents.contains(&i) {
@@ -522,8 +579,11 @@ pub struct PNode {
     pub role: Role,
     /// Label tier: 0 none, 1 given name, 2 given name and initial, 3 full.
     pub lab: u8,
-    /// The smaller gap to a neighbour in the row: the room a label has.
+    /// The smaller gap to a neighbour in the row: what chose `lab`.
     pub room: f64,
+    /// The gap to the next person to the right in the row: how far this
+    /// person's label may run.
+    pub right: f64,
     #[serde(skip)]
     idx: usize,
     /// Generations from the centre, signed: negative is upstream.
@@ -682,6 +742,7 @@ impl Frame<'_> {
             role,
             lab: 0,
             room: 999.0,
+            right: 999.0,
             idx,
             gen,
             d: self.g.desc[idx] + 1,
@@ -741,6 +802,18 @@ struct DNode {
 
 /// Lay out the river around `centre` with `n` generations each way.
 pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout> {
+    layout_ordered(g, &g.order_for(&|_| true), centre, n, shape)
+}
+
+/// [`layout`] with the children's order chosen for one reader
+/// ([`Graph::order_for`]).
+pub fn layout_ordered(
+    g: &Graph,
+    order: &[Vec<usize>],
+    centre: &str,
+    n: usize,
+    shape: Shape,
+) -> Option<Layout> {
     let c = g.index_of(centre)?;
     let step = 96f64
         .min((CY - 46.0) / n as f64)
@@ -806,6 +879,7 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
     let mut dn: Vec<DNode> = Vec::new();
     let mut cur = 0f64;
     fn lay(
+        order: &[Vec<usize>],
         g: &Graph,
         idx: usize,
         depth: usize,
@@ -814,7 +888,7 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
         dn: &mut Vec<DNode>,
     ) -> usize {
         let ks: Vec<usize> = if depth < n {
-            g.kids_of[idx].clone()
+            order[idx].clone()
         } else {
             Vec::new()
         };
@@ -836,9 +910,9 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
         }
         let kids: Vec<usize> = ks
             .iter()
-            .map(|&k| lay(g, k, depth + 1, n, cur, dn))
+            .map(|&k| lay(order, g, k, depth + 1, n, cur, dn))
             .collect();
-        let sp = g.spouses_of(idx);
+        let sp = g.spouses_of(idx, order);
         if !sp.is_empty() && kids.len() == 1 {
             *cur += 1.0;
         }
@@ -851,15 +925,15 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
         slot
     }
     let top: Vec<usize> = if n > 0 {
-        g.kids_of[c]
+        order[c]
             .iter()
-            .map(|&k| lay(g, k, 1, n, &mut cur, &mut dn))
+            .map(|&k| lay(order, g, k, 1, n, &mut cur, &mut dn))
             .collect()
     } else {
         Vec::new()
     };
     let sd = 130f64.min((W - 150.0) / cur.max(1.0));
-    let csp = g.spouses_of(c);
+    let csp = g.spouses_of(c, order);
     let sp_x = CX + 200f64.max(230f64.min(sd * 1.4));
     let c0x = if csp.is_empty() {
         CX
@@ -1060,7 +1134,7 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
             return;
         };
         let mut groups: Vec<(usize, Vec<usize>)> = Vec::new();
-        for &k in &g.kids_of[pid] {
+        for &k in &order[pid] {
             if frame.pos(k).is_none() {
                 continue;
             }
@@ -1264,6 +1338,7 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
             };
             frame.persons[s].lab = label_tier(left.min(right));
             frame.persons[s].room = left.min(right);
+            frame.persons[s].right = right;
         }
     }
 
@@ -1611,7 +1686,10 @@ pub fn build(
     words: Words,
     signed_in: bool,
 ) -> Option<River> {
-    let mut layout = layout(g, centre, n, shape)?;
+    // Children ordered for this reader: by date only where they may see the
+    // whole sibship.
+    let order = g.order_for(&|i| lens.sees_person(&g.ids[i]));
+    let mut layout = layout_ordered(g, &order, centre, n, shape)?;
     redact_years(&mut layout, flat, lens);
     // A signed-out visitor gets no bands at all.
     layout.meta.bands = layout.meta.era && signed_in;
@@ -1637,7 +1715,7 @@ pub fn build(
         .find(|&&p| g.shape[p].slot == Some(0))
         .or_else(|| parents.first())
         .map(|&p| g.ids[p].clone());
-    let up = g.kids_of[c].first().map(|&k| g.ids[k].clone());
+    let up = order[c].first().map(|&k| g.ids[k].clone());
     Some(River {
         layout,
         shown,
@@ -1910,7 +1988,8 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     out.push_str(r#"<g class="rv-lit"></g>"#);
 
     // ---- persons
-    for (p, s) in l.persons.iter().zip(shown) {
+    let tiers = label_tiers(l, shown);
+    for (pi, (p, s)) in l.persons.iter().zip(shown).enumerate() {
         let is_c = p.role == Role::Centre;
         let r = if is_c { 7.5 } else { 4.8 };
         let (x, y) = (num(p.x), num(p.y));
@@ -1951,16 +2030,19 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 s.colour
             );
         }
-        let tier = if s.redacted {
-            0
-        } else if is_c {
-            3
-        } else {
-            p.lab
-        };
-        let tier = fit_edge(fit_tier(tier, s, p.room, is_c), s, p.x, r, is_c);
+        let tier = tiers[pi];
         if tier > 0 {
             let name = &s.names[(tier as usize).clamp(1, 3) - 1];
+            // The centre always labels; when even its given name is longer
+            // than the room it has, it is cut to fit.
+            let clipped;
+            let name = if is_c {
+                let start = p.x + r + 10.0;
+                clipped = clip_label(name, (p.right - 12.0).min(RIGHT_EDGE - start));
+                &clipped
+            } else {
+                name
+            };
             let halo = format!(
                 r#"paint-order="stroke" stroke="{BG}" stroke-width="4" stroke-linejoin="round""#
             );
@@ -2057,18 +2139,85 @@ fn label_width(text: &str, centre: bool) -> f64 {
 /// Step a label down a tier while it would run into its neighbour.
 ///
 /// The tier rule reads the gap only, so a long full name in a 140-unit gap
-/// overprinted the next person's. The centre always keeps its full name. A
-/// given name that does not fit either is dropped rather than overprinted:
-/// the person still labels on hover, which is where a reader looks for it.
-pub fn fit_tier(tier: u8, s: &Shown, room: f64, centre: bool) -> u8 {
-    if centre {
-        return tier;
-    }
+/// overprinted the next person's. `gap` is the room to the right-hand
+/// neighbour, and the years line counts as well as the name. A label that
+/// does not fit even as a given name is dropped rather than overprinted: the
+/// person still labels on hover, which is where a reader looks for it. The
+/// centre always labels, so it stops at its given name.
+pub fn fit_tier(tier: u8, s: &Shown, gap: f64, centre: bool) -> u8 {
+    let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
+    let floor = u8::from(centre);
     let mut t = tier;
-    while t > 0 && label_width(&s.names[t as usize - 1], false) > room - 12.0 {
+    while t > floor && label_width(&s.names[t as usize - 1], centre).max(years) > gap - 12.0 {
         t -= 1;
     }
     t
+}
+
+/// The centre's name, cut with an ellipsis to fit `room`.
+///
+/// Only for the centre, which always labels. A given name is normally short;
+/// one record on the operator's bundle holds a sentence in it ("Anna - w
+/// dokumentach wystepuje także pod tym imieniem"), which ran 130 units past
+/// the frame from the fixed point.
+pub fn clip_label(name: &str, room: f64) -> String {
+    if label_width(name, true) <= room {
+        return name.to_string();
+    }
+    let mut out = String::new();
+    for c in name.chars() {
+        let next = format!("{out}{c}…");
+        if label_width(&next, true) > room {
+            break;
+        }
+        out.push(c);
+    }
+    format!("{}…", out.trim_end())
+}
+
+/// Every person's label tier, resolved row by row, left to right.
+///
+/// A label is fitted to the gap to its right-hand neighbour, counting its
+/// years line as well as its name, and to the right rail; the centre shortens
+/// too but keeps at least its given name. Then a label that would start
+/// inside the previous label in its row is dropped — the previous one may be
+/// the centre's, which cannot be — so no two labels overlap
+/// (`tests/river_text.rs`, the pairwise check).
+pub fn label_tiers(l: &Layout, shown: &[Shown]) -> Vec<u8> {
+    let mut tiers = vec![0u8; l.persons.len()];
+    let mut rows: BTreeMap<i64, Vec<usize>> = BTreeMap::new();
+    for (i, p) in l.persons.iter().enumerate() {
+        rows.entry(p.y.round() as i64).or_default().push(i);
+    }
+    for (_, mut row) in rows {
+        row.sort_by(|a, b| l.persons[*a].x.total_cmp(&l.persons[*b].x));
+        let mut last_end = f64::NEG_INFINITY;
+        for i in row {
+            let (p, s) = (&l.persons[i], &shown[i]);
+            let centre = p.role == Role::Centre;
+            let r = if centre { 7.5 } else { 4.8 };
+            let start = p.x + r + if centre { 10.0 } else { 6.0 };
+            let mut t = if s.redacted {
+                0
+            } else if centre {
+                3
+            } else {
+                p.lab
+            };
+            if t > 0 {
+                t = fit_edge(fit_tier(t, s, p.right, centre), s, p.x, r, centre);
+            }
+            if t > 0 && !centre && start < last_end + 4.0 {
+                t = 0;
+            }
+            if t > 0 {
+                let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
+                last_end = start + label_width(&s.names[t as usize - 1], centre).max(years);
+            }
+            tiers[i] = t;
+        }
+    }
+    tiers
 }
 
 #[cfg(test)]
@@ -2367,6 +2516,10 @@ mod tests {
         assert_eq!(fit_tier(3, &s, 400.0, false), 3);
         assert_eq!(fit_tier(2, &s, 80.0, false), 1);
         assert_eq!(fit_tier(1, &s, 60.0, false), 0);
-        assert_eq!(fit_tier(3, &s, 10.0, true), 3);
+        assert_eq!(
+            fit_tier(3, &s, 10.0, true),
+            1,
+            "the centre keeps its given name"
+        );
     }
 }

@@ -2156,6 +2156,98 @@ impl Tab {
     }
 }
 
+/// The record's tabs beside the river.
+///
+/// The same machinery as [`Tab`] — a slug read from `?tab=`, a catalogue key,
+/// and the slug passed to `_person_detail.html` as its `tab` — regrouping the
+/// sections that already exist. Nothing here is new content: the fiche is the
+/// panel body as it was, every section in it, and each other tab is a subset
+/// of those sections. The grid's panel and the person page pass no river tab
+/// and are drawn exactly as before.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RiverTab {
+    /// The whole record, as the panel always drew it.
+    Fiche,
+    /// Family and the other relationships.
+    Family,
+    /// The timeline, occupations and places: the person page's Life face.
+    Life,
+    /// The sources half of the evidence section.
+    Sources,
+    /// Photographs and documents: the other half.
+    Media,
+    /// The AXGF 1.1 profile, as the person page's Profile tab draws it.
+    Profile,
+}
+
+/// The river's tabs, in the order they are shown.
+pub const RIVER_TABS: &[RiverTab] = &[
+    RiverTab::Fiche,
+    RiverTab::Family,
+    RiverTab::Life,
+    RiverTab::Sources,
+    RiverTab::Media,
+    RiverTab::Profile,
+];
+
+impl RiverTab {
+    /// The slug used in `?tab=`. The fiche passes no `tab` to the partial at
+    /// all, which is what draws every section.
+    pub fn slug(self) -> &'static str {
+        match self {
+            Self::Fiche => "record",
+            Self::Family => "family",
+            Self::Life => "life",
+            Self::Sources => "sources",
+            Self::Media => "media",
+            Self::Profile => "profile",
+        }
+    }
+
+    /// The catalogue key for its label. Five are the person page's or a
+    /// section's own words; only "Sources" is new.
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::Fiche => "person-tab-record",
+            Self::Family => "record-family",
+            Self::Life => "person-tab-life",
+            Self::Sources => "river-tab-sources",
+            Self::Media => "person-tab-media",
+            Self::Profile => "person-tab-profile",
+        }
+    }
+
+    /// Read a tab out of `?tab=`; anything unknown is the fiche, as an
+    /// unknown [`Tab`] is the record.
+    pub fn from_query(value: Option<&str>) -> Self {
+        match value.map(str::trim) {
+            Some("family") => Self::Family,
+            Some("life") => Self::Life,
+            Some("sources") => Self::Sources,
+            Some("media") => Self::Media,
+            Some("profile") => Self::Profile,
+            _ => Self::Fiche,
+        }
+    }
+
+    /// How much is behind the tab, as the person page counts its own.
+    pub fn count(self, p: &PersonView) -> usize {
+        match self {
+            Self::Fiche => 0,
+            Self::Family => {
+                p.parents.len()
+                    + p.siblings.len()
+                    + p.unions.iter().map(|g| g.records.len()).sum::<usize>()
+                    + p.links.len()
+            }
+            Self::Life => p.timeline.len() + p.occupations.len() + p.places.len(),
+            Self::Sources => p.sources.len(),
+            Self::Media => p.documents.len(),
+            Self::Profile => p.profile_count,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

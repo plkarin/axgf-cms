@@ -3204,4 +3204,5 @@ river-legend-lost = record ends
 river-legend-discharge = descendants
 river-legend-direction = ↓ toward the source · ↑ toward the living
 river-grid-link = Grid view
+river-tab-sources = Sources
 river-legend-title = How to read the river

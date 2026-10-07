@@ -138,8 +138,10 @@ async fn main() -> Result<()> {
 
     let app = axgf_cms::router(Arc::clone(&state));
 
-    // Before the listener opens, so the first visitor does not pay for it.
+    // Before the listener opens, so the first visitor does not pay for
+    // either: every catalogue parsed, every template compiled.
     axgf_cms::i18n::warm();
+    axgf_cms::render::warm();
 
     let listener = tokio::net::TcpListener::bind(cfg.bind)
         .await

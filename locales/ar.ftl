@@ -3424,4 +3424,5 @@ river-legend-lost = ينتهي السجل
 river-legend-discharge = الذرية
 river-legend-direction = ↓ نحو المنبع · ↑ نحو الأحياء
 river-grid-link = عرض الشبكة
+river-tab-sources = المصادر
 river-legend-title = كيف يُقرأ النهر

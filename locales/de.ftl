@@ -3164,4 +3164,5 @@ river-legend-lost = Aufzeichnung endet
 river-legend-discharge = Nachkommen
 river-legend-direction = ↓ zur Quelle · ↑ zu den Lebenden
 river-grid-link = Rasteransicht
+river-tab-sources = Quellen
 river-legend-title = So liest man den Fluss

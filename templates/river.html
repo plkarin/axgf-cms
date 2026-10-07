@@ -27,7 +27,7 @@
       <button type="button" class="rv-btn" id="rv-back" disabled>{{ t("river-back") }}</button>
       <div class="rv-seg" role="group" aria-label="{{ t('river-range') }}">
         {%- for r in ranges %}
-        <a href="/?p={{ centre_q }}&amp;n={{ r }}" data-range="{{ r }}"
+        <a href="/?p={{ centre_q }}&amp;n={{ r }}{% if river_tab and river_tab != 'record' %}&amp;tab={{ river_tab }}{% endif %}" data-range="{{ r }}"
            {%- if r == n %} aria-current="true"{% endif %}>± {{ r }}</a>
         {%- endfor %}
       </div>

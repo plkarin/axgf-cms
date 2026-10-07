@@ -31,7 +31,28 @@
     </div>
   </div>
 
-  {% include "_person_detail.html" %}
+  {#- Beside the river only (`river_tabs`): the record's six tabs, real links
+      in the person page's own markup, so the page works with scripting off
+      and the back button goes back a tab. Each tab is a subset of the
+      sections the panel always drew; the fiche is all of them. The grid's
+      panel never sets the flag and is drawn exactly as before. #}
+  {% if river_tabs %}
+  <nav class="person-tabs rv-tabs" aria-label="{{ t('person-sections-label') }}">
+    {%- for tb in tabs %}
+    <a href="/?p={{ p.id }}&amp;n={{ river_n }}{% if tb.slug != 'record' %}&amp;tab={{ tb.slug }}{% endif %}"
+       data-tab="{{ tb.slug }}"
+       class="person-tab{% if tb.slug == river_tab %} is-current{% endif %}"
+       {%- if tb.slug == river_tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}
+      {%- if tb.count %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
+    {%- endfor %}
+  </nav>
+  {% endif %}
+
+  {% if river_tabs and river_tab == "profile" %}
+    {% include "_profile.html" %}
+  {% else %}
+    {% include "_person_detail.html" %}
+  {% endif %}
 </div>
 {% else %}
 <div class="panel-inner panel-empty">

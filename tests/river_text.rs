@@ -1,4 +1,5 @@
-//! Every word the river draws fits inside the frame.
+//! Every word the river draws fits inside the frame, and no two labels
+//! overlap.
 //!
 //! Eyeballing contact sheets missed names cut off at the right edge at ± 3
 //! and ± 5. This replaces the eyeball: for every `<text>` in every emitted
@@ -118,6 +119,45 @@ fn check(svg: &str, what: &str, failures: &mut Vec<String>) {
     }
 }
 
+/// No two people's labels overlap.
+///
+/// A label is a name line and a years line drawn at the same x; its box is
+/// the union of the two, each measured with [`advance`]. Every pair of boxes
+/// in one drawing is tested — the rows are what makes overlap possible, but a
+/// pairwise check does not have to know that.
+fn check_overlap(svg: &str, what: &str, failures: &mut Vec<String>) {
+    let mut boxes: Vec<(String, f64, f64, f64, f64)> = Vec::new();
+    let labels: Vec<Text> = texts(svg).into_iter().filter(|t| t.label).collect();
+    for pair in labels.chunks(2) {
+        let [name, years] = pair else {
+            failures.push(format!("{what}: a name without its years line"));
+            continue;
+        };
+        assert_eq!(name.x, years.x, "{what}: a label's two lines share an x");
+        let right = (name.x + advance(name)).max(years.x + advance(years));
+        boxes.push((
+            name.content.clone(),
+            name.x,
+            right,
+            name.y - name.size,
+            years.y + 2.0,
+        ));
+    }
+    for i in 0..boxes.len() {
+        for j in i + 1..boxes.len() {
+            let (a, b) = (&boxes[i], &boxes[j]);
+            let overlap_x = a.1 < b.2 && b.1 < a.2;
+            let overlap_y = a.3 < b.4 && b.3 < a.4;
+            if overlap_x && overlap_y {
+                failures.push(format!(
+                    "{what}: {:?} [{:.1}..{:.1}] overlaps {:?} [{:.1}..{:.1}]",
+                    a.0, a.1, a.2, b.0, b.1, b.2
+                ));
+            }
+        }
+    }
+}
+
 fn words() -> Words {
     Words {
         living_band: "VIVANTS".into(),
@@ -139,13 +179,26 @@ fn centres(flat: &Value, g: &Graph) -> Vec<String> {
         .collect()
 }
 
-fn run(flat: &Value) -> Vec<String> {
+fn run(flat: &Value, every_centre: bool) -> Vec<String> {
     let g = Graph::build(flat);
+    let chosen = if every_centre {
+        let mut all: Vec<String> = flat["persons"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect();
+        all.sort();
+        all
+    } else {
+        centres(flat, &g)
+    };
+    let expected = chosen.len() * 3 * 2;
     let admin = Lens::unrestricted();
     let visitor = Lens::resolve(flat, Visibility::Public);
     let mut failures = Vec::new();
     let mut checked = 0;
-    for centre in centres(flat, &g) {
+    for centre in chosen {
         for n in river::RANGES {
             for (who, lens, signed_in) in [("admin", &admin, true), ("visitor", &visitor, false)] {
                 let r = river::build(
@@ -159,16 +212,15 @@ fn run(flat: &Value) -> Vec<String> {
                     signed_in,
                 )
                 .unwrap();
-                check(
-                    &r.svg("river"),
-                    &format!("{who} {centre} ±{n}"),
-                    &mut failures,
-                );
+                let svg = r.svg("river");
+                let what = format!("{who} {centre} ±{n}");
+                check(&svg, &what, &mut failures);
+                check_overlap(&svg, &what, &mut failures);
                 checked += 1;
             }
         }
     }
-    assert_eq!(checked, 30 * 3 * 2);
+    assert_eq!(checked, expected);
     failures
 }
 
@@ -275,7 +327,7 @@ fn generated() -> Value {
 fn every_word_on_the_river_fits_the_frame() {
     let flat = generated();
     assert!(flat["persons"].as_object().unwrap().len() > 250);
-    let failures = run(&flat);
+    let failures = run(&flat, false);
     assert!(
         failures.is_empty(),
         "{} text node(s) leave the frame:\n{}",
@@ -312,7 +364,9 @@ fn every_word_on_the_operators_river_fits_the_frame() {
         let v: Value = serde_json::from_str(&s).unwrap();
         target.insert(v["id"].as_str().unwrap().to_string(), v);
     }
-    let failures = run(&json!({"persons": persons, "families": families}));
+    // Every person as the centre, not thirty: the known overlap, Demetriusz
+    // Kaniewski's name over his wife's, was not among the thirty.
+    let failures = run(&json!({"persons": persons, "families": families}), true);
     assert!(
         failures.is_empty(),
         "{} text node(s) leave the frame:\n{}",
@@ -370,4 +424,86 @@ fn the_window_holds_everything_and_crops_only_dead_space() {
             assert!(h >= 0.9 * river::H, "±{n} fills the frame: height {h}");
         }
     }
+}
+
+/// The known overlap, as a fixed shape rather than whatever a generated
+/// family happens to place: a centre with a long name and a spouse 200 units
+/// to the right, which is where Demetriusz Kaniewski's name ran over Marianna
+/// Dola's. The generated family stopped containing this case when sibling
+/// order changed, and the check above went on passing without it.
+#[test]
+fn a_long_centre_name_does_not_run_over_the_spouse() {
+    let person = |id: &str, given: &str, surname: &str, g: &str, born: i64| {
+        json!({"id": id, "type": "person", "axgf_version": "1.1",
+            "identity": {"name": {"display": format!("{given} {surname}"),
+                "components": [{"type": "given_name", "value": given}, {"type": "family_name", "value": surname}]},
+                "gender": {"value": g}, "is_living": false, "visibility": "public"},
+            "birth": {"date": {"value": born.to_string(), "precision": "year"}}})
+    };
+    let mut persons = Map::new();
+    for p in [
+        person(
+            "c",
+            "Konstancja Wiktoria",
+            "Gundelach-Groszkowska",
+            "F",
+            1790,
+        ),
+        person("s", "Demetriusz", "Kaniewski", "M", 1786),
+        person("k", "Tekla", "Kaniewska", "F", 1811),
+        // A given name that is a sentence: the centre's floor label must be
+        // cut to fit, not run off the frame.
+        person(
+            "n",
+            "Anna - w dokumentach wystepuje także pod tym imieniem",
+            "Kaniewska",
+            "F",
+            1814,
+        ),
+    ] {
+        persons.insert(p["id"].as_str().unwrap().to_string(), p);
+    }
+    // A tight row of short given names over full date ranges: thirteen
+    // children, squeezed toward the centre by the spouse on the right, stand
+    // 47.7 apart — wide enough for "Jan" at tier 1, not for "1815–1880" under
+    // it — and a fit that measured only the name drew the years into the next
+    // label.
+    let mut kids = vec![json!({"person_id": "k"}), json!({"person_id": "n"})];
+    for (i, given) in [
+        "Jan", "Ola", "Ewa", "Iza", "Ida", "Józ", "Ala", "Lex", "Ula", "Ola", "Eda",
+    ]
+    .iter()
+    .enumerate()
+    {
+        let id = format!("t{i}");
+        let mut p = person(&id, given, "Kaniewska", "F", 1815 + i as i64);
+        p["death"] = json!({"date": {"value": (1880 + i).to_string(), "precision": "year"}});
+        persons.insert(id.clone(), p);
+        kids.push(json!({"person_id": id}));
+    }
+    let families = json!({"f": {"id": "f", "type": "family", "axgf_version": "1.1",
+        "union": {"persons": [{"person_id": "s", "role": "spouse"}, {"person_id": "c", "role": "spouse"}]},
+        "children": kids}});
+    let flat = json!({"persons": persons, "families": families});
+    let g = Graph::build(&flat);
+    let mut failures = Vec::new();
+    for centre in ["c", "s", "n"] {
+        for n in river::RANGES {
+            let r = river::build(
+                &flat,
+                &Lens::unrestricted(),
+                &g,
+                centre,
+                n,
+                Shape::default(),
+                words(),
+                true,
+            )
+            .unwrap();
+            let svg = r.svg("river");
+            check(&svg, &format!("{centre} ±{n}"), &mut failures);
+            check_overlap(&svg, &format!("{centre} ±{n}"), &mut failures);
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

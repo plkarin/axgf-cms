@@ -104,6 +104,16 @@ pub fn env() -> &'static Environment<'static> {
     })
 }
 
+/// Compile every template now rather than on the first page.
+///
+/// The environment compiles all of them on first use, and that first use was
+/// a visitor: after the catalogue moved to boot, the first river request in a
+/// process still cost ~4 ms more than the ones after it. `main` calls this
+/// next to [`crate::i18n::warm`], before the listener opens.
+pub fn warm() {
+    let _ = env();
+}
+
 /// Add `t(key, ...)` to the environment.
 ///
 /// The locale is read from the render context rather than being bound into the

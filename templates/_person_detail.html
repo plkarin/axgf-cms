@@ -117,7 +117,7 @@
 {% endif %}
 
 {# ------------------------------------------------------------------ FAMILY #}
-{% if (tab is undefined or tab == "record") and (p.parents or p.siblings or p.unions) %}
+{% if (tab is undefined or tab == "record" or tab == "family") and (p.parents or p.siblings or p.unions) %}
 <section id="family" class="rec-section">
   {{ m.sec(t, t("record-family"), compact, t("record-family-help")) }}
   {# Only wrap a grid around cards that exist: an empty two-column grid still
@@ -212,7 +212,7 @@
 {% endif %}
 
 {# --------------------------------------------------- OTHER RELATIONSHIPS #}
-{% if (tab is undefined or tab == "record") and (p.links) %}
+{% if (tab is undefined or tab == "record" or tab == "family") and (p.links) %}
 <section class="links-section rec-section" id="relationships">
   {{ m.sec(t, t("record-other-relationships"), compact, t("record-other-relationships-help")) }}
   <div class="grid cols-2">
@@ -404,7 +404,15 @@
    entirely empty page: no heading, no sentence, nothing. Most people on a
    converted bundle are exactly that person. #}
 {% set has_evidence = p.sources or p.documents or p.images %}
-{% if (tab is undefined and has_evidence) or (tab == "media") or (tab is undefined and is_admin) %}
+{#- Beside the river the evidence is two tabs: "sources" draws the sources
+    table, "media" the photographs, the documents and the way to attach one.
+    The person page's own "media" tab is still all of it. #}
+{% set split = river_tabs is defined and river_tabs %}
+{% set show_sources = not (split and tab == "media") %}
+{% set show_files = not (split and tab == "sources") %}
+{% if split and tab == "sources" %}{% set has_evidence = p.sources %}
+{% elif split and tab == "media" %}{% set has_evidence = p.documents or p.images %}{% endif %}
+{% if (tab is undefined and has_evidence) or (tab == "media") or (tab == "sources" and split) or (tab is undefined and is_admin) %}
 <section id="evidence" class="rec-section">
   {{ m.sec(t, t("record-sources-documents"), compact, t("record-sources-documents-help")) }}
 
@@ -415,7 +423,7 @@
   </p>
   {% endif %}
 
-  {% if p.sources %}
+  {% if p.sources and show_sources %}
   {# `data-label` on every cell is what lets the panel stack this table into
      rows of labelled lines instead of scrolling it sideways. The labels are
      the `th` text, so the two never disagree. #}
@@ -445,7 +453,7 @@
   </div>
   {% endif %}
 
-  {% if p.images %}
+  {% if p.images and show_files %}
   <h3>{{ t("record-photographs") }}</h3>
   <div class="gallery">
     {% for d in p.images %}
@@ -465,7 +473,7 @@
   </div>
   {% endif %}
 
-  {% if p.documents %}
+  {% if p.documents and show_files %}
   <h3>{{ t("record-documents") }}</h3>
   <div class="table-wrap">
   <table class="stackable">
@@ -499,7 +507,7 @@
   </div>
   {% endif %}
 
-  {% if is_admin %}
+  {% if is_admin and show_files %}
   <form class="upload-form" method="post" enctype="multipart/form-data"
         action="/admin/person/{{ p.id }}/document">
     <h3>{{ t("record-attach-document") }}</h3>
@@ -521,7 +529,7 @@
     </p>
   </form>
   {% endif %}
-  {% if may_write %}
+  {% if may_write and show_files %}
   <p><a class="small" href="/admin/person/{{ p.id }}/documents">{{ t("documents-edit-link") }}</a></p>
   {% endif %}
 </section>

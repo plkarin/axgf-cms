@@ -136,16 +136,17 @@
       else if (e.conf === 'd') out += '<path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-dasharray="' + f(Math.max(4, w * 1.3)) + ' ' + f(Math.max(3, w * 0.6)) + '"' + o + '/>';
       else out += '<g' + o + '><path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-opacity="0.14"/><path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0.1 5.5"/></g>';
     });
+    var T = tiers(fr);
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, x = f(p.x), y = f(p.y);
       out += '<g opacity="' + f(p.a) + '">';
       if (s.living) out += '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" fill="#e6b062" fill-opacity="0.16"/>';
       out += isC ? '<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" stroke="#dcae64" stroke-width="1.2"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#dcae64"/>'
         : '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (s.sparse || s.redacted ? BG : s.colour) + '" stroke="' + (s.sparse || s.redacted ? s.colour : BG) + '" stroke-width="1.6"/>';
-      var tier = s.redacted ? 0 : edge(isC ? 3 : fit(p.lab, s, p.room), s, p.x, r, isC);
+      var tier = T[p.id] || 0;
       if (tier > 0) {
         var lx = f(p.x + r + (isC ? 10 : 6)), halo = ' paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round"';
-        out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(s.names[tier - 1]) + '</text>'
+        out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(isC ? clip(s.names[tier - 1], Math.min(p.right - 12, 866 - (p.x + r + 10))) : s.names[tier - 1]) + '</text>'
           + '<text x="' + lx + '" y="' + f(p.y + (isC ? 14 : 11.5)) + '" font-family="' + MONO + '" font-size="' + (isC ? 11 : 9.5) + '" fill="#8d9c92"' + halo + '>' + esc(s.years) + '</text>';
       }
       out += '</g>';
@@ -170,10 +171,37 @@
     while (t > floor && start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > 866) t--;
     return t;
   }
-  // river::fit_tier: step a label down while it would run into its neighbour.
-  function fit(t, s, room) {
-    while (t > 0 && width(s.names[t - 1], 12, false) > room - 12) t--;
+  // river::fit_tier: step a label down while it, or its years line, would run
+  // into its right-hand neighbour; the centre keeps its given name.
+  function fit(t, s, gap, isC) {
+    var yw = width(s.years, isC ? 11 : 9.5, true);
+    while (t > (isC ? 1 : 0) && Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > gap - 12) t--;
     return t;
+  }
+  // river::label_tiers: row by row, left to right; a label that would start
+  // inside the previous one is dropped, unless it is the centre's.
+  function tiers(fr) {
+    var rows = {}, out = {};
+    fr.persons.forEach(function (p) { (rows[Math.round(p.y)] = rows[Math.round(p.y)] || []).push(p); });
+    Object.keys(rows).forEach(function (k) {
+      var last = -Infinity;
+      rows[k].sort(function (a, b) { return a.x - b.x; }).forEach(function (p) {
+        var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, start = p.x + r + (isC ? 10 : 6);
+        var t = s.redacted ? 0 : isC ? 3 : p.lab;
+        if (t > 0) t = edge(fit(t, s, p.right, isC), s, p.x, r, isC);
+        if (t > 0 && !isC && start < last + 4) t = 0;
+        if (t > 0) last = start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), width(s.years, isC ? 11 : 9.5, true));
+        out[p.id] = t;
+      });
+    });
+    return out;
+  }
+  // river::clip_label: the centre always labels, cut to fit if it must.
+  function clip(name, room) {
+    if (width(name, 16, true) <= room) return name;
+    var out = '';
+    for (var i = 0; i < name.length && width(out + name[i] + '…', 16, true) <= room; i++) out += name[i];
+    return out.replace(/\s+$/, '') + '…';
   }
   function edges(fr, PM) {
     var list = [];
@@ -232,7 +260,7 @@
         cur = body.river; remember(cur);
         if (!fromHistory) {
           if (id !== trail[trail.length - 1]) trail = trail.filter(function (x) { return x !== id; }).concat([id]).slice(-7);
-          history.pushState({ p: id, n: n }, '', base + '?p=' + encodeURIComponent(id) + '&n=' + n);
+          history.pushState({ p: id, n: n, tab: tab }, '', url(id, n));
         }
         swapPanel(id); controls(n);
         var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; };
@@ -244,11 +272,16 @@
           if (t < 1) raf = requestAnimationFrame(tick); else done();
         })(t0);
       })
-      .catch(function () { busy = false; location.href = base + '?p=' + encodeURIComponent(id) + '&n=' + n; });
+      .catch(function () { busy = false; location.href = url(id, n); });
+  }
+  // The record tab beside the river; kept across travel.
+  var tab = new URLSearchParams(location.search).get('tab') || 'record';
+  function url(id, n) {
+    return base + '?p=' + encodeURIComponent(id) + '&n=' + n + (tab !== 'record' ? '&tab=' + encodeURIComponent(tab) : '');
   }
   function swapPanel(id) {
     if (!panel) return;
-    fetch('/tree/panel/' + encodeURIComponent(id), { credentials: 'same-origin' })
+    fetch('/tree/panel/' + encodeURIComponent(id) + '?river=1&n=' + cur.layout.meta.n + (tab !== 'record' ? '&tab=' + encodeURIComponent(tab) : ''), { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.text() : null; })
       .then(function (html) {
         // A record this reader may not read is refused, and the panel says
@@ -261,7 +294,7 @@
   function controls(n) {
     var c = cur.layout.meta.centre;
     root.querySelectorAll('[data-range]').forEach(function (a) {
-      a.href = base + '?p=' + encodeURIComponent(c) + '&n=' + a.dataset.range;
+      a.href = url(c, a.dataset.range);
       if (+a.dataset.range === n) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
     });
     var grid = root.querySelector('.rv-grid'); if (grid) grid.href = '/tree?root=' + encodeURIComponent(c);
@@ -302,8 +335,17 @@
   });
   canvas.addEventListener('mouseleave', function () { if (!busy) light(null); });
   root.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-range],[data-motion],[data-go],[data-centre]');
+    var t = e.target.closest && e.target.closest('[data-range],[data-motion],[data-go],[data-centre],[data-tab]');
     if (!t) return;
+    if (t.dataset.tab) {
+      // A record tab: the panel changes, the river does not.
+      e.preventDefault();
+      tab = t.dataset.tab;
+      var c = cur.layout.meta.centre;
+      history.pushState({ p: c, n: cur.layout.meta.n, tab: tab }, '', url(c, cur.layout.meta.n));
+      swapPanel(c);
+      return;
+    }
     if (t.dataset.range) { e.preventDefault(); travel(cur.layout.meta.centre, +t.dataset.range); }
     else if (t.dataset.motion) {
       cut = t.dataset.motion === 'cut';
@@ -319,8 +361,15 @@
     else if (e.key === 'ArrowLeft' && trail.length > 1) { e.preventDefault(); goBack(); }
   });
   window.addEventListener('popstate', function (e) {
-    if (e.state && e.state.p) travel(e.state.p, e.state.n, true);
+    if (!e.state || !e.state.p) return;
+    var tabChanged = (e.state.tab || 'record') !== tab;
+    tab = e.state.tab || 'record';
+    if (e.state.p === cur.layout.meta.centre && e.state.n === cur.layout.meta.n) {
+      if (tabChanged) swapPanel(e.state.p);
+    } else {
+      travel(e.state.p, e.state.n, true);
+    }
   });
-  history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n }, '');
+  history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
   controls(cur.layout.meta.n);
 })();

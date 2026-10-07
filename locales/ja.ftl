@@ -2939,4 +2939,5 @@ river-legend-lost = 記録はここまで
 river-legend-discharge = 子孫数
 river-legend-direction = ↓ 源流へ · ↑ 存命者へ
 river-grid-link = グリッド表示
+river-tab-sources = 出典
 river-legend-title = 流れの読み方

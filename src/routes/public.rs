@@ -508,6 +508,7 @@ pub async fn tree_panel(
     State(state): State<Shared>,
     headers: HeaderMap,
     Path(id): Path<String>,
+    Query(q): Query<PanelQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/tree?sel={id}"));
@@ -528,17 +529,38 @@ pub async fn tree_panel(
         }
     });
     match outcome {
-        Reading::Ok(p) => render::page_with(
-            &chrome,
-            "_panel.html",
-            context! {
-                p,
-                history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
-                compact => true,
-                max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
-                document_types => crate::documents::document_type_options(chrome.lang),
-            },
-        ),
+        Reading::Ok(p) => {
+            // The river asks for its tabs; the grid does not, and gets the
+            // panel exactly as before.
+            let tab_ctx = if q.river.is_some() {
+                let n =
+                    q.n.filter(|n| crate::river::RANGES.contains(n))
+                        .unwrap_or(crate::river::DEFAULT_RANGE);
+                river_tab_context(
+                    &state,
+                    &viewer,
+                    chrome.lang,
+                    &p,
+                    q.tab.as_deref(),
+                    q.group.as_deref(),
+                    n,
+                )
+            } else {
+                context! {}
+            };
+            render::page_with(
+                &chrome,
+                "_panel.html",
+                context! {
+                    p,
+                    history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
+                    compact => true,
+                    max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                    document_types => crate::documents::document_type_options(chrome.lang),
+                    ..tab_ctx
+                },
+            )
+        }
         Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
         Reading::Absent => render::error_page_in(
             &chrome,
@@ -1258,6 +1280,20 @@ pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Respo
 // The river
 // ---------------------------------------------------------------------------
 
+/// Query parameters for `/tree/panel/:id`. All optional: the grid sends
+/// none, the river sends `river=1` and its tab.
+#[derive(serde::Deserialize)]
+pub struct PanelQuery {
+    #[serde(default)]
+    river: Option<String>,
+    #[serde(default)]
+    tab: Option<String>,
+    #[serde(default)]
+    group: Option<String>,
+    #[serde(default)]
+    n: Option<usize>,
+}
+
 /// Query parameters for `/` and `/river/data`.
 #[derive(serde::Deserialize)]
 pub struct RiverQuery {
@@ -1267,6 +1303,50 @@ pub struct RiverQuery {
     /// Generations each way: 2, 3 or 5.
     #[serde(default)]
     n: Option<usize>,
+    /// The record tab beside the river (`person::RiverTab`).
+    #[serde(default)]
+    tab: Option<String>,
+    /// The profile group, on the profile tab.
+    #[serde(default)]
+    group: Option<String>,
+}
+
+/// The record tabs beside the river, for one person: what `_panel.html` reads
+/// when `river_tabs` is set. The fiche passes no `tab`, which is what makes the
+/// partial draw every section, so the key is left out rather than set empty.
+fn river_tab_context(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    lang: &str,
+    p: &crate::person::PersonView,
+    tab: Option<&str>,
+    group: Option<&str>,
+    n: usize,
+) -> minijinja::Value {
+    let tab = crate::person::RiverTab::from_query(tab);
+    let tabs: Vec<Value> = crate::person::RIVER_TABS
+        .iter()
+        .map(|t| json!({"slug": t.slug(), "key": t.key(), "count": t.count(p)}))
+        .collect();
+    let profile_group = (tab == crate::person::RiverTab::Profile)
+        .then(|| {
+            state.read_as(viewer.ceiling(), |flat, lens| {
+                crate::person::profile_group(flat, &p.id, lens, lang, group)
+            })
+        })
+        .flatten();
+    let base = context! {
+        river_tabs => true,
+        river_tab => tab.slug(),
+        river_n => n,
+        tabs,
+        profile_group,
+    };
+    if tab == crate::person::RiverTab::Fiche {
+        base
+    } else {
+        context! { tab => tab.slug(), ..base }
+    }
 }
 
 /// One river, resolved for one reader.
@@ -1384,6 +1464,21 @@ pub async fn river(
         ms = started.elapsed().as_secs_f64() * 1000.0,
         "river laid out"
     );
+    let tab_ctx = v
+        .panel
+        .as_ref()
+        .map(|p| {
+            river_tab_context(
+                &state,
+                &viewer,
+                chrome.lang,
+                p,
+                q.tab.as_deref(),
+                q.group.as_deref(),
+                v.n,
+            )
+        })
+        .unwrap_or_else(|| context! {});
     render::page_with(
         &chrome,
         "river.html",
@@ -1403,6 +1498,7 @@ pub async fn river(
             compact => true,
             max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
             document_types => crate::documents::document_type_options(chrome.lang),
+            ..tab_ctx
         },
     )
 }

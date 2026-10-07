@@ -3150,4 +3150,5 @@ river-legend-lost = fin du relevé
 river-legend-discharge = débit
 river-legend-direction = ↓ vers la source · ↑ vers les vivants
 river-grid-link = Vue en grille
+river-tab-sources = Sources
 river-legend-title = Lire la rivière

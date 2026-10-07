@@ -97,11 +97,24 @@ fn twelve() -> Value {
         family("f4", &["p07", "p08"], &[("p09", 0.95), ("p10", 0.3)]),
         family("f5", &["p09"], &[("p12", 0.8), ("p11", 0.9)]),
     ];
+    let mut persons: serde_json::Map<String, Value> = persons
+        .into_iter()
+        .map(|p| (p["id"].as_str().unwrap().to_string(), p))
+        .collect();
+    // One source and one document for Stanislas, so the record tabs that
+    // split the evidence have something on each side.
+    persons["p07"]["birth"]["source_id"] = json!("s1");
     json!({
         "manifest": {"axgf": "1.1", "created_at": "2026-09-01T00:00:00Z"},
-        "persons": persons.into_iter().map(|p| (p["id"].as_str().unwrap().to_string(), p)).collect::<serde_json::Map<_, _>>(),
+        "persons": persons,
         "families": families.into_iter().map(|f| (f["id"].as_str().unwrap().to_string(), f)).collect::<serde_json::Map<_, _>>(),
-        "events": {}, "places": {}, "sources": {}, "occupations": {}, "links": {}, "documents": {}
+        "events": {}, "places": {}, "occupations": {}, "links": {},
+        "sources": {"s1": {"id": "s1", "type": "source", "axgf_version": "1.0", "version_num": 1,
+            "title": "Registre des naissances SOURCEMARK", "source_type": "birth_certificate", "reliability": "primary"}},
+        "documents": {"d1": {"id": "d1", "type": "document", "axgf_version": "1.0", "version_num": 1,
+            "filename": "acte-DOCMARK.pdf", "mime_type": "application/pdf", "document_type": "birth_certificate",
+            "status": "referenced",
+            "linked_to": [{"entity_type": "person", "entity_id": "p07", "role": "subject"}]}}
     })
 }
 
@@ -713,4 +726,156 @@ fn hidden_peoples_dates_never_change_what_a_visitor_receives() {
             }
         }
     }
+}
+
+#[test]
+fn siblings_follow_birth_dates_only_where_the_reader_sees_every_sibling() {
+    // One parent, two families. In `all-visible` the children are recorded
+    // youngest first; in `one-hidden` likewise, with the eldest hidden.
+    let mut hidden = person("z", "Zofia", "Nowak", "F", Some(1930), None, false);
+    hidden["identity"]["visibility"] = json!("members");
+    let persons = vec![
+        person("dad", "Jan", "Nowak", "M", Some(1880), Some(1950), false),
+        person("m1", "Anna", "Lis", "F", Some(1882), Some(1910), false),
+        person("m2", "Ewa", "Mazur", "F", Some(1890), Some(1960), false),
+        person("a3", "Adam", "Nowak", "M", Some(1909), None, false),
+        person("a2", "Adela", "Nowak", "F", Some(1905), None, false),
+        person("a1", "Antoni", "Nowak", "M", Some(1902), None, false),
+        person("y", "Yvonne", "Nowak", "F", Some(1935), None, false),
+        person("x", "Xawery", "Nowak", "M", Some(1940), None, false),
+        hidden,
+    ];
+    let families = vec![
+        family(
+            "all-visible",
+            &["dad", "m1"],
+            &[("a3", 0.9), ("a2", 0.9), ("a1", 0.9)],
+        ),
+        family(
+            "one-hidden",
+            &["dad", "m2"],
+            &[("x", 0.9), ("y", 0.9), ("z", 0.9)],
+        ),
+    ];
+    let keyed = |v: Vec<Value>| -> serde_json::Map<String, Value> {
+        v.into_iter()
+            .map(|e| (e["id"].as_str().unwrap().to_string(), e))
+            .collect()
+    };
+    let flat = json!({"persons": keyed(persons), "families": keyed(families)});
+    let g = Graph::build(&flat);
+    let x_of = |r: &river::River, id: &str| r.layout.person(id).unwrap().x;
+    let visitor = Lens::resolve(&flat, Visibility::Public);
+    assert!(!visitor.sees_person("z"));
+    let v = river::build(
+        &flat,
+        &visitor,
+        &g,
+        "dad",
+        2,
+        Shape::default(),
+        words(),
+        false,
+    )
+    .unwrap();
+    // Every sibling visible: by birth date, eldest left.
+    assert!(x_of(&v, "a1") < x_of(&v, "a2") && x_of(&v, "a2") < x_of(&v, "a3"));
+    // A hidden sibling: the record's order, no date read.
+    assert!(x_of(&v, "x") < x_of(&v, "y") && x_of(&v, "y") < x_of(&v, "z"));
+    // An administrator sees the whole second sibship, so it is by date too.
+    let a = river::build(
+        &flat,
+        &Lens::unrestricted(),
+        &g,
+        "dad",
+        2,
+        Shape::default(),
+        words(),
+        true,
+    )
+    .unwrap();
+    assert!(x_of(&a, "z") < x_of(&a, "y") && x_of(&a, "y") < x_of(&a, "x"));
+    // ↑ is the first child in this reader's order.
+    assert_eq!(v.up.as_deref(), Some("a1"));
+}
+
+#[tokio::test]
+async fn the_record_beside_the_river_has_six_tabs_regrouping_what_was_there() {
+    let (app, _d) = app("river-tabs");
+    let page = |tab: &str| {
+        let uri = if tab.is_empty() {
+            "/?p=p07".to_string()
+        } else {
+            format!("/?p=p07&tab={tab}")
+        };
+        let app = app.clone();
+        async move { body_string(get_admin(&app, &uri).await).await }
+    };
+    // The fiche is the panel as it was: every section.
+    let fiche = page("").await;
+    for slug in ["record", "family", "life", "sources", "media", "profile"] {
+        assert!(
+            fiche.contains(&format!(r#"data-tab="{slug}""#)),
+            "tab {slug}"
+        );
+    }
+    let current = |html: &str, slug: &str| {
+        html.split(&format!(r#"data-tab="{slug}""#))
+            .nth(1)
+            .is_some_and(|rest| rest[..rest.find('>').unwrap()].contains("is-current"))
+    };
+    assert!(
+        current(&fiche, "record") && !current(&fiche, "family"),
+        "the fiche is the tab open by default"
+    );
+    for section in [r#"id="identity""#, r#"id="family""#, r#"id="evidence""#] {
+        assert!(fiche.contains(section), "the fiche draws {section}");
+    }
+    assert!(fiche.contains("SOURCEMARK") && fiche.contains("DOCMARK"));
+
+    let family = page("family").await;
+    assert!(current(&family, "family") && !current(&family, "record"));
+    assert!(family.contains(r#"id="family""#));
+    assert!(!family.contains(r#"id="identity""#) && !family.contains(r#"id="evidence""#));
+
+    let life = page("life").await;
+    assert!(!life.contains(r#"id="family""#) && !life.contains(r#"id="identity""#));
+
+    let sources = page("sources").await;
+    assert!(
+        sources.contains("SOURCEMARK"),
+        "the sources tab draws the sources"
+    );
+    assert!(!sources.contains("DOCMARK"), "and not the documents");
+
+    let media = page("media").await;
+    assert!(
+        media.contains("DOCMARK"),
+        "the media tab draws the documents"
+    );
+    assert!(!media.contains("SOURCEMARK"), "and not the sources");
+
+    let profile = page("profile").await;
+    assert!(profile.contains(r#"class="profile-groups""#));
+
+    // The fragment the client swaps in carries the same tabs when asked.
+    let frag = body_string(get_admin(&app, "/tree/panel/p07?river=1&tab=sources").await).await;
+    assert!(
+        frag.contains(r#"data-tab="sources""#)
+            && frag.contains("SOURCEMARK")
+            && !frag.contains("DOCMARK")
+    );
+}
+
+#[tokio::test]
+async fn the_grid_panel_and_the_person_page_are_unchanged_by_the_river_tabs() {
+    let (app, _d) = app("river-tabs-grid");
+    // The grid's panel request carries no flag and gets no tabs.
+    let grid = body_string(get_admin(&app, "/tree/panel/p07").await).await;
+    assert!(!grid.contains("rv-tabs") && !grid.contains(r#"data-tab="#));
+    assert!(grid.contains("SOURCEMARK") && grid.contains("DOCMARK"));
+    // The person page's own media tab still holds sources and documents.
+    let media = body_string(get_admin(&app, "/person/p07?tab=media").await).await;
+    assert!(media.contains("SOURCEMARK") && media.contains("DOCMARK"));
+    assert!(!media.contains("rv-tabs"));
 }

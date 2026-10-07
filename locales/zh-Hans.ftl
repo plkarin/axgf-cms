@@ -2939,4 +2939,5 @@ river-legend-lost = 记录到此为止
 river-legend-discharge = 后代数
 river-legend-direction = ↓ 向源头 · ↑ 向在世者
 river-grid-link = 网格视图
+river-tab-sources = 来源
 river-legend-title = 如何阅读河流

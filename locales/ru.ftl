@@ -3352,4 +3352,5 @@ river-legend-lost = конец записей
 river-legend-discharge = потомки
 river-legend-direction = ↓ к истоку · ↑ к живым
 river-grid-link = Сетка
+river-tab-sources = Источники
 river-legend-title = Как читать реку

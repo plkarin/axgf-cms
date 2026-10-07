@@ -32,9 +32,28 @@ by birth date. Every word the river draws is held inside the frame by an
 advance-width estimate, over 30 centres × 3 ranges, in CI
 (`tests/river_text.rs`).
 
-The interface catalogue is parsed at boot rather than by the first visitor:
-on the operator's 866-person bundle the first request to the river went from
-15.7 ms to 6.9 ms, and every one after it takes about 3 ms.
+Siblings are drawn in birth-date order where the reader may see every sibling
+in the family, and in the order the family records them where they may not —
+no hidden person's date is ever read. On the operator's bundle 57 of the 120
+families with two or more children record them out of birth order. No two
+labels overlap: a label is fitted to the room before its right-hand
+neighbour, years line included, and the centre's is cut to fit rather than
+run over its spouse's. The four rules that look wrong and are not — width does
+not sum at a confluence, sibling order ignores hidden dates, the year scale
+needs a visible anchor, the terminator is the same for the living and the dead
+— are written down, each with the test that holds it, in
+`docs/adr/0001-river-invariants.md`.
+
+The record beside the river has six tabs — the whole record, family, life,
+sources, media, profile — in the person page's tab markup, each a subset of
+the sections the panel always drew. The grid's panel and the person page are
+unchanged.
+
+The interface catalogue is parsed and every template compiled at boot rather
+than by the first visitor: on the operator's 866-person bundle the first
+request to the river costs about a millisecond more than the ones after it,
+which take 3–5 ms. `scripts/river-bench.sh` measures it without leaving a
+server behind.
 
 **A service, not a binary somebody launches over SSH.** The unit existed and
 had never been run. Running it is what produced everything below.

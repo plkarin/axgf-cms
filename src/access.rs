@@ -395,8 +395,12 @@ impl Default for Lens {
 /// childless person said whether they were alive.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct RiverShape {
-    /// Year of birth, for ordering siblings. Never drawn for a redacted person.
+    /// Year of birth: the generation estimate's input. Never drawn for a
+    /// redacted person.
     pub birth_year: Option<i64>,
+    /// Birth date as a `YYYYMMDD` sort key. Orders siblings, and only ever a
+    /// sibship whose every member the reader may see (`river::Graph::order_for`).
+    pub birth_sort: Option<i64>,
     /// Which side of a couple this person stands on: 0 father, 1 mother, from
     /// the recorded gender. `None` when the record gives neither, in which
     /// case the union's own order decides.
@@ -454,6 +458,9 @@ pub fn river_shape(flat: &Value, id: &str) -> RiverShape {
     };
     RiverShape {
         birth_year: river_year(p, "birth"),
+        birth_sort: p
+            .get("birth")
+            .and_then(|b| crate::view::render_date_field(b, "date").sort),
         slot,
     }
 }

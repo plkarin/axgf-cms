@@ -3407,6 +3407,7 @@ health-cache-missing = { $missing ->
 ## River
 
 nav-river = النهر
+nav-home = نظرة عامة
 river-aria = النهر حول { $name }: الأسلاف في الأسفل، والذرية في الأعلى.
 river-band-living = الأحياء
 river-circa = نحو{" "}
@@ -3419,7 +3420,7 @@ river-cut = قطع
 river-legend-attested = موثّق
 river-legend-inferred = مستنتج
 river-legend-speculative = مفترض
-river-legend-lost = خط مفقود
+river-legend-lost = ينتهي السجل
 river-legend-discharge = الذرية
 river-legend-direction = ↓ نحو المنبع · ↑ نحو الأحياء
 river-grid-link = عرض الشبكة

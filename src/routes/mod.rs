@@ -128,11 +128,12 @@ fn security_headers(router: Router, csp: &str) -> Router {
 /// Every route, before the middleware is wrapped around it.
 fn routes(state: Shared) -> Router {
     Router::new()
-        .route("/", get(public::home))
-        // The river. Not the landing page yet: it takes `/` once its numbers
-        // and its contact sheets have been signed off.
-        .route("/river", get(public::river))
+        // The river is the landing page. The overview that was `/` is at
+        // `/about`, and is still what `/` shows for an archive with nobody in
+        // it, which has no river to draw.
+        .route("/", get(public::river))
         .route("/river/data", get(public::river_data))
+        .route("/about", get(public::home))
         .route("/tree", get(public::tree))
         .route("/tree/panel/:id", get(public::tree_panel))
         .route("/person/:id", get(public::person))

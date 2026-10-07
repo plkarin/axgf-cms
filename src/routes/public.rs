@@ -11,11 +11,11 @@ use crate::routes::Shared;
 use crate::state::COLLECTIONS;
 use crate::{auth, render, view};
 
-/// `GET /` — what this tree holds, and the ways in. Also what `/river` shows
+/// `GET /about` — what this tree holds, and the ways in. Also what `/` shows
 /// for an archive with nobody in it, which has no river to draw.
 pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/about");
     let counts = state.counts();
     let total: usize = counts.iter().map(|(_, n)| n).sum();
 
@@ -41,7 +41,7 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
         &chrome,
         "home.html",
         context! {
-            nav => "home",
+            nav => "about",
             family_name,
             total,
             // The tile's label is a translated plural, not the collection's
@@ -1258,7 +1258,7 @@ pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Respo
 // The river
 // ---------------------------------------------------------------------------
 
-/// Query parameters for `/river` and `/river/data`.
+/// Query parameters for `/` and `/river/data`.
 #[derive(serde::Deserialize)]
 pub struct RiverQuery {
     /// The person at the fixed point. Defaults to the fullest first screen.
@@ -1359,7 +1359,7 @@ fn river_view(
     })
 }
 
-/// `GET /river` — the river, or the overview for an archive with nobody in it.
+/// `GET /` — the river, or the overview for an archive with nobody in it.
 ///
 /// Server-rendered and complete without JavaScript: the SVG is the first
 /// paint, the range segment is three links, and every person is a link to
@@ -1417,7 +1417,7 @@ pub async fn river_data(
     Query(q): Query<RiverQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/river");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
     match river_view(&state, &viewer, chrome.lang, &q, false) {
         Some(v) => {
             let mut body = v.payload;

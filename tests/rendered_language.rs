@@ -157,9 +157,9 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
     let cookie = format!("{}; axgf_lang=zh-Hans", admin_cookie(&app).await);
     let pages = [
         "/".to_string(),
-        "/river".into(),
-        format!("/river?p={A}&n=5"),
+        format!("/?p={A}&n=5"),
         format!("/river/data?p={KID}&n=2"),
+        "/about".into(),
         "/tree".into(),
         format!("/tree/panel/{A}"),
         format!("/person/{A}"),

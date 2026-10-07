@@ -3328,6 +3328,7 @@ health-cache-missing = { $missing ->
 ## River
 
 nav-river = Rzeka
+nav-home = Przegląd
 river-aria = Rzeka wokół osoby { $name }: przodkowie na dole, potomkowie u góry.
 river-band-living = ŻYJĄCY
 river-circa = ok.{" "}
@@ -3340,7 +3341,7 @@ river-cut = cięcie
 river-legend-attested = poświadczone
 river-legend-inferred = wywnioskowane
 river-legend-speculative = przypuszczalne
-river-legend-lost = linia urwana
+river-legend-lost = koniec zapisów
 river-legend-discharge = potomkowie
 river-legend-direction = ↓ ku źródłu · ↑ ku żyjącym
 river-grid-link = Widok siatki

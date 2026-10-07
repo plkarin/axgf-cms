@@ -2922,6 +2922,7 @@ health-cache-missing = { $declared } 个附件中有 { $missing } 个不在缓�
 ## River
 
 nav-river = 河流
+nav-home = 概览
 river-aria = 以 { $name } 为中心的河流：祖先在下，后代在上。
 river-band-living = 在世
 river-circa = 约
@@ -2934,7 +2935,7 @@ river-cut = 切换
 river-legend-attested = 有据
 river-legend-inferred = 推断
 river-legend-speculative = 推测
-river-legend-lost = 断线
+river-legend-lost = 记录到此为止
 river-legend-discharge = 后代数
 river-legend-direction = ↓ 向源头 · ↑ 向在世者
 river-grid-link = 网格视图

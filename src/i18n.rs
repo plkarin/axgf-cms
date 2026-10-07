@@ -289,6 +289,21 @@ fn catalog() -> &'static Catalog {
     CATALOG.get_or_init(Catalog::build)
 }
 
+/// Parse every catalogue now rather than on the first translation.
+///
+/// All eleven are parsed together, on whichever request first asks for a
+/// word: 16–24 ms on the machine this was written for, paid by one visitor
+/// per process — the first request to the river measured 15.7 ms against
+/// 3.2 ms for every one after it. Per-language state is not the cost: the
+/// first plural formatted in each language takes about 0.01 ms (measured in
+/// `tests/i18n_warm.rs`). So this runs once at boot, before the listener
+/// opens, and no visitor pays it. The coverage counts the settings page
+/// shows are built here too, for the same reason.
+pub fn warm() {
+    let _ = catalog();
+    let _ = counts();
+}
+
 /// How many of *English's* messages each locale defines.
 ///
 /// `FluentBundle` does not expose its message list, so the ids are read from

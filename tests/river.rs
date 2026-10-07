@@ -128,13 +128,16 @@ fn words() -> Words {
 #[tokio::test]
 async fn the_river_is_drawn_on_the_server() {
     let (app, _d) = app("river-landing");
-    let body = expect_status(get(&app, "/river?p=p07").await, StatusCode::OK, "GET /").await;
+    let body = expect_status(get(&app, "/?p=p07").await, StatusCode::OK, "GET /").await;
     assert!(
         body.contains(r#"<svg class="rv-svg""#),
         "the SVG is in the first paint"
     );
+    // One terminator, living or not, and the legend says what it means for
+    // both: the record ends. "Line lost" described only the dead.
+    assert!(body.contains("record ends") && !body.contains("line lost"));
     // Without JavaScript every person is a link that re-centres the river.
-    assert!(body.contains(r#"href="/river?p=p05&amp;n=3""#));
+    assert!(body.contains(r#"href="/?p=p05&amp;n=3""#));
     // The range segment is three links.
     for n in [2, 3, 5] {
         assert!(body.contains(&format!(r#"data-range="{n}""#)));
@@ -154,15 +157,15 @@ async fn the_river_is_drawn_on_the_server() {
 #[tokio::test]
 async fn range_is_two_three_or_five_and_nothing_else() {
     let (app, _d) = app("river-range");
-    let five = body_string(get(&app, "/river?p=p07&n=5").await).await;
+    let five = body_string(get(&app, "/?p=p07&n=5").await).await;
     assert!(five.contains(">+5</text>"));
-    let odd = body_string(get(&app, "/river?p=p07&n=9").await).await;
+    let odd = body_string(get(&app, "/?p=p07&n=9").await).await;
     assert!(
         odd.contains(">+3</text>") && !odd.contains(">+4</text>"),
         "an unknown range falls back to 3"
     );
     let unknown = expect_status(
-        get(&app, "/river?p=nobody").await,
+        get(&app, "/?p=nobody").await,
         StatusCode::OK,
         "unknown centre",
     )
@@ -187,19 +190,20 @@ async fn the_travel_endpoint_returns_layout_and_svg() {
 }
 
 #[tokio::test]
-async fn an_empty_archive_shows_the_overview_instead_of_a_river() {
+async fn an_empty_archive_lands_on_the_overview() {
     let (app, _d) = app_with_empty_bundle("river-empty");
-    let body = expect_status(get(&app, "/river").await, StatusCode::OK, "GET /river").await;
+    let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
     assert!(body.contains("What the family has recorded so far"));
 }
 
 #[tokio::test]
-async fn the_landing_page_is_still_the_overview() {
-    // The river takes `/` only once it has been signed off.
-    let (app, _d) = app("river-not-landing");
+async fn the_river_is_the_landing_page_and_the_overview_is_at_about() {
+    let (app, _d) = app("river-landing-page");
     let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
-    assert!(body.contains("What the family has recorded so far"));
-    assert!(!body.contains(r#"<svg class="rv-svg""#));
+    assert!(body.contains(r#"<svg class="rv-svg""#));
+    let about = expect_status(get(&app, "/about").await, StatusCode::OK, "GET /about").await;
+    assert!(about.contains("What the family has recorded so far"));
+    assert!(!about.contains(r#"<svg class="rv-svg""#));
 }
 
 #[tokio::test]
@@ -207,8 +211,8 @@ async fn no_sensitive_class_reaches_any_river_surface() {
     let (app, _d) = app("river-classes");
     for who in [None, Some("admin")] {
         for uri in [
-            "/river?p=p09",
-            "/river?p=p11&n=5",
+            "/?p=p09",
+            "/?p=p11&n=5",
             "/river/data?p=p11",
             "/river/data?p=p09&n=5",
         ] {
@@ -478,9 +482,9 @@ fn a_signed_out_visitor_gets_no_bands() {
 #[tokio::test]
 async fn the_signed_out_page_has_no_bands_and_the_signed_in_page_does() {
     let (app, _d) = app("river-bands");
-    let anon = body_string(get(&app, "/river?p=p07").await).await;
+    let anon = body_string(get(&app, "/?p=p07").await).await;
     assert!(!anon.contains(r##"stroke="#18241f""##));
-    let admin = body_string(get_admin(&app, "/river?p=p07").await).await;
+    let admin = body_string(get_admin(&app, "/?p=p07").await).await;
     assert!(admin.contains(r##"stroke="#18241f""##));
 }
 
@@ -549,7 +553,164 @@ fn a_label_at_the_right_edge_shortens_instead_of_running_off_the_frame() {
     assert_eq!(river::fit_edge(3, &s, 850.0, 4.8, false), 0, "nothing fits");
     assert_eq!(
         river::fit_edge(3, &s, 850.0, 7.5, true),
-        3,
-        "the centre keeps its name"
+        1,
+        "the centre keeps at least its given name"
     );
+}
+
+/// A generated family: four generations, several children per couple, every
+/// third person hidden from visitors. Siblings are deliberately recorded out
+/// of birth order, and hidden and visible siblings share families.
+fn generated() -> Value {
+    let mut persons = Vec::new();
+    let mut families = Vec::new();
+    let mut next = 0usize;
+    let mut mk = |persons: &mut Vec<Value>, born: i64, g: &str| {
+        let id = format!("g{next:03}");
+        let mut p = person(
+            &id,
+            &format!("Given{next}"),
+            "Family",
+            g,
+            Some(born),
+            Some(born + 60),
+            false,
+        );
+        if next % 3 == 1 {
+            p["identity"]["visibility"] = json!("members");
+        }
+        next += 1;
+        persons.push(p);
+        id
+    };
+    let a = mk(&mut persons, 1800, "M");
+    let b = mk(&mut persons, 1803, "F");
+    let mut parents = vec![(a, b)];
+    for gen in 0..3 {
+        let mut next_parents = Vec::new();
+        for (fi, (fa, mo)) in parents.clone().into_iter().enumerate() {
+            let base = 1830 + gen * 30;
+            // Three children recorded youngest first.
+            let kids: Vec<String> = (0..3)
+                .rev()
+                .map(|k| {
+                    mk(
+                        &mut persons,
+                        base + k * 3,
+                        if k % 2 == 0 { "M" } else { "F" },
+                    )
+                })
+                .collect();
+            families.push(family(
+                &format!("fam{gen}{fi}"),
+                &[&fa, &mo],
+                &kids.iter().map(|k| (k.as_str(), 0.9)).collect::<Vec<_>>(),
+            ));
+            if gen < 2 {
+                let spouse = mk(&mut persons, base + 1, "F");
+                next_parents.push((kids[0].clone(), spouse));
+            }
+        }
+        parents = next_parents;
+    }
+    json!({
+        "persons": persons.into_iter().map(|p| (p["id"].as_str().unwrap().to_string(), p)).collect::<serde_json::Map<_, _>>(),
+        "families": families.into_iter().map(|f| (f["id"].as_str().unwrap().to_string(), f)).collect::<serde_json::Map<_, _>>(),
+    })
+}
+
+/// Every way a hidden person's dates can differ.
+fn redate(flat: &mut Value, lens: &Lens, variant: usize) {
+    let ids: Vec<String> = flat["persons"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .cloned()
+        .collect();
+    for (i, id) in ids.iter().enumerate() {
+        if lens.sees_person(id) {
+            continue;
+        }
+        let p = &mut flat["persons"][id.as_str()];
+        let shift = ((i * 37 + variant * 11) % 90) as i64 - 45;
+        match variant {
+            0 => {}
+            1 => {
+                p["birth"] =
+                    json!({"date": {"value": (1700 + shift * 3).to_string(), "precision": "year"}})
+            }
+            2 => p["birth"] = Value::Null,
+            3 => {
+                p["birth"] = json!({"date": {"value": "1850", "precision": "year", "circa": true}})
+            }
+            4 => {
+                p["birth"] = json!({"date": {"range": {"earliest": {"value": "1600"}, "latest": {"value": "1999"}}}})
+            }
+            5 => p["birth"] = json!({"date": {"value": "1910", "precision": "decade"}}),
+            6 => {
+                p["death"] = Value::Null;
+                p["birth"] =
+                    json!({"date": {"value": (2000 - shift).to_string(), "precision": "year"}});
+            }
+            _ => p["death"] = json!({"date": {"value": "2024", "precision": "year"}}),
+        }
+    }
+}
+
+#[test]
+fn hidden_peoples_dates_never_change_what_a_visitor_receives() {
+    // The invariant all the year-scale fixes were cases of: a visitor's SVG
+    // and payload are a function of what they may see. Two bundles that
+    // differ only in the dates of people hidden from them render
+    // byte-identically, from every centre, at every range, signed in or not.
+    for (name, base) in [("twelve", twelve()), ("generated", generated())] {
+        let lens = Lens::resolve(&base, Visibility::Public);
+        let hidden = base["persons"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .filter(|id| !lens.sees_person(id))
+            .count();
+        assert!(hidden > 0, "{name}: the fixture must hide someone");
+        let render = |flat: &Value| -> Vec<(String, String)> {
+            let g = Graph::build(flat);
+            let lens = Lens::resolve(flat, Visibility::Public);
+            let mut out = Vec::new();
+            for centre in flat["persons"].as_object().unwrap().keys() {
+                for n in river::RANGES {
+                    for signed_in in [false, true] {
+                        let r = river::build(
+                            flat,
+                            &lens,
+                            &g,
+                            centre,
+                            n,
+                            Shape::default(),
+                            words(),
+                            signed_in,
+                        )
+                        .unwrap();
+                        out.push((r.svg("river"), serde_json::to_string(&r.payload()).unwrap()));
+                    }
+                }
+            }
+            out
+        };
+        let want = render(&base);
+        for variant in 1..8 {
+            let mut flat = base.clone();
+            redate(&mut flat, &lens, variant);
+            let got = render(&flat);
+            for (i, (a, b)) in want.iter().zip(&got).enumerate() {
+                assert!(
+                    a.0 == b.0,
+                    "{name}, variant {variant}, render {i}: the SVG changed"
+                );
+                assert!(
+                    a.1 == b.1,
+                    "{name}, variant {variant}, render {i}: the payload changed"
+                );
+            }
+        }
+    }
 }

@@ -15,9 +15,9 @@
   var dataEl = document.getElementById('rv-data');
   if (!root || !canvas || !dataEl) return;
 
-  var BG = '#0c1310', MONO = 'ui-monospace,Menlo,monospace', W = 900, H = 640;
+  var BG = '#0c1310', MONO = 'ui-monospace,Menlo,monospace';
   var WIDTHS = [0, 1.6, 3, 5, 8, 12];
-  var base = root.dataset.base || '/river';
+  var base = root.dataset.base || '/';
   var panel = document.getElementById('tree-panel');
   var back = document.getElementById('rv-back');
   var data = JSON.parse(dataEl.textContent);
@@ -85,7 +85,8 @@
     var ka = A.meta.scale.knots, kb = B.meta.scale.knots, knots = kb;
     if (ka.length === kb.length) knots = ka.map(function (k, i) { return [mix(k[0], kb[i][0]), mix(k[1], kb[i][1])]; });
     return { persons: persons, couples: couples, tails: tails,
-      meta: Object.assign({}, B.meta, { scale: { knots: knots }, rail: e < 0.5 ? A.meta.rail : B.meta.rail }) };
+      meta: Object.assign({}, B.meta, { scale: { knots: knots }, rail: e < 0.5 ? A.meta.rail : B.meta.rail,
+        view: [mix(A.meta.view[0], B.meta.view[0]), mix(A.meta.view[1], B.meta.view[1])] }) };
   }
   function yOf(knots, year) {
     var k = knots, i = 1;
@@ -100,16 +101,18 @@
     var colour = fr.meta.era ? ramp : function () { return '#86b08f'; };
     fr.persons.forEach(function (p) { PM[p.id] = p; });
     // river::Meta::bands — none without an era, none for a signed-out reader.
+    var vt = fr.meta.view[0], vb = vt + fr.meta.view[1];
     for (var Y = fr.meta.bands ? 1600 : 2050; Y < 2050; Y += 50) {
       var ya = yOf(fr.meta.scale.knots, Y), yb = yOf(fr.meta.scale.knots, Y + 50);
-      if (yb > H || ya < 0) continue;
-      var live = Y >= 1950, t = Math.max(0, yb), b = Math.min(H, ya);
+      if (yb > vb || ya < vt) continue;
+      var live = Y >= 1950, t = Math.max(vt, yb), b = Math.min(vb, ya);
       out += '<rect x="0" y="' + f(t) + '" width="900" height="' + f(b - t) + '" fill="' + (live ? '#15150f' : (Y / 50) % 2 ? '#0e1714' : BG) + '"/>';
-      if (ya <= H) out += '<line x1="0" y1="' + f(ya) + '" x2="900" y2="' + f(ya) + '" stroke="#18241f"/><text x="10" y="' + f(ya - 6) + '" font-family="' + MONO + '" font-size="10" fill="' + (live ? '#8a7a52' : '#4f6158') + '">' + Y + '</text>';
+      if (ya <= vb) out += '<line x1="0" y1="' + f(ya) + '" x2="900" y2="' + f(ya) + '" stroke="#18241f"/>'
+        + (ya - 16 >= vt ? '<text x="10" y="' + f(ya - 6) + '" font-family="' + MONO + '" font-size="10" fill="' + (live ? '#8a7a52' : '#4f6158') + '">' + Y + '</text>' : '');
       if (live && !named && t + 16 < b - 18 && (named = true)) out += '<text x="10" y="' + f(t + 16) + '" font-family="' + MONO + '" font-size="10" letter-spacing="1" fill="#8a7a52">' + esc(cur.words[0]) + '</text>';
     }
     fr.meta.rail.forEach(function (r) {
-      if (r[1] < 8 || r[1] > H - 4) return;
+      if (r[1] < vt + 8 || r[1] > vb - 4) return;
       out += '<text x="890" y="' + f(r[1] + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="10" fill="' + (r[0] === 0 ? '#dcae64' : '#4f6158') + '">' + (r[0] > 0 ? '+' + r[0] : r[0] === 0 ? '0 ◂' : '−' + (-r[0])) + '</text>';
     });
     fr.tails.forEach(function (t) {
@@ -139,7 +142,7 @@
       if (s.living) out += '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" fill="#e6b062" fill-opacity="0.16"/>';
       out += isC ? '<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" stroke="#dcae64" stroke-width="1.2"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#dcae64"/>'
         : '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (s.sparse || s.redacted ? BG : s.colour) + '" stroke="' + (s.sparse || s.redacted ? s.colour : BG) + '" stroke-width="1.6"/>';
-      var tier = s.redacted ? 0 : isC ? 3 : edge(fit(p.lab, s, p.room), s, p.x, r);
+      var tier = s.redacted ? 0 : edge(isC ? 3 : fit(p.lab, s, p.room), s, p.x, r, isC);
       if (tier > 0) {
         var lx = f(p.x + r + (isC ? 10 : 6)), halo = ' paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round"';
         out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(s.names[tier - 1]) + '</text>'
@@ -147,16 +150,29 @@
       }
       out += '</g>';
     });
-    return '<svg class="rv-svg" viewBox="0 0 900 640" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect width="900" height="640" fill="' + BG + '"/>' + out + '</svg>';
+    return '<svg class="rv-svg" viewBox="0 ' + f(vt) + ' 900 ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect y="' + f(vt) + '" width="900" height="' + f(fr.meta.view[1]) + '" fill="' + BG + '"/>' + out + '</svg>';
   }
-  // river::fit_edge: shorten a label rather than run it past the right rail.
-  function edge(t, s, x, r) {
-    while (t > 0 && x + r + 6 + Math.max(s.names[t - 1].length * 6.3, s.years.length * 5.8) > 866) t--;
+  // river::text_width: 0.55 em serif, 0.6 em bold or mono, 1 em wide scripts.
+  function width(text, size, bold) {
+    var w = 0;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      if (c >= 0xD800 && c <= 0xDBFF) { i++; }
+      var wide = (c >= 0x1100 && c <= 0x115F) || (c >= 0x2E80 && c <= 0xA4CF) || (c >= 0xAC00 && c <= 0xD7A3) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFE30 && c <= 0xFE4F) || (c >= 0xFF00 && c <= 0xFF60) || (c >= 0xFFE0 && c <= 0xFFE6);
+      w += size * (wide ? 1 : bold ? 0.6 : 0.55);
+    }
+    return w;
+  }
+  // river::fit_edge: shorten a label rather than run it past the right rail;
+  // the centre keeps at least its given name.
+  function edge(t, s, x, r, isC) {
+    var floor = isC ? 1 : 0, start = x + r + (isC ? 10 : 6), yw = width(s.years, isC ? 11 : 9.5, true);
+    while (t > floor && start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > 866) t--;
     return t;
   }
   // river::fit_tier: step a label down while it would run into its neighbour.
   function fit(t, s, room) {
-    while (t > 0 && s.names[t - 1].length * 6.3 > room - 12) t--;
+    while (t > 0 && width(s.names[t - 1], 12, false) > room - 12) t--;
     return t;
   }
   function edges(fr, PM) {
@@ -195,7 +211,7 @@
         if (p.id === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" stroke="#f3dfae" stroke-width="1.3"/>';
         // On hover the full name, right-aligned to the dot where it would
         // otherwise run past the rail: a hover label is alone on its row.
-        var hw = s.names[2].length * 6.3, right = p.x + 10.8 + hw > 866;
+        var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > 866;
         labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" fill="#f3dfae" paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text>';
       });
     }
@@ -270,7 +286,7 @@
   function nearest(e) {
     var svg = canvas.querySelector('svg'); if (!svg) return null;
     var box = svg.getBoundingClientRect(), k = 900 / box.width, best = null, bd = 44 * k;
-    var x = (e.clientX - box.left) * k, y = (e.clientY - box.top) * k;
+    var x = (e.clientX - box.left) * k, y = (e.clientY - box.top) * k + cur.layout.meta.view[0];
     cur.layout.persons.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p.id; } });
     return best;
   }

@@ -2922,6 +2922,7 @@ health-cache-missing = 添付ファイル { $declared } 件のうち { $missing 
 ## River
 
 nav-river = 流れ
+nav-home = 概要
 river-aria = { $name } を中心とする流れ：祖先は下、子孫は上。
 river-band-living = 存命
 river-circa = 約
@@ -2934,7 +2935,7 @@ river-cut = 切替
 river-legend-attested = 確認済み
 river-legend-inferred = 推定
 river-legend-speculative = 推測
-river-legend-lost = 途絶えた系統
+river-legend-lost = 記録はここまで
 river-legend-discharge = 子孫数
 river-legend-direction = ↓ 源流へ · ↑ 存命者へ
 river-grid-link = グリッド表示

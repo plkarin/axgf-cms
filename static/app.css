@@ -3629,7 +3629,10 @@ a.tcard:hover {
   border-color: var(--rv-accent);
   box-shadow: 0 0 0 1px var(--rv-accent);
 }
-.rv-canvas { flex: 1 1 auto; min-block-size: 300px; }
+/* The canvas is as tall as its drawing. Stretched to the record panel beside
+   it, it pushed the legend away from the river it explains and put back, as
+   page, the empty height the cropped viewBox had just taken out. */
+.rv-canvas { flex: 0 0 auto; }
 .rv-canvas svg { display: block; }
 .rv-canvas .rv-p { cursor: pointer; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }

@@ -570,7 +570,7 @@ async fn the_sample_bundle_serves_every_page() {
     }
     let (app, _p) = common::app_with_bundle("sample-serve", Path::new(&path));
 
-    for uri in ["/", "/river", "/tree", "/convert", "/health"] {
+    for uri in ["/", "/about", "/tree", "/convert", "/health"] {
         let resp = common::get(&app, uri).await;
         assert_eq!(
             resp.status(),
@@ -579,8 +579,9 @@ async fn the_sample_bundle_serves_every_page() {
         );
     }
 
-    // The home page should name what the sample actually holds.
-    let home = common::body_string(common::get(&app, "/").await).await;
+    // The overview should name what the sample actually holds. It is at
+    // /about since the river took the landing page.
+    let home = common::body_string(common::get(&app, "/about").await).await;
     assert!(home.contains("relationships beyond the family"), "{home}");
     assert!(home.contains("jobs with a start and an end"));
 

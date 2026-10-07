@@ -64,8 +64,9 @@ pub const CX: f64 = 470.0;
 pub const CY: f64 = 318.0;
 /// Years per generation, for the year scale.
 pub const YEARS_PER_GEN: f64 = 29.0;
-/// Where the river is served. Every person in the SVG links here.
-pub const RIVER_PATH: &str = "/river";
+/// Where the river is served: the landing page. Every person in the SVG
+/// links here.
+pub const RIVER_PATH: &str = "/";
 /// The ranges a reader can choose.
 pub const RANGES: [usize; 3] = [2, 3, 5];
 pub const DEFAULT_RANGE: usize = 3;
@@ -214,6 +215,10 @@ impl Conf {
 // The family graph
 // ---------------------------------------------------------------------------
 
+/// Where a child stands in its family's own record: `birth_order`, then its
+/// position in the list.
+type RecordOrder = (i64, usize);
+
 /// One family: its partners in slot order and its children with the
 /// confidence of each child's claim.
 #[derive(Debug, Clone)]
@@ -232,7 +237,7 @@ pub struct Graph {
     fams: Vec<Fam>,
     /// The family each person is a child of, if any.
     born_in: Vec<Option<usize>>,
-    /// Children, oldest first.
+    /// Children, in the order their families record them.
     kids_of: Vec<Vec<usize>>,
     desc: Vec<usize>,
     anc: Vec<usize>,
@@ -278,20 +283,32 @@ impl Graph {
                 // Father first. A stable sort on the slot keeps the union's own
                 // order wherever the records say nothing.
                 parents.sort_by_key(|&p| shape[p].slot.unwrap_or(0));
-                let kids = f
+                // Children in the order the family records them: its own
+                // `birth_order`, then the order of the list. Never by birth
+                // date: a hidden child's date would then move a visible
+                // sibling, and the order of two hidden siblings would state
+                // which is older (tests/river.rs, the hidden-dates invariant).
+                let mut kids: Vec<(usize, Conf, Option<f64>, RecordOrder)> = f
                     .get("children")
                     .and_then(Value::as_array)
                     .map(|cs| {
                         cs.iter()
-                            .filter_map(|c| {
+                            .enumerate()
+                            .filter_map(|(pos, c)| {
                                 let id = c.get("person_id").and_then(Value::as_str)?;
                                 let i = *index.get(id)?;
                                 let conf = c.get("confidence").and_then(Value::as_f64);
-                                Some((i, Conf::of(conf), conf))
+                                let order = c
+                                    .get("birth_order")
+                                    .and_then(Value::as_i64)
+                                    .unwrap_or(i64::MAX);
+                                Some((i, Conf::of(conf), conf, (order, pos)))
                             })
                             .collect()
                     })
                     .unwrap_or_default();
+                kids.sort_by_key(|k| k.3);
+                let kids = kids.into_iter().map(|(i, c, raw, _)| (i, c, raw)).collect();
                 fams.push(Fam {
                     id: (*fid).clone(),
                     parents,
@@ -304,7 +321,7 @@ impl Graph {
         // drawn from the one whose claim is strongest; ties go to the first.
         let mut born_in: Vec<Option<usize>> = vec![None; n];
         let mut born_conf: Vec<f64> = vec![f64::NEG_INFINITY; n];
-        let mut kid_sets: Vec<BTreeSet<usize>> = vec![BTreeSet::new(); n];
+        let mut kids_of: Vec<Vec<usize>> = vec![Vec::new(); n];
         for (fi, f) in fams.iter().enumerate() {
             for &(k, _, raw) in &f.kids {
                 let c = raw.unwrap_or(UNRATED);
@@ -313,25 +330,14 @@ impl Graph {
                     born_in[k] = Some(fi);
                 }
                 for &p in &f.parents {
-                    if p != k {
-                        kid_sets[p].insert(k);
+                    if p != k && !kids_of[p].contains(&k) {
+                        kids_of[p].push(k);
                     }
                 }
             }
         }
-        let by_birth = |a: &usize, b: &usize| {
-            let ya = shape[*a].birth_year.unwrap_or(i64::MAX);
-            let yb = shape[*b].birth_year.unwrap_or(i64::MAX);
-            ya.cmp(&yb).then_with(|| ids[*a].cmp(&ids[*b]))
-        };
-        let kids_of: Vec<Vec<usize>> = kid_sets
-            .into_iter()
-            .map(|s| {
-                let mut v: Vec<usize> = s.into_iter().collect();
-                v.sort_by(by_birth);
-                v
-            })
-            .collect();
+        // A parent's children: family by family in the order families are
+        // read (by id), each family's in its own recorded order.
 
         let mut g = Graph {
             ids,
@@ -618,6 +624,9 @@ pub struct Meta {
     /// Whether to draw the half-century bands: an era, and a signed-in
     /// reader.
     pub bands: bool,
+    /// The part of the 900 × 640 frame the drawing occupies: `(top, height)`
+    /// in viewBox units. See [`view_window`].
+    pub view: (f64, f64),
 }
 
 /// One laid-out river.
@@ -1276,9 +1285,29 @@ pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout>
             rail,
             era: true,
             bands: true,
+            view: view_window(n, step),
         },
         years,
     })
+}
+
+/// The window of the frame a river at range `n` needs.
+///
+/// The step is capped at 96, so at ± 2 the rows reach only 192 units either
+/// side of the centre, and a full 640-unit frame left about 40% of itself as
+/// empty bands above and below. The geometry is unchanged — the centre stays
+/// at (470, 318) and every coordinate means what it meant — and the viewBox
+/// is cropped to how far the drawing can reach: the outermost row, plus the
+/// longest tail that leaves it (0.55 of a step up, 0.62 down), plus 10 for an
+/// arrowhead and its count or a ring. It depends on the range and the step
+/// only, never on who is drawn, so the fixed point stays put on screen while
+/// the river travels within a range. Where the step was not capped this is
+/// (nearly) the whole frame.
+pub fn view_window(n: usize, step: f64) -> (f64, f64) {
+    let span = n as f64 * step;
+    let top = (CY - span - 0.55 * step - 10.0).max(0.0);
+    let bottom = (CY + span + 0.62 * step + 10.0).min(H);
+    (r1(top), r1(bottom - top))
 }
 
 /// Label tier from a person's smaller neighbour gap.
@@ -1665,16 +1694,18 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     };
 
     // ---- half-century bands, left rail
+    let (v_top, v_h) = l.meta.view;
+    let v_bottom = v_top + v_h;
     let mut living_named = false;
     // No bands without an era, nor for a signed-out reader (`Meta::bands`).
     let mut y0 = if l.meta.bands { 1600 } else { 2050 };
     while y0 < 2050 {
         let ya = l.meta.scale.y_of(y0 as f64);
         let yb = l.meta.scale.y_of((y0 + 50) as f64);
-        if !(yb > H || ya < 0.0) {
+        if !(yb > v_bottom || ya < v_top) {
             let live = y0 >= 1950;
-            let t = yb.max(0.0);
-            let b = ya.min(H);
+            let t = yb.max(v_top);
+            let b = ya.min(v_bottom);
             let fill = if live {
                 BAND_LIVE
             } else if (y0 / 50) % 2 == 1 {
@@ -1689,15 +1720,23 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 num(W),
                 num(b - t)
             );
-            if ya <= H {
+            if ya <= v_bottom {
                 let _ = write!(
                     out,
-                    r#"<line x1="0" y1="{y}" x2="{w}" y2="{y}" stroke="{BAND_RULE}"/><text x="10" y="{ty}" font-family="{MONO}" font-size="10" fill="{tf}">{y0}</text>"#,
+                    r#"<line x1="0" y1="{y}" x2="{w}" y2="{y}" stroke="{BAND_RULE}"/>"#,
                     y = num(ya),
                     w = num(W),
-                    ty = num(ya - 6.0),
-                    tf = if live { BAND_TEXT_LIVE } else { BAND_TEXT }
                 );
+                // The year sits above its line; where that is above the
+                // window, it would be cut in half, so it is left out.
+                if ya - 6.0 - 10.0 >= v_top {
+                    let _ = write!(
+                        out,
+                        r#"<text x="10" y="{ty}" font-family="{MONO}" font-size="10" fill="{tf}">{y0}</text>"#,
+                        ty = num(ya - 6.0),
+                        tf = if live { BAND_TEXT_LIVE } else { BAND_TEXT }
+                    );
+                }
             }
             // The living band's name, once, just inside the band's top, and
             // only where it clears the band's own year label below it. The
@@ -1720,7 +1759,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
 
     // ---- right rail: generations relative to the centre
     for &(k, y) in &l.meta.rail {
-        if !(8.0..=H - 4.0).contains(&y) {
+        if !(v_top + 8.0..=v_bottom - 4.0).contains(&y) {
             continue;
         }
         let label = match k.cmp(&0) {
@@ -1943,9 +1982,10 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     }
 
     format!(
-        r#"<svg class="rv-svg" viewBox="0 0 {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect width="{w}" height="{h}" fill="{BG}"/>{out}</svg>"#,
+        r#"<svg class="rv-svg" viewBox="0 {top} {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect y="{top}" width="{w}" height="{h}" fill="{BG}"/>{out}</svg>"#,
+        top = num(v_top),
         w = num(W),
-        h = num(H),
+        h = num(v_h),
         a = html_escape(aria_label)
     )
 }
@@ -1956,16 +1996,17 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
 /// the operator's bundle). Drawing those labels to the left of the dot
 /// instead ran them into their left neighbour's, so a label keeps to the
 /// right, as the reference draws it, and shortens instead: there is never a
-/// neighbour further right for it to meet. The centre stands at the fixed
-/// point and never reaches the edge.
+/// neighbour further right for it to meet. The centre shortens too — a long
+/// enough name reached the rail from the fixed point — but never below its
+/// given name.
 pub fn fit_edge(tier: u8, s: &Shown, x: f64, r: f64, centre: bool) -> u8 {
-    if centre {
-        return tier;
-    }
-    let start = x + r + 6.0;
-    let years = s.years.chars().count() as f64 * 5.8;
+    let start = x + r + if centre { 10.0 } else { 6.0 };
+    let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
+    // The centre always labels: it keeps at least its given name.
+    let floor = u8::from(centre);
     let mut t = tier;
-    while t > 0 && start + label_width(&s.names[t as usize - 1]).max(years) > RIGHT_EDGE {
+    while t > floor && start + label_width(&s.names[t as usize - 1], centre).max(years) > RIGHT_EDGE
+    {
         t -= 1;
     }
     t
@@ -1987,9 +2028,30 @@ pub fn url_component(s: &str) -> String {
     out
 }
 
-/// Roughly how wide a 12-unit serif label is.
-fn label_width(text: &str) -> f64 {
-    text.chars().count() as f64 * 6.3
+/// How wide a run of text is, estimated: 0.55 em a character in the serif,
+/// 0.6 em bold or monospace, a full em for wide scripts. `tests/river_text.rs`
+/// holds every text node to the frame with an estimate of its own.
+pub fn text_width(text: &str, size: f64, mono: bool, bold: bool) -> f64 {
+    let latin = if mono || bold { 0.6 } else { 0.55 };
+    text.chars()
+        .map(|c| size * if is_wide(c) { 1.0 } else { latin })
+        .sum()
+}
+
+/// East Asian wide characters: a full em each.
+fn is_wide(c: char) -> bool {
+    matches!(c as u32,
+        0x1100..=0x115F | 0x2E80..=0xA4CF | 0xAC00..=0xD7A3 | 0xF900..=0xFAFF
+        | 0xFE30..=0xFE4F | 0xFF00..=0xFF60 | 0xFFE0..=0xFFE6)
+}
+
+/// A name label's width: 12-unit serif, or the centre's 16-unit bold.
+fn label_width(text: &str, centre: bool) -> f64 {
+    if centre {
+        text_width(text, 16.0, false, true)
+    } else {
+        text_width(text, 12.0, false, false)
+    }
 }
 
 /// Step a label down a tier while it would run into its neighbour.
@@ -2003,7 +2065,7 @@ pub fn fit_tier(tier: u8, s: &Shown, room: f64, centre: bool) -> u8 {
         return tier;
     }
     let mut t = tier;
-    while t > 0 && label_width(&s.names[t as usize - 1]) > room - 12.0 {
+    while t > 0 && label_width(&s.names[t as usize - 1], false) > room - 12.0 {
         t -= 1;
     }
     t

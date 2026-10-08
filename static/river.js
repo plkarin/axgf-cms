@@ -41,6 +41,8 @@
     return '#e6b062';
   }
   function byId(list) { var m = {}; list.forEach(function (o) { m[o.id || o.key] = o; }); return m; }
+  // A person drawn under two lines is two occurrences; edges name the key.
+  function byKey(list) { var m = {}; list.forEach(function (o) { m[o.key] = o; }); return m; }
   var privateWord = (panel && panel.dataset.private) || '·';
   function remember(r) { r.shown.forEach(function (s) { names[s.id] = s.redacted ? privateWord : s.names[1]; }); }
   remember(cur);
@@ -56,7 +58,7 @@
     };
   }
   function tween(A, B, e) {
-    var pa = byId(A.persons), pb = byId(B.persons), anchor = A.meta.centre;
+    var pa = byKey(A.persons), pb = byKey(B.persons), anchor = A.meta.centre;
     var dx = pb[anchor] ? pb[anchor].x - pa[anchor].x : 0, dy = pb[anchor] ? pb[anchor].y - pa[anchor].y : 0;
     function mix(a, b) { return a + (b - a) * e; }
     function merge(la, lb, key, fn) {
@@ -66,7 +68,7 @@
       return keys.map(function (k) { return fn(ma[k], mb[k]); });
     }
     function slide(o, s, al) { return Object.assign({}, o, { x: o.x + dx * s, y: o.y + dy * s, a: al }); }
-    var persons = merge(A.persons, B.persons, 'id', function (a, b) {
+    var persons = merge(A.persons, B.persons, 'key', function (a, b) {
       if (a && b) return Object.assign({}, e < 0.5 ? a : b, { x: mix(a.x, b.x), y: mix(a.y, b.y), a: 1 });
       return a ? slide(a, e, 1 - e) : slide(b, -(1 - e), e);
     });
@@ -99,7 +101,7 @@
   function paint(fr) {
     var out = '', defs = '', gi = 0, PM = {}, named = false;
     var colour = fr.meta.era ? ramp : function () { return '#86b08f'; };
-    fr.persons.forEach(function (p) { PM[p.id] = p; });
+    fr.persons.forEach(function (p) { PM[p.key] = p; });
     // river::Meta::bands — none without an era, none for a signed-out reader.
     var vt = fr.meta.view[0], vb = vt + fr.meta.view[1];
     for (var Y = fr.meta.bands ? 1600 : 2050; Y < 2050; Y += 50) {
@@ -140,10 +142,12 @@
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, x = f(p.x), y = f(p.y);
       out += '<g opacity="' + f(p.a) + '">';
+      // river::render_svg: an occurrence of a person drawn twice says so.
+      if (p.repeat > 1) out += '<text x="' + f(p.x - (p.role === 'centre' ? 7.5 : 4.8) - 4) + '" y="' + f(p.y + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="9.5" fill="#8d9c92">×' + p.repeat + '</text>';
       if (s.living) out += '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" fill="#e6b062" fill-opacity="0.16"/>';
       out += isC ? '<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" stroke="#dcae64" stroke-width="1.2"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#dcae64"/>'
         : '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (s.sparse || s.redacted ? BG : s.colour) + '" stroke="' + (s.sparse || s.redacted ? s.colour : BG) + '" stroke-width="1.6"/>';
-      var tier = T[p.id] || 0;
+      var tier = T[p.key] || 0;
       if (tier > 0) {
         var lx = f(p.x + r + (isC ? 10 : 6)), halo = ' paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round"';
         out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(isC ? clip(s.names[tier - 1], Math.min(p.right - 12, 866 - (p.x + r + 10))) : s.names[tier - 1]) + '</text>'
@@ -191,7 +195,7 @@
         if (t > 0) t = edge(fit(t, s, p.right, isC), s, p.x, r, isC);
         if (t > 0 && !isC && start < last + 4) t = 0;
         if (t > 0) last = start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), width(s.years, isC ? 11 : 9.5, true));
-        out[p.id] = t;
+        out[p.key] = t;
       });
     });
     return out;
@@ -227,7 +231,7 @@
     if (!lit) return;
     var hl = svg.querySelector('.rv-hl') || svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
     hl.setAttribute('class', 'rv-hl');
-    var fr = still(cur), on = id && route(fr, id), PM = byId(fr.persons), html = '', labels = '';
+    var fr = still(cur), on = id && route(fr, id), PM = byKey(fr.persons), html = '', labels = '';
     if (on) {
       edges(fr, PM).forEach(function (e) {
         var c = e.cp, hit = e.from ? on[e.from] && (c.kids.some(function (k) { return on[k]; }) || c.parents.some(function (q) { return q !== e.from && on[q]; })) : on[e.to] && c.parents.some(function (q) { return on[q]; });
@@ -235,8 +239,8 @@
       });
       fr.persons.forEach(function (p) {
         var s = p.s || {};
-        if (!on[p.id] || p.role === 'centre' || s.redacted) return;
-        if (p.id === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" stroke="#f3dfae" stroke-width="1.3"/>';
+        if (!on[p.key] || p.role === 'centre' || s.redacted) return;
+        if (p.key === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" stroke="#f3dfae" stroke-width="1.3"/>';
         // On hover the full name, right-aligned to the dot where it would
         // otherwise run past the rail: a hover label is alone on its row.
         var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > 866;
@@ -331,7 +335,7 @@
   });
   canvas.addEventListener('mouseover', function (e) {
     var a = e.target.closest && e.target.closest('.rv-p');
-    if (!busy) light(a ? a.getAttribute('data-id') : null);
+    if (!busy) light(a ? a.getAttribute('data-key') : null);
   });
   canvas.addEventListener('mouseleave', function () { if (!busy) light(null); });
   root.addEventListener('click', function (e) {

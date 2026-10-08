@@ -227,6 +227,9 @@ struct Fam {
     /// Partners, father first where the records say which is which.
     parents: Vec<usize>,
     kids: Vec<(usize, Conf, Option<f64>)>,
+    /// The union's start date as a `YYYYMMDD` key: orders a person's unions,
+    /// and only when the reader may see every member of them.
+    start_sort: Option<i64>,
 }
 
 /// Every person and family the river can reach, indexed.
@@ -311,10 +314,16 @@ impl Graph {
                     .unwrap_or_default();
                 kids.sort_by_key(|k| k.3);
                 let kids = kids.into_iter().map(|(i, c, raw, _)| (i, c, raw)).collect();
+                let start_sort = f
+                    .get("union")
+                    .and_then(|u| u.get("start"))
+                    .map(|s| crate::view::render_date_field(s, "date"))
+                    .and_then(|d| d.sort);
                 fams.push(Fam {
                     id: (*fid).clone(),
                     parents,
                     kids,
+                    start_sort,
                 });
             }
         }
@@ -423,25 +432,7 @@ impl Graph {
             .map(|p| {
                 let mut out: Vec<usize> = Vec::new();
                 for &f in &self.partner_in[p] {
-                    let mut kids: Vec<usize> = self.fams[f]
-                        .kids
-                        .iter()
-                        .map(|k| k.0)
-                        .filter(|&k| k != p)
-                        .collect();
-                    if kids.iter().all(|&k| sees(k)) {
-                        // Dated children, sorted, back into the slots dated
-                        // children held; undated ones stay where they were.
-                        let slots: Vec<usize> = (0..kids.len())
-                            .filter(|&i| self.shape[kids[i]].birth_sort.is_some())
-                            .collect();
-                        let mut dated: Vec<usize> = slots.iter().map(|&i| kids[i]).collect();
-                        dated.sort_by_key(|&k| self.shape[k].birth_sort);
-                        for (slot, k) in slots.into_iter().zip(dated) {
-                            kids[slot] = k;
-                        }
-                    }
-                    for k in kids {
+                    for k in self.sibship(f, p, sees) {
                         if !out.contains(&k) {
                             out.push(k);
                         }
@@ -452,18 +443,62 @@ impl Graph {
             .collect()
     }
 
-    /// Partners in families that have children, in the order of those
-    /// children.
-    fn spouses_of(&self, i: usize, order: &[Vec<usize>]) -> Vec<usize> {
-        let mut out = Vec::new();
-        for &k in &order[i] {
-            if let Some(f) = self.born_in[k] {
-                for &p in &self.fams[f].parents {
-                    if p != i && !out.contains(&p) && self.fams[f].parents.contains(&i) {
-                        out.push(p);
-                    }
-                }
+    /// One family's children, `p` excluded, in the reader's order: by birth
+    /// date where they may see every child, recorded order otherwise.
+    fn sibship(&self, f: usize, p: usize, sees: &dyn Fn(usize) -> bool) -> Vec<usize> {
+        let mut kids: Vec<usize> = self.fams[f]
+            .kids
+            .iter()
+            .map(|k| k.0)
+            .filter(|&k| k != p)
+            .collect();
+        if kids.iter().all(|&k| sees(k)) {
+            // Dated children, sorted, back into the slots dated children
+            // held; undated ones stay where they were.
+            let slots: Vec<usize> = (0..kids.len())
+                .filter(|&i| self.shape[kids[i]].birth_sort.is_some())
+                .collect();
+            let mut dated: Vec<usize> = slots.iter().map(|&i| kids[i]).collect();
+            dated.sort_by_key(|&k| self.shape[k].birth_sort);
+            for (slot, k) in slots.into_iter().zip(dated) {
+                kids[slot] = k;
             }
+        }
+        kids
+    }
+
+    /// A person's unions that have children, in the order they are drawn,
+    /// each with the spouse drawn beside the person and the children in
+    /// sibling order.
+    ///
+    /// By the union's own start date where the reader may see every member
+    /// of every one of them — partners and children — and every one is
+    /// dated; otherwise in the order the families are read, and no date is
+    /// read at all. The sibling rule (ADR 0001 §2) for unions: a hidden
+    /// spouse's marriage date must not move anything a visitor receives.
+    pub fn unions_for(
+        &self,
+        p: usize,
+        sees: &dyn Fn(usize) -> bool,
+    ) -> Vec<(usize, Option<usize>, Vec<usize>)> {
+        let mut out: Vec<(usize, Option<usize>, Vec<usize>)> = Vec::new();
+        for &f in &self.partner_in[p] {
+            let kids = self.sibship(f, p, sees);
+            if kids.is_empty() {
+                continue;
+            }
+            let spouse = self.fams[f].parents.iter().copied().find(|&q| q != p);
+            out.push((f, spouse, kids));
+        }
+        let all_seen = out.iter().all(|(f, _, _)| {
+            let fam = &self.fams[*f];
+            fam.parents.iter().all(|&q| sees(q)) && fam.kids.iter().all(|k| sees(k.0))
+        });
+        let all_dated = out
+            .iter()
+            .all(|(f, _, _)| self.fams[*f].start_sort.is_some());
+        if out.len() > 1 && all_seen && all_dated {
+            out.sort_by_key(|(f, _, _)| self.fams[*f].start_sort);
         }
         out
     }
@@ -574,6 +609,10 @@ pub enum Role {
 #[derive(Debug, Clone, Serialize)]
 pub struct PNode {
     pub id: String,
+    /// Unique per drawn occurrence: the id for the first, `id~2`, `id~3` for
+    /// an ancestor or descendant drawn again under another line. Edges
+    /// reference occurrences by key.
+    pub key: String,
     pub x: f64,
     pub y: f64,
     pub role: Role,
@@ -584,6 +623,10 @@ pub struct PNode {
     /// The gap to the next person to the right in the row: how far this
     /// person's label may run.
     pub right: f64,
+    /// How many times this person appears in the drawing, when more than
+    /// once: an ancestor reached through two lines (pedigree collapse) is
+    /// drawn under each, and every occurrence carries the count. 0 otherwise.
+    pub repeat: usize,
     #[serde(skip)]
     idx: usize,
     /// Generations from the centre, signed: negative is upstream.
@@ -609,6 +652,8 @@ pub struct Couple {
     pub stub_d: usize,
     /// The year the stub is coloured by: its first parent's, plus 28.
     pub stub_year: f64,
+    /// A union drawn more than once, under a repeated ancestor.
+    pub repeat: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -706,17 +751,15 @@ impl Layout {
     }
 }
 
-struct Frame<'g> {
-    g: &'g Graph,
+struct Frame {
     n: usize,
     step: f64,
     /// Row y per signed generation offset.
     row_y: BTreeMap<i64, f64>,
     persons: Vec<PNode>,
-    at: HashMap<usize, usize>,
 }
 
-impl Frame<'_> {
+impl Frame {
     fn y(&self, gen: i64) -> f64 {
         if let Some(y) = self.row_y.get(&gen) {
             return *y;
@@ -732,32 +775,6 @@ impl Frame<'_> {
     /// Height from row `gen` up to the row downstream of it.
     fn gap_up(&self, gen: i64) -> f64 {
         (self.y(gen) - self.y(gen + 1)).abs().max(1.0)
-    }
-
-    fn put(&mut self, idx: usize, x: f64, role: Role, gen: i64) {
-        let node = PNode {
-            id: self.g.ids[idx].clone(),
-            x,
-            y: self.y(gen),
-            role,
-            lab: 0,
-            room: 999.0,
-            right: 999.0,
-            idx,
-            gen,
-            d: self.g.desc[idx] + 1,
-        };
-        match self.at.get(&idx) {
-            Some(&slot) => self.persons[slot] = node,
-            None => {
-                self.at.insert(idx, self.persons.len());
-                self.persons.push(node);
-            }
-        }
-    }
-
-    fn pos(&self, idx: usize) -> Option<&PNode> {
-        self.at.get(&idx).map(|&s| &self.persons[s])
     }
 }
 
@@ -782,34 +799,262 @@ fn fit(xs: &mut [&mut f64], cx: f64, lo: f64, hi: f64) {
     }
 }
 
-struct ANode {
-    idx: usize,
-    depth: usize,
-    par: Vec<ANode>,
-    x: f64,
-}
-
-struct DNode {
-    idx: usize,
-    depth: usize,
-    kids: Vec<usize>,
-    sp: Vec<usize>,
-    u: f64,
-    spu: Option<f64>,
-    x: f64,
-    spx: Option<f64>,
-}
-
 /// Lay out the river around `centre` with `n` generations each way.
 pub fn layout(g: &Graph, centre: &str, n: usize, shape: Shape) -> Option<Layout> {
-    layout_ordered(g, &g.order_for(&|_| true), centre, n, shape)
+    layout_for(g, &|_| true, &|_| DEFAULT_LABEL_W, centre, n, shape)
 }
 
-/// [`layout`] with the children's order chosen for one reader
-/// ([`Graph::order_for`]).
-pub fn layout_ordered(
+/// A label's room when the layout is asked without a reader: the unit tests,
+/// the scale bench. A reader's own labels are measured in [`build`].
+pub const DEFAULT_LABEL_W: f64 = 60.0;
+const CENTRE_CLEAR: f64 = 28.0;
+/// The space kept between two neighbours' extents in a row.
+const PACK_GAP: f64 = 10.0;
+
+/// One drawn occurrence of a person.
+#[derive(Debug, Clone)]
+struct Occ {
+    idx: usize,
+    gen: i64,
+    role: Role,
+    x: f64,
+}
+
+/// A node of a tree being packed: one or more occurrences side by side in one
+/// row — a person and the spouses drawn with them — and the subtrees below.
+#[derive(Debug, Clone)]
+struct Block {
+    /// (occurrence, offset from the block's anchor)
+    members: Vec<(usize, f64)>,
+    left: f64,
+    right: f64,
+    row: i64,
+    kids: Vec<usize>,
+    /// A leaf's tail: the row it reaches into and its extent there, held in
+    /// the contour so no neighbouring subtree is packed under it.
+    tail: Option<(i64, (f64, f64))>,
+}
+
+/// A packed subtree: its extent per row and every block's anchor, relative to
+/// the subtree root's anchor.
+struct Packed {
+    contour: BTreeMap<i64, (f64, f64)>,
+    anchors: Vec<(usize, f64)>,
+}
+
+impl Packed {
+    fn shift(&mut self, dx: f64) {
+        for v in self.contour.values_mut() {
+            v.0 += dx;
+            v.1 += dx;
+        }
+        for a in self.anchors.iter_mut() {
+            a.1 += dx;
+        }
+    }
+}
+
+/// Contour packing (Reingold–Tilford): lay each subtree out on its own, then
+/// set it beside the subtrees already placed by walking their right contour
+/// against its left contour, row by row, and pushing it right by the worst
+/// overlap plus [`PACK_GAP`]. The parent sits at the midpoint of its outermost
+/// children. Subtrees are therefore disjoint in every row by construction —
+/// which is what barycentric placement could not promise, and why it crossed.
+///
+/// Contours are kept as one interval per row rather than threaded: a river
+/// is at most five rows deep on either side, so the walk is O(rows) per merge
+/// and the whole pack linear in the number of blocks for any range drawn.
+fn pack(blocks: &[Block], i: usize) -> Packed {
+    let b = &blocks[i];
+    let mut acc: Option<Packed> = None;
+    let mut first = 0.0;
+    let mut last = 0.0;
+    for (n, &k) in b.kids.iter().enumerate() {
+        let mut p = pack(blocks, k);
+        match acc.as_mut() {
+            None => {
+                acc = Some(p);
+            }
+            Some(a) => {
+                let shift = p
+                    .contour
+                    .iter()
+                    .filter_map(|(row, l)| a.contour.get(row).map(|r| r.1 - l.0 + PACK_GAP))
+                    .fold(f64::NEG_INFINITY, f64::max);
+                let shift = if shift.is_finite() {
+                    shift
+                } else {
+                    last + PACK_GAP
+                };
+                p.shift(shift);
+                for (row, v) in p.contour {
+                    let e = a.contour.entry(row).or_insert(v);
+                    e.0 = e.0.min(v.0);
+                    e.1 = e.1.max(v.1);
+                }
+                a.anchors.extend(p.anchors);
+                last = shift;
+                if n == 0 {
+                    first = shift;
+                }
+            }
+        }
+    }
+    let mut out = acc.unwrap_or(Packed {
+        contour: BTreeMap::new(),
+        anchors: Vec::new(),
+    });
+    let mid = if b.kids.is_empty() {
+        0.0
+    } else {
+        (first + last) / 2.0
+    };
+    out.contour.insert(b.row, (mid + b.left, mid + b.right));
+    if let Some((row, (l, r))) = b.tail {
+        let e = out.contour.entry(row).or_insert((mid + l, mid + r));
+        e.0 = e.0.min(mid + l);
+        e.1 = e.1.max(mid + r);
+    }
+    out.anchors.push((i, mid));
+    out.shift(-mid);
+    out
+}
+
+/// Which side each lone spouse is drawn on, by descendant occurrence: what a
+/// pass asked for, and what the last build used.
+#[derive(Default)]
+struct Sides {
+    want: HashMap<usize, bool>,
+    used: HashMap<usize, bool>,
+}
+
+/// The polyline [`curve`] draws, in `PIECES` straight pieces.
+fn flatten(x1: f64, y1: f64, x2: f64, y2: f64) -> Vec<(f64, f64)> {
+    const PIECES: usize = 24;
+    let m = (y1 + y2) / 2.0;
+    (0..=PIECES)
+        .map(|k| {
+            let t = k as f64 / PIECES as f64;
+            let u = 1.0 - t;
+            let (a, b, c, d) = (u * u * u, 3.0 * u * u * t, 3.0 * u * t * t, t * t * t);
+            (
+                a * x1 + b * x1 + c * x2 + d * x2,
+                a * y1 + b * m + c * m + d * y2,
+            )
+        })
+        .collect()
+}
+
+fn pieces_cross(p: (f64, f64), q: (f64, f64), r: (f64, f64), s: (f64, f64)) -> bool {
+    let o = |a: (f64, f64), b: (f64, f64), c: (f64, f64)| {
+        (b.0 - a.0) * (c.1 - a.1) - (b.1 - a.1) * (c.0 - a.0)
+    };
+    let (d1, d2, d3, d4) = (o(r, s, p), o(r, s, q), o(p, q, r), o(p, q, s));
+    (d1 > 0.0) != (d2 > 0.0) && (d3 > 0.0) != (d4 > 0.0)
+}
+
+/// Shorten every tail that would cross a drawn line — a parent's line to a
+/// union, a union's to a child, a family stub — until it clears it by a few
+/// units. A tail is only a sign that a line goes on or ends; how long it is
+/// carries nothing, and a long sweep from a far union can pass just under a
+/// spouse's tail where no packing would move it.
+fn clear_tails(persons: &[PNode], couples: &[Couple], tails: &mut [Tail]) {
+    let at: HashMap<&str, (f64, f64)> = persons
+        .iter()
+        .map(|p| (p.key.as_str(), (p.x, p.y)))
+        .collect();
+    let mut lines: Vec<Vec<(f64, f64)>> = Vec::new();
+    for c in couples {
+        for k in c.parents.iter().chain(&c.kids) {
+            if let Some(&(x, y)) = at.get(k.as_str()) {
+                lines.push(flatten(x, y, c.x, c.y));
+            }
+        }
+        if c.stub > 0 {
+            let side = if c.x < 150.0 { 1.0 } else { -1.0 };
+            lines.push(flatten(c.x, c.y, c.x + side * 36.0, c.y - 32.0));
+        }
+    }
+    let bbox = |l: &[(f64, f64)]| {
+        l.iter().fold(
+            (
+                f64::INFINITY,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                f64::NEG_INFINITY,
+            ),
+            |b, p| (b.0.min(p.0), b.1.min(p.1), b.2.max(p.0), b.3.max(p.1)),
+        )
+    };
+    let mut boxes: Vec<(f64, f64, f64, f64)> = lines.iter().map(|l| bbox(l)).collect();
+    const MARGIN: f64 = 4.0;
+    for t in tails.iter_mut() {
+        let (dx, dy) = (t.x2 - t.x1, t.y2 - t.y1);
+        let len = dx.hypot(dy);
+        if len < 1.0 {
+            continue;
+        }
+        let mut scale = 1.0;
+        for _ in 0..12 {
+            // The tail as drawn plus a margin at its end; ignore what touches
+            // its own start, where it leaves a node other lines also meet.
+            let s = scale + MARGIN / len;
+            let pts = flatten(t.x1, t.y1, t.x1 + dx * s, t.y1 + dy * s);
+            let near = |p: (f64, f64)| (p.0 - t.x1).hypot(p.1 - t.y1) < 3.0;
+            let (bx0, by0, bx1, by1) = pts.iter().fold(
+                (
+                    f64::INFINITY,
+                    f64::INFINITY,
+                    f64::NEG_INFINITY,
+                    f64::NEG_INFINITY,
+                ),
+                |b, p| (b.0.min(p.0), b.1.min(p.1), b.2.max(p.0), b.3.max(p.1)),
+            );
+            let hit = lines.iter().zip(&boxes).any(|(l, b)| {
+                b.0 <= bx1 && bx0 <= b.2 && b.1 <= by1 && by0 <= b.3 && {
+                    pts.windows(2).any(|a| {
+                        l.windows(2).any(|e| {
+                            pieces_cross(a[0], a[1], e[0], e[1])
+                                && !(near(a[0]) && near(e[0]) || near(a[0]) && near(e[1]))
+                        })
+                    })
+                }
+            });
+            if !hit {
+                break;
+            }
+            scale *= 0.8;
+        }
+        t.x2 = t.x1 + dx * scale;
+        t.y2 = t.y1 + dy * scale;
+        // A tail placed is in the way of the tails after it.
+        let drawn = flatten(t.x1, t.y1, t.x2, t.y2);
+        boxes.push(bbox(&drawn));
+        lines.push(drawn);
+    }
+}
+
+/// One union drawn under a descendant: whose block, which family, the spouse
+/// drawn with them, and the children's occurrences.
+struct UnionDrawn {
+    person: usize,
+    fam: usize,
+    spouse: Option<usize>,
+    kids: Vec<usize>,
+}
+
+/// Lay the river out: the ancestor tree below the centre and the descendant
+/// tree above it, each packed by contour ([`pack`]), placed so the centre
+/// holds the fixed point, and fitted into the frame.
+///
+/// `sees` is the reader's lens (sibling and union order may read dates only
+/// where it admits everyone involved), and `label_w` how wide this reader's
+/// label for a person is — nothing for a person they may not see, so no
+/// hidden name's length moves anything.
+pub fn layout_for(
     g: &Graph,
-    order: &[Vec<usize>],
+    sees: &dyn Fn(usize) -> bool,
+    label_w: &dyn Fn(usize) -> f64,
     centre: &str,
     n: usize,
     shape: Shape,
@@ -818,504 +1063,638 @@ pub fn layout_ordered(
     let step = 96f64
         .min((CY - 46.0) / n as f64)
         .min((H - 64.0 - CY) / n as f64);
-
-    // ---- ancestors: walk [father, mother] to depth n
-    fn walk(g: &Graph, idx: usize, depth: usize, n: usize, leaves: &mut usize) -> ANode {
-        let par: Vec<ANode> = if depth < n {
-            g.parents_of(idx)
-                .into_iter()
-                .map(|p| walk(g, p, depth + 1, n, leaves))
-                .collect()
-        } else {
-            Vec::new()
-        };
-        let mut node = ANode {
-            idx,
-            depth,
-            par,
-            x: 0.0,
-        };
-        if node.par.is_empty() {
-            node.x = *leaves as f64;
-            *leaves += 1;
+    let mut widths: HashMap<usize, f64> = HashMap::new();
+    let mut extent = |i: usize, centre: bool| -> (f64, f64) {
+        let w = *widths.entry(i).or_insert_with(|| label_w(i));
+        let r = if centre { 7.5 } else { 4.8 };
+        // The centre's spouse line rises across the end of the centre's
+        // label on its way to their union; the centre keeps CENTRE_CLEAR
+        // more room so it rises clear of the name.
+        (
+            -(r + 4.0),
+            r + if centre { 10.0 + CENTRE_CLEAR } else { 6.0 } + w,
+        )
+    };
+    // What a leaf's tail occupies in the next row: its stroke, and for a line
+    // that continues, the arrowhead and its count.
+    fn tail_extent(d: usize, count: Option<usize>) -> (f64, f64) {
+        let half = width_of(d) / 2.0 + 3.0;
+        match count {
+            Some(n) => (
+                -half.max(6.0),
+                8.0 + text_width(&format!("+{n}"), 9.5, true, false),
+            ),
+            None => (-half, half),
         }
-        node
-    }
-    let mut leaves = 0usize;
-    let mut root = walk(g, c, 0, n, &mut leaves);
-    let sa = 150f64.min((W - 150.0) / leaves.max(1) as f64);
-    fn set_x(nd: &mut ANode, sa: f64) {
-        if nd.par.is_empty() {
-            nd.x *= sa;
-        } else {
-            for p in nd.par.iter_mut() {
-                set_x(p, sa);
-            }
-            nd.x = nd.par.iter().map(|p| p.x).sum::<f64>() / nd.par.len() as f64;
-        }
-    }
-    set_x(&mut root, sa);
-    let off = CX - root.x;
-    fn shift(nd: &mut ANode, off: f64) {
-        nd.x += off;
-        for p in nd.par.iter_mut() {
-            shift(p, off);
-        }
-    }
-    shift(&mut root, off);
-    fn collect<'a>(nd: &'a mut ANode, out: &mut Vec<&'a mut f64>) {
-        out.push(&mut nd.x);
-        for p in nd.par.iter_mut() {
-            collect(p, out);
-        }
-    }
-    {
-        let mut xs = Vec::new();
-        collect(&mut root, &mut xs);
-        fit(&mut xs, CX, 70.0, W - 44.0);
     }
 
-    // ---- descendants: a unit-grid walk
-    let mut dn: Vec<DNode> = Vec::new();
-    let mut cur = 0f64;
-    fn lay(
-        order: &[Vec<usize>],
+    let mut occs: Vec<Occ> = vec![Occ {
+        idx: c,
+        gen: 0,
+        role: Role::Centre,
+        x: 0.0,
+    }];
+    let mut blocks: Vec<Block> = Vec::new();
+
+    // ---- the ancestor tree: father, mother, to depth n
+    let (cl, cr) = extent(c, true);
+    #[allow(clippy::too_many_arguments)]
+    fn anc(
         g: &Graph,
-        idx: usize,
+        i: usize,
+        occ: usize,
         depth: usize,
         n: usize,
-        cur: &mut f64,
-        dn: &mut Vec<DNode>,
+        occs: &mut Vec<Occ>,
+        blocks: &mut Vec<Block>,
+        extent: &mut dyn FnMut(usize, bool) -> (f64, f64),
+        lr: (f64, f64),
     ) -> usize {
-        let ks: Vec<usize> = if depth < n {
-            order[idx].clone()
+        let slot = blocks.len();
+        blocks.push(Block {
+            members: vec![(occ, 0.0)],
+            left: lr.0,
+            right: lr.1,
+            row: -(depth as i64),
+            kids: Vec::new(),
+            tail: None,
+        });
+        if depth == n || g.parents_of(i).is_empty() {
+            let cont = !g.parents_of(i).is_empty();
+            let ext = tail_extent(g.desc[i] + 1, cont.then(|| g.anc[i]));
+            blocks[slot].tail = Some((-(depth as i64) - 1, ext));
+        }
+        if depth < n {
+            let mut kids = Vec::new();
+            for p in g.parents_of(i) {
+                let o = occs.len();
+                occs.push(Occ {
+                    idx: p,
+                    gen: -(depth as i64) - 1,
+                    role: Role::Anc,
+                    x: 0.0,
+                });
+                let e = extent(p, false);
+                kids.push(anc(g, p, o, depth + 1, n, occs, blocks, extent, e));
+            }
+            blocks[slot].kids = kids;
+        }
+        slot
+    }
+    let anc_root = anc(g, c, 0, 0, n, &mut occs, &mut blocks, &mut extent, (cl, cr));
+
+    // ---- the descendant tree: a person, their spouses, their unions' children
+    let mut unions: Vec<UnionDrawn> = Vec::new();
+    #[allow(clippy::too_many_arguments)]
+    fn desc(
+        g: &Graph,
+        i: usize,
+        occ: usize,
+        depth: usize,
+        n: usize,
+        sees: &dyn Fn(usize) -> bool,
+        occs: &mut Vec<Occ>,
+        blocks: &mut Vec<Block>,
+        unions: &mut Vec<UnionDrawn>,
+        extent: &mut dyn FnMut(usize, bool) -> (f64, f64),
+        sides: &mut Sides,
+        guess_left: bool,
+    ) -> usize {
+        let drawn = if depth < n {
+            g.unions_for(i, sees)
         } else {
             Vec::new()
         };
-        let slot = dn.len();
-        dn.push(DNode {
-            idx,
-            depth,
-            kids: Vec::new(),
-            sp: Vec::new(),
-            u: 0.0,
-            spu: None,
-            x: 0.0,
-            spx: None,
-        });
-        if ks.is_empty() {
-            dn[slot].u = *cur;
-            *cur += 1.0;
-            return slot;
+        let centre = depth == 0;
+        let me = extent(i, centre);
+        // The spouses of the drawn unions, beside the person: one to the
+        // right; two either side; more continuing to the right.
+        let mut spouse_occ: Vec<Option<usize>> = Vec::new();
+        for (_, sp, _) in &drawn {
+            spouse_occ.push(sp.map(|s| {
+                let o = occs.len();
+                occs.push(Occ {
+                    idx: s,
+                    gen: depth as i64,
+                    role: if centre { Role::Spouse } else { Role::Dspouse },
+                    x: 0.0,
+                });
+                o
+            }));
         }
-        let kids: Vec<usize> = ks
+        let sp_ext: Vec<Option<(f64, f64)>> = drawn
             .iter()
-            .map(|&k| lay(order, g, k, depth + 1, n, cur, dn))
+            .map(|(_, sp, _)| sp.map(|s| extent(s, false)))
             .collect();
-        let sp = g.spouses_of(idx, order);
-        if !sp.is_empty() && kids.len() == 1 {
-            *cur += 1.0;
-        }
-        let m = kids.iter().map(|&k| dn[k].u).sum::<f64>() / kids.len() as f64;
-        let node = &mut dn[slot];
-        node.u = if sp.is_empty() { m } else { m - 0.5 };
-        node.spu = (!sp.is_empty()).then_some(m + 0.5);
-        node.kids = kids;
-        node.sp = sp;
-        slot
-    }
-    let top: Vec<usize> = if n > 0 {
-        order[c]
+        let mut members: Vec<(usize, f64, (f64, f64))> = vec![(occ, 0.0, me)];
+        let shown: Vec<(usize, (f64, f64))> = spouse_occ
             .iter()
-            .map(|&k| lay(order, g, k, 1, n, &mut cur, &mut dn))
-            .collect()
-    } else {
-        Vec::new()
-    };
-    let sd = 130f64.min((W - 150.0) / cur.max(1.0));
-    let csp = g.spouses_of(c, order);
-    let sp_x = CX + 200f64.max(230f64.min(sd * 1.4));
-    let c0x = if csp.is_empty() {
-        CX
-    } else {
-        (CX + sp_x) / 2.0
-    };
-    let m_top = if top.is_empty() {
-        0.0
-    } else {
-        top.iter().map(|&k| dn[k].u).sum::<f64>() / top.len() as f64
-    };
-    for nd in dn.iter_mut() {
-        nd.x = (nd.u - m_top) * sd + c0x;
-        nd.spx = nd.spu.map(|u| (u - m_top) * sd + c0x);
-    }
-    {
-        let mut xs: Vec<&mut f64> = Vec::new();
-        for nd in dn.iter_mut() {
-            xs.push(&mut nd.x);
-            if let Some(s) = nd.spx.as_mut() {
-                xs.push(s);
+            .zip(&sp_ext)
+            .filter_map(|(o, e)| o.zip(*e))
+            .collect();
+        // Which occurrence of this person each spouse's union hangs from.
+        let mut beside: HashMap<usize, usize> = HashMap::new();
+        if shown.len() >= 2 {
+            let (o1, e1) = shown[0];
+            members.insert(0, (o1, -(e1.1 - me.0 + PACK_GAP), e1));
+            let mut x = 0.0;
+            let mut prev = me;
+            for (k, &(o, e)) in shown[1..].iter().enumerate() {
+                // A person sits beside two spouses at most; from the third
+                // on, they are drawn again, marked as a repeat, beside each —
+                // otherwise their line to a later union must cross an
+                // earlier spouse's.
+                if k > 0 {
+                    let again = occs.len();
+                    occs.push(Occ {
+                        idx: i,
+                        gen: depth as i64,
+                        role: Role::Desc,
+                        x: 0.0,
+                    });
+                    let me2 = extent(i, false);
+                    x += prev.1 - me2.0 + PACK_GAP;
+                    members.push((again, x, me2));
+                    beside.insert(o, again);
+                    prev = me2;
+                }
+                x += prev.1 - e.0 + PACK_GAP;
+                members.push((o, x, e));
+                prev = e;
+            }
+        } else if let Some(&(o, e)) = shown.first() {
+            // One spouse goes on the side away from where this person's line
+            // arrives from their parents' union, so that line never has to
+            // pass under the spouse's own.
+            let left_of = *sides.want.get(&occ).unwrap_or(&guess_left);
+            sides.used.insert(occ, left_of);
+            if left_of {
+                let a = e.1 - me.0 + PACK_GAP;
+                members = vec![(o, -a / 2.0, e), (occ, a / 2.0, me)];
+            } else {
+                let a = me.1 - e.0 + PACK_GAP;
+                members = vec![(occ, -a / 2.0, me), (o, a / 2.0, e)];
             }
         }
-        fit(&mut xs, c0x, 70.0, W - 44.0);
+        let left = members
+            .iter()
+            .map(|m| m.1 + m.2 .0)
+            .fold(f64::INFINITY, f64::min);
+        let right = members
+            .iter()
+            .map(|m| m.1 + m.2 .1)
+            .fold(f64::NEG_INFINITY, f64::max);
+        let slot = blocks.len();
+        blocks.push(Block {
+            members: members.iter().map(|m| (m.0, m.1)).collect(),
+            left,
+            right,
+            row: depth as i64,
+            kids: Vec::new(),
+            tail: None,
+        });
+        if drawn.is_empty() {
+            let cont = !g.kids_of[i].is_empty();
+            let ext = if cont {
+                tail_extent(g.desc[i] + 1, Some(g.desc[i]))
+            } else {
+                tail_extent(1, None)
+            };
+            blocks[slot].tail = Some((depth as i64 + 1, ext));
+        }
+        // Children's groups go left to right in the order of the partners
+        // they were had with — a union with no partner drawn sits at the
+        // person — so no parent's line to a union crosses another's.
+        let at = |o: Option<usize>| -> f64 {
+            o.and_then(|o| members.iter().find(|m| m.0 == o))
+                .map_or_else(|| members.iter().find(|m| m.0 == occ).unwrap().1, |m| m.1)
+        };
+        let mut drawn: Vec<_> = drawn.into_iter().zip(spouse_occ).collect();
+        drawn.sort_by(|a, b| at(a.1).total_cmp(&at(b.1)));
+        let mut kid_blocks = Vec::new();
+        for ((f, _, kids), sp) in drawn {
+            let mut kid_occs = Vec::new();
+            let m = kids.len();
+            for (j, k) in kids.into_iter().enumerate() {
+                let o = occs.len();
+                occs.push(Occ {
+                    idx: k,
+                    gen: depth as i64 + 1,
+                    role: Role::Desc,
+                    x: 0.0,
+                });
+                kid_occs.push(o);
+                kid_blocks.push(desc(
+                    g,
+                    k,
+                    o,
+                    depth + 1,
+                    n,
+                    sees,
+                    occs,
+                    blocks,
+                    unions,
+                    extent,
+                    sides,
+                    2 * j + 1 < m,
+                ));
+            }
+            unions.push(UnionDrawn {
+                person: sp.and_then(|s| beside.get(&s).copied()).unwrap_or(occ),
+                fam: f,
+                spouse: sp,
+                kids: kid_occs,
+            });
+        }
+        blocks[slot].kids = kid_blocks;
+        slot
     }
 
-    // ---- rows: head counts, the vertical scale, the hourglass budget
+    // ---- place: pack each tree, put the centre on the fixed point, fit
+    fn place(blocks: &[Block], root: usize, occs: &mut [Occ]) -> Vec<usize> {
+        let packed = pack(blocks, root);
+        let mut touched = Vec::new();
+        for (b, ax) in packed.anchors {
+            for &(o, dx) in &blocks[b].members {
+                occs[o].x = ax + dx;
+                touched.push(o);
+            }
+        }
+        let off = CX - occs[0].x;
+        for &o in &touched {
+            occs[o].x += off;
+        }
+        touched
+    }
+    let anc_occs = place(&blocks, anc_root, &mut occs);
+
+    // The descendant tree is built, packed, and built again with each lone
+    // spouse moved to the side their partner's line does not arrive from,
+    // until no side changes (the sides only move blocks within their row,
+    // so this settles in a pass or two; three at most are run).
+    let (occ_mark, block_mark) = (occs.len(), blocks.len());
+    let mut sides = Sides::default();
+    let mut desc_occs = Vec::new();
+    for _ in 0..3 {
+        occs.truncate(occ_mark);
+        blocks.truncate(block_mark);
+        unions.clear();
+        sides.used.clear();
+        let root = desc(
+            g,
+            c,
+            0,
+            0,
+            n,
+            sees,
+            &mut occs,
+            &mut blocks,
+            &mut unions,
+            &mut extent,
+            &mut sides,
+            false,
+        );
+        desc_occs = place(&blocks, root, &mut occs);
+        let mut changed = false;
+        for u in &unions {
+            let mut ps = vec![occs[u.person].x];
+            ps.extend(u.spouse.map(|s| occs[s].x));
+            let pm = ps.iter().sum::<f64>() / ps.len() as f64;
+            let (kl, kr) = u
+                .kids
+                .iter()
+                .fold((f64::INFINITY, f64::NEG_INFINITY), |a, &k| {
+                    (a.0.min(occs[k].x), a.1.max(occs[k].x))
+                });
+            let cx = pm * 0.5 + (kl + kr) / 4.0;
+            for &k in &u.kids {
+                if let Some(&was) = sides.used.get(&k) {
+                    let want = cx > occs[k].x;
+                    if want != was {
+                        sides.want.insert(k, want);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+    // Row 0 holds only the centre and their spouses: it keeps its packed
+    // spacing through the fit, which would otherwise squeeze a large
+    // family's spouse onto the centre's name.
+    let row0: Vec<(usize, f64)> = desc_occs
+        .iter()
+        .filter(|&&o| occs[o].gen == 0)
+        .map(|&o| (o, occs[o].x))
+        .collect();
+    for list in [&anc_occs, &desc_occs] {
+        let mut xs: Vec<f64> = list.iter().map(|&o| occs[o].x).collect();
+        {
+            let mut refs: Vec<&mut f64> = xs.iter_mut().collect();
+            fit(&mut refs, CX, 70.0, W - 44.0);
+        }
+        for (&o, x) in list.iter().zip(xs) {
+            occs[o].x = x;
+        }
+    }
+    occs[0].x = CX;
+    for (o, x) in row0 {
+        occs[o].x = x.clamp(70.0, W - 44.0);
+    }
+
+    // ---- rows
     let mut frame = Frame {
-        g,
         n,
         step,
         row_y: BTreeMap::new(),
         persons: Vec::new(),
-        at: HashMap::new(),
     };
     let mut heads: BTreeMap<i64, BTreeSet<usize>> = BTreeMap::new();
-    fn count_anc(nd: &ANode, heads: &mut BTreeMap<i64, BTreeSet<usize>>) {
-        heads.entry(-(nd.depth as i64)).or_default().insert(nd.idx);
-        for p in &nd.par {
-            count_anc(p, heads);
-        }
-    }
-    count_anc(&root, &mut heads);
-    for nd in &dn {
-        let e = heads.entry(nd.depth as i64).or_default();
-        e.insert(nd.idx);
-        if nd.spx.is_some() {
-            if let Some(&s) = nd.sp.first() {
-                e.insert(s);
-            }
-        }
+    for o in &occs {
+        heads.entry(o.gen).or_default().insert(o.idx);
     }
     frame.row_y = rows_y(&heads, n, step, shape.log_spacing);
 
-    // Place everybody, in the reference's order.
-    fn put_anc(frame: &mut Frame<'_>, nd: &ANode, c: usize) {
-        let role = if nd.idx == c { Role::Centre } else { Role::Anc };
-        frame.put(nd.idx, nd.x, role, -(nd.depth as i64));
-        for p in &nd.par {
-            put_anc(frame, p, c);
-        }
+    // ---- persons, one per occurrence; a person drawn twice is marked twice
+    let mut seen: HashMap<usize, usize> = HashMap::new();
+    let mut count: HashMap<usize, usize> = HashMap::new();
+    for o in &occs {
+        *count.entry(o.idx).or_default() += 1;
     }
-    put_anc(&mut frame, &root, c);
-    if let Some(&s) = csp.first() {
-        frame.put(s, sp_x, Role::Spouse, 0);
+    let keys: Vec<String> = occs
+        .iter()
+        .map(|o| {
+            let k = seen.entry(o.idx).or_default();
+            *k += 1;
+            if *k == 1 {
+                g.ids[o.idx].clone()
+            } else {
+                format!("{}~{k}", g.ids[o.idx])
+            }
+        })
+        .collect();
+    for (o, key) in occs.iter().zip(&keys) {
+        let reps = count[&o.idx];
+        frame.persons.push(PNode {
+            id: g.ids[o.idx].clone(),
+            key: key.clone(),
+            x: o.x,
+            y: frame.y(o.gen),
+            role: o.role,
+            lab: 0,
+            room: 999.0,
+            right: 999.0,
+            repeat: if reps > 1 { reps } else { 0 },
+            idx: o.idx,
+            gen: o.gen,
+            d: g.desc[o.idx] + 1,
+        });
     }
-    if let Some(&s) = csp.get(1) {
-        frame.put(s, CX - (sp_x - CX), Role::Spouse, 0);
-    }
-    for nd in &dn {
-        frame.put(nd.idx, nd.x, Role::Desc, nd.depth as i64);
-        if let (Some(&s), Some(x)) = (nd.sp.first(), nd.spx) {
-            frame.put(s, x, Role::Dspouse, nd.depth as i64);
-        }
-    }
-
     if shape.hourglass {
-        hourglass(&mut frame, 130.0, c0x);
+        hourglass(&mut frame, 130.0, CX);
     }
+    let xy = |o: usize| (frame.persons[o].x, frame.persons[o].y);
 
-    // ---- couples and tails, from the final positions
+    // ---- couples and tails
     let mut couples: Vec<Couple> = Vec::new();
-    let mut couple_at: HashMap<String, usize> = HashMap::new();
     let mut tails: Vec<Tail> = Vec::new();
     let year_est = estimate_years(g, c, &frame);
     let yr = |i: usize| -> f64 { year_est.get(&i).copied().unwrap_or(1900.0) };
-    let mut add_couple = |couples: &mut Vec<Couple>, cp: Couple| match couple_at.get(&cp.key) {
-        Some(&s) => couples[s] = cp,
-        None => {
-            couple_at.insert(cp.key.clone(), couples.len());
-            couples.push(cp);
+    let mut fam_seen: HashMap<usize, usize> = HashMap::new();
+    let mut fam_count: HashMap<usize, usize> = HashMap::new();
+    // Ancestor unions: one per drawn child whose parents are drawn.
+    let mut anc_unions: Vec<(usize, Vec<usize>)> = Vec::new();
+    {
+        fn walk(blocks: &[Block], b: usize, out: &mut Vec<(usize, Vec<usize>)>) {
+            let child = blocks[b].members[0].0;
+            if !blocks[b].kids.is_empty() {
+                out.push((
+                    child,
+                    blocks[b]
+                        .kids
+                        .iter()
+                        .map(|&k| blocks[k].members[0].0)
+                        .collect(),
+                ));
+            }
+            for &k in &blocks[b].kids {
+                walk(blocks, k, out);
+            }
         }
-    };
-
-    fn anc_nodes<'a>(nd: &'a ANode, out: &mut Vec<&'a ANode>) {
-        out.push(nd);
-        for p in &nd.par {
-            anc_nodes(p, out);
+        walk(&blocks, anc_root, &mut anc_unions);
+    }
+    for (child, _) in &anc_unions {
+        if let Some(f) = g.born_in[occs[*child].idx] {
+            *fam_count.entry(f).or_default() += 1;
         }
     }
-    let mut all_anc = Vec::new();
-    anc_nodes(&root, &mut all_anc);
-    for nd in all_anc {
-        let i = nd.idx;
-        let gen = -(nd.depth as i64);
-        let Some(me) = frame.pos(i).map(|p| (p.x, p.y)) else {
-            continue;
-        };
-        let parents = g.parents_of(i);
-        if !nd.par.is_empty() {
-            let f = g.born_in[i].expect("drawn parents come from a family");
-            let fam = &g.fams[f];
-            let pxs: Vec<f64> = nd
-                .par
-                .iter()
-                .filter_map(|p| frame.pos(p.idx).map(|q| q.x))
-                .collect();
-            let pm = pxs.iter().sum::<f64>() / pxs.len().max(1) as f64;
-            let cx = pm * 0.5 + me.0 * 0.5;
-            let cy = me.1 + 0.62 * frame.gap_down(gen);
-            let k = g.kid_conf(f, i);
-            let d = g.family_discharge(f);
-            let drawn = g.desc[i] + 1;
-            add_couple(
-                &mut couples,
-                Couple {
-                    key: fam.id.clone(),
-                    x: cx,
-                    y: cy,
-                    parents: parents.iter().map(|&p| g.ids[p].clone()).collect(),
-                    kids: vec![g.ids[i].clone()],
-                    d,
-                    stub: fam.kids.iter().filter(|kk| kk.0 != i).count(),
-                    pconf: parents.iter().map(|&p| (g.ids[p].clone(), k)).collect(),
-                    kconf: [(g.ids[i].clone(), k)].into_iter().collect(),
-                    stub_d: d.saturating_sub(drawn).max(1),
-                    stub_year: 1850.0,
-                },
-            );
-            if parents.len() < 2 {
-                // Which parent is missing decides the side the lost line
-                // leaves on: a missing father to the left.
-                let side = match parents.first().and_then(|&p| g.shape[p].slot) {
-                    Some(1) => -1.0,
-                    _ => 1.0,
-                };
-                tails.push(Tail {
-                    key: format!("m{}", fam.id),
-                    x1: cx,
-                    y1: cy,
-                    x2: cx + side * 26f64.max(sa * 0.42),
-                    y2: frame.y(gen - 1) + 14.0,
-                    d,
-                    kind: TailKind::Lost,
-                    dir: 1,
-                    count: 0,
-                    year: yr(i) - 28.0,
-                    who: i,
-                    offset: -28.0,
-                });
-            }
-        } else if !parents.is_empty() {
-            tails.push(Tail {
-                key: format!("c{}", g.ids[i]),
-                x1: me.0,
-                y1: me.1,
-                x2: me.0,
-                y2: me.1 + 0.58 * frame.gap_down(gen),
-                d: g.desc[i] + 1,
-                kind: TailKind::Cont,
-                dir: 1,
-                count: g.anc[i],
-                year: yr(i) - 20.0,
-                who: i,
-                offset: -20.0,
-            });
+    for u in &unions {
+        *fam_count.entry(u.fam).or_default() += 1;
+    }
+    let mut fam_key = |f: usize| -> (String, bool) {
+        let k = fam_seen.entry(f).or_default();
+        *k += 1;
+        let key = if *k == 1 {
+            g.fams[f].id.clone()
         } else {
+            format!("{}~{k}", g.fams[f].id)
+        };
+        (key, fam_count.get(&f).copied().unwrap_or(1) > 1)
+    };
+
+    let mut has_parents_drawn: BTreeSet<usize> = BTreeSet::new();
+    for (child, parents) in &anc_unions {
+        has_parents_drawn.insert(*child);
+        let o = &occs[*child];
+        let i = o.idx;
+        let Some(f) = g.born_in[i] else { continue };
+        let fam = &g.fams[f];
+        let me = xy(*child);
+        let pm = parents.iter().map(|&p| xy(p).0).sum::<f64>() / parents.len() as f64;
+        let cx = pm * 0.5 + me.0 * 0.5;
+        let cy = me.1 + 0.62 * frame.gap_down(o.gen);
+        let k = g.kid_conf(f, i);
+        let d = g.family_discharge(f);
+        let drawn = g.desc[i] + 1;
+        let (key, repeat) = fam_key(f);
+        couples.push(Couple {
+            key: key.clone(),
+            x: cx,
+            y: cy,
+            parents: parents.iter().map(|&p| keys[p].clone()).collect(),
+            kids: vec![keys[*child].clone()],
+            d,
+            stub: fam.kids.iter().filter(|kk| kk.0 != i).count(),
+            pconf: parents.iter().map(|&p| (keys[p].clone(), k)).collect(),
+            kconf: [(keys[*child].clone(), k)].into_iter().collect(),
+            stub_d: d.saturating_sub(drawn).max(1),
+            stub_year: 1850.0,
+            repeat,
+        });
+        if parents.len() < 2 {
+            let side = match parents.first().and_then(|&p| g.shape[occs[p].idx].slot) {
+                Some(1) => -1.0,
+                _ => 1.0,
+            };
             tails.push(Tail {
-                key: format!("l{}", g.ids[i]),
-                x1: me.0,
-                y1: me.1,
-                x2: me.0,
-                y2: me.1 + 0.62 * frame.gap_down(gen),
-                d: g.desc[i] + 1,
+                key: format!("m{key}"),
+                x1: cx,
+                y1: cy,
+                x2: cx + side * 26f64.max(PACK_GAP * 4.0),
+                y2: frame.y(o.gen - 1) + 14.0,
+                d,
                 kind: TailKind::Lost,
                 dir: 1,
                 count: 0,
-                year: yr(i) - 20.0,
+                year: yr(i) - 28.0,
                 who: i,
-                offset: -20.0,
+                offset: -28.0,
             });
         }
     }
-
-    // Descendant families, grouped under each drawn parent.
-    let mut add_desc = |pid: usize, couples: &mut Vec<Couple>, tails: &mut Vec<Tail>| {
-        let Some(pp) = frame.pos(pid).map(|p| (p.y, p.gen)) else {
-            return;
-        };
-        let mut groups: Vec<(usize, Vec<usize>)> = Vec::new();
-        for &k in &order[pid] {
-            if frame.pos(k).is_none() {
-                continue;
-            }
-            let Some(f) = g.born_in[k] else { continue };
-            if !g.fams[f].parents.contains(&pid) {
-                continue;
-            }
-            match groups.iter_mut().find(|(gf, _)| *gf == f) {
-                Some((_, ks)) => ks.push(k),
-                None => groups.push((f, vec![k])),
-            }
+    // Ancestor leaves: the line continues off the frame, or the record ends.
+    for &o in &anc_occs {
+        if has_parents_drawn.contains(&o) {
+            continue;
         }
-        for (f, ks) in groups {
-            let fam = &g.fams[f];
-            let placed: Vec<f64> = fam
-                .parents
-                .iter()
-                .filter_map(|&p| frame.pos(p).map(|q| q.x))
-                .collect();
-            let pm = placed.iter().sum::<f64>() / placed.len().max(1) as f64;
-            let km = ks
-                .iter()
-                .filter_map(|&k| frame.pos(k).map(|q| q.x))
-                .sum::<f64>()
-                / ks.len() as f64;
-            let cx = pm * 0.5 + km * 0.5;
-            let cy = pp.0 - 0.38 * frame.gap_up(pp.1);
-            let d = g.family_discharge(f);
-            // The parent's line into the family is as certain as its
-            // best-attested child.
-            let best = ks
-                .iter()
-                .map(|&k| g.kid_conf(f, k))
-                .min()
-                .unwrap_or(Conf::Attested);
-            add_couple(
-                couples,
-                Couple {
-                    key: fam.id.clone(),
-                    x: cx,
-                    y: cy,
-                    parents: fam.parents.iter().map(|&p| g.ids[p].clone()).collect(),
-                    kids: ks.iter().map(|&k| g.ids[k].clone()).collect(),
-                    d,
-                    stub: 0,
-                    pconf: fam
-                        .parents
-                        .iter()
-                        .map(|&p| (g.ids[p].clone(), best))
-                        .collect(),
-                    kconf: ks
-                        .iter()
-                        .map(|&k| (g.ids[k].clone(), g.kid_conf(f, k)))
-                        .collect(),
-                    stub_d: 1,
-                    stub_year: 1850.0,
-                },
-            );
-            if fam.parents.len() < 2 {
-                tails.push(Tail {
-                    key: format!("m{}", fam.id),
-                    x1: cx,
-                    y1: cy,
-                    x2: cx - 30.0,
-                    y2: pp.0 + 10.0,
-                    d,
-                    kind: TailKind::Lost,
-                    dir: 1,
-                    count: 0,
-                    year: yr(pid),
-                    who: pid,
-                    offset: 0.0,
-                });
-            }
-        }
-    };
-    add_desc(c, &mut couples, &mut tails);
-    for nd in &dn {
-        if !nd.kids.is_empty() {
-            add_desc(nd.idx, &mut couples, &mut tails);
-        }
+        let oc = &occs[o];
+        let (x, y) = xy(o);
+        let i = oc.idx;
+        let down = frame.gap_down(oc.gen);
+        let cont = !g.parents_of(i).is_empty();
+        tails.push(Tail {
+            key: format!("{}{}", if cont { "c" } else { "l" }, keys[o]),
+            x1: x,
+            y1: y,
+            x2: x,
+            y2: y + if cont { 0.58 } else { 0.62 } * down,
+            d: g.desc[i] + 1,
+            kind: if cont { TailKind::Cont } else { TailKind::Lost },
+            dir: 1,
+            count: if cont { g.anc[i] } else { 0 },
+            year: yr(i) - 20.0,
+            who: i,
+            offset: -20.0,
+        });
     }
-    for nd in &dn {
-        if !nd.kids.is_empty() {
-            continue;
+    // Descendant unions.
+    let mut with_kids: BTreeSet<usize> = BTreeSet::new();
+    for u in &unions {
+        with_kids.insert(u.person);
+        let po = &occs[u.person];
+        let fam = &g.fams[u.fam];
+        let mut parents = vec![u.person];
+        if let Some(s) = u.spouse {
+            parents.push(s);
         }
-        let Some(me) = frame.pos(nd.idx).map(|p| (p.x, p.y, p.gen)) else {
-            continue;
-        };
-        let up = 0.55 * frame.gap_up(me.2);
-        if !g.kids_of[nd.idx].is_empty() {
-            tails.push(Tail {
-                key: format!("c{}", g.ids[nd.idx]),
-                x1: me.0,
-                y1: me.1,
-                x2: me.0,
-                y2: me.1 - up,
-                d: g.desc[nd.idx] + 1,
-                kind: TailKind::Cont,
-                dir: -1,
-                count: g.desc[nd.idx],
-                year: yr(nd.idx) + 20.0,
-                who: nd.idx,
-                offset: 20.0,
+        let pm = parents.iter().map(|&p| xy(p).0).sum::<f64>() / parents.len() as f64;
+        let (kl, kr) = u
+            .kids
+            .iter()
+            .fold((f64::INFINITY, f64::NEG_INFINITY), |a, &k| {
+                (a.0.min(xy(k).0), a.1.max(xy(k).0))
             });
-        } else {
-            // Every childless line ends in the same ring, living or not.
-            // Drawing it only for the dead told a reader of a redacted,
-            // childless person whether they were alive.
+        let km = (kl + kr) / 2.0;
+        let cx = pm * 0.5 + km * 0.5;
+        let py = xy(u.person).1;
+        let cy = py - 0.38 * frame.gap_up(po.gen);
+        let d = g.family_discharge(u.fam);
+        let best = u
+            .kids
+            .iter()
+            .map(|&k| g.kid_conf(u.fam, occs[k].idx))
+            .min()
+            .unwrap_or(Conf::Attested);
+        let (key, repeat) = fam_key(u.fam);
+        couples.push(Couple {
+            key: key.clone(),
+            x: cx,
+            y: cy,
+            parents: parents.iter().map(|&p| keys[p].clone()).collect(),
+            kids: u.kids.iter().map(|&k| keys[k].clone()).collect(),
+            d,
+            stub: 0,
+            pconf: parents.iter().map(|&p| (keys[p].clone(), best)).collect(),
+            kconf: u
+                .kids
+                .iter()
+                .map(|&k| (keys[k].clone(), g.kid_conf(u.fam, occs[k].idx)))
+                .collect(),
+            stub_d: 1,
+            stub_year: 1850.0,
+            repeat,
+        });
+        if fam.parents.len() < 2 {
             tails.push(Tail {
-                key: format!("e{}", g.ids[nd.idx]),
-                x1: me.0,
-                y1: me.1,
-                x2: me.0,
-                y2: me.1 - up,
-                d: 1,
+                key: format!("m{key}"),
+                x1: cx,
+                y1: cy,
+                x2: cx - 30.0,
+                y2: py + 10.0,
+                d,
                 kind: TailKind::Lost,
-                dir: -1,
+                dir: 1,
                 count: 0,
-                year: yr(nd.idx),
-                who: nd.idx,
+                year: yr(po.idx),
+                who: po.idx,
                 offset: 0.0,
             });
         }
     }
-    if g.kids_of[c].is_empty() {
+    // Descendant leaves, the centre included: continued, or the record ends —
+    // the same ring whether or not the person is living.
+    for (o, oc) in occs.iter().enumerate() {
+        if !matches!(oc.role, Role::Desc | Role::Centre) || with_kids.contains(&o) {
+            continue;
+        }
+        let (x, y) = xy(o);
+        let up = 0.55 * frame.gap_up(oc.gen);
+        let i = oc.idx;
+        let cont = !g.kids_of[i].is_empty();
         tails.push(Tail {
-            key: format!("e{}", g.ids[c]),
-            x1: CX,
-            y1: CY,
-            x2: CX,
-            y2: CY - 0.55 * step,
-            d: 1,
-            kind: TailKind::Lost,
+            key: format!("{}{}", if cont { "c" } else { "e" }, keys[o]),
+            x1: x,
+            y1: y,
+            x2: x,
+            y2: y - up,
+            d: if cont { g.desc[i] + 1 } else { 1 },
+            kind: if cont { TailKind::Cont } else { TailKind::Lost },
             dir: -1,
-            count: 0,
-            year: yr(c),
-            who: c,
-            offset: 0.0,
+            count: if cont { g.desc[i] } else { 0 },
+            year: yr(i) + if cont { 20.0 } else { 0.0 },
+            who: i,
+            offset: if cont { 20.0 } else { 0.0 },
         });
     }
-    let spouses: Vec<(usize, f64, f64, i64)> = frame
-        .persons
-        .iter()
-        .filter(|p| matches!(p.role, Role::Spouse | Role::Dspouse))
-        .map(|p| (p.idx, p.x, p.y, p.gen))
-        .collect();
-    for (i, x, y, gen) in spouses {
-        let down = frame.gap_down(gen);
-        if !g.parents_of(i).is_empty() {
-            tails.push(Tail {
-                key: format!("c{}", g.ids[i]),
-                x1: x,
-                y1: y,
-                x2: x,
-                y2: y + 0.5 * down,
-                d: g.desc[i] + 1,
-                kind: TailKind::Cont,
-                dir: 1,
-                count: g.anc[i],
-                year: yr(i) - 20.0,
-                who: i,
-                offset: -20.0,
-            });
-        } else {
-            tails.push(Tail {
-                key: format!("l{}", g.ids[i]),
-                x1: x,
-                y1: y,
-                x2: x,
-                y2: y + 0.55 * down,
-                d: g.desc[i] + 1,
-                kind: TailKind::Lost,
-                dir: 1,
-                count: 0,
-                year: yr(i) - 20.0,
-                who: i,
-                offset: -20.0,
-            });
+    // Spouses: their own line runs upstream, off the frame or to its end.
+    for (o, oc) in occs.iter().enumerate() {
+        if !matches!(oc.role, Role::Spouse | Role::Dspouse) {
+            continue;
         }
+        let (x, y) = xy(o);
+        let i = oc.idx;
+        let down = frame.gap_down(oc.gen);
+        let cont = !g.parents_of(i).is_empty();
+        tails.push(Tail {
+            key: format!("{}{}", if cont { "c" } else { "l" }, keys[o]),
+            x1: x,
+            y1: y,
+            x2: x,
+            y2: y + SPOUSE_TAIL * down,
+            d: g.desc[i] + 1,
+            kind: if cont { TailKind::Cont } else { TailKind::Lost },
+            dir: 1,
+            count: if cont { g.anc[i] } else { 0 },
+            year: yr(i) - 20.0,
+            who: i,
+            offset: -20.0,
+        });
     }
+
+    // ---- tails stop short of any line they would cross
+    clear_tails(&frame.persons, &couples, &mut tails);
 
     // ---- label density per row
     let mut rows: BTreeMap<i64, Vec<usize>> = BTreeMap::new();
@@ -1366,6 +1745,11 @@ pub fn layout_ordered(
     })
 }
 
+/// How far a spouse's own line runs upstream before it ends or leaves the
+/// frame, as a fraction of a generation — at most: where a line arriving at
+/// the row passes beneath it, [`clear_tails`] stops it short.
+const SPOUSE_TAIL: f64 = 0.5;
+
 /// The window of the frame a river at range `n` needs.
 ///
 /// The step is capped at 96, so at ± 2 the rows reach only 192 units either
@@ -1385,14 +1769,14 @@ pub fn view_window(n: usize, step: f64) -> (f64, f64) {
     (r1(top), r1(bottom - top))
 }
 
-/// Label tier from a person's smaller neighbour gap.
+/// Label tier from a person's smaller neighbour gap: none where dots are too
+/// close to label at all, otherwise the full name, which [`label_tiers`]
+/// then shortens to what the measured text leaves room for. (Fixed gap
+/// thresholds for the middle tiers predate contour packing, which spaces a
+/// row by its labels' widths; they shortened names that fitted.)
 pub fn label_tier(gap: f64) -> u8 {
     if gap < 46.0 {
         0
-    } else if gap < 76.0 {
-        1
-    } else if gap < 138.0 {
-        2
     } else {
         3
     }
@@ -1456,7 +1840,7 @@ fn rows_y(
 /// keeps the drawing free of new crossings; what changes is that a childless
 /// first child no longer sits at the far end of a slot grid sized for its
 /// siblings' grandchildren.
-fn hourglass(frame: &mut Frame<'_>, sd_cap: f64, c0x: f64) {
+fn hourglass(frame: &mut Frame, sd_cap: f64, c0x: f64) {
     let mut rows: BTreeMap<i64, Vec<usize>> = BTreeMap::new();
     for (s, p) in frame.persons.iter().enumerate() {
         if p.gen > 0 {
@@ -1477,7 +1861,7 @@ fn hourglass(frame: &mut Frame<'_>, sd_cap: f64, c0x: f64) {
 /// A birth year for everyone drawn: the recorded one, or one estimated from
 /// the generation. Redacted persons are coloured by the estimate too, which is
 /// done at render time; this is the geometry's year.
-fn estimate_years(g: &Graph, c: usize, frame: &Frame<'_>) -> HashMap<usize, f64> {
+fn estimate_years(g: &Graph, c: usize, frame: &Frame) -> HashMap<usize, f64> {
     let centre_year = g.shape[c]
         .birth_year
         .map(|y| y as f64)
@@ -1503,7 +1887,7 @@ fn estimate_years(g: &Graph, c: usize, frame: &Frame<'_>) -> HashMap<usize, f64>
 }
 
 /// The year scale through the generation rows.
-fn year_scale(frame: &Frame<'_>, year: f64) -> YearScale {
+fn year_scale(frame: &Frame, year: f64) -> YearScale {
     let n = frame.n as i64;
     let mut knots: Vec<(f64, f64)> = (-(n + 1)..=(n + 1))
         .map(|k| (year + k as f64 * YEARS_PER_GEN, frame.y(k)))
@@ -1639,7 +2023,7 @@ fn redact_years(l: &mut Layout, flat: &Value, lens: &Lens) {
         .persons
         .iter()
         .zip(&l.years)
-        .map(|(p, &y)| (p.id.as_str(), y))
+        .map(|(p, &y)| (p.key.as_str(), y))
         .collect();
     for c in l.couples.iter_mut() {
         c.stub_year = c
@@ -1688,8 +2072,32 @@ pub fn build(
 ) -> Option<River> {
     // Children ordered for this reader: by date only where they may see the
     // whole sibship.
-    let order = g.order_for(&|i| lens.sees_person(&g.ids[i]));
-    let mut layout = layout_ordered(g, &order, centre, n, shape)?;
+    let sees = |i: usize| lens.sees_person(&g.ids[i]);
+    // Each label's room is what this reader's label for that person needs:
+    // nothing for a person they may not see.
+    let label_w = |i: usize| -> f64 {
+        let l = access::river_label(flat, lens, &g.ids[i]);
+        if l.redacted {
+            return 0.0;
+        }
+        let s = shown_for(&l, &g.ids[i], 1900.0, &words);
+        if g.ids[i] == centre {
+            // The centre is set in its own, larger face and shows its full
+            // name where there is room; a name long enough to need more
+            // than CENTRE_LABEL_MAX is clipped instead of pushing the
+            // spouse across the frame.
+            return label_width(&s.names[2], true)
+                .min(CENTRE_LABEL_MAX)
+                .max(text_width(&s.years, 11.0, true, false));
+        }
+        // Room for the full name where the frame has it; the fit and the
+        // label tiers shorten it where it does not. One record holds a
+        // sentence in a name, so no label asks for more than LABEL_MAX.
+        label_width(&s.names[2], false)
+            .min(LABEL_MAX)
+            .max(text_width(&s.years, 9.5, true, false))
+    };
+    let mut layout = layout_for(g, &sees, &label_w, centre, n, shape)?;
     redact_years(&mut layout, flat, lens);
     // A signed-out visitor gets no bands at all.
     layout.meta.bands = layout.meta.era && signed_in;
@@ -1715,7 +2123,12 @@ pub fn build(
         .find(|&&p| g.shape[p].slot == Some(0))
         .or_else(|| parents.first())
         .map(|&p| g.ids[p].clone());
-    let up = order[c].first().map(|&k| g.ids[k].clone());
+    // ↑: the first child of the first union, in the order they are drawn.
+    let up = g
+        .unions_for(c, &sees)
+        .first()
+        .and_then(|u| u.2.first())
+        .map(|&k| g.ids[k].clone());
     Some(River {
         layout,
         shown,
@@ -1751,11 +2164,13 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     let mut defs = String::new();
     let mut out = String::new();
     let mut gi = 0usize;
+    // Edges name the occurrence they join, by key: a person drawn twice is
+    // two nodes.
     let by_id: HashMap<&str, usize> = l
         .persons
         .iter()
         .enumerate()
-        .map(|(i, p)| (p.id.as_str(), i))
+        .map(|(i, p)| (p.key.as_str(), i))
         .collect();
     let col = |year: f64| -> String {
         if l.meta.era {
@@ -1997,11 +2412,23 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
         // re-centred on this person, at the same range.
         let _ = write!(
             out,
-            r#"<a class="rv-p" data-id="{}" href="{RIVER_PATH}?p={}&amp;n={}"><circle cx="{x}" cy="{y}" r="20" fill="transparent"/>"#,
+            r#"<a class="rv-p" data-id="{}" data-key="{}" href="{RIVER_PATH}?p={}&amp;n={}"><circle cx="{x}" cy="{y}" r="20" fill="transparent"/>"#,
             html_escape(&p.id),
+            html_escape(&p.key),
             url_component(&p.id),
             l.meta.n
         );
+        // A person drawn under two lines (pedigree collapse) is drawn twice,
+        // and each occurrence says how many there are.
+        if p.repeat > 1 {
+            let _ = write!(
+                out,
+                r#"<text x="{}" y="{}" text-anchor="end" font-family="{MONO}" font-size="9.5" fill="{DATA_TEXT}">×{}</text>"#,
+                num(p.x - r - 4.0),
+                num(p.y + 3.5),
+                p.repeat
+            );
+        }
         if s.living {
             let _ = write!(
                 out,
@@ -2153,6 +2580,12 @@ pub fn fit_tier(tier: u8, s: &Shown, gap: f64, centre: bool) -> u8 {
     }
     t
 }
+
+/// The most room the layout keeps for any other label.
+const LABEL_MAX: f64 = 100.0;
+
+/// The most room the layout keeps for the centre's label.
+const CENTRE_LABEL_MAX: f64 = 200.0;
 
 /// The centre's name, cut with an ellipsis to fit `room`.
 ///
@@ -2334,9 +2767,7 @@ mod tests {
     #[test]
     fn label_tiers_follow_the_gap() {
         assert_eq!(label_tier(45.9), 0);
-        assert_eq!(label_tier(46.0), 1);
-        assert_eq!(label_tier(75.9), 1);
-        assert_eq!(label_tier(137.9), 2);
+        assert_eq!(label_tier(46.0), 3);
         assert_eq!(label_tier(138.0), 3);
     }
 
@@ -2371,7 +2802,14 @@ mod tests {
         // The spouse stands to the right at the centre's row.
         let w = l.person("wife").unwrap();
         assert_eq!((w.y, w.role), (CY, Role::Spouse));
-        assert!(w.x - CX >= 200.0 && w.x - CX <= 230.0);
+        // Packed beside the centre: far enough for the centre's label, no
+        // further (the reference's fixed 200–230 left a gap packing removes).
+        let room = 7.5 + 10.0 + DEFAULT_LABEL_W + PACK_GAP + 4.8 + 4.0;
+        assert!(
+            w.x - CX >= room - 1e-9 && w.x - CX < 200.0,
+            "spouse at +{}",
+            w.x - CX
+        );
     }
 
     #[test]

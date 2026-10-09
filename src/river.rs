@@ -663,9 +663,8 @@ pub struct Couple {
     /// and stops short of it, so its count never sits on that row's dots.
     pub stub_dx: f64,
     pub stub_dy: f64,
-    /// Which side of the stub's end its count is written on: 1 right, -1
-    /// left, 0 not written (it would run over a dot). See [`place_counts`].
-    pub stub_side: i8,
+    /// Where the stub's count is written. See [`place_counts`].
+    pub stub_at: Option<Mark>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -696,9 +695,25 @@ pub struct Tail {
     who: usize,
     #[serde(skip)]
     offset: f64,
-    /// For a line that continues: which side of the arrowhead its count is
-    /// written on, 1 right, -1 left, 0 not written. See [`place_counts`].
-    pub count_side: i8,
+    /// For a line that continues: where its count is written. See
+    /// [`place_counts`].
+    pub count_at: Option<Mark>,
+}
+
+/// Where a count is written: its anchor point (`anchor` -1 ends there, 0 is
+/// centred on it, 1 starts there), a leader line from the mark to it when it
+/// stands off, and whether it carries a halo (written on the line itself).
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+pub struct Mark {
+    pub x: f64,
+    pub y: f64,
+    pub anchor: i8,
+    pub leader: Option<[f64; 4]>,
+    pub halo: bool,
+    /// Placed clear of dots and rings but not of labels: nothing clear of
+    /// both was found.
+    #[serde(skip)]
+    pub over_label: bool,
 }
 
 /// The year scale: a piecewise-linear map from year to y.
@@ -981,67 +996,214 @@ fn pieces_cross(p: (f64, f64), q: (f64, f64), r: (f64, f64), s: (f64, f64)) -> b
     (d1 > 0.0) != (d2 > 0.0) && (d3 > 0.0) != (d4 > 0.0)
 }
 
-/// Choose where each count is written — a continuing line's `+n` beside its
-/// arrowhead, a family stub's `+n` beside its end — so that none runs over a
-/// dot, a repeat ring, a terminator ring, an arrowhead or another count:
-/// on its usual side if that is clear, otherwise on the other, otherwise not
-/// at all. A count is a hint (the line is drawn either way, and a tighter
-/// range can be opened); a count on top of somebody's dot reads as theirs.
-fn place_counts(persons: &[PNode], couples: &mut [Couple], tails: &mut [Tail]) {
+/// Write every `+n` where it runs over nothing — no dot, ring, arrowhead,
+/// label or other count — and never leave one out: the count is the only
+/// thing telling a reader how many people lie beyond the frame or beside a
+/// drawn child, and a river that drops it understates the family.
+///
+/// Tried in order: beside the mark on its usual side, on the other side,
+/// just past an arrowhead's tip, standing off at a few distances with a
+/// hairline leader back to the mark, and, when all of those are taken, on
+/// the line itself with a halo. Runs once the labels are known (it needs
+/// them as obstacles), so in [`build`], not in the layout.
+pub fn place_counts(l: &mut Layout, shown: &[Shown]) {
     type Box4 = (f64, f64, f64, f64);
-    let mut circles: Vec<(f64, f64, f64)> = persons
+    let tiers = label_tiers(l, shown);
+    let mut circles: Vec<(f64, f64, f64)> = l
+        .persons
         .iter()
         .map(|p| (p.x, p.y, outer_radius(p) + 0.5))
         .collect();
-    for t in tails.iter() {
+    for t in &l.tails {
         match t.kind {
             TailKind::Lost => circles.push((t.x2, t.y2, 4.2)),
             TailKind::Cont => circles.push((t.x2, t.y2 + f64::from(t.dir) * 3.0, 5.0)),
         }
     }
+    // Labels, as drawn: name line and years line from the label's start.
     let mut placed: Vec<Box4> = Vec::new();
-    let clear = |b: Box4, circles: &[(f64, f64, f64)], placed: &[Box4]| {
-        circles.iter().all(|&(cx, cy, r)| {
-            let dx = (b.0 - cx).max(cx - b.1).max(0.0);
-            let dy = (b.2 - cy).max(cy - b.3).max(0.0);
-            dx.hypot(dy) >= r
-        }) && placed
-            .iter()
-            .all(|o| b.1 <= o.0 || o.1 <= b.0 || b.3 <= o.2 || o.3 <= b.2)
+    for ((p, s), &tier) in l.persons.iter().zip(shown).zip(&tiers) {
+        if tier == 0 {
+            continue;
+        }
+        let centre = p.role == Role::Centre;
+        let r = if centre { 7.5 } else { 4.8 };
+        let start = p.x + r + if centre { 10.0 } else { 6.0 };
+        let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
+        let end = start + label_width(&s.names[tier as usize - 1], centre).max(years);
+        let (top, bottom) = if centre {
+            (p.y - 14.0, p.y + 17.0)
+        } else {
+            (p.y - 11.0, p.y + 14.0)
+        };
+        placed.push((start - 2.0, end + 2.0, top, bottom));
+    }
+    let (wl, ww) = l.meta.hview;
+    let (vt, vh) = l.meta.view;
+    let clear = |b: Box4, placed: &[Box4]| {
+        b.0 >= wl + 2.0
+            && b.1 <= wl + ww - 2.0
+            && b.2 >= vt
+            && b.3 <= vt + vh
+            && circles.iter().all(|&(cx, cy, r)| {
+                let dx = (b.0 - cx).max(cx - b.1).max(0.0);
+                let dy = (b.2 - cy).max(cy - b.3).max(0.0);
+                dx.hypot(dy) >= r
+            })
+            && placed
+                .iter()
+                .all(|o| b.1 <= o.0 || o.1 <= b.0 || b.3 <= o.2 || o.3 <= b.2)
     };
-    // A text box: anchored at `x` on `side` (1 starts there, -1 ends there),
-    // baseline `y`.
-    let text = |x: f64, y: f64, side: f64, w: f64, size: f64| -> Box4 {
-        let (a, b) = if side > 0.0 { (x, x + w) } else { (x - w, x) };
-        (a, b, y - 0.8 * size, y + 0.2 * size)
+    let text_box = |m: &Mark, w: f64, size: f64| -> Box4 {
+        let (a, b) = match m.anchor {
+            1 => (m.x, m.x + w),
+            -1 => (m.x - w, m.x),
+            _ => (m.x - w / 2.0, m.x + w / 2.0),
+        };
+        (
+            a - 1.0,
+            b + 1.0,
+            m.y - 0.8 * size - 1.0,
+            m.y + 0.2 * size + 1.0,
+        )
     };
+    let mark = |x: f64, y: f64, anchor: i8| Mark {
+        x,
+        y,
+        anchor,
+        leader: None,
+        halo: false,
+        over_label: false,
+    };
+    // Candidates around a mark at (x, y): `usual` is the preferred side,
+    // `dir` which way the line runs on (1 down, -1 up, 0 sideways), `gap`
+    // how far beside the mark text starts, `tip` how far the mark reaches
+    // along `dir`.
+    let candidates =
+        |x: f64, y: f64, base: f64, usual: f64, dir: f64, gap: f64, tip: f64, size: f64| {
+            let mut out = vec![
+                mark(x + usual * gap, base, usual as i8),
+                mark(x - usual * gap, base, -usual as i8),
+            ];
+            if dir != 0.0 {
+                let past = y + dir * tip + if dir > 0.0 { size + 1.0 } else { -3.0 };
+                out.push(mark(x, past, 0));
+            }
+            // Up and down the line first, then level, then the other way.
+            let lifts = if dir != 0.0 {
+                [dir, 0.0, -dir, 2.0 * dir, -2.0 * dir]
+            } else {
+                [0.0, -1.0, 1.0, -2.0, 2.0]
+            };
+            for reach in [16.0, 24.0, 34.0, 46.0, 60.0, 78.0] {
+                for side in [usual, -usual] {
+                    for lift in lifts {
+                        let (tx, ty) = (x + side * reach, y + lift * reach * 0.6);
+                        let mut m = mark(tx, ty + size * 0.35, side as i8);
+                        m.leader = Some([x + side * 4.0, y, tx - side * 2.0, ty]);
+                        out.push(m);
+                    }
+                }
+            }
+            out
+        };
+    let choose =
+        |cands: Vec<Mark>, w: f64, size: f64, placed: &mut Vec<Box4>, last: Mark| -> Mark {
+            // Clear of everything first; then, if nothing is, clear of the
+            // dots, rings and arrowheads at least — a count over a label is
+            // legible, a count over a dot reads as that person's.
+            let none: Vec<Box4> = Vec::new();
+            for (m, strict) in cands
+                .iter()
+                .map(|m| (*m, true))
+                .chain(cands.iter().map(|m| (*m, false)))
+            {
+                let b = text_box(&m, w, size);
+                // A leader must not run over a dot either.
+                let leader_ok = m.leader.is_none_or(|[x1, y1, x2, y2]| {
+                    circles.iter().all(|&(cx, cy, r)| {
+                        let (dx, dy) = (x2 - x1, y2 - y1);
+                        let len2 = (dx * dx + dy * dy).max(1e-9);
+                        let k = (((cx - x1) * dx + (cy - y1) * dy) / len2).clamp(0.0, 1.0);
+                        let (px, py) = (x1 + k * dx, y1 + k * dy);
+                        (px - cx).hypot(py - cy) >= r || (x1 - cx).hypot(y1 - cy) < r + 0.5
+                    })
+                });
+                if leader_ok && clear(b, if strict { placed } else { &none }) {
+                    placed.push(b);
+                    return Mark {
+                        over_label: !strict,
+                        ..m
+                    };
+                }
+            }
+            placed.push(text_box(&last, w, size));
+            last
+        };
+    let mut tails = std::mem::take(&mut l.tails);
     for t in tails.iter_mut().filter(|t| t.kind == TailKind::Cont) {
         let w = text_width(&format!("+{}", t.count), 9.5, true, false);
-        let y = t.y2 + if t.dir > 0 { 4.0 } else { 2.0 };
-        t.count_side = 0;
-        for side in [1.0, -1.0] {
-            let b = text(t.x2 + side * 8.0, y, side, w, 9.5);
-            if clear(b, &circles, &placed) {
-                t.count_side = side as i8;
-                placed.push(b);
-                break;
-            }
-        }
+        let dir = f64::from(t.dir);
+        let base = t.y2 + if t.dir > 0 { 4.0 } else { 2.0 };
+        let cands = candidates(t.x2, t.y2, base, 1.0, dir, 8.0, 6.0, 9.5);
+        let mid = Mark {
+            x: (t.x1 + t.x2) / 2.0,
+            y: (t.y1 + t.y2) / 2.0 + 3.3,
+            anchor: 0,
+            leader: None,
+            halo: true,
+            over_label: false,
+        };
+        t.count_at = Some(choose(cands, w, 9.5, &mut placed, mid));
     }
+    l.tails = tails;
+    let mut couples = std::mem::take(&mut l.couples);
     for c in couples.iter_mut().filter(|c| c.stub > 0) {
         let w = text_width(&format!("+{}", c.stub), 10.0, true, false);
         let (x2, y2) = (c.x + c.stub_dx, c.y + c.stub_dy);
-        let usual = c.stub_dx.signum();
-        c.stub_side = 0;
-        for side in [usual, -usual] {
-            let b = text(x2 + side * 5.0, y2 - 3.0, side, w, 10.0);
-            if clear(b, &circles, &placed) {
-                c.stub_side = side as i8;
-                placed.push(b);
-                break;
-            }
-        }
+        let cands = candidates(x2, y2, y2 - 3.0, c.stub_dx.signum(), 0.0, 5.0, 0.0, 10.0);
+        let mid = Mark {
+            x: (c.x + x2) / 2.0,
+            y: (c.y + y2) / 2.0 + 3.5,
+            anchor: 0,
+            leader: None,
+            halo: true,
+            over_label: false,
+        };
+        c.stub_at = Some(choose(cands, w, 10.0, &mut placed, mid));
     }
+    l.couples = couples;
+}
+
+/// Write a count where [`place_counts`] put it.
+fn write_mark(out: &mut String, m: &Mark, text: &str, size: f64) {
+    if let Some([x1, y1, x2, y2]) = m.leader {
+        let _ = write!(
+            out,
+            r#"<line x1="{}" y1="{}" x2="{}" y2="{}" stroke="{DATA_TEXT}" stroke-width="0.6" stroke-opacity="0.7"/>"#,
+            num(x1),
+            num(y1),
+            num(x2),
+            num(y2)
+        );
+    }
+    let anchor = match m.anchor {
+        1 => "",
+        -1 => r#" text-anchor="end""#,
+        _ => r#" text-anchor="middle""#,
+    };
+    let halo = if m.halo {
+        format!(r#" paint-order="stroke" stroke="{BG}" stroke-width="3" stroke-linejoin="round""#)
+    } else {
+        String::new()
+    };
+    let _ = write!(
+        out,
+        r#"<text class="rv-count" x="{}" y="{}"{anchor}{halo} font-family="{MONO}" font-size="{size}" fill="{DATA_TEXT}">{}</text>"#,
+        num(m.x),
+        num(m.y),
+        html_escape(text)
+    );
 }
 
 /// Shorten every tail that would cross a drawn line — a parent's line to a
@@ -1640,7 +1802,7 @@ pub fn layout_for(
             // left edge, otherwise to the left.
             stub_dx: if cx - hw.0 < 80.0 { 36.0 } else { -36.0 },
             stub_dy: -(cy - me.1 - 18.0).clamp(8.0, 32.0),
-            stub_side: 0,
+            stub_at: None,
         });
         if parents.len() < 2 {
             let side = match parents.first().and_then(|&p| g.shape[occs[p].idx].slot) {
@@ -1660,7 +1822,7 @@ pub fn layout_for(
                 year: yr(i) - 28.0,
                 who: i,
                 offset: -28.0,
-                count_side: 1,
+                count_at: None,
             });
         }
     }
@@ -1687,7 +1849,7 @@ pub fn layout_for(
             year: yr(i) - 20.0,
             who: i,
             offset: -20.0,
-            count_side: 1,
+            count_at: None,
         });
     }
     // Descendant unions.
@@ -1738,7 +1900,7 @@ pub fn layout_for(
             repeat,
             stub_dx: 0.0,
             stub_dy: 0.0,
-            stub_side: 0,
+            stub_at: None,
         });
         if fam.parents.len() < 2 {
             tails.push(Tail {
@@ -1754,7 +1916,7 @@ pub fn layout_for(
                 year: yr(po.idx),
                 who: po.idx,
                 offset: 0.0,
-                count_side: 1,
+                count_at: None,
             });
         }
     }
@@ -1781,7 +1943,7 @@ pub fn layout_for(
             year: yr(i) + if cont { 20.0 } else { 0.0 },
             who: i,
             offset: if cont { 20.0 } else { 0.0 },
-            count_side: 1,
+            count_at: None,
         });
     }
     // Spouses: their own line runs upstream, off the frame or to its end.
@@ -1806,13 +1968,12 @@ pub fn layout_for(
             year: yr(i) - 20.0,
             who: i,
             offset: -20.0,
-            count_side: 1,
+            count_at: None,
         });
     }
 
     // ---- tails stop short of any line they would cross
     clear_tails(&frame.persons, &couples, &mut tails);
-    place_counts(&frame.persons, &mut couples, &mut tails);
 
     // ---- label density per row
     let mut rows: BTreeMap<i64, Vec<usize>> = BTreeMap::new();
@@ -2252,7 +2413,7 @@ pub fn build(
     // A signed-out visitor gets no bands at all.
     layout.meta.bands = layout.meta.era && signed_in;
     let era = layout.meta.era;
-    let shown = layout
+    let shown: Vec<Shown> = layout
         .persons
         .iter()
         .zip(&layout.years)
@@ -2273,6 +2434,7 @@ pub fn build(
             s
         })
         .collect();
+    place_counts(&mut layout, &shown);
     let c = g.index_of(centre)?;
     let parents = g.parents_of(c);
     let down = parents
@@ -2449,20 +2611,8 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                     num(t.x2),
                     num(t.y2 + dir * 6.0),
                 );
-                if t.count_side != 0 {
-                    let side = f64::from(t.count_side);
-                    let _ = write!(
-                        out,
-                        r#"<text x="{}" y="{}"{} font-family="{MONO}" font-size="9.5" fill="{DATA_TEXT}">+{}</text>"#,
-                        num(t.x2 + side * 8.0),
-                        num(t.y2 + if t.dir > 0 { 4.0 } else { 2.0 }),
-                        if side < 0.0 {
-                            r#" text-anchor="end""#
-                        } else {
-                            ""
-                        },
-                        t.count
-                    );
+                if let Some(m) = &t.count_at {
+                    write_mark(&mut out, m, &format!("+{}", t.count), 9.5);
                 }
                 out.push_str("</g>");
             }
@@ -2537,16 +2687,8 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 col(base),
                 num(width_of(c.stub_d)),
             );
-            if c.stub_side != 0 {
-                let side = f64::from(c.stub_side);
-                let _ = write!(
-                    out,
-                    r#"<text x="{}" y="{}" text-anchor="{}" font-family="{MONO}" font-size="10" fill="{DATA_TEXT}">+{}</text>"#,
-                    num(x2 + side * 5.0),
-                    num(y2 - 3.0),
-                    if side < 0.0 { "end" } else { "start" },
-                    c.stub
-                );
+            if let Some(m) = &c.stub_at {
+                write_mark(&mut out, m, &format!("+{}", c.stub), 10.0);
             }
             out.push_str("</g>");
         }
@@ -2830,26 +2972,30 @@ pub fn drawn_extent(l: &Layout, shown: &[Shown]) -> (f64, f64) {
             );
         }
     }
+    let mark_extent = |m: &Mark, text: &str, size: f64| {
+        let w = text_width(text, size, true, false);
+        match m.anchor {
+            1 => (m.x, m.x + w),
+            -1 => (m.x - w, m.x),
+            _ => (m.x - w / 2.0, m.x + w / 2.0),
+        }
+    };
     for t in &l.tails {
-        let count = if t.kind == TailKind::Cont && t.count_side != 0 {
-            8.0 + text_width(&format!("+{}", t.count), 9.5, true, false)
-        } else {
-            4.0
-        };
-        let (l_, r_) = if t.count_side < 0 {
-            (count, 4.0)
-        } else {
-            (4.0, count)
-        };
-        take(t.x1.min(t.x2 - l_), t.x1.max(t.x2 + r_));
+        take(t.x1.min(t.x2) - 4.0, t.x1.max(t.x2) + 4.0);
+        if let Some(m) = &t.count_at {
+            let (a, b) = mark_extent(m, &format!("+{}", t.count), 9.5);
+            take(a, b);
+        }
     }
     for c in &l.couples {
         take(c.x, c.x);
         if c.stub > 0 {
-            let side = f64::from(c.stub_side);
-            let w = 5.0 + text_width(&format!("+{}", c.stub), 10.0, true, false);
             let end = c.x + c.stub_dx;
-            take(end.min(end + side * w), end.max(end + side * w));
+            take(end.min(c.x), end.max(c.x));
+            if let Some(m) = &c.stub_at {
+                let (a, b) = mark_extent(m, &format!("+{}", c.stub), 10.0);
+                take(a, b);
+            }
         }
     }
     (CX - lo, hi - CX)

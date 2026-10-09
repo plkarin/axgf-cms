@@ -19,7 +19,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::io::Read;
 
 use axgf_cms::access::Lens;
-use axgf_cms::river::{self, Graph, Layout, Shape, Words};
+use axgf_cms::river::{self, Graph, Layout, Shape, TailKind, Words};
 use serde_json::{json, Map, Value};
 
 /// Segments per cubic.
@@ -249,6 +249,8 @@ struct Report {
     collapsed: BTreeSet<String>,
     /// Renders drawing a descendant again beside a third or later spouse.
     remarried: usize,
+    /// Where the `+n` counts were written.
+    placements: BTreeMap<&'static str, usize>,
     /// How far each drawing reaches left and right of the fixed point.
     extents: Vec<(f64, f64)>,
     /// Everything drawn (labels too), as a share of the window's width.
@@ -337,6 +339,25 @@ fn run(flat: &Value, centres: &[String], n: usize) -> Report {
             r.collapsed.extend(col.iter().map(|p| p.id.clone()));
         }
         r.remarried += usize::from(l.persons.iter().any(|p| p.again));
+        // Where each count went: beside its mark, past an arrowhead, out on
+        // a leader, on the line itself — or nowhere, which must not happen.
+        let marks = l
+            .tails
+            .iter()
+            .filter(|t| t.kind == TailKind::Cont)
+            .map(|t| t.count_at)
+            .chain(l.couples.iter().filter(|c| c.stub > 0).map(|c| c.stub_at));
+        for m in marks {
+            let k = match m {
+                None => "dropped",
+                Some(m) if m.over_label => "over a label",
+                Some(m) if m.halo => "on the line",
+                Some(m) if m.leader.is_some() => "on a leader",
+                Some(m) if m.anchor == 0 => "past the tip",
+                Some(_) => "beside",
+            };
+            *r.placements.entry(k).or_default() += 1;
+        }
         r.compact.push(compactness(l));
         let e = river::drawn_extent(l, &rv.shown);
         r.extents.push(e);
@@ -400,6 +421,7 @@ fn print(name: &str, n: usize, r: &mut Report) {
         pct(rs.clone(), 0.9),
         pct(rs, 1.0)
     );
+    println!("    +n counts: {:?}", r.placements);
     // Every permitted crossing, listed: none is passed over silently.
     for p in &r.repeat_pairs {
         println!("    repeat (permitted): {p}");
@@ -441,11 +463,15 @@ fn the_operators_river_does_not_cross_itself() {
         .cloned()
         .collect();
     centres.sort();
-    let mut total = 0;
+    let (mut total, mut dropped) = (0, 0);
     for n in river::RANGES {
         let mut r = run(&flat, &centres, n);
         print("operator", n, &mut r);
         total += r.crossings;
+        dropped += r.placements.get("dropped").copied().unwrap_or(0);
     }
     assert_eq!(total, 0, "the river crosses itself");
+    // A +n is all a reader has of the people beyond a line's end: none is
+    // ever left out.
+    assert_eq!(dropped, 0, "+n counts dropped");
 }

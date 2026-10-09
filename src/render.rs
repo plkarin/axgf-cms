@@ -12,6 +12,10 @@ use axum::response::{Html, IntoResponse, Response};
 use minijinja::{context, Environment, Value as MjValue};
 use serde::Serialize;
 
+/// The design tokens (Study 06), served at `/static/css/tokens.css` and
+/// loaded before the stylesheet: the one file that names colours by value.
+pub const TOKENS_CSS: &str = include_str!("../static/css/tokens.css");
+
 /// The stylesheet, served at `/static/app.css`.
 pub const APP_CSS: &str = include_str!("../static/app.css");
 

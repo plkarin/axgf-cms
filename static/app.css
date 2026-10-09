@@ -3660,6 +3660,16 @@ a.tcard:hover {
   border-radius: 50%;
   box-sizing: border-box;
 }
+.rv-rep {
+  display: block;
+  inline-size: 13px;
+  block-size: 13px;
+  border: 1px solid var(--rv-text-3);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: radial-gradient(circle, var(--rv-water) 0 3.2px, transparent 3.7px);
+}
+.rv-rep-again { border-style: dashed; }
 .rv-widths { gap: 4px !important; }
 .rv-widths > i { display: block; block-size: 12px; background: var(--rv-water); }
 .rv-widths > i:last-of-type { margin-inline-end: 3px; }

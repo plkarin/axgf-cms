@@ -88,7 +88,8 @@
     if (ka.length === kb.length) knots = ka.map(function (k, i) { return [mix(k[0], kb[i][0]), mix(k[1], kb[i][1])]; });
     return { persons: persons, couples: couples, tails: tails,
       meta: Object.assign({}, B.meta, { scale: { knots: knots }, rail: e < 0.5 ? A.meta.rail : B.meta.rail,
-        view: [mix(A.meta.view[0], B.meta.view[0]), mix(A.meta.view[1], B.meta.view[1])] }) };
+        view: [mix(A.meta.view[0], B.meta.view[0]), mix(A.meta.view[1], B.meta.view[1])],
+        hview: [mix(A.meta.hview[0], B.meta.hview[0]), mix(A.meta.hview[1], B.meta.hview[1])] }) };
   }
   function yOf(knots, year) {
     var k = knots, i = 1;
@@ -103,24 +104,26 @@
     var colour = fr.meta.era ? ramp : function () { return '#86b08f'; };
     fr.persons.forEach(function (p) { PM[p.key] = p; });
     // river::Meta::bands — none without an era, none for a signed-out reader.
-    var vt = fr.meta.view[0], vb = vt + fr.meta.view[1];
+    var vt = fr.meta.view[0], vb = vt + fr.meta.view[1], hl0 = fr.meta.hview[0], hw = fr.meta.hview[1];
     for (var Y = fr.meta.bands ? 1600 : 2050; Y < 2050; Y += 50) {
       var ya = yOf(fr.meta.scale.knots, Y), yb = yOf(fr.meta.scale.knots, Y + 50);
       if (yb > vb || ya < vt) continue;
       var live = Y >= 1950, t = Math.max(vt, yb), b = Math.min(vb, ya);
-      out += '<rect x="0" y="' + f(t) + '" width="900" height="' + f(b - t) + '" fill="' + (live ? '#15150f' : (Y / 50) % 2 ? '#0e1714' : BG) + '"/>';
-      if (ya <= vb) out += '<line x1="0" y1="' + f(ya) + '" x2="900" y2="' + f(ya) + '" stroke="#18241f"/>'
-        + (ya - 16 >= vt ? '<text x="10" y="' + f(ya - 6) + '" font-family="' + MONO + '" font-size="10" fill="' + (live ? '#8a7a52' : '#4f6158') + '">' + Y + '</text>' : '');
-      if (live && !named && t + 16 < b - 18 && (named = true)) out += '<text x="10" y="' + f(t + 16) + '" font-family="' + MONO + '" font-size="10" letter-spacing="1" fill="#8a7a52">' + esc(cur.words[0]) + '</text>';
+      out += '<rect x="' + f(hl0) + '" y="' + f(t) + '" width="' + f(hw) + '" height="' + f(b - t) + '" fill="' + (live ? '#15150f' : (Y / 50) % 2 ? '#0e1714' : BG) + '"/>';
+      if (ya <= vb) out += '<line x1="' + f(hl0) + '" y1="' + f(ya) + '" x2="' + f(hl0 + hw) + '" y2="' + f(ya) + '" stroke="#18241f"/>'
+        + (ya - 16 >= vt ? '<text x="' + f(hl0 + 10) + '" y="' + f(ya - 6) + '" font-family="' + MONO + '" font-size="10" fill="' + (live ? '#8a7a52' : '#4f6158') + '">' + Y + '</text>' : '');
+      if (live && !named && t + 16 < b - 18 && (named = true)) out += '<text x="' + f(hl0 + 10) + '" y="' + f(t + 16) + '" font-family="' + MONO + '" font-size="10" letter-spacing="1" fill="#8a7a52">' + esc(cur.words[0]) + '</text>';
     }
     fr.meta.rail.forEach(function (r) {
       if (r[1] < vt + 8 || r[1] > vb - 4) return;
-      out += '<text x="890" y="' + f(r[1] + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="10" fill="' + (r[0] === 0 ? '#dcae64' : '#4f6158') + '">' + (r[0] > 0 ? '+' + r[0] : r[0] === 0 ? '0 ◂' : '−' + (-r[0])) + '</text>';
+      out += '<text x="' + f(hl0 + hw - 10) + '" y="' + f(r[1] + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="10" fill="' + (r[0] === 0 ? '#dcae64' : '#4f6158') + '">' + (r[0] > 0 ? '+' + r[0] : r[0] === 0 ? '0 ◂' : '−' + (-r[0])) + '</text>';
     });
     fr.tails.forEach(function (t) {
       var c = colour(t.year), w = WIDTHS[cls(t.d)], d = vc(t.x1, t.y1, t.x2, t.y2);
       if (t.kind === 'cont') {
-        out += '<g opacity="' + f(t.a) + '"><path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + w + '"/><polygon points="' + f(t.x2 - 4) + ',' + f(t.y2) + ' ' + f(t.x2 + 4) + ',' + f(t.y2) + ' ' + f(t.x2) + ',' + f(t.y2 + t.dir * 6) + '" fill="' + c + '"/><text x="' + f(t.x2 + 8) + '" y="' + f(t.y2 + (t.dir > 0 ? 4 : 2)) + '" font-family="' + MONO + '" font-size="9.5" fill="#8d9c92">+' + t.count + '</text></g>';
+        out += '<g opacity="' + f(t.a) + '"><path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + w + '"/><polygon points="' + f(t.x2 - 4) + ',' + f(t.y2) + ' ' + f(t.x2 + 4) + ',' + f(t.y2) + ' ' + f(t.x2) + ',' + f(t.y2 + t.dir * 6) + '" fill="' + c + '"/>'
+          // river::place_counts chose the side, or none.
+          + (t.count_side ? '<text x="' + f(t.x2 + t.count_side * 8) + '" y="' + f(t.y2 + (t.dir > 0 ? 4 : 2)) + '"' + (t.count_side < 0 ? ' text-anchor="end"' : '') + ' font-family="' + MONO + '" font-size="9.5" fill="#8d9c92">+' + t.count + '</text>' : '') + '</g>';
       } else {
         var id = 'tg' + (gi++);
         defs += '<linearGradient id="' + id + '" gradientUnits="userSpaceOnUse" x1="' + f(t.x1) + '" y1="' + f(t.y1) + '" x2="' + f(t.x2) + '" y2="' + f(t.y2) + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></linearGradient>';
@@ -129,8 +132,9 @@
     });
     fr.couples.forEach(function (c) {
       if (!c.stub) return;
-      var side = c.x < 150 ? 1 : -1, x2 = c.x + side * 36, y2 = c.y - 32;
-      out += '<g opacity="' + f(c.a) + '"><path d="' + vc(c.x, c.y, x2, y2) + '" fill="none" stroke="' + colour(c.stub_year) + '" stroke-opacity="0.45" stroke-width="' + WIDTHS[cls(c.stub_d)] + '"/><text x="' + f(x2 + side * 5) + '" y="' + f(y2 - 3) + '" text-anchor="' + (side < 0 ? 'end' : 'start') + '" font-family="' + MONO + '" font-size="10" fill="#8d9c92">+' + c.stub + '</text></g>';
+      var side = c.stub_side, x2 = c.x + c.stub_dx, y2 = c.y + c.stub_dy;
+      out += '<g opacity="' + f(c.a) + '"><path d="' + vc(c.x, c.y, x2, y2) + '" fill="none" stroke="' + colour(c.stub_year) + '" stroke-opacity="0.45" stroke-width="' + WIDTHS[cls(c.stub_d)] + '"/>'
+        + (side ? '<text x="' + f(x2 + side * 5) + '" y="' + f(y2 - 3) + '" text-anchor="' + (side < 0 ? 'end' : 'start') + '" font-family="' + MONO + '" font-size="10" fill="#8d9c92">+' + c.stub + '</text>' : '') + '</g>';
     });
     edges(fr, PM).sort(function (a, b) { return b.d - a.d; }).forEach(function (e) {
       var d = vc(e.x1, e.y1, e.x2, e.y2), w = WIDTHS[cls(e.d)], o = ' opacity="' + f(e.a) + '"';
@@ -142,20 +146,22 @@
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, x = f(p.x), y = f(p.y);
       out += '<g opacity="' + f(p.a) + '">';
-      // river::render_svg: an occurrence of a person drawn twice says so.
-      if (p.repeat > 1) out += '<text x="' + f(p.x - (p.role === 'centre' ? 7.5 : 4.8) - 4) + '" y="' + f(p.y + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="9.5" fill="#8d9c92">×' + p.repeat + '</text>';
+      // river::render_svg: a solid ring for a person reached by several
+      // lines, a dashed one for a copy beside a later partner.
+      if (p.repeat > 1) out += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6) + '" fill="none" stroke="#8d9c92" stroke-width="1"/>';
+      if (p.again) out += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" stroke="#8d9c92" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
       if (s.living) out += '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" fill="#e6b062" fill-opacity="0.16"/>';
       out += isC ? '<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" stroke="#dcae64" stroke-width="1.2"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#dcae64"/>'
         : '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (s.sparse || s.redacted ? BG : s.colour) + '" stroke="' + (s.sparse || s.redacted ? s.colour : BG) + '" stroke-width="1.6"/>';
       var tier = T[p.key] || 0;
       if (tier > 0) {
         var lx = f(p.x + r + (isC ? 10 : 6)), halo = ' paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round"';
-        out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(isC ? clip(s.names[tier - 1], Math.min(p.right - 12, 866 - (p.x + r + 10))) : s.names[tier - 1]) + '</text>'
+        out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(isC ? clip(s.names[tier - 1], Math.min(p.right - 17.5 - 6.8, hl0 + hw - 34 - (p.x + r + 10))) : s.names[tier - 1]) + '</text>'
           + '<text x="' + lx + '" y="' + f(p.y + (isC ? 14 : 11.5)) + '" font-family="' + MONO + '" font-size="' + (isC ? 11 : 9.5) + '" fill="#8d9c92"' + halo + '>' + esc(s.years) + '</text>';
       }
       out += '</g>';
     });
-    return '<svg class="rv-svg" viewBox="0 ' + f(vt) + ' 900 ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect y="' + f(vt) + '" width="900" height="' + f(fr.meta.view[1]) + '" fill="' + BG + '"/>' + out + '</svg>';
+    return '<svg class="rv-svg" viewBox="' + f(hl0) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect x="' + f(hl0) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(fr.meta.view[1]) + '" fill="' + BG + '"/>' + out + '</svg>';
   }
   // river::text_width: 0.55 em serif, 0.6 em bold or mono, 1 em wide scripts.
   function width(text, size, bold) {
@@ -168,18 +174,18 @@
     }
     return w;
   }
-  // river::fit_edge: shorten a label rather than run it past the right rail;
-  // the centre keeps at least its given name.
-  function edge(t, s, x, r, isC) {
+  // river::fit_edge: shorten a label rather than run it past the right rail
+  // (river::Meta::label_edge); the centre keeps at least its given name.
+  function edge(t, s, x, r, isC, lim) {
     var floor = isC ? 1 : 0, start = x + r + (isC ? 10 : 6), yw = width(s.years, isC ? 11 : 9.5, true);
-    while (t > floor && start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > 866) t--;
+    while (t > floor && start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > lim) t--;
     return t;
   }
   // river::fit_tier: step a label down while it, or its years line, would run
-  // into its right-hand neighbour; the centre keeps its given name.
+  // into its right-hand neighbour's dot; the centre keeps its given name.
   function fit(t, s, gap, isC) {
-    var yw = width(s.years, isC ? 11 : 9.5, true);
-    while (t > (isC ? 1 : 0) && Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > gap - 12) t--;
+    var yw = width(s.years, isC ? 11 : 9.5, true), room = gap - (isC ? 17.5 : 10.8) - 6.8;
+    while (t > (isC ? 1 : 0) && Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), yw) > room) t--;
     return t;
   }
   // river::label_tiers: row by row, left to right; a label that would start
@@ -189,10 +195,14 @@
     fr.persons.forEach(function (p) { (rows[Math.round(p.y)] = rows[Math.round(p.y)] || []).push(p); });
     Object.keys(rows).forEach(function (k) {
       var last = -Infinity;
-      rows[k].sort(function (a, b) { return a.x - b.x; }).forEach(function (p) {
+      // river::outer_radius: the centre's ring, a repeat ring, or the dot.
+      function outer(q) { return q.role === 'centre' ? 14 : 4.8 + (q.again && q.repeat > 1 ? 4.8 : q.again || q.repeat > 1 ? 2.6 : 0); }
+      var row = rows[k].sort(function (a, b) { return a.x - b.x; });
+      row.forEach(function (p, j) {
+        var wider = row[j + 1] ? outer(row[j + 1]) - 4.8 : 0;
         var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, start = p.x + r + (isC ? 10 : 6);
         var t = s.redacted ? 0 : isC ? 3 : p.lab;
-        if (t > 0) t = edge(fit(t, s, p.right, isC), s, p.x, r, isC);
+        if (t > 0) t = edge(fit(t, s, p.right - wider, isC), s, p.x, r, isC, fr.meta.hview[0] + fr.meta.hview[1] - 34);
         if (t > 0 && !isC && start < last + 4) t = 0;
         if (t > 0) last = start + Math.max(width(s.names[t - 1], isC ? 16 : 12, isC), width(s.years, isC ? 11 : 9.5, true));
         out[p.key] = t;
@@ -243,7 +253,7 @@
         if (p.key === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" stroke="#f3dfae" stroke-width="1.3"/>';
         // On hover the full name, right-aligned to the dot where it would
         // otherwise run past the rail: a hover label is alone on its row.
-        var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > 866;
+        var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > fr.meta.hview[0] + fr.meta.hview[1] - 34;
         labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" fill="#f3dfae" paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text>';
       });
     }
@@ -315,15 +325,15 @@
   }
 
   /* ---- wiring ---- */
-  // Hit circles are r 20 in the 900-unit viewBox: about 40 px on a desktop,
+  // Hit circles are r 20 in viewBox units: about 40 px on a desktop at ±5,
   // under the 44 px a finger needs. On touch, a tap that misses every circle
   // goes to the nearest person within 44 px instead.
   var touch = false;
   canvas.addEventListener('pointerdown', function (e) { touch = e.pointerType === 'touch'; });
   function nearest(e) {
     var svg = canvas.querySelector('svg'); if (!svg) return null;
-    var box = svg.getBoundingClientRect(), k = 900 / box.width, best = null, bd = 44 * k;
-    var x = (e.clientX - box.left) * k, y = (e.clientY - box.top) * k + cur.layout.meta.view[0];
+    var hv = cur.layout.meta.hview, box = svg.getBoundingClientRect(), k = hv[1] / box.width, best = null, bd = 44 * k;
+    var x = (e.clientX - box.left) * k + hv[0], y = (e.clientY - box.top) * k + cur.layout.meta.view[0];
     cur.layout.persons.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p.id; } });
     return best;
   }

@@ -623,10 +623,15 @@ pub struct PNode {
     /// The gap to the next person to the right in the row: how far this
     /// person's label may run.
     pub right: f64,
-    /// How many times this person appears in the drawing, when more than
-    /// once: an ancestor reached through two lines (pedigree collapse) is
-    /// drawn under each, and every occurrence carries the count. 0 otherwise.
+    /// How many lines reach this person, when more than one: a person
+    /// reached through two lines (pedigree collapse) is drawn under each,
+    /// and every occurrence carries the count. 0 otherwise.
     pub repeat: usize,
+    /// Drawn again in the same row beside a third or later partner (a
+    /// person sits beside two partners at most). Set on every occurrence of
+    /// that person, the first included, so the reader can pair them; marked
+    /// differently from `repeat`, which is a different story.
+    pub again: bool,
     #[serde(skip)]
     idx: usize,
     /// Generations from the centre, signed: negative is upstream.
@@ -654,6 +659,13 @@ pub struct Couple {
     pub stub_year: f64,
     /// A union drawn more than once, under a repeated ancestor.
     pub repeat: bool,
+    /// Where the stub ends, from the union: it rises toward the child's row
+    /// and stops short of it, so its count never sits on that row's dots.
+    pub stub_dx: f64,
+    pub stub_dy: f64,
+    /// Which side of the stub's end its count is written on: 1 right, -1
+    /// left, 0 not written (it would run over a dot). See [`place_counts`].
+    pub stub_side: i8,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -684,6 +696,9 @@ pub struct Tail {
     who: usize,
     #[serde(skip)]
     offset: f64,
+    /// For a line that continues: which side of the arrowhead its count is
+    /// written on, 1 right, -1 left, 0 not written. See [`place_counts`].
+    pub count_side: i8,
 }
 
 /// The year scale: a piecewise-linear map from year to y.
@@ -732,6 +747,15 @@ pub struct Meta {
     /// The part of the 900 × 640 frame the drawing occupies: `(top, height)`
     /// in viewBox units. See [`view_window`].
     pub view: (f64, f64),
+    /// Its horizontal part, `(left, width)`. See [`h_window`].
+    pub hview: (f64, f64),
+}
+
+impl Meta {
+    /// Where labels stop: the right rail's generation numbers sit beyond.
+    pub fn label_edge(&self) -> f64 {
+        self.hview.0 + self.hview.1 - 34.0
+    }
 }
 
 /// One laid-out river.
@@ -746,8 +770,10 @@ pub struct Layout {
 }
 
 impl Layout {
-    pub fn person(&self, id: &str) -> Option<&PNode> {
-        self.persons.iter().find(|p| p.id == id)
+    /// A person by occurrence key: their id for the first (or only) time
+    /// they are drawn, `id~2` and on for a repeat.
+    pub fn person(&self, key: &str) -> Option<&PNode> {
+        self.persons.iter().find(|p| p.key == key)
     }
 }
 
@@ -818,6 +844,8 @@ struct Occ {
     gen: i64,
     role: Role,
     x: f64,
+    /// Drawn again beside a third or later partner, not reached by a line.
+    again: bool,
 }
 
 /// A node of a tree being packed: one or more occurrences side by side in one
@@ -953,6 +981,69 @@ fn pieces_cross(p: (f64, f64), q: (f64, f64), r: (f64, f64), s: (f64, f64)) -> b
     (d1 > 0.0) != (d2 > 0.0) && (d3 > 0.0) != (d4 > 0.0)
 }
 
+/// Choose where each count is written — a continuing line's `+n` beside its
+/// arrowhead, a family stub's `+n` beside its end — so that none runs over a
+/// dot, a repeat ring, a terminator ring, an arrowhead or another count:
+/// on its usual side if that is clear, otherwise on the other, otherwise not
+/// at all. A count is a hint (the line is drawn either way, and a tighter
+/// range can be opened); a count on top of somebody's dot reads as theirs.
+fn place_counts(persons: &[PNode], couples: &mut [Couple], tails: &mut [Tail]) {
+    type Box4 = (f64, f64, f64, f64);
+    let mut circles: Vec<(f64, f64, f64)> = persons
+        .iter()
+        .map(|p| (p.x, p.y, outer_radius(p) + 0.5))
+        .collect();
+    for t in tails.iter() {
+        match t.kind {
+            TailKind::Lost => circles.push((t.x2, t.y2, 4.2)),
+            TailKind::Cont => circles.push((t.x2, t.y2 + f64::from(t.dir) * 3.0, 5.0)),
+        }
+    }
+    let mut placed: Vec<Box4> = Vec::new();
+    let clear = |b: Box4, circles: &[(f64, f64, f64)], placed: &[Box4]| {
+        circles.iter().all(|&(cx, cy, r)| {
+            let dx = (b.0 - cx).max(cx - b.1).max(0.0);
+            let dy = (b.2 - cy).max(cy - b.3).max(0.0);
+            dx.hypot(dy) >= r
+        }) && placed
+            .iter()
+            .all(|o| b.1 <= o.0 || o.1 <= b.0 || b.3 <= o.2 || o.3 <= b.2)
+    };
+    // A text box: anchored at `x` on `side` (1 starts there, -1 ends there),
+    // baseline `y`.
+    let text = |x: f64, y: f64, side: f64, w: f64, size: f64| -> Box4 {
+        let (a, b) = if side > 0.0 { (x, x + w) } else { (x - w, x) };
+        (a, b, y - 0.8 * size, y + 0.2 * size)
+    };
+    for t in tails.iter_mut().filter(|t| t.kind == TailKind::Cont) {
+        let w = text_width(&format!("+{}", t.count), 9.5, true, false);
+        let y = t.y2 + if t.dir > 0 { 4.0 } else { 2.0 };
+        t.count_side = 0;
+        for side in [1.0, -1.0] {
+            let b = text(t.x2 + side * 8.0, y, side, w, 9.5);
+            if clear(b, &circles, &placed) {
+                t.count_side = side as i8;
+                placed.push(b);
+                break;
+            }
+        }
+    }
+    for c in couples.iter_mut().filter(|c| c.stub > 0) {
+        let w = text_width(&format!("+{}", c.stub), 10.0, true, false);
+        let (x2, y2) = (c.x + c.stub_dx, c.y + c.stub_dy);
+        let usual = c.stub_dx.signum();
+        c.stub_side = 0;
+        for side in [usual, -usual] {
+            let b = text(x2 + side * 5.0, y2 - 3.0, side, w, 10.0);
+            if clear(b, &circles, &placed) {
+                c.stub_side = side as i8;
+                placed.push(b);
+                break;
+            }
+        }
+    }
+}
+
 /// Shorten every tail that would cross a drawn line — a parent's line to a
 /// union, a union's to a child, a family stub — until it clears it by a few
 /// units. A tail is only a sign that a line goes on or ends; how long it is
@@ -971,8 +1062,7 @@ fn clear_tails(persons: &[PNode], couples: &[Couple], tails: &mut [Tail]) {
             }
         }
         if c.stub > 0 {
-            let side = if c.x < 150.0 { 1.0 } else { -1.0 };
-            lines.push(flatten(c.x, c.y, c.x + side * 36.0, c.y - 32.0));
+            lines.push(flatten(c.x, c.y, c.x + c.stub_dx, c.y + c.stub_dy));
         }
     }
     let bbox = |l: &[(f64, f64)]| {
@@ -1070,8 +1160,9 @@ pub fn layout_for(
         // The centre's spouse line rises across the end of the centre's
         // label on its way to their union; the centre keeps CENTRE_CLEAR
         // more room so it rises clear of the name.
+        // The centre's ring (r 14) is its left edge.
         (
-            -(r + 4.0),
+            if centre { -(14.0 + 4.0) } else { -(r + 4.0) },
             r + if centre { 10.0 + CENTRE_CLEAR } else { 6.0 } + w,
         )
     };
@@ -1093,6 +1184,7 @@ pub fn layout_for(
         gen: 0,
         role: Role::Centre,
         x: 0.0,
+        again: false,
     }];
     let mut blocks: Vec<Block> = Vec::new();
 
@@ -1133,6 +1225,7 @@ pub fn layout_for(
                     gen: -(depth as i64) - 1,
                     role: Role::Anc,
                     x: 0.0,
+                    again: false,
                 });
                 let e = extent(p, false);
                 kids.push(anc(g, p, o, depth + 1, n, occs, blocks, extent, e));
@@ -1178,6 +1271,7 @@ pub fn layout_for(
                     gen: depth as i64,
                     role: if centre { Role::Spouse } else { Role::Dspouse },
                     x: 0.0,
+                    again: false,
                 });
                 o
             }));
@@ -1211,6 +1305,7 @@ pub fn layout_for(
                         gen: depth as i64,
                         role: Role::Desc,
                         x: 0.0,
+                        again: true,
                     });
                     let me2 = extent(i, false);
                     x += prev.1 - me2.0 + PACK_GAP;
@@ -1282,6 +1377,7 @@ pub fn layout_for(
                     gen: depth as i64 + 1,
                     role: Role::Desc,
                     x: 0.0,
+                    again: false,
                 });
                 kid_occs.push(o);
                 kid_blocks.push(desc(
@@ -1381,6 +1477,7 @@ pub fn layout_for(
             break;
         }
     }
+    let hw = h_window(n);
     // Row 0 holds only the centre and their spouses: it keeps its packed
     // spacing through the fit, which would otherwise squeeze a large
     // family's spouse onto the centre's name.
@@ -1393,16 +1490,16 @@ pub fn layout_for(
         let mut xs: Vec<f64> = list.iter().map(|&o| occs[o].x).collect();
         {
             let mut refs: Vec<&mut f64> = xs.iter_mut().collect();
-            fit(&mut refs, CX, 70.0, W - 44.0);
+            fit(&mut refs, CX, hw.0 + 70.0, hw.0 + hw.1 - 44.0);
         }
         for (&o, x) in list.iter().zip(xs) {
             occs[o].x = x;
         }
     }
-    occs[0].x = CX;
     for (o, x) in row0 {
-        occs[o].x = x.clamp(70.0, W - 44.0);
+        occs[o].x = x.clamp(hw.0 + 70.0, hw.0 + hw.1 - 44.0);
     }
+    occs[0].x = CX;
 
     // ---- rows
     let mut frame = Frame {
@@ -1420,8 +1517,13 @@ pub fn layout_for(
     // ---- persons, one per occurrence; a person drawn twice is marked twice
     let mut seen: HashMap<usize, usize> = HashMap::new();
     let mut count: HashMap<usize, usize> = HashMap::new();
+    let mut again: BTreeSet<usize> = BTreeSet::new();
     for o in &occs {
-        *count.entry(o.idx).or_default() += 1;
+        if o.again {
+            again.insert(o.idx);
+        } else {
+            *count.entry(o.idx).or_default() += 1;
+        }
     }
     let keys: Vec<String> = occs
         .iter()
@@ -1436,7 +1538,7 @@ pub fn layout_for(
         })
         .collect();
     for (o, key) in occs.iter().zip(&keys) {
-        let reps = count[&o.idx];
+        let reps = count.get(&o.idx).copied().unwrap_or(1);
         frame.persons.push(PNode {
             id: g.ids[o.idx].clone(),
             key: key.clone(),
@@ -1447,6 +1549,7 @@ pub fn layout_for(
             room: 999.0,
             right: 999.0,
             repeat: if reps > 1 { reps } else { 0 },
+            again: again.contains(&o.idx),
             idx: o.idx,
             gen: o.gen,
             d: g.desc[o.idx] + 1,
@@ -1532,6 +1635,12 @@ pub fn layout_for(
             stub_d: d.saturating_sub(drawn).max(1),
             stub_year: 1850.0,
             repeat,
+            // Rises toward the child's row, ending 18 short of it so its
+            // count clears the row's dots; to the right near the window's
+            // left edge, otherwise to the left.
+            stub_dx: if cx - hw.0 < 80.0 { 36.0 } else { -36.0 },
+            stub_dy: -(cy - me.1 - 18.0).clamp(8.0, 32.0),
+            stub_side: 0,
         });
         if parents.len() < 2 {
             let side = match parents.first().and_then(|&p| g.shape[occs[p].idx].slot) {
@@ -1551,6 +1660,7 @@ pub fn layout_for(
                 year: yr(i) - 28.0,
                 who: i,
                 offset: -28.0,
+                count_side: 1,
             });
         }
     }
@@ -1577,6 +1687,7 @@ pub fn layout_for(
             year: yr(i) - 20.0,
             who: i,
             offset: -20.0,
+            count_side: 1,
         });
     }
     // Descendant unions.
@@ -1625,6 +1736,9 @@ pub fn layout_for(
             stub_d: 1,
             stub_year: 1850.0,
             repeat,
+            stub_dx: 0.0,
+            stub_dy: 0.0,
+            stub_side: 0,
         });
         if fam.parents.len() < 2 {
             tails.push(Tail {
@@ -1640,6 +1754,7 @@ pub fn layout_for(
                 year: yr(po.idx),
                 who: po.idx,
                 offset: 0.0,
+                count_side: 1,
             });
         }
     }
@@ -1666,6 +1781,7 @@ pub fn layout_for(
             year: yr(i) + if cont { 20.0 } else { 0.0 },
             who: i,
             offset: if cont { 20.0 } else { 0.0 },
+            count_side: 1,
         });
     }
     // Spouses: their own line runs upstream, off the frame or to its end.
@@ -1690,11 +1806,13 @@ pub fn layout_for(
             year: yr(i) - 20.0,
             who: i,
             offset: -20.0,
+            count_side: 1,
         });
     }
 
     // ---- tails stop short of any line they would cross
     clear_tails(&frame.persons, &couples, &mut tails);
+    place_counts(&frame.persons, &mut couples, &mut tails);
 
     // ---- label density per row
     let mut rows: BTreeMap<i64, Vec<usize>> = BTreeMap::new();
@@ -1740,6 +1858,7 @@ pub fn layout_for(
             era: true,
             bands: true,
             view: view_window(n, step),
+            hview: h_window(n),
         },
         years,
     })
@@ -1767,6 +1886,37 @@ pub fn view_window(n: usize, step: f64) -> (f64, f64) {
     let top = (CY - span - 0.55 * step - 10.0).max(0.0);
     let bottom = (CY + span + 0.62 * step + 10.0).min(H);
     (r1(top), r1(bottom - top))
+}
+
+/// How far a river at range `n` usually reaches left and right of the fixed
+/// point: the 85th percentile of [`drawn_extent`] over every centre of the
+/// operator's 866-person bundle, each side on its own (measured by
+/// `tests/river_crossings.rs`; rerun it to re-derive these).
+const REACH: [(usize, f64, f64); 3] = [(2, 200.0, 389.0), (3, 297.0, 391.0), (5, 395.0, 391.0)];
+
+/// The horizontal window of the frame a river at range `n` is drawn in:
+/// `(left, width)`.
+///
+/// The vertical window ([`view_window`]) removed the empty bands above and
+/// below a short river; this removes the empty frame beside a narrow one.
+/// Like the vertical window it depends on the range only, never on who is
+/// drawn: a crop per drawing would change the scale from one person to the
+/// next and move the fixed point while the river travels. A river that
+/// reaches further than most at its range is scaled down into the window by
+/// [`fit`], as every river was into the whole frame before.
+///
+/// The window keeps 62 units left of the usual reach (70 from the edge to
+/// the nearest dot, as before, less a dot's own 8.8) for the band years and
+/// family stubs, and 34 right of it for the rail.
+pub fn h_window(n: usize) -> (f64, f64) {
+    let (_, l, r) = REACH
+        .iter()
+        .copied()
+        .find(|&(k, _, _)| k >= n)
+        .unwrap_or(REACH[REACH.len() - 1]);
+    let left = (CX - l - 62.0).max(0.0);
+    let right = (CX + r + 34.0).min(W);
+    (r1(left), r1(right - left))
 }
 
 /// Label tier from a person's smaller neighbour gap: none where dots are too
@@ -2113,6 +2263,13 @@ pub fn build(
             if !era {
                 s.colour = NEUTRAL.to_string();
             }
+            // A person drawn more than once says why, at the end of their
+            // years line (the ring on the dot says it where the label is
+            // dropped): `×n` for n lines reaching them, `↔` for a copy
+            // beside a later partner. See [`repeat_marks`].
+            if !s.redacted {
+                s.years.push_str(&repeat_marks(p));
+            }
             s
         })
         .collect();
@@ -2189,6 +2346,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     // ---- half-century bands, left rail
     let (v_top, v_h) = l.meta.view;
     let v_bottom = v_top + v_h;
+    let (h_left, h_w) = l.meta.hview;
     let mut living_named = false;
     // No bands without an era, nor for a signed-out reader (`Meta::bands`).
     let mut y0 = if l.meta.bands { 1600 } else { 2050 };
@@ -2208,24 +2366,27 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             };
             let _ = write!(
                 out,
-                r#"<rect x="0" y="{}" width="{}" height="{}" fill="{fill}"/>"#,
+                r#"<rect x="{}" y="{}" width="{}" height="{}" fill="{fill}"/>"#,
+                num(h_left),
                 num(t),
-                num(W),
+                num(h_w),
                 num(b - t)
             );
             if ya <= v_bottom {
                 let _ = write!(
                     out,
-                    r#"<line x1="0" y1="{y}" x2="{w}" y2="{y}" stroke="{BAND_RULE}"/>"#,
+                    r#"<line x1="{x1}" y1="{y}" x2="{x2}" y2="{y}" stroke="{BAND_RULE}"/>"#,
+                    x1 = num(h_left),
                     y = num(ya),
-                    w = num(W),
+                    x2 = num(h_left + h_w),
                 );
                 // The year sits above its line; where that is above the
                 // window, it would be cut in half, so it is left out.
                 if ya - 6.0 - 10.0 >= v_top {
                     let _ = write!(
                         out,
-                        r#"<text x="10" y="{ty}" font-family="{MONO}" font-size="10" fill="{tf}">{y0}</text>"#,
+                        r#"<text x="{tx}" y="{ty}" font-family="{MONO}" font-size="10" fill="{tf}">{y0}</text>"#,
+                        tx = num(h_left + 10.0),
                         ty = num(ya - 6.0),
                         tf = if live { BAND_TEXT_LIVE } else { BAND_TEXT }
                     );
@@ -2241,7 +2402,8 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 living_named = true;
                 let _ = write!(
                     out,
-                    r#"<text x="10" y="{}" font-family="{MONO}" font-size="10" letter-spacing="1" fill="{BAND_TEXT_LIVE}">{}</text>"#,
+                    r#"<text x="{}" y="{}" font-family="{MONO}" font-size="10" letter-spacing="1" fill="{BAND_TEXT_LIVE}">{}</text>"#,
+                    num(h_left + 10.0),
                     num(label_y),
                     html_escape(&words.living_band)
                 );
@@ -2263,7 +2425,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
         let _ = write!(
             out,
             r#"<text x="{}" y="{}" text-anchor="end" font-family="{MONO}" font-size="10" fill="{}">{label}</text>"#,
-            num(W - 10.0),
+            num(h_left + h_w - 10.0),
             num(y + 3.5),
             if k == 0 { ACCENT } else { BAND_TEXT }
         );
@@ -2279,17 +2441,30 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 let dir = f64::from(t.dir);
                 let _ = write!(
                     out,
-                    r#"<g class="rv-tail"><path d="{d}" fill="none" stroke="{c}" stroke-width="{w}"/><polygon points="{},{} {},{} {},{}" fill="{c}"/><text x="{}" y="{}" font-family="{MONO}" font-size="9.5" fill="{DATA_TEXT}">+{}</text></g>"#,
+                    r#"<g class="rv-tail"><path d="{d}" fill="none" stroke="{c}" stroke-width="{w}"/><polygon points="{},{} {},{} {},{}" fill="{c}"/>"#,
                     num(t.x2 - 4.0),
                     num(t.y2),
                     num(t.x2 + 4.0),
                     num(t.y2),
                     num(t.x2),
                     num(t.y2 + dir * 6.0),
-                    num(t.x2 + 8.0),
-                    num(t.y2 + if t.dir > 0 { 4.0 } else { 2.0 }),
-                    t.count
                 );
+                if t.count_side != 0 {
+                    let side = f64::from(t.count_side);
+                    let _ = write!(
+                        out,
+                        r#"<text x="{}" y="{}"{} font-family="{MONO}" font-size="9.5" fill="{DATA_TEXT}">+{}</text>"#,
+                        num(t.x2 + side * 8.0),
+                        num(t.y2 + if t.dir > 0 { 4.0 } else { 2.0 }),
+                        if side < 0.0 {
+                            r#" text-anchor="end""#
+                        } else {
+                            ""
+                        },
+                        t.count
+                    );
+                }
+                out.push_str("</g>");
             }
             TailKind::Lost => {
                 let id = format!("g{gi}");
@@ -2353,20 +2528,27 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             }
         }
         if c.stub > 0 {
-            let side = if c.x < 150.0 { 1.0 } else { -1.0 };
-            let (x2, y2) = (c.x + side * 36.0, c.y - 32.0);
+            let (x2, y2) = (c.x + c.stub_dx, c.y + c.stub_dy);
             let base = c.stub_year;
             let _ = write!(
                 out,
-                r#"<g class="rv-stub"><path d="{}" fill="none" stroke="{}" stroke-opacity="0.45" stroke-width="{}"/><text x="{}" y="{}" text-anchor="{}" font-family="{MONO}" font-size="10" fill="{DATA_TEXT}">+{}</text></g>"#,
+                r#"<g class="rv-stub"><path d="{}" fill="none" stroke="{}" stroke-opacity="0.45" stroke-width="{}"/>"#,
                 curve(c.x, c.y, x2, y2),
                 col(base),
                 num(width_of(c.stub_d)),
-                num(x2 + side * 5.0),
-                num(y2 - 3.0),
-                if side < 0.0 { "end" } else { "start" },
-                c.stub
             );
+            if c.stub_side != 0 {
+                let side = f64::from(c.stub_side);
+                let _ = write!(
+                    out,
+                    r#"<text x="{}" y="{}" text-anchor="{}" font-family="{MONO}" font-size="10" fill="{DATA_TEXT}">+{}</text>"#,
+                    num(x2 + side * 5.0),
+                    num(y2 - 3.0),
+                    if side < 0.0 { "end" } else { "start" },
+                    c.stub
+                );
+            }
+            out.push_str("</g>");
         }
     }
     edges.sort_by_key(|e| std::cmp::Reverse(e.d));
@@ -2418,15 +2600,23 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             url_component(&p.id),
             l.meta.n
         );
-        // A person drawn under two lines (pedigree collapse) is drawn twice,
-        // and each occurrence says how many there are.
+        // A person drawn more than once is ringed: a solid ring where two
+        // or more lines reach them (pedigree collapse), a dashed ring where
+        // they are drawn again beside a later partner. The years line says
+        // which in words-free marks too (`repeat_marks`), and the legend
+        // names both.
         if p.repeat > 1 {
             let _ = write!(
                 out,
-                r#"<text x="{}" y="{}" text-anchor="end" font-family="{MONO}" font-size="9.5" fill="{DATA_TEXT}">×{}</text>"#,
-                num(p.x - r - 4.0),
-                num(p.y + 3.5),
-                p.repeat
+                r#"<circle class="rv-repeat" cx="{x}" cy="{y}" r="{}" fill="none" stroke="{DATA_TEXT}" stroke-width="1"/>"#,
+                num(r + REPEAT_RING)
+            );
+        }
+        if p.again {
+            let _ = write!(
+                out,
+                r#"<circle class="rv-again" cx="{x}" cy="{y}" r="{}" fill="none" stroke="{DATA_TEXT}" stroke-width="1" stroke-dasharray="2.4 1.8"/>"#,
+                num(r + REPEAT_RING + if p.repeat > 1 { 2.2 } else { 0.0 })
             );
         }
         if s.living {
@@ -2465,7 +2655,10 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             let clipped;
             let name = if is_c {
                 let start = p.x + r + 10.0;
-                clipped = clip_label(name, (p.right - 12.0).min(RIGHT_EDGE - start));
+                clipped = clip_label(
+                    name,
+                    (p.right - LABEL_START_C - NEIGHBOUR).min(l.meta.label_edge() - start),
+                );
                 &clipped
             } else {
                 name
@@ -2491,9 +2684,10 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     }
 
     format!(
-        r#"<svg class="rv-svg" viewBox="0 {top} {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect y="{top}" width="{w}" height="{h}" fill="{BG}"/>{out}</svg>"#,
+        r#"<svg class="rv-svg" viewBox="{left} {top} {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect x="{left}" y="{top}" width="{w}" height="{h}" fill="{BG}"/>{out}</svg>"#,
+        left = num(h_left),
         top = num(v_top),
-        w = num(W),
+        w = num(h_w),
         h = num(v_h),
         a = html_escape(aria_label)
     )
@@ -2508,21 +2702,17 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
 /// neighbour further right for it to meet. The centre shortens too — a long
 /// enough name reached the rail from the fixed point — but never below its
 /// given name.
-pub fn fit_edge(tier: u8, s: &Shown, x: f64, r: f64, centre: bool) -> u8 {
+pub fn fit_edge(tier: u8, s: &Shown, x: f64, r: f64, centre: bool, edge: f64) -> u8 {
     let start = x + r + if centre { 10.0 } else { 6.0 };
     let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
     // The centre always labels: it keeps at least its given name.
     let floor = u8::from(centre);
     let mut t = tier;
-    while t > floor && start + label_width(&s.names[t as usize - 1], centre).max(years) > RIGHT_EDGE
-    {
+    while t > floor && start + label_width(&s.names[t as usize - 1], centre).max(years) > edge {
         t -= 1;
     }
     t
 }
-
-/// Labels stop short of the right rail's generation numbers.
-const RIGHT_EDGE: f64 = W - 34.0;
 
 /// Percent-encode everything but the unreserved characters.
 pub fn url_component(s: &str) -> String {
@@ -2563,11 +2753,40 @@ fn label_width(text: &str, centre: bool) -> f64 {
     }
 }
 
+/// How far outside a dot its repeat ring is drawn.
+pub const REPEAT_RING: f64 = 2.6;
+
+/// The outermost circle drawn for a person: the centre's ring, a repeat
+/// ring, or the dot itself.
+pub fn outer_radius(p: &PNode) -> f64 {
+    if p.role == Role::Centre {
+        return 14.0;
+    }
+    let ring = if p.again && p.repeat > 1 {
+        REPEAT_RING + 2.2
+    } else if p.again || p.repeat > 1 {
+        REPEAT_RING
+    } else {
+        0.0
+    };
+    4.8 + ring
+}
+
+/// What a label must leave before the next dot in its row: that dot's radius
+/// and the label's halo.
+const NEIGHBOUR: f64 = 4.8 + 2.0;
+/// Where a label starts, from its dot's centre: radius plus gap.
+const LABEL_START: f64 = 4.8 + 6.0;
+const LABEL_START_C: f64 = 7.5 + 10.0;
+
 /// Step a label down a tier while it would run into its neighbour.
 ///
 /// The tier rule reads the gap only, so a long full name in a 140-unit gap
-/// overprinted the next person's. `gap` is the room to the right-hand
-/// neighbour, and the years line counts as well as the name. A label that
+/// overprinted the next person's. `gap` is the distance to the right-hand
+/// neighbour's dot, so the label has that less its own start and the
+/// neighbour's radius ([`NEIGHBOUR`]) — measured from the dot's centre it
+/// once ran into the next dot (`tests/river_text.rs`, text against circles).
+/// The years line counts as well as the name. A label that
 /// does not fit even as a given name is dropped rather than overprinted: the
 /// person still labels on hover, which is where a reader looks for it. The
 /// centre always labels, so it stops at its given name.
@@ -2575,10 +2794,65 @@ pub fn fit_tier(tier: u8, s: &Shown, gap: f64, centre: bool) -> u8 {
     let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
     let floor = u8::from(centre);
     let mut t = tier;
-    while t > floor && label_width(&s.names[t as usize - 1], centre).max(years) > gap - 12.0 {
+    let room = gap - if centre { LABEL_START_C } else { LABEL_START } - NEIGHBOUR;
+    while t > floor && label_width(&s.names[t as usize - 1], centre).max(years) > room {
         t -= 1;
     }
     t
+}
+
+/// How far the drawing reaches left and right of the fixed point, in viewBox
+/// units: dots, tails and their counts, family stubs and their counts, and
+/// every label at the tier it is drawn at.
+pub fn drawn_extent(l: &Layout, shown: &[Shown]) -> (f64, f64) {
+    let (mut lo, mut hi) = (CX, CX);
+    let mut take = |a: f64, b: f64| {
+        lo = lo.min(a);
+        hi = hi.max(b);
+    };
+    let tiers = label_tiers(l, shown);
+    for ((p, s), &t) in l.persons.iter().zip(shown).zip(&tiers) {
+        let centre = p.role == Role::Centre;
+        let r = if centre { 7.5 } else { 4.8 };
+        take(p.x - r - 4.0, p.x + r);
+        if t > 0 {
+            let years = text_width(&s.years, if centre { 11.0 } else { 9.5 }, true, false);
+            let start = p.x + r + if centre { 10.0 } else { 6.0 };
+            let end = start + label_width(&s.names[t as usize - 1], centre).max(years);
+            // The centre's name is clipped at the label edge when drawn.
+            take(
+                start,
+                if centre {
+                    end.min(l.meta.label_edge())
+                } else {
+                    end
+                },
+            );
+        }
+    }
+    for t in &l.tails {
+        let count = if t.kind == TailKind::Cont && t.count_side != 0 {
+            8.0 + text_width(&format!("+{}", t.count), 9.5, true, false)
+        } else {
+            4.0
+        };
+        let (l_, r_) = if t.count_side < 0 {
+            (count, 4.0)
+        } else {
+            (4.0, count)
+        };
+        take(t.x1.min(t.x2 - l_), t.x1.max(t.x2 + r_));
+    }
+    for c in &l.couples {
+        take(c.x, c.x);
+        if c.stub > 0 {
+            let side = f64::from(c.stub_side);
+            let w = 5.0 + text_width(&format!("+{}", c.stub), 10.0, true, false);
+            let end = c.x + c.stub_dx;
+            take(end.min(end + side * w), end.max(end + side * w));
+        }
+    }
+    (CX - lo, hi - CX)
 }
 
 /// The most room the layout keeps for any other label.
@@ -2586,6 +2860,20 @@ const LABEL_MAX: f64 = 100.0;
 
 /// The most room the layout keeps for the centre's label.
 const CENTRE_LABEL_MAX: f64 = 200.0;
+
+/// The years-line suffix for a person drawn more than once: ` ×n` when n
+/// lines reach them (pedigree collapse), ` ↔` when they are drawn again
+/// beside a later partner; both when both.
+pub fn repeat_marks(p: &PNode) -> String {
+    let mut out = String::new();
+    if p.repeat > 1 {
+        let _ = write!(out, " ×{}", p.repeat);
+    }
+    if p.again {
+        out.push_str(" ↔");
+    }
+    out
+}
 
 /// The centre's name, cut with an ellipsis to fit `room`.
 ///
@@ -2625,8 +2913,13 @@ pub fn label_tiers(l: &Layout, shown: &[Shown]) -> Vec<u8> {
     for (_, mut row) in rows {
         row.sort_by(|a, b| l.persons[*a].x.total_cmp(&l.persons[*b].x));
         let mut last_end = f64::NEG_INFINITY;
-        for i in row {
+        for (j, &i) in row.iter().enumerate() {
             let (p, s) = (&l.persons[i], &shown[i]);
+            // The room runs to the right-hand neighbour's dot; where that dot
+            // is ringed (a repeat, or the centre's ring), to its ring.
+            let wider = row
+                .get(j + 1)
+                .map_or(0.0, |&k| outer_radius(&l.persons[k]) - 4.8);
             let centre = p.role == Role::Centre;
             let r = if centre { 7.5 } else { 4.8 };
             let start = p.x + r + if centre { 10.0 } else { 6.0 };
@@ -2638,7 +2931,14 @@ pub fn label_tiers(l: &Layout, shown: &[Shown]) -> Vec<u8> {
                 p.lab
             };
             if t > 0 {
-                t = fit_edge(fit_tier(t, s, p.right, centre), s, p.x, r, centre);
+                t = fit_edge(
+                    fit_tier(t, s, p.right - wider, centre),
+                    s,
+                    p.x,
+                    r,
+                    centre,
+                    l.meta.label_edge(),
+                );
             }
             if t > 0 && !centre && start < last_end + 4.0 {
                 t = 0;

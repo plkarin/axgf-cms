@@ -552,20 +552,28 @@ fn a_label_at_the_right_edge_shortens_instead_of_running_off_the_frame() {
         sparse: false,
         redacted: false,
     };
-    assert_eq!(river::fit_edge(3, &s, 300.0, 4.8, false), 3, "room enough");
     assert_eq!(
-        river::fit_edge(3, &s, 760.0, 4.8, false),
+        river::fit_edge(3, &s, 300.0, 4.8, false, river::W - 34.0),
+        3,
+        "room enough"
+    );
+    assert_eq!(
+        river::fit_edge(3, &s, 760.0, 4.8, false, river::W - 34.0),
         2,
         "given name and initial fit"
     );
     assert_eq!(
-        river::fit_edge(3, &s, 790.0, 4.8, false),
+        river::fit_edge(3, &s, 790.0, 4.8, false, river::W - 34.0),
         1,
         "only the given name fits"
     );
-    assert_eq!(river::fit_edge(3, &s, 850.0, 4.8, false), 0, "nothing fits");
     assert_eq!(
-        river::fit_edge(3, &s, 850.0, 7.5, true),
+        river::fit_edge(3, &s, 850.0, 4.8, false, river::W - 34.0),
+        0,
+        "nothing fits"
+    );
+    assert_eq!(
+        river::fit_edge(3, &s, 850.0, 7.5, true, river::W - 34.0),
         1,
         "the centre keeps at least its given name"
     );

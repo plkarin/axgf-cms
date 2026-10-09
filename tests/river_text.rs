@@ -24,9 +24,10 @@ use axgf_cms::acl::Visibility;
 use axgf_cms::river::{self, Graph, Shape, Words};
 use serde_json::{json, Map, Value};
 
-/// Labels stop here: the right rail's generation numbers sit beyond it.
-const LABEL_EDGE: f64 = river::W - 34.0;
-/// Anything else stops inside the frame by this much.
+/// Labels stop this far inside the window's right edge: the right rail's
+/// generation numbers sit beyond.
+const LABEL_EDGE: f64 = 34.0;
+/// Anything else stops inside the window by this much.
 const MARGIN: f64 = 4.0;
 
 #[derive(Debug)]
@@ -95,7 +96,7 @@ fn advance(t: &Text) -> f64 {
 fn check(svg: &str, what: &str, failures: &mut Vec<String>) {
     let view = attr(svg, "viewBox").expect("a viewBox");
     let v: Vec<f64> = view.split(' ').map(|n| n.parse().unwrap()).collect();
-    let (top, bottom) = (v[1], v[1] + v[3]);
+    let (left_edge, top, right_edge, bottom) = (v[0], v[1], v[0] + v[2], v[1] + v[3]);
     for t in texts(svg) {
         let w = advance(&t);
         let (left, right) = if t.end {
@@ -104,11 +105,11 @@ fn check(svg: &str, what: &str, failures: &mut Vec<String>) {
             (t.x, t.x + w)
         };
         let edge = if t.label {
-            LABEL_EDGE
+            right_edge - LABEL_EDGE
         } else {
-            river::W - MARGIN
+            right_edge - MARGIN
         };
-        if right > edge || left < MARGIN || t.y - t.size < top || t.y > bottom {
+        if right > edge || left < left_edge + MARGIN || t.y - t.size < top || t.y > bottom {
             failures.push(format!(
                 "{what}: {:?} spans x {left:.1}..{right:.1} (edge {edge}), y {:.1}..{:.1} (window {top}..{bottom})",
                 t.content,
@@ -152,6 +153,46 @@ fn check_overlap(svg: &str, what: &str, failures: &mut Vec<String>) {
                 failures.push(format!(
                     "{what}: {:?} [{:.1}..{:.1}] overlaps {:?} [{:.1}..{:.1}]",
                     a.0, a.1, a.2, b.0, b.1, b.2
+                ));
+            }
+        }
+    }
+}
+
+/// No text runs over a node: a person's dot (r 4.8, the centre's 7.5) or a
+/// ring where a line ends.
+///
+/// Every `<text>` in the drawing — names, years, `×n` markers, counts — is
+/// boxed by its advance and its em (ascent 0.8, descent 0.2 of its size);
+/// every drawn circle is tested against every box. The invisible r-20 hit
+/// circles and the living glow are not nodes and are skipped. Labels start
+/// at r + 6 from their own dot, so the collision is with a neighbour's dot
+/// or ring: what a name runs into when its row is tight.
+fn check_circles(svg: &str, what: &str, failures: &mut Vec<String>) {
+    let mut circles: Vec<(f64, f64, f64)> = Vec::new();
+    for chunk in svg.split("<circle").skip(1) {
+        let tag = &chunk[..chunk.find('>').expect("a circle tag closes")];
+        if tag.contains(r#"fill="transparent""#) || tag.contains("fill-opacity") {
+            continue;
+        }
+        let num = |n: &str| attr(tag, n).unwrap().parse::<f64>().unwrap();
+        circles.push((num("cx"), num("cy"), num("r")));
+    }
+    for t in texts(svg) {
+        let w = advance(&t);
+        let (left, right) = if t.end {
+            (t.x - w, t.x)
+        } else {
+            (t.x, t.x + w)
+        };
+        let (top, bottom) = (t.y - 0.8 * t.size, t.y + 0.2 * t.size);
+        for &(cx, cy, r) in &circles {
+            let dx = (left - cx).max(cx - right).max(0.0);
+            let dy = (top - cy).max(cy - bottom).max(0.0);
+            if dx.hypot(dy) < r {
+                failures.push(format!(
+                    "{what}: {:?} [{left:.1}..{right:.1}, {top:.1}..{bottom:.1}] runs over the circle at ({cx:.1}, {cy:.1}) r {r}",
+                    t.content
                 ));
             }
         }
@@ -214,8 +255,13 @@ fn run(flat: &Value, every_centre: bool) -> Vec<String> {
                 .unwrap();
                 let svg = r.svg("river");
                 let what = format!("{who} {centre} ±{n}");
+                // RIVER_TEXT_DEBUG="who centre ±n" prints that layout.
+                if std::env::var("RIVER_TEXT_DEBUG").ok().as_deref() == Some(what.as_str()) {
+                    println!("{}", serde_json::to_string(&r.layout).unwrap());
+                }
                 check(&svg, &what, &mut failures);
                 check_overlap(&svg, &what, &mut failures);
+                check_circles(&svg, &what, &mut failures);
                 checked += 1;
             }
         }
@@ -330,7 +376,7 @@ fn every_word_on_the_river_fits_the_frame() {
     let failures = run(&flat, false);
     assert!(
         failures.is_empty(),
-        "{} text node(s) leave the frame:\n{}",
+        "{} text node(s) leave the frame or run over a node:\n{}",
         failures.len(),
         failures
             .iter()
@@ -367,9 +413,13 @@ fn every_word_on_the_operators_river_fits_the_frame() {
     // Every person as the centre, not thirty: the known overlap, Demetriusz
     // Kaniewski's name over his wife's, was not among the thirty.
     let failures = run(&json!({"persons": persons, "families": families}), true);
+    // RIVER_TEXT_ALL=path writes every failure, not only the first forty.
+    if let Ok(path) = std::env::var("RIVER_TEXT_ALL") {
+        std::fs::write(path, failures.join("\n")).unwrap();
+    }
     assert!(
         failures.is_empty(),
-        "{} text node(s) leave the frame:\n{}",
+        "{} text node(s) leave the frame or run over a node:\n{}",
         failures.len(),
         failures
             .iter()
@@ -407,6 +457,16 @@ fn the_window_holds_everything_and_crops_only_dead_space() {
                 p.y
             );
         }
+        let (left, w) = r.layout.meta.hview;
+        for p in &r.layout.persons {
+            assert!(
+                p.x - 4.8 >= left && p.x + 4.8 <= left + w,
+                "±{n}: {} at x {} outside {left}..{}",
+                p.id,
+                p.x,
+                left + w
+            );
+        }
         for t in &r.layout.tails {
             assert!(
                 t.y2 - 4.0 >= top && t.y2 + 4.0 <= bottom,
@@ -422,6 +482,51 @@ fn the_window_holds_everything_and_crops_only_dead_space() {
             assert_eq!(r.layout.meta.view, river::view_window(2, 96.0));
         } else {
             assert!(h >= 0.9 * river::H, "±{n} fills the frame: height {h}");
+        }
+    }
+}
+
+/// The window depends on the range and nothing else, so the fixed point
+/// stays where it is on screen while the river travels: from every centre at
+/// one range the viewBox is the same and the centre is at (CX, CY) in it.
+/// (`river.js` tweens the window between two frames; between two frames of
+/// one range that is no change at all.)
+#[test]
+fn the_fixed_point_does_not_move_while_the_river_travels() {
+    let flat = generated();
+    let g = Graph::build(&flat);
+    let ids: Vec<String> = flat["persons"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .cloned()
+        .collect();
+    for n in river::RANGES {
+        let mut seen: Option<String> = None;
+        for id in &ids {
+            let r = river::build(
+                &flat,
+                &Lens::unrestricted(),
+                &g,
+                id,
+                n,
+                Shape::default(),
+                words(),
+                true,
+            )
+            .unwrap();
+            let c = r.layout.person(id).unwrap();
+            assert_eq!(
+                (c.x, c.y),
+                (river::CX, river::CY),
+                "±{n} {id}: the centre is the fixed point"
+            );
+            assert_eq!(r.layout.meta.hview, river::h_window(n));
+            let view = attr(&r.svg("river"), "viewBox").unwrap();
+            match &seen {
+                None => seen = Some(view),
+                Some(v) => assert_eq!(&view, v, "±{n} {id}: the window moved"),
+            }
         }
     }
 }

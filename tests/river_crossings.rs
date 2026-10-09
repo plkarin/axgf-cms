@@ -85,11 +85,10 @@ fn edges(l: &Layout) -> Vec<Edge> {
             }
         }
         if c.stub > 0 {
-            let side = if c.x < 150.0 { 1.0 } else { -1.0 };
             out.push(Edge {
                 a: ukey.clone(),
                 b: format!("stub:{}", c.key),
-                pts: cubic(c.x, c.y, c.x + side * 36.0, c.y - 32.0),
+                pts: cubic(c.x, c.y, c.x + c.stub_dx, c.y + c.stub_dy),
                 repeat: c.repeat,
                 label: format!("stub of {}", c.key),
             });
@@ -205,7 +204,9 @@ fn compactness(l: &Layout) -> f64 {
     if !lo.is_finite() || hi <= lo {
         return 0.0;
     }
-    (hi - lo) / (river::W - 44.0 - 70.0)
+    // Dots may sit from 70 inside the window's left edge to 44 inside its
+    // right (the frame's margins before the window, kept).
+    (hi - lo) / (l.meta.hview.1 - 44.0 - 70.0)
 }
 
 /// A long, shallow run: over 150 units across and under ~22° from horizontal.
@@ -248,6 +249,10 @@ struct Report {
     collapsed: BTreeSet<String>,
     /// Renders drawing a descendant again beside a third or later spouse.
     remarried: usize,
+    /// How far each drawing reaches left and right of the fixed point.
+    extents: Vec<(f64, f64)>,
+    /// Everything drawn (labels too), as a share of the window's width.
+    fill: Vec<f64>,
 }
 
 fn run(flat: &Value, centres: &[String], n: usize) -> Report {
@@ -324,37 +329,18 @@ fn run(flat: &Value, centres: &[String], n: usize) -> Report {
         for x in xs.iter().filter(|x| x.2) {
             r.repeat_pairs.push(format!("{c} ±{n}: {} × {}", x.0, x.1));
         }
-        // A person drawn again beside a third spouse: every occurrence on
-        // one row, and a parent of three or more unions. Any other repeat is
-        // pedigree collapse — a person reached by two lines.
-        let mut rows: BTreeMap<&str, BTreeSet<i64>> = BTreeMap::new();
-        for p in l.persons.iter().filter(|p| p.repeat > 0) {
-            rows.entry(p.id.as_str())
-                .or_default()
-                .insert(p.y.round() as i64);
+        // Pedigree collapse (`repeat`) and a copy beside a later partner
+        // (`again`) are marked apart by the layout itself.
+        let col: Vec<_> = l.persons.iter().filter(|p| p.repeat > 0).collect();
+        if !col.is_empty() {
+            r.collapse += 1;
+            r.collapsed.extend(col.iter().map(|p| p.id.clone()));
         }
-        let unions_of = |id: &str| {
-            l.couples
-                .iter()
-                .filter(|c| {
-                    c.parents
-                        .iter()
-                        .any(|k| k == id || k.starts_with(&format!("{id}~")))
-                })
-                .count()
-        };
-        let (mut col, mut rem) = (false, false);
-        for (id, ys) in rows {
-            if ys.len() == 1 && unions_of(id) >= 3 {
-                rem = true;
-            } else {
-                col = true;
-                r.collapsed.insert(id.to_string());
-            }
-        }
-        r.collapse += usize::from(col);
-        r.remarried += usize::from(rem);
+        r.remarried += usize::from(l.persons.iter().any(|p| p.again));
         r.compact.push(compactness(l));
+        let e = river::drawn_extent(l, &rv.shown);
+        r.extents.push(e);
+        r.fill.push((e.0 + e.1) / l.meta.hview.1);
         let (s, e) = sweeps(l);
         r.sweeps.0 += s;
         r.sweeps.1 += e;
@@ -390,6 +376,29 @@ fn print(name: &str, n: usize, r: &mut Report) {
         r.renders,
         r.collapsed.len(),
         r.remarried
+    );
+    let pct = |mut v: Vec<f64>, q: f64| {
+        v.sort_by(f64::total_cmp);
+        v[((v.len() - 1) as f64 * q).round() as usize]
+    };
+    let (ls, rs): (Vec<f64>, Vec<f64>) = r.extents.iter().copied().unzip();
+    println!(
+        "    whole drawing ÷ window width: median {:.2}, worst {:.2}",
+        pct(r.fill.clone(), 0.5),
+        pct(r.fill.clone(), 0.0)
+    );
+    println!(
+        "    extent left p50 {:.0} p80 {:.0} p85 {:.0} p90 {:.0} max {:.0} · right p50 {:.0} p80 {:.0} p85 {:.0} p90 {:.0} max {:.0}",
+        pct(ls.clone(), 0.5),
+        pct(ls.clone(), 0.8),
+        pct(ls.clone(), 0.85),
+        pct(ls.clone(), 0.9),
+        pct(ls, 1.0),
+        pct(rs.clone(), 0.5),
+        pct(rs.clone(), 0.8),
+        pct(rs.clone(), 0.85),
+        pct(rs.clone(), 0.9),
+        pct(rs, 1.0)
     );
     // Every permitted crossing, listed: none is passed over silently.
     for p in &r.repeat_pairs {

@@ -48,6 +48,11 @@
           or not: "lost" described only the dead, and a ring drawn only for
           them told a reader whether a hidden person was alive. #}
       <span><i class="rv-ring"></i>{{ t("river-legend-lost") }}</span>
+      {#- A person drawn more than once, for two different reasons, told
+          apart: reached by several lines (pedigree collapse), or drawn again
+          beside a third or later partner. #}
+      <span><i class="rv-rep"></i>{{ t("river-legend-repeat") }}</span>
+      <span><i class="rv-rep rv-rep-again"></i>{{ t("river-legend-again") }}</span>
       <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
       <span class="rv-direction">{{ t("river-legend-direction") }}</span>
     </div>

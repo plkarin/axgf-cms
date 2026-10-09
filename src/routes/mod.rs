@@ -248,6 +248,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/:kind/:id/edit", get(admin::edit_form))
         .route("/admin/:kind/:id", post(admin::update))
         .route("/admin/:kind/:id/delete", post(admin::delete))
+        .route("/static/css/tokens.css", get(public::tokens_css))
         .route("/static/app.css", get(public::css))
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/river.js", get(public::river_js))

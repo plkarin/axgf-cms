@@ -1250,6 +1250,18 @@ pub async fn health(State(state): State<Shared>, headers: HeaderMap) -> Response
         .into_response()
 }
 
+/// `GET /static/css/tokens.css`
+pub async fn tokens_css() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/css; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::TOKENS_CSS,
+    )
+        .into_response()
+}
+
 /// `GET /static/app.css`
 pub async fn css() -> Response {
     (

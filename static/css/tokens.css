@@ -1,0 +1,28 @@
+/* Design tokens: Study 06, "The Furniture".
+
+   The only file in the site that may name a colour by its hex value
+   (tests/design_tokens.rs; the river's water ramp in src/river.rs is the
+   one exemption, and the test names it). Everything else uses these.
+
+   Every control is built from the river's own ground: surfaces a shade
+   lighter than the page, never a colour; hairline edges; amber only on the
+   primary action and the focus ring. */
+:root {
+  --surface-page: #0b110e;
+  --surface-raised: #111a16;
+  --surface-sunken: #0e1512;
+  --surface-hover: #17221d;
+
+  --border-hairline: #22302a;
+  --border-strong: #3a4b42;
+
+  --text-primary: #ece6d6;
+  --text-secondary: #a7b3aa;
+  --text-tertiary: #75847b;
+
+  --accent: #dcae64;
+  --focus-ring: #dcae64;
+  --danger: #d98068;
+
+  color-scheme: dark;
+}

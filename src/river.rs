@@ -140,6 +140,25 @@ pub fn colour_at(year: f64) -> String {
     format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2])
 }
 
+/// Whether `hex` is a colour of the water ramp: one [`colour_at`] gives for
+/// some year, or the neutral water of a river without an era.
+///
+/// The ramp is the one place outside `static/css/tokens.css` that names
+/// colours by value (`tests/design_tokens.rs`): it is a scale of years, not
+/// furniture, and the river reads it continuously.
+pub fn on_water_ramp(hex: &str) -> bool {
+    use std::sync::OnceLock;
+    static ALL: OnceLock<std::collections::HashSet<String>> = OnceLock::new();
+    let all = ALL.get_or_init(|| {
+        let mut s: std::collections::HashSet<String> = (0..=59000)
+            .map(|k| colour_at(RAMP_FROM + (RAMP_TO - RAMP_FROM) * f64::from(k) / 59000.0))
+            .collect();
+        s.insert(NEUTRAL.to_string());
+        s
+    });
+    all.contains(&hex.to_ascii_lowercase())
+}
+
 /// Round to one decimal.
 pub fn r1(v: f64) -> f64 {
     let r = (v * 10.0).round() / 10.0;

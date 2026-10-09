@@ -67,22 +67,24 @@
       lb.forEach(function (o) { mb[o[key]] = o; if (!(o[key] in ma)) keys.push(o[key]); });
       return keys.map(function (k) { return fn(ma[k], mb[k]); });
     }
-    function slide(o, s, al) { return Object.assign({}, o, { x: o.x + dx * s, y: o.y + dy * s, a: al }); }
+    function slide(o, s, al) { return Object.assign({}, o, { x: o.x + dx * s, y: o.y + dy * s, a: al, sref: [o.x, o.y] }); }
     var persons = merge(A.persons, B.persons, 'key', function (a, b) {
       if (a && b) return Object.assign({}, e < 0.5 ? a : b, { x: mix(a.x, b.x), y: mix(a.y, b.y), a: 1 });
       return a ? slide(a, e, 1 - e) : slide(b, -(1 - e), e);
     });
     var couples = merge(A.couples, B.couples, 'key', function (a, b) {
-      if (a && b) return Object.assign({}, b, { x: mix(a.x, b.x), y: mix(a.y, b.y), a: 1,
+      if (a && b) return Object.assign({}, b, { x: mix(a.x, b.x), y: mix(a.y, b.y), a: 1, sref: [b.x, b.y],
         parents: a.parents.concat(b.parents.filter(function (p) { return a.parents.indexOf(p) < 0; })),
         kids: a.kids.concat(b.kids.filter(function (k) { return a.kids.indexOf(k) < 0; })),
         pconf: Object.assign({}, a.pconf, b.pconf), kconf: Object.assign({}, a.kconf, b.kconf) });
       return a ? slide(a, e, 1 - e) : slide(b, -(1 - e), e);
     });
     var tails = merge(A.tails, B.tails, 'key', function (a, b) {
-      if (a && b) return Object.assign({}, b, { x1: mix(a.x1, b.x1), y1: mix(a.y1, b.y1), x2: mix(a.x2, b.x2), y2: mix(a.y2, b.y2), a: 1 });
+      // cref: where the line ended when its count was placed, so the count
+      // travels with the arrowhead.
+      if (a && b) return Object.assign({}, b, { x1: mix(a.x1, b.x1), y1: mix(a.y1, b.y1), x2: mix(a.x2, b.x2), y2: mix(a.y2, b.y2), a: 1, cref: [b.x2, b.y2] });
       var t = a || b, s = a ? e : -(1 - e);
-      return Object.assign({}, t, { x1: t.x1 + dx * s, y1: t.y1 + dy * s, x2: t.x2 + dx * s, y2: t.y2 + dy * s, a: a ? 1 - e : e });
+      return Object.assign({}, t, { x1: t.x1 + dx * s, y1: t.y1 + dy * s, x2: t.x2 + dx * s, y2: t.y2 + dy * s, a: a ? 1 - e : e, cref: [t.x2, t.y2] });
     });
     var ka = A.meta.scale.knots, kb = B.meta.scale.knots, knots = kb;
     if (ka.length === kb.length) knots = ka.map(function (k, i) { return [mix(k[0], kb[i][0]), mix(k[1], kb[i][1])]; });
@@ -122,8 +124,7 @@
       var c = colour(t.year), w = WIDTHS[cls(t.d)], d = vc(t.x1, t.y1, t.x2, t.y2);
       if (t.kind === 'cont') {
         out += '<g opacity="' + f(t.a) + '"><path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + w + '"/><polygon points="' + f(t.x2 - 4) + ',' + f(t.y2) + ' ' + f(t.x2 + 4) + ',' + f(t.y2) + ' ' + f(t.x2) + ',' + f(t.y2 + t.dir * 6) + '" fill="' + c + '"/>'
-          // river::place_counts chose the side, or none.
-          + (t.count_side ? '<text x="' + f(t.x2 + t.count_side * 8) + '" y="' + f(t.y2 + (t.dir > 0 ? 4 : 2)) + '"' + (t.count_side < 0 ? ' text-anchor="end"' : '') + ' font-family="' + MONO + '" font-size="9.5" fill="#8d9c92">+' + t.count + '</text>' : '') + '</g>';
+          + mark(t.count_at, '+' + t.count, 9.5, t.cref ? t.x2 - t.cref[0] : 0, t.cref ? t.y2 - t.cref[1] : 0) + '</g>';
       } else {
         var id = 'tg' + (gi++);
         defs += '<linearGradient id="' + id + '" gradientUnits="userSpaceOnUse" x1="' + f(t.x1) + '" y1="' + f(t.y1) + '" x2="' + f(t.x2) + '" y2="' + f(t.y2) + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></linearGradient>';
@@ -132,9 +133,9 @@
     });
     fr.couples.forEach(function (c) {
       if (!c.stub) return;
-      var side = c.stub_side, x2 = c.x + c.stub_dx, y2 = c.y + c.stub_dy;
+      var x2 = c.x + c.stub_dx, y2 = c.y + c.stub_dy;
       out += '<g opacity="' + f(c.a) + '"><path d="' + vc(c.x, c.y, x2, y2) + '" fill="none" stroke="' + colour(c.stub_year) + '" stroke-opacity="0.45" stroke-width="' + WIDTHS[cls(c.stub_d)] + '"/>'
-        + (side ? '<text x="' + f(x2 + side * 5) + '" y="' + f(y2 - 3) + '" text-anchor="' + (side < 0 ? 'end' : 'start') + '" font-family="' + MONO + '" font-size="10" fill="#8d9c92">+' + c.stub + '</text>' : '') + '</g>';
+        + mark(c.stub_at, '+' + c.stub, 10, c.sref ? c.x - c.sref[0] : 0, c.sref ? c.y - c.sref[1] : 0) + '</g>';
     });
     edges(fr, PM).sort(function (a, b) { return b.d - a.d; }).forEach(function (e) {
       var d = vc(e.x1, e.y1, e.x2, e.y2), w = WIDTHS[cls(e.d)], o = ' opacity="' + f(e.a) + '"';
@@ -162,6 +163,18 @@
       out += '</g>';
     });
     return '<svg class="rv-svg" viewBox="' + f(hl0) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect x="' + f(hl0) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(fr.meta.view[1]) + '" fill="' + BG + '"/>' + out + '</svg>';
+  }
+  // river::write_mark: a count where river::place_counts put it, moved with
+  // its mark while the river is in motion (dx, dy: how far the mark has
+  // travelled from where the count was placed).
+  function mark(m, text, size, dx, dy) {
+    if (!m) return '';
+    dx = dx || 0; dy = dy || 0;
+    var out = '';
+    if (m.leader) out += '<line x1="' + f(m.leader[0] + dx) + '" y1="' + f(m.leader[1] + dy) + '" x2="' + f(m.leader[2] + dx) + '" y2="' + f(m.leader[3] + dy) + '" stroke="#8d9c92" stroke-width="0.6" stroke-opacity="0.7"/>';
+    return out + '<text x="' + f(m.x + dx) + '" y="' + f(m.y + dy) + '"' + (m.anchor < 0 ? ' text-anchor="end"' : m.anchor === 0 ? ' text-anchor="middle"' : '')
+      + (m.halo ? ' paint-order="stroke" stroke="' + BG + '" stroke-width="3" stroke-linejoin="round"' : '')
+      + ' font-family="' + MONO + '" font-size="' + size + '" fill="#8d9c92">' + esc(text) + '</text>';
   }
   // river::text_width: 0.55 em serif, 0.6 em bold or mono, 1 em wide scripts.
   function width(text, size, bold) {

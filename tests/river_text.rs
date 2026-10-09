@@ -74,7 +74,9 @@ fn texts(svg: &str) -> Vec<Text> {
                 end: attr(tag, "text-anchor").as_deref() == Some("end"),
                 // Name and year labels carry the halo; band, rail and count text
                 // does not.
-                label: tag.contains("paint-order"),
+                // (A `+n` written on its line carries a halo too; it is a
+                // count, not a label.)
+                label: tag.contains("paint-order") && !tag.contains("rv-count"),
                 content: unescape(content),
             }
         })

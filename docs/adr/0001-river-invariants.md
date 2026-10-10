@@ -6,8 +6,9 @@ river's two projections), `static/river.js`
 The river (`/`) draws one person at a fixed point, ancestors below and
 descendants above. Four of its rules look like mistakes. Each was chosen on
 purpose, each has been "fixed" once already in the course of building it, and
-each is now held by a test. Change one only by changing its test first, and
-read why it is there before you do.
+each is now held by a test. A fifth decision (§5) looks like a bug and is
+also deliberate. Change any of them only by changing its test first, and read
+why it is there before you do.
 
 ---
 
@@ -127,6 +128,42 @@ terminator for the living; it is the same leak.
 (byte-identical SVG and payload for a hidden childless person, living or not)
 and the legend assertion in `the_river_is_drawn_on_the_server`
 (`tests/river.rs`).
+
+---
+
+## 5. The fixed point is still during travel; a range change is a zoom
+
+**Decision.** Each range has its own window (`river::h_window`,
+`river::view_window`): each side of the fixed point is cut at what 85% of
+rivers at that range reach, over every centre of the operator's 866-person
+archive, and a river that reaches further is scaled into it. The window
+depends on the range and nothing else. Within a range the fixed point does
+not move on screen while the river travels. A range change moves it: the
+window tweens from one range's shape to the other's, and the fixed point
+drifts with it.
+
+**What looks wrong.** Changing from ± 5 to ± 2 slides the centred person
+across the screen — 112 px on a 1280-px desktop, 48 px on a phone — instead of
+holding them where they were.
+
+**Why.** Travel and a range change are different motions. Travel keeps the
+scale and moves the family through the fixed point, and that motion must be
+still at its centre or the reader loses their place. A range change keeps the
+family and changes the scale: it is a zoom, and the windows that make each
+range compact are not the same shape. Holding the fixed point still across a
+zoom would need every range's window to be a scaled copy of one shape. The
+side that binds is the right, which labels fill at every range, so the
+narrow windows would have to widen to the widest one's proportions: ± 2's
+window would be about 99% of ± 5's. That empties out ± 2 and ± 3 — the
+views most readers use — to keep a point still during a motion that lasts
+560 ms. Rejected.
+
+**Enforced by** `the_fixed_point_does_not_move_while_the_river_travels`
+(`tests/river_text.rs`): from every centre at one range the viewBox is the
+same and the centre is at (470, 318). Watched frame by frame in Chromium,
+at 1280 × 900 and 390 × 844: within a range the viewBox and the SVG's box
+never change and the fixed point moves 0.0 px; across a range change the
+window tweens over about 30 frames and does not jump.
 
 ---
 

@@ -16,9 +16,9 @@ else. That is who most of this page is for. **If you have been sent a `.axgf`
 file and just want to look at it, skip to
 [Opening a `.axgf` file on your own computer](#opening-a-axgf-file-on-your-own-computer).**
 
-| The tree around one person | One person's record |
+| The river around one person — the landing page | One person's record |
 |---|---|
-| [![The tree view: four generations around Jules Meunier, each card with dates and a confidence dot, and his record open in a panel beside it](docs/screenshots/tree.png)](docs/screenshots/tree.png) | [![A person page: Jules Meunier, 1823–1901, with tabs for Record, Life, Profile, Media and Tree](docs/screenshots/person.png)](docs/screenshots/person.png) |
+| [![The river view, the landing page: Jules Meunier at the fixed point, his parents below and his children and grandchildren above, each line as wide as the descendants it carries, his record open in six tabs beside it](docs/screenshots/river.png)](docs/screenshots/river.png) | [![A person page: Jules Meunier, 1823–1901, with tabs for Record, Life, Profile, Media and Tree](docs/screenshots/person.png)](docs/screenshots/person.png) |
 
 *Both show the demonstration family that `--with-sample` installs.*
 
@@ -30,19 +30,15 @@ On a fresh Ubuntu LTS server, as a user who can `sudo`:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --version v0.1.0-rc1 --with-sample
+  | sudo bash -s -- --with-sample
 ```
 
-> **Why `--version`, for now:** no stable release has been published yet —
-> only the release candidate `v0.1.0-rc1`, from 31 August 2026 — and without
-> `--version` the script asks for the latest *stable* release, finds none, and
-> stops with a message saying exactly that. `v0.1.0-rc1` predates the extended
-> person profile (the **Profile** tab), and **it cannot open a family file
-> that uses the profile**: it reads AXGF 1.0 only, and refuses a 1.1 file with
-> `unsupported AXGF spec version "1.1"`. That is fine for a new, empty site; to
-> serve an existing 1.1 file, or to have what is on `main`, use `--from-source`
-> instead, which needs `cargo` on root's `PATH`. Once a stable release exists,
-> the command above works without `--version`.
+It installs the latest stable release — **v0.2.0**, of 10 October 2026, the
+first with the river as its landing page — and reads AXGF 1.0 and 1.1 files.
+To pin a release, add `--version v0.2.0`; to build what is on `main` instead,
+`--from-source`, which needs `cargo` on root's `PATH`. Every release, with its
+binaries and checksums, is on the
+[releases page](https://github.com/plkarin/axgf-cms/releases).
 
 `--with-sample` seeds the small demonstration family in the screenshots, so a
 fresh install has something to look at. Leave it out to start with an empty
@@ -170,13 +166,13 @@ sudo systemctl start axgf-cms
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --upgrade --version <tag>
+  | sudo bash -s -- --upgrade
 ```
 
 It backs up first, keeps the working binary aside, installs the new one,
 restarts, and checks that the family's data is readable. If it is not, it puts
-the previous version back on its own. (Drop `--version` once stable releases
-exist.)
+the previous version back on its own. Without `--version` it upgrades to the
+latest stable release.
 
 ## Languages
 
@@ -206,7 +202,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes, with a current build.** The only download so far, [`v0.1.0-rc1`](https://github.com/plkarin/axgf-cms/releases), opens older (AXGF 1.0) files only; a file from a site that records the extended profile is AXGF 1.1, and that release refuses it. Until the next release, build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
+| **Linux** | **Yes.** Download the current release, [`v0.2.0`](https://github.com/plkarin/axgf-cms/releases/tag/v0.2.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

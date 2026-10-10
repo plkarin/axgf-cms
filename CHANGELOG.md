@@ -6,7 +6,44 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-10-10
+
+### Changed
+
+**The landing page is the river, not the overview.** `/` used to open on the
+overview of the archive; it now opens on the river view, centred on a person.
+The overview moved to `/about` (and is still what `/` shows for an archive
+with nobody in it); the card grid is at `/tree`, unchanged.
+
+In short:
+
+- **The river view** at `/`, drawn on the server, complete without
+  JavaScript, with **zero crossings**: no drawn line crosses another, from any
+  of the 866 people of the operator's archive as the centre, at ± 2, ± 3 and
+  ± 5 (`tests/river_crossings.rs`).
+- **Six record tabs** beside it — the whole record, family, life, sources,
+  media, profile.
+- **Four invariants**, each held by a test and explained in
+  `docs/adr/0001-river-invariants.md`: width is recorded descendants and does
+  not sum where lines meet; sibling order reads birth dates only where the
+  reader sees every sibling; the year scale needs an anchor the reader may
+  see; one terminator for the living and the dead.
+- **AXGF 1.1 support through `axgf-rs` 0.5.0**, now a crates.io dependency
+  rather than a git pin: bundles carrying the extended person profile open,
+  validate and export against the frozen AXGF 1.1.0 schema.
+
 ### Added
+
+**The river does not cross itself.** Each side of the fixed point is laid
+out by contour packing (Reingold–Tilford), separated by what each reader's
+labels need; a person reached by two lines (pedigree collapse) is drawn under
+each, ringed and marked `×n`, and a person with a third partner is drawn again
+beside them, marked `↔` with a dashed ring — the legend names both. Each range
+has its own window, cut at what 85% of rivers reach, so a small family no
+longer sits small in a wide empty frame; during travel the fixed point does
+not move. Every `+n` beyond a line's end is written — beside it, or on a short
+leader where the row is tight — and no label or count runs over a dot
+(`tests/river_text.rs`).
 
 **The river is the landing page.** `/` now draws one person at a fixed
 point, ancestors flowing in from below and descendants out above, laid out
@@ -54,6 +91,20 @@ than by the first visitor: on the operator's 866-person bundle the first
 request to the river costs about a millisecond more than the ones after it,
 which take 3–5 ms. `scripts/river-bench.sh` measures it without leaving a
 server behind.
+
+### Fixed
+
+**`bootstrap.sh --upgrade` asks for health where the installation listens.**
+An upgrade took the bind address, the bundle and the backup directory from
+the script's defaults rather than from `/etc/axgf-cms/env`. On a server whose
+service listens anywhere but 127.0.0.1:8080, the health check after the
+restart asked the wrong port — nothing, or someone else's server — and the
+upgrade rolled back a healthy release. It now reads all three from the env
+file unless they are given on the command line, and says which it used.
+
+## [0.1.0] — 2026-09-24
+
+### Added
 
 **A service, not a binary somebody launches over SSH.** The unit existed and
 had never been run. Running it is what produced everything below.
@@ -1641,7 +1692,7 @@ break the encoding the product rests on. Diagnostics need severity colours of
 their own; that is a change to the confidence system and does not belong in a
 commit about backgrounds.
 
-## [0.1.0] — 2026-08-XX
+## [0.1.0-rc1] — 2026-08-31
 
 The first release. One binary serves a browsable, editable website for a
 single family's AXGF archive: the tree, every person's record, the documents
@@ -2767,4 +2818,6 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.2.0
 [0.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.1.0
+[0.1.0-rc1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.1.0-rc1

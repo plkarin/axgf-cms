@@ -1527,6 +1527,56 @@ pub async fn river_data(
     }
 }
 
+/// `?q=` on the search page and its JSON twin.
+#[derive(Debug, serde::Deserialize)]
+pub struct SearchQuery {
+    #[serde(default)]
+    q: String,
+}
+
+/// How many people the masthead's suggestions list; the page shows more.
+const SEARCH_SUGGESTIONS: usize = 8;
+const SEARCH_PAGE: usize = 60;
+
+/// `GET /search?q=` — people by name, through the reader's lens
+/// ([`crate::search::people`]). The masthead form lands here with scripting
+/// off; with it on, `ui.js` lists suggestions from `/search.json` instead and
+/// Enter travels without leaving the page.
+pub async fn search(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
+    Query(q): Query<SearchQuery>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let hits = state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::search::people(flat, lens, &q.q, SEARCH_PAGE)
+    });
+    render::page_with(
+        &chrome,
+        "search.html",
+        context! {
+            nav => "search",
+            q => q.q.trim(),
+            hits,
+        },
+    )
+}
+
+/// `GET /search.json?q=` — the masthead's suggestions.
+pub async fn search_json(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<SearchQuery>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let hits = state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::search::people(flat, lens, &q.q, SEARCH_SUGGESTIONS)
+    });
+    ([(header::CACHE_CONTROL, "no-store")], Json(hits)).into_response()
+}
+
 /// `GET /static/river.js`.
 pub async fn river_js() -> Response {
     (

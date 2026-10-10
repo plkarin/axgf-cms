@@ -135,6 +135,8 @@ fn routes(state: Shared) -> Router {
         .route("/river/data", get(public::river_data))
         .route("/about", get(public::home))
         .route("/tree", get(public::tree))
+        .route("/search", get(public::search))
+        .route("/search.json", get(public::search_json))
         .route("/tree/panel/:id", get(public::tree_panel))
         .route("/person/:id", get(public::person))
         .route("/document/:id/raw", get(public::document_raw))
@@ -240,6 +242,9 @@ fn routes(state: Shared) -> Router {
             "/admin/person/:id/avatar",
             get(admin::avatar_picker).post(admin::avatar_set),
         )
+        // Before `/admin/place/:id`, which takes POST only and otherwise
+        // matched "new" as an id: the place list's "New place" answered 405.
+        .route("/admin/place/new", get(admin::new_place_form))
         .route("/admin/place/:id/edit", get(admin::place_edit))
         .route("/admin/place/:id", post(admin::place_update))
         .route("/admin/place/:id/geocode", post(admin::place_geocode))

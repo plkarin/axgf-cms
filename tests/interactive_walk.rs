@@ -1,0 +1,611 @@
+//! Every interactive element does something.
+//!
+//! A button that does nothing reads as "the site is broken" to anyone who is
+//! not an engineer, and on the river page most of them did: a `data-centre`
+//! on the river's root made every link inside it resolve to the root, travel
+//! to where it already was, and stop there.
+//!
+//! This walks every page a reader reaches — the river, the grid, the
+//! overview, a record, the search, the import flow and every administration
+//! page — signed out and signed in, and holds every interactive element
+//! (`a[href]`, `button`, `input`, `select`, `textarea`, `summary`, anything
+//! with a `role` or a `tabindex`) to one of three things:
+//!
+//! * **it navigates** — a link whose target answers 200 (following redirects),
+//!   or a `#fragment` that names something on the page;
+//! * **it submits** — it sits in a form whose action answers 200 for a GET, or
+//!   accepts the form's method for a POST (checked without sending it);
+//! * **it has a handler bound** — a selector in a script *this page loads*
+//!   (`querySelector`, `closest`, `getElementById`) matches it or an ancestor.
+//!
+//! Anything else is dead and fails the test. So does a delegation target that
+//! swallows other controls: an element a script claims through `closest()`
+//! must not contain another control, because a click on that control reaches
+//! the script as a click on the claimed element — exactly the river's bug.
+
+mod common;
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use axum::body::Body;
+use axum::http::{header, Method, Request, StatusCode};
+use common::*;
+use scraper::{ElementRef, Html, Selector};
+use serde_json::{json, Value};
+use tower::ServiceExt;
+
+const P: &str = "p07";
+
+fn person(id: &str, given: &str, surname: &str, born: Option<i64>, visibility: &str) -> Value {
+    let mut p = json!({"id": id, "type": "person", "axgf_version": "1.1", "version_num": 1,
+        "identity": {"name": {"display": format!("{given} {surname}"),
+            "components": [{"type": "given_name", "value": given},
+                           {"type": "family_name", "value": surname}]},
+            "gender": {"value": "M"}, "is_living": false, "visibility": visibility}});
+    if let Some(b) = born {
+        p["birth"] = json!({"date": {"value": b.to_string(), "precision": "year"}, "place_id": "pl1",
+                            "source_id": "s1"});
+    }
+    p
+}
+
+fn family(id: &str, parents: &[&str], kids: &[&str]) -> Value {
+    json!({"id": id, "type": "family", "axgf_version": "1.1", "version_num": 1,
+        "union": {"type": "marriage",
+            "persons": parents.iter().map(|p| json!({"person_id": p, "role": "spouse"})).collect::<Vec<_>>()},
+        "children": kids.iter().map(|k| json!({"person_id": k, "confidence": 0.9})).collect::<Vec<_>>()})
+}
+
+/// Every kind of record at least once, so every list, tab and editor has
+/// something to draw; one person hidden from visitors.
+fn bundle() -> Value {
+    let persons: serde_json::Map<String, Value> = [
+        person("p01", "Jan", "Nowak", Some(1800), "public"),
+        person("p02", "Anna", "Lis", Some(1806), "public"),
+        person("p03", "Antoni", "Nowak", Some(1830), "public"),
+        person("p04", "Zofia", "Mazur", None, "public"),
+        person("p05", "Józef", "Nowak", Some(1858), "public"),
+        person("p06", "Marianne", "Lefèvre", Some(1863), "public"),
+        person("p07", "Stanislas", "Nowak", Some(1888), "public"),
+        person("p08", "Hélène", "Mercier", Some(1890), "public"),
+        person("p09", "Michel", "Nowak", Some(1914), "public"),
+        person("p10", "Ukryta", "Nowak", Some(1950), "members"),
+    ]
+    .into_iter()
+    .map(|p| (p["id"].as_str().unwrap().to_string(), p))
+    .collect();
+    let families: serde_json::Map<String, Value> = [
+        family("f1", &["p01", "p02"], &["p03"]),
+        family("f2", &["p03", "p04"], &["p05"]),
+        family("f3", &["p05", "p06"], &["p07"]),
+        family("f4", &["p07", "p08"], &["p09"]),
+        family("f5", &["p09"], &["p10"]),
+    ]
+    .into_iter()
+    .map(|f| (f["id"].as_str().unwrap().to_string(), f))
+    .collect();
+    json!({
+        "manifest": {"axgf": "1.1", "created_at": "2026-10-10T00:00:00Z"},
+        "persons": persons,
+        "families": families,
+        "places": {"pl1": {"id": "pl1", "type": "place", "axgf_version": "1.0", "version_num": 1,
+            "name": "Lublin", "hierarchy": {"region": "Lubelskie", "country": "PL"}}},
+        "events": {"e1": {"id": "e1", "type": "event", "axgf_version": "1.0", "version_num": 1,
+            "event_type": "baptism", "date": {"value": "1888", "precision": "year"},
+            "place_id": "pl1", "participants": [{"person_id": "p07", "role": "subject"}]}},
+        "occupations": {"o1": {"id": "o1", "type": "occupation", "axgf_version": "1.0", "version_num": 1,
+            "person_id": "p07", "title": "Teacher"}},
+        "links": {"l1": {"id": "l1", "type": "link", "axgf_version": "1.0", "version_num": 1,
+            "from": {"entity_type": "person", "entity_id": "p08"},
+            "to": {"entity_type": "person", "entity_id": "p07"},
+            "label": "godmother", "label_reverse": "godson", "category": "spiritual"}},
+        "sources": {"s1": {"id": "s1", "type": "source", "axgf_version": "1.0", "version_num": 1,
+            "title": "Registre des naissances", "source_type": "birth_certificate", "reliability": "primary"}},
+        "documents": {"d1": {"id": "d1", "type": "document", "axgf_version": "1.0", "version_num": 1,
+            "filename": "acte.pdf", "mime_type": "application/pdf", "document_type": "birth_certificate",
+            "status": "referenced",
+            "linked_to": [{"entity_type": "person", "entity_id": "p07", "role": "subject"}]}}
+    })
+}
+
+fn app() -> (axum::Router, Scratch) {
+    let src = scratch("walk-src");
+    let path = src.join("walk.axgf");
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&bundle().to_string()).expect("export"),
+    )
+    .expect("write");
+    let out = app_with_bundle("walk", &path);
+    drop(src);
+    out
+}
+
+/// A request as the reader: with their session cookie, if any.
+async fn send(
+    app: &axum::Router,
+    method: Method,
+    uri: &str,
+    cookie: Option<&str>,
+) -> axum::http::Response<Body> {
+    let mut b = Request::builder().method(method).uri(uri);
+    if let Some(c) = cookie {
+        b = b.header(header::COOKIE, c);
+    }
+    app.clone()
+        .oneshot(b.body(Body::empty()).unwrap())
+        .await
+        .expect("request")
+}
+
+/// GET, following redirects the way a browser does. The final status, and
+/// the body when it is a page.
+async fn fetch(
+    app: &axum::Router,
+    uri: &str,
+    cookie: Option<&str>,
+) -> (StatusCode, String, String) {
+    let mut at = uri.to_string();
+    for _ in 0..5 {
+        let resp = send(app, Method::GET, &at, cookie).await;
+        let status = resp.status();
+        if status.is_redirection() {
+            let to = resp
+                .headers()
+                .get(header::LOCATION)
+                .and_then(|v| v.to_str().ok())
+                .unwrap_or("")
+                .to_string();
+            at = resolve(&at, &to);
+            continue;
+        }
+        let is_html = resp
+            .headers()
+            .get(header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|t| t.starts_with("text/html"));
+        let body = if is_html {
+            body_string(resp).await
+        } else {
+            String::new()
+        };
+        return (status, body, at);
+    }
+    (StatusCode::LOOP_DETECTED, String::new(), at)
+}
+
+/// A link's target as a path on this site, relative to the page it is on.
+fn resolve(page: &str, href: &str) -> String {
+    let href = href.replace("&amp;", "&");
+    if href.starts_with('/') {
+        return href;
+    }
+    let page_path = page.split(['?', '#']).next().unwrap_or("/");
+    if let Some(q) = href.strip_prefix('?') {
+        return format!("{page_path}?{q}");
+    }
+    let dir = page_path.rsplit_once('/').map_or("", |(d, _)| d);
+    format!("{dir}/{href}")
+}
+
+/// Whether the router has a handler for `method` at `path`, asked without
+/// running it: an OPTIONS request answers 405 with an `Allow` header naming
+/// the methods a route has, and 404 when there is no route at all.
+async fn accepts(app: &axum::Router, method: &str, path: &str, cookie: Option<&str>) -> bool {
+    let resp = send(app, Method::OPTIONS, path, cookie).await;
+    if resp.status() == StatusCode::NOT_FOUND {
+        return false;
+    }
+    let allow = resp
+        .headers()
+        .get(header::ALLOW)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .to_ascii_uppercase();
+    allow.split(',').any(|m| m.trim() == method) || resp.status().is_success()
+}
+
+/// The selectors a script binds: the argument of every `querySelector`,
+/// `querySelectorAll`, `closest` and `getElementById` call, the last as
+/// `#id`. Those passed to `closest` are returned separately: they are
+/// delegation targets, which must not swallow other controls.
+fn bound_selectors(js: &str) -> (Vec<String>, Vec<String>) {
+    let (mut all, mut closest) = (Vec::new(), Vec::new());
+    for call in [
+        "querySelectorAll(",
+        "querySelector(",
+        "closest(",
+        "getElementById(",
+    ] {
+        for (at, _) in js.match_indices(call) {
+            let rest = js[at + call.len()..].trim_start();
+            let Some(q) = rest.chars().next().filter(|c| *c == '\'' || *c == '"') else {
+                continue;
+            };
+            let Some(end) = rest[1..].find(q) else {
+                continue;
+            };
+            let arg = &rest[1..1 + end];
+            let sel = if call == "getElementById(" {
+                format!("#{arg}")
+            } else {
+                arg.to_string()
+            };
+            if call == "closest(" {
+                closest.push(sel.clone());
+            }
+            all.push(sel);
+        }
+    }
+    (all, closest)
+}
+
+fn interactive() -> Selector {
+    Selector::parse(
+        "a[href], button, input:not([type=hidden]), select, textarea, summary, \
+         [role=button], [role=link], [role=tab], [role=option], [role=menuitem], [tabindex]",
+    )
+    .unwrap()
+}
+
+/// A short, recognisable description of an element for a failure message.
+fn describe(el: &ElementRef) -> String {
+    let html = el.html();
+    let open = html.split('>').next().unwrap_or("").to_string() + ">";
+    let text: String = el
+        .text()
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    let text: String = text.chars().take(40).collect();
+    format!("{open} {text:?}")
+}
+
+/// The form an element sits in, if any.
+fn form_of<'a>(el: &ElementRef<'a>) -> Option<ElementRef<'a>> {
+    let mut cur = el.parent().and_then(ElementRef::wrap);
+    while let Some(e) = cur {
+        if e.value().name() == "form" {
+            return Some(e);
+        }
+        cur = e.parent().and_then(ElementRef::wrap);
+    }
+    None
+}
+
+#[derive(Default, Debug)]
+struct Tally {
+    walked: usize,
+    navigates: usize,
+    submits: usize,
+    bound: usize,
+    native: usize,
+    external: usize,
+    dead: Vec<String>,
+}
+
+/// Walk one page as one reader.
+async fn walk(
+    app: &axum::Router,
+    page: &str,
+    cookie: Option<&str>,
+    who: &str,
+    checked_links: &mut BTreeMap<String, StatusCode>,
+    tally: &mut Tally,
+) {
+    let (status, html, landed) = fetch(app, page, cookie).await;
+    assert_eq!(status, StatusCode::OK, "{who}: {page} answers {status}");
+    let doc = Html::parse_document(&html);
+
+    // The scripts this page loads, and what they bind.
+    let script = Selector::parse("script[src]").unwrap();
+    let (mut selectors, mut delegates) = (Vec::new(), Vec::new());
+    for s in doc.select(&script) {
+        let src = s.value().attr("src").unwrap_or("");
+        if !src.starts_with("/static/") {
+            continue;
+        }
+        let body = body_string(send(app, Method::GET, src, cookie).await).await;
+        let (a, c) = bound_selectors(&body);
+        selectors.extend(a);
+        delegates.extend(c);
+    }
+    let parsed: Vec<Selector> = selectors
+        .iter()
+        .filter_map(|s| Selector::parse(s).ok())
+        .collect();
+    let delegated: Vec<Selector> = delegates
+        .iter()
+        .filter_map(|s| Selector::parse(s).ok())
+        .collect();
+    let ids: BTreeSet<String> = doc
+        .select(&Selector::parse("[id]").unwrap())
+        .filter_map(|e| e.value().attr("id").map(str::to_string))
+        .collect();
+
+    // No delegation target may swallow another control.
+    let controls = interactive();
+    for sel in &delegated {
+        for claimed in doc.select(sel) {
+            let inner: Vec<String> = claimed.select(&controls).map(|c| describe(&c)).collect();
+            if !inner.is_empty() {
+                tally.dead.push(format!(
+                    "{who} {page}: {} is claimed by a script's closest() and swallows {} control(s), e.g. {}",
+                    describe(&claimed),
+                    inner.len(),
+                    inner[0]
+                ));
+            }
+        }
+    }
+
+    let is_bound = |el: &ElementRef| -> bool {
+        let mut cur = Some(*el);
+        while let Some(e) = cur {
+            if parsed.iter().any(|s| s.matches(&e)) {
+                return true;
+            }
+            cur = e.parent().and_then(ElementRef::wrap);
+        }
+        false
+    };
+    for el in doc.select(&controls) {
+        tally.walked += 1;
+        let v = el.value();
+        let what = describe(&el);
+        // A link navigates.
+        if v.name() == "a" {
+            let href = v.attr("href").unwrap_or("");
+            if href.starts_with("http://")
+                || href.starts_with("https://")
+                || href.starts_with("mailto:")
+            {
+                tally.external += 1;
+                continue;
+            }
+            if let Some(frag) = href.strip_prefix('#') {
+                if ids.contains(frag) || is_bound(&el) {
+                    tally.navigates += 1;
+                } else {
+                    tally.dead.push(format!(
+                        "{who} {page}: {what} points at #{frag}, which is not on the page"
+                    ));
+                }
+                continue;
+            }
+            let target = resolve(&landed, href.split('#').next().unwrap_or(""));
+            let status = match checked_links.get(&target) {
+                Some(s) => *s,
+                None => {
+                    let (s, _, _) = fetch(app, &target, cookie).await;
+                    checked_links.insert(target.clone(), s);
+                    s
+                }
+            };
+            if status == StatusCode::OK {
+                tally.navigates += 1;
+            } else {
+                tally
+                    .dead
+                    .push(format!("{who} {page}: {what} -> {target} answers {status}"));
+            }
+            continue;
+        }
+        // <summary> opens its <details>; that is the browser's own handler.
+        if v.name() == "summary" {
+            tally.native += 1;
+            continue;
+        }
+        // Inside a form: the form submits. Its action is checked once per
+        // element; a control in a dead form is as dead as the form.
+        if let Some(form) = form_of(&el) {
+            let method = form
+                .value()
+                .attr("method")
+                .unwrap_or("get")
+                .to_ascii_uppercase();
+            let action = form
+                .value()
+                .attr("action")
+                .map(|a| resolve(&landed, a))
+                .unwrap_or_else(|| landed.clone());
+            let ok = if method == "GET" {
+                let key = format!("GET {action}");
+                match checked_links.get(&key) {
+                    Some(s) => *s == StatusCode::OK,
+                    None => {
+                        let (s, _, _) = fetch(app, &action, cookie).await;
+                        checked_links.insert(key, s);
+                        s == StatusCode::OK
+                    }
+                }
+            } else {
+                accepts(
+                    app,
+                    &method,
+                    action.split('?').next().unwrap_or(&action),
+                    cookie,
+                )
+                .await
+            };
+            if ok {
+                tally.submits += 1;
+            } else {
+                tally.dead.push(format!("{who} {page}: {what} submits a form to {method} {action}, which nothing handles"));
+            }
+            continue;
+        }
+        // Anything else needs a script.
+        if is_bound(&el) {
+            tally.bound += 1;
+        } else {
+            tally.dead.push(format!(
+                "{who} {page}: {what} navigates nowhere, submits nothing, and no script binds it"
+            ));
+        }
+    }
+}
+
+/// The pages a reader reaches, signed out and as an administrator.
+fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
+    let mut out: Vec<String> = [
+        "/".to_string(),
+        format!("/?p={P}&n=3"),
+        format!("/?p={P}&n=2&tab=family"),
+        "/tree".into(),
+        format!("/tree?root={P}"),
+        "/about".into(),
+        format!("/person/{P}"),
+        "/search?q=nowak".into(),
+        "/settings".into(),
+        "/convert".into(),
+    ]
+    .into();
+    if let Some(page) = converted {
+        out.push(page.to_string());
+    }
+    if signed_in {
+        out.push("/admin".into());
+        for kind in axgf_cms::admin::KINDS {
+            out.push(format!("/admin/{kind}"));
+            out.push(format!("/admin/{kind}/new"));
+        }
+        for (kind, id) in [
+            ("person", P),
+            ("family", "f3"),
+            ("event", "e1"),
+            ("source", "s1"),
+            ("place", "pl1"),
+        ] {
+            out.push(format!("/admin/{kind}/{id}/edit"));
+        }
+        out.push("/admin/users".into());
+    } else {
+        out.push("/admin/login".into());
+    }
+    out
+}
+
+const BOUNDARY: &str = "----axgfwalkboundary";
+
+/// The import flow's second page: a GEDCOM converted, with its download.
+async fn convert_once(app: &axum::Router, cookie: Option<&str>) -> String {
+    let ged = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/small.ged"),
+    )
+    .expect("fixture");
+    let mut body = Vec::new();
+    body.extend_from_slice(format!("--{BOUNDARY}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"small.ged\"\r\nContent-Type: application/octet-stream\r\n\r\n").as_bytes());
+    body.extend_from_slice(&ged);
+    body.extend_from_slice(b"\r\n");
+    for (n, v) in [("confidence", "0.8"), ("lang", "fr")] {
+        body.extend_from_slice(
+            format!("--{BOUNDARY}\r\nContent-Disposition: form-data; name=\"{n}\"\r\n\r\n{v}\r\n")
+                .as_bytes(),
+        );
+    }
+    body.extend_from_slice(format!("--{BOUNDARY}--\r\n").as_bytes());
+    let mut b = Request::builder()
+        .method(Method::POST)
+        .uri("/convert/gedcom")
+        .header(
+            header::CONTENT_TYPE,
+            format!("multipart/form-data; boundary={BOUNDARY}"),
+        );
+    if let Some(c) = cookie {
+        b = b.header(header::COOKIE, c);
+    }
+    let resp = app
+        .clone()
+        .oneshot(b.body(Body::from(body)).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK, "the import converts");
+    body_string(resp).await
+}
+
+/// The import result is a page answered to a POST, so it is walked from its
+/// HTML rather than fetched: every element on it is held to the same rule.
+async fn walk_html(
+    app: &axum::Router,
+    html: &str,
+    cookie: Option<&str>,
+    who: &str,
+    tally: &mut Tally,
+) {
+    let doc = Html::parse_document(html);
+    for el in doc.select(&interactive()) {
+        tally.walked += 1;
+        let what = describe(&el);
+        if let Some(href) = el.value().attr("href") {
+            if href.starts_with("http://") || href.starts_with("https://") {
+                tally.external += 1;
+                continue;
+            }
+            let (s, _, _) = fetch(app, &resolve("/convert/gedcom", href), cookie).await;
+            if s == StatusCode::OK {
+                tally.navigates += 1;
+            } else {
+                tally
+                    .dead
+                    .push(format!("{who} import result: {what} -> {href} answers {s}"));
+            }
+        } else if el.value().name() == "summary" {
+            tally.native += 1;
+        } else {
+            // The result page's forms are the masthead's and the
+            // preferences'; they are walked on every other page.
+            tally.submits += 1;
+        }
+    }
+}
+
+#[tokio::test]
+async fn every_interactive_element_does_something_signed_out_and_signed_in() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let mut report = Vec::new();
+    let mut dead = Vec::new();
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        let mut tally = Tally::default();
+        let mut links = BTreeMap::new();
+        for page in pages(c.is_some(), None) {
+            walk(&app, &page, c, who, &mut links, &mut tally).await;
+        }
+        let result = convert_once(&app, c).await;
+        walk_html(&app, &result, c, who, &mut tally).await;
+        report.push(format!(
+            "{who}: {} elements walked — {} navigate, {} submit, {} bound by a script, {} native, {} external",
+            tally.walked, tally.navigates, tally.submits, tally.bound, tally.native, tally.external
+        ));
+        dead.extend(tally.dead);
+    }
+    println!("{}", report.join("\n"));
+    for d in &dead {
+        println!("DEAD {d}");
+    }
+    assert!(
+        dead.is_empty(),
+        "{} dead element(s):\n{}",
+        dead.len(),
+        dead.join("\n")
+    );
+}
+
+#[test]
+fn the_walk_reads_what_scripts_bind() {
+    let (all, closest) = bound_selectors(
+        "var t = e.target.closest('[data-range],[data-go]'); document.getElementById(\"rv-back\"); x.querySelectorAll('.tcard');",
+    );
+    assert_eq!(closest, ["[data-range],[data-go]"]);
+    assert!(all.contains(&"#rv-back".to_string()) && all.contains(&".tcard".to_string()));
+    assert_eq!(
+        resolve("/person/p1", "?tab=family"),
+        "/person/p1?tab=family"
+    );
+    assert_eq!(
+        resolve("/admin/person", "/admin/person/new"),
+        "/admin/person/new"
+    );
+}

@@ -362,8 +362,12 @@
   });
   canvas.addEventListener('mouseleave', function () { if (!busy) light(null); });
   root.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-range],[data-motion],[data-go],[data-centre],[data-tab]');
-    if (!t) return;
+    // The controls themselves, not any element that happens to carry the
+    // attribute: <html data-motion> is the reader's motion preference, and
+    // matching it turned a click on any other link here into a motion
+    // toggle; `data-centre` on this root once swallowed every link inside it.
+    var t = e.target.closest && e.target.closest('a[data-range],button[data-motion],a[data-go],button[data-centre],a[data-tab]');
+    if (!t || !root.contains(t)) return;
     if (t.dataset.tab) {
       // A record tab: the panel changes, the river does not.
       e.preventDefault();
@@ -397,6 +401,8 @@
       travel(e.state.p, e.state.n, true);
     }
   });
+  // The masthead search (ui.js) travels here rather than reloading the page.
+  window.axgfRiver = { travel: function (id) { travel(id); } };
   history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
   controls(cur.layout.meta.n);
 })();

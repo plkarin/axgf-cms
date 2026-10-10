@@ -12,6 +12,7 @@ keywords = ["axgf", "genealogy", "gedcom", "family-tree", "cms"]
 categories = ["web-programming", "visualization"]
 
 [dependencies]
+unicode-normalization = "0.1"
 # All genealogy logic lives here. This crate contains none of its own.
 #
 # 0.5.0 from crates.io: the release that merges a duplicate couple whose union
@@ -75,6 +76,9 @@ base64 = "0.21"
 http-body-util = "0.1"
 serde_json = "1"
 tower = { version = "0.4", features = ["util"] }
+# tests/interactive_walk.rs: parse rendered pages and match the selectors
+# the page scripts bind against them.
+scraper = "0.20"
 
 # Line tables only: backtraces keep file and line, and the debug tree drops
 # the full DWARF that let it grow to 20 GB in a day of test builds.

@@ -2943,3 +2943,13 @@ river-legend-direction = ↓ 源流へ · ↑ 存命者へ
 river-grid-link = グリッド表示
 river-tab-sources = 出典
 river-legend-title = 流れの読み方
+
+# Masthead search
+search-label = 人物を検索
+search-placeholder = 人物を検索
+search-title = 検索
+search-heading = 「{ $q }」に一致する人物
+search-none = 表示できる人の中に、その名前の人はいません。
+search-open-record = 記録を開く
+search-hint = Enter でその人まで川を移動し、Shift+Enter で記録を開きます。
+search-empty-query = 検索する名前を入力してください。

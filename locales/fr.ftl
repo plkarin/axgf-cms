@@ -3154,3 +3154,13 @@ river-legend-direction = ↓ vers la source · ↑ vers les vivants
 river-grid-link = Vue en grille
 river-tab-sources = Sources
 river-legend-title = Lire la rivière
+
+# Masthead search
+search-label = Rechercher une personne
+search-placeholder = Rechercher une personne
+search-title = Recherche
+search-heading = Personnes correspondant à « { $q } »
+search-none = Personne de visible ne porte ce nom.
+search-open-record = Ouvrir la fiche
+search-hint = Entrée fait voyager la rivière jusqu’à elle ; Maj+Entrée ouvre sa fiche.
+search-empty-query = Saisissez un nom pour rechercher.

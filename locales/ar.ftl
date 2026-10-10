@@ -3428,3 +3428,13 @@ river-legend-direction = ↓ نحو المنبع · ↑ نحو الأحياء
 river-grid-link = عرض الشبكة
 river-tab-sources = المصادر
 river-legend-title = كيف يُقرأ النهر
+
+# Masthead search
+search-label = ابحث عن شخص
+search-placeholder = ابحث عن شخص
+search-title = البحث
+search-heading = الأشخاص المطابقون لـ «{ $q }»
+search-none = لا أحد ممن يمكنك رؤيتهم يحمل هذا الاسم.
+search-open-record = افتح السجل
+search-hint = يأخذ Enter النهر إليه، ويفتح Shift+Enter سجله.
+search-empty-query = اكتب اسمًا للبحث.

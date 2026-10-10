@@ -2943,3 +2943,13 @@ river-legend-direction = ↓ 向源头 · ↑ 向在世者
 river-grid-link = 网格视图
 river-tab-sources = 来源
 river-legend-title = 如何阅读河流
+
+# Masthead search
+search-label = 搜索人物
+search-placeholder = 搜索人物
+search-title = 搜索
+search-heading = 与“{ $q }”匹配的人物
+search-none = 你能看到的人中没有叫这个名字的。
+search-open-record = 打开记录
+search-hint = 回车键将河流移到此人；上档键+回车键打开其记录。
+search-empty-query = 输入姓名进行搜索。

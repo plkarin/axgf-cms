@@ -3356,3 +3356,13 @@ river-legend-direction = ↓ к истоку · ↑ к живым
 river-grid-link = Сетка
 river-tab-sources = Источники
 river-legend-title = Как читать реку
+
+# Masthead search
+search-label = Найти человека
+search-placeholder = Найти человека
+search-title = Поиск
+search-heading = Люди по запросу «{ $q }»
+search-none = Среди видимых вам людей никого с таким именем нет.
+search-open-record = Открыть карточку
+search-hint = Enter переносит реку к этому человеку; Shift+Enter открывает его карточку.
+search-empty-query = Введите имя для поиска.

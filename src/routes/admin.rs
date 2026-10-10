@@ -511,6 +511,12 @@ pub async fn list(
 }
 
 /// `GET /admin/:kind/new`
+/// `GET /admin/place/new` — [`new_form`] for places, which need their own
+/// route: `/admin/place/:id` would otherwise take "new" for an id.
+pub async fn new_place_form(state: State<Shared>, headers: HeaderMap) -> Response {
+    new_form(state, headers, Path("place".to_string())).await
+}
+
 pub async fn new_form(
     State(state): State<Shared>,
     headers: HeaderMap,

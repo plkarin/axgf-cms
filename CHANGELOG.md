@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+**An upgrade no longer spends a daily backup.** The archive `bootstrap.sh
+--upgrade` takes before replacing the binary was one more
+`axgf-backup-*.zip`, counted against the seven daily archives, so every
+upgrade pushed the oldest one out — on the operator's server the 0.2.0
+upgrade, and the rollback rehearsal before it, each cost one. It is now an
+`axgf-pre-upgrade-*.zip`, a set of its own with its own count (the last three,
+`--keep-pre-upgrade`), pruned only among themselves; the daily, weekly and
+monthly selection never sees it. Upgrading from a binary that predates this
+(0.2.0 and before), the script runs that binary's backup with pruning off and
+files the archive into the pre-upgrade set itself.
+
+**Every backup archive is 0600.** The timer's archives were 0600 and the
+pre-upgrade one, written under `sudo -u` with umask 022, was 0644 — the same
+accounts file under two modes, safe only while the directory stayed 0700.
+Archives are now created 0600 whoever writes them.
+
+### Changed
+
+Debug builds carry line tables only (`[profile.dev] debug =
+"line-tables-only"`): a clean test build's `target/debug` went from 9.2 GB to
+4.3 GB, and backtraces keep their files and lines.
+
 ## [0.2.0] — 2026-10-10
 
 ### Changed

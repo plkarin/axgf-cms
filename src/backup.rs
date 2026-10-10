@@ -55,6 +55,34 @@ pub const MEMBER_MANIFEST: &str = "backup.json";
 /// Prefix every archive this application writes carries.
 pub const PREFIX: &str = "axgf-backup-";
 
+/// The name of an archive taken just before an upgrade replaces the binary.
+///
+/// Its own name, so that it is its own set: the daily, weekly and monthly
+/// selection never sees it, and an upgrade never evicts one of the archives
+/// the timer wrote. An upgrade must add to the safety net, not trade a piece
+/// of it for a new one.
+pub const PRE_UPGRADE_PREFIX: &str = "axgf-pre-upgrade-";
+
+/// Which set an archive belongs to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Kind {
+    /// Written by the timer, or by hand: kept by the daily, weekly and
+    /// monthly selection.
+    Scheduled,
+    /// Written by `bootstrap.sh --upgrade` before the binary is replaced:
+    /// kept by its own count, [`Retention::pre_upgrade`].
+    PreUpgrade,
+}
+
+impl Kind {
+    pub fn prefix(self) -> &'static str {
+        match self {
+            Kind::Scheduled => PREFIX,
+            Kind::PreUpgrade => PRE_UPGRADE_PREFIX,
+        }
+    }
+}
+
 /// The manifest written into every archive.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Manifest {
@@ -92,6 +120,9 @@ pub struct Retention {
     pub daily: usize,
     pub weekly: usize,
     pub monthly: usize,
+    /// Pre-upgrade archives to keep, newest first. A separate budget: they
+    /// never count towards the three above, nor those towards this.
+    pub pre_upgrade: usize,
 }
 
 impl Default for Retention {
@@ -100,6 +131,7 @@ impl Default for Retention {
             daily: 7,
             weekly: 4,
             monthly: 12,
+            pre_upgrade: 3,
         }
     }
 }
@@ -207,6 +239,13 @@ fn stamp() -> String {
 /// verification too would double the window in which a family member's save
 /// waits, for no gain: the archive is closed and nothing can change it.
 pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
+    run_as(bundle, dest, retention, Kind::Scheduled)
+}
+
+/// [`run`], for either set of archives. A pre-upgrade run names its archive
+/// for its set and prunes only that set.
+pub fn run_as(bundle: &Path, dest: &Path, retention: Retention, kind: Kind) -> Result<Report> {
+    let prefix = kind.prefix();
     let files = StateFiles::for_bundle(bundle);
     if !files.bundle.exists() {
         bail!(
@@ -237,8 +276,8 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
         },
     )?;
 
-    let tmp = dest.join(format!("{PREFIX}{}.zip.part", stamp()));
-    let final_path = dest.join(format!("{PREFIX}{}.zip", stamp()));
+    let tmp = dest.join(format!("{prefix}{}.zip.part", stamp()));
+    let final_path = dest.join(format!("{prefix}{}.zip", stamp()));
 
     // Created and claimed here rather than inside `write_archive`, because the
     // claim has to outlive the writing: between the last byte and the rename
@@ -247,8 +286,24 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
     // wreckage of a dead run. `try_clone` shares one open file description, so
     // both handles hold the same lock and it is released when the last of them
     // goes — at the end of this function, after the rename.
-    let part = fs::File::create(&tmp)
-        .map_err(|e| anyhow::anyhow!("{}", space::explain_write_failure(&e, &tmp, None)))?;
+    // 0600 from the moment it exists, whoever runs this and whatever their
+    // umask: the archive holds the accounts file. The timer's unit happened
+    // to give 0600 and `sudo -u` during an upgrade gave 0644 — the same data
+    // under two modes, safe only while the directory stays 0700.
+    let part = {
+        use std::os::unix::fs::OpenOptionsExt;
+        fs::OpenOptions::new()
+            .write(true)
+            .read(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&tmp)
+    }
+    .map_err(|e| anyhow::anyhow!("{}", space::explain_write_failure(&e, &tmp, None)))?;
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = part.set_permissions(fs::Permissions::from_mode(0o600));
+    }
     if let Err(e) = part.try_lock() {
         let _ = fs::remove_file(&tmp);
         bail!("another backup is already writing {}: {e}", tmp.display());
@@ -294,7 +349,10 @@ pub fn run(bundle: &Path, dest: &Path, retention: Retention) -> Result<Report> {
     drop(part);
     let bytes = fs::metadata(&final_path).map(|m| m.len()).unwrap_or(0);
 
-    let pruned = prune(dest, retention)?;
+    let pruned = match kind {
+        Kind::Scheduled => prune(dest, retention)?,
+        Kind::PreUpgrade => prune_pre_upgrade(dest, retention.pre_upgrade)?,
+    };
 
     tracing::info!(
         archive = %final_path.display(),
@@ -338,7 +396,9 @@ pub fn sweep_orphaned_parts(dest: &Path) -> (usize, u64) {
         let path = entry.path();
         let name = entry.file_name();
         let Some(name) = name.to_str() else { continue };
-        if !name.starts_with(PREFIX) || !name.ends_with(".zip.part") {
+        if !(name.starts_with(PREFIX) || name.starts_with(PRE_UPGRADE_PREFIX))
+            || !name.ends_with(".zip.part")
+        {
             continue;
         }
         let Ok(file) = fs::OpenOptions::new().read(true).write(true).open(&path) else {
@@ -753,8 +813,15 @@ pub struct Archive {
     pub taken: time::OffsetDateTime,
 }
 
-/// Every archive in `dir`, newest first.
+/// Every scheduled archive in `dir`, newest first. Pre-upgrade archives are
+/// a set of their own ([`list_kind`]).
 pub fn list(dir: &Path) -> Result<Vec<Archive>> {
+    list_kind(dir, Kind::Scheduled)
+}
+
+/// Every archive of one set in `dir`, newest first.
+pub fn list_kind(dir: &Path, kind: Kind) -> Result<Vec<Archive>> {
+    let prefix = kind.prefix();
     let mut out = Vec::new();
     let entries = match fs::read_dir(dir) {
         Ok(e) => e,
@@ -767,7 +834,7 @@ pub fn list(dir: &Path) -> Result<Vec<Archive>> {
             continue;
         };
         let Some(stamp) = name
-            .strip_prefix(PREFIX)
+            .strip_prefix(prefix)
             .and_then(|s| s.strip_suffix(".zip"))
         else {
             continue;
@@ -821,6 +888,23 @@ pub fn prune(dir: &Path, retention: Retention) -> Result<Vec<PathBuf>> {
                 path = %a.path.display(),
                 error = %e,
                 "could not remove an expired backup"
+            ),
+        }
+    }
+    Ok(removed)
+}
+
+/// Keep the newest `keep` pre-upgrade archives and delete the rest. Only
+/// that set: a scheduled archive is never touched here.
+pub fn prune_pre_upgrade(dir: &Path, keep: usize) -> Result<Vec<PathBuf>> {
+    let mut removed = Vec::new();
+    for a in list_kind(dir, Kind::PreUpgrade)?.into_iter().skip(keep) {
+        match fs::remove_file(&a.path) {
+            Ok(()) => removed.push(a.path),
+            Err(e) => tracing::warn!(
+                path = %a.path.display(),
+                error = %e,
+                "could not remove an expired pre-upgrade backup"
             ),
         }
     }
@@ -1112,6 +1196,7 @@ mod tests {
                 daily: 1,
                 weekly: 0,
                 monthly: 1,
+                pre_upgrade: 3,
             },
         );
         assert_eq!(

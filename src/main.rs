@@ -23,14 +23,21 @@ async fn main() -> Result<()> {
             keep_daily,
             keep_weekly,
             keep_monthly,
+            pre_upgrade,
+            keep_pre_upgrade,
         }) => {
-            return run_backup(
-                &cfg,
-                dest.as_deref(),
-                *keep_daily,
-                *keep_weekly,
-                *keep_monthly,
-            )
+            let retention = axgf_cms::backup::Retention {
+                daily: *keep_daily,
+                weekly: *keep_weekly,
+                monthly: *keep_monthly,
+                pre_upgrade: *keep_pre_upgrade,
+            };
+            let kind = if *pre_upgrade {
+                axgf_cms::backup::Kind::PreUpgrade
+            } else {
+                axgf_cms::backup::Kind::Scheduled
+            };
+            return run_backup(&cfg, dest.as_deref(), retention, kind);
         }
         Some(Command::Restore { archive, force }) => return run_restore(&cfg, archive, *force),
         Some(Command::Verify { archive }) => {
@@ -320,9 +327,8 @@ fn init_logging() {
 fn run_backup(
     cfg: &Config,
     dest: Option<&std::path::Path>,
-    daily: usize,
-    weekly: usize,
-    monthly: usize,
+    retention: axgf_cms::backup::Retention,
+    kind: axgf_cms::backup::Kind,
 ) -> Result<()> {
     let bundle = cfg.bundle()?;
     let dest = dest
@@ -338,12 +344,7 @@ fn run_backup(
         })?
         .to_path_buf();
 
-    let retention = axgf_cms::backup::Retention {
-        daily,
-        weekly,
-        monthly,
-    };
-    let report = axgf_cms::backup::run(bundle, &dest, retention)?;
+    let report = axgf_cms::backup::run_as(bundle, &dest, retention, kind)?;
 
     let m = &report.manifest;
     eprintln!("─────────────────────────────────────────────────────────");

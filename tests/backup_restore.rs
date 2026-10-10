@@ -10,7 +10,7 @@
 mod common;
 
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use axgf_cms::backup::{self, Retention};
 use axum::body::Body;
@@ -619,6 +619,7 @@ fn a_backup_run_prunes_as_it_goes() {
             daily: 1,
             weekly: 0,
             monthly: 0,
+            pre_upgrade: 3,
         },
     )
     .expect("backup");
@@ -815,3 +816,126 @@ fn a_part_file_a_live_run_is_writing_is_left_alone() {
 
 /// A helper the other tests share for header assertions.
 fn _unused(_: &Request<Body>, _: header::HeaderName) {}
+
+/// `YYYYMMDDTHHMMSSZ`, `days` before now, at a fixed time of day.
+fn stamp_days_ago(days: i64) -> String {
+    let t = time::OffsetDateTime::now_utc() - time::Duration::days(days);
+    format!(
+        "{:04}{:02}{:02}T031500Z",
+        t.year(),
+        u8::from(t.month()),
+        t.day()
+    )
+}
+
+/// An upgrade adds to the safety net; it never trades a piece of it away.
+///
+/// With a week of daily archives in place, a pre-upgrade backup used to be
+/// one more `axgf-backup-*.zip` and push the oldest daily out — the operator's
+/// own upgrade, and the rollback probe before it, each cost one. Now it is a
+/// set of its own: every daily survives it, the next scheduled run does not
+/// count it, and pre-upgrade archives are pruned by their own count.
+#[test]
+fn an_upgrade_never_evicts_a_daily_archive() {
+    let bundle = seeded("br-preup");
+    let dest = scratch("br-preup-dest");
+    let dailies: Vec<PathBuf> = (1..=7)
+        .map(|d| dest.join(format!("axgf-backup-{}.zip", stamp_days_ago(d))))
+        .collect();
+    for d in &dailies {
+        std::fs::write(d, b"a daily archive").expect("write");
+    }
+    // Four older pre-upgrade archives: with the one about to be written, one
+    // more than the budget of three.
+    for d in [40, 30, 20, 10] {
+        std::fs::write(
+            dest.join(format!("axgf-pre-upgrade-{}.zip", stamp_days_ago(d))),
+            b"an earlier upgrade",
+        )
+        .expect("write");
+    }
+
+    let report = backup::run_as(
+        &bundle,
+        dest.dir(),
+        Retention::default(),
+        backup::Kind::PreUpgrade,
+    )
+    .expect("pre-upgrade backup");
+    let name = report
+        .archive
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .into_owned();
+    assert!(name.starts_with("axgf-pre-upgrade-"), "{name}");
+    for d in &dailies {
+        assert!(d.exists(), "a pre-upgrade backup evicted {}", d.display());
+    }
+    let pre = backup::list_kind(dest.dir(), backup::Kind::PreUpgrade).expect("list");
+    assert_eq!(
+        pre.len(),
+        3,
+        "pre-upgrade archives keep their own count of three"
+    );
+    assert_eq!(
+        pre[0].path, report.archive,
+        "the newest is the one just written"
+    );
+    assert_eq!(
+        report.pruned.len(),
+        2,
+        "the two oldest pre-upgrade archives went: {:?}",
+        report.pruned
+    );
+
+    // The next scheduled run counts dailies only: seven plus its own, one of
+    // the dailies goes, and no pre-upgrade archive is touched.
+    let daily = backup::run(&bundle, dest.dir(), Retention::default()).expect("daily backup");
+    assert!(daily.pruned.iter().all(|p| p
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .starts_with("axgf-backup-")));
+    assert!(
+        report.archive.exists(),
+        "a scheduled run pruned the pre-upgrade archive"
+    );
+    assert_eq!(
+        backup::list_kind(dest.dir(), backup::Kind::PreUpgrade)
+            .unwrap()
+            .len(),
+        3
+    );
+    assert!(backup::list(dest.dir())
+        .unwrap()
+        .iter()
+        .all(|a| !a.path.to_string_lossy().contains("pre-upgrade")));
+}
+
+/// Every archive is 0600 — it holds the accounts file — whoever writes it and
+/// whatever their umask. Under `sudo -u` during an upgrade the umask is 022,
+/// and the pre-upgrade archive came out 0644 beside 0600 dailies.
+#[test]
+fn every_archive_is_0600_whatever_the_umask() {
+    use std::os::unix::fs::PermissionsExt;
+    let bundle = seeded("br-mode");
+    let dest = scratch("br-mode-dest");
+    // SAFETY: umask is process-wide and always succeeds; 022 is the common
+    // default, so other tests running alongside are not made any stricter.
+    let before = unsafe { libc::umask(0o022) };
+    let scheduled = backup::run(&bundle, dest.dir(), Retention::default()).expect("backup");
+    std::thread::sleep(std::time::Duration::from_millis(1100));
+    let pre = backup::run_as(
+        &bundle,
+        dest.dir(),
+        Retention::default(),
+        backup::Kind::PreUpgrade,
+    )
+    .expect("pre-upgrade backup");
+    unsafe { libc::umask(before) };
+    for a in [&scheduled.archive, &pre.archive] {
+        let mode = std::fs::metadata(a).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600, "{} is {mode:o}", a.display());
+    }
+}

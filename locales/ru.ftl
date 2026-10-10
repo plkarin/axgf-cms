@@ -3366,3 +3366,64 @@ search-none = Среди видимых вам людей никого с так
 search-open-record = Открыть карточку
 search-hint = Enter переносит реку к этому человеку; Shift+Enter открывает его карточку.
 search-empty-query = Введите имя для поиска.
+
+# Data quality (/quality)
+nav-quality = Качество данных
+quality-title = На что стоит взглянуть
+quality-none = Смотреть не на что: все проверки пройдены.
+quality-intro = Здесь ничего не меняется за вас. Каждая строка говорит, что выглядит неверным и что делать; откройте карточку и решите.
+quality-groups-label = Виды замечаний
+quality-all = Все
+quality-group-names = Имена
+quality-group-relations = Родственные связи
+quality-group-dates = Даты
+quality-group-places = Места
+quality-group-evidence = Источники
+quality-export-csv = Скачать как CSV
+quality-export-json = Скачать как JSON
+quality-open = Открыть
+quality-none-file = В этом файле смотреть не на что.
+quality-show-list = Показать список
+quality-after-import = В файле ничего не изменено. Когда он станет архивом сайта, страница качества данных покажет то же самое со ссылкой на каждую карточку.
+quality-summary = { $n ->
+    [one] Одна вещь, на которую стоит взглянуть
+   *[other] Стоит взглянуть: { $n }
+}
+quality-summary-file = { $n ->
+    [one] В этом файле стоит взглянуть на одну вещь
+   *[other] В этом файле стоит взглянуть: { $n }
+}
+quality-rule-name-sentence = Фраза в поле имени
+quality-name-sentence = «{ $value }» — это фраза, а не имя: оставьте в поле только имя, а пояснение перенесите в заметку.
+quality-rule-union-parent-child = Супруги, которые также родитель и ребёнок
+quality-union-parent-child = { $parent } и { $child } записаны как супруги и одновременно как родитель и ребёнок: проверьте, какую связь подтверждают источники, и удалите другую.
+quality-rule-child-listed-twice = Ребёнок указан дважды
+quality-child-listed-twice = { $child } дважды указан среди детей этой семьи: удалите вторую запись.
+quality-rule-duplicate-union = Одна и та же пара записана дважды
+quality-duplicate-union = Для { $a } и { $b } записано союзов: { $count }. Объедините их в один, если только они действительно не вступали в брак несколько раз.
+quality-rule-partner-twice = Один человек с обеих сторон союза
+quality-partner-twice = { $person } записан с обеих сторон этого союза: замените одну сторону настоящим супругом или оставьте её пустой, если он неизвестен.
+quality-rule-foreign-surnames = Дети с фамилией, не совпадающей ни с одним из родителей
+quality-foreign-surnames = У детей ({ $count } из { $children }) фамилия не совпадает ни с одним из родителей ({ $surnames }): проверьте, относятся ли они к этой семье, или запишите их как пасынков и падчериц.
+quality-rule-death-before-birth = Смерть раньше рождения
+quality-death-before-birth = Для { $person } записана смерть в { $death }, раньше рождения в { $birth }: сверьте обе даты с источниками.
+quality-rule-child-before-parent = Ребёнок родился раньше родителя
+quality-child-before-parent = { $child } (род. { $childborn }) записан родившимся раньше родителя { $parent } (род. { $parentborn }): проверьте даты или родство.
+quality-rule-parent-too-young = Родитель младше двенадцати лет
+quality-parent-too-young = { $parent } было бы { $age } при рождении { $child }: проверьте даты или родство.
+quality-rule-parent-too-old = Родитель старше шестидесяти пяти лет
+quality-parent-too-old = { $parent } было бы { $age } при рождении { $child }: проверьте даты или родство.
+quality-rule-marriage-before-birth = Брак раньше рождения одного из супругов
+quality-marriage-before-birth = Этот брак датирован { $married }, раньше рождения { $person } в { $born }: проверьте дату брака.
+quality-rule-isolated-record = Карточка без дат и связей
+quality-isolated-record = У { $person } нет ни одной даты и ни одной связи: добавьте то, что связывает этого человека с семьёй, или удалите карточку, если она создана по ошибке.
+quality-rule-place-no-region = Место без региона
+quality-place-no-region = У места { $place } нет региона: добавьте его, чтобы различать места с одинаковым названием.
+quality-rule-region-free-text = Заметка в поле региона
+quality-region-free-text = В поле региона места { $place } заметка «{ $value }», а не место: перенесите заметку в нужную карточку, а в регионе оставьте регион.
+quality-rule-place-near-duplicate = Одно место, записанное по-разному
+quality-place-near-duplicate = { $names } похожи на одно и то же место, записанное по-разному: объедините их в одно.
+quality-rule-not-a-place = Запись, которая не является местом
+quality-not-a-place = «{ $place }» есть в списке мест, но это не место: сделайте из этого заметку в карточке, где оно используется, и укажите настоящее место.
+quality-rule-certain-without-source = Достоверно, но без источника
+quality-certain-without-source = В записи { $record } есть сведение, отмеченное как полностью достоверное ({ $claims }), без источника: приложите источник или понизьте достоверность.

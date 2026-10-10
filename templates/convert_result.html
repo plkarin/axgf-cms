@@ -36,6 +36,23 @@
 
   {# Kept on one line: a multi-line literal would carry its newlines and
      indentation straight into the rendered paragraph. #}
+  {#- What the data-quality screen would list for this file, before it is
+      anybody's archive: the line, and the list behind it. Nothing in the
+      file is changed for the uploader. #}
+  {% if quality is defined %}
+  <section class="card quality-import">
+    <h2>{% if quality %}{{ t("quality-summary-file", n=quality|length) }}{% else %}{{ t("quality-none-file") }}{% endif %}</h2>
+    {% if quality %}
+    <details>
+      <summary>{{ t("quality-show-list") }}</summary>
+      <ul class="quality-findings">
+        {%- for f in quality %}<li>{{ f.message }}</li>{% endfor %}
+      </ul>
+    </details>
+    <p class="small muted">{{ t("quality-after-import") }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
   {{ comp.completeness_panel(completeness, t,
        t("completeness-import-title"), t("completeness-import-intro")) }}
 

@@ -54,6 +54,7 @@
           settings page can offer the way back. -#}
       {{ prefs.link(t, settings_url, current_locale) }}
       {% if signed_in %}
+        <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
         {% if may_write %}
           <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
         {% endif %}

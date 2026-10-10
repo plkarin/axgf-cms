@@ -118,6 +118,12 @@ pub async fn gedcom(
 
     // Export to the bytes the visitor will download. The served bundle is
     // untouched: this never goes near AppState::mutate.
+    // What the data-quality screen would say about this file, said now: the
+    // uploader's own file, so every finding is theirs to see.
+    let quality: Vec<Value> = crate::quality::detect(&bundle)
+        .iter()
+        .map(|f| json!({"rule": f.rule.slug(), "message": crate::quality::message(f, chrome.lang)}))
+        .collect();
     let bytes = match crate::state::export_to_bytes(&bundle.to_string()) {
         Ok(b) => b,
         Err(e) => {
@@ -158,6 +164,7 @@ pub async fn gedcom(
             filename => upload.filename,
             download_id => id,
             download_name,
+            quality,
             size_kb => size / 1024,
             total,
             counts => counts.iter().zip(crate::admin::KINDS.iter())

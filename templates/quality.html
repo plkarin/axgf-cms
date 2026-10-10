@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ t("quality-title") }} — {{ t("app-name") }}{% endblock %}
+
+{% block content %}
+{# Things worth a look. Nothing on this page changes anything: each line says
+   what looks wrong and what to do, and links to the record's own editor, so
+   every correction is somebody's decision, journaled and locked like any
+   other edit. Only findings about people this reader may see are here
+   (quality::for_reader). #}
+<h1>{{ t("quality-title") }}</h1>
+<p class="lede">{% if total %}{{ t("quality-summary", n=total) }}{% else %}{{ t("quality-none") }}{% endif %}</p>
+<p class="muted small">{{ t("quality-intro") }}</p>
+
+<nav class="quality-groups" aria-label="{{ t('quality-groups-label') }}">
+  <a href="/quality" {% if not group %}aria-current="page"{% endif %}>{{ t("quality-all") }} <span class="tab-count">{{ total }}</span></a>
+  {%- for g in groups %}
+  <a href="/quality?group={{ g.slug }}" {% if group == g.slug %}aria-current="page"{% endif %}>{{ t("quality-group-" ~ g.slug) }} <span class="tab-count">{{ g.n }}</span></a>
+  {%- endfor %}
+</nav>
+
+<p class="small">
+  <a href="/quality.csv">{{ t("quality-export-csv") }}</a> ·
+  <a href="/quality.json">{{ t("quality-export-json") }}</a>
+</p>
+
+{% for r in rules %}
+<section class="card quality-rule" id="rule-{{ r.slug }}">
+  <h2>{{ t("quality-rule-" ~ r.slug) }} <span class="tab-count">{{ r.n }}</span></h2>
+  <ul class="quality-findings">
+    {%- for f in r.items %}
+    <li>{{ f.message }}{% if f.link %} <a href="{{ f.link }}">{{ t("quality-open") }}</a>{% endif %}</li>
+    {%- endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endblock %}

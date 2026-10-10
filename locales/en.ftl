@@ -3218,3 +3218,64 @@ search-none = Nobody you can see is called that.
 search-open-record = Open the record
 search-hint = Enter travels the river to them; Shift+Enter opens their record.
 search-empty-query = Type a name to search.
+
+# Data quality (/quality)
+nav-quality = Data quality
+quality-title = Things worth a look
+quality-none = Nothing worth a look: every check passed.
+quality-intro = Nothing here is changed for you. Each line says what looks wrong and what to do; open the record and decide.
+quality-groups-label = Kinds of finding
+quality-all = All
+quality-group-names = Names
+quality-group-relations = Relations
+quality-group-dates = Dates
+quality-group-places = Places
+quality-group-evidence = Evidence
+quality-export-csv = Download as CSV
+quality-export-json = Download as JSON
+quality-open = Open
+quality-none-file = Nothing worth a look in this file.
+quality-show-list = Show the list
+quality-after-import = Nothing in the file was changed. Once it is the site’s archive, the data-quality page lists the same things with a link to each record.
+quality-summary = { $n ->
+    [one] One thing worth a look
+   *[other] { $n } things worth a look
+}
+quality-summary-file = { $n ->
+    [one] One thing worth a look in this file
+   *[other] { $n } things worth a look in this file
+}
+quality-rule-name-sentence = A sentence in a name field
+quality-name-sentence = “{ $value }” reads as a sentence, not a name: keep the name in the field and move the explanation into a note.
+quality-rule-union-parent-child = A couple who are also parent and child
+quality-union-parent-child = { $parent } and { $child } are recorded as a couple and also as parent and child: check which relationship the sources support and remove the other.
+quality-rule-child-listed-twice = A child listed twice
+quality-child-listed-twice = { $child } is listed twice among this family’s children: remove the second entry.
+quality-rule-duplicate-union = The same couple recorded twice
+quality-duplicate-union = { $a } and { $b } have { $count } unions recorded: merge them into one, unless they really married more than once.
+quality-rule-partner-twice = One person on both sides of a union
+quality-partner-twice = { $person } is recorded on both sides of this union: replace one side with the real partner, or leave it empty if the partner is unknown.
+quality-rule-foreign-surnames = Children whose surname matches neither parent
+quality-foreign-surnames = { $count } of { $children } children carry a surname that matches neither parent ({ $surnames }): check that they belong to this family, or record them as step-children.
+quality-rule-death-before-birth = Death before birth
+quality-death-before-birth = { $person } is recorded as dying in { $death }, before their birth in { $birth }: check both dates against the sources.
+quality-rule-child-before-parent = A child born before a parent
+quality-child-before-parent = { $child } (born { $childborn }) is recorded as born before their parent { $parent } (born { $parentborn }): check the dates or the parentage.
+quality-rule-parent-too-young = A parent younger than twelve
+quality-parent-too-young = { $parent } would have been { $age } when { $child } was born: check the dates or the parentage.
+quality-rule-parent-too-old = A parent older than sixty-five
+quality-parent-too-old = { $parent } would have been { $age } when { $child } was born: check the dates or the parentage.
+quality-rule-marriage-before-birth = A marriage before a partner’s birth
+quality-marriage-before-birth = This marriage is dated { $married }, before { $person } was born in { $born }: check the marriage date.
+quality-rule-isolated-record = A record with no date and no relations
+quality-isolated-record = { $person } has no date and no relation to anyone: add what links them to the family, or delete the record if it was entered by mistake.
+quality-rule-place-no-region = A place with no region
+quality-place-no-region = { $place } has no region: add one, so that places with the same name can be told apart.
+quality-rule-region-free-text = A note in the region field
+quality-region-free-text = The region of { $place } holds a note, “{ $value }”, rather than a place: move the note into the record that needs it and leave the region for the region.
+quality-rule-place-near-duplicate = One place written several ways
+quality-place-near-duplicate = { $names } look like the same place written differently: merge them into one place.
+quality-rule-not-a-place = An entry that is not a place
+quality-not-a-place = “{ $place }” is in the list of places but does not read as a place: turn it into a note on the record that uses it, and link the actual place.
+quality-rule-certain-without-source = Certain, with no source
+quality-certain-without-source = { $record } has a claim marked fully certain ({ $claims }) with no source attached: attach the source, or lower the confidence.

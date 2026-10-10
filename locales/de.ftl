@@ -3178,3 +3178,64 @@ search-none = Niemand, den Sie sehen können, heißt so.
 search-open-record = Datensatz öffnen
 search-hint = Enter führt den Fluss zu dieser Person; Umschalt+Enter öffnet ihren Datensatz.
 search-empty-query = Geben Sie einen Namen ein, um zu suchen.
+
+# Data quality (/quality)
+nav-quality = Datenqualität
+quality-title = Was einen Blick wert ist
+quality-none = Nichts zu sehen: Alle Prüfungen sind bestanden.
+quality-intro = Hier wird nichts für Sie geändert. Jede Zeile sagt, was falsch aussieht und was zu tun ist; öffnen Sie den Datensatz und entscheiden Sie.
+quality-groups-label = Arten von Befunden
+quality-all = Alle
+quality-group-names = Namen
+quality-group-relations = Beziehungen
+quality-group-dates = Daten
+quality-group-places = Orte
+quality-group-evidence = Belege
+quality-export-csv = Als CSV herunterladen
+quality-export-json = Als JSON herunterladen
+quality-open = Öffnen
+quality-none-file = In dieser Datei ist nichts einen Blick wert.
+quality-show-list = Liste anzeigen
+quality-after-import = In der Datei wurde nichts geändert. Sobald sie das Archiv der Website ist, listet die Seite Datenqualität dieselben Punkte mit einem Link zu jedem Datensatz.
+quality-summary = { $n ->
+    [one] Eine Sache, die einen Blick wert ist
+   *[other] { $n } Dinge, die einen Blick wert sind
+}
+quality-summary-file = { $n ->
+    [one] Eine Sache in dieser Datei, die einen Blick wert ist
+   *[other] { $n } Dinge in dieser Datei, die einen Blick wert sind
+}
+quality-rule-name-sentence = Ein Satz in einem Namensfeld
+quality-name-sentence = „{ $value }“ ist ein Satz, kein Name: Lassen Sie den Namen im Feld und verschieben Sie die Erklärung in eine Notiz.
+quality-rule-union-parent-child = Ein Paar, das auch Elternteil und Kind ist
+quality-union-parent-child = { $parent } und { $child } sind als Paar und zugleich als Elternteil und Kind erfasst: Prüfen Sie, welche Beziehung die Quellen belegen, und entfernen Sie die andere.
+quality-rule-child-listed-twice = Ein Kind doppelt eingetragen
+quality-child-listed-twice = { $child } steht zweimal unter den Kindern dieser Familie: Entfernen Sie den zweiten Eintrag.
+quality-rule-duplicate-union = Dasselbe Paar doppelt erfasst
+quality-duplicate-union = Für { $a } und { $b } sind { $count } Verbindungen erfasst: Führen Sie sie zu einer zusammen, außer sie haben wirklich mehrmals geheiratet.
+quality-rule-partner-twice = Eine Person auf beiden Seiten einer Verbindung
+quality-partner-twice = { $person } steht auf beiden Seiten dieser Verbindung: Ersetzen Sie eine Seite durch den wirklichen Partner oder lassen Sie sie leer, wenn er unbekannt ist.
+quality-rule-foreign-surnames = Kinder, deren Nachname zu keinem Elternteil passt
+quality-foreign-surnames = { $count } von { $children } Kindern tragen einen Nachnamen, der zu keinem Elternteil passt ({ $surnames }): Prüfen Sie, ob sie zu dieser Familie gehören, oder erfassen Sie sie als Stiefkinder.
+quality-rule-death-before-birth = Tod vor der Geburt
+quality-death-before-birth = Für { $person } ist der Tod { $death } erfasst, vor der Geburt { $birth }: Prüfen Sie beide Daten anhand der Quellen.
+quality-rule-child-before-parent = Ein Kind vor einem Elternteil geboren
+quality-child-before-parent = { $child } (geb. { $childborn }) ist als vor dem Elternteil { $parent } (geb. { $parentborn }) geboren erfasst: Prüfen Sie die Daten oder die Abstammung.
+quality-rule-parent-too-young = Ein Elternteil jünger als zwölf
+quality-parent-too-young = { $parent } wäre bei der Geburt von { $child } { $age } Jahre alt gewesen: Prüfen Sie die Daten oder die Abstammung.
+quality-rule-parent-too-old = Ein Elternteil älter als fünfundsechzig
+quality-parent-too-old = { $parent } wäre bei der Geburt von { $child } { $age } Jahre alt gewesen: Prüfen Sie die Daten oder die Abstammung.
+quality-rule-marriage-before-birth = Eine Heirat vor der Geburt eines Partners
+quality-marriage-before-birth = Diese Heirat ist auf { $married } datiert, vor der Geburt von { $person } { $born }: Prüfen Sie das Heiratsdatum.
+quality-rule-isolated-record = Ein Datensatz ohne Datum und ohne Beziehungen
+quality-isolated-record = { $person } hat kein Datum und keine Beziehung zu jemandem: Ergänzen Sie, was die Person mit der Familie verbindet, oder löschen Sie den Datensatz, wenn er versehentlich angelegt wurde.
+quality-rule-place-no-region = Ein Ort ohne Region
+quality-place-no-region = { $place } hat keine Region: Ergänzen Sie eine, damit gleichnamige Orte unterscheidbar sind.
+quality-rule-region-free-text = Eine Notiz im Feld Region
+quality-region-free-text = Die Region von { $place } enthält eine Notiz, „{ $value }“, keinen Ort: Verschieben Sie die Notiz in den betreffenden Datensatz und lassen Sie die Region für die Region.
+quality-rule-place-near-duplicate = Ein Ort, verschieden geschrieben
+quality-place-near-duplicate = { $names } sehen nach demselben Ort in anderer Schreibweise aus: Führen Sie sie zu einem Ort zusammen.
+quality-rule-not-a-place = Ein Eintrag, der kein Ort ist
+quality-not-a-place = „{ $place }“ steht in der Ortsliste, ist aber kein Ort: Machen Sie daraus eine Notiz am betreffenden Datensatz und verknüpfen Sie den tatsächlichen Ort.
+quality-rule-certain-without-source = Sicher, ohne Quelle
+quality-certain-without-source = { $record } enthält eine als völlig sicher markierte Angabe ({ $claims }) ohne Quelle: Fügen Sie die Quelle hinzu oder senken Sie die Gewissheit.

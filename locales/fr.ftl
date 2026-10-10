@@ -3164,3 +3164,64 @@ search-none = Personne de visible ne porte ce nom.
 search-open-record = Ouvrir la fiche
 search-hint = Entrée fait voyager la rivière jusqu’à elle ; Maj+Entrée ouvre sa fiche.
 search-empty-query = Saisissez un nom pour rechercher.
+
+# Data quality (/quality)
+nav-quality = Qualité des données
+quality-title = Choses à regarder
+quality-none = Rien à regarder : toutes les vérifications sont passées.
+quality-intro = Rien n’est modifié à votre place. Chaque ligne dit ce qui semble faux et quoi faire ; ouvrez la fiche et décidez.
+quality-groups-label = Types de constats
+quality-all = Tout
+quality-group-names = Noms
+quality-group-relations = Liens familiaux
+quality-group-dates = Dates
+quality-group-places = Lieux
+quality-group-evidence = Preuves
+quality-export-csv = Télécharger en CSV
+quality-export-json = Télécharger en JSON
+quality-open = Ouvrir
+quality-none-file = Rien à regarder dans ce fichier.
+quality-show-list = Afficher la liste
+quality-after-import = Rien n’a été modifié dans le fichier. Une fois qu’il sera l’archive du site, la page Qualité des données listera les mêmes points avec un lien vers chaque fiche.
+quality-summary = { $n ->
+    [one] Une chose à regarder
+   *[other] { $n } choses à regarder
+}
+quality-summary-file = { $n ->
+    [one] Une chose à regarder dans ce fichier
+   *[other] { $n } choses à regarder dans ce fichier
+}
+quality-rule-name-sentence = Une phrase dans un champ de nom
+quality-name-sentence = « { $value } » se lit comme une phrase, pas comme un nom : gardez le nom dans le champ et déplacez l’explication dans une note.
+quality-rule-union-parent-child = Un couple qui est aussi parent et enfant
+quality-union-parent-child = { $parent } et { $child } sont enregistrés comme couple et aussi comme parent et enfant : vérifiez le lien que les sources confirment et supprimez l’autre.
+quality-rule-child-listed-twice = Un enfant inscrit deux fois
+quality-child-listed-twice = { $child } figure deux fois parmi les enfants de cette famille : supprimez la seconde inscription.
+quality-rule-duplicate-union = Le même couple enregistré deux fois
+quality-duplicate-union = { $a } et { $b } ont { $count } unions enregistrées : fusionnez-les en une seule, sauf s’ils se sont vraiment mariés plusieurs fois.
+quality-rule-partner-twice = Une même personne des deux côtés d’une union
+quality-partner-twice = { $person } est enregistré des deux côtés de cette union : remplacez un côté par le vrai conjoint, ou laissez-le vide s’il est inconnu.
+quality-rule-foreign-surnames = Enfants dont le nom ne correspond à aucun parent
+quality-foreign-surnames = { $count } enfants sur { $children } portent un nom qui ne correspond à aucun parent ({ $surnames }) : vérifiez qu’ils appartiennent bien à cette famille, ou enregistrez-les comme enfants d’un autre lit.
+quality-rule-death-before-birth = Décès avant la naissance
+quality-death-before-birth = { $person } est enregistré comme décédé en { $death }, avant sa naissance en { $birth } : vérifiez les deux dates dans les sources.
+quality-rule-child-before-parent = Un enfant né avant un parent
+quality-child-before-parent = { $child } (né en { $childborn }) est enregistré comme né avant son parent { $parent } (né en { $parentborn }) : vérifiez les dates ou la filiation.
+quality-rule-parent-too-young = Un parent de moins de douze ans
+quality-parent-too-young = { $parent } aurait eu { $age } ans à la naissance de { $child } : vérifiez les dates ou la filiation.
+quality-rule-parent-too-old = Un parent de plus de soixante-cinq ans
+quality-parent-too-old = { $parent } aurait eu { $age } ans à la naissance de { $child } : vérifiez les dates ou la filiation.
+quality-rule-marriage-before-birth = Un mariage avant la naissance d’un conjoint
+quality-marriage-before-birth = Ce mariage est daté de { $married }, avant la naissance de { $person } en { $born } : vérifiez la date du mariage.
+quality-rule-isolated-record = Une fiche sans date ni lien
+quality-isolated-record = { $person } n’a ni date ni lien avec quiconque : ajoutez ce qui le relie à la famille, ou supprimez la fiche si elle a été créée par erreur.
+quality-rule-place-no-region = Un lieu sans région
+quality-place-no-region = { $place } n’a pas de région : ajoutez-en une, pour distinguer les lieux qui portent le même nom.
+quality-rule-region-free-text = Une note dans le champ région
+quality-region-free-text = La région de { $place } contient une note, « { $value } », et non un lieu : déplacez la note vers la fiche concernée et laissez la région à la région.
+quality-rule-place-near-duplicate = Un même lieu écrit de plusieurs façons
+quality-place-near-duplicate = { $names } semblent être le même lieu écrit différemment : fusionnez-les en un seul lieu.
+quality-rule-not-a-place = Une entrée qui n’est pas un lieu
+quality-not-a-place = « { $place } » figure dans la liste des lieux mais ne se lit pas comme un lieu : faites-en une note sur la fiche qui l’utilise et reliez le vrai lieu.
+quality-rule-certain-without-source = Certain, sans source
+quality-certain-without-source = { $record } a une affirmation marquée comme entièrement certaine ({ $claims }) sans source : joignez la source, ou baissez le degré de certitude.

@@ -3359,3 +3359,64 @@ search-none = Nikt widoczny dla Ciebie nie nosi tego imienia.
 search-open-record = Otwórz kartę
 search-hint = Enter przenosi rzekę do tej osoby; Shift+Enter otwiera jej kartę.
 search-empty-query = Wpisz imię lub nazwisko, aby wyszukać.
+
+# Data quality (/quality)
+nav-quality = Jakość danych
+quality-title = Rzeczy warte uwagi
+quality-none = Nic do sprawdzenia: wszystkie kontrole przeszły.
+quality-intro = Nic nie jest tu zmieniane za Ciebie. Każdy wiersz mówi, co wygląda na błąd i co zrobić; otwórz kartę i zdecyduj.
+quality-groups-label = Rodzaje uwag
+quality-all = Wszystko
+quality-group-names = Imiona i nazwiska
+quality-group-relations = Pokrewieństwo
+quality-group-dates = Daty
+quality-group-places = Miejsca
+quality-group-evidence = Źródła
+quality-export-csv = Pobierz jako CSV
+quality-export-json = Pobierz jako JSON
+quality-open = Otwórz
+quality-none-file = W tym pliku nie ma nic do sprawdzenia.
+quality-show-list = Pokaż listę
+quality-after-import = Niczego w pliku nie zmieniono. Gdy stanie się archiwum strony, strona jakości danych pokaże te same uwagi z odnośnikiem do każdej karty.
+quality-summary = { $n ->
+    [one] Jedna rzecz warta uwagi
+   *[other] Rzeczy warte uwagi: { $n }
+}
+quality-summary-file = { $n ->
+    [one] Jedna rzecz warta uwagi w tym pliku
+   *[other] Rzeczy warte uwagi w tym pliku: { $n }
+}
+quality-rule-name-sentence = Zdanie w polu imienia lub nazwiska
+quality-name-sentence = „{ $value }” to zdanie, a nie imię ani nazwisko: zostaw w polu samo imię lub nazwisko, a wyjaśnienie przenieś do notatki.
+quality-rule-union-parent-child = Para, która jest też rodzicem i dzieckiem
+quality-union-parent-child = { $parent } i { $child } zapisano jako parę, a zarazem jako rodzica i dziecko: sprawdź, który związek potwierdzają źródła, i usuń drugi.
+quality-rule-child-listed-twice = Dziecko wpisane dwa razy
+quality-child-listed-twice = { $child } występuje dwa razy wśród dzieci tej rodziny: usuń drugi wpis.
+quality-rule-duplicate-union = Ta sama para zapisana dwa razy
+quality-duplicate-union = { $a } i { $b } mają zapisanych { $count } związków: połącz je w jeden, chyba że naprawdę pobrali się więcej niż raz.
+quality-rule-partner-twice = Ta sama osoba po obu stronach związku
+quality-partner-twice = { $person } jest zapisany po obu stronach tego związku: wpisz po jednej stronie prawdziwego partnera albo zostaw ją pustą, jeśli jest nieznany.
+quality-rule-foreign-surnames = Dzieci o nazwisku innym niż obojga rodziców
+quality-foreign-surnames = { $count } z { $children } dzieci nosi nazwisko inne niż obojga rodziców ({ $surnames }): sprawdź, czy należą do tej rodziny, albo zapisz je jako pasierbów.
+quality-rule-death-before-birth = Zgon przed urodzeniem
+quality-death-before-birth = { $person } ma zapisany zgon w { $death }, przed urodzeniem w { $birth }: sprawdź obie daty w źródłach.
+quality-rule-child-before-parent = Dziecko urodzone przed rodzicem
+quality-child-before-parent = { $child } (ur. { $childborn }) jest zapisany jako urodzony przed rodzicem { $parent } (ur. { $parentborn }): sprawdź daty albo pokrewieństwo.
+quality-rule-parent-too-young = Rodzic młodszy niż dwanaście lat
+quality-parent-too-young = { $parent } miałby { $age } lat w chwili narodzin { $child }: sprawdź daty albo pokrewieństwo.
+quality-rule-parent-too-old = Rodzic starszy niż sześćdziesiąt pięć lat
+quality-parent-too-old = { $parent } miałby { $age } lat w chwili narodzin { $child }: sprawdź daty albo pokrewieństwo.
+quality-rule-marriage-before-birth = Ślub przed urodzeniem jednego z małżonków
+quality-marriage-before-birth = Ten ślub ma datę { $married }, sprzed urodzenia { $person } w { $born }: sprawdź datę ślubu.
+quality-rule-isolated-record = Karta bez daty i bez powiązań
+quality-isolated-record = { $person } nie ma żadnej daty ani powiązania z nikim: dodaj to, co łączy tę osobę z rodziną, albo usuń kartę, jeśli powstała przez pomyłkę.
+quality-rule-place-no-region = Miejsce bez regionu
+quality-place-no-region = { $place } nie ma regionu: dodaj go, by odróżnić miejsca o tej samej nazwie.
+quality-rule-region-free-text = Notatka w polu regionu
+quality-region-free-text = Pole regionu miejsca { $place } zawiera notatkę „{ $value }”, a nie miejsce: przenieś notatkę do karty, której dotyczy, a w regionie zostaw region.
+quality-rule-place-near-duplicate = To samo miejsce zapisane na różne sposoby
+quality-place-near-duplicate = { $names } wyglądają na to samo miejsce zapisane inaczej: połącz je w jedno.
+quality-rule-not-a-place = Wpis, który nie jest miejscem
+quality-not-a-place = „{ $place }” jest na liście miejsc, ale nie jest miejscem: zamień to w notatkę na karcie, która tego używa, i podłącz prawdziwe miejsce.
+quality-rule-certain-without-source = Pewne, bez źródła
+quality-certain-without-source = { $record } ma informację oznaczoną jako całkowicie pewna ({ $claims }) bez źródła: dołącz źródło albo obniż pewność.

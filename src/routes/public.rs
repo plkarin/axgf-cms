@@ -2,7 +2,7 @@
 
 use axum::extract::{Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
-use axum::response::{IntoResponse, Response};
+use axum::response::{IntoResponse, Redirect, Response};
 use axum::Json;
 use minijinja::context;
 use serde_json::{json, Value};
@@ -1525,6 +1525,139 @@ pub async fn river_data(
         }
         None => StatusCode::NOT_FOUND.into_response(),
     }
+}
+
+/// `?group=` on the data-quality screen.
+#[derive(Debug, serde::Deserialize)]
+pub struct QualityQuery {
+    #[serde(default)]
+    group: Option<String>,
+}
+
+/// The findings this reader may be shown ([`crate::quality::for_reader`]),
+/// or `None` for a signed-out visitor: the screen is a working list for the
+/// family, not a public page.
+fn quality_findings(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+) -> Option<Vec<crate::quality::Finding>> {
+    if !viewer.signed_in() {
+        return None;
+    }
+    Some(state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::quality::for_reader(flat, lens)
+    }))
+}
+
+/// `GET /quality` — things worth a look in the archive, grouped, each with
+/// one sentence (what is wrong, then what to do) and a link to the record's
+/// own editor. Nothing is changed from here.
+pub async fn quality(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
+    Query(q): Query<QualityQuery>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let Some(all) = quality_findings(&state, &viewer) else {
+        return Redirect::to("/admin/login").into_response();
+    };
+    let may_write = viewer.may_write();
+    let total = all.len();
+    let groups: Vec<Value> = crate::quality::GROUPS
+        .iter()
+        .map(|g| json!({"slug": g, "n": all.iter().filter(|f| f.rule.group() == *g).count()}))
+        .collect();
+    let chosen = q
+        .group
+        .filter(|g| crate::quality::GROUPS.contains(&g.as_str()));
+    let mut rules: Vec<Value> = Vec::new();
+    for rule in crate::quality::Rule::ALL {
+        if chosen.as_deref().is_some_and(|g| g != rule.group()) {
+            continue;
+        }
+        let items: Vec<Value> = all
+            .iter()
+            .filter(|f| f.rule == rule)
+            .map(|f| {
+                json!({
+                    "message": crate::quality::message(f, chrome.lang),
+                    "link": crate::quality::link(f, may_write),
+                })
+            })
+            .collect();
+        if !items.is_empty() {
+            rules.push(json!({"slug": rule.slug(), "group": rule.group(), "n": items.len(), "items": items}));
+        }
+    }
+    render::page_with(
+        &chrome,
+        "quality.html",
+        context! {
+            nav => "quality",
+            total,
+            groups,
+            group => chosen,
+            rules,
+        },
+    )
+}
+
+/// `GET /quality.csv` — the same list, to work through offline.
+pub async fn quality_csv(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/quality");
+    let Some(all) = quality_findings(&state, &viewer) else {
+        return Redirect::to("/admin/login").into_response();
+    };
+    (
+        [
+            (header::CONTENT_TYPE, "text/csv; charset=utf-8"),
+            (
+                header::CONTENT_DISPOSITION,
+                "attachment; filename=\"quality.csv\"",
+            ),
+            (header::CACHE_CONTROL, "no-store"),
+        ],
+        crate::quality::csv(&all, chrome.lang, viewer.may_write()),
+    )
+        .into_response()
+}
+
+/// `GET /quality.json` — the same list, with each finding's arguments.
+pub async fn quality_json(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/quality");
+    let Some(all) = quality_findings(&state, &viewer) else {
+        return Redirect::to("/admin/login").into_response();
+    };
+    let may_write = viewer.may_write();
+    let body: Vec<Value> = all
+        .iter()
+        .map(|f| {
+            json!({
+                "group": f.rule.group(),
+                "rule": f.rule.slug(),
+                "kind": f.kind,
+                "id": f.id,
+                "link": crate::quality::link(f, may_write),
+                "message": crate::quality::message(f, chrome.lang),
+                "args": f.args,
+            })
+        })
+        .collect();
+    (
+        [
+            (
+                header::CONTENT_DISPOSITION,
+                "attachment; filename=\"quality.json\"",
+            ),
+            (header::CACHE_CONTROL, "no-store"),
+        ],
+        Json(body),
+    )
+        .into_response()
 }
 
 /// `?q=` on the search page and its JSON twin.

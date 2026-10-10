@@ -774,11 +774,34 @@ installation of axgf-cms."
   fi
   if [ "$DRY_RUN" = "1" ]; then
     printf '  [dry-run] axgf-cms backup --bundle %s --dest %s\n' "$BUNDLE" "$BACKUP_DIR"
-  elif "$INSTALL_PATH" backup --help >/dev/null 2>&1; then
-    run_as_service "$INSTALL_PATH" backup --bundle "$BUNDLE" --dest "$BACKUP_DIR" \
+  elif "$INSTALL_PATH" backup --help 2>/dev/null | grep -q -- '--pre-upgrade'; then
+    # A pre-upgrade archive is its own set: named for it, kept by its own
+    # count, never counted against the daily archives — an upgrade must not
+    # evict one of them to make room for itself.
+    run_as_service "$INSTALL_PATH" backup --pre-upgrade --bundle "$BUNDLE" --dest "$BACKUP_DIR" \
       || die "the pre-upgrade backup failed, so the upgrade stopped before it \
 started. Nothing was changed. Fix the backup first: an upgrade without one is \
 the single most expensive thing that can go wrong here."
+  elif "$INSTALL_PATH" backup --help >/dev/null 2>&1; then
+    # The installed binary has backups but predates pre-upgrade archives
+    # (0.2.0 and before). Its archive would be one more daily and push the
+    # oldest one out, so it runs with pruning off, and its archive is then
+    # renamed into the pre-upgrade set and made 0600 like every other.
+    before="$(ls -1 "$BACKUP_DIR" 2>/dev/null | grep '^axgf-backup-.*\.zip$' || true)"
+    run_as_service "$INSTALL_PATH" backup --bundle "$BUNDLE" --dest "$BACKUP_DIR" \
+        --keep-daily 100000 --keep-weekly 100000 --keep-monthly 100000 \
+      || die "the pre-upgrade backup failed, so the upgrade stopped before it \
+started. Nothing was changed. Fix the backup first: an upgrade without one is \
+the single most expensive thing that can go wrong here."
+    if [ "$DRY_RUN" = "0" ]; then
+      for f in $(ls -1 "$BACKUP_DIR" | grep '^axgf-backup-.*\.zip$'); do
+        printf '%s\n' "$before" | grep -qxF "$f" && continue
+        renamed="axgf-pre-upgrade-${f#axgf-backup-}"
+        run mv "$BACKUP_DIR/$f" "$BACKUP_DIR/$renamed"
+        run chmod 0600 "$BACKUP_DIR/$renamed"
+        say "kept as ${renamed}, outside the daily archives"
+      done
+    fi
   else
     # The installed version predates `axgf-cms backup` — which is exactly the
     # version most installations are upgrading *from*, since backups did not
@@ -868,7 +891,8 @@ the single most expensive thing that can go wrong here."
   Upgraded ${OLD_VERSION} -> ${NEW_VERSION}.
 
   The previous binary is kept at ${PREVIOUS}. The pre-upgrade backup is the
-  newest archive in ${BACKUP_DIR}.
+  newest axgf-pre-upgrade-*.zip in ${BACKUP_DIR}; the daily archives are as
+  they were.
 
 EOF
     exit 0

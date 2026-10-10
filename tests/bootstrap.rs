@@ -491,6 +491,85 @@ fn an_upgrade_asks_for_health_where_the_installation_listens() {
     );
 }
 
+/// Upgrading from a binary that predates pre-upgrade archives (0.2.0 and
+/// before): its backup would be one more daily and push the oldest out, so
+/// the script runs it with pruning off and moves the archive into the
+/// pre-upgrade set, 0600. This stand-in behaves like such a binary: no
+/// `--pre-upgrade` in its help, and an `axgf-backup-*.zip` written 0644.
+#[test]
+fn upgrading_from_an_older_binary_keeps_the_dailies_and_files_its_archive_apart() {
+    use std::os::unix::fs::PermissionsExt;
+    let prefix = common::scratch("boot-upgrade-old");
+    std::fs::write(
+        prefix.join("stand-in-binary"),
+        r#"#!/bin/sh
+case "$1" in
+  --version) echo "axgf-cms 0.2.0"; exit 0 ;;
+  backup)
+    for a in "$@"; do
+      [ "$a" = --help ] && { echo "Usage: axgf-cms backup [--dest DIR] [--keep-daily N]"; exit 0; }
+    done
+    dest=""; prev=""
+    for a in "$@"; do [ "$prev" = --dest ] && dest="$a"; prev="$a"; done
+    echo "$@" > "$dest/args"
+    ( umask 022; echo archive > "$dest/axgf-backup-$(date -u +%Y%m%dT%H%M%SZ).zip" )
+    exit 0 ;;
+esac
+exit 0
+"#,
+    )
+    .unwrap();
+    std::fs::set_permissions(
+        prefix.join("stand-in-binary"),
+        std::fs::Permissions::from_mode(0o755),
+    )
+    .unwrap();
+    let backups = prefix.join("srv/backups");
+    run_bootstrap(&prefix, &["--backup-dir", backups.to_str().unwrap()]);
+    std::fs::write(prefix.join("var/lib/axgf-cms/family.axgf"), b"stand-in").unwrap();
+    let dailies = [
+        "axgf-backup-20261001T031500Z.zip",
+        "axgf-backup-20261002T031500Z.zip",
+    ];
+    for d in dailies {
+        std::fs::write(backups.join(d), b"daily").unwrap();
+    }
+
+    let out = run_bootstrap(&prefix, &["--upgrade"]);
+
+    let args = std::fs::read_to_string(backups.join("args")).unwrap();
+    assert!(
+        args.contains("--keep-daily 100000"),
+        "pruning off for an old binary: {args}"
+    );
+    for d in dailies {
+        assert!(backups.join(d).exists(), "the upgrade evicted {d}");
+    }
+    let names: Vec<String> = std::fs::read_dir(&backups)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    let pre: Vec<&String> = names
+        .iter()
+        .filter(|n| n.starts_with("axgf-pre-upgrade-"))
+        .collect();
+    assert_eq!(pre.len(), 1, "{names:?}\n{out}");
+    assert_eq!(
+        names
+            .iter()
+            .filter(|n| n.starts_with("axgf-backup-"))
+            .count(),
+        2,
+        "only the two dailies remain under the daily name: {names:?}"
+    );
+    let mode = std::fs::metadata(backups.join(pre[0]))
+        .unwrap()
+        .permissions()
+        .mode()
+        & 0o777;
+    assert_eq!(mode, 0o600, "{} is {mode:o}", pre[0]);
+}
+
 /// Run bootstrap.sh with the *real* binary rather than the stand-in, so the
 /// steps that actually invoke it are exercised.
 fn run_bootstrap_for_real(prefix: &Path, extra: &[&str]) -> String {

@@ -55,6 +55,14 @@ pub enum Command {
         /// Monthly archives to keep.
         #[arg(long, value_name = "N", default_value_t = 12)]
         keep_monthly: usize,
+        /// Write a pre-upgrade archive: named for its own set, kept by its own
+        /// count, and never counted against the daily, weekly or monthly ones.
+        /// `bootstrap.sh --upgrade` passes it.
+        #[arg(long)]
+        pre_upgrade: bool,
+        /// Pre-upgrade archives to keep.
+        #[arg(long, value_name = "N", default_value_t = 3)]
+        keep_pre_upgrade: usize,
     },
     /// Put a backup archive back, keeping the current state aside first.
     ///

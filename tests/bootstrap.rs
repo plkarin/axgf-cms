@@ -453,6 +453,44 @@ fn upgrading_something_that_is_not_installed_is_refused_rather_than_installed() 
     );
 }
 
+/// An upgrade takes the installation's settings from its env file, not from
+/// the script's defaults: on the operator's server the service listens on
+/// 8088 and something else answers on 8080, so an upgrade that asked 8080
+/// for health would have rolled back a healthy release.
+#[test]
+fn an_upgrade_asks_for_health_where_the_installation_listens() {
+    let prefix = common::scratch("boot-upgrade-bind");
+    let elsewhere = prefix.join("srv/elsewhere");
+    run_bootstrap(
+        &prefix,
+        &[
+            "--bind",
+            "127.0.0.1:8099",
+            "--backup-dir",
+            elsewhere.to_str().unwrap(),
+        ],
+    );
+    // The stand-in binary writes no bundle; an upgrade wants one to exist.
+    std::fs::write(prefix.join("var/lib/axgf-cms/family.axgf"), b"stand-in").unwrap();
+    let out = run_bootstrap(&prefix, &["--upgrade"]);
+    assert!(
+        out.contains("health at http://127.0.0.1:8099/health"),
+        "{out}"
+    );
+    assert!(!out.contains("127.0.0.1:8080"), "{out}");
+    assert!(
+        out.contains("srv/elsewhere"),
+        "the backup goes where the installation keeps them: {out}"
+    );
+
+    // A --bind given on the command line still wins.
+    let out = run_bootstrap(&prefix, &["--upgrade", "--bind", "127.0.0.1:8100"]);
+    assert!(
+        out.contains("health at http://127.0.0.1:8100/health"),
+        "{out}"
+    );
+}
+
 /// Run bootstrap.sh with the *real* binary rather than the stand-in, so the
 /// steps that actually invoke it are exercised.
 fn run_bootstrap_for_real(prefix: &Path, extra: &[&str]) -> String {

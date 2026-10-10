@@ -70,6 +70,10 @@ WITH_SAMPLE=0
 FROM_SOURCE=0
 VERSION=""
 BIND="127.0.0.1:8080"
+# Set when the operator names them, so an upgrade knows not to take them from
+# the installation's own env file instead.
+BIND_GIVEN=0
+BACKUP_DIR_GIVEN=0
 DRY_RUN=0
 UPGRADE=0
 UNINSTALL=0
@@ -114,9 +118,9 @@ while [ $# -gt 0 ]; do
     --with-sample) WITH_SAMPLE=1 ;;
     --from-source) FROM_SOURCE=1 ;;
     --version) need_value "$1" "${2:-}" "v0.1.0-rc1"; VERSION="$2"; shift ;;
-    --bind) need_value "$1" "${2:-}" "127.0.0.1:8080"; BIND="$2"; shift ;;
+    --bind) need_value "$1" "${2:-}" "127.0.0.1:8080"; BIND="$2"; BIND_GIVEN=1; shift ;;
     --admin-user) need_value "$1" "${2:-}" "admin"; ADMIN_USER="$2"; shift ;;
-    --backup-dir) need_value "$1" "${2:-}" "/srv/backups"; BACKUP_DIR="$2"; shift ;;
+    --backup-dir) need_value "$1" "${2:-}" "/srv/backups"; BACKUP_DIR="$2"; BACKUP_DIR_GIVEN=1; shift ;;
     --backup-at) need_value "$1" "${2:-}" "03:30"; BACKUP_AT="$2"; shift ;;
     --upgrade) UPGRADE=1 ;;
     --uninstall) UNINSTALL=1 ;;
@@ -728,6 +732,21 @@ if [ "$UPGRADE" = "1" ]; then
   # ------------------------------------------------------------------------
   step "Upgrading"
   # ------------------------------------------------------------------------
+  # An installation's settings are its env file, not this script's defaults.
+  # Upgrading with the defaults asked the health check at 127.0.0.1:8080 —
+  # on a machine whose service listens elsewhere, that is either nothing (a
+  # healthy upgrade rolled back) or somebody else's server — and backed up
+  # whatever bundle and directory the defaults named.
+  if [ -f "$ENV_FILE" ]; then
+    env_value() { sed -n "s/^$1=//p" "$ENV_FILE" | tail -1; }
+    v="$(env_value AXGF_CMS_BIND)"
+    [ "$BIND_GIVEN" = "0" ] && [ -n "$v" ] && BIND="$v"
+    v="$(env_value AXGF_CMS_BUNDLE)"
+    [ -n "$v" ] && BUNDLE="${PREFIX}${v#"$PREFIX"}"
+    v="$(env_value AXGF_CMS_BACKUP_DIR)"
+    [ "$BACKUP_DIR_GIVEN" = "0" ] && [ -n "$v" ] && BACKUP_DIR="${PREFIX}${v#"$PREFIX"}"
+  fi
+  say "settings from ${ENV_FILE}: bundle ${BUNDLE}, backups ${BACKUP_DIR}, health at http://${BIND}/health"
   [ -x "$INSTALL_PATH" ] || die "nothing is installed at ${INSTALL_PATH}, so there is \
 nothing to upgrade. Run this script without --upgrade to install."
   [ -f "$BUNDLE" ] || die "no bundle at ${BUNDLE}. This does not look like an \

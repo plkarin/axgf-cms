@@ -12,8 +12,9 @@
 //! In HTML only tags and `<style>` blocks are read, not text: a place with no
 //! name is shown by its id, and `#9f8e7d6c` there is a name, not a colour.
 //!
-//! The site is converted page by page (/ → /person → /tree → /about →
-//! import → admin). Until it is done this is a ratchet: no page may go above
+//! app.css, which every page shares, moved its colours here in one step;
+//! what is left is each page's own markup and scripts. Until it is done this
+//! is a ratchet: no page may go above
 //! the count it started with ([`START`]), and a page in [`CONVERTED`] must be
 //! at zero. When every page is converted, [`START`] goes and zero is the rule.
 
@@ -25,24 +26,24 @@ use axum::http::StatusCode;
 use common::*;
 use serde_json::{json, Value};
 
-/// Hex literals per page when the tokens arrived (2026-10-09, before any page
-/// was converted): HTML + stylesheets + scripts.
-const START: &[(&str, usize)] = &[
-    ("/", 325),
-    ("/ signed in", 342),
-    ("/person/:id", 261),
-    ("/tree", 261),
-    ("/about", 261),
-    ("import", 261),
-    ("admin", 261),
-    ("admin list", 261),
-    ("admin edit", 261),
-    ("admin users", 261),
-    ("404", 261),
-];
+/// Hex literals per page: HTML + stylesheets + scripts. When the tokens
+/// arrived (2026-10-09) every page carried app.css's 261, and `/` 325 (342
+/// signed in). app.css then moved every colour into tokens.css in one step,
+/// which left only what `/` draws itself: river.js and the river's markup.
+const START: &[(&str, usize)] = &[("/", 64), ("/ signed in", 81)];
 
 /// Pages converted to the tokens: no hex literal may remain.
-const CONVERTED: &[&str] = &[];
+const CONVERTED: &[&str] = &[
+    "/person/:id",
+    "/tree",
+    "/about",
+    "import",
+    "admin",
+    "admin list",
+    "admin edit",
+    "admin users",
+    "404",
+];
 
 const P: &str = "p03";
 

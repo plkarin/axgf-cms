@@ -3201,6 +3201,25 @@ a.tcard:hover {
 .rv-canvas { flex: 0 0 auto; }
 .rv-canvas svg { display: block; }
 .rv-canvas .rv-p { cursor: pointer; }
+/* The drawing's inks. src/river.rs (and river.js, its port for frames in
+   motion) mark each non-water colour with a class; the colours themselves
+   are the river's palette in tokens.css. */
+.rv-svg .k-bg { fill: var(--rv-ink-1); }
+.rv-svg .k-halo { stroke: var(--rv-ink-1); }
+.rv-svg .k-band-odd { fill: var(--rv-band-odd); }
+.rv-svg .k-band-live { fill: var(--rv-band-live); }
+.rv-svg .k-band-rule { stroke: var(--rv-band-rule); }
+.rv-svg .k-band-text { fill: var(--rv-band-text); }
+.rv-svg .k-band-text-live { fill: var(--rv-band-text-live); }
+.rv-svg .k-data { fill: var(--rv-data); }
+.rv-svg .k-data-line { stroke: var(--rv-data); }
+.rv-svg .k-name { fill: var(--rv-name); }
+.rv-svg .k-centre { fill: var(--rv-centre); }
+.rv-svg .k-accent { fill: var(--rv-accent); }
+.rv-svg .k-accent-line { stroke: var(--rv-accent); }
+.rv-svg .k-glow { fill: var(--rv-glow); }
+.rv-svg .k-lit { stroke: var(--rv-lit); }
+.rv-svg .k-lit-fill { fill: var(--rv-lit); }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
 .rv-legend {
   display: flex;

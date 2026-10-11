@@ -15,7 +15,9 @@
   var dataEl = document.getElementById('rv-data');
   if (!root || !canvas || !dataEl) return;
 
-  var BG = '#0c1310', MONO = 'ui-monospace,Menlo,monospace';
+  // Every non-water colour is a class (k-*), painted by app.css from the
+  // river's palette in tokens.css, exactly as river::render_svg does.
+  var MONO = 'ui-monospace,Menlo,monospace';
   var WIDTHS = [0, 1.6, 3, 5, 8, 12];
   var base = root.dataset.base || '/';
   var panel = document.getElementById('tree-panel');
@@ -115,14 +117,14 @@
       var ya = yOf(fr.meta.scale.knots, Y), yb = yOf(fr.meta.scale.knots, Y + 50);
       if (yb > vb || ya < vt) continue;
       var live = Y >= 1950, t = Math.max(vt, yb), b = Math.min(vb, ya);
-      out += '<rect x="' + f(hl0) + '" y="' + f(t) + '" width="' + f(hw) + '" height="' + f(b - t) + '" fill="' + (live ? '#15150f' : (Y / 50) % 2 ? '#0e1714' : BG) + '"/>';
-      if (ya <= vb) out += '<line x1="' + f(hl0) + '" y1="' + f(ya) + '" x2="' + f(hl0 + hw) + '" y2="' + f(ya) + '" stroke="#18241f"/>'
-        + (ya - 16 >= vt ? '<text x="' + f(hl0 + 10) + '" y="' + f(ya - 6) + '" font-family="' + MONO + '" font-size="10" fill="' + (live ? '#8a7a52' : '#4f6158') + '">' + Y + '</text>' : '');
-      if (live && !named && t + 16 < b - 18 && (named = true)) out += '<text x="' + f(hl0 + 10) + '" y="' + f(t + 16) + '" font-family="' + MONO + '" font-size="10" letter-spacing="1" fill="#8a7a52">' + esc(cur.words[0]) + '</text>';
+      out += '<rect x="' + f(hl0) + '" y="' + f(t) + '" width="' + f(hw) + '" height="' + f(b - t) + '" class="' + (live ? 'k-band-live' : (Y / 50) % 2 ? 'k-band-odd' : 'k-bg') + '"/>';
+      if (ya <= vb) out += '<line x1="' + f(hl0) + '" y1="' + f(ya) + '" x2="' + f(hl0 + hw) + '" y2="' + f(ya) + '" class="k-band-rule"/>'
+        + (ya - 16 >= vt ? '<text x="' + f(hl0 + 10) + '" y="' + f(ya - 6) + '" font-family="' + MONO + '" font-size="10" class="' + (live ? 'k-band-text-live' : 'k-band-text') + '">' + Y + '</text>' : '');
+      if (live && !named && t + 16 < b - 18 && (named = true)) out += '<text x="' + f(hl0 + 10) + '" y="' + f(t + 16) + '" font-family="' + MONO + '" font-size="10" letter-spacing="1" class="k-band-text-live">' + esc(cur.words[0]) + '</text>';
     }
     fr.meta.rail.forEach(function (r) {
       if (r[1] < vt + 8 || r[1] > vb - 4) return;
-      out += '<text x="' + f(hl0 + hw - 10) + '" y="' + f(r[1] + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="10" fill="' + (r[0] === 0 ? '#dcae64' : '#4f6158') + '">' + (r[0] > 0 ? '+' + r[0] : r[0] === 0 ? '0 ◂' : '−' + (-r[0])) + '</text>';
+      out += '<text x="' + f(hl0 + hw - 10) + '" y="' + f(r[1] + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="10" class="' + (r[0] === 0 ? 'k-accent' : 'k-band-text') + '">' + (r[0] > 0 ? '+' + r[0] : r[0] === 0 ? '0 ◂' : '−' + (-r[0])) + '</text>';
     });
     fr.tails.forEach(function (t) {
       var c = colour(t.year), w = WIDTHS[cls(t.d)], d = vc(t.x1, t.y1, t.x2, t.y2);
@@ -132,7 +134,7 @@
       } else {
         var id = 'tg' + (gi++);
         defs += '<linearGradient id="' + id + '" gradientUnits="userSpaceOnUse" x1="' + f(t.x1) + '" y1="' + f(t.y1) + '" x2="' + f(t.x2) + '" y2="' + f(t.y2) + '"><stop offset="0" stop-color="' + c + '" stop-opacity="0.85"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></linearGradient>';
-        out += '<g opacity="' + f(t.a) + '"><path d="' + d + '" fill="none" stroke="url(#' + id + ')" stroke-width="' + w + '"/><circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3.4" fill="' + BG + '" stroke="' + c + '" stroke-width="1.4"/></g>';
+        out += '<g opacity="' + f(t.a) + '"><path d="' + d + '" fill="none" stroke="url(#' + id + ')" stroke-width="' + w + '"/><circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3.4" class="k-bg" stroke="' + c + '" stroke-width="1.4"/></g>';
       }
     });
     fr.couples.forEach(function (c) {
@@ -153,20 +155,20 @@
       out += '<g opacity="' + f(p.a) + '">';
       // river::render_svg: a solid ring for a person reached by several
       // lines, a dashed one for a copy beside a later partner.
-      if (p.repeat > 1) out += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6) + '" fill="none" stroke="#8d9c92" stroke-width="1"/>';
-      if (p.again) out += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" stroke="#8d9c92" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
-      if (s.living) out += '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" fill="#e6b062" fill-opacity="0.16"/>';
-      out += isC ? '<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" stroke="#dcae64" stroke-width="1.2"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#dcae64"/>'
-        : '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (s.sparse || s.redacted ? BG : s.colour) + '" stroke="' + (s.sparse || s.redacted ? s.colour : BG) + '" stroke-width="1.6"/>';
+      if (p.repeat > 1) out += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6) + '" fill="none" class="k-data-line" stroke-width="1"/>';
+      if (p.again) out += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" class="k-data-line" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
+      if (s.living) out += '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" class="k-glow" fill-opacity="0.16"/>';
+      out += isC ? '<circle cx="' + x + '" cy="' + y + '" r="14" fill="none" class="k-accent-line" stroke-width="1.2"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="k-accent"/>'
+        : '<circle cx="' + x + '" cy="' + y + '" r="' + r + (s.sparse || s.redacted ? '" class="k-bg" stroke="' : '" class="k-halo" fill="') + s.colour + '" stroke-width="1.6"/>';
       var tier = T[p.key] || 0;
       if (tier > 0) {
-        var lx = f(p.x + r + (isC ? 10 : 6)), halo = ' paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round"';
-        out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" fill="' + (isC ? '#f6efdc' : '#e2dccb') + '"' + halo + '>' + esc(isC ? clip(s.names[tier - 1], Math.min(p.right - 17.5 - 6.8, hl0 + hw - 34 - (p.x + r + 10))) : s.names[tier - 1]) + '</text>'
-          + '<text x="' + lx + '" y="' + f(p.y + (isC ? 14 : 11.5)) + '" font-family="' + MONO + '" font-size="' + (isC ? 11 : 9.5) + '" fill="#8d9c92"' + halo + '>' + esc(s.years) + '</text>';
+        var lx = f(p.x + r + (isC ? 10 : 6)), halo = ' paint-order="stroke" stroke-width="4" stroke-linejoin="round"';
+        out += '<text x="' + lx + '" y="' + f(p.y - 1) + '" font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="' + (isC ? 16 : 12) + '" font-weight="' + (isC ? 600 : 400) + '" class="' + (isC ? 'k-centre' : 'k-name') + ' k-halo"' + halo + '>' + esc(isC ? clip(s.names[tier - 1], Math.min(p.right - 17.5 - 6.8, hl0 + hw - 34 - (p.x + r + 10))) : s.names[tier - 1]) + '</text>'
+          + '<text x="' + lx + '" y="' + f(p.y + (isC ? 14 : 11.5)) + '" font-family="' + MONO + '" font-size="' + (isC ? 11 : 9.5) + '" class="k-data k-halo"' + halo + '>' + esc(s.years) + '</text>';
       }
       out += '</g>';
     });
-    return '<svg class="rv-svg" viewBox="' + f(hl0) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect x="' + f(hl0) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(fr.meta.view[1]) + '" fill="' + BG + '"/>' + out + '</svg>';
+    return '<svg class="rv-svg" viewBox="' + f(hl0) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect x="' + f(hl0) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(fr.meta.view[1]) + '" class="k-bg"/>' + out + '</svg>';
   }
   // river::write_mark: a count where river::place_counts put it, moved with
   // its mark while the river is in motion (dx, dy: how far the mark has
@@ -175,10 +177,10 @@
     if (!m) return '';
     dx = dx || 0; dy = dy || 0;
     var out = '';
-    if (m.leader) out += '<line x1="' + f(m.leader[0] + dx) + '" y1="' + f(m.leader[1] + dy) + '" x2="' + f(m.leader[2] + dx) + '" y2="' + f(m.leader[3] + dy) + '" stroke="#8d9c92" stroke-width="0.6" stroke-opacity="0.7"/>';
+    if (m.leader) out += '<line x1="' + f(m.leader[0] + dx) + '" y1="' + f(m.leader[1] + dy) + '" x2="' + f(m.leader[2] + dx) + '" y2="' + f(m.leader[3] + dy) + '" class="k-data-line" stroke-width="0.6" stroke-opacity="0.7"/>';
     return out + '<text x="' + f(m.x + dx) + '" y="' + f(m.y + dy) + '"' + (m.anchor < 0 ? ' text-anchor="end"' : m.anchor === 0 ? ' text-anchor="middle"' : '')
-      + (m.halo ? ' paint-order="stroke" stroke="' + BG + '" stroke-width="3" stroke-linejoin="round"' : '')
-      + ' font-family="' + MONO + '" font-size="' + size + '" fill="#8d9c92">' + esc(text) + '</text>';
+      + (m.halo ? ' paint-order="stroke" stroke-width="3" stroke-linejoin="round"' : '')
+      + ' font-family="' + MONO + '" font-size="' + size + '" class="k-data' + (m.halo ? ' k-halo' : '') + '">' + esc(text) + '</text>';
   }
   // river::text_width: 0.55 em serif, 0.6 em bold or mono, 1 em wide scripts.
   function width(text, size, bold) {
@@ -262,16 +264,16 @@
     if (on) {
       edges(fr, PM).forEach(function (e) {
         var c = e.cp, hit = e.from ? on[e.from] && (c.kids.some(function (k) { return on[k]; }) || c.parents.some(function (q) { return q !== e.from && on[q]; })) : on[e.to] && c.parents.some(function (q) { return on[q]; });
-        if (hit) html += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" fill="none" stroke="#f3dfae" STW stroke-linecap="round"/>';
+        if (hit) html += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" fill="none" class="k-lit" STW stroke-linecap="round"/>';
       });
       fr.persons.forEach(function (p) {
         var s = p.s || {};
         if (!on[p.key] || p.role === 'centre' || s.redacted) return;
-        if (p.key === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" stroke="#f3dfae" stroke-width="1.3"/>';
+        if (p.key === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" class="k-lit" stroke-width="1.3"/>';
         // On hover the full name, right-aligned to the dot where it would
         // otherwise run past the rail: a hover label is alone on its row.
         var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > fr.meta.hview[0] + fr.meta.hview[1] - 34;
-        labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" fill="#f3dfae" paint-order="stroke" stroke="' + BG + '" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text>';
+        labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text>';
       });
     }
     lit.innerHTML = html.replace(/STW/g, 'stroke-width="11" stroke-opacity="0.07"') + html.replace(/STW/g, 'stroke-width="5" stroke-opacity="0.18"') + html.replace(/STW/g, 'stroke-width="2"');

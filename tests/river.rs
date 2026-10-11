@@ -383,7 +383,7 @@ fn the_twelve_person_river_matches_its_snapshot() {
         "lost lines fade in user space"
     );
     assert!(
-        svg.contains(r##"r="3.4" fill="#0c1310""##),
+        svg.contains(r#"<circle class="k-bg" "#) && svg.contains(r#"r="3.4" stroke="#),
         "and end in an open ring"
     );
     assert!(svg.contains("VIVANTS"));
@@ -485,20 +485,20 @@ fn a_signed_out_visitor_gets_no_bands() {
     let svg = out.svg("river");
     assert!(!out.layout.meta.bands);
     assert!(
-        !svg.contains(r##"stroke="#18241f""##) && !svg.contains("VIVANTS"),
+        !svg.contains(r#"class="k-band-rule""#) && !svg.contains("VIVANTS"),
         "no band rules, no band names"
     );
     let inn = river::build(&flat, &lens, &g, "p07", 3, Shape::default(), words(), true).unwrap();
-    assert!(inn.layout.meta.bands && inn.svg("river").contains(r##"stroke="#18241f""##));
+    assert!(inn.layout.meta.bands && inn.svg("river").contains(r#"class="k-band-rule""#));
 }
 
 #[tokio::test]
 async fn the_signed_out_page_has_no_bands_and_the_signed_in_page_does() {
     let (app, _d) = app("river-bands");
     let anon = body_string(get(&app, "/?p=p07").await).await;
-    assert!(!anon.contains(r##"stroke="#18241f""##));
+    assert!(!anon.contains(r#"class="k-band-rule""#));
     let admin = body_string(get_admin(&app, "/?p=p07").await).await;
-    assert!(admin.contains(r##"stroke="#18241f""##));
+    assert!(admin.contains(r#"class="k-band-rule""#));
 }
 
 #[test]
@@ -513,7 +513,7 @@ fn with_no_visible_year_the_river_has_no_era_at_all() {
         let svg = r.svg("river");
         let payload = serde_json::to_string(&r.payload()).unwrap();
         // No band, no year, and one colour.
-        assert!(!svg.contains(r##"stroke="#18241f""##));
+        assert!(!svg.contains(r#"class="k-band-rule""#));
         for year in [
             "1800", "1830", "1858", "1888", "1914", "1950", "1990", "1900", "1700",
         ] {

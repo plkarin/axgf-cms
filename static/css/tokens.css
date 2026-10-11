@@ -152,6 +152,12 @@
   --rv-rule-1: #1a2520; --rv-rule-2: #22302a; --rv-rule-3: #3a4b42; --rv-rule-4: #4d6157;
   --rv-text-1: #ece6d6; --rv-text-2: #a7b3aa; --rv-text-3: #75847b;
   --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #f3dfae; --rv-water: #86b08f; --rv-warn: #d98068;
+  /* The drawing's own inks (src/river.rs paints with classes, app.css maps
+     them to these): the half-century bands, their rules and years, the
+     data and names beside each person, the living glow. */
+  --rv-band-odd: #0e1714; --rv-band-live: #15150f; --rv-band-rule: #18241f;
+  --rv-band-text: #4f6158; --rv-band-text-live: #8a7a52;
+  --rv-data: #8d9c92; --rv-name: #e2dccb; --rv-centre: #f6efdc; --rv-glow: #e6b062;
   --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* Study 06 on the river itself, under every theme: anything drawn inside

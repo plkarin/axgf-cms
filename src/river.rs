@@ -87,18 +87,12 @@ pub const NEUTRAL: &str = "#86b08f";
 const RAMP_FROM: f64 = 1690.0;
 const RAMP_TO: f64 = 1985.0;
 
-/// The river canvas colour: the fill of open rings and of the label halo.
-const BG: &str = "#0c1310";
-const ACCENT: &str = "#dcae64";
-const LIVING_GLOW: &str = "#e6b062";
-const BAND_ODD: &str = "#0e1714";
-const BAND_LIVE: &str = "#15150f";
-const BAND_RULE: &str = "#18241f";
-const BAND_TEXT: &str = "#4f6158";
-const BAND_TEXT_LIVE: &str = "#8a7a52";
-const DATA_TEXT: &str = "#8d9c92";
-const NAME_TEXT: &str = "#e2dccb";
-const CENTRE_TEXT: &str = "#f6efdc";
+// Every colour in the drawing other than the water's is a class, painted in
+// app.css (`.rv-svg .k-*`) from the river's palette in tokens.css — the one
+// file that names colours. The water itself, `colour_at` and `NEUTRAL`, is
+// the exemption tests/design_tokens.rs names. Classes, not `var()` in the
+// attributes: a custom property in an SVG presentation attribute is not
+// something every browser resolves.
 const MONO: &str = "ui-monospace,Menlo,monospace";
 const SERIF: &str = "'Iowan Old Style',Palatino,Georgia,serif";
 
@@ -1199,7 +1193,7 @@ fn write_mark(out: &mut String, m: &Mark, text: &str, size: f64) {
     if let Some([x1, y1, x2, y2]) = m.leader {
         let _ = write!(
             out,
-            r#"<line x1="{}" y1="{}" x2="{}" y2="{}" stroke="{DATA_TEXT}" stroke-width="0.6" stroke-opacity="0.7"/>"#,
+            r#"<line x1="{}" y1="{}" x2="{}" y2="{}" class="k-data-line" stroke-width="0.6" stroke-opacity="0.7"/>"#,
             num(x1),
             num(y1),
             num(x2),
@@ -1211,14 +1205,17 @@ fn write_mark(out: &mut String, m: &Mark, text: &str, size: f64) {
         -1 => r#" text-anchor="end""#,
         _ => r#" text-anchor="middle""#,
     };
-    let halo = if m.halo {
-        format!(r#" paint-order="stroke" stroke="{BG}" stroke-width="3" stroke-linejoin="round""#)
+    let (halo, k_halo) = if m.halo {
+        (
+            r#" paint-order="stroke" stroke-width="3" stroke-linejoin="round""#,
+            " k-halo",
+        )
     } else {
-        String::new()
+        ("", "")
     };
     let _ = write!(
         out,
-        r#"<text class="rv-count" x="{}" y="{}"{anchor}{halo} font-family="{MONO}" font-size="{size}" fill="{DATA_TEXT}">{}</text>"#,
+        r#"<text class="rv-count k-data{k_halo}" x="{}" y="{}"{anchor}{halo} font-family="{MONO}" font-size="{size}">{}</text>"#,
         num(m.x),
         num(m.y),
         html_escape(text)
@@ -2538,16 +2535,16 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             let live = y0 >= 1950;
             let t = yb.max(v_top);
             let b = ya.min(v_bottom);
-            let fill = if live {
-                BAND_LIVE
+            let band = if live {
+                "k-band-live"
             } else if (y0 / 50) % 2 == 1 {
-                BAND_ODD
+                "k-band-odd"
             } else {
-                BG
+                "k-bg"
             };
             let _ = write!(
                 out,
-                r#"<rect x="{}" y="{}" width="{}" height="{}" fill="{fill}"/>"#,
+                r#"<rect class="{band}" x="{}" y="{}" width="{}" height="{}"/>"#,
                 num(h_left),
                 num(t),
                 num(h_w),
@@ -2556,7 +2553,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             if ya <= v_bottom {
                 let _ = write!(
                     out,
-                    r#"<line x1="{x1}" y1="{y}" x2="{x2}" y2="{y}" stroke="{BAND_RULE}"/>"#,
+                    r#"<line class="k-band-rule" x1="{x1}" y1="{y}" x2="{x2}" y2="{y}"/>"#,
                     x1 = num(h_left),
                     y = num(ya),
                     x2 = num(h_left + h_w),
@@ -2566,10 +2563,14 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 if ya - 6.0 - 10.0 >= v_top {
                     let _ = write!(
                         out,
-                        r#"<text x="{tx}" y="{ty}" font-family="{MONO}" font-size="10" fill="{tf}">{y0}</text>"#,
+                        r#"<text class="{tf}" x="{tx}" y="{ty}" font-family="{MONO}" font-size="10">{y0}</text>"#,
                         tx = num(h_left + 10.0),
                         ty = num(ya - 6.0),
-                        tf = if live { BAND_TEXT_LIVE } else { BAND_TEXT }
+                        tf = if live {
+                            "k-band-text-live"
+                        } else {
+                            "k-band-text"
+                        }
                     );
                 }
             }
@@ -2583,7 +2584,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 living_named = true;
                 let _ = write!(
                     out,
-                    r#"<text x="{}" y="{}" font-family="{MONO}" font-size="10" letter-spacing="1" fill="{BAND_TEXT_LIVE}">{}</text>"#,
+                    r#"<text class="k-band-text-live" x="{}" y="{}" font-family="{MONO}" font-size="10" letter-spacing="1">{}</text>"#,
                     num(h_left + 10.0),
                     num(label_y),
                     html_escape(&words.living_band)
@@ -2605,10 +2606,10 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
         };
         let _ = write!(
             out,
-            r#"<text x="{}" y="{}" text-anchor="end" font-family="{MONO}" font-size="10" fill="{}">{label}</text>"#,
+            r#"<text class="{}" x="{}" y="{}" text-anchor="end" font-family="{MONO}" font-size="10">{label}</text>"#,
+            if k == 0 { "k-accent" } else { "k-band-text" },
             num(h_left + h_w - 10.0),
-            num(y + 3.5),
-            if k == 0 { ACCENT } else { BAND_TEXT }
+            num(y + 3.5)
         );
     }
 
@@ -2648,7 +2649,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
                 );
                 let _ = write!(
                     out,
-                    r#"<g class="rv-tail"><path d="{d}" fill="none" stroke="url(#{id})" stroke-width="{w}"/><circle cx="{}" cy="{}" r="3.4" fill="{BG}" stroke="{c}" stroke-width="1.4"/></g>"#,
+                    r#"<g class="rv-tail"><path d="{d}" fill="none" stroke="url(#{id})" stroke-width="{w}"/><circle class="k-bg" cx="{}" cy="{}" r="3.4" stroke="{c}" stroke-width="1.4"/></g>"#,
                     num(t.x2),
                     num(t.y2)
                 );
@@ -2769,41 +2770,41 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
         if p.repeat > 1 {
             let _ = write!(
                 out,
-                r#"<circle class="rv-repeat" cx="{x}" cy="{y}" r="{}" fill="none" stroke="{DATA_TEXT}" stroke-width="1"/>"#,
+                r#"<circle class="rv-repeat k-data-line" cx="{x}" cy="{y}" r="{}" fill="none" stroke-width="1"/>"#,
                 num(r + REPEAT_RING)
             );
         }
         if p.again {
             let _ = write!(
                 out,
-                r#"<circle class="rv-again" cx="{x}" cy="{y}" r="{}" fill="none" stroke="{DATA_TEXT}" stroke-width="1" stroke-dasharray="2.4 1.8"/>"#,
+                r#"<circle class="rv-again k-data-line" cx="{x}" cy="{y}" r="{}" fill="none" stroke-width="1" stroke-dasharray="2.4 1.8"/>"#,
                 num(r + REPEAT_RING + if p.repeat > 1 { 2.2 } else { 0.0 })
             );
         }
         if s.living {
             let _ = write!(
                 out,
-                r#"<circle cx="{x}" cy="{y}" r="{}" fill="{LIVING_GLOW}" fill-opacity="0.16"/>"#,
+                r#"<circle class="k-glow" cx="{x}" cy="{y}" r="{}" fill-opacity="0.16"/>"#,
                 num(r + 4.0)
             );
         }
         if is_c {
             let _ = write!(
                 out,
-                r#"<circle cx="{x}" cy="{y}" r="14" fill="none" stroke="{ACCENT}" stroke-width="1.2"/><circle cx="{x}" cy="{y}" r="{}" fill="{ACCENT}"/>"#,
+                r#"<circle class="k-accent-line" cx="{x}" cy="{y}" r="14" fill="none" stroke-width="1.2"/><circle class="k-accent" cx="{x}" cy="{y}" r="{}"/>"#,
                 num(r)
             );
         } else if s.sparse || s.redacted {
             let _ = write!(
                 out,
-                r#"<circle cx="{x}" cy="{y}" r="{}" fill="{BG}" stroke="{}" stroke-width="1.6" stroke-dasharray="1.6 1.6"/>"#,
+                r#"<circle class="k-bg" cx="{x}" cy="{y}" r="{}" stroke="{}" stroke-width="1.6" stroke-dasharray="1.6 1.6"/>"#,
                 num(r),
                 s.colour
             );
         } else {
             let _ = write!(
                 out,
-                r#"<circle cx="{x}" cy="{y}" r="{}" fill="{}" stroke="{BG}" stroke-width="1.6"/>"#,
+                r#"<circle class="k-halo" cx="{x}" cy="{y}" r="{}" fill="{}" stroke-width="1.6"/>"#,
                 num(r),
                 s.colour
             );
@@ -2824,17 +2825,15 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
             } else {
                 name
             };
-            let halo = format!(
-                r#"paint-order="stroke" stroke="{BG}" stroke-width="4" stroke-linejoin="round""#
-            );
+            let halo = r#"paint-order="stroke" stroke-width="4" stroke-linejoin="round""#;
             let lx = num(p.x + r + if is_c { 10.0 } else { 6.0 });
             let _ = write!(
                 out,
-                r#"<text x="{lx}" y="{}" font-family="{SERIF}" font-size="{}" font-weight="{}" fill="{}" {halo}>{}</text><text x="{lx}" y="{}" font-family="{MONO}" font-size="{}" fill="{DATA_TEXT}" {halo}>{}</text>"#,
+                r#"<text class="{} k-halo" x="{lx}" y="{}" font-family="{SERIF}" font-size="{}" font-weight="{}" {halo}>{}</text><text class="k-data k-halo" x="{lx}" y="{}" font-family="{MONO}" font-size="{}" {halo}>{}</text>"#,
+                if is_c { "k-centre" } else { "k-name" },
                 num(p.y - 1.0),
                 if is_c { 16 } else { 12 },
                 if is_c { 600 } else { 400 },
-                if is_c { CENTRE_TEXT } else { NAME_TEXT },
                 html_escape(name),
                 num(p.y + if is_c { 14.0 } else { 11.5 }),
                 if is_c { "11" } else { "9.5" },
@@ -2845,7 +2844,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     }
 
     format!(
-        r#"<svg class="rv-svg" viewBox="{left} {top} {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect x="{left}" y="{top}" width="{w}" height="{h}" fill="{BG}"/>{out}</svg>"#,
+        r#"<svg class="rv-svg" viewBox="{left} {top} {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect class="k-bg" x="{left}" y="{top}" width="{w}" height="{h}"/>{out}</svg>"#,
         left = num(h_left),
         top = num(v_top),
         w = num(h_w),

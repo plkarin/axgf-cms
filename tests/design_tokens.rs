@@ -4,7 +4,8 @@
 //! out, the administration signed in — and its HTML, and every stylesheet and
 //! script it loads, is scanned for hex colour literals. `static/css/tokens.css`
 //! is where colours are named, so it is not scanned. One exemption, named
-//! here: **the river's water ramp in `src/river.rs`** (`river::on_water_ramp`)
+//! here: **the river's water ramp in `src/river.rs`** (`river::on_water_ramp`),
+//! and its port in `static/river.js`
 //! — the colours `river::colour_at` gives the water for a year, and the
 //! neutral water of a river without an era. It is a scale of years drawn on
 //! the water, not furniture.
@@ -12,11 +13,10 @@
 //! In HTML only tags and `<style>` blocks are read, not text: a place with no
 //! name is shown by its id, and `#9f8e7d6c` there is a name, not a colour.
 //!
-//! app.css, which every page shares, moved its colours here in one step;
-//! what is left is each page's own markup and scripts. Until it is done this
-//! is a ratchet: no page may go above
-//! the count it started with ([`START`]), and a page in [`CONVERTED`] must be
-//! at zero. When every page is converted, [`START`] goes and zero is the rule.
+//! Every page is at zero, and zero is the rule. It got there in two steps:
+//! app.css, which every page shares, moved its colours to tokens.css at once
+//! (261 literals on every page), and then the river's drawing and its script
+//! moved theirs to classes (64 on `/`, 81 signed in).
 
 mod common;
 
@@ -25,25 +25,6 @@ use std::collections::{BTreeMap, BTreeSet};
 use axum::http::StatusCode;
 use common::*;
 use serde_json::{json, Value};
-
-/// Hex literals per page: HTML + stylesheets + scripts. When the tokens
-/// arrived (2026-10-09) every page carried app.css's 261, and `/` 325 (342
-/// signed in). app.css then moved every colour into tokens.css in one step,
-/// which left only what `/` draws itself: river.js and the river's markup.
-const START: &[(&str, usize)] = &[("/", 64), ("/ signed in", 81)];
-
-/// Pages converted to the tokens: no hex literal may remain.
-const CONVERTED: &[&str] = &[
-    "/person/:id",
-    "/tree",
-    "/about",
-    "import",
-    "admin",
-    "admin list",
-    "admin edit",
-    "admin users",
-    "404",
-];
 
 const P: &str = "p03";
 
@@ -113,6 +94,8 @@ fn pages() -> Vec<(&'static str, String, bool)> {
         ("admin edit", format!("/admin/person/{P}/edit"), true),
         ("admin users", "/admin/users".into(), true),
         ("404", "/no-such-page".into(), false),
+        ("settings", "/settings?tab=theme".into(), false),
+        ("quality", "/quality".into(), true),
     ]
 }
 
@@ -209,7 +192,19 @@ async fn count(app: &axum::Router, cookie: &str, path: &str, signed_in: bool) ->
             continue;
         }
         let body = body_string(get(app, &a).await).await;
-        by_asset.insert(a, hexes(&body));
+        // river.js is river::render_svg's port for frames in motion, and
+        // carries the same water ramp; the exemption is the ramp, wherever
+        // it is drawn.
+        let found = hexes(&body);
+        let found = if a == "/static/river.js" {
+            found
+                .into_iter()
+                .filter(|h| !axgf_cms::river::on_water_ramp(h))
+                .collect()
+        } else {
+            found
+        };
+        by_asset.insert(a, found);
     }
     Count {
         html: html_hex,
@@ -221,7 +216,6 @@ async fn count(app: &axum::Router, cookie: &str, path: &str, signed_in: bool) ->
 async fn no_colour_is_named_outside_the_tokens() {
     let (app, _s) = app();
     let cookie = admin_cookie(&app).await;
-    let start: BTreeMap<&str, usize> = START.iter().copied().collect();
     let mut failures = Vec::new();
     println!("{:<14} {:>5} {:>5}  assets", "page", "total", "html");
     for (name, path, signed_in) in pages() {
@@ -236,24 +230,12 @@ async fn no_colour_is_named_outside_the_tokens() {
                 .collect::<Vec<_>>()
                 .join(", ")
         );
-        if CONVERTED.contains(&name) {
-            if total > 0 {
-                let mut seen: BTreeSet<&String> = c.html.iter().collect();
-                for h in c.by_asset.values() {
-                    seen.extend(h);
-                }
-                failures.push(format!(
-                    "{name}: {total} hex literal(s) on a converted page: {seen:?}"
-                ));
+        if total > 0 {
+            let mut seen: BTreeSet<&String> = c.html.iter().collect();
+            for h in c.by_asset.values() {
+                seen.extend(h);
             }
-        } else {
-            match start.get(name) {
-                Some(&was) if total > was => {
-                    failures.push(format!("{name}: {total} hex literals, up from {was}"))
-                }
-                None => failures.push(format!("{name}: no starting count recorded ({total})")),
-                _ => {}
-            }
+            failures.push(format!("{name}: {total} hex literal(s): {seen:?}"));
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));

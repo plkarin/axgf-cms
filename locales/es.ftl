@@ -303,8 +303,8 @@ place-map-clear = Quitar el punto
 place-open-in-map = Buscar este lugar en OpenStreetMap y pegar aquí el enlace
 
 person-tab-record = Ficha
-person-tab-life = Vida
-person-tab-media = Materiales
+person-tab-life = Eventos
+person-tab-media = Medios
 person-tab-tree = Árbol
 person-tab-history = Historial
 person-tree-depth = { $n } generaciones a cada lado. El árbol entero está más abajo.

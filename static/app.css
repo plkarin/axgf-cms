@@ -2132,31 +2132,47 @@ a.stat:hover { border-color: var(--accent); }
  * is marked by weight and a rule under it rather than by colour alone, because
  * colour alone is not a distinction every reader can make. */
 .person-tabs {
+  /* Study 06, B4: no boxes; one row that scrolls sideways and never wraps,
+     whatever the width or the language. Logical properties throughout, so
+     right-to-left mirrors the order and the underline stays where it is. */
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  gap: 0.25rem;
   margin: 1.25rem 0 0;
-  border-bottom: 1px solid var(--border-hairline);
+  /* The hairline is drawn inside the strip, not as its border: a strip that
+     scrolls clips what hangs outside it, and the current tab's 2px rule has
+     to sit over the hairline, whole. */
+  box-shadow: inset 0 -1px 0 var(--border-hairline);
 }
 .person-tab {
-  padding: 0.5rem 0.9rem;
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.55rem 0.7rem;
+  white-space: nowrap;
   color: var(--text-secondary);
   text-decoration: none;
-  border: 1px solid transparent;
-  border-bottom: 2px solid transparent;
-  border-radius: var(--radius) var(--radius) 0 0;
+  border: 0;
+  border-block-end: 2px solid transparent;
   font-size: var(--type-minor);
   /* The label is bolder when current. Reserving the bold metrics up front
      stops the row from reflowing as the reader moves between tabs. */
   font-weight: var(--weight-semi);
-  color: var(--text-secondary);
 }
-.person-tab:hover { color: var(--accent); background: var(--accent-soft); }
+.person-tab:hover { color: var(--text-primary); }
+/* Current: full ink and a 2px amber rule. */
 .person-tab.is-current {
   color: var(--text-primary);
-  border-bottom-color: var(--accent);
-  background: var(--surface-raised);
+  border-block-end-color: var(--accent);
 }
+/* An empty tab is dimmed, never disabled: an empty tab is where you add
+   things. */
+.person-tab.is-empty { color: var(--text-tertiary); }
+.person-tab.is-empty.is-current { color: var(--text-primary); }
 .person-tabs + * { margin-top: 1.25rem; }
 
 /* The tree tab: the same canvas the tree page draws, in a box that scrolls
@@ -2844,10 +2860,11 @@ a.tcard:hover {
 /* How much is behind a tab. Quiet: it is a hint about where to click, not a
    number anybody came to read. */
 .tab-count {
+  font-family: var(--mono);
   font-size: var(--type-label);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-normal);
   color: var(--text-tertiary);
-  margin-inline-start: 0.15rem;
+  font-variant-numeric: tabular-nums;
 }
 .person-tab.is-current .tab-count { color: var(--text-secondary); }
 

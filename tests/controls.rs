@@ -201,3 +201,54 @@ fn a_button_that_submits_work_says_so_while_it_is_busy() {
     }
     assert!(missing.is_empty(), "{}", missing.join("\n"));
 }
+
+/// The record's tab strip is one row at any width (B4). It scrolls sideways
+/// rather than wrapping — production wrapped at phone width — and its tabs
+/// never shrink or break their labels. Logical properties throughout, so
+/// `dir="rtl"` mirrors the order and the underline stays at the block end.
+/// The row is measured in a browser at 390px in French, German and Arabic for
+/// the 0.4.0 report; this holds the rules that make it so.
+#[test]
+fn the_tab_strip_is_one_row_that_scrolls_and_mirrors() {
+    let strip = rule(".person-tabs");
+    let tab = rule(".person-tab");
+    assert_eq!(decl(&strip, "flex-wrap"), Some("nowrap"), "{strip}");
+    assert_eq!(decl(&strip, "overflow-x"), Some("auto"), "{strip}");
+    // The hairline inside the strip: a scrolling strip clips anything hung
+    // below it, which is how the current tab's rule lost half its width.
+    assert_eq!(decl(&strip, "box-shadow"), Some("inset 0 -1px 0 var(--border-hairline)"));
+    assert!(decl(&tab, "margin-block-end").is_none(), "{tab}");
+    let tab = rule(".person-tab");
+    assert_eq!(
+        decl(&tab, "flex"),
+        Some("none"),
+        "a tab never shrinks: {tab}"
+    );
+    assert_eq!(decl(&tab, "white-space"), Some("nowrap"), "{tab}");
+    assert_eq!(
+        decl(&tab, "border-block-end"),
+        Some("2px solid transparent")
+    );
+    for (sel, body) in rules() {
+        if sel.contains("person-tab") {
+            for physical in [
+                "border-bottom",
+                "margin-left",
+                "margin-right",
+                "padding-left",
+                "padding-right",
+            ] {
+                assert!(decl(&body, physical).is_none(), "{sel} uses {physical}");
+            }
+            assert_ne!(decl(&body, "flex-wrap"), Some("wrap"), "{sel} wraps");
+        }
+    }
+    let current = rule(".person-tab.is-current");
+    assert_eq!(
+        decl(&current, "border-block-end-color"),
+        Some("var(--accent)")
+    );
+    assert_eq!(decl(&current, "color"), Some("var(--text-primary)"));
+    let count = rule(".tab-count");
+    assert_eq!(decl(&count, "font-family"), Some("var(--mono)"));
+}

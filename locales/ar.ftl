@@ -279,8 +279,8 @@ place-map-clear = أزل النقطة
 place-open-in-map = ابحث عن هذا المكان في OpenStreetMap ثم ألصق الرابط هنا
 
 person-tab-record = السجل
-person-tab-life = الحياة
-person-tab-media = المواد
+person-tab-life = الأحداث
+person-tab-media = الوسائط
 person-tab-tree = الشجرة
 person-tab-history = السجل
 person-tree-depth = { $n } أجيال في كل اتجاه. الشجرة كاملةً في الأسفل.

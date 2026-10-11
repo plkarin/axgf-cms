@@ -294,7 +294,7 @@ place-map-clear = Clear the point
 place-open-in-map = Find this place in OpenStreetMap, then paste the link back
 
 person-tab-record = Record
-person-tab-life = Life
+person-tab-life = Events
 person-tab-media = Media
 person-tab-tree = Tree
 person-tab-history = History

@@ -305,7 +305,7 @@ place-map-clear = Punkt entfernen
 place-open-in-map = Diesen Ort in OpenStreetMap suchen und den Link zurück einfügen
 
 person-tab-record = Eintrag
-person-tab-life = Leben
+person-tab-life = Ereignisse
 person-tab-media = Medien
 person-tab-tree = Stammbaum
 person-tab-history = Verlauf

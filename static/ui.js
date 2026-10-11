@@ -25,6 +25,21 @@
     b.hidden = true;
   });
 
+  // A tab strip scrolls sideways rather than wrap (B4), so the current tab
+  // can start out of view. Bring it to the middle of its strip — the strip
+  // only, never the page — on load, and whenever river.js swaps the record
+  // beside the river (it calls this).
+  function showCurrentTabs(root) {
+    (root || document).querySelectorAll(".person-tabs").forEach(function (nav) {
+      var cur = nav.querySelector(".is-current");
+      if (!cur || nav.scrollWidth <= nav.clientWidth) return;
+      var n = nav.getBoundingClientRect(), c = cur.getBoundingClientRect();
+      nav.scrollLeft += (c.left + c.width / 2) - (n.left + n.width / 2);
+    });
+  }
+  window.axgfShowCurrentTabs = showCurrentTabs;
+  showCurrentTabs();
+
   // `data-toggle="<id>"` — show or hide the element with that id. The delete
   // confirmation row under a listing.
   document.addEventListener("click", function (ev) {

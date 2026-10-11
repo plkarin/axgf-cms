@@ -49,9 +49,9 @@
     {%- for tb in tabs %}
     <a href="/?p={{ p.id }}&amp;n={{ river_n }}{% if tb.slug != 'record' %}&amp;tab={{ tb.slug }}{% endif %}"
        data-tab="{{ tb.slug }}"
-       class="person-tab{% if tb.slug == river_tab %} is-current{% endif %}"
+       class="person-tab{% if tb.slug == river_tab %} is-current{% endif %}{% if tb.slug != 'record' and not tb.count %} is-empty{% endif %}"
        {%- if tb.slug == river_tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}
-      {%- if tb.count %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
+      {%- if tb.slug != 'record' %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
     {%- endfor %}
   </nav>
   {% endif %}

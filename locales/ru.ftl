@@ -325,8 +325,8 @@ place-map-clear = Убрать точку
 place-open-in-map = Найти это место в OpenStreetMap и вставить ссылку обратно
 
 person-tab-record = Запись
-person-tab-life = Жизнь
-person-tab-media = Материалы
+person-tab-life = События
+person-tab-media = Медиа
 person-tab-tree = Древо
 person-tab-history = История
 person-tree-depth = По { $n } поколения в каждую сторону. Всё древо — ниже.

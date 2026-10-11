@@ -643,9 +643,15 @@ async fn an_empty_media_tab_explains_itself_instead_of_being_blank() {
     );
 }
 
-/// The tabs say how much is behind them, and say nothing when it is nothing.
+/// The tabs say how much is behind them; an empty one is dimmed, never
+/// disabled (B4).
+///
+/// The zero used to be left out ("Media 0" read worse than "Media"). Study 06
+/// prints it and dims the tab instead: the reader sees at once which tabs are
+/// empty, and an empty tab is still a link, because it is where you add
+/// things.
 #[tokio::test]
-async fn a_tab_counts_what_is_behind_it_and_omits_a_zero() {
+async fn a_tab_counts_what_is_behind_it_and_an_empty_one_dims_but_still_opens() {
     let src = showcase_bundle("tab-count-src");
     let (app, _p) = app_with_bundle("tab-count", &src);
 
@@ -656,15 +662,36 @@ async fn a_tab_counts_what_is_behind_it_and_omits_a_zero() {
         .and_then(|s| s.split("</nav>").next())
         .expect("the tab bar");
 
+    let tabs: Vec<&str> = nav.split("<a ").skip(1).collect();
+    assert!(tabs.len() >= 5, "{nav}");
+    for tab in &tabs {
+        assert!(
+            tab.contains("href=\"/person/"),
+            "every tab is a link: {tab}"
+        );
+        let record = tab.contains(r#"class="person-tab is-current""#) || !tab.contains("?tab=");
+        if record {
+            assert!(!tab.contains("tab-count"), "the record has no count: {tab}");
+            continue;
+        }
+        assert!(
+            tab.contains(r#"<span class="tab-count">"#),
+            "a count, zero included: {tab}"
+        );
+        let empty = tab.contains(r#"<span class="tab-count">0</span>"#);
+        assert_eq!(
+            tab.contains("is-empty"),
+            empty,
+            "dimmed exactly when empty: {tab}"
+        );
+        assert!(
+            !tab.contains("aria-disabled") && !tab.contains("disabled"),
+            "{tab}"
+        );
+    }
     assert!(
-        nav.contains("tab-count"),
-        "a tab with content says how much: {nav}"
-    );
-    // "Media 0" is a worse thing to read than "Media", and the tab opens and
-    // explains itself either way.
-    assert!(
-        !nav.contains(">0</span>"),
-        "a zero is omitted rather than printed: {nav}"
+        tabs.iter().any(|t| t.contains("is-empty")) && tabs.iter().any(|t| !t.contains("is-empty")),
+        "this record has both kinds: {nav}"
     );
 }
 

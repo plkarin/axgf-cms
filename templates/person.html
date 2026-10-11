@@ -108,13 +108,14 @@
 <nav class="person-tabs" aria-label="{{ t('person-sections-label') }}">
   {% for tb in tabs %}
   <a href="/person/{{ p.id }}{% if tb.slug != 'record' %}?tab={{ tb.slug }}{% endif %}"
-     class="person-tab{% if tb.slug == tab %} is-current{% endif %}"
+     class="person-tab{% if tb.slug == tab %} is-current{% endif %}{% if tb.slug != 'record' and not tb.count %} is-empty{% endif %}"
      {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}
-    {#- How much is behind the tab, so the reader can tell an empty one from a
-        full one before spending a page load on it. Omitted rather than shown
-        as zero: "Media 0" is a worse thing to read than "Media", and the tab
-        still opens and still explains itself. #}
-    {%- if tb.count %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
+    {#- How much is behind the tab, in mono beside its name, so the reader
+        can tell an empty one from a full one before spending a page load on
+        it. Zero is shown, and dims the tab without disabling it: an empty
+        tab is where you add things (B4). The record has no count; it is
+        everything. #}
+    {%- if tb.slug != 'record' %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
   {% endfor %}
 </nav>
 

@@ -322,6 +322,7 @@
         // new centre.
         panel.innerHTML = html !== null ? html
           : '<div class="panel-inner panel-empty"><p class="muted">' + esc(panel.dataset.privateTitle || '') + '</p></div>';
+        if (window.axgfShowCurrentTabs) window.axgfShowCurrentTabs(panel);
       });
   }
   function controls(n) {

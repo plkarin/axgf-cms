@@ -511,8 +511,14 @@ case "$1" in
     done
     dest=""; prev=""
     for a in "$@"; do [ "$prev" = --dest ] && dest="$a"; prev="$a"; done
-    echo "$@" > "$dest/args"
-    ( umask 022; echo archive > "$dest/axgf-backup-$(date -u +%Y%m%dT%H%M%SZ).zip" )
+    # Like the real 0.2.0: write the archive 0644 under sudo -u's umask,
+    # then keep one archive a day — which removes that day's daily.
+    day=$(date -u +%Y%m%d)
+    new="axgf-backup-$(date -u +%Y%m%dT%H%M%SZ).zip"
+    ( umask 022; echo archive > "$dest/$new" )
+    for old in "$dest"/axgf-backup-"$day"T*.zip; do
+      [ -e "$old" ] && [ "$(basename "$old")" != "$new" ] && rm -f "$old"
+    done
     exit 0 ;;
 esac
 exit 0
@@ -527,22 +533,36 @@ exit 0
     let backups = prefix.join("srv/backups");
     run_bootstrap(&prefix, &["--backup-dir", backups.to_str().unwrap()]);
     std::fs::write(prefix.join("var/lib/axgf-cms/family.axgf"), b"stand-in").unwrap();
+    // Two older dailies, and this morning's — the one a same-day backup
+    // beside it used to replace.
+    let now = time::OffsetDateTime::now_utc();
+    let today = format!(
+        "axgf-backup-{:04}{:02}{:02}T000100Z.zip",
+        now.year(),
+        u8::from(now.month()),
+        now.day()
+    );
     let dailies = [
-        "axgf-backup-20261001T031500Z.zip",
-        "axgf-backup-20261002T031500Z.zip",
+        "axgf-backup-20261001T031500Z.zip".to_string(),
+        "axgf-backup-20261002T031500Z.zip".to_string(),
+        today,
     ];
-    for d in dailies {
+    for d in &dailies {
         std::fs::write(backups.join(d), b"daily").unwrap();
+    }
+    // Four earlier pre-upgrade archives: with the new one, the set is kept
+    // to its last three.
+    for d in ["20260901", "20260902", "20260903", "20260904"] {
+        std::fs::write(
+            backups.join(format!("axgf-pre-upgrade-{d}T120000Z.zip")),
+            b"earlier",
+        )
+        .unwrap();
     }
 
     let out = run_bootstrap(&prefix, &["--upgrade"]);
 
-    let args = std::fs::read_to_string(backups.join("args")).unwrap();
-    assert!(
-        args.contains("--keep-daily 100000"),
-        "pruning off for an old binary: {args}"
-    );
-    for d in dailies {
+    for d in &dailies {
         assert!(backups.join(d).exists(), "the upgrade evicted {d}");
     }
     let names: Vec<String> = std::fs::read_dir(&backups)
@@ -553,21 +573,34 @@ exit 0
         .iter()
         .filter(|n| n.starts_with("axgf-pre-upgrade-"))
         .collect();
-    assert_eq!(pre.len(), 1, "{names:?}\n{out}");
+    assert_eq!(
+        pre.len(),
+        3,
+        "the last three pre-upgrade archives: {names:?}\n{out}"
+    );
+    assert!(
+        !names.iter().any(|n| n.contains("20260901")),
+        "the oldest went"
+    );
     assert_eq!(
         names
             .iter()
             .filter(|n| n.starts_with("axgf-backup-"))
             .count(),
-        2,
-        "only the two dailies remain under the daily name: {names:?}"
+        3,
+        "only the three dailies remain under the daily name: {names:?}"
     );
-    let mode = std::fs::metadata(backups.join(pre[0]))
+    assert!(
+        !names.iter().any(|n| n.starts_with(".pre-upgrade")),
+        "its working directory is gone: {names:?}"
+    );
+    let newest = pre.iter().max().unwrap();
+    let mode = std::fs::metadata(backups.join(newest))
         .unwrap()
         .permissions()
         .mode()
         & 0o777;
-    assert_eq!(mode, 0o600, "{} is {mode:o}", pre[0]);
+    assert_eq!(mode, 0o600, "{newest} is {mode:o}");
 }
 
 /// Run bootstrap.sh with the *real* binary rather than the stand-in, so the

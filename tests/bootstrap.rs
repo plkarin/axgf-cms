@@ -861,11 +861,29 @@ fn stage_script(dir: &Path, tag: &str, extra: Option<&str>) {
 
 /// A dry run with no locally supplied binary, so the download branch is the
 /// one that reports what it would fetch.
+/// It runs the installer as a release ships it, stamped `v0.1.0-rc1`.
 fn dry_run_download(prefix: &Path, extra: &[&str]) -> String {
+    dry_run_as(prefix, Some("v0.1.0-rc1"), extra)
+}
+
+/// A dry run of the installer stamped with `stamp`, or of the unstamped copy
+/// on `main` when it is `None`.
+fn dry_run_as(prefix: &Path, stamp: Option<&str>, extra: &[&str]) -> String {
     let mut args = vec!["--dry-run"];
     args.extend_from_slice(extra);
+    let source = std::fs::read_to_string(repo_root().join("deploy/bootstrap.sh")).unwrap();
+    let script = match stamp {
+        Some(tag) => source.replace(
+            "SCRIPT_VERSION=\"__SCRIPT_VERSION__\"",
+            &format!("SCRIPT_VERSION=\"{tag}\""),
+        ),
+        None => source,
+    };
+    std::fs::create_dir_all(prefix).unwrap();
+    let path = prefix.join("bootstrap-dry-run.sh");
+    std::fs::write(&path, script).unwrap();
     let out = Command::new("bash")
-        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .arg(&path)
         .args(&args)
         .env("AXGF_CMS_PREFIX", prefix)
         .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
@@ -882,28 +900,45 @@ fn dry_run_download(prefix: &Path, extra: &[&str]) -> String {
 }
 
 #[test]
-fn the_default_asks_for_latest_and_a_tag_asks_for_that_tag() {
-    // The URL is the whole of the fix: /releases/latest resolves stable
-    // releases only, so a release candidate is unreachable without --version.
-    let prefix = common::scratch("boot-url");
-    let out = dry_run_download(&prefix, &[]);
+fn a_dry_run_describes_the_release_that_would_be_installed() {
+    // A release's installer installs its own release, so that is the one
+    // whose asset the dry run names, with or without --version.
+    let asset = format!(
+        "releases/download/v0.1.0-rc1/axgf-cms-v0.1.0-rc1-{}.tar.gz",
+        target_triple()
+    );
+    let out = dry_run_download(&common::scratch("boot-url"), &[]);
+    assert!(out.contains(&asset), "its own release: {out}");
+    let out = dry_run_download(
+        &common::scratch("boot-url-tag"),
+        &["--version", "v0.1.0-rc1"],
+    );
+    assert!(out.contains(&asset), "--version naming itself: {out}");
+}
+
+#[test]
+fn a_dry_run_that_would_hand_over_stops_there() {
+    // It used to go on and describe its own release: asked for v0.3.0, the
+    // v0.3.1 installer said it would download v0.3.1.
+    let out = dry_run_download(&common::scratch("boot-dry-other"), &["--version", "v0.3.0"]);
     assert!(
-        out.contains(&format!(
-            "releases/latest/download/axgf-cms-{}.tar.gz",
-            target_triple()
-        )),
-        "the default is still latest: {out}"
+        out.contains("releases/download/v0.3.0/bootstrap.sh"),
+        "it names the installer it would hand over to: {out}"
+    );
+    assert!(out.contains("the rest is up to that installer"), "{out}");
+    assert!(
+        !out.contains("tar.gz"),
+        "and describes no download of its own: {out}"
     );
 
-    let prefix = common::scratch("boot-url-tag");
-    let out = dry_run_download(&prefix, &["--version", "v0.1.0-rc1"]);
+    // The copy on main always hands over, to the latest release's installer.
+    let out = dry_run_as(&common::scratch("boot-dry-main"), None, &[]);
     assert!(
-        out.contains(&format!(
-            "releases/download/v0.1.0-rc1/axgf-cms-v0.1.0-rc1-{}.tar.gz",
-            target_triple()
-        )),
-        "--version addresses the tagged asset: {out}"
+        out.contains("releases/latest/download/bootstrap.sh"),
+        "{out}"
     );
+    assert!(out.contains("the rest is up to that installer"), "{out}");
+    assert!(!out.contains("tar.gz"), "{out}");
 }
 
 #[test]

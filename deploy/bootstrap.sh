@@ -212,6 +212,13 @@ hand_over() {
   url="$(script_url)"
   if [ "$DRY_RUN" = "1" ]; then
     printf '  [dry-run] would fetch and verify %s, and run it unless it is this version\n' "$url"
+    # What happens after a hand-over is the other installer's to say; going
+    # on would describe this one's version instead.
+    if [ -z "$SCRIPT_VERSION" ] || { [ -n "$VERSION" ] && [ "$VERSION" != "$SCRIPT_VERSION" ]; }; then
+      printf '  [dry-run] the rest is up to that installer: run it with --dry-run to see it\n'
+      exit 0
+    fi
+    printf '  [dry-run] if it is %s, the rest is as follows\n' "$SCRIPT_VERSION"
     return
   fi
   tmp="$(mktemp -d)"; TMPDIRS+=("$tmp")

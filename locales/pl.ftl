@@ -3440,3 +3440,6 @@ quality-dismissed-summary = { $n ->
     [many] { $n } uwag sprawdzonych i zachowanych
    *[other] { $n } uwagi sprawdzonej i zachowanej
 }
+quality-dismiss-all = Oznacz wszystkie jako sprawdzone ({ $n })
+quality-restore-all = Pokaż wszystkie ponownie ({ $n })
+quality-bulk-conflict = Karty zmienione od otwarcia listy: { $n }. Nic nie oznaczono; odśwież listę i spróbuj ponownie.

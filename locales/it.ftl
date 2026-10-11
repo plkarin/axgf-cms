@@ -3254,3 +3254,6 @@ quality-dismissed-summary = { $n ->
     [one] { $n } rilievo verificato e mantenuto
    *[other] { $n } rilievi verificati e mantenuti
 }
+quality-dismiss-all = Segna tutto come verificato ({ $n })
+quality-restore-all = Mostra di nuovo tutto ({ $n })
+quality-bulk-conflict = Schede cambiate dall’apertura dell’elenco: { $n }. Non è stato segnato nulla; ricarica l’elenco e riprova.

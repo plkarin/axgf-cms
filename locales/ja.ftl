@@ -3019,3 +3019,6 @@ quality-gone-detail = 一覧を開いた後に記録が変わり、指摘の内�
 quality-summary = 確認したほうがよい点：{ $n } 件
 quality-summary-file = このファイルで確認したほうがよい点：{ $n } 件
 quality-dismissed-summary = 確認済みの指摘：{ $n } 件
+quality-dismiss-all = すべて確認済みにする（{ $n }）
+quality-restore-all = すべて再表示する（{ $n }）
+quality-bulk-conflict = 一覧を開いた後に変更された記録：{ $n } 件。何も変更していません。一覧を再読み込みしてやり直してください。

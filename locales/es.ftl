@@ -3254,3 +3254,6 @@ quality-dismissed-summary = { $n ->
     [one] { $n } hallazgo comprobado y conservado
    *[other] { $n } hallazgos comprobados y conservados
 }
+quality-dismiss-all = Marcar todo como comprobado ({ $n })
+quality-restore-all = Volver a mostrar todo ({ $n })
+quality-bulk-conflict = Fichas cambiadas desde que se abrió la lista: { $n }. No se marcó nada; recargue la lista y vuelva a intentarlo.

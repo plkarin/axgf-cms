@@ -417,3 +417,96 @@ fn changing_the_value_brings_a_dismissed_finding_back() {
     );
     assert_ne!(now.fingerprint, f.fingerprint);
 }
+
+/// Every finding of one rule, as listed, marked as checked in one save — the
+/// way 97 places without a region can be cleared at all — all or nothing:
+/// one stale record and none is marked. Each record still steps its version
+/// once, as if saved alone.
+#[tokio::test]
+async fn a_whole_rule_is_marked_as_checked_in_one_save_or_not_at_all() {
+    let (ps, fs, mut pls) = clean();
+    for (id, name) in [("r1", "Kraków"), ("r2", "Radom"), ("r3", "Płock")] {
+        pls.push(place(id, name, None));
+    }
+    let src = common::scratch("quality-bulk-src");
+    let path = src.join("q.axgf");
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&bundle(ps, fs, pls).to_string()).unwrap(),
+    )
+    .unwrap();
+    let (app, _s) = common::app_with_bundle("quality-bulk", &path);
+    drop(src);
+    let cookie = common::admin_cookie(&app).await;
+    let list = || async {
+        let body =
+            common::body_string(common::get_with_cookie(&app, "/quality.json", &cookie).await)
+                .await;
+        serde_json::from_str::<Vec<Value>>(&body).unwrap()
+    };
+    let enc = |s: &str| s.replace('|', "%7C").replace(':', "%3A");
+    let form = |items: &[Value], bump: Option<&str>| -> String {
+        let mut b = String::from("rule=place-no-region&back=/quality&note=villages");
+        for f in items {
+            let v = f["version"].as_u64().unwrap() + u64::from(bump == f["id"].as_str());
+            b.push_str(&format!(
+                "&f={}",
+                enc(&format!(
+                    "place|{}|{}|{v}",
+                    f["id"].as_str().unwrap(),
+                    f["fingerprint"].as_str().unwrap()
+                ))
+            ));
+        }
+        b
+    };
+    let before: Vec<Value> = list()
+        .await
+        .into_iter()
+        .filter(|f| f["rule"] == "place-no-region")
+        .collect();
+    assert_eq!(before.len(), 3);
+
+    // One record stale: refused, and none of the three is marked.
+    let resp = common::post_form_as(
+        &app,
+        &cookie,
+        "/quality/rule/dismiss",
+        &form(&before, Some("r2")),
+    )
+    .await;
+    assert_eq!(resp.status(), axum::http::StatusCode::CONFLICT);
+    assert!(list()
+        .await
+        .iter()
+        .filter(|f| f["rule"] == "place-no-region")
+        .all(|f| f["dismissed"].is_null()));
+
+    // As shown: all three, in one request.
+    let resp =
+        common::post_form_as(&app, &cookie, "/quality/rule/dismiss", &form(&before, None)).await;
+    assert!(resp.status().is_redirection(), "{}", resp.status());
+    let after: Vec<Value> = list()
+        .await
+        .into_iter()
+        .filter(|f| f["rule"] == "place-no-region")
+        .collect();
+    for f in &after {
+        assert_eq!(f["dismissed"]["note"], "villages");
+        let was = before.iter().find(|b| b["id"] == f["id"]).unwrap();
+        assert_eq!(
+            f["version"].as_u64().unwrap(),
+            was["version"].as_u64().unwrap() + 1
+        );
+    }
+
+    // And all shown again.
+    let resp =
+        common::post_form_as(&app, &cookie, "/quality/rule/restore", &form(&after, None)).await;
+    assert!(resp.status().is_redirection());
+    assert!(list()
+        .await
+        .iter()
+        .filter(|f| f["rule"] == "place-no-region")
+        .all(|f| f["dismissed"].is_null()));
+}

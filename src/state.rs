@@ -326,6 +326,33 @@ pub enum UpdateOutcome {
     Missing,
 }
 
+/// One record in a batch of version-checked updates
+/// ([`AppState::update_many_checked`]).
+pub struct BatchItem {
+    pub kind: axgf_rs::EntityKind,
+    pub id: String,
+    pub expected_version: u64,
+    pub entity: Value,
+    pub label: Option<String>,
+}
+
+/// The outcome of a batch: all applied in one save, or none.
+pub enum BatchOutcome {
+    Applied {
+        records: usize,
+    },
+    /// These records changed (or went) since the batch was prepared. Nothing
+    /// was written.
+    Conflict {
+        ids: Vec<String>,
+    },
+    /// The library refused one of them. Nothing was written.
+    Refused {
+        id: String,
+        diagnostics: Vec<Diagnostic>,
+    },
+}
+
 /// Outcome of a mutation attempt.
 ///
 /// A refused mutation is not an application error — the library declined and
@@ -1095,6 +1122,84 @@ impl AppState {
             diagnostics,
             version_num: current_version + 1,
             changes: entry.changes,
+        })
+    }
+
+    /// Version-checked updates of many records, written in one save.
+    ///
+    /// A save rewrites the whole bundle — on the operator's 434 MB archive
+    /// that is the cost of any edit — so marking 97 findings of one rule as
+    /// checked one save at a time was not something anybody would do. This
+    /// applies every update under one write lock and persists once. It is all
+    /// or nothing: every record's version is compared first, and if any has
+    /// changed, or the library refuses any of them, nothing is written. Each
+    /// record still gets its own journal entry and its own version step, so
+    /// the history reads exactly as if they had been saved one by one.
+    pub fn update_many_checked(&self, items: Vec<BatchItem>, who: &str) -> Result<BatchOutcome> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+
+        let mut stale = Vec::new();
+        let mut stored_of = Vec::with_capacity(items.len());
+        for it in &items {
+            let collection = crate::admin::collection_for(it.kind);
+            match guard.get(collection).and_then(|c| c.get(&it.id)).cloned() {
+                Some(s) if version_of(&s) == it.expected_version => stored_of.push(s),
+                _ => stale.push(it.id.clone()),
+            }
+        }
+        if !stale.is_empty() {
+            return Ok(BatchOutcome::Conflict { ids: stale });
+        }
+
+        let mut bundle = guard.to_string();
+        let mut written = Vec::with_capacity(items.len());
+        for (it, stored) in items.iter().zip(&stored_of) {
+            let mut entity = it.entity.clone();
+            entity["version_num"] = Value::from(it.expected_version + 1);
+            entity["updated_at"] = Value::from(crate::view::now_iso8601());
+            crate::profile::declare_version(it.kind, &mut entity);
+            if let Some(created) = stored.get("created_at") {
+                entity["created_at"] = created.clone();
+            }
+            let env = axgf_rs::update_entity(&bundle, it.kind, &entity.to_string());
+            if env.status == Status::Error || env.data.is_null() {
+                return Ok(BatchOutcome::Refused {
+                    id: it.id.clone(),
+                    diagnostics: env.diagnostics,
+                });
+            }
+            let Some(next) = bundle_from_data(&env.data) else {
+                return Ok(BatchOutcome::Refused {
+                    id: it.id.clone(),
+                    diagnostics: env.diagnostics,
+                });
+            };
+            bundle = next.to_string();
+            written.push(entity);
+        }
+        let new_bundle: Value = serde_json::from_str(&bundle)?;
+        self.persist(&new_bundle)?;
+        *guard = new_bundle;
+        self.invalidate_lenses();
+        drop(guard);
+
+        for ((it, stored), after) in items.iter().zip(&stored_of).zip(&written) {
+            let entry = crate::journal::entry_for(crate::journal::Record {
+                who,
+                action: "update",
+                kind: kind_name(it.kind),
+                entity_id: &it.id,
+                label: it.label.clone(),
+                version_num: Some(it.expected_version + 1),
+                before: Some(stored),
+                after: Some(after),
+            });
+            if let Err(e) = self.journal.append(&entry) {
+                tracing::error!(error = %e, "could not append to the edit journal");
+            }
+        }
+        Ok(BatchOutcome::Applied {
+            records: items.len(),
         })
     }
 

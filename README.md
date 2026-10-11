@@ -33,9 +33,10 @@ curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootst
   | sudo bash -s -- --with-sample
 ```
 
-It installs the latest stable release — **v0.2.0**, of 10 October 2026, the
-first with the river as its landing page — and reads AXGF 1.0 and 1.1 files.
-To pin a release, add `--version v0.2.0`; to build what is on `main` instead,
+It installs the latest stable release — **v0.3.0**, of 11 October 2026, which
+adds a data-quality page (`/quality`) and search to the river landing page
+of v0.2.0 — and reads AXGF 1.0 and 1.1 files.
+To pin a release, add `--version v0.3.0`; to build what is on `main` instead,
 `--from-source`, which needs `cargo` on root's `PATH`. Every release, with its
 binaries and checksums, is on the
 [releases page](https://github.com/plkarin/axgf-cms/releases).
@@ -202,7 +203,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v0.2.0`](https://github.com/plkarin/axgf-cms/releases/tag/v0.2.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v0.3.0`](https://github.com/plkarin/axgf-cms/releases/tag/v0.3.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

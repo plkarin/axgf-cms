@@ -664,6 +664,8 @@ record-living-yes = жив
 record-deceased = умер(ла)
 record-centre-tree-here = Центрировать древо здесь
 record-centre-tree-title = Передвинуть древо, чтобы центрировать его на этом человеке
+record-see-in-tree = Показать в древе
+record-see-in-tree-title = Открыть сетку карточек вокруг этого человека
 record-open-full-page = Открыть отдельной страницей ↗
 record-open-full-title = Открыть самостоятельную страницу, которой можно поделиться
 record-edit = Править
@@ -3356,3 +3358,92 @@ river-legend-direction = ↓ к истоку · ↑ к живым
 river-grid-link = Сетка
 river-tab-sources = Источники
 river-legend-title = Как читать реку
+
+# Masthead search
+search-label = Найти человека
+search-placeholder = Найти человека
+search-title = Поиск
+search-heading = Люди по запросу «{ $q }»
+search-none = Среди видимых вам людей никого с таким именем нет.
+search-open-record = Открыть карточку
+search-hint = Enter переносит реку к этому человеку; Shift+Enter открывает его карточку.
+search-empty-query = Введите имя для поиска.
+
+# Data quality (/quality)
+nav-quality = Качество данных
+quality-title = На что стоит взглянуть
+quality-none = Смотреть не на что: все проверки пройдены.
+quality-intro = Здесь ничего не меняется за вас. Каждая строка — случай, который стоит проверить; часто у него есть веская причина. Откройте карточку и решите или отметьте его как проверенный.
+quality-groups-label = Виды замечаний
+quality-all = Все
+quality-group-names = Имена
+quality-group-relations = Родственные связи
+quality-group-dates = Даты
+quality-group-places = Места
+quality-group-evidence = Источники
+quality-export-csv = Скачать как CSV
+quality-export-json = Скачать как JSON
+quality-open = Открыть
+quality-none-file = В этом файле смотреть не на что.
+quality-show-list = Показать список
+quality-after-import = В файле ничего не изменено. Когда он станет архивом сайта, страница качества данных покажет то же самое со ссылкой на каждую карточку.
+quality-rule-name-sentence = Фраза в поле имени
+quality-name-sentence = «{ $value }» больше похоже на фразу, чем на имя: если это пояснение, оставьте в поле только имя, а остальное перенесите в заметку.
+quality-rule-union-parent-child = Супруги, которые также родитель и ребёнок
+quality-union-parent-child = { $parent } и { $child } указаны и как супруги, и как родитель и ребёнок: стоит проверить, какую связь подтверждают источники.
+quality-rule-child-listed-twice = Ребёнок указан дважды
+quality-child-listed-twice = { $child } дважды указан среди детей этой семьи: если это один и тот же ребёнок, одну запись можно убрать.
+quality-rule-duplicate-union = Одна и та же пара записана дважды
+quality-duplicate-union = Для { $a } и { $b } записано союзов: { $count }. Если брак был один, возможно, это одна и та же запись, внесённая дважды.
+quality-rule-partner-twice = Один человек с обеих сторон союза
+quality-partner-twice = { $person } указан с обеих сторон этого союза: стоит выяснить, кто был вторым супругом, или оставить эту сторону пустой, если никто не знает.
+quality-rule-foreign-surnames = Сын с фамилией, не совпадающей ни с одним из родителей
+quality-foreign-surnames = Фамилия, не совпадающая ни с одним из родителей: { $who }. Это бывает нормально — смена фамилии, пасынок, иное написание, — но стоит взглянуть. (Дочери не учитываются: обычно это фамилия по мужу.)
+quality-rule-death-before-birth = Смерть раньше рождения
+quality-death-before-birth = У { $person } смерть в { $death } — раньше рождения в { $birth }: возможно, одна из дат введена с ошибкой; стоит сверить с источниками.
+quality-rule-child-before-parent = Ребёнок родился раньше родителя
+quality-child-before-parent = { $child } (род. { $childborn }), судя по записям, родился раньше родителя { $parent } (род. { $parentborn }): стоит проверить даты или родство.
+quality-rule-parent-too-young = Родитель младше двенадцати лет
+quality-parent-too-young = { $parent } было бы { $age } при рождении { $child }, что необычно: стоит проверить даты или родство.
+quality-rule-parent-too-old = Родитель старше шестидесяти пяти лет
+quality-parent-too-old = { $parent } было бы { $age } при рождении { $child }, что необычно: стоит проверить даты или родство.
+quality-rule-marriage-before-birth = Брак раньше рождения одного из супругов
+quality-marriage-before-birth = Этот брак датирован { $married } — раньше рождения { $person } в { $born }: стоит проверить дату брака.
+quality-rule-isolated-record = Карточка без дат и связей
+quality-isolated-record = У { $person } нет ни дат, ни связей с кем-либо в семье: стоит добавить, как этот человек связан с семьёй, или удалить карточку, если она создана по ошибке.
+quality-rule-place-no-region = Место без региона
+quality-place-no-region = У места { $place } нет региона: регион помогает различать места с одинаковым названием.
+quality-rule-region-free-text = Регион, похожий на заметку
+quality-region-free-text = В регионе места { $place } указано «{ $value }» — это больше похоже на заметку, чем на регион: стоит перенести заметку в карточку, к которой она относится.
+quality-rule-place-near-duplicate = Места, которые могут совпадать
+quality-place-near-duplicate = { $names } — возможно, одно и то же место, записанное по-разному: если так, их можно объединить.
+quality-rule-not-a-place = Запись, которая, возможно, не место
+quality-not-a-place = «{ $place }» есть в списке мест, но, возможно, это не место — запись начинается со строчной буквы, что для названий мест редкость: стоит проверить, не заметка ли это о месте.
+quality-rule-certain-without-source = Достоверно, но без источника
+quality-certain-without-source = В записи { $record } есть сведение, отмеченное как полностью достоверное ({ $claims }), без источника: стоит приложить источник или понизить достоверность.
+quality-dismiss = Проверено — у нас так и есть
+quality-restore = Показать снова
+quality-note-label = Почему (необязательно)
+quality-show-dismissed = Проверенные и оставленные
+quality-show-open = Назад к открытому списку
+quality-dismissed-by = Проверено: { $by }, { $at }
+quality-gone-title = Этого замечания больше нет
+quality-gone-detail = Карточка изменилась с момента открытия списка, и замечание теперь другое. Обновите список и посмотрите снова.
+quality-summary = { $n ->
+    [one] { $n } вещь, на которую стоит взглянуть
+    [few] { $n } вещи, на которые стоит взглянуть
+    [many] { $n } вещей, на которые стоит взглянуть
+   *[other] { $n } вещи, на которые стоит взглянуть
+}
+quality-summary-file = { $n ->
+    [one] В этом файле { $n } вещь, на которую стоит взглянуть
+    [few] В этом файле { $n } вещи, на которые стоит взглянуть
+    [many] В этом файле { $n } вещей, на которые стоит взглянуть
+   *[other] В этом файле { $n } вещи, на которые стоит взглянуть
+}
+quality-dismissed-summary = { $n ->
+    [one] { $n } замечание проверено и оставлено
+    [few] { $n } замечания проверены и оставлены
+    [many] { $n } замечаний проверено и оставлено
+   *[other] { $n } замечания проверено и оставлено
+}

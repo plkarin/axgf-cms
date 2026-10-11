@@ -17,7 +17,13 @@
 </p>
 {% endif %}
 
-<div class="river" data-base="/" data-centre="{{ centre }}" data-n="{{ n }}">
+{#- `data-river-centre`, not `data-centre`: river.js routes clicks by the
+    nearest ancestor carrying one of its data attributes, and `data-centre`
+    on this root made every other link inside the river — the grid, the full
+    record, the editor — resolve to the root, travel to where it already was,
+    and do nothing. #}
+<div class="river" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
+     data-river-motion="{{ 'cut' if motion_cut else 'travel' }}">
   <section class="rv-stage" aria-label="{{ t('nav-river') }}">
     <div class="rv-controls">
       <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
@@ -32,8 +38,8 @@
         {%- endfor %}
       </div>
       <div class="rv-seg" role="group" aria-label="{{ t('river-motion') }}">
-        <button type="button" data-motion="travel" aria-pressed="true">{{ t("river-travel") }}</button>
-        <button type="button" data-motion="cut" aria-pressed="false">{{ t("river-cut") }}</button>
+        <button type="button" data-motion="travel" aria-pressed="{{ 'false' if motion_cut else 'true' }}">{{ t("river-travel") }}</button>
+        <button type="button" data-motion="cut" aria-pressed="{{ 'true' if motion_cut else 'false' }}">{{ t("river-cut") }}</button>
       </div>
       <a class="rv-btn rv-grid" href="/tree?root={{ centre_q }}">{{ t("river-grid-link") }}</a>
     </div>

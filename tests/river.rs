@@ -887,3 +887,136 @@ async fn the_grid_panel_and_the_person_page_are_unchanged_by_the_river_tabs() {
     assert!(media.contains("SOURCEMARK") && media.contains("DOCMARK"));
     assert!(!media.contains("rv-tabs"));
 }
+
+/// The motion choice is an accessibility setting, not a passing state: a
+/// reader who chose "cut" — often because animation is hard on them — keeps
+/// it on the next page and the next reload, because the server renders it
+/// back from the cookie river.js writes. And prefers-reduced-motion still
+/// wins over a "travel" choice: river.js animates only when neither the
+/// choice nor the system asks for a cut, and disables "travel" when the
+/// system does.
+#[tokio::test]
+async fn a_cut_choice_survives_pages_and_reloads_and_reduced_motion_still_forces_it() {
+    let (app, _s) = app("river-motion");
+    let plain = body_string(get(&app, "/?p=p07&n=3").await).await;
+    assert!(plain.contains(r#"data-river-motion="travel""#));
+    assert!(plain.contains(r#"data-motion="travel" aria-pressed="true""#));
+
+    for uri in ["/?p=p07&n=3", "/?p=p05&n=5", "/?p=p07&n=2&tab=family"] {
+        let page = body_string(get_with_cookie(&app, uri, "axgf_river_motion=cut").await).await;
+        assert!(page.contains(r#"data-river-motion="cut""#), "{uri}");
+        assert!(
+            page.contains(r#"data-motion="cut" aria-pressed="true""#),
+            "{uri}"
+        );
+        assert!(
+            page.contains(r#"data-motion="travel" aria-pressed="false""#),
+            "{uri}"
+        );
+    }
+
+    let js = axgf_cms::render::RIVER_JS;
+    assert!(
+        js.contains("root.dataset.riverMotion === 'cut'"),
+        "river.js starts from the rendered choice"
+    );
+    assert!(js.contains("axgf_river_motion="), "and remembers a new one");
+    assert!(
+        js.contains("if (cut || reduce) return done();"),
+        "a forced cut never animates"
+    );
+    assert!(
+        js.contains("if (reduce && !isCut) b.disabled = true;"),
+        "and says so"
+    );
+    // The page's own <html data-motion> must never be taken for the control.
+    assert!(
+        js.contains("button[data-motion]") && !js.contains("closest('[data-range],[data-motion]")
+    );
+}
+
+/// The data-quality screen, beside the invariant above it: a reader learns
+/// nothing about a person they may not see — not their name, not their dates,
+/// not that their record has something worth a look — from the page, the CSV
+/// or the JSON, and the count they are shown is the count without them.
+#[tokio::test]
+async fn the_quality_screen_tells_a_reader_nothing_about_someone_hidden_from_them() {
+    let mut hidden = person(
+        "zz-hidden-7",
+        "Ukryta - w dokumentach inaczej zapisana",
+        "Tajna",
+        "F",
+        Some(1777),
+        Some(1666),
+        true,
+    );
+    hidden["identity"]["visibility"] = json!("private");
+    let mut flat = twelve();
+    flat["persons"]["zz-hidden-7"] = hidden;
+    let src = scratch("quality-hidden-src");
+    let path = src.join("q.axgf");
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).unwrap(),
+    )
+    .unwrap();
+    let (app, _s) = app_with_bundle("quality-hidden", &path);
+    drop(src);
+
+    // An administrator sees the finding; a viewer, who may not read private
+    // records, sees a list without any trace of it.
+    let admin = body_string(get_admin(&app, "/quality.json").await).await;
+    assert!(admin.contains("Ukryta"), "the administrator's list has it");
+    let made = post_form(
+        &app,
+        "/admin/users",
+        "username=vera&password=correct-horse-battery&role=viewer&email=&family_scope=",
+        true,
+    )
+    .await;
+    assert!(
+        made.status().is_success() || made.status().is_redirection(),
+        "{}",
+        made.status()
+    );
+    let login = post_form(
+        &app,
+        "/admin/login",
+        "username=vera&password=correct-horse-battery",
+        false,
+    )
+    .await;
+    let cookie = login
+        .headers()
+        .get(axum::http::header::SET_COOKIE)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|c| c.split(';').next())
+        .expect("vera signs in")
+        .to_string();
+    let page = body_string(get_with_cookie(&app, "/quality", &cookie).await).await;
+    let csv = body_string(get_with_cookie(&app, "/quality.csv", &cookie).await).await;
+    let json: Value = serde_json::from_str(
+        &body_string(get_with_cookie(&app, "/quality.json", &cookie).await).await,
+    )
+    .unwrap();
+    for (what, body) in [
+        ("page", page.as_str()),
+        ("csv", csv.as_str()),
+        ("json", &json.to_string()),
+    ] {
+        for trace in ["zz-hidden-7", "Ukryta", "Tajna", "1777", "1666", "inaczej"] {
+            assert!(
+                !body.contains(trace),
+                "{trace} reached a viewer through the {what}"
+            );
+        }
+    }
+    let without =
+        axgf_cms::quality::for_reader(&twelve(), &Lens::resolve(&twelve(), Visibility::Members))
+            .len();
+    assert_eq!(
+        json.as_array().unwrap().len(),
+        without,
+        "the viewer's count is the count without the hidden person"
+    );
+}

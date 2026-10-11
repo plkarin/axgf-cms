@@ -511,6 +511,12 @@ pub async fn list(
 }
 
 /// `GET /admin/:kind/new`
+/// `GET /admin/place/new` — [`new_form`] for places, which need their own
+/// route: `/admin/place/:id` would otherwise take "new" for an id.
+pub async fn new_place_form(state: State<Shared>, headers: HeaderMap) -> Response {
+    new_form(state, headers, Path("place".to_string())).await
+}
+
 pub async fn new_form(
     State(state): State<Shared>,
     headers: HeaderMap,
@@ -3375,5 +3381,168 @@ fn set_avatar_choice(
             "error-no-such-person-title",
             "error-no-such-person-detail",
         )),
+    }
+}
+
+/// `POST /quality/dismiss` and `/quality/restore` — mark one finding as looked
+/// at ("checked, this is normal for us"), or bring it back.
+///
+/// A dismissal is a change to the record the finding is about: an entry in
+/// its `extensions` under [`crate::quality::DISMISSED_KEY`], saved through
+/// `update_checked` like any edit, so it is journaled, locked against the
+/// version the list was rendered from, and scoped like any other write. It
+/// names the finding by its fingerprint, which includes a hash of what the
+/// finding is about, so changing the value later brings the finding back.
+/// Nothing is ever removed but a dismissal itself, and only by restoring.
+pub async fn quality_mark(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(action): Path<String>,
+    Form(form): Form<HashMap<String, String>>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let field = |k: &str| {
+        form.get(k)
+            .map(|v| v.trim().to_string())
+            .unwrap_or_default()
+    };
+    let (kind, id, fingerprint) = (field("kind"), field("id"), field("fingerprint"));
+    let Some(k) = crate::admin::kind_from_str(&kind) else {
+        return unknown_kind(&chrome, &kind);
+    };
+    let dismiss = match action.as_str() {
+        "dismiss" => true,
+        "restore" => false,
+        _ => return StatusCode::NOT_FOUND.into_response(),
+    };
+    // Only a finding this reader can currently see may be dismissed, and only
+    // as it currently reads: anything else is not a finding.
+    let (stored, finding) = state.read_as(viewer.ceiling(), |flat, lens| {
+        let stored = flat
+            .get(crate::admin::collection_for(k))
+            .and_then(|c| c.get(&id))
+            .cloned();
+        let finding = crate::quality::for_reader(flat, lens)
+            .into_iter()
+            .find(|f| f.fingerprint == fingerprint && f.id == id);
+        (stored, finding)
+    });
+    let Some(stored) = stored else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-deleted-while-editing",
+        );
+    };
+    if dismiss && finding.is_none() {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "quality-gone-title",
+            "quality-gone-detail",
+        );
+    }
+
+    let mut entity = stored.clone();
+    if !entity.get("extensions").is_some_and(Value::is_object) {
+        entity["extensions"] = json!({});
+    }
+    let list = entity["extensions"]
+        .as_object_mut()
+        .expect("an object")
+        .entry(crate::quality::DISMISSED_KEY)
+        .or_insert_with(|| json!([]));
+    if !list.is_array() {
+        *list = json!([]);
+    }
+    let list = list.as_array_mut().expect("an array");
+    list.retain(|d| d.get("fingerprint").and_then(Value::as_str) != Some(fingerprint.as_str()));
+    if dismiss {
+        let at = time::OffsetDateTime::now_utc()
+            .format(&time::format_description::well_known::Rfc3339)
+            .unwrap_or_default();
+        let mut entry = json!({
+            "fingerprint": fingerprint,
+            "rule": finding.as_ref().map(|f| f.rule.slug()).unwrap_or(""),
+            "by": viewer.name(),
+            "at": at,
+        });
+        let note = field("note");
+        if !note.is_empty() {
+            entry["note"] = Value::String(note);
+        }
+        list.push(entry);
+    }
+    if list.is_empty() {
+        entity["extensions"]
+            .as_object_mut()
+            .expect("an object")
+            .remove(crate::quality::DISMISSED_KEY);
+    }
+    if entity["extensions"]
+        .as_object()
+        .is_some_and(|m| m.is_empty())
+    {
+        entity
+            .as_object_mut()
+            .expect("an entity")
+            .remove("extensions");
+    }
+    if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, Some(&stored)) {
+        return r;
+    }
+
+    let base_version: u64 = form
+        .get("base_version")
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(u64::MAX);
+    let label = label_for(k, &stored);
+    let outcome =
+        match state.update_checked(k, &id, base_version, entity.clone(), viewer.name(), label) {
+            Ok(o) => o,
+            Err(e) => return io_error(&chrome, &e),
+        };
+    let back = form
+        .get("back")
+        .filter(|b| b.starts_with("/quality") && !b.starts_with("//"))
+        .cloned()
+        .unwrap_or_else(|| "/quality".into());
+    match outcome {
+        crate::state::UpdateOutcome::Applied { .. } => Redirect::to(&back).into_response(),
+        crate::state::UpdateOutcome::Refused { diagnostics } => result_page(
+            &chrome,
+            &kind,
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(back),
+        ),
+        crate::state::UpdateOutcome::Missing => render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-entity-title",
+            "error-deleted-while-editing",
+        ),
+        crate::state::UpdateOutcome::Conflict {
+            current,
+            current_version,
+            expected_version,
+        } => conflict_page(
+            &state,
+            &chrome,
+            &kind,
+            k,
+            &id,
+            Some(&stored),
+            &current,
+            &entity,
+            current_version,
+            expected_version,
+            viewer.ceiling(),
+        ),
     }
 }

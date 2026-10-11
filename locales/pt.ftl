@@ -570,6 +570,8 @@ record-living-yes = vivo
 record-deceased = falecido/a
 record-centre-tree-here = Centrar a árvore aqui
 record-centre-tree-title = Mover a árvore para a centrar nesta pessoa
+record-see-in-tree = Ver na árvore
+record-see-in-tree-title = Abrir a grelha de fichas em torno desta pessoa
 record-open-full-page = Abrir a página inteira ↗
 record-open-full-title = Abrir a página independente que se pode partilhar
 record-edit = Editar
@@ -3171,3 +3173,86 @@ river-legend-direction = ↓ rumo à nascente · ↑ rumo aos vivos
 river-grid-link = Vista em grelha
 river-tab-sources = Fontes
 river-legend-title = Como ler o rio
+
+# Masthead search
+search-label = Procurar uma pessoa
+search-placeholder = Procurar uma pessoa
+search-title = Pesquisa
+search-heading = Pessoas que correspondem a «{ $q }»
+search-none = Ninguém que possa ver tem esse nome.
+search-open-record = Abrir a ficha
+search-hint = Enter leva o rio até essa pessoa; Shift+Enter abre a sua ficha.
+search-empty-query = Escreva um nome para pesquisar.
+
+# Data quality (/quality)
+nav-quality = Qualidade dos dados
+quality-title = Coisas a ver
+quality-none = Nada a ver: todas as verificações passaram.
+quality-intro = Nada aqui é alterado por si. Cada linha é um caso que merece verificação — muitas vezes há uma boa razão. Abra a ficha e decida, ou marque-o como verificado.
+quality-groups-label = Tipos de constatação
+quality-all = Tudo
+quality-group-names = Nomes
+quality-group-relations = Parentescos
+quality-group-dates = Datas
+quality-group-places = Lugares
+quality-group-evidence = Provas
+quality-export-csv = Descarregar em CSV
+quality-export-json = Descarregar em JSON
+quality-open = Abrir
+quality-none-file = Nada a ver neste ficheiro.
+quality-show-list = Mostrar a lista
+quality-after-import = Nada no ficheiro foi alterado. Quando for o arquivo do site, a página de qualidade dos dados mostrará o mesmo com uma ligação para cada ficha.
+quality-rule-name-sentence = Uma frase num campo de nome
+quality-name-sentence = «{ $value }» parece mais uma frase do que um nome: se for uma explicação, deixe o nome no campo e passe o resto para uma nota.
+quality-rule-union-parent-child = Um casal que também é pai e filho
+quality-union-parent-child = { $parent } e { $child } aparecem como casal e também como pai e filho: vale a pena verificar que relação as fontes confirmam.
+quality-rule-child-listed-twice = Um filho registado duas vezes
+quality-child-listed-twice = { $child } aparece duas vezes entre os filhos desta família: se for o mesmo filho, uma das entradas pode sair.
+quality-rule-duplicate-union = O mesmo casal registado duas vezes
+quality-duplicate-union = { $a } e { $b } têm { $count } uniões registadas: se casaram só uma vez, pode ser a mesma união introduzida duas vezes.
+quality-rule-partner-twice = Uma pessoa dos dois lados de uma união
+quality-partner-twice = { $person } aparece dos dois lados desta união: vale a pena verificar quem era o outro cônjuge, ou deixar esse lado vazio se ninguém souber.
+quality-rule-foreign-surnames = Um filho cujo apelido não corresponde a nenhum dos pais
+quality-foreign-surnames = Um apelido que não corresponde ao de nenhum dos pais: { $who }. Pode ser normal — mudança de apelido, enteado, outra grafia —, mas merece um olhar. (As filhas não são contadas, porque o apelido de casada é a razão habitual.)
+quality-rule-death-before-birth = Óbito antes do nascimento
+quality-death-before-birth = { $person } tem um óbito em { $death }, antes do nascimento em { $birth }: talvez uma das datas esteja mal escrita; vale a pena verificar nas fontes.
+quality-rule-child-before-parent = Um filho nascido antes de um dos pais
+quality-child-before-parent = { $child } (nascido em { $childborn }) parece ter nascido antes de { $parent } (nascido em { $parentborn }): vale a pena verificar as datas ou a filiação.
+quality-rule-parent-too-young = Um pai com menos de doze anos
+quality-parent-too-young = { $parent } teria { $age } anos quando { $child } nasceu, o que é invulgar: vale a pena verificar as datas ou a filiação.
+quality-rule-parent-too-old = Um pai com mais de sessenta e cinco anos
+quality-parent-too-old = { $parent } teria { $age } anos quando { $child } nasceu, o que é invulgar: vale a pena verificar as datas ou a filiação.
+quality-rule-marriage-before-birth = Um casamento antes do nascimento de um cônjuge
+quality-marriage-before-birth = Este casamento está datado de { $married }, antes do nascimento de { $person } em { $born }: vale a pena verificar a data do casamento.
+quality-rule-isolated-record = Uma ficha sem data nem ligações
+quality-isolated-record = { $person } não tem data nem ligação a ninguém da família: vale a pena acrescentar como pertence a ela, ou apagar a ficha se foi criada por engano.
+quality-rule-place-no-region = Um lugar sem região
+quality-place-no-region = { $place } não tem região: acrescentar uma ajuda a distinguir lugares com o mesmo nome.
+quality-rule-region-free-text = Uma região que parece uma nota
+quality-region-free-text = A região de { $place } diz «{ $value }», o que parece mais uma nota do que uma região: vale a pena passar a nota para a ficha que descreve.
+quality-rule-place-near-duplicate = Lugares que podem ser o mesmo
+quality-place-near-duplicate = { $names } podem ser o mesmo lugar escrito de outra forma: se for o caso, podem ser juntos num só.
+quality-rule-not-a-place = Uma entrada que talvez não seja um lugar
+quality-not-a-place = «{ $place }» está na lista de lugares mas talvez não seja um lugar — começa com minúscula, o que os nomes de lugares raramente fazem: vale a pena verificar se é uma nota sobre um lugar.
+quality-rule-certain-without-source = Certo, sem fonte
+quality-certain-without-source = { $record } tem uma afirmação marcada como totalmente certa ({ $claims }) sem fonte: vale a pena juntar a fonte ou baixar a certeza.
+quality-dismiss = Verificado — normal para nós
+quality-restore = Voltar a mostrar
+quality-note-label = Porquê (opcional)
+quality-show-dismissed = Verificados e mantidos
+quality-show-open = Voltar à lista em aberto
+quality-dismissed-by = Verificado por { $by } em { $at }
+quality-gone-title = Essa constatação já não existe
+quality-gone-detail = A ficha mudou desde que a lista foi aberta e a constatação já não é a mesma. Recarregue a lista e volte a ver.
+quality-summary = { $n ->
+    [one] { $n } coisa a ver
+   *[other] { $n } coisas a ver
+}
+quality-summary-file = { $n ->
+    [one] { $n } coisa a ver neste ficheiro
+   *[other] { $n } coisas a ver neste ficheiro
+}
+quality-dismissed-summary = { $n ->
+    [one] { $n } constatação verificada e mantida
+   *[other] { $n } constatações verificadas e mantidas
+}

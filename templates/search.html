@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ t("search-title") }} — {{ t("app-name") }}{% endblock %}
+
+{% block content %}
+{# What the masthead search shows with scripting off, or after a plain
+   submit. Each person is two real links: their place in the river, and their
+   record — the two things Enter and Shift+Enter do in the suggestions. Only
+   people this reader may open are ever listed (search::people). #}
+<h1>{{ t("search-title") }}</h1>
+{% if not q %}
+<p class="muted">{{ t("search-empty-query") }}</p>
+{% elif hits %}
+<p class="muted">{{ t("search-heading", q=q) }}</p>
+<ul class="search-results">
+  {%- for h in hits %}
+  <li>
+    <a href="/?p={{ h.id }}">{{ h.name }}</a>
+    {%- if h.years %} <span class="mono small muted">{{ h.years }}</span>{% endif %}
+    · <a class="small" href="/person/{{ h.id }}">{{ t("search-open-record") }}</a>
+  </li>
+  {%- endfor %}
+</ul>
+{% else %}
+<p>{{ t("search-none") }}</p>
+{% endif %}
+{% endblock %}

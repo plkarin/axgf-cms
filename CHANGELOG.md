@@ -6,6 +6,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-11
+
+### Added
+
+**Every control on the river does something.** A `data-centre` on the
+river's root made its click handler resolve every other link inside the
+river to the root and stop there, so "Grid view", "Open full page" and
+"Edit" did nothing; `<html data-motion>` matched the same handler and set
+"cut" back to "travel" on any other click; and "New place" answered 405,
+because `/admin/place/:id` took "new" for an id. All fixed.
+`tests/interactive_walk.rs` now walks every interactive element on every
+page a reader reaches, signed out and in — about 1,500 of them — and fails
+on any that navigates nowhere, submits to nothing, or has no handler, and on
+any element a script claims that would swallow another control.
+
+**Search from the masthead.** People by name, accents and case ignored;
+Enter travels the river to the person, Shift+Enter opens their record. Only
+people the reader may open are ever matched, so a hidden name finds nothing.
+
+**Things worth a look (`/quality`).** Seventeen named checks over names,
+relations, dates, places and evidence — a sentence in a name field, a couple
+who are also parent and child, a child listed twice, a parent of ten, a
+region that reads like a note, one place written two ways, and so on —
+each a sentence saying what looks worth checking and what to do, with a link
+to the record's own editor. Nothing is ever changed for you. A finding can
+be marked "checked — normal for us", recorded on the record through the
+normal edit path and kept behind a filter; it comes back if what it is about
+changes. The list exports as CSV and JSON, an import shows "N things worth a
+look in this file", and a reader is never shown anything about a person
+they may not see. On the operator's 866-person archive: 141 findings.
+
+**The river remembers "cut".** The choice between travel and cut survives
+other pages and reloads, and `prefers-reduced-motion` still forces a cut.
+
+### Changed
+
+In the record beside the river, "Centre the tree here" is now "See in the
+tree": it opens the grid around that person.
+
 ### Fixed
 
 **An upgrade no longer spends a daily backup.** The archive `bootstrap.sh
@@ -2842,6 +2881,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.3.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.0
 [0.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.2.0
 [0.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.1.0
 [0.1.0-rc1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.1.0-rc1

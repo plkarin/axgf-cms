@@ -23,8 +23,16 @@
       </p>
     </div>
     <div class="panel-actions">
+      {#- Beside the river this person is already the centre, so re-centring
+          the river on them would do nothing: the tree it means is the grid,
+          opened around them. In the grid's own panel it re-roots the grid. #}
+      {%- if river_tabs %}
+      <a class="btn small" href="/tree?root={{ p.id }}"
+         title="{{ t('record-see-in-tree-title') }}">{{ t("record-see-in-tree") }}</a>
+      {%- else %}
       <button type="button" class="btn small" data-centre="{{ p.id }}"
               title="{{ t('record-centre-tree-title') }}">{{ t("record-centre-tree-here") }}</button>
+      {%- endif %}
       <a class="btn small panel-open-full" href="/person/{{ p.id }}"
          title="{{ t('record-open-full-title') }}">{{ t("record-open-full-page") }}</a>
       {% if may_write %}<a class="btn small" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>{% endif %}

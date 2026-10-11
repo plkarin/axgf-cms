@@ -3701,3 +3701,17 @@ a.tcard:hover {
 @media print {
   .rv-controls, .rv-record { display: none; }
 }
+
+/* The masthead search and its suggestions. */
+.masthead-search { position: relative; margin-inline-start: 1rem; }
+.masthead-search input[type="search"] { inline-size: 14rem; max-inline-size: 40vw; }
+.search-suggest {
+  position: absolute; inset-inline-start: 0; inset-block-start: 100%; z-index: 20;
+  min-inline-size: 100%; margin: 2px 0 0; padding: 4px 0; list-style: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+}
+.search-suggest li { padding: 6px 10px; cursor: pointer; white-space: nowrap; }
+.search-suggest li[aria-selected="true"], .search-suggest li:hover { background: var(--accent-soft); }
+.search-suggest .search-years { opacity: .7; font-size: .85em; }
+.search-results { list-style: none; padding: 0; }
+.search-results li { padding: 6px 0; border-block-end: 1px solid var(--border); }

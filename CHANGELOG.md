@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- A dry run of the installer that would hand over to another release's
+  installer says so and stops; it used to go on describing its own release
+  (asked for v0.3.0, v0.3.1's said it would download v0.3.1).
+
 ## [0.3.1] — 2026-10-11
 
 ### Changed

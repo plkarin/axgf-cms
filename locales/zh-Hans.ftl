@@ -29,6 +29,7 @@ nav-convert = 导入
 nav-admin = 管理
 nav-sign-in = 登录
 nav-sign-out = 退出
+account-emergency = 紧急令牌
 footer-open-format = 您家族的档案是留在自己手里的一个文件，以公开格式写成，在本站消失很久之后依然打得开。
 footer-open-format-link = 关于该格式
 

@@ -103,6 +103,8 @@
      never lies over the oldest generation. Wider than any platform's bar. */
   --hscroll-gutter: 1rem;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* Study 06's serif: the wordmark, and the names the river writes. */
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* The river's type, at the sizes its design fixes in pixels. */
   --type-rv-eyebrow: 10px;
   --type-rv-data: 10.5px;
@@ -368,39 +370,131 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 }
 /* ---------- layout ---------- */
 
+/* The masthead (Study 06, B5): 58px, the page's own ground, one hairline
+   under it. Nothing in it is coloured: the wordmark is ink, the section you
+   are in is underlined in ink, and amber is kept for the primary action and
+   the focus ring. */
 .masthead {
   border-bottom: 1px solid var(--border-hairline);
-  background: var(--surface-raised);
+  background: var(--surface-page);
   position: sticky;
   top: 0;
   z-index: 40;
 }
 .masthead-inner {
-  max-width: 1180px;
+  /* Wider than the page's column: the bar is the frame, and at a desktop
+     width everything in it fits on one 58px row. */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0.7rem 1.25rem;
+  padding: 0 1.25rem;
+  min-block-size: 58px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 1.25rem;
   flex-wrap: wrap;
 }
 .brand {
-  font-weight: var(--weight-strong);
-  letter-spacing: -0.01em;
+  font-family: var(--serif);
+  font-weight: var(--weight-semi);
+  font-size: var(--type-sub);
+  letter-spacing: 0;
+  color: var(--text-primary);
   text-decoration: none;
-  font-size: var(--type-body);
 }
-/* One string, one colour. The name used to be split into `axgf` + `-cms` in
-   raw HTML to tint the halves, which is exactly the sort of place a rename
-   never reaches. */
-.brand { color: var(--accent); }
-.masthead nav { display: flex; gap: 1rem; flex-wrap: wrap; }
-.masthead nav a { color: var(--text-secondary); text-decoration: none; font-size: var(--type-minor); }
-.masthead nav a:hover, .masthead nav a[aria-current="page"] {
-  color: var(--accent);
-  text-decoration: underline;
+.masthead nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.masthead nav a {
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+  text-decoration: none;
+  padding-block: 0.3rem;
+  border-bottom: 2px solid transparent;
+  transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease);
 }
+.masthead nav a:hover { color: var(--text-primary); }
+.masthead nav a[aria-current="page"] {
+  color: var(--text-primary);
+  border-bottom-color: var(--text-primary);
+}
+/* Buttons in the masthead are not section links: no underline, their own
+   colours. */
+.masthead nav a.btn { border-bottom: 1px solid var(--border-strong); padding-block: 0; }
 .masthead .spacer { flex: 1 1 auto; }
+.chrome-nav { gap: 0.9rem; }
+
+/* The language: a native select, restyled, showing a two-letter code. */
+.lang-form { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; }
+.lang-form [hidden] { display: none; }
+.lang-form select {
+  font-family: var(--mono);
+  font-size: var(--type-small);
+  letter-spacing: 0.04em;
+  block-size: 28px;
+  padding-block: 0;
+  padding-inline: 0.5rem 0.25rem;
+  inline-size: auto;
+  color: var(--text-primary);
+  background-color: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
+
+/* Signed in: an initials chip and the name, opening onto a short menu. */
+.account { position: relative; }
+.account > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+  padding-block: 0.2rem;
+}
+.account > summary::-webkit-details-marker { display: none; }
+.account > summary::after { content: "▾"; font-size: 0.8em; color: var(--text-tertiary); }
+.account > summary:hover { color: var(--text-primary); }
+.initials {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: var(--mono);
+  font-size: var(--type-micro);
+  letter-spacing: 0.02em;
+}
+.account-menu {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 8px);
+  min-inline-size: 12rem;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  z-index: 50;
+}
+.account-menu a, .account-menu .btn {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  block-size: 32px;
+  padding-inline: 0.6rem;
+  color: var(--text-primary);
+  font-size: var(--type-minor);
+  text-decoration: none;
+  border: 0;
+  border-radius: 2px;
+  justify-content: flex-start;
+}
+.account-menu a:hover, .account-menu .btn:hover { background: var(--surface-hover); }
+.account-menu form { margin: 0; }
+.masthead-settings { font-size: var(--type-minor); }
 
 main {
   max-width: 1180px;
@@ -2465,40 +2559,6 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
   outline-offset: 2px;
 }
 
-/* ---------------------------------------------------------------------------
-   The way in to the settings, and the settings surface
-   ---------------------------------------------------------------------------
-   The masthead used to hold the preferences themselves: a `<details>` over four
-   stacked forms, twenty-three controls behind one chevron. It holds a link now.
-   The link still names the current language, because that is the preference a
-   reader checks far more often than they change it, and a control that answers
-   the question without being opened beats one that has to be.
-
-   No panel, so no positioning, no z-index, no open/closed state and no opening
-   animation — which was motion that announced a menu rather than meaning
-   anything. */
-.prefs-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.6rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  font-size: var(--type-minor);
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: background-color var(--tempo) var(--ease),
-              border-color var(--tempo) var(--ease),
-              color var(--tempo) var(--ease);
-}
-.prefs-link:hover {
-  background: var(--accent-soft);
-  border-color: var(--border-hairline);
-  color: var(--text-primary);
-}
-.prefs-current { font-weight: var(--weight-medium); }
-.prefs-globe { flex: none; opacity: 0.85; }
-
 /* The settings page. A heading, the way back out, and one panel per tab. */
 .settings-head {
   display: flex;
@@ -2578,24 +2638,6 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 }
 .badge.reviewed { border-color: var(--conf-certain); color: var(--conf-certain); }
 
-/* ---------------------------------------------------------------------------
-   Masthead
-   --------------------------------------------------------------------------- */
-.masthead-inner { align-items: center; }
-.chrome-nav { display: flex; align-items: center; gap: 0.75rem; }
-.masthead nav a {
-  padding: 0.3rem 0.15rem;
-  border-bottom: 2px solid transparent;
-  text-decoration: none;
-  transition: color var(--tempo) var(--ease),
-              border-color var(--tempo) var(--ease);
-}
-.masthead nav a:hover { border-bottom-color: var(--border-strong); }
-.masthead nav a[aria-current="page"] {
-  border-bottom-color: var(--accent);
-  color: var(--accent);
-  font-weight: var(--weight-semi);
-}
 
 /* ---------------------------------------------------------------------------
    Panels and elevation
@@ -3289,7 +3331,7 @@ a.tcard:hover {
 
 /* The masthead search and its suggestions. */
 .masthead-search { position: relative; margin-inline-start: 1rem; }
-.masthead-search input[type="search"] { inline-size: 14rem; max-inline-size: 40vw; }
+.masthead-search input[type="search"] { inline-size: 13rem; max-inline-size: 40vw; }
 .search-suggest {
   position: absolute; inset-inline-start: 0; inset-block-start: 100%; z-index: 20;
   min-inline-size: 100%; margin: 2px 0 0; padding: 4px 0; list-style: none;

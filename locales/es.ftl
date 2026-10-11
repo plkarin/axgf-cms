@@ -29,6 +29,7 @@ nav-convert = Importar
 nav-admin = Administración
 nav-sign-in = Iniciar sesión
 nav-sign-out = Cerrar sesión
+account-emergency = Token de emergencia
 footer-open-format = El archivo de su familia es un solo fichero que se queda con usted, escrito en un formato abierto: seguirá abriéndose mucho después de que este sitio haya desaparecido.
 footer-open-format-link = Sobre el formato
 

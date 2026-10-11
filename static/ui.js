@@ -1,4 +1,4 @@
-// Six behaviours that used to be inline `onclick`, `oninput` and `onsubmit`
+// Behaviours that used to be inline `onclick`, `oninput` and `onsubmit`
 // attributes in the templates.
 //
 // They moved here for one reason: an inline handler is script inside the
@@ -13,6 +13,17 @@
 // works too, and everything degrades to a plain form post with scripting off.
 (function () {
   "use strict";
+
+  // `data-autosubmit` — a select that applies itself: the masthead's
+  // language. The form's own button is for a reader without scripts, so it
+  // goes when this runs.
+  document.addEventListener("change", function (ev) {
+    var sel = ev.target.closest("[data-autosubmit]");
+    if (sel && sel.form) sel.form.submit();
+  });
+  document.querySelectorAll("[data-autosubmit-go]").forEach(function (b) {
+    b.hidden = true;
+  });
 
   // `data-toggle="<id>"` — show or hide the element with that id. The delete
   // confirmation row under a listing.

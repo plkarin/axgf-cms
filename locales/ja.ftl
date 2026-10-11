@@ -30,6 +30,7 @@ nav-convert = 取り込み
 nav-admin = 管理
 nav-sign-in = ログイン
 nav-sign-out = ログアウト
+account-emergency = 緊急トークン
 footer-open-format = ご家族のアーカイブは、手元に残る一つのファイルです。公開された形式で書かれているため、このサイトがなくなったあとも長く開くことができます。
 footer-open-format-link = 形式について
 

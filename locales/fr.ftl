@@ -17,6 +17,7 @@ nav-convert = Importer
 nav-admin = Administration
 nav-sign-in = Se connecter
 nav-sign-out = Se déconnecter
+account-emergency = Jeton d’urgence
 
 ## Préférences
 

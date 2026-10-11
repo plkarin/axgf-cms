@@ -131,6 +131,7 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--radius-sm",
         "--radius-lg",
         "--mono",
+        "--serif",
         "--tempo",
         "--ease",
         "--shadow-a",

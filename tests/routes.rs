@@ -489,6 +489,14 @@ async fn an_error_page_carries_no_stray_button() {
 /// eleven languages, eight themes, three styles and a checkbox, twenty-three
 /// controls behind one chevron. A reader after any one of them read past the
 /// rest.
+/// The settings page's own panel: the masthead carries a language select on
+/// every page, this one included, and it is not the tab's.
+fn panel(page: &str) -> &str {
+    let start = page.find("<main").expect("a main element");
+    let end = page[start..].find("</main>").expect("its end") + start;
+    &page[start..end]
+}
+
 #[tokio::test]
 async fn the_settings_are_three_tabs_and_a_tab_shows_only_its_own_choices() {
     let (app, _p) = app_with_empty_bundle("settings-tabs");
@@ -506,7 +514,7 @@ async fn the_settings_are_three_tabs_and_a_tab_shows_only_its_own_choices() {
     );
     // And nothing else's.
     assert!(
-        !theme.contains(r#"name="lang""#) && !theme.contains(r#"name="style""#),
+        !panel(&theme).contains(r#"name="lang""#) && !panel(&theme).contains(r#"name="style""#),
         "the theme tab carries only themes"
     );
 
@@ -518,7 +526,7 @@ async fn the_settings_are_three_tabs_and_a_tab_shows_only_its_own_choices() {
     .await;
     assert!(lang.contains(r#"name="lang""#), "the languages: {lang}");
     assert!(
-        !lang.contains(r#"name="theme""#) && !lang.contains(r#"name="style""#),
+        !panel(&lang).contains(r#"name="theme""#) && !panel(&lang).contains(r#"name="style""#),
         "the language tab carries only languages"
     );
     // The coverage labelling is the honest part and it stays: two reviewed,
@@ -546,7 +554,8 @@ async fn the_settings_are_three_tabs_and_a_tab_shows_only_its_own_choices() {
         "the appearance tab: {appearance}"
     );
     assert!(
-        !appearance.contains(r#"name="theme""#) && !appearance.contains(r#"name="lang""#),
+        !panel(&appearance).contains(r#"name="theme""#)
+            && !panel(&appearance).contains(r#"name="lang""#),
         "and nothing about colour or language"
     );
 

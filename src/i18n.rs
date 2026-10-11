@@ -518,6 +518,8 @@ pub fn selector_entries() -> Vec<serde_json::Value> {
         .map(|l| {
             serde_json::json!({
                 "tag": l.tag,
+                // The masthead shows this: two letters fit any script.
+                "code": l.tag.split('-').next().unwrap_or(l.tag).to_uppercase(),
                 "english_name": l.english_name,
                 "native_name": l.native_name,
                 "dir": l.dir.as_str(),

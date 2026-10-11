@@ -29,7 +29,7 @@
         proper noun, so every catalogue carries the same value and a test says
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
-    <a class="brand" href="/">{{ t("app-name") }}</a>
+    <a class="brand" href="/">{{ t("app-name") | replace("-", "·") }}</a>
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
@@ -49,21 +49,28 @@
     </form>
     <span class="spacer"></span>
     <nav class="chrome-nav">
-      {#- The way in to the preferences, not the preferences themselves. It
-          names the language it is currently in, so the reader can see the
-          setting without opening anything, and carries where they are so the
-          settings page can offer the way back. -#}
-      {{ prefs.link(t, settings_url, current_locale) }}
       {% if signed_in %}
         <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
         {% if may_write %}
           <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
         {% endif %}
-        <form method="post" action="/admin/logout" style="display:inline">
-          <button class="btn btn-compact">{{ t("nav-sign-out") }}</button>
-        </form>
+      {% endif %}
+      {{ prefs.language(t, locales, current_locale, back) }}
+      {% if signed_in %}
+        {#- Who is signed in, and the two things to do about it. A <details>,
+            so it opens without a script and closes on a second click. -#}
+        <details class="account">
+          <summary><span class="initials" aria-hidden="true">{{ viewer_initials }}</span><span class="account-name">{{ viewer_name }}</span></summary>
+          <div class="account-menu">
+            <a href="{{ settings_url }}">{{ t("settings-title") }}</a>
+            <form method="post" action="/admin/logout">
+              <button class="btn ghost" type="submit">{{ t("nav-sign-out") }}</button>
+            </form>
+          </div>
+        </details>
       {% else %}
-        <a href="/admin/login">{{ t("nav-sign-in") }}</a>
+        <a class="masthead-settings" href="{{ settings_url }}">{{ t("settings-title") }}</a>
+        <a class="btn" href="/admin/login">{{ t("nav-sign-in") }}</a>
       {% endif %}
     </nav>
   </div>

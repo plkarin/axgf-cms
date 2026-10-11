@@ -35,6 +35,7 @@ nav-convert = Импорт
 nav-admin = Управление
 nav-sign-in = Войти
 nav-sign-out = Выйти
+account-emergency = Аварийный токен
 footer-open-format = Архив вашей семьи — это один файл, который остаётся у вас, записанный в открытом формате: он откроется и много позже, чем исчезнет этот сайт.
 footer-open-format-link = О формате
 

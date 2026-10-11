@@ -30,6 +30,7 @@ nav-tree = الشجرة
 nav-admin = الإدارة
 nav-sign-in = تسجيل الدخول
 nav-sign-out = تسجيل الخروج
+account-emergency = رمز الطوارئ
 
 settings-title = الإعدادات
 settings-tabs-label = أقسام الإعدادات

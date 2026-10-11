@@ -211,6 +211,12 @@ pub struct Chrome {
     pub signed_in: bool,
     pub may_write: bool,
     pub is_admin: bool,
+    /// Who is signed in, for the masthead's account menu: the username, or
+    /// the emergency session's name in the interface language. Empty when
+    /// nobody is.
+    pub viewer_name: String,
+    /// One or two letters for the masthead's chip, from `viewer_name`.
+    pub viewer_initials: String,
     /// Where a preference form should return the reader to.
     pub back: String,
     /// The masthead's link to the settings, carrying `back` as the way out.
@@ -251,7 +257,14 @@ impl Chrome {
         let wash_cookie = crate::session::named_cookie(headers, crate::theme::WASH_COOKIE_NAME);
         let wash_choice =
             crate::theme::reader_wants_wash(viewer.backgrounds(), wash_cookie.as_deref());
+        let viewer_name = if viewer.emergency {
+            crate::i18n::translate(locale.tag, "account-emergency", None)
+        } else {
+            viewer.name().to_string()
+        };
         Self {
+            viewer_initials: initials(&viewer_name),
+            viewer_name,
             lang: locale.tag,
             dir: locale.dir.as_str(),
             theme: theme.attribute().unwrap_or(""),
@@ -292,6 +305,36 @@ impl Chrome {
         }
         crate::i18n::translate(self.lang, key, Some(&args))
     }
+}
+
+/// The masthead chip's letters: the first letter of each of the first two
+/// words of a name (`marta.w` → `MW`), or the first two of a single word
+/// (`verification` → `VE`). Letters, not bytes: a name may be in any script.
+///
+/// ```
+/// use axgf_cms::render::initials;
+/// assert_eq!(initials("marta.w"), "MW");
+/// assert_eq!(initials("verification"), "VE");
+/// assert_eq!(initials("Jeton d’urgence"), "JU");
+/// assert_eq!(initials("Łucja Żak"), "ŁŻ");
+/// assert_eq!(initials("紧急令牌"), "紧急");
+/// assert_eq!(initials(""), "");
+/// ```
+pub fn initials(name: &str) -> String {
+    let mut words: Vec<&str> = name
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .collect();
+    // An elision is not a word: `Jeton d’urgence` is JU, not JD.
+    if words.iter().filter(|w| w.chars().count() > 1).count() >= 2 {
+        words.retain(|w| w.chars().count() > 1);
+    }
+    let letters: String = match words.as_slice() {
+        [] => String::new(),
+        [one] => one.chars().take(2).collect(),
+        [a, b, ..] => a.chars().take(1).chain(b.chars().take(1)).collect(),
+    };
+    letters.to_uppercase()
 }
 
 /// Sanitise the `back` value a preference form will post.

@@ -45,6 +45,8 @@ theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
 theme-colour-blind-note = adapté au daltonisme
 theme-contrast-note = contraste maximal
+theme-dark-note = par défaut
+theme-river-note = La rivière reste sombre quel que soit le thème : ses couleurs sont faites pour un fond sombre.
 
 ## Arbre
 

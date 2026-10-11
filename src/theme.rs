@@ -59,7 +59,7 @@ pub const THEMES: &[Theme] = &[
     Theme {
         id: "dark",
         key: "theme-dark",
-        note_key: None,
+        note_key: Some("theme-dark-note"),
         wash: true,
         colour_blind: false,
     },
@@ -100,8 +100,11 @@ pub const THEMES: &[Theme] = &[
     },
 ];
 
-/// What a reader gets when they have expressed no preference.
-pub const DEFAULT: &str = "system";
+/// What a reader gets when they have expressed no preference: `dark`, which
+/// is Study 06, the site's own look (docs/adr/0002). It used to be `system`,
+/// which on most machines meant light, so the signature look was the one
+/// almost nobody saw. `system` is still on offer as a choice.
+pub const DEFAULT: &str = "dark";
 
 /// Name of the cookie the theme selector sets.
 pub const COOKIE_NAME: &str = "axgf_theme";
@@ -150,7 +153,8 @@ impl Theme {
 
     /// The theme for `id`, or the default.
     pub fn get(id: &str) -> &'static Theme {
-        Self::find(id).unwrap_or_else(|| Self::find(DEFAULT).expect("system is always present"))
+        Self::find(id)
+            .unwrap_or_else(|| Self::find(DEFAULT).expect("the default is always present"))
     }
 
     /// The value for `data-theme`, or `None` to let the system decide.
@@ -160,7 +164,7 @@ impl Theme {
 }
 
 /// Choose the theme for a request: the account, then the cookie, then the
-/// default — which defers to `prefers-color-scheme`.
+/// default.
 ///
 /// Deliberately the same order as the language, and for the same reason: the
 /// account is the only one of the three the reader chose durably.
@@ -224,12 +228,17 @@ mod tests {
 
     #[test]
     fn the_account_beats_the_cookie_which_beats_the_default() {
-        assert_eq!(negotiate(Some("sepia"), Some("dark")).id, "sepia");
-        assert_eq!(negotiate(None, Some("dark")).id, "dark");
-        assert_eq!(negotiate(None, None).id, "system");
+        assert_eq!(negotiate(Some("sepia"), Some("light")).id, "sepia");
+        assert_eq!(negotiate(None, Some("light")).id, "light");
+        // No preference is Study 06, written into the page rather than left
+        // to the system.
+        assert_eq!(negotiate(None, None).id, "dark");
+        assert_eq!(negotiate(None, None).attribute(), Some("dark"));
         // Nonsense at any level falls through rather than failing.
-        assert_eq!(negotiate(Some("chartreuse"), Some("dark")).id, "dark");
-        assert_eq!(negotiate(None, Some("chartreuse")).id, "system");
+        assert_eq!(negotiate(Some("chartreuse"), Some("light")).id, "light");
+        assert_eq!(negotiate(None, Some("chartreuse")).id, "dark");
+        // Choosing the system is still a choice.
+        assert_eq!(negotiate(None, Some("system")).attribute(), None);
     }
 
     #[test]

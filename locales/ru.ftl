@@ -66,6 +66,8 @@ theme-protanopia = Протанопия
 theme-tritanopia = Тританопия
 theme-colour-blind-note = безопасно при дальтонизме
 theme-contrast-note = максимальный контраст
+theme-dark-note = по умолчанию
+theme-river-note = Река остаётся тёмной в любой теме: её цвета подобраны для тёмного фона.
 
 ## Древо
 

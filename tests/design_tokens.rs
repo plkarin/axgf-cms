@@ -259,28 +259,218 @@ async fn no_colour_is_named_outside_the_tokens() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
-#[test]
-fn the_tokens_are_the_studys() {
+/// Every block in tokens.css that defines custom properties, comments
+/// stripped: (selector, [(name, value)]). An `@media` wrapper is looked
+/// through, so the system-dark block is read as `:root:not([data-theme])`.
+fn token_blocks() -> Vec<(String, BTreeMap<String, String>)> {
     let css = include_str!("../static/css/tokens.css");
-    for (name, value) in [
-        ("--surface-page", "#0b110e"),
-        ("--surface-raised", "#111a16"),
-        ("--surface-sunken", "#0e1512"),
-        ("--surface-hover", "#17221d"),
-        ("--border-hairline", "#22302a"),
-        ("--border-strong", "#3a4b42"),
-        ("--text-primary", "#ece6d6"),
-        ("--text-secondary", "#a7b3aa"),
-        ("--text-tertiary", "#75847b"),
-        ("--accent", "#dcae64"),
-        ("--focus-ring", "#dcae64"),
-        ("--danger", "#d98068"),
-    ] {
-        assert!(
-            css.contains(&format!("{name}: {value};")),
-            "tokens.css: {name} should be {value}"
+    let mut src = String::new();
+    let mut rest = css;
+    while let Some(i) = rest.find("/*") {
+        src.push_str(&rest[..i]);
+        rest = &rest[i + rest[i..].find("*/").expect("closed comment") + 2..];
+    }
+    src.push_str(rest);
+    let mut out = Vec::new();
+    let mut start = 0;
+    for (i, c) in src.char_indices() {
+        match c {
+            '}' => start = i + 1,
+            '{' => {
+                let sel = src[start..i]
+                    .split_whitespace()
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                let end = i + src[i..].find('}').expect("closed block");
+                let body = &src[i + 1..end];
+                if !body.contains('{') {
+                    let vars: BTreeMap<String, String> = body
+                        .split(';')
+                        .filter_map(|d| d.trim().split_once(':'))
+                        .filter(|(k, _)| k.trim().starts_with("--"))
+                        .map(|(k, v)| (k.trim().to_string(), v.trim().to_string()))
+                        .collect();
+                    if !vars.is_empty() {
+                        out.push((
+                            sel.trim_start_matches("@media (prefers-color-scheme: dark) ")
+                                .to_string(),
+                            vars,
+                        ));
+                    }
+                }
+                start = i + 1;
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
+fn block(sel: &str) -> BTreeMap<String, String> {
+    token_blocks()
+        .into_iter()
+        .find(|(s, _)| s.starts_with(sel))
+        .unwrap_or_else(|| panic!("tokens.css has no {sel} block"))
+        .1
+}
+
+const STUDY_06: &[(&str, &str)] = &[
+    ("--surface-page", "#0b110e"),
+    ("--surface-raised", "#111a16"),
+    ("--surface-sunken", "#0e1512"),
+    ("--surface-hover", "#17221d"),
+    ("--border-hairline", "#22302a"),
+    ("--border-strong", "#3a4b42"),
+    ("--text-primary", "#ece6d6"),
+    ("--text-secondary", "#a7b3aa"),
+    ("--text-tertiary", "#75847b"),
+    ("--accent", "#dcae64"),
+    ("--focus-ring", "#dcae64"),
+    ("--danger", "#d98068"),
+];
+
+#[test]
+fn the_dark_theme_is_study_06_and_so_is_the_river() {
+    // Study 06 is the `dark` theme, written twice (the explicit choice, and
+    // "match my system" on a dark OS), and the river carries the same values
+    // under every theme through its own palette. Three copies of one palette:
+    // this is what keeps them one.
+    let river = block(".river");
+    for sel in ["[data-theme=\"dark\"]", ":root:not([data-theme])"] {
+        let b = block(sel);
+        for (name, value) in STUDY_06 {
+            assert_eq!(
+                b.get(*name).map(String::as_str),
+                Some(*value),
+                "{sel} {name}"
+            );
+        }
+    }
+    for (name, value) in STUDY_06 {
+        let via = river
+            .get(*name)
+            .unwrap_or_else(|| panic!(".river does not set {name}"));
+        let rv = via
+            .strip_prefix("var(")
+            .and_then(|v| v.strip_suffix(')'))
+            .unwrap_or_else(|| panic!(".river {name} should name one of its own: {via}"));
+        assert_eq!(
+            river.get(rv).map(String::as_str),
+            Some(*value),
+            ".river {name} -> {rv}"
         );
     }
+}
+
+fn luminance(hex: &str) -> f64 {
+    let h = hex.trim_start_matches('#');
+    let c = |i: usize| {
+        let v = u8::from_str_radix(&h[i..i + 2], 16).expect("a hex colour") as f64 / 255.0;
+        if v <= 0.03928 {
+            v / 12.92
+        } else {
+            ((v + 0.055) / 1.055).powf(2.4)
+        }
+    };
+    0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4)
+}
+
+fn contrast(a: &str, b: &str) -> f64 {
+    let (a, b) = (luminance(a), luminance(b));
+    (a.max(b) + 0.05) / (a.min(b) + 0.05)
+}
+
+/// Pairs that fall short and are known, each with the reason it stands.
+/// Study 06's control edge is 2.06:1 on its own page; WCAG 1.4.11 asks 3:1 of
+/// a control's boundary. The study's value stands until its owner rules on
+/// it; every button carries a label and every field a visible label, so no
+/// control is identified by its edge alone.
+const KNOWN_SHORT: &[(&str, &str, &str)] = &[
+    ("[data-theme=\"dark\"]", "--border-strong", "--surface-page"),
+    (
+        "[data-theme=\"dark\"]",
+        "--border-strong",
+        "--surface-raised",
+    ),
+    (
+        "[data-theme=\"dark\"]",
+        "--border-strong",
+        "--surface-sunken",
+    ),
+    (
+        ":root:not([data-theme])",
+        "--border-strong",
+        "--surface-page",
+    ),
+    (
+        ":root:not([data-theme])",
+        "--border-strong",
+        "--surface-raised",
+    ),
+    (
+        ":root:not([data-theme])",
+        "--border-strong",
+        "--surface-sunken",
+    ),
+];
+
+#[test]
+fn every_theme_reads() {
+    // WCAG AA for text (4.5:1) and for the graphics a control is known by
+    // (3:1), measured on every surface the token can sit on, in every theme.
+    let all = token_blocks();
+    let root = all
+        .iter()
+        .find(|(s, _)| s == ":root")
+        .expect(":root")
+        .1
+        .clone();
+    let surfaces = ["--surface-page", "--surface-raised", "--surface-sunken"];
+    let mut rules: Vec<(&str, &str, f64)> = Vec::new();
+    for bg in surfaces.iter().chain(["--surface-hover"].iter()) {
+        rules.push(("--text-primary", bg, 4.5));
+        rules.push(("--text-secondary", bg, 4.5));
+    }
+    for bg in surfaces {
+        rules.push(("--text-tertiary", bg, 4.5));
+        rules.push(("--focus-ring", bg, 3.0));
+        rules.push(("--border-strong", bg, 3.0));
+    }
+    for bg in ["--surface-page", "--surface-raised"] {
+        rules.push(("--danger", bg, 4.5));
+        rules.push(("--warning", bg, 4.5));
+    }
+    rules.push(("--on-accent", "--accent", 4.5));
+
+    let mut short = Vec::new();
+    let mut themes = 0;
+    for (sel, vars) in &all {
+        if sel.starts_with(".river") {
+            continue;
+        }
+        themes += 1;
+        let mut v = root.clone();
+        v.extend(vars.clone());
+        for (fg, bg, min) in &rules {
+            let r = contrast(&v[*fg], &v[*bg]);
+            let known = KNOWN_SHORT
+                .iter()
+                .any(|(s, f, b)| sel.as_str() == *s && f == fg && b == bg);
+            if r < *min && !known {
+                short.push(format!("{sel}: {fg} on {bg} is {r:.2}:1, under {min}:1"));
+            }
+            if known && r >= *min {
+                short.push(format!(
+                    "{sel}: {fg} on {bg} now clears {min}:1 — take it off KNOWN_SHORT"
+                ));
+            }
+        }
+    }
+    assert_eq!(
+        themes, 7,
+        "light, system-dark, dark, high contrast, sepia, the red-green pair, tritanopia"
+    );
+    assert!(short.is_empty(), "{}", short.join("\n"));
 }
 
 #[test]

@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+**Study 06 is the site's look.** The dark, river-ground palette of Study 06
+("The Furniture") is now the `dark` theme and the default for anyone who has
+not chosen a theme; it used to be "match my system", which mostly meant
+light. The other six themes stay — light, high contrast, sepia and the three
+colour-blind themes — and each now defines the same design tokens in its own
+colours, so every component draws with one set of names
+(`static/css/tokens.css`, the only file that names a colour). Readers who
+chose a theme keep it. The river stays dark under every theme, and the theme
+picker says so (docs/adr/0002).
+
 ### Fixed
 
 - A dry run of the installer that would hand over to another release's

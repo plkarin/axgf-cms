@@ -55,6 +55,8 @@ theme-protanopia = عمى اللون الأحمر
 theme-tritanopia = عمى اللون الأزرق
 theme-colour-blind-note = ملائم لعمى الألوان
 theme-contrast-note = أقصى تباين
+theme-dark-note = الافتراضي
+theme-river-note = يبقى النهر داكنًا في كل السمات: ألوانه مصمَّمة لخلفية داكنة.
 
 tree-title-around = حول { $name }
 tree-title-whole = الشجرة كاملة

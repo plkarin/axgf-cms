@@ -60,6 +60,8 @@ theme-protanopia = 红色盲
 theme-tritanopia = 蓝色盲
 theme-colour-blind-note = 色觉友好
 theme-contrast-note = 最高对比度
+theme-dark-note = 默认
+theme-river-note = 无论选择哪种主题，河流都保持深色：它的颜色是为深色背景设计的。
 
 ## 家谱
 

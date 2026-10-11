@@ -526,7 +526,7 @@ fn the_tree_and_the_record_read_as_one_surface() {
 
     let split = block(".tree-split {");
     assert!(
-        split.contains("background: var(--surface)"),
+        split.contains("background: var(--surface-raised)"),
         "the surface belongs to the split, once, so the two columns read as \
          one:\n{split}"
     );

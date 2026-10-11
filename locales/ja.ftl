@@ -61,6 +61,8 @@ theme-protanopia = 第一色覚
 theme-tritanopia = 第三色覚
 theme-colour-blind-note = 色覚に配慮
 theme-contrast-note = 最大コントラスト
+theme-dark-note = 既定
+theme-river-note = 川はどのテーマでも暗いままです。色が暗い背景に合わせて作られているためです。
 
 ## 家系図
 

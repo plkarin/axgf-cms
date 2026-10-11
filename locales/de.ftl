@@ -62,6 +62,8 @@ theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
 theme-colour-blind-note = farbfehlsichtigkeitssicher
 theme-contrast-note = maximaler Kontrast
+theme-dark-note = Standard
+theme-river-note = Der Fluss bleibt in jedem Thema dunkel: Seine Farben sind für einen dunklen Grund gemacht.
 
 ## Stammbaum
 

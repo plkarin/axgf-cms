@@ -2,64 +2,61 @@
    value (tests/design_tokens.rs; the river's water ramp in src/river.rs is
    the one exemption, and the test names it). Everything else uses these.
 
-   Two parts, in this order, and the order matters:
+   THE TOKENS ARE STUDY 06's, "The Furniture"
+   ------------------------------------------
+   Every theme defines the same names, in its own colours:
 
-     1. The design tokens of Study 06, "The Furniture" — the palette the
-        interface is being converted to.
-     2. The palettes the interface draws with today, moved here unchanged
-        from app.css: the light palette on :root, the river's, and the seven
-        themes. Three names are in both — --accent, --danger and
-        --border-strong — and coming second, these win, so the pages look as
-        they did until a component is moved onto the Study 06 tokens.
+     --surface-page     the ground
+     --surface-raised   a card, a panel: a shade lighter than the page
+     --surface-sunken   a field's well
+     --surface-hover    a row under the pointer
+     --border-hairline  the edge between things
+     --border-strong    the edge of a control
+     --text-primary, --text-secondary, --text-tertiary
+     --accent           the primary action, and nothing else
+     --focus-ring       the ring every control carries with the keyboard
+     --danger           destructive actions, as an outline and text
 
-   Design tokens: Study 06, "The Furniture".
+   plus the ones this product needs and the study does not name: the
+   confidence ramp, the two gender hues, the crossing hues, the wash.
 
+   Study 06 itself is the `dark` theme, and `dark` is what a reader gets
+   until they choose otherwise (src/theme.rs, DEFAULT; docs/adr/0002).
    Every control is built from the river's own ground: surfaces a shade
    lighter than the page, never a colour; hairline edges; amber only on the
-   primary action and the focus ring. */
+   primary action and the focus ring.
+
+   The river is dark under every theme. Its water ramp is calibrated for a
+   dark ground, so `.river` sets the Study 06 values on itself whatever the
+   page around it is (docs/adr/0002). */
+
+/* Light: what a reader who chooses it gets, and what "match my system"
+   gives on a light OS. Written on :root so that a page with no data-theme
+   at all still has every token. */
 :root {
-  --surface-page: #0b110e;
-  --surface-raised: #111a16;
-  --surface-sunken: #0e1512;
-  --surface-hover: #17221d;
-
-  --border-hairline: #22302a;
-  --border-strong: #3a4b42;
-
-  --text-primary: #ece6d6;
-  --text-secondary: #a7b3aa;
-  --text-tertiary: #75847b;
-
-  --accent: #dcae64;
-  --focus-ring: #dcae64;
-  --danger: #d98068;
-
-  color-scheme: dark;
-}
-
-
-/* ===========================================================================
-   The palettes in use today, moved unchanged from app.css.
-   =========================================================================== */
-
-/* The light palette: the default, and what "system" gives a light OS. */
-:root {
-  --bg: #fbfaf8;
-  --surface: #ffffff;
-  --border: #e2ddd5;
+  color-scheme: light;
+  --surface-page: #fbfaf8;
+  --surface-raised: #ffffff;
+  --border-hairline: #e2ddd5;
   /* The boundary of a control, which WCAG 1.4.11 holds to 3:1 against what
      is behind it. Measured, not guessed: this is the lightest value that
      still clears 3:1 on the *darkest* ground a control can sit on, which
      since the page wash arrived is the deepest of its gradient stops rather
-     than --surface. Darkened from #979188, which cleared 3:1 on --surface and
-     3.0 on --bg but only 2.80 against the wash. */
+     than --surface-raised. Darkened from #979188, which cleared 3:1 on --surface-raised and
+     3.0 on --surface-page but only 2.80 against the wash. */
   --border-strong: #908a82;
-  --ink: #23201c;
-  --ink-soft: #5f584f;
-  /* Darkened from #8b8378: at 0.78rem on --surface that was 3.1:1, under the
+  --text-primary: #23201c;
+  --text-secondary: #5f584f;
+  /* Darkened from #8b8378: at 0.78rem on --surface-raised that was 3.1:1, under the
      4.5:1 that WCAG AA asks of body text. Muted secondary text is where a
      palette usually fails, so it is the one measured first. */
-  --ink-faint: #6f685e;
+  --text-tertiary: #6f685e;
+  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+     a field's well, a row under the pointer, and the ring every control
+     carries when it has the keyboard. */
+  --surface-sunken: #f3f2f0;
+  --surface-hover: #f2f2f1;
+  --focus-ring: #5b3f8e;
   --accent: #5b3f8e;
   --accent-soft: #f0ebf8;
   /* Text on top of --accent. A literal white here was the one colour no
@@ -93,7 +90,7 @@
      shipped, and invisible to a reader of this file because the variable's
      name says "medium", not "unreadable". Same defect the confidence track
      and the delete button had, same fix. Held to 4.5:1 against the darkest
-     ground it can sit on, which is a wash stop rather than --surface. */
+     ground it can sit on, which is a wash stop rather than --surface-raised. */
   --warning: #8a5f18;
 
   /* Two neutral hues for gender, deliberately not pink and blue. The `-line`
@@ -128,7 +125,7 @@
 
   /* The three tints the page wash is built from, mixed from this theme's own
      background toward its own hues — nothing here is a colour the theme did
-     not already contain. Each lands 2 to 3 L* from --bg, which is felt
+     not already contain. Each lands 2 to 3 L* from --surface-page, which is felt
      rather than seen.
 
      Moss, stone and clay rather than the neutral greys these were: the hue
@@ -157,6 +154,15 @@
   --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #f3dfae; --rv-water: #86b08f; --rv-warn: #d98068;
   --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  /* Study 06 on the river itself, under every theme: anything drawn inside
+     it — its controls, the record beside it — sits on the river's ground. */
+  --surface-page: var(--rv-ink-0); --surface-raised: var(--rv-ink-3);
+  --surface-sunken: var(--rv-ink-2); --surface-hover: var(--rv-ink-4);
+  --border-hairline: var(--rv-rule-2); --border-strong: var(--rv-rule-3);
+  --text-primary: var(--rv-text-1); --text-secondary: var(--rv-text-2);
+  --text-tertiary: var(--rv-text-3);
+  --accent: var(--rv-accent); --focus-ring: var(--rv-accent); --danger: var(--rv-warn);
+  color-scheme: dark;
 }
 
 /* ---------------------------------------------------------------------------
@@ -196,24 +202,30 @@
    explicit choice. A reader who picked dark gets it whatever their OS says. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --bg: #171614;
-    --surface: #201e1b;
-    --border: #35322d;
-    --border-strong: #6e6b65;
-    --ink: #ece8e1;
-    --ink-soft: #bdb6ab;
-    --ink-faint: #9c9488;
-    --accent: #c3aeea;
-    --accent-soft: #2a2437;
-  --on-accent: #1a1622;
-    --on-accent: #1a1622;
+    color-scheme: dark;
+    --surface-page: #0b110e;
+    --surface-raised: #111a16;
+    --border-hairline: #22302a;
+    --border-strong: #3a4b42;
+    --text-primary: #ece6d6;
+    --text-secondary: #a7b3aa;
+    --text-tertiary: #75847b;
+    /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+       a field's well, a row under the pointer, and the ring every control
+       carries when it has the keyboard. */
+    --surface-sunken: #0e1512;
+    --surface-hover: #17221d;
+    --focus-ring: #dcae64;
+    --accent: #dcae64;
+    --accent-soft: #2a2a1f;
+    --on-accent: #0b110e;
 
     --conf-certain: #6dc39a;
     --conf-high: #8fbf97;
     --conf-medium: #d9ab6b;
     --conf-low: #e0937a;
     --conf-track: #3a3630;
-    --danger: #e0937a;
+    --danger: #d98068;
     --warning: #d9ab6b;
 
     --sex-a: #253034;
@@ -236,30 +248,37 @@
     --shadow-a: 0.45;
 
     /* Cool and nearly imperceptible, as a dark page asks for. */
-    --wash-1: #181d18;
-    --wash-2: #1b1c19;
-    --wash-3: #151c1a;
+    --wash-1: #0d1411;
+    --wash-2: #0c1310;
+    --wash-3: #0e1310;
   }
 }
 
 [data-theme="dark"] {
-  --bg: #171614;
-  --surface: #201e1b;
-  --border: #35322d;
-  --border-strong: #6e6b65;
-  --ink: #ece8e1;
-  --ink-soft: #bdb6ab;
-  --ink-faint: #9c9488;
-  --accent: #c3aeea;
-  --accent-soft: #2a2437;
-  --on-accent: #1a1622;
+  color-scheme: dark;
+  --surface-page: #0b110e;
+  --surface-raised: #111a16;
+  --border-hairline: #22302a;
+  --border-strong: #3a4b42;
+  --text-primary: #ece6d6;
+  --text-secondary: #a7b3aa;
+  --text-tertiary: #75847b;
+  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+     a field's well, a row under the pointer, and the ring every control
+     carries when it has the keyboard. */
+  --surface-sunken: #0e1512;
+  --surface-hover: #17221d;
+  --focus-ring: #dcae64;
+  --accent: #dcae64;
+  --accent-soft: #2a2a1f;
+  --on-accent: #0b110e;
 
   --conf-certain: #6dc39a;
   --conf-high: #8fbf97;
   --conf-medium: #d9ab6b;
   --conf-low: #e0937a;
   --conf-track: #3a3630;
-  --danger: #e0937a;
+  --danger: #d98068;
   --warning: #d9ab6b;
 
   --sex-a: #253034;
@@ -282,9 +301,9 @@
   --shadow-a: 0.45;
 
   /* Cool and nearly imperceptible, as a dark page asks for. */
-  --wash-1: #181d18;
-  --wash-2: #1b1c19;
-  --wash-3: #151c1a;
+  --wash-1: #0d1411;
+  --wash-2: #0c1310;
+  --wash-3: #0e1310;
 }
 
 /* --- high contrast ------------------------------------------------------- */
@@ -292,13 +311,20 @@
    theme": the point is maximum luminance separation for low vision, so every
    muted tone collapses onto the ink colour rather than being nudged. */
 [data-theme="high-contrast"] {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --border: #000000;
+  color-scheme: light;
+  --surface-page: #ffffff;
+  --surface-raised: #ffffff;
+  --border-hairline: #000000;
   --border-strong: #000000;
-  --ink: #000000;
-  --ink-soft: #000000;
-  --ink-faint: #1a1a1a;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-tertiary: #1a1a1a;
+  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+     a field's well, a row under the pointer, and the ring every control
+     carries when it has the keyboard. */
+  --surface-sunken: #ffffff;
+  --surface-hover: #e8e8ff;
+  --focus-ring: #0000cc;
   --accent: #0000cc;
   --accent-soft: #e8e8ff;
   --on-accent: #ffffff;
@@ -340,13 +366,20 @@
 
 /* --- sepia --------------------------------------------------------------- */
 [data-theme="sepia"] {
-  --bg: #f4ecdc;
-  --surface: #fbf5e9;
-  --border: #ddd0b6;
+  color-scheme: light;
+  --surface-page: #f4ecdc;
+  --surface-raised: #fbf5e9;
+  --border-hairline: #ddd0b6;
   --border-strong: #8c8069;
-  --ink: #3a2f1e;
-  --ink-soft: #5d4e35;
-  --ink-faint: #6f6047;
+  --text-primary: #3a2f1e;
+  --text-secondary: #5d4e35;
+  --text-tertiary: #6f6047;
+  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+     a field's well, a row under the pointer, and the ring every control
+     carries when it has the keyboard. */
+  --surface-sunken: #ede5d5;
+  --surface-hover: #efe9dd;
+  --focus-ring: #7a4a1e;
   --accent: #7a4a1e;
   --accent-soft: #f0e2cc;
   --on-accent: #fbf5e9;
@@ -395,13 +428,20 @@
    ramp is a blue lightness ramp. */
 [data-theme="deuteranopia"],
 [data-theme="protanopia"] {
-  --bg: #fbfaf8;
-  --surface: #ffffff;
-  --border: #d9d5cd;
+  color-scheme: light;
+  --surface-page: #fbfaf8;
+  --surface-raised: #ffffff;
+  --border-hairline: #d9d5cd;
   --border-strong: #8e8a82;
-  --ink: #1f1f22;
-  --ink-soft: #4c4c52;
-  --ink-faint: #66666d;
+  --text-primary: #1f1f22;
+  --text-secondary: #4c4c52;
+  --text-tertiary: #66666d;
+  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+     a field's well, a row under the pointer, and the ring every control
+     carries when it has the keyboard. */
+  --surface-sunken: #f3f2f1;
+  --surface-hover: #f2f2f2;
+  --focus-ring: #0059a6;
   --accent: #0059a6;
   --accent-soft: #e4eefa;
   --on-accent: #ffffff;
@@ -443,13 +483,20 @@
    confidence ramp is a lightness ramp of reddish-purple, and the decorative
    hues stay on the red-to-teal axis. */
 [data-theme="tritanopia"] {
-  --bg: #fbf9f9;
-  --surface: #ffffff;
-  --border: #ded4d4;
+  color-scheme: light;
+  --surface-page: #fbf9f9;
+  --surface-raised: #ffffff;
+  --border-hairline: #ded4d4;
   --border-strong: #928787;
-  --ink: #201c1c;
-  --ink-soft: #4f4646;
-  --ink-faint: #6b6060;
+  --text-primary: #201c1c;
+  --text-secondary: #4f4646;
+  --text-tertiary: #6b6060;
+  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
+     a field's well, a row under the pointer, and the ring every control
+     carries when it has the keyboard. */
+  --surface-sunken: #f3f1f1;
+  --surface-hover: #f2f1f1;
+  --focus-ring: #9b2d5e;
   --accent: #9b2d5e;
   --accent-soft: #fae6ef;
   --on-accent: #ffffff;

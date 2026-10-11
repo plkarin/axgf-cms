@@ -157,7 +157,7 @@ fn every_theme_redefines_every_colour_root_defines() {
 
 #[test]
 fn the_confidence_track_is_never_the_border_colour() {
-    // The bar's track has to read as *empty*. It used to be `--border`, which
+    // The bar's track has to read as *empty*. It used to be `--border-hairline`, which
     // under the high-contrast theme is pure black, so a 12% bar rendered as a
     // mostly-dark bar and looked more certain than a 98% one — inverting the
     // signal in the theme that needs it most.
@@ -171,7 +171,7 @@ fn the_confidence_track_is_never_the_border_colour() {
         .unwrap();
     assert!(
         bar.contains("var(--conf-track)"),
-        "the track must have its own variable, not borrow --border:\n{bar}"
+        "the track must have its own variable, not borrow --border-hairline:\n{bar}"
     );
 }
 
@@ -462,8 +462,8 @@ fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
 
     let bg = block
         .lines()
-        .find_map(|l| l.trim().strip_prefix("--bg:"))
-        .expect("--bg")
+        .find_map(|l| l.trim().strip_prefix("--surface-page:"))
+        .expect("--surface-page")
         .trim()
         .trim_end_matches(';')
         .to_string();
@@ -484,7 +484,7 @@ fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
 /// reader", so a block that sits *inside* a section and also appears nearer
 /// than it inverts the containment — the eye reads that before it reads
 /// anything the layout meant. The block is therefore dropped to the page's own
-/// `--bg`, which turns it into a well in the section's surface, and its
+/// `--surface-page`, which turns it into a well in the section's surface, and its
 /// `box-shadow` is explicitly `none` rather than merely unset.
 #[test]
 fn a_block_inside_a_section_is_recessed_rather_than_raised() {
@@ -495,7 +495,7 @@ fn a_block_inside_a_section_is_recessed_rather_than_raised() {
     let block = &css[start..start + css[start..].find('}').expect("the rule") + 1];
 
     assert!(
-        block.contains("background: var(--bg)"),
+        block.contains("background: var(--surface-page)"),
         "a block drops to the page's own background — recessed, not raised:\n{block}"
     );
     assert!(
@@ -546,8 +546,8 @@ fn every_level_two_surface_is_declared_in_one_place() {
     // hold literally, so the comfortable style is the interface unchanged.
     let root = root_block(&css);
     for want in [
-        "--section-fill: var(--surface)",
-        "--section-border: 1px solid var(--border)",
+        "--section-fill: var(--surface-raised)",
+        "--section-border: 1px solid var(--border-hairline)",
         "--section-shadow: 0 1px 2px",
     ] {
         assert!(
@@ -668,7 +668,7 @@ fn no_style_block_names_a_colour() {
         let open = css[start..].find('{').expect("a block") + start;
         let end = css[open..].find("\n}").expect("a closing brace") + open;
         let body = &css[open..end];
-        // References to the theme's own tokens are the point — `var(--surface)`
+        // References to the theme's own tokens are the point — `var(--surface-raised)`
         // is how a style stays out of the palette's business — so they are
         // removed before looking. What must not survive is a colour *invented*
         // here: a hex, an rgb() or an hsl() of its own.

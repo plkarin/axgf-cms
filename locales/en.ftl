@@ -51,6 +51,8 @@ theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
 theme-colour-blind-note = colour-blind safe
 theme-contrast-note = maximum contrast
+theme-dark-note = the default
+theme-river-note = The river stays dark under every theme: its colours are made for a dark ground.
 
 ## Tree
 

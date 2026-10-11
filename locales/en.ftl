@@ -3293,3 +3293,6 @@ quality-dismissed-summary = { $n ->
     [one] One finding checked and kept
    *[other] { $n } findings checked and kept
 }
+quality-dismiss-all = Mark all as checked ({ $n })
+quality-restore-all = Show all again ({ $n })
+quality-bulk-conflict = Records changed since the list was opened: { $n }. Nothing was marked; reload the list and try again.

@@ -36,6 +36,23 @@
 {% for r in rules %}
 <details class="card quality-rule" id="rule-{{ r.slug }}">
   <summary><span class="quality-rule-title">{{ t("quality-rule-" ~ r.slug) }}</span> <span class="tab-count">{{ r.n }}</span></summary>
+  {%- if may_write and r.n > 1 %}
+  {#- Every finding of this rule, as listed here, in one save: the form names
+      each one with its record's version, so nothing changed since this page
+      was rendered is touched without being seen. #}
+  <form method="post" action="/quality/rule/{{ 'restore' if show_dismissed else 'dismiss' }}" class="inline-form quality-mark-all">
+    <input type="hidden" name="rule" value="{{ r.slug }}">
+    <input type="hidden" name="back" value="{{ back }}#rule-{{ r.slug }}">
+    {%- for f in r.items %}
+    <input type="hidden" name="f" value="{{ f.kind }}|{{ f.id }}|{{ f.fingerprint }}|{{ f.version }}">
+    {%- endfor %}
+    {%- if not show_dismissed %}
+    <label class="sr-only" for="note-all-{{ r.slug }}">{{ t("quality-note-label") }}</label>
+    <input type="text" name="note" id="note-all-{{ r.slug }}" placeholder="{{ t('quality-note-label') }}" maxlength="200">
+    {%- endif %}
+    <button class="btn small" type="submit">{{ t("quality-restore-all", n=r.n) if show_dismissed else t("quality-dismiss-all", n=r.n) }}</button>
+  </form>
+  {%- endif %}
   <ul class="quality-findings">
     {%- for f in r.items %}
     <li>

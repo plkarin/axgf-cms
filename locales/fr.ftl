@@ -3239,3 +3239,6 @@ quality-dismissed-summary = { $n ->
     [one] { $n } constat vérifié et conservé
    *[other] { $n } constats vérifiés et conservés
 }
+quality-dismiss-all = Tout marquer comme vérifié ({ $n })
+quality-restore-all = Tout réafficher ({ $n })
+quality-bulk-conflict = Fiches modifiées depuis l’ouverture de la liste : { $n }. Rien n’a été marqué ; rechargez la liste et recommencez.

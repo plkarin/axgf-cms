@@ -17,8 +17,9 @@ copy it, together with the `.acl` beside it, and you have a complete backup.
 ## One-line install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --with-sample
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 | Option | Effect |
@@ -288,32 +289,70 @@ sudo journalctl -u axgf-cms -n 20
 
 ---
 
-## Upgrading
+## Deploying a release
 
-Upgrades replace one file. The bundle format is versioned independently and
-the binary refuses to load a spec version it does not understand, so a bad
-upgrade fails loudly at startup rather than silently rewriting your data.
+These are the steps for every deploy of a new release onto a live
+installation. None of them is optional. The rehearsal in step 3 has caught a
+serious defect each time it has been run — a health check asking the wrong
+port, which would have rolled back a healthy upgrade, and a pre-upgrade backup
+that evicted the day's daily archive — so it is not something to remember to
+ask for: it is part of deploying.
 
-```sh
-# Back up first — always.
-sudo cp /var/lib/axgf-cms/family.axgf /backups/pre-upgrade.axgf
+1. **Free space.** At least twice the bundle, plus margin: the upgrade takes
+   a verified backup before anything is replaced, and a save rebuilds the
+   whole archive beside itself.
 
-# Re-running bootstrap installs the new binary and leaves the bundle,
-# the token and the unit's settings alone.
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash
+   ```sh
+   df -h /var/lib/axgf-cms; ls -lh /var/lib/axgf-cms/family.axgf
+   ```
 
-sudo systemctl restart axgf-cms
-curl -s localhost:8080/health
-```
+2. **The release's own installer**, checked. Every release ships
+   `bootstrap.sh` stamped with its tag; it installs exactly that release and
+   is never taken from `main`.
 
-Or by hand: download the new archive, verify its checksum, `install` it over
-`/usr/local/bin/axgf-cms`, and restart.
+   ```sh
+   V=v0.3.1
+   curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/bootstrap.sh
+   curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/bootstrap.sh.sha256
+   curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/rehearse-rollback.sh
+   curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/rehearse-rollback.sh.sha256
+   sha256sum -c bootstrap.sh.sha256 rehearse-rollback.sh.sha256
+   ```
 
-To roll back, install the previous binary with `--version` and, if the
-bundle was modified in the meantime, restore the backup.
+3. **Rehearse the rollback — required.** Runs that release's `--upgrade` with a
+   binary that refuses to start, and checks that the installation comes back
+   byte-identical, with no daily archive lost and the site up again.
 
----
+   ```sh
+   sudo bash rehearse-rollback.sh --version $V
+   ```
+
+   It prints **PASS** or **FAIL**. On FAIL, stop: do not deploy, and report
+   what it printed. The site is unreachable for a few seconds during the
+   rehearsal, and one more pre-upgrade archive is kept.
+
+4. **Deploy.**
+
+   ```sh
+   sudo bash bootstrap.sh --upgrade
+   ```
+
+   It backs up with the running binary, keeps that binary and the current
+   units aside, installs the new ones, restarts, and asks `/health` whether
+   the family's data is readable — rolling everything back by itself if not.
+
+5. **Check, as a reader would.** With an ordinary account, not the emergency
+   token: `/health`, the river at `/`, the grid at `/tree`, `/about`, a record
+   at `/person/<id>`, `/quality`, and the same pages signed out (no year bands,
+   no names of people who are not public, `/quality` asks you to sign in).
+
+Installations upgraded before v0.3.1 were installed and upgraded by a script
+fetched from `main`. Nothing on them refers to that script afterwards — the
+units run the binary only — so nothing on them needs changing: the next
+upgrade is done the way above, with the installer of the release it installs.
+An old one-line command that still fetches from `main` hands over to the
+release's own installer, checked, and runs nothing else of its own; a release
+from before installers were shipped (v0.3.0 and earlier) is refused by it.
 
 ## Troubleshooting
 

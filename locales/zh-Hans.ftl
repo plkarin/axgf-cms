@@ -3019,3 +3019,6 @@ quality-gone-detail = 打开列表后记录已有改动，这条问题已不同�
 quality-summary = 值得一看的问题：{ $n } 项
 quality-summary-file = 此文件中值得一看的问题：{ $n } 项
 quality-dismissed-summary = 已核实并保留的问题：{ $n } 项
+quality-dismiss-all = 全部标记为已核实（{ $n }）
+quality-restore-all = 全部重新显示（{ $n }）
+quality-bulk-conflict = 打开列表后有改动的记录：{ $n } 条。没有标记任何内容；请刷新列表后重试。

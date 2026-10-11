@@ -4,7 +4,7 @@
 //! refuse-cleanly guarantees apply uniformly. Diagnostics are always shown —
 //! warnings never block, mirroring the library's non-blocking philosophy.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use axum::extract::{Form, Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
@@ -3544,5 +3544,172 @@ pub async fn quality_mark(
             expected_version,
             viewer.ceiling(),
         ),
+    }
+}
+
+/// `POST /quality/rule/dismiss` and `/quality/rule/restore` — every finding of
+/// one rule on the list as it was shown, marked as checked (or shown again)
+/// in a single save.
+///
+/// The form carries the rule and, for each finding it listed, `f =
+/// kind|id|fingerprint|version`: what was on the reader's screen, and the
+/// version of each record when they saw it. Each is checked again here — the
+/// finding must still be there for this reader, under this rule — and the
+/// records are updated through `update_many_checked`: one write lock, one
+/// save, a journal entry and a version step per record, and nothing written
+/// at all if any record changed since the list was rendered.
+pub async fn quality_mark_rule(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(action): Path<String>,
+    Form(form): Form<Vec<(String, String)>>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let dismiss = match action.as_str() {
+        "dismiss" => true,
+        "restore" => false,
+        _ => return StatusCode::NOT_FOUND.into_response(),
+    };
+    let field = |k: &str| {
+        form.iter()
+            .find(|(n, _)| n == k)
+            .map(|(_, v)| v.trim().to_string())
+            .unwrap_or_default()
+    };
+    let rule = field("rule");
+    let note = field("note");
+    let back = Some(field("back"))
+        .filter(|b| b.starts_with("/quality") && !b.starts_with("//"))
+        .unwrap_or_else(|| "/quality".into());
+    // What the reader was shown: (kind, id) -> (version, fingerprints).
+    let mut shown: BTreeMap<(String, String), (u64, Vec<String>)> = BTreeMap::new();
+    for (n, v) in &form {
+        if n != "f" {
+            continue;
+        }
+        let parts: Vec<&str> = v.splitn(4, '|').collect();
+        let [kind, id, fp, version] = parts[..] else {
+            continue;
+        };
+        let Ok(version) = version.parse::<u64>() else {
+            continue;
+        };
+        let e = shown
+            .entry((kind.to_string(), id.to_string()))
+            .or_insert((version, Vec::new()));
+        e.1.push(fp.to_string());
+    }
+
+    let (current, records) = state.read_as(viewer.ceiling(), |flat, lens| {
+        let current: Vec<crate::quality::Finding> = crate::quality::for_reader(flat, lens)
+            .into_iter()
+            .filter(|f| f.rule.slug() == rule && f.dismissed.is_some() != dismiss)
+            .collect();
+        let records: BTreeMap<(String, String), Value> = shown
+            .keys()
+            .filter_map(|(kind, id)| {
+                let k = crate::admin::kind_from_str(kind)?;
+                let e = flat.get(crate::admin::collection_for(k))?.get(id)?.clone();
+                Some(((kind.clone(), id.clone()), e))
+            })
+            .collect();
+        (current, records)
+    });
+
+    let at = time::OffsetDateTime::now_utc()
+        .format(&time::format_description::well_known::Rfc3339)
+        .unwrap_or_default();
+    let mut items = Vec::new();
+    for ((kind, id), (version, fps)) in &shown {
+        let Some(k) = crate::admin::kind_from_str(kind) else {
+            continue;
+        };
+        let Some(stored) = records.get(&(kind.clone(), id.clone())) else {
+            continue;
+        };
+        // Only what is still a finding of this rule, for this reader, as shown.
+        let fps: Vec<&String> = fps
+            .iter()
+            .filter(|fp| current.iter().any(|f| &f.fingerprint == *fp && &f.id == id))
+            .collect();
+        if fps.is_empty() {
+            continue;
+        }
+        let mut entity = stored.clone();
+        if !entity.get("extensions").is_some_and(Value::is_object) {
+            entity["extensions"] = json!({});
+        }
+        let list = entity["extensions"]
+            .as_object_mut()
+            .expect("an object")
+            .entry(crate::quality::DISMISSED_KEY)
+            .or_insert_with(|| json!([]));
+        if !list.is_array() {
+            *list = json!([]);
+        }
+        let list = list.as_array_mut().expect("an array");
+        list.retain(|d| {
+            !fps.iter()
+                .any(|fp| d.get("fingerprint").and_then(Value::as_str) == Some(fp.as_str()))
+        });
+        if dismiss {
+            for fp in &fps {
+                let mut e = json!({"fingerprint": fp, "rule": rule, "by": viewer.name(), "at": at});
+                if !note.is_empty() {
+                    e["note"] = Value::String(note.clone());
+                }
+                list.push(e);
+            }
+        }
+        if list.is_empty() {
+            entity["extensions"]
+                .as_object_mut()
+                .expect("an object")
+                .remove(crate::quality::DISMISSED_KEY);
+        }
+        if entity["extensions"]
+            .as_object()
+            .is_some_and(|m| m.is_empty())
+        {
+            entity
+                .as_object_mut()
+                .expect("an entity")
+                .remove("extensions");
+        }
+        if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, Some(stored)) {
+            return r;
+        }
+        items.push(crate::state::BatchItem {
+            kind: k,
+            id: id.clone(),
+            expected_version: *version,
+            label: label_for(k, stored),
+            entity,
+        });
+    }
+    if items.is_empty() {
+        return Redirect::to(&back).into_response();
+    }
+    match state.update_many_checked(items, viewer.name()) {
+        Ok(crate::state::BatchOutcome::Applied { .. }) => Redirect::to(&back).into_response(),
+        Ok(crate::state::BatchOutcome::Conflict { ids }) => render::error_page_args(
+            &chrome,
+            StatusCode::CONFLICT,
+            "quality-gone-title",
+            "quality-bulk-conflict",
+            &[("n", (ids.len() as i64).into())],
+        ),
+        Ok(crate::state::BatchOutcome::Refused { diagnostics, .. }) => result_page(
+            &chrome,
+            "quality",
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(back),
+        ),
+        Err(e) => io_error(&chrome, &e),
     }
 }

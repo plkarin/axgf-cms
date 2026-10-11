@@ -823,7 +823,40 @@ fn stage_release(prefix: &Path, tag: &str) -> PathBuf {
         .status()
         .expect("package the staged release");
     assert!(st.success(), "packaging failed");
+    stage_script(&dir, tag, None);
     mirror
+}
+
+/// Stage the installer a release ships: this repository's bootstrap.sh,
+/// stamped with `tag` exactly as the release workflow stamps it, with its
+/// `.sha256` beside it. `extra` is a line added after the stamp, so a test
+/// can see that this copy is the one that ran.
+fn stage_script(dir: &Path, tag: &str, extra: Option<&str>) {
+    let src = std::fs::read_to_string(repo_root().join("deploy/bootstrap.sh"))
+        .expect("read bootstrap.sh");
+    let stamp_from = "SCRIPT_VERSION=\"__SCRIPT_VERSION__\"";
+    assert!(
+        src.contains(stamp_from),
+        "the script carries the placeholder the workflow stamps"
+    );
+    let mut stamped = src.replacen(stamp_from, &format!("SCRIPT_VERSION=\"{tag}\""), 1);
+    if let Some(line) = extra {
+        stamped = stamped.replacen(
+            &format!("SCRIPT_VERSION=\"{tag}\""),
+            &format!("SCRIPT_VERSION=\"{tag}\"\n{line}"),
+            1,
+        );
+    }
+    std::fs::write(dir.join("bootstrap.sh"), stamped).expect("write staged script");
+    let st = Command::new("bash")
+        .arg("-c")
+        .arg(format!(
+            "cd {} && sha256sum bootstrap.sh > bootstrap.sh.sha256",
+            dir.display()
+        ))
+        .status()
+        .expect("checksum the staged script");
+    assert!(st.success());
 }
 
 /// A dry run with no locally supplied binary, so the download branch is the
@@ -1154,6 +1187,92 @@ fn leftovers(prefix: &Path) -> Vec<String> {
         .unwrap_or_default()
 }
 
+/// The installer that runs is the one the release shipped: the copy from
+/// `main` hands over to it, checked against its checksum, and that copy
+/// installs exactly its own version's binary.
+#[test]
+fn the_installer_that_runs_is_the_one_the_release_shipped() {
+    let prefix = common::scratch("boot-handover");
+    let mirror = stage_release(&prefix, "v0.9.0");
+    stage_script(
+        &mirror.join("releases/download/v0.9.0"),
+        "v0.9.0",
+        Some("echo SHIPPED-WITH-v0.9.0"),
+    );
+    let api = stage_api(&prefix, r#"[{"tag_name": "v0.9.0", "prerelease": false}]"#);
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v0.9.0"]);
+    assert!(r.ok, "{}", r.out);
+    assert!(
+        r.says("handing over to the installer shipped with v0.9.0 (checksum verified)"),
+        "{}",
+        r.out
+    );
+    assert!(
+        r.says("SHIPPED-WITH-v0.9.0"),
+        "the shipped copy ran: {}",
+        r.out
+    );
+    assert!(
+        r.says("releases/download/v0.9.0/axgf-cms-v0.9.0-"),
+        "and fetched its own version by tag: {}",
+        r.out
+    );
+    assert!(prefix.join("usr/local/bin/axgf-cms").exists(), "{}", r.out);
+    assert_eq!(
+        leftovers(&prefix),
+        Vec::<String>::new(),
+        "the handed-over copy cleans up after both"
+    );
+}
+
+/// An installer that does not match its checksum, that says it belongs to
+/// another release, or that a release never shipped, is not run.
+#[test]
+fn an_installer_that_is_not_the_releases_own_is_refused() {
+    // Tampered with after its checksum was taken.
+    let prefix = common::scratch("boot-handover-bad");
+    let mirror = stage_release(&prefix, "v0.9.0");
+    let api = stage_api(&prefix, r#"[{"tag_name": "v0.9.0", "prerelease": false}]"#);
+    let script = mirror.join("releases/download/v0.9.0/bootstrap.sh");
+    let mut s = std::fs::read_to_string(&script).unwrap();
+    s.push_str("\necho TAMPERED\n");
+    std::fs::write(&script, s).unwrap();
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v0.9.0"]);
+    assert!(!r.ok && r.says("does not match its checksum"), "{}", r.out);
+    assert!(
+        !r.says("TAMPERED") && !prefix.join("usr/local/bin/axgf-cms").exists(),
+        "{}",
+        r.out
+    );
+
+    // Stamped for a different release than the one it sits in.
+    let prefix = common::scratch("boot-handover-other");
+    let mirror = stage_release(&prefix, "v0.9.0");
+    let api = stage_api(&prefix, r#"[{"tag_name": "v0.9.0", "prerelease": false}]"#);
+    stage_script(&mirror.join("releases/download/v0.9.0"), "v0.8.0", None);
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v0.9.0"]);
+    assert!(
+        !r.ok && r.says("says it is the installer for v0.8.0, not v0.9.0"),
+        "{}",
+        r.out
+    );
+
+    // A release from before installers were shipped.
+    let prefix = common::scratch("boot-handover-old");
+    let mirror = stage_release(&prefix, "v0.3.0");
+    for f in ["bootstrap.sh", "bootstrap.sh.sha256"] {
+        std::fs::remove_file(mirror.join("releases/download/v0.3.0").join(f)).unwrap();
+    }
+    let api = stage_api(&prefix, r#"[{"tag_name": "v0.3.0", "prerelease": false}]"#);
+    let r = run_against_mirror(&prefix, &mirror, &api, &["--version", "v0.3.0"]);
+    assert!(
+        !r.ok && r.says("publishes no bootstrap.sh") && r.says("v0.3.1 or later"),
+        "{}",
+        r.out
+    );
+    assert!(!prefix.join("usr/local/bin/axgf-cms").exists());
+}
+
 /// The script removes its temporary directories however it exits.
 ///
 /// They were removed on the success path only. A full test run left eighteen
@@ -1206,4 +1325,40 @@ fn bootstrap_leaves_no_temporary_directory_however_it_exits() {
     let dry = common::scratch("boot-tmp-dry");
     dry_run_download(&dry, &[]);
     assert_eq!(leftovers(&dry), Vec::<String>::new(), "after a dry run");
+}
+
+/// The rollback rehearsal every deploy runs first (docs/DEPLOY.md) parses,
+/// explains itself, and will not run without the release it rehearses —
+/// rehearsing with any other installer would prove nothing about this one.
+/// It needs root and a live installation to run for real; the runbook is
+/// where it is run.
+#[test]
+fn the_rollback_rehearsal_is_shipped_and_insists_on_a_version() {
+    let script = repo_root().join("deploy/rehearse-rollback.sh");
+    let syntax = Command::new("bash")
+        .arg("-n")
+        .arg(&script)
+        .status()
+        .unwrap();
+    assert!(syntax.success());
+    let help = Command::new("bash")
+        .arg(&script)
+        .arg("--help")
+        .output()
+        .unwrap();
+    assert!(help.status.success());
+    assert!(String::from_utf8_lossy(&help.stdout).contains("REQUIRED"));
+    let bare = Command::new("bash").arg(&script).output().unwrap();
+    assert!(!bare.status.success());
+    assert!(String::from_utf8_lossy(&bare.stderr).contains("--version is required"));
+    let workflow =
+        std::fs::read_to_string(repo_root().join(".github/workflows/release.yml")).unwrap();
+    assert!(
+        workflow.contains("cp deploy/rehearse-rollback.sh dist/rehearse-rollback.sh"),
+        "shipped with each release"
+    );
+    assert!(
+        workflow.contains("cp deploy/bootstrap.sh dist/bootstrap.sh"),
+        "and so is the installer"
+    );
 }

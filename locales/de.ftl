@@ -3253,3 +3253,6 @@ quality-dismissed-summary = { $n ->
     [one] { $n } Befund geprüft und belassen
    *[other] { $n } Befunde geprüft und belassen
 }
+quality-dismiss-all = Alle als geprüft markieren ({ $n })
+quality-restore-all = Alle wieder anzeigen ({ $n })
+quality-bulk-conflict = Seit dem Öffnen der Liste geänderte Datensätze: { $n }. Nichts wurde markiert; laden Sie die Liste neu und versuchen Sie es erneut.

@@ -4,7 +4,13 @@
 # command. The package, the binary, the unit and the system user are all
 # called axgf-cms; ax-genealogy is what the site calls itself.
 #
-#   curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh | sudo bash
+#   curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+#   curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+#   sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh
+#
+# Each release ships this script, stamped with its tag; that copy installs
+# exactly its own release, and hands over to another release's own copy
+# when asked for one (see "The script that runs" below).
 #
 # Options:
 #   --with-sample     seed a new bundle with the built-in demonstration family
@@ -105,6 +111,10 @@ cleanup_tmpdirs() {
   done
 }
 trap cleanup_tmpdirs EXIT
+# A script handed over to (see hand_over) removes the directory it was
+# downloaded into: the script that downloaded it was replaced by `exec` and
+# will never run its own cleanup.
+[ -n "${AXGF_CMS_HANDOVER_DIR:-}" ] && TMPDIRS+=("$AXGF_CMS_HANDOVER_DIR")
 
 # Options that take a value must be given one. Without this, a trailing
 # `--version` set the tag to the empty string and then ran off the end of the
@@ -113,6 +123,7 @@ need_value() {
   [ -n "${2:-}" ] || die "$1 needs a value (for example: $1 $3)"
 }
 
+ORIG_ARGS=("$@")
 while [ $# -gt 0 ]; do
   case "$1" in
     --with-sample) WITH_SAMPLE=1 ;;
@@ -168,6 +179,75 @@ write_file() {
   fi
   printf '%s\n' "$content" > "$path"
   chmod "$mode" "$path"
+}
+
+# --------------------------------------------------------------------------
+# The script that runs is the script of the release being installed
+# --------------------------------------------------------------------------
+# Each release ships this file as an asset, `bootstrap.sh`, with a `.sha256`
+# beside it, and the release workflow stamps the copy with its own tag below.
+# A stamped script installs exactly its own version's binary. Asked for any
+# other version — `--version`, or no version at all, which means the latest
+# release — it fetches that release's script, checks it against its
+# checksum, and hands over to it. So the tag describes what runs: nothing
+# from `main` decides what an install or an upgrade does.
+#
+# The copy on `main` is unstamped. It only ever hands over, which is what an
+# operator running the old one-line command (fetched from `main`) gets. A
+# release that predates shipped scripts (v0.3.0 and earlier) is refused
+# rather than run with a script it was never released with.
+SCRIPT_VERSION="__SCRIPT_VERSION__"
+case "$SCRIPT_VERSION" in __*) SCRIPT_VERSION="" ;; esac
+
+script_url() {
+  if [ -n "$VERSION" ]; then
+    printf '%s/releases/download/%s/bootstrap.sh' "$RELEASE_BASE" "$VERSION"
+  else
+    printf '%s/releases/latest/download/bootstrap.sh' "$RELEASE_BASE"
+  fi
+}
+
+hand_over() {
+  local url tmp stamp
+  url="$(script_url)"
+  if [ "$DRY_RUN" = "1" ]; then
+    printf '  [dry-run] would fetch and verify %s, and run it unless it is this version\n' "$url"
+    return
+  fi
+  tmp="$(mktemp -d)"; TMPDIRS+=("$tmp")
+  if ! curl -fsSL "$url" -o "$tmp/bootstrap.sh" 2>/dev/null; then
+    # The release is there but ships no installer: it predates shipped
+    # installers. Anything else — no such tag, nothing published, no
+    # network — is what a failed download already explains.
+    local tags
+    if tags="$(published_tags)" && {
+         { [ -n "$VERSION" ] && printf '%s\n' "$tags" | grep -qxF -- "$VERSION"; } \
+         || { [ -z "$VERSION" ] && has_latest_stable; }; }; then
+      die "${VERSION:-the latest release} publishes no bootstrap.sh at
+  ${url}
+
+  Releases from v0.3.1 on ship the installer that belongs to them, and a
+  release is not installed with any other. Install v0.3.1 or later
+  (--version v0.3.1), or build from source with --from-source."
+    fi
+    URL="$url"; ASSET="bootstrap.sh"; ARCH="$(uname -m)"; TARGET="-"
+    explain_download_failure
+  fi
+  curl -fsSL "${url}.sha256" -o "$tmp/bootstrap.sh.sha256" 2>/dev/null \
+    || die "${url} has no .sha256 beside it, so it cannot be checked; refusing to run it."
+  ( cd "$tmp" && sed "s#\([a-f0-9]\{64\}\).*#\1  bootstrap.sh#" bootstrap.sh.sha256 | sha256sum -c - >/dev/null ) \
+    || die "the installer for ${VERSION:-the latest release} does not match its checksum; refusing to run it."
+  stamp="$(sed -n 's/^SCRIPT_VERSION="\(v[^"]*\)"$/\1/p' "$tmp/bootstrap.sh" | head -1)"
+  [ -n "$stamp" ] || die "${url} is not a release's installer (it carries no version); refusing to run it."
+  if [ -n "$VERSION" ] && [ "$stamp" != "$VERSION" ]; then
+    die "${url} says it is the installer for ${stamp}, not ${VERSION}; refusing to run it."
+  fi
+  if [ "$stamp" = "$SCRIPT_VERSION" ]; then
+    say "the installer for ${stamp} is this one"
+    return
+  fi
+  say "handing over to the installer shipped with ${stamp} (checksum verified)"
+  AXGF_CMS_HANDED_OVER=1 AXGF_CMS_HANDOVER_DIR="$tmp" exec bash "$tmp/bootstrap.sh" ${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}
 }
 
 # Tags of every published release, newest first, one per line. Fails (rather
@@ -253,6 +333,21 @@ $(printf '%s\n' "$tags" | sed 's/^/    /')
 if [ "$DRY_RUN" = "0" ] && [ "$SKIP_PRIVILEGED" = "0" ] && [ "$(id -u)" != "0" ]; then
   die "must run as root (try: sudo bash bootstrap.sh)"
 fi
+
+# An upgrade with nothing installed is refused below without fetching anything.
+if [ "$UNINSTALL" = "0" ] && [ "$FROM_SOURCE" = "0" ] && [ -z "$LOCAL_BINARY" ] \
+   && [ "${AXGF_CMS_HANDED_OVER:-0}" != "1" ] \
+   && { [ "$UPGRADE" = "0" ] || [ -x "$INSTALL_PATH" ]; }; then
+  if [ -z "$SCRIPT_VERSION" ] || [ -z "$VERSION" ] || [ "$VERSION" != "$SCRIPT_VERSION" ]; then
+    hand_over
+  fi
+fi
+# From here on this script installs its own version's binary, by tag, never
+# whatever "latest" has become since it was fetched.
+if [ -n "$SCRIPT_VERSION" ] && [ -z "$LOCAL_BINARY" ] && [ "$FROM_SOURCE" = "0" ]; then
+  VERSION="$SCRIPT_VERSION"
+fi
+
 
 step "Checking the host"
 ARCH="$(uname -m)"

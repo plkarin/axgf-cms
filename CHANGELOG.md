@@ -6,6 +6,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-10-11
+
+### Changed
+
+**The installer is the release's own.** Until now the one-line install and
+`--upgrade` fetched `bootstrap.sh` from `main`: whoever installed v0.3.0 got
+v0.3.0's binary and whatever `main` held that day, and a bad commit on `main`
+reached every install and upgrade with no release in between. Each release
+now ships its `bootstrap.sh` as an asset, stamped with its tag, with a
+`.sha256` beside it, and the documented commands fetch and check that copy. A
+stamped installer installs exactly its own version; asked for another — with
+`--version`, or by `--upgrade` to the latest — it fetches that release's
+installer, checks it against its checksum and hands over to it. The copy on
+`main` only ever hands over. A release from before installers were shipped
+(v0.3.0 and earlier) is refused rather than installed with a script it was
+never released with.
+
+Installed copies need nothing done: nothing on them refers to the script
+after it has run. Their next upgrade is done with the installer of the
+release being installed (`docs/DEPLOY.md`).
+
+**Deploying a release is a runbook, and its rollback rehearsal is required.**
+`docs/DEPLOY.md` lists the steps; `deploy/rehearse-rollback.sh`, shipped
+with each release, runs the target release's `--upgrade` with a binary that
+refuses to start and checks that the installation comes back byte-identical,
+no daily archive lost, the site up. It has caught a serious defect each time
+it has been run.
+
+### Added
+
+**A whole rule marked as checked at once.** On `/quality` each rule has
+"Mark all as checked" (and, behind the filter, "Show all again"): every
+finding of that rule as listed, in one save, all or nothing — one record
+changed since the page was rendered and none is marked — with a journal entry
+and a version step per record. On the operator's 434 MB archive, release
+build: one dismissal takes 12–17 s (a save rewrites the archive); all 97
+places without a region take 20 s, where one at a time would take about 23
+minutes.
+
 ### Fixed
 
 **An upgrade from 0.2.0 or earlier no longer replaces that day's daily
@@ -2892,6 +2931,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.3.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.1
 [0.3.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.0
 [0.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.2.0
 [0.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.1.0

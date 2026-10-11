@@ -29,14 +29,17 @@ file and just want to look at it, skip to
 On a fresh Ubuntu LTS server, as a user who can `sudo`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --with-sample
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
-It installs the latest stable release — **v0.3.0**, of 11 October 2026, which
-adds a data-quality page (`/quality`) and search to the river landing page
-of v0.2.0 — and reads AXGF 1.0 and 1.1 files.
-To pin a release, add `--version v0.3.0`; to build what is on `main` instead,
+The installer is the one the release ships, checked against its checksum:
+it installs exactly that release — today **v0.3.1**, which has the river, search and the
+data-quality page (`/quality`) — and reads AXGF 1.0 and 1.1 files. To install
+a particular release, fetch the same two files from
+`releases/download/<tag>/` instead of `releases/latest/download/` (v0.3.1 or
+later; earlier releases shipped no installer). To build what is on `main` instead,
 `--from-source`, which needs `cargo` on root's `PATH`. Every release, with its
 binaries and checksums, is on the
 [releases page](https://github.com/plkarin/axgf-cms/releases).
@@ -166,8 +169,9 @@ sudo systemctl start axgf-cms
 ## Upgrade
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --upgrade
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --upgrade
 ```
 
 It backs up first, keeps the working binary aside, installs the new one,
@@ -203,7 +207,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v0.3.0`](https://github.com/plkarin/axgf-cms/releases/tag/v0.3.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v0.3.1`](https://github.com/plkarin/axgf-cms/releases/tag/v0.3.1), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

@@ -58,7 +58,40 @@
       return;
     }
     var question = form.getAttribute("data-confirm");
-    if (question && !window.confirm(question)) ev.preventDefault();
+    if (question && !window.confirm(question)) {
+      ev.preventDefault();
+      return;
+    }
+    // `data-busy="<label>"` on a submit button — while the request is out,
+    // the button says what is happening (B2: the label changes, no spinner)
+    // and a second press does not send it twice. Disabling the button now
+    // would drop its name and value from the submission, so it is marked
+    // instead, and later submits of this form are refused.
+    if (form.getAttribute("aria-busy") === "true") {
+      ev.preventDefault();
+      return;
+    }
+    var by = ev.submitter;
+    if (by && by.hasAttribute("data-busy")) {
+      form.setAttribute("aria-busy", "true");
+      by.setAttribute("aria-busy", "true");
+      by.setAttribute("aria-disabled", "true");
+      by.setAttribute("data-idle", by.textContent);
+      by.textContent = by.getAttribute("data-busy");
+    }
+  });
+  // Back to a page from the history cache: the form is idle again.
+  window.addEventListener("pageshow", function (ev) {
+    if (!ev.persisted) return;
+    document.querySelectorAll('form[aria-busy="true"]').forEach(function (f) {
+      f.removeAttribute("aria-busy");
+    });
+    document.querySelectorAll("[data-idle]").forEach(function (b) {
+      b.textContent = b.getAttribute("data-idle");
+      b.removeAttribute("data-idle");
+      b.removeAttribute("aria-busy");
+      b.removeAttribute("aria-disabled");
+    });
   });
 
   // `data-search` — the masthead search. Suggestions from /search.json as

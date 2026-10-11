@@ -118,7 +118,7 @@
   </fieldset>
 
   <div class="ed-actions">
-    <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+    <button type="submit" class="btn primary" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     <a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a>
   </div>
 </form>

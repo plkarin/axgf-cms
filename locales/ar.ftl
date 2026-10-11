@@ -43,6 +43,8 @@ prefs-theme = السمة
 prefs-background = الخلفية
 prefs-background-on = تدرّج لوني خفيف خلف الصفحة
 prefs-apply = تطبيق
+busy-saving = جارٍ الحفظ…
+busy-working = جارٍ التنفيذ…
 prefs-reviewed = مُراجَعة
 prefs-machine = آلية، { $coverage }٪
 

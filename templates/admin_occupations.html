@@ -22,7 +22,7 @@
     <legend>{{ o.title }}</legend>
     {{ m.occupation_fields(t, o, precisions, places, sources) }}
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
   </fieldset>
 </form>
@@ -36,7 +36,7 @@
     <legend>{{ t("occupations-new") }}</legend>
     {{ m.occupation_fields(t, none, precisions, places, sources) }}
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("occupations-create") }}</button>
+      <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("occupations-create") }}</button>
     </div>
   </fieldset>
 </form>

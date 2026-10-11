@@ -11,7 +11,7 @@
 <section class="rec-section">
 <div class="cta-row">
   {% for k in kinds %}
-    <a class="btn {% if k == kind %}primary{% endif %}" href="/admin/{{ k }}">{{ t("kind-" ~ k) }}</a>
+    <a class="btn small" href="/admin/{{ k }}"{% if k == kind %} aria-current="page"{% endif %}>{{ t("kind-" ~ k) }}</a>
   {% endfor %}
 </div>
 
@@ -48,8 +48,8 @@
       <td class="mono small muted">{{ r.id }}</td>
       <td>{% if r.confidence %}{{ m.conf_bar(r.confidence) }}{% endif %}</td>
       <td class="nowrap">
-        <a class="btn small-btn" href="/admin/{{ kind }}/{{ r.id }}/edit">{{ t("admin-edit") }}</a>
-        <button class="btn small-btn danger" type="button"
+        <a class="btn small" href="/admin/{{ kind }}/{{ r.id }}/edit">{{ t("admin-edit") }}</a>
+        <button class="btn small danger" type="button"
                 data-toggle="del-{{ r.id }}">
           {{ t("admin-delete") }}
         </button>

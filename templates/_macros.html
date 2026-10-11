@@ -520,7 +520,7 @@
    hidden row with script: the same words, and it opens with scripting off. #}
 {% macro delete_block(t, kind, id, label, version) %}
 <details class="ed-delete">
-  <summary class="btn danger small-btn">{{ label }}</summary>
+  <summary class="btn small danger">{{ label }}</summary>
   <form method="post" action="/admin/{{ kind }}/{{ id }}/delete">
     <input type="hidden" name="base_version" value="{{ version }}">
     <p><strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong></p>

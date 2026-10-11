@@ -797,7 +797,6 @@ h4 {
 
 /* One control height across buttons, inputs and selects, so a row of them
    lines up on its centres instead of drifting by a padding value. */
-.btn,
 input[type="text"], input[type="password"], input[type="email"],
 input[type="search"], input[type="file"], select, textarea {
   border-radius: var(--radius);
@@ -816,58 +815,70 @@ input[type="search"], input[type="file"], select, textarea {
 }
 textarea { line-height: 1.5; }
 
+/* ---------------------------------------------------------------------------
+   Buttons (Study 06, B2)
+   ---------------------------------------------------------------------------
+   Four variants and only four. `.btn` alone is the SECONDARY, the everyday
+   button: transparent, a 1px strong edge, ink. `.primary` is filled with the
+   accent and there is at most one on a page (tests/controls.rs). `.ghost` has
+   no edge, for actions inside rows. `.danger` is an outline in the danger
+   colour, never a fill: destructive actions should feel serious, not loud.
+
+   36px, or 28px with `.small`, radius 2 — nothing else, nowhere. Disabled is
+   dashed, so it reads as off in greyscale. A busy button says so in words
+   (ui.js swaps in `data-busy`); there is no spinner. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding-inline: 0.95rem;
+  box-sizing: border-box;
+  block-size: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-minor);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  font-weight: var(--weight-medium);
-  white-space: nowrap;
-  box-shadow: 0 1px 1px rgb(var(--shadow-rgb) / var(--shadow-a));
+  transition: background-color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease),
+              color var(--tempo) var(--ease);
 }
-.btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-soft);
+.btn.small { block-size: 28px; padding: 0 10px; font-size: var(--type-small); }
+.btn:hover { background: var(--surface-hover); }
+/* A secondary that is the current one of a set — a range, a mode, the
+   record type being listed — is pressed: the hover surface and full ink,
+   never a colour. */
+.btn[aria-current], .btn[aria-pressed="true"] {
+  background: var(--surface-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
-/* Pressing moves the control a single pixel. Enough to feel, not enough to
-   shift what is around it. */
-.btn:active { transform: translateY(1px); box-shadow: none; }
-
-/* The primary action reads as primary through weight and fill, not through
-   size — it sits in a row with the others and must not break the rhythm. */
 .btn.primary {
   background: var(--accent);
-  border-color: var(--accent);
+  border-color: transparent;
   color: var(--on-accent);
   font-weight: var(--weight-semi);
-  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
 }
-.btn.primary:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-  /* Lift rather than fade: dropping opacity would take the label's contrast
-     down with it, and this pair has no margin to give away. */
-  box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
-}
-.btn.danger { color: var(--danger); border-color: var(--danger); }
-.btn.danger:hover {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface-raised);
-  box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
-}
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text-primary)); }
+.btn.ghost { border-color: transparent; }
+.btn.ghost:hover { background: var(--surface-hover); }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.danger:hover { background: var(--surface-hover); }
 .btn:disabled, .btn[aria-disabled="true"] {
-  opacity: 0.55;
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--text-tertiary);
   cursor: not-allowed;
-  box-shadow: none;
 }
-.btn-compact { padding: 0.3rem 0.65rem; font-size: var(--type-minor); }
-.small-btn { padding: 0.3rem 0.6rem; font-size: var(--type-minor); border-radius: var(--radius-sm); }
+.btn[aria-busy="true"] { cursor: progress; }
 
 select {
   cursor: pointer;
@@ -945,11 +956,6 @@ input[type="file"], select, textarea {
   padding: 0.45rem 0.6rem;
 }
 textarea { font-family: var(--mono); font-size: var(--type-minor); line-height: 1.5; }
-input:focus, select:focus, textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-  border-color: var(--accent);
-}
 .field { margin-bottom: 1rem; }
 .field .hint { font-size: var(--type-small); color: var(--text-tertiary); margin-top: 0.2rem; }
 fieldset { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; }
@@ -1371,7 +1377,6 @@ bdi.date { unicode-bidi: isolate; }
 .panel-name { margin: 0; font-size: var(--type-sub); line-height: 1.2; }
 .panel-head .lede { margin: 0.2rem 0 0; }
 .panel-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.btn.small { padding: 0.15rem 0.5rem; font-size: var(--type-small); }
 .panel-empty { color: var(--text-tertiary); padding: 1rem 0; }
 
 /* The record sections, re-flowed for a narrow column.
@@ -2027,7 +2032,6 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .filter-row input[type="text"] { max-width: 22rem; }
 .filter-row .spacer { flex: 1 1 auto; }
 
-.small-btn { padding: 0.15rem 0.5rem; font-size: var(--type-small); }
 
 .delete-row { background: var(--surface-page); }
 .policy-list { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.6rem 0; }
@@ -2553,9 +2557,13 @@ input, select, textarea, button {
   font: inherit;
 }
 input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity: 1; }
-input:focus-visible, select:focus-visible,
-textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary:focus-visible {
-  outline: 2px solid var(--accent);
+/* Focus (B2): a 2px ring in --focus-ring at 2px offset, on every control,
+   never removed. Not the browser's outline, and nothing anywhere sets
+   `outline: none` without putting this back (tests/controls.rs). A field
+   shows it on any focus, because typing into one is always the keyboard. */
+:is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+:is(input, select, textarea):focus {
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -3189,54 +3197,14 @@ a.tcard:hover {
   padding: 0;
   list-style: none;
 }
-.rv-chip {
-  display: inline-flex;
-  align-items: center;
-  block-size: 26px;
-  padding-inline: 9px;
-  border: 1px solid var(--rv-rule-2);
-  border-radius: 2px;
-  color: var(--rv-text-2);
-  font-size: var(--type-rv-chip);
-  white-space: nowrap;
-  text-decoration: none;
-}
-.rv-chip[aria-current] { background: var(--rv-chip-on); color: var(--rv-text-1); border-color: var(--rv-rule-4); }
-.rv-btn {
-  display: inline-flex;
-  align-items: center;
-  block-size: 28px;
-  padding-inline: 10px;
-  background: transparent;
-  border: 1px solid var(--rv-rule-3);
-  border-radius: 2px;
-  color: var(--rv-text-1);
-  font-size: var(--type-rv-control);
-  text-decoration: none;
-  cursor: pointer;
-}
-.rv-btn:hover:not(:disabled) { background: var(--rv-ink-4); }
-.rv-btn:disabled { color: var(--rv-text-3); cursor: default; }
-.rv-seg { display: flex; border: 1px solid var(--rv-rule-3); border-radius: 2px; }
-.rv-seg > a, .rv-seg > button {
-  display: inline-flex;
-  align-items: center;
-  block-size: 28px;
-  padding-inline: 10px;
-  background: transparent;
-  border: 0;
-  color: var(--rv-text-2);
-  font-family: var(--rv-mono);
-  font-size: var(--type-rv-seg);
-  text-decoration: none;
-  cursor: pointer;
-}
-.rv-seg > [aria-current], .rv-seg > [aria-pressed="true"] { background: var(--rv-text-1); color: var(--rv-ink-0); }
-.river :is(a, button):focus-visible {
-  outline: none;
-  border-color: var(--rv-accent);
-  box-shadow: 0 0 0 1px var(--rv-accent);
-}
+/* The river's controls are ordinary secondary buttons (B2) — `.river` sets
+   Study 06 on itself, so they draw on the river's ground under every theme.
+   What is left here is layout: the itinerary's chips, and the joined sets
+   whose current member is pressed. */
+.rv-chip { font-size: var(--type-rv-chip); }
+.rv-seg { display: flex; }
+.rv-seg > .btn { font-family: var(--rv-mono); font-size: var(--type-rv-seg); }
+.rv-seg > .btn + .btn { margin-inline-start: -1px; }
 /* The canvas is as tall as its drawing. Stretched to the record panel beside
    it, it pushed the legend away from the river it explains and put back, as
    page, the empty height the cropped viewBox had just taken out. */

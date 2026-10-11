@@ -65,7 +65,7 @@
           <textarea name="family_scope" rows="2"
                     placeholder="{{ t('accounts-branch-placeholder') }}"
                     aria-label="{{ t('accounts-branch') }}">{{ u.family_scope | join("\n") }}</textarea>
-          <button class="btn" type="submit">{{ t("admin-save") }}</button>
+          <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
         </form>
       </td>
     </tr>
@@ -127,7 +127,7 @@
       {% endif %}
     </div>
   </div>
-  <button class="btn primary" type="submit">{{ t("accounts-create") }}</button>
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("accounts-create") }}</button>
 </form>
 
 {% endblock %}

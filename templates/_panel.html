@@ -35,7 +35,7 @@
       {%- endif %}
       <a class="btn small panel-open-full" href="/person/{{ p.id }}"
          title="{{ t('record-open-full-title') }}">{{ t("record-open-full-page") }}</a>
-      {% if may_write %}<a class="btn small" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>{% endif %}
+      {% if may_write %}<a class="btn small ghost" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>{% endif %}
     </div>
   </div>
 

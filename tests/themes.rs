@@ -568,7 +568,7 @@ fn every_level_two_surface_is_declared_in_one_place() {
 fn the_danger_colour_is_not_the_low_confidence_fill() {
     let css = css();
     assert!(
-        css.contains(".btn.danger { color: var(--danger)"),
+        css.contains(".btn.danger { border-color: var(--danger); color: var(--danger); }"),
         "the destructive button uses the token meant for reading"
     );
     for theme in THEME_SELECTORS {

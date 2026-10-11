@@ -27,7 +27,7 @@
     {% if l.reversed %}<p class="ed-elsewhere">{{ t("links-reversed") }}</p>{% endif %}
     {{ m.link_fields(t, l, categories, relations, precisions, sources) }}
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
   </fieldset>
 </form>
@@ -41,7 +41,7 @@
     <legend>{{ t("links-new") }}</legend>
     {{ m.link_fields(t, none, categories, relations, precisions, sources) }}
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("links-create") }}</button>
+      <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("links-create") }}</button>
     </div>
   </fieldset>
 </form>

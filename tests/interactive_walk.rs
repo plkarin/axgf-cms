@@ -207,8 +207,9 @@ async fn accepts(app: &axum::Router, method: &str, path: &str, cookie: Option<&s
 
 /// The selectors a script binds: the argument of every `querySelector`,
 /// `querySelectorAll`, `closest` and `getElementById` call, the last as
-/// `#id`. Those passed to `closest` are returned separately: they are
-/// delegation targets, which must not swallow other controls.
+/// `#id`. Those passed to `closest` on an event's target are returned
+/// separately: they are delegation targets, which must not swallow other
+/// controls.
 fn bound_selectors(js: &str) -> (Vec<String>, Vec<String>) {
     let (mut all, mut closest) = (Vec::new(), Vec::new());
     for call in [
@@ -231,7 +232,10 @@ fn bound_selectors(js: &str) -> (Vec<String>, Vec<String>) {
             } else {
                 arg.to_string()
             };
-            if call == "closest(" {
+            // Delegation is `closest` on an event's target. On anything else
+            // (`frame.closest('label')`) it is a lookup from an element the
+            // script already holds, and claims no clicks.
+            if call == "closest(" && js[..at].ends_with("target.") {
                 closest.push(sel.clone());
             }
             all.push(sel);
@@ -483,6 +487,21 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
         ] {
             out.push(format!("/admin/{kind}/{id}/edit"));
         }
+        // The record's own editors, one per facet.
+        for facet in [
+            "identity",
+            "family",
+            "events",
+            "occupations",
+            "links",
+            "documents",
+            "avatar",
+            "profile",
+            "physical",
+        ] {
+            out.push(format!("/admin/person/{P}/{facet}"));
+        }
+        out.push("/admin/place/new".into());
         out.push("/admin/users".into());
     } else {
         out.push("/admin/login".into());
@@ -603,6 +622,10 @@ fn the_walk_reads_what_scripts_bind() {
     );
     assert_eq!(closest, ["[data-range],[data-go]"]);
     assert!(all.contains(&"#rv-back".to_string()) && all.contains(&".tcard".to_string()));
+    // A lookup from an element in hand delegates nothing.
+    let (looked_up, delegated) = bound_selectors("var label = frame.closest('label');");
+    assert_eq!(looked_up, ["label"]);
+    assert!(delegated.is_empty());
     assert_eq!(
         resolve("/person/p1", "?tab=family"),
         "/person/p1?tab=family"
@@ -610,5 +633,79 @@ fn the_walk_reads_what_scripts_bind() {
     assert_eq!(
         resolve("/admin/person", "/admin/person/new"),
         "/admin/person/new"
+    );
+}
+
+/// At most one primary button on a page (B2): the primary is the one thing
+/// the page is for. A form per record makes every save a secondary; the
+/// river has none at all.
+#[tokio::test]
+async fn no_page_has_more_than_one_primary_button() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let primary = Selector::parse(".btn.primary").unwrap();
+    let mut over = Vec::new();
+    let mut seen = 0;
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        for page in pages(c.is_some(), None) {
+            let (status, html, _) = fetch(&app, &page, c).await;
+            assert_eq!(status, StatusCode::OK, "{who} {page}");
+            let doc = Html::parse_document(&html);
+            let n = doc.select(&primary).count();
+            seen += 1;
+            if n > 1 {
+                let all: Vec<String> = doc.select(&primary).map(|e| describe(&e)).collect();
+                over.push(format!("{who} {page}: {n} primaries: {all:?}"));
+            }
+        }
+    }
+    assert!(seen > 40, "the walk's pages, both ways: {seen}");
+    assert!(over.is_empty(), "{}", over.join("\n"));
+}
+
+/// The river's controls are secondaries and its record's "edit" a ghost; the
+/// river has no primary (B2).
+#[tokio::test]
+async fn the_river_controls_are_secondary_and_edit_is_a_ghost() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let (_, html, _) = fetch(&app, &format!("/?p={P}&n=3"), Some(&cookie)).await;
+    let doc = Html::parse_document(&html);
+    let sel = |s: &str| Selector::parse(s).unwrap();
+    for (what, s) in [
+        ("the itinerary chips", ".rv-trail a"),
+        ("the ranges", "[data-range]"),
+        ("voyage and coupe", "button[data-motion]"),
+        ("the grid", ".rv-grid"),
+        ("back", "#rv-back"),
+    ] {
+        let found: Vec<_> = doc.select(&sel(s)).collect();
+        assert!(!found.is_empty(), "{what}: none on the page");
+        for el in found {
+            let class = el.value().attr("class").unwrap_or("");
+            assert!(
+                class.split_whitespace().any(|c| c == "btn")
+                    && !class.contains("primary")
+                    && !class.contains("ghost"),
+                "{what} is a secondary button: {}",
+                describe(&el)
+            );
+        }
+    }
+    let edit: Vec<_> = doc
+        .select(&sel(&format!(r#"a[href="/admin/person/{P}/edit"]"#)))
+        .collect();
+    assert!(!edit.is_empty(), "the record's edit link");
+    for el in edit {
+        assert!(
+            el.value().attr("class").unwrap_or("").contains("ghost"),
+            "{}",
+            describe(&el)
+        );
+    }
+    assert_eq!(
+        doc.select(&sel(".btn.primary")).count(),
+        0,
+        "no primary on the river"
     );
 }

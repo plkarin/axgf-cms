@@ -37,7 +37,7 @@
       </tbody>
     </table>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
   </fieldset>
 </form>
@@ -59,7 +59,7 @@
       <tbody>{{ m.participant_row(t, 0, none, roles) }}</tbody>
     </table>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("events-create") }}</button>
+      <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("events-create") }}</button>
     </div>
   </fieldset>
 </form>

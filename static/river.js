@@ -333,7 +333,7 @@
     var grid = root.querySelector('.rv-grid'); if (grid) grid.href = '/tree?root=' + encodeURIComponent(c);
     var ol = root.querySelector('.rv-trail');
     ol.innerHTML = trail.map(function (id) {
-      return '<li><a class="rv-chip" data-go="' + esc(id) + '" href="' + base + '?p=' + encodeURIComponent(id) + '&amp;n=' + n + '"' + (id === c ? ' aria-current="page"' : '') + '>' + esc(names[id] || '·') + '</a></li>';
+      return '<li><a class="btn small rv-chip" data-go="' + esc(id) + '" href="' + base + '?p=' + encodeURIComponent(id) + '&amp;n=' + n + '"' + (id === c ? ' aria-current="page"' : '') + '>' + esc(names[id] || '·') + '</a></li>';
     }).join('');
     back.disabled = trail.length < 2;
   }

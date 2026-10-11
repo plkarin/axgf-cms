@@ -28,20 +28,20 @@
     <div class="rv-controls">
       <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
       <ol class="rv-trail" aria-labelledby="rv-trail-label">
-        <li><a class="rv-chip" aria-current="page" href="/?p={{ centre_q }}&amp;n={{ n }}">{{ centre_name }}</a></li>
+        <li><a class="btn small rv-chip" aria-current="page" href="/?p={{ centre_q }}&amp;n={{ n }}">{{ centre_name }}</a></li>
       </ol>
-      <button type="button" class="rv-btn" id="rv-back" disabled>{{ t("river-back") }}</button>
+      <button type="button" class="btn small" id="rv-back" disabled>{{ t("river-back") }}</button>
       <div class="rv-seg" role="group" aria-label="{{ t('river-range') }}">
         {%- for r in ranges %}
-        <a href="/?p={{ centre_q }}&amp;n={{ r }}{% if river_tab and river_tab != 'record' %}&amp;tab={{ river_tab }}{% endif %}" data-range="{{ r }}"
+        <a class="btn small" href="/?p={{ centre_q }}&amp;n={{ r }}{% if river_tab and river_tab != 'record' %}&amp;tab={{ river_tab }}{% endif %}" data-range="{{ r }}"
            {%- if r == n %} aria-current="true"{% endif %}>± {{ r }}</a>
         {%- endfor %}
       </div>
       <div class="rv-seg" role="group" aria-label="{{ t('river-motion') }}">
-        <button type="button" data-motion="travel" aria-pressed="{{ 'false' if motion_cut else 'true' }}">{{ t("river-travel") }}</button>
-        <button type="button" data-motion="cut" aria-pressed="{{ 'true' if motion_cut else 'false' }}">{{ t("river-cut") }}</button>
+        <button type="button" class="btn small" data-motion="travel" aria-pressed="{{ 'false' if motion_cut else 'true' }}">{{ t("river-travel") }}</button>
+        <button type="button" class="btn small" data-motion="cut" aria-pressed="{{ 'true' if motion_cut else 'false' }}">{{ t("river-cut") }}</button>
       </div>
-      <a class="rv-btn rv-grid" href="/tree?root={{ centre_q }}">{{ t("river-grid-link") }}</a>
+      <a class="btn small rv-grid" href="/tree?root={{ centre_q }}">{{ t("river-grid-link") }}</a>
     </div>
 
     <div class="rv-canvas" id="rv-canvas">{{ svg|safe }}</div>

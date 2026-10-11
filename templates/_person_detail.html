@@ -162,7 +162,7 @@
             data-confirm="{{ t("record-union-duplicate-confirm") }}">
         <input type="hidden" name="families" value="{{ g.family_ids | join(",") }}">
         <input type="hidden" name="back" value="/person/{{ p.id }}">
-        <button class="btn btn-compact" type="submit">{{ t("record-union-duplicate-action") }}</button>
+        <button class="btn small" type="submit">{{ t("record-union-duplicate-action") }}</button>
       </form>
       {% endif %}
     </div>
@@ -518,7 +518,7 @@
       </select>
       <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}"
              aria-label="{{ t('record-caption') }}">
-      <button class="btn primary">{{ t("record-upload") }}</button>
+      <button class="btn" data-busy="{{ t('busy-working') }}">{{ t("record-upload") }}</button>
     </div>
     <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}
       <details class="sec-help">

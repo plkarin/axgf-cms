@@ -57,7 +57,7 @@
       {% endfor %}
     </select>
   </div>
-  <button class="btn primary" type="submit">{{ t("tree-show") }}</button>
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("tree-show") }}</button>
   {% if show_all %}
     <a class="btn" href="/tree">{{ t("tree-back-to-focused") }}</a>
   {% else %}

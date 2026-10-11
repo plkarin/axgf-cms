@@ -88,7 +88,7 @@
     {{ m.union_point(t, "end", t("family-ended"), f.end, precisions, places) }}
 
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
       <button type="submit" name="action" value="detach" class="btn">{{ t("family-leave") }}</button>
       <a class="btn" href="/admin/family/{{ f.id }}/edit">{{ t("family-open-entity") }}</a>
     </div>
@@ -109,7 +109,7 @@
         </select></label>
     </div>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("family-create-union") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-working') }}">{{ t("family-create-union") }}</button>
     </div>
   </fieldset>
 </form>
@@ -145,7 +145,7 @@
         </select></label>
     </div>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("family-attach") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-working') }}">{{ t("family-attach") }}</button>
     </div>
   </fieldset>
 </form>

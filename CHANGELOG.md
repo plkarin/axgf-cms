@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+**An upgrade from 0.2.0 or earlier no longer replaces that day's daily
+backup.** Those binaries keep one archive a day, so a pre-upgrade backup
+written beside the daily archives replaced the morning's, whatever the
+retention counts said — the 0.3.0 rollback rehearsal on the operator's
+server lost one that way. `bootstrap.sh --upgrade` now has such a binary
+write into an empty directory of its own and moves the archive into the
+pre-upgrade set (0600, the last three kept). The script is fetched from
+`main`, so this applies to upgrades to 0.3.0 as well.
+
 ## [0.3.0] — 2026-10-11
 
 ### Added

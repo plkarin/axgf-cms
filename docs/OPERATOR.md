@@ -24,8 +24,9 @@ regularly and nothing else here can hurt you very much.
 ## Install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --with-sample
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 It creates a system user with no shell, a data directory, a configuration
@@ -196,8 +197,9 @@ reversible.
 ## Upgrading
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --upgrade
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --upgrade
 ```
 
 In order: a backup with the binary that is known to work; the working binary

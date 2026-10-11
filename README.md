@@ -29,8 +29,9 @@ file and just want to look at it, skip to
 On a fresh Ubuntu LTS server, as a user who can `sudo`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --with-sample
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 It installs the latest stable release — **v0.3.0**, of 11 October 2026, which
@@ -166,8 +167,9 @@ sudo systemctl start axgf-cms
 ## Upgrade
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/plkarin/axgf-cms/main/deploy/bootstrap.sh \
-  | sudo bash -s -- --upgrade
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh
+curl -fsSLO https://github.com/plkarin/axgf-cms/releases/latest/download/bootstrap.sh.sha256
+sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --upgrade
 ```
 
 It backs up first, keeps the working binary aside, installs the new one,

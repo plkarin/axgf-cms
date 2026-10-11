@@ -123,6 +123,24 @@ jobs:
           pattern: axgf-cms-*
           merge-multiple: true
 
+      # The installer ships with the release it installs: the tag's own
+      # deploy/bootstrap.sh, stamped with the tag, with a checksum beside it.
+      # bootstrap.sh refuses to install a release that has no stamped script,
+      # and a stamped script installs exactly its own version.
+      - name: Stamp and attach the installer
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          cp deploy/bootstrap.sh dist/bootstrap.sh
+          sed -i "s/^SCRIPT_VERSION=\"__SCRIPT_VERSION__\"$/SCRIPT_VERSION=\"${tag}\"/" dist/bootstrap.sh
+          grep -qx "SCRIPT_VERSION=\"${tag}\"" dist/bootstrap.sh || { echo "the installer was not stamped" >&2; exit 1; }
+          bash -n dist/bootstrap.sh
+          (cd dist && sha256sum bootstrap.sh > bootstrap.sh.sha256)
+          # And the rollback rehearsal every deploy runs first (docs/DEPLOY.md).
+          cp deploy/rehearse-rollback.sh dist/rehearse-rollback.sh
+          bash -n dist/rehearse-rollback.sh
+          (cd dist && sha256sum rehearse-rollback.sh > rehearse-rollback.sh.sha256)
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}

@@ -138,6 +138,7 @@ fn routes(state: Shared) -> Router {
         .route("/quality", get(public::quality))
         .route("/quality.csv", get(public::quality_csv))
         .route("/quality.json", get(public::quality_json))
+        .route("/quality/:action", post(admin::quality_mark))
         .route("/search", get(public::search))
         .route("/search.json", get(public::search_json))
         .route("/tree/panel/:id", get(public::tree_panel))

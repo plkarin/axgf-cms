@@ -24,7 +24,11 @@
   var cur = data.river;                 // the layout at rest
   var trail = [cur.layout.meta.centre];
   var names = {};                       // id -> short name, for trail chips
-  var cut = false, raf = null, busy = false;
+  // The reader's motion choice, as the server rendered it from their cookie
+  // (RIVER_MOTION_COOKIE): it survives travel, range changes, other pages and
+  // reloads. prefers-reduced-motion forces a cut whatever was chosen, and
+  // says so by disabling "travel".
+  var cut = root.dataset.riverMotion === 'cut', raf = null, busy = false;
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function f(n) { var r = Math.round(n * 10) / 10; return r === 0 ? '0' : String(r); }
@@ -379,8 +383,10 @@
     }
     if (t.dataset.range) { e.preventDefault(); travel(cur.layout.meta.centre, +t.dataset.range); }
     else if (t.dataset.motion) {
+      if (t.disabled) return;
       cut = t.dataset.motion === 'cut';
-      root.querySelectorAll('[data-motion]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === t)); });
+      try { document.cookie = 'axgf_river_motion=' + (cut ? 'cut' : 'travel') + '; path=/; max-age=31536000; samesite=lax'; } catch (err) {}
+      motionButtons();
     } else { e.preventDefault(); travel(t.dataset.go || t.dataset.centre); }
   });
   back.addEventListener('click', goBack);
@@ -401,6 +407,15 @@
       travel(e.state.p, e.state.n, true);
     }
   });
+  // aria-pressed follows the effective motion: a forced cut shows as a cut.
+  function motionButtons() {
+    root.querySelectorAll('button[data-motion]').forEach(function (b) {
+      var isCut = b.dataset.motion === 'cut';
+      b.setAttribute('aria-pressed', String(isCut === (cut || reduce)));
+      if (reduce && !isCut) b.disabled = true;
+    });
+  }
+  motionButtons();
   // The masthead search (ui.js) travels here rather than reloading the page.
   window.axgfRiver = { travel: function (id) { travel(id); } };
   history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');

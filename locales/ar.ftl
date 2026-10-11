@@ -460,6 +460,8 @@ gender-U = غير مسجّل
 
 record-centre-tree-here = اجعل الشجرة تتمركز هنا
 record-centre-tree-title = حرّك الشجرة لتتمركز على هذا الشخص
+record-see-in-tree = اعرض في الشجرة
+record-see-in-tree-title = افتح شبكة البطاقات حول هذا الشخص
 record-open-full-page = افتح الصفحة الكاملة ↗
 record-open-full-title = افتح الصفحة المستقلة القابلة للمشاركة
 record-edit = تحرير
@@ -3443,7 +3445,7 @@ search-empty-query = اكتب اسمًا للبحث.
 nav-quality = جودة البيانات
 quality-title = أمور تستحق النظر
 quality-none = لا شيء يستحق النظر: اجتازت كل الفحوص.
-quality-intro = لا يُغيَّر هنا شيء نيابة عنك. يقول كل سطر ما يبدو خاطئًا وما العمل؛ افتح السجل وقرر.
+quality-intro = لا يُغيَّر هنا شيء نيابة عنك. كل سطر حالة تستحق التحقق — وكثيرًا ما يكون لها سبب وجيه. افتح السجل وقرر، أو علّمها بأنها تم التحقق منها.
 quality-groups-label = أنواع الملاحظات
 quality-all = الكل
 quality-group-names = الأسماء
@@ -3457,39 +3459,69 @@ quality-open = افتح
 quality-none-file = لا شيء يستحق النظر في هذا الملف.
 quality-show-list = اعرض القائمة
 quality-after-import = لم يُغيَّر شيء في الملف. حين يصبح أرشيف الموقع، تعرض صفحة جودة البيانات الأمور نفسها مع رابط إلى كل سجل.
-quality-summary = أمور تستحق النظر: { $n }
-quality-summary-file = أمور تستحق النظر في هذا الملف: { $n }
 quality-rule-name-sentence = جملة في حقل الاسم
-quality-name-sentence = «{ $value }» جملة وليست اسمًا: أبقِ الاسم وحده في الحقل وانقل الشرح إلى ملاحظة.
+quality-name-sentence = يبدو «{ $value }» جملةً أكثر منه اسمًا: إن كان شرحًا فأبقِ الاسم وحده في الحقل وانقل الباقي إلى ملاحظة.
 quality-rule-union-parent-child = زوجان هما أيضًا والد وولد
-quality-union-parent-child = سُجِّل { $parent } و{ $child } زوجين وكذلك والدًا وولدًا: تحقق أي الصلتين تؤيدها المصادر واحذف الأخرى.
+quality-union-parent-child = يظهر { $parent } و{ $child } زوجين ووالدًا وولدًا في آن: يستحق التحقق من الصلة التي تؤيدها المصادر.
 quality-rule-child-listed-twice = طفل مذكور مرتين
-quality-child-listed-twice = يظهر { $child } مرتين بين أبناء هذه العائلة: احذف الإدخال الثاني.
+quality-child-listed-twice = يظهر { $child } مرتين بين أبناء هذه العائلة: إن كان الولد نفسه فيمكن حذف أحد الإدخالين.
 quality-rule-duplicate-union = الزوجان نفسهما مسجلان مرتين
-quality-duplicate-union = سُجِّل لـ { $a } و{ $b } عدد { $count } من الزيجات: ادمجها في واحدة ما لم يتزوجا فعلًا أكثر من مرة.
+quality-duplicate-union = سُجِّل لـ { $a } و{ $b } عدد { $count } من الزيجات: إن تزوجا مرة واحدة فقد يكون الزواج نفسه أُدخل مرتين.
 quality-rule-partner-twice = شخص واحد في طرفي الزواج
-quality-partner-twice = سُجِّل { $person } في طرفي هذا الزواج: استبدل أحد الطرفين بالشريك الحقيقي، أو اتركه فارغًا إن كان مجهولًا.
-quality-rule-foreign-surnames = أبناء لا يطابق لقبهم أيًّا من الوالدين
-quality-foreign-surnames = يحمل { $count } من أصل { $children } أبناء لقبًا لا يطابق أيًّا من الوالدين ({ $surnames }): تحقق من انتمائهم إلى هذه العائلة، أو سجّلهم أبناء زوج.
+quality-partner-twice = يظهر { $person } في طرفي هذا الزواج: يستحق التحقق من هوية الشريك الآخر، أو ترك ذلك الطرف فارغًا إن لم يعرفه أحد.
+quality-rule-foreign-surnames = ابن لا يطابق لقبه أيًّا من الوالدين
+quality-foreign-surnames = لقب لا يطابق لقب أيٍّ من الوالدين: { $who }. قد يكون ذلك طبيعيًا — تغيير لقب أو ابن زوج أو كتابة مختلفة — لكنه يستحق نظرة. (البنات غير محسوبات، فلقب الزواج هو السبب المعتاد.)
 quality-rule-death-before-birth = وفاة قبل الولادة
-quality-death-before-birth = سُجِّلت وفاة { $person } عام { $death }، قبل ولادته عام { $birth }: تحقق من التاريخين في المصادر.
+quality-death-before-birth = وفاة { $person } مسجلة عام { $death }، قبل ولادته عام { $birth }: ربما أُدخل أحد التاريخين خطأً؛ يستحق التحقق في المصادر.
 quality-rule-child-before-parent = ولد مولود قبل أحد والديه
-quality-child-before-parent = سُجِّل { $child } (مولود { $childborn }) مولودًا قبل والده { $parent } (مولود { $parentborn }): تحقق من التواريخ أو النسب.
+quality-child-before-parent = يبدو أن { $child } (مولود { $childborn }) وُلد قبل والده { $parent } (مولود { $parentborn }): يستحق التحقق من التواريخ أو النسب.
 quality-rule-parent-too-young = والد دون الثانية عشرة
-quality-parent-too-young = كان { $parent } سيبلغ { $age } عامًا حين وُلد { $child }: تحقق من التواريخ أو النسب.
+quality-parent-too-young = كان { $parent } سيبلغ { $age } عامًا حين وُلد { $child }، وهذا غير معتاد: يستحق التحقق من التواريخ أو النسب.
 quality-rule-parent-too-old = والد تجاوز الخامسة والستين
-quality-parent-too-old = كان { $parent } سيبلغ { $age } عامًا حين وُلد { $child }: تحقق من التواريخ أو النسب.
+quality-parent-too-old = كان { $parent } سيبلغ { $age } عامًا حين وُلد { $child }، وهذا غير معتاد: يستحق التحقق من التواريخ أو النسب.
 quality-rule-marriage-before-birth = زواج قبل ولادة أحد الزوجين
-quality-marriage-before-birth = أُرِّخ هذا الزواج بعام { $married }، قبل ولادة { $person } عام { $born }: تحقق من تاريخ الزواج.
+quality-marriage-before-birth = أُرِّخ هذا الزواج بعام { $married }، قبل ولادة { $person } عام { $born }: يستحق التحقق من تاريخ الزواج.
 quality-rule-isolated-record = سجل بلا تاريخ ولا صلات
-quality-isolated-record = لا تاريخ لـ { $person } ولا صلة بأحد: أضف ما يربطه بالعائلة، أو احذف السجل إن أُنشئ خطأً.
+quality-isolated-record = لا تاريخ لـ { $person } ولا صلة بأحد في العائلة: يستحق إضافة ما يربطه بها، أو حذف السجل إن أُنشئ خطأً.
 quality-rule-place-no-region = مكان بلا منطقة
-quality-place-no-region = لا منطقة لـ { $place }: أضف واحدة لتمييز الأماكن التي تحمل الاسم نفسه.
-quality-rule-region-free-text = ملاحظة في حقل المنطقة
-quality-region-free-text = يحوي حقل المنطقة في { $place } ملاحظة «{ $value }» لا مكانًا: انقل الملاحظة إلى السجل الذي يحتاجها واترك حقل المنطقة للمنطقة.
-quality-rule-place-near-duplicate = مكان واحد مكتوب بأكثر من طريقة
-quality-place-near-duplicate = يبدو أن { $names } المكان نفسه مكتوبًا بطرق مختلفة: ادمجها في مكان واحد.
-quality-rule-not-a-place = إدخال ليس مكانًا
-quality-not-a-place = «{ $place }» في قائمة الأماكن لكنه ليس مكانًا: حوّله إلى ملاحظة في السجل الذي يستخدمه واربط المكان الفعلي.
+quality-place-no-region = لا منطقة لـ { $place }: إضافة واحدة تساعد على تمييز الأماكن التي تحمل الاسم نفسه.
+quality-rule-region-free-text = منطقة تبدو كملاحظة
+quality-region-free-text = منطقة { $place } مكتوبة «{ $value }»، وهذا يبدو ملاحظةً أكثر منه منطقة: يستحق نقل الملاحظة إلى السجل الذي تصفه.
+quality-rule-place-near-duplicate = أماكن قد تكون واحدًا
+quality-place-near-duplicate = قد يكون { $names } المكان نفسه مكتوبًا بطرق مختلفة: إن كان كذلك فيمكن دمجها في مكان واحد.
+quality-rule-not-a-place = إدخال قد لا يكون مكانًا
+quality-not-a-place = «{ $place }» في قائمة الأماكن لكنه قد لا يكون مكانًا — يبدأ بحرف صغير، وأسماء الأماكن نادرًا ما تفعل ذلك: يستحق التحقق مما إذا كان ملاحظة عن مكان.
 quality-rule-certain-without-source = مؤكد بلا مصدر
-quality-certain-without-source = في { $record } معلومة مؤكدة تمامًا ({ $claims }) بلا مصدر: أرفق المصدر أو اخفض درجة اليقين.
+quality-certain-without-source = في { $record } معلومة مؤكدة تمامًا ({ $claims }) بلا مصدر: يستحق إرفاق المصدر أو خفض درجة اليقين.
+quality-dismiss = تم التحقق — طبيعي لدينا
+quality-restore = أظهره مجددًا
+quality-note-label = السبب (اختياري)
+quality-show-dismissed = ما تم التحقق منه وإبقاؤه
+quality-show-open = العودة إلى القائمة المفتوحة
+quality-dismissed-by = تحقق منه { $by } في { $at }
+quality-gone-title = تلك الملاحظة لم تعد موجودة
+quality-gone-detail = تغيّر السجل منذ فتح القائمة، فلم تعد الملاحظة كما كانت. أعد تحميل القائمة وانظر مجددًا.
+quality-summary = { $n ->
+    [zero] لا شيء يستحق النظر
+    [one] أمر واحد يستحق النظر
+    [two] أمران يستحقان النظر
+    [few] { $n } أمور تستحق النظر
+    [many] { $n } أمرًا يستحق النظر
+   *[other] { $n } أمر يستحق النظر
+}
+quality-summary-file = { $n ->
+    [zero] لا شيء يستحق النظر في هذا الملف
+    [one] أمر واحد يستحق النظر في هذا الملف
+    [two] أمران يستحقان النظر في هذا الملف
+    [few] { $n } أمور تستحق النظر في هذا الملف
+    [many] { $n } أمرًا يستحق النظر في هذا الملف
+   *[other] { $n } أمر يستحق النظر في هذا الملف
+}
+quality-dismissed-summary = { $n ->
+    [zero] لا ملاحظات تم التحقق منها
+    [one] ملاحظة واحدة تم التحقق منها وإبقاؤها
+    [two] ملاحظتان تم التحقق منهما وإبقاؤهما
+    [few] { $n } ملاحظات تم التحقق منها وإبقاؤها
+    [many] { $n } ملاحظةً تم التحقق منها وإبقاؤها
+   *[other] { $n } ملاحظة تم التحقق منها وإبقاؤها
+}

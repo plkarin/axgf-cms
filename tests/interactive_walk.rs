@@ -466,6 +466,9 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
         out.push(page.to_string());
     }
     if signed_in {
+        out.push("/quality".into());
+        out.push("/quality?group=places".into());
+        out.push("/quality?show=dismissed".into());
         out.push("/admin".into());
         for kind in axgf_cms::admin::KINDS {
             out.push(format!("/admin/{kind}"));

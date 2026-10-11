@@ -46,8 +46,9 @@ pub enum Rule {
     DuplicateUnion,
     /// One person on both sides of the same union.
     PartnerTwice,
-    /// Children carrying surnames that match neither parent's, at least
-    /// [`FOREIGN_MIN`] of them and at least a quarter of the family.
+    /// A child not recorded as a daughter whose surname matches neither
+    /// parent's (Polish -ski/-ska and -cki/-cka counted as one surname).
+    /// Daughters are left out: a married surname is the usual reason.
     ForeignSurnames,
     // Dates
     /// Death before birth.
@@ -82,7 +83,7 @@ pub const NAME_MAX_CHARS: usize = 30;
 pub const NAME_MAX_WORDS: usize = 3;
 pub const PARENT_MIN_AGE: i64 = 12;
 pub const PARENT_MAX_AGE: i64 = 65;
-pub const FOREIGN_MIN: usize = 2;
+pub const FOREIGN_MIN: usize = 1;
 
 impl Rule {
     pub const ALL: [Rule; 17] = [
@@ -167,13 +168,79 @@ pub struct Finding {
     pub persons: Vec<String>,
     /// What the sentence names: people's names, years, values.
     pub args: BTreeMap<String, String>,
+    /// The finding's identity across runs: its rule, its record, and a hash
+    /// of what it names ([`fingerprint`]). Change the value and the identity
+    /// changes, so a dismissed finding comes back.
+    pub fingerprint: String,
+    /// When somebody looked and said "this is normal for us": who, when, and
+    /// what they wrote. Shown behind a filter, never deleted.
+    pub dismissed: Option<Value>,
+    /// The record's version when this was read, for the dismiss form's
+    /// optimistic lock.
+    pub version: u64,
+}
+
+/// Where dismissals live: on the record itself, in its `extensions`, under
+/// the spec's namespaced-key convention (`x-{vendor}-{field}`). A dismissal
+/// is a change to the record, made through the edit path that journals it
+/// and locks it — the detectors still change nothing.
+pub const DISMISSED_KEY: &str = "x-axgenealogy-quality-dismissed";
+
+/// `rule:record:hash`, the hash over the finding's arguments in key order.
+pub fn fingerprint(rule: Rule, id: &str, args: &BTreeMap<String, String>) -> String {
+    use sha2::{Digest, Sha256};
+    let mut h = Sha256::new();
+    for (k, v) in args {
+        h.update(k.as_bytes());
+        h.update([0]);
+        h.update(v.as_bytes());
+        h.update([0]);
+    }
+    let hex: String = h
+        .finalize()
+        .iter()
+        .take(8)
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    format!("{}:{id}:{hex}", rule.slug())
+}
+
+/// The bundle's collection for a record kind.
+pub fn collection(kind: &str) -> &'static str {
+    match kind {
+        "person" => "persons",
+        "family" => "families",
+        "place" => "places",
+        "event" => "events",
+        "occupation" => "occupations",
+        "link" => "links",
+        "source" => "sources",
+        _ => "documents",
+    }
 }
 
 /// Every rule over the whole bundle, in [`Rule::ALL`] order. Nothing is
 /// filtered for a reader here: see [`for_reader`].
 pub fn detect(flat: &Value) -> Vec<Finding> {
     let b = Bundle::read(flat);
-    Rule::ALL.iter().flat_map(|r| run_on(&b, *r)).collect()
+    let mut all: Vec<Finding> = Rule::ALL.iter().flat_map(|r| run_on(&b, *r)).collect();
+    for f in &mut all {
+        let record = flat.get(collection(f.kind)).and_then(|c| c.get(&f.id));
+        f.version = record
+            .and_then(|r| r.get("version_num"))
+            .and_then(Value::as_u64)
+            .unwrap_or(0);
+        f.dismissed = record
+            .and_then(|r| r.get("extensions"))
+            .and_then(|e| e.get(DISMISSED_KEY))
+            .and_then(Value::as_array)
+            .and_then(|a| {
+                a.iter()
+                    .find(|d| d.get("fingerprint").and_then(Value::as_str) == Some(&f.fingerprint))
+            })
+            .cloned();
+    }
+    all
 }
 
 /// One rule over the whole bundle.
@@ -263,6 +330,10 @@ struct Person<'a> {
     name: String,
     given: Vec<String>,
     surname: Vec<String>,
+    /// Recorded as female: a daughter's married surname is the usual reason
+    /// hers differs from her parents', so [`Rule::ForeignSurnames`] leaves
+    /// her out.
+    female: bool,
     birth: Option<Day>,
     death: Option<Day>,
 }
@@ -288,7 +359,7 @@ struct Bundle<'a> {
     places: Vec<Place<'a>>,
 }
 
-fn components<'a>(p: &'a Value, kind: &str) -> Vec<String> {
+fn components(p: &Value, kind: &str) -> Vec<String> {
     p.get("identity")
         .and_then(|i| i.get("name"))
         .and_then(|n| n.get("components"))
@@ -323,6 +394,12 @@ impl<'a> Bundle<'a> {
                 name: crate::view::person_display_name(p),
                 given: components(p, "given_name"),
                 surname: components(p, "family_name"),
+                female: p
+                    .get("identity")
+                    .and_then(|i| i.get("gender"))
+                    .and_then(|g| g.get("value"))
+                    .and_then(Value::as_str)
+                    == Some("F"),
                 birth: Day::of(p.get("birth").and_then(|b| b.get("date"))),
                 death: Day::of(p.get("death").and_then(|b| b.get("date"))),
             })
@@ -401,15 +478,19 @@ fn finding(
     persons: Vec<String>,
     args: &[(&str, String)],
 ) -> Finding {
+    let args: BTreeMap<String, String> = args
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.clone()))
+        .collect();
     Finding {
         rule,
         kind,
         id: id.to_string(),
         persons,
-        args: args
-            .iter()
-            .map(|(k, v)| (k.to_string(), v.clone()))
-            .collect(),
+        fingerprint: fingerprint(rule, id, &args),
+        args,
+        dismissed: None,
+        version: 0,
     }
 }
 
@@ -563,6 +644,15 @@ fn surname_stem(s: &str) -> String {
     f
 }
 
+/// A surname's words, each reduced by [`surname_stem`]: a double name
+/// ("Pszczółkowski Nowierski", "Gutowski Klicka") matches either half.
+fn surname_words(s: &str) -> Vec<String> {
+    s.split(|c: char| c.is_whitespace() || c == '-')
+        .filter(|w| !w.is_empty())
+        .map(surname_stem)
+        .collect()
+}
+
 fn foreign_surnames(b: &Bundle) -> Vec<Finding> {
     let mut out = Vec::new();
     for f in &b.families {
@@ -570,36 +660,46 @@ fn foreign_surnames(b: &Bundle) -> Vec<Finding> {
             .partners
             .iter()
             .filter_map(|p| b.person(p))
-            .flat_map(|p| p.surname.iter().map(|s| surname_stem(s)))
+            .flat_map(|p| p.surname.iter().flat_map(|s| surname_words(s)))
             .collect();
-        let kids: Vec<&Person> = f.children.iter().filter_map(|c| b.person(c)).collect();
-        if parents.is_empty() || kids.len() < FOREIGN_MIN {
+        if parents.is_empty() {
             continue;
         }
-        let foreign: Vec<&&Person> = kids
+        // Daughters are left out: on the operator's archive every one of the
+        // first version's fourteen families was flagged for daughters
+        // recorded under their married names, which is the normal case.
+        let mut seen = BTreeSet::new();
+        let foreign: Vec<&Person> = f
+            .children
             .iter()
+            .filter(|c| seen.insert(**c))
+            .filter_map(|c| b.person(c))
+            .filter(|k| !k.female)
             .filter(|k| {
                 !k.surname.is_empty()
-                    && !k.surname.iter().any(|s| parents.contains(&surname_stem(s)))
+                    && !k
+                        .surname
+                        .iter()
+                        .flat_map(|s| surname_words(s))
+                        .any(|w| parents.contains(&w))
             })
             .collect();
-        if foreign.len() >= FOREIGN_MIN && foreign.len() * 4 >= kids.len() {
-            let names: BTreeSet<String> = foreign
-                .iter()
-                .flat_map(|k| k.surname.iter().cloned())
-                .collect();
+        if foreign.len() >= FOREIGN_MIN {
             let mut persons: Vec<String> = f.partners.iter().map(|s| s.to_string()).collect();
-            persons.extend(kids.iter().map(|k| k.id.to_string()));
+            persons.extend(foreign.iter().map(|k| k.id.to_string()));
             out.push(finding(
                 Rule::ForeignSurnames,
                 "family",
                 f.id,
                 persons,
-                &[
-                    ("count", foreign.len().to_string()),
-                    ("children", kids.len().to_string()),
-                    ("surnames", names.into_iter().collect::<Vec<_>>().join(", ")),
-                ],
+                &[(
+                    "who",
+                    foreign
+                        .iter()
+                        .map(|k| k.name.clone())
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                )],
             ));
         }
     }
@@ -982,6 +1082,67 @@ fn subjects(b: &Bundle, kind: &str, id: &str, e: &Value) -> Vec<String> {
     }
 }
 
+/// The finding in one sentence, in the reader's language: what is wrong, then
+/// what to do about it.
+pub fn message(f: &Finding, lang: &str) -> String {
+    let mut args = fluent::FluentArgs::new();
+    for (k, v) in &f.args {
+        args.set(k.as_str(), v.clone());
+    }
+    crate::i18n::translate(lang, &format!("quality-{}", f.rule.slug()), Some(&args))
+}
+
+/// Where the finding is fixed: the record's own editor for someone who may
+/// write, the person's record for someone who may only read. `None` when a
+/// reader has nowhere to go (a place, for someone who may not edit it).
+pub fn link(f: &Finding, may_write: bool) -> Option<String> {
+    if may_write {
+        return Some(format!("/admin/{}/{}/edit", f.kind, f.id));
+    }
+    match f.kind {
+        "person" => Some(format!("/person/{}", f.id)),
+        _ => f.persons.first().map(|p| format!("/person/{p}")),
+    }
+}
+
+fn dismissed_field(f: &Finding, key: &str) -> String {
+    f.dismissed
+        .as_ref()
+        .and_then(|d| d.get(key))
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string()
+}
+
+/// The findings as CSV, one per line: group, rule, kind, id, link, message,
+/// and, for a finding somebody marked as checked, who, when and why.
+pub fn csv(findings: &[Finding], lang: &str, may_write: bool) -> String {
+    fn field(s: &str) -> String {
+        if s.contains([',', '"', '\n', '\r']) {
+            format!("\"{}\"", s.replace('"', "\"\""))
+        } else {
+            s.to_string()
+        }
+    }
+    let mut out = String::from("group,rule,kind,id,link,message,checked_by,checked_at,note\n");
+    for f in findings {
+        let row = [
+            f.rule.group().to_string(),
+            f.rule.slug().to_string(),
+            f.kind.to_string(),
+            f.id.clone(),
+            link(f, may_write).unwrap_or_default(),
+            message(f, lang),
+            dismissed_field(f, "by"),
+            dismissed_field(f, "at"),
+            dismissed_field(f, "note"),
+        ];
+        out.push_str(&row.iter().map(|s| field(s)).collect::<Vec<_>>().join(","));
+        out.push('\n');
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1030,52 +1191,4 @@ mod tests {
         assert_eq!(d("1850-06-01").years_to(d("1862-05-31")), 11);
         assert_eq!(d("1850").years_to(d("1862")), 12);
     }
-}
-
-/// The finding in one sentence, in the reader's language: what is wrong, then
-/// what to do about it.
-pub fn message(f: &Finding, lang: &str) -> String {
-    let mut args = fluent::FluentArgs::new();
-    for (k, v) in &f.args {
-        args.set(k.as_str(), v.clone());
-    }
-    crate::i18n::translate(lang, &format!("quality-{}", f.rule.slug()), Some(&args))
-}
-
-/// Where the finding is fixed: the record's own editor for someone who may
-/// write, the person's record for someone who may only read. `None` when a
-/// reader has nowhere to go (a place, for someone who may not edit it).
-pub fn link(f: &Finding, may_write: bool) -> Option<String> {
-    if may_write {
-        return Some(format!("/admin/{}/{}/edit", f.kind, f.id));
-    }
-    match f.kind {
-        "person" => Some(format!("/person/{}", f.id)),
-        _ => f.persons.first().map(|p| format!("/person/{p}")),
-    }
-}
-
-/// The findings as CSV, one per line: group, rule, kind, id, link, message.
-pub fn csv(findings: &[Finding], lang: &str, may_write: bool) -> String {
-    fn field(s: &str) -> String {
-        if s.contains([',', '"', '\n', '\r']) {
-            format!("\"{}\"", s.replace('"', "\"\""))
-        } else {
-            s.to_string()
-        }
-    }
-    let mut out = String::from("group,rule,kind,id,link,message\n");
-    for f in findings {
-        let row = [
-            f.rule.group().to_string(),
-            f.rule.slug().to_string(),
-            f.kind.to_string(),
-            f.id.clone(),
-            link(f, may_write).unwrap_or_default(),
-            message(f, lang),
-        ];
-        out.push_str(&row.iter().map(|s| field(s)).collect::<Vec<_>>().join(","));
-        out.push('\n');
-    }
-    out
 }

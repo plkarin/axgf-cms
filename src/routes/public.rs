@@ -231,6 +231,13 @@ pub struct TreeQuery {
 /// Name of the cookie `tree.js` stores the measured column width in.
 pub const WIDTH_COOKIE: &str = "axgf_tw";
 
+/// The river's motion choice, "cut" or "travel", written by river.js when the
+/// reader picks one. A reader who chose "cut" — often because animation is
+/// hard on them — must not be handed animation back by the next page, the
+/// next reload or a stray click; the server renders the choice back, so it
+/// holds before any script runs.
+pub const RIVER_MOTION_COOKIE: &str = "axgf_river_motion";
+
 /// The row width to lay this request's tree out to.
 ///
 /// The query string wins over the cookie, because it is the more explicit of
@@ -1479,12 +1486,18 @@ pub async fn river(
             )
         })
         .unwrap_or_else(|| context! {});
+    // The reader's choice between travel and cut, remembered across pages
+    // and reloads ([`RIVER_MOTION_COOKIE`]); prefers-reduced-motion still
+    // forces a cut in river.js whatever this says.
+    let motion_cut =
+        crate::session::named_cookie(&headers, RIVER_MOTION_COOKIE).as_deref() == Some("cut");
     render::page_with(
         &chrome,
         "river.html",
         context! {
             nav => "river",
             still => true,
+            motion_cut,
             svg => v.svg,
             payload => script_json(&v.payload),
             centre_q => crate::river::url_component(&v.centre),
@@ -1532,6 +1545,10 @@ pub async fn river_data(
 pub struct QualityQuery {
     #[serde(default)]
     group: Option<String>,
+    /// `dismissed` to see what somebody marked as normal; anything else, the
+    /// findings still open.
+    #[serde(default)]
+    show: Option<String>,
 }
 
 /// The findings this reader may be shown ([`crate::quality::for_reader`]),
@@ -1564,6 +1581,12 @@ pub async fn quality(
         return Redirect::to("/admin/login").into_response();
     };
     let may_write = viewer.may_write();
+    let show_dismissed = q.show.as_deref() == Some("dismissed");
+    let dismissed_total = all.iter().filter(|f| f.dismissed.is_some()).count();
+    let all: Vec<_> = all
+        .into_iter()
+        .filter(|f| f.dismissed.is_some() == show_dismissed)
+        .collect();
     let total = all.len();
     let groups: Vec<Value> = crate::quality::GROUPS
         .iter()
@@ -1572,6 +1595,12 @@ pub async fn quality(
     let chosen = q
         .group
         .filter(|g| crate::quality::GROUPS.contains(&g.as_str()));
+    let back = match (&chosen, show_dismissed) {
+        (Some(g), true) => format!("/quality?show=dismissed&group={g}"),
+        (Some(g), false) => format!("/quality?group={g}"),
+        (None, true) => "/quality?show=dismissed".into(),
+        (None, false) => "/quality".into(),
+    };
     let mut rules: Vec<Value> = Vec::new();
     for rule in crate::quality::Rule::ALL {
         if chosen.as_deref().is_some_and(|g| g != rule.group()) {
@@ -1584,6 +1613,11 @@ pub async fn quality(
                 json!({
                     "message": crate::quality::message(f, chrome.lang),
                     "link": crate::quality::link(f, may_write),
+                    "kind": f.kind,
+                    "id": f.id,
+                    "fingerprint": f.fingerprint,
+                    "version": f.version,
+                    "dismissed": f.dismissed,
                 })
             })
             .collect();
@@ -1597,6 +1631,10 @@ pub async fn quality(
         context! {
             nav => "quality",
             total,
+            dismissed_total,
+            show_dismissed,
+            back,
+            may_write,
             groups,
             group => chosen,
             rules,
@@ -1644,6 +1682,9 @@ pub async fn quality_json(State(state): State<Shared>, headers: HeaderMap) -> Re
                 "link": crate::quality::link(f, may_write),
                 "message": crate::quality::message(f, chrome.lang),
                 "args": f.args,
+                "fingerprint": f.fingerprint,
+                "dismissed": f.dismissed,
+                "version": f.version,
             })
         })
         .collect();

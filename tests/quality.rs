@@ -245,6 +245,37 @@ fn the_operators_archive_per_rule() {
         *counts.entry(f.rule).or_default() += 1;
     }
     println!("{} findings", findings.len());
+    // Every foreign-surnames family in full, to judge the rule by.
+    let name = |id: &str| -> String {
+        flat["persons"][id]["identity"]["name"]["display"]
+            .as_str()
+            .unwrap_or("?")
+            .to_string()
+    };
+    for f in findings.iter().filter(|f| f.rule == Rule::ForeignSurnames) {
+        let fam = &flat["families"][&f.id];
+        let partners: Vec<String> = fam["union"]["persons"]
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .filter_map(|p| p["person_id"].as_str())
+            .map(name)
+            .collect();
+        let kids: Vec<String> = fam["children"]
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .filter_map(|k| k["person_id"].as_str())
+            .map(name)
+            .collect();
+        println!(
+            "  FAMILY {} · parents: {} · {} → children: {}",
+            &f.id[..8],
+            partners.join(" & "),
+            f.args["who"],
+            kids.join("; ")
+        );
+    }
     for rule in Rule::ALL {
         println!(
             "  {:<24} {:>4}",
@@ -271,4 +302,118 @@ fn the_operators_archive_per_rule() {
             );
         }
     }
+}
+
+/// A dismissal is a person's decision, recorded on the record through the
+/// edit path: the finding leaves the open list, is kept behind the filter
+/// with who, when and why, and the record's version goes up by one, like any
+/// other edit. A dismissal made from a stale list is refused, not merged.
+#[tokio::test]
+async fn a_finding_is_dismissed_through_the_edit_path_and_kept_behind_the_filter() {
+    let src = common::scratch("quality-dismiss-src");
+    let path = src.join("q.axgf");
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&one_of_each().to_string()).unwrap(),
+    )
+    .unwrap();
+    let (app, _s) = common::app_with_bundle("quality-dismiss", &path);
+    drop(src);
+    let cookie = common::admin_cookie(&app).await;
+    let list = |c: String| {
+        let app = app.clone();
+        async move {
+            let body =
+                common::body_string(common::get_with_cookie(&app, "/quality.json", &c).await).await;
+            serde_json::from_str::<Vec<Value>>(&body).unwrap()
+        }
+    };
+    let before = list(cookie.clone()).await;
+    let f = before
+        .iter()
+        .find(|f| f["rule"] == "place-no-region")
+        .expect("Kraków has no region")
+        .clone();
+    let (fp, version) = (
+        f["fingerprint"].as_str().unwrap().to_string(),
+        f["version"].as_u64().unwrap(),
+    );
+
+    let body = format!(
+        "kind=place&id=pl2&fingerprint={}&base_version={version}&note=ours&back=/quality",
+        fp.replace(':', "%3A")
+    );
+    let resp = common::post_form_as(&app, &cookie, "/quality/dismiss", &body).await;
+    assert!(resp.status().is_redirection(), "{}", resp.status());
+
+    let after = list(cookie.clone()).await;
+    let g = after
+        .iter()
+        .find(|x| x["fingerprint"] == fp.as_str())
+        .expect("kept, not deleted");
+    assert_eq!(g["dismissed"]["note"], "ours");
+    assert_eq!(
+        g["version"].as_u64().unwrap(),
+        version + 1,
+        "a dismissal is an edit like any other"
+    );
+    let open =
+        common::body_string(common::get_with_cookie(&app, "/quality?group=places", &cookie).await)
+            .await;
+    let checked = common::body_string(
+        common::get_with_cookie(&app, "/quality?show=dismissed", &cookie).await,
+    )
+    .await;
+    assert!(
+        !open.contains("Kraków has no region") && !open.contains(">Kraków"),
+        "gone from the open list"
+    );
+    assert!(
+        checked.contains("Kraków") && checked.contains("ours"),
+        "and behind the filter, with the note"
+    );
+
+    // From a list rendered before that change: refused, nothing written.
+    let h = after.iter().find(|x| x["rule"] == "not-a-place").unwrap();
+    let stale = format!(
+        "kind=place&id={}&fingerprint={}&base_version={}&back=/quality",
+        h["id"].as_str().unwrap(),
+        h["fingerprint"].as_str().unwrap().replace(':', "%3A"),
+        h["version"].as_u64().unwrap() + 5
+    );
+    let resp = common::post_form_as(&app, &cookie, "/quality/dismiss", &stale).await;
+    assert!(
+        !resp.status().is_redirection(),
+        "a stale dismissal is not applied"
+    );
+    let again = list(cookie).await;
+    assert!(again.iter().find(|x| x["rule"] == "not-a-place").unwrap()["dismissed"].is_null());
+}
+
+/// The finding's identity carries a hash of what it is about, so a dismissal
+/// covers that value only: change the value and the finding is back.
+#[test]
+fn changing_the_value_brings_a_dismissed_finding_back() {
+    let mut flat = one_of_each();
+    let f = quality::run(&flat, Rule::RegionFreeText).remove(0);
+    flat["places"][&f.id]["extensions"] =
+        json!({ quality::DISMISSED_KEY: [{"fingerprint": f.fingerprint, "by": "test"}] });
+    let now = quality::detect(&flat)
+        .into_iter()
+        .find(|x| x.rule == Rule::RegionFreeText)
+        .unwrap();
+    assert!(
+        now.dismissed.is_some(),
+        "dismissed while the value is the same"
+    );
+    flat["places"][&f.id]["region"] = json!("tam pochowana");
+    let now = quality::detect(&flat)
+        .into_iter()
+        .find(|x| x.rule == Rule::RegionFreeText)
+        .unwrap();
+    assert!(
+        now.dismissed.is_none(),
+        "a different value is a different finding"
+    );
+    assert_ne!(now.fingerprint, f.fingerprint);
 }

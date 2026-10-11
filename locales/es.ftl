@@ -568,6 +568,8 @@ record-living-yes = vive
 record-deceased = fallecido/a
 record-centre-tree-here = Centrar el árbol aquí
 record-centre-tree-title = Mover el árbol para centrarlo en esta persona
+record-see-in-tree = Ver en el árbol
+record-see-in-tree-title = Abrir la cuadrícula de fichas alrededor de esta persona
 record-open-full-page = Abrir la página entera ↗
 record-open-full-title = Abrir la página independiente que se puede compartir
 record-edit = Editar
@@ -3184,7 +3186,7 @@ search-empty-query = Escribe un nombre para buscar.
 nav-quality = Calidad de los datos
 quality-title = Cosas que merecen una mirada
 quality-none = Nada que mirar: todas las comprobaciones han pasado.
-quality-intro = Aquí no se cambia nada por usted. Cada línea dice qué parece estar mal y qué hacer; abra la ficha y decida.
+quality-intro = Aquí no se cambia nada por usted. Cada línea es un caso que merece una comprobación — a menudo hay una buena razón. Abra la ficha y decida, o márquelo como comprobado.
 quality-groups-label = Tipos de hallazgo
 quality-all = Todo
 quality-group-names = Nombres
@@ -3198,45 +3200,57 @@ quality-open = Abrir
 quality-none-file = Nada que mirar en este archivo.
 quality-show-list = Mostrar la lista
 quality-after-import = No se ha cambiado nada en el archivo. Cuando sea el archivo del sitio, la página de calidad de los datos mostrará lo mismo con un enlace a cada ficha.
+quality-rule-name-sentence = Una frase en un campo de nombre
+quality-name-sentence = «{ $value }» parece más una frase que un nombre: si es una explicación, deje el nombre en el campo y pase el resto a una nota.
+quality-rule-union-parent-child = Una pareja que también es padre e hijo
+quality-union-parent-child = { $parent } y { $child } aparecen a la vez como pareja y como padre e hijo: conviene comprobar qué relación confirman las fuentes.
+quality-rule-child-listed-twice = Un hijo anotado dos veces
+quality-child-listed-twice = { $child } aparece dos veces entre los hijos de esta familia: si es el mismo hijo, una de las entradas puede quitarse.
+quality-rule-duplicate-union = La misma pareja registrada dos veces
+quality-duplicate-union = { $a } y { $b } tienen { $count } uniones registradas: si solo se casaron una vez, quizá sea una misma unión introducida dos veces.
+quality-rule-partner-twice = Una persona a ambos lados de una unión
+quality-partner-twice = { $person } aparece a ambos lados de esta unión: conviene comprobar quién era la otra pareja, o dejar ese lado vacío si nadie lo sabe.
+quality-rule-foreign-surnames = Un hijo cuyo apellido no coincide con ninguno de los padres
+quality-foreign-surnames = Un apellido que no coincide con el de ninguno de los padres: { $who }. Puede ser normal — un cambio de apellido, un hijastro, otra grafía —, pero merece una mirada. (Las hijas no se cuentan, porque el apellido de casada suele ser la razón.)
+quality-rule-death-before-birth = Fallecimiento antes del nacimiento
+quality-death-before-birth = { $person } tiene un fallecimiento en { $death }, antes de su nacimiento en { $birth }: quizá una de las fechas esté mal escrita; conviene comprobarlo en las fuentes.
+quality-rule-child-before-parent = Un hijo nacido antes que uno de sus padres
+quality-child-before-parent = { $child } (nacido en { $childborn }) parece haber nacido antes que { $parent } (nacido en { $parentborn }): conviene comprobar las fechas o la filiación.
+quality-rule-parent-too-young = Un padre menor de doce años
+quality-parent-too-young = { $parent } habría tenido { $age } años al nacer { $child }, lo cual es inusual: conviene comprobar las fechas o la filiación.
+quality-rule-parent-too-old = Un padre mayor de sesenta y cinco años
+quality-parent-too-old = { $parent } habría tenido { $age } años al nacer { $child }, lo cual es inusual: conviene comprobar las fechas o la filiación.
+quality-rule-marriage-before-birth = Un matrimonio antes del nacimiento de un cónyuge
+quality-marriage-before-birth = Este matrimonio está fechado en { $married }, antes del nacimiento de { $person } en { $born }: conviene comprobar la fecha del matrimonio.
+quality-rule-isolated-record = Una ficha sin fecha ni parentescos
+quality-isolated-record = { $person } no tiene ninguna fecha ni vínculo con nadie de la familia: conviene añadir cómo pertenece a ella, o borrar la ficha si se creó por error.
+quality-rule-place-no-region = Un lugar sin región
+quality-place-no-region = { $place } no tiene región: añadir una ayuda a distinguir los lugares con el mismo nombre.
+quality-rule-region-free-text = Una región que parece una nota
+quality-region-free-text = La región de { $place } dice «{ $value }», que parece más una nota que una región: conviene pasar la nota a la ficha que describe.
+quality-rule-place-near-duplicate = Lugares que quizá sean el mismo
+quality-place-near-duplicate = { $names } quizá sean el mismo lugar escrito de otra forma: si es así, pueden fusionarse en uno.
+quality-rule-not-a-place = Una entrada que quizá no sea un lugar
+quality-not-a-place = «{ $place }» está en la lista de lugares pero quizá no sea un lugar — empieza en minúscula, algo poco habitual en los nombres de lugar: conviene comprobar si es una nota sobre un lugar.
+quality-rule-certain-without-source = Seguro, sin fuente
+quality-certain-without-source = { $record } tiene un dato marcado como totalmente seguro ({ $claims }) sin fuente: conviene adjuntar la fuente o bajar la certeza.
+quality-dismiss = Comprobado — normal en nuestra familia
+quality-restore = Volver a mostrarlo
+quality-note-label = Por qué (opcional)
+quality-show-dismissed = Comprobados y conservados
+quality-show-open = Volver a la lista abierta
+quality-dismissed-by = Comprobado por { $by } el { $at }
+quality-gone-title = Ese hallazgo ya no está
+quality-gone-detail = La ficha ha cambiado desde que se abrió la lista y el hallazgo ya no es el mismo. Recargue la lista y vuelva a mirar.
 quality-summary = { $n ->
-    [one] Una cosa que merece una mirada
+    [one] { $n } cosa que merece una mirada
    *[other] { $n } cosas que merecen una mirada
 }
 quality-summary-file = { $n ->
-    [one] Una cosa en este archivo merece una mirada
+    [one] { $n } cosa en este archivo merece una mirada
    *[other] { $n } cosas en este archivo merecen una mirada
 }
-quality-rule-name-sentence = Una frase en un campo de nombre
-quality-name-sentence = «{ $value }» es una frase, no un nombre: deje el nombre en el campo y pase la explicación a una nota.
-quality-rule-union-parent-child = Una pareja que también es padre e hijo
-quality-union-parent-child = { $parent } y { $child } figuran como pareja y también como padre e hijo: compruebe qué relación confirman las fuentes y elimine la otra.
-quality-rule-child-listed-twice = Un hijo anotado dos veces
-quality-child-listed-twice = { $child } aparece dos veces entre los hijos de esta familia: elimine la segunda entrada.
-quality-rule-duplicate-union = La misma pareja registrada dos veces
-quality-duplicate-union = { $a } y { $b } tienen { $count } uniones registradas: fusiónelas en una, salvo que de verdad se casaran más de una vez.
-quality-rule-partner-twice = Una persona a ambos lados de una unión
-quality-partner-twice = { $person } figura a ambos lados de esta unión: sustituya un lado por la pareja real, o déjelo vacío si se desconoce.
-quality-rule-foreign-surnames = Hijos cuyo apellido no coincide con ninguno de los padres
-quality-foreign-surnames = { $count } de { $children } hijos llevan un apellido que no coincide con ninguno de los padres ({ $surnames }): compruebe que pertenecen a esta familia o regístrelos como hijastros.
-quality-rule-death-before-birth = Fallecimiento antes del nacimiento
-quality-death-before-birth = { $person } figura como fallecido en { $death }, antes de su nacimiento en { $birth }: compruebe ambas fechas en las fuentes.
-quality-rule-child-before-parent = Un hijo nacido antes que uno de sus padres
-quality-child-before-parent = { $child } (nacido en { $childborn }) figura como nacido antes que { $parent } (nacido en { $parentborn }): compruebe las fechas o la filiación.
-quality-rule-parent-too-young = Un padre menor de doce años
-quality-parent-too-young = { $parent } habría tenido { $age } años al nacer { $child }: compruebe las fechas o la filiación.
-quality-rule-parent-too-old = Un padre mayor de sesenta y cinco años
-quality-parent-too-old = { $parent } habría tenido { $age } años al nacer { $child }: compruebe las fechas o la filiación.
-quality-rule-marriage-before-birth = Un matrimonio antes del nacimiento de un cónyuge
-quality-marriage-before-birth = Este matrimonio está fechado en { $married }, antes del nacimiento de { $person } en { $born }: compruebe la fecha del matrimonio.
-quality-rule-isolated-record = Una ficha sin fecha ni parentescos
-quality-isolated-record = { $person } no tiene ninguna fecha ni parentesco con nadie: añada lo que lo une a la familia, o borre la ficha si se creó por error.
-quality-rule-place-no-region = Un lugar sin región
-quality-place-no-region = { $place } no tiene región: añada una, para distinguir los lugares con el mismo nombre.
-quality-rule-region-free-text = Una nota en el campo región
-quality-region-free-text = La región de { $place } contiene una nota, «{ $value }», y no un lugar: pase la nota a la ficha que la necesita y deje la región para la región.
-quality-rule-place-near-duplicate = Un mismo lugar escrito de varias formas
-quality-place-near-duplicate = { $names } parecen el mismo lugar escrito de otra forma: fusiónelos en un solo lugar.
-quality-rule-not-a-place = Una entrada que no es un lugar
-quality-not-a-place = «{ $place }» está en la lista de lugares pero no es un lugar: conviértalo en una nota de la ficha que lo usa y enlace el lugar real.
-quality-rule-certain-without-source = Seguro, sin fuente
-quality-certain-without-source = { $record } tiene un dato marcado como totalmente seguro ({ $claims }) sin fuente: adjunte la fuente o baje la certeza.
+quality-dismissed-summary = { $n ->
+    [one] { $n } hallazgo comprobado y conservado
+   *[other] { $n } hallazgos comprobados y conservados
+}

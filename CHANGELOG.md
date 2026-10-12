@@ -18,6 +18,36 @@ colours, so every component draws with one set of names
 chose a theme keep it. The river stays dark under every theme, and the theme
 picker says so (docs/adr/0002).
 
+**The furniture, redrawn** (Study 06, B2–B7):
+
+- *Masthead.* 58px on the page's ground, the wordmark `ax·genealogy` in
+  ink, the current section underlined in ink. The language is a select
+  showing a two-letter code. Signed in, an initials chip and a name open a
+  menu with the settings and signing out.
+- *Buttons.* Four variants only: secondary, primary (at most one per page),
+  ghost and danger (an outline). 36px or 28px, radius 2. A busy button says
+  what it is doing and refuses a second press. Every control carries the
+  same focus ring. The river's controls are ordinary secondaries.
+- *Record tabs.* Underlined, counts in mono, an empty tab dimmed but never
+  disabled. One row that scrolls sideways at any width, and mirrors in
+  right-to-left languages. "Vie" and "Documents" are now "Événements" and
+  "Médias".
+- *Fields.* Sunken, with mono uppercase labels that are always visible, and
+  no placeholders. A date's qualifier sits inside its box (`vers ▾ 1890`),
+  and an approximate date reads "vers 1890" with a dotted underline. Search
+  suggestions draw each person's line as the river does and end with a
+  count and the two keys.
+- *Administration tables.* Hairlines, a selection column, and a bulk bar
+  that takes over the header row to export the selected records or delete
+  them (asked first; all in one save or none). Filiation is drawn in the
+  river's line styles, and pagination reads "1–50 sur 866".
+- *Notices.* A shape per kind (ring, disc, diamond, square), so none of them
+  needs colour. A person's old address after a merge says where they went
+  and offers the way on.
+
+No colour is named outside `tokens.css` on any page; the river's water ramp
+is the one exemption.
+
 ### Fixed
 
 - A dry run of the installer that would hand over to another release's

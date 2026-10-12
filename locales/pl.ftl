@@ -331,6 +331,39 @@ admin-delete = Usuń
 admin-not-set = — nie ustawiono —
 admin-edit = Edytuj
 admin-page-of = Strona { $page } z { $pages }
+list-select-row = Zaznacz { $name }
+list-select-page = Zaznacz wszystkie wiersze na tej stronie
+list-selected = { $n ->
+        [one] { $n } zaznaczona
+        [few] { $n } zaznaczone
+        [many] { $n } zaznaczonych
+       *[other] { $n } zaznaczonej
+    }
+list-export = Eksportuj
+list-escape = Esc usuwa zaznaczenie
+bulk-confirm-title = { $n ->
+        [one] Usunąć { $n } kartę?
+        [few] Usunąć { $n } karty?
+        [many] Usunąć { $n } kart?
+       *[other] Usunąć { $n } karty?
+    }
+bulk-confirm-detail = Karta, do której inna wciąż się odwołuje, zostaje odrzucona — i wtedy nic nie jest usuwane.
+bulk-confirm-go = Usuń je
+bulk-deleted = { $n ->
+        [one] Usunięto { $n } kartę.
+        [few] Usunięto { $n } karty.
+        [many] Usunięto { $n } kart.
+       *[other] Usunięto { $n } karty.
+    }
+bulk-refused = Nic nie usunięto: { $name } jest wciąż przywoływany gdzie indziej. Najpierw usuń to odwołanie, potem spróbuj ponownie.
+bulk-changed = { $n ->
+        [one] { $n } karta zmieniła się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+        [few] { $n } karty zmieniły się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+        [many] { $n } kart zmieniło się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+       *[other] { $n } karty zmieniło się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+    }
+admin-range = { $from }–{ $to } z { $total }
+list-filiation = Pochodzenie
 admin-previous = Poprzednia
 admin-next = Następna
 admin-saved = Zapisano jako wersja { $version } — { $summary }

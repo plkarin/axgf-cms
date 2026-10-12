@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ t("app-name") }}{% endblock %}
+
+{# The bulk bar's delete, asked once more on a page of its own: what will be
+   deleted, by name, and the one rule that can refuse it — before anything is
+   touched. #}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<p class="lede">{{ t("bulk-confirm-detail") }}</p>
+<form method="post" action="/admin/{{ kind }}/bulk">
+  <ul class="bulk-list">
+    {% for r in rows %}
+    <li><bdi>{{ r.summary }}</bdi> <span class="mono small muted">{{ r.id }}</span>
+      <input type="hidden" name="id" value="{{ r.id }}|{{ r.version }}"></li>
+    {% endfor %}
+  </ul>
+  <div class="cta-row">
+    <button class="btn danger" type="submit" name="action" value="delete" data-busy="{{ t('busy-working') }}">{{ t("bulk-confirm-go") }}</button>
+    <a class="btn" href="{{ back }}">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+{% endblock %}

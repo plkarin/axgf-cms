@@ -471,6 +471,7 @@ pub async fn list(
                     "summary": summarize(flat, chrome.lang, k, e),
                     "confidence": e.get("confidence").and_then(Value::as_f64)
                                    .map(view::Confidence::new),
+                    "filiation": filiation(flat, k, id, e),
                 })
             })
             .filter(|r| {
@@ -492,6 +493,20 @@ pub async fn list(
     });
 
     let page = paginate(rows, q.page);
+    let from = if page.total == 0 {
+        0
+    } else {
+        (page.page - 1) * page.per_page + 1
+    };
+    let to = from.saturating_sub(1) + page.items.len();
+    let range = chrome.t_args(
+        "admin-range",
+        &[
+            ("from", (from as i64).into()),
+            ("to", (to as i64).into()),
+            ("total", (page.total as i64).into()),
+        ],
+    );
     render::page_with(
         &chrome,
         "admin_list.html",
@@ -499,6 +514,9 @@ pub async fn list(
             nav => "admin",
             kind,
             kinds => KINDS,
+            range,
+            has_filiation => matches!(k, axgf_rs::EntityKind::Person | axgf_rs::EntityKind::Family),
+            selected_forms => count_forms(&chrome, "list-selected").to_string(),
             rows => page.items,
             page => page.page,
             pages => page.pages,
@@ -508,6 +526,217 @@ pub async fn list(
             is_person => kind == "person",
         },
     )
+}
+
+/// How a record's filiation is attested, in the river's three line styles
+/// (B6): `a` attested, `d` inferred, `s` speculative, from the same bands
+/// the river draws with. A person's is their link to the family they are a
+/// child of; a family's, one per child. Other kinds have none.
+fn filiation(flat: &Value, k: axgf_rs::EntityKind, id: &str, e: &Value) -> Vec<crate::river::Conf> {
+    let conf = |c: &Value| crate::river::Conf::of(c.get("confidence").and_then(Value::as_f64));
+    match k {
+        axgf_rs::EntityKind::Family => e
+            .get("children")
+            .and_then(Value::as_array)
+            .map(|cs| cs.iter().map(conf).collect())
+            .unwrap_or_default(),
+        axgf_rs::EntityKind::Person => flat
+            .get("families")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flat_map(|fs| fs.values())
+            .filter_map(|f| f.get("children").and_then(Value::as_array))
+            .flatten()
+            .filter(|c| c.get("person_id").and_then(Value::as_str) == Some(id))
+            .map(conf)
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+/// A plural message as the page's script can use it without Fluent: the
+/// message rendered for 0 to 199 with the number cut out, deduplicated.
+/// `forms` are the distinct texts with `{n}` where the number goes; `index`
+/// says which form each count takes. 0–199 is enough for every integer rule
+/// the eleven catalogues use, which depend on n, n mod 10 and n mod 100: a
+/// count from 200 up takes the form of 100 + n mod 100.
+fn count_forms(chrome: &render::Chrome, key: &str) -> Value {
+    let mut forms: Vec<String> = Vec::new();
+    let mut index = Vec::with_capacity(200);
+    for n in 0..200i64 {
+        let text = chrome.t_args(key, &[("n", n.into())]);
+        let form = text.replacen(&n.to_string(), "{n}", 1);
+        let i = forms.iter().position(|f| *f == form).unwrap_or_else(|| {
+            forms.push(form);
+            forms.len() - 1
+        });
+        index.push(i);
+    }
+    json!({"forms": forms, "index": index})
+}
+
+/// The selected rows of a listing, as `id|version` pairs.
+fn selected(form: &[(String, String)]) -> Vec<(String, u64)> {
+    form.iter()
+        .filter(|(k, _)| k == "id")
+        .filter_map(|(_, v)| {
+            let (id, version) = v.rsplit_once('|')?;
+            Some((id.to_string(), version.parse().ok()?))
+        })
+        .collect()
+}
+
+/// `POST /admin/:kind/bulk` — the bulk bar's actions on the selected rows
+/// (B6). `action=export` downloads them; `action=confirm` asks first, on a
+/// page of its own; `action=delete` deletes them all in one save or none,
+/// refusing any that another record still refers to.
+pub async fn bulk(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(kind): Path<String>,
+    Form(form): Form<Vec<(String, String)>>,
+) -> Response {
+    let (viewer, chrome) = guard_admin!(state, headers);
+    let Some(k) = kind_from_str(&kind) else {
+        return unknown_kind(&chrome, &kind);
+    };
+    let action = form
+        .iter()
+        .find(|(name, _)| name == "action")
+        .map(|(_, v)| v.as_str())
+        .unwrap_or("");
+    let items = selected(&form);
+    let back = format!("/admin/{kind}");
+    if items.is_empty() {
+        return Redirect::to(&back).into_response();
+    }
+    let collection = crate::admin::collection_for(k);
+    let stored: Vec<(String, Option<Value>)> = state.read(|flat| {
+        items
+            .iter()
+            .map(|(id, _)| {
+                (
+                    id.clone(),
+                    flat.get(collection).and_then(|c| c.get(id)).cloned(),
+                )
+            })
+            .collect()
+    });
+    match action {
+        "export" => {
+            // By id, whatever order they were ticked in.
+            let records: std::collections::BTreeMap<String, Value> = stored
+                .into_iter()
+                .filter_map(|(id, e)| e.map(|e| (id, e)))
+                .collect();
+            let records: serde_json::Map<String, Value> = records.into_iter().collect();
+            let body = json!({ collection: records });
+            let name = format!("axgf-{kind}-{}.json", records_len(&body, collection));
+            (
+                [
+                    (header::CONTENT_TYPE, "application/json".to_string()),
+                    (
+                        header::CONTENT_DISPOSITION,
+                        format!("attachment; filename=\"{name}\""),
+                    ),
+                    (header::CACHE_CONTROL, "no-store".to_string()),
+                ],
+                serde_json::to_string_pretty(&body).unwrap_or_default(),
+            )
+                .into_response()
+        }
+        "confirm" => {
+            let rows: Vec<Value> = stored
+                .iter()
+                .zip(&items)
+                .map(|((id, e), (_, version))| {
+                    json!({
+                        "id": id,
+                        "version": version,
+                        "summary": e.as_ref().and_then(|e| label_for(k, e)).unwrap_or_else(|| id.clone()),
+                    })
+                })
+                .collect();
+            let n = rows.len() as i64;
+            render::page_with(
+                &chrome,
+                "admin_bulk.html",
+                context! {
+                    nav => "admin",
+                    kind,
+                    rows,
+                    title => chrome.t_args("bulk-confirm-title", &[("n", n.into())]),
+                    back,
+                },
+            )
+        }
+        "delete" => {
+            for (_, e) in &stored {
+                if let Some(e) = e {
+                    if let Err(r) = check_scope(&state, &chrome, &viewer, k, e, None) {
+                        return r;
+                    }
+                }
+            }
+            match state.delete_many_checked(
+                k,
+                &items,
+                axgf_rs::DeletePolicy::Reject,
+                viewer.name(),
+                |e| label_for(k, e),
+            ) {
+                Ok(crate::state::BatchOutcome::Applied { records }) => {
+                    let line = chrome.t_args("bulk-deleted", &[("n", (records as i64).into())]);
+                    result_page(
+                        &chrome,
+                        &kind,
+                        &line,
+                        &crate::state::MutationOutcome {
+                            applied: true,
+                            diagnostics: Vec::new(),
+                            data: Value::Null,
+                        },
+                        Some(back),
+                    )
+                }
+                Ok(crate::state::BatchOutcome::Conflict { ids }) => render::error_page_args(
+                    &chrome,
+                    StatusCode::CONFLICT,
+                    "error-delete-changed-title",
+                    "bulk-changed",
+                    &[("n", (ids.len() as i64).into())],
+                ),
+                Ok(crate::state::BatchOutcome::Refused { id, diagnostics }) => {
+                    let name = stored
+                        .iter()
+                        .find(|(i, _)| *i == id)
+                        .and_then(|(_, e)| e.as_ref())
+                        .and_then(|e| label_for(k, e))
+                        .unwrap_or(id);
+                    let line = chrome.t_args("bulk-refused", &[("name", name.into())]);
+                    result_page(
+                        &chrome,
+                        &kind,
+                        &line,
+                        &crate::state::MutationOutcome {
+                            applied: false,
+                            diagnostics,
+                            data: Value::Null,
+                        },
+                        Some(back),
+                    )
+                }
+                Err(e) => io_error(&chrome, &e),
+            }
+        }
+        _ => StatusCode::BAD_REQUEST.into_response(),
+    }
+}
+
+fn records_len(body: &Value, collection: &str) -> usize {
+    body.get(collection)
+        .and_then(Value::as_object)
+        .map_or(0, |m| m.len())
 }
 
 /// `GET /admin/:kind/new`

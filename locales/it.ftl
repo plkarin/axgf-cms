@@ -315,6 +315,35 @@ admin-delete = Elimina
 admin-not-set = — non impostato —
 admin-edit = Modifica
 admin-page-of = Pagina { $page } di { $pages }
+list-select-row = Seleziona { $name }
+list-select-page = Seleziona tutte le righe di questa pagina
+list-selected = { $n ->
+        [one] { $n } selezionata
+        [many] { $n } selezionate
+       *[other] { $n } selezionate
+    }
+list-export = Esporta
+list-escape = Esc per deselezionare
+bulk-confirm-title = { $n ->
+        [one] Eliminare { $n } scheda?
+        [many] Eliminare { $n } schede?
+       *[other] Eliminare { $n } schede?
+    }
+bulk-confirm-detail = Una scheda a cui un’altra rimanda ancora viene rifiutata, e allora non si elimina nulla.
+bulk-confirm-go = Eliminale
+bulk-deleted = { $n ->
+        [one] { $n } scheda eliminata.
+        [many] { $n } schede eliminate.
+       *[other] { $n } schede eliminate.
+    }
+bulk-refused = Non è stato eliminato nulla: { $name } è ancora citato altrove. Rimuovi prima quel rimando, poi riprova.
+bulk-changed = { $n ->
+        [one] { $n } scheda è cambiata da quando è stato mostrato l’elenco, quindi non è stato eliminato nulla. Ricarica l’elenco e riprova.
+        [many] { $n } schede sono cambiate da quando è stato mostrato l’elenco, quindi non è stato eliminato nulla. Ricarica l’elenco e riprova.
+       *[other] { $n } schede sono cambiate da quando è stato mostrato l’elenco, quindi non è stato eliminato nulla. Ricarica l’elenco e riprova.
+    }
+admin-range = { $from }–{ $to } di { $total }
+list-filiation = Filiazione
 admin-previous = Precedente
 admin-next = Successiva
 admin-saved = Salvato come versione { $version } — { $summary }

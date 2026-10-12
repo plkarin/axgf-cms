@@ -317,6 +317,35 @@ admin-delete = Apagar
 admin-not-set = — por definir —
 admin-edit = Editar
 admin-page-of = Página { $page } de { $pages }
+list-select-row = Selecionar { $name }
+list-select-page = Selecionar todas as linhas desta página
+list-selected = { $n ->
+        [one] { $n } selecionada
+        [many] { $n } selecionadas
+       *[other] { $n } selecionadas
+    }
+list-export = Exportar
+list-escape = Esc para limpar a seleção
+bulk-confirm-title = { $n ->
+        [one] Eliminar { $n } ficha?
+        [many] Eliminar { $n } fichas?
+       *[other] Eliminar { $n } fichas?
+    }
+bulk-confirm-detail = Uma ficha a que outra ainda remete é recusada, e então nada é eliminado.
+bulk-confirm-go = Eliminá-las
+bulk-deleted = { $n ->
+        [one] { $n } ficha eliminada.
+        [many] { $n } fichas eliminadas.
+       *[other] { $n } fichas eliminadas.
+    }
+bulk-refused = Nada foi eliminado: { $name } ainda é referido noutro lugar. Retire primeiro essa referência e tente de novo.
+bulk-changed = { $n ->
+        [one] { $n } ficha mudou desde que a lista foi mostrada, por isso nada foi eliminado. Recarregue a lista e tente de novo.
+        [many] { $n } fichas mudaram desde que a lista foi mostrada, por isso nada foi eliminado. Recarregue a lista e tente de novo.
+       *[other] { $n } fichas mudaram desde que a lista foi mostrada, por isso nada foi eliminado. Recarregue a lista e tente de novo.
+    }
+admin-range = { $from }–{ $to } de { $total }
+list-filiation = Filiação
 admin-previous = Anterior
 admin-next = Seguinte
 admin-saved = Guardado como versão { $version } — { $summary }

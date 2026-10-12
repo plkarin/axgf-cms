@@ -40,6 +40,38 @@
   window.axgfShowCurrentTabs = showCurrentTabs;
   showCurrentTabs();
 
+  // `data-bulk` — a listing's selection (B6). While any row is selected the
+  // bulk bar takes over the header row and counts them, in the page's own
+  // plural (the server rendered every form; `data-forms`); Escape clears.
+  var bulk = document.querySelector("[data-bulk]");
+  if (bulk) {
+    var bar = bulk.querySelector("[data-bulk-bar]");
+    var head = bulk.querySelector(".bulk-head");
+    var count = bulk.querySelector("[data-bulk-count]");
+    var all = bulk.querySelector("[data-bulk-all]");
+    var forms = JSON.parse(count.getAttribute("data-forms"));
+    var boxes = function () { return bulk.querySelectorAll('input[name="id"]'); };
+    var update = function () {
+      var list = boxes(), n = 0;
+      list.forEach(function (b) { if (b.checked) n++; });
+      count.textContent = forms.forms[forms.index[n < 200 ? n : 100 + (n % 100)]].replace("{n}", String(n));
+      bar.hidden = n === 0;
+      head.hidden = n > 0;
+      all.checked = n > 0 && n === list.length;
+      all.indeterminate = n > 0 && n < list.length;
+    };
+    bulk.addEventListener("change", function (ev) {
+      if (ev.target === all) boxes().forEach(function (b) { b.checked = all.checked; });
+      update();
+    });
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Escape" || bar.hidden) return;
+      boxes().forEach(function (b) { b.checked = false; });
+      update();
+    });
+    update();
+  }
+
   // `data-toggle="<id>"` — show or hide the element with that id. The delete
   // confirmation row under a listing.
   document.addEventListener("click", function (ev) {

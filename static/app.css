@@ -951,7 +951,7 @@ th {
   white-space: nowrap;
 }
 tbody tr { transition: background-color var(--tempo) var(--ease); }
-tbody tr:hover { background: var(--accent-soft); }
+tbody tr:hover { background: var(--surface-hover); }
 tbody tr:last-child td { border-bottom: none; }
 /* A column of numbers is compared digit by digit, so it is aligned to its
    end and set in figures of one width. */
@@ -3409,3 +3409,36 @@ a.tcard:hover {
 .search-suggest li.search-foot:hover { background: none; }
 .search-results { list-style: none; padding: 0; }
 .search-results li { padding: 6px 0; border-block-end: 1px solid var(--border-hairline); }
+
+/* ---------------------------------------------------------------------------
+   Administration tables (Study 06, B6)
+   ---------------------------------------------------------------------------
+   Rows separated by hairlines, no zebra; identifiers and numbers in mono. A
+   selected row tints the surface and gains no coloured edge. While rows are
+   selected the bulk bar takes over the header row (ui.js); without scripts
+   both rows show. The filiation column draws a record's parent–child links in
+   the river's own line styles: solid attested, dashed inferred, dotted
+   speculative. */
+.admin-table tbody tr { background: transparent; }
+.admin-table tbody td { border-bottom: 1px solid var(--border-hairline); }
+.admin-table .sel { inline-size: 1%; padding-inline-end: 0; }
+.admin-table .sel input { margin: 0; }
+.admin-table tbody tr:has(> .sel input:checked) { background: var(--surface-hover); }
+.bulk-inner { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.bulk-count { font-family: var(--mono); font-size: var(--type-small); color: var(--text-primary); text-transform: none; letter-spacing: normal; }
+.bulk-esc { margin-inline-start: auto; font-family: var(--mono); font-size: var(--type-label); color: var(--text-tertiary); text-transform: none; letter-spacing: normal; font-weight: var(--weight-normal); }
+.bulk-bar[hidden], .bulk-head[hidden] { display: none; }
+.filiation { white-space: nowrap; }
+.fil {
+  display: inline-block;
+  inline-size: 26px;
+  block-size: 0;
+  vertical-align: middle;
+  margin-inline-end: 4px;
+  border-top: 2px solid var(--text-secondary);
+}
+.fil-d { border-top-style: dashed; }
+.fil-s { border-top-style: dotted; border-top-width: 3px; }
+.pager-range { font-family: var(--mono); font-size: var(--type-small); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.bulk-list { list-style: none; padding: 0; margin: 1rem 0; }
+.bulk-list li { padding: 0.45rem 0; border-bottom: 1px solid var(--border-hairline); }

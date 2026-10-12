@@ -300,6 +300,35 @@ admin-delete = Supprimer
 admin-not-set = — non renseigné —
 admin-edit = Modifier
 admin-page-of = Page { $page } sur { $pages }
+list-select-row = Sélectionner { $name }
+list-select-page = Tout sélectionner sur cette page
+list-selected = { $n ->
+        [one] { $n } sélectionnée
+        [many] { $n } sélectionnées
+       *[other] { $n } sélectionnées
+    }
+list-export = Exporter
+list-escape = Échap pour désélectionner
+bulk-confirm-title = { $n ->
+        [one] Supprimer { $n } fiche ?
+        [many] Supprimer { $n } fiches ?
+       *[other] Supprimer { $n } fiches ?
+    }
+bulk-confirm-detail = Une fiche à laquelle une autre renvoie encore est refusée, et alors rien n’est supprimé.
+bulk-confirm-go = Les supprimer
+bulk-deleted = { $n ->
+        [one] { $n } fiche supprimée.
+        [many] { $n } fiches supprimées.
+       *[other] { $n } fiches supprimées.
+    }
+bulk-refused = Rien n’a été supprimé : { $name } est encore cité ailleurs. Retirez d’abord ce renvoi, puis recommencez.
+bulk-changed = { $n ->
+        [one] { $n } fiche a changé depuis l’affichage de la liste, donc rien n’a été supprimé. Rechargez la liste et recommencez.
+        [many] { $n } fiches ont changé depuis l’affichage de la liste, donc rien n’a été supprimé. Rechargez la liste et recommencez.
+       *[other] { $n } fiches ont changé depuis l’affichage de la liste, donc rien n’a été supprimé. Rechargez la liste et recommencez.
+    }
+admin-range = { $from }–{ $to } sur { $total }
+list-filiation = Filiation
 admin-previous = Précédent
 admin-next = Suivant
 admin-saved = Enregistré en version { $version } — { $summary }

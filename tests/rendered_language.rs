@@ -40,6 +40,8 @@ const LINK: &str = "efefefef-9999-4999-8999-999999999999";
 /// Words that are the same in every language this application speaks, or
 /// that name a thing rather than describe it.
 const UNIVERSAL: &[&str] = &[
+    // The name printed on the key, the same on every keyboard.
+    "Esc",
     "AXGF",
     "JSON",
     "UUID",

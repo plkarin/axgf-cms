@@ -317,6 +317,31 @@ admin-delete = Löschen
 admin-not-set = — nicht gesetzt —
 admin-edit = Bearbeiten
 admin-page-of = Seite { $page } von { $pages }
+list-select-row = { $name } auswählen
+list-select-page = Alle Zeilen dieser Seite auswählen
+list-selected = { $n ->
+        [one] { $n } ausgewählt
+       *[other] { $n } ausgewählt
+    }
+list-export = Exportieren
+list-escape = Esc hebt die Auswahl auf
+bulk-confirm-title = { $n ->
+        [one] { $n } Eintrag löschen?
+       *[other] { $n } Einträge löschen?
+    }
+bulk-confirm-detail = Ein Eintrag, auf den ein anderer noch verweist, wird abgelehnt – dann wird nichts gelöscht.
+bulk-confirm-go = Löschen
+bulk-deleted = { $n ->
+        [one] { $n } Eintrag gelöscht.
+       *[other] { $n } Einträge gelöscht.
+    }
+bulk-refused = Nichts wurde gelöscht: Auf { $name } wird noch an anderer Stelle verwiesen. Entfernen Sie zuerst diesen Verweis und versuchen Sie es erneut.
+bulk-changed = { $n ->
+        [one] { $n } Eintrag hat sich seit dem Anzeigen der Liste geändert, daher wurde nichts gelöscht. Laden Sie die Liste neu und versuchen Sie es erneut.
+       *[other] { $n } Einträge haben sich seit dem Anzeigen der Liste geändert, daher wurde nichts gelöscht. Laden Sie die Liste neu und versuchen Sie es erneut.
+    }
+admin-range = { $from }–{ $to } von { $total }
+list-filiation = Abstammung
 admin-previous = Zurück
 admin-next = Weiter
 admin-saved = Gespeichert als Fassung { $version } — { $summary }

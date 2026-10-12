@@ -31,21 +31,44 @@
   </p></div>
 {% else %}
 
+{#- The bulk bar's form. Empty: the row checkboxes and the bar's buttons
+    join it with `form="bulk"`, because each row also holds its own delete
+    form and a form may not sit inside another. -#}
+<form id="bulk" method="post" action="/admin/{{ kind }}/bulk"></form>
+
 <section class="rec-section">
 <div class="table-wrap">
-<table>
+<table class="admin-table" data-bulk>
   <thead>
-    <tr><th>{{ t("list-summary") }}</th><th>{{ t("list-id") }}</th>
+    <tr class="bulk-head">
+      <th class="sel"><input type="checkbox" data-bulk-all aria-label="{{ t('list-select-page') }}"></th>
+      <th>{{ t("list-summary") }}</th><th>{{ t("list-id") }}</th>
+      {% if has_filiation %}<th>{{ t("list-filiation") }}</th>{% endif %}
       <th>{{ t("record-confidence") }}</th><th style="width:1%">{{ t("list-actions") }}</th></tr>
+    {#- The bulk bar takes over the header row while rows are selected (B6):
+        ui.js swaps the two. Without scripts both show, and the bar works. -#}
+    <tr class="bulk-bar" data-bulk-bar>
+      <th colspan="{{ 6 if has_filiation else 5 }}"><div class="bulk-inner">
+        <span class="bulk-count" data-bulk-count data-forms="{{ selected_forms }}">{{ t("list-selected", n=0) }}</span>
+        <button class="btn small" form="bulk" type="submit" name="action" value="export">{{ t("list-export") }}</button>
+        <button class="btn small danger" form="bulk" type="submit" name="action" value="confirm">{{ t("admin-delete") }}</button>
+        <span class="bulk-esc">{{ t("list-escape") }}</span>
+      </div></th>
+    </tr>
   </thead>
   <tbody>
     {% for r in rows %}
     <tr>
+      <td class="sel"><input type="checkbox" form="bulk" name="id" value="{{ r.id }}|{{ r.version }}"
+                             aria-label="{{ t('list-select-row', name=r.summary) }}"></td>
       <td>
         {% if is_person %}<a href="/person/{{ r.id }}">{{ r.summary }}</a>
         {% else %}{{ r.summary }}{% endif %}
       </td>
       <td class="mono small muted">{{ r.id }}</td>
+      {% if has_filiation %}<td class="filiation">
+        {%- for c in r.filiation %}<span class="fil fil-{{ c }}" title="{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}"><span class="sr-only">{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}</span></span>{% endfor -%}
+      </td>{% endif %}
       <td>{% if r.confidence %}{{ m.conf_bar(r.confidence) }}{% endif %}</td>
       <td class="nowrap">
         <a class="btn small" href="/admin/{{ kind }}/{{ r.id }}/edit">{{ t("admin-edit") }}</a>
@@ -56,7 +79,7 @@
       </td>
     </tr>
     <tr id="del-{{ r.id }}" hidden>
-      <td colspan="4" class="delete-row">
+      <td colspan="{{ 6 if has_filiation else 5 }}" class="delete-row">
         <form method="post" action="/admin/{{ kind }}/{{ r.id }}/delete">
           <input type="hidden" name="base_version" value="{{ r.version }}">
           <strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong>
@@ -78,17 +101,15 @@
 </div>
 </section>
 
-{% if pages > 1 %}
 <nav class="pager">
   {% if page > 1 %}
     <a class="btn" href="/admin/{{ kind }}?page={{ page - 1 }}&q={{ q }}">{{ t("admin-previous") }}</a>
   {% endif %}
-  <span class="muted small">{{ t("admin-page-of", page=page, pages=pages) }}</span>
+  <span class="pager-range">{{ range }}</span>
   {% if page < pages %}
     <a class="btn" href="/admin/{{ kind }}?page={{ page + 1 }}&q={{ q }}">{{ t("admin-next") }}</a>
   {% endif %}
 </nav>
-{% endif %}
 
 {% endif %}
 {% endblock %}

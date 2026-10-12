@@ -1203,6 +1203,73 @@ impl AppState {
         })
     }
 
+    /// Delete several records of one kind in one save, or none (B6's bulk
+    /// bar). Every version is checked first, as [`update_many_checked`] does;
+    /// then each delete runs through the library in turn on the same bundle,
+    /// under `policy`, and the first refusal abandons the lot, leaving memory
+    /// and file as they were. One journal entry per record.
+    ///
+    /// [`update_many_checked`]: Self::update_many_checked
+    pub fn delete_many_checked(
+        &self,
+        kind: axgf_rs::EntityKind,
+        items: &[(String, u64)],
+        policy: axgf_rs::DeletePolicy,
+        who: &str,
+        label: impl Fn(&Value) -> Option<String>,
+    ) -> Result<BatchOutcome> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        let collection = crate::admin::collection_for(kind);
+        let mut stale = Vec::new();
+        let mut stored_of = Vec::with_capacity(items.len());
+        for (id, expected) in items {
+            match guard.get(collection).and_then(|c| c.get(id)).cloned() {
+                Some(s) if version_of(&s) == *expected => stored_of.push(s),
+                _ => stale.push(id.clone()),
+            }
+        }
+        if !stale.is_empty() {
+            return Ok(BatchOutcome::Conflict { ids: stale });
+        }
+        let mut bundle = guard.to_string();
+        for (id, _) in items {
+            let env = axgf_rs::delete_entity(&bundle, kind, id, policy);
+            let next = (env.status != Status::Error)
+                .then(|| bundle_from_data(&env.data))
+                .flatten();
+            let Some(next) = next else {
+                return Ok(BatchOutcome::Refused {
+                    id: id.clone(),
+                    diagnostics: env.diagnostics,
+                });
+            };
+            bundle = next.to_string();
+        }
+        let new_bundle: Value = serde_json::from_str(&bundle)?;
+        self.persist(&new_bundle)?;
+        *guard = new_bundle;
+        self.invalidate_lenses();
+        drop(guard);
+        for ((id, _), stored) in items.iter().zip(&stored_of) {
+            let entry = crate::journal::entry_for(crate::journal::Record {
+                who,
+                action: "delete",
+                kind: kind_name(kind),
+                entity_id: id,
+                label: label(stored),
+                version_num: None,
+                before: None,
+                after: None,
+            });
+            if let Err(e) = self.journal.append(&entry) {
+                tracing::error!(error = %e, "could not append to the edit journal");
+            }
+        }
+        Ok(BatchOutcome::Applied {
+            records: items.len(),
+        })
+    }
+
     /// Record a mutation that is not a version-checked update.
     ///
     /// Creates, deletes and uploads have no prior version to check against, so

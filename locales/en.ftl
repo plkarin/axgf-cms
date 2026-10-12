@@ -306,6 +306,31 @@ admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit
 admin-page-of = Page { $page } of { $pages }
+list-select-row = Select { $name }
+list-select-page = Select every row on this page
+list-selected = { $n ->
+        [one] { $n } selected
+       *[other] { $n } selected
+    }
+list-export = Export
+list-escape = Esc to clear the selection
+bulk-confirm-title = { $n ->
+        [one] Delete { $n } record?
+       *[other] Delete { $n } records?
+    }
+bulk-confirm-detail = A record that another one still refers to is refused, and then nothing is deleted.
+bulk-confirm-go = Delete them
+bulk-deleted = { $n ->
+        [one] { $n } record deleted.
+       *[other] { $n } records deleted.
+    }
+bulk-refused = Nothing was deleted: { $name } is still referred to elsewhere. Remove that reference first, then try again.
+bulk-changed = { $n ->
+        [one] { $n } record changed since the list was shown, so nothing was deleted. Reload the list and try again.
+       *[other] { $n } records changed since the list was shown, so nothing was deleted. Reload the list and try again.
+    }
+admin-range = { $from }–{ $to } of { $total }
+list-filiation = Filiation
 admin-previous = Previous
 admin-next = Next
 admin-saved = Saved as version { $version } — { $summary }

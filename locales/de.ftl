@@ -2890,6 +2890,7 @@ diff-section-ocr = Erkannter Text
 diff-section-format-version = Formatversion
 history-created = hat angelegt
 history-deleted = hat gelöscht
+history-merged = hat mit einem anderen Eintrag zusammengeführt
 history-attached = hat eine Datei angehängt
 admin-raw-json-unparsed = Das Roh-JSON ließ sich nicht lesen ({ $error }). Nichts wurde gespeichert.
 admin-raw-json-dangling = Das Roh-JSON verweist mit { $field } auf { $target }, das es in diesem Archiv nicht gibt. Wählen Sie es über ein Feld oben aus oder korrigieren Sie die Kennung. Nichts wurde gespeichert.

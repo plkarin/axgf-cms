@@ -149,7 +149,7 @@
 .river {
   --rv-ink-0: #0b110e; --rv-ink-1: #0c1310; --rv-ink-2: #0e1512; --rv-ink-3: #111a16; --rv-ink-4: #17221d;
   --rv-chip-on: #1d2a24;
-  --rv-rule-1: #1a2520; --rv-rule-2: #22302a; --rv-rule-3: #3a4b42; --rv-rule-4: #4d6157;
+  --rv-rule-1: #1a2520; --rv-rule-2: #22302a; --rv-rule-3: #526a5d; --rv-rule-4: #4d6157;
   --rv-text-1: #ece6d6; --rv-text-2: #a7b3aa; --rv-text-3: #75847b;
   --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #f3dfae; --rv-water: #86b08f; --rv-warn: #d98068;
   /* The drawing's own inks (src/river.rs paints with classes, app.css maps
@@ -212,7 +212,7 @@
     --surface-page: #0b110e;
     --surface-raised: #111a16;
     --border-hairline: #22302a;
-    --border-strong: #3a4b42;
+    --border-strong: #526a5d;
     --text-primary: #ece6d6;
     --text-secondary: #a7b3aa;
     --text-tertiary: #75847b;
@@ -265,7 +265,7 @@
   --surface-page: #0b110e;
   --surface-raised: #111a16;
   --border-hairline: #22302a;
-  --border-strong: #3a4b42;
+  --border-strong: #526a5d;
   --text-primary: #ece6d6;
   --text-secondary: #a7b3aa;
   --text-tertiary: #75847b;

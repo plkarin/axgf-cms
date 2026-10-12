@@ -302,7 +302,9 @@ const STUDY_06: &[(&str, &str)] = &[
     ("--surface-sunken", "#0e1512"),
     ("--surface-hover", "#17221d"),
     ("--border-hairline", "#22302a"),
-    ("--border-strong", "#3a4b42"),
+    // Not the study's #3a4b42: measured at 2.06:1 on its own page, under
+    // the 3:1 of WCAG 1.4.11 (ADR 0002, §3).
+    ("--border-strong", "#526a5d"),
     ("--text-primary", "#ece6d6"),
     ("--text-secondary", "#a7b3aa"),
     ("--text-tertiary", "#75847b"),
@@ -362,40 +364,6 @@ fn contrast(a: &str, b: &str) -> f64 {
     (a.max(b) + 0.05) / (a.min(b) + 0.05)
 }
 
-/// Pairs that fall short and are known, each with the reason it stands.
-/// Study 06's control edge is 2.06:1 on its own page; WCAG 1.4.11 asks 3:1 of
-/// a control's boundary. The study's value stands until its owner rules on
-/// it; every button carries a label and every field a visible label, so no
-/// control is identified by its edge alone.
-const KNOWN_SHORT: &[(&str, &str, &str)] = &[
-    ("[data-theme=\"dark\"]", "--border-strong", "--surface-page"),
-    (
-        "[data-theme=\"dark\"]",
-        "--border-strong",
-        "--surface-raised",
-    ),
-    (
-        "[data-theme=\"dark\"]",
-        "--border-strong",
-        "--surface-sunken",
-    ),
-    (
-        ":root:not([data-theme])",
-        "--border-strong",
-        "--surface-page",
-    ),
-    (
-        ":root:not([data-theme])",
-        "--border-strong",
-        "--surface-raised",
-    ),
-    (
-        ":root:not([data-theme])",
-        "--border-strong",
-        "--surface-sunken",
-    ),
-];
-
 #[test]
 fn every_theme_reads() {
     // WCAG AA for text (4.5:1) and for the graphics a control is known by
@@ -435,16 +403,8 @@ fn every_theme_reads() {
         v.extend(vars.clone());
         for (fg, bg, min) in &rules {
             let r = contrast(&v[*fg], &v[*bg]);
-            let known = KNOWN_SHORT
-                .iter()
-                .any(|(s, f, b)| sel.as_str() == *s && f == fg && b == bg);
-            if r < *min && !known {
+            if r < *min {
                 short.push(format!("{sel}: {fg} on {bg} is {r:.2}:1, under {min}:1"));
-            }
-            if known && r >= *min {
-                short.push(format!(
-                    "{sel}: {fg} on {bg} now clears {min}:1 — take it off KNOWN_SHORT"
-                ));
             }
         }
     }

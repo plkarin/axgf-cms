@@ -2892,6 +2892,7 @@ diff-section-ocr = Texto reconocido
 diff-section-format-version = Versión del formato
 history-created = creó
 history-deleted = eliminó
+history-merged = fusionó con otra ficha
 history-attached = adjuntó un archivo
 admin-raw-json-unparsed = No se pudo leer el JSON en bruto ({ $error }). No se ha guardado nada.
 admin-raw-json-dangling = El JSON en bruto hace que { $field } apunte a { $target }, que no está en este archivo. Elíjalo con un campo de arriba o corrija el identificador. No se ha guardado nada.

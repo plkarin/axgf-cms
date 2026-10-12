@@ -2927,6 +2927,7 @@ diff-section-ocr = Recognised text
 diff-section-format-version = Format version
 history-created = created
 history-deleted = deleted
+history-merged = merged into another record
 history-attached = attached a file
 admin-raw-json-unparsed = The raw JSON did not parse ({ $error }). Nothing was saved.
 admin-raw-json-dangling = The raw JSON points { $field } at { $target }, which is not in this archive. Pick it with a field above, or correct the id. Nothing was saved.

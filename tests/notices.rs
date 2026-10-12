@@ -113,6 +113,15 @@ async fn a_merged_persons_old_address_says_where_they_went() {
         html.find(r#"<a class="btn primary" href="/person/m1">Ouvrir la fiche fusionnée</a>"#);
     let river = html.find(r#"<a class="btn" href="/">Retour à la rivière</a>"#);
     assert!(open.is_some() && river.is_some() && open < river, "{html}");
+    // The journal says what happened, not "no field changed".
+    let dash =
+        body_string(get_with_cookie(&app, "/admin", &format!("{cookie}; axgf_lang=fr")).await)
+            .await;
+    assert!(
+        dash.contains("a fusionné dans une autre fiche"),
+        "the dashboard's recent edits"
+    );
+    assert!(!dash.contains("aucun champ modifié"));
     // The survivor is there, and the man who only shares a name is untouched.
     assert_eq!(get(&app, "/person/m1").await.status(), StatusCode::OK);
     assert_eq!(get(&app, "/person/m3").await.status(), StatusCode::OK);

@@ -3061,6 +3061,7 @@ diff-section-ocr = Rozpoznany tekst
 diff-section-format-version = Wersja formatu
 history-created = utworzył(a)
 history-deleted = usunął/usunęła
+history-merged = scalił(a) z inną kartą
 history-attached = dołączył(a) plik
 admin-raw-json-unparsed = Surowego JSON-a nie udało się odczytać ({ $error }). Nic nie zostało zapisane.
 admin-raw-json-dangling = Surowy JSON wskazuje w { $field } na { $target }, którego nie ma w tym archiwum. Wybierz go w polu powyżej albo popraw identyfikator. Nic nie zostało zapisane.

@@ -96,6 +96,7 @@ impl Entry {
             "create" => crate::i18n::translate(lang, "history-created", None),
             "delete" => crate::i18n::translate(lang, "history-deleted", None),
             "upload" => crate::i18n::translate(lang, "history-attached", None),
+            "merge" => crate::i18n::translate(lang, "history-merged", None),
             _ => crate::diff::summarise_in(&self.changes, &self.kind, lang),
         }
     }

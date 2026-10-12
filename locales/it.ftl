@@ -2892,6 +2892,7 @@ diff-section-ocr = Testo riconosciuto
 diff-section-format-version = Versione del formato
 history-created = ha creato
 history-deleted = ha eliminato
+history-merged = ha unito a un’altra scheda
 history-attached = ha allegato un file
 admin-raw-json-unparsed = Il JSON grezzo non si è potuto leggere ({ $error }). Non è stato salvato nulla.
 admin-raw-json-dangling = Il JSON grezzo fa puntare { $field } a { $target }, che non è in questo archivio. Sceglilo con un campo qui sopra o correggi l’identificativo. Non è stato salvato nulla.

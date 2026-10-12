@@ -75,17 +75,18 @@ confidence by dash pattern, not hue.
 **Not built:** a light water ramp. If one is ever wanted, it starts as its
 own study.
 
-## 3. One edge of Study 06 falls short of WCAG, and stays for now
+## 3. One deliberate deviation from Study 06: the control edge
 
-Study 06's control edge, `--border-strong` `#3a4b42`, measures 2.06:1 on its
-own page (1.91 on a raised surface, 2.00 in a field's well). WCAG 1.4.11 asks
-3:1 of the boundary a control is known by. Every other pair in every theme
-clears its threshold.
+**Decision.** `--border-strong` is `#526a5d`, not the study's `#3a4b42`.
 
-The study's value stands until its owner decides. No control is identified by
-its edge alone: every button carries a label, and every field has a visible
-label (B3). `every_theme_reads` names these pairs in `KNOWN_SHORT`, and fails
-once they clear, so the exception cannot outlive its reason unnoticed. The
-least change that clears 3:1 on all three surfaces keeps the study's hue and
-saturation and raises its lightness: `#526a5d` (3.25 on the page, 3.02
-raised, 3.15 in a well).
+**Why.** Study 06 was produced without a contrast audit; the audit is newer
+information, and it wins. The study's edge measured 2.06:1 on its own page
+(1.91 on a raised surface, 2.00 in a field's well), and WCAG 1.4.11 asks 3:1
+of the boundary a control is known by. `#526a5d` keeps the study's hue and
+saturation and raises only its lightness, just far enough: 3.25 on the page,
+3.02 raised, 3.15 in a well. The river's own `--rv-rule-3`, which is the same
+edge, moves with it, so the river and the `dark` theme stay one palette.
+
+**What holds it.** `every_theme_reads` measures every pair in every theme and
+carries no exceptions; none may be added to it. The study's other eleven
+values are held exactly by `the_dark_theme_is_study_06_and_so_is_the_river`.

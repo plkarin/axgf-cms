@@ -3130,6 +3130,7 @@ diff-section-ocr = النص المتعرَّف عليه
 diff-section-format-version = إصدار الصيغة
 history-created = أنشأ
 history-deleted = حذف
+history-merged = دمج مع سجل آخر
 history-attached = أرفق ملفًا
 admin-raw-json-unparsed = تعذّرت قراءة JSON الخام ({ $error }). لم يُحفظ شيء.
 admin-raw-json-dangling = يشير JSON الخام في { $field } إلى { $target }، وهو غير موجود في هذا الأرشيف. اختره من حقل أعلاه أو صحّح المعرّف. لم يُحفظ شيء.

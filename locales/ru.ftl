@@ -3068,6 +3068,7 @@ diff-section-ocr = Распознанный текст
 diff-section-format-version = Версия формата
 history-created = создал(а)
 history-deleted = удалил(а)
+history-merged = объединил(а) с другой карточкой
 history-attached = приложил(а) файл
 admin-raw-json-unparsed = Исходный JSON не удалось прочитать ({ $error }). Ничего не сохранено.
 admin-raw-json-dangling = В исходном JSON поле { $field } указывает на { $target }, которого нет в этом архиве. Выберите его в поле выше или исправьте идентификатор. Ничего не сохранено.

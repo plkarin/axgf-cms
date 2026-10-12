@@ -2680,6 +2680,7 @@ diff-section-ocr = 認識したテキスト
 diff-section-format-version = 形式のバージョン
 history-created = が作成
 history-deleted = が削除
+history-merged = が別の記録に統合
 history-attached = がファイルを添付
 admin-raw-json-unparsed = 生の JSON を読み取れませんでした（{ $error }）。何も保存されていません。
 admin-raw-json-dangling = 生の JSON の { $field } が { $target } を指していますが、このアーカイブにはありません。上の欄で選ぶか、ID を訂正してください。何も保存されていません。

@@ -66,7 +66,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } conjoints
     }, { $depth } générations de chaque côté.
 tree-filter-label = Filtrer les fiches affichées
-tree-filter-placeholder = Saisissez un nom…
 tree-centre-on = Centrer sur
 tree-depth = Générations de chaque côté
 tree-show = Afficher
@@ -629,7 +628,6 @@ record-verbatim-note = Conservé exactement tel que le dossier l'énonçait, par
 record-file-to-attach = Fichier à joindre
 record-document-type = Type de document
 record-caption = Légende
-record-caption-placeholder = Légende (facultative)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 record-occupations-help-undated = Un métier s’enregistre avec un début et une fin, ce qui permet d’en comparer plusieurs sur un même axe. Cette archive contient les intitulés mais aucune date — c’est courant après une importation, la plupart des fichiers familiaux n’ayant nulle part où les mettre — donc il n’y a pas encore d’échelle à dessiner.
@@ -1055,7 +1053,6 @@ identity-living-help = C'est l'indicateur posé par la source. La page présume 
 identity-error-no-display = Une fiche a besoin d'un nom pour être affichée. Rien n'a été enregistré.
 editor-blank-to-remove = Videz le nom pour supprimer cette entrée.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = fr
 identity-edit-link = Modifier les noms et l'identité
 
 ## Union types, statuses and date precision, said out loud
@@ -3164,12 +3161,19 @@ river-legend-title = Lire la rivière
 
 # Masthead search
 search-label = Rechercher une personne
-search-placeholder = Rechercher une personne
+search-short = Personne
+date-qualifier = Qualificatif
+date-qualifier-circa = vers
 search-title = Recherche
 search-heading = Personnes correspondant à « { $q } »
 search-none = Personne de visible ne porte ce nom.
 search-open-record = Ouvrir la fiche
 search-hint = Entrée fait voyager la rivière jusqu’à elle ; Maj+Entrée ouvre sa fiche.
+search-summary = { $n ->
+        [one] { $n } personne
+        [many] { $n } personnes
+       *[other] { $n } personnes
+    } · ↵ voyager · ⇧↵ ouvrir la fiche
 search-empty-query = Saisissez un nom pour rechercher.
 
 # Data quality (/quality)

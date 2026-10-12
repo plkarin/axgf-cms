@@ -87,7 +87,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } partnerów
     }, po { $depth } pokoleń w każdą stronę.
 tree-filter-label = Filtruj widoczne karty
-tree-filter-placeholder = Wpisz nazwisko…
 tree-centre-on = Wyśrodkuj na
 tree-depth = Pokoleń w każdą stronę
 tree-show = Pokaż
@@ -740,7 +739,6 @@ record-verbatim-note = Zachowane dokładnie tak, jak podawał to zapis, poniewa�
 record-file-to-attach = Plik do dołączenia
 record-document-type = Typ dokumentu
 record-caption = Podpis
-record-caption-placeholder = Podpis (opcjonalnie)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1225,7 +1223,6 @@ identity-living-help = To znacznik ustawiony przez źródło. Strona osobno domn
 identity-error-no-display = Zapis potrzebuje nazwy, pod którą będzie pokazywany. Nic nie zapisano.
 editor-blank-to-remove = Wyczyść nazwę, aby usunąć ten wpis.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = pl
 identity-edit-link = Edytuj nazwy i tożsamość
 
 ## Union types, statuses and date precision, said out loud
@@ -3359,12 +3356,20 @@ river-legend-title = Jak czytać rzekę
 
 # Masthead search
 search-label = Szukaj osoby
-search-placeholder = Szukaj osoby
+search-short = Osoba
+date-qualifier = Określenie
+date-qualifier-circa = około
 search-title = Wyszukiwanie
 search-heading = Osoby pasujące do „{ $q }”
 search-none = Nikt widoczny dla Ciebie nie nosi tego imienia.
 search-open-record = Otwórz kartę
 search-hint = Enter przenosi rzekę do tej osoby; Shift+Enter otwiera jej kartę.
+search-summary = { $n ->
+        [one] { $n } osoba
+        [few] { $n } osoby
+        [many] { $n } osób
+       *[other] { $n } osoby
+    } · ↵ podróż · ⇧↵ otwórz kartę
 search-empty-query = Wpisz imię lub nazwisko, aby wyszukać.
 
 # Data quality (/quality)

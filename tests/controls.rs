@@ -216,7 +216,10 @@ fn the_tab_strip_is_one_row_that_scrolls_and_mirrors() {
     assert_eq!(decl(&strip, "overflow-x"), Some("auto"), "{strip}");
     // The hairline inside the strip: a scrolling strip clips anything hung
     // below it, which is how the current tab's rule lost half its width.
-    assert_eq!(decl(&strip, "box-shadow"), Some("inset 0 -1px 0 var(--border-hairline)"));
+    assert_eq!(
+        decl(&strip, "box-shadow"),
+        Some("inset 0 -1px 0 var(--border-hairline)")
+    );
     assert!(decl(&tab, "margin-block-end").is_none(), "{tab}");
     let tab = rule(".person-tab");
     assert_eq!(

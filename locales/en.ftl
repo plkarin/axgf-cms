@@ -72,7 +72,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } partners
     }, { $depth } generations each way.
 tree-filter-label = Filter visible cards
-tree-filter-placeholder = Type a name…
 tree-centre-on = Centre on
 tree-depth = Generations each way
 tree-show = Show
@@ -654,7 +653,6 @@ record-verbatim-note = Kept exactly as the record stated it, because no converte
 record-file-to-attach = File to attach
 record-document-type = Document type
 record-caption = Caption
-record-caption-placeholder = Caption (optional)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1109,7 +1107,6 @@ identity-living-help = This is the flag the source set. The page separately pres
 identity-error-no-display = A record needs a name to be shown by. Nothing was saved.
 editor-blank-to-remove = Clear the name to remove this entry.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = en
 identity-edit-link = Edit names and identity
 
 ## Union types, statuses and date precision, said out loud
@@ -3218,12 +3215,18 @@ river-legend-title = How to read the river
 
 # Masthead search
 search-label = Search for a person
-search-placeholder = Search for a person
+search-short = Person
+date-qualifier = Qualifier
+date-qualifier-circa = circa
 search-title = Search
 search-heading = People matching “{ $q }”
 search-none = Nobody you can see is called that.
 search-open-record = Open the record
 search-hint = Enter travels the river to them; Shift+Enter opens their record.
+search-summary = { $n ->
+        [one] { $n } person
+       *[other] { $n } people
+    } · ↵ travel · ⇧↵ open the record
 search-empty-query = Type a name to search.
 
 # Data quality (/quality)

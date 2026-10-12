@@ -512,12 +512,14 @@
         action="/admin/person/{{ p.id }}/document">
     <h3>{{ t("record-attach-document") }}</h3>
     <div class="filter-row">
-      <input type="file" name="file" required aria-label="{{ t('record-file-to-attach') }}">
-      <select name="document_type" aria-label="{{ t('record-document-type') }}">
-        {% for o in document_types %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
-      </select>
-      <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}"
-             aria-label="{{ t('record-caption') }}">
+      <label>{{ t('record-file-to-attach') }}
+        <input type="file" name="file" required></label>
+      <label>{{ t('record-document-type') }}
+        <select name="document_type">
+          {% for o in document_types %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
+        </select></label>
+      <label>{{ t("record-caption") }}
+        <input type="text" name="caption"></label>
       <button class="btn" data-busy="{{ t('busy-working') }}">{{ t("record-upload") }}</button>
     </div>
     <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}

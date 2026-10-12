@@ -709,3 +709,72 @@ async fn the_river_controls_are_secondary_and_edit_is_a_ghost() {
         "no primary on the river"
     );
 }
+
+/// Every field has a label a reader can see, and none relies on a
+/// placeholder (B3). A label is one that wraps the field, names it by `for`
+/// or by `aria-labelledby` pointing at text on the page, the column header
+/// of a row editor, or — for a date — the date's own label above the box its
+/// qualifier and year share. The masthead's language select shows its value as a code and
+/// is named for assistive technology; it is the one field without a label
+/// on screen, and is named here.
+#[tokio::test]
+async fn every_field_has_a_visible_label_and_none_a_placeholder() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let fields = Selector::parse(
+        "input:not([type=hidden]):not([type=submit]):not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea",
+    )
+    .unwrap();
+    let labels = Selector::parse("label[for]").unwrap();
+    let header = Selector::parse("thead th").unwrap();
+    let mut bare = Vec::new();
+    let mut seen = 0;
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        for page in pages(c.is_some(), None) {
+            let (_, html, _) = fetch(&app, &page, c).await;
+            assert!(
+                !html.contains(" placeholder="),
+                "{who} {page}: a placeholder"
+            );
+            let doc = Html::parse_document(&html);
+            let named: BTreeSet<String> = doc
+                .select(&labels)
+                .filter_map(|l| l.value().attr("for").map(String::from))
+                .collect();
+            for f in doc.select(&fields) {
+                seen += 1;
+                let wrapped = f.ancestors().filter_map(ElementRef::wrap).any(|a| {
+                    let v = a.value();
+                    v.name() == "label"
+                        // A row editor: the column's header names the field.
+                        || (v.name() == "table" && a.select(&header).next().is_some())
+                        || v.attr("class").is_some_and(|c| {
+                            c.split_whitespace()
+                                .any(|c| c == "date-field" || c == "date-input" || c == "lang-form")
+                        })
+                });
+                let by_for = f.value().attr("id").is_some_and(|id| named.contains(id));
+                // Named by text on the page: a legend, a heading.
+                let by_ref = f.value().attr("aria-labelledby").is_some_and(|ids| {
+                    ids.split_whitespace().all(|id| {
+                        doc.select(&Selector::parse(&format!("#{id}")).unwrap())
+                            .next()
+                            .is_some_and(|e| !e.text().collect::<String>().trim().is_empty())
+                    })
+                });
+                if !wrapped && !by_for && !by_ref {
+                    bare.push(format!("{who} {page}: {}", describe(&f)));
+                }
+            }
+        }
+    }
+    assert!(seen > 100, "fields walked: {seen}");
+    bare.sort();
+    bare.dedup();
+    assert!(
+        bare.is_empty(),
+        "{} field(s) with no visible label:\n{}",
+        bare.len(),
+        bare.join("\n")
+    );
+}

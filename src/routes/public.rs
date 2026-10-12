@@ -1750,17 +1750,25 @@ pub async fn search(
     )
 }
 
-/// `GET /search.json?q=` — the masthead's suggestions.
+/// `GET /search.json?q=` — the masthead's suggestions: `{hits, total,
+/// summary}`, each hit with its discharge class.
 pub async fn search_json(
     State(state): State<Shared>,
     headers: HeaderMap,
     Query(q): Query<SearchQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let hits = state.read_as(viewer.ceiling(), |flat, lens| {
-        crate::search::people(flat, lens, &q.q, SEARCH_SUGGESTIONS)
+    let (hits, total) = state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::search::people_counted(flat, lens, &q.q, SEARCH_SUGGESTIONS)
     });
-    ([(header::CACHE_CONTROL, "no-store")], Json(hits)).into_response()
+    // The suggestions' footer (B3): how many matched, and the two keys.
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let summary = chrome.t_args("search-summary", &[("n", (total as i64).into())]);
+    (
+        [(header::CACHE_CONTROL, "no-store")],
+        Json(json!({"hits": hits, "total": total, "summary": summary})),
+    )
+        .into_response()
 }
 
 /// `GET /static/river.js`.

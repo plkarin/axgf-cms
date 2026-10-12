@@ -83,7 +83,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } Partner
     }, { $depth } Generationen in jede Richtung.
 tree-filter-label = Sichtbare Karten filtern
-tree-filter-placeholder = Namen eingeben …
 tree-centre-on = Zentrieren auf
 tree-depth = Generationen in jede Richtung
 tree-show = Anzeigen
@@ -649,7 +648,6 @@ record-verbatim-note = Genau so bewahrt, wie der Eintrag es angab, weil kein Kon
 record-file-to-attach = Anzuhängende Datei
 record-document-type = Art des Dokuments
 record-caption = Bildunterschrift
-record-caption-placeholder = Bildunterschrift (optional)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1072,7 +1070,6 @@ identity-living-help = Das ist das Kennzeichen, das die Quelle gesetzt hat. Die 
 identity-error-no-display = Ein Eintrag braucht einen Namen, unter dem er angezeigt wird. Nichts wurde gespeichert.
 editor-blank-to-remove = Namen leeren, um diesen Eintrag zu entfernen.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = de
 identity-edit-link = Namen und Identität bearbeiten
 
 ## Union types, statuses and date precision, said out loud
@@ -3178,12 +3175,18 @@ river-legend-title = So liest man den Fluss
 
 # Masthead search
 search-label = Person suchen
-search-placeholder = Person suchen
+search-short = Person
+date-qualifier = Zusatz
+date-qualifier-circa = um
 search-title = Suche
 search-heading = Personen zu „{ $q }“
 search-none = Niemand, den Sie sehen können, heißt so.
 search-open-record = Datensatz öffnen
 search-hint = Enter führt den Fluss zu dieser Person; Umschalt+Enter öffnet ihren Datensatz.
+search-summary = { $n ->
+        [one] { $n } Person
+       *[other] { $n } Personen
+    } · ↵ hinreisen · ⇧↵ Eintrag öffnen
 search-empty-query = Geben Sie einen Namen ein, um zu suchen.
 
 # Data quality (/quality)

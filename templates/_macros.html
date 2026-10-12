@@ -390,8 +390,7 @@
 {% macro union_point(t, prefix, title, v, precisions, places) %}
 <h3>{{ title }}</h3>
 <div class="ed-grid">
-  <label>{{ t("phys-col-date") }}
-    <input type="text" name="{{ prefix }}.date" value="{{ v.date }}" size="12"></label>
+  {{ date_value(t, prefix, t("phys-col-date"), v) }}
   <label>{{ t("record-precision") }}
     <select name="{{ prefix }}.precision">
       {% for p in precisions %}
@@ -399,9 +398,6 @@
         {{- t("precision-" ~ p) if p else t("admin-not-set") -}}</option>
       {% endfor %}
     </select></label>
-  <label class="inline">
-    <input type="checkbox" name="{{ prefix }}.circa" value="on" {{ "checked" if v.circa }}>
-    {{ t("record-approximate") }}</label>
   <label>{{ t("record-place") }}
     <select name="{{ prefix }}.place_id">
       <option value="">{{ t("admin-not-set") }}</option>
@@ -414,8 +410,7 @@
 
 {# A date, as the three inputs a form shows it as. #}
 {% macro date_fields(t, prefix, title, v, precisions) %}
-<label>{{ title }}
-  <input type="text" name="{{ prefix }}.date" value="{{ v.date if v }}" size="12"></label>
+{{ date_value(t, prefix, title, v) }}
 <label>{{ t("record-precision") }}
   <select name="{{ prefix }}.precision">
     {% for p in precisions %}
@@ -423,9 +418,28 @@
       {{- t("precision-" ~ p) if p else t("admin-not-set") -}}</option>
     {% endfor %}
   </select></label>
-<label class="inline">
-  <input type="checkbox" name="{{ prefix }}.circa" value="on" {{ "checked" if v and v.circa }}>
-  {{ t("record-approximate") }}</label>
+{% endmacro %}
+
+{# A date's qualifier, inside the date's own box (B3): `vers ▾ 1890`, not a
+   checkbox beside the field. It posts `<prefix>.circa` as `on` or nothing,
+   exactly as the checkbox did. #}
+{% macro qualifier(t, name, on, title) %}
+<select name="{{ name }}" class="date-qualifier" aria-label="{{ title }} — {{ t('date-qualifier') }}">
+  <option value="">—</option>
+  <option value="on" {{ "selected" if on }}>{{ t("date-qualifier-circa") }}</option>
+</select>
+{% endmacro %}
+
+{# A date's value with its qualifier: one labelled box. The label names the
+   year field; the qualifier is named on its own. #}
+{% macro date_value(t, prefix, title, v) %}
+<div class="date-field">
+  <span class="field-label" aria-hidden="true">{{ title }}</span>
+  <span class="date-input">
+    {{ qualifier(t, prefix ~ ".circa", v and v.circa, title) }}
+    <input type="text" name="{{ prefix }}.date" value="{{ v.date if v }}" size="12" aria-label="{{ title }}">
+  </span>
+</div>
 {% endmacro %}
 
 {# One link. The far end is one field over a datalist of every person, family

@@ -57,14 +57,13 @@
             <option value="active" {{ "selected" if u.status == "active" }}>{{ t("accounts-active") }}</option>
             <option value="disabled" {{ "selected" if u.status == "disabled" }}>{{ t("accounts-disabled") }}</option>
           </select>
-          <input type="email" name="email" value="{{ u.email if u.email else '' }}"
-                 placeholder="{{ t('accounts-email') }}" aria-label="{{ t('accounts-email') }}">
-          <input type="password" name="password" autocomplete="new-password"
-                 placeholder="{{ t('accounts-new-password-placeholder') }}"
-                 aria-label="{{ t('accounts-new-password-placeholder') }}">
-          <textarea name="family_scope" rows="2"
-                    placeholder="{{ t('accounts-branch-placeholder') }}"
-                    aria-label="{{ t('accounts-branch') }}">{{ u.family_scope | join("\n") }}</textarea>
+          <label>{{ t("accounts-email") }}
+            <input type="email" name="email" value="{{ u.email if u.email else '' }}"></label>
+          <label>{{ t("accounts-new-password-placeholder") }}
+            <input type="password" name="password" autocomplete="new-password"></label>
+          <label>{{ t("accounts-branch") }}
+            <textarea name="family_scope" rows="2">{{ u.family_scope | join("\n") }}</textarea>
+            <span class="hint">{{ t("accounts-branch-placeholder") }}</span></label>
           <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
         </form>
       </td>
@@ -104,9 +103,9 @@
   <div class="field">
     <label for="nu-scope">{{ t("accounts-branch") }}
       <span class="small muted">{{ t("accounts-optional") }}</span></label>
-    <textarea id="nu-scope" name="family_scope" rows="3"
-              placeholder="{{ t('accounts-branch-placeholder') }}"></textarea>
+    <textarea id="nu-scope" name="family_scope" rows="3"></textarea>
     <div class="hint">
+      {{ t("accounts-branch-placeholder") }}.
       {{ t("accounts-branch-hint") }}
       {# A scope limits writing, not reading. That is the one thing an
          administrator can get wrong here, so it stays — on demand. #}

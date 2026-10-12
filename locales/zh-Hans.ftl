@@ -72,7 +72,6 @@ tree-title-around = { $name }的周边
 tree-title-whole = 整棵家谱
 tree-lede-focused = 祖先{ $ancestors }人、后代{ $descendants }人、配偶或伴侣{ $spouses }人，每个方向{ $depth }代。
 tree-filter-label = 筛选可见的卡片
-tree-filter-placeholder = 输入姓名…
 tree-centre-on = 以此人为中心
 tree-depth = 每个方向的代数
 tree-show = 显示
@@ -553,7 +552,6 @@ record-verbatim-note = 完全按记录原样保留，因为没有任何转换器
 record-file-to-attach = 要附加的文件
 record-document-type = 文献类别
 record-caption = 说明
-record-caption-placeholder = 说明（可选）
 record-history-entry-meta = —— { $at }
 record-history-entry-version = ，{ $version }
 
@@ -889,7 +887,6 @@ identity-living-help = 这是来源设置的标志。当出生年代过久时，
 identity-error-no-display = 记录需要一个用于显示的名字。未保存任何内容。
 editor-blank-to-remove = 清空名字即可删除此条目。
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = zh-Hans
 identity-edit-link = 编辑姓名与身份
 
 ## Union types, statuses and date precision, said out loud
@@ -2953,12 +2950,15 @@ river-legend-title = 如何阅读河流
 
 # Masthead search
 search-label = 搜索人物
-search-placeholder = 搜索人物
+search-short = 人物
+date-qualifier = 限定词
+date-qualifier-circa = 约
 search-title = 搜索
 search-heading = 与“{ $q }”匹配的人物
 search-none = 你能看到的人中没有叫这个名字的。
 search-open-record = 打开记录
 search-hint = 回车键将河流移到此人；上档键+回车键打开其记录。
+search-summary = { $n } 人 · ↵ 前往 · ⇧↵ 打开记录
 search-empty-query = 输入姓名进行搜索。
 
 # Data quality (/quality)

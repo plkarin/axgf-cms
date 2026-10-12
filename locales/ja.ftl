@@ -73,7 +73,6 @@ tree-title-around = { $name }の周辺
 tree-title-whole = 家系図の全体
 tree-lede-focused = 祖先{ $ancestors }名、子孫{ $descendants }名、配偶者・伴侶{ $spouses }名、各方向{ $depth }世代。
 tree-filter-label = 表示中のカードを絞り込む
-tree-filter-placeholder = 名前を入力…
 tree-centre-on = 中心にする人
 tree-depth = 各方向の世代数
 tree-show = 表示
@@ -554,7 +553,6 @@ record-verbatim-note = どの変換器も解釈できなかったため、記録
 record-file-to-attach = 添付するファイル
 record-document-type = 資料の種別
 record-caption = 説明
-record-caption-placeholder = 説明（任意）
 record-history-entry-meta = — { $at }
 record-history-entry-version = 、{ $version }
 
@@ -889,7 +887,6 @@ identity-living-help = これは出典が設定した印です。ページは出
 identity-error-no-display = 記録には表示するための名前が必要です。何も保存していません。
 editor-blank-to-remove = 名前を空にするとこの項目を削除します。
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = ja
 identity-edit-link = 名前と身元を編集
 
 ## Union types, statuses and date precision, said out loud
@@ -2953,12 +2950,15 @@ river-legend-title = 流れの読み方
 
 # Masthead search
 search-label = 人物を検索
-search-placeholder = 人物を検索
+search-short = 人物
+date-qualifier = 修飾
+date-qualifier-circa = 頃
 search-title = 検索
 search-heading = 「{ $q }」に一致する人物
 search-none = 表示できる人の中に、その名前の人はいません。
 search-open-record = 記録を開く
 search-hint = Enter でその人まで川を移動し、Shift+Enter で記録を開きます。
+search-summary = { $n }人 · ↵ 移動 · ⇧↵ 記録を開く
 search-empty-query = 検索する名前を入力してください。
 
 # Data quality (/quality)

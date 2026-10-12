@@ -93,7 +93,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } партнёров
     }, по { $depth } поколений в каждую сторону.
 tree-filter-label = Отфильтровать видимые карточки
-tree-filter-placeholder = Введите имя…
 tree-centre-on = Центрировать на
 tree-depth = Поколений в каждую сторону
 tree-show = Показать
@@ -747,7 +746,6 @@ record-verbatim-note = Сохранено ровно так, как значил
 record-file-to-attach = Файл для прикрепления
 record-document-type = Тип документа
 record-caption = Подпись
-record-caption-placeholder = Подпись (необязательно)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1232,7 +1230,6 @@ identity-living-help = Это признак, поставленный исто�
 identity-error-no-display = Записи нужно имя, под которым она отображается. Ничего не сохранено.
 editor-blank-to-remove = Очистите имя, чтобы удалить эту запись.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = ru
 identity-edit-link = Изменить имена и личность
 
 ## Union types, statuses and date precision, said out loud
@@ -3366,12 +3363,20 @@ river-legend-title = Как читать реку
 
 # Masthead search
 search-label = Найти человека
-search-placeholder = Найти человека
+search-short = Человек
+date-qualifier = Уточнение
+date-qualifier-circa = около
 search-title = Поиск
 search-heading = Люди по запросу «{ $q }»
 search-none = Среди видимых вам людей никого с таким именем нет.
 search-open-record = Открыть карточку
 search-hint = Enter переносит реку к этому человеку; Shift+Enter открывает его карточку.
+search-summary = { $n ->
+        [one] { $n } человек
+        [few] { $n } человека
+        [many] { $n } человек
+       *[other] { $n } человека
+    } · ↵ перейти · ⇧↵ открыть карточку
 search-empty-query = Введите имя для поиска.
 
 # Data quality (/quality)

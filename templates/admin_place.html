@@ -207,12 +207,13 @@
       <label for="paste">{{ t("place-paste") }}</label>
       <div class="paste-row">
         <input type="text" id="paste" name="paste" value="" autocomplete="off"
-               placeholder="{{ t('place-paste-placeholder') }}">
+               aria-describedby="paste-example">
         <button class="btn" type="submit"
                 formaction="/admin/place/{{ place.id }}/geocode" formmethod="post">
           {{ t("place-paste-read") }}
         </button>
       </div>
+      <p class="hint" id="paste-example">{{ t("place-paste-placeholder") }}</p>
       <p class="hint">{{ t("place-paste-hint") }}</p>
       {% if lookup and lookup.pasted and lookup.error %}
       <p class="notice warn" role="alert">{{ t("place-paste-unreadable") }}</p>

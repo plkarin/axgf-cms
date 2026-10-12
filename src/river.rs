@@ -385,6 +385,13 @@ impl Graph {
         g
     }
 
+    /// A person's discharge class (1–5), as the river draws their line: from
+    /// recorded descendants + 1, which is family shape and so the same for
+    /// every reader. `None` for an id the bundle does not hold.
+    pub fn discharge_class(&self, id: &str) -> Option<usize> {
+        self.index.get(id).map(|&i| class_of(self.desc[i] + 1))
+    }
+
     /// Distinct people descended from any of `roots`, the roots excluded.
     fn descendants(&self, roots: &[usize]) -> BTreeSet<usize> {
         let mut seen = BTreeSet::new();
@@ -3423,5 +3430,20 @@ mod tests {
             1,
             "the centre keeps its given name"
         );
+    }
+
+    #[test]
+    fn a_persons_discharge_class_is_the_rivers_width_for_them() {
+        let person = |id: &str| json!({"id": id, "type": "person"});
+        let flat = json!({
+            "persons": {"a": person("a"), "k1": person("k1"), "k2": person("k2"), "k3": person("k3")},
+            "families": {"f": {"id": "f", "union": {"persons": [{"person_id": "a"}]},
+                "children": [{"person_id": "k1"}, {"person_id": "k2"}, {"person_id": "k3"}]}}
+        });
+        let g = Graph::build(&flat);
+        // Three descendants + 1 is 4: the 2–5 class. A childless child is 1.
+        assert_eq!(g.discharge_class("a"), Some(2));
+        assert_eq!(g.discharge_class("k1"), Some(1));
+        assert_eq!(g.discharge_class("nobody"), None);
     }
 }

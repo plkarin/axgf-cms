@@ -736,7 +736,13 @@ h4 {
 
 .date { }
 .date[data-kind="exact"] { }
-.date[data-kind="approximate"] { font-style: italic; color: var(--text-secondary); }
+/* An approximate date reads "vers 1890" with a dotted underline (B3): the
+   qualifier is part of the value, and the dots say so without a colour. */
+.date[data-kind="approximate"] {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
 .date[data-kind="range"] { font-style: italic; color: var(--text-secondary); }
 .date[data-kind="preserved"] {
   font-family: var(--mono);
@@ -795,25 +801,40 @@ h4 {
 
 .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0; }
 
-/* One control height across buttons, inputs and selects, so a row of them
-   lines up on its centres instead of drifting by a padding value. */
+/* ---------------------------------------------------------------------------
+   Fields (Study 06, B3)
+   ---------------------------------------------------------------------------
+   A field sits a shade below the page, like water below a bank: the sunken
+   surface, a strong edge, radius 2, the same 36px as a button so a row of
+   them lines up. Its label is mono, uppercase and always visible — never a
+   placeholder (tests/fields.rs). A select is the browser's own, restyled; the
+   theme's color-scheme gives its open list the right ground. */
 input[type="text"], input[type="password"], input[type="email"],
-input[type="search"], input[type="file"], select, textarea {
-  border-radius: var(--radius);
-  padding: 0.5rem 0.85rem;
-  font-size: var(--type-minor);
-  font-family: inherit;
-  line-height: 1.35;
+input[type="search"], input[type="number"], input[type="url"],
+input[type="file"], select, textarea {
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 36px;
+  padding: 0 10px;
   border: 1px solid var(--border-strong);
-  background: var(--surface-raised);
+  border-radius: 2px;
+  background: var(--surface-sunken);
   color: var(--text-primary);
-  transition: background-color var(--tempo) var(--ease),
-              border-color var(--tempo) var(--ease),
-              color var(--tempo) var(--ease),
-              box-shadow var(--tempo) var(--ease),
-              transform var(--tempo) var(--ease);
+  font-family: var(--face);
+  font-size: var(--type-minor);
+  font-weight: var(--weight-normal);
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
+  transition: border-color var(--tempo) var(--ease);
 }
-textarea { line-height: 1.5; }
+input[type="file"] { padding-block: 6px; }
+textarea {
+  block-size: auto;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  line-height: 1.5;
+}
 
 /* ---------------------------------------------------------------------------
    Buttons (Study 06, B2)
@@ -886,7 +907,6 @@ select {
   padding-inline-end: 1.8rem;
 }
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 
 /* ---------- notices ---------- */
 
@@ -943,21 +963,57 @@ td.num, th.num { text-align: end; }
 
 /* ---------- forms ---------- */
 
-label { display: block; font-size: var(--type-minor); color: var(--text-secondary); margin-bottom: 0.25rem; }
-input[type="text"], input[type="password"], input[type="number"],
-input[type="file"], select, textarea {
-  width: 100%;
-  font: inherit;
-  font-size: var(--type-minor);
-  color: var(--text-primary);
-  background: var(--surface-raised);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 0.45rem 0.6rem;
+/* The label: mono, uppercase, always above its field. A checkbox's or a
+   radio's label is a sentence beside it (`label.inline`) and stays one. */
+label, .field-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
-textarea { font-family: var(--mono); font-size: var(--type-minor); line-height: 1.5; }
+label.inline {
+  font-family: inherit;
+  font-size: var(--type-minor);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-primary);
+}
+label > input, label > select, label > textarea, label > .date-input { margin-top: 0.3rem; }
+/* A date and its qualifier are one box: `vers ▾ 1890`. */
+.date-input {
+  display: flex;
+  align-items: stretch;
+  inline-size: 100%;
+}
+.date-input > .date-qualifier {
+  flex: none;
+  inline-size: auto;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  border-inline-end-width: 0;
+  color: var(--text-secondary);
+}
+.date-input > input {
+  flex: 1 1 auto;
+  min-inline-size: 5rem;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+.date-field { margin: 0; }
 .field { margin-bottom: 1rem; }
-.field .hint { font-size: var(--type-small); color: var(--text-tertiary); margin-top: 0.2rem; }
+/* Help under a field says what the field means in the source. */
+.hint, .field .hint {
+  font-family: var(--face);
+  font-size: var(--type-small);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-tertiary);
+  margin-top: 0.3rem;
+}
 fieldset { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; }
 legend { font-size: var(--type-small); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); padding: 0 0.4rem; }
 
@@ -2567,11 +2623,11 @@ details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
    discipline elsewhere fixes it, because the rule that needs to exist was
    simply absent. Measured, not assumed: this is the pair the contrast sweep
    flagged first. */
-input, select, textarea, button {
+input, select, textarea {
   color: var(--text-primary);
-  background-color: var(--surface-raised);
-  font: inherit;
+  background-color: var(--surface-sunken);
 }
+button { color: var(--text-primary); background-color: transparent; font: inherit; }
 input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity: 1; }
 /* Focus (B2): a 2px ring in --focus-ring at 2px offset, on every control,
    never removed. Not the browser's outline, and nothing anywhere sets
@@ -3150,12 +3206,11 @@ a.tcard:hover {
 .pf-prov-grid { display: grid; gap: 0.6rem 1.2rem; margin-top: 0.35rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
 /* A date and its precision and circa flag, side by side and nowhere else. */
-.pf-date.ed-grid { grid-template-columns: minmax(7rem, 1fr) minmax(8rem, 1fr) auto; }
+.pf-date.ed-grid { grid-template-columns: minmax(11rem, 3fr) minmax(8rem, 2fr); }
 .pf-src.ed-grid { grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr); }
 .pf-note { grid-column: 1 / -1; }
 @media (max-width: 480px) {
   .pf-date.ed-grid { grid-template-columns: 1fr 1fr; }
-  .pf-date.ed-grid > label.inline { grid-column: 1 / -1; }
   .pf-src.ed-grid { grid-template-columns: 1fr; }
 }
 .pf-prov > summary { cursor: pointer; font-size: var(--type-minor); color: var(--text-secondary); }
@@ -3316,7 +3371,9 @@ a.tcard:hover {
 
 /* The masthead search and its suggestions. */
 .masthead-search { position: relative; margin-inline-start: 1rem; }
-.masthead-search input[type="search"] { inline-size: 13rem; max-inline-size: 40vw; }
+/* Its label is visible, beside the field, like every other field's. */
+.search-box { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.search-box > input[type="search"] { margin-top: 0; inline-size: 9rem; max-inline-size: 36vw; }
 .search-suggest {
   position: absolute; inset-inline-start: 0; inset-block-start: 100%; z-index: 20;
   min-inline-size: 100%; margin: 2px 0 0; padding: 4px 0; list-style: none;
@@ -3324,6 +3381,31 @@ a.tcard:hover {
 }
 .search-suggest li { padding: 6px 10px; cursor: pointer; white-space: nowrap; }
 .search-suggest li[aria-selected="true"], .search-suggest li:hover { background: var(--accent-soft); }
-.search-suggest .search-years { opacity: .7; font-size: .85em; }
+.search-suggest .search-years { color: var(--text-tertiary); font-family: var(--mono); font-size: var(--type-small); }
+.search-suggest li { display: flex; align-items: center; gap: 0.5rem; }
+/* The discharge class, drawn as the river draws it: a line as thick as the
+   person's recorded descendants make it, 1 · 2–5 · 6–20 · 21–80 · 81+. */
+.search-class {
+  flex: none;
+  display: inline-block;
+  block-size: 14px;
+  background: var(--text-secondary);
+  border-radius: 1px;
+}
+.search-class[data-class="1"] { inline-size: 2px; }
+.search-class[data-class="2"] { inline-size: 3px; }
+.search-class[data-class="3"] { inline-size: 5px; }
+.search-class[data-class="4"] { inline-size: 8px; }
+.search-class[data-class="5"] { inline-size: 12px; }
+.search-suggest li.search-foot {
+  cursor: default;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-hairline);
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  color: var(--text-tertiary);
+}
+.search-suggest li.search-foot:hover { background: none; }
 .search-results { list-style: none; padding: 0; }
 .search-results li { padding: 6px 0; border-block-end: 1px solid var(--border-hairline); }

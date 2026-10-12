@@ -86,7 +86,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } زوج
     }، { $depth } أجيال في كل اتجاه.
 tree-filter-label = تصفية البطاقات الظاهرة
-tree-filter-placeholder = اكتب اسمًا…
 tree-centre-on = التمركز حول
 tree-depth = أجيال في كل اتجاه
 tree-show = إظهار
@@ -850,7 +849,6 @@ record-verbatim-note = محفوظ كما جاء في السجل تمامًا، �
 record-file-to-attach = الملف المراد إرفاقه
 record-document-type = نوع المستند
 record-caption = التعليق
-record-caption-placeholder = تعليق (اختياري)
 record-history-entry-meta = — { $at }
 record-history-entry-version = ، { $version }
 
@@ -1276,7 +1274,6 @@ identity-living-help = هذه العلامة التي وضعها المصدر. �
 identity-error-no-display = يحتاج السجل إلى اسم يُعرض به. لم يُحفظ شيء.
 editor-blank-to-remove = امسح الاسم لحذف هذا المُدخَل.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = ar
 identity-edit-link = حرّر الأسماء والهوية
 
 ## Union types, statuses and date precision, said out loud
@@ -3438,12 +3435,22 @@ river-legend-title = كيف يُقرأ النهر
 
 # Masthead search
 search-label = ابحث عن شخص
-search-placeholder = ابحث عن شخص
+search-short = شخص
+date-qualifier = المُحدِّد
+date-qualifier-circa = نحو
 search-title = البحث
 search-heading = الأشخاص المطابقون لـ «{ $q }»
 search-none = لا أحد ممن يمكنك رؤيتهم يحمل هذا الاسم.
 search-open-record = افتح السجل
 search-hint = يأخذ Enter النهر إليه، ويفتح Shift+Enter سجله.
+search-summary = { $n ->
+        [zero] لا أحد
+        [one] شخص واحد
+        [two] شخصان
+        [few] { $n } أشخاص
+        [many] { $n } شخصًا
+       *[other] { $n } شخص
+    } · ↵ انتقال · ⇧↵ فتح السجل
 search-empty-query = اكتب اسمًا للبحث.
 
 # Data quality (/quality)

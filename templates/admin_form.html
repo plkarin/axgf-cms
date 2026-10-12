@@ -27,8 +27,16 @@
   <fieldset>
     <legend>{{ t("admin-fields") }}</legend>
     {% for f in fields %}
+    {% if not f.inside_date %}
     <div class="field">
-      {% if f.kind == "bool" %}
+      {% if f.qualifier %}
+        <label for="{{ f.path }}">{{ f.label }}</label>
+        <span class="date-input">
+          {{ m.qualifier(t, f.qualifier.path, f.qualifier.on, f.label) }}
+          <input type="text" id="{{ f.path }}" name="{{ f.path }}" value="{{ f.value }}" size="12">
+        </span>
+
+      {% elif f.kind == "bool" %}
         <label class="inline">
           <input type="checkbox" name="{{ f.path }}" value="on" {% if f.checked %}checked{% endif %}>
           {{ f.label }}
@@ -69,7 +77,9 @@
       {% endif %}
 
       {% if f.hint %}<div class="hint">{{ f.hint }}</div>{% endif %}
+      {% if f.qualifier and f.qualifier.hint %}<div class="hint">{{ f.qualifier.hint }}</div>{% endif %}
     </div>
+    {% endif %}
     {% endfor %}
   </fieldset>
 
@@ -82,7 +92,7 @@
   {% endfor %}
 
   <fieldset>
-    <legend>{{ t("admin-raw-json") }}</legend>
+    <legend id="raw-json-legend">{{ t("admin-raw-json") }}</legend>
     {# How the raw document and the fields above combine is a genuine trap —
        edit a value twice and one write silently loses. It is kept, one click
        away, rather than printed over the form every time. #}
@@ -93,7 +103,7 @@
         <span>{{ t("admin-raw-json-help") }}</span>
       </details>
     </p>
-    <textarea name="raw_json" rows="16" spellcheck="false">{{ raw }}</textarea>
+    <textarea name="raw_json" rows="16" spellcheck="false" aria-labelledby="raw-json-legend">{{ raw }}</textarea>
   </fieldset>
 
   <div class="cta-row">

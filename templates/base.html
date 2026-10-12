@@ -40,10 +40,11 @@
         works with scripting off; ui.js adds suggestions, where Enter travels
         the river to the person and Shift+Enter opens their record. -#}
     <form class="masthead-search" role="search" method="get" action="/search">
+      <label class="search-box" for="masthead-q"><span class="search-box-label">{{ t('search-short') }}</span>
       <input type="search" name="q" id="masthead-q" autocomplete="off"
-             aria-label="{{ t('search-label') }}" placeholder="{{ t('search-placeholder') }}"
+             aria-label="{{ t('search-label') }}"
              aria-describedby="masthead-q-hint" aria-controls="masthead-q-list" aria-expanded="false"
-             data-search>
+             data-search></label>
       <span id="masthead-q-hint" class="sr-only">{{ t("search-hint") }}</span>
       <ul id="masthead-q-list" class="search-suggest" role="listbox" hidden></ul>
     </form>

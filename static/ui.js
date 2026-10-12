@@ -130,20 +130,28 @@
       location.href = "/?p=" + encodeURIComponent(hit.id);
     };
     var mark = function () {
-      Array.prototype.forEach.call(list.children, function (li, i) {
+      Array.prototype.forEach.call(list.querySelectorAll('[role="option"]'), function (li, i) {
         li.setAttribute("aria-selected", String(i === at));
       });
       if (at >= 0) input.setAttribute("aria-activedescendant", "masthead-q-" + at);
       else input.removeAttribute("aria-activedescendant");
     };
-    var show = function (found) {
+    var show = function (reply) {
+      var found = reply.hits || [];
       hits = found; at = -1; list.innerHTML = "";
       found.forEach(function (h, i) {
         var li = document.createElement("li");
         li.id = "masthead-q-" + i;
         li.setAttribute("role", "option");
         li.setAttribute("aria-selected", "false");
-        li.textContent = h.name;
+        // The river's line for this person, at its discharge class: a
+        // founder reads differently from a childless cousin (B3).
+        var bar = document.createElement("i");
+        bar.className = "search-class";
+        bar.setAttribute("data-class", String(h["class"] || 1));
+        bar.setAttribute("aria-hidden", "true");
+        li.appendChild(bar);
+        li.appendChild(document.createTextNode(h.name));
         if (h.years) {
           var y = document.createElement("span");
           y.className = "search-years";
@@ -153,6 +161,13 @@
         li.addEventListener("mousedown", function (e) { e.preventDefault(); go(h, e.shiftKey); });
         list.appendChild(li);
       });
+      if (found.length && reply.summary) {
+        var foot = document.createElement("li");
+        foot.className = "search-foot";
+        foot.setAttribute("role", "presentation");
+        foot.textContent = reply.summary;
+        list.appendChild(foot);
+      }
       list.hidden = found.length === 0;
       input.setAttribute("aria-expanded", String(found.length > 0));
     };
@@ -163,7 +178,7 @@
       timer = setTimeout(function () {
         asked = q;
         fetch("/search.json?q=" + encodeURIComponent(q), { credentials: "same-origin" })
-          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (r) { return r.ok ? r.json() : { hits: [] }; })
           .then(function (found) { if (asked === q) show(found); })
           .catch(function () {});
       }, 120);

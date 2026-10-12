@@ -47,8 +47,8 @@
     <input type="hidden" name="f" value="{{ f.kind }}|{{ f.id }}|{{ f.fingerprint }}|{{ f.version }}">
     {%- endfor %}
     {%- if not show_dismissed %}
-    <label class="sr-only" for="note-all-{{ r.slug }}">{{ t("quality-note-label") }}</label>
-    <input type="text" name="note" id="note-all-{{ r.slug }}" placeholder="{{ t('quality-note-label') }}" maxlength="200">
+    <label class="note-label" for="note-all-{{ r.slug }}">{{ t("quality-note-label") }}</label>
+    <input type="text" name="note" id="note-all-{{ r.slug }}" maxlength="200">
     {%- endif %}
     <button class="btn small" type="submit">{{ t("quality-restore-all", n=r.n) if show_dismissed else t("quality-dismiss-all", n=r.n) }}</button>
   </form>
@@ -68,8 +68,8 @@
         <input type="hidden" name="base_version" value="{{ f.version }}">
         <input type="hidden" name="back" value="{{ back }}#rule-{{ r.slug }}">
         {%- if not f.dismissed %}
-        <label class="sr-only" for="note-{{ loop.index }}-{{ r.slug }}">{{ t("quality-note-label") }}</label>
-        <input type="text" name="note" id="note-{{ loop.index }}-{{ r.slug }}" placeholder="{{ t('quality-note-label') }}" maxlength="200">
+        <label class="note-label" for="note-{{ loop.index }}-{{ r.slug }}">{{ t("quality-note-label") }}</label>
+        <input type="text" name="note" id="note-{{ loop.index }}-{{ r.slug }}" maxlength="200">
         {%- endif %}
         <button class="btn small" type="submit">{{ t("quality-restore") if f.dismissed else t("quality-dismiss") }}</button>
       </form>

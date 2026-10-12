@@ -16,8 +16,8 @@
 </div>
 
 <form method="get" action="/admin/{{ kind }}" class="filter-row">
-  <input type="text" name="q" value="{{ q }}" placeholder="{{ t('list-filter-placeholder') }}"
-         autocomplete="off">
+  <label>{{ t('list-filter-placeholder') }}
+    <input type="text" name="q" value="{{ q }}" autocomplete="off"></label>
   <button class="btn" type="submit">{{ t("list-filter") }}</button>
   {% if q %}<a class="btn" href="/admin/{{ kind }}">{{ t("list-clear") }}</a>{% endif %}
   <span class="spacer"></span>

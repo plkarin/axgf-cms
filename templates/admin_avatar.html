@@ -81,10 +81,12 @@
   <input type="hidden" name="base_version" value="{{ base_version }}">
   <input type="hidden" name="document_type" value="photo">
   <div class="field">
-    <input type="file" name="file" accept="image/*" required>
+    <label>{{ t('record-file-to-attach') }}
+      <input type="file" name="file" accept="image/*" required></label>
   </div>
   <div class="field">
-    <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}">
+    <label>{{ t("record-caption") }} <span class="small muted">{{ t("accounts-optional") }}</span>
+      <input type="text" name="caption"></label>
   </div>
   <div class="cta-row">
     <button class="btn" type="submit">{{ t("avatar-upload-button") }}</button>

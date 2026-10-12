@@ -1465,6 +1465,19 @@ fn field_views(
                     })
                 })
                 .collect();
+            // A date's qualifier lives inside the date's own box (B3): the
+            // value field carries its sibling `circa`, and the circa field is
+            // not drawn on its own. The form posts the same keys as before.
+            let qualifier = f.path.strip_suffix(".date.value").map(|stem| {
+                let path = format!("{stem}.date.circa");
+                let hint = fields_for(kind)
+                    .iter()
+                    .find(|g| g.path == path)
+                    .and_then(|g| g.hint)
+                    .map(t)
+                    .unwrap_or_default();
+                json!({"path": path, "on": get_path(entity, &path) == "true", "hint": hint})
+            });
             json!({
                 "path": f.path,
                 "label": t(f.label),
@@ -1474,6 +1487,8 @@ fn field_views(
                 "picks": f.picks,
                 "value": current,
                 "checked": current == "true",
+                "qualifier": qualifier,
+                "inside_date": f.path.ends_with(".date.circa"),
             })
         })
         .collect()

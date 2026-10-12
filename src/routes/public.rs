@@ -578,6 +578,71 @@ pub async fn tree_panel(
     }
 }
 
+/// A person who is not there: merged into someone, when the journal says so
+/// and the reader may see that someone (B7); otherwise simply not found. The
+/// survivor is named only through the reader's lens, so an old address never
+/// tells a visitor about a record they may not read.
+fn merged_or_absent(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &crate::access::Viewer,
+    id: &str,
+) -> Response {
+    let merged = state.journal().merged_into("person", id).and_then(|e| {
+        let into = e.merged_into.clone()?;
+        let name = state.read_as(viewer.ceiling(), |flat, lens| {
+            (lens.sees_person(&into))
+                .then(|| {
+                    flat.pointer(&format!("/persons/{into}"))
+                        .map(crate::view::person_display_name)
+                })
+                .flatten()
+        })?;
+        Some((into, name, e.at))
+    });
+    let Some((into, name, at)) = merged else {
+        return render::error_page_in(
+            chrome,
+            StatusCode::NOT_FOUND,
+            "error-no-such-person-title",
+            "error-no-such-person-detail",
+        );
+    };
+    let date = day_month(chrome, &at);
+    let detail = chrome.t_args(
+        "error-merged-detail",
+        &[("name", name.into()), ("date", date.into())],
+    );
+    let mut resp = render::page_with(
+        chrome,
+        "merged.html",
+        context! {
+            title => chrome.t("error-merged-title"),
+            detail,
+            into,
+            nav => "",
+        },
+    );
+    *resp.status_mut() = StatusCode::NOT_FOUND;
+    resp
+}
+
+/// "3 août 2026", from an RFC 3339 timestamp, in the reader's language: the
+/// record pages' own full-date pattern, which spells the month as the
+/// language needs it there.
+fn day_month(chrome: &render::Chrome, at: &str) -> String {
+    let num =
+        |r: std::ops::Range<usize>| at.get(r).and_then(|s| s.parse::<i64>().ok()).unwrap_or(1);
+    chrome.t_args(
+        "date-day-month-year",
+        &[
+            ("day", num(8..10).into()),
+            ("month", num(5..7).into()),
+            ("year", num(0..4).into()),
+        ],
+    )
+}
+
 /// One person's edit history, newest first, as the record page renders it.
 ///
 /// `ceiling` is the reader's authority, and it is here for one reason: a
@@ -849,12 +914,7 @@ pub async fn person(
             )
         }
         Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
-        Reading::Absent => render::error_page_in(
-            &chrome,
-            StatusCode::NOT_FOUND,
-            "error-no-such-person-title",
-            "error-no-such-person-detail",
-        ),
+        Reading::Absent => merged_or_absent(&state, &chrome, &viewer, &id),
     }
 }
 

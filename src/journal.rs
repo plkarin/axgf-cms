@@ -63,7 +63,7 @@ pub struct Entry {
     /// The username, or `emergency-token`. Never an id: the journal has to
     /// stay readable after an account is deleted.
     pub who: String,
-    /// `create`, `update`, `delete` or `upload`.
+    /// `create`, `update`, `delete`, `upload` or `merge`.
     pub action: String,
     /// `person`, `family`, …
     pub kind: String,
@@ -75,6 +75,11 @@ pub struct Entry {
     /// The version this edit produced.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version_num: Option<u64>,
+    /// For a `merge`: the record this one was merged into. What lets an old
+    /// address say where its person went (B7). Absent from every other
+    /// action, and from entries written before merges were recorded.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub merged_into: Option<String>,
     #[serde(default)]
     pub changes: Vec<Change>,
 }
@@ -272,6 +277,14 @@ impl Journal {
             .collect();
         all.reverse();
         all
+    }
+
+    /// Where a record went, if it was merged into another: the newest
+    /// `merge` entry for it.
+    pub fn merged_into(&self, kind: &str, id: &str) -> Option<Entry> {
+        self.for_entity(kind, id)
+            .into_iter()
+            .find(|e| e.action == "merge" && e.merged_into.is_some())
     }
 
     /// Who last changed this entity, and when.
@@ -480,7 +493,7 @@ fn restore(v: &str) -> Value {
 pub struct Record<'a> {
     /// The username, or `emergency-token`.
     pub who: &'a str,
-    /// `create`, `update`, `delete` or `upload`.
+    /// `create`, `update`, `delete`, `upload` or `merge`.
     pub action: &'a str,
     pub kind: &'a str,
     pub entity_id: &'a str,
@@ -507,6 +520,7 @@ pub fn entry_for(r: Record<'_>) -> Entry {
         entity_id: r.entity_id.to_string(),
         label: r.label,
         version_num: r.version_num,
+        merged_into: None,
         changes,
     }
 }
@@ -647,6 +661,7 @@ mod tests {
             entity_id: "p1".into(),
             label: None,
             version_num: Some(v),
+            merged_into: None,
             changes: vec![crate::diff::Change {
                 path: path.into(),
                 from: Some(from.into()),
@@ -700,6 +715,7 @@ mod tests {
             entity_id: "p1".into(),
             label: None,
             version_num: Some(2),
+            merged_into: None,
             changes: vec![crate::diff::Change {
                 path: "notes".into(),
                 from: None,
@@ -724,6 +740,7 @@ mod tests {
             entity_id: "p1".into(),
             label: None,
             version_num: Some(2),
+            merged_into: None,
             changes: vec![crate::diff::Change {
                 path: "identity.is_living".into(),
                 from: Some("true".into()),
@@ -782,6 +799,7 @@ mod tests {
         after["morphology"] = json!({"height": [{"value": 193}], "weight": [{"value": 105}]});
         let e = Entry {
             version_num: Some(2),
+            merged_into: None,
             ..entry_for(Record {
                 who: "anna",
                 action: "update",

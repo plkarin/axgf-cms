@@ -908,21 +908,50 @@ select {
 }
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
 
-/* ---------- notices ---------- */
-
+/* ---------- notices (Study 06, B7) ----------
+   Each kind has its own SHAPE, so none of it needs colour to read: a ring
+   for information, a disc for something done, a diamond for caution, a
+   square for an error. The shape sits in a gutter of its own beside the
+   text. No tinted ground, except a barely-there one under an error. A
+   message says what happened, then what to do next; its actions are
+   buttons underneath. */
 .notice {
+  position: relative;
   border: 1px solid var(--border-hairline);
-  border-inline-start: 3px solid var(--text-tertiary);
-  border-radius: var(--radius);
-  padding: 0.8rem 1rem;
+  border-radius: 2px;
+  /* The shape's gutter: the content keeps its own flow beside it. */
+  padding: 0.8rem 1rem 0.8rem 2.4rem;
+  padding-inline: 2.4rem 1rem;
   margin: 1rem 0;
-  background: var(--surface-raised);
+  background: transparent;
+  box-shadow: none;
 }
-.notice.warn { border-inline-start-color: var(--conf-medium); }
-.notice.error { border-inline-start-color: var(--danger); }
-.notice.ok { border-inline-start-color: var(--conf-certain); }
+.notice::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: calc(0.8rem + 0.45em);
+  inline-size: 10px;
+  block-size: 10px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: 50%;
+}
+.notice.ok::before { border: 0; background: var(--conf-certain); }
+.notice.warn::before, .notice-defect::before {
+  border: 0;
+  background: var(--warning);
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 0;
+  transform: rotate(45deg);
+  inset-inline-start: calc(1rem + 1px);
+}
+.notice.error::before { border: 0; background: var(--danger); border-radius: 0; }
+.notice.error { background: color-mix(in srgb, var(--danger) 5%, transparent); }
 .notice p:first-child { margin-top: 0; }
 .notice p:last-child { margin-bottom: 0; }
+.notice .notice-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
 
 /* ---------- tables ---------- */
 
@@ -2464,7 +2493,6 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   border-radius: 0;
   padding: 0 0 0 1rem;
 }
-.notice-defect { border-inline-start-color: var(--conf-medium); }
 /* The action sits under the sentence, inside the notice that explains it. */
 .notice-defect p { margin: 0; }
 .notice-defect .inline-form { margin-top: 0.6rem; }
@@ -2750,10 +2778,6 @@ a.tcard:hover {
   z-index: 3;
 }
 
-.notice {
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
-}
 
 /* Chips and section controls pick up the same tempo as everything else. */
 .chip, .src-chip {

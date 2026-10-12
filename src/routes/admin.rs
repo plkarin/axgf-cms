@@ -1325,6 +1325,51 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
     )
 }
 
+/// Which removed person went into which survivor, after a deduplication.
+///
+/// The library keeps one of a group that shares a name and both years and
+/// removes the rest; the survivor of a removed person is the one remaining
+/// person with the same name (folded) and the same two years. Where that is
+/// not exactly one, nothing is recorded: better no trail than a wrong one.
+pub(crate) fn merge_trail(before: &Value, after: &Value) -> Vec<(String, String, Option<String>)> {
+    fn year(p: &Value, event: &str) -> Option<String> {
+        let v = p.pointer(&format!("/{event}/date/value"))?.as_str()?;
+        let y: String = v.chars().take_while(|c| c.is_ascii_digit()).collect();
+        (y.len() == 4).then_some(y)
+    }
+    fn key(p: &Value) -> Option<(String, String, String)> {
+        let name = p.pointer("/identity/name/display")?.as_str()?;
+        Some((
+            crate::text::fold(name),
+            year(p, "birth")?,
+            year(p, "death")?,
+        ))
+    }
+    let (Some(before), Some(after)) = (before.as_object(), after.as_object()) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    for (id, p) in before {
+        if after.contains_key(id) {
+            continue;
+        }
+        let Some(k) = key(p) else { continue };
+        let keepers: Vec<&String> = after
+            .iter()
+            .filter(|(_, q)| key(q).as_ref() == Some(&k))
+            .map(|(kid, _)| kid)
+            .collect();
+        if let [keeper] = keepers.as_slice() {
+            let label = p
+                .pointer("/identity/name/display")
+                .and_then(Value::as_str)
+                .map(String::from);
+            out.push((id.clone(), (*keeper).clone(), label));
+        }
+    }
+    out
+}
+
 /// `POST /admin/dedup`
 pub async fn dedup(
     State(state): State<Shared>,
@@ -1349,10 +1394,33 @@ pub async fn dedup(
     // questions and only the second one can still be answered afterwards.
     let present_before = count_families(&state, &asked);
 
+    let before = state.read(|flat| flat.get("persons").cloned().unwrap_or(Value::Null));
     let out = match state.mutate(axgf_rs::deduplicate) {
         Ok(o) => o,
         Err(e) => return io_error(&chrome, &e),
     };
+    // The library merges people and says how many, not which into which. An
+    // old address should still be able to say where its person went (B7), so
+    // the trail is worked out here and kept in the operator's journal.
+    if out.applied {
+        let after = state.read(|flat| flat.get("persons").cloned().unwrap_or(Value::Null));
+        for (victim, keeper, label) in merge_trail(&before, &after) {
+            let entry = crate::journal::Entry {
+                merged_into: Some(keeper),
+                ..crate::journal::entry_for(crate::journal::Record {
+                    who: _viewer.name(),
+                    action: "merge",
+                    kind: "person",
+                    entity_id: &victim,
+                    label,
+                    version_num: None,
+                    before: None,
+                    after: None,
+                })
+            };
+            state.journal_mutation(&entry);
+        }
+    }
 
     let mut summary = summary_line(
         &chrome,

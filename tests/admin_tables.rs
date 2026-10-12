@@ -75,6 +75,15 @@ async fn a_listing_selects_rows_and_draws_filiation_in_the_rivers_lines() {
     assert!(html.contains("data-bulk-all"));
     assert!(html.contains(r#"<tr class="bulk-bar" data-bulk-bar>"#));
     assert!(html.contains(r#"value="export""#) && html.contains(r#"value="confirm""#));
+    // Exactly those two. No merge, not even a disabled one: the library has
+    // no record merge, and a control that cannot work is not shipped.
+    let bar = &html[html.find("data-bulk-bar").unwrap()..];
+    let bar = &bar[..bar.find("</tr>").unwrap()];
+    assert_eq!(bar.matches("<button").count(), 2, "{bar}");
+    assert!(
+        !bar.contains("disabled") && !bar.to_lowercase().contains("merge"),
+        "{bar}"
+    );
     // 0.95, 0.6, 0.3: attested, inferred, speculative — solid, dashed, dotted.
     let cell = &html[html
         .find(r#"<td class="filiation">"#)

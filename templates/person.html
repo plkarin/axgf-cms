@@ -61,17 +61,23 @@
       {%- endif %}
     </p>
 
+    {#- What is recorded about them, joined by middots: whatever is absent
+        leaves no separator behind. Visibility is an editing concern, so it is
+        shown to the people who can act on it and to nobody else. -#}
+    {% set presumed = t("record-presumed-deceased") %}
+    {% set facts = [p.gender] if p.gender else [] %}
+    {% if p.is_living %}{% set facts = facts + [t("record-living-yes")] %}
+    {% elif p.living_presumed %}{% set facts = facts + [presumed] %}
+    {% elif p.death.present %}{% set facts = facts + [t("record-deceased")] %}{% endif %}
+    {% if p.gender_note %}{% set facts = facts + [p.gender_note] %}{% endif %}
+    {% if p.visibility and may_write %}{% set facts = facts + [t("person-visibility-inline") ~ " " ~ p.visibility] %}{% endif %}
+    {% if facts %}
     <p class="lede small">
-      {%- if p.gender %}{{ p.gender }}{% endif -%}
-      {%- if p.is_living %} · {{ t("record-living-yes") }}
-      {%- elif p.living_presumed %} · <span class="presumed"
-          title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
-      {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
-      {%- if p.gender_note %} · {{ p.gender_note }}{% endif -%}
-      {# Visibility is an editing concern, so it is shown to the people who can
-         act on it and to nobody else. #}
-      {%- if p.visibility and may_write %} · {{ t("person-visibility-inline") }} {{ p.visibility }}{% endif -%}
+      {%- for f in facts %}{% if not loop.first %} · {% endif %}
+      {%- if f == presumed and p.living_presumed %}<span class="presumed" title="{{ t('record-presumed-why', years=presume_after) }}">{{ f }}</span>
+      {%- else %}{{ f }}{% endif %}{% endfor -%}
     </p>
+    {% endif %}
 
     {# Where they were, and how the record sits in the family. Each part is
        omitted when the bundle does not state it. #}

@@ -15,12 +15,11 @@
       {# Gender and living status only. Visibility is a labelled chip in the
          Identity section below, and saying it twice in a narrow column is how
          a header turns into a run-on string. #}
-      <p class="lede small">
-        {%- if p.gender %}{{ p.gender }}{% endif -%}
-        {%- if p.living_presumed %} · {{ t("record-presumed-deceased") }}
-        {%- elif p.is_living %} · {{ t("record-living-yes") }}
-        {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
-      </p>
+      {% set facts = [p.gender] if p.gender else [] %}
+      {% if p.living_presumed %}{% set facts = facts + [t("record-presumed-deceased")] %}
+      {% elif p.is_living %}{% set facts = facts + [t("record-living-yes")] %}
+      {% elif p.death.present %}{% set facts = facts + [t("record-deceased")] %}{% endif %}
+      {% if facts %}<p class="lede small">{{ facts | join(" · ") }}</p>{% endif %}
     </div>
     <div class="panel-actions">
       {#- One glance at a person, and the way to the whole record. In the

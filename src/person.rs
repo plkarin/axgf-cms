@@ -437,17 +437,12 @@ pub fn build_in(
         .and_then(|i| i.get("gender"))
         .and_then(|g| g.get("value"))
         .and_then(Value::as_str)
-        .map(|g| {
-            // The specification's enum, said out loud in the reader's
-            // language. A value this build does not know falls through to
-            // "unrecorded" rather than being printed raw, because a bare "X"
-            // on a record reads as a defect.
-            let key = match g {
-                "M" | "F" | "NB" => format!("gender-{g}"),
-                _ => "gender-unrecorded".to_string(),
-            };
-            crate::i18n::translate(lang, &key, None)
-        });
+        // The specification's enum, said out loud in the reader's language.
+        // "U" is the record saying it does not know, and read mode draws
+        // nothing for that; a value this build does not know is not printed
+        // raw either, because a bare "X" on a record reads as a defect.
+        .filter(|g| matches!(*g, "M" | "F" | "NB"))
+        .map(|g| crate::i18n::translate(lang, &format!("gender-{g}"), None));
     let gender_note = identity
         .and_then(|i| i.get("gender"))
         .and_then(|g| g.get("note"))

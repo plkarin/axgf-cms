@@ -15,7 +15,12 @@
 
 {% if not occupations %}<p class="muted">{{ t("occupations-none") }}</p>{% endif %}
 
+{#- Each record is one row that opens to its form (the minimalism pass):
+    what is recorded first, the editing on demand. -#}
+<div class="record-list" data-content>
 {% for o in occupations %}
+<details class="record-edit">
+<summary><bdi>{{ o.title }}</bdi></summary>
 <form method="post" action="/admin/person/{{ id }}/occupations/{{ o.id }}" class="editor">
   <input type="hidden" name="base_version" value="{{ o.version }}">
   <fieldset class="ed-group">
@@ -29,8 +34,12 @@
 {#- Outside the form above, not inside it: a form nested in a form is
     dropped by the parser, and the delete button became a second save button. -#}
 {{ m.delete_block(t, "occupation", o.id, t("occupations-remove"), o.version) }}
+</details>
 {% endfor %}
+</div>
 
+<details class="add-record">
+<summary>{{ t("occupations-new") }}</summary>
 <form method="post" action="/admin/person/{{ id }}/occupations" class="editor">
   <fieldset class="ed-group">
     <legend>{{ t("occupations-new") }}</legend>
@@ -40,6 +49,7 @@
     </div>
   </fieldset>
 </form>
+</details>
 
 <p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
 {% endblock %}

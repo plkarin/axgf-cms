@@ -37,8 +37,23 @@ macro_rules! writer {
 }
 
 /// `GET /admin/person/:id/profile` — the first group.
-pub async fn edit_first(Path(id): Path<String>) -> Response {
-    Redirect::to(&format!("/admin/person/{id}/profile/identity")).into_response()
+/// `?group=` on the profile editor: its group select, sent without scripts.
+#[derive(serde::Deserialize, Default)]
+pub struct GroupQuery {
+    #[serde(default)]
+    group: Option<String>,
+}
+
+pub async fn edit_first(
+    Path(id): Path<String>,
+    axum::extract::Query(q): axum::extract::Query<GroupQuery>,
+) -> Response {
+    let group = q
+        .group
+        .as_deref()
+        .filter(|g| crate::profile::group(g).is_some())
+        .unwrap_or("identity");
+    Redirect::to(&format!("/admin/person/{id}/profile/{group}")).into_response()
 }
 
 /// `GET /admin/person/:id/profile/:group`

@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
+{#- The optional fields, each drawn once: at rest when it holds something,
+    behind its group's disclosure when it does not (the minimalism pass). -#}
+{% macro f_latin(t, name) %}<label>{{ t("identity-display-latin") }}
+        <input type="text" name="name.display_latin" value="{{ name.display_latin }}"></label>{% endmacro %}
+{% macro f_culture(t, name) %}<label>{{ t("identity-culture") }}
+        <input type="text" name="name.culture" value="{{ name.culture }}" size="8"></label>{% endmacro %}
+{% macro f_direction(t, name, directions) %}<label>{{ t("identity-direction") }}
+        <select name="name.direction">
+          {% for d in directions %}
+          <option value="{{ d }}" {{ "selected" if d == name.direction }}>
+            {{- t("identity-direction-" ~ d) if d else t("admin-not-set") -}}</option>
+          {% endfor %}
+        </select></label>{% endmacro %}
+{% macro f_gender_note(t, gender_note) %}<label>{{ t("record-note") }}
+        <input type="text" name="gender.note" value="{{ gender_note }}"></label>{% endmacro %}
+{% macro f_visibility(t, visibility, visibilities) %}<label>{{ t("record-visibility") }}
+        <select name="visibility">
+          {% for v in visibilities %}
+          <option value="{{ v }}" {{ "selected" if v == visibility }}>
+            {{- t("visibility-" ~ v) if v else t("admin-not-set") -}}</option>
+          {% endfor %}
+        </select></label>{% endmacro %}
+{% macro f_living(t, is_living) %}<label class="inline">
+        <input type="checkbox" name="is_living" value="on" {{ "checked" if is_living }}>
+        {{ t("record-living") }}</label>{% endmacro %}
 {% block title %}{{ person_name }} — {{ t("identity-editor-title") }}{% endblock %}
 
 {# The identity editor.
@@ -27,18 +52,21 @@
     <div class="ed-grid">
       <label>{{ t("identity-display") }}
         <input type="text" name="name.display" value="{{ name.display }}" required></label>
-      <label>{{ t("identity-display-latin") }}
-        <input type="text" name="name.display_latin" value="{{ name.display_latin }}"></label>
-      <label>{{ t("identity-culture") }}
-        <input type="text" name="name.culture" value="{{ name.culture }}" size="8"></label>
-      <label>{{ t("identity-direction") }}
-        <select name="name.direction">
-          {% for d in directions %}
-          <option value="{{ d }}" {{ "selected" if d == name.direction }}>
-            {{- t("identity-direction-" ~ d) if d else t("admin-not-set") -}}</option>
-          {% endfor %}
-        </select></label>
+      {% if name.display_latin %}{{ f_latin(t, name) }}{% endif %}
+      {% if name.culture %}{{ f_culture(t, name) }}{% endif %}
+      {% if name.direction %}{{ f_direction(t, name, directions) }}{% endif %}
     </div>
+    {% set n_empty = [not name.display_latin, not name.culture, not name.direction] | select | list | length %}
+    {% if n_empty %}
+    <details class="more-fields">
+      <summary>{{ t("form-more-fields", n=n_empty) }}</summary>
+      <div class="ed-grid">
+        {% if not name.display_latin %}{{ f_latin(t, name) }}{% endif %}
+        {% if not name.culture %}{{ f_culture(t, name) }}{% endif %}
+        {% if not name.direction %}{{ f_direction(t, name, directions) }}{% endif %}
+      </div>
+    </details>
+    {% endif %}
 
     {# Components: which part of the name is the given name, which the family
        name. `order` is the row's position, so a form that renders them in
@@ -49,7 +77,7 @@
       <thead><tr>
         <th>{{ t("identity-part") }}</th><th>{{ t("identity-value") }}</th>
       </tr></thead>
-      <tbody>
+      <tbody data-content>
         {% for c in components %}
         <tr>
           <td data-label="{{ t('identity-part') }}">
@@ -83,10 +111,15 @@
   <fieldset class="ed-group">
     <legend>{{ t("identity-other-names") }}</legend>
     <p class="hint">{{ t("identity-other-help") }}</p>
+    <div class="record-list" data-content>
     {% for a in alts %}
     {{ m.alt_name_row(t, loop.index0, a, name_types, directions, sources) }}
     {% endfor %}
-    {{ m.alt_name_row(t, alts | length, none, name_types, directions, sources) }}
+    </div>
+    <details class="add-record">
+      <summary>{{ t("identity-other-names") }}</summary>
+      {{ m.alt_name_row(t, alts | length, none, name_types, directions, sources) }}
+    </details>
   </fieldset>
 
   <fieldset class="ed-group">
@@ -98,19 +131,21 @@
           <option value="{{ g }}" {{ "selected" if g == gender_value }}>{{ t("gender-" ~ g) }}</option>
           {% endfor %}
         </select></label>
-      <label>{{ t("record-note") }}
-        <input type="text" name="gender.note" value="{{ gender_note }}"></label>
-      <label>{{ t("record-visibility") }}
-        <select name="visibility">
-          {% for v in visibilities %}
-          <option value="{{ v }}" {{ "selected" if v == visibility }}>
-            {{- t("visibility-" ~ v) if v else t("admin-not-set") -}}</option>
-          {% endfor %}
-        </select></label>
-      <label class="inline">
-        <input type="checkbox" name="is_living" value="on" {{ "checked" if is_living }}>
-        {{ t("record-living") }}</label>
+      {% if gender_note %}{{ f_gender_note(t, gender_note) }}{% endif %}
+      {% if visibility %}{{ f_visibility(t, visibility, visibilities) }}{% endif %}
+      {% if is_living %}{{ f_living(t, is_living) }}{% endif %}
     </div>
+    {% set n_about = [not gender_note, not visibility, not is_living] | select | list | length %}
+    {% if n_about %}
+    <details class="more-fields">
+      <summary>{{ t("form-more-fields", n=n_about) }}</summary>
+      <div class="ed-grid">
+        {% if not gender_note %}{{ f_gender_note(t, gender_note) }}{% endif %}
+        {% if not visibility %}{{ f_visibility(t, visibility, visibilities) }}{% endif %}
+        {% if not is_living %}{{ f_living(t, is_living) }}{% endif %}
+      </div>
+    </details>
+    {% endif %}
     {# The plausibility rule is a display rule and this is the recorded flag it
        does not touch, so an editor has to be told which one they are setting. #}
     <p class="hint">{{ t("identity-living-help") }}</p>

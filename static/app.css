@@ -3498,3 +3498,17 @@ a.tcard:hover {
 .menu-disclosure > summary { cursor: pointer; }
 .menu-disclosure > summary::marker { color: var(--text-tertiary); }
 .menu-disclosure[open] > .menu-panel { position: static; margin-top: 0.4rem; }
+
+/* Edit mode's record rows (the minimalism pass): each record is one line
+   that opens to its form; adding is one disclosure. */
+.record-list { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+.record-edit, .add-record, .more-fields, .raw-fieldset, .danger-zone {
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  padding: 0.6rem 0.9rem;
+}
+.record-edit > summary, .add-record > summary, .more-fields > summary,
+.raw-fieldset > summary, .danger-zone > summary { cursor: pointer; font-weight: var(--weight-medium); }
+.record-edit[open] > summary, .add-record[open] > summary, .more-fields[open] > summary,
+.raw-fieldset[open] > summary, .danger-zone[open] > summary { margin-bottom: 0.6rem; }
+.danger-zone > summary { color: var(--danger); }

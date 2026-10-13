@@ -164,7 +164,7 @@
           {%- if u.spouse %}{{ m.person_link(u.spouse) }}{% endif -%}
         </strong>
         {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
-        <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
+        {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
         {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
       </div>
       <div class="small union-when">
@@ -243,7 +243,7 @@
       <div class="tl-label">
         <strong>{{ o.title }}</strong>
         {% if o.position %}<span class="chip small">{{ o.position }}</span>{% endif %}
-        <span class="small muted">{{ o.span }}</span>
+        {% if o.span %}<span class="small muted">{{ o.span }}</span>{% endif %}
         {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
         {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
       </div>
@@ -254,7 +254,7 @@
                  logical property rather than `left` is what makes that happen
                  without a second stylesheet or a second set of numbers. -#}
              style="inset-inline-start:{{ o.bar_left }}%;width:{{ o.bar_width }}%"
-             title="{{ o.title }}, {{ o.span }}{% if o.confidence %} — {{ t('confidence-' ~ o.confidence.band, percent=o.confidence.percent) }}{% endif %}">
+             title="{{ o.title }}{% if o.span %}, {{ o.span }}{% endif %}{% if o.confidence %} — {{ t('confidence-' ~ o.confidence.band, percent=o.confidence.percent) }}{% endif %}">
           {%- if o.open_start %}<span class="tl-open tl-open-l" title="{{ t('record-start-not-recorded') }}"></span>{% endif -%}
           {%- if o.open_end %}<span class="tl-open tl-open-r" title="{{ t('record-end-not-recorded') }}"></span>{% endif -%}
         </div>
@@ -277,7 +277,7 @@
       <strong>{{ o.title }}</strong>
       {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
       {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
-      <span class="small muted">{{ o.span }}</span>
+      {% if o.span %}<span class="small muted">{{ o.span }}</span>{% endif %}
       {% if o.confidence %}{{ m.conf_bar(o.confidence) }}{% endif %}
       {% if o.source %}{{ m.source_chip(o.source) }}{% endif %}
     </li>

@@ -1585,7 +1585,9 @@ impl Ctx<'_> {
                     (Some(a), Some(b)) => format!("{a}–{b}"),
                     (Some(a), None) => self.tr("record-period-from", &[("date", a.into())]),
                     (None, Some(b)) => self.tr("record-period-until", &[("date", b.into())]),
-                    (None, None) => self.tr("record-dates-unrecorded", &[]),
+                    // No dates, no words for their absence (read mode draws
+                    // only what is recorded).
+                    (None, None) => String::new(),
                 };
 
                 OccupationView {
@@ -2004,21 +2006,24 @@ fn lifespan_of(person: &Value, lang: &str) -> Option<String> {
 /// vocabulary falls back to the raw value with its underscores opened, which
 /// is what it did before for a type it did not know.
 fn union_type(union: &Value, lang: &str) -> Option<String> {
-    let t = union.get("type")?.as_str()?;
+    // "unknown" is the record saying it does not know: nothing to draw.
+    let t = union.get("type")?.as_str().filter(|t| *t != "unknown")?;
     Some(crate::i18n::vocab(lang, "union-type", t))
 }
 
 /// How a union stands: still running, or ended, and how.
 ///
 /// `union.status` is preferred when present; otherwise an `end` block with a
-/// reason says the same thing. A union with neither is reported as unrecorded
-/// rather than assumed to be ongoing — the record does not say.
+/// reason says the same thing. A union with neither has no status — empty,
+/// so nothing is drawn — rather than one assumed to be ongoing: the record
+/// does not say.
 fn union_status(union: Option<&Value>, lang: &str) -> String {
-    let unknown = || crate::i18n::translate(lang, "union-status-unknown", None);
+    let unknown = String::new;
     let Some(u) = union else {
         return unknown();
     };
-    if let Some(s) = str_field(u, "status") {
+    // "unknown" is the record saying it does not know, like no status.
+    if let Some(s) = str_field(u, "status").filter(|s| s != "unknown") {
         return crate::i18n::vocab(lang, "union-status", &s);
     }
     let end = u.get("end").filter(|e| !e.is_null());
@@ -2745,7 +2750,22 @@ mod tests {
             !v.has_timeline,
             "with no dates anywhere there is no scale to draw"
         );
-        assert_eq!(v.occupations[0].span, "dates unrecorded");
+        // And no words for the missing dates either: read mode draws only
+        // what is recorded.
+        assert_eq!(v.occupations[0].span, "");
+    }
+
+    #[test]
+    fn a_union_the_record_calls_unknown_draws_no_chip() {
+        // GEDCOM imports write "unknown" for a type or a status nobody knew:
+        // the record saying it does not know, which read mode does not draw.
+        let u = json!({"type": "unknown", "status": "unknown"});
+        assert_eq!(union_type(&u, "en"), None);
+        assert_eq!(union_status(Some(&u), "en"), "");
+        assert_eq!(union_status(None, "en"), "");
+        let u = json!({"type": "marriage", "status": "ongoing"});
+        assert!(union_type(&u, "en").is_some());
+        assert!(!union_status(Some(&u), "en").is_empty());
     }
 
     #[test]

@@ -28,6 +28,8 @@ fn placeholders() -> Vec<String> {
         "life-nothing-recorded",
         "record-no-evidence",
         "profile-empty",
+        "record-dates-unrecorded",
+        "union-status-unknown",
     ]
     .iter()
     .map(|k| axgf_cms::i18n::translate("en", k, None))

@@ -240,3 +240,19 @@ fn rows_are_ruled_by_hairlines_with_no_zebra_and_no_coloured_edge() {
     let rule = &rule[..rule.find('}').unwrap()];
     assert!(!rule.contains("border"), "and gains no edge: {rule}");
 }
+
+#[tokio::test]
+async fn the_dashboard_draws_no_tile_for_a_kind_with_none() {
+    // Six people and one family; no event, place or source.
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let html = body_string(get_with_cookie(&app, "/admin", &cookie).await).await;
+    assert!(html.contains(r#"<a class="stat" href="/admin/person""#));
+    assert!(html.contains(r#"<a class="stat" href="/admin/family""#));
+    for none in ["event", "place", "source"] {
+        assert!(
+            !html.contains(&format!(r#"class="stat" href="/admin/{none}""#)),
+            "no 0 tile for {none}"
+        );
+    }
+}

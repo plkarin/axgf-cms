@@ -205,7 +205,9 @@ async fn the_travel_endpoint_returns_layout_and_svg() {
 async fn an_empty_archive_lands_on_the_overview() {
     let (app, _d) = app_with_empty_bundle("river-empty");
     let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
-    assert!(body.contains("What the family has recorded so far"));
+    // The overview, saying so — and no heading over a row of zeros.
+    assert!(body.contains("Nothing recorded yet."));
+    assert!(!body.contains("What the family has recorded so far"));
 }
 
 #[tokio::test]

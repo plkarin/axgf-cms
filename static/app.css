@@ -816,7 +816,6 @@ h4 {
   line-height: 1.1;
 }
 .stat .k { font-size: var(--type-small); color: var(--text-tertiary); text-transform: capitalize; }
-.stat.zero .n { color: var(--text-tertiary); font-weight: var(--weight-normal); }
 
 .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0; }
 

@@ -32,10 +32,12 @@ async fn home_states_what_the_family_has_recorded_not_what_the_product_does() {
         );
     }
 
-    // What the family has is still stated, and so is the way in.
+    // What the family has is still stated — here, that it has nothing yet:
+    // no heading over a row of zeros, and not one "0" tile.
+    assert!(body.contains("Nothing recorded yet."));
     assert!(
-        body.contains("What the family has recorded so far"),
-        "the counts keep their heading"
+        !body.contains("What the family has recorded so far") && !body.contains(r#"class="stat"#),
+        "no counts of nothing"
     );
     assert!(
         body.contains("/tree"),

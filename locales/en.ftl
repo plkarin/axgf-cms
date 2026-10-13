@@ -27,6 +27,7 @@ footer-open-format-link = About the format
 ## Preferences
 
 settings-title = Settings
+edit-mode-label = Editing — what you save changes the family's records
 display-menu-label = Language and display
 display-settings = Theme and display…
 settings-tabs-label = Settings sections

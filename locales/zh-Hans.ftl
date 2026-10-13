@@ -36,6 +36,7 @@ footer-open-format-link = 关于该格式
 ## 偏好设置
 
 settings-title = 设置
+edit-mode-label = 编辑模式 — 保存的内容会更改家族记录
 display-menu-label = 语言和显示
 display-settings = 主题和显示…
 settings-tabs-label = 设置的各节

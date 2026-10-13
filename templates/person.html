@@ -39,19 +39,22 @@
     {% endif %}
 
     <p class="person-vitals">
+      {#- Only what is recorded (the minimalism pass): a missing date is not
+          drawn as "Date unknown"; with neither date, the line says the
+          rest, or nothing. -#}
+      {%- set born = p.birth.present and p.birth.date and p.birth.date.kind != "unknown" %}
+      {%- set died = p.death.present and p.death.date and p.death.date.kind != "unknown" %}
+      {%- if born or died or p.is_living or p.living_presumed %}
       <span class="pv-dates">
-        {{- m.date(p.birth.date) if p.birth.present else t("date-unknown") -}}
-        <span class="sep"> – </span>
+        {{- m.date(p.birth.date) if born -}}
+        {%- if born and (died or p.is_living or p.living_presumed) %}<span class="sep"> – </span>{% elif not born %}<span class="sep">– </span>{% endif -%}
         {%- if p.is_living %}{{ t("record-living-yes") }}
-        {%- elif p.death.present %}{{ m.date(p.death.date) }}
-        {#- An inference, and marked as one. The bare "Date unknown" that used
-            to sit here reads as a gap somebody has not filled in, which is a
-            different statement from "the record says living and the record
-            cannot be right". #}
+        {%- elif died %}{{ m.date(p.death.date) }}
         {%- elif p.living_presumed %}<span class="presumed"
             title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
-        {%- else %}{{ t("date-unknown") }}{% endif -%}
+        {%- endif -%}
       </span>
+      {%- endif %}
       {%- if p.header.age is not none %}
       <span class="sep"> · </span>{% if p.header.age_is_current %}{{ t("person-age-now", n=p.header.age) }}
       {%- else %}{{ t("person-age-at-death", n=p.header.age) }}{% endif %}

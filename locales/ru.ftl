@@ -42,6 +42,7 @@ footer-open-format-link = О формате
 ## Настройки
 
 settings-title = Настройки
+edit-mode-label = Редактирование — сохранённое меняет карточки семьи
 display-menu-label = Язык и вид
 display-settings = Тема и вид…
 settings-tabs-label = Разделы настроек

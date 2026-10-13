@@ -28,7 +28,9 @@
      of that one value, so a style changes one number and the page keeps its
      beat rather than drifting out of it a rule at a time. */
   --step: 0.55rem;
-  --text: 16px;
+  /* rem, not px (the minimalism pass): 1rem is the reader’s own setting,
+     16px unless they changed it, and a px value here overrode it. */
+  --text: 1rem;
   --leading: 1.6;
   --measure: 74ch;
   --face: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -106,11 +108,11 @@
   /* Study 06's serif: the wordmark, and the names the river writes. */
   --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* The river's type, at the sizes its design fixes in pixels. */
-  --type-rv-eyebrow: 10px;
-  --type-rv-data: 10.5px;
-  --type-rv-seg: 11.5px;
-  --type-rv-chip: 12px;
-  --type-rv-control: 12.5px;
+  --type-rv-eyebrow: 0.625rem;
+  --type-rv-data: 0.65625rem;
+  --type-rv-seg: 0.71875rem;
+  --type-rv-chip: 0.75rem;
+  --type-rv-control: 0.78125rem;
 }
 
 /* The river's palette and the seven themes are in static/css/tokens.css. */
@@ -311,7 +313,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
    the scroll between the thing just read and the thing being compared. */
 [data-style="compact"] {
   --step: 0.4rem;
-  --text: 15px;
+  --text: 0.9375rem;
   --leading: 1.5;
   --measure: 88ch;
   --face: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -343,7 +345,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
    page will not keep. */
 [data-style="paper"] {
   --step: 0.7rem;
-  --text: 17px;
+  --text: 1.0625rem;
   --leading: 1.72;
   --measure: 66ch;
   --face: Iowan Old Style, "Palatino Linotype", Palatino, Georgia,
@@ -825,7 +827,7 @@ input[type="search"], input[type="number"], input[type="url"],
 input[type="file"], select, textarea {
   box-sizing: border-box;
   inline-size: 100%;
-  block-size: 36px;
+  min-block-size: 36px;
   padding: 0 10px;
   border: 1px solid var(--border-strong);
   border-radius: 2px;
@@ -841,7 +843,7 @@ input[type="file"], select, textarea {
 }
 input[type="file"] { padding-block: 6px; }
 textarea {
-  block-size: auto;
+  min-block-size: auto;
   padding: 8px 10px;
   font-family: var(--mono);
   line-height: 1.5;
@@ -865,7 +867,7 @@ textarea {
   justify-content: center;
   gap: 0.4rem;
   box-sizing: border-box;
-  block-size: 36px;
+  min-block-size: 36px;
   padding: 0 14px;
   border: 1px solid var(--border-strong);
   border-radius: 2px;
@@ -882,7 +884,7 @@ textarea {
               border-color var(--tempo) var(--ease),
               color var(--tempo) var(--ease);
 }
-.btn.small { block-size: 28px; padding: 0 10px; font-size: var(--type-small); }
+.btn.small { min-block-size: 28px; padding: 0 10px; font-size: var(--type-small); }
 .btn:hover { background: var(--surface-hover); }
 /* A secondary that is the current one of a set — a range, a mode, the
    record type being listed — is pressed: the hover surface and full ink,
@@ -3512,3 +3514,29 @@ a.tcard:hover {
 .record-edit[open] > summary, .add-record[open] > summary, .more-fields[open] > summary,
 .raw-fieldset[open] > summary, .danger-zone[open] > summary { margin-bottom: 0.6rem; }
 .danger-zone > summary { color: var(--danger); }
+
+/* Edit mode (the minimalism pass): a band under the masthead that says so,
+   with the accent's rule under it, so nobody mistakes a form for the record.
+   Not a tinted page: a 6% tint took tertiary text to 4.47:1 and control
+   edges to 2.99:1 on the dark ground — under WCAG — so the band carries it. */
+.edit-band {
+  padding: 0.45rem 1.25rem;
+  background: var(--surface-raised);
+  border-block-end: 2px solid var(--accent);
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+/* A finger, not a pointer (the minimalism pass, ADR 0002 §5): on a touch
+   screen every button and field reaches 44 CSS px, the target WCAG 2.5.5
+   asks for. The river's people are reached by the nearest-person tap. */
+@media (pointer: coarse) {
+  .btn, .btn.small,
+  input[type="text"], input[type="password"], input[type="email"],
+  input[type="search"], input[type="number"], input[type="url"],
+  select, summary { min-block-size: 44px; }
+  input[type="checkbox"], input[type="radio"] { inline-size: 24px; block-size: 24px; }
+}

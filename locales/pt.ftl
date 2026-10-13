@@ -38,6 +38,7 @@ footer-open-format-link = Sobre o formato
 ## Preferências
 
 settings-title = Definições
+edit-mode-label = Edição: o que guardar altera as fichas da família
 display-menu-label = Idioma e apresentação
 display-settings = Tema e apresentação…
 settings-tabs-label = Secções das definições

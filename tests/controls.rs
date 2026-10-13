@@ -67,9 +67,11 @@ fn button_rules() -> Vec<(String, String)> {
 #[test]
 fn a_button_is_36px_or_28px_and_radius_2_nowhere_else() {
     let base = rule(".btn");
-    assert_eq!(decl(&base, "block-size"), Some("36px"));
+    // A minimum, so text at the reader's own size grows the control rather
+    // than spilling out of it (rem type, ADR 0002 §4).
+    assert_eq!(decl(&base, "min-block-size"), Some("36px"));
     assert_eq!(decl(&base, "border-radius"), Some("2px"));
-    assert_eq!(decl(&rule(".btn.small"), "block-size"), Some("28px"));
+    assert_eq!(decl(&rule(".btn.small"), "min-block-size"), Some("28px"));
     for (sel, body) in rules() {
         if !sel.contains(".btn") {
             continue;
@@ -85,7 +87,11 @@ fn a_button_is_36px_or_28px_and_radius_2_nowhere_else() {
                 assert!(
                     matches!(
                         (prop, v),
-                        ("border-radius", "2px") | ("block-size", "36px" | "28px" | "32px")
+                        ("border-radius", "2px")
+                            | (
+                                "block-size" | "min-block-size",
+                                "36px" | "28px" | "32px" | "44px"
+                            )
                     ),
                     "{sel} sets {prop}: {v}"
                 );

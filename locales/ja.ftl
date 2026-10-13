@@ -37,6 +37,7 @@ footer-open-format-link = 形式について
 ## 設定
 
 settings-title = 設定
+edit-mode-label = 編集中 — 保存した内容は家族の記録を変更します
 display-menu-label = 言語と表示
 display-settings = テーマと表示…
 settings-tabs-label = 設定の節

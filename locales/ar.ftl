@@ -33,6 +33,7 @@ nav-sign-out = تسجيل الخروج
 account-emergency = رمز الطوارئ
 
 settings-title = الإعدادات
+edit-mode-label = وضع التحرير — ما تحفظه يغيّر سجلات العائلة
 display-menu-label = اللغة والعرض
 display-settings = السمة والعرض…
 settings-tabs-label = أقسام الإعدادات

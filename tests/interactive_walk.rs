@@ -946,3 +946,81 @@ async fn every_screen_keeps_its_chrome_budget() {
         over.join("\n")
     );
 }
+
+/// A reader without the right to edit receives no edit control in the markup
+/// of any page — not disabled, not hidden by CSS: absent (the minimalism
+/// pass). An edit control is a form that writes (to `/admin/…`, other than
+/// signing out, or to `/quality/…`) or a link into the administration.
+#[tokio::test]
+async fn a_reader_without_edit_rights_receives_no_edit_control_anywhere() {
+    let src = scratch("walk-viewer-src");
+    let source = src.join("walk.axgf");
+    std::fs::write(
+        &source,
+        axgf_cms::state::export_to_bytes(&bundle().to_string()).expect("export"),
+    )
+    .expect("write");
+    let dir = scratch("walk-viewer");
+    let path = dir.join("family.axgf");
+    std::fs::copy(&source, &path).expect("copy");
+    let mut acl = axgf_cms::acl::Acl::default();
+    acl.users.push(
+        axgf_cms::acl::new_user(
+            "reader",
+            "correct-horse-battery-staple",
+            axgf_cms::acl::Role::Viewer,
+        )
+        .expect("a viewer"),
+    );
+    acl.save(&axgf_cms::acl::Acl::path_for(&path))
+        .expect("save acl");
+    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    let login = post_form(
+        &app,
+        "/admin/login",
+        "username=reader&password=correct-horse-battery-staple",
+        false,
+    )
+    .await;
+    let cookie = login
+        .headers()
+        .get(header::SET_COOKIE)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|c| c.split(';').next())
+        .expect("the viewer signs in")
+        .to_string();
+
+    let forms = Selector::parse("form").unwrap();
+    let links = Selector::parse("a[href]").unwrap();
+    let mut found = Vec::new();
+    let mut read = 0;
+    for page in pages(true, None) {
+        let (status, html, _) = fetch(&app, &page, Some(&cookie)).await;
+        if status != StatusCode::OK {
+            continue; // the administration refuses a viewer outright
+        }
+        read += 1;
+        let doc = Html::parse_document(&html);
+        for f in doc.select(&forms) {
+            let action = f.value().attr("action").unwrap_or("");
+            let method = f
+                .value()
+                .attr("method")
+                .unwrap_or("get")
+                .to_ascii_lowercase();
+            let writes = (action.starts_with("/admin/") && action != "/admin/logout")
+                || action.starts_with("/quality/");
+            if method == "post" && writes {
+                found.push(format!("{page}: a form that writes, to {action}"));
+            }
+        }
+        for a in doc.select(&links) {
+            let href = a.value().attr("href").unwrap_or("");
+            if href.starts_with("/admin/") || href == "/admin" {
+                found.push(format!("{page}: a link into the administration, {href}"));
+            }
+        }
+    }
+    assert!(read >= 10, "the viewer reads the read-only pages: {read}");
+    assert!(found.is_empty(), "{}", found.join("\n"));
+}

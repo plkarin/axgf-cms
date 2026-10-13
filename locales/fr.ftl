@@ -22,6 +22,7 @@ account-emergency = Jeton d’urgence
 ## Préférences
 
 settings-title = Réglages
+edit-mode-label = Mode édition — ce que vous enregistrez modifie les fiches de la famille
 display-menu-label = Langue et affichage
 display-settings = Thème et affichage…
 settings-tabs-label = Sections des réglages

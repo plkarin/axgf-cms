@@ -26,7 +26,8 @@
 {# A date, rendered at whatever precision the source actually supports. The
    data-kind attribute is what makes an approximate date look approximate. #}
 {% macro date(d, show_note=true) %}
-  {%- if d -%}
+  {#- An unknown date is nothing to read: not drawn (the minimalism pass). -#}
+  {%- if d and d.kind != "unknown" -%}
   {#- `bdi` because a rendered date mixes translated words with digits and
       neutral marks — "avant 1430", "<1930", "1826–1830". In a right-to-left
       page the bidirectional algorithm would reorder the neutrals and turn

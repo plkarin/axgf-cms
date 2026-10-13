@@ -36,6 +36,7 @@ footer-open-format-link = O formacie
 ## Ustawienia
 
 settings-title = Ustawienia
+edit-mode-label = Edycja — to, co zapiszesz, zmienia karty rodziny
 display-menu-label = Język i wygląd
 display-settings = Motyw i wygląd…
 settings-tabs-label = Sekcje ustawień

@@ -38,6 +38,7 @@ footer-open-format-link = Über das Format
 ## Einstellungen
 
 settings-title = Einstellungen
+edit-mode-label = Bearbeitung — was Sie speichern, ändert die Einträge der Familie
 display-menu-label = Sprache und Anzeige
 display-settings = Farbschema und Anzeige …
 settings-tabs-label = Abschnitte der Einstellungen

@@ -3,7 +3,7 @@
    request negotiated. Doing it in a script after load would guarantee a flash
    of the wrong theme on every page, and would flip Arabic from left to right
    in front of the reader. #}
-<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %}
+<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %} data-mode="{{ 'edit' if nav == 'admin' else 'read' }}"
       data-style="{{ style }}" data-wash="{{ "on" if wash else "off" }}"{% if nav %} data-route="{{ nav }}"{% endif %}
       {#- `data-route` is the *navigation* group, not the page: the person page
           and the tree page share "tree" because they share a nav item, so it
@@ -82,6 +82,9 @@
     </nav>
   </div>
 </header>
+{#- Editing looks different from reading (the minimalism pass): a band that
+    says so, under an accent rule. A statement, not a control. -#}
+{% if nav == "admin" %}<div class="edit-band" role="note">{{ t("edit-mode-label") }}</div>{% endif %}
 
 <main class="{% block main_class %}{% endblock %}">
 {% block content %}{% endblock %}

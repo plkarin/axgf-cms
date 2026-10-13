@@ -349,8 +349,23 @@ pub async fn logout(State(state): State<Shared>, headers: HeaderMap) -> Response
 // ---------------------------------------------------------------------------
 
 /// `GET /admin`
-pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Response {
+/// `?kind=` on `/admin`: the listing's kind select, sent without scripts.
+#[derive(Deserialize, Default)]
+pub struct DashboardQuery {
+    #[serde(default)]
+    kind: Option<String>,
+}
+
+pub async fn dashboard(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<DashboardQuery>,
+) -> Response {
     let (_viewer, chrome) = guard!(state, headers);
+    // The listing's kind select posts here; a known kind goes to its list.
+    if let Some(k) = q.kind.as_deref().filter(|k| KINDS.contains(k)) {
+        return Redirect::to(&format!("/admin/{k}")).into_response();
+    }
     let counts = state.counts();
     let env = state.inspect_with(axgf_rs::validate);
     let diagnostics = diagnostics_json(&env.diagnostics, chrome.lang);
@@ -1739,6 +1754,13 @@ fn field_views(
     lists: &std::collections::BTreeMap<String, Vec<Value>>,
 ) -> Vec<Value> {
     let t = |key: &str| crate::i18n::translate(lang, key, None);
+    // A new record shows its first group (a person's identity, …); an
+    // existing one shows what it holds (the minimalism pass).
+    let creating = entity.get("id").is_none();
+    let first_group = fields_for(kind)
+        .first()
+        .map(|f| f.path.split('.').next().unwrap_or(""))
+        .unwrap_or("");
     fields_for(kind)
         .iter()
         .map(|f| {
@@ -1786,6 +1808,18 @@ fn field_views(
                 "checked": current == "true",
                 "qualifier": qualifier,
                 "inside_date": f.path.ends_with(".date.circa"),
+                // Holds a value: drawn at rest in edit mode. An empty field
+                // waits behind the form's one "other fields" disclosure (the
+                // minimalism pass). A date is filled by its value.
+                "filled": match f.kind {
+                    crate::admin::FieldKind::Bool => current == "true",
+                    _ => !current.trim().is_empty(),
+                },
+                "group": f.path.split('.').next().unwrap_or(""),
+                "show": (match f.kind {
+                    crate::admin::FieldKind::Bool => current == "true",
+                    _ => !current.trim().is_empty(),
+                }) || (creating && f.path.split('.').next().unwrap_or("") == first_group),
             })
         })
         .collect()

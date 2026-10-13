@@ -231,6 +231,11 @@ admin-bundle-heavy = Este arquivo pesa { $size }. É carregado por inteiro ao ar
 
 admin-fields = Campos
 admin-raw-json = JSON em bruto
+form-more-fields = { $n ->
+        [one] Mais um campo
+        [many] Mais { $n } campos
+       *[other] Mais { $n } campos
+    }
 admin-raw-json-help = O elemento inteiro, para que nada fique por editar: listas como os parceiros e os filhos de uma família, ou a história de fronteiras de um lugar, vivem precisamente aqui. Este é o documento de partida; os campos acima são depois escritos sobre os caminhos que lhes pertencem, por isso edite um valor num sítio ou no outro, não nos dois. Tem de ler-se como JSON, senão não se guarda nada.
 admin-save = Guardar
 admin-cancel = Cancelar
@@ -324,6 +329,7 @@ admin-not-set = — por definir —
 admin-edit = Editar
 admin-page-of = Página { $page } de { $pages }
 list-select-row = Selecionar { $name }
+list-kind-label = Tipo
 list-select-page = Selecionar todas as linhas desta página
 list-selected = { $n ->
         [one] { $n } selecionada
@@ -3237,6 +3243,9 @@ quality-none = Nada a ver: todas as verificações passaram.
 quality-intro = Nada aqui é alterado por si. Cada linha é um caso que merece verificação — muitas vezes há uma boa razão. Abra a ficha e decida, ou marque-o como verificado.
 quality-groups-label = Tipos de constatação
 quality-all = Tudo
+quality-show-label = Mostrar
+quality-show-open-option = Por verificar
+quality-download = Transferir
 quality-group-names = Nomes
 quality-group-relations = Parentescos
 quality-group-dates = Datas

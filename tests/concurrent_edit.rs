@@ -352,7 +352,7 @@ async fn the_history_is_in_edit_mode_and_shown_to_nobody_else() {
 
     let editor = body_string(get_admin(&app, &format!("/admin/person/{ALICE}/edit")).await).await;
     assert!(
-        editor.contains(r#"<ol class="history">"#) && editor.contains("changed Notes"),
+        editor.contains(r#"<ol class="history""#) && editor.contains("changed Notes"),
         "the editor shows who changed what: {editor}"
     );
     for uri in [

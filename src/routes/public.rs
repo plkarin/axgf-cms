@@ -287,8 +287,15 @@ pub async fn tree(
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
-    let show_all = q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty());
-    let depth = q.depth.unwrap_or(DEFAULT_DEPTH).min(MAX_DEPTH);
+    // The page's one select offers the depths and, last, the whole family as
+    // depth 0 (the minimalism pass); `all=1` is the older spelling of it.
+    let show_all =
+        q.all.as_deref().is_some_and(|v| v != "0" && !v.is_empty()) || q.depth == Some(0);
+    let depth = q
+        .depth
+        .filter(|d| *d > 0)
+        .unwrap_or(DEFAULT_DEPTH)
+        .min(MAX_DEPTH);
     let row_w = wrap_width(&q, &headers);
 
     let started = std::time::Instant::now();

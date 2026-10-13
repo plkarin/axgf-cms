@@ -91,8 +91,10 @@
   {# The acknowledgement the licence asks for, kept to one line: honest about
      what the archive is written in, without turning the footer into a
      developer index. #}
+  {#- Plain text, not a link: the acknowledgement is the words, and a link here
+      was one more control on every page (the minimalism pass). -#}
   <p class="small">{{ t("footer-open-format") }}
-    <a href="https://github.com/plkarin/axgf-spec">{{ t("footer-open-format-link") }}</a></p>
+    {{ t("footer-open-format-link") }} <span class="mono">{{ spec_url | safe }}</span></p>
 </footer>
 
 {# Loaded on every page: it is 1 kB and it is what lets the

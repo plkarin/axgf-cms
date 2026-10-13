@@ -73,7 +73,7 @@ async fn a_listing_selects_rows_and_draws_filiation_in_the_rivers_lines() {
         "a row's box carries its version"
     );
     assert!(html.contains("data-bulk-all"));
-    assert!(html.contains(r#"<tr class="bulk-bar" data-bulk-bar>"#));
+    assert!(html.contains(r#"<tr class="bulk-bar" data-bulk-bar data-js-hidden>"#));
     assert!(html.contains(r#"value="export""#) && html.contains(r#"value="confirm""#));
     // Exactly those two. No merge, not even a disabled one: the library has
     // no record merge, and a control that cannot work is not shipped.

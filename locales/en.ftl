@@ -220,6 +220,10 @@ admin-bundle-heavy = This archive is { $size }. The whole of it is loaded at sta
 
 admin-fields = Fields
 admin-raw-json = Raw JSON
+form-more-fields = { $n ->
+        [one] One more field
+       *[other] { $n } more fields
+    }
 admin-raw-json-help = The whole entity, so nothing is uneditable — lists such as a family's partners and children, or a place's border history, live here. This is the starting document; the fields above are then written over the paths they own, so edit a value in one place or the other, not both. It must parse as JSON or nothing is saved.
 admin-save = Save
 admin-cancel = Cancel
@@ -313,6 +317,7 @@ admin-not-set = — not set —
 admin-edit = Edit
 admin-page-of = Page { $page } of { $pages }
 list-select-row = Select { $name }
+list-kind-label = Type
 list-select-page = Select every row on this page
 list-selected = { $n ->
         [one] { $n } selected
@@ -3269,6 +3274,9 @@ quality-none = Nothing worth a look: every check passed.
 quality-intro = Nothing here is changed for you. Each line is a pattern worth checking — often there is a good reason for it. Open the record and decide, or mark it as checked.
 quality-groups-label = Kinds of finding
 quality-all = All
+quality-show-label = Show
+quality-show-open-option = To check
+quality-download = Download
 quality-group-names = Names
 quality-group-relations = Relations
 quality-group-dates = Dates

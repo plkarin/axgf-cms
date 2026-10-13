@@ -837,6 +837,8 @@ struct Chrome {
     total: usize,
     masthead: usize,
     rows_over: Vec<String>,
+    /// What was counted, outside the masthead, for a failure message.
+    counted: Vec<String>,
 }
 
 fn chrome_of(html: &str) -> Chrome {
@@ -844,6 +846,7 @@ fn chrome_of(html: &str) -> Chrome {
     let sel = interactive();
     let mut total = 0;
     let mut masthead = 0;
+    let mut counted = Vec::new();
     for el in doc.select(&sel) {
         if !at_rest(&el) || is_content(&el) {
             continue;
@@ -855,6 +858,8 @@ fn chrome_of(html: &str) -> Chrome {
             .any(|a| a.value().name() == "header" && a.value().attr("class") == Some("masthead"))
         {
             masthead += 1;
+        } else {
+            counted.push(describe(&el));
         }
     }
     // A content row carries at most two controls.
@@ -872,6 +877,7 @@ fn chrome_of(html: &str) -> Chrome {
         total,
         masthead,
         rows_over,
+        counted,
     }
 }
 
@@ -902,8 +908,9 @@ async fn every_screen_keeps_its_chrome_budget() {
             );
             if ch.total > budget {
                 over.push(format!(
-                    "{who} {page}: {} chrome controls, budget {budget}",
-                    ch.total
+                    "{who} {page}: {} chrome controls, budget {budget}:\n    {}",
+                    ch.total,
+                    ch.counted.join("\n    ")
                 ));
             }
             if ch.masthead > 7 {

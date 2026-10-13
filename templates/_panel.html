@@ -28,8 +28,8 @@
           river they are already the centre. Editors get one more: editing
           is entered here and nowhere else in the panel. -#}
       {%- if not river_tabs %}
-      <button type="button" class="btn small" data-centre="{{ p.id }}"
-              title="{{ t('record-centre-tree-title') }}">{{ t("record-centre-tree-here") }}</button>
+      <a class="btn small" data-centre="{{ p.id }}" href="/tree?root={{ p.id }}&amp;sel={{ p.id }}"
+         title="{{ t('record-centre-tree-title') }}">{{ t("record-centre-tree-here") }}</a>
       {%- endif %}
       <a class="btn small panel-open-full" href="/person/{{ p.id }}"
          title="{{ t('record-open-full-title') }}">{{ t("record-open-full-page") }}</a>

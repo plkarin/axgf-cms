@@ -248,7 +248,7 @@ fn unescape(s: &str) -> String {
 fn histories(page: &str) -> String {
     let mut out = String::new();
     let mut rest = page;
-    while let Some(at) = rest.find("<ol class=\"history\">") {
+    while let Some(at) = rest.find("<ol class=\"history\"") {
         let end = rest[at..].find("</ol>").expect("closed") + at;
         out.push_str(&rest[at..end]);
         rest = &rest[end..];

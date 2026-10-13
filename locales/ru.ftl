@@ -249,6 +249,12 @@ admin-bundle-heavy = Этот архив весит { $size }. Он целико
 
 admin-fields = Поля
 admin-raw-json = Исходный JSON
+form-more-fields = { $n ->
+        [one] Ещё { $n } поле
+        [few] Ещё { $n } поля
+        [many] Ещё { $n } полей
+       *[other] Ещё { $n } поля
+    }
 admin-raw-json-help = Объект целиком, так что неизменяемого нет ничего — списки вроде партнёров и детей семьи или истории границ места живут именно здесь. Это исходный документ; поля выше затем записываются поверх принадлежащих им путей, поэтому правьте значение либо в одном месте, либо в другом, но не в обоих. Он должен разбираться как JSON, иначе не сохранится ничего.
 admin-save = Сохранить
 admin-cancel = Отмена
@@ -344,6 +350,7 @@ admin-not-set = — не задано —
 admin-edit = Править
 admin-page-of = Страница { $page } из { $pages }
 list-select-row = Выбрать { $name }
+list-kind-label = Тип
 list-select-page = Выбрать все строки на этой странице
 list-selected = { $n ->
         [one] выбрана { $n }
@@ -3427,6 +3434,9 @@ quality-none = Смотреть не на что: все проверки про
 quality-intro = Здесь ничего не меняется за вас. Каждая строка — случай, который стоит проверить; часто у него есть веская причина. Откройте карточку и решите или отметьте его как проверенный.
 quality-groups-label = Виды замечаний
 quality-all = Все
+quality-show-label = Показать
+quality-show-open-option = К проверке
+quality-download = Скачать
 quality-group-names = Имена
 quality-group-relations = Родственные связи
 quality-group-dates = Даты

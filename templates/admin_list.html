@@ -9,11 +9,15 @@
 {# The kind switcher and the filter are one set of controls over the table
    below, so they are one frame — the same frame the tree's controls get. #}
 <section class="rec-section">
-<div class="cta-row">
-  {% for k in kinds %}
-    <a class="btn small" href="/admin/{{ k }}"{% if k == kind %} aria-current="page"{% endif %}>{{ t("kind-" ~ k) }}</a>
-  {% endfor %}
-</div>
+{#- Which kind of record: one select, not eight buttons (the minimalism
+    pass). Applied on change; the button is for a reader without scripts. -#}
+<form method="get" action="/admin" class="filter-row">
+  <label>{{ t("list-kind-label") }}
+    <select name="kind" data-autosubmit>
+      {% for k in kinds %}<option value="{{ k }}" {{ "selected" if k == kind }}>{{ t("kind-" ~ k) }}</option>{% endfor %}
+    </select></label>
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+</form>
 
 <form method="get" action="/admin/{{ kind }}" class="filter-row">
   <label>{{ t('list-filter-placeholder') }}
@@ -44,11 +48,11 @@
       <th class="sel"><input type="checkbox" data-bulk-all aria-label="{{ t('list-select-page') }}"></th>
       <th>{{ t("list-summary") }}</th><th>{{ t("list-id") }}</th>
       {% if has_filiation %}<th>{{ t("list-filiation") }}</th>{% endif %}
-      <th>{{ t("record-confidence") }}</th><th style="width:1%">{{ t("list-actions") }}</th></tr>
+      <th>{{ t("record-confidence") }}</th></tr>
     {#- The bulk bar takes over the header row while rows are selected (B6):
         ui.js swaps the two. Without scripts both show, and the bar works. -#}
-    <tr class="bulk-bar" data-bulk-bar>
-      <th colspan="{{ 6 if has_filiation else 5 }}"><div class="bulk-inner">
+    <tr class="bulk-bar" data-bulk-bar data-js-hidden>
+      <th colspan="{{ 5 if has_filiation else 4 }}"><div class="bulk-inner">
         <span class="bulk-count" data-bulk-count data-forms="{{ selected_forms }}">{{ t("list-selected", n=0) }}</span>
         <button class="btn small" form="bulk" type="submit" name="action" value="export">{{ t("list-export") }}</button>
         <button class="btn small danger" form="bulk" type="submit" name="action" value="confirm">{{ t("admin-delete") }}</button>
@@ -56,44 +60,22 @@
       </div></th>
     </tr>
   </thead>
-  <tbody>
+  {#- Two controls a row: select it, open it. Editing a record is on the
+      record; deleting is the bulk bar's (select one, or many). -#}
+  <tbody data-content>
     {% for r in rows %}
     <tr>
       <td class="sel"><input type="checkbox" form="bulk" name="id" value="{{ r.id }}|{{ r.version }}"
                              aria-label="{{ t('list-select-row', name=r.summary) }}"></td>
       <td>
         {% if is_person %}<a href="/person/{{ r.id }}">{{ r.summary }}</a>
-        {% else %}{{ r.summary }}{% endif %}
+        {% else %}<a href="/admin/{{ kind }}/{{ r.id }}/edit">{{ r.summary }}</a>{% endif %}
       </td>
       <td class="mono small muted">{{ r.id }}</td>
       {% if has_filiation %}<td class="filiation">
         {%- for c in r.filiation %}<span class="fil fil-{{ c }}" title="{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}"><span class="sr-only">{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}</span></span>{% endfor -%}
       </td>{% endif %}
       <td>{% if r.confidence %}{{ m.conf_bar(r.confidence) }}{% endif %}</td>
-      <td class="nowrap">
-        <a class="btn small" href="/admin/{{ kind }}/{{ r.id }}/edit">{{ t("admin-edit") }}</a>
-        <button class="btn small danger" type="button"
-                data-toggle="del-{{ r.id }}">
-          {{ t("admin-delete") }}
-        </button>
-      </td>
-    </tr>
-    <tr id="del-{{ r.id }}" hidden>
-      <td colspan="{{ 6 if has_filiation else 5 }}" class="delete-row">
-        <form method="post" action="/admin/{{ kind }}/{{ r.id }}/delete">
-          <input type="hidden" name="base_version" value="{{ r.version }}">
-          <strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong>
-          <div class="policy-list">
-            <label><input type="radio" name="policy" value="reject" checked>
-              <strong>{{ t("list-policy-reject") }}</strong> {{ t("list-policy-reject-detail") }}</label>
-            <label><input type="radio" name="policy" value="cascade">
-              <strong>{{ t("list-policy-cascade") }}</strong> {{ t("list-policy-cascade-detail") }}</label>
-            <label><input type="radio" name="policy" value="orphan">
-              <strong>{{ t("list-policy-orphan") }}</strong> {{ t("list-policy-orphan-detail") }}</label>
-          </div>
-          <button class="btn danger" type="submit">{{ t("admin-delete") }}</button>
-        </form>
-      </td>
     </tr>
     {% endfor %}
   </tbody>

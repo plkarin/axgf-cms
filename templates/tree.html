@@ -25,8 +25,7 @@
   <p class="notice restricted-notice" role="status">
     {{ t("tree-hidden-notice", n=hidden) }}
     {%- if signed_in %}{{ t("tree-hidden-because-role") }}
-    {%- else %}{{ t("tree-hidden-because-anonymous") }}
-      <a href="/admin/login">{{ t("tree-hidden-sign-in") }}</a>
+    {%- else %}{{ t("tree-hidden-because-anonymous") }} {{ t("tree-hidden-sign-in") }}
     {%- endif %}
   </p>
   {% endif %}
@@ -37,33 +36,23 @@
   </form>
 </div>
 
-{% if roster %}
+{#- One control: how much of the family to draw. The person in the middle is
+    chosen from a card ("Centrer l'arbre ici" in its panel), not from a list
+    of everybody (the minimalism pass). Applied on change; the button is for
+    a reader without scripts. -#}
 <form class="tree-controls" method="get" action="/tree">
-  <div class="tc-field">
-    <label for="root">{{ t("tree-centre-on") }}</label>
-    <select id="root" name="root">
-      {% for p in roster %}
-        <option value="{{ p.id }}"
-          {%- if focus and p.id == focus.root %} selected{% endif %}>{{ p.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
+  {% if focus %}<input type="hidden" name="root" value="{{ focus.root }}">{% endif %}
   <div class="tc-field">
     <label for="depth">{{ t("tree-depth") }}</label>
-    <select id="depth" name="depth">
+    <select id="depth" name="depth" data-autosubmit>
       {% for d in range(1, max_depth + 1) %}
-        <option value="{{ d }}" {% if d == depth %}selected{% endif %}>{{ d }}</option>
+        <option value="{{ d }}" {% if d == depth and not show_all %}selected{% endif %}>{{ d }}</option>
       {% endfor %}
+      <option value="0" {% if show_all %}selected{% endif %}>{{ t("tree-show-all", n=layout.total_person_count) }}</option>
     </select>
   </div>
-  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("tree-show") }}</button>
-  {% if show_all %}
-    <a class="btn" href="/tree">{{ t("tree-back-to-focused") }}</a>
-  {% else %}
-    <a class="btn" href="/tree?all=1">{{ t("tree-show-all", n=layout.total_person_count) }}</a>
-  {% endif %}
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("tree-show") }}</button>
 </form>
-{% endif %}
 
 {% if show_all and layout.person_count > 40 %}
 <div class="notice warn">
@@ -92,7 +81,7 @@
   <p><strong>{{ t("tree-contradicts-title") }}</strong> {{ t("tree-contradicts-detail") }}</p>
   {# Empty when the contradiction is a parentage loop rather than a single
      bad edge: the flag is set but no one pair is to blame. #}
-  <ul class="contradiction-list">
+  <ul class="contradiction-list" data-content>
     {% for c in contradictions.pairs %}
     <li>{{ t("tree-contradicts-pair") }}
       {% if c.parent.id %}<a href="/person/{{ c.parent.id }}">{{ c.parent.name }}</a>

@@ -384,7 +384,19 @@ async fn the_delete_form_offers_all_three_policies_with_reject_default() {
         true,
     )
     .await;
+    // Deleting is on the record's editor now, not in every row of the list.
     let list = body_string(get_admin(&app, "/admin/person").await).await;
+    assert!(
+        !list.contains(r#"name="policy""#),
+        "no delete form in the listing"
+    );
+    let id = list
+        .split("href=\"/person/")
+        .nth(1)
+        .and_then(|s| s.split('"').next())
+        .expect("the new person in the list")
+        .to_string();
+    let list = body_string(get_admin(&app, &format!("/admin/person/{id}/edit")).await).await;
 
     assert!(
         list.contains(r#"value="reject" checked"#),

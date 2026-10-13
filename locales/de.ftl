@@ -231,6 +231,10 @@ admin-bundle-heavy = Dieses Archiv ist { $size } groß. Es wird beim Start volls
 
 admin-fields = Felder
 admin-raw-json = Roh-JSON
+form-more-fields = { $n ->
+        [one] Ein weiteres Feld
+       *[other] { $n } weitere Felder
+    }
 admin-raw-json-help = Der ganze Datensatz, damit nichts unbearbeitbar ist — Listen wie die Partner und Kinder einer Familie oder die Grenzgeschichte eines Ortes stehen genau hier. Das ist das Ausgangsdokument; die Felder darüber werden anschließend über die ihnen gehörenden Pfade geschrieben, bearbeiten Sie einen Wert also an der einen oder der anderen Stelle, nicht an beiden. Es muss sich als JSON lesen lassen, sonst wird nichts gespeichert.
 admin-save = Speichern
 admin-cancel = Abbrechen
@@ -324,6 +328,7 @@ admin-not-set = — nicht gesetzt —
 admin-edit = Bearbeiten
 admin-page-of = Seite { $page } von { $pages }
 list-select-row = { $name } auswählen
+list-kind-label = Art
 list-select-page = Alle Zeilen dieser Seite auswählen
 list-selected = { $n ->
         [one] { $n } ausgewählt
@@ -3229,6 +3234,9 @@ quality-none = Nichts zu sehen: Alle Prüfungen sind bestanden.
 quality-intro = Hier wird nichts für Sie geändert. Jede Zeile ist ein Fall, der eine Prüfung wert ist — oft gibt es einen guten Grund dafür. Öffnen Sie den Datensatz und entscheiden Sie, oder markieren Sie ihn als geprüft.
 quality-groups-label = Arten von Befunden
 quality-all = Alle
+quality-show-label = Anzeigen
+quality-show-open-option = Zu prüfen
+quality-download = Herunterladen
 quality-group-names = Namen
 quality-group-relations = Beziehungen
 quality-group-dates = Daten

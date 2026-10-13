@@ -202,6 +202,14 @@ admin-no-changes-yet = لم يُغيَّر شيء بعد عبر هذا التط�
 admin-last-validation = آخر تحقّق
 admin-fields = الحقول
 admin-raw-json = JSON الخام
+form-more-fields = { $n ->
+        [zero] لا حقول أخرى
+        [one] حقل آخر
+        [two] حقلان آخران
+        [few] { $n } حقول أخرى
+        [many] { $n } حقلًا آخر
+       *[other] { $n } حقل آخر
+    }
 admin-save = حفظ
 admin-cancel = إلغاء
 place-editor-title = تحرير مكان
@@ -298,6 +306,7 @@ admin-not-set = — غير محدَّد —
 admin-edit = تحرير
 admin-page-of = صفحة { $page } من { $pages }
 list-select-row = تحديد { $name }
+list-kind-label = النوع
 list-select-page = تحديد كل صفوف هذه الصفحة
 list-selected = { $n ->
         [zero] لا شيء محدد
@@ -3509,6 +3518,9 @@ quality-none = لا شيء يستحق النظر: اجتازت كل الفحوص
 quality-intro = لا يُغيَّر هنا شيء نيابة عنك. كل سطر حالة تستحق التحقق — وكثيرًا ما يكون لها سبب وجيه. افتح السجل وقرر، أو علّمها بأنها تم التحقق منها.
 quality-groups-label = أنواع الملاحظات
 quality-all = الكل
+quality-show-label = عرض
+quality-show-open-option = للتحقق
+quality-download = تنزيل
 quality-group-names = الأسماء
 quality-group-relations = صلات القرابة
 quality-group-dates = التواريخ

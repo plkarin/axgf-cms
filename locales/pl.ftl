@@ -243,6 +243,12 @@ admin-bundle-heavy = To archiwum waży { $size }. Całość jest wczytywana przy
 
 admin-fields = Pola
 admin-raw-json = Surowy JSON
+form-more-fields = { $n ->
+        [one] Jeszcze jedno pole
+        [few] Jeszcze { $n } pola
+        [many] Jeszcze { $n } pól
+       *[other] Jeszcze { $n } pola
+    }
 admin-raw-json-help = Cały obiekt, więc nic nie jest nieedytowalne — listy takie jak partnerzy i dzieci rodziny albo historia granic miejsca żyją właśnie tu. To dokument wyjściowy; pola powyżej są następnie zapisywane po ścieżkach, które posiadają, więc edytuj wartość albo w jednym miejscu, albo w drugim, nie w obu. Musi się parsować jako JSON, inaczej nic nie zostanie zapisane.
 admin-save = Zapisz
 admin-cancel = Anuluj
@@ -338,6 +344,7 @@ admin-not-set = — nie ustawiono —
 admin-edit = Edytuj
 admin-page-of = Strona { $page } z { $pages }
 list-select-row = Zaznacz { $name }
+list-kind-label = Rodzaj
 list-select-page = Zaznacz wszystkie wiersze na tej stronie
 list-selected = { $n ->
         [one] { $n } zaznaczona
@@ -3420,6 +3427,9 @@ quality-none = Nic do sprawdzenia: wszystkie kontrole przeszły.
 quality-intro = Nic nie jest tu zmieniane za Ciebie. Każdy wiersz to przypadek wart sprawdzenia — często jest dla niego dobry powód. Otwórz kartę i zdecyduj albo oznacz go jako sprawdzony.
 quality-groups-label = Rodzaje uwag
 quality-all = Wszystko
+quality-show-label = Pokaż
+quality-show-open-option = Do sprawdzenia
+quality-download = Pobierz
 quality-group-names = Imiona i nazwiska
 quality-group-relations = Pokrewieństwo
 quality-group-dates = Daty

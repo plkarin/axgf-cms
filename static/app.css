@@ -3484,3 +3484,17 @@ a.tcard:hover {
 .pager-range { font-family: var(--mono); font-size: var(--type-small); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .bulk-list { list-style: none; padding: 0; margin: 1rem 0; }
 .bulk-list li { padding: 0.45rem 0; border-bottom: 1px solid var(--border-hairline); }
+
+/* The quality page's filters: two selects and the downloads, on one row. */
+.quality-filter { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.quality-filter [hidden] { display: none; }
+.quality-filter select { inline-size: auto; }
+.quality-downloads { position: relative; }
+.quality-downloads > summary { cursor: pointer; padding-block: 0.4rem; color: var(--text-secondary); }
+
+/* A short list of actions behind one disclosure (the dashboard's create and
+   export). */
+.menu-disclosure { position: relative; display: inline-block; margin: 0.25rem 0; }
+.menu-disclosure > summary { cursor: pointer; }
+.menu-disclosure > summary::marker { color: var(--text-tertiary); }
+.menu-disclosure[open] > .menu-panel { position: static; margin-top: 0.4rem; }

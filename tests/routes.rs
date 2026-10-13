@@ -142,8 +142,10 @@ async fn the_tree_defaults_to_a_focused_subtree_with_controls() {
     );
     assert!(body.contains(r#"name="root""#));
     assert!(body.contains(r#"name="depth""#));
+    // The whole family is the depth select's last choice (the minimalism
+    // pass made the tree's controls one select).
     assert!(
-        body.contains("/tree?all=1"),
+        body.contains(r#"<option value="0" >"#) || body.contains(r#"<option value="0">"#),
         "the full view stays reachable from the focused one"
     );
     // A card click opens the record in the side panel; re-centring is now an
@@ -180,8 +182,10 @@ async fn an_explicit_root_and_depth_are_honoured() {
     )
     .await;
     assert!(
-        body.contains(&format!("value=\"{id}\" selected")),
-        "the picker should show the requested root"
+        body.contains(&format!(
+            r#"<input type="hidden" name="root" value="{id}">"#
+        )),
+        "the requested root travels with the depth control"
     );
     assert!(body.contains("1 generations each way") || body.contains(">1</option>"));
     assert!(body.contains("is-root"), "the root card is marked");
@@ -208,8 +212,8 @@ async fn the_full_view_warns_about_its_width() {
     let body = expect_status(get(&app, "/tree?all=1").await, StatusCode::OK, "GET all").await;
     assert!(body.contains("The whole tree"));
     assert!(
-        body.contains("Back to the focused view"),
-        "a way back to the default"
+        body.contains(r#"<option value="0" selected>"#) && body.contains(r#"<option value="1""#),
+        "the whole family is the chosen depth, and a number is the way back"
     );
     // The sample is small, so the width warning is suppressed; on a big bundle
     // it appears. Either way the full view must not claim to be focused.

@@ -214,6 +214,11 @@ admin-bundle-heavy = Cette archive pèse { $size }. L’ensemble est chargé au 
 
 admin-fields = Champs
 admin-raw-json = JSON brut
+form-more-fields = { $n ->
+        [one] Un autre champ
+        [many] { $n } autres champs
+       *[other] { $n } autres champs
+    }
 admin-raw-json-help = L'entité entière, de sorte que rien ne soit non modifiable — les listes telles que les conjoints et les enfants d'une famille, ou l'histoire des frontières d'un lieu, se trouvent ici. C'est le document de départ ; les champs ci-dessus sont ensuite écrits par-dessus les chemins qui leur appartiennent : modifiez une valeur à un endroit ou à l'autre, pas aux deux. Cela doit être du JSON valide, sinon rien n'est enregistré.
 admin-save = Enregistrer
 admin-cancel = Annuler
@@ -307,6 +312,7 @@ admin-not-set = — non renseigné —
 admin-edit = Modifier
 admin-page-of = Page { $page } sur { $pages }
 list-select-row = Sélectionner { $name }
+list-kind-label = Type
 list-select-page = Tout sélectionner sur cette page
 list-selected = { $n ->
         [one] { $n } sélectionnée
@@ -3220,6 +3226,9 @@ quality-none = Rien à regarder : toutes les vérifications sont passées.
 quality-intro = Rien n’est modifié à votre place. Chaque ligne signale un cas qui mérite une vérification — il y a souvent une bonne raison. Ouvrez la fiche et décidez, ou marquez-le comme vérifié.
 quality-groups-label = Types de constats
 quality-all = Tout
+quality-show-label = Afficher
+quality-show-open-option = À vérifier
+quality-download = Télécharger
 quality-group-names = Noms
 quality-group-relations = Liens familiaux
 quality-group-dates = Dates

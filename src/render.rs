@@ -220,6 +220,8 @@ pub struct Chrome {
     pub viewer_name: String,
     /// One or two letters for the masthead's chip, from `viewer_name`.
     pub viewer_initials: String,
+    /// Where the format is published, for the footer's acknowledgement.
+    pub spec_url: &'static str,
     /// Where a preference form should return the reader to.
     pub back: String,
     /// The masthead's link to the settings, carrying `back` as the way out.
@@ -266,6 +268,7 @@ impl Chrome {
             viewer.name().to_string()
         };
         Self {
+            spec_url: "github.com/plkarin/axgf-spec",
             viewer_initials: initials(&viewer_name),
             viewer_name,
             lang: locale.tag,

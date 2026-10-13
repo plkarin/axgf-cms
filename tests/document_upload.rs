@@ -355,7 +355,10 @@ async fn a_document_with_no_payload_renders_without_breaking() {
     // The state in words, not the schema's code: `referenced` is what the
     // bundle says and "named, held elsewhere" is what a reader is told.
     assert!(body.contains("named, held elsewhere"));
-    assert!(body.contains("no file"), "it must say the file is not here");
+    // Said once, by the status, across the size and download columns: not a
+    // "no file" beside it, and no empty cells (the minimalism pass).
+    assert!(body.contains(r#"colspan="3""#), "the status spans the empty columns");
+    assert!(!body.contains(">no file<"));
     assert!(
         !body.contains(&format!("/document/{doc_id}/raw")),
         "nothing to download, so nothing may be linked"

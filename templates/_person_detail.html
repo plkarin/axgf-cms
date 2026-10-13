@@ -450,15 +450,17 @@
             {% if not d.known %}<div class="small muted">{{ t("record-absent-document") }}</div>{% endif %}</td>
         <td class="small" data-label="{{ t('record-type') }}">{{ d.document_type_label }}{% if d.mime_type %}
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
+        {#- A file held here: its size and the download. One named but held
+            elsewhere has neither, and its status, in words, spans their
+            columns instead of two empty cells (the minimalism pass). -#}
+        {% if d.has_payload %}
         <td class="small" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
         <td class="small" data-label="{{ t('record-size') }}">{{ d.size_human if d.size_human }}</td>
-        {# No `data-label`: an action is not a field, and a stacked row that
-           labelled it would read "FILE / {{ t("record-download") }}". #}
-        <td class="small">
-          {% if d.has_payload %}
-            <a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a>
-          {% endif %}
-        </td>
+        {# No `data-label`: an action is not a field. #}
+        <td class="small"><a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a></td>
+        {% else %}
+        <td class="small" colspan="3" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>

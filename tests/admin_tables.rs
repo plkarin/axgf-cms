@@ -100,6 +100,10 @@ async fn a_listing_selects_rows_and_draws_filiation_in_the_rivers_lines() {
         people.contains(r#"<span class="fil fil-d""#),
         "Piotr's is inferred"
     );
+    // Nobody here has a confidence of their own: no column for it, and the
+    // bulk bar spans the columns that are drawn.
+    assert!(!people.contains("<th>Confidence</th>"), "an empty column");
+    assert!(people.contains(r#"<th colspan="4">"#));
     // Pagination reads as a range of the whole.
     assert!(
         people.contains(r#"<span class="pager-range">1–6 of 6</span>"#),

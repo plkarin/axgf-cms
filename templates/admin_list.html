@@ -40,6 +40,9 @@
     form and a form may not sit inside another. -#}
 <form id="bulk" method="post" action="/admin/{{ kind }}/bulk"></form>
 
+{#- A column nobody on the page has a value for is not drawn. -#}
+{% set has_confidence = rows | selectattr("confidence") | list | length > 0 %}
+{% set columns = 3 + (1 if has_filiation else 0) + (1 if has_confidence else 0) %}
 <section class="rec-section">
 <div class="table-wrap">
 <table class="admin-table" data-bulk>
@@ -48,11 +51,11 @@
       <th class="sel"><input type="checkbox" data-bulk-all aria-label="{{ t('list-select-page') }}"></th>
       <th>{{ t("list-summary") }}</th><th>{{ t("list-id") }}</th>
       {% if has_filiation %}<th>{{ t("list-filiation") }}</th>{% endif %}
-      <th>{{ t("record-confidence") }}</th></tr>
+      {% if has_confidence %}<th>{{ t("record-confidence") }}</th>{% endif %}</tr>
     {#- The bulk bar takes over the header row while rows are selected (B6):
         ui.js swaps the two. Without scripts both show, and the bar works. -#}
     <tr class="bulk-bar" data-bulk-bar data-js-hidden>
-      <th colspan="{{ 5 if has_filiation else 4 }}"><div class="bulk-inner">
+      <th colspan="{{ columns }}"><div class="bulk-inner">
         <span class="bulk-count" data-bulk-count data-forms="{{ selected_forms }}">{{ t("list-selected", n=0) }}</span>
         <button class="btn small" form="bulk" type="submit" name="action" value="export">{{ t("list-export") }}</button>
         <button class="btn small danger" form="bulk" type="submit" name="action" value="confirm">{{ t("admin-delete") }}</button>
@@ -75,7 +78,7 @@
       {% if has_filiation %}<td class="filiation">
         {%- for c in r.filiation %}<span class="fil fil-{{ c }}" title="{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}"><span class="sr-only">{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}</span></span>{% endfor -%}
       </td>{% endif %}
-      <td>{% if r.confidence %}{{ m.conf_bar(r.confidence) }}{% endif %}</td>
+      {% if has_confidence %}<td>{% if r.confidence %}{{ m.conf_bar(r.confidence) }}{% endif %}</td>{% endif %}
     </tr>
     {% endfor %}
   </tbody>

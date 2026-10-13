@@ -2976,6 +2976,9 @@ a.tcard:hover {
    padding pushed the table past the page's edge; it stays inside instead. */
 @media (max-width: 40em) {
   .rec-section > .table-wrap { margin-inline: 0; width: 100%; }
+  /* On a phone a UUID wraps to five lines and tells a reader nothing: the
+     list keeps the name, and the record's own page keeps its identifier. */
+  .admin-table .rec-id { display: none; }
 }
 .rec-section > .table-wrap > table { font-size: var(--type-minor); }
 .rec-section > .table-wrap th:first-child,

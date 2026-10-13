@@ -49,7 +49,7 @@
   <thead>
     <tr class="bulk-head">
       <th class="sel"><input type="checkbox" data-bulk-all aria-label="{{ t('list-select-page') }}"></th>
-      <th>{{ t("list-summary") }}</th><th>{{ t("list-id") }}</th>
+      <th>{{ t("list-summary") }}</th><th class="rec-id">{{ t("list-id") }}</th>
       {% if has_filiation %}<th>{{ t("list-filiation") }}</th>{% endif %}
       {% if has_confidence %}<th>{{ t("record-confidence") }}</th>{% endif %}</tr>
     {#- The bulk bar takes over the header row while rows are selected (B6):
@@ -74,7 +74,7 @@
         {% if is_person %}<a href="/person/{{ r.id }}">{{ r.summary }}</a>
         {% else %}<a href="/admin/{{ kind }}/{{ r.id }}/edit">{{ r.summary }}</a>{% endif %}
       </td>
-      <td class="mono small muted">{{ r.id }}</td>
+      <td class="rec-id mono small muted">{{ r.id }}</td>
       {% if has_filiation %}<td class="filiation">
         {%- for c in r.filiation %}<span class="fil fil-{{ c }}" title="{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}"><span class="sr-only">{{ t('river-legend-' ~ {'a': 'attested', 'd': 'inferred', 's': 'speculative'}[c]) }}</span></span>{% endfor -%}
       </td>{% endif %}

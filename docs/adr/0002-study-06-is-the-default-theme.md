@@ -90,3 +90,67 @@ edge, moves with it, so the river and the `dark` theme stay one palette.
 **What holds it.** `every_theme_reads` measures every pair in every theme and
 carries no exceptions; none may be added to it. The study's other eleven
 values are held exactly by `the_dark_theme_is_study_06_and_so_is_the_river`.
+
+## 4. Type in rem, from the reader's own setting
+
+**Decision.** Every type size is in rem. The read-mode body is 1rem: 16px
+unless the reader has changed their browser's text size. The compact style
+is 0.9375rem and paper 1.0625rem. The river's own small sizes, 0.625rem to
+0.78125rem, are rem too. Buttons and fields take a minimum height (36px, or
+28px small), not a fixed one, so larger text grows the control instead of
+spilling out of it.
+
+**Deviation from Study 06.** The study specifies 13.5–15.5px type in px.
+
+**Why.** Px overrides the reader's own text-size setting. This product's
+most attentive readers are often the oldest people in a family, reading on a
+tablet. The setting they chose is the size the page should be.
+
+## 5. A finger, not a pointer
+
+**Decision.** On a coarse pointer (`@media (pointer: coarse)`) every button,
+field and disclosure reaches 44 CSS px, the target size WCAG 2.5.5 asks for.
+On the river, a tap is resolved to the nearest person within 44 CSS px, so a
+person's touch target is at least 88px across. For a mouse, each person's hit
+circle is sized to 44 CSS px at the drawing's current scale, never below its
+drawn 20 units.
+
+**Deviation from Study 06.** The study's controls are 36px and 28px, and the
+river's dots are about 40px across at desktop width.
+
+## 6. Hover has a touch equivalent: "tap to look, tap again to go"
+
+**Decision.** On a touch screen, the first tap on a person in the river does
+what hovering does with a mouse: it lights the route from the centre and
+shows the person's dropped label. A second tap on the same person travels
+there, and a tap on open water clears the selection.
+
+**Deviation from Study 06.** The study reveals labels and lights the route on
+hover only, and a tablet has no hover.
+
+## 7. Reading and editing are two modes
+
+These changes come from the minimalism pass. They are not deviations from
+Study 06's palette, but they change what B4 (the record tabs) built.
+
+- **Read mode draws only what is recorded.** There are no labels without
+  values, no dashes, no "Date unknown" or "no score", no empty sections, and
+  no column a whole table would leave empty. A radar is drawn only from three
+  axes or more.
+  `tests/read_mode.rs` holds this over every person of the sample, and over a
+  real archive on demand (866 people, 0 empty fields).
+- **The record is one page, without tabs, beside the river and on its own.**
+  With nothing empty drawn, a record is short enough to read through, and the
+  tabs had been most of the page's chrome. B4's tab design now lives only in
+  edit mode.
+- **Editing is entered explicitly, and looks different.** Editors get one
+  "Modifier" on the record and on the panel, and edit mode carries a band
+  under the masthead saying so.
+- **A reader without the right to edit receives no edit control.** None is
+  rendered for them, in any form: not disabled, not hidden by CSS. The walk
+  holds this as a viewer account.
+- **Every screen has a chrome budget.** Read-only screens may have 12 chrome
+  controls, at most 7 of them in the masthead; edit and administration
+  screens may have 20. A list row may carry two controls, and signing in may
+  add at most three controls to a read-only screen.
+  `tests/interactive_walk.rs` fails on any excess.

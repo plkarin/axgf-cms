@@ -672,13 +672,9 @@ async fn the_river_controls_are_secondary_and_edit_is_a_ghost() {
     let (_, html, _) = fetch(&app, &format!("/?p={P}&n=3"), Some(&cookie)).await;
     let doc = Html::parse_document(&html);
     let sel = |s: &str| Selector::parse(s).unwrap();
-    for (what, s) in [
-        ("the itinerary chips", ".rv-trail a"),
-        ("the ranges", "[data-range]"),
-        ("voyage and coupe", "button[data-motion]"),
-        ("the grid", ".rv-grid"),
-        ("back", "#rv-back"),
-    ] {
+    // The range is a select, travel/cut a setting and the grid a section of
+    // the masthead now (the minimalism pass); what is left is buttons.
+    for (what, s) in [("the itinerary chips", ".rv-trail a"), ("back", "#rv-back")] {
         let found: Vec<_> = doc.select(&sel(s)).collect();
         assert!(!found.is_empty(), "{what}: none on the page");
         for el in found {
@@ -776,5 +772,170 @@ async fn every_field_has_a_visible_label_and_none_a_placeholder() {
         "{} field(s) with no visible label:\n{}",
         bare.len(),
         bare.join("\n")
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The chrome budget (minimalism pass)
+// ---------------------------------------------------------------------------
+
+/// Whether `el` is drawn when the page has just loaded and nobody has opened,
+/// hovered or typed anything: not `hidden`, not inside a closed `<details>`
+/// (a disclosure's own summary is drawn), not screen-reader-only, and not
+/// something ui.js hides on load (`data-js-hidden`).
+fn at_rest(el: &ElementRef) -> bool {
+    if el.value().attr("type") == Some("hidden") {
+        return false;
+    }
+    let mut first = true;
+    for a in std::iter::once(*el).chain(el.ancestors().filter_map(ElementRef::wrap)) {
+        let v = a.value();
+        if v.attr("hidden").is_some() || v.attr("data-js-hidden").is_some() {
+            return false;
+        }
+        if v.attr("class")
+            .is_some_and(|c| c.split_whitespace().any(|c| c == "sr-only"))
+        {
+            return false;
+        }
+        if matches!(v.name(), "template" | "noscript" | "datalist") {
+            return false;
+        }
+        if v.name() == "details" && v.attr("open").is_none() && !first {
+            // Inside a closed disclosure — unless this is its summary.
+            let is_own_summary = el.value().name() == "summary"
+                && el
+                    .parent()
+                    .and_then(ElementRef::wrap)
+                    .is_some_and(|p| p.id() == a.id());
+            if !is_own_summary {
+                return false;
+            }
+        }
+        first = false;
+    }
+    true
+}
+
+/// A content control: one per data item, inside a container the template
+/// marks `data-content` (the river's drawing, a list's rows, a record's
+/// relatives, search results). Its count follows the data and is not budgeted.
+fn is_content(el: &ElementRef) -> bool {
+    el.ancestors()
+        .filter_map(ElementRef::wrap)
+        .any(|a| a.value().attr("data-content").is_some())
+}
+
+/// Read-only screens: 12 chrome controls at most, the masthead 7 of them.
+/// Everything else (edit screens, administration, settings, import, sign-in):
+/// 20.
+fn read_only(page: &str) -> bool {
+    !(page.starts_with("/admin") || page.starts_with("/settings") || page.starts_with("/convert"))
+}
+
+struct Chrome {
+    total: usize,
+    masthead: usize,
+    rows_over: Vec<String>,
+}
+
+fn chrome_of(html: &str) -> Chrome {
+    let doc = Html::parse_document(html);
+    let sel = interactive();
+    let mut total = 0;
+    let mut masthead = 0;
+    for el in doc.select(&sel) {
+        if !at_rest(&el) || is_content(&el) {
+            continue;
+        }
+        total += 1;
+        if el
+            .ancestors()
+            .filter_map(ElementRef::wrap)
+            .any(|a| a.value().name() == "header" && a.value().attr("class") == Some("masthead"))
+        {
+            masthead += 1;
+        }
+    }
+    // A content row carries at most two controls.
+    let rows =
+        Selector::parse("[data-content] > tr, [data-content] > li, [data-content] tbody > tr")
+            .unwrap();
+    let mut rows_over = Vec::new();
+    for row in doc.select(&rows) {
+        let n = row.select(&sel).filter(at_rest).count();
+        if n > 2 {
+            rows_over.push(describe(&row));
+        }
+    }
+    Chrome {
+        total,
+        masthead,
+        rows_over,
+    }
+}
+
+#[tokio::test]
+async fn every_screen_keeps_its_chrome_budget() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let mut over = Vec::new();
+    let mut out_counts: BTreeMap<String, usize> = BTreeMap::new();
+    println!(
+        "{:<44} {:>6} {:>9} {:>6}",
+        "screen", "chrome", "masthead", "budget"
+    );
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        for page in pages(c.is_some(), None) {
+            let (status, html, _) = fetch(&app, &page, c).await;
+            if status != StatusCode::OK {
+                continue;
+            }
+            let ch = chrome_of(&html);
+            let budget = if read_only(&page) { 12 } else { 20 };
+            println!(
+                "{:<44} {:>6} {:>9} {:>6}",
+                format!("{who} {page}"),
+                ch.total,
+                ch.masthead,
+                budget
+            );
+            if ch.total > budget {
+                over.push(format!(
+                    "{who} {page}: {} chrome controls, budget {budget}",
+                    ch.total
+                ));
+            }
+            if ch.masthead > 7 {
+                over.push(format!(
+                    "{who} {page}: masthead {} controls, budget 7",
+                    ch.masthead
+                ));
+            }
+            for r in &ch.rows_over {
+                over.push(format!(
+                    "{who} {page}: a row with more than two controls: {r}"
+                ));
+            }
+            if c.is_none() {
+                out_counts.insert(page.clone(), ch.total);
+            } else if read_only(&page) {
+                if let Some(&out) = out_counts.get(&page) {
+                    if ch.total > out + 3 {
+                        over.push(format!(
+                            "{page}: signing in adds {} chrome controls, at most 3 ({out} → {})",
+                            ch.total - out,
+                            ch.total
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        over.is_empty(),
+        "{} over budget:\n{}",
+        over.len(),
+        over.join("\n")
     );
 }

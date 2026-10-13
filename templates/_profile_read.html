@@ -1,0 +1,37 @@
+{# The profile, in read mode: every group this reader sees something in, one
+   after another, and no others (the minimalism pass). An attribute nobody
+   recorded is not drawn — no label, no dash, no "nothing". A class this
+   reader may not see is said once, by name, because a record holding a
+   diagnosis must never read as a record holding nothing.
+
+   The 1.0 facts a group also covers (identity, death, occupations,
+   relationships) are drawn by _person_detail.html; this draws the 1.1
+   attributes. Context: `profile_groups`, a list of GroupView. #}
+{% import "_macros.html" as m %}
+{% for g in profile_groups %}
+<section class="rec-section profile-panel" id="profile-{{ g.key }}">
+  <div class="sec-head"><h2>{{ g.title }}{% if g.class_label %} <span class="chip small pa-class">{{ g.class_label }}</span>{% endif %}</h2></div>
+  {% if g.withheld %}
+  <p class="notice" role="status">{{ t("profile-withheld", classes=g.withheld | join(t("list-separator"))) }}</p>
+  {% endif %}
+  {% if g.attributes %}
+  <dl class="profile-attrs">
+    {% for a in g.attributes %}
+    <div class="pa{% if a.is_series %} is-series{% endif %}">
+      <dt>{{ a.label }}
+        {%- if a.class_label %} <span class="chip small pa-class">{{ a.class_label }}</span>{% endif %}
+        {%- if a.earlier %} <span class="chip small pa-earlier" title="{{ t('profile-earlier-title') }}">{{ t("profile-earlier") }}</span>{% endif -%}
+      </dt>
+      <dd>
+        {% if a.is_series %}
+        <ol class="claims">{% for c in a.claims %}<li>{{ m.claim(t, c) }}</li>{% endfor %}</ol>
+        {% else %}
+        {% for c in a.claims %}{{ m.claim(t, c) }}{% endfor %}
+        {% endif %}
+      </dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% endif %}
+</section>
+{% endfor %}

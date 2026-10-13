@@ -44,10 +44,14 @@ pub async fn settings(
     // page is the whole of "stay here after applying".
     let chrome = render::Chrome::resolve(&viewer, &headers, &self_url);
 
+    let river_cut = crate::session::named_cookie(&headers, super::public::RIVER_MOTION_COOKIE)
+        .as_deref()
+        == Some("cut");
     render::page_with(
         &chrome,
         "settings.html",
         context! {
+            river_cut,
             nav => "settings",
             tab => tab.slug(),
             tabs => crate::settings::Tab::entries(),
@@ -181,14 +185,76 @@ pub async fn style(headers: HeaderMap, Form(f): Form<StyleForm>) -> Response {
     respond(&headers, crate::style::COOKIE_NAME, style.id, &f.back)
 }
 
-/// Set the cookie and send the reader back where they were.
-fn respond(headers: &HeaderMap, name: &str, value: &str, back: &str) -> Response {
-    // A year: this is a preference, not a session, and a reader who picks
-    // Arabic should not have to pick it again next month.
+/// `POST /prefs` — the settings page's one form: theme, language, density and
+/// the wash, applied together (the minimalism pass made the page one form
+/// of four choices and one button). Each is stored exactly as its own
+/// endpoint stores it; an unknown theme or language is refused, as there.
+#[derive(Deserialize)]
+pub struct AllForm {
+    #[serde(default)]
+    theme: String,
+    #[serde(default)]
+    lang: String,
+    #[serde(default)]
+    style: String,
+    #[serde(default)]
+    wash: Option<String>,
+    /// The river's motion: travel or cut (it used to be two buttons on the
+    /// river itself).
+    #[serde(default)]
+    motion: String,
+    #[serde(default)]
+    back: String,
+}
+
+pub async fn all(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<AllForm>,
+) -> Response {
+    let (Some(theme), Some(locale)) = (
+        crate::theme::Theme::find(&f.theme),
+        crate::i18n::Locale::find(&f.lang),
+    ) else {
+        return bad_choice(&state, &headers);
+    };
+    let style = crate::style::Style::get(&f.style);
+    let on = f.wash.is_some();
+    let viewer = auth::viewer(&state, &headers);
+    store_preference(&state, &viewer, |u| {
+        u.theme = Some(theme.id.to_string());
+        u.language = Some(locale.tag.to_string());
+        u.backgrounds = Some(on);
+    });
+    let wash = if on { "on" } else { crate::theme::WASH_OFF };
+    let mut resp = respond(&headers, crate::theme::COOKIE_NAME, theme.id, &f.back);
+    let motion = if f.motion == "cut" { "cut" } else { "travel" };
+    for (name, value) in [
+        (crate::i18n::COOKIE_NAME, locale.tag),
+        (crate::style::COOKIE_NAME, style.id),
+        (crate::theme::WASH_COOKIE_NAME, wash),
+        (super::public::RIVER_MOTION_COOKIE, motion),
+    ] {
+        if let Ok(v) = cookie_for(&headers, name, value).parse() {
+            resp.headers_mut().append(header::SET_COOKIE, v);
+        }
+    }
+    resp
+}
+
+fn cookie_for(headers: &HeaderMap, name: &str, value: &str) -> String {
     let mut cookie = format!("{name}={value}; Path=/; SameSite=Lax; Max-Age=31536000");
     if crate::session::is_tls(headers) {
         cookie.push_str("; Secure");
     }
+    cookie
+}
+
+/// Set the cookie and send the reader back where they were.
+fn respond(headers: &HeaderMap, name: &str, value: &str, back: &str) -> Response {
+    // A year: this is a preference, not a session, and a reader who picks
+    // Arabic should not have to pick it again next month.
+    let cookie = cookie_for(headers, name, value);
     // Deliberately *not* HttpOnly. Nothing here is a credential — it is which
     // language to render in — and leaving it readable lets a future
     // progressive enhancement see the choice without a round trip.

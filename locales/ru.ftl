@@ -42,6 +42,8 @@ footer-open-format-link = О формате
 ## Настройки
 
 settings-title = Настройки
+display-menu-label = Язык и вид
+display-settings = Тема и вид…
 settings-tabs-label = Разделы настроек
 settings-tab-theme = Тема
 settings-tab-language = Язык
@@ -710,6 +712,7 @@ record-see-in-tree-title = Открыть сетку карточек вокру
 record-open-full-page = Открыть отдельной страницей ↗
 record-open-full-title = Открыть самостоятельную страницу, которой можно поделиться
 record-edit = Править
+record-see-in-river = Показать в реке
 panel-empty = Выберите карточку, чтобы увидеть здесь полную запись о человеке.
 person-see-in-tree = Посмотреть этого человека в древе
 person-visibility-inline = видимость:

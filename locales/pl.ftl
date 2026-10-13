@@ -36,6 +36,8 @@ footer-open-format-link = O formacie
 ## Ustawienia
 
 settings-title = Ustawienia
+display-menu-label = Język i wygląd
+display-settings = Motyw i wygląd…
 settings-tabs-label = Sekcje ustawień
 settings-tab-theme = Motyw
 settings-tab-language = Język
@@ -703,6 +705,7 @@ record-see-in-tree-title = Otwórz siatkę kart wokół tej osoby
 record-open-full-page = Otwórz pełną stronę ↗
 record-open-full-title = Otwórz samodzielną stronę, którą można udostępnić
 record-edit = Edytuj
+record-see-in-river = Zobacz w rzece
 panel-empty = Wybierz kartę, aby zobaczyć tutaj pełny wpis tej osoby.
 person-see-in-tree = Zobacz tę osobę w drzewie
 person-visibility-inline = widoczność:

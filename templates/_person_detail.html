@@ -82,9 +82,6 @@
 
   {{ m.fact_chips(p) }}
 
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/identity">{{ t("identity-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -110,9 +107,6 @@
     </li>
     {% endfor %}
   </ol>
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/events">{{ t("events-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -153,18 +147,8 @@
     <div class="notice notice-defect" role="status">
       <p><strong>{{ t("record-union-duplicate") }}</strong>
       {{ t("record-union-duplicate-detail") }}</p>
-      {#- A mutation, so a form and not a link. It calls the library's
-          deduplicate(); this application holds no merging logic of its own.
-          The confirmation says what it runs over, because the library's
-          deduplication is whole-bundle and this button cannot narrow it. -#}
-      {% if is_admin %}
-      <form method="post" action="/admin/dedup" class="inline-form"
-            data-confirm="{{ t("record-union-duplicate-confirm") }}">
-        <input type="hidden" name="families" value="{{ g.family_ids | join(",") }}">
-        <input type="hidden" name="back" value="/person/{{ p.id }}">
-        <button class="btn small" type="submit">{{ t("record-union-duplicate-action") }}</button>
-      </form>
-      {% endif %}
+      {#- The action is an edit, so it is not here: the administration
+          page runs the library's deduplication (read/edit separation). -#}
     </div>
     {% endif %}
 
@@ -205,9 +189,6 @@
     {% endfor %}
   </div>
   {% endfor %}
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/family">{{ t("family-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -237,9 +218,6 @@
     </div>
     {% endfor %}
   </div>
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/links">{{ t("links-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -247,7 +225,7 @@
 {# At the foot of the record tab, and only there: the side panel is one glance
    at a whole person in a narrow column, which is not where six-axis charts and
    their tables belong. #}
-{% if tab == "record" %}{% include "_radar.html" %}{% endif %}
+
 
 {# ------------------------------------------------------------- OCCUPATIONS #}
 {% if (tab is undefined or tab == "life") and (p.occupations) %}
@@ -302,9 +280,6 @@
     {% endfor %}
   </ul>
   {% endif %}
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/occupations">{{ t("occupations-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -313,9 +288,12 @@
 {# Only in the tree's side panel, which has no tabs: one line saying how much
    the record's profile holds and where to read it. The panel is one glance
    at a person, and fourteen groups of attributes are not a glance. #}
-{% if tab is undefined and p.profile_count %}
+{#- Beside the river or the grid the profile is collapsed into a count —
+    "Profil · 12 renseignés" — and the record page, one link away, draws it
+    whole. The record page draws it itself (`full_record`). -#}
+{% if not full_record and p.profile_count %}
 <section id="profile-summary" class="rec-section">
-  <p class="small"><a href="/person/{{ p.id }}?tab=profile">{{ t("profile-summary-link", n=p.profile_count) }}</a></p>
+  <p class="small">{{ t("profile-summary-link", n=p.profile_count) }}</p>
 </section>
 {% endif %}
 
@@ -358,9 +336,6 @@
          converted bundle. The prompt to fill it in belongs where the reader
          noticed the gap, but it edits the place, which is shared — the editor
          says so, and by how many records. #}
-      {% if may_write and pu.place.known and pu.place.thin %}
-      <a class="small" href="/admin/place/{{ pu.place.id }}/edit">{{ t("place-add-detail") }}</a>
-      {% endif %}
     </div>
     {% endfor %}
   </div>
@@ -385,9 +360,6 @@
 <section id="life-empty" class="rec-section">
   {{ m.sec(t, t("record-life-events"), compact, t("record-life-events-help")) }}
   <p class="notice" role="status">{{ t("life-nothing-recorded") }}</p>
-  {% if may_write %}
-  <p class="small"><a href="/admin/person/{{ p.id }}/events">{{ t("life-add-first") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -404,15 +376,11 @@
    entirely empty page: no heading, no sentence, nothing. Most people on a
    converted bundle are exactly that person. #}
 {% set has_evidence = p.sources or p.documents or p.images %}
-{#- Beside the river the evidence is two tabs: "sources" draws the sources
-    table, "media" the photographs, the documents and the way to attach one.
-    The person page's own "media" tab is still all of it. #}
-{% set split = river_tabs is defined and river_tabs %}
-{% set show_sources = not (split and tab == "media") %}
-{% set show_files = not (split and tab == "sources") %}
-{% if split and tab == "sources" %}{% set has_evidence = p.sources %}
-{% elif split and tab == "media" %}{% set has_evidence = p.documents or p.images %}{% endif %}
-{% if (tab is undefined and has_evidence) or (tab == "media") or (tab == "sources" and split) or (tab is undefined and is_admin) %}
+{% set show_sources = true %}
+{% set show_files = true %}
+{#- Only when there is evidence to show: an empty section is not drawn, and
+    attaching a file is an edit (the documents editor). -#}
+{% if has_evidence %}
 <section id="evidence" class="rec-section">
   {{ m.sec(t, t("record-sources-documents"), compact, t("record-sources-documents-help")) }}
 
@@ -507,33 +475,7 @@
   </div>
   {% endif %}
 
-  {% if is_admin and show_files %}
-  <form class="upload-form" method="post" enctype="multipart/form-data"
-        action="/admin/person/{{ p.id }}/document">
-    <h3>{{ t("record-attach-document") }}</h3>
-    <div class="filter-row">
-      <label>{{ t('record-file-to-attach') }}
-        <input type="file" name="file" required></label>
-      <label>{{ t('record-document-type') }}
-        <select name="document_type">
-          {% for o in document_types %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
-        </select></label>
-      <label>{{ t("record-caption") }}
-        <input type="text" name="caption"></label>
-      <button class="btn" data-busy="{{ t('busy-working') }}">{{ t("record-upload") }}</button>
-    </div>
-    <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}
-      <details class="sec-help">
-        <summary title="{{ t('record-help-toggle') }}"
-                 aria-label="{{ t('record-help-toggle') }}">?</summary>
-        <span class="small muted">{{ t("record-upload-help", mb=max_upload_mb) }}</span>
-      </details>
-    </p>
-  </form>
-  {% endif %}
-  {% if may_write and show_files %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/documents">{{ t("documents-edit-link") }}</a></p>
-  {% endif %}
+
 </section>
 {% endif %}
 
@@ -600,14 +542,5 @@
 </section>
 {% endif %}
 
-{# --------------------------------------------------------------------- RAW #}
-{% if tab is undefined or tab == "record" %}
-<section id="raw" class="rec-section">
-  <details class="raw">
-    <summary>{{ t("record-raw") }}
-      <span class="small muted">— {{ t("record-raw-summary-note") }}</span></summary>
-    <p class="small muted">{{ t("record-raw-help") }}</p>
-    <pre class="raw-json">{{ p.raw_json }}</pre>
-  </details>
-</section>
-{% endif %}
+{#- The raw JSON is an editing artefact; the record form shows it (edit
+    mode). Read mode has no raw-data section. -#}

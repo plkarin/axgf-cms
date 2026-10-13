@@ -36,6 +36,8 @@ footer-open-format-link = 关于该格式
 ## 偏好设置
 
 settings-title = 设置
+display-menu-label = 语言和显示
+display-settings = 主题和显示…
 settings-tabs-label = 设置的各节
 settings-tab-theme = 配色
 settings-tab-language = 语言
@@ -506,6 +508,7 @@ record-see-in-tree-title = 打开以此人为中心的卡片网格
 record-open-full-page = 打开完整页面 ↗
 record-open-full-title = 打开可单独分享的页面
 record-edit = 编辑
+record-see-in-river = 在河流中查看
 panel-empty = 选择一张卡片，即可在此看到那个人的完整记录。
 person-see-in-tree = 在家谱中查看此人
 person-visibility-inline = 可见范围：

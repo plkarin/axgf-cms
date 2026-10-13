@@ -38,6 +38,8 @@ footer-open-format-link = Sobre o formato
 ## Preferências
 
 settings-title = Definições
+display-menu-label = Idioma e apresentação
+display-settings = Tema e apresentação…
 settings-tabs-label = Secções das definições
 settings-tab-theme = Tema
 settings-tab-language = Língua
@@ -612,6 +614,7 @@ record-see-in-tree-title = Abrir a grelha de fichas em torno desta pessoa
 record-open-full-page = Abrir a página inteira ↗
 record-open-full-title = Abrir a página independente que se pode partilhar
 record-edit = Editar
+record-see-in-river = Ver no rio
 panel-empty = Escolha uma ficha para ver aqui o documento completo dessa pessoa.
 person-see-in-tree = Ver esta pessoa na árvore
 person-visibility-inline = visibilidade:

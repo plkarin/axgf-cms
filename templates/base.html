@@ -29,7 +29,9 @@
         proper noun, so every catalogue carries the same value and a test says
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
-    <a class="brand" href="/">{{ t("app-name") | replace("-", "·") }}</a>
+    {#- Not a link: "Rivière" beside it goes to the same place, and a
+        masthead holds seven controls at most (the minimalism pass). -#}
+    <span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
@@ -49,28 +51,32 @@
       <ul id="masthead-q-list" class="search-suggest" role="listbox" hidden></ul>
     </form>
     <span class="spacer"></span>
+    {#- Seven controls, signed in or not: four sections, the search, the
+        display menu, and either "sign in" or the account menu. What used to
+        sit here beside them — the language select, quality, administration,
+        settings — opens from one of the two menus. -#}
     <nav class="chrome-nav">
+      <details class="display-menu">
+        <summary aria-label="{{ t('display-menu-label') }}">{{ current_locale.code }}</summary>
+        <div class="menu-panel">
+          {{ prefs.language(t, locales, current_locale, back) }}
+          <a href="{{ settings_url }}">{{ t("display-settings") }}</a>
+        </div>
+      </details>
       {% if signed_in %}
-        <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
-        {% if may_write %}
-          <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
-        {% endif %}
-      {% endif %}
-      {{ prefs.language(t, locales, current_locale, back) }}
-      {% if signed_in %}
-        {#- Who is signed in, and the two things to do about it. A <details>,
-            so it opens without a script and closes on a second click. -#}
         <details class="account">
           <summary><span class="initials" aria-hidden="true">{{ viewer_initials }}</span><span class="account-name">{{ viewer_name }}</span></summary>
-          <div class="account-menu">
-            <a href="{{ settings_url }}">{{ t("settings-title") }}</a>
+          <div class="menu-panel">
+            <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
+            {% if may_write %}
+            <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
+            {% endif %}
             <form method="post" action="/admin/logout">
               <button class="btn ghost" type="submit">{{ t("nav-sign-out") }}</button>
             </form>
           </div>
         </details>
       {% else %}
-        <a class="masthead-settings" href="{{ settings_url }}">{{ t("settings-title") }}</a>
         <a class="btn" href="/admin/login">{{ t("nav-sign-in") }}</a>
       {% endif %}
     </nav>

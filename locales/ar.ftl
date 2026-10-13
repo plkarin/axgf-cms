@@ -33,6 +33,8 @@ nav-sign-out = تسجيل الخروج
 account-emergency = رمز الطوارئ
 
 settings-title = الإعدادات
+display-menu-label = اللغة والعرض
+display-settings = السمة والعرض…
 settings-tabs-label = أقسام الإعدادات
 settings-tab-theme = السمة
 settings-tab-language = اللغة
@@ -514,6 +516,7 @@ record-see-in-tree-title = افتح شبكة البطاقات حول هذا ال
 record-open-full-page = افتح الصفحة الكاملة ↗
 record-open-full-title = افتح الصفحة المستقلة القابلة للمشاركة
 record-edit = تحرير
+record-see-in-river = عرض في النهر
 record-living-yes = على قيد الحياة
 record-deceased = متوفّى
 record-display-name = الاسم المعروض

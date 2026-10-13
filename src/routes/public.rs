@@ -489,10 +489,6 @@ pub async fn tree(
             full_width => full_width.round() as i64,
             p => panel,
             selected,
-            history => selected
-                .as_deref()
-                .filter(|_| viewer.signed_in())
-                .map(|id| entity_history(&state, id, viewer.ceiling(), chrome.lang)),
             // How many people this reader is not being shown. Stated rather
             // than hidden: a tree with silent gaps looks like a broken import.
             hidden,
@@ -543,15 +539,7 @@ pub async fn tree_panel(
                 let n =
                     q.n.filter(|n| crate::river::RANGES.contains(n))
                         .unwrap_or(crate::river::DEFAULT_RANGE);
-                river_tab_context(
-                    &state,
-                    &viewer,
-                    chrome.lang,
-                    &p,
-                    q.tab.as_deref(),
-                    q.group.as_deref(),
-                    n,
-                )
+                river_tab_context(n)
             } else {
                 context! {}
             };
@@ -560,7 +548,6 @@ pub async fn tree_panel(
                 "_panel.html",
                 context! {
                     p,
-                    history => viewer.signed_in().then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang)),
                     compact => true,
                     max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
                     document_types => crate::documents::document_type_options(chrome.lang),
@@ -641,43 +628,6 @@ fn day_month(chrome: &render::Chrome, at: &str) -> String {
             ("year", num(0..4).into()),
         ],
     )
-}
-
-/// One person's edit history, newest first, as the record page renders it.
-///
-/// `ceiling` is the reader's authority, and it is here for one reason: a
-/// recorded change carries the value that changed, so a diff of a class
-/// attribute is the diagnosis itself, printed back out beside a record that
-/// withheld it. See [`crate::sensitive::changes_for_reader`].
-fn entity_history(
-    state: &Shared,
-    id: &str,
-    ceiling: crate::acl::Visibility,
-    lang: &str,
-) -> Vec<Value> {
-    let readable = state.read(|flat| {
-        flat.get("persons")
-            .and_then(|c| c.get(id))
-            .map(|p| crate::access::readable_scopes(p, ceiling))
-            // No such person: nothing to disclose, and the journal for an id
-            // that is not in the bundle is somebody's deleted record.
-            .unwrap_or_default()
-    });
-    state
-        .journal()
-        .for_entity("person", id)
-        .into_iter()
-        .map(|e| {
-            json!({
-                "at": e.at,
-                "who": crate::journal::who_in(&e.who, lang),
-                "action": e.action,
-                "version_num": e.version_num,
-                "summary": e.summary_in(lang),
-                "changes": crate::diff::for_reader(&e.changes, readable, "person", lang),
-            })
-        })
-        .collect()
 }
 
 /// The three answers a read of one entity can have.
@@ -840,15 +790,6 @@ pub async fn person(
                     }))
                 })
                 .collect();
-            // The journal names editors, so it is shown to people who are
-            // signed in and to nobody else. Built before the tabs because the
-            // History tab is only offered when there is a reader entitled to
-            // it — an empty tab a signed-out reader cannot ever fill is worse
-            // than no tab.
-            let history = viewer
-                .signed_in()
-                .then(|| entity_history(&state, &id, viewer.ceiling(), chrome.lang));
-            let history_count = history.as_ref().map_or(0, Vec::len);
 
             render::page_with(
                 &chrome,
@@ -856,47 +797,18 @@ pub async fn person(
                 context! {
                     nav => "tree",
                     p,
-                    history,
+                    // Read mode is the whole record on one page: every
+                    // filled section, every filled profile group, no tabs,
+                    // and no edit history — that is an editing concern.
+                    profile_groups => state.read_as(viewer.ceiling(), |flat, lens| {
+                        crate::person::profile_groups_filled(flat, &id, lens, chrome.lang)
+                    }),
+                    full_record => true,
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
                     compact => false,
                     max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
                 document_types => crate::documents::document_type_options(chrome.lang),
-                    tab => tab.slug(),
-                    tabs => crate::person::TABS
-                        .iter()
-                        // The record's edit history is a fact about the people
-                        // keeping the tree, not about the family in it.
-                        .filter(|t| **t != crate::person::Tab::History || history_count > 0)
-                        .map(|t| {
-                            // How much is behind each tab, so a reader can
-                            // tell a full one from an empty one before
-                            // spending a page load on it. The record tab
-                            // carries no count: it is always there and
-                            // counting identity against documents would be
-                            // comparing unlike things.
-                            let count = match t {
-                                crate::person::Tab::Record => 0,
-                                crate::person::Tab::Life => {
-                                    p.timeline.len() + p.occupations.len() + p.places.len()
-                                }
-                                crate::person::Tab::Profile => p.profile_count,
-                                crate::person::Tab::Media => {
-                                    p.sources.len() + p.documents.len()
-                                }
-                                crate::person::Tab::Tree => {
-                                    p.parents.len()
-                                        + p.siblings.len()
-                                        // A group is a couple; the count is of
-                                        // unions, so two records of one couple
-                                        // still count what the reader sees.
-                                        + p.unions.iter().map(|g| g.records.len()).sum::<usize>()
-                                }
-                                crate::person::Tab::History => history_count,
-                            };
-                            json!({"slug": t.slug(), "key": t.key(), "count": count})
-                        })
-                        .collect::<Vec<_>>(),
                     layout,
                     profile_group,
                     // The canvas partial marks the selected card; on this page
@@ -1366,10 +1278,6 @@ pub struct PanelQuery {
     #[serde(default)]
     river: Option<String>,
     #[serde(default)]
-    tab: Option<String>,
-    #[serde(default)]
-    group: Option<String>,
-    #[serde(default)]
     n: Option<usize>,
 }
 
@@ -1382,49 +1290,16 @@ pub struct RiverQuery {
     /// Generations each way: 2, 3 or 5.
     #[serde(default)]
     n: Option<usize>,
-    /// The record tab beside the river (`person::RiverTab`).
-    #[serde(default)]
-    tab: Option<String>,
-    /// The profile group, on the profile tab.
-    #[serde(default)]
-    group: Option<String>,
 }
 
-/// The record tabs beside the river, for one person: what `_panel.html` reads
-/// when `river_tabs` is set. The fiche passes no `tab`, which is what makes the
-/// partial draw every section, so the key is left out rather than set empty.
-fn river_tab_context(
-    state: &Shared,
-    viewer: &crate::access::Viewer,
-    lang: &str,
-    p: &crate::person::PersonView,
-    tab: Option<&str>,
-    group: Option<&str>,
-    n: usize,
-) -> minijinja::Value {
-    let tab = crate::person::RiverTab::from_query(tab);
-    let tabs: Vec<Value> = crate::person::RIVER_TABS
-        .iter()
-        .map(|t| json!({"slug": t.slug(), "key": t.key(), "count": t.count(p)}))
-        .collect();
-    let profile_group = (tab == crate::person::RiverTab::Profile)
-        .then(|| {
-            state.read_as(viewer.ceiling(), |flat, lens| {
-                crate::person::profile_group(flat, &p.id, lens, lang, group)
-            })
-        })
-        .flatten();
-    let base = context! {
+/// What `_panel.html` needs to know beside the river: that it is beside the
+/// river (no grid re-root button) and the range to link back with. There
+/// are no tabs any more — the panel is the record's filled sections, in read
+/// mode (the minimalism pass) — so an old `?tab=` is simply not read.
+fn river_tab_context(n: usize) -> minijinja::Value {
+    context! {
         river_tabs => true,
-        river_tab => tab.slug(),
         river_n => n,
-        tabs,
-        profile_group,
-    };
-    if tab == crate::person::RiverTab::Fiche {
-        base
-    } else {
-        context! { tab => tab.slug(), ..base }
     }
 }
 
@@ -1546,17 +1421,7 @@ pub async fn river(
     let tab_ctx = v
         .panel
         .as_ref()
-        .map(|p| {
-            river_tab_context(
-                &state,
-                &viewer,
-                chrome.lang,
-                p,
-                q.tab.as_deref(),
-                q.group.as_deref(),
-                v.n,
-            )
-        })
+        .map(|_| river_tab_context(v.n))
         .unwrap_or_else(|| context! {});
     // The reader's choice between travel and cut, remembered across pages
     // and reloads ([`RIVER_MOTION_COOKIE`]); prefers-reduced-motion still

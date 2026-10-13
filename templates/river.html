@@ -11,8 +11,7 @@
 <p class="notice restricted-notice river-notice" role="status">
   {{ t("tree-hidden-notice", n=hidden) }}
   {%- if signed_in %}{{ t("tree-hidden-because-role") }}
-  {%- else %}{{ t("tree-hidden-because-anonymous") }}
-    <a href="/admin/login">{{ t("tree-hidden-sign-in") }}</a>
+  {%- else %}{{ t("tree-hidden-because-anonymous") }} {{ t("tree-hidden-sign-in") }}
   {%- endif %}
 </p>
 {% endif %}
@@ -27,24 +26,29 @@
   <section class="rv-stage" aria-label="{{ t('nav-river') }}">
     <div class="rv-controls">
       <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
-      <ol class="rv-trail" aria-labelledby="rv-trail-label">
+      {#- The itinerary is content: one chip per person visited. -#}
+      <ol class="rv-trail" aria-labelledby="rv-trail-label" data-content>
         <li><a class="btn small rv-chip" aria-current="page" href="/?p={{ centre_q }}&amp;n={{ n }}">{{ centre_name }}</a></li>
       </ol>
-      <button type="button" class="btn small" id="rv-back" disabled>{{ t("river-back") }}</button>
-      <div class="rv-seg" role="group" aria-label="{{ t('river-range') }}">
-        {%- for r in ranges %}
-        <a class="btn small" href="/?p={{ centre_q }}&amp;n={{ r }}{% if river_tab and river_tab != 'record' %}&amp;tab={{ river_tab }}{% endif %}" data-range="{{ r }}"
-           {%- if r == n %} aria-current="true"{% endif %}>± {{ r }}</a>
-        {%- endfor %}
-      </div>
-      <div class="rv-seg" role="group" aria-label="{{ t('river-motion') }}">
-        <button type="button" class="btn small" data-motion="travel" aria-pressed="{{ 'false' if motion_cut else 'true' }}">{{ t("river-travel") }}</button>
-        <button type="button" class="btn small" data-motion="cut" aria-pressed="{{ 'true' if motion_cut else 'false' }}">{{ t("river-cut") }}</button>
-      </div>
-      <a class="btn small rv-grid" href="/tree?root={{ centre_q }}">{{ t("river-grid-link") }}</a>
+      {#- Hidden until there is somewhere to go back to: nothing to do is
+          nothing drawn (the minimalism pass). -#}
+      <button type="button" class="btn small" id="rv-back" hidden>{{ t("river-back") }}</button>
+      {#- The range: one select. river.js applies it in place; without the
+          script, the form reloads at the chosen range. Travel or cut is a
+          reading preference now, in the settings. -#}
+      <form class="rv-range" method="get" action="/">
+        <input type="hidden" name="p" value="{{ centre_q }}" data-range-p>
+        <label class="rv-eyebrow" for="rv-range">{{ t("river-range") }}</label>
+        <select name="n" id="rv-range" data-range-select>
+          {%- for r in ranges %}
+          <option value="{{ r }}" {{ "selected" if r == n }}>± {{ r }}</option>
+          {%- endfor %}
+        </select>
+        <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+      </form>
     </div>
 
-    <div class="rv-canvas" id="rv-canvas">{{ svg|safe }}</div>
+    <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}</div>
 
     <div class="rv-legend" role="note" aria-label="{{ t('river-legend-title') }}">
       <span><i class="rv-key rv-key-a"></i>{{ t("river-legend-attested") }}</span>

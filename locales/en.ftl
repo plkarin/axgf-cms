@@ -27,6 +27,8 @@ footer-open-format-link = About the format
 ## Preferences
 
 settings-title = Settings
+display-menu-label = Language and display
+display-settings = Theme and display…
 settings-tabs-label = Settings sections
 settings-tab-theme = Theme
 settings-tab-language = Language
@@ -613,6 +615,7 @@ record-see-in-tree-title = Open the grid of cards around this person
 record-open-full-page = Open full page ↗
 record-open-full-title = Open the standalone, shareable page
 record-edit = Edit
+record-see-in-river = See in the river
 panel-empty = Select a card to see that person's full record here.
 person-see-in-tree = See this person in the tree
 person-visibility-inline = visibility:

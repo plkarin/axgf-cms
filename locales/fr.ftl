@@ -22,6 +22,8 @@ account-emergency = Jeton d’urgence
 ## Préférences
 
 settings-title = Réglages
+display-menu-label = Langue et affichage
+display-settings = Thème et affichage…
 settings-tabs-label = Sections des réglages
 settings-tab-theme = Thème
 settings-tab-language = Langue
@@ -609,6 +611,7 @@ record-see-in-tree-title = Ouvrir la grille de fiches autour de cette personne
 record-open-full-page = Ouvrir la page entière ↗
 record-open-full-title = Ouvrir la page autonome et partageable
 record-edit = Modifier
+record-see-in-river = Voir dans la rivière
 panel-empty = Sélectionnez une fiche pour voir ici le dossier complet de cette personne.
 person-see-in-tree = Voir cette personne dans l'arbre
 person-visibility-inline = visibilité :

@@ -38,6 +38,8 @@ footer-open-format-link = Über das Format
 ## Einstellungen
 
 settings-title = Einstellungen
+display-menu-label = Sprache und Anzeige
+display-settings = Farbschema und Anzeige …
 settings-tabs-label = Abschnitte der Einstellungen
 settings-tab-theme = Farbschema
 settings-tab-language = Sprache
@@ -608,6 +610,7 @@ record-see-in-tree-title = Das Kartenraster um diese Person öffnen
 record-open-full-page = Ganze Seite öffnen ↗
 record-open-full-title = Die eigenständige, teilbare Seite öffnen
 record-edit = Bearbeiten
+record-see-in-river = Im Fluss ansehen
 panel-empty = Wählen Sie eine Karte, um hier den vollständigen Eintrag dieser Person zu sehen.
 person-see-in-tree = Diese Person im Stammbaum ansehen
 person-visibility-inline = Sichtbarkeit:

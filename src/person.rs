@@ -653,6 +653,36 @@ pub fn profile_group(
     Some(crate::profile::view::group(&lifted, chosen, &reader))
 }
 
+/// Every profile group this reader sees something in — recorded attributes,
+/// or a class withheld from them — in the groups' own order. Read mode draws
+/// these and nothing else: a group with no filled field does not exist there
+/// (the minimalism pass). A withheld class is not emptiness; it is "there is
+/// something here you may not see", which is true.
+pub fn profile_groups_filled(
+    flat: &Value,
+    id: &str,
+    lens: &crate::access::Lens,
+    lang: &str,
+) -> Vec<crate::profile::view::GroupView> {
+    let Some(person) = flat.get("persons").and_then(|p| p.get(id)) else {
+        return Vec::new();
+    };
+    let lifted = crate::profile::lift::lift(person);
+    let withheld_documents = crate::access::withheld_documents(flat, lens.ceiling());
+    let reader = crate::profile::view::Reader {
+        flat,
+        lang,
+        readable: crate::access::readable_scopes(person, lens.ceiling()),
+        withheld_documents: &withheld_documents,
+    };
+    crate::profile::view::tabs(&lifted, &reader)
+        .into_iter()
+        .filter_map(|t| crate::profile::group(t.key))
+        .map(|g| crate::profile::view::group(&lifted, g, &reader))
+        .filter(|g| !g.attributes.is_empty() || !g.withheld.is_empty())
+        .collect()
+}
+
 /// Read a non-empty string field.
 fn str_field(v: &Value, key: &str) -> Option<String> {
     v.get(key)

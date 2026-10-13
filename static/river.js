@@ -293,10 +293,10 @@
         cur = body.river; remember(cur);
         if (!fromHistory) {
           if (id !== trail[trail.length - 1]) trail = trail.filter(function (x) { return x !== id; }).concat([id]).slice(-7);
-          history.pushState({ p: id, n: n, tab: tab }, '', url(id, n));
+          history.pushState({ p: id, n: n }, '', url(id, n));
         }
         swapPanel(id); controls(n);
-        var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; };
+        var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; sizeHits(); };
         if (cut || reduce) return done();
         var t0 = performance.now();
         (function tick(now) {
@@ -307,14 +307,12 @@
       })
       .catch(function () { busy = false; location.href = url(id, n); });
   }
-  // The record tab beside the river; kept across travel.
-  var tab = new URLSearchParams(location.search).get('tab') || 'record';
   function url(id, n) {
-    return base + '?p=' + encodeURIComponent(id) + '&n=' + n + (tab !== 'record' ? '&tab=' + encodeURIComponent(tab) : '');
+    return base + '?p=' + encodeURIComponent(id) + '&n=' + n;
   }
   function swapPanel(id) {
     if (!panel) return;
-    fetch('/tree/panel/' + encodeURIComponent(id) + '?river=1&n=' + cur.layout.meta.n + (tab !== 'record' ? '&tab=' + encodeURIComponent(tab) : ''), { credentials: 'same-origin' })
+    fetch('/tree/panel/' + encodeURIComponent(id) + '?river=1&n=' + cur.layout.meta.n, { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.text() : null; })
       .then(function (html) {
         // A record this reader may not read is refused, and the panel says
@@ -327,16 +325,19 @@
   }
   function controls(n) {
     var c = cur.layout.meta.centre;
-    root.querySelectorAll('[data-range]').forEach(function (a) {
-      a.href = url(c, a.dataset.range);
-      if (+a.dataset.range === n) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
-    });
-    var grid = root.querySelector('.rv-grid'); if (grid) grid.href = '/tree?root=' + encodeURIComponent(c);
+    // The range is one select (the minimalism pass); its form's `p` follows
+    // the centre so that, without this script, submitting it still works.
+    var sel = root.querySelector('select[data-range-select]');
+    if (sel) sel.value = String(n);
+    var pin = root.querySelector('input[data-range-p]');
+    if (pin) pin.value = c;
     var ol = root.querySelector('.rv-trail');
     ol.innerHTML = trail.map(function (id) {
       return '<li><a class="btn small rv-chip" data-go="' + esc(id) + '" href="' + base + '?p=' + encodeURIComponent(id) + '&amp;n=' + n + '"' + (id === c ? ' aria-current="page"' : '') + '>' + esc(names[id] || '·') + '</a></li>';
     }).join('');
-    back.disabled = trail.length < 2;
+    // Nothing to go back to is nothing drawn: hidden, not disabled.
+    back.hidden = trail.length < 2;
+    sizeHits();
   }
   function goBack() {
     if (trail.length < 2) return;
@@ -357,10 +358,35 @@
     cur.layout.persons.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p.id; } });
     return best;
   }
+  // A target a finger can hit (44 CSS px): the hit circle is sized for the
+  // drawing's current scale, never below its drawn 20 units.
+  function sizeHits() {
+    var svg = canvas.querySelector('svg'); if (!svg) return;
+    var box = svg.getBoundingClientRect(); if (!box.width) return;
+    var r = Math.max(20, 22 * cur.layout.meta.hview[1] / box.width);
+    canvas.querySelectorAll('a.rv-p > circle:first-child').forEach(function (c) { c.setAttribute('r', r.toFixed(1)); });
+  }
+  window.addEventListener('resize', sizeHits);
+  // Hover does not exist on a tablet. "Tap to look, tap again to go": the
+  // first tap on a person does what hovering does with a mouse — lights the
+  // route from the centre and shows their dropped label — and a second tap
+  // on the same person travels there. A tap on open water clears it.
+  var looked = null;
   canvas.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('.rv-p');
     var id = a ? a.getAttribute('data-id') : touch ? nearest(e) : null;
+    if (touch && !busy) {
+      e.preventDefault();
+      if (!id) { looked = null; light(null); return; }
+      if (id !== looked) {
+        looked = id;
+        var p = cur.layout.persons.filter(function (q) { return q.id === id; })[0];
+        light(a ? a.getAttribute('data-key') : p && p.key);
+        return;
+      }
+    }
     if (!id) return;
+    looked = null;
     e.preventDefault(); travel(id);
   });
   canvas.addEventListener('mouseover', function (e) {
@@ -369,30 +395,18 @@
   });
   canvas.addEventListener('mouseleave', function () { if (!busy) light(null); });
   root.addEventListener('click', function (e) {
-    // The controls themselves, not any element that happens to carry the
-    // attribute: <html data-motion> is the reader's motion preference, and
-    // matching it turned a click on any other link here into a motion
-    // toggle; `data-centre` on this root once swallowed every link inside it.
-    var t = e.target.closest && e.target.closest('a[data-range],button[data-motion],a[data-go],button[data-centre],a[data-tab]');
+    // The chips of the itinerary, and the grid panel's re-root: the controls
+    // themselves, not any element that happens to carry the attribute —
+    // `data-centre` on this root once swallowed every link inside it.
+    var t = e.target.closest && e.target.closest('a[data-go],button[data-centre]');
     if (!t || !root.contains(t)) return;
-    if (t.dataset.tab) {
-      // A record tab: the panel changes, the river does not.
-      e.preventDefault();
-      tab = t.dataset.tab;
-      var c = cur.layout.meta.centre;
-      history.pushState({ p: c, n: cur.layout.meta.n, tab: tab }, '', url(c, cur.layout.meta.n));
-      swapPanel(c);
-      return;
-    }
-    if (t.dataset.range) { e.preventDefault(); travel(cur.layout.meta.centre, +t.dataset.range); }
-    else if (t.dataset.motion) {
-      if (t.disabled) return;
-      cut = t.dataset.motion === 'cut';
-      try { document.cookie = 'axgf_river_motion=' + (cut ? 'cut' : 'travel') + '; path=/; max-age=31536000; samesite=lax'; } catch (err) {}
-      motionButtons();
-    } else { e.preventDefault(); travel(t.dataset.go || t.dataset.centre); }
+    e.preventDefault(); travel(t.dataset.go || t.dataset.centre);
   });
   back.addEventListener('click', goBack);
+  root.addEventListener('change', function (e) {
+    var sel = e.target.closest && e.target.closest('select[data-range-select]');
+    if (sel) travel(cur.layout.meta.centre, +sel.value);
+  });
   document.addEventListener('keydown', function (e) {
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -402,25 +416,12 @@
   });
   window.addEventListener('popstate', function (e) {
     if (!e.state || !e.state.p) return;
-    var tabChanged = (e.state.tab || 'record') !== tab;
-    tab = e.state.tab || 'record';
-    if (e.state.p === cur.layout.meta.centre && e.state.n === cur.layout.meta.n) {
-      if (tabChanged) swapPanel(e.state.p);
-    } else {
+    if (e.state.p !== cur.layout.meta.centre || e.state.n !== cur.layout.meta.n) {
       travel(e.state.p, e.state.n, true);
     }
   });
-  // aria-pressed follows the effective motion: a forced cut shows as a cut.
-  function motionButtons() {
-    root.querySelectorAll('button[data-motion]').forEach(function (b) {
-      var isCut = b.dataset.motion === 'cut';
-      b.setAttribute('aria-pressed', String(isCut === (cut || reduce)));
-      if (reduce && !isCut) b.disabled = true;
-    });
-  }
-  motionButtons();
   // The masthead search (ui.js) travels here rather than reloading the page.
   window.axgfRiver = { travel: function (id) { travel(id); } };
-  history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
+  history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n }, '');
   controls(cur.layout.meta.n);
 })();

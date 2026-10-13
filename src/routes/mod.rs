@@ -163,6 +163,7 @@ fn routes(state: Shared) -> Router {
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))
         .route("/prefs/background", post(prefs::background))
+        .route("/prefs", post(prefs::all))
         // Static admin segments are declared alongside the ":kind" routes;
         // the router matches literal segments in preference to a parameter.
         .route("/admin", get(admin::dashboard))

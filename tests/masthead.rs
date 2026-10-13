@@ -73,7 +73,11 @@ async fn signed_out_the_language_is_a_select_and_sign_in_is_secondary() {
     let (app, _s) = app_with_empty_bundle("masthead-out");
     let html = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
     let bar = masthead(&html);
-    assert!(bar.contains(">ax·genealogy</a>"), "the wordmark: {bar}");
+    // The wordmark is text: "Rivière" beside it is the link to the same place.
+    assert!(
+        bar.contains(r#"<span class="brand">ax·genealogy</span>"#),
+        "the wordmark: {bar}"
+    );
     assert!(
         bar.contains(r#"<select name="lang""#),
         "a real select: {bar}"

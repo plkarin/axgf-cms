@@ -129,16 +129,13 @@
    this macro never sees a key and cannot be given an English sentence by
    accident. `t` is passed in because an imported macro does not inherit the
    including template's context. #}
+{#- Read mode draws the heading and nothing else (the minimalism pass): the
+    "?" beside every heading was a control per section, and the record says
+    what a section is better than a sentence about it. `help` is kept in the
+    signature so callers need not change. -#}
 {% macro sec(t, title, compact, help) %}
 <div class="sec-head">
   <h2>{{ title }}</h2>
-  {%- if help %}
-  <details class="sec-help">
-    <summary title="{{ t('record-help-toggle') }}"
-             aria-label="{{ t('record-help-toggle') }}">?</summary>
-    <p class="small muted">{{ help }}</p>
-  </details>
-  {%- endif %}
 </div>
 {% endmacro %}
 

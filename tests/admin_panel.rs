@@ -863,14 +863,17 @@ async fn a_couple_entered_twice_is_grouped_named_and_actionable() {
         "and rules out the wrong reading"
     );
 
-    // With a way to act on it, naming both families.
+    // The record is read mode, so the merge is not offered on it: the
+    // administration page runs the library's deduplication (the
+    // minimalism pass, read/edit separation).
     assert!(
-        page.contains(r#"action="/admin/dedup""#),
-        "an administrator is offered the merge: {page}"
+        !page.contains(r#"action="/admin/dedup""#),
+        "no edit control on the record"
     );
+    let dash = body_string(get_admin(&app, "/admin").await).await;
     assert!(
-        page.contains("fam-full,fam-thin") || page.contains("fam-thin,fam-full"),
-        "and it names the pair: {page}"
+        dash.contains(r#"action="/admin/dedup""#),
+        "the administration page offers it"
     );
 
     // A reader who cannot edit is told what the page holds but offered no

@@ -221,46 +221,20 @@ async fn gender_living_and_visibility_are_labelled_chips_not_a_run_on_string() {
     );
 }
 
-/// Section prose is one click away on both surfaces.
-///
-/// It used to be printed under the heading on the standalone page and folded
-/// behind a `?` only in the narrow panel. Printed, it is the page explaining
-/// itself above content that says it better; the words are still there for
-/// whoever wants them.
+/// No section carries a "?" in read mode (the minimalism pass): a disclosure
+/// per heading was a control per section, and the record says what a section
+/// is better than a sentence about it.
 #[tokio::test]
-async fn section_prose_is_behind_a_question_mark_on_both_surfaces() {
+async fn no_section_carries_a_help_disclosure_in_read_mode() {
     let (app, _p) = app_with_bundle("panel-help", &bundle("panel-help-src"));
-    let opening = "Birth, death and every event this person took part in";
-
     for (surface, body) in [
         ("the standalone page", page(&app, SOLO).await),
         ("the panel", panel(&app, SOLO).await),
     ] {
+        assert!(!body.contains("sec-help"), "{surface}");
         assert!(
-            body.contains("sec-help"),
-            "{surface} puts the explanation behind a small affordance"
-        );
-        assert!(
-            body.contains(opening),
-            "…without dropping the words: {surface} must not be a lesser record"
-        );
-        // The prose is inside the collapsed <details>, not loose in the
-        // section. Anchored on `sec-help` because the full page's first
-        // disclosure is the masthead's preferences menu, which the panel
-        // fragment does not carry.
-        let after_summary = body
-            .split("class=\"sec-help\"")
-            .nth(1)
-            .expect("a section disclosure")
-            .split("</summary>")
-            .nth(1)
-            .unwrap_or("");
-        assert!(
-            after_summary
-                .trim_start()
-                .starts_with("<p class=\"small muted\">"),
-            "on {surface} the text must live inside the disclosure, not beside \
-             it:\n{after_summary:.120}"
+            body.contains(r#"<div class="sec-head">"#),
+            "{surface} still heads its sections"
         );
     }
 }

@@ -37,6 +37,8 @@ footer-open-format-link = 形式について
 ## 設定
 
 settings-title = 設定
+display-menu-label = 言語と表示
+display-settings = テーマと表示…
 settings-tabs-label = 設定の節
 settings-tab-theme = 配色
 settings-tab-language = 言語
@@ -507,6 +509,7 @@ record-see-in-tree-title = この人を中心にカード一覧を開く
 record-open-full-page = 単独のページで開く ↗
 record-open-full-title = 共有できる単独のページを開く
 record-edit = 編集
+record-see-in-river = 川で見る
 panel-empty = カードを選ぶと、その人の記録の全体がここに表示されます。
 person-see-in-tree = この人を家系図で見る
 person-visibility-inline = 公開範囲:

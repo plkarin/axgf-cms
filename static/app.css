@@ -439,8 +439,8 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 }
 
 /* Signed in: an initials chip and the name, opening onto a short menu. */
-.account { position: relative; }
-.account > summary {
+.account, .display-menu { position: relative; }
+.account > summary, .display-menu > summary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -450,9 +450,19 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   font-size: var(--type-minor);
   padding-block: 0.2rem;
 }
-.account > summary::-webkit-details-marker { display: none; }
-.account > summary::after { content: "▾"; font-size: 0.8em; color: var(--text-tertiary); }
-.account > summary:hover { color: var(--text-primary); }
+.account > summary::-webkit-details-marker,
+.display-menu > summary::-webkit-details-marker { display: none; }
+.account > summary::after,
+.display-menu > summary::after { content: "▾"; font-size: 0.8em; color: var(--text-tertiary); }
+.account > summary:hover, .display-menu > summary:hover { color: var(--text-primary); }
+/* The display menu's summary is the language's two-letter code (B5). */
+.display-menu > summary {
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
 .initials {
   display: inline-grid;
   place-items: center;
@@ -466,7 +476,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   font-size: var(--type-micro);
   letter-spacing: 0.02em;
 }
-.account-menu {
+.menu-panel {
   position: absolute;
   inset-inline-end: 0;
   inset-block-start: calc(100% + 8px);
@@ -479,7 +489,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   border-radius: 2px;
   z-index: 50;
 }
-.account-menu a, .account-menu .btn {
+.menu-panel > a, .menu-panel .btn {
   display: flex;
   align-items: center;
   inline-size: 100%;
@@ -492,9 +502,10 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   border-radius: 2px;
   justify-content: flex-start;
 }
-.account-menu a:hover, .account-menu .btn:hover { background: var(--surface-hover); }
-.account-menu form { margin: 0; }
-.masthead-settings { font-size: var(--type-minor); }
+.menu-panel > a:hover, .menu-panel .btn:hover { background: var(--surface-hover); }
+.menu-panel > a[aria-current="page"] { border-bottom: 0; text-decoration: underline; text-decoration-thickness: 2px; }
+.menu-panel .lang-form { padding: 4px 0.6rem 6px; }
+.menu-panel form { margin: 0; }
 
 main {
   max-width: 1180px;
@@ -3298,9 +3309,16 @@ a.tcard:hover {
    What is left here is layout: the itinerary's chips, and the joined sets
    whose current member is pressed. */
 .rv-chip { font-size: var(--type-rv-chip); }
-.rv-seg { display: flex; }
-.rv-seg > .btn { font-family: var(--rv-mono); font-size: var(--type-rv-seg); }
-.rv-seg > .btn + .btn { margin-inline-start: -1px; }
+/* The range: one native select, the river's mono. */
+.rv-range { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; }
+.rv-range [hidden] { display: none; }
+.rv-range select {
+  inline-size: auto;
+  block-size: 28px;
+  padding-inline: 0.5rem 0.25rem;
+  font-family: var(--rv-mono);
+  font-size: var(--type-rv-seg);
+}
 /* The canvas is as tall as its drawing. Stretched to the record panel beside
    it, it pushed the legend away from the river it explains and put back, as
    page, the empty height the cropped viewBox had just taken out. */

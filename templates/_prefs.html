@@ -10,6 +10,6 @@
     <option value="{{ l.tag }}" lang="{{ l.tag }}" {{ "selected" if l.tag == current_locale.tag }}>{{ l.code }}</option>
     {% endfor %}
   </select>
-  <button class="btn small" type="submit" data-autosubmit-go>{{ t("prefs-apply") }}</button>
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
 </form>
 {% endmacro %}

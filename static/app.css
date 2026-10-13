@@ -281,6 +281,10 @@ html {
    than tracking. The tree keeps the static wash, which is what it had. */
 
 body {
+  /* A filename, a path, an identifier: an unbroken string must break rather
+     than push the page sideways, at any text size (the overflow check of the
+     minimalism pass found photo captions and the journal's path doing it). */
+  overflow-wrap: anywhere;
   margin: 0;
   background: transparent;
   color: var(--text-primary);
@@ -1001,7 +1005,9 @@ td.num, th.num, .conf-pct, .tdates {
   font-variant-numeric: tabular-nums;
 }
 td.num, th.num { text-align: end; }
-.table-wrap { overflow-x: auto; }
+/* Positioned, so what is absolutely placed inside (the screen-reader text)
+   scrolls with the table instead of widening the page. */
+.table-wrap { overflow-x: auto; position: relative; }
 
 /* ---------- forms ---------- */
 
@@ -1056,7 +1062,7 @@ label > input, label > select, label > textarea, label > .date-input { margin-to
   color: var(--text-tertiary);
   margin-top: 0.3rem;
 }
-fieldset { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; }
+fieldset { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; min-inline-size: 0; }
 legend { font-size: var(--type-small); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); padding: 0 0.4rem; }
 
 /* ---------- diagnostics ---------- */
@@ -2965,6 +2971,11 @@ a.tcard:hover {
    frame and the padding, and a table that keeps its own inset inside that
    reads as a block within a block that is not one. */
 .rec-section > .table-wrap { margin-inline: -1.3rem; width: calc(100% + 2.6rem); }
+/* On a narrow screen, or with large text, the bleed into the section's
+   padding pushed the table past the page's edge; it stays inside instead. */
+@media (max-width: 40em) {
+  .rec-section > .table-wrap { margin-inline: 0; width: 100%; }
+}
 .rec-section > .table-wrap > table { font-size: var(--type-minor); }
 .rec-section > .table-wrap th:first-child,
 .rec-section > .table-wrap td:first-child { padding-inline-start: 1.3rem; }

@@ -151,12 +151,11 @@ async fn the_river_is_drawn_on_the_server() {
     assert!(body.contains("record ends") && !body.contains("line lost"));
     // Without JavaScript every person is a link that re-centres the river.
     assert!(body.contains(r#"href="/?p=p05&amp;n=3""#));
-    // The range segment is three links.
+    // The range is one select, which works without JavaScript as a form.
+    assert!(body.contains(r#"data-range-select"#));
     for n in [2, 3, 5] {
-        assert!(body.contains(&format!(r#"data-range="{n}""#)));
+        assert!(body.contains(&format!(r#"<option value="{n}""#)));
     }
-    // The grid keeps its route and a link from the river.
-    assert!(body.contains(r#"href="/tree?root=p07""#));
     // The record panel is the existing partial.
     assert!(body.contains(r#"class="panel-inner" data-person="p07""#));
     assert!(body.contains(r#"id="rv-data""#));
@@ -206,7 +205,9 @@ async fn the_travel_endpoint_returns_layout_and_svg() {
 async fn an_empty_archive_lands_on_the_overview() {
     let (app, _d) = app_with_empty_bundle("river-empty");
     let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
-    assert!(body.contains("What the family has recorded so far"));
+    // The overview, saying so — and no heading over a row of zeros.
+    assert!(body.contains("Nothing recorded yet."));
+    assert!(!body.contains("What the family has recorded so far"));
 }
 
 #[tokio::test]
@@ -383,7 +384,7 @@ fn the_twelve_person_river_matches_its_snapshot() {
         "lost lines fade in user space"
     );
     assert!(
-        svg.contains(r##"r="3.4" fill="#0c1310""##),
+        svg.contains(r#"<circle class="k-bg" "#) && svg.contains(r#"r="3.4" stroke="#),
         "and end in an open ring"
     );
     assert!(svg.contains("VIVANTS"));
@@ -485,20 +486,20 @@ fn a_signed_out_visitor_gets_no_bands() {
     let svg = out.svg("river");
     assert!(!out.layout.meta.bands);
     assert!(
-        !svg.contains(r##"stroke="#18241f""##) && !svg.contains("VIVANTS"),
+        !svg.contains(r#"class="k-band-rule""#) && !svg.contains("VIVANTS"),
         "no band rules, no band names"
     );
     let inn = river::build(&flat, &lens, &g, "p07", 3, Shape::default(), words(), true).unwrap();
-    assert!(inn.layout.meta.bands && inn.svg("river").contains(r##"stroke="#18241f""##));
+    assert!(inn.layout.meta.bands && inn.svg("river").contains(r#"class="k-band-rule""#));
 }
 
 #[tokio::test]
 async fn the_signed_out_page_has_no_bands_and_the_signed_in_page_does() {
     let (app, _d) = app("river-bands");
     let anon = body_string(get(&app, "/?p=p07").await).await;
-    assert!(!anon.contains(r##"stroke="#18241f""##));
+    assert!(!anon.contains(r#"class="k-band-rule""#));
     let admin = body_string(get_admin(&app, "/?p=p07").await).await;
-    assert!(admin.contains(r##"stroke="#18241f""##));
+    assert!(admin.contains(r#"class="k-band-rule""#));
 }
 
 #[test]
@@ -513,7 +514,7 @@ fn with_no_visible_year_the_river_has_no_era_at_all() {
         let svg = r.svg("river");
         let payload = serde_json::to_string(&r.payload()).unwrap();
         // No band, no year, and one colour.
-        assert!(!svg.contains(r##"stroke="#18241f""##));
+        assert!(!svg.contains(r#"class="k-band-rule""#));
         for year in [
             "1800", "1830", "1858", "1888", "1914", "1950", "1990", "1900", "1700",
         ] {
@@ -808,70 +809,42 @@ fn siblings_follow_birth_dates_only_where_the_reader_sees_every_sibling() {
 }
 
 #[tokio::test]
-async fn the_record_beside_the_river_has_six_tabs_regrouping_what_was_there() {
+async fn the_record_beside_the_river_is_one_read_and_one_way_on() {
+    // Beside the river the record is read mode: its filled sections, no tabs
+    // (the minimalism pass), the way to the whole record, and — for somebody
+    // who may edit — the one way into editing.
     let (app, _d) = app("river-tabs");
-    let page = |tab: &str| {
-        let uri = if tab.is_empty() {
-            "/?p=p07".to_string()
-        } else {
-            format!("/?p=p07&tab={tab}")
-        };
-        let app = app.clone();
-        async move { body_string(get_admin(&app, &uri).await).await }
-    };
-    // The fiche is the panel as it was: every section.
-    let fiche = page("").await;
-    for slug in ["record", "family", "life", "sources", "media", "profile"] {
-        assert!(
-            fiche.contains(&format!(r#"data-tab="{slug}""#)),
-            "tab {slug}"
-        );
-    }
-    let current = |html: &str, slug: &str| {
-        html.split(&format!(r#"data-tab="{slug}""#))
-            .nth(1)
-            .is_some_and(|rest| rest[..rest.find('>').unwrap()].contains("is-current"))
-    };
+    let fiche = body_string(get_admin(&app, "/?p=p07").await).await;
     assert!(
-        current(&fiche, "record") && !current(&fiche, "family"),
-        "the fiche is the tab open by default"
+        !fiche.contains("data-tab=") && !fiche.contains("rv-tabs"),
+        "no tabs"
     );
     for section in [r#"id="identity""#, r#"id="family""#, r#"id="evidence""#] {
-        assert!(fiche.contains(section), "the fiche draws {section}");
+        assert!(fiche.contains(section), "the panel draws {section}");
     }
     assert!(fiche.contains("SOURCEMARK") && fiche.contains("DOCMARK"));
-
-    let family = page("family").await;
-    assert!(current(&family, "family") && !current(&family, "record"));
-    assert!(family.contains(r#"id="family""#));
-    assert!(!family.contains(r#"id="identity""#) && !family.contains(r#"id="evidence""#));
-
-    let life = page("life").await;
-    assert!(!life.contains(r#"id="family""#) && !life.contains(r#"id="identity""#));
-
-    let sources = page("sources").await;
     assert!(
-        sources.contains("SOURCEMARK"),
-        "the sources tab draws the sources"
+        fiche.contains(r#"href="/person/p07""#),
+        "the whole record, one link away"
     );
-    assert!(!sources.contains("DOCMARK"), "and not the documents");
-
-    let media = page("media").await;
-    assert!(
-        media.contains("DOCMARK"),
-        "the media tab draws the documents"
+    assert_eq!(
+        fiche.matches(r#"href="/admin/person/p07/edit""#).count(),
+        1,
+        "one way into editing"
     );
-    assert!(!media.contains("SOURCEMARK"), "and not the sources");
-
-    let profile = page("profile").await;
-    assert!(profile.contains(r#"class="profile-groups""#));
-
-    // The fragment the client swaps in carries the same tabs when asked.
-    let frag = body_string(get_admin(&app, "/tree/panel/p07?river=1&tab=sources").await).await;
+    // An old tab address lands on the same panel.
+    for tab in ["family", "sources", "media", "profile"] {
+        let page = body_string(get_admin(&app, &format!("/?p=p07&tab={tab}")).await).await;
+        assert!(
+            page.contains(r#"id="identity""#) && page.contains("SOURCEMARK"),
+            "{tab}"
+        );
+    }
+    // A visitor gets no way into editing at all.
+    let anon = body_string(get(&app, "/?p=p07").await).await;
     assert!(
-        frag.contains(r#"data-tab="sources""#)
-            && frag.contains("SOURCEMARK")
-            && !frag.contains("DOCMARK")
+        !anon.contains("/admin/person") && !anon.contains("/edit\""),
+        "no edit control for a visitor"
     );
 }
 
@@ -897,42 +870,58 @@ async fn the_grid_panel_and_the_person_page_are_unchanged_by_the_river_tabs() {
 /// system does.
 #[tokio::test]
 async fn a_cut_choice_survives_pages_and_reloads_and_reduced_motion_still_forces_it() {
+    // Travel or cut is a reading preference, set in the settings form (it
+    // used to be two buttons on the river; the minimalism pass moved them).
     let (app, _s) = app("river-motion");
     let plain = body_string(get(&app, "/?p=p07&n=3").await).await;
     assert!(plain.contains(r#"data-river-motion="travel""#));
-    assert!(plain.contains(r#"data-motion="travel" aria-pressed="true""#));
+    assert!(
+        !plain.contains(r#"data-motion="travel""#) && !plain.contains(r#"data-motion="cut""#),
+        "no motion buttons on the river (<html data-motion> is the page's own)"
+    );
+
+    let set = post_form(
+        &app,
+        "/prefs",
+        "theme=dark&lang=en&style=comfortable&motion=cut&back=%2F",
+        false,
+    )
+    .await;
+    let cookies: Vec<String> = set
+        .headers()
+        .get_all(axum::http::header::SET_COOKIE)
+        .iter()
+        .map(|v| v.to_str().unwrap().to_string())
+        .collect();
+    assert!(
+        cookies
+            .iter()
+            .any(|c| c.starts_with("axgf_river_motion=cut")),
+        "{cookies:?}"
+    );
 
     for uri in ["/?p=p07&n=3", "/?p=p05&n=5", "/?p=p07&n=2&tab=family"] {
         let page = body_string(get_with_cookie(&app, uri, "axgf_river_motion=cut").await).await;
         assert!(page.contains(r#"data-river-motion="cut""#), "{uri}");
-        assert!(
-            page.contains(r#"data-motion="cut" aria-pressed="true""#),
-            "{uri}"
-        );
-        assert!(
-            page.contains(r#"data-motion="travel" aria-pressed="false""#),
-            "{uri}"
-        );
     }
+    let settings =
+        body_string(get_with_cookie(&app, "/settings", "axgf_river_motion=cut").await).await;
+    assert!(
+        settings.contains(r#"<option value="cut" selected>"#),
+        "the settings show it"
+    );
 
     let js = axgf_cms::render::RIVER_JS;
     assert!(
         js.contains("root.dataset.riverMotion === 'cut'"),
         "river.js starts from the rendered choice"
     );
-    assert!(js.contains("axgf_river_motion="), "and remembers a new one");
     assert!(
         js.contains("if (cut || reduce) return done();"),
         "a forced cut never animates"
     );
-    assert!(
-        js.contains("if (reduce && !isCut) b.disabled = true;"),
-        "and says so"
-    );
-    // The page's own <html data-motion> must never be taken for the control.
-    assert!(
-        js.contains("button[data-motion]") && !js.contains("closest('[data-range],[data-motion]")
-    );
+    // The page's own <html data-motion> must never be taken for a control.
+    assert!(!js.contains("[data-motion]"));
 }
 
 /// The data-quality screen, beside the invariant above it: a reader learns
@@ -1018,5 +1007,27 @@ async fn the_quality_screen_tells_a_reader_nothing_about_someone_hidden_from_the
         json.as_array().unwrap().len(),
         without,
         "the viewer's count is the count without the hidden person"
+    );
+}
+
+/// Tap to look, tap again to go (ADR 0002 §6). A browser cannot run here, so
+/// this pins the three things the touch walk found broken: the mouse events a
+/// browser fakes after a tap put the lit route out again; the lit label lay
+/// over the person and swallowed the second tap; and "Back" showed before
+/// there was anywhere to go back to.
+#[test]
+fn a_tap_lights_the_route_and_a_second_tap_on_it_travels() {
+    let js = include_str!("../static/river.js");
+    let css = include_str!("../static/app.css");
+    assert!(
+        !js.contains("'mouseover'") && !js.contains("'mouseleave'"),
+        "hover listens to pointers, not to the mouse events a tap fakes"
+    );
+    assert!(js.contains("canvas.addEventListener('pointerover', function (e) {\n    if (e.pointerType === 'touch' || busy) return;"));
+    assert!(js.contains("if (e.pointerType !== 'touch' && !busy) light(null);"));
+    assert!(css.contains(".rv-svg .rv-lit, .rv-svg .rv-hl { pointer-events: none; }"));
+    assert!(
+        css.contains("[hidden] { display: none !important; }"),
+        "a hidden button stays hidden whatever its class says"
     );
 }

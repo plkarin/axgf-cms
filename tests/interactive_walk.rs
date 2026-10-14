@@ -207,8 +207,9 @@ async fn accepts(app: &axum::Router, method: &str, path: &str, cookie: Option<&s
 
 /// The selectors a script binds: the argument of every `querySelector`,
 /// `querySelectorAll`, `closest` and `getElementById` call, the last as
-/// `#id`. Those passed to `closest` are returned separately: they are
-/// delegation targets, which must not swallow other controls.
+/// `#id`. Those passed to `closest` on an event's target are returned
+/// separately: they are delegation targets, which must not swallow other
+/// controls.
 fn bound_selectors(js: &str) -> (Vec<String>, Vec<String>) {
     let (mut all, mut closest) = (Vec::new(), Vec::new());
     for call in [
@@ -231,7 +232,10 @@ fn bound_selectors(js: &str) -> (Vec<String>, Vec<String>) {
             } else {
                 arg.to_string()
             };
-            if call == "closest(" {
+            // Delegation is `closest` on an event's target. On anything else
+            // (`frame.closest('label')`) it is a lookup from an element the
+            // script already holds, and claims no clicks.
+            if call == "closest(" && js[..at].ends_with("target.") {
                 closest.push(sel.clone());
             }
             all.push(sel);
@@ -483,6 +487,21 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
         ] {
             out.push(format!("/admin/{kind}/{id}/edit"));
         }
+        // The record's own editors, one per facet.
+        for facet in [
+            "identity",
+            "family",
+            "events",
+            "occupations",
+            "links",
+            "documents",
+            "avatar",
+            "profile",
+            "physical",
+        ] {
+            out.push(format!("/admin/person/{P}/{facet}"));
+        }
+        out.push("/admin/place/new".into());
         out.push("/admin/users".into());
     } else {
         out.push("/admin/login".into());
@@ -603,6 +622,10 @@ fn the_walk_reads_what_scripts_bind() {
     );
     assert_eq!(closest, ["[data-range],[data-go]"]);
     assert!(all.contains(&"#rv-back".to_string()) && all.contains(&".tcard".to_string()));
+    // A lookup from an element in hand delegates nothing.
+    let (looked_up, delegated) = bound_selectors("var label = frame.closest('label');");
+    assert_eq!(looked_up, ["label"]);
+    assert!(delegated.is_empty());
     assert_eq!(
         resolve("/person/p1", "?tab=family"),
         "/person/p1?tab=family"
@@ -611,4 +634,393 @@ fn the_walk_reads_what_scripts_bind() {
         resolve("/admin/person", "/admin/person/new"),
         "/admin/person/new"
     );
+}
+
+/// At most one primary button on a page (B2): the primary is the one thing
+/// the page is for. A form per record makes every save a secondary; the
+/// river has none at all.
+#[tokio::test]
+async fn no_page_has_more_than_one_primary_button() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let primary = Selector::parse(".btn.primary").unwrap();
+    let mut over = Vec::new();
+    let mut seen = 0;
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        for page in pages(c.is_some(), None) {
+            let (status, html, _) = fetch(&app, &page, c).await;
+            assert_eq!(status, StatusCode::OK, "{who} {page}");
+            let doc = Html::parse_document(&html);
+            let n = doc.select(&primary).count();
+            seen += 1;
+            if n > 1 {
+                let all: Vec<String> = doc.select(&primary).map(|e| describe(&e)).collect();
+                over.push(format!("{who} {page}: {n} primaries: {all:?}"));
+            }
+        }
+    }
+    assert!(seen > 40, "the walk's pages, both ways: {seen}");
+    assert!(over.is_empty(), "{}", over.join("\n"));
+}
+
+/// The river's controls are secondaries and its record's "edit" a ghost; the
+/// river has no primary (B2).
+#[tokio::test]
+async fn the_river_controls_are_secondary_and_edit_is_a_ghost() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let (_, html, _) = fetch(&app, &format!("/?p={P}&n=3"), Some(&cookie)).await;
+    let doc = Html::parse_document(&html);
+    let sel = |s: &str| Selector::parse(s).unwrap();
+    // The range is a select, travel/cut a setting and the grid a section of
+    // the masthead now (the minimalism pass); what is left is buttons.
+    for (what, s) in [("the itinerary chips", ".rv-trail a"), ("back", "#rv-back")] {
+        let found: Vec<_> = doc.select(&sel(s)).collect();
+        assert!(!found.is_empty(), "{what}: none on the page");
+        for el in found {
+            let class = el.value().attr("class").unwrap_or("");
+            assert!(
+                class.split_whitespace().any(|c| c == "btn")
+                    && !class.contains("primary")
+                    && !class.contains("ghost"),
+                "{what} is a secondary button: {}",
+                describe(&el)
+            );
+        }
+    }
+    let edit: Vec<_> = doc
+        .select(&sel(&format!(r#"a[href="/admin/person/{P}/edit"]"#)))
+        .collect();
+    assert!(!edit.is_empty(), "the record's edit link");
+    for el in edit {
+        assert!(
+            el.value().attr("class").unwrap_or("").contains("ghost"),
+            "{}",
+            describe(&el)
+        );
+    }
+    assert_eq!(
+        doc.select(&sel(".btn.primary")).count(),
+        0,
+        "no primary on the river"
+    );
+}
+
+/// Every field has a label a reader can see, and none relies on a
+/// placeholder (B3). A label is one that wraps the field, names it by `for`
+/// or by `aria-labelledby` pointing at text on the page, the column header
+/// of a row editor, or — for a date — the date's own label above the box its
+/// qualifier and year share. The masthead's language select shows its value as a code and
+/// is named for assistive technology; it is the one field without a label
+/// on screen, and is named here.
+#[tokio::test]
+async fn every_field_has_a_visible_label_and_none_a_placeholder() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let fields = Selector::parse(
+        "input:not([type=hidden]):not([type=submit]):not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea",
+    )
+    .unwrap();
+    let labels = Selector::parse("label[for]").unwrap();
+    let header = Selector::parse("thead th").unwrap();
+    let mut bare = Vec::new();
+    let mut seen = 0;
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        for page in pages(c.is_some(), None) {
+            let (_, html, _) = fetch(&app, &page, c).await;
+            assert!(
+                !html.contains(" placeholder="),
+                "{who} {page}: a placeholder"
+            );
+            let doc = Html::parse_document(&html);
+            let named: BTreeSet<String> = doc
+                .select(&labels)
+                .filter_map(|l| l.value().attr("for").map(String::from))
+                .collect();
+            for f in doc.select(&fields) {
+                seen += 1;
+                let wrapped = f.ancestors().filter_map(ElementRef::wrap).any(|a| {
+                    let v = a.value();
+                    v.name() == "label"
+                        // A row editor: the column's header names the field.
+                        || (v.name() == "table" && a.select(&header).next().is_some())
+                        || v.attr("class").is_some_and(|c| {
+                            c.split_whitespace()
+                                .any(|c| c == "date-field" || c == "date-input" || c == "lang-form")
+                        })
+                });
+                let by_for = f.value().attr("id").is_some_and(|id| named.contains(id));
+                // Named by text on the page: a legend, a heading.
+                let by_ref = f.value().attr("aria-labelledby").is_some_and(|ids| {
+                    ids.split_whitespace().all(|id| {
+                        doc.select(&Selector::parse(&format!("#{id}")).unwrap())
+                            .next()
+                            .is_some_and(|e| !e.text().collect::<String>().trim().is_empty())
+                    })
+                });
+                if !wrapped && !by_for && !by_ref {
+                    bare.push(format!("{who} {page}: {}", describe(&f)));
+                }
+            }
+        }
+    }
+    assert!(seen > 100, "fields walked: {seen}");
+    bare.sort();
+    bare.dedup();
+    assert!(
+        bare.is_empty(),
+        "{} field(s) with no visible label:\n{}",
+        bare.len(),
+        bare.join("\n")
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The chrome budget (minimalism pass)
+// ---------------------------------------------------------------------------
+
+/// Whether `el` is drawn when the page has just loaded and nobody has opened,
+/// hovered or typed anything: not `hidden`, not inside a closed `<details>`
+/// (a disclosure's own summary is drawn), not screen-reader-only, and not
+/// something ui.js hides on load (`data-js-hidden`).
+fn at_rest(el: &ElementRef) -> bool {
+    if el.value().attr("type") == Some("hidden") {
+        return false;
+    }
+    let mut first = true;
+    for a in std::iter::once(*el).chain(el.ancestors().filter_map(ElementRef::wrap)) {
+        let v = a.value();
+        if v.attr("hidden").is_some() || v.attr("data-js-hidden").is_some() {
+            return false;
+        }
+        if v.attr("class")
+            .is_some_and(|c| c.split_whitespace().any(|c| c == "sr-only"))
+        {
+            return false;
+        }
+        if matches!(v.name(), "template" | "noscript" | "datalist") {
+            return false;
+        }
+        if v.name() == "details" && v.attr("open").is_none() && !first {
+            // Inside a closed disclosure — unless this is its summary.
+            let is_own_summary = el.value().name() == "summary"
+                && el
+                    .parent()
+                    .and_then(ElementRef::wrap)
+                    .is_some_and(|p| p.id() == a.id());
+            if !is_own_summary {
+                return false;
+            }
+        }
+        first = false;
+    }
+    true
+}
+
+/// A content control: one per data item, inside a container the template
+/// marks `data-content` (the river's drawing, a list's rows, a record's
+/// relatives, search results). Its count follows the data and is not budgeted.
+fn is_content(el: &ElementRef) -> bool {
+    el.ancestors()
+        .filter_map(ElementRef::wrap)
+        .any(|a| a.value().attr("data-content").is_some())
+}
+
+/// Read-only screens: 12 chrome controls at most, the masthead 7 of them.
+/// Everything else (edit screens, administration, settings, import, sign-in):
+/// 20.
+fn read_only(page: &str) -> bool {
+    !(page.starts_with("/admin") || page.starts_with("/settings") || page.starts_with("/convert"))
+}
+
+struct Chrome {
+    total: usize,
+    masthead: usize,
+    rows_over: Vec<String>,
+    /// What was counted, outside the masthead, for a failure message.
+    counted: Vec<String>,
+}
+
+fn chrome_of(html: &str) -> Chrome {
+    let doc = Html::parse_document(html);
+    let sel = interactive();
+    let mut total = 0;
+    let mut masthead = 0;
+    let mut counted = Vec::new();
+    for el in doc.select(&sel) {
+        if !at_rest(&el) || is_content(&el) {
+            continue;
+        }
+        total += 1;
+        if el
+            .ancestors()
+            .filter_map(ElementRef::wrap)
+            .any(|a| a.value().name() == "header" && a.value().attr("class") == Some("masthead"))
+        {
+            masthead += 1;
+        } else {
+            counted.push(describe(&el));
+        }
+    }
+    // A content row carries at most two controls.
+    let rows =
+        Selector::parse("[data-content] > tr, [data-content] > li, [data-content] tbody > tr")
+            .unwrap();
+    let mut rows_over = Vec::new();
+    for row in doc.select(&rows) {
+        let n = row.select(&sel).filter(at_rest).count();
+        if n > 2 {
+            rows_over.push(describe(&row));
+        }
+    }
+    Chrome {
+        total,
+        masthead,
+        rows_over,
+        counted,
+    }
+}
+
+#[tokio::test]
+async fn every_screen_keeps_its_chrome_budget() {
+    let (app, _s) = app();
+    let cookie = admin_cookie(&app).await;
+    let mut over = Vec::new();
+    let mut out_counts: BTreeMap<String, usize> = BTreeMap::new();
+    println!(
+        "{:<44} {:>6} {:>9} {:>6}",
+        "screen", "chrome", "masthead", "budget"
+    );
+    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+        for page in pages(c.is_some(), None) {
+            let (status, html, _) = fetch(&app, &page, c).await;
+            if status != StatusCode::OK {
+                continue;
+            }
+            let ch = chrome_of(&html);
+            let budget = if read_only(&page) { 12 } else { 20 };
+            println!(
+                "{:<44} {:>6} {:>9} {:>6}",
+                format!("{who} {page}"),
+                ch.total,
+                ch.masthead,
+                budget
+            );
+            if ch.total > budget {
+                over.push(format!(
+                    "{who} {page}: {} chrome controls, budget {budget}:\n    {}",
+                    ch.total,
+                    ch.counted.join("\n    ")
+                ));
+            }
+            if ch.masthead > 7 {
+                over.push(format!(
+                    "{who} {page}: masthead {} controls, budget 7",
+                    ch.masthead
+                ));
+            }
+            for r in &ch.rows_over {
+                over.push(format!(
+                    "{who} {page}: a row with more than two controls: {r}"
+                ));
+            }
+            if c.is_none() {
+                out_counts.insert(page.clone(), ch.total);
+            } else if read_only(&page) {
+                if let Some(&out) = out_counts.get(&page) {
+                    if ch.total > out + 3 {
+                        over.push(format!(
+                            "{page}: signing in adds {} chrome controls, at most 3 ({out} → {})",
+                            ch.total - out,
+                            ch.total
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        over.is_empty(),
+        "{} over budget:\n{}",
+        over.len(),
+        over.join("\n")
+    );
+}
+
+/// A reader without the right to edit receives no edit control in the markup
+/// of any page — not disabled, not hidden by CSS: absent (the minimalism
+/// pass). An edit control is a form that writes (to `/admin/…`, other than
+/// signing out, or to `/quality/…`) or a link into the administration.
+#[tokio::test]
+async fn a_reader_without_edit_rights_receives_no_edit_control_anywhere() {
+    let src = scratch("walk-viewer-src");
+    let source = src.join("walk.axgf");
+    std::fs::write(
+        &source,
+        axgf_cms::state::export_to_bytes(&bundle().to_string()).expect("export"),
+    )
+    .expect("write");
+    let dir = scratch("walk-viewer");
+    let path = dir.join("family.axgf");
+    std::fs::copy(&source, &path).expect("copy");
+    let mut acl = axgf_cms::acl::Acl::default();
+    acl.users.push(
+        axgf_cms::acl::new_user(
+            "reader",
+            "correct-horse-battery-staple",
+            axgf_cms::acl::Role::Viewer,
+        )
+        .expect("a viewer"),
+    );
+    acl.save(&axgf_cms::acl::Acl::path_for(&path))
+        .expect("save acl");
+    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    let login = post_form(
+        &app,
+        "/admin/login",
+        "username=reader&password=correct-horse-battery-staple",
+        false,
+    )
+    .await;
+    let cookie = login
+        .headers()
+        .get(header::SET_COOKIE)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|c| c.split(';').next())
+        .expect("the viewer signs in")
+        .to_string();
+
+    let forms = Selector::parse("form").unwrap();
+    let links = Selector::parse("a[href]").unwrap();
+    let mut found = Vec::new();
+    let mut read = 0;
+    for page in pages(true, None) {
+        let (status, html, _) = fetch(&app, &page, Some(&cookie)).await;
+        if status != StatusCode::OK {
+            continue; // the administration refuses a viewer outright
+        }
+        read += 1;
+        let doc = Html::parse_document(&html);
+        for f in doc.select(&forms) {
+            let action = f.value().attr("action").unwrap_or("");
+            let method = f
+                .value()
+                .attr("method")
+                .unwrap_or("get")
+                .to_ascii_lowercase();
+            let writes = (action.starts_with("/admin/") && action != "/admin/logout")
+                || action.starts_with("/quality/");
+            if method == "post" && writes {
+                found.push(format!("{page}: a form that writes, to {action}"));
+            }
+        }
+        for a in doc.select(&links) {
+            let href = a.value().attr("href").unwrap_or("");
+            if href.starts_with("/admin/") || href == "/admin" {
+                found.push(format!("{page}: a link into the administration, {href}"));
+            }
+        }
+    }
+    assert!(read >= 10, "the viewer reads the read-only pages: {read}");
+    assert!(found.is_empty(), "{}", found.join("\n"));
 }

@@ -31,23 +31,17 @@
     <table class="wide stackable place-names">
       <thead>
         <tr>
-          <th scope="col">{{ t("place-name-primary") }}</th>
           <th scope="col">{{ t("place-name-lang") }}</th>
           <th scope="col">{{ t("place-name-value") }}</th>
         </tr>
       </thead>
-      <tbody>
-        {# The stored names, then two blank rows. Blank rows rather than an
-           "add" button so the form works with scripting off; empty ones are
-           dropped on save. #}
+      {#- The stored names, then two blank rows (scripting off adds no rows);
+          empty ones are dropped on save. Two controls a row: which is the
+          primary name is one select below (the minimalism pass). -#}
+      <tbody data-content>
         {% for i in range(place.names | length + 2) %}
         {% set n = place.names[i] if i < (place.names | length) else none %}
         <tr>
-          <td data-label="{{ t('place-name-primary') }}">
-            <input type="radio" name="primary" value="{{ i }}"
-                   {{ "checked" if n and n.is_primary }}
-                   aria-label="{{ t('place-name-primary') }}">
-          </td>
           <td data-label="{{ t('place-name-lang') }}">
             <input type="text" name="names.{{ i }}.lang" size="6" maxlength="35"
                    value="{{ n.lang if n else '' }}"
@@ -62,13 +56,18 @@
         {% endfor %}
       </tbody>
     </table>
+    {% if place.names | length > 1 %}
+    <label>{{ t("place-name-primary") }}
+      <select name="primary">
+        {% for n in place.names %}
+        <option value="{{ loop.index0 }}" {{ "selected" if n.is_primary }}>{{ n.value }}</option>
+        {% endfor %}
+      </select></label>
+    {% elif place.names %}<input type="hidden" name="primary" value="0">{% endif %}
     <p class="hint">{{ t("place-names-hint") }}</p>
   </fieldset>
 
-  <fieldset>
-    <legend>{{ t("place-where") }}</legend>
-    <div class="grid cols-3">
-      <div class="field">
+  {%- macro f_type(t, place, place_types) %}<div class="field">
         <label for="place_type">{{ t("place-type") }}</label>
         <select id="place_type" name="place_type">
           <option value="">{{ t("admin-not-set") }}</option>
@@ -76,59 +75,63 @@
           <option value="{{ pt }}" {{ "selected" if pt == place.place_type }}>{{ t("place-type-" ~ pt) }}</option>
           {% endfor %}
         </select>
-      </div>
-      <div class="field">
+      </div>{% endmacro %}
+  {%- macro f_region(t, place) %}<div class="field">
         <label for="region">{{ t("place-region") }}</label>
         <input type="text" id="region" name="region" value="{{ place.region }}">
-      </div>
-      <div class="field">
+      </div>{% endmacro %}
+  {%- macro f_country(t, place) %}<div class="field">
         <label for="country_current">{{ t("place-country-current") }}</label>
         <input type="text" id="country_current" name="country_current"
                value="{{ place.country_current }}" size="8" maxlength="8">
         <div class="hint">{{ t("place-country-hint") }}</div>
-      </div>
+      </div>{% endmacro %}
+  <fieldset>
+    <legend>{{ t("place-where") }}</legend>
+    <div class="grid cols-3">
+      {% if place.place_type %}{{ f_type(t, place, place_types) }}{% endif %}
+      {% if place.region %}{{ f_region(t, place) }}{% endif %}
+      {% if place.country_current %}{{ f_country(t, place) }}{% endif %}
     </div>
+    {% set n_where = [not place.place_type, not place.region, not place.country_current] | select | list | length %}
+    {% if n_where %}
+    <details class="more-fields">
+      <summary>{{ t("form-more-fields", n=n_where) }}</summary>
+      <div class="grid cols-3">
+        {% if not place.place_type %}{{ f_type(t, place, place_types) }}{% endif %}
+        {% if not place.region %}{{ f_region(t, place) }}{% endif %}
+        {% if not place.country_current %}{{ f_country(t, place) }}{% endif %}
+      </div>
+    </details>
+    {% endif %}
   </fieldset>
 
+  {%- macro history_fields(t, i, h) %}<div class="grid cols-4">
+      <label>{{ t('place-history-country') }}
+        <input type="text" name="history.{{ i }}.country" size="8" maxlength="8" value="{{ h.country if h else '' }}"></label>
+      <label>{{ t('place-history-from') }}
+        <input type="text" name="history.{{ i }}.from" size="10" value="{{ h.from if h else '' }}"></label>
+      <label>{{ t('place-history-until') }}
+        <input type="text" name="history.{{ i }}.until" size="10" value="{{ h.until if h else '' }}"></label>
+      <label>{{ t('record-note') }}
+        <input type="text" name="history.{{ i }}.note" value="{{ h.note if h else '' }}"></label>
+    </div>{% endmacro %}
   <fieldset>
     <legend>{{ t("place-country-history") }}</legend>
-    <table class="wide stackable">
-      <thead>
-        <tr>
-          <th scope="col">{{ t("place-history-country") }}</th>
-          <th scope="col">{{ t("place-history-from") }}</th>
-          <th scope="col">{{ t("place-history-until") }}</th>
-          <th scope="col">{{ t("record-note") }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for i in range(place.history | length + 2) %}
-        {% set h = place.history[i] if i < (place.history | length) else none %}
-        <tr>
-          <td data-label="{{ t('place-history-country') }}">
-            <input type="text" name="history.{{ i }}.country" size="8" maxlength="8"
-                   value="{{ h.country if h else '' }}"
-                   aria-label="{{ t('place-history-country') }}">
-          </td>
-          <td data-label="{{ t('place-history-from') }}">
-            <input type="text" name="history.{{ i }}.from" size="10"
-                   value="{{ h.from if h else '' }}"
-                   aria-label="{{ t('place-history-from') }}">
-          </td>
-          <td data-label="{{ t('place-history-until') }}">
-            <input type="text" name="history.{{ i }}.until" size="10"
-                   value="{{ h.until if h else '' }}"
-                   aria-label="{{ t('place-history-until') }}">
-          </td>
-          <td data-label="{{ t('record-note') }}">
-            <input type="text" name="history.{{ i }}.note"
-                   value="{{ h.note if h else '' }}"
-                   aria-label="{{ t('record-note') }}">
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {#- Each period is one row that opens to its four fields (the
+        minimalism pass); adding one is a disclosure. -#}
+    <div class="record-list" data-content>
+      {% for h in place.history %}
+      <details class="record-edit">
+        <summary>{{ h.country }} · {{ h.from }}–{{ h.until }}</summary>
+        {{ history_fields(t, loop.index0, h) }}
+      </details>
+      {% endfor %}
+    </div>
+    <details class="add-record">
+      <summary>{{ t("place-country-history") }}</summary>
+      {{ history_fields(t, place.history | length, none) }}
+    </details>
     <p class="hint">{{ t("place-country-history-hint") }}</p>
   </fieldset>
 
@@ -145,6 +148,12 @@
      fields as the consolation prize would be designed against its own data. #}
   <fieldset>
     <legend>{{ t("place-coordinates") }}</legend>
+    {#- With no position recorded, the whole of this — fields, map, paste,
+        lookup — is one disclosure (the minimalism pass); open when a lookup
+        has just answered. -#}
+    {% set has_position = place.coordinates.lat or place.coordinates.lon %}
+    {% if not has_position %}<details class="more-fields"{% if lookup %} open{% endif %}>
+      <summary>{{ t("place-coordinates") }}</summary>{% endif %}
     <div class="grid cols-3">
       <div class="field">
         <label for="lat">{{ t("place-lat") }}</label>
@@ -167,6 +176,8 @@
       </div>
     </div>
     <p class="hint">{{ t("place-coordinates-hint") }}</p>
+    {% if has_position %}<details class="more-fields"{% if lookup %} open{% endif %}>
+      <summary>{{ t("place-open-in-map") }}</summary>{% endif %}
 
     {# The map is an input device before it is a picture: one place in this
        bundle of 123 has coordinates, so there is almost nothing to display and
@@ -207,12 +218,13 @@
       <label for="paste">{{ t("place-paste") }}</label>
       <div class="paste-row">
         <input type="text" id="paste" name="paste" value="" autocomplete="off"
-               placeholder="{{ t('place-paste-placeholder') }}">
+               aria-describedby="paste-example">
         <button class="btn" type="submit"
                 formaction="/admin/place/{{ place.id }}/geocode" formmethod="post">
           {{ t("place-paste-read") }}
         </button>
       </div>
+      <p class="hint" id="paste-example">{{ t("place-paste-placeholder") }}</p>
       <p class="hint">{{ t("place-paste-hint") }}</p>
       {% if lookup and lookup.pasted and lookup.error %}
       <p class="notice warn" role="alert">{{ t("place-paste-unreadable") }}</p>
@@ -274,31 +286,43 @@
       </div>
       {% endif %}
     </div>
+    </details>
   </fieldset>
 
+  {%- macro f_wikidata(t, place) %}<div class="field">
+        <label for="wikidata">{{ t("place-wikidata") }}</label>
+        <input type="text" id="wikidata" name="identifiers.wikidata" value="{{ place.wikidata }}" size="12">
+      </div>{% endmacro %}
+  {%- macro f_geonames(t, place) %}<div class="field">
+        <label for="geonames">{{ t("place-geonames") }}</label>
+        <input type="text" id="geonames" name="identifiers.geonames" value="{{ place.geonames }}" size="12">
+      </div>{% endmacro %}
+  {%- macro f_note(t, place) %}<div class="field">
+    <label for="note">{{ t("record-note") }}</label>
+    <textarea id="note" name="note" rows="3">{{ place.note }}</textarea>
+  </div>{% endmacro %}
   <fieldset>
     <legend>{{ t("place-identifiers") }}</legend>
     <div class="grid cols-3">
-      <div class="field">
-        <label for="wikidata">{{ t("place-wikidata") }}</label>
-        <input type="text" id="wikidata" name="identifiers.wikidata"
-               value="{{ place.wikidata }}" size="12">
-      </div>
-      <div class="field">
-        <label for="geonames">{{ t("place-geonames") }}</label>
-        <input type="text" id="geonames" name="identifiers.geonames"
-               value="{{ place.geonames }}" size="12">
-      </div>
+      {% if place.wikidata %}{{ f_wikidata(t, place) }}{% endif %}
+      {% if place.geonames %}{{ f_geonames(t, place) }}{% endif %}
     </div>
+    {% if place.note %}{{ f_note(t, place) }}{% endif %}
+    {% set n_ids = [not place.wikidata, not place.geonames, not place.note] | select | list | length %}
+    {% if n_ids %}
+    <details class="more-fields">
+      <summary>{{ t("form-more-fields", n=n_ids) }}</summary>
+      <div class="grid cols-3">
+        {% if not place.wikidata %}{{ f_wikidata(t, place) }}{% endif %}
+        {% if not place.geonames %}{{ f_geonames(t, place) }}{% endif %}
+      </div>
+      {% if not place.note %}{{ f_note(t, place) }}{% endif %}
+    </details>
+    {% endif %}
   </fieldset>
 
-  <div class="field">
-    <label for="note">{{ t("record-note") }}</label>
-    <textarea id="note" name="note" rows="3">{{ place.note }}</textarea>
-  </div>
-
   <div class="cta-row">
-    <button class="btn primary" type="submit">{{ t("admin-save") }}</button>
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     <a class="btn" href="/admin/place">{{ t("admin-cancel") }}</a>
   </div>
 </form>

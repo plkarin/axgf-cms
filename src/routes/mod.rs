@@ -163,6 +163,7 @@ fn routes(state: Shared) -> Router {
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))
         .route("/prefs/background", post(prefs::background))
+        .route("/prefs", post(prefs::all))
         // Static admin segments are declared alongside the ":kind" routes;
         // the router matches literal segments in preference to a parameter.
         .route("/admin", get(admin::dashboard))
@@ -258,6 +259,8 @@ fn routes(state: Shared) -> Router {
         .route("/admin/:kind/:id/edit", get(admin::edit_form))
         .route("/admin/:kind/:id", post(admin::update))
         .route("/admin/:kind/:id/delete", post(admin::delete))
+        .route("/admin/:kind/bulk", post(admin::bulk))
+        .route("/static/css/tokens.css", get(public::tokens_css))
         .route("/static/app.css", get(public::css))
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/river.js", get(public::river_js))

@@ -67,7 +67,7 @@
       <li><strong>{{ o.title }}</strong>
         {%- if o.position %} <span class="chip small">{{ o.position }}</span>{% endif %}
         {%- if o.employer %} <span class="small">{{ o.employer }}</span>{% endif %}
-        <span class="small muted">{{ o.span }}</span>
+        {% if o.span %}<span class="small muted">{{ o.span }}</span>{% endif %}
         {%- if o.confidence %} {{ m.conf_bar(o.confidence) }}{% endif %}</li>
       {% endfor %}
     </ul>
@@ -108,7 +108,7 @@
       <div class="union-head">
         <strong>{% if u.spouse %}{{ m.person_link(u.spouse) }}{% else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif %}</strong>
         {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
-        <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
+        {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
       </div>
       <div class="small union-when">
         {% if u.start %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}

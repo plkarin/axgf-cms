@@ -18,22 +18,32 @@ pub struct Hit {
     pub name: String,
     /// "1823–1901", "c.1798–", or empty: the river's own years line.
     pub years: String,
+    /// The river's discharge class, 1–5 (B3): drawn as a small bar so a
+    /// founder reads differently from a childless cousin before the reader
+    /// chooses. Family shape, which every reader may see (ADR 0001).
+    pub class: usize,
 }
 
 /// People whose name holds every word of `query`, folded ([`fold`]): names
 /// that start with the first word first, then alphabetically. At most
 /// `limit`. An empty query finds nobody.
 pub fn people(flat: &Value, lens: &Lens, query: &str, limit: usize) -> Vec<Hit> {
+    people_counted(flat, lens, query, limit).0
+}
+
+/// [`people`], with how many there were in all — the suggestions show eight
+/// and say how many matched.
+pub fn people_counted(flat: &Value, lens: &Lens, query: &str, limit: usize) -> (Vec<Hit>, usize) {
     let words: Vec<String> = fold(query)
         .split(' ')
         .filter(|w| !w.is_empty())
         .map(String::from)
         .collect();
     if words.is_empty() {
-        return Vec::new();
+        return (Vec::new(), 0);
     }
     let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
-        return Vec::new();
+        return (Vec::new(), 0);
     };
     let mut found: Vec<(bool, String, Hit)> = Vec::new();
     for (id, p) in persons {
@@ -66,9 +76,18 @@ pub fn people(flat: &Value, lens: &Lens, query: &str, limit: usize) -> Vec<Hit> 
                 id: id.clone(),
                 name,
                 years,
+                class: 1,
             },
         ));
     }
     found.sort_by(|a, b| (a.0, &a.1, &a.2.id).cmp(&(b.0, &b.1, &b.2.id)));
-    found.into_iter().take(limit).map(|f| f.2).collect()
+    let total = found.len();
+    let mut hits: Vec<Hit> = found.into_iter().take(limit).map(|f| f.2).collect();
+    if !hits.is_empty() {
+        let g = crate::river::Graph::build(flat);
+        for h in &mut hits {
+            h.class = g.discharge_class(&h.id).unwrap_or(1);
+        }
+    }
+    (hits, total)
 }

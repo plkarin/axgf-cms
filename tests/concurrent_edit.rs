@@ -340,73 +340,44 @@ fn urlencode(s: &str) -> String {
 }
 
 #[tokio::test]
-async fn the_history_is_shown_to_signed_in_readers_and_to_nobody_else() {
+async fn the_history_is_in_edit_mode_and_shown_to_nobody_else() {
     // The journal names this family's editors and quotes what each of them
-    // corrected. That is precisely why it is kept out of the shareable bundle,
-    // so publishing it on the public record page would put it straight back
-    // where it was kept out of.
+    // corrected — which is why it is kept out of the shareable bundle. It is
+    // an editing concern, so it lives in edit mode, on the record's editor,
+    // and on no read surface for anybody (the minimalism pass).
     let (app, _scratch) = app("ce-history-private");
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("a correction somebody made");
     assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
 
-    // It is a tab of its own now: metadata about the record, not content of
-    // it. The tab is offered to a signed-in reader...
-    let record = body_string(get_admin(&app, &format!("/person/{ALICE}")).await).await;
-    let nav = record
-        .split(r#"<nav class="person-tabs""#)
-        .nth(1)
-        .and_then(|s| s.split("</nav>").next())
-        .expect("the tab bar");
+    let editor = body_string(get_admin(&app, &format!("/admin/person/{ALICE}/edit")).await).await;
     assert!(
-        nav.contains("?tab=history"),
-        "a signed-in reader is offered the history: {nav}"
-    );
-    // Alongside the rest, after Tree — six tabs, not five and a footer.
-    let at = |slug: &str| nav.find(&format!("?tab={slug}")).expect(slug);
-    assert!(
-        at("life") < at("profile")
-            && at("profile") < at("media")
-            && at("media") < at("tree")
-            && at("tree") < at("history"),
-        "History sits last among the tabs: {nav}"
-    );
-    assert!(
-        !record.contains("changed Notes"),
-        "and it is no longer under Notes at the foot of the record tab"
-    );
-
-    // ...and it holds what it always held.
-    let signed_in =
-        body_string(get_admin(&app, &format!("/person/{ALICE}?tab=history")).await).await;
-    assert!(
-        signed_in.contains("History") && signed_in.contains("changed Notes"),
-        "a signed-in reader sees who changed what: {signed_in}"
-    );
-
-    // A signed-out reader is offered no tab, and gets nothing by asking for it
-    // directly either.
-    let anonymous = body_string(get(&app, &format!("/person/{ALICE}")).await).await;
-    assert!(
-        !anonymous.contains("?tab=history"),
-        "a signed-out reader is not offered the history: {anonymous}"
+        editor.contains(r#"<ol class="history""#) && editor.contains("changed Notes"),
+        "the editor shows who changed what: {editor}"
     );
     for uri in [
         format!("/person/{ALICE}"),
         format!("/person/{ALICE}?tab=history"),
     ] {
-        let page = body_string(get(&app, &uri).await).await;
-        assert!(
-            !page.contains("changed Notes"),
-            "a signed-out reader is not shown the editors' names or their edits ({uri})"
-        );
-        assert!(
-            !page.contains("emergency-token"),
-            "and certainly not who was signed in at the time ({uri})"
-        );
+        for (who, page) in [
+            ("signed out", body_string(get(&app, &uri).await).await),
+            (
+                "administrator",
+                body_string(get_admin(&app, &uri).await).await,
+            ),
+        ] {
+            assert!(
+                !page.contains("changed Notes"),
+                "{who} on {uri}: read mode has no history"
+            );
+            assert!(!page.contains("emergency-token"), "{who} on {uri}");
+        }
     }
-    // The record itself is still public — it is the *history* that is not.
-    assert!(anonymous.contains("Alice"));
+    let anonymous = body_string(get(&app, &format!("/person/{ALICE}")).await).await;
+    assert!(
+        anonymous.contains("Alice"),
+        "the record itself is still public"
+    );
 }
 
 #[tokio::test]

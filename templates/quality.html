@@ -18,21 +18,33 @@
 </p>
 <p class="muted small">{{ t("quality-intro") }}</p>
 
-<nav class="quality-groups" aria-label="{{ t('quality-groups-label') }}">
-  {%- set base = "/quality?show=dismissed&" if show_dismissed else "/quality?" %}
-  <a href="{{ base }}" {% if not group %}aria-current="page"{% endif %}>{{ t("quality-all") }} <span class="tab-count">{{ total }}</span></a>
-  {%- for g in groups %}
-  <a href="{{ base }}group={{ g.slug }}" {% if group == g.slug %}aria-current="page"{% endif %}>{{ t("quality-group-" ~ g.slug) }} <span class="tab-count">{{ g.n }}</span></a>
-  {%- endfor %}
-</nav>
+{#- Three controls (the minimalism pass): which group, open or checked, and
+    the downloads behind one disclosure. Applied on change; the button is for
+    a reader without scripts. -#}
+<form class="quality-filter" method="get" action="/quality">
+  <label>{{ t("quality-groups-label") }}
+    <select name="group" data-autosubmit>
+      <option value="" {{ "selected" if not group }}>{{ t("quality-all") }} ({{ total }})</option>
+      {%- for g in groups %}
+      <option value="{{ g.slug }}" {{ "selected" if group == g.slug }}>{{ t("quality-group-" ~ g.slug) }} ({{ g.n }})</option>
+      {%- endfor %}
+    </select></label>
+  <label>{{ t("quality-show-label") }}
+    <select name="show" data-autosubmit>
+      <option value="" {{ "selected" if not show_dismissed }}>{{ t("quality-show-open-option") }}</option>
+      <option value="dismissed" {{ "selected" if show_dismissed }}>{{ t("quality-show-dismissed") }} ({{ dismissed_total }})</option>
+    </select></label>
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+  <details class="quality-downloads">
+    <summary>{{ t("quality-download") }}</summary>
+    <div class="menu-panel">
+      <a href="/quality.csv">{{ t("quality-export-csv") }}</a>
+      <a href="/quality.json">{{ t("quality-export-json") }}</a>
+    </div>
+  </details>
+</form>
 
-<p class="small">
-  {%- if show_dismissed %}<a href="/quality">{{ t("quality-show-open") }}</a>
-  {%- else %}<a href="/quality?show=dismissed">{{ t("quality-show-dismissed") }} <span class="tab-count">{{ dismissed_total }}</span></a>{% endif %} ·
-  <a href="/quality.csv">{{ t("quality-export-csv") }}</a> ·
-  <a href="/quality.json">{{ t("quality-export-json") }}</a>
-</p>
-
+<div class="quality-rules" data-content>
 {% for r in rules %}
 <details class="card quality-rule" id="rule-{{ r.slug }}">
   <summary><span class="quality-rule-title">{{ t("quality-rule-" ~ r.slug) }}</span> <span class="tab-count">{{ r.n }}</span></summary>
@@ -47,13 +59,15 @@
     <input type="hidden" name="f" value="{{ f.kind }}|{{ f.id }}|{{ f.fingerprint }}|{{ f.version }}">
     {%- endfor %}
     {%- if not show_dismissed %}
-    <label class="sr-only" for="note-all-{{ r.slug }}">{{ t("quality-note-label") }}</label>
-    <input type="text" name="note" id="note-all-{{ r.slug }}" placeholder="{{ t('quality-note-label') }}" maxlength="200">
+    <label class="note-label" for="note-all-{{ r.slug }}">{{ t("quality-note-label") }}</label>
+    <input type="text" name="note" id="note-all-{{ r.slug }}" maxlength="200">
     {%- endif %}
     <button class="btn small" type="submit">{{ t("quality-restore-all", n=r.n) if show_dismissed else t("quality-dismiss-all", n=r.n) }}</button>
   </form>
   {%- endif %}
-  <ul class="quality-findings">
+  {#- Two controls a row: the record, and "checked". A note goes with the
+      rule's "mark all" above. -#}
+  <ul class="quality-findings" data-content>
     {%- for f in r.items %}
     <li>
       <p>{{ f.message }}{% if f.link %} <a href="{{ f.link }}">{{ t("quality-open") }}</a>{% endif %}</p>
@@ -67,10 +81,6 @@
         <input type="hidden" name="fingerprint" value="{{ f.fingerprint }}">
         <input type="hidden" name="base_version" value="{{ f.version }}">
         <input type="hidden" name="back" value="{{ back }}#rule-{{ r.slug }}">
-        {%- if not f.dismissed %}
-        <label class="sr-only" for="note-{{ loop.index }}-{{ r.slug }}">{{ t("quality-note-label") }}</label>
-        <input type="text" name="note" id="note-{{ loop.index }}-{{ r.slug }}" placeholder="{{ t('quality-note-label') }}" maxlength="200">
-        {%- endif %}
         <button class="btn small" type="submit">{{ t("quality-restore") if f.dismissed else t("quality-dismiss") }}</button>
       </form>
       {%- endif %}
@@ -79,4 +89,5 @@
   </ul>
 </details>
 {% endfor %}
+</div>
 {% endblock %}

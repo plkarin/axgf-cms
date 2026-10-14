@@ -31,12 +31,16 @@ nav-convert = Importar
 nav-admin = Administração
 nav-sign-in = Entrar
 nav-sign-out = Sair
+account-emergency = Token de emergência
 footer-open-format = O arquivo da sua família é um único ficheiro que fica consigo, escrito num formato aberto: continuará a abrir muito depois de este sítio ter desaparecido.
 footer-open-format-link = Sobre o formato
 
 ## Preferências
 
 settings-title = Definições
+edit-mode-label = Edição: o que guardar altera as fichas da família
+display-menu-label = Idioma e apresentação
+display-settings = Tema e apresentação…
 settings-tabs-label = Secções das definições
 settings-tab-theme = Tema
 settings-tab-language = Língua
@@ -47,6 +51,8 @@ prefs-theme = Tema
 prefs-background = Fundo
 prefs-background-on = Um véu suave de cor por trás da página
 prefs-apply = Aplicar
+busy-saving = A guardar…
+busy-working = Em curso…
 prefs-reviewed = revista
 prefs-machine = automática, { $coverage } %
 prefs-machine-complete = completa, ainda por rever
@@ -62,6 +68,8 @@ theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
 theme-colour-blind-note = seguro para daltonismo
 theme-contrast-note = contraste máximo
+theme-dark-note = padrão
+theme-river-note = O rio continua escuro em qualquer tema: as suas cores foram feitas para um fundo escuro.
 
 ## Árvore
 
@@ -78,7 +86,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } parceiros
     }, { $depth } gerações para cada lado.
 tree-filter-label = Filtrar as fichas visíveis
-tree-filter-placeholder = Escreva um nome…
 tree-centre-on = Centrar em
 tree-depth = Gerações para cada lado
 tree-show = Mostrar
@@ -161,6 +168,10 @@ error-not-found-title = Não encontrado
 error-not-found-detail = Essa página não existe aqui.
 error-no-such-person-title = Não há tal pessoa
 error-no-such-person-detail = Aqui não há nenhuma pessoa com esse identificador.
+error-merged-title = Esta ficha já não existe.
+error-merged-detail = Foi fundida com { $name } em { $date }. As ligações para o endereço antigo levam agora à ficha fundida.
+error-merged-open = Abrir a ficha fundida
+error-back-to-river = Voltar ao rio
 error-no-such-entity-title = Não há tal elemento
 error-no-such-entity-detail = Aqui não há nenhuma ficha com esse identificador.
 error-deleted-while-editing = Aqui não há nenhuma ficha com esse identificador. Pode ter sido apagada enquanto a editava.
@@ -221,6 +232,11 @@ admin-bundle-heavy = Este arquivo pesa { $size }. É carregado por inteiro ao ar
 
 admin-fields = Campos
 admin-raw-json = JSON em bruto
+form-more-fields = { $n ->
+        [one] Mais um campo
+        [many] Mais { $n } campos
+       *[other] Mais { $n } campos
+    }
 admin-raw-json-help = O elemento inteiro, para que nada fique por editar: listas como os parceiros e os filhos de uma família, ou a história de fronteiras de um lugar, vivem precisamente aqui. Este é o documento de partida; os campos acima são depois escritos sobre os caminhos que lhes pertencem, por isso edite um valor num sítio ou no outro, não nos dois. Tem de ler-se como JSON, senão não se guarda nada.
 admin-save = Guardar
 admin-cancel = Cancelar
@@ -300,8 +316,8 @@ place-map-clear = Retirar o ponto
 place-open-in-map = Procurar este lugar no OpenStreetMap e colar aqui a ligação
 
 person-tab-record = Ficha
-person-tab-life = Vida
-person-tab-media = Materiais
+person-tab-life = Eventos
+person-tab-media = Média
 person-tab-tree = Árvore
 person-tab-history = Histórico
 person-tree-depth = { $n } gerações para cada lado. A árvore inteira está mais abaixo.
@@ -313,6 +329,36 @@ admin-delete = Apagar
 admin-not-set = — por definir —
 admin-edit = Editar
 admin-page-of = Página { $page } de { $pages }
+list-select-row = Selecionar { $name }
+list-kind-label = Tipo
+list-select-page = Selecionar todas as linhas desta página
+list-selected = { $n ->
+        [one] { $n } selecionada
+        [many] { $n } selecionadas
+       *[other] { $n } selecionadas
+    }
+list-export = Exportar
+list-escape = Esc para limpar a seleção
+bulk-confirm-title = { $n ->
+        [one] Eliminar { $n } ficha?
+        [many] Eliminar { $n } fichas?
+       *[other] Eliminar { $n } fichas?
+    }
+bulk-confirm-detail = Uma ficha a que outra ainda remete é recusada, e então nada é eliminado.
+bulk-confirm-go = Eliminá-las
+bulk-deleted = { $n ->
+        [one] { $n } ficha eliminada.
+        [many] { $n } fichas eliminadas.
+       *[other] { $n } fichas eliminadas.
+    }
+bulk-refused = Nada foi eliminado: { $name } ainda é referido noutro lugar. Retire primeiro essa referência e tente de novo.
+bulk-changed = { $n ->
+        [one] { $n } ficha mudou desde que a lista foi mostrada, por isso nada foi eliminado. Recarregue a lista e tente de novo.
+        [many] { $n } fichas mudaram desde que a lista foi mostrada, por isso nada foi eliminado. Recarregue a lista e tente de novo.
+       *[other] { $n } fichas mudaram desde que a lista foi mostrada, por isso nada foi eliminado. Recarregue a lista e tente de novo.
+    }
+admin-range = { $from }–{ $to } de { $total }
+list-filiation = Filiação
 admin-previous = Anterior
 admin-next = Seguinte
 admin-saved = Guardado como versão { $version } — { $summary }
@@ -575,6 +621,7 @@ record-see-in-tree-title = Abrir a grelha de fichas em torno desta pessoa
 record-open-full-page = Abrir a página inteira ↗
 record-open-full-title = Abrir a página independente que se pode partilhar
 record-edit = Editar
+record-see-in-river = Ver no rio
 panel-empty = Escolha uma ficha para ver aqui o documento completo dessa pessoa.
 person-see-in-tree = Ver esta pessoa na árvore
 person-visibility-inline = visibilidade:
@@ -644,7 +691,6 @@ record-verbatim-note = Guardado tal como a ficha o dava, porque nenhum conversor
 record-file-to-attach = Ficheiro a anexar
 record-document-type = Tipo de documento
 record-caption = Legenda
-record-caption-placeholder = Legenda (facultativa)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1067,7 +1113,6 @@ identity-living-help = Esta é a marca que a fonte pôs. A página presume à pa
 identity-error-no-display = Um registo precisa de um nome pelo qual ser mostrado. Nada foi guardado.
 editor-blank-to-remove = Limpe o nome para remover esta entrada.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = pt
 identity-edit-link = Editar nomes e identidade
 
 ## Union types, statuses and date precision, said out loud
@@ -2859,6 +2904,7 @@ diff-section-ocr = Texto reconhecido
 diff-section-format-version = Versão do formato
 history-created = criou
 history-deleted = eliminou
+history-merged = fundiu com outra ficha
 history-attached = anexou um ficheiro
 admin-raw-json-unparsed = Não foi possível ler o JSON em bruto ({ $error }). Nada foi guardado.
 admin-raw-json-dangling = O JSON em bruto faz { $field } apontar para { $target }, que não está neste arquivo. Escolha-o num campo acima ou corrija o identificador. Nada foi guardado.
@@ -3176,12 +3222,19 @@ river-legend-title = Como ler o rio
 
 # Masthead search
 search-label = Procurar uma pessoa
-search-placeholder = Procurar uma pessoa
+search-short = Pessoa
+date-qualifier = Qualificador
+date-qualifier-circa = cerca de
 search-title = Pesquisa
 search-heading = Pessoas que correspondem a «{ $q }»
 search-none = Ninguém que possa ver tem esse nome.
 search-open-record = Abrir a ficha
 search-hint = Enter leva o rio até essa pessoa; Shift+Enter abre a sua ficha.
+search-summary = { $n ->
+        [one] { $n } pessoa
+        [many] { $n } pessoas
+       *[other] { $n } pessoas
+    } · ↵ viajar · ⇧↵ abrir a ficha
 search-empty-query = Escreva um nome para pesquisar.
 
 # Data quality (/quality)
@@ -3191,6 +3244,9 @@ quality-none = Nada a ver: todas as verificações passaram.
 quality-intro = Nada aqui é alterado por si. Cada linha é um caso que merece verificação — muitas vezes há uma boa razão. Abra a ficha e decida, ou marque-o como verificado.
 quality-groups-label = Tipos de constatação
 quality-all = Tudo
+quality-show-label = Mostrar
+quality-show-open-option = Por verificar
+quality-download = Transferir
 quality-group-names = Nomes
 quality-group-relations = Parentescos
 quality-group-dates = Datas

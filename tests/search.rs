@@ -47,8 +47,19 @@ async fn a_name_is_found_however_it_is_typed() {
             q,
         )
         .await;
-        let hits: Value = serde_json::from_str(&body).unwrap();
+        let reply: Value = serde_json::from_str(&body).unwrap();
+        let hits = &reply["hits"];
         assert_eq!(hits.as_array().unwrap().len(), 1, "{q}: {body}");
+        assert_eq!(reply["total"], 1);
+        // The river's line for them, and the footer's count (B3).
+        assert!(
+            (1..=5).contains(&hits[0]["class"].as_u64().unwrap()),
+            "{body}"
+        );
+        assert!(
+            reply["summary"].as_str().unwrap().starts_with('1'),
+            "{body}"
+        );
         assert_eq!(hits[0]["id"], "p1");
         assert_eq!(hits[0]["years"], "1858–");
     }
@@ -81,7 +92,11 @@ async fn a_hidden_person_is_never_found_by_someone_who_may_not_see_them() {
             q,
         )
         .await;
-        assert_eq!(body, "[]", "a visitor searching {q:?}");
+        // Exactly what a name in nobody's record gets back.
+        let nobody = body_string(get(&app, "/search.json?q=nobodyatall").await).await;
+        assert_eq!(body, nobody, "a visitor searching {q:?}");
+        let reply: Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(reply["total"], 0, "{body}");
         let page = expect_status(
             get(&app, &format!("/search?q={q}")).await,
             StatusCode::OK,

@@ -8,11 +8,30 @@
 
 use std::collections::BTreeSet;
 
+/// The stylesheet as a page loads it: the colours (`tokens.css`), then
+/// `app.css`.
 fn css() -> String {
-    std::fs::read_to_string(
-        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("static/app.css"),
-    )
-    .expect("read app.css")
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
+    read("static/css/tokens.css") + "\n" + &read("static/app.css")
+}
+
+/// `:root` as the interface draws with it: every `:root {` block but the
+/// Study 06 tokens, which nothing draws with yet (see the head of
+/// `tokens.css`) and so no theme redefines.
+fn root_block(css: &str) -> String {
+    let mut out = String::new();
+    let mut rest = css;
+    while let Some(i) = rest.find("\n:root {") {
+        let block = &rest[i + 1..];
+        let end = block.find("\n}").expect("a closing brace");
+        if !block[..end].contains("--surface-page:") {
+            out.push_str(&block[..end + 2]);
+            out.push('\n');
+        }
+        rest = &block[end..];
+    }
+    out
 }
 
 /// The custom properties defined inside one selector's block.
@@ -27,6 +46,20 @@ fn block_vars(css: &str, selector: &str) -> BTreeSet<String> {
         .filter_map(|l| l.trim().strip_prefix("--"))
         .filter_map(|l| l.split(':').next())
         .map(|n| format!("--{n}"))
+        .collect()
+}
+
+/// The custom properties `:root` defines, across all its blocks.
+fn root_vars(css: &str) -> BTreeSet<String> {
+    root_block(css)
+        .split("\n:root {")
+        .flat_map(|b| {
+            b.lines()
+                .filter_map(|l| l.trim().strip_prefix("--"))
+                .filter_map(|l| l.split(':').next())
+                .map(|n| format!("--{n}"))
+                .collect::<Vec<_>>()
+        })
         .collect()
 }
 
@@ -98,6 +131,7 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--radius-sm",
         "--radius-lg",
         "--mono",
+        "--serif",
         "--tempo",
         "--ease",
         "--shadow-a",
@@ -107,7 +141,7 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--stick-top",
         "--hscroll-gutter",
     ];
-    let root: BTreeSet<String> = block_vars(&css, ":root {")
+    let root: BTreeSet<String> = root_vars(&css)
         .into_iter()
         .filter(|v| !NOT_A_COLOUR.contains(&v.as_str()))
         .collect();
@@ -124,7 +158,7 @@ fn every_theme_redefines_every_colour_root_defines() {
 
 #[test]
 fn the_confidence_track_is_never_the_border_colour() {
-    // The bar's track has to read as *empty*. It used to be `--border`, which
+    // The bar's track has to read as *empty*. It used to be `--border-hairline`, which
     // under the high-contrast theme is pure black, so a 12% bar rendered as a
     // mostly-dark bar and looked more certain than a 98% one — inverting the
     // signal in the theme that needs it most.
@@ -138,7 +172,7 @@ fn the_confidence_track_is_never_the_border_colour() {
         .unwrap();
     assert!(
         bar.contains("var(--conf-track)"),
-        "the track must have its own variable, not borrow --border:\n{bar}"
+        "the track must have its own variable, not borrow --border-hairline:\n{bar}"
     );
 }
 
@@ -429,8 +463,8 @@ fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
 
     let bg = block
         .lines()
-        .find_map(|l| l.trim().strip_prefix("--bg:"))
-        .expect("--bg")
+        .find_map(|l| l.trim().strip_prefix("--surface-page:"))
+        .expect("--surface-page")
         .trim()
         .trim_end_matches(';')
         .to_string();
@@ -451,7 +485,7 @@ fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
 /// reader", so a block that sits *inside* a section and also appears nearer
 /// than it inverts the containment — the eye reads that before it reads
 /// anything the layout meant. The block is therefore dropped to the page's own
-/// `--bg`, which turns it into a well in the section's surface, and its
+/// `--surface-page`, which turns it into a well in the section's surface, and its
 /// `box-shadow` is explicitly `none` rather than merely unset.
 #[test]
 fn a_block_inside_a_section_is_recessed_rather_than_raised() {
@@ -462,7 +496,7 @@ fn a_block_inside_a_section_is_recessed_rather_than_raised() {
     let block = &css[start..start + css[start..].find('}').expect("the rule") + 1];
 
     assert!(
-        block.contains("background: var(--bg)"),
+        block.contains("background: var(--surface-page)"),
         "a block drops to the page's own background — recessed, not raised:\n{block}"
     );
     assert!(
@@ -511,11 +545,10 @@ fn every_level_two_surface_is_declared_in_one_place() {
 
     // And the defaults those tokens carry are the values this rule used to
     // hold literally, so the comfortable style is the interface unchanged.
-    let root = &css[css.find(":root {").expect("the root block")..];
-    let root = &root[..root.find("\n}").expect("its close")];
+    let root = root_block(&css);
     for want in [
-        "--section-fill: var(--surface)",
-        "--section-border: 1px solid var(--border)",
+        "--section-fill: var(--surface-raised)",
+        "--section-border: 1px solid var(--border-hairline)",
         "--section-shadow: 0 1px 2px",
     ] {
         assert!(
@@ -535,7 +568,7 @@ fn every_level_two_surface_is_declared_in_one_place() {
 fn the_danger_colour_is_not_the_low_confidence_fill() {
     let css = css();
     assert!(
-        css.contains(".btn.danger { color: var(--danger)"),
+        css.contains(".btn.danger { border-color: var(--danger); color: var(--danger); }"),
         "the destructive button uses the token meant for reading"
     );
     for theme in THEME_SELECTORS {
@@ -596,7 +629,7 @@ fn every_style_redefines_every_value_the_scale_has() {
         "--section-border",
         "--section-radius",
     ];
-    let root = block_vars(&css, ":root {");
+    let root = root_vars(&css);
     for v in SCALE {
         assert!(
             root.contains(*v),
@@ -636,7 +669,7 @@ fn no_style_block_names_a_colour() {
         let open = css[start..].find('{').expect("a block") + start;
         let end = css[open..].find("\n}").expect("a closing brace") + open;
         let body = &css[open..end];
-        // References to the theme's own tokens are the point — `var(--surface)`
+        // References to the theme's own tokens are the point — `var(--surface-raised)`
         // is how a style stays out of the palette's business — so they are
         // removed before looking. What must not survive is a colour *invented*
         // here: a hex, an rgb() or an hsl() of its own.

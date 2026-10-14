@@ -163,16 +163,17 @@ async fn a_living_persons_health_never_reaches_a_reader_who_may_not_see_it() {
     }
 }
 
-/// The raw-JSON dump is the shortest path from a stored diagnosis to a
-/// stranger's screen, and it is shown to every reader, not only to admins.
+/// The raw-JSON dump was the shortest path from a stored diagnosis to a
+/// stranger's screen. It is an editing artefact now, and read mode carries
+/// none (the editor's textarea is held by `sensitive_classes::*_raw`).
 #[tokio::test]
-async fn the_raw_entity_dump_is_stripped_rather_than_printed_whole() {
+async fn the_record_page_carries_no_raw_dump_and_no_diagnosis() {
     let (app, _p) = app_with_bundle("health-raw", &bundle("health-raw-src"));
 
     let body = body_string(get(&app, &format!("/person/{LIVING}")).await).await;
     assert!(
-        body.contains("Raw entity") || body.contains("raw-json"),
-        "the raw section is on the page, so this test is testing something"
+        !body.contains("Raw entity") && !body.contains("raw-json"),
+        "no raw section in read mode"
     );
     assert!(
         !body.contains(CONDITION),
@@ -403,8 +404,8 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
 
     for uri in [
         format!("/person/{LIVING}"),
-        // The history is its own tab now. The rule travelled with it.
-        format!("/person/{LIVING}?tab=history"),
+        // The history is in edit mode now (the editor, below). The rule
+        // travelled with it.
         format!("/person/{LIVING}?tab=profile&group=health"),
         format!("/tree/panel/{LIVING}"),
         format!("/tree?root={LIVING}"),
@@ -418,7 +419,7 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
         // Not merely absent: the row is still there, saying so. A diff with a
         // row silently missing is a diff that is wrong — the reader must be
         // able to tell that something changed without being shown what.
-        if uri.contains("/edit") || uri.contains("tab=history") {
+        if uri.contains("/edit") {
             assert!(
                 body.contains("diff-withheld"),
                 "{uri} dropped the row instead of marking it withheld"
@@ -429,7 +430,7 @@ async fn the_edit_journal_does_not_print_back_the_diagnosis_the_record_withheld(
     // The positive control: an administrator reading the same history does see
     // it, so the redaction is the rule doing its job and not the journal being
     // empty.
-    let admin = body_string(get_admin(&app, &format!("/person/{LIVING}?tab=history")).await).await;
+    let admin = body_string(get_admin(&app, &format!("/admin/person/{LIVING}/edit")).await).await;
     assert!(admin.contains(CONDITION), "an administrator reads it");
 }
 

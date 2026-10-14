@@ -87,7 +87,7 @@
     <textarea name="raw_json" rows="18" spellcheck="false">{{ mine_raw }}</textarea>
   </fieldset>
   <div class="cta-row">
-    <button class="btn primary" type="submit">{{ t("conflict-save-over") }}</button>
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("conflict-save-over") }}</button>
     <a class="btn" href="/admin/{{ kind }}/{{ id }}/edit">{{ t("conflict-discard") }}</a>
   </div>
 </form>

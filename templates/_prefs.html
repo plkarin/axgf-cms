@@ -1,32 +1,15 @@
-{# The masthead's way in to the preferences.
-
-   It used to be the preferences: a `<details>` holding four stacked forms —
-   eleven languages, eight themes, three styles and a checkbox — so a reader
-   after any one of them read past the other twenty-two controls. They live on
-   `/settings` now, a tab each. This is the link to that page.
-
-   It names the current language rather than saying "Settings", because the
-   language is the preference a reader most often wants to *check* rather than
-   change, and a control that answers the question without being opened is
-   better than one that has to be. #}
-
-{# The arguments are passed explicitly because an imported macro does not see
-   the including template's context in minijinja — including `t`, which is a
-   function bound at render time and not a global. #}
-{% macro link(t, settings_url, current_locale) %}
-<a class="prefs-link" href="{{ settings_url }}" title="{{ t('settings-title') }}">
-  {#- An inline SVG rather than the 🌐 emoji: an emoji is a font dependency
-      that renders as a replacement box wherever that font is absent, and it
-      cannot take the theme's ink colour. This one is drawn in currentColor
-      and is decorative, so it is hidden from assistive technology and the
-      control is named by its text. -#}
-  <svg class="prefs-globe" viewBox="0 0 20 20" width="16" height="16"
-       fill="none" stroke="currentColor" stroke-width="1.5"
-       stroke-linecap="round" aria-hidden="true" focusable="false">
-    <circle cx="10" cy="10" r="7.25"/>
-    <path d="M2.75 10h14.5"/>
-    <path d="M10 2.75c2 2.1 3 4.6 3 7.25s-1 5.15-3 7.25c-2-2.1-3-4.6-3-7.25s1-5.15 3-7.25z"/>
-  </svg>
-  <span class="prefs-current">{{ current_locale.native_name }}</span>
-</a>
+{# The masthead's language control: a real <select>, showing the language's
+   two-letter code so it fits whatever script the interface is in (B5). It
+   posts to the same place as the settings tab; ui.js submits on change, and
+   the button is there for a reader without scripts, hidden when ui.js runs. #}
+{% macro language(t, locales, current_locale, back) %}
+<form class="lang-form" method="post" action="/prefs/language">
+  <input type="hidden" name="back" value="{{ back }}">
+  <select name="lang" aria-label="{{ t('prefs-language') }}" title="{{ current_locale.native_name }}" data-autosubmit>
+    {% for l in locales %}
+    <option value="{{ l.tag }}" lang="{{ l.tag }}" {{ "selected" if l.tag == current_locale.tag }}>{{ l.code }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+</form>
 {% endmacro %}

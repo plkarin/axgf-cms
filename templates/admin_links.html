@@ -19,7 +19,12 @@
 
 {% if not links %}<p class="muted">{{ t("links-none") }}</p>{% endif %}
 
+{#- Each record is one row that opens to its form (the minimalism pass):
+    what is recorded first, the editing on demand. -#}
+<div class="record-list" data-content>
 {% for l in links %}
+<details class="record-edit">
+<summary><bdi>{{ l.label }}</bdi></summary>
 <form method="post" action="/admin/person/{{ id }}/links/{{ l.id }}" class="editor">
   <input type="hidden" name="base_version" value="{{ l.version }}">
   <fieldset class="ed-group">
@@ -27,24 +32,29 @@
     {% if l.reversed %}<p class="ed-elsewhere">{{ t("links-reversed") }}</p>{% endif %}
     {{ m.link_fields(t, l, categories, relations, precisions, sources) }}
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
   </fieldset>
 </form>
 {#- Outside the form above, not inside it: a form nested in a form is
     dropped by the parser, and the delete button became a second save button. -#}
 {{ m.delete_block(t, "link", l.id, t("links-remove"), l.version) }}
+</details>
 {% endfor %}
+</div>
 
+<details class="add-record">
+<summary>{{ t("links-new") }}</summary>
 <form method="post" action="/admin/person/{{ id }}/links" class="editor">
   <fieldset class="ed-group">
     <legend>{{ t("links-new") }}</legend>
     {{ m.link_fields(t, none, categories, relations, precisions, sources) }}
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("links-create") }}</button>
+      <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("links-create") }}</button>
     </div>
   </fieldset>
 </form>
+</details>
 
 <p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
 {% endblock %}

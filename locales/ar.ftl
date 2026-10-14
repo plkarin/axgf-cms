@@ -30,8 +30,12 @@ nav-tree = الشجرة
 nav-admin = الإدارة
 nav-sign-in = تسجيل الدخول
 nav-sign-out = تسجيل الخروج
+account-emergency = رمز الطوارئ
 
 settings-title = الإعدادات
+edit-mode-label = وضع التحرير — ما تحفظه يغيّر سجلات العائلة
+display-menu-label = اللغة والعرض
+display-settings = السمة والعرض…
 settings-tabs-label = أقسام الإعدادات
 settings-tab-theme = السمة
 settings-tab-language = اللغة
@@ -42,6 +46,8 @@ prefs-theme = السمة
 prefs-background = الخلفية
 prefs-background-on = تدرّج لوني خفيف خلف الصفحة
 prefs-apply = تطبيق
+busy-saving = جارٍ الحفظ…
+busy-working = جارٍ التنفيذ…
 prefs-reviewed = مُراجَعة
 prefs-machine = آلية، { $coverage }٪
 
@@ -55,6 +61,8 @@ theme-protanopia = عمى اللون الأحمر
 theme-tritanopia = عمى اللون الأزرق
 theme-colour-blind-note = ملائم لعمى الألوان
 theme-contrast-note = أقصى تباين
+theme-dark-note = الافتراضي
+theme-river-note = يبقى النهر داكنًا في كل السمات: ألوانه مصمَّمة لخلفية داكنة.
 
 tree-title-around = حول { $name }
 tree-title-whole = الشجرة كاملة
@@ -81,7 +89,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } زوج
     }، { $depth } أجيال في كل اتجاه.
 tree-filter-label = تصفية البطاقات الظاهرة
-tree-filter-placeholder = اكتب اسمًا…
 tree-centre-on = التمركز حول
 tree-depth = أجيال في كل اتجاه
 tree-show = إظهار
@@ -147,6 +154,10 @@ error-not-found-title = غير موجود
 error-not-found-detail = هذه الصفحة غير موجودة في هذا الملف.
 error-no-such-person-title = لا يوجد هذا الشخص
 error-no-such-person-detail = لا يحتوي هذا الملف على شخص بهذا المعرّف.
+error-merged-title = هذا السجل لم يعد موجودًا.
+error-merged-detail = دُمج مع { $name } في { $date }. الروابط إلى العنوان القديم تقود الآن إلى السجل المدمج.
+error-merged-open = فتح السجل المدمج
+error-back-to-river = العودة إلى النهر
 error-no-such-entity-title = لا يوجد هذا السجل
 error-no-such-entity-detail = لا يحتوي هذا الملف على سجل بهذا المعرّف.
 error-deleted-while-editing = لا يحتوي هذا الملف على سجل بهذا المعرّف. ربما حُذف أثناء تحريرك له.
@@ -192,6 +203,14 @@ admin-no-changes-yet = لم يُغيَّر شيء بعد عبر هذا التط�
 admin-last-validation = آخر تحقّق
 admin-fields = الحقول
 admin-raw-json = JSON الخام
+form-more-fields = { $n ->
+        [zero] لا حقول أخرى
+        [one] حقل آخر
+        [two] حقلان آخران
+        [few] { $n } حقول أخرى
+        [many] { $n } حقلًا آخر
+       *[other] { $n } حقل آخر
+    }
 admin-save = حفظ
 admin-cancel = إلغاء
 place-editor-title = تحرير مكان
@@ -274,8 +293,8 @@ place-map-clear = أزل النقطة
 place-open-in-map = ابحث عن هذا المكان في OpenStreetMap ثم ألصق الرابط هنا
 
 person-tab-record = السجل
-person-tab-life = الحياة
-person-tab-media = المواد
+person-tab-life = الأحداث
+person-tab-media = الوسائط
 person-tab-tree = الشجرة
 person-tab-history = السجل
 person-tree-depth = { $n } أجيال في كل اتجاه. الشجرة كاملةً في الأسفل.
@@ -287,6 +306,48 @@ admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير
 admin-page-of = صفحة { $page } من { $pages }
+list-select-row = تحديد { $name }
+list-kind-label = النوع
+list-select-page = تحديد كل صفوف هذه الصفحة
+list-selected = { $n ->
+        [zero] لا شيء محدد
+        [one] سجل واحد محدد
+        [two] سجلان محددان
+        [few] { $n } سجلات محددة
+        [many] { $n } سجلًا محددًا
+       *[other] { $n } سجل محدد
+    }
+list-export = تصدير
+list-escape = Esc لإلغاء التحديد
+bulk-confirm-title = { $n ->
+        [zero] حذف لا شيء؟
+        [one] حذف سجل واحد؟
+        [two] حذف سجلين؟
+        [few] حذف { $n } سجلات؟
+        [many] حذف { $n } سجلًا؟
+       *[other] حذف { $n } سجل؟
+    }
+bulk-confirm-detail = يُرفض السجل الذي لا يزال سجل آخر يشير إليه، وعندها لا يُحذف شيء.
+bulk-confirm-go = احذفها
+bulk-deleted = { $n ->
+        [zero] لم يُحذف شيء.
+        [one] حُذف سجل واحد.
+        [two] حُذف سجلان.
+        [few] حُذفت { $n } سجلات.
+        [many] حُذف { $n } سجلًا.
+       *[other] حُذف { $n } سجل.
+    }
+bulk-refused = لم يُحذف شيء: لا يزال { $name } مُشارًا إليه في مكان آخر. أزل تلك الإشارة أولًا ثم أعد المحاولة.
+bulk-changed = { $n ->
+        [zero] لم يتغيّر شيء.
+        [one] تغيّر سجل واحد منذ عرض القائمة، لذلك لم يُحذف شيء. أعد تحميل القائمة وحاول مجددًا.
+        [two] تغيّر سجلان منذ عرض القائمة، لذلك لم يُحذف شيء. أعد تحميل القائمة وحاول مجددًا.
+        [few] تغيّرت { $n } سجلات منذ عرض القائمة، لذلك لم يُحذف شيء. أعد تحميل القائمة وحاول مجددًا.
+        [many] تغيّر { $n } سجلًا منذ عرض القائمة، لذلك لم يُحذف شيء. أعد تحميل القائمة وحاول مجددًا.
+       *[other] تغيّر { $n } سجل منذ عرض القائمة، لذلك لم يُحذف شيء. أعد تحميل القائمة وحاول مجددًا.
+    }
+admin-range = { $from }–{ $to } من { $total }
+list-filiation = النسب
 admin-previous = السابق
 admin-next = التالي
 admin-saved = حُفظ بوصفه الإصدار { $version } — { $summary }
@@ -465,6 +526,7 @@ record-see-in-tree-title = افتح شبكة البطاقات حول هذا ال
 record-open-full-page = افتح الصفحة الكاملة ↗
 record-open-full-title = افتح الصفحة المستقلة القابلة للمشاركة
 record-edit = تحرير
+record-see-in-river = عرض في النهر
 record-living-yes = على قيد الحياة
 record-deceased = متوفّى
 record-display-name = الاسم المعروض
@@ -845,7 +907,6 @@ record-verbatim-note = محفوظ كما جاء في السجل تمامًا، �
 record-file-to-attach = الملف المراد إرفاقه
 record-document-type = نوع المستند
 record-caption = التعليق
-record-caption-placeholder = تعليق (اختياري)
 record-history-entry-meta = — { $at }
 record-history-entry-version = ، { $version }
 
@@ -1271,7 +1332,6 @@ identity-living-help = هذه العلامة التي وضعها المصدر. �
 identity-error-no-display = يحتاج السجل إلى اسم يُعرض به. لم يُحفظ شيء.
 editor-blank-to-remove = امسح الاسم لحذف هذا المُدخَل.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = ar
 identity-edit-link = حرّر الأسماء والهوية
 
 ## Union types, statuses and date precision, said out loud
@@ -3083,6 +3143,7 @@ diff-section-ocr = النص المتعرَّف عليه
 diff-section-format-version = إصدار الصيغة
 history-created = أنشأ
 history-deleted = حذف
+history-merged = دمج مع سجل آخر
 history-attached = أرفق ملفًا
 admin-raw-json-unparsed = تعذّرت قراءة JSON الخام ({ $error }). لم يُحفظ شيء.
 admin-raw-json-dangling = يشير JSON الخام في { $field } إلى { $target }، وهو غير موجود في هذا الأرشيف. اختره من حقل أعلاه أو صحّح المعرّف. لم يُحفظ شيء.
@@ -3433,12 +3494,22 @@ river-legend-title = كيف يُقرأ النهر
 
 # Masthead search
 search-label = ابحث عن شخص
-search-placeholder = ابحث عن شخص
+search-short = شخص
+date-qualifier = المُحدِّد
+date-qualifier-circa = نحو
 search-title = البحث
 search-heading = الأشخاص المطابقون لـ «{ $q }»
 search-none = لا أحد ممن يمكنك رؤيتهم يحمل هذا الاسم.
 search-open-record = افتح السجل
 search-hint = يأخذ Enter النهر إليه، ويفتح Shift+Enter سجله.
+search-summary = { $n ->
+        [zero] لا أحد
+        [one] شخص واحد
+        [two] شخصان
+        [few] { $n } أشخاص
+        [many] { $n } شخصًا
+       *[other] { $n } شخص
+    } · ↵ انتقال · ⇧↵ فتح السجل
 search-empty-query = اكتب اسمًا للبحث.
 
 # Data quality (/quality)
@@ -3448,6 +3519,9 @@ quality-none = لا شيء يستحق النظر: اجتازت كل الفحوص
 quality-intro = لا يُغيَّر هنا شيء نيابة عنك. كل سطر حالة تستحق التحقق — وكثيرًا ما يكون لها سبب وجيه. افتح السجل وقرر، أو علّمها بأنها تم التحقق منها.
 quality-groups-label = أنواع الملاحظات
 quality-all = الكل
+quality-show-label = عرض
+quality-show-open-option = للتحقق
+quality-download = تنزيل
 quality-group-names = الأسماء
 quality-group-relations = صلات القرابة
 quality-group-dates = التواريخ

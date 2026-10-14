@@ -2,10 +2,10 @@
 {% import "_macros.html" as m %}
 {% block title %}{{ p.name }} — {{ t("app-name") }}{% endblock %}
 
-{# The identity page is the whole record, not a summary of it. The sections
-   themselves live in _person_detail.html, shared verbatim with the tree side
-   panel; this page adds the standalone chrome around them — a heading, the
-   section index, and the link back into the tree. #}
+{# The record page, in read mode: the whole record, not a summary of it, and
+   only what is recorded. The sections live in _person_detail.html, shared
+   with the side panels; the profile's filled groups follow in
+   _profile_read.html. Editing is a separate mode, entered by "Modifier". #}
 
 {% block content %}
 
@@ -13,7 +13,7 @@
    two of them; nothing here is prose about the software. #}
 <header class="person-head">
   {% if p.header.avatar %}
-  <a class="person-avatar" href="/document/{{ p.header.avatar.id }}/view"
+  <a class="person-avatar" data-content href="/document/{{ p.header.avatar.id }}/view"
      aria-label="{{ t('person-portrait-of', name=p.name) }}">
     <img src="/document/{{ p.header.avatar.id }}/thumb" alt="{{ t('person-portrait-of', name=p.name) }}"
          width="112" height="112" loading="lazy" decoding="async"
@@ -39,36 +39,45 @@
     {% endif %}
 
     <p class="person-vitals">
+      {#- Only what is recorded (the minimalism pass): a missing date is not
+          drawn as "Date unknown"; with neither date, the line says the
+          rest, or nothing. -#}
+      {%- set born = p.birth.present and p.birth.date and p.birth.date.kind != "unknown" %}
+      {%- set died = p.death.present and p.death.date and p.death.date.kind != "unknown" %}
+      {%- if born or died or p.is_living or p.living_presumed %}
       <span class="pv-dates">
-        {{- m.date(p.birth.date) if p.birth.present else t("date-unknown") -}}
-        <span class="sep"> – </span>
+        {{- m.date(p.birth.date) if born -}}
+        {%- if born and (died or p.is_living or p.living_presumed) %}<span class="sep"> – </span>{% elif not born %}<span class="sep">– </span>{% endif -%}
         {%- if p.is_living %}{{ t("record-living-yes") }}
-        {%- elif p.death.present %}{{ m.date(p.death.date) }}
-        {#- An inference, and marked as one. The bare "Date unknown" that used
-            to sit here reads as a gap somebody has not filled in, which is a
-            different statement from "the record says living and the record
-            cannot be right". #}
+        {%- elif died %}{{ m.date(p.death.date) }}
         {%- elif p.living_presumed %}<span class="presumed"
             title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
-        {%- else %}{{ t("date-unknown") }}{% endif -%}
+        {%- endif -%}
       </span>
+      {%- endif %}
       {%- if p.header.age is not none %}
       <span class="sep"> · </span>{% if p.header.age_is_current %}{{ t("person-age-now", n=p.header.age) }}
       {%- else %}{{ t("person-age-at-death", n=p.header.age) }}{% endif %}
       {%- endif %}
     </p>
 
+    {#- What is recorded about them, joined by middots: whatever is absent
+        leaves no separator behind. Visibility is an editing concern, so it is
+        shown to the people who can act on it and to nobody else. -#}
+    {% set presumed = t("record-presumed-deceased") %}
+    {% set facts = [p.gender] if p.gender else [] %}
+    {% if p.is_living %}{% set facts = facts + [t("record-living-yes")] %}
+    {% elif p.living_presumed %}{% set facts = facts + [presumed] %}
+    {% elif p.death.present %}{% set facts = facts + [t("record-deceased")] %}{% endif %}
+    {% if p.gender_note %}{% set facts = facts + [p.gender_note] %}{% endif %}
+    {% if p.visibility and may_write %}{% set facts = facts + [t("person-visibility-inline") ~ " " ~ p.visibility] %}{% endif %}
+    {% if facts %}
     <p class="lede small">
-      {%- if p.gender %}{{ p.gender }}{% endif -%}
-      {%- if p.is_living %} · {{ t("record-living-yes") }}
-      {%- elif p.living_presumed %} · <span class="presumed"
-          title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
-      {%- elif p.death.present %} · {{ t("record-deceased") }}{% endif -%}
-      {%- if p.gender_note %} · {{ p.gender_note }}{% endif -%}
-      {# Visibility is an editing concern, so it is shown to the people who can
-         act on it and to nobody else. #}
-      {%- if p.visibility and may_write %} · {{ t("person-visibility-inline") }} {{ p.visibility }}{% endif -%}
+      {%- for f in facts %}{% if not loop.first %} · {% endif %}
+      {%- if f == presumed and p.living_presumed %}<span class="presumed" title="{{ t('record-presumed-why', years=presume_after) }}">{{ f }}</span>
+      {%- else %}{{ f }}{% endif %}{% endfor -%}
     </p>
+    {% endif %}
 
     {# Where they were, and how the record sits in the family. Each part is
        omitted when the bundle does not state it. #}
@@ -82,66 +91,29 @@
     {% endif %}
   </div>
 
+  {#- Reading comes first; editing is entered here, and only here, and
+      looks different when it is (the minimalism pass). A reader without
+      the right to edit receives no edit control at all, in any form. -#}
   {% if may_write %}
   <div class="person-head-actions">
     <a class="btn" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>
-    {# Only for people who may edit. The automatic pick puts a newspaper
-       clipping on a record as readily as a portrait, and until somebody says
-       which is which there is no way for the software to know. #}
-    <a class="btn" href="/admin/person/{{ p.id }}/avatar">{{ t("avatar-choose-link") }}</a>
   </div>
   {% endif %}
 
 </header>
 
-{# The tabs.
-
-   Five real links, not five panels behind a script: each is a URL somebody can
-   send to somebody else, the back button goes back a tab, and the page works
-   with scripting off exactly as the rest of the panel does. `aria-current` is
-   what tells a screen reader which one is open, and it is on the link rather
-   than on a wrapper because the link is the thing that is current.
-
-   The record is not split by this. Every section still holds what it held —
-   see `_person_detail.html`, which draws all of them when no tab is named,
-   which is what the tree side panel asks for. #}
-<nav class="person-tabs" aria-label="{{ t('person-sections-label') }}">
-  {% for tb in tabs %}
-  <a href="/person/{{ p.id }}{% if tb.slug != 'record' %}?tab={{ tb.slug }}{% endif %}"
-     class="person-tab{% if tb.slug == tab %} is-current{% endif %}"
-     {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}
-    {#- How much is behind the tab, so the reader can tell an empty one from a
-        full one before spending a page load on it. Omitted rather than shown
-        as zero: "Media 0" is a worse thing to read than "Media", and the tab
-        still opens and still explains itself. #}
-    {%- if tb.count %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
-  {% endfor %}
-</nav>
-
-{% if tab == "tree" %}
-  {# Rooted on this person rather than on whoever makes the best first screen,
-     and shallow: three generations each way is what "where does this person
-     sit" means. The whole tree is one link away and says so. #}
-  {% if layout and layout.bands %}
-  <div class="person-tree" style="--tree-width:{{ layout.width }}px;--tree-height:{{ layout.height }}px">
-    <div class="tree-scroll">
-      {% include "_tree_canvas.html" %}
-    </div>
-  </div>
-  <p class="hint">{{ t("person-tree-depth", n=tree_depth) }}</p>
-  {% else %}
-  {# A person with no recorded parents, partners or children is not an error.
-     It is most of a converted bundle's edges, and saying so plainly beats
-     drawing an empty box. #}
-  <p class="notice" role="status">{{ t("person-tree-alone") }}</p>
-  {% endif %}
-{% elif tab == "profile" %}
-  {% include "_profile.html" %}
-{% else %}
+{#- The record, on one page: every section that holds something, and nothing
+    that does not. There used to be tabs; with nothing empty drawn, a record
+    is short enough to read through, and the tabs were most of the chrome on
+    the page. The person's portrait, relatives, places, sources and files are
+    the record's content and are not counted as chrome. -#}
+<div class="record-body" data-content>
   {% include "_person_detail.html" %}
-{% endif %}
+  {% include "_radar.html" %}
+  {% include "_profile_read.html" %}
+</div>
 
-<p style="margin-top:2rem"><a class="btn" href="/tree?root={{ p.id }}">{{ t("person-see-in-tree") }}</a></p>
+<p class="record-foot"><a class="btn" href="/?p={{ p.id }}">{{ t("record-see-in-river") }}</a></p>
 
 {% endblock %}
 

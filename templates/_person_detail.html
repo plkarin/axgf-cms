@@ -43,9 +43,14 @@
       </div>
     {% else %}
     <div class="table-wrap">
+    {#- A column only when some name has something in it: an empty column is
+        an empty field per row (the minimalism pass). -#}
+    {% set col_used = p.names | selectattr("period") | list %}
+    {% set col_evidence = (p.names | selectattr("confidence") | list) or (p.names | selectattr("source") | list) %}
     <table class="names">
       <thead><tr><th>{{ t("record-name") }}</th><th>{{ t("record-name-type") }}</th>
-        <th>{{ t("record-name-used") }}</th><th>{{ t("record-name-evidence") }}</th></tr></thead>
+        {% if col_used %}<th>{{ t("record-name-used") }}</th>{% endif %}
+        {% if col_evidence %}<th>{{ t("record-name-evidence") }}</th>{% endif %}</tr></thead>
       <tbody>
         {% for n in p.names %}
         <tr>
@@ -67,11 +72,11 @@
             {%- if n.is_primary %} <span class="chip small">{{ t("record-display-name") }}</span>{% endif %}
             {%- if n.culture %}<div class="muted">{{ n.culture }}</div>{% endif %}
           </td>
-          <td class="small" data-label="{{ t('record-name-used') }}">{{ n.period if n.period else "—" }}</td>
-          <td data-label="{{ t('record-name-evidence') }}">
+          {% if col_used %}<td class="small" data-label="{{ t('record-name-used') }}">{{ n.period if n.period }}</td>{% endif %}
+          {% if col_evidence %}<td data-label="{{ t('record-name-evidence') }}">
             {% if n.confidence %}{{ m.conf_bar(n.confidence) }}{% endif %}
             {% if n.source %}{{ m.source_chip(n.source) }}{% endif %}
-          </td>
+          </td>{% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -82,9 +87,6 @@
 
   {{ m.fact_chips(p) }}
 
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/identity">{{ t("identity-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -110,9 +112,6 @@
     </li>
     {% endfor %}
   </ol>
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/events">{{ t("events-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -153,18 +152,8 @@
     <div class="notice notice-defect" role="status">
       <p><strong>{{ t("record-union-duplicate") }}</strong>
       {{ t("record-union-duplicate-detail") }}</p>
-      {#- A mutation, so a form and not a link. It calls the library's
-          deduplicate(); this application holds no merging logic of its own.
-          The confirmation says what it runs over, because the library's
-          deduplication is whole-bundle and this button cannot narrow it. -#}
-      {% if is_admin %}
-      <form method="post" action="/admin/dedup" class="inline-form"
-            data-confirm="{{ t("record-union-duplicate-confirm") }}">
-        <input type="hidden" name="families" value="{{ g.family_ids | join(",") }}">
-        <input type="hidden" name="back" value="/person/{{ p.id }}">
-        <button class="btn btn-compact" type="submit">{{ t("record-union-duplicate-action") }}</button>
-      </form>
-      {% endif %}
+      {#- The action is an edit, so it is not here: the administration
+          page runs the library's deduplication (read/edit separation). -#}
     </div>
     {% endif %}
 
@@ -172,11 +161,10 @@
     <div class="union">
       <div class="union-head">
         <strong>
-          {%- if u.spouse %}{{ m.person_link(u.spouse) }}
-          {%- else %}<span class="muted">{{ t("record-partner-not-recorded") }}</span>{% endif -%}
+          {%- if u.spouse %}{{ m.person_link(u.spouse) }}{% endif -%}
         </strong>
         {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
-        <span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>
+        {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
         {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
       </div>
       <div class="small union-when">
@@ -205,9 +193,6 @@
     {% endfor %}
   </div>
   {% endfor %}
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/family">{{ t("family-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -237,9 +222,6 @@
     </div>
     {% endfor %}
   </div>
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/links">{{ t("links-edit-link") }}</a></p>
-  {% endif %}
 </section>
 {% endif %}
 
@@ -247,7 +229,7 @@
 {# At the foot of the record tab, and only there: the side panel is one glance
    at a whole person in a narrow column, which is not where six-axis charts and
    their tables belong. #}
-{% if tab == "record" %}{% include "_radar.html" %}{% endif %}
+
 
 {# ------------------------------------------------------------- OCCUPATIONS #}
 {% if (tab is undefined or tab == "life") and (p.occupations) %}
@@ -261,7 +243,7 @@
       <div class="tl-label">
         <strong>{{ o.title }}</strong>
         {% if o.position %}<span class="chip small">{{ o.position }}</span>{% endif %}
-        <span class="small muted">{{ o.span }}</span>
+        {% if o.span %}<span class="small muted">{{ o.span }}</span>{% endif %}
         {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
         {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
       </div>
@@ -272,7 +254,7 @@
                  logical property rather than `left` is what makes that happen
                  without a second stylesheet or a second set of numbers. -#}
              style="inset-inline-start:{{ o.bar_left }}%;width:{{ o.bar_width }}%"
-             title="{{ o.title }}, {{ o.span }}{% if o.confidence %} — {{ t('confidence-' ~ o.confidence.band, percent=o.confidence.percent) }}{% endif %}">
+             title="{{ o.title }}{% if o.span %}, {{ o.span }}{% endif %}{% if o.confidence %} — {{ t('confidence-' ~ o.confidence.band, percent=o.confidence.percent) }}{% endif %}">
           {%- if o.open_start %}<span class="tl-open tl-open-l" title="{{ t('record-start-not-recorded') }}"></span>{% endif -%}
           {%- if o.open_end %}<span class="tl-open tl-open-r" title="{{ t('record-end-not-recorded') }}"></span>{% endif -%}
         </div>
@@ -295,15 +277,12 @@
       <strong>{{ o.title }}</strong>
       {% if o.employer %}<span class="small">{{ o.employer }}</span>{% endif %}
       {% if o.place %}<span class="small muted">{{ m.place(o.place) }}</span>{% endif %}
-      <span class="small muted">{{ o.span }}</span>
+      {% if o.span %}<span class="small muted">{{ o.span }}</span>{% endif %}
       {% if o.confidence %}{{ m.conf_bar(o.confidence) }}{% endif %}
       {% if o.source %}{{ m.source_chip(o.source) }}{% endif %}
     </li>
     {% endfor %}
   </ul>
-  {% endif %}
-  {% if may_write %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/occupations">{{ t("occupations-edit-link") }}</a></p>
   {% endif %}
 </section>
 {% endif %}
@@ -313,9 +292,12 @@
 {# Only in the tree's side panel, which has no tabs: one line saying how much
    the record's profile holds and where to read it. The panel is one glance
    at a person, and fourteen groups of attributes are not a glance. #}
-{% if tab is undefined and p.profile_count %}
+{#- Beside the river or the grid the profile is collapsed into a count —
+    "Profil · 12 renseignés" — and the record page, one link away, draws it
+    whole. The record page draws it itself (`full_record`). -#}
+{% if not full_record and p.profile_count %}
 <section id="profile-summary" class="rec-section">
-  <p class="small"><a href="/person/{{ p.id }}?tab=profile">{{ t("profile-summary-link", n=p.profile_count) }}</a></p>
+  <p class="small">{{ t("profile-summary-link", n=p.profile_count) }}</p>
 </section>
 {% endif %}
 
@@ -358,9 +340,6 @@
          converted bundle. The prompt to fill it in belongs where the reader
          noticed the gap, but it edits the place, which is shared — the editor
          says so, and by how many records. #}
-      {% if may_write and pu.place.known and pu.place.thin %}
-      <a class="small" href="/admin/place/{{ pu.place.id }}/edit">{{ t("place-add-detail") }}</a>
-      {% endif %}
     </div>
     {% endfor %}
   </div>
@@ -381,15 +360,7 @@
    It says what is missing, in the three names the tab is made of, so the
    answer is specific rather than a shrug. An administrator is told where to
    put the first one; a reader is not offered a door they cannot open. #}
-{% if tab == "life" and not (p.timeline or p.occupations or p.places) %}
-<section id="life-empty" class="rec-section">
-  {{ m.sec(t, t("record-life-events"), compact, t("record-life-events-help")) }}
-  <p class="notice" role="status">{{ t("life-nothing-recorded") }}</p>
-  {% if may_write %}
-  <p class="small"><a href="/admin/person/{{ p.id }}/events">{{ t("life-add-first") }}</a></p>
-  {% endif %}
-</section>
-{% endif %}
+
 
 {# ---------------------------------------------------- SOURCES AND DOCUMENTS #}
 
@@ -404,24 +375,15 @@
    entirely empty page: no heading, no sentence, nothing. Most people on a
    converted bundle are exactly that person. #}
 {% set has_evidence = p.sources or p.documents or p.images %}
-{#- Beside the river the evidence is two tabs: "sources" draws the sources
-    table, "media" the photographs, the documents and the way to attach one.
-    The person page's own "media" tab is still all of it. #}
-{% set split = river_tabs is defined and river_tabs %}
-{% set show_sources = not (split and tab == "media") %}
-{% set show_files = not (split and tab == "sources") %}
-{% if split and tab == "sources" %}{% set has_evidence = p.sources %}
-{% elif split and tab == "media" %}{% set has_evidence = p.documents or p.images %}{% endif %}
-{% if (tab is undefined and has_evidence) or (tab == "media") or (tab == "sources" and split) or (tab is undefined and is_admin) %}
+{% set show_sources = true %}
+{% set show_files = true %}
+{#- Only when there is evidence to show: an empty section is not drawn, and
+    attaching a file is an edit (the documents editor). -#}
+{% if has_evidence %}
 <section id="evidence" class="rec-section">
   {{ m.sec(t, t("record-sources-documents"), compact, t("record-sources-documents-help")) }}
 
-  {% if not has_evidence %}
-  <p class="notice" role="status">
-    {{ t("record-no-evidence") }}
-    {%- if not is_admin %} {{ t("record-no-evidence-signed-out") }}{% endif %}
-  </p>
-  {% endif %}
+
 
   {% if p.sources and show_sources %}
   {# `data-label` on every cell is what lets the panel stack this table into
@@ -439,7 +401,7 @@
             {% if s.repository %}<div class="small muted">{{ s.repository }}</div>{% endif %}
             {% if s.status %}<div class="small muted">{{ s.status }}</div>{% endif %}
             {% if s.note %}<div class="small muted">{{ s.note }}</div>{% endif %}</td>
-        <td class="small" data-label="{{ t('record-type') }}">{{ s.source_type if s.source_type else "—" }}</td>
+        <td class="small" data-label="{{ t('record-type') }}">{{ s.source_type if s.source_type }}</td>
         <td data-label="{{ t('record-source-reliability') }}"><span class="src-chip" data-rank="{{ s.reliability_rank }}">
               <span class="src-rel">{{ s.reliability_label }}</span></span></td>
         <td class="small" data-label="{{ t('record-source-supports') }}">
@@ -488,18 +450,17 @@
             {% if not d.known %}<div class="small muted">{{ t("record-absent-document") }}</div>{% endif %}</td>
         <td class="small" data-label="{{ t('record-type') }}">{{ d.document_type_label }}{% if d.mime_type %}
             <div class="muted">{{ d.mime_type }}</div>{% endif %}</td>
+        {#- A file held here: its size and the download. One named but held
+            elsewhere has neither, and its status, in words, spans their
+            columns instead of two empty cells (the minimalism pass). -#}
+        {% if d.has_payload %}
         <td class="small" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
-        <td class="small" data-label="{{ t('record-size') }}">{{ d.size_human if d.size_human else "—" }}</td>
-        {# No `data-label`: an action is not a field, and a stacked row that
-           labelled it would read "FILE / {{ t("record-download") }}". #}
-        <td class="small">
-          {% if d.has_payload %}
-            <a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a>
-          {% else %}
-            <span class="muted"
-                  title="{{ t('record-document-no-file') }}">{{ t("record-no-file") }}</span>
-          {% endif %}
-        </td>
+        <td class="small" data-label="{{ t('record-size') }}">{{ d.size_human if d.size_human }}</td>
+        {# No `data-label`: an action is not a field. #}
+        <td class="small"><a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a></td>
+        {% else %}
+        <td class="small" colspan="3" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>
@@ -507,31 +468,7 @@
   </div>
   {% endif %}
 
-  {% if is_admin and show_files %}
-  <form class="upload-form" method="post" enctype="multipart/form-data"
-        action="/admin/person/{{ p.id }}/document">
-    <h3>{{ t("record-attach-document") }}</h3>
-    <div class="filter-row">
-      <input type="file" name="file" required aria-label="{{ t('record-file-to-attach') }}">
-      <select name="document_type" aria-label="{{ t('record-document-type') }}">
-        {% for o in document_types %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
-      </select>
-      <input type="text" name="caption" placeholder="{{ t('record-caption-placeholder') }}"
-             aria-label="{{ t('record-caption') }}">
-      <button class="btn primary">{{ t("record-upload") }}</button>
-    </div>
-    <p class="small muted">{{ t("record-upload-help-short", mb=max_upload_mb) }}
-      <details class="sec-help">
-        <summary title="{{ t('record-help-toggle') }}"
-                 aria-label="{{ t('record-help-toggle') }}">?</summary>
-        <span class="small muted">{{ t("record-upload-help", mb=max_upload_mb) }}</span>
-      </details>
-    </p>
-  </form>
-  {% endif %}
-  {% if may_write and show_files %}
-  <p><a class="small" href="/admin/person/{{ p.id }}/documents">{{ t("documents-edit-link") }}</a></p>
-  {% endif %}
+
 </section>
 {% endif %}
 
@@ -598,14 +535,5 @@
 </section>
 {% endif %}
 
-{# --------------------------------------------------------------------- RAW #}
-{% if tab is undefined or tab == "record" %}
-<section id="raw" class="rec-section">
-  <details class="raw">
-    <summary>{{ t("record-raw") }}
-      <span class="small muted">— {{ t("record-raw-summary-note") }}</span></summary>
-    <p class="small muted">{{ t("record-raw-help") }}</p>
-    <pre class="raw-json">{{ p.raw_json }}</pre>
-  </details>
-</section>
-{% endif %}
+{#- The raw JSON is an editing artefact; the record form shows it (edit
+    mode). Read mode has no raw-data section. -#}

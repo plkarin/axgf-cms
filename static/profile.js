@@ -13,7 +13,7 @@
     var template = spare.cloneNode(true);
     var button = document.createElement("button");
     button.type = "button";
-    button.className = "btn small-btn pf-add";
+    button.className = "btn small pf-add";
     button.textContent = set.getAttribute("data-add-label") || "+";
     button.addEventListener("click", function () {
       var rows = set.querySelectorAll(".pf-row");

@@ -330,6 +330,7 @@ fn change(version: u64, from: &str, to: &str) -> axgf_cms::journal::Entry {
         entity_id: ALICE.into(),
         label: None,
         version_num: Some(version),
+        merged_into: None,
         changes: vec![axgf_cms::diff::Change {
             path: "notes".into(),
             from: Some(from.into()),

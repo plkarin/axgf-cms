@@ -26,7 +26,8 @@
 {# A date, rendered at whatever precision the source actually supports. The
    data-kind attribute is what makes an approximate date look approximate. #}
 {% macro date(d, show_note=true) %}
-  {%- if d -%}
+  {#- An unknown date is nothing to read: not drawn (the minimalism pass). -#}
+  {%- if d and d.kind != "unknown" -%}
   {#- `bdi` because a rendered date mixes translated words with digits and
       neutral marks — "avant 1430", "<1930", "1826–1830". In a right-to-left
       page the bidirectional algorithm would reorder the neutrals and turn
@@ -129,16 +130,13 @@
    this macro never sees a key and cannot be given an English sentence by
    accident. `t` is passed in because an imported macro does not inherit the
    including template's context. #}
+{#- Read mode draws the heading and nothing else (the minimalism pass): the
+    "?" beside every heading was a control per section, and the record says
+    what a section is better than a sentence about it. `help` is kept in the
+    signature so callers need not change. -#}
 {% macro sec(t, title, compact, help) %}
 <div class="sec-head">
   <h2>{{ title }}</h2>
-  {%- if help %}
-  <details class="sec-help">
-    <summary title="{{ t('record-help-toggle') }}"
-             aria-label="{{ t('record-help-toggle') }}">?</summary>
-    <p class="small muted">{{ help }}</p>
-  </details>
-  {%- endif %}
 </div>
 {% endmacro %}
 
@@ -390,8 +388,7 @@
 {% macro union_point(t, prefix, title, v, precisions, places) %}
 <h3>{{ title }}</h3>
 <div class="ed-grid">
-  <label>{{ t("phys-col-date") }}
-    <input type="text" name="{{ prefix }}.date" value="{{ v.date }}" size="12"></label>
+  {{ date_value(t, prefix, t("phys-col-date"), v) }}
   <label>{{ t("record-precision") }}
     <select name="{{ prefix }}.precision">
       {% for p in precisions %}
@@ -399,9 +396,6 @@
         {{- t("precision-" ~ p) if p else t("admin-not-set") -}}</option>
       {% endfor %}
     </select></label>
-  <label class="inline">
-    <input type="checkbox" name="{{ prefix }}.circa" value="on" {{ "checked" if v.circa }}>
-    {{ t("record-approximate") }}</label>
   <label>{{ t("record-place") }}
     <select name="{{ prefix }}.place_id">
       <option value="">{{ t("admin-not-set") }}</option>
@@ -414,8 +408,7 @@
 
 {# A date, as the three inputs a form shows it as. #}
 {% macro date_fields(t, prefix, title, v, precisions) %}
-<label>{{ title }}
-  <input type="text" name="{{ prefix }}.date" value="{{ v.date if v }}" size="12"></label>
+{{ date_value(t, prefix, title, v) }}
 <label>{{ t("record-precision") }}
   <select name="{{ prefix }}.precision">
     {% for p in precisions %}
@@ -423,9 +416,28 @@
       {{- t("precision-" ~ p) if p else t("admin-not-set") -}}</option>
     {% endfor %}
   </select></label>
-<label class="inline">
-  <input type="checkbox" name="{{ prefix }}.circa" value="on" {{ "checked" if v and v.circa }}>
-  {{ t("record-approximate") }}</label>
+{% endmacro %}
+
+{# A date's qualifier, inside the date's own box (B3): `vers ▾ 1890`, not a
+   checkbox beside the field. It posts `<prefix>.circa` as `on` or nothing,
+   exactly as the checkbox did. #}
+{% macro qualifier(t, name, on, title) %}
+<select name="{{ name }}" class="date-qualifier" aria-label="{{ title }} — {{ t('date-qualifier') }}">
+  <option value="">—</option>
+  <option value="on" {{ "selected" if on }}>{{ t("date-qualifier-circa") }}</option>
+</select>
+{% endmacro %}
+
+{# A date's value with its qualifier: one labelled box. The label names the
+   year field; the qualifier is named on its own. #}
+{% macro date_value(t, prefix, title, v) %}
+<div class="date-field">
+  <span class="field-label" aria-hidden="true">{{ title }}</span>
+  <span class="date-input">
+    {{ qualifier(t, prefix ~ ".circa", v and v.circa, title) }}
+    <input type="text" name="{{ prefix }}.date" value="{{ v.date if v }}" size="12" aria-label="{{ title }}">
+  </span>
+</div>
 {% endmacro %}
 
 {# One link. The far end is one field over a datalist of every person, family
@@ -520,7 +532,7 @@
    hidden row with script: the same words, and it opens with scripting off. #}
 {% macro delete_block(t, kind, id, label, version) %}
 <details class="ed-delete">
-  <summary class="btn danger small-btn">{{ label }}</summary>
+  <summary class="btn small danger">{{ label }}</summary>
   <form method="post" action="/admin/{{ kind }}/{{ id }}/delete">
     <input type="hidden" name="base_version" value="{{ version }}">
     <p><strong>{{ t("list-delete-confirm", kind=t("kind-" ~ kind)) }}</strong></p>

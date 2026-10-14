@@ -371,19 +371,19 @@ async fn attached_document(app: &axum::Router, person: &str) -> String {
 }
 
 #[tokio::test]
-async fn the_root_picker_lists_only_reachable_people() {
+async fn the_tree_lists_nobody_in_a_picker() {
+    // The root used to be chosen from a list of everybody, which had to be
+    // kept to the people a reader may open. There is no such list now (the
+    // minimalism pass): the root is chosen from a card. So no id of anybody —
+    // open or hidden — appears as a choice on the page.
     let (app, _scratch) = app("vis-roster");
     let tree = body_string(get(&app, "/tree").await).await;
-    let options: Vec<&str> = tree
-        .split("<option value=\"")
-        .skip(1)
-        .map(|c| c.split('"').next().unwrap_or(""))
-        .collect();
-    assert!(options.contains(&OPEN), "a public person is a destination");
-    assert!(
-        !options.contains(&MEMBERS) && !options.contains(&PRIVATE),
-        "a picker entry that leads to “Private” is not a destination: {options:?}"
-    );
+    for id in [OPEN, MEMBERS, PRIVATE] {
+        assert!(
+            !tree.contains(&format!("<option value=\"{id}\"")),
+            "{id} offered as a choice"
+        );
+    }
 }
 
 #[tokio::test]

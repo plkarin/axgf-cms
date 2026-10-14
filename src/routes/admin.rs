@@ -349,8 +349,23 @@ pub async fn logout(State(state): State<Shared>, headers: HeaderMap) -> Response
 // ---------------------------------------------------------------------------
 
 /// `GET /admin`
-pub async fn dashboard(State(state): State<Shared>, headers: HeaderMap) -> Response {
+/// `?kind=` on `/admin`: the listing's kind select, sent without scripts.
+#[derive(Deserialize, Default)]
+pub struct DashboardQuery {
+    #[serde(default)]
+    kind: Option<String>,
+}
+
+pub async fn dashboard(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<DashboardQuery>,
+) -> Response {
     let (_viewer, chrome) = guard!(state, headers);
+    // The listing's kind select posts here; a known kind goes to its list.
+    if let Some(k) = q.kind.as_deref().filter(|k| KINDS.contains(k)) {
+        return Redirect::to(&format!("/admin/{k}")).into_response();
+    }
     let counts = state.counts();
     let env = state.inspect_with(axgf_rs::validate);
     let diagnostics = diagnostics_json(&env.diagnostics, chrome.lang);
@@ -471,6 +486,7 @@ pub async fn list(
                     "summary": summarize(flat, chrome.lang, k, e),
                     "confidence": e.get("confidence").and_then(Value::as_f64)
                                    .map(view::Confidence::new),
+                    "filiation": filiation(flat, k, id, e),
                 })
             })
             .filter(|r| {
@@ -492,6 +508,20 @@ pub async fn list(
     });
 
     let page = paginate(rows, q.page);
+    let from = if page.total == 0 {
+        0
+    } else {
+        (page.page - 1) * page.per_page + 1
+    };
+    let to = from.saturating_sub(1) + page.items.len();
+    let range = chrome.t_args(
+        "admin-range",
+        &[
+            ("from", (from as i64).into()),
+            ("to", (to as i64).into()),
+            ("total", (page.total as i64).into()),
+        ],
+    );
     render::page_with(
         &chrome,
         "admin_list.html",
@@ -499,6 +529,9 @@ pub async fn list(
             nav => "admin",
             kind,
             kinds => KINDS,
+            range,
+            has_filiation => matches!(k, axgf_rs::EntityKind::Person | axgf_rs::EntityKind::Family),
+            selected_forms => count_forms(&chrome, "list-selected").to_string(),
             rows => page.items,
             page => page.page,
             pages => page.pages,
@@ -508,6 +541,217 @@ pub async fn list(
             is_person => kind == "person",
         },
     )
+}
+
+/// How a record's filiation is attested, in the river's three line styles
+/// (B6): `a` attested, `d` inferred, `s` speculative, from the same bands
+/// the river draws with. A person's is their link to the family they are a
+/// child of; a family's, one per child. Other kinds have none.
+fn filiation(flat: &Value, k: axgf_rs::EntityKind, id: &str, e: &Value) -> Vec<crate::river::Conf> {
+    let conf = |c: &Value| crate::river::Conf::of(c.get("confidence").and_then(Value::as_f64));
+    match k {
+        axgf_rs::EntityKind::Family => e
+            .get("children")
+            .and_then(Value::as_array)
+            .map(|cs| cs.iter().map(conf).collect())
+            .unwrap_or_default(),
+        axgf_rs::EntityKind::Person => flat
+            .get("families")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flat_map(|fs| fs.values())
+            .filter_map(|f| f.get("children").and_then(Value::as_array))
+            .flatten()
+            .filter(|c| c.get("person_id").and_then(Value::as_str) == Some(id))
+            .map(conf)
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+/// A plural message as the page's script can use it without Fluent: the
+/// message rendered for 0 to 199 with the number cut out, deduplicated.
+/// `forms` are the distinct texts with `{n}` where the number goes; `index`
+/// says which form each count takes. 0–199 is enough for every integer rule
+/// the eleven catalogues use, which depend on n, n mod 10 and n mod 100: a
+/// count from 200 up takes the form of 100 + n mod 100.
+fn count_forms(chrome: &render::Chrome, key: &str) -> Value {
+    let mut forms: Vec<String> = Vec::new();
+    let mut index = Vec::with_capacity(200);
+    for n in 0..200i64 {
+        let text = chrome.t_args(key, &[("n", n.into())]);
+        let form = text.replacen(&n.to_string(), "{n}", 1);
+        let i = forms.iter().position(|f| *f == form).unwrap_or_else(|| {
+            forms.push(form);
+            forms.len() - 1
+        });
+        index.push(i);
+    }
+    json!({"forms": forms, "index": index})
+}
+
+/// The selected rows of a listing, as `id|version` pairs.
+fn selected(form: &[(String, String)]) -> Vec<(String, u64)> {
+    form.iter()
+        .filter(|(k, _)| k == "id")
+        .filter_map(|(_, v)| {
+            let (id, version) = v.rsplit_once('|')?;
+            Some((id.to_string(), version.parse().ok()?))
+        })
+        .collect()
+}
+
+/// `POST /admin/:kind/bulk` — the bulk bar's actions on the selected rows
+/// (B6). `action=export` downloads them; `action=confirm` asks first, on a
+/// page of its own; `action=delete` deletes them all in one save or none,
+/// refusing any that another record still refers to.
+pub async fn bulk(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(kind): Path<String>,
+    Form(form): Form<Vec<(String, String)>>,
+) -> Response {
+    let (viewer, chrome) = guard_admin!(state, headers);
+    let Some(k) = kind_from_str(&kind) else {
+        return unknown_kind(&chrome, &kind);
+    };
+    let action = form
+        .iter()
+        .find(|(name, _)| name == "action")
+        .map(|(_, v)| v.as_str())
+        .unwrap_or("");
+    let items = selected(&form);
+    let back = format!("/admin/{kind}");
+    if items.is_empty() {
+        return Redirect::to(&back).into_response();
+    }
+    let collection = crate::admin::collection_for(k);
+    let stored: Vec<(String, Option<Value>)> = state.read(|flat| {
+        items
+            .iter()
+            .map(|(id, _)| {
+                (
+                    id.clone(),
+                    flat.get(collection).and_then(|c| c.get(id)).cloned(),
+                )
+            })
+            .collect()
+    });
+    match action {
+        "export" => {
+            // By id, whatever order they were ticked in.
+            let records: std::collections::BTreeMap<String, Value> = stored
+                .into_iter()
+                .filter_map(|(id, e)| e.map(|e| (id, e)))
+                .collect();
+            let records: serde_json::Map<String, Value> = records.into_iter().collect();
+            let body = json!({ collection: records });
+            let name = format!("axgf-{kind}-{}.json", records_len(&body, collection));
+            (
+                [
+                    (header::CONTENT_TYPE, "application/json".to_string()),
+                    (
+                        header::CONTENT_DISPOSITION,
+                        format!("attachment; filename=\"{name}\""),
+                    ),
+                    (header::CACHE_CONTROL, "no-store".to_string()),
+                ],
+                serde_json::to_string_pretty(&body).unwrap_or_default(),
+            )
+                .into_response()
+        }
+        "confirm" => {
+            let rows: Vec<Value> = stored
+                .iter()
+                .zip(&items)
+                .map(|((id, e), (_, version))| {
+                    json!({
+                        "id": id,
+                        "version": version,
+                        "summary": e.as_ref().and_then(|e| label_for(k, e)).unwrap_or_else(|| id.clone()),
+                    })
+                })
+                .collect();
+            let n = rows.len() as i64;
+            render::page_with(
+                &chrome,
+                "admin_bulk.html",
+                context! {
+                    nav => "admin",
+                    kind,
+                    rows,
+                    title => chrome.t_args("bulk-confirm-title", &[("n", n.into())]),
+                    back,
+                },
+            )
+        }
+        "delete" => {
+            for (_, e) in &stored {
+                if let Some(e) = e {
+                    if let Err(r) = check_scope(&state, &chrome, &viewer, k, e, None) {
+                        return r;
+                    }
+                }
+            }
+            match state.delete_many_checked(
+                k,
+                &items,
+                axgf_rs::DeletePolicy::Reject,
+                viewer.name(),
+                |e| label_for(k, e),
+            ) {
+                Ok(crate::state::BatchOutcome::Applied { records }) => {
+                    let line = chrome.t_args("bulk-deleted", &[("n", (records as i64).into())]);
+                    result_page(
+                        &chrome,
+                        &kind,
+                        &line,
+                        &crate::state::MutationOutcome {
+                            applied: true,
+                            diagnostics: Vec::new(),
+                            data: Value::Null,
+                        },
+                        Some(back),
+                    )
+                }
+                Ok(crate::state::BatchOutcome::Conflict { ids }) => render::error_page_args(
+                    &chrome,
+                    StatusCode::CONFLICT,
+                    "error-delete-changed-title",
+                    "bulk-changed",
+                    &[("n", (ids.len() as i64).into())],
+                ),
+                Ok(crate::state::BatchOutcome::Refused { id, diagnostics }) => {
+                    let name = stored
+                        .iter()
+                        .find(|(i, _)| *i == id)
+                        .and_then(|(_, e)| e.as_ref())
+                        .and_then(|e| label_for(k, e))
+                        .unwrap_or(id);
+                    let line = chrome.t_args("bulk-refused", &[("name", name.into())]);
+                    result_page(
+                        &chrome,
+                        &kind,
+                        &line,
+                        &crate::state::MutationOutcome {
+                            applied: false,
+                            diagnostics,
+                            data: Value::Null,
+                        },
+                        Some(back),
+                    )
+                }
+                Err(e) => io_error(&chrome, &e),
+            }
+        }
+        _ => StatusCode::BAD_REQUEST.into_response(),
+    }
+}
+
+fn records_len(body: &Value, collection: &str) -> usize {
+    body.get(collection)
+        .and_then(Value::as_object)
+        .map_or(0, |m| m.len())
 }
 
 /// `GET /admin/:kind/new`
@@ -1096,6 +1340,51 @@ pub async fn validate(State(state): State<Shared>, headers: HeaderMap) -> Respon
     )
 }
 
+/// Which removed person went into which survivor, after a deduplication.
+///
+/// The library keeps one of a group that shares a name and both years and
+/// removes the rest; the survivor of a removed person is the one remaining
+/// person with the same name (folded) and the same two years. Where that is
+/// not exactly one, nothing is recorded: better no trail than a wrong one.
+pub(crate) fn merge_trail(before: &Value, after: &Value) -> Vec<(String, String, Option<String>)> {
+    fn year(p: &Value, event: &str) -> Option<String> {
+        let v = p.pointer(&format!("/{event}/date/value"))?.as_str()?;
+        let y: String = v.chars().take_while(|c| c.is_ascii_digit()).collect();
+        (y.len() == 4).then_some(y)
+    }
+    fn key(p: &Value) -> Option<(String, String, String)> {
+        let name = p.pointer("/identity/name/display")?.as_str()?;
+        Some((
+            crate::text::fold(name),
+            year(p, "birth")?,
+            year(p, "death")?,
+        ))
+    }
+    let (Some(before), Some(after)) = (before.as_object(), after.as_object()) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    for (id, p) in before {
+        if after.contains_key(id) {
+            continue;
+        }
+        let Some(k) = key(p) else { continue };
+        let keepers: Vec<&String> = after
+            .iter()
+            .filter(|(_, q)| key(q).as_ref() == Some(&k))
+            .map(|(kid, _)| kid)
+            .collect();
+        if let [keeper] = keepers.as_slice() {
+            let label = p
+                .pointer("/identity/name/display")
+                .and_then(Value::as_str)
+                .map(String::from);
+            out.push((id.clone(), (*keeper).clone(), label));
+        }
+    }
+    out
+}
+
 /// `POST /admin/dedup`
 pub async fn dedup(
     State(state): State<Shared>,
@@ -1120,10 +1409,33 @@ pub async fn dedup(
     // questions and only the second one can still be answered afterwards.
     let present_before = count_families(&state, &asked);
 
+    let before = state.read(|flat| flat.get("persons").cloned().unwrap_or(Value::Null));
     let out = match state.mutate(axgf_rs::deduplicate) {
         Ok(o) => o,
         Err(e) => return io_error(&chrome, &e),
     };
+    // The library merges people and says how many, not which into which. An
+    // old address should still be able to say where its person went (B7), so
+    // the trail is worked out here and kept in the operator's journal.
+    if out.applied {
+        let after = state.read(|flat| flat.get("persons").cloned().unwrap_or(Value::Null));
+        for (victim, keeper, label) in merge_trail(&before, &after) {
+            let entry = crate::journal::Entry {
+                merged_into: Some(keeper),
+                ..crate::journal::entry_for(crate::journal::Record {
+                    who: _viewer.name(),
+                    action: "merge",
+                    kind: "person",
+                    entity_id: &victim,
+                    label,
+                    version_num: None,
+                    before: None,
+                    after: None,
+                })
+            };
+            state.journal_mutation(&entry);
+        }
+    }
 
     let mut summary = summary_line(
         &chrome,
@@ -1442,6 +1754,13 @@ fn field_views(
     lists: &std::collections::BTreeMap<String, Vec<Value>>,
 ) -> Vec<Value> {
     let t = |key: &str| crate::i18n::translate(lang, key, None);
+    // A new record shows its first group (a person's identity, …); an
+    // existing one shows what it holds (the minimalism pass).
+    let creating = entity.get("id").is_none();
+    let first_group = fields_for(kind)
+        .first()
+        .map(|f| f.path.split('.').next().unwrap_or(""))
+        .unwrap_or("");
     fields_for(kind)
         .iter()
         .map(|f| {
@@ -1465,6 +1784,19 @@ fn field_views(
                     })
                 })
                 .collect();
+            // A date's qualifier lives inside the date's own box (B3): the
+            // value field carries its sibling `circa`, and the circa field is
+            // not drawn on its own. The form posts the same keys as before.
+            let qualifier = f.path.strip_suffix(".date.value").map(|stem| {
+                let path = format!("{stem}.date.circa");
+                let hint = fields_for(kind)
+                    .iter()
+                    .find(|g| g.path == path)
+                    .and_then(|g| g.hint)
+                    .map(t)
+                    .unwrap_or_default();
+                json!({"path": path, "on": get_path(entity, &path) == "true", "hint": hint})
+            });
             json!({
                 "path": f.path,
                 "label": t(f.label),
@@ -1474,6 +1806,20 @@ fn field_views(
                 "picks": f.picks,
                 "value": current,
                 "checked": current == "true",
+                "qualifier": qualifier,
+                "inside_date": f.path.ends_with(".date.circa"),
+                // Holds a value: drawn at rest in edit mode. An empty field
+                // waits behind the form's one "other fields" disclosure (the
+                // minimalism pass). A date is filled by its value.
+                "filled": match f.kind {
+                    crate::admin::FieldKind::Bool => current == "true",
+                    _ => !current.trim().is_empty(),
+                },
+                "group": f.path.split('.').next().unwrap_or(""),
+                "show": (match f.kind {
+                    crate::admin::FieldKind::Bool => current == "true",
+                    _ => !current.trim().is_empty(),
+                }) || (creating && f.path.split('.').next().unwrap_or("") == first_group),
             })
         })
         .collect()

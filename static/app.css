@@ -13,103 +13,10 @@
  */
 
 :root {
-  --bg: #fbfaf8;
-  --surface: #ffffff;
-  --border: #e2ddd5;
-  /* The boundary of a control, which WCAG 1.4.11 holds to 3:1 against what
-     is behind it. Measured, not guessed: this is the lightest value that
-     still clears 3:1 on the *darkest* ground a control can sit on, which
-     since the page wash arrived is the deepest of its gradient stops rather
-     than --surface. Darkened from #979188, which cleared 3:1 on --surface and
-     3.0 on --bg but only 2.80 against the wash. */
-  --border-strong: #908a82;
-  --ink: #23201c;
-  --ink-soft: #5f584f;
-  /* Darkened from #8b8378: at 0.78rem on --surface that was 3.1:1, under the
-     4.5:1 that WCAG AA asks of body text. Muted secondary text is where a
-     palette usually fails, so it is the one measured first. */
-  --ink-faint: #6f685e;
-  --accent: #5b3f8e;
-  --accent-soft: #f0ebf8;
-  /* Text on top of --accent. A literal white here was the one colour no
-     theme could override. */
-  --on-accent: #ffffff;
-
-  /* Confidence palette: a single hue ramp so the eye reads it as one scale,
-     not as unrelated categories. Colour is the *last* of four encodings
-     here — see the theme block below. */
-  --conf-certain: #1f6b4a;
-  --conf-high: #45774f;
-  --conf-medium: #8a5f18;
-  --conf-low: #9d4a26;
-  --conf-track: #e6e1d8;
-
-  /* Destructive actions and the error severity, as a FOREGROUND.
-     The low-confidence colour used to do this job and could not, being the
-     lightest stop of the confidence ramp — chosen to be filled into a bar, and
-     the lightest stop of a ramp is exactly the wrong thing to set text in. On the three
-     colour-blind themes it put the Delete button's label at 2.5:1 against
-     4.5:1 required — a real AA failure, shipped, and invisible to a reader of
-     the stylesheet because the variable's name says "low", not "unreadable".
-     Same defect the confidence track had, same fix: its own variable. */
-  --danger: #9d4a26;
-
-  /* The warning severity, as a FOREGROUND, for the same reason --danger has
-     its own variable: --conf-medium is a ramp stop, chosen to be filled into
-     a bar, and a bar fill only has to clear the 3:1 of a graphic. Set in
-     0.7–0.8rem text it was measured at 4.33:1 on the two red-green themes and
-     4.41 against the sepia wash, both under the 4.5 AA asks of body text —
-     shipped, and invisible to a reader of this file because the variable's
-     name says "medium", not "unreadable". Same defect the confidence track
-     and the delete button had, same fix. Held to 4.5:1 against the darkest
-     ground it can sit on, which is a wash stop rather than --surface. */
-  --warning: #8a5f18;
-
-  /* Two neutral hues for gender, deliberately not pink and blue. The `-line`
-     values are the outline of a tree card, which is a control, so they are
-     held to 3:1 against the canvas behind them rather than chosen by eye. */
-  --sex-a: #e8eef0;
-  --sex-a-line: #83969e;
-  --sex-b: #f2ece4;
-  --sex-b-line: #a29078;
-  --sex-u: #ecebe9;
-  --sex-u-line: #96938e;
-
-  /* Residual edge crossings. Paired with dash patterns below, because a hue
-     alone does not survive the themes this file exists for. Drawn at the
-     edge's confidence opacity — 0.75 for the usual 0.8 — so each is held to
-     3:1 *composited at that opacity*, not as the swatch: the Okabe–Ito
-     vermilion, green, pink and ochre as published measured 2.26–2.74 on the
-     page and are darkened just far enough to clear it. */
-  --hue-1: #0072b2;
-  --hue-2: #be5400;
-  --hue-3: #00825f;
-  --hue-4: #ba4987;
-  --hue-5: #7c4dbe;
-  --hue-6: #8f6809;
-  --hue-7: #1f7a8c;
-  --hue-8: #8c3b3b;
-
-  /* Elevation. Composed from a colour and a strength rather than a literal
-     shadow per theme, so a theme states two values instead of six. */
-  --shadow-rgb: 35 32 28;
-  --shadow-a: 0.07;
-
-  /* The three tints the page wash is built from, mixed from this theme's own
-     background toward its own hues — nothing here is a colour the theme did
-     not already contain. Each lands 2 to 3 L* from --bg, which is felt
-     rather than seen.
-
-     Moss, stone and clay rather than the neutral greys these were: the hue
-     moved, the luminance did not. That last part is a constraint, not a
-     preference — the deepest of these three stops is the darkest ground a
-     control boundary can sit on, and --border-strong is tuned to clear 3:1
-     against exactly that. Taking wash-1 down to #eef3ea for a greener cast
-     cost 0.04 of it (3.07 to 3.03) and the value here is where that headroom
-     comes back. Re-measure this pair before changing any of the three. */
-  --wash-1: #f0f4ec;
-  --wash-2: #eff3ef;
-  --wash-3: #f7f3ea;
+  /* Every colour on :root — the light palette, which is the default — is in
+     static/css/tokens.css, the one file that names colours, with the river's
+     palette and the seven themes. What stays here is the part of :root that
+     is not a colour. */
 
   /* ---------------------------------------------------------------------
      The presentation scale. A *style* owns these; a theme never touches them,
@@ -121,7 +28,9 @@
      of that one value, so a style changes one number and the page keeps its
      beat rather than drifting out of it a rule at a time. */
   --step: 0.55rem;
-  --text: 16px;
+  /* rem, not px (the minimalism pass): 1rem is the reader’s own setting,
+     16px unless they changed it, and a px value here overrode it. */
+  --text: 1rem;
   --leading: 1.6;
   --measure: 74ch;
   --face: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -176,9 +85,9 @@
      which is what a printer does to a card anyway. */
   --section-pad: 1.15rem 1.3rem;
   --section-gap: 1.1rem;
-  --section-fill: var(--surface);
+  --section-fill: var(--surface-raised);
   --section-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
-  --section-border: 1px solid var(--border);
+  --section-border: 1px solid var(--border-hairline);
   --section-radius: var(--radius-lg);
 
   --radius: 7px;
@@ -196,360 +105,23 @@
      never lies over the oldest generation. Wider than any platform's bar. */
   --hscroll-gutter: 1rem;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* Study 06's serif: the wordmark, and the names the river writes. */
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* The river's type, at the sizes its design fixes in pixels. */
-  --type-rv-eyebrow: 10px;
-  --type-rv-data: 10.5px;
-  --type-rv-seg: 11.5px;
-  --type-rv-chip: 12px;
-  --type-rv-control: 12.5px;
+  --type-rv-eyebrow: 0.625rem;
+  --type-rv-data: 0.65625rem;
+  --type-rv-seg: 0.71875rem;
+  --type-rv-chip: 0.75rem;
+  --type-rv-control: 0.78125rem;
 }
 
-/* The river's own palette (`/`), declared with the others but not on :root,
-   because it is the same under every theme by design: the water's colour ramp
-   is drawn into the SVG server-side, and the dark ground is part of how that
-   ramp reads. Time also runs on the half-century bands for exactly that
-   reason — they are what carries it in the colour-blind themes and in print.
-   A theme that ever needs to can still override these on `.river`. */
-.river {
-  --rv-ink-0: #0b110e; --rv-ink-1: #0c1310; --rv-ink-2: #0e1512; --rv-ink-3: #111a16; --rv-ink-4: #17221d;
-  --rv-chip-on: #1d2a24;
-  --rv-rule-1: #1a2520; --rv-rule-2: #22302a; --rv-rule-3: #3a4b42; --rv-rule-4: #4d6157;
-  --rv-text-1: #ece6d6; --rv-text-2: #a7b3aa; --rv-text-3: #75847b;
-  --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #f3dfae; --rv-water: #86b08f; --rv-warn: #d98068;
-  --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-}
+/* The river's palette and the seven themes are in static/css/tokens.css. */
 
-/* ---------------------------------------------------------------------------
-   Themes
-   ---------------------------------------------------------------------------
-   Seven of them, plus "system". Every colour is a custom property on :root,
-   and a theme is one block that redefines them under a `data-theme` attribute
-   the server writes into the markup. Nothing below this block names a literal
-   colour, so adding a theme is a palette and nothing else.
-
-   THE CONSTRAINT THAT SHAPES ALL OF THEM
-   --------------------------------------
-   Confidence is this product's argument, and colour is exactly what
-   disappears under colour blindness. So confidence is never carried by colour
-   alone, in any theme:
-
-     * a bar's LENGTH is the value, and length survives everything;
-     * a dot is a PIE filled to the value, so the dot carries the number too,
-       not merely which of four bands it fell in;
-     * the numeric percentage is printed beside the bar and is in the
-       accessible name of both, so a screen reader hears "0.35" and not
-       "orange";
-     * inline text carries opacity and an underline style.
-
-   The three colour-blind themes then go further and drop hue from the
-   confidence ramp altogether, using a lightness ramp of a single safe hue.
-   Lightness is the one channel no form of colour blindness takes away, so
-   under those themes a 0.35 and a 0.98 differ four ways over.
-
-   The palettes for them use the Okabe-Ito set, which is chosen to stay
-   distinguishable under each condition — and even so, they are used for
-   *decoration* and never as the sole carrier of a value. */
-
-
-/* --- dark ---------------------------------------------------------------- */
-/* Written once and applied twice: to the system preference, and to the
-   explicit choice. A reader who picked dark gets it whatever their OS says. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg: #171614;
-    --surface: #201e1b;
-    --border: #35322d;
-    --border-strong: #6e6b65;
-    --ink: #ece8e1;
-    --ink-soft: #bdb6ab;
-    --ink-faint: #9c9488;
-    --accent: #c3aeea;
-    --accent-soft: #2a2437;
-  --on-accent: #1a1622;
-    --on-accent: #1a1622;
-
-    --conf-certain: #6dc39a;
-    --conf-high: #8fbf97;
-    --conf-medium: #d9ab6b;
-    --conf-low: #e0937a;
-    --conf-track: #3a3630;
-    --danger: #e0937a;
-    --warning: #d9ab6b;
-
-    --sex-a: #253034;
-    --sex-a-line: #5c757f;
-    --sex-b: #322c24;
-    --sex-b-line: #7d6c52;
-    --sex-u: #2a2926;
-    --sex-u-line: #6e6a63;
-
-    --hue-1: #56b4e9;
-    --hue-2: #e69f00;
-    --hue-3: #33d6a6;
-    --hue-4: #f0a3c8;
-    --hue-5: #b49ae0;
-    --hue-6: #d6b656;
-    --hue-7: #6fc0d0;
-    --hue-8: #d78a8a;
-
-    --shadow-rgb: 0 0 0;
-    --shadow-a: 0.45;
-
-    /* Cool and nearly imperceptible, as a dark page asks for. */
-    --wash-1: #181d18;
-    --wash-2: #1b1c19;
-    --wash-3: #151c1a;
-  }
-}
-
-[data-theme="dark"] {
-  --bg: #171614;
-  --surface: #201e1b;
-  --border: #35322d;
-  --border-strong: #6e6b65;
-  --ink: #ece8e1;
-  --ink-soft: #bdb6ab;
-  --ink-faint: #9c9488;
-  --accent: #c3aeea;
-  --accent-soft: #2a2437;
-  --on-accent: #1a1622;
-
-  --conf-certain: #6dc39a;
-  --conf-high: #8fbf97;
-  --conf-medium: #d9ab6b;
-  --conf-low: #e0937a;
-  --conf-track: #3a3630;
-  --danger: #e0937a;
-  --warning: #d9ab6b;
-
-  --sex-a: #253034;
-  --sex-a-line: #5c757f;
-  --sex-b: #322c24;
-  --sex-b-line: #7d6c52;
-  --sex-u: #2a2926;
-  --sex-u-line: #6e6a63;
-
-  --hue-1: #56b4e9;
-  --hue-2: #e69f00;
-  --hue-3: #33d6a6;
-  --hue-4: #f0a3c8;
-  --hue-5: #b49ae0;
-  --hue-6: #d6b656;
-  --hue-7: #6fc0d0;
-  --hue-8: #d78a8a;
-
-  --shadow-rgb: 0 0 0;
-  --shadow-a: 0.45;
-
-  /* Cool and nearly imperceptible, as a dark page asks for. */
-  --wash-1: #181d18;
-  --wash-2: #1b1c19;
-  --wash-3: #151c1a;
-}
-
-/* --- high contrast ------------------------------------------------------- */
-/* Pure black on pure white, borders at full strength. Not a "darker light
-   theme": the point is maximum luminance separation for low vision, so every
-   muted tone collapses onto the ink colour rather than being nudged. */
-[data-theme="high-contrast"] {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --border: #000000;
-  --border-strong: #000000;
-  --ink: #000000;
-  --ink-soft: #000000;
-  --ink-faint: #1a1a1a;
-  --accent: #0000cc;
-  --accent-soft: #e8e8ff;
-  --on-accent: #ffffff;
-
-  --conf-certain: #000000;
-  --conf-high: #333333;
-  --conf-medium: #555555;
-  --conf-low: #767676;
-  --conf-track: #ffffff;
-  --danger: #a30000;
-  --warning: #555555;
-
-  --sex-a: #ffffff;
-  --sex-a-line: #000000;
-  --sex-b: #ffffff;
-  --sex-b-line: #000000;
-  --sex-u: #ffffff;
-  --sex-u-line: #000000;
-
-  --hue-1: #000000;
-  --hue-2: #0000cc;
-  --hue-3: #006600;
-  --hue-4: #7a0055;
-  --hue-5: #333333;
-  --hue-6: #664400;
-  --hue-7: #004466;
-  --hue-8: #660000;
-
-  --shadow-rgb: 0 0 0;
-  --shadow-a: 0;
-
-  /* No wash: the theme's `wash` flag says so and this is never drawn. The
-     tokens are the background itself, so a mistake shows nothing rather
-     than something. */
-  --wash-1: #ffffff;
-  --wash-2: #ffffff;
-  --wash-3: #ffffff;
-}
-
-/* --- sepia --------------------------------------------------------------- */
-[data-theme="sepia"] {
-  --bg: #f4ecdc;
-  --surface: #fbf5e9;
-  --border: #ddd0b6;
-  --border-strong: #8c8069;
-  --ink: #3a2f1e;
-  --ink-soft: #5d4e35;
-  --ink-faint: #6f6047;
-  --accent: #7a4a1e;
-  --accent-soft: #f0e2cc;
-  --on-accent: #fbf5e9;
-
-  --conf-certain: #3f5f2f;
-  --conf-high: #5a6b34;
-  --conf-medium: #8a6018;
-  --conf-low: #94411f;
-  --conf-track: #eadfc8;
-  --danger: #94411f;
-  --warning: #865d17;
-
-  --sex-a: #e8e5d6;
-  --sex-a-line: #948c73;
-  --sex-b: #f0e4d0;
-  --sex-b-line: #9f8a67;
-  --sex-u: #ece5d5;
-  --sex-u-line: #968c73;
-
-  --hue-1: #1f5673;
-  --hue-2: #94411f;
-  --hue-3: #3f5f2f;
-  --hue-4: #7a3f5a;
-  --hue-5: #5a4a7a;
-  --hue-6: #7a5f16;
-  --hue-7: #2f6060;
-  --hue-8: #6b2f2f;
-
-  --shadow-rgb: 74 58 34;
-  --shadow-a: 0.10;
-
-  /* Warm: amber, terracotta and olive off the theme's own ramp. */
-  --wash-1: #eae5cf;
-  --wash-2: #f0e6d0;
-  --wash-3: #e9e7d2;
-}
-
-/* --- colour-blind themes ------------------------------------------------- */
-/* The confidence ramp here is a LIGHTNESS ramp of one hue, not four hues.
-   Lightness is the only channel no form of colour blindness removes, so
-   "darker means surer" holds even when hue does not — and it is the fourth
-   redundant encoding after bar length, pie fill and the printed number. */
-
-/* Deuteranopia and protanopia are both red-green; the safe axis is
-   blue-to-orange, so the decorative hues come from there and the confidence
-   ramp is a blue lightness ramp. */
-[data-theme="deuteranopia"],
-[data-theme="protanopia"] {
-  --bg: #fbfaf8;
-  --surface: #ffffff;
-  --border: #d9d5cd;
-  --border-strong: #8e8a82;
-  --ink: #1f1f22;
-  --ink-soft: #4c4c52;
-  --ink-faint: #66666d;
-  --accent: #0059a6;
-  --accent-soft: #e4eefa;
-  --on-accent: #ffffff;
-
-  --conf-certain: #06304f;
-  --conf-high: #0a5183;
-  --conf-medium: #2f7fb8;
-  --conf-low: #77a9c9;
-  --conf-track: #e9edf1;
-  --danger: #8f3d00;
-  --warning: #2a72a6;
-
-  --sex-a: #e6eef4;
-  --sex-a-line: #7d96a8;
-  --sex-b: #f2eee4;
-  --sex-b-line: #9c937e;
-  --sex-u: #ebebe9;
-  --sex-u-line: #939390;
-
-  --hue-1: #0072b2;
-  --hue-2: #be5400;
-  --hue-3: #003f6b;
-  --hue-4: #8a4b00;
-  --hue-5: #447398;
-  --hue-6: #966329;
-  --hue-7: #00506e;
-  --hue-8: #6b3a00;
-
-  --shadow-rgb: 20 28 38;
-  --shadow-a: 0.08;
-
-  /* Off the blue-orange axis these themes already use. */
-  --wash-1: #eef3f1;
-  --wash-2: #f8f2e9;
-  --wash-3: #f0f3f0;
-}
-
-/* Tritanopia is blue-yellow, so blue and yellow are the pair to avoid. The
-   confidence ramp is a lightness ramp of reddish-purple, and the decorative
-   hues stay on the red-to-teal axis. */
-[data-theme="tritanopia"] {
-  --bg: #fbf9f9;
-  --surface: #ffffff;
-  --border: #ded4d4;
-  --border-strong: #928787;
-  --ink: #201c1c;
-  --ink-soft: #4f4646;
-  --ink-faint: #6b6060;
-  --accent: #9b2d5e;
-  --accent-soft: #fae6ef;
-  --on-accent: #ffffff;
-
-  --conf-certain: #490021;
-  --conf-high: #7a0d3c;
-  --conf-medium: #b03a6b;
-  --conf-low: #d290ac;
-  --conf-track: #f2eaea;
-  --danger: #a41020;
-  --warning: #b03a6b;
-
-  --sex-a: #eeeaea;
-  --sex-a-line: #9d9191;
-  --sex-b: #f6e9ec;
-  --sex-b-line: #a78c97;
-  --sex-u: #efecec;
-  --sex-u-line: #999292;
-
-  --hue-1: #a3003c;
-  --hue-2: #00676b;
-  --hue-3: #5c0025;
-  --hue-4: #00434a;
-  --hue-5: #c14876;
-  --hue-6: #2a7b7b;
-  --hue-7: #7a1540;
-  --hue-8: #005f66;
-
-  --shadow-rgb: 38 20 26;
-  --shadow-a: 0.08;
-
-  /* Off the red-teal axis this theme already uses. */
-  --wash-1: #f5f1ee;
-  --wash-2: #eff3f0;
-  --wash-3: #f4f1ec;
-}
 
 
 * { box-sizing: border-box; }
+/* What the markup hides stays hidden, whatever display a class gives it. */
+[hidden] { display: none !important; }
 
 /* ---------------------------------------------------------------------------
    The page wash
@@ -580,7 +152,7 @@
    forms — so no text is ever over the gradient. What the wash reaches is the
    page behind them and the margins beside them. */
 html {
-  background-color: var(--bg);
+  background-color: var(--surface-page);
   background-repeat: no-repeat;
   /* Home, and anything without a route of its own. */
   background-image:
@@ -711,9 +283,13 @@ html {
    than tracking. The tree keeps the static wash, which is what it had. */
 
 body {
+  /* A filename, a path, an identifier: an unbroken string must break rather
+     than push the page sideways, at any text size (the overflow check of the
+     minimalism pass found photo captions and the journal's path doing it). */
+  overflow-wrap: anywhere;
   margin: 0;
   background: transparent;
-  color: var(--ink);
+  color: var(--text-primary);
   font: var(--text) / var(--leading) var(--face);
   -webkit-text-size-adjust: 100%;
 }
@@ -743,7 +319,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
    the scroll between the thing just read and the thing being compared. */
 [data-style="compact"] {
   --step: 0.4rem;
-  --text: 15px;
+  --text: 0.9375rem;
   --leading: 1.5;
   --measure: 88ch;
   --face: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -762,9 +338,9 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   --label-track: 0.05em;
   --section-pad: 0.7rem 0.85rem;
   --section-gap: 0.55rem;
-  --section-fill: var(--surface);
+  --section-fill: var(--surface-raised);
   --section-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
-  --section-border: 1px solid var(--border);
+  --section-border: 1px solid var(--border-hairline);
   --section-radius: var(--radius);
 }
 
@@ -775,7 +351,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
    page will not keep. */
 [data-style="paper"] {
   --step: 0.7rem;
-  --text: 17px;
+  --text: 1.0625rem;
   --leading: 1.72;
   --measure: 66ch;
   --face: Iowan Old Style, "Palatino Linotype", Palatino, Georgia,
@@ -802,39 +378,142 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 }
 /* ---------- layout ---------- */
 
+/* The masthead (Study 06, B5): 58px, the page's own ground, one hairline
+   under it. Nothing in it is coloured: the wordmark is ink, the section you
+   are in is underlined in ink, and amber is kept for the primary action and
+   the focus ring. */
 .masthead {
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  border-bottom: 1px solid var(--border-hairline);
+  background: var(--surface-page);
   position: sticky;
   top: 0;
   z-index: 40;
 }
 .masthead-inner {
-  max-width: 1180px;
+  /* Wider than the page's column: the bar is the frame, and at a desktop
+     width everything in it fits on one 58px row. */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0.7rem 1.25rem;
+  padding: 0 1.25rem;
+  min-block-size: 58px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 1.25rem;
   flex-wrap: wrap;
 }
 .brand {
-  font-weight: var(--weight-strong);
-  letter-spacing: -0.01em;
+  font-family: var(--serif);
+  font-weight: var(--weight-semi);
+  font-size: var(--type-sub);
+  letter-spacing: 0;
+  color: var(--text-primary);
   text-decoration: none;
-  font-size: var(--type-body);
 }
-/* One string, one colour. The name used to be split into `axgf` + `-cms` in
-   raw HTML to tint the halves, which is exactly the sort of place a rename
-   never reaches. */
-.brand { color: var(--accent); }
-.masthead nav { display: flex; gap: 1rem; flex-wrap: wrap; }
-.masthead nav a { color: var(--ink-soft); text-decoration: none; font-size: var(--type-minor); }
-.masthead nav a:hover, .masthead nav a[aria-current="page"] {
-  color: var(--accent);
-  text-decoration: underline;
+.masthead nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.masthead nav a {
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+  text-decoration: none;
+  padding-block: 0.3rem;
+  border-bottom: 2px solid transparent;
+  transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease);
 }
+.masthead nav a:hover { color: var(--text-primary); }
+.masthead nav a[aria-current="page"] {
+  color: var(--text-primary);
+  border-bottom-color: var(--text-primary);
+}
+/* Buttons in the masthead are not section links: no underline, their own
+   colours. */
+.masthead nav a.btn { border-bottom: 1px solid var(--border-strong); padding-block: 0; }
 .masthead .spacer { flex: 1 1 auto; }
+.chrome-nav { gap: 0.9rem; }
+
+/* The language: a native select, restyled, showing a two-letter code. */
+.lang-form { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; }
+.lang-form [hidden] { display: none; }
+.lang-form select {
+  font-family: var(--mono);
+  font-size: var(--type-small);
+  letter-spacing: 0.04em;
+  block-size: 28px;
+  padding-block: 0;
+  padding-inline: 0.5rem 0.25rem;
+  inline-size: auto;
+  color: var(--text-primary);
+  background-color: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
+
+/* Signed in: an initials chip and the name, opening onto a short menu. */
+.account, .display-menu { position: relative; }
+.account > summary, .display-menu > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+  padding-block: 0.2rem;
+}
+.account > summary::-webkit-details-marker,
+.display-menu > summary::-webkit-details-marker { display: none; }
+.account > summary::after,
+.display-menu > summary::after { content: "▾"; font-size: 0.8em; color: var(--text-tertiary); }
+.account > summary:hover, .display-menu > summary:hover { color: var(--text-primary); }
+/* The display menu's summary is the language's two-letter code (B5). */
+.display-menu > summary {
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
+.initials {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: var(--mono);
+  font-size: var(--type-micro);
+  letter-spacing: 0.02em;
+}
+.menu-panel {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 8px);
+  min-inline-size: 12rem;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  z-index: 50;
+}
+.menu-panel > a, .menu-panel .btn {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  block-size: 32px;
+  padding-inline: 0.6rem;
+  color: var(--text-primary);
+  font-size: var(--type-minor);
+  text-decoration: none;
+  border: 0;
+  border-radius: 2px;
+  justify-content: flex-start;
+}
+.menu-panel > a:hover, .menu-panel .btn:hover { background: var(--surface-hover); }
+.menu-panel > a[aria-current="page"] { border-bottom: 0; text-decoration: underline; text-decoration-thickness: 2px; }
+.menu-panel .lang-form { padding: 4px 0.6rem 6px; }
+.menu-panel form { margin: 0; }
 
 main {
   max-width: 1180px;
@@ -852,9 +531,9 @@ footer {
   max-width: 1180px;
   margin: 0 auto;
   padding: 1.5rem 1.25rem 3rem;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-size: var(--type-minor);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-hairline);
 }
 
 /* The hierarchy, on the scale a style sets. Every vertical space here is a
@@ -887,7 +566,7 @@ h4 {
   font-weight: var(--weight-semi);
   margin: calc(var(--step) * 1.8) 0 calc(var(--step) * 0.6);
 }
-.lede { color: var(--ink-soft); font-size: var(--type-body); margin-top: 0; }
+.lede { color: var(--text-secondary); font-size: var(--type-body); margin-top: 0; }
 .small, .hint { font-size: var(--small-size); }
 
 /* ---------------------------------------------------------------------------
@@ -899,20 +578,20 @@ h4 {
    at one of exactly three levels, and each is separated from its neighbours by
    more than one signal, because any single one of them fails somewhere: shadow
    is invisible under high-contrast (--shadow-a is 0 there), and fill is
-   invisible where --bg and --surface are the same colour (high-contrast
+   invisible where --surface-page and --surface-raised are the same colour (high-contrast
    again).
 
-     LEVEL 1  the page      --bg plus the wash. No border, no elevation.
-     LEVEL 2  a section     --surface fill, hairline border, --radius-lg,
+     LEVEL 1  the page      --surface-page plus the wash. No border, no elevation.
+     LEVEL 2  a section     --surface-raised fill, hairline border, --radius-lg,
                             1.15rem padding, a 1px shadow.
-     LEVEL 3  a block       --bg fill — recessed, not raised — hairline
+     LEVEL 3  a block       --surface-page fill — recessed, not raised — hairline
                             border, the smaller --radius, and NO shadow.
 
    WHY LEVEL 3 IS RECESSED RATHER THAN RAISED. A shadow reads as "nearer the
    reader". A block that sits inside a section and appears nearer than the
    section it is inside inverts the containment, and the eye notices that
    before it notices anything you meant. Dropping the block to the page's own
-   --bg turns it into a well in the section's surface, which is the shape the
+   --surface-page turns it into a well in the section's surface, which is the shape the
    thing actually has. It also costs nothing under high-contrast, where the
    two fills are identical and the black hairline carries the whole boundary
    on its own.
@@ -966,8 +645,8 @@ h4 {
 .rec-section .name-block,
 .rec-section .shot,
 .tree-controls .field-group {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
   box-shadow: none;
   padding: 0.8rem 0.9rem;
@@ -991,7 +670,7 @@ h4 {
 
 /* ---------- confidence: the showcase primitive ---------- */
 
-/* The track has to read as EMPTY. It was `--border`, which in the
+/* The track has to read as EMPTY. It was `--border-hairline`, which in the
    high-contrast theme is pure black — so a 12% bar rendered as a mostly-dark
    bar and looked *more* certain than a 98% one, exactly inverting the signal
    in the theme that most needs it. The track gets its own variable, and every
@@ -1070,14 +749,20 @@ h4 {
 }
 
 .conf-inline { display: inline-flex; align-items: center; gap: 0.4rem; }
-.conf-pct { font-size: var(--type-small); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.conf-pct { font-size: var(--type-small); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
 
 /* ---------- date honesty ---------- */
 
 .date { }
 .date[data-kind="exact"] { }
-.date[data-kind="approximate"] { font-style: italic; color: var(--ink-soft); }
-.date[data-kind="range"] { font-style: italic; color: var(--ink-soft); }
+/* An approximate date reads "vers 1890" with a dotted underline (B3): the
+   qualifier is part of the value, and the dots say so without a colour. */
+.date[data-kind="approximate"] {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.date[data-kind="range"] { font-style: italic; color: var(--text-secondary); }
 .date[data-kind="preserved"] {
   font-family: var(--mono);
   font-size: 0.88em;
@@ -1085,19 +770,19 @@ h4 {
   padding: 0.05em 0.35em;
   border-radius: 3px;
 }
-.date[data-kind="unknown"] { color: var(--ink-faint); }
+.date[data-kind="unknown"] { color: var(--text-tertiary); }
 
 .date-note {
   display: block;
   font-size: var(--type-small);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   margin-top: 0.15rem;
 }
 .cal-tag {
   font-size: var(--type-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   border: 1px solid var(--border-strong);
   border-radius: 3px;
   padding: 0 0.3em;
@@ -1108,19 +793,19 @@ h4 {
 /* ---------- home ---------- */
 
 .why {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-inline-start: 3px solid var(--accent);
-  background: var(--surface);
+  background: var(--surface-raised);
   border-radius: var(--radius);
   padding: 1.1rem 1.35rem;
 }
 .why h2 { margin-top: 0; }
-.why p { color: var(--ink-soft); }
+.why p { color: var(--text-secondary); }
 .why p:last-child { margin-bottom: 0; }
 
 .stat {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
   padding: 0.8rem 0.9rem;
 }
@@ -1130,84 +815,109 @@ h4 {
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
-.stat .k { font-size: var(--type-small); color: var(--ink-faint); text-transform: capitalize; }
-.stat.zero .n { color: var(--ink-faint); font-weight: var(--weight-normal); }
+.stat .k { font-size: var(--type-small); color: var(--text-tertiary); text-transform: capitalize; }
 
 .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0; }
 
-/* One control height across buttons, inputs and selects, so a row of them
-   lines up on its centres instead of drifting by a padding value. */
-.btn,
+/* ---------------------------------------------------------------------------
+   Fields (Study 06, B3)
+   ---------------------------------------------------------------------------
+   A field sits a shade below the page, like water below a bank: the sunken
+   surface, a strong edge, radius 2, the same 36px as a button so a row of
+   them lines up. Its label is mono, uppercase and always visible — never a
+   placeholder (tests/fields.rs). A select is the browser's own, restyled; the
+   theme's color-scheme gives its open list the right ground. */
 input[type="text"], input[type="password"], input[type="email"],
-input[type="search"], input[type="file"], select, textarea {
-  border-radius: var(--radius);
-  padding: 0.5rem 0.85rem;
-  font-size: var(--type-minor);
-  font-family: inherit;
-  line-height: 1.35;
+input[type="search"], input[type="number"], input[type="url"],
+input[type="file"], select, textarea {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 36px;
+  padding: 0 10px;
   border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--ink);
-  transition: background-color var(--tempo) var(--ease),
-              border-color var(--tempo) var(--ease),
-              color var(--tempo) var(--ease),
-              box-shadow var(--tempo) var(--ease),
-              transform var(--tempo) var(--ease);
+  border-radius: 2px;
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font-family: var(--face);
+  font-size: var(--type-minor);
+  font-weight: var(--weight-normal);
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
+  transition: border-color var(--tempo) var(--ease);
 }
-textarea { line-height: 1.5; }
+input[type="file"] { padding-block: 6px; }
+textarea {
+  min-block-size: auto;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  line-height: 1.5;
+}
 
+/* ---------------------------------------------------------------------------
+   Buttons (Study 06, B2)
+   ---------------------------------------------------------------------------
+   Four variants and only four. `.btn` alone is the SECONDARY, the everyday
+   button: transparent, a 1px strong edge, ink. `.primary` is filled with the
+   accent and there is at most one on a page (tests/controls.rs). `.ghost` has
+   no edge, for actions inside rows. `.danger` is an outline in the danger
+   colour, never a fill: destructive actions should feel serious, not loud.
+
+   36px, or 28px with `.small`, radius 2 — nothing else, nowhere. Disabled is
+   dashed, so it reads as off in greyscale. A busy button says so in words
+   (ui.js swaps in `data-busy`); there is no spinner. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding-inline: 0.95rem;
+  box-sizing: border-box;
+  min-block-size: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-minor);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  font-weight: var(--weight-medium);
-  white-space: nowrap;
-  box-shadow: 0 1px 1px rgb(var(--shadow-rgb) / var(--shadow-a));
+  transition: background-color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease),
+              color var(--tempo) var(--ease);
 }
-.btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-soft);
+.btn.small { min-block-size: 28px; padding: 0 10px; font-size: var(--type-small); }
+.btn:hover { background: var(--surface-hover); }
+/* A secondary that is the current one of a set — a range, a mode, the
+   record type being listed — is pressed: the hover surface and full ink,
+   never a colour. */
+.btn[aria-current], .btn[aria-pressed="true"] {
+  background: var(--surface-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
-/* Pressing moves the control a single pixel. Enough to feel, not enough to
-   shift what is around it. */
-.btn:active { transform: translateY(1px); box-shadow: none; }
-
-/* The primary action reads as primary through weight and fill, not through
-   size — it sits in a row with the others and must not break the rhythm. */
 .btn.primary {
   background: var(--accent);
-  border-color: var(--accent);
+  border-color: transparent;
   color: var(--on-accent);
   font-weight: var(--weight-semi);
-  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
 }
-.btn.primary:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-  /* Lift rather than fade: dropping opacity would take the label's contrast
-     down with it, and this pair has no margin to give away. */
-  box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
-}
-.btn.danger { color: var(--danger); border-color: var(--danger); }
-.btn.danger:hover {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface);
-  box-shadow: 0 2px 6px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.6));
-}
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text-primary)); }
+.btn.ghost { border-color: transparent; }
+.btn.ghost:hover { background: var(--surface-hover); }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.danger:hover { background: var(--surface-hover); }
 .btn:disabled, .btn[aria-disabled="true"] {
-  opacity: 0.55;
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--text-tertiary);
   cursor: not-allowed;
-  box-shadow: none;
 }
-.btn-compact { padding: 0.3rem 0.65rem; font-size: var(--type-minor); }
-.small-btn { padding: 0.3rem 0.6rem; font-size: var(--type-minor); border-radius: var(--radius-sm); }
+.btn[aria-busy="true"] { cursor: progress; }
 
 select {
   cursor: pointer;
@@ -1215,23 +925,51 @@ select {
   padding-inline-end: 1.8rem;
 }
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 
-/* ---------- notices ---------- */
-
+/* ---------- notices (Study 06, B7) ----------
+   Each kind has its own SHAPE, so none of it needs colour to read: a ring
+   for information, a disc for something done, a diamond for caution, a
+   square for an error. The shape sits in a gutter of its own beside the
+   text. No tinted ground, except a barely-there one under an error. A
+   message says what happened, then what to do next; its actions are
+   buttons underneath. */
 .notice {
-  border: 1px solid var(--border);
-  border-inline-start: 3px solid var(--ink-faint);
-  border-radius: var(--radius);
-  padding: 0.8rem 1rem;
+  position: relative;
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  /* The shape's gutter: the content keeps its own flow beside it. */
+  padding: 0.8rem 1rem 0.8rem 2.4rem;
+  padding-inline: 2.4rem 1rem;
   margin: 1rem 0;
-  background: var(--surface);
+  background: transparent;
+  box-shadow: none;
 }
-.notice.warn { border-inline-start-color: var(--conf-medium); }
-.notice.error { border-inline-start-color: var(--danger); }
-.notice.ok { border-inline-start-color: var(--conf-certain); }
+.notice::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: calc(0.8rem + 0.45em);
+  inline-size: 10px;
+  block-size: 10px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: 50%;
+}
+.notice.ok::before { border: 0; background: var(--conf-certain); }
+.notice.warn::before, .notice-defect::before {
+  border: 0;
+  background: var(--warning);
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 0;
+  transform: rotate(45deg);
+  inset-inline-start: calc(1rem + 1px);
+}
+.notice.error::before { border: 0; background: var(--danger); border-radius: 0; }
+.notice.error { background: color-mix(in srgb, var(--danger) 5%, transparent); }
 .notice p:first-child { margin-top: 0; }
 .notice p:last-child { margin-bottom: 0; }
+.notice .notice-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
 
 /* ---------- tables ---------- */
 
@@ -1241,13 +979,13 @@ th, td {
   /* Taller rows: a listing is scanned down a column, and 0.5rem put the
      lines close enough that the eye kept losing its place. */
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-hairline);
   vertical-align: top;
 }
 thead th {
   position: sticky;
   top: 0;
-  background: var(--surface);
+  background: var(--surface-raised);
   z-index: 1;
   border-bottom-width: 2px;
 }
@@ -1255,12 +993,12 @@ th {
   font-size: var(--label-size);
   text-transform: uppercase;
   letter-spacing: var(--label-track);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-weight: var(--weight-semi);
   white-space: nowrap;
 }
 tbody tr { transition: background-color var(--tempo) var(--ease); }
-tbody tr:hover { background: var(--accent-soft); }
+tbody tr:hover { background: var(--surface-hover); }
 tbody tr:last-child td { border-bottom: none; }
 /* A column of numbers is compared digit by digit, so it is aligned to its
    end and set in figures of one width. */
@@ -1268,53 +1006,86 @@ td.num, th.num, .conf-pct, .tdates {
   font-variant-numeric: tabular-nums;
 }
 td.num, th.num { text-align: end; }
-.table-wrap { overflow-x: auto; }
+/* Positioned, so what is absolutely placed inside (the screen-reader text)
+   scrolls with the table instead of widening the page. */
+.table-wrap { overflow-x: auto; position: relative; }
 
 /* ---------- forms ---------- */
 
-label { display: block; font-size: var(--type-minor); color: var(--ink-soft); margin-bottom: 0.25rem; }
-input[type="text"], input[type="password"], input[type="number"],
-input[type="file"], select, textarea {
-  width: 100%;
-  font: inherit;
+/* The label: mono, uppercase, always above its field. A checkbox's or a
+   radio's label is a sentence beside it (`label.inline`) and stays one. */
+label, .field-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+label.inline {
+  font-family: inherit;
   font-size: var(--type-minor);
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 0.45rem 0.6rem;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-primary);
 }
-textarea { font-family: var(--mono); font-size: var(--type-minor); line-height: 1.5; }
-input:focus, select:focus, textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-  border-color: var(--accent);
+label > input, label > select, label > textarea, label > .date-input { margin-top: 0.3rem; }
+/* A date and its qualifier are one box: `vers ▾ 1890`. */
+.date-input {
+  display: flex;
+  align-items: stretch;
+  inline-size: 100%;
 }
+.date-input > .date-qualifier {
+  flex: none;
+  inline-size: auto;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  border-inline-end-width: 0;
+  color: var(--text-secondary);
+}
+.date-input > input {
+  flex: 1 1 auto;
+  min-inline-size: 5rem;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+.date-field { margin: 0; }
 .field { margin-bottom: 1rem; }
-.field .hint { font-size: var(--type-small); color: var(--ink-faint); margin-top: 0.2rem; }
-fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; }
-legend { font-size: var(--type-small); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); padding: 0 0.4rem; }
+/* Help under a field says what the field means in the source. */
+.hint, .field .hint {
+  font-family: var(--face);
+  font-size: var(--type-small);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-tertiary);
+  margin-top: 0.3rem;
+}
+fieldset { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; min-inline-size: 0; }
+legend { font-size: var(--type-small); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); padding: 0 0.4rem; }
 
 /* ---------- diagnostics ---------- */
 
-.diag { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 1rem 0; }
+.diag { border: 1px solid var(--border-hairline); border-radius: var(--radius); overflow: hidden; margin: 1rem 0; }
 .diag-row {
   display: grid;
   grid-template-columns: minmax(180px, auto) 1fr;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-hairline);
   font-size: var(--type-minor);
-  background: var(--surface);
+  background: var(--surface-raised);
 }
 .diag-row:last-child { border-bottom: none; }
 .diag-code { font-family: var(--mono); font-size: var(--type-small); }
 .diag-row[data-sev="error"]   .diag-code { color: var(--danger); }
 .diag-row[data-sev="warning"] .diag-code { color: var(--warning); }
-.diag-row[data-sev="info"]    .diag-code { color: var(--ink-faint); }
-.diag-ref { display: block; font-size: var(--type-label); color: var(--ink-faint); font-family: var(--mono); }
+.diag-row[data-sev="info"]    .diag-code { color: var(--text-tertiary); }
+.diag-ref { display: block; font-size: var(--type-label); color: var(--text-tertiary); font-family: var(--mono); }
 .diag-explanation { margin: 0 0 0.25rem; }
-.diag-message { margin: 0; color: var(--ink-soft); overflow-wrap: anywhere; }
+.diag-message { margin: 0; color: var(--text-secondary); overflow-wrap: anywhere; }
 
 /* An inference, marked as one.
  *
@@ -1329,7 +1100,7 @@ legend { font-size: var(--type-small); text-transform: uppercase; letter-spacing
 }
 abbr.presumed { text-decoration: none; }
 
-.muted { color: var(--ink-faint); }
+.muted { color: var(--text-tertiary); }
 .small { font-size: var(--type-minor); }
 .nowrap { white-space: nowrap; }
 
@@ -1353,11 +1124,11 @@ abbr.presumed { text-decoration: none; }
   flex-wrap: wrap;
   margin: 1rem 0 0.5rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
 }
-.tree-legend .lg { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--ink-soft); }
+.tree-legend .lg { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-secondary); }
 
 /* The tree scrolls sideways and only sideways.
  *
@@ -1410,7 +1181,7 @@ abbr.presumed { text-decoration: none; }
 .tree-canvas { position: relative; }
 
 .tree-wires { position: absolute; inset: 0; pointer-events: none; }
-.wire { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; }
+.wire { fill: none; stroke: var(--text-tertiary); stroke-width: 1.5; }
 .wire-spouse { stroke-width: 2; stroke-dasharray: none; }
 .wire[data-band="low"] { stroke-dasharray: 3 3; }
 .wire[data-band="medium"] { stroke-dasharray: 6 3; }
@@ -1446,7 +1217,7 @@ abbr.presumed { text-decoration: none; }
   position: absolute;
   inset-inline: 0;
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--ink) 3%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
   pointer-events: none;
   z-index: 0;
 }
@@ -1454,7 +1225,7 @@ abbr.presumed { text-decoration: none; }
   /* A band that had to wrap says so with a bracket down its leading edge, so
      the reader can see at a glance that these rows are one generation rather
      than several. */
-  border-inline-start: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-inline-start: 2px solid color-mix(in srgb, var(--text-primary) 18%, transparent);
 }
 .band-zone.unplaced {
   background: color-mix(in srgb, var(--conf-medium) 7%, transparent);
@@ -1467,12 +1238,12 @@ abbr.presumed { text-decoration: none; }
   font-size: var(--type-label);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   padding-inline-start: 0.5rem;
   white-space: nowrap;
   z-index: 1;
 }
-.band-label strong { color: var(--ink-soft); font-weight: var(--weight-semi); }
+.band-label strong { color: var(--text-secondary); font-weight: var(--weight-semi); }
 .band-label span { margin-inline-start: 0.4rem; text-transform: none; letter-spacing: 0; }
 .band-label.unplaced strong { color: var(--warning); }
 
@@ -1490,7 +1261,7 @@ abbr.presumed { text-decoration: none; }
   border: 1px solid var(--sex-u-line);
   background: var(--sex-u);
   border-radius: 5px;
-  color: var(--ink);
+  color: var(--text-primary);
   text-decoration: none;
   display: flex;
   flex-direction: column;
@@ -1538,12 +1309,12 @@ abbr.presumed { text-decoration: none; }
   align-items: center;
   padding-inline: 0.15rem;
 }
-.tcard.is-restricted .tdates { justify-content: center; color: var(--ink-faint); }
+.tcard.is-restricted .tdates { justify-content: center; color: var(--text-tertiary); }
 .tcard.is-restricted:hover { box-shadow: none; z-index: 2; }
 
 /* The same treatment inline, where a hidden person is named as a relative. */
 .restricted {
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   font-style: italic;
   border-bottom: 1px dashed var(--border-strong);
 }
@@ -1563,7 +1334,7 @@ abbr.presumed { text-decoration: none; }
 }
 .tdates {
   font-size: var(--type-label);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   display: flex;
   align-items: center;
@@ -1640,7 +1411,7 @@ abbr.presumed { text-decoration: none; }
   /* Past this, a line of the record's prose is uncomfortable to read. */
   --panel-max: 560px;
   --split-gap: 1.5rem;
-  background: var(--surface);
+  background: var(--surface-raised);
   border-radius: var(--radius-lg);
   padding: 1rem;
   display: grid;
@@ -1704,15 +1475,14 @@ bdi.date { unicode-bidi: isolate; }
   gap: 0.6rem;
   align-items: flex-start;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-hairline);
   padding-bottom: 0.6rem;
   margin-bottom: 0.7rem;
 }
 .panel-name { margin: 0; font-size: var(--type-sub); line-height: 1.2; }
 .panel-head .lede { margin: 0.2rem 0 0; }
 .panel-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.btn.small { padding: 0.15rem 0.5rem; font-size: var(--type-small); }
-.panel-empty { color: var(--ink-faint); padding: 1rem 0; }
+.panel-empty { color: var(--text-tertiary); padding: 1rem 0; }
 
 /* The record sections, re-flowed for a narrow column.
  *
@@ -1781,13 +1551,13 @@ bdi.date { unicode-bidi: isolate; }
   clip: rect(0, 0, 0, 0);
 }
 .tree-panel table.stackable tr {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--surface-page);
   padding: 0.4rem 0.6rem;
   margin-bottom: 0.5rem;
 }
-.tree-panel table.stackable tr:hover { background: var(--bg); }
+.tree-panel table.stackable tr:hover { background: var(--surface-page); }
 .tree-panel table.stackable td {
   border-bottom: none;
   padding: 0.15rem 0;
@@ -1798,7 +1568,7 @@ bdi.date { unicode-bidi: isolate; }
   font-size: var(--type-micro);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
 
 @media (max-width: 1000px) {
@@ -1821,16 +1591,16 @@ bdi.date { unicode-bidi: isolate; }
  * end because adding an entry has to work with scripting off. */
 .editor { max-inline-size: 62rem; }
 .ed-group {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
-  background: var(--surface);
+  background: var(--surface-raised);
   padding: 1rem 1.1rem 1.1rem;
   margin: 0 0 1.1rem;
 }
 .ed-group > legend {
   font-weight: var(--weight-semi);
   padding: 0 0.4rem;
-  color: var(--ink);
+  color: var(--text-primary);
 }
 .ed-group h3 {
   margin: 1.1rem 0 0.2rem;
@@ -1847,14 +1617,14 @@ bdi.date { unicode-bidi: isolate; }
   flex-direction: column;
   gap: 0.2rem;
   font-size: var(--type-small);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   min-inline-size: 0;
 }
 .ed-grid > label.inline {
   flex-direction: row;
   align-items: center;
   gap: 0.4rem;
-  color: var(--ink);
+  color: var(--text-primary);
   font-size: var(--type-minor);
 }
 .ed-grid > label.wide { grid-column: 1 / -1; }
@@ -1864,7 +1634,7 @@ bdi.date { unicode-bidi: isolate; }
    fields of one name reading as one field of eight names. */
 .ed-row {
   padding: 0.7rem 0 0.75rem;
-  border-block-start: 1px solid var(--border);
+  border-block-start: 1px solid var(--border-hairline);
 }
 .ed-row:first-of-type { border-block-start: 0; }
 .ed-row .hint { margin: 0.35rem 0 0; }
@@ -1874,7 +1644,7 @@ bdi.date { unicode-bidi: isolate; }
   font-size: var(--label-size);
   text-transform: uppercase;
   letter-spacing: var(--label-track);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-weight: var(--weight-semi);
   padding-block-end: 0.3rem;
 }
@@ -1898,7 +1668,7 @@ bdi.date { unicode-bidi: isolate; }
 .ed-files { list-style: none; margin: 0; padding: 0; }
 .ed-files > li {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem;
-  padding-block: 0.6rem; border-block-end: 1px solid var(--border);
+  padding-block: 0.6rem; border-block-end: 1px solid var(--border-hairline);
 }
 .ed-files > li > span:first-child { flex: 1 1 16rem; min-width: 0; overflow-wrap: anywhere; }
 .ed-files .ed-delete { margin-block-start: 0; }
@@ -1927,7 +1697,7 @@ bdi.date { unicode-bidi: isolate; }
   padding: 0.5rem 0 0.5rem 0.7rem;
   margin: 0.6rem 0 0.9rem;
   font-size: var(--type-minor);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
 }
 
 @media (max-width: 640px) {
@@ -1939,9 +1709,9 @@ bdi.date { unicode-bidi: isolate; }
     font-size: var(--type-label);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
   }
-  .ed-rows tr { padding-block: 0.4rem; border-block-start: 1px solid var(--border); }
+  .ed-rows tr { padding-block: 0.4rem; border-block-start: 1px solid var(--border-hairline); }
   .ed-rows.ed-people td:first-child,
   .ed-rows.ed-people td:last-child { inline-size: 100%; min-inline-size: 0; }
 }
@@ -1960,9 +1730,9 @@ bdi.date { unicode-bidi: isolate; }
 .radar-card {
   margin: 0;
   padding: calc(var(--step) * 1.6);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
   min-width: 0;
 }
 .radar-card h3 { margin: 0 0 0.4rem; }
@@ -1991,8 +1761,8 @@ bdi.date { unicode-bidi: isolate; }
   width: 100%; height: 100%;
   overflow: visible;
 }
-.radar-ring { fill: none; stroke: var(--border); stroke-width: 1; }
-.radar-spoke { stroke: var(--border); stroke-width: 1; }
+.radar-ring { fill: none; stroke: var(--border-hairline); stroke-width: 1; }
+.radar-spoke { stroke: var(--border-hairline); stroke-width: 1; }
 .radar-spoke.radar-absent {
   stroke: var(--border-strong);
   stroke-width: 1.5;
@@ -2004,17 +1774,17 @@ bdi.date { unicode-bidi: isolate; }
 .radar-band[data-band="certain"] { stroke: var(--conf-certain); }
 .radar-band[data-band="high"] { stroke: var(--conf-high); }
 .radar-band[data-band="low"] { stroke: var(--conf-low); }
-.radar-point { stroke: var(--ink); stroke-width: 2; fill: none; }
-.radar-point[data-band="certain"] { fill: var(--ink); }
+.radar-point { stroke: var(--text-primary); stroke-width: 2; fill: none; }
+.radar-point[data-band="certain"] { fill: var(--text-primary); }
 .radar-point[data-band="low"] { stroke-dasharray: 2.4 2; }
-.radar-point-core { fill: var(--ink); stroke: none; }
+.radar-point-core { fill: var(--text-primary); stroke: none; }
 
 .radar-label {
   position: absolute;
   max-width: 8.5rem;
   font-size: var(--type-small);
   line-height: 1.2;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   pointer-events: none;
 }
 .radar-label[data-side="top"] { transform: translate(-50%, -100%); text-align: center; }
@@ -2023,15 +1793,15 @@ bdi.date { unicode-bidi: isolate; }
    in Arabic too, because the chart does not mirror. */
 .radar-label[data-side="right"] { transform: translate(0, -50%); text-align: left; }
 .radar-label[data-side="left"] { transform: translate(-100%, -50%); text-align: right; }
-.radar-label[data-absent] { color: var(--ink-faint); font-style: italic; }
+.radar-label[data-absent] { color: var(--text-tertiary); font-style: italic; }
 .radar-num {
   display: inline-block;
   min-width: 1.2em;
   font-weight: var(--weight-strong);
   font-variant-numeric: tabular-nums;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
-.radar-score { font-weight: var(--weight-strong); color: var(--ink); font-variant-numeric: tabular-nums; }
+.radar-score { font-weight: var(--weight-strong); color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
 .radar-table { width: 100%; border-collapse: collapse; font-size: var(--type-minor); margin-top: 0.4rem; }
 .radar-table td, .radar-table th { overflow-wrap: anywhere; }
@@ -2039,22 +1809,22 @@ bdi.date { unicode-bidi: isolate; }
   text-align: start;
   vertical-align: top;
   padding: 0.35rem 0.4rem 0.35rem 0;
-  border-block-start: 1px solid var(--border);
+  border-block-start: 1px solid var(--border-hairline);
 }
 .radar-table thead th {
   border-block-start: none;
   font-size: var(--label-size);
   text-transform: uppercase;
   letter-spacing: var(--label-track, 0.04em);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-weight: var(--weight-semi);
 }
 .radar-table tbody th { font-weight: var(--weight-semi); }
-.radar-table tr[data-absent] th { color: var(--ink-faint); font-weight: var(--weight-medium); }
-.radar-conf { display: block; font-size: var(--type-small); color: var(--ink-soft); }
+.radar-table tr[data-absent] th { color: var(--text-tertiary); font-weight: var(--weight-medium); }
+.radar-conf { display: block; font-size: var(--type-small); color: var(--text-secondary); }
 .radar-facts { margin: 0; padding: 0; list-style: none; }
 .radar-facts li + li { margin-top: 0.2rem; }
-.radar-fact-label { color: var(--ink-soft); }
+.radar-fact-label { color: var(--text-secondary); }
 .radar-fact-label::after { content: ":"; }
 /* The marker again, in the table: the same four shapes, drawn in CSS. */
 .radar-mark {
@@ -2064,10 +1834,10 @@ bdi.date { unicode-bidi: isolate; }
   vertical-align: -0.05rem;
   border-radius: 50%;
   box-sizing: border-box;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--text-primary);
 }
-.radar-mark[data-band="certain"] { background: var(--ink); }
-.radar-mark[data-band="high"] { background: radial-gradient(circle, var(--ink) 0 32%, transparent 34%); }
+.radar-mark[data-band="certain"] { background: var(--text-primary); }
+.radar-mark[data-band="high"] { background: radial-gradient(circle, var(--text-primary) 0 32%, transparent 34%); }
 .radar-mark[data-band="low"] { border-style: dashed; }
 
 .radar-fold > summary {
@@ -2076,7 +1846,7 @@ bdi.date { unicode-bidi: isolate; }
   padding: 0.35rem 0.7rem;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  color: var(--ink);
+  color: var(--text-primary);
 }
 .radar-fold[open] > summary { margin-bottom: 0.4rem; }
 
@@ -2087,7 +1857,7 @@ bdi.date { unicode-bidi: isolate; }
   .radar-table thead { display: none; }
   .radar-table, .radar-table tbody, .radar-table tr,
   .radar-table th, .radar-table td { display: block; width: 100%; }
-  .radar-table tr { border-block-start: 1px solid var(--border); padding-block: 0.3rem; }
+  .radar-table tr { border-block-start: 1px solid var(--border-hairline); padding-block: 0.3rem; }
   .radar-table th, .radar-table td { border: none; padding: 0.1rem 0; }
 }
 
@@ -2123,8 +1893,8 @@ bdi.date { unicode-bidi: isolate; }
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
   flex: none;
 }
 .person-avatar img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
@@ -2142,11 +1912,11 @@ bdi.date { unicode-bidi: isolate; }
 }
 .person-akas {
   margin: 0.25rem 0 0;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   font-size: var(--type-minor);
 }
 .person-vitals { margin: 0.35rem 0 0; font-size: var(--type-body); }
-.person-vitals .sep { color: var(--ink-faint); }
+.person-vitals .sep { color: var(--text-tertiary); }
 .person-head .lede { margin: 0.3rem 0 0; }
 .person-placing {
   margin: 0.3rem 0 0;
@@ -2176,20 +1946,20 @@ bdi.date { unicode-bidi: isolate; }
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
   padding: 0.6rem 0.9rem;
   margin: 1rem 0 1.5rem;
   font-size: var(--type-minor);
 }
-.showcase-strip strong { color: var(--ink-soft); font-weight: var(--weight-semi); }
+.showcase-strip strong { color: var(--text-secondary); font-weight: var(--weight-semi); }
 
 .chip {
   display: inline-block;
   background: var(--accent-soft);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   border-radius: 100px;
   padding: 0.1rem 0.6rem;
   font-size: var(--type-small);
@@ -2215,23 +1985,23 @@ bdi.date { unicode-bidi: isolate; }
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--surface-page);
   padding: 0.25rem 0.6rem;
 }
 .fact-chips dt {
   font-size: var(--type-micro);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   line-height: 1.4;
 }
 .fact-chips dd { margin: 0; font-size: var(--type-minor); line-height: 1.35; }
 .fact-chips .fc.wide { flex: 1 1 100%; }
 
 ul.plain { list-style: none; padding: 0; margin: 0.25rem 0 0; }
-ul.plain > li { padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+ul.plain > li { padding: 0.35rem 0; border-bottom: 1px solid var(--border-hairline); }
 ul.plain > li:last-child { border-bottom: none; }
 
 li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -2253,7 +2023,7 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   letter-spacing: 0.04em;
   font-size: var(--type-micro);
   font-weight: var(--weight-semi);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
 .src-chip[data-rank="4"] { border-color: var(--conf-certain); }
 .src-chip[data-rank="4"] .src-rel { color: var(--conf-certain); }
@@ -2263,7 +2033,7 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .src-chip[data-rank="2"] .src-rel { color: var(--warning); }
 .src-chip[data-rank="1"] { border-color: var(--conf-low); }
 .src-chip[data-rank="1"] .src-rel { color: var(--conf-low); }
-.src-title { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.src-title { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Non-family links: the clearest GEDCOM gap, so visually distinct from the
    family lists. */
@@ -2272,15 +2042,15 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   border-radius: var(--radius);
   padding: 1.1rem 1.25rem;
   margin: 1.5rem 0;
-  background: var(--surface);
+  background: var(--surface-raised);
 }
 .links-section > h2 { margin-top: 0; }
 .link-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
   padding: 0.7rem 0.85rem;
-  background: var(--bg);
+  background: var(--surface-page);
 }
 .link-card[data-dir="incoming"] { border-inline-start-style: dashed; }
 .link-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -2295,14 +2065,14 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   gap: 0.75rem;
   align-items: center;
   padding: 0.4rem 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-hairline);
 }
 .tl-label { display: flex; flex-direction: column; }
 .tl-track {
   position: relative;
   height: 22px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
   border-radius: 4px;
   min-width: 120px;
 }
@@ -2330,26 +2100,26 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
    away from the bar. */
 .tl-open-l {
   inset-inline-start: 0;
-  background: linear-gradient(to right, var(--surface), transparent);
+  background: linear-gradient(to right, var(--surface-raised), transparent);
 }
 .tl-open-r {
   inset-inline-end: 0;
-  background: linear-gradient(to left, var(--surface), transparent);
+  background: linear-gradient(to left, var(--surface-raised), transparent);
 }
-[dir="rtl"] .tl-open-l { background: linear-gradient(to left, var(--surface), transparent); }
-[dir="rtl"] .tl-open-r { background: linear-gradient(to right, var(--surface), transparent); }
+[dir="rtl"] .tl-open-l { background: linear-gradient(to left, var(--surface-raised), transparent); }
+[dir="rtl"] .tl-open-r { background: linear-gradient(to right, var(--surface-raised), transparent); }
 .tl-meta { display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; }
 .tl-axis {
   display: flex;
   justify-content: space-between;
   font-size: var(--type-label);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
   padding-top: 0.3rem;
 }
 
 .prose { white-space: pre-wrap; max-width: 72ch; }
-.muted-prose { color: var(--ink-soft); font-size: var(--type-minor); }
+.muted-prose { color: var(--text-secondary); font-size: var(--type-minor); }
 
 @media (max-width: 700px) {
   .tl-row { grid-template-columns: 1fr; }
@@ -2367,19 +2137,18 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .filter-row input[type="text"] { max-width: 22rem; }
 .filter-row .spacer { flex: 1 1 auto; }
 
-.small-btn { padding: 0.15rem 0.5rem; font-size: var(--type-small); }
 
-.delete-row { background: var(--bg); }
+.delete-row { background: var(--surface-page); }
 .policy-list { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.6rem 0; }
 .policy-list label {
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
   font-size: var(--type-minor);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   margin: 0;
 }
-.policy-list strong { color: var(--ink); }
+.policy-list strong { color: var(--text-primary); }
 
 label.inline { display: flex; align-items: center; gap: 0.45rem; }
 label.inline input[type="checkbox"] { width: auto; margin: 0; }
@@ -2399,9 +2168,9 @@ a.stat:hover { border-color: var(--accent); }
   flex-wrap: wrap;
   margin: 1rem 0 0.25rem;
   padding: 0.75rem 0.9rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
 }
 .tc-field { display: flex; flex-direction: column; gap: 0.2rem; }
 .tc-field label {
@@ -2409,7 +2178,7 @@ a.stat:hover { border-color: var(--accent); }
   font-size: var(--label-size);
   text-transform: uppercase;
   letter-spacing: var(--label-track);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
 .tc-field select { min-width: 12rem; }
 #depth { min-width: 5rem; }
@@ -2418,10 +2187,10 @@ a.stat:hover { border-color: var(--accent); }
 /* ---------- completeness readout ---------- */
 
 .completeness {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
   padding: 1.1rem 1.25rem;
   margin: 1.5rem 0;
 }
@@ -2436,7 +2205,7 @@ a.stat:hover { border-color: var(--accent); }
    shape of what is missing is visible at a glance. */
 .comp-has .comp-count { color: var(--conf-certain); font-weight: var(--weight-semi); }
 .comp-empty { background: transparent; }
-.comp-empty .comp-count { color: var(--ink-faint); }
+.comp-empty .comp-count { color: var(--text-tertiary); }
 
 .comp-tag {
   display: inline-block;
@@ -2451,9 +2220,9 @@ a.stat:hover { border-color: var(--accent); }
   white-space: normal;
   max-width: 11rem;
 }
-.comp-tag.empty-tag { color: var(--ink-faint); border-color: var(--border-strong); }
+.comp-tag.empty-tag { color: var(--text-tertiary); border-color: var(--border-strong); }
 
-.date-shapes .stat .k { text-transform: none; font-weight: var(--weight-semi); color: var(--ink-soft); }
+.date-shapes .stat .k { text-transform: none; font-weight: var(--weight-semi); color: var(--text-secondary); }
 
 /* ---------- identity page: sections ---------- */
 
@@ -2468,31 +2237,47 @@ a.stat:hover { border-color: var(--accent); }
  * is marked by weight and a rule under it rather than by colour alone, because
  * colour alone is not a distinction every reader can make. */
 .person-tabs {
+  /* Study 06, B4: no boxes; one row that scrolls sideways and never wraps,
+     whatever the width or the language. Logical properties throughout, so
+     right-to-left mirrors the order and the underline stays where it is. */
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  gap: 0.25rem;
   margin: 1.25rem 0 0;
-  border-bottom: 1px solid var(--border);
+  /* The hairline is drawn inside the strip, not as its border: a strip that
+     scrolls clips what hangs outside it, and the current tab's 2px rule has
+     to sit over the hairline, whole. */
+  box-shadow: inset 0 -1px 0 var(--border-hairline);
 }
 .person-tab {
-  padding: 0.5rem 0.9rem;
-  color: var(--ink-soft);
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.55rem 0.7rem;
+  white-space: nowrap;
+  color: var(--text-secondary);
   text-decoration: none;
-  border: 1px solid transparent;
-  border-bottom: 2px solid transparent;
-  border-radius: var(--radius) var(--radius) 0 0;
+  border: 0;
+  border-block-end: 2px solid transparent;
   font-size: var(--type-minor);
   /* The label is bolder when current. Reserving the bold metrics up front
      stops the row from reflowing as the reader moves between tabs. */
   font-weight: var(--weight-semi);
-  color: var(--ink-soft);
 }
-.person-tab:hover { color: var(--accent); background: var(--accent-soft); }
+.person-tab:hover { color: var(--text-primary); }
+/* Current: full ink and a 2px amber rule. */
 .person-tab.is-current {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
-  background: var(--surface);
+  color: var(--text-primary);
+  border-block-end-color: var(--accent);
 }
+/* An empty tab is dimmed, never disabled: an empty tab is where you add
+   things. */
+.person-tab.is-empty { color: var(--text-tertiary); }
+.person-tab.is-empty.is-current { color: var(--text-primary); }
 .person-tabs + * { margin-top: 1.25rem; }
 
 /* The tree tab: the same canvas the tree page draws, in a box that scrolls
@@ -2500,9 +2285,9 @@ a.stat:hover { border-color: var(--accent); }
 .person-tree {
   position: relative;
   margin: 1.25rem 0 0.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
   overflow: hidden;
 }
 .person-tree .tree-scroll {
@@ -2518,12 +2303,12 @@ a.stat:hover { border-color: var(--accent); }
   gap: 0.4rem 1rem;
   margin: 1.25rem 0;
   padding: 0.6rem 0.85rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
   font-size: var(--type-minor);
 }
-.section-index a { color: var(--ink-soft); text-decoration: none; }
+.section-index a { color: var(--text-secondary); text-decoration: none; }
 .section-index a:hover { color: var(--accent); text-decoration: underline; }
 
 main > section { scroll-margin-top: 1rem; }
@@ -2544,7 +2329,7 @@ main > section { scroll-margin-top: 1rem; }
 /* A section heading anchors its section. It was small, grey and the same
    weight as the labels under it, so the eye had nothing to find. */
 .rec-section .sec-head h2 {
-  color: var(--ink);
+  color: var(--text-primary);
   font-weight: var(--h2-weight);
 }
 .sec-help { font-size: var(--type-minor); }
@@ -2556,7 +2341,7 @@ main > section { scroll-margin-top: 1rem; }
   height: 1.15rem;
   border: 1px solid var(--border-strong);
   border-radius: 50%;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-size: var(--type-label);
   line-height: 1;
   cursor: help;
@@ -2577,10 +2362,10 @@ table.names td { vertical-align: top; }
 .name-native { font-weight: var(--weight-semi); }
 .name-latin {
   margin-inline-start: 0.5rem;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   font-style: italic;
 }
-.name-latin::before { content: "≈ "; color: var(--ink-faint); font-style: normal; }
+.name-latin::before { content: "≈ "; color: var(--text-tertiary); font-style: normal; }
 
 /* One name as a block: a heading with a small type label under it, which is
    what a single name deserves. The four-column table said one fact in four
@@ -2589,7 +2374,7 @@ table.names td { vertical-align: top; }
 .name-block > p { margin: 0.25rem 0 0; }
 .name-block > p:first-child { margin-top: 0; }
 .name-block + .name-block {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-hairline);
   margin-top: 0.65rem;
   padding-top: 0.65rem;
 }
@@ -2600,12 +2385,12 @@ table.names td { vertical-align: top; }
   overflow-wrap: break-word;
 }
 .nb-latin {
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   font-style: italic;
   font-size: var(--type-minor);
   overflow-wrap: break-word;
 }
-.nb-latin::before { content: "≈ "; color: var(--ink-faint); font-style: normal; }
+.nb-latin::before { content: "≈ "; color: var(--text-tertiary); font-style: normal; }
 .nb-kind {
   display: flex;
   flex-wrap: wrap;
@@ -2616,7 +2401,7 @@ table.names td { vertical-align: top; }
   font-size: var(--type-label);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
 .nb-evidence {
   display: flex;
@@ -2647,16 +2432,16 @@ table.names td { vertical-align: top; }
 }
 .name-part:not(:last-child)::after {
   content: "·";
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
 .np-k {
   font-size: var(--type-micro);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
-.np-v { color: var(--ink-soft); overflow-wrap: anywhere; }
+.np-v { color: var(--text-secondary); overflow-wrap: anywhere; }
 
 /* A phrase that should wrap as a whole — "From 12 June 1919", "until 1955" —
    rather than leaving a preposition stranded on the line above its date. */
@@ -2685,7 +2470,7 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   background: var(--border-strong);
 }
 .life-row[data-kind="birth"]::before { background: var(--conf-certain); }
-.life-row[data-kind="death"]::before { background: var(--ink-faint); }
+.life-row[data-kind="death"]::before { background: var(--text-tertiary); }
 .life-when { display: flex; flex-direction: column; gap: 0.2rem; }
 @media (max-width: 34rem) {
   .life-row { grid-template-columns: 1fr; }
@@ -2695,8 +2480,8 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
 .union {
   margin-top: 1rem;
   padding: 0.85rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
 }
 /* Two Family records for one couple.
@@ -2728,21 +2513,20 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   border-radius: 0;
   padding: 0 0 0 1rem;
 }
-.notice-defect { border-inline-start-color: var(--conf-medium); }
 /* The action sits under the sentence, inside the notice that explains it. */
 .notice-defect p { margin: 0; }
 .notice-defect .inline-form { margin-top: 0.6rem; }
 
 .union-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-.union h4 { margin: 0.85rem 0 0.25rem; font-size: var(--type-minor); color: var(--ink-soft); }
+.union h4 { margin: 0.85rem 0 0.25rem; font-size: var(--type-minor); color: var(--text-secondary); }
 .union-status[data-status="ongoing"] { color: var(--conf-certain); }
-.union-status[data-status="not recorded"] { color: var(--ink-faint); }
+.union-status[data-status="not recorded"] { color: var(--text-tertiary); }
 .birth-order {
   display: inline-block;
   min-width: 1.4em;
   text-align: center;
   font-size: var(--type-label);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   border: 1px solid var(--border-strong);
   border-radius: 3px;
   font-variant-numeric: tabular-nums;
@@ -2759,17 +2543,17 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
    readability checkable rather than asserted. */
 details.raw {
   margin-top: 1.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
   padding: 0.6rem 0.85rem;
-  background: var(--surface);
+  background: var(--surface-raised);
 }
 details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
 .raw-json {
   max-height: 32rem;
   overflow: auto;
   font-size: var(--type-small);
-  background: var(--bg);
+  background: var(--surface-page);
   padding: 0.75rem;
   border-radius: var(--radius);
 }
@@ -2788,14 +2572,14 @@ details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
   width: 100%;
   height: 150px;
   object-fit: cover;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-raised);
 }
 .shot figcaption {
   margin-top: 0.3rem;
   font-size: var(--type-small);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   display: flex;
   flex-direction: column;
 }
@@ -2828,7 +2612,7 @@ details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
 .diff-from {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
 }
 
 /* A recorded change whose value this reader may not see. Italic and muted so
@@ -2837,10 +2621,10 @@ details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
    "withheld". */
 .diff-withheld {
   font-style: italic;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
 }
 .diff-to { font-weight: var(--weight-semi); }
-.diff-arrow { color: var(--ink-faint); padding: 0 0.3rem; }
+.diff-arrow { color: var(--text-tertiary); padding: 0 0.3rem; }
 
 /* A field both editors touched. The left border is the signal; the tint only
    reinforces it, so the row still reads as marked without colour. */
@@ -2854,7 +2638,7 @@ details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
 .history { margin: 0.5rem 0 1.5rem; padding-inline-start: 1.2rem; }
 .history li { margin-bottom: 0.5rem; line-height: 1.5; }
 .history details { margin-top: 0.35rem; }
-.history summary { cursor: pointer; color: var(--ink-soft); }
+.history summary { cursor: pointer; color: var(--text-secondary); }
 
 
 /* ---------------------------------------------------------------------------
@@ -2883,55 +2667,25 @@ details.raw > summary { cursor: pointer; font-weight: var(--weight-semi); }
    ---------------------------------------------------------------------------
    A control that does not set its own colours inherits the user agent's, which
    are black text on a white field. Under the dark theme that produced black on
-   #201e1b — 1.26:1, effectively unreadable — and no amount of custom-property
+   the dark theme's --surface-raised — 1.26:1, effectively unreadable — and no amount of custom-property
    discipline elsewhere fixes it, because the rule that needs to exist was
    simply absent. Measured, not assumed: this is the pair the contrast sweep
    flagged first. */
-input, select, textarea, button {
-  color: var(--ink);
-  background-color: var(--surface);
-  font: inherit;
+input, select, textarea {
+  color: var(--text-primary);
+  background-color: var(--surface-sunken);
 }
-input::placeholder, textarea::placeholder { color: var(--ink-faint); opacity: 1; }
-input:focus-visible, select:focus-visible,
-textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary:focus-visible {
-  outline: 2px solid var(--accent);
+button { color: var(--text-primary); background-color: transparent; font: inherit; }
+input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity: 1; }
+/* Focus (B2): a 2px ring in --focus-ring at 2px offset, on every control,
+   never removed. Not the browser's outline, and nothing anywhere sets
+   `outline: none` without putting this back (tests/controls.rs). A field
+   shows it on any focus, because typing into one is always the keyboard. */
+:is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+:is(input, select, textarea):focus {
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
-
-/* ---------------------------------------------------------------------------
-   The way in to the settings, and the settings surface
-   ---------------------------------------------------------------------------
-   The masthead used to hold the preferences themselves: a `<details>` over four
-   stacked forms, twenty-three controls behind one chevron. It holds a link now.
-   The link still names the current language, because that is the preference a
-   reader checks far more often than they change it, and a control that answers
-   the question without being opened beats one that has to be.
-
-   No panel, so no positioning, no z-index, no open/closed state and no opening
-   animation — which was motion that announced a menu rather than meaning
-   anything. */
-.prefs-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.6rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  font-size: var(--type-minor);
-  color: var(--ink-soft);
-  text-decoration: none;
-  transition: background-color var(--tempo) var(--ease),
-              border-color var(--tempo) var(--ease),
-              color var(--tempo) var(--ease);
-}
-.prefs-link:hover {
-  background: var(--accent-soft);
-  border-color: var(--border);
-  color: var(--ink);
-}
-.prefs-current { font-weight: var(--weight-medium); }
-.prefs-globe { flex: none; opacity: 0.85; }
 
 /* The settings page. A heading, the way back out, and one panel per tab. */
 .settings-head {
@@ -2953,13 +2707,13 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 .settings-panel + .settings-panel {
   margin-top: 1.5rem;
   padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-hairline);
 }
 .settings-panel legend {
   font-size: var(--label-size);
   text-transform: uppercase;
   letter-spacing: var(--label-track);
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-weight: var(--weight-semi);
   padding: 0;
   margin-bottom: 0.4rem;
@@ -2996,7 +2750,7 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
 .lang-list label .badge { margin-inline-start: auto; }
 .lang-list input, .theme-list input { flex: none; margin: 0; accent-color: var(--accent); }
 /* Each language named in itself, which is what a speaker of it looks for. */
-.lang-list label > span:nth-of-type(1) { font-weight: var(--weight-medium); color: var(--ink); }
+.lang-list label > span:nth-of-type(1) { font-weight: var(--weight-medium); color: var(--text-primary); }
 .lang-list label > span:nth-of-type(2) { margin-inline-start: auto; }
 
 .badge {
@@ -3006,30 +2760,12 @@ textarea:focus-visible, button:focus-visible, a:focus-visible, details > summary
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
   border: 1px solid var(--border-strong);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .badge.reviewed { border-color: var(--conf-certain); color: var(--conf-certain); }
 
-/* ---------------------------------------------------------------------------
-   Masthead
-   --------------------------------------------------------------------------- */
-.masthead-inner { align-items: center; }
-.chrome-nav { display: flex; align-items: center; gap: 0.75rem; }
-.masthead nav a {
-  padding: 0.3rem 0.15rem;
-  border-bottom: 2px solid transparent;
-  text-decoration: none;
-  transition: color var(--tempo) var(--ease),
-              border-color var(--tempo) var(--ease);
-}
-.masthead nav a:hover { border-bottom-color: var(--border-strong); }
-.masthead nav a[aria-current="page"] {
-  border-bottom-color: var(--accent);
-  color: var(--accent);
-  font-weight: var(--weight-semi);
-}
 
 /* ---------------------------------------------------------------------------
    Panels and elevation
@@ -3062,10 +2798,6 @@ a.tcard:hover {
   z-index: 3;
 }
 
-.notice {
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
-}
 
 /* Chips and section controls pick up the same tempo as everything else. */
 .chip, .src-chip {
@@ -3082,7 +2814,7 @@ a.tcard:hover {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border-strong);
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   font-size: var(--type-label);
   list-style: none;
   transition: background-color var(--tempo) var(--ease),
@@ -3116,7 +2848,7 @@ a.tcard:hover {
    wrong country — and a list that renders those identically to a real match
    is a list that invites the wrong click. The off-target rows keep their
    position (relevance is the service's to rank) and lose their confidence. */
-.geocode { margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
+.geocode { margin-top: 1rem; border-top: 1px solid var(--border-hairline); padding-top: 0.9rem; }
 .geocode-results { margin-top: 0.8rem; }
 
 .suggestions {
@@ -3134,24 +2866,24 @@ a.tcard:hover {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.5rem 0.65rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-inline-start: 3px solid var(--conf-certain);
   border-radius: 6px;
-  background: var(--surface);
+  background: var(--surface-raised);
 }
 .suggestions li.off-target {
   border-inline-start-color: var(--conf-medium);
-  background: var(--bg);
+  background: var(--surface-page);
 }
 .suggestion-what { display: flex; align-items: baseline; gap: 0.45rem; flex-wrap: wrap; min-width: 14rem; flex: 1 1 20rem; }
 .suggestion-what .place-name { font-weight: var(--weight-semi); }
 .suggestion-take { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-.suggestion-take code { font-size: var(--type-minor); color: var(--ink-soft); }
+.suggestion-take code { font-size: var(--type-minor); color: var(--text-secondary); }
 
 .suggestions .tag {
   font-size: var(--type-label);
-  color: var(--ink-faint);
-  border: 1px solid var(--border);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-hairline);
   border-radius: 999px;
   padding: 0.05rem 0.45rem;
   white-space: nowrap;
@@ -3176,9 +2908,9 @@ a.tcard:hover {
 .map-shell { margin-top: 0.9rem; }
 #place-map {
   height: 20rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: 6px;
-  background: var(--bg);
+  background: var(--surface-page);
 }
 .map-actions {
   display: flex;
@@ -3203,13 +2935,13 @@ a.tcard:hover {
 
 /* Leaflet paints its own controls and popups; keep them inside the palette
    rather than letting the vendored stylesheet's defaults sit on the page. */
-.leaflet-container { font: inherit; background: var(--bg); }
+.leaflet-container { font: inherit; background: var(--surface-page); }
 .leaflet-bar a,
 .leaflet-control-attribution {
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--surface-raised);
+  color: var(--text-primary);
 }
-.leaflet-bar a { border-bottom-color: var(--border); }
+.leaflet-bar a { border-bottom-color: var(--border-hairline); }
 .leaflet-bar a:hover { background: var(--accent-soft); }
 .leaflet-control-attribution { font-size: var(--type-label); }
 .leaflet-control-attribution a { color: var(--accent); }
@@ -3219,26 +2951,35 @@ a.tcard:hover {
 .places-map-shell { margin: 0.75rem 0 1rem; }
 #places-map {
   height: 16rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--surface-page);
 }
 #places-map .leaflet-popup-content strong { display: block; margin-bottom: 0.2rem; }
 
 /* How much is behind a tab. Quiet: it is a hint about where to click, not a
    number anybody came to read. */
 .tab-count {
+  font-family: var(--mono);
   font-size: var(--type-label);
-  font-weight: var(--weight-medium);
-  color: var(--ink-faint);
-  margin-inline-start: 0.15rem;
+  font-weight: var(--weight-normal);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
 }
-.person-tab.is-current .tab-count { color: var(--ink-soft); }
+.person-tab.is-current .tab-count { color: var(--text-secondary); }
 
 /* A table fills its section edge to edge. The section already supplies the
    frame and the padding, and a table that keeps its own inset inside that
    reads as a block within a block that is not one. */
 .rec-section > .table-wrap { margin-inline: -1.3rem; width: calc(100% + 2.6rem); }
+/* On a narrow screen, or with large text, the bleed into the section's
+   padding pushed the table past the page's edge; it stays inside instead. */
+@media (max-width: 40em) {
+  .rec-section > .table-wrap { margin-inline: 0; width: 100%; }
+  /* On a phone a UUID wraps to five lines and tells a reader nothing: the
+     list keeps the name, and the record's own page keeps its identifier. */
+  .admin-table .rec-id { display: none; }
+}
 .rec-section > .table-wrap > table { font-size: var(--type-minor); }
 .rec-section > .table-wrap th:first-child,
 .rec-section > .table-wrap td:first-child { padding-inline-start: 1.3rem; }
@@ -3294,7 +3035,7 @@ a.tcard:hover {
 }
 .phys-item.is-series { display: block; }
 .phys-label {
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   font-size: var(--type-small);
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -3309,7 +3050,7 @@ a.tcard:hover {
   flex-direction: column;
   gap: 0.25rem;
   /* The rule sits on the leading edge and mirrors in RTL with the rest. */
-  border-inline-start: 2px solid var(--border);
+  border-inline-start: 2px solid var(--border-hairline);
   padding-inline-start: 0.7rem;
 }
 .phys-series li {
@@ -3320,21 +3061,21 @@ a.tcard:hover {
 }
 .phys-series .phys-when {
   font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
+  color: var(--text-secondary);
   min-width: 6.5rem;
 }
-.phys-item:not(.is-series) .phys-when { color: var(--ink-faint); }
+.phys-item:not(.is-series) .phys-when { color: var(--text-tertiary); }
 
 /* The editor: one table per field, a row per dated entry, a spare row at the
    end so adding one works with scripting off. */
 .phys-field { margin: 0 0 1rem; }
-.phys-field > legend { font-size: var(--type-minor); color: var(--ink-soft); padding-inline: 0.3rem; }
+.phys-field > legend { font-size: var(--type-minor); color: var(--text-secondary); padding-inline: 0.3rem; }
 .phys-rows { width: 100%; font-size: var(--type-minor); }
 .phys-rows th {
   font-size: var(--type-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--ink-faint);
+  color: var(--text-tertiary);
   text-align: start;
   font-weight: var(--weight-semi);
 }
@@ -3346,14 +3087,14 @@ a.tcard:hover {
      every other wide table in this file stacks. */
   .phys-rows thead { display: none; }
   .phys-rows, .phys-rows tbody, .phys-rows tr, .phys-rows td { display: block; width: 100%; }
-  .phys-rows tr { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem; margin-bottom: 0.5rem; }
+  .phys-rows tr { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 0.4rem; margin-bottom: 0.5rem; }
   .phys-rows td::before {
     content: attr(data-label);
     display: block;
     font-size: var(--type-label);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--ink-faint);
+    color: var(--text-tertiary);
   }
   .phys-label { min-width: 0; }
 }
@@ -3387,9 +3128,9 @@ a.tcard:hover {
   display: block;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 2px solid var(--border);
+  border: 2px solid var(--border-hairline);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--surface-page);
 }
 .avatar-option.is-chosen .avatar-frame { border-color: var(--accent); border-width: 3px; }
 .avatar-frame img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
@@ -3418,7 +3159,7 @@ a.tcard:hover {
    around the contents. The border cannot come from --section-border, which is
    all four sides; this is the one rule a style adds rather than retunes. */
 [data-style="paper"] .rec-section {
-  border-block-start: 1px solid var(--border);
+  border-block-start: 1px solid var(--border-hairline);
   padding-block-start: calc(var(--step) * 2);
 }
 [data-style="paper"] .rec-section:first-of-type { border-block-start: 0; }
@@ -3431,7 +3172,7 @@ a.tcard:hover {
   background: transparent;
   border-inline: 0;
   border-block-start: 0;
-  border-block-end: 1px solid var(--border);
+  border-block-end: 1px solid var(--border-hairline);
   border-radius: 0;
   padding-inline: 0;
 }
@@ -3451,16 +3192,16 @@ a.tcard:hover {
 }
 .profile-group-link {
   display: inline-flex; align-items: center; gap: 0.3rem;
-  padding: 0.28rem 0.6rem; border: 1px solid var(--border); border-radius: 999px;
-  color: var(--ink); text-decoration: none; font-size: var(--type-minor); line-height: 1.3;
-  background: var(--surface);
+  padding: 0.28rem 0.6rem; border: 1px solid var(--border-hairline); border-radius: 999px;
+  color: var(--text-primary); text-decoration: none; font-size: var(--type-minor); line-height: 1.3;
+  background: var(--surface-raised);
 }
 .profile-group-link:hover { border-color: var(--accent); }
 .profile-group-link.is-current {
   border-color: var(--accent); background: var(--accent); color: var(--on-accent);
 }
 .profile-group-link.is-current .tab-count { color: inherit; }
-.profile-group-link.is-empty:not(.is-current) { color: var(--ink-soft); }
+.profile-group-link.is-empty:not(.is-current) { color: var(--text-secondary); }
 /* A small padlock drawn with borders: a shape, not a colour, and named in
    words beside it for anybody who does not see it. */
 .pg-withheld {
@@ -3478,22 +3219,22 @@ a.tcard:hover {
 .profile-attrs { margin: 0.4rem 0 0; }
 .profile-attrs .pa {
   display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: 0.2rem 1rem;
-  padding: 0.55rem 0; border-top: 1px solid var(--border);
+  padding: 0.55rem 0; border-top: 1px solid var(--border-hairline);
 }
 .profile-attrs .pa:first-child { border-top: 0; }
-.profile-attrs dt { font-weight: var(--weight-semi); color: var(--ink); }
+.profile-attrs dt { font-weight: var(--weight-semi); color: var(--text-primary); }
 .profile-attrs dd { margin: 0; min-width: 0; }
 .profile-attrs .claims { margin: 0; padding: 0; list-style: none; }
 .profile-attrs .claims li + li { margin-top: 0.3rem; }
 .claim { display: inline; overflow-wrap: anywhere; }
 .claim > * + * { margin-inline-start: 0.35rem; }
-.claim-when { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.claim-when { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .claim-value { font-weight: var(--weight-medium); }
 .claim-parts { display: inline; }
-.claim-part + .claim-part::before { content: " · "; color: var(--ink-soft); }
-.claim-part-label { color: var(--ink-soft); }
+.claim-part + .claim-part::before { content: " · "; color: var(--text-secondary); }
+.claim-part-label { color: var(--text-secondary); }
 .claim-part-label::after { content: ":"; }
-.claim-period { color: var(--ink-soft); font-size: 0.9em; }
+.claim-period { color: var(--text-secondary); font-size: 0.9em; }
 .pa-class, .pa-earlier { vertical-align: 0.1em; }
 .profile-empty { margin-top: 0.5rem; }
 @media (max-width: 640px) {
@@ -3503,7 +3244,7 @@ a.tcard:hover {
 /* The editor. */
 .pf-attr { margin: 0 0 1rem; }
 .pf-attr > legend { font-weight: var(--weight-semi); }
-.pf-row { padding: 0.55rem 0 0.4rem; border-top: 1px dashed var(--border); }
+.pf-row { padding: 0.55rem 0 0.4rem; border-top: 1px dashed var(--border-hairline); }
 .pf-row:first-of-type { border-top: 0; }
 .pf-spare-note { margin: 0 0 0.25rem; }
 .pf-input { min-width: 0; }
@@ -3512,23 +3253,22 @@ a.tcard:hover {
 .pf-req { color: var(--danger); margin-inline-start: 0.15rem; }
 .pf-num { display: inline-flex; align-items: center; gap: 0.3rem; }
 .pf-num input { width: 8rem; }
-.pf-unit { color: var(--ink-soft); font-size: var(--type-minor); }
+.pf-unit { color: var(--text-secondary); font-size: var(--type-minor); }
 .pf-prov { margin-top: 0.35rem; }
 .pf-prov-grid { display: grid; gap: 0.6rem 1.2rem; margin-top: 0.35rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); }
 /* A date and its precision and circa flag, side by side and nowhere else. */
-.pf-date.ed-grid { grid-template-columns: minmax(7rem, 1fr) minmax(8rem, 1fr) auto; }
+.pf-date.ed-grid { grid-template-columns: minmax(11rem, 3fr) minmax(8rem, 2fr); }
 .pf-src.ed-grid { grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr); }
 .pf-note { grid-column: 1 / -1; }
 @media (max-width: 480px) {
   .pf-date.ed-grid { grid-template-columns: 1fr 1fr; }
-  .pf-date.ed-grid > label.inline { grid-column: 1 / -1; }
   .pf-src.ed-grid { grid-template-columns: 1fr; }
 }
-.pf-prov > summary { cursor: pointer; font-size: var(--type-minor); color: var(--ink-soft); }
+.pf-prov > summary { cursor: pointer; font-size: var(--type-minor); color: var(--text-secondary); }
 .pf-prov[open] > summary { margin-bottom: 0.3rem; }
 .pf-remove { margin-top: 0.3rem; font-size: var(--type-minor); }
-.pf-problems { margin: 0.2rem 0 0.4rem; padding-inline-start: 1.2rem; color: var(--ink); }
+.pf-problems { margin: 0.2rem 0 0.4rem; padding-inline-start: 1.2rem; color: var(--text-primary); }
 .pf-add { margin-top: 0.4rem; }
 
 /* ---------------------------------------------------------------------------
@@ -3581,53 +3321,20 @@ a.tcard:hover {
   padding: 0;
   list-style: none;
 }
-.rv-chip {
-  display: inline-flex;
-  align-items: center;
-  block-size: 26px;
-  padding-inline: 9px;
-  border: 1px solid var(--rv-rule-2);
-  border-radius: 2px;
-  color: var(--rv-text-2);
-  font-size: var(--type-rv-chip);
-  white-space: nowrap;
-  text-decoration: none;
-}
-.rv-chip[aria-current] { background: var(--rv-chip-on); color: var(--rv-text-1); border-color: var(--rv-rule-4); }
-.rv-btn {
-  display: inline-flex;
-  align-items: center;
+/* The river's controls are ordinary secondary buttons (B2) — `.river` sets
+   Study 06 on itself, so they draw on the river's ground under every theme.
+   What is left here is layout: the itinerary's chips, and the joined sets
+   whose current member is pressed. */
+.rv-chip { font-size: var(--type-rv-chip); }
+/* The range: one native select, the river's mono. */
+.rv-range { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; }
+.rv-range [hidden] { display: none; }
+.rv-range select {
+  inline-size: auto;
   block-size: 28px;
-  padding-inline: 10px;
-  background: transparent;
-  border: 1px solid var(--rv-rule-3);
-  border-radius: 2px;
-  color: var(--rv-text-1);
-  font-size: var(--type-rv-control);
-  text-decoration: none;
-  cursor: pointer;
-}
-.rv-btn:hover:not(:disabled) { background: var(--rv-ink-4); }
-.rv-btn:disabled { color: var(--rv-text-3); cursor: default; }
-.rv-seg { display: flex; border: 1px solid var(--rv-rule-3); border-radius: 2px; }
-.rv-seg > a, .rv-seg > button {
-  display: inline-flex;
-  align-items: center;
-  block-size: 28px;
-  padding-inline: 10px;
-  background: transparent;
-  border: 0;
-  color: var(--rv-text-2);
+  padding-inline: 0.5rem 0.25rem;
   font-family: var(--rv-mono);
   font-size: var(--type-rv-seg);
-  text-decoration: none;
-  cursor: pointer;
-}
-.rv-seg > [aria-current], .rv-seg > [aria-pressed="true"] { background: var(--rv-text-1); color: var(--rv-ink-0); }
-.river :is(a, button):focus-visible {
-  outline: none;
-  border-color: var(--rv-accent);
-  box-shadow: 0 0 0 1px var(--rv-accent);
 }
 /* The canvas is as tall as its drawing. Stretched to the record panel beside
    it, it pushed the legend away from the river it explains and put back, as
@@ -3635,6 +3342,28 @@ a.tcard:hover {
 .rv-canvas { flex: 0 0 auto; }
 .rv-canvas svg { display: block; }
 .rv-canvas .rv-p { cursor: pointer; }
+/* The drawing's inks. src/river.rs (and river.js, its port for frames in
+   motion) mark each non-water colour with a class; the colours themselves
+   are the river's palette in tokens.css. */
+.rv-svg .k-bg { fill: var(--rv-ink-1); }
+.rv-svg .k-halo { stroke: var(--rv-ink-1); }
+.rv-svg .k-band-odd { fill: var(--rv-band-odd); }
+.rv-svg .k-band-live { fill: var(--rv-band-live); }
+.rv-svg .k-band-rule { stroke: var(--rv-band-rule); }
+.rv-svg .k-band-text { fill: var(--rv-band-text); }
+.rv-svg .k-band-text-live { fill: var(--rv-band-text-live); }
+.rv-svg .k-data { fill: var(--rv-data); }
+.rv-svg .k-data-line { stroke: var(--rv-data); }
+.rv-svg .k-name { fill: var(--rv-name); }
+.rv-svg .k-centre { fill: var(--rv-centre); }
+.rv-svg .k-accent { fill: var(--rv-accent); }
+.rv-svg .k-accent-line { stroke: var(--rv-accent); }
+.rv-svg .k-glow { fill: var(--rv-glow); }
+.rv-svg .k-lit { stroke: var(--rv-lit); }
+.rv-svg .k-lit-fill { fill: var(--rv-lit); }
+/* The lit route and its label are drawn over the people: a second tap on a
+   person goes through them to the person, to travel there. */
+.rv-svg .rv-lit, .rv-svg .rv-hl { pointer-events: none; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
 .rv-legend {
   display: flex;
@@ -3678,9 +3407,9 @@ a.tcard:hover {
    with the theme's variables; here they are the river's, so the panel reads
    on the river's ground whichever theme the reader chose. */
 .rv-record {
-  --bg: var(--rv-ink-3); --surface: var(--rv-ink-3); --section-fill: var(--rv-ink-2);
-  --border: var(--rv-rule-2); --border-strong: var(--rv-rule-3);
-  --ink: var(--rv-text-1); --ink-soft: var(--rv-text-2); --ink-faint: var(--rv-text-3);
+  --surface-page: var(--rv-ink-3); --surface-raised: var(--rv-ink-3); --section-fill: var(--rv-ink-2);
+  --border-hairline: var(--rv-rule-2); --border-strong: var(--rv-rule-3);
+  --text-primary: var(--rv-text-1); --text-secondary: var(--rv-text-2); --text-tertiary: var(--rv-text-3);
   --accent: var(--rv-accent); --accent-soft: var(--rv-ink-4); --on-accent: var(--rv-ink-0);
   --conf-track: var(--rv-rule-2);
   --section-border: 1px solid var(--rv-rule-2);
@@ -3704,14 +3433,128 @@ a.tcard:hover {
 
 /* The masthead search and its suggestions. */
 .masthead-search { position: relative; margin-inline-start: 1rem; }
-.masthead-search input[type="search"] { inline-size: 14rem; max-inline-size: 40vw; }
+/* Its label is visible, beside the field, like every other field's. */
+.search-box { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.search-box > input[type="search"] { margin-top: 0; inline-size: 9rem; max-inline-size: 36vw; }
 .search-suggest {
   position: absolute; inset-inline-start: 0; inset-block-start: 100%; z-index: 20;
   min-inline-size: 100%; margin: 2px 0 0; padding: 4px 0; list-style: none;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+  background: var(--surface-raised); border: 1px solid var(--border-hairline); border-radius: 2px;
 }
 .search-suggest li { padding: 6px 10px; cursor: pointer; white-space: nowrap; }
 .search-suggest li[aria-selected="true"], .search-suggest li:hover { background: var(--accent-soft); }
-.search-suggest .search-years { opacity: .7; font-size: .85em; }
+.search-suggest .search-years { color: var(--text-tertiary); font-family: var(--mono); font-size: var(--type-small); }
+.search-suggest li { display: flex; align-items: center; gap: 0.5rem; }
+/* The discharge class, drawn as the river draws it: a line as thick as the
+   person's recorded descendants make it, 1 · 2–5 · 6–20 · 21–80 · 81+. */
+.search-class {
+  flex: none;
+  display: inline-block;
+  block-size: 14px;
+  background: var(--text-secondary);
+  border-radius: 1px;
+}
+.search-class[data-class="1"] { inline-size: 2px; }
+.search-class[data-class="2"] { inline-size: 3px; }
+.search-class[data-class="3"] { inline-size: 5px; }
+.search-class[data-class="4"] { inline-size: 8px; }
+.search-class[data-class="5"] { inline-size: 12px; }
+.search-suggest li.search-foot {
+  cursor: default;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-hairline);
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  color: var(--text-tertiary);
+}
+.search-suggest li.search-foot:hover { background: none; }
 .search-results { list-style: none; padding: 0; }
-.search-results li { padding: 6px 0; border-block-end: 1px solid var(--border); }
+.search-results li { padding: 6px 0; border-block-end: 1px solid var(--border-hairline); }
+
+/* ---------------------------------------------------------------------------
+   Administration tables (Study 06, B6)
+   ---------------------------------------------------------------------------
+   Rows separated by hairlines, no zebra; identifiers and numbers in mono. A
+   selected row tints the surface and gains no coloured edge. While rows are
+   selected the bulk bar takes over the header row (ui.js); without scripts
+   both rows show. The filiation column draws a record's parent–child links in
+   the river's own line styles: solid attested, dashed inferred, dotted
+   speculative. */
+.admin-table tbody tr { background: transparent; }
+.admin-table tbody td { border-bottom: 1px solid var(--border-hairline); }
+.admin-table .sel { inline-size: 1%; padding-inline-end: 0; }
+.admin-table .sel input { margin: 0; }
+.admin-table tbody tr:has(> .sel input:checked) { background: var(--surface-hover); }
+.bulk-inner { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.bulk-count { font-family: var(--mono); font-size: var(--type-small); color: var(--text-primary); text-transform: none; letter-spacing: normal; }
+.bulk-esc { margin-inline-start: auto; font-family: var(--mono); font-size: var(--type-label); color: var(--text-tertiary); text-transform: none; letter-spacing: normal; font-weight: var(--weight-normal); }
+.bulk-bar[hidden], .bulk-head[hidden] { display: none; }
+.filiation { white-space: nowrap; }
+.fil {
+  display: inline-block;
+  inline-size: 26px;
+  block-size: 0;
+  vertical-align: middle;
+  margin-inline-end: 4px;
+  border-top: 2px solid var(--text-secondary);
+}
+.fil-d { border-top-style: dashed; }
+.fil-s { border-top-style: dotted; border-top-width: 3px; }
+.pager-range { font-family: var(--mono); font-size: var(--type-small); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.bulk-list { list-style: none; padding: 0; margin: 1rem 0; }
+.bulk-list li { padding: 0.45rem 0; border-bottom: 1px solid var(--border-hairline); }
+
+/* The quality page's filters: two selects and the downloads, on one row. */
+.quality-filter { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.quality-filter [hidden] { display: none; }
+.quality-filter select { inline-size: auto; }
+.quality-downloads { position: relative; }
+.quality-downloads > summary { cursor: pointer; padding-block: 0.4rem; color: var(--text-secondary); }
+
+/* A short list of actions behind one disclosure (the dashboard's create and
+   export). */
+.menu-disclosure { position: relative; display: inline-block; margin: 0.25rem 0; }
+.menu-disclosure > summary { cursor: pointer; }
+.menu-disclosure > summary::marker { color: var(--text-tertiary); }
+.menu-disclosure[open] > .menu-panel { position: static; margin-top: 0.4rem; }
+
+/* Edit mode's record rows (the minimalism pass): each record is one line
+   that opens to its form; adding is one disclosure. */
+.record-list { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+.record-edit, .add-record, .more-fields, .raw-fieldset, .danger-zone {
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  padding: 0.6rem 0.9rem;
+}
+.record-edit > summary, .add-record > summary, .more-fields > summary,
+.raw-fieldset > summary, .danger-zone > summary { cursor: pointer; font-weight: var(--weight-medium); }
+.record-edit[open] > summary, .add-record[open] > summary, .more-fields[open] > summary,
+.raw-fieldset[open] > summary, .danger-zone[open] > summary { margin-bottom: 0.6rem; }
+.danger-zone > summary { color: var(--danger); }
+
+/* Edit mode (the minimalism pass): a band under the masthead that says so,
+   with the accent's rule under it, so nobody mistakes a form for the record.
+   Not a tinted page: a 6% tint took tertiary text to 4.47:1 and control
+   edges to 2.99:1 on the dark ground — under WCAG — so the band carries it. */
+.edit-band {
+  padding: 0.45rem 1.25rem;
+  background: var(--surface-raised);
+  border-block-end: 2px solid var(--accent);
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+/* A finger, not a pointer (the minimalism pass, ADR 0002 §5): on a touch
+   screen every button and field reaches 44 CSS px, the target WCAG 2.5.5
+   asks for. The river's people are reached by the nearest-person tap. */
+@media (pointer: coarse) {
+  .btn, .btn.small,
+  input[type="text"], input[type="password"], input[type="email"],
+  input[type="search"], input[type="number"], input[type="url"],
+  select, summary { min-block-size: 44px; }
+  input[type="checkbox"], input[type="radio"] { inline-size: 24px; block-size: 24px; }
+}

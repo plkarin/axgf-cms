@@ -32,10 +32,12 @@ async fn home_states_what_the_family_has_recorded_not_what_the_product_does() {
         );
     }
 
-    // What the family has is still stated, and so is the way in.
+    // What the family has is still stated — here, that it has nothing yet:
+    // no heading over a row of zeros, and not one "0" tile.
+    assert!(body.contains("Nothing recorded yet."));
     assert!(
-        body.contains("What the family has recorded so far"),
-        "the counts keep their heading"
+        !body.contains("What the family has recorded so far") && !body.contains(r#"class="stat"#),
+        "no counts of nothing"
     );
     assert!(
         body.contains("/tree"),
@@ -142,8 +144,10 @@ async fn the_tree_defaults_to_a_focused_subtree_with_controls() {
     );
     assert!(body.contains(r#"name="root""#));
     assert!(body.contains(r#"name="depth""#));
+    // The whole family is the depth select's last choice (the minimalism
+    // pass made the tree's controls one select).
     assert!(
-        body.contains("/tree?all=1"),
+        body.contains(r#"<option value="0" >"#) || body.contains(r#"<option value="0">"#),
         "the full view stays reachable from the focused one"
     );
     // A card click opens the record in the side panel; re-centring is now an
@@ -180,8 +184,10 @@ async fn an_explicit_root_and_depth_are_honoured() {
     )
     .await;
     assert!(
-        body.contains(&format!("value=\"{id}\" selected")),
-        "the picker should show the requested root"
+        body.contains(&format!(
+            r#"<input type="hidden" name="root" value="{id}">"#
+        )),
+        "the requested root travels with the depth control"
     );
     assert!(body.contains("1 generations each way") || body.contains(">1</option>"));
     assert!(body.contains("is-root"), "the root card is marked");
@@ -208,8 +214,8 @@ async fn the_full_view_warns_about_its_width() {
     let body = expect_status(get(&app, "/tree?all=1").await, StatusCode::OK, "GET all").await;
     assert!(body.contains("The whole tree"));
     assert!(
-        body.contains("Back to the focused view"),
-        "a way back to the default"
+        body.contains(r#"<option value="0" selected>"#) && body.contains(r#"<option value="1""#),
+        "the whole family is the chosen depth, and a number is the way back"
     );
     // The sample is small, so the width warning is suppressed; on a big bundle
     // it appears. Either way the full view must not claim to be focused.
@@ -483,128 +489,85 @@ async fn an_error_page_carries_no_stray_button() {
     );
 }
 
-/// The preferences are three tabs, and each shows only its own choices.
-///
-/// They used to be four forms stacked inside one `<details>` in the masthead:
-/// eleven languages, eight themes, three styles and a checkbox, twenty-three
-/// controls behind one chevron. A reader after any one of them read past the
-/// rest.
-#[tokio::test]
-async fn the_settings_are_three_tabs_and_a_tab_shows_only_its_own_choices() {
-    let (app, _p) = app_with_empty_bundle("settings-tabs");
+/// The settings page's own content: the masthead carries a language select
+/// on every page, this one included, and it is not the page's.
+fn panel(page: &str) -> &str {
+    let start = page.find("<main").expect("a main element");
+    let end = page[start..].find("</main>").expect("its end") + start;
+    &page[start..end]
+}
 
-    let theme = expect_status(
+/// The preferences are one form: four choices and one button.
+///
+/// They were three tabs holding twenty-two radio buttons and three buttons,
+/// which put a visitor in front of a configuration screen to choose a colour
+/// (the minimalism pass). Each list is a select now.
+#[tokio::test]
+async fn the_settings_are_one_form_of_five_choices() {
+    let (app, _p) = app_with_empty_bundle("settings-one-form");
+    let page = expect_status(
         get(&app, "/settings").await,
         StatusCode::OK,
         "GET /settings",
     )
     .await;
-    // The default tab is the theme, and it carries the themes.
-    assert!(
-        theme.contains(r#"name="theme""#),
-        "the theme choices: {theme}"
-    );
-    // And nothing else's.
-    assert!(
-        !theme.contains(r#"name="lang""#) && !theme.contains(r#"name="style""#),
-        "the theme tab carries only themes"
-    );
-
-    let lang = expect_status(
-        get(&app, "/settings?tab=language").await,
-        StatusCode::OK,
-        "GET /settings?tab=language",
-    )
-    .await;
-    assert!(lang.contains(r#"name="lang""#), "the languages: {lang}");
-    assert!(
-        !lang.contains(r#"name="theme""#) && !lang.contains(r#"name="style""#),
-        "the language tab carries only languages"
-    );
-    // The coverage labelling is the honest part and it stays: two reviewed,
-    // nine complete but unreviewed.
-    assert_eq!(
-        lang.matches(r#"badge reviewed">"#).count(),
-        2,
-        "two catalogues are reviewed by a person: {lang}"
-    );
-    assert_eq!(
-        lang.matches("complete, not yet reviewed").count(),
-        9,
-        "and nine are complete without review"
-    );
-
-    let appearance = expect_status(
-        get(&app, "/settings?tab=appearance").await,
-        StatusCode::OK,
-        "GET /settings?tab=appearance",
-    )
-    .await;
-    // Density and the wash: two geometries, no colour between them.
-    assert!(
-        appearance.contains(r#"name="style""#) && appearance.contains(r#"name="wash""#),
-        "the appearance tab: {appearance}"
-    );
-    assert!(
-        !appearance.contains(r#"name="theme""#) && !appearance.contains(r#"name="lang""#),
-        "and nothing about colour or language"
-    );
-
-    // Each is a real URL with a real current-tab marker, not a panel behind a
-    // script. Nothing on the page opens anything.
-    for page in [&theme, &lang, &appearance] {
+    let main = panel(&page);
+    assert_eq!(main.matches("<form").count(), 1, "one form: {main}");
+    assert!(main.contains(r#"action="/prefs""#));
+    for name in ["theme", "lang", "style", "motion"] {
         assert!(
-            page.contains(r#"aria-current="page""#),
-            "the open tab is named"
-        );
-        assert_eq!(
-            page.matches("<details").count(),
-            0,
-            "the settings open nothing: {page}"
+            main.contains(&format!(r#"<select name="{name}">"#)),
+            "{name}: {main}"
         );
     }
+    assert!(main.contains(r#"name="wash""#));
+    assert!(
+        !main.contains(r#"type="radio""#),
+        "no lists of radio buttons"
+    );
+    assert_eq!(main.matches("<button").count(), 1, "one button");
+    // Every theme and every language is still offered.
+    assert_eq!(
+        main.matches("<option").count(),
+        8 + 11 + 3 + 2,
+        "themes, languages, densities, motion"
+    );
 
-    // An unknown tab is the theme rather than a 404: the thing the reader
-    // wanted is right there behind it.
-    let stale = expect_status(
-        get(&app, "/settings?tab=nonsense").await,
-        StatusCode::OK,
-        "a stale tab",
+    // And applying sets all four, as the separate endpoints did.
+    let resp = post_form(
+        &app,
+        "/prefs",
+        "theme=sepia&lang=pl&style=compact&wash=on&back=%2Fsettings",
+        false,
     )
     .await;
-    assert!(
-        stale.contains(r#"name="theme""#),
-        "a stale link lands on the theme"
-    );
-}
-
-/// The masthead links to the settings and carries the way back.
-#[tokio::test]
-async fn the_masthead_offers_the_settings_and_remembers_the_page() {
-    let (app, _p) = app_with_empty_bundle("settings-entry");
-    let tree = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
-    assert!(
-        tree.contains(r#"href="&#x2f;settings?from=&#x2f;tree""#),
-        "the masthead carries the way in and the way back: {tree}"
-    );
-
-    // And the settings offer the way out again.
-    let page = expect_status(
-        get(&app, "/settings?from=%2Ftree").await,
-        StatusCode::OK,
-        "settings from the tree",
+    assert!(resp.status().is_redirection());
+    let cookies: Vec<String> = resp
+        .headers()
+        .get_all(axum::http::header::SET_COOKIE)
+        .iter()
+        .map(|v| v.to_str().unwrap().to_string())
+        .collect();
+    for want in [
+        "axgf_theme=sepia",
+        "axgf_lang=pl",
+        "axgf_style=compact",
+        "axgf_wash=on",
+    ] {
+        assert!(
+            cookies.iter().any(|c| c.starts_with(want)),
+            "{want}: {cookies:?}"
+        );
+    }
+    // A theme that is not on the menu is refused, as on its own endpoint.
+    let bad = post_form(
+        &app,
+        "/prefs",
+        "theme=chartreuse&lang=pl&style=compact",
+        false,
     )
     .await;
-    assert!(
-        page.contains(r#"href="&#x2f;tree""#),
-        "the way back: {page}"
-    );
-    // Applying a choice returns the reader here, on this tab, rather than to
-    // the page they came from — so the choice is visible once it is made.
-    assert!(
-        page.contains(r#"value="&#x2f;settings?tab=theme&amp;from=&#x2f;tree""#),
-        "a form returns to this tab: {page}"
-    );
+    assert_eq!(bad.status(), StatusCode::BAD_REQUEST);
 }
 
 /// An off-site `from` is not a redirect this application will perform.

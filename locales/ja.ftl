@@ -30,12 +30,16 @@ nav-convert = 取り込み
 nav-admin = 管理
 nav-sign-in = ログイン
 nav-sign-out = ログアウト
+account-emergency = 緊急トークン
 footer-open-format = ご家族のアーカイブは、手元に残る一つのファイルです。公開された形式で書かれているため、このサイトがなくなったあとも長く開くことができます。
 footer-open-format-link = 形式について
 
 ## 設定
 
 settings-title = 設定
+edit-mode-label = 編集中 — 保存した内容は家族の記録を変更します
+display-menu-label = 言語と表示
+display-settings = テーマと表示…
 settings-tabs-label = 設定の節
 settings-tab-theme = 配色
 settings-tab-language = 言語
@@ -46,6 +50,8 @@ prefs-theme = 配色
 prefs-background = 背景
 prefs-background-on = ページの背後にごく淡い色のぼかしを敷く
 prefs-apply = 適用
+busy-saving = 保存中…
+busy-working = 処理中…
 prefs-reviewed = 校閲済み
 prefs-machine = 機械翻訳、{ $coverage }%
 prefs-machine-complete = 全項目訳出、未校閲
@@ -61,6 +67,8 @@ theme-protanopia = 第一色覚
 theme-tritanopia = 第三色覚
 theme-colour-blind-note = 色覚に配慮
 theme-contrast-note = 最大コントラスト
+theme-dark-note = 既定
+theme-river-note = 川はどのテーマでも暗いままです。色が暗い背景に合わせて作られているためです。
 
 ## 家系図
 
@@ -68,7 +76,6 @@ tree-title-around = { $name }の周辺
 tree-title-whole = 家系図の全体
 tree-lede-focused = 祖先{ $ancestors }名、子孫{ $descendants }名、配偶者・伴侶{ $spouses }名、各方向{ $depth }世代。
 tree-filter-label = 表示中のカードを絞り込む
-tree-filter-placeholder = 名前を入力…
 tree-centre-on = 中心にする人
 tree-depth = 各方向の世代数
 tree-show = 表示
@@ -148,6 +155,10 @@ error-not-found-title = 見つかりません
 error-not-found-detail = そのページはここにはありません。
 error-no-such-person-title = 該当する人がいません
 error-no-such-person-detail = その識別子を持つ人はここにいません。
+error-merged-title = この記録はもうありません。
+error-merged-detail = { $date }に{ $name }へ統合されました。古いアドレスへのリンクは、統合された記録に通じます。
+error-merged-open = 統合された記録を開く
+error-back-to-river = 川に戻る
 error-no-such-entity-title = 該当するものがありません
 error-no-such-entity-detail = その識別子を持つ記録はここにありません。
 error-deleted-while-editing = その識別子を持つ記録はここにありません。編集中に削除された可能性があります。
@@ -199,6 +210,7 @@ admin-bundle-heavy = このアーカイブは{ $size }です。起動時に全�
 
 admin-fields = 項目
 admin-raw-json = 生の JSON
+form-more-fields = ほかの項目 { $n }件
 admin-raw-json-help = 記録の全体です。編集できないものは何もありません。家族の配偶者や子どもの一覧、場所の国境変遷といった配列はここにあります。これが出発点の文書で、上の各項目はそのあと自分の担当する場所へ書き込まれます。ですから値の編集はどちらか一方で行い、両方では行わないでください。JSON として解釈できなければ何も保存されません。
 admin-save = 保存
 admin-cancel = 取消
@@ -275,8 +287,8 @@ place-map-clear = 点を消す
 place-open-in-map = この地名を OpenStreetMap で探し、リンクを貼り戻す
 
 person-tab-record = 記録
-person-tab-life = 生涯
-person-tab-media = 資料
+person-tab-life = 出来事
+person-tab-media = メディア
 person-tab-tree = 系図
 person-tab-history = 履歴
 person-tree-depth = 上下それぞれ { $n } 世代。系図の全体は下にあります。
@@ -288,6 +300,20 @@ admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集
 admin-page-of = { $pages }ページ中{ $page }ページ目
+list-select-row = { $name }を選択
+list-kind-label = 種類
+list-select-page = このページの行をすべて選択
+list-selected = { $n }件選択
+list-export = 書き出す
+list-escape = Escで選択を解除
+bulk-confirm-title = { $n }件の記録を削除しますか？
+bulk-confirm-detail = ほかの記録からまだ参照されている記録は拒否され、その場合は何も削除されません。
+bulk-confirm-go = 削除する
+bulk-deleted = { $n }件の記録を削除しました。
+bulk-refused = 何も削除されていません。{ $name }はまだほかの場所から参照されています。先にその参照を外してから、もう一度お試しください。
+bulk-changed = 一覧を表示した後に{ $n }件の記録が変更されたため、何も削除されていません。一覧を再読み込みして、もう一度お試しください。
+admin-range = { $total }件中 { $from }–{ $to }
+list-filiation = 親子関係
 admin-previous = 前へ
 admin-next = 次へ
 admin-saved = 版{ $version }として保存しました — { $summary }
@@ -486,6 +512,7 @@ record-see-in-tree-title = この人を中心にカード一覧を開く
 record-open-full-page = 単独のページで開く ↗
 record-open-full-title = 共有できる単独のページを開く
 record-edit = 編集
+record-see-in-river = 川で見る
 panel-empty = カードを選ぶと、その人の記録の全体がここに表示されます。
 person-see-in-tree = この人を家系図で見る
 person-visibility-inline = 公開範囲:
@@ -549,7 +576,6 @@ record-verbatim-note = どの変換器も解釈できなかったため、記録
 record-file-to-attach = 添付するファイル
 record-document-type = 資料の種別
 record-caption = 説明
-record-caption-placeholder = 説明（任意）
 record-history-entry-meta = — { $at }
 record-history-entry-version = 、{ $version }
 
@@ -884,7 +910,6 @@ identity-living-help = これは出典が設定した印です。ページは出
 identity-error-no-display = 記録には表示するための名前が必要です。何も保存していません。
 editor-blank-to-remove = 名前を空にするとこの項目を削除します。
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = ja
 identity-edit-link = 名前と身元を編集
 
 ## Union types, statuses and date precision, said out loud
@@ -2661,6 +2686,7 @@ diff-section-ocr = 認識したテキスト
 diff-section-format-version = 形式のバージョン
 history-created = が作成
 history-deleted = が削除
+history-merged = が別の記録に統合
 history-attached = がファイルを添付
 admin-raw-json-unparsed = 生の JSON を読み取れませんでした（{ $error }）。何も保存されていません。
 admin-raw-json-dangling = 生の JSON の { $field } が { $target } を指していますが、このアーカイブにはありません。上の欄で選ぶか、ID を訂正してください。何も保存されていません。
@@ -2948,12 +2974,15 @@ river-legend-title = 流れの読み方
 
 # Masthead search
 search-label = 人物を検索
-search-placeholder = 人物を検索
+search-short = 人物
+date-qualifier = 修飾
+date-qualifier-circa = 頃
 search-title = 検索
 search-heading = 「{ $q }」に一致する人物
 search-none = 表示できる人の中に、その名前の人はいません。
 search-open-record = 記録を開く
 search-hint = Enter でその人まで川を移動し、Shift+Enter で記録を開きます。
+search-summary = { $n }人 · ↵ 移動 · ⇧↵ 記録を開く
 search-empty-query = 検索する名前を入力してください。
 
 # Data quality (/quality)
@@ -2963,6 +2992,9 @@ quality-none = 確認すべき点はありません。すべての検査に合�
 quality-intro = ここでは何も自動的に変更されません。各行は確認する価値のあるケースで、たいていはもっともな理由があります。記録を開いて判断するか、確認済みにしてください。
 quality-groups-label = 指摘の種類
 quality-all = すべて
+quality-show-label = 表示
+quality-show-open-option = 確認待ち
+quality-download = ダウンロード
 quality-group-names = 名前
 quality-group-relations = 家族関係
 quality-group-dates = 日付

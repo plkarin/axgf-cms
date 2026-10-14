@@ -36,8 +36,9 @@
 <section class="rec-section">
 <h2>{{ t("admin-entities") }}</h2>
 <div class="grid cols-4">
-  {% for c in counts %}
-  <a class="stat {% if c.n == 0 %}zero{% endif %}" href="/admin/{{ c.singular }}"
+  {#- None of a kind: no tile (creating the first is under Create). -#}
+  {% for c in counts if c.n %}
+  <a class="stat" href="/admin/{{ c.singular }}"
      style="text-decoration:none;color:inherit;display:block">
     <div class="n">{{ c.n }}</div>
     <div class="k">{{ t("kind-" ~ c.singular ~ "-plural", n=c.n) }}</div>
@@ -46,11 +47,14 @@
 </div>
 </section>
 
+{#- Creating: one disclosure holding the eight kinds (the minimalism pass). -#}
 <section class="rec-section">
-<h2>{{ t("admin-create") }}</h2>
-<div class="cta-row">
-  {% for k in kinds %}<a class="btn" href="/admin/{{ k }}/new">{{ t("admin-new-kind", kind=t("kind-" ~ k)) }}</a>{% endfor %}
-</div>
+<details class="menu-disclosure">
+  <summary>{{ t("admin-create") }}</summary>
+  <div class="menu-panel">
+  {% for k in kinds %}<a href="/admin/{{ k }}/new">{{ t("admin-new-kind", kind=t("kind-" ~ k)) }}</a>{% endfor %}
+  </div>
+</details>
 </section>
 
 <section class="rec-section">
@@ -63,12 +67,15 @@
         data-confirm="{{ t("admin-dedup-confirm") }}">
     <button class="btn" type="submit">{{ t("admin-deduplicate") }}</button>
   </form>
-  {# The plain "Export" is the shareable one, carries no sensitive class, and
-     is first: it is what a tired operator clicks. #}
-  <a class="btn" href="/admin/export">{{ t("admin-export") }}</a>
   <a class="btn" href="/admin/users">{{ t("admin-accounts") }}</a>
 </div>
 <p class="small muted">{{ t("admin-roles-note") }}</p>
+
+{#- Exporting: one disclosure. The plain export, which carries no sensitive
+    class, is first inside it: it is what a tired operator clicks. -#}
+<details class="menu-disclosure export-disclosure">
+<summary>{{ t("admin-export") }}</summary>
+<p><a class="btn" href="/admin/export">{{ t("admin-export") }}</a></p>
 
 {# Each class chosen on its own, because who a file is for decides which of
    them it may carry — a cousin researching a hereditary condition may be sent
@@ -88,6 +95,7 @@
   <button class="btn" type="submit">{{ t("admin-export-with-chosen") }}</button>
 </form>
 <p class="small muted">{{ t("admin-export-health-note") }}</p>
+</details>
 </section>
 
 {{ comp.completeness_panel(completeness, t,
@@ -101,7 +109,7 @@
         path=journal_path) }}
   {% if live_sessions %}{{ t("admin-sessions-open", n=live_sessions) }}{% endif %}
 </p>
-<ol class="history">
+<ol class="history" data-content>
   {% for e in recent_edits %}
   <li>
     <strong>{{ e.who }}</strong> {{ e.summary }} {{ t("admin-history-on") }}

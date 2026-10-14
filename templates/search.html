@@ -11,7 +11,7 @@
 <p class="muted">{{ t("search-empty-query") }}</p>
 {% elif hits %}
 <p class="muted">{{ t("search-heading", q=q) }}</p>
-<ul class="search-results">
+<ul class="search-results" data-content>
   {%- for h in hits %}
   <li>
     <a href="/?p={{ h.id }}">{{ h.name }}</a>

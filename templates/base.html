@@ -3,7 +3,7 @@
    request negotiated. Doing it in a script after load would guarantee a flash
    of the wrong theme on every page, and would flip Arabic from left to right
    in front of the reader. #}
-<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %}
+<html lang="{{ lang }}" dir="{{ dir }}"{% if theme %} data-theme="{{ theme }}"{% endif %} data-mode="{{ 'edit' if nav == 'admin' else 'read' }}"
       data-style="{{ style }}" data-wash="{{ "on" if wash else "off" }}"{% if nav %} data-route="{{ nav }}"{% endif %}
       {#- `data-route` is the *navigation* group, not the page: the person page
           and the tree page share "tree" because they share a nav item, so it
@@ -14,6 +14,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ t("app-name") }}{% endblock %}</title>
+<link rel="stylesheet" href="/static/css/tokens.css">
 <link rel="stylesheet" href="/static/app.css">
 {# Only the pages that need it pull the map stylesheet in, so an ordinary page
    still costs exactly one CSS request. #}
@@ -28,7 +29,9 @@
         proper noun, so every catalogue carries the same value and a test says
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
-    <a class="brand" href="/">{{ t("app-name") }}</a>
+    {#- Not a link: "Rivière" beside it goes to the same place, and a
+        masthead holds seven controls at most (the minimalism pass). -#}
+    <span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
@@ -39,34 +42,49 @@
         works with scripting off; ui.js adds suggestions, where Enter travels
         the river to the person and Shift+Enter opens their record. -#}
     <form class="masthead-search" role="search" method="get" action="/search">
+      <label class="search-box" for="masthead-q"><span class="search-box-label">{{ t('search-short') }}</span>
       <input type="search" name="q" id="masthead-q" autocomplete="off"
-             aria-label="{{ t('search-label') }}" placeholder="{{ t('search-placeholder') }}"
+             aria-label="{{ t('search-label') }}"
              aria-describedby="masthead-q-hint" aria-controls="masthead-q-list" aria-expanded="false"
-             data-search>
+             data-search></label>
       <span id="masthead-q-hint" class="sr-only">{{ t("search-hint") }}</span>
       <ul id="masthead-q-list" class="search-suggest" role="listbox" hidden></ul>
     </form>
     <span class="spacer"></span>
+    {#- Seven controls, signed in or not: four sections, the search, the
+        display menu, and either "sign in" or the account menu. What used to
+        sit here beside them — the language select, quality, administration,
+        settings — opens from one of the two menus. -#}
     <nav class="chrome-nav">
-      {#- The way in to the preferences, not the preferences themselves. It
-          names the language it is currently in, so the reader can see the
-          setting without opening anything, and carries where they are so the
-          settings page can offer the way back. -#}
-      {{ prefs.link(t, settings_url, current_locale) }}
+      <details class="display-menu">
+        <summary aria-label="{{ t('display-menu-label') }}">{{ current_locale.code }}</summary>
+        <div class="menu-panel">
+          {{ prefs.language(t, locales, current_locale, back) }}
+          <a href="{{ settings_url }}">{{ t("display-settings") }}</a>
+        </div>
+      </details>
       {% if signed_in %}
-        <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
-        {% if may_write %}
-          <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
-        {% endif %}
-        <form method="post" action="/admin/logout" style="display:inline">
-          <button class="btn btn-compact">{{ t("nav-sign-out") }}</button>
-        </form>
+        <details class="account">
+          <summary><span class="initials" aria-hidden="true">{{ viewer_initials }}</span><span class="account-name">{{ viewer_name }}</span></summary>
+          <div class="menu-panel">
+            <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
+            {% if may_write %}
+            <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>
+            {% endif %}
+            <form method="post" action="/admin/logout">
+              <button class="btn ghost" type="submit">{{ t("nav-sign-out") }}</button>
+            </form>
+          </div>
+        </details>
       {% else %}
-        <a href="/admin/login">{{ t("nav-sign-in") }}</a>
+        <a class="btn" href="/admin/login">{{ t("nav-sign-in") }}</a>
       {% endif %}
     </nav>
   </div>
 </header>
+{#- Editing looks different from reading (the minimalism pass): a band that
+    says so, under an accent rule. A statement, not a control. -#}
+{% if nav == "admin" %}<div class="edit-band" role="note">{{ t("edit-mode-label") }}</div>{% endif %}
 
 <main class="{% block main_class %}{% endblock %}">
 {% block content %}{% endblock %}
@@ -76,8 +94,10 @@
   {# The acknowledgement the licence asks for, kept to one line: honest about
      what the archive is written in, without turning the footer into a
      developer index. #}
+  {#- Plain text, not a link: the acknowledgement is the words, and a link here
+      was one more control on every page (the minimalism pass). -#}
   <p class="small">{{ t("footer-open-format") }}
-    <a href="https://github.com/plkarin/axgf-spec">{{ t("footer-open-format-link") }}</a></p>
+    {{ t("footer-open-format-link") }} <span class="mono">{{ spec_url | safe }}</span></p>
 </footer>
 
 {# Loaded on every page: it is 1 kB and it is what lets the

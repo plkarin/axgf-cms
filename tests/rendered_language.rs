@@ -40,6 +40,8 @@ const LINK: &str = "efefefef-9999-4999-8999-999999999999";
 /// Words that are the same in every language this application speaks, or
 /// that name a thing rather than describe it.
 const UNIVERSAL: &[&str] = &[
+    // The name printed on the key, the same on every keyboard.
+    "Esc",
     "AXGF",
     "JSON",
     "UUID",
@@ -240,6 +242,10 @@ fn english_in(html: &str) -> Vec<String> {
     for tag in ["script", "style", "textarea", "code", "pre", "datalist"] {
         text = strip_elements(&text, tag);
     }
+    // A language named in itself: an option that declares its own `lang`
+    // ("Français", "Polski") is in that language on purpose, the way a
+    // screen reader switches voice for it.
+    text = strip_lang_options(&text);
     let mut spoken = Vec::new();
     // What a screen reader says or a tooltip shows is read too.
     for attr in ["title", "aria-label", "placeholder", "alt"] {
@@ -357,6 +363,26 @@ fn strip_elements(s: &str, tag: &str) -> String {
             None => {
                 rest = "";
             }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Remove every `<option …>` that carries a `lang` attribute.
+fn strip_lang_options(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut rest = s;
+    while let Some(i) = rest.find("<option") {
+        let tag_end = rest[i..].find('>').map_or(rest.len(), |j| i + j);
+        if rest[i..tag_end].contains(" lang=\"") {
+            out.push_str(&rest[..i]);
+            rest = rest[i..]
+                .find("</option>")
+                .map_or("", |j| &rest[i + j + 9..]);
+        } else {
+            out.push_str(&rest[..tag_end]);
+            rest = &rest[tag_end..];
         }
     }
     out.push_str(rest);

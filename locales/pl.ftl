@@ -29,12 +29,16 @@ nav-convert = Import
 nav-admin = Administracja
 nav-sign-in = Zaloguj się
 nav-sign-out = Wyloguj się
+account-emergency = Token awaryjny
 footer-open-format = Archiwum Twojej rodziny to jeden plik, który zostaje u Ciebie, zapisany w otwartym formacie — otworzysz go długo po tym, jak ta strona zniknie.
 footer-open-format-link = O formacie
 
 ## Ustawienia
 
 settings-title = Ustawienia
+edit-mode-label = Edycja — to, co zapiszesz, zmienia karty rodziny
+display-menu-label = Język i wygląd
+display-settings = Motyw i wygląd…
 settings-tabs-label = Sekcje ustawień
 settings-tab-theme = Motyw
 settings-tab-language = Język
@@ -45,6 +49,8 @@ prefs-theme = Motyw
 prefs-background = Tło
 prefs-background-on = Delikatna poświata koloru za stroną
 prefs-apply = Zastosuj
+busy-saving = Zapisywanie…
+busy-working = Trwa…
 prefs-reviewed = przejrzane
 prefs-machine = maszynowe, { $coverage }%
 prefs-machine-complete = kompletne, jeszcze nieprzejrzane
@@ -60,6 +66,8 @@ theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
 theme-colour-blind-note = bezpieczny dla daltonistów
 theme-contrast-note = maksymalny kontrast
+theme-dark-note = domyślny
+theme-river-note = Rzeka pozostaje ciemna w każdym motywie: jej kolory są dobrane do ciemnego tła.
 
 ## Drzewo
 
@@ -82,7 +90,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } partnerów
     }, po { $depth } pokoleń w każdą stronę.
 tree-filter-label = Filtruj widoczne karty
-tree-filter-placeholder = Wpisz nazwisko…
 tree-centre-on = Wyśrodkuj na
 tree-depth = Pokoleń w każdą stronę
 tree-show = Pokaż
@@ -167,6 +174,10 @@ error-not-found-title = Nie znaleziono
 error-not-found-detail = Taka strona tu nie istnieje.
 error-no-such-person-title = Nie ma takiej osoby
 error-no-such-person-detail = Nie ma tutaj osoby o tym identyfikatorze.
+error-merged-title = Ta karta już nie istnieje.
+error-merged-detail = Została scalona z { $name } { $date }. Linki do starego adresu prowadzą teraz do scalonej karty.
+error-merged-open = Otwórz scaloną kartę
+error-back-to-river = Wróć do rzeki
 error-no-such-entity-title = Nie ma takiego obiektu
 error-no-such-entity-detail = Nie ma tutaj wpisu o tym identyfikatorze.
 error-deleted-while-editing = Nie ma tutaj wpisu o tym identyfikatorze. Mógł zostać usunięty, kiedy go edytowałeś.
@@ -233,6 +244,12 @@ admin-bundle-heavy = To archiwum waży { $size }. Całość jest wczytywana przy
 
 admin-fields = Pola
 admin-raw-json = Surowy JSON
+form-more-fields = { $n ->
+        [one] Jeszcze jedno pole
+        [few] Jeszcze { $n } pola
+        [many] Jeszcze { $n } pól
+       *[other] Jeszcze { $n } pola
+    }
 admin-raw-json-help = Cały obiekt, więc nic nie jest nieedytowalne — listy takie jak partnerzy i dzieci rodziny albo historia granic miejsca żyją właśnie tu. To dokument wyjściowy; pola powyżej są następnie zapisywane po ścieżkach, które posiadają, więc edytuj wartość albo w jednym miejscu, albo w drugim, nie w obu. Musi się parsować jako JSON, inaczej nic nie zostanie zapisane.
 admin-save = Zapisz
 admin-cancel = Anuluj
@@ -314,8 +331,8 @@ place-map-clear = Usuń punkt
 place-open-in-map = Znajdź to miejsce w OpenStreetMap i wklej odnośnik z powrotem
 
 person-tab-record = Zapis
-person-tab-life = Życie
-person-tab-media = Materiały
+person-tab-life = Wydarzenia
+person-tab-media = Media
 person-tab-tree = Drzewo
 person-tab-history = Historia
 person-tree-depth = Po { $n } pokolenia w każdą stronę. Całe drzewo jest niżej.
@@ -327,6 +344,40 @@ admin-delete = Usuń
 admin-not-set = — nie ustawiono —
 admin-edit = Edytuj
 admin-page-of = Strona { $page } z { $pages }
+list-select-row = Zaznacz { $name }
+list-kind-label = Rodzaj
+list-select-page = Zaznacz wszystkie wiersze na tej stronie
+list-selected = { $n ->
+        [one] { $n } zaznaczona
+        [few] { $n } zaznaczone
+        [many] { $n } zaznaczonych
+       *[other] { $n } zaznaczonej
+    }
+list-export = Eksportuj
+list-escape = Esc usuwa zaznaczenie
+bulk-confirm-title = { $n ->
+        [one] Usunąć { $n } kartę?
+        [few] Usunąć { $n } karty?
+        [many] Usunąć { $n } kart?
+       *[other] Usunąć { $n } karty?
+    }
+bulk-confirm-detail = Karta, do której inna wciąż się odwołuje, zostaje odrzucona — i wtedy nic nie jest usuwane.
+bulk-confirm-go = Usuń je
+bulk-deleted = { $n ->
+        [one] Usunięto { $n } kartę.
+        [few] Usunięto { $n } karty.
+        [many] Usunięto { $n } kart.
+       *[other] Usunięto { $n } karty.
+    }
+bulk-refused = Nic nie usunięto: { $name } jest wciąż przywoływany gdzie indziej. Najpierw usuń to odwołanie, potem spróbuj ponownie.
+bulk-changed = { $n ->
+        [one] { $n } karta zmieniła się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+        [few] { $n } karty zmieniły się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+        [many] { $n } kart zmieniło się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+       *[other] { $n } karty zmieniło się od wyświetlenia listy, więc nic nie usunięto. Odśwież listę i spróbuj ponownie.
+    }
+admin-range = { $from }–{ $to } z { $total }
+list-filiation = Pochodzenie
 admin-previous = Poprzednia
 admin-next = Następna
 admin-saved = Zapisano jako wersja { $version } — { $summary }
@@ -662,6 +713,7 @@ record-see-in-tree-title = Otwórz siatkę kart wokół tej osoby
 record-open-full-page = Otwórz pełną stronę ↗
 record-open-full-title = Otwórz samodzielną stronę, którą można udostępnić
 record-edit = Edytuj
+record-see-in-river = Zobacz w rzece
 panel-empty = Wybierz kartę, aby zobaczyć tutaj pełny wpis tej osoby.
 person-see-in-tree = Zobacz tę osobę w drzewie
 person-visibility-inline = widoczność:
@@ -735,7 +787,6 @@ record-verbatim-note = Zachowane dokładnie tak, jak podawał to zapis, poniewa�
 record-file-to-attach = Plik do dołączenia
 record-document-type = Typ dokumentu
 record-caption = Podpis
-record-caption-placeholder = Podpis (opcjonalnie)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1220,7 +1271,6 @@ identity-living-help = To znacznik ustawiony przez źródło. Strona osobno domn
 identity-error-no-display = Zapis potrzebuje nazwy, pod którą będzie pokazywany. Nic nie zapisano.
 editor-blank-to-remove = Wyczyść nazwę, aby usunąć ten wpis.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = pl
 identity-edit-link = Edytuj nazwy i tożsamość
 
 ## Union types, statuses and date precision, said out loud
@@ -3022,6 +3072,7 @@ diff-section-ocr = Rozpoznany tekst
 diff-section-format-version = Wersja formatu
 history-created = utworzył(a)
 history-deleted = usunął/usunęła
+history-merged = scalił(a) z inną kartą
 history-attached = dołączył(a) plik
 admin-raw-json-unparsed = Surowego JSON-a nie udało się odczytać ({ $error }). Nic nie zostało zapisane.
 admin-raw-json-dangling = Surowy JSON wskazuje w { $field } na { $target }, którego nie ma w tym archiwum. Wybierz go w polu powyżej albo popraw identyfikator. Nic nie zostało zapisane.
@@ -3354,12 +3405,20 @@ river-legend-title = Jak czytać rzekę
 
 # Masthead search
 search-label = Szukaj osoby
-search-placeholder = Szukaj osoby
+search-short = Osoba
+date-qualifier = Określenie
+date-qualifier-circa = około
 search-title = Wyszukiwanie
 search-heading = Osoby pasujące do „{ $q }”
 search-none = Nikt widoczny dla Ciebie nie nosi tego imienia.
 search-open-record = Otwórz kartę
 search-hint = Enter przenosi rzekę do tej osoby; Shift+Enter otwiera jej kartę.
+search-summary = { $n ->
+        [one] { $n } osoba
+        [few] { $n } osoby
+        [many] { $n } osób
+       *[other] { $n } osoby
+    } · ↵ podróż · ⇧↵ otwórz kartę
 search-empty-query = Wpisz imię lub nazwisko, aby wyszukać.
 
 # Data quality (/quality)
@@ -3369,6 +3428,9 @@ quality-none = Nic do sprawdzenia: wszystkie kontrole przeszły.
 quality-intro = Nic nie jest tu zmieniane za Ciebie. Każdy wiersz to przypadek wart sprawdzenia — często jest dla niego dobry powód. Otwórz kartę i zdecyduj albo oznacz go jako sprawdzony.
 quality-groups-label = Rodzaje uwag
 quality-all = Wszystko
+quality-show-label = Pokaż
+quality-show-open-option = Do sprawdzenia
+quality-download = Pobierz
 quality-group-names = Imiona i nazwiska
 quality-group-relations = Pokrewieństwo
 quality-group-dates = Daty

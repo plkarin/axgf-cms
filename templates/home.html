@@ -9,25 +9,26 @@
   {% else %}{{ t("home-count", total=total) }}{% endif %}
 </p>
 
-<div class="cta-row">
-  <a class="btn primary" href="/tree">{{ t("home-browse") }}</a>
-  <a class="btn" href="/convert">{{ t("home-convert") }}</a>
-  {% if may_write %}<a class="btn" href="/admin">{{ t("nav-admin") }}</a>{% endif %}
-</div>
+{#- No buttons here: the tree, the import and the administration are each
+    one control away in the masthead already (the minimalism pass). -#}
 
+{#- A kind the archive holds none of is not drawn: a "0" is an empty field. -#}
+{% set held = counts | selectattr("n") | list %}
+{% if held %}
 <h2>{{ t("home-in-this-tree") }}</h2>
 <div class="grid cols-4">
-  {% for c in counts %}
-  <div class="stat {% if c.n == 0 %}zero{% endif %}">
+  {% for c in held %}
+  <div class="stat">
     <div class="n">{{ c.n }}</div>
     <div class="k">{{ t("kind-" ~ c.singular ~ "-plural", n=c.n) }}</div>
   </div>
   {% endfor %}
 </div>
+{% endif %}
 
 {% if showcase %}
 <h2>{{ t("home-showcase-title") }}</h2>
-<div class="grid cols-2">
+<div class="grid cols-2" data-content>
   {% for s in showcase %}
   <div class="card">
     <h3 style="margin-top:0">{{ s.title }}</h3>

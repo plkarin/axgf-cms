@@ -35,12 +35,16 @@ nav-convert = Импорт
 nav-admin = Управление
 nav-sign-in = Войти
 nav-sign-out = Выйти
+account-emergency = Аварийный токен
 footer-open-format = Архив вашей семьи — это один файл, который остаётся у вас, записанный в открытом формате: он откроется и много позже, чем исчезнет этот сайт.
 footer-open-format-link = О формате
 
 ## Настройки
 
 settings-title = Настройки
+edit-mode-label = Редактирование — сохранённое меняет карточки семьи
+display-menu-label = Язык и вид
+display-settings = Тема и вид…
 settings-tabs-label = Разделы настроек
 settings-tab-theme = Тема
 settings-tab-language = Язык
@@ -51,6 +55,8 @@ prefs-theme = Тема
 prefs-background = Фон
 prefs-background-on = Мягкая цветовая подложка за страницей
 prefs-apply = Применить
+busy-saving = Сохранение…
+busy-working = Выполняется…
 prefs-reviewed = вычитано
 prefs-machine = машинный, { $coverage }%
 prefs-machine-complete = полный, ещё не вычитан
@@ -66,6 +72,8 @@ theme-protanopia = Протанопия
 theme-tritanopia = Тританопия
 theme-colour-blind-note = безопасно при дальтонизме
 theme-contrast-note = максимальный контраст
+theme-dark-note = по умолчанию
+theme-river-note = Река остаётся тёмной в любой теме: её цвета подобраны для тёмного фона.
 
 ## Древо
 
@@ -88,7 +96,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } партнёров
     }, по { $depth } поколений в каждую сторону.
 tree-filter-label = Отфильтровать видимые карточки
-tree-filter-placeholder = Введите имя…
 tree-centre-on = Центрировать на
 tree-depth = Поколений в каждую сторону
 tree-show = Показать
@@ -173,6 +180,10 @@ error-not-found-title = Не найдено
 error-not-found-detail = Такой страницы здесь нет.
 error-no-such-person-title = Нет такого человека
 error-no-such-person-detail = Здесь нет человека с таким идентификатором.
+error-merged-title = Этой карточки больше нет.
+error-merged-detail = Она была объединена с { $name } { $date }. Ссылки на старый адрес теперь ведут к объединённой карточке.
+error-merged-open = Открыть объединённую карточку
+error-back-to-river = Вернуться к реке
 error-no-such-entity-title = Нет такого объекта
 error-no-such-entity-detail = Здесь нет записи с таким идентификатором.
 error-deleted-while-editing = Здесь нет записи с таким идентификатором. Возможно, её удалили, пока вы её правили.
@@ -239,6 +250,12 @@ admin-bundle-heavy = Этот архив весит { $size }. Он целико
 
 admin-fields = Поля
 admin-raw-json = Исходный JSON
+form-more-fields = { $n ->
+        [one] Ещё { $n } поле
+        [few] Ещё { $n } поля
+        [many] Ещё { $n } полей
+       *[other] Ещё { $n } поля
+    }
 admin-raw-json-help = Объект целиком, так что неизменяемого нет ничего — списки вроде партнёров и детей семьи или истории границ места живут именно здесь. Это исходный документ; поля выше затем записываются поверх принадлежащих им путей, поэтому правьте значение либо в одном месте, либо в другом, но не в обоих. Он должен разбираться как JSON, иначе не сохранится ничего.
 admin-save = Сохранить
 admin-cancel = Отмена
@@ -320,8 +337,8 @@ place-map-clear = Убрать точку
 place-open-in-map = Найти это место в OpenStreetMap и вставить ссылку обратно
 
 person-tab-record = Запись
-person-tab-life = Жизнь
-person-tab-media = Материалы
+person-tab-life = События
+person-tab-media = Медиа
 person-tab-tree = Древо
 person-tab-history = История
 person-tree-depth = По { $n } поколения в каждую сторону. Всё древо — ниже.
@@ -333,6 +350,40 @@ admin-delete = Удалить
 admin-not-set = — не задано —
 admin-edit = Править
 admin-page-of = Страница { $page } из { $pages }
+list-select-row = Выбрать { $name }
+list-kind-label = Тип
+list-select-page = Выбрать все строки на этой странице
+list-selected = { $n ->
+        [one] выбрана { $n }
+        [few] выбрано { $n }
+        [many] выбрано { $n }
+       *[other] выбрано { $n }
+    }
+list-export = Экспортировать
+list-escape = Esc снимает выбор
+bulk-confirm-title = { $n ->
+        [one] Удалить { $n } карточку?
+        [few] Удалить { $n } карточки?
+        [many] Удалить { $n } карточек?
+       *[other] Удалить { $n } карточки?
+    }
+bulk-confirm-detail = Карточка, на которую ещё ссылается другая, отклоняется, и тогда ничего не удаляется.
+bulk-confirm-go = Удалить
+bulk-deleted = { $n ->
+        [one] Удалена { $n } карточка.
+        [few] Удалено { $n } карточки.
+        [many] Удалено { $n } карточек.
+       *[other] Удалено { $n } карточки.
+    }
+bulk-refused = Ничего не удалено: на { $name } ещё ссылаются в другом месте. Сначала уберите эту ссылку, затем попробуйте снова.
+bulk-changed = { $n ->
+        [one] { $n } карточка изменилась после показа списка, поэтому ничего не удалено. Обновите список и попробуйте снова.
+        [few] { $n } карточки изменились после показа списка, поэтому ничего не удалено. Обновите список и попробуйте снова.
+        [many] { $n } карточек изменилось после показа списка, поэтому ничего не удалено. Обновите список и попробуйте снова.
+       *[other] { $n } карточки изменилось после показа списка, поэтому ничего не удалено. Обновите список и попробуйте снова.
+    }
+admin-range = { $from }–{ $to } из { $total }
+list-filiation = Происхождение
 admin-previous = Назад
 admin-next = Вперёд
 admin-saved = Сохранено как версия { $version } — { $summary }
@@ -669,6 +720,7 @@ record-see-in-tree-title = Открыть сетку карточек вокру
 record-open-full-page = Открыть отдельной страницей ↗
 record-open-full-title = Открыть самостоятельную страницу, которой можно поделиться
 record-edit = Править
+record-see-in-river = Показать в реке
 panel-empty = Выберите карточку, чтобы увидеть здесь полную запись о человеке.
 person-see-in-tree = Посмотреть этого человека в древе
 person-visibility-inline = видимость:
@@ -742,7 +794,6 @@ record-verbatim-note = Сохранено ровно так, как значил
 record-file-to-attach = Файл для прикрепления
 record-document-type = Тип документа
 record-caption = Подпись
-record-caption-placeholder = Подпись (необязательно)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1227,7 +1278,6 @@ identity-living-help = Это признак, поставленный исто�
 identity-error-no-display = Записи нужно имя, под которым она отображается. Ничего не сохранено.
 editor-blank-to-remove = Очистите имя, чтобы удалить эту запись.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = ru
 identity-edit-link = Изменить имена и личность
 
 ## Union types, statuses and date precision, said out loud
@@ -3029,6 +3079,7 @@ diff-section-ocr = Распознанный текст
 diff-section-format-version = Версия формата
 history-created = создал(а)
 history-deleted = удалил(а)
+history-merged = объединил(а) с другой карточкой
 history-attached = приложил(а) файл
 admin-raw-json-unparsed = Исходный JSON не удалось прочитать ({ $error }). Ничего не сохранено.
 admin-raw-json-dangling = В исходном JSON поле { $field } указывает на { $target }, которого нет в этом архиве. Выберите его в поле выше или исправьте идентификатор. Ничего не сохранено.
@@ -3361,12 +3412,20 @@ river-legend-title = Как читать реку
 
 # Masthead search
 search-label = Найти человека
-search-placeholder = Найти человека
+search-short = Человек
+date-qualifier = Уточнение
+date-qualifier-circa = около
 search-title = Поиск
 search-heading = Люди по запросу «{ $q }»
 search-none = Среди видимых вам людей никого с таким именем нет.
 search-open-record = Открыть карточку
 search-hint = Enter переносит реку к этому человеку; Shift+Enter открывает его карточку.
+search-summary = { $n ->
+        [one] { $n } человек
+        [few] { $n } человека
+        [many] { $n } человек
+       *[other] { $n } человека
+    } · ↵ перейти · ⇧↵ открыть карточку
 search-empty-query = Введите имя для поиска.
 
 # Data quality (/quality)
@@ -3376,6 +3435,9 @@ quality-none = Смотреть не на что: все проверки про
 quality-intro = Здесь ничего не меняется за вас. Каждая строка — случай, который стоит проверить; часто у него есть веская причина. Откройте карточку и решите или отметьте его как проверенный.
 quality-groups-label = Виды замечаний
 quality-all = Все
+quality-show-label = Показать
+quality-show-open-option = К проверке
+quality-download = Скачать
 quality-group-names = Имена
 quality-group-relations = Родственные связи
 quality-group-dates = Даты

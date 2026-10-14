@@ -18,7 +18,12 @@
 
 {% if not events %}<p class="muted">{{ t("events-none") }}</p>{% endif %}
 
+{#- Each record is one row that opens to its form (the minimalism pass):
+    what is recorded first, the editing on demand. -#}
+<div class="record-list" data-content>
 {% for e in events %}
+<details class="record-edit">
+<summary>{{ t("event-category-" ~ e.category) }}</summary>
 <form method="post" action="/admin/person/{{ id }}/events/{{ e.id }}" class="editor">
   <input type="hidden" name="base_version" value="{{ e.version }}">
   <fieldset class="ed-group">
@@ -37,15 +42,19 @@
       </tbody>
     </table>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
   </fieldset>
 </form>
 {#- Outside the form above, not inside it: a form nested in a form is
     dropped by the parser, and the delete button became a second save button. -#}
 {{ m.delete_block(t, "event", e.id, t("events-remove"), e.version) }}
+</details>
 {% endfor %}
+</div>
 
+<details class="add-record">
+<summary>{{ t("events-new") }}</summary>
 <form method="post" action="/admin/person/{{ id }}/events" class="editor">
   <fieldset class="ed-group">
     <legend>{{ t("events-new") }}</legend>
@@ -59,10 +68,11 @@
       <tbody>{{ m.participant_row(t, 0, none, roles) }}</tbody>
     </table>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("events-create") }}</button>
+      <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("events-create") }}</button>
     </div>
   </fieldset>
 </form>
+</details>
 
 <p><a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a></p>
 {% endblock %}

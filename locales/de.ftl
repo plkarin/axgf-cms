@@ -31,12 +31,16 @@ nav-convert = Import
 nav-admin = Verwaltung
 nav-sign-in = Anmelden
 nav-sign-out = Abmelden
+account-emergency = Notfall-Token
 footer-open-format = Das Archiv Ihrer Familie ist eine einzige Datei, die bei Ihnen bleibt, in einem offenen Format geschrieben — sie lässt sich noch lange öffnen, wenn es diese Website nicht mehr gibt.
 footer-open-format-link = Über das Format
 
 ## Einstellungen
 
 settings-title = Einstellungen
+edit-mode-label = Bearbeitung — was Sie speichern, ändert die Einträge der Familie
+display-menu-label = Sprache und Anzeige
+display-settings = Farbschema und Anzeige …
 settings-tabs-label = Abschnitte der Einstellungen
 settings-tab-theme = Farbschema
 settings-tab-language = Sprache
@@ -47,6 +51,8 @@ prefs-theme = Farbschema
 prefs-background = Hintergrund
 prefs-background-on = Sanfter Farbverlauf hinter der Seite
 prefs-apply = Übernehmen
+busy-saving = Wird gespeichert…
+busy-working = Wird ausgeführt…
 prefs-reviewed = geprüft
 prefs-machine = maschinell, { $coverage } %
 prefs-machine-complete = vollständig, noch ungeprüft
@@ -62,6 +68,8 @@ theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
 theme-colour-blind-note = farbfehlsichtigkeitssicher
 theme-contrast-note = maximaler Kontrast
+theme-dark-note = Standard
+theme-river-note = Der Fluss bleibt in jedem Thema dunkel: Seine Farben sind für einen dunklen Grund gemacht.
 
 ## Stammbaum
 
@@ -78,7 +86,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } Partner
     }, { $depth } Generationen in jede Richtung.
 tree-filter-label = Sichtbare Karten filtern
-tree-filter-placeholder = Namen eingeben …
 tree-centre-on = Zentrieren auf
 tree-depth = Generationen in jede Richtung
 tree-show = Anzeigen
@@ -161,6 +168,10 @@ error-not-found-title = Nicht gefunden
 error-not-found-detail = Diese Seite gibt es hier nicht.
 error-no-such-person-title = Keine solche Person
 error-no-such-person-detail = Hier gibt es keine Person mit dieser Kennung.
+error-merged-title = Dieser Eintrag existiert nicht mehr.
+error-merged-detail = Er wurde am { $date } mit { $name } zusammengeführt. Links auf die alte Adresse führen jetzt zum zusammengeführten Eintrag.
+error-merged-open = Zusammengeführten Eintrag öffnen
+error-back-to-river = Zurück zum Fluss
 error-no-such-entity-title = Kein solcher Datensatz
 error-no-such-entity-detail = Hier gibt es keinen Eintrag mit dieser Kennung.
 error-deleted-while-editing = Hier gibt es keinen Eintrag mit dieser Kennung. Möglicherweise wurde er gelöscht, während Sie ihn bearbeitet haben.
@@ -221,6 +232,10 @@ admin-bundle-heavy = Dieses Archiv ist { $size } groß. Es wird beim Start volls
 
 admin-fields = Felder
 admin-raw-json = Roh-JSON
+form-more-fields = { $n ->
+        [one] Ein weiteres Feld
+       *[other] { $n } weitere Felder
+    }
 admin-raw-json-help = Der ganze Datensatz, damit nichts unbearbeitbar ist — Listen wie die Partner und Kinder einer Familie oder die Grenzgeschichte eines Ortes stehen genau hier. Das ist das Ausgangsdokument; die Felder darüber werden anschließend über die ihnen gehörenden Pfade geschrieben, bearbeiten Sie einen Wert also an der einen oder der anderen Stelle, nicht an beiden. Es muss sich als JSON lesen lassen, sonst wird nichts gespeichert.
 admin-save = Speichern
 admin-cancel = Abbrechen
@@ -300,7 +315,7 @@ place-map-clear = Punkt entfernen
 place-open-in-map = Diesen Ort in OpenStreetMap suchen und den Link zurück einfügen
 
 person-tab-record = Eintrag
-person-tab-life = Leben
+person-tab-life = Ereignisse
 person-tab-media = Medien
 person-tab-tree = Stammbaum
 person-tab-history = Verlauf
@@ -313,6 +328,32 @@ admin-delete = Löschen
 admin-not-set = — nicht gesetzt —
 admin-edit = Bearbeiten
 admin-page-of = Seite { $page } von { $pages }
+list-select-row = { $name } auswählen
+list-kind-label = Art
+list-select-page = Alle Zeilen dieser Seite auswählen
+list-selected = { $n ->
+        [one] { $n } ausgewählt
+       *[other] { $n } ausgewählt
+    }
+list-export = Exportieren
+list-escape = Esc hebt die Auswahl auf
+bulk-confirm-title = { $n ->
+        [one] { $n } Eintrag löschen?
+       *[other] { $n } Einträge löschen?
+    }
+bulk-confirm-detail = Ein Eintrag, auf den ein anderer noch verweist, wird abgelehnt – dann wird nichts gelöscht.
+bulk-confirm-go = Löschen
+bulk-deleted = { $n ->
+        [one] { $n } Eintrag gelöscht.
+       *[other] { $n } Einträge gelöscht.
+    }
+bulk-refused = Nichts wurde gelöscht: Auf { $name } wird noch an anderer Stelle verwiesen. Entfernen Sie zuerst diesen Verweis und versuchen Sie es erneut.
+bulk-changed = { $n ->
+        [one] { $n } Eintrag hat sich seit dem Anzeigen der Liste geändert, daher wurde nichts gelöscht. Laden Sie die Liste neu und versuchen Sie es erneut.
+       *[other] { $n } Einträge haben sich seit dem Anzeigen der Liste geändert, daher wurde nichts gelöscht. Laden Sie die Liste neu und versuchen Sie es erneut.
+    }
+admin-range = { $from }–{ $to } von { $total }
+list-filiation = Abstammung
 admin-previous = Zurück
 admin-next = Weiter
 admin-saved = Gespeichert als Fassung { $version } — { $summary }
@@ -575,6 +616,7 @@ record-see-in-tree-title = Das Kartenraster um diese Person öffnen
 record-open-full-page = Ganze Seite öffnen ↗
 record-open-full-title = Die eigenständige, teilbare Seite öffnen
 record-edit = Bearbeiten
+record-see-in-river = Im Fluss ansehen
 panel-empty = Wählen Sie eine Karte, um hier den vollständigen Eintrag dieser Person zu sehen.
 person-see-in-tree = Diese Person im Stammbaum ansehen
 person-visibility-inline = Sichtbarkeit:
@@ -644,7 +686,6 @@ record-verbatim-note = Genau so bewahrt, wie der Eintrag es angab, weil kein Kon
 record-file-to-attach = Anzuhängende Datei
 record-document-type = Art des Dokuments
 record-caption = Bildunterschrift
-record-caption-placeholder = Bildunterschrift (optional)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1067,7 +1108,6 @@ identity-living-help = Das ist das Kennzeichen, das die Quelle gesetzt hat. Die 
 identity-error-no-display = Ein Eintrag braucht einen Namen, unter dem er angezeigt wird. Nichts wurde gespeichert.
 editor-blank-to-remove = Namen leeren, um diesen Eintrag zu entfernen.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = de
 identity-edit-link = Namen und Identität bearbeiten
 
 ## Union types, statuses and date precision, said out loud
@@ -2859,6 +2899,7 @@ diff-section-ocr = Erkannter Text
 diff-section-format-version = Formatversion
 history-created = hat angelegt
 history-deleted = hat gelöscht
+history-merged = hat mit einem anderen Eintrag zusammengeführt
 history-attached = hat eine Datei angehängt
 admin-raw-json-unparsed = Das Roh-JSON ließ sich nicht lesen ({ $error }). Nichts wurde gespeichert.
 admin-raw-json-dangling = Das Roh-JSON verweist mit { $field } auf { $target }, das es in diesem Archiv nicht gibt. Wählen Sie es über ein Feld oben aus oder korrigieren Sie die Kennung. Nichts wurde gespeichert.
@@ -3173,12 +3214,18 @@ river-legend-title = So liest man den Fluss
 
 # Masthead search
 search-label = Person suchen
-search-placeholder = Person suchen
+search-short = Person
+date-qualifier = Zusatz
+date-qualifier-circa = um
 search-title = Suche
 search-heading = Personen zu „{ $q }“
 search-none = Niemand, den Sie sehen können, heißt so.
 search-open-record = Datensatz öffnen
 search-hint = Enter führt den Fluss zu dieser Person; Umschalt+Enter öffnet ihren Datensatz.
+search-summary = { $n ->
+        [one] { $n } Person
+       *[other] { $n } Personen
+    } · ↵ hinreisen · ⇧↵ Eintrag öffnen
 search-empty-query = Geben Sie einen Namen ein, um zu suchen.
 
 # Data quality (/quality)
@@ -3188,6 +3235,9 @@ quality-none = Nichts zu sehen: Alle Prüfungen sind bestanden.
 quality-intro = Hier wird nichts für Sie geändert. Jede Zeile ist ein Fall, der eine Prüfung wert ist — oft gibt es einen guten Grund dafür. Öffnen Sie den Datensatz und entscheiden Sie, oder markieren Sie ihn als geprüft.
 quality-groups-label = Arten von Befunden
 quality-all = Alle
+quality-show-label = Anzeigen
+quality-show-open-option = Zu prüfen
+quality-download = Herunterladen
 quality-group-names = Namen
 quality-group-relations = Beziehungen
 quality-group-dates = Daten

@@ -248,7 +248,7 @@ fn unescape(s: &str) -> String {
 fn histories(page: &str) -> String {
     let mut out = String::new();
     let mut rest = page;
-    while let Some(at) = rest.find("<ol class=\"history\">") {
+    while let Some(at) = rest.find("<ol class=\"history\"") {
         let end = rest[at..].find("</ol>").expect("closed") + at;
         out.push_str(&rest[at..end]);
         rest = &rest[end..];
@@ -311,12 +311,11 @@ async fn record(class: Class) {
     let panel =
         body_string(get_with_cookie(&app, &format!("/tree/panel/{LIVING}"), &cousin).await).await;
     assert_absent(&panel, &class, "the tree panel");
-    // The raw dump is on the page, and the open data in it is not withheld.
+    // Read mode carries no raw dump at all: the raw document is an editing
+    // artefact, and the editor's textarea is checked by `raw` below.
     let page = body_string(get(&app, &format!("/person/{LIVING}")).await).await;
-    assert!(
-        page.contains("raw-json") && page.contains(OPEN),
-        "the dump is there"
-    );
+    assert!(!page.contains("raw-json"), "no raw dump in read mode");
+    assert!(page.contains(OPEN), "the open data is on the page");
     // An administrator reads it, so it is withheld rather than absent.
     let admin = body_string(get_admin(&app, &format!("/person/{LIVING}")).await).await;
     assert!(
@@ -330,13 +329,16 @@ async fn journal(class: Class) {
     let (app, _scratch) = app_with_contributor(&format!("cls-journal-{}", class.name));
     admin_adds_second_claims(&app).await;
     let cousin = sign_in(&app, "cousin").await;
-    for uri in [
-        // The record's history is its own tab; the panel and the editor still
-        // draw it inline.
-        format!("/person/{LIVING}?tab=history"),
-        format!("/tree/panel/{LIVING}"),
-        format!("/admin/person/{LIVING}/edit"),
-    ] {
+    // The history is an editing concern: it lives in edit mode, on the
+    // record's editor, and nowhere in read mode.
+    for uri in [format!("/person/{LIVING}"), format!("/tree/panel/{LIVING}")] {
+        let page = body_string(get_with_cookie(&app, &uri, &cousin).await).await;
+        assert!(
+            histories(&page).is_empty(),
+            "{uri} is read mode and shows no history"
+        );
+    }
+    for uri in [format!("/admin/person/{LIVING}/edit")] {
         let page = body_string(get_with_cookie(&app, &uri, &cousin).await).await;
         let history = histories(&page);
         assert!(!history.is_empty(), "{uri} shows a history");
@@ -348,7 +350,7 @@ async fn journal(class: Class) {
         );
     }
     let admin = histories(
-        &body_string(get_admin(&app, &format!("/person/{LIVING}?tab=history")).await).await,
+        &body_string(get_admin(&app, &format!("/admin/person/{LIVING}/edit")).await).await,
     );
     assert!(
         admin.contains(class.second),

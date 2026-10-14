@@ -29,12 +29,16 @@ nav-convert = 导入
 nav-admin = 管理
 nav-sign-in = 登录
 nav-sign-out = 退出
+account-emergency = 紧急令牌
 footer-open-format = 您家族的档案是留在自己手里的一个文件，以公开格式写成，在本站消失很久之后依然打得开。
 footer-open-format-link = 关于该格式
 
 ## 偏好设置
 
 settings-title = 设置
+edit-mode-label = 编辑模式 — 保存的内容会更改家族记录
+display-menu-label = 语言和显示
+display-settings = 主题和显示…
 settings-tabs-label = 设置的各节
 settings-tab-theme = 配色
 settings-tab-language = 语言
@@ -45,6 +49,8 @@ prefs-theme = 配色
 prefs-background = 背景
 prefs-background-on = 页面背后一层淡淡的色晕
 prefs-apply = 应用
+busy-saving = 正在保存…
+busy-working = 处理中…
 prefs-reviewed = 已校订
 prefs-machine = 机器翻译，{ $coverage }%
 prefs-machine-complete = 已译全，尚未校订
@@ -60,6 +66,8 @@ theme-protanopia = 红色盲
 theme-tritanopia = 蓝色盲
 theme-colour-blind-note = 色觉友好
 theme-contrast-note = 最高对比度
+theme-dark-note = 默认
+theme-river-note = 无论选择哪种主题，河流都保持深色：它的颜色是为深色背景设计的。
 
 ## 家谱
 
@@ -67,7 +75,6 @@ tree-title-around = { $name }的周边
 tree-title-whole = 整棵家谱
 tree-lede-focused = 祖先{ $ancestors }人、后代{ $descendants }人、配偶或伴侣{ $spouses }人，每个方向{ $depth }代。
 tree-filter-label = 筛选可见的卡片
-tree-filter-placeholder = 输入姓名…
 tree-centre-on = 以此人为中心
 tree-depth = 每个方向的代数
 tree-show = 显示
@@ -147,6 +154,10 @@ error-not-found-title = 未找到
 error-not-found-detail = 此处没有该页面。
 error-no-such-person-title = 没有这个人
 error-no-such-person-detail = 此处没有使用该标识的人。
+error-merged-title = 此记录已不存在。
+error-merged-detail = 它已于{ $date }并入{ $name }。指向旧地址的链接现在通向合并后的记录。
+error-merged-open = 打开合并后的记录
+error-back-to-river = 返回河流
 error-no-such-entity-title = 没有这条记录
 error-no-such-entity-detail = 此处没有使用该标识的记录。
 error-deleted-while-editing = 此处没有使用该标识的记录。它可能在您编辑期间被删除了。
@@ -198,6 +209,7 @@ admin-bundle-heavy = 这份档案有{ $size }。它在启动时整体读入并�
 
 admin-fields = 字段
 admin-raw-json = 原始 JSON
+form-more-fields = 另外 { $n } 个字段
 admin-raw-json-help = 整条记录，因此没有什么是不能编辑的——像家庭的配偶和子女列表、地点的疆界变迁这类数组就在这里。这是起始文档；上面的各字段随后会写到各自负责的路径上，所以同一个值请只在一处编辑，不要两处都改。它必须能按 JSON 解析，否则什么都不会保存。
 admin-save = 保存
 admin-cancel = 取消
@@ -274,8 +286,8 @@ place-map-clear = 清除该点
 place-open-in-map = 在 OpenStreetMap 中查找此地，再把链接粘回来
 
 person-tab-record = 记录
-person-tab-life = 生平
-person-tab-media = 材料
+person-tab-life = 事件
+person-tab-media = 媒体
 person-tab-tree = 家系
 person-tab-history = 历史
 person-tree-depth = 上下各 { $n } 代。完整的家系图在下方。
@@ -287,6 +299,20 @@ admin-delete = 删除
 admin-not-set = —— 未设置 ——
 admin-edit = 编辑
 admin-page-of = 第 { $page } 页，共 { $pages } 页
+list-select-row = 选择 { $name }
+list-kind-label = 类型
+list-select-page = 选择本页所有行
+list-selected = 已选 { $n } 项
+list-export = 导出
+list-escape = 按 Esc 取消选择
+bulk-confirm-title = 删除 { $n } 条记录？
+bulk-confirm-detail = 仍被其他记录引用的记录会被拒绝，此时不会删除任何内容。
+bulk-confirm-go = 删除
+bulk-deleted = 已删除 { $n } 条记录。
+bulk-refused = 未删除任何内容：{ $name } 仍在别处被引用。请先移除该引用，再重试。
+bulk-changed = 列表显示后有 { $n } 条记录发生了变化，因此未删除任何内容。请重新加载列表后再试。
+admin-range = { $from }–{ $to }，共 { $total }
+list-filiation = 亲子关系
 admin-previous = 上一页
 admin-next = 下一页
 admin-saved = 已保存为版本 { $version } —— { $summary }
@@ -485,6 +511,7 @@ record-see-in-tree-title = 打开以此人为中心的卡片网格
 record-open-full-page = 打开完整页面 ↗
 record-open-full-title = 打开可单独分享的页面
 record-edit = 编辑
+record-see-in-river = 在河流中查看
 panel-empty = 选择一张卡片，即可在此看到那个人的完整记录。
 person-see-in-tree = 在家谱中查看此人
 person-visibility-inline = 可见范围：
@@ -548,7 +575,6 @@ record-verbatim-note = 完全按记录原样保留，因为没有任何转换器
 record-file-to-attach = 要附加的文件
 record-document-type = 文献类别
 record-caption = 说明
-record-caption-placeholder = 说明（可选）
 record-history-entry-meta = —— { $at }
 record-history-entry-version = ，{ $version }
 
@@ -884,7 +910,6 @@ identity-living-help = 这是来源设置的标志。当出生年代过久时，
 identity-error-no-display = 记录需要一个用于显示的名字。未保存任何内容。
 editor-blank-to-remove = 清空名字即可删除此条目。
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = zh-Hans
 identity-edit-link = 编辑姓名与身份
 
 ## Union types, statuses and date precision, said out loud
@@ -2661,6 +2686,7 @@ diff-section-ocr = 识别出的文本
 diff-section-format-version = 格式版本
 history-created = 创建了此记录
 history-deleted = 删除了此记录
+history-merged = 并入了另一条记录
 history-attached = 附加了一个文件
 admin-raw-json-unparsed = 无法读取原始 JSON（{ $error }）。未保存任何内容。
 admin-raw-json-dangling = 原始 JSON 中的 { $field } 指向 { $target }，但本档案中没有它。请在上方的字段中选择，或更正该 ID。未保存任何内容。
@@ -2948,12 +2974,15 @@ river-legend-title = 如何阅读河流
 
 # Masthead search
 search-label = 搜索人物
-search-placeholder = 搜索人物
+search-short = 人物
+date-qualifier = 限定词
+date-qualifier-circa = 约
 search-title = 搜索
 search-heading = 与“{ $q }”匹配的人物
 search-none = 你能看到的人中没有叫这个名字的。
 search-open-record = 打开记录
 search-hint = 回车键将河流移到此人；上档键+回车键打开其记录。
+search-summary = { $n } 人 · ↵ 前往 · ⇧↵ 打开记录
 search-empty-query = 输入姓名进行搜索。
 
 # Data quality (/quality)
@@ -2963,6 +2992,9 @@ quality-none = 没有需要查看的问题：所有检查均已通过。
 quality-intro = 这里不会替你修改任何内容。每一行都是值得核对的情况——往往有其合理原因。打开记录后自行决定，或标记为已核实。
 quality-groups-label = 问题类别
 quality-all = 全部
+quality-show-label = 显示
+quality-show-open-option = 待检查
+quality-download = 下载
 quality-group-names = 姓名
 quality-group-relations = 亲属关系
 quality-group-dates = 日期

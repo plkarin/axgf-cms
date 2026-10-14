@@ -29,12 +29,16 @@ nav-convert = Importar
 nav-admin = Administración
 nav-sign-in = Iniciar sesión
 nav-sign-out = Cerrar sesión
+account-emergency = Token de emergencia
 footer-open-format = El archivo de su familia es un solo fichero que se queda con usted, escrito en un formato abierto: seguirá abriéndose mucho después de que este sitio haya desaparecido.
 footer-open-format-link = Sobre el formato
 
 ## Preferencias
 
 settings-title = Ajustes
+edit-mode-label = Edición: lo que guarde cambia las fichas de la familia
+display-menu-label = Idioma y presentación
+display-settings = Tema y presentación…
 settings-tabs-label = Secciones de los ajustes
 settings-tab-theme = Tema
 settings-tab-language = Idioma
@@ -45,6 +49,8 @@ prefs-theme = Tema
 prefs-background = Fondo
 prefs-background-on = Un velo suave de color detrás de la página
 prefs-apply = Aplicar
+busy-saving = Guardando…
+busy-working = En curso…
 prefs-reviewed = revisada
 prefs-machine = automática, { $coverage } %
 prefs-machine-complete = completa, aún sin revisar
@@ -60,6 +66,8 @@ theme-protanopia = Protanopía
 theme-tritanopia = Tritanopía
 theme-colour-blind-note = apto para daltonismo
 theme-contrast-note = contraste máximo
+theme-dark-note = predeterminado
+theme-river-note = El río sigue oscuro con cualquier tema: sus colores están hechos para un fondo oscuro.
 
 ## Árbol
 
@@ -76,7 +84,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } parejas
     }, { $depth } generaciones a cada lado.
 tree-filter-label = Filtrar las fichas visibles
-tree-filter-placeholder = Escriba un nombre…
 tree-centre-on = Centrar en
 tree-depth = Generaciones a cada lado
 tree-show = Mostrar
@@ -159,6 +166,10 @@ error-not-found-title = No encontrado
 error-not-found-detail = Esa página no existe aquí.
 error-no-such-person-title = No hay tal persona
 error-no-such-person-detail = Aquí no hay ninguna persona con ese identificador.
+error-merged-title = Esta ficha ya no existe.
+error-merged-detail = Se fusionó con { $name } el { $date }. Los enlaces a la dirección antigua llevan ahora a la ficha fusionada.
+error-merged-open = Abrir la ficha fusionada
+error-back-to-river = Volver al río
 error-no-such-entity-title = No hay tal elemento
 error-no-such-entity-detail = Aquí no hay ninguna ficha con ese identificador.
 error-deleted-while-editing = Aquí no hay ninguna ficha con ese identificador. Puede que la borraran mientras usted la editaba.
@@ -219,6 +230,11 @@ admin-bundle-heavy = Este archivo pesa { $size }. Se carga entero al arrancar y 
 
 admin-fields = Campos
 admin-raw-json = JSON en bruto
+form-more-fields = { $n ->
+        [one] Un campo más
+        [many] { $n } campos más
+       *[other] { $n } campos más
+    }
 admin-raw-json-help = El elemento entero, de modo que nada quede sin poder editarse: las listas como las parejas y los hijos de una familia, o la historia de fronteras de un lugar, viven justamente aquí. Este es el documento de partida; los campos de arriba se escriben después sobre las rutas que les pertenecen, así que edite un valor en un sitio o en el otro, no en los dos. Tiene que leerse como JSON o no se guarda nada.
 admin-save = Guardar
 admin-cancel = Cancelar
@@ -298,8 +314,8 @@ place-map-clear = Quitar el punto
 place-open-in-map = Buscar este lugar en OpenStreetMap y pegar aquí el enlace
 
 person-tab-record = Ficha
-person-tab-life = Vida
-person-tab-media = Materiales
+person-tab-life = Eventos
+person-tab-media = Medios
 person-tab-tree = Árbol
 person-tab-history = Historial
 person-tree-depth = { $n } generaciones a cada lado. El árbol entero está más abajo.
@@ -311,6 +327,36 @@ admin-delete = Borrar
 admin-not-set = — sin establecer —
 admin-edit = Editar
 admin-page-of = Página { $page } de { $pages }
+list-select-row = Seleccionar { $name }
+list-kind-label = Tipo
+list-select-page = Seleccionar todas las filas de esta página
+list-selected = { $n ->
+        [one] { $n } seleccionada
+        [many] { $n } seleccionadas
+       *[other] { $n } seleccionadas
+    }
+list-export = Exportar
+list-escape = Esc para quitar la selección
+bulk-confirm-title = { $n ->
+        [one] ¿Eliminar { $n } ficha?
+        [many] ¿Eliminar { $n } fichas?
+       *[other] ¿Eliminar { $n } fichas?
+    }
+bulk-confirm-detail = Una ficha a la que otra todavía remite se rechaza, y entonces no se elimina nada.
+bulk-confirm-go = Eliminarlas
+bulk-deleted = { $n ->
+        [one] { $n } ficha eliminada.
+        [many] { $n } fichas eliminadas.
+       *[other] { $n } fichas eliminadas.
+    }
+bulk-refused = No se eliminó nada: { $name } todavía se cita en otro lugar. Quite primero esa referencia y vuelva a intentarlo.
+bulk-changed = { $n ->
+        [one] { $n } ficha cambió desde que se mostró la lista, así que no se eliminó nada. Vuelva a cargar la lista e inténtelo de nuevo.
+        [many] { $n } fichas cambiaron desde que se mostró la lista, así que no se eliminó nada. Vuelva a cargar la lista e inténtelo de nuevo.
+       *[other] { $n } fichas cambiaron desde que se mostró la lista, así que no se eliminó nada. Vuelva a cargar la lista e inténtelo de nuevo.
+    }
+admin-range = { $from }–{ $to } de { $total }
+list-filiation = Filiación
 admin-previous = Anterior
 admin-next = Siguiente
 admin-saved = Guardado como versión { $version } — { $summary }
@@ -573,6 +619,7 @@ record-see-in-tree-title = Abrir la cuadrícula de fichas alrededor de esta pers
 record-open-full-page = Abrir la página entera ↗
 record-open-full-title = Abrir la página independiente que se puede compartir
 record-edit = Editar
+record-see-in-river = Ver en el río
 panel-empty = Elija una ficha para ver aquí el documento completo de esa persona.
 person-see-in-tree = Ver a esta persona en el árbol
 person-visibility-inline = visibilidad:
@@ -642,7 +689,6 @@ record-verbatim-note = Conservado tal como lo daba la ficha, porque ningún conv
 record-file-to-attach = Fichero que adjuntar
 record-document-type = Tipo de documento
 record-caption = Pie
-record-caption-placeholder = Pie (opcional)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1065,7 +1111,6 @@ identity-living-help = Esta es la marca que puso la fuente. La página presume a
 identity-error-no-display = Un registro necesita un nombre con el que mostrarse. No se guardó nada.
 editor-blank-to-remove = Borra el nombre para eliminar esta entrada.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = es
 identity-edit-link = Editar nombres e identidad
 
 ## Union types, statuses and date precision, said out loud
@@ -2857,6 +2902,7 @@ diff-section-ocr = Texto reconocido
 diff-section-format-version = Versión del formato
 history-created = creó
 history-deleted = eliminó
+history-merged = fusionó con otra ficha
 history-attached = adjuntó un archivo
 admin-raw-json-unparsed = No se pudo leer el JSON en bruto ({ $error }). No se ha guardado nada.
 admin-raw-json-dangling = El JSON en bruto hace que { $field } apunte a { $target }, que no está en este archivo. Elíjalo con un campo de arriba o corrija el identificador. No se ha guardado nada.
@@ -3174,12 +3220,19 @@ river-legend-title = Cómo leer el río
 
 # Masthead search
 search-label = Buscar una persona
-search-placeholder = Buscar una persona
+search-short = Persona
+date-qualifier = Calificador
+date-qualifier-circa = hacia
 search-title = Búsqueda
 search-heading = Personas que coinciden con «{ $q }»
 search-none = Nadie que puedas ver se llama así.
 search-open-record = Abrir la ficha
 search-hint = Intro lleva el río hasta esa persona; Mayús+Intro abre su ficha.
+search-summary = { $n ->
+        [one] { $n } persona
+        [many] { $n } personas
+       *[other] { $n } personas
+    } · ↵ viajar · ⇧↵ abrir la ficha
 search-empty-query = Escribe un nombre para buscar.
 
 # Data quality (/quality)
@@ -3189,6 +3242,9 @@ quality-none = Nada que mirar: todas las comprobaciones han pasado.
 quality-intro = Aquí no se cambia nada por usted. Cada línea es un caso que merece una comprobación — a menudo hay una buena razón. Abra la ficha y decida, o márquelo como comprobado.
 quality-groups-label = Tipos de hallazgo
 quality-all = Todo
+quality-show-label = Mostrar
+quality-show-open-option = Por revisar
+quality-download = Descargar
 quality-group-names = Nombres
 quality-group-relations = Parentescos
 quality-group-dates = Fechas

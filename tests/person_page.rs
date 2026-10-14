@@ -256,8 +256,11 @@ async fn a_section_with_no_data_is_omitted_rather_than_shown_empty() {
     ] {
         assert!(!body.contains(absent), "{absent} should not be on the page");
     }
-    // The raw block always has something to say, so it is always there.
-    assert!(body.contains(r#"id="raw""#));
+    // Nor the raw block, which is an editing artefact (edit mode), nor a
+    // chart drawn from nothing, nor the per-section "?" (minimalism pass).
+    assert!(!body.contains(r#"id="raw""#));
+    assert!(!body.contains(r#"id="charts""#));
+    assert!(!body.contains("sec-help"));
     assert!(body.contains("Nothing Recorded"));
 }
 
@@ -408,16 +411,9 @@ async fn the_page_carries_the_full_record_section_by_section() {
     assert!(body.contains("Lwów parish register"));
     assert!(body.contains("Supports"));
 
-    // Notes, and the raw entity.
+    // Notes; and no raw entity, which is edit mode's.
     assert!(body.contains("Emigrated in 1921."));
-    // The raw block is escaped on the way out — it is data being displayed,
-    // not markup — so it is matched on the key rather than on the quoting.
-    let raw = body
-        .split(r#"<pre class="raw-json">"#)
-        .nth(1)
-        .expect("the raw JSON block");
-    assert!(raw.contains("axgf_version"));
-    assert!(raw.contains("Bronis"), "the entity itself, not a summary");
+    assert!(!body.contains(r#"<pre class="raw-json">"#));
 
     // Sections with nothing in them stay off the page.
     assert!(!body.contains(r#"id="relationships""#));
@@ -444,48 +440,6 @@ async fn the_masthead_carries_a_face_a_span_and_a_placing() {
     assert!(body.contains("person-vitals"), "the span is stated");
 }
 
-/// Sections are dealt to tabs, and no section is lost in the dealing.
-///
-/// The page used to be one scroll of eight sections behind a list of anchor
-/// links. Splitting it into four views is only defensible if the union of the
-/// views is still the whole record — a tab system that quietly drops a section
-/// is a record that quietly drops a fact.
-#[tokio::test]
-async fn every_section_lands_on_exactly_one_tab() {
-    let src = showcase_bundle("tabs-src");
-    let (app, _p) = app_with_bundle("tabs", &src);
-
-    // What the whole record holds, taken from the one render that names no
-    // tab: the tree side panel. Deriving the expectation rather than writing
-    // it down means this test keeps working when a section is added, and
-    // still fails when one is dropped.
-    let whole =
-        sections_in(&body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await);
-    assert!(
-        whole.len() >= 4,
-        "the fixture is too thin to test with: {whole:?}"
-    );
-
-    let mut seen: Vec<String> = Vec::new();
-    for tab in ["", "?tab=life", "?tab=media", "?tab=history"] {
-        let body = body_string(get_admin(&app, &format!("/person/{JULES}{tab}")).await).await;
-        for id in sections_in(&body) {
-            assert!(
-                !seen.contains(&id),
-                "{id} appears on more than one tab: {seen:?}"
-            );
-            seen.push(id);
-        }
-    }
-
-    for id in &whole {
-        assert!(
-            seen.contains(id),
-            "{id} is on no tab at all — it was dropped, not moved: {seen:?}"
-        );
-    }
-}
-
 /// The `id` of every `<section>` in a rendered record, in order.
 fn sections_in(html: &str) -> Vec<String> {
     let mut out = Vec::new();
@@ -505,57 +459,25 @@ fn sections_in(html: &str) -> Vec<String> {
 /// A tab is a link, so it survives having no scripting and being sent to
 /// somebody else.
 #[tokio::test]
-async fn a_tab_is_a_url_and_an_unknown_one_is_the_record() {
+async fn every_old_tab_address_is_the_one_record_page() {
+    // The record is one page in read mode (the minimalism pass): no tabs,
+    // every filled section. Links to the old tabs, from anywhere, still land
+    // on the person, and on the same page.
     let src = showcase_bundle("tab-url-src");
     let (app, _p) = app_with_bundle("tab-url", &src);
-
-    let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
-    assert!(
-        body.contains(&format!("href=\"/person/{JULES}?tab=life\"")),
-        "the tabs are real links: {body}"
-    );
-    assert!(
-        body.matches("aria-current=\"page\"").count() >= 1,
-        "the open tab says so to a screen reader"
-    );
-
-    // A stale or mistyped tab shows the person, not an error about a query
-    // parameter: the thing the reader wanted is right there behind it.
-    let resp = get_admin(&app, &format!("/person/{JULES}?tab=nonsense")).await;
-    assert_eq!(resp.status(), StatusCode::OK);
-    let body = body_string(resp).await;
-    assert!(
-        body.contains("<section id=\"identity\""),
-        "an unknown tab falls back to the record"
-    );
-}
-
-/// The tree tab is rooted on this person, and is not laid out for the others.
-#[tokio::test]
-async fn the_tree_tab_is_rooted_on_this_person() {
-    let src = showcase_bundle("tab-tree-src");
-    let (app, _p) = app_with_bundle("tab-tree", &src);
-
-    let body = body_string(get_admin(&app, &format!("/person/{JULES}?tab=tree")).await).await;
-    assert!(
-        body.contains("tree-canvas"),
-        "the tree tab draws the canvas: {body}"
-    );
-    assert!(
-        body.contains(&format!("data-id=\"{JULES}\"")),
-        "and this person is on it"
-    );
-    assert!(
-        !body.contains("<section id=\"identity\""),
-        "the record sections are not also drawn underneath"
-    );
-
-    // The other tabs pay nothing for a tree they do not draw.
-    let record = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
-    assert!(
-        !record.contains("tree-canvas"),
-        "no tree is laid out for the record tab"
-    );
+    let whole = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
+    assert!(!whole.contains("person-tabs"), "no tab bar in read mode");
+    assert!(whole.contains(r#"<section id="identity""#));
+    for tab in ["life", "media", "profile", "tree", "history", "nonsense"] {
+        let resp = get_admin(&app, &format!("/person/{JULES}?tab={tab}")).await;
+        assert_eq!(resp.status(), StatusCode::OK, "{tab}");
+        let body = body_string(resp).await;
+        assert!(
+            body.contains(r#"<section id="identity""#),
+            "?tab={tab} shows the record"
+        );
+        assert!(!body.contains("person-tabs"));
+    }
 }
 
 /// The side panel is not a tabbed page and still shows everything.
@@ -564,108 +486,63 @@ async fn the_tree_tab_is_rooted_on_this_person() {
 /// what the panel asks for: it is one glance at a whole person inside the
 /// tree, not somewhere to navigate.
 #[tokio::test]
-async fn the_tree_panel_still_shows_the_whole_record() {
+async fn the_tree_panel_shows_the_same_record_as_the_page() {
+    // Both are read mode: the record's filled sections. The page adds the
+    // profile's groups and charts; the panel says the profile in a count.
     let src = showcase_bundle("panel-src");
     let (app, _p) = app_with_bundle("panel", &src);
-
     let panel =
         sections_in(&body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await);
     let record =
         sections_in(&body_string(get_admin(&app, &format!("/person/{JULES}")).await).await);
-    assert!(
-        panel.len() > record.len(),
-        "the panel names no tab and so shows more than any single tab does: \
-         panel {panel:?} vs record tab {record:?}"
-    );
     for id in ["identity", "life"] {
-        assert!(
-            panel.iter().any(|s| s == id),
-            "{id} is missing from the panel, which names no tab: {panel:?}"
-        );
+        assert!(panel.iter().any(|s| s == id), "{id}: {panel:?}");
+        assert!(record.iter().any(|s| s == id), "{id}: {record:?}");
+    }
+    for id in &panel {
+        if id != "profile-summary" {
+            assert!(
+                record.contains(id),
+                "the page has the panel's {id}: {record:?}"
+            );
+        }
     }
 }
 
-/// A tab the reader clicked is a question, and a blank page is not an answer.
-///
-/// Everywhere else a section with no content is omitted, and that is right —
-/// it makes the page a readout of what the bundle holds. A tab is different.
-/// Before this, a signed-out reader opening Media on a person with no
-/// documents got an entirely empty page: the section rendered only for an
-/// administrator, because only they had the upload form to put in it. Most
-/// people on a converted bundle have no documents, so that was the common
-/// case, not the edge one.
+/// A record with no evidence draws no evidence section — not an empty table,
+/// not "nothing here", not an upload form (attaching a file is an edit; the
+/// documents editor does it).
 #[tokio::test]
-async fn an_empty_media_tab_explains_itself_instead_of_being_blank() {
-    // A person with nothing attached, which is what most of a converted
-    // bundle looks like — the showcase fixture is deliberately the opposite.
-    let dir = scratch("media-empty-src");
+async fn a_record_with_no_evidence_draws_no_evidence_section() {
+    let dir = scratch("no-evidence-src");
     let path = dir.join("bare.axgf");
     let flat = json!({
         "manifest": {"axgf": "1.0"},
-        "persons": {
-            JULES: {
-                "id": JULES, "type": "person", "axgf_version": "1.0",
-                "identity": {"name": {"display": "Anna Bare", "components": []}},
-                "visibility": "public"
-            }
-        },
-        "families": {}, "events": {}, "links": {}, "occupations": {},
-        "sources": {}, "places": {}, "documents": {}
+        "persons": {"dddddddd-2222-4222-8222-222222222222": {
+            "id": "dddddddd-2222-4222-8222-222222222222", "type": "person", "axgf_version": "1.0",
+            "identity": {"name": {"display": "Bare Person", "components": []},
+                         "gender": {"value": "U"}, "is_living": false}}}
     });
     std::fs::write(
         &path,
-        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+        axgf_cms::state::export_to_bytes(&flat.to_string()).unwrap(),
     )
-    .expect("write");
-    let (app, _p) = app_with_bundle("media-empty", &path);
-
-    // Signed out: no upload form, and previously nothing else either.
-    let body = body_string(get(&app, &format!("/person/{JULES}?tab=media")).await).await;
-    assert!(
-        body.contains("<section id=\"evidence\""),
-        "the tab renders its section even with nothing in it: {body}"
-    );
-    assert!(
-        body.contains("Nothing is attached to this record"),
-        "and says so in words"
-    );
-    assert!(
-        !body.contains("/document"),
-        "without offering an upload to somebody who may not upload"
-    );
-
-    // Signed in: the same sentence, plus the form.
-    let admin = body_string(get_admin(&app, &format!("/person/{JULES}?tab=media")).await).await;
-    assert!(admin.contains("Nothing is attached to this record"));
-    assert!(
-        admin.contains(&format!("/admin/person/{JULES}/document")),
-        "an administrator is offered the upload"
-    );
-}
-
-/// The tabs say how much is behind them, and say nothing when it is nothing.
-#[tokio::test]
-async fn a_tab_counts_what_is_behind_it_and_omits_a_zero() {
-    let src = showcase_bundle("tab-count-src");
-    let (app, _p) = app_with_bundle("tab-count", &src);
-
-    let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
-    let nav = body
-        .split(r#"<nav class="person-tabs""#)
-        .nth(1)
-        .and_then(|s| s.split("</nav>").next())
-        .expect("the tab bar");
-
-    assert!(
-        nav.contains("tab-count"),
-        "a tab with content says how much: {nav}"
-    );
-    // "Media 0" is a worse thing to read than "Media", and the tab opens and
-    // explains itself either way.
-    assert!(
-        !nav.contains(">0</span>"),
-        "a zero is omitted rather than printed: {nav}"
-    );
+    .unwrap();
+    let (app, _p) = app_with_bundle("no-evidence", &path);
+    for (who, body) in [
+        (
+            "signed out",
+            body_string(get(&app, "/person/dddddddd-2222-4222-8222-222222222222").await).await,
+        ),
+        (
+            "admin",
+            body_string(get_admin(&app, "/person/dddddddd-2222-4222-8222-222222222222").await)
+                .await,
+        ),
+    ] {
+        assert!(!body.contains(r#"id="evidence""#), "{who}");
+        assert!(!body.contains("upload-form"), "{who}");
+    }
 }
 
 /// No figure is drawn, on a record that carries everything one was drawn from.
@@ -741,27 +618,22 @@ async fn no_figure_is_drawn_and_the_record_carries_no_caption_for_one() {
 /// them still draws them, every axis absent and saying so — never a middling
 /// score standing in for a fact nobody recorded.
 #[tokio::test]
-async fn the_record_ends_with_three_charts_and_nothing_is_scored_from_nothing() {
+async fn a_chart_needs_three_axes_and_an_absent_axis_has_no_row() {
+    // A radar drawn from one axis misinforms: below three of its six axes a
+    // chart is not drawn at all, and on a drawn one an absent axis is a
+    // dotted spoke, never a "no score" row (the minimalism pass).
     let src = showcase_bundle("charts-empty-src");
     let (app, _p) = app_with_bundle("charts-empty", &src);
     let body = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
-    assert_eq!(body.matches("class=\"radar-card\"").count(), 3);
     assert_eq!(
-        body.matches("<span class=\"muted\">no score</span>")
-            .count(),
-        18,
-        "all eighteen axes are absent"
+        body.matches("class=\"radar-card\"").count(),
+        0,
+        "nothing to draw from"
     );
-    assert!(
-        !body.contains("radar-outline"),
-        "no shape is drawn from nothing"
-    );
-    assert!(!body.contains("radar-point"), "and no point is placed");
-    // Only on the record tab, and not in the narrow side panel.
-    let life = body_string(get_admin(&app, &format!("/person/{JULES}?tab=life")).await).await;
-    assert!(!life.contains("radar-card"));
+    assert!(!body.contains(r#"id="charts""#), "and no section for it");
+    assert!(!body.contains("no score") && !body.contains("radar-empty"));
     let panel = body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await;
-    assert!(!panel.contains("radar-card"));
+    assert!(!panel.contains("radar-card"), "never in the narrow panel");
 }
 
 /// A living person's temperament chart is folded shut even for a reader who
@@ -813,9 +685,13 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
         !public.contains("Systolic 131"),
         "nor a living person's blood pressure, through the vitality chart"
     );
+    // The vitality chart rests on one axis here, so it is not drawn (three
+    // of six at least); the administrator still reads the value, in the
+    // profile's health group.
+    assert!(admin.contains("131"), "which the admin reads");
     assert!(
-        admin.contains("Systolic 131"),
-        "which the admin's chart reads"
+        admin.matches("class=\"radar-card\"").count() == 1,
+        "only the temperament chart"
     );
     assert!(
         public.contains("withheld from you"),
@@ -825,48 +701,4 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
         public.contains("Posture: Ideal") || public.contains("Ideal"),
         "the open physique still reads"
     );
-}
-
-/// A record nobody has edited offers no History tab and shows no empty one.
-///
-/// The history is metadata about the record — who corrected what, and when —
-/// so it is a tab of its own rather than the foot of the first one. A record
-/// with no journal has nothing to put behind that tab, and a tab that opens on
-/// nothing is worse than a tab that is not there. The positive case — the tab
-/// offered, in its place, holding what it should — is in `concurrent_edit`,
-/// where an edit actually happens.
-#[tokio::test]
-async fn an_unedited_record_offers_no_history_tab_and_hides_none_in_the_record() {
-    let src = showcase_bundle("history-tab-src");
-    let (app, _p) = app_with_bundle("history-tab", &src);
-
-    let record = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
-    let nav = record
-        .split(r#"<nav class="person-tabs""#)
-        .nth(1)
-        .and_then(|s| s.split("</nav>").next())
-        .expect("the tab bar");
-
-    // The other five are all there.
-    for slug in ["life", "profile", "media", "tree"] {
-        assert!(
-            nav.contains(&format!("?tab={slug}")),
-            "the {slug} tab is offered: {nav}"
-        );
-    }
-    assert!(
-        !nav.contains("?tab=history"),
-        "nothing has been edited, so there is no history to offer: {nav}"
-    );
-
-    // And it is nowhere in the record tab either — it was moved, not hidden.
-    assert!(
-        !record.contains(r#"<section id="history""#),
-        "the record tab is the record, not its metadata: {record}"
-    );
-
-    // Asking for the tab directly is not an error: it is the record page with
-    // nothing behind that tab, which is what a stale link should get.
-    let direct = get_admin(&app, &format!("/person/{JULES}?tab=history")).await;
-    assert_eq!(direct.status(), axum::http::StatusCode::OK);
 }

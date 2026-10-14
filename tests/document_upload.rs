@@ -355,7 +355,13 @@ async fn a_document_with_no_payload_renders_without_breaking() {
     // The state in words, not the schema's code: `referenced` is what the
     // bundle says and "named, held elsewhere" is what a reader is told.
     assert!(body.contains("named, held elsewhere"));
-    assert!(body.contains("no file"), "it must say the file is not here");
+    // Said once, by the status, across the size and download columns: not a
+    // "no file" beside it, and no empty cells (the minimalism pass).
+    assert!(
+        body.contains(r#"colspan="3""#),
+        "the status spans the empty columns"
+    );
+    assert!(!body.contains(">no file<"));
     assert!(
         !body.contains(&format!("/document/{doc_id}/raw")),
         "nothing to download, so nothing may be linked"
@@ -373,16 +379,30 @@ async fn a_document_with_no_payload_renders_without_breaking() {
 }
 
 #[tokio::test]
-async fn the_upload_form_is_only_offered_to_an_admin() {
+async fn the_upload_form_is_in_edit_mode_and_only_for_an_admin() {
+    // Attaching a file is an edit: it lives in the documents editor, not on
+    // the record, which is read mode for everybody (the minimalism pass).
     let src = one_person_bundle("upload-form-src");
     let (app, _p) = app_with_bundle("upload-form", &src);
-
-    let anon = body_string(get(&app, &format!("/person/{PERSON}?tab=media")).await).await;
-    assert!(!anon.contains("Attach a document"));
-
-    let admin = body_string(get_admin(&app, &format!("/person/{PERSON}?tab=media")).await).await;
-    assert!(admin.contains("Attach a document"));
-    assert!(admin.contains(&format!("/admin/person/{PERSON}/document")));
+    let anon = body_string(get(&app, &format!("/person/{PERSON}")).await).await;
+    let admin_record = body_string(get_admin(&app, &format!("/person/{PERSON}")).await).await;
+    for (who, page) in [("signed out", &anon), ("administrator", &admin_record)] {
+        assert!(
+            !page.contains("upload-form") && !page.contains("Attach a document"),
+            "{who}"
+        );
+    }
+    let editor =
+        body_string(get_admin(&app, &format!("/admin/person/{PERSON}/documents")).await).await;
+    assert!(
+        editor.contains(r#"enctype="multipart/form-data""#),
+        "the editor uploads: {editor}"
+    );
+    let anon_editor = get(&app, &format!("/admin/person/{PERSON}/documents")).await;
+    assert!(
+        !anon_editor.status().is_success(),
+        "and is not open to a visitor"
+    );
 }
 
 #[tokio::test]
@@ -640,7 +660,14 @@ async fn choosing_no_picture_shows_the_initials() {
         body.contains("person-avatar is-initials"),
         "the initials placeholder is shown: {body}"
     );
-    assert!(!body.contains("/thumb"), "and no image is requested");
+    // The record's header asks for no portrait. (The record's own evidence
+    // section still shows the photographs attached to it.)
+    let head = &body[body.find(r#"<header class="person-head">"#).unwrap()..];
+    let head = &head[..head.find("</header>").unwrap()];
+    assert!(
+        !head.contains("/thumb"),
+        "and no image is requested: {head}"
+    );
 }
 
 /// A document that is not this person's cannot be made their face.

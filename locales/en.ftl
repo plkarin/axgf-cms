@@ -20,12 +20,16 @@ nav-convert = Import
 nav-admin = Admin
 nav-sign-in = Sign in
 nav-sign-out = Sign out
+account-emergency = Emergency token
 footer-open-format = Your family’s archive is one file you keep, written in an open format so it will still open long after this site is gone.
 footer-open-format-link = About the format
 
 ## Preferences
 
 settings-title = Settings
+edit-mode-label = Editing — what you save changes the family's records
+display-menu-label = Language and display
+display-settings = Theme and display…
 settings-tabs-label = Settings sections
 settings-tab-theme = Theme
 settings-tab-language = Language
@@ -36,6 +40,8 @@ prefs-theme = Theme
 prefs-background = Background
 prefs-background-on = A soft wash of colour behind the page
 prefs-apply = Apply
+busy-saving = Saving…
+busy-working = Working…
 prefs-reviewed = reviewed
 prefs-machine = machine, { $coverage }%
 prefs-machine-complete = complete, not yet reviewed
@@ -51,6 +57,8 @@ theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
 theme-colour-blind-note = colour-blind safe
 theme-contrast-note = maximum contrast
+theme-dark-note = the default
+theme-river-note = The river stays dark under every theme: its colours are made for a dark ground.
 
 ## Tree
 
@@ -67,7 +75,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } partners
     }, { $depth } generations each way.
 tree-filter-label = Filter visible cards
-tree-filter-placeholder = Type a name…
 tree-centre-on = Centre on
 tree-depth = Generations each way
 tree-show = Show
@@ -150,6 +157,10 @@ error-not-found-title = Not found
 error-not-found-detail = That page does not exist here.
 error-no-such-person-title = No such person
 error-no-such-person-detail = There is no person here with that id.
+error-merged-title = This record no longer exists.
+error-merged-detail = It was merged into { $name } on { $date }. Links to the old address now lead to the merged record.
+error-merged-open = Open the merged record
+error-back-to-river = Back to the river
 error-no-such-entity-title = No such entity
 error-no-such-entity-detail = There is no record here with that id.
 error-deleted-while-editing = There is no record here with that id. It may have been deleted while you were editing it.
@@ -210,6 +221,10 @@ admin-bundle-heavy = This archive is { $size }. The whole of it is loaded at sta
 
 admin-fields = Fields
 admin-raw-json = Raw JSON
+form-more-fields = { $n ->
+        [one] One more field
+       *[other] { $n } more fields
+    }
 admin-raw-json-help = The whole entity, so nothing is uneditable — lists such as a family's partners and children, or a place's border history, live here. This is the starting document; the fields above are then written over the paths they own, so edit a value in one place or the other, not both. It must parse as JSON or nothing is saved.
 admin-save = Save
 admin-cancel = Cancel
@@ -289,7 +304,7 @@ place-map-clear = Clear the point
 place-open-in-map = Find this place in OpenStreetMap, then paste the link back
 
 person-tab-record = Record
-person-tab-life = Life
+person-tab-life = Events
 person-tab-media = Media
 person-tab-tree = Tree
 person-tab-history = History
@@ -302,6 +317,32 @@ admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit
 admin-page-of = Page { $page } of { $pages }
+list-select-row = Select { $name }
+list-kind-label = Type
+list-select-page = Select every row on this page
+list-selected = { $n ->
+        [one] { $n } selected
+       *[other] { $n } selected
+    }
+list-export = Export
+list-escape = Esc to clear the selection
+bulk-confirm-title = { $n ->
+        [one] Delete { $n } record?
+       *[other] Delete { $n } records?
+    }
+bulk-confirm-detail = A record that another one still refers to is refused, and then nothing is deleted.
+bulk-confirm-go = Delete them
+bulk-deleted = { $n ->
+        [one] { $n } record deleted.
+       *[other] { $n } records deleted.
+    }
+bulk-refused = Nothing was deleted: { $name } is still referred to elsewhere. Remove that reference first, then try again.
+bulk-changed = { $n ->
+        [one] { $n } record changed since the list was shown, so nothing was deleted. Reload the list and try again.
+       *[other] { $n } records changed since the list was shown, so nothing was deleted. Reload the list and try again.
+    }
+admin-range = { $from }–{ $to } of { $total }
+list-filiation = Filiation
 admin-previous = Previous
 admin-next = Next
 admin-saved = Saved as version { $version } — { $summary }
@@ -580,6 +621,7 @@ record-see-in-tree-title = Open the grid of cards around this person
 record-open-full-page = Open full page ↗
 record-open-full-title = Open the standalone, shareable page
 record-edit = Edit
+record-see-in-river = See in the river
 panel-empty = Select a card to see that person's full record here.
 person-see-in-tree = See this person in the tree
 person-visibility-inline = visibility:
@@ -649,7 +691,6 @@ record-verbatim-note = Kept exactly as the record stated it, because no converte
 record-file-to-attach = File to attach
 record-document-type = Document type
 record-caption = Caption
-record-caption-placeholder = Caption (optional)
 record-history-entry-meta = — { $at }
 record-history-entry-version = , { $version }
 
@@ -1104,7 +1145,6 @@ identity-living-help = This is the flag the source set. The page separately pres
 identity-error-no-display = A record needs a name to be shown by. Nothing was saved.
 editor-blank-to-remove = Clear the name to remove this entry.
 # A BCP 47 tag, shown as an example in the language field.
-identity-culture-placeholder = en
 identity-edit-link = Edit names and identity
 
 ## Union types, statuses and date precision, said out loud
@@ -2896,6 +2936,7 @@ diff-section-ocr = Recognised text
 diff-section-format-version = Format version
 history-created = created
 history-deleted = deleted
+history-merged = merged into another record
 history-attached = attached a file
 admin-raw-json-unparsed = The raw JSON did not parse ({ $error }). Nothing was saved.
 admin-raw-json-dangling = The raw JSON points { $field } at { $target }, which is not in this archive. Pick it with a field above, or correct the id. Nothing was saved.
@@ -3213,12 +3254,18 @@ river-legend-title = How to read the river
 
 # Masthead search
 search-label = Search for a person
-search-placeholder = Search for a person
+search-short = Person
+date-qualifier = Qualifier
+date-qualifier-circa = circa
 search-title = Search
 search-heading = People matching “{ $q }”
 search-none = Nobody you can see is called that.
 search-open-record = Open the record
 search-hint = Enter travels the river to them; Shift+Enter opens their record.
+search-summary = { $n ->
+        [one] { $n } person
+       *[other] { $n } people
+    } · ↵ travel · ⇧↵ open the record
 search-empty-query = Type a name to search.
 
 # Data quality (/quality)
@@ -3228,6 +3275,9 @@ quality-none = Nothing worth a look: every check passed.
 quality-intro = Nothing here is changed for you. Each line is a pattern worth checking — often there is a good reason for it. Open the record and decide, or mark it as checked.
 quality-groups-label = Kinds of finding
 quality-all = All
+quality-show-label = Show
+quality-show-open-option = To check
+quality-download = Download
 quality-group-names = Names
 quality-group-relations = Relations
 quality-group-dates = Dates

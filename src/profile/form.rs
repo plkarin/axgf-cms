@@ -119,6 +119,10 @@ pub struct EditorAttribute {
     pub problems: Vec<String>,
     /// A field this application recorded before AXGF 1.1 with no 1.1 home.
     pub earlier: bool,
+    /// Holds something — a recorded row, or a problem with what was just
+    /// submitted. Drawn at rest; the rest wait behind the group's one
+    /// disclosure (the minimalism pass).
+    pub filled: bool,
 }
 
 /// The group, as the editor draws it.
@@ -188,6 +192,7 @@ pub fn editor_group(
                 .class
                 .map(|c| crate::i18n::translate(lang, &format!("scope-{}", c.as_str()), None)),
             is_series: a.cardinality == Cardinality::Series,
+            filled: false,
             rows,
             problems: problems
                 .get(a.path)
@@ -241,6 +246,7 @@ pub fn editor_group(
             class_label: (left.extension == crate::physical::HEALTH_KEY)
                 .then(|| crate::i18n::translate(lang, "scope-health", None)),
             is_series: true,
+            filled: false,
             rows,
             problems: Vec::new(),
             earlier: true,
@@ -255,6 +261,9 @@ pub fn editor_group(
                 a.class_label = None;
             }
         }
+    }
+    for a in &mut attributes {
+        a.filled = a.rows.iter().any(|r| !r.spare) || !a.problems.is_empty();
     }
     EditorGroup {
         class_label,

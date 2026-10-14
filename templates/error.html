@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} — {{ t("app-name") }}{% endblock %}
 
+{# What happened (the title, then the sentence), then what to do next: the
+   ways on, as buttons underneath (B7). The notice's shape says what kind of
+   thing happened without colour: a ring for something simply not here, a
+   diamond for a refusal or a conflict, a square for a failure. #}
+
 {% block content %}
 <h1>{{ title }}</h1>
-<p class="lede">{{ detail }}</p>
-<p>
-  {% if error_back %}<a class="btn" href="{{ error_back }}">{{ error_back_label }}</a>{% endif %}
-  <a class="btn" href="/">{{ t("error-back-to-start") }}</a>
-</p>
+<div class="notice{% if status >= 500 %} error{% elif status != 404 %} warn{% endif %}">
+  <p>{{ detail }}</p>
+  <div class="notice-actions">
+    {% if error_back %}<a class="btn" href="{{ error_back }}">{{ error_back_label }}</a>{% endif %}
+    <a class="btn" href="/">{{ t("error-back-to-start") }}</a>
+  </div>
+</div>
 {% endblock %}

@@ -29,7 +29,7 @@
       </tbody>
     </table>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("admin-save") }}</button>
+      <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
   </fieldset>
 </form>
@@ -50,7 +50,7 @@
         <input type="checkbox" name="set_avatar" value="on"> {{ t("avatar-upload-button") }}</label>
     </div>
     <div class="ed-actions">
-      <button type="submit" class="btn primary">{{ t("documents-upload") }}</button>
+      <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("documents-upload") }}</button>
     </div>
   </fieldset>
 </form>
@@ -63,7 +63,7 @@
     {% for f in files %}
     <li>
       <span><bdi>{{ f.filename }}</bdi> <span class="small muted">{{ f.type }}</span></span>
-      <a class="btn small-btn" href="/admin/document/{{ f.id }}/edit">{{ t("documents-edit-details") }}</a>
+      <a class="btn small" href="/admin/document/{{ f.id }}/edit">{{ t("documents-edit-details") }}</a>
       {% if is_admin %}{{ m.delete_block(t, "document", f.id, t("documents-delete"), f.version) }}{% endif %}
     </li>
     {% endfor %}

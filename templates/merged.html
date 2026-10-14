@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ t("app-name") }}{% endblock %}
+
+{# A person's old address, after they were merged into another record (B7):
+   what happened, then what to do next, and the two ways on as buttons. #}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="notice" role="status">
+  <p>{{ detail }}</p>
+  <div class="notice-actions">
+    <a class="btn primary" href="/person/{{ into }}">{{ t("error-merged-open") }}</a>
+    <a class="btn" href="/">{{ t("error-back-to-river") }}</a>
+  </div>
+</div>
+{% endblock %}

@@ -5,7 +5,8 @@
 
    Context: `p` (a PersonView), `is_admin`, `compact`, and `tab`.
 
-   `tab` names which face of the record to draw: "record", "life" or "media".
+   `tab` names which face of the record to draw: "record" (the fiche),
+   "family", "life", "sources" or "media" (`crate::person::RecordTab`).
    When it is undefined every section is drawn, which is what the tree side
    panel wants — a panel is one glance at a whole person, not a place to
    navigate. Nothing is ever *dropped* by a tab; the sections are the same
@@ -116,7 +117,7 @@
 {% endif %}
 
 {# ------------------------------------------------------------------ FAMILY #}
-{% if (tab is undefined or tab == "record" or tab == "family") and (p.parents or p.siblings or p.unions) %}
+{% if (tab is undefined or tab == "family") and (p.parents or p.siblings or p.unions) %}
 <section id="family" class="rec-section">
   {{ m.sec(t, t("record-family"), compact, t("record-family-help")) }}
   {# Only wrap a grid around cards that exist: an empty two-column grid still
@@ -197,7 +198,7 @@
 {% endif %}
 
 {# --------------------------------------------------- OTHER RELATIONSHIPS #}
-{% if (tab is undefined or tab == "record" or tab == "family") and (p.links) %}
+{% if (tab is undefined or tab == "family") and (p.links) %}
 <section class="links-section rec-section" id="relationships">
   {{ m.sec(t, t("record-other-relationships"), compact, t("record-other-relationships-help")) }}
   <div class="grid cols-2">
@@ -295,7 +296,7 @@
 {#- Beside the river or the grid the profile is collapsed into a count —
     "Profil · 12 renseignés" — and the record page, one link away, draws it
     whole. The record page draws it itself (`full_record`). -#}
-{% if not full_record and p.profile_count %}
+{% if not full_record and not river_tabs and p.profile_count %}
 <section id="profile-summary" class="rec-section">
   <p class="small">{{ t("profile-summary-link", n=p.profile_count) }}</p>
 </section>
@@ -374,9 +375,11 @@
    a signed-out reader opening Media on a person with no documents got an
    entirely empty page: no heading, no sentence, nothing. Most people on a
    converted bundle are exactly that person. #}
-{% set has_evidence = p.sources or p.documents or p.images %}
-{% set show_sources = true %}
-{% set show_files = true %}
+{#- Sources and Médias are two tabs; the grid's panel, with no tab, draws
+    both halves. -#}
+{% set show_sources = tab is undefined or tab == "sources" %}
+{% set show_files = tab is undefined or tab == "media" %}
+{% set has_evidence = (show_sources and p.sources) or (show_files and (p.documents or p.images)) %}
 {#- Only when there is evidence to show: an empty section is not drawn, and
     attaching a file is an edit (the documents editor). -#}
 {% if has_evidence %}

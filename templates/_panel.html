@@ -36,10 +36,17 @@
     </div>
   </div>
 
-  {#- The record's filled sections, the profile as a count. No tabs: with
-      nothing empty drawn, the panel is short enough to read through. -#}
+  {#- Beside the river (`river_tabs`): the record's tabs, as on the record
+      page — only those holding something. The grid's panel has no tabs and
+      draws every section, with the profile as a count. -#}
+  {% if river_tabs %}{% include "_tabs.html" %}{% endif %}
+
   <div class="record-body" data-content>
+    {% if river_tabs and tab == "profile" %}
+    {% include "_profile_read.html" %}
+    {% else %}
     {% include "_person_detail.html" %}
+    {% endif %}
   </div>
 </div>
 {% else %}

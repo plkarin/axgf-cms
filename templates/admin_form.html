@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
+{% from "_profile_edit.html" import attribute %}
 {#- One field of the form, as it always was. -#}
 {% macro field(t, m, f) %}
     <div class="field">
@@ -80,10 +81,26 @@
 
   <fieldset>
     <legend>{{ t("admin-fields") }}</legend>
-    {#- What the record holds, and only that (the minimalism pass): every
-        empty field waits behind one disclosure, with its count. A new record
-        shows its first group. -#}
+    {#- A person's own fields — names, dates, places, parents — are drawn
+        whether or not they hold anything (v0.4.1): in edit mode an empty
+        field is what the editor came to fill. Other kinds keep what they
+        hold at rest and their empty fields behind one disclosure; a new
+        record shows its first group. -#}
+    {#- A person's fields are the record being edited: in edit mode they are
+        its content, not the page's chrome, and the walk counts them so. -#}
+    <div class="ed-fields"{% if kind == "person" %} data-content{% endif %}>
     {% for f in fields if not f.inside_date and f.show %}{{ field(t, m, f) }}{% endfor %}
+    </div>
+    {% if kind == "person" and not creating %}
+    <div class="field ed-parents">
+      <span class="field-label">{{ t("record-parents") }}</span>
+      {% if parents %}
+      <ul class="plain">{% for r in parents %}<li><bdi>{{ r.name }}</bdi></li>{% endfor %}</ul>
+      {% endif %}
+      <p class="small"><a href="/admin/person/{{ id }}/family">{{ t("family-edit-link") }}</a>
+        · <a href="/admin/person/{{ id }}/identity">{{ t("identity-edit-link") }}</a></p>
+    </div>
+    {% endif %}
     {% set rest = fields | rejectattr("inside_date") | rejectattr("show") | list %}
     {% if rest %}
     <details class="more-fields">
@@ -92,6 +109,53 @@
     </details>
     {% endif %}
   </fieldset>
+
+  {#- The AXGF 1.1 profile: all fourteen groups, always, by name, each with
+      how many of its fields hold a value (v0.4.1). One disclosure per
+      group, never one per field. Closed by default; a group with content
+      opens. Opening one draws every field in it, filled and empty alike,
+      ready to type into. One save writes the fields above and every group
+      that was changed; an untouched group is left exactly as stored. -#}
+  {% if profile_sections %}
+  <section class="pf-groups" aria-labelledby="pf-groups-title">
+    <h2 id="pf-groups-title">{{ t("person-tab-profile") }}</h2>
+    {% for s in profile_sections %}
+    {% set g = s.group %}
+    <details class="pf-group" id="group-{{ g.key }}"{% if s.open %} open{% endif %}>
+      <summary><span class="pf-group-title">{{ g.title }}</span><span class="sep" aria-hidden="true"> · </span>
+        <span class="pf-group-count">{% if s.filled %}{{ t("profile-group-filled", n=s.filled) }}{% else %}0{% endif %}</span>
+        {%- if g.class_label %} <span class="chip small pa-class">{{ g.class_label }}</span>{% endif %}</summary>
+      {#- The fields are the record's content: how many are filled follows
+          the record, so the walk does not count them as chrome. -#}
+      <div class="pf-group-body" data-content>
+        <input type="hidden" name="pf.{{ g.key }}" value="1">
+        <p class="small muted">{{ g.intro }}</p>
+        {% if g.withheld %}
+        <div class="notice" role="status"><p>{{ t("profile-editor-withheld", classes=g.withheld | join(", ")) }}</p></div>
+        {% endif %}
+        {% if s.living_class %}
+        <div class="notice warn"><p>{{ t("profile-living-class-note") }}</p></div>
+        {% endif %}
+        {% if g.key == "relationships" %}
+        {#- Nothing here is an attribute of the person: parents, partners,
+            children and godparents are Family and Link entities that name
+            them, and are edited there. -#}
+        <p>{{ t("profile-relationships-elsewhere") }}</p>
+        <ul class="plain cta-row">
+          <li><a class="btn" href="/admin/person/{{ id }}/family">{{ t("family-edit-link") }}</a></li>
+          <li><a class="btn" href="/admin/person/{{ id }}/links">{{ t("links-edit-link") }}</a></li>
+          <li><a class="btn" href="/admin/person/{{ id }}/events">{{ t("events-edit-link") }}</a></li>
+        </ul>
+        {% elif not g.attributes %}
+        <p class="notice" role="status">{{ t("profile-editor-nothing") }}</p>
+        {% else %}
+        {% for a in g.attributes %}{{ attribute(t, m, a, profile_sources, precisions) }}{% endfor %}
+        {% endif %}
+      </div>
+    </details>
+    {% endfor %}
+  </section>
+  {% endif %}
 
   {# One datalist per group, rendered once and shared by every picker on the
      page that points at it. #}
@@ -170,4 +234,8 @@
 </ol>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+{% if profile_sections %}<script src="/static/profile.js" defer></script>{% endif %}
 {% endblock %}

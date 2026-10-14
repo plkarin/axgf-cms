@@ -79,23 +79,11 @@ const JULES: &str = "11111111-1111-4111-8111-111111111111";
 async fn person_page_surfaces_every_gedcom_gap() {
     let src = showcase_bundle("person-src");
     let (app, _p) = app_with_bundle("person", &src);
-    // The gaps this test is about are spread across the record and the life
-    // tab, and the question — does the page state what the source could not
-    // pin down — is about the page rather than about any one tab. So it reads
-    // both and asserts against the pair.
-    let record = expect_status(
-        get(&app, &format!("/person/{JULES}")).await,
-        StatusCode::OK,
-        "person page",
-    )
-    .await;
-    let life = expect_status(
-        get(&app, &format!("/person/{JULES}?tab=life")).await,
-        StatusCode::OK,
-        "life tab",
-    )
-    .await;
-    let body = format!("{record}{life}");
+    // The gaps this test is about are spread across the record's tabs, and
+    // the question — does the page state what the source could not pin down
+    // — is about the page rather than about any one tab. So it reads every
+    // tab the record offers and asserts against all of them.
+    let body = every_tab(&app, &format!("/person/{JULES}"), None).await;
 
     // Date honesty: circa and preserved-unparseable both stated as such.
     assert!(body.contains("circa 1500"), "circa must be stated");
@@ -198,12 +186,7 @@ async fn a_referenced_but_absent_person_renders_unlinked() {
     std::fs::write(&path, bytes).expect("write");
 
     let (app, _p) = app_with_bundle("ghost", &path);
-    let body = expect_status(
-        get(&app, "/person/aaaaaaaa-1111-4111-8111-111111111111").await,
-        StatusCode::OK,
-        "person with a ghost child",
-    )
-    .await;
+    let body = every_tab(&app, "/person/aaaaaaaa-1111-4111-8111-111111111111", None).await;
 
     assert!(
         body.contains("[Unknown]"),
@@ -344,29 +327,17 @@ async fn the_page_carries_the_full_record_section_by_section() {
     std::fs::write(&path, bytes).expect("write");
 
     let (app, _p) = app_with_bundle("full", &path);
-    // "The full record, section by section" is now a claim about the page as a
-    // whole rather than about one response: the sections are dealt across four
-    // tabs. Both halves are read and the assertions run against the pair, with
-    // the life tab kept separately for the ordering check below.
-    let record = expect_status(
-        get(&app, &format!("/person/{jules}")).await,
-        StatusCode::OK,
-        "the full record",
-    )
-    .await;
+    // "The full record, section by section" is a claim about the page as a
+    // whole rather than about one response: the sections are dealt across
+    // the record's tabs. Every tab is read and the assertions run against all
+    // of them, with the life tab kept separately for the ordering check below.
+    let body = every_tab(&app, &format!("/person/{jules}"), None).await;
     let life_body = expect_status(
         get(&app, &format!("/person/{jules}?tab=life")).await,
         StatusCode::OK,
         "the life tab",
     )
     .await;
-    let media_body = expect_status(
-        get(&app, &format!("/person/{jules}?tab=media")).await,
-        StatusCode::OK,
-        "the media tab",
-    )
-    .await;
-    let body = format!("{record}{life_body}{media_body}");
 
     // Identity: both scripts, the period the name was used, visibility.
     assert!(body.contains("Бронислав Клицкий"), "native script");
@@ -459,42 +430,85 @@ fn sections_in(html: &str) -> Vec<String> {
 /// A tab is a link, so it survives having no scripting and being sent to
 /// somebody else.
 #[tokio::test]
-async fn every_old_tab_address_is_the_one_record_page() {
-    // The record is one page in read mode (the minimalism pass): no tabs,
-    // every filled section. Links to the old tabs, from anywhere, still land
-    // on the person, and on the same page.
+async fn every_tab_is_an_address_and_only_filled_tabs_are_drawn() {
+    // The record's tabs (v0.4.1): Fiche · Famille · Événements · Sources ·
+    // Médias · Profil, each a link, and only those holding something.
     let src = showcase_bundle("tab-url-src");
     let (app, _p) = app_with_bundle("tab-url", &src);
-    let whole = body_string(get_admin(&app, &format!("/person/{JULES}")).await).await;
-    assert!(!whole.contains("person-tabs"), "no tab bar in read mode");
-    assert!(whole.contains(r#"<section id="identity""#));
-    for tab in ["life", "media", "profile", "tree", "history", "nonsense"] {
-        let resp = get_admin(&app, &format!("/person/{JULES}?tab={tab}")).await;
+    let cookie = admin_cookie(&app).await;
+    let fiche =
+        body_string(get_with_cookie(&app, &format!("/person/{JULES}"), &cookie).await).await;
+    let hrefs = tab_hrefs(&fiche);
+    assert!(hrefs.len() > 1, "a strip of tabs: {hrefs:?}");
+    assert_eq!(
+        hrefs[0],
+        format!("/person/{JULES}"),
+        "the fiche first, with no ?tab="
+    );
+    assert!(fiche.contains(r#"<section id="identity""#));
+    assert!(!fiche.contains("is-empty"), "no tab is drawn dimmed");
+    // Jules has no documents and no profile: no Médias, no Profil.
+    for absent in ["media", "profile"] {
+        assert!(
+            !hrefs.iter().any(|h| h.ends_with(&format!("tab={absent}"))),
+            "{absent} holds nothing and is not drawn: {hrefs:?}"
+        );
+    }
+    // Each tab lands on itself, current.
+    for href in &hrefs {
+        let body = body_string(get_with_cookie(&app, href, &cookie).await).await;
+        let doc = scraper::Html::parse_document(&body);
+        let sel = scraper::Selector::parse(r#"nav.person-tabs a[aria-current="page"]"#).unwrap();
+        let current: Vec<_> = doc
+            .select(&sel)
+            .filter_map(|a| a.value().attr("href"))
+            .collect();
+        assert_eq!(
+            current,
+            [href.as_str()],
+            "{href}: itself, and only itself, is current"
+        );
+    }
+    // An old, unknown or empty tab lands on the fiche rather than on an
+    // error or an empty page.
+    for tab in ["media", "profile", "tree", "history", "nonsense"] {
+        let resp = get_with_cookie(&app, &format!("/person/{JULES}?tab={tab}"), &cookie).await;
         assert_eq!(resp.status(), StatusCode::OK, "{tab}");
         let body = body_string(resp).await;
         assert!(
             body.contains(r#"<section id="identity""#),
-            "?tab={tab} shows the record"
+            "?tab={tab} shows the fiche"
         );
-        assert!(!body.contains("person-tabs"));
     }
 }
 
-/// The side panel is not a tabbed page and still shows everything.
+/// The grid's side panel is not tabbed and still shows everything.
 ///
 /// `_person_detail.html` renders every section when no tab is named. That is
-/// what the panel asks for: it is one glance at a whole person inside the
-/// tree, not somewhere to navigate.
+/// what the grid's panel asks for: it is one glance at a whole person inside
+/// the tree, not somewhere to navigate. Beside the river it has the record
+/// page's tabs.
 #[tokio::test]
 async fn the_tree_panel_shows_the_same_record_as_the_page() {
-    // Both are read mode: the record's filled sections. The page adds the
-    // profile's groups and charts; the panel says the profile in a count.
     let src = showcase_bundle("panel-src");
     let (app, _p) = app_with_bundle("panel", &src);
-    let panel =
-        sections_in(&body_string(get_admin(&app, &format!("/tree/panel/{JULES}")).await).await);
-    let record =
-        sections_in(&body_string(get_admin(&app, &format!("/person/{JULES}")).await).await);
+    let cookie = admin_cookie(&app).await;
+    let panel_html =
+        body_string(get_with_cookie(&app, &format!("/tree/panel/{JULES}"), &cookie).await).await;
+    assert!(
+        !panel_html.contains("person-tabs"),
+        "the grid's panel has no tabs"
+    );
+    let panel = sections_in(&panel_html);
+    let record = sections_in(&every_tab(&app, &format!("/person/{JULES}"), Some(&cookie)).await);
+    let river = sections_in(
+        &every_tab(
+            &app,
+            &format!("/tree/panel/{JULES}?river=1&n=3"),
+            Some(&cookie),
+        )
+        .await,
+    );
     for id in ["identity", "life"] {
         assert!(panel.iter().any(|s| s == id), "{id}: {panel:?}");
         assert!(record.iter().any(|s| s == id), "{id}: {record:?}");
@@ -504,6 +518,10 @@ async fn the_tree_panel_shows_the_same_record_as_the_page() {
             assert!(
                 record.contains(id),
                 "the page has the panel's {id}: {record:?}"
+            );
+            assert!(
+                river.contains(id),
+                "the river's tabs have the panel's {id}: {river:?}"
             );
         }
     }
@@ -665,14 +683,15 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
     .expect("write");
     let (app, _p) = app_with_bundle("charts-living", &path);
 
-    let admin = body_string(get_admin(&app, &format!("/person/{id}")).await).await;
+    let cookie = admin_cookie(&app).await;
+    let admin = every_tab(&app, &format!("/person/{id}"), Some(&cookie)).await;
     assert!(
         admin.contains("<details class=\"radar-fold\">"),
         "folded for the admin"
     );
     assert!(admin.contains("Openness</span> <bdi>") || admin.contains("Openness 81"));
 
-    let public = body_string(get(&app, &format!("/person/{id}")).await).await;
+    let public = every_tab(&app, &format!("/person/{id}"), None).await;
     assert!(
         !public.contains("radar-fold"),
         "nothing to unfold for the public"

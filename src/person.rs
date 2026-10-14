@@ -2100,129 +2100,59 @@ fn dedup_refs(v: &mut Vec<PersonRef>) {
     });
 }
 
-/// Which face of the record the reader asked for.
+/// Which face of the record the reader is looking at: the six tabs of
+/// Study 06 (B4) — Fiche · Famille · Événements · Sources · Médias · Profil —
+/// on the record page and in the panel beside the river alike.
 ///
-/// The person page used to be one scroll of eight sections with a list of
-/// anchor links above it. That index was a table of contents for a document
-/// nobody reads top to bottom: somebody opening a person wants their life, or
-/// their photographs, or where they sit in the family, and those three are
-/// different questions rather than three parts of one answer.
+/// Tabs organise what exists; they never display what is missing. A tab with
+/// nothing in it is not drawn at all — not dimmed, not disabled: a sparse
+/// person may have two tabs and a rich one six (v0.4.1, after the minimalism
+/// pass removed them altogether). Inside each tab the read-mode rule is
+/// unchanged: only what is recorded.
 ///
 /// The record itself is not split. Every section still exists and still holds
-/// exactly what it held; this only decides which of them are on screen at
-/// once. The tree side panel passes no tab at all and gets all of them, which
-/// is right for a panel — see `_person_detail.html`.
+/// exactly what it held; a tab only decides which of them are on screen. The
+/// grid's side panel passes no tab and gets every section.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Tab {
-    /// Who they were: identity, family, other relationships, notes.
-    Record,
-    /// What happened: the timeline, the occupations, the places.
-    Life,
-    /// What the record says about them, attribute by attribute: the fourteen
-    /// groups of AXGF 1.1, one sub-tab each.
-    Profile,
-    /// What proves it: documents, images, sources.
-    Media,
-    /// Where they sit: the family graph, rooted on them.
-    Tree,
-    /// What was corrected, by whom, and when. Metadata about the record
-    /// rather than content of it, which is why it is a tab of its own and no
-    /// longer the foot of the first one. Only ever offered to a signed-in
-    /// reader: the journal names the family's editors and quotes what each of
-    /// them changed, which is why it is kept out of the shareable bundle.
-    History,
-}
-
-/// The tabs, in the order they are shown.
-pub const TABS: &[Tab] = &[
-    Tab::Record,
-    Tab::Life,
-    Tab::Profile,
-    Tab::Media,
-    Tab::Tree,
-    Tab::History,
-];
-
-impl Tab {
-    /// The slug used in `?tab=` and as the template's discriminator.
-    pub fn slug(self) -> &'static str {
-        match self {
-            Self::Record => "record",
-            Self::Life => "life",
-            Self::Profile => "profile",
-            Self::Media => "media",
-            Self::Tree => "tree",
-            Self::History => "history",
-        }
-    }
-
-    /// The catalogue key for its label.
-    pub fn key(self) -> &'static str {
-        match self {
-            Self::Record => "person-tab-record",
-            Self::Life => "person-tab-life",
-            Self::Profile => "person-tab-profile",
-            Self::Media => "person-tab-media",
-            Self::Tree => "person-tab-tree",
-            Self::History => "person-tab-history",
-        }
-    }
-
-    /// Read a tab out of `?tab=`.
-    ///
-    /// An unknown value is the record rather than a 404. A tab is a view of a
-    /// page that exists, so a stale or mistyped link should land the reader on
-    /// the person they asked for rather than on an error about a query
-    /// parameter — the thing they wanted is right there behind it.
-    pub fn from_query(value: Option<&str>) -> Self {
-        match value.map(str::trim) {
-            Some("life") => Self::Life,
-            Some("profile") => Self::Profile,
-            Some("media") => Self::Media,
-            Some("tree") => Self::Tree,
-            Some("history") => Self::History,
-            _ => Self::Record,
-        }
-    }
-}
-
-/// The record's tabs beside the river.
-///
-/// The same machinery as [`Tab`] — a slug read from `?tab=`, a catalogue key,
-/// and the slug passed to `_person_detail.html` as its `tab` — regrouping the
-/// sections that already exist. Nothing here is new content: the fiche is the
-/// panel body as it was, every section in it, and each other tab is a subset
-/// of those sections. The grid's panel and the person page pass no river tab
-/// and are drawn exactly as before.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RiverTab {
-    /// The whole record, as the panel always drew it.
+pub enum RecordTab {
+    /// Who they were: identity and notes.
     Fiche,
     /// Family and the other relationships.
     Family,
-    /// The timeline, occupations and places: the person page's Life face.
+    /// The timeline, occupations and places.
     Life,
     /// The sources half of the evidence section.
     Sources,
     /// Photographs and documents: the other half.
     Media,
-    /// The AXGF 1.1 profile, as the person page's Profile tab draws it.
+    /// The AXGF 1.1 profile: its filled groups and, on the record page, the
+    /// radars that hold three axes or more.
     Profile,
 }
 
-/// The river's tabs, in the order they are shown.
-pub const RIVER_TABS: &[RiverTab] = &[
-    RiverTab::Fiche,
-    RiverTab::Family,
-    RiverTab::Life,
-    RiverTab::Sources,
-    RiverTab::Media,
-    RiverTab::Profile,
+/// The tabs, in the order they are shown.
+pub const RECORD_TABS: &[RecordTab] = &[
+    RecordTab::Fiche,
+    RecordTab::Family,
+    RecordTab::Life,
+    RecordTab::Sources,
+    RecordTab::Media,
+    RecordTab::Profile,
 ];
 
-impl RiverTab {
-    /// The slug used in `?tab=`. The fiche passes no `tab` to the partial at
-    /// all, which is what draws every section.
+/// One tab as a template draws it.
+#[derive(Debug, Clone, Serialize)]
+pub struct TabView {
+    pub slug: &'static str,
+    pub key: &'static str,
+    /// How much is behind the tab, in mono beside its name. `None` for the
+    /// fiche, which is the record's summary rather than a list of things, and
+    /// for a profile that holds only a withheld class or a chart.
+    pub count: Option<usize>,
+}
+
+impl RecordTab {
+    /// The slug used in `?tab=` and passed to `_person_detail.html` as `tab`.
     pub fn slug(self) -> &'static str {
         match self {
             Self::Fiche => "record",
@@ -2234,8 +2164,7 @@ impl RiverTab {
         }
     }
 
-    /// The catalogue key for its label. Five are the person page's or a
-    /// section's own words; only "Sources" is new.
+    /// The catalogue key for its label.
     pub fn key(self) -> &'static str {
         match self {
             Self::Fiche => "person-tab-record",
@@ -2247,8 +2176,12 @@ impl RiverTab {
         }
     }
 
-    /// Read a tab out of `?tab=`; anything unknown is the fiche, as an
-    /// unknown [`Tab`] is the record.
+    /// Read a tab out of `?tab=`.
+    ///
+    /// An unknown value is the fiche rather than a 404. A tab is a view of a
+    /// page that exists, so a stale or mistyped link should land the reader on
+    /// the person they asked for rather than on an error about a query
+    /// parameter — the thing they wanted is right there behind it.
     pub fn from_query(value: Option<&str>) -> Self {
         match value.map(str::trim) {
             Some("family") => Self::Family,
@@ -2260,7 +2193,8 @@ impl RiverTab {
         }
     }
 
-    /// How much is behind the tab, as the person page counts its own.
+    /// How much is behind the tab. Zero means the tab is not drawn, except
+    /// for the two whose content is not a list: see [`tabs_for`].
     pub fn count(self, p: &PersonView) -> usize {
         match self {
             Self::Fiche => 0,
@@ -2272,10 +2206,58 @@ impl RiverTab {
             }
             Self::Life => p.timeline.len() + p.occupations.len() + p.places.len(),
             Self::Sources => p.sources.len(),
+            // `images` are among `documents`.
             Self::Media => p.documents.len(),
             Self::Profile => p.profile_count,
         }
     }
+}
+
+/// The tabs this record has something in, in order.
+///
+/// `profile` says whether the Profil tab would draw anything: a filled or
+/// withheld group, or — on the record page — a radar with three axes or more.
+/// The caller knows which of those the surface draws; a tab that would hold
+/// only radars below that line is not drawn.
+pub fn tabs_for(p: &PersonView, profile: bool) -> Vec<TabView> {
+    RECORD_TABS
+        .iter()
+        .filter_map(|&t| {
+            let n = t.count(p);
+            let holds = match t {
+                // What the fiche draws: the showcase strip, the identity
+                // section, the notes.
+                RecordTab::Fiche => {
+                    !p.showcase_notes.is_empty()
+                        || !p.names.is_empty()
+                        || p.gender.is_some()
+                        || !p.notes.is_empty()
+                }
+                RecordTab::Media => !p.documents.is_empty() || !p.images.is_empty(),
+                RecordTab::Profile => profile,
+                _ => n > 0,
+            };
+            holds.then(|| TabView {
+                slug: t.slug(),
+                key: t.key(),
+                count: (t != RecordTab::Fiche && n > 0).then_some(n),
+            })
+        })
+        .collect()
+}
+
+/// The tab on screen: the one asked for when the record has it, else the
+/// first it has. A link to a tab this person has nothing in — the river keeps
+/// the reader's tab as they travel — lands on the record rather than on an
+/// empty page.
+pub fn current_tab(requested: Option<&str>, tabs: &[TabView]) -> RecordTab {
+    let asked = RecordTab::from_query(requested);
+    if tabs.iter().any(|t| t.slug == asked.slug()) {
+        return asked;
+    }
+    tabs.first()
+        .map(|t| RecordTab::from_query(Some(t.slug)))
+        .unwrap_or(RecordTab::Fiche)
 }
 
 #[cfg(test)]
@@ -2895,36 +2877,81 @@ mod tests {
     }
 
     #[test]
-    fn an_unknown_tab_lands_on_the_record_rather_than_a_404() {
+    fn an_unknown_tab_lands_on_the_fiche_rather_than_a_404() {
         // A tab names a view of a page that exists. A stale link should show
         // the person, not an error about a query parameter.
-        assert_eq!(Tab::from_query(None), Tab::Record);
-        assert_eq!(Tab::from_query(Some("")), Tab::Record);
-        assert_eq!(Tab::from_query(Some("nonsense")), Tab::Record);
+        assert_eq!(RecordTab::from_query(None), RecordTab::Fiche);
+        assert_eq!(RecordTab::from_query(Some("")), RecordTab::Fiche);
+        assert_eq!(RecordTab::from_query(Some("nonsense")), RecordTab::Fiche);
         assert_eq!(
-            Tab::from_query(Some("Life")),
-            Tab::Record,
+            RecordTab::from_query(Some("Life")),
+            RecordTab::Fiche,
             "slugs are exact"
         );
         assert_eq!(
-            Tab::from_query(Some(" life ")),
-            Tab::Life,
+            RecordTab::from_query(Some(" life ")),
+            RecordTab::Life,
             "but padding is not a typo"
         );
     }
 
     #[test]
     fn every_tab_round_trips_through_its_own_slug() {
-        for tab in TABS {
-            assert_eq!(Tab::from_query(Some(tab.slug())), *tab, "{}", tab.slug());
+        for tab in RECORD_TABS {
+            assert_eq!(
+                RecordTab::from_query(Some(tab.slug())),
+                *tab,
+                "{}",
+                tab.slug()
+            );
         }
     }
 
     #[test]
     fn every_tab_has_a_distinct_slug_and_key() {
-        let slugs: std::collections::BTreeSet<_> = TABS.iter().map(|t| t.slug()).collect();
-        let keys: std::collections::BTreeSet<_> = TABS.iter().map(|t| t.key()).collect();
-        assert_eq!(slugs.len(), TABS.len());
-        assert_eq!(keys.len(), TABS.len());
+        let slugs: std::collections::BTreeSet<_> = RECORD_TABS.iter().map(|t| t.slug()).collect();
+        let keys: std::collections::BTreeSet<_> = RECORD_TABS.iter().map(|t| t.key()).collect();
+        assert_eq!(slugs.len(), RECORD_TABS.len());
+        assert_eq!(keys.len(), RECORD_TABS.len());
+    }
+
+    #[test]
+    fn a_tab_with_nothing_in_it_is_not_offered() {
+        // A bare person: a name and nothing else. One tab, the fiche, and
+        // no count on it.
+        let flat = json!({"persons": {"p": {"id": "p", "type": "person",
+            "identity": {"name": {"display": "Bare"}}}}});
+        let v = build_in(&flat, "p", &open(), "en").expect("built");
+        let tabs = tabs_for(&v, false);
+        assert_eq!(tabs.iter().map(|t| t.slug).collect::<Vec<_>>(), ["record"]);
+        assert_eq!(tabs[0].count, None);
+        // Asked for a tab it does not have, the reader gets the fiche.
+        assert_eq!(current_tab(Some("media"), &tabs), RecordTab::Fiche);
+        // A profile that would draw something is a tab; one that would not
+        // is not.
+        assert_eq!(tabs_for(&v, true).len(), 2);
+    }
+
+    #[test]
+    fn a_rich_person_has_a_tab_for_each_thing_recorded() {
+        let v = build_in(&bundle(), "p-jules", &open(), "en").expect("built");
+        let tabs = tabs_for(&v, v.profile_count > 0);
+        for t in &tabs {
+            if t.slug != "record" && t.slug != "profile" {
+                assert!(
+                    t.count.is_some_and(|n| n > 0),
+                    "{} drawn with a count",
+                    t.slug
+                );
+            }
+        }
+        assert_eq!(
+            current_tab(Some("family"), &tabs).slug(),
+            if tabs.iter().any(|t| t.slug == "family") {
+                "family"
+            } else {
+                "record"
+            }
+        );
     }
 }

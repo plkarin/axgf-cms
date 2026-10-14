@@ -102,15 +102,23 @@
 
 </header>
 
-{#- The record, on one page: every section that holds something, and nothing
-    that does not. There used to be tabs; with nothing empty drawn, a record
-    is short enough to read through, and the tabs were most of the chrome on
-    the page. The person's portrait, relatives, places, sources and files are
-    the record's content and are not counted as chrome. -#}
+{#- The tabs (v0.4.1). Real links, so a tab is a URL somebody can send and
+    the back button goes back a tab. Only the tabs this record has something
+    in are drawn — not dimmed, not disabled: absent. They are content, not
+    chrome: how many there are follows what is recorded, so the nav is
+    `data-content`. -#}
+{% include "_tabs.html" %}
+
+{#- The tab on screen. Inside it, as everywhere in read mode, only what is
+    recorded. The person's portrait, relatives, places, sources and files
+    are the record's content and are not counted as chrome. -#}
 <div class="record-body" data-content>
-  {% include "_person_detail.html" %}
+  {% if tab == "profile" %}
   {% include "_radar.html" %}
   {% include "_profile_read.html" %}
+  {% else %}
+  {% include "_person_detail.html" %}
+  {% endif %}
 </div>
 
 <p class="record-foot"><a class="btn" href="/?p={{ p.id }}">{{ t("record-see-in-river") }}</a></p>

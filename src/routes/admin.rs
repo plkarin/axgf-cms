@@ -821,6 +821,16 @@ pub async fn edit_form(
         crate::access::readable_for(k, &entity, viewer.ceiling()),
     );
     let pickers = picker_lists(&state, &viewer, k, chrome.lang);
+    let person = person_form_context(
+        &state,
+        &chrome,
+        &viewer,
+        k,
+        &id,
+        Some(&entity),
+        None,
+        &crate::profile::form::Problems::new(),
+    );
     render::page_with(
         &chrome,
         "admin_form.html",
@@ -837,6 +847,7 @@ pub async fn edit_form(
             action => format!("/admin/{kind}/{id}"),
             base_version => crate::state::version_of(&entity),
             history => history_json(&state, crate::state::kind_name(k), &id, viewer.ceiling(), chrome.lang),
+            ..person
         },
     )
 }
@@ -1000,6 +1011,28 @@ pub async fn update(
             .and_then(|c| c.get(&id))
             .cloned()
     });
+
+    // A person's form carries every profile group (v0.4.1). The groups the
+    // editor changed are read back over what the fields made; the others are
+    // left exactly as stored.
+    if let (axgf_rs::EntityKind::Person, Some(stored)) = (k, stored.as_ref()) {
+        let body: crate::forms::Body = form.iter().map(|(a, b)| (a.clone(), b.clone())).collect();
+        match super::profile::apply_profile(
+            &state,
+            chrome.lang,
+            &viewer,
+            &id,
+            stored,
+            entity,
+            &body,
+        ) {
+            Ok(e) => entity = e,
+            Err(problems) => {
+                return person_form_refused(&state, &viewer, &chrome, &id, &form, &body, &problems);
+            }
+        }
+        entity["id"] = Value::String(id.clone());
+    }
 
     // What the form did not show, the form cannot delete. The raw document
     // this editor was given had every class they may not read stripped out of
@@ -1816,10 +1849,15 @@ fn field_views(
                     _ => !current.trim().is_empty(),
                 },
                 "group": f.path.split('.').next().unwrap_or(""),
-                "show": (match f.kind {
-                    crate::admin::FieldKind::Bool => current == "true",
-                    _ => !current.trim().is_empty(),
-                }) || (creating && f.path.split('.').next().unwrap_or("") == first_group),
+                // A person's own fields — names, dates, places — are the
+                // common case and are always drawn (v0.4.1): in edit mode an
+                // empty field is what the editor came to fill.
+                "show": kind == axgf_rs::EntityKind::Person
+                    || (match f.kind {
+                        crate::admin::FieldKind::Bool => current == "true",
+                        _ => !current.trim().is_empty(),
+                    })
+                    || (creating && f.path.split('.').next().unwrap_or("") == first_group),
             })
         })
         .collect()
@@ -2461,6 +2499,26 @@ fn form_error(
     // could not see to correct.
     let entity = crate::admin::apply_form(entity, k, form);
     let pickers = picker_lists(state, viewer, k, chrome.lang);
+    // A refusal over one field must not cost what was typed into the
+    // profile's groups: they are drawn back from the submission.
+    let body: crate::forms::Body = form.iter().map(|(a, b)| (a.clone(), b.clone())).collect();
+    let stored = id.and_then(|i| {
+        state.read(|flat| {
+            flat.get(crate::admin::collection_for(k))
+                .and_then(|c| c.get(i))
+                .cloned()
+        })
+    });
+    let person = person_form_context(
+        state,
+        chrome,
+        viewer,
+        k,
+        id.unwrap_or(""),
+        stored.as_ref(),
+        Some(&body),
+        &crate::profile::form::Problems::new(),
+    );
     let mut resp = render::page_with(
         chrome,
         "admin_form.html",
@@ -2482,9 +2540,102 @@ fn form_error(
                 Some(i) => format!("/admin/{kind}/{i}"),
                 None => format!("/admin/{kind}"),
             },
+            ..person
         },
     );
     *resp.status_mut() = StatusCode::BAD_REQUEST;
+    resp
+}
+
+/// What a person's form draws beyond its fields (v0.4.1): the parents, which
+/// are identity and so always on screen, and the fourteen profile groups by
+/// name, each with how many of its fields hold a value. Empty for any other
+/// kind, and for a person not yet created.
+#[allow(clippy::too_many_arguments)]
+fn person_form_context(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    k: axgf_rs::EntityKind,
+    id: &str,
+    stored: Option<&Value>,
+    submitted: Option<&crate::forms::Body>,
+    problems: &crate::profile::form::Problems,
+) -> minijinja::Value {
+    let (axgf_rs::EntityKind::Person, Some(stored)) = (k, stored) else {
+        return context! {};
+    };
+    let p = state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::person::build_in(flat, id, lens, chrome.lang)
+    });
+    let (parents, relatives) = p
+        .as_ref()
+        .map(|p| (p.parents.clone(), crate::person::RecordTab::Family.count(p)))
+        .unwrap_or_default();
+    let profile = super::profile::profile_form(
+        state,
+        chrome.lang,
+        viewer,
+        id,
+        stored,
+        relatives,
+        submitted,
+        problems,
+    );
+    context! {
+        parents,
+        profile_sections => profile.sections,
+        profile_sources => profile.sources,
+        precisions => profile.precisions,
+    }
+}
+
+/// A person's save refused over its profile: the form again, as submitted,
+/// with each problem beside its attribute and that group open.
+fn person_form_refused(
+    state: &Shared,
+    viewer: &Viewer,
+    chrome: &render::Chrome,
+    id: &str,
+    form: &HashMap<String, String>,
+    body: &crate::forms::Body,
+    problems: &crate::profile::form::Problems,
+) -> Response {
+    let k = axgf_rs::EntityKind::Person;
+    let raw = form.get("raw_json").cloned().unwrap_or_else(|| "{}".into());
+    let entity = serde_json::from_str::<Value>(&raw).unwrap_or(Value::Object(Default::default()));
+    let entity = crate::admin::apply_form(entity, k, form);
+    let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(id)).cloned());
+    let pickers = picker_lists(state, viewer, k, chrome.lang);
+    let person = person_form_context(
+        state,
+        chrome,
+        viewer,
+        k,
+        id,
+        stored.as_ref(),
+        Some(body),
+        problems,
+    );
+    let mut resp = render::page_with(
+        chrome,
+        "admin_form.html",
+        context! {
+            nav => "admin",
+            kind => "person",
+            kinds => KINDS,
+            creating => false,
+            id,
+            fields => field_views(k, &entity, chrome.lang, &pickers),
+            pickers,
+            raw,
+            error => chrome.t("profile-problems"),
+            base_version => form.get("base_version").cloned().unwrap_or_default(),
+            action => format!("/admin/person/{id}"),
+            ..person
+        },
+    );
+    *resp.status_mut() = StatusCode::UNPROCESSABLE_ENTITY;
     resp
 }
 

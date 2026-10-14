@@ -130,7 +130,7 @@ pub async fn update(
         entity,
         Some(&stored),
         submitted_version(&body),
-        &format!("/person/{id}?tab=profile&group={}", g.key),
+        &format!("/person/{id}?tab=profile#profile-{}", g.key),
         &format!("/admin/person/{id}/profile/{}", g.key),
     )
 }
@@ -274,4 +274,148 @@ fn render_editor(
                 .unwrap_or_else(|| crate::state::version_of(stored).to_string()),
         },
     )
+}
+
+/// The option lists every group's inputs draw from, for this person.
+fn choices_for(state: &Shared, lang: &str, viewer: &Viewer, id: &str, stored: &Value) -> Choices {
+    state.read(|flat| Choices {
+        lang: lang.to_string(),
+        sources: crate::forms::entity_options(flat, "sources", crate::forms::source_label),
+        places: crate::forms::entity_options(flat, "places", crate::forms::place_label),
+        documents: person_documents(flat, id, stored, viewer.ceiling()),
+    })
+}
+
+/// One group as the record's editor draws it: every attribute this editor
+/// may read, filled and empty alike, and how many of them hold a value.
+#[derive(serde::Serialize)]
+pub struct EditorSection {
+    pub group: form::EditorGroup,
+    /// Attributes holding a value — "Santé · 3 renseignés". For
+    /// Relationships, which has no attribute of its own, the relatives the
+    /// record names.
+    pub filled: usize,
+    /// Closed by default; a group with content, or with a problem in what was
+    /// just submitted, opens.
+    pub open: bool,
+    /// Whether to say that a living person's class data is in here.
+    pub living_class: bool,
+}
+
+/// What the record's editor needs to draw the profile: all fourteen groups,
+/// always, by name (v0.4.1). The minimalism pass had put every empty field
+/// behind one "n other fields" lump and taken away the only link into the
+/// group editor, so a field nobody had filled could not be filled.
+pub struct ProfileForm {
+    pub sections: Vec<EditorSection>,
+    pub sources: Vec<Value>,
+    pub precisions: &'static [&'static str],
+}
+
+/// Draw every group for the record's editor, from the stored person or —
+/// after a refused save — from what was submitted.
+#[allow(clippy::too_many_arguments)]
+pub fn profile_form(
+    state: &Shared,
+    lang: &str,
+    viewer: &Viewer,
+    id: &str,
+    stored: &Value,
+    relatives: usize,
+    submitted: Option<&Body>,
+    problems: &Problems,
+) -> ProfileForm {
+    let readable = crate::access::readable_scopes(stored, viewer.ceiling());
+    let lifted = crate::profile::lift::lift(stored);
+    let choices = choices_for(state, lang, viewer, id, stored);
+    let is_living = stored
+        .pointer("/identity/is_living")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let sections = crate::profile::groups()
+        .iter()
+        .map(|g| {
+            let group = form::editor_group(&lifted, g, readable, &choices, submitted, problems);
+            let filled = if g.key == "relationships" {
+                relatives
+            } else {
+                group
+                    .attributes
+                    .iter()
+                    .filter(|a| a.rows.iter().any(|r| !r.spare))
+                    .count()
+            };
+            let troubled = group.attributes.iter().any(|a| !a.problems.is_empty());
+            let living_class = is_living
+                && (group.class_label.is_some()
+                    || group.attributes.iter().any(|a| a.class_label.is_some())
+                    || g.key == "personality");
+            EditorSection {
+                open: filled > 0 || troubled,
+                filled,
+                living_class,
+                group,
+            }
+        })
+        .collect();
+    ProfileForm {
+        sections,
+        sources: choices.sources,
+        precisions: PRECISIONS,
+    }
+}
+
+/// The hidden input each group of the record's form carries, so a save can
+/// tell a group that was drawn and left empty from one that was not drawn.
+pub fn group_marker(key: &str) -> String {
+    format!("pf.{key}")
+}
+
+/// `entity` — the person as the record's form left it — with every group the
+/// editor changed read back over it.
+///
+/// The form posts all fourteen groups on every save. A group whose submission
+/// is exactly what was drawn is not read back ([`form::touched`]): a save that
+/// corrects a name must not rewrite claims nobody looked at. When no group was
+/// touched, `entity` comes back as it went in.
+pub fn apply_profile(
+    state: &Shared,
+    lang: &str,
+    viewer: &Viewer,
+    id: &str,
+    stored: &Value,
+    entity: Value,
+    body: &Body,
+) -> Result<Value, Problems> {
+    let readable = crate::access::readable_scopes(stored, viewer.ceiling());
+    let drawn_from = crate::profile::lift::lift(stored);
+    let choices = choices_for(state, lang, viewer, id, stored);
+    let touched: Vec<_> = crate::profile::groups()
+        .iter()
+        // Only a group the form actually drew: its marker came back. A body
+        // without one — a form opened before this version, a script that
+        // posts the raw document — says nothing about that group, and its
+        // absent fields are not a request to clear it.
+        .filter(|g| body.contains_key(&group_marker(g.key)))
+        .filter(|g| {
+            let eg = form::editor_group(&drawn_from, g, readable, &choices, None, &Problems::new());
+            form::touched(&eg, body, PRECISIONS, &choices.sources)
+        })
+        .collect();
+    if touched.is_empty() {
+        return Ok(entity);
+    }
+    let mut out = crate::profile::lift::lift(&entity);
+    let mut problems = Problems::new();
+    for g in touched {
+        match form::apply(&out, g, readable, body) {
+            Ok(v) => out = v,
+            Err(p) => problems.extend(p),
+        }
+    }
+    if problems.is_empty() {
+        Ok(out)
+    } else {
+        Err(problems)
+    }
 }

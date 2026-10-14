@@ -2569,6 +2569,7 @@ profile-yes = 是
 profile-no = 否
 profile-value = 值
 profile-editor-title = 档案
+profile-group-filled = 已填 { $n } 项
 profile-problems = 部分输入未能保存。每个问题都标在对应字段旁边，没有写入任何内容。
 profile-editor-withheld = 此分类中还有此人的“{ $classes }”数据，你无权查看。这些数据不会在此显示，保存此表单也不会改动它们。
 profile-living-class-note = 此人被记录为在世。你在此处填写的敏感类别内容仅管理员可见。

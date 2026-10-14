@@ -809,20 +809,33 @@ fn siblings_follow_birth_dates_only_where_the_reader_sees_every_sibling() {
 }
 
 #[tokio::test]
-async fn the_record_beside_the_river_is_one_read_and_one_way_on() {
-    // Beside the river the record is read mode: its filled sections, no tabs
-    // (the minimalism pass), the way to the whole record, and — for somebody
-    // who may edit — the one way into editing.
+async fn the_record_beside_the_river_has_its_tabs_and_one_way_on() {
+    // Beside the river the record is read mode under its tabs (v0.4.1): only
+    // the tabs that hold something, each a link that keeps the river where it
+    // is, the way to the whole record, and — for somebody who may edit — the
+    // one way into editing.
     let (app, _d) = app("river-tabs");
     let fiche = body_string(get_admin(&app, "/?p=p07").await).await;
-    assert!(
-        !fiche.contains("data-tab=") && !fiche.contains("rv-tabs"),
-        "no tabs"
-    );
-    for section in [r#"id="identity""#, r#"id="family""#, r#"id="evidence""#] {
-        assert!(fiche.contains(section), "the panel draws {section}");
+    assert!(fiche.contains("rv-tabs"), "the panel has its tabs");
+    let tabs = tab_hrefs(&fiche);
+    for slug in ["family", "sources", "media"] {
+        assert!(
+            tabs.iter().any(|h| h.ends_with(&format!("&tab={slug}"))),
+            "{slug}: {tabs:?}"
+        );
     }
-    assert!(fiche.contains("SOURCEMARK") && fiche.contains("DOCMARK"));
+    assert!(
+        fiche.contains(r#"data-tab="family""#),
+        "river.js swaps the panel on a tab"
+    );
+    assert!(
+        fiche.contains(r#"id="identity""#),
+        "the fiche draws the identity"
+    );
+    assert!(
+        !fiche.contains(r#"id="family""#),
+        "and leaves the family to its tab"
+    );
     assert!(
         fiche.contains(r#"href="/person/p07""#),
         "the whole record, one link away"
@@ -832,14 +845,13 @@ async fn the_record_beside_the_river_is_one_read_and_one_way_on() {
         1,
         "one way into editing"
     );
-    // An old tab address lands on the same panel.
-    for tab in ["family", "sources", "media", "profile"] {
-        let page = body_string(get_admin(&app, &format!("/?p=p07&tab={tab}")).await).await;
-        assert!(
-            page.contains(r#"id="identity""#) && page.contains("SOURCEMARK"),
-            "{tab}"
-        );
-    }
+    // Each tab draws its own part of the record.
+    let family = body_string(get_admin(&app, "/?p=p07&tab=family").await).await;
+    assert!(family.contains(r#"id="family""#) && !family.contains(r#"id="identity""#));
+    let sources = body_string(get_admin(&app, "/?p=p07&tab=sources").await).await;
+    assert!(sources.contains("SOURCEMARK") && !sources.contains("DOCMARK"));
+    let media = body_string(get_admin(&app, "/?p=p07&tab=media").await).await;
+    assert!(media.contains("DOCMARK") && !media.contains("SOURCEMARK"));
     // A visitor gets no way into editing at all.
     let anon = body_string(get(&app, "/?p=p07").await).await;
     assert!(
@@ -849,16 +861,22 @@ async fn the_record_beside_the_river_is_one_read_and_one_way_on() {
 }
 
 #[tokio::test]
-async fn the_grid_panel_and_the_person_page_are_unchanged_by_the_river_tabs() {
+async fn the_grid_panel_has_no_tabs_and_the_person_page_has_the_same() {
     let (app, _d) = app("river-tabs-grid");
-    // The grid's panel request carries no flag and gets no tabs.
+    // The grid's panel request carries no flag and gets no tabs: every
+    // section, as before.
     let grid = body_string(get_admin(&app, "/tree/panel/p07").await).await;
-    assert!(!grid.contains("rv-tabs") && !grid.contains(r#"data-tab="#));
+    assert!(!grid.contains("person-tabs") && !grid.contains(r#"data-tab="#));
     assert!(grid.contains("SOURCEMARK") && grid.contains("DOCMARK"));
-    // The person page's own media tab still holds sources and documents.
+    // The person page's tabs are the panel's: Sources and Médias apart.
+    let sources = body_string(get_admin(&app, "/person/p07?tab=sources").await).await;
+    assert!(sources.contains("SOURCEMARK") && !sources.contains("DOCMARK"));
     let media = body_string(get_admin(&app, "/person/p07?tab=media").await).await;
-    assert!(media.contains("SOURCEMARK") && media.contains("DOCMARK"));
-    assert!(!media.contains("rv-tabs"));
+    assert!(media.contains("DOCMARK") && !media.contains("SOURCEMARK"));
+    assert!(
+        !media.contains("rv-tabs"),
+        "the page's tabs link to the page"
+    );
 }
 
 /// The motion choice is an accessibility setting, not a passing state: a

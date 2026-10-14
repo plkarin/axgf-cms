@@ -293,7 +293,7 @@
         cur = body.river; remember(cur);
         if (!fromHistory) {
           if (id !== trail[trail.length - 1]) trail = trail.filter(function (x) { return x !== id; }).concat([id]).slice(-7);
-          history.pushState({ p: id, n: n }, '', url(id, n));
+          history.pushState({ p: id, n: n, tab: tab }, '', url(id, n));
         }
         swapPanel(id); controls(n);
         var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; sizeHits(); };
@@ -307,12 +307,16 @@
       })
       .catch(function () { busy = false; location.href = url(id, n); });
   }
+  // The record tab beside the river; kept as the reader travels. A person
+  // without that tab is drawn on their first one by the server.
+  var tab = new URLSearchParams(location.search).get('tab') || 'record';
+  function tabQuery() { return tab !== 'record' ? '&tab=' + encodeURIComponent(tab) : ''; }
   function url(id, n) {
-    return base + '?p=' + encodeURIComponent(id) + '&n=' + n;
+    return base + '?p=' + encodeURIComponent(id) + '&n=' + n + tabQuery();
   }
   function swapPanel(id) {
     if (!panel) return;
-    fetch('/tree/panel/' + encodeURIComponent(id) + '?river=1&n=' + cur.layout.meta.n, { credentials: 'same-origin' })
+    fetch('/tree/panel/' + encodeURIComponent(id) + '?river=1&n=' + cur.layout.meta.n + tabQuery(), { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.text() : null; })
       .then(function (html) {
         // A record this reader may not read is refused, and the panel says
@@ -402,8 +406,17 @@
     // The chips of the itinerary, and the grid panel's re-root: the controls
     // themselves, not any element that happens to carry the attribute —
     // `data-centre` on this root once swallowed every link inside it.
-    var t = e.target.closest && e.target.closest('a[data-go],button[data-centre]');
+    var t = e.target.closest && e.target.closest('a[data-go],button[data-centre],a[data-tab]');
     if (!t || !root.contains(t)) return;
+    if (t.dataset.tab) {
+      // A record tab: the panel changes, the river does not.
+      e.preventDefault();
+      tab = t.dataset.tab;
+      var c = cur.layout.meta.centre;
+      history.pushState({ p: c, n: cur.layout.meta.n, tab: tab }, '', url(c, cur.layout.meta.n));
+      swapPanel(c);
+      return;
+    }
     e.preventDefault(); travel(t.dataset.go || t.dataset.centre);
   });
   back.addEventListener('click', goBack);
@@ -420,12 +433,16 @@
   });
   window.addEventListener('popstate', function (e) {
     if (!e.state || !e.state.p) return;
+    var tabChanged = (e.state.tab || 'record') !== tab;
+    tab = e.state.tab || 'record';
     if (e.state.p !== cur.layout.meta.centre || e.state.n !== cur.layout.meta.n) {
       travel(e.state.p, e.state.n, true);
+    } else if (tabChanged) {
+      swapPanel(e.state.p);
     }
   });
   // The masthead search (ui.js) travels here rather than reloading the page.
   window.axgfRiver = { travel: function (id) { travel(id); } };
-  history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n }, '');
+  history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
   controls(cur.layout.meta.n);
 })();

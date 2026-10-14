@@ -262,7 +262,7 @@
   <select name="{{ i.name }}">
     <option value="">{{ t("admin-not-set") }}</option>
     {% for g in i.groups %}<optgroup label="{{ g.label }}">
-      {% for o in g.options %}<option value="{{ o.value }}" {{ "selected" if o.value == i.value }}>{{ o.label }}</option>{% endfor %}
+      {% for o in g.options %}<option value="{{ o.value }}"{% if g.lang %} lang="{{ g.lang }}"{% endif %} {{ "selected" if o.value == i.value }}>{{ o.label }}</option>{% endfor %}
     </optgroup>{% endfor %}
   </select>
   {% elif i.kind == "textarea" %}

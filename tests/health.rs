@@ -134,6 +134,10 @@ async fn surfaces(app: &axum::Router, id: &str) -> Vec<(&'static str, String)> {
         ("media tab", format!("/person/{id}?tab=media")),
         ("tree tab", format!("/person/{id}?tab=tree")),
         ("panel fragment", format!("/tree/panel/{id}")),
+        (
+            "river panel",
+            format!("/tree/panel/{id}?river=1&tab=profile"),
+        ),
         ("tree page", format!("/tree?root={id}")),
         ("health json", "/health".to_string()),
     ] {
@@ -170,7 +174,7 @@ async fn a_living_persons_health_never_reaches_a_reader_who_may_not_see_it() {
 async fn the_record_page_carries_no_raw_dump_and_no_diagnosis() {
     let (app, _p) = app_with_bundle("health-raw", &bundle("health-raw-src"));
 
-    let body = body_string(get(&app, &format!("/person/{LIVING}")).await).await;
+    let body = every_tab(&app, &format!("/person/{LIVING}"), None).await;
     assert!(
         !body.contains("Raw entity") && !body.contains("raw-json"),
         "no raw section in read mode"

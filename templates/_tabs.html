@@ -1,0 +1,25 @@
+{#- The record's tabs: Fiche · Famille · Événements · Sources · Médias ·
+    Profil (Study 06, B4), on the record page and beside the river.
+
+    Context: `p`, `tabs` (only the tabs this record has something in, from
+    `crate::person::tabs_for`), `tab` (the slug on screen), and, beside the
+    river, `river_tabs` and `river_n`.
+
+    No boxes; the current tab in full ink over a 2px amber rule; counts in
+    mono; one row that scrolls sideways and never wraps. A tab with nothing
+    in it is not here at all — Study 06 dimmed a zero-count tab because an
+    empty tab is where you add things, and that is edit mode's business, not
+    reading's. The fiche carries no count: it is the record's summary, not a
+    list. `data-content`: the number of tabs follows what is recorded, so
+    they are content controls, not chrome. -#}
+{% if tabs | length > 1 %}
+<nav class="person-tabs{% if river_tabs %} rv-tabs{% endif %}" aria-label="{{ t('person-sections-label') }}" data-content>
+  {%- for tb in tabs %}
+  <a class="person-tab{% if tb.slug == tab %} is-current{% endif %}"
+     {%- if river_tabs %} data-tab="{{ tb.slug }}" href="/?p={{ p.id }}&amp;n={{ river_n }}{% if tb.slug != 'record' %}&amp;tab={{ tb.slug }}{% endif %}"
+     {%- else %} href="/person/{{ p.id }}{% if tb.slug != 'record' %}?tab={{ tb.slug }}{% endif %}"{% endif %}
+     {%- if tb.slug == tab %} aria-current="page"{% endif %}>{{ t(tb.key) }}
+    {%- if tb.count %} <span class="tab-count">{{ tb.count }}</span>{% endif %}</a>
+  {%- endfor %}
+</nav>
+{% endif %}

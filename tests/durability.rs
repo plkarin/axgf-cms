@@ -160,7 +160,7 @@ async fn a_temp_file_left_by_a_crash_is_swept_at_startup_and_the_bundle_is_untou
     let innocent = dir.join("family.axgf.notes");
     std::fs::write(&innocent, b"keep me").expect("write");
 
-    let app = axgf_cms::app(&path, TOKEN).expect("start over the wreckage");
+    let app = build_app(&path).expect("start over the wreckage");
 
     for s in &strays {
         assert!(!s.exists(), "{} survived startup", s.display());
@@ -369,7 +369,7 @@ async fn stale_payload_cache_generations_are_swept_at_startup() {
     let innocent = cache_base.join("notes");
     std::fs::create_dir_all(&innocent).unwrap();
 
-    let _app = axgf_cms::app(&path, TOKEN).expect("start");
+    let _app = build_app(&path).expect("start");
 
     for d in &stale {
         assert!(!d.exists(), "{} was not swept", d.display());

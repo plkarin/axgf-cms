@@ -93,6 +93,9 @@ pub struct AppState {
     /// Where backups are expected to be, when the operator said so. Read by
     /// `/health` and by the dashboard banner; never written to from a request.
     backup_dir: Option<PathBuf>,
+    /// Where `/health` reads free space from: the filesystem, unless a test
+    /// says otherwise ([`crate::space::Probe`]).
+    space: std::sync::Arc<dyn crate::space::Probe>,
     /// True when the emergency admin token was supplied by the operator rather
     /// than generated at startup.
     ///
@@ -563,6 +566,7 @@ impl AppState {
                 geocoder: None,
                 map: None,
                 backup_dir: None,
+                space: std::sync::Arc::new(crate::space::Filesystem),
                 standing_admin_token: false,
             },
             report,
@@ -668,6 +672,18 @@ impl AppState {
     /// Where backups are expected, if the operator said.
     pub fn backup_dir(&self) -> Option<&Path> {
         self.backup_dir.as_deref()
+    }
+
+    /// Read free space from `probe` instead of the filesystem. For tests: the
+    /// server never calls it, so `/health` always measures the real disk.
+    pub fn with_space_probe(mut self, probe: std::sync::Arc<dyn crate::space::Probe>) -> Self {
+        self.space = probe;
+        self
+    }
+
+    /// Where `/health` reads free space from.
+    pub fn space_probe(&self) -> &dyn crate::space::Probe {
+        self.space.as_ref()
     }
 
     /// Record whether the emergency token is a standing one, before sharing.

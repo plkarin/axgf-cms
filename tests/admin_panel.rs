@@ -137,7 +137,7 @@ async fn create_then_read_round_trips_through_the_bundle() {
     assert!(list.contains("Ada Lovelace"));
 
     // It survived to disk: a fresh app over the same file finds it.
-    let reopened = axgf_cms::app(&path, TOKEN).expect("reopen");
+    let reopened = build_app(&path).expect("reopen");
     let health = body_string(get(&reopened, "/health").await).await;
     let v: serde_json::Value = serde_json::from_str(&health).unwrap();
     assert_eq!(v["entities"]["persons"], 1, "the person must be on disk");

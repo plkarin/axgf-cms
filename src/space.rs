@@ -77,6 +77,59 @@ pub fn total_bytes(path: &Path) -> Option<u64> {
     Some((stat.f_blocks as u64).saturating_mul(unit))
 }
 
+/// Where `/health` reads free space from.
+///
+/// The real filesystem in production. A test hands in a [`Fixed`] instead,
+/// so its verdict depends on the code and not on how full the disk of
+/// whatever machine runs the suite happens to be: the health tests went red
+/// twice in one week on a build host at 91 %, with nothing wrong in the code.
+pub trait Probe: Send + Sync {
+    /// Bytes this process may still write on the filesystem holding `path`.
+    fn available(&self, path: &Path) -> Option<u64>;
+    /// Size of that filesystem.
+    fn total(&self, path: &Path) -> Option<u64>;
+}
+
+/// The filesystem itself: [`available_bytes`] and [`total_bytes`].
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Filesystem;
+
+impl Probe for Filesystem {
+    fn available(&self, path: &Path) -> Option<u64> {
+        available_bytes(path)
+    }
+    fn total(&self, path: &Path) -> Option<u64> {
+        total_bytes(path)
+    }
+}
+
+/// A filesystem of a stated size, for tests. `None` in either field is a
+/// filesystem whose space cannot be read.
+#[derive(Debug, Clone, Copy)]
+pub struct Fixed {
+    pub available: Option<u64>,
+    pub total: Option<u64>,
+}
+
+impl Fixed {
+    /// `available` bytes free of `total`.
+    pub fn new(available: u64, total: u64) -> Self {
+        Fixed {
+            available: Some(available),
+            total: Some(total),
+        }
+    }
+}
+
+impl Probe for Fixed {
+    fn available(&self, _: &Path) -> Option<u64> {
+        self.available
+    }
+    fn total(&self, _: &Path) -> Option<u64> {
+        self.total
+    }
+}
+
 /// Free space as a fraction of the whole, 0.0–1.0.
 pub fn free_fraction(path: &Path) -> Option<f64> {
     let total = total_bytes(path)?;

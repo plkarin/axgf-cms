@@ -85,7 +85,7 @@ fn payloads_are_absent_from_the_in_memory_bundle_after_load() {
 #[tokio::test]
 async fn a_served_document_matches_the_bytes_in_the_original_bundle() {
     let (path, png, id, _zip) = bundle_with_image("pc-serve");
-    let app = axgf_cms::app(&path, TOKEN).expect("app");
+    let app = build_app(&path).expect("app");
 
     let resp = get(&app, &format!("/document/{id}/raw")).await;
     assert_eq!(resp.status(), StatusCode::OK);

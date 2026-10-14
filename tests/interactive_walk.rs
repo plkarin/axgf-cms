@@ -974,7 +974,7 @@ async fn a_reader_without_edit_rights_receives_no_edit_control_anywhere() {
     );
     acl.save(&axgf_cms::acl::Acl::path_for(&path))
         .expect("save acl");
-    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    let app = build_app(&path).expect("build app");
     let login = post_form(
         &app,
         "/admin/login",

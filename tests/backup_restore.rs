@@ -216,7 +216,7 @@ async fn a_restored_installation_serves_the_same_pages_and_the_same_photograph()
     let bundle = seeded("br-serve");
     let dest = scratch("br-serve-dest");
 
-    let app = axgf_cms::app(&bundle, TOKEN).expect("app");
+    let app = build_app(&bundle).expect("app");
     let before_page = body_string(get(&app, &format!("/person/{ALICE}")).await).await;
     let doc_id = "33333333-3333-4333-8333-333333333333";
     let before_bytes = body_bytes(get(&app, &format!("/document/{doc_id}/raw")).await).await;
@@ -229,7 +229,7 @@ async fn a_restored_installation_serves_the_same_pages_and_the_same_photograph()
     // merely serve what the cache happens to still hold.
     backup::restore(&report.archive, &bundle, false).expect("restore");
 
-    let app = axgf_cms::app(&bundle, TOKEN).expect("app after restore");
+    let app = build_app(&bundle).expect("app after restore");
     let after_page = body_string(get(&app, &format!("/person/{ALICE}")).await).await;
     let after_bytes = body_bytes(get(&app, &format!("/document/{doc_id}/raw")).await).await;
     assert_eq!(before_page, after_page, "the record page changed");
@@ -377,7 +377,7 @@ fn a_restore_keeps_the_state_it_replaces() {
     let before = fingerprint(&bundle);
 
     // Change the live installation, then restore over it.
-    let app = axgf_cms::app(&bundle, TOKEN).expect("app");
+    let app = build_app(&bundle).expect("app");
     drop(app);
     std::fs::write(axgf_cms::journal::Journal::path_for(&bundle), b"").expect("wipe journal");
 
@@ -453,7 +453,7 @@ async fn a_backup_taken_during_editing_holds_three_files_that_agree() {
     // restored: a bundle from after a save and an ACL from before it.
     let bundle = seeded("br-consistent");
     let dest = scratch("br-consistent-dest");
-    let app = axgf_cms::app(&bundle, TOKEN).expect("app");
+    let app = build_app(&bundle).expect("app");
 
     let bundle_path = bundle.to_path_buf();
     let dest_path = dest.dir().to_path_buf();
@@ -522,7 +522,7 @@ async fn a_save_waits_for_a_backup_rather_than_landing_inside_it() {
     // The exclusion itself, without a race: the lock is held by hand, a save
     // is attempted, and it must not have finished until the lock is released.
     let bundle = seeded("br-exclusion");
-    let app = axgf_cms::app(&bundle, TOKEN).expect("app");
+    let app = build_app(&bundle).expect("app");
 
     let held = axgf_cms::lockfile::WriteLock::acquire(&bundle).expect("take the lock");
 
@@ -704,7 +704,14 @@ async fn health_reports_the_age_of_the_newest_backup() {
     let bundle = seeded("br-health");
     let dest = scratch("br-health-dest");
     let state = axgf_cms::AppState::load_or_create(&bundle, TOKEN.into()).expect("state");
-    let state = std::sync::Arc::new(state.with_backup_dir(Some(dest.dir().to_path_buf())));
+    // A disk with room, stated rather than measured: this test is about the
+    // backup, and must not go red because the machine running it is full.
+    let roomy = std::sync::Arc::new(axgf_cms::space::Fixed::new(50 << 30, 100 << 30));
+    let state = std::sync::Arc::new(
+        state
+            .with_backup_dir(Some(dest.dir().to_path_buf()))
+            .with_space_probe(roomy),
+    );
 
     let app = axgf_cms::router(std::sync::Arc::clone(&state));
     let resp = app

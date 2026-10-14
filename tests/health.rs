@@ -358,7 +358,7 @@ fn app_with_contributor(tag: &str) -> (axum::Router, common::Scratch) {
     );
     acl.save(&axgf_cms::acl::Acl::path_for(&path))
         .expect("save acl");
-    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    let app = build_app(&path).expect("build app");
     (app, dir.pointing_at(path))
 }
 

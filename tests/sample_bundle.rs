@@ -640,7 +640,7 @@ async fn a_signed_out_visitor_sees_the_sample_family() {
     let dir = common::scratch("sample-anon");
     let path = dir.join("family.axgf");
     std::fs::write(&path, std::fs::read(sample_axgf()).expect("read sample")).expect("write");
-    let app = axgf_cms::app(&path, common::TOKEN).expect("build app");
+    let app = common::build_app(&path).expect("build app");
 
     let tree = common::body_string(common::get(&app, "/tree?all=1").await).await;
     assert!(

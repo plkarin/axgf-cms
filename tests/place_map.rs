@@ -36,7 +36,7 @@ async fn without_a_tile_source_the_editor_asks_for_no_map_at_all() {
     let dir = scratch("map-off");
     let path = dir.join("family.axgf");
     std::fs::copy(sample(), &path).expect("copy");
-    let app = axgf_cms::app(&path, TOKEN).expect("app");
+    let app = build_app(&path).expect("app");
     let id = a_place_id(&app).await;
 
     let body = body_string(get_admin(&app, &format!("/admin/place/{id}/edit")).await).await;
@@ -112,7 +112,7 @@ async fn the_vendored_library_is_served_by_this_binary() {
     let dir = scratch("map-assets");
     let path = dir.join("family.axgf");
     std::fs::copy(sample(), &path).expect("copy");
-    let app = axgf_cms::app(&path, TOKEN).expect("app");
+    let app = build_app(&path).expect("app");
 
     for (uri, needle) in [
         ("/static/vendor/leaflet.js", "Leaflet"),

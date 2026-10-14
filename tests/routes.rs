@@ -282,7 +282,7 @@ async fn tree_shows_confidence_as_line_opacity_and_a_legend() {
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
     std::fs::write(&path, bytes).expect("write");
 
-    let app = axgf_cms::app(&path, TOKEN).expect("rebuild app");
+    let app = build_app(&path).expect("rebuild app");
     let body = expect_status(get(&app, "/tree").await, StatusCode::OK, "GET /tree").await;
 
     // The two parentage lines must carry visibly different opacity.
@@ -351,7 +351,7 @@ async fn binary_attachments_survive_a_mutation() {
     let bytes = axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export");
     std::fs::write(&path, bytes).expect("write");
 
-    let app = axgf_cms::app(&path, TOKEN).expect("reopen");
+    let app = build_app(&path).expect("reopen");
 
     // Any mutation rewrites the whole file.
     let resp = post_form(

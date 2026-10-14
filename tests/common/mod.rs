@@ -133,6 +133,18 @@ pub fn scratch(tag: &str) -> Scratch {
     }
 }
 
+/// Build the app over the bundle at `path`, as the binary does, except that
+/// `/health` reads free space from a roomy stub rather than from the disk
+/// running the suite: a test's verdict must not depend on how full the build
+/// host is. The real check is `space::Filesystem`, and the binary always uses
+/// it.
+pub fn build_app(path: &Path) -> anyhow::Result<axum::Router> {
+    let state = axgf_cms::AppState::load_or_create(path, TOKEN.to_string())?.with_space_probe(
+        std::sync::Arc::new(axgf_cms::space::Fixed::new(50 << 30, 100 << 30)),
+    );
+    Ok(axgf_cms::router(std::sync::Arc::new(state)))
+}
+
 /// Build an app over a fresh empty bundle, returning the router and the path.
 ///
 /// The second value owns the directory: hold it for as long as the app is
@@ -140,7 +152,7 @@ pub fn scratch(tag: &str) -> Scratch {
 pub fn app_with_empty_bundle(tag: &str) -> (axum::Router, Scratch) {
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
-    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    let app = build_app(&path).expect("build app");
     (app, dir.pointing_at(path))
 }
 
@@ -149,7 +161,7 @@ pub fn app_with_bundle(tag: &str, source: &Path) -> (axum::Router, Scratch) {
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
     std::fs::copy(source, &path).expect("copy source bundle");
-    let app = axgf_cms::app(&path, TOKEN).expect("build app");
+    let app = build_app(&path).expect("build app");
     (app, dir.pointing_at(path))
 }
 

@@ -188,7 +188,7 @@ pub fn report(state: &crate::state::AppState, backup_dir: Option<&Path>) -> Repo
     Report {
         checks: vec![
             bundle_check(state),
-            disk_check(state.bundle_path()),
+            disk_check(state.bundle_path(), state.space_probe()),
             backup_check(backup_dir),
             cache_check(state),
         ],
@@ -226,7 +226,7 @@ pub fn report_offline(
                         key: "health-bundle-invalid",
                         args: vec![("errors", Arg::Num(1))],
                     },
-                    disk_check(bundle),
+                    disk_check(bundle, &crate::space::Filesystem),
                     backup_check(backup_dir),
                 ],
             }
@@ -317,7 +317,7 @@ pub fn report_offline(
     Report {
         checks: vec![
             bundle_check,
-            disk_check(bundle),
+            disk_check(bundle, &crate::space::Filesystem),
             backup_check(backup_dir),
             cache,
         ],
@@ -352,13 +352,10 @@ fn bundle_check(state: &crate::state::AppState) -> Check {
     Check::ok("bundle", format!("loaded and valid, {total} entities"))
 }
 
-/// Is there room to save?
-fn disk_check(bundle: &Path) -> Check {
+/// Is there room to save? `space` is the filesystem everywhere but in tests.
+fn disk_check(bundle: &Path, space: &dyn crate::space::Probe) -> Check {
     let dir = bundle.parent().unwrap_or(Path::new("."));
-    let (Some(free), Some(total)) = (
-        crate::space::available_bytes(dir),
-        crate::space::total_bytes(dir),
-    ) else {
+    let (Some(free), Some(total)) = (space.available(dir), space.total(dir)) else {
         return Check {
             name: "disk",
             level: Level::Warn,
@@ -547,6 +544,7 @@ fn cache_check(state: &crate::state::AppState) -> Check {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::space::Probe;
 
     fn check(name: &'static str, level: Level) -> Check {
         Check {
@@ -614,11 +612,70 @@ mod tests {
         assert_eq!(describe_age(72), "3 days old");
     }
 
+    /// The disk check against a filesystem of a stated size, never the
+    /// host's: it used to measure the disk running the suite, and went red
+    /// when that disk was full rather than when the code was wrong. A bundle
+    /// that does not exist weighs nothing, so the room a save needs is the
+    /// 16 MiB margin alone.
+    fn disk(free: u64, total: u64) -> Check {
+        let bundle = Path::new("/nonexistent/axgf-health-test/family.axgf");
+        disk_check(bundle, &crate::space::Fixed::new(free, total))
+    }
+    const GIB: u64 = 1 << 30;
+
     #[test]
     fn a_disk_with_room_is_ok() {
-        let here = std::env::current_dir().unwrap().join("Cargo.toml");
-        let c = disk_check(&here);
+        let c = disk(50 * GIB, 100 * GIB);
         assert_eq!(c.level, Level::Ok, "{}", c.detail);
         assert!(c.detail.contains("free of"), "{}", c.detail);
+    }
+
+    #[test]
+    fn a_disk_under_a_tenth_free_warns_and_under_three_percent_fails() {
+        let c = disk(8 * GIB, 100 * GIB);
+        assert_eq!(
+            (c.level, c.key),
+            (Level::Warn, "health-disk-low"),
+            "{}",
+            c.detail
+        );
+        let c = disk(2 * GIB, 100 * GIB);
+        assert_eq!(
+            (c.level, c.key),
+            (Level::Fail, "health-disk-critical"),
+            "{}",
+            c.detail
+        );
+    }
+
+    #[test]
+    fn too_little_room_to_rebuild_the_bundle_fails_whatever_the_percentage() {
+        // Half of a small disk is free, but not the room a save needs.
+        let c = disk(8 << 20, 16 << 20);
+        assert_eq!(
+            (c.level, c.key),
+            (Level::Fail, "health-disk-no-room-to-save"),
+            "{}",
+            c.detail
+        );
+    }
+
+    #[test]
+    fn a_disk_whose_space_cannot_be_read_warns() {
+        let unreadable = crate::space::Fixed {
+            available: None,
+            total: None,
+        };
+        let c = disk_check(Path::new("/nonexistent/family.axgf"), &unreadable);
+        assert_eq!((c.level, c.key), (Level::Warn, "health-disk-unknown"));
+    }
+
+    #[test]
+    fn the_real_filesystem_can_be_read() {
+        // What /health measures in production is still the disk itself; this
+        // asserts only that it can be read, never how full it is.
+        let here = std::env::current_dir().unwrap();
+        assert!(crate::space::Filesystem.available(&here).is_some());
+        assert!(crate::space::Filesystem.total(&here).is_some());
     }
 }

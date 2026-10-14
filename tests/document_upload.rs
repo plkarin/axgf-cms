@@ -126,7 +126,7 @@ async fn an_upload_round_trips_through_export_and_reimport_with_the_bytes_intact
     assert_eq!(ids.len(), 1, "one document entity was created");
     let doc_id = &ids[0];
 
-    let reloaded = axgf_cms::app(&path, TOKEN).expect("reopen the written bundle");
+    let reloaded = build_app(&path).expect("reopen the written bundle");
     let resp = get(&reloaded, &format!("/document/{doc_id}/raw")).await;
     assert_eq!(resp.status(), StatusCode::OK);
     let served = body_bytes(resp).await;

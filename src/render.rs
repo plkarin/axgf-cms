@@ -286,6 +286,8 @@ impl Chrome {
             themes: crate::theme::selector_entries(),
             current_locale: serde_json::json!({
                 "tag": locale.tag,
+                // As the language select prints it: "ZH", not "ZH-HANS".
+                "code": locale.tag.split('-').next().unwrap_or(locale.tag).to_uppercase(),
                 "native_name": locale.native_name,
                 "english_name": locale.english_name,
                 "reviewed": locale.reviewed,

@@ -389,11 +389,15 @@
     looked = null;
     e.preventDefault(); travel(id);
   });
-  canvas.addEventListener('mouseover', function (e) {
+  // Hover is a mouse's (or a pen's): a finger's taps are handled above, and
+  // the mouse events a browser fakes after a tap would otherwise put out the
+  // route the tap has just lit.
+  canvas.addEventListener('pointerover', function (e) {
+    if (e.pointerType === 'touch' || busy) return;
     var a = e.target.closest && e.target.closest('.rv-p');
-    if (!busy) light(a ? a.getAttribute('data-key') : null);
+    light(a ? a.getAttribute('data-key') : null);
   });
-  canvas.addEventListener('mouseleave', function () { if (!busy) light(null); });
+  canvas.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'touch' && !busy) light(null); });
   root.addEventListener('click', function (e) {
     // The chips of the itinerary, and the grid panel's re-root: the controls
     // themselves, not any element that happens to carry the attribute —

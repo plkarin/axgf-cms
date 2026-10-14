@@ -128,4 +128,6 @@ async fn the_language_select_shows_the_current_language() {
         bar.contains(r#"<option value="pl" lang="pl" selected>PL</option>"#),
         "{bar}"
     );
+    // And the closed menu says which, rather than drawing an empty box.
+    assert!(bar.contains(">PL</summary>"), "{bar}");
 }

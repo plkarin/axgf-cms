@@ -1007,3 +1007,25 @@ async fn the_quality_screen_tells_a_reader_nothing_about_someone_hidden_from_the
         "the viewer's count is the count without the hidden person"
     );
 }
+
+/// Tap to look, tap again to go (ADR 0002 §6). A browser cannot run here, so
+/// this pins the three things the touch walk found broken: the mouse events a
+/// browser fakes after a tap put the lit route out again; the lit label lay
+/// over the person and swallowed the second tap; and "Back" showed before
+/// there was anywhere to go back to.
+#[test]
+fn a_tap_lights_the_route_and_a_second_tap_on_it_travels() {
+    let js = include_str!("../static/river.js");
+    let css = include_str!("../static/app.css");
+    assert!(
+        !js.contains("'mouseover'") && !js.contains("'mouseleave'"),
+        "hover listens to pointers, not to the mouse events a tap fakes"
+    );
+    assert!(js.contains("canvas.addEventListener('pointerover', function (e) {\n    if (e.pointerType === 'touch' || busy) return;"));
+    assert!(js.contains("if (e.pointerType !== 'touch' && !busy) light(null);"));
+    assert!(css.contains(".rv-svg .rv-lit, .rv-svg .rv-hl { pointer-events: none; }"));
+    assert!(
+        css.contains("[hidden] { display: none !important; }"),
+        "a hidden button stays hidden whatever its class says"
+    );
+}

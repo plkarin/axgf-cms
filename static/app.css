@@ -120,6 +120,8 @@
 
 
 * { box-sizing: border-box; }
+/* What the markup hides stays hidden, whatever display a class gives it. */
+[hidden] { display: none !important; }
 
 /* ---------------------------------------------------------------------------
    The page wash
@@ -3357,6 +3359,9 @@ a.tcard:hover {
 .rv-svg .k-glow { fill: var(--rv-glow); }
 .rv-svg .k-lit { stroke: var(--rv-lit); }
 .rv-svg .k-lit-fill { fill: var(--rv-lit); }
+/* The lit route and its label are drawn over the people: a second tap on a
+   person goes through them to the person, to travel there. */
+.rv-svg .rv-lit, .rv-svg .rv-hl { pointer-events: none; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
 .rv-legend {
   display: flex;

@@ -221,7 +221,7 @@ async fn admin_adds_second_claims(app: &axum::Router) {
     let resp = post_form(app, &format!("/admin/person/{LIVING}"), &body, true).await;
     assert_eq!(
         resp.status(),
-        StatusCode::OK,
+        StatusCode::SEE_OTHER,
         "the administrator's edit saves"
     );
 }
@@ -446,7 +446,7 @@ async fn restore(class: Class) {
         form_encode(&sent.to_string())
     );
     let resp = post_form_as(&app, &cousin, &format!("/admin/person/{LIVING}"), &body).await;
-    expect_status(resp, StatusCode::OK, "the contributor's save").await;
+    expect_status(resp, StatusCode::SEE_OTHER, "the contributor's save").await;
 
     let stored = textarea(
         &body_string(get_admin(&app, &format!("/admin/person/{LIVING}/edit")).await).await,

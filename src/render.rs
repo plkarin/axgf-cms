@@ -36,6 +36,10 @@ pub const AVATAR_JS: &str = include_str!("../static/avatar.js");
 /// The profile editor's "add another entry", enhancement only.
 pub const PROFILE_JS: &str = include_str!("../static/profile.js");
 
+/// The record's editor: its tabs in place, the marks on a tab with unsaved
+/// changes, the question before leaving them. Enhancement only.
+pub const EDITOR_JS: &str = include_str!("../static/editor.js");
+
 /// The six behaviours that were inline `onclick`/`oninput`/`onsubmit`
 /// attributes until the Content-Security-Policy stopped allowing inline
 /// script. Loaded on every page; enhancement only.
@@ -83,6 +87,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_form.html",
     "admin_place.html",
     "admin_profile.html",
+    "admin_person.html",
     "_profile_edit.html",
     "admin_identity.html",
     "admin_family.html",

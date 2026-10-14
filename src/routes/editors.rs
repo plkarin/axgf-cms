@@ -867,7 +867,7 @@ fn family_view(flat: &Value, lens: &crate::access::Lens, fid: &str, fam: &Value)
 }
 
 /// Families this reader may attach a child to, labelled by their partners.
-fn family_options(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
+pub(super) fn family_options(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
     let Some(fams) = flat.get("families").and_then(Value::as_object) else {
         return Vec::new();
     };

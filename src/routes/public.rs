@@ -758,6 +758,8 @@ pub async fn person(
                     // edit history — that is an editing concern.
                     tabs,
                     tab => tab.slug(),
+                    // Modifier opens the editor on the tab being read.
+                    edit_tab => super::person_editor::fragment_for(tab.slug()),
                     profile_groups,
                     full_record => true,
                     // The standalone page has the width for the explanatory
@@ -1071,6 +1073,18 @@ pub async fn profile_js() -> Response {
         .into_response()
 }
 
+/// `GET /static/editor.js` — the record's editor's tabs and change marks.
+pub async fn editor_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::EDITOR_JS,
+    )
+        .into_response()
+}
+
 /// `GET /static/ui.js` — the delegated handlers every page carries.
 pub async fn ui_js() -> Response {
     (
@@ -1270,6 +1284,7 @@ fn river_tab_context(
         river_n => n,
         tabs,
         tab => tab.slug(),
+        edit_tab => super::person_editor::fragment_for(tab.slug()),
         profile_groups,
     }
 }

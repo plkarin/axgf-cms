@@ -339,6 +339,49 @@ pub struct BatchItem {
     pub label: Option<String>,
 }
 
+/// One write of a [`AppState::commit`]: the record's editor turns every tab
+/// that changed into a list of these and saves them together.
+#[derive(Debug, Clone)]
+pub enum Op {
+    /// A new record, its id already chosen, so later operations in the same
+    /// commit can name it.
+    Create {
+        kind: axgf_rs::EntityKind,
+        entity: Value,
+    },
+    /// A version-checked replacement of one record.
+    Update {
+        kind: axgf_rs::EntityKind,
+        id: String,
+        expected_version: u64,
+        entity: Value,
+    },
+    /// A version-checked delete, refused if anything still refers to it.
+    Delete {
+        kind: axgf_rs::EntityKind,
+        id: String,
+        expected_version: u64,
+    },
+    /// A Document and its bytes, as [`AppState::add_document`] adds them.
+    AddDocument { entity: Value, payload: Vec<u8> },
+}
+
+impl Op {
+    fn target(&self) -> (axgf_rs::EntityKind, String) {
+        let id_of = |e: &Value| {
+            e.get("id")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string()
+        };
+        match self {
+            Op::Create { kind, entity } => (*kind, id_of(entity)),
+            Op::Update { kind, id, .. } | Op::Delete { kind, id, .. } => (*kind, id.clone()),
+            Op::AddDocument { entity, .. } => (axgf_rs::EntityKind::Document, id_of(entity)),
+        }
+    }
+}
+
 /// The outcome of a batch: all applied in one save, or none.
 pub enum BatchOutcome {
     Applied {
@@ -1217,6 +1260,179 @@ impl AppState {
         Ok(BatchOutcome::Applied {
             records: items.len(),
         })
+    }
+
+    /// Several writes of several kinds, in one save, or none (v0.4.2).
+    ///
+    /// The record's editor is six tabs over one form with one Enregistrer, and
+    /// a save rewrites the whole bundle — 12 to 17 seconds on the operator's
+    /// 434 MB archive — so a family added on one tab, a height on another and
+    /// a photograph on a third are written by one persist, not three. Every
+    /// version is compared first; then each operation runs through the
+    /// library on the same bundle, in order, and the first refusal abandons
+    /// the lot, leaving memory and file as they were. Each record gets its own
+    /// journal entry, so the history reads as if they were saved one by one.
+    ///
+    /// A document's bytes go to the payload cache before the persist, as
+    /// [`add_document`](Self::add_document) does; if a later operation is
+    /// refused they stay in the cache unreferenced, which costs disk and not
+    /// data.
+    pub fn commit(
+        &self,
+        ops: Vec<Op>,
+        who: &str,
+        label: impl Fn(axgf_rs::EntityKind, &Value) -> Option<String>,
+    ) -> Result<BatchOutcome> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+
+        let mut stale = Vec::new();
+        let mut stored_of: Vec<Option<Value>> = Vec::with_capacity(ops.len());
+        for op in &ops {
+            match op {
+                Op::Update {
+                    kind,
+                    id,
+                    expected_version,
+                    ..
+                }
+                | Op::Delete {
+                    kind,
+                    id,
+                    expected_version,
+                } => {
+                    let collection = crate::admin::collection_for(*kind);
+                    match guard.get(collection).and_then(|c| c.get(id)).cloned() {
+                        Some(s) if version_of(&s) == *expected_version => stored_of.push(Some(s)),
+                        _ => {
+                            stale.push(id.clone());
+                            stored_of.push(None);
+                        }
+                    }
+                }
+                _ => stored_of.push(None),
+            }
+        }
+        if !stale.is_empty() {
+            return Ok(BatchOutcome::Conflict { ids: stale });
+        }
+
+        let refused = |id: String, env: &Envelope| BatchOutcome::Refused {
+            id,
+            diagnostics: env.diagnostics.clone(),
+        };
+        let mut bundle = guard.to_string();
+        let mut payloads: Vec<(String, Value)> = Vec::new();
+        let mut written: Vec<Option<Value>> = Vec::with_capacity(ops.len());
+        for (op, stored) in ops.iter().zip(&stored_of) {
+            let id = op.target().1;
+            let (env, after) = match op {
+                Op::Create { kind, entity } => {
+                    let mut entity = entity.clone();
+                    crate::profile::declare_version(*kind, &mut entity);
+                    (
+                        axgf_rs::add_entity(&bundle, *kind, &entity.to_string()),
+                        Some(entity),
+                    )
+                }
+                Op::AddDocument { entity, payload } => {
+                    let Some(path) = entity.pointer("/file/path").and_then(Value::as_str) else {
+                        anyhow::bail!("a document is added with its file path already chosen");
+                    };
+                    let env = axgf_rs::add_entity(
+                        &bundle,
+                        axgf_rs::EntityKind::Document,
+                        &entity.to_string(),
+                    );
+                    if env.status != Status::Error && !env.data.is_null() {
+                        payloads.push((path.to_string(), self.payloads.put(path, payload)?));
+                    }
+                    (env, Some(entity.clone()))
+                }
+                Op::Update {
+                    kind,
+                    entity,
+                    expected_version,
+                    ..
+                } => {
+                    let mut entity = entity.clone();
+                    entity["version_num"] = Value::from(expected_version + 1);
+                    entity["updated_at"] = Value::from(crate::view::now_iso8601());
+                    crate::profile::declare_version(*kind, &mut entity);
+                    if let Some(created) = stored.as_ref().and_then(|s| s.get("created_at")) {
+                        entity["created_at"] = created.clone();
+                    }
+                    (
+                        axgf_rs::update_entity(&bundle, *kind, &entity.to_string()),
+                        Some(entity),
+                    )
+                }
+                Op::Delete { kind, id, .. } => (
+                    axgf_rs::delete_entity(&bundle, *kind, id, axgf_rs::DeletePolicy::Reject),
+                    None,
+                ),
+            };
+            if env.status == Status::Error || env.data.is_null() {
+                return Ok(refused(id, &env));
+            }
+            let Some(next) = bundle_from_data(&env.data) else {
+                return Ok(refused(id, &env));
+            };
+            bundle = next.to_string();
+            written.push(after);
+        }
+        let mut new_bundle: Value = serde_json::from_str(&bundle)?;
+        if !payloads.is_empty() {
+            let Some(declared) = new_bundle
+                .as_object_mut()
+                .map(|obj| {
+                    obj.entry("external_payloads")
+                        .or_insert_with(|| Value::Object(Default::default()))
+                })
+                .and_then(Value::as_object_mut)
+            else {
+                anyhow::bail!("external_payloads is not an object");
+            };
+            for (path, declaration) in payloads {
+                declared.insert(path, declaration);
+            }
+        }
+        self.persist(&new_bundle)?;
+        *guard = new_bundle;
+        self.invalidate_lenses();
+        drop(guard);
+
+        for ((op, stored), after) in ops.iter().zip(&stored_of).zip(&written) {
+            let (kind, id) = op.target();
+            let (action, version_num) = match op {
+                Op::Create { .. } => ("create", Some(1)),
+                Op::AddDocument { .. } => ("upload", None),
+                Op::Update {
+                    expected_version, ..
+                } => ("update", Some(expected_version + 1)),
+                Op::Delete { .. } => ("delete", None),
+            };
+            let entry = crate::journal::entry_for(crate::journal::Record {
+                who,
+                action,
+                kind: kind_name(kind),
+                entity_id: &id,
+                label: stored
+                    .as_ref()
+                    .or(after.as_ref())
+                    .and_then(|e| label(kind, e)),
+                version_num,
+                before: matches!(op, Op::Update { .. })
+                    .then_some(())
+                    .and(stored.as_ref()),
+                after: matches!(op, Op::Update { .. })
+                    .then_some(())
+                    .and(after.as_ref()),
+            });
+            if let Err(e) = self.journal.append(&entry) {
+                tracing::error!(error = %e, "could not append to the edit journal");
+            }
+        }
+        Ok(BatchOutcome::Applied { records: ops.len() })
     }
 
     /// Delete several records of one kind in one save, or none (B6's bulk

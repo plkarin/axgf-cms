@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% from "_profile_edit.html" import attribute %}
+
+{#- The record's editor (v0.4.2): six tabs over one form, one save.
+
+    The tabs are the reading tabs — Fiche · Famille · Événements · Sources ·
+    Médias · Profil — and all six are always here: reading hides an empty
+    tab, editing never does, because an empty tab is where you add things.
+    They show and hide parts of one form, so one Enregistrer writes what
+    changed on every tab (`routes::person_editor`). Without scripting the tab
+    on screen is the URL's fragment (`:target`); with it, editor.js keeps the
+    fragment, marks a tab whose fields changed, and asks before the page is
+    left with changes unsaved.
+
+    Every part that writes a record is a block with a `<prefix>.drawn`
+    marker: the save reads back only a block that was drawn and changed. -#}
+
+{#- One input, as the model describes it. -#}
+{% macro fld(f) %}
+{%- if f.kind == "hidden" %}<input type="hidden" name="{{ f.name }}" value="{{ f.value }}">
+{%- elif f.kind == "check" %}
+<label class="inline ed-check"><input type="checkbox" name="{{ f.name }}" value="on"{% if f.value == "on" %} checked{% endif %}> {{ f.label }}</label>
+{%- else %}
+<label class="ed-field{% if f.wide %} wide{% endif %}"><span class="field-label">{{ f.label }}</span>
+  {%- if f.kind == "select" %}
+  <select name="{{ f.name }}">
+    {%- for o in f.options %}<option value="{{ o.value }}"{% if o.value == f.value %} selected{% endif %}>{{ o.label }}</option>{% endfor -%}
+  </select>
+  {%- elif f.kind == "textarea" %}
+  <textarea name="{{ f.name }}" rows="3">{{ f.value }}</textarea>
+  {%- elif f.kind == "number" %}
+  <input type="number" name="{{ f.name }}" value="{{ f.value }}"
+         {%- if f.min %} min="{{ f.min }}"{% endif %}{% if f.max %} max="{{ f.max }}"{% endif %}{% if f.step %} step="{{ f.step }}"{% endif %}>
+  {%- elif f.kind == "picker" %}
+  <input type="text" name="{{ f.name }}" value="{{ f.value }}" list="{{ f.list }}" autocomplete="off" dir="auto">
+  {%- elif f.kind == "file" %}
+  <input type="file" name="{{ f.name }}">
+  {%- elif f.qualifier %}
+  <span class="date-input">
+    {{- m.qualifier(t, f.qualifier, f.qualifier_on, f.label) -}}
+    <input type="text" name="{{ f.name }}" value="{{ f.value }}" size="12"></span>
+  {%- else %}
+  <input type="text" name="{{ f.name }}" value="{{ f.value }}" dir="auto">
+  {%- endif %}
+  {%- if f.hint %}<span class="hint">{{ f.hint }}</span>{% endif %}
+</label>
+{%- endif %}
+{% endmacro %}
+
+{#- An action on a list: a toggle drawn as a quiet button. Ticked, the row it
+    belongs to reads as struck through until the save. -#}
+{% macro action(f) %}
+<label class="ed-action"><input type="checkbox" name="{{ f.name }}" value="on"{% if f.value == "on" %} checked{% endif %}><span>{{ f.label }}</span></label>
+{% endmacro %}
+
+{% macro block(b) %}
+{%- if b.kind == "new" %}
+<details class="ed-add" id="{{ b.prefix }}"{% if b.touched %} open{% endif %}>
+  <summary>{{ b.add_label }}</summary>
+  <input type="hidden" name="{{ b.prefix }}.drawn" value="1">
+  {% if b.subtitle %}<p class="hint">{{ b.subtitle }}</p>{% endif %}
+  <div class="ed-grid" data-content>{% for f in b.fields %}{{ fld(f) }}{% endfor %}</div>
+</details>
+{%- else %}
+{#- A record on the tab — a union, an event, a file — with its fields and
+    actions: content, one per thing recorded, not the page's chrome. -#}
+<article class="ed-block ed-{{ b.kind }}{% if b.touched %} is-touched{% endif %}" id="{{ b.prefix }}" data-content>
+  <input type="hidden" name="{{ b.prefix }}.drawn" value="1">
+  <header class="ed-block-head">
+    {% if b.thumb %}<img class="ed-thumb" src="{{ b.thumb }}" alt="" width="56" height="56" loading="lazy">{% endif %}
+    <div class="ed-block-title">
+      <h3>{% if b.href %}<a href="{{ b.href }}">{{ b.title }}</a>{% else %}{{ b.title }}{% endif %}</h3>
+      {% if b.subtitle %}<span class="small muted">{{ b.subtitle }}</span>{% endif %}
+    </div>
+    {% if b.remove %}{{ action(b.remove) }}{% endif %}
+  </header>
+  <div class="ed-grid" data-content>{% for f in b.fields %}{{ fld(f) }}{% endfor %}</div>
+  {% for l in b.lists %}
+  <div class="ed-list-wrap">
+    <h4 class="ed-list-title">{{ l.title }}</h4>
+    {% if l.rows %}
+    <div class="ed-list" data-content>
+      {% for r in l.rows %}
+      <div class="ed-item">
+        <span class="ed-item-name">{% if r.href %}<a href="{{ r.href }}"><bdi>{{ r.title }}</bdi></a>{% else %}<bdi>{{ r.title }}</bdi>{% endif %}</span>
+        {% if r.fields %}<span class="ed-item-fields">{% for f in r.fields %}{{ fld(f) }}{% endfor %}</span>{% endif %}
+        {% if r.remove %}{{ action(r.remove) }}{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if l.add %}
+    <details class="ed-add-row">
+      <summary>{{ l.add_label }}</summary>
+      <div class="ed-grid" data-content>{% for f in l.add.fields %}{{ fld(f) }}{% endfor %}</div>
+    </details>
+    {% endif %}
+  </div>
+  {% endfor %}
+</article>
+{%- endif %}
+{% endmacro %}
+
+{% block title %}{{ t("admin-edit") }} — {{ person_name }} — {{ t("app-name") }}{% endblock %}
+
+{% block content %}
+<h1>{{ t("admin-edit") }} <bdi>{{ person_name }}</bdi></h1>
+<p class="lede mono small">{{ id }}</p>
+
+{% if saved is not none %}
+<div class="notice" role="status"><p>{% if saved %}{{ t("edit-saved", n=saved) }}{% else %}{{ t("edit-saved-none") }}{% endif %}</p></div>
+{% endif %}
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+<form method="post" action="/admin/person/{{ id }}#{{ tab }}" enctype="multipart/form-data"
+      class="person-editor" data-tab="{{ tab }}"{% if unsaved %} data-unsaved{% endif %}>
+  <input type="hidden" name="base_version" value="{{ base_version }}">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  {#- Six tabs, always: B4's strip, one row that scrolls sideways. A dot marks
+      a tab with changes not yet saved. -#}
+  <nav class="person-tabs ed-tabs" aria-label="{{ t('person-sections-label') }}">
+    {%- for tb in tabs %}
+    <a class="person-tab{% if tb.key == tab %} is-current{% endif %}{% if tb.changed %} has-changes{% endif %}"
+       href="#{{ tb.key }}" data-edit-tab="{{ tb.key }}"{% if tb.key == tab %} aria-current="true"{% endif %}><span class="ed-tab-name">{{ tb.label }}</span>
+      <span class="ed-mark" aria-hidden="true"></span><span class="sr-only ed-mark-text"{% if not tb.changed %} hidden{% endif %}>{{ t("edit-tab-changed") }}</span></a>
+    {%- endfor %}
+  </nav>
+
+  <div class="ed-panels">
+  {% for tb in tabs %}
+  <section class="ed-panel{% if tb.key == tab %} is-current{% endif %}" id="{{ tb.key }}" aria-label="{{ tb.label }}">
+
+    {% if tb.key == "fiche" %}
+    {#- Names, dates, places: the common case, with no disclosure. A
+        person's fields are the record being edited — its content, not the
+        page's chrome. -#}
+    <div class="ed-fields" data-content>
+      {% for f in fiche %}{{ fld(f) }}{% endfor %}
+    </div>
+    <p class="small"><a href="/admin/person/{{ id }}/identity">{{ t("identity-edit-link") }}</a></p>
+    <details class="raw-fieldset">
+      <summary id="raw-json-legend">{{ t("admin-raw-json") }}</summary>
+      <p class="hint">{{ t("admin-raw-json-help") }}</p>
+      <textarea name="raw_json" rows="16" spellcheck="false" aria-labelledby="raw-json-legend">{{ raw }}</textarea>
+    </details>
+    {% if is_admin %}
+    <details class="danger-zone">
+      <summary>{{ t("admin-delete") }}</summary>
+      <input type="hidden" name="base_version" value="{{ base_version }}" form="person-delete">
+      <p><strong>{{ t("list-delete-confirm", kind=t("kind-person")) }}</strong></p>
+      <div class="policy-list">
+        <label class="inline"><input type="radio" name="policy" value="reject" checked form="person-delete">
+          <span><strong>{{ t("list-policy-reject") }}</strong> {{ t("list-policy-reject-detail") }}</span></label>
+        <label class="inline"><input type="radio" name="policy" value="cascade" form="person-delete">
+          <span><strong>{{ t("list-policy-cascade") }}</strong> {{ t("list-policy-cascade-detail") }}</span></label>
+        <label class="inline"><input type="radio" name="policy" value="orphan" form="person-delete">
+          <span><strong>{{ t("list-policy-orphan") }}</strong> {{ t("list-policy-orphan-detail") }}</span></label>
+      </div>
+      <button class="btn danger" type="submit" form="person-delete">{{ t("admin-delete") }}</button>
+    </details>
+    {% endif %}
+
+    {% elif tb.key == "profil" %}
+    {#- The fourteen AXGF 1.1 groups, as v0.4.1 built them: each named with
+        its count, closed unless it has content; opening one draws every
+        field in it. One control per group, never one per field. -#}
+    <div class="pf-groups">
+      {% for s in profile_sections %}
+      {% set g = s.group %}
+      <details class="pf-group" id="group-{{ g.key }}"{% if s.open %} open{% endif %}>
+        <summary><span class="pf-group-title">{{ g.title }}</span><span class="sep" aria-hidden="true"> · </span>
+          <span class="pf-group-count">{% if s.filled %}{{ t("profile-group-filled", n=s.filled) }}{% else %}0{% endif %}</span>
+          {%- if g.class_label %} <span class="chip small pa-class">{{ g.class_label }}</span>{% endif %}</summary>
+        <div class="pf-group-body" data-content>
+          <input type="hidden" name="pf.{{ g.key }}" value="1">
+          <p class="small muted">{{ g.intro }}</p>
+          {% if g.withheld %}
+          <div class="notice" role="status"><p>{{ t("profile-editor-withheld", classes=g.withheld | join(", ")) }}</p></div>
+          {% endif %}
+          {% if s.living_class %}
+          <div class="notice warn"><p>{{ t("profile-living-class-note") }}</p></div>
+          {% endif %}
+          {% if g.key == "relationships" %}
+          <p>{{ t("profile-relationships-elsewhere") }}</p>
+          <p><a href="#famille" data-edit-tab="famille">{{ t("record-family") }}</a> ·
+             <a href="/admin/person/{{ id }}/links">{{ t("links-edit-link") }}</a></p>
+          {% elif not g.attributes %}
+          <p class="notice" role="status">{{ t("profile-editor-nothing") }}</p>
+          {% else %}
+          {% for a in g.attributes %}{{ attribute(t, m, a, profile_sources, precisions) }}{% endfor %}
+          {% endif %}
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    {% set existing = tb.blocks | rejectattr("kind", "equalto", "new") | rejectattr("kind", "equalto", "cite") | list %}
+    {% if not existing %}
+    <p class="muted">
+      {%- if tb.key == "famille" %}{{ t("family-no-unions") }} {{ t("family-no-parents") }}
+      {%- elif tb.key == "evenements" %}{{ t("events-none") }}
+      {%- elif tb.key == "sources" %}{{ t("edit-no-sources") }}
+      {%- else %}{{ t("edit-no-files") }}{% endif -%}
+    </p>
+    {% endif %}
+    {% for b in tb.blocks %}{{ block(b) }}{% endfor %}
+    {% endif %}
+
+  </section>
+  {% endfor %}
+  </div>
+
+  {#- The pickers' lists, once each, shared by every field that searches
+      them. -#}
+  {% for group, options in pickers | items %}
+  <datalist id="pick-{{ group }}">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+  {% endfor %}
+  {% for group, options in event_pickers | items %}{% if group not in pickers %}
+  <datalist id="pick-{{ group }}">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+  {% endif %}{% endfor %}
+  {% for group, options in datalists | items %}
+  <datalist id="{{ group }}">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+  {% endfor %}
+
+  <div class="cta-row ed-save">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
+    <a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+
+{#- Deleting the person: on the Fiche tab, closed until opened. Its controls
+    belong to this empty form by their `form` attribute, since a form cannot
+    sit inside the editor's. -#}
+{% if is_admin %}<form id="person-delete" method="post" action="/admin/person/{{ id }}/delete"></form>{% endif %}
+
+{% if history %}
+<h2>{{ t("record-history") }}</h2>
+<p class="small muted">{{ t("record-history-help") }}</p>
+<ol class="history" data-content>
+  {% for h in history %}
+  <li>
+    <strong>{{ h.who }}</strong> {{ h.summary }}
+    <span class="small muted">{{ t("record-history-entry-meta", at=h.at) }}
+      {%- if h.version_num %}{{ t("record-history-entry-version", version=t("admin-version", version=h.version_num)) }}{% endif %}</span>
+    {% if h.changes %}
+    <details>
+      <summary class="small">{{ t("admin-what-changed") }}</summary>
+      <table class="wide diff-table">
+        <tbody>
+        {% for c in h.changes %}
+          <tr>
+            <td data-label="{{ t('admin-field') }}"><code>{{ c.path }}</code></td>
+            <td data-label="{{ t('admin-from') }}">{{ m.diff_val(t, c, c.from, "diff-from") }}</td>
+            <td data-label="{{ t('admin-to') }}">{{ m.diff_val(t, c, c.to, "diff-to") }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </details>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/profile.js" defer></script>
+<script src="/static/editor.js" defer></script>
+{% endblock %}

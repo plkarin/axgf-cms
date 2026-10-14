@@ -486,7 +486,7 @@ async fn an_editor_who_never_saw_the_health_cannot_blank_it() {
         form_encode(&edited)
     );
     let resp = post_form_as(&app, &cousin, &format!("/admin/person/{LIVING}"), &body).await;
-    assert_eq!(resp.status(), StatusCode::OK, "the edit is accepted");
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER, "the edit is accepted");
 
     // The profile tabs, not the record: the record carries the edit journal,
     // whose "from" column holds the value as it was before this very save.

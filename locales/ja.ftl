@@ -3055,3 +3055,25 @@ quality-dismissed-summary = 確認済みの指摘：{ $n } 件
 quality-dismiss-all = すべて確認済みにする（{ $n }）
 quality-restore-all = すべて再表示する（{ $n }）
 quality-bulk-conflict = 一覧を開いた後に変更された記録：{ $n } 件。何も変更していません。一覧を再読み込みしてやり直してください。
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = 変更あり（未保存）
+edit-remove = 外す
+edit-add-partner = 配偶者を追加
+edit-add-child = 子を追加
+edit-union-with = { $names } との婚姻
+edit-union-alone = 配偶者の記録がない婚姻
+edit-child-of = { $names } の子
+edit-new-family = 家族を作成
+edit-cite-title = 出典に基づく事実
+edit-attach-to = 引用先
+edit-add-source = 出典を追加
+edit-error-source-title = 新しい出典には題名が必要です。何も保存されていません。
+edit-detach-file = この記録から外す
+edit-no-sources = この人物自身の事実はまだどの出典も引用していません。
+edit-no-files = この記録にはまだファイルが添付されていません。
+edit-saved = 保存しました：{ $n }件の記録を一度に書き込みました。
+edit-saved-none = 変更がなかったため、何も保存していません。
+edit-stale = このページを開いた後、別の人が { $what } を変更しました。何も保存されていません。入力した内容はすべて残っています。
+edit-refused = 何も保存されていません：{ $reason }

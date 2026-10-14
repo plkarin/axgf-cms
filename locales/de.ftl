@@ -3307,3 +3307,28 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = Alle als geprüft markieren ({ $n })
 quality-restore-all = Alle wieder anzeigen ({ $n })
 quality-bulk-conflict = Seit dem Öffnen der Liste geänderte Datensätze: { $n }. Nichts wurde markiert; laden Sie die Liste neu und versuchen Sie es erneut.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = geändert, noch nicht gespeichert
+edit-remove = Entfernen
+edit-add-partner = Partner hinzufügen
+edit-add-child = Kind hinzufügen
+edit-union-with = Verbindung mit { $names }
+edit-union-alone = Verbindung ohne erfassten Partner
+edit-child-of = Kind von { $names }
+edit-new-family = Familie anlegen
+edit-cite-title = Was sich auf eine Quelle stützt
+edit-attach-to = Zitieren für
+edit-add-source = Quelle hinzufügen
+edit-error-source-title = Eine neue Quelle braucht einen Titel. Nichts wurde gespeichert.
+edit-detach-file = Von diesem Eintrag lösen
+edit-no-sources = Noch keine eigene Angabe dieser Person zitiert eine Quelle.
+edit-no-files = Diesem Eintrag ist noch keine Datei angehängt.
+edit-saved = { $n ->
+        [one] Gespeichert: ein Eintrag geschrieben.
+       *[other] Gespeichert: { $n } Einträge in einem Speichervorgang geschrieben.
+    }
+edit-saved-none = Nichts hatte sich geändert, also wurde nichts gespeichert.
+edit-stale = Jemand anderes hat { $what } geändert, seit diese Seite geöffnet wurde. Nichts wurde gespeichert; alle Ihre Eingaben sind noch da.
+edit-refused = Nichts wurde gespeichert: { $reason }

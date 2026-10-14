@@ -96,7 +96,7 @@
       the right to edit receives no edit control at all, in any form. -#}
   {% if may_write %}
   <div class="person-head-actions">
-    <a class="btn" href="/admin/person/{{ p.id }}/edit">{{ t("record-edit") }}</a>
+    <a class="btn" href="/admin/person/{{ p.id }}/edit{% if edit_tab %}#{{ edit_tab }}{% endif %}">{{ t("record-edit") }}</a>
   </div>
   {% endif %}
 

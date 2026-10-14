@@ -690,7 +690,7 @@ async fn the_river_controls_are_secondary_and_edit_is_a_ghost() {
         }
     }
     let edit: Vec<_> = doc
-        .select(&sel(&format!(r#"a[href="/admin/person/{P}/edit"]"#)))
+        .select(&sel(&format!(r#"a[href^="/admin/person/{P}/edit"]"#)))
         .collect();
     assert!(!edit.is_empty(), "the record's edit link");
     for el in edit {
@@ -882,6 +882,43 @@ fn chrome_of(html: &str) -> Chrome {
     }
 }
 
+/// The record's editor, tab by tab: each tab's chrome is what lies outside
+/// every tab plus what lies in it. Empty for any other page.
+fn editor_tabs(html: &str) -> Vec<(String, usize)> {
+    let doc = Html::parse_document(html);
+    let panels = Selector::parse("section.ed-panel").unwrap();
+    let sel = interactive();
+    let in_panel = |el: &ElementRef| -> Option<String> {
+        el.ancestors()
+            .filter_map(ElementRef::wrap)
+            .find(|a| {
+                a.value().name() == "section"
+                    && a.value()
+                        .attr("class")
+                        .is_some_and(|c| c.split_whitespace().any(|c| c == "ed-panel"))
+            })
+            .and_then(|a| a.value().id().map(str::to_string))
+    };
+    let mut outside = 0;
+    let mut inside: BTreeMap<String, usize> = BTreeMap::new();
+    for el in doc.select(&sel) {
+        if !at_rest(&el) || is_content(&el) {
+            continue;
+        }
+        match in_panel(&el) {
+            Some(p) => *inside.entry(p).or_default() += 1,
+            None => outside += 1,
+        }
+    }
+    doc.select(&panels)
+        .filter_map(|p| p.value().id().map(str::to_string))
+        .map(|key| {
+            let n = outside + inside.get(&key).copied().unwrap_or(0);
+            (key, n)
+        })
+        .collect()
+}
+
 /// The person editor's profile groups (`details.pf-group`): how many, and
 /// whether each is one control at rest — its summary — and never one per
 /// field. A group's fields are the record's content.
@@ -927,8 +964,31 @@ async fn every_screen_keeps_its_chrome_budget() {
                 continue;
             }
             let ch = chrome_of(&html);
-            // The person editor names every AXGF profile group, always (v0.4.1):
-            // one disclosure per group on top of the edit budget, and only one.
+            // The record's editor (v0.4.2) is six tabs over one form: each tab
+            // is a screen of its own and keeps the edit budget on its own —
+            // the controls outside every tab plus its own. Its Profil tab
+            // names every AXGF profile group, always: one disclosure per
+            // group on top, and only one.
+            let tabs = editor_tabs(&html);
+            if !tabs.is_empty() {
+                let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
+                for (key, n) in &tabs {
+                    let budget = 20 + if key == "profil" { groups } else { 0 };
+                    println!(
+                        "{:<44} {:>6} {:>9} {:>6}",
+                        format!("{who} {page}#{key}"),
+                        n,
+                        ch.masthead,
+                        budget
+                    );
+                    if *n > budget {
+                        over.push(format!(
+                            "{who} {page}#{key}: {n} chrome controls, budget {budget}"
+                        ));
+                    }
+                }
+                continue;
+            }
             let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
             let budget = if read_only(&page) { 12 } else { 20 } + groups;
             println!(

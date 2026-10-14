@@ -3610,3 +3610,32 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = علِّم الكل بأنه تم التحقق منه ({ $n })
 quality-restore-all = أظهر الكل مجددًا ({ $n })
 quality-bulk-conflict = سجلات تغيّرت منذ فتح القائمة: { $n }. لم يُعلَّم شيء؛ أعد تحميل القائمة وحاول مجددًا.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = معدَّل، لم يُحفظ بعد
+edit-remove = إزالة
+edit-add-partner = إضافة زوج
+edit-add-child = إضافة ابن
+edit-union-with = اقتران مع { $names }
+edit-union-alone = اقتران بلا زوج مسجَّل
+edit-child-of = ابن { $names }
+edit-new-family = إنشاء عائلة
+edit-cite-title = ما يستند إلى مصدر
+edit-attach-to = استشهد به لـ
+edit-add-source = إضافة مصدر
+edit-error-source-title = يحتاج المصدر الجديد إلى عنوان. لم يُحفظ شيء.
+edit-detach-file = فصل عن هذه البطاقة
+edit-no-sources = لا تستشهد أي واقعة خاصة بهذا الشخص بمصدر بعد.
+edit-no-files = لم يُرفق أي ملف بهذه البطاقة بعد.
+edit-saved = { $n ->
+        [zero] لم يُكتب شيء.
+        [one] حُفظ: بطاقة واحدة.
+        [two] حُفظ: بطاقتان في حفظ واحد.
+        [few] حُفظ: { $n } بطاقات في حفظ واحد.
+        [many] حُفظ: { $n } بطاقة في حفظ واحد.
+       *[other] حُفظ: { $n } بطاقة في حفظ واحد.
+    }
+edit-saved-none = لم يتغير شيء، فلم يُحفظ شيء.
+edit-stale = عدَّل شخص آخر { $what } منذ فتح هذه الصفحة. لم يُحفظ شيء؛ كل ما أدخلته ما زال هنا.
+edit-refused = لم يُحفظ شيء: { $reason }

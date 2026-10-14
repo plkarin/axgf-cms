@@ -276,7 +276,7 @@ async fn a_scoped_contributor_edits_inside_the_branch_and_nowhere_else() {
         .await;
         assert_eq!(
             resp.status(),
-            StatusCode::OK,
+            StatusCode::SEE_OTHER,
             "{who} is inside the branch and must be editable"
         );
     }

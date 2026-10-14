@@ -226,6 +226,12 @@ const ALLOWED: &[&str] = &[
     "person-children-count",
     "person-died-in",
     "person-generations-below",
+    // The record's tabs (v0.4.1): each names a part of the record that is
+    // there, and is drawn only when it is.
+    "person-tab-life",
+    "person-tab-media",
+    "person-tab-profile",
+    "person-tab-record",
     "person-visibility-inline",
     "pf-agreeableness",
     "pf-body-region",
@@ -380,6 +386,7 @@ const ALLOWED: &[&str] = &[
     "record-union-until",
     "record-verbatim-note",
     "record-visibility",
+    "river-tab-sources",
     "reliability-authored",
     "reliability-oral",
     "reliability-primary",
@@ -551,7 +558,23 @@ async fn check_every_person(app: &axum::Router, bundle: &Path) -> Sweep {
     // The same label recurs on every page: each distinct text is read once.
     let mut read: std::collections::HashMap<String, Vec<&[String]>> = Default::default();
     for id in &ids {
-        for uri in [format!("/person/{id}"), format!("/tree/panel/{id}?river=1")] {
+        // The record page and the panel beside the river, each on every tab
+        // it offers (v0.4.1): a tab holds part of the record, and the rule
+        // holds inside each.
+        let mut uris = Vec::new();
+        for first in [format!("/person/{id}"), format!("/tree/panel/{id}?river=1")] {
+            let html = body_string(get_with_cookie(app, &first, &cookie).await).await;
+            let tabs: Vec<String> = tab_hrefs(&html)
+                .into_iter()
+                .filter_map(|h| h.split("tab=").nth(1).map(str::to_string))
+                .collect();
+            for t in tabs {
+                let sep = if first.contains('?') { '&' } else { '?' };
+                uris.push(format!("{first}{sep}tab={t}"));
+            }
+            uris.push(first);
+        }
+        for uri in uris {
             let html = body_string(get_with_cookie(app, &uri, &cookie).await).await;
             for f in empty_fields(&html) {
                 sweep.empty.push(format!("{uri}: {f}"));

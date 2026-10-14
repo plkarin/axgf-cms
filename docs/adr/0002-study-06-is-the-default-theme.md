@@ -139,10 +139,32 @@ Study 06's palette, but they change what B4 (the record tabs) built.
   axes or more.
   `tests/read_mode.rs` holds this over every person of the sample, and over a
   real archive on demand (866 people, 0 empty fields).
-- **The record is one page, without tabs, beside the river and on its own.**
-  With nothing empty drawn, a record is short enough to read through, and the
-  tabs had been most of the page's chrome. B4's tab design now lives only in
-  edit mode.
+- **The record has its tabs back (v0.4.1).** v0.4.0 drew the record as one
+  page without tabs. That removed two things when only one was asked for:
+  hiding empty fields was right, removing the tabs went too far. Tabs
+  organise what exists; they do not display what is missing. The record page
+  and the panel beside the river carry Study 06's six — Fiche · Famille ·
+  Événements · Sources · Médias · Profil — drawn as B4 draws them, and only
+  those that hold something: a tab with nothing in it is not drawn at all,
+  rather than dimmed. (B4 dimmed a zero-count tab because an empty tab is
+  where you add things; that is edit mode's case, not reading's.) A record
+  with one tab draws no strip. Inside each tab, read mode is unchanged. A
+  radar still needs three axes, and a Profil tab that would hold only radars
+  below that line is not drawn. The tabs are content controls, not chrome —
+  how many there are follows what is recorded — so the record page's chrome
+  count did not rise (8 signed out, 9 signed in, before and after).
+- **In edit mode, empty is the normal state (v0.4.1).** Hiding what is empty
+  governs reading. v0.4.0 applied it to the edit form too, putting every empty
+  field behind one "n other fields" lump. It also dropped the only link into
+  the profile editor, so the 132 attributes of AXGF 1.1's fourteen groups
+  could not be reached — and were empty because there was no longer a way to
+  fill them. The person editor now draws a person's own fields (names, dates,
+  places, parents) without a disclosure, and lists all fourteen groups by
+  name, always, each with how many of its fields hold a value. A group is
+  closed by default and open when it has content. Opening one shows every
+  field, filled or empty. That is one control per group, never one per field.
+  `tests/profile_editor.rs` holds every attribute reachable for a person with
+  none of them filled.
 - **Editing is entered explicitly, and looks different.** Editors get one
   "Modifier" on the record and on the panel, and edit mode carries a band
   under the masthead saying so.
@@ -152,5 +174,9 @@ Study 06's palette, but they change what B4 (the record tabs) built.
 - **Every screen has a chrome budget.** Read-only screens may have 12 chrome
   controls, at most 7 of them in the masthead; edit and administration
   screens may have 20. A list row may carry two controls, and signing in may
-  add at most three controls to a read-only screen.
+  add at most three controls to a read-only screen. On the person editor the
+  record's own fields are its content, not chrome: in edit mode they are what
+  the editor came to change. Its fourteen profile groups add one control each
+  to the budget, and the walk fails a group with more than one control at
+  rest.
   `tests/interactive_walk.rs` fails on any excess.

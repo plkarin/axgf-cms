@@ -2810,6 +2810,7 @@ profile-yes = Yes
 profile-no = No
 profile-value = Value
 profile-editor-title = Profile
+profile-group-filled = { $n } filled
 profile-problems = Some of what was entered could not be saved. Each problem is named beside its field, and nothing was written.
 profile-editor-withheld = This group also holds { $classes } for this person, which you may not read. It is not shown here, and saving this form leaves it exactly as it is.
 profile-living-class-note = This person is recorded as living. What you enter in a sensitive class here is shown to administrators only.

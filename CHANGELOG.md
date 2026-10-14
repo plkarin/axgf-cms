@@ -6,6 +6,76 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-10-14
+
+Two fixes to the v0.4.0 minimalism pass. Both come from the same mistake:
+"hide what is empty" was applied to editing as well as reading. It governs
+reading only. In edit mode, empty is the normal state; it is what an editor
+is there to change. Nothing about the AXGF file changes.
+
+### Fixed
+
+**The record's tabs are back.** v0.4.0 drew the record as one long page
+without tabs. Hiding empty fields was right; removing the tabs went too far.
+The record page and the panel beside the river carry Study 06's six tabs again,
+in all eleven languages: Fiche · Famille · Événements · Sources · Médias ·
+Profil.
+
+- They are styled as B4 draws them: no boxes, the current tab in full ink with
+  an amber underline, counts in mono, and one row that scrolls sideways
+  rather than wrapping.
+- A tab with nothing in it is not drawn at all, not dimmed. A sparse person
+  may have two tabs and a rich one six. A record with only one tab draws no
+  tab strip.
+- Inside each tab, nothing empty is drawn, as before.
+- Sources and Médias are separate tabs. Radars sit on the record page's
+  Profil tab, still only when they have at least three axes. A tab that would
+  hold only radars below that line is not drawn.
+- Beside the river, the tab stays as you travel, and the back button goes
+  back a tab.
+- The grid's side panel is unchanged: every section, no tabs.
+- Tabs count as content, not chrome, so the record page's chrome count is
+  unchanged.
+
+**Every profile field can be filled again.** v0.4.0 put every empty field of
+the person editor behind one "n autres champs" disclosure and removed the
+only link into the profile editor. The 132 attributes of AXGF 1.1's fourteen
+groups could not be reached, and so stayed empty. The person editor now:
+
+- shows the identity fields (names, dates, places, parents) with no
+  disclosure;
+- lists all fourteen profile groups by name, always, each with how many of
+  its fields hold a value ("Santé · 3 renseignés", "Justice · 0");
+- keeps groups closed by default and opens any group with content;
+- shows every field of an opened group, filled or empty, ready to type into;
+- uses one control per group, never one per field.
+
+One Save writes the fields and the groups. A group is written back only if
+the form showed it and something in it changed. Saving a name therefore
+leaves the profile exactly as stored, and so does a form opened before this
+version or a script that posts the raw document.
+
+The one-group editor (`/admin/person/<id>/profile/<group>`) also shows every
+field.
+
+National rank titles (Hauptmann, kapral, Sergent) are marked with their own
+language, so a screen reader pronounces them in it.
+
+### Tests
+
+- `tests/profile_editor.rs` checks that all 132 attributes can be reached and
+  typed into for a person with none of them filled, so this regression cannot
+  return unnoticed. It also covers saving a field, a save that touches no
+  group, a form without the groups, and a refused save that keeps what was
+  typed.
+- The read-mode sweep now reads every tab of the record page and of the river
+  panel. On the operator's archive: 866 people, 0 empty fields, 0 disallowed
+  texts.
+- The chrome walk counts the tabs as content. On the person editor, the
+  record's own fields are content, and the fourteen groups add one control
+  each to the edit budget, with at most one per group. ADR 0002 §7 records
+  both decisions.
+
 ## [0.4.0] — 2026-10-14
 
 Two passes over the whole interface: Study 06's look, then a minimalism pass
@@ -3011,6 +3081,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.4.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.1
 [0.4.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.0
 [0.3.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.1
 [0.3.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.0

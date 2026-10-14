@@ -3005,6 +3005,14 @@ profile-yes = نعم
 profile-no = لا
 profile-value = القيمة
 profile-editor-title = الملف الشخصي
+profile-group-filled = { $n ->
+        [zero] لا شيء
+        [one] حقل واحد معبّأ
+        [two] حقلان معبّآن
+        [few] { $n } حقول معبّأة
+        [many] { $n } حقلًا معبّأً
+       *[other] { $n } حقل معبّأ
+    }
 profile-problems = تعذّر حفظ جزء مما أُدخل. كل مشكلة مذكورة بجوار حقلها، ولم يُكتب شيء.
 profile-editor-withheld = يضم هذا القسم أيضًا لهذا الشخص بيانات من فئة { $classes } لا يحق لك قراءتها. لا تظهر هنا، وحفظ هذا النموذج يتركها كما هي.
 profile-living-class-note = هذا الشخص مسجّل على قيد الحياة. ما تُدخله هنا في فئة حساسة لا يراه إلا المشرفون.

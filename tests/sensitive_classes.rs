@@ -301,7 +301,15 @@ fn assert_absent(page: &str, class: &Class, surface: &str) {
 async fn record(class: Class) {
     let (app, _scratch) = app_with_contributor(&format!("cls-record-{}", class.name));
     let cousin = sign_in(&app, "cousin").await;
-    for tab in ["", "?tab=life", "?tab=media", "?tab=tree", "?tab=profile"] {
+    for tab in [
+        "",
+        "?tab=family",
+        "?tab=life",
+        "?tab=sources",
+        "?tab=media",
+        "?tab=tree",
+        "?tab=profile",
+    ] {
         let uri = format!("/person/{LIVING}{tab}");
         let anon = body_string(get(&app, &uri).await).await;
         assert_absent(&anon, &class, &format!("{uri} (signed out)"));
@@ -311,13 +319,22 @@ async fn record(class: Class) {
     let panel =
         body_string(get_with_cookie(&app, &format!("/tree/panel/{LIVING}"), &cousin).await).await;
     assert_absent(&panel, &class, "the tree panel");
+    // Beside the river, on every tab it offers.
+    let river = every_tab(
+        &app,
+        &format!("/tree/panel/{LIVING}?river=1&n=3"),
+        Some(&cousin),
+    )
+    .await;
+    assert_absent(&river, &class, "the panel beside the river");
     // Read mode carries no raw dump at all: the raw document is an editing
     // artefact, and the editor's textarea is checked by `raw` below.
-    let page = body_string(get(&app, &format!("/person/{LIVING}")).await).await;
+    let page = every_tab(&app, &format!("/person/{LIVING}"), None).await;
     assert!(!page.contains("raw-json"), "no raw dump in read mode");
     assert!(page.contains(OPEN), "the open data is on the page");
     // An administrator reads it, so it is withheld rather than absent.
-    let admin = body_string(get_admin(&app, &format!("/person/{LIVING}")).await).await;
+    let admin_cookie = admin_cookie(&app).await;
+    let admin = every_tab(&app, &format!("/person/{LIVING}"), Some(&admin_cookie)).await;
     assert!(
         admin.contains(class.first),
         "an administrator reads {}",
@@ -620,7 +637,7 @@ async fn a_deceased_record_publishes_its_history_but_never_its_genome() {
     let (app, _scratch) = app_with_contributor("cls-deceased");
     let uri = format!("/person/{DEAD}");
 
-    let anon = body_string(get(&app, &uri).await).await;
+    let anon = every_tab(&app, &uri, None).await;
     assert!(
         anon.contains("Diphtheria"),
         "a public deceased record publishes its cause of death"
@@ -639,7 +656,7 @@ async fn a_deceased_record_publishes_its_history_but_never_its_genome() {
     );
 
     let aunt = sign_in(&app, "aunt").await;
-    let member = body_string(get_with_cookie(&app, &uri, &aunt).await).await;
+    let member = every_tab(&app, &uri, Some(&aunt)).await;
     assert!(
         member.contains("H1c3"),
         "a signed-in member reads the genome of the dead"
@@ -650,10 +667,11 @@ async fn a_deceased_record_publishes_its_history_but_never_its_genome() {
     );
 
     let cousin = sign_in(&app, "cousin").await;
-    let contributor = body_string(get_with_cookie(&app, &uri, &cousin).await).await;
+    let contributor = every_tab(&app, &uri, Some(&cousin)).await;
     assert!(!contributor.contains("poaching"), "nor a contributor");
 
-    let admin = body_string(get_admin(&app, &uri).await).await;
+    let admin_cookie = admin_cookie(&app).await;
+    let admin = every_tab(&app, &uri, Some(&admin_cookie)).await;
     assert!(admin.contains("poaching"), "an administrator reads it");
 }
 

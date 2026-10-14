@@ -63,6 +63,10 @@ pub struct Opt {
 pub struct OptGroup {
     pub label: String,
     pub options: Vec<Opt>,
+    /// The language the options are written in, when it is not the
+    /// reader's: a national rank keeps its national title ("Hauptmann",
+    /// "kapral"), and says so, so a screen reader speaks it in that voice.
+    pub lang: Option<&'static str>,
 }
 
 /// One input of a row.
@@ -275,6 +279,99 @@ pub fn editor_group(
             .iter()
             .map(|s| crate::i18n::translate(lang, &format!("scope-{}", s.as_str()), None))
             .collect(),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// untouched groups
+// ---------------------------------------------------------------------------
+
+/// What a browser posts for this group as drawn, if nobody touches it: every
+/// non-empty value under the name its input carries.
+///
+/// The record's editor draws all fourteen groups in one form (v0.4.1), so a
+/// save that changes a name also posts every group. A group whose submission
+/// is exactly this was not edited, and is not read back: the stored claims
+/// stay byte for byte as they were, and the first save of a name does not
+/// move what the application recorded before 1.1 (see `lift`). A select
+/// cannot post a value it has no option for, so such a value counts as the
+/// blank the browser would send.
+pub fn drawn(eg: &EditorGroup, precisions: &[&str], sources: &[Value]) -> Body {
+    let source_ids: Vec<&str> = sources
+        .iter()
+        .filter_map(|s| s.get("id").and_then(Value::as_str))
+        .collect();
+    let mut out = Body::new();
+    for a in &eg.attributes {
+        for r in &a.rows {
+            let row = |f: &str| format!("{}.{}.{f}", a.prefix, r.index);
+            if let Some(ci) = r.ci {
+                out.insert(row("ci"), ci.to_string());
+            }
+            for i in &r.inputs {
+                let postable = match i.kind {
+                    "select" | "yesno" => i.options.iter().any(|o| o.value == i.value),
+                    "grouped" => i
+                        .groups
+                        .iter()
+                        .any(|g| g.options.iter().any(|o| o.value == i.value)),
+                    _ => true,
+                };
+                if postable {
+                    out.insert(i.name.clone(), i.value.clone());
+                }
+            }
+            for (p, d) in [("d", &r.date), ("f", &r.from), ("u", &r.until)] {
+                out.insert(row(&format!("{p}.date")), d.date.clone());
+                if precisions.contains(&d.precision.as_str()) {
+                    out.insert(row(&format!("{p}.precision")), d.precision.clone());
+                }
+                if d.circa {
+                    out.insert(row(&format!("{p}.circa")), "on".into());
+                }
+            }
+            if source_ids.contains(&r.source_id.as_str()) {
+                out.insert(row("source_id"), r.source_id.clone());
+            }
+            out.insert(row("confidence"), r.confidence.clone());
+            out.insert(row("note"), r.note.clone());
+        }
+    }
+    out.retain(|_, v| !v.trim().is_empty());
+    out
+}
+
+/// The non-empty part of a submission that belongs to this group: every
+/// `<attribute path>.<row>.…` of the attributes it draws.
+pub fn submitted(eg: &EditorGroup, form: &Body) -> Body {
+    form.iter()
+        .filter(|(k, v)| {
+            !v.trim().is_empty()
+                && eg.attributes.iter().any(|a| {
+                    k.strip_prefix(a.prefix.as_str())
+                        .and_then(|rest| rest.strip_prefix('.'))
+                        .is_some_and(|rest| rest.starts_with(|c: char| c.is_ascii_digit()))
+                })
+        })
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect()
+}
+
+/// Whether the editor changed anything in this group.
+pub fn touched(eg: &EditorGroup, form: &Body, precisions: &[&str], sources: &[Value]) -> bool {
+    drawn(eg, precisions, sources) != submitted(eg, form)
+}
+
+/// The language a country's rank titles are written in.
+fn rank_language(country: &str) -> Option<&'static str> {
+    match country {
+        "FR" => Some("fr"),
+        "PL" => Some("pl"),
+        "DE" => Some("de"),
+        "GB" => Some("en-GB"),
+        "US" => Some("en-US"),
+        "RU" => Some("ru"),
+        _ => None,
     }
 }
 
@@ -679,6 +776,7 @@ fn push_inputs(
             groups: vocab::MILITARY_RANKS
                 .iter()
                 .map(|rv| OptGroup {
+                    lang: rank_language(rv.country),
                     label: super::term_label(lang, &vocab::COUNTRY, rv.country),
                     options: rv
                         .ranks

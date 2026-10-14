@@ -2569,6 +2569,7 @@ profile-yes = はい
 profile-no = いいえ
 profile-value = 値
 profile-editor-title = プロフィール
+profile-group-filled = 入力済み { $n }件
 profile-problems = 入力の一部を保存できませんでした。問題はそれぞれの項目の横に示してあり、何も書き込まれていません。
 profile-editor-withheld = この区分には、この人の「{ $classes }」に当たるデータもありますが、あなたには閲覧権限がありません。ここには表示されず、このフォームを保存してもそのまま残ります。
 profile-living-class-note = この人は存命として記録されています。ここで機微な区分に入力した内容は、管理者にしか表示されません。

@@ -2940,6 +2940,12 @@ profile-yes = Tak
 profile-no = Nie
 profile-value = Wartość
 profile-editor-title = Profil
+profile-group-filled = { $n ->
+        [one] { $n } wypełnione
+        [few] { $n } wypełnione
+        [many] { $n } wypełnionych
+       *[other] { $n } wypełnionego
+    }
 profile-problems = Części wprowadzonych danych nie udało się zapisać. Każdy problem opisano przy jego polu i nic nie zostało zapisane.
 profile-editor-withheld = Ten dział zawiera też dla tej osoby dane z kategorii: { $classes }, do których nie masz dostępu. Nie są tu pokazane, a zapisanie formularza pozostawi je bez zmian.
 profile-living-class-note = Ta osoba jest zapisana jako żyjąca. To, co wpiszesz tutaj w kategorii wrażliwej, zobaczą tylko administratorzy.

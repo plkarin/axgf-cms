@@ -2773,6 +2773,7 @@ profile-yes = Ja
 profile-no = Nein
 profile-value = Wert
 profile-editor-title = Profil
+profile-group-filled = { $n } ausgefüllt
 profile-problems = Ein Teil der Eingaben konnte nicht gespeichert werden. Jedes Problem ist neben seinem Feld genannt, und es wurde nichts geschrieben.
 profile-editor-withheld = Dieser Bereich enthält für diese Person auch Angaben der Kategorie { $classes }, die Sie nicht lesen dürfen. Sie werden hier nicht angezeigt, und das Speichern dieses Formulars lässt sie unverändert.
 profile-living-class-note = Diese Person ist als lebend erfasst. Was Sie hier in einer sensiblen Kategorie eintragen, sehen nur Administratoren.

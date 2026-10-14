@@ -851,7 +851,8 @@ async fn a_couple_entered_twice_is_grouped_named_and_actionable() {
     const A: &str = "aaaaaaaa-1111-4111-8111-111111111111";
     let (app, _p) = duplicate_family_app("dup-family");
 
-    let page = body_string(get_admin(&app, &format!("/person/{A}")).await).await;
+    // Unions are on the record's Famille tab.
+    let page = body_string(get_admin(&app, &format!("/person/{A}?tab=family")).await).await;
 
     // One group holding both records, not two loose blocks.
     assert_eq!(
@@ -890,7 +891,7 @@ async fn a_couple_entered_twice_is_grouped_named_and_actionable() {
 
     // A reader who cannot edit is told what the page holds but offered no
     // button they may not press.
-    let public = body_string(get(&app, &format!("/person/{A}")).await).await;
+    let public = body_string(get(&app, &format!("/person/{A}?tab=family")).await).await;
     assert!(
         public.contains("One couple, more than one record."),
         "a reader is still told the records disagree"

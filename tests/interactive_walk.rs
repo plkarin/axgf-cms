@@ -461,6 +461,7 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
         format!("/tree?root={P}"),
         "/about".into(),
         format!("/person/{P}"),
+        format!("/person/{P}?tab=family"),
         "/search?q=nowak".into(),
         "/settings".into(),
         "/convert".into(),
@@ -881,6 +882,34 @@ fn chrome_of(html: &str) -> Chrome {
     }
 }
 
+/// The person editor's profile groups (`details.pf-group`): how many, and
+/// whether each is one control at rest — its summary — and never one per
+/// field. A group's fields are the record's content.
+fn profile_group_controls(html: &str, over: &mut Vec<String>, at: &str) -> usize {
+    let doc = Html::parse_document(html);
+    let groups = Selector::parse("details.pf-group").unwrap();
+    let sel = interactive();
+    let mut n = 0;
+    for g in doc.select(&groups) {
+        n += 1;
+        let chrome = g
+            .select(&sel)
+            .filter(|el| at_rest(el) && !is_content(el))
+            .count();
+        if chrome != 1 {
+            over.push(format!(
+                "{at}: a profile group carries {chrome} chrome controls, not one: {}",
+                describe(&g)
+            ));
+        }
+    }
+    let most = axgf_cms::profile::groups().len();
+    if n > most {
+        over.push(format!("{at}: {n} profile groups, the registry has {most}"));
+    }
+    n.min(most)
+}
+
 #[tokio::test]
 async fn every_screen_keeps_its_chrome_budget() {
     let (app, _s) = app();
@@ -898,7 +927,10 @@ async fn every_screen_keeps_its_chrome_budget() {
                 continue;
             }
             let ch = chrome_of(&html);
-            let budget = if read_only(&page) { 12 } else { 20 };
+            // The person editor names every AXGF profile group, always (v0.4.1):
+            // one disclosure per group on top of the edit budget, and only one.
+            let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
+            let budget = if read_only(&page) { 12 } else { 20 } + groups;
             println!(
                 "{:<44} {:>6} {:>9} {:>6}",
                 format!("{who} {page}"),

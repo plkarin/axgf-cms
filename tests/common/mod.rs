@@ -293,3 +293,37 @@ pub async fn expect_status(resp: Response<Body>, want: StatusCode, what: &str) -
     );
     body
 }
+
+/// The hrefs of a record's tabs, in order (`nav.person-tabs`). Empty when the
+/// record has one tab or none, and so draws no strip.
+#[allow(dead_code)]
+pub fn tab_hrefs(html: &str) -> Vec<String> {
+    let doc = scraper::Html::parse_document(html);
+    let sel = scraper::Selector::parse("nav.person-tabs a.person-tab").unwrap();
+    doc.select(&sel)
+        .filter_map(|a| a.value().attr("href").map(|h| h.replace("&amp;", "&")))
+        .collect()
+}
+
+/// A record page and every tab it offers, one after another: the whole
+/// record as a reader can reach it. The record is dealt across its tabs
+/// (v0.4.1), so a claim about "the page" is a claim about all of them.
+#[allow(dead_code)]
+pub async fn every_tab(app: &axum::Router, uri: &str, cookie: Option<&str>) -> String {
+    let fetch = |u: String| async move {
+        let resp = match cookie {
+            Some(c) => get_with_cookie(app, &u, c).await,
+            None => get(app, &u).await,
+        };
+        assert_eq!(resp.status(), StatusCode::OK, "{u}");
+        body_string(resp).await
+    };
+    let first = fetch(uri.to_string()).await;
+    let mut out = first.clone();
+    for href in tab_hrefs(&first) {
+        if href != uri {
+            out.push_str(&fetch(href).await);
+        }
+    }
+    out
+}

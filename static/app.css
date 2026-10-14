@@ -2274,10 +2274,8 @@ a.stat:hover { border-color: var(--accent); }
   color: var(--text-primary);
   border-block-end-color: var(--accent);
 }
-/* An empty tab is dimmed, never disabled: an empty tab is where you add
-   things. */
-.person-tab.is-empty { color: var(--text-tertiary); }
-.person-tab.is-empty.is-current { color: var(--text-primary); }
+/* A tab with nothing in it is not drawn (v0.4.1): there is no empty
+   state to style. */
 .person-tabs + * { margin-top: 1.25rem; }
 
 /* The tree tab: the same canvas the tree page draws, in a box that scrolls
@@ -3532,6 +3530,30 @@ a.tcard:hover {
 .record-edit[open] > summary, .add-record[open] > summary, .more-fields[open] > summary,
 .raw-fieldset[open] > summary, .danger-zone[open] > summary { margin-bottom: 0.6rem; }
 .danger-zone > summary { color: var(--danger); }
+
+/* The record's profile in edit mode (v0.4.1): the fourteen groups as one
+   list, each a disclosure named for its group with how many of its fields
+   hold a value. Rows separated by hairlines, as Study 06 draws a list; the
+   count in mono, like a tab's. */
+.pf-groups { margin-block: 1.5rem; }
+.pf-groups > h2 { margin-block-end: 0.5rem; }
+.pf-group { border-block-end: 1px solid var(--border-hairline); }
+.pf-group:first-of-type { border-block-start: 1px solid var(--border-hairline); }
+.pf-group > summary {
+  cursor: pointer;
+  padding: 0.6rem 0.25rem;
+  font-weight: var(--weight-medium);
+}
+.pf-group > summary .sep { color: var(--text-tertiary); }
+.pf-group-count {
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.pf-group-body { padding: 0.25rem 0.25rem 1rem; }
+.ed-parents ul { margin: 0.25rem 0; }
 
 /* Edit mode (the minimalism pass): a band under the masthead that says so,
    with the accent's rule under it, so nobody mistakes a form for the record.

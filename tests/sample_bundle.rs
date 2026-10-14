@@ -592,7 +592,7 @@ async fn the_sample_bundle_serves_every_page() {
         .nth(1)
         .and_then(|s| s.split('"').next())
         .expect("a person link");
-    let page = common::body_string(common::get(&app, &format!("/person/{id}")).await).await;
+    let page = common::every_tab(&app, &format!("/person/{id}"), None).await;
     assert!(page.contains("links-section"));
 }
 

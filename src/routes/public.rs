@@ -244,15 +244,6 @@ pub const RIVER_MOTION_COOKIE: &str = "axgf_river_motion";
 /// the two and is what a link can carry. Anything unparseable or out of range
 /// falls back rather than failing: a bad width is a worse-looking tree, not an
 /// error page.
-/// The remembered row width, for a page with no tree query of its own.
-fn wrap_width_from(headers: &HeaderMap) -> f64 {
-    crate::session::named_cookie(headers, WIDTH_COOKIE)
-        .and_then(|v| v.trim().parse::<f64>().ok())
-        .filter(|v| v.is_finite() && *v > 0.0)
-        .map(|v| v.clamp(crate::tree::MIN_WRAP_W, crate::tree::MAX_WRAP_W))
-        .unwrap_or(crate::tree::DEFAULT_WRAP_W)
-}
-
 fn wrap_width(q: &TreeQuery, headers: &HeaderMap) -> f64 {
     q.w.or_else(|| {
         crate::session::named_cookie(headers, WIDTH_COOKIE)
@@ -541,12 +532,12 @@ pub async fn tree_panel(
     match outcome {
         Reading::Ok(p) => {
             // The river asks for its tabs; the grid does not, and gets the
-            // panel exactly as before.
+            // panel exactly as before: every section.
             let tab_ctx = if q.river.is_some() {
                 let n =
                     q.n.filter(|n| crate::river::RANGES.contains(n))
                         .unwrap_or(crate::river::DEFAULT_RANGE);
-                river_tab_context(n)
+                river_tab_context(&state, &viewer, chrome.lang, &p, n, q.tab.as_deref())
             } else {
                 context! {}
             };
@@ -690,20 +681,11 @@ fn person_roster(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
         .collect()
 }
 
-/// How deep the person page's tree tab reaches in each direction.
-///
-/// Three is grandparents to grandchildren, which is the span a reader means by
-/// "where does this person sit". Deeper turns the tab into the tree page,
-/// which already exists and is one link away.
-const PERSON_TREE_DEPTH: usize = 3;
-
-/// `?tab=` on the person page, and `&group=` on its Profile tab.
+/// `?tab=` on the person page.
 #[derive(Debug, serde::Deserialize)]
 pub struct PersonQuery {
     #[serde(default)]
     tab: Option<String>,
-    #[serde(default)]
-    group: Option<String>,
 }
 
 /// `GET /person/:id` — everything known about one person.
@@ -714,15 +696,12 @@ pub async fn person(
     Query(q): Query<PersonQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let tab = crate::person::Tab::from_query(q.tab.as_deref());
     // The tab travels in the path Chrome remembers, so switching language on
     // the media tab comes back to the media tab.
-    let here = match (tab, q.group.as_deref()) {
-        (crate::person::Tab::Record, _) => format!("/person/{id}"),
-        (crate::person::Tab::Profile, Some(g)) if crate::profile::group(g).is_some() => {
-            format!("/person/{id}?tab=profile&group={g}")
-        }
-        (other, _) => format!("/person/{id}?tab={}", other.slug()),
+    let asked = crate::person::RecordTab::from_query(q.tab.as_deref());
+    let here = match asked {
+        crate::person::RecordTab::Fiche => format!("/person/{id}"),
+        other => format!("/person/{id}?tab={}", other.slug()),
     };
     let chrome = render::Chrome::resolve(&viewer, &headers, &here);
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
@@ -740,45 +719,15 @@ pub async fn person(
 
     match outcome {
         Reading::Ok(p) => {
-            // The tree is laid out only for the tab that draws it. It is by a
-            // wide margin the most expensive thing this page can do, and most
-            // visits to a person never ask for it.
-            let layout = (tab == crate::person::Tab::Tree).then(|| {
-                state.read_as(viewer.ceiling(), |flat, lens| {
-                    let subtree = crate::tree::select_subtree(
-                        flat,
-                        &id,
-                        PERSON_TREE_DEPTH,
-                        PERSON_TREE_DEPTH,
-                    );
-                    let opts = crate::tree::LayoutOpts::default()
-                        .with_width(wrap_width_from(&headers))
-                        .seeing(lens.set());
-                    let mut l = crate::tree::layout_focused_with(flat, &subtree, opts);
-                    crate::tree::localise(&mut l, chrome.lang);
-                    // A person this reader may not see keeps their place and
-                    // loses everything else, exactly as on the tree page. The
-                    // shape of a family is not a secret; the names in it can
-                    // be.
-                    crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
-                    l
-                })
+            let profile_groups = state.read_as(viewer.ceiling(), |flat, lens| {
+                crate::person::profile_groups_filled(flat, &id, lens, chrome.lang)
             });
-            // The one profile group on screen, built only for the tab that
-            // draws it.
-            let profile_group = (tab == crate::person::Tab::Profile)
-                .then(|| {
-                    state.read_as(viewer.ceiling(), |flat, lens| {
-                        crate::person::profile_group(
-                            flat,
-                            &id,
-                            lens,
-                            chrome.lang,
-                            q.group.as_deref(),
-                        )
-                    })
-                })
-                .flatten();
+            // The record page's Profil tab draws the filled groups and the
+            // radars that hold three axes or more; with neither, it is not a
+            // tab.
+            let charts = p.radars.iter().any(|c| c.present >= 3);
+            let tabs = crate::person::tabs_for(&p, !profile_groups.is_empty() || charts);
+            let tab = crate::person::current_tab(q.tab.as_deref(), &tabs);
             // The places this person's record actually locates. Usually
             // none: on a converted bundle one place in 123 carries a position,
             // so the map appears when there is something to put on it and is
@@ -804,24 +753,18 @@ pub async fn person(
                 context! {
                     nav => "tree",
                     p,
-                    // Read mode is the whole record on one page: every
-                    // filled section, every filled profile group, no tabs,
-                    // and no edit history — that is an editing concern.
-                    profile_groups => state.read_as(viewer.ceiling(), |flat, lens| {
-                        crate::person::profile_groups_filled(flat, &id, lens, chrome.lang)
-                    }),
+                    // Read mode: every filled section and every filled
+                    // profile group, under the tabs that hold them, and no
+                    // edit history — that is an editing concern.
+                    tabs,
+                    tab => tab.slug(),
+                    profile_groups,
                     full_record => true,
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
                     compact => false,
                     max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
-                document_types => crate::documents::document_type_options(chrome.lang),
-                    layout,
-                    profile_group,
-                    // The canvas partial marks the selected card; on this page
-                    // that is always the person whose record it is.
-                    selected => id,
-                    tree_depth => PERSON_TREE_DEPTH,
+                    document_types => crate::documents::document_type_options(chrome.lang),
                     map => state.map().cloned(),
                     // Serialised here rather than by a template filter: the
                     // attribute holds one JSON document, and building it in
@@ -1286,6 +1229,8 @@ pub struct PanelQuery {
     river: Option<String>,
     #[serde(default)]
     n: Option<usize>,
+    #[serde(default)]
+    tab: Option<String>,
 }
 
 /// Query parameters for `/` and `/river/data`.
@@ -1297,16 +1242,35 @@ pub struct RiverQuery {
     /// Generations each way: 2, 3 or 5.
     #[serde(default)]
     n: Option<usize>,
+    /// The record tab in the panel; kept as the reader travels.
+    #[serde(default)]
+    tab: Option<String>,
 }
 
 /// What `_panel.html` needs to know beside the river: that it is beside the
-/// river (no grid re-root button) and the range to link back with. There
-/// are no tabs any more — the panel is the record's filled sections, in read
-/// mode (the minimalism pass) — so an old `?tab=` is simply not read.
-fn river_tab_context(n: usize) -> minijinja::Value {
+/// river (no grid re-root button), the range to link back with, and the
+/// record's tabs — only those that hold something — with the one on screen.
+/// The panel's Profil tab draws the filled groups; the radars stay on the
+/// record page, where there is the width for them.
+fn river_tab_context(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    lang: &str,
+    p: &crate::person::PersonView,
+    n: usize,
+    requested: Option<&str>,
+) -> minijinja::Value {
+    let profile_groups = state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::person::profile_groups_filled(flat, &p.id, lens, lang)
+    });
+    let tabs = crate::person::tabs_for(p, !profile_groups.is_empty());
+    let tab = crate::person::current_tab(requested, &tabs);
     context! {
         river_tabs => true,
         river_n => n,
+        tabs,
+        tab => tab.slug(),
+        profile_groups,
     }
 }
 
@@ -1428,7 +1392,7 @@ pub async fn river(
     let tab_ctx = v
         .panel
         .as_ref()
-        .map(|_| river_tab_context(v.n))
+        .map(|p| river_tab_context(&state, &viewer, chrome.lang, p, v.n, q.tab.as_deref()))
         .unwrap_or_else(|| context! {});
     // The reader's choice between travel and cut, remembered across pages
     // and reloads ([`RIVER_MOTION_COOKIE`]); prefers-reduced-motion still

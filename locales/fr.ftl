@@ -2761,6 +2761,11 @@ profile-yes = Oui
 profile-no = Non
 profile-value = Valeur
 profile-editor-title = Profil
+profile-group-filled = { $n ->
+        [one] { $n } renseigné
+        [many] { $n } renseignés
+       *[other] { $n } renseignés
+    }
 profile-problems = Une partie de la saisie n’a pas pu être enregistrée. Chaque problème est indiqué à côté de son champ, et rien n’a été écrit.
 profile-editor-withheld = Cette rubrique contient aussi, pour cette personne, des données de type { $classes } auxquelles vous n’avez pas accès. Elles ne sont pas affichées ici, et enregistrer ce formulaire les laisse telles quelles.
 profile-living-class-note = Cette personne est enregistrée comme vivante. Ce que vous saisissez ici dans une catégorie sensible n’est visible que des administrateurs.

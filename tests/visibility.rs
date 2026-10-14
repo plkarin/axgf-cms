@@ -151,7 +151,7 @@ async fn a_signed_out_reader_gets_no_hidden_name_on_any_surface() {
     }
 
     // The child's own page, which names both parents — one of whom is hidden.
-    let child = body_string(get(&app, &format!("/person/{CHILD}")).await).await;
+    let child = every_tab(&app, &format!("/person/{CHILD}"), None).await;
     no_leak("/person (as a relative)", &child, &secrets);
     assert!(
         child.contains(OPEN_NAME),
@@ -188,7 +188,7 @@ async fn a_hidden_parent_keeps_their_place_in_the_family() {
     // bundle holds two would be a false statement about the genealogy — and
     // for this application that is the one unacceptable failure mode.
     let (app, _scratch) = app("vis-shape");
-    let child = body_string(get(&app, &format!("/person/{CHILD}")).await).await;
+    let child = every_tab(&app, &format!("/person/{CHILD}"), None).await;
     assert!(
         child.contains("Private"),
         "the hidden parent is shown as withheld, not dropped: {child}"
@@ -242,12 +242,13 @@ async fn a_link_can_be_private_when_both_its_endpoints_are_not() {
     // relationship is the sensitive fact, so the link carries its own
     // visibility and it has to be honoured on its own.
     let (app, _scratch) = app("vis-link");
-    let anon = body_string(get(&app, &format!("/person/{CHILD}")).await).await;
+    let anon = every_tab(&app, &format!("/person/{CHILD}"), None).await;
     assert!(
         !anon.contains("acknowledged natural"),
         "a private link must not render, even between two public people"
     );
-    let admin = body_string(get_admin(&app, &format!("/person/{CHILD}")).await).await;
+    let admin_cookie = admin_cookie(&app).await;
+    let admin = every_tab(&app, &format!("/person/{CHILD}"), Some(&admin_cookie)).await;
     assert!(
         admin.contains("acknowledged natural"),
         "…and must still render for a reader entitled to it"

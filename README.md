@@ -18,7 +18,7 @@ file and just want to look at it, skip to
 
 | The river around one person — the landing page | One person's record |
 |---|---|
-| [![The river view, the landing page: Jules Meunier at the fixed point, his parents below and his children and grandchildren above, each line as wide as the descendants it carries, his record open in six tabs beside it](docs/screenshots/river.png)](docs/screenshots/river.png) | [![A person page: Jules Meunier, 1823–1901, with tabs for Record, Life, Profile, Media and Tree](docs/screenshots/person.png)](docs/screenshots/person.png) |
+| [![The river view, the landing page: Jules Meunier at the fixed point, his parents below and his children and grandchildren above, each line as wide as the descendants it carries, his record open beside it](docs/screenshots/river.png)](docs/screenshots/river.png) | [![A person page: Jules Meunier, 1823–1901, with tabs for Record, Life, Profile, Media and Tree](docs/screenshots/person.png)](docs/screenshots/person.png) |
 
 *Both show the demonstration family that `--with-sample` installs.*
 

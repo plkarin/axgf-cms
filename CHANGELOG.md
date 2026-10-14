@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-10-14
+
+Two passes over the whole interface: Study 06's look, then a minimalism pass
+for a reader of any age on a tablet. Nothing about the AXGF file changes.
+
 ### Changed
 
 **Study 06 is the site's look.** The dark, river-ground palette of Study 06
@@ -28,10 +33,6 @@ picker says so (docs/adr/0002).
   ghost and danger (an outline). 36px or 28px, radius 2. A busy button says
   what it is doing and refuses a second press. Every control carries the
   same focus ring. The river's controls are ordinary secondaries.
-- *Record tabs.* Underlined, counts in mono, an empty tab dimmed but never
-  disabled. One row that scrolls sideways at any width, and mirrors in
-  right-to-left languages. "Vie" and "Documents" are now "Événements" and
-  "Médias".
 - *Fields.* Sunken, with mono uppercase labels that are always visible, and
   no placeholders. A date's qualifier sits inside its box (`vers ▾ 1890`),
   and an approximate date reads "vers 1890" with a dotted underline. Search
@@ -48,8 +49,39 @@ picker says so (docs/adr/0002).
 No colour is named outside `tokens.css` on any page; the river's water ramp
 is the one exemption.
 
+**Every element earns its place** (the minimalism pass, docs/adr/0002 §4–7):
+
+- *Nothing empty is drawn in read mode.* No label without a value, no dash,
+  no "date unknown", "not recorded" or "no score", no heading over nothing,
+  no "0" tile. A chart appears only when at least three of its six axes
+  hold a value. Collapsed things give a count ("40 facts in the profile").
+- *Reading first, editing on purpose.* A record opens on what is recorded,
+  in one page without tabs. Someone who may edit sees one "Edit" and enters
+  editing explicitly; editing pages carry a band saying so. Someone who may
+  not edit receives no edit control in any page at all — not disabled, not
+  hidden: absent.
+- *A budget of controls.* The masthead has seven (four sections, the person
+  search, one display menu, one sign-in or account menu). A reading screen
+  has at most twelve, an editing screen twenty, a list row two — select it,
+  open it. Editing and deleting a record moved onto the record; deleting
+  many is the bulk bar's. Settings is one form of five fields and Apply.
+- *Edit forms show what the record holds.* Every empty field waits behind
+  one disclosure with its count ("4 more fields"); the raw JSON and Delete
+  are closed until opened. The profile's fourteen groups are one select.
+- *For older eyes and fingers.* Type is set in rem from a 16px reading base,
+  so the browser's text size is honoured; no page scrolls sideways at 390px
+  with text at 150%. Touch targets are 44px. On a touch screen a first tap on
+  a person in the river does what hovering does — lights the route and shows
+  the name — and a second tap travels there ("tap to look, tap again to go").
+- The river's range is one select (±2, ±3, ±5); the motion and wash
+  preferences moved to Settings; the grid view is under "Tree".
+
 ### Fixed
 
+- The "Back" button in the river showed before there was anywhere to go
+  back to.
+- On the admin list the identifier column is dropped on a phone, where a
+  UUID wrapped to five lines.
 - A dry run of the installer that would hand over to another release's
   installer says so and stops; it used to go on describing its own release
   (asked for v0.3.0, v0.3.1's said it would download v0.3.1).
@@ -2979,6 +3011,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.4.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.0
 [0.3.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.1
 [0.3.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.0
 [0.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.2.0

@@ -554,7 +554,7 @@ pub fn generic_fields(views: &[Value], prefix: &str) -> Vec<Field> {
                 _ => f.kind = "text",
             }
             if let Some(q) = v["qualifier"].as_object() {
-                f.qualifier = q.get("path").and_then(Value::as_str).map(&name);
+                f.qualifier = q.get("path").and_then(Value::as_str).map(name);
                 f.qualifier_on = q.get("on").and_then(Value::as_bool).unwrap_or(false);
             }
             f

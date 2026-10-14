@@ -494,8 +494,9 @@ async fn tightening_a_visibility_takes_effect_on_the_very_next_read() {
         urlencode(&serde_json::to_string(&entity).unwrap())
     );
     let resp = post_form(&app, &format!("/admin/person/{OPEN}"), &body, true).await;
-    let out = expect_status(resp, StatusCode::OK, "tighten visibility").await;
-    assert!(out.contains("Updated") || out.contains("Saved"), "{out}");
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER, "tighten visibility");
+    let to = resp.headers()["location"].to_str().unwrap().to_string();
+    assert!(to.contains("saved=1"), "one record written: {to}");
 
     // The very next signed-out read must already be refused.
     assert_eq!(

@@ -3320,3 +3320,29 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = Marcar tudo como verificado ({ $n })
 quality-restore-all = Voltar a mostrar tudo ({ $n })
 quality-bulk-conflict = Fichas alteradas desde que a lista foi aberta: { $n }. Nada foi marcado; recarregue a lista e tente de novo.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = alterado, ainda não guardado
+edit-remove = Retirar
+edit-add-partner = Adicionar um cônjuge
+edit-add-child = Adicionar um filho
+edit-union-with = União com { $names }
+edit-union-alone = União sem cônjuge registado
+edit-child-of = Filho de { $names }
+edit-new-family = Criar uma família
+edit-cite-title = O que assenta numa fonte
+edit-attach-to = Citá-la para
+edit-add-source = Adicionar uma fonte
+edit-error-source-title = Uma fonte nova precisa de um título. Nada foi guardado.
+edit-detach-file = Retirar desta ficha
+edit-no-sources = Nenhum facto próprio desta pessoa cita ainda uma fonte.
+edit-no-files = Ainda não há nenhum ficheiro anexado a esta ficha.
+edit-saved = { $n ->
+        [one] Guardado: uma ficha escrita.
+        [many] Guardado: { $n } fichas escritas de uma só vez.
+       *[other] Guardado: { $n } fichas escritas de uma só vez.
+    }
+edit-saved-none = Nada tinha mudado, por isso nada foi guardado.
+edit-stale = Outra pessoa alterou { $what } desde que esta página foi aberta. Nada foi guardado; tudo o que escreveu continua aqui.
+edit-refused = Nada foi guardado: { $reason }

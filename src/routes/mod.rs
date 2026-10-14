@@ -3,6 +3,7 @@
 mod admin;
 mod convert;
 mod editors;
+mod person_editor;
 mod prefs;
 mod profile;
 mod public;
@@ -254,6 +255,18 @@ fn routes(state: Shared) -> Router {
         .route("/admin/place/:id/edit", get(admin::place_edit))
         .route("/admin/place/:id", post(admin::place_update))
         .route("/admin/place/:id/geocode", post(admin::place_geocode))
+        // The record's editor (v0.4.2): six tabs over one form, one save —
+        // which may carry a file from the Médias tab, so its body may be as
+        // large as an upload and the fields around it.
+        .route("/admin/person/new", get(person_editor::new_form))
+        .route("/admin/person/bulk", post(person_editor::bulk))
+        .route("/admin/person/:id/edit", get(person_editor::edit))
+        .route(
+            "/admin/person/:id",
+            post(person_editor::save).layer(DefaultBodyLimit::max(
+                crate::documents::MAX_UPLOAD + 4 * 1024 * 1024,
+            )),
+        )
         .route("/admin/:kind", get(admin::list).post(admin::create))
         .route("/admin/:kind/new", get(admin::new_form))
         .route("/admin/:kind/:id/edit", get(admin::edit_form))
@@ -267,6 +280,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))
+        .route("/static/editor.js", get(public::editor_js))
         .route("/static/ui.js", get(public::ui_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))

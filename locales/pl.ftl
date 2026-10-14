@@ -3511,3 +3511,30 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = Oznacz wszystkie jako sprawdzone ({ $n })
 quality-restore-all = Pokaż wszystkie ponownie ({ $n })
 quality-bulk-conflict = Karty zmienione od otwarcia listy: { $n }. Nic nie oznaczono; odśwież listę i spróbuj ponownie.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = zmienione, jeszcze niezapisane
+edit-remove = Usuń
+edit-add-partner = Dodaj małżonka
+edit-add-child = Dodaj dziecko
+edit-union-with = Związek z { $names }
+edit-union-alone = Związek bez zapisanego partnera
+edit-child-of = Dziecko: { $names }
+edit-new-family = Utwórz rodzinę
+edit-cite-title = Co opiera się na źródle
+edit-attach-to = Cytuj dla
+edit-add-source = Dodaj źródło
+edit-error-source-title = Nowe źródło musi mieć tytuł. Nic nie zostało zapisane.
+edit-detach-file = Odłącz od tej karty
+edit-no-sources = Żaden fakt tej osoby nie cytuje jeszcze źródła.
+edit-no-files = Do tej karty nie dołączono jeszcze żadnego pliku.
+edit-saved = { $n ->
+        [one] Zapisano: jedna karta.
+        [few] Zapisano: { $n } karty w jednym zapisie.
+        [many] Zapisano: { $n } kart w jednym zapisie.
+       *[other] Zapisano: { $n } karty w jednym zapisie.
+    }
+edit-saved-none = Nic się nie zmieniło, więc nic nie zostało zapisane.
+edit-stale = Ktoś inny zmienił { $what } od otwarcia tej strony. Nic nie zostało zapisane; wszystko, co wpisano, nadal tu jest.
+edit-refused = Nic nie zostało zapisane: { $reason }

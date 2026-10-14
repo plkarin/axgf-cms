@@ -165,6 +165,22 @@ Study 06's palette, but they change what B4 (the record tabs) built.
   field, filled or empty. That is one control per group, never one per field.
   `tests/profile_editor.rs` holds every attribute reachable for a person with
   none of them filled.
+- **The editor has the reading tabs, all six, always (v0.4.2).** Modifier
+  opens the editor on the tab being read (`#famille` for Famille). In edit
+  mode no tab is ever hidden, empty ones included: an empty tab is where
+  things are added. That asymmetry with reading is deliberate. The tabs show
+  and hide parts of **one form with one save**. A save rewrites the whole
+  archive, 12 to 17 s on the operator's 434 MB bundle, so six pages with six
+  saves would turn an editing session into six waits. One Enregistrer turns
+  every change, on every tab, into a single commit (`AppState::commit`),
+  written all or nothing. Every record a tab draws (a union, the family
+  somebody is a child of, an event, a source, a file, a profile group) is
+  written back only when the form drew it and something in it changed.
+  Without scripting, the tab on screen is the URL fragment (`:target`).
+  `editor.js` adds marks on tabs with unsaved changes and asks before the
+  page is left. The editor's 1.1 MB of HTML could be cut by splitting it into
+  six server pages, but only at the cost of six saves. That trade becomes
+  worth making once incremental saves land in axgf-rs 0.6.
 - **Editing is entered explicitly, and looks different.** Editors get one
   "Modifier" on the record and on the panel, and edit mode carries a band
   under the masthead saying so.
@@ -176,7 +192,10 @@ Study 06's palette, but they change what B4 (the record tabs) built.
   screens may have 20. A list row may carry two controls, and signing in may
   add at most three controls to a read-only screen. On the person editor the
   record's own fields are its content, not chrome: in edit mode they are what
-  the editor came to change. Its fourteen profile groups add one control each
-  to the budget, and the walk fails a group with more than one control at
-  rest.
+  the editor came to change. Since v0.4.2, each of the editor's tabs is a
+  screen with its own budget: the controls outside every tab plus its own.
+  A record on a tab (a union, an event, a file) is content, one per thing
+  recorded. The fixed "add" actions are chrome. The Profil tab's fourteen
+  groups add one control each to its budget, and the walk fails a group with
+  more than one control at rest.
   `tests/interactive_walk.rs` fails on any excess.

@@ -3055,3 +3055,25 @@ quality-dismissed-summary = 已核实并保留的问题：{ $n } 项
 quality-dismiss-all = 全部标记为已核实（{ $n }）
 quality-restore-all = 全部重新显示（{ $n }）
 quality-bulk-conflict = 打开列表后有改动的记录：{ $n } 条。没有标记任何内容；请刷新列表后重试。
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = 已修改，尚未保存
+edit-remove = 移除
+edit-add-partner = 添加配偶
+edit-add-child = 添加子女
+edit-union-with = 与 { $names } 的婚姻
+edit-union-alone = 未记录配偶的婚姻
+edit-child-of = { $names } 的子女
+edit-new-family = 新建家庭
+edit-cite-title = 依据来源的事实
+edit-attach-to = 引用于
+edit-add-source = 添加来源
+edit-error-source-title = 新来源需要标题。未保存任何内容。
+edit-detach-file = 从此记录中移除
+edit-no-sources = 此人自身的事实尚未引用任何来源。
+edit-no-files = 此记录尚未附加任何文件。
+edit-saved = 已保存：一次写入 { $n } 条记录。
+edit-saved-none = 没有任何变化，因此未保存。
+edit-stale = 自此页面打开后，其他人修改了 { $what }。未保存任何内容；您输入的内容都还在。
+edit-refused = 未保存任何内容：{ $reason }

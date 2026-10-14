@@ -3580,3 +3580,131 @@ a.tcard:hover {
   select, summary { min-block-size: 44px; }
   input[type="checkbox"], input[type="radio"] { inline-size: 24px; block-size: 24px; }
 }
+
+/* ---------------------------------------------------------------------------
+ * The record's editor (v0.4.2): six tabs over one form.
+ *
+ * Without scripting, the tab on screen is the URL's fragment (:target), and
+ * the server's current tab when there is none. editor.js takes over with
+ * `.js` on the panels and shows the one marked current.
+ * ------------------------------------------------------------------------- */
+.ed-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-page);
+}
+.ed-panel { display: none; padding-block: 1.25rem 0.5rem; }
+.ed-panel.is-current { display: block; }
+.ed-panels:has(.ed-panel:target) > .ed-panel { display: none; }
+.ed-panel:target { display: block; }
+.ed-panels.js > .ed-panel { display: none; }
+.ed-panels.js > .ed-panel.is-current { display: block; }
+
+/* A tab with changes not yet saved: a dot after its name, in the accent. */
+.ed-mark { display: none; }
+.person-tab.has-changes .ed-mark {
+  display: inline-block;
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-inline-start: 0.1rem;
+  align-self: center;
+}
+
+.ed-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 0.25rem 1.25rem;
+}
+.ed-fields > .field, .ed-fields > label { margin: 0; }
+.ed-field { display: flex; flex-direction: column; gap: 0.3rem; min-inline-size: 0; }
+.ed-field.wide { grid-column: 1 / -1; }
+.ed-field .field-label {
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.ed-field input:not([type="checkbox"]), .ed-field select, .ed-field textarea { inline-size: 100%; }
+.ed-fields, .ed-grid { margin-block-end: 0.75rem; }
+
+/* A record the tab writes: a union, an event, a source, a file. Hairlines,
+   no boxes, as Study 06 draws a list. */
+.ed-block {
+  border-block-start: 1px solid var(--border-hairline);
+  padding-block: 1rem 0.5rem;
+}
+.ed-block:last-of-type { border-block-end: 1px solid var(--border-hairline); }
+.ed-block.is-touched { box-shadow: inset 2px 0 0 var(--accent); padding-inline-start: 0.75rem; }
+.ed-block-head { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem; margin-block-end: 0.75rem; }
+.ed-block-title { flex: 1 1 12rem; min-inline-size: 0; overflow-wrap: anywhere; }
+.ed-block-title h3 { margin: 0; font-size: var(--type-body); }
+.ed-thumb { inline-size: 3.5rem; block-size: 3.5rem; object-fit: cover; border-radius: 2px; }
+
+/* A list inside a record — partners, children — as rows with their actions. */
+.ed-list-title {
+  margin: 0.75rem 0 0.25rem;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: var(--weight-normal);
+}
+.ed-list { border-block-start: 1px solid var(--border-hairline); }
+.ed-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 1rem;
+  padding-block: 0.5rem;
+  border-block-end: 1px solid var(--border-hairline);
+}
+.ed-item-name { flex: 1 1 12rem; align-self: center; min-inline-size: 0; }
+.ed-item-fields { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.ed-item-fields .ed-field { inline-size: 11rem; }
+.ed-item:has(.ed-action input:checked) .ed-item-name,
+.ed-block:has(> .ed-block-head .ed-action input:checked) .ed-block-title {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+/* An action on a list: a checkbox drawn as a quiet button. */
+.ed-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  font-size: var(--type-minor);
+  color: var(--text-secondary);
+  cursor: pointer;
+  max-inline-size: 100%;
+}
+.ed-action:has(input:checked) { border-color: var(--danger); color: var(--danger); }
+
+/* "Add": a disclosure that opens onto the fields of the new thing. */
+.ed-add, .ed-add-row { margin-block: 0.75rem; }
+.ed-add > summary, .ed-add-row > summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: var(--weight-medium);
+}
+.ed-add[open], .ed-add-row[open] {
+  border-inline-start: 2px solid var(--accent);
+  padding-inline-start: 0.75rem;
+}
+.ed-add[open] > summary, .ed-add-row[open] > summary { margin-block-end: 0.6rem; }
+
+.ed-save {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface-page);
+  padding-block: 0.75rem;
+  border-block-start: 1px solid var(--border-hairline);
+  z-index: 2;
+}

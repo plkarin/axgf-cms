@@ -3347,3 +3347,28 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = Mark all as checked ({ $n })
 quality-restore-all = Show all again ({ $n })
 quality-bulk-conflict = Records changed since the list was opened: { $n }. Nothing was marked; reload the list and try again.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = changed, not saved yet
+edit-remove = Remove
+edit-add-partner = Add a partner
+edit-add-child = Add a child
+edit-union-with = Union with { $names }
+edit-union-alone = Union with no partner recorded
+edit-child-of = Child of { $names }
+edit-new-family = Start a family
+edit-cite-title = What rests on a source
+edit-attach-to = Cite it for
+edit-add-source = Add a source
+edit-error-source-title = A new source needs a title. Nothing was saved.
+edit-detach-file = Detach from this record
+edit-no-sources = None of this person's own facts cites a source yet.
+edit-no-files = No file is attached to this record yet.
+edit-saved = { $n ->
+        [one] Saved: one record written.
+       *[other] Saved: { $n } records written in one save.
+    }
+edit-saved-none = Nothing had changed, so nothing was saved.
+edit-stale = Someone else changed { $what } since this page was opened. Nothing was saved; everything you entered is still here.
+edit-refused = Nothing was saved: { $reason }

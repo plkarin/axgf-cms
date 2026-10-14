@@ -6,6 +6,81 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-10-14
+
+The record's editor is now six tabs instead of one long page. Nothing about
+the AXGF file changes.
+
+### Changed
+
+**The editor has the reading tabs.** Fiche · Famille · Événements · Sources
+· Médias · Profil, in all eleven languages, drawn as the record page draws
+them. Modifier opens the editor on the tab being read, so the tab you were
+reading is the tab you edit.
+
+- **All six tabs are always present in edit mode**, including empty ones,
+  because an empty tab is where you add things. Reading still hides an
+  empty tab. The difference is deliberate.
+- **Fiche:** names, dates, places and the other identity fields, with no
+  disclosure.
+- **Famille:** actions on a list, not a column of inputs:
+  - start a family, with a partner and a child;
+  - add or remove a partner;
+  - add or remove a child, and set each child's lineage and confidence;
+  - leave a union;
+  - attach this person to their parents' family, or detach them from it.
+- **Événements:** add, change and remove life events with their dates,
+  places and sources. Removing the last person from an event deletes the
+  event.
+- **Sources:** cite a source for the birth or the death, or none. Edit the
+  fields of each source this person rests on. Add a new source and cite it
+  in the same save.
+- **Médias:** upload a file, caption it, change its type, or detach it.
+- **Profil:** the fourteen AXGF 1.1 groups as in v0.4.1.
+
+**One form, one save.** The tabs show and hide parts of one form. One
+Enregistrer writes everything changed, on every tab, as a single commit:
+every record checked against the version it was drawn from, then all
+written or none.
+
+- This matters because a save rewrites the whole archive, which takes 12 to
+  17 seconds on a 434 MB bundle.
+- A union, an event, a source, a file or a profile group is written back
+  only if the form drew it and something in it changed. A save that fixes a
+  name therefore rewrites no family nobody opened.
+- After a save you return to the editor, on the tab you were on, with a
+  note of how many records were written.
+- If a save is refused, you return to the tab it was refused on, with
+  everything typed on every tab still there.
+
+**You can see what is unsaved.** A tab with unsaved changes carries a dot,
+and so does a tab whose changes a refused save has kept. Leaving the page
+with changes asks first. Without JavaScript the tabs still work, through the
+URL fragment (`#famille`).
+
+### Fixed
+
+- A confidence in the person form was a slider. A slider cannot say "not
+  set", and a browser sends the middle of its range for one drawn without a
+  value. It is now a number field.
+- An attached file whose bytes the archive does not hold is no longer linked
+  to a viewer that answers "not found".
+
+### Tests
+
+- `tests/person_editor.rs` checks that:
+  - all six tabs render, empty ones included;
+  - Modifier lands on the tab being read;
+  - changes on three tabs are written by one save;
+  - untouched tabs write nothing;
+  - the Famille tab can create, change and detach;
+  - a refused save keeps every tab as it was typed;
+  - a source can be added and cited in one save;
+  - a file can be uploaded, captioned and detached in the one save.
+- `tests/profile_editor.rs` still holds all 132 attributes reachable for a
+  person with none filled.
+- The chrome walk now counts the editor tab by tab.
+
 ## [0.4.1] — 2026-10-14
 
 Two fixes to the v0.4.0 minimalism pass. Both come from the same mistake:
@@ -3081,6 +3156,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.4.2]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.2
 [0.4.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.1
 [0.4.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.0
 [0.3.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.3.1

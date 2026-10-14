@@ -49,11 +49,13 @@ fn sel(s: &str) -> Selector {
     Selector::parse(s).unwrap()
 }
 
-/// The edit form: the one that posts to the person.
+/// The edit form: the one that posts to the person, whatever tab it is on.
 fn edit_form<'a>(doc: &'a Html, id: &str) -> ElementRef<'a> {
-    doc.select(&sel(&format!(r#"form[action="/admin/person/{id}"]"#)))
-        .next()
-        .expect("the person's edit form")
+    doc.select(&sel(&format!(
+        r#"form.person-editor[action^="/admin/person/{id}#"]"#
+    )))
+    .next()
+    .expect("the person's edit form")
 }
 
 /// Whether a control can be typed into: named, not disabled, not read-only,
@@ -247,9 +249,12 @@ async fn every_profile_attribute_is_reachable_for_a_person_with_none_filled() {
             "{name} is not behind a disclosure"
         );
     }
+    // Parents are the Famille tab's: attaching this person to a family.
     assert!(
-        form.select(&sel(".ed-parents")).next().is_some(),
-        "the parents"
+        form.select(&sel("section#famille details.ed-add"))
+            .next()
+            .is_some(),
+        "the parents, on the Famille tab"
     );
 }
 

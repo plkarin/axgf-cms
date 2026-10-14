@@ -821,16 +821,6 @@ pub async fn edit_form(
         crate::access::readable_for(k, &entity, viewer.ceiling()),
     );
     let pickers = picker_lists(&state, &viewer, k, chrome.lang);
-    let person = person_form_context(
-        &state,
-        &chrome,
-        &viewer,
-        k,
-        &id,
-        Some(&entity),
-        None,
-        &crate::profile::form::Problems::new(),
-    );
     render::page_with(
         &chrome,
         "admin_form.html",
@@ -847,7 +837,6 @@ pub async fn edit_form(
             action => format!("/admin/{kind}/{id}"),
             base_version => crate::state::version_of(&entity),
             history => history_json(&state, crate::state::kind_name(k), &id, viewer.ceiling(), chrome.lang),
-            ..person
         },
     )
 }
@@ -855,7 +844,10 @@ pub async fn edit_form(
 /// An entity as this editor may see it: every scope they may not read taken
 /// out *before* it is serialised, because a redaction done on a string is a
 /// redaction waiting to be defeated by a line break.
-fn shown_entity(entity: &Value, readable: crate::sensitive::Scopes) -> std::borrow::Cow<'_, Value> {
+pub(super) fn shown_entity(
+    entity: &Value,
+    readable: crate::sensitive::Scopes,
+) -> std::borrow::Cow<'_, Value> {
     if readable == crate::sensitive::Scopes::EVERY {
         std::borrow::Cow::Borrowed(entity)
     } else {
@@ -870,7 +862,7 @@ fn shown_entity(entity: &Value, readable: crate::sensitive::Scopes) -> std::borr
 /// carries the value that changed — so without this the diff prints back the
 /// diagnosis the rest of the application withholds. Only a person can carry
 /// class data; every other kind passes through untouched.
-fn history_json(
+pub(super) fn history_json(
     state: &Shared,
     kind: &str,
     id: &str,
@@ -925,7 +917,7 @@ pub async fn create(
         Err(msg) => return form_error(&state, &viewer, &chrome, &kind, None, &msg, &form, k),
     };
     let mut entity = apply_form(base, k, &form);
-    if let Err(msg) = refuse_new_dangling(&state, &entity, None, chrome.lang) {
+    if let Err(msg) = refuse_new_dangling(&state, &entity, None, chrome.lang, &[]) {
         return form_error(&state, &viewer, &chrome, &kind, None, &msg, &form, k);
     }
     if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, None) {
@@ -1012,28 +1004,6 @@ pub async fn update(
             .cloned()
     });
 
-    // A person's form carries every profile group (v0.4.1). The groups the
-    // editor changed are read back over what the fields made; the others are
-    // left exactly as stored.
-    if let (axgf_rs::EntityKind::Person, Some(stored)) = (k, stored.as_ref()) {
-        let body: crate::forms::Body = form.iter().map(|(a, b)| (a.clone(), b.clone())).collect();
-        match super::profile::apply_profile(
-            &state,
-            chrome.lang,
-            &viewer,
-            &id,
-            stored,
-            entity,
-            &body,
-        ) {
-            Ok(e) => entity = e,
-            Err(problems) => {
-                return person_form_refused(&state, &viewer, &chrome, &id, &form, &body, &problems);
-            }
-        }
-        entity["id"] = Value::String(id.clone());
-    }
-
     // What the form did not show, the form cannot delete. The raw document
     // this editor was given had every class they may not read stripped out of
     // it, so an absence in what came back is not an edit — it is the redaction
@@ -1047,7 +1017,7 @@ pub async fn update(
         let readable = crate::access::readable_for(k, stored, viewer.ceiling());
         entity = crate::sensitive::restore(&entity, stored, readable);
     }
-    if let Err(msg) = refuse_new_dangling(&state, &entity, stored.as_ref(), chrome.lang) {
+    if let Err(msg) = refuse_new_dangling(&state, &entity, stored.as_ref(), chrome.lang, &[]) {
         return form_error(&state, &viewer, &chrome, &kind, Some(&id), &msg, &form, k);
     }
     if let Err(r) = check_scope(&state, &chrome, &viewer, k, &entity, stored.as_ref()) {
@@ -1245,7 +1215,7 @@ pub(super) fn conflict_page(
 }
 
 /// A short human label for an entity, for the journal listing.
-fn label_for(kind: axgf_rs::EntityKind, entity: &Value) -> Option<String> {
+pub(super) fn label_for(kind: axgf_rs::EntityKind, entity: &Value) -> Option<String> {
     match kind {
         axgf_rs::EntityKind::Person => Some(view::person_display_name(entity)),
         _ => entity
@@ -1610,7 +1580,7 @@ impl ExportQuery {
 ///
 /// The refusal is a sentence in the reader's language around the parser's own
 /// message, which names a line and a column and stays as the parser wrote it.
-fn base_from_raw(form: &HashMap<String, String>, lang: &str) -> Result<Value, String> {
+pub(super) fn base_from_raw(form: &HashMap<String, String>, lang: &str) -> Result<Value, String> {
     match form.get("raw_json").map(String::as_str).map(str::trim) {
         None | Some("") => Ok(Value::Object(Default::default())),
         Some(s) => serde_json::from_str::<Value>(s).map_err(|e| {
@@ -1637,11 +1607,12 @@ fn base_from_raw(form: &HashMap<String, String>, lang: &str) -> Result<Value, St
 /// already carried is left alone: an imported bundle can arrive with them, and
 /// refusing every later edit of that record until somebody repaired a field
 /// they never touched would be a different wrong answer.
-fn refuse_new_dangling(
+pub(super) fn refuse_new_dangling(
     state: &Shared,
     entity: &Value,
     stored: Option<&Value>,
     lang: &str,
+    pending: &[String],
 ) -> Result<(), String> {
     let mut had = Vec::new();
     if let Some(stored) = stored {
@@ -1654,6 +1625,7 @@ fn refuse_new_dangling(
         refs.into_iter().find(|(_, target)| {
             Some(target.as_str()) != own
                 && !had.iter().any(|(_, t)| t == target)
+                && !pending.iter().any(|p| p == target)
                 && !flat
                     .as_object()
                     .is_some_and(|c| c.values().any(|m| m.get(target).is_some()))
@@ -1716,7 +1688,7 @@ fn is_uuid(s: &str) -> bool {
 /// reason to carry 866 people in a datalist it does not render. Everything is
 /// read through the viewer's lens, like every other picker — a person this
 /// editor may not read is not offered to them by name.
-fn picker_lists(
+pub(super) fn picker_lists(
     state: &Shared,
     viewer: &Viewer,
     kind: axgf_rs::EntityKind,
@@ -1780,7 +1752,7 @@ fn picker_label(
         .unwrap_or_else(|| id.to_string())
 }
 
-fn field_views(
+pub(super) fn field_views(
     kind: axgf_rs::EntityKind,
     entity: &Value,
     lang: &str,
@@ -2395,7 +2367,7 @@ pub(super) fn result_page(
 ///
 /// A value that names nothing, or names two things, is refused with the
 /// field's own label in the message rather than guessed at.
-fn resolve_pickers(
+pub(super) fn resolve_pickers(
     state: &Shared,
     kind: axgf_rs::EntityKind,
     form: &mut HashMap<String, String>,
@@ -2499,26 +2471,6 @@ fn form_error(
     // could not see to correct.
     let entity = crate::admin::apply_form(entity, k, form);
     let pickers = picker_lists(state, viewer, k, chrome.lang);
-    // A refusal over one field must not cost what was typed into the
-    // profile's groups: they are drawn back from the submission.
-    let body: crate::forms::Body = form.iter().map(|(a, b)| (a.clone(), b.clone())).collect();
-    let stored = id.and_then(|i| {
-        state.read(|flat| {
-            flat.get(crate::admin::collection_for(k))
-                .and_then(|c| c.get(i))
-                .cloned()
-        })
-    });
-    let person = person_form_context(
-        state,
-        chrome,
-        viewer,
-        k,
-        id.unwrap_or(""),
-        stored.as_ref(),
-        Some(&body),
-        &crate::profile::form::Problems::new(),
-    );
     let mut resp = render::page_with(
         chrome,
         "admin_form.html",
@@ -2540,102 +2492,9 @@ fn form_error(
                 Some(i) => format!("/admin/{kind}/{i}"),
                 None => format!("/admin/{kind}"),
             },
-            ..person
         },
     );
     *resp.status_mut() = StatusCode::BAD_REQUEST;
-    resp
-}
-
-/// What a person's form draws beyond its fields (v0.4.1): the parents, which
-/// are identity and so always on screen, and the fourteen profile groups by
-/// name, each with how many of its fields hold a value. Empty for any other
-/// kind, and for a person not yet created.
-#[allow(clippy::too_many_arguments)]
-fn person_form_context(
-    state: &Shared,
-    chrome: &render::Chrome,
-    viewer: &Viewer,
-    k: axgf_rs::EntityKind,
-    id: &str,
-    stored: Option<&Value>,
-    submitted: Option<&crate::forms::Body>,
-    problems: &crate::profile::form::Problems,
-) -> minijinja::Value {
-    let (axgf_rs::EntityKind::Person, Some(stored)) = (k, stored) else {
-        return context! {};
-    };
-    let p = state.read_as(viewer.ceiling(), |flat, lens| {
-        crate::person::build_in(flat, id, lens, chrome.lang)
-    });
-    let (parents, relatives) = p
-        .as_ref()
-        .map(|p| (p.parents.clone(), crate::person::RecordTab::Family.count(p)))
-        .unwrap_or_default();
-    let profile = super::profile::profile_form(
-        state,
-        chrome.lang,
-        viewer,
-        id,
-        stored,
-        relatives,
-        submitted,
-        problems,
-    );
-    context! {
-        parents,
-        profile_sections => profile.sections,
-        profile_sources => profile.sources,
-        precisions => profile.precisions,
-    }
-}
-
-/// A person's save refused over its profile: the form again, as submitted,
-/// with each problem beside its attribute and that group open.
-fn person_form_refused(
-    state: &Shared,
-    viewer: &Viewer,
-    chrome: &render::Chrome,
-    id: &str,
-    form: &HashMap<String, String>,
-    body: &crate::forms::Body,
-    problems: &crate::profile::form::Problems,
-) -> Response {
-    let k = axgf_rs::EntityKind::Person;
-    let raw = form.get("raw_json").cloned().unwrap_or_else(|| "{}".into());
-    let entity = serde_json::from_str::<Value>(&raw).unwrap_or(Value::Object(Default::default()));
-    let entity = crate::admin::apply_form(entity, k, form);
-    let stored = state.read(|flat| flat.get("persons").and_then(|c| c.get(id)).cloned());
-    let pickers = picker_lists(state, viewer, k, chrome.lang);
-    let person = person_form_context(
-        state,
-        chrome,
-        viewer,
-        k,
-        id,
-        stored.as_ref(),
-        Some(body),
-        problems,
-    );
-    let mut resp = render::page_with(
-        chrome,
-        "admin_form.html",
-        context! {
-            nav => "admin",
-            kind => "person",
-            kinds => KINDS,
-            creating => false,
-            id,
-            fields => field_views(k, &entity, chrome.lang, &pickers),
-            pickers,
-            raw,
-            error => chrome.t("profile-problems"),
-            base_version => form.get("base_version").cloned().unwrap_or_default(),
-            action => format!("/admin/person/{id}"),
-            ..person
-        },
-    );
-    *resp.status_mut() = StatusCode::UNPROCESSABLE_ENTITY;
     resp
 }
 
@@ -2896,7 +2755,7 @@ fn upload_refused(
 /// Path separators and quotes are stripped rather than escaped, and the
 /// extension is forced to match what the bytes actually are, so a file called
 /// `holiday.jpg` that is really a PDF is stored as `holiday.pdf`.
-fn clean_filename(raw: &str, ext: &str) -> String {
+pub(super) fn clean_filename(raw: &str, ext: &str) -> String {
     let base = raw
         .rsplit(['/', '\\'])
         .next()

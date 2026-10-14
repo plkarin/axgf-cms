@@ -3318,3 +3318,29 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = Segna tutto come verificato ({ $n })
 quality-restore-all = Mostra di nuovo tutto ({ $n })
 quality-bulk-conflict = Schede cambiate dall’apertura dell’elenco: { $n }. Non è stato segnato nulla; ricarica l’elenco e riprova.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = modificato, non ancora salvato
+edit-remove = Togli
+edit-add-partner = Aggiungi un coniuge
+edit-add-child = Aggiungi un figlio
+edit-union-with = Unione con { $names }
+edit-union-alone = Unione senza coniuge registrato
+edit-child-of = Figlio di { $names }
+edit-new-family = Crea una famiglia
+edit-cite-title = Ciò che poggia su una fonte
+edit-attach-to = Citarla per
+edit-add-source = Aggiungi una fonte
+edit-error-source-title = Una nuova fonte ha bisogno di un titolo. Non è stato salvato nulla.
+edit-detach-file = Togli da questa scheda
+edit-no-sources = Nessun dato proprio di questa persona cita ancora una fonte.
+edit-no-files = A questa scheda non è ancora allegato alcun file.
+edit-saved = { $n ->
+        [one] Salvato: una scheda scritta.
+        [many] Salvato: { $n } schede scritte in un solo salvataggio.
+       *[other] Salvato: { $n } schede scritte in un solo salvataggio.
+    }
+edit-saved-none = Non era cambiato nulla, quindi non è stato salvato nulla.
+edit-stale = Qualcun altro ha modificato { $what } da quando questa pagina è stata aperta. Non è stato salvato nulla; tutto ciò che ha inserito è ancora qui.
+edit-refused = Non è stato salvato nulla: { $reason }

@@ -3303,3 +3303,29 @@ quality-dismissed-summary = { $n ->
 quality-dismiss-all = Tout marquer comme vérifié ({ $n })
 quality-restore-all = Tout réafficher ({ $n })
 quality-bulk-conflict = Fiches modifiées depuis l’ouverture de la liste : { $n }. Rien n’a été marqué ; rechargez la liste et recommencez.
+
+## The record's editor (v0.4.2)
+
+edit-tab-changed = modifié, pas encore enregistré
+edit-remove = Retirer
+edit-add-partner = Ajouter un conjoint
+edit-add-child = Ajouter un enfant
+edit-union-with = Union avec { $names }
+edit-union-alone = Union sans conjoint enregistré
+edit-child-of = Enfant de { $names }
+edit-new-family = Créer une famille
+edit-cite-title = Ce qui repose sur une source
+edit-attach-to = La citer pour
+edit-add-source = Ajouter une source
+edit-error-source-title = Une nouvelle source doit avoir un titre. Rien n'a été enregistré.
+edit-detach-file = Retirer de cette fiche
+edit-no-sources = Aucun fait propre à cette personne ne cite encore de source.
+edit-no-files = Aucun fichier n'est encore attaché à cette fiche.
+edit-saved = { $n ->
+        [one] Enregistré : une fiche modifiée.
+        [many] Enregistré : { $n } fiches modifiées en une fois.
+       *[other] Enregistré : { $n } fiches modifiées en une fois.
+    }
+edit-saved-none = Rien n'avait changé : rien n'a été enregistré.
+edit-stale = Quelqu'un d'autre a modifié { $what } depuis l'ouverture de cette page. Rien n'a été enregistré ; tout ce que vous avez saisi est conservé.
+edit-refused = Rien n'a été enregistré : { $reason }

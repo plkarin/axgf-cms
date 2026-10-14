@@ -8,6 +8,9 @@
 
 mod common;
 
+/// A person's save that lands goes back to the editor's tab (v0.4.2).
+const SAVED: axum::http::StatusCode = axum::http::StatusCode::SEE_OTHER;
+
 use axum::http::StatusCode;
 use common::*;
 use serde_json::{json, Value};
@@ -111,7 +114,7 @@ async fn a_second_edit_from_a_stale_version_is_refused_with_a_diff() {
     let mut first = person(ALICE, "Alice", base);
     first["notes"] = json!("edited by the first editor");
     let resp = save(&app, ALICE, base, &first).await;
-    assert_eq!(resp.status(), StatusCode::OK, "the first save succeeds");
+    assert_eq!(resp.status(), SAVED, "the first save succeeds");
 
     // The second, still holding version 1, saves something else.
     let mut second = person(ALICE, "Alice", base);
@@ -164,8 +167,8 @@ async fn edits_to_different_entities_both_succeed() {
     let mut b = person(BOB, "Bob", 1);
     b["notes"] = json!("a note for Bob");
 
-    assert_eq!(save(&app, ALICE, 1, &a).await.status(), StatusCode::OK);
-    assert_eq!(save(&app, BOB, 1, &b).await.status(), StatusCode::OK);
+    assert_eq!(save(&app, ALICE, 1, &a).await.status(), SAVED);
+    assert_eq!(save(&app, BOB, 1, &b).await.status(), SAVED);
 
     let page_a = body_string(get_admin(&app, &format!("/admin/person/{ALICE}/edit")).await).await;
     let page_b = body_string(get_admin(&app, &format!("/admin/person/{BOB}/edit")).await).await;
@@ -181,7 +184,7 @@ async fn an_edit_after_reloading_the_current_version_succeeds() {
 
     let mut first = person(ALICE, "Alice", 1);
     first["notes"] = json!("first");
-    assert_eq!(save(&app, ALICE, 1, &first).await.status(), StatusCode::OK);
+    assert_eq!(save(&app, ALICE, 1, &first).await.status(), SAVED);
 
     // The second editor is refused…
     let mut second = person(ALICE, "Alice", 1);
@@ -195,7 +198,7 @@ async fn an_edit_after_reloading_the_current_version_succeeds() {
     let now = stored_version(&app, ALICE).await;
     assert_eq!(now, 2, "the first save moved it to 2");
     let resp = save(&app, ALICE, now, &second).await;
-    assert_eq!(resp.status(), StatusCode::OK, "re-applying on top works");
+    assert_eq!(resp.status(), SAVED, "re-applying on top works");
 
     let page = body_string(get_admin(&app, &format!("/admin/person/{ALICE}/edit")).await).await;
     assert!(page.contains("second"));
@@ -209,10 +212,7 @@ async fn a_successful_save_increments_the_version_exactly_once() {
         assert_eq!(stored_version(&app, ALICE).await, expected);
         let mut e = person(ALICE, "Alice", expected);
         e["notes"] = json!(format!("edit {expected}"));
-        assert_eq!(
-            save(&app, ALICE, expected, &e).await.status(),
-            StatusCode::OK
-        );
+        assert_eq!(save(&app, ALICE, expected, &e).await.status(), SAVED);
     }
     assert_eq!(stored_version(&app, ALICE).await, 5);
 }
@@ -241,7 +241,7 @@ async fn the_conflict_page_marks_the_fields_both_editors_touched() {
     let mut first = person(ALICE, "Alice", 1);
     first["notes"] = json!("theirs");
     first["identity"]["gender"]["value"] = json!("NB");
-    assert_eq!(save(&app, ALICE, 1, &first).await.status(), StatusCode::OK);
+    assert_eq!(save(&app, ALICE, 1, &first).await.status(), SAVED);
 
     // The second editor changed `notes` too, and nothing else.
     let mut second = person(ALICE, "Alice", 1);
@@ -260,7 +260,7 @@ async fn every_successful_edit_lands_in_the_journal_and_the_history() {
     let (app, _scratch) = app("ce-journal");
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("a corrected note");
-    assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
+    assert_eq!(save(&app, ALICE, 1, &e).await.status(), SAVED);
 
     let page = body_string(get_admin(&app, &format!("/admin/person/{ALICE}/edit")).await).await;
     assert!(
@@ -300,7 +300,7 @@ async fn the_journal_lives_beside_the_bundle_and_not_inside_it() {
 
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("a private correction");
-    assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
+    assert_eq!(save(&app, ALICE, 1, &e).await.status(), SAVED);
 
     let journal = live.with_extension("journal");
     assert!(journal.exists(), "the journal is written beside the bundle");
@@ -348,7 +348,7 @@ async fn the_history_is_in_edit_mode_and_shown_to_nobody_else() {
     let (app, _scratch) = app("ce-history-private");
     let mut e = person(ALICE, "Alice", 1);
     e["notes"] = json!("a correction somebody made");
-    assert_eq!(save(&app, ALICE, 1, &e).await.status(), StatusCode::OK);
+    assert_eq!(save(&app, ALICE, 1, &e).await.status(), SAVED);
 
     let editor = body_string(get_admin(&app, &format!("/admin/person/{ALICE}/edit")).await).await;
     assert!(
@@ -390,7 +390,7 @@ async fn a_delete_decided_on_an_older_version_is_refused() {
     let mut edited = person(ALICE, "Alice", 1);
     edited["notes"] = json!("changed by the other editor");
     let saved = save(&app, ALICE, 1, &edited).await;
-    assert!(saved.status().is_success(), "the other editor's save lands");
+    assert_eq!(saved.status(), SAVED, "the other editor's save lands");
 
     let resp = post_form(
         &app,

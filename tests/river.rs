@@ -841,7 +841,9 @@ async fn the_record_beside_the_river_has_its_tabs_and_one_way_on() {
         "the whole record, one link away"
     );
     assert_eq!(
-        fiche.matches(r#"href="/admin/person/p07/edit""#).count(),
+        fiche
+            .matches(r#"href="/admin/person/p07/edit#fiche""#)
+            .count(),
         1,
         "one way into editing"
     );

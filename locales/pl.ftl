@@ -56,17 +56,25 @@ prefs-machine = maszynowe, { $coverage }%
 prefs-machine-complete = kompletne, jeszcze nieprzejrzane
 prefs-machine-title = Przetłumaczone bez weryfikacji przez osobę, dla której to język ojczysty. Zwłaszcza słownictwo genealogiczne może być błędne — słowa oznaczające związek, rodzica chrzestnego czy źródło pierwotne różnią się w zależności od tradycji archiwalnej danego kraju. Poprawki są mile widziane, a CONTRIBUTING.md mówi, od czego zacząć.
 
-theme-light = Jasny
-theme-dark = Ciemny
+theme-light = Kreda
+theme-dark = Nokturn
 theme-system = Zgodnie z systemem
-theme-high-contrast = Wysoki kontrast
+theme-high-contrast = Rycina
 theme-sepia = Sepia
 theme-deuteranopia = Deuteranopia
 theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
+theme-default-note = Nokturn, motyw ciemny, jest domyślny, nawet gdy system prosi o jasny. Wybierz „Zgodnie z systemem”, aby decydował system.
+theme-fleuve-hiver-note = jasny, chłodny
+theme-fleuve-hiver = Zimowa rzeka
+theme-encre-note = ciemny, granatowy
+theme-encre = Atrament
+theme-crepuscule-note = ciemny, ciepły
+theme-crepuscule = Zmierzch
+theme-light-note = jasny
 theme-colour-blind-note = bezpieczny dla daltonistów
-theme-contrast-note = maksymalny kontrast
-theme-dark-note = domyślny
+theme-contrast-note = wysoki kontrast
+theme-dark-note = ciemny · domyślny
 theme-river-note = Rzeka pozostaje ciemna w każdym motywie: jej kolory są dobrane do ciemnego tła.
 
 ## Drzewo

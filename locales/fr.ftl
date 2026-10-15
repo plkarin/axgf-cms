@@ -41,17 +41,25 @@ prefs-reviewed = relu
 prefs-machine = automatique, { $coverage } %
 prefs-machine-title = Traduit sans relecture par une personne dont c’est la langue maternelle. Le vocabulaire généalogique en particulier peut être fautif — les mots pour une union, un parrain ou une source primaire varient selon la tradition archivistique de chaque pays. Les corrections sont bienvenues ; CONTRIBUTING.md indique par où commencer.
 
-theme-light = Clair
-theme-dark = Sombre
+theme-light = Craie
+theme-dark = Nocturne
 theme-system = Suivre mon système
-theme-high-contrast = Contraste élevé
+theme-high-contrast = Gravure
 theme-sepia = Sépia
 theme-deuteranopia = Deutéranopie
 theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
+theme-default-note = Nocturne, le thème sombre, est le thème par défaut, même si votre système demande un thème clair. Choisissez « Suivre mon système » pour le laisser décider.
+theme-fleuve-hiver-note = clair, froid
+theme-fleuve-hiver = Fleuve d'hiver
+theme-encre-note = sombre, bleu nuit
+theme-encre = Encre
+theme-crepuscule-note = sombre, chaud
+theme-crepuscule = Crépuscule
+theme-light-note = clair
 theme-colour-blind-note = adapté au daltonisme
-theme-contrast-note = contraste maximal
-theme-dark-note = par défaut
+theme-contrast-note = contraste élevé
+theme-dark-note = sombre · par défaut
 theme-river-note = La rivière reste sombre quel que soit le thème : ses couleurs sont faites pour un fond sombre.
 
 ## Arbre

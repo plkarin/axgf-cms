@@ -1,4 +1,4 @@
-//! The seven themes, and how one is chosen for a request.
+//! The ten themes, and how one is chosen for a request.
 //!
 //! # Rendered server-side, on purpose
 //!
@@ -8,13 +8,19 @@
 //! navigation, and is worst for exactly the reader who most needs the setting:
 //! somebody using the high-contrast theme gets a white flash on every page.
 //!
-//! # `system` is a choice, not the absence of one
+//! # Dark wins, and the system has a say only when asked
 //!
-//! A reader who picks "match my system" has expressed a preference, and it is
-//! stored like any other. It renders as *no* `data-theme` attribute, which
-//! lets the stylesheet's `prefers-color-scheme` media queries decide. That is
-//! why [`Theme::attribute`] can return `None` while [`Theme::id`] cannot: what
-//! is stored and what is rendered are different questions.
+//! The order is: the account's stored preference, then the cookie, then
+//! [`DEFAULT`], which is `dark`, written into the page. The operating
+//! system's `prefers-color-scheme` is not in that order at all (v0.4.3): a
+//! reader who has chosen nothing gets Study 06's dark ground even when their
+//! system asks for light. The system decides only for a reader who chose
+//! "match my system", which renders `data-theme="system"` and is the one
+//! selector the stylesheet's colour-scheme query applies to. A page without
+//! any `data-theme` falls back to dark in the stylesheet too.
+//!
+//! `prefers-reduced-motion` keeps its power: it is a medical setting, and
+//! nothing a reader picks here overrides it (`static/app.css`, `river.js`).
 
 use serde::Serialize;
 
@@ -41,25 +47,24 @@ pub struct Theme {
 }
 
 /// Every theme on offer, in the order the selector lists them.
+///
+/// Named evocatively since v0.4.3 — Nocturne, Craie, Gravure, Crépuscule,
+/// Encre, Fleuve d'hiver — with a functional subtitle where the name alone
+/// would not say what the theme is for (`note_key`). The colour-blind themes
+/// keep the names of what they are built for: there, the name is the
+/// function.
 pub const THEMES: &[Theme] = &[
     Theme {
-        id: "system",
-        key: "theme-system",
-        note_key: None,
+        id: "dark",
+        key: "theme-dark",
+        note_key: Some("theme-dark-note"),
         wash: true,
         colour_blind: false,
     },
     Theme {
         id: "light",
         key: "theme-light",
-        note_key: None,
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "dark",
-        key: "theme-dark",
-        note_key: Some("theme-dark-note"),
+        note_key: Some("theme-light-note"),
         wash: true,
         colour_blind: false,
     },
@@ -74,6 +79,27 @@ pub const THEMES: &[Theme] = &[
         id: "sepia",
         key: "theme-sepia",
         note_key: None,
+        wash: true,
+        colour_blind: false,
+    },
+    Theme {
+        id: "crepuscule",
+        key: "theme-crepuscule",
+        note_key: Some("theme-crepuscule-note"),
+        wash: true,
+        colour_blind: false,
+    },
+    Theme {
+        id: "encre",
+        key: "theme-encre",
+        note_key: Some("theme-encre-note"),
+        wash: true,
+        colour_blind: false,
+    },
+    Theme {
+        id: "fleuve-hiver",
+        key: "theme-fleuve-hiver",
+        note_key: Some("theme-fleuve-hiver-note"),
         wash: true,
         colour_blind: false,
     },
@@ -98,6 +124,13 @@ pub const THEMES: &[Theme] = &[
         wash: true,
         colour_blind: true,
     },
+    Theme {
+        id: "system",
+        key: "theme-system",
+        note_key: None,
+        wash: true,
+        colour_blind: false,
+    },
 ];
 
 /// What a reader gets when they have expressed no preference: `dark`, which
@@ -118,9 +151,13 @@ pub const COOKIE_NAME: &str = "axgf_theme";
 /// do.
 pub const WASH_COOKIE_NAME: &str = "axgf_wash";
 
-/// The cookie value that turns the wash off. Anything else, including a
-/// missing cookie, leaves it on.
+/// The cookie value that turns the wash off.
 pub const WASH_OFF: &str = "off";
+
+/// The cookie value that turns it on. Nothing else does: since v0.4.3 the
+/// wash — and the texture a theme may carry with it — is off until a reader
+/// asks for it.
+pub const WASH_ON: &str = "on";
 
 /// Whether the page wash should be drawn for this request.
 ///
@@ -142,7 +179,7 @@ pub fn reader_wants_wash(account: Option<bool>, cookie: Option<&str>) -> bool {
     if let Some(stored) = account {
         return stored;
     }
-    !matches!(cookie, Some(WASH_OFF))
+    matches!(cookie, Some(WASH_ON))
 }
 
 impl Theme {
@@ -157,9 +194,11 @@ impl Theme {
             .unwrap_or_else(|| Self::find(DEFAULT).expect("the default is always present"))
     }
 
-    /// The value for `data-theme`, or `None` to let the system decide.
-    pub fn attribute(&self) -> Option<&'static str> {
-        (self.id != "system").then_some(self.id)
+    /// The value for `data-theme`. Every theme has one, `system` included:
+    /// a page always says which theme it is in, and the colour-scheme media
+    /// query applies to `[data-theme="system"]` and to nothing else.
+    pub fn attribute(&self) -> &'static str {
+        self.id
     }
 }
 
@@ -199,31 +238,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn all_seven_themes_plus_system_are_offered() {
-        // Seven themes were asked for; `system` is the eighth entry because
-        // "follow the browser" is a choice a reader can make, not one of them.
-        assert_eq!(THEMES.len(), 8);
+    fn ten_themes_plus_system_are_offered() {
+        // Seven until v0.4.3, then three more: Crépuscule, Encre and Fleuve
+        // d'hiver. `system` is the last entry because following the browser
+        // is a choice a reader can make, not one of the themes.
         let ids: Vec<&str> = THEMES.iter().map(|t| t.id).collect();
         assert_eq!(
             ids,
             vec![
-                "system",
-                "light",
                 "dark",
+                "light",
                 "high-contrast",
                 "sepia",
+                "crepuscule",
+                "encre",
+                "fleuve-hiver",
                 "deuteranopia",
                 "protanopia",
-                "tritanopia"
+                "tritanopia",
+                "system"
             ]
         );
     }
 
     #[test]
-    fn system_renders_no_attribute_so_the_media_query_decides() {
-        assert_eq!(Theme::get("system").attribute(), None);
-        assert_eq!(Theme::get("dark").attribute(), Some("dark"));
-        assert_eq!(Theme::get("deuteranopia").attribute(), Some("deuteranopia"));
+    fn every_theme_is_written_into_the_page_system_included() {
+        assert_eq!(Theme::get("system").attribute(), "system");
+        assert_eq!(Theme::get("dark").attribute(), "dark");
+        assert_eq!(Theme::get("deuteranopia").attribute(), "deuteranopia");
     }
 
     #[test]
@@ -231,14 +273,15 @@ mod tests {
         assert_eq!(negotiate(Some("sepia"), Some("light")).id, "sepia");
         assert_eq!(negotiate(None, Some("light")).id, "light");
         // No preference is Study 06, written into the page rather than left
-        // to the system.
+        // to the system — whatever the system asks for.
         assert_eq!(negotiate(None, None).id, "dark");
-        assert_eq!(negotiate(None, None).attribute(), Some("dark"));
+        assert_eq!(negotiate(None, None).attribute(), "dark");
         // Nonsense at any level falls through rather than failing.
         assert_eq!(negotiate(Some("chartreuse"), Some("light")).id, "light");
         assert_eq!(negotiate(None, Some("chartreuse")).id, "dark");
-        // Choosing the system is still a choice.
-        assert_eq!(negotiate(None, Some("system")).attribute(), None);
+        // Choosing the system is still a choice, and the only way the
+        // system gets a say.
+        assert_eq!(negotiate(None, Some("system")).attribute(), "system");
     }
 
     #[test]
@@ -255,9 +298,10 @@ mod tests {
         let sepia = Theme::get("sepia");
         let hc = Theme::get("high-contrast");
 
-        // Nobody asked: on.
-        assert!(wash_enabled(sepia, None, None));
-        // The reader turned it off in this browser.
+        // Nobody asked: off (v0.4.3).
+        assert!(!wash_enabled(sepia, None, None));
+        // The reader turned it on in this browser, then off.
+        assert!(wash_enabled(sepia, None, Some(WASH_ON)));
         assert!(!wash_enabled(sepia, None, Some(WASH_OFF)));
         // …and on their account, which outranks the cookie either way round.
         assert!(!wash_enabled(sepia, Some(false), None));
@@ -266,7 +310,7 @@ mod tests {
 
         // High-contrast refuses regardless of what either of them says…
         assert!(!wash_enabled(hc, Some(true), None));
-        assert!(!wash_enabled(hc, None, None));
+        assert!(!wash_enabled(hc, None, Some(WASH_ON)));
         // …but what the reader asked for is remembered underneath it, so the
         // switch still reads correctly and sepia gets it back.
         assert!(reader_wants_wash(Some(true), None));

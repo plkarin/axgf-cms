@@ -56,17 +56,25 @@ prefs-machine = automatica, { $coverage }%
 prefs-machine-complete = completa, non ancora riletta
 prefs-machine-title = Tradotta senza rilettura da una persona di madrelingua. Il lessico genealogico in particolare può essere sbagliato: le parole per un'unione, un padrino o una fonte primaria cambiano secondo la tradizione archivistica di ogni paese. Le correzioni sono benvenute, e CONTRIBUTING.md dice da dove cominciare.
 
-theme-light = Chiaro
-theme-dark = Scuro
+theme-light = Gesso
+theme-dark = Notturno
 theme-system = Come il sistema
-theme-high-contrast = Contrasto elevato
+theme-high-contrast = Incisione
 theme-sepia = Seppia
 theme-deuteranopia = Deuteranopia
 theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
+theme-default-note = Notturno, il tema scuro, è quello predefinito anche se il sistema ne chiede uno chiaro. Scelga «Come il sistema» per lasciar decidere il sistema.
+theme-fleuve-hiver-note = chiaro, freddo
+theme-fleuve-hiver = Fiume d'inverno
+theme-encre-note = scuro, blu notte
+theme-encre = Inchiostro
+theme-crepuscule-note = scuro, caldo
+theme-crepuscule = Crepuscolo
+theme-light-note = chiaro
 theme-colour-blind-note = adatto al daltonismo
-theme-contrast-note = contrasto massimo
-theme-dark-note = predefinito
+theme-contrast-note = alto contrasto
+theme-dark-note = scuro · predefinito
 theme-river-note = Il fiume resta scuro con qualsiasi tema: i suoi colori sono pensati per uno sfondo scuro.
 
 ## Albero

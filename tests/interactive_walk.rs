@@ -947,6 +947,19 @@ fn profile_group_controls(html: &str, over: &mut Vec<String>, at: &str) -> usize
     n.min(most)
 }
 
+/// The masthead's cap: ten since v0.4.3 — four sections, the search, the
+/// language, the theme and the density, the settings, and the account. The
+/// three in the middle are the accessibility controls, and a menu hid them
+/// from the reader who most needs them (docs/adr/0002 §9).
+const MASTHEAD: usize = 10;
+
+/// What a page may add of its own, beside the masthead: unchanged by v0.4.3,
+/// which raised the masthead's cap and nobody else's. These are the old
+/// budgets (12 for a read-only screen, 20 for an edit screen) with the old
+/// masthead's seven taken out.
+const OWN_READ: usize = 5;
+const OWN_EDIT: usize = 13;
+
 #[tokio::test]
 async fn every_screen_keeps_its_chrome_budget() {
     let (app, _s) = app();
@@ -955,7 +968,7 @@ async fn every_screen_keeps_its_chrome_budget() {
     let mut out_counts: BTreeMap<String, usize> = BTreeMap::new();
     println!(
         "{:<44} {:>6} {:>9} {:>6}",
-        "screen", "chrome", "masthead", "budget"
+        "screen", "own", "masthead", "budget"
     );
     for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
         for page in pages(c.is_some(), None) {
@@ -973,41 +986,48 @@ async fn every_screen_keeps_its_chrome_budget() {
             if !tabs.is_empty() {
                 let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
                 for (key, n) in &tabs {
-                    let budget = 20 + if key == "profil" { groups } else { 0 };
+                    let own = n - ch.masthead;
+                    let budget = OWN_EDIT + if key == "profil" { groups } else { 0 };
                     println!(
                         "{:<44} {:>6} {:>9} {:>6}",
                         format!("{who} {page}#{key}"),
-                        n,
+                        own,
                         ch.masthead,
                         budget
                     );
-                    if *n > budget {
+                    if own > budget {
                         over.push(format!(
-                            "{who} {page}#{key}: {n} chrome controls, budget {budget}"
+                            "{who} {page}#{key}: {own} chrome controls of its own, budget {budget}"
                         ));
                     }
+                }
+                if ch.masthead > MASTHEAD {
+                    over.push(format!(
+                        "{who} {page}: masthead {} controls, budget {MASTHEAD}",
+                        ch.masthead
+                    ));
                 }
                 continue;
             }
             let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
-            let budget = if read_only(&page) { 12 } else { 20 } + groups;
+            let own = ch.total - ch.masthead;
+            let budget = if read_only(&page) { OWN_READ } else { OWN_EDIT } + groups;
             println!(
                 "{:<44} {:>6} {:>9} {:>6}",
                 format!("{who} {page}"),
-                ch.total,
+                own,
                 ch.masthead,
                 budget
             );
-            if ch.total > budget {
+            if own > budget {
                 over.push(format!(
-                    "{who} {page}: {} chrome controls, budget {budget}:\n    {}",
-                    ch.total,
+                    "{who} {page}: {own} chrome controls of its own, budget {budget}:\n    {}",
                     ch.counted.join("\n    ")
                 ));
             }
-            if ch.masthead > 7 {
+            if ch.masthead > MASTHEAD {
                 over.push(format!(
-                    "{who} {page}: masthead {} controls, budget 7",
+                    "{who} {page}: masthead {} controls, budget {MASTHEAD}",
                     ch.masthead
                 ));
             }

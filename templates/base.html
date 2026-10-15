@@ -29,8 +29,7 @@
         proper noun, so every catalogue carries the same value and a test says
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
-    {#- Not a link: "Rivière" beside it goes to the same place, and a
-        masthead holds seven controls at most (the minimalism pass). -#}
+    {#- Not a link: "Rivière" beside it goes to the same place. -#}
     <span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
@@ -38,6 +37,12 @@
       <a href="/about" {% if nav == "about" %}aria-current="page"{% endif %}>{{ t("nav-home") }}</a>
       <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>
     </nav>
+    {#- Then the reader's own controls, each on its own (v0.4.3): the
+        person search, the language, the theme and the density. The last
+        three are the accessibility controls, and a menu hid them from the
+        reader who most needs them (docs/adr/0002 §9). Ten controls at most:
+        four sections, these four, the settings and the account. -#}
+    <div class="masthead-tools">
     {#- People by name, through the reader's lens. A plain GET form, so it
         works with scripting off; ui.js adds suggestions, where Enter travels
         the river to the person and Shift+Enter opens their record. -#}
@@ -50,19 +55,15 @@
       <span id="masthead-q-hint" class="sr-only">{{ t("search-hint") }}</span>
       <ul id="masthead-q-list" class="search-suggest" role="listbox" hidden></ul>
     </form>
+    <div class="reading-prefs">
+      {{ prefs.language(t, locales, current_locale, back) }}
+      {{ prefs.theme(t, themes, theme_choice, back) }}
+      {{ prefs.density(t, styles, style, back) }}
+      <a class="prefs-more" href="{{ settings_url }}" title="{{ t('display-settings') }}" aria-label="{{ t('display-settings') }}">⋯</a>
+    </div>
+    </div>
     <span class="spacer"></span>
-    {#- Seven controls, signed in or not: four sections, the search, the
-        display menu, and either "sign in" or the account menu. What used to
-        sit here beside them — the language select, quality, administration,
-        settings — opens from one of the two menus. -#}
     <nav class="chrome-nav">
-      <details class="display-menu">
-        <summary aria-label="{{ t('display-menu-label') }}">{{ current_locale.code }}</summary>
-        <div class="menu-panel">
-          {{ prefs.language(t, locales, current_locale, back) }}
-          <a href="{{ settings_url }}">{{ t("display-settings") }}</a>
-        </div>
-      </details>
       {% if signed_in %}
         <details class="account">
           <summary><span class="initials" aria-hidden="true">{{ viewer_initials }}</span><span class="account-name">{{ viewer_name }}</span></summary>

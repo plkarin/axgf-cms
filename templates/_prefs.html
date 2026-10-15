@@ -1,13 +1,41 @@
-{# The masthead's language control: a real <select>, showing the language's
-   two-letter code so it fits whatever script the interface is in (B5). It
-   posts to the same place as the settings tab; ui.js submits on change, and
-   the button is there for a reader without scripts, hidden when ui.js runs. #}
+{# The masthead's three reading controls (v0.4.3): language, theme and
+   density, each a real <select> showing a short label, so it fits whatever
+   script the interface is in and the three stay one row at 390px. They are
+   separate controls because they are the accessibility controls: the reader
+   who most needs high contrast or a larger density must not have to find
+   them inside a menu first (docs/adr/0002 §9). Each posts to its own
+   endpoint; ui.js submits on change, and the button is there for a reader
+   without scripts, hidden when ui.js runs. #}
 {% macro language(t, locales, current_locale, back) %}
 <form class="lang-form" method="post" action="/prefs/language">
   <input type="hidden" name="back" value="{{ back }}">
   <select name="lang" aria-label="{{ t('prefs-language') }}" title="{{ current_locale.native_name }}" data-autosubmit>
     {% for l in locales %}
     <option value="{{ l.tag }}" lang="{{ l.tag }}" {{ "selected" if l.tag == current_locale.tag }}>{{ l.code }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+</form>
+{% endmacro %}
+
+{% macro theme(t, themes, current, back) %}
+<form class="lang-form pref-form" method="post" action="/prefs/theme">
+  <input type="hidden" name="back" value="{{ back }}">
+  <select name="theme" aria-label="{{ t('prefs-theme') }}" data-autosubmit>
+    {% for th in themes %}
+    <option value="{{ th.id }}" {{ "selected" if th.id == current }}{% if th.note_key %} title="{{ t(th.note_key) }}"{% endif %}>{{ t(th.key) }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+</form>
+{% endmacro %}
+
+{% macro density(t, styles, current, back) %}
+<form class="lang-form pref-form" method="post" action="/prefs/style">
+  <input type="hidden" name="back" value="{{ back }}">
+  <select name="style" aria-label="{{ t('prefs-style') }}" data-autosubmit>
+    {% for st in styles %}
+    <option value="{{ st.id }}" {{ "selected" if st.id == current }} title="{{ t(st.note_key) }}">{{ t(st.key) }}</option>
     {% endfor %}
   </select>
   <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>

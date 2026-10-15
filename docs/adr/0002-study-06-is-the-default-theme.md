@@ -199,3 +199,81 @@ Study 06's palette, but they change what B4 (the record tabs) built.
   groups add one control each to its budget, and the walk fails a group with
   more than one control at rest.
   `tests/interactive_walk.rs` fails on any excess.
+
+## 8. Dark wins unless the reader chose otherwise (v0.4.3)
+
+**How a theme is chosen**, in order:
+
+1. the theme stored on the reader's account;
+2. the `axgf_theme` cookie;
+3. `theme::DEFAULT`, which is `dark`, written into the page.
+
+`prefers-color-scheme` is not in that list. Since v0.4.0 the server has
+written `data-theme="dark"` for a reader who chose nothing, so the media
+query already reached only "match my system". v0.4.3 makes that explicit and
+closes the last gap:
+
+- "Match my system" renders `data-theme="system"`, and the one
+  `prefers-color-scheme` query in `tokens.css` applies to that selector and
+  to nothing else.
+- A page with no `data-theme` at all now falls back to Study 06 in the
+  stylesheet as well. It used to fall back to the light palette on `:root`.
+
+So a reader who has not chosen gets the dark ground even when their system
+asks for light. Their system decides only if they ask it to, by choosing
+"match my system". The theme picker's help line says so in every language.
+`prefers-reduced-motion` keeps its power: it is a medical setting, and no
+choice made here overrides it.
+
+**Themes are named, not described.** Nocturne (dark, the default), Craie
+(light) and Gravure (high contrast) keep their function as a subtitle.
+Crépuscule (dark, warm), Encre (dark, midnight blue) and Fleuve d'hiver
+(light, cool) are new. There are three new ones and no more, because each
+theme multiplies the screenshot and contrast matrix. The colour-blind themes
+keep the names of what they are for: there, the name is the function.
+
+**Every theme is measured against more grounds than before.**
+`every_theme_reads` now also measures text, control edges, the focus ring,
+danger and warning on each of the three wash stops. For a theme that carries
+a texture, it measures them again with the grain's strongest pixel
+composited in (5% white on a dark ground, 5% black on a light one). All ten
+token blocks pass with no exception. The three new themes were tuned against
+those rules and two more the stylesheet's comments state: tree-card outlines
+at 3:1, and crossing hues at 3:1 when drawn at 75% opacity.
+
+**A theme may carry a texture, on the page only.** `--wash-texture` is one
+more layer of the root element's background, under the same switch as the
+wash. That switch is now **off until the reader turns it on**; it used to
+default on. The texture is an inline SVG grain of a few hundred bytes: drawn,
+never fetched, so it cannot block first paint. Crépuscule, Encre and Fleuve
+d'hiver carry one; no other theme does.
+
+It never goes on a button, a field, a card or a frame. Study 06 builds every
+control from the river's own ground: surfaces a shade lighter than the page,
+never a colour, and hairline edges. A textured control would undo that.
+
+## 9. The masthead holds ten controls: the accessibility controls are not in a menu (v0.4.3)
+
+**Decision.** The masthead shows the person search, then three native
+selects (language, theme and density), each showing a short label, then a
+link to the rest of the settings. The account menu stays on the right. The
+theme used to be reachable only through the language button's menu.
+
+The masthead's chrome cap rises from 7 to 10:
+
+- the four sections;
+- the search;
+- language, theme and density;
+- the settings;
+- the account, or signing in.
+
+**Why.** Theme, density and language are the accessibility controls.
+Burying them in a menu hides them from the person who most needs them: the
+one who must switch to a larger density or to high contrast before they can
+read anything at all. A control that helps someone read is not clutter.
+
+**What did not move.** Every page's own budget is what it was: 5 controls of
+its own on a read-only screen and 13 on an edit screen or editor tab. Those
+are the old totals of 12 and 20 with the old masthead's 7 taken out.
+`tests/interactive_walk.rs` counts the masthead and the page separately, and
+fails either one over its cap.

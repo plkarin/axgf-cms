@@ -62,17 +62,25 @@ prefs-machine = машинный, { $coverage }%
 prefs-machine-complete = полный, ещё не вычитан
 prefs-machine-title = Переведено без вычитки носителем языка. Особенно ненадёжна генеалогическая лексика — слова для союза, восприемника или первичного источника различаются по традиции делопроизводства каждой страны. Исправления приветствуются, а CONTRIBUTING.md говорит, с чего начать.
 
-theme-light = Светлая
-theme-dark = Тёмная
+theme-light = Мел
+theme-dark = Ноктюрн
 theme-system = Как в системе
-theme-high-contrast = Высокий контраст
+theme-high-contrast = Гравюра
 theme-sepia = Сепия
 theme-deuteranopia = Дейтеранопия
 theme-protanopia = Протанопия
 theme-tritanopia = Тританопия
+theme-default-note = Ноктюрн, тёмная тема, используется по умолчанию, даже если система просит светлую. Выберите «Как в системе», чтобы решала система.
+theme-fleuve-hiver-note = светлая, холодная
+theme-fleuve-hiver = Зимняя река
+theme-encre-note = тёмная, тёмно-синяя
+theme-encre = Чернила
+theme-crepuscule-note = тёмная, тёплая
+theme-crepuscule = Сумерки
+theme-light-note = светлая
 theme-colour-blind-note = безопасно при дальтонизме
-theme-contrast-note = максимальный контраст
-theme-dark-note = по умолчанию
+theme-contrast-note = высокий контраст
+theme-dark-note = тёмная · по умолчанию
 theme-river-note = Река остаётся тёмной в любой теме: её цвета подобраны для тёмного фона.
 
 ## Древо

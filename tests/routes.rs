@@ -404,8 +404,8 @@ async fn the_page_says_whether_the_wash_is_drawn() {
 
     let plain = body_string(get(&app, "/tree").await).await;
     assert!(
-        plain.contains(r#"data-wash="on""#),
-        "nobody has said otherwise, so it is drawn"
+        plain.contains(r#"data-wash="off""#),
+        "nobody has asked for it, so it is not drawn (v0.4.3)"
     );
     // The route reaches the stylesheet too, which is what lets the wash vary
     // by page without a stylesheet per page.
@@ -415,11 +415,16 @@ async fn the_page_says_whether_the_wash_is_drawn() {
     );
 
     // A theme that refuses it overrides the default.
-    let hc = body_string(get_with_cookie(&app, "/tree", "axgf_theme=high-contrast").await).await;
+    let hc =
+        body_string(get_with_cookie(&app, "/tree", "axgf_theme=high-contrast; axgf_wash=on").await)
+            .await;
     assert!(
         hc.contains(r#"data-wash="off""#),
         "high-contrast draws none of it, whatever anyone asked for"
     );
+    // A reader who asks for it gets it.
+    let on = body_string(get_with_cookie(&app, "/tree", "axgf_wash=on").await).await;
+    assert!(on.contains(r#"data-wash="on""#), "asked for, drawn");
 
     // …and so does the reader, under a theme that would have drawn it.
     let off = body_string(get_with_cookie(&app, "/tree", "axgf_wash=off").await).await;
@@ -529,7 +534,7 @@ async fn the_settings_are_one_form_of_five_choices() {
     // Every theme and every language is still offered.
     assert_eq!(
         main.matches("<option").count(),
-        8 + 11 + 3 + 2,
+        11 + 11 + 3 + 2,
         "themes, languages, densities, motion"
     );
 

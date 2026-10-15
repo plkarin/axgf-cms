@@ -138,6 +138,13 @@
   --wash-1: #f0f4ec;
   --wash-2: #eff3ef;
   --wash-3: #f7f3ea;
+
+  /* A texture a theme may carry over its wash, under the same switch (off
+     until a reader turns it on). An image, not a colour: an inline SVG grain,
+     drawn and never fetched, a few hundred bytes. On the page's background
+     only — never on a control, a field, a card or a frame, which Study 06
+     builds from the plain ground. Most themes carry none. */
+  --wash-texture: none;
 }
 
 /* The river's own palette (`/`), declared with the others but not on :root,
@@ -204,10 +211,14 @@
 
 
 /* --- dark ---------------------------------------------------------------- */
-/* Written once and applied twice: to the system preference, and to the
-   explicit choice. A reader who picked dark gets it whatever their OS says. */
+/* Written twice: for the explicit choice and for anyone who has chosen
+   nothing — which the server writes as `dark`, and which a page with no
+   data-theme at all falls back to here — and for "match my system" on a dark
+   system. `prefers-color-scheme` applies to `[data-theme="system"]` and to
+   nothing else (v0.4.3): a reader who has not chosen gets the dark ground
+   even when their system asks for light (docs/adr/0002 §8). */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
+  [data-theme="system"] {
     color-scheme: dark;
     --surface-page: #0b110e;
     --surface-raised: #111a16;
@@ -260,7 +271,8 @@
   }
 }
 
-[data-theme="dark"] {
+[data-theme="dark"],
+:root:not([data-theme]) {
   color-scheme: dark;
   --surface-page: #0b110e;
   --surface-raised: #111a16;
@@ -421,6 +433,165 @@
   --wash-1: #eae5cf;
   --wash-2: #f0e6d0;
   --wash-3: #e9e7d2;
+}
+
+/* --- crépuscule ------------------------------------------------------------- */
+/* Dusk: a plum-black ground, warm ink, a peach-amber accent. Every pair
+   measured, the darkest wash stop and the grain at its strongest included:
+   the tightest is --border-strong on --surface-raised at 3.40:1. */
+[data-theme="crepuscule"] {
+  color-scheme: dark;
+  --surface-page: #15101b;
+  --surface-raised: #1c1623;
+  --border-hairline: #2e2538;
+  --border-strong: #76668a;
+  --text-primary: #f0e7dc;
+  --text-secondary: #bdb0bc;
+  --text-tertiary: #968a9d;
+  --surface-sunken: #120e17;
+  --surface-hover: #251d2d;
+  --focus-ring: #e8aa70;
+  --accent: #e8aa70;
+  --accent-soft: #30251f;
+  --on-accent: #15101b;
+
+  --conf-certain: #7cc4a0;
+  --conf-high: #a3c49a;
+  --conf-medium: #e0b070;
+  --conf-low: #e8957c;
+  --conf-track: #3b3242;
+  --danger: #ee8f7c;
+  --warning: #e0b070;
+
+  --sex-a: #272a3a;
+  --sex-a-line: #7a80a0;
+  --sex-b: #352a20;
+  --sex-b-line: #95805f;
+  --sex-u: #2c2931;
+  --sex-u-line: #837d89;
+
+  --hue-1: #56b4e9;
+  --hue-2: #e69f00;
+  --hue-3: #33d6a6;
+  --hue-4: #f0a3c8;
+  --hue-5: #b49ae0;
+  --hue-6: #d6b656;
+  --hue-7: #6fc0d0;
+  --hue-8: #d78a8a;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.5;
+
+  --wash-1: #1a1320;
+  --wash-2: #18121d;
+  --wash-3: #1b1419;
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* --- encre ------------------------------------------------------------------ */
+/* Ink: a midnight-blue ground and a pale ink-blue accent. The tightest
+   pair is a card outline on its fill, 3.47:1. */
+[data-theme="encre"] {
+  color-scheme: dark;
+  --surface-page: #0a0f1e;
+  --surface-raised: #10172b;
+  --border-hairline: #212b47;
+  --border-strong: #5c6e98;
+  --text-primary: #e9edf5;
+  --text-secondary: #aab5ca;
+  --text-tertiary: #8592ab;
+  --surface-sunken: #0c1224;
+  --surface-hover: #161f3a;
+  --focus-ring: #a7c6f2;
+  --accent: #a7c6f2;
+  --accent-soft: #1a2440;
+  --on-accent: #0a0f1e;
+
+  --conf-certain: #6dc39a;
+  --conf-high: #8fbf97;
+  --conf-medium: #d9ab6b;
+  --conf-low: #e0937a;
+  --conf-track: #2a3350;
+  --danger: #ef8c7c;
+  --warning: #ddb06e;
+
+  --sex-a: #1d2840;
+  --sex-a-line: #6680a8;
+  --sex-b: #2c2620;
+  --sex-b-line: #8a775c;
+  --sex-u: #22252e;
+  --sex-u-line: #747b8c;
+
+  --hue-1: #56b4e9;
+  --hue-2: #e69f00;
+  --hue-3: #33d6a6;
+  --hue-4: #f0a3c8;
+  --hue-5: #b49ae0;
+  --hue-6: #d6b656;
+  --hue-7: #6fc0d0;
+  --hue-8: #d78a8a;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.5;
+
+  --wash-1: #0d1324;
+  --wash-2: #0c1121;
+  --wash-3: #0f1426;
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* --- fleuve d'hiver --------------------------------------------------------- */
+/* The winter river: the one cool light theme. Its ground is a shade darker
+   than Craie's, so its card outlines and crossing hues are darkened to keep
+   3:1; --border-strong clears 3:1 on the darkest wash stop under the grain
+   at its strongest pixel (3.30:1), and 3.68 without it. */
+[data-theme="fleuve-hiver"] {
+  color-scheme: light;
+  --surface-page: #f3f6f8;
+  --surface-raised: #ffffff;
+  --border-hairline: #d3dce3;
+  --border-strong: #6f7d86;
+  --text-primary: #152029;
+  --text-secondary: #3f4e5a;
+  --text-tertiary: #53636f;
+  --surface-sunken: #ecf1f4;
+  --surface-hover: #e8eef2;
+  --focus-ring: #1d5a85;
+  --accent: #1d5a85;
+  --accent-soft: #e1edf6;
+  --on-accent: #ffffff;
+
+  --conf-certain: #1f6b4a;
+  --conf-high: #3d6c52;
+  --conf-medium: #83601b;
+  --conf-low: #9a4a2a;
+  --conf-track: #dce4ea;
+  --danger: #9a3a2a;
+  --warning: #7e5c18;
+
+  --sex-a: #e4edf2;
+  --sex-a-line: #6a808c;
+  --sex-b: #f0ebe4;
+  --sex-b-line: #877560;
+  --sex-u: #eaebec;
+  --sex-u-line: #777c81;
+
+  --hue-1: #0072b2;
+  --hue-2: #b04e00;
+  --hue-3: #00785a;
+  --hue-4: #ac4280;
+  --hue-5: #7c4dbe;
+  --hue-6: #84600a;
+  --hue-7: #1b7182;
+  --hue-8: #8c3b3b;
+
+  --shadow-rgb: 23 34 43;
+  --shadow-a: 0.08;
+
+  --wash-1: #e9f0f4;
+  --wash-2: #edf2f5;
+  --wash-3: #f0f3f1;
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 /* --- colour-blind themes ------------------------------------------------- */

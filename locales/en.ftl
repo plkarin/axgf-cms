@@ -47,17 +47,25 @@ prefs-machine = machine, { $coverage }%
 prefs-machine-complete = complete, not yet reviewed
 prefs-machine-title = Translated without review by a native speaker. Genealogical vocabulary especially may be wrong — the words for a union, a godparent or a primary source differ by national record-keeping tradition. Corrections are welcome, and CONTRIBUTING.md says where to start.
 
-theme-light = Light
-theme-dark = Dark
+theme-light = Chalk
+theme-dark = Nocturne
 theme-system = Match my system
-theme-high-contrast = High contrast
+theme-high-contrast = Engraving
 theme-sepia = Sepia
 theme-deuteranopia = Deuteranopia
 theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
+theme-default-note = Nocturne, the dark theme, is the default whatever your system asks for. Choose “Match my system” to let your system decide.
+theme-fleuve-hiver-note = light, cool
+theme-fleuve-hiver = Winter River
+theme-encre-note = dark, midnight blue
+theme-encre = Ink
+theme-crepuscule-note = dark, warm
+theme-crepuscule = Dusk
+theme-light-note = light
 theme-colour-blind-note = colour-blind safe
-theme-contrast-note = maximum contrast
-theme-dark-note = the default
+theme-contrast-note = high contrast
+theme-dark-note = dark · the default
 theme-river-note = The river stays dark under every theme: its colours are made for a dark ground.
 
 ## Tree

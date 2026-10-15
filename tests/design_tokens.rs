@@ -315,12 +315,15 @@ const STUDY_06: &[(&str, &str)] = &[
 
 #[test]
 fn the_dark_theme_is_study_06_and_so_is_the_river() {
-    // Study 06 is the `dark` theme, written twice (the explicit choice, and
-    // "match my system" on a dark OS), and the river carries the same values
-    // under every theme through its own palette. Three copies of one palette:
-    // this is what keeps them one.
+    // Study 06 is the `dark` theme, written twice (the explicit choice and
+    // the page with no choice, then "match my system" on a dark OS), and the
+    // river carries the same values under every theme through its own
+    // palette. Three copies of one palette: this is what keeps them one.
     let river = block(".river");
-    for sel in ["[data-theme=\"dark\"]", ":root:not([data-theme])"] {
+    for sel in [
+        "[data-theme=\"dark\"], :root:not([data-theme])",
+        "[data-theme=\"system\"]",
+    ] {
         let b = block(sel);
         for (name, value) in STUDY_06 {
             assert_eq!(
@@ -359,6 +362,22 @@ fn luminance(hex: &str) -> f64 {
     0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4)
 }
 
+/// The grain's strongest pixel: the alpha in its SVG's colour matrix.
+const GRAIN: f64 = 0.05;
+
+/// `fg` laid over `bg` at `alpha`, as a hex colour.
+fn blend(fg: &str, bg: &str, alpha: f64) -> String {
+    let ch = |h: &str, i: usize| {
+        u8::from_str_radix(&h.trim_start_matches('#')[i..i + 2], 16).expect("hex") as f64
+    };
+    let mut out = String::from("#");
+    for i in [0, 2, 4] {
+        let v = alpha * ch(fg, i) + (1.0 - alpha) * ch(bg, i);
+        out.push_str(&format!("{:02x}", v.round() as u8));
+    }
+    out
+}
+
 fn contrast(a: &str, b: &str) -> f64 {
     let (a, b) = (luminance(a), luminance(b));
     (a.max(b) + 0.05) / (a.min(b) + 0.05)
@@ -390,6 +409,17 @@ fn every_theme_reads() {
         rules.push(("--danger", bg, 4.5));
         rules.push(("--warning", bg, 4.5));
     }
+    // The page wash's stops are grounds too: text and control edges sit on
+    // the page wherever no card does (v0.4.3).
+    for bg in ["--wash-1", "--wash-2", "--wash-3"] {
+        for fg in ["--text-primary", "--text-secondary", "--text-tertiary"] {
+            rules.push((fg, bg, 4.5));
+        }
+        rules.push(("--border-strong", bg, 3.0));
+        rules.push(("--focus-ring", bg, 3.0));
+        rules.push(("--danger", bg, 4.5));
+        rules.push(("--warning", bg, 4.5));
+    }
     rules.push(("--on-accent", "--accent", 4.5));
 
     let mut short = Vec::new();
@@ -407,10 +437,37 @@ fn every_theme_reads() {
                 short.push(format!("{sel}: {fg} on {bg} is {r:.2}:1, under {min}:1"));
             }
         }
+        // A theme that carries a texture is measured under it too: its
+        // grain is at most 5% black on a light ground and 5% white on a dark
+        // one, and every ground it can darken or lighten is taken at that.
+        if v.get("--wash-texture").is_some_and(|t| t.contains("url(")) {
+            let dark = luminance(&v["--surface-page"]) < 0.2;
+            let veil = if dark { "#ffffff" } else { "#000000" };
+            for ground in ["--surface-page", "--wash-1", "--wash-2", "--wash-3"] {
+                let g = blend(veil, &v[ground], GRAIN);
+                for (fg, min) in [
+                    ("--text-primary", 4.5),
+                    ("--text-secondary", 4.5),
+                    ("--text-tertiary", 4.5),
+                    ("--border-strong", 3.0),
+                    ("--focus-ring", 3.0),
+                    ("--danger", 4.5),
+                    ("--warning", 4.5),
+                ] {
+                    let r = contrast(&v[fg], &g);
+                    if r < min {
+                        short.push(format!(
+                            "{sel}: {fg} on {ground} under the grain is {r:.2}:1, under {min}:1"
+                        ));
+                    }
+                }
+            }
+        }
     }
     assert_eq!(
-        themes, 7,
-        "light, system-dark, dark, high contrast, sepia, the red-green pair, tritanopia"
+        themes, 10,
+        "light, system-dark, dark, high contrast, sepia, crépuscule, encre, \
+         fleuve d'hiver, the red-green pair, tritanopia"
     );
     assert!(short.is_empty(), "{}", short.join("\n"));
 }

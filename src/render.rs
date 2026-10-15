@@ -280,7 +280,7 @@ impl Chrome {
             viewer_name,
             lang: locale.tag,
             dir: locale.dir.as_str(),
-            theme: theme.attribute().unwrap_or(""),
+            theme: theme.attribute(),
             theme_choice: theme.id,
             wash: crate::theme::wash_enabled(theme, viewer.backgrounds(), wash_cookie.as_deref()),
             wash_choice,

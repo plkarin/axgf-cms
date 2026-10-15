@@ -153,13 +153,17 @@
    page behind them and the margins beside them. */
 html {
   background-color: var(--surface-page);
-  background-repeat: no-repeat;
+  /* Three gradients, then the theme's texture, tiled (v0.4.3): none on most
+     themes, an inline SVG grain on a few. Same switch, same root
+     background, never on a control. */
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
   /* Home, and anything without a route of its own. */
   background-image:
     radial-gradient(68% 52% at 6% calc(-8% + var(--drift)), var(--wash-1), transparent 72%),
     radial-gradient(58% 46% at 98% calc(6% - var(--drift) * 1.6), var(--wash-2), transparent 70%),
     radial-gradient(90% 55% at calc(42% + var(--drift) * 0.7) calc(108% + var(--drift) * 1.2),
-      var(--wash-3), transparent 74%);
+      var(--wash-3), transparent 74%),
+    var(--wash-texture);
   /* Fixed to the viewport rather than the document. The tree page can be six
      thousand pixels tall, and a wash that scrolled with it would be a band of
      colour at the top of a mostly flat page. iOS Safari ignores this and
@@ -177,21 +181,24 @@ html {
     radial-gradient(72% 55% at 96% calc(-6% + var(--drift)), var(--wash-2), transparent 72%),
     radial-gradient(54% 44% at 4% calc(12% - var(--drift) * 1.6), var(--wash-3), transparent 70%),
     radial-gradient(86% 52% at calc(58% - var(--drift) * 0.7) calc(106% + var(--drift) * 1.2),
-      var(--wash-1), transparent 74%);
+      var(--wash-1), transparent 74%),
+    var(--wash-texture);
 }
 [data-route="convert"] {
   background-image:
     radial-gradient(64% 50% at 50% calc(-10% + var(--drift)), var(--wash-3), transparent 72%),
     radial-gradient(58% 48% at 2% calc(62% - var(--drift) * 1.6), var(--wash-1), transparent 70%),
     radial-gradient(70% 50% at calc(100% - var(--drift) * 0.7) calc(92% + var(--drift) * 1.2),
-      var(--wash-2), transparent 72%);
+      var(--wash-2), transparent 72%),
+    var(--wash-texture);
 }
 [data-route="admin"] {
   background-image:
     radial-gradient(60% 48% at 2% calc(-4% + var(--drift)), var(--wash-3), transparent 70%),
     radial-gradient(66% 52% at 100% calc(44% - var(--drift) * 1.6), var(--wash-1), transparent 72%),
     radial-gradient(80% 50% at calc(40% + var(--drift) * 0.7) calc(104% + var(--drift) * 1.2),
-      var(--wash-2), transparent 72%);
+      var(--wash-2), transparent 72%),
+    var(--wash-texture);
 }
 /* `[data-wash="off"]` has to win over the per-route rules above, so it is
    repeated after them rather than relying on source order alone. */
@@ -446,9 +453,52 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   border-radius: 2px;
 }
 
+/* The reader's controls (v0.4.3): the search, then language, theme and
+   density as three native selects in one row, then the way to the rest of
+   the settings. One row at 390px: the search takes a row of its own there
+   and the three selects keep theirs, scrolling never and wrapping never. */
+.masthead-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+.reading-prefs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+}
+.reading-prefs .lang-form select { max-inline-size: 9.5rem; text-overflow: ellipsis; }
+/* The theme and the density are words, not codes: the interface face, not
+   the mono the language's two letters are set in, so a name like "Fleuve
+   d'hiver" keeps the row at 390px in every language. */
+.reading-prefs .pref-form select {
+  font-family: inherit;
+  letter-spacing: 0;
+  padding-inline: 0.4rem 0.15rem;
+}
+.prefs-more {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-family: var(--mono);
+}
+.prefs-more:hover { color: var(--text-primary); }
+@media (max-width: 640px) {
+  .masthead-tools { flex: 1 1 100%; }
+  .masthead-tools .masthead-search { flex: 1 1 100%; }
+}
+
 /* Signed in: an initials chip and the name, opening onto a short menu. */
-.account, .display-menu { position: relative; }
-.account > summary, .display-menu > summary {
+.account { position: relative; }
+.account > summary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -458,19 +508,9 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   font-size: var(--type-minor);
   padding-block: 0.2rem;
 }
-.account > summary::-webkit-details-marker,
-.display-menu > summary::-webkit-details-marker { display: none; }
-.account > summary::after,
-.display-menu > summary::after { content: "▾"; font-size: 0.8em; color: var(--text-tertiary); }
-.account > summary:hover, .display-menu > summary:hover { color: var(--text-primary); }
-/* The display menu's summary is the language's two-letter code (B5). */
-.display-menu > summary {
-  font-family: var(--mono);
-  letter-spacing: 0.04em;
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 2px;
-}
+.account > summary::-webkit-details-marker { display: none; }
+.account > summary::after { content: "▾"; font-size: 0.8em; color: var(--text-tertiary); }
+.account > summary:hover { color: var(--text-primary); }
 .initials {
   display: inline-grid;
   place-items: center;

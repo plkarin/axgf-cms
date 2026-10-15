@@ -58,17 +58,25 @@ prefs-machine = maschinell, { $coverage } %
 prefs-machine-complete = vollständig, noch ungeprüft
 prefs-machine-title = Ohne Prüfung durch eine Person mit dieser Muttersprache übersetzt. Besonders das genealogische Vokabular kann falsch sein — die Wörter für eine Verbindung, einen Paten oder eine Primärquelle unterscheiden sich je nach Archivtradition des Landes. Korrekturen sind willkommen, und CONTRIBUTING.md sagt, wo man anfängt.
 
-theme-light = Hell
-theme-dark = Dunkel
+theme-light = Kreide
+theme-dark = Nocturne
 theme-system = Wie im System
-theme-high-contrast = Hoher Kontrast
+theme-high-contrast = Kupferstich
 theme-sepia = Sepia
 theme-deuteranopia = Deuteranopie
 theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
+theme-default-note = Nocturne, das dunkle Farbschema, ist der Standard – auch wenn Ihr System ein helles verlangt. Wählen Sie „Wie im System“, um Ihr System entscheiden zu lassen.
+theme-fleuve-hiver-note = hell, kühl
+theme-fleuve-hiver = Winterfluss
+theme-encre-note = dunkel, nachtblau
+theme-encre = Tinte
+theme-crepuscule-note = dunkel, warm
+theme-crepuscule = Dämmerung
+theme-light-note = hell
 theme-colour-blind-note = farbfehlsichtigkeitssicher
-theme-contrast-note = maximaler Kontrast
-theme-dark-note = Standard
+theme-contrast-note = hoher Kontrast
+theme-dark-note = dunkel · Standard
 theme-river-note = Der Fluss bleibt in jedem Thema dunkel: Seine Farben sind für einen dunklen Grund gemacht.
 
 ## Stammbaum

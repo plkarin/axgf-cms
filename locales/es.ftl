@@ -56,17 +56,25 @@ prefs-machine = automática, { $coverage } %
 prefs-machine-complete = completa, aún sin revisar
 prefs-machine-title = Traducida sin revisión por una persona de lengua materna. El vocabulario genealógico en particular puede estar equivocado: las palabras para una unión, un padrino o una fuente primaria cambian según la tradición archivística de cada país. Se agradecen las correcciones, y CONTRIBUTING.md dice por dónde empezar.
 
-theme-light = Claro
-theme-dark = Oscuro
+theme-light = Tiza
+theme-dark = Nocturno
 theme-system = Como el sistema
-theme-high-contrast = Contraste alto
+theme-high-contrast = Grabado
 theme-sepia = Sepia
 theme-deuteranopia = Deuteranopía
 theme-protanopia = Protanopía
 theme-tritanopia = Tritanopía
+theme-default-note = Nocturno, el tema oscuro, es el predeterminado aunque su sistema pida uno claro. Elija «Como el sistema» para que decida su sistema.
+theme-fleuve-hiver-note = claro, frío
+theme-fleuve-hiver = Río de invierno
+theme-encre-note = oscuro, azul noche
+theme-encre = Tinta
+theme-crepuscule-note = oscuro, cálido
+theme-crepuscule = Crepúsculo
+theme-light-note = claro
 theme-colour-blind-note = apto para daltonismo
-theme-contrast-note = contraste máximo
-theme-dark-note = predeterminado
+theme-contrast-note = alto contraste
+theme-dark-note = oscuro · predeterminado
 theme-river-note = El río sigue oscuro con cualquier tema: sus colores están hechos para un fondo oscuro.
 
 ## Árbol

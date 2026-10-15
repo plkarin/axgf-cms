@@ -56,17 +56,25 @@ prefs-machine = 机器翻译，{ $coverage }%
 prefs-machine-complete = 已译全，尚未校订
 prefs-machine-title = 未经母语者校订的翻译。家谱学词汇尤其可能有误：表示婚姻关系、教父母或原始史料的词，各国记录传统各不相同。欢迎指正，CONTRIBUTING.md 说明了从何入手。
 
-theme-light = 浅色
-theme-dark = 深色
+theme-light = 粉笔
+theme-dark = 夜曲
 theme-system = 跟随系统
-theme-high-contrast = 高对比度
+theme-high-contrast = 版画
 theme-sepia = 棕褐
 theme-deuteranopia = 绿色盲
 theme-protanopia = 红色盲
 theme-tritanopia = 蓝色盲
+theme-default-note = 深色主题“夜曲”为默认主题，即使系统要求浅色也是如此。选择“跟随系统”即可交由系统决定。
+theme-fleuve-hiver-note = 浅色，冷调
+theme-fleuve-hiver = 冬河
+theme-encre-note = 深色，午夜蓝
+theme-encre = 墨
+theme-crepuscule-note = 深色，暖调
+theme-crepuscule = 黄昏
+theme-light-note = 浅色
 theme-colour-blind-note = 色觉友好
-theme-contrast-note = 最高对比度
-theme-dark-note = 默认
+theme-contrast-note = 高对比度
+theme-dark-note = 深色 · 默认
 theme-river-note = 无论选择哪种主题，河流都保持深色：它的颜色是为深色背景设计的。
 
 ## 家谱

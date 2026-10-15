@@ -63,10 +63,15 @@ fn root_vars(css: &str) -> BTreeSet<String> {
         .collect()
 }
 
-/// Every theme's own selector. `system` has no block: it is the absence of a
-/// `data-theme` attribute, which is what lets `prefers-color-scheme` decide.
+/// Every theme's own selector. `system` has no block of its own: it is the
+/// light palette of `:root`, and the dark one inside the one
+/// `prefers-color-scheme` query, which applies to `[data-theme="system"]` and
+/// to nothing else (v0.4.3).
 const THEME_SELECTORS: &[&str] = &[
-    "[data-theme=\"dark\"] {",
+    "[data-theme=\"dark\"],",
+    "[data-theme=\"crepuscule\"] {",
+    "[data-theme=\"encre\"] {",
+    "[data-theme=\"fleuve-hiver\"] {",
     "[data-theme=\"high-contrast\"] {",
     "[data-theme=\"sepia\"] {",
     "[data-theme=\"deuteranopia\"],",
@@ -773,4 +778,53 @@ fn every_font_weight_is_one_of_the_four() {
         "these set a weight by hand instead of naming one of the four:\n{}",
         offenders.join("\n")
     );
+}
+
+/// The system has a say only for a reader who asked for it (v0.4.3): every
+/// `prefers-color-scheme` query applies to `[data-theme="system"]` and to
+/// nothing else, and a page with no theme at all falls back to Study 06.
+#[test]
+fn the_system_decides_only_when_the_reader_chose_to_follow_it() {
+    let css = css();
+    let mut found = 0;
+    let mut rest = css.as_str();
+    while let Some(i) = rest.find("@media (prefers-color-scheme") {
+        found += 1;
+        let after = &rest[i..];
+        let open = after.find('{').expect("a block");
+        let inner = after[open + 1..].trim_start();
+        assert!(
+            inner.starts_with("[data-theme=\"system\"]"),
+            "a colour-scheme query applies to something other than the system choice: {}",
+            &after[..open + 60.min(after.len() - open)]
+        );
+        rest = &after[open..];
+    }
+    assert_eq!(found, 1, "one colour-scheme query, for the system choice");
+    assert!(
+        css.contains("[data-theme=\"dark\"],\n:root:not([data-theme]) {"),
+        "a page with no data-theme is dark too"
+    );
+}
+
+/// A texture is the page's, never a control's (v0.4.3; docs/adr/0002 §8).
+#[test]
+fn no_texture_is_drawn_on_a_control() {
+    let css = css();
+    let uses: Vec<&str> = css
+        .match_indices("var(--wash-texture)")
+        .map(|(i, _)| {
+            let rule = css[..i].rfind('}').map_or(0, |j| j + 1);
+            css[rule..i].trim_start()
+        })
+        .collect();
+    assert!(!uses.is_empty(), "the texture is drawn somewhere");
+    for u in uses {
+        let sel = u.split('{').next().unwrap_or("").trim();
+        let sel = sel.rsplit("*/").next().unwrap_or(sel).trim();
+        assert!(
+            sel == "html" || sel.starts_with("[data-route="),
+            "the texture reaches something that is not the page: {sel}"
+        );
+    }
 }

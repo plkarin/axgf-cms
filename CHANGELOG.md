@@ -6,6 +6,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.3] — 2026-10-15
+
+Themes and the masthead. The editor and the river's layout are unchanged.
+Nothing about the AXGF file changes.
+
+### Changed
+
+**Dark wins unless you choose otherwise.** A theme is chosen in this order:
+the theme stored on your account, then the theme cookie, then Nocturne, the
+dark theme. Your system's light or dark preference is no longer part of that
+order. It decides only if you choose "Suivre mon système". A page drawn with
+no theme at all is now dark in the stylesheet too; it used to fall back to
+light. The theme picker's help line says this in every language.
+`prefers-reduced-motion` still overrides everything.
+
+**The masthead has four separate controls.** After the person search come
+three native selects, each showing a short label: language (FR), theme and
+density, then a link to the rest of the settings. The account menu stays on
+the right. The theme no longer hides inside the language button. On a phone
+the three selects stay on one row in all eleven languages.
+
+The masthead may hold ten controls, up from seven. Language, theme and
+density are the accessibility controls, and a menu hid them from the person
+who needs them most. Every page's own budget is unchanged.
+
+**The themes have names.**
+
+- Nocturne (sombre · par défaut), Craie (clair) and Gravure (contraste élevé)
+  keep their function as a subtitle.
+- Three themes are new: Crépuscule (dark, warm), Encre (dark, midnight blue)
+  and Fleuve d'hiver (light, cool).
+- Each new theme defines the full Study 06 token set. It passes the contrast
+  test with no exception, `--border-strong` at 3:1 included.
+- The river keeps its dark palette under every theme.
+- High contrast and the three colour-blind themes are untouched.
+
+**The page wash is now off until you turn it on.** This is the setting "un
+voile de couleur léger derrière la page", and it used to default on. A theme
+may now also carry a texture under that same setting. Crépuscule, Encre and
+Fleuve d'hiver each carry a faint grain. The grain is an inline SVG of a few
+hundred bytes that is never fetched and never delays the page. It is drawn
+on the page background only, never on a control, field, card or frame.
+
+### Tests
+
+- The contrast test now also measures text, control edges, the focus ring,
+  danger and warning against every wash stop. For a theme with a texture it
+  measures them again under the grain's strongest pixel. All ten themes pass
+  with no exception.
+- New tests check that the colour-scheme query applies only to "match my
+  system", and that no texture reaches a control.
+- The chrome walk caps the masthead at ten. It checks each page's own
+  controls against the budgets those pages already had.
+
 ## [0.4.2] — 2026-10-14
 
 The record's editor is now six tabs instead of one long page. Nothing about
@@ -3156,6 +3210,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.4.3]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3
 [0.4.2]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.2
 [0.4.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.1
 [0.4.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.0

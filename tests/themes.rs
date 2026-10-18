@@ -68,6 +68,7 @@ fn root_vars(css: &str) -> BTreeSet<String> {
 /// `prefers-color-scheme` query, which applies to `[data-theme="system"]` and
 /// to nothing else (v0.4.3).
 const THEME_SELECTORS: &[&str] = &[
+    "[data-theme=\"canopee\"] {",
     "[data-theme=\"dark\"],",
     "[data-theme=\"crepuscule\"] {",
     "[data-theme=\"encre\"] {",
@@ -84,10 +85,12 @@ fn every_theme_redefines_every_colour_root_defines() {
     // palette. One forgotten line is then a light-coloured element sitting in
     // a dark page, and it will be found by a reader rather than by us.
     let css = css();
-    // Geometry, typography and timing are the same in every theme by design:
+    // Geometry, typography and timing are the same in every theme by design —
     // a theme changes what the interface looks like, not how fast it moves or
-    // how round its corners are. Everything else is a colour, and a theme that
-    // misses one inherits the light palette's.
+    // how round its corners are — with one exception, written down: Canopée,
+    // the reference theme, carries its own round and tempo (ADR 0004), and
+    // redefines them under its own selector rather than here. Everything else
+    // is a colour, and a theme that misses one inherits the light palette's.
     const NOT_A_COLOUR: &[&str] = &[
         // The presentation scale. A *style* owns these and a theme never
         // touches them; see `src/style.rs` for why the two axes are kept
@@ -135,6 +138,12 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--radius",
         "--radius-sm",
         "--radius-lg",
+        // The round of a button and of a field (v0.5.0): Study 06's 2px on
+        // `:root`, Canopée's own under its selector.
+        "--btn-radius",
+        "--field-radius",
+        // The reference theme's headline, derived from the display rung.
+        "--type-hero",
         "--mono",
         "--serif",
         "--tempo",

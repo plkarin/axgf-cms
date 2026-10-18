@@ -34,7 +34,10 @@ fn a_field_sits_below_the_page_and_its_label_is_mono_and_uppercase() {
         field.contains("background: var(--surface-sunken)"),
         "{field}"
     );
-    assert!(field.contains("block-size: 36px") && field.contains("border-radius: 2px"));
+    // Study 06's 2px, through the token every theme but Canopée leaves alone
+    // (docs/adr/0004 §2): the reference theme softens its fields to 12px.
+    assert!(field.contains("block-size: 36px") && field.contains("border-radius: var(--field-radius)"));
+    assert!(css().contains("--field-radius: 2px;"), "Study 06's field radius on :root");
     // A field inside a label does not take the label's type.
     assert!(field.contains("font-family: var(--face)") && field.contains("text-transform: none"));
     let label = rule("label, .field-label");

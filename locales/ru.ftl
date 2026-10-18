@@ -70,7 +70,7 @@ theme-sepia = Сепия
 theme-deuteranopia = Дейтеранопия
 theme-protanopia = Протанопия
 theme-tritanopia = Тританопия
-theme-default-note = Ноктюрн, тёмная тема, используется по умолчанию, даже если система просит светлую. Выберите «Как в системе», чтобы решала система.
+theme-default-note = Полог, тёмная тема цвета лесной зелени, используется по умолчанию, даже если система просит светлую. Выберите «Как в системе», чтобы решала система.
 theme-fleuve-hiver-note = светлая, холодная
 theme-fleuve-hiver = Зимняя река
 theme-encre-note = тёмная, тёмно-синяя
@@ -80,8 +80,10 @@ theme-crepuscule = Сумерки
 theme-light-note = светлая
 theme-colour-blind-note = безопасно при дальтонизме
 theme-contrast-note = высокий контраст
-theme-dark-note = тёмная · по умолчанию
+theme-dark-note = тёмная
 theme-river-note = Река остаётся тёмной в любой теме: её цвета подобраны для тёмного фона.
+theme-canopee = Полог
+theme-canopee-note = тёмная, лесной зелёный · по умолчанию
 
 ## Древо
 
@@ -661,6 +663,22 @@ home-showcase-title = Там, где это древо уже говорит б�
 home-showcase-example = Посмотреть пример →
 home-nothing-title = Показывать пока нечего.
 home-nothing-detail = Импортируйте семейный файл, чтобы перенести существующее древо, или начните с пустого места и добавьте первого человека сами.
+home-eyebrow = Семейный архив
+home-hero-1 = Каждая жизнь — источник.
+home-hero-2 = Каждая семья — река.
+home-cta-river = Исследовать реку
+home-cta-tree = Посмотреть древо
+home-scroll = Прокрутите, чтобы узнать больше
+home-trust-title = Достоверность родственных связей
+home-trust-certain = практически достоверные
+home-trust-high = хорошо подтверждённые
+home-trust-medium = правдоподобные
+home-trust-low = гипотетические
+home-trust-unrated = ещё не оценены
+home-showcase-eyebrow = Больше, чем имена и даты
+home-cta-title = Вместе сохраним память семьи.
+home-cta-detail = Каждое добавленное имя и каждый проверенный источник делают реку точнее для тех, кто придёт после нас.
+home-cta-add = Добавить человека
 
 ## Карточки обзора
 
@@ -3415,6 +3433,7 @@ river-legend-repeat = ×n достигнут n линиями, показан п
 river-legend-again = ↔ показан снова рядом со следующим партнёром
 river-legend-discharge = потомки
 river-legend-direction = ↓ к истоку · ↑ к живым
+river-legend-generation = одно поколение ≈ 29 лет
 river-grid-link = Сетка
 river-tab-sources = Источники
 river-legend-title = Как читать реку

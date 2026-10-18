@@ -49,7 +49,7 @@ theme-sepia = Sépia
 theme-deuteranopia = Deutéranopie
 theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
-theme-default-note = Nocturne, le thème sombre, est le thème par défaut, même si votre système demande un thème clair. Choisissez « Suivre mon système » pour le laisser décider.
+theme-default-note = Canopée, le thème sombre vert forêt, est le thème par défaut, même si votre système demande un thème clair. Choisissez « Suivre mon système » pour le laisser décider.
 theme-fleuve-hiver-note = clair, froid
 theme-fleuve-hiver = Fleuve d'hiver
 theme-encre-note = sombre, bleu nuit
@@ -59,8 +59,10 @@ theme-crepuscule = Crépuscule
 theme-light-note = clair
 theme-colour-blind-note = adapté au daltonisme
 theme-contrast-note = contraste élevé
-theme-dark-note = sombre · par défaut
+theme-dark-note = sombre
 theme-river-note = La rivière reste sombre quel que soit le thème : ses couleurs sont faites pour un fond sombre.
+theme-canopee = Canopée
+theme-canopee-note = sombre, vert forêt · par défaut
 
 ## Arbre
 
@@ -563,6 +565,22 @@ home-showcase-title = Là où cet arbre dit déjà plus que des noms et des date
 home-showcase-example = Voir un exemple →
 home-nothing-title = Rien à montrer pour l'instant.
 home-nothing-detail = Importez un fichier familial pour reprendre un arbre existant, ou partez de rien et ajoutez vous-même la première personne.
+home-eyebrow = Archive familiale
+home-hero-1 = Chaque vie est une source.
+home-hero-2 = Chaque famille, une rivière.
+home-cta-river = Explorer la rivière
+home-cta-tree = Voir l’arbre
+home-scroll = Défiler pour explorer
+home-trust-title = Confiance des filiations
+home-trust-certain = pratiquement certaines
+home-trust-high = bien étayées
+home-trust-medium = plausibles
+home-trust-low = hypothétiques
+home-trust-unrated = pas encore évaluées
+home-showcase-eyebrow = Au-delà des noms et des dates
+home-cta-title = Ensemble, gardons la mémoire de la famille.
+home-cta-detail = Chaque nom ajouté, chaque source vérifiée rend la rivière plus juste pour ceux qui viendront.
+home-cta-add = Ajouter une personne
 
 showcase-links-title = { $n ->
         [one] Une relation hors de la famille
@@ -3212,6 +3230,7 @@ river-legend-repeat = ×n atteint par n lignes, dessiné sous chacune
 river-legend-again = ↔ redessiné auprès d’un partenaire suivant
 river-legend-discharge = débit
 river-legend-direction = ↓ vers la source · ↑ vers les vivants
+river-legend-generation = une génération ≈ 29 ans
 river-grid-link = Vue en grille
 river-tab-sources = Sources
 river-legend-title = Lire la rivière

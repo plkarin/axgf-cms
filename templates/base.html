@@ -1,4 +1,4 @@
-{% import "_prefs.html" as prefs %}<!doctype html>
+{% import "_prefs.html" as prefs %}{% import "_icons.html" as ic %}<!doctype html>
 {# `lang`, `dir` and `data-theme` are rendered server-side from what this
    request negotiated. Doing it in a script after load would guarantee a flash
    of the wrong theme on every page, and would flip Arabic from left to right
@@ -30,7 +30,9 @@
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
     {#- Not a link: "Rivière" beside it goes to the same place. -#}
-    <span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
+    {#- The leaf is Canopée's mark (v0.5.0); every other theme draws the
+        wordmark alone, as Study 06 does. -#}
+    <span class="brand-mark" aria-hidden="true">{{ ic.icon("leaf") }}</span><span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>

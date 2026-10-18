@@ -1,0 +1,55 @@
+{#- Line icons, drawn inline (v0.5.0, docs/adr/0004). One 24-unit grid, one
+    stroke, the colour of the text they sit in (`.ico` in app.css): an icon
+    never brings a colour of its own, so every theme draws it right.
+    Decorative wherever they are used — the words beside them are the
+    content — so they are hidden from assistive technology. -#}
+{% macro icon(name) -%}
+<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+{%- if name == "leaf" -%}
+<path d="M5 19c0-8.3 5.2-14 14-14 0 9-5.8 14-14 14z"/><path d="M5 19l7.5-7.5"/>
+{%- elif name == "river" -%}
+<path d="M3 8.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 15.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+{%- elif name == "tree" -%}
+<path d="M12 21v-8.5"/><path d="M12 12.5c0-4.4 3-7.5 7.5-7.5 0 4.4-3 7.5-7.5 7.5z"/><path d="M12 15c0-3.3-2.6-6-6.5-6 0 3.3 2.6 6 6.5 6z"/>
+{%- elif name == "person" -%}
+<circle cx="12" cy="8" r="3.5"/><path d="M5 20.5c0-3.9 3.1-7 7-7s7 3.1 7 7"/>
+{%- elif name == "family" -%}
+<circle cx="8.5" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6"/><path d="M14.4 14.4c.6-.3 1.3-.4 2.1-.4 2.6 0 4.5 2.3 4.5 5.5"/>
+{%- elif name == "event" or name == "preserved" -%}
+<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/>
+{%- elif name == "place" or name == "places" -%}
+<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.3"/>
+{%- elif name == "source" or name == "sources" -%}
+<path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z"/><path d="M12 6.5V19"/>
+{%- elif name == "document" -%}
+<path d="M14 3H7.5A2.5 2.5 0 0 0 5 5.5v13A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 16.5h4"/>
+{%- elif name == "occupation" or name == "occupations" -%}
+<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A2.5 2.5 0 0 1 11.5 3h1A2.5 2.5 0 0 1 15 5.5V7"/><path d="M3 13h18"/>
+{%- elif name == "link" or name == "links" -%}
+<path d="M10 14a4 4 0 0 0 5.7 0l3-3A4 4 0 0 0 13 5.3l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>
+{%- elif name == "search" -%}
+<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>
+{%- elif name == "quality" -%}
+<path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>
+{%- elif name == "uncertain" or name == "hourglass" -%}
+<path d="M7 3h10M7 21h10"/><path d="M8 3c0 5 8 5 8 9s-8 4-8 9"/><path d="M16 3c0 5-8 5-8 9s8 4 8 9"/>
+{%- elif name == "compass" -%}
+<circle cx="12" cy="12" r="9"/><path d="M12 5.5l2.4 6.5-2.4 6.5-2.4-6.5z"/><path d="M12 2v2M12 20v2"/>
+{%- elif name == "wave" -%}
+<path d="M2 12c2.4-3.2 4.8-3.2 7.2 0s4.8 3.2 7.2 0 4.2-3.2 5.6-1"/>
+{%- else -%}
+<circle cx="12" cy="12" r="3"/>
+{%- endif -%}
+</svg>
+{%- endmacro %}
+
+{#- A loader (docs/adr/0004 §4): drawn under Canopée only, beside words that
+    say what is happening, never in place of them. -#}
+{% macro loader(kind) -%}
+{%- if kind == "hourglass" -%}<span class="ld ld-hourglass" aria-hidden="true">{{ icon("hourglass") }}</span>
+{%- elif kind == "river" -%}<span class="ld ld-river" aria-hidden="true">{{ icon("wave") }}</span>
+{%- elif kind == "ring" -%}<span class="ld ld-ring" aria-hidden="true"></span>
+{%- elif kind == "ripple" -%}<span class="ld ld-ripple" aria-hidden="true"><i></i><i></i></span>
+{%- else -%}<span class="ld ld-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+{%- endif -%}
+{%- endmacro %}

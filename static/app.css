@@ -93,6 +93,17 @@
   --radius: 7px;
   --radius-sm: 5px;
   --radius-lg: 11px;
+  /* The round of a button and of a field: Study 06's 2px, which every theme
+     keeps but one. Canopée, the reference theme, carries its own (pill
+     buttons, softened fields) and redefines these two and nothing else of
+     the geometry a style owns (docs/adr/0004). A token rather than a literal
+     so that the rule "one radius for every button" still holds, per theme. */
+  --btn-radius: 2px;
+  --field-radius: 2px;
+  /* The one size above the display rung: the reference theme's headline on
+     the overview page. Derived from the rung, so a style that retunes the
+     scale retunes it too. */
+  --type-hero: clamp(calc(var(--type-display) * 0.82), 4.4vw, calc(var(--type-display) * 1.4));
   /* One duration for everything that moves, so the interface has a single
      tempo rather than a different one per component. Short enough that it
      never delays a click. */
@@ -416,6 +427,9 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   color: var(--text-primary);
   text-decoration: none;
 }
+/* Canopée's leaf beside the wordmark (v0.5.0); every other theme draws the
+   wordmark alone. */
+.brand-mark { display: none; }
 .masthead nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .masthead nav a {
   color: var(--text-secondary);
@@ -468,7 +482,12 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  flex-wrap: nowrap;
+  /* One row whenever one row fits, which at 390px it does at the reader's
+     ordinary text size in every language. At a larger text size it cannot,
+     and then the row wraps rather than pushing the whole page sideways —
+     measured on every page at 390px with text at 150 %, where it used to
+     overflow by up to 148px (v0.5.0). */
+  flex-wrap: wrap;
 }
 .reading-prefs .lang-form select { max-inline-size: 9.5rem; text-overflow: ellipsis; }
 /* The theme and the density are words, not codes: the interface face, not
@@ -547,7 +566,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   font-size: var(--type-minor);
   text-decoration: none;
   border: 0;
-  border-radius: 2px;
+  border-radius: var(--btn-radius);
   justify-content: flex-start;
 }
 .menu-panel > a:hover, .menu-panel .btn:hover { background: var(--surface-hover); }
@@ -875,7 +894,7 @@ input[type="file"], select, textarea {
   min-block-size: 36px;
   padding: 0 10px;
   border: 1px solid var(--border-strong);
-  border-radius: 2px;
+  border-radius: var(--field-radius);
   background: var(--surface-sunken);
   color: var(--text-primary);
   font-family: var(--face);
@@ -903,9 +922,11 @@ textarea {
    no edge, for actions inside rows. `.danger` is an outline in the danger
    colour, never a fill: destructive actions should feel serious, not loud.
 
-   36px, or 28px with `.small`, radius 2 — nothing else, nowhere. Disabled is
-   dashed, so it reads as off in greyscale. A busy button says so in words
-   (ui.js swaps in `data-busy`); there is no spinner. */
+   36px, or 28px with `.small`, and one radius per theme — Study 06's 2px
+   everywhere but in Canopée, which rounds them into pills (--btn-radius,
+   docs/adr/0004). Disabled is dashed, so it reads as off in greyscale. A
+   busy button says so in words (ui.js swaps in `data-busy`); under Canopée
+   a loader moves beside the words, never in place of them. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -915,7 +936,7 @@ textarea {
   min-block-size: 36px;
   padding: 0 14px;
   border: 1px solid var(--border-strong);
-  border-radius: 2px;
+  border-radius: var(--btn-radius);
   background: transparent;
   color: var(--text-primary);
   font: inherit;
@@ -958,6 +979,12 @@ textarea {
   cursor: not-allowed;
 }
 .btn[aria-busy="true"] { cursor: progress; }
+/* On a phone, a label that does not fit wraps inside its button instead of
+   carrying the button past the edge of the page; the button grows, as its
+   minimum height allows (measured at 390px with text at 150 %, v0.5.0). */
+@media (max-width: 30rem) {
+  .btn { white-space: normal; text-align: center; }
+}
 
 select {
   cursor: pointer;
@@ -3385,8 +3412,10 @@ a.tcard:hover {
    are the river's palette in tokens.css. */
 .rv-svg .k-bg { fill: var(--rv-ink-1); }
 .rv-svg .k-halo { stroke: var(--rv-ink-1); }
-.rv-svg .k-band-odd { fill: var(--rv-band-odd); }
-.rv-svg .k-band-live { fill: var(--rv-band-live); }
+/* Translucent since v0.5.0: the bands are terraces over the river's ground,
+   not a floor laid on top of it (docs/adr/0004 §5). */
+.rv-svg .k-band-odd { fill: var(--rv-band-odd); fill-opacity: 0.55; }
+.rv-svg .k-band-live { fill: var(--rv-band-live); fill-opacity: 0.6; }
 .rv-svg .k-band-rule { stroke: var(--rv-band-rule); }
 .rv-svg .k-band-text { fill: var(--rv-band-text); }
 .rv-svg .k-band-text-live { fill: var(--rv-band-text-live); }
@@ -3748,3 +3777,784 @@ a.tcard:hover {
   border-block-start: 1px solid var(--border-hairline);
   z-index: 2;
 }
+
+/* ===========================================================================
+   v0.5.0 — the reference theme, the overview page and the river's ground
+   ===========================================================================
+   Four parts, in this order: what every theme draws (icons, the overview
+   page's frames, loaders that only Canopée shows), Canopée's own furniture
+   (docs/adr/0004), the motion that answers a reader under Canopée, and the
+   river's new ground, which is the river's and so every theme's. Nothing
+   below names a colour: the palettes are in tokens.css. */
+
+/* ---------- icons ----------
+   Inline SVG from templates/_icons.html, stroked in the current colour:
+   an icon never has a colour of its own, it takes its text's. */
+.ico {
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.22em;
+}
+
+/* ---------- the overview page (`/about`) ----------
+   One frame per thing the page says: who the archive is (the hero), what it
+   holds (the strip and the composition), what it already tells beyond names
+   and dates (the cards), and what a reader can do for it (the last band).
+   Under every theme these are ordinary surfaces; Canopée adds the
+   photographs and the motion further down. */
+.hero {
+  position: relative;
+  display: grid;
+  /* The headline takes the whole width; the confidence card stands beside
+     the lede and the two ways in, and the figures run underneath. */
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
+  grid-template-areas: "chip chip" "title title" "lede card" "actions card" "strip strip";
+  column-gap: calc(var(--step) * 5);
+  row-gap: 0;
+  align-items: start;
+  padding: calc(var(--step) * 6) calc(var(--step) * 4) calc(var(--step) * 4);
+  margin: 0 0 var(--section-gap);
+  border: var(--section-border);
+  border-radius: var(--radius-lg);
+  background: var(--section-fill);
+  overflow: hidden;
+}
+.hero-copy { display: contents; }
+.hero .eyebrow-chip { grid-area: chip; justify-self: start; }
+.hero-title { grid-area: title; }
+.hero-lede { grid-area: lede; }
+.hero-actions { grid-area: actions; }
+.hero-card { grid-area: card; align-self: end; }
+.hero .stat-strip { grid-area: strip; margin-block-start: calc(var(--step) * 4); }
+.eyebrow-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 calc(var(--step) * 2.4);
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.eyebrow-chip .dot {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+.hero-title {
+  font-size: var(--type-hero);
+  font-weight: var(--weight-strong);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  margin: 0 0 calc(var(--step) * 2.2);
+  text-wrap: balance;
+}
+.hero-title > span { display: block; }
+.hero-accent { color: var(--accent); }
+.hero-lede { font-size: var(--type-sub); line-height: 1.5; margin: 0 0 calc(var(--step) * 3.4); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.hero-actions .btn { min-block-size: 44px; padding-inline: 1.3rem; font-size: var(--type-body); }
+.hero-ring {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+.hero-ring .ico { inline-size: 1rem; block-size: 1rem; }
+
+/* How sure the archive is of each parentage, drawn as bars in the
+   confidence ramp's own colours: each band as long as its share of the
+   links. The count is printed beside the bar and is what is read; the bar
+   only compares, so colour is never the carrier (the ramp's rule). */
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-page);
+}
+.hero-card h2 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.share-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7rem; }
+.share-list li { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 0.8rem; font-size: var(--type-small); }
+.share-list .k { color: var(--text-secondary); }
+.share-list .k::first-letter, .stat-item .k::first-letter { text-transform: uppercase; }
+.share-list .v { font-variant-numeric: tabular-nums; font-weight: var(--weight-semi); }
+.share-bar {
+  grid-column: 1 / -1;
+  block-size: 4px;
+  border-radius: 999px;
+  background: var(--conf-track);
+  overflow: hidden;
+}
+.share-bar > i {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--share, 0%);
+  min-inline-size: 3px;
+  border-radius: inherit;
+  background: var(--accent);
+}
+.share-bar[data-band="certain"] > i { background: var(--conf-certain); }
+.share-bar[data-band="high"] > i { background: var(--conf-high); }
+.share-bar[data-band="medium"] > i { background: var(--conf-medium); }
+.share-bar[data-band="low"] > i { background: var(--conf-low); }
+.share-bar[data-band="unrated"] > i { background: var(--text-tertiary); }
+
+/* The strip: the counts in one row of icon, number and word. */
+.stat-strip {
+  grid-column: 1 / -1;
+  list-style: none;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.9rem 1rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-page);
+}
+.stat-item { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 0.6rem; align-items: center; }
+.stat-ico {
+  grid-row: 1 / span 2;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-hairline);
+  color: var(--accent);
+}
+.stat-item .n {
+  font-size: var(--type-major);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+/* A word is never cut in two here: the column grows instead. */
+.stat-item .k { font-size: var(--type-small); color: var(--text-secondary); overflow-wrap: normal; }
+
+/* "Scroll to explore": a mouse whose wheel moves, and the words. It is a
+   picture of an instruction, so assistive technology is spared it. */
+.scroll-cue {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: 0.7rem;
+  translate: -50% 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--mono);
+  font-size: var(--type-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.scroll-cue > i {
+  position: relative;
+  inline-size: 18px;
+  block-size: 28px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+}
+.scroll-cue > i::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 5px;
+  inline-size: 3px;
+  block-size: 6px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+/* Sections under the hero: an eyebrow, a heading, then the frames. */
+.home-section { margin: calc(var(--step) * 7) 0 0; }
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.home-h2 { margin-top: 0; font-size: var(--type-major); font-weight: var(--weight-medium); letter-spacing: -0.015em; max-inline-size: 30ch; }
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.3rem 1.25rem 1.2rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+.feature-card h3 { margin: 0.35rem 0 0; font-size: var(--type-sub); font-weight: var(--weight-semi); }
+.feature-card p { margin: 0; color: var(--text-secondary); font-size: var(--type-minor); }
+.feature-ico {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.9rem;
+  block-size: 2.9rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-hairline);
+  color: var(--accent);
+}
+.feature-ico .ico { inline-size: 1.35rem; block-size: 1.35rem; }
+.feature-go { margin-block-start: auto; padding-block-start: 0.4rem; font-size: var(--type-minor); font-weight: var(--weight-medium); }
+
+/* The last band: what a reader can do for the archive. */
+.cta-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+  margin: calc(var(--step) * 7) 0 0;
+  padding: 1rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+.cta-photo { display: none; }
+.cta-copy h2 { margin: 0 0 0.4rem; font-size: var(--type-major); font-weight: var(--weight-medium); letter-spacing: -0.015em; }
+.cta-copy p { margin: 0; color: var(--text-secondary); }
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-areas: "chip" "title" "lede" "actions" "card" "strip";
+    padding: calc(var(--step) * 4) calc(var(--step) * 2.4) calc(var(--step) * 3);
+  }
+  .hero-card { margin-block-start: calc(var(--step) * 4); }
+  .cta-banner { grid-template-columns: 1fr; }
+}
+
+/* ---------- loaders (v0.5.0, docs/adr/0004 §4) ----------
+   From the reference's loader set: a ring, three dots, ripples, an
+   hourglass and a river. They never replace words: a busy button still
+   says what it is doing (B2), and the loader moves beside the words,
+   hidden from assistive technology. Drawn in the current colour. Only
+   Canopée shows them — every other theme keeps Study 06's words alone —
+   and `prefers-reduced-motion` stills them like everything else. */
+.ld { display: none; }
+[data-theme="canopee"] .ld { display: inline-grid; }
+.ld {
+  place-items: center;
+  inline-size: 1.1em;
+  block-size: 1.1em;
+  flex: none;
+  color: inherit;
+}
+.ld-dots { grid-auto-flow: column; gap: 0.2em; inline-size: auto; }
+.ld-dots > i {
+  inline-size: 0.32em;
+  block-size: 0.32em;
+  border-radius: 50%;
+  background: currentColor;
+  animation: ld-bounce 900ms var(--ease) infinite;
+}
+.ld-dots > i:nth-child(2) { animation-delay: 120ms; }
+.ld-dots > i:nth-child(3) { animation-delay: 240ms; }
+@keyframes ld-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+  40% { transform: translateY(-0.28em); opacity: 1; }
+}
+.ld-ring {
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-block-start-color: currentColor;
+  animation: ld-spin 820ms linear infinite;
+}
+@keyframes ld-spin { to { transform: rotate(1turn); } }
+.ld-ripple { position: relative; }
+.ld-ripple > i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: ld-ripple 1400ms cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.ld-ripple > i:nth-child(2) { animation-delay: 700ms; }
+@keyframes ld-ripple {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.ld-hourglass .ico { inline-size: 100%; block-size: 100%; animation: ld-flip 1600ms var(--ease) infinite; }
+@keyframes ld-flip {
+  0%, 70% { transform: rotate(0); }
+  100% { transform: rotate(180deg); }
+}
+.ld-river .ico { inline-size: 100%; block-size: 100%; stroke-dasharray: 4 5; animation: ld-flow 900ms linear infinite; }
+@keyframes ld-flow { to { stroke-dashoffset: -18; } }
+/* A busy button keeps its words and moves its loader beside them. */
+.btn[aria-busy="true"] .ld { margin-inline-start: 0.15rem; }
+
+/* ===========================================================================
+   Canopée — the reference theme's furniture (docs/adr/0004)
+   ===========================================================================
+   Every other theme is a palette. Canopée carries a shape and a tempo as
+   well: pill buttons, softened fields and frames, a lime glow under what
+   can be pressed, and motion that answers the reader. Everything is written
+   under [data-theme="canopee"], so any other theme gives Study 06's
+   furniture back exactly. What does not change, here or anywhere: the four
+   button variants and their heights, the focus ring (2px at 2px on every
+   control), labels above fields, the notice shapes, the chrome budgets. */
+[data-theme="canopee"] {
+  --btn-radius: 999px;
+  --field-radius: 12px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
+  --tempo: 170ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+[data-theme="canopee"] ::selection { background: rgb(var(--glow-rgb) / 0.32); }
+
+/* The masthead: the page's own ground, a hairline, the brand's leaf, and
+   the section you are in written in the accent. */
+[data-theme="canopee"] .masthead {
+  background: color-mix(in srgb, var(--surface-page) 92%, transparent);
+}
+[data-theme="canopee"] .brand {
+  font-family: var(--face);
+  font-size: var(--type-body);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.01em;
+}
+[data-theme="canopee"] .brand-mark {
+  display: inline-grid;
+  place-items: center;
+  margin-inline-end: -0.7rem;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  color: var(--accent);
+}
+[data-theme="canopee"] .brand-mark .ico { inline-size: 18px; block-size: 18px; }
+[data-theme="canopee"] .masthead nav a[aria-current="page"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+/* Pills, at the padding Study 06 measured: the three selects stay one row
+   at 390px in every language (docs/adr/0002 §9), so the round costs no room. */
+[data-theme="canopee"] .lang-form select { border-radius: var(--btn-radius); }
+[data-theme="canopee"] .prefs-more { border-radius: 50%; }
+[data-theme="canopee"] .chrome-nav > a.btn {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--on-accent);
+  font-weight: var(--weight-semi);
+}
+[data-theme="canopee"] .chrome-nav > a.btn:hover {
+  background: color-mix(in srgb, var(--accent) 86%, var(--text-primary));
+  box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75);
+}
+[data-theme="canopee"] .initials {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+[data-theme="canopee"] .menu-panel {
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  box-shadow: 0 20px 44px -18px rgb(var(--shadow-rgb) / 0.8);
+}
+[data-theme="canopee"] .search-box > input[type="search"] { border-radius: var(--btn-radius); }
+[data-theme="canopee"] .search-suggest {
+  border-radius: var(--radius);
+  padding: 6px;
+  box-shadow: 0 20px 44px -18px rgb(var(--shadow-rgb) / 0.8);
+}
+[data-theme="canopee"] .search-suggest li { border-radius: var(--radius-sm); }
+
+/* Buttons: the same four, as pills. The primary carries an arrow that
+   nudges forward under the pointer (and backward in a right-to-left
+   script); the arrow is decoration, so it has no text alternative. */
+[data-theme="canopee"] .btn {
+  padding-inline: 18px;
+  font-weight: var(--weight-semi);
+  transition: background-color var(--tempo) var(--ease),
+              border-color var(--tempo) var(--ease),
+              color var(--tempo) var(--ease),
+              box-shadow var(--tempo) var(--ease),
+              transform var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .btn.small { padding-inline: 12px; }
+[data-theme="canopee"] .btn:hover { border-color: var(--accent); }
+[data-theme="canopee"] .btn:active { transform: translateY(1px); }
+[data-theme="canopee"] .btn.primary:hover { box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75); }
+[data-theme="canopee"] .btn.primary:not([aria-busy="true"])::after {
+  content: "→" / "";
+  display: inline-block;
+  transition: transform var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .btn.primary:hover::after { transform: translateX(3px); }
+[data-theme="canopee"][dir="rtl"] .btn.primary:not([aria-busy="true"])::after { content: "←" / ""; }
+[data-theme="canopee"][dir="rtl"] .btn.primary:hover::after { transform: translateX(-3px); }
+[data-theme="canopee"] .btn.ghost:hover { border-color: transparent; color: var(--accent); }
+[data-theme="canopee"] .btn.danger:hover { border-color: var(--danger); }
+[data-theme="canopee"] .btn:disabled,
+[data-theme="canopee"] .btn[aria-disabled="true"] { transform: none; box-shadow: none; }
+
+/* Focus: the ring every theme draws (2px at 2px), and under it a soft glow
+   of the same lime, so the control with the keyboard reads from across a
+   room. A glow, never in place of the ring. */
+[data-theme="canopee"] :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+[data-theme="canopee"] :is(input, select, textarea):focus {
+  box-shadow: 0 0 0 6px rgb(var(--glow-rgb) / 0.2);
+}
+
+/* Fields: a softened well, and the accent on the one with the keyboard. */
+[data-theme="canopee"] main :is(input[type="text"], input[type="password"], input[type="email"],
+  input[type="search"], input[type="number"], input[type="url"], select, textarea) {
+  padding-inline-start: 14px;
+  transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
+}
+[data-theme="canopee"] :is(input, select, textarea):focus { border-color: var(--accent); }
+
+/* Frames: a sheen at the top of a raised surface and a deeper shadow, so
+   a card sits on the forest floor rather than on paper. Not on a block
+   inside a section (level 3 stays recessed), and not in the paper style,
+   which has no cards to lift. */
+[data-theme="canopee"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner):not(:is(.card, .rec-section) *) {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 3.5%, transparent), transparent 48%);
+  box-shadow: 0 1px 0 rgb(var(--shadow-rgb) / 0.2), 0 18px 36px -26px rgb(var(--shadow-rgb) / 0.9);
+}
+
+/* Notices: the same four shapes, larger, each carrying its sign — a ring
+   with i, a disc with ✓, a diamond with !, a square with × — so the kind
+   reads twice, by shape and by mark, and never by colour alone. */
+[data-theme="canopee"] .notice {
+  border-radius: var(--radius);
+  padding-inline: 3rem 1.1rem;
+  background-color: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+}
+[data-theme="canopee"] .notice::before {
+  display: grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  inset-inline-start: 1rem;
+  inset-block-start: 0.85rem;
+  font-family: var(--face);
+  font-size: var(--type-micro);
+  font-weight: var(--weight-strong);
+  line-height: 1;
+  content: "i" / "";
+  color: var(--text-secondary);
+}
+[data-theme="canopee"] .notice.ok::before { content: "✓" / ""; color: var(--surface-page); }
+[data-theme="canopee"] .notice.warn::before,
+[data-theme="canopee"] .notice-defect::before {
+  content: "!" / "";
+  inline-size: 22px;
+  block-size: 22px;
+  inset-inline-start: calc(1rem - 1px);
+  transform: none;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  color: var(--surface-page);
+}
+[data-theme="canopee"] .notice.error::before { content: "×" / ""; border-radius: 4px; color: var(--surface-page); }
+
+/* The record's tabs: a segmented pill, the current one filled. */
+[data-theme="canopee"] .person-tabs {
+  box-shadow: none;
+  gap: 0.25rem;
+  padding: 4px;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--btn-radius);
+}
+[data-theme="canopee"] .person-tab {
+  border-block-end: 0;
+  border-radius: var(--btn-radius);
+  padding-block: 0.45rem;
+  padding-inline: 0.95rem;
+  transition: background-color var(--tempo) var(--ease), color var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .person-tab:hover { background: var(--surface-hover); }
+[data-theme="canopee"] .person-tab.is-current { background: var(--accent); color: var(--on-accent); }
+[data-theme="canopee"] .person-tab.is-current .tab-count { color: var(--on-accent); }
+
+/* Bars and badges: round ends. */
+[data-theme="canopee"] .conf-bar,
+[data-theme="canopee"] .conf-bar > i { border-radius: 999px; }
+[data-theme="canopee"] .edit-band { letter-spacing: 0.12em; }
+
+/* The overview page under Canopée: the reference's two photographs (made
+   for this theme in Canva, docs/adr/0004 §3) behind the hero and beside
+   the last band, under a shade so that the text over them keeps the
+   contrast the palette was measured for. A photograph is the page's, never
+   a control's: the buttons over it are the ordinary buttons. */
+[data-theme="canopee"] .hero {
+  min-block-size: min(78vh, 46rem);
+  border-color: var(--border-hairline);
+  background-color: var(--surface-page);
+  background-image:
+    linear-gradient(90deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
+    linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
+    url("/static/img/canopee-hero.jpg");
+  background-size: cover;
+  background-position: center, center, 70% 40%;
+  box-shadow: 0 30px 60px -40px rgb(var(--shadow-rgb) / 0.9);
+}
+[data-theme="canopee"][dir="rtl"] .hero {
+  background-image:
+    linear-gradient(270deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
+    linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
+    url("/static/img/canopee-hero.jpg");
+}
+[data-theme="canopee"] .eyebrow-chip {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--surface-page) 60%, transparent);
+}
+[data-theme="canopee"] .hero-card,
+[data-theme="canopee"] .stat-strip {
+  background: color-mix(in srgb, var(--surface-page) 72%, transparent);
+  border-color: color-mix(in srgb, var(--border-strong) 45%, transparent);
+}
+[data-theme="canopee"] .scroll-cue { display: flex; }
+[data-theme="canopee"] .hero { padding-block-end: 4.6rem; }
+[data-theme="canopee"] .stat-ico { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+[data-theme="canopee"] .feature-ico { border: 0; }
+/* Zenze's coloured pastilles, one tint per kind of detail the archive holds:
+   water for relations and places, leaf for occupations, amber for dates,
+   clay for sources. Each ink is measured at 4.5:1 or more on its disc. */
+[data-theme="canopee"] .feature-ico { background: var(--accent-soft); }
+[data-theme="canopee"] .feature-ico:is([data-kind="links"], [data-kind="places"]) { background: var(--icon-river); color: var(--icon-river-ink); }
+[data-theme="canopee"] .feature-ico[data-kind="occupations"] { background: var(--icon-tree); color: var(--icon-tree-ink); }
+[data-theme="canopee"] .feature-ico:is([data-kind="uncertain"], [data-kind="preserved"]) { background: var(--icon-search); color: var(--icon-search-ink); }
+[data-theme="canopee"] .feature-ico[data-kind="sources"] { background: var(--icon-quality); color: var(--icon-quality-ink); }
+[data-theme="canopee"] .feature-card {
+  transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .feature-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+}
+[data-theme="canopee"] .cta-banner {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
+  padding-block: 0.75rem;
+  padding-inline: 0.75rem 1.5rem;
+}
+@media (max-width: 860px) {
+  [data-theme="canopee"] .cta-banner { grid-template-columns: 1fr; padding-inline: 0.75rem; }
+}
+[data-theme="canopee"] .cta-photo {
+  display: block;
+  align-self: stretch;
+  min-block-size: 9rem;
+  border-radius: var(--radius);
+  background: var(--surface-sunken) url("/static/img/canopee-cta.jpg") center 42% / cover;
+}
+
+/* ---------- motion under Canopée ----------
+   What moves, moves because the reader did: a section rises into place the
+   first time it scrolls into view, a count runs up to its number once, the
+   primary's arrow nudges under the pointer. Nothing loops but a loader
+   while work is out, and the mouse of the scroll cue, three times. ui.js
+   sets `js-motion` on the root only when `prefers-reduced-motion` allows
+   it, so a page without scripts, or a reader who asked for stillness,
+   gets every section in place and every number whole. */
+html.js-motion[data-theme="canopee"] [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 640ms var(--ease), transform 640ms var(--ease);
+}
+html.js-motion[data-theme="canopee"] [data-reveal].is-in { opacity: 1; transform: none; }
+/* Paper has no scroll: a section that never scrolled into view prints all
+   the same. */
+@media print {
+  html.js-motion[data-theme] [data-reveal] { opacity: 1; transform: none; }
+}
+html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-wheel 1600ms var(--ease) 3; }
+@keyframes cue-wheel {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+/* ===========================================================================
+   The river's ground and lights (v0.5.0, docs/adr/0004 §5)
+   ===========================================================================
+   After the Selva Verde reference: a forest seen from above, at dusk, with
+   contour lines over it; the water lit from within; terrain that follows
+   every line. The river is the river under every theme (ADR 0002 §2), so
+   all of this is too — except under Gravure (high contrast) and in print,
+   where the ground goes back to the plain ink it always was.
+
+   The photograph (made in Canva for the river) sits under a shade that
+   keeps every ink above it at the contrast the river was measured for; the
+   contour lines are a mask coloured by --rv-contour; the drawing's own
+   ground lets both through at a third. Nothing on the ground depends on
+   the archive: it is the same picture behind every person. */
+.rv-canvas {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--rv-ink-1);
+  background-image:
+    radial-gradient(130% 95% at 52% 50%, transparent 35%, rgb(var(--rv-shade-rgb) / 0.6) 100%),
+    linear-gradient(rgb(var(--rv-shade-rgb) / 0.58), rgb(var(--rv-shade-rgb) / 0.58)),
+    url("/static/img/river-ground.jpg");
+  background-size: cover;
+  background-position: center;
+}
+.rv-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--rv-contour);
+  opacity: 0.2;
+  -webkit-mask: url("/static/img/river-contours.svg") center / cover no-repeat;
+  mask: url("/static/img/river-contours.svg") center / cover no-repeat;
+}
+.rv-canvas svg { position: relative; }
+/* The drawing's own ground is its first rect, and the even half-century
+   bands are the other rects in its ground ink (src/river.rs draws both with
+   `k-bg`, as river.js does; a circle in that ink is a ring's or a hollow
+   dot's, and stays opaque). Translucent, so the ground shows through. */
+.rv-svg > rect.k-bg:first-of-type { fill-opacity: 0.34; }
+.rv-svg > rect.k-bg:not(:first-of-type) { fill-opacity: 0.16; }
+.rv-svg .k-core { stroke: var(--rv-core); }
+.rv-svg .k-lit-halo { stroke: var(--rv-lit-halo); }
+.rv-svg .k-station { fill: var(--rv-core); }
+.rv-svg .rv-terrain { pointer-events: none; }
+[data-theme="high-contrast"] .rv-canvas { background-image: none; }
+[data-theme="high-contrast"] .rv-canvas::before { display: none; }
+[data-theme="high-contrast"] .rv-svg > rect.k-bg { fill-opacity: 1; }
+[data-theme="high-contrast"] .rv-svg :is(.rv-terrain, .rv-cores) { display: none; }
+@media print {
+  .rv-canvas { background-image: none; }
+  .rv-canvas::before { display: none; }
+  .rv-svg > rect.k-bg { fill-opacity: 1; }
+  .rv-svg :is(.rv-terrain, .rv-cores) { display: none; }
+}
+
+/* The lit route (river.js): a halo, the light, and a thread of light
+   running along it from the centre, three times, then still. */
+.rv-svg .k-flow {
+  stroke: var(--rv-core);
+  stroke-dasharray: 1.5 22;
+  animation: rv-flow 1500ms linear 3;
+}
+@keyframes rv-flow { to { stroke-dashoffset: -47; } }
+/* The entrance, once per page: the water and the terrain come up, then the
+   people, from the first paint — CSS rather than script, so nothing that was
+   drawn is hidden and redrawn. river.js takes `rv-intro` off once it has
+   played, so the stills a travel lays down later arrive without it. */
+@keyframes rv-fade-in { from { opacity: 0; } }
+.river.rv-intro .rv-svg > :is(path, g.rv-tail, g.rv-stub, g:not([class])) { animation: rv-fade-in 700ms var(--ease) both; }
+.river.rv-intro .rv-svg :is(.rv-terrain, .rv-cores) { animation: rv-fade-in 1400ms var(--ease) both; }
+.river.rv-intro .rv-svg a.rv-p { animation: rv-fade-in 800ms var(--ease) 220ms both; }
+/* Arriving: the fixed point's ring breathes twice and is still. */
+.river.rv-arrived .rv-svg .k-accent-line {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rv-breathe 2000ms var(--ease) 2;
+}
+@keyframes rv-breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.2; }
+}
+/* "Cut" is a reader's choice about motion on the river (the settings),
+   and it holds for every light the river draws, not only for travel. */
+.river[data-river-motion="cut"] .rv-svg * { animation: none !important; }
+
+/* The legend, as a cartographer's: a title in spaced capitals, a compass
+   that says which way time runs, and the scale of a generation. */
+.rv-legend-title {
+  flex: 1 1 100%;
+  font-size: var(--type-rv-eyebrow);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rv-text-3);
+}
+.rv-compass .ico { inline-size: 22px; block-size: 22px; color: var(--rv-text-2); }
+.rv-scale > b {
+  display: block;
+  inline-size: 46px;
+  block-size: 6px;
+  border: 1px solid var(--rv-text-3);
+  border-block-start: 0;
+}
+
+/* The itinerary as a journey: each person visited is a numbered stop on
+   one line, 01 to 07, as the reference numbers the stations of its path. */
+.rv-trail { counter-reset: stop; gap: 2px 10px; }
+.rv-trail > li { counter-increment: stop; display: inline-flex; align-items: center; gap: 6px; }
+.rv-trail > li::before {
+  content: counter(stop, decimal-leading-zero) / "";
+  font-family: var(--rv-mono);
+  font-size: var(--type-rv-eyebrow);
+  letter-spacing: 0.08em;
+  color: var(--rv-text-3);
+}
+.rv-trail > li + li { padding-inline-start: 18px; position: relative; }
+.rv-trail > li + li::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 2px;
+  inset-block-start: 50%;
+  inline-size: 11px;
+  border-block-start: 1px solid var(--rv-rule-3);
+}
+.rv-trail > li:has(> [aria-current])::before { color: var(--rv-accent); }
+
+/* A loader where the river is going: ripples on the person tapped, while
+   their river is fetched (river.js), under every theme — it is the river's,
+   like the travel it announces. */
+.rv-wait {
+  position: absolute;
+  z-index: 2;
+  inline-size: 34px;
+  block-size: 34px;
+  translate: -50% -50%;
+  pointer-events: none;
+  color: var(--rv-lit);
+}
+.rv-wait > i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0;
+  animation: ld-ripple 1200ms cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.rv-wait > i:nth-child(2) { animation-delay: 600ms; }

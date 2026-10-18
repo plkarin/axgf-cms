@@ -226,7 +226,10 @@
   {% endfor %}
 
   <div class="cta-row ed-save">
-    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
+    {#- The whole archive is rewritten on save, 12 to 17 s on the operator's
+        bundle (ADR 0002 §7): under Canopée the river flows beside the words
+        while it is (docs/adr/0004 §4). -#}
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}" data-loader="river">{{ t("admin-save") }}</button>
     <a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a>
   </div>
 </form>

@@ -126,6 +126,10 @@
       if (r[1] < vt + 8 || r[1] > vb - 4) return;
       out += '<text x="' + f(hl0 + hw - 10) + '" y="' + f(r[1] + 3.5) + '" text-anchor="end" font-family="' + MONO + '" font-size="10" class="' + (r[0] === 0 ? 'k-accent' : 'k-band-text') + '">' + (r[0] > 0 ? '+' + r[0] : r[0] === 0 ? '0 ◂' : '−' + (-r[0])) + '</text>';
     });
+    // The Selva Verde ground (docs/adr/0004 §5): terrain under every line,
+    // drawn from the same edges as the water, so it travels with them.
+    var E = edges(fr, PM);
+    out += terrain(E);
     fr.tails.forEach(function (t) {
       var c = colour(t.year), w = WIDTHS[cls(t.d)], d = vc(t.x1, t.y1, t.x2, t.y2);
       if (t.kind === 'cont') {
@@ -143,12 +147,13 @@
       out += '<g opacity="' + f(c.a) + '"><path d="' + vc(c.x, c.y, x2, y2) + '" fill="none" stroke="' + colour(c.stub_year) + '" stroke-opacity="0.45" stroke-width="' + WIDTHS[cls(c.stub_d)] + '"/>'
         + mark(c.stub_at, '+' + c.stub, 10, c.sref ? c.x - c.sref[0] : 0, c.sref ? c.y - c.sref[1] : 0) + '</g>';
     });
-    edges(fr, PM).sort(function (a, b) { return b.d - a.d; }).forEach(function (e) {
+    E.slice().sort(function (a, b) { return b.d - a.d; }).forEach(function (e) {
       var d = vc(e.x1, e.y1, e.x2, e.y2), w = WIDTHS[cls(e.d)], o = ' opacity="' + f(e.a) + '"';
       if (e.conf === 'a') out += '<path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-linecap="round"' + o + '/>';
       else if (e.conf === 'd') out += '<path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-dasharray="' + f(Math.max(4, w * 1.3)) + ' ' + f(Math.max(3, w * 0.6)) + '"' + o + '/>';
       else out += '<g' + o + '><path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-opacity="0.14"/><path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0.1 5.5"/></g>';
     });
+    out += cores(E);
     var T = tiers(fr);
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, x = f(p.x), y = f(p.y);
@@ -170,6 +175,60 @@
     });
     return '<svg class="rv-svg" viewBox="' + f(hl0) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(fr.meta.view[1]) + '" width="100%" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs><rect x="' + f(hl0) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(fr.meta.view[1]) + '" class="k-bg"/>' + out + '</svg>';
   }
+  /* ---- the ground's lights (v0.5.0, docs/adr/0004 §5) ----
+   * Decoration only, and the client's: the server's SVG is unchanged, so the
+   * byte-identical invariants of ADR 0001 hold of it exactly as before, and
+   * everything drawn here is computed from the payload this page already
+   * holds — the same edges, at the same places, in the same water colours.
+   *
+   * Terrain: every line seen from above is a valley, two soft bands wide,
+   * in its own water's colour; where lines gather, the terrain deepens.
+   * Cores: attested water carries a thread of light down its middle, so
+   * confidence also reads as brightness — solid and lit, dashed and dull,
+   * dotted and faint. Plain strokes, no filter, no clip-path (the river's
+   * rendering contract). */
+  function terrain(E) {
+    if (!E.length) return '';
+    var outer = '', inner = '';
+    E.forEach(function (e) {
+      var d = vc(e.x1, e.y1, e.x2, e.y2), w = WIDTHS[cls(e.d)], o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      outer += '<path d="' + d + '" stroke="' + e.c + '" stroke-width="' + f(w + 40) + '"' + o + '/>';
+      inner += '<path d="' + d + '" stroke="' + e.c + '" stroke-width="' + f(w + 13) + '"' + o + '/>';
+    });
+    return '<g class="rv-terrain" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+      + '<g stroke-opacity="0.035">' + outer + '</g><g stroke-opacity="0.06">' + inner + '</g></g>';
+  }
+  function cores(E) {
+    var out = '';
+    E.forEach(function (e) {
+      if (e.conf !== 'a') return;
+      var w = WIDTHS[cls(e.d)], o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      out += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" stroke-width="' + f(Math.max(0.6, w * 0.16)) + '"' + o + '/>';
+    });
+    return out ? '<g class="rv-cores k-core" fill="none" stroke-linecap="round" stroke-opacity="0.5" aria-hidden="true">' + out + '</g>' : '';
+  }
+  // Lay both on the server's still frame: the terrain under the first line,
+  // the cores over the last, under the lit route and the people.
+  function decorate() {
+    var svg = canvas.querySelector('svg.rv-svg');
+    if (!svg || svg.querySelector('.rv-terrain, .rv-cores')) return;
+    var fr = still(cur), E = edges(fr, byKey(fr.persons));
+    var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    tmp.innerHTML = terrain(E) + cores(E);
+    var first = null;
+    for (var n = svg.firstElementChild; n; n = n.nextElementSibling) {
+      var tag = n.tagName.toLowerCase();
+      if (tag === 'g' || tag === 'path' || tag === 'a') { first = n; break; }
+    }
+    var t = tmp.querySelector('.rv-terrain'), c = tmp.querySelector('.rv-cores');
+    if (t) svg.insertBefore(t, first);
+    if (c) svg.insertBefore(c, svg.querySelector('.rv-lit') || first || null);
+    // The scale of a generation is a statement about time: drawn only for a
+    // river that has an era (ADR 0001 §3), as the bands are.
+    var sc = root.querySelector('[data-rv-scale]');
+    if (sc) sc.hidden = !cur.layout.meta.bands;
+  }
+
   // river::write_mark: a count where river::place_counts put it, moved with
   // its mark while the river is in motion (dx, dy: how far the mark has
   // travelled from where the count was placed).
@@ -264,19 +323,27 @@
     if (on) {
       edges(fr, PM).forEach(function (e) {
         var c = e.cp, hit = e.from ? on[e.from] && (c.kids.some(function (k) { return on[k]; }) || c.parents.some(function (q) { return q !== e.from && on[q]; })) : on[e.to] && c.parents.some(function (q) { return on[q]; });
-        if (hit) html += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" fill="none" class="k-lit" STW stroke-linecap="round"/>';
+        if (hit) html += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" fill="none" class="KL" STW stroke-linecap="round"/>';
       });
       fr.persons.forEach(function (p) {
         var s = p.s || {};
         if (!on[p.key] || p.role === 'centre' || s.redacted) return;
-        if (p.key === id) labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="11" fill="none" class="k-lit" stroke-width="1.3"/>';
+        // Every person on the route is a station of the path, ringed in its
+        // light; the one under the pointer, a wider ring.
+        labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + (p.key === id ? 11 : 8.5) + '" fill="none" class="k-lit" stroke-width="' + (p.key === id ? 1.3 : 0.9) + '"' + (p.key === id ? '' : ' stroke-opacity="0.7"') + '/>';
         // On hover the full name, right-aligned to the dot where it would
         // otherwise run past the rail: a hover label is alone on its row.
         var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > fr.meta.hview[0] + fr.meta.hview[1] - 34;
         labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text>';
       });
     }
-    lit.innerHTML = html.replace(/STW/g, 'stroke-width="11" stroke-opacity="0.07"') + html.replace(/STW/g, 'stroke-width="5" stroke-opacity="0.18"') + html.replace(/STW/g, 'stroke-width="2"');
+    // Three stacked strokes as before — a halo, a glow and the light — now
+    // with a warm core and a thread of light running along it from the
+    // sources toward the living, three times, then still (app.css). Strokes
+    // only: no filter (the river's rendering contract).
+    function layer(cls, stw) { return html.replace(/KL/g, cls).replace(/STW/g, stw); }
+    lit.innerHTML = layer('k-lit-halo', 'stroke-width="16" stroke-opacity="0.07"') + layer('k-lit', 'stroke-width="7" stroke-opacity="0.16"')
+      + layer('k-lit', 'stroke-width="2.6" stroke-opacity="0.85"') + layer('k-core', 'stroke-width="1.1"') + layer('k-flow', 'stroke-width="1.6"');
     hl.innerHTML = labels;
   }
 
@@ -286,6 +353,10 @@
     n = n || cur.layout.meta.n;
     if (busy || (id === cur.layout.meta.centre && n === cur.layout.meta.n)) return;
     busy = true;
+    // Where the river is going, ripples (the reference's loader), if the
+    // answer is slow enough to be waited for. The first frame of the travel
+    // takes them away.
+    var waitTimer = setTimeout(function () { waitAt(id); }, 140);
     fetch('/river/data?p=' + encodeURIComponent(id) + '&n=' + n, { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw r; return r.json(); })
       .then(function (body) {
@@ -296,7 +367,8 @@
           history.pushState({ p: id, n: n, tab: tab }, '', url(id, n));
         }
         swapPanel(id); controls(n);
-        var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; sizeHits(); };
+        clearTimeout(waitTimer);
+        var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; sizeHits(); decorate(); arrive(); };
         if (cut || reduce) return done();
         var t0 = performance.now();
         (function tick(now) {
@@ -305,7 +377,29 @@
           if (t < 1) raf = requestAnimationFrame(tick); else done();
         })(t0);
       })
-      .catch(function () { busy = false; location.href = url(id, n); });
+      .catch(function () { clearTimeout(waitTimer); busy = false; location.href = url(id, n); });
+  }
+  function waitAt(id) {
+    var svg = canvas.querySelector('svg'), p = cur.layout.persons.filter(function (q) { return q.id === id; })[0];
+    if (!svg || !p || cut || reduce) return;
+    var box = svg.getBoundingClientRect(), hv = cur.layout.meta.hview, v = cur.layout.meta.view;
+    var w = document.createElement('span');
+    w.className = 'rv-wait';
+    w.setAttribute('aria-hidden', 'true');
+    w.innerHTML = '<i></i><i></i>';
+    w.style.left = ((p.x - hv[0]) / hv[1] * box.width) + 'px';
+    w.style.top = ((p.y - v[0]) / v[1] * box.height) + 'px';
+    canvas.appendChild(w);
+  }
+  // The fixed point's ring breathes twice when a reader arrives (app.css).
+  var arriveTimer = null;
+  function arrive() {
+    if (cut || reduce) return;
+    root.classList.remove('rv-arrived');
+    void root.offsetWidth;
+    root.classList.add('rv-arrived');
+    clearTimeout(arriveTimer);
+    arriveTimer = setTimeout(function () { root.classList.remove('rv-arrived'); }, 4200);
   }
   // The record tab beside the river; kept as the reader travels. A person
   // without that tab is drawn on their first one by the server.
@@ -445,4 +539,9 @@
   window.axgfRiver = { travel: function (id) { travel(id); } };
   history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
   controls(cur.layout.meta.n);
+  decorate();
+  // The river's entrance is CSS from the first paint (`rv-intro`, written by
+  // the server): it plays once per page, so the class goes once it has, and
+  // the stills a travel lays down later arrive without it.
+  setTimeout(function () { root.classList.remove('rv-intro'); }, 2400);
 })();

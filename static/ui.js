@@ -125,8 +125,29 @@
       by.setAttribute("aria-disabled", "true");
       by.setAttribute("data-idle", by.textContent);
       by.textContent = by.getAttribute("data-busy");
+      // Beside the words, never in place of them: a loader that only the
+      // reference theme draws (app.css, docs/adr/0004 §4) and that assistive
+      // technology is spared — the words already say what is happening.
+      by.appendChild(loader(by.getAttribute("data-loader")));
     }
   });
+  // A loader's markup, as templates/_icons.html writes it: three dots by
+  // default, or the river or the hourglass where a page asks for one.
+  function loader(kind) {
+    var el = document.createElement("span");
+    el.setAttribute("aria-hidden", "true");
+    if (kind === "river" || kind === "hourglass") {
+      el.className = "ld ld-" + kind;
+      el.innerHTML = '<svg class="ico" viewBox="0 0 24 24" focusable="false">' + (kind === "river"
+        ? '<path d="M2 12c2.4-3.2 4.8-3.2 7.2 0s4.8 3.2 7.2 0 4.2-3.2 5.6-1"/>'
+        : '<path d="M7 3h10M7 21h10"/><path d="M8 3c0 5 8 5 8 9s-8 4-8 9"/><path d="M16 3c0 5-8 5-8 9s8 4 8 9"/>') + "</svg>";
+    } else {
+      el.className = "ld ld-dots";
+      el.innerHTML = "<i></i><i></i><i></i>";
+    }
+    return el;
+  }
+  window.axgfLoader = loader;
   // Back to a page from the history cache: the form is idle again.
   window.addEventListener("pageshow", function (ev) {
     if (!ev.persisted) return;
@@ -140,6 +161,46 @@
       b.removeAttribute("aria-disabled");
     });
   });
+
+  // Motion that answers the reader (v0.5.0, docs/adr/0004 §6). Only where
+  // `prefers-reduced-motion` allows it, and only drawn by the reference
+  // theme: `js-motion` on the root is what app.css waits for, so a page
+  // without this script, or a reader who asked for stillness, has every
+  // section in place and every number whole from the first paint.
+  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!still && "IntersectionObserver" in window) {
+    var root = document.documentElement;
+    root.classList.add("js-motion");
+    var canopee = root.getAttribute("data-theme") === "canopee";
+    // A section rises into place the first time it scrolls into view.
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("is-in");
+        seen.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    document.querySelectorAll("[data-reveal]").forEach(function (el) { seen.observe(el); });
+    // A count runs up to its number once, the first time it is seen. The
+    // server wrote the number; this only replays the arrival of it.
+    if (canopee) {
+      var counted = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          counted.unobserve(e.target);
+          var el = e.target, to = parseInt(el.getAttribute("data-count"), 10);
+          if (!(to > 0)) return;
+          var t0 = performance.now(), ms = Math.min(1400, 500 + to / 3);
+          (function tick(now) {
+            var k = Math.min(1, (now - t0) / ms), eased = 1 - Math.pow(1 - k, 3);
+            el.textContent = String(Math.round(to * eased));
+            if (k < 1) requestAnimationFrame(tick); else el.textContent = String(to);
+          })(t0);
+        });
+      }, { threshold: 0.6 });
+      document.querySelectorAll("[data-count]").forEach(function (el) { counted.observe(el); });
+    }
+  }
 
   // `data-search` — the masthead search. Suggestions from /search.json as
   // you type; ↓ ↑ choose one; Enter travels the river to them (on the river
@@ -209,7 +270,11 @@
       if (!q) { close(); return; }
       timer = setTimeout(function () {
         asked = q;
+        // While the suggestions are out, the field says it is looking (the
+        // reference theme draws the dots; every theme gets aria-busy).
+        input.setAttribute("aria-busy", "true");
         fetch("/search.json?q=" + encodeURIComponent(q), { credentials: "same-origin" })
+          .finally(function () { if (asked === q) input.removeAttribute("aria-busy"); })
           .then(function (r) { return r.ok ? r.json() : { hits: [] }; })
           .then(function (found) { if (asked === q) show(found); })
           .catch(function () {});

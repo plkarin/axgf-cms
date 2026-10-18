@@ -1,44 +1,83 @@
 {% extends "base.html" %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ family_name }} — {{ t("app-name") }}{% endblock %}
+{% block main_class %}home{% endblock %}
 
 {% block content %}
-
-<h1>{{ family_name }}</h1>
-<p class="lede">
-  {% if total == 0 %}{{ t("home-empty") }}
-  {% else %}{{ t("home-count", total=total) }}{% endif %}
-</p>
-
-{#- No buttons here: the tree, the import and the administration are each
-    one control away in the masthead already (the minimalism pass). -#}
-
-{#- A kind the archive holds none of is not drawn: a "0" is an empty field. -#}
+{#- The overview (v0.5.0, docs/adr/0004): who the archive is, what it holds,
+    what it already tells beyond names and dates, and what a reader can do
+    for it. Under Canopée the hero carries its photograph and the sections
+    rise into place; under every other theme they are the plain frames of
+    Study 06. A kind the archive holds none of is not drawn: a "0" is an
+    empty field. -#}
 {% set held = counts | selectattr("n") | list %}
-{% if held %}
-<h2>{{ t("home-in-this-tree") }}</h2>
-<div class="grid cols-4">
-  {% for c in held %}
-  <div class="stat">
-    <div class="n">{{ c.n }}</div>
-    <div class="k">{{ t("kind-" ~ c.singular ~ "-plural", n=c.n) }}</div>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
 
-{% if showcase %}
-<h2>{{ t("home-showcase-title") }}</h2>
-<div class="grid cols-2" data-content>
-  {% for s in showcase %}
-  <div class="card">
-    <h3 style="margin-top:0">{{ s.title }}</h3>
-    <p class="small muted" style="margin-bottom:0.5rem">{{ s.detail }}</p>
-    {% if s.example_id %}
-      <a class="small" href="/person/{{ s.example_id }}">{{ t("home-showcase-example") }}</a>
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow-chip"><span class="dot" aria-hidden="true"></span>{{ family_name }} · {{ t("home-eyebrow") }}</p>
+    <h1 class="hero-title"><span>{{ t("home-hero-1") }}</span> <span class="hero-accent">{{ t("home-hero-2") }}</span></h1>
+    <p class="lede hero-lede">
+      {%- if total == 0 %}{{ t("home-empty") }}
+      {%- else %}{{ t("home-count", total=total) }}{% endif -%}
+    </p>
+    {#- Two ways in, and only two: the river and the tree. Everything else is
+        one control away in the masthead (the minimalism pass). -#}
+    {% if total > 0 %}
+    <div class="hero-actions">
+      <a class="btn primary" href="/">{{ t("home-cta-river") }}</a>
+      <a class="btn" href="/tree"><span class="hero-ring">{{ ic.icon("tree") }}</span>{{ t("home-cta-tree") }}</a>
+    </div>
     {% endif %}
   </div>
-  {% endfor %}
-</div>
+
+  {#- How sure the archive is of who is whose child: the record page's four
+      bands, and the links nobody has rated yet — not a number they do not
+      have (ADR 0003). The count is the value; the bar only compares. -#}
+  {% if trust %}
+  <aside class="hero-card" aria-labelledby="home-trust">
+    <h2 id="home-trust">{{ t("home-trust-title") }}</h2>
+    <ul class="share-list">
+      {% for b in trust %}
+      <li><span class="k">{{ t("home-trust-" ~ b.band) }}</span><span class="v">{{ b.n }}</span>
+        <span class="share-bar" data-band="{{ b.band }}" aria-hidden="true"><i style="--share: {{ b.pct }}%"></i></span></li>
+      {% endfor %}
+    </ul>
+  </aside>
+  {% endif %}
+
+  {% if held %}
+  <ul class="stat-strip" aria-label="{{ t('home-in-this-tree') }}">
+    {% for c in held %}
+    <li class="stat-item">
+      <span class="stat-ico">{{ ic.icon(c.singular) }}</span>
+      <span class="n" data-count="{{ c.n }}">{{ c.n }}</span>
+      <span class="k">{{ t("kind-" ~ c.singular ~ "-plural", n=c.n) }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <span class="scroll-cue" aria-hidden="true"><i></i>{{ t("home-scroll") }}</span>
+</section>
+
+{% if showcase %}
+<section class="home-section" data-reveal aria-labelledby="home-showcase">
+  <p class="eyebrow">{{ t("home-showcase-eyebrow") }}</p>
+  <h2 class="home-h2" id="home-showcase">{{ t("home-showcase-title") }}</h2>
+  {#- Content, one card per kind of detail the archive actually holds, each
+      pointing at a real example the reader may open. -#}
+  <div class="feature-grid" data-content>
+    {% for s in showcase %}
+    <article class="feature-card">
+      <span class="feature-ico" data-kind="{{ s.kind }}">{{ ic.icon(s.kind) }}</span>
+      <h3>{{ s.title }}</h3>
+      <p>{{ s.detail }}</p>
+      {% if s.example_id %}
+      <a class="feature-go" href="/person/{{ s.example_id }}">{{ t("home-showcase-example") }}</a>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
 {% endif %}
 
 {% if total == 0 %}
@@ -48,6 +87,17 @@
     {{ t("home-nothing-detail") }}
   </p>
 </div>
+{% else %}
+<section class="cta-banner" data-reveal aria-labelledby="home-cta">
+  <div class="cta-photo" aria-hidden="true"></div>
+  <div class="cta-copy">
+    <h2 id="home-cta">{{ t("home-cta-title") }}</h2>
+    <p>{{ t("home-cta-detail") }}</p>
+  </div>
+  {#- An editor's way to add to the archive; a reader receives no edit
+      control at all, not even a disabled one. -#}
+  {% if may_write %}<a class="btn" href="/admin/person/new">{{ t("home-cta-add") }}</a>{% endif %}
+</section>
 {% endif %}
 
 {% endblock %}

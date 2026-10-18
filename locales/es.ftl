@@ -64,7 +64,7 @@ theme-sepia = Sepia
 theme-deuteranopia = Deuteranopía
 theme-protanopia = Protanopía
 theme-tritanopia = Tritanopía
-theme-default-note = Nocturno, el tema oscuro, es el predeterminado aunque su sistema pida uno claro. Elija «Como el sistema» para que decida su sistema.
+theme-default-note = Dosel, el tema oscuro verde bosque, es el predeterminado aunque su sistema pida uno claro. Elija «Como el sistema» para que decida su sistema.
 theme-fleuve-hiver-note = claro, frío
 theme-fleuve-hiver = Río de invierno
 theme-encre-note = oscuro, azul noche
@@ -74,8 +74,10 @@ theme-crepuscule = Crepúsculo
 theme-light-note = claro
 theme-colour-blind-note = apto para daltonismo
 theme-contrast-note = alto contraste
-theme-dark-note = oscuro · predeterminado
+theme-dark-note = oscuro
 theme-river-note = El río sigue oscuro con cualquier tema: sus colores están hechos para un fondo oscuro.
+theme-canopee = Dosel
+theme-canopee-note = oscuro, verde bosque · predeterminado
 
 ## Árbol
 
@@ -574,6 +576,22 @@ home-showcase-title = Donde este árbol dice ya más que nombres y fechas
 home-showcase-example = Ver un ejemplo →
 home-nothing-title = Todavía no hay nada que mostrar.
 home-nothing-detail = Importe un fichero familiar para traer un árbol ya existente, o empiece de cero y añada usted mismo a la primera persona.
+home-eyebrow = Archivo familiar
+home-hero-1 = Cada vida es una fuente.
+home-hero-2 = Cada familia, un río.
+home-cta-river = Explorar el río
+home-cta-tree = Ver el árbol
+home-scroll = Desplácese para explorar
+home-trust-title = Confianza en las filiaciones
+home-trust-certain = prácticamente seguras
+home-trust-high = bien fundamentadas
+home-trust-medium = plausibles
+home-trust-low = hipotéticas
+home-trust-unrated = aún sin evaluar
+home-showcase-eyebrow = Más allá de nombres y fechas
+home-cta-title = Juntos, guardemos la memoria de la familia.
+home-cta-detail = Cada nombre añadido y cada fuente comprobada hacen el río más fiel para quienes vendrán.
+home-cta-add = Añadir una persona
 
 ## Tarjetas de muestra
 
@@ -3227,6 +3245,7 @@ river-legend-repeat = ×n alcanzado por n líneas, dibujado bajo cada una
 river-legend-again = ↔ dibujado de nuevo junto a una pareja posterior
 river-legend-discharge = descendientes
 river-legend-direction = ↓ hacia la fuente · ↑ hacia los vivos
+river-legend-generation = una generación ≈ 29 años
 river-grid-link = Vista en cuadrícula
 river-tab-sources = Fuentes
 river-legend-title = Cómo leer el río

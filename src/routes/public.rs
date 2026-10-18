@@ -37,6 +37,11 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
         showcase_highlights(flat, lens, chrome.lang)
     });
 
+    // How sure the archive is of who is whose child (v0.5.0): the
+    // confidence of every filiation this reader may see, in the record
+    // page's four bands, and those nobody has rated yet.
+    let trust = state.read_as(viewer.ceiling(), filiation_trust);
+
     render::page_with(
         &chrome,
         "home.html",
@@ -53,8 +58,61 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
                 .map(|((_, n), singular)| json!({"singular": singular, "n": n}))
                 .collect::<Vec<_>>(),
             showcase,
+            trust,
         },
     )
+}
+
+/// The confidence of every parent–child link the reader may see, in the
+/// record page's bands (`view::Confidence`: certain ≥ 0.90, high ≥ 0.75,
+/// medium ≥ 0.50, low below), plus the links nobody has rated — which are
+/// not 0.5 or any other number: an absent value has no position (ADR 0003).
+///
+/// A link counts only when the reader may see the family and the child, so
+/// a hidden child is not even a number here. Each band carries its share of
+/// the whole, rounded, and a band with nothing in it is not drawn.
+fn filiation_trust(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
+    let mut n = [0usize; 5];
+    for fam in flat
+        .get("families")
+        .and_then(Value::as_object)
+        .into_iter()
+        .flat_map(|m| m.values())
+        .filter(|f| lens.sees_entity(f))
+    {
+        for child in fam
+            .get("children")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+        {
+            let seen = child
+                .get("person_id")
+                .and_then(Value::as_str)
+                .is_some_and(|id| lens.sees_person(id));
+            if !seen {
+                continue;
+            }
+            let band = match child.get("confidence").and_then(Value::as_f64) {
+                Some(x) if x >= 0.90 => 0,
+                Some(x) if x >= 0.75 => 1,
+                Some(x) if x >= 0.50 => 2,
+                Some(_) => 3,
+                None => 4,
+            };
+            n[band] += 1;
+        }
+    }
+    let total: usize = n.iter().sum();
+    if total == 0 {
+        return Vec::new();
+    }
+    ["certain", "high", "medium", "low", "unrated"]
+        .iter()
+        .zip(n)
+        .filter(|(_, k)| *k > 0)
+        .map(|(band, k)| json!({"band": band, "n": k, "pct": (k * 100 + total / 2) / total}))
+        .collect()
 }
 
 /// Work out which of the richer kinds of detail this tree actually holds, so
@@ -88,6 +146,7 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
                     .map(str::to_string)
             });
             out.push(json!({
+                "kind": "links",
                 "title": t("showcase-links-title", &[("n", (readable.len() as i64).into())]),
                 "detail": t("showcase-links-detail", &[]),
                 "example_id": example,
@@ -112,6 +171,7 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
                 .and_then(Value::as_str)
                 .map(str::to_string);
             out.push(json!({
+                "kind": "occupations",
                 "title": t("showcase-occupations-title", &[("n", (readable.len() as i64).into())]),
                 "detail": t("showcase-occupations-detail", &[]),
                 "example_id": example,
@@ -151,6 +211,7 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
         }
         if uncertain > 0 {
             out.push(json!({
+                "kind": "uncertain",
                 "title": t("showcase-uncertain-title", &[("n", (uncertain as i64).into())]),
                 "detail": t("showcase-uncertain-detail", &[]),
                 "example_id": example,
@@ -158,6 +219,7 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
         }
         if preserved > 0 {
             out.push(json!({
+                "kind": "preserved",
                 "title": t("showcase-preserved-title", &[("n", (preserved as i64).into())]),
                 "detail": t("showcase-preserved-detail", &[]),
                 "example_id": Value::Null,
@@ -172,6 +234,7 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
                 .filter(|s| s.get("reliability").and_then(Value::as_str) == Some("primary"))
                 .count();
             out.push(json!({
+                "kind": "sources",
                 "title": t("showcase-sources-title", &[("n", (sources.len() as i64).into())]),
                 "detail": t("showcase-sources-detail", &[("primary", (primary as i64).into())]),
                 "example_id": Value::Null,
@@ -190,6 +253,7 @@ fn showcase_highlights(flat: &Value, lens: &crate::access::Lens, lang: &str) -> 
             .count();
         if with_history > 0 {
             out.push(json!({
+                "kind": "places",
                 "title": t("showcase-places-title", &[("n", (with_history as i64).into())]),
                 "detail": t("showcase-places-detail", &[]),
                 "example_id": Value::Null,
@@ -1215,6 +1279,44 @@ pub async fn css() -> Response {
         render::APP_CSS,
     )
         .into_response()
+}
+
+/// A picture the binary carries (v0.5.0, docs/adr/0004). A day of cache: a
+/// picture changes with a release, and a release is announced.
+fn picture(kind: &'static str, body: &'static [u8]) -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, kind),
+            (header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
+        body,
+    )
+        .into_response()
+}
+
+/// `GET /static/img/canopee-hero.jpg` — behind the overview page's hero, under
+/// Canopée only.
+pub async fn canopee_hero_jpg() -> Response {
+    picture("image/jpeg", render::CANOPEE_HERO_JPG)
+}
+
+/// `GET /static/img/canopee-cta.jpg` — beside the overview page's last band,
+/// under Canopée only.
+pub async fn canopee_cta_jpg() -> Response {
+    picture("image/jpeg", render::CANOPEE_CTA_JPG)
+}
+
+/// `GET /static/img/river-ground.jpg` — the river's ground, under every theme
+/// but Gravure. The same picture behind every person: nothing in it depends
+/// on the archive.
+pub async fn river_ground_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_GROUND_JPG)
+}
+
+/// `GET /static/img/river-contours.svg` — the contour lines over the river's
+/// ground, a mask coloured by the stylesheet.
+pub async fn river_contours_svg() -> Response {
+    picture("image/svg+xml", render::RIVER_CONTOURS_SVG.as_bytes())
 }
 
 /// Fallback for unmatched paths.

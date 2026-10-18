@@ -45,6 +45,36 @@ fn the_bar_is_58px_on_the_page_ground_with_one_hairline() {
     assert!(rule(".masthead-inner").contains("min-block-size: 58px"));
 }
 
+/// Every rule as (selector, body), comments stripped and `@media` wrappers
+/// looked through — the same reading `tests/controls.rs` makes.
+fn rules() -> Vec<(String, String)> {
+    let src = css();
+    let mut css = String::new();
+    let mut rest = src;
+    while let Some(i) = rest.find("/*") {
+        css.push_str(&rest[..i]);
+        rest = &rest[i + rest[i..].find("*/").expect("closed comment") + 2..];
+    }
+    css.push_str(rest);
+    let mut out = Vec::new();
+    let mut start = 0;
+    for (i, c) in css.char_indices() {
+        match c {
+            '}' => start = i + 1,
+            '{' => {
+                let end = i + css[i..].find('}').expect("a closing brace");
+                let body = &css[i + 1..end];
+                if !body.contains('{') {
+                    out.push((css[start..i].trim().to_string(), body.trim().to_string()));
+                }
+                start = i + 1;
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
 #[test]
 fn nothing_in_the_bar_is_coloured() {
     // The purple wordmark and its underline were in no palette. Amber is the
@@ -58,14 +88,27 @@ fn nothing_in_the_bar_is_coloured() {
             && !current.contains("background"),
         "an underline in ink, not a pill: {current}"
     );
-    let all: String = css()
-        .split("\n.")
-        .filter(|r| r.starts_with("masthead") || r.starts_with("brand"))
-        .collect();
-    assert!(
-        !all.contains("--accent"),
-        "no accent anywhere in the masthead's rules"
-    );
+    // Read rule by rule. It used to be read in chunks split at "\n.", which
+    // would have let any rule that does not begin with a class through
+    // unread. Canopée, the reference theme, writes the section you are in,
+    // the sign-in and its leaf in its lime (docs/adr/0004 §2): that is the
+    // one exception, and it holds only under that theme's own selector, so
+    // every other theme keeps Study 06's ink masthead.
+    let mut canopee = 0;
+    for (sel, body) in rules() {
+        let reaches = [".masthead", ".brand", ".chrome-nav", ".lang-form", ".prefs-more"]
+            .iter()
+            .any(|m| sel.contains(m));
+        if !reaches || !body.contains("--accent") {
+            continue;
+        }
+        if sel.split(',').all(|part| part.trim().starts_with("[data-theme=\"canopee\"]")) {
+            canopee += 1;
+            continue;
+        }
+        panic!("{sel} puts the accent in the masthead outside Canopée: {body}");
+    }
+    assert!(canopee > 0, "Canopée draws its own masthead, under its own selector");
 }
 
 #[tokio::test]

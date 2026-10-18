@@ -6,6 +6,98 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Canopée, the reference theme, and a river that reads like a landscape.
+Nothing about the AXGF file changes. The river's geometry, its layout and
+everything the server sends for it (SVG and payload) are byte for byte what
+they were. docs/adr/0004 records every decision below.
+
+### Added
+
+**Canopée, the new default theme.** It has a forest-green ground and a lime
+accent, after the Zenze and Selva Verde references, which were cut apart and
+reworked in Canva (folder "AXGF · Thème Canopée"). It is the first theme
+that carries more than a palette:
+
+- pill buttons, the primary with an arrow that moves forward under the
+  pointer;
+- softened fields and cards;
+- record tabs as a segmented pill;
+- notices whose shape also carries a sign (i, ✓, !, ×);
+- a leaf beside the wordmark;
+- a lime glow under the focus ring, never in place of it.
+
+A reader who already chose a theme keeps it. To try Canopée, pick
+"Canopée" in the masthead's theme select. Its contrast is measured like
+every other theme's: the tightest pair is a control edge on the darkest
+wash under the contour texture, at 3.25:1.
+
+**The overview page (`/about`) is redrawn.**
+
+- The hero: the family's name in a chip, the headline "Chaque vie est une
+  source. Chaque famille, une rivière.", what the family has recorded, and
+  two ways in, the river and the tree. Under Canopée a photograph of
+  terraced hills sits behind it.
+- A card showing how sure the archive is of each parentage. It counts only
+  links the reader may see, in the record page's four bands, plus the links
+  nobody has rated yet.
+- The figures as a strip with icons.
+- The showcase cards with coloured discs.
+- A last band. *Ajouter une personne* is the page's only edit control, and
+  only an editor gets it.
+
+**Loaders, beside the words.** A busy button still says what it is doing.
+Under Canopée a loader from the reference set also moves beside the words:
+three dots, a flowing river on the record editor's save (which rewrites the
+whole archive), an hourglass on an import. Ripples mark the person you are
+travelling to in the river while their river is fetched.
+
+**The river's ground**, after Selva Verde:
+
+- a forest seen from above under a shade, with contour lines;
+- terrain that follows every line in its water's colour, so old generations
+  sit in teal ground and recent ones in ochre;
+- a thread of light down the middle of attested water, so confidence also
+  reads as brightness;
+- a lit route with a halo, its stations ringed, and a thread of light
+  running toward the living;
+- a cartographer's legend: a compass, and the scale of a generation (29
+  years), shown only for a river with an era;
+- the itinerary numbered 01, 02, 03;
+- an entrance once per page, and the fixed point breathing on arrival.
+
+All of it is drawn by `river.js` from the payload the page already holds,
+with plain strokes and no filter. Under Gravure (high contrast) and in print
+the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
+every light that moves.
+
+**Motion that answers the reader**, under Canopée:
+
+- sections rise into place once;
+- figures count up once;
+- the scroll cue's wheel turns three times.
+
+Nothing moves without a reason, and nothing loops except a loader while work
+is out.
+
+### Changed
+
+- **The default theme is Canopée.** Nocturne (Study 06) is still offered,
+  and so is every other theme.
+- **Buttons and fields take their round from a token** (`--btn-radius`,
+  `--field-radius`): Study 06's 2px in every theme but Canopée.
+
+### Tests
+
+- `controls.rs`: one radius per theme, defined on `:root` and by Canopée and
+  nowhere else.
+- `fields.rs`: the same for fields.
+- `masthead.rs`: the stylesheet is read rule by rule. The accent may reach
+  the masthead only under Canopée's selector. The test used to read chunks
+  split at `\n.`, which let anything not starting with a class through
+  unread.
+- `themes.rs` and `design_tokens.rs`: eleven palettes measured, Canopée
+  among them, with no exception.
+
 ## [0.4.3] — 2026-10-15
 
 Themes and the masthead. The editor and the river's layout are unchanged.

@@ -65,7 +65,7 @@ theme-sepia = セピア
 theme-deuteranopia = 第二色覚
 theme-protanopia = 第一色覚
 theme-tritanopia = 第三色覚
-theme-default-note = 暗い配色「夜想曲」が既定です。システムが明るい配色を求めていても変わりません。システムに任せるには「システムに合わせる」を選んでください。
+theme-default-note = 森の緑の暗い配色「林冠」が既定です。システムが明るい配色を求めていても変わりません。システムに任せるには「システムに合わせる」を選んでください。
 theme-fleuve-hiver-note = 明るい・寒色
 theme-fleuve-hiver = 冬の川
 theme-encre-note = 暗い・濃紺
@@ -75,8 +75,10 @@ theme-crepuscule = 黄昏
 theme-light-note = 明るい
 theme-colour-blind-note = 色覚に配慮
 theme-contrast-note = 高コントラスト
-theme-dark-note = 暗い・既定
+theme-dark-note = 暗い
 theme-river-note = 川はどのテーマでも暗いままです。色が暗い背景に合わせて作られているためです。
+theme-canopee = 林冠
+theme-canopee-note = 暗い・森の緑・既定
 
 ## 家系図
 
@@ -488,6 +490,22 @@ home-showcase-title = この家系図がすでに名前と日付以上を語っ�
 home-showcase-example = 例を見る →
 home-nothing-title = まだお見せするものがありません。
 home-nothing-detail = 家族のファイルを取り込んで既存の家系図を移すか、何もないところから最初の一人をご自身で登録してください。
+home-eyebrow = 家族の記録
+home-hero-1 = ひとつの命は、ひとつの源。
+home-hero-2 = ひとつの家族は、ひとつの川。
+home-cta-river = 川をたどる
+home-cta-tree = 家系図を見る
+home-scroll = スクロールして見る
+home-trust-title = 親子関係の確からしさ
+home-trust-certain = ほぼ確実
+home-trust-high = 根拠が十分
+home-trust-medium = 妥当
+home-trust-low = 仮説的
+home-trust-unrated = 未評価
+home-showcase-eyebrow = 名前と日付の先へ
+home-cta-title = 家族の記憶を、いっしょに守りましょう。
+home-cta-detail = 名前をひとつ加え、出典をひとつ確かめるたびに、川は後の世代にとってより確かなものになります。
+home-cta-add = 人物を追加
 
 ## 概観カード
 
@@ -2977,6 +2995,7 @@ river-legend-repeat = ×n n本の系統から到達し、それぞれの下に�
 river-legend-again = ↔ 後の配偶者の隣に再表示
 river-legend-discharge = 子孫数
 river-legend-direction = ↓ 源流へ · ↑ 存命者へ
+river-legend-generation = 1世代 ≈ 29年
 river-grid-link = グリッド表示
 river-tab-sources = 出典
 river-legend-title = 流れの読み方

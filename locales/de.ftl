@@ -66,7 +66,7 @@ theme-sepia = Sepia
 theme-deuteranopia = Deuteranopie
 theme-protanopia = Protanopie
 theme-tritanopia = Tritanopie
-theme-default-note = Nocturne, das dunkle Farbschema, ist der Standard – auch wenn Ihr System ein helles verlangt. Wählen Sie „Wie im System“, um Ihr System entscheiden zu lassen.
+theme-default-note = Blätterdach, das dunkle waldgrüne Farbschema, ist der Standard – auch wenn Ihr System ein helles verlangt. Wählen Sie „Wie im System“, um Ihr System entscheiden zu lassen.
 theme-fleuve-hiver-note = hell, kühl
 theme-fleuve-hiver = Winterfluss
 theme-encre-note = dunkel, nachtblau
@@ -76,8 +76,10 @@ theme-crepuscule = Dämmerung
 theme-light-note = hell
 theme-colour-blind-note = farbfehlsichtigkeitssicher
 theme-contrast-note = hoher Kontrast
-theme-dark-note = dunkel · Standard
+theme-dark-note = dunkel
 theme-river-note = Der Fluss bleibt in jedem Thema dunkel: Seine Farben sind für einen dunklen Grund gemacht.
+theme-canopee = Blätterdach
+theme-canopee-note = dunkel, waldgrün · Standard
 
 ## Stammbaum
 
@@ -571,6 +573,22 @@ home-showcase-title = Wo dieser Stammbaum bereits mehr sagt als Namen und Daten
 home-showcase-example = Ein Beispiel ansehen →
 home-nothing-title = Noch nichts zu zeigen.
 home-nothing-detail = Importieren Sie eine Familiendatei, um einen vorhandenen Stammbaum zu übernehmen, oder fangen Sie bei null an und legen Sie die erste Person selbst an.
+home-eyebrow = Familienarchiv
+home-hero-1 = Jedes Leben ist eine Quelle.
+home-hero-2 = Jede Familie ein Fluss.
+home-cta-river = Den Fluss erkunden
+home-cta-tree = Den Stammbaum ansehen
+home-scroll = Zum Erkunden scrollen
+home-trust-title = Gewissheit der Abstammungen
+home-trust-certain = praktisch sicher
+home-trust-high = gut belegt
+home-trust-medium = plausibel
+home-trust-low = hypothetisch
+home-trust-unrated = noch nicht bewertet
+home-showcase-eyebrow = Mehr als Namen und Daten
+home-cta-title = Gemeinsam bewahren wir das Gedächtnis der Familie.
+home-cta-detail = Jeder hinzugefügte Name und jede geprüfte Quelle macht den Fluss genauer für alle, die nach uns kommen.
+home-cta-add = Person hinzufügen
 
 ## Übersichtskarten
 
@@ -3217,6 +3235,7 @@ river-legend-repeat = ×n über n Linien erreicht, unter jeder gezeichnet
 river-legend-again = ↔ neben einem späteren Partner erneut gezeichnet
 river-legend-discharge = Nachkommen
 river-legend-direction = ↓ zur Quelle · ↑ zu den Lebenden
+river-legend-generation = eine Generation ≈ 29 Jahre
 river-grid-link = Rasteransicht
 river-tab-sources = Quellen
 river-legend-title = So liest man den Fluss

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ centre_name }} — {{ t("nav-river") }} — {{ t("app-name") }}{% endblock %}
 {% block main_class %}wide river-main{% endblock %}
 
@@ -21,7 +22,9 @@
     on this root made every other link inside the river — the grid, the full
     record, the editor — resolve to the root, travel to where it already was,
     and do nothing. #}
-<div class="river" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
+{#- `rv-intro`: the river's entrance, played once from the first paint by
+    app.css and taken off by river.js when it has played (v0.5.0). -#}
+<div class="river rv-intro" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
      data-river-motion="{{ 'cut' if motion_cut else 'travel' }}">
   <section class="rv-stage" aria-label="{{ t('nav-river') }}">
     <div class="rv-controls">
@@ -50,7 +53,13 @@
 
     <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}</div>
 
-    <div class="rv-legend" role="note" aria-label="{{ t('river-legend-title') }}">
+    <div class="rv-legend" role="note" aria-labelledby="rv-legend-title">
+      {#- A cartographer's legend (v0.5.0, docs/adr/0004 §5): a title, the
+          keys, a compass that says which way time runs, and the scale of a
+          generation — shown by river.js only when the river has an era,
+          because without a year the reader may see it has no time at all
+          (ADR 0001 §3). -#}
+      <span class="rv-legend-title" id="rv-legend-title">{{ t("river-legend-title") }}</span>
       <span><i class="rv-key rv-key-a"></i>{{ t("river-legend-attested") }}</span>
       <span><i class="rv-key rv-key-d"></i>{{ t("river-legend-inferred") }}</span>
       <span><i class="rv-key rv-key-s"></i>{{ t("river-legend-speculative") }}</span>
@@ -64,7 +73,8 @@
       <span><i class="rv-rep"></i>{{ t("river-legend-repeat") }}</span>
       <span><i class="rv-rep rv-rep-again"></i>{{ t("river-legend-again") }}</span>
       <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
-      <span class="rv-direction">{{ t("river-legend-direction") }}</span>
+      <span class="rv-scale" data-rv-scale hidden><b></b>{{ t("river-legend-generation") }}</span>
+      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}{{ t("river-legend-direction") }}</span>
     </div>
   </section>
 

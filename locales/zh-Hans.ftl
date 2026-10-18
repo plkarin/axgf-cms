@@ -64,7 +64,7 @@ theme-sepia = 棕褐
 theme-deuteranopia = 绿色盲
 theme-protanopia = 红色盲
 theme-tritanopia = 蓝色盲
-theme-default-note = 深色主题“夜曲”为默认主题，即使系统要求浅色也是如此。选择“跟随系统”即可交由系统决定。
+theme-default-note = 森林绿深色主题“林冠”为默认主题，即使系统要求浅色也是如此。选择“跟随系统”即可交由系统决定。
 theme-fleuve-hiver-note = 浅色，冷调
 theme-fleuve-hiver = 冬河
 theme-encre-note = 深色，午夜蓝
@@ -74,8 +74,10 @@ theme-crepuscule = 黄昏
 theme-light-note = 浅色
 theme-colour-blind-note = 色觉友好
 theme-contrast-note = 高对比度
-theme-dark-note = 深色 · 默认
+theme-dark-note = 深色
 theme-river-note = 无论选择哪种主题，河流都保持深色：它的颜色是为深色背景设计的。
+theme-canopee = 林冠
+theme-canopee-note = 深色 · 森林绿 · 默认
 
 ## 家谱
 
@@ -487,6 +489,22 @@ home-showcase-title = 这棵家谱已经说出的，不止是姓名和日期
 home-showcase-example = 看一个例子 →
 home-nothing-title = 还没有可展示的内容。
 home-nothing-detail = 导入一个家族文件以迁入已有的家谱，或者从零开始，自己添加第一个人。
+home-eyebrow = 家族档案
+home-hero-1 = 每一个生命，都是一处源头。
+home-hero-2 = 每一个家庭，都是一条河流。
+home-cta-river = 探索河流
+home-cta-tree = 查看家谱树
+home-scroll = 向下滚动浏览
+home-trust-title = 亲子关系的可信程度
+home-trust-certain = 几乎确定
+home-trust-high = 依据充分
+home-trust-medium = 较为可信
+home-trust-low = 推测
+home-trust-unrated = 尚未评估
+home-showcase-eyebrow = 不止姓名与日期
+home-cta-title = 让我们一起守护家族的记忆。
+home-cta-detail = 每添加一个名字、每核实一处来源，这条河流对后来者都更加真实。
+home-cta-add = 添加人物
 
 ## 概览卡片
 
@@ -2977,6 +2995,7 @@ river-legend-repeat = ×n 由 n 条世系到达，在每条之下各绘一次
 river-legend-again = ↔ 在后来的伴侣旁再次绘出
 river-legend-discharge = 后代数
 river-legend-direction = ↓ 向源头 · ↑ 向在世者
+river-legend-generation = 一代 ≈ 29 年
 river-grid-link = 网格视图
 river-tab-sources = 来源
 river-legend-title = 如何阅读河流

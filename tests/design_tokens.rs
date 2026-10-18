@@ -465,9 +465,9 @@ fn every_theme_reads() {
         }
     }
     assert_eq!(
-        themes, 10,
-        "light, system-dark, dark, high contrast, sepia, crépuscule, encre, \
-         fleuve d'hiver, the red-green pair, tritanopia"
+        themes, 11,
+        "light, system-dark, dark, canopée, high contrast, sepia, crépuscule, \
+         encre, fleuve d'hiver, the red-green pair, tritanopia"
     );
     assert!(short.is_empty(), "{}", short.join("\n"));
 }

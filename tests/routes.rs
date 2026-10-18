@@ -531,10 +531,12 @@ async fn the_settings_are_one_form_of_five_choices() {
         "no lists of radio buttons"
     );
     assert_eq!(main.matches("<button").count(), 1, "one button");
-    // Every theme and every language is still offered.
+    // Every theme and every language is still offered: eleven themes and
+    // "match my system" since Canopée (v0.5.0), eleven languages, three
+    // densities, two kinds of motion.
     assert_eq!(
         main.matches("<option").count(),
-        11 + 11 + 3 + 2,
+        12 + 11 + 3 + 2,
         "themes, languages, densities, motion"
     );
 

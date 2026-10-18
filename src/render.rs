@@ -50,6 +50,16 @@ pub const UI_JS: &str = include_str!("../static/ui.js");
 pub const LEAFLET_JS: &str = include_str!("../static/vendor/leaflet.js");
 pub const LEAFLET_CSS: &str = include_str!("../static/vendor/leaflet.css");
 
+/// The pictures of v0.5.0 (docs/adr/0004): Canopée's two photographs, made
+/// for it in the operator's Canva, the river's ground (a forest from above,
+/// also made there) and the river's contour lines (generated, a mask that
+/// app.css colours). Embedded like every other asset, so a release is still
+/// one file; 0.3 MB in all.
+pub const CANOPEE_HERO_JPG: &[u8] = include_bytes!("../static/img/canopee-hero.jpg");
+pub const CANOPEE_CTA_JPG: &[u8] = include_bytes!("../static/img/canopee-cta.jpg");
+pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
+pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
+
 macro_rules! templates {
     ($($name:literal),* $(,)?) => {
         &[ $( ($name, include_str!(concat!("../templates/", $name))) ),* ]
@@ -98,6 +108,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_avatar.html",
     "admin_result.html",
     "_macros.html",
+    "_icons.html",
     "_completeness.html"
 ];
 

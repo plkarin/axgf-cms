@@ -55,7 +55,7 @@ theme-sepia = Sepia
 theme-deuteranopia = Deuteranopia
 theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
-theme-default-note = Nocturne, the dark theme, is the default whatever your system asks for. Choose “Match my system” to let your system decide.
+theme-default-note = Canopy, the dark forest-green theme, is the default whatever your system asks for. Choose “Match my system” to let your system decide.
 theme-fleuve-hiver-note = light, cool
 theme-fleuve-hiver = Winter River
 theme-encre-note = dark, midnight blue
@@ -65,8 +65,10 @@ theme-crepuscule = Dusk
 theme-light-note = light
 theme-colour-blind-note = colour-blind safe
 theme-contrast-note = high contrast
-theme-dark-note = dark · the default
+theme-dark-note = dark
 theme-river-note = The river stays dark under every theme: its colours are made for a dark ground.
+theme-canopee = Canopy
+theme-canopee-note = dark, forest green · the default
 
 ## Tree
 
@@ -576,6 +578,22 @@ home-showcase-title = Where this tree already says more than names and dates
 home-showcase-example = See an example →
 home-nothing-title = Nothing to show yet.
 home-nothing-detail = Import a family file to bring an existing tree across, or start from nothing and add the first person yourself.
+home-eyebrow = Family archive
+home-hero-1 = Every life is a source.
+home-hero-2 = Every family, a river.
+home-cta-river = Explore the river
+home-cta-tree = See the tree
+home-scroll = Scroll to explore
+home-trust-title = Confidence in each parentage
+home-trust-certain = practically certain
+home-trust-high = well supported
+home-trust-medium = plausible
+home-trust-low = hypothetical
+home-trust-unrated = not yet rated
+home-showcase-eyebrow = Beyond names and dates
+home-cta-title = Together, let’s keep the family’s memory.
+home-cta-detail = Every name added and every source checked makes the river truer for those who come after.
+home-cta-add = Add a person
 
 ## Showcase cards
 
@@ -3257,6 +3275,7 @@ river-legend-repeat = ×n reached by n lines, drawn under each
 river-legend-again = ↔ drawn again beside a later partner
 river-legend-discharge = descendants
 river-legend-direction = ↓ toward the source · ↑ toward the living
+river-legend-generation = one generation ≈ 29 years
 river-grid-link = Grid view
 river-tab-sources = Sources
 river-legend-title = How to read the river

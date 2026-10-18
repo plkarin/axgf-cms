@@ -8,16 +8,24 @@
 //! navigation, and is worst for exactly the reader who most needs the setting:
 //! somebody using the high-contrast theme gets a white flash on every page.
 //!
-//! # Dark wins, and the system has a say only when asked
+//! # A dark ground wins, and the system has a say only when asked
 //!
 //! The order is: the account's stored preference, then the cookie, then
-//! [`DEFAULT`], which is `dark`, written into the page. The operating
-//! system's `prefers-color-scheme` is not in that order at all (v0.4.3): a
-//! reader who has chosen nothing gets Study 06's dark ground even when their
-//! system asks for light. The system decides only for a reader who chose
-//! "match my system", which renders `data-theme="system"` and is the one
-//! selector the stylesheet's colour-scheme query applies to. A page without
-//! any `data-theme` falls back to dark in the stylesheet too.
+//! [`DEFAULT`], which is `canopee` since v0.5.0, written into the page. The
+//! operating system's `prefers-color-scheme` is not in that order at all
+//! (v0.4.3): a reader who has chosen nothing gets a dark ground even when
+//! their system asks for light. The system decides only for a reader who
+//! chose "match my system", which renders `data-theme="system"` and is the
+//! one selector the stylesheet's colour-scheme query applies to. A page
+//! without any `data-theme` falls back to Study 06's dark in the stylesheet.
+//!
+//! # Canopée, the reference theme (v0.5.0, docs/adr/0004)
+//!
+//! Every other theme is a palette and nothing else. Canopée is the first to
+//! carry its own furniture as well — the round of its buttons and fields, its
+//! elevation, its motion, its loaders and its two photographs — all written
+//! under `[data-theme="canopee"]`, so that choosing any other theme gives back
+//! Study 06's furniture exactly as it was.
 //!
 //! `prefers-reduced-motion` keeps its power: it is a medical setting, and
 //! nothing a reader picks here overrides it (`static/app.css`, `river.js`).
@@ -54,6 +62,13 @@ pub struct Theme {
 /// keep the names of what they are built for: there, the name is the
 /// function.
 pub const THEMES: &[Theme] = &[
+    Theme {
+        id: "canopee",
+        key: "theme-canopee",
+        note_key: Some("theme-canopee-note"),
+        wash: true,
+        colour_blind: false,
+    },
     Theme {
         id: "dark",
         key: "theme-dark",
@@ -133,11 +148,13 @@ pub const THEMES: &[Theme] = &[
     },
 ];
 
-/// What a reader gets when they have expressed no preference: `dark`, which
-/// is Study 06, the site's own look (docs/adr/0002). It used to be `system`,
-/// which on most machines meant light, so the signature look was the one
-/// almost nobody saw. `system` is still on offer as a choice.
-pub const DEFAULT: &str = "dark";
+/// What a reader gets when they have expressed no preference: `canopee`, the
+/// reference theme since v0.5.0 (docs/adr/0004). Before it, `dark` — Study
+/// 06 — held the place (docs/adr/0002), and before that `system`, which on
+/// most machines meant light, so the signature look was the one almost
+/// nobody saw. Both are still on offer as choices, and a reader who chose
+/// Nocturne keeps it.
+pub const DEFAULT: &str = "canopee";
 
 /// Name of the cookie the theme selector sets.
 pub const COOKIE_NAME: &str = "axgf_theme";
@@ -238,14 +255,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn ten_themes_plus_system_are_offered() {
+    fn eleven_themes_plus_system_are_offered() {
         // Seven until v0.4.3, then three more: Crépuscule, Encre and Fleuve
-        // d'hiver. `system` is the last entry because following the browser
-        // is a choice a reader can make, not one of the themes.
+        // d'hiver; then Canopée, first because it is the default (v0.5.0).
+        // `system` is the last entry because following the browser is a
+        // choice a reader can make, not one of the themes.
         let ids: Vec<&str> = THEMES.iter().map(|t| t.id).collect();
         assert_eq!(
             ids,
             vec![
+                "canopee",
                 "dark",
                 "light",
                 "high-contrast",
@@ -272,13 +291,16 @@ mod tests {
     fn the_account_beats_the_cookie_which_beats_the_default() {
         assert_eq!(negotiate(Some("sepia"), Some("light")).id, "sepia");
         assert_eq!(negotiate(None, Some("light")).id, "light");
-        // No preference is Study 06, written into the page rather than left
-        // to the system — whatever the system asks for.
-        assert_eq!(negotiate(None, None).id, "dark");
-        assert_eq!(negotiate(None, None).attribute(), "dark");
+        // No preference is Canopée, the reference theme, written into the
+        // page rather than left to the system — whatever the system asks for.
+        assert_eq!(negotiate(None, None).id, "canopee");
+        assert_eq!(negotiate(None, None).attribute(), "canopee");
         // Nonsense at any level falls through rather than failing.
         assert_eq!(negotiate(Some("chartreuse"), Some("light")).id, "light");
-        assert_eq!(negotiate(None, Some("chartreuse")).id, "dark");
+        assert_eq!(negotiate(None, Some("chartreuse")).id, "canopee");
+        // A reader who chose Study 06 keeps it: the new default reaches only
+        // readers who never chose.
+        assert_eq!(negotiate(None, Some("dark")).id, "dark");
         // Choosing the system is still a choice, and the only way the
         // system gets a say.
         assert_eq!(negotiate(None, Some("system")).attribute(), "system");

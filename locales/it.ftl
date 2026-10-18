@@ -64,7 +64,7 @@ theme-sepia = Seppia
 theme-deuteranopia = Deuteranopia
 theme-protanopia = Protanopia
 theme-tritanopia = Tritanopia
-theme-default-note = Notturno, il tema scuro, è quello predefinito anche se il sistema ne chiede uno chiaro. Scelga «Come il sistema» per lasciar decidere il sistema.
+theme-default-note = Chioma, il tema scuro verde bosco, è quello predefinito anche se il sistema ne chiede uno chiaro. Scelga «Come il sistema» per lasciar decidere il sistema.
 theme-fleuve-hiver-note = chiaro, freddo
 theme-fleuve-hiver = Fiume d'inverno
 theme-encre-note = scuro, blu notte
@@ -74,8 +74,10 @@ theme-crepuscule = Crepuscolo
 theme-light-note = chiaro
 theme-colour-blind-note = adatto al daltonismo
 theme-contrast-note = alto contrasto
-theme-dark-note = scuro · predefinito
+theme-dark-note = scuro
 theme-river-note = Il fiume resta scuro con qualsiasi tema: i suoi colori sono pensati per uno sfondo scuro.
+theme-canopee = Chioma
+theme-canopee-note = scuro, verde bosco · predefinito
 
 ## Albero
 
@@ -574,6 +576,22 @@ home-showcase-title = Dove quest'albero dice già più di nomi e date
 home-showcase-example = Vedi un esempio →
 home-nothing-title = Ancora nulla da mostrare.
 home-nothing-detail = Importate un file di famiglia per portare qui un albero già esistente, oppure partite da zero e aggiungete voi stessi la prima persona.
+home-eyebrow = Archivio di famiglia
+home-hero-1 = Ogni vita è una sorgente.
+home-hero-2 = Ogni famiglia, un fiume.
+home-cta-river = Esplora il fiume
+home-cta-tree = Vedi l’albero
+home-scroll = Scorra per esplorare
+home-trust-title = Affidabilità delle filiazioni
+home-trust-certain = praticamente certe
+home-trust-high = ben documentate
+home-trust-medium = plausibili
+home-trust-low = ipotetiche
+home-trust-unrated = non ancora valutate
+home-showcase-eyebrow = Oltre i nomi e le date
+home-cta-title = Insieme, custodiamo la memoria della famiglia.
+home-cta-detail = Ogni nome aggiunto e ogni fonte verificata rendono il fiume più fedele per chi verrà.
+home-cta-add = Aggiungi una persona
 
 ## Schede di panoramica
 
@@ -3227,6 +3245,7 @@ river-legend-repeat = ×n raggiunto da n linee, disegnato sotto ciascuna
 river-legend-again = ↔ ridisegnato accanto a un partner successivo
 river-legend-discharge = discendenti
 river-legend-direction = ↓ verso la sorgente · ↑ verso i vivi
+river-legend-generation = una generazione ≈ 29 anni
 river-grid-link = Vista a griglia
 river-tab-sources = Fonti
 river-legend-title = Come leggere il fiume

@@ -158,13 +158,19 @@
   --rv-chip-on: #1d2a24;
   --rv-rule-1: #1a2520; --rv-rule-2: #22302a; --rv-rule-3: #526a5d; --rv-rule-4: #4d6157;
   --rv-text-1: #ece6d6; --rv-text-2: #a7b3aa; --rv-text-3: #75847b;
-  --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #f3dfae; --rv-water: #86b08f; --rv-warn: #d98068;
+  --rv-accent: #dcae64; --rv-accent-hi: #f0d9a2; --rv-lit: #fbe9c0; --rv-water: #86b08f; --rv-warn: #d98068;
   /* The drawing's own inks (src/river.rs paints with classes, app.css maps
      them to these): the half-century bands, their rules and years, the
      data and names beside each person, the living glow. */
   --rv-band-odd: #0e1714; --rv-band-live: #15150f; --rv-band-rule: #18241f;
   --rv-band-text: #4f6158; --rv-band-text-live: #8a7a52;
   --rv-data: #8d9c92; --rv-name: #e2dccb; --rv-centre: #f6efdc; --rv-glow: #e6b062;
+  /* The Selva Verde rework (v0.5.0, docs/adr/0004 §5): the bright thread
+     down the middle of attested water, the route the pointer lights and its
+     halo, the contour lines of the ground, and the shade laid over the
+     ground's photograph so that every ink above keeps its contrast. */
+  --rv-core: #fdf3d8; --rv-lit-halo: #f2cf86; --rv-contour: #6f9a8c;
+  --rv-shade-rgb: 10 17 14;
   --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* Study 06 on the river itself, under every theme: anything drawn inside
@@ -322,6 +328,79 @@
   --wash-1: #0d1411;
   --wash-2: #0c1310;
   --wash-3: #0e1310;
+}
+
+/* --- canopée --------------------------------------------------------------- */
+/* The reference theme since v0.5.0 (docs/adr/0004), and the default: a
+   forest-green ground and a lime accent, after the Zenze and Selva Verde
+   references, cut and reworked in the operator's Canva ("Kit UI Canopée").
+   Every pair measured with the rules of `every_theme_reads`, the darkest
+   wash stop and the contour texture at its strongest pixel included: the
+   tightest is --border-strong on --wash-1 under the texture, 3.25:1.
+
+   The last block of names is this theme's own and no other theme carries
+   them: the four tints of an icon's disc (river, tree, search, quality —
+   Zenze's coloured pastilles) and the glow under a lime control. Anything
+   that draws with them is written under [data-theme="canopee"]. */
+[data-theme="canopee"] {
+  color-scheme: dark;
+  --surface-page: #0c1611;
+  --surface-raised: #122019;
+  --border-hairline: #21352a;
+  --border-strong: #5a7a66;
+  --text-primary: #eef4ec;
+  --text-secondary: #a9bcae;
+  --text-tertiary: #8aa192;
+  --surface-sunken: #0f1b15;
+  --surface-hover: #192a21;
+  --focus-ring: #b4dc7c;
+  --accent: #a8d672;
+  --accent-soft: #1c2b1b;
+  --on-accent: #0c1611;
+
+  --conf-certain: #7fcf9a;
+  --conf-high: #a3cc8a;
+  --conf-medium: #e0b46c;
+  --conf-low: #e8957c;
+  --conf-track: #2c3a31;
+  --danger: #f0927f;
+  --warning: #e6bb6a;
+
+  --sex-a: #1d2c2a;
+  --sex-a-line: #62837f;
+  --sex-b: #2e2a1f;
+  --sex-b-line: #8c7858;
+  --sex-u: #232a25;
+  --sex-u-line: #77807a;
+
+  --hue-1: #56b4e9;
+  --hue-2: #e69f00;
+  --hue-3: #33d6a6;
+  --hue-4: #f0a3c8;
+  --hue-5: #b49ae0;
+  --hue-6: #d6b656;
+  --hue-7: #6fc0d0;
+  --hue-8: #d78a8a;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.5;
+
+  --wash-1: #0f1c15;
+  --wash-2: #0d1913;
+  --wash-3: #111b13;
+  /* Contour lines, drawn and never fetched, under the same switch as every
+     texture: off until a reader turns the background on. */
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.05' stroke-width='1'%3E%3Cpath d='M-10 60c40-26 80 22 130-4s90-30 130 2'/%3E%3Cpath d='M-10 104c46-20 84 24 132-2s86-26 128 6'/%3E%3Cpath d='M-10 150c42-30 88 18 134-6s82-22 126 8'/%3E%3Cpath d='M-10 196c50-22 80 26 128 0s92-30 132 4'/%3E%3C/g%3E%3C/svg%3E");
+
+  --icon-river: #1f4a4c;
+  --icon-tree: #24452a;
+  --icon-search: #4d3c1c;
+  --icon-quality: #4d2a26;
+  --icon-river-ink: #8fd3c8;
+  --icon-tree-ink: #b4dc7c;
+  --icon-search-ink: #ecc77a;
+  --icon-quality-ink: #f3a593;
+  --glow-rgb: 168 214 114;
 }
 
 /* --- high contrast ------------------------------------------------------- */

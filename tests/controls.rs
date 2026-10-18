@@ -1,7 +1,8 @@
 //! Buttons and focus, as Study 06 draws them (B2), held at the stylesheet.
 //!
-//! Four variants and only four; 36px or 28px and radius 2 for every one of
-//! them; a 2px focus ring at 2px offset on every control, never taken away;
+//! Four variants and only four; 36px or 28px and one radius for every one of
+//! them (Study 06's 2px, or the reference theme's pill, ADR 0004); a 2px
+//! focus ring at 2px offset on every control, never taken away;
 //! a disabled secondary is dashed; danger is an outline, never a fill. The
 //! one-primary-per-page rule is held where every page is fetched, in
 //! `tests/interactive_walk.rs`.
@@ -65,12 +66,17 @@ fn button_rules() -> Vec<(String, String)> {
 }
 
 #[test]
-fn a_button_is_36px_or_28px_and_radius_2_nowhere_else() {
+fn a_button_is_36px_or_28px_and_one_radius_per_theme() {
     let base = rule(".btn");
     // A minimum, so text at the reader's own size grows the control rather
     // than spilling out of it (rem type, ADR 0002 §4).
     assert_eq!(decl(&base, "min-block-size"), Some("36px"));
-    assert_eq!(decl(&base, "border-radius"), Some("2px"));
+    // One radius for every button, and it is the theme's: Study 06's 2px in
+    // every theme but Canopée, which rounds them into pills (ADR 0004). It
+    // used to be the literal "2px" everywhere; a token keeps "one radius,
+    // nowhere else" true per theme instead of forbidding the reference
+    // theme its shape.
+    assert_eq!(decl(&base, "border-radius"), Some("var(--btn-radius)"));
     assert_eq!(decl(&rule(".btn.small"), "min-block-size"), Some("28px"));
     for (sel, body) in rules() {
         if !sel.contains(".btn") {
@@ -87,7 +93,7 @@ fn a_button_is_36px_or_28px_and_radius_2_nowhere_else() {
                 assert!(
                     matches!(
                         (prop, v),
-                        ("border-radius", "2px")
+                        ("border-radius", "var(--btn-radius)")
                             | (
                                 "block-size" | "min-block-size",
                                 "36px" | "28px" | "32px" | "44px"
@@ -98,6 +104,20 @@ fn a_button_is_36px_or_28px_and_radius_2_nowhere_else() {
             }
         }
     }
+    // Where the radius is decided: Study 06's on `:root`, and the one theme
+    // that carries a shape of its own.
+    let defs: Vec<(String, String)> = rules()
+        .into_iter()
+        .filter_map(|(sel, body)| decl(&body, "--btn-radius").map(|v| (sel, v.to_string())))
+        .collect();
+    assert_eq!(
+        defs,
+        vec![
+            (":root".to_string(), "2px".to_string()),
+            ("[data-theme=\"canopee\"]".to_string(), "999px".to_string()),
+        ],
+        "--btn-radius is defined on :root and by Canopée, and nowhere else"
+    );
 }
 
 #[test]

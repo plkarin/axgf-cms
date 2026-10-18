@@ -196,6 +196,37 @@ login-sign-in-prompt = Connectez-vous pour accéder à l'administration.
 ## Administration
 
 admin-title = Administration
+setup-title = Mettre en route cette archive
+setup-lede = Cette installation ne contient encore aucune famille. Choisissez comment elle commence. Rien ici n’est jamais écrit par-dessus une famille : cette page se ferme dès qu’il y en a une.
+setup-door-archive-title = À partir d’une archive AXGF
+setup-door-archive-detail = Un fichier .axgf venu d’une autre installation ou d’une sauvegarde. Ses personnes, ses sources et ses photographies arrivent telles quelles.
+setup-door-archive-file = Archive (.axgf)
+setup-door-archive-go = Mettre en route avec cette archive
+setup-limit-gb = Jusqu’à { $n } Go, écrits directement sur le disque.
+setup-door-scratch-title = À partir de rien
+setup-door-scratch-detail = Une archive vide. Ajoutez la première personne, puis sa famille, fiche après fiche.
+setup-door-scratch-go = Ajouter la première personne
+setup-door-gedcom-title = À partir d’un fichier GEDCOM
+setup-door-gedcom-detail = Le fichier que tout logiciel de généalogie exporte : GEDCOM 5.5, 5.5.1, 5.5.5 ou 7.0, en .ged ou en .gdz, quel que soit son encodage. Vous voyez comment il a été lu et ce qui passe avant que rien ne soit gardé.
+setup-door-gedcom-file = Fichier GEDCOM (.ged, .gdz)
+setup-door-gedcom-go = Lire ce fichier
+setup-never-over = Pour remplacer une famille déjà présente, restaurez une sauvegarde en ligne de commande (axgf-cms restore) ; aucune page n’écrit par-dessus.
+setup-adopt-title = En faire la famille de l’archive
+setup-adopt-detail = Fiches qui deviendraient la famille de cette installation : { $total }. Rien n’est gardé avant que vous n’appuyiez sur le bouton.
+setup-adopt-go = Mettre en route l’archive avec cette famille
+setup-adopt-back = Choisir une autre entrée
+setup-done-title = L’archive est en route
+setup-done-detail = Fiches dans la famille de cette installation désormais : { $total }.
+setup-done-photos = Photographies et documents arrivés avec elle : { $n }.
+setup-done-mismatches = Fichiers dont le contenu ne correspond pas à l’empreinte enregistrée : { $n }. Ils sont gardés ; vérifiez-les.
+setup-done-river = Ouvrir la rivière
+setup-done-admin = Administration
+setup-refused-title = Ceci n’a pas pu devenir l’archive
+setup-refused-detail = Rien n’a été écrit. Ce qui l’a empêché :
+setup-closed-title = Cette archive est déjà en route
+setup-closed-detail = Elle contient une famille, et aucune page n’écrit par-dessus. Pour la remplacer, restaurez une sauvegarde en ligne de commande (axgf-cms restore).
+setup-not-archive = Ce n’est pas une archive .axgf.
+setup-archive-too-large = Cette archive dépasse la taille d’un envoi.
 admin-lede = Modification de { $path } — { $total } entités, { $files ->
         [one] un fichier joint
        *[other] { $files } fichiers joints
@@ -554,7 +585,7 @@ tree-edge-parentage = Une filiation enregistrée
 
 ## Accueil, suite
 
-home-empty = Rien d’enregistré pour l’instant. Importez un fichier familial pour reprendre un arbre existant, ou ajoutez la première personne à la main.
+home-empty = Rien d’enregistré pour l’instant.
 home-count = { $total ->
         [one] Une fiche
        *[other] { $total } fiches
@@ -564,7 +595,8 @@ home-convert = Importer un fichier familial
 home-showcase-title = Là où cet arbre dit déjà plus que des noms et des dates
 home-showcase-example = Voir un exemple →
 home-nothing-title = Rien à montrer pour l'instant.
-home-nothing-detail = Importez un fichier familial pour reprendre un arbre existant, ou partez de rien et ajoutez vous-même la première personne.
+home-nothing-admin = Cette installation ne contient encore aucune famille : mettez-la en route à partir d’une archive, d’un fichier GEDCOM, ou de rien.
+home-nothing-visitor = Cette archive de famille est en cours de préparation.
 home-eyebrow = Archive familiale
 home-hero-1 = Chaque vie est une source.
 home-hero-2 = Chaque famille, une rivière.
@@ -2919,6 +2951,7 @@ diff-section-format-version = Version du format
 history-created = a créé
 history-deleted = a supprimé
 history-merged = a fusionné dans une autre fiche
+history-setup = a mis en route l’archive
 history-attached = a joint un fichier
 admin-raw-json-unparsed = Le JSON brut n’a pas pu être lu ({ $error }). Rien n’a été enregistré.
 admin-raw-json-dangling = Le JSON brut fait pointer { $field } vers { $target }, qui ne figure pas dans cette archive. Choisissez-le avec un champ ci-dessus ou corrigez l’identifiant. Rien n’a été enregistré.
@@ -2965,6 +2998,16 @@ convert-error-file-too-large = Ce fichier pèse { $size } Mo et la limite est de
 convert-error-too-large = Cet envoi dépasse la limite de { $limit } Mo. Rien n’a été converti.
 convert-error-unreadable = L’envoi n’a pas pu être lu ({ $error }). Rien n’a été converti.
 convert-error-not-gedcom = Ce fichier ne ressemble pas à un fichier GEDCOM : un fichier GEDCOM 5.5.1 commence par une ligne « 0 HEAD ». Rien n’a été converti.
+gedcom-read-title = Comment le fichier a été lu
+gedcom-read-as = Lu comme du GEDCOM { $version }, en { $encoding }.
+gedcom-read-as-unversioned = Lu comme du GEDCOM (son en-tête ne donne pas de version), en { $encoding }.
+gedcom-read-declared = Son en-tête annonce { $declared } ; ses octets disent autre chose, et ont été lus tels qu’ils sont.
+gedcom-read-gedzip = Une archive GEDCOM 7 (.gdz) : son jeu de données a été lu. Autres fichiers qu’elle contient (photographies, scans), non repris : { $n }.
+gedcom-read-crs = Lignes terminées à l’ancienne manière Macintosh, réparées : { $n }.
+gedcom-read-voids = Pointeurs vers @VOID@ — le « aucun enregistrement » de GEDCOM 7 — écartés plutôt que lus comme des personnes : { $n }.
+gedcom-read-notes = Notes partagées (SNOTE) lues comme des notes : { $n }.
+convert-error-no-dataset = Ce zip ne contient ni gedcom.ged, ni un unique fichier .ged à lire à sa place.
+convert-error-refused = Le convertisseur a refusé ce fichier. Les diagnostics ci-dessous disent pourquoi. Rien n’a été gardé.
 convert-error-packaging = Le fichier a été converti mais n’a pas pu être empaqueté ({ $error }).
 completeness-fraction = { $part } sur { $whole }
 event-category-adoption = Adoption

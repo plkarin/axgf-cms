@@ -145,6 +145,7 @@ dependencies = [
  "base64 0.21.7",
  "clap",
  "crc32fast",
+ "encoding_rs",
  "fluent",
  "hmac",
  "http-body-util",

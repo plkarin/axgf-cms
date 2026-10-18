@@ -5,6 +5,13 @@
 {% block content %}
 
 <h1>{{ t("admin-title") }}</h1>
+{% if unset %}
+{#- An installation with no family yet (docs/adr/0005): the way in, first. -#}
+<div class="notice">
+  <p>{{ t("home-nothing-admin") }}</p>
+  <p><a class="btn" href="/admin/setup">{{ t("setup-title") }}</a></p>
+</div>
+{% endif %}
 <p class="lede">{{ t("admin-lede", path=bundle_path, total=total,
      files=attachment_count, size=bundle_size) }}</p>
 

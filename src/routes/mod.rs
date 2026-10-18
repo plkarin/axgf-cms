@@ -7,6 +7,7 @@ mod person_editor;
 mod prefs;
 mod profile;
 mod public;
+mod setup;
 
 use std::sync::Arc;
 
@@ -168,6 +169,21 @@ fn routes(state: Shared) -> Router {
         // Static admin segments are declared alongside the ":kind" routes;
         // the router matches literal segments in preference to a parameter.
         .route("/admin", get(admin::dashboard))
+        // Setting an installation up (docs/adr/0005): three doors, open while
+        // it has no family. Declared before the ":kind" forms so the literal
+        // "setup" segment wins.
+        .route("/admin/setup", get(setup::page))
+        .route(
+            "/admin/setup/gedcom",
+            post(setup::gedcom).layer(DefaultBodyLimit::max(
+                crate::convert::MAX_UPLOAD + 64 * 1024,
+            )),
+        )
+        .route("/admin/setup/gedcom/:id", post(setup::adopt_gedcom))
+        .route(
+            "/admin/setup/archive",
+            post(setup::archive).layer(DefaultBodyLimit::max(setup::MAX_ARCHIVE)),
+        )
         .route("/admin/login", get(admin::login_form).post(admin::login))
         .route("/admin/logout", post(admin::logout))
         // Declared before the ":kind" routes so the literal "users" segment

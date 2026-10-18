@@ -9,7 +9,7 @@
 <form method="post" action="/convert/gedcom" enctype="multipart/form-data" class="card">
   <div class="field">
     <label for="file">{{ t("convert-file-label") }}</label>
-    <input type="file" id="file" name="file" accept=".ged,.GED,text/plain" required>
+    <input type="file" id="file" name="file" accept=".ged,.GED,.gdz,.GDZ,text/plain,application/zip" required>
     <div class="hint">{{ t("convert-file-hint", mb=max_mb) }}</div>
   </div>
 

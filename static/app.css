@@ -1566,9 +1566,30 @@ bdi.date { unicode-bidi: isolate; }
   margin-bottom: 0.7rem;
 }
 .panel-name { margin: 0; font-size: var(--type-sub); line-height: 1.2; }
+/* The portrait beside the name, on its line (v0.5.0): the record page's
+   frame at a column's size. */
+.panel-who { display: flex; align-items: center; gap: 0.8rem; min-inline-size: 0; }
+.panel-who-text { min-inline-size: 0; }
+.panel-avatar { inline-size: 64px; block-size: 64px; border-radius: var(--radius); }
+.panel-avatar.is-initials { font-size: var(--type-sub); }
 .panel-head .lede { margin: 0.2rem 0 0; }
 .panel-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
 .panel-empty { color: var(--text-tertiary); padding: 1rem 0; }
+
+/* Setting an installation up (docs/adr/0005): three doors, side by side
+   where there is room, each a section of its own; and how a GEDCOM was
+   read, as a short list. */
+.setup-doors {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  align-items: start;
+}
+.setup-door form { display: grid; gap: 0.6rem; }
+.setup-door .field { margin: 0; }
+.setup-next { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.gedcom-reading-list { margin: 0; padding-inline-start: 1.2rem; }
+.gedcom-reading-list li + li { margin-block-start: 0.3rem; }
 
 /* The record sections, re-flowed for a narrow column.
  *
@@ -3456,6 +3477,11 @@ a.tcard:hover {
 /* The lit route and its label are drawn over the people: a second tap on a
    person goes through them to the person, to travel there. */
 .rv-svg .rv-lit, .rv-svg .rv-hl { pointer-events: none; }
+/* A lit word's own ground (river.js): a row is rarely a lit person's alone,
+   so their name is set on the river's ink, edged in its light, and the
+   person's own shorter word steps aside while they are lit. */
+.rv-svg .rv-hl-box { fill: var(--rv-ink-1); fill-opacity: 0.92; stroke: var(--rv-lit); stroke-opacity: 0.35; stroke-width: 0.8; }
+.rv-svg a.rv-p.rv-looked .k-name { visibility: hidden; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
 .rv-legend {
   display: flex;
@@ -4817,6 +4843,9 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
 [data-theme="canopee"] #life { --sign: var(--ico-calendar); --disc: var(--icon-search-ink); }
 [data-theme="canopee"] #places { --sign: var(--ico-pin); --disc: var(--icon-river-ink); }
 [data-theme="canopee"] #occupations { --sign: var(--ico-briefcase); --disc: var(--icon-search-ink); }
+[data-theme="canopee"] #setup-archive-door { --sign: var(--ico-upload); --disc: var(--icon-river-ink); }
+[data-theme="canopee"] #setup-scratch-door { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
+[data-theme="canopee"] #setup-gedcom-door { --sign: var(--ico-book); --disc: var(--icon-search-ink); }
 [data-theme="canopee"] #relationships { --sign: var(--ico-link); --disc: var(--icon-river-ink); }
 [data-theme="canopee"] #notes { --sign: var(--ico-pen); --disc: var(--accent); }
 [data-theme="canopee"] #history { --sign: var(--ico-clock); --disc: var(--accent); }
@@ -4844,6 +4873,7 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
 [data-theme="canopee"] a.person-avatar:hover { transform: scale(1.03); }
+[data-theme="canopee"] .panel-avatar { border-radius: 16px; }
 [data-theme="canopee"] .person-head h1 { font-size: var(--type-title); letter-spacing: -0.02em; }
 [data-theme="canopee"] .person-vitals .pv-dates {
   display: inline-flex;

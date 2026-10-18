@@ -73,6 +73,25 @@ with plain strokes and no filter. Under Gravure (high contrast) and in print
 the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
 every light that moves.
 
+**An installation sets itself up** (docs/adr/0005). While it holds no
+family, an administrator is offered three doors at `/admin/setup`:
+
+- **an AXGF archive**, streamed to disk and taken in with its photographs;
+- **nothing**, the first person added with the editor;
+- **a GEDCOM file of any version**: 5.5, 5.5.1, 5.5.5 or 7.0, as `.ged` or
+  `.gdz`, in ANSEL, UTF-8, UTF-16 (with or without a byte-order mark),
+  Windows-1252 or Mac Roman, with any line ending. It is read, shown with
+  how it was read and what came across, and kept only on a second press.
+
+No door ever writes over a family; replacing one stays `axgf-cms restore`.
+The setup is journalled, and the accounts follow the new family. A visitor
+to an installation without a family is told it is being set up instead of
+being invited to import a file.
+
+**The record beside the river shows the person's portrait** next to their
+name, framed as on the record page, with their initials when there is no
+photograph.
+
 **The river comes alive.** Under the drawing, a forest seen from above is
 computed in WebGL at the screen's own resolution, so it is never soft and
 never pixelated:
@@ -149,6 +168,12 @@ is out.
   could not be read. Options take the theme's raised surface and text.
 - **The completeness tag ("not yet recorded") ran past its column** in every
   theme. It now sits under the count.
+- **A lit name in the river covered its neighbour's.** The full name now goes
+  to whichever side the window has room on, on a ground of its own. The
+  person's own shorter label steps aside while they are lit, and stations
+  on the route are named only when the drawing left them unnamed.
+- **`/convert` read only GEDCOM 5.5.1 as most software writes it.** It now
+  reads every file the set-up reads, and says how it read it.
 - **The overview's dark backgrounds showed steps** on a 1920 × 1080 monitor.
   The hero's large shadow is gone, and a grain finer than a pixel breaks the
   steps of its gradients and the sign-in page's.
@@ -158,6 +183,16 @@ is out.
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
   motion, "Cut", a hidden page and Gravure.
+- `setup.rs`, new:
+  - the three doors are offered only to an administrator, and only while
+    there is no family;
+  - seven GEDCOM files (5.5 in ANSEL, 5.5.1 in UTF-8 and Windows-1252, 5.5.5
+    in UTF-16, CR line endings, 7.0 bare and as `.gdz`) each set a family up
+    with its names whole;
+  - an archive's photograph is served byte for byte;
+  - no door writes over a family.
+- `gedcom_in` unit tests: every encoding, container and repair the reader
+  makes.
 - `rendered_language.rs`: "Ctrl" joins "Esc" among the names printed on a
   key, which a page in Chinese may show (the zoom hint).
 - `controls.rs`: one radius per theme, defined on `:root` and by Canopée and

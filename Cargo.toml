@@ -13,6 +13,10 @@ categories = ["web-programming", "visualization"]
 
 [dependencies]
 unicode-normalization = "0.1"
+# Reading a GEDCOM in whatever encoding a family's software wrote it:
+# Windows-1252, Mac Roman and UTF-16 without a byte-order mark (ANSEL, which
+# no library has, is decoded in src/gedcom_in.rs). Already in the tree.
+encoding_rs = "0.8"
 # All genealogy logic lives here. This crate contains none of its own.
 #
 # 0.5.0 from crates.io: the release that merges a duplicate couple whose union

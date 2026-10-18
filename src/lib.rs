@@ -34,6 +34,7 @@ pub mod coords;
 pub mod diff;
 pub mod documents;
 pub mod forms;
+pub mod gedcom_in;
 pub mod geocode;
 pub mod health;
 pub mod i18n;

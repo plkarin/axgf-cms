@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ t("setup-title") }} — {{ t("app-name") }}{% endblock %}
+
+{% block content %}
+{# The end of a door (docs/adr/0005): the family this installation now holds,
+   or why the file could not become it — in which case nothing was written. #}
+{% if ok %}
+<h1>{{ t("setup-done-title") }}</h1>
+<p class="lede">{{ t("setup-done-detail", total=total) }}</p>
+<section class="rec-section">
+  <h2>{{ how }}</h2>
+  <div class="grid cols-4">
+    {% for c in counts %}
+    <div class="stat {% if c.n == 0 %}zero{% endif %}">
+      <div class="n">{{ c.n }}</div>
+      <div class="k">{{ t("kind-" ~ c.singular ~ "-plural", n=c.n) }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if photos %}<p>{{ t("setup-done-photos", n=photos) }}</p>{% endif %}
+  {% if mismatches %}<div class="notice warn"><p>{{ t("setup-done-mismatches", n=mismatches) }}</p></div>{% endif %}
+</section>
+<p class="setup-next">
+  <a class="btn primary" href="/">{{ t("setup-done-river") }}</a>
+  <a class="btn" href="/admin">{{ t("setup-done-admin") }}</a>
+</p>
+{% else %}
+<h1>{{ t("setup-refused-title") }}</h1>
+<div class="notice error">
+  <p>{{ t("setup-refused-detail") }}</p>
+  {% if technical %}<p class="mono small" lang="en" dir="ltr">{{ why }}</p>{% else %}<p>{{ why }}</p>{% endif %}
+</div>
+<p><a class="btn" href="/admin/setup">{{ t("setup-adopt-back") }}</a></p>
+{% endif %}
+{% endblock %}

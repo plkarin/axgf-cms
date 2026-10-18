@@ -421,6 +421,8 @@ pub async fn dashboard(
             // the first login and for the day nobody can sign in, and it is
             // meant to be taken out again afterwards.
             standing_admin_token => state.standing_admin_token(),
+            // No family yet (docs/adr/0005): the dashboard points at the set-up.
+            unset => state.is_unset(),
             recent_edits => state
                 .journal()
                 .recent(15)

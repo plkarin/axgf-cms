@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
 {% import "_completeness.html" as comp %}
+{% import "_gedcom_reading.html" as gr %}
 {% block title %}{{ t("convert-result-title") }} — {{ t("app-name") }}{% endblock %}
 
 {% block content %}
@@ -11,14 +12,17 @@
   <div class="notice error">
     <p>{{ error }}</p>
   </div>
+  {{ gr.reading_panel(reading, t) }}
   {{ m.diagnostics(diagnostics) }}
-  <p><a class="btn" href="/convert">{{ t("convert-try-another") }}</a></p>
+  <p><a class="btn" href="{{ '/admin/setup' if setup else '/convert' }}">{{ t("convert-try-another") }}</a></p>
 
 {% else %}
 
   <h1>{{ t("convert-converted", filename=filename) }}</h1>
   <p class="lede">{{ t("convert-result-lede", total=total, size=size_kb,
        confidence=confidence, lang=lang) }}</p>
+
+  {{ gr.reading_panel(reading, t) }}
 
   {# The report is framed section by section like the record and the admin
      pages: what was produced, what was skipped, what to download. #}
@@ -77,6 +81,18 @@
   </div>
   {% endif %}
 
+  {% if setup %}
+  {#- The set-up's third door (docs/adr/0005): what was shown above becomes
+      this installation's family on this press, and not before. -#}
+  <section class="rec-section setup-adopt">
+  <h2>{{ t("setup-adopt-title") }}</h2>
+  <p>{{ t("setup-adopt-detail", total=total) }}</p>
+  <form method="post" action="/admin/setup/gedcom/{{ download_id }}">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}" data-loader="river">{{ t("setup-adopt-go") }}</button>
+  </form>
+  </section>
+  <p style="margin-top:2rem"><a class="btn" href="/admin/setup">{{ t("setup-adopt-back") }}</a></p>
+  {% else %}
   <section class="rec-section">
   <h2>{{ t("convert-download-title") }}</h2>
   <p>
@@ -88,6 +104,7 @@
   </section>
 
   <p style="margin-top:2rem"><a class="btn" href="/convert">{{ t("convert-another") }}</a></p>
+  {% endif %}
 
 {% endif %}
 

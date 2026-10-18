@@ -1,0 +1,39 @@
+0 HEAD
+1 SOUR TEST
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Józef /Gęsiorek/
+1 SEX M
+1 BIRT
+2 DATE 12 APR 1871
+2 PLAC Kraków, Polska
+1 DEAT
+2 DATE 3 JAN 1940
+2 PLAC Łódź, Polska
+1 NOTE Une note longue : « Ça s’écrit
+2 CONC  sur deux lignes »
+2 CONT et elle continue ici.
+1 OCCU Cordonnier
+0 @I2@ INDI
+1 NAME Helena /Nowak/
+1 SEX F
+1 BIRT
+2 DATE ABT 1875
+2 PLAC Żółkiew, Polska
+0 @I3@ INDI
+1 NAME Éléonore /Gęsiorek/
+1 SEX F
+1 BIRT
+2 DATE BET 1900 AND 1905
+2 PLAC Saint-Étienne, France
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 MARR
+2 DATE 1899
+2 PLAC Kraków, Polska
+0 TRLR

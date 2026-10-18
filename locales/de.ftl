@@ -213,6 +213,37 @@ login-sign-in-prompt = Melden Sie sich an, um in die Verwaltung zu gelangen.
 ## Verwaltung
 
 admin-title = Verwaltung
+setup-title = Dieses Archiv einrichten
+setup-lede = Diese Installation enthält noch keine Familie. Wählen Sie, wie sie beginnt. Hier wird nie etwas über eine Familie geschrieben: Diese Seite schließt sich, sobald es eine gibt.
+setup-door-archive-title = Aus einem AXGF-Archiv
+setup-door-archive-detail = Eine .axgf-Datei aus einer anderen Installation oder aus einer Sicherung. Personen, Quellen und Fotos kommen unverändert herüber.
+setup-door-archive-file = Archiv (.axgf)
+setup-door-archive-go = Mit diesem Archiv einrichten
+setup-limit-gb = Bis zu { $n } GB, direkt auf die Festplatte geschrieben.
+setup-door-scratch-title = Aus dem Nichts
+setup-door-scratch-detail = Ein leeres Archiv. Fügen Sie die erste Person hinzu, dann ihre Familie, Datensatz für Datensatz.
+setup-door-scratch-go = Erste Person hinzufügen
+setup-door-gedcom-title = Aus einer GEDCOM-Datei
+setup-door-gedcom-detail = Die Datei, die jedes Genealogieprogramm exportiert: GEDCOM 5.5, 5.5.1, 5.5.5 oder 7.0, als .ged oder .gdz, in welcher Kodierung auch immer. Sie sehen, wie sie gelesen wurde und was herüberkommt, bevor etwas behalten wird.
+setup-door-gedcom-file = GEDCOM-Datei (.ged, .gdz)
+setup-door-gedcom-go = Diese Datei lesen
+setup-never-over = Um eine schon vorhandene Familie zu ersetzen, stellen Sie eine Sicherung über die Kommandozeile wieder her (axgf-cms restore); keine Seite schreibt darüber.
+setup-adopt-title = Zur Familie des Archivs machen
+setup-adopt-detail = Datensätze, die zur Familie dieser Installation würden: { $total }. Nichts wird behalten, bevor Sie den Knopf drücken.
+setup-adopt-go = Archiv mit dieser Familie einrichten
+setup-adopt-back = Einen anderen Weg wählen
+setup-done-title = Das Archiv ist eingerichtet
+setup-done-detail = Datensätze in der Familie dieser Installation jetzt: { $total }.
+setup-done-photos = Fotos und Dokumente, die mitgekommen sind: { $n }.
+setup-done-mismatches = Dateien, deren Inhalt nicht zum gespeicherten Fingerabdruck passt: { $n }. Sie bleiben erhalten; prüfen Sie sie.
+setup-done-river = Den Fluss öffnen
+setup-done-admin = Verwaltung
+setup-refused-title = Daraus konnte kein Archiv werden
+setup-refused-detail = Nichts wurde geschrieben. Was es verhindert hat:
+setup-closed-title = Dieses Archiv ist bereits eingerichtet
+setup-closed-detail = Es enthält eine Familie, und keine Seite schreibt darüber. Um sie zu ersetzen, stellen Sie eine Sicherung über die Kommandozeile wieder her (axgf-cms restore).
+setup-not-archive = Das ist kein .axgf-Archiv.
+setup-archive-too-large = Dieses Archiv ist größer, als ein Upload sein darf.
 admin-lede = Bearbeitet wird { $path } — { $total } Datensätze, { $files ->
         [one] eine angehängte Datei
        *[other] { $files } angehängte Dateien
@@ -560,7 +591,7 @@ tree-edge-parentage = Eine erfasste Abstammung
 
 ## Startseite
 
-home-empty = Noch nichts erfasst. Importieren Sie eine Familiendatei, um einen vorhandenen Stammbaum zu übernehmen, oder legen Sie die erste Person von Hand an.
+home-empty = Noch nichts erfasst.
 home-count = { $total ->
         [one] Ein Eintrag
        *[other] { $total } Einträge
@@ -572,7 +603,8 @@ home-in-this-tree = Was die Familie bisher erfasst hat
 home-showcase-title = Wo dieser Stammbaum bereits mehr sagt als Namen und Daten
 home-showcase-example = Ein Beispiel ansehen →
 home-nothing-title = Noch nichts zu zeigen.
-home-nothing-detail = Importieren Sie eine Familiendatei, um einen vorhandenen Stammbaum zu übernehmen, oder fangen Sie bei null an und legen Sie die erste Person selbst an.
+home-nothing-admin = Diese Installation enthält noch keine Familie: Richten Sie sie aus einem Archiv, aus einer GEDCOM-Datei oder aus dem Nichts ein.
+home-nothing-visitor = Dieses Familienarchiv wird gerade eingerichtet.
 home-eyebrow = Familienarchiv
 home-hero-1 = Jedes Leben ist eine Quelle.
 home-hero-2 = Jede Familie ein Fluss.
@@ -2927,6 +2959,7 @@ diff-section-format-version = Formatversion
 history-created = hat angelegt
 history-deleted = hat gelöscht
 history-merged = hat mit einem anderen Eintrag zusammengeführt
+history-setup = hat das Archiv eingerichtet
 history-attached = hat eine Datei angehängt
 admin-raw-json-unparsed = Das Roh-JSON ließ sich nicht lesen ({ $error }). Nichts wurde gespeichert.
 admin-raw-json-dangling = Das Roh-JSON verweist mit { $field } auf { $target }, das es in diesem Archiv nicht gibt. Wählen Sie es über ein Feld oben aus oder korrigieren Sie die Kennung. Nichts wurde gespeichert.
@@ -2973,6 +3006,16 @@ convert-error-file-too-large = Diese Datei ist { $size } MB groß, die Grenze li
 convert-error-too-large = Der Upload überschreitet die Grenze von { $limit } MB. Nichts wurde umgewandelt.
 convert-error-unreadable = Der Upload ließ sich nicht lesen ({ $error }). Nichts wurde umgewandelt.
 convert-error-not-gedcom = Das sieht nicht nach einer GEDCOM-Datei aus: Eine GEDCOM-5.5.1-Datei beginnt mit der Zeile „0 HEAD“. Nichts wurde umgewandelt.
+gedcom-read-title = Wie die Datei gelesen wurde
+gedcom-read-as = Gelesen als GEDCOM { $version }, in { $encoding }.
+gedcom-read-as-unversioned = Gelesen als GEDCOM (der Kopf nennt keine Version), in { $encoding }.
+gedcom-read-declared = Der Kopf nennt { $declared }; die Bytes sagen etwas anderes und wurden so gelesen, wie sie sind.
+gedcom-read-gedzip = Ein GEDCOM-7-Archiv (.gdz): sein Datensatz wurde gelesen. Weitere Dateien darin (Fotos, Scans), nicht übernommen: { $n }.
+gedcom-read-crs = Zeilen mit altem Macintosh-Zeilenende, repariert: { $n }.
+gedcom-read-voids = Verweise auf @VOID@ – GEDCOM 7s „kein Datensatz“ – beiseitegelegt statt als Personen gelesen: { $n }.
+gedcom-read-notes = Gemeinsame Notizen (SNOTE) als Notizen gelesen: { $n }.
+convert-error-no-dataset = Dieses ZIP enthält weder gedcom.ged noch eine einzelne .ged-Datei, die stattdessen gelesen werden könnte.
+convert-error-refused = Der Konverter hat diese Datei abgelehnt. Die Hinweise unten sagen, warum. Nichts wurde behalten.
 convert-error-packaging = Die Datei wurde umgewandelt, ließ sich aber nicht verpacken ({ $error }).
 completeness-fraction = { $part } von { $whole }
 event-category-adoption = Adoption

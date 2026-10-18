@@ -1,0 +1,46 @@
+﻿0 HEAD
+1 GEDC
+2 VERS 7.0
+1 SCHMA
+2 TAG _SKYPEID http://xmlns.com/foaf/0.1/skypeID
+1 SOUR TEST
+0 @I1@ INDI
+1 NAME Józef /Gęsiorek/
+1 SEX M
+1 BIRT
+2 DATE 12 APR 1871
+2 PLAC Kraków, Polska
+1 DEAT
+2 DATE 3 JAN 1940
+2 PLAC Łódź, Polska
+1 SNOTE @N1@
+1 OCCU Cordonnier
+1 EXID 123
+2 TYPE http://example.org
+1 NO DIV
+0 @I2@ INDI
+1 NAME Helena /Nowak/
+1 SEX F
+1 BIRT
+2 DATE ABT 1875
+2 PLAC Żółkiew, Polska
+0 @I3@ INDI
+1 NAME Éléonore /Gęsiorek/
+1 SEX F
+1 BIRT
+2 DATE BET 1900 AND 1905
+2 PLAC Saint-Étienne, France
+1 ASSO @VOID@
+2 PHRASE Mr Stockdale
+2 ROLE FRIEND
+0 @N1@ SNOTE Une note longue : « Ça s’écrit sur deux lignes »
+1 CONT et elle continue ici.
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 CHIL @VOID@
+1 MARR
+2 DATE 1899
+2 PLAC Kraków, Polska
+0 TRLR

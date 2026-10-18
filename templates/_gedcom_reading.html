@@ -1,0 +1,22 @@
+{# How a GEDCOM was read (v0.5.0, docs/adr/0005 §3): the version and the
+   encoding, and every repair made on the way, said before anybody relies on
+   the result. Shared by the conversion page and the set-up's GEDCOM door.
+
+   `t` is passed in because an imported macro does not see the including
+   template's context in minijinja. #}
+{% macro reading_panel(r, t) %}
+{% if r %}
+<section class="rec-section gedcom-reading">
+  <h2>{{ t("gedcom-read-title") }}</h2>
+  <ul class="gedcom-reading-list">
+    <li>{% if r.version %}{{ t("gedcom-read-as", version=r.version, encoding=r.encoding) }}
+        {%- else %}{{ t("gedcom-read-as-unversioned", encoding=r.encoding) }}{% endif %}</li>
+    {% if r.declared_otherwise %}<li>{{ t("gedcom-read-declared", declared=r.declared) }}</li>{% endif %}
+    {% if r.gedzip %}<li>{{ t("gedcom-read-gedzip", n=r.media) }}</li>{% endif %}
+    {% if r.lone_crs %}<li>{{ t("gedcom-read-crs", n=r.lone_crs) }}</li>{% endif %}
+    {% if r.voids %}<li>{{ t("gedcom-read-voids", n=r.voids) }}</li>{% endif %}
+    {% if r.shared_notes %}<li>{{ t("gedcom-read-notes", n=r.shared_notes) }}</li>{% endif %}
+  </ul>
+</section>
+{% endif %}
+{% endmacro %}

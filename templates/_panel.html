@@ -10,7 +10,24 @@
 {% if p %}
 <div class="panel-inner" data-person="{{ p.id }}">
   <div class="panel-head">
-    <div>
+    {#- The portrait beside the name, framed as on the record page (v0.5.0):
+        the photograph when there is one, the initials otherwise — the same
+        size either way, so the name never moves. -#}
+    <div class="panel-who">
+      {% if p.header.avatar %}
+      <a class="person-avatar panel-avatar" data-content href="/document/{{ p.header.avatar.id }}/view"
+         aria-label="{{ t('person-portrait-of', name=p.name) }}">
+        <img src="/document/{{ p.header.avatar.id }}/thumb" alt="{{ t('person-portrait-of', name=p.name) }}"
+             width="64" height="64" loading="lazy" decoding="async"
+             {%- if p.header.avatar.focal %} style="object-position: {{ p.header.avatar.focal }}"{% endif %}>
+      </a>
+      {% else %}
+      <span class="person-avatar panel-avatar is-initials" role="img"
+            aria-label="{{ t('person-no-portrait') }}" title="{{ t('person-no-portrait') }}">
+        <span aria-hidden="true">{{ p.header.initials }}</span>
+      </span>
+      {% endif %}
+    <div class="panel-who-text">
       <h2 class="panel-name">{{ p.name }}</h2>
       {# Gender and living status only. Visibility is a labelled chip in the
          Identity section below, and saying it twice in a narrow column is how
@@ -20,6 +37,7 @@
       {% elif p.is_living %}{% set facts = facts + [t("record-living-yes")] %}
       {% elif p.death.present %}{% set facts = facts + [t("record-deceased")] %}{% endif %}
       {% if facts %}<p class="lede small">{{ facts | join(" · ") }}</p>{% endif %}
+    </div>
     </div>
     <div class="panel-actions">
       {#- One glance at a person, and the way to the whole record. In the

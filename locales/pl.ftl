@@ -219,6 +219,37 @@ login-sign-in-prompt = Zaloguj się, aby wejść do panelu administracyjnego.
 ## Administracja
 
 admin-title = Administracja
+setup-title = Uruchom to archiwum
+setup-lede = Ta instalacja nie zawiera jeszcze żadnej rodziny. Wybierz, jak się zaczyna. Nic tu nie jest nigdy zapisywane na istniejącej rodzinie: ta strona zamyka się, gdy tylko jakaś się pojawi.
+setup-door-archive-title = Z archiwum AXGF
+setup-door-archive-detail = Plik .axgf z innej instalacji lub z kopii zapasowej. Osoby, źródła i zdjęcia przechodzą takie, jakie są.
+setup-door-archive-file = Archiwum (.axgf)
+setup-door-archive-go = Uruchom z tego archiwum
+setup-limit-gb = Do { $n } GB, zapisywane prosto na dysk.
+setup-door-scratch-title = Od zera
+setup-door-scratch-detail = Puste archiwum. Dodaj pierwszą osobę, potem jej rodzinę, rekord po rekordzie.
+setup-door-scratch-go = Dodaj pierwszą osobę
+setup-door-gedcom-title = Z pliku GEDCOM
+setup-door-gedcom-detail = Plik, który eksportuje każdy program genealogiczny: GEDCOM 5.5, 5.5.1, 5.5.5 lub 7.0, jako .ged lub .gdz, w dowolnym kodowaniu. Zobaczysz, jak został odczytany i co przechodzi, zanim cokolwiek zostanie zachowane.
+setup-door-gedcom-file = Plik GEDCOM (.ged, .gdz)
+setup-door-gedcom-go = Odczytaj ten plik
+setup-never-over = Aby zastąpić rodzinę, która już tu jest, przywróć kopię zapasową z wiersza poleceń (axgf-cms restore); żadna strona nie zapisuje na niej.
+setup-adopt-title = Uczyń to rodziną archiwum
+setup-adopt-detail = Rekordy, które stałyby się rodziną tej instalacji: { $total }. Nic nie zostanie zachowane, zanim naciśniesz przycisk.
+setup-adopt-go = Uruchom archiwum z tą rodziną
+setup-adopt-back = Wybierz inną drogę
+setup-done-title = Archiwum jest uruchomione
+setup-done-detail = Rekordy w rodzinie tej instalacji teraz: { $total }.
+setup-done-photos = Zdjęcia i dokumenty, które przyszły razem z nią: { $n }.
+setup-done-mismatches = Pliki, których zawartość nie zgadza się z zapisanym odciskiem: { $n }. Zostały zachowane; sprawdź je.
+setup-done-river = Otwórz rzekę
+setup-done-admin = Administracja
+setup-refused-title = To nie mogło stać się archiwum
+setup-refused-detail = Nic nie zostało zapisane. Co temu przeszkodziło:
+setup-closed-title = To archiwum jest już uruchomione
+setup-closed-detail = Zawiera rodzinę, a żadna strona nie zapisuje na niej. Aby ją zastąpić, przywróć kopię zapasową z wiersza poleceń (axgf-cms restore).
+setup-not-archive = To nie jest archiwum .axgf.
+setup-archive-too-large = To archiwum jest większe, niż może być przesyłany plik.
 admin-lede = Edytowanie { $path } — { $total } obiektów, { $files ->
         [one] jeden załączony plik
         [few] { $files } załączone pliki
@@ -641,7 +672,7 @@ tree-edge-parentage = Zapisane pochodzenie
 
 ## Strona główna
 
-home-empty = Nic jeszcze nie zapisano. Zaimportuj plik rodzinny, aby przenieść istniejące drzewo, albo dodaj pierwszą osobę ręcznie.
+home-empty = Nic jeszcze nie zapisano.
 home-count = { $total ->
         [one] Jeden wpis
         [few] { $total } wpisy
@@ -655,7 +686,8 @@ home-in-this-tree = Co rodzina zapisała do tej pory
 home-showcase-title = Tam, gdzie to drzewo mówi już więcej niż imiona i daty
 home-showcase-example = Zobacz przykład →
 home-nothing-title = Nie ma jeszcze czego pokazać.
-home-nothing-detail = Zaimportuj plik rodzinny, aby przenieść istniejące drzewo, albo zacznij od zera i sam dodaj pierwszą osobę.
+home-nothing-admin = Ta instalacja nie zawiera jeszcze żadnej rodziny: uruchom ją z archiwum, z pliku GEDCOM albo od zera.
+home-nothing-visitor = To archiwum rodzinne jest w przygotowaniu.
 home-eyebrow = Archiwum rodzinne
 home-hero-1 = Każde życie jest źródłem.
 home-hero-2 = Każda rodzina — rzeką.
@@ -3105,6 +3137,7 @@ diff-section-format-version = Wersja formatu
 history-created = utworzył(a)
 history-deleted = usunął/usunęła
 history-merged = scalił(a) z inną kartą
+history-setup = uruchomił(a) archiwum
 history-attached = dołączył(a) plik
 admin-raw-json-unparsed = Surowego JSON-a nie udało się odczytać ({ $error }). Nic nie zostało zapisane.
 admin-raw-json-dangling = Surowy JSON wskazuje w { $field } na { $target }, którego nie ma w tym archiwum. Wybierz go w polu powyżej albo popraw identyfikator. Nic nie zostało zapisane.
@@ -3163,6 +3196,16 @@ convert-error-file-too-large = Ten plik ma { $size } MB, a limit wynosi { $limit
 convert-error-too-large = Przesyłany plik przekracza limit { $limit } MB. Niczego nie przekonwertowano.
 convert-error-unreadable = Nie udało się odczytać przesłanych danych ({ $error }). Niczego nie przekonwertowano.
 convert-error-not-gedcom = To nie wygląda na plik GEDCOM: plik GEDCOM 5.5.1 zaczyna się od wiersza „0 HEAD”. Niczego nie przekonwertowano.
+gedcom-read-title = Jak odczytano plik
+gedcom-read-as = Odczytano jako GEDCOM { $version }, w kodowaniu { $encoding }.
+gedcom-read-as-unversioned = Odczytano jako GEDCOM (nagłówek nie podaje wersji), w kodowaniu { $encoding }.
+gedcom-read-declared = Nagłówek podaje { $declared }; bajty mówią co innego i zostały odczytane takimi, jakie są.
+gedcom-read-gedzip = Archiwum GEDCOM 7 (.gdz): odczytano jego zbiór danych. Pozostałe pliki w nim (zdjęcia, skany), nieprzeniesione: { $n }.
+gedcom-read-crs = Wiersze zakończone po staremu, jak na Macintoshu, naprawione: { $n }.
+gedcom-read-voids = Odwołania do @VOID@ — „brak rekordu” w GEDCOM 7 — odłożone zamiast odczytane jako osoby: { $n }.
+gedcom-read-notes = Notatki współdzielone (SNOTE) odczytane jako notatki: { $n }.
+convert-error-no-dataset = To archiwum zip nie zawiera ani gedcom.ged, ani pojedynczego pliku .ged, który można by odczytać zamiast niego.
+convert-error-refused = Konwerter odrzucił ten plik. Diagnostyka poniżej mówi dlaczego. Nic nie zostało zachowane.
 convert-error-packaging = Plik został przekonwertowany, ale nie udało się go spakować ({ $error }).
 completeness-fraction = { $part } z { $whole }
 event-category-adoption = Adopcja

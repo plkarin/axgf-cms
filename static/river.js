@@ -585,18 +585,31 @@
         var c = e.cp, hit = e.from ? on[e.from] && (c.kids.some(function (k) { return on[k]; }) || c.parents.some(function (q) { return q !== e.from && on[q]; })) : on[e.to] && c.parents.some(function (q) { return on[q]; });
         if (hit) html += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" fill="none" class="KL" STW stroke-linecap="round"/>';
       });
+      // Where a word may run before it meets the rail: the window as it is
+      // on screen now (widened, zoomed), less the rail's room. A word is
+      // scaled back by the zoom (cam.iz), its distance from the dot with it.
+      var vb = svg.viewBox.baseVal, F = frame(fr.meta), u = 1 / (F.k * cam.z), T = tiers(fr);
       fr.persons.forEach(function (p) {
         var s = p.s || {};
         if (!on[p.key] || p.role === 'centre' || s.redacted) return;
         // Every person on the route is a station of the path, ringed in its
         // light; the one under the pointer, a wider ring. Each station is a
         // map symbol: it keeps its size when the river is zoomed.
+        var target = p.key === id;
         labels += '<g class="rv-cs" style="transform-origin:' + f(p.x) + 'px ' + f(p.y) + 'px">';
-        labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + (p.key === id ? 11 : 8.5) + '" fill="none" class="k-lit" stroke-width="' + (p.key === id ? 1.3 : 0.9) + '"' + (p.key === id ? '' : ' stroke-opacity="0.7"') + '/>';
-        // On hover the full name, right-aligned to the dot where it would
-        // otherwise run past the rail: a hover label is alone on its row.
-        var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > fr.meta.hview[0] + fr.meta.hview[1] - 34;
-        labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text></g>';
+        labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + (target ? 11 : 8.5) + '" fill="none" class="k-lit" stroke-width="' + (target ? 1.3 : 0.9) + '"' + (target ? '' : ' stroke-opacity="0.7"') + '/>';
+        // The person under the pointer is named in full; a station the
+        // drawing left unnamed, by its shortest name. A row is rarely theirs
+        // alone, so the word sits on a ground of its own (sized in place
+        // below) and goes to whichever side the window has room on: it may
+        // cover a neighbour's word for as long as it is lit, and is never
+        // read through one.
+        var word = target ? s.names[2] : T[p.key] ? '' : s.names[0];
+        if (word) {
+          var right = p.x + (10.8 + width(word, 12, false)) * cam.iz > vb.x + vb.width - 34 * u;
+          labels += '<rect class="rv-hl-box" rx="3"/><text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(word) + '</text>';
+        }
+        labels += '</g>';
       });
     }
     // Three stacked strokes as before — a halo, a glow and the light — now
@@ -607,6 +620,16 @@
     lit.innerHTML = layer('k-lit-halo', 'stroke-width="11" stroke-opacity="0.1"') + layer('k-lit', 'stroke-width="5.5" stroke-opacity="0.24"')
       + layer('k-lit', 'stroke-width="2.8" stroke-opacity="0.92"') + layer('k-core', 'stroke-width="1.2"') + layer('k-flow', 'stroke-width="1.7"');
     hl.innerHTML = labels;
+    // Each word's ground, the size the browser actually set it at.
+    hl.querySelectorAll('rect.rv-hl-box').forEach(function (r) {
+      var b = r.nextElementSibling && r.nextElementSibling.getBBox();
+      if (!b || !b.width) return;
+      r.setAttribute('x', f(b.x - 3)); r.setAttribute('y', f(b.y - 1.5));
+      r.setAttribute('width', f(b.width + 6)); r.setAttribute('height', f(b.height + 3));
+    });
+    // The lit person's own word steps aside for their full name.
+    svg.querySelectorAll('a.rv-p.rv-looked').forEach(function (a) { a.classList.remove('rv-looked'); });
+    if (on) svg.querySelectorAll('a.rv-p').forEach(function (a) { if (a.getAttribute('data-key') === id) a.classList.add('rv-looked'); });
   }
 
   /* ---- travel ---- */

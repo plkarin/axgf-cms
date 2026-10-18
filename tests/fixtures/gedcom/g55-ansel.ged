@@ -1,0 +1,39 @@
+0 HEAD
+1 SOUR TEST
+1 GEDC
+2 VERS 5.5
+2 FORM LINEAGE-LINKED
+1 CHAR ANSEL
+0 @I1@ INDI
+1 NAME J‚ozef /GÒesiorek/
+1 SEX M
+1 BIRT
+2 DATE 12 APR 1871
+2 PLAC Krak‚ow, Polska
+1 DEAT
+2 DATE 3 JAN 1940
+2 PLAC °‚od?, Polska
+1 NOTE Une note longue : ‡ Ca s'‚ecrit
+2 CONC  sur deux lignes ‡
+2 CONT et elle continue ici.
+1 OCCU Cordonnier
+0 @I2@ INDI
+1 NAME Helena /Nowak/
+1 SEX F
+1 BIRT
+2 DATE ABT 1875
+2 PLAC ÁZ‚o±kiew, Polska
+0 @I3@ INDI
+1 NAME ‚El‚eonore /GÒesiorek/
+1 SEX F
+1 BIRT
+2 DATE BET 1900 AND 1905
+2 PLAC Saint-‚Etienne, France
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 MARR
+2 DATE 1899
+2 PLAC Krak‚ow, Polska
+0 TRLR

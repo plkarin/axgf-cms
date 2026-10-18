@@ -6,7 +6,8 @@ use axum::response::Response;
 use minijinja::context;
 use serde_json::{json, Value};
 
-use crate::convert::{axgf_name_for, counts_of, looks_like_gedcom, MAX_UPLOAD};
+use crate::convert::{axgf_name_for, counts_of, MAX_UPLOAD};
+use crate::gedcom_in::{self, Refusal};
 use crate::routes::Shared;
 use crate::state::envelope_into_data;
 use crate::{auth, render};
@@ -27,7 +28,7 @@ pub async fn form(State(state): State<Shared>, headers: HeaderMap) -> Response {
 
 /// Fields pulled out of the upload form.
 #[derive(Default)]
-struct Upload {
+pub(super) struct Upload {
     filename: String,
     bytes: Vec<u8>,
     confidence: f64,
@@ -42,7 +43,30 @@ pub async fn gedcom(
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
+    convert_and_show(&state, &chrome, multipart, Purpose::Download).await
+}
 
+/// What a conversion is for: a file to take away, or the family an
+/// installation is about to be set up with (docs/adr/0005). The same reading,
+/// the same conversion and the same report either way; only the last
+/// section differs — a download, or the button that sets the archive up.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Purpose {
+    Download,
+    Setup,
+}
+
+/// Read an uploaded GEDCOM of any version (`crate::gedcom_in`), convert it,
+/// and show what came across and how the file was read.
+pub(super) async fn convert_and_show(
+    state: &Shared,
+    chrome: &render::Chrome,
+    multipart: Multipart,
+    purpose: Purpose,
+) -> Response {
+    let chrome = chrome.clone();
+    let setup = purpose == Purpose::Setup;
+    let fail = |chrome: &render::Chrome, status: StatusCode, message: &str| fail(chrome, status, message, setup);
     let limit_mb = || ((MAX_UPLOAD / (1024 * 1024)) as i64).into();
     let upload = match read_upload(multipart).await {
         Ok(u) => u,
@@ -79,16 +103,28 @@ pub async fn gedcom(
             ),
         );
     }
-    if !looks_like_gedcom(&upload.bytes) {
-        return fail(
-            &chrome,
-            StatusCode::OK,
-            &chrome.t("convert-error-not-gedcom"),
-        );
-    }
+    // Any version, any encoding, bare or in a `.gdz`: read into the dialect
+    // the converter reads, and what was mended on the way kept for the page.
+    let read = match gedcom_in::read(&upload.bytes, MAX_UPLOAD) {
+        Ok(r) => r,
+        Err(Refusal::NotGedcom) => {
+            return fail(&chrome, StatusCode::OK, &chrome.t("convert-error-not-gedcom"))
+        }
+        Err(Refusal::NoDataset) => {
+            return fail(&chrome, StatusCode::OK, &chrome.t("convert-error-no-dataset"))
+        }
+        Err(Refusal::TooLarge) => {
+            return fail(
+                &chrome,
+                StatusCode::PAYLOAD_TOO_LARGE,
+                &chrome.t_args("convert-error-too-large", &[("limit", limit_mb())]),
+            )
+        }
+    };
+    let reading = reading_view(&read.reading);
 
     // The library owns the conversion. This crate only reports the result.
-    let env = axgf_rs::convert_gedcom(&upload.bytes, upload.confidence, &upload.lang);
+    let env = axgf_rs::convert_gedcom(read.text.as_bytes(), upload.confidence, &upload.lang);
     let diagnostics = super::admin::diagnostics_json(&env.diagnostics, chrome.lang);
 
     let data = match envelope_into_data(env) {
@@ -98,12 +134,13 @@ pub async fn gedcom(
                 &chrome,
                 "convert_result.html",
                 context! {
-                    nav => "convert",
-                            ok => false,
-                    error => "The converter refused this file. The diagnostics below \
-                              say why. The served bundle was not touched.",
+                    nav => if setup { "admin" } else { "convert" },
+                    ok => false,
+                    setup,
+                    error => chrome.t("convert-error-refused"),
                     diagnostics,
                     filename => upload.filename,
+                    reading,
                 },
             );
         }
@@ -159,8 +196,10 @@ pub async fn gedcom(
         &chrome,
         "convert_result.html",
         context! {
-            nav => "convert",
+            nav => if setup { "admin" } else { "convert" },
             ok => true,
+            setup,
+            reading,
             filename => upload.filename,
             download_id => id,
             download_name,
@@ -201,14 +240,14 @@ pub async fn download(
 /// Why an upload could not be read. Two cases, because they deserve different
 /// statuses — a body past the limit is a 413, anything else malformed a 400 —
 /// and the sentence for each is the reader's, chosen by the handler.
-enum UploadError {
+pub(super) enum UploadError {
     TooLarge,
     /// The multipart parser's own message, kept as it wrote it.
     Unreadable(String),
 }
 
 /// Read the multipart form, tolerating fields in any order.
-async fn read_upload(mut multipart: Multipart) -> Result<Upload, UploadError> {
+pub(super) async fn read_upload(mut multipart: Multipart) -> Result<Upload, UploadError> {
     let mut out = Upload {
         confidence: 0.8,
         lang: "en".to_string(),
@@ -261,17 +300,34 @@ async fn read_upload(mut multipart: Multipart) -> Result<Upload, UploadError> {
 }
 
 /// Render the result page in its failure shape, with a fitting status.
-fn fail(chrome: &render::Chrome, status: StatusCode, message: &str) -> Response {
+fn fail(chrome: &render::Chrome, status: StatusCode, message: &str, setup: bool) -> Response {
     let mut resp = render::page_with(
         chrome,
         "convert_result.html",
         context! {
-            nav => "convert",
+            nav => if setup { "admin" } else { "convert" },
             ok => false,
+            setup,
             error => message,
             diagnostics => Vec::<Value>::new(),
         },
     );
     *resp.status_mut() = status;
     resp
+}
+
+/// How a file was read, for `_gedcom_reading.html`: the facts, which the
+/// template words in the reader's language.
+fn reading_view(r: &gedcom_in::Reading) -> Value {
+    json!({
+        "version": r.version,
+        "encoding": r.encoding.map(|e| e.label()),
+        "declared": r.declared,
+        "declared_otherwise": r.declared_otherwise(),
+        "gedzip": r.gedzip,
+        "media": r.media,
+        "lone_crs": r.lone_crs,
+        "voids": r.voids,
+        "shared_notes": r.shared_notes,
+    })
 }

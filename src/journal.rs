@@ -63,7 +63,7 @@ pub struct Entry {
     /// The username, or `emergency-token`. Never an id: the journal has to
     /// stay readable after an account is deleted.
     pub who: String,
-    /// `create`, `update`, `delete`, `upload` or `merge`.
+    /// `create`, `update`, `delete`, `upload`, `merge` or `setup`.
     pub action: String,
     /// `person`, `family`, …
     pub kind: String,
@@ -97,6 +97,7 @@ impl Entry {
             "delete" => crate::i18n::translate(lang, "history-deleted", None),
             "upload" => crate::i18n::translate(lang, "history-attached", None),
             "merge" => crate::i18n::translate(lang, "history-merged", None),
+            "setup" => crate::i18n::translate(lang, "history-setup", None),
             _ => crate::diff::summarise_in(&self.changes, &self.kind, lang),
         }
     }

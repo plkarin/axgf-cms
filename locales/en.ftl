@@ -202,6 +202,37 @@ login-sign-in-prompt = Sign in to reach the admin panel.
 ## Admin
 
 admin-title = Admin
+setup-title = Set up this archive
+setup-lede = This installation holds no family yet. Choose how it begins. Nothing here is ever written over a family: this page closes as soon as there is one.
+setup-door-archive-title = From an AXGF archive
+setup-door-archive-detail = An .axgf file from another installation or from a backup. Its people, sources and photographs come across as they are.
+setup-door-archive-file = Archive (.axgf)
+setup-door-archive-go = Set up from this archive
+setup-limit-gb = Up to { $n } GB, written straight to disk.
+setup-door-scratch-title = From nothing
+setup-door-scratch-detail = An empty archive. Add the first person, then their family, one record at a time.
+setup-door-scratch-go = Add the first person
+setup-door-gedcom-title = From a GEDCOM file
+setup-door-gedcom-detail = The file every genealogy program exports: GEDCOM 5.5, 5.5.1, 5.5.5 or 7.0, as .ged or .gdz, in whatever encoding it was written. You see how it was read and what comes across before anything is kept.
+setup-door-gedcom-file = GEDCOM file (.ged, .gdz)
+setup-door-gedcom-go = Read this file
+setup-never-over = To replace a family that is already here, restore a backup from the command line (axgf-cms restore); no page writes over one.
+setup-adopt-title = Make this the archive’s family
+setup-adopt-detail = Records that would become this installation’s family: { $total }. Nothing is kept until you press the button.
+setup-adopt-go = Set up the archive with this family
+setup-adopt-back = Choose another way in
+setup-done-title = The archive is set up
+setup-done-detail = Records in this installation’s family now: { $total }.
+setup-done-photos = Photographs and documents that came with it: { $n }.
+setup-done-mismatches = Files whose bytes did not match the fingerprint recorded for them: { $n }. They are kept; check them.
+setup-done-river = Open the river
+setup-done-admin = Administration
+setup-refused-title = This could not become the archive
+setup-refused-detail = Nothing was written. What stopped it:
+setup-closed-title = This archive is already set up
+setup-closed-detail = It holds a family, and no page writes over one. To replace it, restore a backup from the command line (axgf-cms restore).
+setup-not-archive = This is not an .axgf archive.
+setup-archive-too-large = This archive is larger than an upload may be.
 admin-lede = Editing { $path } — { $total } entities, { $files ->
         [one] one attached file
        *[other] { $files } attached files
@@ -565,7 +596,7 @@ tree-edge-parentage = A recorded parentage
 
 ## Home page
 
-home-empty = Nothing recorded yet. Import a family file to bring an existing tree across, or add the first person by hand.
+home-empty = Nothing recorded yet.
 home-count = { $total ->
         [one] One record
        *[other] { $total } records
@@ -577,7 +608,8 @@ home-in-this-tree = What the family has recorded so far
 home-showcase-title = Where this tree already says more than names and dates
 home-showcase-example = See an example →
 home-nothing-title = Nothing to show yet.
-home-nothing-detail = Import a family file to bring an existing tree across, or start from nothing and add the first person yourself.
+home-nothing-admin = This installation holds no family yet: set it up from an archive, from a GEDCOM file, or from nothing.
+home-nothing-visitor = This family archive is being set up.
 home-eyebrow = Family archive
 home-hero-1 = Every life is a source.
 home-hero-2 = Every family, a river.
@@ -2964,6 +2996,7 @@ diff-section-format-version = Format version
 history-created = created
 history-deleted = deleted
 history-merged = merged into another record
+history-setup = set up the archive
 history-attached = attached a file
 admin-raw-json-unparsed = The raw JSON did not parse ({ $error }). Nothing was saved.
 admin-raw-json-dangling = The raw JSON points { $field } at { $target }, which is not in this archive. Pick it with a field above, or correct the id. Nothing was saved.
@@ -3010,6 +3043,16 @@ convert-error-file-too-large = That file is { $size } MB and the limit is { $lim
 convert-error-too-large = That upload is larger than the { $limit } MB limit. Nothing was converted.
 convert-error-unreadable = The upload could not be read ({ $error }). Nothing was converted.
 convert-error-not-gedcom = That does not look like a GEDCOM file: a GEDCOM 5.5.1 file starts with a “0 HEAD” line. Nothing was converted.
+gedcom-read-title = How the file was read
+gedcom-read-as = Read as GEDCOM { $version }, in { $encoding }.
+gedcom-read-as-unversioned = Read as GEDCOM (its header gives no version), in { $encoding }.
+gedcom-read-declared = Its header says { $declared }; its bytes say otherwise, and were read as they are.
+gedcom-read-gedzip = A GEDCOM 7 archive (.gdz): its dataset was read. Other files in it (photographs, scans), not carried across: { $n }.
+gedcom-read-crs = Lines ending the old Macintosh way, mended: { $n }.
+gedcom-read-voids = Pointers to @VOID@ — GEDCOM 7’s “no record” — set aside rather than read as people: { $n }.
+gedcom-read-notes = Shared notes (SNOTE) read as notes: { $n }.
+convert-error-no-dataset = This zip holds no gedcom.ged, and no single .ged file to read instead.
+convert-error-refused = The converter refused this file. The diagnostics below say why. Nothing was kept.
 convert-error-packaging = The file was converted but could not be packaged ({ $error }).
 completeness-fraction = { $part } of { $whole }
 event-category-adoption = Adoption

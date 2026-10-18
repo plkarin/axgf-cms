@@ -448,6 +448,26 @@ fn declared_payloads(flat: &Value) -> Vec<String> {
 /// A flat bundle has no top-level `bundle` key of its own — its keys are
 /// `manifest` and the eight collections — so preferring `data.bundle` when
 /// present and falling back to `data` covers every case unambiguously.
+/// What became of an attempt to set an installation up (docs/adr/0005).
+#[derive(Debug)]
+pub enum Adoption {
+    /// The family is now this installation's. For an archive, what its
+    /// photographs came to on the way in.
+    Done(PopulateReport),
+    /// A family was already there by the time the write lock was held, and
+    /// nothing was written.
+    Occupied,
+    /// The library would not take it, in its own words.
+    Refused(Vec<Diagnostic>),
+}
+
+/// No entity in any collection: a family not set up yet.
+fn is_unset(flat: &Value) -> bool {
+    COLLECTIONS
+        .iter()
+        .all(|c| flat.get(*c).and_then(Value::as_object).is_none_or(|m| m.is_empty()))
+}
+
 fn bundle_from_data(data: &Value) -> Option<&Value> {
     match data.get("bundle") {
         Some(b) if b.is_object() => Some(b),
@@ -1612,6 +1632,78 @@ impl AppState {
     pub fn inspect_with(&self, op: impl FnOnce(&str) -> Envelope) -> Envelope {
         let flat = self.flat_json();
         op(&flat)
+    }
+
+    /// Whether this installation has no family yet (docs/adr/0005): not one
+    /// entity in any collection, whatever the manifest says. That is what an
+    /// installation started without a bundle holds, and the one state in
+    /// which it offers to be set up.
+    pub fn is_unset(&self) -> bool {
+        self.read(is_unset)
+    }
+
+    /// Give an installation that has no family yet the one in `env` — a
+    /// converted GEDCOM (docs/adr/0005, the third door).
+    ///
+    /// Checked again under the write lock, so two administrators setting up
+    /// at once cannot both win, and nothing is ever written over a family:
+    /// replacing one that exists stays `axgf-cms restore`, on purpose.
+    pub fn adopt(&self, env: Envelope) -> Result<Adoption> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        if !is_unset(&guard) {
+            return Ok(Adoption::Occupied);
+        }
+        let out = self.apply_locked(&mut guard, move |_| env, |_, _| {})?;
+        if !out.applied {
+            return Ok(Adoption::Refused(out.diagnostics));
+        }
+        let manifest = guard.get("manifest").cloned();
+        drop(guard);
+        self.rebind_accounts(manifest.as_ref())?;
+        Ok(Adoption::Done(PopulateReport::default()))
+    }
+
+    /// Give an installation that has no family yet the one in an `.axgf`
+    /// archive on disk (docs/adr/0005, the first door), photographs and all.
+    ///
+    /// Read as the server reads its own bundle at startup: streamed, each
+    /// payload into the disk cache through a fixed buffer, the archive never
+    /// whole in memory; then written as every save is, atomically, and taken
+    /// in. A file the library will not import changes nothing.
+    pub fn adopt_archive(&self, archive: &Path) -> Result<Adoption> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        if !is_unset(&guard) {
+            return Ok(Adoption::Occupied);
+        }
+        let file = fs::File::open(archive)
+            .with_context(|| format!("opening the uploaded archive {}", archive.display()))?;
+        let mut report = PopulateReport {
+            cache_dir: self.payloads.dir().to_path_buf(),
+            ..Default::default()
+        };
+        let env = axgf_rs::import_bundle_streaming(file, |payload| {
+            self.payloads.take_payload(payload, &mut report)
+        });
+        if env.status == Status::Error || env.data.is_null() || env.data.get("manifest").is_none() {
+            return Ok(Adoption::Refused(env.diagnostics));
+        }
+        let flat = env.data;
+        self.payloads.flush_index()?;
+        self.payloads.verify_against_metadata(&flat, &mut report);
+        self.persist(&flat)?;
+        let manifest = flat.get("manifest").cloned();
+        *guard = flat;
+        self.invalidate_lenses();
+        drop(guard);
+        self.rebind_accounts(manifest.as_ref())?;
+        Ok(Adoption::Done(report))
+    }
+
+    /// The accounts follow the family they were set up for: the `.acl`'s
+    /// binding names the new manifest, so the next start does not warn that
+    /// one family's accounts are being applied to another's.
+    fn rebind_accounts(&self, manifest: Option<&Value>) -> Result<()> {
+        self.acl_mutate(|acl| acl.bind_to(manifest, None))
     }
 
     /// Size of the bundle on disk, in bytes.

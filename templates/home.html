@@ -81,11 +81,15 @@
 {% endif %}
 
 {% if total == 0 %}
+{#- An installation with no family yet (docs/adr/0005): its administrator is
+    shown the way in; anybody else, that it is being set up — not an
+    invitation to import a file they have no right to bring. -#}
 <div class="notice">
   <p>
     <strong>{{ t("home-nothing-title") }}</strong>
-    {{ t("home-nothing-detail") }}
+    {% if is_admin %}{{ t("home-nothing-admin") }}{% else %}{{ t("home-nothing-visitor") }}{% endif %}
   </p>
+  {% if is_admin %}<p><a class="btn" href="/admin/setup">{{ t("setup-title") }}</a></p>{% endif %}
 </div>
 {% else %}
 <section class="cta-banner" data-reveal aria-labelledby="home-cta">

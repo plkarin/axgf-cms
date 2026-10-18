@@ -93,9 +93,11 @@ public. Nothing was taken from them. What the site carries was made for it:
 | `static/img/river-ground.jpg` | Canva, generated (a dark forest from above, in mist) | the river's ground, every theme but Gravure |
 | `static/img/river-contours.svg` | a script: isolines of a fixed-seed relief, used as a mask | over the river's ground |
 
-They come to 0.3 MB in the binary. They are served by
-`/static/img/…` with a day of cache, and the Content-Security-Policy already
-allowed same-origin images.
+They come to 0.86 MB in the binary. The first ones were exported small and
+looked soft on a monitor (the operator's review, §10); each is now kept at
+the size Canva generates it, 1680 or 1536 pixels wide, and sharpened once.
+They are served by `/static/img/…` with a day of cache, and the
+Content-Security-Policy already allowed same-origin images.
 
 **Text never sits on a bare photograph.** A shade made from the theme's own
 ground lies between the two, so text keeps the contrast its palette was
@@ -127,14 +129,23 @@ its bands and every one of ADR 0001's invariants. What changes is the ground
 it runs on and the light on the water:
 
 - **Ground.** The forest photograph under a shade, contour lines in
-  `--rv-contour` over it, and the drawing's own ground and even bands made
-  translucent (structural selectors, so `src/river.rs` is unchanged).
-- **Terrain.** Every line is a valley two soft bands wide, in its own water's
-  colour, so the old generations sit in teal ground and the recent ones in
-  ochre, and the terrain deepens where lines gather.
-- **Cores.** Attested water carries a thread of light down its middle. Solid
-  and lit, dashed and dull, dotted and faint: confidence now also reads as
-  brightness.
+  `--rv-contour` over it, mist in two corners, and the drawing's own ground
+  and even bands made translucent (structural selectors, so `src/river.rs`
+  is unchanged).
+- **Zones.** The ground the lines run through, drawn as a cartographer draws
+  terrain: a translucent area with four crisp contour lines nested inside
+  it, teal below the fixed point (towards the sources) and ochre above it
+  (towards the living). They are the isolines of a field made by the lines
+  themselves (marching squares over a blurred raster), so they follow every
+  branch and merge where branches gather, and they say nothing the lines do
+  not. The first pass drew soft blurred valleys instead; on a monitor they
+  read as a smudge, not as Selva Verde's terrain (§10).
+- **Banks.** A thin dark edge under every line, so the water stays sharp on
+  the forest.
+- **Cores and glow.** Attested water carries a thread of light down its
+  middle, with a faint warm glow around it in two passes, as Selva Verde's
+  path is lit. Solid and lit, dashed and dull, dotted and faint: confidence
+  now also reads as brightness.
 - **The lit route.** A halo, a glow, the light, a warm core, and a thread of
   light running from the sources toward the living, three times, then still.
   Every person on the route is ringed as a station of the path.
@@ -147,8 +158,9 @@ it runs on and the light on the water:
 - **Motion.** An entrance once per page (the water and terrain come up, then
   the people), and the fixed point's ring breathing twice on arrival.
 
-**Why all of it is drawn by the client.** The terrain, the cores, the lights
-and the scale are computed in `river.js` from the payload the page already
+**Why all of it is drawn by the client.** The zones, the banks, the cores,
+the glow, the lights and the scale are computed in `river.js` from the
+payload the page already
 holds: the same edges, at the same places, in the same water colours. The
 server's SVG and payload are byte for byte what they were. ADR 0001's
 invariant, that "two archives that differ only by hidden people's dates
@@ -218,7 +230,60 @@ It is in the operator's Canva, folder **AXGF · Thème Canopée**:
 - **Canopée — implémentation 1 to 5**: the theme as built, rendered from
   this stylesheet and separated into editable objects (palette, buttons and
   tabs, fields, cards and figures, notices and loaders). Where these and the
-  generated boards disagree, these are right.
+  generated boards disagree, these are right. They show the first pass: the
+  second (§10: section discs, moving buttons, the river's zones and glow) is
+  in the stylesheet and `river.js` only.
 
 The boards are the reference for anyone changing this theme. The code is the
 theme.
+
+## 10. The second pass: the operator's review
+
+The operator tried the first pass on a monitor, in the compact style, and
+reported five things. Each one, and what changed:
+
+- **"The pictures are blurred."** They were. They had been exported small
+  and recompressed, and the river's ground was so dark under its shade that
+  it read as black. They are re-made at full size (§3), and the river's
+  ground is a lighter forest that the shade no longer swallows.
+- **"The river does not look like the model."** The soft terrain is
+  replaced by crisp zones with nested contour lines, banks under the water,
+  a warm glow on attested water and mist in two corners (§5): Selva Verde's
+  vocabulary, laid on a family's river rather than on one path.
+- **"Every button's animation."** Every button, in every place, now
+  answers the pointer under Canopée. A band of light crosses it once, it
+  lifts with a soft shadow, and a press shrinks it a little and leaves an ink
+  ripple where the pointer went down (`ui.js`, on `pointerdown`). The
+  record's way into the river and the edit button beside a name carry their
+  own signs (the river, a pen); the edit button is filled, as the kit draws
+  a record's one action. `prefers-reduced-motion` stills all of it, as it
+  stills everything else; "Cut" in the settings is about the river's travel
+  and leaves the buttons alone.
+- **"The theme must be on every page; the person page is barely touched."**
+  The kit is carried onto every page, still only under
+  `[data-theme="canopee"]`. Every section opens with a disc that carries
+  its sign, in a colour of its own (a person for identity, two for family,
+  a calendar for a life, a pin for places). The person is a card with a
+  ringed portrait and dates in a chip. Every page title has a lime rule
+  under it. Rows answer the pointer, and figures are tiles. Every
+  disclosure turns a chevron, and the counts are pills. The editor's save
+  bar glows, and the login page is a glass card over the hero's hills.
+  Every other theme is Study 06 exactly, as before.
+- **"The name header runs out of its card" and "the language list cannot be
+  read".** The identity table bleeds to its section's edges by the
+  section's own inline padding, and the compact style padded less than the
+  bleed. The bleed now reads `--section-pad-x`, which each style defines
+  (`tests/themes.rs` holds it to that). On Windows, an open select drew
+  its options on white with the theme's pale text. Options now take the
+  theme's raised surface and text, the current one its hover surface, and a
+  select its sunken ground.
+
+One more fault was found while checking: the completeness tag ("not yet
+recorded") ran past its column in every theme, because the cell does not
+wrap and the tag sat beside the count. It now sits under it, as its top
+margin always meant.
+
+Measured: every page in the compact style at 390 and 1280 pixels, text at
+100 % and 150 %, 56 checks, no horizontal overflow; the open select's
+colours read from the browser under Canopée and under the dark and light
+themes; the full test suite and Clippy.

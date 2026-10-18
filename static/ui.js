@@ -202,6 +202,25 @@
     }
   }
 
+  // The ink of a press (v0.5.0, docs/adr/0004 §6): under the reference
+  // theme, a button, a tab or a chip shows where it was pressed — a ripple
+  // from the pointer, gone in 0.6 s. Never where the reader asked for
+  // stillness.
+  document.addEventListener("pointerdown", function (ev) {
+    if (still || document.documentElement.getAttribute("data-theme") !== "canopee") return;
+    var b = ev.target.closest && ev.target.closest(".btn, .person-tab");
+    if (!b || b.disabled || b.getAttribute("aria-disabled") === "true") return;
+    var r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.4;
+    var ink = document.createElement("span");
+    ink.className = "ripple-ink";
+    ink.setAttribute("aria-hidden", "true");
+    ink.style.width = ink.style.height = d + "px";
+    ink.style.left = (ev.clientX - r.left - d / 2) + "px";
+    ink.style.top = (ev.clientY - r.top - d / 2) + "px";
+    b.appendChild(ink);
+    setTimeout(function () { if (ink.parentNode) ink.parentNode.removeChild(ink); }, 700);
+  });
+
   // `data-search` — the masthead search. Suggestions from /search.json as
   // you type; ↓ ↑ choose one; Enter travels the river to them (on the river
   // page without leaving it, through river.js; elsewhere by opening the river

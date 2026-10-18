@@ -53,11 +53,14 @@ travelling to in the river while their river is fetched.
 
 **The river's ground**, after Selva Verde:
 
-- a forest seen from above under a shade, with contour lines;
-- terrain that follows every line in its water's colour, so old generations
-  sit in teal ground and recent ones in ochre;
-- a thread of light down the middle of attested water, so confidence also
-  reads as brightness;
+- a forest seen from above under a shade, with contour lines and mist in
+  two corners;
+- zones drawn as a map draws terrain: a translucent ground with crisp
+  contour lines nested inside it, teal towards the sources and ochre
+  towards the living, following every branch;
+- a thin dark bank under every line, so the water stays sharp;
+- a thread of light down the middle of attested water, with a faint warm
+  glow around it, so confidence also reads as brightness;
 - a lit route with a halo, its stations ringed, and a thread of light
   running toward the living;
 - a cartographer's legend: a compass, and the scale of a generation (29
@@ -69,6 +72,27 @@ All of it is drawn by `river.js` from the payload the page already holds,
 with plain strokes and no filter. Under Gravure (high contrast) and in print
 the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
 every light that moves.
+
+**Canopée on every page.** The record, the tree, the administration, the
+editor, the quality list, search, settings and the login page carry the kit
+too, under Canopée only:
+
+- every section opens with a disc carrying its sign, each in its own colour;
+- the person is a card with a ringed portrait and dates in a chip;
+- every page title has a lime rule under it;
+- rows answer the pointer, and figures are tiles;
+- every disclosure turns a chevron, and counts are pills;
+- the login page is a glass card over the hills.
+
+**Every button moves**, under Canopée:
+
+- a band of light crosses it once under the pointer;
+- it lifts with a soft shadow;
+- a press shrinks it a little and leaves an ink ripple where the pointer
+  went down.
+
+The record's way into the river and the edit button beside a name carry
+their own signs, a river and a pen.
 
 **Motion that answers the reader**, under Canopée:
 
@@ -86,6 +110,19 @@ is out.
 - **Buttons and fields take their round from a token** (`--btn-radius`,
   `--field-radius`): Study 06's 2px in every theme but Canopée.
 
+### Fixed
+
+- **The pictures were soft.** They are re-made at full size (1680 and 1536
+  pixels wide) and sharpened once. The river's ground was so dark under its
+  shade that it read as black; it is a lighter forest now.
+- **The identity table's header ran outside its card** in the compact style.
+  The table bleeds to its section's edges by `--section-pad-x`, which every
+  style now defines.
+- **An open select was white with pale text on Windows**, so the language
+  could not be read. Options take the theme's raised surface and text.
+- **The completeness tag ("not yet recorded") ran past its column** in every
+  theme. It now sits under the count.
+
 ### Tests
 
 - `controls.rs`: one radius per theme, defined on `:root` and by Canopée and
@@ -96,7 +133,8 @@ is out.
   split at `\n.`, which let anything not starting with a class through
   unread.
 - `themes.rs` and `design_tokens.rs`: eleven palettes measured, Canopée
-  among them, with no exception.
+  among them, with no exception. `--section-pad-x` is held to every style,
+  like the rest of the scale.
 
 ## [0.4.3] — 2026-10-15
 

@@ -170,7 +170,10 @@
      halo, the contour lines of the ground, and the shade laid over the
      ground's photograph so that every ink above keeps its contrast. */
   --rv-core: #fdf3d8; --rv-lit-halo: #f2cf86; --rv-contour: #6f9a8c;
+  --rv-zone-down: #66bfab; --rv-zone-up: #f2c879;
   --rv-shade-rgb: 10 17 14;
+  /* The mist in two corners of the ground, as over Selva Verde's forest. */
+  --rv-mist-rgb: 214 226 220;
   --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* Study 06 on the river itself, under every theme: anything drawn inside

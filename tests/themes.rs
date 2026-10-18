@@ -130,6 +130,7 @@ fn every_theme_redefines_every_colour_root_defines() {
         "--label-track",
         "--small-size",
         "--section-pad",
+        "--section-pad-x",
         "--section-gap",
         "--section-fill",
         "--section-shadow",
@@ -637,6 +638,10 @@ fn every_style_redefines_every_value_the_scale_has() {
         "--h2-weight",
         "--label-track",
         "--section-pad",
+        // The inline half of it, which a table bleeding to its section's
+        // edges bleeds by (v0.5.0): a style that forgot it would bleed by
+        // the default's and cross its own card's edge.
+        "--section-pad-x",
         "--section-gap",
         "--section-fill",
         "--section-shadow",

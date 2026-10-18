@@ -83,7 +83,13 @@
   /* How much room a section gives its contents, and whether it is a card or a
      ruled block. Paper sets the shadow to none and the fill to transparent,
      which is what a printer does to a card anyway. */
-  --section-pad: 1.15rem 1.3rem;
+  /* The inline half of the section's padding on its own, so that what
+     bleeds into it (a table drawn edge to edge) bleeds by exactly that much
+     in every style. It was a literal 1.3rem, which under compact — whose
+     sections pad 0.85rem — carried a table's header past its card's edges
+     (v0.5.0, the operator's screenshot of a record in compact). */
+  --section-pad-x: 1.3rem;
+  --section-pad: 1.15rem var(--section-pad-x);
   --section-gap: 1.1rem;
   --section-fill: var(--surface-raised);
   --section-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
@@ -354,7 +360,8 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   --h1-weight: var(--weight-strong);
   --h2-weight: var(--weight-semi);
   --label-track: 0.05em;
-  --section-pad: 0.7rem 0.85rem;
+  --section-pad-x: 0.85rem;
+  --section-pad: 0.7rem var(--section-pad-x);
   --section-gap: 0.55rem;
   --section-fill: var(--surface-raised);
   --section-shadow: 0 1px 2px rgb(var(--shadow-rgb) / var(--shadow-a));
@@ -387,6 +394,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   --h1-weight: var(--weight-semi);
   --h2-weight: var(--weight-semi);
   --label-track: 0.09em;
+  --section-pad-x: 0rem;
   --section-pad: 0 0 calc(var(--step) * 2);
   --section-gap: calc(var(--step) * 2.4);
   --section-fill: transparent;
@@ -462,7 +470,7 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   padding-inline: 0.5rem 0.25rem;
   inline-size: auto;
   color: var(--text-primary);
-  background-color: transparent;
+  background-color: var(--surface-sunken);
   border: 1px solid var(--border-strong);
   border-radius: 2px;
 }
@@ -991,6 +999,17 @@ select {
   /* Room for the native arrow so the value never sits under it. */
   padding-inline-end: 1.8rem;
 }
+/* The open list of a select is drawn by the system from the select's own
+   colours. A transparent select — the masthead's were — made Chrome on
+   Windows draw its options in the theme's ink on a white list: near-white
+   on white under every dark theme, so a language could not be read, let
+   alone chosen (v0.5.0, the operator's screenshot). Every select has its
+   theme's ground now, and every option carries it too. */
+option, optgroup {
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+}
+option:checked { background-color: var(--surface-hover); }
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
 
 /* ---------- notices (Study 06, B7) ----------
@@ -2274,8 +2293,11 @@ a.stat:hover { border-color: var(--accent); }
 .comp-empty { background: transparent; }
 .comp-empty .comp-count { color: var(--text-tertiary); }
 
+/* Under the count, on a line of its own: the cell does not wrap, so a tag
+   beside the count ran past the column (v0.5.0). */
 .comp-tag {
-  display: inline-block;
+  display: block;
+  inline-size: fit-content;
   margin-top: 0.25rem;
   font-size: var(--type-label);
   text-transform: uppercase;
@@ -3036,7 +3058,10 @@ a.tcard:hover {
 /* A table fills its section edge to edge. The section already supplies the
    frame and the padding, and a table that keeps its own inset inside that
    reads as a block within a block that is not one. */
-.rec-section > .table-wrap { margin-inline: -1.3rem; width: calc(100% + 2.6rem); }
+.rec-section > .table-wrap {
+  margin-inline: calc(-1 * var(--section-pad-x));
+  width: calc(100% + 2 * var(--section-pad-x));
+}
 /* On a narrow screen, or with large text, the bleed into the section's
    padding pushed the table past the page's edge; it stays inside instead. */
 @media (max-width: 40em) {
@@ -3047,9 +3072,9 @@ a.tcard:hover {
 }
 .rec-section > .table-wrap > table { font-size: var(--type-minor); }
 .rec-section > .table-wrap th:first-child,
-.rec-section > .table-wrap td:first-child { padding-inline-start: 1.3rem; }
+.rec-section > .table-wrap td:first-child { padding-inline-start: max(0.75rem, var(--section-pad-x)); }
 .rec-section > .table-wrap th:last-child,
-.rec-section > .table-wrap td:last-child { padding-inline-end: 1.3rem; }
+.rec-section > .table-wrap td:last-child { padding-inline-end: max(0.75rem, var(--section-pad-x)); }
 
 /* The filter row sits inside its section now, so it drops its own margin. */
 .rec-section > .filter-row:last-child,
@@ -4420,16 +4445,19 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
 
    The photograph (made in Canva for the river) sits under a shade that
    keeps every ink above it at the contrast the river was measured for; the
-   contour lines are a mask coloured by --rv-contour; the drawing's own
-   ground lets both through at a third. Nothing on the ground depends on
-   the archive: it is the same picture behind every person. */
+   contour lines are a mask coloured by --rv-contour; mist lies in two
+   corners; the drawing's own ground lets all of it through. Nothing on the
+   ground depends on the archive: it is the same picture behind every
+   person. */
 .rv-canvas {
   position: relative;
   isolation: isolate;
   background-color: var(--rv-ink-1);
   background-image:
-    radial-gradient(130% 95% at 52% 50%, transparent 35%, rgb(var(--rv-shade-rgb) / 0.6) 100%),
-    linear-gradient(rgb(var(--rv-shade-rgb) / 0.58), rgb(var(--rv-shade-rgb) / 0.58)),
+    radial-gradient(42% 34% at 0% 100%, rgb(var(--rv-mist-rgb) / 0.3), transparent 72%),
+    radial-gradient(36% 28% at 100% 0%, rgb(var(--rv-mist-rgb) / 0.22), transparent 72%),
+    radial-gradient(125% 92% at 50% 48%, transparent 40%, rgb(var(--rv-shade-rgb) / 0.62) 100%),
+    linear-gradient(rgb(var(--rv-shade-rgb) / 0.34), rgb(var(--rv-shade-rgb) / 0.34)),
     url("/static/img/river-ground.jpg");
   background-size: cover;
   background-position: center;
@@ -4441,7 +4469,7 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   z-index: -1;
   pointer-events: none;
   background-color: var(--rv-contour);
-  opacity: 0.2;
+  opacity: 0.1;
   -webkit-mask: url("/static/img/river-contours.svg") center / cover no-repeat;
   mask: url("/static/img/river-contours.svg") center / cover no-repeat;
 }
@@ -4450,21 +4478,44 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
    bands are the other rects in its ground ink (src/river.rs draws both with
    `k-bg`, as river.js does; a circle in that ink is a ring's or a hollow
    dot's, and stays opaque). Translucent, so the ground shows through. */
-.rv-svg > rect.k-bg:first-of-type { fill-opacity: 0.34; }
-.rv-svg > rect.k-bg:not(:first-of-type) { fill-opacity: 0.16; }
+.rv-svg > rect.k-bg:first-of-type { fill-opacity: 0.16; }
+.rv-svg > rect.k-bg:not(:first-of-type) { fill-opacity: 0.08; }
+/* The years and generations of the rails stand on the forest now, so they
+   carry the same dark halo as the names. */
+.rv-svg :is(.k-band-text, .k-band-text-live, .k-accent) {
+  paint-order: stroke;
+  stroke: var(--rv-ink-1);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+/* Zones (river.js): a translucent ground and its nested contour lines, crisp
+   at every level, teal under the fixed point and ochre above it. */
+.rv-svg .rv-zones { pointer-events: none; animation: rv-fade-in 700ms var(--ease) both; }
+.rv-svg .rv-zone-down { fill: var(--rv-zone-down); stroke: var(--rv-zone-down); }
+.rv-svg .rv-zone-up { fill: var(--rv-zone-up); stroke: var(--rv-zone-up); }
+.rv-svg .rv-zone.z0 { fill-opacity: 0.13; stroke-opacity: 0.85; stroke-width: 1.1; }
+.rv-svg .rv-zone.z1 { fill-opacity: 0.08; stroke-opacity: 0.5; stroke-width: 0.8; }
+.rv-svg .rv-zone.z2 { fill-opacity: 0.06; stroke-opacity: 0.42; stroke-width: 0.7; }
+.rv-svg .rv-zone.z3 { fill-opacity: 0; stroke-opacity: 0.36; stroke-width: 0.6; stroke-dasharray: 2.5 3; }
+/* Banks: a thin dark edge under every line, so the water is sharp on the
+   forest rather than soft. */
+.rv-svg .rv-banks { stroke: var(--rv-ink-0); stroke-opacity: 0.62; pointer-events: none; }
 .rv-svg .k-core { stroke: var(--rv-core); }
 .rv-svg .k-lit-halo { stroke: var(--rv-lit-halo); }
 .rv-svg .k-station { fill: var(--rv-core); }
-.rv-svg .rv-terrain { pointer-events: none; }
+.rv-svg .rv-cores { pointer-events: none; }
+/* The glow under the cores (river.js): the lit route's warm light, faint,
+   on attested water only. */
+.rv-svg .rv-glow { stroke: var(--rv-lit-halo); pointer-events: none; }
 [data-theme="high-contrast"] .rv-canvas { background-image: none; }
 [data-theme="high-contrast"] .rv-canvas::before { display: none; }
 [data-theme="high-contrast"] .rv-svg > rect.k-bg { fill-opacity: 1; }
-[data-theme="high-contrast"] .rv-svg :is(.rv-terrain, .rv-cores) { display: none; }
+[data-theme="high-contrast"] .rv-svg :is(.rv-zones, .rv-banks, .rv-glow, .rv-cores) { display: none; }
 @media print {
   .rv-canvas { background-image: none; }
   .rv-canvas::before { display: none; }
   .rv-svg > rect.k-bg { fill-opacity: 1; }
-  .rv-svg :is(.rv-terrain, .rv-cores) { display: none; }
+  .rv-svg :is(.rv-zones, .rv-banks, .rv-glow, .rv-cores) { display: none; }
 }
 
 /* The lit route (river.js): a halo, the light, and a thread of light
@@ -4481,7 +4532,7 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
    played, so the stills a travel lays down later arrive without it. */
 @keyframes rv-fade-in { from { opacity: 0; } }
 .river.rv-intro .rv-svg > :is(path, g.rv-tail, g.rv-stub, g:not([class])) { animation: rv-fade-in 700ms var(--ease) both; }
-.river.rv-intro .rv-svg :is(.rv-terrain, .rv-cores) { animation: rv-fade-in 1400ms var(--ease) both; }
+.river.rv-intro .rv-svg :is(.rv-zones, .rv-banks, .rv-glow, .rv-cores) { animation: rv-fade-in 1100ms var(--ease) both; }
 .river.rv-intro .rv-svg a.rv-p { animation: rv-fade-in 800ms var(--ease) 220ms both; }
 /* Arriving: the fixed point's ring breathes twice and is still. */
 .river.rv-arrived .rv-svg .k-accent-line {
@@ -4558,3 +4609,370 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   animation: ld-ripple 1200ms cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 .rv-wait > i:nth-child(2) { animation-delay: 600ms; }
+
+/* ===========================================================================
+   Canopée on every page (v0.5.0, second pass — the operator's review)
+   ===========================================================================
+   The first pass dressed the overview and the controls; the record, the tree,
+   the administration and the editor were "too lightly touched". This part
+   carries the kit onto every page: an icon disc on every section, the person
+   as a card, figures as tiles, rows that answer the pointer, and buttons that
+   move — a sheen across them under the pointer, a lift, an ink ripple from
+   where they were pressed. Everything stays under [data-theme="canopee"], so
+   every other theme is Study 06 exactly; nothing here names a colour, and
+   prefers-reduced-motion stills it like everything else. */
+[data-theme="canopee"] {
+  --ico-leaf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 19c0-8.3 5.2-14 14-14 0 9-5.8 14-14 14z'/%3E%3Cpath d='M5 19l7.5-7.5'/%3E%3C/svg%3E");
+  --ico-person: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.6'/%3E%3Cpath d='M5 20.5c0-3.9 3.1-7 7-7s7 3.1 7 7'/%3E%3C/svg%3E");
+  --ico-family: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8.5' cy='8.5' r='3'/%3E%3Ccircle cx='16.5' cy='9.5' r='2.4'/%3E%3Cpath d='M3 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6'/%3E%3Cpath d='M14.4 14.4c.6-.3 1.3-.4 2.1-.4 2.6 0 4.5 2.3 4.5 5.5'/%3E%3C/svg%3E");
+  --ico-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='15' rx='2.5'/%3E%3Cpath d='M8 3v4M16 3v4M4 10h16'/%3E%3C/svg%3E");
+  --ico-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z'/%3E%3Ccircle cx='12' cy='10' r='2.3'/%3E%3C/svg%3E");
+  --ico-briefcase: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='7' width='18' height='13' rx='2.5'/%3E%3Cpath d='M9 7V5.5A2.5 2.5 0 0 1 11.5 3h1A2.5 2.5 0 0 1 15 5.5V7'/%3E%3Cpath d='M3 13h18'/%3E%3C/svg%3E");
+  --ico-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 14a4 4 0 0 0 5.7 0l3-3A4 4 0 0 0 13 5.3l-1 1'/%3E%3Cpath d='M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1'/%3E%3C/svg%3E");
+  --ico-pen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4l10-10-4-4L4 16z'/%3E%3Cpath d='M13.5 6.5l4 4'/%3E%3C/svg%3E");
+  --ico-clock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5V12l3 2'/%3E%3C/svg%3E");
+  --ico-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z'/%3E%3Cpath d='M12 6.5V19'/%3E%3C/svg%3E");
+  --ico-bars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 20V11M10 20V5M15 20v-7M20 20V8'/%3E%3C/svg%3E");
+  --ico-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.2 5.6L20 9.5l-4.5 3.8L17 19l-5-3-5 3 1.5-5.7L4 9.5l5.8-.9z'/%3E%3C/svg%3E");
+  --ico-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='14' rx='2.5'/%3E%3Ccircle cx='9' cy='10' r='1.8'/%3E%3Cpath d='M4 17l5-4.5 4 3.5 3-2.5 4.5 4'/%3E%3C/svg%3E");
+  --ico-river: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0'/%3E%3Cpath d='M3 15.5c2-2 4-2 6 0s4 2 6 0 4-2 6 0'/%3E%3C/svg%3E");
+  --ico-shield: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/svg%3E");
+  --ico-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='M20 20l-4.2-4.2'/%3E%3C/svg%3E");
+  --ico-gear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7'/%3E%3C/svg%3E");
+  --ico-upload: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4M7 9l5-5 5 5'/%3E%3Cpath d='M4 16v3a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-3'/%3E%3C/svg%3E");
+  --ico-lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8 10.5V8a4 4 0 0 1 8 0v2.5'/%3E%3C/svg%3E");
+  --ico-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E");
+}
+
+/* ---------- buttons, every one of them ---------- */
+[data-theme="canopee"] .btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* The sheen: a band of light that crosses the button once under the pointer. */
+[data-theme="canopee"] .btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 32%, color-mix(in srgb, var(--text-primary) 18%, transparent) 50%, transparent 68%);
+  transform: translateX(-130%);
+  transition: transform 720ms var(--ease);
+  pointer-events: none;
+}
+[data-theme="canopee"] .btn:hover::before { transform: translateX(130%); }
+[data-theme="canopee"] .btn.primary::before {
+  background: linear-gradient(105deg, transparent 32%, color-mix(in srgb, var(--surface-page) 22%, transparent) 50%, transparent 68%);
+}
+[data-theme="canopee"] .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgb(var(--shadow-rgb) / 0.9);
+}
+[data-theme="canopee"] .btn.primary:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
+[data-theme="canopee"] .btn.ghost:hover { background: var(--accent-soft); }
+[data-theme="canopee"] .btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 70ms;
+}
+/* The ink of a press, drawn by ui.js where the pointer went down. */
+.ripple-ink {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.22;
+  transform: scale(0);
+  pointer-events: none;
+  animation: ripple-ink 620ms var(--ease) forwards;
+}
+@keyframes ripple-ink { to { transform: scale(1); opacity: 0; } }
+/* A secondary that leads somewhere carries its own sign: the record's way
+   into the river, and the edit button beside a name. */
+[data-theme="canopee"] .record-foot .btn[href^="/?p="]::after,
+[data-theme="canopee"] :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
+  content: "" / "";
+  flex: none;
+  inline-size: 1rem;
+  aspect-ratio: 1;
+  background: currentColor;
+  -webkit-mask: var(--ico-river) center / contain no-repeat;
+  mask: var(--ico-river) center / contain no-repeat;
+  transition: transform var(--tempo) var(--ease);
+}
+[data-theme="canopee"] :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
+  -webkit-mask-image: var(--ico-pen);
+  mask-image: var(--ico-pen);
+}
+[data-theme="canopee"] :is(.record-foot .btn[href^="/?p="], :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]):hover::after { transform: translateX(2px) rotate(-6deg); }
+/* The edit button beside a name is the record's one action: filled, as the
+   kit draws a primary. */
+[data-theme="canopee"] .person-head-actions .btn[href*="/edit"] {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--on-accent);
+}
+[data-theme="canopee"] .person-head-actions .btn[href*="/edit"]:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
+/* Small round controls turn under the pointer. */
+[data-theme="canopee"] .prefs-more { transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), color var(--tempo) var(--ease); }
+[data-theme="canopee"] .prefs-more:hover { transform: rotate(90deg); border-color: var(--accent); color: var(--accent); }
+[data-theme="canopee"] .lang-form select { transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
+[data-theme="canopee"] .lang-form select:hover { border-color: var(--accent); box-shadow: 0 0 0 4px rgb(var(--glow-rgb) / 0.12); }
+[data-theme="canopee"] .masthead nav a { transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease); }
+[data-theme="canopee"] .masthead nav a:not([aria-current]):hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+[data-theme="canopee"] .account > summary::after { transition: transform var(--tempo) var(--ease); display: inline-block; }
+[data-theme="canopee"] .account[open] > summary::after { transform: rotate(180deg); }
+[data-theme="canopee"] .person-tab { position: relative; overflow: hidden; isolation: isolate; }
+[data-theme="canopee"] .person-tab:active { transform: scale(0.97); }
+/* A link in a page's text: its underline moves off the word under the
+   pointer, and takes the accent. */
+[data-theme="canopee"] main :is(p, li, td, dd) a:not(.btn) {
+  text-underline-offset: 2px;
+  transition: color var(--tempo) var(--ease), text-underline-offset var(--tempo) var(--ease);
+}
+[data-theme="canopee"] main :is(p, li, td, dd) a:not(.btn):hover { text-underline-offset: 4px; }
+
+/* ---------- page titles and section discs ---------- */
+[data-theme="canopee"] main h1:not(.hero-title)::after {
+  content: "";
+  display: block;
+  inline-size: 3rem;
+  block-size: 3px;
+  margin-block-start: 0.55rem;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+/* Every section says what it holds with a disc, as the kit's cards do: a
+   tinted disc with its sign cut out of it. The sign is the section's — a
+   person for identity, two for family, a calendar for a life, a pin for
+   places — and the leaf where a section has no sign of its own. */
+[data-theme="canopee"] :is(.sec-head h2, .rec-section > h2:first-child, .settings-panel legend) {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+[data-theme="canopee"] :is(.sec-head h2, .rec-section > h2:first-child)::before {
+  content: "";
+  flex: none;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background: var(--disc, var(--accent));
+  -webkit-mask: var(--sign, var(--ico-leaf)) center / 1.05rem no-repeat, linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask: var(--sign, var(--ico-leaf)) center / 1.05rem no-repeat, linear-gradient(black 0 0);
+  mask-composite: exclude;
+}
+[data-theme="canopee"] #identity { --sign: var(--ico-person); --disc: var(--icon-river-ink); }
+[data-theme="canopee"] #family { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
+[data-theme="canopee"] #life { --sign: var(--ico-calendar); --disc: var(--icon-search-ink); }
+[data-theme="canopee"] #places { --sign: var(--ico-pin); --disc: var(--icon-river-ink); }
+[data-theme="canopee"] #occupations { --sign: var(--ico-briefcase); --disc: var(--icon-search-ink); }
+[data-theme="canopee"] #relationships { --sign: var(--ico-link); --disc: var(--icon-river-ink); }
+[data-theme="canopee"] #notes { --sign: var(--ico-pen); --disc: var(--accent); }
+[data-theme="canopee"] #history { --sign: var(--ico-clock); --disc: var(--accent); }
+[data-theme="canopee"] #evidence { --sign: var(--ico-book); --disc: var(--icon-quality-ink); }
+[data-theme="canopee"] #charts { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+[data-theme="canopee"] #profile-summary { --sign: var(--ico-star); --disc: var(--icon-river-ink); }
+[data-theme="canopee"] .completeness { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+[data-theme="canopee"] .rec-section:has(.gallery) { --sign: var(--ico-image); --disc: var(--accent); }
+[data-theme="canopee"] .rec-section:has(.diag) { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+
+/* ---------- the record ---------- */
+[data-theme="canopee"] .person-head {
+  padding: 1.25rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(90% 140% at 0% 0%, rgb(var(--glow-rgb) / 0.1), transparent 60%),
+    var(--surface-raised);
+  box-shadow: 0 18px 36px -26px rgb(var(--shadow-rgb) / 0.9);
+}
+[data-theme="canopee"] .person-avatar {
+  border-radius: 22px;
+  border: 0;
+  box-shadow: 0 0 0 3px var(--surface-raised), 0 0 0 5px color-mix(in srgb, var(--accent) 70%, transparent), 0 14px 30px -14px rgb(var(--glow-rgb) / 0.7);
+  transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
+}
+[data-theme="canopee"] a.person-avatar:hover { transform: scale(1.03); }
+[data-theme="canopee"] .person-head h1 { font-size: var(--type-title); letter-spacing: -0.02em; }
+[data-theme="canopee"] .person-vitals .pv-dates {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.65rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+[data-theme="canopee"] .showcase-strip {
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, rgb(var(--glow-rgb) / 0.08), transparent 70%), var(--surface-raised);
+}
+[data-theme="canopee"] .showcase-strip > strong {
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+[data-theme="canopee"] .chip {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
+  transition: border-color var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+[data-theme="canopee"] .fact-chips .fc {
+  border-radius: var(--radius);
+  border: 1px solid var(--border-hairline);
+  background: var(--surface-sunken);
+  transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .fact-chips .fc:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
+[data-theme="canopee"] .fact-chips dt { color: var(--accent); }
+[data-theme="canopee"] :is(.union, .place-card, .link-card, .life-row, .name-block) {
+  transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
+}
+[data-theme="canopee"] :is(.union, .place-card, .link-card):hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  transform: translateY(-1px);
+}
+[data-theme="canopee"] .gallery .shot { transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); border-radius: var(--radius); overflow: hidden; }
+[data-theme="canopee"] .gallery .shot:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(var(--shadow-rgb) / 0.95); }
+
+/* ---------- tables, everywhere ---------- */
+[data-theme="canopee"] thead th { border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text-secondary); }
+[data-theme="canopee"] tbody tr { transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
+[data-theme="canopee"] tbody tr:hover { box-shadow: inset 3px 0 0 var(--accent); }
+[data-theme="canopee"][dir="rtl"] tbody tr:hover { box-shadow: inset -3px 0 0 var(--accent); }
+
+/* ---------- the tree ---------- */
+[data-theme="canopee"] .tcard {
+  border-radius: 10px;
+  transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .tcard:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 22px -14px rgb(var(--glow-rgb) / 0.8);
+}
+[data-theme="canopee"] .tcard.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgb(var(--glow-rgb) / 0.45), 0 10px 22px -14px rgb(var(--glow-rgb) / 0.8);
+}
+[data-theme="canopee"] .band-label {
+  font-family: var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+[data-theme="canopee"] .tree-legend { border-radius: var(--radius); }
+
+/* ---------- administration and quality ---------- */
+[data-theme="canopee"] a.stat {
+  text-decoration: none;
+  transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
+}
+[data-theme="canopee"] a.stat:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  box-shadow: 0 14px 28px -18px rgb(var(--glow-rgb) / 0.7);
+}
+[data-theme="canopee"] .stat .n { color: var(--accent); }
+[data-theme="canopee"] .stat .k { color: var(--text-secondary); }
+[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary {
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--tempo) var(--ease);
+}
+[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::-webkit-details-marker { display: none; }
+[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before {
+  content: "";
+  display: inline-block;
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+  margin-inline-end: 0.45rem;
+  vertical-align: -0.1em;
+  background: var(--accent);
+  -webkit-mask: var(--ico-chev) center / contain no-repeat;
+  mask: var(--ico-chev) center / contain no-repeat;
+  transition: transform var(--tempo) var(--ease);
+}
+[data-theme="canopee"][dir="rtl"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before { transform: scaleX(-1); }
+[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov)[open] > summary::before { transform: rotate(90deg); }
+[data-theme="canopee"] :is(.quality-rule, .pf-group) > summary:hover { color: var(--accent); }
+[data-theme="canopee"] .quality-rule {
+  transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .quality-rule:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+[data-theme="canopee"] .quality-rule[open] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 16px 32px -24px rgb(var(--glow-rgb) / 0.7); }
+[data-theme="canopee"] :is(.tab-count, .pf-group-count) {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+[data-theme="canopee"] .person-tab.is-current .tab-count { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); }
+[data-theme="canopee"] .ed-save {
+  background: color-mix(in srgb, var(--surface-page) 88%, transparent);
+  border-block-start-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 -16px 30px -24px rgb(var(--glow-rgb) / 0.6);
+}
+[data-theme="canopee"] .ed-block { border-radius: var(--radius); transition: border-color var(--tempo) var(--ease); }
+[data-theme="canopee"] .ed-block:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+[data-theme="canopee"] .edit-band {
+  background: linear-gradient(90deg, rgb(var(--glow-rgb) / 0.16), transparent 75%);
+  color: var(--accent);
+}
+[data-theme="canopee"] .search-results li {
+  border-radius: var(--radius-sm);
+  padding-inline: 0.75rem;
+  transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
+}
+[data-theme="canopee"] .search-results li:hover { background: var(--surface-hover); box-shadow: inset 3px 0 0 var(--accent); }
+[data-theme="canopee"] .settings-panel {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+[data-theme="canopee"] input[type="file"] {
+  padding: 0.6rem;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--surface-sunken);
+}
+[data-theme="canopee"] input[type="file"]::file-selector-button {
+  margin-inline-end: 0.8rem;
+  padding: 0.35rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: var(--weight-semi);
+  cursor: pointer;
+}
+[data-theme="canopee"] input[type="range"] { accent-color: var(--accent); }
+
+/* ---------- signing in ---------- */
+/* The one page a visitor sees first: the hero's landscape behind it, under
+   the same shade, and the form as a card in front. */
+[data-theme="canopee"] main:has(form[action="/admin/login"]) {
+  max-width: none;
+  min-block-size: 70vh;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-page) 55%, transparent), var(--surface-page) 95%),
+    url("/static/img/canopee-hero.jpg") center 35% / cover;
+}
+[data-theme="canopee"] main:has(form[action="/admin/login"]) > * { inline-size: min(28rem, 100%); }
+[data-theme="canopee"] main:has(form[action="/admin/login"]) .card {
+  background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
+  box-shadow: 0 30px 60px -30px rgb(var(--shadow-rgb) / 0.95);
+}

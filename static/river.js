@@ -129,7 +129,7 @@
     // The Selva Verde ground (docs/adr/0004 §5): terrain under every line,
     // drawn from the same edges as the water, so it travels with them.
     var E = edges(fr, PM);
-    out += terrain(E);
+    out += banks(E);
     fr.tails.forEach(function (t) {
       var c = colour(t.year), w = WIDTHS[cls(t.d)], d = vc(t.x1, t.y1, t.x2, t.y2);
       if (t.kind === 'cont') {
@@ -153,7 +153,7 @@
       else if (e.conf === 'd') out += '<path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-dasharray="' + f(Math.max(4, w * 1.3)) + ' ' + f(Math.max(3, w * 0.6)) + '"' + o + '/>';
       else out += '<g' + o + '><path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="' + w + '" stroke-opacity="0.14"/><path d="' + d + '" fill="none" stroke="' + e.c + '" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0.1 5.5"/></g>';
     });
-    out += cores(E);
+    out += glow(E) + cores(E);
     var T = tiers(fr);
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, x = f(p.x), y = f(p.y);
@@ -179,50 +179,188 @@
    * Decoration only, and the client's: the server's SVG is unchanged, so the
    * byte-identical invariants of ADR 0001 hold of it exactly as before, and
    * everything drawn here is computed from the payload this page already
-   * holds — the same edges, at the same places, in the same water colours.
+   * holds — the same edges, at the same places.
    *
-   * Terrain: every line seen from above is a valley, two soft bands wide,
-   * in its own water's colour; where lines gather, the terrain deepens.
-   * Cores: attested water carries a thread of light down its middle, so
-   * confidence also reads as brightness — solid and lit, dashed and dull,
-   * dotted and faint. Plain strokes, no filter, no clip-path (the river's
-   * rendering contract). */
-  function terrain(E) {
-    if (!E.length) return '';
-    var outer = '', inner = '';
+   * Zones, after Selva Verde: the ground the lines run through, drawn as a
+   * cartographer draws terrain — a translucent area with crisp contour lines
+   * nested inside it, teal where the ancestors are (below the fixed point),
+   * ochre where the descendants are (above it). They are the isolines of a
+   * field made by the lines themselves (marching squares), so they follow
+   * every branch and merge where branches gather, and they say nothing the
+   * lines do not.
+   * Banks: a thin dark edge under every line, so the water stays sharp on
+   * the forest. Cores: attested water carries a thread of light down its
+   * middle, so confidence also reads as brightness — solid and lit, dashed
+   * and dull, dotted and faint. Plain strokes and fills: no filter, no
+   * clip-path (the river's rendering contract). */
+  var ZONE_CELL = 3, ZONE_LEVELS = [0.14, 0.34, 0.58, 0.8];
+  function banks(E) {
+    var out = '';
     E.forEach(function (e) {
-      var d = vc(e.x1, e.y1, e.x2, e.y2), w = WIDTHS[cls(e.d)], o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
-      outer += '<path d="' + d + '" stroke="' + e.c + '" stroke-width="' + f(w + 40) + '"' + o + '/>';
-      inner += '<path d="' + d + '" stroke="' + e.c + '" stroke-width="' + f(w + 13) + '"' + o + '/>';
+      var w = WIDTHS[cls(e.d)], o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      out += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" stroke-width="' + f(w + 2.6) + '"' + o + '/>';
     });
-    return '<g class="rv-terrain" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-      + '<g stroke-opacity="0.035">' + outer + '</g><g stroke-opacity="0.06">' + inner + '</g></g>';
+    return out ? '<g class="rv-banks" fill="none" stroke-linecap="round" aria-hidden="true">' + out + '</g>' : '';
   }
   function cores(E) {
     var out = '';
     E.forEach(function (e) {
       if (e.conf !== 'a') return;
       var w = WIDTHS[cls(e.d)], o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
-      out += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" stroke-width="' + f(Math.max(0.6, w * 0.16)) + '"' + o + '/>';
+      out += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" stroke-width="' + f(Math.max(0.6, w * 0.32)) + '"' + o + '/>';
     });
-    return out ? '<g class="rv-cores k-core" fill="none" stroke-linecap="round" stroke-opacity="0.5" aria-hidden="true">' + out + '</g>' : '';
+    return out ? '<g class="rv-cores k-core" fill="none" stroke-linecap="round" stroke-opacity="0.92" aria-hidden="true">' + out + '</g>' : '';
   }
-  // Lay both on the server's still frame: the terrain under the first line,
-  // the cores over the last, under the lit route and the people.
+  // The glow: the same threads, wider and faint, in the warm light of the
+  // lit route — two passes, so the light falls off as Selva Verde's path
+  // does. Attested water only, as the cores: what is surest shines.
+  function glow(E) {
+    var out = '';
+    [[3.2, 0.1], [1.7, 0.22]].forEach(function (g) {
+      var paths = '';
+      E.forEach(function (e) {
+        if (e.conf !== 'a') return;
+        var w = WIDTHS[cls(e.d)], o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+        paths += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" stroke-width="' + f(Math.max(0.6, w * 0.32) * g[0]) + '"' + o + '/>';
+      });
+      if (paths) out += '<g class="rv-glow" fill="none" stroke-linecap="round" stroke-opacity="' + g[1] + '" aria-hidden="true">' + paths + '</g>';
+    });
+    return out;
+  }
+  // A box blur, run twice, is close enough to a Gaussian for a contour.
+  function blurField(fl, W, H, r) {
+    var tmp = new Float32Array(W * H), n = 2 * r + 1, x, y, s, row;
+    for (y = 0; y < H; y++) {
+      row = y * W; s = 0;
+      for (x = -r; x <= r; x++) s += fl[row + Math.min(W - 1, Math.max(0, x))];
+      for (x = 0; x < W; x++) {
+        tmp[row + x] = s / n;
+        s += fl[row + Math.min(W - 1, x + r + 1)] - fl[row + Math.max(0, x - r)];
+      }
+    }
+    for (x = 0; x < W; x++) {
+      s = 0;
+      for (y = -r; y <= r; y++) s += tmp[Math.min(H - 1, Math.max(0, y)) * W + x];
+      for (y = 0; y < H; y++) {
+        fl[y * W + x] = s / n;
+        s += tmp[Math.min(H - 1, y + r + 1) * W + x] - tmp[Math.max(0, y - r) * W + x];
+      }
+    }
+  }
+  // Marching squares: the segments where the field crosses `lv`, joined into
+  // loops. The field is padded with a cell of zero on every side, so every
+  // contour closes.
+  function isolines(fl, W, H, lv) {
+    var segs = [], x, y;
+    for (y = 0; y < H - 1; y++) for (x = 0; x < W - 1; x++) {
+      var a = fl[y * W + x], b = fl[y * W + x + 1], c = fl[(y + 1) * W + x + 1], d = fl[(y + 1) * W + x];
+      var k = (a > lv ? 8 : 0) | (b > lv ? 4 : 0) | (c > lv ? 2 : 0) | (d > lv ? 1 : 0);
+      if (k === 0 || k === 15) continue;
+      var T = [x + (lv - a) / (b - a), y], R = [x + 1, y + (lv - b) / (c - b)],
+          B = [x + (lv - d) / (c - d), y + 1], L = [x, y + (lv - a) / (d - a)];
+      switch (k) {
+        case 1: case 14: segs.push([L, B]); break;
+        case 2: case 13: segs.push([B, R]); break;
+        case 3: case 12: segs.push([L, R]); break;
+        case 4: case 11: segs.push([T, R]); break;
+        case 6: case 9: segs.push([T, B]); break;
+        case 7: case 8: segs.push([L, T]); break;
+        case 5: segs.push([L, T], [B, R]); break;
+        case 10: segs.push([L, B], [T, R]); break;
+      }
+    }
+    var key = function (p) { return Math.round(p[0] * 64) + ',' + Math.round(p[1] * 64); };
+    var at = {}, used = new Uint8Array(segs.length), loops = [];
+    segs.forEach(function (sg, i) { [0, 1].forEach(function (e) { var kk = key(sg[e]); (at[kk] = at[kk] || []).push(i); }); });
+    function grow(line, front) {
+      for (;;) {
+        var tip = front ? line[0] : line[line.length - 1], near = at[key(tip)] || [], next = -1;
+        for (var i = 0; i < near.length; i++) if (!used[near[i]]) { next = near[i]; break; }
+        if (next < 0) return;
+        used[next] = 1;
+        var sg = segs[next], other = key(sg[0]) === key(tip) ? sg[1] : sg[0];
+        if (front) line.unshift(other); else line.push(other);
+      }
+    }
+    for (var i = 0; i < segs.length; i++) {
+      if (used[i]) continue;
+      used[i] = 1;
+      var line = [segs[i][0], segs[i][1]];
+      grow(line, false); grow(line, true);
+      if (line.length > 5) loops.push(line);
+    }
+    return loops;
+  }
+  function zoneField(list, meta) {
+    var hv = meta.hview, v = meta.view, S = ZONE_CELL;
+    var W = Math.ceil(hv[1] / S) + 3, H = Math.ceil(v[1] / S) + 3;
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var ctx = cv.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.setTransform(1 / S, 0, 0, 1 / S, 1.5 - hv[0] / S, 1.5 - v[0] / S);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = 'white';
+    list.forEach(function (e) {
+      var m = (e.y1 + e.y2) / 2;
+      ctx.lineWidth = WIDTHS[cls(e.d)] + 46;
+      ctx.beginPath(); ctx.moveTo(e.x1, e.y1); ctx.bezierCurveTo(e.x1, m, e.x2, m, e.x2, e.y2); ctx.stroke();
+    });
+    var px = ctx.getImageData(0, 0, W, H).data, fl = new Float32Array(W * H);
+    for (var i = 0; i < W * H; i++) fl[i] = px[i * 4 + 3] / 255;
+    blurField(fl, W, H, 5); blurField(fl, W, H, 5);
+    // The padding cell back to zero, so the loops close inside the grid.
+    for (var x = 0; x < W; x++) { fl[x] = 0; fl[(H - 1) * W + x] = 0; }
+    for (var y = 0; y < H; y++) { fl[y * W] = 0; fl[y * W + W - 1] = 0; }
+    return { fl: fl, W: W, H: H, x0: hv[0] - 1.5 * S, y0: v[0] - 1.5 * S };
+  }
+  function zonePath(F, lv) {
+    var S = ZONE_CELL, d = '';
+    isolines(F.fl, F.W, F.H, lv).forEach(function (loop) {
+      var px = null, py = null, part = '';
+      loop.forEach(function (p) {
+        var x = F.x0 + p[0] * S, y = F.y0 + p[1] * S;
+        if (px !== null && Math.abs(x - px) + Math.abs(y - py) < 1.6) return;
+        part += (part ? 'L' : 'M') + f(x) + ' ' + f(y);
+        px = x; py = y;
+      });
+      if (part) d += part + 'Z';
+    });
+    return d;
+  }
+  function zones(fr, E) {
+    var up = [], down = [], cy = 318, out = '';
+    E.forEach(function (e) { ((e.y1 + e.y2) / 2 < cy ? up : down).push(e); });
+    fr.tails.forEach(function (t) { ((t.y1 + t.y2) / 2 < cy ? up : down).push({ x1: t.x1, y1: t.y1, x2: t.x2, y2: t.y2, d: t.d }); });
+    [['up', up], ['down', down]].forEach(function (side) {
+      if (!side[1].length) return;
+      var F = zoneField(side[1], fr.meta);
+      if (!F) return;
+      ZONE_LEVELS.forEach(function (lv, k) {
+        var d = zonePath(F, lv);
+        if (d) out += '<path class="rv-zone rv-zone-' + side[0] + ' z' + k + '" d="' + d + '"/>';
+      });
+    });
+    return out ? '<g class="rv-zones" fill-rule="evenodd" aria-hidden="true">' + out + '</g>' : '';
+  }
+  // Lay them on the server's still frame: zones and banks under the first
+  // line, the cores over the last, under the lit route and the people.
   function decorate() {
     var svg = canvas.querySelector('svg.rv-svg');
-    if (!svg || svg.querySelector('.rv-terrain, .rv-cores')) return;
+    if (!svg || svg.querySelector('.rv-zones, .rv-banks, .rv-cores')) return;
     var fr = still(cur), E = edges(fr, byKey(fr.persons));
     var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    tmp.innerHTML = terrain(E) + cores(E);
+    tmp.innerHTML = zones(fr, E) + banks(E) + glow(E) + cores(E);
     var first = null;
     for (var n = svg.firstElementChild; n; n = n.nextElementSibling) {
       var tag = n.tagName.toLowerCase();
       if (tag === 'g' || tag === 'path' || tag === 'a') { first = n; break; }
     }
-    var t = tmp.querySelector('.rv-terrain'), c = tmp.querySelector('.rv-cores');
-    if (t) svg.insertBefore(t, first);
-    if (c) svg.insertBefore(c, svg.querySelector('.rv-lit') || first || null);
+    var z = tmp.querySelector('.rv-zones'), b = tmp.querySelector('.rv-banks'), c = tmp.querySelector('.rv-cores');
+    if (z) svg.insertBefore(z, first);
+    if (b) svg.insertBefore(b, first);
+    var lit = svg.querySelector('.rv-lit') || first || null;
+    tmp.querySelectorAll('.rv-glow').forEach(function (g) { svg.insertBefore(g, lit); });
+    if (c) svg.insertBefore(c, lit);
     // The scale of a generation is a statement about time: drawn only for a
     // river that has an era (ADR 0001 §3), as the bands are.
     var sc = root.querySelector('[data-rv-scale]');
@@ -342,8 +480,8 @@
     // sources toward the living, three times, then still (app.css). Strokes
     // only: no filter (the river's rendering contract).
     function layer(cls, stw) { return html.replace(/KL/g, cls).replace(/STW/g, stw); }
-    lit.innerHTML = layer('k-lit-halo', 'stroke-width="16" stroke-opacity="0.07"') + layer('k-lit', 'stroke-width="7" stroke-opacity="0.16"')
-      + layer('k-lit', 'stroke-width="2.6" stroke-opacity="0.85"') + layer('k-core', 'stroke-width="1.1"') + layer('k-flow', 'stroke-width="1.6"');
+    lit.innerHTML = layer('k-lit-halo', 'stroke-width="11" stroke-opacity="0.1"') + layer('k-lit', 'stroke-width="5.5" stroke-opacity="0.24"')
+      + layer('k-lit', 'stroke-width="2.8" stroke-opacity="0.92"') + layer('k-core', 'stroke-width="1.2"') + layer('k-flow', 'stroke-width="1.7"');
     hl.innerHTML = labels;
   }
 

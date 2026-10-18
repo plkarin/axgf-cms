@@ -4344,7 +4344,9 @@ a.tcard:hover {
    for this theme in Canva, docs/adr/0004 §3) behind the hero and beside
    the last band, under a shade so that the text over them keeps the
    contrast the palette was measured for. A photograph is the page's, never
-   a control's: the buttons over it are the ordinary buttons. */
+   a control's: the buttons over it are the ordinary buttons. The pictures
+   are cached for a day, so one that changes takes a new `?v=` here, or a
+   reader who saw the old one keeps it (the second pass's are `v=2`). */
 [data-theme="canopee"] .hero {
   min-block-size: min(78vh, 46rem);
   border-color: var(--border-hairline);
@@ -4352,7 +4354,7 @@ a.tcard:hover {
   background-image:
     linear-gradient(90deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
-    url("/static/img/canopee-hero.jpg");
+    url("/static/img/canopee-hero.jpg?v=2");
   background-size: cover;
   background-position: center, center, 70% 40%;
   box-shadow: 0 30px 60px -40px rgb(var(--shadow-rgb) / 0.9);
@@ -4361,7 +4363,7 @@ a.tcard:hover {
   background-image:
     linear-gradient(270deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
-    url("/static/img/canopee-hero.jpg");
+    url("/static/img/canopee-hero.jpg?v=2");
 }
 [data-theme="canopee"] .eyebrow-chip {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -4405,7 +4407,7 @@ a.tcard:hover {
   align-self: stretch;
   min-block-size: 9rem;
   border-radius: var(--radius);
-  background: var(--surface-sunken) url("/static/img/canopee-cta.jpg") center 42% / cover;
+  background: var(--surface-sunken) url("/static/img/canopee-cta.jpg?v=2") center 42% / cover;
 }
 
 /* ---------- motion under Canopée ----------
@@ -4458,7 +4460,7 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
     radial-gradient(36% 28% at 100% 0%, rgb(var(--rv-mist-rgb) / 0.22), transparent 72%),
     radial-gradient(125% 92% at 50% 48%, transparent 40%, rgb(var(--rv-shade-rgb) / 0.62) 100%),
     linear-gradient(rgb(var(--rv-shade-rgb) / 0.34), rgb(var(--rv-shade-rgb) / 0.34)),
-    url("/static/img/river-ground.jpg");
+    url("/static/img/river-ground.jpg?v=2");
   background-size: cover;
   background-position: center;
 }
@@ -4969,7 +4971,7 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   place-items: center;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--surface-page) 55%, transparent), var(--surface-page) 95%),
-    url("/static/img/canopee-hero.jpg") center 35% / cover;
+    url("/static/img/canopee-hero.jpg?v=2") center 35% / cover;
 }
 [data-theme="canopee"] main:has(form[action="/admin/login"]) > * { inline-size: min(28rem, 100%); }
 [data-theme="canopee"] main:has(form[action="/admin/login"]) .card {

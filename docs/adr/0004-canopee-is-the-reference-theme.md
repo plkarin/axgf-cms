@@ -96,7 +96,9 @@ public. Nothing was taken from them. What the site carries was made for it:
 They come to 0.86 MB in the binary. The first ones were exported small and
 looked soft on a monitor (the operator's review, §10); each is now kept at
 the size Canva generates it, 1680 or 1536 pixels wide, and sharpened once.
-They are served by `/static/img/…` with a day of cache, and the
+They are served by `/static/img/…` with a day of cache, so a picture that
+changes takes a new `?v=` where the stylesheet names it (the second pass's
+are `v=2`): otherwise a reader who saw the old one keeps it for a day. The
 Content-Security-Policy already allowed same-origin images.
 
 **Text never sits on a bare photograph.** A shade made from the theme's own

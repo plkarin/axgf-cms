@@ -114,7 +114,9 @@ is out.
 
 - **The pictures were soft.** They are re-made at full size (1680 and 1536
   pixels wide) and sharpened once. The river's ground was so dark under its
-  shade that it read as black; it is a lighter forest now.
+  shade that it read as black; it is a lighter forest now. Pictures are
+  cached for a day, so the stylesheet names the new ones with `?v=2`: a
+  browser that kept the old ones fetches these.
 - **The identity table's header ran outside its card** in the compact style.
   The table bleeds to its section's edges by `--section-pad-x`, which every
   style now defines.

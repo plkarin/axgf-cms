@@ -193,7 +193,7 @@
    * middle, so confidence also reads as brightness — solid and lit, dashed
    * and dull, dotted and faint. Plain strokes and fills: no filter, no
    * clip-path (the river's rendering contract). */
-  var ZONE_CELL = 3, ZONE_LEVELS = [0.14, 0.34, 0.58, 0.8];
+  var ZONE_CELL = 3, ZONE_PAD = 60, ZONE_LEVELS = [0.14, 0.34, 0.58, 0.8];
   function banks(E) {
     var out = '';
     E.forEach(function (e) {
@@ -292,7 +292,10 @@
     return loops;
   }
   function zoneField(list, meta) {
-    var hv = meta.hview, v = meta.view, S = ZONE_CELL;
+    // Beyond the server's window by ZONE_PAD on every side: the window
+    // widens to the stage (below), and a zone stopped at its old edge would
+    // show a straight cut.
+    var hv = [meta.hview[0] - ZONE_PAD, meta.hview[1] + 2 * ZONE_PAD], v = [meta.view[0] - ZONE_PAD, meta.view[1] + 2 * ZONE_PAD], S = ZONE_CELL;
     var W = Math.ceil(hv[1] / S) + 3, H = Math.ceil(v[1] / S) + 3;
     var cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
@@ -365,7 +368,126 @@
     // river that has an era (ADR 0001 §3), as the bands are.
     var sc = root.querySelector('[data-rv-scale]');
     if (sc) sc.hidden = !cur.layout.meta.bands;
+    place(svg, cur.layout.meta);
+    sizeHits();
+    if (window.axgfRiverScene) window.axgfRiverScene.layout(sceneLayout());
   }
+
+  /* ---- the window and the camera (v0.5.0, docs/adr/0004 §11) ----
+   * The drawing is never shown larger than KMAX pixels to the unit. On a
+   * 1920-pixel screen it used to fill the stage, and its 12-unit names grew
+   * to 22 pixels. Wider than that, the window widens instead: the ground and
+   * the half-century bands run to the stage's edges, the years and the rail
+   * go with them, and the drawing stays in the middle at the size of the
+   * rest of the site. The window depends on the range and the stage alone,
+   * so within a range the fixed point still does not move (ADR 0001 §5).
+   *
+   * The camera is a zoom, 1 to ZMAX, and the point it looks at. Zoomed, the
+   * people and every word keep their size and only the distances between
+   * them grow, as a map's symbols do (`rv-cs`, scaled back by app.css). */
+  var KMAX = 1.15, ZMAX = 3, cam = { z: 1, x: null, y: null, iz: 1 };
+  // The drawing is replaced, never the stage: the living ground and the
+  // water's light (river-scene.js) sit beside it and keep their state.
+  function setSvg(markup) {
+    var tpl = document.createElement('template');
+    tpl.innerHTML = markup;
+    var svg = tpl.content.querySelector('svg'), old = canvas.querySelector('svg.rv-svg');
+    if (old) old.replaceWith(svg); else canvas.appendChild(svg);
+    return svg;
+  }
+  function frame(meta) {
+    var hv = meta.hview, v = meta.view, sw = canvas.clientWidth || hv[1];
+    var k = Math.min(sw / hv[1], KMAX), w = Math.max(hv[1], sw / k);
+    return { x: hv[0] - (w - hv[1]) / 2, y: v[0], w: w, h: v[1], k: k, hv: hv };
+  }
+  // Once per drawing: which rects and rules are the ground and the bands
+  // (as wide as the server's window), which words are the years and the
+  // rail (at its edges), and the point every other word and person keeps
+  // when scaled back.
+  function prepare(svg, hv) {
+    var near = function (a, b) { return Math.abs(a - b) < 0.6; }, P = { bands: [], rules: [], rails: [] };
+    svg.querySelectorAll('rect').forEach(function (r) {
+      if (near(+r.getAttribute('x'), hv[0]) && near(+r.getAttribute('width'), hv[1])) P.bands.push(r);
+    });
+    svg.querySelectorAll('line.k-band-rule').forEach(function (l) { P.rules.push(l); });
+    svg.querySelectorAll('text').forEach(function (t) {
+      if (t.closest('a.rv-p')) return;
+      var x = +t.getAttribute('x');
+      t.classList.add('rv-cs');
+      if (near(x, hv[0] + 10)) P.rails.push([t, -1]);
+      else if (t.getAttribute('text-anchor') === 'end' && near(x, hv[0] + hv[1] - 10)) P.rails.push([t, 1]);
+      else t.style.transformOrigin = t.getAttribute('x') + 'px ' + t.getAttribute('y') + 'px';
+    });
+    svg.querySelectorAll('a.rv-p').forEach(function (a) {
+      var c = a.querySelector('circle');
+      if (c) a.style.transformOrigin = c.getAttribute('cx') + 'px ' + c.getAttribute('cy') + 'px';
+    });
+    svg._rv = P;
+    return P;
+  }
+  function apply(svg, F) {
+    var P = svg._rv || prepare(svg, F.hv);
+    P.bands.forEach(function (r) { r.setAttribute('x', F.x.toFixed(2)); r.setAttribute('width', F.w.toFixed(2)); });
+    P.rules.forEach(function (l) { l.setAttribute('x1', F.x.toFixed(2)); l.setAttribute('x2', (F.x + F.w).toFixed(2)); });
+    var z = cam.z, vw = F.w / z, vh = F.h / z;
+    var cx = cam.x === null ? F.x + F.w / 2 : cam.x, cy = cam.y === null ? F.y + F.h / 2 : cam.y;
+    cx = Math.min(Math.max(cx, F.x + vw / 2), F.x + F.w - vw / 2);
+    cy = Math.min(Math.max(cy, F.y + vh / 2), F.y + F.h - vh / 2);
+    if (cam.x !== null) { cam.x = cx; cam.y = cy; }
+    var x = cx - vw / 2, y = cy - vh / 2;
+    svg.setAttribute('viewBox', x.toFixed(2) + ' ' + y.toFixed(2) + ' ' + vw.toFixed(2) + ' ' + vh.toFixed(2));
+    // A word grows with the zoom until it reaches its own size (KMAX: on a
+    // phone the drawing starts smaller), and not past it.
+    var iz = cam.iz = Math.min(1, KMAX / (F.k * z));
+    if (iz < 0.999) { svg.setAttribute('data-zoom', ''); svg.style.setProperty('--rv-iz', iz.toFixed(4)); }
+    else { svg.removeAttribute('data-zoom'); svg.style.removeProperty('--rv-iz'); }
+    P.rails.forEach(function (r) {
+      var tx = (r[1] < 0 ? x + 10 / z : x + vw - 10 / z).toFixed(2);
+      r[0].setAttribute('x', tx);
+      r[0].style.transformOrigin = tx + 'px ' + r[0].getAttribute('y') + 'px';
+    });
+    canvas.classList.toggle('rv-zoomed', z > 1);
+    if (zoomInput && Math.abs(+zoomInput.value - z) > 0.01) zoomInput.value = String(Math.round(z * 10) / 10);
+    if (window.axgfRiverScene) window.axgfRiverScene.view();
+  }
+  function place(svg, meta) { if (svg) apply(svg, frame(meta)); return svg; }
+  function centreOf(layout) {
+    var c = layout.persons.filter(function (p) { return p.role === 'centre'; })[0];
+    return c ? { x: c.x, y: c.y } : null;
+  }
+  // The layout the living ground draws its banks and its light from.
+  function sceneLayout() {
+    var fr = still(cur);
+    return {
+      edges: edges(fr, byKey(fr.persons)).map(function (e) { return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf }; }),
+      persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role }; })
+    };
+  }
+  // Zoom to `z` about a point on screen, which stays where it is under the
+  // pointer or the fingers; about the middle when there is none.
+  function zoomTo(z, clientX, clientY) {
+    var svg = canvas.querySelector('svg.rv-svg');
+    if (!svg || busy) return;
+    var F = frame(cur.layout.meta), vb = svg.viewBox.baseVal, box = svg.getBoundingClientRect();
+    if (!box.width) return;
+    z = Math.min(ZMAX, Math.max(1, z));
+    var fx = clientX === undefined ? 0.5 : (clientX - box.left) / box.width;
+    var fy = clientY === undefined ? 0.5 : (clientY - box.top) / box.height;
+    var ux = vb.x + fx * vb.width, uy = vb.y + fy * vb.height;
+    cam.z = z;
+    if (z === 1) { cam.x = null; cam.y = null; }
+    else { cam.x = ux + (0.5 - fx) * F.w / z; cam.y = uy + (0.5 - fy) * F.h / z; }
+    apply(svg, F);
+    sizeHits();
+  }
+  function panBy(dx, dy) {
+    var svg = canvas.querySelector('svg.rv-svg');
+    if (!svg || cam.z <= 1) return;
+    var vb = svg.viewBox.baseVal, u = vb.width / svg.getBoundingClientRect().width;
+    cam.x = vb.x + vb.width / 2 - dx * u; cam.y = vb.y + vb.height / 2 - dy * u;
+    apply(svg, frame(cur.layout.meta));
+  }
+  var zoomInput = root.querySelector('[data-rv-zoom]');
 
   // river::write_mark: a count where river::place_counts put it, moved with
   // its mark while the river is in motion (dx, dy: how far the mark has
@@ -467,12 +589,14 @@
         var s = p.s || {};
         if (!on[p.key] || p.role === 'centre' || s.redacted) return;
         // Every person on the route is a station of the path, ringed in its
-        // light; the one under the pointer, a wider ring.
+        // light; the one under the pointer, a wider ring. Each station is a
+        // map symbol: it keeps its size when the river is zoomed.
+        labels += '<g class="rv-cs" style="transform-origin:' + f(p.x) + 'px ' + f(p.y) + 'px">';
         labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + (p.key === id ? 11 : 8.5) + '" fill="none" class="k-lit" stroke-width="' + (p.key === id ? 1.3 : 0.9) + '"' + (p.key === id ? '' : ' stroke-opacity="0.7"') + '/>';
         // On hover the full name, right-aligned to the dot where it would
         // otherwise run past the rail: a hover label is alone on its row.
         var hw = width(s.names[2], 12, false), right = p.x + 10.8 + hw > fr.meta.hview[0] + fr.meta.hview[1] - 34;
-        labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text>';
+        labels += '<text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(s.names[2]) + '</text></g>';
       });
     }
     // Three stacked strokes as before — a halo, a glow and the light — now
@@ -506,12 +630,21 @@
         }
         swapPanel(id); controls(n);
         clearTimeout(waitTimer);
-        var done = function () { canvas.innerHTML = body.svg; busy = false; raf = null; sizeHits(); decorate(); arrive(); };
+        if (window.axgfRiverScene) window.axgfRiverScene.travel();
+        // Zoomed in, the camera glides to the fixed point with the river, so
+        // the person travelled to arrives in view.
+        var c0 = { x: cam.x, y: cam.y }, c1 = centreOf(body.river.layout);
+        var done = function () {
+          canvas.querySelectorAll('.rv-wait').forEach(function (w) { w.remove(); });
+          if (cam.z > 1 && c1) { cam.x = c1.x; cam.y = c1.y; }
+          setSvg(body.svg); busy = false; raf = null; decorate(); arrive();
+        };
         if (cut || reduce) return done();
         var t0 = performance.now();
         (function tick(now) {
-          var t = Math.min(1, (now - t0) / 560);
-          canvas.innerHTML = paint(tween(A, B, ease(t)));
+          var t = Math.min(1, (now - t0) / 560), fr = tween(A, B, ease(t));
+          if (cam.z > 1 && c0.x !== null && c1) { cam.x = c0.x + (c1.x - c0.x) * ease(t); cam.y = c0.y + (c1.y - c0.y) * ease(t); }
+          place(setSvg(paint(fr)), fr.meta);
           if (t < 1) raf = requestAnimationFrame(tick); else done();
         })(t0);
       })
@@ -520,13 +653,13 @@
   function waitAt(id) {
     var svg = canvas.querySelector('svg'), p = cur.layout.persons.filter(function (q) { return q.id === id; })[0];
     if (!svg || !p || cut || reduce) return;
-    var box = svg.getBoundingClientRect(), hv = cur.layout.meta.hview, v = cur.layout.meta.view;
+    var box = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
     var w = document.createElement('span');
     w.className = 'rv-wait';
     w.setAttribute('aria-hidden', 'true');
     w.innerHTML = '<i></i><i></i>';
-    w.style.left = ((p.x - hv[0]) / hv[1] * box.width) + 'px';
-    w.style.top = ((p.y - v[0]) / v[1] * box.height) + 'px';
+    w.style.left = ((p.x - vb.x) / vb.width * box.width) + 'px';
+    w.style.top = ((p.y - vb.y) / vb.height * box.height) + 'px';
     canvas.appendChild(w);
   }
   // The fixed point's ring breathes twice when a reader arrives (app.css).
@@ -589,26 +722,31 @@
   canvas.addEventListener('pointerdown', function (e) { touch = e.pointerType === 'touch'; });
   function nearest(e) {
     var svg = canvas.querySelector('svg'); if (!svg) return null;
-    var hv = cur.layout.meta.hview, box = svg.getBoundingClientRect(), k = hv[1] / box.width, best = null, bd = 44 * k;
-    var x = (e.clientX - box.left) * k + hv[0], y = (e.clientY - box.top) * k + cur.layout.meta.view[0];
+    var vb = svg.viewBox.baseVal, box = svg.getBoundingClientRect(), k = vb.width / box.width, best = null, bd = 44 * k;
+    var x = (e.clientX - box.left) * k + vb.x, y = (e.clientY - box.top) * k + vb.y;
     cur.layout.persons.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p.id; } });
     return best;
   }
   // A target a finger can hit (44 CSS px): the hit circle is sized for the
-  // drawing's current scale, never below its drawn 20 units.
+  // drawing's current scale, never below its drawn 20 units. Zoomed, the
+  // person is scaled back (cam.iz), and its circle with it.
   function sizeHits() {
     var svg = canvas.querySelector('svg'); if (!svg) return;
     var box = svg.getBoundingClientRect(); if (!box.width) return;
-    var r = Math.max(20, 22 * cur.layout.meta.hview[1] / box.width);
+    var r = Math.max(20, 22 * svg.viewBox.baseVal.width / box.width / cam.iz);
     canvas.querySelectorAll('a.rv-p > circle:first-child').forEach(function (c) { c.setAttribute('r', r.toFixed(1)); });
   }
-  window.addEventListener('resize', sizeHits);
+  // A new width is a new window: the drawing keeps its size, the ground
+  // its edges.
+  window.addEventListener('resize', function () { place(canvas.querySelector('svg.rv-svg'), cur.layout.meta); sizeHits(); });
   // Hover does not exist on a tablet. "Tap to look, tap again to go": the
   // first tap on a person does what hovering does with a mouse — lights the
   // route from the centre and shows their dropped label — and a second tap
   // on the same person travels there. A tap on open water clears it.
   var looked = null;
   canvas.addEventListener('click', function (e) {
+    // The click a drag or a pinch ends with is not a choice of person.
+    if (performance.now() - dragged < 400) { e.preventDefault(); return; }
     var a = e.target.closest && e.target.closest('.rv-p');
     var id = a ? a.getAttribute('data-id') : touch ? nearest(e) : null;
     if (touch && !busy) {
@@ -634,6 +772,59 @@
     light(a ? a.getAttribute('data-key') : null);
   });
   canvas.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'touch' && !busy) light(null); });
+  // Zoom: Ctrl (⌘) with the wheel — which is also what a trackpad's pinch
+  // sends — two fingers, the slider, or + and − on the keyboard. A wheel
+  // alone still scrolls the page. Zoomed, a drag moves the camera; at rest
+  // a finger still scrolls the page (touch-action, app.css).
+  canvas.addEventListener('wheel', function (e) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    zoomTo(cam.z * Math.exp(-e.deltaY * 0.0025), e.clientX, e.clientY);
+  }, { passive: false });
+  var pts = {}, drag = null, pinch = null, dragged = 0;
+  canvas.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    pts[e.pointerId] = [e.clientX, e.clientY];
+    var ids = Object.keys(pts);
+    if (ids.length === 2) {
+      var a = pts[ids[0]], b = pts[ids[1]];
+      pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, z: cam.z };
+      drag = null;
+    } else if (ids.length === 1) drag = { x: e.clientX, y: e.clientY, moved: false };
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    var prev = pts[e.pointerId];
+    if (!prev) return;
+    pts[e.pointerId] = [e.clientX, e.clientY];
+    var ids = Object.keys(pts);
+    if (pinch && ids.length === 2) {
+      var a = pts[ids[0]], b = pts[ids[1]];
+      zoomTo(pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+      dragged = performance.now();
+      return;
+    }
+    if (!drag || cam.z <= 1) return;
+    if (!drag.moved) {
+      if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
+      drag.moved = true;
+      canvas.classList.add('rv-grabbing');
+      if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+    }
+    dragged = performance.now();
+    panBy(e.clientX - prev[0], e.clientY - prev[1]);
+  });
+  function lift(e) {
+    delete pts[e.pointerId];
+    if (Object.keys(pts).length < 2) pinch = null;
+    if (!Object.keys(pts).length) { drag = null; canvas.classList.remove('rv-grabbing'); }
+  }
+  canvas.addEventListener('pointerup', lift);
+  canvas.addEventListener('pointercancel', lift);
+  if (zoomInput) {
+    zoomInput.max = String(ZMAX);
+    zoomInput.addEventListener('input', function () { zoomTo(+zoomInput.value); });
+    root.querySelectorAll('[data-rv-zoom-wrap]').forEach(function (w) { w.hidden = false; });
+  }
   root.addEventListener('click', function (e) {
     // The chips of the itinerary, and the grid panel's re-root: the controls
     // themselves, not any element that happens to carry the attribute —
@@ -662,6 +853,9 @@
     var to = e.key === 'ArrowDown' ? cur.down : e.key === 'ArrowUp' ? cur.up : null;
     if (to) { e.preventDefault(); travel(to); }
     else if (e.key === 'ArrowLeft' && trail.length > 1) { e.preventDefault(); goBack(); }
+    else if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomTo(cam.z * 1.25); }
+    else if (e.key === '-') { e.preventDefault(); zoomTo(cam.z / 1.25); }
+    else if (e.key === '0' && cam.z > 1) { e.preventDefault(); zoomTo(1); }
   });
   window.addEventListener('popstate', function (e) {
     if (!e.state || !e.state.p) return;
@@ -674,7 +868,7 @@
     }
   });
   // The masthead search (ui.js) travels here rather than reloading the page.
-  window.axgfRiver = { travel: function (id) { travel(id); } };
+  window.axgfRiver = { travel: function (id) { travel(id); }, layout: sceneLayout };
   history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
   controls(cur.layout.meta.n);
   decorate();

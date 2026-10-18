@@ -49,6 +49,15 @@
         </select>
         <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
       </form>
+      {#- The camera and the living ground (v0.5.0, docs/adr/0004 §11): both
+          are the scripts', so both are hidden until a script shows them —
+          nothing to do is nothing drawn. The pause is the one control that
+          stops the ground and the water's light moving (WCAG 2.2.2). -#}
+      <span class="rv-zoom" data-rv-zoom-wrap hidden>
+        <label class="rv-eyebrow" for="rv-zoom">{{ t("river-zoom") }}</label>
+        <input type="range" id="rv-zoom" min="1" max="3" step="0.1" value="1" data-rv-zoom>
+      </span>
+      <button type="button" class="btn small rv-still" aria-pressed="false" data-rv-still hidden>{{ t("river-still") }}</button>
     </div>
 
     <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}</div>
@@ -75,6 +84,7 @@
       <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
       <span class="rv-scale" data-rv-scale hidden><b></b>{{ t("river-legend-generation") }}</span>
       <span class="rv-direction rv-compass">{{ ic.icon("compass") }}{{ t("river-legend-direction") }}</span>
+      <span class="rv-hint" data-rv-zoom-wrap hidden>{{ t("river-zoom-hint") }}</span>
     </div>
   </section>
 
@@ -89,4 +99,4 @@
 <script type="application/json" id="rv-data">{{ payload|safe }}</script>
 {% endblock %}
 
-{% block scripts %}<script src="/static/river.js" defer></script>{% endblock %}
+{% block scripts %}<script src="/static/river.js" defer></script><script src="/static/river-scene.js" defer></script>{% endblock %}

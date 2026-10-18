@@ -40,8 +40,11 @@ const LINK: &str = "efefefef-9999-4999-8999-999999999999";
 /// Words that are the same in every language this application speaks, or
 /// that name a thing rather than describe it.
 const UNIVERSAL: &[&str] = &[
-    // The name printed on the key, the same on every keyboard.
+    // The name printed on the key, the same on every keyboard. ("Ctrl" since
+    // the river's zoom hint, v0.5.0: a Chinese keyboard prints it too, and
+    // German, which prints "Strg", is not checked here and says "Strg".)
     "Esc",
+    "Ctrl",
     "AXGF",
     "JSON",
     "UUID",

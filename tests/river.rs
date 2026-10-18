@@ -1051,3 +1051,27 @@ fn a_tap_lights_the_route_and_a_second_tap_on_it_travels() {
         "a hidden button stays hidden whatever its class says"
     );
 }
+
+/// The living ground (v0.5.0, docs/adr/0004 §11) is the scripts' alone. The
+/// page names it; its pause and the camera's zoom are hidden until a script
+/// shows them, so a reader without scripts is offered nothing that does
+/// nothing (and the chrome budget counts what a reader is shown); and it
+/// holds still for a reader who asked for stillness, in their system or in
+/// the settings, and while the page is not being looked at. Gravure keeps
+/// the river's plain ink.
+#[tokio::test]
+async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
+    let (app, _d) = app("river-scene");
+    let body = expect_status(get(&app, "/?p=p07&n=3").await, StatusCode::OK, "GET /").await;
+    assert!(body.contains(r#"<script src="/static/river-scene.js" defer></script>"#));
+    assert!(body.contains(r#"aria-pressed="false" data-rv-still hidden>"#));
+    assert!(body.contains(r#"<span class="rv-zoom" data-rv-zoom-wrap hidden>"#));
+    let js = axgf_cms::render::RIVER_SCENE_JS;
+    assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
+    assert!(js.contains("root.dataset.riverMotion === 'cut'"));
+    assert!(js.contains("document.hidden"));
+    assert!(js.contains("=== 'high-contrast') return;"));
+    // A decoration: it never takes a pointer from the drawing.
+    let css = include_str!("../static/app.css");
+    assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));
+}

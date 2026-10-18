@@ -281,6 +281,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/img/river-contours.svg", get(public::river_contours_svg))
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/river.js", get(public::river_js))
+        .route("/static/river-scene.js", get(public::river_scene_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))

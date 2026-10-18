@@ -185,7 +185,9 @@ Under Canopée, these move once and stop:
 - the primary's arrow nudges under the pointer;
 - the scroll cue's wheel turns three times.
 
-Nothing loops except a loader while work is out. `ui.js` marks the root
+Nothing loops except a loader while work is out — and, since the third
+pass, the river's ground, which the operator asked to see alive and
+which three things hold still (§11). `ui.js` marks the root
 `js-motion` only when `prefers-reduced-motion` allows it. A page without
 scripts, or a reader who asked for stillness, therefore has every section in
 place and every number whole from the first paint.
@@ -289,3 +291,95 @@ Measured: every page in the compact style at 390 and 1280 pixels, text at
 100 % and 150 %, 56 checks, no horizontal overflow; the open select's
 colours read from the browser under Canopée and under the dark and light
 themes; the full test suite and Clippy.
+
+## 11. The living river (the operator's second review)
+
+The operator looked again on a 1920 × 1080 monitor. The pictures were still
+soft there and the dark backgrounds looked "pixelated"; the river's type was
+too big; and they asked for the river to be alive — the water visibly
+flowing, the trees moving a little in the wind, something modelled in 3D for
+the web and never pixelated — and for its content to be pleasant to move
+around in, at the type size of the rest of the site.
+
+**Why it was soft.** The river's ground was a 1680-pixel photograph stretched
+to a stage 1466 pixels wide and, on a tall river, 1190 high: scaled up, so
+soft. And the drawing scaled with the stage (`width="100%"`): at 1280 pixels
+a unit was 1.05 pixels, at 1920 it was 1.87, so a 12-unit name was 22 pixels
+and the centre's 30.
+
+**Decision: the ground is computed, not a picture.** `static/river-scene.js`
+draws a forest seen from above under the drawing, in WebGL, at the screen's
+own resolution (up to two device pixels per CSS pixel):
+
+- crowns lit by a low sun from the upper right, pointed like conifers seen
+  from above, with a needle bump and the shadow each casts on the next;
+- hills under the forest, whose slopes the same sun lights;
+- clearings and wet ground along every line, from a mask drawn from the
+  river's own edges;
+- mist in two corners, warm on the sun's side.
+
+It is never scaled up, so it is never soft, and it dithers its own output,
+so its darkest gradients never show steps. Its colours are tokens:
+`--rv-canopy-deep`, `-mid`, `-lit`, `-warm`, `--rv-sun` and `--rv-bank`, with
+the existing `--rv-mist-rgb`, `--rv-shade-rgb`, `--rv-core` and
+`--rv-lit-halo`. Without WebGL, the photograph is the ground, as before.
+
+**What moves.** Gusts cross the canopy: a band of wind travels over it,
+leaning the trees and turning their leaves to the light, and each tree sways
+at its own rhythm. The mist drifts. Pulses of light run down every attested
+line from the sources toward the living, on a canvas over the drawing that
+never covers a person or a word. Thirty frames a second at most; a machine
+that cannot keep up gets fewer pixels (never fewer than the screen's own),
+then fewer frames. Nothing moves while the river is off screen or the tab is
+hidden.
+
+**Who it holds still for.** `prefers-reduced-motion`, "Cut" in the settings,
+and the river's own pause, "Figer le paysage" (a toggle with `aria-pressed`,
+remembered in this browser), all draw the ground once and hold it. That is
+WCAG 2.2.2's way to stop motion that starts by itself. Under Gravure and in
+print, the ground is plain ink, as before.
+
+**Type at the site's size.** The drawing is never shown larger than 1.15
+pixels to the unit (`KMAX`). A wider stage widens the window instead: the
+ground, the half-century bands, the years and the rail run to its edges, and
+the drawing stays in the middle. At 1920 pixels the names are 14 pixels and
+the centre's 18, as at 1280. The window depends on the range and the stage
+alone, so within a range the fixed point still does not move (ADR 0001 §5).
+
+**A map you can move in.** The camera zooms from 1 to 3:
+
+- Ctrl (⌘) with the wheel, which is also what a trackpad pinch sends;
+- two fingers;
+- the "Zoom" slider;
+- `+`, `−` and `0` on the keyboard.
+
+Zoomed in, a drag moves the camera. People and words are map symbols: they
+grow with the zoom only up to their own size, which is what makes a phone's
+small drawing readable, and keep it after that; only the distances between
+them grow. Contour lines and the lit route stay hairlines. Travel keeps the
+zoom and glides the camera to the fixed point. At rest, a finger still
+scrolls the page. The slider and the pause are hidden until a script shows
+them, so a reader without scripts is offered nothing that does nothing.
+
+**The server's river is unchanged.** All of this is `river.js` and
+`river-scene.js`, drawn from the payload the page already holds. The SVG and
+the payload are byte for byte what they were (ADR 0001), and the drawing has
+no filter and no clip-path. `river.js` now replaces the drawing in place
+instead of the whole stage, so the scene's two canvases keep their state
+through a travel.
+
+**The overview's steps.** The hero's large dark shadow on the dark page
+showed as bands, so it is removed. A grey grain finer than a pixel (4.5 %)
+over the hero's and the sign-in page's gradients breaks their 8-bit steps.
+The hero's JPEG was already quality 88 with full colour resolution.
+
+Measured, in Chromium with WebGL (software rendering):
+
+- the river at 1920 × 1080, 1280 × 900 and 390 × 844;
+- zoom 2 and 2.5, a lit route, a travel;
+- reduced motion, the pause, Gravure (no scene) and the dark theme (scene);
+- no script error.
+
+Two frames 0.9 s apart differ on 7 % of the ground's pixels: the gusts and
+the pulses. The software renderer is far slower than a graphics card, so
+frame rates were not measured here.

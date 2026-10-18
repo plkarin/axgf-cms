@@ -73,6 +73,27 @@ with plain strokes and no filter. Under Gravure (high contrast) and in print
 the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
 every light that moves.
 
+**The river comes alive.** Under the drawing, a forest seen from above is
+computed in WebGL at the screen's own resolution, so it is never soft and
+never pixelated:
+
+- crowns lit by a low sun, with their shadows;
+- hills under the forest;
+- clearings and wet ground along every line;
+- mist in two corners.
+
+Gusts cross the canopy and lean the trees as they pass, and pulses of light
+run down every attested line from the sources toward the living. It holds
+still under `prefers-reduced-motion`, with "Cut" in the settings, and with
+the river's new pause button, "Figer le paysage". Nothing moves while the
+river is off screen. Without WebGL the photograph stays; under Gravure and
+in print, the plain ink.
+
+**A river you can move around in.** Zoom from 1 to 3 with Ctrl (⌘) and the
+wheel, a trackpad or two-finger pinch, the "Zoom" slider, or `+` `−` `0`;
+zoomed in, drag to move. Names and people keep their size as the distances
+grow, as on a map, and on a phone they grow until they can be read.
+
 **Canopée on every page.** The record, the tree, the administration, the
 editor, the quality list, search, settings and the login page carry the kit
 too, under Canopée only:
@@ -109,6 +130,10 @@ is out.
   and so is every other theme.
 - **Buttons and fields take their round from a token** (`--btn-radius`,
   `--field-radius`): Study 06's 2px in every theme but Canopée.
+- **The river's type no longer grows with the screen.** The drawing is shown
+  at 1.15 pixels to the unit at most, and a wider stage widens the
+  landscape instead. At 1920 pixels the names were 22 pixels and the
+  centre's 30; they are now 14 and 18, as at 1280.
 
 ### Fixed
 
@@ -124,9 +149,17 @@ is out.
   could not be read. Options take the theme's raised surface and text.
 - **The completeness tag ("not yet recorded") ran past its column** in every
   theme. It now sits under the count.
+- **The overview's dark backgrounds showed steps** on a 1920 × 1080 monitor.
+  The hero's large shadow is gone, and a grain finer than a pixel breaks the
+  steps of its gradients and the sign-in page's.
 
 ### Tests
 
+- `river.rs`: the living ground is the scripts' alone. Its pause and the
+  zoom are hidden until a script shows them, and it holds still for reduced
+  motion, "Cut", a hidden page and Gravure.
+- `rendered_language.rs`: "Ctrl" joins "Esc" among the names printed on a
+  key, which a page in Chinese may show (the zoom hint).
 - `controls.rs`: one radius per theme, defined on `:root` and by Canopée and
   nowhere else.
 - `fields.rs`: the same for fields.

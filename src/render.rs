@@ -26,6 +26,12 @@ pub const TREE_JS: &str = include_str!("../static/tree.js");
 /// river is complete without it.
 pub const RIVER_JS: &str = include_str!("../static/river.js");
 
+/// The river's living ground, served at `/static/river-scene.js`: the WebGL
+/// forest under the drawing and the water's light over it (docs/adr/0004
+/// §11). Decoration only; without it, or without WebGL, the photograph is
+/// the ground.
+pub const RIVER_SCENE_JS: &str = include_str!("../static/river-scene.js");
+
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
 pub const MAP_JS: &str = include_str!("../static/map.js");

@@ -4352,15 +4352,17 @@ a.tcard:hover {
   border-color: var(--border-hairline);
   background-color: var(--surface-page);
   background-image:
+    var(--grain),
     linear-gradient(90deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
     url("/static/img/canopee-hero.jpg?v=2");
-  background-size: cover;
-  background-position: center, center, 70% 40%;
-  box-shadow: 0 30px 60px -40px rgb(var(--shadow-rgb) / 0.9);
+  background-size: 160px 160px, cover, cover, cover;
+  background-position: 0 0, center, center, 70% 40%;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
 }
 [data-theme="canopee"][dir="rtl"] .hero {
   background-image:
+    var(--grain),
     linear-gradient(270deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
     url("/static/img/canopee-hero.jpg?v=2");
@@ -4518,7 +4520,48 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   .rv-canvas::before { display: none; }
   .rv-svg > rect.k-bg { fill-opacity: 1; }
   .rv-svg :is(.rv-zones, .rv-banks, .rv-glow, .rv-cores) { display: none; }
+  .rv-canvas :is(.rv-ground, .rv-water) { display: none; }
 }
+
+/* The living ground (river-scene.js, docs/adr/0004 §11): a WebGL forest
+   under the drawing and the water's light over it, both the size of the
+   drawing and drawn at the screen's own resolution. While they run, the
+   photograph and its contour mask are not needed; without WebGL they are
+   the ground, as before. The light over the drawing never takes a pointer. */
+.rv-canvas.rv-alive { background-image: none; }
+.rv-canvas.rv-alive::before { display: none; }
+/* The half-century bands were measured over the photograph; over the
+   living ground, which is lighter and moves, they need less ink to read. */
+.rv-canvas.rv-alive .rv-svg .k-band-odd { fill-opacity: 0.32; }
+.rv-canvas.rv-alive .rv-svg .k-band-live { fill-opacity: 0.4; }
+.rv-canvas :is(.rv-ground, .rv-water) {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+.rv-canvas .rv-ground { z-index: -1; }
+.rv-canvas .rv-water { z-index: 1; }
+/* The camera (river.js). Zoomed, every person and every word is a map
+   symbol: scaled back by the zoom about its own point, so only the
+   distances grow; the contour lines and the lit route stay hairlines. */
+.rv-svg[data-zoom] :is(a.rv-p, .rv-cs) {
+  transform-box: view-box;
+  transform: scale(var(--rv-iz, 1));
+}
+.rv-svg[data-zoom] :is(.rv-zone, .k-band-rule, .rv-lit path) { vector-effect: non-scaling-stroke; }
+/* At rest a finger scrolls the page; zoomed, it moves the camera. */
+.rv-canvas { touch-action: pan-y; }
+.rv-canvas.rv-zoomed { touch-action: none; cursor: grab; }
+.rv-canvas.rv-grabbing { cursor: grabbing; }
+.rv-zoom { display: inline-flex; align-items: center; gap: 0.5rem; }
+.rv-zoom input[type="range"] { inline-size: 7rem; accent-color: var(--rv-accent); }
+/* The pause: what it does is the same word whatever its state; the state
+   is aria-pressed, and the sign beside the word. */
+.rv-still::before { content: "❚❚" / ""; font-size: 0.7em; letter-spacing: -0.12em; }
+.rv-still[aria-pressed="true"]::before { content: "▶" / ""; letter-spacing: 0; }
+.rv-hint { color: var(--rv-text-3); }
 
 /* The lit route (river.js): a halo, the light, and a thread of light
    running along it from the centre, three times, then still. */
@@ -4643,6 +4686,10 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   --ico-gear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7'/%3E%3C/svg%3E");
   --ico-upload: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4M7 9l5-5 5 5'/%3E%3Cpath d='M4 16v3a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-3'/%3E%3C/svg%3E");
   --ico-lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8 10.5V8a4 4 0 0 1 8 0v2.5'/%3E%3C/svg%3E");
+  /* A grain finer than a pixel can show, at 4.5 %: it breaks the 8-bit steps
+     a dark gradient over a photograph otherwise shows as bands (v0.5.0,
+     the operator's review at 1920 × 1080). Grey, so it names no colour. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 0 0.045'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
   --ico-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E");
 }
 
@@ -4970,6 +5017,7 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   display: grid;
   place-items: center;
   background:
+    var(--grain) 0 0 / 160px 160px repeat,
     linear-gradient(180deg, color-mix(in srgb, var(--surface-page) 55%, transparent), var(--surface-page) 95%),
     url("/static/img/canopee-hero.jpg?v=2") center 35% / cover;
 }

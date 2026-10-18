@@ -1795,3 +1795,15 @@ pub async fn river_js() -> Response {
     )
         .into_response()
 }
+
+/// `GET /static/river-scene.js`.
+pub async fn river_scene_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::RIVER_SCENE_JS,
+    )
+        .into_response()
+}

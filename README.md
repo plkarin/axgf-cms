@@ -101,6 +101,35 @@ The river reaches 2, 3 or 5 generations each way. To zoom from 1× to 3×,
 use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
 `−` and `0` keys. Once zoomed in, drag to move *(new in 0.5.0)*.
 
+### The same family as a tree, or as a galaxy
+
+*(New in 0.5.0, on `main`.)* Two themes draw the landing page their own way.
+
+- **Fusion** grows the family as a living tree. The person you are visiting
+  stands at the foot of the trunk. Their ancestors are the roots, spreading
+  under the soil, and their descendants are the crown. The living are green
+  leaves at the tips, and sap climbs from the roots to the leaves.
+- **Galaxy** makes that person a sun, with one orbit per generation:
+  descendants above, ancestors below.
+
+Underneath, both are the river:
+
+- the same people, with the same marks for how sure each link is;
+- the same travel, trail, zoom and keyboard;
+- the same privacy: a reader sees only what they may.
+
+Above the drawing, a dashboard counts ancestors, descendants, generations
+and the living, and shows how many links are attested. **Whole family**
+opens the widest range in one click.
+
+| Fusion: a living tree, from the roots to the leaves | Galaxy: a solar system, one orbit per generation |
+|---|---|
+| [![The Fusion theme: Lucien Delaunay at the foot of a trunk on the soil line. His parents and grandparents spread below as roots, and his children, grandchildren and great-grandchildren form a crown of boughs above, the living as green leaves. A dashboard above counts 10 ancestors, 15 descendants, 7 generations, 22 living and 100 % attested links. His record is open beside it.](docs/screenshots/fusion-tree.jpg)](docs/screenshots/fusion-tree.jpg) | [![The Galaxy theme: Lucien Delaunay as a sun at the centre, his wife Zofia Zając on the innermost orbit, descendants on the orbits above and ancestors on those below, joined by violet links, over a starfield with a nebula. The same dashboard sits above, and his record beside it.](docs/screenshots/galaxy-system.jpg)](docs/screenshots/galaxy-system.jpg) |
+
+<p align="center">
+<a href="docs/screenshots/fusion-whole.jpg"><img src="docs/screenshots/fusion-whole.jpg" width="620" alt="Whole family, under Fusion: one tree from the great-great-great-grandparents in the roots to the great-grandchildren at the top of the crown, nine generations, with the legend reading: the roots, ancestors; the crown, descendants."></a>
+</p>
+
 ### Every person, a record
 
 | A record: portrait, dates, places, family with how sure each link is | Photographs and scanned documents, with their captions |
@@ -180,13 +209,29 @@ an `.axgf` to download, without touching the site.
 
 ### Make it yours
 
+[![The overview page under the three themes that carry their own furniture. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
+
 [![Zofia Zając's profile in eight of the themes: Canopy, Chalk, Sepia, Nocturne, Dusk, Ink, Winter River and Engraving](docs/screenshots/themes.jpg)](docs/screenshots/themes.jpg)
 
-There are eleven themes. **Canopy** (*Canopée*, the default from 0.5.0) is a
-dark forest green with the gold of the logo. Chalk, Sepia and Winter River are light. Nocturne, Dusk
-and Ink are dark. Engraving is high contrast, and three themes are safe for
-deuteranopia, protanopia and tritanopia. "Match my system" follows your
-computer. Three styles set the density: **Comfortable**, **Compact**, and
+There are thirteen themes.
+
+- **Canopy** (*Canopée*, the default from 0.5.0) is a dark forest green with
+  the gold of the logo.
+- **Fusion** is a dashboard at night, charcoal and neon red, and draws the
+  family as a tree.
+- **Galaxy** is deep space, navy and violet, and draws it as a solar system.
+
+These three carry their own buttons, motion and photographs, and every page
+follows them, down to the words: under Fusion the overview reads "Every life
+is a leaf. Every family, a tree."
+
+The others:
+
+- **Chalk, Sepia and Winter River** are light.
+- **Nocturne, Dusk and Ink** are dark.
+- **Engraving** is high contrast.
+- **Three themes** are safe for deuteranopia, protanopia and tritanopia.
+- **"Match my system"** follows your computer. Three styles set the density: **Comfortable**, **Compact**, and
 **Paper**, a serif face and rules for reading once or for printing. Every
 reader chooses for themselves, and a signed-in reader's theme and language
 follow them to every device.
@@ -207,6 +252,8 @@ ten of the themes.
 
 - the living river and its zoom;
 - the Canopy theme;
+- the Fusion and Galaxy themes, with the family as a living tree and as a
+  solar system;
 - the portrait beside the river;
 - the three ways in;
 - the GEDCOM reader for every version and encoding.

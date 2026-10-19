@@ -6,10 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Canopée, the reference theme, and a river that reads like a landscape.
-Nothing about the AXGF file changes. The river's geometry, its layout and
-everything the server sends for it (SVG and payload) are byte for byte what
-they were. docs/adr/0004 records every decision below.
+Canopée, the reference theme, and a river that reads like a landscape. Two
+more themes, Fusion and Galaxy, each draw the landing page their own way: a
+living tree and a solar system. Nothing about the AXGF file changes. The
+river's geometry, its layout and everything the server sends for it (SVG
+and payload) are byte for byte what they were, under every theme.
+docs/adr/0004 records the decisions behind Canopée and the river,
+docs/adr/0006 the logo's, and docs/adr/0007 the two views'.
 
 ### Added
 
@@ -91,6 +94,62 @@ headline, portrait rings and glows. The ground, the forest, the river and
 every component are unchanged, and the river's own accent was already a
 gold. The gold reads at 7.1:1 on the lightest ground, and dark text on a
 gold button at 9.5:1.
+
+**Two themes with a view of their own: Fusion and Galaxy**
+(docs/adr/0007). Each carries Canopée's furniture in its own palette, with
+its own round, tempo and photographs, and the logo in its colours. Each
+draws the river's own layout, people and lens in its own way:
+
+- **Fusion**, a dashboard at night (charcoal, neon red and orange, a teal
+  and a green for what is alive), draws a **living tree**:
+  - the person at the fixed point stands on the soil line at the foot of
+    the trunk;
+  - their descendants make the crown, a dome of boughs from the fork at
+    the top of the trunk, one ring per generation, with the living as
+    green leaves at the tips and those gone as embers;
+  - their ancestors make the roots, spreading wide and shallow under the
+    soil;
+  - a bough thins with every generation and carries what its parentage is
+    worth, as a vein of light, a broken vein or a dotted trace;
+  - sap is drawn up from the root tips to the leaves, the leaves breathe,
+    and spores rise.
+- **Galaxy**, deep space (navy, violet, cyan, magenta), draws a **solar
+  system**:
+  - the person at the fixed point is the sun, and every generation an orbit;
+  - descendants are in the upper half of the sky and ancestors in the
+    lower;
+  - links bend toward the sun;
+  - stars twinkle, a comet runs on each orbit and pulses travel along the
+    links.
+
+Both views are the river's to use:
+
+- **Travel** works as in the river: a click travels, the trail keeps the
+  way, the keyboard, the zoom and the drag all work, and the light under
+  the pointer runs along the bough or the link.
+- **A dashboard** between the controls and the drawing: ancestors,
+  descendants, generations, the living, the share of attested links as a
+  gauge, and people per generation as bars.
+- **"Whole family"** opens the widest range and goes back.
+- **The motion holds still** exactly as the river's ground does: reduced
+  motion, "Cut", the pause, a hidden tab, a drawing off screen, a machine
+  too slow for it.
+
+**No river where a tree or a sky is drawn.** Under Fusion and Galaxy every
+word that named the river names the tree or the galaxy instead, in all
+eleven languages:
+
+- the overview's two lines ("Every life is a leaf. Every family, a tree." /
+  "Every life is a star. Every family, a galaxy.") and its last band;
+- the call to action and the navigation;
+- the legend's title and compass;
+- the pause;
+- the record's "See in…" link;
+- the search hint;
+- the error page's way back;
+- the setup's last button.
+
+The legend's keys to the river's width and height are the river's alone.
 
 **An installation sets itself up** (docs/adr/0005). While it holds no
 family, an administrator is offered three doors at `/admin/setup`:
@@ -244,9 +303,25 @@ is out.
   under every theme and only Canopée colours it; the inline logo is the
   file's drawing, path for path; the sign-in page's two logos keep their own
   ids.
-- `themes.rs` and `design_tokens.rs`: eleven palettes measured, Canopée
-  among them, with no exception. `--section-pad-x` is held to every style,
-  like the rest of the scale.
+- `themes.rs` and `design_tokens.rs`: thirteen palettes measured, Canopée,
+  Fusion and Galaxy among them, with no exception. `--section-pad-x` is held
+  to every style, like the rest of the scale. A texture is still the page's
+  alone: the tree's stage draws its grid from a token of its own
+  (`--tv-grid`).
+- `views.rs`, new:
+  - each theme loads the view it brings and no other, its script before
+    `river.js`, and only the river loads the river's scene;
+  - the dashboard is a view's;
+  - no river is named where a tree or a sky is drawn: the pause, the
+    compass, the search hint, the overview's two lines and the record's
+    link, and no key to width or height under a view;
+  - the views' scripts and pictures are served, and the scripts name no
+    colour;
+  - each view gives `river.js` everything it asks for, and holds still on
+    the river's terms.
+- `masthead.rs`, `controls.rs` and `brand.rs`: the kit is the three
+  themes'. The accent may reach the masthead, a radius may be redefined and
+  the logo coloured only under Canopée, Fusion and Galaxy.
 
 ## [0.4.3] — 2026-10-15
 

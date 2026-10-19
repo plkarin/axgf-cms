@@ -3414,5 +3414,9 @@ edit-saved = { $n ->
        *[other] Enregistré : { $n } fiches modifiées en une fois.
     }
 edit-saved-none = Rien n'avait changé : rien n'a été enregistré.
+edit-back-to-record = Retour à la fiche
+edit-avatar = Photo de profil
+edit-avatar-frame = Cadrer le visage
+edit-avatar-upload = Utiliser comme photo de profil
 edit-stale = Quelqu'un d'autre a modifié { $what } depuis l'ouverture de cette page. Rien n'a été enregistré ; tout ce que vous avez saisi est conservé.
 edit-refused = Rien n'a été enregistré : { $reason }

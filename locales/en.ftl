@@ -3457,5 +3457,9 @@ edit-saved = { $n ->
        *[other] Saved: { $n } records written in one save.
     }
 edit-saved-none = Nothing had changed, so nothing was saved.
+edit-back-to-record = Back to the record
+edit-avatar = Profile picture
+edit-avatar-frame = Frame the face
+edit-avatar-upload = Use as the profile picture
 edit-stale = Someone else changed { $what } since this page was opened. Nothing was saved; everything you entered is still here.
 edit-refused = Nothing was saved: { $reason }

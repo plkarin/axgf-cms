@@ -3417,5 +3417,9 @@ edit-saved = { $n ->
        *[other] Gespeichert: { $n } Einträge in einem Speichervorgang geschrieben.
     }
 edit-saved-none = Nichts hatte sich geändert, also wurde nichts gespeichert.
+edit-back-to-record = Zurück zum Eintrag
+edit-avatar = Profilbild
+edit-avatar-frame = Gesicht ausrichten
+edit-avatar-upload = Als Profilbild verwenden
 edit-stale = Jemand anderes hat { $what } geändert, seit diese Seite geöffnet wurde. Nichts wurde gespeichert; alle Ihre Eingaben sind noch da.
 edit-refused = Nichts wurde gespeichert: { $reason }

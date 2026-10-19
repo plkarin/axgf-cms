@@ -62,12 +62,13 @@
      was already stored, so saving does not silently recentre a crop somebody
      set earlier. #}
   <input type="hidden" name="base_version" value="{{ base_version }}">
+  {% if from_edit %}<input type="hidden" name="from" value="edit">{% endif %}
   <input type="hidden" name="focal_x" id="focal-x" value="{{ focal_x }}">
   <input type="hidden" name="focal_y" id="focal-y" value="{{ focal_y }}">
 
   <div class="cta-row">
     <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
-    <a class="btn" href="/person/{{ person_id }}">{{ t("admin-cancel") }}</a>
+    <a class="btn" href="{% if from_edit %}/admin/person/{{ person_id }}/edit#medias{% else %}/person/{{ person_id }}{% endif %}">{{ t("admin-cancel") }}</a>
   </div>
 </form>
 

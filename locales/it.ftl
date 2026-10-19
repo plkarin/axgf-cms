@@ -3429,5 +3429,9 @@ edit-saved = { $n ->
        *[other] Salvato: { $n } schede scritte in un solo salvataggio.
     }
 edit-saved-none = Non era cambiato nulla, quindi non è stato salvato nulla.
+edit-back-to-record = Torna alla scheda
+edit-avatar = Foto del profilo
+edit-avatar-frame = Inquadra il volto
+edit-avatar-upload = Usa come foto del profilo
 edit-stale = Qualcun altro ha modificato { $what } da quando questa pagina è stata aperta. Non è stato salvato nulla; tutto ciò che ha inserito è ancora qui.
 edit-refused = Non è stato salvato nulla: { $reason }

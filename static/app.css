@@ -3880,6 +3880,49 @@ a.tcard:hover {
 }
 .ed-action:has(input:checked) { border-color: var(--danger); color: var(--danger); }
 
+/* The picture that stands for the person (Médias): the face as it is shown
+   now, beside the two answers that are not a picture. Each image below
+   carries the radio that makes it the face, drawn as the quiet button an
+   action is, and in the accent when it is the one. */
+.ed-avatar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 0.25rem 1rem;
+}
+.ed-avatar-now {
+  inline-size: 64px;
+  block-size: 64px;
+  flex: none;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-hairline);
+}
+.ed-avatar-now.is-initials {
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+  color: var(--accent);
+  font-size: var(--type-sub);
+  font-weight: var(--weight-semi);
+}
+.ed-avatar-body { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.1rem; min-inline-size: 0; }
+.ed-avatar-body h3 { flex-basis: 100%; margin: 0; font-size: var(--type-body); }
+.ed-avatar-mode { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+.ed-avatar-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: 2px;
+  font-size: var(--type-minor);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.ed-avatar-pick:has(input:checked) { border-color: var(--accent); color: var(--accent); }
+
 /* "Add": a disclosure that opens onto the fields of the new thing. */
 .ed-add, .ed-add-row { margin-block: 0.75rem; }
 .ed-add > summary, .ed-add-row > summary {

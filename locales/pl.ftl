@@ -3623,5 +3623,9 @@ edit-saved = { $n ->
        *[other] Zapisano: { $n } karty w jednym zapisie.
     }
 edit-saved-none = Nic się nie zmieniło, więc nic nie zostało zapisane.
+edit-back-to-record = Wróć do zapisu
+edit-avatar = Zdjęcie profilowe
+edit-avatar-frame = Wykadruj twarz
+edit-avatar-upload = Użyj jako zdjęcia profilowego
 edit-stale = Ktoś inny zmienił { $what } od otwarcia tej strony. Nic nie zostało zapisane; wszystko, co wpisano, nadal tu jest.
 edit-refused = Nic nie zostało zapisane: { $reason }

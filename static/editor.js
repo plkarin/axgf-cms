@@ -54,7 +54,17 @@
     if (el.type === "checkbox" || el.type === "radio") return el.checked !== el.defaultChecked;
     if (el.type === "file") return el.files && el.files.length > 0;
     if (el.tagName === "SELECT") {
-      return Array.prototype.some.call(el.options, function (o) { return o.selected !== o.defaultSelected; });
+      var opts = Array.prototype.slice.call(el.options);
+      if (el.multiple) return opts.some(function (o) { return o.selected !== o.defaultSelected; });
+      // A select drawn with no option marked `selected` shows its first one,
+      // which is then its drawn value and not a change. Comparing every
+      // option's `selected` with its `defaultSelected` counted every such
+      // select as changed, so leaving the editor always asked first — even
+      // straight after a save.
+      var drawn = -1;
+      opts.forEach(function (o, i) { if (o.defaultSelected) drawn = i; });
+      if (drawn < 0) opts.some(function (o, i) { if (!o.disabled) { drawn = i; return true; } return false; });
+      return el.selectedIndex !== drawn;
     }
     return el.value !== el.defaultValue;
   }

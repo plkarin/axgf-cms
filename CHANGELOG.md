@@ -271,6 +271,25 @@ is out.
   "Conscien-tiousness" carries its own soft hyphen. Checked in all eleven
   languages, at four widths and in two styles: no label leaves its card or
   touches the table.
+- **The profile picture can be chosen in the record's editor again.** The
+  picker lost its only link in the minimalism pass (0.4.0), so no page led to
+  it. The editor's Media tab now:
+  - shows the face as it is shown now;
+  - offers the two answers that are not a picture, "let the software pick"
+    and "show initials";
+  - gives each image a "Profile picture" radio, saved with the rest of the
+    form;
+  - lets an upload become the face in the same save;
+  - links to the picker to frame the face, and the picker comes back to the
+    tab.
+
+  A picture detached in the same save cannot stay the face: the choice goes
+  back to the software.
+- **Leaving the record's editor always asked first, even right after a
+  save.** Every select drawn with no option marked as chosen counted as a
+  change. A select now counts as changed only when the option it shows
+  differs from the one it was drawn with. After a save, the way out reads
+  "Back to the record".
 - **Count marks were cut off at the edge of the tree and the galaxy.** A
   line that runs past the crown or the roots now has room for its count, and
   the galaxy sizes its orbits by how far its marks reach.
@@ -312,6 +331,14 @@ extra margin those themes gave.
   - four palettes are measured: Study 06 on `:root`, and the three themes;
   - the completeness check now also reads the colours on `:root`, which it
     used to skip.
+- `person_editor.rs`:
+  - the Media tab chooses the picture that stands for the person: an
+    upload, a picture's radio, initials or the software's pick, a file that
+    is not the person's refused, and a picture detached in the same save
+    let go;
+  - after a save the way out is back to the record;
+  - the picker opened from the editor goes back to it, and the framing it
+    sets survives the same picture being chosen again from the tab.
 - `routes.rs`: the footer names the product, the version, the author and the
   format, with one link. `interactive_walk.rs` counts the footer apart from
   a page's own chrome and caps it at one link.

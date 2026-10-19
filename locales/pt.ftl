@@ -3431,5 +3431,9 @@ edit-saved = { $n ->
        *[other] Guardado: { $n } fichas escritas de uma só vez.
     }
 edit-saved-none = Nada tinha mudado, por isso nada foi guardado.
+edit-back-to-record = Voltar à ficha
+edit-avatar = Foto de perfil
+edit-avatar-frame = Enquadrar o rosto
+edit-avatar-upload = Usar como foto de perfil
 edit-stale = Outra pessoa alterou { $what } desde que esta página foi aberta. Nada foi guardado; tudo o que escreveu continua aqui.
 edit-refused = Nada foi guardado: { $reason }

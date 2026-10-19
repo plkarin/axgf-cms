@@ -3522,6 +3522,7 @@ pub async fn avatar_picker(
     State(state): State<Shared>,
     headers: HeaderMap,
     Path(id): Path<String>,
+    axum::extract::Query(q): axum::extract::Query<HashMap<String, String>>,
 ) -> Response {
     let (viewer, chrome) = guard!(state, headers);
     let view = state.read_as(viewer.ceiling(), |flat, lens| {
@@ -3569,6 +3570,9 @@ pub async fn avatar_picker(
             focal_y => focal.y,
             max_upload_mb => documents::MAX_UPLOAD / (1024 * 1024),
             base_version => stored.as_ref().map(crate::state::version_of).unwrap_or(0),
+            // Opened from the record's editor (its Médias tab, to frame the
+            // face): saving and cancelling both go back there.
+            from_edit => q.get("from").is_some_and(|f| f == "edit"),
         },
     )
 }
@@ -3589,6 +3593,9 @@ pub struct AvatarForm {
     /// The version of the person the picker was drawn from.
     #[serde(default)]
     base_version: Option<String>,
+    /// `edit` when the picker was opened from the record's editor.
+    #[serde(default)]
+    from: String,
 }
 
 /// `POST /admin/person/:id/avatar` — record the choice.
@@ -3657,6 +3664,9 @@ pub async fn avatar_set(
         base_version,
     ) {
         return r;
+    }
+    if f.from == "edit" {
+        return Redirect::to(&format!("/admin/person/{id}/edit?saved=1#medias")).into_response();
     }
     Redirect::to(&format!("/person/{id}")).into_response()
 }

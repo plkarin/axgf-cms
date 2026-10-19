@@ -3724,5 +3724,9 @@ edit-saved = { $n ->
        *[other] حُفظ: { $n } بطاقة في حفظ واحد.
     }
 edit-saved-none = لم يتغير شيء، فلم يُحفظ شيء.
+edit-back-to-record = العودة إلى السجل
+edit-avatar = صورة الملف الشخصي
+edit-avatar-frame = ضبط موضع الوجه
+edit-avatar-upload = استخدامها صورةً للملف الشخصي
 edit-stale = عدَّل شخص آخر { $what } منذ فتح هذه الصفحة. لم يُحفظ شيء؛ كل ما أدخلته ما زال هنا.
 edit-refused = لم يُحفظ شيء: { $reason }

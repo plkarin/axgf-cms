@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- ax·genealogy's mark at favicon size: the tile and the X of
+       logo-mark.svg, without the wreath, which is noise under 48 pixels. -->
+  <defs>
+    <linearGradient id="mL" gradientUnits="userSpaceOnUse" x1="60" y1="106" x2="60" y2="64">
+      <stop offset="0" stop-color="#a06f24"/><stop offset="1" stop-color="#e6b254"/>
+    </linearGradient>
+    <linearGradient id="mU" gradientUnits="userSpaceOnUse" x1="60" y1="64" x2="60" y2="14">
+      <stop offset="0" stop-color="#e6b254"/><stop offset="1" stop-color="#f7d99a"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="24" fill="#14322b"/>
+  <g transform="translate(60 60) scale(0.88) translate(-60 -60)" fill="none" stroke-linecap="round">
+    <path d="M16 106 C26 92 42 79 60 64" stroke="url(#mL)" stroke-width="16"/>
+    <path d="M104 106 C94 92 78 79 60 64" stroke="url(#mL)" stroke-width="16"/>
+    <path d="M60 64 C70 50 81 32 92 14" stroke="url(#mU)" stroke-width="12"/>
+    <path d="M60 64 C50 50 39 32 28 14" stroke="url(#mU)" stroke-width="12"/>
+  </g>
+</svg>

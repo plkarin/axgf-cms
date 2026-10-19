@@ -66,6 +66,20 @@ pub const CANOPEE_CTA_JPG: &[u8] = include_bytes!("../static/img/canopee-cta.jpg
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 
+/// ax·genealogy's logo (v0.5.0, docs/adr/0006), and what a browser or a phone
+/// asks for to show it: the favicon (the tile and the X, without the wreath,
+/// which is noise under 48 pixels), the home-screen icons (the whole logo,
+/// full bleed, for the platform to round) and the manifest that names them.
+/// The masthead and the sign-in page draw the logo inline (`_logo.html`), so
+/// a theme can colour it.
+pub const LOGO_SVG: &str = include_str!("../static/img/logo-mark.svg");
+pub const FAVICON_SVG: &str = include_str!("../static/img/favicon.svg");
+pub const FAVICON_ICO: &[u8] = include_bytes!("../static/img/favicon.ico");
+pub const APPLE_TOUCH_ICON_PNG: &[u8] = include_bytes!("../static/img/apple-touch-icon.png");
+pub const ICON_192_PNG: &[u8] = include_bytes!("../static/img/icon-192.png");
+pub const ICON_512_PNG: &[u8] = include_bytes!("../static/img/icon-512.png");
+pub const WEB_MANIFEST: &str = include_str!("../static/site.webmanifest");
+
 macro_rules! templates {
     ($($name:literal),* $(,)?) => {
         &[ $( ($name, include_str!(concat!("../templates/", $name))) ),* ]
@@ -118,6 +132,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_result.html",
     "_macros.html",
     "_icons.html",
+    "_logo.html",
     "_completeness.html"
 ];
 

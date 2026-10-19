@@ -48,7 +48,8 @@ carries a shape and a tempo:
 - a quicker ease (`--tempo`, `--ease`);
 - a lime glow under the primary action and under the focus ring;
 - a leaf beside the wordmark, the section you are in written in lime, and
-  the sign-in filled;
+  the sign-in filled. (Since ADR 0006 the leaf is ax·genealogy's logo and the
+  lime is the logo's gold.)
 - segmented-pill record tabs, notices whose shape also carries its sign (a
   ring with *i*, a disc with ✓, a diamond with !, a square with ×);
 - cards with a sheen and a deeper shadow;

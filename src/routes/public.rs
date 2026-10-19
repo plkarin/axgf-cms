@@ -1319,6 +1319,44 @@ pub async fn river_contours_svg() -> Response {
     picture("image/svg+xml", render::RIVER_CONTOURS_SVG.as_bytes())
 }
 
+/// `GET /static/img/logo-mark.svg` — the logo whole, in its own colours.
+pub async fn logo_svg() -> Response {
+    picture("image/svg+xml", render::LOGO_SVG.as_bytes())
+}
+
+/// `GET /favicon.svg` — the tab's icon, wherever SVG icons are read.
+pub async fn favicon_svg() -> Response {
+    picture("image/svg+xml", render::FAVICON_SVG.as_bytes())
+}
+
+/// `GET /favicon.ico` — 16, 32 and 48 pixels, for everything else, and for
+/// the clients that ask for it at the root without reading the page.
+pub async fn favicon_ico() -> Response {
+    picture("image/x-icon", render::FAVICON_ICO)
+}
+
+/// `GET /apple-touch-icon.png` — 180 pixels, where iOS looks for it even when
+/// the page does not say.
+pub async fn apple_touch_icon_png() -> Response {
+    picture("image/png", render::APPLE_TOUCH_ICON_PNG)
+}
+
+/// `GET /static/img/icon-192.png` — the manifest's home-screen icon.
+pub async fn icon_192_png() -> Response {
+    picture("image/png", render::ICON_192_PNG)
+}
+
+/// `GET /static/img/icon-512.png` — the manifest's large icon.
+pub async fn icon_512_png() -> Response {
+    picture("image/png", render::ICON_512_PNG)
+}
+
+/// `GET /site.webmanifest` — the name and the icons a phone puts on its home
+/// screen.
+pub async fn web_manifest() -> Response {
+    picture("application/manifest+json", render::WEB_MANIFEST.as_bytes())
+}
+
 /// Fallback for unmatched paths.
 pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Response {
     // Even a 404 is rendered in the reader's language and theme. It is a page

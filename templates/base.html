@@ -1,4 +1,4 @@
-{% import "_prefs.html" as prefs %}{% import "_icons.html" as ic %}<!doctype html>
+{% import "_prefs.html" as prefs %}{% import "_icons.html" as ic %}{% import "_logo.html" as logo %}<!doctype html>
 {# `lang`, `dir` and `data-theme` are rendered server-side from what this
    request negotiated. Doing it in a script after load would guarantee a flash
    of the wrong theme on every page, and would flip Arabic from left to right
@@ -19,7 +19,12 @@
 {# Only the pages that need it pull the map stylesheet in, so an ordinary page
    still costs exactly one CSS request. #}
 {% block head %}{% endblock %}
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='14'>&#127795;</text></svg>">
+{#- The logo as a browser and a phone show it (docs/adr/0006). The .ico says
+    32x32 rather than "any", or Chrome would take it over the SVG. -#}
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
 
@@ -30,9 +35,9 @@
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
     {#- Not a link: "Rivière" beside it goes to the same place. -#}
-    {#- The leaf is Canopée's mark (v0.5.0); every other theme draws the
-        wordmark alone, as Study 06 does. -#}
-    <span class="brand-mark" aria-hidden="true">{{ ic.icon("leaf") }}</span><span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
+    {#- The logo (docs/adr/0006): in its own colours under Canopée, in ink
+        like the wordmark under every other theme. -#}
+    {{ logo.mark("mh", "brand-mark") }}<span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>

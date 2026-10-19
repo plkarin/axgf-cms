@@ -341,16 +341,21 @@
 
 /* --- canopée --------------------------------------------------------------- */
 /* The reference theme since v0.5.0 (docs/adr/0004), and the default: a
-   forest-green ground and a lime accent, after the Zenze and Selva Verde
-   references, cut and reworked in the operator's Canva ("Kit UI Canopée").
+   forest-green ground, after the Zenze and Selva Verde references, cut and
+   reworked in the operator's Canva ("Kit UI Canopée"), and the gold of
+   ax·genealogy's logo for its accent (docs/adr/0006). The accent was a lime
+   until the logo came; the ground, the forest and the river did not change.
    Every pair measured with the rules of `every_theme_reads`, the darkest
    wash stop and the contour texture at its strongest pixel included: the
-   tightest is --border-strong on --wash-1 under the texture, 3.25:1.
+   tightest is --border-strong on --wash-1 under the texture, 3.25:1. The
+   gold reads at 7.1:1 on the lightest ground, and the dark ink on it at
+   9.5:1.
 
    The last block of names is this theme's own and no other theme carries
    them: the four tints of an icon's disc (river, tree, search, quality —
-   Zenze's coloured pastilles) and the glow under a lime control. Anything
-   that draws with them is written under [data-theme="canopee"]. */
+   Zenze's coloured pastilles), the glow under a gold control, and the logo's
+   own four colours, exactly as it was drawn. Anything that draws with them
+   is written under [data-theme="canopee"]. */
 [data-theme="canopee"] {
   color-scheme: dark;
   --surface-page: #0c1611;
@@ -362,9 +367,9 @@
   --text-tertiary: #8aa192;
   --surface-sunken: #0f1b15;
   --surface-hover: #192a21;
-  --focus-ring: #b4dc7c;
-  --accent: #a8d672;
-  --accent-soft: #1c2b1b;
+  --focus-ring: #f7d99a;
+  --accent: #e6b254;
+  --accent-soft: #2a2515;
   --on-accent: #0c1611;
 
   --conf-certain: #7fcf9a;
@@ -409,7 +414,12 @@
   --icon-tree-ink: #b4dc7c;
   --icon-search-ink: #ecc77a;
   --icon-quality-ink: #f3a593;
-  --glow-rgb: 168 214 114;
+  --glow-rgb: 230 178 84;
+
+  --logo-tile: #14322b;
+  --logo-deep: #a06f24;
+  --logo-gold: #e6b254;
+  --logo-light: #f7d99a;
 }
 
 /* --- high contrast ------------------------------------------------------- */

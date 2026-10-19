@@ -73,6 +73,25 @@ with plain strokes and no filter. Under Gravure (high contrast) and in print
 the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
 every light that moves.
 
+**ax·genealogy has a logo** (docs/adr/0006), the operator's: a laurel
+wreath around a gold X, the river as a mark. It replaces Canopée's leaf in
+the masthead. Under Canopée it is drawn in its own colours, and under every
+other theme in ink, like the wordmark. It is also:
+
+- above the sign-in form;
+- the tab's icon, which was the 🌳 emoji. The favicon is the tile and the X,
+  without the wreath, as SVG and as a 16-, 32- and 48-pixel `.ico`;
+- the icon a phone puts on its home screen (`apple-touch-icon.png`, and 192
+  and 512 pixels in a new `site.webmanifest`).
+
+**Canopée takes the logo's gold for its accent.** The lime gives way to the
+logo's own gold (`#e6b254`), with its pale gold for the focus ring. That
+covers the buttons, the section you are in, links, title rules, the
+headline, portrait rings and glows. The ground, the forest, the river and
+every component are unchanged, and the river's own accent was already a
+gold. The gold reads at 7.1:1 on the lightest ground, and dark text on a
+gold button at 9.5:1.
+
 **An installation sets itself up** (docs/adr/0005). While it holds no
 family, an administrator is offered three doors at `/admin/setup`:
 
@@ -220,6 +239,11 @@ is out.
   unread. And the bar is pinned at a desktop width, not at a phone's.
 - `radar` unit test: a label beside a chart is capped at 28 % of the box,
   and the chart leaves it at least that room on both sides.
+- `brand.rs`, new: every icon is served with its type and named by the
+  page; every icon in the manifest exists; the masthead carries the logo
+  under every theme and only Canopée colours it; the inline logo is the
+  file's drawing, path for path; the sign-in page's two logos keep their own
+  ids.
 - `themes.rs` and `design_tokens.rs`: eleven palettes measured, Canopée
   among them, with no exception. `--section-pad-x` is held to every style,
   like the rest of the scale.

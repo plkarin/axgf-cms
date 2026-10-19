@@ -304,6 +304,13 @@ fn routes(state: Shared) -> Router {
             "/static/img/river-contours.svg",
             get(public::river_contours_svg),
         )
+        .route("/static/img/logo-mark.svg", get(public::logo_svg))
+        .route("/static/img/icon-192.png", get(public::icon_192_png))
+        .route("/static/img/icon-512.png", get(public::icon_512_png))
+        .route("/favicon.svg", get(public::favicon_svg))
+        .route("/favicon.ico", get(public::favicon_ico))
+        .route("/apple-touch-icon.png", get(public::apple_touch_icon_png))
+        .route("/site.webmanifest", get(public::web_manifest))
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/river.js", get(public::river_js))
         .route("/static/river-scene.js", get(public::river_scene_js))

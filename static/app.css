@@ -435,9 +435,22 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   color: var(--text-primary);
   text-decoration: none;
 }
-/* Canopée's leaf beside the wordmark (v0.5.0); every other theme draws the
-   wordmark alone. */
-.brand-mark { display: none; }
+/* The logo (docs/adr/0006), drawn inline by `_logo.html` so that a theme
+   colours it. Everywhere but Canopée it is ink, as the wordmark beside it
+   is: no tile, the wreath and the X in the text's own colour. */
+.logo-mark { display: block; flex: none; }
+.logo-mark .lm-tile { fill: none; }
+.logo-mark .lm-stem { stroke: currentColor; }
+.logo-mark .lm-leaf { fill: currentColor; }
+.logo-mark stop { stop-color: currentColor; }
+.brand-mark {
+  inline-size: 30px;
+  block-size: 30px;
+  margin-inline-end: -0.7rem;
+  color: var(--text-primary);
+}
+/* Above the sign-in form, the first thing a relative is shown. */
+.login-logo { inline-size: 64px; block-size: 64px; color: var(--text-primary); margin-block-end: 0.75rem; }
 .masthead nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .masthead nav a {
   color: var(--text-secondary);
@@ -4195,7 +4208,7 @@ a.tcard:hover {
    Canopée — the reference theme's furniture (docs/adr/0004)
    ===========================================================================
    Every other theme is a palette. Canopée carries a shape and a tempo as
-   well: pill buttons, softened fields and frames, a lime glow under what
+   well: pill buttons, softened fields and frames, a gold glow under what
    can be pressed, and motion that answers the reader. Everything is written
    under [data-theme="canopee"], so any other theme gives Study 06's
    furniture back exactly. What does not change, here or anywhere: the four
@@ -4212,8 +4225,8 @@ a.tcard:hover {
 }
 [data-theme="canopee"] ::selection { background: rgb(var(--glow-rgb) / 0.32); }
 
-/* The masthead: the page's own ground, a hairline, the brand's leaf, and
-   the section you are in written in the accent. */
+/* The masthead: the page's own ground, a hairline, the logo in its own
+   colours, and the section you are in written in the accent. */
 [data-theme="canopee"] .masthead {
   background: color-mix(in srgb, var(--surface-page) 92%, transparent);
 }
@@ -4223,17 +4236,22 @@ a.tcard:hover {
   font-weight: var(--weight-semi);
   letter-spacing: 0.01em;
 }
+/* The logo as it was drawn: the green tile, the gold X, the pale wreath. */
+[data-theme="canopee"] .logo-mark .lm-tile { fill: var(--logo-tile); }
+[data-theme="canopee"] .logo-mark .lm-stem { stroke: var(--logo-light); }
+[data-theme="canopee"] .logo-mark .lm-leaf { fill: var(--logo-light); }
+[data-theme="canopee"] .logo-mark .lm-deep { stop-color: var(--logo-deep); }
+[data-theme="canopee"] .logo-mark .lm-gold { stop-color: var(--logo-gold); }
+[data-theme="canopee"] .logo-mark .lm-light { stop-color: var(--logo-light); }
 [data-theme="canopee"] .brand-mark {
-  display: inline-grid;
-  place-items: center;
-  margin-inline-end: -0.7rem;
-  inline-size: 32px;
-  block-size: 32px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
-  color: var(--accent);
+  inline-size: 34px;
+  block-size: 34px;
+  margin-inline-end: -0.6rem;
 }
-[data-theme="canopee"] .brand-mark .ico { inline-size: 18px; block-size: 18px; }
+[data-theme="canopee"] .login-logo {
+  inline-size: 76px;
+  block-size: 76px;
+}
 [data-theme="canopee"] .masthead nav a[aria-current="page"] {
   color: var(--accent);
   border-bottom-color: var(--accent);
@@ -4300,7 +4318,7 @@ a.tcard:hover {
 [data-theme="canopee"] .btn[aria-disabled="true"] { transform: none; box-shadow: none; }
 
 /* Focus: the ring every theme draws (2px at 2px), and under it a soft glow
-   of the same lime, so the control with the keyboard reads from across a
+   of the same gold, so the control with the keyboard reads from across a
    room. A glow, never in place of the ring. */
 [data-theme="canopee"] :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
 [data-theme="canopee"] :is(input, select, textarea):focus {

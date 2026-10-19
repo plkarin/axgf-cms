@@ -1,3 +1,5 @@
+<p align="center"><img src="static/img/logo-mark.svg" width="104" height="104" alt=""></p>
+
 <h1 align="center">ax·genealogy</h1>
 
 <p align="center"><strong>Every life is a source. Every family, a river.</strong></p>
@@ -181,7 +183,7 @@ an `.axgf` to download, without touching the site.
 [![Zofia Zając's profile in eight of the themes: Canopy, Chalk, Sepia, Nocturne, Dusk, Ink, Winter River and Engraving](docs/screenshots/themes.jpg)](docs/screenshots/themes.jpg)
 
 There are eleven themes. **Canopy** (*Canopée*, the default from 0.5.0) is a
-dark forest green. Chalk, Sepia and Winter River are light. Nocturne, Dusk
+dark forest green with the gold of the logo. Chalk, Sepia and Winter River are light. Nocturne, Dusk
 and Ink are dark. Engraving is high contrast, and three themes are safe for
 deuteranopia, protanopia and tritanopia. "Match my system" follows your
 computer. Three styles set the density: **Comfortable**, **Compact**, and

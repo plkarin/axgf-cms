@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ t("login-title") }} — {{ t("app-name") }}{% endblock %}
+{% import "_logo.html" as logo %}
 {% block content %}
+{#- In a block of its own: under Canopée every child of this page is the
+    form's width, and the logo sits at that column's edge, over the title. -#}
+<div class="login-mark">{{ logo.mark("lg", "login-logo") }}</div>
 <h1>{{ t("login-title") }}</h1>
 <p class="lede">{{ t("login-lede") }}</p>
 

@@ -30,8 +30,8 @@ nav-admin = Administración
 nav-sign-in = Iniciar sesión
 nav-sign-out = Cerrar sesión
 account-emergency = Token de emergencia
-footer-open-format = El archivo de su familia es un solo fichero que se queda con usted, escrito en un formato abierto: seguirá abriéndose mucho después de que este sitio haya desaparecido.
-footer-open-format-link = Sobre el formato
+footer-credit = © 2026 · Diseñado y desarrollado por { $author }
+footer-format-link = El formato AXGF en GitHub
 
 ## Preferencias
 

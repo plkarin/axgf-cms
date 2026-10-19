@@ -98,14 +98,16 @@
 {% block content %}{% endblock %}
 </main>
 
-<footer>
-  {# The acknowledgement the licence asks for, kept to one line: honest about
-     what the archive is written in, without turning the footer into a
-     developer index. #}
-  {#- Plain text, not a link: the acknowledgement is the words, and a link here
-      was one more control on every page (the minimalism pass). -#}
-  <p class="small">{{ t("footer-open-format") }}
-    {{ t("footer-open-format-link") }} <span class="mono">{{ spec_url | safe }}</span></p>
+<footer class="site-footer">
+  {#- The product and its version, who made it, and the format it writes in:
+      one line, and one link, the acknowledgement the format's licence asks
+      for. The version is on every page, so that a reader reporting a problem
+      can say which one they saw. -#}
+  <div class="footer-inner">
+    <p class="footer-id">{{ logo.mark("ft", "footer-logo") }}<span class="footer-name">{{ t("app-name") }}</span><span class="footer-version">v{{ version }}</span></p>
+    <p class="footer-credit">{{ t("footer-credit", author=author) }}</p>
+    <p class="footer-format"><a href="https://{{ spec_url | safe }}" rel="noopener">{{ ic.icon("code") }}{{ t("footer-format-link") }}</a></p>
+  </div>
 </footer>
 
 {# Loaded on every page: it is 1 kB and it is what lets the

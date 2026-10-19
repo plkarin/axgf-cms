@@ -36,7 +36,22 @@
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0];
     var cx = C ? C.x : hl + hw / 2, cy = C ? C.y : m.cy, step0 = m.step || 100;
     var sx = hl + hw / 2, sy = vt + vh / 2, n = Math.max(1, m.n);
-    var Rmax = Math.min(hw, vh) / 2 - 30, R0 = Math.min(40, Rmax * 0.17), step = (Rmax - R0) / n;
+    // The outermost orbit leaves room for what goes beyond it: a line the
+    // record continues runs on past the last generation drawn, and its count
+    // is written past its end. Measured from the frame — how far out its
+    // farthest line and count reach — so that a sky with none keeps its size.
+    var reach = n;
+    fr.tails.forEach(function (t) {
+      reach = Math.max(reach, Math.abs(t.y2 - cy) / step0);
+      if (t.count_at) reach = Math.max(reach, Math.abs(t.count_at.y - cy) / step0 + 0.12);
+    });
+    fr.couples.forEach(function (c) {
+      if (!c.stub) return;
+      reach = Math.max(reach, Math.abs(c.y + c.stub_dy - cy) / step0);
+      if (c.stub_at) reach = Math.max(reach, Math.abs(c.stub_at.y - cy) / step0 + 0.12);
+    });
+    var Rmax = Math.min(hw, vh) / 2 - 30, R0 = Math.min(40, Rmax * 0.17);
+    var step = reach > n ? (Rmax + 12 - R0) / (reach + 0.1) : (Rmax - R0) / n;
     SUN = [sx, sy];
     // Each half of the sky takes the river's order from left to right over
     // its own breadth, not the window's: the river draws the ancestors over

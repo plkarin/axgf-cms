@@ -613,13 +613,55 @@ main {
 .sec-help p { max-inline-size: var(--measure); }
 main.wide { max-width: none; padding-inline: 1rem; }
 
-footer {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+/* The footer (v0.5.0): the product and its version, who made it, and the
+   format it writes in — one line on a wide screen, stacked on a phone. */
+.site-footer {
+  margin-block-start: 2rem;
+  border-top: 1px solid var(--border-hairline);
   color: var(--text-tertiary);
   font-size: var(--type-minor);
-  border-top: 1px solid var(--border-hairline);
+}
+.footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 2.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.5rem;
+}
+.footer-inner p { margin: 0; }
+.footer-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--text-secondary);
+  font-weight: var(--weight-semi);
+}
+.footer-logo { inline-size: 1.6em; block-size: 1.6em; flex: none; }
+.footer-version {
+  font-family: var(--mono);
+  font-size: var(--type-micro);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.04em;
+  padding: 0.15em 0.6em;
+  border: 1px solid var(--border-hairline);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+}
+.footer-format { margin-inline-start: auto; }
+.footer-format a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.footer-format a:hover,
+.footer-format a:focus-visible { color: var(--accent); text-decoration: underline; text-underline-offset: 0.2em; }
+.footer-format .ico { inline-size: 1.15em; block-size: 1.15em; flex: none; }
+@media (max-width: 640px) {
+  .footer-format { margin-inline-start: 0; flex-basis: 100%; }
 }
 
 /* The hierarchy, on the scale a style sets. Every vertical space here is a
@@ -4392,6 +4434,24 @@ a.tcard:hover {
   background: var(--surface-sunken);
   border: 1px solid var(--border-hairline);
   border-radius: var(--btn-radius);
+}
+/* When its tabs do not fit — in the river's side panel, in a long language —
+   the pill scrolls sideways without a scrollbar, which would sit inside its
+   round ends: the side where more tabs wait fades out (ui.js says which), and
+   the wheel turns sideways over it. A keyboard reaches every tab as before. */
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tabs { scrollbar-width: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tabs::-webkit-scrollbar { display: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tabs[data-more="right"] {
+  -webkit-mask-image: linear-gradient(to right, currentColor calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(to right, currentColor calc(100% - 2.5rem), transparent);
+}
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tabs[data-more="left"] {
+  -webkit-mask-image: linear-gradient(to left, currentColor calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(to left, currentColor calc(100% - 2.5rem), transparent);
+}
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tabs[data-more="both"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, currentColor 2.5rem, currentColor calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(to right, transparent, currentColor 2.5rem, currentColor calc(100% - 2.5rem), transparent);
 }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab {
   border-block-end: 0;

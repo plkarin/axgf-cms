@@ -837,6 +837,9 @@ fn read_only(page: &str) -> bool {
 struct Chrome {
     total: usize,
     masthead: usize,
+    /// The site footer's own: its one link, the acknowledgement the format's
+    /// licence asks for (v0.5.0). Counted apart, like the masthead, and capped.
+    footer: usize,
     rows_over: Vec<String>,
     /// What was counted, outside the masthead, for a failure message.
     counted: Vec<String>,
@@ -847,6 +850,7 @@ fn chrome_of(html: &str) -> Chrome {
     let sel = interactive();
     let mut total = 0;
     let mut masthead = 0;
+    let mut footer = 0;
     let mut counted = Vec::new();
     for el in doc.select(&sel) {
         if !at_rest(&el) || is_content(&el) {
@@ -859,6 +863,12 @@ fn chrome_of(html: &str) -> Chrome {
             .any(|a| a.value().name() == "header" && a.value().attr("class") == Some("masthead"))
         {
             masthead += 1;
+        } else if el
+            .ancestors()
+            .filter_map(ElementRef::wrap)
+            .any(|a| a.value().name() == "footer" && a.value().attr("class") == Some("site-footer"))
+        {
+            footer += 1;
         } else {
             counted.push(describe(&el));
         }
@@ -877,6 +887,7 @@ fn chrome_of(html: &str) -> Chrome {
     Chrome {
         total,
         masthead,
+        footer,
         rows_over,
         counted,
     }
@@ -958,6 +969,10 @@ const MASTHEAD: usize = 10;
 /// budgets (12 for a read-only screen, 20 for an edit screen) with the old
 /// masthead's seven taken out.
 const OWN_READ: usize = 5;
+/// The footer's cap: the format's link (v0.5.0), on every page. Before it the
+/// footer was plain text, and one more link there is one more on every screen,
+/// so it is held to that one.
+const FOOTER: usize = 1;
 const OWN_EDIT: usize = 13;
 
 #[tokio::test]
@@ -986,7 +1001,7 @@ async fn every_screen_keeps_its_chrome_budget() {
             if !tabs.is_empty() {
                 let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
                 for (key, n) in &tabs {
-                    let own = n - ch.masthead;
+                    let own = n - ch.masthead - ch.footer;
                     let budget = OWN_EDIT + if key == "profil" { groups } else { 0 };
                     println!(
                         "{:<44} {:>6} {:>9} {:>6}",
@@ -1010,7 +1025,7 @@ async fn every_screen_keeps_its_chrome_budget() {
                 continue;
             }
             let groups = profile_group_controls(&html, &mut over, &format!("{who} {page}"));
-            let own = ch.total - ch.masthead;
+            let own = ch.total - ch.masthead - ch.footer;
             let budget = if read_only(&page) { OWN_READ } else { OWN_EDIT } + groups;
             println!(
                 "{:<44} {:>6} {:>9} {:>6}",
@@ -1029,6 +1044,12 @@ async fn every_screen_keeps_its_chrome_budget() {
                 over.push(format!(
                     "{who} {page}: masthead {} controls, budget {MASTHEAD}",
                     ch.masthead
+                ));
+            }
+            if ch.footer > FOOTER {
+                over.push(format!(
+                    "{who} {page}: footer {} controls, budget {FOOTER}",
+                    ch.footer
                 ));
             }
             for r in &ch.rows_over {

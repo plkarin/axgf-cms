@@ -61,7 +61,18 @@
     var share = Math.min(0.8, Math.max(0.4, (nd + 0.9) / (nd + 0.9 + na * 0.8 + 0.35)));
     var xc = hl + hw / 2, ys = vt + vh * share;
     var H = nd ? Math.min(0.17 * vh, (ys - vt) * 0.28) : 0, fy = ys - H, h0 = na ? 22 : 0, fry = ys + h0;
-    var Rx = hw / 2 - 92, Ry = Math.max(40, fy - vt - 34), Rxr = Rx * 0.86, Ryr = Math.max(30, vt + vh - 34 - fry);
+    // A line the record continues past the rim runs on outward, and its count
+    // is written past its end: the rim leaves room for both where there is
+    // one, so that no count is cut off at the window's edge.
+    var onUp = false, onDown = false;
+    fr.tails.forEach(function (t) {
+      if (t.kind !== 'cont') return;
+      var g = (t.y1 - cy) / step;
+      if (nd && g < -(nd - 0.5)) onUp = true;
+      if (na && g > na - 0.5) onDown = true;
+    });
+    var Rx = hw / 2 - 92, Ry = Math.max(40, fy - vt - 34 - (onUp ? 24 : 0)), Rxr = Rx * 0.86;
+    var Ryr = Math.max(30, vt + vh - 34 - fry - (onDown ? 24 : 0));
     var Pw = Math.min(96, hw * 0.12);
     // A generation's ring, as a share of the crown's or the roots' reach:
     // the first at 2/(n+1), the last at the rim.

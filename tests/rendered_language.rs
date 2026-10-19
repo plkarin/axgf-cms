@@ -73,6 +73,7 @@ const UNIVERSAL: &[&str] = &[
     "OpenStreetMap",
     "contributors",
     "Google",
+    "GitHub",
     "Wikidata",
     "GeoNames",
     "URI",
@@ -309,6 +310,9 @@ fn english_in(html: &str) -> Vec<String> {
     // ("Français", "Polski") is in that language on purpose, the way a
     // screen reader switches voice for it.
     text = strip_lang_options(&text);
+    // The author credited in the footer (v0.5.0): a person's name is theirs
+    // in every language.
+    text = text.replace(axgf_cms::render::AUTHOR, " ");
     let mut spoken = Vec::new();
     // What a screen reader says or a tooltip shows is read too.
     for attr in ["title", "aria-label", "placeholder", "alt"] {

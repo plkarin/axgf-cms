@@ -54,17 +54,32 @@ async fn home_states_what_the_family_has_recorded_not_what_the_product_does() {
 }
 
 #[tokio::test]
-async fn the_open_format_is_acknowledged_once_in_the_footer() {
-    // The licence asks for the acknowledgement and it stays; what it must not
-    // do is become the product's pitch. One discreet line, on every page.
+async fn the_footer_names_the_product_its_version_its_author_and_the_format() {
+    // On every page: the product and the version this build is, so that a
+    // reader reporting a problem can say which one they saw; who made it; and
+    // one link, the acknowledgement the format's licence asks for.
     let (app, _p) = app_with_empty_bundle("home-footer");
     let body = expect_status(get(&app, "/").await, StatusCode::OK, "GET /").await;
+    let footer = &body[body
+        .find(r#"<footer class="site-footer">"#)
+        .expect("a footer")..];
+    let footer = &footer[..footer.find("</footer>").expect("its end")];
 
-    assert!(body.contains("written in an open format"));
+    assert!(footer.contains(&format!("v{}", env!("CARGO_PKG_VERSION"))));
+    assert!(footer.contains("ax-genealogy"));
+    assert!(footer.contains("Pierre-Léonard Karin"));
+    assert!(
+        footer.contains(r#"<a href="https://github.com/plkarin/axgf-spec" rel="noopener">"#),
+        "the format's link, clickable: {footer}"
+    );
     assert_eq!(
         body.matches("github.com/plkarin/axgf-spec").count(),
         1,
         "exactly one link to the format, and it lives in the footer"
+    );
+    assert!(
+        !body.contains("written in an open format"),
+        "the sentence the footer used to carry is gone"
     );
 }
 

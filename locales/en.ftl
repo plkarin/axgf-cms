@@ -21,8 +21,8 @@ nav-admin = Admin
 nav-sign-in = Sign in
 nav-sign-out = Sign out
 account-emergency = Emergency token
-footer-open-format = Your family’s archive is one file you keep, written in an open format so it will still open long after this site is gone.
-footer-open-format-link = About the format
+footer-credit = © 2026 · Designed and built by { $author }
+footer-format-link = The AXGF format on GitHub
 
 ## Preferences
 

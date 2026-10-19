@@ -11,7 +11,11 @@
 
 {# The masthead. Everything in it is a fact the bundle states or arithmetic on
    two of them; nothing here is prose about the software. #}
-<header class="person-head">
+{#- The portraits an AI reworked (docs/adr/0009) have a band of their own in
+    it: for the family's members only, and for an editor the way to add
+    them. -#}
+{% set ai_band = signed_in and (p.ai_portraits or may_write) %}
+<header class="person-head{% if ai_band %} has-ai{% endif %}">
   {% if p.header.avatar %}
   <a class="person-avatar" data-content href="/document/{{ p.header.avatar.id }}/view"
      aria-label="{{ t('person-portrait-of', name=p.name) }}">
@@ -90,6 +94,32 @@
     <p class="person-placing small muted">{{ placing | join(" · ") }}</p>
     {% endif %}
   </div>
+
+  {#- What the person might have looked like, as an AI reworked their
+      photographs: beside the face, never in its place. Each picture is
+      marked as the AI's, and the band says once, for every reader, that
+      none of them is a photograph of the time. -#}
+  {% if ai_band %}
+  <section class="person-ai" id="ai-portraits"{% if p.ai_portraits %} aria-labelledby="person-ai-title"{% endif %}>
+    {#- With nothing to show, an editor gets the way to add them and no
+        heading over an empty band: read mode draws what is there. -#}
+    {% if p.ai_portraits %}
+    <h2 class="person-ai-title" id="person-ai-title"><span class="ai-chip">{{ t("ai-badge") }}</span> {{ t("ai-portraits-band") }}</h2>
+    <ul class="person-ai-list" data-content>
+      {% for d in p.ai_portraits %}
+      <li><a class="person-ai-shot" href="/document/{{ d.id }}/view"
+             {%- if d.caption or d.note %} title="{{ d.caption if d.caption else '' }}{% if d.caption and d.note %} · {% endif %}{{ d.note if d.note else '' }}"{% endif %}>
+        <img src="/document/{{ d.id }}/thumb" alt="{{ t('ai-portraits-alt', name=p.name) }}" width="88" height="88" loading="lazy" decoding="async">
+        <span class="ai-badge" aria-hidden="true">{{ t("ai-badge") }}</span></a></li>
+      {% endfor %}
+    </ul>
+    <p class="person-ai-note small muted">{{ t("ai-portraits-not-evidence") }}</p>
+    {% endif %}
+    {% if may_write %}
+    <a class="btn small person-ai-add" href="/admin/person/{{ p.id }}/ai-portraits">{{ t("ai-portraits-manage") if p.ai_portraits else t("ai-portraits-upload") }}</a>
+    {% endif %}
+  </section>
+  {% endif %}
 
   {#- Reading comes first; editing is entered here, and only here, and
       looks different when it is (the minimalism pass). A reader without

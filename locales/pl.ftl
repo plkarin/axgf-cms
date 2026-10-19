@@ -1287,6 +1287,26 @@ avatar-upload-title = Prześlij zdjęcie i użyj go
 avatar-upload-button = Prześlij i ustaw jako zdjęcie
 avatar-not-available-title = To zdjęcie jest niedostępne
 avatar-not-available-detail = Wybrany plik nie jest powiązany z tą osobą albo nie masz prawa go odczytać.
+ai-badge = SI
+ai-portraits-title = Portrety przetworzone przez SI
+ai-portraits-band = Retusz
+ai-portraits-upload = Dodaj obrazy przetworzone przez SI
+ai-portraits-manage = Zarządzaj obrazami SI
+ai-portraits-intro = Obrazy, które SI wykonała na podstawie zdjęć tej osoby: jak mogła wyglądać. Pojawiają się obok twarzy w zapisie, oznaczone „SI”, i widzą je tylko zalogowani członkowie. Nigdy nie są zdjęciem tej osoby, nigdy nie trafiają do jej plików i nigdy nie są dowodem.
+ai-portraits-current = W zapisie
+ai-portraits-add = Dodaj obrazy — wolne miejsca: { $n }
+ai-portraits-files = Obrazy (PNG, JPEG, WebP lub GIF), kilka naraz
+ai-portraits-generator = Wykonane w
+ai-portraits-from = Na podstawie
+ai-portraits-from-none = Nie podano
+ai-portraits-remove = Usuń
+ai-portraits-alt = Portret: { $name }, przetworzony przez SI
+ai-portraits-not-evidence = Wykonane przez SI na podstawie zdjęć: to nie są obrazy z epoki.
+ai-portraits-full = Zapis ma już trzy obrazy SI. Usuń jeden, aby dodać inny.
+ai-portraits-too-many = Zapis mieści najwyżej trzy obrazy SI. Usuń jeden, zanim dodasz kolejny.
+ai-portraits-images-only = Portret SI musi być obrazem: PNG, JPEG, WebP lub GIF.
+ai-portraits-stale = Zapis zmienił się, gdy ta strona była otwarta. Nic nie zapisano: otwórz go ponownie i powtórz.
+ai-portraits-back = Wróć do obrazów SI
 
 record-history-withheld = nieudostępnione
 

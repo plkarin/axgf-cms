@@ -926,6 +926,26 @@ avatar-upload-title = 画像をアップロードして使う
 avatar-upload-button = アップロードして画像にする
 avatar-not-available-title = その画像は利用できません
 avatar-not-available-detail = 選ばれたファイルはこの人に結び付けられていないか、閲覧が許されていません。
+ai-badge = AI
+ai-portraits-title = AI で加工した肖像
+ai-portraits-band = 加工
+ai-portraits-upload = AI で加工した画像をアップロード
+ai-portraits-manage = AI 画像を管理
+ai-portraits-intro = この人物の写真から AI が作った画像で、その人がどのような姿だったかを想像させます。記録では顔の横に「AI」の印付きで表示され、ログインしたメンバーだけが見られます。その人物の画像として使われることも、ファイルに含まれることも、証拠として扱われることもありません。
+ai-portraits-current = 記録にある画像
+ai-portraits-add = 画像を追加 — あと { $n } 枚
+ai-portraits-files = 画像（PNG、JPEG、WebP、GIF）、複数まとめて選べます
+ai-portraits-generator = 作成ツール
+ai-portraits-from = 元の写真
+ai-portraits-from-none = 指定なし
+ai-portraits-remove = 外す
+ai-portraits-alt = { $name } の肖像（AI による加工）
+ai-portraits-not-evidence = 写真をもとに AI が作成：当時の画像ではありません。
+ai-portraits-full = この記録にはすでに AI 画像が 3 枚あります。追加するには 1 枚外してください。
+ai-portraits-too-many = 1 件の記録に置ける AI 画像は 3 枚までです。追加する前に 1 枚外してください。
+ai-portraits-images-only = AI 肖像は画像である必要があります：PNG、JPEG、WebP、GIF。
+ai-portraits-stale = このページを開いている間に記録が変更されました。何も保存されていません。開き直してもう一度行ってください。
+ai-portraits-back = AI 画像に戻る
 
 record-history-withheld = あなたには表示されません
 

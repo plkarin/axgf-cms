@@ -1695,9 +1695,12 @@ pub async fn documents_update(
             })
             .unwrap_or_default()
     });
+    // A portrait an AI reworked is never attached as one of the record's
+    // files (docs/adr/0009), whoever may read it.
     let may_attach = |did: &str| {
         state.read_as(viewer.ceiling(), |flat, lens| {
             crate::access::may_read_document(flat, lens, true, did)
+                && !crate::ai_portrait::is_ai_portrait_id(flat, did)
         })
     };
 
@@ -1792,6 +1795,11 @@ fn render_documents(
         })
         .into_iter()
         .filter(|o| o.get("id").and_then(Value::as_str).is_some_and(readable))
+        .filter(|o| {
+            !o.get("id")
+                .and_then(Value::as_str)
+                .is_some_and(|did| crate::ai_portrait::is_ai_portrait_id(flat, did))
+        })
         .collect();
         // The files attached to this person, for editing their details and
         // for deleting one outright — which is a different act from

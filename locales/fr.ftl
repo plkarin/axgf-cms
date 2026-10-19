@@ -1112,6 +1112,26 @@ avatar-upload-title = Envoyer une image et l'utiliser
 avatar-upload-button = Envoyer et utiliser comme image
 avatar-not-available-title = Cette image n'est pas disponible
 avatar-not-available-detail = Le fichier choisi n'est pas lié à cette personne, ou vous n'avez pas le droit de le lire.
+ai-badge = IA
+ai-portraits-title = Portraits retravaillés par IA
+ai-portraits-band = Retouches
+ai-portraits-upload = Déposer les images retravaillées via IA
+ai-portraits-manage = Gérer les images IA
+ai-portraits-intro = Des images qu'une IA a faites à partir des photographies de cette personne : ce à quoi elle pouvait ressembler. Elles apparaissent à côté du visage sur la fiche, marquées « IA », et seuls les membres connectés les voient. Elles ne sont jamais l'image de la personne, jamais parmi ses fichiers, jamais une preuve.
+ai-portraits-current = Sur la fiche
+ai-portraits-add = Ajouter des images — place pour { $n }
+ai-portraits-files = Images (PNG, JPEG, WebP ou GIF), plusieurs à la fois
+ai-portraits-generator = Réalisées avec
+ai-portraits-from = D'après
+ai-portraits-from-none = Non précisé
+ai-portraits-remove = Retirer
+ai-portraits-alt = Portrait de { $name } retravaillé par une IA
+ai-portraits-not-evidence = Faites par une IA d'après les photographies : pas des images d'époque.
+ai-portraits-full = La fiche a ses trois images IA. Retirez-en une pour en ajouter une autre.
+ai-portraits-too-many = Une fiche porte trois images IA au plus. Retirez-en une avant d'en ajouter une autre.
+ai-portraits-images-only = Un portrait IA doit être une image : PNG, JPEG, WebP ou GIF.
+ai-portraits-stale = La fiche a changé pendant que cette page était ouverte. Rien n'a été enregistré : rouvrez-la et recommencez.
+ai-portraits-back = Retour aux images IA
 
 record-history-withheld = non communiqué
 

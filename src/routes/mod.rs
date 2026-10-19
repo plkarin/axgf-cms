@@ -1,6 +1,7 @@
 //! HTTP routing.
 
 mod admin;
+mod ai_portraits;
 mod convert;
 mod editors;
 mod person_editor;
@@ -200,6 +201,17 @@ fn routes(state: Shared) -> Router {
             post(admin::upload_document).layer(DefaultBodyLimit::max(
                 crate::documents::MAX_UPLOAD + 64 * 1024,
             )),
+        )
+        // The portraits an AI reworked (docs/adr/0009): up to three pictures
+        // in one save, so the body may be three uploads and the fields
+        // around them.
+        .route(
+            "/admin/person/:id/ai-portraits",
+            get(ai_portraits::page)
+                .post(ai_portraits::save)
+                .layer(DefaultBodyLimit::max(
+                    crate::ai_portrait::MAX * crate::documents::MAX_UPLOAD + 256 * 1024,
+                )),
         )
         // The structured Place editor. Declared before the ":kind" forms so
         // the literal "place" segment wins: a place is mostly lists — several

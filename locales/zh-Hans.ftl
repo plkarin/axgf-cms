@@ -926,6 +926,26 @@ avatar-upload-title = 上传一张图片并使用
 avatar-upload-button = 上传并用作图片
 avatar-not-available-title = 该图片不可用
 avatar-not-available-detail = 所选文件未与此人相连，或你无权读取。
+ai-badge = AI
+ai-portraits-title = AI 修饰的肖像
+ai-portraits-band = 修饰
+ai-portraits-upload = 上传 AI 修饰的图片
+ai-portraits-manage = 管理 AI 图片
+ai-portraits-intro = AI 根据此人的照片生成的图片：此人可能的样子。它们显示在记录中头像旁边，标有“AI”，只有已登录的成员能看到。它们绝不会成为此人的头像，绝不列入其文件，也绝不作为证据。
+ai-portraits-current = 记录中的图片
+ai-portraits-add = 添加图片——还可添加 { $n } 张
+ai-portraits-files = 图片（PNG、JPEG、WebP 或 GIF），可一次选择多张
+ai-portraits-generator = 生成工具
+ai-portraits-from = 依据的照片
+ai-portraits-from-none = 未说明
+ai-portraits-remove = 移除
+ai-portraits-alt = { $name } 的肖像，经 AI 修饰
+ai-portraits-not-evidence = 由 AI 根据照片生成：并非当时的图像。
+ai-portraits-full = 此记录已有三张 AI 图片。请先移除一张再添加。
+ai-portraits-too-many = 每条记录最多三张 AI 图片。请先移除一张再添加。
+ai-portraits-images-only = AI 肖像必须是图片：PNG、JPEG、WebP 或 GIF。
+ai-portraits-stale = 此页面打开期间记录已被更改。未保存任何内容：请重新打开并再试一次。
+ai-portraits-back = 返回 AI 图片
 
 record-history-withheld = 对你不显示
 

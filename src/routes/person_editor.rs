@@ -849,6 +849,11 @@ pub fn model(
             if !crate::access::may_read_document(flat, lens, true, &did) {
                 continue;
             }
+            // A portrait an AI reworked is managed where it is shown, beside
+            // the face (`routes::ai_portraits`), never among the files.
+            if crate::ai_portrait::is_ai_portrait_id(flat, &did) {
+                continue;
+            }
             let Some(d) = flat.get("documents").and_then(|c| c.get(&did)) else {
                 continue;
             };

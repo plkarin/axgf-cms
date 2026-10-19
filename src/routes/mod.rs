@@ -291,10 +291,19 @@ fn routes(state: Shared) -> Router {
         .route("/admin/:kind/bulk", post(admin::bulk))
         .route("/static/css/tokens.css", get(public::tokens_css))
         .route("/static/app.css", get(public::css))
-        .route("/static/img/canopee-hero.jpg", get(public::canopee_hero_jpg))
+        .route(
+            "/static/img/canopee-hero.jpg",
+            get(public::canopee_hero_jpg),
+        )
         .route("/static/img/canopee-cta.jpg", get(public::canopee_cta_jpg))
-        .route("/static/img/river-ground.jpg", get(public::river_ground_jpg))
-        .route("/static/img/river-contours.svg", get(public::river_contours_svg))
+        .route(
+            "/static/img/river-ground.jpg",
+            get(public::river_ground_jpg),
+        )
+        .route(
+            "/static/img/river-contours.svg",
+            get(public::river_contours_svg),
+        )
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/river.js", get(public::river_js))
         .route("/static/river-scene.js", get(public::river_scene_js))

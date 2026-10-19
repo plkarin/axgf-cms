@@ -96,19 +96,31 @@ fn nothing_in_the_bar_is_coloured() {
     // every other theme keeps Study 06's ink masthead.
     let mut canopee = 0;
     for (sel, body) in rules() {
-        let reaches = [".masthead", ".brand", ".chrome-nav", ".lang-form", ".prefs-more"]
-            .iter()
-            .any(|m| sel.contains(m));
+        let reaches = [
+            ".masthead",
+            ".brand",
+            ".chrome-nav",
+            ".lang-form",
+            ".prefs-more",
+        ]
+        .iter()
+        .any(|m| sel.contains(m));
         if !reaches || !body.contains("--accent") {
             continue;
         }
-        if sel.split(',').all(|part| part.trim().starts_with("[data-theme=\"canopee\"]")) {
+        if sel
+            .split(',')
+            .all(|part| part.trim().starts_with("[data-theme=\"canopee\"]"))
+        {
             canopee += 1;
             continue;
         }
         panic!("{sel} puts the accent in the masthead outside Canopée: {body}");
     }
-    assert!(canopee > 0, "Canopée draws its own masthead, under its own selector");
+    assert!(
+        canopee > 0,
+        "Canopée draws its own masthead, under its own selector"
+    );
 }
 
 #[tokio::test]

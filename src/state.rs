@@ -463,9 +463,11 @@ pub enum Adoption {
 
 /// No entity in any collection: a family not set up yet.
 fn is_unset(flat: &Value) -> bool {
-    COLLECTIONS
-        .iter()
-        .all(|c| flat.get(*c).and_then(Value::as_object).is_none_or(|m| m.is_empty()))
+    COLLECTIONS.iter().all(|c| {
+        flat.get(*c)
+            .and_then(Value::as_object)
+            .is_none_or(|m| m.is_empty())
+    })
 }
 
 fn bundle_from_data(data: &Value) -> Option<&Value> {

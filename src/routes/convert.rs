@@ -66,7 +66,9 @@ pub(super) async fn convert_and_show(
 ) -> Response {
     let chrome = chrome.clone();
     let setup = purpose == Purpose::Setup;
-    let fail = |chrome: &render::Chrome, status: StatusCode, message: &str| fail(chrome, status, message, setup);
+    let fail = |chrome: &render::Chrome, status: StatusCode, message: &str| {
+        fail(chrome, status, message, setup)
+    };
     let limit_mb = || ((MAX_UPLOAD / (1024 * 1024)) as i64).into();
     let upload = match read_upload(multipart).await {
         Ok(u) => u,
@@ -108,10 +110,18 @@ pub(super) async fn convert_and_show(
     let read = match gedcom_in::read(&upload.bytes, MAX_UPLOAD) {
         Ok(r) => r,
         Err(Refusal::NotGedcom) => {
-            return fail(&chrome, StatusCode::OK, &chrome.t("convert-error-not-gedcom"))
+            return fail(
+                &chrome,
+                StatusCode::OK,
+                &chrome.t("convert-error-not-gedcom"),
+            )
         }
         Err(Refusal::NoDataset) => {
-            return fail(&chrome, StatusCode::OK, &chrome.t("convert-error-no-dataset"))
+            return fail(
+                &chrome,
+                StatusCode::OK,
+                &chrome.t("convert-error-no-dataset"),
+            )
         }
         Err(Refusal::TooLarge) => {
             return fail(

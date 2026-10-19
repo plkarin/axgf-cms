@@ -19,7 +19,8 @@ fn multipart(filename: &str, content: &[u8], fields: &[(&str, &str)]) -> Vec<u8>
     let mut body = Vec::new();
     body.extend_from_slice(format!("--{BOUNDARY}\r\n").as_bytes());
     body.extend_from_slice(
-        format!("Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n").as_bytes(),
+        format!("Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n")
+            .as_bytes(),
     );
     body.extend_from_slice(b"Content-Type: application/octet-stream\r\n\r\n");
     body.extend_from_slice(content);
@@ -36,13 +37,21 @@ fn multipart(filename: &str, content: &[u8], fields: &[(&str, &str)]) -> Vec<u8>
     body
 }
 
-async fn post_multipart(app: &axum::Router, uri: &str, cookie: &str, body: Vec<u8>) -> axum::http::Response<Body> {
+async fn post_multipart(
+    app: &axum::Router,
+    uri: &str,
+    cookie: &str,
+    body: Vec<u8>,
+) -> axum::http::Response<Body> {
     app.clone()
         .oneshot(
             Request::builder()
                 .uri(uri)
                 .method("POST")
-                .header(header::CONTENT_TYPE, format!("multipart/form-data; boundary={BOUNDARY}"))
+                .header(
+                    header::CONTENT_TYPE,
+                    format!("multipart/form-data; boundary={BOUNDARY}"),
+                )
                 .header(header::COOKIE, cookie)
                 .body(Body::from(body))
                 .unwrap(),
@@ -52,7 +61,9 @@ async fn post_multipart(app: &axum::Router, uri: &str, cookie: &str, body: Vec<u
 }
 
 fn fixture(name: &str) -> Vec<u8> {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures").join(name);
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures")
+        .join(name);
     std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()))
 }
 
@@ -63,7 +74,12 @@ async fn exported(app: &axum::Router, cookie: &str) -> Vec<(String, Value)> {
     let names: Vec<String> = zip.file_names().map(str::to_string).collect();
     names
         .into_iter()
-        .filter(|n| n.ends_with(".json") && !n.starts_with("schema/") && n != "manifest.json" && !n.ends_with("index.json"))
+        .filter(|n| {
+            n.ends_with(".json")
+                && !n.starts_with("schema/")
+                && n != "manifest.json"
+                && !n.ends_with("index.json")
+        })
         .map(|n| {
             let mut s = String::new();
             zip.by_name(&n).unwrap().read_to_string(&mut s).unwrap();
@@ -76,7 +92,12 @@ fn people(entities: &[(String, Value)]) -> Vec<String> {
     let mut out: Vec<String> = entities
         .iter()
         .filter(|(n, _)| n.starts_with("persons/"))
-        .map(|(_, v)| v["identity"]["name"]["display"].as_str().unwrap_or_default().to_string())
+        .map(|(_, v)| {
+            v["identity"]["name"]["display"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string()
+        })
         .collect();
     out.sort();
     out
@@ -88,14 +109,28 @@ async fn set_up_from_gedcom(app: &axum::Router, cookie: &str, file: &str) -> Str
         app,
         "/admin/setup/gedcom",
         cookie,
-        multipart(file, &fixture(&format!("gedcom/{file}")), &[("confidence", "0.8"), ("lang", "pl")]),
+        multipart(
+            file,
+            &fixture(&format!("gedcom/{file}")),
+            &[("confidence", "0.8"), ("lang", "pl")],
+        ),
     )
     .await;
     let page = expect_status(resp, StatusCode::OK, file).await;
-    let at = page.find("action=\"/admin/setup/gedcom/").unwrap_or_else(|| panic!("{file}: no button to keep it"));
+    let at = page
+        .find("action=\"/admin/setup/gedcom/")
+        .unwrap_or_else(|| panic!("{file}: no button to keep it"));
     let action: String = page[at + 8..].chars().take_while(|c| *c != '"').collect();
-    let done = expect_status(post_form_as(app, cookie, &action, "").await, StatusCode::OK, file).await;
-    assert!(done.contains("The archive is set up"), "{file}: the done page");
+    let done = expect_status(
+        post_form_as(app, cookie, &action, "").await,
+        StatusCode::OK,
+        file,
+    )
+    .await;
+    assert!(
+        done.contains("The archive is set up"),
+        "{file}: the done page"
+    );
     page
 }
 
@@ -103,18 +138,36 @@ async fn set_up_from_gedcom(app: &axum::Router, cookie: &str, file: &str) -> Str
 async fn an_installation_without_a_family_offers_its_administrator_three_doors() {
     let (app, _s) = app_with_empty_bundle("setup-doors");
     let cookie = admin_cookie(&app).await;
-    let page = expect_status(get_with_cookie(&app, "/admin/setup", &cookie).await, StatusCode::OK, "setup").await;
-    for door in [r#"action="/admin/setup/archive""#, r#"href="/admin/person/new""#, r#"action="/admin/setup/gedcom""#] {
+    let page = expect_status(
+        get_with_cookie(&app, "/admin/setup", &cookie).await,
+        StatusCode::OK,
+        "setup",
+    )
+    .await;
+    for door in [
+        r#"action="/admin/setup/archive""#,
+        r#"href="/admin/person/new""#,
+        r#"action="/admin/setup/gedcom""#,
+    ] {
         assert!(page.contains(door), "{door}");
     }
     // A visitor is offered nothing to bring in: not the page, not a link.
-    assert_eq!(get(&app, "/admin/setup").await.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(
+        get(&app, "/admin/setup").await.status(),
+        StatusCode::UNAUTHORIZED
+    );
     let visitor = body_string(get(&app, "/about").await).await;
     assert!(!visitor.contains("/admin/setup"));
     let admin = body_string(get_with_cookie(&app, "/about", &cookie).await).await;
-    assert!(admin.contains(r#"href="/admin/setup""#), "the overview shows the administrator the way in");
+    assert!(
+        admin.contains(r#"href="/admin/setup""#),
+        "the overview shows the administrator the way in"
+    );
     let dashboard = body_string(get_with_cookie(&app, "/admin", &cookie).await).await;
-    assert!(dashboard.contains(r#"href="/admin/setup""#), "and so does the dashboard");
+    assert!(
+        dashboard.contains(r#"href="/admin/setup""#),
+        "and so does the dashboard"
+    );
 }
 
 /// The operator's question, answered for each case a family's file can be:
@@ -144,17 +197,38 @@ async fn every_gedcom_version_and_encoding_sets_a_family_up_with_its_names_whole
         // GEDCOM 7: the @VOID@ child is not a child, and the shared note is
         // Józef's note.
         if file.starts_with("g70") {
-            assert!(page.contains("@VOID@") && page.contains("SNOTE"), "{file}: the repairs are said");
-            let fam = family.iter().find(|(n, _)| n.starts_with("families/")).expect("a family");
-            assert_eq!(fam.1["children"].as_array().map(Vec::len), Some(1), "{file}: one child, not two");
+            assert!(
+                page.contains("@VOID@") && page.contains("SNOTE"),
+                "{file}: the repairs are said"
+            );
+            let fam = family
+                .iter()
+                .find(|(n, _)| n.starts_with("families/"))
+                .expect("a family");
+            assert_eq!(
+                fam.1["children"].as_array().map(Vec::len),
+                Some(1),
+                "{file}: one child, not two"
+            );
             let jozef = family
                 .iter()
-                .find(|(n, v)| n.starts_with("persons/") && v["identity"]["name"]["display"] == "Józef Gęsiorek")
+                .find(|(n, v)| {
+                    n.starts_with("persons/")
+                        && v["identity"]["name"]["display"] == "Józef Gęsiorek"
+                })
                 .expect("Józef");
-            assert!(jozef.1.to_string().contains("Une note longue"), "{file}: the shared note reached him");
+            assert!(
+                jozef.1.to_string().contains("Une note longue"),
+                "{file}: the shared note reached him"
+            );
         }
         // The doors close behind the family.
-        assert_eq!(get_with_cookie(&app, "/admin/setup", &cookie).await.status(), StatusCode::CONFLICT);
+        assert_eq!(
+            get_with_cookie(&app, "/admin/setup", &cookie)
+                .await
+                .status(),
+            StatusCode::CONFLICT
+        );
     }
 }
 
@@ -163,29 +237,61 @@ async fn an_archive_sets_a_family_up_photographs_and_all() {
     let (app, _s) = app_with_empty_bundle("setup-archive");
     let cookie = admin_cookie(&app).await;
     let archive = fixture("with-photo.axgf");
-    let resp = post_multipart(&app, "/admin/setup/archive", &cookie, multipart("with-photo.axgf", &archive, &[])).await;
+    let resp = post_multipart(
+        &app,
+        "/admin/setup/archive",
+        &cookie,
+        multipart("with-photo.axgf", &archive, &[]),
+    )
+    .await;
     expect_status(resp, StatusCode::OK, "archive").await;
     let family = exported(&app, &cookie).await;
     assert_eq!(people(&family), ["Józef Gęsiorek"]);
     // The photograph is served, byte for byte the archive's own.
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(archive)).unwrap();
-    let name = zip.file_names().find(|n| n.ends_with(".jpg")).unwrap().to_string();
+    let name = zip
+        .file_names()
+        .find(|n| n.ends_with(".jpg"))
+        .unwrap()
+        .to_string();
     let mut original = Vec::new();
-    zip.by_name(&name).unwrap().read_to_end(&mut original).unwrap();
-    let id = name.trim_start_matches("documents/files/").trim_end_matches(".jpg");
-    let served = body_bytes(get_with_cookie(&app, &format!("/document/{id}/raw"), &cookie).await).await;
+    zip.by_name(&name)
+        .unwrap()
+        .read_to_end(&mut original)
+        .unwrap();
+    let id = name
+        .trim_start_matches("documents/files/")
+        .trim_end_matches(".jpg");
+    let served =
+        body_bytes(get_with_cookie(&app, &format!("/document/{id}/raw"), &cookie).await).await;
     assert_eq!(served, original);
-    assert_eq!(get_with_cookie(&app, "/admin/setup", &cookie).await.status(), StatusCode::CONFLICT);
+    assert_eq!(
+        get_with_cookie(&app, "/admin/setup", &cookie)
+            .await
+            .status(),
+        StatusCode::CONFLICT
+    );
 }
 
 #[tokio::test]
 async fn a_file_that_is_not_an_archive_changes_nothing() {
     let (app, _s) = app_with_empty_bundle("setup-not-archive");
     let cookie = admin_cookie(&app).await;
-    let resp = post_multipart(&app, "/admin/setup/archive", &cookie, multipart("x.axgf", b"not a zip", &[])).await;
+    let resp = post_multipart(
+        &app,
+        "/admin/setup/archive",
+        &cookie,
+        multipart("x.axgf", b"not a zip", &[]),
+    )
+    .await;
     assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
     // Still unset: the doors are still open.
-    assert_eq!(get_with_cookie(&app, "/admin/setup", &cookie).await.status(), StatusCode::OK);
+    assert_eq!(
+        get_with_cookie(&app, "/admin/setup", &cookie)
+            .await
+            .status(),
+        StatusCode::OK
+    );
 }
 
 /// Nothing is ever written over a family: each door, tried again once one is
@@ -202,10 +308,22 @@ async fn no_door_writes_over_a_family() {
     let gedcom = multipart("g70-utf8.ged", &fixture("gedcom/g70-utf8.ged"), &[]);
     let archive = multipart("with-photo.axgf", &fixture("with-photo.axgf"), &[]);
     for (what, resp) in [
-        ("the page", get_with_cookie(&app, "/admin/setup", &cookie).await),
-        ("the same conversion again", post_form_as(&app, &cookie, &again, "").await),
-        ("another GEDCOM", post_multipart(&app, "/admin/setup/gedcom", &cookie, gedcom).await),
-        ("an archive", post_multipart(&app, "/admin/setup/archive", &cookie, archive).await),
+        (
+            "the page",
+            get_with_cookie(&app, "/admin/setup", &cookie).await,
+        ),
+        (
+            "the same conversion again",
+            post_form_as(&app, &cookie, &again, "").await,
+        ),
+        (
+            "another GEDCOM",
+            post_multipart(&app, "/admin/setup/gedcom", &cookie, gedcom).await,
+        ),
+        (
+            "an archive",
+            post_multipart(&app, "/admin/setup/archive", &cookie, archive).await,
+        ),
     ] {
         assert_eq!(resp.status(), StatusCode::CONFLICT, "{what}");
     }

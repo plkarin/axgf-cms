@@ -88,7 +88,9 @@ impl Reading {
     /// Whether the encoding read differs from the one the header declares —
     /// worth saying, because the header is what the family's software claims.
     pub fn declared_otherwise(&self) -> bool {
-        let Some(d) = &self.declared else { return false };
+        let Some(d) = &self.declared else {
+            return false;
+        };
         let d = d.to_ascii_uppercase();
         let said = match d.as_str() {
             "ANSEL" => Some(Encoding::Ansel),
@@ -243,24 +245,37 @@ fn decode(raw: &[u8]) -> (String, Encoding) {
     if let Ok(s) = std::str::from_utf8(raw) {
         return (s.to_string(), Encoding::Utf8);
     }
-    match declared_char(raw).map(|c| c.to_ascii_uppercase()).as_deref() {
+    match declared_char(raw)
+        .map(|c| c.to_ascii_uppercase())
+        .as_deref()
+    {
         Some("ANSEL") => (ansel(raw), Encoding::Ansel),
         Some("MACINTOSH" | "MACROMAN") => (
-            encoding_rs::MACINTOSH.decode_without_bom_handling(raw).0.into_owned(),
+            encoding_rs::MACINTOSH
+                .decode_without_bom_handling(raw)
+                .0
+                .into_owned(),
             Encoding::MacRoman,
         ),
         // ANSI, Windows-1252, Latin-1, IBMPC, a file that says UTF-8 and is
         // not: Windows-1252 is what such files nearly always are, and it
         // reads Latin-1 the same.
         _ => (
-            encoding_rs::WINDOWS_1252.decode_without_bom_handling(raw).0.into_owned(),
+            encoding_rs::WINDOWS_1252
+                .decode_without_bom_handling(raw)
+                .0
+                .into_owned(),
             Encoding::Windows1252,
         ),
     }
 }
 
 fn utf16(raw: &[u8], little: bool) -> String {
-    let enc = if little { encoding_rs::UTF_16LE } else { encoding_rs::UTF_16BE };
+    let enc = if little {
+        encoding_rs::UTF_16LE
+    } else {
+        encoding_rs::UTF_16BE
+    };
     enc.decode_without_bom_handling(raw).0.into_owned()
 }
 
@@ -395,7 +410,9 @@ fn parts(line: &str) -> Option<Parts<'_>> {
     if tag.is_empty() {
         return None;
     }
-    let value = rest[tag_len..].strip_prefix(' ').unwrap_or(&rest[tag_len..]);
+    let value = rest[tag_len..]
+        .strip_prefix(' ')
+        .unwrap_or(&rest[tag_len..]);
     Some(Parts { level, tag, value })
 }
 
@@ -473,7 +490,10 @@ mod tests {
     #[test]
     fn utf8_with_and_without_a_mark_is_read_as_is() {
         let body = "0 HEAD\n1 GEDC\n2 VERS 5.5.1\n1 CHAR UTF-8\n0 @I1@ INDI\n1 NAME Józef /Gęsiorek/\n0 TRLR\n";
-        for bytes in [body.as_bytes().to_vec(), [b"\xEF\xBB\xBF".as_slice(), body.as_bytes()].concat()] {
+        for bytes in [
+            body.as_bytes().to_vec(),
+            [b"\xEF\xBB\xBF".as_slice(), body.as_bytes()].concat(),
+        ] {
             let r = read(&bytes, LIMIT).unwrap();
             assert_eq!(names(&r.text), ["Józef Gęsiorek"]);
             assert_eq!(r.reading.encoding, Some(Encoding::Utf8));
@@ -485,7 +505,9 @@ mod tests {
     fn ansel_accents_come_before_their_letter_and_are_composed_onto_it() {
         // "Józef Gęsiorek", "Łódź", "Éléonore" as GEDCOM 5.5 wrote them.
         let mut bytes = b"0 HEAD\r\n1 GEDC\r\n2 VERS 5.5\r\n1 CHAR ANSEL\r\n0 @I1@ INDI\r\n1 NAME J\xE2ozef /G\xF1esiorek/\r\n".to_vec();
-        bytes.extend_from_slice(b"1 NAME \xA1\xE2od\xE2z /x/\r\n1 NAME \xE2El\xE2eonore /x/\r\n0 TRLR\r\n");
+        bytes.extend_from_slice(
+            b"1 NAME \xA1\xE2od\xE2z /x/\r\n1 NAME \xE2El\xE2eonore /x/\r\n0 TRLR\r\n",
+        );
         let r = read(&bytes, LIMIT).unwrap();
         assert_eq!(names(&r.text), ["Józef Gęsiorek", "Łódź x", "Éléonore x"]);
         assert_eq!(r.reading.encoding, Some(Encoding::Ansel));
@@ -519,17 +541,29 @@ mod tests {
 
     #[test]
     fn windows_1252_keeps_its_quotation_marks_and_mac_roman_its_letters() {
-        let r = read(b"0 HEAD\r\n1 CHAR ANSI\r\n0 @I1@ INDI\r\n1 NAME Ren\xE9 /d\x92Arc/\r\n0 TRLR\r\n", LIMIT).unwrap();
+        let r = read(
+            b"0 HEAD\r\n1 CHAR ANSI\r\n0 @I1@ INDI\r\n1 NAME Ren\xE9 /d\x92Arc/\r\n0 TRLR\r\n",
+            LIMIT,
+        )
+        .unwrap();
         assert_eq!(names(&r.text), ["René d’Arc"]);
         assert_eq!(r.reading.encoding, Some(Encoding::Windows1252));
-        let r = read(b"0 HEAD\r1 CHAR MACINTOSH\r0 @I1@ INDI\r1 NAME Ren\x8E /x/\r0 TRLR\r", LIMIT).unwrap();
+        let r = read(
+            b"0 HEAD\r1 CHAR MACINTOSH\r0 @I1@ INDI\r1 NAME Ren\x8E /x/\r0 TRLR\r",
+            LIMIT,
+        )
+        .unwrap();
         assert_eq!(names(&r.text), ["René x"]);
         assert_eq!(r.reading.encoding, Some(Encoding::MacRoman));
     }
 
     #[test]
     fn old_macintosh_line_endings_are_mended() {
-        let r = read(b"0 HEAD\r1 CHAR UTF-8\r0 @I1@ INDI\r1 NAME A /B/\r0 TRLR\r", LIMIT).unwrap();
+        let r = read(
+            b"0 HEAD\r1 CHAR UTF-8\r0 @I1@ INDI\r1 NAME A /B/\r0 TRLR\r",
+            LIMIT,
+        )
+        .unwrap();
         assert_eq!(names(&r.text), ["A B"]);
         assert_eq!(r.reading.lone_crs, 5);
     }
@@ -541,14 +575,24 @@ mod tests {
         assert_eq!(r.reading.voids, 2);
         assert_eq!(r.reading.shared_notes, 2);
         assert!(!r.text.contains("@VOID@") && !r.text.contains("PHRASE"));
-        assert!(r.text.contains("1 NOTE @N1@") && r.text.contains("0 @N1@ NOTE First line\n1 CONT second"));
-        assert!(r.text.contains("1 CHIL @I1@\n0 @N1@"), "the real child stays");
+        assert!(
+            r.text.contains("1 NOTE @N1@")
+                && r.text.contains("0 @N1@ NOTE First line\n1 CONT second")
+        );
+        assert!(
+            r.text.contains("1 CHIL @I1@\n0 @N1@"),
+            "the real child stays"
+        );
         assert_eq!(r.reading.version.as_deref(), Some("7.0"));
     }
 
     #[test]
     fn the_software_version_is_not_taken_for_the_gedcom_version() {
-        let r = read(b"0 HEAD\n1 SOUR PAF\n2 VERS 5.2\n1 GEDC\n2 VERS 5.5\n0 TRLR\n", LIMIT).unwrap();
+        let r = read(
+            b"0 HEAD\n1 SOUR PAF\n2 VERS 5.2\n1 GEDC\n2 VERS 5.5\n0 TRLR\n",
+            LIMIT,
+        )
+        .unwrap();
         assert_eq!(r.reading.version.as_deref(), Some("5.5"));
     }
 
@@ -558,7 +602,8 @@ mod tests {
         {
             let mut z = zip::ZipWriter::new(&mut buf);
             for (name, bytes) in files {
-                z.start_file(*name, zip::write::FileOptions::default()).unwrap();
+                z.start_file(*name, zip::write::FileOptions::default())
+                    .unwrap();
                 z.write_all(bytes).unwrap();
             }
             z.finish().unwrap();
@@ -569,14 +614,20 @@ mod tests {
     #[test]
     fn a_gedzip_is_read_from_its_gedcom_ged_and_its_media_counted() {
         let gdz = zip_of(&[
-            ("gedcom.ged", b"0 HEAD\n1 GEDC\n2 VERS 7.0\n0 @I1@ INDI\n1 NAME A /B/\n0 TRLR\n"),
+            (
+                "gedcom.ged",
+                b"0 HEAD\n1 GEDC\n2 VERS 7.0\n0 @I1@ INDI\n1 NAME A /B/\n0 TRLR\n",
+            ),
             ("photos/a.jpg", b"\xFF\xD8"),
         ]);
         let r = read(&gdz, LIMIT).unwrap();
         assert!(r.reading.gedzip);
         assert_eq!(r.reading.media, 1);
         assert_eq!(names(&r.text), ["A B"]);
-        assert_eq!(read(&zip_of(&[("a.jpg", b"x")]), LIMIT).unwrap_err(), Refusal::NoDataset);
+        assert_eq!(
+            read(&zip_of(&[("a.jpg", b"x")]), LIMIT).unwrap_err(),
+            Refusal::NoDataset
+        );
         assert_eq!(read(&gdz, 10).unwrap_err(), Refusal::TooLarge);
     }
 

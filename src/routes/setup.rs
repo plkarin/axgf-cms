@@ -66,7 +66,11 @@ pub async fn page(State(state): State<Shared>, headers: HeaderMap) -> Response {
 
 /// `POST /admin/setup/gedcom` — the third door: read, convert, show. Nothing
 /// is kept yet; the page ends on the button that keeps it.
-pub async fn gedcom(State(state): State<Shared>, headers: HeaderMap, multipart: Multipart) -> Response {
+pub async fn gedcom(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    multipart: Multipart,
+) -> Response {
     let (_viewer, chrome) = admin_while_unset!(state, headers);
     convert_and_show(&state, &chrome, multipart, Purpose::Setup).await
 }
@@ -89,8 +93,15 @@ pub async fn adopt_gedcom(
     // The conversion was kept as the archive it would download as; reading
     // it back is reading exactly what the page showed.
     let st = state.clone();
-    let outcome = tokio::task::spawn_blocking(move || st.adopt(axgf_rs::import_bundle(&bytes))).await;
-    finish(&state, &chrome, viewer.name(), &format!("GEDCOM · {name}"), outcome)
+    let outcome =
+        tokio::task::spawn_blocking(move || st.adopt(axgf_rs::import_bundle(&bytes))).await;
+    finish(
+        &state,
+        &chrome,
+        viewer.name(),
+        &format!("GEDCOM · {name}"),
+        outcome,
+    )
 }
 
 /// `POST /admin/setup/archive` — the first door: an `.axgf`, streamed to a
@@ -118,12 +129,23 @@ pub async fn archive(
     {
         if let Err(e) = crate::space::ensure_room_for(
             &dir,
-            &crate::space::Need { bytes: len.saturating_mul(3), what: "the archive" },
+            &crate::space::Need {
+                bytes: len.saturating_mul(3),
+                what: "the archive",
+            },
         ) {
-            return refused(&chrome, StatusCode::INSUFFICIENT_STORAGE, &e.to_string(), true);
+            return refused(
+                &chrome,
+                StatusCode::INSUFFICIENT_STORAGE,
+                &e.to_string(),
+                true,
+            );
         }
     }
-    let part = dir.join(format!(".setup-{}.axgf.part", uuid::Uuid::new_v4().simple()));
+    let part = dir.join(format!(
+        ".setup-{}.axgf.part",
+        uuid::Uuid::new_v4().simple()
+    ));
     let mut name = String::new();
     let mut total = 0usize;
     let written: Result<(), String> = async {
@@ -156,12 +178,23 @@ pub async fn archive(
         .is_ok_and(|h| h == *b"PK\x03\x04");
     if total == 0 || !is_zip {
         let _ = std::fs::remove_file(&part);
-        return refused(&chrome, StatusCode::BAD_REQUEST, &chrome.t("setup-not-archive"), false);
+        return refused(
+            &chrome,
+            StatusCode::BAD_REQUEST,
+            &chrome.t("setup-not-archive"),
+            false,
+        );
     }
     let (st, path) = (state.clone(), part.clone());
     let outcome = tokio::task::spawn_blocking(move || st.adopt_archive(&path)).await;
     let _ = std::fs::remove_file(&part);
-    finish(&state, &chrome, viewer.name(), &format!("AXGF · {name}"), outcome)
+    finish(
+        &state,
+        &chrome,
+        viewer.name(),
+        &format!("AXGF · {name}"),
+        outcome,
+    )
 }
 
 /// Every door ends here: the family taken in and journalled, or why not.
@@ -206,11 +239,24 @@ fn finish(
             )
         }
         Ok(Ok(Adoption::Occupied)) => closed(chrome),
-        Ok(Ok(Adoption::Refused(diags))) => {
-            refused(chrome, StatusCode::UNPROCESSABLE_ENTITY, &format_diagnostics(&diags), true)
-        }
-        Ok(Err(e)) => refused(chrome, StatusCode::INTERNAL_SERVER_ERROR, &e.to_string(), true),
-        Err(e) => refused(chrome, StatusCode::INTERNAL_SERVER_ERROR, &e.to_string(), true),
+        Ok(Ok(Adoption::Refused(diags))) => refused(
+            chrome,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            &format_diagnostics(&diags),
+            true,
+        ),
+        Ok(Err(e)) => refused(
+            chrome,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &e.to_string(),
+            true,
+        ),
+        Err(e) => refused(
+            chrome,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &e.to_string(),
+            true,
+        ),
     }
 }
 
@@ -229,6 +275,11 @@ fn refused(chrome: &render::Chrome, status: StatusCode, why: &str, technical: bo
 
 /// The doors once a family is there.
 fn closed(chrome: &render::Chrome) -> Response {
-    render::error_page_in(chrome, StatusCode::CONFLICT, "setup-closed-title", "setup-closed-detail")
-        .into_response()
+    render::error_page_in(
+        chrome,
+        StatusCode::CONFLICT,
+        "setup-closed-title",
+        "setup-closed-detail",
+    )
+    .into_response()
 }

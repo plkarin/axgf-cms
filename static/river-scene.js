@@ -10,8 +10,8 @@
  *
  * Decoration, and the client's alone. The server's SVG and payload are
  * unchanged (ADR 0001); everything here is drawn from the edges river.js
- * already holds, at the places it draws them. Without WebGL — or under
- * Gravure, or in print — the photograph and the ink stay as they were.
+ * already holds, at the places it draws them. Without WebGL, or in print,
+ * the photograph and the ink stay as they were.
  * prefers-reduced-motion, "Cut" in the settings, or the river's own pause
  * button draw the ground once and hold it still; nothing moves while the
  * river is off screen or the tab is hidden.
@@ -21,7 +21,6 @@
   var root = document.querySelector('.river');
   var stage = document.getElementById('rv-canvas');
   if (!root || !stage || !window.WebGLRenderingContext) return;
-  if (document.documentElement.getAttribute('data-theme') === 'high-contrast') return;
 
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cut = root.dataset.riverMotion === 'cut';

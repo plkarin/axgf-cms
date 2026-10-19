@@ -1321,9 +1321,8 @@ pub async fn galaxy_cta_jpg() -> Response {
     picture("image/jpeg", render::GALAXY_CTA_JPG)
 }
 
-/// `GET /static/img/river-ground.jpg` — the river's ground, under every theme
-/// but Gravure. The same picture behind every person: nothing in it depends
-/// on the archive.
+/// `GET /static/img/river-ground.jpg` — the river's ground. The same picture
+/// behind every person: nothing in it depends on the archive.
 pub async fn river_ground_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_JPG)
 }

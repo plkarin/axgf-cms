@@ -314,24 +314,18 @@ const STUDY_06: &[(&str, &str)] = &[
 ];
 
 #[test]
-fn the_dark_theme_is_study_06_and_so_is_the_river() {
-    // Study 06 is the `dark` theme, written twice (the explicit choice and
-    // the page with no choice, then "match my system" on a dark OS), and the
-    // river carries the same values under every theme through its own
-    // palette. Three copies of one palette: this is what keeps them one.
+fn the_floor_is_study_06_and_so_is_the_river() {
+    // Study 06 is the floor under every theme, on `:root` (docs/adr/0008),
+    // and the river carries the same values through its own palette. Two
+    // copies of one palette: this is what keeps them one.
     let river = block(".river");
-    for sel in [
-        "[data-theme=\"dark\"], :root:not([data-theme])",
-        "[data-theme=\"system\"]",
-    ] {
-        let b = block(sel);
-        for (name, value) in STUDY_06 {
-            assert_eq!(
-                b.get(*name).map(String::as_str),
-                Some(*value),
-                "{sel} {name}"
-            );
-        }
+    let root = block(":root");
+    for (name, value) in STUDY_06 {
+        assert_eq!(
+            root.get(*name).map(String::as_str),
+            Some(*value),
+            ":root {name}"
+        );
     }
     for (name, value) in STUDY_06 {
         let via = river
@@ -465,9 +459,8 @@ fn every_theme_reads() {
         }
     }
     assert_eq!(
-        themes, 13,
-        "light, system-dark, dark, canopée, fusion, galaxy, high contrast, sepia, \
-         crépuscule, encre, fleuve d'hiver, the red-green pair, tritanopia"
+        themes, 4,
+        "Study 06 on :root, and the three themes: canopée, fusion, galaxy"
     );
     assert!(short.is_empty(), "{}", short.join("\n"));
 }

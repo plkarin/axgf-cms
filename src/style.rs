@@ -2,19 +2,19 @@
 //!
 //! # Why this is a second axis and not more themes
 //!
-//! A theme answers "what does this look like" and owns colour: seven of them,
-//! every pair measured against WCAG AA. Density and typographic scale are a
-//! different question with a different answer, and multiplying them into the
-//! theme list would have produced twenty-one themes and twenty-one palettes to
-//! keep in tune. They are orthogonal, so they are stored orthogonally: a reader
+//! A theme answers "what does this look like" and owns colour: three of them
+//! since 0.5.0, every pair measured against WCAG AA. Density and typographic
+//! scale are a different question with a different answer, and multiplying
+//! them into the theme list would have produced nine themes and nine palettes
+//! to keep in tune. They are orthogonal, so they are stored orthogonally: a reader
 //! picks a style and a theme independently and gets the pair they asked for.
 //!
 //! The division is strict and it is what keeps the contrast work intact. A
 //! style may change a size, a space, a weight, a measure or a border width. A
 //! style may never change a colour. Nothing in a `[data-style]` block names a
-//! hue, and a test fails the build if one ever does — so the twenty-one
-//! combinations are seven palettes under three geometries rather than
-//! twenty-one palettes.
+//! hue, and a test fails the build if one ever does — so the nine
+//! combinations are three palettes under three geometries rather than nine
+//! palettes.
 //!
 //! # The three
 //!

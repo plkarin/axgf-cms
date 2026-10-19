@@ -16,19 +16,17 @@ fn css() -> String {
     read("static/css/tokens.css") + "\n" + &read("static/app.css")
 }
 
-/// `:root` as the interface draws with it: every `:root {` block but the
-/// Study 06 tokens, which nothing draws with yet (see the head of
-/// `tokens.css`) and so no theme redefines.
+/// `:root` as the interface draws with it: every `:root {` block — Study
+/// 06's colours in `tokens.css`, the floor under every theme, and the rest of
+/// `:root` in `app.css`.
 fn root_block(css: &str) -> String {
     let mut out = String::new();
     let mut rest = css;
     while let Some(i) = rest.find("\n:root {") {
         let block = &rest[i + 1..];
         let end = block.find("\n}").expect("a closing brace");
-        if !block[..end].contains("--surface-page:") {
-            out.push_str(&block[..end + 2]);
-            out.push('\n');
-        }
+        out.push_str(&block[..end + 2]);
+        out.push('\n');
         rest = &block[end..];
     }
     out
@@ -63,36 +61,46 @@ fn root_vars(css: &str) -> BTreeSet<String> {
         .collect()
 }
 
-/// Every theme's own selector. `system` has no block of its own: it is the
-/// light palette of `:root`, and the dark one inside the one
-/// `prefers-color-scheme` query, which applies to `[data-theme="system"]` and
-/// to nothing else (v0.4.3).
+/// Every theme's own selector: the three since 0.5.0 (docs/adr/0008).
 const THEME_SELECTORS: &[&str] = &[
     "[data-theme=\"canopee\"] {",
     "[data-theme=\"fusion\"] {",
     "[data-theme=\"galaxy\"] {",
-    "[data-theme=\"dark\"],",
-    "[data-theme=\"crepuscule\"] {",
-    "[data-theme=\"encre\"] {",
-    "[data-theme=\"fleuve-hiver\"] {",
-    "[data-theme=\"high-contrast\"] {",
-    "[data-theme=\"sepia\"] {",
-    "[data-theme=\"deuteranopia\"],",
-    "[data-theme=\"tritanopia\"] {",
 ];
 
 #[test]
+fn every_theme_on_offer_has_a_block_and_no_other_does() {
+    let css = css();
+    let offered: Vec<&str> = axgf_cms::theme::THEMES.iter().map(|t| t.id).collect();
+    for (sel, id) in THEME_SELECTORS.iter().zip(&offered) {
+        assert!(sel.contains(&format!("\"{id}\"")), "{sel} is not {id}");
+    }
+    assert_eq!(THEME_SELECTORS.len(), offered.len());
+    // A palette for a theme nobody can choose is colour nobody measures.
+    let mut rest = css.as_str();
+    while let Some(i) = rest.find("[data-theme=\"") {
+        let after = &rest[i + "[data-theme=\"".len()..];
+        let id = &after[..after.find('"').expect("a closing quote")];
+        assert!(
+            offered.contains(&id),
+            "a rule for a theme not on offer: {id}"
+        );
+        rest = after;
+    }
+}
+
+#[test]
 fn every_theme_redefines_every_colour_root_defines() {
-    // A theme that misses one property inherits `:root`'s — which is the light
-    // palette. One forgotten line is then a light-coloured element sitting in
-    // a dark page, and it will be found by a reader rather than by us.
+    // A theme that misses one property inherits `:root`'s — which is Study
+    // 06's. One forgotten line is then an element in another theme's colours
+    // sitting in this one, and it will be found by a reader rather than by us.
     let css = css();
     // Geometry, typography and timing are the same in every theme by design —
     // a theme changes what the interface looks like, not how fast it moves or
     // how round its corners are — with one exception, written down: Canopée,
     // the reference theme, carries its own round and tempo (ADR 0004), and
     // redefines them under its own selector rather than here. Everything else
-    // is a colour, and a theme that misses one inherits the light palette's.
+    // is a colour, and a theme that misses one inherits Study 06's.
     const NOT_A_COLOUR: &[&str] = &[
         // The presentation scale. A *style* owns these and a theme never
         // touches them; see `src/style.rs` for why the two axes are kept
@@ -168,7 +176,7 @@ fn every_theme_redefines_every_colour_root_defines() {
         let missing: Vec<&String> = root.difference(&mine).collect();
         assert!(
             missing.is_empty(),
-            "{sel} does not define {missing:?} and will inherit the light palette"
+            "{sel} does not define {missing:?} and will inherit Study 06's"
         );
     }
 }
@@ -276,10 +284,9 @@ fn nothing_outside_the_theme_blocks_hardcodes_a_colour() {
     // else. A literal colour further down the file is one that no theme can
     // override, and it will be the thing that looks wrong in dark mode.
     let css = css();
+    // The last theme block in tokens.css, which the stylesheet loads first.
     let themes_end = css
-        .find(".tl-open-l")
-        .or_else(|| css.find("/* --- colour-blind themes"))
-        .map(|_| css.rfind("[data-theme=\"tritanopia\"]").unwrap())
+        .find("[data-theme=\"galaxy\"] {")
         .expect("the theme blocks");
     let end_of_themes = css[themes_end..].find("\n}").unwrap() + themes_end;
     let body = &css[end_of_themes..];
@@ -463,39 +470,6 @@ fn the_wash_can_be_turned_off_on_every_route() {
     }
 }
 
-/// High-contrast carries wash tokens, and they are its own background.
-///
-/// The theme's `wash` flag is what actually stops the gradient being drawn —
-/// the server never writes `data-wash="on"` for it. These values are the
-/// second lock: if that flag were ever wrong, the gradient would still be the
-/// background painted on the background, and the page would look the same.
-#[test]
-fn the_high_contrast_wash_would_be_invisible_even_if_it_were_drawn() {
-    let css = css();
-    let start = css
-        .find(r#"[data-theme="high-contrast"] {"#)
-        .expect("the high-contrast block");
-    let end = css[start..].find("\n}").expect("its closing brace") + start;
-    let block = &css[start..end];
-
-    let bg = block
-        .lines()
-        .find_map(|l| l.trim().strip_prefix("--surface-page:"))
-        .expect("--surface-page")
-        .trim()
-        .trim_end_matches(';')
-        .to_string();
-    for n in 1..=3 {
-        let stop = block
-            .lines()
-            .find_map(|l| l.trim().strip_prefix(&format!("--wash-{n}:")))
-            .unwrap_or_else(|| panic!("--wash-{n} is missing"))
-            .trim()
-            .trim_end_matches(';');
-        assert_eq!(stop, bg, "--wash-{n} must be the background itself");
-    }
-}
-
 /// A block inside a section is recessed, and carries no elevation of its own.
 ///
 /// The three levels are page, section, block. A shadow reads as "nearer the
@@ -657,8 +631,7 @@ fn every_style_redefines_every_value_the_scale_has() {
             "{v} is on the scale but `:root` does not define it"
         );
     }
-    // `comfortable` is the values on :root and has no block, exactly as the
-    // `system` theme has none.
+    // `comfortable` is the values on :root and has no block.
     for style in axgf_cms::style::STYLES
         .iter()
         .filter(|s| s.id != "comfortable")
@@ -675,9 +648,9 @@ fn every_style_redefines_every_value_the_scale_has() {
 
 /// A style may change a size, a space, a weight or a border. Never a colour.
 ///
-/// This is the load-bearing half of keeping twenty-one combinations to seven
+/// This is the load-bearing half of keeping nine combinations to three
 /// palettes. A hue in one of these blocks would be a colour nobody measured,
-/// under seven themes, and would not show up in the theme sweep because the
+/// under three themes, and would not show up in the theme sweep because the
 /// theme sweep does not know styles exist.
 #[test]
 fn no_style_block_names_a_colour() {
@@ -796,30 +769,21 @@ fn every_font_weight_is_one_of_the_four() {
     );
 }
 
-/// The system has a say only for a reader who asked for it (v0.4.3): every
-/// `prefers-color-scheme` query applies to `[data-theme="system"]` and to
-/// nothing else, and a page with no theme at all falls back to Study 06.
+/// The system has no say (v0.5.0, docs/adr/0008): every theme is dark, so
+/// no `prefers-color-scheme` query is left, and a page with no theme at all
+/// is Study 06, which `:root` carries.
 #[test]
-fn the_system_decides_only_when_the_reader_chose_to_follow_it() {
-    let css = css();
-    let mut found = 0;
-    let mut rest = css.as_str();
-    while let Some(i) = rest.find("@media (prefers-color-scheme") {
-        found += 1;
-        let after = &rest[i..];
-        let open = after.find('{').expect("a block");
-        let inner = after[open + 1..].trim_start();
-        assert!(
-            inner.starts_with("[data-theme=\"system\"]"),
-            "a colour-scheme query applies to something other than the system choice: {}",
-            &after[..open + 60.min(after.len() - open)]
-        );
-        rest = &after[open..];
-    }
-    assert_eq!(found, 1, "one colour-scheme query, for the system choice");
+fn the_system_has_no_say_and_a_page_without_a_theme_is_dark() {
+    let css = strip_comments(&css());
     assert!(
-        css.contains("[data-theme=\"dark\"],\n:root:not([data-theme]) {"),
-        "a page with no data-theme is dark too"
+        !css.contains("prefers-color-scheme"),
+        "no colour-scheme query: no theme follows the system"
+    );
+    let root = &css[css.find("\n:root {").expect(":root")..];
+    let root = &root[..root.find("\n}").expect("its end")];
+    assert!(
+        root.contains("color-scheme: dark;") && root.contains("--surface-page: #0b110e;"),
+        "a page with no data-theme is Study 06"
     );
 }
 

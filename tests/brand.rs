@@ -62,8 +62,8 @@ async fn the_icons_a_browser_and_a_phone_ask_for_are_the_logo() {
     }
 }
 
-/// The masthead draws the same logo in every theme, and only Canopée gives it
-/// colours. Everywhere else it is ink, like the wordmark beside it.
+/// The masthead draws the same logo in every theme, each in its own colours;
+/// a page that names no theme draws it in ink, like the wordmark beside it.
 #[tokio::test]
 async fn the_masthead_carries_the_logo_under_every_theme() {
     let (app, _s) = app_with_empty_bundle("brand-masthead");
@@ -85,8 +85,8 @@ async fn the_masthead_carries_the_logo_under_every_theme() {
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("static/app.css"),
     )
     .expect("app.css");
-    // The kit's three themes colour it, each from its own `--logo-*`; every
-    // other theme draws it in ink.
+    // The kit's three themes colour it, each from its own `--logo-*`; the
+    // ink is the floor under them.
     for line in css.lines().filter(|l| l.contains("var(--logo-")) {
         assert!(
             line.trim_start().starts_with(

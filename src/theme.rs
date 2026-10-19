@@ -8,24 +8,22 @@
 //! navigation, and is worst for exactly the reader who most needs the setting:
 //! somebody using the high-contrast theme gets a white flash on every page.
 //!
-//! # A dark ground wins, and the system has a say only when asked
+//! # Three themes, all on a dark ground (docs/adr/0008)
 //!
 //! The order is: the account's stored preference, then the cookie, then
-//! [`DEFAULT`], which is `canopee` since v0.5.0, written into the page. The
-//! operating system's `prefers-color-scheme` is not in that order at all
-//! (v0.4.3): a reader who has chosen nothing gets a dark ground even when
-//! their system asks for light. The system decides only for a reader who
-//! chose "match my system", which renders `data-theme="system"` and is the
-//! one selector the stylesheet's colour-scheme query applies to. A page
-//! without any `data-theme` falls back to Study 06's dark in the stylesheet.
+//! [`DEFAULT`], which is `canopee`, written into the page. The operating
+//! system's `prefers-color-scheme` has no say: every theme is dark. A stored
+//! preference for a theme that is no longer offered — the ten that 0.5.0
+//! retired, "match my system" among them — is passed over like any unknown
+//! value, and the reader gets the default. A page without any `data-theme`
+//! falls back to Study 06's dark, which `tokens.css` writes on `:root`.
 //!
 //! # Canopée, the reference theme (v0.5.0, docs/adr/0004)
 //!
-//! Every other theme is a palette and nothing else. Canopée is the first to
-//! carry its own furniture as well — the round of its buttons and fields, its
-//! elevation, its motion, its loaders and its two photographs — all written
-//! under `[data-theme="canopee"]`, so that choosing any other theme gives back
-//! Study 06's furniture exactly as it was.
+//! A theme was a palette and nothing else until Canopée, the first to carry
+//! its own furniture as well — the round of its buttons and fields, its
+//! elevation, its motion, its loaders and its two photographs. Fusion and
+//! Galaxy share that furniture (the kit), each in its own colours.
 //!
 //! # Fusion and Galaxy, two themes with a view of their own (docs/adr/0007)
 //!
@@ -50,132 +48,45 @@ pub struct Theme {
     pub key: &'static str,
     /// A locale key for a short qualifier, where one earns its place.
     pub note_key: Option<&'static str>,
-    /// True for the three themes built around a form of colour blindness.
-    pub colour_blind: bool,
     /// Whether this theme carries the soft background wash.
     ///
-    /// False for high-contrast, and it is a property of the theme rather than
-    /// a rule written into the stylesheet: the point of that theme is maximum
-    /// luminance separation, and a wash — however faint — spends some of it.
-    /// Any future theme with the same purpose says so here and gets the same
-    /// treatment without anything else being edited.
+    /// True for all three. It was false for the high-contrast theme until
+    /// 0.5.0 retired it, and it stays a property of the theme rather than a
+    /// rule written into the stylesheet: a theme built for maximum luminance
+    /// separation says so here and gets the same treatment without anything
+    /// else being edited.
     pub wash: bool,
 }
 
-/// Every theme on offer, in the order the selector lists them.
-///
-/// Named evocatively since v0.4.3 — Nocturne, Craie, Gravure, Crépuscule,
-/// Encre, Fleuve d'hiver — with a functional subtitle where the name alone
-/// would not say what the theme is for (`note_key`). The colour-blind themes
-/// keep the names of what they are built for: there, the name is the
-/// function.
+/// Every theme on offer, in the order the selector lists them: Canopée
+/// first, because it is the default, then the two that bring a view of their
+/// own. Thirteen themes and "match my system" until 0.5.0 (docs/adr/0008).
 pub const THEMES: &[Theme] = &[
     Theme {
         id: "canopee",
         key: "theme-canopee",
         note_key: Some("theme-canopee-note"),
         wash: true,
-        colour_blind: false,
     },
     Theme {
         id: "fusion",
         key: "theme-fusion",
         note_key: Some("theme-fusion-note"),
         wash: true,
-        colour_blind: false,
     },
     Theme {
         id: "galaxy",
         key: "theme-galaxy",
         note_key: Some("theme-galaxy-note"),
         wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "dark",
-        key: "theme-dark",
-        note_key: Some("theme-dark-note"),
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "light",
-        key: "theme-light",
-        note_key: Some("theme-light-note"),
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "high-contrast",
-        key: "theme-high-contrast",
-        note_key: Some("theme-contrast-note"),
-        wash: false,
-        colour_blind: false,
-    },
-    Theme {
-        id: "sepia",
-        key: "theme-sepia",
-        note_key: None,
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "crepuscule",
-        key: "theme-crepuscule",
-        note_key: Some("theme-crepuscule-note"),
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "encre",
-        key: "theme-encre",
-        note_key: Some("theme-encre-note"),
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "fleuve-hiver",
-        key: "theme-fleuve-hiver",
-        note_key: Some("theme-fleuve-hiver-note"),
-        wash: true,
-        colour_blind: false,
-    },
-    Theme {
-        id: "deuteranopia",
-        key: "theme-deuteranopia",
-        note_key: Some("theme-colour-blind-note"),
-        wash: true,
-        colour_blind: true,
-    },
-    Theme {
-        id: "protanopia",
-        key: "theme-protanopia",
-        note_key: Some("theme-colour-blind-note"),
-        wash: true,
-        colour_blind: true,
-    },
-    Theme {
-        id: "tritanopia",
-        key: "theme-tritanopia",
-        note_key: Some("theme-colour-blind-note"),
-        wash: true,
-        colour_blind: true,
-    },
-    Theme {
-        id: "system",
-        key: "theme-system",
-        note_key: None,
-        wash: true,
-        colour_blind: false,
     },
 ];
 
-/// What a reader gets when they have expressed no preference: `canopee`, the
-/// reference theme since v0.5.0 (docs/adr/0004). Before it, `dark` — Study
-/// 06 — held the place (docs/adr/0002), and before that `system`, which on
-/// most machines meant light, so the signature look was the one almost
-/// nobody saw. Both are still on offer as choices, and a reader who chose
-/// Nocturne keeps it.
+/// What a reader gets when they have expressed no preference, or chose a
+/// theme that is no longer offered: `canopee`, the reference theme since
+/// v0.5.0 (docs/adr/0004). Before it, `dark` — Study 06 — held the place
+/// (docs/adr/0002), and before that `system`, which on most machines meant
+/// light, so the signature look was the one almost nobody saw.
 pub const DEFAULT: &str = "canopee";
 
 /// The drawing of the landing page under a theme: the river, or the view a
@@ -196,7 +107,7 @@ pub const COOKIE_NAME: &str = "axgf_theme";
 /// Name of the cookie carrying "show the background wash, or not".
 ///
 /// A separate preference from the theme, because it is a separate question: a
-/// reader can want sepia and want it flat. It is stored the same way the theme
+/// reader can want Galaxy and want it flat. It is stored the same way the theme
 /// and the language are — cookie first, and on the account as well when there
 /// is one — so all three follow a reader to another browser or none of them
 /// do.
@@ -224,8 +135,8 @@ pub fn wash_enabled(theme: &Theme, account: Option<bool>, cookie: Option<&str>) 
 ///
 /// Separate from [`wash_enabled`] because the preference control has to show
 /// the switch as the reader left it even under a theme that will not honour
-/// it: turning high-contrast on should not silently forget that they had
-/// asked for the wash under sepia.
+/// it: choosing such a theme should not silently forget that they had asked
+/// for the wash under another.
 pub fn reader_wants_wash(account: Option<bool>, cookie: Option<&str>) -> bool {
     if let Some(stored) = account {
         return stored;
@@ -245,9 +156,7 @@ impl Theme {
             .unwrap_or_else(|| Self::find(DEFAULT).expect("the default is always present"))
     }
 
-    /// The value for `data-theme`. Every theme has one, `system` included:
-    /// a page always says which theme it is in, and the colour-scheme media
-    /// query applies to `[data-theme="system"]` and to nothing else.
+    /// The value for `data-theme`: a page always says which theme it is in.
     pub fn attribute(&self) -> &'static str {
         self.id
     }
@@ -277,7 +186,6 @@ pub fn selector_entries() -> Vec<serde_json::Value> {
                 "id": t.id,
                 "key": t.key,
                 "note_key": t.note_key,
-                "colour_blind": t.colour_blind,
                 "wash": t.wash,
             })
         })
@@ -289,113 +197,98 @@ mod tests {
     use super::*;
 
     #[test]
-    fn thirteen_themes_plus_system_are_offered() {
-        // Seven until v0.4.3, then three more: Crépuscule, Encre and Fleuve
-        // d'hiver; then Canopée, first because it is the default, and the
-        // two that bring a view of their own, Fusion and Galaxy (v0.5.0).
-        // `system` is the last entry because following the browser is a
-        // choice a reader can make, not one of the themes.
+    fn three_themes_are_offered() {
+        // Canopée first, because it is the default, then the two that bring
+        // a view of their own. Thirteen themes and "match my system" until
+        // 0.5.0, which kept these three (docs/adr/0008).
         let ids: Vec<&str> = THEMES.iter().map(|t| t.id).collect();
-        assert_eq!(
-            ids,
-            vec![
-                "canopee",
-                "fusion",
-                "galaxy",
-                "dark",
-                "light",
-                "high-contrast",
-                "sepia",
-                "crepuscule",
-                "encre",
-                "fleuve-hiver",
-                "deuteranopia",
-                "protanopia",
-                "tritanopia",
-                "system"
-            ]
-        );
+        assert_eq!(ids, vec!["canopee", "fusion", "galaxy"]);
     }
 
     #[test]
     fn two_themes_bring_a_view_of_their_own() {
         assert_eq!(view_of("fusion"), "tree");
         assert_eq!(view_of("galaxy"), "galaxy");
-        for t in THEMES
-            .iter()
-            .filter(|t| !matches!(t.id, "fusion" | "galaxy"))
-        {
-            assert_eq!(view_of(t.id), "river", "{}", t.id);
+        assert_eq!(view_of("canopee"), "river");
+    }
+
+    #[test]
+    fn every_theme_is_written_into_the_page() {
+        for t in THEMES {
+            assert_eq!(Theme::get(t.id).attribute(), t.id);
         }
     }
 
     #[test]
-    fn every_theme_is_written_into_the_page_system_included() {
-        assert_eq!(Theme::get("system").attribute(), "system");
-        assert_eq!(Theme::get("dark").attribute(), "dark");
-        assert_eq!(Theme::get("deuteranopia").attribute(), "deuteranopia");
-    }
-
-    #[test]
     fn the_account_beats_the_cookie_which_beats_the_default() {
-        assert_eq!(negotiate(Some("sepia"), Some("light")).id, "sepia");
-        assert_eq!(negotiate(None, Some("light")).id, "light");
+        assert_eq!(negotiate(Some("galaxy"), Some("fusion")).id, "galaxy");
+        assert_eq!(negotiate(None, Some("fusion")).id, "fusion");
         // No preference is Canopée, the reference theme, written into the
         // page rather than left to the system — whatever the system asks for.
         assert_eq!(negotiate(None, None).id, "canopee");
         assert_eq!(negotiate(None, None).attribute(), "canopee");
         // Nonsense at any level falls through rather than failing.
-        assert_eq!(negotiate(Some("chartreuse"), Some("light")).id, "light");
+        assert_eq!(negotiate(Some("chartreuse"), Some("fusion")).id, "fusion");
         assert_eq!(negotiate(None, Some("chartreuse")).id, "canopee");
-        // A reader who chose Study 06 keeps it: the new default reaches only
-        // readers who never chose.
-        assert_eq!(negotiate(None, Some("dark")).id, "dark");
-        // Choosing the system is still a choice, and the only way the
-        // system gets a say.
-        assert_eq!(negotiate(None, Some("system")).attribute(), "system");
     }
 
     #[test]
-    fn only_high_contrast_refuses_the_wash() {
-        // A property of the theme, not a rule written into the stylesheet:
-        // the next theme built for legibility says so here and needs no
-        // stylesheet exception of its own.
-        let no_wash: Vec<&str> = THEMES.iter().filter(|t| !t.wash).map(|t| t.id).collect();
-        assert_eq!(no_wash, vec!["high-contrast"]);
+    fn a_reader_who_chose_a_retired_theme_gets_the_default() {
+        // Stored on an account or in a cookie before 0.5.0: passed over like
+        // any unknown value, never an error, and a later choice still wins.
+        for retired in [
+            "dark",
+            "light",
+            "high-contrast",
+            "sepia",
+            "crepuscule",
+            "encre",
+            "fleuve-hiver",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
+            "system",
+        ] {
+            assert!(Theme::find(retired).is_none(), "{retired}");
+            assert_eq!(negotiate(Some(retired), None).id, "canopee", "{retired}");
+            assert_eq!(negotiate(None, Some(retired)).id, "canopee", "{retired}");
+            assert_eq!(negotiate(Some(retired), Some("galaxy")).id, "galaxy");
+        }
+    }
+
+    #[test]
+    fn every_theme_takes_the_wash() {
+        assert!(THEMES.iter().all(|t| t.wash));
     }
 
     #[test]
     fn the_theme_can_veto_the_wash_and_so_can_the_reader() {
-        let sepia = Theme::get("sepia");
-        let hc = Theme::get("high-contrast");
+        let galaxy = Theme::get("galaxy");
+        // No theme on offer refuses it any more; one built for maximum
+        // contrast would, by saying so on itself.
+        let flat = Theme {
+            id: "flat",
+            key: "theme-canopee",
+            note_key: None,
+            wash: false,
+        };
 
         // Nobody asked: off (v0.4.3).
-        assert!(!wash_enabled(sepia, None, None));
+        assert!(!wash_enabled(galaxy, None, None));
         // The reader turned it on in this browser, then off.
-        assert!(wash_enabled(sepia, None, Some(WASH_ON)));
-        assert!(!wash_enabled(sepia, None, Some(WASH_OFF)));
+        assert!(wash_enabled(galaxy, None, Some(WASH_ON)));
+        assert!(!wash_enabled(galaxy, None, Some(WASH_OFF)));
         // …and on their account, which outranks the cookie either way round.
-        assert!(!wash_enabled(sepia, Some(false), None));
-        assert!(wash_enabled(sepia, Some(true), Some(WASH_OFF)));
-        assert!(!wash_enabled(sepia, Some(false), Some("on")));
+        assert!(!wash_enabled(galaxy, Some(false), None));
+        assert!(wash_enabled(galaxy, Some(true), Some(WASH_OFF)));
+        assert!(!wash_enabled(galaxy, Some(false), Some("on")));
 
-        // High-contrast refuses regardless of what either of them says…
-        assert!(!wash_enabled(hc, Some(true), None));
-        assert!(!wash_enabled(hc, None, Some(WASH_ON)));
-        // …but what the reader asked for is remembered underneath it, so the
-        // switch still reads correctly and sepia gets it back.
+        // A theme that refuses it refuses regardless of what either says…
+        assert!(!wash_enabled(&flat, Some(true), None));
+        assert!(!wash_enabled(&flat, None, Some(WASH_ON)));
+        // …but what the reader asked for is remembered underneath it.
         assert!(reader_wants_wash(Some(true), None));
         assert!(!reader_wants_wash(Some(false), None));
-    }
-
-    #[test]
-    fn exactly_three_themes_are_built_for_colour_blindness() {
-        let cb: Vec<&str> = THEMES
-            .iter()
-            .filter(|t| t.colour_blind)
-            .map(|t| t.id)
-            .collect();
-        assert_eq!(cb, vec!["deuteranopia", "protanopia", "tritanopia"]);
     }
 
     #[test]

@@ -411,8 +411,8 @@ async fn the_contradiction_banner_names_its_people_and_only_for_editors() {
 ///
 /// `data-wash` is resolved on the server from two things — the theme's own
 /// flag and what the reader asked for — so the stylesheet needs no exception
-/// for the high-contrast theme and there is no second copy of the rule that
-/// decides it.
+/// for a theme that refuses it and there is no second copy of the rule that
+/// decides it (`theme::wash_enabled`, tested where it is written).
 #[tokio::test]
 async fn the_page_says_whether_the_wash_is_drawn() {
     let (app, _p) = app_with_empty_bundle("wash");
@@ -429,14 +429,6 @@ async fn the_page_says_whether_the_wash_is_drawn() {
         "and the page says which route it is"
     );
 
-    // A theme that refuses it overrides the default.
-    let hc =
-        body_string(get_with_cookie(&app, "/tree", "axgf_theme=high-contrast; axgf_wash=on").await)
-            .await;
-    assert!(
-        hc.contains(r#"data-wash="off""#),
-        "high-contrast draws none of it, whatever anyone asked for"
-    );
     // A reader who asks for it gets it.
     let on = body_string(get_with_cookie(&app, "/tree", "axgf_wash=on").await).await;
     assert!(on.contains(r#"data-wash="on""#), "asked for, drawn");
@@ -546,12 +538,11 @@ async fn the_settings_are_one_form_of_five_choices() {
         "no lists of radio buttons"
     );
     assert_eq!(main.matches("<button").count(), 1, "one button");
-    // Every theme and every language is still offered: thirteen themes and
-    // "match my system" since Canopée, Fusion and Galaxy (v0.5.0), eleven
-    // languages, three densities, two kinds of motion.
+    // Every theme and every language is offered: the three themes (v0.5.0,
+    // docs/adr/0008), eleven languages, three densities, two kinds of motion.
     assert_eq!(
         main.matches("<option").count(),
-        14 + 11 + 3 + 2,
+        3 + 11 + 3 + 2,
         "themes, languages, densities, motion"
     );
 
@@ -559,7 +550,7 @@ async fn the_settings_are_one_form_of_five_choices() {
     let resp = post_form(
         &app,
         "/prefs",
-        "theme=sepia&lang=pl&style=compact&wash=on&back=%2Fsettings",
+        "theme=galaxy&lang=pl&style=compact&wash=on&back=%2Fsettings",
         false,
     )
     .await;
@@ -571,7 +562,7 @@ async fn the_settings_are_one_form_of_five_choices() {
         .map(|v| v.to_str().unwrap().to_string())
         .collect();
     for want in [
-        "axgf_theme=sepia",
+        "axgf_theme=galaxy",
         "axgf_lang=pl",
         "axgf_style=compact",
         "axgf_wash=on",
@@ -581,15 +572,18 @@ async fn the_settings_are_one_form_of_five_choices() {
             "{want}: {cookies:?}"
         );
     }
-    // A theme that is not on the menu is refused, as on its own endpoint.
-    let bad = post_form(
-        &app,
-        "/prefs",
-        "theme=chartreuse&lang=pl&style=compact",
-        false,
-    )
-    .await;
-    assert_eq!(bad.status(), StatusCode::BAD_REQUEST);
+    // A theme that is not on the menu is refused, as on its own endpoint —
+    // and so is one that was, before 0.5.0 retired it.
+    for gone in ["chartreuse", "sepia"] {
+        let bad = post_form(
+            &app,
+            "/prefs",
+            &format!("theme={gone}&lang=pl&style=compact"),
+            false,
+        )
+        .await;
+        assert_eq!(bad.status(), StatusCode::BAD_REQUEST, "{gone}");
+    }
 }
 
 /// An off-site `from` is not a redirect this application will perform.

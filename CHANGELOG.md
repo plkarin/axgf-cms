@@ -8,11 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Canopée, the reference theme, and a river that reads like a landscape. Two
 more themes, Fusion and Galaxy, each draw the landing page their own way: a
-living tree and a solar system. Nothing about the AXGF file changes. The
-river's geometry, its layout and everything the server sends for it (SVG
-and payload) are byte for byte what they were, under every theme.
-docs/adr/0004 records the decisions behind Canopée and the river,
-docs/adr/0006 the logo's, and docs/adr/0007 the two views'.
+living tree and a solar system. These three are now the only themes. Nothing
+about the AXGF file changes. The river's geometry, its layout and everything
+the server sends for it (SVG and payload) are byte for byte what they were,
+under every theme. docs/adr/0004 records the decisions behind Canopée and
+the river, docs/adr/0006 the logo's, docs/adr/0007 the two views', and
+docs/adr/0008 why ten themes were retired.
 
 ### Added
 
@@ -29,9 +30,8 @@ that carries more than a palette:
 - a leaf beside the wordmark;
 - a lime glow under the focus ring, never in place of it.
 
-A reader who already chose a theme keeps it. To try Canopée, pick
-"Canopée" in the masthead's theme select. Its contrast is measured like
-every other theme's: the tightest pair is a control edge on the darkest
+A reader who had chosen one of the retired themes gets Canopée (see
+Removed). Its contrast is measured like every other theme's: the tightest pair is a control edge on the darkest
 wash under the contour texture, at 3.25:1.
 
 **The overview page (`/about`) is redrawn.**
@@ -72,8 +72,7 @@ travelling to in the river while their river is fetched.
 - an entrance once per page, and the fixed point breathing on arrival.
 
 All of it is drawn by `river.js` from the payload the page already holds,
-with plain strokes and no filter. Under Gravure (high contrast) and in print
-the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
+with plain strokes and no filter. In print the ground is plain ink again. "Coupe" and `prefers-reduced-motion` stop
 every light that moves.
 
 **ax·genealogy has a logo** (docs/adr/0006), the operator's: a laurel
@@ -223,8 +222,15 @@ is out.
 
 ### Changed
 
-- **The default theme is Canopée.** Nocturne (Study 06) is still offered,
-  and so is every other theme.
+- **The default theme is Canopée.** Study 06 is the floor under the three
+  themes: a page that names no theme gets it.
+- **The footer names the product, its version and its author,** and links to
+  the AXGF format on GitHub. The sentence it carried is gone. The link is
+  counted apart from a page's own controls and held to one.
+- **A tab strip that does not fit scrolls without a scrollbar**, under the
+  three themes. The side where more tabs wait fades out. The mouse wheel
+  turns the strip sideways while it has further to go, and a tab reached
+  with the keyboard is brought clear of the fade.
 - **Buttons and fields take their round from a token** (`--btn-radius`,
   `--field-radius`): Study 06's 2px in every theme but Canopée.
 - **The river's type no longer grows with the screen.** The drawing is shown
@@ -265,6 +271,9 @@ is out.
   "Conscien-tiousness" carries its own soft hyphen. Checked in all eleven
   languages, at four widths and in two styles: no label leaves its card or
   touches the table.
+- **Count marks were cut off at the edge of the tree and the galaxy.** A
+  line that runs past the crown or the roots now has room for its count, and
+  the galaxy sizes its orbits by how far its marks reach.
 - **On a phone, the masthead hid a third of every page.** At that width it
   wraps to five rows, and it stayed pinned to the top while the page,
   showing through Canopée's translucent ground, scrolled under it. Below
@@ -272,11 +281,40 @@ is out.
   the screen, and opening a record from it no longer stops short by the
   height of a bar that is not there.
 
+### Removed
+
+**Ten themes, and "match my system"** (docs/adr/0008). The operator kept
+the three set up for 0.5.0: Canopée, Fusion and Galaxy. These are gone,
+with their words in every language:
+
+- Nocturne, Craie, Sépia, Crépuscule, Encre and Fleuve d'hiver;
+- Gravure, the high-contrast theme;
+- the three colour-blind themes.
+
+A reader who had chosen one of them gets Canopée, and nothing breaks.
+
+What this costs: every theme left is dark, and none is built for high
+contrast or for colour blindness. Confidence still never rests on colour
+alone (a bar's length, a pie, the printed percentage). What is gone is the
+extra margin those themes gave.
+
 ### Tests
 
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
-  motion, "Cut", a hidden page and Gravure.
+  motion, "Cut" and a hidden page.
+- Three themes (docs/adr/0008):
+  - the registry offers three themes;
+  - a reader who chose a retired theme gets the default;
+  - only a theme on offer has a block or a rule;
+  - no `prefers-color-scheme` query is left, and a page with no theme is
+    Study 06;
+  - four palettes are measured: Study 06 on `:root`, and the three themes;
+  - the completeness check now also reads the colours on `:root`, which it
+    used to skip.
+- `routes.rs`: the footer names the product, the version, the author and the
+  format, with one link. `interactive_walk.rs` counts the footer apart from
+  a page's own chrome and caps it at one link.
 - `setup.rs`, new:
   - the three doors are offered only to an administrator, and only while
     there is no family;
@@ -303,7 +341,7 @@ is out.
   under every theme and only Canopée colours it; the inline logo is the
   file's drawing, path for path; the sign-in page's two logos keep their own
   ids.
-- `themes.rs` and `design_tokens.rs`: thirteen palettes measured, Canopée,
+- `themes.rs` and `design_tokens.rs`: every palette measured, Canopée,
   Fusion and Galaxy among them, with no exception. `--section-pad-x` is held
   to every style, like the rest of the scale. A texture is still the page's
   alone: the tree's stage draws its grid from a token of its own

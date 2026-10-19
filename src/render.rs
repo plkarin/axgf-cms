@@ -86,6 +86,9 @@ pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.
 /// full bleed, for the platform to round) and the manifest that names them.
 /// The masthead and the sign-in page draw the logo inline (`_logo.html`), so
 /// a theme can colour it.
+/// Who made ax·genealogy: credited in every page's footer (v0.5.0).
+pub const AUTHOR: &str = "Pierre-Léonard Karin";
+
 pub const LOGO_SVG: &str = include_str!("../static/img/logo-mark.svg");
 pub const FAVICON_SVG: &str = include_str!("../static/img/favicon.svg");
 pub const FAVICON_ICO: &[u8] = include_bytes!("../static/img/favicon.ico");
@@ -282,6 +285,10 @@ pub struct Chrome {
     pub viewer_initials: String,
     /// Where the format is published, for the footer's acknowledgement.
     pub spec_url: &'static str,
+    /// This build's version, shown in the footer on every page.
+    pub version: &'static str,
+    /// Who made ax·genealogy, credited in the footer.
+    pub author: &'static str,
     /// Where a preference form should return the reader to.
     pub back: String,
     /// The masthead's link to the settings, carrying `back` as the way out.
@@ -329,6 +336,8 @@ impl Chrome {
         };
         Self {
             spec_url: "github.com/plkarin/axgf-spec",
+            version: env!("CARGO_PKG_VERSION"),
+            author: AUTHOR,
             viewer_initials: initials(&viewer_name),
             viewer_name,
             lang: locale.tag,

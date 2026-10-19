@@ -31,8 +31,8 @@ nav-admin = 管理
 nav-sign-in = ログイン
 nav-sign-out = ログアウト
 account-emergency = 緊急トークン
-footer-open-format = ご家族のアーカイブは、手元に残る一つのファイルです。公開された形式で書かれているため、このサイトがなくなったあとも長く開くことができます。
-footer-open-format-link = 形式について
+footer-credit = © 2026 · 設計・開発：{ $author }
+footer-format-link = GitHub の AXGF 形式
 
 ## 設定
 

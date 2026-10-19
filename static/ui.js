@@ -31,14 +31,60 @@
   // beside the river (it calls this).
   function showCurrentTabs(root) {
     (root || document).querySelectorAll(".person-tabs").forEach(function (nav) {
+      wireTabs(nav);
       var cur = nav.querySelector(".is-current");
-      if (!cur || nav.scrollWidth <= nav.clientWidth) return;
-      var n = nav.getBoundingClientRect(), c = cur.getBoundingClientRect();
-      nav.scrollLeft += (c.left + c.width / 2) - (n.left + n.width / 2);
+      if (cur && nav.scrollWidth > nav.clientWidth) {
+        var n = nav.getBoundingClientRect(), c = cur.getBoundingClientRect();
+        nav.scrollLeft += (c.left + c.width / 2) - (n.left + n.width / 2);
+      }
+      markTabs(nav);
     });
+  }
+  // Under the kit the strip has no scrollbar (it would sit inside the pill's
+  // round ends): `data-more` says on which side more tabs wait, and app.css
+  // fades that side out. Read in the strip's own direction, so a
+  // right-to-left page fades the side its hidden tabs are on.
+  function markTabs(nav) {
+    var room = nav.scrollWidth - nav.clientWidth;
+    var at = Math.abs(nav.scrollLeft);
+    var start = room > 1 && at > 1, end = room > 1 && at < room - 1;
+    if (getComputedStyle(nav).direction === "rtl") { var s = start; start = end; end = s; }
+    if (start && end) nav.setAttribute("data-more", "both");
+    else if (end) nav.setAttribute("data-more", "right");
+    else if (start) nav.setAttribute("data-more", "left");
+    else nav.removeAttribute("data-more");
+  }
+  // A mouse wheel turns the strip sideways while it has further to go that
+  // way; at either end the page scrolls as usual, so the strip never traps it.
+  function wireTabs(nav) {
+    if (nav.axgfTabs) return;
+    nav.axgfTabs = true;
+    nav.addEventListener("scroll", function () { markTabs(nav); }, { passive: true });
+    // A tab reached with the keyboard is brought clear of the faded edge.
+    nav.addEventListener("focusin", function (ev) {
+      var n = nav.getBoundingClientRect(), c = ev.target.getBoundingClientRect(), pad = 44;
+      if (c.left < n.left + pad) nav.scrollLeft -= n.left + pad - c.left;
+      else if (c.right > n.right - pad) nav.scrollLeft += c.right - (n.right - pad);
+    });
+    nav.addEventListener("wheel", function (ev) {
+      if (ev.ctrlKey || Math.abs(ev.deltaX) >= Math.abs(ev.deltaY)) return;
+      var room = nav.scrollWidth - nav.clientWidth;
+      if (room <= 1) return;
+      // Distances along the strip's own direction: a right-to-left strip
+      // starts at 0 and runs negative.
+      var d = ev.deltaY * (ev.deltaMode === 1 ? 16 : ev.deltaMode === 2 ? nav.clientWidth : 1);
+      var at = Math.abs(nav.scrollLeft);
+      if ((d > 0 && at >= room - 1) || (d < 0 && at <= 1)) return;
+      ev.preventDefault();
+      var to = Math.max(0, Math.min(room, at + d));
+      nav.scrollLeft = getComputedStyle(nav).direction === "rtl" ? -to : to;
+    }, { passive: false });
   }
   window.axgfShowCurrentTabs = showCurrentTabs;
   showCurrentTabs();
+  window.addEventListener("resize", function () {
+    document.querySelectorAll(".person-tabs").forEach(markTabs);
+  });
 
   // `data-bulk` — a listing's selection (B6). While any row is selected the
   // bulk bar takes over the header row and counts them, in the page's own

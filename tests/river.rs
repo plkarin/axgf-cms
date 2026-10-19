@@ -903,7 +903,7 @@ async fn a_cut_choice_survives_pages_and_reloads_and_reduced_motion_still_forces
     let set = post_form(
         &app,
         "/prefs",
-        "theme=dark&lang=en&style=comfortable&motion=cut&back=%2F",
+        "theme=canopee&lang=en&style=comfortable&motion=cut&back=%2F",
         false,
     )
     .await;
@@ -1057,8 +1057,7 @@ fn a_tap_lights_the_route_and_a_second_tap_on_it_travels() {
 /// shows them, so a reader without scripts is offered nothing that does
 /// nothing (and the chrome budget counts what a reader is shown); and it
 /// holds still for a reader who asked for stillness, in their system or in
-/// the settings, and while the page is not being looked at. Gravure keeps
-/// the river's plain ink.
+/// the settings, and while the page is not being looked at.
 #[tokio::test]
 async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     let (app, _d) = app("river-scene");
@@ -1070,7 +1069,6 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
     assert!(js.contains("root.dataset.riverMotion === 'cut'"));
     assert!(js.contains("document.hidden"));
-    assert!(js.contains("=== 'high-contrast') return;"));
     // A decoration: it never takes a pointer from the drawing.
     let css = include_str!("../static/app.css");
     assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));

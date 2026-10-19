@@ -28,7 +28,7 @@ use serde::Serialize;
 /// Which group of preferences the reader asked for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum Tab {
-    /// What colour the page is: the seven themes and `system`.
+    /// What colour the page is: the three themes.
     Theme,
     /// What language it is in, and how complete each catalogue is.
     Language,

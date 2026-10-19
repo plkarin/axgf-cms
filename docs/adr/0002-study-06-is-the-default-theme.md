@@ -1,6 +1,8 @@
 # ADR 0002 — Study 06 is the default look, and every theme speaks its names
 
-**Status:** accepted · **Applies to:** `static/css/tokens.css`,
+**Status:** accepted · superseded in part by
+[ADR 0008](0008-three-themes.md): since 0.5.0 three themes are offered, and
+no "match my system" · **Applies to:** `static/css/tokens.css`,
 `src/theme.rs`, `templates/settings.html`, `tests/design_tokens.rs`,
 `tests/themes.rs`
 

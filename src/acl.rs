@@ -753,7 +753,7 @@ mod tests {
         let mut u = new_user("karin", "correct horse battery", Role::Contributor).unwrap();
         u.email = Some("karin@example.org".into());
         u.language = Some("pl".into());
-        u.theme = Some("deuteranopia".into());
+        u.theme = Some("galaxy".into());
         u.family_scope = vec!["11111111-1111-4111-8111-111111111111".into()];
         acl.users.push(u);
         acl.bind_to(

@@ -171,8 +171,8 @@ fn store_preference(
 /// `POST /prefs/style` — how dense the page is.
 ///
 /// A separate form from the theme because it is a separate question: a reader
-/// can want sepia and want it compact, and pairing them into one control would
-/// make twenty-one choices out of ten.
+/// can want Galaxy and want it compact, and pairing them into one control would
+/// make nine choices out of six.
 #[derive(Deserialize)]
 pub struct StyleForm {
     style: String,

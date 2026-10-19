@@ -143,7 +143,7 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
     // record gives to it, what Enter does in the masthead's search)
     let cases = [
         (
-            "dark",
+            "canopee",
             "Hold the landscape still",
             "↓ toward the source · ↑ toward the living",
             ["Every life is a source.", "Every family, a river."],
@@ -177,7 +177,7 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
         assert!(river.contains(hint), "{theme}: {hint}");
         // A river's width is its discharge and its height is time: keys to
         // what a view does not draw are the river's alone.
-        let river_only = theme == "dark";
+        let river_only = theme == "canopee";
         assert_eq!(
             river.contains(r#"class="rv-widths""#),
             river_only,

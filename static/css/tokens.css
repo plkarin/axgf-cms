@@ -20,130 +20,121 @@
    plus the ones this product needs and the study does not name: the
    confidence ramp, the two gender hues, the crossing hues, the wash.
 
-   Study 06 itself is the `dark` theme, and `dark` is what a reader gets
-   until they choose otherwise (src/theme.rs, DEFAULT; docs/adr/0002).
-   Every control is built from the river's own ground: surfaces a shade
-   lighter than the page, never a colour; hairline edges; amber only on the
-   primary action and the focus ring.
+   Study 06 is the floor: `:root` carries its values, every theme below
+   redefines them in its own colours, and a page that names no theme has it
+   whole (docs/adr/0002, docs/adr/0008). Every control is built from the
+   river's own ground: surfaces a shade lighter than the page, never a
+   colour; hairline edges; one accent, on the primary action and the focus
+   ring only.
 
    The river is dark under every theme. Its water ramp is calibrated for a
    dark ground, so `.river` sets the Study 06 values on itself whatever the
    page around it is (docs/adr/0002). */
 
-/* Light: what a reader who chooses it gets, and what "match my system"
-   gives on a light OS. Written on :root so that a page with no data-theme
-   at all still has every token. */
+/* Study 06, written on :root so that a page with no data-theme at all
+   still has every token, on the dark ground every theme shares. Each theme
+   below redefines every colour named here (tests/themes.rs), so under a
+   theme none of these values shows. */
 :root {
-  color-scheme: light;
-  --surface-page: #fbfaf8;
-  --surface-raised: #ffffff;
-  --border-hairline: #e2ddd5;
+  color-scheme: dark;
+  --surface-page: #0b110e;
+  --surface-raised: #111a16;
+  --border-hairline: #22302a;
   /* The boundary of a control, which WCAG 1.4.11 holds to 3:1 against what
-     is behind it. Measured, not guessed: this is the lightest value that
-     still clears 3:1 on the *darkest* ground a control can sit on, which
-     since the page wash arrived is the deepest of its gradient stops rather
-     than --surface-raised. Darkened from #979188, which cleared 3:1 on --surface-raised and
-     3.0 on --surface-page but only 2.80 against the wash. */
-  --border-strong: #908a82;
-  --text-primary: #23201c;
-  --text-secondary: #5f584f;
-  /* Darkened from #8b8378: at 0.78rem on --surface-raised that was 3.1:1, under the
-     4.5:1 that WCAG AA asks of body text. Muted secondary text is where a
-     palette usually fails, so it is the one measured first. */
-  --text-tertiary: #6f685e;
-  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-     a field's well, a row under the pointer, and the ring every control
-     carries when it has the keyboard. */
-  --surface-sunken: #f3f2f0;
-  --surface-hover: #f2f2f1;
-  --focus-ring: #5b3f8e;
-  --accent: #5b3f8e;
-  --accent-soft: #f0ebf8;
-  /* Text on top of --accent. A literal white here was the one colour no
+     is behind it — on the *darkest* ground a control can sit on, which since
+     the page wash arrived is the deepest of its gradient stops rather than
+     the raised surface. Not the study's #3a4b42: measured at 2.06:1 on its
+     own page (docs/adr/0002, §3). */
+  --border-strong: #526a5d;
+  --text-primary: #ece6d6;
+  --text-secondary: #a7b3aa;
+  /* Muted secondary text is where a palette usually fails, so it is the one
+     measured first: 4.5:1, as WCAG AA asks of body text, on every ground it
+     can sit on (tests/design_tokens.rs, `every_theme_reads`). */
+  --text-tertiary: #75847b;
+  /* Study 06's three surfaces and the focus ring: a field's well, a row
+     under the pointer, and the ring every control carries when it has the
+     keyboard. */
+  --surface-sunken: #0e1512;
+  --surface-hover: #17221d;
+  --focus-ring: #dcae64;
+  --accent: #dcae64;
+  --accent-soft: #2a2a1f;
+  /* Text on top of --accent. A literal here would be the one colour no
      theme could override. */
-  --on-accent: #ffffff;
+  --on-accent: #0b110e;
 
   /* Confidence palette: a single hue ramp so the eye reads it as one scale,
      not as unrelated categories. Colour is the *last* of four encodings
-     here — see the theme block below. */
-  --conf-certain: #1f6b4a;
-  --conf-high: #45774f;
-  --conf-medium: #8a5f18;
-  --conf-low: #9d4a26;
-  --conf-track: #e6e1d8;
+     here — see the head of the themes below. */
+  --conf-certain: #6dc39a;
+  --conf-high: #8fbf97;
+  --conf-medium: #d9ab6b;
+  --conf-low: #e0937a;
+  --conf-track: #3a3630;
 
   /* Destructive actions and the error severity, as a FOREGROUND.
      The low-confidence colour used to do this job and could not, being the
-     lightest stop of the confidence ramp — chosen to be filled into a bar, and
-     the lightest stop of a ramp is exactly the wrong thing to set text in. On the three
-     colour-blind themes it put the Delete button's label at 2.5:1 against
-     4.5:1 required — a real AA failure, shipped, and invisible to a reader of
-     the stylesheet because the variable's name says "low", not "unreadable".
-     Same defect the confidence track had, same fix: its own variable. */
-  --danger: #9d4a26;
+     lightest stop of the confidence ramp — chosen to be filled into a bar,
+     and the lightest stop of a ramp is exactly the wrong thing to set text
+     in. On the colour-blind themes of 0.4 it put the Delete button's label
+     at 2.5:1 against 4.5:1 required — a real AA failure, shipped, and
+     invisible to a reader of the stylesheet because the variable's name
+     says "low", not "unreadable". Same defect the confidence track had, same
+     fix: its own variable. */
+  --danger: #d98068;
 
   /* The warning severity, as a FOREGROUND, for the same reason --danger has
      its own variable: --conf-medium is a ramp stop, chosen to be filled into
      a bar, and a bar fill only has to clear the 3:1 of a graphic. Set in
-     0.7–0.8rem text it was measured at 4.33:1 on the two red-green themes and
-     4.41 against the sepia wash, both under the 4.5 AA asks of body text —
-     shipped, and invisible to a reader of this file because the variable's
-     name says "medium", not "unreadable". Same defect the confidence track
-     and the delete button had, same fix. Held to 4.5:1 against the darkest
-     ground it can sit on, which is a wash stop rather than --surface-raised. */
-  --warning: #8a5f18;
+     0.7–0.8rem text it was measured under the 4.5 AA asks of body text on
+     two of the themes of 0.4 — shipped, and invisible to a reader of this
+     file because the variable's name says "medium", not "unreadable". Held
+     to 4.5:1 against the darkest ground it can sit on, which is a wash stop
+     rather than --surface-raised. */
+  --warning: #d9ab6b;
 
   /* Two neutral hues for gender, deliberately not pink and blue. The `-line`
      values are the outline of a tree card, which is a control, so they are
      held to 3:1 against the canvas behind them rather than chosen by eye. */
-  --sex-a: #e8eef0;
-  --sex-a-line: #83969e;
-  --sex-b: #f2ece4;
-  --sex-b-line: #a29078;
-  --sex-u: #ecebe9;
-  --sex-u-line: #96938e;
+  --sex-a: #253034;
+  --sex-a-line: #5c757f;
+  --sex-b: #322c24;
+  --sex-b-line: #7d6c52;
+  --sex-u: #2a2926;
+  --sex-u-line: #6e6a63;
 
-  /* Residual edge crossings. Paired with dash patterns below, because a hue
-     alone does not survive the themes this file exists for. Drawn at the
-     edge's confidence opacity — 0.75 for the usual 0.8 — so each is held to
-     3:1 *composited at that opacity*, not as the swatch: the Okabe–Ito
-     vermilion, green, pink and ochre as published measured 2.26–2.74 on the
-     page and are darkened just far enough to clear it. */
-  --hue-1: #0072b2;
-  --hue-2: #be5400;
-  --hue-3: #00825f;
-  --hue-4: #ba4987;
-  --hue-5: #7c4dbe;
-  --hue-6: #8f6809;
-  --hue-7: #1f7a8c;
-  --hue-8: #8c3b3b;
+  /* Residual edge crossings: the Okabe–Ito set, chosen to stay apart under
+     each form of colour blindness, and paired with dash patterns in app.css
+     all the same, because a hue alone does not survive every eye. */
+  --hue-1: #56b4e9;
+  --hue-2: #e69f00;
+  --hue-3: #33d6a6;
+  --hue-4: #f0a3c8;
+  --hue-5: #b49ae0;
+  --hue-6: #d6b656;
+  --hue-7: #6fc0d0;
+  --hue-8: #d78a8a;
 
   /* Elevation. Composed from a colour and a strength rather than a literal
      shadow per theme, so a theme states two values instead of six. */
-  --shadow-rgb: 35 32 28;
-  --shadow-a: 0.07;
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.45;
 
-  /* The three tints the page wash is built from, mixed from this theme's own
-     background toward its own hues — nothing here is a colour the theme did
-     not already contain. Each lands 2 to 3 L* from --surface-page, which is felt
-     rather than seen.
-
-     Moss, stone and clay rather than the neutral greys these were: the hue
-     moved, the luminance did not. That last part is a constraint, not a
-     preference — the deepest of these three stops is the darkest ground a
-     control boundary can sit on, and --border-strong is tuned to clear 3:1
-     against exactly that. Taking wash-1 down to #eef3ea for a greener cast
-     cost 0.04 of it (3.07 to 3.03) and the value here is where that headroom
-     comes back. Re-measure this pair before changing any of the three. */
-  --wash-1: #f0f4ec;
-  --wash-2: #eff3ef;
-  --wash-3: #f7f3ea;
+  /* The three tints the page wash is built from, mixed from the theme's own
+     background toward its own hues — cool and nearly imperceptible, as a
+     dark page asks for. The deepest of the three is the darkest ground a
+     control boundary can sit on, and --border-strong is held to 3:1 against
+     exactly that: re-measure the pair before changing any of them. */
+  --wash-1: #0d1411;
+  --wash-2: #0c1310;
+  --wash-3: #0e1310;
 
   /* A texture a theme may carry over its wash, under the same switch (off
      until a reader turns it on). An image, not a colour: an inline SVG grain,
      drawn and never fetched, a few hundred bytes. On the page's background
      only — never on a control, a field, a card or a frame, which Study 06
-     builds from the plain ground. Most themes carry none. */
+     builds from the plain ground. */
   --wash-texture: none;
 }
 
@@ -151,7 +142,7 @@
    because it is the same under every theme by design: the water's colour ramp
    is drawn into the SVG server-side, and the dark ground is part of how that
    ramp reads. Time also runs on the half-century bands for exactly that
-   reason — they are what carries it in the colour-blind themes and in print.
+   reason — they are what carries it to a colour-blind eye and in print.
    A theme that ever needs to can still override these on `.river`. */
 .river {
   --rv-ink-0: #0b110e; --rv-ink-1: #0c1310; --rv-ink-2: #0e1512; --rv-ink-3: #111a16; --rv-ink-4: #17221d;
@@ -196,10 +187,12 @@
 /* ---------------------------------------------------------------------------
    Themes
    ---------------------------------------------------------------------------
-   Seven of them, plus "system". Every colour is a custom property on :root,
-   and a theme is one block that redefines them under a `data-theme` attribute
-   the server writes into the markup. Nothing below this block names a literal
-   colour, so adding a theme is a palette and nothing else.
+   Three of them since 0.5.0 (docs/adr/0008): Canopée, the default, and
+   Fusion and Galaxy, which share its furniture and each bring a view of
+   their own. Every colour is a custom property on :root, and a theme is one
+   block that redefines them under a `data-theme` attribute the server writes
+   into the markup. Nothing below these blocks names a literal colour, so a
+   theme's colours are its palette and nothing else.
 
    THE CONSTRAINT THAT SHAPES ALL OF THEM
    --------------------------------------
@@ -215,129 +208,11 @@
        "orange";
      * inline text carries opacity and an underline style.
 
-   The three colour-blind themes then go further and drop hue from the
-   confidence ramp altogether, using a lightness ramp of a single safe hue.
-   Lightness is the one channel no form of colour blindness takes away, so
-   under those themes a 0.35 and a 0.98 differ four ways over.
+   Until 0.5.0, three colour-blind themes went further and dropped hue from
+   the confidence ramp altogether. They were retired with seven others
+   (docs/adr/0008); the four encodings above are what remains, and they are
+   enough on their own that no reading depends on telling two hues apart. */
 
-   The palettes for them use the Okabe-Ito set, which is chosen to stay
-   distinguishable under each condition — and even so, they are used for
-   *decoration* and never as the sole carrier of a value. */
-
-
-/* --- dark ---------------------------------------------------------------- */
-/* Written twice: for the explicit choice and for anyone who has chosen
-   nothing — which the server writes as `dark`, and which a page with no
-   data-theme at all falls back to here — and for "match my system" on a dark
-   system. `prefers-color-scheme` applies to `[data-theme="system"]` and to
-   nothing else (v0.4.3): a reader who has not chosen gets the dark ground
-   even when their system asks for light (docs/adr/0002 §8). */
-@media (prefers-color-scheme: dark) {
-  [data-theme="system"] {
-    color-scheme: dark;
-    --surface-page: #0b110e;
-    --surface-raised: #111a16;
-    --border-hairline: #22302a;
-    --border-strong: #526a5d;
-    --text-primary: #ece6d6;
-    --text-secondary: #a7b3aa;
-    --text-tertiary: #75847b;
-    /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-       a field's well, a row under the pointer, and the ring every control
-       carries when it has the keyboard. */
-    --surface-sunken: #0e1512;
-    --surface-hover: #17221d;
-    --focus-ring: #dcae64;
-    --accent: #dcae64;
-    --accent-soft: #2a2a1f;
-    --on-accent: #0b110e;
-
-    --conf-certain: #6dc39a;
-    --conf-high: #8fbf97;
-    --conf-medium: #d9ab6b;
-    --conf-low: #e0937a;
-    --conf-track: #3a3630;
-    --danger: #d98068;
-    --warning: #d9ab6b;
-
-    --sex-a: #253034;
-    --sex-a-line: #5c757f;
-    --sex-b: #322c24;
-    --sex-b-line: #7d6c52;
-    --sex-u: #2a2926;
-    --sex-u-line: #6e6a63;
-
-    --hue-1: #56b4e9;
-    --hue-2: #e69f00;
-    --hue-3: #33d6a6;
-    --hue-4: #f0a3c8;
-    --hue-5: #b49ae0;
-    --hue-6: #d6b656;
-    --hue-7: #6fc0d0;
-    --hue-8: #d78a8a;
-
-    --shadow-rgb: 0 0 0;
-    --shadow-a: 0.45;
-
-    /* Cool and nearly imperceptible, as a dark page asks for. */
-    --wash-1: #0d1411;
-    --wash-2: #0c1310;
-    --wash-3: #0e1310;
-  }
-}
-
-[data-theme="dark"],
-:root:not([data-theme]) {
-  color-scheme: dark;
-  --surface-page: #0b110e;
-  --surface-raised: #111a16;
-  --border-hairline: #22302a;
-  --border-strong: #526a5d;
-  --text-primary: #ece6d6;
-  --text-secondary: #a7b3aa;
-  --text-tertiary: #75847b;
-  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-     a field's well, a row under the pointer, and the ring every control
-     carries when it has the keyboard. */
-  --surface-sunken: #0e1512;
-  --surface-hover: #17221d;
-  --focus-ring: #dcae64;
-  --accent: #dcae64;
-  --accent-soft: #2a2a1f;
-  --on-accent: #0b110e;
-
-  --conf-certain: #6dc39a;
-  --conf-high: #8fbf97;
-  --conf-medium: #d9ab6b;
-  --conf-low: #e0937a;
-  --conf-track: #3a3630;
-  --danger: #d98068;
-  --warning: #d9ab6b;
-
-  --sex-a: #253034;
-  --sex-a-line: #5c757f;
-  --sex-b: #322c24;
-  --sex-b-line: #7d6c52;
-  --sex-u: #2a2926;
-  --sex-u-line: #6e6a63;
-
-  --hue-1: #56b4e9;
-  --hue-2: #e69f00;
-  --hue-3: #33d6a6;
-  --hue-4: #f0a3c8;
-  --hue-5: #b49ae0;
-  --hue-6: #d6b656;
-  --hue-7: #6fc0d0;
-  --hue-8: #d78a8a;
-
-  --shadow-rgb: 0 0 0;
-  --shadow-a: 0.45;
-
-  /* Cool and nearly imperceptible, as a dark page asks for. */
-  --wash-1: #0d1411;
-  --wash-2: #0c1310;
-  --wash-3: #0e1310;
-}
 
 /* --- canopée --------------------------------------------------------------- */
 /* The reference theme since v0.5.0 (docs/adr/0004), and the default: a
@@ -595,391 +470,4 @@
   --gx-planet-hidden: #6b74ba;
   --gx-nebula-a: #3b1f7a;
   --gx-nebula-b: #0f3d66;
-}
-
-/* --- high contrast ------------------------------------------------------- */
-/* Pure black on pure white, borders at full strength. Not a "darker light
-   theme": the point is maximum luminance separation for low vision, so every
-   muted tone collapses onto the ink colour rather than being nudged. */
-[data-theme="high-contrast"] {
-  color-scheme: light;
-  --surface-page: #ffffff;
-  --surface-raised: #ffffff;
-  --border-hairline: #000000;
-  --border-strong: #000000;
-  --text-primary: #000000;
-  --text-secondary: #000000;
-  --text-tertiary: #1a1a1a;
-  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-     a field's well, a row under the pointer, and the ring every control
-     carries when it has the keyboard. */
-  --surface-sunken: #ffffff;
-  --surface-hover: #e8e8ff;
-  --focus-ring: #0000cc;
-  --accent: #0000cc;
-  --accent-soft: #e8e8ff;
-  --on-accent: #ffffff;
-
-  --conf-certain: #000000;
-  --conf-high: #333333;
-  --conf-medium: #555555;
-  --conf-low: #767676;
-  --conf-track: #ffffff;
-  --danger: #a30000;
-  --warning: #555555;
-
-  --sex-a: #ffffff;
-  --sex-a-line: #000000;
-  --sex-b: #ffffff;
-  --sex-b-line: #000000;
-  --sex-u: #ffffff;
-  --sex-u-line: #000000;
-
-  --hue-1: #000000;
-  --hue-2: #0000cc;
-  --hue-3: #006600;
-  --hue-4: #7a0055;
-  --hue-5: #333333;
-  --hue-6: #664400;
-  --hue-7: #004466;
-  --hue-8: #660000;
-
-  --shadow-rgb: 0 0 0;
-  --shadow-a: 0;
-
-  /* No wash: the theme's `wash` flag says so and this is never drawn. The
-     tokens are the background itself, so a mistake shows nothing rather
-     than something. */
-  --wash-1: #ffffff;
-  --wash-2: #ffffff;
-  --wash-3: #ffffff;
-}
-
-/* --- sepia --------------------------------------------------------------- */
-[data-theme="sepia"] {
-  color-scheme: light;
-  --surface-page: #f4ecdc;
-  --surface-raised: #fbf5e9;
-  --border-hairline: #ddd0b6;
-  --border-strong: #8c8069;
-  --text-primary: #3a2f1e;
-  --text-secondary: #5d4e35;
-  --text-tertiary: #6f6047;
-  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-     a field's well, a row under the pointer, and the ring every control
-     carries when it has the keyboard. */
-  --surface-sunken: #ede5d5;
-  --surface-hover: #efe9dd;
-  --focus-ring: #7a4a1e;
-  --accent: #7a4a1e;
-  --accent-soft: #f0e2cc;
-  --on-accent: #fbf5e9;
-
-  --conf-certain: #3f5f2f;
-  --conf-high: #5a6b34;
-  --conf-medium: #8a6018;
-  --conf-low: #94411f;
-  --conf-track: #eadfc8;
-  --danger: #94411f;
-  --warning: #865d17;
-
-  --sex-a: #e8e5d6;
-  --sex-a-line: #948c73;
-  --sex-b: #f0e4d0;
-  --sex-b-line: #9f8a67;
-  --sex-u: #ece5d5;
-  --sex-u-line: #968c73;
-
-  --hue-1: #1f5673;
-  --hue-2: #94411f;
-  --hue-3: #3f5f2f;
-  --hue-4: #7a3f5a;
-  --hue-5: #5a4a7a;
-  --hue-6: #7a5f16;
-  --hue-7: #2f6060;
-  --hue-8: #6b2f2f;
-
-  --shadow-rgb: 74 58 34;
-  --shadow-a: 0.10;
-
-  /* Warm: amber, terracotta and olive off the theme's own ramp. */
-  --wash-1: #eae5cf;
-  --wash-2: #f0e6d0;
-  --wash-3: #e9e7d2;
-}
-
-/* --- crépuscule ------------------------------------------------------------- */
-/* Dusk: a plum-black ground, warm ink, a peach-amber accent. Every pair
-   measured, the darkest wash stop and the grain at its strongest included:
-   the tightest is --border-strong on --surface-raised at 3.40:1. */
-[data-theme="crepuscule"] {
-  color-scheme: dark;
-  --surface-page: #15101b;
-  --surface-raised: #1c1623;
-  --border-hairline: #2e2538;
-  --border-strong: #76668a;
-  --text-primary: #f0e7dc;
-  --text-secondary: #bdb0bc;
-  --text-tertiary: #968a9d;
-  --surface-sunken: #120e17;
-  --surface-hover: #251d2d;
-  --focus-ring: #e8aa70;
-  --accent: #e8aa70;
-  --accent-soft: #30251f;
-  --on-accent: #15101b;
-
-  --conf-certain: #7cc4a0;
-  --conf-high: #a3c49a;
-  --conf-medium: #e0b070;
-  --conf-low: #e8957c;
-  --conf-track: #3b3242;
-  --danger: #ee8f7c;
-  --warning: #e0b070;
-
-  --sex-a: #272a3a;
-  --sex-a-line: #7a80a0;
-  --sex-b: #352a20;
-  --sex-b-line: #95805f;
-  --sex-u: #2c2931;
-  --sex-u-line: #837d89;
-
-  --hue-1: #56b4e9;
-  --hue-2: #e69f00;
-  --hue-3: #33d6a6;
-  --hue-4: #f0a3c8;
-  --hue-5: #b49ae0;
-  --hue-6: #d6b656;
-  --hue-7: #6fc0d0;
-  --hue-8: #d78a8a;
-
-  --shadow-rgb: 0 0 0;
-  --shadow-a: 0.5;
-
-  --wash-1: #1a1320;
-  --wash-2: #18121d;
-  --wash-3: #1b1419;
-  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-}
-
-/* --- encre ------------------------------------------------------------------ */
-/* Ink: a midnight-blue ground and a pale ink-blue accent. The tightest
-   pair is a card outline on its fill, 3.47:1. */
-[data-theme="encre"] {
-  color-scheme: dark;
-  --surface-page: #0a0f1e;
-  --surface-raised: #10172b;
-  --border-hairline: #212b47;
-  --border-strong: #5c6e98;
-  --text-primary: #e9edf5;
-  --text-secondary: #aab5ca;
-  --text-tertiary: #8592ab;
-  --surface-sunken: #0c1224;
-  --surface-hover: #161f3a;
-  --focus-ring: #a7c6f2;
-  --accent: #a7c6f2;
-  --accent-soft: #1a2440;
-  --on-accent: #0a0f1e;
-
-  --conf-certain: #6dc39a;
-  --conf-high: #8fbf97;
-  --conf-medium: #d9ab6b;
-  --conf-low: #e0937a;
-  --conf-track: #2a3350;
-  --danger: #ef8c7c;
-  --warning: #ddb06e;
-
-  --sex-a: #1d2840;
-  --sex-a-line: #6680a8;
-  --sex-b: #2c2620;
-  --sex-b-line: #8a775c;
-  --sex-u: #22252e;
-  --sex-u-line: #747b8c;
-
-  --hue-1: #56b4e9;
-  --hue-2: #e69f00;
-  --hue-3: #33d6a6;
-  --hue-4: #f0a3c8;
-  --hue-5: #b49ae0;
-  --hue-6: #d6b656;
-  --hue-7: #6fc0d0;
-  --hue-8: #d78a8a;
-
-  --shadow-rgb: 0 0 0;
-  --shadow-a: 0.5;
-
-  --wash-1: #0d1324;
-  --wash-2: #0c1121;
-  --wash-3: #0f1426;
-  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-}
-
-/* --- fleuve d'hiver --------------------------------------------------------- */
-/* The winter river: the one cool light theme. Its ground is a shade darker
-   than Craie's, so its card outlines and crossing hues are darkened to keep
-   3:1; --border-strong clears 3:1 on the darkest wash stop under the grain
-   at its strongest pixel (3.30:1), and 3.68 without it. */
-[data-theme="fleuve-hiver"] {
-  color-scheme: light;
-  --surface-page: #f3f6f8;
-  --surface-raised: #ffffff;
-  --border-hairline: #d3dce3;
-  --border-strong: #6f7d86;
-  --text-primary: #152029;
-  --text-secondary: #3f4e5a;
-  --text-tertiary: #53636f;
-  --surface-sunken: #ecf1f4;
-  --surface-hover: #e8eef2;
-  --focus-ring: #1d5a85;
-  --accent: #1d5a85;
-  --accent-soft: #e1edf6;
-  --on-accent: #ffffff;
-
-  --conf-certain: #1f6b4a;
-  --conf-high: #3d6c52;
-  --conf-medium: #83601b;
-  --conf-low: #9a4a2a;
-  --conf-track: #dce4ea;
-  --danger: #9a3a2a;
-  --warning: #7e5c18;
-
-  --sex-a: #e4edf2;
-  --sex-a-line: #6a808c;
-  --sex-b: #f0ebe4;
-  --sex-b-line: #877560;
-  --sex-u: #eaebec;
-  --sex-u-line: #777c81;
-
-  --hue-1: #0072b2;
-  --hue-2: #b04e00;
-  --hue-3: #00785a;
-  --hue-4: #ac4280;
-  --hue-5: #7c4dbe;
-  --hue-6: #84600a;
-  --hue-7: #1b7182;
-  --hue-8: #8c3b3b;
-
-  --shadow-rgb: 23 34 43;
-  --shadow-a: 0.08;
-
-  --wash-1: #e9f0f4;
-  --wash-2: #edf2f5;
-  --wash-3: #f0f3f1;
-  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-}
-
-/* --- colour-blind themes ------------------------------------------------- */
-/* The confidence ramp here is a LIGHTNESS ramp of one hue, not four hues.
-   Lightness is the only channel no form of colour blindness removes, so
-   "darker means surer" holds even when hue does not — and it is the fourth
-   redundant encoding after bar length, pie fill and the printed number. */
-
-/* Deuteranopia and protanopia are both red-green; the safe axis is
-   blue-to-orange, so the decorative hues come from there and the confidence
-   ramp is a blue lightness ramp. */
-[data-theme="deuteranopia"],
-[data-theme="protanopia"] {
-  color-scheme: light;
-  --surface-page: #fbfaf8;
-  --surface-raised: #ffffff;
-  --border-hairline: #d9d5cd;
-  --border-strong: #8e8a82;
-  --text-primary: #1f1f22;
-  --text-secondary: #4c4c52;
-  --text-tertiary: #66666d;
-  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-     a field's well, a row under the pointer, and the ring every control
-     carries when it has the keyboard. */
-  --surface-sunken: #f3f2f1;
-  --surface-hover: #f2f2f2;
-  --focus-ring: #0059a6;
-  --accent: #0059a6;
-  --accent-soft: #e4eefa;
-  --on-accent: #ffffff;
-
-  --conf-certain: #06304f;
-  --conf-high: #0a5183;
-  --conf-medium: #2f7fb8;
-  --conf-low: #77a9c9;
-  --conf-track: #e9edf1;
-  --danger: #8f3d00;
-  --warning: #2a72a6;
-
-  --sex-a: #e6eef4;
-  --sex-a-line: #7d96a8;
-  --sex-b: #f2eee4;
-  --sex-b-line: #9c937e;
-  --sex-u: #ebebe9;
-  --sex-u-line: #939390;
-
-  --hue-1: #0072b2;
-  --hue-2: #be5400;
-  --hue-3: #003f6b;
-  --hue-4: #8a4b00;
-  --hue-5: #447398;
-  --hue-6: #966329;
-  --hue-7: #00506e;
-  --hue-8: #6b3a00;
-
-  --shadow-rgb: 20 28 38;
-  --shadow-a: 0.08;
-
-  /* Off the blue-orange axis these themes already use. */
-  --wash-1: #eef3f1;
-  --wash-2: #f8f2e9;
-  --wash-3: #f0f3f0;
-}
-
-/* Tritanopia is blue-yellow, so blue and yellow are the pair to avoid. The
-   confidence ramp is a lightness ramp of reddish-purple, and the decorative
-   hues stay on the red-to-teal axis. */
-[data-theme="tritanopia"] {
-  color-scheme: light;
-  --surface-page: #fbf9f9;
-  --surface-raised: #ffffff;
-  --border-hairline: #ded4d4;
-  --border-strong: #928787;
-  --text-primary: #201c1c;
-  --text-secondary: #4f4646;
-  --text-tertiary: #6b6060;
-  /* Study 06's three surfaces and the focus ring, in this theme's own colours:
-     a field's well, a row under the pointer, and the ring every control
-     carries when it has the keyboard. */
-  --surface-sunken: #f3f1f1;
-  --surface-hover: #f2f1f1;
-  --focus-ring: #9b2d5e;
-  --accent: #9b2d5e;
-  --accent-soft: #fae6ef;
-  --on-accent: #ffffff;
-
-  --conf-certain: #490021;
-  --conf-high: #7a0d3c;
-  --conf-medium: #b03a6b;
-  --conf-low: #d290ac;
-  --conf-track: #f2eaea;
-  --danger: #a41020;
-  --warning: #b03a6b;
-
-  --sex-a: #eeeaea;
-  --sex-a-line: #9d9191;
-  --sex-b: #f6e9ec;
-  --sex-b-line: #a78c97;
-  --sex-u: #efecec;
-  --sex-u-line: #999292;
-
-  --hue-1: #a3003c;
-  --hue-2: #00676b;
-  --hue-3: #5c0025;
-  --hue-4: #00434a;
-  --hue-5: #c14876;
-  --hue-6: #2a7b7b;
-  --hue-7: #7a1540;
-  --hue-8: #005f66;
-
-  --shadow-rgb: 38 20 26;
-  --shadow-a: 0.08;
-
-  /* Off the red-teal axis this theme already uses. */
-  --wash-1: #f5f1ee;
-  --wash-2: #eff3f0;
-  --wash-3: #f4f1ec;
 }

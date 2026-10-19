@@ -157,8 +157,8 @@ The charts are honest by construction:
   in the [source](src/radar.rs), and nothing is guessed by a language model.
 - **Certainty is drawn three ways at once:** a bar along the spoke as long as
   the uncertainty, a marker whose shape is the band, and the band's colour.
-  No single channel carries it alone, so it survives every colour-blind
-  theme.
+  No single channel carries it alone, so reading it never depends on
+  telling two colours apart.
 - **Nothing is stored.** The scores are a reading of the record, worked out on
   every view. Nobody can later mistake them for a claim about the person.
 - **Living people are protected.** A living person's temperament chart stays
@@ -211,9 +211,7 @@ an `.axgf` to download, without touching the site.
 
 [![The overview page under the three themes that carry their own furniture. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
-[![Zofia Zając's profile in eight of the themes: Canopy, Chalk, Sepia, Nocturne, Dusk, Ink, Winter River and Engraving](docs/screenshots/themes.jpg)](docs/screenshots/themes.jpg)
-
-There are thirteen themes.
+There are three themes.
 
 - **Canopy** (*Canopée*, the default from 0.5.0) is a dark forest green with
   the gold of the logo.
@@ -221,20 +219,23 @@ There are thirteen themes.
   family as a tree.
 - **Galaxy** is deep space, navy and violet, and draws it as a solar system.
 
-These three carry their own buttons, motion and photographs, and every page
-follows them, down to the words: under Fusion the overview reads "Every life
-is a leaf. Every family, a tree."
+Each carries its own buttons, motion and photographs, and every page follows
+it, down to the words: under Fusion the overview reads "Every life is a
+leaf. Every family, a tree."
 
-The others:
+All three are dark. None is built for high contrast or for colour
+blindness. Certainty never rests on colour alone, though: a bar's length, a
+pie and the printed percentage carry it under every theme
+([why there are three](docs/adr/0008-three-themes.md)).
 
-- **Chalk, Sepia and Winter River** are light.
-- **Nocturne, Dusk and Ink** are dark.
-- **Engraving** is high contrast.
-- **Three themes** are safe for deuteranopia, protanopia and tritanopia.
-- **"Match my system"** follows your computer. Three styles set the density: **Comfortable**, **Compact**, and
-**Paper**, a serif face and rules for reading once or for printing. Every
-reader chooses for themselves, and a signed-in reader's theme and language
-follow them to every device.
+Three styles set the density:
+
+- **Comfortable**;
+- **Compact**;
+- **Paper**, a serif face and rules, for reading once or for printing.
+
+Every reader chooses for themselves, and a signed-in reader's theme and
+language follow them to every device.
 
 ### In eleven languages, right to left included
 
@@ -253,7 +254,8 @@ ten of the themes.
 - the living river and its zoom;
 - the Canopy theme;
 - the Fusion and Galaxy themes, with the family as a living tree and as a
-  solar system;
+  solar system, which are now the only three themes (the ten others are
+  retired);
 - the portrait beside the river;
 - the three ways in;
 - the GEDCOM reader for every version and encoding.

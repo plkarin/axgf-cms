@@ -13,15 +13,15 @@
  */
 
 :root {
-  /* Every colour on :root — the light palette, which is the default — is in
+  /* Every colour on :root — Study 06, the floor under every theme — is in
      static/css/tokens.css, the one file that names colours, with the river's
-     palette and the seven themes. What stays here is the part of :root that
+     palette and the three themes. What stays here is the part of :root that
      is not a colour. */
 
   /* ---------------------------------------------------------------------
      The presentation scale. A *style* owns these; a theme never touches them,
-     and nothing in here is a colour. That division is what keeps twenty-one
-     combinations to seven palettes: see `src/style.rs`, and the test that
+     and nothing in here is a colour. That division is what keeps nine
+     combinations to three palettes: see `src/style.rs`, and the test that
      fails the build if a `[data-style]` block ever names a hue.
 
      The rhythm unit `step` is the root of it: everything spatial is a multiple
@@ -132,7 +132,7 @@
   --type-rv-control: 0.78125rem;
 }
 
-/* The river's palette and the seven themes are in static/css/tokens.css. */
+/* The river's palette and the three themes are in static/css/tokens.css. */
 
 
 
@@ -162,8 +162,8 @@
 
    IT IS OFF WHEN IT SHOULD BE. `data-wash` is written by the server from the
    theme's own flag and the reader's stored preference, already resolved
-   together, so this stylesheet needs no exception for the high-contrast theme
-   and no second copy of the rule that produces one.
+   together, so this stylesheet needs no exception for a theme that refuses
+   it and no second copy of the rule that produces one.
 
    Content sits on solid surfaces — the tree and record split, cards, tables,
    forms — so no text is ever over the gradient. What the wash reaches is the
@@ -257,9 +257,9 @@ html {
 
    WHEN IT DOES NOT RUN. `prefers-reduced-motion` removes the movement and
    leaves the wash exactly where it was — a medical setting, not a taste.
-   `[data-wash="off"]` removes both, which covers the high-contrast theme
-   (whose `wash` flag is false) and any reader who turned backgrounds off,
-   because the server has already resolved those two into one attribute.
+   `[data-wash="off"]` removes both, which covers a theme whose `wash` flag
+   is false and any reader who turned backgrounds off, because the server
+   has already resolved those two into one attribute.
 
    NOTHING IS UNDER TEXT. Every content surface is opaque — see the three
    levels above. What drifts is the page behind them and the margins beside
@@ -330,12 +330,11 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
    a size, a space, a weight, a measure or a border, and never a colour. That
    is not a convention, it is enforced — `no_style_block_names_a_colour` reads
    this file and fails the build if one of these blocks ever contains a hex, an
-   `rgb(` or a colour custom property. Seven palettes under three geometries is
-   twenty-one combinations that stay measured; twenty-one palettes would not.
+   `rgb(` or a colour custom property. Three palettes under three geometries
+   is nine combinations that stay measured; nine palettes would not.
 
    `comfortable` is the default and therefore the values already on `:root`; it
-   has no block of its own, exactly as the `system` theme has none. What
-   follows is only what the other two change. */
+   has no block of its own. What follows is only what the other two change. */
 
 /* Compact: for somebody working through records rather than reading one.
    The rhythm unit drops by a quarter and everything spatial follows it, so the
@@ -705,9 +704,9 @@ h4 {
    section meant reading the first two. Every surface in the interface now sits
    at one of exactly three levels, and each is separated from its neighbours by
    more than one signal, because any single one of them fails somewhere: shadow
-   is invisible under high-contrast (--shadow-a is 0 there), and fill is
-   invisible where --surface-page and --surface-raised are the same colour (high-contrast
-   again).
+   was invisible under the high-contrast theme of 0.4 (--shadow-a was 0
+   there), and fill is invisible wherever --surface-page and --surface-raised
+   come close.
 
      LEVEL 1  the page      --surface-page plus the wash. No border, no elevation.
      LEVEL 2  a section     --surface-raised fill, hairline border, --radius-lg,
@@ -720,9 +719,8 @@ h4 {
    section it is inside inverts the containment, and the eye notices that
    before it notices anything you meant. Dropping the block to the page's own
    --surface-page turns it into a well in the section's surface, which is the shape the
-   thing actually has. It also costs nothing under high-contrast, where the
-   two fills are identical and the black hairline carries the whole boundary
-   on its own.
+   thing actually has. It also costs nothing where the two fills come close:
+   the hairline carries the whole boundary on its own.
 
    WHY THERE IS NO ACCENT BAR ON EVERY SECTION. It was the obvious option and
    it is the wrong one here: an accent rule down the leading edge is already
@@ -799,9 +797,9 @@ h4 {
 /* ---------- confidence: the showcase primitive ---------- */
 
 /* The track has to read as EMPTY. It was `--border-hairline`, which in the
-   high-contrast theme is pure black — so a 12% bar rendered as a mostly-dark
-   bar and looked *more* certain than a 98% one, exactly inverting the signal
-   in the theme that most needs it. The track gets its own variable, and every
+   high-contrast theme of 0.4 was pure black — so a 12% bar rendered as a
+   mostly-dark bar and looked *more* certain than a 98% one, exactly inverting
+   the signal in the theme that most needed it. The track gets its own variable, and every
    theme sets it lighter than its fills. Caught by rendering the strip; reading
    the CSS would not have shown it. */
 .conf-bar {
@@ -4572,9 +4570,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    ===========================================================================
    After the Selva Verde reference: a forest seen from above, at dusk, with
    contour lines over it; the water lit from within; terrain that follows
-   every line. The river is the river under every theme (ADR 0002 §2), so
-   all of this is too — except under Gravure (high contrast) and in print,
-   where the ground goes back to the plain ink it always was.
+   every line. Wherever the river is drawn, all of this is too — except in
+   print, where the ground goes back to the plain ink it always was.
 
    The photograph (made in Canva for the river) sits under a shade that
    keeps every ink above it at the contrast the river was measured for; the
@@ -4640,10 +4637,6 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 /* The glow under the cores (river.js): the lit route's warm light, faint,
    on attested water only. */
 .rv-svg .rv-glow { stroke: var(--rv-lit-halo); pointer-events: none; }
-[data-theme="high-contrast"] .rv-canvas { background-image: none; }
-[data-theme="high-contrast"] .rv-canvas::before { display: none; }
-[data-theme="high-contrast"] .rv-svg > rect.k-bg { fill-opacity: 1; }
-[data-theme="high-contrast"] .rv-svg :is(.rv-zones, .rv-banks, .rv-glow, .rv-cores) { display: none; }
 @media print {
   .rv-canvas { background-image: none; }
   .rv-canvas::before { display: none; }

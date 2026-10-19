@@ -21,7 +21,7 @@
   {% if mismatches %}<div class="notice warn"><p>{{ t("setup-done-mismatches", n=mismatches) }}</p></div>{% endif %}
 </section>
 <p class="setup-next">
-  <a class="btn primary" href="/">{{ t("setup-done-river") }}</a>
+  <a class="btn primary" href="/">{{ t("setup-done-river") if view == "river" else t("view-" ~ view ~ "-open") }}</a>
   <a class="btn" href="/admin">{{ t("setup-done-admin") }}</a>
 </p>
 {% else %}

@@ -10,7 +10,7 @@
   <p>{{ detail }}</p>
   <div class="notice-actions">
     <a class="btn primary" href="/person/{{ into }}">{{ t("error-merged-open") }}</a>
-    <a class="btn" href="/">{{ t("error-back-to-river") }}</a>
+    <a class="btn" href="/">{{ t("error-back-to-river") if view == "river" else t("view-" ~ view ~ "-back") }}</a>
   </div>
 </div>
 {% endblock %}

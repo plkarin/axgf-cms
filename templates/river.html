@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% import "_icons.html" as ic %}
-{% block title %}{{ centre_name }} — {{ t("nav-river") }} — {{ t("app-name") }}{% endblock %}
+{% block title %}{{ centre_name }} — {{ t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") }} — {{ t("app-name") }}{% endblock %}
 {% block main_class %}wide river-main{% endblock %}
 
 {% block content %}
+{% set view_name = t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") %}
 {# The river. The SVG below is the whole first paint and is correct without
    JavaScript: every person is a link that re-centres the page on them, and
    the range segment is three links. `static/river.js` turns those links into
@@ -24,9 +25,12 @@
     and do nothing. #}
 {#- `rv-intro`: the river's entrance, played once from the first paint by
     app.css and taken off by river.js when it has played (v0.5.0). -#}
+{#- `data-view`: the drawing this theme gives the river (docs/adr/0007) —
+    `river`, Fusion's `tree` or Galaxy's `galaxy`. The layout, the payload and
+    every control are the same under each. -#}
 <div class="river rv-intro" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
-     data-river-motion="{{ 'cut' if motion_cut else 'travel' }}">
-  <section class="rv-stage" aria-label="{{ t('nav-river') }}">
+     data-river-motion="{{ 'cut' if motion_cut else 'travel' }}" data-view="{{ view }}">
+  <section class="rv-stage" aria-label="{{ view_name }}">
     <div class="rv-controls">
       <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
       {#- The itinerary is content: one chip per person visited. -#}
@@ -57,10 +61,29 @@
         <label class="rv-eyebrow" for="rv-zoom">{{ t("river-zoom") }}</label>
         <input type="range" id="rv-zoom" min="1" max="3" step="0.1" value="1" data-rv-zoom>
       </span>
-      <button type="button" class="btn small rv-still" aria-pressed="false" data-rv-still hidden>{{ t("river-still") }}</button>
+      <button type="button" class="btn small rv-still" aria-pressed="false" data-rv-still hidden>{{ t("river-still") if view == "river" else t("view-" ~ view ~ "-still") }}</button>
+      {#- The whole family at once, beside a theme's view (docs/adr/0007):
+          the scripts', so hidden until one shows it. -#}
+      <button type="button" class="btn small rv-whole" aria-pressed="false" data-rv-whole hidden>{{ t("river-whole") }}</button>
     </div>
 
-    <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}</div>
+    {#- A view's dashboard (docs/adr/0007): figures read from the drawing on
+        screen, through this reader's lens like everything in it, between
+        the controls and the drawing so that it never covers a person.
+        Filled and shown by the view's script; the river shows none. -#}
+    {% if view != "river" %}
+    <div class="rv-hud" data-rv-hud hidden>
+      <dl class="rv-hud-figures">
+        <div><dt>{{ t("hud-ancestors") }}</dt><dd data-hud="anc"></dd></div>
+        <div><dt>{{ t("hud-descendants") }}</dt><dd data-hud="desc"></dd></div>
+        <div><dt>{{ t("hud-generations") }}</dt><dd data-hud="gens"></dd></div>
+        <div><dt>{{ t("hud-living") }}</dt><dd data-hud="living"></dd></div>
+        <div class="rv-hud-gauge"><dt>{{ t("hud-attested") }}</dt><dd data-hud="attested"></dd></div>
+      </dl>
+    </div>
+    {% endif %}
+    <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}
+    </div>
 
     <div class="rv-legend" role="note" aria-labelledby="rv-legend-title">
       {#- A cartographer's legend (v0.5.0, docs/adr/0004 §5): a title, the
@@ -68,7 +91,7 @@
           generation — shown by river.js only when the river has an era,
           because without a year the reader may see it has no time at all
           (ADR 0001 §3). -#}
-      <span class="rv-legend-title" id="rv-legend-title">{{ t("river-legend-title") }}</span>
+      <span class="rv-legend-title" id="rv-legend-title">{{ t("river-legend-title") if view == "river" else t("view-" ~ view ~ "-legend") }}</span>
       <span><i class="rv-key rv-key-a"></i>{{ t("river-legend-attested") }}</span>
       <span><i class="rv-key rv-key-d"></i>{{ t("river-legend-inferred") }}</span>
       <span><i class="rv-key rv-key-s"></i>{{ t("river-legend-speculative") }}</span>
@@ -81,9 +104,13 @@
           beside a third or later partner. #}
       <span><i class="rv-rep"></i>{{ t("river-legend-repeat") }}</span>
       <span><i class="rv-rep rv-rep-again"></i>{{ t("river-legend-again") }}</span>
+      {#- A river's width is its discharge, and its height is time; a
+          theme's view draws neither (docs/adr/0007), so it shows neither key. #}
+      {%- if view == "river" %}
       <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
       <span class="rv-scale" data-rv-scale hidden><b></b>{{ t("river-legend-generation") }}</span>
-      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}{{ t("river-legend-direction") }}</span>
+      {%- endif %}
+      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}{{ t("river-legend-direction") if view == "river" else t("view-" ~ view ~ "-direction") }}</span>
       <span class="rv-hint" data-rv-zoom-wrap hidden>{{ t("river-zoom-hint") }}</span>
     </div>
   </section>
@@ -99,4 +126,6 @@
 <script type="application/json" id="rv-data">{{ payload|safe }}</script>
 {% endblock %}
 
-{% block scripts %}<script src="/static/river.js" defer></script><script src="/static/river-scene.js" defer></script>{% endblock %}
+{#- A theme's view registers itself before river.js runs, and brings its own
+    living scene; the river's is river-scene.js. -#}
+{% block scripts %}{% if view == "tree" %}<script src="/static/fusion.js" defer></script>{% elif view == "galaxy" %}<script src="/static/galaxy.js" defer></script>{% endif %}<script src="/static/river.js" defer></script>{% if view == "river" %}<script src="/static/river-scene.js" defer></script>{% endif %}{% endblock %}

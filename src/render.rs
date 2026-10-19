@@ -32,6 +32,13 @@ pub const RIVER_JS: &str = include_str!("../static/river.js");
 /// the ground.
 pub const RIVER_SCENE_JS: &str = include_str!("../static/river-scene.js");
 
+/// Fusion's living tree, served at `/static/fusion.js`, and Galaxy's solar
+/// system, at `/static/galaxy.js` (docs/adr/0007): each a view of the river
+/// for river.js to paint with, and the scene that keeps it alive. Loaded only
+/// under their theme; the server's river is the page without them.
+pub const FUSION_JS: &str = include_str!("../static/fusion.js");
+pub const GALAXY_JS: &str = include_str!("../static/galaxy.js");
+
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
 pub const MAP_JS: &str = include_str!("../static/map.js");
@@ -63,6 +70,13 @@ pub const LEAFLET_CSS: &str = include_str!("../static/vendor/leaflet.css");
 /// one file; 0.3 MB in all.
 pub const CANOPEE_HERO_JPG: &[u8] = include_bytes!("../static/img/canopee-hero.jpg");
 pub const CANOPEE_CTA_JPG: &[u8] = include_bytes!("../static/img/canopee-cta.jpg");
+/// Fusion's and Galaxy's two photographs each, made for them in the
+/// operator's Canva (docs/adr/0007): behind the overview's hero and the
+/// sign-in, and beside the overview's last band.
+pub const FUSION_HERO_JPG: &[u8] = include_bytes!("../static/img/fusion-hero.jpg");
+pub const FUSION_CTA_JPG: &[u8] = include_bytes!("../static/img/fusion-cta.jpg");
+pub const GALAXY_HERO_JPG: &[u8] = include_bytes!("../static/img/galaxy-hero.jpg");
+pub const GALAXY_CTA_JPG: &[u8] = include_bytes!("../static/img/galaxy-cta.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 
@@ -241,6 +255,10 @@ pub struct Chrome {
     /// What the reader chose, which may be `system`. Distinct from `theme`
     /// because the selector has to show `system` as ticked.
     pub theme_choice: &'static str,
+    /// The landing page's drawing under this theme: `river`, or a theme's own
+    /// view, `tree` (Fusion) or `galaxy` (Galaxy). See
+    /// [`crate::theme::view_of`].
+    pub view: &'static str,
     /// The presentation style: how dense the page is, never what colour. A
     /// second axis from the theme, and orthogonal to it — see [`crate::style`].
     pub style: &'static str,
@@ -317,6 +335,7 @@ impl Chrome {
             dir: locale.dir.as_str(),
             theme: theme.attribute(),
             theme_choice: theme.id,
+            view: crate::theme::view_of(theme.id),
             wash: crate::theme::wash_enabled(theme, viewer.backgrounds(), wash_cookie.as_deref()),
             wash_choice,
             signed_in: viewer.signed_in(),

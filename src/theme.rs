@@ -1,4 +1,4 @@
-//! The ten themes, and how one is chosen for a request.
+//! The themes, and how one is chosen for a request.
 //!
 //! # Rendered server-side, on purpose
 //!
@@ -26,6 +26,14 @@
 //! elevation, its motion, its loaders and its two photographs — all written
 //! under `[data-theme="canopee"]`, so that choosing any other theme gives back
 //! Study 06's furniture exactly as it was.
+//!
+//! # Fusion and Galaxy, two themes with a view of their own (docs/adr/0007)
+//!
+//! Each carries furniture as Canopée does, and one thing more: its own
+//! drawing of the landing page. Under Fusion the river's layout is drawn as
+//! a living tree, under Galaxy as a solar system ([`view_of`]). The layout,
+//! the people in it and what this reader may see of them are the river's,
+//! from the same payload; only the drawing changes.
 //!
 //! `prefers-reduced-motion` keeps its power: it is a medical setting, and
 //! nothing a reader picks here overrides it (`static/app.css`, `river.js`).
@@ -66,6 +74,20 @@ pub const THEMES: &[Theme] = &[
         id: "canopee",
         key: "theme-canopee",
         note_key: Some("theme-canopee-note"),
+        wash: true,
+        colour_blind: false,
+    },
+    Theme {
+        id: "fusion",
+        key: "theme-fusion",
+        note_key: Some("theme-fusion-note"),
+        wash: true,
+        colour_blind: false,
+    },
+    Theme {
+        id: "galaxy",
+        key: "theme-galaxy",
+        note_key: Some("theme-galaxy-note"),
         wash: true,
         colour_blind: false,
     },
@@ -155,6 +177,18 @@ pub const THEMES: &[Theme] = &[
 /// nobody saw. Both are still on offer as choices, and a reader who chose
 /// Nocturne keeps it.
 pub const DEFAULT: &str = "canopee";
+
+/// The drawing of the landing page under a theme: the river, or the view a
+/// theme brings of its own (docs/adr/0007) — a living tree under Fusion, a
+/// solar system under Galaxy. Under each, the same layout, the same people
+/// and the same privacy; only the drawing changes.
+pub fn view_of(id: &str) -> &'static str {
+    match id {
+        "fusion" => "tree",
+        "galaxy" => "galaxy",
+        _ => "river",
+    }
+}
 
 /// Name of the cookie the theme selector sets.
 pub const COOKIE_NAME: &str = "axgf_theme";
@@ -255,9 +289,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn eleven_themes_plus_system_are_offered() {
+    fn thirteen_themes_plus_system_are_offered() {
         // Seven until v0.4.3, then three more: Crépuscule, Encre and Fleuve
-        // d'hiver; then Canopée, first because it is the default (v0.5.0).
+        // d'hiver; then Canopée, first because it is the default, and the
+        // two that bring a view of their own, Fusion and Galaxy (v0.5.0).
         // `system` is the last entry because following the browser is a
         // choice a reader can make, not one of the themes.
         let ids: Vec<&str> = THEMES.iter().map(|t| t.id).collect();
@@ -265,6 +300,8 @@ mod tests {
             ids,
             vec![
                 "canopee",
+                "fusion",
+                "galaxy",
                 "dark",
                 "light",
                 "high-contrast",
@@ -278,6 +315,18 @@ mod tests {
                 "system"
             ]
         );
+    }
+
+    #[test]
+    fn two_themes_bring_a_view_of_their_own() {
+        assert_eq!(view_of("fusion"), "tree");
+        assert_eq!(view_of("galaxy"), "galaxy");
+        for t in THEMES
+            .iter()
+            .filter(|t| !matches!(t.id, "fusion" | "galaxy"))
+        {
+            assert_eq!(view_of(t.id), "river", "{}", t.id);
+        }
     }
 
     #[test]

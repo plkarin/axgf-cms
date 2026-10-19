@@ -32,6 +32,17 @@
   // says so by disabling "travel".
   var cut = root.dataset.riverMotion === 'cut', raf = null, busy = false;
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Another drawing of the same river (v0.5.0, docs/adr/0007): Fusion's
+  // living tree, Galaxy's solar system. A theme's script registers it before
+  // this file runs; without one, the river. The layout, the travel, the
+  // trail, the panel, the keyboard and the camera stay this file's under
+  // every view: a view decides how a frame looks (`paint`), and may move
+  // where its people stand (`shape`), from the same payload.
+  var view = window.axgfView || null;
+  // The frame at rest, as the view draws it: where the people stand on
+  // screen, for the camera, the lit route and a finger's nearest person.
+  var here = null;
+  function shaped(r) { var fr = still(r); return view && view.shape ? view.shape(fr) : fr; }
 
   function f(n) { var r = Math.round(n * 10) / 10; return r === 0 ? '0' : String(r); }
   function cls(d) { return d <= 1 ? 1 : d <= 5 ? 2 : d <= 20 ? 3 : d <= 80 ? 4 : 5; }
@@ -349,6 +360,14 @@
   // line, the cores over the last, under the lit route and the people.
   function decorate() {
     var svg = canvas.querySelector('svg.rv-svg');
+    if (view) {
+      if (!svg) return;
+      if (view.rest) view.rest(svg, here, api);
+      place(svg, here.meta);
+      sizeHits();
+      if (window.axgfRiverScene) window.axgfRiverScene.layout(sceneLayout());
+      return;
+    }
     if (!svg || svg.querySelector('.rv-zones, .rv-banks, .rv-cores')) return;
     var fr = still(cur), E = edges(fr, byKey(fr.persons));
     var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -457,10 +476,10 @@
   }
   // The layout the living ground draws its banks and its light from.
   function sceneLayout() {
-    var fr = still(cur);
+    var fr = here;
     return {
       edges: edges(fr, byKey(fr.persons)).map(function (e) { return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf }; }),
-      persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role }; })
+      persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role, gen: p.gen, living: !!(p.s && p.s.living) }; })
     };
   }
   // Zoom to `z` about a point on screen, which stays where it is under the
@@ -468,7 +487,7 @@
   function zoomTo(z, clientX, clientY) {
     var svg = canvas.querySelector('svg.rv-svg');
     if (!svg || busy) return;
-    var F = frame(cur.layout.meta), vb = svg.viewBox.baseVal, box = svg.getBoundingClientRect();
+    var F = frame(here.meta), vb = svg.viewBox.baseVal, box = svg.getBoundingClientRect();
     if (!box.width) return;
     z = Math.min(ZMAX, Math.max(1, z));
     var fx = clientX === undefined ? 0.5 : (clientX - box.left) / box.width;
@@ -485,7 +504,7 @@
     if (!svg || cam.z <= 1) return;
     var vb = svg.viewBox.baseVal, u = vb.width / svg.getBoundingClientRect().width;
     cam.x = vb.x + vb.width / 2 - dx * u; cam.y = vb.y + vb.height / 2 - dy * u;
-    apply(svg, frame(cur.layout.meta));
+    apply(svg, frame(here.meta));
   }
   var zoomInput = root.querySelector('[data-rv-zoom]');
 
@@ -579,16 +598,18 @@
     if (!lit) return;
     var hl = svg.querySelector('.rv-hl') || svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
     hl.setAttribute('class', 'rv-hl');
-    var fr = still(cur), on = id && route(fr, id), PM = byKey(fr.persons), html = '', labels = '';
+    var fr = here, on = id && route(fr, id), PM = byKey(fr.persons), html = '', labels = '';
+    if (view && view.light) { view.light(svg, fr, on, id, api); return; }
+    var curve = view && view.edge ? view.edge : vc;
     if (on) {
       edges(fr, PM).forEach(function (e) {
         var c = e.cp, hit = e.from ? on[e.from] && (c.kids.some(function (k) { return on[k]; }) || c.parents.some(function (q) { return q !== e.from && on[q]; })) : on[e.to] && c.parents.some(function (q) { return on[q]; });
-        if (hit) html += '<path d="' + vc(e.x1, e.y1, e.x2, e.y2) + '" fill="none" class="KL" STW stroke-linecap="round"/>';
+        if (hit) html += '<path d="' + curve(e.x1, e.y1, e.x2, e.y2) + '" fill="none" class="KL" STW stroke-linecap="round"/>';
       });
       // Where a word may run before it meets the rail: the window as it is
       // on screen now (widened, zoomed), less the rail's room. A word is
       // scaled back by the zoom (cam.iz), its distance from the dot with it.
-      var vb = svg.viewBox.baseVal, F = frame(fr.meta), u = 1 / (F.k * cam.z), T = tiers(fr);
+      var vb = svg.viewBox.baseVal, F = frame(fr.meta), u = 1 / (F.k * cam.z), T = view && view.named ? view.named() : tiers(fr);
       fr.persons.forEach(function (p) {
         var s = p.s || {};
         if (!on[p.key] || p.role === 'centre' || s.redacted) return;
@@ -599,7 +620,8 @@
         labels += '<g class="rv-cs" style="transform-origin:' + f(p.x) + 'px ' + f(p.y) + 'px">';
         labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + (target ? 11 : 8.5) + '" fill="none" class="k-lit" stroke-width="' + (target ? 1.3 : 0.9) + '"' + (target ? '' : ' stroke-opacity="0.7"') + '/>';
         // The person under the pointer is named in full; a station the
-        // drawing left unnamed, by its shortest name. A row is rarely theirs
+        // drawing left unnamed, by its shortest name. A theme's view says
+        // itself whom it named (docs/adr/0007). A row is rarely theirs
         // alone, so the word sits on a ground of its own (sized in place
         // below) and goes to whichever side the window has room on: it may
         // cover a neighbour's word for as long as it is lit, and is never
@@ -645,8 +667,8 @@
     fetch('/river/data?p=' + encodeURIComponent(id) + '&n=' + n, { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw r; return r.json(); })
       .then(function (body) {
-        var A = still(cur), B = still(body.river);
-        cur = body.river; remember(cur);
+        var A = here, B = shaped(body.river);
+        cur = body.river; here = B; remember(cur);
         if (!fromHistory) {
           if (id !== trail[trail.length - 1]) trail = trail.filter(function (x) { return x !== id; }).concat([id]).slice(-7);
           history.pushState({ p: id, n: n, tab: tab }, '', url(id, n));
@@ -656,25 +678,25 @@
         if (window.axgfRiverScene) window.axgfRiverScene.travel();
         // Zoomed in, the camera glides to the fixed point with the river, so
         // the person travelled to arrives in view.
-        var c0 = { x: cam.x, y: cam.y }, c1 = centreOf(body.river.layout);
+        var c0 = { x: cam.x, y: cam.y }, c1 = centreOf(B);
         var done = function () {
           canvas.querySelectorAll('.rv-wait').forEach(function (w) { w.remove(); });
           if (cam.z > 1 && c1) { cam.x = c1.x; cam.y = c1.y; }
-          setSvg(body.svg); busy = false; raf = null; decorate(); arrive();
+          setSvg(view ? view.paint(here, api, true) : body.svg); busy = false; raf = null; decorate(); arrive();
         };
         if (cut || reduce) return done();
         var t0 = performance.now();
         (function tick(now) {
           var t = Math.min(1, (now - t0) / 560), fr = tween(A, B, ease(t));
           if (cam.z > 1 && c0.x !== null && c1) { cam.x = c0.x + (c1.x - c0.x) * ease(t); cam.y = c0.y + (c1.y - c0.y) * ease(t); }
-          place(setSvg(paint(fr)), fr.meta);
+          place(setSvg(view ? view.paint(fr, api, false) : paint(fr)), fr.meta);
           if (t < 1) raf = requestAnimationFrame(tick); else done();
         })(t0);
       })
       .catch(function () { clearTimeout(waitTimer); busy = false; location.href = url(id, n); });
   }
   function waitAt(id) {
-    var svg = canvas.querySelector('svg'), p = cur.layout.persons.filter(function (q) { return q.id === id; })[0];
+    var svg = canvas.querySelector('svg'), p = here.persons.filter(function (q) { return q.id === id; })[0];
     if (!svg || !p || cut || reduce) return;
     var box = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
     var w = document.createElement('span');
@@ -729,6 +751,7 @@
     }).join('');
     // Nothing to go back to is nothing drawn: hidden, not disabled.
     back.hidden = trail.length < 2;
+    if (whole) whole.setAttribute('aria-pressed', n === 5 ? 'true' : 'false');
     sizeHits();
   }
   function goBack() {
@@ -747,7 +770,7 @@
     var svg = canvas.querySelector('svg'); if (!svg) return null;
     var vb = svg.viewBox.baseVal, box = svg.getBoundingClientRect(), k = vb.width / box.width, best = null, bd = 44 * k;
     var x = (e.clientX - box.left) * k + vb.x, y = (e.clientY - box.top) * k + vb.y;
-    cur.layout.persons.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p.id; } });
+    here.persons.forEach(function (p) { var d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p.id; } });
     return best;
   }
   // A target a finger can hit (44 CSS px): the hit circle is sized for the
@@ -761,7 +784,7 @@
   }
   // A new width is a new window: the drawing keeps its size, the ground
   // its edges.
-  window.addEventListener('resize', function () { place(canvas.querySelector('svg.rv-svg'), cur.layout.meta); sizeHits(); });
+  window.addEventListener('resize', function () { place(canvas.querySelector('svg.rv-svg'), here.meta); sizeHits(); });
   // Hover does not exist on a tablet. "Tap to look, tap again to go": the
   // first tap on a person does what hovering does with a mouse — lights the
   // route from the centre and shows their dropped label — and a second tap
@@ -777,7 +800,7 @@
       if (!id) { looked = null; light(null); return; }
       if (id !== looked) {
         looked = id;
-        var p = cur.layout.persons.filter(function (q) { return q.id === id; })[0];
+        var p = here.persons.filter(function (q) { return q.id === id; })[0];
         light(a ? a.getAttribute('data-key') : p && p.key);
         return;
       }
@@ -890,8 +913,30 @@
       swapPanel(e.state.p);
     }
   });
+  // The whole family at once (v0.5.0, docs/adr/0007): the widest range and
+  // the camera back to the whole window. Offered beside a view; under the
+  // river, the range select says the same thing.
+  var whole = root.querySelector('[data-rv-whole]'), before = null;
+  if (whole && view) {
+    whole.hidden = false;
+    whole.addEventListener('click', function () {
+      var n = cur.layout.meta.n, on = n !== 5;
+      if (on) before = n;
+      zoomTo(1);
+      travel(cur.layout.meta.centre, on ? 5 : (before || 3));
+    });
+  }
+  // What a view may use of this file: the river's own helpers, so that a
+  // view's words, curves and counts are measured and placed as the river's.
+  var api = { f: f, vc: vc, esc: esc, cls: cls, widths: WIDTHS, mono: MONO, byKey: byKey, edges: edges,
+    tiers: tiers, width: width, clip: clip, mark: mark, privateWord: privateWord, base: base,
+    words: function () { return cur.words; } };
   // The masthead search (ui.js) travels here rather than reloading the page.
-  window.axgfRiver = { travel: function (id) { travel(id); }, layout: sceneLayout };
+  window.axgfRiver = { travel: function (id, n) { travel(id, n); }, layout: sceneLayout };
+  here = shaped(cur);
+  // Under a view, its own drawing replaces the server's river at once; the
+  // server's stays the page without scripts (app.css hides it meanwhile).
+  if (view) setSvg(view.paint(here, api, true));
   history.replaceState({ p: cur.layout.meta.centre, n: cur.layout.meta.n, tab: tab }, '');
   controls(cur.layout.meta.n);
   decorate();

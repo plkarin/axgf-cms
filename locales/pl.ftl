@@ -78,6 +78,10 @@ theme-dark-note = ciemny
 theme-river-note = Rzeka pozostaje ciemna w każdym motywie: jej kolory są dobrane do ciemnego tła.
 theme-canopee = Listowie
 theme-canopee-note = ciemny, leśna zieleń · domyślny
+theme-fusion = Fuzja
+theme-fusion-note = ciemny, neon · żywe drzewo
+theme-galaxy = Galaktyka
+theme-galaxy-note = głęboki kosmos · układ słoneczny
 
 ## Drzewo
 
@@ -188,6 +192,8 @@ error-merged-title = Ta karta już nie istnieje.
 error-merged-detail = Została scalona z { $name } { $date }. Linki do starego adresu prowadzą teraz do scalonej karty.
 error-merged-open = Otwórz scaloną kartę
 error-back-to-river = Wróć do rzeki
+view-tree-back = Wróć do drzewa
+view-galaxy-back = Wróć do galaktyki
 error-no-such-entity-title = Nie ma takiego obiektu
 error-no-such-entity-detail = Nie ma tutaj wpisu o tym identyfikatorze.
 error-deleted-while-editing = Nie ma tutaj wpisu o tym identyfikatorze. Mógł zostać usunięty, kiedy go edytowałeś.
@@ -243,6 +249,8 @@ setup-done-detail = Rekordy w rodzinie tej instalacji teraz: { $total }.
 setup-done-photos = Zdjęcia i dokumenty, które przyszły razem z nią: { $n }.
 setup-done-mismatches = Pliki, których zawartość nie zgadza się z zapisanym odciskiem: { $n }. Zostały zachowane; sprawdź je.
 setup-done-river = Otwórz rzekę
+view-tree-open = Otwórz drzewo
+view-galaxy-open = Otwórz galaktykę
 setup-done-admin = Administracja
 setup-refused-title = To nie mogło stać się archiwum
 setup-refused-detail = Nic nie zostało zapisane. Co temu przeszkodziło:
@@ -691,7 +699,13 @@ home-nothing-visitor = To archiwum rodzinne jest w przygotowaniu.
 home-eyebrow = Archiwum rodzinne
 home-hero-1 = Każde życie jest źródłem.
 home-hero-2 = Każda rodzina — rzeką.
+view-tree-hero-1 = Każde życie jest liściem.
+view-tree-hero-2 = Każda rodzina — drzewem.
+view-galaxy-hero-1 = Każde życie jest gwiazdą.
+view-galaxy-hero-2 = Każda rodzina — galaktyką.
 home-cta-river = Odkryj rzekę
+view-tree-cta = Odkryj drzewo
+view-galaxy-cta = Odkryj galaktykę
 home-cta-tree = Zobacz drzewo
 home-scroll = Przewiń, aby odkrywać
 home-trust-title = Pewność pokrewieństw
@@ -703,6 +717,8 @@ home-trust-unrated = jeszcze nieocenione
 home-showcase-eyebrow = Więcej niż imiona i daty
 home-cta-title = Razem zachowajmy pamięć rodziny.
 home-cta-detail = Każde dodane imię i każde sprawdzone źródło czynią rzekę wierniejszą dla tych, którzy przyjdą po nas.
+view-tree-cta-detail = Każde dodane imię i każde sprawdzone źródło czynią drzewo wierniejszym dla tych, którzy przyjdą po nas.
+view-galaxy-cta-detail = Każde dodane imię i każde sprawdzone źródło czynią galaktykę wierniejszą dla tych, którzy przyjdą po nas.
 home-cta-add = Dodaj osobę
 
 ## Karty przeglądu
@@ -772,6 +788,8 @@ record-open-full-page = Otwórz pełną stronę ↗
 record-open-full-title = Otwórz samodzielną stronę, którą można udostępnić
 record-edit = Edytuj
 record-see-in-river = Zobacz w rzece
+view-tree-see = Zobacz w drzewie
+view-galaxy-see = Zobacz w galaktyce
 panel-empty = Wybierz kartę, aby zobaczyć tutaj pełny wpis tej osoby.
 person-see-in-tree = Zobacz tę osobę w drzewie
 person-visibility-inline = widoczność:
@@ -3474,13 +3492,27 @@ river-legend-repeat = ×n osiągnięty n liniami, narysowany pod każdą
 river-legend-again = ↔ narysowany ponownie obok kolejnego partnera
 river-legend-discharge = potomkowie
 river-legend-direction = ↓ ku źródłu · ↑ ku żyjącym
+view-tree-direction = ↓ korzenie: przodkowie · ↑ korona: potomkowie
+view-galaxy-direction = ↓ przodkowie pod słońcem · ↑ potomkowie nad nim
 river-legend-generation = jedno pokolenie ≈ 29 lat
 river-zoom = Powiększenie
 river-still = Zatrzymaj krajobraz
+view-tree-still = Zatrzymaj drzewo
+view-galaxy-still = Zatrzymaj niebo
+river-whole = Cała rodzina
 river-zoom-hint = Powiększenie: Ctrl + kółko, uszczypnięcie lub + / − · po powiększeniu przeciągnij, by się przesunąć
 river-grid-link = Widok siatki
 river-tab-sources = Źródła
 river-legend-title = Jak czytać rzekę
+view-tree-name = Żywe drzewo
+view-tree-legend = Jak czytać drzewo
+view-galaxy-name = Galaktyka
+view-galaxy-legend = Jak czytać galaktykę
+hud-ancestors = Przodkowie
+hud-descendants = Potomkowie
+hud-generations = Pokolenia
+hud-living = Żyjący
+hud-attested = Potwierdzone więzi
 
 # Masthead search
 search-label = Szukaj osoby
@@ -3492,6 +3524,8 @@ search-heading = Osoby pasujące do „{ $q }”
 search-none = Nikt widoczny dla Ciebie nie nosi tego imienia.
 search-open-record = Otwórz kartę
 search-hint = Enter przenosi rzekę do tej osoby; Shift+Enter otwiera jej kartę.
+view-tree-search-hint = Enter przenosi drzewo do tej osoby; Shift+Enter otwiera jej kartę.
+view-galaxy-search-hint = Enter czyni tę osobę słońcem; Shift+Enter otwiera jej kartę.
 search-summary = { $n ->
         [one] { $n } osoba
         [few] { $n } osoby

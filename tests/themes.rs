@@ -69,6 +69,8 @@ fn root_vars(css: &str) -> BTreeSet<String> {
 /// to nothing else (v0.4.3).
 const THEME_SELECTORS: &[&str] = &[
     "[data-theme=\"canopee\"] {",
+    "[data-theme=\"fusion\"] {",
+    "[data-theme=\"galaxy\"] {",
     "[data-theme=\"dark\"],",
     "[data-theme=\"crepuscule\"] {",
     "[data-theme=\"encre\"] {",

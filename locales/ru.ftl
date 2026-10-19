@@ -84,6 +84,10 @@ theme-dark-note = тёмная
 theme-river-note = Река остаётся тёмной в любой теме: её цвета подобраны для тёмного фона.
 theme-canopee = Полог
 theme-canopee-note = тёмная, лесной зелёный · по умолчанию
+theme-fusion = Фьюжн
+theme-fusion-note = тёмная, неон · живое дерево
+theme-galaxy = Галактика
+theme-galaxy-note = глубокий космос · солнечная система
 
 ## Древо
 
@@ -194,6 +198,8 @@ error-merged-title = Этой карточки больше нет.
 error-merged-detail = Она была объединена с { $name } { $date }. Ссылки на старый адрес теперь ведут к объединённой карточке.
 error-merged-open = Открыть объединённую карточку
 error-back-to-river = Вернуться к реке
+view-tree-back = Вернуться к дереву
+view-galaxy-back = Вернуться к галактике
 error-no-such-entity-title = Нет такого объекта
 error-no-such-entity-detail = Здесь нет записи с таким идентификатором.
 error-deleted-while-editing = Здесь нет записи с таким идентификатором. Возможно, её удалили, пока вы её правили.
@@ -249,6 +255,8 @@ setup-done-detail = Записей в семье этой установки т�
 setup-done-photos = Фотографий и документов, пришедших вместе с ней: { $n }.
 setup-done-mismatches = Файлов, содержимое которых не совпадает с записанным отпечатком: { $n }. Они сохранены; проверьте их.
 setup-done-river = Открыть реку
+view-tree-open = Открыть дерево
+view-galaxy-open = Открыть галактику
 setup-done-admin = Администрирование
 setup-refused-title = Это не удалось сделать архивом
 setup-refused-detail = Ничего не записано. Что помешало:
@@ -698,7 +706,13 @@ home-nothing-visitor = Этот семейный архив готовится.
 home-eyebrow = Семейный архив
 home-hero-1 = Каждая жизнь — источник.
 home-hero-2 = Каждая семья — река.
+view-tree-hero-1 = Каждая жизнь — лист.
+view-tree-hero-2 = Каждая семья — дерево.
+view-galaxy-hero-1 = Каждая жизнь — звезда.
+view-galaxy-hero-2 = Каждая семья — галактика.
 home-cta-river = Исследовать реку
+view-tree-cta = Исследовать дерево
+view-galaxy-cta = Исследовать галактику
 home-cta-tree = Посмотреть древо
 home-scroll = Прокрутите, чтобы узнать больше
 home-trust-title = Достоверность родственных связей
@@ -710,6 +724,8 @@ home-trust-unrated = ещё не оценены
 home-showcase-eyebrow = Больше, чем имена и даты
 home-cta-title = Вместе сохраним память семьи.
 home-cta-detail = Каждое добавленное имя и каждый проверенный источник делают реку точнее для тех, кто придёт после нас.
+view-tree-cta-detail = Каждое добавленное имя и каждый проверенный источник делают дерево точнее для тех, кто придёт после нас.
+view-galaxy-cta-detail = Каждое добавленное имя и каждый проверенный источник делают галактику точнее для тех, кто придёт после нас.
 home-cta-add = Добавить человека
 
 ## Карточки обзора
@@ -779,6 +795,8 @@ record-open-full-page = Открыть отдельной страницей ↗
 record-open-full-title = Открыть самостоятельную страницу, которой можно поделиться
 record-edit = Править
 record-see-in-river = Показать в реке
+view-tree-see = Показать в дереве
+view-galaxy-see = Показать в галактике
 panel-empty = Выберите карточку, чтобы увидеть здесь полную запись о человеке.
 person-see-in-tree = Посмотреть этого человека в древе
 person-visibility-inline = видимость:
@@ -3476,13 +3494,27 @@ river-legend-repeat = ×n достигнут n линиями, показан п
 river-legend-again = ↔ показан снова рядом со следующим партнёром
 river-legend-discharge = потомки
 river-legend-direction = ↓ к истоку · ↑ к живым
+view-tree-direction = ↓ корни: предки · ↑ крона: потомки
+view-galaxy-direction = ↓ предки под солнцем · ↑ потомки над ним
 river-legend-generation = одно поколение ≈ 29 лет
 river-zoom = Масштаб
 river-still = Остановить пейзаж
+view-tree-still = Остановить дерево
+view-galaxy-still = Остановить небо
+river-whole = Вся семья
 river-zoom-hint = Масштаб: Ctrl + колесо, щипок или + / − · при увеличении перетаскивайте
 river-grid-link = Сетка
 river-tab-sources = Источники
 river-legend-title = Как читать реку
+view-tree-name = Живое дерево
+view-tree-legend = Как читать дерево
+view-galaxy-name = Галактика
+view-galaxy-legend = Как читать галактику
+hud-ancestors = Предки
+hud-descendants = Потомки
+hud-generations = Поколения
+hud-living = Живые
+hud-attested = Подтверждённые связи
 
 # Masthead search
 search-label = Найти человека
@@ -3494,6 +3526,8 @@ search-heading = Люди по запросу «{ $q }»
 search-none = Среди видимых вам людей никого с таким именем нет.
 search-open-record = Открыть карточку
 search-hint = Enter переносит реку к этому человеку; Shift+Enter открывает его карточку.
+view-tree-search-hint = Enter выращивает дерево вокруг этого человека; Shift+Enter открывает его карточку.
+view-galaxy-search-hint = Enter делает этого человека солнцем; Shift+Enter открывает его карточку.
 search-summary = { $n ->
         [one] { $n } человек
         [few] { $n } человека

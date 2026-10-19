@@ -104,8 +104,8 @@ fn a_button_is_36px_or_28px_and_one_radius_per_theme() {
             }
         }
     }
-    // Where the radius is decided: Study 06's on `:root`, and the one theme
-    // that carries a shape of its own.
+    // Where the radius is decided: Study 06's on `:root`, and the three
+    // themes that carry a shape of their own (the kit, docs/adr/0007).
     let defs: Vec<(String, String)> = rules()
         .into_iter()
         .filter_map(|(sel, body)| decl(&body, "--btn-radius").map(|v| (sel, v.to_string())))
@@ -115,8 +115,10 @@ fn a_button_is_36px_or_28px_and_one_radius_per_theme() {
         vec![
             (":root".to_string(), "2px".to_string()),
             ("[data-theme=\"canopee\"]".to_string(), "999px".to_string()),
+            ("[data-theme=\"fusion\"]".to_string(), "8px".to_string()),
+            ("[data-theme=\"galaxy\"]".to_string(), "999px".to_string()),
         ],
-        "--btn-radius is defined on :root and by Canopée, and nowhere else"
+        "--btn-radius is defined on :root and by the kit's three themes, and nowhere else"
     );
 }
 

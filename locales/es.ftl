@@ -78,6 +78,10 @@ theme-dark-note = oscuro
 theme-river-note = El río sigue oscuro con cualquier tema: sus colores están hechos para un fondo oscuro.
 theme-canopee = Dosel
 theme-canopee-note = oscuro, verde bosque · predeterminado
+theme-fusion = Fusión
+theme-fusion-note = oscuro, neón · un árbol vivo
+theme-galaxy = Galaxia
+theme-galaxy-note = espacio profundo · un sistema solar
 
 ## Árbol
 
@@ -180,6 +184,8 @@ error-merged-title = Esta ficha ya no existe.
 error-merged-detail = Se fusionó con { $name } el { $date }. Los enlaces a la dirección antigua llevan ahora a la ficha fusionada.
 error-merged-open = Abrir la ficha fusionada
 error-back-to-river = Volver al río
+view-tree-back = Volver al árbol
+view-galaxy-back = Volver a la galaxia
 error-no-such-entity-title = No hay tal elemento
 error-no-such-entity-detail = Aquí no hay ninguna ficha con ese identificador.
 error-deleted-while-editing = Aquí no hay ninguna ficha con ese identificador. Puede que la borraran mientras usted la editaba.
@@ -235,6 +241,8 @@ setup-done-detail = Registros en la familia de esta instalación ahora: { $total
 setup-done-photos = Fotografías y documentos que llegaron con ella: { $n }.
 setup-done-mismatches = Ficheros cuyo contenido no coincide con la huella registrada: { $n }. Se conservan; revíselos.
 setup-done-river = Abrir el río
+view-tree-open = Abrir el árbol
+view-galaxy-open = Abrir la galaxia
 setup-done-admin = Administración
 setup-refused-title = Esto no pudo convertirse en el archivo
 setup-refused-detail = No se escribió nada. Lo que lo impidió:
@@ -611,7 +619,13 @@ home-nothing-visitor = Este archivo familiar se está preparando.
 home-eyebrow = Archivo familiar
 home-hero-1 = Cada vida es una fuente.
 home-hero-2 = Cada familia, un río.
+view-tree-hero-1 = Cada vida es una hoja.
+view-tree-hero-2 = Cada familia, un árbol.
+view-galaxy-hero-1 = Cada vida es una estrella.
+view-galaxy-hero-2 = Cada familia, una galaxia.
 home-cta-river = Explorar el río
+view-tree-cta = Explorar el árbol
+view-galaxy-cta = Explorar la galaxia
 home-cta-tree = Ver el árbol
 home-scroll = Desplácese para explorar
 home-trust-title = Confianza en las filiaciones
@@ -623,6 +637,8 @@ home-trust-unrated = aún sin evaluar
 home-showcase-eyebrow = Más allá de nombres y fechas
 home-cta-title = Juntos, guardemos la memoria de la familia.
 home-cta-detail = Cada nombre añadido y cada fuente comprobada hacen el río más fiel para quienes vendrán.
+view-tree-cta-detail = Cada nombre añadido y cada fuente comprobada hacen el árbol más fiel para quienes vendrán.
+view-galaxy-cta-detail = Cada nombre añadido y cada fuente comprobada hacen la galaxia más fiel para quienes vendrán.
 home-cta-add = Añadir una persona
 
 ## Tarjetas de muestra
@@ -678,6 +694,8 @@ record-open-full-page = Abrir la página entera ↗
 record-open-full-title = Abrir la página independiente que se puede compartir
 record-edit = Editar
 record-see-in-river = Ver en el río
+view-tree-see = Ver en el árbol
+view-galaxy-see = Ver en la galaxia
 panel-empty = Elija una ficha para ver aquí el documento completo de esa persona.
 person-see-in-tree = Ver a esta persona en el árbol
 person-visibility-inline = visibilidad:
@@ -3288,13 +3306,27 @@ river-legend-repeat = ×n alcanzado por n líneas, dibujado bajo cada una
 river-legend-again = ↔ dibujado de nuevo junto a una pareja posterior
 river-legend-discharge = descendientes
 river-legend-direction = ↓ hacia la fuente · ↑ hacia los vivos
+view-tree-direction = ↓ las raíces: los antepasados · ↑ la copa: los descendientes
+view-galaxy-direction = ↓ los antepasados bajo el sol · ↑ los descendientes encima
 river-legend-generation = una generación ≈ 29 años
 river-zoom = Zoom
 river-still = Detener el paisaje
+view-tree-still = Detener el árbol
+view-galaxy-still = Detener el cielo
+river-whole = Toda la familia
 river-zoom-hint = Zoom: Ctrl + rueda, pellizcar o + / − · con zoom, arrastre para moverse
 river-grid-link = Vista en cuadrícula
 river-tab-sources = Fuentes
 river-legend-title = Cómo leer el río
+view-tree-name = Árbol vivo
+view-tree-legend = Cómo leer el árbol
+view-galaxy-name = Galaxia
+view-galaxy-legend = Cómo leer la galaxia
+hud-ancestors = Antepasados
+hud-descendants = Descendientes
+hud-generations = Generaciones
+hud-living = Vivos
+hud-attested = Vínculos comprobados
 
 # Masthead search
 search-label = Buscar una persona
@@ -3306,6 +3338,8 @@ search-heading = Personas que coinciden con «{ $q }»
 search-none = Nadie que puedas ver se llama así.
 search-open-record = Abrir la ficha
 search-hint = Intro lleva el río hasta esa persona; Mayús+Intro abre su ficha.
+view-tree-search-hint = Intro hace crecer el árbol en torno a esa persona; Mayús+Intro abre su ficha.
+view-galaxy-search-hint = Intro la convierte en el sol; Mayús+Intro abre su ficha.
 search-summary = { $n ->
         [one] { $n } persona
         [many] { $n } personas

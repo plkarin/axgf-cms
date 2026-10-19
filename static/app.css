@@ -4151,7 +4151,7 @@ a.tcard:hover {
    Canopée shows them — every other theme keeps Study 06's words alone —
    and `prefers-reduced-motion` stills them like everything else. */
 .ld { display: none; }
-[data-theme="canopee"] .ld { display: inline-grid; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .ld { display: inline-grid; }
 .ld {
   place-items: center;
   inline-size: 1.1em;
@@ -4210,7 +4210,7 @@ a.tcard:hover {
    Every other theme is a palette. Canopée carries a shape and a tempo as
    well: pill buttons, softened fields and frames, a gold glow under what
    can be pressed, and motion that answers the reader. Everything is written
-   under [data-theme="canopee"], so any other theme gives Study 06's
+   under :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]), so any other theme gives Study 06's
    furniture back exactly. What does not change, here or anywhere: the four
    button variants and their heights, the focus ring (2px at 2px on every
    control), labels above fields, the notice shapes, the chrome budgets. */
@@ -4222,76 +4222,81 @@ a.tcard:hover {
   --radius-lg: 18px;
   --tempo: 170ms;
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* Its two photographs, behind the overview's hero and the sign-in, and
+     beside the overview's last band (docs/adr/0004). The pictures are
+     cached for a day, so one that changes takes a new `?v=`. */
+  --kit-hero: url("/static/img/canopee-hero.jpg?v=2");
+  --kit-cta: url("/static/img/canopee-cta.jpg?v=2");
 }
-[data-theme="canopee"] ::selection { background: rgb(var(--glow-rgb) / 0.32); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) ::selection { background: rgb(var(--glow-rgb) / 0.32); }
 
 /* The masthead: the page's own ground, a hairline, the logo in its own
    colours, and the section you are in written in the accent. */
-[data-theme="canopee"] .masthead {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .masthead {
   background: color-mix(in srgb, var(--surface-page) 92%, transparent);
 }
-[data-theme="canopee"] .brand {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .brand {
   font-family: var(--face);
   font-size: var(--type-body);
   font-weight: var(--weight-semi);
   letter-spacing: 0.01em;
 }
 /* The logo as it was drawn: the green tile, the gold X, the pale wreath. */
-[data-theme="canopee"] .logo-mark .lm-tile { fill: var(--logo-tile); }
-[data-theme="canopee"] .logo-mark .lm-stem { stroke: var(--logo-light); }
-[data-theme="canopee"] .logo-mark .lm-leaf { fill: var(--logo-light); }
-[data-theme="canopee"] .logo-mark .lm-deep { stop-color: var(--logo-deep); }
-[data-theme="canopee"] .logo-mark .lm-gold { stop-color: var(--logo-gold); }
-[data-theme="canopee"] .logo-mark .lm-light { stop-color: var(--logo-light); }
-[data-theme="canopee"] .brand-mark {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .logo-mark .lm-tile { fill: var(--logo-tile); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .logo-mark .lm-stem { stroke: var(--logo-light); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .logo-mark .lm-leaf { fill: var(--logo-light); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .logo-mark .lm-deep { stop-color: var(--logo-deep); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .logo-mark .lm-gold { stop-color: var(--logo-gold); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .logo-mark .lm-light { stop-color: var(--logo-light); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .brand-mark {
   inline-size: 34px;
   block-size: 34px;
   margin-inline-end: -0.6rem;
 }
-[data-theme="canopee"] .login-logo {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .login-logo {
   inline-size: 76px;
   block-size: 76px;
 }
-[data-theme="canopee"] .masthead nav a[aria-current="page"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .masthead nav a[aria-current="page"] {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
 /* Pills, at the padding Study 06 measured: the three selects stay one row
    at 390px in every language (docs/adr/0002 §9), so the round costs no room. */
-[data-theme="canopee"] .lang-form select { border-radius: var(--btn-radius); }
-[data-theme="canopee"] .prefs-more { border-radius: 50%; }
-[data-theme="canopee"] .chrome-nav > a.btn {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .lang-form select { border-radius: var(--btn-radius); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .prefs-more { border-radius: 50%; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .chrome-nav > a.btn {
   background: var(--accent);
   border-color: transparent;
   color: var(--on-accent);
   font-weight: var(--weight-semi);
 }
-[data-theme="canopee"] .chrome-nav > a.btn:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .chrome-nav > a.btn:hover {
   background: color-mix(in srgb, var(--accent) 86%, var(--text-primary));
   box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75);
 }
-[data-theme="canopee"] .initials {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .initials {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-soft);
 }
-[data-theme="canopee"] .menu-panel {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .menu-panel {
   border-radius: var(--radius-lg);
   padding: 8px;
   box-shadow: 0 20px 44px -18px rgb(var(--shadow-rgb) / 0.8);
 }
-[data-theme="canopee"] .search-box > input[type="search"] { border-radius: var(--btn-radius); }
-[data-theme="canopee"] .search-suggest {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .search-box > input[type="search"] { border-radius: var(--btn-radius); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .search-suggest {
   border-radius: var(--radius);
   padding: 6px;
   box-shadow: 0 20px 44px -18px rgb(var(--shadow-rgb) / 0.8);
 }
-[data-theme="canopee"] .search-suggest li { border-radius: var(--radius-sm); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .search-suggest li { border-radius: var(--radius-sm); }
 
 /* Buttons: the same four, as pills. The primary carries an arrow that
    nudges forward under the pointer (and backward in a right-to-left
    script); the arrow is decoration, so it has no text alternative. */
-[data-theme="canopee"] .btn {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn {
   padding-inline: 18px;
   font-weight: var(--weight-semi);
   transition: background-color var(--tempo) var(--ease),
@@ -4300,44 +4305,44 @@ a.tcard:hover {
               box-shadow var(--tempo) var(--ease),
               transform var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .btn.small { padding-inline: 12px; }
-[data-theme="canopee"] .btn:hover { border-color: var(--accent); }
-[data-theme="canopee"] .btn:active { transform: translateY(1px); }
-[data-theme="canopee"] .btn.primary:hover { box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75); }
-[data-theme="canopee"] .btn.primary:not([aria-busy="true"])::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.small { padding-inline: 12px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn:hover { border-color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn:active { transform: translateY(1px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.primary:hover { box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.primary:not([aria-busy="true"])::after {
   content: "→" / "";
   display: inline-block;
   transition: transform var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .btn.primary:hover::after { transform: translateX(3px); }
-[data-theme="canopee"][dir="rtl"] .btn.primary:not([aria-busy="true"])::after { content: "←" / ""; }
-[data-theme="canopee"][dir="rtl"] .btn.primary:hover::after { transform: translateX(-3px); }
-[data-theme="canopee"] .btn.ghost:hover { border-color: transparent; color: var(--accent); }
-[data-theme="canopee"] .btn.danger:hover { border-color: var(--danger); }
-[data-theme="canopee"] .btn:disabled,
-[data-theme="canopee"] .btn[aria-disabled="true"] { transform: none; box-shadow: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.primary:hover::after { transform: translateX(3px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"])[dir="rtl"] .btn.primary:not([aria-busy="true"])::after { content: "←" / ""; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"])[dir="rtl"] .btn.primary:hover::after { transform: translateX(-3px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.ghost:hover { border-color: transparent; color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.danger:hover { border-color: var(--danger); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn:disabled,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn[aria-disabled="true"] { transform: none; box-shadow: none; }
 
 /* Focus: the ring every theme draws (2px at 2px), and under it a soft glow
    of the same gold, so the control with the keyboard reads from across a
    room. A glow, never in place of the ring. */
-[data-theme="canopee"] :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
-[data-theme="canopee"] :is(input, select, textarea):focus {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(input, select, textarea):focus {
   box-shadow: 0 0 0 6px rgb(var(--glow-rgb) / 0.2);
 }
 
 /* Fields: a softened well, and the accent on the one with the keyboard. */
-[data-theme="canopee"] main :is(input[type="text"], input[type="password"], input[type="email"],
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main :is(input[type="text"], input[type="password"], input[type="email"],
   input[type="search"], input[type="number"], input[type="url"], select, textarea) {
   padding-inline-start: 14px;
   transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-[data-theme="canopee"] :is(input, select, textarea):focus { border-color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(input, select, textarea):focus { border-color: var(--accent); }
 
 /* Frames: a sheen at the top of a raised surface and a deeper shadow, so
    a card sits on the forest floor rather than on paper. Not on a block
    inside a section (level 3 stays recessed), and not in the paper style,
    which has no cards to lift. */
-[data-theme="canopee"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner):not(:is(.card, .rec-section) *) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]):not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner):not(:is(.card, .rec-section) *) {
   background-image: linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 3.5%, transparent), transparent 48%);
   box-shadow: 0 1px 0 rgb(var(--shadow-rgb) / 0.2), 0 18px 36px -26px rgb(var(--shadow-rgb) / 0.9);
 }
@@ -4345,12 +4350,12 @@ a.tcard:hover {
 /* Notices: the same four shapes, larger, each carrying its sign — a ring
    with i, a disc with ✓, a diamond with !, a square with × — so the kind
    reads twice, by shape and by mark, and never by colour alone. */
-[data-theme="canopee"] .notice {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .notice {
   border-radius: var(--radius);
   padding-inline: 3rem 1.1rem;
   background-color: color-mix(in srgb, var(--surface-raised) 72%, transparent);
 }
-[data-theme="canopee"] .notice::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .notice::before {
   display: grid;
   place-items: center;
   inline-size: 20px;
@@ -4364,9 +4369,9 @@ a.tcard:hover {
   content: "i" / "";
   color: var(--text-secondary);
 }
-[data-theme="canopee"] .notice.ok::before { content: "✓" / ""; color: var(--surface-page); }
-[data-theme="canopee"] .notice.warn::before,
-[data-theme="canopee"] .notice-defect::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .notice.ok::before { content: "✓" / ""; color: var(--surface-page); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .notice.warn::before,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .notice-defect::before {
   content: "!" / "";
   inline-size: 22px;
   block-size: 22px;
@@ -4375,10 +4380,10 @@ a.tcard:hover {
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   color: var(--surface-page);
 }
-[data-theme="canopee"] .notice.error::before { content: "×" / ""; border-radius: 4px; color: var(--surface-page); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .notice.error::before { content: "×" / ""; border-radius: 4px; color: var(--surface-page); }
 
 /* The record's tabs: a segmented pill, the current one filled. */
-[data-theme="canopee"] .person-tabs {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tabs {
   box-shadow: none;
   gap: 0.25rem;
   padding: 4px;
@@ -4388,21 +4393,21 @@ a.tcard:hover {
   border: 1px solid var(--border-hairline);
   border-radius: var(--btn-radius);
 }
-[data-theme="canopee"] .person-tab {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab {
   border-block-end: 0;
   border-radius: var(--btn-radius);
   padding-block: 0.45rem;
   padding-inline: 0.95rem;
   transition: background-color var(--tempo) var(--ease), color var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .person-tab:hover { background: var(--surface-hover); }
-[data-theme="canopee"] .person-tab.is-current { background: var(--accent); color: var(--on-accent); }
-[data-theme="canopee"] .person-tab.is-current .tab-count { color: var(--on-accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab:hover { background: var(--surface-hover); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab.is-current { background: var(--accent); color: var(--on-accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab.is-current .tab-count { color: var(--on-accent); }
 
 /* Bars and badges: round ends. */
-[data-theme="canopee"] .conf-bar,
-[data-theme="canopee"] .conf-bar > i { border-radius: 999px; }
-[data-theme="canopee"] .edit-band { letter-spacing: 0.12em; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .conf-bar,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .conf-bar > i { border-radius: 999px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .edit-band { letter-spacing: 0.12em; }
 
 /* The overview page under Canopée: the reference's two photographs (made
    for this theme in Canva, docs/adr/0004 §3) behind the hero and beside
@@ -4411,7 +4416,7 @@ a.tcard:hover {
    a control's: the buttons over it are the ordinary buttons. The pictures
    are cached for a day, so one that changes takes a new `?v=` here, or a
    reader who saw the old one keeps it (the second pass's are `v=2`). */
-[data-theme="canopee"] .hero {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .hero {
   min-block-size: min(78vh, 46rem);
   border-color: var(--border-hairline);
   background-color: var(--surface-page);
@@ -4419,61 +4424,61 @@ a.tcard:hover {
     var(--grain),
     linear-gradient(90deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
-    url("/static/img/canopee-hero.jpg?v=2");
+    var(--kit-hero);
   background-size: 160px 160px, cover, cover, cover;
   background-position: 0 0, center, center, 70% 40%;
   background-repeat: repeat, no-repeat, no-repeat, no-repeat;
 }
-[data-theme="canopee"][dir="rtl"] .hero {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"])[dir="rtl"] .hero {
   background-image:
     var(--grain),
     linear-gradient(270deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
-    url("/static/img/canopee-hero.jpg?v=2");
+    var(--kit-hero);
 }
-[data-theme="canopee"] .eyebrow-chip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .eyebrow-chip {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   color: var(--accent);
   background: color-mix(in srgb, var(--surface-page) 60%, transparent);
 }
-[data-theme="canopee"] .hero-card,
-[data-theme="canopee"] .stat-strip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .hero-card,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .stat-strip {
   background: color-mix(in srgb, var(--surface-page) 72%, transparent);
   border-color: color-mix(in srgb, var(--border-strong) 45%, transparent);
 }
-[data-theme="canopee"] .scroll-cue { display: flex; }
-[data-theme="canopee"] .hero { padding-block-end: 4.6rem; }
-[data-theme="canopee"] .stat-ico { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
-[data-theme="canopee"] .feature-ico { border: 0; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .scroll-cue { display: flex; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .hero { padding-block-end: 4.6rem; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .stat-ico { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-ico { border: 0; }
 /* Zenze's coloured pastilles, one tint per kind of detail the archive holds:
    water for relations and places, leaf for occupations, amber for dates,
    clay for sources. Each ink is measured at 4.5:1 or more on its disc. */
-[data-theme="canopee"] .feature-ico { background: var(--accent-soft); }
-[data-theme="canopee"] .feature-ico:is([data-kind="links"], [data-kind="places"]) { background: var(--icon-river); color: var(--icon-river-ink); }
-[data-theme="canopee"] .feature-ico[data-kind="occupations"] { background: var(--icon-tree); color: var(--icon-tree-ink); }
-[data-theme="canopee"] .feature-ico:is([data-kind="uncertain"], [data-kind="preserved"]) { background: var(--icon-search); color: var(--icon-search-ink); }
-[data-theme="canopee"] .feature-ico[data-kind="sources"] { background: var(--icon-quality); color: var(--icon-quality-ink); }
-[data-theme="canopee"] .feature-card {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-ico { background: var(--accent-soft); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-ico:is([data-kind="links"], [data-kind="places"]) { background: var(--icon-river); color: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-ico[data-kind="occupations"] { background: var(--icon-tree); color: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-ico:is([data-kind="uncertain"], [data-kind="preserved"]) { background: var(--icon-search); color: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-ico[data-kind="sources"] { background: var(--icon-quality); color: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-card {
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .feature-card:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .feature-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent) 38%, transparent);
 }
-[data-theme="canopee"] .cta-banner {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .cta-banner {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
   padding-block: 0.75rem;
   padding-inline: 0.75rem 1.5rem;
 }
 @media (max-width: 860px) {
-  [data-theme="canopee"] .cta-banner { grid-template-columns: 1fr; padding-inline: 0.75rem; }
+  :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .cta-banner { grid-template-columns: 1fr; padding-inline: 0.75rem; }
 }
-[data-theme="canopee"] .cta-photo {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .cta-photo {
   display: block;
   align-self: stretch;
   min-block-size: 9rem;
   border-radius: var(--radius);
-  background: var(--surface-sunken) url("/static/img/canopee-cta.jpg?v=2") center 42% / cover;
+  background: var(--surface-sunken) var(--kit-cta) center 42% / cover;
 }
 
 /* ---------- motion under Canopée ----------
@@ -4484,18 +4489,18 @@ a.tcard:hover {
    sets `js-motion` on the root only when `prefers-reduced-motion` allows
    it, so a page without scripts, or a reader who asked for stillness,
    gets every section in place and every number whole. */
-html.js-motion[data-theme="canopee"] [data-reveal] {
+html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) [data-reveal] {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 640ms var(--ease), transform 640ms var(--ease);
 }
-html.js-motion[data-theme="canopee"] [data-reveal].is-in { opacity: 1; transform: none; }
+html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) [data-reveal].is-in { opacity: 1; transform: none; }
 /* Paper has no scroll: a section that never scrolled into view prints all
    the same. */
 @media print {
   html.js-motion[data-theme] [data-reveal] { opacity: 1; transform: none; }
 }
-html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-wheel 1600ms var(--ease) 3; }
+html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .scroll-cue > i::after { animation: cue-wheel 1600ms var(--ease) 3; }
 @keyframes cue-wheel {
   0% { transform: translateY(0); opacity: 1; }
   70% { transform: translateY(8px); opacity: 0; }
@@ -4727,10 +4732,10 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
    carries the kit onto every page: an icon disc on every section, the person
    as a card, figures as tiles, rows that answer the pointer, and buttons that
    move — a sheen across them under the pointer, a lift, an ink ripple from
-   where they were pressed. Everything stays under [data-theme="canopee"], so
+   where they were pressed. Everything stays under :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]), so
    every other theme is Study 06 exactly; nothing here names a colour, and
    prefers-reduced-motion stills it like everything else. */
-[data-theme="canopee"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) {
   --ico-leaf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 19c0-8.3 5.2-14 14-14 0 9-5.8 14-14 14z'/%3E%3Cpath d='M5 19l7.5-7.5'/%3E%3C/svg%3E");
   --ico-person: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.6'/%3E%3Cpath d='M5 20.5c0-3.9 3.1-7 7-7s7 3.1 7 7'/%3E%3C/svg%3E");
   --ico-family: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8.5' cy='8.5' r='3'/%3E%3Ccircle cx='16.5' cy='9.5' r='2.4'/%3E%3Cpath d='M3 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6'/%3E%3Cpath d='M14.4 14.4c.6-.3 1.3-.4 2.1-.4 2.6 0 4.5 2.3 4.5 5.5'/%3E%3C/svg%3E");
@@ -4758,13 +4763,13 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
 }
 
 /* ---------- buttons, every one of them ---------- */
-[data-theme="canopee"] .btn {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn {
   position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 /* The sheen: a band of light that crosses the button once under the pointer. */
-[data-theme="canopee"] .btn::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -4774,17 +4779,17 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   transition: transform 720ms var(--ease);
   pointer-events: none;
 }
-[data-theme="canopee"] .btn:hover::before { transform: translateX(130%); }
-[data-theme="canopee"] .btn.primary::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn:hover::before { transform: translateX(130%); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.primary::before {
   background: linear-gradient(105deg, transparent 32%, color-mix(in srgb, var(--surface-page) 22%, transparent) 50%, transparent 68%);
 }
-[data-theme="canopee"] .btn:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px -12px rgb(var(--shadow-rgb) / 0.9);
 }
-[data-theme="canopee"] .btn.primary:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
-[data-theme="canopee"] .btn.ghost:hover { background: var(--accent-soft); }
-[data-theme="canopee"] .btn:active {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.primary:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn.ghost:hover { background: var(--accent-soft); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .btn:active {
   transform: translateY(0) scale(0.97);
   transition-duration: 70ms;
 }
@@ -4802,8 +4807,8 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
 @keyframes ripple-ink { to { transform: scale(1); opacity: 0; } }
 /* A secondary that leads somewhere carries its own sign: the record's way
    into the river, and the edit button beside a name. */
-[data-theme="canopee"] .record-foot .btn[href^="/?p="]::after,
-[data-theme="canopee"] :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .record-foot .btn[href^="/?p="]::after,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
   content: "" / "";
   flex: none;
   inline-size: 1rem;
@@ -4813,40 +4818,40 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   mask: var(--ico-river) center / contain no-repeat;
   transition: transform var(--tempo) var(--ease);
 }
-[data-theme="canopee"] :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
   -webkit-mask-image: var(--ico-pen);
   mask-image: var(--ico-pen);
 }
-[data-theme="canopee"] :is(.record-foot .btn[href^="/?p="], :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]):hover::after { transform: translateX(2px) rotate(-6deg); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.record-foot .btn[href^="/?p="], :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]):hover::after { transform: translateX(2px) rotate(-6deg); }
 /* The edit button beside a name is the record's one action: filled, as the
    kit draws a primary. */
-[data-theme="canopee"] .person-head-actions .btn[href*="/edit"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-head-actions .btn[href*="/edit"] {
   background: var(--accent);
   border-color: transparent;
   color: var(--on-accent);
 }
-[data-theme="canopee"] .person-head-actions .btn[href*="/edit"]:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-head-actions .btn[href*="/edit"]:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
 /* Small round controls turn under the pointer. */
-[data-theme="canopee"] .prefs-more { transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), color var(--tempo) var(--ease); }
-[data-theme="canopee"] .prefs-more:hover { transform: rotate(90deg); border-color: var(--accent); color: var(--accent); }
-[data-theme="canopee"] .lang-form select { transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
-[data-theme="canopee"] .lang-form select:hover { border-color: var(--accent); box-shadow: 0 0 0 4px rgb(var(--glow-rgb) / 0.12); }
-[data-theme="canopee"] .masthead nav a { transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease); }
-[data-theme="canopee"] .masthead nav a:not([aria-current]):hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-[data-theme="canopee"] .account > summary::after { transition: transform var(--tempo) var(--ease); display: inline-block; }
-[data-theme="canopee"] .account[open] > summary::after { transform: rotate(180deg); }
-[data-theme="canopee"] .person-tab { position: relative; overflow: hidden; isolation: isolate; }
-[data-theme="canopee"] .person-tab:active { transform: scale(0.97); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .prefs-more { transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), color var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .prefs-more:hover { transform: rotate(90deg); border-color: var(--accent); color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .lang-form select { transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .lang-form select:hover { border-color: var(--accent); box-shadow: 0 0 0 4px rgb(var(--glow-rgb) / 0.12); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .masthead nav a { transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .masthead nav a:not([aria-current]):hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .account > summary::after { transition: transform var(--tempo) var(--ease); display: inline-block; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .account[open] > summary::after { transform: rotate(180deg); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab { position: relative; overflow: hidden; isolation: isolate; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab:active { transform: scale(0.97); }
 /* A link in a page's text: its underline moves off the word under the
    pointer, and takes the accent. */
-[data-theme="canopee"] main :is(p, li, td, dd) a:not(.btn) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main :is(p, li, td, dd) a:not(.btn) {
   text-underline-offset: 2px;
   transition: color var(--tempo) var(--ease), text-underline-offset var(--tempo) var(--ease);
 }
-[data-theme="canopee"] main :is(p, li, td, dd) a:not(.btn):hover { text-underline-offset: 4px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main :is(p, li, td, dd) a:not(.btn):hover { text-underline-offset: 4px; }
 
 /* ---------- page titles and section discs ---------- */
-[data-theme="canopee"] main h1:not(.hero-title)::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main h1:not(.hero-title)::after {
   content: "";
   display: block;
   inline-size: 3rem;
@@ -4859,12 +4864,12 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
    tinted disc with its sign cut out of it. The sign is the section's — a
    person for identity, two for family, a calendar for a life, a pin for
    places — and the leaf where a section has no sign of its own. */
-[data-theme="canopee"] :is(.sec-head h2, .rec-section > h2:first-child, .settings-panel legend) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.sec-head h2, .rec-section > h2:first-child, .settings-panel legend) {
   display: flex;
   align-items: center;
   gap: 0.7rem;
 }
-[data-theme="canopee"] :is(.sec-head h2, .rec-section > h2:first-child)::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.sec-head h2, .rec-section > h2:first-child)::before {
   content: "";
   flex: none;
   inline-size: 2rem;
@@ -4876,26 +4881,26 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   mask: var(--sign, var(--ico-leaf)) center / 1.05rem no-repeat, linear-gradient(black 0 0);
   mask-composite: exclude;
 }
-[data-theme="canopee"] #identity { --sign: var(--ico-person); --disc: var(--icon-river-ink); }
-[data-theme="canopee"] #family { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
-[data-theme="canopee"] #life { --sign: var(--ico-calendar); --disc: var(--icon-search-ink); }
-[data-theme="canopee"] #places { --sign: var(--ico-pin); --disc: var(--icon-river-ink); }
-[data-theme="canopee"] #occupations { --sign: var(--ico-briefcase); --disc: var(--icon-search-ink); }
-[data-theme="canopee"] #setup-archive-door { --sign: var(--ico-upload); --disc: var(--icon-river-ink); }
-[data-theme="canopee"] #setup-scratch-door { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
-[data-theme="canopee"] #setup-gedcom-door { --sign: var(--ico-book); --disc: var(--icon-search-ink); }
-[data-theme="canopee"] #relationships { --sign: var(--ico-link); --disc: var(--icon-river-ink); }
-[data-theme="canopee"] #notes { --sign: var(--ico-pen); --disc: var(--accent); }
-[data-theme="canopee"] #history { --sign: var(--ico-clock); --disc: var(--accent); }
-[data-theme="canopee"] #evidence { --sign: var(--ico-book); --disc: var(--icon-quality-ink); }
-[data-theme="canopee"] #charts { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
-[data-theme="canopee"] #profile-summary { --sign: var(--ico-star); --disc: var(--icon-river-ink); }
-[data-theme="canopee"] .completeness { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
-[data-theme="canopee"] .rec-section:has(.gallery) { --sign: var(--ico-image); --disc: var(--accent); }
-[data-theme="canopee"] .rec-section:has(.diag) { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #identity { --sign: var(--ico-person); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #family { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #life { --sign: var(--ico-calendar); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #places { --sign: var(--ico-pin); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #occupations { --sign: var(--ico-briefcase); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #setup-archive-door { --sign: var(--ico-upload); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #setup-scratch-door { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #setup-gedcom-door { --sign: var(--ico-book); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #relationships { --sign: var(--ico-link); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #notes { --sign: var(--ico-pen); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #history { --sign: var(--ico-clock); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #evidence { --sign: var(--ico-book); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #charts { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) #profile-summary { --sign: var(--ico-star); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .completeness { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .rec-section:has(.gallery) { --sign: var(--ico-image); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .rec-section:has(.diag) { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
 
 /* ---------- the record ---------- */
-[data-theme="canopee"] .person-head {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-head {
   padding: 1.25rem;
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
@@ -4904,16 +4909,16 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
     var(--surface-raised);
   box-shadow: 0 18px 36px -26px rgb(var(--shadow-rgb) / 0.9);
 }
-[data-theme="canopee"] .person-avatar {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-avatar {
   border-radius: 22px;
   border: 0;
   box-shadow: 0 0 0 3px var(--surface-raised), 0 0 0 5px color-mix(in srgb, var(--accent) 70%, transparent), 0 14px 30px -14px rgb(var(--glow-rgb) / 0.7);
   transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-[data-theme="canopee"] a.person-avatar:hover { transform: scale(1.03); }
-[data-theme="canopee"] .panel-avatar { border-radius: 16px; }
-[data-theme="canopee"] .person-head h1 { font-size: var(--type-title); letter-spacing: -0.02em; }
-[data-theme="canopee"] .person-vitals .pv-dates {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) a.person-avatar:hover { transform: scale(1.03); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .panel-avatar { border-radius: 16px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-head h1 { font-size: var(--type-title); letter-spacing: -0.02em; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-vitals .pv-dates {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -4922,11 +4927,11 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
-[data-theme="canopee"] .showcase-strip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .showcase-strip {
   border-radius: var(--radius);
   background: linear-gradient(90deg, rgb(var(--glow-rgb) / 0.08), transparent 70%), var(--surface-raised);
 }
-[data-theme="canopee"] .showcase-strip > strong {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .showcase-strip > strong {
   font-family: var(--mono);
   font-size: var(--type-label);
   font-weight: var(--weight-normal);
@@ -4934,78 +4939,78 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   text-transform: uppercase;
   color: var(--accent);
 }
-[data-theme="canopee"] .chip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .chip {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
   background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
   transition: border-color var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
-[data-theme="canopee"] .fact-chips .fc {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .fact-chips .fc {
   border-radius: var(--radius);
   border: 1px solid var(--border-hairline);
   background: var(--surface-sunken);
   transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .fact-chips .fc:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
-[data-theme="canopee"] .fact-chips dt { color: var(--accent); }
-[data-theme="canopee"] :is(.union, .place-card, .link-card, .life-row, .name-block) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .fact-chips .fc:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .fact-chips dt { color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.union, .place-card, .link-card, .life-row, .name-block) {
   transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
 }
-[data-theme="canopee"] :is(.union, .place-card, .link-card):hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.union, .place-card, .link-card):hover {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
   transform: translateY(-1px);
 }
-[data-theme="canopee"] .gallery .shot { transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); border-radius: var(--radius); overflow: hidden; }
-[data-theme="canopee"] .gallery .shot:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(var(--shadow-rgb) / 0.95); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .gallery .shot { transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); border-radius: var(--radius); overflow: hidden; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .gallery .shot:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(var(--shadow-rgb) / 0.95); }
 
 /* ---------- tables, everywhere ---------- */
-[data-theme="canopee"] thead th { border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text-secondary); }
-[data-theme="canopee"] tbody tr { transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
-[data-theme="canopee"] tbody tr:hover { box-shadow: inset 3px 0 0 var(--accent); }
-[data-theme="canopee"][dir="rtl"] tbody tr:hover { box-shadow: inset -3px 0 0 var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) thead th { border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text-secondary); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) tbody tr { transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) tbody tr:hover { box-shadow: inset 3px 0 0 var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"])[dir="rtl"] tbody tr:hover { box-shadow: inset -3px 0 0 var(--accent); }
 
 /* ---------- the tree ---------- */
-[data-theme="canopee"] .tcard {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .tcard {
   border-radius: 10px;
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .tcard:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .tcard:hover {
   transform: translateY(-2px);
   border-color: var(--accent);
   box-shadow: 0 10px 22px -14px rgb(var(--glow-rgb) / 0.8);
 }
-[data-theme="canopee"] .tcard.is-selected {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .tcard.is-selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgb(var(--glow-rgb) / 0.45), 0 10px 22px -14px rgb(var(--glow-rgb) / 0.8);
 }
-[data-theme="canopee"] .band-label {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .band-label {
   font-family: var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
 }
-[data-theme="canopee"] .tree-legend { border-radius: var(--radius); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .tree-legend { border-radius: var(--radius); }
 
 /* ---------- administration and quality ---------- */
-[data-theme="canopee"] a.stat {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) a.stat {
   text-decoration: none;
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-[data-theme="canopee"] a.stat:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) a.stat:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   box-shadow: 0 14px 28px -18px rgb(var(--glow-rgb) / 0.7);
 }
-[data-theme="canopee"] .stat .n { color: var(--accent); }
-[data-theme="canopee"] .stat .k { color: var(--text-secondary); }
-[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .stat .n { color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .stat .k { color: var(--text-secondary); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary {
   cursor: pointer;
   list-style: none;
   transition: color var(--tempo) var(--ease);
 }
-[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::-webkit-details-marker { display: none; }
-[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::-webkit-details-marker { display: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before {
   content: "";
   display: inline-block;
   inline-size: 0.9rem;
@@ -5017,15 +5022,15 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   mask: var(--ico-chev) center / contain no-repeat;
   transition: transform var(--tempo) var(--ease);
 }
-[data-theme="canopee"][dir="rtl"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before { transform: scaleX(-1); }
-[data-theme="canopee"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov)[open] > summary::before { transform: rotate(90deg); }
-[data-theme="canopee"] :is(.quality-rule, .pf-group) > summary:hover { color: var(--accent); }
-[data-theme="canopee"] .quality-rule {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"])[dir="rtl"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before { transform: scaleX(-1); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov)[open] > summary::before { transform: rotate(90deg); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.quality-rule, .pf-group) > summary:hover { color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .quality-rule {
   transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .quality-rule:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
-[data-theme="canopee"] .quality-rule[open] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 16px 32px -24px rgb(var(--glow-rgb) / 0.7); }
-[data-theme="canopee"] :is(.tab-count, .pf-group-count) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .quality-rule:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .quality-rule[open] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 16px 32px -24px rgb(var(--glow-rgb) / 0.7); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) :is(.tab-count, .pf-group-count) {
   display: inline-grid;
   place-items: center;
   min-inline-size: 1.5rem;
@@ -5034,37 +5039,37 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   background: var(--accent-soft);
   color: var(--accent);
 }
-[data-theme="canopee"] .person-tab.is-current .tab-count { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); }
-[data-theme="canopee"] .ed-save {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .person-tab.is-current .tab-count { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .ed-save {
   background: color-mix(in srgb, var(--surface-page) 88%, transparent);
   border-block-start-color: color-mix(in srgb, var(--accent) 40%, transparent);
   box-shadow: 0 -16px 30px -24px rgb(var(--glow-rgb) / 0.6);
 }
-[data-theme="canopee"] .ed-block { border-radius: var(--radius); transition: border-color var(--tempo) var(--ease); }
-[data-theme="canopee"] .ed-block:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
-[data-theme="canopee"] .edit-band {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .ed-block { border-radius: var(--radius); transition: border-color var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .ed-block:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .edit-band {
   background: linear-gradient(90deg, rgb(var(--glow-rgb) / 0.16), transparent 75%);
   color: var(--accent);
 }
-[data-theme="canopee"] .search-results li {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .search-results li {
   border-radius: var(--radius-sm);
   padding-inline: 0.75rem;
   transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-[data-theme="canopee"] .search-results li:hover { background: var(--surface-hover); box-shadow: inset 3px 0 0 var(--accent); }
-[data-theme="canopee"] .settings-panel {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .search-results li:hover { background: var(--surface-hover); box-shadow: inset 3px 0 0 var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) .settings-panel {
   padding: 1.25rem 1.4rem;
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
   background: var(--surface-raised);
 }
-[data-theme="canopee"] input[type="file"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) input[type="file"] {
   padding: 0.6rem;
   border-style: dashed;
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   background: var(--surface-sunken);
 }
-[data-theme="canopee"] input[type="file"]::file-selector-button {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) input[type="file"]::file-selector-button {
   margin-inline-end: 0.8rem;
   padding: 0.35rem 0.9rem;
   border: 0;
@@ -5074,12 +5079,12 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   font-weight: var(--weight-semi);
   cursor: pointer;
 }
-[data-theme="canopee"] input[type="range"] { accent-color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) input[type="range"] { accent-color: var(--accent); }
 
 /* ---------- signing in ---------- */
 /* The one page a visitor sees first: the hero's landscape behind it, under
    the same shade, and the form as a card in front. */
-[data-theme="canopee"] main:has(form[action="/admin/login"]) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main:has(form[action="/admin/login"]) {
   max-width: none;
   min-block-size: 70vh;
   display: grid;
@@ -5087,10 +5092,244 @@ html.js-motion[data-theme="canopee"] .scroll-cue > i::after { animation: cue-whe
   background:
     var(--grain) 0 0 / 160px 160px repeat,
     linear-gradient(180deg, color-mix(in srgb, var(--surface-page) 55%, transparent), var(--surface-page) 95%),
-    url("/static/img/canopee-hero.jpg?v=2") center 35% / cover;
+    var(--kit-hero) center 35% / cover;
 }
-[data-theme="canopee"] main:has(form[action="/admin/login"]) > * { inline-size: min(28rem, 100%); }
-[data-theme="canopee"] main:has(form[action="/admin/login"]) .card {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main:has(form[action="/admin/login"]) > * { inline-size: min(28rem, 100%); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"]) main:has(form[action="/admin/login"]) .card {
   background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
   box-shadow: 0 30px 60px -30px rgb(var(--shadow-rgb) / 0.95);
+}
+
+/* ===========================================================================
+   Fusion and Galaxy — two themes with a view of their own (docs/adr/0007)
+   ===========================================================================
+   Both carry the kit — Canopée's furniture above, written for the three —
+   in their own palette (tokens.css), with their own round, tempo and
+   photographs, and each draws the landing page its own way: Fusion as a
+   living tree (static/fusion.js), Galaxy as a solar system
+   (static/galaxy.js). What does not change: everything the kit keeps, and
+   everything every theme keeps. */
+[data-theme="fusion"] {
+  --btn-radius: 8px;
+  --field-radius: 8px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
+  --tempo: 140ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --kit-hero: url("/static/img/fusion-hero.jpg");
+  --kit-cta: url("/static/img/fusion-cta.jpg");
+}
+[data-theme="galaxy"] {
+  --btn-radius: 999px;
+  --field-radius: 14px;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 22px;
+  --tempo: 200ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --kit-hero: url("/static/img/galaxy-hero.jpg");
+  --kit-cta: url("/static/img/galaxy-cta.jpg");
+}
+/* Fusion's tiles: a neon edge along the top, as the reference's dashboard
+   panels have, and a deeper shadow. Galaxy's: glass over the night, a
+   violet edge and a glow. Not in the paper style, which draws no boxes. */
+[data-theme="fusion"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card) {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 30%, transparent), 0 18px 40px -30px rgb(var(--shadow-rgb) / 0.9);
+}
+[data-theme="fusion"] .masthead { border-bottom-color: color-mix(in srgb, var(--accent) 28%, var(--border-hairline)); }
+[data-theme="galaxy"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card) {
+  background-color: color-mix(in srgb, var(--surface-raised) 84%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--border-hairline));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent), 0 24px 60px -36px rgb(var(--glow-rgb) / 0.55);
+}
+[data-theme="galaxy"] .masthead { border-bottom-color: color-mix(in srgb, var(--accent) 26%, var(--border-hairline)); }
+
+/* The river's page in their palette. The river keeps Study 06's ground
+   under every theme (tokens.css `.river`), because its water ramp is drawn
+   for it; a view is not the river, and takes its theme's colours back. */
+:is([data-theme="fusion"], [data-theme="galaxy"]) .river {
+  --surface-page: inherit; --surface-raised: inherit; --surface-sunken: inherit; --surface-hover: inherit;
+  --border-hairline: inherit; --border-strong: inherit;
+  --text-primary: inherit; --text-secondary: inherit; --text-tertiary: inherit;
+  --accent: inherit; --focus-ring: inherit; --danger: inherit;
+  --rv-ink-0: var(--surface-page); --rv-ink-1: var(--surface-sunken); --rv-ink-2: var(--surface-sunken);
+  --rv-ink-3: var(--surface-raised); --rv-ink-4: var(--surface-hover); --rv-chip-on: var(--accent-soft);
+  --rv-rule-1: var(--border-hairline); --rv-rule-2: var(--border-hairline);
+  --rv-rule-3: var(--border-strong); --rv-rule-4: var(--border-strong);
+  --rv-text-1: var(--text-primary); --rv-text-2: var(--text-secondary); --rv-text-3: var(--text-tertiary);
+  --rv-accent: var(--accent); --rv-accent-hi: var(--focus-ring); --rv-warn: var(--danger);
+  --rv-band-odd: var(--surface-sunken); --rv-band-live: var(--surface-sunken); --rv-band-rule: var(--border-hairline);
+  --rv-band-text: var(--text-tertiary); --rv-band-text-live: var(--accent);
+  --rv-data: var(--text-secondary); --rv-name: var(--text-primary); --rv-centre: var(--text-primary);
+  --rv-core: var(--text-primary);
+}
+[data-theme="fusion"] .river { --rv-water: var(--tv-vein); --rv-lit: var(--tv-vein-soft); --rv-lit-halo: var(--tv-vein); --rv-glow: var(--tv-leaf-living); }
+[data-theme="galaxy"] .river { --rv-water: var(--gx-link); --rv-lit: var(--gx-link-hot); --rv-lit-halo: var(--gx-link); --rv-glow: var(--gx-planet-living); }
+
+/* The stage: a dashboard's grid under the tree, a nebula under the sky.
+   The river's photograph and contour lines are the river's. */
+.river[data-view="tree"] .rv-canvas {
+  background-color: var(--surface-page);
+  background-image:
+    radial-gradient(55% 50% at 50% 34%, color-mix(in srgb, var(--tv-vein) 9%, transparent), transparent 72%),
+    radial-gradient(70% 40% at 50% 100%, color-mix(in srgb, var(--tv-vein) 7%, transparent), transparent 70%),
+    var(--tv-grid);
+  background-size: 100% 100%, 100% 100%, 48px 48px;
+  background-position: center, center, 0 0;
+}
+.river[data-view="galaxy"] .rv-canvas {
+  background-color: var(--surface-page);
+  background-image:
+    radial-gradient(48% 42% at 26% 28%, color-mix(in srgb, var(--gx-nebula-a) 55%, transparent), transparent 72%),
+    radial-gradient(44% 40% at 76% 74%, color-mix(in srgb, var(--gx-nebula-b) 50%, transparent), transparent 72%),
+    radial-gradient(30% 30% at 50% 50%, color-mix(in srgb, var(--gx-sun) 10%, transparent), transparent 70%);
+  background-size: 100% 100%;
+}
+.river:is([data-view="tree"], [data-view="galaxy"]) .rv-canvas::before { display: none; }
+/* The server's river is the page without scripts. Under a view it waits,
+   unseen, for the view's drawing to replace it — and shows after a moment
+   if no script ever does. */
+.river:is([data-view="tree"], [data-view="galaxy"]) .rv-canvas > svg.rv-svg:not([data-view]) {
+  opacity: 0;
+  animation: rv-await-view 0.25s linear 1.6s forwards;
+}
+@keyframes rv-await-view { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .river:is([data-view="tree"], [data-view="galaxy"]) .rv-canvas > svg.rv-svg:not([data-view]) { opacity: 1; animation: none; }
+}
+.rv-whole[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ---- the living tree (fusion.js) ---- */
+.tv-svg .tv-bg { fill: var(--surface-page); fill-opacity: 0.5; }
+.tv-svg .tv-soil { stroke: var(--tv-soil); stroke-width: 1.2; stroke-opacity: 0.7; }
+.tv-svg .tv-soil-top { stop-color: var(--tv-soil); stop-opacity: 0.07; }
+.tv-svg .tv-crown-in { stop-color: var(--tv-leaf-living); stop-opacity: 0.1; }
+.tv-svg .tv-crown-out { stop-color: var(--tv-leaf-living); stop-opacity: 0; }
+.tv-svg .tv-dot.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.75; }
+.tv-svg .tv-dot.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.6; }
+.tv-svg .tv-dot.tv-hidden { fill: var(--tv-leaf-hidden); fill-opacity: 0.45; }
+.tv-svg .tv-dot.tv-root { fill: var(--tv-teal); fill-opacity: 0.45; }
+.tv-svg .tv-soil-end { stop-color: var(--tv-soil); stop-opacity: 0; }
+.tv-svg .tv-bark { fill: var(--tv-bark); }
+.tv-svg .tv-bark-line { stroke: var(--tv-bark); }
+.tv-svg .tv-ridge { stroke: var(--tv-bark-lit); stroke-opacity: 0.55; }
+.tv-svg .tv-faint { opacity: 0.45; }
+.tv-svg .tv-vein { stroke: var(--tv-vein); stroke-opacity: 0.9; }
+.tv-svg .tv-vein-d { stroke-opacity: 0.7; }
+.tv-svg .tv-vein-s { stroke: var(--tv-vein-soft); stroke-opacity: 0.55; }
+.tv-svg .tv-twig { stroke: var(--tv-bark-lit); stroke-opacity: 0.6; }
+.tv-svg .tv-ring-arc { stroke: var(--tv-bark-lit); stroke-opacity: 0.35; stroke-width: 0.8; stroke-dasharray: 1.5 5; }
+.tv-svg .tv-twig-tip { fill: var(--tv-bark-lit); }
+.tv-svg .tv-bud { stroke-dasharray: 2 2; }
+.tv-svg .tv-end { fill: var(--surface-page); stroke: var(--tv-bark-lit); stroke-width: 1.4; }
+.tv-svg .tv-leaf.tv-living { fill: var(--tv-leaf-living); }
+.tv-svg .tv-leaf-glow.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.2; }
+.tv-svg .tv-leaf.tv-gone { fill: var(--tv-leaf-gone); }
+.tv-svg .tv-leaf-glow.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.12; }
+.tv-svg .tv-leaf.tv-hidden { fill: var(--surface-page); stroke: var(--tv-leaf-hidden); }
+.tv-svg .tv-halo { fill: var(--accent); fill-opacity: 0.12; }
+.tv-svg .tv-ring { stroke: var(--accent); }
+.tv-svg .tv-heart { fill: var(--accent); }
+.tv-svg .tv-name { fill: var(--text-primary); font-family: var(--face); }
+.tv-svg .tv-data { fill: var(--text-secondary); }
+
+/* ---- the solar system (galaxy.js) ---- */
+.gx-svg .gx-bg { fill: var(--surface-page); fill-opacity: 0; }
+.gx-svg .gx-nebula { opacity: 0.6; }
+.gx-svg .gx-neb-a-in { stop-color: var(--gx-nebula-a); stop-opacity: 0.5; }
+.gx-svg .gx-neb-b-in { stop-color: var(--gx-nebula-b); stop-opacity: 0.5; }
+.gx-svg .gx-neb-out { stop-color: var(--surface-page); stop-opacity: 0; }
+.gx-svg .gx-orbit { fill: none; stroke: var(--gx-orbit); stroke-width: 1; stroke-dasharray: 3 5; }
+.gx-svg .gx-orbit-0 { stroke-dasharray: none; stroke-opacity: 0.6; }
+.gx-svg .gx-link { stroke: var(--gx-link); stroke-opacity: 0.75; }
+.gx-svg .gx-link-d { stroke-opacity: 0.55; }
+.gx-svg .gx-link-s { stroke: var(--gx-link-hot); stroke-opacity: 0.45; }
+.gx-svg .gx-union { fill: var(--gx-link); fill-opacity: 0.8; }
+.gx-svg .gx-tail { fill: none; stroke: var(--gx-orbit); stroke-width: 1.2; }
+.gx-svg .gx-tail-tip { fill: var(--gx-link); }
+.gx-svg .gx-stub { stroke-dasharray: 2 2; }
+.gx-svg .gx-end { fill: var(--surface-page); stroke: var(--gx-planet-hidden); stroke-width: 1.4; }
+.gx-svg .gx-corona { fill: var(--gx-sun); }
+.gx-svg .gx-corona-3 { fill-opacity: 0.07; }
+.gx-svg .gx-corona-2 { fill-opacity: 0.15; }
+.gx-svg .gx-sun { fill: var(--gx-sun); }
+.gx-svg .gx-sun-core { fill: var(--gx-sun-core); }
+.gx-svg .gx-planet.gx-living { fill: var(--gx-planet-living); }
+.gx-svg .gx-planet-glow.gx-living { fill: var(--gx-planet-living); fill-opacity: 0.2; }
+.gx-svg .gx-planet.gx-gone { fill: var(--gx-planet-gone); }
+.gx-svg .gx-planet-glow.gx-gone { fill: var(--gx-planet-gone); fill-opacity: 0.18; }
+.gx-svg .gx-planet.gx-hidden { fill: var(--surface-page); stroke: var(--gx-planet-hidden); }
+.gx-svg .gx-name { fill: var(--text-primary); font-family: var(--face); }
+.gx-svg .gx-data { fill: var(--text-secondary); }
+
+/* ---- a view's dashboard: figures read from the drawing on screen ----
+   A strip of tiles between the controls and the drawing, as the reference's
+   dashboard panels sit around its tree: never over a person. */
+.rv-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-block-end: 1px solid var(--border-hairline);
+  background: color-mix(in srgb, var(--surface-page) 55%, transparent);
+}
+.rv-hud-figures { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; }
+.rv-hud-figures > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-inline-size: 6.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-hairline));
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+.rv-hud dt {
+  font-family: var(--mono);
+  font-size: var(--type-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.rv-hud dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--type-sub);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.rv-hud-gauge dd { display: flex; align-items: center; gap: 0.45rem; }
+.rv-hud-ring { inline-size: 1.5em; block-size: 1.5em; flex: none; }
+.rv-hud-track { fill: none; stroke: var(--border-hairline); stroke-width: 3.5; }
+.rv-hud-arc { fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; }
+.rv-hud-bars {
+  flex: 1 1 9rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  min-block-size: 2.6rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-hairline));
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+.rv-hud-bars i { flex: 1 1 0; min-inline-size: 4px; border-radius: 2px 2px 0 0; opacity: 0.85; }
+.river[data-view="tree"] .rv-bar-root { background: var(--tv-teal); }
+.river[data-view="tree"] .rv-bar-trunk { background: var(--tv-leaf-living); }
+.river[data-view="tree"] .rv-bar-crown { background: var(--tv-vein); }
+.river[data-view="galaxy"] .rv-bar-root { background: var(--gx-link); }
+.river[data-view="galaxy"] .rv-bar-trunk { background: var(--gx-sun); }
+.river[data-view="galaxy"] .rv-bar-crown { background: var(--gx-link-hot); }
+@media (max-width: 40rem) {
+  .rv-hud-bars { display: none; }
+  .rv-hud-figures > div { min-inline-size: 0; flex: 1 1 40%; }
+}
+@media print {
+  .rv-hud { display: none; }
 }

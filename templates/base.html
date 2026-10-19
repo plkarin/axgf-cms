@@ -39,7 +39,7 @@
         like the wordmark under every other theme. -#}
     {{ logo.mark("mh", "brand-mark") }}<span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
     <nav>
-      <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") }}</a>
+      <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
       <a href="/about" {% if nav == "about" %}aria-current="page"{% endif %}>{{ t("nav-home") }}</a>
       <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>
@@ -59,7 +59,7 @@
              aria-label="{{ t('search-label') }}"
              aria-describedby="masthead-q-hint" aria-controls="masthead-q-list" aria-expanded="false"
              data-search></label>
-      <span id="masthead-q-hint" class="sr-only">{{ t("search-hint") }}</span>
+      <span id="masthead-q-hint" class="sr-only">{{ t("search-hint") if view == "river" else t("view-" ~ view ~ "-search-hint") }}</span>
       <ul id="masthead-q-list" class="search-suggest" role="listbox" hidden></ul>
     </form>
     <div class="reading-prefs">

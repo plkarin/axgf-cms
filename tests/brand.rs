@@ -85,11 +85,14 @@ async fn the_masthead_carries_the_logo_under_every_theme() {
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("static/app.css"),
     )
     .expect("app.css");
+    // The kit's three themes colour it, each from its own `--logo-*`; every
+    // other theme draws it in ink.
     for line in css.lines().filter(|l| l.contains("var(--logo-")) {
         assert!(
-            line.trim_start()
-                .starts_with("[data-theme=\"canopee\"] .logo-mark"),
-            "the logo's own colours are Canopée's alone: {line}"
+            line.trim_start().starts_with(
+                ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"]) .logo-mark"
+            ),
+            "the logo's colours are the kit's alone: {line}"
         );
     }
     assert!(css.contains(".logo-mark stop { stop-color: currentColor; }"));

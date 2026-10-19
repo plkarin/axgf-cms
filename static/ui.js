@@ -171,7 +171,8 @@
   if (!still && "IntersectionObserver" in window) {
     var root = document.documentElement;
     root.classList.add("js-motion");
-    var canopee = root.getAttribute("data-theme") === "canopee";
+    // The kit: Canopée's furniture, shared by Fusion and Galaxy (docs/adr/0007).
+    var canopee = /^(canopee|fusion|galaxy)$/.test(root.getAttribute("data-theme") || "");
     // A section rises into place the first time it scrolls into view.
     var seen = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -207,7 +208,7 @@
   // from the pointer, gone in 0.6 s. Never where the reader asked for
   // stillness.
   document.addEventListener("pointerdown", function (ev) {
-    if (still || document.documentElement.getAttribute("data-theme") !== "canopee") return;
+    if (still || !/^(canopee|fusion|galaxy)$/.test(document.documentElement.getAttribute("data-theme") || "")) return;
     var b = ev.target.closest && ev.target.closest(".btn, .person-tab");
     if (!b || b.disabled || b.getAttribute("aria-disabled") === "true") return;
     var r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.4;

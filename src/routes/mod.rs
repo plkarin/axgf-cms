@@ -296,6 +296,10 @@ fn routes(state: Shared) -> Router {
             get(public::canopee_hero_jpg),
         )
         .route("/static/img/canopee-cta.jpg", get(public::canopee_cta_jpg))
+        .route("/static/img/fusion-hero.jpg", get(public::fusion_hero_jpg))
+        .route("/static/img/fusion-cta.jpg", get(public::fusion_cta_jpg))
+        .route("/static/img/galaxy-hero.jpg", get(public::galaxy_hero_jpg))
+        .route("/static/img/galaxy-cta.jpg", get(public::galaxy_cta_jpg))
         .route(
             "/static/img/river-ground.jpg",
             get(public::river_ground_jpg),
@@ -314,6 +318,8 @@ fn routes(state: Shared) -> Router {
         .route("/static/tree.js", get(public::tree_js))
         .route("/static/river.js", get(public::river_js))
         .route("/static/river-scene.js", get(public::river_scene_js))
+        .route("/static/fusion.js", get(public::fusion_js))
+        .route("/static/galaxy.js", get(public::galaxy_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))

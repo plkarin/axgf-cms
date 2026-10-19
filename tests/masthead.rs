@@ -90,9 +90,10 @@ fn nothing_in_the_bar_is_coloured() {
     );
     // Read rule by rule. It used to be read in chunks split at "\n.", which
     // would have let any rule that does not begin with a class through
-    // unread. Canopée, the reference theme, writes the section you are in,
-    // the sign-in and its leaf in its lime (docs/adr/0004 §2): that is the
-    // one exception, and it holds only under that theme's own selector, so
+    // unread. Canopée, the reference theme, writes the section you are in
+    // and the sign-in in its accent (docs/adr/0004 §2), and so do Fusion and
+    // Galaxy, which carry its kit (docs/adr/0007): that is the one
+    // exception, and it holds only under those themes' own selectors, so
     // every other theme keeps Study 06's ink masthead.
     let mut canopee = 0;
     for (sel, body) in rules() {
@@ -108,18 +109,40 @@ fn nothing_in_the_bar_is_coloured() {
         if !reaches || !body.contains("--accent") {
             continue;
         }
-        if sel
-            .split(',')
-            .all(|part| part.trim().starts_with("[data-theme=\"canopee\"]"))
-        {
+        const KIT: &str =
+            ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"])";
+        let own = |part: &str| {
+            let part = part.trim();
+            part.starts_with(KIT)
+                || ["canopee", "fusion", "galaxy"]
+                    .iter()
+                    .any(|t| part.starts_with(&format!("[data-theme=\"{t}\"]")))
+        };
+        // A selector list, split at its own commas only: the kit's `:is()`
+        // carries commas of its own.
+        let mut parts = Vec::new();
+        let (mut depth, mut start) = (0i32, 0usize);
+        for (i, c) in sel.char_indices() {
+            match c {
+                '(' => depth += 1,
+                ')' => depth -= 1,
+                ',' if depth == 0 => {
+                    parts.push(&sel[start..i]);
+                    start = i + 1;
+                }
+                _ => {}
+            }
+        }
+        parts.push(&sel[start..]);
+        if parts.into_iter().all(own) {
             canopee += 1;
             continue;
         }
-        panic!("{sel} puts the accent in the masthead outside Canopée: {body}");
+        panic!("{sel} puts the accent in the masthead outside the kit's themes: {body}");
     }
     assert!(
         canopee > 0,
-        "Canopée draws its own masthead, under its own selector"
+        "the kit draws its own masthead, under its themes' selectors"
     );
 }
 

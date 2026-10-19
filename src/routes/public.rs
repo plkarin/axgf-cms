@@ -1306,6 +1306,21 @@ pub async fn canopee_cta_jpg() -> Response {
     picture("image/jpeg", render::CANOPEE_CTA_JPG)
 }
 
+/// `GET /static/img/fusion-hero.jpg` and the three others: Fusion's and
+/// Galaxy's photographs, under their theme only.
+pub async fn fusion_hero_jpg() -> Response {
+    picture("image/jpeg", render::FUSION_HERO_JPG)
+}
+pub async fn fusion_cta_jpg() -> Response {
+    picture("image/jpeg", render::FUSION_CTA_JPG)
+}
+pub async fn galaxy_hero_jpg() -> Response {
+    picture("image/jpeg", render::GALAXY_HERO_JPG)
+}
+pub async fn galaxy_cta_jpg() -> Response {
+    picture("image/jpeg", render::GALAXY_CTA_JPG)
+}
+
 /// `GET /static/img/river-ground.jpg` — the river's ground, under every theme
 /// but Gravure. The same picture behind every person: nothing in it depends
 /// on the archive.
@@ -1842,6 +1857,30 @@ pub async fn river_scene_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::RIVER_SCENE_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/fusion.js` — Fusion's living tree (docs/adr/0007).
+pub async fn fusion_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::FUSION_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/galaxy.js` — Galaxy's solar system (docs/adr/0007).
+pub async fn galaxy_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::GALAXY_JS,
     )
         .into_response()
 }

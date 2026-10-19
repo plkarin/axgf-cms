@@ -69,6 +69,10 @@ theme-dark-note = dark
 theme-river-note = The river stays dark under every theme: its colours are made for a dark ground.
 theme-canopee = Canopy
 theme-canopee-note = dark, forest green · the default
+theme-fusion = Fusion
+theme-fusion-note = dark, neon · a living tree
+theme-galaxy = Galaxy
+theme-galaxy-note = deep space · a solar system
 
 ## Tree
 
@@ -171,6 +175,8 @@ error-merged-title = This record no longer exists.
 error-merged-detail = It was merged into { $name } on { $date }. Links to the old address now lead to the merged record.
 error-merged-open = Open the merged record
 error-back-to-river = Back to the river
+view-tree-back = Back to the tree
+view-galaxy-back = Back to the galaxy
 error-no-such-entity-title = No such entity
 error-no-such-entity-detail = There is no record here with that id.
 error-deleted-while-editing = There is no record here with that id. It may have been deleted while you were editing it.
@@ -226,6 +232,8 @@ setup-done-detail = Records in this installation’s family now: { $total }.
 setup-done-photos = Photographs and documents that came with it: { $n }.
 setup-done-mismatches = Files whose bytes did not match the fingerprint recorded for them: { $n }. They are kept; check them.
 setup-done-river = Open the river
+view-tree-open = Open the tree
+view-galaxy-open = Open the galaxy
 setup-done-admin = Administration
 setup-refused-title = This could not become the archive
 setup-refused-detail = Nothing was written. What stopped it:
@@ -613,7 +621,13 @@ home-nothing-visitor = This family archive is being set up.
 home-eyebrow = Family archive
 home-hero-1 = Every life is a source.
 home-hero-2 = Every family, a river.
+view-tree-hero-1 = Every life is a leaf.
+view-tree-hero-2 = Every family, a tree.
+view-galaxy-hero-1 = Every life is a star.
+view-galaxy-hero-2 = Every family, a galaxy.
 home-cta-river = Explore the river
+view-tree-cta = Explore the tree
+view-galaxy-cta = Explore the galaxy
 home-cta-tree = See the tree
 home-scroll = Scroll to explore
 home-trust-title = Confidence in each parentage
@@ -625,6 +639,8 @@ home-trust-unrated = not yet rated
 home-showcase-eyebrow = Beyond names and dates
 home-cta-title = Together, let’s keep the family’s memory.
 home-cta-detail = Every name added and every source checked makes the river truer for those who come after.
+view-tree-cta-detail = Every name added and every source checked makes the tree truer for those who come after.
+view-galaxy-cta-detail = Every name added and every source checked makes the galaxy truer for those who come after.
 home-cta-add = Add a person
 
 ## Showcase cards
@@ -680,6 +696,8 @@ record-open-full-page = Open full page ↗
 record-open-full-title = Open the standalone, shareable page
 record-edit = Edit
 record-see-in-river = See in the river
+view-tree-see = See in the tree
+view-galaxy-see = See in the galaxy
 panel-empty = Select a card to see that person's full record here.
 person-see-in-tree = See this person in the tree
 person-visibility-inline = visibility:
@@ -3318,13 +3336,27 @@ river-legend-repeat = ×n reached by n lines, drawn under each
 river-legend-again = ↔ drawn again beside a later partner
 river-legend-discharge = descendants
 river-legend-direction = ↓ toward the source · ↑ toward the living
+view-tree-direction = ↓ the roots: ancestors · ↑ the crown: descendants
+view-galaxy-direction = ↓ ancestors below the sun · ↑ descendants above
 river-legend-generation = one generation ≈ 29 years
 river-zoom = Zoom
 river-still = Hold the landscape still
+view-tree-still = Hold the tree still
+view-galaxy-still = Hold the sky still
+river-whole = Whole family
 river-zoom-hint = Zoom: Ctrl + wheel, pinch, or + / − · zoomed in, drag to move
 river-grid-link = Grid view
 river-tab-sources = Sources
 river-legend-title = How to read the river
+view-tree-name = Living tree
+view-tree-legend = How to read the tree
+view-galaxy-name = Galaxy
+view-galaxy-legend = How to read the galaxy
+hud-ancestors = Ancestors
+hud-descendants = Descendants
+hud-generations = Generations
+hud-living = Living
+hud-attested = Attested links
 
 # Masthead search
 search-label = Search for a person
@@ -3336,6 +3368,8 @@ search-heading = People matching “{ $q }”
 search-none = Nobody you can see is called that.
 search-open-record = Open the record
 search-hint = Enter travels the river to them; Shift+Enter opens their record.
+view-tree-search-hint = Enter grows the tree around them; Shift+Enter opens their record.
+view-galaxy-search-hint = Enter makes them the sun; Shift+Enter opens their record.
 search-summary = { $n ->
         [one] { $n } person
        *[other] { $n } people

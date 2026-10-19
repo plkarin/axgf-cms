@@ -15,7 +15,7 @@
 <section class="hero">
   <div class="hero-copy">
     <p class="eyebrow-chip"><span class="dot" aria-hidden="true"></span>{{ family_name }} · {{ t("home-eyebrow") }}</p>
-    <h1 class="hero-title"><span>{{ t("home-hero-1") }}</span> <span class="hero-accent">{{ t("home-hero-2") }}</span></h1>
+    <h1 class="hero-title"><span>{{ t("home-hero-1") if view == "river" else t("view-" ~ view ~ "-hero-1") }}</span> <span class="hero-accent">{{ t("home-hero-2") if view == "river" else t("view-" ~ view ~ "-hero-2") }}</span></h1>
     <p class="lede hero-lede">
       {%- if total == 0 %}{{ t("home-empty") }}
       {%- else %}{{ t("home-count", total=total) }}{% endif -%}
@@ -24,7 +24,7 @@
         one control away in the masthead (the minimalism pass). -#}
     {% if total > 0 %}
     <div class="hero-actions">
-      <a class="btn primary" href="/">{{ t("home-cta-river") }}</a>
+      <a class="btn primary" href="/">{{ t("home-cta-river") if view == "river" else t("view-" ~ view ~ "-cta") }}</a>
       <a class="btn" href="/tree"><span class="hero-ring">{{ ic.icon("tree") }}</span>{{ t("home-cta-tree") }}</a>
     </div>
     {% endif %}
@@ -96,7 +96,7 @@
   <div class="cta-photo" aria-hidden="true"></div>
   <div class="cta-copy">
     <h2 id="home-cta">{{ t("home-cta-title") }}</h2>
-    <p>{{ t("home-cta-detail") }}</p>
+    <p>{{ t("home-cta-detail") if view == "river" else t("view-" ~ view ~ "-cta-detail") }}</p>
   </div>
   {#- An editor's way to add to the archive; a reader receives no edit
       control at all, not even a disabled one. -#}

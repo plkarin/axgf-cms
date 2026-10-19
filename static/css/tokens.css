@@ -422,6 +422,181 @@
   --logo-light: #f7d99a;
 }
 
+/* --- fusion ---------------------------------------------------------------- */
+/* A dashboard at night (v0.5.0, docs/adr/0007), after the operator's two
+   references: charcoal tiles, neon red and orange, a teal and a green for
+   what is alive. Its landing view is not the river but a living tree drawn
+   from the same layout (static/fusion.js). Measured with the rules of
+   `every_theme_reads`, under its grid at its strongest pixel: the tightest
+   pair is --border-strong on --wash-3, 3.6:1; the accent reads at 5.9:1 on
+   the lightest ground, and the dark ink on it at 6.4:1. */
+[data-theme="fusion"] {
+  color-scheme: dark;
+  --surface-page: #0c0e11;
+  --surface-raised: #15181d;
+  --border-hairline: #252a32;
+  --border-strong: #6a7482;
+  --text-primary: #f0f2f5;
+  --text-secondary: #b2bac5;
+  --text-tertiary: #959fad;
+  --surface-sunken: #101317;
+  --surface-hover: #1c2027;
+  --focus-ring: #ffb454;
+  --accent: #ff5f3a;
+  --accent-soft: #2a1712;
+  --on-accent: #0c0e11;
+
+  --conf-certain: #43d98a;
+  --conf-high: #9bd36b;
+  --conf-medium: #ffb454;
+  --conf-low: #ff6b6b;
+  --conf-track: #2a3038;
+  --danger: #ff7b7b;
+  --warning: #ffc15e;
+
+  --sex-a: #16202b;
+  --sex-a-line: #5d7e9c;
+  --sex-b: #2b1d1d;
+  --sex-b-line: #9c6a5d;
+  --sex-u: #1e2126;
+  --sex-u-line: #77808b;
+
+  --hue-1: #4cc9f0;
+  --hue-2: #ff9f1c;
+  --hue-3: #2ee6a6;
+  --hue-4: #f15bb5;
+  --hue-5: #a78bfa;
+  --hue-6: #fde047;
+  --hue-7: #5eead4;
+  --hue-8: #fb7185;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.55;
+
+  --wash-1: #0d1014;
+  --wash-2: #0b0d10;
+  --wash-3: #0e1013;
+  /* The dashboard's grid, drawn and never fetched. */
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M48 0H0V48' fill='none' stroke='%23ffffff' stroke-opacity='.035' stroke-width='1'/%3E%3C/svg%3E");
+  /* The tree's stage: the dashboard's grid, a shade stronger than the page's. */
+  --tv-grid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M48 0H0V48' fill='none' stroke='%23ffffff' stroke-opacity='.05' stroke-width='1'/%3E%3C/svg%3E");
+
+  --icon-river: #12333a;
+  --icon-tree: #183a24;
+  --icon-search: #3d2a12;
+  --icon-quality: #3d1616;
+  --icon-river-ink: #5eead4;
+  --icon-tree-ink: #6ee7a0;
+  --icon-search-ink: #ffb454;
+  --icon-quality-ink: #ff7b7b;
+  --glow-rgb: 255 95 58;
+
+  /* The logo in this theme's neon (docs/adr/0006 §2): the same drawing. */
+  --logo-tile: #15181d;
+  --logo-deep: #c2410c;
+  --logo-gold: #ff5f3a;
+  --logo-light: #ffb454;
+
+  /* The living tree (static/fusion.js): bark, the light in its veins, a
+     leaf that is alive and one that is not, and the soil line. */
+  --tv-bark: #4b525d;
+  --tv-bark-lit: #79828f;
+  --tv-vein: #ff5f3a;
+  --tv-vein-soft: #ff9b5e;
+  --tv-leaf-living: #43d98a;
+  --tv-leaf-gone: #ff8a3d;
+  --tv-leaf-hidden: #6a7482;
+  --tv-soil: #ff5f3a;
+  --tv-teal: #2ee6c5;
+}
+
+/* --- galaxy ---------------------------------------------------------------- */
+/* Deep space (v0.5.0, docs/adr/0007), after the operator's two references:
+   navy, electric violet, cyan and magenta. Its landing view is a solar
+   system drawn from the same layout (static/galaxy.js): the person at the
+   centre is the sun, every generation an orbit. Measured with the rules of
+   `every_theme_reads`, under its stars at their strongest pixel: the
+   tightest pair is --border-strong on --wash-3, 4.0:1; the accent reads at
+   5.5:1 on the lightest ground, and the dark ink on it at 6.0:1. */
+[data-theme="galaxy"] {
+  color-scheme: dark;
+  --surface-page: #070a1a;
+  --surface-raised: #0f1430;
+  --border-hairline: #1f2752;
+  --border-strong: #6b74ba;
+  --text-primary: #eef0ff;
+  --text-secondary: #b8bdea;
+  --text-tertiary: #9ca2d8;
+  --surface-sunken: #0b0f24;
+  --surface-hover: #161c3f;
+  --focus-ring: #67e8f9;
+  --accent: #8b7bff;
+  --accent-soft: #1c1a45;
+  --on-accent: #070a1a;
+
+  --conf-certain: #4ef0c5;
+  --conf-high: #6bb8ff;
+  --conf-medium: #ffbe6b;
+  --conf-low: #ff6b9d;
+  --conf-track: #222a55;
+  --danger: #ff7a9c;
+  --warning: #ffc46b;
+
+  --sex-a: #121c3a;
+  --sex-a-line: #5b7bd0;
+  --sex-b: #2a1636;
+  --sex-b-line: #b06fc0;
+  --sex-u: #171c33;
+  --sex-u-line: #7a80b0;
+
+  --hue-1: #67e8f9;
+  --hue-2: #f472b6;
+  --hue-3: #a3e635;
+  --hue-4: #fbbf24;
+  --hue-5: #c084fc;
+  --hue-6: #34d399;
+  --hue-7: #60a5fa;
+  --hue-8: #fb7185;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.6;
+
+  --wash-1: #080b1d;
+  --wash-2: #070a18;
+  --wash-3: #090c20;
+  /* Stars, drawn and never fetched. */
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='12' cy='18' r='.7' fill-opacity='.5'/%3E%3Ccircle cx='71' cy='44' r='.5' fill-opacity='.4'/%3E%3Ccircle cx='132' cy='26' r='.9' fill-opacity='.35'/%3E%3Ccircle cx='38' cy='97' r='.5' fill-opacity='.45'/%3E%3Ccircle cx='104' cy='118' r='.7' fill-opacity='.3'/%3E%3Ccircle cx='150' cy='88' r='.4' fill-opacity='.5'/%3E%3Ccircle cx='86' cy='150' r='.6' fill-opacity='.35'/%3E%3Ccircle cx='6' cy='140' r='.4' fill-opacity='.4'/%3E%3C/g%3E%3C/svg%3E");
+
+  --icon-river: #11284a;
+  --icon-tree: #1d2a4d;
+  --icon-search: #2f1f4a;
+  --icon-quality: #3a1530;
+  --icon-river-ink: #67e8f9;
+  --icon-tree-ink: #a3e635;
+  --icon-search-ink: #fbbf24;
+  --icon-quality-ink: #ff7a9c;
+  --glow-rgb: 139 123 255;
+
+  /* The logo in this theme's light (docs/adr/0006 §2): the same drawing. */
+  --logo-tile: #0f1430;
+  --logo-deep: #6d28d9;
+  --logo-gold: #8b7bff;
+  --logo-light: #67e8f9;
+
+  /* The solar system (static/galaxy.js): the sun, an orbit, a link, and a
+     planet that is alive, one that is not, one this reader may not see. */
+  --gx-sun: #ffb347;
+  --gx-sun-core: #fff1c9;
+  --gx-orbit: #2c3570;
+  --gx-link: #8b7bff;
+  --gx-link-hot: #f472b6;
+  --gx-planet-living: #4ef0c5;
+  --gx-planet-gone: #8b7bff;
+  --gx-planet-hidden: #6b74ba;
+  --gx-nebula-a: #3b1f7a;
+  --gx-nebula-b: #0f3d66;
+}
+
 /* --- high contrast ------------------------------------------------------- */
 /* Pure black on pure white, borders at full strength. Not a "darker light
    theme": the point is maximum luminance separation for low vision, so every

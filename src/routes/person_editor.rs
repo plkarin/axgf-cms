@@ -247,6 +247,16 @@ pub struct RowList {
     pub add_label: String,
 }
 
+/// On the Médias tab, the radio an image carries: this picture stands for
+/// the person (`avatar.choice`, read by [`avatar_wanted`]).
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct AvatarPick {
+    /// The document's id, posted when the radio is the one ticked.
+    pub value: String,
+    /// The stored choice, or the one just sent by a refused save.
+    pub checked: bool,
+}
+
 /// Everything one record's part of a tab draws, under one name prefix.
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct Block {
@@ -269,6 +279,10 @@ pub struct Block {
     pub add_label: String,
     /// Changed in what was just submitted (a refused save): drawn open.
     pub touched: bool,
+    /// An image on the Médias tab: the radio that makes it the person's
+    /// picture. Not one of the block's fields, so choosing a picture never
+    /// counts as changing the document.
+    pub avatar: Option<AvatarPick>,
 }
 
 impl Block {
@@ -826,6 +840,10 @@ pub fn model(
                 label: o["label"].as_str().unwrap_or_default().to_string(),
             })
             .collect();
+        let chosen = match crate::avatar::read(person) {
+            crate::avatar::Choice::Document { id, .. } => Some(id),
+            _ => None,
+        };
         let mb = &mut tabs[tab("medias")].blocks;
         for did in attached {
             if !crate::access::may_read_document(flat, lens, true, &did) {
@@ -869,6 +887,10 @@ pub fn model(
                     ),
                 ],
                 remove: Some(check(format!("{prefix}.leave"), cx.t("edit-detach-file"))),
+                avatar: image.then(|| AvatarPick {
+                    checked: chosen.as_deref() == Some(did.as_str()),
+                    value: did.clone(),
+                }),
                 ..Default::default()
             });
         }
@@ -897,6 +919,9 @@ pub fn model(
                     "",
                     std::iter::once(cx.not_set()).chain(types.clone()).collect(),
                 ),
+                // Uploading a portrait and making it the face is one
+                // intention, as on the picker (`avatar-upload-title`).
+                check("new.doc.avatar".into(), cx.t("edit-avatar-upload")),
             ],
             ..Default::default()
         });
@@ -1209,6 +1234,9 @@ pub struct Working {
     pub records: BTreeMap<(String, String), (EntityKind, Value, Value, u64)>,
     pub creates: Vec<Op>,
     pub deletes: Vec<Op>,
+    /// The picture uploaded in this save with "use as the profile picture"
+    /// ticked: the id it will have.
+    pub avatar_new: Option<String>,
 }
 
 impl Working {
@@ -1556,6 +1584,11 @@ pub fn read_back(
                 if let Some(c) = text(&sub, "caption") {
                     entity["caption"] = json!(c);
                 }
+                // Only a picture can be a face; a PDF ticked as one is
+                // simply attached.
+                if on(&sub, "avatar") && kind.raster_image {
+                    work.avatar_new = Some(doc_id.clone());
+                }
                 work.creates.push(Op::AddDocument {
                     entity,
                     payload: up.bytes,
@@ -1832,6 +1865,39 @@ pub fn render_editor(
     let p = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::person::build_in(flat, id, lens, chrome.lang)
     });
+    // Médias: which picture stands for the person. A refused save keeps the
+    // choice it sent; the box above the files is drawn only when the tab has
+    // an image to choose.
+    let sent_avatar = body.and_then(|b| b.get("avatar.choice"));
+    if let Some(sent) = sent_avatar {
+        for b in model.tabs.iter_mut().flat_map(|t| t.blocks.iter_mut()) {
+            if let Some(a) = b.avatar.as_mut() {
+                a.checked = a.value == *sent;
+            }
+        }
+    }
+    let avatar = model
+        .tabs
+        .iter()
+        .flat_map(|t| t.blocks.iter())
+        .any(|b| b.avatar.is_some())
+        .then(|| {
+            let mode = match sent_avatar.map(String::as_str) {
+                Some("" | "auto") => "auto",
+                Some("none") => "none",
+                Some(_) => "document",
+                None => match crate::avatar::read(stored) {
+                    crate::avatar::Choice::Auto => "auto",
+                    crate::avatar::Choice::None => "none",
+                    crate::avatar::Choice::Document { .. } => "document",
+                },
+            };
+            json!({
+                "mode": mode,
+                "current": p.as_ref().and_then(|p| p.header.avatar.as_ref()),
+                "initials": p.as_ref().map(|p| p.header.initials.clone()).unwrap_or_default(),
+            })
+        });
     let relatives = p
         .as_ref()
         .map(|p| crate::person::RecordTab::Family.count(p))
@@ -1893,6 +1959,7 @@ pub fn render_editor(
             raw,
             error,
             saved,
+            avatar,
             unsaved => body.is_some(),
             base_version => body
                 .and_then(|b| b.get("base_version").cloned())
@@ -2071,6 +2138,24 @@ pub async fn save(
         return refused(fiche_as_sent(&form), &no_problems, r.message, r.tab);
     }
 
+    // Médias: which picture stands for the person.
+    match avatar_wanted(
+        &state,
+        &viewer,
+        chrome.lang,
+        &id,
+        &stored,
+        &body,
+        work.avatar_new.as_deref(),
+    ) {
+        Ok(Some(choice)) => {
+            entity = crate::avatar::apply(&entity, &choice);
+            entity["id"] = Value::String(id.clone());
+        }
+        Ok(None) => {}
+        Err(msg) => return refused(fiche_as_sent(&form), &no_problems, msg, "medias"),
+    }
+
     // What this editor may not read, they did not see and cannot have meant
     // to change: put back as stored.
     let readable = crate::access::readable_for(k, &stored, viewer.ceiling());
@@ -2223,6 +2308,73 @@ fn tab_of(body: &Body) -> &'static str {
     body.get("tab")
         .and_then(|t| known_tab(t))
         .unwrap_or("fiche")
+}
+
+/// The picture the Médias tab asks to stand for the person, or `None` to
+/// leave the stored choice as it is.
+///
+/// `avatar.choice` is sent only where the tab drew the choice — a person
+/// with no image to choose has no radio, and a form without one changes
+/// nothing. A picture uploaded in the same save with "use as the profile
+/// picture" ticked wins over the radios. A chosen picture must be one this
+/// editor may read and one linked to this person, as on the picker
+/// (`admin::avatar_set`); one detached in this same save leaves the choice
+/// to the software rather than to a file the record no longer holds. The
+/// focal point set on the picker is kept while the same picture stays
+/// chosen.
+fn avatar_wanted(
+    state: &Shared,
+    viewer: &Viewer,
+    lang: &str,
+    id: &str,
+    stored: &Value,
+    body: &Body,
+    uploaded: Option<&str>,
+) -> Result<Option<crate::avatar::Choice>, String> {
+    use crate::avatar::{Choice, Focal};
+    let now = crate::avatar::read(stored);
+    let wanted = if let Some(doc) = uploaded {
+        Choice::Document {
+            id: doc.to_string(),
+            focal: Focal::default(),
+        }
+    } else {
+        let Some(sent) = body.get("avatar.choice").map(|s| s.trim()) else {
+            return Ok(None);
+        };
+        match sent {
+            "" | "auto" => Choice::Auto,
+            "none" => Choice::None,
+            doc if body
+                .get(&format!("doc.{doc}.leave"))
+                .is_some_and(|v| v == "on") =>
+            {
+                Choice::Auto
+            }
+            doc => {
+                let ok = state.read_as(viewer.ceiling(), |flat, lens| {
+                    crate::person::build_in(flat, id, lens, lang)
+                        .is_some_and(|v| v.images.iter().any(|d| d.id == doc))
+                });
+                if !ok {
+                    return Err(crate::i18n::translate(
+                        lang,
+                        "avatar-not-available-detail",
+                        None,
+                    ));
+                }
+                let focal = match &now {
+                    Choice::Document { id: was, focal } if was == doc => *focal,
+                    _ => Focal::default(),
+                };
+                Choice::Document {
+                    id: doc.to_string(),
+                    focal,
+                }
+            }
+        }
+    };
+    Ok((wanted != now).then_some(wanted))
 }
 
 /// `GET /admin/person/new`. The editor's `/admin/person/:id` would otherwise

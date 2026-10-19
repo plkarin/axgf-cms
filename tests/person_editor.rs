@@ -90,6 +90,14 @@ fn submission(form: &ElementRef) -> Vec<(String, String)> {
                         out.push((name, "on".into()));
                     }
                 }
+                // A radio is posted only when it is the one ticked, and as
+                // its own value. The delete policy's radios belong to another
+                // form (`form="person-delete"`) and are not this one's.
+                Some("radio") => {
+                    if v.attr("checked").is_some() && v.attr("form").is_none() {
+                        out.push((name, v.attr("value").unwrap_or("").to_string()));
+                    }
+                }
                 Some("file") => {}
                 _ => out.push((name, v.attr("value").unwrap_or("").to_string())),
             },
@@ -562,4 +570,285 @@ async fn the_media_tab_uploads_captions_and_detaches_in_the_one_save() {
             .is_none(),
         "detached"
     );
+}
+
+/// The editor's save, as multipart, with a file under `new.doc.file`.
+async fn save_with_file(
+    app: &axum::Router,
+    cookie: &str,
+    id: &str,
+    pairs: &[(String, String)],
+    file: &[u8],
+) -> axum::response::Response {
+    use axum::body::Body;
+    use axum::http::{header, Request};
+    use tower::ServiceExt;
+    let boundary = "----axgfavatarboundary";
+    let mut body = Vec::new();
+    for (k, v) in pairs {
+        body.extend_from_slice(
+            format!("--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n")
+                .as_bytes(),
+        );
+    }
+    body.extend_from_slice(
+        format!(
+            "--{boundary}\r\nContent-Disposition: form-data; name=\"new.doc.file\"; \
+             filename=\"face.png\"\r\nContent-Type: image/png\r\n\r\n"
+        )
+        .as_bytes(),
+    );
+    body.extend_from_slice(file);
+    body.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!("/admin/person/{id}"))
+                .method("POST")
+                .header(
+                    header::CONTENT_TYPE,
+                    format!("multipart/form-data; boundary={boundary}"),
+                )
+                .header(header::COOKIE, cookie)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+/// The stored avatar choice, as the raw document carries it.
+async fn avatar_of(app: &axum::Router, cookie: &str, id: &str) -> Value {
+    flat(app, cookie, &format!("person/{id}")).await["extensions"]["axgf-cms:avatar/v1"].clone()
+}
+
+/// Médias: which picture stands for the person is chosen where the pictures
+/// are (it had been reachable only from a link the record page lost in the
+/// minimalism pass). An upload can be the face in the same save; a picture
+/// on the tab is chosen by its radio; the two answers that are not a picture
+/// are there too; and the choice is saved with the rest of the form.
+#[tokio::test]
+async fn the_media_tab_chooses_the_picture_that_stands_for_the_person() {
+    let src = bundle("avatar-src");
+    let (app, _p) = app_with_bundle("avatar", &src);
+    let cookie = admin_cookie(&app).await;
+
+    // Nobody without a picture is offered a choice between none.
+    let html = page(&app, &cookie, LONE).await;
+    assert!(
+        !html.contains(r#"name="avatar.choice""#),
+        "no picture, no choice"
+    );
+
+    // An upload ticked as the face is the face, in the one save.
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "new.doc.avatar", "on");
+    set(&mut pairs, "tab", "medias");
+    let resp = save_with_file(&app, &cookie, KID, &pairs, &png()).await;
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER);
+    let html = page(&app, &cookie, KID).await;
+    let doc = Html::parse_document(&html);
+    let did = doc
+        .select(&sel("section#medias article.ed-document"))
+        .next()
+        .expect("the upload is on the tab")
+        .value()
+        .id()
+        .unwrap()
+        .trim_start_matches("doc.")
+        .to_string();
+    assert_eq!(avatar_of(&app, &cookie, KID).await["document_id"], did);
+    // The tab says so: the box above the files shows the face, and the
+    // picture's own radio is the one ticked.
+    assert!(
+        doc.select(&sel("section#medias .ed-avatar img.ed-avatar-now"))
+            .next()
+            .is_some(),
+        "the face as it is shown now"
+    );
+    let ticked: Vec<String> = doc
+        .select(&sel(r#"input[name="avatar.choice"][checked]"#))
+        .map(|r| r.value().attr("value").unwrap().to_string())
+        .collect();
+    assert_eq!(ticked, vec![did.clone()]);
+    assert!(
+        doc.select(&sel(&format!(
+            r#"a[href="/admin/person/{KID}/avatar?from=edit"]"#
+        )))
+        .next()
+        .is_some(),
+        "framing the face is the picker's, one link away"
+    );
+
+    // Initials instead, then the software's pick: each a radio, each saved
+    // with the form.
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "avatar.choice", "none");
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    assert_eq!(avatar_of(&app, &cookie, KID).await, json!({"mode": "none"}));
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "avatar.choice", "auto");
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    assert!(
+        avatar_of(&app, &cookie, KID).await.is_null(),
+        "automatic is no choice stored"
+    );
+
+    // The picture again, by its radio; a save that leaves the radios alone
+    // leaves the choice alone.
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "avatar.choice", &did);
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    assert_eq!(avatar_of(&app, &cookie, KID).await["document_id"], did);
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "identity.name.display", "Zofia N.");
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    assert_eq!(avatar_of(&app, &cookie, KID).await["document_id"], did);
+
+    // A file that is not this person's is refused, and nothing is written.
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(
+        &mut pairs,
+        "avatar.choice",
+        "d0000000-0000-4000-8000-00000000dead",
+    );
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    assert_eq!(avatar_of(&app, &cookie, KID).await["document_id"], did);
+
+    // Detached in the same save, the picture cannot stay the face: the
+    // choice goes back to the software rather than to a file the record no
+    // longer holds.
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, &format!("doc.{did}.leave"), "on");
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    assert!(avatar_of(&app, &cookie, KID).await.is_null());
+}
+
+/// Just saved, there is nothing to cancel: the editor's way out reads "Back
+/// to the record" and goes there. Before a save it is still "Cancel".
+#[tokio::test]
+async fn after_a_save_the_way_out_is_back_to_the_record() {
+    let src = bundle("back-src");
+    let (app, _p) = app_with_bundle("back", &src);
+    let cookie = admin_cookie(&app).await;
+    let way_out = |html: &str| -> (String, String) {
+        let doc = Html::parse_document(html);
+        let a = doc
+            .select(&sel(".ed-save a.btn"))
+            .next()
+            .expect("the way out");
+        (
+            a.value().attr("href").unwrap().to_string(),
+            a.text().collect::<String>().trim().to_string(),
+        )
+    };
+    let before = page(&app, &cookie, ANNA).await;
+    assert_eq!(
+        way_out(&before),
+        (format!("/person/{ANNA}"), "Cancel".into())
+    );
+
+    let mut pairs = drawn(&app, &cookie, ANNA).await;
+    set(&mut pairs, "identity.name.display", "Anna L.");
+    let resp = post_form_as(
+        &app,
+        &cookie,
+        &format!("/admin/person/{ANNA}"),
+        &encode(&pairs),
+    )
+    .await;
+    let to = resp.headers()["location"].to_str().unwrap().to_string();
+    let after =
+        body_string(get_with_cookie(&app, to.split('#').next().unwrap(), &cookie).await).await;
+    assert_eq!(
+        way_out(&after),
+        (format!("/person/{ANNA}"), "Back to the record".into())
+    );
+}
+
+/// The picker, opened from the editor to frame the face, goes back there.
+#[tokio::test]
+async fn the_picker_opened_from_the_editor_goes_back_to_it() {
+    let src = bundle("picker-src");
+    let (app, _p) = app_with_bundle("picker", &src);
+    let cookie = admin_cookie(&app).await;
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "new.doc.avatar", "on");
+    assert_eq!(
+        save_with_file(&app, &cookie, KID, &pairs, &png())
+            .await
+            .status(),
+        StatusCode::SEE_OTHER
+    );
+    let did = avatar_of(&app, &cookie, KID).await["document_id"]
+        .as_str()
+        .expect("the upload is the face")
+        .to_string();
+
+    let html = body_string(
+        get_with_cookie(
+            &app,
+            &format!("/admin/person/{KID}/avatar?from=edit"),
+            &cookie,
+        )
+        .await,
+    )
+    .await;
+    assert!(html.contains(r#"<input type="hidden" name="from" value="edit">"#));
+    assert!(html.contains(&format!(r#"href="/admin/person/{KID}/edit#medias""#)));
+    let version = Html::parse_document(&html)
+        .select(&sel(r#"input[name="base_version"]"#))
+        .next()
+        .and_then(|i| i.value().attr("value").map(str::to_string))
+        .expect("the version the picker was drawn from");
+    let plain =
+        body_string(get_with_cookie(&app, &format!("/admin/person/{KID}/avatar"), &cookie).await)
+            .await;
+    assert!(
+        !plain.contains(r#"name="from""#),
+        "opened from the record, it goes back there"
+    );
+
+    let resp = post_form_as(
+        &app,
+        &cookie,
+        &format!("/admin/person/{KID}/avatar"),
+        &format!("choice={did}&focal_x=0.5&focal_y=0.2&from=edit&base_version={version}"),
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER);
+    assert_eq!(
+        resp.headers()["location"],
+        format!("/admin/person/{KID}/edit?saved=1#medias").as_str()
+    );
+    let stored = avatar_of(&app, &cookie, KID).await;
+    assert_eq!(stored["focal"]["y"], 0.2);
+
+    // Chosen again from the tab, the same picture keeps its framing.
+    let mut pairs = drawn(&app, &cookie, KID).await;
+    set(&mut pairs, "identity.name.display", "Zofia F.");
+    set(&mut pairs, "avatar.choice", &did);
+    assert_eq!(
+        save(&app, &cookie, KID, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    assert_eq!(avatar_of(&app, &cookie, KID).await["focal"]["y"], 0.2);
 }

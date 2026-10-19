@@ -73,6 +73,7 @@
       <h3>{% if b.href %}<a href="{{ b.href }}">{{ b.title }}</a>{% else %}{{ b.title }}{% endif %}</h3>
       {% if b.subtitle %}<span class="small muted">{{ b.subtitle }}</span>{% endif %}
     </div>
+    {% if b.avatar %}<label class="ed-avatar-pick"><input type="radio" name="avatar.choice" value="{{ b.avatar.value }}"{% if b.avatar.checked %} checked{% endif %}><span>{{ t("edit-avatar") }}</span></label>{% endif %}
     {% if b.remove %}{{ action(b.remove) }}{% endif %}
   </header>
   <div class="ed-grid" data-content>{% for f in b.fields %}{{ fld(f) }}{% endfor %}</div>
@@ -197,6 +198,26 @@
     </div>
 
     {% else %}
+    {% if tb.key == "medias" and avatar %}
+    {#- Which picture stands for the person, saved with the rest of the
+        form: each image below carries its radio, and the two answers that
+        are not a picture come first, as on the picker. Framing the face
+        stays the picker's. -#}
+    <section class="ed-avatar" aria-labelledby="ed-avatar-title" data-content>
+      {% if avatar.current %}
+      <img class="ed-avatar-now" src="/document/{{ avatar.current.id }}/thumb" alt="" width="64" height="64"
+           {%- if avatar.current.focal %} style="object-position: {{ avatar.current.focal }}"{% endif %}>
+      {% else %}
+      <span class="ed-avatar-now is-initials" aria-hidden="true">{{ avatar.initials }}</span>
+      {% endif %}
+      <div class="ed-avatar-body">
+        <h3 id="ed-avatar-title">{{ t("edit-avatar") }}</h3>
+        <label class="ed-avatar-mode"><input type="radio" name="avatar.choice" value="auto"{% if avatar.mode == "auto" %} checked{% endif %}><span>{{ t("avatar-mode-auto") }}</span></label>
+        <label class="ed-avatar-mode"><input type="radio" name="avatar.choice" value="none"{% if avatar.mode == "none" %} checked{% endif %}><span>{{ t("avatar-mode-none") }}</span></label>
+        {% if avatar.mode == "document" %}<a class="ed-avatar-frame" href="/admin/person/{{ id }}/avatar?from=edit">{{ t("edit-avatar-frame") }}</a>{% endif %}
+      </div>
+    </section>
+    {% endif %}
     {% set existing = tb.blocks | rejectattr("kind", "equalto", "new") | rejectattr("kind", "equalto", "cite") | list %}
     {% if not existing %}
     <p class="muted">
@@ -230,7 +251,9 @@
         bundle (ADR 0002 §7): under Canopée the river flows beside the words
         while it is (docs/adr/0004 §4). -#}
     <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}" data-loader="river">{{ t("admin-save") }}</button>
-    <a class="btn" href="/person/{{ id }}">{{ t("admin-cancel") }}</a>
+    {#- Just saved, there is nothing to cancel: the way out is back to the
+        record. -#}
+    <a class="btn" href="/person/{{ id }}">{% if saved is not none %}{{ t("edit-back-to-record") }}{% else %}{{ t("admin-cancel") }}{% endif %}</a>
   </div>
 </form>
 

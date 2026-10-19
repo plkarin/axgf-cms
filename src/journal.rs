@@ -546,7 +546,7 @@ mod tests {
             action: "update",
             kind: "person",
             entity_id: id,
-            label: Some("Laura Karin".into()),
+            label: Some("Irena Sowik".into()),
             version_num: Some(2),
             before: Some(&json!({"notes": "old"})),
             after: Some(&json!({"notes": "new"})),

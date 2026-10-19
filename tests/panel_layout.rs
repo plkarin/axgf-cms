@@ -25,7 +25,7 @@ fn bundle(tag: &str) -> common::Scratch {
             SOLO: {
                 "id": SOLO, "type": "person", "axgf_version": "1.0",
                 "identity": {
-                    "name": {"display": "Laura Karin", "components": [
+                    "name": {"display": "Irena Sowik", "components": [
                         {"type": "given_name", "value": "Laura", "order": 1},
                         {"type": "family_name", "value": "Karin", "order": 2}]},
                     "gender": {"value": "F"}, "is_living": true,
@@ -37,13 +37,13 @@ fn bundle(tag: &str) -> common::Scratch {
             MANY: {
                 "id": MANY, "type": "person", "axgf_version": "1.0",
                 "identity": {
-                    "name": {"display": "Marianna Ludwika Rumiński",
+                    "name": {"display": "Marianna Ludwika Lisiński",
                              "components": [
                                 {"type": "given_name", "value": "Marianna Ludwika", "order": 1},
-                                {"type": "family_name", "value": "Rumiński", "order": 2}]},
+                                {"type": "family_name", "value": "Lisiński", "order": 2}]},
                     "gender": {"value": "F"}, "is_living": false,
                     "names": [
-                        {"display": "Rumiński", "type": "alias", "components": []},
+                        {"display": "Lisiński", "type": "alias", "components": []},
                         {"display": "Marianna Ludwika Łęczycki", "type": "alias",
                          "components": [], "valid_from": "1902"},
                         {"display": "Мария Лещицкая", "type": "transliteration",
@@ -115,7 +115,7 @@ async fn a_single_name_is_a_heading_not_a_four_column_table() {
         ("page", page(&app, SOLO).await),
     ] {
         assert!(
-            body.contains("nb-display") && body.contains("Laura Karin"),
+            body.contains("nb-display") && body.contains("Irena Sowik"),
             "{surface}: one name should render as a name block"
         );
         assert!(
@@ -331,7 +331,7 @@ async fn the_panel_and_the_page_state_the_same_facts() {
     let page = page(&app, SOLO).await;
 
     for fact in [
-        "Laura Karin",
+        "Irena Sowik",
         "Laura",
         "Karin",
         "Female",

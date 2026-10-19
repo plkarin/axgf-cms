@@ -133,7 +133,7 @@ pub struct PersonOption {
 /// page and shared by every picker on it.
 ///
 /// The label carries a short id because names in a converted bundle are not
-/// unique — this bundle has eight people called "Simla" — so picking by name
+/// unique — this bundle has eight people called "Wolna" — so picking by name
 /// alone cannot say which. See [`resolve_person`] for the way back.
 pub fn person_options(flat: &Value, lens: &crate::access::Lens) -> Vec<PersonOption> {
     let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
@@ -151,7 +151,7 @@ pub fn person_options(flat: &Value, lens: &crate::access::Lens) -> Vec<PersonOpt
     out
 }
 
-/// "Maria Klicki · 1895–1973 · #00365a01".
+/// "Maria Trecki · 1895–1973 · #0b4e9d27".
 pub fn person_label(id: &str, person: &Value) -> String {
     let name = crate::view::person_display_name(person);
     let years = |k: &str| {
@@ -179,7 +179,7 @@ pub fn short_id(id: &str) -> &str {
 /// accepts anything: the label the datalist inserted, a bare id pasted from
 /// somewhere else, and a name somebody typed. The first is exact, the second
 /// is exact, and the third is only accepted when it matches exactly one
-/// person — a guess between two people called Simla is not a thing a genealogy
+/// person — a guess between two people called Wolna is not a thing a genealogy
 /// application should make on somebody's behalf.
 pub fn resolve_person(input: &str, flat: &Value) -> Result<String, PickError> {
     let input = input.trim();
@@ -417,17 +417,17 @@ mod tests {
     fn a_person_is_found_by_label_by_id_and_by_an_unambiguous_name() {
         let flat = json!({"persons": {
             "aaaaaaaa-0000-4000-8000-000000000001":
-                {"identity": {"name": {"display": "Maria Klicki"}}},
+                {"identity": {"name": {"display": "Maria Trecki"}}},
             "bbbbbbbb-0000-4000-8000-000000000002":
-                {"identity": {"name": {"display": "Simla"}}},
+                {"identity": {"name": {"display": "Wolna"}}},
             "cccccccc-0000-4000-8000-000000000003":
-                {"identity": {"name": {"display": "Simla"}}}
+                {"identity": {"name": {"display": "Wolna"}}}
         }});
         let label = person_label(
             "aaaaaaaa-0000-4000-8000-000000000001",
             &flat["persons"]["aaaaaaaa-0000-4000-8000-000000000001"],
         );
-        assert!(label.starts_with("Maria Klicki"));
+        assert!(label.starts_with("Maria Trecki"));
         assert_eq!(
             resolve_person(&label, &flat).unwrap(),
             "aaaaaaaa-0000-4000-8000-000000000001"
@@ -437,11 +437,11 @@ mod tests {
             "aaaaaaaa-0000-4000-8000-000000000001"
         );
         assert_eq!(
-            resolve_person("Maria Klicki", &flat).unwrap(),
+            resolve_person("Maria Trecki", &flat).unwrap(),
             "aaaaaaaa-0000-4000-8000-000000000001"
         );
         // Two people of that name, so this application does not pick one.
-        assert_eq!(resolve_person("Simla", &flat), Err(PickError::Ambiguous));
+        assert_eq!(resolve_person("Wolna", &flat), Err(PickError::Ambiguous));
         assert_eq!(resolve_person("Nobody", &flat), Err(PickError::NotFound));
         assert_eq!(resolve_person("  ", &flat), Err(PickError::Empty));
     }

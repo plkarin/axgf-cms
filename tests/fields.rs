@@ -64,9 +64,9 @@ fn app() -> (axum::Router, Scratch) {
     let flat = json!({
         "manifest": {"axgf": "1.1", "created_at": "2026-10-11T00:00:00Z"},
         "persons": {P: {"id": P, "type": "person", "axgf_version": "1.1", "version_num": 1,
-            "identity": {"name": {"display": "Józef Wierzbięta",
+            "identity": {"name": {"display": "Józef Brzezięcka",
                 "components": [{"type": "given_name", "value": "Józef"},
-                               {"type": "family_name", "value": "Wierzbięta"}]},
+                               {"type": "family_name", "value": "Brzezięcka"}]},
                 "gender": {"value": "M"}, "is_living": false, "visibility": "public"},
             "birth": {"date": {"value": "1888", "precision": "year", "circa": true}},
             "death": {"date": {"value": "1951", "precision": "year"}}}},

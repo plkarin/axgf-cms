@@ -757,14 +757,14 @@ mod tests {
         u.family_scope = vec!["11111111-1111-4111-8111-111111111111".into()];
         acl.users.push(u);
         acl.bind_to(
-            Some(&json!({"family": {"name": "Klicki"}, "created_at": "2026-08-09T13:15:54Z"})),
+            Some(&json!({"family": {"name": "Trecki"}, "created_at": "2026-08-09T13:15:54Z"})),
             Some("abc123".into()),
         );
         acl.save(&path).unwrap();
 
         let back = Acl::load(&path).unwrap();
         assert_eq!(back.acl_version, ACL_VERSION);
-        assert_eq!(back.bundle.family.as_deref(), Some("Klicki"));
+        assert_eq!(back.bundle.family.as_deref(), Some("Trecki"));
         let u = &back.users[0];
         assert_eq!(u.username, "karin");
         assert_eq!(u.role, Role::Contributor);
@@ -777,19 +777,19 @@ mod tests {
     fn another_familys_acl_is_detected() {
         let mut acl = Acl::default();
         acl.bind_to(
-            Some(&json!({"family": {"name": "Klicki"}, "created_at": "2026-08-09T13:15:54Z"})),
+            Some(&json!({"family": {"name": "Trecki"}, "created_at": "2026-08-09T13:15:54Z"})),
             Some("aaa".into()),
         );
 
         // The same tree, edited since — the hash moved, the identity did not.
-        let same = json!({"family": {"name": "Klicki"}, "created_at": "2026-08-09T13:15:54Z"});
+        let same = json!({"family": {"name": "Trecki"}, "created_at": "2026-08-09T13:15:54Z"});
         assert_eq!(acl.check_binding(Some(&same), Some("bbb")), Binding::Ok);
 
         // A different family altogether.
         let other = json!({"family": {"name": "Meunier"}, "created_at": "2020-01-01T00:00:00Z"});
         match acl.check_binding(Some(&other), Some("bbb")) {
             Binding::Mismatch { expected, found } => {
-                assert!(expected.contains("Klicki"), "{expected}");
+                assert!(expected.contains("Trecki"), "{expected}");
                 assert!(found.contains("Meunier"), "{found}");
             }
             Binding::Ok => panic!("a different family must be reported"),

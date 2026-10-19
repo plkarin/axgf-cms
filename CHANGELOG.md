@@ -1487,7 +1487,7 @@ Two refusals rather than guesses. A union needs at least one person in it, so
 taking out the last partner is refused and points at deleting the family, which
 is a different operation with a referential-integrity policy attached. And a
 typed name that matches two people is refused rather than resolved: this bundle
-has eight people called Simla, and picking one of them on somebody's behalf is
+has eight people called Wolna, and picking one of them on somebody's behalf is
 not a thing a genealogy application should do.
 
 Birth order is left blank when nobody stated it. A number taken from the row's
@@ -2600,7 +2600,7 @@ honour, because that is where it stops; it now keeps the pair instead of
 counting it. On the operator's own data the banner reads:
 
 > Recorded both as a couple and as parent and child:
-> **Jakub Tomasz Klicki** · **Bronisław Stanisław Klicki**
+> **Jakub Tomasz Trecki** · **Bronisław Stanisław Trecki**
 
 with a link to each record. Up to three pairs are named and the rest counted.
 A reader who may edit but may not read one of the two sees the restricted
@@ -2898,9 +2898,9 @@ now derived from the people in it:
 
 | | Label |
 |---|---|
-| both partners | `Leonard Kasprzyk & Janina Kasprzyk — 2 children` |
-| one partner | `Eugenia Oktawia Zboiński & [Unknown] — one child` |
-| children only | `Florian Klicki and 3 siblings — parents not recorded` |
+| both partners | `Leonard Wierciak & Janina Wierciak — 2 children` |
+| one partner | `Eugenia Oktawia Wolański & [Unknown] — one child` |
+| children only | `Florian Trecki and 3 siblings — parents not recorded` |
 | nothing recorded | `Family with nobody recorded` |
 
 An explicit `name` still wins where one exists. The children-only case names
@@ -2914,10 +2914,10 @@ else, so the same label is correct in Polish's three forms and Arabic's six.
 
 The same treatment reached the other listings whose summary named no people:
 
-- **event** — was `marriage — 24 August 1991` for all 141 rows; now
-  `Marriage — Adam Filip Pendzych & Katarzyna Elżbieta Grzybowski, 1820`.
+- **event** — was `marriage — 16 May 1987` for all 141 rows; now
+  `Marriage — Adam Filip Rzepczak & Katarzyna Elżbieta Jagodowski, 1820`.
 - **occupation** — was the title alone, and titles repeat across a family;
-  now `Adam Bochenek — lekarz, anatom, histolog, antropolog`.
+  now `Feliks Brzoza — lekarz, aptekarz, zielarz, nauczyciel`.
 - **link** — was `godfather of → godchild of`, naming the relationship twice
   and neither of the people; now `godfather of: Leonard → Janina`.
 - **source** — dropped the `(unknown)` that followed every title, and the
@@ -2964,7 +2964,7 @@ half the panel on a four-column table stating a single fact.
 but the card was 58px tall, enough for one line plus the dates, so the second
 line and its ellipsis were cut off by the card's own overflow and a long name
 read as a truncated fragment rather than a clamped one. Polish given-name
-chains make this the common case: `Alfons Władysław Antoni Wierzbięta` lost
+chains make this the common case: `Alfons Władysław Antoni Brzezięcka` lost
 everything after the first word. Cards are 66px; row pitch and the SVG
 connector geometry derive from `CARD_H` and followed automatically.
 

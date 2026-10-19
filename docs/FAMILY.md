@@ -61,7 +61,7 @@ a search box above the list: type part of a name and press Enter. Searching for
 Names in this kind of archive repeat — there may well be eight people called
 Maria. The list shows each person's years beside their name so you can tell
 which is which, and where two are still indistinguishable, the last part of
-their internal reference (`#3ca35cb9`) is shown too. You never need to type one
+their internal reference (`#3f81d0a6`) is shown too. You never need to type one
 of those.
 
 ## What a person's page shows you

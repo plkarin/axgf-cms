@@ -1849,7 +1849,7 @@ mod tests {
     fn stored() -> Value {
         json!({
             "identity": {
-                "name": {"display": "Maria Klicki", "components": [
+                "name": {"display": "Maria Trecki", "components": [
                     {"type": "given_name", "value": "Maria", "order": 1}]},
                 "gender": {"value": "F"},
                 "is_living": false,
@@ -1899,7 +1899,7 @@ mod tests {
         // form had no input for them is losing data to a user interface.
         let v = build_identity(
             &body(&[
-                ("name.display", "Maria Klicki"),
+                ("name.display", "Maria Trecki"),
                 ("alt.0.ci", "0"),
                 ("alt.0.display", "Maria Fiszczuk"),
                 ("alt.0.type", "married"),
@@ -1918,7 +1918,7 @@ mod tests {
     fn a_new_alternative_name_starts_with_no_parts() {
         let v = build_identity(
             &body(&[
-                ("name.display", "Maria Klicki"),
+                ("name.display", "Maria Trecki"),
                 ("alt.0.display", "Marysia"),
                 ("alt.0.type", "nickname"),
             ]),
@@ -1931,7 +1931,7 @@ mod tests {
     #[test]
     fn a_blank_row_removes_the_name_it_held() {
         let v = build_identity(
-            &body(&[("name.display", "Maria Klicki"), ("alt.0.display", "")]),
+            &body(&[("name.display", "Maria Trecki"), ("alt.0.display", "")]),
             &stored(),
         )
         .expect("built");

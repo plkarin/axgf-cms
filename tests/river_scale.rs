@@ -125,7 +125,7 @@ fn centres(flat: &Value, g: &Graph) -> Vec<String> {
     for id in &ids {
         let n = name_of(flat, id);
         if (n.contains("Jakub") || n.contains("Bronisław"))
-            && n.contains("Klicki")
+            && n.contains("Trecki")
             && !out.contains(id)
         {
             out.push(id.clone());

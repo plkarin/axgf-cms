@@ -545,7 +545,7 @@ fn a_label_at_the_right_edge_shortens_instead_of_running_off_the_frame() {
         names: [
             "Jarosław".into(),
             "Jarosław M.".into(),
-            "Jarosław Medyński".into(),
+            "Jarosław Rudyński".into(),
         ],
         years: "1901–1980".into(),
         colour: String::new(),

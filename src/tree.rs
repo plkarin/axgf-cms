@@ -29,7 +29,7 @@ use crate::view::{self, Confidence};
 // connectors must line up with the cards without a layout pass in the browser.
 const CARD_W: f64 = 132.0;
 // Tall enough for a two-line name plus the dates line. Polish given-name
-// chains run long ("Alfons Władysław Antoni Wierzbięta"); at 58px the clamped
+// chains run long ("Alfons Władysław Antoni Brzezięcka"); at 58px the clamped
 // second line, ellipsis and all, was clipped by the card's own overflow, so a
 // name read as a truncated fragment. The connector geometry and row pitch are
 // both derived from this, so raising it keeps cards and wires aligned.

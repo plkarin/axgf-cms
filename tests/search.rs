@@ -19,7 +19,7 @@ fn app() -> (axum::Router, Scratch) {
     let flat = json!({
         "manifest": {"axgf": "1.1", "created_at": "2026-10-10T00:00:00Z"},
         "persons": {
-            "p1": person("p1", "Józef", "Wierzbięta", "public"),
+            "p1": person("p1", "Józef", "Brzezięcka", "public"),
             "p2": person("p2", "Zuzanna", "Ukryta", "members"),
         },
         "families": {}, "events": {}, "places": {}, "occupations": {}, "links": {},
@@ -40,7 +40,7 @@ fn app() -> (axum::Router, Scratch) {
 #[tokio::test]
 async fn a_name_is_found_however_it_is_typed() {
     let (app, _s) = app();
-    for q in ["wierzbieta", "WIERZBIĘTA", "jozef wierz", "Józef"] {
+    for q in ["brzeziecka", "BRZEZIĘCKA", "jozef brzez", "Józef"] {
         let body = expect_status(
             get(&app, &format!("/search.json?q={}", urlencoding(q))).await,
             StatusCode::OK,
@@ -64,7 +64,7 @@ async fn a_name_is_found_however_it_is_typed() {
         assert_eq!(hits[0]["years"], "1858–");
     }
     let page = expect_status(
-        get(&app, "/search?q=wierzbieta").await,
+        get(&app, "/search?q=brzeziecka").await,
         StatusCode::OK,
         "page",
     )

@@ -29,7 +29,7 @@ const QUIET_LINK: &str = "88888888-8888-4888-8888-888888888888";
 /// Names that exist nowhere else in the bundle, so finding one in a response
 /// body is proof of a leak rather than an accident of shared vocabulary.
 const MEMBERS_NAME: &str = "Ludwika Zawadzka";
-const PRIVATE_NAME: &str = "Bronisława Wierzbięta";
+const PRIVATE_NAME: &str = "Bronisława Brzezięcka";
 const OPEN_NAME: &str = "Kazimierz Dąbrowski";
 
 fn person(id: &str, display: &str, visibility: Option<&str>, living: bool) -> serde_json::Value {

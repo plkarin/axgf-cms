@@ -415,13 +415,13 @@ mod tests {
     #[test]
     fn a_changed_scalar_is_reported_with_both_values() {
         let a = json!({"identity": {"name": {"display": "Laura"}}});
-        let b = json!({"identity": {"name": {"display": "Laura Karin"}}});
+        let b = json!({"identity": {"name": {"display": "Irena Sowik"}}});
         assert_eq!(
             diff(&a, &b),
             vec![Change {
                 path: "identity.name.display".into(),
                 from: Some("Laura".into()),
-                to: Some("Laura Karin".into()),
+                to: Some("Irena Sowik".into()),
             }]
         );
     }

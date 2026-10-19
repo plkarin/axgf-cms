@@ -626,7 +626,7 @@ fn partner_twice(b: &Bundle) -> Vec<Finding> {
 }
 
 /// A surname reduced to what a Polish family shares across genders:
-/// Klicki/Klicka, Gutowski/Gutowska, Dzierżyński/Dzierżyńska.
+/// Trecki/Trecka, Lubowski/Lubowska, Dzierżyński/Dzierżyńska.
 fn surname_stem(s: &str) -> String {
     let f = fold(s);
     for (suffix, stem) in [
@@ -645,7 +645,7 @@ fn surname_stem(s: &str) -> String {
 }
 
 /// A surname's words, each reduced by [`surname_stem`]: a double name
-/// ("Pszczółkowski Nowierski", "Gutowski Klicka") matches either half.
+/// ("Szczęsnowski Mielnicki", "Lubowski Trecka") matches either half.
 fn surname_words(s: &str) -> Vec<String> {
     s.split(|c: char| c.is_whitespace() || c == '-')
         .filter(|w| !w.is_empty())
@@ -1174,9 +1174,9 @@ mod tests {
 
     #[test]
     fn surnames_match_across_polish_gender_forms() {
-        assert_eq!(surname_stem("Klicki"), surname_stem("Klicka"));
-        assert_eq!(surname_stem("Gutowska"), surname_stem("Gutowski"));
-        assert_ne!(surname_stem("Nowak"), surname_stem("Kasprzyk"));
+        assert_eq!(surname_stem("Trecki"), surname_stem("Trecka"));
+        assert_eq!(surname_stem("Lubowska"), surname_stem("Lubowski"));
+        assert_ne!(surname_stem("Nowak"), surname_stem("Wierciak"));
     }
 
     #[test]

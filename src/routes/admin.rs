@@ -2008,7 +2008,7 @@ fn summarize(flat: &Value, lang: &str, kind: axgf_rs::EntityKind, e: &Value) -> 
 /// A family entity in a converted bundle carries a `union` and a `children`
 /// list and nothing else — no name, no dates. The rule, in order:
 ///
-/// 1. both partners known — "Leonard Kasprzyk & Janina Kasprzyk";
+/// 1. both partners known — "Leonard Wierciak & Janina Wierciak";
 /// 2. one partner — the other reads as unknown rather than being omitted,
 ///    because "married to somebody we have not recorded" is a fact;
 /// 3. no partners at all — name the **eldest child** and count the rest.

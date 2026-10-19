@@ -260,7 +260,7 @@ async fn the_page_carries_the_full_record_section_by_section() {
             jules: {
                 "id": jules, "type": "person", "axgf_version": "1.0",
                 "identity": {
-                    "name": {"display": "Bronisław Klicki", "components": []},
+                    "name": {"display": "Bronisław Trecki", "components": []},
                     "gender": {"value": "M"}, "is_living": false,
                     "visibility": "public",
                     "names": [{"type": "transliteration", "display": "Бронислав Клицкий",
@@ -274,12 +274,12 @@ async fn the_page_carries_the_full_record_section_by_section() {
                 "notes": "Emigrated in 1921."
             },
             adele: {"id": adele, "type": "person", "axgf_version": "1.0",
-                    "identity": {"name": {"display": "Karolina Boddin", "components": []},
+                    "identity": {"name": {"display": "Karolina Hollin", "components": []},
                                  "is_living": false},
                     "birth": {"date": {"value": "1893", "precision": "year"}},
                     "death": {"date": {"value": "1970", "precision": "year"}}},
             kid: {"id": kid, "type": "person", "axgf_version": "1.0",
-                  "identity": {"name": {"display": "Michał Klicki", "components": []}}}
+                  "identity": {"name": {"display": "Michał Trecki", "components": []}}}
         },
         "families": {
             "88888888-8888-4888-8888-888888888888": {
@@ -370,7 +370,7 @@ async fn the_page_carries_the_full_record_section_by_section() {
 
     // Family: the union's type, how it ended, and the child's birth order.
     assert!(body.contains("ended by the death of a spouse"));
-    assert!(body.contains("Karolina Boddin"));
+    assert!(body.contains("Karolina Hollin"));
     assert!(body.contains(&format!(r#"href="/person/{kid}""#)));
     assert!(body.contains("birth order"));
 

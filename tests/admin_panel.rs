@@ -510,10 +510,10 @@ async fn a_family_is_labelled_by_the_people_in_it() {
         .map(|n| format!("{n}{n}111111-1111-4111-8111-111111111111"))
         .collect();
     let names = [
-        "Leonard Kasprzyk",
-        "Janina Kasprzyk",
-        "Marek Kasprzyk",
-        "Zofia Kasprzyk",
+        "Leonard Wierciak",
+        "Janina Wierciak",
+        "Marek Wierciak",
+        "Zofia Wierciak",
         "Halina Nowak",
         "Piotr Nowak",
         "Ewa Nowak",
@@ -566,7 +566,7 @@ async fn a_family_is_labelled_by_the_people_in_it() {
     let body = body_string(get_admin(&app, "/admin/family").await).await;
 
     assert!(
-        body.contains("Leonard Kasprzyk &amp; Janina Kasprzyk — 2 children"),
+        body.contains("Leonard Wierciak &amp; Janina Wierciak — 2 children"),
         "both partners are named: {body}"
     );
     assert!(
@@ -583,7 +583,7 @@ async fn a_family_is_labelled_by_the_people_in_it() {
          unrecorded is itself a fact: {body}"
     );
     assert!(
-        body.contains("Marek Kasprzyk and 2 siblings"),
+        body.contains("Marek Wierciak and 2 siblings"),
         "a family with no recorded parents is named by its eldest child, \
          because \"children of [unknown]\" would read the same on every such \
          row: {body}"
@@ -825,7 +825,7 @@ fn duplicate_family_app_typed(tag: &str, thin_type: &str) -> (axum::Router, comm
                           // Reversed order: a family is identified by the set.
                           "persons": [{"person_id": B, "role": "spouse"},
                                       {"person_id": A, "role": "spouse"}],
-                          "start": {"date": {"value": "1991-08-24", "precision": "exact"}}},
+                          "start": {"date": {"value": "1987-05-16", "precision": "exact"}}},
                 "children": [{"person_id": KID, "confidence": 0.8}]}
         },
         "events": {}, "links": {}, "occupations": {},
@@ -944,7 +944,7 @@ async fn the_merge_action_reports_what_happened_to_the_pair_it_was_given() {
     assert_eq!(fams.len(), 1, "{fams:?}");
     let kept = fams.values().next().unwrap();
     assert_eq!(kept["union"]["type"], "marriage");
-    assert_eq!(kept["union"]["start"]["date"]["value"], "1991-08-24");
+    assert_eq!(kept["union"]["start"]["date"]["value"], "1987-05-16");
 }
 
 /// A pair whose recorded union types genuinely disagree is refused by the

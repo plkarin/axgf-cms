@@ -1,7 +1,7 @@
 //! Comparing text the way a reader means it.
 //!
-//! "Łodź" and "Łódź" are one city typed two ways, "Wierzbięta" and
-//! "Wierzbieta" one family, and "anna" is what somebody types for "Anna".
+//! "Łodź" and "Łódź" are one city typed two ways, "Brzezięcka" and
+//! "Brzeziecka" one family, and "anna" is what somebody types for "Anna".
 //! [`fold`] is the one place that decides what counts as the same: the
 //! masthead search matches through it, and the data-quality screen finds
 //! near-duplicate place names with it.
@@ -53,7 +53,7 @@ mod tests {
     fn one_city_typed_two_ways_folds_to_one() {
         assert_eq!(fold("Łodź"), fold("Łódź"));
         assert_eq!(fold("Łódź"), "lodz");
-        assert_eq!(fold("  Wierzbięta  Jan "), "wierzbieta jan");
+        assert_eq!(fold("  Brzezięcka  Jan "), "brzeziecka jan");
         assert_eq!(fold("Straße"), "strasse");
         assert_eq!(fold("山田花子"), "山田花子");
     }

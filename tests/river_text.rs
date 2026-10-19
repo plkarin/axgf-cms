@@ -295,12 +295,12 @@ fn generated() -> Value {
         "Wojciech",
     ];
     const SURNAME: &[&str] = &[
-        "Wierzbięta",
-        "Gundelach-Groszkowski",
+        "Brzezięcka",
+        "Lindenach-Trzaskowski",
         "Nowak",
         "Szczepańska",
         "Lis",
-        "Chądzyński",
+        "Mądrzyński",
     ];
     let mut persons = Map::new();
     let mut families = Map::new();
@@ -413,7 +413,7 @@ fn every_word_on_the_operators_river_fits_the_frame() {
         target.insert(v["id"].as_str().unwrap().to_string(), v);
     }
     // Every person as the centre, not thirty: the known overlap, Demetriusz
-    // Kaniewski's name over his wife's, was not among the thirty.
+    // Lasiewski's name over his wife's, was not among the thirty.
     let failures = run(&json!({"persons": persons, "families": families}), true);
     // RIVER_TEXT_ALL=path writes every failure, not only the first forty.
     if let Ok(path) = std::env::var("RIVER_TEXT_ALL") {
@@ -535,7 +535,7 @@ fn the_fixed_point_does_not_move_while_the_river_travels() {
 
 /// The known overlap, as a fixed shape rather than whatever a generated
 /// family happens to place: a centre with a long name and a spouse 200 units
-/// to the right, which is where Demetriusz Kaniewski's name ran over Marianna
+/// to the right, which is where Demetriusz Lasiewski's name ran over Marianna
 /// Dola's. The generated family stopped containing this case when sibling
 /// order changed, and the check above went on passing without it.
 #[test]
@@ -552,18 +552,18 @@ fn a_long_centre_name_does_not_run_over_the_spouse() {
         person(
             "c",
             "Konstancja Wiktoria",
-            "Gundelach-Groszkowska",
+            "Lindenach-Trzaskowska",
             "F",
             1790,
         ),
-        person("s", "Demetriusz", "Kaniewski", "M", 1786),
-        person("k", "Tekla", "Kaniewska", "F", 1811),
+        person("s", "Demetriusz", "Lasiewski", "M", 1786),
+        person("k", "Tekla", "Lasiewska", "F", 1811),
         // A given name that is a sentence: the centre's floor label must be
         // cut to fit, not run off the frame.
         person(
             "n",
-            "Anna - w dokumentach wystepuje także pod tym imieniem",
-            "Kaniewska",
+            "Irma - w dokumentach wystepuje także pod tym imieniem",
+            "Lasiewska",
             "F",
             1814,
         ),
@@ -583,7 +583,7 @@ fn a_long_centre_name_does_not_run_over_the_spouse() {
     .enumerate()
     {
         let id = format!("t{i}");
-        let mut p = person(&id, given, "Kaniewska", "F", 1815 + i as i64);
+        let mut p = person(&id, given, "Lasiewska", "F", 1815 + i as i64);
         p["death"] = json!({"date": {"value": (1880 + i).to_string(), "precision": "year"}});
         persons.insert(id.clone(), p);
         kids.push(json!({"person_id": id}));

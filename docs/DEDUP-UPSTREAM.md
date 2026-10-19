@@ -4,7 +4,7 @@
 > now depends on. Both changes below shipped together. On a copy of the
 > operator's bundle, 0.4.0 merged neither remaining duplicate couple and
 > refused both; 0.5.0 merges both, and the survivor of the pair below keeps
-> `marriage`, 1991-08-24, its place and its event. The report is kept as the
+> `marriage`, 1987-05-16, its place and its event. The report is kept as the
 > record of why.
 
 A report for `axgf-rs`, written from `axgf-cms` against
@@ -20,12 +20,12 @@ one of the three and refuses the other two with `MANUAL_REVIEW_REQUIRED`.
 
 | pair | `union.type` | `union.start` | outcome |
 |------|--------------|---------------|---------|
-| `aec2bbe4…` / `cce10ed4…` | `unknown` / `unknown` | – / – | **merged** |
-| `43ad8281…` / `73d5c839…` | `unknown` / `marriage` | – / 1911 | **refused** |
-| `e823f9e2…` / `f6c1c9ae…` | `unknown` / `marriage` | – / 1991-08-24 | **refused** |
+| `a1d7f382…` / `cce10ed4…` | `unknown` / `unknown` | – / – | **merged** |
+| `4b6e1c93…` / `7e09b4d5…` | `unknown` / `marriage` | – / 1911 | **refused** |
+| `e15c8a3f…` / `f0a7c2e9…` | `unknown` / `marriage` | – / 1987-05-16 | **refused** |
 
-The third is the couple on the operator's own family: Janusz Kasprzyk and
-Saturnina Majcher, both records naming the same child.
+The third is the couple on the operator's own family: Tadeusz Wierciak and
+Bernadeta Zawilec, both records naming the same child.
 
 ## Why
 
@@ -115,20 +115,20 @@ for (key, val) in v_obj {
 
 `union` is one such top-level key. The keeper already has a `union`, so the
 victim's `union` is skipped **entirely** — not merged field by field. And the
-keeper is the lowest-UUID family, which for this pair is `e823f9e2…`: the thin
+keeper is the lowest-UUID family, which for this pair is `e15c8a3f…`: the thin
 record.
 
 Measured, by applying the ambiguity fix above and letting the pair merge:
 
 ```
 A survives=true  B survives=false
-KEEPER e823f9e2-8817-4d44-aabb-8b3999dcffe6
+KEEPER e15c8a3f-3b2d-4f61-8e5a-0c9d2b7f3e41
   union = { "confidence": 0.8, "persons": [ …Janusz…, …Saturnina… ] }
-  children = [ {"person_id": "5eb76a82…", "confidence": 0.8} ]
+  children = [ {"person_id": "5a2c9e47…", "confidence": 0.8} ]
 ```
 
 The surviving union has no `type`, no `status`, and **no `start`** — the
-24 August 1991 date, its `place_id` and its `event_id` are gone. The pair's
+16 May 1987 date, its `place_id` and its `event_id` are gone. The pair's
 only real information was in the record that got discarded.
 
 So the ambiguity fix on its own converts a visible, reported duplicate into
@@ -148,8 +148,8 @@ place and its event, and loses nothing.
 ## Reproducing
 
 `deduplicate()` over the bundle's flat JSON; the pair is
-`e823f9e2-8817-4d44-aabb-8b3999dcffe6` and
-`f6c1c9ae-82b2-44b6-92fc-390c85566f65`. Both survive, and the diagnostic reads:
+`e15c8a3f-3b2d-4f61-8e5a-0c9d2b7f3e41` and
+`f0a7c2e9-6a19-4c83-9d4e-1f8a3c6b2d90`. Both survive, and the diagnostic reads:
 
 ```
 families [...] share spouse set [...] but disagree on union.type or

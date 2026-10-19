@@ -3363,12 +3363,12 @@ mod tests {
 
     #[test]
     fn a_father_son_union_draws_without_hanging() {
-        // The Klicki record: a son entered as his father's partner.
+        // The Trecki record: a son entered as his father's partner.
         let flat = bundle(
             vec![
-                person("jakub", "Jakub", "Klicki", "M", 1800, false),
-                person("bron", "Bronisław", "Klicki", "M", 1830, false),
-                person("kid", "Ewa", "Klicki", "F", 1855, false),
+                person("jakub", "Jakub", "Trecki", "M", 1800, false),
+                person("bron", "Bronisław", "Trecki", "M", 1830, false),
+                person("kid", "Ewa", "Trecki", "F", 1855, false),
             ],
             vec![
                 family("f1", &["jakub"], &[("bron", None)]),
@@ -3413,7 +3413,7 @@ mod tests {
             names: [
                 "Eugeniusz".into(),
                 "Eugeniusz G.".into(),
-                "Eugeniusz Karol Alojzy Gundelach".into(),
+                "Eugeniusz Karol Alojzy Lindenach".into(),
             ],
             years: String::new(),
             colour: String::new(),

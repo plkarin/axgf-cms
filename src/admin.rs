@@ -59,7 +59,7 @@ pub struct Field {
     /// Empty for every other kind of field.
     ///
     /// These were plain text inputs until this existed. A form that asks an
-    /// administrator to type `3ca35cb9-a8d6-4943-9ad3-d1af333e3a50` is not
+    /// administrator to type `3f81d0a6-5c3b-4e8a-9b1d-2f6e8c0a4b17` is not
     /// asking a question anybody can answer; the structured editors had grown
     /// pickers for exactly this and the generic ones had not.
     pub picks: &'static str,

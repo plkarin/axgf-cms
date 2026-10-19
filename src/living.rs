@@ -5,7 +5,7 @@
 //! GEDCOM has no way to record "died, date unknown". A person whose death was
 //! never written down leaves the format with nothing to say, so a converter
 //! writes `is_living: true` and the receiving application repeats it. Pelagia
-//! Simla, born 1898, arrives in the bundle marked living and this application
+//! Wolna, born 1898, arrives in the bundle marked living and this application
 //! rendered her as `1898 – living`, which in 2026 is a claim that somebody is
 //! 128 years old. The converter is not at fault and cannot be fixed: the
 //! answer is not in the file.
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn the_operators_own_case_is_the_one_this_exists_for() {
-        // Pelagia Simla, born 1898, marked living by the converter because
+        // Pelagia Wolna, born 1898, marked living by the converter because
         // GEDCOM had no way to say her death was never written down.
         assert_eq!(
             status_at(&person(true, Some("1898")), 120, 2026),

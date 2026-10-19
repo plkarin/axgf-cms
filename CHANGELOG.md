@@ -190,6 +190,26 @@ wheel, a trackpad or two-finger pinch, the "Zoom" slider, or `+` `−` `0`;
 zoomed in, drag to move. Names and people keep their size as the distances
 grow, as on a map, and on a phone they grow until they can be read.
 
+**Portraits reworked by an AI, beside the face** (docs/adr/0009). The
+record's masthead has a band of its own, between who the person was and the
+edit button. It holds up to three pictures an AI made from the person's
+photographs: what they might have looked like.
+
+- Only signed-in members see them. A visitor is refused their files at
+  every door.
+- Each one is marked "AI" ("IA", "KI"…) with a turning ring, and the band
+  says that none of them is a picture of the time.
+- An editor adds and removes them on one page,
+  `/admin/person/:id/ai-portraits`. Several can be uploaded at once, the
+  tool and the source photograph can be named, and everything is saved in
+  one commit.
+- In the archive each one is an ordinary Document that claims nothing:
+  type `other`, linked with the role `ai_portrait`, tagged
+  `ai-generated`, with the `generator` and `derived_from_id` that AXGF 1.1
+  names.
+- It is never the person's picture, never in their gallery or their Media
+  tab, and never a file that can be attached as evidence.
+
 **Canopée on every page.** The record, the tree, the administration, the
 editor, the quality list, search, settings and the login page carry the kit
 too, under Canopée only:
@@ -331,6 +351,12 @@ extra margin those themes gave.
   - four palettes are measured: Study 06 on `:root`, and the three themes;
   - the completeness check now also reads the colours on `:root`, which it
     used to skip.
+- `ai_portraits.rs`, new: an editor adds three at most, marked as the AI's
+  and never a photograph (not the face, not in the gallery, not on the
+  Media tab, not on the picker); one save removes and adds; pictures only;
+  a visitor sees no band and gets no bytes; a reader sees the band and no
+  control. `read_mode.rs`: the band's words are allowed where they name
+  what is there.
 - `person_editor.rs`:
   - the Media tab chooses the picture that stands for the person: an
     upload, a picture's radio, initials or the software's pick, a file that

@@ -1124,6 +1124,26 @@ avatar-upload-title = Ein Bild hochladen und verwenden
 avatar-upload-button = Hochladen und als Bild verwenden
 avatar-not-available-title = Dieses Bild steht nicht zur Verfügung
 avatar-not-available-detail = Die gewählte Datei ist nicht mit dieser Person verknüpft oder Sie dürfen sie nicht lesen.
+ai-badge = KI
+ai-portraits-title = Von KI überarbeitete Porträts
+ai-portraits-band = Retusche
+ai-portraits-upload = Von KI überarbeitete Bilder hochladen
+ai-portraits-manage = KI-Bilder verwalten
+ai-portraits-intro = Bilder, die eine KI aus den Fotografien dieser Person gemacht hat: wie sie ausgesehen haben könnte. Sie erscheinen neben dem Gesicht im Eintrag, mit „KI“ gekennzeichnet, und nur angemeldete Mitglieder sehen sie. Sie sind nie das Bild der Person, nie unter ihren Dateien, nie ein Beleg.
+ai-portraits-current = Im Eintrag
+ai-portraits-add = Bilder hinzufügen — Platz für { $n }
+ai-portraits-files = Bilder (PNG, JPEG, WebP oder GIF), mehrere auf einmal
+ai-portraits-generator = Erstellt mit
+ai-portraits-from = Nach
+ai-portraits-from-none = Nicht angegeben
+ai-portraits-remove = Entfernen
+ai-portraits-alt = Porträt von { $name }, von einer KI überarbeitet
+ai-portraits-not-evidence = Von einer KI aus den Fotografien gemacht: keine Bilder aus der Zeit.
+ai-portraits-full = Der Eintrag hat seine drei KI-Bilder. Entfernen Sie eines, um ein anderes hinzuzufügen.
+ai-portraits-too-many = Ein Eintrag fasst höchstens drei KI-Bilder. Entfernen Sie eines, bevor Sie ein weiteres hinzufügen.
+ai-portraits-images-only = Ein KI-Porträt muss ein Bild sein: PNG, JPEG, WebP oder GIF.
+ai-portraits-stale = Der Eintrag hat sich geändert, während diese Seite offen war. Nichts wurde gespeichert: Öffnen Sie ihn erneut und wiederholen Sie es.
+ai-portraits-back = Zurück zu den KI-Bildern
 
 record-history-withheld = Ihnen nicht gezeigt
 

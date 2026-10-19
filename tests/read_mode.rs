@@ -125,6 +125,15 @@ const ALLOWED: &[&str] = &[
     "accounts-status",
     "admin-edit",
     "admin-from",
+    // The portraits an AI reworked (docs/adr/0009): the band names pictures
+    // that are there, and the way to add them is an edit control, as
+    // `record-edit` is.
+    "ai-badge",
+    "ai-portraits-alt",
+    "ai-portraits-band",
+    "ai-portraits-manage",
+    "ai-portraits-not-evidence",
+    "ai-portraits-upload",
     "confidence-certain",
     "confidence-high",
     "confidence-low",

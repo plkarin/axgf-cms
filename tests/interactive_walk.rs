@@ -497,6 +497,7 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
             "links",
             "documents",
             "avatar",
+            "ai-portraits",
             "profile",
             "physical",
         ] {

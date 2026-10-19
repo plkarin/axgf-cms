@@ -1348,6 +1348,26 @@ avatar-upload-title = ارفع صورة واستعملها
 avatar-upload-button = ارفع واجعلها الصورة
 avatar-not-available-title = هذه الصورة غير متاحة
 avatar-not-available-detail = الملف المختار غير مرتبط بهذا الشخص، أو ليس لك أن تقرأه.
+ai-badge = AI
+ai-portraits-title = صور شخصية عدّلها الذكاء الاصطناعي
+ai-portraits-band = تعديلات
+ai-portraits-upload = رفع صور معدّلة بالذكاء الاصطناعي
+ai-portraits-manage = إدارة صور الذكاء الاصطناعي
+ai-portraits-intro = صور صنعها الذكاء الاصطناعي من الصور الفوتوغرافية لهذا الشخص: كيف ربما كان يبدو. تظهر بجانب الوجه في السجل، موسومة بـ«AI»، ولا يراها إلا الأعضاء المسجّل دخولهم. لا تكون أبدًا صورة الشخص، ولا تُدرج بين ملفاته، ولا تُعدّ دليلًا.
+ai-portraits-current = في السجل
+ai-portraits-add = إضافة صور — يتسع لـ { $n }
+ai-portraits-files = صور (PNG أو JPEG أو WebP أو GIF)، يمكن اختيار عدة صور معًا
+ai-portraits-generator = صُنعت بواسطة
+ai-portraits-from = انطلاقًا من
+ai-portraits-from-none = غير محدد
+ai-portraits-remove = إزالة
+ai-portraits-alt = صورة { $name } معدّلة بالذكاء الاصطناعي
+ai-portraits-not-evidence = صنعها الذكاء الاصطناعي من الصور الفوتوغرافية: ليست صورًا من ذلك الزمن.
+ai-portraits-full = في السجل ثلاث صور معدّلة بالذكاء الاصطناعي. أزل واحدة لإضافة أخرى.
+ai-portraits-too-many = لا يتسع السجل لأكثر من ثلاث صور معدّلة بالذكاء الاصطناعي. أزل واحدة قبل إضافة أخرى.
+ai-portraits-images-only = يجب أن تكون الصورة المعدّلة بالذكاء الاصطناعي صورةً: PNG أو JPEG أو WebP أو GIF.
+ai-portraits-stale = تغيّر السجل أثناء فتح هذه الصفحة. لم يُحفظ شيء: افتحها من جديد وأعد المحاولة.
+ai-portraits-back = العودة إلى صور الذكاء الاصطناعي
 
 record-history-withheld = محجوب عنك
 

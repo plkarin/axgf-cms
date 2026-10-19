@@ -2111,6 +2111,111 @@ bdi.date { unicode-bidi: isolate; }
   overflow: hidden;
 }
 
+/* The portraits an AI reworked (docs/adr/0009): a band of its own in the
+   masthead, between who the person was and the edit button. Every picture
+   carries the AI's mark and a ring that turns slowly where motion is
+   allowed — the one moving thing in a masthead of facts, so that nobody
+   takes these for photographs of the time. */
+.person-head.has-ai { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.person-ai {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 0.55rem;
+  min-inline-size: 0;
+  max-inline-size: 22rem;
+}
+.person-ai-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.ai-chip {
+  padding: 0.1em 0.55em;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--accent), color-mix(in srgb, var(--hue-5) 70%, var(--accent)));
+  color: var(--on-accent);
+  font-weight: var(--weight-strong);
+  letter-spacing: 0.08em;
+}
+.person-ai-list { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.person-ai-shot,
+.ai-frame {
+  position: relative;
+  display: block;
+  inline-size: 88px;
+  block-size: 88px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--surface-sunken);
+}
+.ai-frame { inline-size: 140px; block-size: 140px; }
+.person-ai-shot img,
+.ai-frame img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+/* The ring: a conic gradient through the accent and two of the crossing
+   hues, cut down to its border by a mask. */
+@property --ai-turn {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.person-ai-shot::after,
+.ai-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--ai-turn), var(--accent), var(--hue-5), var(--hue-1), var(--accent));
+  -webkit-mask: linear-gradient(currentColor 0 0) content-box, linear-gradient(currentColor 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(currentColor 0 0) content-box, linear-gradient(currentColor 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.ai-badge {
+  position: absolute;
+  inset-block-end: 5px;
+  inset-inline-end: 5px;
+  z-index: 2;
+  padding: 0.05em 0.45em;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface-page) 72%, transparent);
+  color: var(--accent);
+  font-size: var(--type-micro);
+  font-weight: var(--weight-strong);
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(4px);
+}
+.person-ai-note { margin: 0; max-inline-size: 22rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .person-ai-shot::after,
+  .ai-frame::after { animation: ai-turn 9s linear infinite; }
+  .person-ai-shot img { transition: transform var(--tempo) var(--ease); }
+  .person-ai-shot:hover img,
+  .person-ai-shot:focus-visible img { transform: scale(1.06); }
+}
+@keyframes ai-turn { to { --ai-turn: 360deg; } }
+
+/* The page that manages them. */
+.ai-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.ai-card { display: grid; gap: 0.4rem; justify-items: start; max-inline-size: 140px; overflow-wrap: anywhere; }
+
+/* Narrower, the band goes under the facts rather than squeezing them. */
+@media (max-width: 1100px) {
+  .person-head.has-ai { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .person-head.has-ai .person-ai { grid-column: 2; grid-row: 2; }
+  .person-head.has-ai .person-head-actions { grid-column: 3; grid-row: 1; }
+}
 
 @media (max-width: 640px) {
   /* The actions move under the text rather than squeezing a third column into
@@ -2119,6 +2224,9 @@ bdi.date { unicode-bidi: isolate; }
   .person-head-actions { grid-column: 1 / -1; }
   .person-avatar { inline-size: 76px; block-size: 76px; }
   .person-avatar.is-initials { font-size: var(--type-title); }
+  .person-head.has-ai { grid-template-columns: auto minmax(0, 1fr); }
+  .person-head.has-ai .person-ai { grid-column: 1 / -1; grid-row: auto; }
+  .person-head.has-ai .person-head-actions { grid-column: 1 / -1; grid-row: auto; }
 }
 
 .showcase-strip {

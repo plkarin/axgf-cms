@@ -146,6 +146,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_events.html",
     "admin_documents.html",
     "admin_avatar.html",
+    "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",
     "_icons.html",

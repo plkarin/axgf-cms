@@ -207,6 +207,15 @@ line, from a backup ([`axgf-cms restore`](#backup-and-restore)). The same
 GEDCOM reader is behind **Import** (`/convert`), which turns any GEDCOM into
 an `.axgf` to download, without touching the site.
 
+### Portraits reworked by an AI
+
+On a record's masthead, beside the face, the family's signed-in members can
+see up to three pictures an AI made from the person's photographs: what
+they might have looked like. Each is marked "AI". None of them is ever the
+person's picture, in their gallery or among the files that serve as
+evidence. In the archive, each one is a Document that says what it is
+([why](docs/adr/0009-ai-reworked-portraits-are-never-evidence.md)).
+
 ### Make it yours
 
 [![The overview page under the three themes that carry their own furniture. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
@@ -256,6 +265,7 @@ ten of the themes.
 - the Fusion and Galaxy themes, with the family as a living tree and as a
   solar system, which are now the only three themes (the ten others are
   retired);
+- portraits reworked by an AI, beside the face, for signed-in members;
 - the portrait beside the river;
 - the three ways in;
 - the GEDCOM reader for every version and encoding.

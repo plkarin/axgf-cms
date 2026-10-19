@@ -874,6 +874,12 @@ fn stored_document(
             return None;
         }
         let d = flat.get("documents")?.get(id)?;
+        // A portrait an AI reworked is the family's members' alone
+        // (docs/adr/0009): its bytes are refused to a reader who is not
+        // signed in, whatever the person's own visibility.
+        if !viewer.signed_in() && crate::ai_portrait::is_ai_portrait(d) {
+            return None;
+        }
         let path = d.get("file")?.get("path")?.as_str()?.to_string();
         Some(StoredDocument {
             mime: d

@@ -377,6 +377,10 @@ pub struct PersonView {
     pub documents: Vec<DocumentView>,
     /// Images among `documents`, for the gallery.
     pub images: Vec<DocumentView>,
+    /// Portraits an AI reworked (`crate::ai_portrait`), oldest first and at
+    /// most three: never among `documents` or `images`, never the avatar, and
+    /// drawn in the masthead only for a reader who is signed in.
+    pub ai_portraits: Vec<DocumentView>,
     pub notes: Vec<NoteView>,
     /// The entity exactly as the bundle holds it, pretty-printed.
     pub raw_json: String,
@@ -482,6 +486,7 @@ pub fn build_in(
     let events = ctx.events_for(id);
     let timeline = build_timeline(&birth, &death, events);
     let documents = ctx.documents_for(id, person);
+    let ai_portraits = ctx.ai_portraits_for(id);
     let images: Vec<DocumentView> = documents
         .iter()
         .filter(|d| d.is_image && d.has_payload)
@@ -601,6 +606,7 @@ pub fn build_in(
         sources,
         documents,
         images,
+        ai_portraits,
         header,
         notes,
         raw_json,
@@ -1673,6 +1679,51 @@ impl Ctx<'_> {
             .collect()
     }
 
+    /// The portraits an AI reworked of this person, oldest first, at most
+    /// [`crate::ai_portrait::MAX`], through the same class-data filter as
+    /// every other file.
+    fn ai_portraits_for(&self, id: &str) -> Vec<DocumentView> {
+        let withheld = crate::access::withheld_documents(self.flat, self.lens.ceiling());
+        crate::ai_portrait::of_person(self.flat, id)
+            .into_iter()
+            .filter(|(did, _)| !withheld.contains(*did))
+            .filter(|(_, d)| str_field(d, "status").as_deref() == Some("present"))
+            .take(crate::ai_portrait::MAX)
+            .map(|(did, d)| {
+                let mime = str_field(d, "mime_type");
+                let size = d
+                    .get("file")
+                    .and_then(|f| f.get("size_bytes"))
+                    .and_then(Value::as_u64);
+                DocumentView {
+                    id: did.to_string(),
+                    filename: str_field(d, "filename").unwrap_or_else(|| did.to_string()),
+                    is_image: mime.as_deref().is_some_and(|m| m.starts_with("image/")),
+                    focal: None,
+                    mime_type: mime,
+                    document_type: "other".into(),
+                    document_type_label: crate::i18n::vocab(self.lang, "document-type", "other"),
+                    has_payload: d
+                        .get("file")
+                        .and_then(|f| f.get("path"))
+                        .and_then(Value::as_str)
+                        .is_some(),
+                    status: "present".into(),
+                    status_label: crate::i18n::vocab(self.lang, "document-status", "present"),
+                    caption: str_field(d, "caption"),
+                    // The software that made it, where the uploader said: the
+                    // band's caption under each picture.
+                    note: crate::ai_portrait::generator(d).map(str::to_string),
+                    role: Some(crate::ai_portrait::ROLE.to_string()),
+                    known: true,
+                    size_bytes: size,
+                    size_human: size.map(|b| human_size(b, self.lang)),
+                }
+            })
+            .filter(|d| d.is_image && d.has_payload)
+            .collect()
+    }
+
     /// Documents attached to this person, from either direction.
     fn documents_for(&self, id: &str, person: &Value) -> Vec<DocumentView> {
         let Some(docs) = self.collection("documents") else {
@@ -1687,6 +1738,14 @@ impl Ctx<'_> {
 
         let mut push = |doc_id: &str, role: Option<String>| {
             if seen.iter().any(|s| s == doc_id) || withheld.contains(doc_id) {
+                return;
+            }
+            // A portrait an AI reworked is never one of the record's files:
+            // it has a band of its own (`ai_portraits_for`).
+            if docs
+                .get(doc_id)
+                .is_some_and(crate::ai_portrait::is_ai_portrait)
+            {
                 return;
             }
             seen.push(doc_id.to_string());

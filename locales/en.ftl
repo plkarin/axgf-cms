@@ -1159,6 +1159,26 @@ avatar-upload-title = Upload a picture and use it
 avatar-upload-button = Upload and use as picture
 avatar-not-available-title = That picture is not available
 avatar-not-available-detail = The chosen file is not linked to this person, or is not one you may read.
+ai-badge = AI
+ai-portraits-title = Portraits reworked by AI
+ai-portraits-band = Retouched
+ai-portraits-upload = Upload AI-reworked pictures
+ai-portraits-manage = Manage the AI pictures
+ai-portraits-intro = Pictures an AI made from this person's photographs: what they might have looked like. They appear beside the face on the record, marked “AI”, and only members who are signed in see them. They are never the person's picture, never among their files, never evidence.
+ai-portraits-current = On the record
+ai-portraits-add = Add pictures — room for { $n }
+ai-portraits-files = Pictures (PNG, JPEG, WebP or GIF), several at once
+ai-portraits-generator = Made with
+ai-portraits-from = Made from
+ai-portraits-from-none = Not said
+ai-portraits-remove = Remove
+ai-portraits-alt = Portrait of { $name }, reworked by an AI
+ai-portraits-not-evidence = Made by an AI from the photographs: not pictures of the time.
+ai-portraits-full = The record has its three AI pictures. Remove one to add another.
+ai-portraits-too-many = A record holds three AI pictures at most. Remove one before adding another.
+ai-portraits-images-only = An AI portrait has to be a picture: PNG, JPEG, WebP or GIF.
+ai-portraits-stale = The record changed while this page was open. Nothing was saved: open it again and repeat.
+ai-portraits-back = Back to the AI pictures
 
 # The value of a recorded change this reader may not see. It sits in a
 # table cell, so it is a phrase rather than a sentence.

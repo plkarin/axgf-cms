@@ -1127,6 +1127,26 @@ avatar-upload-title = Carica un'immagine e usala
 avatar-upload-button = Carica e usa come immagine
 avatar-not-available-title = Quell'immagine non è disponibile
 avatar-not-available-detail = Il file scelto non è collegato a questa persona, oppure non ti è dato leggerlo.
+ai-badge = IA
+ai-portraits-title = Ritratti rielaborati dall'IA
+ai-portraits-band = Ritocchi
+ai-portraits-upload = Carica immagini rielaborate con l'IA
+ai-portraits-manage = Gestisci le immagini IA
+ai-portraits-intro = Immagini che un'IA ha ricavato dalle fotografie di questa persona: come poteva apparire. Compaiono accanto al volto nella scheda, segnate «IA», e le vedono solo i membri che hanno effettuato l'accesso. Non sono mai l'immagine della persona, mai tra i suoi file, mai una prova.
+ai-portraits-current = Nella scheda
+ai-portraits-add = Aggiungi immagini — spazio per { $n }
+ai-portraits-files = Immagini (PNG, JPEG, WebP o GIF), anche più d'una alla volta
+ai-portraits-generator = Realizzate con
+ai-portraits-from = A partire da
+ai-portraits-from-none = Non indicato
+ai-portraits-remove = Rimuovi
+ai-portraits-alt = Ritratto di { $name } rielaborato da un'IA
+ai-portraits-not-evidence = Realizzate da un'IA a partire dalle fotografie: non sono immagini dell'epoca.
+ai-portraits-full = La scheda ha già le sue tre immagini IA. Rimuovine una per aggiungerne un'altra.
+ai-portraits-too-many = Una scheda contiene al massimo tre immagini IA. Rimuovine una prima di aggiungerne un'altra.
+ai-portraits-images-only = Un ritratto IA deve essere un'immagine: PNG, JPEG, WebP o GIF.
+ai-portraits-stale = La scheda è cambiata mentre questa pagina era aperta. Non è stato salvato nulla: riaprila e ripeti.
+ai-portraits-back = Torna alle immagini IA
 
 record-history-withheld = non mostrato a te
 

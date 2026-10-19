@@ -662,7 +662,7 @@ async fn choosing_no_picture_shows_the_initials() {
     );
     // The record's header asks for no portrait. (The record's own evidence
     // section still shows the photographs attached to it.)
-    let head = &body[body.find(r#"<header class="person-head">"#).unwrap()..];
+    let head = &body[body.find(r#"<header class="person-head"#).unwrap()..];
     let head = &head[..head.find("</header>").unwrap()];
     assert!(
         !head.contains("/thumb"),

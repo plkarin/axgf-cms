@@ -186,3 +186,17 @@ async fn the_language_select_shows_the_current_language() {
     // A select of its own (v0.4.3), not hidden in a menu with the theme.
     assert!(!bar.contains("display-menu"), "{bar}");
 }
+
+/// Pinned at a desktop width, where the bar is one 58px row. At phone width
+/// it wraps to five rows, a third of the screen: pinned there, it hid a third
+/// of every page. It scrolls away with the page instead.
+#[test]
+fn on_a_phone_the_bar_scrolls_away_with_the_page() {
+    assert!(rule(".masthead").contains("position: sticky"));
+    let css = css();
+    let phone = css
+        .match_indices("@media (max-width: 640px) {")
+        .map(|(i, _)| &css[i..i + css[i..].find("\n}").expect("the block's end")])
+        .find(|block| block.contains(".masthead { position: static; }"));
+    assert!(phone.is_some(), "no phone-width rule unpins the masthead");
+}

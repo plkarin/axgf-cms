@@ -206,9 +206,12 @@
         var top = panel.getBoundingClientRect().top;
         /* Measured, not parsed: `--stick-top` is authored in rem and reading
          * the custom property would hand back the string "4.5rem". The
-         * masthead is the thing being cleared, so ask it how tall it is. */
+         * masthead is the thing being cleared, so ask it how tall it is —
+         * when it is pinned. At phone width it scrolls away with the page
+         * (app.css), and then there is nothing to clear. */
         var head = document.querySelector('.masthead');
-        var stick = (head ? head.getBoundingClientRect().height : 60) + 12;
+        var pinned = head && getComputedStyle(head).position === 'sticky';
+        var stick = (pinned ? head.getBoundingClientRect().height : 0) + 12;
         if (top < stick) {
           window.scrollBy({ top: top - stick, left: 0, behavior: 'auto' });
         }

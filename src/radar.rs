@@ -1396,6 +1396,32 @@ mod tests {
         assert_eq!(bands.len(), 2);
     }
 
+    /// A label beside the chart may be as wide as the room between its spoke
+    /// and the box's edge, which app.css states as 28 % of the box. Wider, a
+    /// label left its card and ran onto the table. Moving the chart in the box
+    /// moves that room, and the stylesheet's figure has to follow.
+    #[test]
+    fn a_side_label_fits_the_room_the_stylesheet_gives_it() {
+        let css = include_str!("../static/app.css");
+        for side in ["right", "left"] {
+            let at = css
+                .find(&format!(".radar-label[data-side=\"{side}\"] {{"))
+                .expect("the side's rule");
+            let body = &css[at..at + css[at..].find('}').expect("its end")];
+            assert!(body.contains("max-width: 28%;"), "{body}");
+        }
+        for i in 0..6 {
+            let (x, _) = point(i, LABEL_R);
+            let (lx, _) = to_box(x, 0.0);
+            let room = match i {
+                1 | 2 => 100.0 - lx,
+                4 | 5 => lx,
+                _ => continue,
+            };
+            assert!(room >= 28.0, "axis {i}: {room} % of the box");
+        }
+    }
+
     #[test]
     fn the_normal_distribution_is_right_to_four_places() {
         assert!((normal_cdf(0.0) - 0.5).abs() < 1e-4);

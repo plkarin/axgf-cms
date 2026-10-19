@@ -177,6 +177,22 @@ is out.
 - **The overview's dark backgrounds showed steps** on a 1920 × 1080 monitor.
   The hero's large shadow is gone, and a grain finer than a pixel breaks the
   steps of its gradients and the sign-in page's.
+- **A radar chart's labels split words and left their card.** A label to the
+  right of a chart was squeezed to the room before the box's edge, and the
+  page's last-resort word breaking cut "Conscientiousness" in two, with no
+  hyphen. A label to the left hung past the card's edge in eight languages.
+  Every label now takes its own width, and a label beside the chart is
+  capped at the room its spoke leaves (28 % of the box). A word too long
+  for that room is hyphenated where the browser knows the language; English
+  "Conscien-tiousness" carries its own soft hyphen. Checked in all eleven
+  languages, at four widths and in two styles: no label leaves its card or
+  touches the table.
+- **On a phone, the masthead hid a third of every page.** At that width it
+  wraps to five rows, and it stayed pinned to the top while the page,
+  showing through Canopée's translucent ground, scrolled under it. Below
+  640 pixels it now scrolls away with the page. The tree pins to the top of
+  the screen, and opening a record from it no longer stops short by the
+  height of a bar that is not there.
 
 ### Tests
 
@@ -201,7 +217,9 @@ is out.
 - `masthead.rs`: the stylesheet is read rule by rule. The accent may reach
   the masthead only under Canopée's selector. The test used to read chunks
   split at `\n.`, which let anything not starting with a class through
-  unread.
+  unread. And the bar is pinned at a desktop width, not at a phone's.
+- `radar` unit test: a label beside a chart is capped at 28 % of the box,
+  and the chart leaves it at least that room on both sides.
 - `themes.rs` and `design_tokens.rs`: eleven palettes measured, Canopée
   among them, with no exception. `--section-pad-x` is held to every style,
   like the rest of the scale.

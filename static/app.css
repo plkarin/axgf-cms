@@ -521,6 +521,12 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 @media (max-width: 640px) {
   .masthead-tools { flex: 1 1 100%; }
   .masthead-tools .masthead-search { flex: 1 1 100%; }
+  /* At this width the masthead wraps to five rows, a third of a phone's
+     screen. Pinned, it hid that third of every page, and Canopée's
+     translucent ground showed the page passing under it. Here it scrolls
+     away with the page, and what is pinned below it pins to the top. */
+  .masthead { position: static; }
+  :root { --stick-top: 0.75rem; }
 }
 
 /* Signed in: an initials chip and the name, opening onto a short menu. */
@@ -1886,20 +1892,34 @@ bdi.date { unicode-bidi: isolate; }
 .radar-point[data-band="low"] { stroke-dasharray: 2.4 2; }
 .radar-point-core { fill: var(--text-primary); stroke: none; }
 
+/* A label takes its own width, up to the room it has. Above and below the
+   chart that is 8.5rem. Beside it, it is what lies between the label's spoke
+   and the box's edge: 28 % of the box (`crate::radar::to_box` puts a side
+   label at 28.2 % from its edge). Wider, a label crossed the box into the
+   card's padding, and past it, onto the table beside the chart.
+   A word too long for that room is hyphenated where the browser knows the
+   language. Only a word of 13 letters or more is: below that, hyphenation
+   split words that fitted on the next line, just to fill this one
+   ("sta-bility"). Failing that, the body's `overflow-wrap: anywhere` breaks
+   it, as a last resort. English "Conscien-tiousness" carries its own soft
+   hyphen in en.ftl: Chrome does not hyphenate a capitalised English word. */
 .radar-label {
   position: absolute;
+  width: max-content;
   max-width: 8.5rem;
   font-size: var(--type-small);
   line-height: 1.2;
   color: var(--text-secondary);
+  hyphens: auto;
+  hyphenate-limit-chars: 13 4 4;
   pointer-events: none;
 }
 .radar-label[data-side="top"] { transform: translate(-50%, -100%); text-align: center; }
 .radar-label[data-side="bottom"] { transform: translate(-50%, 0); text-align: center; }
 /* Physical, not logical: a label to the right of the chart grows rightwards
    in Arabic too, because the chart does not mirror. */
-.radar-label[data-side="right"] { transform: translate(0, -50%); text-align: left; }
-.radar-label[data-side="left"] { transform: translate(-100%, -50%); text-align: right; }
+.radar-label[data-side="right"] { transform: translate(0, -50%); text-align: left; max-width: 28%; }
+.radar-label[data-side="left"] { transform: translate(-100%, -50%); text-align: right; max-width: 28%; }
 .radar-label[data-absent] { color: var(--text-tertiary); font-style: italic; }
 .radar-num {
   display: inline-block;

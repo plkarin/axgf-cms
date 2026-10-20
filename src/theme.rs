@@ -8,7 +8,7 @@
 //! navigation, and is worst for exactly the reader who most needs the setting:
 //! somebody using the high-contrast theme gets a white flash on every page.
 //!
-//! # Three themes, all on a dark ground (docs/adr/0008)
+//! # Four themes, all on a dark ground (docs/adr/0008, docs/adr/0010)
 //!
 //! The order is: the account's stored preference, then the cookie, then
 //! [`DEFAULT`], which is `canopee`, written into the page. The operating
@@ -22,10 +22,11 @@
 //!
 //! A theme was a palette and nothing else until Canopée, the first to carry
 //! its own furniture as well — the round of its buttons and fields, its
-//! elevation, its motion, its loaders and its two photographs. Fusion and
-//! Galaxy share that furniture (the kit), each in its own colours.
+//! elevation, its motion, its loaders and its two photographs. Fusion,
+//! Galaxy and Summit share that furniture (the kit), each in its own colours.
 //!
-//! # Fusion and Galaxy, two themes with a view of their own (docs/adr/0007)
+//! # Fusion, Galaxy and Summit: themes with a view of their own
+//! (docs/adr/0007, docs/adr/0010)
 //!
 //! Each carries furniture as Canopée does, and one thing more: its own
 //! drawing of the landing page. Under Fusion the river's layout is drawn as
@@ -59,8 +60,9 @@ pub struct Theme {
 }
 
 /// Every theme on offer, in the order the selector lists them: Canopée
-/// first, because it is the default, then the two that bring a view of their
-/// own. Thirteen themes and "match my system" until 0.5.0 (docs/adr/0008).
+/// first, because it is the default, then the three that bring a view of
+/// their own. Thirteen themes and "match my system" until 0.5.0
+/// (docs/adr/0008); Summit joined the three kept (docs/adr/0010).
 pub const THEMES: &[Theme] = &[
     Theme {
         id: "canopee",
@@ -80,6 +82,12 @@ pub const THEMES: &[Theme] = &[
         note_key: Some("theme-galaxy-note"),
         wash: true,
     },
+    Theme {
+        id: "summit",
+        key: "theme-summit",
+        note_key: Some("theme-summit-note"),
+        wash: true,
+    },
 ];
 
 /// What a reader gets when they have expressed no preference, or chose a
@@ -91,12 +99,14 @@ pub const DEFAULT: &str = "canopee";
 
 /// The drawing of the landing page under a theme: the river, or the view a
 /// theme brings of its own (docs/adr/0007) — a living tree under Fusion, a
-/// solar system under Galaxy. Under each, the same layout, the same people
-/// and the same privacy; only the drawing changes.
+/// solar system under Galaxy, an ascent under Summit (docs/adr/0010). Under
+/// each, the same layout, the same people and the same privacy; only the
+/// drawing changes.
 pub fn view_of(id: &str) -> &'static str {
     match id {
         "fusion" => "tree",
         "galaxy" => "galaxy",
+        "summit" => "summit",
         _ => "river",
     }
 }
@@ -197,18 +207,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn three_themes_are_offered() {
-        // Canopée first, because it is the default, then the two that bring
-        // a view of their own. Thirteen themes and "match my system" until
-        // 0.5.0, which kept these three (docs/adr/0008).
+    fn four_themes_are_offered() {
+        // Canopée first, because it is the default, then the three that
+        // bring a view of their own. Thirteen themes and "match my system"
+        // until 0.5.0, which kept three (docs/adr/0008) and added Summit
+        // (docs/adr/0010).
         let ids: Vec<&str> = THEMES.iter().map(|t| t.id).collect();
-        assert_eq!(ids, vec!["canopee", "fusion", "galaxy"]);
+        assert_eq!(ids, vec!["canopee", "fusion", "galaxy", "summit"]);
     }
 
     #[test]
-    fn two_themes_bring_a_view_of_their_own() {
+    fn three_themes_bring_a_view_of_their_own() {
         assert_eq!(view_of("fusion"), "tree");
         assert_eq!(view_of("galaxy"), "galaxy");
+        assert_eq!(view_of("summit"), "summit");
         assert_eq!(view_of("canopee"), "river");
     }
 

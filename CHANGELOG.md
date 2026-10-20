@@ -190,6 +190,35 @@ wheel, a trackpad or two-finger pinch, the "Zoom" slider, or `+` `−` `0`;
 zoomed in, drag to move. Names and people keep their size as the distances
 grow, as on a map, and on a phone they grow until they can be read.
 
+**Summit, a fourth theme: the family as an ascent at sunrise**
+(docs/adr/0010). It is drawn from the operator's two references: a
+mountain dashboard at dawn and a night-navy weather application with gold
+accents.
+
+- **The landing view** (`static/summit.js`, the river's layout as Fusion
+  and Galaxy use it):
+  - the person at the fixed point stands at a camp;
+  - the ancestors climb the mountain, one contour line per generation,
+    each narrower than the one below;
+  - the descendants stand in the valley under the camp;
+  - every parentage is a trail, as surely as it is known;
+  - the summit is the farthest the record reaches.
+- **The mountain answers the climb:**
+  - the snow line comes down as the camp's birth year goes back in time,
+    read only when this reader may see that year;
+  - the sun rises with every person on the itinerary.
+- **The sky lives under the drawing:** the last stars, the sun's glow, mist
+  in the valley, and light running down the attested trails. It holds still
+  on the river's terms.
+- **The dashboard's bars become the climb's profile:** a gold line from the
+  valley to the summit, with the camp marked on it.
+- **Canopée's furniture in Summit's palette:** night navy, the gold of first
+  light, the dawn's violets and roses. It has a 12 px round, titles in the
+  book face, and two photographs made in Canva at their native size. The
+  tightest contrast is 3.5:1, a control's edge on the third wash.
+- **Its words in eleven languages:** "Every life is a step. Every family, an
+  ascent."
+
 **Portraits reworked by an AI, beside the face** (docs/adr/0009). The
 record's masthead has a band of its own, between who the person was and the
 edit button. It holds up to three pictures an AI made from the person's
@@ -342,6 +371,12 @@ extra margin those themes gave.
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
   motion, "Cut" and a hidden page.
+- Summit (docs/adr/0010):
+  - `views.rs`: it loads only its own view, names no river, serves its
+    script and pictures with no colour named, gives river.js everything it
+    asks for, and holds still on the river's terms;
+  - five palettes are measured, and the kit's selector, the rounds and the
+    settings know four themes.
 - Three themes (docs/adr/0008):
   - the registry offers three themes;
   - a reader who chose a retired theme gets the default;

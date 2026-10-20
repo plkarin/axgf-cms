@@ -220,19 +220,24 @@ evidence. In the archive, each one is a Document that says what it is
 
 [![The overview page under the three themes that carry their own furniture. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
-There are three themes.
+There are four themes.
 
 - **Canopy** (*Canopée*, the default from 0.5.0) is a dark forest green with
   the gold of the logo.
 - **Fusion** is a dashboard at night, charcoal and neon red, and draws the
   family as a tree.
 - **Galaxy** is deep space, navy and violet, and draws it as a solar system.
+- **Summit** is a mountain at sunrise, night navy and the gold of first
+  light. It draws the family as an ascent: the ancestors up the mountain,
+  the descendants in the valley. The further back the person you stand on
+  was born, the further the snow comes down, and the sun rises as you
+  travel.
 
 Each carries its own buttons, motion and photographs, and every page follows
 it, down to the words: under Fusion the overview reads "Every life is a
 leaf. Every family, a tree."
 
-All three are dark. None is built for high contrast or for colour
+All four are dark. None is built for high contrast or for colour
 blindness. Certainty never rests on colour alone, though: a bar's length, a
 pie and the printed percentage carry it under every theme
 ([why there are three](docs/adr/0008-three-themes.md)).
@@ -263,8 +268,9 @@ ten of the themes.
 - the living river and its zoom;
 - the Canopy theme;
 - the Fusion and Galaxy themes, with the family as a living tree and as a
-  solar system, which are now the only three themes (the ten others are
-  retired);
+  solar system;
+- the Summit theme, with the family as an ascent at sunrise;
+- four themes in all (the ten earlier ones are retired);
 - portraits reworked by an AI, beside the face, for signed-in members;
 - the portrait beside the river;
 - the three ways in;

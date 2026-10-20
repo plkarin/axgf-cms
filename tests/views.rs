@@ -104,9 +104,10 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
         );
         let at = |src: &str| html.find(&format!(r#"<script src="{src}" defer></script>"#));
         let river = at("/static/river.js").expect("river.js, under every theme");
-        let (fusion, galaxy, scene) = (
+        let (fusion, galaxy, summit, scene) = (
             at("/static/fusion.js"),
             at("/static/galaxy.js"),
+            at("/static/summit.js"),
             at("/static/river-scene.js"),
         );
         match view {
@@ -114,14 +115,30 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
                 // Deferred scripts run in order: the view registers itself
                 // before river.js looks for it.
                 assert!(fusion.expect("fusion.js") < river, "{theme}");
-                assert!(galaxy.is_none() && scene.is_none(), "{theme}");
+                assert!(
+                    galaxy.is_none() && scene.is_none() && summit.is_none(),
+                    "{theme}"
+                );
             }
             "galaxy" => {
                 assert!(galaxy.expect("galaxy.js") < river, "{theme}");
-                assert!(fusion.is_none() && scene.is_none(), "{theme}");
+                assert!(
+                    fusion.is_none() && scene.is_none() && summit.is_none(),
+                    "{theme}"
+                );
+            }
+            "summit" => {
+                assert!(summit.expect("summit.js") < river, "{theme}");
+                assert!(
+                    fusion.is_none() && galaxy.is_none() && scene.is_none(),
+                    "{theme}"
+                );
             }
             _ => {
-                assert!(fusion.is_none() && galaxy.is_none(), "{theme}");
+                assert!(
+                    fusion.is_none() && galaxy.is_none() && summit.is_none(),
+                    "{theme}"
+                );
                 assert!(scene.expect("the river's own scene") > river, "{theme}");
             }
         }
@@ -166,6 +183,14 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
             "See in the galaxy",
             "Enter makes them the sun",
         ),
+        (
+            "summit",
+            "Hold the mountain still",
+            "↑ ancestors up toward the summit · ↓ descendants in the valley",
+            ["Every life is a step.", "Every family, an ascent."],
+            "See on the mountain",
+            "Enter climbs to them",
+        ),
     ];
     for (theme, still, compass, hero, see, hint) in cases {
         let river = page(&app, &format!("/?p={P}"), theme).await;
@@ -196,7 +221,11 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
 #[tokio::test]
 async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
     let (app, _s) = app_with_empty_bundle("views-assets");
-    for js in ["/static/fusion.js", "/static/galaxy.js"] {
+    for js in [
+        "/static/fusion.js",
+        "/static/galaxy.js",
+        "/static/summit.js",
+    ] {
         let resp = get(&app, js).await;
         assert_eq!(resp.status(), StatusCode::OK, "{js}");
         let kind = resp.headers()[header::CONTENT_TYPE]
@@ -213,6 +242,8 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/fusion-cta.jpg",
         "/static/img/galaxy-hero.jpg",
         "/static/img/galaxy-cta.jpg",
+        "/static/img/summit-hero.jpg",
+        "/static/img/summit-cta.jpg",
     ] {
         let resp = get(&app, jpg).await;
         assert_eq!(resp.status(), StatusCode::OK, "{jpg}");
@@ -233,7 +264,11 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
 fn a_view_gives_river_js_everything_it_asks_for() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
-    for (file, name) in [("static/fusion.js", "tree"), ("static/galaxy.js", "galaxy")] {
+    for (file, name) in [
+        ("static/fusion.js", "tree"),
+        ("static/galaxy.js", "galaxy"),
+        ("static/summit.js", "summit"),
+    ] {
         let js = read(file);
         assert!(
             js.contains(&format!(

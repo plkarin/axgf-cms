@@ -1,6 +1,8 @@
 # ADR 0008 — Three themes
 
-**Status:** accepted, v0.5.0 (2026-10-19) · **Supersedes in part:**
+**Status:** accepted, v0.5.0 (2026-10-19); amended by
+[ADR 0010](0010-summit-the-family-as-an-ascent.md), which adds Summit as a
+fourth theme · **Supersedes in part:**
 [ADR 0002](0002-study-06-is-the-default-theme.md), for the themes it kept on
 offer · **Applies to:** `src/theme.rs`, `static/css/tokens.css`,
 `static/app.css`, `static/river-scene.js`, `templates/settings.html`,

@@ -61,11 +61,13 @@ fn root_vars(css: &str) -> BTreeSet<String> {
         .collect()
 }
 
-/// Every theme's own selector: the three since 0.5.0 (docs/adr/0008).
+/// Every theme's own selector: the three kept in 0.5.0 (docs/adr/0008) and
+/// Summit (docs/adr/0010).
 const THEME_SELECTORS: &[&str] = &[
     "[data-theme=\"canopee\"] {",
     "[data-theme=\"fusion\"] {",
     "[data-theme=\"galaxy\"] {",
+    "[data-theme=\"summit\"] {",
 ];
 
 #[test]
@@ -286,7 +288,7 @@ fn nothing_outside_the_theme_blocks_hardcodes_a_colour() {
     let css = css();
     // The last theme block in tokens.css, which the stylesheet loads first.
     let themes_end = css
-        .find("[data-theme=\"galaxy\"] {")
+        .find("[data-theme=\"summit\"] {")
         .expect("the theme blocks");
     let end_of_themes = css[themes_end..].find("\n}").unwrap() + themes_end;
     let body = &css[end_of_themes..];

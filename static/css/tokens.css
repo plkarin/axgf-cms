@@ -187,9 +187,9 @@
 /* ---------------------------------------------------------------------------
    Themes
    ---------------------------------------------------------------------------
-   Three of them since 0.5.0 (docs/adr/0008): Canopée, the default, and
-   Fusion and Galaxy, which share its furniture and each bring a view of
-   their own. Every colour is a custom property on :root, and a theme is one
+   Four of them: Canopée, the default, and Fusion, Galaxy and Summit,
+   which share its furniture and each bring a view of their own (the three
+   kept in 0.5.0, docs/adr/0008, and Summit, docs/adr/0010). Every colour is a custom property on :root, and a theme is one
    block that redefines them under a `data-theme` attribute the server writes
    into the markup. Nothing below these blocks names a literal colour, so a
    theme's colours are its palette and nothing else.
@@ -470,4 +470,108 @@
   --gx-planet-hidden: #6b74ba;
   --gx-nebula-a: #3b1f7a;
   --gx-nebula-b: #0f3d66;
+}
+
+/* --- summit ---------------------------------------------------------------- */
+/* A mountain at sunrise (v0.5.0, docs/adr/0010), after the operator's two
+   references: a night-navy ground, the gold of first light for its accent,
+   and the dawn's violets, roses and peaches for its sky. Its landing view is
+   an ascent drawn from the same layout (static/summit.js): the ancestors up
+   the mountain, the descendants down in the valley, and more snow the
+   further back the climb goes. Measured with the rules of
+   `every_theme_reads`, under its stars at their strongest pixel: the
+   tightest pair is --border-strong on --wash-3, 3.5:1; the gold reads at
+   8.8:1 on a card, and the dark ink on it at 9.5:1. */
+[data-theme="summit"] {
+  color-scheme: dark;
+  --surface-page: #06111d;
+  --surface-raised: #0d1a28;
+  --border-hairline: #1f3247;
+  --border-strong: #61778f;
+  --text-primary: #f4ead9;
+  --text-secondary: #c4b7a4;
+  --text-tertiary: #a39884;
+  --surface-sunken: #091520;
+  --surface-hover: #132334;
+  --focus-ring: #f3cf8a;
+  --accent: #e0b062;
+  --accent-soft: #2a2215;
+  --on-accent: #06111d;
+
+  --conf-certain: #86d3b0;
+  --conf-high: #9fc4e8;
+  --conf-medium: #e0b062;
+  --conf-low: #e98c78;
+  --conf-track: #22344b;
+  --danger: #f08e7a;
+  --warning: #edc36e;
+
+  --sex-a: #102238;
+  --sex-a-line: #5f82ad;
+  --sex-b: #2b1d22;
+  --sex-b-line: #b88672;
+  --sex-u: #172231;
+  --sex-u-line: #7d8798;
+
+  --hue-1: #6fc4ec;
+  --hue-2: #f0a35e;
+  --hue-3: #86d3b0;
+  --hue-4: #f3a6c0;
+  --hue-5: #b8a2e6;
+  --hue-6: #e3c25c;
+  --hue-7: #7dc7d4;
+  --hue-8: #e58e8e;
+
+  --shadow-rgb: 0 0 0;
+  --shadow-a: 0.55;
+
+  --wash-1: #07131f;
+  --wash-2: #06111c;
+  --wash-3: #081522;
+  /* The last stars before the dawn, drawn and never fetched. */
+  --wash-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='18' cy='22' r='.6' fill-opacity='.45'/%3E%3Ccircle cx='96' cy='38' r='.5' fill-opacity='.35'/%3E%3Ccircle cx='158' cy='14' r='.8' fill-opacity='.3'/%3E%3Ccircle cx='52' cy='112' r='.4' fill-opacity='.4'/%3E%3Ccircle cx='134' cy='96' r='.6' fill-opacity='.3'/%3E%3Ccircle cx='76' cy='164' r='.5' fill-opacity='.35'/%3E%3C/g%3E%3C/svg%3E");
+
+  --icon-river: #0f2a3d;
+  --icon-tree: #14291f;
+  --icon-search: #2c2416;
+  --icon-quality: #33191f;
+  --icon-river-ink: #7dc7d4;
+  --icon-tree-ink: #86d3b0;
+  --icon-search-ink: #e0b062;
+  --icon-quality-ink: #f08e7a;
+  --glow-rgb: 224 176 98;
+
+  /* The logo in this theme's light (docs/adr/0006 §2): the same drawing,
+     an ember of the dawn under the gold. */
+  --logo-tile: #0d1a28;
+  --logo-deep: #9a5a3c;
+  --logo-gold: #e0b062;
+  --logo-light: #f3cf8a;
+
+  /* The ascent (static/summit.js): the sky from night to dawn, the sun,
+     the far ranges and the mountain's rock in shade and in first light, its
+     snow in shade, in light and in the dawn's glow, the valley and its
+     mist, the trail, the contour lines, and a camp that is alive, one that
+     is not, and one this reader may not see. */
+  --sm-sky-night: #0a1630;
+  --sm-sky-dawn: #3d2a52;
+  --sm-sky-glow: #d98f7a;
+  --sm-sun: #ffd38a;
+  --sm-sun-core: #fff3d9;
+  --sm-range-far: #2a3550;
+  --sm-range-mid: #1c2639;
+  --sm-rock: #1f2a40;
+  --sm-rock-lit: #6b4b5a;
+  --sm-snow: #eef2f8;
+  --sm-snow-shade: #a9b8cf;
+  --sm-snow-glow: #f6c3ad;
+  --sm-valley: #0b1c22;
+  --sm-pine: #0e2a2a;
+  --sm-mist: #a9bcd0;
+  --sm-trail: #e0b062;
+  --sm-trail-hot: #ffdca3;
+  --sm-contour: #3a4c68;
+  --sm-camp-living: #ffcf7a;
+  --sm-camp-gone: #c9d3e2;
+  --sm-camp-hidden: #61778f;
 }

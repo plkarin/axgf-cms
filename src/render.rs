@@ -32,12 +32,14 @@ pub const RIVER_JS: &str = include_str!("../static/river.js");
 /// the ground.
 pub const RIVER_SCENE_JS: &str = include_str!("../static/river-scene.js");
 
-/// Fusion's living tree, served at `/static/fusion.js`, and Galaxy's solar
-/// system, at `/static/galaxy.js` (docs/adr/0007): each a view of the river
-/// for river.js to paint with, and the scene that keeps it alive. Loaded only
-/// under their theme; the server's river is the page without them.
+/// Fusion's living tree, served at `/static/fusion.js`, Galaxy's solar
+/// system, at `/static/galaxy.js` (docs/adr/0007), and Summit's ascent, at
+/// `/static/summit.js` (docs/adr/0010): each a view of the river for river.js
+/// to paint with, and the scene that keeps it alive. Loaded only under their
+/// theme; the server's river is the page without them.
 pub const FUSION_JS: &str = include_str!("../static/fusion.js");
 pub const GALAXY_JS: &str = include_str!("../static/galaxy.js");
+pub const SUMMIT_JS: &str = include_str!("../static/summit.js");
 
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
@@ -77,6 +79,10 @@ pub const FUSION_HERO_JPG: &[u8] = include_bytes!("../static/img/fusion-hero.jpg
 pub const FUSION_CTA_JPG: &[u8] = include_bytes!("../static/img/fusion-cta.jpg");
 pub const GALAXY_HERO_JPG: &[u8] = include_bytes!("../static/img/galaxy-hero.jpg");
 pub const GALAXY_CTA_JPG: &[u8] = include_bytes!("../static/img/galaxy-cta.jpg");
+/// Summit's two, made the same way (docs/adr/0010): a summit at sunrise above
+/// a misty valley, and footprints climbing a snowy ridge above the clouds.
+pub const SUMMIT_HERO_JPG: &[u8] = include_bytes!("../static/img/summit-hero.jpg");
+pub const SUMMIT_CTA_JPG: &[u8] = include_bytes!("../static/img/summit-cta.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 

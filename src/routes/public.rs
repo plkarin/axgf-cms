@@ -1326,6 +1326,12 @@ pub async fn galaxy_hero_jpg() -> Response {
 pub async fn galaxy_cta_jpg() -> Response {
     picture("image/jpeg", render::GALAXY_CTA_JPG)
 }
+pub async fn summit_hero_jpg() -> Response {
+    picture("image/jpeg", render::SUMMIT_HERO_JPG)
+}
+pub async fn summit_cta_jpg() -> Response {
+    picture("image/jpeg", render::SUMMIT_CTA_JPG)
+}
 
 /// `GET /static/img/river-ground.jpg` — the river's ground. The same picture
 /// behind every person: nothing in it depends on the archive.
@@ -1886,6 +1892,18 @@ pub async fn galaxy_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::GALAXY_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/summit.js` — Summit's ascent (docs/adr/0010).
+pub async fn summit_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::SUMMIT_JS,
     )
         .into_response()
 }

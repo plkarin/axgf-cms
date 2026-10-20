@@ -315,6 +315,10 @@ fn routes(state: Shared) -> Router {
         .route("/static/img/summit-hero.jpg", get(public::summit_hero_jpg))
         .route("/static/img/summit-cta.jpg", get(public::summit_cta_jpg))
         .route(
+            "/static/img/summit-panorama.jpg",
+            get(public::summit_panorama_jpg),
+        )
+        .route(
             "/static/img/river-ground.jpg",
             get(public::river_ground_jpg),
         )

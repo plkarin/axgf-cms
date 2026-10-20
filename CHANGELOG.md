@@ -197,26 +197,29 @@ accents.
 
 - **The landing view** (`static/summit.js`, the river's layout as Fusion
   and Galaxy use it):
+  - the mountain keeps the river's vertical: the oldest at its foot, the
+    youngest toward its summit;
   - the person at the fixed point stands at a camp;
-  - the ancestors climb the mountain, one contour line per generation,
+  - the descendants climb the mountain, one contour line per generation,
     each narrower than the one below;
-  - the descendants stand in the valley under the camp;
+  - the ancestors stand in the valley under the camp, the furthest back the
+    deepest in its mist;
   - every parentage is a trail, as surely as it is known;
-  - the summit is the farthest the record reaches.
+  - the summit is the youngest generation the drawing reaches.
 - **The mountain is a photograph:** a wall of peaks above a forest and a
   misty valley at dawn, made in Canva. Its summit is the drawing's, the camp
-  stands at the foot of its rock, and every row of ancestors is drawn in
-  until it stands under the crest. A travel moves it with the people.
+  stands at the foot of its rock, and every row up the mountain stands under
+  the crest. A travel moves it with the people.
 - **The mountain answers the climb:**
-  - the snow line comes down as the camp's birth year goes back in time,
-    read only when this reader may see that year. The snow is laid on the
-    photograph's ledges and couloirs first, then its faces, never its
-    cliffs;
+  - the snow line comes down as the camp's birth year comes nearer the
+    present, read only when this reader may see that year. The snow is
+    laid on the photograph's ledges and couloirs first, then its faces,
+    never its cliffs;
   - the sun rises with every person on the itinerary, and the photograph
     comes out of the night with it.
 - **The scene lives under the drawing:** the last stars, high cloud, snow
   blown off the summit, mist drifting through the forest and the valley, and
-  light running down the attested trails. It holds still on the river's
+  light climbing the attested trails. It holds still on the river's
   terms. Without WebGL the drawing keeps a mountain of its own.
 - **The dashboard's bars become the climb's profile:** a gold line from the
   valley to the summit, with the camp marked on it.

@@ -3067,7 +3067,7 @@ river-legend-discharge = 子孫数
 river-legend-direction = ↓ 源流へ · ↑ 存命者へ
 view-tree-direction = ↓ 根：祖先 · ↑ 樹冠：子孫
 view-galaxy-direction = ↓ 太陽の下：祖先 · ↑ 上：子孫
-view-summit-direction = ↑ 祖先は頂上へ・↓ 子孫は谷へ
+view-summit-direction = ↓ 祖先は谷に・↑ 子孫は頂上へ
 river-legend-generation = 1世代 ≈ 29年
 river-zoom = ズーム
 river-still = 風景を止める
@@ -3103,7 +3103,7 @@ search-open-record = 記録を開く
 search-hint = Enter でその人まで川を移動し、Shift+Enter で記録を開きます。
 view-tree-search-hint = Enter でその人を中心に木を育て、Shift+Enter で記録を開きます。
 view-galaxy-search-hint = Enter でその人を太陽にし、Shift+Enter で記録を開きます。
-view-summit-search-hint = Enter でその人のところまで登り、Shift+Enter で記録を開きます。
+view-summit-search-hint = Enter でその人のところへ向かい、Shift+Enter で記録を開きます。
 search-summary = { $n }人 · ↵ 移動 · ⇧↵ 記録を開く
 search-empty-query = 検索する名前を入力してください。
 

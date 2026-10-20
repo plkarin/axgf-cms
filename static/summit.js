@@ -2,19 +2,22 @@
  *
  * The river's own layout — the same people, the same links, from the same
  * payload, through the same reader's lens — raised into a mountain at
- * sunrise. The person at the fixed point stands at the camp. Their ancestors
- * go up the mountain, one contour line for every generation, each line a
- * little narrower than the one below it, as a mountain is; their
- * descendants go down into the valley under the camp. Every parentage is a
- * trail from parent to union to child, lit as surely as it is known: solid,
- * broken or a trace. The summit is the farthest the record reaches: with no
- * ancestor above, the camp is on the summit.
+ * sunrise, the way the river runs: the oldest at the foot, the youngest
+ * toward the summit. The person at the fixed point stands at the camp. Their
+ * descendants climb the mountain, one contour line for every generation,
+ * each line a little narrower than the one below it, as a mountain is; their
+ * ancestors stand down in the valley under the camp, the furthest back the
+ * deepest in its mist. Every parentage is a trail from parent to union to
+ * child, lit as surely as it is known: solid, broken or a trace. The summit
+ * is the youngest generation the drawing reaches: with no descendant above,
+ * the camp is on the summit.
  *
  * The mountain answers the climb:
- * - its snow comes down with the years. The further back the person at the
- *   camp was born, the lower the snow line: read from the year the river
- *   itself rests on, and only when this reader may see it (`meta.era`).
- *   Without one, the snow keeps to the heights, whoever is at the camp;
+ * - its snow comes down with the years. The nearer the present the person at
+ *   the camp was born, the nearer the summit they stand, and the lower the
+ *   snow line: read from the year the river itself rests on, and only when
+ *   this reader may see it (`meta.era`). Without one, the snow keeps to the
+ *   heights, whoever is at the camp;
  * - the sun rises with the itinerary. Every person travelled to brings the
  *   dawn on, from the last stars to full light.
  *
@@ -32,7 +35,7 @@
  * - the light, from the blue of the night to the first sun coming down the
  *   wall;
  * - and, every frame: snow blown off the summit, mist drifting through the
- *   forest and over the valley, light running down every attested trail.
+ *   forest and over the valley, light climbing every attested trail.
  * Without WebGL the drawing keeps a mountain of its own (`drawn`).
  *
  * Two things the page knows by name:
@@ -62,11 +65,12 @@
     return Math.min(1, 0.12 + (n - 1) * 0.18);
   }
   // How far the snow comes down, 0.12 (the summit's tip) to 1 (down to the
-  // camp), from the year the river rests on, and only one this reader may
-  // see: a year it may not see must not show through the weather.
+  // camp), from the year the river rests on: the nearer the present, the
+  // nearer the summit, the snowier. Only a year this reader may see: a year
+  // it may not see must not show through the weather.
   function snowiness(m) {
     if (!m || !m.era || !isFinite(m.year)) return 0.3;
-    return Math.max(0.12, Math.min(1, (2005 - m.year) / 300));
+    return Math.max(0.12, Math.min(1, (m.year - 1705) / 300));
   }
   // A fixed sequence of numbers, so that the same mountain is drawn on every
   // visit and in every frame of a travel.
@@ -78,12 +82,13 @@
   /* ---- the photograph ---- */
   // Made at 1776 × 896 and shown at that aspect; served at 2048 × 1024 so
   // that the graphics card can filter it. Where its summit is, where a camp
-  // stands on it (the foot of its rock, as a share of its height), and its
+  // stands on it (the foot of its rock, as a share of its height), from
+  // where down its crest leaves the whole wall to stand on (`wall`), and its
   // skyline: in each of 1024 columns, the first row that is no longer sky,
   // as a share of its height, 16 bits little-endian. It was read from the
   // photograph itself: the first row of each column that departs from the
   // sky above it, and stays departed.
-  var PHOTO = { src: '/static/img/summit-panorama.jpg?v=1', aspect: 1776 / 896, su: 0.4907, sv: 0.0739, camp: 0.58 };
+  var PHOTO = { src: '/static/img/summit-panorama.jpg?v=1', aspect: 1776 / 896, su: 0.4907, sv: 0.0739, camp: 0.58, wall: 0.27 };
   var SKYLINE = 'tze3N7c3tzcAOAM4gTi3OCQ5bDm1OSA6nzrbOoM7HDybPFg94T0XPtw+Xj+xP/A/AEAAQP4/AEAAQIY/JD/bPpw+HT7nPWg9' +
     '6Ty0PDU8tjs3OyQ7FTvbOmA6STpJOgg6QDkkOR452zhpOEk4Rzg3OG047DhrOek54Dm3Obc55TlkOuM6YTsKPJI82zzbPNo8' +
     'kjxLPEk8STxJPEk8ADy3O2U75jqwOkk6/Dm3OW05JDncOF04JzgAOLw3hjckN9I2kjZmNmI2lzYWN5U3FDjcOCQ5uDg5OLs3' +
@@ -157,14 +162,14 @@
     var m = fr.meta, hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0];
     var cx = C ? C.x : hl + hw / 2, cy = C ? C.y : m.cy, step0 = m.step || 100;
-    // How far the drawing reaches each way, in generations: up (the
-    // ancestors, below the river's centre) and down (the descendants, above
-    // it), with the lines the record continues past them and their counts —
-    // so that a count is never cut by the frame.
+    // How far the drawing reaches each way, in generations, as the river
+    // draws them: down to the ancestors (below the river's centre) and up to
+    // the descendants (above it), with the lines the record continues past
+    // them and their counts — so that a count is never cut by the frame.
     var up = 0, down = 0;
     function reach(y, extra) {
       var g = (y - cy) / step0;
-      if (g > 0) up = Math.max(up, g + (extra || 0)); else down = Math.max(down, -g + (extra || 0));
+      if (g > 0) down = Math.max(down, g + (extra || 0)); else up = Math.max(up, -g + (extra || 0));
     }
     fr.persons.forEach(function (p) { reach(p.y); });
     fr.tails.forEach(function (t) { reach(t.y2); if (t.count_at) reach(t.count_at.y, 0.18); });
@@ -177,18 +182,35 @@
     // step under it; the valley takes the rest.
     // A short climb leaves the summit more sky to stand in: with few
     // contours, the peak stands taller over the last of them.
-    var sx = hl + hw / 2, topContent = vt + vh * (0.18 + 0.06 * Math.max(0, 3 - up)), bottom = vt + vh - 30;
-    var span = up + down + 0.5, avail = bottom - topContent;
-    var step = Math.min(step0 * 1.25, avail / Math.max(1, span));
-    // The camp's name and years take some 46 units under it. When the steps
-    // are too short to leave them that, the valley's first row stands NAME
-    // under the camp (`under` more than a step) and the rest a step apart.
-    var NAME = 56, under = 0;
-    if (down > 0.25 && step < NAME) { step = Math.min(step, (avail - NAME) / Math.max(1, span - 1)); under = NAME - step; }
-    var campY = topContent + up * step;
-    var summitY = vt + 26;
+    var sx = hl + hw / 2, bottom = vt + vh - 30, summitY = vt + 26, span = up + down + 0.5;
+    // The rows from `top` down, a step for each generation. The camp's name
+    // and years take some 46 units under it: when the steps are too short to
+    // leave them that, the valley's first row stands NAME under the camp
+    // (`under` more than a step) and the rest a step apart.
+    var NAME = 56;
+    function lay(top) {
+      var avail = bottom - top, step = Math.min(step0 * 1.25, avail / Math.max(1, span)), under = 0;
+      if (down > 0.25 && step < NAME) { step = Math.min(step, (avail - NAME) / Math.max(1, span - 1)); under = NAME - step; }
+      return { top: top, step: step, under: under, campY: top + up * step };
+    }
+    var L = lay(vt + vh * (0.18 + 0.06 * Math.max(0, 3 - up))), pl = null;
+    if (SCENE) {
+      pl = placing(sx, L.campY, summitY, hl, hw, vt + vh);
+      // On the photograph the heights begin no higher than where its crest
+      // leaves the whole wall to stand on: above that a row would have only
+      // the summit's peak for its rock. Laying the rows lower moves the
+      // photograph, so the two are settled together.
+      for (var pass = 0; pass < 4 && up > 0.25; pass++) {
+        var wall = pl.y + PHOTO.wall * pl.h;
+        if (L.top >= wall - 0.5) break;
+        L = lay(Math.min(wall, bottom - span * 22));
+        pl = placing(sx, L.campY, summitY, hl, hw, vt + vh);
+      }
+    }
+    var step = L.step, under = L.under, campY = L.campY;
     // Each half takes the river's order from left to right over its own
-    // breadth, as Galaxy's halves do; the heights narrow as they rise.
+    // breadth, as Galaxy's halves do: the valley's (0, the ancestors) and the
+    // heights' (1, the descendants), which narrow as they rise.
     var lo = [Infinity, Infinity], hi = [-Infinity, -Infinity];
     function widen(x, y) {
       var g = (y - cy) / step0;
@@ -208,13 +230,13 @@
     // On the photograph, every row up the mountain must stand on its rock:
     // each is drawn in about the summit's axis as much as it needs to stand
     // under the crest where it is, and never less than the row below it.
-    var pl = SCENE ? placing(sx, campY, summitY, hl, hw, vt + vh) : null, fit = [1];
+    var fit = [1];
     if (pl) {
       var ext = [];
       var note = function (x, y) {
-        var g = Math.round((y - cy) / step0);
+        var g = Math.round((cy - y) / step0);
         if (g < 1) return;
-        var d = (x - mid[0]) * k[0], e = ext[g] || (ext[g] = [0, 0]);
+        var d = (x - mid[1]) * k[1], e = ext[g] || (ext[g] = [0, 0]);
         e[0] = Math.min(e[0], d); e[1] = Math.max(e[1], d);
       };
       fr.persons.forEach(function (p) { note(p.x, p.y); });
@@ -232,13 +254,13 @@
       return fit[i] + (fit[j] - fit[i]) * (g - Math.floor(g));
     }
     function place(x, y) {
-      var g = (y - cy) / step0, ny = campY - g * step + (g < 0 ? under * Math.min(1, -g) : 0);
+      var g = (y - cy) / step0, ny = campY + g * step + (g > 0 ? under * Math.min(1, g) : 0);
       if (Math.abs(g) < 0.25) {
         var dx = x - cx;
         if (Math.abs(dx) < 1) return [sx, ny];
         return [sx + (dx < 0 ? -1 : 1) * (28 + Math.min(1, Math.abs(dx) / 140) * 62), ny];
       }
-      var h = g > 0 ? 0 : 1, narrow = h === 0 ? (1 - steep * Math.min(g, Math.max(1, up))) * fitAt(g) : 1;
+      var h = g > 0 ? 0 : 1, narrow = h === 1 ? (1 - steep * Math.min(-g, Math.max(1, up))) * fitAt(-g) : 1;
       return [sx + (x - mid[h]) * k[h] * narrow, ny];
     }
     function moved(o) { var q = place(o.x, o.y); return Object.assign({}, o, { x: q[0], y: q[1] }); }
@@ -446,8 +468,8 @@
     fr.couples.forEach(function (c) {
       out += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="1.8" class="sm-union" opacity="' + f(c.a) + '"/>';
     });
-    // The summit's flag, where the record stops climbing: on the camp itself
-    // when nobody stands above it.
+    // The summit's flag, over the youngest generation the drawing reaches:
+    // on the camp itself when nobody stands above it.
     if (up > 0) {
       var fx = sx + 18, fy = summitY + 1;
       out += '<path d="M' + f(fx) + ' ' + f(fy) + 'V' + f(fy - 16) + '" class="sm-pole"/><path d="M' + f(fx) + ' ' + f(fy - 16) + 'L' + f(fx + 11) + ' ' + f(fy - 12.5) + 'L' + f(fx) + ' ' + f(fy - 9) + 'Z" class="sm-flag"/>';
@@ -581,11 +603,11 @@
     var box = hud.querySelector('.rv-hud-bars') || hud.appendChild(document.createElement('div'));
     box.className = 'rv-hud-bars sm-profile';
     box.setAttribute('aria-hidden', 'true');
-    // From the valley (the youngest generation, the largest `gen`) to the
-    // summit (the oldest), left to right, as a climb is read.
+    // From the valley (the oldest generation, the smallest `gen`) to the
+    // summit (the youngest), left to right, as a climb is read.
     var most = 1, pts = [], W = 160, H = 40, i = 0, count = hi - lo + 1;
-    for (var g = hi; g >= lo; g--) most = Math.max(most, per[g] || 0);
-    for (g = hi; g >= lo; g--, i++) {
+    for (var g = lo; g <= hi; g++) most = Math.max(most, per[g] || 0);
+    for (g = lo; g <= hi; g++, i++) {
       var x = count > 1 ? 6 + (W - 12) * i / (count - 1) : W / 2;
       pts.push([x, H - 5 - (H - 12) * (per[g] || 0) / most, g === 0]);
     }
@@ -907,14 +929,14 @@
     return dawnShown;
   }
   // A new layout at rest: its scenery (reached already when the travel
-  // moved toward it), and light running down its attested trails, from the
-  // heights toward the living.
+  // moved toward it), and light climbing its attested trails, from the
+  // valley toward the summit.
   function layout(L) {
     flows = [];
     if (REST && !same(sc.to, REST)) aim(REST, sc.to ? 600 : 0);
     if (L && L.edges) L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
-      var a = e.y1 <= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1];
+      var a = e.y1 >= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1];
       var n = 20, xs = [], ys = [], cum = [0];
       for (var i = 0; i <= n; i++) {
         var q = cpoint(a[0], a[1], a[2], a[3], i / n);

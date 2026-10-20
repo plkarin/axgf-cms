@@ -3302,7 +3302,7 @@ river-legend-discharge = débit
 river-legend-direction = ↓ vers la source · ↑ vers les vivants
 view-tree-direction = ↓ les racines : les ancêtres · ↑ la couronne : les descendants
 view-galaxy-direction = ↓ les ancêtres sous le soleil · ↑ les descendants au-dessus
-view-summit-direction = ↑ les ancêtres vers le sommet · ↓ les descendants dans la vallée
+view-summit-direction = ↓ les ancêtres dans la vallée · ↑ les descendants vers le sommet
 river-legend-generation = une génération ≈ 29 ans
 river-zoom = Zoom
 river-still = Figer le paysage
@@ -3338,7 +3338,7 @@ search-open-record = Ouvrir la fiche
 search-hint = Entrée fait voyager la rivière jusqu’à elle ; Maj+Entrée ouvre sa fiche.
 view-tree-search-hint = Entrée fait pousser l’arbre autour d’elle ; Maj+Entrée ouvre sa fiche.
 view-galaxy-search-hint = Entrée en fait le soleil ; Maj+Entrée ouvre sa fiche.
-view-summit-search-hint = Entrée vous y fait monter ; Maj+Entrée ouvre sa fiche.
+view-summit-search-hint = Entrée vous y conduit ; Maj+Entrée ouvre sa fiche.
 search-summary = { $n ->
         [one] { $n } personne
         [many] { $n } personnes

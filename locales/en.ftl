@@ -3347,7 +3347,7 @@ river-legend-discharge = descendants
 river-legend-direction = ↓ toward the source · ↑ toward the living
 view-tree-direction = ↓ the roots: ancestors · ↑ the crown: descendants
 view-galaxy-direction = ↓ ancestors below the sun · ↑ descendants above
-view-summit-direction = ↑ ancestors up toward the summit · ↓ descendants in the valley
+view-summit-direction = ↓ ancestors in the valley · ↑ descendants up toward the summit
 river-legend-generation = one generation ≈ 29 years
 river-zoom = Zoom
 river-still = Hold the landscape still
@@ -3383,7 +3383,7 @@ search-open-record = Open the record
 search-hint = Enter travels the river to them; Shift+Enter opens their record.
 view-tree-search-hint = Enter grows the tree around them; Shift+Enter opens their record.
 view-galaxy-search-hint = Enter makes them the sun; Shift+Enter opens their record.
-view-summit-search-hint = Enter climbs to them; Shift+Enter opens their record.
+view-summit-search-hint = Enter takes you to them; Shift+Enter opens their record.
 search-summary = { $n ->
         [one] { $n } person
        *[other] { $n } people

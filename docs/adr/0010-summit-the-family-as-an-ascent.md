@@ -34,12 +34,19 @@ operator asked the same day for more:
 > detailed, serious, and its surroundings too, the trees, the cliffs… an
 > animated panorama, a bit like the river."
 
+Then they corrected its direction, which had put the ancestors on the
+heights:
+
+> "You got the direction wrong: the oldest comes from the bottom and the
+> youngest reaches the summit. Roughly, someone born in 1900 will be lower
+> on the mountain than someone born in 2000."
+
 Fusion and Galaxy already draw the river's layout their own way (ADR 0007).
 Summit is the third view of that kind.
 
 ## Decision
 
-### 1. Up the mountain to the ancestors, down into the valley to the living
+### 1. Up the mountain to the descendants, down into the valley to the ancestors
 
 `summit.js` gives river.js a view, under the same contract as Fusion's and
 Galaxy's: `shape`, `edge`, `paint`, `rest`, `named`, and the scene.
@@ -47,27 +54,29 @@ Galaxy's: `shape`, `edge`, `paint`, `rest`, `named`, and the scene.
 **The camp.** The person at the fixed point stands at a camp: a flag, and
 their name beneath it.
 
-**The ancestors climb.** They go up the mountain, one contour line per
-generation, numbered ▲1, ▲2… at the edge.
+**The mountain keeps the river's vertical**, as the tree and the galaxy do:
+the oldest at its foot, the youngest toward its summit. In the operator's
+words, someone born in 1900 stands lower on the mountain than someone born
+in 2000.
 
-- Each contour is a little narrower than the one below it, as a mountain
-  is. The narrowing is perspective only: the order of every row is the
-  river's.
-- This is the one view that turns the river's vertical over. "Going back"
-  in a family is going up: *remonter* in French.
+**The descendants climb.** They go up the mountain, one contour line per
+generation, numbered ▲1, ▲2… at the edge. Each contour is a little narrower
+than the one below it, as a mountain is. The narrowing is perspective only:
+the order of every row is the river's.
 
-**The descendants go down.** They stand in the valley under the camp,
-numbered ▼1, ▼2… Its forest edge and mist sit between the camp and them.
-However short the steps of a long range, the valley's first row stands far
-enough under the camp to leave room for the camp's name and years.
+**The ancestors go down.** They stand in the valley under the camp,
+numbered ▼1, ▼2…, the furthest back the deepest in its mist. Its forest
+edge sits between the camp and them. However short the steps of a long
+range, the valley's first row stands far enough under the camp to leave
+room for the camp's name and years.
 
 **The trails.** Every parentage is a trail from parent to union to child. It
 is solid, broken or a trace, as surely as it is known. Each trail climbs as a
 path does: up the slope, across, then up again.
 
-**The summit is the farthest the record reaches.** With no ancestor above
-them, the person at the camp stands on the summit, and the camp's flag is
-the summit's.
+**The summit is the youngest generation the drawing reaches.** With no
+descendant above them, the person at the camp stands on the summit, and the
+camp's flag is the summit's.
 
 **The mountain is a photograph, and everyone stands on its rock.** It is a
 wall of peaks above a forest and a misty valley, at dawn (§6). It is laid
@@ -80,24 +89,32 @@ under the drawing so that:
   its valley floor reaches most of the way down the frame. Below it the
   valley goes on in mist.
 
-Its crest runs the whole width, so the rows of ancestors, which widen as they
-climb, have rock to stand on. Each row up the mountain is drawn in about the
-summit's axis as far as it needs to stand under the crest where it is, and
-never less than the row below it. So nobody stands in the sky. The drawing
-in changes no order.
+Its crest runs the whole width, so the rows of descendants, which often widen
+as they climb, have rock to stand on:
+
+- the rows begin no higher than where the crest leaves the whole wall to
+  stand on (27 % of the photograph's height). Above that a row would have
+  only the summit's peak for its rock. Laying the rows lower moves the
+  photograph, so the two are settled together;
+- each row up the mountain is drawn in about the summit's axis as far as it
+  still needs to stand under the crest where it is, and never less than the
+  row below it.
+
+So nobody stands in the sky. The drawing in changes no order.
 
 A travel moves the photograph with the people, in step with river.js's own
 (the same 560 ms, the same easing), so everyone keeps their rock.
 
 ### 2. The snow comes down with the years
 
-The snow line falls as the camp's birth year goes back in time:
+The nearer the present the person at the camp was born, the nearer the
+summit they stand, and the lower the snow line falls:
 
 | Birth year at the camp | Snow |
 |---|---|
-| around 2000 | the summit's tip only |
-| 1800 | over half the mountain |
-| about 1700 | down to the camp |
+| about 1700 | the summit's tip only |
+| 1850 | half the way down to the camp |
+| around 2000 | down to the camp |
 
 The snow is laid on the photograph's own rock:
 
@@ -107,8 +124,8 @@ The snow is laid on the photograph's own rock:
 - never on the cliffs, which are too steep to keep it.
 
 Its relief is the rock's. Where the first light is on the rock, the snow is
-rose. Travelling up the family therefore makes the mountain snowier, as the
-operator asked.
+rose. Climbing toward the summit, from parents to children, therefore makes
+the mountain snowier, as the operator asked.
 
 **The year is the one the river already rests on** (`meta.year`). It is
 read only when this reader may see it (`meta.era`). A year the reader may
@@ -140,8 +157,8 @@ Two canvases, as Galaxy's:
   - the sky behind its crest, the sun and its glow;
   - every frame: the last stars, high cloud drifting, snow blown off the
     summit, and mist drifting through the forest and over the valley floor;
-- **over it:** light running down every attested trail, from the heights
-  toward the living.
+- **over it:** light climbing every attested trail, from the valley toward
+  the summit.
 
 What changes only with a layout, the dawn or the window is drawn once into a
 texture; only what moves is drawn every frame.
@@ -191,7 +208,7 @@ Summit carries Canopée's furniture, as Fusion and Galaxy do, with:
 - **its words in eleven languages:**
   - "Every life is a step. Every family, an ascent.";
   - "Climb the mountain";
-  - "↑ ancestors up toward the summit · ↓ descendants in the valley".
+  - "↓ ancestors in the valley · ↑ descendants up toward the summit".
 
 **Contrast** is measured by the rules of `every_theme_reads`, under the
 theme's stars at their strongest pixel. The tightest pair is a control's edge
@@ -221,15 +238,16 @@ card, and the dark ink on it at 9.5:1.
 
 ## Alternatives considered
 
-**Ancestors down, as in the river, Fusion and Galaxy.** Rejected. The
-summit would then be the living, and "the closer to the summit, the
-snowier" would mean the present. The operator's own words run the other
-way: back in time is up.
+**Ancestors up the mountain.** The first version, the same day: going back
+in a family is going up, *remonter* in French, and the summit was the
+farthest the record reaches. It turned the river's vertical over, alone
+among the views. The operator corrected it: the oldest come from the
+bottom, the youngest reach the summit.
 
 **Snow measured by the length of the itinerary.** Rejected. A reader who
-travelled down to their own children would have found the mountain
-snowier. The year is what "further back" means, and it is the same for
-every reader allowed to see it.
+travelled to their ancestors, down into the valley, would have found the
+mountain snowier on the way down. The year says how near the summit the
+camp stands, and it is the same for every reader allowed to see it.
 
 **A mountain computed for every pixel**, as the river's ground is. Tried
 first, the same day: rock in strata and couloirs from noise, snow, conifers
@@ -238,8 +256,8 @@ A photograph carries the detail computed rock lacks. The scene keeps what
 must change with the climb: the light, the snow, the weather.
 
 **A single pyramid.** The first panorama made had one narrow peak for its
-summit. A family's rows of ancestors widen as they climb, so the highest
-rows would have been squeezed onto its point. The wall chosen has a crest
+summit. A family's rows often widen as they climb, so the highest rows
+would have been squeezed onto its point. The wall chosen has a crest
 across its whole width.
 
 **Snow taken away under the line**, so that a recent camp shows bare rock.

@@ -3307,7 +3307,7 @@ river-legend-discharge = Nachkommen
 river-legend-direction = ↓ zur Quelle · ↑ zu den Lebenden
 view-tree-direction = ↓ die Wurzeln: Vorfahren · ↑ die Krone: Nachkommen
 view-galaxy-direction = ↓ Vorfahren unter der Sonne · ↑ Nachkommen darüber
-view-summit-direction = ↑ die Vorfahren zum Gipfel hin · ↓ die Nachkommen im Tal
+view-summit-direction = ↓ die Vorfahren im Tal · ↑ die Nachkommen zum Gipfel hin
 river-legend-generation = eine Generation ≈ 29 Jahre
 river-zoom = Zoom
 river-still = Landschaft anhalten
@@ -3343,7 +3343,7 @@ search-open-record = Datensatz öffnen
 search-hint = Enter führt den Fluss zu dieser Person; Umschalt+Enter öffnet ihren Datensatz.
 view-tree-search-hint = Enter lässt den Baum um diese Person wachsen; Umschalt+Enter öffnet ihren Datensatz.
 view-galaxy-search-hint = Enter macht diese Person zur Sonne; Umschalt+Enter öffnet ihren Datensatz.
-view-summit-search-hint = Enter führt zu dieser Person hinauf; Umschalt+Enter öffnet ihren Datensatz.
+view-summit-search-hint = Enter führt zu dieser Person; Umschalt+Enter öffnet ihren Datensatz.
 search-summary = { $n ->
         [one] { $n } Person
        *[other] { $n } Personen

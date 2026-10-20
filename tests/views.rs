@@ -186,10 +186,10 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
         (
             "summit",
             "Hold the mountain still",
-            "↑ ancestors up toward the summit · ↓ descendants in the valley",
+            "↓ ancestors in the valley · ↑ descendants up toward the summit",
             ["Every life is a step.", "Every family, an ascent."],
             "See on the mountain",
-            "Enter climbs to them",
+            "Enter takes you to them",
         ),
     ];
     for (theme, still, compass, hero, see, hint) in cases {

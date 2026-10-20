@@ -3594,7 +3594,7 @@ river-legend-discharge = الذرية
 river-legend-direction = ↓ نحو المنبع · ↑ نحو الأحياء
 view-tree-direction = ↓ الجذور: الأسلاف · ↑ التاج: الأحفاد
 view-galaxy-direction = ↓ الأسلاف تحت الشمس · ↑ الأحفاد فوقها
-view-summit-direction = ↑ الأسلاف نحو القمّة · ↓ الأحفاد في الوادي
+view-summit-direction = ↓ الأسلاف في الوادي · ↑ الأحفاد نحو القمّة
 river-legend-generation = جيل واحد ≈ 29 سنة
 river-zoom = تكبير
 river-still = إيقاف حركة المنظر
@@ -3630,7 +3630,7 @@ search-open-record = افتح السجل
 search-hint = يأخذ Enter النهر إليه، ويفتح Shift+Enter سجله.
 view-tree-search-hint = يُنمّي Enter الشجرة حوله، ويفتح Shift+Enter سجله.
 view-galaxy-search-hint = يجعله Enter الشمس، ويفتح Shift+Enter سجله.
-view-summit-search-hint = يأخذك Enter إليه صعودًا، ويفتح Shift+Enter سجله.
+view-summit-search-hint = يأخذك Enter إليه، ويفتح Shift+Enter سجله.
 search-summary = { $n ->
         [zero] لا أحد
         [one] شخص واحد

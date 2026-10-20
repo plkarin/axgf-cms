@@ -3067,7 +3067,7 @@ river-legend-discharge = 后代数
 river-legend-direction = ↓ 向源头 · ↑ 向在世者
 view-tree-direction = ↓ 树根：祖先 · ↑ 树冠：后代
 view-galaxy-direction = ↓ 太阳下方：祖先 · ↑ 上方：后代
-view-summit-direction = ↑ 祖先向着顶峰 · ↓ 后代在山谷
+view-summit-direction = ↓ 祖先在山谷 · ↑ 后代向着顶峰
 river-legend-generation = 一代 ≈ 29 年
 river-zoom = 缩放
 river-still = 暂停风景
@@ -3103,7 +3103,7 @@ search-open-record = 打开记录
 search-hint = 回车键将河流移到此人；上档键+回车键打开其记录。
 view-tree-search-hint = 回车键让树围绕此人生长；上档键+回车键打开其记录。
 view-galaxy-search-hint = 回车键让此人成为太阳；上档键+回车键打开其记录。
-view-summit-search-hint = 回车键带你登上此人所在；上档键+回车键打开其记录。
+view-summit-search-hint = 回车键带你前往此人所在；上档键+回车键打开其记录。
 search-summary = { $n } 人 · ↵ 前往 · ⇧↵ 打开记录
 search-empty-query = 输入姓名进行搜索。
 

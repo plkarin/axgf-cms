@@ -244,6 +244,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/galaxy-cta.jpg",
         "/static/img/summit-hero.jpg",
         "/static/img/summit-cta.jpg",
+        "/static/img/summit-panorama.jpg",
     ] {
         let resp = get(&app, jpg).await;
         assert_eq!(resp.status(), StatusCode::OK, "{jpg}");

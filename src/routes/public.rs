@@ -1332,6 +1332,12 @@ pub async fn summit_hero_jpg() -> Response {
 pub async fn summit_cta_jpg() -> Response {
     picture("image/jpeg", render::SUMMIT_CTA_JPG)
 }
+/// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
+/// ascent. The same picture behind every person: nothing in it depends on the
+/// archive.
+pub async fn summit_panorama_jpg() -> Response {
+    picture("image/jpeg", render::SUMMIT_PANORAMA_JPG)
+}
 
 /// `GET /static/img/river-ground.jpg` — the river's ground. The same picture
 /// behind every person: nothing in it depends on the archive.

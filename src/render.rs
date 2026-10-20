@@ -83,6 +83,9 @@ pub const GALAXY_CTA_JPG: &[u8] = include_bytes!("../static/img/galaxy-cta.jpg")
 /// a misty valley, and footprints climbing a snowy ridge above the clouds.
 pub const SUMMIT_HERO_JPG: &[u8] = include_bytes!("../static/img/summit-hero.jpg");
 pub const SUMMIT_CTA_JPG: &[u8] = include_bytes!("../static/img/summit-cta.jpg");
+/// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
+/// above a forest and a misty valley at dawn, under the scene of `summit.js`.
+pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 

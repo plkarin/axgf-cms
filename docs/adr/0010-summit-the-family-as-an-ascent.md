@@ -5,7 +5,8 @@
 fourth · **Builds on:** [ADR 0007](0007-a-theme-may-bring-its-own-view.md)
 · **Applies to:** `static/summit.js`, `static/css/tokens.css`,
 `static/app.css`, `static/ui.js`, `static/img/summit-hero.jpg`,
-`static/img/summit-cta.jpg`, `src/theme.rs`, `src/render.rs`,
+`static/img/summit-cta.jpg`, `static/img/summit-panorama.jpg`,
+`src/theme.rs`, `src/render.rs`,
 `src/routes/mod.rs`, `src/routes/public.rs`, `templates/river.html`,
 `locales/*.ftl`, `tests/views.rs`, `tests/themes.rs`,
 `tests/design_tokens.rs`, `tests/controls.rs`, `tests/masthead.rs`,
@@ -25,6 +26,13 @@ Their words:
 > "Navigation through the family follows the ascent of a mountain, around
 > sunrise in the mountains. The further we navigate through the genealogy
 > and the closer we get to the summit, the snowier the mountain becomes."
+
+The first mountain was drawn flat, in the theme's colours. Seeing it, the
+operator asked the same day for more:
+
+> "The mountain looks like a child's cartoon. I would like it more
+> detailed, serious, and its surroundings too, the trees, the cliffs… an
+> animated panorama, a bit like the river."
 
 Fusion and Galaxy already draw the river's layout their own way (ADR 0007).
 Summit is the third view of that kind.
@@ -50,6 +58,8 @@ generation, numbered ▲1, ▲2… at the edge.
 
 **The descendants go down.** They stand in the valley under the camp,
 numbered ▼1, ▼2… Its forest edge and mist sit between the camp and them.
+However short the steps of a long range, the valley's first row stands far
+enough under the camp to leave room for the camp's name and years.
 
 **The trails.** Every parentage is a trail from parent to union to child. It
 is solid, broken or a trace, as surely as it is known. Each trail climbs as a
@@ -59,11 +69,25 @@ path does: up the slope, across, then up again.
 them, the person at the camp stands on the summit, and the camp's flag is
 the summit's.
 
-**The mountain is drawn from where the frame put everyone.** Every contour
-is as wide as the people on it need. From each one, the flanks spread as
-they go down. So nobody ever stands in the sky, and the mountain rises with
-its people as they travel. A crest of peaks crowns the highest contour, and
-the summit is the tallest of them.
+**The mountain is a photograph, and everyone stands on its rock.** It is a
+wall of peaks above a forest and a misty valley, at dawn (§6). It is laid
+under the drawing so that:
+
+- its summit is the drawing's, where the flag stands;
+- the camp stands at the foot of its rock, at the top of the forest, unless
+  the valley needs the room;
+- it is never narrower than the window river.js opens on the drawing, and
+  its valley floor reaches most of the way down the frame. Below it the
+  valley goes on in mist.
+
+Its crest runs the whole width, so the rows of ancestors, which widen as they
+climb, have rock to stand on. Each row up the mountain is drawn in about the
+summit's axis as far as it needs to stand under the crest where it is, and
+never less than the row below it. So nobody stands in the sky. The drawing
+in changes no order.
+
+A travel moves the photograph with the people, in step with river.js's own
+(the same 560 ms, the same easing), so everyone keeps their rock.
 
 ### 2. The snow comes down with the years
 
@@ -75,8 +99,15 @@ The snow line falls as the camp's birth year goes back in time:
 | 1800 | over half the mountain |
 | about 1700 | down to the camp |
 
-Tongues of snow run down the couloirs, so the line is never a ruled one.
-Travelling up the family therefore makes the mountain snowier, as the
+The snow is laid on the photograph's own rock:
+
+- just under the line, on the ledges and couloirs the photograph already
+  holds snow in, so the line is never a ruled one;
+- higher up, on the faces too;
+- never on the cliffs, which are too steep to keep it.
+
+Its relief is the rock's. Where the first light is on the rock, the snow is
+rose. Travelling up the family therefore makes the mountain snowier, as the
 operator asked.
 
 **The year is the one the river already rests on** (`meta.year`). It is
@@ -86,19 +117,38 @@ the heights, whoever is at the camp.
 
 ### 3. The sun rises with the climb
 
-Each person on the itinerary brings the dawn on: the sky warms, the last
-stars fade and the sun rises beside the mountain. A climb starts in the
-night and reaches its summit at sunrise. River.js already keeps the
-itinerary, one chip per person, so nothing new is stored.
+Each person on the itinerary brings the dawn on:
+
+- the sky warms and the last stars fade;
+- the sun rises beside the summit, from behind the crest to above it;
+- the photograph comes out of the blue of the night. The first light on its
+  summit, which the photograph was taken in, waits for the dawn;
+- at sunrise the sun comes down the wall from the summit.
+
+The dawn shown comes on toward the dawn reached over a second or so, rather
+than at a stroke. A climb starts in the night and reaches its summit at
+sunrise. River.js already keeps the itinerary, one chip per person, so
+nothing new is stored.
 
 ### 4. The scene, and when it holds still
 
 Two canvases, as Galaxy's:
 
-- **under the drawing:** the sky, from night to dawn, the sun and its glow,
-  and the last stars;
-- **over it:** mist drifting in the valley, and light running down every
-  attested trail, from the heights toward the living.
+- **under the drawing** (WebGL):
+  - the photograph, in the light of the dawn reached, under the snow of the
+    years, with the contour of every generation;
+  - the sky behind its crest, the sun and its glow;
+  - every frame: the last stars, high cloud drifting, snow blown off the
+    summit, and mist drifting through the forest and over the valley floor;
+- **over it:** light running down every attested trail, from the heights
+  toward the living.
+
+What changes only with a layout, the dawn or the window is drawn once into a
+texture; only what moves is drawn every frame.
+
+Before the photograph arrives, and if it never does, its outline stands in
+the theme's rock, from the skyline the script carries. Without WebGL the
+drawing carries a mountain of its own, drawn as wide as its people need.
 
 It holds still on the river's terms:
 
@@ -127,10 +177,17 @@ Summit carries Canopée's furniture, as Fusion and Galaxy do, with:
 - **its shape:** a 12 px round, and an unhurried tempo;
 - **its type:** titles in the book face (`--serif`), as the reference's
   headline;
-- **two photographs**, made in the operator's Canva and exported at their
+- **three photographs**, made in the operator's Canva and exported at their
   native size:
   - a summit at sunrise above a misty valley;
   - footprints climbing a snowy ridge above a sea of clouds;
+  - the mountain of the ascent (§1): a wall of peaks above a forest and a
+    misty valley at dawn, 1776 × 896. It is served at 2048 × 1024 so the
+    graphics card can filter it, and shown at its own aspect. Its skyline
+    is written in `summit.js`: in each of 1024 columns, the first row that
+    is no longer sky. It was read from the photograph: the first row of each
+    column that departs from the sky above it, and stays departed. A new
+    photograph needs a new skyline, and its summit and camp read again;
 - **its words in eleven languages:**
   - "Every life is a step. Every family, an ascent.";
   - "Climb the mountain";
@@ -153,7 +210,8 @@ card, and the dark ink on it at 9.5:1.
   - `views.rs` covers the new view like the other two:
     - it loads only its own script;
     - its words name no river;
-    - its script and pictures are served and name no colour;
+    - its script and pictures, the panorama with them, are served and name
+      no colour;
     - it gives river.js everything it asks for, and holds still on the
       river's terms;
   - `themes.rs` and `design_tokens.rs` measure five palettes: Study 06 and
@@ -172,3 +230,19 @@ way: back in time is up.
 travelled down to their own children would have found the mountain
 snowier. The year is what "further back" means, and it is the same for
 every reader allowed to see it.
+
+**A mountain computed for every pixel**, as the river's ground is. Tried
+first, the same day: rock in strata and couloirs from noise, snow, conifers
+drawn one by one. The operator rejected it on sight as "a child's cartoon".
+A photograph carries the detail computed rock lacks. The scene keeps what
+must change with the climb: the light, the snow, the weather.
+
+**A single pyramid.** The first panorama made had one narrow peak for its
+summit. A family's rows of ancestors widen as they climb, so the highest
+rows would have been squeezed onto its point. The wall chosen has a crest
+across its whole width.
+
+**Snow taken away under the line**, so that a recent camp shows bare rock.
+The photograph's own dusting would have had to be painted out, and a face
+stripped of it reads as concrete. The dusting stays; the snow of the years
+is laid over it.

@@ -18,16 +18,32 @@
  * - the sun rises with the itinerary. Every person travelled to brings the
  *   dawn on, from the last stars to full light.
  *
+ * The mountain is a photograph: a wall of peaks above a forest and a misty
+ * valley, at dawn (static/img/summit-panorama.jpg, made in the operator's
+ * Canva). It is laid under the drawing with its summit on the drawing's and
+ * the camp at the foot of its rock, and every row up the mountain is drawn
+ * in, about the summit's axis, until it stands under the crest: nobody
+ * stands in the sky. Over the photograph the scene paints, as the river's
+ * ground is painted (river-scene.js), what the climb changes:
+ * - the sky behind the crest, from the night to the dawn: the last stars,
+ *   high cloud, the sun rising beside the summit;
+ * - the snow the years set, laid on the photograph's own rock down to their
+ *   line and further down its couloirs, its relief kept under it;
+ * - the light, from the blue of the night to the first sun coming down the
+ *   wall;
+ * - and, every frame: snow blown off the summit, mist drifting through the
+ *   forest and over the valley, light running down every attested trail.
+ * Without WebGL the drawing keeps a mountain of its own (`drawn`).
+ *
  * Two things the page knows by name:
  * - `window.axgfView` (river.js): where its people stand (`shape`), how a
  *   frame is painted, the curve of a trail (`edge`, which the lit route
  *   follows too), and the dashboard beside it at rest. Travel, the trail, the
  *   panel, the keyboard, the camera and every touch rule stay river.js's.
- * - `window.axgfRiverScene`: the sky — the last stars, the sun's glow, mist
- *   drifting in the valley, light running down every attested trail from
- *   the heights toward the living. It holds still as the river's ground
- *   does: reduced motion, "Cut", the pause, a hidden tab, a river off
- *   screen, a machine too slow for it.
+ * - `window.axgfRiverScene`: the scene, told the layout at rest and when a
+ *   travel begins. It holds still as the river's ground does: reduced
+ *   motion, "Cut", the pause, a hidden tab, a river off screen, a machine
+ *   too slow for it.
  *
  * No colour is named here: every one is a token of the theme (`--sm-*`,
  * tokens.css), read from the page or set by class in app.css.
@@ -58,8 +74,83 @@
     var s = seed % 2147483647 || 1;
     return function () { s = (s * 16807) % 2147483647; return s / 2147483647; };
   }
-  // Where the drawing put the camp and the summit, for the sky.
-  var GEO = null;
+
+  /* ---- the photograph ---- */
+  // Made at 1776 × 896 and shown at that aspect; served at 2048 × 1024 so
+  // that the graphics card can filter it. Where its summit is, where a camp
+  // stands on it (the foot of its rock, as a share of its height), and its
+  // skyline: in each of 1024 columns, the first row that is no longer sky,
+  // as a share of its height, 16 bits little-endian. It was read from the
+  // photograph itself: the first row of each column that departs from the
+  // sky above it, and stays departed.
+  var PHOTO = { src: '/static/img/summit-panorama.jpg?v=1', aspect: 1776 / 896, su: 0.4907, sv: 0.0739, camp: 0.58 };
+  var SKYLINE = 'tze3N7c3tzcAOAM4gTi3OCQ5bDm1OSA6nzrbOoM7HDybPFg94T0XPtw+Xj+xP/A/AEAAQP4/AEAAQIY/JD/bPpw+HT7nPWg9' +
+    '6Ty0PDU8tjs3OyQ7FTvbOmA6STpJOgg6QDkkOR452zhpOEk4Rzg3OG047DhrOek54Dm3Obc55TlkOuM6YTsKPJI82zzbPNo8' +
+    'kjxLPEk8STxJPEk8ADy3O2U75jqwOkk6/Dm3OW05JDncOF04JzgAOLw3hjckN9I2kjZmNmI2lzYWN5U3FDjcOCQ5uDg5OLs3' +
+    'PDe9Nnk2WjUkNcI0jDQNNI4zWDMkMyQzADPLMgYybjFOMSQxJDHbMPYwLDGrMSoypDJwM7czbjNuM7UzaDRFNbc1tzUkNSQ1' +
+    'JDVjNeI1YDbfNl43JDcRNyM37za6NpI2jzZJNuM1rTUuNSQ12zSSNFc0ADTsM20z7jK4MoMyBDK3MZgx5TDCMKcweDAAMMQv' +
+    'ji9YL9su2y5uLu8tcC2ELNErPSujKjkqCCqUKQ0p7yjbKJIokihtKEkokCjGKI4pxCkAKmUq0ysALD4sdCzbLCQt6yy1LEks' +
+    'SSyCKyQrxioWKuEpgyk8KbEoeyhxKIMnDCfMJnIm9iXFJZQlFiUAJdUkGCUkJWUlSCZMJ84n2yfbJ/sn/ie3J9snACi6J24n' +
+    'aiduJ68nACgAKLcneiduJ24ntye3J7cnyCcAKAAoACgAKAAoeCgkKbcpOiq1KsEqkipYKtopyikAKkkqGCvFKwAstyu3K8Ar' +
+    'ACwALBgsUywWLZUtSS7cLlsvlC9uL24vbi9PLxov2S5lLuYtbi0yLYosSSz+K2Mr3CppKkwqSSoqKgAqACpJKpIq4ypiK+Ar' +
+    'diwnLZ8tYC4kLyQvJC/PL0kwSTDQL1Iv0y4WLsMs6CtqK+sqgSnlKAUn6iV3JUwlKCUkJQcl2yTbJAclhiW8JcUljyXbJAgk' +
+    '3iPYI7cjrCOTI5ojtyO3I7cjtyMAJAAkKCSnJCUlJiaSJjgnOCgzKR8qPSoAKjkq7Cu1LLct+yxnLI8sDyy3K8grRyx9LHIs' +
+    'PCy9KzkqXSmlKbUp4il4Ktsq2yq1Kn8qACrIKCMojSdIJ5AmCibjJbEloyVkJTgl6SSSJCAkpSOrI24jXSMkI64iviLbItgi' +
+    'iiILItshFyJhIqci3yJtIzgjTiOuI0QkICV0Jf0l2ybbJuImJCfbJpImjyaDJdQjdiMmIyoi+SGIIb8glSAnIPcfeB8kH9Ae' +
+    'kh6SHiMekR0kHdsccBzxG18bDBu9GpIaUxrUGVUZGBk1GPIX0BdfF7sWeBY6FgAWfxXHFCQUJxT7E48TbhMyEyQT7hLrEgAT' +
+    'bRMeFNMVKRZyFsMW7RjnGa0aCRssG60bURykHXseLR9bH3UgOSHyISkiRCPfI5Mk7yTiJZIm8yZyJyoolCgTKUgp/CmSKpIq' +
+    'kio8K/Erwiy3L0kwMDBjL6AuSS5JLkguNi5JLqIuZi8yMIYwOjEqMnYyjzLUMn8zkjTlNG817jUANhA2STbFNiQ3MDcsN5I2' +
+    'rTbbNp429jVXNR81kjRtNMMzlDMYM+AytDKKMusxLTH0MJQwujDbMNsw2zAbMSQxZDE1MkkyVzKSMtsyJDN3M/YzdTT0NCo1' +
+    'qDVwNjg3tzftN2w42zjbOC84mDckNyQ3wTYvNrA1bjVuNSQ1HTWRMyUzGTMkMyQzJDMwM24z4TMbNJo0GDWXNRY2lTYUN203' +
+    'DjjZONs4cThJOAY4SThlOJI4VDjVN583JDfrNpI2Nja3NSQ1JDXbNNs0kjQANAA0ADRJNJI0lzQWNbw1ujYlN6Q3ADhYOBw5' +
+    'nznzOfE6bTuJO207dDvzO948bT0hPVs83Du3O3A7OzubOvQ5tzm3OTI4tzd5NyQ3LjbgNOM0kjQONLczJTPnMtAy2zLbMiQz' +
+    'LTNuM+IzADRNNJI0AjXKNUg2wzaEN7c3tzfnN8w4dzk1OhY7IzwpPW09bT1ZPSQ9pTxJPPA7cTt2OgA6ADq/OYk5tDkGOoU6' +
+    'kjqnOts6bDqTORQ5RjgHOPI3tze3N7c3UzfbNts2kjaSNos2gTaVNjQ3tze3N7c3xDcAOAA4ADgAOPE35DewN203bTdLN203' +
+    'tje3N7c3qDcHN7c2PDbRNeE1cTarNik3qDcFOF04kzhWOSM6nDqsOnY6JDoJOkU6RjoqOgw61DmzOSs5tTg2OMM3uTc9N4Q2' +
+    'SjYMNo81ZTVJNUU1SDUkNYQ16DUwN9w3Rzi7N6Q3jDcXN5g2CDYANrc1rTWxNbU1rTW0NfU1ADYANjU2azagNts2JDckNxU3' +
+    '8DZEN203tze3Nyc4pjjaODc4JDgkOHU42zgkOXg5tzlJOpI62zrbOgQ7DzvWOtQ6hTpGOkk6STqxOuc6ZjuIO5I7pTt5O5c7' +
+    'tzu3O7c7ADxkPGw91TykPJI8uzzWPNs82zwZPZg9AD48Pqg+kT+aPyU/Pj+MQCRBJEGcQBVA7j/+P/U/2T/EP19AdUAlQJs/' +
+    'bD8BP4o+kj6SPrA+2z4cP1E/hz8DQPZAbUHMQUtCyUJIQ8dDRkT1RFtFYUZfRy5ISUhJSAxIt0e3R21HNUf/Rm9GakWnRChE' +
+    'qUMrQ3xC5EH2QNpAZ0DoP2M/fT7rPbs9rj1tPW09bT2xPQA+Zj7lPmQ/bT/PPwpAzECVQV1Ck0JbQ/xDsUQkRZ9Fy0XmRiRH' +
+    'm0czSL9IoEhBSLdHbEckRwBHvkYmRr9Fl0UGRSxErUM=';
+  var SKY = (function () {
+    var bin = atob(SKYLINE), out = new Float32Array(bin.length / 2);
+    for (var i = 0; i < out.length; i++) out[i] = (bin.charCodeAt(2 * i) | bin.charCodeAt(2 * i + 1) << 8) / 65535;
+    return out;
+  })();
+  // The photograph under a layout: its summit on the drawing's, the camp at
+  // the foot of its rock (or above it, when the valley needs the room), and
+  // never narrower than the window river.js opens on the drawing (its
+  // `frame`, whose KMAX this is).
+  var KMAX = 1.15;
+  function placing(sx, campY, summitY, hl, hw, foot) {
+    var sw = (stage && stage.clientWidth) || hw, fw = Math.max(hw, sw / Math.min(sw / hw, KMAX)), fx = hl - (fw - hw) / 2;
+    var ax = sx + 18, ay = summitY + 2;
+    var cover = Math.max((ax - fx) / PHOTO.su, (fx + fw - ax) / (1 - PHOTO.su)) * 1.02 / PHOTO.aspect;
+    // Its valley floor reaches most of the way down the frame: below it the
+    // valley goes on in mist, never for long.
+    var h = Math.max((campY - ay) / (PHOTO.camp - PHOTO.sv), cover, (foot - ay) / (1 - PHOTO.sv) * 0.92);
+    return { x: ax - PHOTO.su * h * PHOTO.aspect, y: ay - PHOTO.sv * h, w: h * PHOTO.aspect, h: h };
+  }
+  // How far the rock reaches either side of the summit's axis at the height
+  // y, `margin` under the crest; past the photograph's edges, as far as it
+  // likes (the scene folds the photograph over there).
+  function rockAt(pl, y, margin) {
+    var v = (y - margin - pl.y) / pl.h, n = SKY.length, l = Math.floor(PHOTO.su * n), r = l;
+    while (l > 0 && SKY[l - 1] < v) l--;
+    while (r < n - 1 && SKY[r + 1] < v) r++;
+    return [l === 0 ? -Infinity : pl.x + l / n * pl.w, r === n - 1 ? Infinity : pl.x + (r + 1) / n * pl.w];
+  }
+  // What the scene needs of a layout: the photograph's place, the camp, the
+  // summit, a generation's height, the snow line and the contours.
+  function scenery(m) {
+    return { pl: m.pano, camp: m.camp[1], summit: m.summit, rise: m.rise, up: m.up || 0,
+      snow: m.summit + (m.camp[1] - m.summit) * snowiness(m) };
+  }
+  // The scenery at rest (from the frame painted) and the one the next travel
+  // leaves (from the frame shaped); whether there is a scene at all (WebGL),
+  // set before river.js first shapes.
+  var REST = null, NEXT = null, SCENE = false;
 
   /* ---- where everyone stands ---- */
   function shape(fr) {
@@ -87,8 +178,13 @@
     // A short climb leaves the summit more sky to stand in: with few
     // contours, the peak stands taller over the last of them.
     var sx = hl + hw / 2, topContent = vt + vh * (0.18 + 0.06 * Math.max(0, 3 - up)), bottom = vt + vh - 30;
-    var span = up + down + 0.5;
-    var step = Math.min(step0 * 1.25, (bottom - topContent) / Math.max(1, span));
+    var span = up + down + 0.5, avail = bottom - topContent;
+    var step = Math.min(step0 * 1.25, avail / Math.max(1, span));
+    // The camp's name and years take some 46 units under it. When the steps
+    // are too short to leave them that, the valley's first row stands NAME
+    // under the camp (`under` more than a step) and the rest a step apart.
+    var NAME = 56, under = 0;
+    if (down > 0.25 && step < NAME) { step = Math.min(step, (avail - NAME) / Math.max(1, span - 1)); under = NAME - step; }
     var campY = topContent + up * step;
     var summitY = vt + 26;
     // Each half takes the river's order from left to right over its own
@@ -109,14 +205,40 @@
       k[h] = Math.min(1.2, room / Math.max(1, (hi[h] - lo[h]) / 2));
     });
     var steep = up > 0 ? 0.32 / Math.max(1, up) : 0;
+    // On the photograph, every row up the mountain must stand on its rock:
+    // each is drawn in about the summit's axis as much as it needs to stand
+    // under the crest where it is, and never less than the row below it.
+    var pl = SCENE ? placing(sx, campY, summitY, hl, hw, vt + vh) : null, fit = [1];
+    if (pl) {
+      var ext = [];
+      var note = function (x, y) {
+        var g = Math.round((y - cy) / step0);
+        if (g < 1) return;
+        var d = (x - mid[0]) * k[0], e = ext[g] || (ext[g] = [0, 0]);
+        e[0] = Math.min(e[0], d); e[1] = Math.max(e[1], d);
+      };
+      fr.persons.forEach(function (p) { note(p.x, p.y); });
+      fr.tails.forEach(function (t) { note(t.x2, t.y2); });
+      fr.couples.forEach(function (c) { note(c.x, c.y); });
+      for (var g = 1; g < ext.length; g++) {
+        var e = ext[g] || [0, 0], R = rockAt(pl, campY - g * step, 24), nar = 1 - steep * Math.min(g, Math.max(1, up)), c = fit[g - 1];
+        if (e[0] < 0) c = Math.min(c, Math.max(0, sx - 30 - R[0]) / (-e[0] * nar));
+        if (e[1] > 0) c = Math.min(c, Math.max(0, R[1] - 30 - sx) / (e[1] * nar));
+        fit.push(Math.max(0.12, c));
+      }
+    }
+    function fitAt(g) {
+      var i = Math.min(fit.length - 1, Math.floor(g)), j = Math.min(fit.length - 1, i + 1);
+      return fit[i] + (fit[j] - fit[i]) * (g - Math.floor(g));
+    }
     function place(x, y) {
-      var g = (y - cy) / step0, ny = campY - g * step;
+      var g = (y - cy) / step0, ny = campY - g * step + (g < 0 ? under * Math.min(1, -g) : 0);
       if (Math.abs(g) < 0.25) {
         var dx = x - cx;
         if (Math.abs(dx) < 1) return [sx, ny];
         return [sx + (dx < 0 ? -1 : 1) * (28 + Math.min(1, Math.abs(dx) / 140) * 62), ny];
       }
-      var h = g > 0 ? 0 : 1, narrow = h === 0 ? 1 - steep * Math.min(g, Math.max(1, up)) : 1;
+      var h = g > 0 ? 0 : 1, narrow = h === 0 ? (1 - steep * Math.min(g, Math.max(1, up))) * fitAt(g) : 1;
       return [sx + (x - mid[h]) * k[h] * narrow, ny];
     }
     function moved(o) { var q = place(o.x, o.y); return Object.assign({}, o, { x: q[0], y: q[1] }); }
@@ -126,6 +248,8 @@
       if (mk.leader) { var a = place(mk.leader[0], mk.leader[1]), b = place(mk.leader[2], mk.leader[3]); out.leader = [a[0], a[1], b[0], b[1]]; }
       return out;
     }
+    var meta = Object.assign({}, m, { camp: [sx, campY], summit: summitY, rise: step, under: under, up: Math.round(up), down: Math.round(down), pano: pl });
+    if (pl) NEXT = scenery(meta);
     return {
       persons: fr.persons.map(moved),
       couples: fr.couples.map(function (c) {
@@ -140,7 +264,7 @@
         var a = place(t.x1, t.y1), b = place(t.x2, t.y2);
         return Object.assign({}, t, { x1: a[0], y1: a[1], x2: b[0], y2: b[1], count_at: markAt(t.count_at) });
       }),
-      meta: Object.assign({}, m, { camp: [sx, campY], summit: summitY, rise: step, up: Math.round(up), down: Math.round(down) })
+      meta: meta
     };
   }
   // A trail climbs as a path does: up the slope, across, and up again.
@@ -149,7 +273,7 @@
     return 'M' + r(x1) + ' ' + r(y1) + 'C' + r(x1) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(y2);
   }
 
-  /* ---- the mountain ---- */
+  /* ---- the drawing's own mountain, without a scene ---- */
   // A ridge line across [x0, x1]: a few waves of different lengths, from a
   // seed, so that the far ranges are the same ranges in every frame.
   function ridge(seed, x0, x1, base, height, n, span) {
@@ -216,24 +340,20 @@
     for (y = crestY; y <= valleyY; y += 14) right.push([sx + half(y) + (rnd() - 0.5) * 8, y]);
     return { outline: left.concat(crest, right), peaks: peaks, half: half, crest: crestY };
   }
-
-  /* ---- the drawing ---- */
-  var named = {};
-  function paint(fr, api, rest) {
-    var f = api.f, esc = api.esc, m = fr.meta, PM = api.byKey(fr.persons), out = '', links = '', nodes = '';
-    var hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
-    var camp = m.camp || [hl + hw / 2, vt + vh * 0.6], sx = camp[0], campY = camp[1];
-    var rise = m.rise || 60, summitY = m.summit || vt + 20, up = m.up || 0, down = m.down || 0;
+  // The far ranges, the massif with its relief and its snow, the contours,
+  // and the valley with its forest edge and its mist: the mountain the
+  // drawing carries when there is no scene to lay the photograph.
+  function drawn(fr, f, m, sx, campY, rise, summitY, up) {
+    var hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1], out = '';
     var S = snowiness(m), D = dawn(), valleyY = campY + rise * 0.55;
     var X0 = hl - hw, X1 = hl + 2 * hw, below = vt + vh * 2;
-    GEO = { camp: camp, summit: summitY, sx: sx, rise: rise, valley: valleyY, hl: hl, hw: hw, vt: vt, vh: vh, flank: 0 };
     // The far ranges, the farther one higher and paler, each with the snow
     // of its own heights.
     var horizon = Math.min(campY - rise * 0.2, vt + vh * 0.62);
     var far = ridge(11, X0, X1, horizon, vh * 0.2, 240, hw), near = ridge(23, X0, X1, horizon + vh * 0.08, vh * 0.16, 240, hw * 1.3);
     var closeAt = function (pts) { return polyline(pts) + 'L' + f(X1) + ' ' + f(below) + 'L' + f(X0) + ' ' + f(below) + 'Z'; };
-    out += '<path d="' + closeAt(far) + '" class="sm-range sm-range-far"/>';
     var farTop = Math.min.apply(null, far.map(function (p) { return p[1]; }));
+    out += '<path d="' + closeAt(far) + '" class="sm-range sm-range-far"/>';
     out += '<path d="' + closeAt(far) + '" class="sm-range-snow" clip-path="url(#sm-far-snow)"/>';
     out += '<path d="' + closeAt(near) + '" class="sm-range sm-range-mid"/>';
     // The mountain: rock in the shade, its sunward side warming with the
@@ -241,7 +361,6 @@
     var mass = massif(fr, sx, campY, rise, summitY, valleyY + rise * 0.6);
     var peakOf = mass.peaks.filter(function (pk) { return pk[2]; })[0];
     var md = polyline(mass.outline) + 'L' + f(X1) + ' ' + f(below) + 'L' + f(X0) + ' ' + f(below) + 'Z';
-    GEO.flank = mass.half(mass.crest + (campY - mass.crest) * 0.3);
     out += '<path d="' + md + '" class="sm-rock"/>';
     out += '<path d="' + md + '" fill="url(#sm-lit)" opacity="' + f(0.25 + 0.6 * D) + '"/>';
     // The relief: an arête down from every peak each way, its sunward side
@@ -265,10 +384,8 @@
     var clip = 'M' + f(X0) + ' ' + f(vt - vh) + 'L' + f(X1) + ' ' + f(vt - vh) + polyline(edgePts.slice().reverse()).replace(/^M/, 'L') + 'Z';
     out += '<path d="' + md + '" class="sm-snow" fill="url(#sm-snow-fade)" clip-path="url(#sm-snowline)"/>';
     out += '<path d="' + md + '" fill="url(#sm-glow)" opacity="' + f(0.15 + 0.7 * D) + '" clip-path="url(#sm-snowline)"/>';
-    // The contour of every generation up the mountain, and its number at the
-    // edge of the frame: ▲ for the heights, ▼ for the valley.
-    var g, boxes = [];
-    for (g = 1; g <= up; g++) {
+    // The contour of every generation up the mountain.
+    for (var g = 1; g <= up; g++) {
       var cyG = campY - g * rise;
       out += '<line x1="' + f(X0) + '" y1="' + f(cyG) + '" x2="' + f(X1) + '" y2="' + f(cyG) + '" class="sm-contour" clip-path="url(#sm-on-rock)"/>';
     }
@@ -281,9 +398,31 @@
     out += '<path d="M' + f(X0) + ' ' + f(valleyY + rise * 0.2) + 'L' + f(X1) + ' ' + f(valleyY + rise * 0.2) + 'L' + f(X1) + ' ' + f(below) + 'L' + f(X0) + ' ' + f(below) + 'Z" class="sm-valley"/>';
     out += '<path d="' + trees + '" class="sm-pines"/>';
     out += '<rect x="' + f(X0) + '" y="' + f(valleyY - rise * 0.2) + '" width="' + f(X1 - X0) + '" height="' + f(rise * 0.9) + '" fill="url(#sm-mist)"/>';
+    var farSnow = farTop + (horizon - farTop) * (0.25 + 0.5 * S);
+    var defs = '<linearGradient id="sm-lit" x1="0" y1="0" x2="1" y2="0"><stop offset="0.35" class="sm-lit-0"/><stop offset="1" class="sm-lit-1"/></linearGradient>'
+      + '<linearGradient id="sm-snow-fade" gradientUnits="userSpaceOnUse" x1="0" y1="' + f(summitY) + '" x2="0" y2="' + f(snowY + 20) + '"><stop offset="0" class="sm-snow-0"/><stop offset="0.7" class="sm-snow-1"/><stop offset="1" class="sm-snow-2"/></linearGradient>'
+      + '<linearGradient id="sm-glow" x1="0" y1="0" x2="1" y2="0"><stop offset="0.4" class="sm-glow-0"/><stop offset="1" class="sm-glow-1"/></linearGradient>'
+      + '<linearGradient id="sm-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sm-mist-0"/><stop offset="0.5" class="sm-mist-1"/><stop offset="1" class="sm-mist-0"/></linearGradient>'
+      + '<clipPath id="sm-snowline"><path d="' + clip + '"/></clipPath>'
+      + '<clipPath id="sm-on-rock"><path d="' + md + '"/></clipPath>'
+      + '<clipPath id="sm-far-snow"><rect x="' + f(X0) + '" y="' + f(vt - vh) + '" width="' + f(X1 - X0) + '" height="' + f(farSnow - vt + vh) + '"/></clipPath>';
+    return { out: out, defs: defs };
+  }
+
+  /* ---- the drawing ---- */
+  var named = {};
+  function paint(fr, api, rest) {
+    var f = api.f, esc = api.esc, m = fr.meta, PM = api.byKey(fr.persons), out = '', links = '', nodes = '', defs = '';
+    var hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
+    var camp = m.camp || [hl + hw / 2, vt + vh * 0.6], sx = camp[0], campY = camp[1];
+    var rise = m.rise || 60, summitY = m.summit || vt + 20, up = m.up || 0, down = m.down || 0;
+    // Under a scene the mountain is the photograph, its contours and its
+    // weather the scene's; without one, the drawing's own.
+    if (rest && m.pano) REST = scenery(m);
+    if (!SCENE) { var dm = drawn(fr, f, m, sx, campY, rise, summitY, up); out += dm.out; defs = dm.defs; }
     // Lines the record continues past the drawing, and lines it ends. How
     // many more each one leads to is written once the names are placed.
-    var counts = [];
+    var counts = [], boxes = [], g;
     fr.tails.forEach(function (t) {
       out += '<g opacity="' + f(t.a) + '"><path d="' + edge(t.x1, t.y1, t.x2, t.y2) + '" fill="none" class="sm-tail"/>';
       out += t.kind === 'cont'
@@ -372,7 +511,7 @@
       out += '<text x="' + f(edgeX) + '" y="' + f(y) + '" text-anchor="end" font-family="' + api.mono + '" font-size="9.5" class="k-band-text sm-alt">' + word + '</text>';
     }
     for (g = 1; g <= up; g++) number('▲' + g, campY - g * rise - 3);
-    for (g = 1; g <= down; g++) number('▼' + g, campY + g * rise - 3);
+    for (g = 1; g <= down; g++) number('▼' + g, campY + g * rise + (m.under || 0) - 3);
     // The camps, and the one at the fixed point.
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', x = f(p.x), y = f(p.y), r = 4.8;
@@ -403,14 +542,6 @@
       nodes += k + '</g>';
     });
     if (rest) named = keep;
-    var farSnow = farTop + (horizon - farTop) * (0.25 + 0.5 * S);
-    var defs = '<linearGradient id="sm-lit" x1="0" y1="0" x2="1" y2="0"><stop offset="0.35" class="sm-lit-0"/><stop offset="1" class="sm-lit-1"/></linearGradient>'
-      + '<linearGradient id="sm-snow-fade" gradientUnits="userSpaceOnUse" x1="0" y1="' + f(summitY) + '" x2="0" y2="' + f(snowY + 20) + '"><stop offset="0" class="sm-snow-0"/><stop offset="0.7" class="sm-snow-1"/><stop offset="1" class="sm-snow-2"/></linearGradient>'
-      + '<linearGradient id="sm-glow" x1="0" y1="0" x2="1" y2="0"><stop offset="0.4" class="sm-glow-0"/><stop offset="1" class="sm-glow-1"/></linearGradient>'
-      + '<linearGradient id="sm-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sm-mist-0"/><stop offset="0.5" class="sm-mist-1"/><stop offset="1" class="sm-mist-0"/></linearGradient>'
-      + '<clipPath id="sm-snowline"><path d="' + clip + '"/></clipPath>'
-      + '<clipPath id="sm-on-rock"><path d="' + md + '"/></clipPath>'
-      + '<clipPath id="sm-far-snow"><rect x="' + f(X0) + '" y="' + f(vt - vh) + '" width="' + f(X1 - X0) + '" height="' + f(farSnow - vt + vh) + '"/></clipPath>';
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cn = C && C.s && !C.s.redacted ? C.s.names[2] : '';
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg sm-svg" data-view="summit" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
@@ -474,49 +605,259 @@
 
   window.axgfView = { name: 'summit', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; } };
 
-  /* ---- the sky ---- */
-  if (!stage) return;
+  /* ---- the scene ---- */
+  if (!stage || !window.WebGLRenderingContext) return;
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cut = root.dataset.riverMotion === 'cut';
   var STORE = 'axgf-river-still', paused = false;
   try { paused = localStorage.getItem(STORE) === '1'; } catch (e) { /* private window */ }
   var css = getComputedStyle(root);
-  function rgb(name, fallback) {
+  function colour(name, fallback) {
     var v = css.getPropertyValue(name).trim();
     if (v.charAt(0) !== '#') return fallback;
     var h = v.slice(1);
     if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
-    return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
+    return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16) / 255; });
   }
-  var WHITE = rgb('--text-primary', [255, 255, 255]), NIGHT = rgb('--sm-sky-night', [0, 0, 0]), DAWN = rgb('--sm-sky-dawn', NIGHT);
-  var GLOW = rgb('--sm-sky-glow', DAWN), SUN = rgb('--sm-sun', WHITE), CORE = rgb('--sm-sun-core', SUN);
-  var TRAIL = rgb('--sm-trail', SUN), HOT = rgb('--sm-trail-hot', TRAIL), MIST = rgb('--sm-mist', WHITE);
-  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
-  function mix(a, b, t) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); }); }
+  var GREY = [0.12, 0.14, 0.2], WHITE = [1, 1, 1];
+  var P = {
+    night: colour('--sm-sky-night', GREY), dusk: colour('--sm-sky-dawn', GREY), glow: colour('--sm-sky-glow', GREY),
+    sun: colour('--sm-sun', WHITE), rock: colour('--sm-rock', GREY), snow: colour('--sm-snow', WHITE),
+    snowSh: colour('--sm-snow-shade', WHITE), snowGl: colour('--sm-snow-glow', WHITE), valley: colour('--sm-valley', GREY),
+    mist: colour('--sm-mist', WHITE), trail: colour('--sm-trail', WHITE), hot: colour('--sm-trail-hot', WHITE)
+  };
 
-  var under = document.createElement('canvas'), over = document.createElement('canvas');
-  under.className = 'rv-ground'; over.className = 'rv-water';
-  under.setAttribute('aria-hidden', 'true'); over.setAttribute('aria-hidden', 'true');
-  stage.insertBefore(under, stage.firstChild);
+  var VERT = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
+  var NOISE = [
+    'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+    'float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
+    ' return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y);}',
+    'float fbm(vec2 p){float s=0.0,a=0.5;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+vec2(17.3,9.1);a*=0.5;}return s;}'
+  ].join('\n');
+  // What holds still between two changes: the photograph in its place, in
+  // the light of the dawn reached, under the snow of the years, behind its
+  // contours, against the sky. Drawn into a texture for every new layout,
+  // dawn or window, never for every frame. Its alpha is how much of each
+  // pixel is sky.
+  var LAND = [
+    'precision highp float;',
+    'uniform vec2 uRes;uniform vec4 uView;uniform vec4 uPl;uniform vec4 uGeo;uniform vec3 uSun;',
+    'uniform float uDawn,uHas,uUp;uniform sampler2D uPhoto,uSky;',
+    'uniform vec3 uNight,uDusk,uGlow,uSunC,uRock,uSnowC,uSnowSh,uSnowGl,uValley,uMist;',
+    NOISE,
+    'float dec(vec4 c){return (c.r*65280.0+c.g*255.0)/65535.0;}',
+    'float lum(vec3 c){return dot(c,vec3(0.299,0.587,0.114));}',
+    // The skyline at u, folded past the photograph's edges as the photograph is.
+    'float crest(float u){float m=mod(u,2.0);m=m>1.0?2.0-m:m;float x=m*1024.0-0.5;',
+    ' float i=clamp(floor(x),0.0,1023.0),j=min(i+1.0,1023.0);',
+    ' return mix(dec(texture2D(uSky,vec2((i+0.5)/1024.0,0.5))),dec(texture2D(uSky,vec2((j+0.5)/1024.0,0.5))),clamp(x-floor(x),0.0,1.0));}',
+    'void main(){',
+    ' vec2 px=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);vec2 w=uView.xy+px*uView.zw;',
+    ' float campY=uGeo.x,sumY=uGeo.y,rise=uGeo.z,snowY=uGeo.w,D=uDawn,k=1.0/uView.z;',
+    ' vec2 uv=(w-uPl.xy)/uPl.zw;float cr=crest(uv.x);',
+    // The sky: the night overhead, the dawn along the crest, warmer as the
+    // climb goes on; the sun's glow and, once risen, its disc.
+    ' float top=uPl.y-0.2*uPl.w,hz=uPl.y+0.3*uPl.w;float t=clamp((w.y-top)/(hz-top),0.0,1.0);',
+    ' vec3 sky=mix(uNight,uDusk,smoothstep(0.0,1.0,t)*(0.3+0.7*D));',
+    ' sky=mix(sky,uGlow,smoothstep(0.5,1.0,t)*(0.1+0.9*D)*0.8);',
+    ' float ds=length((w-uSun.xy)*vec2(1.0,1.2));',
+    ' sky+=uSunC*exp(-ds/(uSun.z*(2.5+8.0*D)))*(0.1+0.9*D);',
+    ' sky=mix(sky,uSunC*1.06,(1.0-smoothstep(uSun.z*0.9,uSun.z*1.1,ds))*smoothstep(0.3,0.6,D));',
+    // The photograph, a little inside its own crest, so that none of the sky
+    // it was taken under is left along the edge.
+    ' float e=max(1.0/(k*uPl.w),1.3/1024.0);',
+    ' float a=clamp((uv.y-cr-1.6/1024.0)/e+0.5,0.0,1.0);',
+    ' vec2 q=vec2(uv.x,clamp(uv.y,0.0,1.0));',
+    // Its pixel, its faces (a few pixels across) and its slopes (a few
+    // dozen): a face lighter than its slope is a ledge or a couloir, one
+    // darker a cliff.
+    ' vec3 ph=texture2D(uPhoto,q).rgb,cb=texture2D(uPhoto,q,4.5).rgb;float l0=lum(ph),lm=lum(texture2D(uPhoto,q,1.5).rgb),lb=lum(cb);',
+    // Until it has arrived: its outline, in the theme's rock.
+    ' vec3 base=uRock*(0.8+0.4*fbm(w*0.01))*mix(1.0,0.55,smoothstep(0.3,0.9,uv.y));',
+    ' ph=mix(base,ph,uHas);l0=mix(0.2,l0,uHas);lm=mix(0.2,lm,uHas);lb=mix(0.2,lb,uHas);',
+    // Past its foot, the valley goes on under its mist: the photograph's
+    // last rows, broadly, fading into the mist's own colour.
+    ' if(uv.y>0.975){vec3 fl=mix(base,texture2D(uPhoto,vec2(uv.x,0.97),6.5).rgb,uHas);',
+    '  vec3 deep=mix(fl,uMist*0.32+uValley*0.6,0.35+0.4*smoothstep(1.0,1.3,uv.y));',
+    '  ph=mix(ph,deep,smoothstep(0.975,1.005,uv.y));',
+    '  ph*=1.0-0.3*smoothstep(1.05,1.6,uv.y);}',
+    // The snow of the years, down to their line, ragged along it. Just under
+    // the line it takes the ledges and couloirs the photograph already holds
+    // snow in; higher, the faces too; never the cliffs, too steep to keep it.
+    // In the shade of the wall it is the snow's shade, its relief the rock's.
+    ' float n1=fbm(vec2(w.x*0.011,3.7)),n2=noise(w*0.045);',
+    ' float line=snowY+(n1-0.5)*rise*0.9;',
+    ' float above=1.0-smoothstep(line-rise*0.3,line+rise*0.3,w.y);',
+    ' float deep=smoothstep(line,line-rise*2.5,w.y);',
+    ' float hold=0.45*l0+0.55*lm+1.3*(lm-lb)+(n2-0.5)*0.08;',
+    ' float thr=mix(0.46,0.3,deep);',
+    ' float cover=above*smoothstep(thr-0.07,thr+0.09,hold);',
+    ' cover=max(cover,smoothstep(0.42,0.56,hold)*(1.0-smoothstep(line,line+rise*1.4,w.y)));',
+    ' cover=clamp(cover,0.0,0.95)*step(uv.y,1.0);',
+    ' float glowOn=smoothstep(0.0,0.12,cb.r-cb.b)*uHas;',
+    ' vec3 sc=mix(uSnowSh,uSnowGl,glowOn*0.75)*(0.72+0.34*smoothstep(0.2,0.5,lm))*clamp(1.0+1.1*(l0-lb),0.72,1.22);',
+    ' ph=mix(ph,sc,cover);',
+    // The light: in the night darker and bluer, the first light on the
+    // summit not come yet; at sunrise the sun coming down the wall, warm on
+    // the snow and on the rock it reaches.
+    ' float night=1.0-smoothstep(0.12,0.62,D),l1=lum(ph);',
+    ' float warm=smoothstep(0.02,0.16,ph.r-ph.b);',
+    ' ph=mix(ph,l1*vec3(0.8,0.9,1.12),warm*night*0.9);',
+    ' ph*=mix(1.0,0.56,night);',
+    ' ph=mix(ph,ph*vec3(0.82,0.9,1.1),night*0.6);',
+    ' float day=smoothstep(0.5,1.0,D);',
+    ' float litY=sumY+(campY-sumY)*(day*1.2-0.08);',
+    ' float lit=day*(1.0-smoothstep(litY-rise*0.5,litY+rise*0.5,w.y))*step(uv.y,0.62);',
+    ' ph*=mix(vec3(1.0),vec3(1.0)+0.42*(uSunC*0.6+uSnowGl*0.4),lit);',
+    ' ph*=1.0+0.08*day;',
+    ' ph+=uSunC*exp(-ds/(uSun.z*7.0))*0.25*D;',
+    // The contour of every generation up the mountain, one pixel wide.
+    ' float ct=0.0;',
+    ' for(int i=1;i<=12;i++){if(float(i)>uUp)break;float d=abs(w.y-(campY-float(i)*rise))*k;',
+    '  ct=max(ct,(1.0-smoothstep(0.35,1.25,d))*step(fract(w.x/7.5),0.22));}',
+    ' ph=mix(ph,uSnowSh,ct*0.3);',
+    ' gl_FragColor=vec4(mix(sky,ph,a),1.0-a);',
+    '}'
+  ].join('\n');
+  // Every frame: the still landscape, with what moves over it.
+  var LIVE = [
+    'precision highp float;',
+    'uniform sampler2D uLand;uniform vec2 uRes;uniform vec4 uView;uniform vec4 uPl;uniform vec4 uGeo;uniform vec2 uTop;',
+    'uniform float uTime,uDawn;uniform vec3 uMist,uGlow,uSunC,uSnowC,uSnowSh;',
+    NOISE,
+    'void main(){',
+    ' vec4 l=texture2D(uLand,gl_FragCoord.xy/uRes);vec3 col=l.rgb;float sk=l.a;',
+    ' vec2 px=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);vec2 w=uView.xy+px*uView.zw;vec2 uv=(w-uPl.xy)/uPl.zw;',
+    ' float campY=uGeo.x,rise=uGeo.z,D=uDawn,T=uTime;',
+    // The last stars, twinkling, gone with the dawn; high cloud drifting,
+    // lit by it.
+    ' if(sk>0.01){vec2 c=floor(w*0.5);float h=hash(c);',
+    '  if(h>0.9955){vec2 o=fract(w*0.5)-vec2(hash(c+1.7),hash(c+3.1));float st=exp(-dot(o,o)*120.0);',
+    '   col+=vec3(st*(1.0-D)*(0.55+0.45*sin(T*(0.8+h*3.0)+h*40.0)))*sk;}',
+    '  float cl=fbm(vec2(w.x*0.0015+T*0.004,w.y*0.011-T*0.0003));',
+    '  float kc=smoothstep(0.56,0.86,cl)*(1.0-smoothstep(uPl.y+0.12*uPl.w,uPl.y+0.3*uPl.w,w.y));',
+    '  col=mix(col,mix(uMist*0.45,mix(uGlow,uSunC,0.4),0.15+0.85*D),kc*0.38*sk);}',
+    // Snow blown off the summit, streaming west on the wind.
+    ' vec2 d=w-uTop;float al=-d.x;',
+    ' if(al>-12.0&&al<uPl.z*0.2){float ac=d.y+al*0.06;float wd=4.0+al*0.24;',
+    '  float env=exp(-ac*ac/(wd*wd))*smoothstep(-12.0,10.0,al)*(1.0-smoothstep(uPl.z*0.04,uPl.z*0.19,al));',
+    '  if(env>0.003){float n=fbm(vec2((al+T*26.0)*0.03,ac*0.07+T*0.1));',
+    '   col=mix(col,mix(uSnowSh,mix(uSnowC,uGlow,0.3),0.25+0.75*D),env*smoothstep(0.25,0.7,n)*0.6*(0.4+0.6*D));}}',
+    // Mist drifting through the forest and over the valley floor, and a veil
+    // of it between the camp and the valley under it.
+    ' float low=smoothstep(0.62,0.9,uv.y),band=exp(-pow((w.y-(campY+rise*0.55))/(rise*0.4),2.0));',
+    ' if(low>0.001||band>0.01){float m1=fbm(vec2(w.x*0.0026-T*0.011,w.y*0.015+T*0.0018));',
+    '  if(low>0.001){float m2=fbm(vec2(w.x*0.0061+T*0.017,w.y*0.028-T*0.003));',
+    '   col=mix(col,uMist*(0.5+0.35*D),low*smoothstep(0.38,0.82,m1*0.7+m2*0.3)*0.42);}',
+    '  col=mix(col,uMist*(0.5+0.3*D),band*smoothstep(0.42,0.85,m1)*0.22);}',
+    ' col+=(hash(gl_FragCoord.xy+fract(T)*91.7)-0.5)/255.0;',
+    ' gl_FragColor=vec4(col,1.0);',
+    '}'
+  ].join('\n');
+
+  var ground = document.createElement('canvas');
+  ground.className = 'rv-ground';
+  ground.setAttribute('aria-hidden', 'true');
+  var gl = ground.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: false, powerPreference: 'low-power' });
+  if (!gl) return;
+  function program(fsrc) {
+    function shader(type, src) {
+      var sh = gl.createShader(type);
+      gl.shaderSource(sh, src); gl.compileShader(sh);
+      if (gl.getShaderParameter(sh, gl.COMPILE_STATUS)) return sh;
+      if (window.console) console.warn('summit.js: the scene does not compile here', gl.getShaderInfoLog(sh));
+      return null;
+    }
+    var vs = shader(gl.VERTEX_SHADER, VERT), fs = shader(gl.FRAGMENT_SHADER, fsrc);
+    if (!vs || !fs) return null;
+    var pr = gl.createProgram();
+    gl.attachShader(pr, vs); gl.attachShader(pr, fs);
+    gl.bindAttribLocation(pr, 0, 'a');
+    gl.linkProgram(pr);
+    return gl.getProgramParameter(pr, gl.LINK_STATUS) ? pr : null;
+  }
+  var landP = program(LAND), liveP = program(LIVE);
+  if (!landP || !liveP) return;
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  function uniforms(pr, names) {
+    var u = {};
+    names.forEach(function (k) { u[k] = gl.getUniformLocation(pr, k); });
+    return u;
+  }
+  var UL = uniforms(landP, ['uRes', 'uView', 'uPl', 'uGeo', 'uSun', 'uDawn', 'uHas', 'uUp', 'uPhoto', 'uSky',
+    'uNight', 'uDusk', 'uGlow', 'uSunC', 'uRock', 'uSnowC', 'uSnowSh', 'uSnowGl', 'uValley', 'uMist']);
+  var UV = uniforms(liveP, ['uLand', 'uRes', 'uView', 'uPl', 'uGeo', 'uTop', 'uTime', 'uDawn', 'uMist', 'uGlow', 'uSunC', 'uSnowC', 'uSnowSh']);
+  gl.useProgram(landP);
+  [['uNight', 'night'], ['uDusk', 'dusk'], ['uGlow', 'glow'], ['uSunC', 'sun'], ['uRock', 'rock'], ['uSnowC', 'snow'],
+    ['uSnowSh', 'snowSh'], ['uSnowGl', 'snowGl'], ['uValley', 'valley'], ['uMist', 'mist']].forEach(function (q) { gl.uniform3fv(UL[q[0]], P[q[1]]); });
+  gl.uniform1i(UL.uPhoto, 1); gl.uniform1i(UL.uSky, 2);
+  gl.useProgram(liveP);
+  [['uMist', 'mist'], ['uGlow', 'glow'], ['uSunC', 'sun'], ['uSnowC', 'snow'], ['uSnowSh', 'snowSh']].forEach(function (q) { gl.uniform3fv(UV[q[0]], P[q[1]]); });
+  gl.uniform1i(UV.uLand, 0);
+  function texture(filter, wrap) {
+    var t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+    return t;
+  }
+  var landT = texture(gl.NEAREST, gl.CLAMP_TO_EDGE), skyT = texture(gl.NEAREST, gl.CLAMP_TO_EDGE);
+  // The photograph folds over at its sides, should a window ever be wider.
+  var photoT = texture(gl.LINEAR, gl.MIRRORED_REPEAT);
+  var fbo = gl.createFramebuffer();
+  // The skyline, two bytes to a column, as the shader reads it back.
+  var skyData = new Uint8Array(SKY.length * 4);
+  for (var si = 0; si < SKY.length; si++) {
+    var sq = Math.round(SKY[si] * 65535);
+    skyData[si * 4] = sq >> 8; skyData[si * 4 + 1] = sq & 255; skyData[si * 4 + 3] = 255;
+  }
+  gl.bindTexture(gl.TEXTURE_2D, skyT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, SKY.length, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, skyData);
+  SCENE = true;
+
+  /* ---- the light down the trails: a 2D canvas over the drawing ---- */
+  var over = document.createElement('canvas');
+  over.className = 'rv-water';
+  over.setAttribute('aria-hidden', 'true');
+  var go = over.getContext('2d');
+  stage.insertBefore(ground, stage.firstChild);
   stage.appendChild(over);
   stage.classList.add('rv-alive');
-  var gu = under.getContext('2d'), go = over.getContext('2d');
-  if (!gu || !go) return;
+  function rgba(c, a) { return 'rgba(' + Math.round(c[0] * 255) + ',' + Math.round(c[1] * 255) + ',' + Math.round(c[2] * 255) + ',' + a.toFixed(3) + ')'; }
 
-  // The last stars: placed once, from a fixed seed, so the sky is the same
-  // sky on every visit and between two frames.
-  var stars = [];
-  (function () {
-    var rnd = seeded(7);
-    for (var i = 0; i < 160; i++) stars.push({ u: rnd(), v: rnd() * 0.6, r: 0.35 + rnd() * 1, a: 0.25 + rnd() * 0.6, tw: rnd() * 6.283, sp: 0.6 + rnd() * 1.4 });
-  })();
-  var flows = [], dpr = 1, cw = 0, ch = 0, clock = 0, travelling = false;
+  var flows = [], dpr = 1, cw = 0, ch = 0, cap = 2, clock = 0, lastClock = 0, travelling = false, landKey = '';
+  // The photograph arrives once, and fades in over its outline.
+  var photo = new Image(), has = false, hasAt = 0;
+  photo.onload = function () {
+    if (gl.isContextLost()) return;
+    gl.bindTexture(gl.TEXTURE_2D, photoT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, photo);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    has = true; hasAt = performance.now(); landKey = '';
+    if (!running) draw(false);
+  };
+  photo.src = PHOTO.src;
+  function shown() { return !has ? 0 : still() ? 1 : Math.min(1, (performance.now() - hasAt) / 700); }
   function size() {
-    var w = stage.clientWidth, h = stage.clientHeight, r = Math.min(window.devicePixelRatio || 1, 2);
+    var w = stage.clientWidth, h = stage.clientHeight, r = Math.min(window.devicePixelRatio || 1, cap);
     if (w === cw && h === ch && r === dpr) return false;
     cw = w; ch = h; dpr = r;
-    under.width = over.width = Math.max(1, Math.round(w * dpr));
-    under.height = over.height = Math.max(1, Math.round(h * dpr));
+    ground.width = over.width = Math.max(1, Math.round(w * dpr));
+    ground.height = over.height = Math.max(1, Math.round(h * dpr));
+    gl.bindTexture(gl.TEXTURE_2D, landT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, ground.width, ground.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, landT, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    landKey = '';
     return true;
   }
   function view() {
@@ -530,83 +871,118 @@
     return [u * u * u * x1 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x2,
       u * u * u * y1 + 3 * u * u * t * my + 3 * u * t * t * my + t * t * t * y2];
   }
-  // Light runs down the attested trails, from the heights toward the
-  // living: from the upper end of a trail to its lower one.
+
+  /* ---- the scenery, and its way from one layout to the next ----
+   * A travel moves the photograph with the people, in step with river.js's
+   * own (560 ms, the same easing), so that everyone keeps their rock. */
+  var sc = { from: null, to: null, t0: 0, dur: 0 };
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function between(a, b, t) {
+    var m = function (x, y) { return x + (y - x) * t; };
+    return { pl: { x: m(a.pl.x, b.pl.x), y: m(a.pl.y, b.pl.y), w: m(a.pl.w, b.pl.w), h: m(a.pl.h, b.pl.h) },
+      camp: m(a.camp, b.camp), summit: m(a.summit, b.summit), rise: m(a.rise, b.rise), snow: m(a.snow, b.snow), up: t < 0.5 ? a.up : b.up };
+  }
+  function same(a, b) {
+    return !!a && !!b && ['camp', 'summit', 'rise', 'snow', 'up'].every(function (k) { return Math.abs(a[k] - b[k]) < 0.01; })
+      && ['x', 'y', 'w', 'h'].every(function (k) { return Math.abs(a.pl[k] - b.pl[k]) < 0.01; });
+  }
+  function current() {
+    if (!sc.from) return sc.to;
+    var t = (performance.now() - sc.t0) / sc.dur;
+    if (t >= 1 || still()) { sc.from = null; return sc.to; }
+    return between(sc.from, sc.to, ease(Math.max(0, t)));
+  }
+  function aim(next, dur) {
+    if (!next) return;
+    var now = current();
+    if (!now || !dur || still()) { sc.from = null; sc.to = next; return; }
+    sc.from = now; sc.to = next; sc.t0 = performance.now(); sc.dur = dur;
+  }
+  // The dawn shown comes on toward the dawn reached, rather than at a stroke.
+  var dawnShown = -1;
+  function dawnNow(dt) {
+    var D = dawn();
+    if (dawnShown < 0 || !dt || still()) dawnShown = D;
+    else dawnShown += (D - dawnShown) * Math.min(1, dt * 1.4);
+    return dawnShown;
+  }
+  // A new layout at rest: its scenery (reached already when the travel
+  // moved toward it), and light running down its attested trails, from the
+  // heights toward the living.
   function layout(L) {
     flows = [];
-    if (!L || !L.edges) return;
-    L.edges.forEach(function (e) {
+    if (REST && !same(sc.to, REST)) aim(REST, sc.to ? 600 : 0);
+    if (L && L.edges) L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
       var a = e.y1 <= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1];
       var n = 20, xs = [], ys = [], cum = [0];
       for (var i = 0; i <= n; i++) {
-        var p = cpoint(a[0], a[1], a[2], a[3], i / n);
-        xs.push(p[0]); ys.push(p[1]);
+        var q = cpoint(a[0], a[1], a[2], a[3], i / n);
+        xs.push(q[0]); ys.push(q[1]);
         if (i) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
       }
       if (cum[n] < 8) return;
       flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
     });
     request();
+    if (!running) draw(false);
+  }
+  // The sun, rising beside the summit, from behind the crest to over it.
+  function sunAt(s, D) {
+    var u = PHOTO.su + 0.16, v = SKY[Math.round(u * SKY.length)];
+    return [s.pl.x + u * s.pl.w, s.pl.y + (v + 0.09 - 0.21 * (D - 0.12) / 0.88) * s.pl.h, 0.011 * s.pl.h];
+  }
+  // The still landscape, redrawn only when something it shows has changed.
+  function land(v, s, D, H) {
+    var key = [v.x, v.y, v.k, cw, ch, dpr, D.toFixed(3), H.toFixed(3), s.pl.x, s.pl.y, s.pl.w, s.camp, s.snow, s.up].join(',');
+    if (key === landKey) return;
+    landKey = key;
+    var sun = sunAt(s, D);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.viewport(0, 0, ground.width, ground.height);
+    gl.useProgram(landP);
+    gl.uniform2f(UL.uRes, ground.width, ground.height);
+    gl.uniform4f(UL.uView, v.x, v.y, 1 / (v.k * dpr), 1 / (v.k * dpr));
+    gl.uniform4f(UL.uPl, s.pl.x, s.pl.y, s.pl.w, s.pl.h);
+    gl.uniform4f(UL.uGeo, s.camp, s.summit, s.rise, s.snow);
+    gl.uniform3f(UL.uSun, sun[0], sun[1], sun[2]);
+    gl.uniform1f(UL.uDawn, D); gl.uniform1f(UL.uHas, H); gl.uniform1f(UL.uUp, s.up);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, photoT);
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, skyT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
   var SPEED = 26;
   function draw(moving) {
     size();
-    var W = under.width, H = under.height, D = dawn(), v = view();
-    gu.setTransform(1, 0, 0, 1, 0, 0); go.setTransform(1, 0, 0, 1, 0, 0);
-    gu.clearRect(0, 0, W, H); go.clearRect(0, 0, W, H);
-    // The sky, from the night at the top to the dawn at the horizon, warmer
-    // the further the climb has gone.
-    var s = v ? v.k * dpr : 1, ox = v ? -v.x * s : 0, oy = v ? -v.y * s : 0;
-    var horizonPx = GEO && v ? GEO.camp[1] * s + oy : H * 0.6;
-    var sky = gu.createLinearGradient(0, 0, 0, Math.max(1, horizonPx));
-    sky.addColorStop(0, rgba(mix(NIGHT, DAWN, 0.25 + 0.45 * D), 1));
-    sky.addColorStop(0.62, rgba(mix(DAWN, GLOW, 0.15 + 0.35 * D), 1));
-    sky.addColorStop(1, rgba(mix(DAWN, GLOW, 0.45 + 0.55 * D), 1));
-    gu.fillStyle = sky; gu.fillRect(0, 0, W, H);
-    // The sun, rising behind the mountain's sunward shoulder as the dawn
-    // comes on: under the drawing, so the ridges stand in front of it.
-    if (GEO && v) {
-      var sxp = (GEO.sx + Math.min(GEO.hw * 0.42, GEO.flank + 70)) * s + ox, low = GEO.camp[1] + GEO.rise * 0.2, high = GEO.summit + (GEO.camp[1] - GEO.summit) * 0.2;
-      var syp = (low + (high - low) * D) * s + oy, R = (60 + 120 * D) * v.k * dpr;
-      var pulse = moving ? 1 + 0.04 * Math.sin(clock * 0.9) : 1;
-      var halo = gu.createRadialGradient(sxp, syp, 0, sxp, syp, R * 3.2 * pulse);
-      halo.addColorStop(0, rgba(SUN, 0.55 * (0.4 + 0.6 * D))); halo.addColorStop(0.35, rgba(GLOW, 0.25 * (0.4 + 0.6 * D))); halo.addColorStop(1, rgba(GLOW, 0));
-      gu.fillStyle = halo; gu.beginPath(); gu.arc(sxp, syp, R * 3.2 * pulse, 0, 6.283); gu.fill();
-      gu.fillStyle = rgba(CORE, 0.9); gu.beginPath(); gu.arc(sxp, syp, 14 * v.k * dpr, 0, 6.283); gu.fill();
-    }
-    // The last stars, fading as the sun comes up.
-    var starA = Math.pow(1 - D, 1.4);
-    if (starA > 0.02) {
-      gu.globalCompositeOperation = 'lighter';
-      stars.forEach(function (st) {
-        var a = st.a * starA * (moving ? 0.65 + 0.35 * Math.sin(clock * st.sp + st.tw) : 0.8);
-        gu.fillStyle = rgba(WHITE, a);
-        gu.beginPath(); gu.arc(st.u * W, st.v * Math.max(1, horizonPx), st.r * dpr, 0, 6.283); gu.fill();
-      });
-      gu.globalCompositeOperation = 'source-over';
-    }
-    if (!v || !moving || travelling) return;
-    // Over the drawing: mist drifting in the valley, and light running down
-    // the trails.
-    if (GEO) {
-      var vy = GEO.valley * s + oy;
-      for (var i = 0; i < 3; i++) {
-        var mx = ((clock * (6 + i * 3) + i * 330) % (W / dpr + 400) - 200) * dpr, my = vy + (i - 1) * 18 * v.k * dpr;
-        var mr = (180 + i * 60) * v.k * dpr, mg = go.createRadialGradient(mx, my, 0, mx, my, mr);
-        mg.addColorStop(0, rgba(MIST, 0.07)); mg.addColorStop(1, rgba(MIST, 0));
-        go.fillStyle = mg; go.beginPath(); go.ellipse(mx, my, mr, mr * 0.28, 0, 0, 6.283); go.fill();
-      }
-    }
+    var v = view(), s = current();
+    if (!v || !s) return;
+    var D = dawnNow(moving ? clock - lastClock : 0);
+    lastClock = clock;
+    land(v, s, D, shown());
+    gl.viewport(0, 0, ground.width, ground.height);
+    gl.useProgram(liveP);
+    gl.uniform2f(UV.uRes, ground.width, ground.height);
+    gl.uniform4f(UV.uView, v.x, v.y, 1 / (v.k * dpr), 1 / (v.k * dpr));
+    gl.uniform4f(UV.uPl, s.pl.x, s.pl.y, s.pl.w, s.pl.h);
+    gl.uniform4f(UV.uGeo, s.camp, s.summit, s.rise, s.snow);
+    gl.uniform2f(UV.uTop, s.pl.x + PHOTO.su * s.pl.w, s.pl.y + PHOTO.sv * s.pl.h);
+    gl.uniform1f(UV.uTime, clock); gl.uniform1f(UV.uDawn, D);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, landT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    go.setTransform(1, 0, 0, 1, 0, 0);
+    go.clearRect(0, 0, over.width, over.height);
+    if (!moving || travelling) return;
+    var k = v.k * dpr, ox = -v.x * k, oy = -v.y * k;
     go.globalCompositeOperation = 'lighter';
     flows.forEach(function (fl) {
       var pos = (fl.phase * fl.len + clock * SPEED) % fl.len, j = 1;
       while (j < fl.n && fl.cum[j] < pos) j++;
       var t = (pos - fl.cum[j - 1]) / ((fl.cum[j] - fl.cum[j - 1]) || 1);
-      var x = (fl.x[j - 1] + (fl.x[j] - fl.x[j - 1]) * t) * s + ox, y = (fl.y[j - 1] + (fl.y[j] - fl.y[j - 1]) * t) * s + oy;
+      var x = (fl.x[j - 1] + (fl.x[j] - fl.x[j - 1]) * t) * k + ox, y = (fl.y[j - 1] + (fl.y[j] - fl.y[j - 1]) * t) * k + oy;
       var fade = Math.min(1, pos / 14, (fl.len - pos) / 14), r = 6 * v.k * dpr;
       var pg = go.createRadialGradient(x, y, 0, x, y, r);
-      pg.addColorStop(0, rgba(HOT, 0.85 * fade)); pg.addColorStop(0.4, rgba(TRAIL, 0.35 * fade)); pg.addColorStop(1, rgba(TRAIL, 0));
+      pg.addColorStop(0, rgba(P.hot, 0.85 * fade)); pg.addColorStop(0.4, rgba(P.trail, 0.35 * fade)); pg.addColorStop(1, rgba(P.trail, 0));
       go.fillStyle = pg; go.beginPath(); go.arc(x, y, r, 0, 6.283); go.fill();
     });
     go.globalCompositeOperation = 'source-over';
@@ -622,7 +998,9 @@
       if (last) { gaps.push(now - last); if (gaps.length > 12) gaps.shift(); }
       if (gaps.length === 12 && gaps.reduce(function (a, b) { return a + b; }) / 12 > 2.5 * FRAME) {
         gaps = [];
-        if (FRAME < 60) FRAME = 1000 / 15; else { tired = true; request(); return; }
+        if (dpr > 1) { cap = 1; size(); }
+        else if (FRAME < 60) FRAME = 1000 / 15;
+        else { tired = true; request(); return; }
       }
       clock += Math.min(0.1, (now - (lastNow || now)) / 1000);
       lastNow = now; last = now;
@@ -633,13 +1011,18 @@
   function request() {
     var goOn = !still();
     if (goOn && !running) { running = true; lastNow = 0; last = 0; gaps = []; raf = requestAnimationFrame(loop); }
-    else if (!goOn) { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; draw(false); }
+    else if (!goOn) { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; sc.from = null; draw(false); }
   }
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (es) { onscreen = es[0].isIntersecting; request(); }).observe(stage);
   }
   document.addEventListener('visibilitychange', request);
   if ('ResizeObserver' in window) new ResizeObserver(function () { if (size()) request(); if (!running) draw(false); }).observe(stage);
+  ground.addEventListener('webglcontextlost', function (e) {
+    // Back to the theme's own sky rather than a black ground.
+    e.preventDefault(); running = false; stage.classList.remove('rv-alive');
+    ground.remove(); over.remove();
+  });
   var btn = root.querySelector('[data-rv-still]');
   if (btn && !reduce && !cut) {
     btn.hidden = false;
@@ -654,9 +1037,8 @@
   }
   window.axgfRiverScene = {
     layout: function (L) { travelling = false; layout(L); },
-    travel: function () { travelling = true; draw(false); },
+    travel: function () { travelling = true; aim(NEXT, 560); if (!running) draw(false); },
     view: function () { if (!running) draw(false); }
   };
   size();
-  draw(false);
 })();

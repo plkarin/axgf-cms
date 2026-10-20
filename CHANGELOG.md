@@ -203,18 +203,26 @@ accents.
   - the descendants stand in the valley under the camp;
   - every parentage is a trail, as surely as it is known;
   - the summit is the farthest the record reaches.
+- **The mountain is a photograph:** a wall of peaks above a forest and a
+  misty valley at dawn, made in Canva. Its summit is the drawing's, the camp
+  stands at the foot of its rock, and every row of ancestors is drawn in
+  until it stands under the crest. A travel moves it with the people.
 - **The mountain answers the climb:**
   - the snow line comes down as the camp's birth year goes back in time,
-    read only when this reader may see that year;
-  - the sun rises with every person on the itinerary.
-- **The sky lives under the drawing:** the last stars, the sun's glow, mist
-  in the valley, and light running down the attested trails. It holds still
-  on the river's terms.
+    read only when this reader may see that year. The snow is laid on the
+    photograph's ledges and couloirs first, then its faces, never its
+    cliffs;
+  - the sun rises with every person on the itinerary, and the photograph
+    comes out of the night with it.
+- **The scene lives under the drawing:** the last stars, high cloud, snow
+  blown off the summit, mist drifting through the forest and the valley, and
+  light running down the attested trails. It holds still on the river's
+  terms. Without WebGL the drawing keeps a mountain of its own.
 - **The dashboard's bars become the climb's profile:** a gold line from the
   valley to the summit, with the camp marked on it.
 - **Canopée's furniture in Summit's palette:** night navy, the gold of first
   light, the dawn's violets and roses. It has a 12 px round, titles in the
-  book face, and two photographs made in Canva at their native size. The
+  book face, and two more photographs made in Canva at their native size. The
   tightest contrast is 3.5:1, a control's edge on the third wash.
 - **Its words in eleven languages:** "Every life is a step. Every family, an
   ascent."
@@ -373,8 +381,8 @@ extra margin those themes gave.
   motion, "Cut" and a hidden page.
 - Summit (docs/adr/0010):
   - `views.rs`: it loads only its own view, names no river, serves its
-    script and pictures with no colour named, gives river.js everything it
-    asks for, and holds still on the river's terms;
+    script and pictures (the panorama with them) with no colour named, gives
+    river.js everything it asks for, and holds still on the river's terms;
   - five palettes are measured, and the kit's selector, the rounds and the
     settings know four themes.
 - Three themes (docs/adr/0008):

@@ -751,7 +751,7 @@ admin-recent-note = آخر { $shown } من { $total ->
 admin-bundle-heavy = حجم هذا الأرشيف { $size }. ويُقرأ كاملًا عند الإقلاع ويبقى في الذاكرة، فبعد { $warn } تقريبًا يبدأ الموقع يكلّف ذاكرة حقيقية وتبطؤ عمليات إعادة التشغيل. وهذا يناسب أرشيفًا عائليًا لا مكتبة وسائط — فإن كانت المرفقات تنمو بلا حد فاحفظها في مخزن ملفات واجعل الأرشيف يشير إليها.
 admin-raw-json-help = السجل كاملًا، فلا شيء يتعذّر تحريره — القوائم مثل شركاء العائلة وأبنائها، أو تاريخ حدود مكان، تعيش هنا. وهذا هو المستند الأصل؛ ثم تُكتب الحقول أعلاه فوق المسارات التي تخصّها، فحرّر القيمة في أحد الموضعين لا في كليهما. ولا بد أن يُقرأ بصيغة JSON وإلا لم يُحفظ شيء.
 accounts-lede = محفوظة في { $path }، بأذونات 600، بجوار الأرشيف لا داخله أبدًا. فالأرشيف يُنسخ ويُرسل ويُنشر؛ ولو سافرت بصمات كلمات السر في داخله لصارت كل نسخة من شجرة العائلة نسخةً من بيانات الدخول.
-accounts-no-registration = لا تسجيل ذاتيًا ولا دعوات، عن قصد. فأرشيف عائلة يكفيه مدير يعرف الجميع، وفي ذلك إزالةٌ لمساحة إساءة الاستعمال بأكملها بدل الدفاع عنها.
+accounts-no-registration = لا يستطيع الزوار فتح حسابات بأنفسهم؛ ويُضبط التسجيل أعلاه. ويكفي معظم العائلات مسؤول يعرف الجميع.
 accounts-branch-hint = يقصر ما يستطيع هذا الحساب تحريره على أولئك الأشخاص وذريتهم وأزواجهم.
 accounts-branch-reading = ولا يقصر ما يستطيع قراءته — فذاك يحكمه مدى ظهور كل سجل، والأمران مفصولان عن قصد.
 accounts-emergency-warning = أنت داخل بالرمز الطارئ. يمنحك صلاحيات المدير في هذه الجلسة لكنه ليس حسابًا: لا تفضيلات له، وسجل التحرير سيقيّد تغييراتك بوصفها emergency-token لا بوصفها شخصًا. أنشئ لنفسك حسابًا حقيقيًا أدناه وادخل به.
@@ -3764,3 +3764,712 @@ edit-avatar-frame = ضبط موضع الوجه
 edit-avatar-upload = استخدامها صورةً للملف الشخصي
 edit-stale = عدَّل شخص آخر { $what } منذ فتح هذه الصفحة. لم يُحفظ شيء؛ كل ما أدخلته ما زال هنا.
 edit-refused = لم يُحفظ شيء: { $reason }
+
+# Administration console (v0.5.0, docs/adr/0011)
+error-cross-site-title = مرفوض: أُرسل من موقع آخر
+error-cross-site-detail = جاء هذا النموذج من صفحة في موقع آخر، لذا لم يُنفَّذ. إن كنت أرسلته من هذا الموقع فأعد تحميل الصفحة وأرسله مجددًا.
+admin-nav-label = أقسام الإدارة
+admin-nav-overview = نظرة عامة
+admin-nav-bundle = أرشيف AXGF
+admin-nav-infrastructure = البنية التحتية
+admin-nav-accounts = الحسابات
+admin-nav-connectivity = الاتصال
+
+# Administration console: the AXGF bundle (v0.5.0, docs/adr/0011)
+bundle-title = أرشيف AXGF
+bundle-lede = أرشيف العائلة كما يحفظه هذا الموقع: { $path }. ما يطابقه، وما يبدو خاطئًا، والطريقتان لأخذ نسخة منه.
+bundle-unset-title = لا توجد عائلة بعد.
+bundle-unset-detail = تحتوي هذه التثبيتة على أرشيف فارغ، فلا شيء للتحقق منه بعد. هيّئها من أرشيف أو من ملف GEDCOM أو من الصفر.
+bundle-kpi-conformity = المطابقة
+bundle-verdict-ok = مطابق
+bundle-verdict-warn = يحتاج مراقبة
+bundle-verdict-fail = غير مطابق
+findings-tally = { $ok } سليمة، { $warn ->
+    [zero] لا تحذيرات
+    [one] تحذير واحد
+    [two] تحذيران
+    [few] { $warn } تحذيرات
+    [many] { $warn } تحذيرًا
+    *[other] { $warn } تحذير
+    }، { $fail } حرجة
+bundle-kpi-entities = الكيانات
+bundle-kpi-entities-note = { $persons ->
+    [zero] لا أشخاص
+    [one] شخص واحد
+    [two] شخصان
+    [few] { $persons } أشخاص
+    [many] { $persons } شخصًا
+    *[other] { $persons } شخص
+    } · { $files ->
+    [zero] لا ملفات مرفقة
+    [one] ملف مرفق واحد
+    [two] ملفان مرفقان
+    [few] { $files } ملفات مرفقة
+    [many] { $files } ملفًا مرفقًا
+    *[other] { $files } ملف مرفق
+    }
+bundle-kpi-size = الحجم على القرص
+bundle-kpi-members = { $n ->
+    [zero] لا ملفات في الأرشيف
+    [one] ملف واحد في الأرشيف
+    [two] ملفان في الأرشيف
+    [few] { $n } ملفات في الأرشيف
+    [many] { $n } ملفًا في الأرشيف
+    *[other] { $n } ملف في الأرشيف
+    }
+bundle-kpi-format = الصيغة
+bundle-kpi-format-note = هذا الإصدار يقرأ ويكتب AXGF { $current }.
+bundle-conformity = المطابقة
+bundle-conformity-intro = تسعة فحوص على الأرشيف كما هو الآن، ولا يغيّره أيٌّ منها. افتح سطرًا لترى ما يجب فعله.
+bundle-area-format = الصيغة
+bundle-area-integrity = السلامة
+bundle-area-privacy = الخصوصية
+bundle-area-content = المحتوى
+level-ok = سليم
+level-warn = تحذير
+level-fail = حرج
+findings-what-to-do = ما الذي يجب فعله
+findings-go = اذهب إلى هناك ←
+bundle-anomalies = الحالات الشاذة
+bundle-anomalies-intro = ما تجده صفحة جودة البيانات، قاعدة بقاعدة: ما زال مفتوحًا، وما عُلِّم بأنه رُوجع.
+bundle-anomalies-rule = القاعدة
+bundle-anomalies-open = مفتوحة
+bundle-anomalies-checked = رُوجعت
+bundle-anomalies-none = لا تجد صفحة جودة البيانات ما يستدعي النظر.
+bundle-diagnostics = تشخيصات المدقّق
+bundle-facts = التفاصيل
+bundle-fact-path = الملف
+bundle-fact-size = الحجم
+bundle-fact-spec = الصيغة
+bundle-fact-schema = المخطط المرفق
+bundle-fact-none = لا يوجد
+bundle-fact-created = أُنشئ
+bundle-fact-updated = آخر كتابة
+bundle-fact-generator = كتبه
+bundle-fact-gedcom = حُوِّل من
+bundle-export = التصدير
+bundle-export-raw = الأرشيف كما هو (.axgf)
+bundle-export-raw-go = تنزيل الأرشيف
+bundle-export-sealed = مُعمّى لشخص واحد (.axgf.gpg)
+bundle-export-sealed-intro = الأرشيف نفسه في صورة رسالة OpenPGP لا يفتحها إلا صاحب المفتاح الخاص. الصق مفتاحه العام: النص الذي يبدأ بـ «-----BEGIN PGP PUBLIC KEY BLOCK-----».
+bundle-export-sealed-go = تنزيل مُعمّى
+seal-recipient = إلى
+seal-fingerprint = البصمة
+seal-algorithm = الخوارزميات
+seal-fips-yes = ضمن مجموعة FIPS المعتمدة
+seal-fips-no = خارج مجموعة FIPS المعتمدة
+seal-expires = انتهاء صلاحية المفتاح
+seal-never = أبدًا
+seal-key-label = المفتاح العام للمستلم
+seal-key-hint = مفتاح RSA لا يقل عن 2048 بت، أو مفتاح بمنحنى إهليلجي. تحقّق من البصمة مع صاحبها قبل إرسال أي شيء.
+seal-remember = احتفظ بهذا المفتاح للمرة القادمة
+seal-check = اقرأ المفتاح فقط
+seal-fips-note = يُعمّى الأرشيف بـ AES-256 إلى مفتاح المستلم. الخوارزميات المعتمدة في FIPS هي RSA بطول 3072 بت فأكثر ومنحنيات NIST ‏P-256 وP-384 وP-521: اطلب P-384. المكتبة المستخدمة هنا ليست بحد ذاتها وحدة معتمدة وفق FIPS 140-3.
+seal-decrypt-note = يفتحه المستلم بواسطة GnuPG:
+seal-forget = انسَ المفتاح المحفوظ
+seal-key-kept = حُفظ المفتاح { $fingerprint } للتصدير المُعمّى التالي.
+seal-error-no-key = الصق أولًا المفتاح العام للمستلم.
+seal-error-not-a-key = هذا ليس مفتاحًا عامًا بصيغة OpenPGP. الصق الكتلة كاملة، من سطر BEGIN إلى سطر END، ولا تلصق مفتاحًا خاصًا أبدًا.
+seal-error-bad-signatures = لا تتحقق تواقيع هذا المفتاح الذاتية: ربما عُدِّل. اطلب من صاحبه نسخة جديدة.
+seal-error-expired = انتهت صلاحية هذا المفتاح، أو كل مفتاح فيه قادر على التعمية. اطلب من صاحبه تمديده أو إرسال مفتاح جديد.
+seal-error-revoked = ألغى صاحب هذا المفتاح صلاحيته. اطلب منه مفتاحه الجديد.
+seal-error-no-encryption-key = يستطيع هذا المفتاح التوقيع لا التعمية: لا يحوي مفتاحًا فرعيًا للتعمية. اطلب من صاحبه إضافة واحد (gpg --quick-add-key … encr).
+seal-error-too-weak = طول مفتاح RSA هذا { $bits } بت؛ والتصدير يحتاج { $min } على الأقل.
+seal-error-unsupported = خوارزمية هذا المفتاح ليست مما يستخدمه التصدير: مفاتيح RSA أو المنحنى الإهليلجي فقط.
+seal-error-io = تعذّر إنشاء النسخة المُعمّاة: { $error }
+date-time-utc = { $date }، { $time } UTC
+
+# Administration console: the bundle's conformity (v0.5.0, docs/adr/0011)
+bundle-check-format-title = إصدار الصيغة
+bundle-check-format-ok = AXGF { $version }، الإصدار الذي يقرؤه هذا البناء ويكتبه.
+bundle-check-format-missing = لا يذكر البيان أي إصدار من AXGF.
+bundle-check-format-missing-fix = لم تكتب الأرشيفَ أداةٌ من أدوات AXGF، أو أنه تضرّر. استعد آخر نسخة احتياطية سليمة (axgf-cms restore).
+bundle-check-format-older = مكتوب بصيغة AXGF { $version }؛ وسيكتبه الحفظ التالي بصيغة AXGF { $current }.
+bundle-check-format-older-fix = لا شيء يجب فعله: سيعيد التعديل التالي كتابته. احتفظ بنسخة من الملف القديم إن كان برنامج آخر لا يقرأ إلا { $version }.
+bundle-check-format-newer = مكتوب بصيغة AXGF { $version }، وهي أحدث من { $current } في هذا البناء: قد يُفقد الحفظُ ما لا يفهمه.
+bundle-check-format-newer-fix = حدّث axgf-cms إلى إصدار يقرأ AXGF { $version } قبل أن يعدّل أحد (البنية التحتية، الإصدار).
+bundle-check-manifest-title = أعداد البيان
+bundle-check-manifest-ok = تطابق أعداد البيان ما يحويه الأرشيف.
+bundle-check-manifest-drift = يُعلن البيان { $declared } بينما يحوي الأرشيف { $actual } ({ $collection }).
+bundle-check-manifest-fix = لا شيء يضيع: تُعاد كتابة الأعداد في الحفظ التالي. وإن جاء الأرشيف من مكان آخر فتحقّق من أنه نُسخ كاملًا.
+bundle-check-validation-title = التحقق
+bundle-check-validation-ok = لا يجد مدقّق المكتبة أي خطأ.
+bundle-check-validation-errors = { $errors ->
+    [zero] لا أخطاء
+    [one] خطأ واحد
+    [two] خطآن
+    [few] { $errors } أخطاء
+    [many] { $errors } خطأً
+    *[other] { $errors } خطأ
+    }: الأرشيف لا يجتاز التحقق.
+bundle-check-validation-errors-fix = يذكر كل تشخيص أدناه السجل والحقل. صحّح السجل، أو استعد آخر نسخة احتياطية سليمة.
+bundle-check-validation-warnings = { $warnings ->
+    [zero] لا تحذيرات
+    [one] تحذير واحد
+    [two] تحذيران
+    [few] { $warnings } تحذيرات
+    [many] { $warnings } تحذيرًا
+    *[other] { $warnings } تحذير
+    }. لا تمنع الحفظ أبدًا؛ كلٌّ منها يشير إلى أن شيئًا قد يكون غير سليم.
+bundle-check-validation-warnings-fix = اقرأها أدناه. معظمها إحالات إلى سجلات ليست في الأرشيف، وكثيرًا ما يتركها الاستيراد من GEDCOM.
+bundle-check-payloads-title = الملفات المرفقة
+bundle-check-payloads-none = لا ملفات مرفقة.
+bundle-check-payloads-ok = { $declared ->
+    [zero] لا ملفات
+    [one] الملف الوحيد موجود.
+    [two] الملفان كلاهما موجودان.
+    [few] الملفات الـ { $declared } كلها موجودة.
+    [many] الملفات الـ { $declared } كلها موجودة.
+    *[other] الملفات الـ { $declared } كلها موجودة.
+    }
+bundle-check-payloads-missing = ينقص من الذاكرة المؤقتة { $missing } من أصل { $declared } ملفًا مرفقًا.
+bundle-check-payloads-fix = يعيد الحفظ التالي بناء الذاكرة المؤقتة من الأرشيف. وإن كانت ناقصة من الأرشيف نفسه فاستعدها من نسخة احتياطية.
+bundle-check-binding-title = الحسابات والأرشيف
+bundle-check-binding-ok = أُنشئ ملف الحسابات لهذه العائلة.
+bundle-check-binding-mismatch = أُنشئ ملف الحسابات لـ { $expected }؛ وهذا الأرشيف هو { $found }.
+bundle-check-binding-fix = إن كان الأرشيف قد استُعيد أو أُعيدت تسميته عمدًا فلا شيء يجب فعله. وإلا فحسابات عائلة تُطبَّق على شجرة عائلة أخرى: ضع ملف ‎.acl الصحيح بجانبه.
+bundle-check-living-title = الأحياء، علنًا
+bundle-check-living-ok = لا أحد ممن سُجّلوا أحياءً ظاهر للزوار.
+bundle-check-living-public = { $n ->
+    [zero] لا أحد من المسجّلين أحياءً موسوم بأنه علني.
+    [one] شخص واحد مسجّل حيًّا موسوم بأنه علني: أي زائر يقرأ سجله.
+    [two] شخصان مسجّلان حيَّين موسومان بأنهما علنيان: أي زائر يقرأ سجلَّيهما.
+    [few] { $n } من المسجّلين أحياءً موسومون بأنهم علنيون: أي زائر يقرأ سجلاتهم.
+    [many] { $n } من المسجّلين أحياءً موسومون بأنهم علنيون: أي زائر يقرأ سجلاتهم.
+    *[other] { $n } من المسجّلين أحياءً موسومون بأنهم علنيون: أي زائر يقرأ سجلاتهم.
+    }
+bundle-check-living-fix = ما لم يوافقوا على ذلك، اجعل ظهورهم للأعضاء (تعديل، الهوية).
+bundle-check-special-title = الفئات الخاصة
+bundle-check-special-none = لا يحوي أي سجل بيانات صحية أو بيومترية أو جينومية أو جنائية أو سلوكية.
+bundle-check-special-some = { $n ->
+    [zero] لا سجلات
+    [one] سجل واحد يحوي
+    [two] سجلان يحويان
+    [few] { $n } سجلات تحوي
+    [many] { $n } سجلًا يحوي
+    *[other] { $n } سجل يحوي
+    } بيانات صحية أو بيومترية أو جينومية أو جنائية أو سلوكية. وبيانات الأحياء منها تبقى للمديرين أيًا كان ما يقوله السجل.
+bundle-check-quality-title = جودة البيانات
+bundle-check-quality-ok = لا شيء يستدعي النظر.
+bundle-check-quality-open = { $n ->
+    [zero] لا شيء يستدعي النظر
+    [one] أمر واحد يستدعي النظر
+    [two] أمران يستدعيان النظر
+    [few] { $n } أمور تستدعي النظر
+    [many] { $n } أمرًا يستدعي النظر
+    *[other] { $n } أمر يستدعي النظر
+    }، في { $groups ->
+    [zero] لا مجموعات
+    [one] مجموعة واحدة
+    [two] مجموعتين
+    [few] { $groups } مجموعات
+    [many] { $groups } مجموعةً
+    *[other] { $groups } مجموعة
+    }.
+bundle-check-quality-fix = افتح صفحة جودة البيانات: يذكر كل سطر السجل وما يبدو خطأً. صحّحه، أو علّمه بأنه رُوجع.
+bundle-check-size-title = الحجم
+bundle-check-size-ok = { $size }، دون { $warn } التي تبدأ هذه الصفحة بعدها في التحذير.
+bundle-check-size-heavy = { $size }، تتجاوز { $warn }.
+bundle-check-size-fix = الأرشيف للعائلة وله أن ينمو. راقب القرص والنسخ الاحتياطية (البنية التحتية، الأحجام)، وارفع ‎--size-warn-mb إن كان هذا الحجم متوقعًا.
+seal-algorithm-value = { $key } · AES-256
+seal-key-placeholder = -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+# Administration console: the infrastructure's checks (v0.5.0, docs/adr/0011 §3)
+infra-area-security = الأمان
+infra-area-access = الوصول
+infra-area-data = البيانات
+infra-area-capacity = السعة
+infra-area-release = الإصدار
+infra-area-platform = المنصة
+infra-verdict-ok = سليمة
+infra-verdict-warn = تحتاج إلى انتباه
+infra-verdict-fail = حرجة
+duration-days = { $n ->
+    [zero] { $n } يوم
+    [one] يوم واحد
+    [two] يومان
+    [few] { $n } أيام
+    [many] { $n } يومًا
+    *[other] { $n } يوم
+    }
+duration-hours = { $n ->
+    [zero] { $n } ساعة
+    [one] ساعة واحدة
+    [two] ساعتان
+    [few] { $n } ساعات
+    [many] { $n } ساعة
+    *[other] { $n } ساعة
+    }
+duration-minutes = { $n ->
+    [zero] { $n } دقيقة
+    [one] دقيقة واحدة
+    [two] دقيقتان
+    [few] { $n } دقائق
+    [many] { $n } دقيقة
+    *[other] { $n } دقيقة
+    }
+infra-transport-title = كيف يُوصَل إلى الموقع
+infra-transport-ok = وصلت هذه الصفحة عبر HTTPS.
+infra-transport-exposed = وصلت هذه الصفحة دون تشفير، والخادم يستمع على { $bind } خارج هذا الجهاز: كلمات المرور وملفات تعريف الجلسة تعبر الشبكة نصًّا واضحًا.
+infra-transport-exposed-fix = ضع أمامه وكيلًا عكسيًا يعمل بـ HTTPS (Caddy أو nginx أو HAProxy)، وأعد ربط الخدمة بـ 127.0.0.1: شغّل bootstrap.sh من جديد مع ‎--bind 127.0.0.1:8080، أو احذف ملف drop-in الذي وسّعها.
+infra-transport-plain = وصلت هذه الصفحة دون تشفير من خادم يستمع على { $bind }. هذا مقبول على هذا الجهاز وحده، وهناك فقط.
+infra-transport-plain-fix = ادخل إلى الموقع عبر عنوانه بـ HTTPS. وإن كان وكيلٌ ينهي TLS فاجعله يرسل X-Forwarded-Proto: https ليعرف هذا الخادم ذلك.
+infra-forwarded-title = العناوين المُمرَّرة
+infra-forwarded-ok = لا يستمع الخادم إلا على هذا الجهاز، لذا يمكن الوثوق بعنوان العميل الذي يمرّره الوكيل لإبطاء محاولات الدخول الفاشلة المتكررة.
+infra-forwarded-exposed = يمكن الوصول إلى الخادم مباشرة، وهو يثق بالترويسة X-Forwarded-For: فالعميل الذي يضعها بنفسه يفلت من الإبطاء بعد محاولات الدخول الفاشلة.
+infra-forwarded-fix = اربط الخدمة بـ 127.0.0.1 خلف الوكيل، أو احجب المنفذ بجدار حماية كي لا يصل إليه إلا الوكيل.
+infra-cross-site-title = الإرسال من مواقع أخرى
+infra-cross-site-ok = لم يُرسَل إلى هنا أي نموذج من موقع آخر خلال اليوم الأخير.
+infra-cross-site-refused = { $n ->
+    [zero] لم يُرفض أي نموذج من موقع آخر خلال اليوم الأخير.
+    [one] رُفض نموذج واحد أُرسل من موقع آخر خلال اليوم الأخير.
+    [two] رُفض نموذجان أُرسلا من مواقع أخرى خلال اليوم الأخير.
+    [few] رُفضت { $n } نماذج أُرسلت من مواقع أخرى خلال اليوم الأخير.
+    [many] رُفض { $n } نموذجًا أُرسل من مواقع أخرى خلال اليوم الأخير.
+    *[other] رُفض { $n } نموذج أُرسل من مواقع أخرى خلال اليوم الأخير.
+    }
+infra-cross-site-fix = لم يمرّ شيء. وإن كان هذا الرفض لك — الموقع نفسه عبر عنوان ثانٍ — فاضبط العنوان العام في صفحة الاتصال، أو استعمل ذلك العنوان وحده.
+infra-sso-title = خدمات تسجيل الدخول
+infra-sso-none = لا خدمة تسجيل دخول مفعّلة؛ تدخل الحسابات بكلمة مرور.
+infra-sso-ok = { $n ->
+    [zero] لا خدمة تسجيل دخول مفعّلة.
+    [one] خدمة تسجيل دخول واحدة مفعّلة، والعنوان العام يعمل بـ HTTPS.
+    [two] خدمتا تسجيل دخول مفعّلتان، والعنوان العام يعمل بـ HTTPS.
+    [few] { $n } خدمات تسجيل دخول مفعّلة، والعنوان العام يعمل بـ HTTPS.
+    [many] { $n } خدمة تسجيل دخول مفعّلة، والعنوان العام يعمل بـ HTTPS.
+    *[other] { $n } خدمة تسجيل دخول مفعّلة، والعنوان العام يعمل بـ HTTPS.
+    }
+infra-sso-no-https = خدمة تسجيل دخول مفعّلة، لكن العنوان العام ليس HTTPS: يرفض المزوّدون إرسال ردّهم إلى عنوان غير مشفّر، فيفشل تسجيل الدخول.
+infra-sso-fix = في صفحة الاتصال، اجعل العنوان العام هو عنوان https://‎ الذي يستعمله القرّاء.
+infra-admins-title = المسؤولون
+infra-admins-none = لا يستطيع أي حساب نشط إدارة هذا الموقع. وحده رمز الطوارئ يستطيع، وما دام مضبوطًا فقط.
+infra-admins-none-fix = سجّل الدخول برمز الطوارئ، وأنشئ مسؤولًا في صفحة الحسابات، ثم احذف الرمز.
+infra-admins-one = مسؤول واحد فقط. إن غاب هذا الشخص أو فقد كلمة مروره فلن يستطيع أحد إدارة الموقع.
+infra-admins-one-fix = امنح دور المسؤول لشخص ثانٍ موثوق في صفحة الحسابات.
+infra-admins-ok = { $n ->
+    [zero] لا مسؤول يستطيع الدخول.
+    [one] مسؤول واحد يستطيع الدخول.
+    [two] مسؤولان يستطيعان الدخول.
+    [few] { $n } مسؤولين يستطيعون الدخول.
+    [many] { $n } مسؤولًا يستطيعون الدخول.
+    *[other] { $n } مسؤول يستطيعون الدخول.
+    }
+infra-token-title = رمز الطوارئ
+infra-token-generated = لا رمز طوارئ مضبوط.
+infra-token-only-way = رمز طوارئ مضبوط، ومع غياب أي حساب مسؤول فهو المدخل الوحيد. احتفظ به حتى يوجد مسؤول.
+infra-token-standing = ما زال رمز الطوارئ مضبوطًا. إنه يدخل متجاوزًا كل حساب وكل صلاحية.
+infra-token-fix = احذف AXGF_CMS_ADMIN_TOKEN من ملف بيئة الخدمة، ثم أعد تشغيل الخدمة.
+infra-registration-title = التسجيل الذاتي
+infra-registration-closed = لا يستطيع الزوار إنشاء حسابات؛ وحده المسؤول يستطيع.
+infra-registration-secret = يستطيع الزوار إنشاء حساب عضو إن عرفوا سرّ التسجيل.
+infra-registration-open = يستطيع أي زائر إنشاء حساب عضو.
+infra-registration-open-fix = يناسب هذا موقعًا يُراد له أن يكون مفتوحًا. وإلا فاشترط سرّ التسجيل، أو أغلق التسجيل، في صفحة الحسابات.
+infra-failures-title = محاولات الدخول الفاشلة
+infra-failures-ok = { $n ->
+    [zero] لا محاولات دخول فاشلة خلال اليوم الأخير.
+    [one] محاولة دخول فاشلة واحدة خلال اليوم الأخير.
+    [two] محاولتا دخول فاشلتان خلال اليوم الأخير.
+    [few] { $n } محاولات دخول فاشلة خلال اليوم الأخير.
+    [many] { $n } محاولة دخول فاشلة خلال اليوم الأخير.
+    *[other] { $n } محاولة دخول فاشلة خلال اليوم الأخير.
+    }
+infra-failures-many = { $n ->
+    [zero] لا محاولات دخول فاشلة.
+    [one] محاولة دخول فاشلة واحدة خلال اليوم الأخير: ربما يخمّن أحدهم كلمات المرور.
+    [two] محاولتا دخول فاشلتان خلال اليوم الأخير: ربما يخمّن أحدهم كلمات المرور.
+    [few] { $n } محاولات دخول فاشلة خلال اليوم الأخير: ربما يخمّن أحدهم كلمات المرور.
+    [many] { $n } محاولة دخول فاشلة خلال اليوم الأخير: ربما يخمّن أحدهم كلمات المرور.
+    *[other] { $n } محاولة دخول فاشلة خلال اليوم الأخير: ربما يخمّن أحدهم كلمات المرور.
+    }
+infra-failures-fix = كل عنوان يُبطَّأ أصلًا بعد الإخفاقات المتكررة. وإن ظل العدد يرتفع فابحث في سجل الوكيل عن مصدر المحاولات واحجبه هناك، وتأكد أن لكل مسؤول كلمة مرور طويلة أو أنه يدخل عبر خدمة تسجيل دخول.
+infra-health-bundle-title = بيانات العائلة
+infra-health-bundle-ok = يُفتح الأرشيف ويجتاز التحقق.
+infra-health-bundle-fix = افتح صفحة أرشيف AXGF لترى الأخطاء وتصححها، أو استعد آخر نسخة احتياطية سليمة (axgf-cms restore).
+infra-health-cache-title = ذاكرة المرفقات المؤقتة
+infra-health-cache-ok = كل ملف مرفق موجود في الذاكرة المؤقتة.
+infra-health-cache-fix = احفظ أي سجل مرة واحدة: الحفظ يعيد بناء الذاكرة المؤقتة. والملفات التي تبقى مفقودة بعده مفقودة من الأرشيف نفسه.
+infra-health-backup-title = النسخ الاحتياطية
+infra-health-backup-ok = { $count ->
+    [zero] توجد نسخة احتياطية حديثة؛ ولا أرشيف محفوظ.
+    [one] توجد نسخة احتياطية حديثة؛ ويُحفظ أرشيف واحد.
+    [two] توجد نسخة احتياطية حديثة؛ ويُحفظ أرشيفان.
+    [few] توجد نسخة احتياطية حديثة؛ وتُحفظ { $count } أرشيفات.
+    [many] توجد نسخة احتياطية حديثة؛ ويُحفظ { $count } أرشيفًا.
+    *[other] توجد نسخة احتياطية حديثة؛ ويُحفظ { $count } أرشيف.
+    }
+infra-health-backup-fix = إن لم يكن هناك مجلد للنسخ فأعد تشغيل bootstrap.sh مع ‎--backup-dir. وإن كان فافحص المؤقّت (systemctl status axgf-cms-backup.timer) وسجلّه (journalctl -u axgf-cms-backup).
+infra-disk-title = مساحة القرص
+infra-disk-ok = { $free } متاحة من { $total } ({ $percent }٪ متاحة).
+infra-disk-fix = حرّر مساحة على القسم الذي يضم مجلد البيانات — نسخ احتياطية قديمة محفوظة في مكان آخر أيضًا، سجلات، ملفات برامج أخرى — أو انقل البيانات إلى قرص أكبر.
+infra-growth-title = النمو
+infra-growth-ok = { $days ->
+    [zero] ينمو نحو { $rate } شهريًا؛ ولا يبقى مكان بهذا المعدل.
+    [one] ينمو نحو { $rate } شهريًا؛ ويبقى مكان ليوم واحد بهذا المعدل.
+    [two] ينمو نحو { $rate } شهريًا؛ ويبقى مكان ليومين بهذا المعدل.
+    [few] ينمو نحو { $rate } شهريًا؛ ويبقى مكان لـ { $days } أيام بهذا المعدل.
+    [many] ينمو نحو { $rate } شهريًا؛ ويبقى مكان لـ { $days } يومًا بهذا المعدل.
+    *[other] ينمو نحو { $rate } شهريًا؛ ويبقى مكان لـ { $days } يوم بهذا المعدل.
+    }
+infra-growth-soon = { $days ->
+    [zero] ينمو نحو { $rate } شهريًا: وبهذا المعدل يمتلئ القرص الآن.
+    [one] ينمو نحو { $rate } شهريًا: وبهذا المعدل يمتلئ القرص خلال يوم واحد.
+    [two] ينمو نحو { $rate } شهريًا: وبهذا المعدل يمتلئ القرص خلال يومين.
+    [few] ينمو نحو { $rate } شهريًا: وبهذا المعدل يمتلئ القرص خلال { $days } أيام.
+    [many] ينمو نحو { $rate } شهريًا: وبهذا المعدل يمتلئ القرص خلال { $days } يومًا.
+    *[other] ينمو نحو { $rate } شهريًا: وبهذا المعدل يمتلئ القرص خلال { $days } يوم.
+    }
+infra-growth-fix = خطّط للمساحة الآن: قرص أكبر، أو نسخ احتياطية أقل على القرص نفسه، أو نقل النسخ إلى قرص آخر.
+infra-growth-flat = لم تكبر النسخ الاحتياطية؛ لا شيء يحتاج إلى تخطيط.
+infra-growth-unknown = لا توجد بعدُ نسخ احتياطية كافية لقياس النمو: يلزم يوم واحد على الأقل بين الأقدم والأحدث.
+infra-memory-title = الذاكرة
+infra-memory-ok = مستعمل { $used } من سقف الخدمة البالغ { $max } ({ $percent }٪).
+infra-memory-high = مستعمل { $used } من سقف الخدمة البالغ { $max } ({ $percent }٪): قريب من الحد الذي يوقف عنده النظامُ الخدمةَ.
+infra-memory-fix = ارفع ‎MemoryMax=‎ في ملف drop-in لـ axgf-cms.service، أو اعثر على ما يحتجز الذاكرة — استيراد ضخم جدًا، مرفق كبير — وأعد تشغيل الخدمة.
+infra-memory-unlimited = قيد الاستعمال { $used }، دون سقف مضبوط للخدمة.
+infra-version-title = الإصدار
+infra-version-ok = v{ $current } هو أحدث إصدار منشور.
+infra-version-behind = يعمل v{ $current }؛ وقد نُشر { $latest }.
+infra-version-behind-fix = اقرأ ملاحظات الإصدار، ثم حدّث من قسم الإصدار أدناه. تُؤخذ نسخة احتياطية أولًا، ويعود الإصدار السابق تلقائيًا إن لم يبدأ الجديد.
+infra-version-unknown = لا يُعرف إن كان هناك إصدار أحدث: لم تُجلب قائمة الإصدارات.
+infra-version-unknown-fix = استعمل «البحث عن إصدارات جديدة» أدناه. لا تصل بيئة الإنتاج المعزولة إلى GitHub بنفسها؛ وبعد تثبيت مساعد الترقية يجلب هو القائمة كل يوم.
+infra-version-stale = { $days ->
+    [zero] جُلبت قائمة الإصدارات اليوم.
+    [one] جُلبت قائمة الإصدارات آخر مرة قبل يوم واحد.
+    [two] جُلبت قائمة الإصدارات آخر مرة قبل يومين.
+    [few] جُلبت قائمة الإصدارات آخر مرة قبل { $days } أيام.
+    [many] جُلبت قائمة الإصدارات آخر مرة قبل { $days } يومًا.
+    *[other] جُلبت قائمة الإصدارات آخر مرة قبل { $days } يوم.
+    }
+infra-upgrades-title = الترقيات
+infra-upgrades-ok = مساعد الترقية مثبّت: يستطيع الزر أدناه تغيير الإصدار.
+infra-upgrades-manual = مساعد الترقية غير مثبّت، لذا يُغيَّر الإصدار يدويًا على الخادم.
+infra-upgrades-fix = شغّل bootstrap.sh الحالي مرة واحدة بصلاحيات root: فهو يثبّت المساعد مع الخدمة.
+infra-sandbox-title = العزل
+infra-sandbox-ok = تعمل العملية مع no-new-privileges ومرشّح لاستدعاءات النظام.
+infra-sandbox-unknown = لا يُبلغ هذا النظام عن عزل العملية.
+infra-sandbox-off = تعمل العملية دون جزء من عزلها: no-new-privileges أو مرشّح استدعاءات النظام معطّل.
+infra-sandbox-fix = شغّل الخدمة من الوحدة التي يكتبها bootstrap.sh، دون ملفات drop-in تخفّف قيودها. وعلى جهاز تطوير هذا متوقَّع.
+infra-clock-title = الساعة
+infra-clock-ok = تشير ساعة النظام إلى عام { $year }، وهذا معقول.
+infra-clock-wrong = تشير ساعة النظام إلى عام { $year }: التواريخ وأعمار النسخ الاحتياطية والجلسات كلها خاطئة.
+infra-clock-fix = فعّل مزامنة الوقت: timedatectl set-ntp true.
+
+# Administration console: the Infrastructure page (v0.5.0, docs/adr/0011)
+infra-title = البنية التحتية
+infra-lede = الجهاز الذي يعمل عليه هذا الموقع، يُفحص كلما فُتحت هذه الصفحة: كيف يُوصل إليه، ومن يملك المفاتيح، وهل البيانات آمنة وما زالت تتسع، وأي إصدار يعمل، والعزل المحيط به.
+infra-kpi-health = الحالة
+infra-kpi-version = الإصدار
+infra-kpi-version-newer = { $version } متاح
+infra-kpi-version-current = محدّث
+infra-kpi-version-unknown = لم يُفحص بعد
+infra-kpi-disk = المساحة المتاحة
+infra-kpi-disk-note = مستعمل { $percent }٪ من { $total }
+infra-kpi-compute = الجهاز
+infra-kpi-cpus = { $n ->
+    [zero] { $n } نواة
+    [one] نواة واحدة
+    [two] نواتان
+    [few] { $n } أنوية
+    [many] { $n } نواة
+    *[other] { $n } نواة
+    }
+infra-kpi-load = الحِمل { $load }
+infra-kpi-rss = قيد الاستعمال { $size }
+infra-unknown = غير معروف
+infra-health = الحالة
+infra-health-intro = الأخضر سليم، والتحذير يستحق نظرة، والحرج يحتاج إلى انتباه الآن. وكل نتيجة تنفتح على ما ينبغي فعله.
+infra-json = الفحوص نفسها بصيغة JSON، لأداة مراقبة
+infra-version = الإصدار
+infra-version-running = قيد التشغيل
+infra-version-latest = أحدث إصدار منشور
+infra-version-up-to-date = محدّث
+infra-version-checked = جُلبت القائمة
+infra-version-never = أبدًا
+infra-source-direct = بواسطة هذا الخادم
+infra-source-helper = بواسطة مساعد الترقية
+infra-version-token = مستودع خاص
+infra-token-env-set = رمز GitHub مضبوط لسرد الإصدارات وتنزيلها.
+infra-token-env-unset = لا رمز. إن كان المستودع خاصًا فضع رمزًا في { $name } لا يقرؤه إلا root: فمساعد الترقية يقرؤه من هناك.
+infra-releases-error = فشلت آخر محاولة لجلب القائمة:
+infra-releases-refresh = البحث عن إصدارات جديدة
+infra-releases-asked = طُلب من مساعد الترقية جلب قائمة جديدة. أعد تحميل هذه الصفحة بعد دقيقة.
+infra-releases-not-asked = تعذّرت كتابة الطلب: { $error }
+infra-upgrade-status-running = جارٍ التغيير من { $from } إلى { $to }…
+infra-upgrade-status-succeeded = تم التغيير من { $from } إلى { $to }.
+infra-upgrade-status-failed = فشل التغيير من { $from } إلى { $to }؛ وما زال { $from } هو الإصدار العامل.
+infra-upgrade-status-refused = رفض مساعد الترقية التغيير إلى { $to }.
+infra-upgrade-log = مخرجات المساعد
+infra-upgrade-pending = طلب { $by } الإصدار { $version } في { $at }؛ ولم يتسلّمه مساعد الترقية بعد.
+infra-releases = الإصدارات المنشورة
+infra-releases-tag = الإصدار
+infra-releases-published = تاريخ النشر
+infra-releases-relation = مقارنةً بهذا
+infra-releases-notes = ملاحظات الإصدار
+infra-releases-open = اقرأ
+infra-relation-newer = أحدث
+infra-relation-current = هذا
+infra-relation-older = أقدم
+infra-prerelease = إصدار مرشّح
+infra-releases-none = لا توجد قائمة إصدارات بعد.
+infra-upgrade = تغيير الإصدار
+infra-upgrade-intro = يطلب الزرُّ ذلك من مساعد الترقية، الذي يعمل بصلاحيات root خارج عزل هذا الموقع. فيأخذ نسخة احتياطية، ويثبّت الإصدار بعد التحقق من مجموعه الاختباري، ويعيد تشغيل الخدمة ويفحصها؛ وإن لم يستجب الإصدار الجديد أعاد السابق.
+infra-upgrade-version = الإصدار المراد تثبيته
+infra-upgrade-confirm = للعودة إلى إصدار أقدم، اكتب وسمه مرة أخرى
+infra-upgrade-confirm-hint = لا حاجة إليه لإصدار أحدث. قد لا يقرأ الإصدار الأقدم بيانات كتبها إصدار أحدث: اقرأ ملاحظاته أولًا.
+infra-upgrade-go = تثبيت هذا الإصدار
+infra-upgrade-safety = يتعذّر الوصول إلى الموقع بضع ثوانٍ أثناء إعادة تشغيل الخدمة.
+infra-upgrade-manual = مساعد الترقية غير مثبّت على هذا الخادم، لذا لا تستطيع هذه الصفحة تغيير الإصدار. بصلاحيات root على الخادم:
+infra-upgrade-manual-helper = تشغيل bootstrap.sh الحالي مرة واحدة يثبّت المساعد، ويعمل الزر هنا من بعدها.
+infra-upgrade-asked = طُلب الإصدار { $version }. يتسلّمه مساعد الترقية خلال ثوانٍ؛ وتُظهر هذه الصفحة كيف جرى ذلك.
+infra-upgrade-no-helper = مساعد الترقية غير مثبّت، لذا لا يمكن تثبيت { $version } من هنا.
+infra-upgrade-unknown-version = { $version } ليس في قائمة الإصدارات المنشورة.
+infra-upgrade-same-version = { $version } هو الإصدار العامل حاليًا.
+infra-upgrade-confirm-older = { $version } أقدم من الإصدار العامل. اكتب وسمه في حقل التأكيد للعودة إليه.
+infra-volumes = التخزين
+infra-volumes-intro = القسم الذي يضم مجلد البيانات ({ $path })، وما يحفظه هذا الموقع عليه.
+infra-volumes-partition = القسم
+infra-of = { $used } من { $total }
+infra-volumes-ours = هذا الموقع
+infra-volumes-breakdown = ما يحفظه هذا الموقع
+infra-part-bundle = أرشيف العائلة
+infra-part-cache = ذاكرة المرفقات المؤقتة
+infra-part-backups = النسخ الاحتياطية
+infra-part-binary = البرنامج
+infra-part-journal = سجل التغييرات
+infra-part-accounts = الحسابات والإعدادات
+infra-files = { $n ->
+    [zero] لا ملفات
+    [one] ملف واحد
+    [two] ملفان
+    [few] { $n } ملفات
+    [many] { $n } ملفًا
+    *[other] { $n } ملف
+    }
+infra-growth = النمو
+infra-growth-month = شهريًا
+infra-growth-not-enough = لا توجد نسخ كافية للحكم
+infra-growth-left = المساحة الباقية بهذا المعدل
+infra-backups = النسخ الاحتياطية
+infra-backups-dir = المجلد
+infra-backups-count = الأرشيفات
+infra-backups-newest = الأحدث
+infra-backups-oldest = الأقدم
+infra-backups-room = المساحة حيث تُحفظ
+infra-free-of = { $free } متاحة من { $total }
+infra-paths = المسارات
+infra-path-data = مجلد البيانات
+infra-path-binary = البرنامج
+infra-compute = الحوسبة
+infra-compute-hidden = يُخفي عزلُ الخدمة عنها أرقام الجهاز نفسه؛ وما يظهر هنا هو ما تستطيع العملية رؤيته.
+infra-compute-memory = ذاكرة الجهاز
+infra-available-of = { $available } متاحة من { $total }
+infra-compute-ceiling = ذاكرة الخدمة
+infra-compute-no-ceiling = { $used }، دون سقف
+infra-compute-os = النظام
+infra-compute-kernel = النواة
+infra-compute-arch = المعمارية
+infra-compute-cpu = المعالج
+infra-compute-cpus = الأنوية
+infra-compute-load = الحِمل (1، 5، 15 دقيقة)
+infra-compute-rss = هذه العملية
+infra-compute-threads = الخيوط
+infra-compute-files = الملفات المفتوحة
+infra-compute-uptime = الخدمة تعمل منذ
+infra-compute-sys-uptime = الجهاز يعمل منذ
+infra-compute-sandbox = العزل
+infra-compute-nnp-on = دون صلاحيات جديدة
+infra-compute-nnp-off = يمكن اكتساب صلاحيات
+infra-compute-seccomp-on = استدعاءات النظام مُرشَّحة
+infra-compute-seccomp-off = استدعاءات النظام غير مُرشَّحة
+infra-activity = النشاط
+infra-activity-intro = محسوبة على مدى { $span }: تحتفظ الخدمة بيوم واحد، وتبدأ من الصفر عند كل إعادة تشغيل.
+infra-activity-sessions = الجلسات المفتوحة
+infra-activity-signed-in = عمليات الدخول
+infra-activity-failed = محاولات الدخول الفاشلة
+infra-activity-registered = الحسابات المُنشأة
+infra-activity-cross-site = الإرسالات المرفوضة من مواقع أخرى
+
+# Sign-in services: what the reader is told when one fails (v0.5.0, docs/adr/0012)
+sso-error-not-configured = خدمة تسجيل الدخول هذه غير مُعدّة على هذا الموقع.
+sso-error-no-public-url = يتطلب الدخول عبر خدمةٍ العنوانَ العام لهذا الموقع، ولم يُضبط بعد. يضبطه المسؤول في صفحة الاتصال.
+sso-error-unreachable = تعذّر الوصول إلى خدمة تسجيل الدخول. أعد المحاولة بعد قليل، أو ادخل بطريقة أخرى.
+sso-error-refused = لم تسمح لك خدمة تسجيل الدخول بالدخول، أو أُلغي الدخول هناك.
+sso-error-stale = انتهت صلاحية عملية الدخول هذه، أو بدأت في متصفح آخر. ابدأ من جديد.
+sso-error-invalid = لم يجتز ردّ خدمة تسجيل الدخول فحوص هذا الموقع، فلم يُستعمل. ابدأ من جديد؛ وإن تكرر ذلك فأخبر المسؤول.
+infra-upgrade-already-pending = { $version } ينتظر مساعد الترقية بالفعل. انتظر حتى ينتهي قبل طلب إصدار آخر.
+
+# Administration console: Connectivity, sign-in services and registration (v0.5.0, docs/adr/0012)
+connectivity-title = الاتصال
+connectivity-lede = كيف يصل القرّاء إلى هذا الموقع وكيف يدخلون: العنوان العام، وخدمات تسجيل الدخول، والقواعد التي يتبعها كل دخول، بما فيها دخول المسؤولين.
+connectivity-kpi-address = العنوان العام
+connectivity-address-unset = غير مضبوط
+connectivity-address-https = HTTPS
+connectivity-address-plain = غير مشفّر
+connectivity-address-unset-note = تحتاج إليه كل خدمة تسجيل دخول
+connectivity-kpi-services = خدمات تسجيل الدخول
+connectivity-kpi-services-note = { $n ->
+    [zero] لا خدمة جاهزة
+    [one] جاهزة للعرض
+    [two] جاهزتان للعرض
+    [few] جاهزة للعرض
+    [many] جاهزة للعرض
+    *[other] جاهزة للعرض
+    }
+connectivity-kpi-passwords = كلمات المرور
+connectivity-policy-short-everyone = الجميع
+connectivity-policy-short-non-admins = عدا المسؤولين
+connectivity-policy-short-nobody = لا أحد
+connectivity-policy-note-everyone = يستطيع كل حساب الدخول بكلمة مروره، وبخدمة مرتبطة أيضًا.
+connectivity-policy-note-non-admins = يدخل المسؤولون عبر خدمة فقط؛ ويبقى للآخرين استعمال كلمة المرور. فلا تفتح كلمة مرور مسؤول مسروقة شيئًا.
+connectivity-policy-note-nobody = يدخل الجميع عبر خدمة. والحساب الذي لا خدمة مرتبطة به ولا عنوان يُربط به لا يستطيع الدخول.
+connectivity-kpi-admins-linked = { $n ->
+    [zero] لا مسؤول لديه خدمة مرتبطة
+    [one] مسؤول واحد لديه خدمة مرتبطة
+    [two] مسؤولان لديهما خدمة مرتبطة
+    [few] { $n } مسؤولين لديهم خدمة مرتبطة
+    [many] { $n } مسؤولًا لديهم خدمة مرتبطة
+    *[other] { $n } مسؤول لديهم خدمة مرتبطة
+    }
+connectivity-kpi-registration = التسجيل
+connectivity-kpi-registration-go = يُضبط في صفحة الحسابات ←
+registration-short-closed = المسؤولون فقط
+registration-short-secret = بسرّ العائلة
+registration-short-open = مفتوح للزوار
+connectivity-address = العنوان العام
+connectivity-address-intro = العنوان الذي يكتبه القرّاء كما يكتبونه: https://family.example. تعيد خدمات تسجيل الدخول القرّاء إليه، لذا يجب أن يكون العنوان العام لا العنوان الذي يستمع عليه هذا الخادم.
+connectivity-address-label = العنوان العام
+connectivity-address-hint = اتركه فارغًا ما دام لا أحد يدخل عبر خدمة.
+connectivity-address-invalid = هذا ليس عنوان http أو https فيه اسم مضيف.
+connectivity-address-saved = حُفظ العنوان العام.
+connectivity-policy = قواعد تسجيل الدخول
+connectivity-policy-intro = تنطبق على كل حساب، بما فيها حسابات المسؤولين. وتُرفض أي قاعدة لا تترك مسؤولًا قادرًا على الدخول.
+connectivity-policy-passwords = من يستطيع الدخول بكلمة مرور
+connectivity-policy-without-way = { $n ->
+    [zero] لا حساب نشطًا بلا خدمة مرتبطة ولا عنوان.
+    [one] حساب نشط واحد بلا خدمة مرتبطة ولا عنوان: مع «لا أحد» لن يستطيع الدخول.
+    [two] حسابان نشطان بلا خدمة مرتبطة ولا عنوان: مع «لا أحد» لن يستطيعا الدخول.
+    [few] { $n } حسابات نشطة بلا خدمة مرتبطة ولا عنوان: مع «لا أحد» لن تستطيع الدخول.
+    [many] { $n } حسابًا نشطًا بلا خدمة مرتبطة ولا عنوان: مع «لا أحد» لن تستطيع الدخول.
+    *[other] { $n } حساب نشط بلا خدمة مرتبطة ولا عنوان: مع «لا أحد» لن تستطيع الدخول.
+    }
+connectivity-link-by-email = ربط الخدمة بالحساب الذي يحمل العنوان المؤكَّد نفسه
+connectivity-link-by-email-note = هكذا يحصل قريبٌ على دخول بنقرة واحدة دون تسجيل: أنشئ حسابه بعنوانه، فيربطه أول دخول له عبر خدمة أكّدت ذلك العنوان. ولا يُطابَق إلا عنوان كتبه مسؤول أو أكّدته خدمة.
+connectivity-domains = النطاقات المسموح لها بفتح حساب
+connectivity-domains-hint = واحد في كل سطر، مثل family.example. فارغ: أي نطاق. وعند ضبطها لا يفتح حسابًا إلا عنوان أكّدته خدمة في أحد هذه النطاقات، ولا يُعرض نموذج التسجيل.
+connectivity-domain-invalid = «{ $domain }» ليس اسم نطاق.
+connectivity-policy-unknown = اختر من يستطيع الدخول بكلمة مرور.
+connectivity-policy-lockout = مرفوض: مع هذا التغيير لن يستطيع أي مسؤول نشط الدخول. اربط أولًا خدمة تسجيل دخول بحساب مسؤول بالدخول عبرها مرة، أو أبقِ كلمات المرور للمسؤولين.
+connectivity-policy-saved = حُفظت قواعد تسجيل الدخول.
+connectivity-not-saved = لم يُحفظ: { $error }
+connectivity-services = خدمات تسجيل الدخول
+connectivity-services-intro = سجّل هذا الموقع في لوحة الخدمة بعنوان إعادة التوجيه المبيَّن، ثم الصق هنا معرّف العميل والسرّ. فيرى الزوار «المتابعة باستخدام …» في صفحتي الدخول والتسجيل.
+connectivity-outbound-note = يتطلب الدخول عبر خدمةٍ أن يصل هذا الخادم إلى الخدمة. والوحدة التي يكتبها bootstrap.sh ترفض الاتصالات الصادرة (IPAddressDeny=any): اسمح بها عبر sudo systemctl edit axgf-cms بإضافة IPAddressAllow=any تحت [Service]، ثم أعد التشغيل. ويخبرك زر الاختبار إن كان ذلك ممكنًا.
+connectivity-service-ready = جاهزة
+connectivity-service-incomplete = غير مكتملة
+connectivity-service-off = معطّلة
+connectivity-service-enable = عرض هذه الخدمة في صفحتي الدخول والتسجيل
+connectivity-service-issuer = المُصدِر
+connectivity-service-issuer-hint = عنوان المزوّد، مثل https://auth.family.example/realms/family؛ وتُقرأ إعداداته من ‎/.well-known/openid-configuration تحته.
+connectivity-service-label = نص الزر
+connectivity-service-tenant = الدليل (المستأجر)
+connectivity-service-tenant-hint = common لأي حساب Microsoft، وorganizations لحسابات العمل والدراسة، وconsumers للحسابات الشخصية، أو معرّف دليلك.
+connectivity-service-client-id = معرّف العميل
+connectivity-service-secret = سرّ العميل
+connectivity-service-secret-set = السرّ مضبوط. اترك هذا فارغًا للإبقاء عليه.
+connectivity-service-secret-unset = لم يُضبط سرّ بعد.
+connectivity-service-secret-clear = إزالة السرّ
+connectivity-service-redirect = عنوان إعادة التوجيه المراد تسجيله
+connectivity-service-redirect-needs-address = اضبط العنوان العام أولًا
+connectivity-service-console = أين تُسجّله
+connectivity-service-console-open = لوحة { $name }
+connectivity-service-test = اختبار الاتصال
+connectivity-issuer-invalid = يجب أن يكون المُصدِر عنوان https://‎.
+connectivity-tenant-invalid = الدليل اسم أو معرّف: حروف وأرقام ونقاط وشرطات.
+connectivity-provider-incomplete = { $name } غير مكتمل: يلزمه معرّف عميل وسرّ عميل، ومُصدِر إن كان مزوّدًا عامًا.
+connectivity-provider-saved = حُفظ { $name }.
+connectivity-test-ok = أجاب { $name }: { $answer }.
+connectivity-test-failed = تعذّر الوصول إلى { $name } من هذا الخادم: { $detail }
+registration-title = التسجيل
+registration-intro = هل يستطيع الزائر فتح حساب هنا بنفسه. وحساب كهذا حساب عضو: يقرأ ما يقرؤه الأعضاء ولا يغيّر شيئًا. ومنحه دورًا آخر قرار المسؤول، أدناه.
+registration-who = من يستطيع فتح حساب
+registration-note-closed = لا يُنشئ الحسابات إلا المسؤول، في هذه الصفحة.
+registration-note-secret = يستطيع الزائر الذي يعرف سرّ العائلة فتح حساب عضو. شارك السرّ كما تشارك رمز باب.
+registration-note-open = يستطيع أي زائر فتح حساب عضو. ويقرأ الأعضاء السجلات المخصّصة للأعضاء.
+registration-rotate = توليد سرّ جديد
+registration-secret = سرّ العائلة
+registration-secret-note = يستطيع كل من يملكه فتح حساب ما دام هذا الوضع مفعّلًا. وتوليد سرّ جديد يُبطل القديم؛ وتبقى الحسابات المفتوحة.
+registration-link = صفحة التسجيل
+registration-quick = طرق الدخول السريعة
+registration-quick-none = لا خدمة تسجيل دخول جاهزة: أعِدّ واحدة في صفحة الاتصال
+registration-changed = آخر تغيير بواسطة { $by }، { $at }.
+registration-unknown = اختر من يستطيع فتح حساب.
+accounts-kpi-total = الحسابات النشطة
+accounts-kpi-total-note = { $disabled ->
+    [zero] لا حسابات معطّلة
+    [one] حساب واحد معطّل
+    [two] حسابان معطّلان
+    [few] { $disabled } حسابات معطّلة
+    [many] { $disabled } حسابًا معطّلًا
+    *[other] { $disabled } حساب معطّل
+    }
+accounts-kpi-admins = المسؤولون
+accounts-kpi-admins-few = أضف مسؤولًا ثانيًا
+accounts-kpi-admins-ok = أكثر من واحد، كما ينبغي
+accounts-kpi-linked = مرتبطة بخدمة
+accounts-kpi-linked-note = { $n ->
+    [zero] لا خدمة جاهزة
+    [one] خدمة واحدة جاهزة
+    [two] خدمتان جاهزتان
+    [few] { $n } خدمات جاهزة
+    [many] { $n } خدمة جاهزة
+    *[other] { $n } خدمة جاهزة
+    }
+accounts-kpi-registered = { $n ->
+    [zero] لم يفتح الزوار أي حساب
+    [one] حساب واحد فتحه زائر
+    [two] حسابان فتحهما زوار
+    [few] { $n } حسابات فتحها زوار
+    [many] { $n } حسابًا فتحه زوار
+    *[other] { $n } حساب فتحه زوار
+    }
+accounts-roles = الأدوار
+accounts-sign-in = يدخل بواسطة
+accounts-sign-in-password = كلمة مرور
+accounts-sign-in-google = Google
+accounts-sign-in-microsoft = Microsoft
+accounts-sign-in-github = GitHub
+accounts-sign-in-oidc = الدخول الموحّد
+accounts-sign-in-none = لا طريقة للدخول بعد
+accounts-created-via-register = فتحه الزائر
+accounts-created-via-sso = فُتح عبر خدمة
+accounts-add-also-register = يستطيع الزوار أيضًا فتح حسابات أعضاء بأنفسهم، كما ضُبط أعلاه. ويمكن للحساب المُنشأ هنا أن يحمل أي دور.
+login-password-not-allowed = لا تسمح قواعد الدخول في هذا الموقع لهذا الحساب باستعمال كلمة مرور: ادخل عبر خدمة.
+login-register = ليس لديك حساب بعد؟ أنشئ واحدًا
+register-title = إنشاء حساب
+register-lede = يقرأ حساب العضو السجلات المخصّصة لأعضاء العائلة. وأسرع طريقة حسابٌ تملكه أصلًا.
+register-closed = يُنشئ المسؤول الحسابات هنا. اطلب منه حسابك.
+register-have-account = لديك حساب؟ سجّل الدخول
+register-or = أو
+register-secret = سرّ العائلة
+register-secret-hint = أعطاك إياه مسؤول، أو أحد أفراد العائلة.
+register-secret-hint-services = اكتبه قبل اختيار خدمة، وإلا طلبته الخطوة التالية.
+register-domains = لا تفتح حسابًا إلا العناوين في { $domains }.
+register-username-hint = من 2 إلى 64 من الحروف أو الأرقام أو النقاط أو الشرطات أو الشرطات السفلية.
+register-submit = إنشاء الحساب
+register-member-note = لا يُطلب أي عنوان: لا يُرسل إليك شيء، ولا يستطيع أحد ادّعاء عنوانك.
+register-form-closed = لا يفتح هذا الموقع حسابات بهذا النموذج.
+register-throttled = محاولات كثيرة جدًا من هنا. انتظر ربع ساعة وأعد المحاولة.
+register-secret-wrong = هذا ليس سرّ العائلة.
+register-username-invalid = يتكوّن اسم المستخدم من 2 إلى 64 من الحروف أو الأرقام أو النقاط أو الشرطات أو الشرطات السفلية.
+register-password-short = تحتاج كلمة المرور إلى { $min } محرفًا على الأقل.
+register-username-taken = اسم المستخدم هذا محجوز. اختر غيره.
+register-not-saved = تعذّر حفظ الحساب. أعد المحاولة بعد قليل.
+register-finish-title = خطوة أخرى
+register-finish-lede = أكّدت الخدمة هويتك. لفتح حساب هنا، اكتب سرّ العائلة.
+register-finish-lede-email = أكّدتك الخدمة بصفتك { $email }. لفتح حساب هنا، اكتب سرّ العائلة.
+sso-continue = متابعة
+sso-continue-with = المتابعة باستخدام { $name }
+sso-error-title = لم يكتمل تسجيل الدخول
+sso-account-disabled = الحساب المرتبط بهذا الدخول معطّل. راجع المسؤول.
+sso-no-account = لا حساب هنا يطابق هذا الدخول، ولا يفتح هذا الموقع حسابات من تلقاء نفسه. اطلب من مسؤول إنشاء حسابك بهذا العنوان: وسيرتبط به دخولك التالي.
+sso-domain-refused = لا تُفتح الحسابات هنا إلا بعنوان من نطاقات العائلة تؤكّده الخدمة.

@@ -1397,3 +1397,228 @@ fn the_rollback_rehearsal_is_shipped_and_insists_on_a_version() {
         "and so is the installer"
     );
 }
+
+// ---------------------------------------------------------------------------
+// The upgrade helper (docs/adr/0011 §5)
+// ---------------------------------------------------------------------------
+
+/// Run the installed helper the way its units do.
+fn run_helper(prefix: &Path, mode: &str) -> std::process::Output {
+    Command::new("bash")
+        .arg(prefix.join("usr/local/lib/axgf-cms/upgrade-helper"))
+        .arg(mode)
+        .output()
+        .expect("run the upgrade helper")
+}
+
+fn helper_status(prefix: &Path) -> serde_json::Value {
+    let text = std::fs::read_to_string(prefix.join("var/lib/axgf-cms/upgrade.status"))
+        .expect("the helper wrote upgrade.status");
+    serde_json::from_str(&text)
+        .unwrap_or_else(|e| panic!("upgrade.status is not JSON ({e}):\n{text}"))
+}
+
+fn ask_for(prefix: &Path, version: &str) {
+    let body = serde_json::json!({ "version": version, "requested_by": "ada", "requested_at": "2026-10-21T09:00:00Z", "id": "x" });
+    std::fs::write(
+        prefix.join("var/lib/axgf-cms/upgrade.request"),
+        body.to_string(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn the_upgrade_helper_is_installed_and_acts_on_a_release_tag_only() {
+    let prefix = common::scratch("boot-helper");
+    run_bootstrap(&prefix, &[]);
+    let helper = prefix.join("usr/local/lib/axgf-cms/upgrade-helper");
+    let installer = prefix.join("usr/local/lib/axgf-cms/bootstrap.sh");
+    assert!(helper.exists() && installer.exists());
+    use std::os::unix::fs::PermissionsExt;
+    assert_eq!(
+        std::fs::metadata(&helper).unwrap().permissions().mode() & 0o777,
+        0o700,
+        "root's alone"
+    );
+    assert!(Command::new("bash")
+        .arg("-n")
+        .arg(&helper)
+        .status()
+        .unwrap()
+        .success());
+    let unit = |name: &str| {
+        std::fs::read_to_string(prefix.join("etc/systemd/system").join(name))
+            .unwrap_or_else(|e| panic!("{name}: {e}"))
+    };
+    let data = prefix.join("var/lib/axgf-cms");
+    assert!(unit("axgf-cms-upgrade.path")
+        .contains(&format!("PathExists={}/upgrade.request", data.display())));
+    assert!(unit("axgf-cms-upgrade.service")
+        .contains(&format!("ExecStart={} upgrade", helper.display())));
+    assert!(unit("axgf-cms-releases.path")
+        .contains(&format!("PathExists={}/releases.request", data.display())));
+    assert!(unit("axgf-cms-releases.service")
+        .contains(&format!("ExecStart={} releases", helper.display())));
+    assert!(unit("axgf-cms-releases.timer").contains("OnCalendar=daily"));
+
+    // Anything but a release tag is refused, and the request is taken away.
+    ask_for(&prefix, "main; rm -rf /");
+    let out = run_helper(&prefix, "upgrade");
+    assert!(out.status.success());
+    assert_eq!(helper_status(&prefix)["state"], "refused");
+    assert!(!data.join("upgrade.request").exists());
+
+    // A tag goes to the installer, whose output comes back as the status's
+    // log — colours stripped, quotes kept, valid JSON throughout.
+    std::fs::write(
+        &installer,
+        "#!/bin/bash\necho \"stub $*\"\nprintf '\\033[1m==> a step\\033[0m\\n'\necho 'a \"quoted\" \\\\ line'\nexit 0\n",
+    )
+    .unwrap();
+    ask_for(&prefix, "v9.9.9");
+    assert!(run_helper(&prefix, "upgrade").status.success());
+    let st = helper_status(&prefix);
+    assert_eq!(st["state"], "succeeded");
+    assert_eq!(st["to"], "v9.9.9");
+    let log: Vec<String> = st["log"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|l| l.as_str().unwrap().to_string())
+        .collect();
+    assert!(
+        log.contains(&"stub --upgrade --version v9.9.9".to_string()),
+        "{log:?}"
+    );
+    assert!(log.contains(&"==> a step".to_string()), "{log:?}");
+    // The stub's single quotes keep both backslashes; so does the status.
+    assert!(
+        log.contains(&r#"a "quoted" \\ line"#.to_string()),
+        "{log:?}"
+    );
+    assert!(!data.join("upgrade.request").exists());
+
+    // A failing installer is reported as failed.
+    std::fs::write(
+        &installer,
+        "#!/bin/bash\necho 'health check failed'\nexit 1\n",
+    )
+    .unwrap();
+    ask_for(&prefix, "v9.9.8");
+    run_helper(&prefix, "upgrade");
+    assert_eq!(helper_status(&prefix)["state"], "failed");
+
+    // Nothing asked, nothing done.
+    assert!(run_helper(&prefix, "upgrade").status.success());
+
+    // And an uninstall takes it all away, data aside.
+    run_bootstrap(&prefix, &["--uninstall"]);
+    assert!(!helper.exists() && !installer.exists());
+    for name in [
+        "axgf-cms-upgrade.path",
+        "axgf-cms-upgrade.service",
+        "axgf-cms-releases.path",
+        "axgf-cms-releases.service",
+        "axgf-cms-releases.timer",
+    ] {
+        assert!(
+            !prefix.join("etc/systemd/system").join(name).exists(),
+            "{name} left behind"
+        );
+    }
+    assert!(
+        data.join("upgrade.status").exists(),
+        "the data directory is not touched"
+    );
+}
+
+#[test]
+fn a_private_repository_is_reached_through_the_api_with_a_token() {
+    let prefix = common::scratch("boot-private");
+    let tag = "v0.1.0-rc1";
+    let staged = stage_release(&prefix, tag);
+    let assets = staged.join("releases/download").join(tag);
+    // What the API holds: the release by tag, naming its assets by id, and
+    // each asset's bytes at its id. The public download URLs answer nothing,
+    // as a private repository's do.
+    let api = prefix.join("api");
+    std::fs::create_dir_all(api.join("releases/tags")).unwrap();
+    std::fs::create_dir_all(api.join("releases/assets")).unwrap();
+    let mut listed = Vec::new();
+    for (i, entry) in std::fs::read_dir(&assets).unwrap().enumerate() {
+        let entry = entry.unwrap();
+        let id = 7000 + i;
+        let name = entry.file_name().to_string_lossy().into_owned();
+        std::fs::copy(
+            entry.path(),
+            api.join("releases/assets").join(id.to_string()),
+        )
+        .unwrap();
+        listed.push(serde_json::json!({
+            "url": format!("https://api.github.com/repos/plkarin/axgf-cms/releases/assets/{id}"),
+            "id": id,
+            "node_id": "RA_x",
+            "name": name,
+            "uploader": { "login": "someone", "url": "https://api.github.com/users/someone" },
+        }));
+    }
+    let release = serde_json::json!({
+        "url": "https://api.github.com/repos/plkarin/axgf-cms/releases/1",
+        "assets_url": "https://api.github.com/repos/plkarin/axgf-cms/releases/1/assets",
+        "tag_name": tag,
+        "name": format!("axgf-cms {tag}"),
+        "assets": listed,
+    });
+    std::fs::write(
+        api.join("releases/tags").join(tag),
+        serde_json::to_string_pretty(&release).unwrap(),
+    )
+    .unwrap();
+    let nowhere = prefix.join("no-public-downloads");
+    std::fs::create_dir_all(&nowhere).unwrap();
+
+    let secret = "ghp_not-a-real-token-but-secret";
+    let out = Command::new("bash")
+        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .args(["--version", tag])
+        .env("AXGF_CMS_PREFIX", &prefix)
+        .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
+        .env(
+            "AXGF_CMS_RELEASE_BASE",
+            format!("file://{}", nowhere.display()),
+        )
+        .env("AXGF_CMS_API_BASE", format!("file://{}", api.display()))
+        .env("AXGF_CMS_LOCAL_BINARY", "")
+        .env("AXGF_CMS_GITHUB_TOKEN", secret)
+        .env("TMPDIR", script_tmp(&prefix))
+        .output()
+        .expect("run bootstrap.sh");
+    let text =
+        String::from_utf8_lossy(&out.stdout).into_owned() + &String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{text}");
+    assert!(text.contains("checksum verified"), "{text}");
+    assert!(
+        prefix.join("usr/local/bin/axgf-cms").exists(),
+        "installed from the API's copy"
+    );
+    assert!(!text.contains(secret), "the token is never printed");
+
+    // Without the token, the same repository is a failed download.
+    let prefix2 = common::scratch("boot-private-no-token");
+    let out = Command::new("bash")
+        .arg(repo_root().join("deploy/bootstrap.sh"))
+        .args(["--version", tag])
+        .env("AXGF_CMS_PREFIX", &prefix2)
+        .env("AXGF_CMS_SKIP_PRIVILEGED", "1")
+        .env(
+            "AXGF_CMS_RELEASE_BASE",
+            format!("file://{}", nowhere.display()),
+        )
+        .env("AXGF_CMS_API_BASE", format!("file://{}", api.display()))
+        .env("AXGF_CMS_LOCAL_BINARY", "")
+        .env_remove("AXGF_CMS_GITHUB_TOKEN")
+        .env("TMPDIR", script_tmp(&prefix2))
+        .output()
+        .expect("run bootstrap.sh");
+    assert!(!out.status.success());
+}

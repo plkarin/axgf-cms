@@ -454,7 +454,7 @@ accounts-roots = { $n ->
        *[other] { $n } корней
     }
 accounts-add = Добавить учётную запись
-accounts-no-registration = Самостоятельной регистрации и приглашений здесь нет намеренно. Для семейного архива достаточно управляющего, который знает всех, и это убирает поле для злоупотреблений целиком, вместо того чтобы его оборонять.
+accounts-no-registration = Посетители не могут сами открывать учётные записи; регистрация настраивается выше. Большинству семей достаточно администратора, который всех знает.
 accounts-password-hint = Оставьте пустым — пароль будет создан и показан один раз. Не менее { $min } знаков, если задаёте сами.
 accounts-new-password-placeholder = новый пароль (пусто = оставить прежний)
 accounts-email = Электронная почта
@@ -3665,3 +3665,648 @@ edit-avatar-frame = Кадрировать лицо
 edit-avatar-upload = Сделать фото профиля
 edit-stale = Кто-то другой изменил { $what } с момента открытия этой страницы. Ничего не сохранено; всё введённое осталось на месте.
 edit-refused = Ничего не сохранено: { $reason }
+
+# Administration console (v0.5.0, docs/adr/0011)
+error-cross-site-title = Отклонено: отправлено с другого сайта
+error-cross-site-detail = Эта форма пришла со страницы другого сайта, поэтому она не выполнена. Если вы отправили её с этого сайта, обновите страницу и отправьте снова.
+admin-nav-label = Разделы администрирования
+admin-nav-overview = Обзор
+admin-nav-bundle = Архив AXGF
+admin-nav-infrastructure = Инфраструктура
+admin-nav-accounts = Учётные записи
+admin-nav-connectivity = Подключения
+
+# Administration console: the AXGF bundle (v0.5.0, docs/adr/0011)
+bundle-title = Архив AXGF
+bundle-lede = Архив семьи в том виде, в каком его хранит этот сайт: { $path }. Чему он соответствует, что выглядит неверным, и два способа забрать копию.
+bundle-unset-title = Семьи пока нет.
+bundle-unset-detail = В этой установке пустой архив, поэтому проверять пока нечего. Настройте её из архива, из файла GEDCOM или с нуля.
+bundle-kpi-conformity = Соответствие
+bundle-verdict-ok = Соответствует
+bundle-verdict-warn = Требует внимания
+bundle-verdict-fail = Не соответствует
+findings-tally = { $ok } в норме, { $warn ->
+    [one] { $warn } предупреждение
+    [few] { $warn } предупреждения
+    [many] { $warn } предупреждений
+    *[other] { $warn } предупреждения
+    }, { $fail } критичных
+bundle-kpi-entities = Записи
+bundle-kpi-entities-note = { $persons ->
+    [one] { $persons } человек
+    [few] { $persons } человека
+    [many] { $persons } человек
+    *[other] { $persons } человека
+    } · { $files ->
+    [one] { $files } файл
+    [few] { $files } файла
+    [many] { $files } файлов
+    *[other] { $files } файла
+    }
+bundle-kpi-size = Размер на диске
+bundle-kpi-members = { $n ->
+    [one] { $n } файл в архиве
+    [few] { $n } файла в архиве
+    [many] { $n } файлов в архиве
+    *[other] { $n } файла в архиве
+    }
+bundle-kpi-format = Формат
+bundle-kpi-format-note = Эта версия читает и пишет AXGF { $current }.
+bundle-conformity = Соответствие
+bundle-conformity-intro = Девять проверок архива в его текущем виде; ни одна его не меняет. Откройте строку, чтобы увидеть, что делать.
+bundle-area-format = Формат
+bundle-area-integrity = Целостность
+bundle-area-privacy = Конфиденциальность
+bundle-area-content = Содержимое
+level-ok = Норма
+level-warn = Внимание
+level-fail = Критично
+findings-what-to-do = Что делать
+findings-go = Перейти →
+bundle-anomalies = Аномалии
+bundle-anomalies-intro = Что находит страница качества данных, правило за правилом: ещё открытое и уже отмеченное как проверенное.
+bundle-anomalies-rule = Правило
+bundle-anomalies-open = Открыто
+bundle-anomalies-checked = Проверено
+bundle-anomalies-none = Страница качества данных не находит ничего, на что стоит посмотреть.
+bundle-diagnostics = Сообщения валидатора
+bundle-facts = Сведения
+bundle-fact-path = Файл
+bundle-fact-size = Размер
+bundle-fact-spec = Формат
+bundle-fact-schema = Встроенная схема
+bundle-fact-none = нет
+bundle-fact-created = Создан
+bundle-fact-updated = Последняя запись
+bundle-fact-generator = Записан
+bundle-fact-gedcom = Преобразован из
+bundle-export = Экспорт
+bundle-export-raw = Архив как есть (.axgf)
+bundle-export-raw-go = Скачать архив
+bundle-export-sealed = Зашифровано для одного человека (.axgf.gpg)
+bundle-export-sealed-intro = Тот же архив в виде сообщения OpenPGP, которое откроет только владелец закрытого ключа. Вставьте его открытый ключ: текст, начинающийся с «-----BEGIN PGP PUBLIC KEY BLOCK-----».
+bundle-export-sealed-go = Скачать зашифрованным
+seal-recipient = Для
+seal-fingerprint = Отпечаток
+seal-algorithm = Алгоритмы
+seal-fips-yes = в наборе, одобренном FIPS
+seal-fips-no = вне набора, одобренного FIPS
+seal-expires = Срок действия ключа
+seal-never = никогда
+seal-key-label = Открытый ключ получателя
+seal-key-hint = Ключ RSA не короче 2048 бит или ключ на эллиптической кривой. Сверьте отпечаток с владельцем, прежде чем что-либо отправлять.
+seal-remember = Запомнить этот ключ на следующий раз
+seal-check = Только прочитать ключ
+seal-fips-note = Архив шифруется AES-256 для ключа получателя. Одобрены FIPS: RSA от 3072 бит и кривые NIST P-256, P-384 и P-521 — просите P-384. Используемая здесь библиотека сама не является модулем, сертифицированным по FIPS 140-3.
+seal-decrypt-note = Получатель открывает его с помощью GnuPG:
+seal-forget = Забыть сохранённый ключ
+seal-key-kept = Ключ { $fingerprint } сохранён для следующего зашифрованного экспорта.
+seal-error-no-key = Сначала вставьте открытый ключ получателя.
+seal-error-not-a-key = Это не открытый ключ OpenPGP. Вставьте блок целиком, от строки BEGIN до строки END, и никогда не вставляйте закрытый ключ.
+seal-error-bad-signatures = Собственные подписи этого ключа не проходят проверку: возможно, он изменён. Попросите у владельца свежую копию.
+seal-error-expired = Срок действия ключа или всех его ключей шифрования истёк. Попросите владельца продлить его или прислать новый.
+seal-error-revoked = Владелец отозвал этот ключ. Попросите у него новый.
+seal-error-no-encryption-key = Этот ключ умеет подписывать, но не шифровать: у него нет подключа шифрования. Попросите владельца добавить его (gpg --quick-add-key … encr).
+seal-error-too-weak = Длина этого ключа RSA — { $bits } бит; для экспорта нужно не меньше { $min }.
+seal-error-unsupported = Алгоритм этого ключа не используется при экспорте: подходят только ключи RSA или на эллиптической кривой.
+seal-error-io = Не удалось создать зашифрованную копию: { $error }
+date-time-utc = { $date }, { $time } UTC
+
+# Administration console: the bundle's conformity (v0.5.0, docs/adr/0011)
+bundle-check-format-title = Версия формата
+bundle-check-format-ok = AXGF { $version } — версия, которую эта сборка читает и пишет.
+bundle-check-format-missing = В манифесте не указана версия AXGF.
+bundle-check-format-missing-fix = Архив записан не инструментом AXGF или повреждён. Восстановите последнюю резервную копию, прошедшую проверку (axgf-cms restore).
+bundle-check-format-older = Записан как AXGF { $version }; следующее сохранение запишет его как AXGF { $current }.
+bundle-check-format-older-fix = Ничего делать не нужно: следующая правка перепишет его. Сохраните копию старого файла, если другая программа читает только { $version }.
+bundle-check-format-newer = Записан как AXGF { $version } — новее, чем { $current } этой сборки: при сохранении может потеряться то, чего она не понимает.
+bundle-check-format-newer-fix = Обновите axgf-cms до версии, читающей AXGF { $version }, прежде чем кто-либо начнёт править (Инфраструктура, Версия).
+bundle-check-manifest-title = Счётчики манифеста
+bundle-check-manifest-ok = Счётчики манифеста совпадают с содержимым архива.
+bundle-check-manifest-drift = Манифест указывает { $declared }, а в архиве { $actual } ({ $collection }).
+bundle-check-manifest-fix = Ничего не потеряно: счётчики перепишутся при следующем сохранении. Если архив получен извне, проверьте, что он скопирован целиком.
+bundle-check-validation-title = Проверка
+bundle-check-validation-ok = Валидатор библиотеки не находит ошибок.
+bundle-check-validation-errors = { $errors ->
+    [one] { $errors } ошибка
+    [few] { $errors } ошибки
+    [many] { $errors } ошибок
+    *[other] { $errors } ошибки
+    }: архив не проходит проверку.
+bundle-check-validation-errors-fix = Каждое сообщение ниже называет запись и поле. Исправьте запись или восстановите последнюю резервную копию, прошедшую проверку.
+bundle-check-validation-warnings = { $warnings ->
+    [one] { $warnings } предупреждение
+    [few] { $warnings } предупреждения
+    [many] { $warnings } предупреждений
+    *[other] { $warnings } предупреждения
+    }. Они никогда не мешают сохранению; каждое говорит, что что-то может быть не так.
+bundle-check-validation-warnings-fix = Прочтите их ниже. Чаще всего это ссылки на записи, которых нет в архиве; такие нередко оставляет импорт GEDCOM.
+bundle-check-payloads-title = Вложенные файлы
+bundle-check-payloads-none = Вложенных файлов нет.
+bundle-check-payloads-ok = { $declared ->
+    [one] Все { $declared } файл на месте.
+    [few] Все { $declared } файла на месте.
+    [many] Все { $declared } файлов на месте.
+    *[other] Все { $declared } файла на месте.
+    }
+bundle-check-payloads-missing = В кэше нет { $missing } из { $declared } вложенных файлов.
+bundle-check-payloads-fix = Следующее сохранение восстановит кэш из архива. Если их нет в самом архиве, восстановите их из резервной копии.
+bundle-check-binding-title = Учётные записи и архив
+bundle-check-binding-ok = Файл учётных записей создан для этой семьи.
+bundle-check-binding-mismatch = Файл учётных записей создан для { $expected }; этот архив — { $found }.
+bundle-check-binding-fix = Если архив восстановлен или переименован намеренно, делать ничего не нужно. Иначе учётные записи одной семьи применяются к древу другой: положите рядом правильный файл .acl.
+bundle-check-living-title = Живые — публично
+bundle-check-living-ok = Никто из записанных живыми не виден посетителям.
+bundle-check-living-public = { $n ->
+    [one] { $n } человек, записанный живым, отмечен
+    [few] { $n } человека, записанных живыми, отмечены
+    [many] { $n } человек, записанных живыми, отмечены
+    *[other] { $n } человека, записанных живыми, отмечены
+    } как публичные: любой посетитель читает их записи.
+bundle-check-living-fix = Если они на это не соглашались, установите видимость «участники» (Изменить, Личность).
+bundle-check-special-title = Особые категории
+bundle-check-special-none = Ни одна запись не содержит данных о здоровье, биометрических, геномных, уголовных или поведенческих.
+bundle-check-special-some = { $n ->
+    [one] { $n } запись содержит
+    [few] { $n } записи содержат
+    [many] { $n } записей содержат
+    *[other] { $n } записи содержат
+    } данные о здоровье, биометрические, геномные, уголовные или поведенческие. У живых их видят только администраторы, что бы ни было указано в записи.
+bundle-check-quality-title = Качество данных
+bundle-check-quality-ok = Смотреть не на что.
+bundle-check-quality-open = { $n ->
+    [one] { $n } вещь требует внимания
+    [few] { $n } вещи требуют внимания
+    [many] { $n } вещей требуют внимания
+    *[other] { $n } вещи требуют внимания
+    }, в { $groups ->
+    [one] { $groups } группе
+    *[other] { $groups } группах
+    }.
+bundle-check-quality-fix = Откройте страницу качества данных: в каждой строке названа запись и то, что выглядит неверным. Исправьте запись или отметьте её проверенной.
+bundle-check-size-title = Размер
+bundle-check-size-ok = { $size } — меньше { $warn }, после которых эта страница предупреждает.
+bundle-check-size-heavy = { $size } — больше { $warn }.
+bundle-check-size-fix = Архив принадлежит семье и может расти. Следите за диском и резервными копиями (Инфраструктура, Объёмы) и увеличьте --size-warn-mb, если такой размер ожидаем.
+seal-algorithm-value = { $key } · AES-256
+seal-key-placeholder = -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+# Administration console: the infrastructure's checks (v0.5.0, docs/adr/0011 §3)
+infra-area-security = Безопасность
+infra-area-access = Доступ
+infra-area-data = Данные
+infra-area-capacity = Ёмкость
+infra-area-release = Версия
+infra-area-platform = Платформа
+infra-verdict-ok = Исправно
+infra-verdict-warn = Требует внимания
+infra-verdict-fail = Критично
+duration-days = { $n ->
+    [one] { $n } день
+    [few] { $n } дня
+    [many] { $n } дней
+    *[other] { $n } дня
+    }
+duration-hours = { $n ->
+    [one] { $n } час
+    [few] { $n } часа
+    [many] { $n } часов
+    *[other] { $n } часа
+    }
+duration-minutes = { $n ->
+    [one] { $n } минута
+    [few] { $n } минуты
+    [many] { $n } минут
+    *[other] { $n } минуты
+    }
+infra-transport-title = Как открывается сайт
+infra-transport-ok = Эта страница пришла по HTTPS.
+infra-transport-exposed = Эта страница пришла без шифрования, а сервер слушает { $bind } — не только эту машину: пароли и cookie сеансов идут по сети открытым текстом.
+infra-transport-exposed-fix = Поставьте перед ним обратный прокси HTTPS (Caddy, nginx, HAProxy) и снова привяжите службу к 127.0.0.1: перезапустите bootstrap.sh с --bind 127.0.0.1:8080 или удалите drop-in, который её открыл.
+infra-transport-plain = Эта страница пришла без шифрования от сервера, слушающего { $bind }. Это допустимо только на этой машине.
+infra-transport-plain-fix = Открывайте сайт по его адресу HTTPS. Если TLS завершает прокси, пусть он передаёт X-Forwarded-Proto: https, чтобы этот сервер об этом знал.
+infra-forwarded-title = Пересылаемые адреса
+infra-forwarded-ok = Сервер слушает только эту машину, поэтому адресу клиента, который передаёт прокси, можно доверять, замедляя повторные неудачные входы.
+infra-forwarded-exposed = Сервер доступен напрямую и доверяет заголовку X-Forwarded-For: клиент, который сам его подставит, обойдёт замедление после неудачных входов.
+infra-forwarded-fix = Привяжите службу к 127.0.0.1 за прокси или закройте порт межсетевым экраном, чтобы до него добирался только прокси.
+infra-cross-site-title = Отправки с других сайтов
+infra-cross-site-ok = За последние сутки сюда не отправляли форм с других сайтов.
+infra-cross-site-refused = { $n ->
+    [one] За последние сутки отклонена { $n } форма, отправленная с другого сайта.
+    [few] За последние сутки отклонены { $n } формы, отправленные с других сайтов.
+    [many] За последние сутки отклонено { $n } форм, отправленных с других сайтов.
+    *[other] За последние сутки отклонено { $n } формы, отправленной с других сайтов.
+    }
+infra-cross-site-fix = Ничего не прошло. Если отказы ваши — тот же сайт по второму адресу, — задайте публичный адрес в разделе «Подключения» или пользуйтесь только им.
+infra-sso-title = Службы входа
+infra-sso-none = Ни одна служба входа не включена; учётные записи входят по паролю.
+infra-sso-ok = { $n ->
+    [one] Включена { $n } служба входа, публичный адрес — HTTPS.
+    [few] Включены { $n } службы входа, публичный адрес — HTTPS.
+    [many] Включено { $n } служб входа, публичный адрес — HTTPS.
+    *[other] Включено { $n } службы входа, публичный адрес — HTTPS.
+    }
+infra-sso-no-https = Служба входа включена, но публичный адрес не HTTPS: поставщики не отправляют ответ на незашифрованный адрес, и вход не удаётся.
+infra-sso-fix = В разделе «Подключения» укажите публичным адресом тот адрес https://, которым пользуются читатели.
+infra-admins-title = Администраторы
+infra-admins-none = Ни одна активная учётная запись не может администрировать сайт. Это может только аварийный токен, и только пока он задан.
+infra-admins-none-fix = Войдите с аварийным токеном, создайте администратора в разделе «Учётные записи», затем удалите токен.
+infra-admins-one = Один администратор. Если этого человека не будет на месте или он потеряет пароль, управлять сайтом не сможет никто.
+infra-admins-one-fix = Дайте роль администратора второму доверенному человеку в разделе «Учётные записи».
+infra-admins-ok = { $n ->
+    [one] { $n } администратор может войти.
+    [few] { $n } администратора могут войти.
+    [many] { $n } администраторов могут войти.
+    *[other] { $n } администратора могут войти.
+    }
+infra-token-title = Аварийный токен
+infra-token-generated = Аварийный токен не задан.
+infra-token-only-way = Аварийный токен задан, и без учётной записи администратора это единственный вход. Сохраните его, пока не появится администратор.
+infra-token-standing = Аварийный токен всё ещё задан. Он открывает вход в обход любых учётных записей и прав.
+infra-token-fix = Удалите AXGF_CMS_ADMIN_TOKEN из файла окружения службы и перезапустите службу.
+infra-registration-title = Самостоятельная регистрация
+infra-registration-closed = Посетители не могут создавать учётные записи; это может только администратор.
+infra-registration-secret = Посетители могут создать учётную запись участника, если знают секрет регистрации.
+infra-registration-open = Любой посетитель может создать учётную запись участника.
+infra-registration-open-fix = Это подходит для сайта, который задуман открытым. Иначе в разделе «Учётные записи» потребуйте секрет регистрации или закройте её.
+infra-failures-title = Неудачные входы
+infra-failures-ok = { $n ->
+    [one] { $n } неудачная попытка входа за последние сутки.
+    [few] { $n } неудачные попытки входа за последние сутки.
+    [many] { $n } неудачных попыток входа за последние сутки.
+    *[other] { $n } неудачной попытки входа за последние сутки.
+    }
+infra-failures-many = { $n ->
+    [one] { $n } неудачная попытка входа за последние сутки: возможно, кто-то подбирает пароли.
+    [few] { $n } неудачные попытки входа за последние сутки: возможно, кто-то подбирает пароли.
+    [many] { $n } неудачных попыток входа за последние сутки: возможно, кто-то подбирает пароли.
+    *[other] { $n } неудачной попытки входа за последние сутки: возможно, кто-то подбирает пароли.
+    }
+infra-failures-fix = Каждый адрес уже замедляется после повторных неудач. Если число продолжает расти, найдите в журнале прокси, откуда идут попытки, и заблокируйте их там; убедитесь, что у каждого администратора длинный пароль или вход через службу входа.
+infra-health-bundle-title = Данные семьи
+infra-health-bundle-ok = Архив открывается и проходит проверку.
+infra-health-bundle-fix = Откройте страницу «Архив AXGF», чтобы увидеть и исправить ошибки, или восстановите последнюю резервную копию, прошедшую проверку (axgf-cms restore).
+infra-health-cache-title = Кэш вложений
+infra-health-cache-ok = Каждый вложенный файл есть в кэше.
+infra-health-cache-fix = Сохраните любую запись один раз: сохранение перестраивает кэш. Файлы, которых и после этого нет, отсутствуют в самом архиве.
+infra-health-backup-title = Резервные копии
+infra-health-backup-ok = { $count ->
+    [one] Есть свежая копия; хранится { $count } архив.
+    [few] Есть свежая копия; хранятся { $count } архива.
+    [many] Есть свежая копия; хранится { $count } архивов.
+    *[other] Есть свежая копия; хранится { $count } архива.
+    }
+infra-health-backup-fix = Если каталога для копий нет, перезапустите bootstrap.sh с --backup-dir. Если есть — проверьте таймер (systemctl status axgf-cms-backup.timer) и его журнал (journalctl -u axgf-cms-backup).
+infra-disk-title = Место на диске
+infra-disk-ok = Свободно { $free } из { $total } ({ $percent } %).
+infra-disk-fix = Освободите место на разделе с каталогом данных — старые копии, которые хранятся и в другом месте, журналы, файлы других программ — или перенесите данные на диск побольше.
+infra-growth-title = Рост
+infra-growth-ok = { $days ->
+    [one] Растёт примерно на { $rate } в месяц; при таком темпе места хватит на { $days } день.
+    [few] Растёт примерно на { $rate } в месяц; при таком темпе места хватит на { $days } дня.
+    [many] Растёт примерно на { $rate } в месяц; при таком темпе места хватит на { $days } дней.
+    *[other] Растёт примерно на { $rate } в месяц; при таком темпе места хватит на { $days } дня.
+    }
+infra-growth-soon = { $days ->
+    [one] Растёт примерно на { $rate } в месяц: при таком темпе диск заполнится через { $days } день.
+    [few] Растёт примерно на { $rate } в месяц: при таком темпе диск заполнится через { $days } дня.
+    [many] Растёт примерно на { $rate } в месяц: при таком темпе диск заполнится через { $days } дней.
+    *[other] Растёт примерно на { $rate } в месяц: при таком темпе диск заполнится через { $days } дня.
+    }
+infra-growth-fix = Позаботьтесь о месте уже сейчас: диск побольше, меньше копий на том же диске или копии на другом диске.
+infra-growth-flat = Копии не выросли; планировать нечего.
+infra-growth-unknown = Пока слишком мало копий, чтобы измерить рост: между самой старой и самой новой должны пройти хотя бы сутки.
+infra-memory-title = Память
+infra-memory-ok = Занято { $used } из лимита службы { $max } ({ $percent } %).
+infra-memory-high = Занято { $used } из лимита службы { $max } ({ $percent } %): близко к порогу, на котором система останавливает службу.
+infra-memory-fix = Увеличьте MemoryMax= в drop-in для axgf-cms.service или найдите, что держит память, — очень большой импорт, крупное вложение — и перезапустите службу.
+infra-memory-unlimited = Используется { $used }, лимит для службы не задан.
+infra-version-title = Версия
+infra-version-ok = v{ $current } — самая новая опубликованная версия.
+infra-version-behind = Работает v{ $current }; опубликована { $latest }.
+infra-version-behind-fix = Прочитайте примечания к выпуску и обновитесь в разделе «Версия» ниже. Сначала делается копия, а прежняя версия возвращается сама, если новая не запустится.
+infra-version-unknown = Неизвестно, есть ли версия новее: список выпусков не загружен.
+infra-version-unknown-fix = Воспользуйтесь кнопкой «Проверить новые версии» ниже. Песочница продакшена сама не достаёт до GitHub; после установки помощника обновлений список ежедневно загружает он.
+infra-version-stale = { $days ->
+    [one] Список выпусков последний раз загружен { $days } день назад.
+    [few] Список выпусков последний раз загружен { $days } дня назад.
+    [many] Список выпусков последний раз загружен { $days } дней назад.
+    *[other] Список выпусков последний раз загружен { $days } дня назад.
+    }
+infra-upgrades-title = Обновления
+infra-upgrades-ok = Помощник обновлений установлен: кнопка ниже может сменить версию.
+infra-upgrades-manual = Помощник обновлений не установлен, поэтому версию меняют вручную на сервере.
+infra-upgrades-fix = Один раз запустите текущий bootstrap.sh от root: он устанавливает помощника вместе со службой.
+infra-sandbox-title = Песочница
+infra-sandbox-ok = Процесс работает с no-new-privileges и фильтром системных вызовов.
+infra-sandbox-unknown = Эта система не сообщает о песочнице процесса.
+infra-sandbox-off = Процесс работает без части песочницы: выключен no-new-privileges или фильтр системных вызовов.
+infra-sandbox-fix = Запускайте службу из юнита, который пишет bootstrap.sh, без drop-in, ослабляющих его. На машине разработчика это ожидаемо.
+infra-clock-title = Часы
+infra-clock-ok = Системные часы показывают { $year } год — это правдоподобно.
+infra-clock-wrong = Системные часы показывают { $year } год: даты, возраст копий и сеансы — всё неверно.
+infra-clock-fix = Включите синхронизацию времени: timedatectl set-ntp true.
+
+# Administration console: the Infrastructure page (v0.5.0, docs/adr/0011)
+infra-title = Инфраструктура
+infra-lede = Машина, на которой работает этот сайт, проверяется при каждом открытии страницы: как до неё добираются, у кого ключи, в сохранности ли данные и хватает ли им места, какая версия работает и какая песочница её окружает.
+infra-kpi-health = Состояние
+infra-kpi-version = Версия
+infra-kpi-version-newer = Доступна { $version }
+infra-kpi-version-current = Актуальна
+infra-kpi-version-unknown = Ещё не проверено
+infra-kpi-disk = Свободно
+infra-kpi-disk-note = Занято { $percent } % из { $total }
+infra-kpi-compute = Машина
+infra-kpi-cpus = { $n ->
+    [one] { $n } ядро
+    [few] { $n } ядра
+    [many] { $n } ядер
+    *[other] { $n } ядра
+    }
+infra-kpi-load = Нагрузка { $load }
+infra-kpi-rss = Занято { $size }
+infra-unknown = Неизвестно
+infra-health = Состояние
+infra-health-intro = Зелёное — в порядке, предупреждение стоит посмотреть, критичное требует внимания сейчас. Каждый пункт раскрывается на том, что делать.
+infra-json = Те же проверки в JSON — для мониторинга
+infra-version = Версия
+infra-version-running = Работает
+infra-version-latest = Последняя опубликованная
+infra-version-up-to-date = актуальна
+infra-version-checked = Список загружен
+infra-version-never = никогда
+infra-source-direct = этим сервером
+infra-source-helper = помощником обновлений
+infra-version-token = Закрытый репозиторий
+infra-token-env-set = Задан токен GitHub для получения списка и загрузки выпусков.
+infra-token-env-unset = Токена нет. Если репозиторий закрытый, положите токен в { $name }, доступный для чтения только root: помощник обновлений читает его оттуда.
+infra-releases-error = Последняя попытка загрузить список не удалась:
+infra-releases-refresh = Проверить новые версии
+infra-releases-asked = Помощника обновлений попросили загрузить свежий список. Обновите страницу через минуту.
+infra-releases-not-asked = Не удалось записать запрос: { $error }
+infra-upgrade-status-running = Идёт переход с { $from } на { $to }…
+infra-upgrade-status-succeeded = Переход с { $from } на { $to } выполнен.
+infra-upgrade-status-failed = Переход с { $from } на { $to } не удался; по-прежнему работает { $from }.
+infra-upgrade-status-refused = Помощник обновлений отказался переходить на { $to }.
+infra-upgrade-log = Вывод помощника
+infra-upgrade-pending = Запрос { $version } от { $by } ({ $at }); помощник обновлений ещё не взял его.
+infra-releases = Опубликованные выпуски
+infra-releases-tag = Версия
+infra-releases-published = Опубликована
+infra-releases-relation = По сравнению с текущей
+infra-releases-notes = Примечания к выпуску
+infra-releases-open = Читать
+infra-relation-newer = новее
+infra-relation-current = текущая
+infra-relation-older = старее
+infra-prerelease = кандидат в выпуск
+infra-releases-none = Списка выпусков пока нет.
+infra-upgrade = Сменить версию
+infra-upgrade-intro = Кнопка обращается к помощнику обновлений, который работает от root вне песочницы сайта. Он делает копию, устанавливает выпуск после проверки контрольной суммы, перезапускает службу и проверяет её; если новая версия не отвечает, возвращается прежняя.
+infra-upgrade-version = Устанавливаемая версия
+infra-upgrade-confirm = Чтобы вернуться к более старой версии, введите её тег ещё раз
+infra-upgrade-confirm-hint = Для более новой версии не нужно. Старая версия может не прочитать данные, записанные новой: сначала прочитайте её примечания.
+infra-upgrade-go = Установить эту версию
+infra-upgrade-safety = Пока служба перезапускается, сайт несколько секунд недоступен.
+infra-upgrade-manual = Помощник обновлений на этом сервере не установлен, поэтому страница не может сменить версию. От root на сервере:
+infra-upgrade-manual-helper = Один запуск текущего bootstrap.sh устанавливает помощника, и с этого момента кнопка здесь работает.
+infra-upgrade-asked = Запрошена { $version }. Помощник обновлений возьмёт запрос в течение нескольких секунд; эта страница покажет, как всё прошло.
+infra-upgrade-no-helper = Помощник обновлений не установлен, поэтому { $version } отсюда установить нельзя.
+infra-upgrade-unknown-version = { $version } нет в списке опубликованных выпусков.
+infra-upgrade-same-version = { $version } уже работает.
+infra-upgrade-confirm-older = { $version } старее работающей версии. Чтобы вернуться к ней, введите её тег в поле подтверждения.
+infra-volumes = Хранилище
+infra-volumes-intro = Раздел с каталогом данных ({ $path }) и то, что сайт на нём хранит.
+infra-volumes-partition = Раздел
+infra-of = { $used } из { $total }
+infra-volumes-ours = Этот сайт
+infra-volumes-breakdown = Что хранит сайт
+infra-part-bundle = Архив семьи
+infra-part-cache = Кэш вложений
+infra-part-backups = Резервные копии
+infra-part-binary = Программа
+infra-part-journal = Журнал изменений
+infra-part-accounts = Учётные записи и настройки
+infra-files = { $n ->
+    [one] { $n } файл
+    [few] { $n } файла
+    [many] { $n } файлов
+    *[other] { $n } файла
+    }
+infra-growth = Рост
+infra-growth-month = В месяц
+infra-growth-not-enough = слишком мало копий, чтобы судить
+infra-growth-left = Места при таком темпе хватит на
+infra-backups = Резервные копии
+infra-backups-dir = Каталог
+infra-backups-count = Архивы
+infra-backups-newest = Самая новая
+infra-backups-oldest = Самая старая
+infra-backups-room = Место там, где они хранятся
+infra-free-of = Свободно { $free } из { $total }
+infra-paths = Пути
+infra-path-data = Каталог данных
+infra-path-binary = Программа
+infra-compute = Вычисления
+infra-compute-hidden = Песочница службы скрывает от неё показатели самой машины; здесь видно то, что видит процесс.
+infra-compute-memory = Память машины
+infra-available-of = Свободно { $available } из { $total }
+infra-compute-ceiling = Память службы
+infra-compute-no-ceiling = { $used }, без лимита
+infra-compute-os = Система
+infra-compute-kernel = Ядро ОС
+infra-compute-arch = Архитектура
+infra-compute-cpu = Процессор
+infra-compute-cpus = Ядра
+infra-compute-load = Нагрузка (1, 5, 15 мин)
+infra-compute-rss = Этот процесс
+infra-compute-threads = Потоки
+infra-compute-files = Открытые файлы
+infra-compute-uptime = Служба работает
+infra-compute-sys-uptime = Машина работает
+infra-compute-sandbox = Песочница
+infra-compute-nnp-on = без новых привилегий
+infra-compute-nnp-off = привилегии можно получить
+infra-compute-seccomp-on = системные вызовы фильтруются
+infra-compute-seccomp-off = системные вызовы не фильтруются
+infra-activity = Активность
+infra-activity-intro = Подсчитано за { $span }: служба хранит одни сутки и начинает с нуля после каждого перезапуска.
+infra-activity-sessions = Открытые сеансы
+infra-activity-signed-in = Входы
+infra-activity-failed = Неудачные входы
+infra-activity-registered = Созданные учётные записи
+infra-activity-cross-site = Отклонённые отправки с других сайтов
+
+# Sign-in services: what the reader is told when one fails (v0.5.0, docs/adr/0012)
+sso-error-not-configured = Эта служба входа на сайте не настроена.
+sso-error-no-public-url = Для входа через службу нужен публичный адрес сайта, а он ещё не задан. Его задаёт администратор в разделе «Подключения».
+sso-error-unreachable = Не удалось связаться со службой входа. Попробуйте чуть позже или войдите иначе.
+sso-error-refused = Служба входа вас не пустила, или вход был отменён на её стороне.
+sso-error-stale = Этот вход устарел или был начат в другом браузере. Начните заново.
+sso-error-invalid = Ответ службы входа не прошёл проверки сайта и не был использован. Начните заново; если это повторится, сообщите администратору.
+infra-upgrade-already-pending = { $version } уже ждёт помощника обновлений. Дождитесь окончания, прежде чем запрашивать другую версию.
+
+# Administration console: Connectivity, sign-in services and registration (v0.5.0, docs/adr/0012)
+connectivity-title = Подключения
+connectivity-lede = Как читатели попадают на сайт и как входят: публичный адрес, службы входа и правила, которым подчиняется каждый вход, включая вход администраторов.
+connectivity-kpi-address = Публичный адрес
+connectivity-address-unset = Не задан
+connectivity-address-https = HTTPS
+connectivity-address-plain = Без шифрования
+connectivity-address-unset-note = Он нужен каждой службе входа
+connectivity-kpi-services = Службы входа
+connectivity-kpi-services-note = { $n ->
+    [one] готова к работе
+    [few] готовы к работе
+    [many] готовы к работе
+    *[other] готовы к работе
+    }
+connectivity-kpi-passwords = Пароли
+connectivity-policy-short-everyone = Все
+connectivity-policy-short-non-admins = Кроме администраторов
+connectivity-policy-short-nobody = Никто
+connectivity-policy-note-everyone = Любая учётная запись может входить по паролю, а также через привязанную службу.
+connectivity-policy-note-non-admins = Администраторы входят только через службу; остальные по-прежнему могут пользоваться паролем. Украденный пароль администратора тогда ничего не открывает.
+connectivity-policy-note-nobody = Все входят через службу. Учётная запись без привязанной службы и без адреса для привязки войти не сможет.
+connectivity-kpi-admins-linked = { $n ->
+    [one] { $n } администратор с привязанной службой
+    [few] { $n } администратора с привязанной службой
+    [many] { $n } администраторов с привязанной службой
+    *[other] { $n } администратора с привязанной службой
+    }
+connectivity-kpi-registration = Регистрация
+connectivity-kpi-registration-go = Задаётся в разделе «Учётные записи» →
+registration-short-closed = Только администраторы
+registration-short-secret = С секретом семьи
+registration-short-open = Открыта для посетителей
+connectivity-address = Публичный адрес
+connectivity-address-intro = Адрес, который набирают читатели, так, как они его набирают: https://family.example. Службы входа возвращают читателей на него, поэтому это должен быть публичный адрес, а не тот, который слушает сервер.
+connectivity-address-label = Публичный адрес
+connectivity-address-hint = Оставьте пустым, пока никто не входит через службу.
+connectivity-address-invalid = Это не адрес http или https с именем хоста.
+connectivity-address-saved = Публичный адрес сохранён.
+connectivity-policy = Правила входа
+connectivity-policy-intro = Они действуют для всех учётных записей, включая администраторов. Правило, при котором ни один администратор не сможет войти, отклоняется.
+connectivity-policy-passwords = Кто может входить по паролю
+connectivity-policy-without-way = { $n ->
+    [one] У { $n } активной учётной записи нет ни привязанной службы, ни адреса: при «Никто» она не сможет войти.
+    [few] У { $n } активных учётных записей нет ни привязанной службы, ни адреса: при «Никто» они не смогут войти.
+    [many] У { $n } активных учётных записей нет ни привязанной службы, ни адреса: при «Никто» они не смогут войти.
+    *[other] У { $n } активной учётной записи нет ни привязанной службы, ни адреса: при «Никто» они не смогут войти.
+    }
+connectivity-link-by-email = Привязывать службу к учётной записи с тем же подтверждённым адресом
+connectivity-link-by-email-note = Так родственник получает вход в один клик без регистрации: создайте ему учётную запись с его адресом, и первый вход через службу, подтвердившую этот адрес, привяжет её. Сравнивается только адрес, введённый администратором или подтверждённый службой.
+connectivity-domains = Домены, с которых можно открыть учётную запись
+connectivity-domains-hint = По одному в строке, например family.example. Пусто — любые. Если заданы, открыть учётную запись может только адрес из этих доменов, подтверждённый службой, и форма регистрации не предлагается.
+connectivity-domain-invalid = «{ $domain }» — не доменное имя.
+connectivity-policy-unknown = Выберите, кто может входить по паролю.
+connectivity-policy-lockout = Отклонено: после этого изменения ни один активный администратор не сможет войти. Сначала привяжите службу входа к учётной записи администратора, войдя через неё один раз, или оставьте пароли администраторам.
+connectivity-policy-saved = Правила входа сохранены.
+connectivity-not-saved = Не сохранено: { $error }
+connectivity-services = Службы входа
+connectivity-services-intro = Зарегистрируйте сайт в консоли службы с указанным адресом перенаправления, затем вставьте сюда идентификатор клиента и секрет. Посетители увидят «Продолжить через …» на страницах входа и регистрации.
+connectivity-outbound-note = Вход через службу требует, чтобы сервер мог до неё достучаться. Юнит, который пишет bootstrap.sh, запрещает исходящие соединения (IPAddressDeny=any): разрешите их через sudo systemctl edit axgf-cms, добавив IPAddressAllow=any в [Service], и перезапустите. Кнопка проверки покажет, получается ли.
+connectivity-service-ready = Готова
+connectivity-service-incomplete = Не настроена
+connectivity-service-off = Выключена
+connectivity-service-enable = Предлагать эту службу на страницах входа и регистрации
+connectivity-service-issuer = Издатель
+connectivity-service-issuer-hint = Адрес поставщика, например https://auth.family.example/realms/family; его настройки читаются из /.well-known/openid-configuration по этому адресу.
+connectivity-service-label = Надпись на кнопке
+connectivity-service-tenant = Каталог (клиент)
+connectivity-service-tenant-hint = common — любая учётная запись Microsoft, organizations — рабочие и учебные, consumers — личные, или идентификатор вашего каталога.
+connectivity-service-client-id = Идентификатор клиента
+connectivity-service-secret = Секрет клиента
+connectivity-service-secret-set = Секрет задан. Оставьте поле пустым, чтобы сохранить его.
+connectivity-service-secret-unset = Секрет ещё не задан.
+connectivity-service-secret-clear = Удалить секрет
+connectivity-service-redirect = Адрес перенаправления для регистрации
+connectivity-service-redirect-needs-address = Сначала задайте публичный адрес
+connectivity-service-console = Где зарегистрировать
+connectivity-service-console-open = Консоль { $name }
+connectivity-service-test = Проверить соединение
+connectivity-issuer-invalid = Издатель должен быть адресом https://.
+connectivity-tenant-invalid = Каталог — это имя или идентификатор: буквы, цифры, точки и дефисы.
+connectivity-provider-incomplete = { $name }: настройка не завершена — нужны идентификатор и секрет клиента, а для универсального поставщика ещё и издатель.
+connectivity-provider-saved = { $name }: сохранено.
+connectivity-test-ok = { $name } ответил: { $answer }.
+connectivity-test-failed = С этого сервера не удалось связаться с { $name }: { $detail }
+registration-title = Регистрация
+registration-intro = Может ли посетитель сам открыть здесь учётную запись. Такая учётная запись — участника: она читает то же, что участники, и ничего не меняет. Дать ей другую роль решает администратор, ниже.
+registration-who = Кто может открыть учётную запись
+registration-note-closed = Учётные записи создаёт только администратор, на этой странице.
+registration-note-secret = Посетитель, знающий секрет семьи, может открыть учётную запись участника. Делитесь секретом так же, как кодом от двери.
+registration-note-open = Любой посетитель может открыть учётную запись участника. Участники читают записи, предназначенные для участников.
+registration-rotate = Создать новый секрет
+registration-secret = Секрет семьи
+registration-secret-note = Любой, у кого он есть, может открыть учётную запись, пока режим включён. Новый секрет отменяет старый; уже открытые учётные записи остаются.
+registration-link = Страница регистрации
+registration-quick = Быстрый вход
+registration-quick-none = Ни одна служба входа не готова: настройте её в разделе «Подключения»
+registration-changed = Последнее изменение: { $by }, { $at }.
+registration-unknown = Выберите, кто может открыть учётную запись.
+accounts-kpi-total = Активные учётные записи
+accounts-kpi-total-note = { $disabled ->
+    [one] { $disabled } отключена
+    [few] { $disabled } отключены
+    [many] { $disabled } отключено
+    *[other] { $disabled } отключено
+    }
+accounts-kpi-admins = Администраторы
+accounts-kpi-admins-few = Добавьте второго
+accounts-kpi-admins-ok = Больше одного, как и должно быть
+accounts-kpi-linked = Привязаны к службе
+accounts-kpi-linked-note = { $n ->
+    [one] { $n } служба готова
+    [few] { $n } службы готовы
+    [many] { $n } служб готово
+    *[other] { $n } службы готово
+    }
+accounts-kpi-registered = { $n ->
+    [one] { $n } открыта посетителем
+    [few] { $n } открыты посетителями
+    [many] { $n } открыто посетителями
+    *[other] { $n } открыто посетителями
+    }
+accounts-roles = Роли
+accounts-sign-in = Входит через
+accounts-sign-in-password = пароль
+accounts-sign-in-google = Google
+accounts-sign-in-microsoft = Microsoft
+accounts-sign-in-github = GitHub
+accounts-sign-in-oidc = единый вход
+accounts-sign-in-none = пока нет способа войти
+accounts-created-via-register = открыта посетителем
+accounts-created-via-sso = открыта через службу
+accounts-add-also-register = Посетители также могут сами открывать учётные записи участников, как задано выше. Учётная запись, созданная здесь, может иметь любую роль.
+login-password-not-allowed = Правила входа этого сайта не позволяют этой учётной записи пользоваться паролем: войдите через службу.
+login-register = Ещё нет учётной записи? Создайте её
+register-title = Создать учётную запись
+register-lede = Учётная запись участника читает записи, предназначенные для членов семьи. Быстрее всего — через учётную запись, которая у вас уже есть.
+register-closed = Учётные записи здесь создаёт администратор. Попросите его создать вашу.
+register-have-account = Уже есть учётная запись? Войдите
+register-or = или
+register-secret = Секрет семьи
+register-secret-hint = Его вам дал администратор или кто-то из семьи.
+register-secret-hint-services = Введите его до выбора службы, иначе его спросят на следующем шаге.
+register-domains = Открыть учётную запись могут только адреса в { $domains }.
+register-username-hint = От 2 до 64 букв, цифр, точек, дефисов или подчёркиваний.
+register-submit = Создать учётную запись
+register-member-note = Адрес не спрашивается: вам ничего не присылают, и никто не может присвоить ваш.
+register-form-closed = Этот сайт не открывает учётные записи через эту форму.
+register-throttled = Слишком много попыток отсюда. Подождите четверть часа и попробуйте снова.
+register-secret-wrong = Это не секрет семьи.
+register-username-invalid = Имя пользователя — от 2 до 64 букв, цифр, точек, дефисов или подчёркиваний.
+register-password-short = Пароль должен содержать не меньше { $min } символов.
+register-username-taken = Это имя пользователя занято. Выберите другое.
+register-not-saved = Не удалось сохранить учётную запись. Попробуйте чуть позже.
+register-finish-title = Ещё один шаг
+register-finish-lede = Служба подтвердила, кто вы. Чтобы открыть здесь учётную запись, введите секрет семьи.
+register-finish-lede-email = Служба подтвердила вас как { $email }. Чтобы открыть здесь учётную запись, введите секрет семьи.
+sso-continue = Продолжить
+sso-continue-with = Продолжить через { $name }
+sso-error-title = Вход не завершён
+sso-account-disabled = Учётная запись, привязанная к этому входу, отключена. Обратитесь к администратору.
+sso-no-account = Ни одна учётная запись здесь не соответствует этому входу, а сам сайт учётные записи не открывает. Попросите администратора создать вашу с этим адресом: следующий вход будет к ней привязан.
+sso-domain-refused = Открыть учётную запись здесь можно только с адресом из доменов семьи, подтверждённым службой.

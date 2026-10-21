@@ -117,6 +117,16 @@ pub struct AppState {
     /// are typed by hand far more often than they are filled from a search.
     /// See [`crate::geocode`] for why that is not pessimism.
     geocoder: Option<crate::geocode::Geocoder>,
+    /// The address this process listens on, when it was started as a server.
+    /// The Infrastructure page measures the exposure against it.
+    bind: Option<std::net::SocketAddr>,
+    /// Sign-ins through an identity provider, in flight (docs/adr/0012).
+    flows: crate::sso::Flows,
+    /// What happened at the door in the last day (docs/adr/0011).
+    events: crate::events::Events,
+    /// The release check's answer, when this process made one itself
+    /// (docs/adr/0011 §5). Read from disk otherwise.
+    release_check: std::sync::Mutex<Option<std::time::Instant>>,
 }
 
 /// A copy of the bundle carrying only the sensitive scopes in `include`.
@@ -633,6 +643,10 @@ impl AppState {
                 backup_dir: None,
                 space: std::sync::Arc::new(crate::space::Filesystem),
                 standing_admin_token: false,
+                bind: None,
+                flows: crate::sso::Flows::new(),
+                events: crate::events::Events::new(),
+                release_check: std::sync::Mutex::new(None),
             },
             report,
         ))
@@ -670,6 +684,52 @@ impl AppState {
     /// Where the ACL file lives.
     pub fn acl_path(&self) -> &Path {
         &self.acl_path
+    }
+
+    /// The rules of entry (docs/adr/0012), read under the accounts' lock.
+    pub fn site(&self) -> crate::site::Site {
+        self.acl_read(|acl| acl.site.clone())
+    }
+
+    /// Change the rules of entry and persist them with the accounts.
+    pub fn site_mutate<T>(&self, f: impl FnOnce(&mut crate::site::Site) -> T) -> Result<T> {
+        self.acl_mutate(|acl| f(&mut acl.site))
+    }
+
+    /// Sign-ins through an identity provider, in flight.
+    pub fn flows(&self) -> &crate::sso::Flows {
+        &self.flows
+    }
+
+    /// What happened at the door in the last day.
+    pub fn events(&self) -> &crate::events::Events {
+        &self.events
+    }
+
+    /// Record where this process listens.
+    pub fn with_bind(mut self, addr: std::net::SocketAddr) -> Self {
+        self.bind = Some(addr);
+        self
+    }
+
+    /// Where this process listens, when it was started as a server.
+    pub fn bind(&self) -> Option<std::net::SocketAddr> {
+        self.bind
+    }
+
+    /// The directory the bundle lives in: where the release channel's files
+    /// are read and written (docs/adr/0011 §5).
+    pub fn data_dir(&self) -> &Path {
+        self.bundle_path.parent().unwrap_or(Path::new("."))
+    }
+
+    /// When this process last asked for the published releases itself, and
+    /// note that it is asking now. `None` the first time.
+    pub fn note_release_check(&self) -> Option<std::time::Instant> {
+        let mut g = self.release_check.lock().unwrap_or_else(|e| e.into_inner());
+        let last = *g;
+        *g = Some(std::time::Instant::now());
+        last
     }
 
     /// Live sessions and the login throttle.
@@ -935,6 +995,12 @@ impl AppState {
     /// Path for a temp file beside the bundle, tagged with the purpose so two
     /// concurrent uses cannot collide with each other or with the atomic
     /// write's own `.tmp`.
+    /// A temp file beside the bundle for `tag`, under the name the startup
+    /// sweep recognises, so a crash cannot leave it on the disk for good.
+    pub fn temp_path(&self, tag: &str) -> PathBuf {
+        self.export_temp_path(tag)
+    }
+
     fn export_temp_path(&self, tag: &str) -> PathBuf {
         let mut name = self
             .bundle_path

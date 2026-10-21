@@ -142,6 +142,11 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "merged.html",
     "admin_conflict.html",
     "admin_dashboard.html",
+    "admin_bundle.html",
+    "admin_infrastructure.html",
+    "admin_connectivity.html",
+    "register.html",
+    "register_finish.html",
     "admin_list.html",
     "admin_form.html",
     "admin_place.html",
@@ -159,6 +164,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_result.html",
     "_macros.html",
     "_icons.html",
+    "_admin_nav.html",
+    "_checks.html",
     "_logo.html",
     "_completeness.html"
 ];
@@ -570,6 +577,18 @@ pub async fn bundle_download_from(
     filename: &str,
     path: std::path::PathBuf,
 ) -> Response {
+    download_from(chrome, filename, path, "application/vnd.axgf+zip").await
+}
+
+/// Stream a temp file as a download of `content_type`, removing it from the
+/// disk as soon as it is open — the bundle's own download, and the encrypted
+/// one (docs/adr/0011 §4).
+pub async fn download_from(
+    chrome: &Chrome,
+    filename: &str,
+    path: std::path::PathBuf,
+    content_type: &'static str,
+) -> Response {
     let file = match tokio::fs::File::open(&path).await {
         Ok(f) => f,
         Err(e) => {
@@ -589,7 +608,7 @@ pub async fn bundle_download_from(
     let mut headers = header::HeaderMap::new();
     headers.insert(
         header::CONTENT_TYPE,
-        header::HeaderValue::from_static("application/vnd.axgf+zip"),
+        header::HeaderValue::from_static(content_type),
     );
     if let Ok(v) = header::HeaderValue::from_str(&format!(
         "attachment; filename=\"{}\"",

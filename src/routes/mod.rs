@@ -2,8 +2,11 @@
 
 mod admin;
 mod ai_portraits;
+mod connectivity;
+mod console;
 mod convert;
 mod editors;
+mod entry;
 mod person_editor;
 mod prefs;
 mod profile;
@@ -13,7 +16,7 @@ mod setup;
 use std::sync::Arc;
 
 use axum::extract::DefaultBodyLimit;
-use axum::http::{header, HeaderValue};
+use axum::http::{header, HeaderMap, HeaderValue};
 use axum::routing::{get, post};
 use axum::Router;
 use tower_http::compression::predicate::{NotForContentType, Predicate as _, SizeAbove};
@@ -78,7 +81,163 @@ fn tile_origin(template: &str) -> Option<String> {
 /// Build the application router.
 pub fn router(state: Shared) -> Router {
     let csp = content_security_policy(&state);
-    security_headers(routes(state), &csp)
+    let guarded = routes(state.clone())
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            same_site_writes,
+        ))
+        .layer(axum::middleware::from_fn(cache_policy));
+    security_headers(guarded, &csp)
+}
+
+/// Refuse a form posted from another site (v0.5.0, docs/adr/0011 §2).
+///
+/// The session cookie is `SameSite=Strict`, and for a long time that was the
+/// whole defence. It is not enough here: a *site* is a registrable domain, so
+/// every application served from the same host — another port, another
+/// virtual host on the same address — is the same site, and a page served by
+/// any of them could post this application's forms with an administrator's
+/// cookie attached.
+///
+/// A browser says where a post comes from in `Origin`, on every cross-origin
+/// post and, in every current browser, on same-origin ones too. A post whose
+/// `Origin` (or, failing that, `Referer`) names another origin is refused. One
+/// carrying neither is let through: no browser sends a cross-site form post
+/// without them, and a script or a test calling this directly has no cookie
+/// worth forging.
+async fn same_site_writes(
+    axum::extract::State(state): axum::extract::State<Shared>,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::http::Method;
+    let writes = matches!(
+        *req.method(),
+        Method::POST | Method::PUT | Method::PATCH | Method::DELETE
+    );
+    if writes {
+        let headers = req.headers();
+        let claimed = headers
+            .get(header::ORIGIN)
+            .and_then(|v| v.to_str().ok())
+            .map(str::to_string)
+            .or_else(|| {
+                headers
+                    .get(header::REFERER)
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(origin_of_url)
+            });
+        if let Some(origin) = claimed {
+            let public = state.site().public_base();
+            if !is_own_origin(&origin, headers, public.as_deref()) {
+                state.events().record(crate::events::Kind::CrossSiteRefused);
+                tracing::warn!(
+                    origin = %origin,
+                    path = %req.uri().path(),
+                    "refused a form posted from another site"
+                );
+                let viewer = crate::auth::viewer(&state, headers);
+                let chrome = crate::render::Chrome::resolve(&viewer, headers, "/");
+                return crate::render::error_page_in(
+                    &chrome,
+                    axum::http::StatusCode::FORBIDDEN,
+                    "error-cross-site-title",
+                    "error-cross-site-detail",
+                );
+            }
+        }
+    }
+    next.run(req).await
+}
+
+/// `https://a.example:8443/x?y` → `https://a.example:8443`.
+fn origin_of_url(url: &str) -> Option<String> {
+    let (scheme, rest) = url.split_once("://")?;
+    let authority = rest.split(['/', '?', '#']).next()?;
+    (!authority.is_empty()).then(|| format!("{scheme}://{authority}"))
+}
+
+/// The `host[:port]` an origin names, lowercased, the default port dropped.
+fn authority_of(origin: &str) -> Option<String> {
+    let (scheme, rest) = origin.trim().split_once("://")?;
+    let authority = rest.split(['/', '?', '#']).next()?.to_ascii_lowercase();
+    if authority.is_empty() || authority.contains('@') {
+        return None;
+    }
+    let default = match scheme.to_ascii_lowercase().as_str() {
+        "https" => ":443",
+        "http" => ":80",
+        _ => return None,
+    };
+    Some(
+        authority
+            .strip_suffix(default)
+            .map(str::to_string)
+            .unwrap_or(authority),
+    )
+}
+
+/// Whether `origin` is this site: the host the request was addressed to, the
+/// host a reverse proxy says it was addressed to, or the public address the
+/// operator set (docs/adr/0012).
+fn is_own_origin(origin: &str, headers: &HeaderMap, public: Option<&str>) -> bool {
+    let Some(claimed) = authority_of(origin) else {
+        // `null` — a sandboxed frame, a `data:` page — is nobody's origin.
+        return false;
+    };
+    let host_of = |name: &str| {
+        headers
+            .get(name)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.split(',').next())
+            .map(|v| v.trim().to_ascii_lowercase())
+            .filter(|v| !v.is_empty())
+    };
+    let strip_default = |h: String| {
+        h.strip_suffix(":80")
+            .or_else(|| h.strip_suffix(":443"))
+            .map(str::to_string)
+            .unwrap_or(h)
+    };
+    let mut ours: Vec<String> = Vec::new();
+    if let Some(h) = host_of("host") {
+        ours.push(strip_default(h));
+    }
+    if let Some(h) = host_of("x-forwarded-host") {
+        ours.push(strip_default(h));
+    }
+    if let Some(p) = public.and_then(authority_of) {
+        ours.push(p);
+    }
+    ours.contains(&claimed)
+}
+
+/// Say how a page may be kept (v0.5.0, docs/adr/0011 §2).
+///
+/// A page a signed-in reader saw can hold anything their account may read —
+/// a living relative's address, the accounts list — and without a word on the
+/// matter a browser keeps it, and shows it again from its history on a shared
+/// computer after the reader signed out. Every HTML page that does not say
+/// otherwise is `no-store` for a signed-in reader and `no-cache` for anyone
+/// else. Stylesheets, scripts and pictures say their own.
+async fn cache_policy(
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    let signed_in = crate::session::cookie_value(req.headers()).is_some();
+    let mut resp = next.run(req).await;
+    let html = resp
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.starts_with("text/html"));
+    if html && !resp.headers().contains_key(header::CACHE_CONTROL) {
+        resp.headers_mut().insert(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static(if signed_in { "no-store" } else { "no-cache" }),
+        );
+    }
+    resp
 }
 
 /// The security headers, and why each one is here.
@@ -190,6 +349,51 @@ fn routes(state: Shared) -> Router {
         // Declared before the ":kind" routes so the literal "users" segment
         // wins over the parameter form.
         .route("/admin/users", get(admin::users).post(admin::create_user))
+        // The console's own rooms (v0.5.0, docs/adr/0011).
+        .route("/admin/bundle", get(console::bundle))
+        .route("/admin/bundle/sealed", post(console::sealed))
+        .route(
+            "/admin/bundle/forget-recipient",
+            post(console::forget_recipient),
+        )
+        .route("/admin/infrastructure", get(console::infrastructure))
+        .route(
+            "/admin/infrastructure.json",
+            get(console::infrastructure_json),
+        )
+        .route(
+            "/admin/infrastructure/releases",
+            post(console::refresh_releases),
+        )
+        .route("/admin/infrastructure/upgrade", post(console::upgrade))
+        .route("/admin/connectivity", get(connectivity::connectivity))
+        .route(
+            "/admin/connectivity/address",
+            post(connectivity::save_address),
+        )
+        .route(
+            "/admin/connectivity/policy",
+            post(connectivity::save_policy),
+        )
+        .route(
+            "/admin/connectivity/provider/:slug",
+            post(connectivity::save_provider),
+        )
+        .route(
+            "/admin/connectivity/test/:slug",
+            post(connectivity::test_provider),
+        )
+        .route(
+            "/admin/users/registration",
+            post(connectivity::save_registration),
+        )
+        .route("/register", get(entry::register_form).post(entry::register))
+        .route(
+            "/register/finish",
+            get(entry::finish_form).post(entry::finish),
+        )
+        .route("/auth/:provider/start", post(entry::start))
+        .route("/auth/:provider/callback", get(entry::callback))
         .route("/admin/users/:id", post(admin::update_user))
         .route("/admin/validate", post(admin::validate))
         .route("/admin/dedup", post(admin::dedup))
@@ -348,4 +552,64 @@ fn routes(state: Shared) -> Router {
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))
         .fallback(public::not_found)
         .with_state(state)
+}
+
+#[cfg(test)]
+mod origin_tests {
+    use super::*;
+
+    fn headers(pairs: &[(&'static str, &str)]) -> HeaderMap {
+        let mut h = HeaderMap::new();
+        for (k, v) in pairs {
+            h.insert(*k, HeaderValue::from_str(v).unwrap());
+        }
+        h
+    }
+
+    #[test]
+    fn a_post_from_the_page_itself_is_ours() {
+        let h = headers(&[("host", "192.168.1.105:8088")]);
+        assert!(is_own_origin("http://192.168.1.105:8088", &h, None));
+        let h = headers(&[("host", "family.example")]);
+        assert!(is_own_origin("https://family.example", &h, None));
+        assert!(is_own_origin("https://FAMILY.example:443", &h, None));
+    }
+
+    #[test]
+    fn another_port_on_the_same_host_is_another_origin() {
+        let h = headers(&[("host", "192.168.1.105:8088")]);
+        assert!(!is_own_origin("http://192.168.1.105", &h, None));
+        assert!(!is_own_origin("http://192.168.1.105:8080", &h, None));
+        assert!(!is_own_origin("null", &h, None));
+        assert!(!is_own_origin("https://evil.example", &h, None));
+    }
+
+    #[test]
+    fn behind_a_proxy_the_public_address_is_ours() {
+        let h = headers(&[
+            ("host", "127.0.0.1:8088"),
+            ("x-forwarded-host", "family.example"),
+        ]);
+        assert!(is_own_origin("https://family.example", &h, None));
+        let h = headers(&[("host", "127.0.0.1:8088")]);
+        assert!(is_own_origin(
+            "https://family.example",
+            &h,
+            Some("https://family.example")
+        ));
+        assert!(!is_own_origin(
+            "https://other.example",
+            &h,
+            Some("https://family.example")
+        ));
+    }
+
+    #[test]
+    fn a_referer_gives_its_origin() {
+        assert_eq!(
+            origin_of_url("https://family.example:8443/admin/users?x=1").as_deref(),
+            Some("https://family.example:8443")
+        );
+        assert_eq!(origin_of_url("not a url"), None);
+    }
 }

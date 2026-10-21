@@ -1,0 +1,20 @@
+{#- The administration's five rooms (v0.5.0, docs/adr/0011 §1): the
+    overview, the bundle, the machine it runs on, the accounts, and how
+    anyone gets in. Administrators only: a contributor's administration is
+    the overview and the record editors, and a row of doors that answer 403
+    would be five controls promising what the account cannot do.
+
+    Section chrome, counted apart from the page's own controls and capped at
+    five, as the masthead and the footer are (tests/interactive_walk.rs).
+    Context: `admin_page`, one of overview, bundle, infrastructure, accounts,
+    connectivity. -#}
+{% import "_icons.html" as ic %}
+{% if is_admin %}
+<nav class="admin-nav" aria-label="{{ t('admin-nav-label') }}">
+  <a class="admin-nav-item" href="/admin"{% if admin_page == "overview" %} aria-current="page"{% endif %}>{{ ic.icon("overview") }}<span>{{ t("admin-nav-overview") }}</span></a>
+  <a class="admin-nav-item" href="/admin/bundle"{% if admin_page == "bundle" %} aria-current="page"{% endif %}>{{ ic.icon("archive") }}<span>{{ t("admin-nav-bundle") }}</span></a>
+  <a class="admin-nav-item" href="/admin/infrastructure"{% if admin_page == "infrastructure" %} aria-current="page"{% endif %}>{{ ic.icon("server") }}<span>{{ t("admin-nav-infrastructure") }}</span></a>
+  <a class="admin-nav-item" href="/admin/users"{% if admin_page == "accounts" %} aria-current="page"{% endif %}>{{ ic.icon("accounts") }}<span>{{ t("admin-nav-accounts") }}</span></a>
+  <a class="admin-nav-item" href="/admin/connectivity"{% if admin_page == "connectivity" %} aria-current="page"{% endif %}>{{ ic.icon("connectivity") }}<span>{{ t("admin-nav-connectivity") }}</span></a>
+</nav>
+{% endif %}

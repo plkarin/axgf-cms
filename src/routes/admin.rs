@@ -173,17 +173,23 @@ pub async fn login_form(State(state): State<Shared>, headers: HeaderMap) -> Resp
     if viewer.may_write() {
         return Redirect::to("/admin").into_response();
     }
-    render::page_with(
-        &chrome,
-        "admin_login.html",
-        context! {
-            nav => "admin",
-            error => "",
-            // A fresh installation has no accounts at all. Saying so beats a
-            // login form that cannot be satisfied.
-            no_accounts => state.acl_read(|a| a.users.is_empty()),
-        },
-    )
+    render::page_with(&chrome, "admin_login.html", login_context(&state, ""))
+}
+
+/// What the sign-in page shows besides an error: the services, whether
+/// passwords are taken at all, and whether a visitor may open an account.
+fn login_context(state: &Shared, error: &str) -> minijinja::Value {
+    let site = state.site();
+    context! {
+        nav => "admin",
+        error,
+        // A fresh installation has no accounts at all. Saying so beats a
+        // login form that cannot be satisfied.
+        no_accounts => state.acl_read(|a| a.users.is_empty()),
+        services => super::entry::ready_providers(&site),
+        passwords => site.sign_in.password != crate::site::PasswordPolicy::Nobody,
+        register => site.registration.is_open_to_visitors(),
+    }
 }
 
 #[derive(Deserialize)]
@@ -289,6 +295,14 @@ pub async fn login(
     state.sessions().clear_failures(&client);
     state.sessions().clear_failures(&username);
 
+    // The right password, under a policy that takes passwords away from this
+    // account's role (Connectivity, docs/adr/0012): the services only. Said
+    // plainly — whoever typed it knows the password already.
+    if !state.site().sign_in.password.allows(user.role) {
+        tracing::info!(username = %user.username, "a password sign-in refused by the sign-in policy");
+        return login_refused(&state, &chrome, &chrome.t("login-password-not-allowed"));
+    }
+
     let id = user.id.clone();
     if let Err(e) = state.acl_mutate(|acl| {
         if let Some(u) = acl.users.iter_mut().find(|u| u.id == id) {
@@ -301,6 +315,7 @@ pub async fn login(
     }
 
     let cookie = state.sessions().open(Some(user.id.clone()), false);
+    state.events().record(crate::events::Kind::SignedIn);
     tracing::info!(username = %user.username, role = user.role.as_str(), "signed in");
     (
         [(
@@ -313,17 +328,10 @@ pub async fn login(
 }
 
 fn login_refused(state: &Shared, chrome: &render::Chrome, error: &str) -> Response {
+    state.events().record(crate::events::Kind::SignInFailed);
     (
         StatusCode::UNAUTHORIZED,
-        render::page_with(
-            chrome,
-            "admin_login.html",
-            context! {
-                nav => "admin",
-                error,
-                no_accounts => state.acl_read(|a| a.users.is_empty()),
-            },
-        ),
+        render::page_with(chrome, "admin_login.html", login_context(state, error)),
     )
         .into_response()
 }
@@ -2833,7 +2841,7 @@ pub async fn users(State(state): State<Shared>, headers: HeaderMap) -> Response 
     render_users(&state, &chrome, &viewer, None, None)
 }
 
-fn render_users(
+pub(super) fn render_users(
     state: &Shared,
     chrome: &render::Chrome,
     viewer: &Viewer,
@@ -2872,11 +2880,45 @@ fn render_users(
                     // Never the hash, not even truncated. It has no business
                     // in a template context that a future edit might print.
                     "is_me": Some(&u.id) == viewer.user.as_ref().map(|m| &m.id),
+                    // How this account signs in: its own password, and the
+                    // services linked to it (docs/adr/0012).
+                    "password": crate::acl::has_password(u),
+                    "services": u.identities.iter().map(|i| i.provider.clone()).collect::<Vec<_>>(),
+                    "created_via": u.created_via.as_deref().map(|v| v.split(':').next().unwrap_or(v).to_string()),
                 })
             })
             .collect::<Vec<_>>()
     });
     let admins = state.acl_read(|acl| acl.active_admins());
+    // The figures above the list: how many, which roles, how they sign in.
+    let stats = state.acl_read(|acl| {
+        let active: Vec<&crate::acl::User> = acl
+            .users
+            .iter()
+            .filter(|u| u.status == crate::acl::Status::Active)
+            .collect();
+        let role = |r: crate::acl::Role| active.iter().filter(|u| u.role == r).count();
+        json!({
+            "total": acl.users.len(),
+            "active": active.len(),
+            "disabled": acl.users.len() - active.len(),
+            "viewers": role(crate::acl::Role::Viewer),
+            "contributors": role(crate::acl::Role::Contributor),
+            "admins": role(crate::acl::Role::Admin),
+            "linked": active.iter().filter(|u| !u.identities.is_empty()).count(),
+            "registered": acl.users.iter().filter(|u| u.created_via.as_deref().is_some_and(|v| v == "register" || v.starts_with("sso:"))).count(),
+        })
+    });
+    let site = state.site();
+    let registration = json!({
+        "mode": site.registration.mode.as_str(),
+        "secret": site.registration.secret,
+        "open": site.registration.is_open_to_visitors(),
+        "changed_at": site.registration.changed_at,
+        "changed_by": site.registration.changed_by,
+        "url": format!("{}/register", site.public_base().unwrap_or_default()),
+    });
+    let services = super::entry::ready_providers(&site);
 
     render::page_with(
         chrome,
@@ -2891,6 +2933,11 @@ fn render_users(
             emergency => viewer.emergency,
             acl_path => state.acl_path().display().to_string(),
             min_password => crate::acl::MIN_PASSWORD,
+            stats,
+            registration,
+            services,
+            password_policy => site.sign_in.password.as_str(),
+            link_by_email => site.sign_in.link_by_email,
         },
     )
 }

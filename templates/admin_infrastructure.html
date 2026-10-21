@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% import "_icons.html" as ic %}
+{% block title %}{{ t("infra-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+
+{% include "_admin_nav.html" %}
+<h1>{{ t("infra-title") }}</h1>
+<p class="lede">{{ t("infra-lede") }}</p>
+
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% if notice %}<div class="notice ok"><p>{{ notice }}</p></div>{% endif %}
+
+{#- The headline: the worst check, the version, the room and the machine. -#}
+<div class="kpis">
+  <div class="kpi">
+    <span class="kpi-label">{{ t("infra-kpi-health") }}</span>
+    <span class="kpi-icon">{{ ic.icon("pulse") }}</span>
+    <span class="kpi-value"><span class="lvl lvl-{{ verdict }}">{{ t("infra-verdict-" ~ verdict) }}</span></span>
+    <span class="kpi-note">{{ t("findings-tally", ok=tally.ok, warn=tally.warn, fail=tally.fail) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("infra-kpi-version") }}</span>
+    <span class="kpi-icon">{{ ic.icon("upgrade") }}</span>
+    <span class="kpi-value">v{{ current }}</span>
+    <span class="kpi-note">{% if newer %}<a href="#version">{{ t("infra-kpi-version-newer", version=newer) }}</a>{% elif latest %}{{ t("infra-kpi-version-current") }}{% else %}{{ t("infra-kpi-version-unknown") }}{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("infra-kpi-disk") }}</span>
+    <span class="kpi-icon">{{ ic.icon("disk") }}</span>
+    <span class="kpi-value">{{ room.free if room else "—" }}</span>
+    <span class="kpi-note">{% if room %}{{ t("infra-kpi-disk-note", total=room.total, percent=room.used_pct) }}{% else %}{{ t("infra-unknown") }}{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("infra-kpi-compute") }}</span>
+    <span class="kpi-icon">{{ ic.icon("cpu") }}</span>
+    <span class="kpi-value">{{ t("infra-kpi-cpus", n=compute.cpus) }}</span>
+    <span class="kpi-note">{% if compute.load %}{{ t("infra-kpi-load", load=compute.load[0] | round(2)) }}{% elif rss %}{{ t("infra-kpi-rss", size=rss) }}{% else %}{{ compute.arch }}{% endif %}</span>
+  </div>
+</div>
+
+<section class="rec-section" id="health">
+<h2>{{ t("infra-health") }}</h2>
+<p class="small muted">{{ t("infra-health-intro") }}</p>
+{% set area_prefix = "infra-area-" %}{% include "_checks.html" %}
+<p class="small muted">{{ ic.icon("gauge") }} <a href="/admin/infrastructure.json">{{ t("infra-json") }}</a></p>
+</section>
+
+{#- Which version runs, which ones exist, and asking for another
+    (docs/adr/0011 §5). The button asks a root helper; it never replaces the
+    program itself. -#}
+<section class="rec-section" id="version">
+<h2>{{ t("infra-version") }}</h2>
+<dl class="facts">
+  <dt>{{ t("infra-version-running") }}</dt><dd><strong>v{{ current }}</strong> <span class="muted small">{{ target }}</span></dd>
+  <dt>{{ t("infra-version-latest") }}</dt><dd>{% if latest %}{{ latest }}{% if newer %} <span class="lvl lvl-warn">{{ t("infra-relation-newer") }}</span>{% else %} <span class="lvl lvl-ok">{{ t("infra-version-up-to-date") }}</span>{% endif %}{% else %}—{% endif %}</dd>
+  <dt>{{ t("infra-version-checked") }}</dt><dd>{% if checked_at %}{{ checked_at | localdatetime(lang) }}{% if source in ["direct", "helper"] %} · {{ t("infra-source-" ~ source) }}{% endif %}{% else %}{{ t("infra-version-never") }}{% endif %}</dd>
+  <dt>{{ t("infra-version-token") }}</dt><dd>{% if token_set %}{{ t("infra-token-env-set") }}{% else %}{{ t("infra-token-env-unset", name=token_file) }}{% endif %}</dd>
+</dl>
+{% if check_error %}<div class="notice warn"><p>{{ t("infra-releases-error") }} <code>{{ check_error }}</code></p></div>{% endif %}
+<form method="post" action="/admin/infrastructure/releases" class="cta-row">
+  <button class="btn" type="submit" data-busy="{{ t('busy-working') }}">{{ t("infra-releases-refresh") }}</button>
+</form>
+
+{% if status %}
+<div class="notice {% if status.state == 'succeeded' %}ok{% elif status.state == 'running' %}{% else %}warn{% endif %}">
+  <p><strong>{{ t("infra-upgrade-status-" ~ (status.state if status.state in ["running", "succeeded", "failed", "refused"] else "failed"), from=status.from, to=status.to) }}</strong>
+  {% if status.finished_at %}{{ status.finished_at | localdatetime(lang) }}{% elif status.started_at %}{{ status.started_at | localdatetime(lang) }}{% endif %}</p>
+  {% if status.message %}<p>{{ status.message }}</p>{% endif %}
+  {% if status.log %}
+  <details class="menu-disclosure"><summary>{{ t("infra-upgrade-log") }}</summary>
+  <pre class="mono small" data-content>{% for l in status.log %}{{ l }}
+{% endfor %}</pre></details>
+  {% endif %}
+</div>
+{% endif %}
+{% if pending %}
+<div class="notice"><p>{{ t("infra-upgrade-pending", version=pending.version, by=pending.requested_by, at=pending.requested_at | localdatetime(lang)) }}</p></div>
+{% endif %}
+
+<h3>{{ t("infra-releases") }}</h3>
+{% if releases %}
+<div class="table-wrap">
+<table class="wide">
+  <thead><tr><th>{{ t("infra-releases-tag") }}</th><th>{{ t("infra-releases-published") }}</th><th>{{ t("infra-releases-relation") }}</th><th>{{ t("infra-releases-notes") }}</th></tr></thead>
+  <tbody data-content>
+  {% for r in releases %}
+    <tr>
+      <td data-label="{{ t('infra-releases-tag') }}"><code>{{ r.tag }}</code>{% if r.prerelease %} <span class="muted small">{{ t("infra-prerelease") }}</span>{% endif %}</td>
+      <td data-label="{{ t('infra-releases-published') }}">{{ r.published | localdate(lang) if r.published else "—" }}</td>
+      <td data-label="{{ t('infra-releases-relation') }}"><span class="lvl {% if r.relation == 'newer' %}lvl-warn{% elif r.relation == 'current' %}lvl-ok{% endif %}">{{ t("infra-relation-" ~ r.relation) }}</span></td>
+      <td data-label="{{ t('infra-releases-notes') }}">{% if r.url %}<a href="{{ r.url }}" rel="noopener noreferrer">{{ t("infra-releases-open") }}</a>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="muted">{{ t("infra-releases-none") }}</p>
+{% endif %}
+
+<h3>{{ t("infra-upgrade") }}</h3>
+<p class="small muted">{{ t("infra-upgrade-intro") }}</p>
+{% if helper %}
+<form method="post" action="/admin/infrastructure/upgrade" class="export-choice" autocomplete="off">
+  <div class="field">
+    <label for="upgrade-version">{{ t("infra-upgrade-version") }}</label>
+    <select id="upgrade-version" name="version" required>
+      {% for r in releases if r.relation != "current" %}
+      <option value="{{ r.tag }}"{% if r.tag == newer %} selected{% endif %}>{{ r.tag }} · {{ t("infra-relation-" ~ r.relation) }}{% if r.prerelease %} · {{ t("infra-prerelease") }}{% endif %}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="upgrade-confirm">{{ t("infra-upgrade-confirm") }}</label>
+    <input id="upgrade-confirm" name="confirm" type="text" class="mono" spellcheck="false">
+    <div class="hint">{{ t("infra-upgrade-confirm-hint") }}</div>
+  </div>
+  <div class="cta-row">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}"{% if not releases or pending %} disabled{% endif %}>{{ ic.icon("upgrade") }} {{ t("infra-upgrade-go") }}</button>
+  </div>
+  <p class="small muted">{{ t("infra-upgrade-safety") }}</p>
+</form>
+{% else %}
+<div class="notice warn">
+  <p>{{ t("infra-upgrade-manual") }}</p>
+  <pre class="mono small">sudo bash bootstrap.sh --upgrade --version {{ newer if newer else (latest if latest else "vX.Y.Z") }}</pre>
+  <p class="small">{{ t("infra-upgrade-manual-helper") }}</p>
+</div>
+{% endif %}
+</section>
+
+{#- The sizes: the partition, then what this site keeps on it. -#}
+<section class="rec-section" id="volumes">
+<h2>{{ t("infra-volumes") }}</h2>
+<p class="small muted">{{ t("infra-volumes-intro", path=data_dir) }}</p>
+{% if room %}
+<div class="meter">
+  <span class="meter-label">{{ t("infra-volumes-partition") }}</span>
+  <span class="meter-track" role="img" aria-label="{{ t('infra-of', used=room.used, total=room.total) }}"><i class="{% if room.level == 'fail' %}is-fail{% elif room.level == 'warn' %}is-warn{% endif %}" style="inline-size:{{ room.used_pct }}%"></i></span>
+  <span class="meter-value">{{ t("infra-of", used=room.used, total=room.total) }}</span>
+</div>
+<div class="meter">
+  <span class="meter-label">{{ t("infra-volumes-ours") }}</span>
+  <span class="meter-track" role="img" aria-label="{{ ours }}"><i style="inline-size:{{ room.ours_pct | round(2) }}%"></i></span>
+  <span class="meter-value">{{ ours }}</span>
+</div>
+{% else %}
+<div class="notice warn"><p>{{ t("health-disk-unknown") }}</p></div>
+{% endif %}
+
+<h3>{{ t("infra-volumes-breakdown") }}</h3>
+<div class="vol-bar" role="img" aria-label="{{ t('infra-volumes-ours') }} {{ ours }}">
+  {%- for p in parts %}<i class="vol-{{ loop.index }}" style="inline-size:{{ p.share | round(2) }}%"></i>{% endfor -%}
+</div>
+<dl class="facts vol-legend">
+  {% for p in parts %}
+  <dt><i class="vol-swatch vol-{{ loop.index }}"></i>{{ t("infra-part-" ~ p.key) }}</dt><dd>{{ p.size }}{% if p.key == "cache" %} · {{ t("infra-files", n=cache_files) }}{% endif %}</dd>
+  {% endfor %}
+</dl>
+
+<h3>{{ t("infra-growth") }}</h3>
+<dl class="facts">
+  <dt>{{ t("infra-growth-month") }}</dt><dd>{{ growth_month if growth_month else t("infra-growth-not-enough") }}</dd>
+  <dt>{{ t("infra-growth-left") }}</dt><dd>{% if days_left is not none %}{{ t("duration-days", n=days_left) }}{% else %}—{% endif %}</dd>
+</dl>
+
+<h3>{{ t("infra-backups") }}</h3>
+{% if backups %}
+<dl class="facts">
+  <dt>{{ t("infra-backups-dir") }}</dt><dd><code>{{ backups.dir }}</code></dd>
+  <dt>{{ t("infra-backups-count") }}</dt><dd>{{ backups.count | localnum(lang) }} · {{ backups.total }}</dd>
+  {% if backups.newest %}<dt>{{ t("infra-backups-newest") }}</dt><dd><code>{{ backups.newest }}</code> · {{ backups.newest_size }}{% if backups.newest_at %} · {{ backups.newest_at | localdatetime(lang) }}{% endif %}</dd>{% endif %}
+  {% if backups.oldest_at %}<dt>{{ t("infra-backups-oldest") }}</dt><dd>{{ backups.oldest_at | localdatetime(lang) }}</dd>{% endif %}
+  {% if backup_room %}<dt>{{ t("infra-backups-room") }}</dt><dd>{{ t("infra-free-of", free=backup_room.free, total=backup_room.total) }}</dd>{% endif %}
+</dl>
+{% else %}
+<div class="notice warn"><p>{{ t("health-backup-unconfigured") }}</p></div>
+{% endif %}
+
+<h3>{{ t("infra-paths") }}</h3>
+<dl class="facts">
+  <dt>{{ t("infra-path-data") }}</dt><dd><code>{{ data_dir }}</code></dd>
+  {% if binary_path %}<dt>{{ t("infra-path-binary") }}</dt><dd><code>{{ binary_path }}</code></dd>{% endif %}
+</dl>
+</section>
+
+<section class="rec-section" id="compute">
+<h2>{{ t("infra-compute") }}</h2>
+{% if compute.system_hidden %}<p class="small muted">{{ t("infra-compute-hidden") }}</p>{% endif %}
+{% if mem %}
+<div class="meter">
+  <span class="meter-label">{{ t("infra-compute-memory") }}</span>
+  <span class="meter-track" role="img" aria-label="{{ t('infra-available-of', available=mem.available, total=mem.total) }}"><i style="inline-size:{{ mem.used_pct }}%"></i></span>
+  <span class="meter-value">{{ t("infra-available-of", available=mem.available, total=mem.total) }}</span>
+</div>
+{% endif %}
+{% if cgroup and cgroup.max %}
+<div class="meter">
+  <span class="meter-label">{{ t("infra-compute-ceiling") }}</span>
+  <span class="meter-track" role="img" aria-label="{{ t('infra-of', used=cgroup.current, total=cgroup.max) }}"><i class="{% if cgroup.pct >= 95 %}is-fail{% elif cgroup.pct >= 80 %}is-warn{% endif %}" style="inline-size:{{ cgroup.pct }}%"></i></span>
+  <span class="meter-value">{{ t("infra-of", used=cgroup.current, total=cgroup.max) }}</span>
+</div>
+{% endif %}
+<dl class="facts">
+  {% if compute.os %}<dt>{{ t("infra-compute-os") }}</dt><dd>{{ compute.os }}</dd>{% endif %}
+  {% if compute.kernel %}<dt>{{ t("infra-compute-kernel") }}</dt><dd>{{ compute.kernel }}</dd>{% endif %}
+  <dt>{{ t("infra-compute-arch") }}</dt><dd>{{ compute.arch }}</dd>
+  {% if compute.cpu_model %}<dt>{{ t("infra-compute-cpu") }}</dt><dd>{{ compute.cpu_model }}</dd>{% endif %}
+  <dt>{{ t("infra-compute-cpus") }}</dt><dd>{{ compute.cpus }}</dd>
+  {% if compute.load %}<dt>{{ t("infra-compute-load") }}</dt><dd>{{ compute.load[0] | round(2) }} · {{ compute.load[1] | round(2) }} · {{ compute.load[2] | round(2) }}</dd>{% endif %}
+  {% if rss %}<dt>{{ t("infra-compute-rss") }}</dt><dd>{{ rss }}</dd>{% endif %}
+  {% if cgroup and not cgroup.max %}<dt>{{ t("infra-compute-ceiling") }}</dt><dd>{{ t("infra-compute-no-ceiling", used=cgroup.current) }}</dd>{% endif %}
+  {% if compute.threads %}<dt>{{ t("infra-compute-threads") }}</dt><dd>{{ compute.threads }}</dd>{% endif %}
+  {% if compute.open_files is not none %}<dt>{{ t("infra-compute-files") }}</dt><dd>{{ compute.open_files }}</dd>{% endif %}
+  <dt>{{ t("infra-compute-uptime") }}</dt><dd>{{ t("duration-" ~ uptime.unit, n=uptime.n) }}</dd>
+  {% if sys_up %}<dt>{{ t("infra-compute-sys-uptime") }}</dt><dd>{{ t("duration-" ~ sys_up.unit, n=sys_up.n) }}</dd>{% endif %}
+  <dt>{{ t("infra-compute-sandbox") }}</dt><dd>{% if compute.no_new_privs is none and compute.seccomp is none %}{{ t("infra-unknown") }}{% else %}{{ t("infra-compute-nnp-" ~ ("on" if compute.no_new_privs else "off")) }} · {{ t("infra-compute-seccomp-" ~ ("on" if compute.seccomp == 2 else "off")) }}{% endif %}</dd>
+</dl>
+</section>
+
+<section class="rec-section" id="activity">
+<h2>{{ t("infra-activity") }}</h2>
+<p class="small muted">{{ t("infra-activity-intro", span=t("duration-" ~ counting.unit, n=counting.n)) }}</p>
+<dl class="facts">
+  <dt>{{ t("infra-activity-sessions") }}</dt><dd>{{ sessions | localnum(lang) }}</dd>
+  <dt>{{ t("infra-activity-signed-in") }}</dt><dd>{{ signed_in_count | localnum(lang) }}</dd>
+  <dt>{{ t("infra-activity-failed") }}</dt><dd>{{ failed | localnum(lang) }}</dd>
+  <dt>{{ t("infra-activity-registered") }}</dt><dd>{{ registered | localnum(lang) }}</dd>
+  <dt>{{ t("infra-activity-cross-site") }}</dt><dd>{{ cross_site | localnum(lang) }}</dd>
+</dl>
+</section>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{#- A list of findings by area, worst first (src/findings.rs): the bundle's
+    conformity and the infrastructure's checks read the same way. Set
+    `area_prefix` before including it; `groups` and `tally` come from the page.
+    Each finding opens on its plan; a critical one is open on arrival. -#}
+<div class="health-bar" role="img" aria-label="{{ t('findings-tally', ok=tally.ok, warn=tally.warn, fail=tally.fail) }}">
+  {%- set all = tally.ok + tally.warn + tally.fail -%}
+  {%- if all %}<i class="hb-ok" style="inline-size:{{ (tally.ok * 100 / all) | round(2) }}%"></i><i class="hb-warn" style="inline-size:{{ (tally.warn * 100 / all) | round(2) }}%"></i><i class="hb-fail" style="inline-size:{{ (tally.fail * 100 / all) | round(2) }}%"></i>{% endif -%}
+</div>
+{% for g in groups %}
+<h3 class="checks-area">{{ t(area_prefix ~ g.area) }}</h3>
+<ul class="checks" data-content>
+  {% for c in g["items"] %}
+  <li>
+    <details class="check" id="check-{{ c.id }}"{% if c.level == "fail" %} open{% endif %}>
+      <summary>
+        <span class="lvl lvl-{{ c.level }}">{{ t("level-" ~ c.level) }}</span>
+        <span class="check-title">{{ c.title }}</span>
+        <span class="check-finding">{{ c.finding }}</span>
+      </summary>
+      {% if c.fix or c.link %}
+      <div class="check-plan">
+        {% if c.fix %}<h4>{{ t("findings-what-to-do") }}</h4><p>{{ c.fix }}</p>{% endif %}
+        {% if c.link %}<p><a href="{{ c.link }}">{{ t("findings-go") }}</a></p>{% endif %}
+      </div>
+      {% endif %}
+    </details>
+  </li>
+  {% endfor %}
+</ul>
+{% endfor %}

@@ -4,6 +4,7 @@
 {% block title %}{{ t("admin-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 
+{% set admin_page = "overview" %}{% include "_admin_nav.html" %}
 <h1>{{ t("admin-title") }}</h1>
 {% if unset %}
 {#- An installation with no family yet (docs/adr/0005): the way in, first. -#}
@@ -74,7 +75,6 @@
         data-confirm="{{ t("admin-dedup-confirm") }}">
     <button class="btn" type="submit">{{ t("admin-deduplicate") }}</button>
   </form>
-  <a class="btn" href="/admin/users">{{ t("admin-accounts") }}</a>
 </div>
 <p class="small muted">{{ t("admin-roles-note") }}</p>
 

@@ -641,11 +641,13 @@
   --glow-rgb: 184 60 10;
 
   /* The logo in this theme's light (docs/adr/0006 §2): the same drawing on
-     the dashboard's dark teal, the orange for its gold. */
-  --logo-tile: #0f3b47;
-  --logo-deep: #9a3412;
-  --logo-gold: #f08a3c;
-  --logo-light: #fcd9b6;
+     white, its X in the funnel's colours — pink where the sources meet,
+     violet, blue toward the descendants — and its laurels blue. Nothing of
+     Canopée's green and gold is left. */
+  --logo-tile: #ffffff;
+  --logo-deep: #ec4899;
+  --logo-gold: #8b5cf6;
+  --logo-light: #3b82f6;
 
   /* The funnel (static/clarity.js): its five glass tones from the mouth
      (blue) to the narrow end (pink), the gloss, the rim, the mesh and the

@@ -3685,12 +3685,7 @@ bundle-kpi-conformity = Соответствие
 bundle-verdict-ok = Соответствует
 bundle-verdict-warn = Требует внимания
 bundle-verdict-fail = Не соответствует
-findings-tally = { $ok } в норме, { $warn ->
-    [one] { $warn } предупреждение
-    [few] { $warn } предупреждения
-    [many] { $warn } предупреждений
-    *[other] { $warn } предупреждения
-    }, { $fail } критичных
+findings-tally = Зелёные: { $ok } · Предупреждения: { $warn } · Критичные: { $fail }
 bundle-kpi-entities = Записи
 bundle-kpi-entities-note = { $persons ->
     [one] { $persons } человек
@@ -4310,3 +4305,12 @@ sso-error-title = Вход не завершён
 sso-account-disabled = Учётная запись, привязанная к этому входу, отключена. Обратитесь к администратору.
 sso-no-account = Ни одна учётная запись здесь не соответствует этому входу, а сам сайт учётные записи не открывает. Попросите администратора создать вашу с этим адресом: следующий вход будет к ней привязан.
 sso-domain-refused = Открыть учётную запись здесь можно только с адресом из доменов семьи, подтверждённым службой.
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = { $admins ->
+    [one] { $admins } администратор
+    [few] { $admins } администратора
+    [many] { $admins } администраторов
+    *[other] { $admins } администратора
+    }
+register-password-hint = Не меньше { $min } символов. Фразу из нескольких слов запомнить легче, чем мешанину знаков.

@@ -3683,12 +3683,7 @@ bundle-kpi-conformity = Zgodność
 bundle-verdict-ok = Zgodne
 bundle-verdict-warn = Do obserwacji
 bundle-verdict-fail = Niezgodne
-findings-tally = { $ok } zielonych, { $warn ->
-    [one] 1 ostrzeżenie
-    [few] { $warn } ostrzeżenia
-    [many] { $warn } ostrzeżeń
-    *[other] { $warn } ostrzeżenia
-    }, { $fail } krytycznych
+findings-tally = Zielone: { $ok } · Ostrzeżenia: { $warn } · Krytyczne: { $fail }
 bundle-kpi-entities = Rekordy
 bundle-kpi-entities-note = { $persons ->
     [one] 1 osoba
@@ -4308,3 +4303,12 @@ sso-error-title = Logowanie nie zostało dokończone
 sso-account-disabled = Konto powiązane z tym logowaniem jest wyłączone. Zwróć się do administratora.
 sso-no-account = Żadne konto nie pasuje do tego logowania, a ta witryna sama nie zakłada kont. Poproś administratora o utworzenie Twojego konta z tym adresem: następne logowanie zostanie z nim powiązane.
 sso-domain-refused = Konto można tu założyć tylko z adresem z domen rodziny, potwierdzonym przez usługę.
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = { $admins ->
+    [one] { $admins } administrator
+    [few] { $admins } administratorów
+    [many] { $admins } administratorów
+    *[other] { $admins } administratora
+    }
+register-password-hint = Co najmniej { $min } znaków. Zdanie z kilku słów łatwiej zapamiętać niż plątaninę znaków.

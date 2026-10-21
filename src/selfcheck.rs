@@ -309,6 +309,8 @@ pub fn coarse(d: Duration) -> (i64, &'static str) {
     } else if s >= 3_600 {
         (s / 3_600, "hours")
     } else {
-        (s / 60, "minutes")
+        // "0 minutes" read as a fault; a process up for seconds has been up
+        // for a minute, near enough.
+        ((s / 60).max(1), "minutes")
     }
 }

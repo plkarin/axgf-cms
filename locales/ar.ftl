@@ -3784,14 +3784,7 @@ bundle-kpi-conformity = المطابقة
 bundle-verdict-ok = مطابق
 bundle-verdict-warn = يحتاج مراقبة
 bundle-verdict-fail = غير مطابق
-findings-tally = { $ok } سليمة، { $warn ->
-    [zero] لا تحذيرات
-    [one] تحذير واحد
-    [two] تحذيران
-    [few] { $warn } تحذيرات
-    [many] { $warn } تحذيرًا
-    *[other] { $warn } تحذير
-    }، { $fail } حرجة
+findings-tally = سليمة: { $ok } · تحذيرات: { $warn } · حرجة: { $fail }
 bundle-kpi-entities = الكيانات
 bundle-kpi-entities-note = { $persons ->
     [zero] لا أشخاص
@@ -4473,3 +4466,14 @@ sso-error-title = لم يكتمل تسجيل الدخول
 sso-account-disabled = الحساب المرتبط بهذا الدخول معطّل. راجع المسؤول.
 sso-no-account = لا حساب هنا يطابق هذا الدخول، ولا يفتح هذا الموقع حسابات من تلقاء نفسه. اطلب من مسؤول إنشاء حسابك بهذا العنوان: وسيرتبط به دخولك التالي.
 sso-domain-refused = لا تُفتح الحسابات هنا إلا بعنوان من نطاقات العائلة تؤكّده الخدمة.
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = { $admins ->
+    [zero] لا مسؤولين
+    [one] مسؤول واحد
+    [two] مسؤولان
+    [few] { $admins } مسؤولين
+    [many] { $admins } مسؤولًا
+    *[other] { $admins } مسؤول
+    }
+register-password-hint = { $min } محرفًا على الأقل. وتُحفظ عبارة من عدة كلمات أسهل من خليط من الرموز.

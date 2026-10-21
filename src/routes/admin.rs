@@ -181,7 +181,9 @@ pub async fn login_form(State(state): State<Shared>, headers: HeaderMap) -> Resp
 fn login_context(state: &Shared, error: &str) -> minijinja::Value {
     let site = state.site();
     context! {
-        nav => "admin",
+        // Not "admin": nobody is signed in here, so nothing is being edited,
+        // and the edit band said otherwise to every visitor.
+        nav => "entry",
         error,
         // A fresh installation has no accounts at all. Saying so beats a
         // login form that cannot be satisfied.
@@ -369,7 +371,7 @@ pub async fn dashboard(
     headers: HeaderMap,
     Query(q): Query<DashboardQuery>,
 ) -> Response {
-    let (_viewer, chrome) = guard!(state, headers);
+    let (viewer, chrome) = guard!(state, headers);
     // The listing's kind select posts here; a known kind goes to its list.
     if let Some(k) = q.kind.as_deref().filter(|k| KINDS.contains(k)) {
         return Redirect::to(&format!("/admin/{k}")).into_response();
@@ -396,6 +398,10 @@ pub async fn dashboard(
         .collect::<Vec<_>>();
     // Validation says what is wrong; this says what is missing.
     let completeness = state.read(|flat| crate::completeness::analyse(flat, chrome.lang));
+    // The console's four rooms at a glance, for an administrator.
+    let console = viewer
+        .is_admin()
+        .then(|| super::console::overview(&state, &headers, &env, chrome.lang));
 
     render::page_with(
         &chrome,
@@ -424,6 +430,7 @@ pub async fn dashboard(
             attachment_count => state.read(|flat| flat.get("external_payloads")
                 .and_then(Value::as_object).map(|m| m.len()).unwrap_or(0)),
             completeness,
+            console,
             health_problems,
             // A standing emergency token bypasses every account; it exists for
             // the first login and for the day nobody can sign in, and it is

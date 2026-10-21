@@ -26,13 +26,13 @@
   <div class="kpi">
     <span class="kpi-label">{{ t("connectivity-kpi-passwords") }}</span>
     <span class="kpi-icon">{{ ic.icon("lock") }}</span>
-    <span class="kpi-value">{{ t("connectivity-policy-short-" ~ password_policy) }}</span>
+    <span class="kpi-value kpi-value-text">{{ t("connectivity-policy-short-" ~ password_policy) }}</span>
     <span class="kpi-note">{{ t("connectivity-kpi-admins-linked", n=linked_admins) }}</span>
   </div>
   <div class="kpi">
     <span class="kpi-label">{{ t("connectivity-kpi-registration") }}</span>
     <span class="kpi-icon">{{ ic.icon("accounts") }}</span>
-    <span class="kpi-value">{{ t("registration-short-" ~ registration) }}</span>
+    <span class="kpi-value kpi-value-text">{{ t("registration-short-" ~ registration) }}</span>
     <span class="kpi-note"><a href="/admin/users#registration">{{ t("connectivity-kpi-registration-go") }}</a></span>
   </div>
 </div>
@@ -41,7 +41,7 @@
 <section class="rec-section" id="address">
 <h2>{{ t("connectivity-address") }}</h2>
 <p class="small muted">{{ t("connectivity-address-intro") }}</p>
-<form method="post" action="/admin/connectivity/address" class="export-choice" autocomplete="off">
+<form method="post" action="/admin/connectivity/address" autocomplete="off">
   <div class="field">
     <label for="public-url">{{ t("connectivity-address-label") }}</label>
     <input id="public-url" name="public_url" type="url" inputmode="url" spellcheck="false" value="{{ public_url }}">
@@ -84,10 +84,10 @@
 <p class="small muted">{{ t("connectivity-services-intro") }}</p>
 {% if outbound_note %}<div class="notice warn"><p>{{ t("connectivity-outbound-note") }}</p></div>{% endif %}
 {% for p in providers %}
-<details class="menu-disclosure export-disclosure" id="service-{{ p.slug }}"{% if p.enabled %} open{% endif %}>
+<details class="menu-disclosure export-disclosure service-card" id="service-{{ p.slug }}"{% if p.enabled %} open{% endif %}>
   <summary>{{ ic.icon("key") }} {{ p.name }}
     {% if p.ready %}<span class="lvl lvl-ok">{{ t("connectivity-service-ready") }}</span>{% elif p.enabled %}<span class="lvl lvl-warn">{{ t("connectivity-service-incomplete") }}</span>{% else %}<span class="lvl">{{ t("connectivity-service-off") }}</span>{% endif %}</summary>
-  <form method="post" action="/admin/connectivity/provider/{{ p.slug }}" class="export-choice" autocomplete="off">
+  <form method="post" action="/admin/connectivity/provider/{{ p.slug }}" class="service-form" autocomplete="off">
     <label class="inline"><input type="checkbox" name="enabled"{% if p.enabled %} checked{% endif %}> {{ t("connectivity-service-enable") }}</label>
     {% if p.needs_issuer %}
     <div class="field">

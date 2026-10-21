@@ -1,0 +1,96 @@
+# ADR 0013 — Clarity: a light theme, the family as a funnel
+
+**Status:** accepted, v0.5.0 (2026-10-21) · **Amends:**
+[ADR 0008](0008-three-themes.md), whose themes were all dark; Clarity is the
+first light one · **Builds on:** [ADR 0007](0007-a-theme-may-bring-its-own-view.md)
+· **Applies to:** `static/clarity.js`, `static/css/tokens.css`,
+`static/app.css`, `static/ui.js`, `static/img/clarity-hero.jpg`,
+`static/img/clarity-cta.jpg`, `src/theme.rs`, `src/render.rs`,
+`src/routes/mod.rs`, `src/routes/public.rs`, `templates/river.html`,
+`locales/*.ftl`, `tests/views.rs`, `tests/themes.rs`,
+`tests/design_tokens.rs`, `tests/controls.rs`, `tests/masthead.rs`,
+`tests/brand.rs`, `tests/routes.rs`
+
+## Context
+
+On 21 October 2026 the operator asked for "a last theme named Clarity",
+taking two screenshots as its frame design pack:
+
+- a glossy funnel chart in blue, violet and pink, its stages labelled with
+  their figures (12,480 visitors, 3,920 product views, 1,204 added to cart,
+  482 purchases);
+- an IT administration dashboard on white: an orange accent, dark teal
+  bars, cards, KPI tiles.
+
+Their words for the navigation:
+
+> "A progressive chart that meshes the family from down (oldest) to up
+> (newest), the links through an inverted cylindrical pyramidal cone."
+
+## Decision
+
+### 1. The view: an inverted cone of glass slices
+
+`static/clarity.js` registers `window.axgfView` under ADR 0007's contract,
+from the river's own layout:
+
+- one slice per generation, its height a generation, its width growing from
+  the narrow end (the oldest generation shown) to the mouth (the newest);
+- each slice a glass band seen slightly from above — its opening, a gloss —
+  in five tones from blue at the mouth through violet to pink at the narrow
+  end, as the reference's stages;
+- each generation's people on the front of their slice, in the river's
+  order from left to right; the person at the fixed point at the front of
+  theirs, partners beside;
+- every parentage a line meshed along the cone's wall from one slice to the
+  next, solid, broken or a trace as surely as it is known;
+- at each slice's right, as a funnel's stages, how many people it holds and
+  which generation it is.
+
+Names give way to beads and to those figures; the pointer brings a dropped
+name back, as everywhere.
+
+Its living scene: light carried up the attested links, from the older end
+to the newer, and a sheen crossing the glass now and then. It holds still on
+the river's terms: reduced motion, "Cut", the pause, a hidden tab, a river
+off screen, a machine too slow for it.
+
+### 2. The first light theme
+
+`[data-theme="clarity"]` sets `color-scheme: light`: a pale ground, white
+cards, dark teal text, the orange accent of the reference. It carries the
+kit (Canopée's furniture), its round (10 px) and tempo, and lighter
+shadows: the kit's are drawn for a dark ground and would be bruises on a
+white one.
+
+It is measured as every theme is (`every_theme_reads`): the tightest pair is
+a control's edge on the sunken surface, 3.5:1; the orange is dark enough to
+carry white text (5.7:1) and to be a link on any surface.
+
+A reader chooses it like any other theme; the operating system's light or
+dark preference still has no say.
+
+### 3. Photographs
+
+Two, made in Canva from the references and exported at native size (pages
+12 and 13 of the theme visuals design): a glass funnel of stacked rings,
+blue to pink, on white, behind the overview's headline ("Every generation
+is a ring. Every family, a funnel."); translucent ribbons with orange beads
+of light for the last band.
+
+## Consequences
+
+- Five themes, one light. ADR 0008's "every theme is dark" no longer holds;
+  its reasons (one ground to measure, no flash) are kept: the theme is
+  still rendered server-side, and its palette is measured like the others.
+- Any part of the interface that assumed a dark ground shows under
+  Clarity first; the kit's shadows were the one found, and are overridden.
+- Adding a view still takes ADR 0007's four things.
+
+## Alternatives considered
+
+- **A flat funnel chart, trapezoids without depth.** Rejected: the
+  reference is glossy and the request a cone; a flat chart reads as a
+  report, not as a place to travel.
+- **The oldest at the mouth.** Rejected: the operator's words put the
+  oldest below and the newest above, and the mouth above.

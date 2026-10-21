@@ -6,16 +6,73 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Canopée, the reference theme, and a river that reads like a landscape. Two
-more themes, Fusion and Galaxy, each draw the landing page their own way: a
-living tree and a solar system. These three are now the only themes. Nothing
+Canopée, the reference theme, and a river that reads like a landscape. Four
+more themes draw the landing page their own way: Fusion a living tree,
+Galaxy a solar system, Summit an ascent, and Clarity, the first light theme,
+a funnel. These five are now the only themes. The administration becomes a
+console of five rooms, and visitors may open accounts and sign in with a
+service when the administrator allows it. Nothing
 about the AXGF file changes. The river's geometry, its layout and everything
 the server sends for it (SVG and payload) are byte for byte what they were,
 under every theme. docs/adr/0004 records the decisions behind Canopée and
 the river, docs/adr/0006 the logo's, docs/adr/0007 the two views', and
-docs/adr/0008 why ten themes were retired.
+docs/adr/0008 why ten themes were retired, docs/adr/0010 and 0013 Summit's
+and Clarity's, docs/adr/0011 the console's and docs/adr/0012 the ways in.
 
 ### Added
+
+**The administration console** (docs/adr/0011): five rooms behind one strip,
+for administrators.
+
+- **Overview**: a tile per room, each its first answer.
+- **AXGF bundle**: the bundle's conformity to AXGF 1.1 (format, manifest,
+  validation, payloads, the accounts' binding, the living in public, special
+  categories, quality, size), each finding green, warning or critical with
+  its plan; the open anomalies per rule; the diagnostics and the facts. The
+  export moved here, raw or **encrypted to an OpenPGP key** (`.axgf.gpg`,
+  AES-256; RSA under 2048 bits refused, the FIPS-approved set named;
+  checked against GnuPG 2.4.4).
+- **Infrastructure**: eighteen checks run on every visit — transport,
+  forwarded addresses, cross-site posts, sign-in services, administrators,
+  the emergency token, registration, failed sign-ins, bundle, cache,
+  backups, disk, growth, memory, version, upgrades, sandbox, clock — each
+  with its mitigation plan, and as JSON for a monitor
+  (`/admin/infrastructure.json`); the version against the published
+  releases, with a button that asks a root helper to install another
+  (backup, checksum, health check and rollback as `--upgrade` does);
+  storage (the partition, what the site keeps, growth, days of room,
+  backups) and computing (system, processor, load, memory, the service's
+  ceiling, the sandbox).
+- **Accounts**: roles at a glance, how each account signs in, and the
+  registration policy.
+- **Connectivity**: the public address, the sign-in rules and the services.
+
+**Ways in** (docs/adr/0012):
+
+- `/register`, under the administrator's rule: administrators only (the
+  default), with the family's secret, or open. A visitor's account is a
+  member's. The form takes no address.
+- **Sign in with Google, Microsoft, GitHub or any OpenID Connect provider**
+  (authorization code, PKCE, state, nonce), on the sign-in and registration
+  pages. A verified address links the account an administrator created with
+  it, so a relative signs in in one click with no registration at all.
+- Rules for everyone, administrators included: passwords for everyone, for
+  everyone but administrators, or for nobody; linking by verified address;
+  allowed domains. A rule that would leave no administrator a way in is
+  refused.
+
+**Clarity, a fifth theme, light** (docs/adr/0013), from a glossy funnel
+chart and an administration dashboard on white: the family as an inverted
+cone of glass slices, one per generation, the oldest at the narrow end and
+the newest at the mouth, each slice counting its people; dark teal and
+orange on white; two photographs made in Canva; its words in eleven
+languages. Its tightest contrast is 3.5:1, a control's edge on the sunken
+surface.
+
+**`bootstrap.sh`**: downloads a private repository's releases through the
+API with a token (`AXGF_CMS_GITHUB_TOKEN` or `/etc/axgf-cms/github-token`,
+never printed); installs the upgrade helper, and removes it on
+`--uninstall`. **`axgf-cms releases`** fetches the list of releases.
 
 **Canopée, the new default theme.** It has a forest-green ground and a lime
 accent, after the Zenze and Selva Verde references, which were cut apart and
@@ -299,6 +356,13 @@ is out.
   centre's 30; they are now 14 and 18, as at 1280.
 
 ### Fixed
+
+- `bootstrap.sh --uninstall` on a machine with no backup archive ended under
+  `pipefail` after removing everything and before saying where the data is.
+- The sign-in page showed the edit band ("edit mode") to a visitor nobody had
+  signed in.
+- Every form posted from another site is refused (`Origin`, else `Referer`),
+  and a page served to a signed-in reader is not cached.
 
 - **The pictures were soft.** They are re-made at full size (1680 and 1536
   pixels wide) and sharpened once. The river's ground was so dark under its

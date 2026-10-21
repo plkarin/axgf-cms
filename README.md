@@ -42,8 +42,8 @@ and just want to look at it, skip to
 - **Your family is one file that you own.** People, relationships, dates,
   sources, scanned certificates and photographs all live in `family.axgf`. It
   is an ordinary ZIP of JSON in an [open format](https://github.com/plkarin/axgf-spec),
-  so it still opens long after this program is gone. **Admin → Export**
-  downloads it at any time.
+  so it still opens long after this program is gone. **Admin → AXGF bundle**
+  downloads it at any time, as it is or encrypted to an OpenPGP key.
 - **Doubt is part of the record.** Every fact and every parent–child link
   carries how sure it is. The site draws it everywhere: the river's lines are
   solid, dashed or dotted, the tree's cards carry a certainty mark, and every
@@ -220,7 +220,7 @@ evidence. In the archive, each one is a Document that says what it is
 
 [![The overview page under the three themes that carry their own furniture. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
-There are four themes.
+There are five themes.
 
 - **Canopy** (*Canopée*, the default from 0.5.0) is a dark forest green with
   the gold of the logo.
@@ -228,19 +228,23 @@ There are four themes.
   family as a tree.
 - **Galaxy** is deep space, navy and violet, and draws it as a solar system.
 - **Summit** is a mountain at sunrise, night navy and the gold of first
-  light. It draws the family as an ascent: the ancestors up the mountain,
-  the descendants in the valley. The further back the person you stand on
-  was born, the further the snow comes down, and the sun rises as you
+  light. It draws the family as an ascent: the ancestors in the valley, the
+  descendants up toward the summit. The more recently the person you stand
+  on was born, the further the snow comes down, and the sun rises as you
   travel.
+- **Clarity** is light: white, dark teal and orange, as an administration
+  dashboard. It draws the family as a funnel of glass slices, one per
+  generation, the oldest at the narrow end and the newest at the mouth,
+  each slice saying how many people it holds.
 
 Each carries its own buttons, motion and photographs, and every page follows
 it, down to the words: under Fusion the overview reads "Every life is a
 leaf. Every family, a tree."
 
-All four are dark. None is built for high contrast or for colour
-blindness. Certainty never rests on colour alone, though: a bar's length, a
-pie and the printed percentage carry it under every theme
-([why there are three](docs/adr/0008-three-themes.md)).
+Four are dark and Clarity is light. None is built for high contrast or for
+colour blindness. Certainty never rests on colour alone, though: a bar's
+length, a pie and the printed percentage carry it under every theme
+([why these themes](docs/adr/0008-three-themes.md)).
 
 Three styles set the density:
 
@@ -270,7 +274,13 @@ ten of the themes.
 - the Fusion and Galaxy themes, with the family as a living tree and as a
   solar system;
 - the Summit theme, with the family as an ascent at sunrise;
-- four themes in all (the ten earlier ones are retired);
+- the Clarity theme, light, with the family as a funnel;
+- five themes in all (the ten earlier ones are retired);
+- an administration console: the bundle's conformity and its export, raw or
+  encrypted; the infrastructure's health, version and upgrades, storage and
+  computing; the accounts; and Connectivity;
+- registration by visitors under the administrator's rule, and sign-in with
+  Google, Microsoft, GitHub or any OpenID Connect provider;
 - portraits reworked by an AI, beside the face, for signed-in members;
 - the portrait beside the river;
 - the three ways in;
@@ -359,8 +369,11 @@ journalctl -u axgf-cms -f           # what it is doing
 systemctl list-timers 'axgf-cms*'   # when the next backup and check run
 ```
 
-Relatives get their accounts from **Admin → Accounts**; there is no
-self-registration. There are three roles: a **viewer** reads, a
+Relatives get their accounts from **Admin → Accounts**, or open one
+themselves if you allow it there: freely, only with the family's secret, or
+not at all (the default). With a sign-in service set up under **Admin →
+Connectivity**, a relative whose address you entered signs in with Google in
+one click. There are three roles: a **viewer** reads, a
 **contributor** also adds and corrects (optionally within one branch of the
 family), and an **admin** also manages accounts, deletes, deduplicates and
 exports. [docs/FAMILY.md](docs/FAMILY.md) is a guide you can send them.
@@ -381,7 +394,7 @@ Everything else an operator needs is in [docs/OPERATOR.md](docs/OPERATOR.md).
 source, scanned certificate and photograph, in one file. It is an ordinary ZIP
 of JSON files with the attachments inside, so you can copy it, keep it on a
 USB stick, or open it with any unzip tool, with or without this program. It is
-yours: **Admin → Export** downloads it at any time.
+yours: **Admin → AXGF bundle** downloads it at any time.
 
 The accounts and the edit history are deliberately *not* inside it. The family
 file is made to be copied and sent to people; password hashes and a record of

@@ -4095,3 +4095,7 @@ view-funnel-still = Detener el embudo
 view-funnel-name = Embudo
 view-funnel-legend = Cómo leer el embudo
 view-funnel-search-hint = Intro los trae al frente; Mayús+Intro abre su ficha.
+bundle-binding-unnamed = un archivo sin nombre
+bundle-binding-created = un archivo creado el { $date }
+bundle-binding-named = «{ $family }»
+bundle-binding-named-created = «{ $family }», creado el { $date }

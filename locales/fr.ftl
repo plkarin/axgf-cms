@@ -4080,3 +4080,7 @@ view-funnel-still = Figer l’entonnoir
 view-funnel-name = Entonnoir
 view-funnel-legend = Comment lire l’entonnoir
 view-funnel-search-hint = Entrée les amène au premier plan ; Maj+Entrée ouvre leur fiche.
+bundle-binding-unnamed = une archive sans nom
+bundle-binding-created = une archive créée le { $date }
+bundle-binding-named = « { $family } »
+bundle-binding-named-created = « { $family } », créée le { $date }

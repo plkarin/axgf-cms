@@ -609,7 +609,9 @@ impl AppState {
             let acl = crate::acl::Acl::load(&acl_path)?;
             match acl.check_binding(flat.get("manifest"), Some(&bundle_sha)) {
                 crate::acl::Binding::Ok => {}
-                crate::acl::Binding::Mismatch { expected, found } => {
+                crate::acl::Binding::Mismatch {
+                    expected, found, ..
+                } => {
                     tracing::warn!(
                         acl = %acl_path.display(),
                         "the ACL was created for {expected} but this bundle is {found}. \

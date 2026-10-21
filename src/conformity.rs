@@ -187,9 +187,9 @@ pub fn check(flat: &Value, cx: &Context) -> Vec<Item> {
     let item = Item::new("binding", "integrity", "bundle-check-binding-title");
     out.push(match &cx.binding {
         crate::acl::Binding::Ok => item.ok("bundle-check-binding-ok"),
-        crate::acl::Binding::Mismatch { expected, found } => item
-            .text("expected", expected.clone())
-            .text("found", found.clone())
+        crate::acl::Binding::Mismatch { want, got, .. } => item
+            .text("expected", described(cx.lang, want))
+            .text("found", described(cx.lang, got))
             .warn("bundle-check-binding-mismatch", "bundle-check-binding-fix"),
     });
 
@@ -333,5 +333,52 @@ mod tests {
         assert!(!version_lt("1.1", "1.1"));
         assert!(!version_lt("2.0", "1.1"));
         assert!(version_lt("v0.4.3", "v0.5.0"));
+    }
+}
+
+/// A bundle as a finding names it, in the reader's language: its family's
+/// name and the day it was created, whichever it carries.
+fn described(lang: &str, (family, created): &(String, String)) -> String {
+    let date = crate::view::local_datetime(created, lang);
+    match (family.is_empty(), created.is_empty()) {
+        (true, true) => crate::view::t(lang, "bundle-binding-unnamed", &[]),
+        (true, false) => crate::view::t(lang, "bundle-binding-created", &[("date", date.into())]),
+        (false, true) => crate::view::t(
+            lang,
+            "bundle-binding-named",
+            &[("family", family.clone().into())],
+        ),
+        (false, false) => crate::view::t(
+            lang,
+            "bundle-binding-named-created",
+            &[("family", family.clone().into()), ("date", date.into())],
+        ),
+    }
+}
+
+#[cfg(test)]
+mod described_tests {
+    use super::described;
+
+    #[test]
+    fn a_bundle_is_named_in_the_readers_language() {
+        let both = (
+            "Famille Exemple".to_string(),
+            "2026-08-09T13:15:54Z".to_string(),
+        );
+        let fr = described("fr", &both);
+        // French guillemets hold the name with no-break spaces.
+        assert!(
+            fr.contains("«\u{a0}Famille Exemple\u{a0}»") && fr.contains("créée le"),
+            "{fr}"
+        );
+        assert!(!fr.contains("created") && !fr.contains("T13:15"), "{fr}");
+        let en = described("en", &(String::new(), String::new()));
+        assert_eq!(en, "an unnamed archive");
+        let de = described("de", &(String::new(), "2026-08-24T12:17:36Z".to_string()));
+        assert!(
+            de.starts_with("ein Archiv, angelegt am") && !de.contains("T12"),
+            "{de}"
+        );
     }
 }

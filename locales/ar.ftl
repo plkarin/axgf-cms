@@ -4493,3 +4493,7 @@ view-funnel-still = أوقف حركة القمع
 view-funnel-name = القمع
 view-funnel-legend = كيف تقرأ القمع
 view-funnel-search-hint = يضعه Enter في المقدّمة؛ ويفتح Shift+Enter سجلّه.
+bundle-binding-unnamed = أرشيف بلا اسم
+bundle-binding-created = أرشيف أُنشئ في { $date }
+bundle-binding-named = «{ $family }»
+bundle-binding-named-created = «{ $family }»، أُنشئ في { $date }

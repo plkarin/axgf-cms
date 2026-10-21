@@ -3714,3 +3714,7 @@ view-funnel-still = じょうごを止める
 view-funnel-name = じょうご
 view-funnel-legend = じょうごの読み方
 view-funnel-search-hint = Enter で手前に、Shift+Enter で記録を開きます。
+bundle-binding-unnamed = 名前のないアーカイブ
+bundle-binding-created = { $date } に作成されたアーカイブ
+bundle-binding-named = 「{ $family }」
+bundle-binding-named-created = { $date } に作成された「{ $family }」

@@ -4330,3 +4330,7 @@ view-funnel-still = Остановить воронку
 view-funnel-name = Воронка
 view-funnel-legend = Как читать воронку
 view-funnel-search-hint = Enter выводит человека на передний план; Shift+Enter открывает его запись.
+bundle-binding-unnamed = архив без названия
+bundle-binding-created = архив, созданный { $date }
+bundle-binding-named = «{ $family }»
+bundle-binding-named-created = «{ $family }», созданный { $date }

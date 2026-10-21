@@ -4046,3 +4046,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } Administratoren
     }
 register-password-hint = Mindestens { $min } Zeichen. Ein Satz aus mehreren Wörtern ist leichter zu merken als ein Zeichensalat.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Klarheit
+theme-clarity-note = hell, Weiß und Orange · ein Trichter
+view-funnel-back = Zurück zum Trichter
+view-funnel-open = Den Trichter öffnen
+view-funnel-hero-1 = Jede Generation ist ein Ring.
+view-funnel-hero-2 = Jede Familie ein Trichter.
+view-funnel-cta = Den Trichter erkunden
+view-funnel-cta-detail = Jeder hinzugefügte Name und jede geprüfte Quelle machen den Trichter wahrer für die, die nach uns kommen.
+view-funnel-see = Im Trichter ansehen
+view-funnel-direction = ↓ die Ältesten am schmalen Ende · ↑ die Jüngsten an der Öffnung
+view-funnel-still = Den Trichter anhalten
+view-funnel-name = Trichter
+view-funnel-legend = So liest man den Trichter
+view-funnel-search-hint = Eingabe holt die Person nach vorn; Umschalt+Eingabe öffnet ihren Datensatz.

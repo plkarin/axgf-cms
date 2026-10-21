@@ -459,8 +459,8 @@ fn every_theme_reads() {
         }
     }
     assert_eq!(
-        themes, 5,
-        "Study 06 on :root, and the four themes: canopée, fusion, galaxy, summit"
+        themes, 6,
+        "Study 06 on :root, and the five themes: canopée, fusion, galaxy, summit, clarity"
     );
     assert!(short.is_empty(), "{}", short.join("\n"));
 }

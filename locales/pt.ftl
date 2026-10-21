@@ -4081,3 +4081,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } administradores
     }
 register-password-hint = Pelo menos { $min } caracteres. Uma frase de várias palavras fixa-se melhor do que uma mistura de sinais.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Clareza
+theme-clarity-note = claro, branco e laranja · um funil
+view-funnel-back = Voltar ao funil
+view-funnel-open = Abrir o funil
+view-funnel-hero-1 = Cada geração é um anel.
+view-funnel-hero-2 = Cada família, um funil.
+view-funnel-cta = Explorar o funil
+view-funnel-cta-detail = Cada nome acrescentado e cada fonte verificada tornam o funil mais fiel para quem vier depois.
+view-funnel-see = Ver no funil
+view-funnel-direction = ↓ os mais antigos na ponta estreita · ↑ os mais recentes na boca
+view-funnel-still = Parar o funil
+view-funnel-name = Funil
+view-funnel-legend = Como ler o funil
+view-funnel-search-hint = Enter traz a pessoa para a frente; Shift+Enter abre o registo.

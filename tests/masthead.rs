@@ -110,11 +110,11 @@ fn nothing_in_the_bar_is_coloured() {
             continue;
         }
         const KIT: &str =
-            ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"], [data-theme=\"summit\"])";
+            ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"], [data-theme=\"summit\"], [data-theme=\"clarity\"])";
         let own = |part: &str| {
             let part = part.trim();
             part.starts_with(KIT)
-                || ["canopee", "fusion", "galaxy", "summit"]
+                || ["canopee", "fusion", "galaxy", "summit", "clarity"]
                     .iter()
                     .any(|t| part.starts_with(&format!("[data-theme=\"{t}\"]")))
         };

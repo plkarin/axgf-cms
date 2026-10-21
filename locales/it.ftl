@@ -4079,3 +4079,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } amministratori
     }
 register-password-hint = Almeno { $min } caratteri. Una frase di più parole si ricorda meglio di un guazzabuglio di segni.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Chiarezza
+theme-clarity-note = chiaro, bianco e arancio · un imbuto
+view-funnel-back = Torna all'imbuto
+view-funnel-open = Apri l'imbuto
+view-funnel-hero-1 = Ogni generazione è un anello.
+view-funnel-hero-2 = Ogni famiglia, un imbuto.
+view-funnel-cta = Esplora l'imbuto
+view-funnel-cta-detail = Ogni nome aggiunto e ogni fonte verificata rendono l'imbuto più vero per chi verrà dopo.
+view-funnel-see = Vedi nell'imbuto
+view-funnel-direction = ↓ i più antichi all'estremità stretta · ↑ i più recenti all'imboccatura
+view-funnel-still = Ferma l'imbuto
+view-funnel-name = Imbuto
+view-funnel-legend = Come leggere l'imbuto
+view-funnel-search-hint = Invio li porta in primo piano; Maiusc+Invio apre la loro scheda.

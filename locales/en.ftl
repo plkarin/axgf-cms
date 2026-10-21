@@ -4086,3 +4086,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } administrators
     }
 register-password-hint = At least { $min } characters. A phrase of several words is easier to remember than a jumble.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Clarity
+theme-clarity-note = light, white and orange · a funnel
+view-funnel-back = Back to the funnel
+view-funnel-open = Open the funnel
+view-funnel-hero-1 = Every generation is a ring.
+view-funnel-hero-2 = Every family, a funnel.
+view-funnel-cta = Explore the funnel
+view-funnel-cta-detail = Every name added and every source checked makes the funnel truer for those who come after.
+view-funnel-see = See in the funnel
+view-funnel-direction = ↓ the oldest at the narrow end · ↑ the newest at the mouth
+view-funnel-still = Hold the funnel still
+view-funnel-name = Funnel
+view-funnel-legend = How to read the funnel
+view-funnel-search-hint = Enter brings them to the front; Shift+Enter opens their record.

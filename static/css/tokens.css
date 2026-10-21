@@ -575,3 +575,96 @@
   --sm-camp-gone: #c9d3e2;
   --sm-camp-hidden: #61778f;
 }
+
+/* Clarity (v0.5.0, docs/adr/0013): the first light theme, from the
+   operator's references — an administration dashboard on white, its orange
+   accent and dark teal figures, and a glossy funnel in blue, violet and pink.
+   Measured as every theme is (`every_theme_reads`); the tightest pair is a
+   control's edge on the sunken surface, 3.5:1. */
+[data-theme="clarity"] {
+  color-scheme: light;
+  --surface-page: #f4f6f9;
+  --surface-raised: #ffffff;
+  --border-hairline: #d8dfe7;
+  --border-strong: #6f7f8e;
+  --text-primary: #132230;
+  --text-secondary: #384b5b;
+  --text-tertiary: #536676;
+  --surface-sunken: #eaeef3;
+  --surface-hover: #e2e8ef;
+  --focus-ring: #b83c0a;
+  --accent: #b83c0a;
+  --accent-soft: #fdebe1;
+  --on-accent: #ffffff;
+
+  --conf-certain: #1f7a4d;
+  --conf-high: #2463a6;
+  --conf-medium: #8a4b00;
+  --conf-low: #b42318;
+  --conf-track: #e2e8ef;
+  --danger: #b42318;
+  --warning: #8a4b00;
+
+  --sex-a: #e7f0fb;
+  --sex-a-line: #3d6fa8;
+  --sex-b: #fbeaee;
+  --sex-b-line: #b0566e;
+  --sex-u: #eef1f4;
+  --sex-u-line: #6f7f8e;
+
+  --hue-1: #2563eb;
+  --hue-2: #c2410c;
+  --hue-3: #15803d;
+  --hue-4: #be185d;
+  --hue-5: #7c3aed;
+  --hue-6: #a16207;
+  --hue-7: #0e7490;
+  --hue-8: #b91c1c;
+
+  --shadow-rgb: 19 34 48;
+  --shadow-a: 0.12;
+
+  --wash-1: #f6f8fb;
+  --wash-2: #f3f6f9;
+  --wash-3: #eef2f6;
+  /* No texture: the reference's white is clean. */
+  --wash-texture: none;
+
+  --icon-river: #e0f2f5;
+  --icon-tree: #e3f4ea;
+  --icon-search: #fdebe1;
+  --icon-quality: #fbe7e6;
+  --icon-river-ink: #0e7490;
+  --icon-tree-ink: #15803d;
+  --icon-search-ink: #b83c0a;
+  --icon-quality-ink: #b42318;
+  --glow-rgb: 184 60 10;
+
+  /* The logo in this theme's light (docs/adr/0006 §2): the same drawing on
+     the dashboard's dark teal, the orange for its gold. */
+  --logo-tile: #0f3b47;
+  --logo-deep: #9a3412;
+  --logo-gold: #f08a3c;
+  --logo-light: #fcd9b6;
+
+  /* The funnel (static/clarity.js): its five glass tones from the mouth
+     (blue) to the narrow end (pink), the gloss, the rim, the mesh and the
+     light running up it, the beads of the living, the dead and the hidden,
+     the person at the fixed point, the stage's ground and its figures. */
+  --cl-slice-1: #3b82f6;
+  --cl-slice-2: #6366f1;
+  --cl-slice-3: #8b5cf6;
+  --cl-slice-4: #c254e8;
+  --cl-slice-5: #ec4899;
+  --cl-gloss: #ffffff;
+  --cl-rim: #ffffff;
+  --cl-link: #0f3b47;
+  --cl-link-hot: #f97316;
+  --cl-bead: #ffffff;
+  --cl-living: #ea580c;
+  --cl-gone: #0f3b47;
+  --cl-hidden: #8a99a8;
+  --cl-centre: #b83c0a;
+  --cl-stage: #fbfcfe;
+  --cl-figure: #132230;
+}

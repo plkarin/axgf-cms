@@ -70,7 +70,16 @@ carry white text (5.7:1) and to be a link on any surface.
 A reader chooses it like any other theme; the operating system's light or
 dark preference still has no say.
 
-### 3. Photographs
+### 3. The logo
+
+The same drawing (docs/adr/0006) in Clarity's colours: a white tile, its
+edge a hairline so that it holds its shape on a white ground; the X in the
+funnel's gradient, pink where the sources meet, violet, blue toward the
+descendants — the funnel's own reading, oldest below, newest above; the
+laurels blue. The operator's first look found the first attempt (a dark
+teal tile, an orange X) still read as Canopée's green and gold.
+
+### 4. Photographs
 
 Two, made in Canva from the references and exported at native size (pages
 12 and 13 of the theme visuals design): a glass funnel of stacked rings,

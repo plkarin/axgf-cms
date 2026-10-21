@@ -410,7 +410,7 @@ accounts-roots = { $n ->
        *[other] { $n } racines
     }
 accounts-add = Ajouter un compte
-accounts-no-registration = Il n'y a délibérément ni inscription libre ni système d'invitation. Pour une archive familiale, un administrateur qui connaît tout le monde suffit, et cela supprime entièrement une surface d'abus au lieu d'avoir à la défendre.
+accounts-no-registration = Les visiteurs ne peuvent pas ouvrir de compte eux-mêmes ; l’inscription se règle plus haut. Pour la plupart des familles, un administrateur qui connaît tout le monde suffit.
 accounts-password-hint = Laissez vide et un mot de passe est généré puis affiché une seule fois. Au moins { $min } caractères si vous le définissez vous-même.
 accounts-new-password-placeholder = nouveau mot de passe (vide = inchangé)
 accounts-email = Courriel
@@ -3454,3 +3454,608 @@ edit-avatar-frame = Cadrer le visage
 edit-avatar-upload = Utiliser comme photo de profil
 edit-stale = Quelqu'un d'autre a modifié { $what } depuis l'ouverture de cette page. Rien n'a été enregistré ; tout ce que vous avez saisi est conservé.
 edit-refused = Rien n'a été enregistré : { $reason }
+
+# Administration console (v0.5.0, docs/adr/0011)
+error-cross-site-title = Refusé : envoyé depuis un autre site
+error-cross-site-detail = Ce formulaire vient d’une page d’un autre site, il n’a donc pas été pris en compte. Si vous l’avez envoyé depuis ce site, rechargez la page et renvoyez-le.
+admin-nav-label = Rubriques de l’administration
+admin-nav-overview = Vue d’ensemble
+admin-nav-bundle = Archive AXGF
+admin-nav-infrastructure = Infrastructure
+admin-nav-accounts = Comptes
+admin-nav-connectivity = Connectivité
+
+# Administration console: the AXGF bundle (v0.5.0, docs/adr/0011)
+bundle-title = Archive AXGF
+bundle-lede = L’archive de la famille telle que ce site la tient : { $path }. Ce à quoi elle est conforme, ce qui semble faux, et les deux façons d’en emporter une copie.
+bundle-unset-title = Pas encore de famille.
+bundle-unset-detail = Cette installation tient une archive vide : il n’y a encore rien à vérifier. Mettez-la en route à partir d’une archive, d’un fichier GEDCOM ou de rien.
+bundle-kpi-conformity = Conformité
+bundle-verdict-ok = Conforme
+bundle-verdict-warn = À surveiller
+bundle-verdict-fail = Non conforme
+findings-tally = { $ok } au vert, { $warn ->
+    [one] 1 avertissement
+    *[other] { $warn } avertissements
+    }, { $fail } critique(s)
+bundle-kpi-entities = Entités
+bundle-kpi-entities-note = { $persons ->
+    [one] 1 personne
+    *[other] { $persons } personnes
+    } · { $files ->
+    [one] 1 fichier joint
+    *[other] { $files } fichiers joints
+    }
+bundle-kpi-size = Taille sur le disque
+bundle-kpi-members = { $n ->
+    [one] 1 fichier dans l’archive
+    *[other] { $n } fichiers dans l’archive
+    }
+bundle-kpi-format = Format
+bundle-kpi-format-note = Cette version lit et écrit AXGF { $current }.
+bundle-conformity = Conformité
+bundle-conformity-intro = Neuf vérifications, faites sur l’archive telle qu’elle est maintenant ; aucune ne la modifie. Ouvrez une ligne pour voir quoi faire.
+bundle-area-format = Format
+bundle-area-integrity = Intégrité
+bundle-area-privacy = Vie privée
+bundle-area-content = Contenu
+level-ok = Au vert
+level-warn = Avertissement
+level-fail = Critique
+findings-what-to-do = Quoi faire
+findings-go = Y aller →
+bundle-anomalies = Anomalies
+bundle-anomalies-intro = Ce que trouve la page Qualité des données, règle par règle : encore ouvert, et déjà marqué vérifié.
+bundle-anomalies-rule = Règle
+bundle-anomalies-open = Ouvertes
+bundle-anomalies-checked = Vérifiées
+bundle-anomalies-none = La page Qualité des données ne trouve rien à regarder.
+bundle-diagnostics = Diagnostics du validateur
+bundle-facts = Caractéristiques
+bundle-fact-path = Fichier
+bundle-fact-size = Taille
+bundle-fact-spec = Format
+bundle-fact-schema = Schéma joint
+bundle-fact-none = aucun
+bundle-fact-created = Créée
+bundle-fact-updated = Dernière écriture
+bundle-fact-generator = Écrite par
+bundle-fact-gedcom = Convertie depuis
+bundle-export = Exporter
+bundle-export-raw = L’archive telle quelle (.axgf)
+bundle-export-raw-go = Télécharger l’archive
+bundle-export-sealed = Chiffrée pour une personne (.axgf.gpg)
+bundle-export-sealed-intro = La même archive, sous forme de message OpenPGP que seul le détenteur de la clé privée peut ouvrir. Collez sa clé publique : le texte qui commence par « -----BEGIN PGP PUBLIC KEY BLOCK----- ».
+bundle-export-sealed-go = Télécharger chiffrée
+seal-recipient = Pour
+seal-fingerprint = Empreinte
+seal-algorithm = Algorithmes
+seal-fips-yes = dans l’ensemble approuvé par la FIPS
+seal-fips-no = hors de l’ensemble approuvé par la FIPS
+seal-expires = Expiration de la clé
+seal-never = jamais
+seal-key-label = La clé publique du destinataire
+seal-key-hint = Une clé RSA d’au moins 2048 bits, ou une clé à courbe elliptique. Vérifiez l’empreinte avec son détenteur avant d’envoyer quoi que ce soit.
+seal-remember = Garder cette clé pour la prochaine fois
+seal-check = Lire la clé seulement
+seal-fips-note = L’archive est chiffrée en AES-256 vers la clé du destinataire. Les algorithmes approuvés par la FIPS sont RSA de 3072 bits ou plus et les courbes NIST P-256, P-384 et P-521 : demandez P-384. La bibliothèque utilisée ici n’est pas elle-même un module validé FIPS 140-3.
+seal-decrypt-note = Le destinataire l’ouvre avec GnuPG :
+seal-forget = Oublier la clé gardée
+seal-key-kept = La clé { $fingerprint } est gardée pour le prochain export chiffré.
+seal-error-no-key = Collez d’abord la clé publique du destinataire.
+seal-error-not-a-key = Ce n’est pas une clé publique OpenPGP. Collez le bloc entier, de sa ligne BEGIN à sa ligne END, et jamais une clé privée.
+seal-error-bad-signatures = Les signatures de cette clé ne se vérifient pas : elle a peut-être été modifiée. Demandez-en une copie neuve à son détenteur.
+seal-error-expired = Cette clé, ou chacune de ses clés capables de chiffrer, a expiré. Demandez à son détenteur de la prolonger ou d’en envoyer une nouvelle.
+seal-error-revoked = Son détenteur a révoqué cette clé. Demandez-lui la nouvelle.
+seal-error-no-encryption-key = Cette clé sait signer mais pas chiffrer : elle n’a pas de sous-clé de chiffrement. Demandez-en une à son détenteur (gpg --quick-add-key … encr).
+seal-error-too-weak = Cette clé RSA fait { $bits } bits ; un export en demande au moins { $min }.
+seal-error-unsupported = L’algorithme de cette clé n’est pas utilisé par l’export : clés RSA ou à courbe elliptique seulement.
+seal-error-io = La copie chiffrée n’a pas pu être faite : { $error }
+date-time-utc = { $date } à { $time } UTC
+
+# Administration console: the bundle's conformity (v0.5.0, docs/adr/0011)
+bundle-check-format-title = Version du format
+bundle-check-format-ok = AXGF { $version }, la version que celle-ci lit et écrit.
+bundle-check-format-missing = Le manifeste ne nomme aucune version d’AXGF.
+bundle-check-format-missing-fix = L’archive n’a pas été écrite par un outil AXGF, ou elle a été abîmée. Restaurez la dernière sauvegarde qui validait (axgf-cms restore).
+bundle-check-format-older = Écrite en AXGF { $version } ; le prochain enregistrement l’écrira en AXGF { $current }.
+bundle-check-format-older-fix = Rien à faire : la prochaine modification la réécrit. Gardez une copie de l’ancien fichier si un autre programme ne lit encore que la { $version }.
+bundle-check-format-newer = Écrite en AXGF { $version }, plus récente que la { $current } de cette version : enregistrer pourrait perdre ce qu’elle ne comprend pas.
+bundle-check-format-newer-fix = Mettez axgf-cms à jour vers une version qui lit AXGF { $version } avant toute modification (Infrastructure, Version).
+bundle-check-manifest-title = Les comptes du manifeste
+bundle-check-manifest-ok = Les comptes du manifeste correspondent au contenu de l’archive.
+bundle-check-manifest-drift = Le manifeste déclare { $declared } là où l’archive en tient { $actual } ({ $collection }).
+bundle-check-manifest-fix = Rien n’est perdu : les comptes sont réécrits au prochain enregistrement. Si cette archive vient d’ailleurs, vérifiez qu’elle a été copiée en entier.
+bundle-check-validation-title = Validation
+bundle-check-validation-ok = Le validateur de la bibliothèque ne trouve rien d’anormal.
+bundle-check-validation-errors = { $errors ->
+    [one] 1 erreur
+    *[other] { $errors } erreurs
+    } : l’archive ne valide pas.
+bundle-check-validation-errors-fix = Chaque diagnostic ci-dessous nomme la fiche et le champ. Corrigez la fiche, ou restaurez la dernière sauvegarde qui validait.
+bundle-check-validation-warnings = { $warnings ->
+    [one] 1 avertissement
+    *[other] { $warnings } avertissements
+    }. Ils ne bloquent jamais un enregistrement ; chacun signale que quelque chose cloche peut-être.
+bundle-check-validation-warnings-fix = Lisez-les ci-dessous. La plupart sont des renvois à des fiches absentes de l’archive, qu’un import GEDCOM laisse souvent.
+bundle-check-payloads-title = Fichiers joints
+bundle-check-payloads-none = Aucun fichier joint.
+bundle-check-payloads-ok = { $declared ->
+    [one] Le fichier est présent.
+    *[other] Les { $declared } fichiers sont tous présents.
+    }
+bundle-check-payloads-missing = { $missing } fichiers joints sur { $declared } manquent dans le cache.
+bundle-check-payloads-fix = Le prochain enregistrement reconstruit le cache à partir de l’archive. S’ils manquent dans l’archive elle-même, restaurez-les depuis une sauvegarde.
+bundle-check-binding-title = Comptes et archive
+bundle-check-binding-ok = Le fichier des comptes a été créé pour cette famille.
+bundle-check-binding-mismatch = Le fichier des comptes a été créé pour { $expected } ; cette archive est { $found }.
+bundle-check-binding-fix = Si l’archive a été restaurée ou renommée exprès, rien à faire. Sinon, les comptes d’une famille s’appliquent à l’arbre d’une autre : remettez le bon fichier .acl à côté.
+bundle-check-living-title = Les vivants, en public
+bundle-check-living-ok = Aucune personne enregistrée comme vivante n’est visible des visiteurs.
+bundle-check-living-public = { $n ->
+    [one] 1 personne enregistrée comme vivante est marquée
+    *[other] { $n } personnes enregistrées comme vivantes sont marquées
+    } publiques : tout visiteur lit leur fiche.
+bundle-check-living-fix = Sauf s’ils l’ont accepté, réglez leur visibilité sur membres (Modifier, Identité).
+bundle-check-special-title = Catégories particulières
+bundle-check-special-none = Aucune fiche ne contient de données de santé, biométriques, génomiques, pénales ou comportementales.
+bundle-check-special-some = { $n ->
+    [one] 1 fiche contient
+    *[other] { $n } fiches contiennent
+    } des données de santé, biométriques, génomiques, pénales ou comportementales. Pour les vivants, elles restent aux administrateurs, quoi que dise la fiche.
+bundle-check-quality-title = Qualité des données
+bundle-check-quality-ok = Rien à regarder.
+bundle-check-quality-open = { $n ->
+    [one] 1 chose à regarder
+    *[other] { $n } choses à regarder
+    }, dans { $groups ->
+    [one] 1 groupe
+    *[other] { $groups } groupes
+    }.
+bundle-check-quality-fix = Ouvrez la page Qualité des données : chaque ligne nomme la fiche et ce qui semble faux. Corrigez-la, ou marquez-la vérifiée.
+bundle-check-size-title = Taille
+bundle-check-size-ok = { $size }, sous les { $warn } au-delà desquels cette page avertit.
+bundle-check-size-heavy = { $size }, au-delà de { $warn }.
+bundle-check-size-fix = L’archive est à la famille, libre de grandir. Surveillez le disque et les sauvegardes (Infrastructure, Volumes), et relevez --size-warn-mb si cette taille est attendue.
+seal-algorithm-value = { $key } · AES-256
+seal-key-placeholder = -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+# Administration console: the infrastructure's checks (v0.5.0, docs/adr/0011 §3)
+infra-area-security = Sécurité
+infra-area-access = Accès
+infra-area-data = Données
+infra-area-capacity = Capacité
+infra-area-release = Version
+infra-area-platform = Plateforme
+infra-verdict-ok = En bonne santé
+infra-verdict-warn = À surveiller
+infra-verdict-fail = Critique
+duration-days = { $n ->
+    [one] { $n } jour
+    [many] { $n } jours
+    *[other] { $n } jours
+    }
+duration-hours = { $n ->
+    [one] { $n } heure
+    [many] { $n } heures
+    *[other] { $n } heures
+    }
+duration-minutes = { $n ->
+    [one] { $n } minute
+    [many] { $n } minutes
+    *[other] { $n } minutes
+    }
+infra-transport-title = Comment le site est joint
+infra-transport-ok = Cette page est arrivée en HTTPS.
+infra-transport-exposed = Cette page est arrivée en clair, et le serveur écoute sur { $bind }, au-delà de cette machine : mots de passe et cookies de session traversent le réseau en clair.
+infra-transport-exposed-fix = Placez un proxy inverse HTTPS (Caddy, nginx, HAProxy) devant, et liez de nouveau le service à 127.0.0.1 : relancez bootstrap.sh avec --bind 127.0.0.1:8080, ou retirez le drop-in qui l’a élargi.
+infra-transport-plain = Cette page est arrivée en clair, d’un serveur qui écoute sur { $bind }. C’est acceptable sur cette machine seule, et seulement là.
+infra-transport-plain-fix = Passez par l’adresse HTTPS du site. Si un proxy termine bien le TLS, faites-lui envoyer X-Forwarded-Proto: https pour que ce serveur le sache.
+infra-forwarded-title = Adresses transmises
+infra-forwarded-ok = Le serveur n’écoute que sur cette machine : l’adresse du client que transmet un proxy est fiable pour ralentir les échecs de connexion répétés.
+infra-forwarded-exposed = Le serveur est joignable directement, et il fait confiance à l’en-tête X-Forwarded-For : un client qui pose lui-même cet en-tête échappe au ralentissement après des échecs de connexion.
+infra-forwarded-fix = Liez le service à 127.0.0.1 derrière le proxy, ou filtrez le port pour que seul le proxy l’atteigne.
+infra-cross-site-title = Envois depuis d’autres sites
+infra-cross-site-ok = Aucun formulaire n’a été envoyé ici depuis un autre site au cours du dernier jour.
+infra-cross-site-refused = { $n ->
+    [one] Un formulaire envoyé depuis un autre site a été refusé au cours du dernier jour.
+    [many] { $n } formulaires envoyés depuis d’autres sites ont été refusés au cours du dernier jour.
+    *[other] { $n } formulaires envoyés depuis d’autres sites ont été refusés au cours du dernier jour.
+    }
+infra-cross-site-fix = Rien n’est passé. Si ces refus sont les vôtres — le même site joint par une seconde adresse —, réglez l’adresse publique dans Connectivité, ou n’utilisez que celle-là.
+infra-sso-title = Services de connexion
+infra-sso-none = Aucun service de connexion n’est activé ; les comptes se connectent avec un mot de passe.
+infra-sso-ok = { $n ->
+    [one] Un service de connexion est activé, et l’adresse publique est en HTTPS.
+    [many] { $n } services de connexion sont activés, et l’adresse publique est en HTTPS.
+    *[other] { $n } services de connexion sont activés, et l’adresse publique est en HTTPS.
+    }
+infra-sso-no-https = Un service de connexion est activé, mais l’adresse publique n’est pas en HTTPS : les fournisseurs refusent d’envoyer leur réponse à une adresse en clair, et la connexion échoue.
+infra-sso-fix = Dans Connectivité, réglez l’adresse publique sur l’adresse https:// qu’utilisent les lecteurs.
+infra-admins-title = Administrateurs
+infra-admins-none = Aucun compte actif ne peut administrer ce site. Seul le jeton d’urgence le peut, et seulement tant qu’il est défini.
+infra-admins-none-fix = Connectez-vous avec le jeton d’urgence, créez un administrateur dans Comptes, puis retirez le jeton.
+infra-admins-one = Un seul administrateur. S’il est absent ou perd son mot de passe, personne ne peut gérer le site.
+infra-admins-one-fix = Donnez le rôle d’administrateur à une seconde personne de confiance, dans Comptes.
+infra-admins-ok = { $n ->
+    [one] { $n } administrateur peut se connecter.
+    [many] { $n } administrateurs peuvent se connecter.
+    *[other] { $n } administrateurs peuvent se connecter.
+    }
+infra-token-title = Jeton d’urgence
+infra-token-generated = Aucun jeton d’urgence n’est défini.
+infra-token-only-way = Un jeton d’urgence est défini et, sans compte administrateur, c’est la seule porte d’entrée. Gardez-le jusqu’à ce qu’un administrateur existe.
+infra-token-standing = Un jeton d’urgence est toujours défini. Il ouvre la session par-dessus tout compte et toute permission.
+infra-token-fix = Retirez AXGF_CMS_ADMIN_TOKEN du fichier d’environnement du service, puis redémarrez le service.
+infra-registration-title = Inscription libre
+infra-registration-closed = Les visiteurs ne peuvent pas créer de compte ; seul un administrateur le peut.
+infra-registration-secret = Les visiteurs peuvent créer un compte membre s’ils connaissent le secret d’inscription.
+infra-registration-open = N’importe quel visiteur peut créer un compte membre.
+infra-registration-open-fix = Cela convient à un site voulu ouvert. Sinon, exigez le secret d’inscription, ou fermez l’inscription, dans Comptes.
+infra-failures-title = Échecs de connexion
+infra-failures-ok = { $n ->
+    [one] { $n } échec de connexion au cours du dernier jour.
+    [many] { $n } échecs de connexion au cours du dernier jour.
+    *[other] { $n } échecs de connexion au cours du dernier jour.
+    }
+infra-failures-many = { $n ->
+    [one] { $n } échec de connexion au cours du dernier jour : quelqu’un essaie peut-être de deviner des mots de passe.
+    [many] { $n } échecs de connexion au cours du dernier jour : quelqu’un essaie peut-être de deviner des mots de passe.
+    *[other] { $n } échecs de connexion au cours du dernier jour : quelqu’un essaie peut-être de deviner des mots de passe.
+    }
+infra-failures-fix = Chaque adresse est déjà ralentie après des échecs répétés. Si le compte continue de grimper, trouvez d’où viennent les tentatives dans le journal du proxy et bloquez-les là, et assurez-vous que chaque administrateur a un long mot de passe ou se connecte par un service de connexion.
+infra-health-bundle-title = Données de la famille
+infra-health-bundle-ok = L’archive s’ouvre et passe la validation.
+infra-health-bundle-fix = Ouvrez la page Archive AXGF pour voir les erreurs et corrigez-les, ou restaurez la dernière sauvegarde qui validait (axgf-cms restore).
+infra-health-cache-title = Cache des pièces jointes
+infra-health-cache-ok = Chaque fichier joint est dans le cache.
+infra-health-cache-fix = Enregistrez une fiche une fois : l’enregistrement reconstruit le cache. Les fichiers encore absents ensuite manquent dans l’archive elle-même.
+infra-health-backup-title = Sauvegardes
+infra-health-backup-ok = { $count ->
+    [one] Une sauvegarde récente existe ; { $count } archive est conservée.
+    [many] Une sauvegarde récente existe ; { $count } archives sont conservées.
+    *[other] Une sauvegarde récente existe ; { $count } archives sont conservées.
+    }
+infra-health-backup-fix = Sans répertoire de sauvegarde, relancez bootstrap.sh avec --backup-dir. Avec un, vérifiez le minuteur (systemctl status axgf-cms-backup.timer) et son journal (journalctl -u axgf-cms-backup).
+infra-disk-title = Espace disque
+infra-disk-ok = { $free } libres sur { $total } ({ $percent } % libres).
+infra-disk-fix = Libérez de la place sur la partition qui contient le répertoire des données — anciennes sauvegardes aussi conservées ailleurs, journaux, fichiers d’autres programmes —, ou déplacez les données sur un disque plus grand.
+infra-growth-title = Croissance
+infra-growth-ok = { $days ->
+    [one] Croît d’environ { $rate } par mois ; de la place pour encore { $days } jour à ce rythme.
+    [many] Croît d’environ { $rate } par mois ; de la place pour encore { $days } jours à ce rythme.
+    *[other] Croît d’environ { $rate } par mois ; de la place pour encore { $days } jours à ce rythme.
+    }
+infra-growth-soon = { $days ->
+    [one] Croît d’environ { $rate } par mois : à ce rythme, le disque est plein dans { $days } jour.
+    [many] Croît d’environ { $rate } par mois : à ce rythme, le disque est plein dans { $days } jours.
+    *[other] Croît d’environ { $rate } par mois : à ce rythme, le disque est plein dans { $days } jours.
+    }
+infra-growth-fix = Prévoyez la place dès maintenant : un disque plus grand, moins de sauvegardes sur le même disque, ou des sauvegardes déplacées sur un autre.
+infra-growth-flat = Les sauvegardes n’ont pas grossi ; il n’y a rien à prévoir.
+infra-growth-unknown = Pas encore assez de sauvegardes pour mesurer la croissance : il faut au moins un jour entre la plus ancienne et la plus récente.
+infra-memory-title = Mémoire
+infra-memory-ok = { $used } utilisés sur le plafond de { $max } du service ({ $percent } %).
+infra-memory-high = { $used } utilisés sur le plafond de { $max } du service ({ $percent } %) : près du seuil où le système arrête le service.
+infra-memory-fix = Relevez MemoryMax= dans un drop-in pour axgf-cms.service, ou trouvez ce qui retient la mémoire — un très gros import, une grosse pièce jointe — et redémarrez le service.
+infra-memory-unlimited = { $used } utilisés, sans plafond fixé pour le service.
+infra-version-title = Version
+infra-version-ok = v{ $current } est la version publiée la plus récente.
+infra-version-behind = v{ $current } tourne ; { $latest } est publiée.
+infra-version-behind-fix = Lisez les notes de version, puis mettez à jour depuis la section Version ci-dessous. Une sauvegarde est faite d’abord, et la version précédente revient d’elle-même si la nouvelle ne démarre pas.
+infra-version-unknown = On ne sait pas s’il existe une version plus récente : la liste des versions n’a pas été récupérée.
+infra-version-unknown-fix = Utilisez « Rechercher de nouvelles versions » ci-dessous. Le bac à sable de production ne peut pas joindre GitHub lui-même ; une fois l’assistant de mise à jour installé, c’est lui qui récupère la liste chaque jour.
+infra-version-stale = { $days ->
+    [one] La liste des versions a été récupérée il y a { $days } jour.
+    [many] La liste des versions a été récupérée il y a { $days } jours.
+    *[other] La liste des versions a été récupérée il y a { $days } jours.
+    }
+infra-upgrades-title = Mises à jour
+infra-upgrades-ok = L’assistant de mise à jour est installé : le bouton ci-dessous peut changer de version.
+infra-upgrades-manual = L’assistant de mise à jour n’est pas installé : la version se change à la main sur le serveur.
+infra-upgrades-fix = Lancez une fois le bootstrap.sh actuel en root : il installe l’assistant avec le service.
+infra-sandbox-title = Bac à sable
+infra-sandbox-ok = Le processus tourne avec no-new-privileges et un filtre d’appels système.
+infra-sandbox-unknown = Ce système n’indique pas le bac à sable du processus.
+infra-sandbox-off = Le processus tourne sans une partie de son bac à sable : no-new-privileges ou le filtre d’appels système est désactivé.
+infra-sandbox-fix = Faites tourner le service depuis l’unité qu’écrit bootstrap.sh, sans drop-in qui l’assouplisse. Sur une machine de développement, c’est attendu.
+infra-clock-title = Horloge
+infra-clock-ok = L’horloge système indique { $year }, ce qui est plausible.
+infra-clock-wrong = L’horloge système indique { $year } : dates, âges des sauvegardes et sessions sont tous faux.
+infra-clock-fix = Activez la synchronisation de l’heure : timedatectl set-ntp true.
+
+# Administration console: the Infrastructure page (v0.5.0, docs/adr/0011)
+infra-title = Infrastructure
+infra-lede = La machine sur laquelle tourne ce site, vérifiée à chaque ouverture de cette page : comment on la joint, qui détient les clés, si les données sont à l’abri et tiennent encore, quelle version tourne, et le bac à sable qui l’entoure.
+infra-kpi-health = Santé
+infra-kpi-version = Version
+infra-kpi-version-newer = { $version } disponible
+infra-kpi-version-current = À jour
+infra-kpi-version-unknown = Pas encore vérifiée
+infra-kpi-disk = Espace libre
+infra-kpi-disk-note = { $percent } % de { $total } utilisés
+infra-kpi-compute = Machine
+infra-kpi-cpus = { $n ->
+    [one] { $n } cœur
+    [many] { $n } cœurs
+    *[other] { $n } cœurs
+    }
+infra-kpi-load = Charge { $load }
+infra-kpi-rss = { $size } utilisés
+infra-unknown = Inconnu
+infra-health = Santé
+infra-health-intro = Vert, tout va bien ; un avertissement mérite un coup d’œil ; critique demande une action tout de suite. Chaque constat s’ouvre sur ce qu’il faut faire.
+infra-json = Les mêmes vérifications en JSON, pour une supervision
+infra-version = Version
+infra-version-running = En service
+infra-version-latest = Dernière publiée
+infra-version-up-to-date = à jour
+infra-version-checked = Liste récupérée
+infra-version-never = jamais
+infra-source-direct = par ce serveur
+infra-source-helper = par l’assistant de mise à jour
+infra-version-token = Dépôt privé
+infra-token-env-set = Un jeton GitHub est défini pour lister et télécharger les versions.
+infra-token-env-unset = Aucun jeton. Si le dépôt est privé, placez-en un dans { $name }, lisible par root seul : l’assistant de mise à jour le lit là.
+infra-releases-error = La dernière tentative de récupération de la liste a échoué :
+infra-releases-refresh = Rechercher de nouvelles versions
+infra-releases-asked = L’assistant de mise à jour a été prié de récupérer une liste fraîche. Rechargez cette page dans une minute.
+infra-releases-not-asked = La demande n’a pas pu être écrite : { $error }
+infra-upgrade-status-running = Passage de { $from } à { $to } en cours…
+infra-upgrade-status-succeeded = Passée de { $from } à { $to }.
+infra-upgrade-status-failed = Le passage de { $from } à { $to } a échoué ; { $from } est toujours la version en service.
+infra-upgrade-status-refused = L’assistant de mise à jour a refusé le passage à { $to }.
+infra-upgrade-log = Sortie de l’assistant
+infra-upgrade-pending = { $by } a demandé { $version } le { $at } ; l’assistant de mise à jour ne l’a pas encore pris en charge.
+infra-releases = Versions publiées
+infra-releases-tag = Version
+infra-releases-published = Publiée
+infra-releases-relation = Par rapport à celle-ci
+infra-releases-notes = Notes de version
+infra-releases-open = Lire
+infra-relation-newer = plus récente
+infra-relation-current = celle-ci
+infra-relation-older = plus ancienne
+infra-prerelease = version candidate
+infra-releases-none = Pas encore de liste des versions.
+infra-upgrade = Changer de version
+infra-upgrade-intro = Le bouton s’adresse à l’assistant de mise à jour, qui tourne en root hors du bac à sable de ce site. Il fait une sauvegarde, installe la version après en avoir vérifié la somme de contrôle, redémarre le service et le vérifie ; si la nouvelle version ne répond pas, la précédente est remise en place.
+infra-upgrade-version = Version à installer
+infra-upgrade-confirm = Pour revenir à une version plus ancienne, retapez son étiquette
+infra-upgrade-confirm-hint = Inutile pour une version plus récente. Une version plus ancienne peut ne pas lire des données écrites par une plus récente : lisez d’abord ses notes.
+infra-upgrade-go = Installer cette version
+infra-upgrade-safety = Le site est indisponible quelques secondes pendant le redémarrage du service.
+infra-upgrade-manual = L’assistant de mise à jour n’est pas installé sur ce serveur : cette page ne peut pas changer de version. En root, sur le serveur :
+infra-upgrade-manual-helper = Lancer une fois le bootstrap.sh actuel installe l’assistant, et le bouton fonctionne ici à partir de là.
+infra-upgrade-asked = { $version } a été demandée. L’assistant de mise à jour la prend en charge en quelques secondes ; cette page indique comment cela s’est passé.
+infra-upgrade-no-helper = L’assistant de mise à jour n’est pas installé : { $version } ne peut pas être installée d’ici.
+infra-upgrade-unknown-version = { $version } n’est pas dans la liste des versions publiées.
+infra-upgrade-same-version = { $version } est la version qui tourne déjà.
+infra-upgrade-confirm-older = { $version } est plus ancienne que la version en service. Tapez son étiquette dans le champ de confirmation pour y revenir.
+infra-volumes = Stockage
+infra-volumes-intro = La partition qui contient le répertoire des données ({ $path }), et ce que ce site y conserve.
+infra-volumes-partition = Partition
+infra-of = { $used } sur { $total }
+infra-volumes-ours = Ce site
+infra-volumes-breakdown = Ce que ce site conserve
+infra-part-bundle = Archive de la famille
+infra-part-cache = Cache des pièces jointes
+infra-part-backups = Sauvegardes
+infra-part-binary = Programme
+infra-part-journal = Journal des modifications
+infra-part-accounts = Comptes et réglages
+infra-files = { $n ->
+    [one] { $n } fichier
+    [many] { $n } fichiers
+    *[other] { $n } fichiers
+    }
+infra-growth = Croissance
+infra-growth-month = Par mois
+infra-growth-not-enough = pas assez de sauvegardes pour le dire
+infra-growth-left = Place restante à ce rythme
+infra-backups = Sauvegardes
+infra-backups-dir = Répertoire
+infra-backups-count = Archives
+infra-backups-newest = La plus récente
+infra-backups-oldest = La plus ancienne
+infra-backups-room = Place là où elles sont gardées
+infra-free-of = { $free } libres sur { $total }
+infra-paths = Chemins
+infra-path-data = Répertoire des données
+infra-path-binary = Programme
+infra-compute = Calcul
+infra-compute-hidden = Le bac à sable du service lui cache les chiffres de la machine elle-même ; ce qui s’affiche ici, c’est ce que le processus peut voir.
+infra-compute-memory = Mémoire de la machine
+infra-available-of = { $available } libres sur { $total }
+infra-compute-ceiling = Mémoire du service
+infra-compute-no-ceiling = { $used }, sans plafond
+infra-compute-os = Système
+infra-compute-kernel = Noyau
+infra-compute-arch = Architecture
+infra-compute-cpu = Processeur
+infra-compute-cpus = Cœurs
+infra-compute-load = Charge (1, 5, 15 min)
+infra-compute-rss = Ce processus
+infra-compute-threads = Fils d’exécution
+infra-compute-files = Fichiers ouverts
+infra-compute-uptime = Service en marche depuis
+infra-compute-sys-uptime = Machine en marche depuis
+infra-compute-sandbox = Bac à sable
+infra-compute-nnp-on = aucun nouveau privilège
+infra-compute-nnp-off = privilèges acquérables
+infra-compute-seccomp-on = appels système filtrés
+infra-compute-seccomp-off = appels système non filtrés
+infra-activity = Activité
+infra-activity-intro = Compté sur { $span } : le service garde une journée, et repart de zéro à chaque redémarrage.
+infra-activity-sessions = Sessions ouvertes
+infra-activity-signed-in = Connexions
+infra-activity-failed = Échecs de connexion
+infra-activity-registered = Comptes créés
+infra-activity-cross-site = Envois d’autres sites refusés
+
+# Sign-in services: what the reader is told when one fails (v0.5.0, docs/adr/0012)
+sso-error-not-configured = Ce service de connexion n’est pas configuré sur ce site.
+sso-error-no-public-url = Se connecter par un service demande l’adresse publique de ce site, qui n’est pas encore définie. Un administrateur la règle dans Connectivité.
+sso-error-unreachable = Le service de connexion n’a pas pu être joint. Réessayez dans un instant, ou connectez-vous autrement.
+sso-error-refused = Le service de connexion ne vous a pas laissé entrer, ou la connexion y a été annulée.
+sso-error-stale = Cette connexion avait expiré, ou a été commencée dans un autre navigateur. Recommencez.
+sso-error-invalid = La réponse du service de connexion n’a pas passé les vérifications de ce site : elle n’a pas été utilisée. Recommencez ; si cela se reproduit, prévenez un administrateur.
+infra-upgrade-already-pending = { $version } attend déjà l’assistant de mise à jour. Attendez la fin avant de demander une autre version.
+
+# Administration console: Connectivity, sign-in services and registration (v0.5.0, docs/adr/0012)
+connectivity-title = Connectivité
+connectivity-lede = Comment les lecteurs joignent ce site et comment ils se connectent : l’adresse publique, les services de connexion et les règles que suit chaque connexion, celles des administrateurs comprises.
+connectivity-kpi-address = Adresse publique
+connectivity-address-unset = Non définie
+connectivity-address-https = HTTPS
+connectivity-address-plain = Non chiffrée
+connectivity-address-unset-note = Tout service de connexion en a besoin
+connectivity-kpi-services = Services de connexion
+connectivity-kpi-services-note = { $n ->
+    [one] prêt à proposer
+    [many] prêts à proposer
+    *[other] prêts à proposer
+    }
+connectivity-kpi-passwords = Mots de passe
+connectivity-policy-short-everyone = Tout le monde
+connectivity-policy-short-non-admins = Sauf les administrateurs
+connectivity-policy-short-nobody = Personne
+connectivity-policy-note-everyone = Chaque compte peut se connecter avec son mot de passe, et aussi par un service lié.
+connectivity-policy-note-non-admins = Les administrateurs ne se connectent que par un service ; les autres peuvent encore utiliser un mot de passe. Un mot de passe d’administrateur volé n’ouvre alors plus rien.
+connectivity-policy-note-nobody = Tout le monde se connecte par un service. Un compte sans service lié ni adresse pour en lier un ne peut pas se connecter.
+connectivity-kpi-admins-linked = { $n ->
+    [one] { $n } administrateur avec un service lié
+    [many] { $n } administrateurs avec un service lié
+    *[other] { $n } administrateurs avec un service lié
+    }
+connectivity-kpi-registration = Inscription
+connectivity-kpi-registration-go = Se règle dans Comptes →
+registration-short-closed = Administrateurs seulement
+registration-short-secret = Avec le secret de la famille
+registration-short-open = Ouverte aux visiteurs
+connectivity-address = Adresse publique
+connectivity-address-intro = L’adresse que tapent les lecteurs, telle qu’ils la tapent : https://family.example. Les services de connexion y renvoient les lecteurs : ce doit être l’adresse publique, pas celle sur laquelle écoute ce serveur.
+connectivity-address-label = Adresse publique
+connectivity-address-hint = Laissez-la vide tant que personne ne se connecte par un service.
+connectivity-address-invalid = Ce n’est pas une adresse http ou https avec un nom d’hôte.
+connectivity-address-saved = L’adresse publique est enregistrée.
+connectivity-policy = Règles de connexion
+connectivity-policy-intro = Elles s’appliquent à chaque compte, administrateurs compris. Une règle qui ne laisserait aucun administrateur capable de se connecter est refusée.
+connectivity-policy-passwords = Qui peut se connecter avec un mot de passe
+connectivity-policy-without-way = { $n ->
+    [one] { $n } compte actif n’a ni service lié ni adresse : avec « Personne », il ne pourrait plus se connecter.
+    [many] { $n } comptes actifs n’ont ni service lié ni adresse : avec « Personne », ils ne pourraient plus se connecter.
+    *[other] { $n } comptes actifs n’ont ni service lié ni adresse : avec « Personne », ils ne pourraient plus se connecter.
+    }
+connectivity-link-by-email = Lier un service au compte qui a la même adresse vérifiée
+connectivity-link-by-email-note = C’est ainsi qu’un proche obtient une connexion en un clic sans aucune inscription : créez son compte avec son adresse, et sa première connexion par un service qui a vérifié cette adresse le lie. Seule une adresse saisie par un administrateur ou vérifiée par un service est jamais rapprochée.
+connectivity-domains = Domaines autorisés à ouvrir un compte
+connectivity-domains-hint = Un par ligne, par exemple family.example. Vide : tous. Une fois définis, seule une adresse vérifiée par un service dans l’un de ces domaines peut ouvrir un compte, et le formulaire d’inscription n’est pas proposé.
+connectivity-domain-invalid = « { $domain } » n’est pas un nom de domaine.
+connectivity-policy-unknown = Choisissez qui peut se connecter avec un mot de passe.
+connectivity-policy-lockout = Refusé : avec ce changement, aucun administrateur actif ne pourrait se connecter. Liez d’abord un service de connexion au compte d’un administrateur, en vous connectant une fois par lui, ou gardez les mots de passe pour les administrateurs.
+connectivity-policy-saved = Les règles de connexion sont enregistrées.
+connectivity-not-saved = Non enregistré : { $error }
+connectivity-services = Services de connexion
+connectivity-services-intro = Enregistrez ce site dans la console du service avec l’adresse de redirection indiquée, puis collez ici l’identifiant client et le secret. Les visiteurs voient alors « Continuer avec … » sur les pages de connexion et d’inscription.
+connectivity-outbound-note = Se connecter par un service exige que ce serveur joigne le service. L’unité qu’écrit bootstrap.sh refuse les connexions sortantes (IPAddressDeny=any) : autorisez-les avec sudo systemctl edit axgf-cms en ajoutant IPAddressAllow=any sous [Service], puis redémarrez. Le bouton de test dit s’il y parvient.
+connectivity-service-ready = Prêt
+connectivity-service-incomplete = Incomplet
+connectivity-service-off = Désactivé
+connectivity-service-enable = Proposer ce service sur les pages de connexion et d’inscription
+connectivity-service-issuer = Émetteur
+connectivity-service-issuer-hint = L’adresse du fournisseur, par exemple https://auth.family.example/realms/family ; ses réglages sont lus dans /.well-known/openid-configuration sous cette adresse.
+connectivity-service-label = Libellé du bouton
+connectivity-service-tenant = Annuaire (tenant)
+connectivity-service-tenant-hint = common pour tout compte Microsoft, organizations pour les comptes professionnels et scolaires, consumers pour les comptes personnels, ou l’identifiant de votre annuaire.
+connectivity-service-client-id = Identifiant client
+connectivity-service-secret = Secret client
+connectivity-service-secret-set = Un secret est défini. Laissez ce champ vide pour le garder.
+connectivity-service-secret-unset = Aucun secret n’est encore défini.
+connectivity-service-secret-clear = Retirer le secret
+connectivity-service-redirect = Adresse de redirection à enregistrer
+connectivity-service-redirect-needs-address = Définissez d’abord l’adresse publique
+connectivity-service-console = Où l’enregistrer
+connectivity-service-console-open = Console de { $name }
+connectivity-service-test = Tester la connexion
+connectivity-issuer-invalid = L’émetteur doit être une adresse https://.
+connectivity-tenant-invalid = Un annuaire est un nom ou un identifiant : lettres, chiffres, points et tirets.
+connectivity-provider-incomplete = { $name } n’est pas complet : il faut un identifiant client et un secret client, et un émetteur pour un fournisseur générique.
+connectivity-provider-saved = { $name } est enregistré.
+connectivity-test-ok = { $name } a répondu : { $answer }.
+connectivity-test-failed = { $name } n’a pas pu être joint depuis ce serveur : { $detail }
+registration-title = Inscription
+registration-intro = Si un visiteur peut ouvrir lui-même un compte ici. Un tel compte est celui d’un membre : il lit ce que lisent les membres et ne change rien. Lui donner un autre rôle est le choix d’un administrateur, plus bas.
+registration-who = Qui peut ouvrir un compte
+registration-note-closed = Seul un administrateur crée des comptes, sur cette page.
+registration-note-secret = Un visiteur qui connaît le secret de la famille peut ouvrir un compte membre. Partagez le secret comme vous partageriez un code de porte.
+registration-note-open = N’importe quel visiteur peut ouvrir un compte membre. Les membres lisent les fiches réservées aux membres.
+registration-rotate = Tirer un nouveau secret
+registration-secret = Le secret de la famille
+registration-secret-note = Quiconque l’a peut ouvrir un compte tant que ce mode est actif. En tirer un nouveau ferme la porte à l’ancien ; les comptes déjà ouverts restent.
+registration-link = Page d’inscription
+registration-quick = Accès rapides
+registration-quick-none = Aucun service de connexion n’est prêt : configurez-en un dans Connectivité
+registration-changed = Modifiée en dernier par { $by }, { $at }.
+registration-unknown = Choisissez qui peut ouvrir un compte.
+accounts-kpi-total = Comptes actifs
+accounts-kpi-total-note = { $disabled ->
+    [one] { $disabled } désactivé
+    [many] { $disabled } désactivés
+    *[other] { $disabled } désactivés
+    }
+accounts-kpi-admins = Administrateurs
+accounts-kpi-admins-few = Ajoutez-en un deuxième
+accounts-kpi-admins-ok = Plus d’un, comme il se doit
+accounts-kpi-linked = Liés à un service
+accounts-kpi-linked-note = { $n ->
+    [one] { $n } service prêt
+    [many] { $n } services prêts
+    *[other] { $n } services prêts
+    }
+accounts-kpi-registered = { $n ->
+    [one] { $n } ouvert par un visiteur
+    [many] { $n } ouverts par des visiteurs
+    *[other] { $n } ouverts par des visiteurs
+    }
+accounts-roles = Rôles
+accounts-sign-in = Se connecte avec
+accounts-sign-in-password = mot de passe
+accounts-sign-in-google = Google
+accounts-sign-in-microsoft = Microsoft
+accounts-sign-in-github = GitHub
+accounts-sign-in-oidc = authentification unique
+accounts-sign-in-none = aucun moyen d’entrer pour l’instant
+accounts-created-via-register = ouvert par le visiteur
+accounts-created-via-sso = ouvert par un service
+accounts-add-also-register = Les visiteurs peuvent aussi ouvrir eux-mêmes des comptes membres, comme réglé plus haut. Un compte créé ici peut avoir n’importe quel rôle.
+login-password-not-allowed = Les règles de connexion de ce site n’autorisent pas ce compte à utiliser un mot de passe : connectez-vous par un service.
+login-register = Pas encore de compte ? Créez-en un
+register-title = Créer un compte
+register-lede = Un compte membre lit les fiches réservées aux membres de la famille. Le plus rapide est un compte que vous avez déjà.
+register-closed = Ici, les comptes sont créés par un administrateur. Demandez-lui le vôtre.
+register-have-account = Vous avez déjà un compte ? Connectez-vous
+register-or = ou
+register-secret = Le secret de la famille
+register-secret-hint = Un administrateur vous l’a donné, ou quelqu’un de la famille.
+register-secret-hint-services = Tapez-le avant de choisir un service, sinon l’étape suivante vous le demandera.
+register-domains = Seules les adresses de { $domains } peuvent ouvrir un compte.
+register-username-hint = De 2 à 64 lettres, chiffres, points, tirets ou tirets bas.
+register-submit = Créer le compte
+register-member-note = Aucune adresse n’est demandée : rien ne vous est envoyé, et personne ne peut s’approprier la vôtre.
+register-form-closed = Ce site n’ouvre pas de compte avec ce formulaire.
+register-throttled = Trop de tentatives depuis cet endroit. Attendez un quart d’heure et réessayez.
+register-secret-wrong = Ce n’est pas le secret de la famille.
+register-username-invalid = Un nom d’utilisateur compte de 2 à 64 lettres, chiffres, points, tirets ou tirets bas.
+register-password-short = Le mot de passe doit compter au moins { $min } caractères.
+register-username-taken = Ce nom d’utilisateur est pris. Choisissez-en un autre.
+register-not-saved = Le compte n’a pas pu être enregistré. Réessayez dans un instant.
+register-finish-title = Encore une étape
+register-finish-lede = Le service a confirmé qui vous êtes. Pour ouvrir un compte ici, tapez le secret de la famille.
+register-finish-lede-email = Le service vous a confirmé comme { $email }. Pour ouvrir un compte ici, tapez le secret de la famille.
+sso-continue = Continuer
+sso-continue-with = Continuer avec { $name }
+sso-error-title = La connexion n’a pas abouti
+sso-account-disabled = Le compte lié à cette connexion est désactivé. Adressez-vous à un administrateur.
+sso-no-account = Aucun compte ici ne correspond à cette connexion, et ce site n’ouvre pas de compte de lui-même. Demandez à un administrateur de créer le vôtre avec cette adresse : votre prochaine connexion s’y liera.
+sso-domain-refused = Ici, un compte ne peut être ouvert qu’avec une adresse des domaines de la famille, confirmée par le service.

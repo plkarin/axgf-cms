@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% import "_icons.html" as ic %}
+{% block title %}{{ t("bundle-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+
+{% include "_admin_nav.html" %}
+<h1>{{ t("bundle-title") }}</h1>
+<p class="lede">{{ t("bundle-lede", path=bundle_path) }}</p>
+
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% if notice %}<div class="notice ok"><p>{{ notice }}</p></div>{% endif %}
+
+{% if unset %}
+{#- No family yet (docs/adr/0005): there is nothing to conform, and the way in
+    is the set-up's three doors. -#}
+<div class="notice">
+  <p><strong>{{ t("bundle-unset-title") }}</strong> {{ t("bundle-unset-detail") }}</p>
+  <p><a class="btn" href="/admin/setup">{{ t("setup-title") }}</a></p>
+</div>
+{% else %}
+
+{#- The headline: one verdict, then the figures that matter. -#}
+<div class="kpis">
+  <div class="kpi">
+    <span class="kpi-label">{{ t("bundle-kpi-conformity") }}</span>
+    <span class="kpi-icon">{{ ic.icon("shield") }}</span>
+    <span class="kpi-value"><span class="lvl lvl-{{ verdict }}">{{ t("bundle-verdict-" ~ verdict) }}</span></span>
+    <span class="kpi-note">{{ t("findings-tally", ok=tally.ok, warn=tally.warn, fail=tally.fail) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("bundle-kpi-entities") }}</span>
+    <span class="kpi-icon">{{ ic.icon("family") }}</span>
+    <span class="kpi-value">{{ total | localnum(lang) }}</span>
+    <span class="kpi-note">{{ t("bundle-kpi-entities-note", persons=persons, files=attachments) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("bundle-kpi-size") }}</span>
+    <span class="kpi-icon">{{ ic.icon("disk") }}</span>
+    <span class="kpi-value">{{ bundle_size }}</span>
+    <span class="kpi-note">{{ t("bundle-kpi-members", n=facts.members) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("bundle-kpi-format") }}</span>
+    <span class="kpi-icon">{{ ic.icon("archive") }}</span>
+    <span class="kpi-value">AXGF {{ facts.spec if facts.spec else "—" }}</span>
+    <span class="kpi-note">{{ t("bundle-kpi-format-note", current=spec_current) }}</span>
+  </div>
+</div>
+
+<section class="rec-section">
+<h2>{{ t("bundle-conformity") }}</h2>
+<p class="small muted">{{ t("bundle-conformity-intro") }}</p>
+{% set area_prefix = "bundle-area-" %}{% include "_checks.html" %}
+</section>
+
+<section class="rec-section" id="anomalies">
+<h2>{{ t("bundle-anomalies") }}</h2>
+{% if anomalies %}
+<p class="small muted">{{ t("bundle-anomalies-intro") }}</p>
+<div class="table-wrap">
+<table class="wide">
+  <thead><tr><th>{{ t("bundle-anomalies-rule") }}</th><th>{{ t("bundle-anomalies-open") }}</th><th>{{ t("bundle-anomalies-checked") }}</th></tr></thead>
+  <tbody data-content>
+  {% for a in anomalies %}
+    <tr>
+      <td data-label="{{ t('bundle-anomalies-rule') }}"><a href="/quality?group={{ a.group }}">{{ t("quality-rule-" ~ a.rule) }}</a></td>
+      <td data-label="{{ t('bundle-anomalies-open') }}">{{ a.open }}</td>
+      <td data-label="{{ t('bundle-anomalies-checked') }}">{{ a.checked }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<div class="notice ok"><p>{{ t("bundle-anomalies-none") }}</p></div>
+{% endif %}
+</section>
+
+<section class="rec-section" id="diagnostics">
+<h2>{{ t("bundle-diagnostics") }}</h2>
+{% if diagnostics %}
+  <div data-content>{{ m.diagnostics(diagnostics) }}</div>
+{% else %}
+  <div class="notice ok"><p>{{ t("admin-validator-clean") }}</p></div>
+{% endif %}
+</section>
+
+<section class="rec-section">
+<h2>{{ t("bundle-facts") }}</h2>
+<dl class="facts">
+  <dt>{{ t("bundle-fact-path") }}</dt><dd><code>{{ bundle_path }}</code></dd>
+  <dt>{{ t("bundle-fact-size") }}</dt><dd>{{ bundle_size }}</dd>
+  <dt>{{ t("bundle-fact-spec") }}</dt><dd>AXGF {{ facts.spec if facts.spec else "—" }}</dd>
+  <dt>{{ t("bundle-fact-schema") }}</dt><dd>{% if facts.schema_embedded %}<code>{{ facts.schema_embedded }}</code>{% else %}{{ t("bundle-fact-none") }}{% endif %}</dd>
+  <dt>{{ t("bundle-fact-created") }}</dt><dd>{{ facts.created_at | localdatetime(lang) if facts.created_at else "—" }}</dd>
+  <dt>{{ t("bundle-fact-updated") }}</dt><dd>{{ facts.updated_at | localdatetime(lang) if facts.updated_at else "—" }}</dd>
+  {% if facts.generator %}<dt>{{ t("bundle-fact-generator") }}</dt><dd>{{ facts.generator }}</dd>{% endif %}
+  {% if facts.gedcom_source %}<dt>{{ t("bundle-fact-gedcom") }}</dt><dd>GEDCOM {{ facts.gedcom_source }}</dd>{% endif %}
+</dl>
+</section>
+{% endif %}
+
+<section class="rec-section" id="export">
+<h2>{{ t("bundle-export") }}</h2>
+<p class="small muted">{{ t("admin-export-health-note") }}</p>
+
+{#- The plain archive: what a tired operator clicks, first. Each sensitive
+    class chosen on its own, nothing ticked on arrival (the dashboard's
+    export, moved here). -#}
+<details class="menu-disclosure export-disclosure">
+<summary>{{ ic.icon("download") }} {{ t("bundle-export-raw") }}</summary>
+<form class="export-choice" method="get" action="/admin/export" autocomplete="off">
+  <fieldset>
+    <legend>{{ t("admin-export-choose") }}</legend>
+    <div class="check-row">
+      {% for s in export_scopes %}
+      <label class="inline"><input type="checkbox" name="{{ s }}" value="include"> {{ t("scope-" ~ s) }}</label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("bundle-export-raw-go") }}</button>
+</form>
+</details>
+
+{#- The same archive, encrypted to one person's OpenPGP key (docs/adr/0011 §4).
+    Posted, because the key is long and the choice of recipient is not a
+    thing to leave in a browser's history. -#}
+<details class="menu-disclosure export-disclosure"{% if error or recipient_text and not recipient %} open{% endif %}>
+<summary>{{ ic.icon("lock") }} {{ t("bundle-export-sealed") }}</summary>
+<p class="small muted">{{ t("bundle-export-sealed-intro") }}</p>
+{% if recipient and not recipient.error %}
+<dl class="facts">
+  <dt>{{ t("seal-recipient") }}</dt><dd>{{ recipient.user_ids | join(", ") if recipient.user_ids else "—" }}</dd>
+  <dt>{{ t("seal-fingerprint") }}</dt><dd><code>{{ recipient.fingerprint }}</code></dd>
+  <dt>{{ t("seal-algorithm") }}</dt><dd>{{ t("seal-algorithm-value", key=recipient.algorithm) }} ·
+    {% if recipient.fips %}<span class="lvl lvl-ok">{{ t("seal-fips-yes") }}</span>{% else %}<span class="lvl lvl-warn">{{ t("seal-fips-no") }}</span>{% endif %}</dd>
+  <dt>{{ t("seal-expires") }}</dt><dd>{{ recipient.expires if recipient.expires else t("seal-never") }}</dd>
+</dl>
+{% elif recipient and recipient.error %}
+<div class="notice warn"><p>{{ recipient.error }}</p></div>
+{% endif %}
+<form class="export-choice" method="post" action="/admin/bundle/sealed" autocomplete="off">
+  <div class="field">
+    <label for="seal-key">{{ t("seal-key-label") }}</label>
+    <textarea id="seal-key" name="recipient" rows="5" spellcheck="false" class="mono" placeholder="{{ t('seal-key-placeholder') }}">{{ recipient_text if recipient_text != "" else "" }}</textarea>
+    <div class="hint">{{ t("seal-key-hint") }}</div>
+  </div>
+  <fieldset>
+    <legend>{{ t("admin-export-choose") }}</legend>
+    <div class="check-row">
+      {% for s in export_scopes %}
+      <label class="inline"><input type="checkbox" name="{{ s }}" value="include"> {{ t("scope-" ~ s) }}</label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <label class="inline"><input type="checkbox" name="remember" checked> {{ t("seal-remember") }}</label>
+  <div class="cta-row">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("bundle-export-sealed-go") }}</button>
+    <button class="btn" type="submit" name="check" value="1">{{ t("seal-check") }}</button>
+  </div>
+  <p class="small muted">{{ t("seal-fips-note") }}</p>
+  <p class="small muted">{{ t("seal-decrypt-note") }} <code>gpg --decrypt family.axgf.gpg &gt; family.axgf</code></p>
+</form>
+{% if recipient %}
+<form method="post" action="/admin/bundle/forget-recipient">
+  <button class="btn ghost" type="submit">{{ t("seal-forget") }}</button>
+</form>
+{% endif %}
+</details>
+</section>
+
+{% endblock %}

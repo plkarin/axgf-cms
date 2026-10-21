@@ -591,12 +591,108 @@ pub fn reliability_rank(r: &str) -> u8 {
     }
 }
 
+/// A timestamp as the reader reads it (v0.5.0, docs/adr/0011): the day in
+/// their language's own pattern and the time on a 24-hour clock, in UTC,
+/// which is what the server records — `2026-10-20T13:36:07.073601788Z` reads
+/// "20 octobre 2026 à 13:36 UTC". Anything that is not such a timestamp comes
+/// back as it was.
+pub fn local_datetime(iso: &str, lang: &str) -> String {
+    let v = iso.trim();
+    let (Some(date), Some(time)) = (v.get(..10), v.get(11..16)) else {
+        return v.to_string();
+    };
+    let date_ok = date.len() == 10 && date.as_bytes()[4] == b'-' && date.as_bytes()[7] == b'-';
+    let time_ok = time.len() == 5 && time.as_bytes()[2] == b':';
+    if !date_ok || !time_ok || !matches!(v.as_bytes().get(10), Some(b'T') | Some(b' ')) {
+        return v.to_string();
+    }
+    let day = format_point(date, "exact", lang);
+    t(
+        lang,
+        "date-time-utc",
+        &[("date", day.into()), ("time", time.to_string().into())],
+    )
+}
+
+/// The day of an ISO 8601 date or timestamp, as the reader's language writes
+/// it; anything else is returned as it came.
+pub fn local_date(iso: &str, lang: &str) -> String {
+    let v = iso.trim();
+    match v.get(..10) {
+        Some(date)
+            if date.len() == 10 && date.as_bytes()[4] == b'-' && date.as_bytes()[7] == b'-' =>
+        {
+            format_point(date, "exact", lang)
+        }
+        _ => v.to_string(),
+    }
+}
+
+/// A whole number grouped as the reader's language groups it: 1 965 in
+/// French (a narrow no-break space), 1,965 in English, 1.965 in German.
+pub fn local_number(n: i64, lang: &str) -> String {
+    let sep = match lang.split('-').next().unwrap_or(lang) {
+        "fr" => "\u{202f}",
+        "pl" | "ru" => "\u{a0}",
+        "de" | "es" | "it" | "pt" => ".",
+        _ => ",",
+    };
+    let digits = n.unsigned_abs().to_string();
+    // Spanish leaves four-digit numbers ungrouped; so does Polish.
+    let lone = matches!(lang.split('-').next(), Some("es") | Some("pl")) && digits.len() == 4;
+    let mut out = String::with_capacity(digits.len() + 6);
+    for (i, ch) in digits.chars().enumerate() {
+        if i > 0 && (digits.len() - i).is_multiple_of(3) && !lone {
+            out.push_str(sep);
+        }
+        out.push(ch);
+    }
+    if n < 0 {
+        format!("-{out}")
+    } else {
+        out
+    }
+}
+
 /// Register the template filters used across the templates.
 pub fn register_filters(env: &mut Environment<'static>) {
     env.add_filter("confidence", |v: f64| -> MjValue {
         MjValue::from_serialize(Confidence::new(v))
     });
     env.add_filter("ordinal", |n: i64| ordinal(n));
+    env.add_filter("localdatetime", |v: String, lang: String| {
+        local_datetime(&v, &lang)
+    });
+    env.add_filter("localdate", |v: String, lang: String| local_date(&v, &lang));
+    env.add_filter("localnum", |n: i64, lang: String| local_number(n, &lang));
+}
+
+#[cfg(test)]
+mod local_tests {
+    use super::*;
+
+    #[test]
+    fn numbers_are_grouped_as_the_language_groups_them() {
+        assert_eq!(local_number(1965, "en"), "1,965");
+        assert_eq!(local_number(1965, "fr"), "1\u{202f}965");
+        assert_eq!(local_number(1234567, "de"), "1.234.567");
+        assert_eq!(local_number(1965, "es"), "1965");
+        assert_eq!(local_number(19650, "es"), "19.650");
+        assert_eq!(local_number(12, "fr"), "12");
+        assert_eq!(local_number(-4000, "en"), "-4,000");
+    }
+
+    #[test]
+    fn a_timestamp_reads_as_a_day_and_a_time() {
+        crate::i18n::warm();
+        let fr = local_datetime("2026-10-20T13:36:07.073601788Z", "fr");
+        assert!(
+            fr.contains("20 octobre 2026") && fr.contains("13:36"),
+            "{fr}"
+        );
+        assert!(!fr.contains("073601788"), "{fr}");
+        assert_eq!(local_datetime("not a date", "fr"), "not a date");
+    }
 }
 
 #[cfg(test)]

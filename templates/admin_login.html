@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t("login-title") }} — {{ t("app-name") }}{% endblock %}
 {% import "_logo.html" as logo %}
+{% import "_icons.html" as ic %}
 {% block content %}
 {#- In a block of its own: under Canopée every child of this page is the
     form's width, and the logo sits at that column's edge, over the title. -#}
@@ -20,6 +21,18 @@
 </div>
 {% endif %}
 
+{#- The services first: one click for whoever has an account with one. -#}
+{% if services %}
+<form method="post" class="card sso-buttons" style="max-width:34rem">
+  <input type="hidden" name="intent" value="signin">
+  {% for p in services %}
+  <button class="btn sso-button" type="submit" formaction="/auth/{{ p.slug }}/start">{{ ic.icon("key") }} {{ t("sso-continue-with", name=p.label) }}</button>
+  {% endfor %}
+</form>
+{% if passwords %}<p class="or-rule" style="max-width:34rem"><span>{{ t("register-or") }}</span></p>{% endif %}
+{% endif %}
+
+{% if passwords or not services %}
 <form method="post" action="/admin/login" class="card" style="max-width:34rem">
   <div class="field">
     <label for="username">{{ t("login-username") }}</label>
@@ -33,6 +46,9 @@
   </div>
   <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("login-submit") }}</button>
 </form>
+{% endif %}
+
+{% if register %}<p style="max-width:34rem"><a href="/register">{{ t("login-register") }}</a></p>{% endif %}
 
 <details class="card" style="max-width:34rem">
   <summary>{{ t("login-emergency-summary") }}</summary>

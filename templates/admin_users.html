@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ t("accounts-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 
+{% set admin_page = "accounts" %}{% include "_admin_nav.html" %}
 <h1>{{ t("accounts-title") }}</h1>
 <p class="lede">{{ t("accounts-lede", path=acl_path) }}</p>
 
@@ -14,6 +16,82 @@
 </div>
 {% endif %}
 
+{#- The figures first: how many, who may do what, how they sign in. -#}
+<div class="kpis">
+  <div class="kpi">
+    <span class="kpi-label">{{ t("accounts-kpi-total") }}</span>
+    <span class="kpi-icon">{{ ic.icon("accounts") }}</span>
+    <span class="kpi-value">{{ stats.active | localnum(lang) }}</span>
+    <span class="kpi-note">{{ t("accounts-kpi-total-note", disabled=stats.disabled) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("accounts-kpi-admins") }}</span>
+    <span class="kpi-icon">{{ ic.icon("shield") }}</span>
+    <span class="kpi-value">{{ stats.admins | localnum(lang) }}</span>
+    <span class="kpi-note">{% if stats.admins < 2 %}<span class="lvl lvl-warn">{{ t("accounts-kpi-admins-few") }}</span>{% else %}{{ t("accounts-kpi-admins-ok") }}{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("accounts-kpi-linked") }}</span>
+    <span class="kpi-icon">{{ ic.icon("key") }}</span>
+    <span class="kpi-value">{{ stats.linked | localnum(lang) }}</span>
+    <span class="kpi-note"><a href="/admin/connectivity#services">{{ t("accounts-kpi-linked-note", n=services | length) }}</a></span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("connectivity-kpi-registration") }}</span>
+    <span class="kpi-icon">{{ ic.icon("link") }}</span>
+    <span class="kpi-value">{{ t("registration-short-" ~ registration.mode) }}</span>
+    <span class="kpi-note">{{ t("accounts-kpi-registered", n=stats.registered) }}</span>
+  </div>
+</div>
+
+<section class="rec-section">
+<h2>{{ t("accounts-roles") }}</h2>
+{%- set all = stats.viewers + stats.contributors + stats.admins %}
+<div class="vol-bar" role="img" aria-label="{{ t('accounts-roles') }}">
+  {%- if all %}<i class="vol-3" style="inline-size:{{ (stats.viewers * 100 / all) | round(2) }}%"></i><i class="vol-2" style="inline-size:{{ (stats.contributors * 100 / all) | round(2) }}%"></i><i class="vol-1" style="inline-size:{{ (stats.admins * 100 / all) | round(2) }}%"></i>{% endif -%}
+</div>
+<dl class="facts vol-legend">
+  <dt><i class="vol-swatch vol-3"></i>{{ t("accounts-role-viewer") }}</dt><dd>{{ stats.viewers | localnum(lang) }}</dd>
+  <dt><i class="vol-swatch vol-2"></i>{{ t("accounts-role-contributor") }}</dt><dd>{{ stats.contributors | localnum(lang) }}</dd>
+  <dt><i class="vol-swatch vol-1"></i>{{ t("accounts-role-admin") }}</dt><dd>{{ stats.admins | localnum(lang) }}</dd>
+</dl>
+</section>
+
+{#- Who may open an account by themselves (docs/adr/0012). -#}
+<section class="rec-section" id="registration">
+<h2>{{ t("registration-title") }}</h2>
+<p class="small muted">{{ t("registration-intro") }}</p>
+<form method="post" action="/admin/users/registration" autocomplete="off">
+  <fieldset>
+    <legend>{{ t("registration-who") }}</legend>
+    <div class="choice-cards">
+      {% for m in ["closed", "secret", "open"] %}
+      <label class="choice-card"><input type="radio" name="mode" value="{{ m }}"{% if m == registration.mode %} checked{% endif %}>
+        <strong>{{ t("registration-short-" ~ m) }}</strong>
+        <span>{{ t("registration-note-" ~ m) }}</span></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <div class="cta-row">
+    <button class="btn" type="submit">{{ t("admin-save") }}</button>
+    {% if registration.mode == "secret" %}<button class="btn ghost" type="submit" name="rotate" value="1">{{ t("registration-rotate") }}</button>{% endif %}
+  </div>
+</form>
+{% if registration.mode == "secret" and registration.secret %}
+<dl class="facts">
+  <dt>{{ t("registration-secret") }}</dt><dd><code>{{ registration.secret }}</code></dd>
+</dl>
+<p class="small muted">{{ t("registration-secret-note") }}</p>
+{% endif %}
+{% if registration.open %}
+<dl class="facts">
+  <dt>{{ t("registration-link") }}</dt><dd><code>{{ registration.url }}</code></dd>
+  <dt>{{ t("registration-quick") }}</dt><dd>{% if services %}{{ services | map(attribute="label") | join(", ") }}{% else %}<a href="/admin/connectivity#services">{{ t("registration-quick-none") }}</a>{% endif %}</dd>
+</dl>
+{% endif %}
+{% if registration.changed_at %}<p class="small muted">{{ t("registration-changed", by=(registration.changed_by if registration.changed_by else "—"), at=registration.changed_at | localdatetime(lang)) }}</p>{% endif %}
+</section>
+
 <h2>{{ t("accounts-existing") }}</h2>
 <div class="table-wrap">
 <table class="wide">
@@ -21,6 +99,7 @@
     <tr>
       <th>{{ t("accounts-username") }}</th><th>{{ t("accounts-role") }}</th>
       <th>{{ t("accounts-status") }}</th><th>{{ t("accounts-branch") }}</th>
+      <th>{{ t("accounts-sign-in") }}</th>
       <th>{{ t("accounts-last-seen") }}</th><th>{{ t("accounts-change") }}</th>
     </tr>
   </thead>
@@ -44,8 +123,14 @@
           <span class="muted">{{ t("accounts-whole-tree") }}</span>
         {% endif %}
       </td>
+      <td data-label="{{ t('accounts-sign-in') }}">
+        {%- if u.password %}<span class="small">{{ t("accounts-sign-in-password") }}</span>{% endif %}
+        {%- for sv in u.services %}{% if u.password or not loop.first %} · {% endif %}<span class="small">{{ t("accounts-sign-in-" ~ sv) }}</span>{% endfor %}
+        {%- if not u.password and not u.services %}<span class="small muted">{{ t("accounts-sign-in-none") }}</span>{% endif %}
+        {%- if u.created_via %}<div class="small muted">{{ t("accounts-created-via-" ~ u.created_via) }}</div>{% endif %}
+      </td>
       <td data-label="{{ t('accounts-last-seen') }}">
-        {{ u.last_login if u.last_login else t("accounts-never") }}
+        {{ u.last_login | localdatetime(lang) if u.last_login else t("accounts-never") }}
       </td>
       <td data-label="{{ t('accounts-change') }}">
         <form method="post" action="/admin/users/{{ u.id }}" class="inline-form">
@@ -75,7 +160,7 @@
 </div>
 
 <h2>{{ t("accounts-add") }}</h2>
-<p class="small muted">{{ t("accounts-no-registration") }}</p>
+<p class="small muted">{% if registration.open %}{{ t("accounts-add-also-register") }}{% else %}{{ t("accounts-no-registration") }}{% endif %}</p>
 
 <form method="post" action="/admin/users" class="card" style="max-width:40rem">
   <div class="field">

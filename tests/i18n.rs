@@ -443,6 +443,54 @@ fn every_dynamic_key_family_is_fully_defined() {
     for direction in ["outgoing", "incoming"] {
         expected.push(format!("record-link-{direction}"));
     }
+    // The administration console (docs/adr/0011): the areas and verdicts its
+    // findings are grouped under, and the words its pages build.
+    for level in ["ok", "warn", "fail"] {
+        expected.push(format!("level-{level}"));
+        expected.push(format!("infra-verdict-{level}"));
+        expected.push(format!("bundle-verdict-{level}"));
+    }
+    for area in axgf_cms::conformity::AREAS {
+        expected.push(format!("bundle-area-{area}"));
+    }
+    for area in axgf_cms::selfcheck::AREAS {
+        expected.push(format!("infra-area-{area}"));
+    }
+    for unit in ["days", "hours", "minutes"] {
+        expected.push(format!("duration-{unit}"));
+    }
+    for relation in ["newer", "current", "older"] {
+        expected.push(format!("infra-relation-{relation}"));
+    }
+    for source in ["direct", "helper"] {
+        expected.push(format!("infra-source-{source}"));
+    }
+    for state in ["running", "succeeded", "failed", "refused"] {
+        expected.push(format!("infra-upgrade-status-{state}"));
+    }
+    for part in [
+        "bundle", "cache", "backups", "binary", "journal", "accounts",
+    ] {
+        expected.push(format!("infra-part-{part}"));
+    }
+    for mode in ["closed", "secret", "open"] {
+        expected.push(format!("registration-short-{mode}"));
+        expected.push(format!("registration-note-{mode}"));
+    }
+    for policy in axgf_cms::site::PasswordPolicy::ALL {
+        expected.push(format!("connectivity-policy-short-{}", policy.as_str()));
+        expected.push(format!("connectivity-policy-note-{}", policy.as_str()));
+    }
+    for kind in axgf_cms::sso::Kind::ALL {
+        expected.push(format!("accounts-sign-in-{}", kind.slug()));
+    }
+    for via in ["register", "sso"] {
+        expected.push(format!("accounts-created-via-{via}"));
+    }
+    for switch in ["on", "off"] {
+        expected.push(format!("infra-compute-nnp-{switch}"));
+        expected.push(format!("infra-compute-seccomp-{switch}"));
+    }
     for code in DIAGNOSTIC_CODES {
         assert!(
             axgf_rs::boundary::envelope::DiagnosticCode::from_wire(code).is_some(),
@@ -839,5 +887,63 @@ fn a_role_reaches_the_page_in_the_readers_language() {
     assert_eq!(
         axgf_cms::i18n::vocab("fr", "union-role", "co_habitant"),
         "co habitant"
+    );
+}
+
+#[test]
+fn every_key_the_console_names_in_rust_is_defined() {
+    // The console's checks pick their sentences in Rust (src/selfcheck.rs,
+    // src/conformity.rs, ...), where the template linter cannot see them. A
+    // missing one renders as its key on the very page meant to say what is
+    // wrong, so every literal that looks like one of their keys is looked up.
+    let english = ids_of(&repo_root().join("locales/en.ftl"));
+    let prefixes = [
+        "infra-",
+        "bundle-",
+        "seal-",
+        "sso-",
+        "findings-",
+        "level-",
+        "register-",
+        "registration-",
+        "connectivity-",
+        "accounts-",
+        "login-",
+    ];
+    let mut missing = Vec::new();
+    for file in [
+        "src/selfcheck.rs",
+        "src/conformity.rs",
+        "src/seal.rs",
+        "src/sso.rs",
+        "src/findings.rs",
+        "src/routes/console.rs",
+        "src/routes/connectivity.rs",
+        "src/routes/entry.rs",
+    ] {
+        let src = std::fs::read_to_string(repo_root().join(file)).expect("read source");
+        for (i, line) in src.lines().enumerate() {
+            let mut rest = line;
+            while let Some(q) = rest.find('"') {
+                let after = &rest[q + 1..];
+                let Some(end) = after.find('"') else { break };
+                let lit = &after[..end];
+                rest = &after[end + 1..];
+                let keyish = !lit.is_empty()
+                    && !lit.ends_with('-')
+                    && lit
+                        .chars()
+                        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
+                if keyish && prefixes.iter().any(|p| lit.starts_with(p)) && !english.contains(lit) {
+                    missing.push(format!("  {file}:{}  {lit}", i + 1));
+                }
+            }
+        }
+    }
+    assert!(
+        missing.is_empty(),
+        "{} key(s) named in the console's Rust code are not in English:\n{}",
+        missing.len(),
+        missing.join("\n")
     );
 }

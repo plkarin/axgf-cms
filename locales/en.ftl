@@ -411,7 +411,7 @@ accounts-roots = { $n ->
        *[other] { $n } roots
     }
 accounts-add = Add an account
-accounts-no-registration = There is no self-registration and no invitation flow, deliberately. For a family archive an administrator who knows everyone is enough, and it removes an abuse surface entirely rather than defending one.
+accounts-no-registration = Visitors cannot open accounts by themselves; registration is set above. For most families an administrator who knows everyone is enough.
 accounts-password-hint = Leave blank and one is generated and shown once. At least { $min } characters if you set it yourself.
 accounts-new-password-placeholder = new password (blank = keep)
 accounts-email = Email
@@ -3497,3 +3497,588 @@ edit-avatar-frame = Frame the face
 edit-avatar-upload = Use as the profile picture
 edit-stale = Someone else changed { $what } since this page was opened. Nothing was saved; everything you entered is still here.
 edit-refused = Nothing was saved: { $reason }
+
+# Administration console (v0.5.0, docs/adr/0011)
+error-cross-site-title = Refused: posted from another site
+error-cross-site-detail = This form came from a page on another site, so it was not acted on. If you sent it from this site, reload the page and send it again.
+admin-nav-label = Administration sections
+admin-nav-overview = Overview
+admin-nav-bundle = AXGF bundle
+admin-nav-infrastructure = Infrastructure
+admin-nav-accounts = Accounts
+admin-nav-connectivity = Connectivity
+
+# Administration console: the AXGF bundle (v0.5.0, docs/adr/0011)
+bundle-title = AXGF bundle
+bundle-lede = The family's archive as this site holds it: { $path }. What it conforms to, what looks wrong, and the two ways to take a copy away.
+bundle-unset-title = No family yet.
+bundle-unset-detail = This installation holds an empty bundle, so there is nothing to check yet. Set it up from an archive, from a GEDCOM file or from nothing.
+bundle-kpi-conformity = Conformity
+bundle-verdict-ok = Conforms
+bundle-verdict-warn = To watch
+bundle-verdict-fail = Does not conform
+findings-tally = { $ok } green, { $warn ->
+    [one] 1 warning
+    *[other] { $warn } warnings
+    }, { $fail } critical
+bundle-kpi-entities = Entities
+bundle-kpi-entities-note = { $persons ->
+    [one] 1 person
+    *[other] { $persons } people
+    } · { $files ->
+    [one] 1 attached file
+    *[other] { $files } attached files
+    }
+bundle-kpi-size = Size on disk
+bundle-kpi-members = { $n ->
+    [one] 1 file in the archive
+    *[other] { $n } files in the archive
+    }
+bundle-kpi-format = Format
+bundle-kpi-format-note = This build reads and writes AXGF { $current }.
+bundle-conformity = Conformity
+bundle-conformity-intro = Nine checks, read from the bundle as it is now; none of them changes it. Open a line to see what to do.
+bundle-area-format = Format
+bundle-area-integrity = Integrity
+bundle-area-privacy = Privacy
+bundle-area-content = Content
+level-ok = Green
+level-warn = Warning
+level-fail = Critical
+findings-what-to-do = What to do
+findings-go = Go there →
+bundle-anomalies = Anomalies
+bundle-anomalies-intro = What the data quality page finds, rule by rule: still open, and already marked checked.
+bundle-anomalies-rule = Rule
+bundle-anomalies-open = Open
+bundle-anomalies-checked = Checked
+bundle-anomalies-none = The data quality page finds nothing to look at.
+bundle-diagnostics = Validator diagnostics
+bundle-facts = Particulars
+bundle-fact-path = File
+bundle-fact-size = Size
+bundle-fact-spec = Format
+bundle-fact-schema = Schema carried
+bundle-fact-none = none
+bundle-fact-created = Created
+bundle-fact-updated = Last written
+bundle-fact-generator = Written by
+bundle-fact-gedcom = Converted from
+bundle-export = Export
+bundle-export-raw = The bundle as it is (.axgf)
+bundle-export-raw-go = Download the bundle
+bundle-export-sealed = Encrypted for one person (.axgf.gpg)
+bundle-export-sealed-intro = The same bundle, as an OpenPGP message that only the holder of the private key can open. Paste their public key: the text that begins “-----BEGIN PGP PUBLIC KEY BLOCK-----”.
+bundle-export-sealed-go = Download encrypted
+seal-recipient = For
+seal-fingerprint = Fingerprint
+seal-algorithm = Algorithms
+seal-fips-yes = in the FIPS-approved set
+seal-fips-no = outside the FIPS-approved set
+seal-expires = Key expires
+seal-never = never
+seal-key-label = The recipient's public key
+seal-key-hint = An RSA key of at least 2048 bits, or an elliptic-curve key. Check the fingerprint with its owner before sending anything.
+seal-remember = Keep this key for next time
+seal-check = Read the key only
+seal-fips-note = The bundle is encrypted with AES-256 to the recipient's key. FIPS-approved algorithms are RSA of 3072 bits or more and the NIST curves P-256, P-384 and P-521: ask for P-384. The library used here is not itself a FIPS 140-3 validated module.
+seal-decrypt-note = The recipient opens it with GnuPG:
+seal-forget = Forget the kept key
+seal-key-kept = The key { $fingerprint } is kept for the next encrypted export.
+seal-error-no-key = Paste the recipient's public key first.
+seal-error-not-a-key = That is not an OpenPGP public key. Paste the whole block, from its BEGIN line to its END line, and never a private key.
+seal-error-bad-signatures = That key's own signatures do not verify: it may have been altered. Ask its owner for a fresh copy.
+seal-error-expired = That key, or every key in it that can encrypt, has expired. Ask its owner to extend it or to send a new one.
+seal-error-revoked = Its owner has revoked that key. Ask them for their new one.
+seal-error-no-encryption-key = That key can sign but not encrypt: it has no encryption subkey. Ask its owner for one (gpg --quick-add-key … encr).
+seal-error-too-weak = That RSA key has { $bits } bits; an export needs at least { $min }.
+seal-error-unsupported = That key's algorithm is not one an export uses: RSA or elliptic-curve keys only.
+seal-error-io = The encrypted copy could not be made: { $error }
+date-time-utc = { $date }, { $time } UTC
+
+# Administration console: the bundle's conformity (v0.5.0, docs/adr/0011)
+bundle-check-format-title = Format version
+bundle-check-format-ok = AXGF { $version }, the version this build reads and writes.
+bundle-check-format-missing = The manifest names no AXGF version.
+bundle-check-format-missing-fix = The bundle was not written by an AXGF tool, or it was damaged. Restore the last backup that validated (axgf-cms restore).
+bundle-check-format-older = Written as AXGF { $version }; the next save writes it as AXGF { $current }.
+bundle-check-format-older-fix = Nothing to do: the next edit rewrites it. Keep a copy of the old file if another program still reads only { $version }.
+bundle-check-format-newer = Written as AXGF { $version }, newer than this build's { $current }: saving could lose what this build does not understand.
+bundle-check-format-newer-fix = Upgrade axgf-cms to a release that reads AXGF { $version } before anyone edits (Infrastructure, Version).
+bundle-check-manifest-title = The manifest's counts
+bundle-check-manifest-ok = The manifest's counts match what the bundle holds.
+bundle-check-manifest-drift = The manifest declares { $declared } where the bundle holds { $actual } ({ $collection }).
+bundle-check-manifest-fix = Nothing is lost: the counts are rewritten at the next save. If this archive came from elsewhere, check it was copied whole.
+bundle-check-validation-title = Validation
+bundle-check-validation-ok = The library's validator finds nothing wrong.
+bundle-check-validation-errors = { $errors ->
+    [one] 1 error
+    *[other] { $errors } errors
+    }: the bundle does not validate.
+bundle-check-validation-errors-fix = Each diagnostic below names the record and the field. Correct the record, or restore the last backup that validated.
+bundle-check-validation-warnings = { $warnings ->
+    [one] 1 warning
+    *[other] { $warnings } warnings
+    }. They never block a save; each says something may be off.
+bundle-check-validation-warnings-fix = Read them below. Most are references to records that are not in this bundle, which a GEDCOM import often leaves.
+bundle-check-payloads-title = Attached files
+bundle-check-payloads-none = No attached files.
+bundle-check-payloads-ok = { $declared ->
+    [one] The one file is present.
+    *[other] All { $declared } files are present.
+    }
+bundle-check-payloads-missing = { $missing } of { $declared } attached files are missing from the cache.
+bundle-check-payloads-fix = The next save rebuilds the cache from the bundle. If they are missing from the bundle itself, restore them from a backup.
+bundle-check-binding-title = Accounts and bundle
+bundle-check-binding-ok = The accounts file was made for this family.
+bundle-check-binding-mismatch = The accounts file was made for { $expected }; this bundle is { $found }.
+bundle-check-binding-fix = If the bundle was restored or renamed on purpose, nothing to do. Otherwise one family's accounts apply to another's tree: put the right .acl back beside it.
+bundle-check-living-title = The living, in public
+bundle-check-living-ok = No one recorded as living is visible to visitors.
+bundle-check-living-public = { $n ->
+    [one] 1 person recorded as living is
+    *[other] { $n } people recorded as living are
+    } marked public: any visitor reads their record.
+bundle-check-living-fix = Unless they agreed to it, set their visibility to members (Edit, Identity).
+bundle-check-special-title = Special categories
+bundle-check-special-none = No record holds health, biometric, genomic, criminal or behavioural data.
+bundle-check-special-some = { $n ->
+    [one] 1 record holds
+    *[other] { $n } records hold
+    } health, biometric, genomic, criminal or behavioural data. For the living it stays with administrators, whatever the record says.
+bundle-check-quality-title = Data quality
+bundle-check-quality-ok = Nothing to look at.
+bundle-check-quality-open = { $n ->
+    [one] 1 thing to look at
+    *[other] { $n } things to look at
+    }, in { $groups ->
+    [one] 1 group
+    *[other] { $groups } groups
+    }.
+bundle-check-quality-fix = Open the data quality page: each line names the record and what looks wrong. Correct it, or mark it checked.
+bundle-check-size-title = Size
+bundle-check-size-ok = { $size }, under the { $warn } past which this page warns.
+bundle-check-size-heavy = { $size }, past { $warn }.
+bundle-check-size-fix = The archive is the family's to grow. Watch the disk and the backups (Infrastructure, Volumes), and raise --size-warn-mb if this size is expected.
+seal-algorithm-value = { $key } · AES-256
+seal-key-placeholder = -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+# Administration console: the infrastructure's checks (v0.5.0, docs/adr/0011 §3)
+infra-area-security = Security
+infra-area-access = Access
+infra-area-data = Data
+infra-area-capacity = Capacity
+infra-area-release = Version
+infra-area-platform = Platform
+infra-verdict-ok = Healthy
+infra-verdict-warn = Needs attention
+infra-verdict-fail = Critical
+duration-days = { $n ->
+    [one] { $n } day
+    *[other] { $n } days
+    }
+duration-hours = { $n ->
+    [one] { $n } hour
+    *[other] { $n } hours
+    }
+duration-minutes = { $n ->
+    [one] { $n } minute
+    *[other] { $n } minutes
+    }
+infra-transport-title = How the site is reached
+infra-transport-ok = This page arrived over HTTPS.
+infra-transport-exposed = This page arrived unencrypted, and the server listens on { $bind }, beyond this machine: passwords and session cookies cross the network in clear.
+infra-transport-exposed-fix = Put an HTTPS reverse proxy (Caddy, nginx, HAProxy) in front, and bind the service to 127.0.0.1 again: rerun bootstrap.sh with --bind 127.0.0.1:8080, or remove the drop-in that widened it.
+infra-transport-plain = This page arrived unencrypted, from a server listening on { $bind }. That is fine on this machine alone, and only there.
+infra-transport-plain-fix = Reach the site through its HTTPS address. If a proxy does terminate TLS, have it send X-Forwarded-Proto: https so this server knows.
+infra-forwarded-title = Forwarded addresses
+infra-forwarded-ok = The server listens on this machine only, so the client address a proxy forwards can be trusted to slow down repeated failed sign-ins.
+infra-forwarded-exposed = The server can be reached directly, and it trusts the X-Forwarded-For header: a client that sets that header itself can escape the slow-down after failed sign-ins.
+infra-forwarded-fix = Bind the service to 127.0.0.1 behind the proxy, or firewall the port so that only the proxy reaches it.
+infra-cross-site-title = Posts from other sites
+infra-cross-site-ok = No form was posted here from another site in the last day.
+infra-cross-site-refused = { $n ->
+    [one] One form posted from another site was refused in the last day.
+    *[other] { $n } forms posted from other sites were refused in the last day.
+    }
+infra-cross-site-fix = Nothing got through. If the refusals are yours — the same site reached by a second address — set the public address under Connectivity, or use that one address.
+infra-sso-title = Sign-in services
+infra-sso-none = No sign-in service is enabled; accounts sign in with a password.
+infra-sso-ok = { $n ->
+    [one] One sign-in service is enabled, and the public address is HTTPS.
+    *[other] { $n } sign-in services are enabled, and the public address is HTTPS.
+    }
+infra-sso-no-https = A sign-in service is enabled, but the public address is not HTTPS: providers refuse to send their answer to a plain address, and signing in fails.
+infra-sso-fix = Under Connectivity, set the public address to the https:// address readers use.
+infra-admins-title = Administrators
+infra-admins-none = No active account can administer this site. Only the emergency token can, and only while it is set.
+infra-admins-none-fix = Sign in with the emergency token, create an administrator under Accounts, then remove the token.
+infra-admins-one = One administrator. If that person is away or loses the password, nobody can manage the site.
+infra-admins-one-fix = Give a second, trusted person the administrator role under Accounts.
+infra-admins-ok = { $n ->
+    [one] { $n } administrator can sign in.
+    *[other] { $n } administrators can sign in.
+    }
+infra-token-title = Emergency token
+infra-token-generated = No emergency token is set.
+infra-token-only-way = An emergency token is set, and with no administrator account it is the only way in. Keep it until an administrator exists.
+infra-token-standing = An emergency token is still set. It signs in past every account and every permission.
+infra-token-fix = Remove AXGF_CMS_ADMIN_TOKEN from the service's environment file, then restart the service.
+infra-registration-title = Self-registration
+infra-registration-closed = Visitors cannot create accounts; only an administrator can.
+infra-registration-secret = Visitors can create a member account if they know the registration secret.
+infra-registration-open = Any visitor can create a member account.
+infra-registration-open-fix = That suits a site meant to be open. Otherwise require the registration secret, or close registration, under Accounts.
+infra-failures-title = Failed sign-ins
+infra-failures-ok = { $n ->
+    [one] { $n } failed sign-in in the last day.
+    *[other] { $n } failed sign-ins in the last day.
+    }
+infra-failures-many = { $n ->
+    [one] { $n } failed sign-in in the last day: somebody may be guessing passwords.
+    *[other] { $n } failed sign-ins in the last day: somebody may be guessing passwords.
+    }
+infra-failures-fix = Each address is already slowed down after repeated failures. If the count keeps climbing, find where the attempts come from in the proxy's log and block it there, and make sure every administrator has a long password or signs in through a sign-in service.
+infra-health-bundle-title = Family data
+infra-health-bundle-ok = The bundle opens and passes validation.
+infra-health-bundle-fix = Open the AXGF bundle page for the errors and correct them, or restore the last backup that validated (axgf-cms restore).
+infra-health-cache-title = Attachment cache
+infra-health-cache-ok = Every attached file is in the cache.
+infra-health-cache-fix = Save any record once: the save rebuilds the cache. Files still missing after that are missing from the bundle itself.
+infra-health-backup-title = Backups
+infra-health-backup-ok = { $count ->
+    [one] A recent backup exists; { $count } archive is kept.
+    *[other] A recent backup exists; { $count } archives are kept.
+    }
+infra-health-backup-fix = Without a backup directory, rerun bootstrap.sh with --backup-dir. With one, check the timer (systemctl status axgf-cms-backup.timer) and its log (journalctl -u axgf-cms-backup).
+infra-disk-title = Disk space
+infra-disk-ok = { $free } free of { $total } ({ $percent }% free).
+infra-disk-fix = Free space on the partition that holds the data directory — old backups also kept elsewhere, logs, other programs' files — or move the data to a larger disk.
+infra-growth-title = Growth
+infra-growth-ok = { $days ->
+    [one] Growing about { $rate } a month; room for { $days } more day at that rate.
+    *[other] Growing about { $rate } a month; room for { $days } more days at that rate.
+    }
+infra-growth-soon = { $days ->
+    [one] Growing about { $rate } a month: at that rate the disk is full in { $days } day.
+    *[other] Growing about { $rate } a month: at that rate the disk is full in { $days } days.
+    }
+infra-growth-fix = Plan the space now: a larger disk, fewer backups kept on the same disk, or backups moved to another one.
+infra-growth-flat = The backups have not grown; there is nothing to plan.
+infra-growth-unknown = Not enough backups yet to measure growth: it takes at least a day between the oldest and the newest.
+infra-memory-title = Memory
+infra-memory-ok = { $used } used of the service's { $max } ceiling ({ $percent }%).
+infra-memory-high = { $used } used of the service's { $max } ceiling ({ $percent }%): close to where the system stops the service.
+infra-memory-fix = Raise MemoryMax= in a drop-in for axgf-cms.service, or find what holds the memory — a very large import, a large attachment — and restart the service.
+infra-memory-unlimited = { $used } in use, with no ceiling set for the service.
+infra-version-title = Version
+infra-version-ok = v{ $current } is the newest published release.
+infra-version-behind = v{ $current } is running; { $latest } is published.
+infra-version-behind-fix = Read the release notes, then upgrade from the Version section below. A backup is taken first, and the previous version comes back on its own if the new one does not start.
+infra-version-unknown = Whether a newer version exists is not known: the list of releases has not been fetched.
+infra-version-unknown-fix = Use “Check for new versions” below. The production sandbox cannot reach GitHub itself; once the upgrade helper is installed, it fetches the list every day.
+infra-version-stale = { $days ->
+    [one] The list of releases was last fetched { $days } day ago.
+    *[other] The list of releases was last fetched { $days } days ago.
+    }
+infra-upgrades-title = Upgrades
+infra-upgrades-ok = The upgrade helper is installed: the button below can change the version.
+infra-upgrades-manual = The upgrade helper is not installed, so the version is changed by hand on the server.
+infra-upgrades-fix = Run the current bootstrap.sh once as root: it installs the helper along with the service.
+infra-sandbox-title = Sandbox
+infra-sandbox-ok = The process runs with no-new-privileges and a system-call filter.
+infra-sandbox-unknown = This system does not report the process's sandbox.
+infra-sandbox-off = The process runs without part of its sandbox: no-new-privileges or the system-call filter is off.
+infra-sandbox-fix = Run the service from the unit bootstrap.sh writes, without drop-ins that loosen it. On a development machine this is expected.
+infra-clock-title = Clock
+infra-clock-ok = The system clock reads { $year }, which is plausible.
+infra-clock-wrong = The system clock reads { $year }: dates, backup ages and sessions are all wrong.
+infra-clock-fix = Turn on time synchronisation: timedatectl set-ntp true.
+
+# Administration console: the Infrastructure page (v0.5.0, docs/adr/0011)
+infra-title = Infrastructure
+infra-lede = The machine this site runs on, checked each time this page opens: how it is reached, who holds the keys, whether the data is safe and still fits, which version runs, and the sandbox around it.
+infra-kpi-health = Health
+infra-kpi-version = Version
+infra-kpi-version-newer = { $version } available
+infra-kpi-version-current = Up to date
+infra-kpi-version-unknown = Not checked yet
+infra-kpi-disk = Free space
+infra-kpi-disk-note = { $percent }% of { $total } used
+infra-kpi-compute = Machine
+infra-kpi-cpus = { $n ->
+    [one] { $n } core
+    *[other] { $n } cores
+    }
+infra-kpi-load = Load { $load }
+infra-kpi-rss = { $size } in use
+infra-unknown = Not known
+infra-health = Health
+infra-health-intro = Green is fine, a warning is worth a look, critical needs attention now. Each finding opens on what to do about it.
+infra-json = The same checks as JSON, for a monitor
+infra-version = Version
+infra-version-running = Running
+infra-version-latest = Latest published
+infra-version-up-to-date = up to date
+infra-version-checked = List fetched
+infra-version-never = never
+infra-source-direct = by this server
+infra-source-helper = by the upgrade helper
+infra-version-token = Private repository
+infra-token-env-set = A GitHub token is set for listing and downloading releases.
+infra-token-env-unset = No token. If the repository is private, put one in { $name }, readable by root only: the upgrade helper reads it there.
+infra-releases-error = The last attempt to fetch the list failed:
+infra-releases-refresh = Check for new versions
+infra-releases-asked = The upgrade helper has been asked for a fresh list. Reload this page in a minute.
+infra-releases-not-asked = The request could not be written: { $error }
+infra-upgrade-status-running = Changing from { $from } to { $to }…
+infra-upgrade-status-succeeded = Changed from { $from } to { $to }.
+infra-upgrade-status-failed = The change from { $from } to { $to } failed; { $from } is still the version running.
+infra-upgrade-status-refused = The upgrade helper refused the change to { $to }.
+infra-upgrade-log = Helper output
+infra-upgrade-pending = { $by } asked for { $version } on { $at }; the upgrade helper has not picked it up yet.
+infra-releases = Published releases
+infra-releases-tag = Version
+infra-releases-published = Published
+infra-releases-relation = Compared with this one
+infra-releases-notes = Release notes
+infra-releases-open = Read
+infra-relation-newer = newer
+infra-relation-current = this one
+infra-relation-older = older
+infra-prerelease = release candidate
+infra-releases-none = No list of releases yet.
+infra-upgrade = Change version
+infra-upgrade-intro = The button asks the upgrade helper, which runs as root outside this site's sandbox. It takes a backup, installs the release once its checksum is verified, restarts the service and checks it; if the new version does not answer, the previous one is put back.
+infra-upgrade-version = Version to install
+infra-upgrade-confirm = To go back to an older version, type its tag again
+infra-upgrade-confirm-hint = Not needed for a newer version. An older version may not read data a newer one wrote: read its notes first.
+infra-upgrade-go = Install this version
+infra-upgrade-safety = The site is unavailable for a few seconds while the service restarts.
+infra-upgrade-manual = The upgrade helper is not installed on this server, so this page cannot change the version. As root, on the server:
+infra-upgrade-manual-helper = Running the current bootstrap.sh once installs the helper, and the button here works from then on.
+infra-upgrade-asked = { $version } has been requested. The upgrade helper picks it up within a few seconds; this page shows how it went.
+infra-upgrade-no-helper = The upgrade helper is not installed, so { $version } cannot be installed from here.
+infra-upgrade-unknown-version = { $version } is not in the list of published releases.
+infra-upgrade-same-version = { $version } is the version already running.
+infra-upgrade-confirm-older = { $version } is older than the running version. Type its tag in the confirmation field to go back to it.
+infra-volumes = Storage
+infra-volumes-intro = The partition that holds the data directory ({ $path }), and what this site keeps on it.
+infra-volumes-partition = Partition
+infra-of = { $used } of { $total }
+infra-volumes-ours = This site
+infra-volumes-breakdown = What this site keeps
+infra-part-bundle = Family bundle
+infra-part-cache = Attachment cache
+infra-part-backups = Backups
+infra-part-binary = Program
+infra-part-journal = Change journal
+infra-part-accounts = Accounts and settings
+infra-files = { $n ->
+    [one] { $n } file
+    *[other] { $n } files
+    }
+infra-growth = Growth
+infra-growth-month = Per month
+infra-growth-not-enough = not enough backups to tell
+infra-growth-left = Room left at this rate
+infra-backups = Backups
+infra-backups-dir = Directory
+infra-backups-count = Archives
+infra-backups-newest = Newest
+infra-backups-oldest = Oldest
+infra-backups-room = Room where they are kept
+infra-free-of = { $free } free of { $total }
+infra-paths = Paths
+infra-path-data = Data directory
+infra-path-binary = Program
+infra-compute = Computing
+infra-compute-hidden = The service's sandbox hides the machine's own figures from it; what shows here is what the process can see.
+infra-compute-memory = Machine memory
+infra-available-of = { $available } free of { $total }
+infra-compute-ceiling = Service memory
+infra-compute-no-ceiling = { $used }, no ceiling
+infra-compute-os = System
+infra-compute-kernel = Kernel
+infra-compute-arch = Architecture
+infra-compute-cpu = Processor
+infra-compute-cpus = Cores
+infra-compute-load = Load (1, 5, 15 min)
+infra-compute-rss = This process
+infra-compute-threads = Threads
+infra-compute-files = Open files
+infra-compute-uptime = Service running for
+infra-compute-sys-uptime = Machine running for
+infra-compute-sandbox = Sandbox
+infra-compute-nnp-on = no new privileges
+infra-compute-nnp-off = privileges can be gained
+infra-compute-seccomp-on = system calls filtered
+infra-compute-seccomp-off = system calls unfiltered
+infra-activity = Activity
+infra-activity-intro = Counted over { $span }: the service keeps one day, and starts again from zero when it restarts.
+infra-activity-sessions = Open sessions
+infra-activity-signed-in = Sign-ins
+infra-activity-failed = Failed sign-ins
+infra-activity-registered = Accounts created
+infra-activity-cross-site = Cross-site posts refused
+
+# Sign-in services: what the reader is told when one fails (v0.5.0, docs/adr/0012)
+sso-error-not-configured = This sign-in service is not set up on this site.
+sso-error-no-public-url = Signing in through a service needs this site's public address, which is not set yet. An administrator sets it under Connectivity.
+sso-error-unreachable = The sign-in service could not be reached. Try again in a moment, or sign in another way.
+sso-error-refused = The sign-in service did not let you in, or the sign-in was cancelled there.
+sso-error-stale = That sign-in had expired, or was started in another browser. Start again.
+sso-error-invalid = The sign-in service's answer did not pass this site's checks, so it was not used. Start again; if it keeps happening, tell an administrator.
+infra-upgrade-already-pending = { $version } is already waiting for the upgrade helper. Wait for it to finish before asking for another version.
+
+# Administration console: Connectivity, sign-in services and registration (v0.5.0, docs/adr/0012)
+connectivity-title = Connectivity
+connectivity-lede = How readers reach this site and how they sign in: the public address, the sign-in services and the rules every sign-in follows, administrators' included.
+connectivity-kpi-address = Public address
+connectivity-address-unset = Not set
+connectivity-address-https = HTTPS
+connectivity-address-plain = Unencrypted
+connectivity-address-unset-note = Every sign-in service needs it
+connectivity-kpi-services = Sign-in services
+connectivity-kpi-services-note = { $n ->
+    [one] ready to offer
+    *[other] ready to offer
+    }
+connectivity-kpi-passwords = Passwords
+connectivity-policy-short-everyone = Everyone
+connectivity-policy-short-non-admins = Not administrators
+connectivity-policy-short-nobody = Nobody
+connectivity-policy-note-everyone = Every account may sign in with its password, and with a linked service too.
+connectivity-policy-note-non-admins = Administrators sign in through a service only; everyone else may still use a password. A stolen administrator password then opens nothing.
+connectivity-policy-note-nobody = Everyone signs in through a service. An account with no linked service and no address to link by cannot sign in.
+connectivity-kpi-admins-linked = { $n ->
+    [one] { $n } administrator with a linked service
+    *[other] { $n } administrators with a linked service
+    }
+connectivity-kpi-registration = Registration
+connectivity-kpi-registration-go = Set on the Accounts page →
+registration-short-closed = Administrators only
+registration-short-secret = With the family's secret
+registration-short-open = Open to visitors
+connectivity-address = Public address
+connectivity-address-intro = The address readers type, as they type it: https://family.example. Sign-in services send readers back to it, so it must be the public address, not the one this server listens on.
+connectivity-address-label = Public address
+connectivity-address-hint = Leave it empty while nobody signs in through a service.
+connectivity-address-invalid = That is not an http or https address with a host name.
+connectivity-address-saved = The public address is saved.
+connectivity-policy = Sign-in rules
+connectivity-policy-intro = They apply to every account, administrators' included. A rule that would leave no administrator able to sign in is refused.
+connectivity-policy-passwords = Who may sign in with a password
+connectivity-policy-without-way = { $n ->
+    [one] { $n } active account has no linked service and no address: under “Nobody” it could not sign in.
+    *[other] { $n } active accounts have no linked service and no address: under “Nobody” they could not sign in.
+    }
+connectivity-link-by-email = Link a service to the account with the same verified address
+connectivity-link-by-email-note = How a relative gets a one-click sign-in without any registration: create their account with their address, and their first sign-in through a service that verified that address links it. Only an address typed by an administrator or verified by a service is ever matched.
+connectivity-domains = Domains allowed to open an account
+connectivity-domains-hint = One per line, such as family.example. Empty: any. When set, only an address a service verified at one of these domains can open an account, and the registration form is not offered.
+connectivity-domain-invalid = “{ $domain }” is not a domain name.
+connectivity-policy-unknown = Choose who may sign in with a password.
+connectivity-policy-lockout = Refused: with this change no active administrator could sign in. Link a sign-in service to an administrator's account first, by signing in through it once, or keep passwords for administrators.
+connectivity-policy-saved = The sign-in rules are saved.
+connectivity-not-saved = Not saved: { $error }
+connectivity-services = Sign-in services
+connectivity-services-intro = Register this site in the service's own console with the redirect address shown, then paste the client ID and secret here. Visitors then see “Continue with …” on the sign-in and registration pages.
+connectivity-outbound-note = Signing in through a service needs this server to reach the service. The unit bootstrap.sh writes refuses outgoing connections (IPAddressDeny=any): allow them with sudo systemctl edit axgf-cms, adding IPAddressAllow=any under [Service], then restart. The test button says whether it can.
+connectivity-service-ready = Ready
+connectivity-service-incomplete = Incomplete
+connectivity-service-off = Off
+connectivity-service-enable = Offer this service on the sign-in and registration pages
+connectivity-service-issuer = Issuer
+connectivity-service-issuer-hint = The provider's address, such as https://auth.family.example/realms/family; its settings are read from /.well-known/openid-configuration under it.
+connectivity-service-label = Button label
+connectivity-service-tenant = Directory (tenant)
+connectivity-service-tenant-hint = common for any Microsoft account, organizations for work and school accounts, consumers for personal ones, or your directory's id.
+connectivity-service-client-id = Client ID
+connectivity-service-secret = Client secret
+connectivity-service-secret-set = A secret is set. Leave this empty to keep it.
+connectivity-service-secret-unset = No secret set yet.
+connectivity-service-secret-clear = Remove the secret
+connectivity-service-redirect = Redirect address to register
+connectivity-service-redirect-needs-address = Set the public address first
+connectivity-service-console = Where to register
+connectivity-service-console-open = { $name }'s console
+connectivity-service-test = Test the connection
+connectivity-issuer-invalid = The issuer must be an https:// address.
+connectivity-tenant-invalid = A directory is a name or an id: letters, digits, dots and dashes.
+connectivity-provider-incomplete = { $name } is not complete: it needs a client ID and a client secret, and an issuer for a generic provider.
+connectivity-provider-saved = { $name } is saved.
+connectivity-test-ok = { $name } answered: { $answer }.
+connectivity-test-failed = { $name } could not be reached from this server: { $detail }
+registration-title = Registration
+registration-intro = Whether a visitor may open an account here by themselves. Such an account is a member's: it reads what members read and changes nothing. Giving it another role is an administrator's choice, below.
+registration-who = Who may open an account
+registration-note-closed = Only an administrator creates accounts, on this page.
+registration-note-secret = A visitor who knows the family's secret may open a member's account. Share the secret the way you would a door code.
+registration-note-open = Any visitor may open a member's account. Members read the records kept for members.
+registration-rotate = Draw a new secret
+registration-secret = The family's secret
+registration-secret-note = Anyone who has it can open an account while this mode is on. Drawing a new one shuts out the old one; accounts already opened stay.
+registration-link = Registration page
+registration-quick = Quick ways in
+registration-quick-none = No sign-in service is ready: set one up under Connectivity
+registration-changed = Last changed by { $by }, { $at }.
+registration-unknown = Choose who may open an account.
+accounts-kpi-total = Active accounts
+accounts-kpi-total-note = { $disabled ->
+    [one] { $disabled } disabled
+    *[other] { $disabled } disabled
+    }
+accounts-kpi-admins = Administrators
+accounts-kpi-admins-few = Add a second
+accounts-kpi-admins-ok = More than one, as it should be
+accounts-kpi-linked = Linked to a service
+accounts-kpi-linked-note = { $n ->
+    [one] { $n } service ready
+    *[other] { $n } services ready
+    }
+accounts-kpi-registered = { $n ->
+    [one] { $n } opened by a visitor
+    *[other] { $n } opened by visitors
+    }
+accounts-roles = Roles
+accounts-sign-in = Signs in with
+accounts-sign-in-password = password
+accounts-sign-in-google = Google
+accounts-sign-in-microsoft = Microsoft
+accounts-sign-in-github = GitHub
+accounts-sign-in-oidc = single sign-on
+accounts-sign-in-none = no way in yet
+accounts-created-via-register = opened by the visitor
+accounts-created-via-sso = opened through a service
+accounts-add-also-register = Visitors may also open member accounts by themselves, as set above. An account created here can have any role.
+login-password-not-allowed = This site's sign-in rules do not let this account use a password: sign in through a service.
+login-register = No account yet? Create one
+register-title = Create an account
+register-lede = A member's account reads the records kept for the family's members. The quickest way is an account you already have.
+register-closed = Accounts here are created by an administrator. Ask one of them for yours.
+register-have-account = Already have an account? Sign in
+register-or = or
+register-secret = The family's secret
+register-secret-hint = An administrator gave it to you, or someone in the family did.
+register-secret-hint-services = Type it before choosing a service, or the next step will ask for it.
+register-domains = Only addresses at { $domains } can open an account.
+register-username-hint = 2 to 64 letters, digits, dots, dashes or underscores.
+register-submit = Create the account
+register-member-note = No address is asked for: nothing is sent to you, and nobody can claim yours.
+register-form-closed = This site does not open accounts with this form.
+register-throttled = Too many attempts from here. Wait a quarter of an hour and try again.
+register-secret-wrong = That is not the family's secret.
+register-username-invalid = A username has 2 to 64 letters, digits, dots, dashes or underscores.
+register-password-short = The password needs at least { $min } characters.
+register-username-taken = That username is taken. Choose another.
+register-not-saved = The account could not be saved. Try again in a moment.
+register-finish-title = One more step
+register-finish-lede = The service confirmed who you are. To open an account here, type the family's secret.
+register-finish-lede-email = The service confirmed you as { $email }. To open an account here, type the family's secret.
+sso-continue = Continue
+sso-continue-with = Continue with { $name }
+sso-error-title = Sign-in did not complete
+sso-account-disabled = The account linked to this sign-in is disabled. Ask an administrator.
+sso-no-account = No account here matches this sign-in, and this site does not open accounts by itself. Ask an administrator to create yours with this address: your next sign-in will link to it.
+sso-domain-refused = Accounts here can only be opened with an address at the family's domains, confirmed by the service.

@@ -91,6 +91,21 @@ pub enum Command {
         #[arg(value_name = "ARCHIVE")]
         archive: Option<PathBuf>,
     },
+    /// Fetch the list of published releases and write it beside the bundle,
+    /// for the Infrastructure page (docs/adr/0011 §5).
+    ///
+    /// The web service cannot do this itself — its sandbox has no network —
+    /// so the upgrade helper bootstrap.sh installs runs it once a day and
+    /// whenever the page asks. A private repository needs
+    /// AXGF_CMS_GITHUB_TOKEN in the environment.
+    Releases {
+        /// Where to write releases.json. Defaults to the bundle's directory.
+        #[arg(long, value_name = "DIR")]
+        data_dir: Option<PathBuf>,
+        /// Who is fetching, as the page reports it: `helper` or `direct`.
+        #[arg(long, value_name = "WHO", default_value = "direct")]
+        source: String,
+    },
 }
 
 /// Browse and edit one AXGF bundle.

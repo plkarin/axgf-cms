@@ -204,6 +204,33 @@ pub struct User {
     /// tree. Read access is governed by visibility, never by this.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub family_scope: Vec<String>,
+    /// The identity providers this account signs in through (docs/adr/0012):
+    /// each the provider's stable identifier for the person, never a token.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub identities: Vec<Identity>,
+    /// How the account came to exist: `admin` (the accounts page or
+    /// `--create-admin`), `register` (the registration form) or
+    /// `sso:<provider>`. Absent on accounts older than 0.5.0, which were all
+    /// made by an administrator.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_via: Option<String>,
+}
+
+/// One provider's identifier for an account's person.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Identity {
+    /// `google`, `microsoft`, `github` or `oidc`.
+    pub provider: String,
+    /// The issuer vouching for `subject`. With it the pair is unique, even
+    /// for two generic providers.
+    pub issuer: String,
+    /// The provider's stable identifier: OpenID Connect's `sub`, GitHub's id.
+    pub subject: String,
+    /// The address the provider gave when the link was made, for the
+    /// accounts page. Never what identifies the person.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    pub linked_at: String,
 }
 
 /// Whether an account may sign in.
@@ -249,6 +276,11 @@ pub struct Acl {
     pub bundle: BundleBinding,
     #[serde(default)]
     pub users: Vec<User>,
+    /// The rules of entry: registration, sign-in, identity providers
+    /// (docs/adr/0012). Kept here because they are access control and must
+    /// travel with the accounts in every backup — and never with the bundle.
+    #[serde(default)]
+    pub site: crate::site::Site,
 }
 
 impl Default for Acl {
@@ -257,6 +289,7 @@ impl Default for Acl {
             acl_version: ACL_VERSION,
             bundle: BundleBinding::default(),
             users: Vec::new(),
+            site: crate::site::Site::default(),
         }
     }
 }
@@ -357,6 +390,33 @@ impl Acl {
         self.users
             .iter()
             .any(|u| u.username.eq_ignore_ascii_case(username))
+    }
+
+    /// The account a provider's identifier belongs to, active or not.
+    pub fn by_identity(&self, provider: &str, issuer: &str, subject: &str) -> Option<&User> {
+        self.users.iter().find(|u| {
+            u.identities
+                .iter()
+                .any(|i| i.provider == provider && i.issuer == issuer && i.subject == subject)
+        })
+    }
+
+    /// The one active account holding `email`, case-insensitively. Two
+    /// accounts with the same address are ambiguous, and an ambiguous address
+    /// links nothing.
+    pub fn active_by_email(&self, email: &str) -> Option<&User> {
+        let email = email.trim();
+        if email.is_empty() {
+            return None;
+        }
+        let mut found = self.users.iter().filter(|u| {
+            u.status == Status::Active
+                && u.email
+                    .as_deref()
+                    .is_some_and(|e| e.trim().eq_ignore_ascii_case(email))
+        });
+        let first = found.next()?;
+        found.next().is_none().then_some(first)
     }
 
     /// How many active admins the ACL holds.
@@ -523,7 +583,39 @@ pub fn new_user(username: &str, password: &str, role: Role) -> Result<User> {
         theme: None,
         backgrounds: None,
         family_scope: Vec::new(),
+        identities: Vec::new(),
+        created_via: None,
     })
+}
+
+/// The stored hash of an account that has no password: one that signs in
+/// through a provider only. Not a PHC string, so nothing ever verifies
+/// against it, and an older build reading it refuses it the same way.
+pub const NO_PASSWORD: &str = "!no-password";
+
+/// Whether an account has a password of its own to sign in with.
+pub fn has_password(user: &User) -> bool {
+    user.password_hash != NO_PASSWORD && PasswordHash::new(&user.password_hash).is_ok()
+}
+
+/// An account for a provider's user: no password, a member.
+pub fn new_provider_user(username: &str, identity: Identity, email: Option<String>) -> User {
+    User {
+        id: uuid::Uuid::new_v4().to_string(),
+        username: username.trim().to_string(),
+        email,
+        password_hash: NO_PASSWORD.to_string(),
+        role: Role::Viewer,
+        status: Status::Active,
+        created_at: crate::view::now_iso8601(),
+        last_login: None,
+        language: None,
+        theme: None,
+        backgrounds: None,
+        family_scope: Vec::new(),
+        created_via: Some(format!("sso:{}", identity.provider)),
+        identities: vec![identity],
+    }
 }
 
 /// Reject usernames that would be ambiguous or unusable.

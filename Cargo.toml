@@ -58,6 +58,17 @@ fluent = "0.17.0"
 unic-langid = "0.9.6"
 intl-memoizer = "0.5.3"
 ureq = { version = "3.4.0", default-features = false, features = ["rustls", "json", "gzip"] }
+# The encrypted export (docs/adr/0011 §4): an OpenPGP message to the
+# recipient's public key, readable by `gpg --decrypt`. Pure Rust, so the
+# static musl release still links nothing, and streaming, so a 435 MB bundle
+# is never in memory. It encrypts only: nothing here ever holds a private key.
+pgp = { version = "0.21", default-features = false }
+# The bit length of a recipient's RSA key (src/seal.rs). Already in the tree
+# through rpgp; named here only for its `PublicKeyParts` trait.
+rsa = { version = "0.9", default-features = false }
+# The random source rpgp takes, and the one the identity providers' `state`,
+# `nonce` and PKCE verifier are drawn from (src/sso.rs).
+rand = "0.8"
 # A backup archive is an ordinary ZIP so that an operator with nothing but
 # `unzip` can get the three files out of it without this binary. Deflate only:
 # the bundle inside is already a compressed archive and goes in stored.

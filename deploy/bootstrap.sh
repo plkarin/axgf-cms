@@ -67,6 +67,26 @@ BACKUP_SERVICE_PATH="${PREFIX}/etc/systemd/system/axgf-cms-backup.service"
 BACKUP_TIMER_PATH="${PREFIX}/etc/systemd/system/axgf-cms-backup.timer"
 VERIFY_SERVICE_PATH="${PREFIX}/etc/systemd/system/axgf-cms-verify.service"
 VERIFY_TIMER_PATH="${PREFIX}/etc/systemd/system/axgf-cms-verify.timer"
+# The upgrade helper (docs/adr/0011 §5): a root script and five units that act
+# on what the Infrastructure page asks for — a fresh list of releases, or a
+# version to install — which the web service, sandboxed and offline, cannot do.
+HELPER_DIR="${PREFIX}/usr/local/lib/axgf-cms"
+HELPER_PATH="${HELPER_DIR}/upgrade-helper"
+HELPER_SCRIPT_COPY="${HELPER_DIR}/bootstrap.sh"
+UPGRADE_PATH_UNIT="${PREFIX}/etc/systemd/system/axgf-cms-upgrade.path"
+UPGRADE_SERVICE_PATH="${PREFIX}/etc/systemd/system/axgf-cms-upgrade.service"
+RELEASES_PATH_UNIT="${PREFIX}/etc/systemd/system/axgf-cms-releases.path"
+RELEASES_SERVICE_PATH="${PREFIX}/etc/systemd/system/axgf-cms-releases.service"
+RELEASES_TIMER_PATH="${PREFIX}/etc/systemd/system/axgf-cms-releases.timer"
+# A private repository's releases are reachable through the API only, with a
+# token. From the environment, else from a file only root can read — the one
+# the upgrade helper uses, so the web service never holds it.
+GITHUB_TOKEN_FILE="${CONF_DIR}/github-token"
+GITHUB_TOKEN="${AXGF_CMS_GITHUB_TOKEN:-}"
+if [ -z "$GITHUB_TOKEN" ] && [ -r "$GITHUB_TOKEN_FILE" ]; then
+  GITHUB_TOKEN="$(head -n 1 "$GITHUB_TOKEN_FILE" | tr -d '[:space:]')"
+fi
+
 # Where the daily archives go. On the same disk as the bundle by default,
 # because that is the only location this script can know exists — and that is
 # exactly why the closing notes insist on copying them off the machine.
@@ -182,6 +202,62 @@ write_file() {
 }
 
 # --------------------------------------------------------------------------
+# Fetching, with or without a token
+# --------------------------------------------------------------------------
+# The token goes to curl on its standard input, as a config line, so it never
+# appears in a process listing or in this script's own output.
+api_get() {
+  if [ -n "$GITHUB_TOKEN" ]; then
+    printf 'header = "Authorization: Bearer %s"\n' "$GITHUB_TOKEN" \
+      | curl -fsSL -K - -H 'Accept: application/vnd.github+json' "$@"
+  else
+    curl -fsSL "$@"
+  fi
+}
+
+# The id of the asset named $1 in the release JSON on stdin. An asset's API
+# url ends in its id and comes before its name, and nothing else in a release
+# has a url of that shape, so the pairs are read in order without a JSON
+# parser this script cannot count on finding.
+asset_id() {
+  grep -o '"url"[[:space:]]*:[[:space:]]*"[^"]*/releases/assets/[0-9]*"\|"name"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | awk -v want="$1" '
+        /^"url"/ { id = $0; sub(/.*\//, "", id); gsub(/[^0-9]/, "", id); next }
+        /^"name"/ {
+          if (id != "") {
+            v = $0; sub(/^"name"[[:space:]]*:[[:space:]]*"/, "", v); sub(/"$/, "", v)
+            if (v == want) { print id; exit }
+            id = ""
+          }
+        }' || true
+}
+
+# Download release asset $2 of tag $1 (empty: the latest stable release) to
+# $3. Without a token, from the release's public URL, as always. With one,
+# through the API — the only way into a private repository's assets.
+fetch_asset() {
+  local tag="$1" name="$2" out="$3" json id
+  if [ -z "$GITHUB_TOKEN" ]; then
+    if [ -n "$tag" ]; then
+      curl -fsSL "${RELEASE_BASE}/releases/download/${tag}/${name}" -o "$out"
+    else
+      curl -fsSL "${RELEASE_BASE}/releases/latest/download/${name}" -o "$out"
+    fi
+    return
+  fi
+  if [ -n "$tag" ]; then
+    json="$(api_get "${API_BASE}/releases/tags/${tag}")" || return 1
+  else
+    json="$(api_get "${API_BASE}/releases/latest")" || return 1
+  fi
+  id="$(printf '%s' "$json" | asset_id "$name")"
+  [ -n "$id" ] || return 1
+  printf 'header = "Authorization: Bearer %s"\n' "$GITHUB_TOKEN" \
+    | curl -fsSL -K - -H 'Accept: application/octet-stream' \
+        "${API_BASE}/releases/assets/${id}" -o "$out"
+}
+
+# --------------------------------------------------------------------------
 # The script that runs is the script of the release being installed
 # --------------------------------------------------------------------------
 # Each release ships this file as an asset, `bootstrap.sh`, with a `.sha256`
@@ -222,7 +298,7 @@ hand_over() {
     return
   fi
   tmp="$(mktemp -d)"; TMPDIRS+=("$tmp")
-  if ! curl -fsSL "$url" -o "$tmp/bootstrap.sh" 2>/dev/null; then
+  if ! fetch_asset "$VERSION" bootstrap.sh "$tmp/bootstrap.sh" 2>/dev/null; then
     # The release is there but ships no installer: it predates shipped
     # installers. Anything else — no such tag, nothing published, no
     # network — is what a failed download already explains.
@@ -240,7 +316,7 @@ hand_over() {
     URL="$url"; ASSET="bootstrap.sh"; ARCH="$(uname -m)"; TARGET="-"
     explain_download_failure
   fi
-  curl -fsSL "${url}.sha256" -o "$tmp/bootstrap.sh.sha256" 2>/dev/null \
+  fetch_asset "$VERSION" bootstrap.sh.sha256 "$tmp/bootstrap.sh.sha256" 2>/dev/null \
     || die "${url} has no .sha256 beside it, so it cannot be checked; refusing to run it."
   ( cd "$tmp" && sed "s#\([a-f0-9]\{64\}\).*#\1  bootstrap.sh#" bootstrap.sh.sha256 | sha256sum -c - >/dev/null ) \
     || die "the installer for ${VERSION:-the latest release} does not match its checksum; refusing to run it."
@@ -262,7 +338,7 @@ hand_over() {
 # "no network" stay distinguishable.
 published_tags() {
   local json
-  json="$(curl -fsSL "${API_BASE}/releases")" || return 1
+  json="$(api_get "${API_BASE}/releases")" || return 1
   # A repository with no releases answers `[]`, and grep finding nothing there
   # is the answer, not a failure — but `set -o pipefail` would make it one.
   printf '%s' "$json" \
@@ -273,7 +349,7 @@ published_tags() {
 # True when a latest *stable* release exists. /releases/latest ignores
 # prereleases, so a repository can have releases and still have no latest.
 has_latest_stable() {
-  curl -fsSL -o /dev/null "${API_BASE}/releases/latest" 2>/dev/null
+  api_get -o /dev/null "${API_BASE}/releases/latest" 2>/dev/null
 }
 
 # Why the download failed, in terms the operator can act on. This used to be a
@@ -403,9 +479,9 @@ else
   say "downloading $URL"
   TMP="$(mktemp -d)"; TMPDIRS+=("$TMP")
   if [ "$DRY_RUN" = "0" ]; then
-    curl -fsSL "$URL" -o "$TMP/pkg.tar.gz" || explain_download_failure
+    fetch_asset "$VERSION" "$ASSET" "$TMP/pkg.tar.gz" || explain_download_failure
     # Verify the checksum when the release publishes one.
-    if curl -fsSL "${URL}.sha256" -o "$TMP/pkg.sha256" 2>/dev/null; then
+    if fetch_asset "$VERSION" "${ASSET}.sha256" "$TMP/pkg.sha256" 2>/dev/null; then
       ( cd "$TMP" && sed "s#\([a-f0-9]\{64\}\).*#\1  pkg.tar.gz#" pkg.sha256 | sha256sum -c - ) \
         || die "checksum mismatch — refusing to install"
       say "checksum verified"
@@ -760,6 +836,211 @@ EOF
 say "wrote $VERIFY_TIMER_PATH"
 }
 
+# --------------------------------------------------------------------------
+# The upgrade helper
+# --------------------------------------------------------------------------
+# The Infrastructure page has a button that changes the version, and the
+# process behind that page must not be able to: it runs unprivileged, offline,
+# in a sandbox that cannot write /usr/local/bin, and that is the point of it.
+# So the page writes a request into the data directory, and this helper —
+# root, outside the sandbox, started by a path unit — acts on it with this
+# very script's --upgrade: the pre-upgrade backup, the checksum, the health
+# check and the automatic rollback. It accepts a release tag and nothing else,
+# so the most a compromised web process can ask for is another official
+# release. The same helper fetches the list of releases, daily and on request,
+# by running `axgf-cms releases` as the service user.
+write_upgrade_helper() {
+step "Upgrade helper"
+run mkdir -p "$HELPER_DIR"
+# The installer that is running now is the one the helper upgrades with; it
+# hands over to the target release's own installer, checksum verified, as it
+# does from a shell. Run from a pipe there is no file to keep, and the button
+# then explains that the helper has no installer.
+if [ -f "$0" ] && [ "$0" -ef "$HELPER_SCRIPT_COPY" ]; then
+  say "the upgrade helper's installer is this one"
+elif [ -f "$0" ]; then
+  run install -m 0700 "$0" "$HELPER_SCRIPT_COPY"
+  say "kept this installer as ${HELPER_SCRIPT_COPY}"
+else
+  warn "this installer is not running from a file, so the upgrade helper has none to use; run it as a file to give it one"
+fi
+write_file "$HELPER_PATH" 0700 <<EOF
+#!/bin/bash
+# axgf-cms upgrade helper — written by bootstrap.sh; do not edit, rerun it.
+#
+#   upgrade-helper releases   fetch the list of releases for the page
+#   upgrade-helper upgrade    install the version the page asked for
+set -euo pipefail
+umask 077
+DATA_DIR="${DATA_DIR}"
+INSTALL_PATH="${INSTALL_PATH}"
+SERVICE_USER="${SERVICE_USER}"
+INSTALLER="${HELPER_SCRIPT_COPY}"
+TOKEN_FILE="${GITHUB_TOKEN_FILE}"
+SKIP_PRIVILEGED="${SKIP_PRIVILEGED}"
+EOF
+if [ "$DRY_RUN" = "0" ]; then
+cat >> "$HELPER_PATH" <<'EOF'
+
+token() {
+  if [ -r "$TOKEN_FILE" ]; then head -n 1 "$TOKEN_FILE" | tr -d '[:space:]'; fi
+}
+
+as_service() {
+  if [ "$SKIP_PRIVILEGED" = "1" ] || [ "$(id -u)" != "0" ]; then "$@"; else runuser -u "$SERVICE_USER" -- "$@"; fi
+}
+
+# A JSON string: quotes and backslashes escaped, terminal colours and other
+# control characters dropped.
+json_string() {
+  printf '"%s"' "$(printf '%s' "$1" | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\000-\010\013-\037' \
+    | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n\r' '  ')"
+}
+
+# upgrade.status, written whole and renamed into place, owned by the service
+# so the page can read it.
+write_status() {
+  local state="$1" message="$2" log="${3:-}" tmp first=1 line
+  tmp="$DATA_DIR/.upgrade.status.$$"
+  {
+    printf '{"state":%s,"from":%s,"to":%s,' "$(json_string "$state")" "$(json_string "$FROM")" "$(json_string "$TAG")"
+    printf '"started_at":%s,' "$(json_string "$STARTED")"
+    if [ "$state" = "running" ]; then printf '"finished_at":null,'; else printf '"finished_at":%s,' "$(json_string "$(date -u +%Y-%m-%dT%H:%M:%SZ)")"; fi
+    printf '"message":%s,"log":[' "$(json_string "$message")"
+    if [ -n "$log" ] && [ -f "$log" ]; then
+      while IFS= read -r line; do
+        [ "$first" = "1" ] || printf ','
+        first=0
+        json_string "$line"
+      done < <(tail -n 40 "$log")
+    fi
+    printf ']}\n'
+  } > "$tmp"
+  if [ "$SKIP_PRIVILEGED" != "1" ] && [ "$(id -u)" = "0" ]; then chown "$SERVICE_USER":"$SERVICE_USER" "$tmp"; fi
+  chmod 0600 "$tmp"
+  mv -f "$tmp" "$DATA_DIR/upgrade.status"
+}
+
+case "${1:-}" in
+  releases)
+    rm -f "$DATA_DIR/releases.request"
+    AXGF_CMS_GITHUB_TOKEN="$(token)"
+    export AXGF_CMS_GITHUB_TOKEN
+    as_service "$INSTALL_PATH" releases --data-dir "$DATA_DIR" --source helper
+    ;;
+  upgrade)
+    REQ="$DATA_DIR/upgrade.request"
+    [ -f "$REQ" ] || exit 0
+    TAG="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$REQ" | head -n 1)"
+    BY="$(sed -n 's/.*"requested_by"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$REQ" | head -n 1)"
+    # Taken at once, so the path unit does not start this again for it.
+    rm -f "$REQ"
+    FROM="v$("$INSTALL_PATH" --version 2>/dev/null | awk '{print $NF}' || true)"
+    STARTED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+      write_status refused "not a release tag"
+      echo "refused: not a release tag" >&2
+      exit 0
+    fi
+    if [ ! -f "$INSTALLER" ]; then
+      write_status refused "the helper has no installer to upgrade with; rerun bootstrap.sh from a file"
+      exit 0
+    fi
+    echo "upgrade to ${TAG} asked for by ${BY:-unknown}, from ${FROM}"
+    write_status running ""
+    LOG="$DATA_DIR/.upgrade.log"
+    : > "$LOG"
+    AXGF_CMS_GITHUB_TOKEN="$(token)"
+    export AXGF_CMS_GITHUB_TOKEN
+    if bash "$INSTALLER" --upgrade --version "$TAG" > "$LOG" 2>&1; then
+      write_status succeeded "" "$LOG"
+    else
+      write_status failed "" "$LOG"
+    fi
+    cat "$LOG"
+    rm -f "$LOG"
+    ;;
+  *)
+    echo "usage: upgrade-helper releases|upgrade" >&2
+    exit 2
+    ;;
+esac
+EOF
+fi
+say "wrote $HELPER_PATH"
+
+write_file "$UPGRADE_PATH_UNIT" 0644 <<EOF
+[Unit]
+Description=axgf-cms — watch for a version asked for from the Infrastructure page
+Documentation=https://github.com/${REPO}
+
+[Path]
+PathExists=${DATA_DIR}/upgrade.request
+Unit=axgf-cms-upgrade.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+write_file "$UPGRADE_SERVICE_PATH" 0644 <<EOF
+[Unit]
+Description=axgf-cms — install the version asked for from the Infrastructure page
+Documentation=https://github.com/${REPO}
+
+[Service]
+# Root, deliberately: it replaces ${INSTALL_PATH} and restarts the service,
+# through bootstrap.sh --upgrade and its backup, checksum and rollback.
+Type=oneshot
+ExecStart=${HELPER_PATH} upgrade
+TimeoutStartSec=30min
+EOF
+write_file "$RELEASES_PATH_UNIT" 0644 <<EOF
+[Unit]
+Description=axgf-cms — watch for the Infrastructure page asking for the list of releases
+Documentation=https://github.com/${REPO}
+
+[Path]
+PathExists=${DATA_DIR}/releases.request
+Unit=axgf-cms-releases.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+write_file "$RELEASES_SERVICE_PATH" 0644 <<EOF
+[Unit]
+Description=axgf-cms — fetch the list of published releases
+Documentation=https://github.com/${REPO}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=${HELPER_PATH} releases
+TimeoutStartSec=2min
+EOF
+write_file "$RELEASES_TIMER_PATH" 0644 <<EOF
+[Unit]
+Description=axgf-cms — fetch the list of published releases daily
+Documentation=https://github.com/${REPO}
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=4h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+say "wrote the upgrade helper's units"
+}
+
+enable_upgrade_helper() {
+  if [ "$SKIP_PRIVILEGED" = "1" ] || ! command -v systemctl >/dev/null 2>&1; then
+    return 0
+  fi
+  run systemctl enable --now axgf-cms-upgrade.path axgf-cms-releases.path axgf-cms-releases.timer \
+    || warn "could not enable the upgrade helper; the Infrastructure page will show the manual command instead"
+}
+
 if [ "$UNINSTALL" = "1" ]; then
   # ------------------------------------------------------------------------
   step "Uninstalling"
@@ -773,12 +1054,13 @@ if [ "$UNINSTALL" = "1" ]; then
   # data is three commands the operator types themselves, with the paths in
   # front of them, printed below.
   if command -v systemctl >/dev/null 2>&1 && [ "$SKIP_PRIVILEGED" = "0" ]; then
-    for unit in axgf-cms-verify.timer axgf-cms-backup.timer axgf-cms.service; do
+    for unit in axgf-cms-releases.timer axgf-cms-releases.path axgf-cms-upgrade.path \
+                axgf-cms-verify.timer axgf-cms-backup.timer axgf-cms.service; do
       if systemctl list-unit-files "$unit" >/dev/null 2>&1; then
         run systemctl disable --now "$unit" || true
       fi
     done
-    say "stopped and disabled the service and both timers"
+    say "stopped and disabled the service, its timers and the upgrade helper"
   fi
 
   for f in "$UNIT_PATH" "$BACKUP_SERVICE_PATH" "$BACKUP_TIMER_PATH" \
@@ -789,7 +1071,16 @@ if [ "$UNINSTALL" = "1" ]; then
     # /etc/systemd/system, which is not what "removed" should look like.
     [ -e "${f}.previous" ] && run rm -f "${f}.previous"
   done
+  for f in "$UPGRADE_PATH_UNIT" "$UPGRADE_SERVICE_PATH" "$RELEASES_PATH_UNIT" \
+           "$RELEASES_SERVICE_PATH" "$RELEASES_TIMER_PATH"; do
+    [ -e "$f" ] && run rm -f "$f"
+  done
   say "removed the unit files"
+  for f in "$HELPER_PATH" "$HELPER_SCRIPT_COPY"; do
+    [ -e "$f" ] && run rm -f "$f"
+  done
+  [ -d "$HELPER_DIR" ] && run rmdir "$HELPER_DIR" 2>/dev/null || true
+  say "removed the upgrade helper"
 
   if command -v systemctl >/dev/null 2>&1 && [ "$SKIP_PRIVILEGED" = "0" ]; then
     run systemctl daemon-reload
@@ -801,7 +1092,9 @@ if [ "$UNINSTALL" = "1" ]; then
   say "removed the binary"
 
   BUNDLE_SIZE="$( [ -f "$BUNDLE" ] && du -h "$BUNDLE" | cut -f1 || echo '-' )"
-  ARCHIVES="$( ls -1 "$BACKUP_DIR"/axgf-backup-*.zip 2>/dev/null | wc -l )"
+  # No archive at all is an answer (0), not a failure: under pipefail a bare
+  # `ls` of nothing ended the uninstall here, before it said where the data is.
+  ARCHIVES="$( { ls -1 "$BACKUP_DIR"/axgf-backup-*.zip 2>/dev/null || true; } | wc -l )"
 
   step "Done"
   cat <<EOF
@@ -973,6 +1266,9 @@ the single most expensive thing that can go wrong here."; }
     [ -f "$u" ] && run cp -p "$u" "${u}.previous"
   done
   write_units
+  # Not kept for a rollback: the helper does not touch the service, and the
+  # one running this upgrade may be it.
+  write_upgrade_helper
   if [ "$SKIP_PRIVILEGED" = "0" ] && [ "$DRY_RUN" = "0" ] && command -v systemctl >/dev/null 2>&1; then
     run systemctl daemon-reload
   fi
@@ -998,6 +1294,8 @@ the single most expensive thing that can go wrong here."; }
         fi
         ;;
     esac
+
+    enable_upgrade_helper
 
     step "Done"
     cat <<EOF
@@ -1213,6 +1511,7 @@ fi
 
 
 write_units
+write_upgrade_helper
 
 
 if [ "$SKIP_PRIVILEGED" = "1" ]; then
@@ -1223,7 +1522,8 @@ elif command -v systemctl >/dev/null 2>&1; then
   run systemctl restart axgf-cms
   run systemctl enable --now axgf-cms-backup.timer
   run systemctl enable --now axgf-cms-verify.timer
-  say "service enabled and started; daily backup and weekly verify timers enabled"
+  enable_upgrade_helper
+  say "service enabled and started; daily backup and weekly verify timers enabled; upgrade helper watching"
 
   # And one backup now, rather than at half past three tomorrow morning.
   #

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% import "_icons.html" as ic %}
+{% block title %}{{ t("connectivity-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+
+{% include "_admin_nav.html" %}
+<h1>{{ t("connectivity-title") }}</h1>
+<p class="lede">{{ t("connectivity-lede") }}</p>
+
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% if notice %}<div class="notice ok"><p>{{ notice }}</p></div>{% endif %}
+
+<div class="kpis">
+  <div class="kpi">
+    <span class="kpi-label">{{ t("connectivity-kpi-address") }}</span>
+    <span class="kpi-icon">{{ ic.icon("connectivity") }}</span>
+    <span class="kpi-value">{% if not public_base %}<span class="lvl lvl-warn">{{ t("connectivity-address-unset") }}</span>{% elif public_https %}<span class="lvl lvl-ok">{{ t("connectivity-address-https") }}</span>{% else %}<span class="lvl lvl-fail">{{ t("connectivity-address-plain") }}</span>{% endif %}</span>
+    <span class="kpi-note">{{ public_base if public_base else t("connectivity-address-unset-note") }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("connectivity-kpi-services") }}</span>
+    <span class="kpi-icon">{{ ic.icon("key") }}</span>
+    <span class="kpi-value">{{ ready | localnum(lang) }}</span>
+    <span class="kpi-note">{{ t("connectivity-kpi-services-note", n=ready) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("connectivity-kpi-passwords") }}</span>
+    <span class="kpi-icon">{{ ic.icon("lock") }}</span>
+    <span class="kpi-value">{{ t("connectivity-policy-short-" ~ password_policy) }}</span>
+    <span class="kpi-note">{{ t("connectivity-kpi-admins-linked", n=linked_admins) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("connectivity-kpi-registration") }}</span>
+    <span class="kpi-icon">{{ ic.icon("accounts") }}</span>
+    <span class="kpi-value">{{ t("registration-short-" ~ registration) }}</span>
+    <span class="kpi-note"><a href="/admin/users#registration">{{ t("connectivity-kpi-registration-go") }}</a></span>
+  </div>
+</div>
+
+{#- Where readers reach the site: what every provider sends them back to. -#}
+<section class="rec-section" id="address">
+<h2>{{ t("connectivity-address") }}</h2>
+<p class="small muted">{{ t("connectivity-address-intro") }}</p>
+<form method="post" action="/admin/connectivity/address" class="export-choice" autocomplete="off">
+  <div class="field">
+    <label for="public-url">{{ t("connectivity-address-label") }}</label>
+    <input id="public-url" name="public_url" type="url" inputmode="url" spellcheck="false" value="{{ public_url }}">
+    <div class="hint">{{ t("connectivity-address-hint") }}</div>
+  </div>
+  <button class="btn" type="submit">{{ t("admin-save") }}</button>
+</form>
+</section>
+
+{#- The rules every sign-in follows, administrators' included. -#}
+<section class="rec-section" id="policy">
+<h2>{{ t("connectivity-policy") }}</h2>
+<p class="small muted">{{ t("connectivity-policy-intro") }}</p>
+<form method="post" action="/admin/connectivity/policy" autocomplete="off">
+  <fieldset>
+    <legend>{{ t("connectivity-policy-passwords") }}</legend>
+    <div class="choice-cards">
+      {% for p in policies %}
+      <label class="choice-card"><input type="radio" name="password" value="{{ p }}"{% if p == password_policy %} checked{% endif %}>
+        <strong>{{ t("connectivity-policy-short-" ~ p) }}</strong>
+        <span>{{ t("connectivity-policy-note-" ~ p) }}</span></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% if without_way %}<p class="small muted">{{ t("connectivity-policy-without-way", n=without_way) }}</p>{% endif %}
+  <label class="inline"><input type="checkbox" name="link_by_email"{% if link_by_email %} checked{% endif %}> {{ t("connectivity-link-by-email") }}</label>
+  <p class="small muted">{{ t("connectivity-link-by-email-note") }}</p>
+  <div class="field">
+    <label for="domains">{{ t("connectivity-domains") }}</label>
+    <textarea id="domains" name="domains" rows="2" spellcheck="false" class="mono">{{ domains }}</textarea>
+    <div class="hint">{{ t("connectivity-domains-hint") }}</div>
+  </div>
+  <button class="btn" type="submit">{{ t("admin-save") }}</button>
+</form>
+</section>
+
+{#- One card per service. The client secret is written and never shown. -#}
+<section class="rec-section" id="services">
+<h2>{{ t("connectivity-services") }}</h2>
+<p class="small muted">{{ t("connectivity-services-intro") }}</p>
+{% if outbound_note %}<div class="notice warn"><p>{{ t("connectivity-outbound-note") }}</p></div>{% endif %}
+{% for p in providers %}
+<details class="menu-disclosure export-disclosure" id="service-{{ p.slug }}"{% if p.enabled %} open{% endif %}>
+  <summary>{{ ic.icon("key") }} {{ p.name }}
+    {% if p.ready %}<span class="lvl lvl-ok">{{ t("connectivity-service-ready") }}</span>{% elif p.enabled %}<span class="lvl lvl-warn">{{ t("connectivity-service-incomplete") }}</span>{% else %}<span class="lvl">{{ t("connectivity-service-off") }}</span>{% endif %}</summary>
+  <form method="post" action="/admin/connectivity/provider/{{ p.slug }}" class="export-choice" autocomplete="off">
+    <label class="inline"><input type="checkbox" name="enabled"{% if p.enabled %} checked{% endif %}> {{ t("connectivity-service-enable") }}</label>
+    {% if p.needs_issuer %}
+    <div class="field">
+      <label for="issuer-{{ p.slug }}">{{ t("connectivity-service-issuer") }}</label>
+      <input id="issuer-{{ p.slug }}" name="issuer" type="url" spellcheck="false" value="{{ p.issuer }}">
+      <div class="hint">{{ t("connectivity-service-issuer-hint") }}</div>
+    </div>
+    <div class="field">
+      <label for="label-{{ p.slug }}">{{ t("connectivity-service-label") }}</label>
+      <input id="label-{{ p.slug }}" name="label" type="text" maxlength="60" value="{{ p.label }}">
+    </div>
+    {% endif %}
+    {% if p.needs_tenant %}
+    <div class="field">
+      <label for="tenant-{{ p.slug }}">{{ t("connectivity-service-tenant") }}</label>
+      <input id="tenant-{{ p.slug }}" name="tenant" type="text" spellcheck="false" value="{{ p.tenant }}">
+      <div class="hint">{{ t("connectivity-service-tenant-hint") }}</div>
+    </div>
+    {% endif %}
+    <div class="field">
+      <label for="client-{{ p.slug }}">{{ t("connectivity-service-client-id") }}</label>
+      <input id="client-{{ p.slug }}" name="client_id" type="text" spellcheck="false" class="mono" value="{{ p.client_id }}">
+    </div>
+    <div class="field">
+      <label for="secret-{{ p.slug }}">{{ t("connectivity-service-secret") }}</label>
+      <input id="secret-{{ p.slug }}" name="client_secret" type="password" autocomplete="new-password" spellcheck="false">
+      <div class="hint">{% if p.secret_set %}{{ t("connectivity-service-secret-set") }}{% else %}{{ t("connectivity-service-secret-unset") }}{% endif %}</div>
+      {% if p.secret_set %}<label class="inline"><input type="checkbox" name="clear_secret"> {{ t("connectivity-service-secret-clear") }}</label>{% endif %}
+    </div>
+    <dl class="facts">
+      <dt>{{ t("connectivity-service-redirect") }}</dt>
+      <dd>{% if p.redirect_uri %}<code>{{ p.redirect_uri }}</code>{% else %}<a href="#address">{{ t("connectivity-service-redirect-needs-address") }}</a>{% endif %}</dd>
+      {% if p.console %}<dt>{{ t("connectivity-service-console") }}</dt><dd><a href="{{ p.console }}" rel="noopener noreferrer">{{ t("connectivity-service-console-open", name=p.name) }}</a></dd>{% endif %}
+    </dl>
+    <div class="cta-row">
+      <button class="btn" type="submit">{{ t("admin-save") }}</button>
+    </div>
+  </form>
+  <form method="post" action="/admin/connectivity/test/{{ p.slug }}">
+    <button class="btn ghost" type="submit" data-busy="{{ t('busy-working') }}">{{ ic.icon("pulse") }} {{ t("connectivity-service-test") }}</button>
+  </form>
+</details>
+{% endfor %}
+</section>
+
+{% endblock %}

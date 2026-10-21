@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "_logo.html" as logo %}
+{% block title %}{{ t("register-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+<div class="login-mark">{{ logo.mark("lg", "login-logo") }}</div>
+<h1>{{ t("register-finish-title") }}</h1>
+<p class="lede">{% if email %}{{ t("register-finish-lede-email", email=email) }}{% else %}{{ t("register-finish-lede") }}{% endif %}</p>
+
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+<form method="post" action="/register/finish" class="card" style="max-width:34rem" autocomplete="off">
+  <div class="field">
+    <label for="fin-secret">{{ t("register-secret") }}</label>
+    <input id="fin-secret" name="secret" type="password" autocomplete="off" spellcheck="false" required autofocus>
+    <div class="hint">{{ t("register-secret-hint") }}</div>
+  </div>
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("register-submit") }}</button>
+</form>
+{% endblock %}

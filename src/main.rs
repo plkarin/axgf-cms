@@ -46,6 +46,35 @@ async fn main() -> Result<()> {
                 None => run_self_check(&cfg),
             }
         }
+        Some(Command::Releases { data_dir, source }) => {
+            let dir = match data_dir {
+                Some(d) => d.clone(),
+                None => cfg
+                    .bundle()?
+                    .parent()
+                    .map(|p| p.to_path_buf())
+                    .unwrap_or_else(|| std::path::PathBuf::from(".")),
+            };
+            let source = if source == "helper" {
+                "helper"
+            } else {
+                "direct"
+            };
+            let channel = axgf_cms::releases::fetch_into(&dir, source);
+            if let Some(e) = &channel.error {
+                anyhow::bail!("could not list the releases: {e}");
+            }
+            println!(
+                "{} release(s) listed in {}; newest stable: {}",
+                channel.releases.len(),
+                dir.join("releases.json").display(),
+                channel
+                    .latest_stable()
+                    .map(|r| r.tag.as_str())
+                    .unwrap_or("none")
+            );
+            return Ok(());
+        }
         None => {}
     }
     // Before anything renders: the plausibility limit is fixed for the life of
@@ -95,6 +124,7 @@ async fn main() -> Result<()> {
                 cfg.map_attribution.as_deref(),
             ))
             .with_backup_dir(cfg.backup_dir.clone())
+            .with_bind(cfg.bind)
             // `generated` means a fresh token each boot, printed once and gone on
             // restart; the opposite is one the operator set, which lasts.
             .with_standing_admin_token(!generated),

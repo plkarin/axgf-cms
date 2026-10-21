@@ -5626,3 +5626,294 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 @media print {
   .rv-hud { display: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   The administration console (v0.5.0, docs/adr/0011)
+   ---------------------------------------------------------------------------
+   Five rooms behind one strip: the overview, the bundle, the machine, the
+   accounts and the ways in. Every page in it is built from four pieces, so
+   that a reader who has learnt one page has learnt them all:
+
+   * the strip (`.admin-nav`), the record's tabs again with an icon each;
+   * the tiles (`.kpis`), one figure each, the dashboard's stat grown a label
+     and a state;
+   * the state (`.lvl`): green, warning or critical, always a word beside the
+     dot, because a colour alone is not a distinction every reader can make;
+   * the meters (`.meter`) and the facts (`.facts`), for the sizes and the
+     particulars. */
+.admin-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  gap: 0.25rem;
+  margin: 0 0 1.25rem;
+  box-shadow: inset 0 -1px 0 var(--border-hairline);
+}
+.admin-nav-item {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-block-end: 2px solid transparent;
+  font-size: var(--type-minor);
+  font-weight: var(--weight-semi);
+}
+.admin-nav-item .ico { inline-size: 1.05em; block-size: 1.05em; }
+.admin-nav-item:hover { color: var(--text-primary); }
+.admin-nav-item[aria-current="page"] {
+  color: var(--text-primary);
+  border-block-end-color: var(--accent);
+}
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"]) .admin-nav {
+  box-shadow: none;
+  padding: 4px;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--btn-radius);
+  scrollbar-width: none;
+}
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"]) .admin-nav::-webkit-scrollbar { display: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"]) .admin-nav-item {
+  border-block-end: 0;
+  border-radius: var(--btn-radius);
+  padding-block: 0.45rem;
+  padding-inline: 0.9rem;
+  transition: background-color var(--tempo) var(--ease), color var(--tempo) var(--ease);
+}
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"]) .admin-nav-item:hover { background: var(--surface-hover); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"]) .admin-nav-item[aria-current="page"] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* The tiles: a label, a figure, what it means, and its state. A tile that
+   goes somewhere is a link, whole. */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 1rem;
+  margin: 0 0 var(--section-gap);
+}
+.kpi {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-content: start;
+  gap: 0.2rem 0.75rem;
+  padding: 1rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+  background: var(--section-fill);
+  border: var(--section-border);
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+a.kpi:hover { border-color: var(--border-strong); }
+.kpi-label {
+  font-size: var(--type-small);
+  color: var(--text-tertiary);
+}
+.kpi-icon {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  inline-size: 2.3rem;
+  block-size: 2.3rem;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+}
+.kpi-icon .ico { inline-size: 1.15rem; block-size: 1.15rem; }
+.kpi-value {
+  font-size: var(--type-major);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.kpi-note {
+  grid-column: 1 / -1;
+  font-size: var(--type-small);
+  color: var(--text-secondary);
+}
+
+/* The state of a thing: a dot and a word. */
+.lvl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-size: var(--type-small);
+  font-weight: var(--weight-semi);
+}
+.lvl::before {
+  content: "";
+  flex: none;
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+.lvl-ok::before { background: var(--conf-certain); }
+.lvl-warn::before { background: var(--warning); }
+.lvl-fail::before { background: var(--danger); }
+.lvl-fail { color: var(--danger); }
+
+/* How many of each, as one bar: green, warning, critical. */
+.health-bar {
+  display: flex;
+  block-size: 0.6rem;
+  margin: 0.6rem 0 0.4rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--conf-track);
+}
+.health-bar > i { display: block; block-size: 100%; }
+.health-bar .hb-ok { background: var(--conf-certain); }
+.health-bar .hb-warn { background: var(--warning); }
+.health-bar .hb-fail { background: var(--danger); }
+
+/* What this site keeps on its partition, part by part: one hue in
+   decreasing strength, because the parts are shares of one thing and not
+   states — a warning colour here would read as a warning. */
+.vol-bar {
+  display: flex;
+  block-size: 0.8rem;
+  margin: 0.6rem 0 0.8rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--conf-track);
+}
+.vol-bar > i { display: block; block-size: 100%; background: var(--accent); }
+.vol-swatch {
+  display: inline-block;
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
+  margin-inline-end: 0.45rem;
+  border-radius: 3px;
+  background: var(--accent);
+  vertical-align: baseline;
+}
+.vol-1 { opacity: 1; }
+.vol-2 { opacity: 0.78; }
+.vol-3 { opacity: 0.6; }
+.vol-4 { opacity: 0.45; }
+.vol-5 { opacity: 0.32; }
+.vol-6 { opacity: 0.2; }
+.vol-bar > i + i { box-shadow: inset 1px 0 0 var(--surface-raised); }
+
+/* A check, its finding, and — opened — its plan. */
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; }
+.check {
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+}
+.check > summary {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.3rem 0.9rem;
+  align-items: baseline;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+}
+.check > summary::-webkit-details-marker { display: none; }
+.check-title { font-weight: var(--weight-semi); }
+.check-finding {
+  grid-column: 2;
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+}
+.check-plan {
+  padding: 0 0.9rem 0.9rem;
+  padding-inline-start: calc(7.5rem + 1.8rem);
+  font-size: var(--type-minor);
+}
+.check-plan h4 { margin: 0 0 0.3rem; font-size: var(--type-small); color: var(--text-tertiary); }
+.check-plan p { margin: 0.3rem 0; }
+.checks-area { margin: 1.1rem 0 0.5rem; font-size: var(--type-small); color: var(--text-tertiary); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* A size, against what it could be. */
+.meter {
+  display: grid;
+  grid-template-columns: minmax(8rem, 13rem) 1fr minmax(5.5rem, auto);
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.45rem 0;
+}
+.meter-label { font-size: var(--type-minor); }
+.meter-track {
+  block-size: 0.7rem;
+  border-radius: 999px;
+  background: var(--conf-track);
+  overflow: hidden;
+}
+.meter-track > i { display: block; block-size: 100%; border-radius: 999px; background: var(--accent); }
+.meter-track > i.is-warn { background: var(--warning); }
+.meter-track > i.is-fail { background: var(--danger); }
+.meter-value {
+  font-size: var(--type-minor);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+/* Particulars: a term, its value. */
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+}
+.facts dt { color: var(--text-tertiary); font-size: var(--type-small); align-self: baseline; }
+.facts dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.facts code { font-size: 0.92em; }
+
+/* A choice among a few, each a sentence: the registration policy. */
+.choice-cards { display: grid; gap: 0.6rem; margin: 0.6rem 0 1rem; }
+.choice-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+.choice-card:has(input:checked) { border-color: var(--accent); }
+.choice-card input { grid-row: 1 / span 2; margin-top: 0.2rem; }
+.choice-card strong { font-weight: var(--weight-semi); }
+.choice-card span { grid-column: 2; color: var(--text-secondary); font-size: var(--type-small); }
+
+/* A provider's sign-in button carries its name, never its brand colours: the
+   theme draws it, as it draws every button. */
+.sso-buttons { display: grid; gap: 0.5rem; margin: 0 0 1rem; }
+.sso-buttons .btn { justify-content: center; }
+.or-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: var(--text-tertiary);
+  font-size: var(--type-small);
+}
+.or-rule::before, .or-rule::after { content: ""; flex: 1; border-top: 1px solid var(--border-hairline); }
+
+@media (max-width: 40rem) {
+  .facts { grid-template-columns: 1fr; }
+  .facts dd { margin-bottom: 0.45rem; }
+  .meter { grid-template-columns: 1fr auto; }
+  .meter-track { grid-column: 1 / -1; grid-row: 2; }
+  .check > summary { grid-template-columns: 1fr; }
+  .check-finding { grid-column: 1; }
+  .check-plan { padding-inline-start: 0.9rem; }
+}

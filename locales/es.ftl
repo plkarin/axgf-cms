@@ -3489,10 +3489,7 @@ bundle-kpi-conformity = Conformidad
 bundle-verdict-ok = Conforme
 bundle-verdict-warn = A vigilar
 bundle-verdict-fail = No conforme
-findings-tally = { $ok } en verde, { $warn ->
-    [one] 1 aviso
-    *[other] { $warn } avisos
-    }, { $fail } críticos
+findings-tally = En verde: { $ok } · Avisos: { $warn } · Críticos: { $fail }
 bundle-kpi-entities = Entidades
 bundle-kpi-entities-note = { $persons ->
     [one] 1 persona
@@ -4074,3 +4071,11 @@ sso-error-title = El inicio de sesión no se completó
 sso-account-disabled = La cuenta vinculada a este inicio de sesión está desactivada. Consulte a un administrador.
 sso-no-account = Ninguna cuenta de aquí corresponde a este inicio de sesión, y este sitio no abre cuentas por sí solo. Pida a un administrador que cree la suya con esta dirección: su próximo inicio de sesión se vinculará a ella.
 sso-domain-refused = Aquí solo se pueden abrir cuentas con una dirección de los dominios de la familia, confirmada por el servicio.
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = { $admins ->
+    [one] { $admins } administrador
+    [many] { $admins } administradores
+    *[other] { $admins } administradores
+    }
+register-password-hint = Al menos { $min } caracteres. Una frase de varias palabras se recuerda mejor que un revoltijo de signos.

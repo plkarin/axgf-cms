@@ -3222,7 +3222,7 @@ bundle-kpi-conformity = 適合性
 bundle-verdict-ok = 適合
 bundle-verdict-warn = 要注意
 bundle-verdict-fail = 不適合
-findings-tally = 正常 { $ok }、警告 { $warn }、重大 { $fail }
+findings-tally = 正常 { $ok } · 警告 { $warn } · 重大 { $fail }
 bundle-kpi-entities = エンティティ
 bundle-kpi-entities-note = { $persons } 人 · 添付ファイル { $files } 件
 bundle-kpi-size = ディスク上のサイズ
@@ -3694,3 +3694,7 @@ sso-error-title = サインインが完了しませんでした
 sso-account-disabled = このサインインに連携したアカウントは無効になっています。管理者に問い合わせてください。
 sso-no-account = このサインインに一致するアカウントはなく、このサイトは自動でアカウントを作成しません。このアドレスでアカウントを作成するよう管理者に依頼してください。次回のサインインで連携されます。
 sso-domain-refused = ここでは、サービスが確認した家族のドメインのアドレスでのみアカウントを作成できます。
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = 管理者 { $admins } 人
+register-password-hint = { $min } 文字以上。記号の寄せ集めより、いくつかの単語を並べたフレーズの方が覚えやすいものです。

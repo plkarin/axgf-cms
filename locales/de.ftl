@@ -3477,10 +3477,7 @@ bundle-kpi-conformity = Konformität
 bundle-verdict-ok = Konform
 bundle-verdict-warn = Im Auge behalten
 bundle-verdict-fail = Nicht konform
-findings-tally = { $ok } grün, { $warn ->
-    [one] 1 Warnung
-    *[other] { $warn } Warnungen
-    }, { $fail } kritisch
+findings-tally = Grün: { $ok } · Warnungen: { $warn } · Kritisch: { $fail }
 bundle-kpi-entities = Einträge
 bundle-kpi-entities-note = { $persons ->
     [one] 1 Person
@@ -4042,3 +4039,10 @@ sso-error-title = Die Anmeldung wurde nicht abgeschlossen
 sso-account-disabled = Das mit dieser Anmeldung verknüpfte Konto ist deaktiviert. Wenden Sie sich an einen Administrator.
 sso-no-account = Kein Konto hier passt zu dieser Anmeldung, und diese Website eröffnet keine Konten von selbst. Bitten Sie einen Administrator, Ihres mit dieser Adresse anzulegen: Ihre nächste Anmeldung wird damit verknüpft.
 sso-domain-refused = Konten können hier nur mit einer vom Dienst bestätigten Adresse aus den Domains der Familie eröffnet werden.
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = { $admins ->
+    [one] { $admins } Administrator
+    *[other] { $admins } Administratoren
+    }
+register-password-hint = Mindestens { $min } Zeichen. Ein Satz aus mehreren Wörtern ist leichter zu merken als ein Zeichensalat.

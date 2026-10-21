@@ -93,7 +93,7 @@ fn render_register(
         chrome,
         "register.html",
         context! {
-            nav => "admin",
+            nav => "entry",
             mode => o.mode.as_str(),
             form => o.form,
             providers => o.providers,
@@ -614,7 +614,7 @@ fn render_finish(
         chrome,
         "register_finish.html",
         context! {
-            nav => "admin",
+            nav => "entry",
             provider => p.claims.kind.slug(),
             email => p.claims.email.clone().filter(|_| p.claims.email_verified),
             name => p.claims.name.clone(),

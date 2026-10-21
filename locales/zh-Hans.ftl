@@ -3222,7 +3222,7 @@ bundle-kpi-conformity = 合规性
 bundle-verdict-ok = 符合
 bundle-verdict-warn = 需关注
 bundle-verdict-fail = 不符合
-findings-tally = 正常 { $ok } 项，警告 { $warn } 项，严重 { $fail } 项
+findings-tally = 正常 { $ok } · 警告 { $warn } · 严重 { $fail }
 bundle-kpi-entities = 实体
 bundle-kpi-entities-note = { $persons } 人 · 附件 { $files } 个
 bundle-kpi-size = 磁盘占用
@@ -3694,3 +3694,7 @@ sso-error-title = 登录未完成
 sso-account-disabled = 与此登录关联的账户已停用。请联系管理员。
 sso-no-account = 这里没有与此登录匹配的账户，本站也不会自行开户。请让管理员用这个地址为你创建账户：你下次登录时就会关联到它。
 sso-domain-refused = 这里只能用经服务确认、属于家族域名的地址开户。
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = 管理员 { $admins } 名
+register-password-hint = 至少 { $min } 个字符。由几个词组成的短语比一堆杂乱的符号更容易记住。

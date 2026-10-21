@@ -46,41 +46,103 @@ struct BundleNote {
     recipient_text: Option<String>,
 }
 
-fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> Response {
-    let unset = state.is_unset();
-    let env = state.inspect_with(axgf_rs::validate);
-    let diagnostics = super::admin::diagnostics_json(&env.diagnostics, chrome.lang);
-    let declared: Vec<String> = state.read(|flat| {
+/// The attachments the bundle declares, by name.
+fn declared_payloads(state: &Shared) -> Vec<String> {
+    state.read(|flat| {
         flat.get("external_payloads")
             .and_then(Value::as_object)
             .map(|m| m.keys().cloned().collect())
             .unwrap_or_default()
-    });
+    })
+}
+
+/// The bundle's conformity findings, from a validation already made. Empty
+/// for an installation with no family yet: nothing to conform.
+pub(super) fn bundle_items(
+    state: &Shared,
+    env: &axgf_rs::boundary::envelope::Envelope,
+    lang: &str,
+) -> Vec<findings::Item> {
+    if state.is_unset() {
+        return Vec::new();
+    }
+    let declared = declared_payloads(state);
     let missing = state
         .payloads()
         .missing_among(declared.iter().map(String::as_str))
         .len();
     let manifest = state.read(|flat| flat.get("manifest").cloned());
     let binding = state.acl_read(|acl| acl.check_binding(manifest.as_ref(), None));
+    state.read(|flat| {
+        conformity::check(
+            flat,
+            &conformity::Context {
+                validation: env,
+                missing_payloads: missing,
+                declared_payloads: declared.len(),
+                binding,
+                size: state.bundle_size(),
+                size_warn: state.size_warn(),
+                lang,
+            },
+        )
+    })
+}
+
+/// The four rooms in a line each, for the overview (docs/adr/0011 §1): the
+/// bundle's verdict, the infrastructure's, the version, the accounts and the
+/// ways in. Administrators only; the dashboard asks for it for them alone.
+pub(super) fn overview(
+    state: &Shared,
+    headers: &HeaderMap,
+    env: &axgf_rs::boundary::envelope::Envelope,
+    lang: &str,
+) -> Value {
+    let bundle = bundle_items(state, env, lang);
+    let (b_ok, b_warn, b_fail) = findings::tally(&bundle);
+    let infra = measure(state, headers, lang);
+    let (i_ok, i_warn, i_fail) = findings::tally(&infra.items);
+    let site = state.site();
+    let (active, admins) = state.acl_read(|acl| {
+        (
+            acl.users
+                .iter()
+                .filter(|u| u.status == crate::acl::Status::Active)
+                .count(),
+            acl.active_admins(),
+        )
+    });
+    json!({
+        "bundle": {
+            "unset": state.is_unset(),
+            "verdict": conformity::verdict(&bundle).as_str(),
+            "tally": { "ok": b_ok, "warn": b_warn, "fail": b_fail },
+        },
+        "infra": {
+            "verdict": findings::worst(&infra.items).as_str(),
+            "tally": { "ok": i_ok, "warn": i_warn, "fail": i_fail },
+        },
+        "version": {
+            "current": crate::releases::current(),
+            "newer": infra.channel.as_ref().and_then(|c| c.newer_stable()).map(|r| r.tag.clone()),
+            "known": infra.channel.as_ref().is_some_and(|c| !c.releases.is_empty()),
+        },
+        "accounts": { "active": active, "admins": admins, "registration": site.registration.mode.as_str() },
+        "entry": {
+            "services": site.providers.ready().len(),
+            "https": site.public_is_https(),
+            "address": site.public_base().is_some(),
+        },
+    })
+}
+
+fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> Response {
+    let unset = state.is_unset();
+    let env = state.inspect_with(axgf_rs::validate);
+    let diagnostics = super::admin::diagnostics_json(&env.diagnostics, chrome.lang);
+    let declared = declared_payloads(state);
     let size = state.bundle_size();
-    let items = if unset {
-        Vec::new()
-    } else {
-        state.read(|flat| {
-            conformity::check(
-                flat,
-                &conformity::Context {
-                    validation: &env,
-                    missing_payloads: missing,
-                    declared_payloads: declared.len(),
-                    binding,
-                    size,
-                    size_warn: state.size_warn(),
-                    lang: chrome.lang,
-                },
-            )
-        })
-    };
+    let items = bundle_items(state, &env, chrome.lang);
     let (ok, warn, fail) = findings::tally(&items);
     let verdict = conformity::verdict(&items).as_str();
     let facts = state.read(|flat| conformity::facts(flat, state.bundle_path()));

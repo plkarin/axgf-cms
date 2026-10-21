@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
 {% import "_completeness.html" as comp %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ t("admin-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 
@@ -15,6 +16,43 @@
 {% endif %}
 <p class="lede">{{ t("admin-lede", path=bundle_path, total=total,
      files=attachment_count, size=bundle_size) }}</p>
+
+{#- The console's four other rooms in a tile each (docs/adr/0011 §1), for an
+    administrator: what each would say first, and the way in. -#}
+{% if console %}
+<div class="kpis kpis-five" data-content>
+  <a class="kpi" href="/admin/bundle">
+    <span class="kpi-label">{{ t("admin-nav-bundle") }}</span>
+    <span class="kpi-icon">{{ ic.icon("archive") }}</span>
+    <span class="kpi-value">{% if console.bundle.unset %}—{% else %}<span class="lvl lvl-{{ console.bundle.verdict }}">{{ t("bundle-verdict-" ~ console.bundle.verdict) }}</span>{% endif %}</span>
+    <span class="kpi-note">{% if console.bundle.unset %}{{ t("bundle-unset-title") }}{% else %}{{ t("findings-tally", ok=console.bundle.tally.ok, warn=console.bundle.tally.warn, fail=console.bundle.tally.fail) }}{% endif %}</span>
+  </a>
+  <a class="kpi" href="/admin/infrastructure">
+    <span class="kpi-label">{{ t("admin-nav-infrastructure") }}</span>
+    <span class="kpi-icon">{{ ic.icon("server") }}</span>
+    <span class="kpi-value"><span class="lvl lvl-{{ console.infra.verdict }}">{{ t("infra-verdict-" ~ console.infra.verdict) }}</span></span>
+    <span class="kpi-note">{{ t("findings-tally", ok=console.infra.tally.ok, warn=console.infra.tally.warn, fail=console.infra.tally.fail) }}</span>
+  </a>
+  <a class="kpi" href="/admin/infrastructure#version">
+    <span class="kpi-label">{{ t("infra-kpi-version") }}</span>
+    <span class="kpi-icon">{{ ic.icon("upgrade") }}</span>
+    <span class="kpi-value">v{{ console.version.current }}</span>
+    <span class="kpi-note">{% if console.version.newer %}{{ t("infra-kpi-version-newer", version=console.version.newer) }}{% elif console.version.known %}{{ t("infra-kpi-version-current") }}{% else %}{{ t("infra-kpi-version-unknown") }}{% endif %}</span>
+  </a>
+  <a class="kpi" href="/admin/users">
+    <span class="kpi-label">{{ t("admin-nav-accounts") }}</span>
+    <span class="kpi-icon">{{ ic.icon("accounts") }}</span>
+    <span class="kpi-value">{{ console.accounts.active | localnum(lang) }}</span>
+    <span class="kpi-note">{{ t("overview-accounts-note", admins=console.accounts.admins) }} · {{ t("registration-short-" ~ console.accounts.registration) }}</span>
+  </a>
+  <a class="kpi" href="/admin/connectivity">
+    <span class="kpi-label">{{ t("admin-nav-connectivity") }}</span>
+    <span class="kpi-icon">{{ ic.icon("connectivity") }}</span>
+    <span class="kpi-value">{{ console.entry.services | localnum(lang) }}</span>
+    <span class="kpi-note">{{ t("connectivity-kpi-services-note", n=console.entry.services) }} · {% if not console.entry.address %}{{ t("connectivity-address-unset") }}{% elif console.entry.https %}{{ t("connectivity-address-https") }}{% else %}{{ t("connectivity-address-plain") }}{% endif %}</span>
+  </a>
+</div>
+{% endif %}
 
 {# The operational banner, above everything: a disk that is nearly full or a
    backup timer that stopped firing is the most important thing on this page,

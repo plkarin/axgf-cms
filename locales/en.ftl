@@ -3517,10 +3517,7 @@ bundle-kpi-conformity = Conformity
 bundle-verdict-ok = Conforms
 bundle-verdict-warn = To watch
 bundle-verdict-fail = Does not conform
-findings-tally = { $ok } green, { $warn ->
-    [one] 1 warning
-    *[other] { $warn } warnings
-    }, { $fail } critical
+findings-tally = Green: { $ok } · Warnings: { $warn } · Critical: { $fail }
 bundle-kpi-entities = Entities
 bundle-kpi-entities-note = { $persons ->
     [one] 1 person
@@ -4082,3 +4079,10 @@ sso-error-title = Sign-in did not complete
 sso-account-disabled = The account linked to this sign-in is disabled. Ask an administrator.
 sso-no-account = No account here matches this sign-in, and this site does not open accounts by itself. Ask an administrator to create yours with this address: your next sign-in will link to it.
 sso-domain-refused = Accounts here can only be opened with an address at the family's domains, confirmed by the service.
+
+# Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
+overview-accounts-note = { $admins ->
+    [one] { $admins } administrator
+    *[other] { $admins } administrators
+    }
+register-password-hint = At least { $min } characters. A phrase of several words is easier to remember than a jumble.

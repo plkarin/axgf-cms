@@ -104,10 +104,11 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
         );
         let at = |src: &str| html.find(&format!(r#"<script src="{src}" defer></script>"#));
         let river = at("/static/river.js").expect("river.js, under every theme");
-        let (fusion, galaxy, summit, scene) = (
+        let (fusion, galaxy, summit, clarity, scene) = (
             at("/static/fusion.js"),
             at("/static/galaxy.js"),
             at("/static/summit.js"),
+            at("/static/clarity.js"),
             at("/static/river-scene.js"),
         );
         match view {
@@ -116,27 +117,34 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
                 // before river.js looks for it.
                 assert!(fusion.expect("fusion.js") < river, "{theme}");
                 assert!(
-                    galaxy.is_none() && scene.is_none() && summit.is_none(),
+                    galaxy.is_none() && scene.is_none() && summit.is_none() && clarity.is_none(),
                     "{theme}"
                 );
             }
             "galaxy" => {
                 assert!(galaxy.expect("galaxy.js") < river, "{theme}");
                 assert!(
-                    fusion.is_none() && scene.is_none() && summit.is_none(),
+                    fusion.is_none() && scene.is_none() && summit.is_none() && clarity.is_none(),
                     "{theme}"
                 );
             }
             "summit" => {
                 assert!(summit.expect("summit.js") < river, "{theme}");
                 assert!(
-                    fusion.is_none() && galaxy.is_none() && scene.is_none(),
+                    fusion.is_none() && galaxy.is_none() && scene.is_none() && clarity.is_none(),
+                    "{theme}"
+                );
+            }
+            "funnel" => {
+                assert!(clarity.expect("clarity.js") < river, "{theme}");
+                assert!(
+                    fusion.is_none() && galaxy.is_none() && scene.is_none() && summit.is_none(),
                     "{theme}"
                 );
             }
             _ => {
                 assert!(
-                    fusion.is_none() && galaxy.is_none() && summit.is_none(),
+                    fusion.is_none() && galaxy.is_none() && summit.is_none() && clarity.is_none(),
                     "{theme}"
                 );
                 assert!(scene.expect("the river's own scene") > river, "{theme}");
@@ -191,6 +199,14 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
             "See on the mountain",
             "Enter takes you to them",
         ),
+        (
+            "clarity",
+            "Hold the funnel still",
+            "↓ the oldest at the narrow end · ↑ the newest at the mouth",
+            ["Every generation is a ring.", "Every family, a funnel."],
+            "See in the funnel",
+            "Enter brings them to the front",
+        ),
     ];
     for (theme, still, compass, hero, see, hint) in cases {
         let river = page(&app, &format!("/?p={P}"), theme).await;
@@ -225,6 +241,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/fusion.js",
         "/static/galaxy.js",
         "/static/summit.js",
+        "/static/clarity.js",
     ] {
         let resp = get(&app, js).await;
         assert_eq!(resp.status(), StatusCode::OK, "{js}");
@@ -245,6 +262,8 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/summit-hero.jpg",
         "/static/img/summit-cta.jpg",
         "/static/img/summit-panorama.jpg",
+        "/static/img/clarity-hero.jpg",
+        "/static/img/clarity-cta.jpg",
     ] {
         let resp = get(&app, jpg).await;
         assert_eq!(resp.status(), StatusCode::OK, "{jpg}");
@@ -269,6 +288,7 @@ fn a_view_gives_river_js_everything_it_asks_for() {
         ("static/fusion.js", "tree"),
         ("static/galaxy.js", "galaxy"),
         ("static/summit.js", "summit"),
+        ("static/clarity.js", "funnel"),
     ] {
         let js = read(file);
         assert!(

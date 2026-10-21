@@ -1332,6 +1332,12 @@ pub async fn summit_hero_jpg() -> Response {
 pub async fn summit_cta_jpg() -> Response {
     picture("image/jpeg", render::SUMMIT_CTA_JPG)
 }
+pub async fn clarity_hero_jpg() -> Response {
+    picture("image/jpeg", render::CLARITY_HERO_JPG)
+}
+pub async fn clarity_cta_jpg() -> Response {
+    picture("image/jpeg", render::CLARITY_CTA_JPG)
+}
 /// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
 /// ascent. The same picture behind every person: nothing in it depends on the
 /// archive.
@@ -1910,6 +1916,18 @@ pub async fn summit_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::SUMMIT_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/clarity.js` — Clarity's funnel (docs/adr/0013).
+pub async fn clarity_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::CLARITY_JS,
     )
         .into_response()
 }

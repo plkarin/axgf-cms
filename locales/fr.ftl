@@ -4064,3 +4064,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } administrateurs
     }
 register-password-hint = Au moins { $min } caractères. Une phrase de plusieurs mots se retient mieux qu’un fouillis de signes.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Clarté
+theme-clarity-note = clair, blanc et orange · un entonnoir
+view-funnel-back = Retour à l’entonnoir
+view-funnel-open = Ouvrir l’entonnoir
+view-funnel-hero-1 = Chaque génération est un anneau.
+view-funnel-hero-2 = Chaque famille, un entonnoir.
+view-funnel-cta = Explorer l’entonnoir
+view-funnel-cta-detail = Chaque nom ajouté et chaque source vérifiée rendent l’entonnoir plus juste pour ceux qui viendront après.
+view-funnel-see = Voir dans l’entonnoir
+view-funnel-direction = ↓ les plus anciens au bout étroit · ↑ les plus récents à l’embouchure
+view-funnel-still = Figer l’entonnoir
+view-funnel-name = Entonnoir
+view-funnel-legend = Comment lire l’entonnoir
+view-funnel-search-hint = Entrée les amène au premier plan ; Maj+Entrée ouvre leur fiche.

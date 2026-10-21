@@ -3698,3 +3698,19 @@ sso-domain-refused = ここでは、サービスが確認した家族のドメ�
 # Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
 overview-accounts-note = 管理者 { $admins } 人
 register-password-hint = { $min } 文字以上。記号の寄せ集めより、いくつかの単語を並べたフレーズの方が覚えやすいものです。
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = クラリティ
+theme-clarity-note = ライト、白とオレンジ・じょうご
+view-funnel-back = じょうごに戻る
+view-funnel-open = じょうごを開く
+view-funnel-hero-1 = ひとつの世代は、ひとつの輪。
+view-funnel-hero-2 = ひとつの家族は、ひとつのじょうご。
+view-funnel-cta = じょうごを見る
+view-funnel-cta-detail = 名前をひとつ加え、出典をひとつ確かめるたびに、じょうごは後の人々にとってより正確になります。
+view-funnel-see = じょうごで見る
+view-funnel-direction = ↓ 最も古い世代は細い先端に・↑ 最も新しい世代は口に
+view-funnel-still = じょうごを止める
+view-funnel-name = じょうご
+view-funnel-legend = じょうごの読み方
+view-funnel-search-hint = Enter で手前に、Shift+Enter で記録を開きます。

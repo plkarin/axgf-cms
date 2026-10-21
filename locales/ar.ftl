@@ -4477,3 +4477,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } مسؤول
     }
 register-password-hint = { $min } محرفًا على الأقل. وتُحفظ عبارة من عدة كلمات أسهل من خليط من الرموز.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = الصفاء
+theme-clarity-note = فاتح، أبيض وبرتقالي · قمع
+view-funnel-back = العودة إلى القمع
+view-funnel-open = افتح القمع
+view-funnel-hero-1 = كل جيل حلقة.
+view-funnel-hero-2 = وكل عائلة قمع.
+view-funnel-cta = استكشف القمع
+view-funnel-cta-detail = كل اسم يُضاف وكل مصدر يُتحقق منه يجعلان القمع أصدق لمن يأتي بعدنا.
+view-funnel-see = عرض في القمع
+view-funnel-direction = ↓ الأقدم عند الطرف الضيق · ↑ الأحدث عند الفوهة
+view-funnel-still = أوقف حركة القمع
+view-funnel-name = القمع
+view-funnel-legend = كيف تقرأ القمع
+view-funnel-search-hint = يضعه Enter في المقدّمة؛ ويفتح Shift+Enter سجلّه.

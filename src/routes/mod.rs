@@ -519,6 +519,11 @@ fn routes(state: Shared) -> Router {
         .route("/static/img/summit-hero.jpg", get(public::summit_hero_jpg))
         .route("/static/img/summit-cta.jpg", get(public::summit_cta_jpg))
         .route(
+            "/static/img/clarity-hero.jpg",
+            get(public::clarity_hero_jpg),
+        )
+        .route("/static/img/clarity-cta.jpg", get(public::clarity_cta_jpg))
+        .route(
             "/static/img/summit-panorama.jpg",
             get(public::summit_panorama_jpg),
         )
@@ -543,6 +548,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/fusion.js", get(public::fusion_js))
         .route("/static/galaxy.js", get(public::galaxy_js))
         .route("/static/summit.js", get(public::summit_js))
+        .route("/static/clarity.js", get(public::clarity_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))

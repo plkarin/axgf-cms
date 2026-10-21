@@ -4079,3 +4079,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } administradores
     }
 register-password-hint = Al menos { $min } caracteres. Una frase de varias palabras se recuerda mejor que un revoltijo de signos.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Claridad
+theme-clarity-note = claro, blanco y naranja · un embudo
+view-funnel-back = Volver al embudo
+view-funnel-open = Abrir el embudo
+view-funnel-hero-1 = Cada generación es un anillo.
+view-funnel-hero-2 = Cada familia, un embudo.
+view-funnel-cta = Explorar el embudo
+view-funnel-cta-detail = Cada nombre añadido y cada fuente comprobada hacen el embudo más fiel para quienes vengan después.
+view-funnel-see = Ver en el embudo
+view-funnel-direction = ↓ los más antiguos en el extremo estrecho · ↑ los más recientes en la boca
+view-funnel-still = Detener el embudo
+view-funnel-name = Embudo
+view-funnel-legend = Cómo leer el embudo
+view-funnel-search-hint = Intro los trae al frente; Mayús+Intro abre su ficha.

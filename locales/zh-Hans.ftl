@@ -3698,3 +3698,19 @@ sso-domain-refused = 这里只能用经服务确认、属于家族域名的地�
 # Administration console: the overview's tiles (v0.5.0, docs/adr/0011)
 overview-accounts-note = 管理员 { $admins } 名
 register-password-hint = 至少 { $min } 个字符。由几个词组成的短语比一堆杂乱的符号更容易记住。
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = 清晰
+theme-clarity-note = 浅色，白与橙 · 漏斗
+view-funnel-back = 返回漏斗
+view-funnel-open = 打开漏斗
+view-funnel-hero-1 = 每一代，都是一个环。
+view-funnel-hero-2 = 每个家族，都是一只漏斗。
+view-funnel-cta = 探索漏斗
+view-funnel-cta-detail = 每添加一个名字、每核实一个来源，都会让漏斗对后来的人更加真实。
+view-funnel-see = 在漏斗中查看
+view-funnel-direction = ↓ 最早的一代在窄端 · ↑ 最新的一代在开口
+view-funnel-still = 让漏斗静止
+view-funnel-name = 漏斗
+view-funnel-legend = 如何阅读漏斗
+view-funnel-search-hint = 按 Enter 将其移到前面；按 Shift+Enter 打开其记录。

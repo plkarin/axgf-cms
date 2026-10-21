@@ -4312,3 +4312,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } administratora
     }
 register-password-hint = Co najmniej { $min } znaków. Zdanie z kilku słów łatwiej zapamiętać niż plątaninę znaków.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Przejrzystość
+theme-clarity-note = jasny, biel i pomarańcz · lejek
+view-funnel-back = Wróć do lejka
+view-funnel-open = Otwórz lejek
+view-funnel-hero-1 = Każde pokolenie to pierścień.
+view-funnel-hero-2 = Każda rodzina to lejek.
+view-funnel-cta = Odkryj lejek
+view-funnel-cta-detail = Każde dodane imię i każde sprawdzone źródło czynią lejek prawdziwszym dla tych, którzy przyjdą po nas.
+view-funnel-see = Zobacz w lejku
+view-funnel-direction = ↓ najstarsi na wąskim końcu · ↑ najmłodsi u wylotu
+view-funnel-still = Zatrzymaj lejek
+view-funnel-name = Lejek
+view-funnel-legend = Jak czytać lejek
+view-funnel-search-hint = Enter przenosi tę osobę na pierwszy plan; Shift+Enter otwiera jej kartę.

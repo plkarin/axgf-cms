@@ -40,6 +40,8 @@ pub const RIVER_SCENE_JS: &str = include_str!("../static/river-scene.js");
 pub const FUSION_JS: &str = include_str!("../static/fusion.js");
 pub const GALAXY_JS: &str = include_str!("../static/galaxy.js");
 pub const SUMMIT_JS: &str = include_str!("../static/summit.js");
+/// Clarity's funnel, at `/static/clarity.js` (docs/adr/0013).
+pub const CLARITY_JS: &str = include_str!("../static/clarity.js");
 
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
@@ -83,6 +85,10 @@ pub const GALAXY_CTA_JPG: &[u8] = include_bytes!("../static/img/galaxy-cta.jpg")
 /// a misty valley, and footprints climbing a snowy ridge above the clouds.
 pub const SUMMIT_HERO_JPG: &[u8] = include_bytes!("../static/img/summit-hero.jpg");
 pub const SUMMIT_CTA_JPG: &[u8] = include_bytes!("../static/img/summit-cta.jpg");
+/// Clarity's two (docs/adr/0013), made in Canva from the operator's
+/// references: a glass funnel of light on white, and a bright, airy band.
+pub const CLARITY_HERO_JPG: &[u8] = include_bytes!("../static/img/clarity-hero.jpg");
+pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg");
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");

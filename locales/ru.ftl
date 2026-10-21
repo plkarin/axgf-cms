@@ -4314,3 +4314,19 @@ overview-accounts-note = { $admins ->
     *[other] { $admins } администратора
     }
 register-password-hint = Не меньше { $min } символов. Фразу из нескольких слов запомнить легче, чем мешанину знаков.
+
+# Clarity: the light theme and its funnel (v0.5.0, docs/adr/0013)
+theme-clarity = Ясность
+theme-clarity-note = светлая, белый и оранжевый · воронка
+view-funnel-back = Назад к воронке
+view-funnel-open = Открыть воронку
+view-funnel-hero-1 = Каждое поколение — кольцо.
+view-funnel-hero-2 = Каждая семья — воронка.
+view-funnel-cta = Исследовать воронку
+view-funnel-cta-detail = Каждое добавленное имя и каждый проверенный источник делают воронку вернее для тех, кто придёт после.
+view-funnel-see = Показать в воронке
+view-funnel-direction = ↓ самые старшие в узком конце · ↑ самые младшие у раструба
+view-funnel-still = Остановить воронку
+view-funnel-name = Воронка
+view-funnel-legend = Как читать воронку
+view-funnel-search-hint = Enter выводит человека на передний план; Shift+Enter открывает его запись.

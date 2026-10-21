@@ -5295,7 +5295,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 /* ---------- signing in ---------- */
 /* The one page a visitor sees first: the hero's landscape behind it, under
    the same shade, and the form as a card in front. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(form[action="/admin/login"]) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(.login-mark) {
   max-width: none;
   min-block-size: 70vh;
   display: grid;
@@ -5305,8 +5305,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
     linear-gradient(180deg, color-mix(in srgb, var(--surface-page) 55%, transparent), var(--surface-page) 95%),
     var(--kit-hero) center 35% / cover;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(form[action="/admin/login"]) > * { inline-size: min(28rem, 100%); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(form[action="/admin/login"]) .card {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(.login-mark) > * { inline-size: min(28rem, 100%); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(.login-mark) .card {
   background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
   box-shadow: 0 30px 60px -30px rgb(var(--shadow-rgb) / 0.95);
 }
@@ -5408,7 +5408,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
   border-bottom-color: var(--border-hairline);
 }
-[data-theme="clarity"] main:has(form[action="/admin/login"]) .card { box-shadow: 0 18px 40px -24px rgb(var(--shadow-rgb) / 0.35); }
+[data-theme="clarity"] main:has(.login-mark) .card { box-shadow: 0 18px 40px -24px rgb(var(--shadow-rgb) / 0.35); }
 /* The way from the record leads into the funnel. */
 [data-theme="clarity"] .record-foot .btn[href^="/?p="]::after {
   -webkit-mask-image: var(--ico-funnel);

@@ -101,9 +101,9 @@ The river reaches 2, 3 or 5 generations each way. To zoom from 1× to 3×,
 use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
 `−` and `0` keys. Once zoomed in, drag to move *(new in 0.5.0)*.
 
-### The same family as a tree, or as a galaxy
+### The same family as a tree, a galaxy, an ascent or a funnel
 
-*(New in 0.5.0, on `main`.)* Two themes draw the landing page their own way.
+*(New in 0.5.0, on `main`.)* Four themes draw the landing page their own way.
 
 - **Fusion** grows the family as a living tree. The person you are visiting
   stands at the foot of the trunk. Their ancestors are the roots, spreading
@@ -111,8 +111,15 @@ use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
   leaves at the tips, and sap climbs from the roots to the leaves.
 - **Galaxy** makes that person a sun, with one orbit per generation:
   descendants above, ancestors below.
+- **Summit** is an ascent at sunrise over a photographed mountain: the
+  ancestors in the valley, the descendants climbing toward the summit, and
+  the snow coming further down the more recently the person was born.
+- **Clarity** is a funnel of glass: one slice per generation, the oldest at
+  the narrow end below, the newest at the wide mouth above, every parentage
+  a line meshed from one slice to the next. Each slice says how many people
+  it holds, as the stages of a funnel chart do.
 
-Underneath, both are the river:
+Underneath, all four are the river:
 
 - the same people, with the same marks for how sure each link is;
 - the same travel, trail, zoom and keyboard;
@@ -125,6 +132,8 @@ opens the widest range in one click.
 | Fusion: a living tree, from the roots to the leaves | Galaxy: a solar system, one orbit per generation |
 |---|---|
 | [![The Fusion theme: Lucien Delaunay at the foot of a trunk on the soil line. His parents and grandparents spread below as roots, and his children, grandchildren and great-grandchildren form a crown of boughs above, the living as green leaves. A dashboard above counts 10 ancestors, 15 descendants, 7 generations, 22 living and 100 % attested links. His record is open beside it.](docs/screenshots/fusion-tree.jpg)](docs/screenshots/fusion-tree.jpg) | [![The Galaxy theme: Lucien Delaunay as a sun at the centre, his wife Zofia Zając on the innermost orbit, descendants on the orbits above and ancestors on those below, joined by violet links, over a starfield with a nebula. The same dashboard sits above, and his record beside it.](docs/screenshots/galaxy-system.jpg)](docs/screenshots/galaxy-system.jpg) |
+| **Summit: an ascent, the oldest in the valley** | **Clarity: a funnel, the oldest at the narrow end** |
+| [![The Summit theme: Lucien Delaunay at a camp on a photographed snowy range before dawn, his ancestors below him toward the valley and his children, grandchildren and great-grandchildren climbing toward the summit along gold trails, the flag on the highest peak. The dashboard sits above, and his record beside it.](docs/screenshots/summit-ascent.jpg)](docs/screenshots/summit-ascent.jpg) | [![The Clarity theme, light: a funnel of glass slices from blue at the wide mouth to pink at the narrow end. Lucien Delaunay at the front of his own slice, his wife Zofia Zając beside him, his children, grandchildren and great-grandchildren in the wider slices above and his ancestors in the narrower ones below, joined by dark teal lines. Each slice is labelled on the right with its number of people: 6, 10, 6, 2, 2, 4. His record is open beside it.](docs/screenshots/clarity-funnel.jpg)](docs/screenshots/clarity-funnel.jpg) |
 
 <p align="center">
 <a href="docs/screenshots/fusion-whole.jpg"><img src="docs/screenshots/fusion-whole.jpg" width="620" alt="Whole family, under Fusion: one tree from the great-great-great-grandparents in the roots to the great-grandchildren at the top of the crown, nine generations, with the legend reading: the roots, ancestors; the crown, descendants."></a>
@@ -216,9 +225,82 @@ person's picture, in their gallery or among the files that serve as
 evidence. In the archive, each one is a Document that says what it is
 ([why](docs/adr/0009-ai-reworked-portraits-are-never-evidence.md)).
 
+### Run it from the browser: the administration console
+
+*(New in 0.5.0, on `main`.)* An administrator finds five rooms behind one
+strip. The overview opens on a tile for each of the four others, with what
+each would say first.
+
+| Infrastructure: health, version, storage and computing | The AXGF bundle: conformity, anomalies, export |
+|---|---|
+| [![The Infrastructure page: four tiles (health needs attention: 11 green, 7 warnings, 0 critical; version v0.5.0; 70.3 GB free, 57 % of 165.2 GB used; 2 cores, load 1.61), then the health checks grouped by area, each green or a warning with what was found: how the site is reached, forwarded addresses, posts from other sites, sign-in services, administrators.](docs/screenshots/console-infrastructure.jpg)](docs/screenshots/console-infrastructure.jpg) | [![The AXGF bundle page: four tiles (conformity to watch: 7 green, 2 warnings; 639 entities, 250 people and 13 attached files; 527.4 KB on disk; AXGF 1.1), then the conformity checks: format version, the manifest's counts, validation with 4 warnings, attached files all present, accounts and bundle.](docs/screenshots/console-bundle.jpg)](docs/screenshots/console-bundle.jpg) |
+
+- **AXGF bundle.** How the family's file conforms to AXGF 1.1, each finding
+  green, a warning or critical, and opening on what to do about it: the
+  format, the manifest, validation, the attached files, whether the accounts
+  were made for this family, anyone living who is visible to visitors, and
+  the open questions of the quality page. Below, the **export**: the file as
+  it is, or **encrypted to someone's OpenPGP key** (`family.axgf.gpg`,
+  AES-256), which only they can open with `gpg --decrypt`. A key too weak
+  (RSA under 2048 bits), expired or revoked is refused, and the page says
+  whether a key is in the FIPS-approved set.
+- **Infrastructure.** Eighteen checks run each time the page opens, the same
+  questions a careful review would ask: is the site reached over HTTPS, who
+  can administer it, is the emergency token still set, are there backups and
+  room for the next ones (with the growth measured from them), how much
+  memory is left under the service's ceiling, is a newer version out, is the
+  sandbox in place, is the clock right. Each is green, a warning or critical,
+  with its plan, and the same checks are served as JSON for a monitor. Then
+  the **version**: the one running, the ones published, and a button to
+  install another — a newer one, or an older one if you type its tag twice.
+  The button asks a small helper that runs as root outside the web service,
+  which does exactly what `bootstrap.sh --upgrade` does: backup, checksum,
+  restart, health check, and the previous version back on its own if the
+  new one does not answer. Then **storage** (the partition, what the site
+  keeps on it, how fast it grows, how many days of room are left) and
+  **computing** (system, processor, load, memory).
+- **Accounts.** Who may do what, at a glance, and how each account signs in.
+- **Connectivity.** The site's public address, the sign-in rules and the
+  sign-in services (below).
+
+### Let the family in: registration and sign-in services
+
+*(New in 0.5.0, on `main`.)* You choose, on the Accounts page, whether
+relatives can open an account themselves:
+
+- **administrators only** (the default: you create every account);
+- **with the family's secret**, a phrase you pass on like a door code, which
+  you can draw again at any time;
+- **open to visitors**.
+
+An account opened this way is a member's: it reads what members read and
+changes nothing, until you give it another role.
+
+<p align="center">
+<a href="docs/screenshots/register.jpg"><img src="docs/screenshots/register.jpg" width="620" alt="The registration page under Canopy, over the hills photograph: the family's secret, then Continue with Google and Continue with Microsoft; below, or a small form with a username, a password and the secret."></a>
+</p>
+
+The quickest way in is an account a relative already has. Under
+**Connectivity**, register the site with **Google**, **Microsoft**,
+**GitHub** or any **OpenID Connect** provider (Keycloak, Authentik, a
+company directory…), and *Continue with Google* appears on the sign-in and
+registration pages. Better still, you need no registration at all: create a
+relative's account with their address, and their first *Continue with
+Google* links to it, provided Google says it verified that address.
+
+Rules for everyone, administrators included, are set there too: who may
+still sign in with a password (everyone, everyone but administrators, or
+nobody), which domains may open an account, and whether a verified address
+links an account. A rule that would leave no administrator a way in is
+refused.
+
+Without a service, a small form remains: a username and a password, and the
+secret if you asked for one. It asks for no email address, so nobody can
+claim someone else's.
+
 ### Make it yours
 
-[![The overview page under the three themes that carry their own furniture. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
+[![The overview page under the five themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a glass funnel from blue to pink, in orange on white.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
 There are five themes.
 
@@ -423,7 +505,13 @@ large save. [docs/OPERATOR.md](docs/OPERATOR.md#publishing-it-tls-and-a-reverse-
 has the details.
 
 Inside, passwords are hashed with Argon2id, sign-in attempts are throttled,
-and the session cookie is `HttpOnly` and `SameSite=Strict`. Visibility is
+and the session cookie is `HttpOnly` and `SameSite=Strict`. Every form must
+be posted from the site itself (its `Origin`, else its `Referer`), and a page
+shown to someone signed in is never cached. Sign-in services use the
+authorization code with PKCE, `state` and `nonce`, and check every claim of
+the token they get back. The sign-in services need the server to reach them:
+the service as installed allows no outgoing connection, and
+[docs/adr/0012](docs/adr/0012-the-ways-in.md) says how to open it. Visibility is
 enforced on the server on every read path. A person you may not read is
 redacted, not omitted: they keep their place in the tree, with no name and no
 dates.
@@ -470,6 +558,12 @@ It backs up first, keeps the working binary aside, installs the new one,
 restarts, and checks that the family's data is readable. If it is not, it puts
 the previous version back on its own. Without `--version` it upgrades to the
 latest stable release.
+
+From 0.5.0 an administrator can do the same from **Admin → Infrastructure →
+Change version**, which asks the helper `bootstrap.sh` installs beside the
+service. While the repository is private, the helper needs a GitHub token in
+`/etc/axgf-cms/github-token`, readable by root only
+([docs/OPERATOR.md](docs/OPERATOR.md#from-the-infrastructure-page-050)).
 
 ## Languages
 

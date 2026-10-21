@@ -4102,3 +4102,7 @@ view-funnel-still = Hold the funnel still
 view-funnel-name = Funnel
 view-funnel-legend = How to read the funnel
 view-funnel-search-hint = Enter brings them to the front; Shift+Enter opens their record.
+bundle-binding-unnamed = an unnamed archive
+bundle-binding-created = an archive created on { $date }
+bundle-binding-named = “{ $family }”
+bundle-binding-named-created = “{ $family }”, created on { $date }

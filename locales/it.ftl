@@ -4095,3 +4095,7 @@ view-funnel-still = Ferma l'imbuto
 view-funnel-name = Imbuto
 view-funnel-legend = Come leggere l'imbuto
 view-funnel-search-hint = Invio li porta in primo piano; Maiusc+Invio apre la loro scheda.
+bundle-binding-unnamed = un archivio senza nome
+bundle-binding-created = un archivio creato il { $date }
+bundle-binding-named = «{ $family }»
+bundle-binding-named-created = «{ $family }», creato il { $date }

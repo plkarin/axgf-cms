@@ -4062,3 +4062,7 @@ view-funnel-still = Den Trichter anhalten
 view-funnel-name = Trichter
 view-funnel-legend = So liest man den Trichter
 view-funnel-search-hint = Eingabe holt die Person nach vorn; Umschalt+Eingabe öffnet ihren Datensatz.
+bundle-binding-unnamed = ein Archiv ohne Namen
+bundle-binding-created = ein Archiv, angelegt am { $date }
+bundle-binding-named = „{ $family }“
+bundle-binding-named-created = „{ $family }“, angelegt am { $date }

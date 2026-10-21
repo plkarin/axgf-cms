@@ -4328,3 +4328,7 @@ view-funnel-still = Zatrzymaj lejek
 view-funnel-name = Lejek
 view-funnel-legend = Jak czytać lejek
 view-funnel-search-hint = Enter przenosi tę osobę na pierwszy plan; Shift+Enter otwiera jej kartę.
+bundle-binding-unnamed = archiwum bez nazwy
+bundle-binding-created = archiwum utworzone { $date }
+bundle-binding-named = „{ $family }”
+bundle-binding-named-created = „{ $family }”, utworzone { $date }

@@ -3714,3 +3714,7 @@ view-funnel-still = 让漏斗静止
 view-funnel-name = 漏斗
 view-funnel-legend = 如何阅读漏斗
 view-funnel-search-hint = 按 Enter 将其移到前面；按 Shift+Enter 打开其记录。
+bundle-binding-unnamed = 一个未命名的归档
+bundle-binding-created = 创建于 { $date } 的归档
+bundle-binding-named = “{ $family }”
+bundle-binding-named-created = 创建于 { $date } 的“{ $family }”

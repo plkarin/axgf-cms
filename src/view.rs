@@ -478,7 +478,7 @@ fn year_of(v: &str) -> String {
 }
 
 /// Shorthand for a translation with arguments.
-fn t(lang: &str, key: &str, pairs: &[(&str, fluent::FluentValue<'_>)]) -> String {
+pub(crate) fn t(lang: &str, key: &str, pairs: &[(&str, fluent::FluentValue<'_>)]) -> String {
     if pairs.is_empty() {
         return crate::i18n::translate(lang, key, None);
     }

@@ -302,7 +302,15 @@ pub enum Binding {
     /// The ACL was created for a different tree. Said out loud, not enforced:
     /// a restored backup and a renamed file are both legitimate, and refusing
     /// to start would be the worse failure.
-    Mismatch { expected: String, found: String },
+    Mismatch {
+        /// In English, for the journal.
+        expected: String,
+        found: String,
+        /// The same, in parts, for a page to say in its reader's language:
+        /// the family's name and when the bundle was created, either empty.
+        want: (String, String),
+        got: (String, String),
+    },
 }
 
 impl Acl {
@@ -482,6 +490,8 @@ impl Acl {
         Binding::Mismatch {
             expected: describe(&want_f, &want_c),
             found: describe(&got_f, &got_c),
+            want: (want_f, want_c),
+            got: (got_f, got_c),
         }
     }
 }
@@ -880,7 +890,9 @@ mod tests {
         // A different family altogether.
         let other = json!({"family": {"name": "Meunier"}, "created_at": "2020-01-01T00:00:00Z"});
         match acl.check_binding(Some(&other), Some("bbb")) {
-            Binding::Mismatch { expected, found } => {
+            Binding::Mismatch {
+                expected, found, ..
+            } => {
                 assert!(expected.contains("Trecki"), "{expected}");
                 assert!(found.contains("Meunier"), "{found}");
             }

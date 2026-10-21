@@ -4097,3 +4097,7 @@ view-funnel-still = Parar o funil
 view-funnel-name = Funil
 view-funnel-legend = Como ler o funil
 view-funnel-search-hint = Enter traz a pessoa para a frente; Shift+Enter abre o registo.
+bundle-binding-unnamed = um arquivo sem nome
+bundle-binding-created = um arquivo criado em { $date }
+bundle-binding-named = «{ $family }»
+bundle-binding-named-created = «{ $family }», criado em { $date }

@@ -213,6 +213,25 @@ Upgrading from a release old enough to have no `backup` command is handled: the
 three files are copied aside with the service stopped first, and the new binary
 writes a proper verified archive as soon as it is up.
 
+### From the Infrastructure page (0.5.0)
+
+`bootstrap.sh` from 0.5.0 on also installs a small root helper beside the
+service (docs/adr/0011 §5): the page's **Change version** button writes a
+request, and the helper runs exactly the upgrade above for that release tag,
+then reports back on the page. It also fetches the list of published releases
+once a day and when the page asks. A private repository needs a GitHub token,
+which the helper reads from a file only root can read:
+
+```sh
+sudo install -m 600 -o root -g root /dev/null /etc/axgf-cms/github-token
+sudoedit /etc/axgf-cms/github-token    # paste the token: never on a command line
+```
+
+`bootstrap.sh` itself uses that file, or `AXGF_CMS_GITHUB_TOKEN`, to download a
+private repository's releases, and never prints the token. Without the helper
+the page shows the command to run instead. `systemctl status
+axgf-cms-upgrade.path axgf-cms-releases.timer` says whether it is watching.
+
 ## Health, and plugging it into a monitor
 
 ```sh

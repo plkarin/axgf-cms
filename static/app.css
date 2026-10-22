@@ -4961,6 +4961,20 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ico-gear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7'/%3E%3C/svg%3E");
   --ico-upload: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4M7 9l5-5 5 5'/%3E%3Cpath d='M4 16v3a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-3'/%3E%3C/svg%3E");
   --ico-lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8 10.5V8a4 4 0 0 1 8 0v2.5'/%3E%3C/svg%3E");
+  /* The console's rooms (docs/adr/0011), drawn from the line icons of
+     templates/_icons.html. */
+  --ico-archive: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='4' width='17' height='4.5' rx='1.2'/%3E%3Cpath d='M5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5'/%3E%3Cpath d='M10 12.5h4'/%3E%3C/svg%3E");
+  --ico-server: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='7' rx='1.8'/%3E%3Crect x='4' y='13' width='16' height='7' rx='1.8'/%3E%3Cpath d='M8 7.5h.01M8 16.5h.01M12 7.5h5M12 16.5h5'/%3E%3C/svg%3E");
+  --ico-accounts: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8.5' r='3'/%3E%3Cpath d='M3.5 19.5c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6'/%3E%3Cpath d='M16 5.5a3 3 0 0 1 0 6'/%3E%3Cpath d='M17.5 13.8c1.9.6 3 2.7 3 5.2'/%3E%3C/svg%3E");
+  --ico-connectivity: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 15l6-6'/%3E%3Cpath d='M10.5 6.5l1.4-1.4a4 4 0 0 1 5.7 5.7l-1.4 1.4'/%3E%3Cpath d='M13.5 17.5l-1.4 1.4a4 4 0 0 1-5.7-5.7l1.4-1.4'/%3E%3C/svg%3E");
+  --ico-gauge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 17a8 8 0 1 1 15 0'/%3E%3Cpath d='M12 13l3.5-4'/%3E%3Ccircle cx='12' cy='13.5' r='1.2'/%3E%3C/svg%3E");
+  --ico-upgrade: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 16.5v-9'/%3E%3Cpath d='M8.5 11 12 7.5l3.5 3.5'/%3E%3C/svg%3E");
+  --ico-cpu: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='6.5' y='6.5' width='11' height='11' rx='1.5'/%3E%3Crect x='9.5' y='9.5' width='5' height='5' rx='.8'/%3E%3Cpath d='M10 3.5v3M14 3.5v3M10 17.5v3M14 17.5v3M3.5 10h3M3.5 14h3M17.5 10h3M17.5 14h3'/%3E%3C/svg%3E");
+  --ico-disk: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='6' rx='7.5' ry='2.8'/%3E%3Cpath d='M4.5 6v12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V6'/%3E%3Cpath d='M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8'/%3E%3C/svg%3E");
+  --ico-key: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='15' r='4.5'/%3E%3Cpath d='M11.2 11.8 19.5 3.5'/%3E%3Cpath d='M16 7l2.5 2.5M14 9l1.8 1.8'/%3E%3C/svg%3E");
+  --ico-download: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11'/%3E%3Cpath d='M7.5 10.5 12 15l4.5-4.5'/%3E%3Cpath d='M4.5 19.5h15'/%3E%3C/svg%3E");
+  --ico-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 21 19.5H3z'/%3E%3Cpath d='M12 10v4.5M12 17.2h.01'/%3E%3C/svg%3E");
+  --ico-pulse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h4l2.5-6 4 12 2.5-6h5'/%3E%3C/svg%3E");
   /* A grain finer than a pixel can show, at 4.5 %: it breaks the 8-bit steps
      a dark gradient over a photograph otherwise shows as bands (v0.5.0,
      the operator's review at 1920 × 1080). Grey, so it names no colour. */
@@ -5109,6 +5123,28 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .completeness { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .rec-section:has(.gallery) { --sign: var(--ico-image); --disc: var(--accent); }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .rec-section:has(.diag) { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+/* The console's rooms (docs/adr/0011): each section its own sign, as the
+   record's are, rather than the leaf every one of them fell back to. */
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #conformity { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #anomalies { --sign: var(--ico-alert); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #diagnostics { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #bundle-facts { --sign: var(--ico-archive); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #export { --sign: var(--ico-download); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #health { --sign: var(--ico-pulse); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #version { --sign: var(--ico-upgrade); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #volumes { --sign: var(--ico-disk); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #compute { --sign: var(--ico-cpu); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #activity { --sign: var(--ico-gauge); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #roles { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #registration { --sign: var(--ico-accounts); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #public-address { --sign: var(--ico-connectivity); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #policy { --sign: var(--ico-lock); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #services { --sign: var(--ico-key); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #entity-counts { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #operations { --sign: var(--ico-gear); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #recent-changes { --sign: var(--ico-clock); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #existing-accounts { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #new-account { --sign: var(--ico-pen); --disc: var(--accent); }
 
 /* ---------- the record ---------- */
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-head {
@@ -5397,16 +5433,145 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --kit-hero: url("/static/img/clarity-hero.jpg");
   --kit-cta: url("/static/img/clarity-cta.jpg");
 }
-[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi) {
+/* Clarity's frames (the operator's second look, 2026-10-22: "the theme is
+   white and the background is white also … it feels like we are writing on
+   paper"). The ground is a blue-grey every box stands off; a box has an
+   edge, a shadow that reads, and along its top a strip of its category's
+   colour — the colour of its sign; its title sits in a band over a rule; a
+   pack of fields is a pale panel whose legend is a chip; each figure's tile
+   wears one of five inks. Not in the paper style, which draws no boxes. */
+[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls) {
   background-color: var(--surface-raised);
-  border-color: var(--border-hairline);
-  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.06), 0 8px 24px -16px rgb(var(--shadow-rgb) / 0.22);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08), 0 8px 20px -10px rgb(var(--shadow-rgb) / 0.18);
+}
+[data-theme="clarity"]:not([data-style="paper"]) .rec-section { border-top: 3px solid var(--disc, var(--cl-ink-4)); }
+[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section, .card, .completeness) .stat { box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08); }
+[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section > h2:first-child, .rec-section > .sec-head) {
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border-hairline);
+}
+[data-theme="clarity"]:not([data-style="paper"]) .rec-section > .sec-head h2 { margin-bottom: 0; }
+/* The sign as a framed chip rather than a disc. */
+[data-theme="clarity"] :is(.sec-head h2, .rec-section > h2:first-child)::before { border-radius: 10px; }
+/* The figures' tiles: one ink each, along the top and in the chip. */
+[data-theme="clarity"] .kpi { --kpi-ink: var(--cl-ink-1); --kpi-tint: var(--cl-tint-1); }
+[data-theme="clarity"] .kpi:nth-child(5n + 2) { --kpi-ink: var(--cl-ink-2); --kpi-tint: var(--cl-tint-2); }
+[data-theme="clarity"] .kpi:nth-child(5n + 3) { --kpi-ink: var(--cl-ink-3); --kpi-tint: var(--cl-tint-3); }
+[data-theme="clarity"] .kpi:nth-child(5n + 4) { --kpi-ink: var(--cl-ink-4); --kpi-tint: var(--cl-tint-4); }
+[data-theme="clarity"] .kpi:nth-child(5n + 5) { --kpi-ink: var(--cl-ink-5); --kpi-tint: var(--cl-tint-5); }
+[data-theme="clarity"]:not([data-style="paper"]) .kpi { border-top: 3px solid var(--kpi-ink); }
+[data-theme="clarity"] .kpi-icon {
+  border-radius: 10px;
+  border-color: transparent;
+  background: var(--kpi-tint);
+  color: var(--kpi-ink);
+}
+/* A pack of fields: a pale panel inside its white box, its legend a chip. */
+[data-theme="clarity"]:not([data-style="paper"]) :is(fieldset, .export-choice, .service-form) {
+  background: var(--cl-pack);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem 1rem;
+}
+[data-theme="clarity"]:not([data-style="paper"]) :is(.export-choice, .service-form) fieldset {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+[data-theme="clarity"]:not([data-style="paper"]) legend {
+  padding: 0.15rem 0.7rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+}
+[data-theme="clarity"] :is(input[type="text"], input[type="password"], input[type="email"], input[type="search"], input[type="number"], input[type="url"], input[type="file"], select, textarea) {
+  background-color: var(--surface-raised);
+}
+[data-theme="clarity"] .choice-card { background: var(--surface-raised); }
+[data-theme="clarity"] thead th { background: var(--surface-sunken); }
+/* A notice says what kind it is by its ground as well as its sign. */
+[data-theme="clarity"]:not([data-style="paper"]) .notice { background: var(--cl-tint-1); border-color: color-mix(in srgb, var(--cl-ink-1) 25%, transparent); }
+[data-theme="clarity"]:not([data-style="paper"]) .notice.ok { background: var(--cl-tint-5); border-color: color-mix(in srgb, var(--cl-ink-5) 25%, transparent); }
+[data-theme="clarity"]:not([data-style="paper"]) .notice.warn { background: var(--cl-tint-4); border-color: color-mix(in srgb, var(--cl-ink-4) 25%, transparent); }
+[data-theme="clarity"]:not([data-style="paper"]) .notice.error { background: var(--cl-tint-3); border-color: color-mix(in srgb, var(--cl-ink-3) 25%, transparent); }
+[data-theme="clarity"] .admin-nav { background: var(--surface-raised); box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08); }
+[data-theme="clarity"] .person-tabs { background: var(--surface-raised); box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08); }
+/* Inside a box, what sat sunk into the page is a pack: the pale blue of a
+   field group, not the page's grey showing through a hole in the box. */
+[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section .name-block, .rec-section .union, .rec-section .shot, :is(.rec-section, .card) .card, .tree-controls .field-group, .link-card, .raw-json, .service-card, .fact-chips .fc, .raw-fieldset, .danger-zone) {
+  background: var(--cl-pack);
+  box-shadow: none;
+}
+/* A finding is a white row with its level along its edge, and each area a
+   heading drawn out by a rule to the box's edge. */
+[data-theme="clarity"]:not([data-style="paper"]) .check {
+  background: var(--surface-raised);
+  border-inline-start: 3px solid var(--conf-certain);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.06);
+}
+[data-theme="clarity"]:not([data-style="paper"]) .check:has(.lvl-warn) { border-inline-start-color: var(--warning); }
+[data-theme="clarity"]:not([data-style="paper"]) .check:has(.lvl-fail) { border-inline-start-color: var(--danger); }
+[data-theme="clarity"] .checks-area { display: flex; align-items: center; gap: 0.75rem; }
+[data-theme="clarity"] .checks-area::after { content: ""; flex: 1; border-block-start: 1px solid var(--border-hairline); }
+/* What the record could say is a section like the others: its strip on top
+   rather than an accent down its side, and its sign in a chip. */
+[data-theme="clarity"]:not([data-style="paper"]) .completeness {
+  border: 1px solid var(--border-hairline);
+  border-top: 3px solid var(--disc);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08), 0 8px 20px -10px rgb(var(--shadow-rgb) / 0.18);
+}
+[data-theme="clarity"] .completeness > h2:first-child { display: flex; align-items: center; gap: 0.7rem; }
+[data-theme="clarity"]:not([data-style="paper"]) .completeness > h2:first-child {
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border-hairline);
+}
+[data-theme="clarity"] .completeness > h2:first-child::before {
+  content: "";
+  flex: none;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 10px;
+  background: var(--disc);
+  -webkit-mask: var(--sign) center / 1.05rem no-repeat, linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask: var(--sign) center / 1.05rem no-repeat, linear-gradient(black 0 0);
+  mask-composite: exclude;
+}
+/* The record's editor: the tab on screen is a box, its strip in the colour
+   of what it writes, and the save a white bar that floats over the page. */
+[data-theme="clarity"] #fiche { --ed-ink: var(--icon-river-ink); }
+[data-theme="clarity"] #famille { --ed-ink: var(--icon-tree-ink); }
+[data-theme="clarity"] #evenements { --ed-ink: var(--icon-search-ink); }
+[data-theme="clarity"] #sources { --ed-ink: var(--icon-quality-ink); }
+[data-theme="clarity"] #medias { --ed-ink: var(--cl-ink-3); }
+[data-theme="clarity"] #profil { --ed-ink: var(--cl-ink-2); }
+[data-theme="clarity"]:not([data-style="paper"]) .ed-panel {
+  padding: 1.25rem 1.25rem 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  border-top: 3px solid var(--ed-ink, var(--cl-ink-4));
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08), 0 8px 20px -10px rgb(var(--shadow-rgb) / 0.18);
+}
+[data-theme="clarity"]:not([data-style="paper"]) .ed-save {
+  bottom: 0.75rem;
+  margin-block-start: 1rem;
+  padding-inline: 1rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08), 0 10px 28px -12px rgb(var(--shadow-rgb) / 0.35);
 }
 /* The logo's white tile keeps its shape on a white ground. */
 [data-theme="clarity"] .logo-mark .lm-tile { stroke: var(--border-hairline); stroke-width: 2; }
 [data-theme="clarity"] .masthead {
-  background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+  background: var(--surface-raised);
   border-bottom-color: var(--border-hairline);
+  box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.08);
 }
 [data-theme="clarity"] main:has(.login-mark) .card { box-shadow: 0 18px 40px -24px rgb(var(--shadow-rgb) / 0.35); }
 /* The way from the record leads into the funnel. */

@@ -416,6 +416,11 @@ pub async fn dashboard(
                                 "kind": k, "n": n, "singular": singular }))
                             .collect::<Vec<_>>(),
             total => counts.iter().map(|(_, n)| n).sum::<usize>(),
+            // The family's notes (docs/adr/0014), as many as this account
+            // reads: a contributor's lens may hide some.
+            notes_count => state.read_as(viewer.ceiling(), |flat, lens| {
+                crate::notes::readable_notes(flat, lens, true).len()
+            }),
             validation => env.data,
             diagnostics,
             bundle_path => state.bundle_path().display().to_string(),

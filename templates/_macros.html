@@ -58,6 +58,39 @@
   {%- endif -%}
 {% endmacro %}
 
+{# A relative as a card (the operator's review of 22 October 2026): their
+   picture or their initials, their name, their years, how they are related
+   — the whole card one link, so that a family reads across and a click
+   lands on somebody. A person this reader may not see keeps their place and
+   nothing else; one the bundle names but does not hold is not a link. #}
+{% macro person_card(p) %}
+  <li class="pcard{% if p.restricted %} is-restricted{% elif not p.known %} is-absent{% endif %}">
+  {%- if p.restricted %}
+    <span class="pcard-in"><span class="pcard-face" aria-hidden="true">·</span><span class="pcard-text"><span class="pcard-name"><span class="restricted" title="{{ t('record-restricted-title') }}">{{ p.name }}</span></span></span></span>
+  {%- else %}
+    {%- if p.known %}<a class="pcard-in" href="/person/{{ p.id }}">{% else %}<span class="pcard-in" title="{{ t('record-absent-person-title') }}">{% endif %}
+      <span class="pcard-face" aria-hidden="true">
+        {%- if p.portrait %}<img src="{{ p.portrait }}" alt="" loading="lazy" width="48" height="48"{% if p.focal %} style="object-position: {{ p.focal }}"{% endif %}>
+        {%- else %}{{ p.initials }}{% endif -%}
+      </span>
+      <span class="pcard-text">
+        <span class="pcard-name"><bdi>{{ p.name }}</bdi></span>
+        {%- if p.lifespan or p.detail %}
+        <span class="pcard-meta">{% if p.lifespan %}{{ p.lifespan }}{% endif %}{% if p.lifespan and p.detail %} · {% endif %}{% if p.detail %}{{ p.detail }}{% endif %}</span>
+        {%- endif %}
+        {%- if p.lineage or p.confidence %}
+        <span class="pcard-tags">
+          {%- if p.lineage %}<span class="chip small">{{ p.lineage }}</span>{% endif %}
+          {%- if p.confidence %}{{ conf_bar(p.confidence) }}{% endif -%}
+        </span>
+        {%- endif %}
+      </span>
+      {%- if p.birth_order %}<span class="birth-order pcard-order" title="{{ t('record-birth-order') }}">{{ p.birth_order }}</span>{% endif %}
+    {%- if p.known %}</a>{% else %}</span>{% endif %}
+  {%- endif %}
+  </li>
+{% endmacro %}
+
 {% macro relation(p) %}
   <li class="rel">
     {{ person_link(p) }}

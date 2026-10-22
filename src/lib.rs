@@ -46,6 +46,8 @@ pub mod i18n;
 pub mod journal;
 pub mod living;
 pub mod lockfile;
+pub mod note_pdf;
+pub mod notes;
 pub mod notify;
 pub mod payloads;
 pub mod person;

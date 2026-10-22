@@ -50,6 +50,13 @@ pub struct PersonRef {
     pub lineage: Option<String>,
     /// Lifespan in brief, e.g. "1881–1962", for the family lists.
     pub lifespan: Option<String>,
+    /// One or two letters standing in for a photograph on a family card.
+    pub initials: String,
+    /// The thumbnail a family card shows — the person's chosen portrait, else
+    /// the heuristic's, among the pictures this reader may see — and where in
+    /// it the face is. Only the family's cards ask for it (`relations`).
+    pub portrait: Option<String>,
+    pub focal: Option<String>,
 }
 
 /// A place, resolved with its historical country context.
@@ -1011,13 +1018,18 @@ impl Ctx<'_> {
                 birth_order: None,
                 lineage: None,
                 lifespan: None,
+                initials: String::new(),
+                portrait: None,
+                focal: None,
             };
         }
+        let name = found
+            .map(view::person_display_name)
+            .unwrap_or_else(|| crate::i18n::translate(self.lang, UNKNOWN_KEY, None));
         PersonRef {
             id: id.to_string(),
-            name: found
-                .map(view::person_display_name)
-                .unwrap_or_else(|| crate::i18n::translate(self.lang, UNKNOWN_KEY, None)),
+            initials: initials_of(&name),
+            name,
             known: found.is_some(),
             restricted: false,
             confidence: confidence.map(Confidence::new),
@@ -1025,7 +1037,45 @@ impl Ctx<'_> {
             birth_order: None,
             lineage: None,
             lifespan: found.and_then(|p| lifespan_of(p, self.lang)),
+            portrait: None,
+            focal: None,
         }
+    }
+
+    /// A relative's card picture: their chosen portrait, else the heuristic's
+    /// (`auto_avatar`), among the pictures of theirs this reader may see —
+    /// the same choice the record's own masthead makes. Nothing for a person
+    /// this reader may not see, or one the bundle does not hold.
+    fn with_portrait(&self, mut r: PersonRef) -> PersonRef {
+        if r.restricted || !r.known {
+            return r;
+        }
+        let Some(p) = self.collection("persons").and_then(|m| m.get(&r.id)) else {
+            return r;
+        };
+        let images: Vec<DocumentView> = self
+            .documents_for(&r.id, p)
+            .into_iter()
+            .filter(|d| d.is_image && d.has_payload)
+            .collect();
+        let chosen = match crate::avatar::read(p) {
+            crate::avatar::Choice::None => None,
+            crate::avatar::Choice::Document { ref id, focal } => images
+                .iter()
+                .find(|d| &d.id == id)
+                .cloned()
+                .map(|mut d| {
+                    d.focal = Some(focal.css());
+                    d
+                })
+                .or_else(|| auto_avatar(&images)),
+            crate::avatar::Choice::Auto => auto_avatar(&images),
+        };
+        if let Some(d) = chosen {
+            r.portrait = Some(format!("/document/{}/thumb", d.id));
+            r.focal = d.focal;
+        }
+        r
     }
 
     /// Resolve a place id, including the country history that makes a place
@@ -1320,6 +1370,10 @@ impl Ctx<'_> {
         // in it — the signature AXGF identifies a family by, and so the thing
         // two records of one couple share.
         let mut unions: Vec<(Vec<String>, String, UnionView)> = Vec::new();
+        // When each union began, to show a life's families in its order
+        // (the operator's review of 22 October 2026): the union's own start,
+        // else its first child's birth, else last.
+        let mut began: Vec<String> = Vec::new();
 
         let Some(families) = self.collection("families") else {
             return (parents, siblings, group_unions(unions));
@@ -1369,26 +1423,31 @@ impl Ctx<'_> {
                     if !parent.restricted {
                         parent.lineage = self.lineage(me.lineage);
                     }
-                    parents.push(parent);
+                    parents.push(self.with_portrait(parent));
                 }
                 for c in &kids {
                     if c.id != id {
-                        siblings.push(self.child_ref(c));
+                        siblings.push(self.with_portrait(self.child_ref(c)));
                     }
                 }
             }
 
             if is_partner {
                 let spouse = partners.iter().find(|(p, _)| *p != id).map(|(p, role)| {
-                    self.person_ref(
-                        p,
-                        union
-                            .and_then(|u| u.get("confidence"))
-                            .and_then(Value::as_f64),
-                        role.map(|r| self.union_role(r)),
+                    self.with_portrait(
+                        self.person_ref(
+                            p,
+                            union
+                                .and_then(|u| u.get("confidence"))
+                                .and_then(Value::as_f64),
+                            role.map(|r| self.union_role(r)),
+                        ),
                     )
                 });
-                let mut children: Vec<PersonRef> = kids.iter().map(|c| self.child_ref(c)).collect();
+                let mut children: Vec<PersonRef> = kids
+                    .iter()
+                    .map(|c| self.with_portrait(self.child_ref(c)))
+                    .collect();
                 // Birth order first where the record states one; the rest keep
                 // the order the family lists them in.
                 children.sort_by_key(|c| c.birth_order.unwrap_or(i64::MAX));
@@ -1421,12 +1480,40 @@ impl Ctx<'_> {
                     partners.iter().map(|(p, _)| (*p).to_string()).collect();
                 signature.sort();
                 signature.dedup();
+                let persons = self.collection("persons");
+                let start = union
+                    .and_then(|u| u.get("start"))
+                    .and_then(|s| s.get("date"))
+                    .and_then(|d| d.get("value"))
+                    .and_then(Value::as_str)
+                    .map(str::to_string);
+                let first_child = kids
+                    .iter()
+                    .filter_map(|c| {
+                        persons?
+                            .get(c.id)?
+                            .get("birth")?
+                            .get("date")?
+                            .get("value")?
+                            .as_str()
+                    })
+                    .min()
+                    .map(str::to_string);
+                began.push(format!(
+                    "{}\u{0}{fam_id}",
+                    start
+                        .or(first_child)
+                        .unwrap_or_else(|| "\u{10ffff}".to_string())
+                ));
                 unions.push((signature, fam_id.clone(), view));
             }
         }
 
         dedup_refs(&mut parents);
         dedup_refs(&mut siblings);
+        let mut ordered: Vec<_> = began.into_iter().zip(unions).collect();
+        ordered.sort_by(|a, b| a.0.cmp(&b.0));
+        let unions = ordered.into_iter().map(|(_, u)| u).collect();
         (parents, siblings, group_unions(unions))
     }
 
@@ -1742,10 +1829,9 @@ impl Ctx<'_> {
             }
             // A portrait an AI reworked is never one of the record's files:
             // it has a band of its own (`ai_portraits_for`).
-            if docs
-                .get(doc_id)
-                .is_some_and(crate::ai_portrait::is_ai_portrait)
-            {
+            if docs.get(doc_id).is_some_and(|d| {
+                crate::ai_portrait::is_ai_portrait(d) || crate::notes::is_note_part(d)
+            }) {
                 return;
             }
             seen.push(doc_id.to_string());

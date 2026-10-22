@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ t("notes-admin-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+<h1>{{ t("notes-admin-title") }}</h1>
+<p class="lede">{{ t("notes-admin-intro") }}</p>
+{% if deleted %}<div class="notice ok" role="status"><p>{{ t("notes-deleted") }}</p></div>{% endif %}
+<p><a class="btn primary" href="/admin/notes/new">{{ t("notes-write") }}</a></p>
+
+<section class="rec-section" id="notes-list">
+<h2>{{ t("notes-section-title") }}</h2>
+{% if rows %}
+<div class="table-wrap">
+<table class="wide notes-table">
+  <thead>
+    <tr><th>{{ t("notes-col-title") }}</th><th>{{ t("notes-col-category") }}</th><th>{{ t("notes-col-date") }}</th>
+        <th>{{ t("notes-col-about") }}</th><th>{{ t("notes-col-author") }}</th><th>{{ t("notes-col-actions") }}</th></tr>
+  </thead>
+  <tbody>
+  {% for r in rows %}{% set n = r.view %}
+    <tr>
+      <td data-label="{{ t('notes-col-title') }}"><a href="/notes/{{ n.id }}"><bdi>{{ n.title }}</bdi></a></td>
+      <td data-label="{{ t('notes-col-category') }}">{% if n.category %}<span class="chip small">{{ n.category }}</span>{% endif %}</td>
+      <td data-label="{{ t('notes-col-date') }}">{% if n.date %}{{ n.date.text }}{% endif %}</td>
+      <td data-label="{{ t('notes-col-about') }}">{% if n.persons %}{% for p in n.persons %}<a href="/person/{{ p.id }}"><bdi>{{ p.name }}</bdi></a>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}<span class="muted">{{ t("notes-family-wide") }}</span>{% endif %}</td>
+      <td data-label="{{ t('notes-col-author') }}">{{ n.author or "—" }}</td>
+      <td data-label="{{ t('notes-col-actions') }}">{% if r.may_change %}<a class="btn small" href="/admin/notes/{{ n.id }}/edit">{{ t("notes-edit") }}</a>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="muted">{{ t("notes-none") }}</p>
+{% endif %}
+</section>
+{% endblock %}

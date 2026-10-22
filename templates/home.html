@@ -59,6 +59,49 @@
   <span class="scroll-cue" aria-hidden="true"><i></i>{{ t("home-scroll") }}</span>
 </section>
 
+{#- Notes and contributions (docs/adr/0014), right under the head of the
+    page: for the family's members, searched, read by letter or all at once,
+    each opened in a window that offers it as a PDF. Without notes.js the
+    search and the letters are links and a form, and each card a page. -#}
+{% import "_notes.html" as nt %}
+{#- Nothing written yet: the block is a writer's, to write the first; a
+    reader is not shown an empty one. -#}
+{% if notes.signed_in and (notes.total > 0 or notes.may_write) %}
+<section class="notes-block" id="notes" aria-labelledby="notes-title" data-notes>
+  <div class="notes-head">
+    <div class="notes-head-copy">
+      <h2 class="home-h2" id="notes-title">{{ t("notes-section-title") }}</h2>
+      <p class="notes-intro">{{ t("notes-section-intro") }}</p>
+    </div>
+    {%- if notes.may_write %}<a class="btn" href="/admin/notes/new">{{ t("notes-write") }}</a>{% endif %}
+  </div>
+  {% if notes.total > 0 %}
+  <form class="notes-search" method="get" action="/about" role="search">
+    <input type="search" name="q" value="{{ notes.q }}" placeholder="{{ t('notes-search-placeholder') }}" aria-label="{{ t('notes-search-label') }}" data-notes-q>
+    {%- if notes.letter %}<input type="hidden" name="letter" value="{{ notes.letter }}">{% endif %}
+    <button class="btn" type="submit">{{ t("notes-search-go") }}</button>
+  </form>
+  <nav class="notes-letters" aria-label="{{ t('notes-letters-label') }}" data-content>
+    <a class="notes-letter notes-letter-all" href="/about#notes" data-notes-letter=""{% if not notes.letter %} aria-current="true"{% endif %}>{{ t("notes-all") }}</a>
+    {%- for l in notes.alphabet %}
+    {%- if l.present %}<a class="notes-letter" href="/about?letter={{ l.query }}#notes" data-notes-letter="{{ l.letter }}"{% if notes.letter == l.letter %} aria-current="true"{% endif %}>{{ l.letter }}</a>
+    {%- else %}<span class="notes-letter is-empty" aria-hidden="true">{{ l.letter }}</span>{% endif %}
+    {%- endfor %}
+  </nav>
+  <p class="notes-count small muted" data-notes-count data-total="{{ notes.total }}" data-template="{{ t('notes-shown', shown='%S', total='%T') }}">{{ t("notes-shown", shown=notes.notes|length, total=notes.total) }}</p>
+  <ul class="notes-grid" data-notes-list data-content>{% for n in notes.notes %}{{ nt.card(t, n) }}{% endfor %}</ul>
+  <p class="muted notes-none-found" data-notes-empty{% if notes.notes %} hidden{% endif %}>{{ t("notes-none-found") }}</p>
+  {% endif %}
+  {{ nt.dialog(t) }}
+</section>
+<script src="/static/notes.js" defer></script>
+{% elif not notes.signed_in and notes.exist %}
+<section class="notes-block notes-locked" id="notes" aria-labelledby="notes-title">
+  <h2 class="home-h2" id="notes-title">{{ t("notes-section-title") }}</h2>
+  <p>{{ t("notes-sign-in") }} <a href="/admin/login">{{ t("nav-sign-in") }}</a></p>
+</section>
+{% endif %}
+
 {% if showcase %}
 <section class="home-section" data-reveal aria-labelledby="home-showcase">
   <p class="eyebrow">{{ t("home-showcase-eyebrow") }}</p>

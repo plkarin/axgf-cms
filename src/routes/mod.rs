@@ -7,6 +7,7 @@ mod console;
 mod convert;
 mod editors;
 mod entry;
+mod notes;
 mod person_editor;
 mod prefs;
 mod profile;
@@ -317,6 +318,28 @@ fn routes(state: Shared) -> Router {
             )),
         )
         .route("/convert/download/:id", get(convert::download))
+        // Notes and contributions (docs/adr/0014): read by the family's
+        // members, written from the administration.
+        .route("/notes/:id", get(notes::show))
+        .route("/notes/:id/pdf", get(notes::pdf))
+        .route("/admin/notes", get(notes::list).post(notes::create))
+        .route("/admin/notes/new", get(notes::new_form))
+        .route(
+            "/admin/notes/images",
+            post(notes::images).layer(DefaultBodyLimit::max(
+                crate::notes::MAX_IMAGE * 4 + 64 * 1024,
+            )),
+        )
+        .route("/admin/notes/preview", post(notes::preview))
+        .route("/admin/notes/pending/:token", get(notes::pending))
+        .route("/admin/notes/:id/edit", get(notes::edit_form))
+        .route(
+            "/admin/notes/:id",
+            post(notes::update).layer(DefaultBodyLimit::max(
+                crate::notes::MAX_TEXT * 4 + 64 * 1024,
+            )),
+        )
+        .route("/admin/notes/:id/delete", post(notes::delete))
         .route("/health", get(public::health))
         // Preferences are POSTs so that choosing a language is not something a
         // link or a crawler can do to a reader.
@@ -535,6 +558,26 @@ fn routes(state: Shared) -> Router {
             "/static/img/river-contours.svg",
             get(public::river_contours_svg),
         )
+        .route(
+            "/static/img/notes-canopee.jpg",
+            get(public::notes_canopee_jpg),
+        )
+        .route(
+            "/static/img/notes-fusion.jpg",
+            get(public::notes_fusion_jpg),
+        )
+        .route(
+            "/static/img/notes-galaxy.jpg",
+            get(public::notes_galaxy_jpg),
+        )
+        .route(
+            "/static/img/notes-summit.jpg",
+            get(public::notes_summit_jpg),
+        )
+        .route(
+            "/static/img/notes-clarity.jpg",
+            get(public::notes_clarity_jpg),
+        )
         .route("/static/img/logo-mark.svg", get(public::logo_svg))
         .route("/static/img/icon-192.png", get(public::icon_192_png))
         .route("/static/img/icon-512.png", get(public::icon_512_png))
@@ -553,6 +596,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))
         .route("/static/editor.js", get(public::editor_js))
+        .route("/static/notes.js", get(public::notes_js))
         .route("/static/ui.js", get(public::ui_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))

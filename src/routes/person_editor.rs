@@ -851,7 +851,9 @@ pub fn model(
             }
             // A portrait an AI reworked is managed where it is shown, beside
             // the face (`routes::ai_portraits`), never among the files.
-            if crate::ai_portrait::is_ai_portrait_id(flat, &did) {
+            if crate::ai_portrait::is_ai_portrait_id(flat, &did)
+                || crate::notes::is_note_part_id(flat, &did)
+            {
                 continue;
             }
             let Some(d) = flat.get("documents").and_then(|c| c.get(&did)) else {

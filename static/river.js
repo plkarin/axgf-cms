@@ -749,6 +749,10 @@
     ol.innerHTML = trail.map(function (id) {
       return '<li><a class="btn small rv-chip" data-go="' + esc(id) + '" href="' + base + '?p=' + encodeURIComponent(id) + '&amp;n=' + n + '"' + (id === c ? ' aria-current="page"' : '') + '>' + esc(names[id] || '·') + '</a></li>';
     }).join('');
+    // The itinerary keeps to one line and scrolls sideways (app.css): the
+    // stop the reader is at, the last, is brought into view. Negative in
+    // a right-to-left page, where the line starts at the right.
+    ol.scrollLeft = getComputedStyle(ol).direction === 'rtl' ? -ol.scrollWidth : ol.scrollWidth;
     // Nothing to go back to is nothing drawn: hidden, not disabled.
     back.hidden = trail.length < 2;
     if (whole) whole.setAttribute('aria-pressed', n === 5 ? 'true' : 'false');

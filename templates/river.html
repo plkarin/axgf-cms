@@ -32,40 +32,52 @@
 <div class="river rv-intro" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
      data-river-motion="{{ 'cut' if motion_cut else 'travel' }}" data-view="{{ view }}">
   <section class="rv-stage" aria-label="{{ view_name }}">
+    {#- Two rows, always in the same order (the operator's review of
+        22 October 2026: the controls had wrapped wherever the width put
+        them). The itinerary on one line of its own, scrolled sideways when
+        it is longer than the stage; under it the tools: going back, the
+        range and the zoom, which change what is drawn, on the left; the
+        pause and the whole family, which change how, on the right. -#}
     <div class="rv-controls">
-      <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
-      {#- The itinerary is content: one chip per person visited. -#}
-      <ol class="rv-trail" aria-labelledby="rv-trail-label" data-content>
-        <li><a class="btn small rv-chip" aria-current="page" href="/?p={{ centre_q }}&amp;n={{ n }}">{{ centre_name }}</a></li>
-      </ol>
-      {#- Hidden until there is somewhere to go back to: nothing to do is
-          nothing drawn (the minimalism pass). -#}
-      <button type="button" class="btn small" id="rv-back" hidden>{{ t("river-back") }}</button>
-      {#- The range: one select. river.js applies it in place; without the
-          script, the form reloads at the chosen range. Travel or cut is a
-          reading preference now, in the settings. -#}
-      <form class="rv-range" method="get" action="/">
-        <input type="hidden" name="p" value="{{ centre_q }}" data-range-p>
-        <label class="rv-eyebrow" for="rv-range">{{ t("river-range") }}</label>
-        <select name="n" id="rv-range" data-range-select>
-          {%- for r in ranges %}
-          <option value="{{ r }}" {{ "selected" if r == n }}>± {{ r }}</option>
-          {%- endfor %}
-        </select>
-        <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
-      </form>
-      {#- The camera and the living ground (v0.5.0, docs/adr/0004 §11): both
-          are the scripts', so both are hidden until a script shows them —
-          nothing to do is nothing drawn. The pause is the one control that
-          stops the ground and the water's light moving (WCAG 2.2.2). -#}
-      <span class="rv-zoom" data-rv-zoom-wrap hidden>
-        <label class="rv-eyebrow" for="rv-zoom">{{ t("river-zoom") }}</label>
-        <input type="range" id="rv-zoom" min="1" max="3" step="0.1" value="1" data-rv-zoom>
-      </span>
-      <button type="button" class="btn small rv-still" aria-pressed="false" data-rv-still hidden>{{ t("river-still") if view == "river" else t("view-" ~ view ~ "-still") }}</button>
-      {#- The whole family at once, beside a theme's view (docs/adr/0007):
-          the scripts', so hidden until one shows it. -#}
-      <button type="button" class="btn small rv-whole" aria-pressed="false" data-rv-whole hidden>{{ t("river-whole") }}</button>
+      <div class="rv-itinerary">
+        <span class="rv-eyebrow" id="rv-trail-label">{{ t("river-trail") }}</span>
+        {#- The itinerary is content: one chip per person visited. -#}
+        <ol class="rv-trail" aria-labelledby="rv-trail-label" data-content>
+          <li><a class="btn small rv-chip" aria-current="page" href="/?p={{ centre_q }}&amp;n={{ n }}">{{ centre_name }}</a></li>
+        </ol>
+      </div>
+      <div class="rv-tools">
+        {#- Hidden until there is somewhere to go back to: nothing to do is
+            nothing drawn (the minimalism pass). -#}
+        <button type="button" class="btn small" id="rv-back" hidden>{{ t("river-back") }}</button>
+        {#- The range: one select. river.js applies it in place; without the
+            script, the form reloads at the chosen range. Travel or cut is a
+            reading preference now, in the settings. -#}
+        <form class="rv-range" method="get" action="/">
+          <input type="hidden" name="p" value="{{ centre_q }}" data-range-p>
+          <label class="rv-eyebrow" for="rv-range">{{ t("river-range") }}</label>
+          <select name="n" id="rv-range" data-range-select>
+            {%- for r in ranges %}
+            <option value="{{ r }}" {{ "selected" if r == n }}>± {{ r }}</option>
+            {%- endfor %}
+          </select>
+          <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("prefs-apply") }}</button>
+        </form>
+        {#- The camera and the living ground (v0.5.0, docs/adr/0004 §11): both
+            are the scripts', so both are hidden until a script shows them —
+            nothing to do is nothing drawn. The pause is the one control that
+            stops the ground and the water's light moving (WCAG 2.2.2). -#}
+        <span class="rv-zoom" data-rv-zoom-wrap hidden>
+          <label class="rv-eyebrow" for="rv-zoom">{{ t("river-zoom") }}</label>
+          <input type="range" id="rv-zoom" min="1" max="3" step="0.1" value="1" data-rv-zoom>
+        </span>
+        <span class="rv-tools-end">
+          <button type="button" class="btn small rv-still" aria-pressed="false" data-rv-still hidden>{{ t("river-still") if view == "river" else t("view-" ~ view ~ "-still") }}</button>
+          {#- The whole family at once, beside a theme's view (docs/adr/0007):
+              the scripts', so hidden until one shows it. -#}
+          <button type="button" class="btn small rv-whole" aria-pressed="false" data-rv-whole hidden>{{ t("river-whole") }}</button>
+        </span>
+      </div>
     </div>
 
     {#- A view's dashboard (docs/adr/0007): figures read from the drawing on

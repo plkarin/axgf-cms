@@ -56,6 +56,10 @@ pub const PROFILE_JS: &str = include_str!("../static/profile.js");
 /// The record's editor: its tabs in place, the marks on a tab with unsaved
 /// changes, the question before leaving them. Enhancement only.
 pub const EDITOR_JS: &str = include_str!("../static/editor.js");
+/// Notes and contributions (docs/adr/0014): writing one (the toolbar, pasted
+/// pictures, the preview) and reading them (the filter, the letters, the
+/// window). Enhancement only.
+pub const NOTES_JS: &str = include_str!("../static/notes.js");
 
 /// The six behaviours that were inline `onclick`/`oninput`/`onsubmit`
 /// attributes until the Content-Security-Policy stopped allowing inline
@@ -93,6 +97,14 @@ pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
+/// Behind the family's notes and contributions (docs/adr/0014), one per
+/// theme, made in the operator's Canva: soft and nearly plain, under a veil of
+/// the theme's surface, so text over them reads as it does anywhere else.
+pub const NOTES_CANOPEE_JPG: &[u8] = include_bytes!("../static/img/notes-canopee.jpg");
+pub const NOTES_FUSION_JPG: &[u8] = include_bytes!("../static/img/notes-fusion.jpg");
+pub const NOTES_GALAXY_JPG: &[u8] = include_bytes!("../static/img/notes-galaxy.jpg");
+pub const NOTES_SUMMIT_JPG: &[u8] = include_bytes!("../static/img/notes-summit.jpg");
+pub const NOTES_CLARITY_JPG: &[u8] = include_bytes!("../static/img/notes-clarity.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 
 /// ax·genealogy's logo (v0.5.0, docs/adr/0006), and what a browser or a phone
@@ -173,7 +185,12 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "_admin_nav.html",
     "_checks.html",
     "_logo.html",
-    "_completeness.html"
+    "_completeness.html",
+    "_notes.html",
+    "_note_frame.html",
+    "note.html",
+    "admin_notes.html",
+    "admin_note.html"
 ];
 
 static ENV: OnceLock<Environment<'static>> = OnceLock::new();

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ note.title }} — {{ t("app-name") }}{% endblock %}
+{% block main_class %}note-page{% endblock %}
+{% block content %}
+<p class="small"><a href="/about#notes">← {{ t("notes-back") }}</a></p>
+{% include "_note_frame.html" %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% import "_icons.html" as ic %}
+{% block title %}{{ t("notes-edit-title") if id else t("notes-new-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/admin/notes">← {{ t("notes-admin-title") }}</a></p>
+<h1>{{ t("notes-edit-title") if id else t("notes-new-title") }}</h1>
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+<form method="post" action="{{ '/admin/notes/' ~ id if id else '/admin/notes' }}" class="note-form" data-note-form>
+  <input type="hidden" name="base_version" value="{{ note_version }}">
+  <section class="rec-section" id="note-about">
+    <h2>{{ t("notes-section-about") }}</h2>
+    <div class="note-form-grid">
+      <label class="field note-field-title"><span class="field-label">{{ t("notes-field-title") }}</span>
+        <input type="text" name="title" value="{{ title }}" required maxlength="200" dir="auto"></label>
+      <label class="field"><span class="field-label">{{ t("notes-field-category") }}</span>
+        <input type="text" name="category" value="{{ category }}" list="note-categories" maxlength="80" dir="auto">
+        <span class="hint">{{ t("notes-field-category-hint") }}</span></label>
+      <label class="field"><span class="field-label">{{ t("notes-field-date") }}</span>
+        <input type="text" name="date" value="{{ date }}" inputmode="numeric" placeholder="{{ t('notes-field-date-placeholder') }}" maxlength="10">
+        <span class="hint">{{ t("notes-field-date-hint") }}</span></label>
+    </div>
+    <fieldset class="note-people" data-note-people>
+      <legend>{{ t("notes-field-people") }}</legend>
+      <ul class="note-chosen" data-note-chosen>
+        {%- for c in chosen %}
+        <li class="chip note-person"><input type="hidden" name="person" value="{{ c.id }}"><bdi>{{ c.label }}</bdi>
+          <button type="button" class="note-person-remove" data-person-remove aria-label="{{ t('notes-person-remove') }}">×</button></li>
+        {%- endfor %}
+      </ul>
+      <div class="note-person-add">
+        <input type="text" name="person_add" list="pick-persons" autocomplete="off" placeholder="{{ t('notes-field-person-placeholder') }}" aria-label="{{ t('notes-field-people') }}" data-person-input>
+        <button type="button" class="btn small" data-person-add hidden>{{ t("notes-person-add") }}</button>
+      </div>
+      <p class="hint">{{ t("notes-field-people-hint") }}</p>
+    </fieldset>
+  </section>
+
+  <section class="rec-section" id="note-text">
+    <h2>{{ t("notes-field-text") }}</h2>
+    <div class="note-toolbar" role="toolbar" aria-label="{{ t('notes-field-text') }}" data-note-toolbar hidden>
+      <button type="button" class="btn small" data-md="bold" aria-label="{{ t('notes-tool-bold') }}" title="{{ t('notes-tool-bold') }}"><b>B</b></button>
+      <button type="button" class="btn small" data-md="italic" aria-label="{{ t('notes-tool-italic') }}" title="{{ t('notes-tool-italic') }}"><i>I</i></button>
+      <button type="button" class="btn small" data-md="heading" aria-label="{{ t('notes-tool-heading') }}" title="{{ t('notes-tool-heading') }}">H</button>
+      <button type="button" class="btn small" data-md="list" aria-label="{{ t('notes-tool-list') }}" title="{{ t('notes-tool-list') }}">•</button>
+      <button type="button" class="btn small" data-md="quote" aria-label="{{ t('notes-tool-quote') }}" title="{{ t('notes-tool-quote') }}">❝</button>
+      <button type="button" class="btn small" data-md="link" aria-label="{{ t('notes-tool-link') }}" title="{{ t('notes-tool-link') }}">{{ ic.icon("link") }}</button>
+      <button type="button" class="btn small" data-md="image">{{ t("notes-tool-image") }}</button>
+      <span class="note-toolbar-end">
+        <button type="button" class="btn small" data-note-mode aria-pressed="false" data-write="{{ t('notes-tool-write') }}" data-preview="{{ t('notes-tool-preview') }}">{{ t("notes-tool-preview") }}</button>
+      </span>
+    </div>
+    <textarea name="markdown" rows="18" class="note-source" dir="auto" data-note-text data-uploading="{{ t('notes-uploading') }}" data-upload-failed="{{ t('notes-error-image') }}">{{ markdown }}</textarea>
+    <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple data-note-file hidden>
+    <div class="note-preview note-text" data-note-preview hidden>{{ preview|safe }}</div>
+    <p class="hint">{{ t("notes-text-hint", mb=max_image_mb) }}</p>
+  </section>
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("notes-save") }}</button>
+    <a class="btn" href="{{ '/notes/' ~ id if id else '/admin/notes' }}">{{ t("notes-cancel") }}</a>
+  </div>
+</form>
+
+{% if id %}
+<form method="post" action="/admin/notes/{{ id }}/delete" class="note-delete">
+  <input type="hidden" name="base_version" value="{{ note_version }}">
+  <details class="danger-zone">
+    <summary>{{ t("notes-delete") }}</summary>
+    <p>{{ t("notes-delete-confirm") }}</p>
+    <button class="btn danger" type="submit">{{ t("notes-delete") }}</button>
+  </details>
+</form>
+{% endif %}
+
+<datalist id="pick-persons">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+<datalist id="note-categories">{% for c in categories %}<option value="{{ c }}"></option>{% endfor %}</datalist>
+<script src="/static/notes.js" defer></script>
+{% endblock %}

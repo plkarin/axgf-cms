@@ -2821,6 +2821,231 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   font-variant-numeric: tabular-nums;
 }
 
+/* The family across (the operator's review of 22 October 2026): rows of
+   cards, a relative per card, the whole card the link. The parents and the
+   siblings are two groups side by side; each union is a block whose head is
+   the partner and the union, and whose children are a row of their own. */
+.fam-band {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.6rem 1.25rem;
+}
+.fam-title {
+  margin: 0 0 0.5rem;
+  font-size: var(--type-minor);
+  font-weight: var(--weight-semi);
+  color: var(--text-secondary);
+}
+.union .fam-title { margin-block: 0.9rem 0.5rem; }
+.fam-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fam-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+}
+.fam-partner { flex: 0 1 17rem; min-inline-size: min(100%, 13.5rem); grid-template-columns: 1fr; }
+.fam-union-facts { flex: 1 1 14rem; display: grid; gap: 0.3rem; min-inline-size: 0; }
+.fam-union-kind { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.pcard { min-inline-size: 0; }
+.pcard-in {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  block-size: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-page);
+  color: inherit;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+a.pcard-in:hover { border-color: var(--accent); }
+a.pcard-in:hover .pcard-name { color: var(--accent); }
+.pcard-face {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: var(--weight-semi);
+  font-size: var(--type-minor);
+}
+.pcard-face img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.pcard-text { display: grid; gap: 0.15rem; min-inline-size: 0; }
+.pcard-name { font-weight: var(--weight-semi); overflow-wrap: anywhere; }
+.pcard-meta { font-size: var(--type-minor); color: var(--text-secondary); }
+.pcard-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; }
+.pcard-order { margin-inline-start: auto; align-self: flex-start; }
+.pcard.is-restricted .pcard-in, .pcard.is-absent .pcard-in { color: var(--text-secondary); }
+.pcard.is-restricted .pcard-face { background: var(--surface-sunken); color: var(--text-tertiary); }
+
+/* Notes and contributions (docs/adr/0014). The family page's block sits
+   on the theme's own soft picture, under a veil of its surface, so that the
+   cards read on it whatever the picture; a theme with none shows the
+   surface alone. */
+.notes-block {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-block: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+.notes-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(color-mix(in srgb, var(--surface-raised) 52%, transparent), color-mix(in srgb, var(--surface-raised) 84%, transparent)),
+    var(--notes-bg, none) center / cover no-repeat;
+}
+.notes-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.75rem 1.5rem; }
+.notes-head-copy { max-inline-size: 62ch; }
+.notes-head .home-h2 { margin: 0; }
+.notes-intro { margin: 0.35rem 0 0; color: var(--text-secondary); }
+.notes-search { display: flex; gap: 0.5rem; margin-block: 1.1rem 0; }
+.notes-search input[type="search"] { flex: 1 1 auto; min-inline-size: 0; max-inline-size: 34rem; }
+.notes-search .btn { flex: none; white-space: nowrap; }
+.notes-letters { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-block: 0.85rem 0.35rem; }
+/* On a phone the letters keep to one line, which scrolls sideways. */
+@media (max-width: 40rem) {
+  .notes-letters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-block-end: 0.25rem; }
+  .notes-letter { flex: none; }
+}
+.notes-letter {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 2rem;
+  block-size: 2rem;
+  padding-inline: 0.35rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-raised) 85%, transparent);
+  color: var(--text-primary);
+  font-size: var(--type-minor);
+  text-decoration: none;
+}
+a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: var(--accent); }
+.notes-letter[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.notes-letter.is-empty { color: var(--text-tertiary); opacity: 0.5; }
+.notes-letter-all { padding-inline: 0.75rem; }
+.notes-count { margin: 0.4rem 0 0; }
+/* Each card as tall as it is: a card with a picture does not stretch the
+   ones beside it into empty boxes. */
+.notes-grid {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 0.85rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.note-card[hidden] { display: none; }
+.note-card-in {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--tempo, 140ms) ease, transform var(--tempo, 140ms) ease;
+}
+.note-card-in:hover { border-color: var(--accent); transform: translateY(-1px); }
+.note-thumb { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--surface-sunken); }
+.note-thumb img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.note-card-body { display: grid; align-content: start; gap: 0.35rem; padding: 0.85rem 0.95rem 0.95rem; }
+.note-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.6rem; }
+.note-date { font-size: var(--type-minor); color: var(--text-secondary); }
+.note-title { font-weight: var(--weight-semi); font-size: var(--type-body); overflow-wrap: anywhere; }
+.note-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+}
+.note-foot { font-size: var(--type-minor); color: var(--text-tertiary); }
+.notes-person .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.notes-locked p { margin-block-end: 0; }
+
+/* A note's window, and its page. */
+.note-dialog {
+  inline-size: min(54rem, calc(100vw - 2rem));
+  max-block-size: calc(100vh - 3rem);
+  padding: 0;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: 0 24px 60px -24px rgb(var(--shadow-rgb, 0 0 0) / 0.55);
+}
+.note-dialog::backdrop { background: rgb(var(--shadow-rgb, 0 0 0) / 0.5); }
+.note-dialog-body { max-block-size: calc(100vh - 3rem); overflow: auto; }
+.note-frame { padding: clamp(1rem, 3vw, 2rem); }
+.note-page .note-frame { padding: 0; }
+.note-head { padding-block-end: 0.9rem; margin-block-end: 1.1rem; border-block-end: 1px solid var(--border-hairline); }
+.note-eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; }
+.note-heading { margin: 0; }
+.notes-person-add { margin-block: 0.25rem 1.25rem; }
+.note-about { margin: 0.45rem 0 0; color: var(--text-secondary); font-size: var(--type-minor); }
+.note-text { line-height: 1.65; overflow-wrap: anywhere; }
+.note-text img { display: block; max-inline-size: 100%; block-size: auto; margin: 0.9rem auto; border-radius: var(--radius); }
+.note-text blockquote { margin: 1rem 0; padding-inline-start: 1rem; border-inline-start: 3px solid var(--accent); color: var(--text-secondary); }
+.note-text :is(h3, h4, h5, h6) { margin-block: 1.3rem 0.4rem; }
+.note-text table { border-collapse: collapse; }
+.note-text :is(th, td) { padding: 0.3rem 0.6rem; border: 1px solid var(--border-hairline); }
+.note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-block-start: 1.5rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--border-hairline);
+}
+.note-close { margin-inline-start: auto; }
+.note-page .note-close { display: none; }
+
+/* Writing one. */
+.note-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.6rem 1rem;
+}
+.note-field-title { grid-column: 1 / -1; }
+.note-people { margin-block-start: 1rem; }
+.note-chosen { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.6rem; padding: 0; list-style: none; }
+.note-person { display: inline-flex; align-items: center; gap: 0.35rem; }
+.note-person-remove { padding: 0 0.15rem; border: 0; background: none; color: inherit; font-size: 1.1em; cursor: pointer; }
+.note-person-add { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.note-person-add input { flex: 1 1 16rem; max-inline-size: 30rem; }
+.note-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-block-end: 0.5rem; }
+.note-toolbar-end { margin-inline-start: auto; }
+.note-source { inline-size: 100%; min-block-size: 22rem; font-family: var(--mono); font-size: var(--type-minor); line-height: 1.55; }
+.note-preview { min-block-size: 22rem; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+.note-delete { margin-block-start: 1.5rem; }
+
 .place-card ul.plain > li { border-bottom: none; padding: 0.1rem 0; }
 
 .note-block.verbatim {
@@ -3586,15 +3811,21 @@ a.tcard:hover {
   flex-direction: column;
   background: var(--rv-ink-1);
 }
+/* Two rows in a fixed order (river.html): the itinerary, then the tools.
+   Before, one wrapping row put each control wherever the width left room,
+   the chips over two uneven lines and the buttons under them. */
 .rv-controls {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-block: 10px;
+  flex-direction: column;
+  gap: 10px;
+  padding-block: 12px;
   padding-inline: 16px;
   border-block-end: 1px solid var(--rv-rule-1);
-  flex-wrap: wrap;
 }
+.rv-itinerary { display: flex; align-items: center; gap: 14px; min-inline-size: 0; }
+/* Left, what is drawn (back, range, zoom); right, how (pause, whole). */
+.rv-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px; min-block-size: 32px; }
+.rv-tools-end { display: inline-flex; align-items: center; gap: 10px; margin-inline-start: auto; }
 .rv-eyebrow {
   font-family: var(--rv-mono);
   font-size: var(--type-rv-eyebrow);
@@ -3602,17 +3833,23 @@ a.tcard:hover {
   text-transform: uppercase;
   color: var(--rv-text-3);
 }
+/* The itinerary keeps to its line: a long journey scrolls sideways, and
+   river.js brings the stop the reader is at into view. */
 .rv-trail {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
-  flex: 1 1 260px;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
   min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rv-rule-3) transparent;
   margin: 0;
-  padding: 0;
+  padding: 2px 0;
   list-style: none;
 }
+.rv-trail > li { flex: none; }
 /* The river's controls are ordinary secondary buttons (B2) — `.river` sets
    Study 06 on itself, so they draw on the river's ground under every theme.
    What is left here is layout: the itinerary's chips, and the joined sets
@@ -3664,10 +3901,13 @@ a.tcard:hover {
 .rv-svg .rv-hl-box { fill: var(--rv-ink-1); fill-opacity: 0.92; stroke: var(--rv-lit); stroke-opacity: 0.35; stroke-width: 0.8; }
 .rv-svg a.rv-p.rv-looked .k-name { visibility: hidden; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
+/* A grid of keys in columns of one width, rather than a row that wrapped
+   them wherever the line ran out; the title, the long keys and the
+   compass each take a row of their own. */
 .rv-legend {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr));
+  gap: 10px 24px;
   align-items: center;
   padding-block: 10px 12px;
   padding-inline: 16px;
@@ -3701,7 +3941,10 @@ a.tcard:hover {
 .rv-widths { gap: 4px !important; }
 .rv-widths > i { display: block; block-size: 12px; background: var(--rv-water); }
 .rv-widths > i:last-of-type { margin-inline-end: 3px; }
-.rv-direction { margin-inline-start: auto; color: var(--rv-text-3); }
+.rv-direction { color: var(--rv-text-3); }
+.rv-legend > :is(.rv-legend-title, .rv-widths, .rv-direction, .rv-hint) { grid-column: 1 / -1; }
+/* The two longest keys take two columns each where there are four. */
+@media (min-width: 64rem) { .rv-legend > span:has(> .rv-rep) { grid-column: span 2; } }
 /* The record beside the river is the ordinary record partial, which draws
    with the theme's variables; here they are the river's, so the panel reads
    on the river's ground whichever theme the reader chose. */
@@ -4418,6 +4661,8 @@ a.tcard:hover {
      cached for a day, so one that changes takes a new `?v=`. */
   --kit-hero: url("/static/img/canopee-hero.jpg?v=2");
   --kit-cta: url("/static/img/canopee-cta.jpg?v=2");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-canopee.jpg");
 }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) ::selection { background: rgb(var(--glow-rgb) / 0.32); }
 
@@ -4869,7 +5114,6 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 /* The legend, as a cartographer's: a title in spaced capitals, a compass
    that says which way time runs, and the scale of a generation. */
 .rv-legend-title {
-  flex: 1 1 100%;
   font-size: var(--type-rv-eyebrow);
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -5368,6 +5612,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --kit-hero: url("/static/img/fusion-hero.jpg");
   --kit-cta: url("/static/img/fusion-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-fusion.jpg");
 }
 [data-theme="galaxy"] {
   --btn-radius: 999px;
@@ -5379,6 +5625,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --kit-hero: url("/static/img/galaxy-hero.jpg");
   --kit-cta: url("/static/img/galaxy-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-galaxy.jpg");
 }
 /* Summit (docs/adr/0010): rounded as the reference's weather cards are,
    and unhurried, as first light is. */
@@ -5392,6 +5640,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.25, 0.7, 0.25, 1);
   --kit-hero: url("/static/img/summit-hero.jpg");
   --kit-cta: url("/static/img/summit-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-summit.jpg");
 }
 /* Fusion's tiles: a neon edge along the top, as the reference's dashboard
    panels have, and a deeper shadow. Galaxy's: glass over the night, a
@@ -5432,6 +5682,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --kit-hero: url("/static/img/clarity-hero.jpg");
   --kit-cta: url("/static/img/clarity-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-clarity.jpg");
 }
 /* Clarity's frames (the operator's second look, 2026-10-22: "the theme is
    white and the background is white also … it feels like we are writing on
@@ -5491,6 +5743,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background-color: var(--surface-raised);
 }
 [data-theme="clarity"] .choice-card { background: var(--surface-raised); }
+[data-theme="clarity"] .pcard-in { background: var(--surface-raised); }
 [data-theme="clarity"] thead th { background: var(--surface-sunken); }
 /* A notice says what kind it is by its ground as well as its sign. */
 [data-theme="clarity"]:not([data-style="paper"]) .notice { background: var(--cl-tint-1); border-color: color-mix(in srgb, var(--cl-ink-1) 25%, transparent); }

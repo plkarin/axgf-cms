@@ -1,0 +1,22 @@
+{#- One note, whole: the window's content (`?frame=1`) and the body of its
+    own page (note.html). -#}
+<article class="note-frame">
+  <header class="note-head">
+    <p class="note-eyebrow">
+      {%- if note.category %}<span class="chip small note-cat">{{ note.category }}</span>{% endif %}
+      {%- if note.date %}<span class="note-date">{{ note.date.text }}</span>{% endif -%}
+    </p>
+    <h2 class="note-heading" id="note-heading"><bdi>{{ note.title }}</bdi></h2>
+    <p class="note-about">
+      {%- if note.persons %}{{ t("notes-about-prefix") }} {% for p in note.persons %}<a href="/person/{{ p.id }}"><bdi>{{ p.name }}</bdi></a>{% if not loop.last %}, {% endif %}{% endfor %}
+      {%- else %}{{ t("notes-about-family") }}{% endif %}
+      {%- if note.author %} · {{ t("notes-by", author=note.author) }}{% endif -%}
+    </p>
+  </header>
+  <div class="note-text">{{ note.html|safe }}</div>
+  <footer class="note-actions">
+    <a class="btn primary" href="/notes/{{ note.id }}/pdf" download>{{ t("notes-pdf") }}</a>
+    {%- if may_change %}<a class="btn" href="/admin/notes/{{ note.id }}/edit">{{ t("notes-edit") }}</a>{% endif %}
+    <button type="button" class="btn ghost note-close" data-note-close>{{ t("notes-close") }}</button>
+  </footer>
+</article>

@@ -72,6 +72,28 @@ in packs, findings carry their level along their edge, and the record's
 editor is a box per tab. Its tightest contrast is 3.7:1, a control's edge on
 the page's second wash.
 
+**Notes and contributions** (docs/adr/0014): what the family writes down
+beside the records — a memory, a piece of research, a letter, with pictures.
+
+- Administrators and contributors write them from the administration
+  (`/admin/notes`, from the dashboard): a title, a category (free, the ones
+  already used suggested), a date (a year, a month or a day), the people it
+  concerns, and a text in Markdown with a toolbar, into which pictures are
+  pasted, dropped or chosen (PNG, JPEG, GIF, WebP, 10 MB each, 40 a note)
+  and a preview. A contributor changes only their own.
+- Each note is shown on the record of every person it concerns, in a section
+  under Identity; a note about no one belongs to the family.
+- All of them on the Family page, in a block under its head, for members:
+  searched (title, category, people, author and the whole text, without
+  case or accents), read by letter or all at once, each opened in a window.
+  Visitors are told the family keeps notes, and how to sign in.
+- Each one as a PDF, drawn by the server: A4, its pictures in it, the family
+  and the page in its footer (DejaVu Sans, embedded with its licence).
+- Over a soft picture per theme, made in Canva.
+- A note is an AXGF document (Markdown, linked to its people) and so are its
+  pictures: the format does not change. A note about a person the reader
+  may not see is hidden with them.
+
 **`bootstrap.sh`**: downloads a private repository's releases through the
 API with a token (`AXGF_CMS_GITHUB_TOKEN` or `/etc/axgf-cms/github-token`,
 never printed); installs the upgrade helper, and removes it on
@@ -342,6 +364,19 @@ is out.
 
 ### Changed
 
+- **"Overview" in the masthead is now "Family"**, and its page carries the
+  family's notes and contributions under its head.
+- **A record's family reads as blocks.** Parents and siblings, then each
+  union in a block of its own — the partner, the union's dates, then that
+  union's children — side by side as cards with a face (the portrait, or
+  initials), the years and the lineage, so that a person with several
+  partners keeps each one's children with them. Unions run in the order
+  they began.
+- **Summit's controls are in two rows**: the itinerary on one, a strip of
+  its own that scrolls sideways to the newest step; the tools on the other,
+  back, range and zoom on the left, pause and "whole family" on the right.
+  The legend ("Read the mountain") lays its entries out on a grid, its title,
+  widths, direction and hint across it.
 - **The default theme is Canopée.** Study 06 is the floor under the three
   themes: a page that names no theme gets it.
 - **The footer names the product, its version and its author,** and links to
@@ -446,6 +481,14 @@ extra margin those themes gave.
 
 ### Tests
 
+- `notes.rs` (docs/adr/0014): a member reads a note on the Family page, its
+  record, its window and its PDF, and a visitor gets none of them; raw HTML
+  and script links never reach the page; a note about a private person is
+  hidden with them; a contributor changes only their own; a pasted picture
+  waits for its note, is served to members only and leaves with its
+  mention; a failed save keeps its text and its pictures; the search and the
+  letters work without script; the dashboard and a record lead a writer to
+  the notes.
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
   motion, "Cut" and a hidden page.

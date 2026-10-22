@@ -91,6 +91,29 @@
 </section>
 {% endif %}
 
+{# ----------------------------------------------- NOTES AND CONTRIBUTIONS #}
+{#- What the family wrote about this person (docs/adr/0014), for its members:
+    `person_notes` is given only by the record's own page, and only to a
+    reader who is signed in. With none to show, a writer gets the way to
+    write the first and no heading over an empty section: read mode draws
+    what is there. -#}
+{% if (tab is undefined or tab == "record") and person_notes is defined %}
+{% if person_notes %}
+{% import "_notes.html" as nt %}
+<section id="person-notes" class="rec-section notes-person" data-notes>
+  <div class="sec-head">
+    <h2>{{ t("notes-section-title") }}</h2>
+    {%- if may_write %}<a class="btn small" href="/admin/notes/new?person={{ p.id }}">{{ t("notes-add-about") }}</a>{% endif %}
+  </div>
+  <ul class="notes-grid" data-notes-list data-content>{% for n in person_notes %}{{ nt.card(t, n) }}{% endfor %}</ul>
+  {{ nt.dialog(t) }}
+</section>
+<script src="/static/notes.js" defer></script>
+{% elif may_write %}
+<p class="notes-person-add" id="person-notes"><a class="btn small" href="/admin/notes/new?person={{ p.id }}">{{ t("notes-add-about") }}</a></p>
+{% endif %}
+{% endif %}
+
 {# ------------------------------------------------------------- LIFE EVENTS #}
 {% if (tab is undefined or tab == "life") and (p.timeline) %}
 <section id="life" class="rec-section">
@@ -120,20 +143,24 @@
 {% if (tab is undefined or tab == "family") and (p.parents or p.siblings or p.unions) %}
 <section id="family" class="rec-section">
   {{ m.sec(t, t("record-family"), compact, t("record-family-help")) }}
-  {# Only wrap a grid around cards that exist: an empty two-column grid still
-     takes its gap, which at panel width is visible. #}
+  {# The family across, in blocks (the operator's review of 22 October
+     2026): the parents and the siblings side by side, each a row of cards;
+     then one block per union — the partner, the union's dates and place,
+     and that union's children as a row of cards of their own — so that a
+     person with several partners shows each family apart, and every name is
+     a card to click rather than a line to aim at. #}
   {% if p.parents or p.siblings %}
-  <div class="grid cols-2">
+  <div class="fam-band">
     {% if p.parents %}
-    <div class="card">
-      <h3 style="margin-top:0">{{ t("record-parents") }}</h3>
-      <ul class="plain">{% for r in p.parents %}{{ m.relation(r) }}{% endfor %}</ul>
+    <div class="fam-group">
+      <h3 class="fam-title">{{ t("record-parents") }}</h3>
+      <ul class="fam-cards" data-content>{% for r in p.parents %}{{ m.person_card(r) }}{% endfor %}</ul>
     </div>
     {% endif %}
     {% if p.siblings %}
-    <div class="card">
-      <h3 style="margin-top:0">{{ t("record-siblings") }}</h3>
-      <ul class="plain">{% for r in p.siblings %}{{ m.relation(r) }}{% endfor %}</ul>
+    <div class="fam-group">
+      <h3 class="fam-title">{{ t("record-siblings") }}</h3>
+      <ul class="fam-cards" data-content>{% for r in p.siblings %}{{ m.person_card(r) }}{% endfor %}</ul>
     </div>
     {% endif %}
   </div>
@@ -160,35 +187,30 @@
 
     {% for u in g.records %}
     <div class="union">
-      <div class="union-head">
-        <strong>
-          {%- if u.spouse %}{{ m.person_link(u.spouse) }}{% endif -%}
-        </strong>
-        {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
-        {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
-        {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
+      <div class="fam-block-head">
+        <ul class="fam-cards fam-partner" data-content>
+          {%- if u.spouse %}{{ m.person_card(u.spouse) }}{% endif -%}
+        </ul>
+        <div class="fam-union-facts">
+          <div class="fam-union-kind">
+            {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
+            {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
+            {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
+          </div>
+          <div class="small union-when">
+            {#- An unknown date is no date: "from" and nothing after it was all
+                the line said of a union recorded without one. -#}
+            {% if u.start and u.start.kind != "unknown" %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}
+            {% if u.start_place %}<span class="wrap-unit">{{ t("record-union-at") }} {{ m.place(u.start_place) }}</span>{% endif %}
+            {% if u.end and u.end.kind != "unknown" %}<span class="wrap-unit">{{ t("record-union-until") }} {{ m.date(u.end) }}</span>{% endif %}
+            {% if u.end_note %}<span class="muted wrap-unit">{{ u.end_note }}</span>{% endif %}
+          </div>
+          {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
+        </div>
       </div>
-      <div class="small union-when">
-        {% if u.start %}<span class="wrap-unit">{{ t("record-union-from") }} {{ m.date(u.start) }}</span>{% endif %}
-        {% if u.start_place %}<span class="wrap-unit">{{ t("record-union-at") }} {{ m.place(u.start_place) }}</span>{% endif %}
-        {% if u.end %}<span class="wrap-unit">{{ t("record-union-until") }} {{ m.date(u.end) }}</span>{% endif %}
-        {% if u.end_note %}<span class="muted wrap-unit">{{ u.end_note }}</span>{% endif %}
-      </div>
-      {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
       {% if u.children %}
-      <h4>{{ t("record-children") }}</h4>
-      <ul class="plain">
-        {% for c in u.children %}
-        <li class="rel">
-          {% if c.birth_order %}<span class="birth-order" title="{{ t('record-birth-order') }}">{{ c.birth_order }}</span>{% endif %}
-          {{ m.person_link(c) }}
-          {%- if c.lineage %} <span class="chip small">{{ c.lineage }}</span>{% endif %}
-          {%- if c.lifespan %} <span class="small muted">{{ c.lifespan }}</span>{% endif %}
-          {%- if c.detail %} <span class="small muted">{{ c.detail }}</span>{% endif %}
-          {%- if c.confidence %} {{ m.conf_bar(c.confidence) }}{% endif %}
-        </li>
-        {% endfor %}
-      </ul>
+      <h4 class="fam-title">{{ t("record-children") }}</h4>
+      <ul class="fam-cards" data-content>{% for c in u.children %}{{ m.person_card(c) }}{% endfor %}</ul>
       {% endif %}
     </div>
     {% endfor %}

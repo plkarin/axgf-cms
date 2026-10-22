@@ -19,10 +19,22 @@
 //!   one, from where the zero bytes fall; otherwise bytes that are valid
 //!   UTF-8 are UTF-8 whatever the header says, and the rest are read as the
 //!   header's `CHAR` declares — ANSEL (decoded here: its accents come before
-//!   their letter, and are composed back onto it), Macintosh, or ANSI —
-//!   Windows-1252, a superset of Latin-1 — for anything else;
+//!   their letter, and are composed back onto it), Macintosh, IBM PC (code
+//!   page 850, DOS software's), or ANSI — Windows-1252, a superset of
+//!   Latin-1 — for anything else. A UTF-8 file with a few bytes that are not
+//!   UTF-8 in it (one note pasted from another program) stays UTF-8, those
+//!   bytes alone read as Windows-1252, rather than every accent in the file
+//!   turning to "Ã©";
 //! - **the line endings**: a CR alone (old Macintosh software), CRLF and LF
 //!   all become LF;
+//! - **the lines**: indentation, tabs or runs of spaces between the level,
+//!   the cross-reference and the tag, a tag in lower case, a space left at
+//!   the end of a line that a `CONC` continues, and a `@#DGREGORIAN@` mark on
+//!   a date are mended — the converter reads one space between fields, an
+//!   upper-case tag, and no calendar mark, and drops or mangles the rest; a
+//!   line nested deeper than any GEDCOM structure goes is set aside with
+//!   what it holds, because the converter's cost grows with the square of a
+//!   file's depth;
 //! - **GEDCOM 7**: a pointer to `@VOID@` — "no record" — is dropped with
 //!   its substructure rather than read as a person, and a shared note
 //!   (`SNOTE`) is read as the `NOTE` 5.5.1 calls it.
@@ -46,6 +58,9 @@ pub enum Encoding {
     Ansel,
     Windows1252,
     MacRoman,
+    /// IBM PC, as DOS software wrote it: code page 850, whose letters are
+    /// code page 437's and more.
+    Ibm850,
 }
 
 impl Encoding {
@@ -58,6 +73,7 @@ impl Encoding {
             Encoding::Ansel => "ANSEL",
             Encoding::Windows1252 => "Windows-1252",
             Encoding::MacRoman => "Mac Roman",
+            Encoding::Ibm850 => "IBM PC (code page 850)",
         }
     }
 }
@@ -82,6 +98,13 @@ pub struct Reading {
     pub voids: usize,
     /// Shared notes (`SNOTE`) read as `NOTE`.
     pub shared_notes: usize,
+    /// Bytes that were not UTF-8 in a file read as UTF-8, read as
+    /// Windows-1252 one by one.
+    pub stray_bytes: usize,
+    /// Lines whose layout was mended (see the module's comment).
+    pub tidied: usize,
+    /// Lines nested deeper than [`MAX_LEVEL`], set aside.
+    pub too_deep: usize,
 }
 
 impl Reading {
@@ -95,6 +118,7 @@ impl Reading {
         let said = match d.as_str() {
             "ANSEL" => Some(Encoding::Ansel),
             "MACINTOSH" | "MACROMAN" => Some(Encoding::MacRoman),
+            d if is_ibm_pc(d) => Some(Encoding::Ibm850),
             "ANSI" | "WINDOWS-1252" | "CP1252" | "LATIN1" | "ISO-8859-1" | "ISO8859-1" => {
                 Some(Encoding::Windows1252)
             }
@@ -142,8 +166,9 @@ pub fn read(bytes: &[u8], limit: usize) -> Result<Read, Refusal> {
         Cow::Borrowed(bytes)
     };
 
-    let (text, encoding) = decode(&raw);
+    let (text, encoding, strays) = decode(&raw);
     reading.encoding = Some(encoding);
+    reading.stray_bytes = strays;
     reading.declared = declared_char(&raw);
     let text = text.trim_start_matches('\u{feff}');
 
@@ -156,16 +181,25 @@ pub fn read(bytes: &[u8], limit: usize) -> Result<Read, Refusal> {
         .count();
     let text = text.replace("\r\n", "\n").replace('\r', "\n");
 
+    let seven = gedcom_version(&text).is_some_and(|v| v.starts_with('7'));
+    let (text, tidied, too_deep) = tidy(&text, seven);
+    reading.tidied = tidied;
+    reading.too_deep = too_deep;
+
     let (text, voids, shared) = from_seven(&text);
     reading.voids = voids;
     reading.shared_notes = shared;
     reading.version = gedcom_version(&text);
 
+    // The first GEDCOM line is the header's. A line of prose before it (some
+    // programs write who exported the file) is not GEDCOM and is passed
+    // over, as the converter passes it over; a binary file has no such line.
     let opens = text
         .lines()
         .map(str::trim)
-        .find(|l| !l.is_empty())
-        .and_then(parts)
+        .filter(|l| !l.is_empty())
+        .take(8)
+        .find_map(parts)
         .is_some_and(|p| p.level == 0 && p.tag.eq_ignore_ascii_case("HEAD"));
     if !opens {
         return Err(Refusal::NotGedcom);
@@ -224,50 +258,170 @@ fn declared_char(raw: &[u8]) -> Option<String> {
         .filter(|v| !v.is_empty())
 }
 
-/// Bytes to text, and the encoding they were read in.
-fn decode(raw: &[u8]) -> (String, Encoding) {
+/// Bytes to text, the encoding they were read in, and how many bytes of a
+/// UTF-8 file were not UTF-8.
+fn decode(raw: &[u8]) -> (String, Encoding, usize) {
     if let Some(rest) = raw.strip_prefix(b"\xEF\xBB\xBF") {
-        return (String::from_utf8_lossy(rest).into_owned(), Encoding::Utf8);
+        let (s, strays) = utf8_mending(rest);
+        return (s, Encoding::Utf8, strays);
     }
     if raw.starts_with(b"\xFF\xFE") {
-        return (utf16(&raw[2..], true), Encoding::Utf16Le);
+        return (utf16(&raw[2..], true), Encoding::Utf16Le, 0);
     }
     if raw.starts_with(b"\xFE\xFF") {
-        return (utf16(&raw[2..], false), Encoding::Utf16Be);
+        return (utf16(&raw[2..], false), Encoding::Utf16Be, 0);
     }
-    // UTF-16 without a mark: the "0" of "0 HEAD" with a zero beside it.
-    if raw.len() >= 4 && raw[0] == b'0' && raw[1] == 0 && raw[3] == 0 {
-        return (utf16(raw, true), Encoding::Utf16Le);
-    }
-    if raw.len() >= 4 && raw[0] == 0 && raw[1] == b'0' && raw[2] == 0 {
-        return (utf16(raw, false), Encoding::Utf16Be);
+    if let Some(little) = utf16_without_mark(raw) {
+        let enc = if little {
+            Encoding::Utf16Le
+        } else {
+            Encoding::Utf16Be
+        };
+        return (utf16(raw, little), enc, 0);
     }
     if let Ok(s) = std::str::from_utf8(raw) {
-        return (s.to_string(), Encoding::Utf8);
+        return (s.to_string(), Encoding::Utf8, 0);
     }
-    match declared_char(raw)
-        .map(|c| c.to_ascii_uppercase())
-        .as_deref()
-    {
-        Some("ANSEL") => (ansel(raw), Encoding::Ansel),
+    let declared = declared_char(raw).map(|c| c.to_ascii_uppercase());
+    match declared.as_deref() {
+        Some("ANSEL") => (ansel(raw), Encoding::Ansel, 0),
         Some("MACINTOSH" | "MACROMAN") => (
             encoding_rs::MACINTOSH
                 .decode_without_bom_handling(raw)
                 .0
                 .into_owned(),
             Encoding::MacRoman,
+            0,
         ),
-        // ANSI, Windows-1252, Latin-1, IBMPC, a file that says UTF-8 and is
-        // not: Windows-1252 is what such files nearly always are, and it
-        // reads Latin-1 the same.
+        Some(d) if is_ibm_pc(d) => (raw.iter().map(|&b| cp850(b)).collect(), Encoding::Ibm850, 0),
+        // A file written in UTF-8 with a few bytes from elsewhere in it: read
+        // as UTF-8, those bytes alone as Windows-1252. Decided by what the
+        // bytes are, not only by what the header says: valid UTF-8
+        // sequences of two bytes or more almost never occur by chance in a
+        // Windows-1252 file, and a file that has them and few strays was
+        // written in UTF-8, whatever its header claims.
+        _ if mostly_utf8(raw) => {
+            let (s, strays) = utf8_mending(raw);
+            (s, Encoding::Utf8, strays)
+        }
+        // ANSI, Windows-1252, Latin-1, a file that says UTF-8 and is not:
+        // Windows-1252 is what such files nearly always are, and it reads
+        // Latin-1 the same.
         _ => (
             encoding_rs::WINDOWS_1252
                 .decode_without_bom_handling(raw)
                 .0
                 .into_owned(),
             Encoding::Windows1252,
+            0,
         ),
     }
+}
+
+/// The names GEDCOM and the software that wrote it give to the IBM PC's
+/// character set.
+fn is_ibm_pc(declared: &str) -> bool {
+    matches!(
+        declared,
+        "IBMPC"
+            | "IBM PC"
+            | "IBM-PC"
+            | "IBM WINDOWS"
+            | "CP850"
+            | "CP437"
+            | "IBM850"
+            | "IBM437"
+            | "DOS"
+    )
+}
+
+/// UTF-16 without a byte-order mark, told by where its zero bytes fall: the
+/// header is ASCII, so in its first few hundred bytes one byte of nearly
+/// every pair is zero. `Some(true)` for little-endian. A leading blank line
+/// does not hide it, as it hid the "0" of "0 HEAD" from the first test.
+fn utf16_without_mark(raw: &[u8]) -> Option<bool> {
+    let n = raw.len().min(512) & !1;
+    if n < 8 {
+        return None;
+    }
+    let (mut even, mut odd) = (0usize, 0usize);
+    for (i, &b) in raw[..n].iter().enumerate() {
+        if b == 0 {
+            if i % 2 == 0 {
+                even += 1;
+            } else {
+                odd += 1;
+            }
+        }
+    }
+    let pairs = n / 2;
+    if odd * 10 >= pairs * 8 && even * 10 <= pairs {
+        Some(true)
+    } else if even * 10 >= pairs * 8 && odd * 10 <= pairs {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+/// Whether bytes that are not valid UTF-8 were nevertheless written in it:
+/// they hold multi-byte UTF-8 sequences, and no more stray bytes than such
+/// sequences.
+fn mostly_utf8(raw: &[u8]) -> bool {
+    let (mut multi, mut strays) = (0usize, 0usize);
+    for chunk in raw.utf8_chunks() {
+        multi += chunk.valid().chars().filter(|c| c.len_utf8() > 1).count();
+        strays += chunk.invalid().len();
+    }
+    multi > 0 && strays <= multi
+}
+
+/// UTF-8, with each byte that is not part of a valid sequence read as
+/// Windows-1252. Returns the text and how many bytes were read that way.
+fn utf8_mending(raw: &[u8]) -> (String, usize) {
+    let mut out = String::with_capacity(raw.len());
+    let mut strays = 0;
+    for chunk in raw.utf8_chunks() {
+        out.push_str(chunk.valid());
+        for &b in chunk.invalid() {
+            strays += 1;
+            out.push_str(
+                &encoding_rs::WINDOWS_1252
+                    .decode_without_bom_handling(&[b])
+                    .0,
+            );
+        }
+    }
+    (out, strays)
+}
+
+/// Code page 850, the IBM PC's Western European set, above ASCII.
+fn cp850(b: u8) -> char {
+    if b < 0x80 {
+        return b as char;
+    }
+    const HIGH: [char; 128] = [
+        '\u{00C7}', '\u{00FC}', '\u{00E9}', '\u{00E2}', '\u{00E4}', '\u{00E0}', '\u{00E5}',
+        '\u{00E7}', '\u{00EA}', '\u{00EB}', '\u{00E8}', '\u{00EF}', '\u{00EE}', '\u{00EC}',
+        '\u{00C4}', '\u{00C5}', '\u{00C9}', '\u{00E6}', '\u{00C6}', '\u{00F4}', '\u{00F6}',
+        '\u{00F2}', '\u{00FB}', '\u{00F9}', '\u{00FF}', '\u{00D6}', '\u{00DC}', '\u{00F8}',
+        '\u{00A3}', '\u{00D8}', '\u{00D7}', '\u{0192}', '\u{00E1}', '\u{00ED}', '\u{00F3}',
+        '\u{00FA}', '\u{00F1}', '\u{00D1}', '\u{00AA}', '\u{00BA}', '\u{00BF}', '\u{00AE}',
+        '\u{00AC}', '\u{00BD}', '\u{00BC}', '\u{00A1}', '\u{00AB}', '\u{00BB}', '\u{2591}',
+        '\u{2592}', '\u{2593}', '\u{2502}', '\u{2524}', '\u{00C1}', '\u{00C2}', '\u{00C0}',
+        '\u{00A9}', '\u{2563}', '\u{2551}', '\u{2557}', '\u{255D}', '\u{00A2}', '\u{00A5}',
+        '\u{2510}', '\u{2514}', '\u{2534}', '\u{252C}', '\u{251C}', '\u{2500}', '\u{253C}',
+        '\u{00E3}', '\u{00C3}', '\u{255A}', '\u{2554}', '\u{2569}', '\u{2566}', '\u{2560}',
+        '\u{2550}', '\u{256C}', '\u{00A4}', '\u{00F0}', '\u{00D0}', '\u{00CA}', '\u{00CB}',
+        '\u{00C8}', '\u{0131}', '\u{00CD}', '\u{00CE}', '\u{00CF}', '\u{2518}', '\u{250C}',
+        '\u{2588}', '\u{2584}', '\u{00A6}', '\u{00CC}', '\u{2580}', '\u{00D3}', '\u{00DF}',
+        '\u{00D4}', '\u{00D2}', '\u{00F5}', '\u{00D5}', '\u{00B5}', '\u{00FE}', '\u{00DE}',
+        '\u{00DA}', '\u{00DB}', '\u{00D9}', '\u{00FD}', '\u{00DD}', '\u{00AF}', '\u{00B4}',
+        '\u{00AD}', '\u{00B1}', '\u{2017}', '\u{00BE}', '\u{00B6}', '\u{00A7}', '\u{00F7}',
+        '\u{00B8}', '\u{00B0}', '\u{00A8}', '\u{00B7}', '\u{00B9}', '\u{00B3}', '\u{00B2}',
+        '\u{25A0}', '\u{00A0}',
+    ];
+    HIGH[(b - 0x80) as usize]
 }
 
 fn utf16(raw: &[u8], little: bool) -> String {
@@ -414,6 +568,245 @@ fn parts(line: &str) -> Option<Parts<'_>> {
         .strip_prefix(' ')
         .unwrap_or(&rest[tag_len..]);
     Some(Parts { level, tag, value })
+}
+
+/// Deeper than any GEDCOM structure goes: 5.5.1's deepest is six levels
+/// (a citation's text under an event), 7.0's seven, and a program's own
+/// extensions rarely add more than two. A line below this is set aside with
+/// everything under it. Without a floor, a file of 300 KB whose lines each go
+/// one level deeper than the last cost the converter time in the square of
+/// its depth and then its stack: the process was aborted, the server with it.
+pub const MAX_LEVEL: u32 = 32;
+
+/// The tags of GEDCOM 5.5.1 and 7.0, by which a tag written in lower case is
+/// recognised and set upright. A tag the standards do not have is left as it
+/// is: an extension (`_UID`) is the writer's to spell.
+const TAGS: &[&str] = &[
+    "ABBR", "ADDR", "ADOP", "ADR1", "ADR2", "ADR3", "AFN", "AGE", "AGNC", "ALIA", "ANCE", "ANCI",
+    "ANUL", "ASSO", "AUTH", "BAPL", "BAPM", "BARM", "BASM", "BIRT", "BLES", "BLOB", "BURI", "CALN",
+    "CAST", "CAUS", "CENS", "CHAN", "CHAR", "CHIL", "CHR", "CHRA", "CITY", "CONC", "CONF", "CONL",
+    "CONT", "COPR", "CORP", "CREA", "CREM", "CROP", "CTRY", "DATA", "DATE", "DEAT", "DESC", "DESI",
+    "DEST", "DIV", "DIVF", "DSCR", "EDUC", "EMAIL", "EMIG", "ENDL", "ENGA", "EVEN", "EXID", "FACT",
+    "FAM", "FAMC", "FAMS", "FAX", "FCOM", "FILE", "FONE", "FORM", "GEDC", "GIVN", "GRAD", "HEAD",
+    "HEIGHT", "HUSB", "IDNO", "IMMI", "INDI", "INIL", "LANG", "LATI", "LEFT", "LEGA", "LONG",
+    "MAP", "MARB", "MARC", "MARL", "MARR", "MARS", "MEDI", "MIME", "NAME", "NATI", "NATU", "NCHI",
+    "NICK", "NMR", "NO", "NOTE", "NPFX", "NSFX", "OBJE", "OCCU", "ORDI", "ORDN", "PAGE", "PEDI",
+    "PHON", "PHRASE", "PLAC", "POST", "PROB", "PROP", "PUBL", "QUAY", "REFN", "RELA", "RELI",
+    "REPO", "RESI", "RESN", "RETI", "RFN", "RIN", "ROLE", "ROMN", "SCHMA", "SDATE", "SEX", "SLGC",
+    "SLGS", "SNOTE", "SOUR", "SPFX", "SSN", "STAE", "STAT", "SUBM", "SUBN", "SURN", "TAG", "TEMP",
+    "TEXT", "TIME", "TITL", "TOP", "TRAN", "TRLR", "TYPE", "UID", "VERS", "WIDTH", "WIFE", "WILL",
+    "WWW",
+];
+
+/// One line, taken apart when it is a GEDCOM line.
+enum Tidied {
+    /// Not a GEDCOM line (blank, prose, no level): as it was.
+    Raw(String),
+    Line {
+        /// The level and, when there is one, the cross-reference.
+        head: String,
+        tag: String,
+        value: Option<String>,
+        /// What it was before any mending, when nothing was mended.
+        raw: Option<String>,
+    },
+    /// Nested deeper than [`MAX_LEVEL`].
+    TooDeep,
+}
+
+impl Tidied {
+    fn render(self, out: &mut String) {
+        match self {
+            Tidied::Raw(r) | Tidied::Line { raw: Some(r), .. } => out.push_str(&r),
+            Tidied::Line {
+                head, tag, value, ..
+            } => {
+                out.push_str(&head);
+                out.push(' ');
+                out.push_str(&tag);
+                if let Some(v) = value {
+                    out.push(' ');
+                    out.push_str(&v);
+                }
+            }
+            Tidied::TooDeep => {}
+        }
+    }
+}
+
+/// The lines laid out as the converter reads them (see the module's
+/// comment). Returns the text, how many lines were mended and how many were
+/// set aside for their depth.
+fn tidy(text: &str, seven: bool) -> (String, usize, usize) {
+    let (mut mended, mut too_deep) = (0, 0);
+    let mut lines: Vec<Tidied> = Vec::new();
+    for raw in text.split('\n') {
+        let line = tidy_line(raw, seven);
+        match &line {
+            Tidied::TooDeep => {
+                too_deep += 1;
+                continue;
+            }
+            Tidied::Line { raw: None, .. } => mended += 1,
+            _ => {}
+        }
+        lines.push(line);
+    }
+    // A space at the end of a line that a CONC continues belongs to the
+    // text; the converter trims every line's end, which glued "coupée" and
+    // "au milieu" into one word. Moved to the head of the CONC's value, where
+    // it is kept.
+    for i in 1..lines.len() {
+        let (before, after) = lines.split_at_mut(i);
+        let (
+            Tidied::Line {
+                value: Some(v),
+                raw: raw_a,
+                ..
+            },
+            Tidied::Line {
+                tag,
+                value: next,
+                raw: raw_b,
+                ..
+            },
+        ) = (&mut before[i - 1], &mut after[0])
+        else {
+            continue;
+        };
+        if tag.as_str() != "CONC" {
+            continue;
+        }
+        let kept = v.trim_end_matches([' ', '\t']).len();
+        if kept == v.len() || kept == 0 {
+            continue;
+        }
+        let space: String = v[kept..].chars().map(|_| ' ').collect();
+        v.truncate(kept);
+        *next = Some(space + next.as_deref().unwrap_or(""));
+        if raw_a.take().is_some() {
+            mended += 1;
+        }
+        if raw_b.take().is_some() {
+            mended += 1;
+        }
+    }
+    let mut out = String::with_capacity(text.len());
+    let n = lines.len();
+    for (i, line) in lines.into_iter().enumerate() {
+        line.render(&mut out);
+        if i + 1 < n {
+            out.push('\n');
+        }
+    }
+    (out, mended, too_deep)
+}
+
+/// One line, mended: no indentation; one space between the level, the
+/// cross-reference, the tag and the value; a standard tag in upper case; no
+/// control character in the value; `@@` read as the `@` it stands for; a sex
+/// written in full or in lower case set as the letter; a Gregorian date's
+/// calendar mark, which says nothing the date does not, dropped.
+fn tidy_line(raw: &str, seven: bool) -> Tidied {
+    let s = raw.trim_start_matches([' ', '\t']);
+    let digits = s.bytes().take_while(u8::is_ascii_digit).count();
+    if digits == 0 {
+        return Tidied::Raw(raw.to_string());
+    }
+    let Ok(level) = s[..digits].parse::<u32>() else {
+        return Tidied::Raw(raw.to_string());
+    };
+    if level > MAX_LEVEL {
+        return Tidied::TooDeep;
+    }
+    let delimited = |r: &str| r.len() - r.trim_start_matches([' ', '\t']).len();
+    let mut rest = &s[digits..];
+    let d = delimited(rest);
+    if d == 0 {
+        return Tidied::Raw(raw.to_string());
+    }
+    rest = &rest[d..];
+    let mut head = level.to_string();
+    if rest.starts_with('@') {
+        if let Some(end) = rest[1..].find('@') {
+            head.push(' ');
+            head.push_str(&rest[..end + 2]);
+            rest = &rest[end + 2..];
+            rest = &rest[delimited(rest)..];
+        }
+    }
+    let tag_len = rest.find([' ', '\t']).unwrap_or(rest.len());
+    let written = &rest[..tag_len];
+    if written.is_empty() {
+        return Tidied::Raw(raw.to_string());
+    }
+    let upper = written.to_ascii_uppercase();
+    let tag = if TAGS.contains(&upper.as_str()) {
+        upper
+    } else {
+        written.to_string()
+    };
+    // The value: everything after the one delimiter that follows the tag.
+    let mut value = rest[tag_len..]
+        .strip_prefix([' ', '\t'])
+        .map(str::to_string);
+    if let Some(v) = value.as_mut() {
+        if v.chars().any(|c| c.is_control() && c != '\t') {
+            v.retain(|c| !c.is_control() || c == '\t');
+        }
+        // `@@` is an `@` in a value; GEDCOM 7 escapes only a leading one.
+        if v.contains("@@") {
+            let read = if seven {
+                v.strip_prefix('@')
+                    .filter(|r| r.starts_with('@'))
+                    .map(str::to_string)
+            } else {
+                Some(v.replace("@@", "@"))
+            };
+            // Read back, it must not become a pointer and lose the text.
+            if let Some(r) =
+                read.filter(|r| !(r.starts_with('@') && r.ends_with('@') && r.len() > 1))
+            {
+                *v = r;
+            }
+        }
+        if tag == "SEX" {
+            let up = v.trim().to_ascii_uppercase();
+            let letter = match up.as_str() {
+                "MALE" | "M" => Some("M"),
+                "FEMALE" | "F" => Some("F"),
+                "U" | "UNKNOWN" => Some("U"),
+                "X" => Some("X"),
+                _ => None,
+            };
+            // Already the letter, give or take a space: left as written.
+            if let Some(l) = letter.filter(|l| v.trim() != *l) {
+                *v = l.to_string();
+            }
+        }
+        if tag == "DATE" {
+            if let Some(rest) = v.trim_start().strip_prefix("@#DGREGORIAN@") {
+                *v = rest.trim_start().to_string();
+            }
+        }
+    }
+    let rebuilt = {
+        let mut r = head.clone();
+        r.push(' ');
+        r.push_str(&tag);
+        if let Some(v) = &value {
+            r.push(' ');
+            r.push_str(v);
+        }
+        r
+    };
+    let raw_kept = (rebuilt == raw).then(|| raw.to_string());
+    Tidied::Line {
+        head,
+        tag,
+        value,
+        raw: raw_kept,
+    }
 }
 
 /// GEDCOM 7, in 5.5.1's words: `@VOID@` pointers dropped with everything

@@ -70,7 +70,7 @@ pub(super) async fn convert_and_show(
         fail(chrome, status, message, setup)
     };
     let limit_mb = || ((MAX_UPLOAD / (1024 * 1024)) as i64).into();
-    let upload = match read_upload(multipart).await {
+    let mut upload = match read_upload(multipart).await {
         Ok(u) => u,
         Err(UploadError::TooLarge) => {
             return fail(
@@ -105,41 +105,42 @@ pub(super) async fn convert_and_show(
             ),
         );
     }
-    // Any version, any encoding, bare or in a `.gdz`: read into the dialect
-    // the converter reads, and what was mended on the way kept for the page.
-    let read = match gedcom_in::read(&upload.bytes, MAX_UPLOAD) {
-        Ok(r) => r,
-        Err(Refusal::NotGedcom) => {
+    // The reading, the conversion, the analyses and the export are seconds
+    // of work for a large file (7.5 s for 40,000 people in 9.8 MB): done on
+    // the blocking pool, so that a conversion holds one of its threads and
+    // not one of the few that answer every other request.
+    let lang = chrome.lang;
+    let confidence = upload.confidence;
+    let place_lang = upload.lang.clone();
+    let bytes = std::mem::take(&mut upload.bytes);
+    let work =
+        tokio::task::spawn_blocking(move || work(&bytes, confidence, &place_lang, lang)).await;
+    let done = match work {
+        Ok(Work::Refused(Refusal::NotGedcom)) => {
             return fail(
                 &chrome,
                 StatusCode::OK,
                 &chrome.t("convert-error-not-gedcom"),
             )
         }
-        Err(Refusal::NoDataset) => {
+        Ok(Work::Refused(Refusal::NoDataset)) => {
             return fail(
                 &chrome,
                 StatusCode::OK,
                 &chrome.t("convert-error-no-dataset"),
             )
         }
-        Err(Refusal::TooLarge) => {
+        Ok(Work::Refused(Refusal::TooLarge)) => {
             return fail(
                 &chrome,
                 StatusCode::PAYLOAD_TOO_LARGE,
                 &chrome.t_args("convert-error-too-large", &[("limit", limit_mb())]),
             )
         }
-    };
-    let reading = reading_view(&read.reading);
-
-    // The library owns the conversion. This crate only reports the result.
-    let env = axgf_rs::convert_gedcom(read.text.as_bytes(), upload.confidence, &upload.lang);
-    let diagnostics = super::admin::diagnostics_json(&env.diagnostics, chrome.lang);
-
-    let data = match envelope_into_data(env) {
-        Ok(d) => d,
-        Err(_) => {
+        Ok(Work::NotConverted {
+            reading,
+            diagnostics,
+        }) => {
             return render::page_with(
                 &chrome,
                 "convert_result.html",
@@ -154,25 +155,16 @@ pub(super) async fn convert_and_show(
                 },
             );
         }
-    };
-
-    let bundle = data.get("bundle").cloned().unwrap_or(Value::Null);
-    let counts = counts_of(&bundle);
-    // Counted from the file the visitor just uploaded, so the argument for the
-    // format is made with their own data rather than a curated demo.
-    let completeness = crate::completeness::analyse(&bundle, chrome.lang);
-    let total: usize = counts.iter().map(|(_, n)| n).sum();
-
-    // Export to the bytes the visitor will download. The served bundle is
-    // untouched: this never goes near AppState::mutate.
-    // What the data-quality screen would say about this file, said now: the
-    // uploader's own file, so every finding is theirs to see.
-    let quality: Vec<Value> = crate::quality::detect(&bundle)
-        .iter()
-        .map(|f| json!({"rule": f.rule.slug(), "message": crate::quality::message(f, chrome.lang)}))
-        .collect();
-    let bytes = match crate::state::export_to_bytes(&bundle.to_string()) {
-        Ok(b) => b,
+        Ok(Work::NotPackaged(e)) => {
+            return fail(
+                &chrome,
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &chrome.t_args("convert-error-packaging", &[("error", e.into())]),
+            )
+        }
+        Ok(Work::Done(d)) => d,
+        // The work panicked: a bug, said as one, rather than a dropped
+        // connection.
         Err(e) => {
             return fail(
                 &chrome,
@@ -184,6 +176,16 @@ pub(super) async fn convert_and_show(
             )
         }
     };
+    let Done {
+        reading,
+        diagnostics,
+        counts,
+        completeness,
+        quality,
+        quality_total,
+        bytes,
+    } = *done;
+    let total: usize = counts.iter().map(|(_, n)| n).sum();
     let size = bytes.len();
 
     let download_name = axgf_name_for(&upload.filename);
@@ -214,6 +216,8 @@ pub(super) async fn convert_and_show(
             download_id => id,
             download_name,
             quality,
+            quality_total,
+            quality_listed => QUALITY_LISTED,
             size_kb => size / 1024,
             total,
             counts => counts.iter().zip(crate::admin::KINDS.iter())
@@ -226,6 +230,92 @@ pub(super) async fn convert_and_show(
             completeness,
         },
     )
+}
+
+/// How many of a converted file's data-quality findings its page lists.
+pub const QUALITY_LISTED: usize = 200;
+
+/// What a conversion came to, worked out off the async runtime.
+enum Work {
+    /// Not a GEDCOM, or a zip with none in it, or one too large.
+    Refused(Refusal),
+    /// Read, and refused by the converter.
+    NotConverted {
+        reading: Value,
+        diagnostics: Vec<Value>,
+    },
+    /// Converted, and the library would not package it.
+    NotPackaged(String),
+    Done(Box<Done>),
+}
+
+struct Done {
+    reading: Value,
+    diagnostics: Vec<Value>,
+    counts: Vec<(&'static str, usize)>,
+    completeness: crate::completeness::Report,
+    quality: Vec<Value>,
+    quality_total: usize,
+    bytes: Vec<u8>,
+}
+
+/// Read an upload as GEDCOM of any version (`crate::gedcom_in`), convert it,
+/// say what the data-quality screen would say about it, and package it.
+fn work(upload: &[u8], confidence: f64, place_lang: &str, lang: &'static str) -> Work {
+    // Any version, any encoding, bare or in a `.gdz`: read into the dialect
+    // the converter reads, and what was mended on the way kept for the page.
+    let read = match gedcom_in::read(upload, MAX_UPLOAD) {
+        Ok(r) => r,
+        Err(r) => return Work::Refused(r),
+    };
+    let reading = reading_view(&read.reading);
+
+    // The library owns the conversion. This crate only reports the result.
+    let env = axgf_rs::convert_gedcom(read.text.as_bytes(), confidence, place_lang);
+    drop(read);
+    let diagnostics = super::admin::diagnostics_json(&env.diagnostics, lang);
+    let data = match envelope_into_data(env) {
+        Ok(d) => d,
+        Err(_) => {
+            return Work::NotConverted {
+                reading,
+                diagnostics,
+            }
+        }
+    };
+    let bundle = data.get("bundle").cloned().unwrap_or(Value::Null);
+    drop(data);
+    let counts = counts_of(&bundle);
+    // Counted from the file the visitor just uploaded, so the argument for the
+    // format is made with their own data rather than a curated demo.
+    let completeness = crate::completeness::analyse(&bundle, lang);
+    // What the data-quality screen would say about this file, said now: the
+    // uploader's own file, so every finding is theirs to see. Listed up to a
+    // point: a messy file of 20,000 people had 32,000 of them, and the page
+    // that listed every one weighed 4.7 MB. The count is whole; the
+    // data-quality page lists them all once the file is served.
+    let findings = crate::quality::detect(&bundle);
+    let quality_total = findings.len();
+    let quality: Vec<Value> = findings
+        .iter()
+        .take(QUALITY_LISTED)
+        .map(|f| json!({"rule": f.rule.slug(), "message": crate::quality::message(f, lang)}))
+        .collect();
+    // Export to the bytes the visitor will download. The served bundle is
+    // untouched: this never goes near AppState::mutate.
+    let bytes = match crate::state::export_to_bytes(&bundle.to_string()) {
+        Ok(b) => b,
+        Err(e) => return Work::NotPackaged(e.to_string()),
+    };
+    Work::Done(Box::new(Done {
+        reading,
+        diagnostics,
+        counts,
+        completeness,
+        quality,
+        quality_total,
+        bytes,
+    }))
 }
 
 /// `GET /convert/download/:id` — the converted bundle.
@@ -339,5 +429,8 @@ fn reading_view(r: &gedcom_in::Reading) -> Value {
         "lone_crs": r.lone_crs,
         "voids": r.voids,
         "shared_notes": r.shared_notes,
+        "stray_bytes": r.stray_bytes,
+        "tidied": r.tidied,
+        "too_deep": r.too_deep,
     })
 }

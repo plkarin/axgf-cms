@@ -622,6 +622,9 @@ extra margin those themes gave.
   release the largest file the upload takes), `gedcom_known_defects.rs` (31
   ignored: the library's), and `gedcom_probe.rs` with
   `scripts/gedcom-corpus.py` to run the campaign again.
+- `.github/workflows/ci.yml`: the suite, clippy and the formatting on every
+  push and pull request, and the release-mode stress test beside them; until
+  now they ran only on a tag.
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
   motion, "Cut" and a hidden page.

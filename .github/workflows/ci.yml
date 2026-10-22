@@ -1,0 +1,41 @@
+name: ci
+
+# Every push and every pull request: the formatting, clippy and the whole
+# suite, as release.yml's gate runs them on a tag — so that a red commit is
+# seen when it is pushed, not when a release is cut. A second job runs, in
+# release, the stress tests the suite leaves out for their length: the GEDCOM
+# import at the upload limit (docs/GEDCOM-IMPORT.md).
+#
+# The same two actions release.yml trusts, and no others.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: fmt, clippy and the suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: cargo fmt --check
+        run: cargo fmt --check
+      - name: cargo clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+      - name: cargo test
+        run: cargo test --locked
+
+  stress:
+    name: stress tests, in release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: The largest GEDCOM the upload takes, converted and served
+        run: cargo test --release --locked --test gedcom_conversion -- --ignored

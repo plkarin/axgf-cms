@@ -35,7 +35,8 @@ Every file in it is invented: the corpus is generated
   during a conversion, every odd family served, documents never served, the
   largest file the upload takes), and `tests/gedcom_known_defects.rs` (31,
   ignored: the converter's defects below, each stated as what a faithful
-  conversion does).
+  conversion does). `.github/workflows/ci.yml` runs the suite on every push
+  and pull request, and the release-mode stress test beside it.
 
 ## What held
 

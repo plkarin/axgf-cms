@@ -490,6 +490,30 @@ is out.
 - An export's button said "Working…" for ever: a file arriving does not
   unload the page. The server now answers the page's token in a short-lived
   cookie once the file starts, and the button is idle again.
+- **GEDCOM import, under stress** (docs/GEDCOM-IMPORT.md). A campaign of 72
+  invented files and five large ones through the conversion page, the
+  converter, the validator, the export and every page found, and mended in
+  the CMS:
+  - a file of 300 KB whose lines go 50,000 levels deep overflowed the stack
+    and aborted the server through `/convert`, which needs no account; lines
+    deeper than 32 levels are now set aside, and said;
+  - files with two spaces after the level, tabs between fields or tags in
+    lower case came out with nobody in them, indented files without their
+    families: the reading mends the layout, and says how many lines;
+  - a UTF-8 file with one stray byte was read entirely as Windows-1252 (every
+    accent "Ã©"); IBM PC files were read as Windows-1252 too; a note split
+    after a space lost the space; `@@`, control characters, `SEX m`/`Male`
+    and a `@#DGREGORIAN@` date were read wrong;
+  - a messy file's result page listed every data-quality finding (4.7 MB for
+    20,000 people); it lists 200 and counts them all;
+  - a conversion held one of the threads that answer requests for its whole
+    length (7.5 s for 40,000 people), so two uploads froze a two-core server;
+    it runs on the blocking pool.
+
+  What the converter of axgf-rs 0.5.0 itself drops or misreads — every event
+  but birth, death and marriage, citations, coordinates, lineage on `FAMC`,
+  most date qualifiers and calendars — is listed there for the library, each
+  with an ignored test in `tests/gedcom_known_defects.rs`.
 - `bootstrap.sh --uninstall` on a machine with no backup archive ended under
   `pipefail` after removing everything and before saying where the data is.
 - The sign-in page showed the edit band ("edit mode") to a visitor nobody had
@@ -590,6 +614,14 @@ extra margin those themes gave.
   mention; a failed save keeps its text and its pictures; the search and the
   letters work without script; the dashboard and a record lead a writer to
   the notes.
+- GEDCOM import (docs/GEDCOM-IMPORT.md): `gedcom_reading.rs` (versions 4.0
+  to 7.0 bare and zipped, every encoding and line ending, layout, depth,
+  refusals, a zip bomb), `gedcom_conversion.rs` (the conversion page, markup,
+  the findings list, the server answering during a conversion, every odd
+  family served page by page, documents named but never served, and in
+  release the largest file the upload takes), `gedcom_known_defects.rs` (31
+  ignored: the library's), and `gedcom_probe.rs` with
+  `scripts/gedcom-corpus.py` to run the campaign again.
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
   motion, "Cut" and a hidden page.

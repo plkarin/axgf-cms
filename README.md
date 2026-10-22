@@ -233,7 +233,7 @@ each would say first.
 
 | Infrastructure: health, version, storage and computing | The AXGF bundle: conformity, anomalies, export |
 |---|---|
-| [![The Infrastructure page: four tiles (health needs attention: 11 green, 7 warnings, 0 critical; version v0.5.0; 70.3 GB free, 57 % of 165.2 GB used; 2 cores, load 1.61), then the health checks grouped by area, each green or a warning with what was found: how the site is reached, forwarded addresses, posts from other sites, sign-in services, administrators.](docs/screenshots/console-infrastructure.jpg)](docs/screenshots/console-infrastructure.jpg) | [![The AXGF bundle page: four tiles (conformity to watch: 7 green, 2 warnings; 639 entities, 250 people and 13 attached files; 527.4 KB on disk; AXGF 1.1), then the conformity checks: format version, the manifest's counts, validation with 4 warnings, attached files all present, accounts and bundle.](docs/screenshots/console-bundle.jpg)](docs/screenshots/console-bundle.jpg) |
+| [![The Infrastructure page: four tiles (health needs attention: 11 green, 7 warnings, 0 critical; version v0.5.0; 70.5 GB free, 57 % of 165.2 GB used; 2 cores, load 0.7), then the health checks grouped by area, each green or a warning with what was found: how the site is reached, forwarded addresses, posts from other sites, sign-in services, administrators.](docs/screenshots/console-infrastructure.jpg)](docs/screenshots/console-infrastructure.jpg) | [![The AXGF bundle page: four tiles (conformity to watch: 7 green, 2 warnings; 639 entities, 250 people and 13 attached files; 527.4 KB on disk; AXGF 1.1), then the conformity checks: format version, the manifest's counts, validation with 4 warnings, attached files all present, accounts and bundle.](docs/screenshots/console-bundle.jpg)](docs/screenshots/console-bundle.jpg) |
 
 - **AXGF bundle.** How the family's file conforms to AXGF 1.1, each finding
   green, a warning or critical, and opening on what to do about it: the
@@ -300,7 +300,7 @@ claim someone else's.
 
 ### Make it yours
 
-[![The overview page under the five themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a glass funnel from blue to pink, in orange on white.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
+[![The overview page under the five themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a glass funnel from blue to pink, in orange, its white card on a blue-grey ground.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
 There are five themes.
 
@@ -314,10 +314,11 @@ There are five themes.
   descendants up toward the summit. The more recently the person you stand
   on was born, the further the snow comes down, and the sun rises as you
   travel.
-- **Clarity** is light: white, dark teal and orange, as an administration
-  dashboard. It draws the family as a funnel of glass slices, one per
-  generation, the oldest at the narrow end and the newest at the mouth,
-  each slice saying how many people it holds.
+- **Clarity** is light, as an administration dashboard: white boxes on a
+  blue-grey ground, each topped by a strip and an icon in its category's
+  colour, with dark teal and orange. It draws the family as a funnel of
+  glass slices, one per generation, the oldest at the narrow end and the
+  newest at the mouth, each slice saying how many people it holds.
 
 Each carries its own buttons, motion and photographs, and every page follows
 it, down to the words: under Fusion the overview reads "Every life is a

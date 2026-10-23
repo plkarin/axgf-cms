@@ -1404,13 +1404,13 @@ pub async fn genealogy_hero_jpg() -> Response {
 pub async fn genealogy_cta_jpg() -> Response {
     picture("image/jpeg", render::GENEALOGY_CTA_JPG)
 }
-/// `GET /static/img/genealogy-tree.jpg` — the tree on its scroll, under
-/// Genealogy's view; and its page's ground, the vines at its edges.
-pub async fn genealogy_tree_jpg() -> Response {
-    picture("image/jpeg", render::GENEALOGY_TREE_JPG)
+/// `GET /static/img/genealogy-vine-l.jpg` and its mirror: the vine along
+/// each edge of Genealogy's pages.
+pub async fn genealogy_vine_l_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_VINE_L_JPG)
 }
-pub async fn genealogy_ground_jpg() -> Response {
-    picture("image/jpeg", render::GENEALOGY_GROUND_JPG)
+pub async fn genealogy_vine_r_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_VINE_R_JPG)
 }
 /// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
 /// ascent. The same picture behind every person: nothing in it depends on the

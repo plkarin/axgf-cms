@@ -1323,7 +1323,7 @@ abbr.presumed { text-decoration: none; }
    be pinned against: it is the whole column and the page simply scrolls it. */
 .tree-split.no-panel .tree-scroll { position: static; }
 
-.tree-canvas { position: relative; }
+.tree-canvas { position: relative; margin-inline: auto; }
 
 .tree-wires { position: absolute; inset: 0; pointer-events: none; }
 .wire { fill: none; stroke: var(--text-tertiary); stroke-width: 1.5; }
@@ -1500,42 +1500,24 @@ abbr.presumed { text-decoration: none; }
 /* ---- Tree + side panel -------------------------------------------------- */
 /* A scrollable tree beside a detail panel.
    ---------------------------------------------------------------------------
-   The split follows what the tree actually needs rather than a fixed ratio.
-   A three-generation view draws about 620px of cards; giving its column a
-   flat `1fr` of a 1920px page handed it 1412px and left an 809px band of
-   nothing between the drawing and the panel — on the widest screen, where
-   there was most to give away.
-
-   The canvas width is something the server already knows, so it comes through
-   as `--tree-width`: the same figure that sets the canvas's own inline width,
-   one number from one source.
-
-   The panel's width is then *computed from the tree's* rather than left to
-   the grid's own free-space distribution, and that is the part that matters.
-   Grid shares free space equally between tracks until each reaches its
-   growth limit, so a panel allowed to grow to 560px reaches it before a
-   2000px-wide tree has taken anything — at 1280px that left the tree 656px
-   when it wanted 2078 and could have had 899. Writing the panel as
-
-       clamp(min, container − tree − gap, max)
-
-   states the priority instead of hoping for it: the tree takes what it can
-   use, the panel takes what is genuinely left, and neither can starve the
-   other. Percentages in a track size resolve against the grid container, so
-   `100%` here is the split's own width.
+   Two tracks: the tree's column takes what the record leaves, and the record
+   keeps one width — a share of the split between its floor and its ceiling —
+   whatever the tree draws. Until 2026-10-23 the record's width was computed
+   from the tree's (`--tree-width`), so that no band of nothing opened between
+   a small tree and its record; but moving through the tree changes its width
+   at every step, and a record that followed it slid toward the middle of the
+   page and back, which the operator read as the page breaking. A narrow tree
+   now stands in the middle of its own column instead.
 
    `minmax(0, …)` on the tree keeps its *minimum* at zero. On the full view
    the canvas is tens of thousands of pixels wide, and an `auto` minimum would
    size the track to it and push the panel off the screen. Pinned to zero, the
    overflow stays inside `.tree-scroll`, where it scrolls.
 
-   The third track absorbs whatever is over once the panel has reached its
-   ceiling, so the surplus on an ultrawide screen sits at the outside edge
-   rather than reopening the band in the middle.
-
-   The fallback in `var(--tree-width, 1fr)` is what a page renders with if the
-   template ever stops passing the width: the previous behaviour, not a broken
-   one. */
+   The layout still hands the page the canvas's size (`--tree-width`,
+   `--tree-height`): the pinned tree below uses the height, and tree.js
+   measures the column the tree was given so that the next tree is folded to
+   it. */
 /* The tree and the record are one surface, not two windows side by side. The
    background and the rounding live here, once, and neither column carries a
    frame of its own: the frames that used to be there were drawing the edge of
@@ -1560,18 +1542,14 @@ abbr.presumed { text-decoration: none; }
   border-radius: var(--radius-lg);
   padding: 1rem;
   display: grid;
+  /* The record keeps its place at the side whatever the tree draws (the
+     operator's review, 2026-10-23): a record that followed the tree's width
+     slid toward the middle of the page every time the tree moved onto a
+     smaller family, and the page read as broken. The tree's column takes
+     the rest, and a narrow tree stands in the middle of it. */
   grid-template-columns:
-    minmax(0, var(--tree-width, 1fr))
-    clamp(
-      var(--panel-min),
-      /* Two gaps, because there are three tracks. Subtracting one left the
-         panel 24px too wide, and the tree — the only track that may shrink —
-         paid for it: a tree laid out to exactly the column it was told about
-         still overflowed by the missing gap. */
-      calc(100% - var(--tree-width, 0px) - 2 * var(--split-gap)),
-      var(--panel-max)
-    )
-    minmax(0, 1fr);
+    minmax(0, 1fr)
+    clamp(var(--panel-min), calc(30% - var(--split-gap)), var(--panel-max));
   gap: var(--split-gap);
   align-items: start;
 }
@@ -2568,6 +2546,36 @@ a.stat:hover { border-color: var(--accent); }
 /* A tab with nothing in it is not drawn (v0.4.1): there is no empty
    state to style. */
 .person-tabs + * { margin-top: 1.25rem; }
+/* The strip's arrows and its drag (ui.js): an arrow shows on a side where
+   more tabs wait, for a pointer that has no sideways wheel. */
+.tabs-wrap { position: relative; margin-block-start: 1.25rem; }
+.tabs-wrap > .person-tabs { margin-block-start: 0; }
+.tabs-wrap + * { margin-top: 1.25rem; }
+.tabs-arrow {
+  position: absolute;
+  inset-block: 0;
+  margin-block: auto;
+  inline-size: 2rem;
+  block-size: 2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-body);
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgb(var(--shadow-rgb) / 0.3);
+}
+.tabs-arrow[hidden] { display: none; }
+.tabs-arrow-left { left: 0.2rem; }
+.tabs-arrow-right { right: 0.2rem; }
+.tabs-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.person-tabs.is-dragging { cursor: grabbing; user-select: none; scroll-behavior: auto; }
 
 /* The tree tab: the same canvas the tree page draws, in a box that scrolls
    rather than one that pushes the rest of the page sideways. */
@@ -6532,29 +6540,35 @@ a.kpi:hover { border-color: var(--border-strong); }
   --kit-cta: url("/static/img/genealogy-cta.jpg");
   /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
   --notes-bg: url("/static/img/notes-genealogy.jpg");
-  /* The page's ground: antique vines along both edges, the middle plain,
-     the same green as the page. A frame, as Canopée's photographs are, not
-     a texture: nothing is ever written over the vines, and on a narrow
-     screen, where the middle is all there is, they are left out. */
-  --gn-ground: url("/static/img/genealogy-ground.jpg");
+  /* The page's frame: an antique vine along each edge, the middle the
+     page's own green. A frame, as Canopée's photographs are, not a texture:
+     nothing is ever written over the vines, and on a narrow screen, where
+     the middle is all there is, they are left out. Each vine is a tall strip
+     drawn at a third of its size or less, so it stays sharp on a dense
+     screen (the first, one wide picture stretched over the window, was
+     blurred; 2026-10-23). */
+  --gn-vine-l: url("/static/img/genealogy-vine-l.jpg");
+  --gn-vine-r: url("/static/img/genealogy-vine-r.jpg");
 }
 [data-theme="genealogy"] body {
   /* As tall as the window, so that a short page has its vines too. */
   min-block-size: 100vh;
-  background-image: var(--gn-ground);
-  background-size: cover;
-  background-position: center top;
+  background-image: var(--gn-vine-l), var(--gn-vine-r);
+  background-size: auto 100vh, auto 100vh;
+  background-position: left top, right top;
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
 @media (max-width: 760px) {
   [data-theme="genealogy"] body { background-image: none; }
 }
+/* A page that takes the whole width (the tree's) has no margin for them. */
+[data-theme="genealogy"] body:has(main.wide) { background-image: none; }
 /* The cards: cream stock in the page's green. Every colour token takes its
    `--gn-l-` twin on a card (tokens.css), so whatever a card holds — text,
    fields, buttons, chips, a chart — reads as it would on a light theme.
    Not in the paper style, which draws no cards. */
-[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .tree-panel, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog) {
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog) {
   color-scheme: light;
   --surface-page: var(--gn-l-surface-page);
   --surface-raised: var(--gn-l-surface-raised);
@@ -6642,51 +6656,55 @@ a.kpi:hover { border-color: var(--border-strong); }
   aspect-ratio: 5 / 6;
 }
 
-/* ---- the scroll (genealogy.js) ---- */
+/* ---- the tree, climbed (genealogy.js) ---- */
 [data-theme="genealogy"] .river { --rv-water: var(--gn-gold); --rv-lit: var(--gn-gold-hi); --rv-lit-halo: var(--gn-gold); --rv-glow: var(--gn-living); }
-/* The stage is parchment, so the words the river draws over a view — the
-   route's names, the counts and their halos — take the scroll's inks. */
+/* The woods behind the tree, from the treetops to the roots: what the page
+   shows before its script has drawn the far trees over it. */
 .river[data-view="scroll"] .rv-canvas {
-  background-color: var(--gn-parchment);
-  --rv-ink-1: var(--gn-veil);
-  --rv-data: var(--gn-ink-2);
-  --rv-name: var(--gn-ink);
-  --rv-centre: var(--gn-ink);
-  --rv-core: var(--gn-ink);
-  --rv-accent: var(--gn-centre);
+  background-color: var(--gn-stage-mid);
+  background-image: linear-gradient(180deg, var(--gn-stage-top) 0%, var(--gn-stage-mid) 55%, var(--gn-stage-low) 100%);
+  background-size: 100% 100%;
 }
-.river[data-view="scroll"] .rv-bar-root { background: var(--gn-gone); }
+.river[data-view="scroll"] .rv-bar-root { background: var(--gn-root-core); }
 .river[data-view="scroll"] .rv-bar-trunk { background: var(--gn-gold-hi); }
-.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-living); }
-.gn-svg .gn-veil { fill: var(--gn-veil); fill-opacity: 0.36; }
-.gn-svg .gn-row { stroke: var(--gn-row); stroke-width: 0.8; stroke-dasharray: 1 5; stroke-opacity: 0.55; }
-.gn-svg .gn-row-0 { stroke-opacity: 0.9; }
-.gn-svg .gn-gen { fill: var(--gn-ink-2); }
-.gn-svg .gn-gen-0 { fill: var(--gn-centre); }
-.gn-svg .gn-line { fill: none; stroke: var(--gn-gold); stroke-width: 1.3; stroke-linejoin: miter; }
-.gn-svg .gn-line-d { stroke-opacity: 0.85; }
-.gn-svg .gn-line-s { stroke-width: 2; stroke-opacity: 0.7; }
-.gn-svg .gn-twig { stroke-width: 1.1; }
-.gn-svg .gn-tip { fill: var(--gn-gold); }
-.gn-svg .gn-end { fill: var(--gn-parchment); stroke: var(--gn-gold); stroke-width: 1.1; }
-.gn-svg .gn-knot { fill: var(--gn-gold-hi); stroke: var(--gn-gold); stroke-width: 1; }
+.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-leaf-2); }
+.gn-svg .gn-bark-dark { stop-color: var(--gn-bark-dark); }
+.gn-svg .gn-bark-mid { stop-color: var(--gn-bark-mid); }
+.gn-svg .gn-bark-lit { stop-color: var(--gn-bark-lit); }
+.gn-svg .gn-trunk { stroke: var(--gn-bark-dark); stroke-width: 1.2; }
+.gn-svg .gn-grain { fill: none; stroke: var(--gn-grain); stroke-width: 1.4; stroke-opacity: 0.55; stroke-linecap: round; }
+.gn-svg .gn-ring { fill: none; stroke: var(--gn-ring); stroke-width: 1; stroke-opacity: 0.22; stroke-dasharray: 2 5; }
+.gn-svg .gn-ring-0 { stroke-opacity: 0.45; }
+.gn-svg .gn-gen { fill: var(--gn-gen); }
+.gn-svg .gn-gen-0 { fill: var(--gn-gold-hi); }
+.gn-svg .gn-branch { fill: none; stroke: var(--gn-branch); stroke-linecap: round; }
+.gn-svg .gn-branch-core { fill: none; stroke: var(--gn-branch-core); stroke-linecap: round; }
+.gn-svg .gn-root { stroke: var(--gn-root); }
+.gn-svg .gn-root-core { stroke: var(--gn-root-core); }
+.gn-svg .gn-faint { stroke-opacity: 0.9; }
+.gn-svg .gn-leaf-1 { fill: var(--gn-leaf-1); }
+.gn-svg .gn-leaf-2 { fill: var(--gn-leaf-2); }
+.gn-svg .gn-leaf-3 { fill: var(--gn-leaf-3); }
+.gn-svg .gn-tip { fill: var(--gn-branch-core); }
+.gn-svg .gn-end { fill: var(--gn-stage-mid); stroke: var(--gn-branch-core); stroke-width: 1.2; }
+.gn-svg .gn-knot { fill: var(--gn-gold-hi); stroke: var(--gn-branch); stroke-width: 1; }
 .gn-svg .gn-card { fill: var(--gn-card); stroke: var(--gn-card-line); stroke-width: 0.9; }
 .gn-svg .gn-card-centre { stroke: var(--gn-gold); stroke-width: 1.6; }
-.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.16; }
+.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.35; }
 .gn-svg .gn-name { fill: var(--gn-ink); font-family: var(--serif); }
 .gn-svg .gn-centre { fill: var(--gn-centre); }
 .gn-svg .gn-years { fill: var(--gn-ink-2); }
-.gn-svg .gn-portrait { fill: var(--gn-portrait); stroke: var(--gn-gold); stroke-width: 1.6; }
+.gn-svg .gn-portrait { fill: var(--gn-portrait); stroke: var(--gn-gold); stroke-width: 1.8; }
 .gn-svg .gn-gone { stroke: var(--gn-gone); }
-.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 2; }
-.gn-svg .gn-portrait-centre { stroke: var(--gn-gold-hi); stroke-width: 2.6; }
+.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 2.2; }
+.gn-svg .gn-portrait-centre { stroke: var(--gn-gold-hi); stroke-width: 2.8; }
 .gn-svg .gn-sparse { fill: var(--gn-portrait-inner); }
-.gn-svg .gn-hidden { fill: var(--gn-veil); stroke: var(--gn-hidden); stroke-width: 1.4; }
+.gn-svg .gn-hidden { fill: var(--gn-hidden-fill); stroke: var(--gn-hidden); stroke-width: 1.4; }
 .gn-svg .gn-portrait-inner { fill: none; stroke: var(--gn-portrait-inner); stroke-width: 1; }
 .gn-svg .gn-initials { fill: var(--gn-initials); font-family: var(--serif); letter-spacing: 0.04em; pointer-events: none; }
-.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.22; }
+.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.2; }
 .gn-svg .gn-again { stroke: var(--gn-gold); }
-.gn-svg a.rv-p:hover .gn-portrait { stroke: var(--gn-centre); }
+.gn-svg a.rv-p:hover .gn-portrait { stroke: var(--gn-gold-hi); }
 .gn-svg a.rv-p:focus-visible .gn-card { stroke: var(--focus-ring); stroke-width: 2; }
 /* While only the near generations are named, a far person keeps their
    portrait and its initials, and their card waits for the pointer. */

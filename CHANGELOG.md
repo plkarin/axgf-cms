@@ -132,25 +132,34 @@ from the list, and the account that chose it and when.
 
 **Genealogy, a sixth theme** (docs/adr/0016, until the operator's review),
 from their frame pack: a dark green page with cream cards, oval portraits
-and antique vines along its edges, and the family on a parchment scroll
-that a tree grows from.
+and antique vines along its edges, and the family on a tree the reader
+climbs.
 
-- `static/genealogy.js`, a view under ADR 0007's contract: a row per
-  generation, descendants toward the crown and ancestors toward the roots,
-  the person at the fixed point on the trunk; each person a portrait in an
-  oval gold frame (their initials: the payload carries no picture) with a
-  cream card that names them; thin gold lines with square corners, whole,
-  broken or dotted as surely as the parentage is known, a gold knot per
-  family. Gold leaves fall from the crown and a glint runs up every
-  attested line, still on the river's terms.
+- `static/genealogy.js`, a view under ADR 0007's contract: a tree drawn in
+  perspective, its trunk through the person at the fixed point; a level
+  per generation round the trunk, descendants up in the branches and
+  ancestors down toward the roots, further generations closer together and
+  smaller, as seen from where the reader stands. Travelling, the camera
+  climbs the trunk to the person travelled to, or goes down it; the blend
+  is done in the tree's own space and the far woods behind follow, more
+  slowly. Each person is an oval gold frame (their initials: the payload
+  carries no picture) with a cream card that names them; a branch is lit
+  wood edged in bark, whole, broken or knotted as surely as the parentage
+  is known. Gold motes rise, leaves fall, a glint runs up every attested
+  branch, still on the river's terms. No picture: the first version, a
+  tree on a parchment picture, drew gold lines the colour of the picture
+  under it, and the operator could not read it.
 - Two palettes: the page's, dark, measured as every theme is (tightest
   4.3:1), and the cards', cream with a sepia ink, every colour token's twin
   given on a card and measured the same way (`genealogy_cards_read`,
-  tightest 3.7:1). A card has a double rule; titles are in a book face.
-- Five pictures made in Canva, none edited from the reference (whose
-  watermark is a third party's): the tree on its scroll without the
-  building in its trunk, the hero, the call to action, the vines, the
-  notes' parchment. Its words in fourteen languages.
+  tightest 3.7:1). A card has a double rule; titles are in a book face;
+  the record beside the river and the tree stays on the page's palette,
+  where its name reads.
+- Pictures made in Canva, none edited from the reference (whose watermark
+  is a third party's): the hero, the call to action, the notes' parchment,
+  and a tall vine and its mirror along the page's edges, drawn at a third
+  of their size so they stay sharp on a dense screen. Its words in fourteen
+  languages.
 
 **Hebrew, Swahili and Lingala**: three more interface languages, complete
 and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
@@ -436,6 +445,15 @@ is out.
 
 ### Changed
 
+- **The tree page moves.** A card moves the tree onto that person, in the
+  same drawing, and opens their record beside it; the tree slides from
+  where the card was to where that person now stands, and the back button
+  walks back through the people visited. "Centre the tree here" is gone:
+  the card is the way. The record keeps its place at the side whatever the
+  tree draws, where it used to follow the tree's width toward the middle
+  of the page. Without scripts a card is the same move as a plain link.
+- **A record's tabs slide**, under every theme: an arrow at each end where
+  more tabs wait, and the strip can be dragged as well as wheeled.
 - **"Overview" in the masthead is now "Family"**, and its page carries the
   family's notes and contributions under its head.
 - **A record's family reads as blocks.** Parents and siblings, then each

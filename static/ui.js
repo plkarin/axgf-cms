@@ -230,6 +230,20 @@
     return el;
   }
   window.axgfLoader = loader;
+  // `data-describe="<id>"` on a select: the block with that id holds one
+  // paragraph per choice (`data-value`), and the one for the choice made is
+  // the one shown — the licence's meaning beside the licence (2026-10-23).
+  document.querySelectorAll("select[data-describe]").forEach(function (sel) {
+    var box = document.getElementById(sel.getAttribute("data-describe"));
+    if (!box) return;
+    function show() {
+      box.querySelectorAll("[data-value]").forEach(function (p) {
+        p.hidden = p.getAttribute("data-value") !== sel.value;
+      });
+    }
+    sel.addEventListener("change", show);
+    show();
+  });
   // Back to a page from the history cache: the form is idle again.
   window.addEventListener("pageshow", function (ev) {
     if (!ev.persisted) return;

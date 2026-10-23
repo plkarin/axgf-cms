@@ -1,5 +1,6 @@
 //! HTTP routing.
 
+mod account;
 mod admin;
 mod ai_portraits;
 mod connectivity;
@@ -344,6 +345,8 @@ fn routes(state: Shared) -> Router {
         // Preferences are POSTs so that choosing a language is not something a
         // link or a crawler can do to a reader.
         .route("/settings", get(prefs::settings))
+        .route("/account", get(account::page))
+        .route("/account/person", post(account::person))
         .route("/prefs/language", post(prefs::language))
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))

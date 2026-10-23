@@ -111,6 +111,7 @@
         <strong>{{ u.username }}</strong>
         {%- if u.is_me %} <span class="small muted">{{ t("accounts-you") }}</span>{% endif %}
         {%- if u.email %}<div class="small muted">{{ u.email }}</div>{% endif %}
+        {%- if u.person %}<div class="small">{{ t("accounts-person") }} <a href="/person/{{ u.person.id }}"><bdi>{{ u.person.name }}</bdi></a></div>{% endif %}
       </td>
       <td data-label="{{ t('accounts-role') }}">{{ u.role }}</td>
       <td data-label="{{ t('accounts-status') }}">

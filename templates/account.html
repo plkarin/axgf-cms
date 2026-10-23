@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ t("account-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+{#- An account's own page (2026-10-23): who it is, and which person in the
+    tree it says it is — its own word, checked by nobody. -#}
+<h1>{{ t("account-title") }}</h1>
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% if notice %}<div class="notice ok" role="status"><p>{{ notice }}</p></div>{% endif %}
+
+{% if emergency %}
+<p class="lede">{{ t("account-emergency-page") }}</p>
+{% else %}
+<section class="rec-section" id="account-who">
+<h2>{{ t("account-who") }}</h2>
+<dl class="facts">
+  <dt>{{ t("accounts-username") }}</dt><dd><strong>{{ account.username }}</strong></dd>
+  <dt>{{ t("accounts-role") }}</dt><dd>{{ t("accounts-role-" ~ account.role) }}</dd>
+  {%- if account.email %}<dt>{{ t("account-email") }}</dt><dd>{{ account.email }}</dd>{% endif %}
+  <dt>{{ t("account-since") }}</dt><dd>{{ account.created_at | localdatetime(lang) }}</dd>
+</dl>
+</section>
+
+<section class="rec-section" id="account-person">
+<h2>{{ t("account-person-title") }}</h2>
+<p class="small muted">{{ t("account-person-intro") }}</p>
+{% if person %}
+<p class="account-person-now">{{ t("account-person-is") }}
+  {% if person.readable %}<a href="/person/{{ person.id }}"><strong><bdi>{{ person.name }}</bdi></strong></a>{% else %}<span class="muted">{{ t("record-restricted-title") }}</span>{% endif %}</p>
+<form method="post" action="/account/person" class="inline-form">
+  <input type="hidden" name="unlink" value="1">
+  <button class="btn" type="submit">{{ t("account-person-unlink") }}</button>
+</form>
+{% endif %}
+<form method="post" action="/account/person" class="account-person-form">
+  <label class="field"><span class="field-label">{{ t("account-person-pick") }}</span>
+    <input type="text" name="person" list="account-persons" autocomplete="off" required></label>
+  <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("account-person-link") if not person else t("account-person-change") }}</button>
+</form>
+<datalist id="account-persons">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+</section>
+{% endif %}
+{% endblock %}

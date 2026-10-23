@@ -365,6 +365,7 @@
       if (view.rest) view.rest(svg, here, api);
       place(svg, here.meta);
       sizeHits();
+      placeNames();
       if (window.axgfRiverScene) window.axgfRiverScene.layout(sceneLayout());
       return;
     }
@@ -389,7 +390,84 @@
     if (sc) sc.hidden = !cur.layout.meta.bands;
     place(svg, cur.layout.meta);
     sizeHits();
+    placeNames();
     if (window.axgfRiverScene) window.axgfRiverScene.layout(sceneLayout());
+  }
+
+  /* ---- names: the near ones, or all of them (2026-10-23) ----
+   * A drawing names whom it has room for, and the reader could not tell why
+   * one person had a name and the next none. Two ways now, the reader's
+   * choice, under every view and the river alike, remembered:
+   * - near (the default): the generations either side of the fixed point
+   *   (−1, 0, +1) are all named, and the others are not;
+   * - all: everyone is named, each name the drawing left out set on a
+   *   ground of its own beside its person — to whichever side is free of
+   *   names, people and other grounds, further out if it must, with a
+   *   thread back to its person.
+   * The drawing's own names stay where it put them; this only hides the far
+   * ones (app.css, `data-far`) and adds the missing ones. */
+  var NAMES = 'axgf-river-names', namesAll = false;
+  try { namesAll = localStorage.getItem(NAMES) === 'all'; } catch (e) { /* private window */ }
+  function placeNames() {
+    var svg = canvas.querySelector('svg.rv-svg');
+    root.classList.toggle('rv-names-all', namesAll);
+    root.classList.toggle('rv-names-near', !namesAll);
+    if (!svg || !here) return;
+    var old = svg.querySelector('.rv-names');
+    if (old) old.remove();
+    var PK = byKey(here.persons), named = {};
+    svg.querySelectorAll('a.rv-p').forEach(function (a) {
+      var p = PK[a.getAttribute('data-key')], far = p && Math.abs(p.gen) > 1;
+      if (far) a.setAttribute('data-far', ''); else a.removeAttribute('data-far');
+      if (a.querySelector('text') && !(far && !namesAll)) named[a.getAttribute('data-key')] = 1;
+    });
+    // What is already on the page: every word and panel, every person.
+    var boxes = [], vb = svg.viewBox.baseVal;
+    svg.querySelectorAll('text, rect.tv-panel').forEach(function (t) {
+      var a = t.closest('a.rv-p');
+      if (t.closest('.rv-hl') || (!namesAll && a && a.hasAttribute('data-far'))) return;
+      try { var b = t.getBBox(); if (b.width) boxes.push([b.x - 2, b.y - 1, b.x + b.width + 2, b.y + b.height + 1]); } catch (e) { /* not rendered */ }
+    });
+    here.persons.forEach(function (p) { boxes.push([p.x - 7, p.y - 7, p.x + 7, p.y + 7]); });
+    function overlap(b) {
+      var n = 0;
+      for (var i = 0; i < boxes.length; i++) {
+        var q = boxes[i];
+        if (b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]) n++;
+      }
+      return n;
+    }
+    var out = '', lo = vb.x + 2, hi = vb.x + vb.width - 2, top = vb.y + 2, bot = vb.y + vb.height - 2;
+    here.persons.slice().sort(function (a, b) { return Math.abs(a.gen) - Math.abs(b.gen) || a.x - b.x; }).forEach(function (p) {
+      var s = p.s || {};
+      if (named[p.key] || s.redacted || !s.names || (!namesAll && Math.abs(p.gen) > 1)) return;
+      var word = Math.abs(p.gen) <= 1 ? s.names[1] : s.names[0], w = width(word, 11, false) + 8, h = 15;
+      var best = null, least = Infinity;
+      [10, 20, 32, 46, 62, 80].some(function (d) {
+        return [[d, -h / 2], [-d - w, -h / 2], [-w / 2, -d - h], [-w / 2, d], [d * 0.7, -d * 0.7 - h], [-d * 0.7 - w, -d * 0.7 - h], [d * 0.7, d * 0.7], [-d * 0.7 - w, d * 0.7]].some(function (o) {
+          var b = [p.x + o[0], p.y + o[1], p.x + o[0] + w, p.y + o[1] + h];
+          if (b[0] < lo || b[2] > hi || b[1] < top || b[3] > bot) return false;
+          var n = overlap(b);
+          if (n < least) { least = n; best = b; }
+          return n === 0;
+        });
+      });
+      if (!best) return;
+      boxes.push(best);
+      // The thread from the person's edge to the nearest point of the ground.
+      var tx = Math.max(best[0], Math.min(p.x, best[2])), ty = Math.max(best[1], Math.min(p.y, best[3]));
+      var dx = tx - p.x, dy = ty - p.y, dl = Math.hypot(dx, dy);
+      out += '<g class="rv-cs rv-name" style="transform-origin:' + f(p.x) + 'px ' + f(p.y) + 'px">';
+      if (dl > 9) out += '<line class="rv-name-thread" x1="' + f(p.x + dx / dl * 6) + '" y1="' + f(p.y + dy / dl * 6) + '" x2="' + f(tx) + '" y2="' + f(ty) + '"/>';
+      out += '<rect class="rv-name-box" x="' + f(best[0]) + '" y="' + f(best[1]) + '" width="' + f(w) + '" height="' + f(h) + '" rx="3"/>'
+        + '<text class="rv-name-text" x="' + f(best[0] + 4) + '" y="' + f(best[1] + 11) + '" font-size="11">' + esc(word) + '</text></g>';
+    });
+    if (!out) return;
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'rv-names');
+    g.setAttribute('aria-hidden', 'true');
+    g.innerHTML = out;
+    svg.insertBefore(g, svg.querySelector('.rv-hl'));
   }
 
   /* ---- the window and the camera (v0.5.0, docs/adr/0004 §11) ----
@@ -931,6 +1009,18 @@
       if (on) before = n;
       zoomTo(1);
       travel(cur.layout.meta.centre, on ? 5 : (before || 3));
+    });
+  }
+  // Near names or all of them: the reader's choice, under every view.
+  var namesBtn = root.querySelector('[data-rv-names]');
+  if (namesBtn) {
+    namesBtn.hidden = false;
+    namesBtn.setAttribute('aria-pressed', namesAll ? 'true' : 'false');
+    namesBtn.addEventListener('click', function () {
+      namesAll = !namesAll;
+      namesBtn.setAttribute('aria-pressed', namesAll ? 'true' : 'false');
+      try { localStorage.setItem(NAMES, namesAll ? 'all' : 'near'); } catch (e) { /* private window */ }
+      placeNames();
     });
   }
   // What a view may use of this file: the river's own helpers, so that a

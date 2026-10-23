@@ -4,7 +4,7 @@ mod common;
 
 use axum::http::StatusCode;
 use common::*;
-use serde_json::json;
+use serde_json::{json, Value};
 
 /// A bundle exercising every showcase feature at once.
 fn showcase_bundle(tag: &str) -> common::Scratch {
@@ -720,4 +720,116 @@ async fn a_living_persons_temperament_is_folded_and_withheld_from_the_public() {
         public.contains("Posture: Ideal") || public.contains("Ideal"),
         "the open physique still reads"
     );
+}
+
+/// A person with two partners keeps each one's children in that union's
+/// block, the unions in the order they began, every relative a card that
+/// opens their record.
+#[tokio::test]
+async fn each_union_is_a_block_holding_its_own_children() {
+    let dir = scratch("blocks-src");
+    let path = dir.join("blocks.axgf");
+    let id = |n: u8| format!("{n:02x}000000-0000-4000-8000-0000000000{n:02x}");
+    let (me, first, second, a, b, c, father) = (id(1), id(2), id(3), id(4), id(5), id(6), id(7));
+    let person = |pid: &str, name: &str, born: &str| {
+        json!({"id": pid, "type": "person", "axgf_version": "1.0",
+               "identity": {"name": {"display": name, "components": []},
+                            "is_living": false, "visibility": "public"},
+               "birth": {"date": {"value": born, "precision": "year"}}})
+    };
+    let family = |fid: &str, persons: Value, start: Option<&str>, children: Vec<&str>| {
+        let mut union = json!({"type": "marriage", "persons": persons});
+        if let Some(s) = start {
+            union["start"] = json!({"date": {"value": s, "precision": "year"}});
+        }
+        json!({"id": fid, "type": "family", "axgf_version": "1.0", "union": union,
+               "children": children.iter().enumerate()
+                   .map(|(i, c)| json!({"person_id": c, "birth_order": i + 1}))
+                   .collect::<Vec<_>>()})
+    };
+    let spouses = |x: &str, y: &str| json!([{"person_id": x, "role": "spouse"}, {"person_id": y, "role": "spouse"}]);
+    // The later union's id sorts first: the page's order is the dates'.
+    let (later, earlier, parents) = (
+        "a0000000-0000-4000-8000-00000000000a",
+        "b0000000-0000-4000-8000-00000000000b",
+        "c0000000-0000-4000-8000-00000000000c",
+    );
+    let flat = json!({
+        "manifest": {"axgf": "1.0"},
+        "persons": {
+            &me: person(&me, "Jean Morel", "1920"),
+            &first: person(&first, "Anne Morel", "1922"),
+            &second: person(&second, "Berthe Morel", "1930"),
+            &a: person(&a, "Albert Morel", "1946"),
+            &b: person(&b, "Blanche Morel", "1948"),
+            &c: person(&c, "Claude Morel", "1960"),
+            &father: person(&father, "Pierre Morel", "1890"),
+        },
+        "families": {
+            later: family(later, spouses(&me, &second), Some("1958"), vec![c.as_str()]),
+            earlier: family(earlier, spouses(&me, &first), Some("1945"), vec![a.as_str(), b.as_str()]),
+            parents: family(parents, json!([{"person_id": father, "role": "spouse"}]), None, vec![me.as_str()]),
+        },
+        "events": {}, "links": {}, "occupations": {}, "places": {}, "sources": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    let src = dir.pointing_at(path);
+    let (app, _p) = app_with_bundle("blocks", &src);
+    let body = body_string(get(&app, &format!("/person/{me}?tab=family")).await).await;
+    let doc = scraper::Html::parse_document(&body);
+    let s = |q: &str| scraper::Selector::parse(q).unwrap();
+    let names = |el: scraper::ElementRef, q: &str| -> Vec<String> {
+        el.select(&s(q))
+            .map(|e| e.text().collect::<String>().trim().to_string())
+            .collect()
+    };
+
+    let band = doc
+        .select(&s(".fam-band"))
+        .next()
+        .expect("the parents' band");
+    assert_eq!(names(band, ".pcard-name"), ["Pierre Morel"]);
+    let unions: Vec<_> = doc.select(&s("div.union")).collect();
+    assert_eq!(unions.len(), 2);
+    assert_eq!(
+        names(unions[0], ".fam-partner .pcard-name"),
+        ["Anne Morel"],
+        "the earlier union first"
+    );
+    assert_eq!(
+        names(unions[0], ".fam-cards:not(.fam-partner) .pcard-name"),
+        ["Albert Morel", "Blanche Morel"]
+    );
+    assert_eq!(
+        names(unions[1], ".fam-partner .pcard-name"),
+        ["Berthe Morel"]
+    );
+    assert_eq!(
+        names(unions[1], ".fam-cards:not(.fam-partner) .pcard-name"),
+        ["Claude Morel"]
+    );
+    // Every card opens its record, and carries a face: initials here.
+    for (who, pid) in [
+        ("Anne", &first),
+        ("Albert", &a),
+        ("Claude", &c),
+        ("Pierre", &father),
+    ] {
+        let card = doc
+            .select(&s(&format!(r#"a.pcard-in[href="/person/{pid}"]"#)))
+            .next()
+            .unwrap_or_else(|| panic!("{who}'s card is a link"));
+        assert!(!card
+            .select(&s(".pcard-face"))
+            .next()
+            .unwrap()
+            .text()
+            .collect::<String>()
+            .trim()
+            .is_empty());
+    }
 }

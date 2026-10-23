@@ -4,7 +4,7 @@
  * The filter dims rather than removes, so the layout and the SVG connectors
  * stay aligned — a person's position in the tree is information, and
  * collapsing rows on every keystroke would destroy it. */
-(function () {
+function axgfTreeFilter() {
   var box = document.getElementById('tree-filter');
   var canvas = document.getElementById('tree-canvas');
   var count = document.getElementById('tree-filter-count');
@@ -56,7 +56,7 @@
     var first = canvas.querySelector('.tcard.match');
     if (first) first.scrollIntoView({ block: 'center', inline: 'center' });
   });
-})();
+}
 
 /* Hover highlight.
  *
@@ -67,7 +67,7 @@
  * vanilla JS. It touches opacity only; hue stays put, because the two encode
  * different things (a raised line is the one you are looking at, a coloured one
  * is one that crosses another). */
-(function () {
+function axgfTreeHover() {
   var canvas = document.getElementById('tree-canvas');
   if (!canvas) return;
   var wires = Array.prototype.slice.call(canvas.querySelectorAll('.wire'));
@@ -102,7 +102,7 @@
       card.addEventListener('mouseleave', reset);
     })(cards[i]);
   }
-})();
+}
 
 /* Telling the server how wide the tree column actually is.
  *
@@ -118,7 +118,7 @@
  * scrollbar. Re-rooting the tree, changing the depth and following a card are
  * all full navigations already, so the measured width is used within one
  * click of arriving. */
-(function () {
+function axgfTreeWidth() {
   var split = document.querySelector('.tree-split');
   var scroll = document.querySelector('.tree-scroll');
   if (!split || !scroll) return;
@@ -144,9 +144,10 @@
      * The fixed point is the narrowest the record may be: give the tree
      * everything except that. */
     var panelMin = parseFloat(cs.getPropertyValue('--panel-min')) || 320;
-    /* Two gaps when the record is beside the tree: tree | gap | record | gap |
-     * whatever is left over on an ultrawide screen. */
-    var avail = beside ? inner - panelMin - 2 * gap : inner;
+    /* The record column keeps its own width whatever the tree draws
+     * (2026-10-23), so the tree may have everything else: tree | gap | record. */
+    var panelW = beside ? Math.max(panelMin, panel.getBoundingClientRect().width) : 0;
+    var avail = beside ? inner - panelW - gap : inner;
     avail = Math.round(avail);
     if (!(avail > 0)) return;
     // Round to a step so that a one-pixel scrollbar difference does not write
@@ -159,111 +160,130 @@
     // A preference, not a feature: if anything here fails the server default
     // is a working tree.
   }
-})();
+}
 
-/* The side panel.
+/* Moving through the tree (the operator's review, 2026-10-23).
  *
- * A card click is the primary action and it loads that person's record into
- * the panel over a small fragment fetch, so the tree itself never reloads. The
- * URL is updated with pushState so the back button walks the selection history
- * and the current selection is copy-pasteable; re-centring the tree is a
- * separate, explicit control inside the panel. With scripting off every card
- * is still a plain link to the standalone /person/:id page, so nothing here is
- * load-bearing for the content — only for keeping it on one page. */
+ * A card is the way onto that person: the tree is drawn again around them,
+ * in the same drawing, and their record opens in the panel beside it. With
+ * scripting on it is a move, not a reload: the new page is fetched, its
+ * <main> replaces this one's, and the tree slides from where the clicked
+ * card was to where that person now stands, so the eye follows them. The
+ * record panel keeps its place at the side whatever the new tree's width.
+ * The URL follows with pushState, so the back button walks back through the
+ * people visited. A modified click (new tab, middle button) is left to the
+ * browser, and with scripting off every card is the same move as a plain
+ * link. Inside the panel, a relative's name moves the tree onto them too;
+ * "Open full page" stays a real navigation. */
 (function () {
-  var panel = document.getElementById('tree-panel');
-  var canvas = document.getElementById('tree-canvas');
-  if (!panel || !canvas) return; // the ?all=1 view has no panel
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var busy = false;
 
-  var depth = panel.dataset.depth || '3';
-  var root = panel.dataset.root || '';
-
-  function markSelected(id) {
-    var cards = canvas.querySelectorAll('.tcard');
-    for (var i = 0; i < cards.length; i++) {
-      cards[i].classList.toggle('is-selected', cards[i].dataset.id === id);
-    }
-  }
-
-  /* A modified click (new tab, middle button) is left to the browser, so a
-   * card and every person link stay openable as ordinary permalinks. */
   function plainClick(e) {
     return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
   }
+  function depthNow() {
+    var p = document.getElementById('tree-panel');
+    return (p && p.dataset.depth) || new URLSearchParams(window.location.search).get('depth') || '';
+  }
+  function urlFor(id) {
+    var d = depthNow();
+    return '/tree?root=' + encodeURIComponent(id) + (d ? '&depth=' + encodeURIComponent(d) : '') +
+           '&sel=' + encodeURIComponent(id);
+  }
+  function cardOf(id) {
+    var canvas = document.getElementById('tree-canvas');
+    if (!canvas) return null;
+    var cards = canvas.querySelectorAll('.tcard');
+    for (var i = 0; i < cards.length; i++) if (cards[i].dataset.id === id) return cards[i];
+    return null;
+  }
+  // The person the tree now stands on, in the middle of the tree's column
+  // when the tree is wider than it.
+  function centreOn(card) {
+    var scroll = document.querySelector('.tree-scroll');
+    if (!scroll || !card || scroll.scrollWidth <= scroll.clientWidth) return;
+    var s = scroll.getBoundingClientRect(), c = card.getBoundingClientRect();
+    scroll.scrollLeft += (c.left + c.width / 2) - (s.left + s.width / 2);
+  }
 
-  function loadPerson(id, push) {
-    fetch('/tree/panel/' + encodeURIComponent(id))
+  function go(id, push, from) {
+    if (busy) return;
+    busy = true;
+    var url = urlFor(id);
+    var was = from ? from.getBoundingClientRect() : null;
+    var main = document.querySelector('main');
+    if (main) main.setAttribute('aria-busy', 'true');
+    fetch(url, { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error('fetch'); return r.text(); })
       .then(function (html) {
-        panel.innerHTML = html;
-        markSelected(id);
-        /* The panel no longer scrolls inside itself, so there is no scrollTop
-         * to reset. What can happen instead is that the reader is far down a
-         * long record when they pick someone from the pinned tree, and the new
-         * record starts above them. Bring its top back into view — but only
-         * when it is actually off the top of the screen, so a click made while
-         * the panel head is already visible does not jerk the page. */
-        var top = panel.getBoundingClientRect().top;
-        /* Measured, not parsed: `--stick-top` is authored in rem and reading
-         * the custom property would hand back the string "4.5rem". The
-         * masthead is the thing being cleared, so ask it how tall it is —
-         * when it is pinned. At phone width it scrolls away with the page
-         * (app.css), and then there is nothing to clear. */
-        var head = document.querySelector('.masthead');
-        var pinned = head && getComputedStyle(head).position === 'sticky';
-        var stick = (pinned ? head.getBoundingClientRect().height : 0) + 12;
-        if (top < stick) {
-          window.scrollBy({ top: top - stick, left: 0, behavior: 'auto' });
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var next = doc.querySelector('main');
+        if (!main || !next) throw new Error('no main');
+        document.title = doc.title;
+        main.innerHTML = next.innerHTML;
+        main.removeAttribute('aria-busy');
+        if (push) history.pushState({ root: id }, '', url);
+        wire();
+        var card = cardOf(id);
+        centreOn(card);
+        var canvas = document.getElementById('tree-canvas');
+        if (was && card && canvas && !reduce) {
+          var now = card.getBoundingClientRect();
+          canvas.style.transition = 'none';
+          canvas.style.transform = 'translate(' + Math.round(was.left - now.left) + 'px,' + Math.round(was.top - now.top) + 'px)';
+          canvas.style.opacity = '0.4';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              canvas.style.transition = 'transform 560ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 420ms ease-out';
+              canvas.style.transform = '';
+              canvas.style.opacity = '';
+            });
+          });
         }
-        if (push) {
-          var url = '/tree?root=' + encodeURIComponent(root) +
-                    '&depth=' + encodeURIComponent(depth) +
-                    '&sel=' + encodeURIComponent(id);
-          history.pushState({ sel: id }, '', url);
-        }
+        // Keep the reader where the tree is: bring its top back into view
+        // when the new page starts above them.
+        var split = document.querySelector('.tree-split');
+        if (split && split.getBoundingClientRect().top < 0) split.scrollIntoView({ block: 'start' });
+        busy = false;
       })
       .catch(function () {
-        // Network or server error: fall back to the standalone page.
-        window.location.href = '/person/' + encodeURIComponent(id);
+        // Network or server error: the plain page, as without scripts.
+        window.location.href = url;
       });
   }
 
-  // Card click → load into the panel.
-  canvas.addEventListener('click', function (e) {
-    var card = e.target.closest && e.target.closest('.tcard');
-    if (!card || !plainClick(e)) return;
-    var id = card.dataset.id;
-    if (!id) return;
-    e.preventDefault();
-    loadPerson(id, true);
-  });
-
-  // Inside the panel: person links walk the family without leaving the page;
-  // "Centre the tree here" re-roots; "Open full page" is a real navigation.
-  panel.addEventListener('click', function (e) {
-    var centre = e.target.closest && e.target.closest('[data-centre]');
-    if (centre) {
+  // Cards, and a relative's name in the panel: the tree moves onto them.
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest && e.target.closest('#tree-canvas .tcard[data-id]');
+    if (card && card.tagName === 'A' && plainClick(e)) {
       e.preventDefault();
-      var cid = centre.getAttribute('data-centre');
-      window.location.href = '/tree?root=' + encodeURIComponent(cid) +
-                             '&depth=' + encodeURIComponent(depth) +
-                             '&sel=' + encodeURIComponent(cid);
+      go(card.dataset.id, true, card);
       return;
     }
-    var link = e.target.closest && e.target.closest('a[href^="/person/"]');
+    var link = e.target.closest && e.target.closest('#tree-panel a[href^="/person/"]');
     if (link && plainClick(e) && !link.classList.contains('panel-open-full')) {
       e.preventDefault();
-      var pid = decodeURIComponent(
-        link.getAttribute('href').slice('/person/'.length).split(/[?#]/)[0]
-      );
-      if (pid) loadPerson(pid, true);
+      var pid = decodeURIComponent(link.getAttribute('href').slice('/person/'.length).split(/[?#]/)[0]);
+      if (pid) go(pid, true, cardOf(pid));
     }
   });
 
-  // The back/forward buttons walk the selection history.
-  window.addEventListener('popstate', function (ev) {
-    var params = new URLSearchParams(window.location.search);
-    var id = (ev.state && ev.state.sel) || params.get('sel') || root;
-    if (id) loadPerson(id, false);
+  // The back and forward buttons walk the people visited.
+  window.addEventListener('popstate', function () {
+    var root = new URLSearchParams(window.location.search).get('root');
+    if (root && document.getElementById('tree-canvas')) go(root, false, null);
   });
 })();
+
+/* Everything above that reads the page runs on the page as it arrives, and
+ * again on every page the tree moves to. */
+function wire() {
+  // The depth's own button is for a reader without scripts (ui.js hides it
+  // on the page as it arrives; a moved-to page brings it back).
+  document.querySelectorAll('[data-autosubmit-go]').forEach(function (b) { b.hidden = true; });
+  axgfTreeFilter();
+  axgfTreeHover();
+  axgfTreeWidth();
+}
+wire();

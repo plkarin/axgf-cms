@@ -1,5 +1,6 @@
 //! HTTP routing.
 
+mod account;
 mod admin;
 mod ai_portraits;
 mod connectivity;
@@ -7,6 +8,7 @@ mod console;
 mod convert;
 mod editors;
 mod entry;
+mod notes;
 mod person_editor;
 mod prefs;
 mod profile;
@@ -317,10 +319,34 @@ fn routes(state: Shared) -> Router {
             )),
         )
         .route("/convert/download/:id", get(convert::download))
+        // Notes and contributions (docs/adr/0014): read by the family's
+        // members, written from the administration.
+        .route("/notes/:id", get(notes::show))
+        .route("/notes/:id/pdf", get(notes::pdf))
+        .route("/admin/notes", get(notes::list).post(notes::create))
+        .route("/admin/notes/new", get(notes::new_form))
+        .route(
+            "/admin/notes/images",
+            post(notes::images).layer(DefaultBodyLimit::max(
+                crate::notes::MAX_IMAGE * 4 + 64 * 1024,
+            )),
+        )
+        .route("/admin/notes/preview", post(notes::preview))
+        .route("/admin/notes/pending/:token", get(notes::pending))
+        .route("/admin/notes/:id/edit", get(notes::edit_form))
+        .route(
+            "/admin/notes/:id",
+            post(notes::update).layer(DefaultBodyLimit::max(
+                crate::notes::MAX_TEXT * 4 + 64 * 1024,
+            )),
+        )
+        .route("/admin/notes/:id/delete", post(notes::delete))
         .route("/health", get(public::health))
         // Preferences are POSTs so that choosing a language is not something a
         // link or a crawler can do to a reader.
         .route("/settings", get(prefs::settings))
+        .route("/account", get(account::page))
+        .route("/account/person", post(account::person))
         .route("/prefs/language", post(prefs::language))
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))
@@ -352,6 +378,7 @@ fn routes(state: Shared) -> Router {
         // The console's own rooms (v0.5.0, docs/adr/0011).
         .route("/admin/bundle", get(console::bundle))
         .route("/admin/bundle/sealed", post(console::sealed))
+        .route("/admin/bundle/family", post(console::family))
         .route(
             "/admin/bundle/forget-recipient",
             post(console::forget_recipient),
@@ -514,6 +541,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/img/canopee-cta.jpg", get(public::canopee_cta_jpg))
         .route("/static/img/fusion-hero.jpg", get(public::fusion_hero_jpg))
         .route("/static/img/fusion-cta.jpg", get(public::fusion_cta_jpg))
+        .route("/static/img/fusion-lab.jpg", get(public::fusion_lab_jpg))
         .route("/static/img/galaxy-hero.jpg", get(public::galaxy_hero_jpg))
         .route("/static/img/galaxy-cta.jpg", get(public::galaxy_cta_jpg))
         .route("/static/img/summit-hero.jpg", get(public::summit_hero_jpg))
@@ -523,6 +551,22 @@ fn routes(state: Shared) -> Router {
             get(public::clarity_hero_jpg),
         )
         .route("/static/img/clarity-cta.jpg", get(public::clarity_cta_jpg))
+        .route(
+            "/static/img/genealogy-hero.jpg",
+            get(public::genealogy_hero_jpg),
+        )
+        .route(
+            "/static/img/genealogy-cta.jpg",
+            get(public::genealogy_cta_jpg),
+        )
+        .route(
+            "/static/img/genealogy-vine-l.jpg",
+            get(public::genealogy_vine_l_jpg),
+        )
+        .route(
+            "/static/img/genealogy-vine-r.jpg",
+            get(public::genealogy_vine_r_jpg),
+        )
         .route(
             "/static/img/summit-panorama.jpg",
             get(public::summit_panorama_jpg),
@@ -534,6 +578,30 @@ fn routes(state: Shared) -> Router {
         .route(
             "/static/img/river-contours.svg",
             get(public::river_contours_svg),
+        )
+        .route(
+            "/static/img/notes-canopee.jpg",
+            get(public::notes_canopee_jpg),
+        )
+        .route(
+            "/static/img/notes-fusion.jpg",
+            get(public::notes_fusion_jpg),
+        )
+        .route(
+            "/static/img/notes-galaxy.jpg",
+            get(public::notes_galaxy_jpg),
+        )
+        .route(
+            "/static/img/notes-summit.jpg",
+            get(public::notes_summit_jpg),
+        )
+        .route(
+            "/static/img/notes-clarity.jpg",
+            get(public::notes_clarity_jpg),
+        )
+        .route(
+            "/static/img/notes-genealogy.jpg",
+            get(public::notes_genealogy_jpg),
         )
         .route("/static/img/logo-mark.svg", get(public::logo_svg))
         .route("/static/img/icon-192.png", get(public::icon_192_png))
@@ -549,10 +617,12 @@ fn routes(state: Shared) -> Router {
         .route("/static/galaxy.js", get(public::galaxy_js))
         .route("/static/summit.js", get(public::summit_js))
         .route("/static/clarity.js", get(public::clarity_js))
+        .route("/static/genealogy.js", get(public::genealogy_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))
         .route("/static/editor.js", get(public::editor_js))
+        .route("/static/notes.js", get(public::notes_js))
         .route("/static/ui.js", get(public::ui_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))

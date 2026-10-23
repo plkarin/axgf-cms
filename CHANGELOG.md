@@ -4,20 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] — 2026-10-23
 
-Canopée, the reference theme, and a river that reads like a landscape. Four
-more themes draw the landing page their own way: Fusion a living tree,
-Galaxy a solar system, Summit an ascent, and Clarity, the first light theme,
-a funnel. These five are now the only themes. The administration becomes a
+Canopée, the reference theme, and a river that reads like a landscape. Five
+more themes draw the landing page their own way: Fusion a tree in its
+glass, Galaxy a solar system, Summit an ascent, Clarity, the first light
+theme, a funnel, and Genealogy a tree the reader climbs. These six are now
+the only themes. The interface speaks fourteen languages. The family keeps
+notes and contributions beside its records. The administration becomes a
 console of five rooms, and visitors may open accounts and sign in with a
-service when the administrator allows it. Nothing
-about the AXGF file changes. The river's geometry, its layout and everything
-the server sends for it (SVG and payload) are byte for byte what they were,
-under every theme. docs/adr/0004 records the decisions behind Canopée and
-the river, docs/adr/0006 the logo's, docs/adr/0007 the two views', and
-docs/adr/0008 why ten themes were retired, docs/adr/0010 and 0013 Summit's
-and Clarity's, docs/adr/0011 the console's and docs/adr/0012 the ways in.
+service when the administrator allows it. The GEDCOM reader is hardened
+against what broke it. Nothing about the AXGF file changes. The river's
+geometry, its layout and everything the server sends for it (SVG and
+payload) are byte for byte what they were, under every theme.
+docs/adr/0004 records the decisions behind Canopée and the river,
+docs/adr/0006 the logo's, docs/adr/0007 the views', docs/adr/0008 why ten
+themes were retired, docs/adr/0010, 0013 and 0016 Summit's, Clarity's and
+Genealogy's, docs/adr/0011 the console's, docs/adr/0012 the ways in,
+docs/adr/0014 the notes' and docs/adr/0015 Fusion's glass.
 
 ### Added
 
@@ -71,6 +75,109 @@ category's ink along its top and the same ink in its icon chip; fields come
 in packs, findings carry their level along their edge, and the record's
 editor is a box per tab. Its tightest contrast is 3.7:1, a control's edge on
 the page's second wash.
+
+**Notes and contributions** (docs/adr/0014): what the family writes down
+beside the records — a memory, a piece of research, a letter, with pictures.
+
+- Administrators and contributors write them from the administration
+  (`/admin/notes`, from the dashboard): a title, a category (free, the ones
+  already used suggested), a date (a year, a month or a day), the people it
+  concerns, and a text in Markdown with a toolbar, into which pictures are
+  pasted, dropped or chosen (PNG, JPEG, GIF, WebP, 10 MB each, 40 a note)
+  and a preview. A contributor changes only their own.
+- Each note is shown on the record of every person it concerns, in a section
+  under Identity; a note about no one belongs to the family.
+- All of them on the Family page, in a block under its head, for members:
+  searched (title, category, people, author and the whole text, without
+  case or accents), read by letter or all at once, each opened in a window.
+  Visitors are told the family keeps notes, and how to sign in.
+- Each one as a PDF, drawn by the server: A4, its pictures in it, the family
+  and the page in its footer (DejaVu Sans, embedded with its licence).
+- Over a soft picture per theme, made in Canva.
+- A note is an AXGF document (Markdown, linked to its people) and so are its
+  pictures: the format does not change. A note about a person the reader
+  may not see is hidden with them.
+
+**The family the archive describes, edited from the bundle room**: its name
+(the one the Family page, the titles and every note's PDF show), a
+description, its main culture and place, the period it covers, and the
+licence it is shared under (`manifest.family`, `manifest.license`).
+Administrators only; the accounts follow the new name, a change made
+meanwhile is not overwritten unknowingly, and the history says who changed
+what. The file's own counts and dates are still the export's.
+
+**Fusion's tree in its glass** (docs/adr/0015, amended the same day: the tree
+in tiers, a floor per generation straight across): the family stands in a glass
+cylinder in a laboratory (a picture made in Canva, its projector under the
+glass). The person at the centre is on the axis in a column of light,
+descendants climb the glass a floor per generation and ancestors go down it
+as roots; on each floor the river's order becomes an angle round the axis,
+so the child in the middle continues the column and the others stand round
+to their side. The front of the glass is named on small glass panels, the
+back is dimmed. Travelling turns the glass: whoever the reader goes to comes
+round to the front and the climb goes on upward. Motes turn round the
+glass, a scanner goes round each floor and embers rise from the projector.
+
+**Every name, or the near ones** (docs/adr/0015 §4): a button beside the
+river's tools, under every theme, shows every name — those the drawing had
+no room for on a ground of their own, beside their person, clear of the
+others — or only the generations either side of the person at the centre,
+all of them named. The choice is remembered.
+
+**An account says which person it is**: a "My account" page for every
+signed-in account, where it links itself to its record in the tree (any
+record it may read; nobody checks it) or takes the link away. The accounts
+list shows each account's record.
+
+**The family's details, chosen from lists**: the main place is a continent;
+the period covered is the births', counted; the licence is one of ten, with
+a sentence beside it saying what it lets others do, its address recorded
+from the list, and the account that chose it and when.
+
+**Genealogy, a sixth theme** (docs/adr/0016),
+from their frame pack: a dark green page with cream cards, oval portraits
+and antique vines along its edges, and the family on a tree the reader
+climbs.
+
+- `static/genealogy.js`, a view under ADR 0007's contract: a tree drawn in
+  perspective, its trunk through the person at the fixed point; a level
+  per generation round the trunk, descendants up in the branches and
+  ancestors down toward the roots, further generations closer together and
+  smaller, as seen from where the reader stands. Travelling, the camera
+  climbs the trunk to the person travelled to, or goes down it; the blend
+  is done in the tree's own space and the far woods behind follow, more
+  slowly. Each person is an oval gold frame (their initials: the payload
+  carries no picture) with a cream card that names them; a branch is lit
+  wood edged in bark, whole, broken or knotted as surely as the parentage
+  is known. Gold motes rise, leaves fall, a glint runs up every attested
+  branch, still on the river's terms. No picture: the first version, a
+  tree on a parchment picture, drew gold lines the colour of the picture
+  under it, and the operator could not read it.
+- Two palettes: the page's, dark, measured as every theme is (tightest
+  4.3:1), and the cards', cream with a sepia ink, every colour token's twin
+  given on a card and measured the same way (`genealogy_cards_read`,
+  tightest 3.7:1). A card has a double rule; titles are in a book face;
+  the record beside the river and the tree stays on the page's palette,
+  where its name reads.
+- Pictures made in Canva, none edited from the reference (whose watermark
+  is a third party's): the hero, the call to action, the notes' parchment,
+  and a tall vine and its mirror along the page's edges, drawn at a third
+  of their size so they stay sharp on a dense screen. Its words in fourteen
+  languages.
+
+**Hebrew, Swahili and Lingala**: three more interface languages, complete
+and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
+left like Arabic, addresses the reader in the plural so that no gender is
+assumed, and writes all four of the plural forms its rules use (one, two,
+many, other). Swahili and Lingala take the names of countries and languages
+from CLDR; Lingala writes e and o for ɛ and ɔ, without tone marks, and the
+languages CLDR does not name in Lingala in French. Each file's header lists
+the words it chose for a union, a source, a record, ancestors and
+descendants, for a speaker to correct.
+
+**Clarity's funnel in its laboratory** (docs/adr/0015): the cone stands on a
+projector with a beam up its axis, over a floor of light lines, rings
+rising from the projector and a drifting network of data points.
 
 **`bootstrap.sh`**: downloads a private repository's releases through the
 API with a token (`AXGF_CMS_GITHUB_TOKEN` or `/etc/axgf-cms/github-token`,
@@ -342,6 +449,28 @@ is out.
 
 ### Changed
 
+- **The tree page moves.** A card moves the tree onto that person, in the
+  same drawing, and opens their record beside it; the tree slides from
+  where the card was to where that person now stands, and the back button
+  walks back through the people visited. "Centre the tree here" is gone:
+  the card is the way. The record keeps its place at the side whatever the
+  tree draws, where it used to follow the tree's width toward the middle
+  of the page. Without scripts a card is the same move as a plain link.
+- **A record's tabs slide**, under every theme: an arrow at each end where
+  more tabs wait, and the strip can be dragged as well as wheeled.
+- **"Overview" in the masthead is now "Family"**, and its page carries the
+  family's notes and contributions under its head.
+- **A record's family reads as blocks.** Parents and siblings, then each
+  union in a block of its own — the partner, the union's dates, then that
+  union's children — side by side as cards with a face (the portrait, or
+  initials), the years and the lineage, so that a person with several
+  partners keeps each one's children with them. Unions run in the order
+  they began.
+- **Summit's controls are in two rows**: the itinerary on one, a strip of
+  its own that scrolls sideways to the newest step; the tools on the other,
+  back, range and zoom on the left, pause and "whole family" on the right.
+  The legend ("Read the mountain") lays its entries out on a grid, its title,
+  widths, direction and hint across it.
 - **The default theme is Canopée.** Study 06 is the floor under the three
   themes: a page that names no theme gets it.
 - **The footer names the product, its version and its author,** and links to
@@ -360,6 +489,35 @@ is out.
 
 ### Fixed
 
+- Clarity's funnel drew the lines beyond its last slice, and their counts,
+  under the glass, in the glass's own colour: they are drawn over it now.
+- An export's button said "Working…" for ever: a file arriving does not
+  unload the page. The server now answers the page's token in a short-lived
+  cookie once the file starts, and the button is idle again.
+- **GEDCOM import, under stress** (docs/GEDCOM-IMPORT.md). A campaign of 72
+  invented files and five large ones through the conversion page, the
+  converter, the validator, the export and every page found, and mended in
+  the CMS:
+  - a file of 300 KB whose lines go 50,000 levels deep overflowed the stack
+    and aborted the server through `/convert`, which needs no account; lines
+    deeper than 32 levels are now set aside, and said;
+  - files with two spaces after the level, tabs between fields or tags in
+    lower case came out with nobody in them, indented files without their
+    families: the reading mends the layout, and says how many lines;
+  - a UTF-8 file with one stray byte was read entirely as Windows-1252 (every
+    accent "Ã©"); IBM PC files were read as Windows-1252 too; a note split
+    after a space lost the space; `@@`, control characters, `SEX m`/`Male`
+    and a `@#DGREGORIAN@` date were read wrong;
+  - a messy file's result page listed every data-quality finding (4.7 MB for
+    20,000 people); it lists 200 and counts them all;
+  - a conversion held one of the threads that answer requests for its whole
+    length (7.5 s for 40,000 people), so two uploads froze a two-core server;
+    it runs on the blocking pool.
+
+  What the converter of axgf-rs 0.5.0 itself drops or misreads — every event
+  but birth, death and marriage, citations, coordinates, lineage on `FAMC`,
+  most date qualifiers and calendars — is listed there for the library, each
+  with an ignored test in `tests/gedcom_known_defects.rs`.
 - `bootstrap.sh --uninstall` on a machine with no backup archive ended under
   `pipefail` after removing everything and before saying where the data is.
 - The sign-in page showed the edit band ("edit mode") to a visitor nobody had
@@ -446,6 +604,31 @@ extra margin those themes gave.
 
 ### Tests
 
+- `views.rs`: Fusion blends frames in its glass over its laboratory, river.js
+  lets a view blend two frames, and the funnel draws its tails and counts
+  over the glass.
+- `manifest.rs`: an administrator names the family and the accounts follow;
+  a wrong field or a change made meanwhile keeps what was typed; only an
+  administrator may; an export tells the page its file has started.
+- `notes.rs` (docs/adr/0014): a member reads a note on the Family page, its
+  record, its window and its PDF, and a visitor gets none of them; raw HTML
+  and script links never reach the page; a note about a private person is
+  hidden with them; a contributor changes only their own; a pasted picture
+  waits for its note, is served to members only and leaves with its
+  mention; a failed save keeps its text and its pictures; the search and the
+  letters work without script; the dashboard and a record lead a writer to
+  the notes.
+- GEDCOM import (docs/GEDCOM-IMPORT.md): `gedcom_reading.rs` (versions 4.0
+  to 7.0 bare and zipped, every encoding and line ending, layout, depth,
+  refusals, a zip bomb), `gedcom_conversion.rs` (the conversion page, markup,
+  the findings list, the server answering during a conversion, every odd
+  family served page by page, documents named but never served, and in
+  release the largest file the upload takes), `gedcom_known_defects.rs` (31
+  ignored: the library's), and `gedcom_probe.rs` with
+  `scripts/gedcom-corpus.py` to run the campaign again.
+- `.github/workflows/ci.yml`: the suite, clippy and the formatting on every
+  push and pull request, and the release-mode stress test beside them; until
+  now they ran only on a tag.
 - `river.rs`: the living ground is the scripts' alone. Its pause and the
   zoom are hidden until a script shows them, and it holds still for reduced
   motion, "Cut" and a hidden page.
@@ -3731,6 +3914,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0
 [0.4.3]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3
 [0.4.2]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.2
 [0.4.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.1

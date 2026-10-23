@@ -1701,6 +1701,7 @@ pub async fn documents_update(
         state.read_as(viewer.ceiling(), |flat, lens| {
             crate::access::may_read_document(flat, lens, true, did)
                 && !crate::ai_portrait::is_ai_portrait_id(flat, did)
+                && !crate::notes::is_note_part_id(flat, did)
         })
     };
 
@@ -1796,9 +1797,10 @@ fn render_documents(
         .into_iter()
         .filter(|o| o.get("id").and_then(Value::as_str).is_some_and(readable))
         .filter(|o| {
-            !o.get("id")
-                .and_then(Value::as_str)
-                .is_some_and(|did| crate::ai_portrait::is_ai_portrait_id(flat, did))
+            !o.get("id").and_then(Value::as_str).is_some_and(|did| {
+                crate::ai_portrait::is_ai_portrait_id(flat, did)
+                    || crate::notes::is_note_part_id(flat, did)
+            })
         })
         .collect();
         // The files attached to this person, for editing their details and

@@ -42,6 +42,8 @@ pub const GALAXY_JS: &str = include_str!("../static/galaxy.js");
 pub const SUMMIT_JS: &str = include_str!("../static/summit.js");
 /// Clarity's funnel, at `/static/clarity.js` (docs/adr/0013).
 pub const CLARITY_JS: &str = include_str!("../static/clarity.js");
+/// Genealogy's scroll, at `/static/genealogy.js` (docs/adr/0016).
+pub const GENEALOGY_JS: &str = include_str!("../static/genealogy.js");
 
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
@@ -56,6 +58,10 @@ pub const PROFILE_JS: &str = include_str!("../static/profile.js");
 /// The record's editor: its tabs in place, the marks on a tab with unsaved
 /// changes, the question before leaving them. Enhancement only.
 pub const EDITOR_JS: &str = include_str!("../static/editor.js");
+/// Notes and contributions (docs/adr/0014): writing one (the toolbar, pasted
+/// pictures, the preview) and reading them (the filter, the letters, the
+/// window). Enhancement only.
+pub const NOTES_JS: &str = include_str!("../static/notes.js");
 
 /// The six behaviours that were inline `onclick`/`oninput`/`onsubmit`
 /// attributes until the Content-Security-Policy stopped allowing inline
@@ -89,10 +95,32 @@ pub const SUMMIT_CTA_JPG: &[u8] = include_bytes!("../static/img/summit-cta.jpg")
 /// references: a glass funnel of light on white, and a bright, airy band.
 pub const CLARITY_HERO_JPG: &[u8] = include_bytes!("../static/img/clarity-hero.jpg");
 pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg");
+/// Genealogy's (docs/adr/0016), made in the operator's Canva after their
+/// frame pack: a golden tree beside a scroll and empty oval frames, a desk
+/// of old letters and photographs, and the vine along each edge of its pages (a tall strip
+/// and its mirror, drawn at a third of their size so they stay sharp on a
+/// dense screen; 2026-10-23).
+pub const GENEALOGY_HERO_JPG: &[u8] = include_bytes!("../static/img/genealogy-hero.jpg");
+pub const GENEALOGY_CTA_JPG: &[u8] = include_bytes!("../static/img/genealogy-cta.jpg");
+pub const GENEALOGY_VINE_L_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-l.jpg");
+pub const GENEALOGY_VINE_R_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-r.jpg");
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");
+/// Fusion's laboratory (2026-10-23), made in the operator's Canva: a dark
+/// room, blue panels at its sides and a projector glowing red on the floor,
+/// under the tree's glass (fusion.js stands the glass on the projector).
+pub const FUSION_LAB_JPG: &[u8] = include_bytes!("../static/img/fusion-lab.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
+/// Behind the family's notes and contributions (docs/adr/0014), one per
+/// theme, made in the operator's Canva: soft and nearly plain, under a veil of
+/// the theme's surface, so text over them reads as it does anywhere else.
+pub const NOTES_CANOPEE_JPG: &[u8] = include_bytes!("../static/img/notes-canopee.jpg");
+pub const NOTES_FUSION_JPG: &[u8] = include_bytes!("../static/img/notes-fusion.jpg");
+pub const NOTES_GALAXY_JPG: &[u8] = include_bytes!("../static/img/notes-galaxy.jpg");
+pub const NOTES_SUMMIT_JPG: &[u8] = include_bytes!("../static/img/notes-summit.jpg");
+pub const NOTES_CLARITY_JPG: &[u8] = include_bytes!("../static/img/notes-clarity.jpg");
+pub const NOTES_GENEALOGY_JPG: &[u8] = include_bytes!("../static/img/notes-genealogy.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 
 /// ax·genealogy's logo (v0.5.0, docs/adr/0006), and what a browser or a phone
@@ -173,7 +201,13 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "_admin_nav.html",
     "_checks.html",
     "_logo.html",
-    "_completeness.html"
+    "_completeness.html",
+    "_notes.html",
+    "_note_frame.html",
+    "note.html",
+    "admin_notes.html",
+    "admin_note.html",
+    "account.html"
 ];
 
 static ENV: OnceLock<Environment<'static>> = OnceLock::new();
@@ -584,6 +618,34 @@ pub async fn bundle_download_from(
     path: std::path::PathBuf,
 ) -> Response {
     download_from(chrome, filename, path, "application/vnd.axgf+zip").await
+}
+
+/// The cookie that tells the page a download it asked for has started
+/// (`data-download` forms, static/ui.js): a file arriving does not unload the
+/// page, so without it the button would say "Working…" for ever. It names a
+/// token the page made up, readable by the page's script, and dies in two
+/// minutes.
+pub const DOWNLOAD_COOKIE: &str = "axgf_download";
+
+/// Mark a download response with the page's token, when it sent one that is
+/// plainly a token.
+pub fn mark_download(resp: &mut Response, headers: &axum::http::HeaderMap, token: Option<&str>) {
+    let Some(token) = token
+        .filter(|t| (8..=64).contains(&t.len()) && t.bytes().all(|b| b.is_ascii_alphanumeric()))
+    else {
+        return;
+    };
+    if !resp.status().is_success() {
+        return;
+    }
+    let mut cookie =
+        format!("{DOWNLOAD_COOKIE}={token}; Path=/admin; SameSite=Strict; Max-Age=120");
+    if crate::session::is_tls(headers) {
+        cookie.push_str("; Secure");
+    }
+    if let Ok(v) = cookie.parse() {
+        resp.headers_mut().append(header::SET_COOKIE, v);
+    }
 }
 
 /// Stream a temp file as a download of `content_type`, removing it from the

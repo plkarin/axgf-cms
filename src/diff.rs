@@ -292,6 +292,21 @@ pub fn label(kind: &str, path: &str, lang: &str) -> String {
     let within = |prefix: &str| path == prefix || path.starts_with(&format!("{prefix}."));
     let top = path.split('.').next().unwrap_or(path);
 
+    if kind == "bundle" {
+        // The manifest's editable part (the bundle room's family form).
+        for (prefix, key) in [
+            ("family.name", "manifest-name"),
+            ("family.description", "manifest-description"),
+            ("family.primary_culture", "manifest-culture"),
+            ("family.primary_place", "manifest-place"),
+            ("family.time_span", "manifest-span"),
+            ("license", "manifest-license"),
+        ] {
+            if within(prefix) {
+                return t(key);
+            }
+        }
+    }
     if kind == "person" {
         use axgf_rs::model::profile::registry::GROUPS;
         for g in GROUPS {

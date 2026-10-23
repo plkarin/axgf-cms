@@ -16,6 +16,9 @@
     {% if r.lone_crs %}<li>{{ t("gedcom-read-crs", n=r.lone_crs) }}</li>{% endif %}
     {% if r.voids %}<li>{{ t("gedcom-read-voids", n=r.voids) }}</li>{% endif %}
     {% if r.shared_notes %}<li>{{ t("gedcom-read-notes", n=r.shared_notes) }}</li>{% endif %}
+    {% if r.stray_bytes %}<li>{{ t("gedcom-read-stray", n=r.stray_bytes) }}</li>{% endif %}
+    {% if r.tidied %}<li>{{ t("gedcom-read-tidied", n=r.tidied) }}</li>{% endif %}
+    {% if r.too_deep %}<li>{{ t("gedcom-read-too-deep", n=r.too_deep) }}</li>{% endif %}
   </ul>
 </section>
 {% endif %}

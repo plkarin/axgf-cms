@@ -180,6 +180,33 @@ pub const LOCALES: &[Locale] = &[
         reviewed: false,
         source: include_str!("../locales/ar.ftl"),
     },
+    // 2026-10-23, at the operator's request: Hebrew, for the Jewish
+    // communities, and Swahili and Lingala, for families of East and Central
+    // Africa. Machine-assisted, unreviewed, like every locale but two.
+    Locale {
+        tag: "he",
+        english_name: "Hebrew",
+        native_name: "עברית",
+        dir: Dir::Rtl,
+        reviewed: false,
+        source: include_str!("../locales/he.ftl"),
+    },
+    Locale {
+        tag: "sw",
+        english_name: "Swahili",
+        native_name: "Kiswahili",
+        dir: Dir::Ltr,
+        reviewed: false,
+        source: include_str!("../locales/sw.ftl"),
+    },
+    Locale {
+        tag: "ln",
+        english_name: "Lingala",
+        native_name: "Lingála",
+        dir: Dir::Ltr,
+        reviewed: false,
+        source: include_str!("../locales/ln.ftl"),
+    },
 ];
 
 /// The language everything falls back to.
@@ -612,16 +639,17 @@ mod tests {
     }
 
     #[test]
-    fn arabic_is_the_only_right_to_left_locale() {
+    fn arabic_and_hebrew_are_the_right_to_left_locales() {
         for l in LOCALES {
             assert_eq!(
                 l.is_rtl(),
-                l.tag == "ar",
+                l.tag == "ar" || l.tag == "he",
                 "{} has the wrong direction",
                 l.tag
             );
         }
         assert_eq!(Locale::get("ar").dir.as_str(), "rtl");
+        assert_eq!(Locale::get("he").dir.as_str(), "rtl");
         assert_eq!(Locale::get("en").dir.as_str(), "ltr");
     }
 

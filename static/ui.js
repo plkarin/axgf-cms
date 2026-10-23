@@ -53,12 +53,70 @@
     else if (end) nav.setAttribute("data-more", "right");
     else if (start) nav.setAttribute("data-more", "left");
     else nav.removeAttribute("data-more");
+    var more = nav.getAttribute("data-more") || "", wrap = nav.parentNode;
+    if (wrap && wrap.classList && wrap.classList.contains("tabs-wrap")) {
+      wrap.querySelector(".tabs-arrow-left").hidden = !(more === "left" || more === "both");
+      wrap.querySelector(".tabs-arrow-right").hidden = !(more === "right" || more === "both");
+    }
+  }
+  // The strip slides three ways (the operator's review, 2026-10-23: "on ne
+  // peut pas slider"): the wheel, as before; a pointer dragging it, as a
+  // finger does on a phone; and an arrow at each end where more tabs wait.
+  // The arrows are for a pointer: the keyboard reaches every tab, and a tab
+  // reached brings itself into view, so they are kept out of the Tab order
+  // and out of what a screen reader reads.
+  function arrows(nav) {
+    var wrap = document.createElement("div");
+    wrap.className = "tabs-wrap";
+    nav.parentNode.insertBefore(wrap, nav);
+    wrap.appendChild(nav);
+    ["left", "right"].forEach(function (side) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tabs-arrow tabs-arrow-" + side;
+      b.tabIndex = -1;
+      b.hidden = true;
+      b.setAttribute("aria-hidden", "true");
+      b.textContent = side === "left" ? "‹" : "›";
+      b.addEventListener("click", function () {
+        nav.scrollBy({ left: (side === "left" ? -0.7 : 0.7) * nav.clientWidth, behavior: "smooth" });
+      });
+      wrap.appendChild(b);
+    });
+  }
+  function drag(nav) {
+    var x0 = 0, from = 0, id = null, moved = false;
+    nav.addEventListener("pointerdown", function (ev) {
+      if (ev.pointerType !== "mouse" || ev.button !== 0 || nav.scrollWidth <= nav.clientWidth + 1) return;
+      x0 = ev.clientX; from = nav.scrollLeft; id = ev.pointerId; moved = false;
+    });
+    nav.addEventListener("pointermove", function (ev) {
+      if (id !== ev.pointerId) return;
+      var dx = ev.clientX - x0;
+      if (!moved && Math.abs(dx) < 6) return;
+      if (!moved) { moved = true; nav.classList.add("is-dragging"); try { nav.setPointerCapture(id); } catch (e) { /* gone */ } }
+      nav.scrollLeft = from - dx;
+    });
+    function end(ev) {
+      if (id !== ev.pointerId) return;
+      id = null;
+      nav.classList.remove("is-dragging");
+    }
+    nav.addEventListener("pointerup", end);
+    nav.addEventListener("pointercancel", end);
+    // A drag is not a click: the tab under the pointer at the end of one is
+    // not followed.
+    nav.addEventListener("click", function (ev) {
+      if (moved) { ev.preventDefault(); ev.stopPropagation(); moved = false; }
+    }, true);
   }
   // A mouse wheel turns the strip sideways while it has further to go that
   // way; at either end the page scrolls as usual, so the strip never traps it.
   function wireTabs(nav) {
     if (nav.axgfTabs) return;
     nav.axgfTabs = true;
+    arrows(nav);
+    drag(nav);
     nav.addEventListener("scroll", function () { markTabs(nav); }, { passive: true });
     // A tab reached with the keyboard is brought clear of the faded edge.
     nav.addEventListener("focusin", function (ev) {
@@ -175,8 +233,44 @@
       // reference theme draws (app.css, docs/adr/0004 §4) and that assistive
       // technology is spared — the words already say what is happening.
       by.appendChild(loader(by.getAttribute("data-loader")));
+      // A file to download does not unload the page: the server answers
+      // with a cookie naming this token once the file starts, and the
+      // button is idle again (render::mark_download).
+      if (form.hasAttribute("data-download")) awaitDownload(form);
     }
   });
+  function idle(form) {
+    form.removeAttribute("aria-busy");
+    form.querySelectorAll("[data-idle]").forEach(function (b) {
+      b.textContent = b.getAttribute("data-idle");
+      b.removeAttribute("data-idle");
+      b.removeAttribute("aria-busy");
+      b.removeAttribute("aria-disabled");
+    });
+  }
+  function awaitDownload(form) {
+    var token = "";
+    for (var i = 0; i < 24; i++) token += "abcdefghijklmnopqrstuvwxyz0123456789".charAt(Math.floor(Math.random() * 36));
+    var field = form.querySelector('input[name="download_token"]');
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = "download_token";
+      form.appendChild(field);
+    }
+    field.value = token;
+    var started = Date.now();
+    var timer = window.setInterval(function () {
+      var arrived = document.cookie.split("; ").indexOf("axgf_download=" + token) !== -1;
+      // Ten minutes at most: a download the server never answered for
+      // (the connection dropped) leaves the button usable again.
+      if (arrived || Date.now() - started > 600000) {
+        window.clearInterval(timer);
+        document.cookie = "axgf_download=; Path=/admin; Max-Age=0; SameSite=Strict";
+        idle(form);
+      }
+    }, 400);
+  }
   // A loader's markup, as templates/_icons.html writes it: three dots by
   // default, or the river or the hourglass where a page asks for one.
   function loader(kind) {
@@ -194,18 +288,24 @@
     return el;
   }
   window.axgfLoader = loader;
+  // `data-describe="<id>"` on a select: the block with that id holds one
+  // paragraph per choice (`data-value`), and the one for the choice made is
+  // the one shown — the licence's meaning beside the licence (2026-10-23).
+  document.querySelectorAll("select[data-describe]").forEach(function (sel) {
+    var box = document.getElementById(sel.getAttribute("data-describe"));
+    if (!box) return;
+    function show() {
+      box.querySelectorAll("[data-value]").forEach(function (p) {
+        p.hidden = p.getAttribute("data-value") !== sel.value;
+      });
+    }
+    sel.addEventListener("change", show);
+    show();
+  });
   // Back to a page from the history cache: the form is idle again.
   window.addEventListener("pageshow", function (ev) {
     if (!ev.persisted) return;
-    document.querySelectorAll('form[aria-busy="true"]').forEach(function (f) {
-      f.removeAttribute("aria-busy");
-    });
-    document.querySelectorAll("[data-idle]").forEach(function (b) {
-      b.textContent = b.getAttribute("data-idle");
-      b.removeAttribute("data-idle");
-      b.removeAttribute("aria-busy");
-      b.removeAttribute("aria-disabled");
-    });
+    document.querySelectorAll('form[aria-busy="true"]').forEach(idle);
   });
 
   // Motion that answers the reader (v0.5.0, docs/adr/0004 §6). Only where
@@ -218,7 +318,7 @@
     var root = document.documentElement;
     root.classList.add("js-motion");
     // The kit: Canopée's furniture, shared by Fusion and Galaxy (docs/adr/0007).
-    var canopee = /^(canopee|fusion|galaxy|summit|clarity)$/.test(root.getAttribute("data-theme") || "");
+    var canopee = /^(canopee|fusion|galaxy|summit|clarity|genealogy)$/.test(root.getAttribute("data-theme") || "");
     // A section rises into place the first time it scrolls into view.
     var seen = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -254,7 +354,7 @@
   // from the pointer, gone in 0.6 s. Never where the reader asked for
   // stillness.
   document.addEventListener("pointerdown", function (ev) {
-    if (still || !/^(canopee|fusion|galaxy|summit|clarity)$/.test(document.documentElement.getAttribute("data-theme") || "")) return;
+    if (still || !/^(canopee|fusion|galaxy|summit|clarity|genealogy)$/.test(document.documentElement.getAttribute("data-theme") || "")) return;
     var b = ev.target.closest && ev.target.closest(".btn, .person-tab");
     if (!b || b.disabled || b.getAttribute("aria-disabled") === "true") return;
     var r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.4;

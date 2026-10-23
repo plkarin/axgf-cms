@@ -1,0 +1,31 @@
+{#- Notes and contributions (docs/adr/0014): a note as a card, and the
+    window one opens in. `t` is passed in, as an imported macro does not see
+    the including template's context. -#}
+{% macro card(t, n) %}
+<li class="note-card" data-note data-letter="{{ n.letter }}" data-haystack="{{ n.haystack }}">
+  <a class="note-card-in" href="/notes/{{ n.id }}" data-note-open="{{ n.id }}">
+    {%- if n.thumb %}<span class="note-thumb"><img src="{{ n.thumb }}" alt="" loading="lazy"></span>{% endif %}
+    <span class="note-card-body">
+      <span class="note-card-top">
+        {%- if n.category %}<span class="chip small note-cat">{{ n.category }}</span>{% endif %}
+        {%- if n.date %}<span class="note-date">{{ n.date.text }}</span>{% endif -%}
+      </span>
+      <span class="note-title"><bdi>{{ n.title }}</bdi></span>
+      {%- if n.summary %}<span class="note-summary">{{ n.summary }}</span>{% endif %}
+      <span class="note-foot">
+        {%- if n.persons %}{% for p in n.persons %}<bdi>{{ p.name }}</bdi>{% if not loop.last %}, {% endif %}{% endfor %}
+        {%- else %}{{ t("notes-family-wide") }}{% endif %}
+        {%- if n.author %} · {{ t("notes-by", author=n.author) }}{% endif -%}
+      </span>
+    </span>
+  </a>
+</li>
+{% endmacro %}
+
+{#- The window a note opens in, filled by notes.js from /notes/:id?frame=1.
+    Without the script each card is a link to the note's own page. -#}
+{% macro dialog(t) %}
+<dialog class="note-dialog" data-note-dialog aria-label="{{ t('notes-section-title') }}">
+  <div class="note-dialog-body" data-note-dialog-body></div>
+</dialog>
+{% endmacro %}

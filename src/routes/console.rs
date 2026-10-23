@@ -5,9 +5,9 @@
 //! Administrators only, every one of them: they say how the machine is
 //! exposed, hand out the whole archive and hold the providers' secrets.
 
-use axum::extract::{Form, State};
+use axum::extract::{Form, Query, State};
 use axum::http::{HeaderMap, StatusCode};
-use axum::response::{IntoResponse, Response};
+use axum::response::{IntoResponse, Redirect, Response};
 use minijinja::context;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -31,9 +31,24 @@ macro_rules! admin_only {
 // ---------------------------------------------------------------------------
 
 /// `GET /admin/bundle`
-pub async fn bundle(State(state): State<Shared>, headers: HeaderMap) -> Response {
+pub async fn bundle(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<BundleQuery>,
+) -> Response {
     let (_viewer, chrome) = admin_only!(state, headers);
-    render_bundle(&state, &chrome, BundleNote::default())
+    let note = BundleNote {
+        notice: (q.family.as_deref() == Some("saved")).then(|| chrome.t("manifest-saved")),
+        ..Default::default()
+    };
+    render_bundle(&state, &chrome, note)
+}
+
+/// `?family=saved`: back from the family's form.
+#[derive(Debug, Default, Deserialize)]
+pub struct BundleQuery {
+    #[serde(default)]
+    family: Option<String>,
 }
 
 /// What a bundle page says above its sections after a form.
@@ -44,6 +59,8 @@ struct BundleNote {
     /// The key text the form carried, given back so a refused key can be
     /// corrected rather than pasted again.
     recipient_text: Option<String>,
+    /// The family's form as it was sent, given back with its error.
+    family: Option<FamilyForm>,
 }
 
 /// The attachments the bundle declares, by name.
@@ -201,10 +218,397 @@ fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> R
             export_scopes => crate::sensitive::Scope::ALL.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
             recipient,
             recipient_text,
+            family => family_context(state, chrome, note.family),
             error => note.error,
             notice => note.notice,
         },
     )
+}
+
+// ---------------------------------------------------------------------------
+// the family the archive describes (manifest.family, manifest.license)
+// ---------------------------------------------------------------------------
+
+/// The continents a family can be said to have lived on: the closed list of
+/// `manifest.family.primary_place` (a human-readable place, written in
+/// English in the file and named in the reader's language on the page).
+pub const CONTINENTS: &[(&str, &str)] = &[
+    ("Africa", "continent-africa"),
+    ("Antarctica", "continent-antarctica"),
+    ("Asia", "continent-asia"),
+    ("Europe", "continent-europe"),
+    ("North America", "continent-north-america"),
+    ("South America", "continent-south-america"),
+    ("Oceania", "continent-oceania"),
+    ("Several continents", "continent-several"),
+];
+
+/// The licences an archive may be shared under: the closed list of
+/// `manifest.license.type`, each with the address the file records for it
+/// (none for the two that are not public licences) and the catalogue key of
+/// what it lets others do.
+pub const LICENCES: &[(&str, Option<&str>, &str)] = &[
+    ("all-rights-reserved", None, "licence-all-rights-reserved"),
+    ("family-private", None, "licence-family-private"),
+    (
+        "CC0-1.0",
+        Some("https://creativecommons.org/publicdomain/zero/1.0/"),
+        "licence-cc0",
+    ),
+    (
+        "CC-BY-4.0",
+        Some("https://creativecommons.org/licenses/by/4.0/"),
+        "licence-cc-by",
+    ),
+    (
+        "CC-BY-SA-4.0",
+        Some("https://creativecommons.org/licenses/by-sa/4.0/"),
+        "licence-cc-by-sa",
+    ),
+    (
+        "CC-BY-NC-4.0",
+        Some("https://creativecommons.org/licenses/by-nc/4.0/"),
+        "licence-cc-by-nc",
+    ),
+    (
+        "CC-BY-NC-SA-4.0",
+        Some("https://creativecommons.org/licenses/by-nc-sa/4.0/"),
+        "licence-cc-by-nc-sa",
+    ),
+    (
+        "CC-BY-ND-4.0",
+        Some("https://creativecommons.org/licenses/by-nd/4.0/"),
+        "licence-cc-by-nd",
+    ),
+    (
+        "CC-BY-NC-ND-4.0",
+        Some("https://creativecommons.org/licenses/by-nc-nd/4.0/"),
+        "licence-cc-by-nc-nd",
+    ),
+    (
+        "ODbL-1.0",
+        Some("https://opendatacommons.org/licenses/odbl/1-0/"),
+        "licence-odbl",
+    ),
+];
+
+/// Who chose the licence, and when: `manifest.license.extensions`, so that
+/// another reader of the file keeps it and may ignore it.
+pub const LICENCE_STAMP: &str = "axgf-cms:license/v1";
+
+/// The earliest and the latest birth the archive records, as the file
+/// writes dates (`1702`, `1702-03`, `1702-03-14`): the period it covers.
+pub fn births_span(flat: &Value) -> Option<(String, String)> {
+    let mut lo: Option<String> = None;
+    let mut hi: Option<String> = None;
+    let persons = flat.get("persons").and_then(Value::as_object)?;
+    for p in persons.values() {
+        let Some(v) = p.pointer("/birth/date/value").and_then(Value::as_str) else {
+            continue;
+        };
+        if crate::notes::date_of(v).is_none() {
+            continue;
+        }
+        if lo.as_deref().is_none_or(|l| v < l) {
+            lo = Some(v.to_string());
+        }
+        if hi.as_deref().is_none_or(|h| v > h) {
+            hi = Some(v.to_string());
+        }
+    }
+    Some((lo?, hi?))
+}
+
+/// The family's form: `manifest.family` and `manifest.license`. The place
+/// and the licence are each one of a closed list (or what the file already
+/// says, kept until it is changed); the period is the births', never typed.
+#[derive(Debug, Default, Clone, Deserialize, serde::Serialize)]
+pub struct FamilyForm {
+    #[serde(default)]
+    token: String,
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    description: String,
+    #[serde(default)]
+    primary_culture: String,
+    #[serde(default)]
+    primary_place: String,
+    #[serde(default)]
+    license_type: String,
+}
+
+impl FamilyForm {
+    fn of(editable: &Value) -> Self {
+        let get = |p: &str| {
+            editable
+                .pointer(p)
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string()
+        };
+        FamilyForm {
+            token: crate::state::manifest_token(editable),
+            name: get("/family/name"),
+            description: get("/family/description"),
+            primary_culture: get("/family/primary_culture"),
+            primary_place: get("/family/primary_place"),
+            license_type: get("/license/type"),
+        }
+    }
+
+    /// Every field trimmed, its control characters dropped (a line break is
+    /// kept in the description).
+    fn cleaned(mut self) -> Self {
+        let line = |s: &str| {
+            s.chars()
+                .filter(|c| !c.is_control())
+                .collect::<String>()
+                .trim()
+                .to_string()
+        };
+        self.name = line(&self.name);
+        self.description = self
+            .description
+            .replace("\r\n", "\n")
+            .chars()
+            .filter(|c| *c == '\n' || !c.is_control())
+            .collect::<String>()
+            .trim()
+            .to_string();
+        self.primary_culture = line(&self.primary_culture);
+        self.primary_place = line(&self.primary_place);
+        self.license_type = line(&self.license_type);
+        self
+    }
+
+    /// What is wrong with it, as a catalogue key, or nothing. `stored` is
+    /// the manifest's editable part: a place or a licence outside the lists
+    /// is accepted only as the one the file already has.
+    fn refusal(&self, stored: &Value) -> Option<&'static str> {
+        let long = |s: &str, n: usize| s.chars().count() > n;
+        if long(&self.name, 120) || long(&self.description, 2000) {
+            return Some("manifest-error-long");
+        }
+        let culture_ok = self.primary_culture.is_empty()
+            || (self.primary_culture.len() <= 35
+                && self
+                    .primary_culture
+                    .split('-')
+                    .enumerate()
+                    .all(|(i, part)| {
+                        let n = part.len();
+                        if i == 0 {
+                            (2..=8).contains(&n) && part.bytes().all(|b| b.is_ascii_alphabetic())
+                        } else {
+                            (1..=8).contains(&n) && part.bytes().all(|b| b.is_ascii_alphanumeric())
+                        }
+                    }));
+        if !culture_ok {
+            return Some("manifest-error-culture");
+        }
+        let kept = |p: &str, v: &str| stored.pointer(p).and_then(Value::as_str) == Some(v);
+        if !self.primary_place.is_empty()
+            && !CONTINENTS.iter().any(|(c, _)| *c == self.primary_place)
+            && !kept("/family/primary_place", &self.primary_place)
+        {
+            return Some("manifest-error-place");
+        }
+        if !self.license_type.is_empty()
+            && !LICENCES.iter().any(|(c, _, _)| *c == self.license_type)
+            && !kept("/license/type", &self.license_type)
+        {
+            return Some("manifest-error-licence");
+        }
+        None
+    }
+
+    /// Write it into a manifest: a field left empty is taken out, and an
+    /// object left with nothing in it goes too, as the format asks. The
+    /// period is the births' (`span`); a licence chosen anew carries who
+    /// chose it and when, and its address from the list.
+    fn apply(
+        &self,
+        manifest: &mut serde_json::Map<String, Value>,
+        span: Option<&(String, String)>,
+        who: &str,
+        now: &str,
+    ) {
+        fn set(obj: &mut serde_json::Map<String, Value>, key: &str, value: &str) {
+            if value.is_empty() {
+                obj.remove(key);
+            } else {
+                obj.insert(key.into(), Value::from(value));
+            }
+        }
+        let mut family = manifest
+            .get("family")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        set(&mut family, "name", &self.name);
+        set(&mut family, "description", &self.description);
+        set(&mut family, "primary_culture", &self.primary_culture);
+        set(&mut family, "primary_place", &self.primary_place);
+        match span {
+            Some((lo, hi)) => {
+                let mut ts = family
+                    .get("time_span")
+                    .and_then(Value::as_object)
+                    .cloned()
+                    .unwrap_or_default();
+                ts.insert("earliest".into(), Value::from(lo.as_str()));
+                ts.insert("latest".into(), Value::from(hi.as_str()));
+                family.insert("time_span".into(), Value::Object(ts));
+            }
+            None => {
+                family.remove("time_span");
+            }
+        }
+        let mut license = manifest
+            .get("license")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        let before = license
+            .get("type")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string();
+        if self.license_type.is_empty() {
+            license.clear();
+        } else if self.license_type != before {
+            license.insert("type".into(), Value::from(self.license_type.as_str()));
+            match LICENCES
+                .iter()
+                .find(|(c, _, _)| *c == self.license_type)
+                .and_then(|l| l.1)
+            {
+                Some(url) => license.insert("url".into(), Value::from(url)),
+                None => license.remove("url"),
+            };
+            // A note written for the licence before says nothing of this one.
+            license.remove("note");
+            let mut ext = license
+                .get("extensions")
+                .and_then(Value::as_object)
+                .cloned()
+                .unwrap_or_default();
+            ext.insert(
+                LICENCE_STAMP.into(),
+                serde_json::json!({ "by": who, "at": now }),
+            );
+            license.insert("extensions".into(), Value::Object(ext));
+        }
+        for (key, obj) in [("family", family), ("license", license)] {
+            if obj.is_empty() {
+                manifest.remove(key);
+            } else {
+                manifest.insert(key.into(), Value::Object(obj));
+            }
+        }
+    }
+}
+
+/// The family's form for the page: the form (as sent with an error, or as
+/// the manifest stands), the lists it chooses from, the period the births
+/// give, and who chose the licence.
+fn family_context(state: &Shared, chrome: &render::Chrome, sent: Option<FamilyForm>) -> Value {
+    let editable = state.manifest_editable();
+    let form = sent.unwrap_or_else(|| FamilyForm::of(&editable));
+    let span = state.read(births_span);
+    let stored_place = editable
+        .pointer("/family/primary_place")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let stored_licence = editable
+        .pointer("/license/type")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let mut places: Vec<Value> = CONTINENTS
+        .iter()
+        .map(|(c, k)| json!({ "value": c, "label": chrome.t(k) }))
+        .collect();
+    if !stored_place.is_empty() && !CONTINENTS.iter().any(|(c, _)| *c == stored_place) {
+        places.insert(0, json!({ "value": stored_place, "label": stored_place }));
+    }
+    let mut licences: Vec<Value> = LICENCES
+        .iter()
+        .map(|(c, _, k)| {
+            json!({ "value": c, "label": chrome.t(&format!("{k}-name")),
+                    "about": chrome.t(&format!("{k}-about")) })
+        })
+        .collect();
+    if !stored_licence.is_empty() && !LICENCES.iter().any(|(c, _, _)| *c == stored_licence) {
+        licences.insert(
+            0,
+            json!({ "value": stored_licence, "label": stored_licence, "about": "" }),
+        );
+    }
+    let stamp = editable
+        .pointer(&format!(
+            "/license/extensions/{}",
+            LICENCE_STAMP.replace('/', "~1")
+        ))
+        .cloned();
+    json!({
+        "form": form,
+        "places": places,
+        "licences": licences,
+        "span": span.map(|(lo, hi)| json!({ "earliest": lo, "latest": hi })),
+        "author": stamp.as_ref().and_then(|s| s.get("by")).and_then(Value::as_str)
+            .map(|w| crate::journal::who_in(w, chrome.lang)),
+        "author_at": stamp.as_ref().and_then(|s| s.get("at")).and_then(Value::as_str),
+    })
+}
+
+/// `POST /admin/bundle/family` — the family's name and what the archive
+/// says about itself (manifest.family, manifest.license).
+pub async fn family(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<FamilyForm>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let f = f.cleaned();
+    let refuse = |key: &str, status: StatusCode, f: FamilyForm| {
+        let note = BundleNote {
+            error: Some(chrome.t(key)),
+            family: Some(f),
+            ..Default::default()
+        };
+        let mut resp = render_bundle(&state, &chrome, note);
+        *resp.status_mut() = status;
+        resp
+    };
+    if let Some(key) = f.refusal(&state.manifest_editable()) {
+        return refuse(key, StatusCode::UNPROCESSABLE_ENTITY, f);
+    }
+    let span = state.read(births_span);
+    let now = crate::view::now_iso8601();
+    let outcome = state.update_manifest(viewer.name(), &f.token, |m| {
+        f.apply(m, span.as_ref(), viewer.name(), &now)
+    });
+    match outcome {
+        Ok(crate::state::ManifestOutcome::Applied) => {
+            tracing::info!(by = viewer.name(), "manifest changed");
+            Redirect::to("/admin/bundle?family=saved#family").into_response()
+        }
+        Ok(crate::state::ManifestOutcome::Unchanged) => {
+            Redirect::to("/admin/bundle#family").into_response()
+        }
+        Ok(crate::state::ManifestOutcome::Conflict) => {
+            // What was sent stays in the form, now made from the version
+            // that is there: saved again, it replaces it knowingly.
+            let mut f = f;
+            f.token = crate::state::manifest_token(&state.manifest_editable());
+            refuse("manifest-error-stale", StatusCode::CONFLICT, f)
+        }
+        Err(e) => {
+            tracing::error!(error = %e, "could not write the manifest");
+            refuse("manifest-error-io", StatusCode::INTERNAL_SERVER_ERROR, f)
+        }
+    }
 }
 
 /// A recipient as the page shows it.
@@ -240,6 +644,9 @@ pub struct SealForm {
     legal: Option<String>,
     #[serde(default)]
     behaviour: Option<String>,
+    /// The page's token, sent back in a cookie once the file starts.
+    #[serde(default)]
+    download_token: Option<String>,
 }
 
 impl SealForm {
@@ -282,8 +689,8 @@ pub async fn sealed(
     let refuse = |key: &str, args: &[(&str, fluent::FluentValue)]| {
         let note = BundleNote {
             error: Some(chrome.t_args(key, args)),
-            notice: None,
             recipient_text: Some(typed.clone()),
+            ..Default::default()
         };
         let mut resp = render_bundle(&state, &chrome, note);
         *resp.status_mut() = StatusCode::UNPROCESSABLE_ENTITY;
@@ -368,13 +775,15 @@ pub async fn sealed(
         bytes = size,
         "encrypted export made"
     );
-    render::download_from(
+    let mut resp = render::download_from(
         &chrome,
         &format!("{name}.gpg"),
         out,
         "application/pgp-encrypted",
     )
-    .await
+    .await;
+    render::mark_download(&mut resp, &headers, f.download_token.as_deref());
+    resp
 }
 
 /// `POST /admin/bundle/forget-recipient` — stop keeping the export's key.

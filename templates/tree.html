@@ -37,9 +37,9 @@
 </div>
 
 {#- One control: how much of the family to draw. The person in the middle is
-    chosen from a card ("Centrer l'arbre ici" in its panel), not from a list
-    of everybody (the minimalism pass). Applied on change; the button is for
-    a reader without scripts. -#}
+    chosen by clicking their card, not from a list of everybody (the
+    minimalism pass; 2026-10-23). Applied on change; the button is for a
+    reader without scripts. -#}
 <form class="tree-controls" method="get" action="/tree">
   {% if focus %}<input type="hidden" name="root" value="{{ focus.root }}">{% endif %}
   <div class="tc-field">

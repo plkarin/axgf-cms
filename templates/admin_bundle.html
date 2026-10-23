@@ -48,6 +48,78 @@
   </div>
 </div>
 
+{#- What the archive says about the family it holds (manifest.family and
+    manifest.license, 2026-10-23): its name is the one the Family page, the
+    titles and every note's PDF show. The figures and dates are the file's
+    own account of itself, written by the export. -#}
+<section class="rec-section" id="family">
+<h2>{{ t("manifest-title") }}</h2>
+<p class="small muted">{{ t("manifest-intro") }}</p>
+<form class="manifest-form" method="post" action="/admin/bundle/family" autocomplete="off">
+  {%- set fm = family.form %}
+  <input type="hidden" name="token" value="{{ fm.token }}">
+  <div class="manifest-grid">
+    <label class="field manifest-wide"><span class="field-label">{{ t("manifest-name") }}</span>
+      <input type="text" name="name" value="{{ fm.name }}" maxlength="120" dir="auto">
+      <span class="hint">{{ t("manifest-name-hint") }}</span></label>
+    <label class="field manifest-wide"><span class="field-label">{{ t("manifest-description") }}</span>
+      <textarea name="description" rows="3" maxlength="2000" dir="auto">{{ fm.description }}</textarea></label>
+    <label class="field"><span class="field-label">{{ t("manifest-culture") }}</span>
+      <input type="text" name="primary_culture" value="{{ fm.primary_culture }}" maxlength="35" spellcheck="false">
+      <span class="hint">{{ t("manifest-culture-hint") }}</span></label>
+    <label class="field"><span class="field-label">{{ t("manifest-place") }}</span>
+      <select name="primary_place">
+        <option value=""{% if not fm.primary_place %} selected{% endif %}>{{ t("manifest-none") }}</option>
+        {%- for o in family.places %}
+        <option value="{{ o.value }}"{% if o.value == fm.primary_place %} selected{% endif %}>{{ o.label }}</option>
+        {%- endfor %}
+      </select>
+      <span class="hint">{{ t("manifest-place-hint") }}</span></label>
+  </div>
+  {#- The period is the births': counted, never typed. -#}
+  <div class="field manifest-span">
+    <span class="field-label">{{ t("manifest-span") }}</span>
+    {%- if family.span %}
+    <p class="manifest-value">{{ t("manifest-span-value", earliest=family.span.earliest, latest=family.span.latest) }}</p>
+    {%- else %}
+    <p class="manifest-value muted">{{ t("manifest-span-none") }}</p>
+    {%- endif %}
+    <span class="hint">{{ t("manifest-span-hint") }}</span>
+  </div>
+  <fieldset class="manifest-set">
+    <legend>{{ t("manifest-license") }}</legend>
+    <div class="manifest-licence">
+      <label class="field"><span class="field-label">{{ t("manifest-license-type") }}</span>
+        <select name="license_type" id="manifest-licence" data-describe="manifest-licence-about">
+          <option value=""{% if not fm.license_type %} selected{% endif %}>{{ t("manifest-none") }}</option>
+          {%- for o in family.licences %}
+          <option value="{{ o.value }}"{% if o.value == fm.license_type %} selected{% endif %}>{{ o.label }}</option>
+          {%- endfor %}
+        </select></label>
+      {#- What the licence chosen lets others do, in a sentence or two; the
+          script shows the one the select names as it changes. -#}
+      <div class="manifest-about" id="manifest-licence-about" aria-live="polite">
+        <p data-value=""{% if fm.license_type %} hidden{% endif %}>{{ t("manifest-license-pick") }}</p>
+        {%- for o in family.licences %}{% if o.about %}
+        <p data-value="{{ o.value }}"{% if o.value != fm.license_type %} hidden{% endif %}>{{ o.about }}</p>
+        {%- endif %}{% endfor %}
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">{{ t("manifest-license-author") }}</span>
+      {%- if family.author %}
+      <p class="manifest-value">{{ t("manifest-license-author-value", who=family.author, at=family.author_at | localdatetime(lang)) }}</p>
+      {%- else %}
+      <p class="manifest-value muted">{{ t("manifest-license-author-none") }}</p>
+      {%- endif %}
+    </div>
+  </fieldset>
+  <div class="cta-row">
+    <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("manifest-save") }}</button>
+  </div>
+</form>
+</section>
+
 <section class="rec-section" id="conformity">
 <h2>{{ t("bundle-conformity") }}</h2>
 <p class="small muted">{{ t("bundle-conformity-intro") }}</p>
@@ -110,7 +182,7 @@
     export, moved here). -#}
 <details class="menu-disclosure export-disclosure">
 <summary>{{ ic.icon("download") }} {{ t("bundle-export-raw") }}</summary>
-<form class="export-choice" method="get" action="/admin/export" autocomplete="off">
+<form class="export-choice" method="get" action="/admin/export" autocomplete="off" data-download>
   <fieldset>
     <legend>{{ t("admin-export-choose") }}</legend>
     <div class="check-row">
@@ -140,7 +212,7 @@
 {% elif recipient and recipient.error %}
 <div class="notice warn"><p>{{ recipient.error }}</p></div>
 {% endif %}
-<form class="export-choice" method="post" action="/admin/bundle/sealed" autocomplete="off">
+<form class="export-choice" method="post" action="/admin/bundle/sealed" autocomplete="off" data-download>
   <div class="field">
     <label for="seal-key">{{ t("seal-key-label") }}</label>
     <textarea id="seal-key" name="recipient" rows="5" spellcheck="false" class="mono" placeholder="{{ t('seal-key-placeholder') }}">{{ recipient_text if recipient_text != "" else "" }}</textarea>

@@ -416,6 +416,11 @@ pub async fn dashboard(
                                 "kind": k, "n": n, "singular": singular }))
                             .collect::<Vec<_>>(),
             total => counts.iter().map(|(_, n)| n).sum::<usize>(),
+            // The family's notes (docs/adr/0014), as many as this account
+            // reads: a contributor's lens may hide some.
+            notes_count => state.read_as(viewer.ceiling(), |flat, lens| {
+                crate::notes::readable_notes(flat, lens, true).len()
+            }),
             validation => env.data,
             diagnostics,
             bundle_path => state.bundle_path().display().to_string(),
@@ -1549,7 +1554,9 @@ pub async fn export(
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "family.axgf".into());
-    render::bundle_download_from(&chrome, &name, tmp).await
+    let mut resp = render::bundle_download_from(&chrome, &name, tmp).await;
+    render::mark_download(&mut resp, &headers, q.download_token.as_deref());
+    resp
 }
 
 // ---------------------------------------------------------------------------
@@ -1573,6 +1580,9 @@ pub struct ExportQuery {
     legal: Option<String>,
     #[serde(default)]
     behaviour: Option<String>,
+    /// The page's token, sent back in a cookie once the file starts.
+    #[serde(default)]
+    download_token: Option<String>,
 }
 
 impl ExportQuery {
@@ -2871,11 +2881,25 @@ pub(super) fn render_users(
             .unwrap_or_default()
     });
 
+    // Who each account says it is in the tree, by name (an account's own
+    // word, 2026-10-23).
+    let names: std::collections::HashMap<String, String> = state.read(|flat| {
+        flat.get("persons")
+            .and_then(Value::as_object)
+            .map(|persons| {
+                persons
+                    .iter()
+                    .map(|(id, p)| (id.clone(), view::person_display_name(p)))
+                    .collect()
+            })
+            .unwrap_or_default()
+    });
     let users = state.acl_read(|acl| {
         acl.users
             .iter()
             .map(|u| {
                 json!({
+                    "person": u.person_id.as_ref().and_then(|pid| names.get(pid).map(|n| json!({"id": pid, "name": n}))),
                     "id": u.id,
                     "username": u.username,
                     "email": u.email,

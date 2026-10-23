@@ -110,13 +110,20 @@ fn nothing_in_the_bar_is_coloured() {
             continue;
         }
         const KIT: &str =
-            ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"], [data-theme=\"summit\"], [data-theme=\"clarity\"])";
+            ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"], [data-theme=\"summit\"], [data-theme=\"clarity\"], [data-theme=\"genealogy\"])";
         let own = |part: &str| {
             let part = part.trim();
             part.starts_with(KIT)
-                || ["canopee", "fusion", "galaxy", "summit", "clarity"]
-                    .iter()
-                    .any(|t| part.starts_with(&format!("[data-theme=\"{t}\"]")))
+                || [
+                    "canopee",
+                    "fusion",
+                    "galaxy",
+                    "summit",
+                    "clarity",
+                    "genealogy",
+                ]
+                .iter()
+                .any(|t| part.starts_with(&format!("[data-theme=\"{t}\"]")))
         };
         // A selector list, split at its own commas only: the kit's `:is()`
         // carries commas of its own.

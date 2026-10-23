@@ -111,6 +111,7 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
             at("/static/clarity.js"),
             at("/static/river-scene.js"),
         );
+        let genealogy = at("/static/genealogy.js");
         match view {
             "tree" => {
                 // Deferred scripts run in order: the view registers itself
@@ -139,6 +140,17 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
                 assert!(clarity.expect("clarity.js") < river, "{theme}");
                 assert!(
                     fusion.is_none() && galaxy.is_none() && scene.is_none() && summit.is_none(),
+                    "{theme}"
+                );
+            }
+            "scroll" => {
+                assert!(genealogy.expect("genealogy.js") < river, "{theme}");
+                assert!(
+                    fusion.is_none()
+                        && galaxy.is_none()
+                        && scene.is_none()
+                        && summit.is_none()
+                        && clarity.is_none(),
                     "{theme}"
                 );
             }
@@ -207,6 +219,17 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
             "See in the funnel",
             "Enter brings them to the front",
         ),
+        (
+            "genealogy",
+            "Hold the leaves still",
+            "↓ toward the roots: ancestors · ↑ toward the crown: descendants",
+            [
+                "Every life is a portrait.",
+                "Every family, a tree to climb.",
+            ],
+            "See in the family tree",
+            "Enter sets them on the trunk",
+        ),
     ];
     for (theme, still, compass, hero, see, hint) in cases {
         let river = page(&app, &format!("/?p={P}"), theme).await;
@@ -242,6 +265,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/galaxy.js",
         "/static/summit.js",
         "/static/clarity.js",
+        "/static/genealogy.js",
     ] {
         let resp = get(&app, js).await;
         assert_eq!(resp.status(), StatusCode::OK, "{js}");
@@ -257,6 +281,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
     for jpg in [
         "/static/img/fusion-hero.jpg",
         "/static/img/fusion-cta.jpg",
+        "/static/img/fusion-lab.jpg",
         "/static/img/galaxy-hero.jpg",
         "/static/img/galaxy-cta.jpg",
         "/static/img/summit-hero.jpg",
@@ -264,6 +289,11 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/summit-panorama.jpg",
         "/static/img/clarity-hero.jpg",
         "/static/img/clarity-cta.jpg",
+        "/static/img/genealogy-hero.jpg",
+        "/static/img/genealogy-cta.jpg",
+        "/static/img/genealogy-vine-l.jpg",
+        "/static/img/genealogy-vine-r.jpg",
+        "/static/img/notes-genealogy.jpg",
     ] {
         let resp = get(&app, jpg).await;
         assert_eq!(resp.status(), StatusCode::OK, "{jpg}");
@@ -289,6 +319,7 @@ fn a_view_gives_river_js_everything_it_asks_for() {
         ("static/galaxy.js", "galaxy"),
         ("static/summit.js", "summit"),
         ("static/clarity.js", "funnel"),
+        ("static/genealogy.js", "scroll"),
     ] {
         let js = read(file);
         assert!(
@@ -320,4 +351,105 @@ fn a_view_gives_river_js_everything_it_asks_for() {
 fn the_colour_scanner_finds_colours_and_leaves_ids_alone() {
     assert_eq!(colours("fill:#fff; stroke:#a1b2c3"), ["#fff", "#a1b2c3"]);
     assert!(colours("url(#tv-soil) '#gx-neb-a' charAt(0) !== '#' #deadline").is_empty());
+}
+
+/// Fusion's tree stands in a glass that turns as the reader travels, over
+/// its laboratory's picture (2026-10-23); Clarity's counts and the lines
+/// beyond its last slice lie over the glass, not under it.
+#[test]
+fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
+    let fusion = read("static/fusion.js");
+    assert!(
+        fusion.contains("window.axgfView.tween = tween3;"),
+        "Fusion blends frames in its glass"
+    );
+    assert!(
+        fusion.contains("'/static/img/fusion-lab.jpg?v=1'"),
+        "over its laboratory"
+    );
+    assert!(
+        fusion.contains("ground.className = 'rv-ground';"),
+        "with a room that moves under the drawing"
+    );
+    let river = read("static/river.js");
+    assert!(
+        river.contains(
+            "view && view.tween ? view.tween(A, B, ease(t), tween) : tween(A, B, ease(t))"
+        ),
+        "river.js lets a view blend two frames from its own blend"
+    );
+    let clarity = read("static/clarity.js");
+    let order = clarity
+        .find("out + base + bands + beam + figs + tails + links + '<g class=\"rv-lit\"></g>' + unions + marks + nodes")
+        .is_some();
+    assert!(order, "the funnel's tails and counts over the glass");
+    assert!(
+        clarity.contains("ground.className = 'rv-ground';"),
+        "and its laboratory under it"
+    );
+}
+
+/// Names (2026-10-23): one button, under every view and the river alike,
+/// asks for every name or only the near generations' (−1, 0, +1), and the
+/// reader's choice is remembered; Fusion lays its tree out in tiers.
+#[test]
+fn a_reader_asks_for_every_name_or_the_near_ones() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
+    let tpl = read("templates/river.html");
+    assert!(tpl.contains(r#"data-rv-names hidden>{{ t("river-names-all") }}</button>"#));
+    let river = read("static/river.js");
+    assert!(river.contains("namesAll = localStorage.getItem(NAMES) === 'all';"));
+    assert!(
+        river.contains("var p = PK[a.getAttribute('data-key')], far = p && Math.abs(p.gen) > 1;")
+    );
+    assert!(river.contains("g.setAttribute('class', 'rv-names');"));
+    let css = read("static/app.css");
+    assert!(css.contains(".river.rv-names-near .rv-svg a.rv-p[data-far] :is(text, .tv-panel, .tv-leader) { display: none; }"));
+    let fusion = read("static/fusion.js");
+    assert!(
+        fusion.contains("function crown(key, left)")
+            && fusion.contains("function roots(key, left)"),
+        "a tree in tiers"
+    );
+}
+
+/// Genealogy's tree, climbed (docs/adr/0016, redrawn 2026-10-23): the family
+/// in levels round a trunk drawn in perspective, with no picture behind it;
+/// travelling, the camera climbs the trunk to the person travelled to (or
+/// goes down it), blended in the tree's own space; a card counts as a placed
+/// word for "All names", and a portrait's initials are not a name; a far
+/// person keeps their portrait while only the near generations are named.
+#[test]
+fn the_family_stands_on_a_tree_the_reader_climbs() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
+    let js = read("static/genealogy.js");
+    assert!(js.contains("function crown(key, left)") && js.contains("function roots(key, left)"));
+    assert!(js.contains("window.axgfView.tween = tween3;"));
+    assert!(
+        js.contains("var lc = to ? to.lv : 0, cam = lc * e;"),
+        "the camera rises (or goes down) to the person travelled to"
+    );
+    assert!(js.contains("return proj(G, th, w - cam);"));
+    assert!(
+        !js.contains("/static/img/"),
+        "the tree is drawn, not a picture"
+    );
+    assert!(js.contains("ground.className = 'rv-ground';"));
+    let river = read("static/river.js");
+    assert!(river.contains("svg.querySelectorAll('text, rect.tv-panel, rect.gn-card')"));
+    assert!(river.contains("a.querySelector('text:not(.gn-initials)')"));
+    let css = read("static/app.css");
+    assert!(
+        css.contains(".river.rv-names-near .rv-svg a.rv-p[data-far] .gn-plate { display: none; }")
+    );
+    assert!(css.contains(
+        ".river.rv-names-near .rv-svg a.rv-p[data-far] text.gn-initials { display: inline; }"
+    ));
+    assert!(css.contains(
+        "[data-theme=\"genealogy\"]:not([data-style=\"paper\"]) :is(.card, .rec-section,"
+    ));
 }

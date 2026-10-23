@@ -69,6 +69,7 @@ const THEME_SELECTORS: &[&str] = &[
     "[data-theme=\"galaxy\"] {",
     "[data-theme=\"summit\"] {",
     "[data-theme=\"clarity\"] {",
+    "[data-theme=\"genealogy\"] {",
 ];
 
 #[test]
@@ -289,7 +290,7 @@ fn nothing_outside_the_theme_blocks_hardcodes_a_colour() {
     let css = css();
     // The last theme block in tokens.css, which the stylesheet loads first.
     let themes_end = css
-        .find("[data-theme=\"clarity\"] {")
+        .find("[data-theme=\"genealogy\"] {")
         .expect("the theme blocks");
     let end_of_themes = css[themes_end..].find("\n}").unwrap() + themes_end;
     let body = &css[end_of_themes..];

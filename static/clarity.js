@@ -68,8 +68,9 @@
     // the right, as a funnel chart's do.
     var funnel = {
       sx: hl + hw * 0.45,
-      top: vt + vh * 0.07,
-      bottom: vt + vh * 0.93,
+      top: vt + vh * 0.06,
+      // Room below for the projector the cone stands on.
+      bottom: vt + vh * 0.85,
       wtop: hw * 0.35,
       wbot: hw * 0.1,
       lo: rlo,
@@ -152,6 +153,10 @@
   function tone(l, lo, hi) { return hi === lo ? 3 : 1 + Math.round(4 * (hi - l) / (hi - lo)); }
   function paint(fr, api, rest) {
     var f = api.f, esc = api.esc, m = fr.meta, PM = api.byKey(fr.persons), out = '', links = '', nodes = '', bands = '', figs = '';
+    // Above the glass, in this order: what the record continues past the
+    // last slice, the mesh, the unions, then the counts. Drawn under the
+    // slices, they were lost in the glass's own colour.
+    var tails = '', unions = '', marks = '', base = '', beam = '';
     var hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
     var G = geometry(m);
     GEO = G;
@@ -165,6 +170,20 @@
       count[p.lv] = (count[p.lv] || 0) + 1;
     });
     var glo = m.funnel.glo, ghi = m.funnel.ghi;
+    // The projector the cone stands on: a platform under the narrow end, its
+    // rings, and a beam of light up the cone's axis to the mouth.
+    var yLow = G.Y(glo - 0.44), wLow = G.W(glo - 0.44), yTop = G.Y(ghi + 0.44), wTop = G.W(ghi + 0.44);
+    // Below the lines the record continues past the narrow end, so that
+    // their counts stand clear of the platform.
+    var pr = wLow * 1.45, py = Math.min(vt + vh - 6 - pr * 1.3 * TILT * 1.6, Math.max(yLow + 18, G.Y(m.funnel.lo - 0.5) + 12));
+    base += '<ellipse class="cl-base-glow" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * 1.25) + '" ry="' + f(pr * 1.25 * TILT * 1.6) + '"/>';
+    for (var ri = 3; ri >= 1; ri--) {
+      base += '<ellipse class="cl-base-ring cl-base-ring-' + ri + '" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * (0.45 + ri * 0.28)) + '" ry="' + f(pr * (0.45 + ri * 0.28) * TILT * 1.6) + '"/>';
+    }
+    base += '<ellipse class="cl-base" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * 0.5) + '" ry="' + f(pr * 0.5 * TILT * 1.6) + '"/>';
+    G.py = py; G.pr = pr;
+    beam += '<rect class="cl-beam" x="' + f(G.sx - wLow * 0.22) + '" y="' + f(yTop) + '" width="' + f(wLow * 0.44) + '" height="' + f(py - yTop) + '" fill="url(#cl-beam)"/>'
+      + '<line class="cl-axis" x1="' + f(G.sx) + '" y1="' + f(yTop - wTop * TILT) + '" x2="' + f(G.sx) + '" y2="' + f(py) + '"/>';
     // The slices, back to front: the narrow end first, so a wider slice above
     // overlaps the one below as glass does.
     var boxes = [];
@@ -176,6 +195,8 @@
         + 'A' + f(wT) + ' ' + f(rT) + ' 0 0 0 ' + f(sx - wT) + ' ' + f(yT) + 'Z"/>';
       // The opening, and the gloss along the upper half of the glass.
       bands += '<ellipse class="cl-rim cl-rim-' + t + '" cx="' + f(sx) + '" cy="' + f(yT) + '" rx="' + f(wT) + '" ry="' + f(rT) + '"/>';
+      // A gauge's ticks just outside the opening, as an instrument's ring.
+      bands += '<ellipse class="cl-tick" cx="' + f(sx) + '" cy="' + f(yT) + '" rx="' + f(wT + 7) + '" ry="' + f(rT + 7 * TILT) + '"/>';
       bands += '<path class="cl-gloss" d="M' + f(sx - wT * 0.86) + ' ' + f(yT + rT * 0.9) + 'Q' + f(sx) + ' ' + f(yT + rT * 1.9) + ' ' + f(sx + wT * 0.86) + ' ' + f(yT + rT * 0.9)
         + 'L' + f(sx + wB * 0.8) + ' ' + f(yB - (yB - yT) * 0.45) + 'Q' + f(sx) + ' ' + f(yB - (yB - yT) * 0.3) + ' ' + f(sx - wB * 0.8) + ' ' + f(yB - (yB - yT) * 0.45) + 'Z"/>';
       // The stage's figures, at its right: its generation and its people.
@@ -190,16 +211,16 @@
     // Lines the record continues past the last slice, and lines it ends.
     var counts = [];
     fr.tails.forEach(function (t) {
-      out += '<g opacity="' + f(t.a) + '"><path d="' + edge(t.x1, t.y1, t.x2, t.y2) + '" fill="none" class="cl-tail"/>';
-      out += t.kind === 'cont'
-        ? '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="2.2" class="cl-tail-tip"/>'
-        : '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3.2" class="cl-end"/>';
-      out += '</g>';
+      tails += '<g opacity="' + f(t.a) + '"><path d="' + edge(t.x1, t.y1, t.x2, t.y2) + '" fill="none" class="cl-tail"/>';
+      tails += t.kind === 'cont'
+        ? '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="2.6" class="cl-tail-tip"/>'
+        : '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3.4" class="cl-end"/>';
+      tails += '</g>';
       if (t.kind === 'cont' && t.count_at) counts.push({ mk: t.count_at, text: '+' + t.count, size: 9.5, dx: t.cref ? t.x2 - t.cref[0] : 0, dy: t.cref ? t.y2 - t.cref[1] : 0, a: t.a });
     });
     fr.couples.forEach(function (c) {
       if (!c.stub) return;
-      out += '<g opacity="' + f(c.a) + '"><path d="' + edge(c.x, c.y, c.x + c.stub_dx, c.y + c.stub_dy) + '" fill="none" class="cl-tail cl-stub"/></g>';
+      tails += '<g opacity="' + f(c.a) + '"><path d="' + edge(c.x, c.y, c.x + c.stub_dx, c.y + c.stub_dy) + '" fill="none" class="cl-tail cl-stub"/></g>';
       if (c.stub_at) counts.push({ mk: c.stub_at, text: '+' + c.stub, size: 10, dx: c.sref ? c.x - c.sref[0] : 0, dy: c.sref ? c.y - c.sref[1] : 0, a: c.a });
     });
     // The mesh: parent to union, union to child.
@@ -210,7 +231,7 @@
       else links += '<path d="' + d + '" fill="none" class="cl-link cl-link-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
     });
     fr.couples.forEach(function (c) {
-      out += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="2" class="cl-union" opacity="' + f(c.a) + '"/>';
+      unions += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="2.2" class="cl-union" opacity="' + f(c.a) + '"/>';
     });
     // Names stand beside their person, outward from the cone's axis: the
     // near generations first, the next while there is room, and a name that
@@ -260,9 +281,10 @@
         return true;
       });
       boxes.push(spot);
-      var mv = Object.assign({}, mk, { x: mk.x + at[0], y: mk.y + at[1] });
+      // On the glass a count wears the page's ground around it, as names do.
+      var mv = Object.assign({}, mk, { x: mk.x + at[0], y: mk.y + at[1], halo: true });
       if (mk.leader) mv.leader = [mk.leader[0], mk.leader[1], mk.leader[2] + at[0], mk.leader[3] + at[1]];
-      out += '<g opacity="' + f(c.a) + '">' + api.mark(mv, c.text, c.size, c.dx, c.dy) + '</g>';
+      marks += '<g class="cl-count" opacity="' + f(c.a) + '">' + api.mark(mv, c.text, c.size, c.dx, c.dy) + '</g>';
     });
     // The people: a bead on the glass, and the person at the fixed point a
     // larger one with the theme's ring.
@@ -292,7 +314,7 @@
       nodes += k + '</g>';
     });
     if (rest) named = keep;
-    var defs = '';
+    var defs = '<linearGradient id="cl-beam" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="cl-beam-edge"/><stop offset="0.5" class="cl-beam-mid"/><stop offset="1" class="cl-beam-edge"/></linearGradient>';
     for (var i = 1; i <= 5; i++) {
       defs += '<linearGradient id="cl-g' + i + '" x1="0" x2="1" y1="0" y2="0">'
         + '<stop offset="0" class="cl-s' + i + ' cl-edge"/><stop offset="0.3" class="cl-s' + i + ' cl-mid"/>'
@@ -302,7 +324,7 @@
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg cl-svg" data-view="funnel" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
       + (rest ? 'role="img" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
-      + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>' + out + bands + figs + links + '<g class="rv-lit"></g>' + nodes + '</svg>';
+      + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>' + out + base + bands + beam + figs + tails + links + '<g class="rv-lit"></g>' + unions + marks + nodes + '</svg>';
   }
 
   /* ---- the dashboard: figures read from the cone on screen ---- */
@@ -362,22 +384,38 @@
     return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
   }
   var HOT = rgb('--cl-link-hot', [200, 80, 20]), SHEEN = rgb('--cl-gloss', [255, 255, 255]);
+  var TONES = [1, 2, 3, 4, 5].map(function (i) { return rgb('--cl-slice-' + i, [99, 102, 241]); });
   function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
 
   var over = document.createElement('canvas');
   over.className = 'rv-water';
   over.setAttribute('aria-hidden', 'true');
   stage.appendChild(over);
+  // The laboratory under the cone (2026-10-23): a floor of light lines
+  // running to the horizon behind the projector, rings rising from it, and
+  // a slow network of data points drifting up the sheet. At rest, the same
+  // laboratory, still.
+  var ground = document.createElement('canvas');
+  ground.className = 'rv-ground';
+  ground.setAttribute('aria-hidden', 'true');
+  stage.insertBefore(ground, stage.firstChild);
   stage.classList.add('rv-alive');
-  var go = over.getContext('2d');
-  if (!go) return;
+  var go = over.getContext('2d'), gg = ground.getContext('2d');
+  if (!go || !gg) return;
+  // The data points, the same on every visit: a position on the sheet
+  // (0..1 each way), a speed, a sway and a tone of the cone.
+  var DOTS = [];
+  for (var di = 0; di < 64; di++) {
+    var h1 = Math.abs(Math.sin(di * 12.9898) * 43758.5453) % 1, h2 = Math.abs(Math.sin(di * 78.233) * 12345.678) % 1;
+    DOTS.push({ x: h1, y: h2, v: 0.012 + 0.02 * ((h1 * 7) % 1), sw: 0.004 + 0.008 * ((h2 * 5) % 1), ph: h1 * 6.283, tone: di % 5, r: 1.2 + 1.6 * ((h1 * 3) % 1) });
+  }
   var flows = [], dpr = 1, cw = 0, ch = 0, clock = 0, travelling = false;
   function size() {
     var w = stage.clientWidth, h = stage.clientHeight, r = Math.min(window.devicePixelRatio || 1, 2);
     if (w === cw && h === ch && r === dpr) return false;
     cw = w; ch = h; dpr = r;
-    over.width = Math.max(1, Math.round(w * dpr));
-    over.height = Math.max(1, Math.round(h * dpr));
+    over.width = ground.width = Math.max(1, Math.round(w * dpr));
+    over.height = ground.height = Math.max(1, Math.round(h * dpr));
     return true;
   }
   function view() {
@@ -411,9 +449,69 @@
     request();
   }
   var SPEED = 26, SWEEP = 7;
+  function lab(moving) {
+    var W = ground.width, H = ground.height, v = view(), t = moving ? clock : 2.2;
+    gg.setTransform(1, 0, 0, 1, 0, 0);
+    gg.clearRect(0, 0, W, H);
+    if (!v || !GEO || GEO.py === undefined) return;
+    var s = v.k * dpr, ox = -v.x * s, oy = -v.y * s;
+    var bx = GEO.sx * s + ox, by = GEO.py * s + oy, br = GEO.pr * s, hz = Math.max(H * 0.42, by - H * 0.3);
+    // The floor: lines from the sheet's lower edge to a point on the horizon
+    // behind the projector, and rungs that close in toward it.
+    gg.lineWidth = Math.max(1, dpr * 0.8);
+    var fl = gg.createLinearGradient(0, hz, 0, H);
+    fl.addColorStop(0, rgba(TONES[1], 0));
+    fl.addColorStop(1, rgba(TONES[1], 0.2));
+    gg.strokeStyle = fl;
+    gg.beginPath();
+    for (var i = -14; i <= 14; i++) { gg.moveTo(bx, hz); gg.lineTo(bx + i * W * 0.09, H); }
+    var run = (t * 0.06) % 1;
+    for (var j = 0; j < 12; j++) {
+      var k = (j + run) / 12, y = hz + (H - hz) * k * k;
+      gg.moveTo(0, y); gg.lineTo(W, y);
+    }
+    gg.stroke();
+    // Rings rising from the projector, each fading as it widens.
+    for (var q = 0; q < 3; q++) {
+      var ph = ((moving ? t / 4.2 : 0.2) + q / 3) % 1, rx = br * (0.8 + 3.4 * ph);
+      gg.strokeStyle = rgba(TONES[2 + q], 0.38 * (1 - ph));
+      gg.lineWidth = Math.max(1, dpr * (1.6 - ph));
+      gg.beginPath(); gg.ellipse(bx, by, rx, rx * TILT * 1.6, 0, 0, 6.283); gg.stroke();
+    }
+    // The network: each point drifts up the sheet and sways; points close
+    // to one another are joined by a faint line.
+    var pts = DOTS.map(function (d) {
+      var yy = ((d.y - t * d.v) % 1 + 1) % 1, xx = d.x + Math.sin(d.ph + t * 0.6) * d.sw;
+      return [xx * W, yy * H, d];
+    });
+    var near = 0.085 * Math.max(W, H);
+    gg.lineWidth = Math.max(1, dpr * 0.7);
+    for (var a = 0; a < pts.length; a++) {
+      for (var b = a + 1; b < pts.length; b++) {
+        var dx = pts[a][0] - pts[b][0], dy = pts[a][1] - pts[b][1], dd = Math.sqrt(dx * dx + dy * dy);
+        if (dd > near) continue;
+        gg.strokeStyle = rgba(TONES[pts[a][2].tone], 0.16 * (1 - dd / near));
+        gg.beginPath(); gg.moveTo(pts[a][0], pts[a][1]); gg.lineTo(pts[b][0], pts[b][1]); gg.stroke();
+      }
+    }
+    pts.forEach(function (p) {
+      gg.fillStyle = rgba(TONES[p[2].tone], 0.5);
+      gg.beginPath(); gg.arc(p[0], p[1], p[2].r * dpr, 0, 6.283); gg.fill();
+    });
+    // A scanner's band crossing the sheet upward now and then.
+    if (moving) {
+      var sc = (t % 11) / 11;
+      if (sc < 0.6) {
+        var sy = H * (1 - sc / 0.6), band = H * 0.06, sg = gg.createLinearGradient(0, sy - band, 0, sy + band);
+        sg.addColorStop(0, rgba(TONES[0], 0)); sg.addColorStop(0.5, rgba(TONES[0], 0.07)); sg.addColorStop(1, rgba(TONES[0], 0));
+        gg.fillStyle = sg; gg.fillRect(0, sy - band, W, band * 2);
+      }
+    }
+  }
   function draw(moving) {
     size();
     var W = over.width, H = over.height;
+    lab(moving);
     go.setTransform(1, 0, 0, 1, 0, 0);
     go.clearRect(0, 0, W, H);
     var v = view();

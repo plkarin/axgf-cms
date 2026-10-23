@@ -1323,7 +1323,7 @@ abbr.presumed { text-decoration: none; }
    be pinned against: it is the whole column and the page simply scrolls it. */
 .tree-split.no-panel .tree-scroll { position: static; }
 
-.tree-canvas { position: relative; }
+.tree-canvas { position: relative; margin-inline: auto; }
 
 .tree-wires { position: absolute; inset: 0; pointer-events: none; }
 .wire { fill: none; stroke: var(--text-tertiary); stroke-width: 1.5; }
@@ -1500,42 +1500,24 @@ abbr.presumed { text-decoration: none; }
 /* ---- Tree + side panel -------------------------------------------------- */
 /* A scrollable tree beside a detail panel.
    ---------------------------------------------------------------------------
-   The split follows what the tree actually needs rather than a fixed ratio.
-   A three-generation view draws about 620px of cards; giving its column a
-   flat `1fr` of a 1920px page handed it 1412px and left an 809px band of
-   nothing between the drawing and the panel — on the widest screen, where
-   there was most to give away.
-
-   The canvas width is something the server already knows, so it comes through
-   as `--tree-width`: the same figure that sets the canvas's own inline width,
-   one number from one source.
-
-   The panel's width is then *computed from the tree's* rather than left to
-   the grid's own free-space distribution, and that is the part that matters.
-   Grid shares free space equally between tracks until each reaches its
-   growth limit, so a panel allowed to grow to 560px reaches it before a
-   2000px-wide tree has taken anything — at 1280px that left the tree 656px
-   when it wanted 2078 and could have had 899. Writing the panel as
-
-       clamp(min, container − tree − gap, max)
-
-   states the priority instead of hoping for it: the tree takes what it can
-   use, the panel takes what is genuinely left, and neither can starve the
-   other. Percentages in a track size resolve against the grid container, so
-   `100%` here is the split's own width.
+   Two tracks: the tree's column takes what the record leaves, and the record
+   keeps one width — a share of the split between its floor and its ceiling —
+   whatever the tree draws. Until 2026-10-23 the record's width was computed
+   from the tree's (`--tree-width`), so that no band of nothing opened between
+   a small tree and its record; but moving through the tree changes its width
+   at every step, and a record that followed it slid toward the middle of the
+   page and back, which the operator read as the page breaking. A narrow tree
+   now stands in the middle of its own column instead.
 
    `minmax(0, …)` on the tree keeps its *minimum* at zero. On the full view
    the canvas is tens of thousands of pixels wide, and an `auto` minimum would
    size the track to it and push the panel off the screen. Pinned to zero, the
    overflow stays inside `.tree-scroll`, where it scrolls.
 
-   The third track absorbs whatever is over once the panel has reached its
-   ceiling, so the surplus on an ultrawide screen sits at the outside edge
-   rather than reopening the band in the middle.
-
-   The fallback in `var(--tree-width, 1fr)` is what a page renders with if the
-   template ever stops passing the width: the previous behaviour, not a broken
-   one. */
+   The layout still hands the page the canvas's size (`--tree-width`,
+   `--tree-height`): the pinned tree below uses the height, and tree.js
+   measures the column the tree was given so that the next tree is folded to
+   it. */
 /* The tree and the record are one surface, not two windows side by side. The
    background and the rounding live here, once, and neither column carries a
    frame of its own: the frames that used to be there were drawing the edge of
@@ -1560,18 +1542,14 @@ abbr.presumed { text-decoration: none; }
   border-radius: var(--radius-lg);
   padding: 1rem;
   display: grid;
+  /* The record keeps its place at the side whatever the tree draws (the
+     operator's review, 2026-10-23): a record that followed the tree's width
+     slid toward the middle of the page every time the tree moved onto a
+     smaller family, and the page read as broken. The tree's column takes
+     the rest, and a narrow tree stands in the middle of it. */
   grid-template-columns:
-    minmax(0, var(--tree-width, 1fr))
-    clamp(
-      var(--panel-min),
-      /* Two gaps, because there are three tracks. Subtracting one left the
-         panel 24px too wide, and the tree — the only track that may shrink —
-         paid for it: a tree laid out to exactly the column it was told about
-         still overflowed by the missing gap. */
-      calc(100% - var(--tree-width, 0px) - 2 * var(--split-gap)),
-      var(--panel-max)
-    )
-    minmax(0, 1fr);
+    minmax(0, 1fr)
+    clamp(var(--panel-min), calc(30% - var(--split-gap)), var(--panel-max));
   gap: var(--split-gap);
   align-items: start;
 }
@@ -2568,6 +2546,36 @@ a.stat:hover { border-color: var(--accent); }
 /* A tab with nothing in it is not drawn (v0.4.1): there is no empty
    state to style. */
 .person-tabs + * { margin-top: 1.25rem; }
+/* The strip's arrows and its drag (ui.js): an arrow shows on a side where
+   more tabs wait, for a pointer that has no sideways wheel. */
+.tabs-wrap { position: relative; margin-block-start: 1.25rem; }
+.tabs-wrap > .person-tabs { margin-block-start: 0; }
+.tabs-wrap + * { margin-top: 1.25rem; }
+.tabs-arrow {
+  position: absolute;
+  inset-block: 0;
+  margin-block: auto;
+  inline-size: 2rem;
+  block-size: 2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-body);
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgb(var(--shadow-rgb) / 0.3);
+}
+.tabs-arrow[hidden] { display: none; }
+.tabs-arrow-left { left: 0.2rem; }
+.tabs-arrow-right { right: 0.2rem; }
+.tabs-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.person-tabs.is-dragging { cursor: grabbing; user-select: none; scroll-behavior: auto; }
 
 /* The tree tab: the same canvas the tree page draws, in a box that scrolls
    rather than one that pushes the rest of the page sideways. */
@@ -2820,6 +2828,253 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   border-radius: 3px;
   font-variant-numeric: tabular-nums;
 }
+
+/* The family across (the operator's review of 22 October 2026): rows of
+   cards, a relative per card, the whole card the link. The parents and the
+   siblings are two groups side by side; each union is a block whose head is
+   the partner and the union, and whose children are a row of their own. */
+.fam-band {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.6rem 1.25rem;
+}
+.fam-title {
+  margin: 0 0 0.5rem;
+  font-size: var(--type-minor);
+  font-weight: var(--weight-semi);
+  color: var(--text-secondary);
+}
+.union .fam-title { margin-block: 0.9rem 0.5rem; }
+.fam-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fam-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+}
+.fam-partner { flex: 0 1 17rem; min-inline-size: min(100%, 13.5rem); grid-template-columns: 1fr; }
+.fam-union-facts { flex: 1 1 14rem; display: grid; gap: 0.3rem; min-inline-size: 0; }
+.fam-union-kind { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.pcard { min-inline-size: 0; }
+.pcard-in {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  block-size: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-page);
+  color: inherit;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+a.pcard-in:hover { border-color: var(--accent); }
+a.pcard-in:hover .pcard-name { color: var(--accent); }
+.pcard-face {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: var(--weight-semi);
+  font-size: var(--type-minor);
+}
+.pcard-face img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.pcard-text { display: grid; gap: 0.15rem; min-inline-size: 0; }
+.pcard-name { font-weight: var(--weight-semi); overflow-wrap: anywhere; }
+.pcard-meta { font-size: var(--type-minor); color: var(--text-secondary); }
+.pcard-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; }
+.pcard-order { margin-inline-start: auto; align-self: flex-start; }
+.pcard.is-restricted .pcard-in, .pcard.is-absent .pcard-in { color: var(--text-secondary); }
+.pcard.is-restricted .pcard-face { background: var(--surface-sunken); color: var(--text-tertiary); }
+
+/* Notes and contributions (docs/adr/0014). The family page's block sits
+   on the theme's own soft picture, under a veil of its surface, so that the
+   cards read on it whatever the picture; a theme with none shows the
+   surface alone. */
+.notes-block {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-block: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+.notes-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(color-mix(in srgb, var(--surface-raised) 52%, transparent), color-mix(in srgb, var(--surface-raised) 84%, transparent)),
+    var(--notes-bg, none) center / cover no-repeat;
+}
+.notes-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.75rem 1.5rem; }
+.notes-head-copy { max-inline-size: 62ch; }
+.notes-head .home-h2 { margin: 0; }
+.notes-intro { margin: 0.35rem 0 0; color: var(--text-secondary); }
+.notes-search { display: flex; align-items: flex-end; gap: 0.5rem; margin-block: 1.1rem 0; }
+.notes-search-field { display: flex; flex-direction: column; flex: 1 1 auto; min-inline-size: 0; max-inline-size: 34rem; margin: 0; }
+.notes-search input[type="search"] { inline-size: 100%; }
+.notes-search .btn { flex: none; white-space: nowrap; }
+.notes-letters { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-block: 0.85rem 0.35rem; }
+/* On a phone the letters keep to one line, which scrolls sideways. */
+@media (max-width: 40rem) {
+  .notes-letters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-block-end: 0.25rem; }
+  .notes-letter { flex: none; }
+}
+.notes-letter {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 2rem;
+  block-size: 2rem;
+  padding-inline: 0.35rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-raised) 85%, transparent);
+  color: var(--text-primary);
+  font-size: var(--type-minor);
+  text-decoration: none;
+}
+a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: var(--accent); }
+.notes-letter[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.notes-letter.is-empty { color: var(--text-tertiary); opacity: 0.5; }
+.notes-letter-all { padding-inline: 0.75rem; }
+.notes-count { margin: 0.4rem 0 0; }
+/* Each card as tall as it is: a card with a picture does not stretch the
+   ones beside it into empty boxes. */
+.notes-grid {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 0.85rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.note-card[hidden] { display: none; }
+.note-card-in {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--tempo, 140ms) ease, transform var(--tempo, 140ms) ease;
+}
+.note-card-in:hover { border-color: var(--accent); transform: translateY(-1px); }
+.note-thumb { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--surface-sunken); }
+.note-thumb img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.note-card-body { display: grid; align-content: start; gap: 0.35rem; padding: 0.85rem 0.95rem 0.95rem; }
+.note-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.6rem; }
+.note-date { font-size: var(--type-minor); color: var(--text-secondary); }
+.note-title { font-weight: var(--weight-semi); font-size: var(--type-body); overflow-wrap: anywhere; }
+.note-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: var(--type-minor);
+}
+.note-foot { font-size: var(--type-minor); color: var(--text-tertiary); }
+.notes-person .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.notes-locked p { margin-block-end: 0; }
+
+/* A note's window, and its page. */
+.note-dialog {
+  inline-size: min(54rem, calc(100vw - 2rem));
+  max-block-size: calc(100vh - 3rem);
+  padding: 0;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: 0 24px 60px -24px rgb(var(--shadow-rgb, 0 0 0) / 0.55);
+}
+.note-dialog::backdrop { background: rgb(var(--shadow-rgb, 0 0 0) / 0.5); }
+.note-dialog-body { max-block-size: calc(100vh - 3rem); overflow: auto; }
+.note-frame { padding: clamp(1rem, 3vw, 2rem); }
+.note-page .note-frame { padding: 0; }
+.note-head { padding-block-end: 0.9rem; margin-block-end: 1.1rem; border-block-end: 1px solid var(--border-hairline); }
+.note-eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; }
+.note-heading { margin: 0; }
+.notes-person-add { margin-block: 0.25rem 1.25rem; }
+.note-about { margin: 0.45rem 0 0; color: var(--text-secondary); font-size: var(--type-minor); }
+.note-text { line-height: 1.65; overflow-wrap: anywhere; }
+.note-text img { display: block; max-inline-size: 100%; block-size: auto; margin: 0.9rem auto; border-radius: var(--radius); }
+.note-text blockquote { margin: 1rem 0; padding-inline-start: 1rem; border-inline-start: 3px solid var(--accent); color: var(--text-secondary); }
+.note-text :is(h3, h4, h5, h6) { margin-block: 1.3rem 0.4rem; }
+.note-text table { border-collapse: collapse; }
+.note-text :is(th, td) { padding: 0.3rem 0.6rem; border: 1px solid var(--border-hairline); }
+.note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-block-start: 1.5rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--border-hairline);
+}
+.note-close { margin-inline-start: auto; }
+.note-page .note-close { display: none; }
+
+/* Writing one. */
+.note-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.6rem 1rem;
+}
+.note-field-title { grid-column: 1 / -1; }
+
+/* The family the archive describes (the bundle room's form). */
+.manifest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.6rem 1rem;
+}
+.manifest-wide { grid-column: 1 / -1; }
+.manifest-grid textarea { inline-size: 100%; }
+.manifest-set { margin-block: 0.4rem 0.9rem; }
+/* The account's own page: the record it says it is. */
+.account-person-now { margin-block: 0.4rem 0.6rem; }
+.account-person-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem 0.8rem; margin-block-start: 0.8rem; }
+.account-person-form .field { flex: 1 1 18rem; max-inline-size: 30rem; margin: 0; }
+.manifest-span { margin-block: 0.2rem 0.9rem; }
+.manifest-value { margin: 0.2rem 0 0.15rem; font-variant-numeric: tabular-nums; }
+/* The licence and, beside it, what it lets others do. */
+.manifest-licence { display: grid; grid-template-columns: minmax(0, 26rem) minmax(0, 1fr); gap: 0.6rem 1.2rem; align-items: start; }
+.manifest-about { padding: 0.65rem 0.85rem; border: 1px solid var(--border-hairline); border-inline-start: 3px solid var(--accent); border-radius: var(--radius-sm); background: var(--surface-sunken); font-size: var(--type-minor); line-height: 1.5; }
+.manifest-about p { margin: 0; }
+@media (max-width: 40rem) { .manifest-licence { grid-template-columns: minmax(0, 1fr); } }
+.note-people { margin-block-start: 1rem; }
+.note-chosen { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.6rem; padding: 0; list-style: none; }
+.note-person { display: inline-flex; align-items: center; gap: 0.35rem; }
+.note-person-remove { padding: 0 0.15rem; border: 0; background: none; color: inherit; font-size: 1.1em; cursor: pointer; }
+.note-person-add { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.note-person-add input { flex: 1 1 16rem; max-inline-size: 30rem; }
+.note-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-block-end: 0.5rem; }
+.note-toolbar-end { margin-inline-start: auto; }
+.note-source { inline-size: 100%; min-block-size: 22rem; font-family: var(--mono); font-size: var(--type-minor); line-height: 1.55; }
+.note-preview { min-block-size: 22rem; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+.note-delete { margin-block-start: 1.5rem; }
 
 .place-card ul.plain > li { border-bottom: none; padding: 0.1rem 0; }
 
@@ -3586,15 +3841,21 @@ a.tcard:hover {
   flex-direction: column;
   background: var(--rv-ink-1);
 }
+/* Two rows in a fixed order (river.html): the itinerary, then the tools.
+   Before, one wrapping row put each control wherever the width left room,
+   the chips over two uneven lines and the buttons under them. */
 .rv-controls {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-block: 10px;
+  flex-direction: column;
+  gap: 10px;
+  padding-block: 12px;
   padding-inline: 16px;
   border-block-end: 1px solid var(--rv-rule-1);
-  flex-wrap: wrap;
 }
+.rv-itinerary { display: flex; align-items: center; gap: 14px; min-inline-size: 0; }
+/* Left, what is drawn (back, range, zoom); right, how (pause, whole). */
+.rv-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px; min-block-size: 32px; }
+.rv-tools-end { display: inline-flex; align-items: center; gap: 10px; margin-inline-start: auto; }
 .rv-eyebrow {
   font-family: var(--rv-mono);
   font-size: var(--type-rv-eyebrow);
@@ -3602,17 +3863,23 @@ a.tcard:hover {
   text-transform: uppercase;
   color: var(--rv-text-3);
 }
+/* The itinerary keeps to its line: a long journey scrolls sideways, and
+   river.js brings the stop the reader is at into view. */
 .rv-trail {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
-  flex: 1 1 260px;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
   min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rv-rule-3) transparent;
   margin: 0;
-  padding: 0;
+  padding: 2px 0;
   list-style: none;
 }
+.rv-trail > li { flex: none; }
 /* The river's controls are ordinary secondary buttons (B2) — `.river` sets
    Study 06 on itself, so they draw on the river's ground under every theme.
    What is left here is layout: the itinerary's chips, and the joined sets
@@ -3664,10 +3931,13 @@ a.tcard:hover {
 .rv-svg .rv-hl-box { fill: var(--rv-ink-1); fill-opacity: 0.92; stroke: var(--rv-lit); stroke-opacity: 0.35; stroke-width: 0.8; }
 .rv-svg a.rv-p.rv-looked .k-name { visibility: hidden; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
+/* A grid of keys in columns of one width, rather than a row that wrapped
+   them wherever the line ran out; the title, the long keys and the
+   compass each take a row of their own. */
 .rv-legend {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr));
+  gap: 10px 24px;
   align-items: center;
   padding-block: 10px 12px;
   padding-inline: 16px;
@@ -3701,7 +3971,10 @@ a.tcard:hover {
 .rv-widths { gap: 4px !important; }
 .rv-widths > i { display: block; block-size: 12px; background: var(--rv-water); }
 .rv-widths > i:last-of-type { margin-inline-end: 3px; }
-.rv-direction { margin-inline-start: auto; color: var(--rv-text-3); }
+.rv-direction { color: var(--rv-text-3); }
+.rv-legend > :is(.rv-legend-title, .rv-widths, .rv-direction, .rv-hint) { grid-column: 1 / -1; }
+/* The two longest keys take two columns each where there are four. */
+@media (min-width: 64rem) { .rv-legend > span:has(> .rv-rep) { grid-column: span 2; } }
 /* The record beside the river is the ordinary record partial, which draws
    with the theme's variables; here they are the river's, so the panel reads
    on the river's ground whichever theme the reader chose. */
@@ -4342,7 +4615,7 @@ a.tcard:hover {
    Canopée shows them — every other theme keeps Study 06's words alone —
    and `prefers-reduced-motion` stills them like everything else. */
 .ld { display: none; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .ld { display: inline-grid; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .ld { display: inline-grid; }
 .ld {
   place-items: center;
   inline-size: 1.1em;
@@ -4401,7 +4674,7 @@ a.tcard:hover {
    Every other theme is a palette. Canopée carries a shape and a tempo as
    well: pill buttons, softened fields and frames, a gold glow under what
    can be pressed, and motion that answers the reader. Everything is written
-   under :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]), so any other theme gives Study 06's
+   under :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]), so any other theme gives Study 06's
    furniture back exactly. What does not change, here or anywhere: the four
    button variants and their heights, the focus ring (2px at 2px on every
    control), labels above fields, the notice shapes, the chrome budgets. */
@@ -4418,76 +4691,78 @@ a.tcard:hover {
      cached for a day, so one that changes takes a new `?v=`. */
   --kit-hero: url("/static/img/canopee-hero.jpg?v=2");
   --kit-cta: url("/static/img/canopee-cta.jpg?v=2");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-canopee.jpg");
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) ::selection { background: rgb(var(--glow-rgb) / 0.32); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) ::selection { background: rgb(var(--glow-rgb) / 0.32); }
 
 /* The masthead: the page's own ground, a hairline, the logo in its own
    colours, and the section you are in written in the accent. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .masthead {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .masthead {
   background: color-mix(in srgb, var(--surface-page) 92%, transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .brand {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .brand {
   font-family: var(--face);
   font-size: var(--type-body);
   font-weight: var(--weight-semi);
   letter-spacing: 0.01em;
 }
 /* The logo as it was drawn: the green tile, the gold X, the pale wreath. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .logo-mark .lm-tile { fill: var(--logo-tile); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .logo-mark .lm-stem { stroke: var(--logo-light); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .logo-mark .lm-leaf { fill: var(--logo-light); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .logo-mark .lm-deep { stop-color: var(--logo-deep); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .logo-mark .lm-gold { stop-color: var(--logo-gold); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .logo-mark .lm-light { stop-color: var(--logo-light); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .brand-mark {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .logo-mark .lm-tile { fill: var(--logo-tile); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .logo-mark .lm-stem { stroke: var(--logo-light); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .logo-mark .lm-leaf { fill: var(--logo-light); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .logo-mark .lm-deep { stop-color: var(--logo-deep); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .logo-mark .lm-gold { stop-color: var(--logo-gold); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .logo-mark .lm-light { stop-color: var(--logo-light); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .brand-mark {
   inline-size: 34px;
   block-size: 34px;
   margin-inline-end: -0.6rem;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .login-logo {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .login-logo {
   inline-size: 76px;
   block-size: 76px;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .masthead nav a[aria-current="page"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .masthead nav a[aria-current="page"] {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
 /* Pills, at the padding Study 06 measured: the three selects stay one row
    at 390px in every language (docs/adr/0002 §9), so the round costs no room. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .lang-form select { border-radius: var(--btn-radius); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .prefs-more { border-radius: 50%; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .chrome-nav > a.btn {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .lang-form select { border-radius: var(--btn-radius); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .prefs-more { border-radius: 50%; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .chrome-nav > a.btn {
   background: var(--accent);
   border-color: transparent;
   color: var(--on-accent);
   font-weight: var(--weight-semi);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .chrome-nav > a.btn:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .chrome-nav > a.btn:hover {
   background: color-mix(in srgb, var(--accent) 86%, var(--text-primary));
   box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .initials {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .initials {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-soft);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .menu-panel {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .menu-panel {
   border-radius: var(--radius-lg);
   padding: 8px;
   box-shadow: 0 20px 44px -18px rgb(var(--shadow-rgb) / 0.8);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .search-box > input[type="search"] { border-radius: var(--btn-radius); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .search-suggest {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .search-box > input[type="search"] { border-radius: var(--btn-radius); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .search-suggest {
   border-radius: var(--radius);
   padding: 6px;
   box-shadow: 0 20px 44px -18px rgb(var(--shadow-rgb) / 0.8);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .search-suggest li { border-radius: var(--radius-sm); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .search-suggest li { border-radius: var(--radius-sm); }
 
 /* Buttons: the same four, as pills. The primary carries an arrow that
    nudges forward under the pointer (and backward in a right-to-left
    script); the arrow is decoration, so it has no text alternative. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn {
   padding-inline: 18px;
   font-weight: var(--weight-semi);
   transition: background-color var(--tempo) var(--ease),
@@ -4496,44 +4771,44 @@ a.tcard:hover {
               box-shadow var(--tempo) var(--ease),
               transform var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.small { padding-inline: 12px; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn:hover { border-color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn:active { transform: translateY(1px); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.primary:hover { box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.primary:not([aria-busy="true"])::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.small { padding-inline: 12px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn:hover { border-color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn:active { transform: translateY(1px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.primary:hover { box-shadow: 0 8px 24px -10px rgb(var(--glow-rgb) / 0.75); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.primary:not([aria-busy="true"])::after {
   content: "→" / "";
   display: inline-block;
   transition: transform var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.primary:hover::after { transform: translateX(3px); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"])[dir="rtl"] .btn.primary:not([aria-busy="true"])::after { content: "←" / ""; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"])[dir="rtl"] .btn.primary:hover::after { transform: translateX(-3px); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.ghost:hover { border-color: transparent; color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.danger:hover { border-color: var(--danger); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn:disabled,
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn[aria-disabled="true"] { transform: none; box-shadow: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.primary:hover::after { transform: translateX(3px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"])[dir="rtl"] .btn.primary:not([aria-busy="true"])::after { content: "←" / ""; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"])[dir="rtl"] .btn.primary:hover::after { transform: translateX(-3px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.ghost:hover { border-color: transparent; color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.danger:hover { border-color: var(--danger); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn:disabled,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn[aria-disabled="true"] { transform: none; box-shadow: none; }
 
 /* Focus: the ring every theme draws (2px at 2px), and under it a soft glow
    of the same gold, so the control with the keyboard reads from across a
    room. A glow, never in place of the ring. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(input, select, textarea):focus {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(input, select, textarea):focus {
   box-shadow: 0 0 0 6px rgb(var(--glow-rgb) / 0.2);
 }
 
 /* Fields: a softened well, and the accent on the one with the keyboard. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main :is(input[type="text"], input[type="password"], input[type="email"],
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main :is(input[type="text"], input[type="password"], input[type="email"],
   input[type="search"], input[type="number"], input[type="url"], select, textarea) {
   padding-inline-start: 14px;
   transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(input, select, textarea):focus { border-color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(input, select, textarea):focus { border-color: var(--accent); }
 
 /* Frames: a sheen at the top of a raised surface and a deeper shadow, so
    a card sits on the forest floor rather than on paper. Not on a block
    inside a section (level 3 stays recessed), and not in the paper style,
    which has no cards to lift. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]):not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner):not(:is(.card, .rec-section) *) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]):not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner):not(:is(.card, .rec-section) *) {
   background-image: linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 3.5%, transparent), transparent 48%);
   box-shadow: 0 1px 0 rgb(var(--shadow-rgb) / 0.2), 0 18px 36px -26px rgb(var(--shadow-rgb) / 0.9);
 }
@@ -4541,12 +4816,12 @@ a.tcard:hover {
 /* Notices: the same four shapes, larger, each carrying its sign — a ring
    with i, a disc with ✓, a diamond with !, a square with × — so the kind
    reads twice, by shape and by mark, and never by colour alone. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .notice {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .notice {
   border-radius: var(--radius);
   padding-inline: 3rem 1.1rem;
   background-color: color-mix(in srgb, var(--surface-raised) 72%, transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .notice::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .notice::before {
   display: grid;
   place-items: center;
   inline-size: 20px;
@@ -4560,9 +4835,9 @@ a.tcard:hover {
   content: "i" / "";
   color: var(--text-secondary);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .notice.ok::before { content: "✓" / ""; color: var(--surface-page); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .notice.warn::before,
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .notice-defect::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .notice.ok::before { content: "✓" / ""; color: var(--surface-page); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .notice.warn::before,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .notice-defect::before {
   content: "!" / "";
   inline-size: 22px;
   block-size: 22px;
@@ -4571,10 +4846,10 @@ a.tcard:hover {
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   color: var(--surface-page);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .notice.error::before { content: "×" / ""; border-radius: 4px; color: var(--surface-page); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .notice.error::before { content: "×" / ""; border-radius: 4px; color: var(--surface-page); }
 
 /* The record's tabs: a segmented pill, the current one filled. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tabs {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tabs {
   box-shadow: none;
   gap: 0.25rem;
   padding: 4px;
@@ -4588,35 +4863,35 @@ a.tcard:hover {
    the pill scrolls sideways without a scrollbar, which would sit inside its
    round ends: the side where more tabs wait fades out (ui.js says which), and
    the wheel turns sideways over it. A keyboard reaches every tab as before. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tabs { scrollbar-width: none; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tabs::-webkit-scrollbar { display: none; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tabs[data-more="right"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tabs { scrollbar-width: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tabs::-webkit-scrollbar { display: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tabs[data-more="right"] {
   -webkit-mask-image: linear-gradient(to right, currentColor calc(100% - 2.5rem), transparent);
   mask-image: linear-gradient(to right, currentColor calc(100% - 2.5rem), transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tabs[data-more="left"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tabs[data-more="left"] {
   -webkit-mask-image: linear-gradient(to left, currentColor calc(100% - 2.5rem), transparent);
   mask-image: linear-gradient(to left, currentColor calc(100% - 2.5rem), transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tabs[data-more="both"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tabs[data-more="both"] {
   -webkit-mask-image: linear-gradient(to right, transparent, currentColor 2.5rem, currentColor calc(100% - 2.5rem), transparent);
   mask-image: linear-gradient(to right, transparent, currentColor 2.5rem, currentColor calc(100% - 2.5rem), transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab {
   border-block-end: 0;
   border-radius: var(--btn-radius);
   padding-block: 0.45rem;
   padding-inline: 0.95rem;
   transition: background-color var(--tempo) var(--ease), color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab:hover { background: var(--surface-hover); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab.is-current { background: var(--accent); color: var(--on-accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab.is-current .tab-count { color: var(--on-accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab:hover { background: var(--surface-hover); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab.is-current { background: var(--accent); color: var(--on-accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab.is-current .tab-count { color: var(--on-accent); }
 
 /* Bars and badges: round ends. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .conf-bar,
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .conf-bar > i { border-radius: 999px; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .edit-band { letter-spacing: 0.12em; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .conf-bar,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .conf-bar > i { border-radius: 999px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .edit-band { letter-spacing: 0.12em; }
 
 /* The overview page under Canopée: the reference's two photographs (made
    for this theme in Canva, docs/adr/0004 §3) behind the hero and beside
@@ -4625,7 +4900,7 @@ a.tcard:hover {
    a control's: the buttons over it are the ordinary buttons. The pictures
    are cached for a day, so one that changes takes a new `?v=` here, or a
    reader who saw the old one keeps it (the second pass's are `v=2`). */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .hero {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .hero {
   min-block-size: min(78vh, 46rem);
   border-color: var(--border-hairline);
   background-color: var(--surface-page);
@@ -4638,51 +4913,51 @@ a.tcard:hover {
   background-position: 0 0, center, center, 70% 40%;
   background-repeat: repeat, no-repeat, no-repeat, no-repeat;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"])[dir="rtl"] .hero {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"])[dir="rtl"] .hero {
   background-image:
     var(--grain),
     linear-gradient(270deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 88%, transparent) 34%, color-mix(in srgb, var(--surface-page) 25%, transparent) 72%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
     linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
     var(--kit-hero);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .eyebrow-chip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .eyebrow-chip {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   color: var(--accent);
   background: color-mix(in srgb, var(--surface-page) 60%, transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .hero-card,
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .stat-strip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .hero-card,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .stat-strip {
   background: color-mix(in srgb, var(--surface-page) 72%, transparent);
   border-color: color-mix(in srgb, var(--border-strong) 45%, transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .scroll-cue { display: flex; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .hero { padding-block-end: 4.6rem; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .stat-ico { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-ico { border: 0; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .scroll-cue { display: flex; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .hero { padding-block-end: 4.6rem; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .stat-ico { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-ico { border: 0; }
 /* Zenze's coloured pastilles, one tint per kind of detail the archive holds:
    water for relations and places, leaf for occupations, amber for dates,
    clay for sources. Each ink is measured at 4.5:1 or more on its disc. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-ico { background: var(--accent-soft); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-ico:is([data-kind="links"], [data-kind="places"]) { background: var(--icon-river); color: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-ico[data-kind="occupations"] { background: var(--icon-tree); color: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-ico:is([data-kind="uncertain"], [data-kind="preserved"]) { background: var(--icon-search); color: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-ico[data-kind="sources"] { background: var(--icon-quality); color: var(--icon-quality-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-card {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-ico { background: var(--accent-soft); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-ico:is([data-kind="links"], [data-kind="places"]) { background: var(--icon-river); color: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-ico[data-kind="occupations"] { background: var(--icon-tree); color: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-ico:is([data-kind="uncertain"], [data-kind="preserved"]) { background: var(--icon-search); color: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-ico[data-kind="sources"] { background: var(--icon-quality); color: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-card {
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .feature-card:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .feature-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent) 38%, transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .cta-banner {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .cta-banner {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
   padding-block: 0.75rem;
   padding-inline: 0.75rem 1.5rem;
 }
 @media (max-width: 860px) {
-  :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .cta-banner { grid-template-columns: 1fr; padding-inline: 0.75rem; }
+  :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .cta-banner { grid-template-columns: 1fr; padding-inline: 0.75rem; }
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .cta-photo {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .cta-photo {
   display: block;
   align-self: stretch;
   min-block-size: 9rem;
@@ -4698,18 +4973,18 @@ a.tcard:hover {
    sets `js-motion` on the root only when `prefers-reduced-motion` allows
    it, so a page without scripts, or a reader who asked for stillness,
    gets every section in place and every number whole. */
-html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) [data-reveal] {
+html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) [data-reveal] {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 640ms var(--ease), transform 640ms var(--ease);
 }
-html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) [data-reveal].is-in { opacity: 1; transform: none; }
+html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) [data-reveal].is-in { opacity: 1; transform: none; }
 /* Paper has no scroll: a section that never scrolled into view prints all
    the same. */
 @media print {
   html.js-motion[data-theme] [data-reveal] { opacity: 1; transform: none; }
 }
-html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .scroll-cue > i::after { animation: cue-wheel 1600ms var(--ease) 3; }
+html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .scroll-cue > i::after { animation: cue-wheel 1600ms var(--ease) 3; }
 @keyframes cue-wheel {
   0% { transform: translateY(0); opacity: 1; }
   70% { transform: translateY(8px); opacity: 0; }
@@ -4869,7 +5144,6 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 /* The legend, as a cartographer's: a title in spaced capitals, a compass
    that says which way time runs, and the scale of a generation. */
 .rv-legend-title {
-  flex: 1 1 100%;
   font-size: var(--type-rv-eyebrow);
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -4936,10 +5210,10 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    carries the kit onto every page: an icon disc on every section, the person
    as a card, figures as tiles, rows that answer the pointer, and buttons that
    move — a sheen across them under the pointer, a lift, an ink ripple from
-   where they were pressed. Everything stays under :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]), so
+   where they were pressed. Everything stays under :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]), so
    every other theme is Study 06 exactly; nothing here names a colour, and
    prefers-reduced-motion stills it like everything else. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) {
   --ico-leaf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 19c0-8.3 5.2-14 14-14 0 9-5.8 14-14 14z'/%3E%3Cpath d='M5 19l7.5-7.5'/%3E%3C/svg%3E");
   --ico-person: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.6'/%3E%3Cpath d='M5 20.5c0-3.9 3.1-7 7-7s7 3.1 7 7'/%3E%3C/svg%3E");
   --ico-family: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8.5' cy='8.5' r='3'/%3E%3Ccircle cx='16.5' cy='9.5' r='2.4'/%3E%3Cpath d='M3 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6'/%3E%3Cpath d='M14.4 14.4c.6-.3 1.3-.4 2.1-.4 2.6 0 4.5 2.3 4.5 5.5'/%3E%3C/svg%3E");
@@ -4983,13 +5257,13 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 }
 
 /* ---------- buttons, every one of them ---------- */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn {
   position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 /* The sheen: a band of light that crosses the button once under the pointer. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -4999,17 +5273,17 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   transition: transform 720ms var(--ease);
   pointer-events: none;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn:hover::before { transform: translateX(130%); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.primary::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn:hover::before { transform: translateX(130%); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.primary::before {
   background: linear-gradient(105deg, transparent 32%, color-mix(in srgb, var(--surface-page) 22%, transparent) 50%, transparent 68%);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px -12px rgb(var(--shadow-rgb) / 0.9);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.primary:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn.ghost:hover { background: var(--accent-soft); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .btn:active {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.primary:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn.ghost:hover { background: var(--accent-soft); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .btn:active {
   transform: translateY(0) scale(0.97);
   transition-duration: 70ms;
 }
@@ -5027,8 +5301,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 @keyframes ripple-ink { to { transform: scale(1); opacity: 0; } }
 /* A secondary that leads somewhere carries its own sign: the record's way
    into the river, and the edit button beside a name. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .record-foot .btn[href^="/?p="]::after,
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .record-foot .btn[href^="/?p="]::after,
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
   content: "" / "";
   flex: none;
   inline-size: 1rem;
@@ -5038,11 +5312,11 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   mask: var(--ico-river) center / contain no-repeat;
   transition: transform var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]::after {
   -webkit-mask-image: var(--ico-pen);
   mask-image: var(--ico-pen);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.record-foot .btn[href^="/?p="], :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]):hover::after { transform: translateX(2px) rotate(-6deg); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.record-foot .btn[href^="/?p="], :is(.person-head-actions, .panel-actions) .btn[href*="/edit"]):hover::after { transform: translateX(2px) rotate(-6deg); }
 /* Under Summit the way from the record leads up the mountain. */
 [data-theme="summit"] .record-foot .btn[href^="/?p="]::after {
   -webkit-mask-image: var(--ico-mountain);
@@ -5050,33 +5324,33 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 }
 /* The edit button beside a name is the record's one action: filled, as the
    kit draws a primary. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-head-actions .btn[href*="/edit"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-head-actions .btn[href*="/edit"] {
   background: var(--accent);
   border-color: transparent;
   color: var(--on-accent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-head-actions .btn[href*="/edit"]:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-head-actions .btn[href*="/edit"]:hover { box-shadow: 0 10px 26px -10px rgb(var(--glow-rgb) / 0.85); }
 /* Small round controls turn under the pointer. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .prefs-more { transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), color var(--tempo) var(--ease); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .prefs-more:hover { transform: rotate(90deg); border-color: var(--accent); color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .lang-form select { transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .lang-form select:hover { border-color: var(--accent); box-shadow: 0 0 0 4px rgb(var(--glow-rgb) / 0.12); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .masthead nav a { transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .masthead nav a:not([aria-current]):hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .account > summary::after { transition: transform var(--tempo) var(--ease); display: inline-block; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .account[open] > summary::after { transform: rotate(180deg); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab { position: relative; overflow: hidden; isolation: isolate; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab:active { transform: scale(0.97); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .prefs-more { transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), color var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .prefs-more:hover { transform: rotate(90deg); border-color: var(--accent); color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .lang-form select { transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .lang-form select:hover { border-color: var(--accent); box-shadow: 0 0 0 4px rgb(var(--glow-rgb) / 0.12); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .masthead nav a { transition: color var(--tempo) var(--ease), border-color var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .masthead nav a:not([aria-current]):hover { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .account > summary::after { transition: transform var(--tempo) var(--ease); display: inline-block; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .account[open] > summary::after { transform: rotate(180deg); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab { position: relative; overflow: hidden; isolation: isolate; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab:active { transform: scale(0.97); }
 /* A link in a page's text: its underline moves off the word under the
    pointer, and takes the accent. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main :is(p, li, td, dd) a:not(.btn) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main :is(p, li, td, dd) a:not(.btn) {
   text-underline-offset: 2px;
   transition: color var(--tempo) var(--ease), text-underline-offset var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main :is(p, li, td, dd) a:not(.btn):hover { text-underline-offset: 4px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main :is(p, li, td, dd) a:not(.btn):hover { text-underline-offset: 4px; }
 
 /* ---------- page titles and section discs ---------- */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main h1:not(.hero-title)::after {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main h1:not(.hero-title)::after {
   content: "";
   display: block;
   inline-size: 3rem;
@@ -5089,12 +5363,12 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    tinted disc with its sign cut out of it. The sign is the section's — a
    person for identity, two for family, a calendar for a life, a pin for
    places — and the leaf where a section has no sign of its own. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.sec-head h2, .rec-section > h2:first-child, .settings-panel legend) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.sec-head h2, .rec-section > h2:first-child, .settings-panel legend) {
   display: flex;
   align-items: center;
   gap: 0.7rem;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.sec-head h2, .rec-section > h2:first-child)::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.sec-head h2, .rec-section > h2:first-child)::before {
   content: "";
   flex: none;
   inline-size: 2rem;
@@ -5106,48 +5380,48 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   mask: var(--sign, var(--ico-leaf)) center / 1.05rem no-repeat, linear-gradient(black 0 0);
   mask-composite: exclude;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #identity { --sign: var(--ico-person); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #family { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #life { --sign: var(--ico-calendar); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #places { --sign: var(--ico-pin); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #occupations { --sign: var(--ico-briefcase); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #setup-archive-door { --sign: var(--ico-upload); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #setup-scratch-door { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #setup-gedcom-door { --sign: var(--ico-book); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #relationships { --sign: var(--ico-link); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #notes { --sign: var(--ico-pen); --disc: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #history { --sign: var(--ico-clock); --disc: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #evidence { --sign: var(--ico-book); --disc: var(--icon-quality-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #charts { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #profile-summary { --sign: var(--ico-star); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .completeness { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .rec-section:has(.gallery) { --sign: var(--ico-image); --disc: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .rec-section:has(.diag) { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #identity { --sign: var(--ico-person); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #family { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #life { --sign: var(--ico-calendar); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #places { --sign: var(--ico-pin); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #occupations { --sign: var(--ico-briefcase); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #setup-archive-door { --sign: var(--ico-upload); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #setup-scratch-door { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #setup-gedcom-door { --sign: var(--ico-book); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #relationships { --sign: var(--ico-link); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #notes { --sign: var(--ico-pen); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #history { --sign: var(--ico-clock); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #evidence { --sign: var(--ico-book); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #charts { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #profile-summary { --sign: var(--ico-star); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .completeness { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .rec-section:has(.gallery) { --sign: var(--ico-image); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .rec-section:has(.diag) { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
 /* The console's rooms (docs/adr/0011): each section its own sign, as the
    record's are, rather than the leaf every one of them fell back to. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #conformity { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #anomalies { --sign: var(--ico-alert); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #diagnostics { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #bundle-facts { --sign: var(--ico-archive); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #export { --sign: var(--ico-download); --disc: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #health { --sign: var(--ico-pulse); --disc: var(--icon-quality-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #version { --sign: var(--ico-upgrade); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #volumes { --sign: var(--ico-disk); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #compute { --sign: var(--ico-cpu); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #activity { --sign: var(--ico-gauge); --disc: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #roles { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #registration { --sign: var(--ico-accounts); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #public-address { --sign: var(--ico-connectivity); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #policy { --sign: var(--ico-lock); --disc: var(--icon-quality-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #services { --sign: var(--ico-key); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #entity-counts { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #operations { --sign: var(--ico-gear); --disc: var(--icon-search-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #recent-changes { --sign: var(--ico-clock); --disc: var(--icon-river-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #existing-accounts { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) #new-account { --sign: var(--ico-pen); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #conformity { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #anomalies { --sign: var(--ico-alert); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #diagnostics { --sign: var(--ico-shield); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #bundle-facts { --sign: var(--ico-archive); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #export { --sign: var(--ico-download); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #health { --sign: var(--ico-pulse); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #version { --sign: var(--ico-upgrade); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #volumes { --sign: var(--ico-disk); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #compute { --sign: var(--ico-cpu); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #activity { --sign: var(--ico-gauge); --disc: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #roles { --sign: var(--ico-bars); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #registration { --sign: var(--ico-accounts); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #public-address { --sign: var(--ico-connectivity); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #policy { --sign: var(--ico-lock); --disc: var(--icon-quality-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #services { --sign: var(--ico-key); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #entity-counts { --sign: var(--ico-family); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #operations { --sign: var(--ico-gear); --disc: var(--icon-search-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #recent-changes { --sign: var(--ico-clock); --disc: var(--icon-river-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #existing-accounts { --sign: var(--ico-person); --disc: var(--icon-tree-ink); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) #new-account { --sign: var(--ico-pen); --disc: var(--accent); }
 
 /* ---------- the record ---------- */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-head {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-head {
   padding: 1.25rem;
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
@@ -5156,16 +5430,16 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
     var(--surface-raised);
   box-shadow: 0 18px 36px -26px rgb(var(--shadow-rgb) / 0.9);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-avatar {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-avatar {
   border-radius: 22px;
   border: 0;
   box-shadow: 0 0 0 3px var(--surface-raised), 0 0 0 5px color-mix(in srgb, var(--accent) 70%, transparent), 0 14px 30px -14px rgb(var(--glow-rgb) / 0.7);
   transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) a.person-avatar:hover { transform: scale(1.03); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .panel-avatar { border-radius: 16px; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-head h1 { font-size: var(--type-title); letter-spacing: -0.02em; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-vitals .pv-dates {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) a.person-avatar:hover { transform: scale(1.03); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .panel-avatar { border-radius: 16px; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-head h1 { font-size: var(--type-title); letter-spacing: -0.02em; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-vitals .pv-dates {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -5174,11 +5448,11 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .showcase-strip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .showcase-strip {
   border-radius: var(--radius);
   background: linear-gradient(90deg, rgb(var(--glow-rgb) / 0.08), transparent 70%), var(--surface-raised);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .showcase-strip > strong {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .showcase-strip > strong {
   font-family: var(--mono);
   font-size: var(--type-label);
   font-weight: var(--weight-normal);
@@ -5186,78 +5460,78 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   text-transform: uppercase;
   color: var(--accent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .chip {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .chip {
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
   background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
   transition: border-color var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .fact-chips .fc {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .fact-chips .fc {
   border-radius: var(--radius);
   border: 1px solid var(--border-hairline);
   background: var(--surface-sunken);
   transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .fact-chips .fc:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .fact-chips dt { color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.union, .place-card, .link-card, .life-row, .name-block) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .fact-chips .fc:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .fact-chips dt { color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.union, .place-card, .link-card, .life-row, .name-block) {
   transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.union, .place-card, .link-card):hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.union, .place-card, .link-card):hover {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
   transform: translateY(-1px);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .gallery .shot { transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); border-radius: var(--radius); overflow: hidden; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .gallery .shot:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(var(--shadow-rgb) / 0.95); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .gallery .shot { transition: transform var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); border-radius: var(--radius); overflow: hidden; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .gallery .shot:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(var(--shadow-rgb) / 0.95); }
 
 /* ---------- tables, everywhere ---------- */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) thead th { border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text-secondary); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) tbody tr { transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) tbody tr:hover { box-shadow: inset 3px 0 0 var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"])[dir="rtl"] tbody tr:hover { box-shadow: inset -3px 0 0 var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) thead th { border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text-secondary); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) tbody tr { transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) tbody tr:hover { box-shadow: inset 3px 0 0 var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"])[dir="rtl"] tbody tr:hover { box-shadow: inset -3px 0 0 var(--accent); }
 
 /* ---------- the tree ---------- */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .tcard {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .tcard {
   border-radius: 10px;
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .tcard:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .tcard:hover {
   transform: translateY(-2px);
   border-color: var(--accent);
   box-shadow: 0 10px 22px -14px rgb(var(--glow-rgb) / 0.8);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .tcard.is-selected {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .tcard.is-selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgb(var(--glow-rgb) / 0.45), 0 10px 22px -14px rgb(var(--glow-rgb) / 0.8);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .band-label {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .band-label {
   font-family: var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .tree-legend { border-radius: var(--radius); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .tree-legend { border-radius: var(--radius); }
 
 /* ---------- administration and quality ---------- */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) a.stat {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) a.stat {
   text-decoration: none;
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) a.stat:hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) a.stat:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   box-shadow: 0 14px 28px -18px rgb(var(--glow-rgb) / 0.7);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .stat .n { color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .stat .k { color: var(--text-secondary); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .stat .n { color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .stat .k { color: var(--text-secondary); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary {
   cursor: pointer;
   list-style: none;
   transition: color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::-webkit-details-marker { display: none; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::-webkit-details-marker { display: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before {
   content: "";
   display: inline-block;
   inline-size: 0.9rem;
@@ -5269,15 +5543,15 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   mask: var(--ico-chev) center / contain no-repeat;
   transition: transform var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"])[dir="rtl"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before { transform: scaleX(-1); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov)[open] > summary::before { transform: rotate(90deg); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.quality-rule, .pf-group) > summary:hover { color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .quality-rule {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"])[dir="rtl"] :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov) > summary::before { transform: scaleX(-1); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.quality-rule, .pf-group, .ed-add, .ed-add-row, .add-record, .record-edit, .more-fields, .menu-disclosure, .sec-help, .radar-fold, .danger-zone, .raw-fieldset, .pf-prov)[open] > summary::before { transform: rotate(90deg); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.quality-rule, .pf-group) > summary:hover { color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .quality-rule {
   transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .quality-rule:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .quality-rule[open] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 16px 32px -24px rgb(var(--glow-rgb) / 0.7); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) :is(.tab-count, .pf-group-count) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .quality-rule:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .quality-rule[open] { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 16px 32px -24px rgb(var(--glow-rgb) / 0.7); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.tab-count, .pf-group-count) {
   display: inline-grid;
   place-items: center;
   min-inline-size: 1.5rem;
@@ -5286,37 +5560,37 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background: var(--accent-soft);
   color: var(--accent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .person-tab.is-current .tab-count { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .ed-save {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .person-tab.is-current .tab-count { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .ed-save {
   background: color-mix(in srgb, var(--surface-page) 88%, transparent);
   border-block-start-color: color-mix(in srgb, var(--accent) 40%, transparent);
   box-shadow: 0 -16px 30px -24px rgb(var(--glow-rgb) / 0.6);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .ed-block { border-radius: var(--radius); transition: border-color var(--tempo) var(--ease); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .ed-block:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .edit-band {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .ed-block { border-radius: var(--radius); transition: border-color var(--tempo) var(--ease); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .ed-block:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .edit-band {
   background: linear-gradient(90deg, rgb(var(--glow-rgb) / 0.16), transparent 75%);
   color: var(--accent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .search-results li {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .search-results li {
   border-radius: var(--radius-sm);
   padding-inline: 0.75rem;
   transition: background-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .search-results li:hover { background: var(--surface-hover); box-shadow: inset 3px 0 0 var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .settings-panel {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .search-results li:hover { background: var(--surface-hover); box-shadow: inset 3px 0 0 var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .settings-panel {
   padding: 1.25rem 1.4rem;
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
   background: var(--surface-raised);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) input[type="file"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) input[type="file"] {
   padding: 0.6rem;
   border-style: dashed;
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   background: var(--surface-sunken);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) input[type="file"]::file-selector-button {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) input[type="file"]::file-selector-button {
   margin-inline-end: 0.8rem;
   padding: 0.35rem 0.9rem;
   border: 0;
@@ -5326,12 +5600,12 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   font-weight: var(--weight-semi);
   cursor: pointer;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) input[type="range"] { accent-color: var(--accent); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) input[type="range"] { accent-color: var(--accent); }
 
 /* ---------- signing in ---------- */
 /* The one page a visitor sees first: the hero's landscape behind it, under
    the same shade, and the form as a card in front. */
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(.login-mark) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main:has(.login-mark) {
   max-width: none;
   min-block-size: 70vh;
   display: grid;
@@ -5341,8 +5615,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
     linear-gradient(180deg, color-mix(in srgb, var(--surface-page) 55%, transparent), var(--surface-page) 95%),
     var(--kit-hero) center 35% / cover;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(.login-mark) > * { inline-size: min(28rem, 100%); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) main:has(.login-mark) .card {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main:has(.login-mark) > * { inline-size: min(28rem, 100%); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) main:has(.login-mark) .card {
   background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
   box-shadow: 0 30px 60px -30px rgb(var(--shadow-rgb) / 0.95);
 }
@@ -5368,6 +5642,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --kit-hero: url("/static/img/fusion-hero.jpg");
   --kit-cta: url("/static/img/fusion-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-fusion.jpg");
 }
 [data-theme="galaxy"] {
   --btn-radius: 999px;
@@ -5379,6 +5655,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --kit-hero: url("/static/img/galaxy-hero.jpg");
   --kit-cta: url("/static/img/galaxy-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-galaxy.jpg");
 }
 /* Summit (docs/adr/0010): rounded as the reference's weather cards are,
    and unhurried, as first light is. */
@@ -5392,6 +5670,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.25, 0.7, 0.25, 1);
   --kit-hero: url("/static/img/summit-hero.jpg");
   --kit-cta: url("/static/img/summit-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-summit.jpg");
 }
 /* Fusion's tiles: a neon edge along the top, as the reference's dashboard
    panels have, and a deeper shadow. Galaxy's: glass over the night, a
@@ -5432,6 +5712,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --kit-hero: url("/static/img/clarity-hero.jpg");
   --kit-cta: url("/static/img/clarity-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-clarity.jpg");
 }
 /* Clarity's frames (the operator's second look, 2026-10-22: "the theme is
    white and the background is white also … it feels like we are writing on
@@ -5491,6 +5773,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background-color: var(--surface-raised);
 }
 [data-theme="clarity"] .choice-card { background: var(--surface-raised); }
+[data-theme="clarity"] .pcard-in { background: var(--surface-raised); }
 [data-theme="clarity"] thead th { background: var(--surface-sunken); }
 /* A notice says what kind it is by its ground as well as its sign. */
 [data-theme="clarity"]:not([data-style="paper"]) .notice { background: var(--cl-tint-1); border-color: color-mix(in srgb, var(--cl-ink-1) 25%, transparent); }
@@ -5583,7 +5866,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 /* The river's page in their palette. The river keeps Study 06's ground
    under every theme (tokens.css `.river`), because its water ramp is drawn
    for it; a view is not the river, and takes its theme's colours back. */
-:is([data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .river {
+:is([data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .river {
   --surface-page: inherit; --surface-raised: inherit; --surface-sunken: inherit; --surface-hover: inherit;
   --border-hairline: inherit; --border-strong: inherit;
   --text-primary: inherit; --text-secondary: inherit; --text-tertiary: inherit;
@@ -5641,54 +5924,68 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background-size: 100% 100%, 56px 56px, 56px 56px;
   background-position: center, -1px -1px, -1px -1px;
 }
-.river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"]) .rv-canvas::before { display: none; }
+.river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"], [data-view="scroll"]) .rv-canvas::before { display: none; }
 /* The server's river is the page without scripts. Under a view it waits,
    unseen, for the view's drawing to replace it — and shows after a moment
    if no script ever does. */
-.river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"]) .rv-canvas > svg.rv-svg:not([data-view]) {
+.river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"], [data-view="scroll"]) .rv-canvas > svg.rv-svg:not([data-view]) {
   opacity: 0;
   animation: rv-await-view 0.25s linear 1.6s forwards;
 }
 @keyframes rv-await-view { to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"]) .rv-canvas > svg.rv-svg:not([data-view]) { opacity: 1; animation: none; }
+  .river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"], [data-view="scroll"]) .rv-canvas > svg.rv-svg:not([data-view]) { opacity: 1; animation: none; }
 }
+/* Names (river.js `names`): the far generations' hidden while only the near
+   ones are asked for; the ones a drawing left out, on a ground of their own
+   with a thread to their person. */
+.river.rv-names-near .rv-svg a.rv-p[data-far] :is(text, .tv-panel, .tv-leader) { display: none; }
+.rv-svg .rv-names { pointer-events: none; }
+.rv-svg .rv-name-box { fill: var(--surface-raised); fill-opacity: 0.92; stroke: var(--border-strong); stroke-width: 0.8; }
+.rv-svg .rv-name-text { fill: var(--text-primary); font-family: var(--face); }
+.rv-svg .rv-name-thread { stroke: var(--text-secondary); stroke-width: 0.8; stroke-opacity: 0.8; }
+.rv-names-btn[aria-pressed="true"],
 .rv-whole[aria-pressed="true"] {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-/* ---- the living tree (fusion.js) ---- */
-.tv-svg .tv-bg { fill: var(--surface-page); fill-opacity: 0.5; }
-.tv-svg .tv-soil { stroke: var(--tv-soil); stroke-width: 1.2; stroke-opacity: 0.7; }
-.tv-svg .tv-soil-top { stop-color: var(--tv-soil); stop-opacity: 0.07; }
-.tv-svg .tv-crown-in { stop-color: var(--tv-leaf-living); stop-opacity: 0.1; }
-.tv-svg .tv-crown-out { stop-color: var(--tv-leaf-living); stop-opacity: 0; }
-.tv-svg .tv-dot.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.75; }
-.tv-svg .tv-dot.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.6; }
-.tv-svg .tv-dot.tv-hidden { fill: var(--tv-leaf-hidden); fill-opacity: 0.45; }
-.tv-svg .tv-dot.tv-root { fill: var(--tv-teal); fill-opacity: 0.45; }
-.tv-svg .tv-soil-end { stop-color: var(--tv-soil); stop-opacity: 0; }
-.tv-svg .tv-bark { fill: var(--tv-bark); }
-.tv-svg .tv-bark-line { stroke: var(--tv-bark); }
-.tv-svg .tv-ridge { stroke: var(--tv-bark-lit); stroke-opacity: 0.55; }
+/* ---- the tree in its glass (fusion.js) ---- */
+.tv-svg .tv-veil { fill: var(--surface-page); fill-opacity: 0.38; }
+.tv-svg .tv-glass-edge { stop-color: var(--tv-glass); stop-opacity: 0.1; }
+.tv-svg .tv-glass-mid { stop-color: var(--tv-glass); stop-opacity: 0.02; }
+.tv-svg .tv-wall { stroke: var(--tv-glass); stroke-opacity: 0.35; stroke-width: 1; }
+.tv-svg :is(.tv-rim, .tv-floor) { fill: none; stroke: var(--tv-glass); }
+.tv-svg .tv-rim.tv-ring-front { stroke-opacity: 0.55; stroke-width: 1.4; }
+.tv-svg .tv-rim.tv-ring-back { stroke-opacity: 0.3; stroke-width: 1; }
+.tv-svg .tv-floor.tv-ring-front { stroke-opacity: 0.42; stroke-width: 1; stroke-dasharray: 6 4; }
+.tv-svg .tv-floor.tv-ring-back { stroke-opacity: 0.2; stroke-width: 0.8; stroke-dasharray: 2 5; }
+.tv-svg .tv-floor-0 { stroke: var(--tv-vein); }
+.tv-svg .tv-column-glow { stroke: var(--tv-vein); stroke-opacity: 0.16; stroke-width: 16; stroke-linecap: round; }
+.tv-svg .tv-column { stroke: var(--tv-vein-soft); stroke-opacity: 0.85; stroke-width: 2; }
+.tv-svg .tv-branch-glow { fill: none; stroke: var(--tv-vein); stroke-opacity: 0.14; stroke-linecap: round; }
+.tv-svg .tv-branch { fill: none; stroke: var(--tv-bark-lit); stroke-opacity: 0.85; }
 .tv-svg .tv-faint { opacity: 0.45; }
-.tv-svg .tv-vein { stroke: var(--tv-vein); stroke-opacity: 0.9; }
+.tv-svg .tv-vein { fill: none; stroke: var(--tv-vein); stroke-opacity: 0.95; }
 .tv-svg .tv-vein-d { stroke-opacity: 0.7; }
 .tv-svg .tv-vein-s { stroke: var(--tv-vein-soft); stroke-opacity: 0.55; }
-.tv-svg .tv-twig { stroke: var(--tv-bark-lit); stroke-opacity: 0.6; }
-.tv-svg .tv-ring-arc { stroke: var(--tv-bark-lit); stroke-opacity: 0.35; stroke-width: 0.8; stroke-dasharray: 1.5 5; }
-.tv-svg .tv-twig-tip { fill: var(--tv-bark-lit); }
+.tv-svg .tv-twig { fill: none; stroke: var(--tv-glass); stroke-opacity: 0.7; }
+.tv-svg .tv-twig-tip { fill: var(--tv-glass); }
 .tv-svg .tv-bud { stroke-dasharray: 2 2; }
-.tv-svg .tv-end { fill: var(--surface-page); stroke: var(--tv-bark-lit); stroke-width: 1.4; }
+.tv-svg .tv-end { fill: var(--surface-page); stroke: var(--tv-glass); stroke-width: 1.4; }
+.tv-svg .tv-count .k-data { fill: var(--text-primary); }
 .tv-svg .tv-leaf.tv-living { fill: var(--tv-leaf-living); }
-.tv-svg .tv-leaf-glow.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.2; }
+.tv-svg .tv-leaf-glow.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.22; }
 .tv-svg .tv-leaf.tv-gone { fill: var(--tv-leaf-gone); }
-.tv-svg .tv-leaf-glow.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.12; }
+.tv-svg .tv-leaf-glow.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.16; }
 .tv-svg .tv-leaf.tv-hidden { fill: var(--surface-page); stroke: var(--tv-leaf-hidden); }
-.tv-svg .tv-halo { fill: var(--accent); fill-opacity: 0.12; }
+.tv-svg .tv-halo { fill: var(--accent); fill-opacity: 0.16; }
 .tv-svg .tv-ring { stroke: var(--accent); }
 .tv-svg .tv-heart { fill: var(--accent); }
+/* The panels the names are written on, as the reference's floating screens. */
+.tv-svg .tv-panel { fill: var(--tv-panel); fill-opacity: 0.86; stroke: var(--tv-panel-line); stroke-opacity: 0.9; stroke-width: 1; }
+.tv-svg .tv-panel-centre { stroke: var(--accent); stroke-width: 1.4; }
+.tv-svg .tv-leader { stroke: var(--tv-panel-line); stroke-width: 1; stroke-opacity: 0.9; }
 .tv-svg .tv-name { fill: var(--text-primary); font-family: var(--face); }
 .tv-svg .tv-data { fill: var(--text-secondary); }
 
@@ -5745,11 +6042,24 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 .cl-svg .cl-link { stroke: var(--cl-link); stroke-opacity: 0.78; }
 .cl-svg .cl-link-d { stroke-opacity: 0.6; }
 .cl-svg .cl-link-s { stroke: var(--cl-link); stroke-opacity: 0.45; }
-.cl-svg .cl-union { fill: var(--cl-link); }
-.cl-svg .cl-tail { fill: none; stroke: var(--cl-link); stroke-opacity: 0.5; stroke-width: 1.2; }
-.cl-svg .cl-tail-tip { fill: var(--cl-link); }
+.cl-svg .cl-union { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 0.8; }
+.cl-svg .cl-tail { fill: none; stroke: var(--cl-link); stroke-opacity: 0.85; stroke-width: 1.4; }
+.cl-svg .cl-tail-tip { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 1.2; }
 .cl-svg .cl-stub { stroke-dasharray: 2 2; }
-.cl-svg .cl-end { fill: var(--cl-bead); stroke: var(--cl-hidden); stroke-width: 1.4; }
+.cl-svg .cl-end { fill: var(--cl-bead); stroke: var(--cl-link); stroke-width: 1.6; }
+/* A count on the glass: the figure's own ink, the page's ground around it. */
+.cl-svg .cl-count .k-data { fill: var(--cl-figure); font-weight: var(--weight-semi); }
+/* The projector under the narrow end, its rings and the beam up the axis;
+   the gauge's ticks beside each opening. */
+.cl-svg .cl-base-glow { fill: var(--cl-slice-3); fill-opacity: 0.1; }
+.cl-svg .cl-base-ring { fill: none; stroke: var(--cl-slice-2); stroke-width: 1; stroke-opacity: 0.5; stroke-dasharray: 3 5; }
+.cl-svg .cl-base-ring-2 { stroke: var(--cl-slice-3); stroke-opacity: 0.4; }
+.cl-svg .cl-base-ring-3 { stroke: var(--cl-slice-4); stroke-opacity: 0.3; stroke-dasharray: 1 6; }
+.cl-svg .cl-base { fill: var(--cl-slice-1); fill-opacity: 0.22; stroke: var(--cl-slice-1); stroke-opacity: 0.75; stroke-width: 1.5; }
+.cl-svg .cl-beam-edge { stop-color: var(--cl-gloss); stop-opacity: 0; }
+.cl-svg .cl-beam-mid { stop-color: var(--cl-gloss); stop-opacity: 0.5; }
+.cl-svg .cl-axis { stroke: var(--cl-gloss); stroke-width: 1.2; stroke-opacity: 0.85; stroke-dasharray: 1 4; }
+.cl-svg .cl-tick { fill: none; stroke: var(--cl-slice-2); stroke-width: 2; stroke-opacity: 0.32; stroke-dasharray: 1 7; }
 .cl-svg .cl-bead { fill: var(--cl-bead); }
 .cl-svg .cl-bead.cl-living { stroke: var(--cl-living); }
 .cl-svg .cl-bead-glow.cl-living { fill: var(--cl-living); fill-opacity: 0.22; }
@@ -5925,7 +6235,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   color: var(--text-primary);
   border-block-end-color: var(--accent);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .admin-nav {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .admin-nav {
   box-shadow: none;
   padding: 4px;
   inline-size: fit-content;
@@ -5935,16 +6245,16 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   border-radius: var(--btn-radius);
   scrollbar-width: none;
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .admin-nav::-webkit-scrollbar { display: none; }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .admin-nav-item {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .admin-nav::-webkit-scrollbar { display: none; }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .admin-nav-item {
   border-block-end: 0;
   border-radius: var(--btn-radius);
   padding-block: 0.45rem;
   padding-inline: 0.9rem;
   transition: background-color var(--tempo) var(--ease), color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .admin-nav-item:hover { background: var(--surface-hover); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"]) .admin-nav-item[aria-current="page"] {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .admin-nav-item:hover { background: var(--surface-hover); }
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .admin-nav-item[aria-current="page"] {
   background: var(--accent);
   color: var(--on-accent);
 }
@@ -6213,3 +6523,190 @@ a.kpi:hover { border-color: var(--border-strong); }
   .check-finding { grid-column: 1; }
   .check-plan { padding-inline-start: 0.9rem; }
 }
+
+/* Genealogy (docs/adr/0016): the operator's second screen — a dark green
+   ground with antique vines climbing its edges, cream cards with an oval
+   portrait and a double rule, titles in a book face and in gold — rounded
+   as old card stock is, and unhurried. */
+[data-theme="genealogy"] {
+  --btn-radius: 999px;
+  --field-radius: 8px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --tempo: 220ms;
+  --ease: cubic-bezier(0.25, 0.7, 0.25, 1);
+  --kit-hero: url("/static/img/genealogy-hero.jpg");
+  --kit-cta: url("/static/img/genealogy-cta.jpg");
+  /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
+  --notes-bg: url("/static/img/notes-genealogy.jpg");
+  /* The page's frame: an antique vine along each edge, the middle the
+     page's own green. A frame, as Canopée's photographs are, not a texture:
+     nothing is ever written over the vines, and on a narrow screen, where
+     the middle is all there is, they are left out. Each vine is a tall strip
+     drawn at a third of its size or less, so it stays sharp on a dense
+     screen (the first, one wide picture stretched over the window, was
+     blurred; 2026-10-23). */
+  --gn-vine-l: url("/static/img/genealogy-vine-l.jpg");
+  --gn-vine-r: url("/static/img/genealogy-vine-r.jpg");
+}
+[data-theme="genealogy"] body {
+  /* As tall as the window, so that a short page has its vines too. */
+  min-block-size: 100vh;
+  background-image: var(--gn-vine-l), var(--gn-vine-r);
+  background-size: auto 100vh, auto 100vh;
+  background-position: left top, right top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+@media (max-width: 760px) {
+  [data-theme="genealogy"] body { background-image: none; }
+}
+/* A page that takes the whole width (the tree's) has no margin for them. */
+[data-theme="genealogy"] body:has(main.wide) { background-image: none; }
+/* The cards: cream stock in the page's green. Every colour token takes its
+   `--gn-l-` twin on a card (tokens.css), so whatever a card holds — text,
+   fields, buttons, chips, a chart — reads as it would on a light theme.
+   Not in the paper style, which draws no cards. */
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog) {
+  color-scheme: light;
+  --surface-page: var(--gn-l-surface-page);
+  --surface-raised: var(--gn-l-surface-raised);
+  --border-hairline: var(--gn-l-border-hairline);
+  --border-strong: var(--gn-l-border-strong);
+  --text-primary: var(--gn-l-text-primary);
+  --text-secondary: var(--gn-l-text-secondary);
+  --text-tertiary: var(--gn-l-text-tertiary);
+  --surface-sunken: var(--gn-l-surface-sunken);
+  --surface-hover: var(--gn-l-surface-hover);
+  --focus-ring: var(--gn-l-focus-ring);
+  --accent: var(--gn-l-accent);
+  --accent-soft: var(--gn-l-accent-soft);
+  --on-accent: var(--gn-l-on-accent);
+  --conf-certain: var(--gn-l-conf-certain);
+  --conf-high: var(--gn-l-conf-high);
+  --conf-medium: var(--gn-l-conf-medium);
+  --conf-low: var(--gn-l-conf-low);
+  --conf-track: var(--gn-l-conf-track);
+  --danger: var(--gn-l-danger);
+  --warning: var(--gn-l-warning);
+  --sex-a: var(--gn-l-sex-a);
+  --sex-a-line: var(--gn-l-sex-a-line);
+  --sex-b: var(--gn-l-sex-b);
+  --sex-b-line: var(--gn-l-sex-b-line);
+  --sex-u: var(--gn-l-sex-u);
+  --sex-u-line: var(--gn-l-sex-u-line);
+  --hue-1: var(--gn-l-hue-1);
+  --hue-2: var(--gn-l-hue-2);
+  --hue-3: var(--gn-l-hue-3);
+  --hue-4: var(--gn-l-hue-4);
+  --hue-5: var(--gn-l-hue-5);
+  --hue-6: var(--gn-l-hue-6);
+  --hue-7: var(--gn-l-hue-7);
+  --hue-8: var(--gn-l-hue-8);
+  --icon-river: var(--gn-l-icon-river);
+  --icon-tree: var(--gn-l-icon-tree);
+  --icon-search: var(--gn-l-icon-search);
+  --icon-quality: var(--gn-l-icon-quality);
+  --icon-river-ink: var(--gn-l-icon-river-ink);
+  --icon-tree-ink: var(--gn-l-icon-tree-ink);
+  --icon-search-ink: var(--gn-l-icon-search-ink);
+  --icon-quality-ink: var(--gn-l-icon-quality-ink);
+  color: var(--text-primary);
+}
+/* A card's double rule, as old card stock is printed: an edge, a cream
+   gap and a hairline of the ink inside it, and a shadow on the green. */
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls) {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  box-shadow: inset 0 0 0 4px var(--surface-raised), inset 0 0 0 5px color-mix(in srgb, var(--border-strong) 30%, transparent), 0 14px 26px -18px rgb(var(--shadow-rgb) / 0.9);
+}
+/* A notice is a card of its own: opaque cream, tinted by its kind, rather
+   than the kit's veil, which over this green reads as grey. */
+[data-theme="genealogy"]:not([data-style="paper"]) .notice { background-color: color-mix(in srgb, var(--accent-soft) 45%, var(--surface-raised)); }
+[data-theme="genealogy"]:not([data-style="paper"]) .notice.warn { background-color: color-mix(in srgb, var(--warning) 9%, var(--surface-raised)); }
+[data-theme="genealogy"]:not([data-style="paper"]) .notice.error { background-color: color-mix(in srgb, var(--danger) 8%, var(--surface-raised)); }
+[data-theme="genealogy"]:not([data-style="paper"]) .notice.ok { background-color: color-mix(in srgb, var(--conf-certain) 9%, var(--surface-raised)); }
+[data-theme="genealogy"] .masthead { border-bottom-color: color-mix(in srgb, var(--accent) 24%, var(--border-hairline)); }
+[data-theme="genealogy"] :is(main h1, .hero h1, .cta-banner h2, .rec-section > h2:first-child, .sec-head h2) { font-family: var(--serif); font-weight: var(--weight-normal); letter-spacing: 0; }
+/* The overview's hero: its picture is light and gold where the others are
+   dark, so the green holds further across it, and the title keeps to the
+   side the green covers. */
+[data-theme="genealogy"] .hero {
+  background-image:
+    var(--grain),
+    linear-gradient(90deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 94%, transparent) 48%, color-mix(in srgb, var(--surface-page) 30%, transparent) 84%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
+    linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
+    var(--kit-hero);
+}
+[data-theme="genealogy"][dir="rtl"] .hero {
+  background-image:
+    var(--grain),
+    linear-gradient(270deg, var(--surface-page) 0%, color-mix(in srgb, var(--surface-page) 94%, transparent) 48%, color-mix(in srgb, var(--surface-page) 30%, transparent) 84%, color-mix(in srgb, var(--surface-page) 45%, transparent) 100%),
+    linear-gradient(0deg, var(--surface-page) 0%, transparent 38%),
+    var(--kit-hero);
+}
+@media (min-width: 861px) {
+  [data-theme="genealogy"] .hero-title { max-inline-size: 60%; }
+}
+/* The portraits in oval frames, as the screen's cards hold them. */
+[data-theme="genealogy"] :is(.person-avatar, .panel-avatar) {
+  border-radius: 50%;
+  block-size: auto;
+  aspect-ratio: 5 / 6;
+}
+
+/* ---- the tree, climbed (genealogy.js) ---- */
+[data-theme="genealogy"] .river { --rv-water: var(--gn-gold); --rv-lit: var(--gn-gold-hi); --rv-lit-halo: var(--gn-gold); --rv-glow: var(--gn-living); }
+/* The woods behind the tree, from the treetops to the roots: what the page
+   shows before its script has drawn the far trees over it. */
+.river[data-view="scroll"] .rv-canvas {
+  background-color: var(--gn-stage-mid);
+  background-image: linear-gradient(180deg, var(--gn-stage-top) 0%, var(--gn-stage-mid) 55%, var(--gn-stage-low) 100%);
+  background-size: 100% 100%;
+}
+.river[data-view="scroll"] .rv-bar-root { background: var(--gn-root-core); }
+.river[data-view="scroll"] .rv-bar-trunk { background: var(--gn-gold-hi); }
+.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-leaf-2); }
+.gn-svg .gn-bark-dark { stop-color: var(--gn-bark-dark); }
+.gn-svg .gn-bark-mid { stop-color: var(--gn-bark-mid); }
+.gn-svg .gn-bark-lit { stop-color: var(--gn-bark-lit); }
+.gn-svg .gn-trunk { stroke: var(--gn-bark-dark); stroke-width: 1.2; }
+.gn-svg .gn-grain { fill: none; stroke: var(--gn-grain); stroke-width: 1.4; stroke-opacity: 0.55; stroke-linecap: round; }
+.gn-svg .gn-ring { fill: none; stroke: var(--gn-ring); stroke-width: 1; stroke-opacity: 0.22; stroke-dasharray: 2 5; }
+.gn-svg .gn-ring-0 { stroke-opacity: 0.45; }
+.gn-svg .gn-gen { fill: var(--gn-gen); }
+.gn-svg .gn-gen-0 { fill: var(--gn-gold-hi); }
+.gn-svg .gn-branch { fill: none; stroke: var(--gn-branch); stroke-linecap: round; }
+.gn-svg .gn-branch-core { fill: none; stroke: var(--gn-branch-core); stroke-linecap: round; }
+.gn-svg .gn-root { stroke: var(--gn-root); }
+.gn-svg .gn-root-core { stroke: var(--gn-root-core); }
+.gn-svg .gn-faint { stroke-opacity: 0.9; }
+.gn-svg .gn-leaf-1 { fill: var(--gn-leaf-1); }
+.gn-svg .gn-leaf-2 { fill: var(--gn-leaf-2); }
+.gn-svg .gn-leaf-3 { fill: var(--gn-leaf-3); }
+.gn-svg .gn-tip { fill: var(--gn-branch-core); }
+.gn-svg .gn-end { fill: var(--gn-stage-mid); stroke: var(--gn-branch-core); stroke-width: 1.2; }
+.gn-svg .gn-knot { fill: var(--gn-gold-hi); stroke: var(--gn-branch); stroke-width: 1; }
+.gn-svg .gn-card { fill: var(--gn-card); stroke: var(--gn-card-line); stroke-width: 0.9; }
+.gn-svg .gn-card-centre { stroke: var(--gn-gold); stroke-width: 1.6; }
+.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.35; }
+.gn-svg .gn-name { fill: var(--gn-ink); font-family: var(--serif); }
+.gn-svg .gn-centre { fill: var(--gn-centre); }
+.gn-svg .gn-years { fill: var(--gn-ink-2); }
+.gn-svg .gn-portrait { fill: var(--gn-portrait); stroke: var(--gn-gold); stroke-width: 1.8; }
+.gn-svg .gn-gone { stroke: var(--gn-gone); }
+.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 2.2; }
+.gn-svg .gn-portrait-centre { stroke: var(--gn-gold-hi); stroke-width: 2.8; }
+.gn-svg .gn-sparse { fill: var(--gn-portrait-inner); }
+.gn-svg .gn-hidden { fill: var(--gn-hidden-fill); stroke: var(--gn-hidden); stroke-width: 1.4; }
+.gn-svg .gn-portrait-inner { fill: none; stroke: var(--gn-portrait-inner); stroke-width: 1; }
+.gn-svg .gn-initials { fill: var(--gn-initials); font-family: var(--serif); letter-spacing: 0.04em; pointer-events: none; }
+.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.2; }
+.gn-svg .gn-again { stroke: var(--gn-gold); }
+.gn-svg a.rv-p:hover .gn-portrait { stroke: var(--gn-gold-hi); }
+.gn-svg a.rv-p:focus-visible .gn-card { stroke: var(--focus-ring); stroke-width: 2; }
+/* While only the near generations are named, a far person keeps their
+   portrait and its initials, and their card waits for the pointer. */
+.river.rv-names-near .rv-svg a.rv-p[data-far] .gn-plate { display: none; }
+.river.rv-names-near .rv-svg a.rv-p[data-far] text.gn-initials { display: inline; }

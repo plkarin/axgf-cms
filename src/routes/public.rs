@@ -11,9 +11,23 @@ use crate::routes::Shared;
 use crate::state::COLLECTIONS;
 use crate::{auth, render, view};
 
-/// `GET /about` — what this tree holds, and the ways in. Also what `/` shows
+/// The family page's notes: what was searched, and the letter chosen.
+#[derive(serde::Deserialize, Default)]
+pub struct HomeQuery {
+    #[serde(default)]
+    q: String,
+    #[serde(default)]
+    letter: String,
+}
+
+/// `GET /about` — the family page: what this tree holds, the family's notes
+/// and contributions for its members, and the ways in. Also what `/` shows
 /// for an archive with nobody in it, which has no river to draw.
-pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
+pub async fn home(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(hq): Query<HomeQuery>,
+) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, "/about");
     let counts = state.counts();
@@ -59,6 +73,9 @@ pub async fn home(State(state): State<Shared>, headers: HeaderMap) -> Response {
                 .collect::<Vec<_>>(),
             showcase,
             trust,
+            // Notes and contributions (docs/adr/0014), for the family's
+            // members, under the head of the page.
+            notes => super::notes::family_context(&state, &viewer, chrome.lang, &hq.q, &hq.letter),
         },
     )
 }
@@ -838,12 +855,35 @@ pub async fn person(
                     place_points_json => serde_json::to_string(&place_points)
                         .unwrap_or_else(|_| "[]".to_string()),
                     place_points,
+                    // Notes and contributions about this person, for the
+                    // family's members (docs/adr/0014), under Identity.
+                    person_notes => person_notes(&state, &viewer, chrome.lang, &id),
+                    signed_in => viewer.signed_in(),
+                    may_write => viewer.may_write(),
                 },
             )
         }
         Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
         Reading::Absent => merged_or_absent(&state, &chrome, &viewer, &id),
     }
+}
+
+/// The notes about one person this reader may read, newest first.
+fn person_notes(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    lang: &str,
+    id: &str,
+) -> Vec<crate::notes::NoteView> {
+    if !viewer.signed_in() {
+        return Vec::new();
+    }
+    state.read_as(viewer.ceiling(), |flat, lens| {
+        crate::notes::notes_about(flat, lens, true, id)
+            .into_iter()
+            .map(|(nid, d)| crate::notes::view_of(flat, nid, d, lang))
+            .collect()
+    })
 }
 
 /// A document's metadata and the ZIP path its payload is cached under.
@@ -878,6 +918,13 @@ fn stored_document(
         // (docs/adr/0009): its bytes are refused to a reader who is not
         // signed in, whatever the person's own visibility.
         if !viewer.signed_in() && crate::ai_portrait::is_ai_portrait(d) {
+            return None;
+        }
+        // A note and its pictures are the family's members' (docs/adr/0014):
+        // read by one who may read the note, under its own rule.
+        if crate::notes::is_note_part(d)
+            && !crate::notes::part_readable(flat, lens, viewer.signed_in(), d)
+        {
             return None;
         }
         let path = d.get("file")?.get("path")?.as_str()?.to_string();
@@ -1155,6 +1202,19 @@ pub async fn editor_js() -> Response {
         .into_response()
 }
 
+/// `GET /static/notes.js` — notes and contributions, read and written
+/// (docs/adr/0014).
+pub async fn notes_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::NOTES_JS,
+    )
+        .into_response()
+}
+
 /// `GET /static/ui.js` — the delegated handlers every page carries.
 pub async fn ui_js() -> Response {
     (
@@ -1338,11 +1398,52 @@ pub async fn clarity_hero_jpg() -> Response {
 pub async fn clarity_cta_jpg() -> Response {
     picture("image/jpeg", render::CLARITY_CTA_JPG)
 }
+pub async fn genealogy_hero_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_HERO_JPG)
+}
+pub async fn genealogy_cta_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_CTA_JPG)
+}
+/// `GET /static/img/genealogy-vine-l.jpg` and its mirror: the vine along
+/// each edge of Genealogy's pages.
+pub async fn genealogy_vine_l_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_VINE_L_JPG)
+}
+pub async fn genealogy_vine_r_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_VINE_R_JPG)
+}
 /// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
 /// ascent. The same picture behind every person: nothing in it depends on the
 /// archive.
 pub async fn summit_panorama_jpg() -> Response {
     picture("image/jpeg", render::SUMMIT_PANORAMA_JPG)
+}
+
+/// `GET /static/img/notes-canopee.jpg` and the five others: behind the
+/// family's notes, each under its own theme.
+pub async fn notes_canopee_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_CANOPEE_JPG)
+}
+pub async fn notes_fusion_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_FUSION_JPG)
+}
+pub async fn notes_galaxy_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_GALAXY_JPG)
+}
+pub async fn notes_summit_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_SUMMIT_JPG)
+}
+pub async fn notes_clarity_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_CLARITY_JPG)
+}
+pub async fn notes_genealogy_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_GENEALOGY_JPG)
+}
+
+/// `GET /static/img/fusion-lab.jpg` — the room the tree's glass stands in,
+/// under Fusion.
+pub async fn fusion_lab_jpg() -> Response {
+    picture("image/jpeg", render::FUSION_LAB_JPG)
 }
 
 /// `GET /static/img/river-ground.jpg` — the river's ground. The same picture
@@ -1573,7 +1674,7 @@ pub async fn river(
     let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
     let started = std::time::Instant::now();
     let Some(v) = river_view(&state, &viewer, chrome.lang, &q, true) else {
-        return home(State(state), headers).await;
+        return home(State(state), headers, Query(HomeQuery::default())).await;
     };
     tracing::debug!(
         centre = %v.centre,
@@ -1928,6 +2029,18 @@ pub async fn clarity_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::CLARITY_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/genealogy.js` — Genealogy's scroll (docs/adr/0016).
+pub async fn genealogy_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::GENEALOGY_JS,
     )
         .into_response()
 }

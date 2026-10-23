@@ -90,7 +90,7 @@ async fn the_masthead_carries_the_logo_under_every_theme() {
     for line in css.lines().filter(|l| l.contains("var(--logo-")) {
         assert!(
             line.trim_start().starts_with(
-                ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"], [data-theme=\"summit\"], [data-theme=\"clarity\"]) .logo-mark"
+                ":is([data-theme=\"canopee\"], [data-theme=\"fusion\"], [data-theme=\"galaxy\"], [data-theme=\"summit\"], [data-theme=\"clarity\"], [data-theme=\"genealogy\"]) .logo-mark"
             ),
             "the logo's colours are the kit's alone: {line}"
         );

@@ -119,8 +119,12 @@ fn a_button_is_36px_or_28px_and_one_radius_per_theme() {
             ("[data-theme=\"galaxy\"]".to_string(), "999px".to_string()),
             ("[data-theme=\"summit\"]".to_string(), "12px".to_string()),
             ("[data-theme=\"clarity\"]".to_string(), "10px".to_string()),
+            (
+                "[data-theme=\"genealogy\"]".to_string(),
+                "999px".to_string()
+            ),
         ],
-        "--btn-radius is defined on :root and by the kit's five themes, and nowhere else"
+        "--btn-radius is defined on :root and by the kit's six themes, and nowhere else"
     );
 }
 
@@ -284,4 +288,51 @@ fn the_tab_strip_is_one_row_that_scrolls_and_mirrors() {
     assert_eq!(decl(&current, "color"), Some("var(--text-primary)"));
     let count = rule(".tab-count");
     assert_eq!(decl(&count, "font-family"), Some("var(--mono)"));
+}
+
+/// The river's controls stand in order (2026-10-22): the itinerary on a row
+/// of its own that scrolls sideways rather than wrapping, the tools on the
+/// next, their last two held to its far end; the legend on a grid.
+#[test]
+fn the_rivers_controls_are_two_ordered_rows_and_the_legend_a_grid() {
+    let controls = rule(".rv-controls");
+    assert_eq!(decl(&controls, "display"), Some("flex"));
+    assert_eq!(decl(&controls, "flex-direction"), Some("column"));
+    let trail = rule(".rv-trail");
+    assert_eq!(
+        decl(&trail, "flex-wrap"),
+        Some("nowrap"),
+        "the itinerary does not wrap"
+    );
+    assert_eq!(
+        decl(&trail, "overflow-x"),
+        Some("auto"),
+        "it scrolls instead"
+    );
+    assert_eq!(decl(&rule(".rv-trail > li"), "flex"), Some("none"));
+    assert_eq!(decl(&rule(".rv-tools"), "display"), Some("flex"));
+    assert_eq!(
+        decl(&rule(".rv-tools-end"), "margin-inline-start"),
+        Some("auto")
+    );
+    let legend = rule(".rv-legend");
+    assert_eq!(decl(&legend, "display"), Some("grid"));
+    assert!(decl(&legend, "grid-template-columns").is_some_and(|v| v.contains("auto-fill")));
+    assert_eq!(
+        decl(
+            &rule(".rv-legend > :is(.rv-legend-title, .rv-widths, .rv-direction, .rv-hint)"),
+            "grid-column"
+        ),
+        Some("1 / -1"),
+        "the title, the widths, the direction and the hint run across it"
+    );
+
+    let river = include_str!("../templates/river.html");
+    let at = |needle: &str| river.find(needle).unwrap_or_else(|| panic!("{needle}"));
+    assert!(at(r#"class="rv-controls""#) < at(r#"class="rv-itinerary""#));
+    assert!(at(r#"class="rv-itinerary""#) < at(r#"class="rv-trail""#));
+    assert!(at(r#"class="rv-trail""#) < at(r#"class="rv-tools""#));
+    assert!(at(r#"class="rv-tools""#) < at(r#"id="rv-back""#));
+    assert!(at(r#"id="rv-back""#) < at(r#"class="rv-range""#));
+    assert!(at(r#"class="rv-range""#) < at(r#"class="rv-tools-end""#));
 }

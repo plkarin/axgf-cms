@@ -45,13 +45,14 @@
       file is changed for the uploader. #}
   {% if quality is defined %}
   <section class="card quality-import">
-    <h2>{% if quality %}{{ t("quality-summary-file", n=quality|length) }}{% else %}{{ t("quality-none-file") }}{% endif %}</h2>
+    <h2>{% if quality %}{{ t("quality-summary-file", n=quality_total) }}{% else %}{{ t("quality-none-file") }}{% endif %}</h2>
     {% if quality %}
     <details>
       <summary>{{ t("quality-show-list") }}</summary>
       <ul class="quality-findings">
         {%- for f in quality %}<li>{{ f.message }}</li>{% endfor %}
       </ul>
+      {% if quality_total > quality_listed %}<p class="small muted">{{ t("quality-file-list-cut", shown=quality_listed) }}</p>{% endif %}
     </details>
     <p class="small muted">{{ t("quality-after-import") }}</p>
     {% endif %}

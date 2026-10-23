@@ -93,6 +93,15 @@
 </div>
 </section>
 
+{#- The family's notes and contributions (docs/adr/0014): written here by
+    administrators and contributors, read by every member on the Family page
+    and on the records they concern. One door: the list holds the rest. -#}
+<section class="rec-section" id="notes-admin">
+<h2>{{ t("notes-section-title") }}</h2>
+<p class="small muted">{{ t("notes-dashboard-count", n=notes_count) }}</p>
+<p><a class="btn" href="/admin/notes">{{ t("notes-dashboard-open") }}</a></p>
+</section>
+
 {#- Creating: one disclosure holding the eight kinds (the minimalism pass). -#}
 <section class="rec-section">
 <details class="menu-disclosure">
@@ -160,6 +169,8 @@
     <strong>{{ e.who }}</strong> {{ e.summary }} {{ t("admin-history-on") }}
     {% if e.kind == "person" %}
       <a href="/person/{{ e.entity_id }}">{{ e.label if e.label else e.entity_id }}</a>
+    {% elif e.kind == "bundle" %}
+      <a href="/admin/bundle#family">{{ e.label if e.label else t("kind-bundle") }}</a>
     {% else %}
       <a href="/admin/{{ e.kind }}/{{ e.entity_id }}/edit">{{ e.label if e.label else e.entity_id }}</a>
     {% endif %}

@@ -82,6 +82,18 @@ libc = "0.2"
 # grepping sentences. Pure Rust: it speaks the journald socket protocol
 # directly and links nothing.
 tracing-journald = "0.3"
+# Notes and contributions (docs/adr/0014): a note is written in Markdown and
+# read as HTML, raw HTML in it shown as text, never run. Pure Rust, the HTML
+# writer only.
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+# The same note as a PDF to download, drawn by the server: text in an embedded
+# font (static/fonts, DejaVu Sans), the note's pictures, page by page. Pure
+# Rust, so the static musl release still links nothing.
+krilla = { version = "0.8", default-features = false, features = ["raster-images", "simple-text"] }
+# How wide a line of text is in that font, to break a paragraph into lines:
+# the shaper krilla draws with (same version), so a line measured is the line
+# drawn.
+rustybuzz = "0.20"
 
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get

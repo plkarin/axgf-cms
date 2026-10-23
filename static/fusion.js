@@ -1,28 +1,35 @@
-/* Fusion's living tree (v0.5.0, docs/adr/0007).
+/* Fusion's tree in its glass (v0.5.0, docs/adr/0007; redrawn 2026-10-23).
  *
  * The river's own people — from the same payload, through the same reader's
- * lens, in the same order from left to right — grown as a tree. The person at
- * the fixed point stands where the trunk leaves the soil. The trunk rises to
- * the fork where their own family begins, and their descendants are its
- * crown: a dome of boughs, one generation further out at every fork, with the
- * living at the tips as green leaves and those gone as embers. Their
- * ancestors are its roots, spreading wide and shallow under the soil line, a
- * generation further down at every fork. A bough thins with every generation
- * it is from the trunk, and carries what its parentage is worth: an attested
- * link a vein of light, an inferred one a broken vein, a speculative one a
- * trace on faded bark.
+ * lens, in the same order from left to right — grown as a tree inside a
+ * glass cylinder, seen from the front and a little above, as a hologram in a
+ * laboratory (static/img/fusion-lab.jpg, made in the operator's Canva; the
+ * glass stands on its projector). The person at the fixed point is on the
+ * axis, in a column of light. The tree is a hierarchy in tiers, a floor of
+ * the glass per generation, straight across: descendants above, each
+ * family's children side by side over it with the parents centred under
+ * them; ancestors below, each person's father and mother under them. The
+ * river's order from left to right decides who comes first; the spacing is
+ * the tree's own. As the reader travels, the glass turns toward the side
+ * the person travelled to came from, in perspective, and back (`tween3`,
+ * through river.js's travel).
+ *
+ * People are named on small glass panels, as the reference's floating
+ * screens; whom the drawing has no room for, the pointer names, or river.js
+ * when every name is asked for. A branch carries what its parentage is
+ * worth: an attested link a vein of light, an inferred one a broken vein, a
+ * speculative one a trace.
  *
  * Two things the page knows by name:
- * - `window.axgfView` (river.js): where everyone stands in the tree (`shape`),
- *   how a bough bends (`edge`, which the lit route follows too), how a frame
- *   is painted at rest and in travel, which people the drawing named, and the
- *   dashboard beside it at rest. Travel, the trail, the panel, the keyboard,
- *   the camera and every touch rule stay river.js's.
- * - `window.axgfRiverScene`: the life over the drawing — sap drawn up from the
- *   root tips through the trunk to the leaves on every attested bough, leaves
- *   breathing, spores rising. It holds still as the river's ground does:
- *   reduced motion, "Cut", the pause, a hidden tab, a tree off screen, a
- *   machine too slow for it.
+ * - `window.axgfView` (river.js): where everyone stands (`shape`), how a
+ *   branch bends (`edge`, which the lit route follows too), how a frame is
+ *   painted at rest and in travel, which people the drawing named, the
+ *   dashboard at rest, and how two frames blend (`tween`).
+ * - `window.axgfRiverScene`: the life of the laboratory — motes turning
+ *   round the glass, embers rising from the projector, a scanner's arc on
+ *   each floor, and light drawn up every attested branch. It holds still as
+ *   the river's ground does: reduced motion, "Cut", the pause, a hidden tab,
+ *   a tree off screen, a machine too slow for it.
  *
  * No colour is named here: every one is a token of the theme (`--tv-*`,
  * tokens.css), read from the page or set by class in app.css.
@@ -33,233 +40,220 @@
   if (!root || root.dataset.view !== 'tree') return;
   var stage = document.getElementById('rv-canvas');
 
-  /* ---- where everyone stands ---- */
-  // The river places a union 38% of the way from the parents' row to the
-  // children's: the centre's own family forks from the top of the trunk, and
-  // their parents' from the foot of the taproot.
-  var UP = 0.38, DOWN = 0.62;
-  // The crown's dome runs a little past level on either side, as boughs
-  // droop; the roots spread almost flat.
-  var DROOP = 0.07 * Math.PI, FLAT = 0.04 * Math.PI;
-  // The geometry of the frame painted last: what `edge` bends boughs by.
+  /* ---- the glass ---- */
+  // How much of a ring's depth shows (its height against its width), and
+  // how much larger the front of the glass looks than its back.
+  var TILT = 0.26, NEAR = 0.32;
+  // The laboratory's picture, and where its projector is in it.
+  var LAB = { src: '/static/img/fusion-lab.jpg?v=1', aspect: 1680 / 944, su: 0.5, sv: 0.8 };
   var GEO = null;
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  // A point on the glass's wall, on the page (the room's motes): its angle
+  // round the axis (0 faces the reader), its floor (up is newer), its
+  // distance from the axis. `z` is how near it is, -1 at the back to 1 at
+  // the front.
+  function project(G, th, lv, rho) {
+    var z = rho * Math.cos(th);
+    return { x: G.x0 + G.R * rho * Math.sin(th), y: G.y0 - lv * G.H + G.R * TILT * z, z: z, k: 1 + NEAR * z };
+  }
+  function centreOf(fr) { return fr.persons.filter(function (p) { return p.role === 'centre'; })[0]; }
+
+  /* ---- where everyone stands: a tree in tiers ---- */
+  // The family as a hierarchical tree (2026-10-23): a floor of the glass per
+  // generation, straight across; descendants above the person at the fixed
+  // point, each family's children side by side over it with the parents
+  // centred under them; ancestors below, each person's father and mother
+  // under them. The river's order from left to right decides who comes
+  // first; the spacing is the tree's own, the same between every two people
+  // of a side.
+  function byKey(list) { var o = {}; list.forEach(function (p) { o[p.key] = p; }); return o; }
   function shape(fr) {
     var m = fr.meta, hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
-    var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0];
+    var C = centreOf(fr);
     var cx = C ? C.x : hl + hw / 2, cy = C ? C.y : m.cy, step = m.step || 86;
-    // How far the frame reaches each way, and how wide each side is drawn in
-    // the river: the crown takes the descendants' order from left to right
-    // over its own breadth, the roots the ancestors' over theirs.
-    var nd = 0, na = 0, lo = [Infinity, Infinity], hi = [-Infinity, -Infinity];
-    fr.persons.forEach(function (p) {
-      var g = (p.y - cy) / step, h;
-      if (g < -0.25) { nd = Math.max(nd, Math.round(-g)); h = 0; } else if (g > 0.25) { na = Math.max(na, Math.round(g)); h = 1; } else return;
-      lo[h] = Math.min(lo[h], p.x); hi[h] = Math.max(hi[h], p.x);
+    function lev(y) { return -(y - cy) / step; }
+    var PK = byKey(fr.persons), up = {}, under = {}, nd = 0, na = 0;
+    fr.persons.forEach(function (p) { var g = Math.round(lev(p.y)); if (g > nd) nd = g; if (-g > na) na = -g; });
+    // Which families lead up from a person (they are a parent in them, the
+    // children above), and which leads down (they are a child in it).
+    fr.couples.forEach(function (c) {
+      c.parents.forEach(function (k) { if (PK[k] && lev(c.y) > lev(PK[k].y)) (up[k] = up[k] || []).push(c); });
+      c.kids.forEach(function (k) { if (PK[k] && lev(c.y) < lev(PK[k].y)) under[k] = c; });
     });
-    // The soil line: the crown and its trunk above, the roots below, each
-    // given room for the generations it has.
-    var share = Math.min(0.8, Math.max(0.4, (nd + 0.9) / (nd + 0.9 + na * 0.8 + 0.35)));
-    var xc = hl + hw / 2, ys = vt + vh * share;
-    var H = nd ? Math.min(0.17 * vh, (ys - vt) * 0.28) : 0, fy = ys - H, h0 = na ? 22 : 0, fry = ys + h0;
-    // A line the record continues past the rim runs on outward, and its count
-    // is written past its end: the rim leaves room for both where there is
-    // one, so that no count is cut off at the window's edge.
-    var onUp = false, onDown = false;
-    fr.tails.forEach(function (t) {
-      if (t.kind !== 'cont') return;
-      var g = (t.y1 - cy) / step;
-      if (nd && g < -(nd - 0.5)) onUp = true;
-      if (na && g > na - 0.5) onDown = true;
-    });
-    var Rx = hw / 2 - 92, Ry = Math.max(40, fy - vt - 34 - (onUp ? 24 : 0)), Rxr = Rx * 0.86;
-    var Ryr = Math.max(30, vt + vh - 34 - fry - (onDown ? 24 : 0));
-    var Pw = Math.min(96, hw * 0.12);
-    // A generation's ring, as a share of the crown's or the roots' reach:
-    // the first at 2/(n+1), the last at the rim.
-    function ring(k, n, first) { return k < 1 ? Math.max(0, (k - first) / (1 - first)) * 2 / (n + 1) : (k + 1) / (n + 1); }
-    function along(h, x) { var span = hi[h] - lo[h]; return span > 1 ? Math.min(1, Math.max(0, (x - lo[h]) / span)) : 0.5; }
-    function place(x, y) {
-      var g = (y - cy) / step, dx = x - cx;
-      if (g < -(UP + 0.02) && nd) {
-        var rc = ring(-g, nd, UP), th = Math.PI - DROOP + along(0, x) * (Math.PI + 2 * DROOP);
-        return [xc + Rx * rc * Math.cos(th), fy + Ry * rc * Math.sin(th)];
-      }
-      if (g > DOWN + 0.02 && na) {
-        var rr = ring(g, na, DOWN), tr = Math.PI - FLAT - along(1, x) * (Math.PI - 2 * FLAT);
-        return [xc + Rxr * rr * Math.cos(tr), fry + Ryr * rr * Math.sin(tr)];
-      }
-      // On the trunk or the taproot: a partner stands on the soil line beside
-      // the trunk, and every fork is on its axis.
-      var side = (dx < 0 ? -1 : 1) * Pw * Math.min(1, Math.abs(dx) / 300);
-      if (Math.abs(dx) < 1) side = 0;
-      if (g <= 0) { var t = Math.min(1, -g / UP); return [xc + side * (1 - t), ys - t * H]; }
-      var t2 = Math.min(1, g / DOWN); return [xc + side * (1 - t2), ys + t2 * h0];
+    function rx(k) { return PK[k] ? PK[k].x : 0; }
+    function shift(keys, X, d) { keys.forEach(function (k) { X[k] += d; }); }
+    // The crown: a person, their partners beside them, and their children's
+    // blocks side by side over them. Returns the block's width (in places)
+    // and who is in it.
+    var XD = {}, seenD = {};
+    function crown(key, left) {
+      seenD[key] = 1;
+      var fams = (up[key] || []).slice().sort(function (a, b) { return a.x - b.x; }), partners = [], kids = [];
+      fams.forEach(function (c) {
+        c.parents.forEach(function (q) { if (q !== key && PK[q] && !seenD[q] && partners.indexOf(q) < 0) { partners.push(q); seenD[q] = 1; } });
+        c.kids.slice().sort(function (a, b) { return rx(a) - rx(b); }).forEach(function (k) { if (PK[k] && !seenD[k] && kids.indexOf(k) < 0) kids.push(k); });
+      });
+      var members = [key].concat(partners), cursor = left;
+      kids.forEach(function (k) { var b = crown(k, cursor); cursor += b.w; members = members.concat(b.members); });
+      var kidsW = cursor - left, own = 1 + partners.length, w = Math.max(kidsW, own, 1);
+      if (kidsW && kidsW < w) shift(members.slice(1 + partners.length), XD, (w - kidsW) / 2);
+      var mid = kids.length ? (XD[kids[0]] + XD[kids[kids.length - 1]]) / 2 : left + w / 2;
+      var row = [key].concat(partners).sort(function (a, b) { return rx(a) - rx(b); });
+      row.forEach(function (k, i) { XD[k] = mid + (i - (row.length - 1) / 2); });
+      return { w: w, members: members };
     }
-    var geo = { xc: xc, ys: ys, fy: fy, fry: fry, h: H, h0: h0, col: 8, rx: Rx, ry: Ry, rxr: Rxr, ryr: Ryr, nd: nd, na: na, n: m.n,
-      rings: { up: [], down: [] } };
-    for (var k = 1; k <= nd; k++) geo.rings.up.push(ring(k, nd, UP));
-    for (k = 1; k <= na; k++) geo.rings.down.push(ring(k, na, DOWN));
-    GEO = geo;
-    var persons = fr.persons.map(function (p) { var q = place(p.x, p.y); return Object.assign({}, p, { x: q[0], y: q[1] }); });
-    var PK = {};
-    persons.forEach(function (p) { PK[p.key] = p; });
+    // The roots: a person, and their father's and mother's blocks side by
+    // side under them.
+    var XA = {}, seenA = {};
+    function roots(key, left) {
+      seenA[key] = 1;
+      var c = under[key], parents = c ? c.parents.filter(function (q) { return PK[q] && !seenA[q]; }).sort(function (a, b) { return rx(a) - rx(b); }) : [];
+      var members = [key], cursor = left;
+      parents.forEach(function (q) { var b = roots(q, cursor); cursor += b.w; members = members.concat(b.members); });
+      var pw = cursor - left, w = Math.max(pw, 1);
+      if (pw && pw < w) shift(members.slice(1), XA, (w - pw) / 2);
+      XA[key] = parents.length ? (XA[parents[0]] + XA[parents[parents.length - 1]]) / 2 : left + w / 2;
+      return { w: w, members: members };
+    }
+    if (C) { crown(C.key, 0); roots(C.key, 0); }
+    // Each side spread over the glass's width from the axis, its places as
+    // wide as the side allows and never wider than a name needs.
+    var R = clamp(Math.min(hw * 0.44, vh * 0.62), 120, 560);
+    var span = nd + na + 0.9, H = Math.min(150, Math.max(24, (vh - 96 - 2 * R * TILT) / Math.max(1, span)));
+    var y0 = vt + 48 + R * TILT + (nd + 0.45) * H;
+    var G = { x0: hl + hw / 2, y0: y0, R: R, H: H, nd: nd, na: na };
+    function unit(X) {
+      if (!C || !(C.key in X)) return 0;
+      var reach = 0;
+      Object.keys(X).forEach(function (k) { reach = Math.max(reach, Math.abs(X[k] - X[C.key])); });
+      return reach ? Math.min(120, R * 0.94 / reach) : 120;
+    }
+    var ud = unit(XD), ua = unit(XA), oD = C ? XD[C.key] : 0, oA = C ? XA[C.key] : 0;
+    // Whoever neither tree reaches keeps the river's place, scaled to the glass.
+    var reachR = 1;
+    fr.persons.forEach(function (p) { reachR = Math.max(reachR, Math.abs(p.x - cx)); });
+    var sr = R * 0.94 / reachR;
+    var at = {};
+    var persons = fr.persons.map(function (p) {
+      var l = Math.round(lev(p.y)), x;
+      if (p.key in XD && l >= 0) x = G.x0 + (XD[p.key] - oD) * ud;
+      else if (p.key in XA) x = G.x0 + (XA[p.key] - oA) * ua;
+      else x = G.x0 + (p.x - cx) * sr;
+      var y = G.y0 - lev(p.y) * G.H;
+      at[p.x + ',' + p.y] = [x, y];
+      return Object.assign({}, p, { x: x, y: y, z: 0, k: 1, w: [x - G.x0, lev(p.y)] });
+    });
+    var NK = byKey(persons);
     var couples = fr.couples.map(function (c) {
-      var q = place(c.x, c.y), o = Object.assign({}, c, { x: q[0], y: q[1] });
+      var ps = c.parents.map(function (k) { return NK[k]; }).filter(Boolean), ks = c.kids.map(function (k) { return NK[k]; }).filter(Boolean);
+      var from = ps.length ? ps : ks, x = from.length ? from.reduce(function (s, q) { return s + q.x; }, 0) / from.length : G.x0 + (c.x - cx) * sr;
+      var y = G.y0 - lev(c.y) * G.H, o = Object.assign({}, c, { x: x, y: y, z: 0, k: 1, w: [x - G.x0, lev(c.y)] });
+      at[c.x + ',' + c.y] = [x, y];
       if (c.stub) {
-        // Brothers and sisters not drawn: a bud beside the bough that leads
-        // to the one who is, leaning away from the trunk.
-        var kid = c.kids.map(function (key) { return PK[key]; }).filter(Boolean)[0];
-        var dx = kid ? kid.x - q[0] : 0, dy = kid ? kid.y - q[1] : -1, l = Math.hypot(dx, dy) || 1, s = q[0] < xc ? -1 : 1;
-        var a = Math.atan2(dy / l, dx / l) + s * 0.7, ux = Math.cos(a), uy = Math.sin(a);
-        o.stub_dx = ux * 20; o.stub_dy = uy * 20;
-        o.stub_at = markAt(q[0] + ux * 20, q[1] + uy * 20, ux, uy);
+        // Brothers and sisters not drawn: a bud leaning off the family
+        // toward the children's floor, away from the axis.
+        var side = x < G.x0 ? -1 : 1, vert = ks.length && ks[0].y < y ? -1 : 1;
+        o.stub_dx = side * 18; o.stub_dy = vert * 14;
+        o.stub_at = markAt(x + side * 18, y + vert * 14, side, vert);
       }
       return o;
     });
-    // A line the record continues off the frame, or one it ends: a twig that
-    // grows on the way its bough was growing.
+    // A line the record continues past the last floor runs on up (or down),
+    // with its count beyond; a line it ends, a short one.
     var tails = fr.tails.map(function (t) {
-      var q = place(t.x1, t.y1), u = grow(q[0], q[1]) || [0, t.dir < 0 ? -1 : 1], len = t.kind === 'cont' ? 30 : 22;
-      var x2 = q[0] + u[0] * len, y2 = q[1] + u[1] * len;
-      return Object.assign({}, t, { x1: q[0], y1: q[1], x2: x2, y2: y2, count_at: t.kind === 'cont' ? markAt(x2, y2, u[0], u[1]) : null });
+      var s = at[t.x1 + ',' + t.y1] || [G.x0 + (t.x1 - cx) * sr, G.y0 - lev(t.y1) * G.H];
+      var dir = t.y2 < t.y1 ? -1 : 1, len = (t.kind === 'cont' ? 0.42 : 0.24) * G.H;
+      var e = [s[0], s[1] + dir * len];
+      return Object.assign({}, t, { x1: s[0], y1: s[1], x2: e[0], y2: e[1], count_at: t.kind === 'cont' ? markAt(e[0], e[1], 0, dir) : null });
     });
-    return { persons: persons, couples: couples, tails: tails, meta: Object.assign({}, m, { tree: geo }) };
+    GEO = G;
+    return { persons: persons, couples: couples, tails: tails, meta: Object.assign({}, m, { tv: G }) };
   }
-  // Where a count stands at the end of a twig, on the side it points to.
-  function markAt(x, y, ux, uy) {
-    var anchor = ux > 0.35 ? 1 : ux < -0.35 ? -1 : 0;
-    return { x: x + ux * 5, y: y + (anchor ? uy * 5 + 3.5 : uy > 0 ? 12 : -5), anchor: anchor, halo: true };
+  // Where a count stands at the end of a line: beside it, on its side.
+  function markAt(x, y, side, vertical) {
+    return { x: x + side * 6, y: y + (side ? 3.5 : vertical > 0 ? 13 : -6), anchor: side, halo: true };
   }
-  // Which way the tree grows at a point: up the trunk, out from the fork
-  // through the crown, down the taproot, out from its foot through the roots.
-  // On the soil line itself it grows both ways, and the caller decides.
-  function grow(x, y) {
-    var G = GEO, dx, dy, l;
-    if (!G) return null;
-    if (y < G.ys - 0.5) {
-      if (y >= G.fy - 0.5 && Math.abs(x - G.xc) <= G.col) return [0, -1];
-      dx = x - G.xc; dy = y - G.fy; l = Math.hypot(dx, dy);
-      return l > 0.5 ? [dx / l, dy / l] : [0, -1];
-    }
-    if (y > G.ys + 0.5) {
-      if (y <= G.fry + 0.5 && Math.abs(x - G.xc) <= G.col) return [0, 1];
-      dx = x - G.xc; dy = y - G.fry; l = Math.hypot(dx, dy);
-      return l > 0.5 ? [dx / l, dy / l] : [0, 1];
-    }
-    return null;
-  }
-  // How far a point is from the foot of the trunk, along the tree.
-  function depth(x, y) {
-    var G = GEO;
-    if (!G || Math.abs(y - G.ys) <= 0.5) return 0;
-    if (y < G.ys) return y >= G.fy - 0.5 && Math.abs(x - G.xc) <= G.col ? G.ys - y : G.h + Math.hypot(x - G.xc, y - G.fy);
-    return y <= G.fry + 0.5 && Math.abs(x - G.xc) <= G.col ? y - G.ys : G.h0 + Math.hypot(x - G.xc, y - G.fry);
-  }
-  // A bough leaves its inner end the way the tree grows there and reaches
-  // its outer end the way the tree grows there: the crown's boughs rise from
-  // the fork and droop at the rim, the roots dive and spread.
-  function ctrl(x1, y1, x2, y2) {
-    var k = 0.42 * Math.hypot(x2 - x1, y2 - y1);
-    var a = grow(x1, y1) || [0, y2 > y1 ? 1 : -1], b = grow(x2, y2) || [0, y1 > y2 ? 1 : -1];
-    if (depth(x1, y1) <= depth(x2, y2)) return [x1, y1, x1 + a[0] * k, y1 + a[1] * k, x2 - b[0] * k, y2 - b[1] * k, x2, y2];
-    return [x1, y1, x1 - a[0] * k, y1 - a[1] * k, x2 + b[0] * k, y2 + b[1] * k, x2, y2];
-  }
-  function bez(c, t) {
-    var u = 1 - t;
-    return [u * u * u * c[0] + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6],
-            u * u * u * c[1] + 3 * u * u * t * c[3] + 3 * u * t * t * c[5] + t * t * t * c[7]];
-  }
-  function bezd(c, t) {
-    var u = 1 - t;
-    return [3 * u * u * (c[2] - c[0]) + 6 * u * t * (c[4] - c[2]) + 3 * t * t * (c[6] - c[4]),
-            3 * u * u * (c[3] - c[1]) + 6 * u * t * (c[5] - c[3]) + 3 * t * t * (c[7] - c[5])];
-  }
+  // A branch climbs from one floor to the next: it leaves and reaches each
+  // end upright, as a stem does.
   function edge(x1, y1, x2, y2) {
-    var c = ctrl(x1, y1, x2, y2), r = function (v) { return Math.round(v * 10) / 10; };
-    return 'M' + r(c[0]) + ' ' + r(c[1]) + 'C' + r(c[2]) + ' ' + r(c[3]) + ' ' + r(c[4]) + ' ' + r(c[5]) + ' ' + r(c[6]) + ' ' + r(c[7]);
+    var r = function (v) { return Math.round(v * 10) / 10; }, my = (y1 + y2) / 2;
+    return 'M' + r(x1) + ' ' + r(y1) + 'C' + r(x1) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(y2);
+  }
+  // Two frames blended as the glass turns: the river's own blend, then the
+  // whole tree turned round the axis toward the side the person travelled
+  // to came from, and back — in perspective, so that the side coming round
+  // grows nearer and the other recedes.
+  function tween3(A, B, e, base) {
+    var fr = base(A, B, e), G = A.meta.tv || B.meta.tv;
+    if (!G) return fr;
+    var to = byKey(A.persons)[B.meta.centre], dir = to ? (to.x < G.x0 - 2 ? -1 : to.x > G.x0 + 2 ? 1 : 0) : 0;
+    if (!dir) return fr;
+    var s = dir * 0.5 * Math.sin(Math.PI * e), D = 3 * G.R, cs = Math.cos(s), sn = Math.sin(s);
+    function turn(x, y) {
+      var r = x - G.x0, z = -r * sn, k = D / (D - z);
+      return [G.x0 + r * cs * k, G.y0 + (y - G.y0) * (1 + (k - 1) * 0.35), z / G.R, k];
+    }
+    fr.persons.concat(fr.couples).forEach(function (o) { var q = turn(o.x, o.y); o.x = q[0]; o.y = q[1]; o.z = q[2]; o.k = q[3]; });
+    fr.tails.forEach(function (t) { var a = turn(t.x1, t.y1), b = turn(t.x2, t.y2); t.x1 = a[0]; t.y1 = a[1]; t.x2 = b[0]; t.y2 = b[1]; });
+    return fr;
   }
 
   /* ---- the drawing ---- */
-  // A bough's width where it leaves a person: the trunk's at the fixed
-  // point, under two thirds of it a generation further, never under a
-  // hairline; roots finer than boughs, a partner's graft finer still.
-  var T0 = 22, TAPER = 0.64, MIN_W = 1.3;
-  function thick(gen) { return Math.max(MIN_W, T0 * Math.pow(TAPER, Math.abs(gen))); }
-  // Bark has a thickness, and it is not the same at both ends.
-  function ribbon(f, c, w1, w2) {
-    var N = 14, L = [], R = [];
-    for (var i = 0; i <= N; i++) {
-      var t = i / N, p = bez(c, t), d = bezd(c, t), l = Math.hypot(d[0], d[1]) || 1, nx = -d[1] / l, ny = d[0] / l, w = (w1 + (w2 - w1) * t) / 2;
-      L.push(f(p[0] + nx * w) + ' ' + f(p[1] + ny * w));
-      R.push(f(p[0] - nx * w) + ' ' + f(p[1] - ny * w));
-    }
-    return 'M' + L.join('L') + 'L' + R.reverse().join('L') + 'Z';
-  }
-  function generationOf(c, PM) {
-    var g = [];
-    c.parents.forEach(function (k) { if (PM[k]) g.push(PM[k].gen + 0.5); });
-    c.kids.forEach(function (k) { if (PM[k]) g.push(PM[k].gen - 0.5); });
-    return g.length ? g.reduce(function (a, b) { return a + b; }) / g.length : 0;
-  }
-  // A crown has leaves around every tip and along its outer boughs, and a
-  // root has hairs: small lights, the same ones in every frame (seeded by who
-  // they are), coloured by what the river already says of them.
-  function seed(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-  function next(h) { return Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; }
-  function foliage(f, p, kind) {
-    var h = seed(p.key), out = '', n = kind === 'root' ? 5 : 16, flat = kind === 'root' ? 0.6 : 1;
-    for (var i = 0; i < n; i++) {
-      h = next(h);
-      var a = (h % 6283) / 1000, d = 7 + (h >>> 9) % (kind === 'root' ? 12 : 19), r = 0.7 + ((h >>> 5) % 9) / 7;
-      out += '<circle cx="' + f(p.x + Math.cos(a) * d) + '" cy="' + f(p.y + Math.sin(a) * d * flat) + '" r="' + f(r) + '" class="tv-dot tv-' + kind + '"/>';
-    }
-    return out;
-  }
-  function canopy(f, c, key, kind) {
-    var h = seed(key), out = '';
-    for (var i = 0; i < 8; i++) {
-      h = next(h);
-      var t = 0.35 + ((h >>> 3) % 1000) / 1600, p = bez(c, t), d = bezd(c, t), l = Math.hypot(d[0], d[1]) || 1;
-      var off = (((h >>> 11) % 1000) / 500 - 1) * (5 + (h >>> 21) % 13), r = 0.8 + ((h >>> 7) % 9) / 7;
-      out += '<circle cx="' + f(p[0] - d[1] / l * off) + '" cy="' + f(p[1] + d[0] / l * off) + '" r="' + f(r) + '" class="tv-dot tv-' + kind + '"/>';
-    }
-    return out;
-  }
-  function centreOf(fr) { return fr.persons.filter(function (p) { return p.role === 'centre'; })[0]; }
-  function centreName(fr) { var c = centreOf(fr), s = c && c.s; return s && !s.redacted ? s.names[2] : ''; }
+  // A branch's width: the column's at the fixed point, narrowing a floor
+  // further out each time, never under a hairline.
+  function thick(gen) { return Math.max(1.3, 6.5 * Math.pow(0.68, Math.abs(gen))); }
   var named = {};
-
   function paint(fr, api, rest) {
-    var f = api.f, esc = api.esc, PM = api.byKey(fr.persons), m = fr.meta, out = '', bark = '', veins = '', nodes = '', tw = '', leaves = '';
+    var f = api.f, esc = api.esc, PM = api.byKey(fr.persons), m = fr.meta;
     var vt = m.view[0], vh = m.view[1], hl = m.hview[0], hw = m.hview[1];
-    var G = m.tree || GEO || { xc: hl + hw / 2, ys: vt + vh / 2, fy: vt + vh / 2, fry: vt + vh / 2, h: 0, h0: 0, col: 8, rx: hw / 3, ry: vh / 3, rxr: hw / 3, ryr: vh / 4, rings: { up: [], down: [] } };
+    var G = m.tv || GEO || { x0: hl + hw / 2, y0: vt + vh / 2, R: hw / 3, H: 90, nd: 0, na: 0 };
     GEO = G;
-    // The ground: the dashboard's dark tile, the crown's glow, and the soil
-    // the trunk stands in, as wide as the window (the camera stretches all
-    // three with it).
-    out += '<rect class="tv-bg" x="' + f(hl) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(vh) + '"/>';
-    if (G.rings.up.length) {
-      out += '<ellipse class="tv-crown" cx="' + f(G.xc) + '" cy="' + f(G.fy - G.ry * 0.38) + '" rx="' + f(G.rx * 1.12) + '" ry="' + f(G.ry * 0.86) + '" fill="url(#tv-crown)"/>';
+    var out = '', far = '', near = '', ringsBack = '', ringsFront = '', tw = '', marks = '';
+    var top = G.y0 - (G.nd + 0.5) * G.H, bottom = G.y0 + (G.na + 0.5) * G.H;
+    // The laboratory: its picture, the projector under the glass, and a
+    // veil that keeps the drawing readable over it.
+    var plat = bottom + G.R * TILT + 10;
+    var Hi = Math.max(vh * 1.02, (plat - vt) / LAB.sv + 2, (vt + vh - plat) / (1 - LAB.sv) + 2, hw / LAB.aspect);
+    var Wi = Hi * LAB.aspect;
+    out += '<image class="tv-lab" href="' + LAB.src + '" x="' + f(G.x0 - LAB.su * Wi) + '" y="' + f(plat - LAB.sv * Hi) + '" width="' + f(Wi) + '" height="' + f(Hi) + '" preserveAspectRatio="none"/>';
+    out += '<rect class="tv-veil" x="' + f(hl) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(vh) + '"/>';
+    // The glass: its walls, a ring per floor — the back half faint and
+    // broken, the front half lit — and the column of light on the axis.
+    var wallTop = top - 0.25 * G.H, wallBot = bottom + 0.15 * G.H;
+    out += '<rect class="tv-glass" x="' + f(G.x0 - G.R) + '" y="' + f(wallTop) + '" width="' + f(2 * G.R) + '" height="' + f(wallBot - wallTop) + '" fill="url(#tv-glass)"/>';
+    out += '<line class="tv-wall" x1="' + f(G.x0 - G.R) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0 - G.R) + '" y2="' + f(wallBot) + '"/>'
+      + '<line class="tv-wall" x1="' + f(G.x0 + G.R) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0 + G.R) + '" y2="' + f(wallBot) + '"/>';
+    function ring(cy, rx, cls) {
+      var ry = rx * TILT;
+      ringsBack += '<path class="' + cls + ' tv-ring-back" d="M' + f(G.x0 - rx) + ' ' + f(cy) + 'A' + f(rx) + ' ' + f(ry) + ' 0 0 1 ' + f(G.x0 + rx) + ' ' + f(cy) + '"/>';
+      ringsFront += '<path class="' + cls + ' tv-ring-front" d="M' + f(G.x0 - rx) + ' ' + f(cy) + 'A' + f(rx) + ' ' + f(ry) + ' 0 0 0 ' + f(G.x0 + rx) + ' ' + f(cy) + '"/>';
     }
-    out += '<rect class="tv-soil-glow" x="' + f(hl) + '" y="' + f(G.ys) + '" width="' + f(hw) + '" height="' + f(Math.max(0, vt + vh - G.ys)) + '" fill="url(#tv-soil)"/>';
-    // Growth rings: where each generation stands, faint enough to read
-    // through — the crown's over its dome, the roots' under their spread.
-    G.rings.up.forEach(function (rc) {
-      var rx = G.rx * rc, ry = G.ry * rc, c = Math.cos(DROOP), sn = Math.sin(DROOP);
-      out += '<path d="M' + f(G.xc - rx * c) + ' ' + f(G.fy + ry * sn) + 'A' + f(rx) + ' ' + f(ry) + ' 0 1 1 ' + f(G.xc + rx * c) + ' ' + f(G.fy + ry * sn) + '" fill="none" class="tv-ring-arc"/>';
-    });
-    G.rings.down.forEach(function (rr) {
-      var rx = G.rxr * rr, ry = G.ryr * rr, c = Math.cos(FLAT), sn = Math.sin(FLAT);
-      out += '<path d="M' + f(G.xc + rx * c) + ' ' + f(G.fry + ry * sn) + 'A' + f(rx) + ' ' + f(ry) + ' 0 0 1 ' + f(G.xc - rx * c) + ' ' + f(G.fry + ry * sn) + '" fill="none" class="tv-ring-arc"/>';
-    });
-    out += '<line class="k-band-rule tv-soil" x1="' + f(hl) + '" y1="' + f(G.ys) + '" x2="' + f(hl + hw) + '" y2="' + f(G.ys) + '"/>';
-    // Twigs: lines the record continues off the frame — with an arrowhead
-    // and the count beyond it — and lines it ends, with the ring the legend
-    // names. Their counts are written once the names are placed.
+    ring(wallTop, G.R, 'tv-rim');
+    ring(wallBot, G.R, 'tv-rim');
+    var boxes = [];
+    function hit(box) {
+      for (var i = 0; i < boxes.length; i++) {
+        var q = boxes[i];
+        if (box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1]) return true;
+      }
+      return false;
+    }
+    for (var l = -G.na; l <= G.nd; l++) {
+      var ly = G.y0 - l * G.H;
+      ring(ly, G.R * 0.98, l === 0 ? 'tv-floor tv-floor-0' : 'tv-floor');
+      // Each floor's generation, at the glass's right, as the river's rail.
+      var word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0 ◂', gx = G.x0 + G.R + 12;
+      out += '<text x="' + f(gx) + '" y="' + f(ly + 3.5) + '" font-family="' + api.mono + '" font-size="10" class="' + (l === 0 ? 'k-accent' : 'k-band-text tv-gen') + '">' + word + '</text>';
+      boxes.push([gx - 2, ly - 8, gx + 30, ly + 5]);
+    }
+    out += '<line class="tv-column-glow" x1="' + f(G.x0) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0) + '" y2="' + f(plat) + '"/>'
+      + '<line class="tv-column" x1="' + f(G.x0) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0) + '" y2="' + f(plat) + '"/>';
+
+    // Lines the record continues past the last floor, and lines it ends.
     var counts = [];
     fr.tails.forEach(function (t) {
-      var w = thick((m.n || 3) + 1) * 0.8, dx = t.x2 - t.x1, dy = t.y2 - t.y1, l = Math.hypot(dx, dy) || 1, ux = dx / l, uy = dy / l;
-      tw += '<g opacity="' + f(t.a) + '"><path d="M' + f(t.x1) + ' ' + f(t.y1) + 'L' + f(t.x2) + ' ' + f(t.y2) + '" fill="none" class="tv-twig" stroke-width="' + f(w) + '"/>';
+      var dx = t.x2 - t.x1, dy = t.y2 - t.y1, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+      tw += '<g opacity="' + f(t.a) + '"><path d="M' + f(t.x1) + ' ' + f(t.y1) + 'L' + f(t.x2) + ' ' + f(t.y2) + '" class="tv-twig" stroke-width="1.4"/>';
       if (t.kind === 'cont') {
         tw += '<polygon class="tv-twig-tip" points="' + f(t.x2 - uy * 4) + ',' + f(t.y2 + ux * 4) + ' ' + f(t.x2 + uy * 4) + ',' + f(t.y2 - ux * 4) + ' ' + f(t.x2 + ux * 6) + ',' + f(t.y2 + uy * 6) + '"/>';
         if (t.count_at) counts.push({ mk: t.count_at, text: '+' + t.count, size: 9.5, dx: t.cref ? t.x2 - t.cref[0] : 0, dy: t.cref ? t.y2 - t.cref[1] : 0, a: t.a });
@@ -270,168 +264,147 @@
     });
     fr.couples.forEach(function (c) {
       if (!c.stub) return;
-      var x2 = c.x + c.stub_dx, y2 = c.y + c.stub_dy;
-      tw += '<g opacity="' + f(c.a) + '"><path d="M' + f(c.x) + ' ' + f(c.y) + 'L' + f(x2) + ' ' + f(y2) + '" fill="none" class="tv-twig tv-bud" stroke-width="1.4"/></g>';
+      tw += '<g opacity="' + f(c.a) + '"><path d="M' + f(c.x) + ' ' + f(c.y) + 'L' + f(c.x + c.stub_dx) + ' ' + f(c.y + c.stub_dy) + '" class="tv-twig tv-bud" stroke-width="1.3"/></g>';
       if (c.stub_at) counts.push({ mk: c.stub_at, text: '+' + c.stub, size: 10, dx: c.sref ? c.x - c.sref[0] : 0, dy: c.sref ? c.y - c.sref[1] : 0, a: c.a });
     });
-    // Boughs and roots, thickest first so the thin ones lie on top.
-    function onAxis(x, y) { return Math.abs(x - G.xc) <= G.col; }
+
+    // Branches, the far ones first and dimmed: a glow, the branch, and the
+    // vein that says what the parentage is worth.
     var B = api.edges(fr, PM).map(function (e) {
-      var c = e.cp, gc = generationOf(c, PM), a = e.from ? PM[e.from] : null, k = e.to ? PM[e.to] : null;
-      var w1 = a ? thick(a.gen) : thick(gc), w2 = k ? thick(k.gen) : thick(gc), s = 0.85 + 0.15 * api.cls(e.d) / 5;
-      if (gc < 0) s *= 0.72;
-      if (a && (a.role === 'spouse' || a.role === 'dspouse')) s *= 0.5;
-      if (onAxis(e.x1, e.y1) && onAxis(e.x2, e.y2)) s *= 1.3;
-      var curve = ctrl(e.x1, e.y1, e.x2, e.y2), outer = depth(e.x1, e.y1) > depth(e.x2, e.y2) ? (a || k) : (k || a);
-      return { e: e, c: curve, w1: w1 * s, w2: w2 * s, outer: outer, crown: gc > 0 };
-    }).sort(function (a, b) { return Math.max(b.w1, b.w2) - Math.max(a.w1, a.w2); });
+      var a = e.from ? PM[e.from] : null, k = e.to ? PM[e.to] : null, c = e.cp || {};
+      var z = ((a ? a.z : c.z || 0) + (k ? k.z : c.z || 0)) / 2, gen = Math.max(a ? Math.abs(a.gen) : 0, k ? Math.abs(k.gen) : 0);
+      var w = thick(gen) * (0.75 + 0.25 * (1 + z) / 2);
+      if (a && (a.role === 'spouse' || a.role === 'dspouse')) w *= 0.6;
+      return { e: e, z: z, w: w };
+    }).sort(function (a, b) { return a.z - b.z; });
     B.forEach(function (b) {
-      var e = b.e, o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '', faint = e.conf === 's' ? ' tv-faint' : '', d = edge(e.x1, e.y1, e.x2, e.y2);
-      if (Math.max(b.w1, b.w2) < 2.2) {
-        bark += '<path d="' + d + '" fill="none" class="tv-bark-line' + faint + '" stroke-width="' + f(Math.max(b.w1, b.w2)) + '" stroke-linecap="round"' + o + '/>';
-      } else {
-        bark += '<path d="' + ribbon(f, b.c, b.w1, b.w2) + '" class="tv-bark' + faint + '"' + o + '/>'
-          + '<path d="' + d + '" fill="none" class="tv-ridge" stroke-width="' + f(Math.min(b.w1, b.w2) * 0.32) + '"' + o + '/>';
-      }
-      if (e.conf === 'a') veins += '<path d="' + d + '" fill="none" class="tv-vein" stroke-width="1.1" stroke-linecap="round"' + o + '/>';
-      else if (e.conf === 'd') veins += '<path d="' + d + '" fill="none" class="tv-vein tv-vein-d" stroke-width="1.1" stroke-dasharray="4.5 3"' + o + '/>';
-      else veins += '<path d="' + d + '" fill="none" class="tv-vein tv-vein-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
-      // Leaves along the crown's outer boughs, the colour of the life at
-      // their tip.
-      var s = b.outer && b.outer.s || {};
-      if (b.crown && b.outer) leaves += '<g opacity="' + f(e.a) + '">' + canopy(f, b.c, (e.from || '') + '>' + (e.to || '') + (e.cp.key || ''), s.redacted || s.sparse ? 'hidden' : s.living ? 'living' : 'gone') + '</g>';
-    });
-    fr.persons.forEach(function (p) {
-      var s = p.s || {};
-      if (p.role === 'centre') return;
-      var kind = p.gen < 0 ? 'root' : s.redacted || s.sparse ? 'hidden' : s.living ? 'living' : 'gone';
-      leaves += '<g opacity="' + f(p.a) + '">' + foliage(f, p, kind) + '</g>';
+      var e = b.e, d = edge(e.x1, e.y1, e.x2, e.y2), back = b.z < -0.15;
+      var o = (e.a < 1 || back) ? ' opacity="' + f((e.a < 1 ? e.a : 1) * (back ? 0.42 : 1)) + '"' : '';
+      var faint = e.conf === 's' ? ' tv-faint' : '', s = '';
+      s += '<path d="' + d + '" class="tv-branch-glow' + faint + '" stroke-width="' + f(b.w * 3.2) + '"' + o + '/>';
+      s += '<path d="' + d + '" class="tv-branch' + faint + '" stroke-width="' + f(b.w) + '" stroke-linecap="round"' + o + '/>';
+      if (e.conf === 'a') s += '<path d="' + d + '" class="tv-vein" stroke-width="1.1" stroke-linecap="round"' + o + '/>';
+      else if (e.conf === 'd') s += '<path d="' + d + '" class="tv-vein tv-vein-d" stroke-width="1.1" stroke-dasharray="4.5 3"' + o + '/>';
+      else s += '<path d="' + d + '" class="tv-vein tv-vein-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
+      if (back) far += s; else near += s;
     });
 
-    // Names stand outward, the way the tree grows where they are: the centre
-    // beside the foot of the trunk, the nearest generations next, the next
-    // ones while there is room. A name that would cover one already placed
-    // is left out, as the river leaves out a word it has no room for; the
-    // pointer brings it back (river.js `light`, through `named`).
-    var keep = {}, boxes = [];
-    function hit(box) {
-      for (var i = 0; i < boxes.length; i++) {
-        var q = boxes[i];
-        if (box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1]) return true;
-      }
-      return false;
-    }
-    var C = centreOf(fr), cs = C && C.s || {}, cleft = true;
-    if (C) {
-      // The centre's name goes to the side its partners leave free.
-      var right = fr.persons.filter(function (p) { return p.role === 'spouse' && p.x > C.x + 1; }).length;
-      var left = fr.persons.filter(function (p) { return p.role === 'spouse' && p.x < C.x - 1; }).length;
-      cleft = !(left && !right);
-      if (!cs.redacted) {
-        var cw = Math.max(api.width(api.clip(cs.names[2], 230), 16, true), api.width(cs.years, 11, true)), cx0 = cleft ? C.x - 24 - cw : C.x + 24;
-        boxes.push([cx0 - 2, C.y - 19, cx0 + cw + 2, C.y + 14]);
-      }
-      boxes.push([C.x - 16, C.y - 16, C.x + 16, C.y + 16]);
-    }
-    fr.persons.slice().sort(function (a, b) { return Math.abs(a.gen) - Math.abs(b.gen) || a.x - b.x; }).forEach(function (p) {
-      var s = p.s || {}, gd = Math.abs(p.gen);
-      if (p.role === 'centre' || s.redacted) return;
-      var u = grow(p.x, p.y), anchor, lx, ly;
-      if (!u) { anchor = p.x < G.xc ? 'end' : 'start'; lx = p.x + (p.x < G.xc ? -11 : 11); ly = p.y - 3; }
-      else {
-        anchor = u[0] < -0.3 ? 'end' : u[0] > 0.3 ? 'start' : 'middle';
-        lx = p.x + u[0] * 11; ly = p.y + u[1] * 11 + (u[1] > 0.3 ? 9 : u[1] < -0.3 ? -2 : 4);
-      }
-      var word = gd <= 1 ? s.names[1] : gd === 2 ? s.names[1] : s.names[0], both = gd <= 1;
-      var w = Math.max(api.width(word, 12, false), both ? api.width(s.years, 9.5, true) : 0);
-      var x0 = anchor === 'end' ? lx - w : anchor === 'middle' ? lx - w / 2 : lx, box = [x0 - 2, ly - 11, x0 + w + 2, ly + (both ? 14 : 3)];
-      if (hit(box)) {
-        if (gd !== 2) return;
-        // A grandchild's or grandparent's short name may give way to the
-        // given name alone before it gives way altogether.
-        word = s.names[0]; w = api.width(word, 12, false);
-        x0 = anchor === 'end' ? lx - w : anchor === 'middle' ? lx - w / 2 : lx; box = [x0 - 2, ly - 11, x0 + w + 2, ly + 3];
-        if (hit(box)) return;
-      }
-      boxes.push(box);
-      keep[p.key] = { x: lx, y: ly, anchor: anchor, word: word, both: both };
+    // Names on glass panels beside the near people, outward from the axis:
+    // the centre first, then the nearest floors, the front before the back.
+    // A panel that would cover another is left out, as the river leaves out
+    // a word it has no room for; the pointer brings it back.
+    var keep = {}, C = centreOf(fr), cs = C && C.s || {}, cside = 1;
+    fr.persons.forEach(function (p) {
+      var r = (p.role === 'centre' ? 13 : 6) * (p.k || 1);
+      boxes.push([p.x - r, p.y - r, p.x + r, p.y + r]);
     });
-    // The counts: never left out, since a count is the only sign of the
-    // people beyond, but stepped aside from a name rather than written over
-    // it — a line lower, higher, or to one side.
+    if (C && !cs.redacted) {
+      var lefts = fr.persons.filter(function (p) { return p.role === 'spouse' && p.x < C.x - 1; }).length;
+      var rights = fr.persons.filter(function (p) { return p.role === 'spouse' && p.x > C.x + 1; }).length;
+      cside = rights && !lefts ? -1 : 1;
+      var cn = api.clip(cs.names[2], 230), cw = Math.max(api.width(cn, 15, true), api.width(cs.years, 10.5, true)) + 20;
+      // Beside the heart on the side its partners leave free, else on the
+      // other, a little higher or lower if a person stands there.
+      // The place that covers the fewest things already placed, the first
+      // of them on a tie.
+      // First as a caption under the heart, its leader straight down, which
+      // leaves the sides to the partners; then beside it, then over it.
+      var at = null, least = Infinity, tries = [[C.x - cw / 2, 42, 0], [C.x - cw / 2, 64, 0]];
+      [26, 64, 110].forEach(function (gap) {
+        [cside, -cside].forEach(function (sd) {
+          [0, -26, 26, -52, 52].forEach(function (dy) { tries.push([sd > 0 ? C.x + gap : C.x - gap - cw, dy, sd]); });
+        });
+        tries.push([C.x - cw / 2, -40 - gap / 2, 0]);
+      });
+      tries.forEach(function (o) {
+        var x0 = o[0], dy = o[1], box = [x0 - 2, C.y - 19 + dy, x0 + cw + 2, C.y + 19 + dy], n = 0;
+        if (box[0] < hl + 2 || box[2] > hl + hw - 2 || box[1] < vt + 2 || box[3] > vt + vh - 2) return;
+        boxes.forEach(function (q) { if (box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1]) n++; });
+        if (n < least) { least = n; at = { x: x0, dy: dy, side: o[2], box: box }; }
+      });
+      if (!at) at = { x: C.x + 26, dy: 0, side: 1, box: [C.x + 24, C.y - 19, C.x + 28 + cw, C.y + 19] };
+      keep[C.key] = { x: at.x, y: C.y - 17 + at.dy, w: cw, h: 34, side: at.side, centre: true, word: cn, both: true };
+      boxes.push(at.box);
+    }
+    fr.persons.slice().sort(function (a, b) { return Math.abs(a.gen) - Math.abs(b.gen) || b.z - a.z; }).forEach(function (p) {
+      var s = p.s || {}, gd = Math.abs(p.gen);
+      if (p.role === 'centre' || s.redacted || p.z < -0.2 || gd > 3) return;
+      var side = p.x < G.x0 - 3 ? -1 : p.x > G.x0 + 3 ? 1 : (p.w && p.w[0] < 0 ? -1 : 1);
+      var word = gd >= 3 ? s.names[0] : s.names[1], both = gd <= 1 && !!s.years;
+      var w = Math.max(api.width(word, 11.5, false), both ? api.width(s.years, 9, true) : 0) + 14, h = both ? 28 : 17;
+      var gap = 10 + 5 * (p.k || 1);
+      for (var tries = 0; tries < 3; tries++) {
+        var dy = tries === 0 ? 0 : tries === 1 ? -(h + 4) : h + 4;
+        var x0 = side > 0 ? p.x + gap : p.x - gap - w, y0 = p.y - h / 2 + dy, box = [x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2];
+        if (box[0] < hl + 2 || box[2] > hl + hw - 2 || hit(box)) continue;
+        boxes.push(box);
+        keep[p.key] = { x: x0, y: y0, w: w, h: h, side: side, word: word, both: both };
+        return;
+      }
+    });
+    // The counts: never left out — the only sign of the people beyond —
+    // but stepped aside from a panel rather than written over it.
     counts.forEach(function (c) {
       var mk = c.mk, w = api.width(c.text, c.size, true), at = [0, 0], spot = null;
-      [[0, 0], [0, 11], [0, -11], [14, 0], [-14, 0], [0, 22]].some(function (o) {
+      [[0, 0], [0, 11], [0, -11], [14, 0], [-14, 0], [0, 22], [0, -22], [28, 0], [-28, 0], [0, 34], [0, -34], [42, 0], [-42, 0]].some(function (o) {
         var x = mk.x + c.dx + o[0], y = mk.y + c.dy + o[1];
         var x0 = mk.anchor < 0 ? x - w : mk.anchor === 0 ? x - w / 2 : x, box = [x0 - 1, y - c.size, x0 + w + 1, y + 2];
-        if (!spot) spot = box; // where it stays if no place is free
+        if (!spot) spot = box;
         if (hit(box)) return false;
         at = o; spot = box;
         return true;
       });
       boxes.push(spot);
-      tw += '<g opacity="' + f(c.a) + '">' + api.mark(Object.assign({}, mk, { x: mk.x + at[0], y: mk.y + at[1] }), c.text, c.size, c.dx, c.dy) + '</g>';
+      marks += '<g class="tv-count" opacity="' + f(c.a) + '">' + api.mark(Object.assign({}, mk, { x: mk.x + at[0], y: mk.y + at[1] }), c.text, c.size, c.dx, c.dy) + '</g>';
     });
-    // Generations, counted as the river's rail counts them: each of the
-    // crown's rings at the end of its dome, each of the roots' at the end of
-    // its spread, on the right where there is room, else on the left, else
-    // not at all; and the soil line, the fixed point's, at the window's edge.
-    function tick(word, x, y, side) {
-      var w = api.width(word, 10, true), x0 = side > 0 ? x : x - w, box = [x0 - 1, y - 9, x0 + w + 1, y + 2];
-      if (hit(box)) return false;
-      boxes.push(box);
-      out += '<text x="' + f(x) + '" y="' + f(y) + '"' + (side < 0 ? ' text-anchor="end"' : '') + ' font-family="' + api.mono + '" font-size="10" class="k-band-text tv-gen">' + word + '</text>';
-      return true;
-    }
-    G.rings.up.forEach(function (rc, i) {
-      var a = DROOP + 0.045 * Math.PI, y = G.fy + G.ry * rc * Math.sin(a) + 3.5, dx = G.rx * rc * Math.cos(a) + 6;
-      if (!tick('+' + (i + 1), G.xc + dx, y, 1)) tick('+' + (i + 1), G.xc - dx, y, -1);
-    });
-    G.rings.down.forEach(function (rr, i) {
-      var dx = G.rxr * rr + 8, y = G.fry + 3.5;
-      if (!tick('−' + (i + 1), G.xc + dx, y, 1)) tick('−' + (i + 1), G.xc - dx, y, -1);
-    });
-    out += '<text x="' + f(hl + hw - 10) + '" y="' + f(G.ys - 4) + '" text-anchor="end" font-family="' + api.mono + '" font-size="10" class="k-accent">0 ◂</text>';
 
-    // People: the heart at the foot of the trunk, leaves alive and leaves
-    // gone, and the person this reader may not see as an outline only.
-    fr.persons.forEach(function (p) {
-      var s = p.s || {}, isC = p.role === 'centre', r = isC ? 7.5 : 4.8, x = f(p.x), y = f(p.y);
-      var g = '<g opacity="' + f(p.a) + '">';
-      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>';
+    // People, far to near: the heart on the axis, leaves alive and leaves
+    // gone, the person this reader may not see as an outline only; each
+    // with its panel, if it has one.
+    var people = '';
+    fr.persons.slice().sort(function (a, b) { return a.z - b.z; }).forEach(function (p) {
+      var s = p.s || {}, isC = p.role === 'centre', k = p.k || 1, r = (isC ? 8 : 4.6) * k, x = f(p.x), y = f(p.y);
+      var fade = p.z < -0.15 ? 0.5 : 1, g = '<g opacity="' + f(p.a * fade) + '">';
+      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><circle cx="' + x + '" cy="' + y + '" r="18" fill="transparent"/>';
       if (p.repeat > 1) g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6) + '" fill="none" class="k-data-line" stroke-width="1"/>';
       if (p.again) g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" class="k-data-line" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
       if (isC) {
-        g += '<circle cx="' + x + '" cy="' + y + '" r="19" class="tv-halo"/><circle cx="' + x + '" cy="' + y + '" r="14" fill="none" class="tv-ring" stroke-width="1.4"/>'
-          + '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="tv-heart"/>';
+        g += '<circle cx="' + x + '" cy="' + y + '" r="24" class="tv-halo"/><circle cx="' + x + '" cy="' + y + '" r="15" fill="none" class="tv-ring" stroke-width="1.4"/>'
+          + '<circle cx="' + x + '" cy="' + y + '" r="' + f(r) + '" class="tv-heart"/>';
       } else if (s.redacted || s.sparse) {
-        g += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="tv-leaf tv-hidden" stroke-width="1.5" stroke-dasharray="1.6 1.6"/>';
+        g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r) + '" class="tv-leaf tv-hidden" stroke-width="1.5" stroke-dasharray="1.6 1.6"/>';
       } else if (s.living) {
-        g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 4.5) + '" class="tv-leaf-glow tv-living"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="tv-leaf tv-living"/>';
+        g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 5) + '" class="tv-leaf-glow tv-living"/><circle cx="' + x + '" cy="' + y + '" r="' + f(r) + '" class="tv-leaf tv-living"/>';
       } else {
-        g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3) + '" class="tv-leaf-glow tv-gone"/><circle cx="' + x + '" cy="' + y + '" r="' + f(r - 0.4) + '" class="tv-leaf tv-gone"/>';
+        g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 4) + '" class="tv-leaf-glow tv-gone"/><circle cx="' + x + '" cy="' + y + '" r="' + f(r - 0.3) + '" class="tv-leaf tv-gone"/>';
       }
-      var halo = ' paint-order="stroke" stroke-width="4" stroke-linejoin="round"';
-      if (isC && !s.redacted) {
-        var an = cleft ? ' text-anchor="end"' : '', lx = f(p.x + (cleft ? -24 : 24));
-        g += '<text x="' + lx + '" y="' + f(p.y - 4) + '"' + an + ' font-size="16" font-weight="600" class="tv-name tv-centre k-halo"' + halo + '>' + esc(api.clip(s.names[2], 230)) + '</text>'
-          + '<text x="' + lx + '" y="' + f(p.y + 11) + '"' + an + ' font-family="' + api.mono + '" font-size="11" class="tv-data k-halo"' + halo + '>' + esc(s.years) + '</text>';
-      } else if (keep[p.key]) {
-        var L = keep[p.key], at = L.anchor !== 'start' ? ' text-anchor="' + L.anchor + '"' : '';
-        g += '<text x="' + f(L.x) + '" y="' + f(L.y) + '"' + at + ' font-size="12" class="tv-name k-halo"' + halo + '>' + esc(L.word) + '</text>';
-        if (L.both) g += '<text x="' + f(L.x) + '" y="' + f(L.y + 11.5) + '"' + at + ' font-family="' + api.mono + '" font-size="9.5" class="tv-data k-halo"' + halo + '>' + esc(s.years) + '</text>';
+      var L = keep[p.key];
+      if (L && !s.redacted) {
+        var ex = L.side > 0 ? L.x : L.side < 0 ? L.x + L.w : L.x + L.w / 2, ey = L.side ? L.y + L.h / 2 : L.y > p.y ? L.y : L.y + L.h;
+        var sx = p.x + L.side * (r + 2), sy = L.side ? p.y : p.y + (L.y > p.y ? r + 2 : -r - 2);
+        g += '<line class="tv-leader" x1="' + f(sx) + '" y1="' + f(sy) + '" x2="' + f(ex) + '" y2="' + f(ey) + '"/>';
+        g += '<rect class="tv-panel' + (L.centre ? ' tv-panel-centre' : '') + '" x="' + f(L.x) + '" y="' + f(L.y) + '" width="' + f(L.w) + '" height="' + f(L.h) + '" rx="4"/>';
+        if (L.centre) {
+          g += '<text x="' + f(L.x + 10) + '" y="' + f(L.y + 15) + '" font-size="15" font-weight="600" class="tv-name tv-centre">' + esc(L.word) + '</text>'
+            + '<text x="' + f(L.x + 10) + '" y="' + f(L.y + 28) + '" font-family="' + api.mono + '" font-size="10.5" class="tv-data">' + esc(s.years) + '</text>';
+        } else {
+          g += '<text x="' + f(L.x + 7) + '" y="' + f(L.y + 12.5) + '" font-size="11.5" class="tv-name">' + esc(L.word) + '</text>';
+          if (L.both) g += '<text x="' + f(L.x + 7) + '" y="' + f(L.y + 23.5) + '" font-family="' + api.mono + '" font-size="9" class="tv-data">' + esc(s.years) + '</text>';
+        }
       }
       if (rest) g += '</a>';
-      nodes += g + '</g>';
+      people += g + '</g>';
     });
-    if (rest) named = keep;
-    var defs = '<linearGradient id="tv-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="tv-soil-top"/><stop offset="1" class="tv-soil-end"/></linearGradient>'
-      + '<radialGradient id="tv-crown"><stop offset="0" class="tv-crown-in"/><stop offset="1" class="tv-crown-out"/></radialGradient>';
+    if (rest) {
+      named = {};
+      Object.keys(keep).forEach(function (k) { if (!keep[k].centre) named[k] = keep[k]; });
+    }
+    var defs = '<linearGradient id="tv-glass" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="tv-glass-edge"/><stop offset="0.5" class="tv-glass-mid"/><stop offset="1" class="tv-glass-edge"/></linearGradient>';
     var head = '<svg class="rv-svg tv-svg" data-view="tree" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="img" aria-label="' + esc(label() + (centreName(fr) ? ' — ' + centreName(fr) : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="img" aria-label="' + esc(label() + (C && C.s && !C.s.redacted ? ' — ' + C.s.names[2] : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>';
-    // The lit route lies over the bark and under the people (river.js).
-    return head + out + bark + tw + veins + leaves + '<g class="rv-lit"></g>' + nodes + '</svg>';
+    // The lit route lies over the branches and under the people (river.js).
+    return head + out + ringsBack + far + ringsFront + tw + near + '<g class="rv-lit"></g>' + marks + people + '</svg>';
   }
   function label() {
     var s = root.querySelector('.rv-stage');
@@ -464,8 +437,8 @@
         + '<circle cx="18" cy="18" r="15.9" class="rv-hud-arc" stroke-dasharray="' + (share * 100).toFixed(1) + ' 100" transform="rotate(-90 18 18)"/></svg>';
       gauge.appendChild(document.createTextNode(E.length ? pct : '—'));
     }
-    // People per generation, oldest at the left: the roots' bars and the
-    // crown's, as the reference's histogram under its tree.
+    // People per generation, oldest at the left: the roots' bars, the
+    // fixed point's, the crown's.
     var bars = hud.querySelector('.rv-hud-bars') || hud.appendChild(document.createElement('div'));
     bars.className = 'rv-hud-bars';
     bars.setAttribute('aria-hidden', 'true');
@@ -479,8 +452,9 @@
   }
 
   window.axgfView = { name: 'tree', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; } };
+  window.axgfView.tween = tween3;
 
-  /* ---- the life over the drawing ---- */
+  /* ---- the life of the laboratory ---- */
   if (!stage) return;
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cut = root.dataset.riverMotion === 'cut';
@@ -494,25 +468,37 @@
     if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
     return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
   }
-  var SAP = rgb('--tv-vein', [255, 255, 255]), SAP2 = rgb('--tv-vein-soft', SAP), LEAF = rgb('--tv-leaf-living', [255, 255, 255]);
-  var EMBER = rgb('--tv-leaf-gone', SAP), SPORE = rgb('--tv-teal', LEAF);
+  var SAP = rgb('--tv-vein', [255, 255, 255]), SAP2 = rgb('--tv-vein-soft', SAP), COLD = rgb('--tv-glass', rgb('--tv-teal', SAP));
   function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
 
+  // Under the drawing, the room's motes, embers and scanners; over it, the
+  // light up the branches.
+  var ground = document.createElement('canvas');
+  ground.className = 'rv-ground';
+  ground.setAttribute('aria-hidden', 'true');
+  stage.insertBefore(ground, stage.firstChild);
   var layer = document.createElement('canvas');
   layer.className = 'rv-water';
   layer.setAttribute('aria-hidden', 'true');
   stage.appendChild(layer);
   stage.classList.add('rv-alive');
-  var ctx = layer.getContext('2d');
-  if (!ctx) return;
+  var gx = ground.getContext('2d'), ctx = layer.getContext('2d');
+  if (!ctx || !gx) return;
+  // The motes, the same on every visit: an angle round the glass, a floor,
+  // a speed and a size.
+  var MOTES = [];
+  for (var mi = 0; mi < 54; mi++) {
+    var h1 = Math.abs(Math.sin(mi * 12.9898) * 43758.5453) % 1, h2 = Math.abs(Math.sin(mi * 78.233) * 12345.678) % 1;
+    MOTES.push({ th: h1 * 6.283, v: h2, speed: 0.12 + 0.2 * ((h1 * 7) % 1), rho: 0.96 + 0.1 * ((h2 * 3) % 1), r: 0.8 + 1.3 * ((h1 * 5) % 1), hot: mi % 3 === 0 });
+  }
 
-  var flows = [], glows = [], spores = [], dpr = 1, cw = 0, ch = 0, clock = 0, travelling = false;
+  var flows = [], dpr = 1, cw = 0, ch = 0, clock = 0, travelling = false;
   function size() {
     var w = stage.clientWidth, h = stage.clientHeight, r = Math.min(window.devicePixelRatio || 1, 2);
     if (w === cw && h === ch && r === dpr) return false;
     cw = w; ch = h; dpr = r;
-    layer.width = Math.max(1, Math.round(w * dpr));
-    layer.height = Math.max(1, Math.round(h * dpr));
+    layer.width = ground.width = Math.max(1, Math.round(w * dpr));
+    layer.height = ground.height = Math.max(1, Math.round(h * dpr));
     return true;
   }
   function view() {
@@ -521,68 +507,74 @@
     var k = Math.min(cw / vb.width, ch / vb.height);
     return { x: vb.x - (cw / k - vb.width) / 2, y: vb.y - (ch / k - vb.height) / 2, k: k };
   }
-  // Sap is drawn up from the root tips to the foot of the trunk, then up
-  // the trunk and out to the leaves: along every attested bough, from the
-  // end that comes first on that way to the end that comes after.
-  function order(x, y) { return (GEO && y > GEO.ys + 0.5 ? -1 : 1) * depth(x, y); }
+  // Light is drawn up every attested branch, from its lower end to its
+  // upper, as sap rises: roots to column to crown.
   function layout(L) {
-    flows = []; glows = [];
+    flows = [];
     if (!L || !L.edges) return;
     L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
-      var c = order(e.x1, e.y1) <= order(e.x2, e.y2) ? ctrl(e.x1, e.y1, e.x2, e.y2) : ctrl(e.x2, e.y2, e.x1, e.y1);
-      var n = 24, xs = [], ys = [], cum = [0];
+      var a = e.y1 >= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1], my = (a[1] + a[3]) / 2;
+      var c = [a[0], a[1], a[0], my, a[2], my, a[2], a[3]], n = 22, xs = [], ys = [], cum = [0];
       for (var i = 0; i <= n; i++) {
-        var p = bez(c, i / n);
-        xs.push(p[0]); ys.push(p[1]);
+        var t = i / n, u = 1 - t;
+        xs.push(u * u * u * c[0] + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]);
+        ys.push(u * u * u * c[1] + 3 * u * u * t * c[3] + 3 * u * t * t * c[5] + t * t * t * c[7]);
         if (i) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
       }
-      var len = cum[n];
-      if (len < 10) return;
-      flows.push({ x: xs, y: ys, cum: cum, n: n, len: len, k: Math.max(1, Math.round(len / 85)),
-        phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
+      if (cum[n] < 10) return;
+      flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], k: Math.max(1, Math.round(cum[n] / 90)), phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
     });
-    (L.persons || []).forEach(function (p, i) {
-      if (p.role === 'centre') return;
-      glows.push({ x: p.x, y: p.y, living: p.living, phase: (i * 0.618) % 1 });
-    });
-    if (!spores.length) for (var s = 0; s < 34; s++) spores.push({ u: (s * 0.381966) % 1, v: (s * 0.7548) % 1, speed: 0.012 + (s % 5) * 0.004, r: 0.6 + (s % 3) * 0.35 });
     request();
   }
-  var SPEED = 24;
+  var SPEED = 30;
+  function room(moving) {
+    var W = ground.width, Hh = ground.height, v = view(), G = GEO, t = moving ? clock : 3.1;
+    gx.setTransform(1, 0, 0, 1, 0, 0);
+    gx.clearRect(0, 0, W, Hh);
+    if (!v || !G) return;
+    var s = v.k * dpr, ox = -v.x * s, oy = -v.y * s;
+    function P(th, lv, rho) { var q = project(G, th, lv, rho); return [q.x * s + ox, q.y * s + oy, q.z]; }
+    var top = G.nd + 0.75, bot = -G.na - 0.65;
+    gx.globalCompositeOperation = 'lighter';
+    // Motes turning round the glass, brighter at the front.
+    MOTES.forEach(function (mo) {
+      var lv = bot + (top - bot) * ((mo.v + t * 0.012) % 1), q = P(mo.th + t * mo.speed, lv, mo.rho), a = 0.18 + 0.42 * (q[2] + 1) / 2;
+      gx.fillStyle = rgba(mo.hot ? SAP2 : COLD, a);
+      gx.beginPath(); gx.arc(q[0], q[1], mo.r * dpr * (1 + 0.3 * q[2]), 0, 6.283); gx.fill();
+    });
+    // A scanner's arc going round each floor's ring.
+    for (var l = -G.na; l <= G.nd; l++) {
+      var cy = (G.y0 - l * G.H) * s + oy, rx = G.R * 0.98 * s, ry = rx * TILT, a0 = t * 0.7 + l * 1.3;
+      gx.strokeStyle = rgba(l > 0 ? SAP : COLD, 0.32);
+      gx.lineWidth = 1.6 * dpr;
+      gx.beginPath(); gx.ellipse(G.x0 * s + ox, cy, rx, ry, 0, a0, a0 + 0.9); gx.stroke();
+    }
+    // Embers rising from the projector up the column.
+    var plat = (G.y0 + (G.na + 0.5) * G.H + G.R * TILT + 10) * s + oy, span = plat - ((G.y0 - (G.nd + 0.75) * G.H) * s + oy);
+    for (var e = 0; e < 26; e++) {
+      var ph = ((e * 0.618 + t * (0.05 + (e % 5) * 0.012)) % 1), x = G.x0 * s + ox + Math.sin(e * 3.7 + t * 0.8) * G.R * 0.12 * s * (1 - ph);
+      gx.fillStyle = rgba(e % 4 ? SAP : SAP2, 0.5 * (1 - ph));
+      gx.beginPath(); gx.arc(x, plat - span * ph, (1.4 + (e % 3) * 0.6) * dpr, 0, 6.283); gx.fill();
+    }
+    gx.globalCompositeOperation = 'source-over';
+  }
   function draw(moving) {
     size();
+    room(moving);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, layer.width, layer.height);
     var v = view();
     if (!v || !moving || travelling) return;
     var s = v.k * dpr, ox = -v.x * s, oy = -v.y * s;
     ctx.globalCompositeOperation = 'lighter';
-    // Spores: the faintest thing on the page, drifting up through the crown.
-    spores.forEach(function (p) {
-      var y = (p.v - clock * p.speed) % 1; if (y < 0) y += 1;
-      var x = p.u + Math.sin(clock * 0.4 + p.u * 9) * 0.01;
-      ctx.fillStyle = rgba(SPORE, 0.16 + 0.1 * Math.sin(clock * 1.3 + p.u * 20));
-      ctx.beginPath(); ctx.arc(x * layer.width, y * layer.height, p.r * dpr, 0, 6.283); ctx.fill();
-    });
-    // Leaves breathe: the living green, the others an ember.
-    glows.forEach(function (l) {
-      var a = 0.5 + 0.5 * Math.sin(clock * (l.living ? 1.6 : 0.9) + l.phase * 6.283);
-      var r = (l.living ? 9 : 6) * v.k * dpr;
-      var g = ctx.createRadialGradient(l.x * s + ox, l.y * s + oy, 0, l.x * s + ox, l.y * s + oy, r);
-      g.addColorStop(0, rgba(l.living ? LEAF : EMBER, (l.living ? 0.34 : 0.16) * a));
-      g.addColorStop(1, rgba(l.living ? LEAF : EMBER, 0));
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(l.x * s + ox, l.y * s + oy, r, 0, 6.283); ctx.fill();
-    });
-    // Sap: a bead of light and its trail on every attested bough.
     flows.forEach(function (fl) {
       for (var j = 0; j < fl.k; j++) {
         var pos = ((fl.phase + j / fl.k) * fl.len + clock * SPEED) % fl.len, i = 1;
         while (i < fl.n && fl.cum[i] < pos) i++;
-        var t = (pos - fl.cum[i - 1]) / ((fl.cum[i] - fl.cum[i - 1]) || 1);
-        var x = (fl.x[i - 1] + (fl.x[i] - fl.x[i - 1]) * t) * s + ox, y = (fl.y[i - 1] + (fl.y[i] - fl.y[i - 1]) * t) * s + oy;
-        var fade = Math.min(1, pos / 18, (fl.len - pos) / 18), r = 3.2 * v.k * dpr;
+        var u = (pos - fl.cum[i - 1]) / ((fl.cum[i] - fl.cum[i - 1]) || 1);
+        var x = (fl.x[i - 1] + (fl.x[i] - fl.x[i - 1]) * u) * s + ox, y = (fl.y[i - 1] + (fl.y[i] - fl.y[i - 1]) * u) * s + oy;
+        var fade = Math.min(1, pos / 18, (fl.len - pos) / 18), r = 3 * v.k * dpr;
         var g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.4);
         g.addColorStop(0, rgba(SAP2, 0.9 * fade));
         g.addColorStop(0.35, rgba(SAP, 0.45 * fade));
@@ -621,7 +613,7 @@
     new IntersectionObserver(function (es) { onscreen = es[0].isIntersecting; request(); }).observe(stage);
   }
   document.addEventListener('visibilitychange', request);
-  if ('ResizeObserver' in window) new ResizeObserver(function () { if (size()) request(); }).observe(stage);
+  if ('ResizeObserver' in window) new ResizeObserver(function () { if (size()) request(); if (!running) draw(false); }).observe(stage);
   // The pause (WCAG 2.2.2): the river's own button, shown only where
   // something moves, and remembered as the river remembers it.
   var btn = root.querySelector('[data-rv-still]');
@@ -638,8 +630,9 @@
   }
   window.axgfRiverScene = {
     layout: function (L) { travelling = false; layout(L); },
-    travel: function () { travelling = true; draw(false); },
+    travel: function () { travelling = true; if (!running) draw(false); },
     view: function () { if (!running) draw(false); }
   };
   size();
+  draw(false);
 })();

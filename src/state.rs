@@ -58,6 +58,9 @@ pub struct AppState {
     /// Converted bundles awaiting download. Deliberately separate from the
     /// served bundle: conversion is a utility and must never write over it.
     conversions: crate::convert::ConversionCache,
+    /// Pictures pasted into a note being written, held until it is saved
+    /// (docs/adr/0014).
+    note_images: crate::notes::PendingImages,
     /// Rendered thumbnails, bounded. Decoding a photograph per request is a
     /// cost that only becomes visible once a gallery has a dozen pictures.
     thumbs: crate::documents::ThumbCache,
@@ -320,6 +323,37 @@ pub enum DeleteOutcome {
     Missing,
 }
 
+/// What a change to the manifest did.
+#[derive(Debug, PartialEq, Eq)]
+pub enum ManifestOutcome {
+    Applied,
+    /// Nothing the form sent differs from what is there.
+    Unchanged,
+    /// The manifest changed since the form was made; nothing was written.
+    Conflict,
+}
+
+/// `manifest.family` and `manifest.license`, as they stand (each `{}` when
+/// absent).
+pub fn manifest_editable_of(manifest: Option<&Value>) -> Value {
+    let part = |k: &str| {
+        manifest
+            .and_then(|m| m.get(k))
+            .filter(|v| v.is_object())
+            .cloned()
+            .unwrap_or_else(|| Value::Object(Default::default()))
+    };
+    serde_json::json!({ "family": part("family"), "license": part("license") })
+}
+
+/// A short fingerprint of the editable part, carried by the form so that a
+/// change made meanwhile is not overwritten.
+pub fn manifest_token(editable: &Value) -> String {
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(editable.to_string().as_bytes());
+    digest.iter().take(8).map(|b| format!("{b:02x}")).collect()
+}
+
 /// What a version-checked update did.
 pub enum UpdateOutcome {
     Applied {
@@ -374,6 +408,20 @@ pub enum Op {
     },
     /// A Document and its bytes, as [`AppState::add_document`] adds them.
     AddDocument { entity: Value, payload: Vec<u8> },
+    /// A version-checked replacement of a Document together with its bytes:
+    /// the new bytes at the entity's `file.path`, declared, and the file it
+    /// had before no longer declared when the path changed (a note edited,
+    /// docs/adr/0014).
+    ReplaceDocument {
+        id: String,
+        expected_version: u64,
+        entity: Value,
+        payload: Vec<u8>,
+    },
+    /// A version-checked delete of a Document, and of the declaration of the
+    /// file it carried, so the next export does not carry bytes that nothing
+    /// names any more.
+    DropDocument { id: String, expected_version: u64 },
 }
 
 impl Op {
@@ -388,6 +436,9 @@ impl Op {
             Op::Create { kind, entity } => (*kind, id_of(entity)),
             Op::Update { kind, id, .. } | Op::Delete { kind, id, .. } => (*kind, id.clone()),
             Op::AddDocument { entity, .. } => (axgf_rs::EntityKind::Document, id_of(entity)),
+            Op::ReplaceDocument { id, .. } | Op::DropDocument { id, .. } => {
+                (axgf_rs::EntityKind::Document, id.clone())
+            }
         }
     }
 }
@@ -631,6 +682,7 @@ impl AppState {
                 inner: RwLock::new(flat),
                 admin_token,
                 conversions: crate::convert::ConversionCache::default(),
+                note_images: crate::notes::PendingImages::default(),
                 thumbs: crate::documents::ThumbCache::default(),
                 size_warn: crate::documents::DEFAULT_SIZE_WARN,
                 payloads: cache,
@@ -752,6 +804,11 @@ impl AppState {
     /// Short-lived store of converted bundles awaiting download.
     pub fn conversions(&self) -> &crate::convert::ConversionCache {
         &self.conversions
+    }
+
+    /// Pictures pasted into notes being written, not yet saved.
+    pub fn note_images(&self) -> &crate::notes::PendingImages {
+        &self.note_images
     }
 
     /// The bounded thumbnail cache.
@@ -1399,6 +1456,24 @@ impl AppState {
                         }
                     }
                 }
+                Op::ReplaceDocument {
+                    id,
+                    expected_version,
+                    ..
+                }
+                | Op::DropDocument {
+                    id,
+                    expected_version,
+                } => {
+                    let collection = "documents";
+                    match guard.get(collection).and_then(|c| c.get(id)).cloned() {
+                        Some(s) if version_of(&s) == *expected_version => stored_of.push(Some(s)),
+                        _ => {
+                            stale.push(id.clone());
+                            stored_of.push(None);
+                        }
+                    }
+                }
                 _ => stored_of.push(None),
             }
         }
@@ -1412,6 +1487,14 @@ impl AppState {
         };
         let mut bundle = guard.to_string();
         let mut payloads: Vec<(String, Value)> = Vec::new();
+        // Files a replaced or dropped Document carried, no longer declared.
+        let mut undeclared: Vec<String> = Vec::new();
+        let path_of = |e: &Option<Value>| {
+            e.as_ref()
+                .and_then(|e| e.pointer("/file/path"))
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        };
         let mut written: Vec<Option<Value>> = Vec::with_capacity(ops.len());
         for (op, stored) in ops.iter().zip(&stored_of) {
             let id = op.target().1;
@@ -1460,6 +1543,46 @@ impl AppState {
                     axgf_rs::delete_entity(&bundle, *kind, id, axgf_rs::DeletePolicy::Reject),
                     None,
                 ),
+                Op::ReplaceDocument {
+                    entity,
+                    expected_version,
+                    payload,
+                    ..
+                } => {
+                    let Some(path) = entity.pointer("/file/path").and_then(Value::as_str) else {
+                        anyhow::bail!("a document is replaced with its file path already chosen");
+                    };
+                    let mut entity = entity.clone();
+                    entity["version_num"] = Value::from(expected_version + 1);
+                    entity["updated_at"] = Value::from(crate::view::now_iso8601());
+                    if let Some(created) = stored.as_ref().and_then(|s| s.get("created_at")) {
+                        entity["created_at"] = created.clone();
+                    }
+                    let env = axgf_rs::update_entity(
+                        &bundle,
+                        axgf_rs::EntityKind::Document,
+                        &entity.to_string(),
+                    );
+                    if env.status != Status::Error && !env.data.is_null() {
+                        payloads.push((path.to_string(), self.payloads.put(path, payload)?));
+                        if let Some(old) = path_of(stored).filter(|old| old != path) {
+                            undeclared.push(old);
+                        }
+                    }
+                    (env, Some(entity))
+                }
+                Op::DropDocument { id, .. } => {
+                    let env = axgf_rs::delete_entity(
+                        &bundle,
+                        axgf_rs::EntityKind::Document,
+                        id,
+                        axgf_rs::DeletePolicy::Reject,
+                    );
+                    if env.status != Status::Error && !env.data.is_null() {
+                        undeclared.extend(path_of(stored));
+                    }
+                    (env, None)
+                }
             };
             if env.status == Status::Error || env.data.is_null() {
                 return Ok(refused(id, &env));
@@ -1471,6 +1594,14 @@ impl AppState {
             written.push(after);
         }
         let mut new_bundle: Value = serde_json::from_str(&bundle)?;
+        if let Some(declared) = new_bundle
+            .get_mut("external_payloads")
+            .and_then(Value::as_object_mut)
+        {
+            for path in &undeclared {
+                declared.remove(path);
+            }
+        }
         if !payloads.is_empty() {
             let Some(declared) = new_bundle
                 .as_object_mut()
@@ -1496,6 +1627,10 @@ impl AppState {
             let (action, version_num) = match op {
                 Op::Create { .. } => ("create", Some(1)),
                 Op::AddDocument { .. } => ("upload", None),
+                Op::ReplaceDocument {
+                    expected_version, ..
+                } => ("update", Some(expected_version + 1)),
+                Op::DropDocument { .. } => ("delete", None),
                 Op::Update {
                     expected_version, ..
                 } => ("update", Some(expected_version + 1)),
@@ -1511,10 +1646,10 @@ impl AppState {
                     .or(after.as_ref())
                     .and_then(|e| label(kind, e)),
                 version_num,
-                before: matches!(op, Op::Update { .. })
+                before: matches!(op, Op::Update { .. } | Op::ReplaceDocument { .. })
                     .then_some(())
                     .and(stored.as_ref()),
-                after: matches!(op, Op::Update { .. })
+                after: matches!(op, Op::Update { .. } | Op::ReplaceDocument { .. })
                     .then_some(())
                     .and(after.as_ref()),
             });
@@ -1774,6 +1909,68 @@ impl AppState {
     /// one family's accounts are being applied to another's.
     fn rebind_accounts(&self, manifest: Option<&Value>) -> Result<()> {
         self.acl_mutate(|acl| acl.bind_to(manifest, None))
+    }
+
+    /// The part of the manifest an administrator may change (2026-10-23):
+    /// the family it describes and the licence it is shared under. Stats,
+    /// privacy flags, dates and the generator are the file's own account of
+    /// itself and are written by the export.
+    pub fn manifest_editable(&self) -> Value {
+        self.read(|flat| manifest_editable_of(flat.get("manifest")))
+    }
+
+    /// Change the editable part of the manifest, provided it is still what
+    /// the form was made from (`expected`, from [`manifest_token`]). The
+    /// accounts are bound to the family's name (`.acl`), so they are bound
+    /// again to the new one, and the change is journalled like an edit.
+    pub fn update_manifest(
+        &self,
+        who: &str,
+        expected: &str,
+        edit: impl FnOnce(&mut serde_json::Map<String, Value>),
+    ) -> Result<ManifestOutcome> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        let before = manifest_editable_of(guard.get("manifest"));
+        if manifest_token(&before) != expected {
+            return Ok(ManifestOutcome::Conflict);
+        }
+        let mut manifest = guard
+            .get("manifest")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        edit(&mut manifest);
+        let after = manifest_editable_of(Some(&Value::Object(manifest.clone())));
+        if after == before {
+            return Ok(ManifestOutcome::Unchanged);
+        }
+        manifest.insert("updated_at".into(), Value::from(crate::view::now_iso8601()));
+        let mut new_bundle = guard.clone();
+        new_bundle["manifest"] = Value::Object(manifest);
+        self.persist(&new_bundle)?;
+        let manifest = new_bundle.get("manifest").cloned();
+        *guard = new_bundle;
+        self.invalidate_lenses();
+        drop(guard);
+        self.rebind_accounts(manifest.as_ref())?;
+        let label = after
+            .pointer("/family/name")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        let entry = crate::journal::entry_for(crate::journal::Record {
+            who,
+            action: "update",
+            kind: "bundle",
+            entity_id: "manifest",
+            label,
+            version_num: None,
+            before: Some(&before),
+            after: Some(&after),
+        });
+        if let Err(e) = self.journal.append(&entry) {
+            tracing::error!(error = %e, "could not append to the edit journal");
+        }
+        Ok(ManifestOutcome::Applied)
     }
 
     /// Size of the bundle on disk, in bytes.

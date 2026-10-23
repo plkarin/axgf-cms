@@ -383,6 +383,11 @@
   --tv-leaf-hidden: #6a7482;
   --tv-soil: #ff5f3a;
   --tv-teal: #2ee6c5;
+  /* The glass the tree stands in (2026-10-23): its cold light, the panels
+     the names are written on, and their edge. */
+  --tv-glass: #4aa8ff;
+  --tv-panel: #0a1420;
+  --tv-panel-line: #2f6fa8;
 }
 
 /* --- galaxy ---------------------------------------------------------------- */
@@ -688,3 +693,172 @@
   --cl-ink-5: #0e6e7e;
   --cl-tint-5: #dff2f4;
 }
+/* Genealogy (v0.5.0, docs/adr/0016), from the operator's frame pack: a
+   dark green interface with cream cards, oval portraits and antique vines
+   (their second screen), and the family on a parchment scroll a tree grows
+   from, joined by thin gold lines (their first, the view). Two palettes:
+   the page's, dark, measured here as every theme is; and the cards', cream
+   with a sepia ink, which app.css puts on every card and which
+   `genealogy_cards_read` measures the same way (tests/design_tokens.rs).
+   The tightest pair of the page is a control's edge on the hover surface,
+   4.3:1; of the cards, a control's edge on the sunken surface, 3.7:1. */
+[data-theme="genealogy"] {
+  color-scheme: dark;
+  --surface-page: #142210;
+  --surface-raised: #1b2d18;
+  --border-hairline: #2e4229;
+  --border-strong: #8a9b7c;
+  --text-primary: #f1e8d2;
+  --text-secondary: #d4c7a6;
+  --text-tertiary: #bcae8b;
+  --surface-sunken: #101c0d;
+  --surface-hover: #23381f;
+  --focus-ring: #e3c070;
+  --accent: #d4aa55;
+  --accent-soft: #2f3317;
+  --on-accent: #142210;
+
+  --conf-certain: #9ad49f;
+  --conf-high: #b7cf86;
+  --conf-medium: #e3bb6a;
+  --conf-low: #ec9a82;
+  --conf-track: #2c3d27;
+  --danger: #f2977f;
+  --warning: #e8c06c;
+
+  --sex-a: #1e2e28;
+  --sex-a-line: #6b8a7c;
+  --sex-b: #30291b;
+  --sex-b-line: #94805a;
+  --sex-u: #242a1f;
+  --sex-u-line: #7d8270;
+
+  --hue-1: #7fb8d8;
+  --hue-2: #e3a43c;
+  --hue-3: #7cd0a0;
+  --hue-4: #e9a7c2;
+  --hue-5: #bca6dc;
+  --hue-6: #d8bc62;
+  --hue-7: #82c4c8;
+  --hue-8: #dc9488;
+
+  --shadow-rgb: 4 10 3;
+  --shadow-a: 0.5;
+
+  --wash-1: #16250f;
+  --wash-2: #132110;
+  --wash-3: #17240f;
+  /* No texture: the vines along the page's edges are its ground (app.css). */
+  --wash-texture: none;
+
+  --icon-river: #22433b;
+  --icon-tree: #2c4524;
+  --icon-search: #4a3c1b;
+  --icon-quality: #4b2c22;
+  --icon-river-ink: #9ed6c4;
+  --icon-tree-ink: #bfdc86;
+  --icon-search-ink: #efcc80;
+  --icon-quality-ink: #f4ab95;
+  --glow-rgb: 212 170 85;
+
+  /* The logo in this theme's light (docs/adr/0006 §2): the forest's green
+     for its tile, the gold of the scroll's lines for its own. */
+  --logo-tile: #1d3320;
+  --logo-deep: #8a6420;
+  --logo-gold: #d4aa55;
+  --logo-light: #f1e2b6;
+
+  /* The cards' palette: cream stock and a sepia ink, the screen's
+     cards. app.css sets each colour token to its `--gn-l-` twin on a
+     card, so everything inside one reads as it would on a light theme. */
+  --gn-l-surface-page: #ece2cb;
+  --gn-l-surface-raised: #f4ecda;
+  --gn-l-border-hairline: #d6c8a6;
+  --gn-l-border-strong: #7c6d4d;
+  --gn-l-text-primary: #261f13;
+  --gn-l-text-secondary: #463b27;
+  --gn-l-text-tertiary: #5a4d35;
+  --gn-l-surface-sunken: #e7dcc1;
+  --gn-l-surface-hover: #ebe1c8;
+  --gn-l-focus-ring: #7d5a12;
+  --gn-l-accent: #2c4a2f;
+  --gn-l-accent-soft: #dfe3c9;
+  --gn-l-on-accent: #f4ecda;
+  --gn-l-conf-certain: #2c6b3a;
+  --gn-l-conf-high: #4f6b1f;
+  --gn-l-conf-medium: #8a5300;
+  --gn-l-conf-low: #a8331f;
+  --gn-l-conf-track: #ddd1b3;
+  --gn-l-danger: #a3261b;
+  --gn-l-warning: #7f4c00;
+  --gn-l-sex-a: #e3e9df;
+  --gn-l-sex-a-line: #4d6f61;
+  --gn-l-sex-b: #f0e2cc;
+  --gn-l-sex-b-line: #8a6a3e;
+  --gn-l-sex-u: #e8e2d2;
+  --gn-l-sex-u-line: #77705d;
+  --gn-l-hue-1: #2b6a95;
+  --gn-l-hue-2: #9a5a08;
+  --gn-l-hue-3: #2c7a4c;
+  --gn-l-hue-4: #a33b6c;
+  --gn-l-hue-5: #6a4a9e;
+  --gn-l-hue-6: #7d6410;
+  --gn-l-hue-7: #1f6d72;
+  --gn-l-hue-8: #a3392e;
+  --gn-l-icon-river: #dbe7df;
+  --gn-l-icon-tree: #e2e8cf;
+  --gn-l-icon-search: #f1e1bd;
+  --gn-l-icon-quality: #f1d9cf;
+  --gn-l-icon-river-ink: #21564a;
+  --gn-l-icon-tree-ink: #3d5b1c;
+  --gn-l-icon-search-ink: #714a05;
+  --gn-l-icon-quality-ink: #8a2c1a;
+
+  /* The tree, climbed (static/genealogy.js): the woods' ground from the
+     top of the window to the roots, the far trees and the mist; the bark
+     of the trunk, dark, mid and lit, and its grain; a branch's bark and
+     its lit wood, and the roots' darker ones; three leaves; the levels'
+     rings; the gold of the knots, its brighter tone and the glint up the
+     branches, the falling leaves; the cards beside the portraits, their
+     edge and shadow, their two inks; the portraits' frames, the living's,
+     the gone's and the hidden's rims; the person at the fixed point; the
+     generations' numbers. Each ink is measured on its own ground: the
+     wood at 5:1 or more on the woods, the cards' words at 7:1. */
+  --gn-stage-top: #0b1512;
+  --gn-stage-mid: #142519;
+  --gn-stage-low: #1e1a10;
+  --gn-far: #1f3a26;
+  --gn-far-2: #16291c;
+  --gn-mist: #a8bca2;
+  --gn-bark-dark: #2a1b0f;
+  --gn-bark-mid: #6b4a2a;
+  --gn-bark-lit: #b08a5a;
+  --gn-grain: #24170c;
+  --gn-branch: #3a2715;
+  --gn-branch-core: #b48c5c;
+  --gn-root: #2c1d10;
+  --gn-root-core: #a88358;
+  --gn-leaf-1: #3f6b2e;
+  --gn-leaf-2: #79a046;
+  --gn-leaf-3: #c9a24d;
+  --gn-ring: #c9a24d;
+  --gn-gold: #c9a24d;
+  --gn-gold-hi: #e8c46a;
+  --gn-glint: #fff1c4;
+  --gn-leaf: #c9963d;
+  --gn-card: #f7efdc;
+  --gn-card-line: #b89a5c;
+  --gn-card-shade: #000000;
+  --gn-ink: #2a2114;
+  --gn-ink-2: #4f4128;
+  --gn-portrait: #cdb489;
+  --gn-portrait-inner: #e6d5b0;
+  --gn-initials: #4a3a1e;
+  --gn-living: #8cc06a;
+  --gn-gone: #c49a52;
+  --gn-hidden: #8a8f7e;
+  --gn-hidden-fill: #22332a;
+  --gn-centre: #7a3f12;
+  --gn-gen: #d8ccaa;
+}
+

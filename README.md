@@ -119,10 +119,12 @@ use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
   the narrow end below, the newest at the wide mouth above, every parentage
   a line meshed from one slice to the next. Each slice says how many people
   it holds, as the stages of a funnel chart do.
-- **Genealogy** is a tree the reader climbs, drawn in perspective: its trunk
-  runs through the person you are visiting, their descendants are up in the
-  branches and their ancestors down toward the roots. Travelling to someone
-  climbs the trunk to them, or goes down it.
+- **Genealogy** is a tree the reader climbs, made of the family's own wood:
+  the person you are visiting is set into its trunk, their children's limbs
+  leave the top of it and every branch is as thick as all it bears, under a
+  crown of leaves; their ancestors are the roots, under the ground.
+  Travelling to someone climbs the tree to them, or goes down into the
+  roots.
 
 Underneath, all five are the river:
 
@@ -140,7 +142,7 @@ opens the widest range in one click.
 | **Summit: an ascent, the oldest in the valley** | **Clarity: a funnel, the oldest at the narrow end** |
 | [![The Summit theme: Lucien Delaunay at a camp on a photographed snowy range before dawn, his ancestors below him toward the valley and his children, grandchildren and great-grandchildren climbing toward the summit along gold trails, the flag on the highest peak. The dashboard sits above, and his record beside it.](docs/screenshots/summit-ascent.jpg)](docs/screenshots/summit-ascent.jpg) | [![The Clarity theme, light: a funnel of glass slices from blue at the wide mouth to pink at the narrow end. Lucien Delaunay at the front of his own slice, his wife Zofia Zając beside him, his children, grandchildren and great-grandchildren in the wider slices above and his ancestors in the narrower ones below, joined by dark teal lines. Each slice is labelled on the right with its number of people: 6, 10, 6, 2, 2, 4. His record is open beside it.](docs/screenshots/clarity-funnel.jpg)](docs/screenshots/clarity-funnel.jpg) |
 | **Genealogy: a tree to climb, the oldest at the roots** | **The whole family, under Fusion** |
-| [![The Genealogy theme: a tree drawn in perspective over dark woods, its trunk running through Lucien Delaunay, shown as an oval gold frame with his initials and a cream card with his name and years. His wife Zofia Zając beside him; his children, grandchildren and great-grandchildren up in the branches among leaves, his parents and grandparents down toward the roots, each generation a faint ring round the trunk, closer together and smaller the further it is. Branches are lit wood edged in bark; cream cards name the near ones. The dashboard sits above, and his record beside it.](docs/screenshots/genealogy-climb.jpg)](docs/screenshots/genealogy-climb.jpg) | [![Whole family, under Fusion: nine generations in the glass, from the great-great-great-grandparents at the foot of the cylinder to the great-grandchildren on its top floor, the dashboard counting 16 ancestors, 15 descendants, 9 generations and 22 living, with the legend reading: the roots, ancestors; the crown, descendants.](docs/screenshots/fusion-whole.jpg)](docs/screenshots/fusion-whole.jpg) |
+| [![The Genealogy theme: a broad tree in old woods at dusk. Lucien Delaunay is an oval gold frame with his initials set into its trunk, just over the grass, with a cream card giving his name and years; his two partners beside him on twigs that join the trunk. His children's limbs leave the top of the trunk and fork again toward his grandchildren and great-grandchildren, each branch as thick as all it carries, under a dome of leaves. Below the ground, in brown soil, his parents and grandparents are roots that part toward each pair of parents. Cream cards name the near ones. The dashboard sits above, and his record beside it.](docs/screenshots/genealogy-climb.jpg)](docs/screenshots/genealogy-climb.jpg) | [![Whole family, under Fusion: nine generations in the glass, from the great-great-great-grandparents at the foot of the cylinder to the great-grandchildren on its top floor, the dashboard counting 16 ancestors, 15 descendants, 9 generations and 22 living, with the legend reading: the roots, ancestors; the crown, descendants.](docs/screenshots/fusion-whole.jpg)](docs/screenshots/fusion-whole.jpg) |
 
 
 ### Every person, a record
@@ -326,9 +328,10 @@ There are six themes.
 - **Genealogy** is dark green and cream, as an old family album: cream
   cards with a double rule, oval portraits, titles in a book face and
   antique vines along the page's edges. It draws the family as a tree the
-  reader climbs: the trunk runs through the person you stand on, the
-  descendants are up in the branches and the ancestors down toward the
-  roots, and travelling to someone climbs the trunk to them, or goes down.
+  reader climbs, in old woods: the person you stand on is set into the
+  trunk, the descendants are up in the crown on branches as thick as all
+  they bear, the ancestors are roots under the ground, and travelling to
+  someone climbs the tree to them, or goes down.
 
 Each carries its own buttons, motion and photographs, and every page follows
 it, down to the words: under Fusion the overview reads "Every life is a

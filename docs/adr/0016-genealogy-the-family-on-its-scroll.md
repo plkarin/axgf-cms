@@ -37,47 +37,74 @@ colour of the picture under them and could not be read, the picture was
 ugly, and what they wanted was "a tree in 3D that one climbs as one moves
 through it, or goes down". The vines were pixelated on their screen.
 
+The second version drew that tree: a trunk through the whole window, the
+person at the fixed point on it, a level per generation round it and thin
+branches out to each person. The operator's next review, the same evening:
+it "does not look like a tree at all, more like an ugly stem".
+
 ## Decision
 
 ### 1. The view: a tree the reader climbs
 
 `static/genealogy.js` registers `window.axgfView` (name `scroll`, kept from
-the first version) under ADR 0007's contract, from the river's own layout,
-and draws no picture:
+the first version) under ADR 0007's contract, from the river's own layout.
+The family's own wood makes the tree:
 
-- a tree in perspective, its trunk running through the person at the fixed
-  point; the camera stands at that person's height, a little in front of
-  the trunk;
-- a level per generation round the trunk: descendants up in the branches,
-  ancestors down toward the roots. Each level's people stand round the
-  trunk in the river's order, by the same tidy hierarchy as Fusion's tiers
-  (ADR 0015), the nearest at the front and those round the side smaller. A
-  generation further up or down is further along the trunk from the camera,
-  so it is drawn closer to the last and smaller;
-- a branch is lit wood edged in dark bark, as wide as it is near the trunk,
-  and says what the parentage is worth: whole for an attested one, broken
-  for an inferred one, a line of knots for a speculative one. Below the
-  fixed point the wood is the roots' darker grain. The wood is measured
-  against the woods behind it (4.5:1 or more), and the cream cards against
-  their words (7:1 or more): nothing is the colour of what it lies on;
+- the person at the fixed point is set into a broad trunk, a little over
+  the ground. Each family forks on the wood of the person it grows from,
+  the partner's twig joining it there; the fixed point's own families fork
+  at the top of the trunk, so that their children's limbs leave the trunk
+  itself. Below the ground, each root parts toward the two parents;
+- every stem is about as thick as all it bears — a twig for one person, a
+  limb for a family, the trunk for everyone (`wood(load)`, the load counted
+  up the crown or down the roots as far as the drawing reaches) — and
+  grows as wood does: it leaves its fork at a slant and bends up toward
+  the light, or, a root, down toward the deep (`bend`, which the lit route
+  and the glints follow too). A stem is lit wood edged in dark bark, lit
+  on its upper left, shaded on its lower right, its grain along it; the
+  trunk's bark is fissured. Every stem stands out at 3:1 or more from
+  whatever lies behind it, as WCAG asks of a graphic: its lit side on the
+  dark leaves, the soil and the woods, its dark edge on the lit leaves.
+  The cream cards hold their words at 7:1 or more: nothing is the colour
+  of what it lies on;
+- a crown of leaves stands behind the descendants, as wide as they reach
+  and over the highest of them: a dome of foliage, darker inside and lit
+  along its upper left, with clusters round each person up the tree. With
+  no one up the tree the crown is the tree's own; a crown with fewer than
+  three limbs gets the trunk's own, bearing no one;
+- the ground lies the whole width of the window: soil from a little under
+  the fixed point down, with its stones, rising in a mound round the trunk,
+  moss and grass along its edge. The roots and the ancestors are under it;
+- a generation further up or down is further from the camera, so it is
+  drawn closer to the last and smaller, and each level's people spread
+  round the trunk in the river's order, the nearest at the front and those
+  round the side smaller, by the same tidy hierarchy as Fusion's tiers
+  (ADR 0015);
 - each person is a portrait in an oval gold frame — their initials, since
   the payload carries no picture (§4) — with a cream card beside it,
   outward from the trunk; the person at the fixed point has a larger frame,
-  a halo and their card under it; a card that would cover another is left
-  out, as everywhere, and the pointer or "All names" (ADR 0015 §4) names
-  whoever has none;
-- travelling, the reader climbs: the camera rises along the trunk to the
-  person travelled to, or goes down it, the tree sliding past and that
-  person growing as they come level with it. The blend is done in the
-  tree's own space — each person's place round the trunk and height on it
-  — rather than between two pictures (`window.axgfView.tween`), and the
-  trunk's grain and the far woods move with the camera, the woods more
-  slowly, as distant things do.
+  set into the bark, a halo and their card under it; a card that would
+  cover another is left out, as everywhere, and the pointer or "All names"
+  (ADR 0015 §4) names whoever has none. A parentage not attested runs
+  along its stem as a seam: broken for an inferred one, a line of knots
+  for a speculative one;
+- travelling, the reader climbs: the camera rises to the person travelled
+  to, or goes down, the tree sliding past and that person growing as they
+  come level with it. The blend is done in the tree's own space — each
+  person's place round the trunk and height on it — rather than between
+  two pictures (`window.axgfView.tween`). The ground holds still, the tree
+  coming up out of it or going down into it, and the woods move with the
+  camera, slowly, as distant things do.
 
-Its living scene: two rows of far trees behind the tree, a band of mist,
-gold motes rising, leaves falling, and a glint run up every attested
-branch. It holds still on the river's terms: reduced motion, "Cut", the
-pause, a hidden tab, a tree off screen, a machine too slow for it.
+Its living scene: under the drawing, the woods (a picture, §3), the
+ground and the crown's leaves, painted once into a still layer for each
+drawing of the tree; over them, a band of mist, gold motes rising, leaves
+falling, and a glint run up every attested stem. Painting the leaves
+there, rather than as the drawing's own elements, keeps a climb at the
+screen's own rate: the second version's drawing would have held some 1,300
+elements, redrawn at every frame of a climb. It holds still on the river's
+terms: reduced motion, "Cut", the pause, a hidden tab, a tree off screen, a
+machine too slow for it.
 
 ### 2. Two palettes: a dark page, cream cards
 
@@ -122,6 +149,7 @@ the working design), none edited from the reference:
 | `genealogy-cta.jpg` | old letters, sepia photographs, a magnifying glass, a pen | the overview's last band |
 | `genealogy-vine-l.jpg`, `genealogy-vine-r.jpg` | a tall climbing vine with rose blossoms on dark green, and its mirror | the page's edges |
 | `notes-genealogy.jpg` | aged cream parchment with faint writing | behind the family's notes |
+| `genealogy-woods.jpg` | an ancient forest at dusk, light falling from the upper left, an empty clearing | behind the tree, 3,840 × 2,160 (ADR 0017) |
 
 The photographs in `genealogy-cta.jpg` are generated: nobody in them
 exists. The tree on its scroll and the wide vine ground of the first

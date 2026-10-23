@@ -1412,6 +1412,11 @@ pub async fn genealogy_vine_l_jpg() -> Response {
 pub async fn genealogy_vine_r_jpg() -> Response {
     picture("image/jpeg", render::GENEALOGY_VINE_R_JPG)
 }
+/// `GET /static/img/genealogy-woods.jpg` — the woods behind Genealogy's
+/// climbed tree. The same picture behind every person.
+pub async fn genealogy_woods_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_WOODS_JPG)
+}
 /// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
 /// ascent. The same picture behind every person: nothing in it depends on the
 /// archive.

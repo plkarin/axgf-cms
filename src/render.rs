@@ -104,6 +104,10 @@ pub const GENEALOGY_HERO_JPG: &[u8] = include_bytes!("../static/img/genealogy-he
 pub const GENEALOGY_CTA_JPG: &[u8] = include_bytes!("../static/img/genealogy-cta.jpg");
 pub const GENEALOGY_VINE_L_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-l.jpg");
 pub const GENEALOGY_VINE_R_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-r.jpg");
+/// The woods behind Genealogy's climbed tree (docs/adr/0016 §1, 2026-10-23):
+/// an ancient forest at dusk, light falling from the upper left, an empty
+/// clearing where `genealogy.js` draws the tree.
+pub const GENEALOGY_WOODS_JPG: &[u8] = include_bytes!("../static/img/genealogy-woods.jpg");
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");

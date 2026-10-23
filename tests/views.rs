@@ -293,6 +293,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/genealogy-cta.jpg",
         "/static/img/genealogy-vine-l.jpg",
         "/static/img/genealogy-vine-r.jpg",
+        "/static/img/genealogy-woods.jpg",
         "/static/img/notes-genealogy.jpg",
     ] {
         let resp = get(&app, jpg).await;
@@ -366,7 +367,7 @@ fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
         "Fusion blends frames in its glass"
     );
     assert!(
-        fusion.contains("'/static/img/fusion-lab.jpg?v=1'"),
+        fusion.contains("'/static/img/fusion-lab.jpg?v=2'"),
         "over its laboratory"
     );
     assert!(
@@ -434,10 +435,21 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
         "the camera rises (or goes down) to the person travelled to"
     );
     assert!(js.contains("return proj(G, th, w - cam);"));
+    // A tree, not a stem (the operator's review, 2026-10-23): each stem as
+    // thick as all it bears, the trunk the thickest, the crown in leaves
+    // behind the wood, the roots under the ground.
     assert!(
-        !js.contains("/static/img/"),
-        "the tree is drawn, not a picture"
+        js.contains("function wood(load) { return clamp(3.4 * Math.pow(load, 0.68), 3.4, 40); }")
     );
+    assert!(js.contains("function stem(c, wa, wb, f) {"));
+    assert!(
+        js.contains("var Wt = clamp(wood(C ? loadUp(C.key, {}) + loadDown(C.key, {}) : 4) * 3,")
+    );
+    assert!(js.contains("GEO.foliage = FOL; GEO.fv = ++leafage;"));
+    assert!(js.contains("GEO.yG = yG; GEO.Wt = Wt;"));
+    // The tree is drawn; only the woods behind it are a picture.
+    assert_eq!(js.matches("/static/img/").count(), 1, "one picture");
+    assert!(js.contains("WOODS.src = '/static/img/genealogy-woods.jpg?v=1';"));
     assert!(js.contains("ground.className = 'rv-ground';"));
     let river = read("static/river.js");
     assert!(river.contains("svg.querySelectorAll('text, rect.tv-panel, rect.gn-card')"));

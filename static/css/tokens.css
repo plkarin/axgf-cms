@@ -815,25 +815,51 @@
   --gn-l-icon-quality-ink: #8a2c1a;
 
   /* The tree, climbed (static/genealogy.js): the woods' ground from the
-     top of the window to the roots, the far trees and the mist; the bark
-     of the trunk, dark, mid and lit, and its grain; a branch's bark and
-     its lit wood, and the roots' darker ones; three leaves; the levels'
-     rings; the gold of the knots, its brighter tone and the glint up the
+     top of the window to the roots, before the woods' picture is drawn,
+     the shade over that picture and the mist; the bark of the trunk, dark,
+     mid and lit, its fissures and their lit lips; a stem's wood, lit and
+     shaded, its edge and grain, and the roots' darker wood; the soil, top
+     and deep, its moss and grass, the rootlets; the crown's leaves in the
+     round, from their shade to the sun on them; the seam of a parentage
+     not attested; the tails' bark and lit wood; three loose leaves; the
+     gold of the knots, its brighter tone and the glint up the
      branches, the falling leaves; the cards beside the portraits, their
      edge and shadow, their two inks; the portraits' frames, the living's,
      the gone's and the hidden's rims; the person at the fixed point; the
-     generations' numbers. Each ink is measured on its own ground: the
-     wood at 5:1 or more on the woods, the cards' words at 7:1. */
+     generations' numbers. Each ink is measured on its own ground: a stem
+     at 3:1 or more on whatever lies behind it (its lit side on the dark
+     leaves, the soil and the woods, its dark edge on the lit leaves), the
+     cards' words at 7:1. */
   --gn-stage-top: #0b1512;
   --gn-stage-mid: #142519;
   --gn-stage-low: #1e1a10;
-  --gn-far: #1f3a26;
-  --gn-far-2: #16291c;
+  --gn-woods-shade: #06100b;
   --gn-mist: #a8bca2;
   --gn-bark-dark: #2a1b0f;
   --gn-bark-mid: #6b4a2a;
   --gn-bark-lit: #b08a5a;
   --gn-grain: #24170c;
+  --gn-fissure: #1a100a;
+  --gn-ridge: #c9a676;
+  --gn-wood: #9a7149;
+  --gn-wood-lit: #d6b07a;
+  --gn-wood-shade: #2c1c0f;
+  --gn-wood-edge: #1f140b;
+  --gn-root-wood: #8c6741;
+  --gn-root-lit: #b48d5f;
+  --gn-soil-top: #2e2416;
+  --gn-soil-deep: #0f0c07;
+  --gn-pebble: #4a3c28;
+  --gn-moss: #4e6b2c;
+  --gn-grass: #6f8f3c;
+  --gn-rootlet: #6b4f33;
+  --gn-clump-0: #0c1f14;
+  --gn-clump-1: #1d4124;
+  --gn-clump-2: #3f7331;
+  --gn-clump-3: #8fae55;
+  --gn-dome-1: #173820;
+  --gn-dome-2: #2c5a2a;
+  --gn-seam: #f3e3b5;
   --gn-branch: #3a2715;
   --gn-branch-core: #b48c5c;
   --gn-root: #2c1d10;
@@ -841,7 +867,6 @@
   --gn-leaf-1: #3f6b2e;
   --gn-leaf-2: #79a046;
   --gn-leaf-3: #c9a24d;
-  --gn-ring: #c9a24d;
   --gn-gold: #c9a24d;
   --gn-gold-hi: #e8c46a;
   --gn-glint: #fff1c4;

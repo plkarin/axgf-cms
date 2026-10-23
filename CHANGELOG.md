@@ -139,20 +139,26 @@ from their frame pack: a dark green page with cream cards, oval portraits
 and antique vines along its edges, and the family on a tree the reader
 climbs.
 
-- `static/genealogy.js`, a view under ADR 0007's contract: a tree drawn in
-  perspective, its trunk through the person at the fixed point; a level
-  per generation round the trunk, descendants up in the branches and
-  ancestors down toward the roots, further generations closer together and
-  smaller, as seen from where the reader stands. Travelling, the camera
-  climbs the trunk to the person travelled to, or goes down it; the blend
-  is done in the tree's own space and the far woods behind follow, more
-  slowly. Each person is an oval gold frame (their initials: the payload
-  carries no picture) with a cream card that names them; a branch is lit
-  wood edged in bark, whole, broken or knotted as surely as the parentage
-  is known. Gold motes rise, leaves fall, a glint runs up every attested
-  branch, still on the river's terms. No picture: the first version, a
-  tree on a parchment picture, drew gold lines the colour of the picture
-  under it, and the operator could not read it.
+- `static/genealogy.js`, a view under ADR 0007's contract: a tree the
+  reader climbs, made of the family's own wood. The person at the fixed
+  point is set into a broad trunk just over the ground; their children's
+  limbs leave the top of the trunk, each family forks on the wood of the
+  person it grows from, and every stem is about as thick as all it bears,
+  bending up toward the light as wood grows. A crown of leaves stands
+  behind the descendants, as wide as they reach; the ancestors are roots
+  under the ground, each parting toward the two parents. Further
+  generations are closer together and smaller, as seen from where the
+  reader stands. Travelling, the camera climbs to the person travelled to,
+  or goes down, the ground holding still and the woods behind (a picture)
+  following more slowly; the blend is done in the tree's own space. Each
+  person is an oval gold frame (their initials: the payload carries no
+  picture) with a cream card that names them; a parentage not attested
+  runs along its stem as a broken seam, or a line of knots. Gold motes
+  rise, leaves fall, a glint runs up every attested stem, still on the
+  river's terms. The first version, a tree on a parchment picture, drew
+  gold lines the colour of the picture under it; the second, a trunk
+  through the window with thin branches, looked to the operator like a
+  stem rather than a tree.
 - Two palettes: the page's, dark, measured as every theme is (tightest
   4.3:1), and the cards', cream with a sepia ink, every colour token's twin
   given on a card and measured the same way (`genealogy_cards_read`,
@@ -164,6 +170,15 @@ climbs.
   and a tall vine and its mirror along the page's edges, drawn at a third
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
+
+**Sharp pictures under the views** (docs/adr/0017): Canopée's forest,
+Fusion's laboratory and Summit's mountain were made at 1,680 to 1,776
+pixels wide and shown up to twice that on a dense screen. Each is now
+served at 3,840 × 2,160 (Summit's at 4,096 × 2,048), enlarged four times
+from the lossless original by a super-resolution model, then brought back
+to the original's tones; the tools are in `tools/pictures`. Genealogy's
+woods are made the same way. Fusion's laboratory is out of focus by
+design: it loses its compression blocks, not its depth of field.
 
 **Hebrew, Swahili and Lingala**: three more interface languages, complete
 and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
@@ -608,6 +623,9 @@ extra margin those themes gave.
 
 ### Tests
 
+- `views.rs`: Genealogy's stems are as thick as all they bear, its crown
+  and ground are painted by its scene, and its only picture is the woods
+  behind the tree, served as a JPEG.
 - `views.rs`: Fusion blends frames in its glass over its laboratory, river.js
   lets a view blend two frames, and the funnel draws its tails and counts
   over the glass.

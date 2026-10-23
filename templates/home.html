@@ -77,7 +77,8 @@
   </div>
   {% if notes.total > 0 %}
   <form class="notes-search" method="get" action="/about" role="search">
-    <input type="search" name="q" value="{{ notes.q }}" placeholder="{{ t('notes-search-placeholder') }}" aria-label="{{ t('notes-search-label') }}" data-notes-q>
+    <label class="field notes-search-field"><span class="field-label">{{ t("notes-search-label") }}</span>
+      <input type="search" name="q" value="{{ notes.q }}" data-notes-q></label>
     {%- if notes.letter %}<input type="hidden" name="letter" value="{{ notes.letter }}">{% endif %}
     <button class="btn" type="submit">{{ t("notes-search-go") }}</button>
   </form>

@@ -75,6 +75,7 @@
         <details class="account">
           <summary><span class="initials" aria-hidden="true">{{ viewer_initials }}</span><span class="account-name">{{ viewer_name }}</span></summary>
           <div class="menu-panel">
+            <a href="/account" {% if nav == "account" %}aria-current="page"{% endif %}>{{ t("nav-account") }}</a>
             <a href="/quality" {% if nav == "quality" %}aria-current="page"{% endif %}>{{ t("nav-quality") }}</a>
             {% if may_write %}
             <a href="/admin" {% if nav == "admin" %}aria-current="page"{% endif %}>{{ t("nav-admin") }}</a>

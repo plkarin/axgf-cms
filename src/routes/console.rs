@@ -218,7 +218,7 @@ fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> R
             export_scopes => crate::sensitive::Scope::ALL.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
             recipient,
             recipient_text,
-            family => family_context(state, note.family),
+            family => family_context(state, chrome, note.family),
             error => note.error,
             notice => note.notice,
         },
@@ -229,8 +229,99 @@ fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> R
 // the family the archive describes (manifest.family, manifest.license)
 // ---------------------------------------------------------------------------
 
-/// The family's form: `manifest.family` and `manifest.license`, each field
-/// a line of text, empty for absent.
+/// The continents a family can be said to have lived on: the closed list of
+/// `manifest.family.primary_place` (a human-readable place, written in
+/// English in the file and named in the reader's language on the page).
+pub const CONTINENTS: &[(&str, &str)] = &[
+    ("Africa", "continent-africa"),
+    ("Antarctica", "continent-antarctica"),
+    ("Asia", "continent-asia"),
+    ("Europe", "continent-europe"),
+    ("North America", "continent-north-america"),
+    ("South America", "continent-south-america"),
+    ("Oceania", "continent-oceania"),
+    ("Several continents", "continent-several"),
+];
+
+/// The licences an archive may be shared under: the closed list of
+/// `manifest.license.type`, each with the address the file records for it
+/// (none for the two that are not public licences) and the catalogue key of
+/// what it lets others do.
+pub const LICENCES: &[(&str, Option<&str>, &str)] = &[
+    ("all-rights-reserved", None, "licence-all-rights-reserved"),
+    ("family-private", None, "licence-family-private"),
+    (
+        "CC0-1.0",
+        Some("https://creativecommons.org/publicdomain/zero/1.0/"),
+        "licence-cc0",
+    ),
+    (
+        "CC-BY-4.0",
+        Some("https://creativecommons.org/licenses/by/4.0/"),
+        "licence-cc-by",
+    ),
+    (
+        "CC-BY-SA-4.0",
+        Some("https://creativecommons.org/licenses/by-sa/4.0/"),
+        "licence-cc-by-sa",
+    ),
+    (
+        "CC-BY-NC-4.0",
+        Some("https://creativecommons.org/licenses/by-nc/4.0/"),
+        "licence-cc-by-nc",
+    ),
+    (
+        "CC-BY-NC-SA-4.0",
+        Some("https://creativecommons.org/licenses/by-nc-sa/4.0/"),
+        "licence-cc-by-nc-sa",
+    ),
+    (
+        "CC-BY-ND-4.0",
+        Some("https://creativecommons.org/licenses/by-nd/4.0/"),
+        "licence-cc-by-nd",
+    ),
+    (
+        "CC-BY-NC-ND-4.0",
+        Some("https://creativecommons.org/licenses/by-nc-nd/4.0/"),
+        "licence-cc-by-nc-nd",
+    ),
+    (
+        "ODbL-1.0",
+        Some("https://opendatacommons.org/licenses/odbl/1-0/"),
+        "licence-odbl",
+    ),
+];
+
+/// Who chose the licence, and when: `manifest.license.extensions`, so that
+/// another reader of the file keeps it and may ignore it.
+pub const LICENCE_STAMP: &str = "axgf-cms:license/v1";
+
+/// The earliest and the latest birth the archive records, as the file
+/// writes dates (`1702`, `1702-03`, `1702-03-14`): the period it covers.
+pub fn births_span(flat: &Value) -> Option<(String, String)> {
+    let mut lo: Option<String> = None;
+    let mut hi: Option<String> = None;
+    let persons = flat.get("persons").and_then(Value::as_object)?;
+    for p in persons.values() {
+        let Some(v) = p.pointer("/birth/date/value").and_then(Value::as_str) else {
+            continue;
+        };
+        if crate::notes::date_of(v).is_none() {
+            continue;
+        }
+        if lo.as_deref().is_none_or(|l| v < l) {
+            lo = Some(v.to_string());
+        }
+        if hi.as_deref().is_none_or(|h| v > h) {
+            hi = Some(v.to_string());
+        }
+    }
+    Some((lo?, hi?))
+}
+
+/// The family's form: `manifest.family` and `manifest.license`. The place
+/// and the licence are each one of a closed list (or what the file already
+/// says, kept until it is changed); the period is the births', never typed.
 #[derive(Debug, Default, Clone, Deserialize, serde::Serialize)]
 pub struct FamilyForm {
     #[serde(default)]
@@ -244,15 +335,7 @@ pub struct FamilyForm {
     #[serde(default)]
     primary_place: String,
     #[serde(default)]
-    earliest: String,
-    #[serde(default)]
-    latest: String,
-    #[serde(default)]
     license_type: String,
-    #[serde(default)]
-    license_url: String,
-    #[serde(default)]
-    license_note: String,
 }
 
 impl FamilyForm {
@@ -270,16 +353,12 @@ impl FamilyForm {
             description: get("/family/description"),
             primary_culture: get("/family/primary_culture"),
             primary_place: get("/family/primary_place"),
-            earliest: get("/family/time_span/earliest"),
-            latest: get("/family/time_span/latest"),
             license_type: get("/license/type"),
-            license_url: get("/license/url"),
-            license_note: get("/license/note"),
         }
     }
 
     /// Every field trimmed, its control characters dropped (a line break is
-    /// kept in the two long ones).
+    /// kept in the description).
     fn cleaned(mut self) -> Self {
         let line = |s: &str| {
             s.chars()
@@ -288,37 +367,27 @@ impl FamilyForm {
                 .trim()
                 .to_string()
         };
-        let text = |s: &str| {
-            s.replace("\r\n", "\n")
-                .chars()
-                .filter(|c| *c == '\n' || !c.is_control())
-                .collect::<String>()
-                .trim()
-                .to_string()
-        };
         self.name = line(&self.name);
-        self.description = text(&self.description);
+        self.description = self
+            .description
+            .replace("\r\n", "\n")
+            .chars()
+            .filter(|c| *c == '\n' || !c.is_control())
+            .collect::<String>()
+            .trim()
+            .to_string();
         self.primary_culture = line(&self.primary_culture);
         self.primary_place = line(&self.primary_place);
-        self.earliest = line(&self.earliest);
-        self.latest = line(&self.latest);
         self.license_type = line(&self.license_type);
-        self.license_url = line(&self.license_url);
-        self.license_note = text(&self.license_note);
         self
     }
 
-    /// What is wrong with it, as a catalogue key, or nothing.
-    fn refusal(&self) -> Option<&'static str> {
+    /// What is wrong with it, as a catalogue key, or nothing. `stored` is
+    /// the manifest's editable part: a place or a licence outside the lists
+    /// is accepted only as the one the file already has.
+    fn refusal(&self, stored: &Value) -> Option<&'static str> {
         let long = |s: &str, n: usize| s.chars().count() > n;
-        if long(&self.name, 120)
-            || long(&self.primary_place, 200)
-            || long(&self.license_type, 80)
-            || long(&self.license_url, 500)
-        {
-            return Some("manifest-error-long");
-        }
-        if long(&self.description, 2000) || long(&self.license_note, 1000) {
+        if long(&self.name, 120) || long(&self.description, 2000) {
             return Some("manifest-error-long");
         }
         let culture_ok = self.primary_culture.is_empty()
@@ -338,27 +407,33 @@ impl FamilyForm {
         if !culture_ok {
             return Some("manifest-error-culture");
         }
-        for d in [&self.earliest, &self.latest] {
-            if !d.is_empty() && crate::notes::date_of(d).is_none() {
-                return Some("manifest-error-date");
-            }
+        let kept = |p: &str, v: &str| stored.pointer(p).and_then(Value::as_str) == Some(v);
+        if !self.primary_place.is_empty()
+            && !CONTINENTS.iter().any(|(c, _)| *c == self.primary_place)
+            && !kept("/family/primary_place", &self.primary_place)
+        {
+            return Some("manifest-error-place");
         }
-        if !self.earliest.is_empty() && !self.latest.is_empty() && self.earliest > self.latest {
-            return Some("manifest-error-order");
-        }
-        let url_ok = self.license_url.is_empty()
-            || ((self.license_url.starts_with("https://")
-                || self.license_url.starts_with("http://"))
-                && !self.license_url.contains(char::is_whitespace));
-        if !url_ok {
-            return Some("manifest-error-url");
+        if !self.license_type.is_empty()
+            && !LICENCES.iter().any(|(c, _, _)| *c == self.license_type)
+            && !kept("/license/type", &self.license_type)
+        {
+            return Some("manifest-error-licence");
         }
         None
     }
 
     /// Write it into a manifest: a field left empty is taken out, and an
-    /// object left with nothing in it goes too, as the format asks.
-    fn apply(&self, manifest: &mut serde_json::Map<String, Value>) {
+    /// object left with nothing in it goes too, as the format asks. The
+    /// period is the births' (`span`); a licence chosen anew carries who
+    /// chose it and when, and its address from the list.
+    fn apply(
+        &self,
+        manifest: &mut serde_json::Map<String, Value>,
+        span: Option<&(String, String)>,
+        who: &str,
+        now: &str,
+    ) {
         fn set(obj: &mut serde_json::Map<String, Value>, key: &str, value: &str) {
             if value.is_empty() {
                 obj.remove(key);
@@ -375,26 +450,56 @@ impl FamilyForm {
         set(&mut family, "description", &self.description);
         set(&mut family, "primary_culture", &self.primary_culture);
         set(&mut family, "primary_place", &self.primary_place);
-        let mut span = family
-            .get("time_span")
-            .and_then(Value::as_object)
-            .cloned()
-            .unwrap_or_default();
-        set(&mut span, "earliest", &self.earliest);
-        set(&mut span, "latest", &self.latest);
-        if span.is_empty() {
-            family.remove("time_span");
-        } else {
-            family.insert("time_span".into(), Value::Object(span));
+        match span {
+            Some((lo, hi)) => {
+                let mut ts = family
+                    .get("time_span")
+                    .and_then(Value::as_object)
+                    .cloned()
+                    .unwrap_or_default();
+                ts.insert("earliest".into(), Value::from(lo.as_str()));
+                ts.insert("latest".into(), Value::from(hi.as_str()));
+                family.insert("time_span".into(), Value::Object(ts));
+            }
+            None => {
+                family.remove("time_span");
+            }
         }
         let mut license = manifest
             .get("license")
             .and_then(Value::as_object)
             .cloned()
             .unwrap_or_default();
-        set(&mut license, "type", &self.license_type);
-        set(&mut license, "url", &self.license_url);
-        set(&mut license, "note", &self.license_note);
+        let before = license
+            .get("type")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string();
+        if self.license_type.is_empty() {
+            license.clear();
+        } else if self.license_type != before {
+            license.insert("type".into(), Value::from(self.license_type.as_str()));
+            match LICENCES
+                .iter()
+                .find(|(c, _, _)| *c == self.license_type)
+                .and_then(|l| l.1)
+            {
+                Some(url) => license.insert("url".into(), Value::from(url)),
+                None => license.remove("url"),
+            };
+            // A note written for the licence before says nothing of this one.
+            license.remove("note");
+            let mut ext = license
+                .get("extensions")
+                .and_then(Value::as_object)
+                .cloned()
+                .unwrap_or_default();
+            ext.insert(
+                LICENCE_STAMP.into(),
+                serde_json::json!({ "by": who, "at": now }),
+            );
+            license.insert("extensions".into(), Value::Object(ext));
+        }
         for (key, obj) in [("family", family), ("license", license)] {
             if obj.is_empty() {
                 manifest.remove(key);
@@ -405,10 +510,56 @@ impl FamilyForm {
     }
 }
 
-/// The family's form for the page: as sent (with an error), or as the
-/// manifest stands.
-fn family_context(state: &Shared, sent: Option<FamilyForm>) -> FamilyForm {
-    sent.unwrap_or_else(|| FamilyForm::of(&state.manifest_editable()))
+/// The family's form for the page: the form (as sent with an error, or as
+/// the manifest stands), the lists it chooses from, the period the births
+/// give, and who chose the licence.
+fn family_context(state: &Shared, chrome: &render::Chrome, sent: Option<FamilyForm>) -> Value {
+    let editable = state.manifest_editable();
+    let form = sent.unwrap_or_else(|| FamilyForm::of(&editable));
+    let span = state.read(births_span);
+    let stored_place = editable
+        .pointer("/family/primary_place")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let stored_licence = editable
+        .pointer("/license/type")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let mut places: Vec<Value> = CONTINENTS
+        .iter()
+        .map(|(c, k)| json!({ "value": c, "label": chrome.t(k) }))
+        .collect();
+    if !stored_place.is_empty() && !CONTINENTS.iter().any(|(c, _)| *c == stored_place) {
+        places.insert(0, json!({ "value": stored_place, "label": stored_place }));
+    }
+    let mut licences: Vec<Value> = LICENCES
+        .iter()
+        .map(|(c, _, k)| {
+            json!({ "value": c, "label": chrome.t(&format!("{k}-name")),
+                    "about": chrome.t(&format!("{k}-about")) })
+        })
+        .collect();
+    if !stored_licence.is_empty() && !LICENCES.iter().any(|(c, _, _)| *c == stored_licence) {
+        licences.insert(
+            0,
+            json!({ "value": stored_licence, "label": stored_licence, "about": "" }),
+        );
+    }
+    let stamp = editable
+        .pointer(&format!(
+            "/license/extensions/{}",
+            LICENCE_STAMP.replace('/', "~1")
+        ))
+        .cloned();
+    json!({
+        "form": form,
+        "places": places,
+        "licences": licences,
+        "span": span.map(|(lo, hi)| json!({ "earliest": lo, "latest": hi })),
+        "author": stamp.as_ref().and_then(|s| s.get("by")).and_then(Value::as_str)
+            .map(|w| crate::journal::who_in(w, chrome.lang)),
+        "author_at": stamp.as_ref().and_then(|s| s.get("at")).and_then(Value::as_str),
+    })
 }
 
 /// `POST /admin/bundle/family` — the family's name and what the archive
@@ -430,10 +581,14 @@ pub async fn family(
         *resp.status_mut() = status;
         resp
     };
-    if let Some(key) = f.refusal() {
+    if let Some(key) = f.refusal(&state.manifest_editable()) {
         return refuse(key, StatusCode::UNPROCESSABLE_ENTITY, f);
     }
-    let outcome = state.update_manifest(viewer.name(), &f.token, |m| f.apply(m));
+    let span = state.read(births_span);
+    let now = crate::view::now_iso8601();
+    let outcome = state.update_manifest(viewer.name(), &f.token, |m| {
+        f.apply(m, span.as_ref(), viewer.name(), &now)
+    });
     match outcome {
         Ok(crate::state::ManifestOutcome::Applied) => {
             tracing::info!(by = viewer.name(), "manifest changed");

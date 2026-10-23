@@ -56,40 +56,62 @@
 <h2>{{ t("manifest-title") }}</h2>
 <p class="small muted">{{ t("manifest-intro") }}</p>
 <form class="manifest-form" method="post" action="/admin/bundle/family" autocomplete="off">
-  <input type="hidden" name="token" value="{{ family.token }}">
+  {%- set fm = family.form %}
+  <input type="hidden" name="token" value="{{ fm.token }}">
   <div class="manifest-grid">
     <label class="field manifest-wide"><span class="field-label">{{ t("manifest-name") }}</span>
-      <input type="text" name="name" value="{{ family.name }}" maxlength="120" dir="auto">
+      <input type="text" name="name" value="{{ fm.name }}" maxlength="120" dir="auto">
       <span class="hint">{{ t("manifest-name-hint") }}</span></label>
     <label class="field manifest-wide"><span class="field-label">{{ t("manifest-description") }}</span>
-      <textarea name="description" rows="3" maxlength="2000" dir="auto">{{ family.description }}</textarea></label>
+      <textarea name="description" rows="3" maxlength="2000" dir="auto">{{ fm.description }}</textarea></label>
     <label class="field"><span class="field-label">{{ t("manifest-culture") }}</span>
-      <input type="text" name="primary_culture" value="{{ family.primary_culture }}" maxlength="35" spellcheck="false">
+      <input type="text" name="primary_culture" value="{{ fm.primary_culture }}" maxlength="35" spellcheck="false">
       <span class="hint">{{ t("manifest-culture-hint") }}</span></label>
     <label class="field"><span class="field-label">{{ t("manifest-place") }}</span>
-      <input type="text" name="primary_place" value="{{ family.primary_place }}" maxlength="200" dir="auto">
+      <select name="primary_place">
+        <option value=""{% if not fm.primary_place %} selected{% endif %}>{{ t("manifest-none") }}</option>
+        {%- for o in family.places %}
+        <option value="{{ o.value }}"{% if o.value == fm.primary_place %} selected{% endif %}>{{ o.label }}</option>
+        {%- endfor %}
+      </select>
       <span class="hint">{{ t("manifest-place-hint") }}</span></label>
   </div>
-  <fieldset class="manifest-set">
-    <legend>{{ t("manifest-span") }}</legend>
-    <div class="manifest-grid">
-      <label class="field"><span class="field-label">{{ t("manifest-earliest") }}</span>
-        <input type="text" name="earliest" value="{{ family.earliest }}" inputmode="numeric" maxlength="10" placeholder="{{ t('notes-field-date-placeholder') }}"></label>
-      <label class="field"><span class="field-label">{{ t("manifest-latest") }}</span>
-        <input type="text" name="latest" value="{{ family.latest }}" inputmode="numeric" maxlength="10" placeholder="{{ t('notes-field-date-placeholder') }}"></label>
-    </div>
-    <p class="hint">{{ t("manifest-span-hint") }}</p>
-  </fieldset>
+  {#- The period is the births': counted, never typed. -#}
+  <div class="field manifest-span">
+    <span class="field-label">{{ t("manifest-span") }}</span>
+    {%- if family.span %}
+    <p class="manifest-value">{{ t("manifest-span-value", earliest=family.span.earliest, latest=family.span.latest) }}</p>
+    {%- else %}
+    <p class="manifest-value muted">{{ t("manifest-span-none") }}</p>
+    {%- endif %}
+    <span class="hint">{{ t("manifest-span-hint") }}</span>
+  </div>
   <fieldset class="manifest-set">
     <legend>{{ t("manifest-license") }}</legend>
-    <div class="manifest-grid">
+    <div class="manifest-licence">
       <label class="field"><span class="field-label">{{ t("manifest-license-type") }}</span>
-        <input type="text" name="license_type" value="{{ family.license_type }}" maxlength="80" spellcheck="false">
-        <span class="hint">{{ t("manifest-license-type-hint") }}</span></label>
-      <label class="field"><span class="field-label">{{ t("manifest-license-url") }}</span>
-        <input type="url" name="license_url" value="{{ family.license_url }}" maxlength="500" spellcheck="false"></label>
-      <label class="field manifest-wide"><span class="field-label">{{ t("manifest-license-note") }}</span>
-        <textarea name="license_note" rows="2" maxlength="1000" dir="auto">{{ family.license_note }}</textarea></label>
+        <select name="license_type" id="manifest-licence" data-describe="manifest-licence-about">
+          <option value=""{% if not fm.license_type %} selected{% endif %}>{{ t("manifest-none") }}</option>
+          {%- for o in family.licences %}
+          <option value="{{ o.value }}"{% if o.value == fm.license_type %} selected{% endif %}>{{ o.label }}</option>
+          {%- endfor %}
+        </select></label>
+      {#- What the licence chosen lets others do, in a sentence or two; the
+          script shows the one the select names as it changes. -#}
+      <div class="manifest-about" id="manifest-licence-about" aria-live="polite">
+        <p data-value=""{% if fm.license_type %} hidden{% endif %}>{{ t("manifest-license-pick") }}</p>
+        {%- for o in family.licences %}{% if o.about %}
+        <p data-value="{{ o.value }}"{% if o.value != fm.license_type %} hidden{% endif %}>{{ o.about }}</p>
+        {%- endif %}{% endfor %}
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">{{ t("manifest-license-author") }}</span>
+      {%- if family.author %}
+      <p class="manifest-value">{{ t("manifest-license-author-value", who=family.author, at=family.author_at | localdatetime(lang)) }}</p>
+      {%- else %}
+      <p class="manifest-value muted">{{ t("manifest-license-author-none") }}</p>
+      {%- endif %}
     </div>
   </fieldset>
   <div class="cta-row">

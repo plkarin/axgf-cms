@@ -2919,8 +2919,9 @@ a.pcard-in:hover .pcard-name { color: var(--accent); }
 .notes-head-copy { max-inline-size: 62ch; }
 .notes-head .home-h2 { margin: 0; }
 .notes-intro { margin: 0.35rem 0 0; color: var(--text-secondary); }
-.notes-search { display: flex; gap: 0.5rem; margin-block: 1.1rem 0; }
-.notes-search input[type="search"] { flex: 1 1 auto; min-inline-size: 0; max-inline-size: 34rem; }
+.notes-search { display: flex; align-items: flex-end; gap: 0.5rem; margin-block: 1.1rem 0; }
+.notes-search-field { display: flex; flex-direction: column; flex: 1 1 auto; min-inline-size: 0; max-inline-size: 34rem; margin: 0; }
+.notes-search input[type="search"] { inline-size: 100%; }
 .notes-search .btn { flex: none; white-space: nowrap; }
 .notes-letters { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-block: 0.85rem 0.35rem; }
 /* On a phone the letters keep to one line, which scrolls sideways. */
@@ -3044,6 +3045,17 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
 .manifest-wide { grid-column: 1 / -1; }
 .manifest-grid textarea { inline-size: 100%; }
 .manifest-set { margin-block: 0.4rem 0.9rem; }
+/* The account's own page: the record it says it is. */
+.account-person-now { margin-block: 0.4rem 0.6rem; }
+.account-person-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem 0.8rem; margin-block-start: 0.8rem; }
+.account-person-form .field { flex: 1 1 18rem; max-inline-size: 30rem; margin: 0; }
+.manifest-span { margin-block: 0.2rem 0.9rem; }
+.manifest-value { margin: 0.2rem 0 0.15rem; font-variant-numeric: tabular-nums; }
+/* The licence and, beside it, what it lets others do. */
+.manifest-licence { display: grid; grid-template-columns: minmax(0, 26rem) minmax(0, 1fr); gap: 0.6rem 1.2rem; align-items: start; }
+.manifest-about { padding: 0.65rem 0.85rem; border: 1px solid var(--border-hairline); border-inline-start: 3px solid var(--accent); border-radius: var(--radius-sm); background: var(--surface-sunken); font-size: var(--type-minor); line-height: 1.5; }
+.manifest-about p { margin: 0; }
+@media (max-width: 40rem) { .manifest-licence { grid-template-columns: minmax(0, 1fr); } }
 .note-people { margin-block-start: 1rem; }
 .note-chosen { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.6rem; padding: 0; list-style: none; }
 .note-person { display: inline-flex; align-items: center; gap: 0.35rem; }
@@ -5916,6 +5928,15 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 @media (prefers-reduced-motion: reduce) {
   .river:is([data-view="tree"], [data-view="galaxy"], [data-view="summit"], [data-view="funnel"]) .rv-canvas > svg.rv-svg:not([data-view]) { opacity: 1; animation: none; }
 }
+/* Names (river.js `names`): the far generations' hidden while only the near
+   ones are asked for; the ones a drawing left out, on a ground of their own
+   with a thread to their person. */
+.river.rv-names-near .rv-svg a.rv-p[data-far] :is(text, .tv-panel, .tv-leader) { display: none; }
+.rv-svg .rv-names { pointer-events: none; }
+.rv-svg .rv-name-box { fill: var(--surface-raised); fill-opacity: 0.92; stroke: var(--border-strong); stroke-width: 0.8; }
+.rv-svg .rv-name-text { fill: var(--text-primary); font-family: var(--face); }
+.rv-svg .rv-name-thread { stroke: var(--text-secondary); stroke-width: 0.8; stroke-opacity: 0.8; }
+.rv-names-btn[aria-pressed="true"],
 .rv-whole[aria-pressed="true"] {
   border-color: var(--accent);
   background: var(--accent-soft);

@@ -2881,11 +2881,25 @@ pub(super) fn render_users(
             .unwrap_or_default()
     });
 
+    // Who each account says it is in the tree, by name (an account's own
+    // word, 2026-10-23).
+    let names: std::collections::HashMap<String, String> = state.read(|flat| {
+        flat.get("persons")
+            .and_then(Value::as_object)
+            .map(|persons| {
+                persons
+                    .iter()
+                    .map(|(id, p)| (id.clone(), view::person_display_name(p)))
+                    .collect()
+            })
+            .unwrap_or_default()
+    });
     let users = state.acl_read(|acl| {
         acl.users
             .iter()
             .map(|u| {
                 json!({
+                    "person": u.person_id.as_ref().and_then(|pid| names.get(pid).map(|n| json!({"id": pid, "name": n}))),
                     "id": u.id,
                     "username": u.username,
                     "email": u.email,

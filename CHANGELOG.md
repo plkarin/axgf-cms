@@ -102,7 +102,8 @@ Administrators only; the accounts follow the new name, a change made
 meanwhile is not overwritten unknowingly, and the history says who changed
 what. The file's own counts and dates are still the export's.
 
-**Fusion's tree in its glass** (docs/adr/0015): the family stands in a glass
+**Fusion's tree in its glass** (docs/adr/0015, amended the same day: the tree
+in tiers, a floor per generation straight across): the family stands in a glass
 cylinder in a laboratory (a picture made in Canva, its projector under the
 glass). The person at the centre is on the axis in a column of light,
 descendants climb the glass a floor per generation and ancestors go down it
@@ -112,6 +113,22 @@ to their side. The front of the glass is named on small glass panels, the
 back is dimmed. Travelling turns the glass: whoever the reader goes to comes
 round to the front and the climb goes on upward. Motes turn round the
 glass, a scanner goes round each floor and embers rise from the projector.
+
+**Every name, or the near ones** (docs/adr/0015 §4): a button beside the
+river's tools, under every theme, shows every name — those the drawing had
+no room for on a ground of their own, beside their person, clear of the
+others — or only the generations either side of the person at the centre,
+all of them named. The choice is remembered.
+
+**An account says which person it is**: a "My account" page for every
+signed-in account, where it links itself to its record in the tree (any
+record it may read; nobody checks it) or takes the link away. The accounts
+list shows each account's record.
+
+**The family's details, chosen from lists**: the main place is a continent;
+the period covered is the births', counted; the licence is one of ten, with
+a sentence beside it saying what it lets others do, its address recorded
+from the list, and the account that chose it and when.
 
 **Clarity's funnel in its laboratory** (docs/adr/0015): the cone stands on a
 projector with a beam up its axis, over a floor of light lines, rings

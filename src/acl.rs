@@ -214,6 +214,11 @@ pub struct User {
     /// made by an administrator.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub created_via: Option<String>,
+    /// The person in the tree this account says it is (2026-10-23): chosen
+    /// by the account itself on its own page, and checked by nobody — it is
+    /// each one's word. Absent for an account that is no one in the tree.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub person_id: Option<String>,
 }
 
 /// One provider's identifier for an account's person.
@@ -595,6 +600,7 @@ pub fn new_user(username: &str, password: &str, role: Role) -> Result<User> {
         family_scope: Vec::new(),
         identities: Vec::new(),
         created_via: None,
+        person_id: None,
     })
 }
 
@@ -624,6 +630,7 @@ pub fn new_provider_user(username: &str, identity: Identity, email: Option<Strin
         backgrounds: None,
         family_scope: Vec::new(),
         created_via: Some(format!("sso:{}", identity.provider)),
+        person_id: None,
         identities: vec![identity],
     }
 }

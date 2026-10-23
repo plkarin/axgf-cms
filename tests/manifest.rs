@@ -13,13 +13,20 @@ use serde_json::{json, Value};
 fn bundle(tag: &str) -> common::Scratch {
     let dir = scratch(tag);
     let path = dir.join("m.axgf");
+    let person = |id: &str, name: &str, born: &str| {
+        json!({"id": id, "type": "person", "axgf_version": "1.1",
+               "identity": {"name": {"display": name, "components": []},
+                            "is_living": false, "visibility": "public"},
+               "birth": {"date": {"value": born, "precision": if born.len() == 4 { "year" } else { "month" }}}})
+    };
     let flat = json!({
         "manifest": {"axgf": "1.1", "created_at": "2026-01-02T03:04:05Z",
-                     "family": {"name": "Fabre", "primary_culture": "fr"}},
-        "persons": {"e1000000-0000-4000-8000-000000000001": {
-            "id": "e1000000-0000-4000-8000-000000000001", "type": "person", "axgf_version": "1.1",
-            "identity": {"name": {"display": "Lucien Fabre", "components": []},
-                         "is_living": false, "visibility": "public"}}},
+                     "family": {"name": "Fabre", "primary_culture": "fr", "primary_place": "Vallée de la Sarthe"}},
+        "persons": {
+            "e1000000-0000-4000-8000-000000000001": person("e1000000-0000-4000-8000-000000000001", "Lucien Fabre", "1702"),
+            "e1000000-0000-4000-8000-000000000002": person("e1000000-0000-4000-8000-000000000002", "Alice Fabre", "1998-05"),
+            "e1000000-0000-4000-8000-000000000003": person("e1000000-0000-4000-8000-000000000003", "Paul Fabre", "1850"),
+        },
         "families": {}, "events": {}, "links": {}, "occupations": {}, "places": {},
         "sources": {}, "documents": {}
     });
@@ -57,12 +64,17 @@ fn fields_of(html: &str) -> Vec<(String, String)> {
         .next()
         .expect("the family's form");
     let mut out = Vec::new();
-    for el in form.select(&Selector::parse("input[name], textarea[name]").unwrap()) {
+    for el in form.select(&Selector::parse("input[name], textarea[name], select[name]").unwrap()) {
         let name = el.value().attr("name").unwrap().to_string();
-        let value = if el.value().name() == "textarea" {
-            el.text().collect()
-        } else {
-            el.value().attr("value").unwrap_or("").to_string()
+        let value = match el.value().name() {
+            "textarea" => el.text().collect(),
+            "select" => el
+                .select(&Selector::parse("option[selected]").unwrap())
+                .next()
+                .and_then(|o| o.value().attr("value"))
+                .unwrap_or("")
+                .to_string(),
+            _ => el.value().attr("value").unwrap_or("").to_string(),
         };
         out.push((name, value));
     }
@@ -99,6 +111,34 @@ async fn an_administrator_names_the_family_and_the_accounts_follow() {
     let fields = fields_of(&page);
     assert!(fields.contains(&("name".into(), "Fabre".into())));
     assert!(fields.contains(&("primary_culture".into(), "fr".into())));
+    // A place the file already has, outside the list, is kept on offer.
+    assert!(fields.contains(&("primary_place".into(), "Vallée de la Sarthe".into())));
+    let doc = Html::parse_document(&page);
+    let places: Vec<String> = doc
+        .select(&Selector::parse(r#"select[name="primary_place"] option"#).unwrap())
+        .map(|o| o.value().attr("value").unwrap_or("").to_string())
+        .collect();
+    for c in [
+        "",
+        "Vallée de la Sarthe",
+        "Africa",
+        "Europe",
+        "Several continents",
+    ] {
+        assert!(places.iter().any(|p| p == c), "{c} offered: {places:?}");
+    }
+    let licences = doc
+        .select(&Selector::parse(r#"select[name="license_type"] option"#).unwrap())
+        .count();
+    assert_eq!(licences, 11, "none, and the ten licences");
+    // The period is the births': shown, never typed.
+    assert!(
+        page.contains("1702 – 1998-05"),
+        "the period the births give"
+    );
+    assert!(!page.contains(r#"name="earliest""#) && !page.contains(r#"name="license_url""#));
+    // Each licence says what it lets others do.
+    assert!(page.contains("as long as they name its authors"));
 
     let resp = post_form_as(
         &app,
@@ -110,14 +150,8 @@ async fn an_administrator_names_the_family_and_the_accounts_follow() {
                 ("name", "Fabre-Delaunay"),
                 ("description", "Deux branches, une vallée."),
                 ("primary_culture", "fr-FR"),
-                ("primary_place", "Vallée de la Sarthe"),
-                ("earliest", "1702"),
-                ("latest", "1998-05"),
+                ("primary_place", "Europe"),
                 ("license_type", "CC-BY-4.0"),
-                (
-                    "license_url",
-                    "https://creativecommons.org/licenses/by/4.0/",
-                ),
             ],
         ),
     )
@@ -129,18 +163,29 @@ async fn an_administrator_names_the_family_and_the_accounts_follow() {
     );
     let back = body_string(get_with_cookie(&app, "/admin/bundle?family=saved", &admin).await).await;
     assert!(back.contains("notice ok"), "the page says it was saved");
+    assert!(
+        back.contains("Emergency token"),
+        "and who chose the licence"
+    );
 
     // In the file, as the format writes it.
     let m = manifest(&app, &admin).await;
     assert_eq!(m["family"]["name"], "Fabre-Delaunay");
     assert_eq!(m["family"]["description"], "Deux branches, une vallée.");
     assert_eq!(m["family"]["primary_culture"], "fr-FR");
-    assert_eq!(m["family"]["primary_place"], "Vallée de la Sarthe");
+    assert_eq!(m["family"]["primary_place"], "Europe");
     assert_eq!(
         m["family"]["time_span"],
         json!({"earliest": "1702", "latest": "1998-05"})
     );
     assert_eq!(m["license"]["type"], "CC-BY-4.0");
+    assert_eq!(
+        m["license"]["url"],
+        "https://creativecommons.org/licenses/by/4.0/"
+    );
+    let stamp = &m["license"]["extensions"]["axgf-cms:license/v1"];
+    assert_eq!(stamp["by"], "emergency-token");
+    let at = stamp["at"].as_str().expect("when").to_string();
     assert_eq!(
         m["created_at"], "2026-01-02T03:04:05Z",
         "the file's own dates are untouched"
@@ -167,7 +212,22 @@ async fn an_administrator_names_the_family_and_the_accounts_follow() {
     );
     assert!(dash.contains("Family name"), "and names what changed");
 
-    // Emptied, a field leaves the file, and an empty licence goes whole.
+    // Saved again with the same licence, who chose it does not change; the
+    // place emptied leaves the file; the licence emptied goes whole.
+    let page = body_string(get_with_cookie(&app, "/admin/bundle", &admin).await).await;
+    let resp = post_form_as(
+        &app,
+        &admin,
+        "/admin/bundle/family",
+        &with(&fields_of(&page), &[("name", "Fabre")]),
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER);
+    let m = manifest(&app, &admin).await;
+    assert_eq!(
+        m["license"]["extensions"]["axgf-cms:license/v1"]["at"],
+        at.as_str()
+    );
     let page = body_string(get_with_cookie(&app, "/admin/bundle", &admin).await).await;
     let resp = post_form_as(
         &app,
@@ -175,22 +235,15 @@ async fn an_administrator_names_the_family_and_the_accounts_follow() {
         "/admin/bundle/family",
         &with(
             &fields_of(&page),
-            &[
-                ("description", ""),
-                ("earliest", ""),
-                ("latest", ""),
-                ("license_type", ""),
-                ("license_url", ""),
-            ],
+            &[("primary_place", ""), ("license_type", "")],
         ),
     )
     .await;
     assert_eq!(resp.status(), StatusCode::SEE_OTHER);
     let m = manifest(&app, &admin).await;
-    assert!(m["family"].get("description").is_none());
-    assert!(m["family"].get("time_span").is_none());
+    assert!(m["family"].get("primary_place").is_none());
     assert!(m.get("license").is_none());
-    assert_eq!(m["family"]["name"], "Fabre-Delaunay");
+    assert_eq!(m["family"]["name"], "Fabre");
 }
 
 #[tokio::test]
@@ -207,16 +260,12 @@ async fn a_wrong_field_or_a_change_made_meanwhile_keeps_what_was_typed() {
             "language tag",
         ),
         (
-            vec![("name", "Gardé"), ("earliest", "14/06/1702")],
-            "1650-03-14",
+            vec![("name", "Gardé"), ("primary_place", "Atlantis")],
+            "main place from the list",
         ),
         (
-            vec![("name", "Gardé"), ("earliest", "1900"), ("latest", "1800")],
-            "ends before",
-        ),
-        (
-            vec![("name", "Gardé"), ("license_url", "javascript:alert(1)")],
-            "https://",
+            vec![("name", "Gardé"), ("license_type", "WTFPL")],
+            "licence from the list",
         ),
     ] {
         let resp = post_form_as(

@@ -17,11 +17,11 @@
         <input type="text" name="category" value="{{ category }}" list="note-categories" maxlength="80" dir="auto">
         <span class="hint">{{ t("notes-field-category-hint") }}</span></label>
       <label class="field"><span class="field-label">{{ t("notes-field-date") }}</span>
-        <input type="text" name="date" value="{{ date }}" inputmode="numeric" placeholder="{{ t('notes-field-date-placeholder') }}" maxlength="10">
+        <input type="text" name="date" value="{{ date }}" inputmode="numeric" maxlength="10">
         <span class="hint">{{ t("notes-field-date-hint") }}</span></label>
     </div>
     <fieldset class="note-people" data-note-people>
-      <legend>{{ t("notes-field-people") }}</legend>
+      <legend id="note-people-legend">{{ t("notes-field-people") }}</legend>
       <ul class="note-chosen" data-note-chosen>
         {%- for c in chosen %}
         <li class="chip note-person"><input type="hidden" name="person" value="{{ c.id }}"><bdi>{{ c.label }}</bdi>
@@ -29,7 +29,7 @@
         {%- endfor %}
       </ul>
       <div class="note-person-add">
-        <input type="text" name="person_add" list="pick-persons" autocomplete="off" placeholder="{{ t('notes-field-person-placeholder') }}" aria-label="{{ t('notes-field-people') }}" data-person-input>
+        <input type="text" name="person_add" list="pick-persons" autocomplete="off" aria-labelledby="note-people-legend" data-person-input>
         <button type="button" class="btn small" data-person-add hidden>{{ t("notes-person-add") }}</button>
       </div>
       <p class="hint">{{ t("notes-field-people-hint") }}</p>

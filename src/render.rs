@@ -194,7 +194,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "_note_frame.html",
     "note.html",
     "admin_notes.html",
-    "admin_note.html"
+    "admin_note.html",
+    "account.html"
 ];
 
 static ENV: OnceLock<Environment<'static>> = OnceLock::new();

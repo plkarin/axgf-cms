@@ -87,11 +87,29 @@ are then drawn once, unmoving. No colour is named in either script; Fusion
 gains three tokens (`--tv-glass`, `--tv-panel`, `--tv-panel-line`). The
 server's river, its SVG and its payload, are unchanged (ADR 0001).
 
+### 4. Amended the same day: a tree in tiers, and every name on request
+
+The operator found the turning glass still unreadable on their archive and
+asked for "a simple hierarchical tree layout, both ways, with the levels
+respected". Fusion now lays the family out in tiers inside the glass, a
+floor per generation straight across: descendants above (each family's
+children side by side over it, the parents centred under them), ancestors
+below (each person's father and mother under them), the spacing the tree's
+own. The glass, the room and its life stay. Travel still turns the glass:
+the river's blend, then the whole tree turned round the axis toward the
+side the person came from and back, in perspective.
+
+And for every view and the river: one button asks for every name, or only
+the near generations' (−1, 0, +1, the default). The drawing's own names
+stay where it put them; river.js hides the far ones and sets each name the
+drawing left out on a ground of its own beside its person, to the side free
+of names and people, with a thread back to it.
+
 ## Consequences
 
-- Fusion names fewer people at once than the river (the back of the glass
-  is named by the pointer only), but every name it shows stands on its own
-  panel, clear of the branches.
+- Every name a view draws stands clear of the others; with every name
+  asked for, the ones a drawing had no room for stand on grounds beside
+  their people, further out when they must.
 - The tween hook is open to every view; only Fusion uses it.
 - Fusion's frames carry each person's place in the glass (`w`: angle,
   floor, distance from the axis) beside their place on the page.

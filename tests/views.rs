@@ -360,3 +360,28 @@ fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
         "and its laboratory under it"
     );
 }
+
+/// Names (2026-10-23): one button, under every view and the river alike,
+/// asks for every name or only the near generations' (−1, 0, +1), and the
+/// reader's choice is remembered; Fusion lays its tree out in tiers.
+#[test]
+fn a_reader_asks_for_every_name_or_the_near_ones() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
+    let tpl = read("templates/river.html");
+    assert!(tpl.contains(r#"data-rv-names hidden>{{ t("river-names-all") }}</button>"#));
+    let river = read("static/river.js");
+    assert!(river.contains("namesAll = localStorage.getItem(NAMES) === 'all';"));
+    assert!(
+        river.contains("var p = PK[a.getAttribute('data-key')], far = p && Math.abs(p.gen) > 1;")
+    );
+    assert!(river.contains("g.setAttribute('class', 'rv-names');"));
+    let css = read("static/app.css");
+    assert!(css.contains(".river.rv-names-near .rv-svg a.rv-p[data-far] :is(text, .tv-panel, .tv-leader) { display: none; }"));
+    let fusion = read("static/fusion.js");
+    assert!(
+        fusion.contains("function crown(key, left)")
+            && fusion.contains("function roots(key, left)"),
+        "a tree in tiers"
+    );
+}

@@ -1554,7 +1554,9 @@ pub async fn export(
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "family.axgf".into());
-    render::bundle_download_from(&chrome, &name, tmp).await
+    let mut resp = render::bundle_download_from(&chrome, &name, tmp).await;
+    render::mark_download(&mut resp, &headers, q.download_token.as_deref());
+    resp
 }
 
 // ---------------------------------------------------------------------------
@@ -1578,6 +1580,9 @@ pub struct ExportQuery {
     legal: Option<String>,
     #[serde(default)]
     behaviour: Option<String>,
+    /// The page's token, sent back in a cookie once the file starts.
+    #[serde(default)]
+    download_token: Option<String>,
 }
 
 impl ExportQuery {

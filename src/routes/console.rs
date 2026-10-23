@@ -5,9 +5,9 @@
 //! Administrators only, every one of them: they say how the machine is
 //! exposed, hand out the whole archive and hold the providers' secrets.
 
-use axum::extract::{Form, State};
+use axum::extract::{Form, Query, State};
 use axum::http::{HeaderMap, StatusCode};
-use axum::response::{IntoResponse, Response};
+use axum::response::{IntoResponse, Redirect, Response};
 use minijinja::context;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -31,9 +31,24 @@ macro_rules! admin_only {
 // ---------------------------------------------------------------------------
 
 /// `GET /admin/bundle`
-pub async fn bundle(State(state): State<Shared>, headers: HeaderMap) -> Response {
+pub async fn bundle(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<BundleQuery>,
+) -> Response {
     let (_viewer, chrome) = admin_only!(state, headers);
-    render_bundle(&state, &chrome, BundleNote::default())
+    let note = BundleNote {
+        notice: (q.family.as_deref() == Some("saved")).then(|| chrome.t("manifest-saved")),
+        ..Default::default()
+    };
+    render_bundle(&state, &chrome, note)
+}
+
+/// `?family=saved`: back from the family's form.
+#[derive(Debug, Default, Deserialize)]
+pub struct BundleQuery {
+    #[serde(default)]
+    family: Option<String>,
 }
 
 /// What a bundle page says above its sections after a form.
@@ -44,6 +59,8 @@ struct BundleNote {
     /// The key text the form carried, given back so a refused key can be
     /// corrected rather than pasted again.
     recipient_text: Option<String>,
+    /// The family's form as it was sent, given back with its error.
+    family: Option<FamilyForm>,
 }
 
 /// The attachments the bundle declares, by name.
@@ -201,10 +218,242 @@ fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> R
             export_scopes => crate::sensitive::Scope::ALL.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
             recipient,
             recipient_text,
+            family => family_context(state, note.family),
             error => note.error,
             notice => note.notice,
         },
     )
+}
+
+// ---------------------------------------------------------------------------
+// the family the archive describes (manifest.family, manifest.license)
+// ---------------------------------------------------------------------------
+
+/// The family's form: `manifest.family` and `manifest.license`, each field
+/// a line of text, empty for absent.
+#[derive(Debug, Default, Clone, Deserialize, serde::Serialize)]
+pub struct FamilyForm {
+    #[serde(default)]
+    token: String,
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    description: String,
+    #[serde(default)]
+    primary_culture: String,
+    #[serde(default)]
+    primary_place: String,
+    #[serde(default)]
+    earliest: String,
+    #[serde(default)]
+    latest: String,
+    #[serde(default)]
+    license_type: String,
+    #[serde(default)]
+    license_url: String,
+    #[serde(default)]
+    license_note: String,
+}
+
+impl FamilyForm {
+    fn of(editable: &Value) -> Self {
+        let get = |p: &str| {
+            editable
+                .pointer(p)
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string()
+        };
+        FamilyForm {
+            token: crate::state::manifest_token(editable),
+            name: get("/family/name"),
+            description: get("/family/description"),
+            primary_culture: get("/family/primary_culture"),
+            primary_place: get("/family/primary_place"),
+            earliest: get("/family/time_span/earliest"),
+            latest: get("/family/time_span/latest"),
+            license_type: get("/license/type"),
+            license_url: get("/license/url"),
+            license_note: get("/license/note"),
+        }
+    }
+
+    /// Every field trimmed, its control characters dropped (a line break is
+    /// kept in the two long ones).
+    fn cleaned(mut self) -> Self {
+        let line = |s: &str| {
+            s.chars()
+                .filter(|c| !c.is_control())
+                .collect::<String>()
+                .trim()
+                .to_string()
+        };
+        let text = |s: &str| {
+            s.replace("\r\n", "\n")
+                .chars()
+                .filter(|c| *c == '\n' || !c.is_control())
+                .collect::<String>()
+                .trim()
+                .to_string()
+        };
+        self.name = line(&self.name);
+        self.description = text(&self.description);
+        self.primary_culture = line(&self.primary_culture);
+        self.primary_place = line(&self.primary_place);
+        self.earliest = line(&self.earliest);
+        self.latest = line(&self.latest);
+        self.license_type = line(&self.license_type);
+        self.license_url = line(&self.license_url);
+        self.license_note = text(&self.license_note);
+        self
+    }
+
+    /// What is wrong with it, as a catalogue key, or nothing.
+    fn refusal(&self) -> Option<&'static str> {
+        let long = |s: &str, n: usize| s.chars().count() > n;
+        if long(&self.name, 120)
+            || long(&self.primary_place, 200)
+            || long(&self.license_type, 80)
+            || long(&self.license_url, 500)
+        {
+            return Some("manifest-error-long");
+        }
+        if long(&self.description, 2000) || long(&self.license_note, 1000) {
+            return Some("manifest-error-long");
+        }
+        let culture_ok = self.primary_culture.is_empty()
+            || (self.primary_culture.len() <= 35
+                && self
+                    .primary_culture
+                    .split('-')
+                    .enumerate()
+                    .all(|(i, part)| {
+                        let n = part.len();
+                        if i == 0 {
+                            (2..=8).contains(&n) && part.bytes().all(|b| b.is_ascii_alphabetic())
+                        } else {
+                            (1..=8).contains(&n) && part.bytes().all(|b| b.is_ascii_alphanumeric())
+                        }
+                    }));
+        if !culture_ok {
+            return Some("manifest-error-culture");
+        }
+        for d in [&self.earliest, &self.latest] {
+            if !d.is_empty() && crate::notes::date_of(d).is_none() {
+                return Some("manifest-error-date");
+            }
+        }
+        if !self.earliest.is_empty() && !self.latest.is_empty() && self.earliest > self.latest {
+            return Some("manifest-error-order");
+        }
+        let url_ok = self.license_url.is_empty()
+            || ((self.license_url.starts_with("https://")
+                || self.license_url.starts_with("http://"))
+                && !self.license_url.contains(char::is_whitespace));
+        if !url_ok {
+            return Some("manifest-error-url");
+        }
+        None
+    }
+
+    /// Write it into a manifest: a field left empty is taken out, and an
+    /// object left with nothing in it goes too, as the format asks.
+    fn apply(&self, manifest: &mut serde_json::Map<String, Value>) {
+        fn set(obj: &mut serde_json::Map<String, Value>, key: &str, value: &str) {
+            if value.is_empty() {
+                obj.remove(key);
+            } else {
+                obj.insert(key.into(), Value::from(value));
+            }
+        }
+        let mut family = manifest
+            .get("family")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        set(&mut family, "name", &self.name);
+        set(&mut family, "description", &self.description);
+        set(&mut family, "primary_culture", &self.primary_culture);
+        set(&mut family, "primary_place", &self.primary_place);
+        let mut span = family
+            .get("time_span")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        set(&mut span, "earliest", &self.earliest);
+        set(&mut span, "latest", &self.latest);
+        if span.is_empty() {
+            family.remove("time_span");
+        } else {
+            family.insert("time_span".into(), Value::Object(span));
+        }
+        let mut license = manifest
+            .get("license")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        set(&mut license, "type", &self.license_type);
+        set(&mut license, "url", &self.license_url);
+        set(&mut license, "note", &self.license_note);
+        for (key, obj) in [("family", family), ("license", license)] {
+            if obj.is_empty() {
+                manifest.remove(key);
+            } else {
+                manifest.insert(key.into(), Value::Object(obj));
+            }
+        }
+    }
+}
+
+/// The family's form for the page: as sent (with an error), or as the
+/// manifest stands.
+fn family_context(state: &Shared, sent: Option<FamilyForm>) -> FamilyForm {
+    sent.unwrap_or_else(|| FamilyForm::of(&state.manifest_editable()))
+}
+
+/// `POST /admin/bundle/family` — the family's name and what the archive
+/// says about itself (manifest.family, manifest.license).
+pub async fn family(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<FamilyForm>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let f = f.cleaned();
+    let refuse = |key: &str, status: StatusCode, f: FamilyForm| {
+        let note = BundleNote {
+            error: Some(chrome.t(key)),
+            family: Some(f),
+            ..Default::default()
+        };
+        let mut resp = render_bundle(&state, &chrome, note);
+        *resp.status_mut() = status;
+        resp
+    };
+    if let Some(key) = f.refusal() {
+        return refuse(key, StatusCode::UNPROCESSABLE_ENTITY, f);
+    }
+    let outcome = state.update_manifest(viewer.name(), &f.token, |m| f.apply(m));
+    match outcome {
+        Ok(crate::state::ManifestOutcome::Applied) => {
+            tracing::info!(by = viewer.name(), "manifest changed");
+            Redirect::to("/admin/bundle?family=saved#family").into_response()
+        }
+        Ok(crate::state::ManifestOutcome::Unchanged) => {
+            Redirect::to("/admin/bundle#family").into_response()
+        }
+        Ok(crate::state::ManifestOutcome::Conflict) => {
+            // What was sent stays in the form, now made from the version
+            // that is there: saved again, it replaces it knowingly.
+            let mut f = f;
+            f.token = crate::state::manifest_token(&state.manifest_editable());
+            refuse("manifest-error-stale", StatusCode::CONFLICT, f)
+        }
+        Err(e) => {
+            tracing::error!(error = %e, "could not write the manifest");
+            refuse("manifest-error-io", StatusCode::INTERNAL_SERVER_ERROR, f)
+        }
+    }
 }
 
 /// A recipient as the page shows it.
@@ -240,6 +489,9 @@ pub struct SealForm {
     legal: Option<String>,
     #[serde(default)]
     behaviour: Option<String>,
+    /// The page's token, sent back in a cookie once the file starts.
+    #[serde(default)]
+    download_token: Option<String>,
 }
 
 impl SealForm {
@@ -282,8 +534,8 @@ pub async fn sealed(
     let refuse = |key: &str, args: &[(&str, fluent::FluentValue)]| {
         let note = BundleNote {
             error: Some(chrome.t_args(key, args)),
-            notice: None,
             recipient_text: Some(typed.clone()),
+            ..Default::default()
         };
         let mut resp = render_bundle(&state, &chrome, note);
         *resp.status_mut() = StatusCode::UNPROCESSABLE_ENTITY;
@@ -368,13 +620,15 @@ pub async fn sealed(
         bytes = size,
         "encrypted export made"
     );
-    render::download_from(
+    let mut resp = render::download_from(
         &chrome,
         &format!("{name}.gpg"),
         out,
         "application/pgp-encrypted",
     )
-    .await
+    .await;
+    render::mark_download(&mut resp, &headers, f.download_token.as_deref());
+    resp
 }
 
 /// `POST /admin/bundle/forget-recipient` — stop keeping the export's key.

@@ -169,6 +169,8 @@
     <strong>{{ e.who }}</strong> {{ e.summary }} {{ t("admin-history-on") }}
     {% if e.kind == "person" %}
       <a href="/person/{{ e.entity_id }}">{{ e.label if e.label else e.entity_id }}</a>
+    {% elif e.kind == "bundle" %}
+      <a href="/admin/bundle#family">{{ e.label if e.label else t("kind-bundle") }}</a>
     {% else %}
       <a href="/admin/{{ e.kind }}/{{ e.entity_id }}/edit">{{ e.label if e.label else e.entity_id }}</a>
     {% endif %}

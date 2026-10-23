@@ -603,6 +603,34 @@ pub async fn bundle_download_from(
     download_from(chrome, filename, path, "application/vnd.axgf+zip").await
 }
 
+/// The cookie that tells the page a download it asked for has started
+/// (`data-download` forms, static/ui.js): a file arriving does not unload the
+/// page, so without it the button would say "Working…" for ever. It names a
+/// token the page made up, readable by the page's script, and dies in two
+/// minutes.
+pub const DOWNLOAD_COOKIE: &str = "axgf_download";
+
+/// Mark a download response with the page's token, when it sent one that is
+/// plainly a token.
+pub fn mark_download(resp: &mut Response, headers: &axum::http::HeaderMap, token: Option<&str>) {
+    let Some(token) = token
+        .filter(|t| (8..=64).contains(&t.len()) && t.bytes().all(|b| b.is_ascii_alphanumeric()))
+    else {
+        return;
+    };
+    if !resp.status().is_success() {
+        return;
+    }
+    let mut cookie =
+        format!("{DOWNLOAD_COOKIE}={token}; Path=/admin; SameSite=Strict; Max-Age=120");
+    if crate::session::is_tls(headers) {
+        cookie.push_str("; Secure");
+    }
+    if let Ok(v) = cookie.parse() {
+        resp.headers_mut().append(header::SET_COOKIE, v);
+    }
+}
+
 /// Stream a temp file as a download of `content_type`, removing it from the
 /// disk as soon as it is open — the bundle's own download, and the encrypted
 /// one (docs/adr/0011 §4).

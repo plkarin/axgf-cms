@@ -1,6 +1,6 @@
 # ADR 0016 — Genealogy: dark green and cream, the family on a tree the reader climbs
 
-**Status:** proposed, v0.5.0 (2026-10-23), until the operator's review ·
+**Status:** accepted, v0.5.0 (2026-10-23) ·
 **Builds on:** [ADR 0007](0007-a-theme-may-bring-its-own-view.md),
 [ADR 0013](0013-clarity-the-family-as-a-funnel.md) (a light palette),
 [ADR 0015](0015-the-tree-in-its-glass-and-the-funnels-laboratory.md) (the

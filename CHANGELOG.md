@@ -4,20 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] — 2026-10-23
 
-Canopée, the reference theme, and a river that reads like a landscape. Four
-more themes draw the landing page their own way: Fusion a living tree,
-Galaxy a solar system, Summit an ascent, and Clarity, the first light theme,
-a funnel. These five are now the only themes. The administration becomes a
+Canopée, the reference theme, and a river that reads like a landscape. Five
+more themes draw the landing page their own way: Fusion a tree in its
+glass, Galaxy a solar system, Summit an ascent, Clarity, the first light
+theme, a funnel, and Genealogy a tree the reader climbs. These six are now
+the only themes. The interface speaks fourteen languages. The family keeps
+notes and contributions beside its records. The administration becomes a
 console of five rooms, and visitors may open accounts and sign in with a
-service when the administrator allows it. Nothing
-about the AXGF file changes. The river's geometry, its layout and everything
-the server sends for it (SVG and payload) are byte for byte what they were,
-under every theme. docs/adr/0004 records the decisions behind Canopée and
-the river, docs/adr/0006 the logo's, docs/adr/0007 the two views', and
-docs/adr/0008 why ten themes were retired, docs/adr/0010 and 0013 Summit's
-and Clarity's, docs/adr/0011 the console's and docs/adr/0012 the ways in.
+service when the administrator allows it. The GEDCOM reader is hardened
+against what broke it. Nothing about the AXGF file changes. The river's
+geometry, its layout and everything the server sends for it (SVG and
+payload) are byte for byte what they were, under every theme.
+docs/adr/0004 records the decisions behind Canopée and the river,
+docs/adr/0006 the logo's, docs/adr/0007 the views', docs/adr/0008 why ten
+themes were retired, docs/adr/0010, 0013 and 0016 Summit's, Clarity's and
+Genealogy's, docs/adr/0011 the console's, docs/adr/0012 the ways in,
+docs/adr/0014 the notes' and docs/adr/0015 Fusion's glass.
 
 ### Added
 
@@ -130,7 +134,7 @@ the period covered is the births', counted; the licence is one of ten, with
 a sentence beside it saying what it lets others do, its address recorded
 from the list, and the account that chose it and when.
 
-**Genealogy, a sixth theme** (docs/adr/0016, until the operator's review),
+**Genealogy, a sixth theme** (docs/adr/0016),
 from their frame pack: a dark green page with cream cards, oval portraits
 and antique vines along its edges, and the family on a tree the reader
 climbs.
@@ -3910,6 +3914,7 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[0.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0
 [0.4.3]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3
 [0.4.2]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.2
 [0.4.1]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.1

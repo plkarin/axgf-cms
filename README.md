@@ -58,7 +58,7 @@ and just want to look at it, skip to
 - **Relatives help.** You create their accounts and choose what each may do:
   read, correct, or administer. A contributor can be limited to one branch.
   Every change records who made it and when.
-- **Any GEDCOM comes in** *(new in 0.5.0; v0.4.3 reads GEDCOM 5.5.1)*. It
+- **Any GEDCOM comes in** *(new in 0.5.0; earlier releases read GEDCOM 5.5.1)*. It
   reads GEDCOM 5.5, 5.5.1, 5.5.5 and 7.0, in ANSEL, UTF-8, UTF-16,
   Windows-1252 or Mac Roman. Before anything is kept, it shows you how the
   file was read and what came across.
@@ -84,7 +84,7 @@ follows you.
 <img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: pulses of light run down the attested lines toward the living, and the forest underneath sways in the wind.">
 </p>
 
-**The river is alive** *(new in 0.5.0, on `main`)*. Under the drawing, a forest
+**The river is alive** *(new in 0.5.0)*. Under the drawing, a forest
 seen from above is computed in WebGL at your screen's own resolution, so it is
 never soft and never pixelated. Low sun on the crowns, hills under the
 forest, clearings and wet ground along every line, and mist in the corners.
@@ -101,14 +101,15 @@ The river reaches 2, 3 or 5 generations each way. To zoom from 1× to 3×,
 use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
 `−` and `0` keys. Once zoomed in, drag to move *(new in 0.5.0)*.
 
-### The same family as a tree, a galaxy, an ascent or a funnel
+### The same family as a tree, a galaxy, an ascent, a funnel or a tree to climb
 
-*(New in 0.5.0, on `main`.)* Four themes draw the landing page their own way.
+*(New in 0.5.0.)* Five themes draw the landing page their own way.
 
-- **Fusion** grows the family as a living tree. The person you are visiting
-  stands at the foot of the trunk. Their ancestors are the roots, spreading
-  under the soil, and their descendants are the crown. The living are green
-  leaves at the tips, and sap climbs from the roots to the leaves.
+- **Fusion** grows the family as a tree in tiers inside a glass cylinder, in
+  a laboratory. The person you are visiting stands on the axis in a column of
+  light; their descendants climb the glass a floor per generation and their
+  ancestors go down it as roots. The living are green leaves, and the glass
+  turns as you travel.
 - **Galaxy** makes that person a sun, with one orbit per generation:
   descendants above, ancestors below.
 - **Summit** is an ascent at sunrise over a photographed mountain: the
@@ -118,8 +119,12 @@ use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
   the narrow end below, the newest at the wide mouth above, every parentage
   a line meshed from one slice to the next. Each slice says how many people
   it holds, as the stages of a funnel chart do.
+- **Genealogy** is a tree the reader climbs, drawn in perspective: its trunk
+  runs through the person you are visiting, their descendants are up in the
+  branches and their ancestors down toward the roots. Travelling to someone
+  climbs the trunk to them, or goes down it.
 
-Underneath, all four are the river:
+Underneath, all five are the river:
 
 - the same people, with the same marks for how sure each link is;
 - the same travel, trail, zoom and keyboard;
@@ -129,15 +134,14 @@ Above the drawing, a dashboard counts ancestors, descendants, generations
 and the living, and shows how many links are attested. **Whole family**
 opens the widest range in one click.
 
-| Fusion: a living tree, from the roots to the leaves | Galaxy: a solar system, one orbit per generation |
+| Fusion: a tree in its glass, a floor per generation | Galaxy: a solar system, one orbit per generation |
 |---|---|
-| [![The Fusion theme: Lucien Delaunay at the foot of a trunk on the soil line. His parents and grandparents spread below as roots, and his children, grandchildren and great-grandchildren form a crown of boughs above, the living as green leaves. A dashboard above counts 10 ancestors, 15 descendants, 7 generations, 22 living and 100 % attested links. His record is open beside it.](docs/screenshots/fusion-tree.jpg)](docs/screenshots/fusion-tree.jpg) | [![The Galaxy theme: Lucien Delaunay as a sun at the centre, his wife Zofia Zając on the innermost orbit, descendants on the orbits above and ancestors on those below, joined by violet links, over a starfield with a nebula. The same dashboard sits above, and his record beside it.](docs/screenshots/galaxy-system.jpg)](docs/screenshots/galaxy-system.jpg) |
+| [![The Fusion theme: the family as a tree in tiers inside a glass cylinder, over a dark laboratory whose projector glows red under the glass. Lucien Delaunay is on the axis in a column of red light, his children, grandchildren and great-grandchildren climbing the glass a floor per generation with the living as green leaves, his parents and grandparents below as roots; the front of the glass is named on small glass panels. A dashboard above counts 10 ancestors, 15 descendants, 7 generations, 22 living and 100 % attested links. His record is open beside it.](docs/screenshots/fusion-tree.jpg)](docs/screenshots/fusion-tree.jpg) | [![The Galaxy theme: Lucien Delaunay as a sun at the centre, his wife Zofia Zając on the innermost orbit, descendants on the orbits above and ancestors on those below, joined by violet links, over a starfield with a nebula. The same dashboard sits above, and his record beside it.](docs/screenshots/galaxy-system.jpg)](docs/screenshots/galaxy-system.jpg) |
 | **Summit: an ascent, the oldest in the valley** | **Clarity: a funnel, the oldest at the narrow end** |
 | [![The Summit theme: Lucien Delaunay at a camp on a photographed snowy range before dawn, his ancestors below him toward the valley and his children, grandchildren and great-grandchildren climbing toward the summit along gold trails, the flag on the highest peak. The dashboard sits above, and his record beside it.](docs/screenshots/summit-ascent.jpg)](docs/screenshots/summit-ascent.jpg) | [![The Clarity theme, light: a funnel of glass slices from blue at the wide mouth to pink at the narrow end. Lucien Delaunay at the front of his own slice, his wife Zofia Zając beside him, his children, grandchildren and great-grandchildren in the wider slices above and his ancestors in the narrower ones below, joined by dark teal lines. Each slice is labelled on the right with its number of people: 6, 10, 6, 2, 2, 4. His record is open beside it.](docs/screenshots/clarity-funnel.jpg)](docs/screenshots/clarity-funnel.jpg) |
+| **Genealogy: a tree to climb, the oldest at the roots** | **The whole family, under Fusion** |
+| [![The Genealogy theme: a tree drawn in perspective over dark woods, its trunk running through Lucien Delaunay, shown as an oval gold frame with his initials and a cream card with his name and years. His wife Zofia Zając beside him; his children, grandchildren and great-grandchildren up in the branches among leaves, his parents and grandparents down toward the roots, each generation a faint ring round the trunk, closer together and smaller the further it is. Branches are lit wood edged in bark; cream cards name the near ones. The dashboard sits above, and his record beside it.](docs/screenshots/genealogy-climb.jpg)](docs/screenshots/genealogy-climb.jpg) | [![Whole family, under Fusion: nine generations in the glass, from the great-great-great-grandparents at the foot of the cylinder to the great-grandchildren on its top floor, the dashboard counting 16 ancestors, 15 descendants, 9 generations and 22 living, with the legend reading: the roots, ancestors; the crown, descendants.](docs/screenshots/fusion-whole.jpg)](docs/screenshots/fusion-whole.jpg) |
 
-<p align="center">
-<a href="docs/screenshots/fusion-whole.jpg"><img src="docs/screenshots/fusion-whole.jpg" width="620" alt="Whole family, under Fusion: one tree from the great-great-great-grandparents in the roots to the great-grandchildren at the top of the crown, nine generations, with the legend reading: the roots, ancestors; the crown, descendants."></a>
-</p>
 
 ### Every person, a record
 
@@ -193,7 +197,7 @@ you like. The list downloads as CSV or JSON.
 
 ### First start: three ways in
 
-*(New in 0.5.0, on `main`.)* A new installation knows when it holds no family
+*(New in 0.5.0.)* A new installation knows when it holds no family
 yet. Its administrator then finds **Set up this archive** on the overview and
 on the administration page, and behind it three doors:
 
@@ -227,7 +231,7 @@ evidence. In the archive, each one is a Document that says what it is
 
 ### Run it from the browser: the administration console
 
-*(New in 0.5.0, on `main`.)* An administrator finds five rooms behind one
+*(New in 0.5.0.)* An administrator finds five rooms behind one
 strip. The overview opens on a tile for each of the four others, with what
 each would say first.
 
@@ -265,7 +269,7 @@ each would say first.
 
 ### Let the family in: registration and sign-in services
 
-*(New in 0.5.0, on `main`.)* You choose, on the Accounts page, whether
+*(New in 0.5.0.)* You choose, on the Accounts page, whether
 relatives can open an account themselves:
 
 - **administrators only** (the default: you create every account);
@@ -300,9 +304,9 @@ claim someone else's.
 
 ### Make it yours
 
-[![The overview page under the five themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a glass funnel from blue to pink, in orange, its white card on a blue-grey ground.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
+[![The overview page under the six themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a glass funnel from blue to pink, in orange, its white card on a blue-grey ground. Genealogy: "Every life is a portrait. Every family, a tree to climb." in a book face and gold beside a golden tree and empty oval frames, on dark green with antique vines along the page's edges, its cards cream.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
-There are five themes.
+There are six themes.
 
 - **Canopy** (*Canopée*, the default from 0.5.0) is a dark forest green with
   the gold of the logo.
@@ -319,12 +323,18 @@ There are five themes.
   colour, with dark teal and orange. It draws the family as a funnel of
   glass slices, one per generation, the oldest at the narrow end and the
   newest at the mouth, each slice saying how many people it holds.
+- **Genealogy** is dark green and cream, as an old family album: cream
+  cards with a double rule, oval portraits, titles in a book face and
+  antique vines along the page's edges. It draws the family as a tree the
+  reader climbs: the trunk runs through the person you stand on, the
+  descendants are up in the branches and the ancestors down toward the
+  roots, and travelling to someone climbs the trunk to them, or goes down.
 
 Each carries its own buttons, motion and photographs, and every page follows
 it, down to the words: under Fusion the overview reads "Every life is a
 leaf. Every family, a tree."
 
-Four are dark and Clarity is light. None is built for high contrast or for
+Five are dark and Clarity is light. None is built for high contrast or for
 colour blindness. Certainty never rests on colour alone, though: a bar's
 length, a pie and the printed percentage carry it under every theme
 ([why these themes](docs/adr/0008-three-themes.md)).
@@ -344,30 +354,30 @@ language follow them to every device.
 
 ---
 
-## What is released, and what is on `main`
+## What is released
 
-The latest release is **v0.4.3**. It has the river, the record, the charts,
-the tree, search, the quality page, the six-tab editor, accounts, backups and
-ten of the themes.
-
-`main` carries **0.5.0**, which is not released yet. It adds:
+The latest release is **v0.5.0**. Over v0.4.3 it adds:
 
 - the living river and its zoom;
-- the Canopy theme;
-- the Fusion and Galaxy themes, with the family as a living tree and as a
-  solar system;
-- the Summit theme, with the family as an ascent at sunrise;
-- the Clarity theme, light, with the family as a funnel;
-- five themes in all (the ten earlier ones are retired);
-- an administration console: the bundle's conformity and its export, raw or
-  encrypted; the infrastructure's health, version and upgrades, storage and
-  computing; the accounts; and Connectivity;
+- six themes, the ten earlier ones retired: Canopy, and five that draw the
+  family their own way — Fusion as a tree in its glass, Galaxy as a solar
+  system, Summit as an ascent at sunrise, Clarity, light, as a funnel, and
+  Genealogy as a tree the reader climbs;
+- fourteen interface languages, Hebrew, Swahili and Lingala among them;
+- the family's notes and contributions, with pictures, on the records and the
+  Family page, each as a PDF;
+- an administration console: the bundle's conformity, the family's own
+  details and the export, raw or encrypted; the infrastructure's health,
+  version and upgrades, storage and computing; the accounts; and
+  Connectivity;
 - registration by visitors under the administrator's rule, and sign-in with
   Google, Microsoft, GitHub or any OpenID Connect provider;
+- an account linked to its own record in the tree;
 - portraits reworked by an AI, beside the face, for signed-in members;
 - the portrait beside the river;
 - the three ways in;
-- the GEDCOM reader for every version and encoding.
+- the GEDCOM reader for every version and encoding, hardened against what
+  broke it.
 
 The installer installs releases. `--from-source` builds `main`.
 [CHANGELOG.md](CHANGELOG.md) has the details, version by version.
@@ -385,14 +395,13 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v0.4.3**, which has the river,
-search, the data-quality page (`/quality`) and Study 06's quieter, larger-type
-interface, and reads AXGF 1.0 and 1.1 files.
+installs exactly that release. Today that is **v0.5.0**, and it reads AXGF 1.0
+and 1.1 files.
 
 To install a particular release, fetch the same two files from
 `releases/download/<tag>/` instead of `releases/latest/download/` (v0.3.1 or
 later; earlier releases shipped no installer). To build what is on `main`
-instead, including everything new in 0.5.0, use `--from-source`, which needs
+instead, use `--from-source`, which needs
 `cargo` on root's `PATH`. Every release, with its binaries and checksums, is
 on the [releases page](https://github.com/plkarin/axgf-cms/releases).
 
@@ -594,7 +603,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v0.4.3`](https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v0.5.0`](https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

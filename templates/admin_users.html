@@ -44,7 +44,7 @@
   </div>
 </div>
 
-<section class="rec-section">
+<section class="rec-section" id="roles">
 <h2>{{ t("accounts-roles") }}</h2>
 {%- set all = stats.viewers + stats.contributors + stats.admins %}
 <div class="vol-bar" role="img" aria-label="{{ t('accounts-roles') }}">
@@ -92,6 +92,7 @@
 {% if registration.changed_at %}<p class="small muted">{{ t("registration-changed", by=(registration.changed_by if registration.changed_by else "—"), at=registration.changed_at | localdatetime(lang)) }}</p>{% endif %}
 </section>
 
+<section class="rec-section" id="existing-accounts">
 <h2>{{ t("accounts-existing") }}</h2>
 <div class="table-wrap">
 <table class="wide">
@@ -158,7 +159,9 @@
   </tbody>
 </table>
 </div>
+</section>
 
+<section class="rec-section" id="new-account">
 <h2>{{ t("accounts-add") }}</h2>
 <p class="small muted">{% if registration.open %}{{ t("accounts-add-also-register") }}{% else %}{{ t("accounts-no-registration") }}{% endif %}</p>
 
@@ -215,5 +218,6 @@
   </div>
   <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("accounts-create") }}</button>
 </form>
+</section>
 
 {% endblock %}

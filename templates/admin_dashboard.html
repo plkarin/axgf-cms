@@ -79,7 +79,7 @@
 {# Each heading and the content under it is a section, framed like every other
    section in the interface. The dashboard was a run of headings on a blank
    sheet — the same thing the record page was, and the same fix. #}
-<section class="rec-section">
+<section class="rec-section" id="entity-counts">
 <h2>{{ t("admin-entities") }}</h2>
 <div class="grid cols-4">
   {#- None of a kind: no tile (creating the first is under Create). -#}
@@ -103,7 +103,7 @@
 </details>
 </section>
 
-<section class="rec-section">
+<section class="rec-section" id="operations">
 <h2>{{ t("admin-operations") }}</h2>
 <div class="cta-row">
   <form method="post" action="/admin/validate" style="display:inline">
@@ -146,7 +146,7 @@
 {{ comp.completeness_panel(completeness, t,
      t("completeness-title"), t("completeness-intro")) }}
 
-<section class="rec-section">
+<section class="rec-section" id="recent-changes">
 <h2>{{ t("admin-recent-changes") }}</h2>
 {% if recent_edits %}
 <p class="small muted">

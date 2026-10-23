@@ -66,8 +66,11 @@ chart and an administration dashboard on white: the family as an inverted
 cone of glass slices, one per generation, the oldest at the narrow end and
 the newest at the mouth, each slice counting its people; dark teal and
 orange on white; two photographs made in Canva; its words in eleven
-languages. Its tightest contrast is 3.5:1, a control's edge on the sunken
-surface.
+languages. Every box stands off a blue-grey ground, with a strip in its
+category's ink along its top and the same ink in its icon chip; fields come
+in packs, findings carry their level along their edge, and the record's
+editor is a box per tab. Its tightest contrast is 3.7:1, a control's edge on
+the page's second wash.
 
 **`bootstrap.sh`**: downloads a private repository's releases through the
 API with a token (`AXGF_CMS_GITHUB_TOKEN` or `/etc/axgf-cms/github-token`,

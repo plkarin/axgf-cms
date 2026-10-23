@@ -48,7 +48,7 @@
   </div>
 </div>
 
-<section class="rec-section">
+<section class="rec-section" id="conformity">
 <h2>{{ t("bundle-conformity") }}</h2>
 <p class="small muted">{{ t("bundle-conformity-intro") }}</p>
 {% set area_prefix = "bundle-area-" %}{% include "_checks.html" %}
@@ -86,7 +86,7 @@
 {% endif %}
 </section>
 
-<section class="rec-section">
+<section class="rec-section" id="bundle-facts">
 <h2>{{ t("bundle-facts") }}</h2>
 <dl class="facts">
   <dt>{{ t("bundle-fact-path") }}</dt><dd><code>{{ bundle_path }}</code></dd>

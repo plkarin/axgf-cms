@@ -580,20 +580,20 @@
    operator's references — an administration dashboard on white, its orange
    accent and dark teal figures, and a glossy funnel in blue, violet and pink.
    Measured as every theme is (`every_theme_reads`); the tightest pair is a
-   control's edge on the sunken surface, 3.5:1. */
+   control's edge on the page's second wash, 3.7:1. */
 [data-theme="clarity"] {
   color-scheme: light;
-  --surface-page: #f4f6f9;
+  --surface-page: #e6ebf1;
   --surface-raised: #ffffff;
-  --border-hairline: #d8dfe7;
-  --border-strong: #6f7f8e;
+  --border-hairline: #d2dae4;
+  --border-strong: #68798a;
   --text-primary: #132230;
-  --text-secondary: #384b5b;
-  --text-tertiary: #536676;
-  --surface-sunken: #eaeef3;
-  --surface-hover: #e2e8ef;
-  --focus-ring: #b83c0a;
-  --accent: #b83c0a;
+  --text-secondary: #36495a;
+  --text-tertiary: #4b5d6d;
+  --surface-sunken: #f0f3f7;
+  --surface-hover: #e9eef4;
+  --focus-ring: #b03a0a;
+  --accent: #b03a0a;
   --accent-soft: #fdebe1;
   --on-accent: #ffffff;
 
@@ -602,15 +602,15 @@
   --conf-medium: #8a4b00;
   --conf-low: #b42318;
   --conf-track: #e2e8ef;
-  --danger: #b42318;
-  --warning: #8a4b00;
+  --danger: #ad2217;
+  --warning: #844700;
 
   --sex-a: #e7f0fb;
   --sex-a-line: #3d6fa8;
   --sex-b: #fbeaee;
   --sex-b-line: #b0566e;
   --sex-u: #eef1f4;
-  --sex-u-line: #6f7f8e;
+  --sex-u-line: #68798a;
 
   --hue-1: #2563eb;
   --hue-2: #c2410c;
@@ -624,9 +624,9 @@
   --shadow-rgb: 19 34 48;
   --shadow-a: 0.12;
 
-  --wash-1: #f6f8fb;
-  --wash-2: #f3f6f9;
-  --wash-3: #eef2f6;
+  --wash-1: #e8ecf2;
+  --wash-2: #e4e9f0;
+  --wash-3: #e9edf3;
   /* No texture: the reference's white is clean. */
   --wash-texture: none;
 
@@ -636,7 +636,7 @@
   --icon-quality: #fbe7e6;
   --icon-river-ink: #0e7490;
   --icon-tree-ink: #15803d;
-  --icon-search-ink: #b83c0a;
+  --icon-search-ink: #b03a0a;
   --icon-quality-ink: #b42318;
   --glow-rgb: 184 60 10;
 
@@ -666,7 +666,25 @@
   --cl-living: #ea580c;
   --cl-gone: #0f3b47;
   --cl-hidden: #8a99a8;
-  --cl-centre: #b83c0a;
+  --cl-centre: #b03a0a;
   --cl-stage: #fbfcfe;
   --cl-figure: #132230;
+
+  /* The frames (v0.5.0, the operator's second look: "we are writing on
+     paper"): a blue-grey ground the white boxes stand off, a pale ground
+     for a pack of fields, and five category inks with their tints — the
+     funnel's blue, violet and pink, the accent's orange, the dashboard's
+     teal — for the strip on top of a box and its icon chip. Each ink reads
+     at 5:1 or more on its tint and on white. */
+  --cl-pack: #f5f7fb;
+  --cl-ink-1: #1d4ed8;
+  --cl-tint-1: #e2eafd;
+  --cl-ink-2: #6d28d9;
+  --cl-tint-2: #ede6fc;
+  --cl-ink-3: #be185d;
+  --cl-tint-3: #fce4ef;
+  --cl-ink-4: #b03a0a;
+  --cl-tint-4: #fde8dc;
+  --cl-ink-5: #0e6e7e;
+  --cl-tint-5: #dff2f4;
 }

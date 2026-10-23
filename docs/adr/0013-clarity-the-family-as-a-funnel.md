@@ -63,9 +63,30 @@ kit (Canopée's furniture), its round (10 px) and tempo, and lighter
 shadows: the kit's are drawn for a dark ground and would be bruises on a
 white one.
 
+The operator's second look found it a sheet of paper: white boxes on a
+near-white ground (1.08:1), nothing to tell one kind of information from the
+next. The ground is now blue-grey (1.2:1 against a box), and every box says
+what it holds:
+
+- a white card with a hairline and a shadow, a 3 px strip along its top in
+  its category's ink, the same ink as the icon chip beside its heading (a
+  square chip rather than the kit's disc), its heading over a rule;
+- the figures' tiles in five inks in turn — the funnel's blue, violet and
+  pink, the accent's orange, the dashboard's teal — each with its tint for
+  the chip, each ink 5:1 or more on its tint and on white;
+- a group of fields is a pack, a pale panel whose legend is a pill, and what
+  sat sunk into the page inside a box (a name, a union, a fact) is a pack
+  too; a notice is tinted by its kind;
+- a finding of the console's checks is a white row with its level along its
+  edge, each area a heading drawn out by a rule;
+- the record's editor is a box per tab, its strip in the colour of what the
+  tab writes, the save a white bar floating over the page.
+
+The paper style keeps none of it: it stays flat.
+
 It is measured as every theme is (`every_theme_reads`): the tightest pair is
-a control's edge on the sunken surface, 3.5:1; the orange is dark enough to
-carry white text (5.7:1) and to be a link on any surface.
+a control's edge on the page's second wash, 3.7:1; the orange is dark enough
+to carry white text (6.1:1) and to be a link on any surface.
 
 A reader chooses it like any other theme; the operating system's light or
 dark preference still has no say.

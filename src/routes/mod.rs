@@ -552,6 +552,22 @@ fn routes(state: Shared) -> Router {
         )
         .route("/static/img/clarity-cta.jpg", get(public::clarity_cta_jpg))
         .route(
+            "/static/img/genealogy-hero.jpg",
+            get(public::genealogy_hero_jpg),
+        )
+        .route(
+            "/static/img/genealogy-cta.jpg",
+            get(public::genealogy_cta_jpg),
+        )
+        .route(
+            "/static/img/genealogy-tree.jpg",
+            get(public::genealogy_tree_jpg),
+        )
+        .route(
+            "/static/img/genealogy-ground.jpg",
+            get(public::genealogy_ground_jpg),
+        )
+        .route(
             "/static/img/summit-panorama.jpg",
             get(public::summit_panorama_jpg),
         )
@@ -583,6 +599,10 @@ fn routes(state: Shared) -> Router {
             "/static/img/notes-clarity.jpg",
             get(public::notes_clarity_jpg),
         )
+        .route(
+            "/static/img/notes-genealogy.jpg",
+            get(public::notes_genealogy_jpg),
+        )
         .route("/static/img/logo-mark.svg", get(public::logo_svg))
         .route("/static/img/icon-192.png", get(public::icon_192_png))
         .route("/static/img/icon-512.png", get(public::icon_512_png))
@@ -597,6 +617,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/galaxy.js", get(public::galaxy_js))
         .route("/static/summit.js", get(public::summit_js))
         .route("/static/clarity.js", get(public::clarity_js))
+        .route("/static/genealogy.js", get(public::genealogy_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/profile.js", get(public::profile_js))

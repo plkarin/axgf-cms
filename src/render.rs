@@ -42,6 +42,8 @@ pub const GALAXY_JS: &str = include_str!("../static/galaxy.js");
 pub const SUMMIT_JS: &str = include_str!("../static/summit.js");
 /// Clarity's funnel, at `/static/clarity.js` (docs/adr/0013).
 pub const CLARITY_JS: &str = include_str!("../static/clarity.js");
+/// Genealogy's scroll, at `/static/genealogy.js` (docs/adr/0016).
+pub const GENEALOGY_JS: &str = include_str!("../static/genealogy.js");
 
 /// The place-editor map. Enhancement only: the coordinate fields work without
 /// it, and it does nothing at all unless the operator configured a tile URL.
@@ -93,6 +95,14 @@ pub const SUMMIT_CTA_JPG: &[u8] = include_bytes!("../static/img/summit-cta.jpg")
 /// references: a glass funnel of light on white, and a bright, airy band.
 pub const CLARITY_HERO_JPG: &[u8] = include_bytes!("../static/img/clarity-hero.jpg");
 pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg");
+/// Genealogy's (docs/adr/0016), made in the operator's Canva after their
+/// frame pack: a golden tree beside a scroll and empty oval frames, a desk
+/// of old letters and photographs, the tree growing from its scroll (the
+/// view's stage), and the page's dark green ground with vines at its edges.
+pub const GENEALOGY_HERO_JPG: &[u8] = include_bytes!("../static/img/genealogy-hero.jpg");
+pub const GENEALOGY_CTA_JPG: &[u8] = include_bytes!("../static/img/genealogy-cta.jpg");
+pub const GENEALOGY_TREE_JPG: &[u8] = include_bytes!("../static/img/genealogy-tree.jpg");
+pub const GENEALOGY_GROUND_JPG: &[u8] = include_bytes!("../static/img/genealogy-ground.jpg");
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");
@@ -109,6 +119,7 @@ pub const NOTES_FUSION_JPG: &[u8] = include_bytes!("../static/img/notes-fusion.j
 pub const NOTES_GALAXY_JPG: &[u8] = include_bytes!("../static/img/notes-galaxy.jpg");
 pub const NOTES_SUMMIT_JPG: &[u8] = include_bytes!("../static/img/notes-summit.jpg");
 pub const NOTES_CLARITY_JPG: &[u8] = include_bytes!("../static/img/notes-clarity.jpg");
+pub const NOTES_GENEALOGY_JPG: &[u8] = include_bytes!("../static/img/notes-genealogy.jpg");
 pub const RIVER_CONTOURS_SVG: &str = include_str!("../static/img/river-contours.svg");
 
 /// ax·genealogy's logo (v0.5.0, docs/adr/0006), and what a browser or a phone

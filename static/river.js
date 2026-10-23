@@ -419,11 +419,11 @@
     svg.querySelectorAll('a.rv-p').forEach(function (a) {
       var p = PK[a.getAttribute('data-key')], far = p && Math.abs(p.gen) > 1;
       if (far) a.setAttribute('data-far', ''); else a.removeAttribute('data-far');
-      if (a.querySelector('text') && !(far && !namesAll)) named[a.getAttribute('data-key')] = 1;
+      if (a.querySelector('text:not(.gn-initials)') && !(far && !namesAll)) named[a.getAttribute('data-key')] = 1;
     });
     // What is already on the page: every word and panel, every person.
     var boxes = [], vb = svg.viewBox.baseVal;
-    svg.querySelectorAll('text, rect.tv-panel').forEach(function (t) {
+    svg.querySelectorAll('text, rect.tv-panel, rect.gn-card').forEach(function (t) {
       var a = t.closest('a.rv-p');
       if (t.closest('.rv-hl') || (!namesAll && a && a.hasAttribute('data-far'))) return;
       try { var b = t.getBBox(); if (b.width) boxes.push([b.x - 2, b.y - 1, b.x + b.width + 2, b.y + b.height + 1]); } catch (e) { /* not rendered */ }

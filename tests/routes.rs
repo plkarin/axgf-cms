@@ -538,12 +538,12 @@ async fn the_settings_are_one_form_of_five_choices() {
         "no lists of radio buttons"
     );
     assert_eq!(main.matches("<button").count(), 1, "one button");
-    // Every theme and every language is offered: the five themes (v0.5.0,
-    // docs/adr/0008, docs/adr/0010, docs/adr/0013), fourteen languages,
-    // three densities, two kinds of motion.
+    // Every theme and every language is offered: the six themes (v0.5.0,
+    // docs/adr/0008, docs/adr/0010, docs/adr/0013, docs/adr/0016), fourteen
+    // languages, three densities, two kinds of motion.
     assert_eq!(
         main.matches("<option").count(),
-        5 + 14 + 3 + 2,
+        6 + 14 + 3 + 2,
         "themes, languages, densities, motion"
     );
 

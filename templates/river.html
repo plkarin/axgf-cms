@@ -27,7 +27,7 @@
     app.css and taken off by river.js when it has played (v0.5.0). -#}
 {#- `data-view`: the drawing this theme gives the river (docs/adr/0007) —
     `river`, Fusion's `tree`, Galaxy's `galaxy`, Summit's `summit`
-    (docs/adr/0010) or Clarity's `funnel` (docs/adr/0013). The layout, the payload and every control are the same
+    (docs/adr/0010), Clarity's `funnel` (docs/adr/0013) or Genealogy's `scroll` (docs/adr/0016). The layout, the payload and every control are the same
     under each. -#}
 <div class="river rv-intro" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
      data-river-motion="{{ 'cut' if motion_cut else 'travel' }}" data-view="{{ view }}">
@@ -144,4 +144,4 @@
 
 {#- A theme's view registers itself before river.js runs, and brings its own
     living scene; the river's is river-scene.js. -#}
-{% block scripts %}{% if view == "tree" %}<script src="/static/fusion.js" defer></script>{% elif view == "galaxy" %}<script src="/static/galaxy.js" defer></script>{% elif view == "summit" %}<script src="/static/summit.js" defer></script>{% elif view == "funnel" %}<script src="/static/clarity.js" defer></script>{% endif %}<script src="/static/river.js" defer></script>{% if view == "river" %}<script src="/static/river-scene.js" defer></script>{% endif %}{% endblock %}
+{% block scripts %}{% if view == "tree" %}<script src="/static/fusion.js" defer></script>{% elif view == "galaxy" %}<script src="/static/galaxy.js" defer></script>{% elif view == "summit" %}<script src="/static/summit.js" defer></script>{% elif view == "funnel" %}<script src="/static/clarity.js" defer></script>{% elif view == "scroll" %}<script src="/static/genealogy.js" defer></script>{% endif %}<script src="/static/river.js" defer></script>{% if view == "river" %}<script src="/static/river-scene.js" defer></script>{% endif %}{% endblock %}

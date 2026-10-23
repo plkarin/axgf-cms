@@ -8,8 +8,8 @@
 //! navigation, and is worst for exactly the reader who most needs the setting:
 //! somebody using the high-contrast theme gets a white flash on every page.
 //!
-//! # Five themes, four on a dark ground and one on a light one
-//! (docs/adr/0008, docs/adr/0010, docs/adr/0013)
+//! # Six themes, five on a dark ground and one on a light one
+//! (docs/adr/0008, docs/adr/0010, docs/adr/0013, docs/adr/0016)
 //!
 //! The order is: the account's stored preference, then the cookie, then
 //! [`DEFAULT`], which is `canopee`, written into the page. The operating
@@ -96,6 +96,12 @@ pub const THEMES: &[Theme] = &[
         note_key: Some("theme-clarity-note"),
         wash: true,
     },
+    Theme {
+        id: "genealogy",
+        key: "theme-genealogy",
+        note_key: Some("theme-genealogy-note"),
+        wash: true,
+    },
 ];
 
 /// What a reader gets when they have expressed no preference, or chose a
@@ -108,7 +114,8 @@ pub const DEFAULT: &str = "canopee";
 /// The drawing of the landing page under a theme: the river, or the view a
 /// theme brings of its own (docs/adr/0007) — a living tree under Fusion, a
 /// solar system under Galaxy, an ascent under Summit (docs/adr/0010), a
-/// funnel under Clarity (docs/adr/0013). Under
+/// funnel under Clarity (docs/adr/0013), the family on its scroll under
+/// Genealogy (docs/adr/0016). Under
 /// each, the same layout, the same people and the same privacy; only the
 /// drawing changes.
 pub fn view_of(id: &str) -> &'static str {
@@ -117,6 +124,7 @@ pub fn view_of(id: &str) -> &'static str {
         "galaxy" => "galaxy",
         "summit" => "summit",
         "clarity" => "funnel",
+        "genealogy" => "scroll",
         _ => "river",
     }
 }
@@ -225,7 +233,14 @@ mod tests {
         let ids: Vec<&str> = THEMES.iter().map(|t| t.id).collect();
         assert_eq!(
             ids,
-            vec!["canopee", "fusion", "galaxy", "summit", "clarity"]
+            vec![
+                "canopee",
+                "fusion",
+                "galaxy",
+                "summit",
+                "clarity",
+                "genealogy"
+            ]
         );
     }
 
@@ -235,6 +250,7 @@ mod tests {
         assert_eq!(view_of("galaxy"), "galaxy");
         assert_eq!(view_of("summit"), "summit");
         assert_eq!(view_of("clarity"), "funnel");
+        assert_eq!(view_of("genealogy"), "scroll");
         assert_eq!(view_of("canopee"), "river");
     }
 

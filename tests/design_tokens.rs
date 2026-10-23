@@ -459,10 +459,60 @@ fn every_theme_reads() {
         }
     }
     assert_eq!(
-        themes, 6,
-        "Study 06 on :root, and the five themes: canopée, fusion, galaxy, summit, clarity"
+        themes, 7,
+        "Study 06 on :root, and the six themes: canopée, fusion, galaxy, summit, clarity, genealogy"
     );
     assert!(short.is_empty(), "{}", short.join("\n"));
+}
+
+#[test]
+fn genealogy_cards_read() {
+    // Genealogy's cards are cream on a dark page (docs/adr/0016): every
+    // colour token has a `--gn-l-` twin in the theme's block, which app.css
+    // gives the token on a card. The twins are measured by the rules a
+    // theme's own palette is, and every twin is given on a card.
+    let theme = block("[data-theme=\"genealogy\"]");
+    let card: BTreeMap<String, String> = theme
+        .iter()
+        .filter_map(|(k, v)| {
+            k.strip_prefix("--gn-l-")
+                .map(|t| (format!("--{t}"), v.clone()))
+        })
+        .collect();
+    let surfaces = ["--surface-page", "--surface-raised", "--surface-sunken"];
+    let mut rules: Vec<(&str, &str, f64)> = Vec::new();
+    for bg in surfaces.iter().chain(["--surface-hover"].iter()) {
+        rules.push(("--text-primary", bg, 4.5));
+        rules.push(("--text-secondary", bg, 4.5));
+    }
+    for bg in surfaces {
+        rules.push(("--text-tertiary", bg, 4.5));
+        rules.push(("--focus-ring", bg, 3.0));
+        rules.push(("--border-strong", bg, 3.0));
+    }
+    for bg in ["--surface-page", "--surface-raised"] {
+        rules.push(("--danger", bg, 4.5));
+        rules.push(("--warning", bg, 4.5));
+    }
+    rules.push(("--on-accent", "--accent", 4.5));
+    let mut short = Vec::new();
+    for (fg, bg, min) in &rules {
+        let r = contrast(&card[*fg], &card[*bg]);
+        if r < *min {
+            short.push(format!(
+                "a Genealogy card: {fg} on {bg} is {r:.2}:1, under {min}:1"
+            ));
+        }
+    }
+    assert!(short.is_empty(), "{}", short.join("\n"));
+    let css = include_str!("../static/app.css");
+    for k in card.keys() {
+        let t = &k[2..];
+        assert!(
+            css.contains(&format!("  {k}: var(--gn-l-{t});")),
+            "a Genealogy card does not take {k}'s twin"
+        );
+    }
 }
 
 #[test]

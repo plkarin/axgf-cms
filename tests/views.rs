@@ -293,7 +293,8 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/genealogy-cta.jpg",
         "/static/img/genealogy-vine-l.jpg",
         "/static/img/genealogy-vine-r.jpg",
-        "/static/img/genealogy-woods.jpg",
+        "/static/img/genealogy-tree.jpg",
+        "/static/img/genealogy-tree-depth.jpg",
         "/static/img/notes-genealogy.jpg",
     ] {
         let resp = get(&app, jpg).await;
@@ -435,21 +436,28 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
         "the camera rises (or goes down) to the person travelled to"
     );
     assert!(js.contains("return proj(G, th, w - cam);"));
-    // A tree, not a stem (the operator's review, 2026-10-23): each stem as
-    // thick as all it bears, the trunk the thickest, the crown in leaves
-    // behind the wood, the roots under the ground.
-    assert!(
-        js.contains("function wood(load) { return clamp(3.4 * Math.pow(load, 0.68), 3.4, 40); }")
+    // The tree of the operator's reference, in relief (2026-10-23): a
+    // picture of it made in Canva, its depth map moving its near parts more
+    // than its far ones as the camera climbs; the family set on it, the
+    // fixed point on the trunk, the lines square-cornered as on the
+    // reference, in ink with the parchment's light under it.
+    assert!(js.contains(
+        "var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1',"
+    ));
+    assert_eq!(
+        js.matches("/static/img/").count(),
+        2,
+        "the tree and its depth"
     );
-    assert!(js.contains("function stem(c, wa, wb, f) {"));
     assert!(
-        js.contains("var Wt = clamp(wood(C ? loadUp(C.key, {}) + loadDown(C.key, {}) : 4) * 3,")
+        js.contains("float d=uDep>0.5?texture2D(uD,clamp(p,0.0,1.0)).r:0.35;vec2 q=p-s*(d-0.35);")
     );
-    assert!(js.contains("GEO.foliage = FOL; GEO.fv = ++leafage;"));
-    assert!(js.contains("GEO.yG = yG; GEO.Wt = Wt;"));
-    // The tree is drawn; only the woods behind it are a picture.
-    assert_eq!(js.matches("/static/img/").count(), 1, "one picture");
-    assert!(js.contains("WOODS.src = '/static/img/genealogy-woods.jpg?v=1';"));
+    assert!(js.contains("function lift(l) { return l >= 0 ? PIC.up * (1 - Math.exp(-l / PIC.ku)) : -PIC.down * (1 - Math.exp(l / PIC.kd)); }"));
+    assert!(js.contains("return [[x1, y1], [x1, my], [x2, my], [x2, y2]];"));
+    assert!(js.contains("class=\"gn-wire-halo\""));
+    // Still, the picture still stands in relief; the pointer leans it only
+    // when motion is allowed.
+    assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
     assert!(js.contains("ground.className = 'rv-ground';"));
     let river = read("static/river.js");
     assert!(river.contains("svg.querySelectorAll('text, rect.tv-panel, rect.gn-card')"));

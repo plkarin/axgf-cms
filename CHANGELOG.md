@@ -139,26 +139,31 @@ from their frame pack: a dark green page with cream cards, oval portraits
 and antique vines along its edges, and the family on a tree the reader
 climbs.
 
-- `static/genealogy.js`, a view under ADR 0007's contract: a tree the
-  reader climbs, made of the family's own wood. The person at the fixed
-  point is set into a broad trunk just over the ground; their children's
-  limbs leave the top of the trunk, each family forks on the wood of the
-  person it grows from, and every stem is about as thick as all it bears,
-  bending up toward the light as wood grows. A crown of leaves stands
-  behind the descendants, as wide as they reach; the ancestors are roots
-  under the ground, each parting toward the two parents. Further
-  generations are closer together and smaller, as seen from where the
-  reader stands. Travelling, the camera climbs to the person travelled to,
-  or goes down, the ground holding still and the woods behind (a picture)
-  following more slowly; the blend is done in the tree's own space. Each
-  person is an oval gold frame (their initials: the payload carries no
-  picture) with a cream card that names them; a parentage not attested
-  runs along its stem as a broken seam, or a line of knots. Gold motes
-  rise, leaves fall, a glint runs up every attested stem, still on the
-  river's terms. The first version, a tree on a parchment picture, drew
-  gold lines the colour of the picture under it; the second, a trunk
-  through the window with thin branches, looked to the operator like a
-  stem rather than a tree.
+- `static/genealogy.js`, a view under ADR 0007's contract: the reference's
+  tree, in relief, which the reader climbs.
+  - **The tree.** An old tree with a twisted trunk and a crown of gold
+    leaves grows out of a parchment scroll. It was made in Canva from a
+    description of the operator's reference, not from the reference
+    itself, then cut out and set on the stage's green.
+  - **The relief.** The graphics card draws it in relief by its depth map:
+    the crown and the roots stand off the parchment as the camera moves,
+    and the pointer leans it a little.
+  - **The family.** The person at the fixed point sits on the trunk, the
+    descendants up in the crown, the ancestors among the roots. Each person
+    is a sepia print in a cream mount (their initials: the payload carries
+    no picture) beside a cream card. A parentage is a fine square-cornered
+    line in dark ink with the parchment's light under it, as on the
+    reference: broken where it is inferred, a line of knots where it is
+    speculative.
+  - **The climb.** Travelling up to a descendant, the camera rises into
+    the crown; toward an ancestor, it goes down to the roots. The blend is
+    done in the tree's own space.
+  - **The scene.** Gold leaves fall from the crown and a glint runs along
+    every attested line, still on the river's terms.
+  - **How it got here.** The first version drew gold lines the colour of
+    the picture under them. The second, a trunk through the window with
+    thin branches, looked to the operator like a stem. The third, a tree
+    drawn of the family's wood, looked like a cartoon.
 - Two palettes: the page's, dark, measured as every theme is (tightest
   4.3:1), and the cards', cream with a sepia ink, every colour token's twin
   given on a card and measured the same way (`genealogy_cards_read`,
@@ -177,8 +182,8 @@ pixels wide and shown up to twice that on a dense screen. Each is now
 served at 3,840 × 2,160 (Summit's at 4,096 × 2,048), enlarged four times
 from the lossless original by a super-resolution model, then brought back
 to the original's tones; the tools are in `tools/pictures`. Genealogy's
-woods are made the same way. Fusion's laboratory is out of focus by
-design: it loses its compression blocks, not its depth of field.
+tree is made the same way. Fusion's laboratory is out of focus by design:
+it loses its compression blocks, not its depth of field.
 
 **Hebrew, Swahili and Lingala**: three more interface languages, complete
 and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
@@ -623,9 +628,10 @@ extra margin those themes gave.
 
 ### Tests
 
-- `views.rs`: Genealogy's stems are as thick as all they bear, its crown
-  and ground are painted by its scene, and its only picture is the woods
-  behind the tree, served as a JPEG.
+- `views.rs`: Genealogy's tree is its picture and its depth map, served as
+  JPEGs, drawn in relief; its levels close in on the tree; its lines are
+  square-cornered with the parchment's light under them; the pointer leans
+  it only where motion is allowed.
 - `views.rs`: Fusion blends frames in its glass over its laboratory, river.js
   lets a view blend two frames, and the funnel draws its tails and counts
   over the glass.

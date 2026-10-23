@@ -568,8 +568,12 @@ fn routes(state: Shared) -> Router {
             get(public::genealogy_vine_r_jpg),
         )
         .route(
-            "/static/img/genealogy-woods.jpg",
-            get(public::genealogy_woods_jpg),
+            "/static/img/genealogy-tree.jpg",
+            get(public::genealogy_tree_jpg),
+        )
+        .route(
+            "/static/img/genealogy-tree-depth.jpg",
+            get(public::genealogy_tree_depth_jpg),
         )
         .route(
             "/static/img/summit-panorama.jpg",

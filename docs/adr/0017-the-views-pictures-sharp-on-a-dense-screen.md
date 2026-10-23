@@ -5,9 +5,9 @@
 [ADR 0010](0010-summit-the-family-as-an-ascent.md) (the mountain),
 [ADR 0015](0015-the-tree-in-its-glass-and-the-funnels-laboratory.md) (the
 laboratory), [ADR 0016](0016-genealogy-the-family-on-its-scroll.md) (the
-woods) · **Applies to:** `static/img/river-ground.jpg`,
+tree) · **Applies to:** `static/img/river-ground.jpg`,
 `static/img/fusion-lab.jpg`, `static/img/summit-panorama.jpg`,
-`static/img/genealogy-woods.jpg`, `static/app.css`, `static/fusion.js`,
+`static/img/genealogy-tree.jpg`, `static/app.css`, `static/fusion.js`,
 `static/summit.js`, `static/genealogy.js`, `tools/pictures/`
 
 ## Context
@@ -28,9 +28,10 @@ river's zoom goes further. Measured on screenshots at 1.5: the forest's
 crowns, the rock and snow of the mountain, the laboratory's light were
 soft, and the JPEGs' blocks showed.
 
-The other three views — Galaxy, Clarity, and Genealogy's tree — are drawn,
-on canvases sized to the screen's own pixels (up to two per pixel). They
-are as sharp as the screen.
+Galaxy and Clarity are drawn, on canvases sized to the screen's own
+pixels (up to two per pixel): they are as sharp as the screen. Genealogy's
+tree became a picture the same day (ADR 0016) and is made as below, at
+2,392 × 3,200, its portrait shape.
 
 ## Decision
 

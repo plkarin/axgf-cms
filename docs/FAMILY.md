@@ -157,9 +157,10 @@ here.
 
 ## Reading it in your own language
 
-The language name in the top bar opens the list. Eleven languages are complete:
-English, Polish, German, French, Spanish, Italian, Portuguese, Russian,
-Arabic, Japanese and Chinese. Arabic lays the whole page out right to left.
+The language name in the top bar opens the list. Fourteen languages are
+complete: English, Polish, German, French, Spanish, Italian, Portuguese,
+Russian, Arabic, Hebrew, Japanese, Chinese, Swahili and Lingala. Arabic and
+Hebrew lay the whole page out right to left.
 
 The choice is remembered on your own computer and changes nothing for anybody
 else. Names, places and captions are shown exactly as they were entered —

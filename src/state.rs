@@ -323,6 +323,37 @@ pub enum DeleteOutcome {
     Missing,
 }
 
+/// What a change to the manifest did.
+#[derive(Debug, PartialEq, Eq)]
+pub enum ManifestOutcome {
+    Applied,
+    /// Nothing the form sent differs from what is there.
+    Unchanged,
+    /// The manifest changed since the form was made; nothing was written.
+    Conflict,
+}
+
+/// `manifest.family` and `manifest.license`, as they stand (each `{}` when
+/// absent).
+pub fn manifest_editable_of(manifest: Option<&Value>) -> Value {
+    let part = |k: &str| {
+        manifest
+            .and_then(|m| m.get(k))
+            .filter(|v| v.is_object())
+            .cloned()
+            .unwrap_or_else(|| Value::Object(Default::default()))
+    };
+    serde_json::json!({ "family": part("family"), "license": part("license") })
+}
+
+/// A short fingerprint of the editable part, carried by the form so that a
+/// change made meanwhile is not overwritten.
+pub fn manifest_token(editable: &Value) -> String {
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(editable.to_string().as_bytes());
+    digest.iter().take(8).map(|b| format!("{b:02x}")).collect()
+}
+
 /// What a version-checked update did.
 pub enum UpdateOutcome {
     Applied {
@@ -1878,6 +1909,68 @@ impl AppState {
     /// one family's accounts are being applied to another's.
     fn rebind_accounts(&self, manifest: Option<&Value>) -> Result<()> {
         self.acl_mutate(|acl| acl.bind_to(manifest, None))
+    }
+
+    /// The part of the manifest an administrator may change (2026-10-23):
+    /// the family it describes and the licence it is shared under. Stats,
+    /// privacy flags, dates and the generator are the file's own account of
+    /// itself and are written by the export.
+    pub fn manifest_editable(&self) -> Value {
+        self.read(|flat| manifest_editable_of(flat.get("manifest")))
+    }
+
+    /// Change the editable part of the manifest, provided it is still what
+    /// the form was made from (`expected`, from [`manifest_token`]). The
+    /// accounts are bound to the family's name (`.acl`), so they are bound
+    /// again to the new one, and the change is journalled like an edit.
+    pub fn update_manifest(
+        &self,
+        who: &str,
+        expected: &str,
+        edit: impl FnOnce(&mut serde_json::Map<String, Value>),
+    ) -> Result<ManifestOutcome> {
+        let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
+        let before = manifest_editable_of(guard.get("manifest"));
+        if manifest_token(&before) != expected {
+            return Ok(ManifestOutcome::Conflict);
+        }
+        let mut manifest = guard
+            .get("manifest")
+            .and_then(Value::as_object)
+            .cloned()
+            .unwrap_or_default();
+        edit(&mut manifest);
+        let after = manifest_editable_of(Some(&Value::Object(manifest.clone())));
+        if after == before {
+            return Ok(ManifestOutcome::Unchanged);
+        }
+        manifest.insert("updated_at".into(), Value::from(crate::view::now_iso8601()));
+        let mut new_bundle = guard.clone();
+        new_bundle["manifest"] = Value::Object(manifest);
+        self.persist(&new_bundle)?;
+        let manifest = new_bundle.get("manifest").cloned();
+        *guard = new_bundle;
+        self.invalidate_lenses();
+        drop(guard);
+        self.rebind_accounts(manifest.as_ref())?;
+        let label = after
+            .pointer("/family/name")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        let entry = crate::journal::entry_for(crate::journal::Record {
+            who,
+            action: "update",
+            kind: "bundle",
+            entity_id: "manifest",
+            label,
+            version_num: None,
+            before: Some(&before),
+            after: Some(&after),
+        });
+        if let Err(e) = self.journal.append(&entry) {
+            tracing::error!(error = %e, "could not append to the edit journal");
+        }
+        Ok(ManifestOutcome::Applied)
     }
 
     /// Size of the bundle on disk, in bytes.

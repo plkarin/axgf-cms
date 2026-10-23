@@ -48,6 +48,56 @@
   </div>
 </div>
 
+{#- What the archive says about the family it holds (manifest.family and
+    manifest.license, 2026-10-23): its name is the one the Family page, the
+    titles and every note's PDF show. The figures and dates are the file's
+    own account of itself, written by the export. -#}
+<section class="rec-section" id="family">
+<h2>{{ t("manifest-title") }}</h2>
+<p class="small muted">{{ t("manifest-intro") }}</p>
+<form class="manifest-form" method="post" action="/admin/bundle/family" autocomplete="off">
+  <input type="hidden" name="token" value="{{ family.token }}">
+  <div class="manifest-grid">
+    <label class="field manifest-wide"><span class="field-label">{{ t("manifest-name") }}</span>
+      <input type="text" name="name" value="{{ family.name }}" maxlength="120" dir="auto">
+      <span class="hint">{{ t("manifest-name-hint") }}</span></label>
+    <label class="field manifest-wide"><span class="field-label">{{ t("manifest-description") }}</span>
+      <textarea name="description" rows="3" maxlength="2000" dir="auto">{{ family.description }}</textarea></label>
+    <label class="field"><span class="field-label">{{ t("manifest-culture") }}</span>
+      <input type="text" name="primary_culture" value="{{ family.primary_culture }}" maxlength="35" spellcheck="false">
+      <span class="hint">{{ t("manifest-culture-hint") }}</span></label>
+    <label class="field"><span class="field-label">{{ t("manifest-place") }}</span>
+      <input type="text" name="primary_place" value="{{ family.primary_place }}" maxlength="200" dir="auto">
+      <span class="hint">{{ t("manifest-place-hint") }}</span></label>
+  </div>
+  <fieldset class="manifest-set">
+    <legend>{{ t("manifest-span") }}</legend>
+    <div class="manifest-grid">
+      <label class="field"><span class="field-label">{{ t("manifest-earliest") }}</span>
+        <input type="text" name="earliest" value="{{ family.earliest }}" inputmode="numeric" maxlength="10" placeholder="{{ t('notes-field-date-placeholder') }}"></label>
+      <label class="field"><span class="field-label">{{ t("manifest-latest") }}</span>
+        <input type="text" name="latest" value="{{ family.latest }}" inputmode="numeric" maxlength="10" placeholder="{{ t('notes-field-date-placeholder') }}"></label>
+    </div>
+    <p class="hint">{{ t("manifest-span-hint") }}</p>
+  </fieldset>
+  <fieldset class="manifest-set">
+    <legend>{{ t("manifest-license") }}</legend>
+    <div class="manifest-grid">
+      <label class="field"><span class="field-label">{{ t("manifest-license-type") }}</span>
+        <input type="text" name="license_type" value="{{ family.license_type }}" maxlength="80" spellcheck="false">
+        <span class="hint">{{ t("manifest-license-type-hint") }}</span></label>
+      <label class="field"><span class="field-label">{{ t("manifest-license-url") }}</span>
+        <input type="url" name="license_url" value="{{ family.license_url }}" maxlength="500" spellcheck="false"></label>
+      <label class="field manifest-wide"><span class="field-label">{{ t("manifest-license-note") }}</span>
+        <textarea name="license_note" rows="2" maxlength="1000" dir="auto">{{ family.license_note }}</textarea></label>
+    </div>
+  </fieldset>
+  <div class="cta-row">
+    <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("manifest-save") }}</button>
+  </div>
+</form>
+</section>
+
 <section class="rec-section" id="conformity">
 <h2>{{ t("bundle-conformity") }}</h2>
 <p class="small muted">{{ t("bundle-conformity-intro") }}</p>
@@ -110,7 +160,7 @@
     export, moved here). -#}
 <details class="menu-disclosure export-disclosure">
 <summary>{{ ic.icon("download") }} {{ t("bundle-export-raw") }}</summary>
-<form class="export-choice" method="get" action="/admin/export" autocomplete="off">
+<form class="export-choice" method="get" action="/admin/export" autocomplete="off" data-download>
   <fieldset>
     <legend>{{ t("admin-export-choose") }}</legend>
     <div class="check-row">
@@ -140,7 +190,7 @@
 {% elif recipient and recipient.error %}
 <div class="notice warn"><p>{{ recipient.error }}</p></div>
 {% endif %}
-<form class="export-choice" method="post" action="/admin/bundle/sealed" autocomplete="off">
+<form class="export-choice" method="post" action="/admin/bundle/sealed" autocomplete="off" data-download>
   <div class="field">
     <label for="seal-key">{{ t("seal-key-label") }}</label>
     <textarea id="seal-key" name="recipient" rows="5" spellcheck="false" class="mono" placeholder="{{ t('seal-key-placeholder') }}">{{ recipient_text if recipient_text != "" else "" }}</textarea>

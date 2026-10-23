@@ -3034,6 +3034,16 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
   gap: 0.6rem 1rem;
 }
 .note-field-title { grid-column: 1 / -1; }
+
+/* The family the archive describes (the bundle room's form). */
+.manifest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.6rem 1rem;
+}
+.manifest-wide { grid-column: 1 / -1; }
+.manifest-grid textarea { inline-size: 100%; }
+.manifest-set { margin-block: 0.4rem 0.9rem; }
 .note-people { margin-block-start: 1rem; }
 .note-chosen { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.6rem; padding: 0; list-style: none; }
 .note-person { display: inline-flex; align-items: center; gap: 0.35rem; }

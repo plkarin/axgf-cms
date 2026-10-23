@@ -94,6 +94,14 @@ beside the records — a memory, a piece of research, a letter, with pictures.
   pictures: the format does not change. A note about a person the reader
   may not see is hidden with them.
 
+**The family the archive describes, edited from the bundle room**: its name
+(the one the Family page, the titles and every note's PDF show), a
+description, its main culture and place, the period it covers, and the
+licence it is shared under (`manifest.family`, `manifest.license`).
+Administrators only; the accounts follow the new name, a change made
+meanwhile is not overwritten unknowingly, and the history says who changed
+what. The file's own counts and dates are still the export's.
+
 **`bootstrap.sh`**: downloads a private repository's releases through the
 API with a token (`AXGF_CMS_GITHUB_TOKEN` or `/etc/axgf-cms/github-token`,
 never printed); installs the upgrade helper, and removes it on
@@ -395,6 +403,9 @@ is out.
 
 ### Fixed
 
+- An export's button said "Working…" for ever: a file arriving does not
+  unload the page. The server now answers the page's token in a short-lived
+  cookie once the file starts, and the button is idle again.
 - `bootstrap.sh --uninstall` on a machine with no backup archive ended under
   `pipefail` after removing everything and before saying where the data is.
 - The sign-in page showed the edit band ("edit mode") to a visitor nobody had
@@ -481,6 +492,9 @@ extra margin those themes gave.
 
 ### Tests
 
+- `manifest.rs`: an administrator names the family and the accounts follow;
+  a wrong field or a change made meanwhile keeps what was typed; only an
+  administrator may; an export tells the page its file has started.
 - `notes.rs` (docs/adr/0014): a member reads a note on the Family page, its
   record, its window and its PDF, and a visitor gets none of them; raw HTML
   and script links never reach the page; a note about a private person is

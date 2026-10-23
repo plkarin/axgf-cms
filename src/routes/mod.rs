@@ -375,6 +375,7 @@ fn routes(state: Shared) -> Router {
         // The console's own rooms (v0.5.0, docs/adr/0011).
         .route("/admin/bundle", get(console::bundle))
         .route("/admin/bundle/sealed", post(console::sealed))
+        .route("/admin/bundle/family", post(console::family))
         .route(
             "/admin/bundle/forget-recipient",
             post(console::forget_recipient),

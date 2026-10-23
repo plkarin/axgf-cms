@@ -175,8 +175,44 @@
       // reference theme draws (app.css, docs/adr/0004 §4) and that assistive
       // technology is spared — the words already say what is happening.
       by.appendChild(loader(by.getAttribute("data-loader")));
+      // A file to download does not unload the page: the server answers
+      // with a cookie naming this token once the file starts, and the
+      // button is idle again (render::mark_download).
+      if (form.hasAttribute("data-download")) awaitDownload(form);
     }
   });
+  function idle(form) {
+    form.removeAttribute("aria-busy");
+    form.querySelectorAll("[data-idle]").forEach(function (b) {
+      b.textContent = b.getAttribute("data-idle");
+      b.removeAttribute("data-idle");
+      b.removeAttribute("aria-busy");
+      b.removeAttribute("aria-disabled");
+    });
+  }
+  function awaitDownload(form) {
+    var token = "";
+    for (var i = 0; i < 24; i++) token += "abcdefghijklmnopqrstuvwxyz0123456789".charAt(Math.floor(Math.random() * 36));
+    var field = form.querySelector('input[name="download_token"]');
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = "download_token";
+      form.appendChild(field);
+    }
+    field.value = token;
+    var started = Date.now();
+    var timer = window.setInterval(function () {
+      var arrived = document.cookie.split("; ").indexOf("axgf_download=" + token) !== -1;
+      // Ten minutes at most: a download the server never answered for
+      // (the connection dropped) leaves the button usable again.
+      if (arrived || Date.now() - started > 600000) {
+        window.clearInterval(timer);
+        document.cookie = "axgf_download=; Path=/admin; Max-Age=0; SameSite=Strict";
+        idle(form);
+      }
+    }, 400);
+  }
   // A loader's markup, as templates/_icons.html writes it: three dots by
   // default, or the river or the hourglass where a page asks for one.
   function loader(kind) {
@@ -197,15 +233,7 @@
   // Back to a page from the history cache: the form is idle again.
   window.addEventListener("pageshow", function (ev) {
     if (!ev.persisted) return;
-    document.querySelectorAll('form[aria-busy="true"]').forEach(function (f) {
-      f.removeAttribute("aria-busy");
-    });
-    document.querySelectorAll("[data-idle]").forEach(function (b) {
-      b.textContent = b.getAttribute("data-idle");
-      b.removeAttribute("data-idle");
-      b.removeAttribute("aria-busy");
-      b.removeAttribute("aria-disabled");
-    });
+    document.querySelectorAll('form[aria-busy="true"]').forEach(idle);
   });
 
   // Motion that answers the reader (v0.5.0, docs/adr/0004 §6). Only where

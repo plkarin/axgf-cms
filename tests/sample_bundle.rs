@@ -588,10 +588,11 @@ async fn the_sample_bundle_serves_every_page() {
     // And a person page should show a link section with real content.
     let tree = common::body_string(common::get(&app, "/tree").await).await;
     let id = tree
-        .split("href=\"/person/")
+        .split("class=\"tcard")
         .nth(1)
+        .and_then(|s| s.split("data-id=\"").nth(1))
         .and_then(|s| s.split('"').next())
-        .expect("a person link");
+        .expect("a person's card");
     let page = common::every_tab(&app, &format!("/person/{id}"), None).await;
     assert!(page.contains("links-section"));
 }

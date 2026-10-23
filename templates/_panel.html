@@ -40,14 +40,11 @@
     </div>
     </div>
     <div class="panel-actions">
-      {#- One glance at a person, and the way to the whole record. In the
-          grid's panel the grid can also be re-rooted on them; beside the
-          river they are already the centre. Editors get one more: editing
-          is entered here and nowhere else in the panel. -#}
-      {%- if not river_tabs %}
-      <a class="btn small" data-centre="{{ p.id }}" href="/tree?root={{ p.id }}&amp;sel={{ p.id }}"
-         title="{{ t('record-centre-tree-title') }}">{{ t("record-centre-tree-here") }}</a>
-      {%- endif %}
+      {#- One glance at a person, and the way to the whole record. The
+          grid moves onto a person from their card, and the river from its
+          own, so neither needs a "centre here" of its own (2026-10-23).
+          Editors get one more: editing is entered here and nowhere else in
+          the panel. -#}
       <a class="btn small panel-open-full" href="/person/{{ p.id }}"
          title="{{ t('record-open-full-title') }}">{{ t("record-open-full-page") }}</a>
       {% if may_write %}<a class="btn small ghost" href="/admin/person/{{ p.id }}/edit{% if edit_tab %}#{{ edit_tab }}{% endif %}">{{ t("record-edit") }}</a>{% endif %}

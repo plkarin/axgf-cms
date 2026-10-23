@@ -97,12 +97,13 @@ pub const CLARITY_HERO_JPG: &[u8] = include_bytes!("../static/img/clarity-hero.j
 pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg");
 /// Genealogy's (docs/adr/0016), made in the operator's Canva after their
 /// frame pack: a golden tree beside a scroll and empty oval frames, a desk
-/// of old letters and photographs, the tree growing from its scroll (the
-/// view's stage), and the page's dark green ground with vines at its edges.
+/// of old letters and photographs, and the vine along each edge of its pages (a tall strip
+/// and its mirror, drawn at a third of their size so they stay sharp on a
+/// dense screen; 2026-10-23).
 pub const GENEALOGY_HERO_JPG: &[u8] = include_bytes!("../static/img/genealogy-hero.jpg");
 pub const GENEALOGY_CTA_JPG: &[u8] = include_bytes!("../static/img/genealogy-cta.jpg");
-pub const GENEALOGY_TREE_JPG: &[u8] = include_bytes!("../static/img/genealogy-tree.jpg");
-pub const GENEALOGY_GROUND_JPG: &[u8] = include_bytes!("../static/img/genealogy-ground.jpg");
+pub const GENEALOGY_VINE_L_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-l.jpg");
+pub const GENEALOGY_VINE_R_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-r.jpg");
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");

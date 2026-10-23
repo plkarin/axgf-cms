@@ -345,26 +345,29 @@ async fn the_panel_and_the_page_state_the_same_facts() {
     }
 }
 
-/// The split follows the tree's real width rather than a fixed ratio.
+/// The record keeps its place beside the tree, whatever the tree draws.
 ///
-/// Measured in a browser rather than reasoned about — the numbers are in the
-/// release notes — but the *structure* those measurements depend on is pinned
-/// here, because it is the part a later edit could quietly undo: the width has
-/// to travel from the layout into the stylesheet, and the panel has to be
-/// derived from it rather than left to the grid's own free-space sharing.
+/// Until 2026-10-23 the record's width was derived from the tree's
+/// (`--tree-width`), so that no band of nothing opened between a small tree
+/// and its record. Moving through the tree changes its width at every step,
+/// and a record that followed it slid toward the middle of the page and
+/// back; the operator read that as the page breaking. What is pinned here is
+/// the shape that keeps it still: the tree's column takes the rest and
+/// floors at zero, the record is bounded at both ends and depends on nothing
+/// the tree draws, and the gap is one variable.
 #[test]
-fn the_tree_width_reaches_the_stylesheet_and_the_panel_is_derived_from_it() {
+fn the_record_keeps_its_place_whatever_the_tree_draws() {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let html = std::fs::read_to_string(root.join("templates/tree.html")).expect("tree.html");
     let css = std::fs::read_to_string(root.join("static/app.css")).expect("app.css");
 
     assert!(
         html.contains("--tree-width:{{ layout.width }}px"),
-        "the split must carry the canvas width the layout computed"
+        "the split still carries the canvas width the layout computed"
     );
     assert!(
         html.contains("width:{{ layout.width }}px"),
-        "and it must be the same figure the canvas itself uses — one number, \
+        "and it is the same figure the canvas itself uses — one number, \
          one source"
     );
 
@@ -377,32 +380,31 @@ fn the_tree_width_reaches_the_stylesheet_and_the_panel_is_derived_from_it() {
         .unwrap();
 
     assert!(
-        rule.contains("minmax(0, var(--tree-width"),
-        "the tree track caps at the drawing and floors at zero, or a full \
-         view pushes the panel off the screen:\n{rule}"
+        rule.contains("minmax(0, 1fr)"),
+        "the tree's column takes what the record leaves and floors at zero, \
+         or a full view pushes the panel off the screen:\n{rule}"
     );
     assert!(
-        rule.contains("100% - var(--tree-width"),
-        "the panel takes what the tree leaves. Grid shares free space equally \
-         until each track hits its growth limit, so a panel merely *allowed* \
-         to reach its maximum gets there before a wide tree has taken \
-         anything — which at 1280px left the tree 656px where it could have \
-         had 883:\n{rule}"
+        !rule.contains("var(--tree-width"),
+        "the record's width depends on nothing the tree draws, or it moves \
+         every time the tree does:\n{rule}"
     );
     assert!(
         rule.contains("var(--panel-min)") && rule.contains("var(--panel-max)"),
         "the panel stays bounded at both ends:\n{rule}"
     );
-    // The subtraction has to use the same gap the grid draws, or the panel is
-    // out by however far the two drift. Both references, one variable.
     assert!(
         rule.contains("gap: var(--split-gap)"),
         "the drawn gap must come from the variable:\n{rule}"
     );
     assert!(
         rule.matches("var(--split-gap)").count() >= 2,
-        "the gap subtracted from the panel must be the gap the grid draws, \
+        "the gap taken from the panel's share must be the gap the grid draws, \
          not a second number that can drift from it:\n{rule}"
+    );
+    assert!(
+        css.contains(".tree-canvas { position: relative; margin-inline: auto; }"),
+        "a tree narrower than its column stands in the middle of it"
     );
 }
 

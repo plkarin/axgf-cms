@@ -165,16 +165,17 @@ async fn the_tree_defaults_to_a_focused_subtree_with_controls() {
         body.contains(r#"<option value="0" >"#) || body.contains(r#"<option value="0">"#),
         "the full view stays reachable from the focused one"
     );
-    // A card click opens the record in the side panel; re-centring is now an
-    // explicit control inside that panel rather than the card's own click.
+    // A card moves the tree onto that person, in the same drawing, and
+    // opens their record in the panel (the operator's review, 2026-10-23),
+    // so the panel needs no "centre here" of its own.
     assert!(
-        body.contains(r#"href="/person/"#),
-        "cards link to the record permalink"
+        body.contains(r#"href="/tree?root="#),
+        "a card moves the tree onto its person"
     );
     assert!(body.contains("tree-panel"), "the detail panel is present");
     assert!(
-        body.contains("data-centre"),
-        "re-centring the tree is a panel control"
+        !body.contains("data-centre"),
+        "no second way to re-centre: the card is the way"
     );
 }
 
@@ -186,10 +187,11 @@ async fn an_explicit_root_and_depth_are_honoured() {
     // Find a person id from the default view, then centre on them explicitly.
     let first = body_string(get(&app, "/tree").await).await;
     let id = first
-        .split("href=\"/person/")
+        .split("class=\"tcard")
         .nth(1)
+        .and_then(|s| s.split("data-id=\"").nth(1))
         .and_then(|s| s.split('"').next())
-        .expect("a person link")
+        .expect("a person's card")
         .to_string();
 
     let body = expect_status(

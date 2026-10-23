@@ -53,12 +53,70 @@
     else if (end) nav.setAttribute("data-more", "right");
     else if (start) nav.setAttribute("data-more", "left");
     else nav.removeAttribute("data-more");
+    var more = nav.getAttribute("data-more") || "", wrap = nav.parentNode;
+    if (wrap && wrap.classList && wrap.classList.contains("tabs-wrap")) {
+      wrap.querySelector(".tabs-arrow-left").hidden = !(more === "left" || more === "both");
+      wrap.querySelector(".tabs-arrow-right").hidden = !(more === "right" || more === "both");
+    }
+  }
+  // The strip slides three ways (the operator's review, 2026-10-23: "on ne
+  // peut pas slider"): the wheel, as before; a pointer dragging it, as a
+  // finger does on a phone; and an arrow at each end where more tabs wait.
+  // The arrows are for a pointer: the keyboard reaches every tab, and a tab
+  // reached brings itself into view, so they are kept out of the Tab order
+  // and out of what a screen reader reads.
+  function arrows(nav) {
+    var wrap = document.createElement("div");
+    wrap.className = "tabs-wrap";
+    nav.parentNode.insertBefore(wrap, nav);
+    wrap.appendChild(nav);
+    ["left", "right"].forEach(function (side) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tabs-arrow tabs-arrow-" + side;
+      b.tabIndex = -1;
+      b.hidden = true;
+      b.setAttribute("aria-hidden", "true");
+      b.textContent = side === "left" ? "‹" : "›";
+      b.addEventListener("click", function () {
+        nav.scrollBy({ left: (side === "left" ? -0.7 : 0.7) * nav.clientWidth, behavior: "smooth" });
+      });
+      wrap.appendChild(b);
+    });
+  }
+  function drag(nav) {
+    var x0 = 0, from = 0, id = null, moved = false;
+    nav.addEventListener("pointerdown", function (ev) {
+      if (ev.pointerType !== "mouse" || ev.button !== 0 || nav.scrollWidth <= nav.clientWidth + 1) return;
+      x0 = ev.clientX; from = nav.scrollLeft; id = ev.pointerId; moved = false;
+    });
+    nav.addEventListener("pointermove", function (ev) {
+      if (id !== ev.pointerId) return;
+      var dx = ev.clientX - x0;
+      if (!moved && Math.abs(dx) < 6) return;
+      if (!moved) { moved = true; nav.classList.add("is-dragging"); try { nav.setPointerCapture(id); } catch (e) { /* gone */ } }
+      nav.scrollLeft = from - dx;
+    });
+    function end(ev) {
+      if (id !== ev.pointerId) return;
+      id = null;
+      nav.classList.remove("is-dragging");
+    }
+    nav.addEventListener("pointerup", end);
+    nav.addEventListener("pointercancel", end);
+    // A drag is not a click: the tab under the pointer at the end of one is
+    // not followed.
+    nav.addEventListener("click", function (ev) {
+      if (moved) { ev.preventDefault(); ev.stopPropagation(); moved = false; }
+    }, true);
   }
   // A mouse wheel turns the strip sideways while it has further to go that
   // way; at either end the page scrolls as usual, so the strip never traps it.
   function wireTabs(nav) {
     if (nav.axgfTabs) return;
     nav.axgfTabs = true;
+    arrows(nav);
+    drag(nav);
     nav.addEventListener("scroll", function () { markTabs(nav); }, { passive: true });
     // A tab reached with the keyboard is brought clear of the faded edge.
     nav.addEventListener("focusin", function (ev) {

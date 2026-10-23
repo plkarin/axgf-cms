@@ -225,7 +225,7 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
             "↓ toward the roots: ancestors · ↑ toward the crown: descendants",
             [
                 "Every life is a portrait.",
-                "Every family, a tree on its scroll.",
+                "Every family, a tree to climb.",
             ],
             "See in the family tree",
             "Enter sets them on the trunk",
@@ -291,8 +291,8 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/clarity-cta.jpg",
         "/static/img/genealogy-hero.jpg",
         "/static/img/genealogy-cta.jpg",
-        "/static/img/genealogy-tree.jpg",
-        "/static/img/genealogy-ground.jpg",
+        "/static/img/genealogy-vine-l.jpg",
+        "/static/img/genealogy-vine-r.jpg",
         "/static/img/notes-genealogy.jpg",
     ] {
         let resp = get(&app, jpg).await;
@@ -416,19 +416,28 @@ fn a_reader_asks_for_every_name_or_the_near_ones() {
     );
 }
 
-/// Genealogy's scroll (docs/adr/0016): the family in rows on the tree's
-/// scroll, a portrait and a card per person, gold lines that turn square
-/// corners; a card counts as a placed word for "All names", and a portrait's
-/// initials are not a name; a far person keeps their portrait while only the
-/// near generations are named.
+/// Genealogy's tree, climbed (docs/adr/0016, redrawn 2026-10-23): the family
+/// in levels round a trunk drawn in perspective, with no picture behind it;
+/// travelling, the camera climbs the trunk to the person travelled to (or
+/// goes down it), blended in the tree's own space; a card counts as a placed
+/// word for "All names", and a portrait's initials are not a name; a far
+/// person keeps their portrait while only the near generations are named.
 #[test]
-fn the_family_stands_on_its_scroll() {
+fn the_family_stands_on_a_tree_the_reader_climbs() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
     let js = read("static/genealogy.js");
     assert!(js.contains("function crown(key, left)") && js.contains("function roots(key, left)"));
-    assert!(js.contains("return 'M' + r(x1) + ' ' + r(y1) + 'V' + my + 'H' + r(x2) + 'V' + r(y2);"));
-    assert!(js.contains("TREE = { src: '/static/img/genealogy-tree.jpg?v=1'"));
+    assert!(js.contains("window.axgfView.tween = tween3;"));
+    assert!(
+        js.contains("var lc = to ? to.lv : 0, cam = lc * e;"),
+        "the camera rises (or goes down) to the person travelled to"
+    );
+    assert!(js.contains("return proj(G, th, w - cam);"));
+    assert!(
+        !js.contains("/static/img/"),
+        "the tree is drawn, not a picture"
+    );
     assert!(js.contains("ground.className = 'rv-ground';"));
     let river = read("static/river.js");
     assert!(river.contains("svg.querySelectorAll('text, rect.tv-panel, rect.gn-card')"));

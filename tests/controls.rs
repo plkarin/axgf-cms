@@ -119,8 +119,12 @@ fn a_button_is_36px_or_28px_and_one_radius_per_theme() {
             ("[data-theme=\"galaxy\"]".to_string(), "999px".to_string()),
             ("[data-theme=\"summit\"]".to_string(), "12px".to_string()),
             ("[data-theme=\"clarity\"]".to_string(), "10px".to_string()),
+            (
+                "[data-theme=\"genealogy\"]".to_string(),
+                "999px".to_string()
+            ),
         ],
-        "--btn-radius is defined on :root and by the kit's five themes, and nowhere else"
+        "--btn-radius is defined on :root and by the kit's six themes, and nowhere else"
     );
 }
 

@@ -130,6 +130,28 @@ the period covered is the births', counted; the licence is one of ten, with
 a sentence beside it saying what it lets others do, its address recorded
 from the list, and the account that chose it and when.
 
+**Genealogy, a sixth theme** (docs/adr/0016, until the operator's review),
+from their frame pack: a dark green page with cream cards, oval portraits
+and antique vines along its edges, and the family on a parchment scroll
+that a tree grows from.
+
+- `static/genealogy.js`, a view under ADR 0007's contract: a row per
+  generation, descendants toward the crown and ancestors toward the roots,
+  the person at the fixed point on the trunk; each person a portrait in an
+  oval gold frame (their initials: the payload carries no picture) with a
+  cream card that names them; thin gold lines with square corners, whole,
+  broken or dotted as surely as the parentage is known, a gold knot per
+  family. Gold leaves fall from the crown and a glint runs up every
+  attested line, still on the river's terms.
+- Two palettes: the page's, dark, measured as every theme is (tightest
+  4.3:1), and the cards', cream with a sepia ink, every colour token's twin
+  given on a card and measured the same way (`genealogy_cards_read`,
+  tightest 3.7:1). A card has a double rule; titles are in a book face.
+- Five pictures made in Canva, none edited from the reference (whose
+  watermark is a third party's): the tree on its scroll without the
+  building in its trunk, the hero, the call to action, the vines, the
+  notes' parchment. Its words in fourteen languages.
+
 **Hebrew, Swahili and Lingala**: three more interface languages, complete
 and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
 left like Arabic, addresses the reader in the plural so that no gender is

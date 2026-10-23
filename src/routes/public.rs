@@ -1398,6 +1398,20 @@ pub async fn clarity_hero_jpg() -> Response {
 pub async fn clarity_cta_jpg() -> Response {
     picture("image/jpeg", render::CLARITY_CTA_JPG)
 }
+pub async fn genealogy_hero_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_HERO_JPG)
+}
+pub async fn genealogy_cta_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_CTA_JPG)
+}
+/// `GET /static/img/genealogy-tree.jpg` — the tree on its scroll, under
+/// Genealogy's view; and its page's ground, the vines at its edges.
+pub async fn genealogy_tree_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_TREE_JPG)
+}
+pub async fn genealogy_ground_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_GROUND_JPG)
+}
 /// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
 /// ascent. The same picture behind every person: nothing in it depends on the
 /// archive.
@@ -1405,7 +1419,7 @@ pub async fn summit_panorama_jpg() -> Response {
     picture("image/jpeg", render::SUMMIT_PANORAMA_JPG)
 }
 
-/// `GET /static/img/notes-canopee.jpg` and the four others: behind the
+/// `GET /static/img/notes-canopee.jpg` and the five others: behind the
 /// family's notes, each under its own theme.
 pub async fn notes_canopee_jpg() -> Response {
     picture("image/jpeg", render::NOTES_CANOPEE_JPG)
@@ -1421,6 +1435,9 @@ pub async fn notes_summit_jpg() -> Response {
 }
 pub async fn notes_clarity_jpg() -> Response {
     picture("image/jpeg", render::NOTES_CLARITY_JPG)
+}
+pub async fn notes_genealogy_jpg() -> Response {
+    picture("image/jpeg", render::NOTES_GENEALOGY_JPG)
 }
 
 /// `GET /static/img/fusion-lab.jpg` — the room the tree's glass stands in,
@@ -2012,6 +2029,18 @@ pub async fn clarity_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::CLARITY_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/genealogy.js` — Genealogy's scroll (docs/adr/0016).
+pub async fn genealogy_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::GENEALOGY_JS,
     )
         .into_response()
 }

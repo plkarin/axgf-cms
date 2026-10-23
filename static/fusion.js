@@ -45,7 +45,7 @@
   // how much larger the front of the glass looks than its back.
   var TILT = 0.26, NEAR = 0.32;
   // The laboratory's picture, and where its projector is in it.
-  var LAB = { src: '/static/img/fusion-lab.jpg?v=1', aspect: 1680 / 944, su: 0.5, sv: 0.8 };
+  var LAB = { src: '/static/img/fusion-lab.jpg?v=2', aspect: 1680 / 944, su: 0.5, sv: 0.8 };
   var GEO = null;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   // A point on the glass's wall, on the page (the room's motes): its angle

@@ -814,51 +814,54 @@
   --gn-l-icon-search-ink: #714a05;
   --gn-l-icon-quality-ink: #8a2c1a;
 
-  /* The tree, climbed (static/genealogy.js): the woods' ground from the
-     top of the window to the roots, the far trees and the mist; the bark
-     of the trunk, dark, mid and lit, and its grain; a branch's bark and
-     its lit wood, and the roots' darker ones; three leaves; the levels'
-     rings; the gold of the knots, its brighter tone and the glint up the
-     branches, the falling leaves; the cards beside the portraits, their
-     edge and shadow, their two inks; the portraits' frames, the living's,
-     the gone's and the hidden's rims; the person at the fixed point; the
-     generations' numbers. Each ink is measured on its own ground: the
-     wood at 5:1 or more on the woods, the cards' words at 7:1. */
-  --gn-stage-top: #0b1512;
-  --gn-stage-mid: #142519;
-  --gn-stage-low: #1e1a10;
-  --gn-far: #1f3a26;
-  --gn-far-2: #16291c;
-  --gn-mist: #a8bca2;
-  --gn-bark-dark: #2a1b0f;
-  --gn-bark-mid: #6b4a2a;
-  --gn-bark-lit: #b08a5a;
-  --gn-grain: #24170c;
-  --gn-branch: #3a2715;
-  --gn-branch-core: #b48c5c;
-  --gn-root: #2c1d10;
-  --gn-root-core: #a88358;
-  --gn-leaf-1: #3f6b2e;
-  --gn-leaf-2: #79a046;
-  --gn-leaf-3: #c9a24d;
-  --gn-ring: #c9a24d;
+  /* The tree, climbed (static/genealogy.js), on its picture of a tree
+     growing out of a parchment scroll: the stage's dark, into which the
+     picture's wall fades round the scroll, and its light behind the scroll
+     before the picture is drawn; the lines' ink and the parchment's light under it,
+     and the lit route's; the gold of the knots, its brighter tone and the
+     glint along the lines, the falling leaves and the dust; the cards
+     beside the portraits, their edge and shadow, their two inks; the
+     portraits' cream mounts and their gold edge, the sepia print, a sparse
+     record's paler one, and the initials on it; the living's, the gone's
+     and the hidden's edges; the person at the fixed point; the
+     generations' numbers, on the stage's dark, and their shadow; the dashboard's bars for the
+     roots, the trunk and the crown. Each ink is measured on its own
+     ground: the lines at 4.5:1 or more on the parchment and 3:1 on the
+     leaves, with the parchment's light under them; the initials at 4.5:1
+     on the print; the cards' words at 7:1. */
+  --gn-stage: #142519;
+  --gn-stage-lit: #2a3a26;
+  --gn-wire: #4a2f12;
+  --gn-wire-halo: #f6ecd4;
+  --gn-lit: #7a4a0c;
+  --gn-lit-halo: #fbf1d8;
+  --gn-node: #c9a24d;
+  --gn-node-rim: #4a3212;
   --gn-gold: #c9a24d;
   --gn-gold-hi: #e8c46a;
   --gn-glint: #fff1c4;
-  --gn-leaf: #c9963d;
+  --gn-leaf: #b8862f;
+  --gn-dust: #fff4d6;
   --gn-card: #f7efdc;
   --gn-card-line: #b89a5c;
   --gn-card-shade: #000000;
   --gn-ink: #2a2114;
   --gn-ink-2: #4f4128;
-  --gn-portrait: #cdb489;
-  --gn-portrait-inner: #e6d5b0;
-  --gn-initials: #4a3a1e;
-  --gn-living: #8cc06a;
-  --gn-gone: #c49a52;
-  --gn-hidden: #8a8f7e;
-  --gn-hidden-fill: #22332a;
+  --gn-mount: #f4ecdb;
+  --gn-mount-line: #a8843f;
+  --gn-print: #a88d64;
+  --gn-print-hi: #c4a87e;
+  --gn-print-sparse: #c9b28c;
+  --gn-initials: #2e2010;
+  --gn-living: #3f6b25;
+  --gn-gone: #a8843f;
+  --gn-hidden: #6f6a5c;
+  --gn-hidden-fill: #e2d8c2;
   --gn-centre: #7a3f12;
-  --gn-gen: #d8ccaa;
+  --gn-gen: #e3d7b8;
+  --gn-gen-0: #e8c46a;
+  --gn-gen-halo: #0f1c13;
+  --gn-bar-root: #a88358;
+  --gn-bar-crown: #79a046;
 }
 

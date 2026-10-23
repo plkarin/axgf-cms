@@ -5014,7 +5014,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
     radial-gradient(36% 28% at 100% 0%, rgb(var(--rv-mist-rgb) / 0.22), transparent 72%),
     radial-gradient(125% 92% at 50% 48%, transparent 40%, rgb(var(--rv-shade-rgb) / 0.62) 100%),
     linear-gradient(rgb(var(--rv-shade-rgb) / 0.34), rgb(var(--rv-shade-rgb) / 0.34)),
-    url("/static/img/river-ground.jpg?v=2");
+    url("/static/img/river-ground.jpg?v=3");
   background-size: cover;
   background-position: center;
 }
@@ -6657,55 +6657,58 @@ a.kpi:hover { border-color: var(--border-strong); }
 }
 
 /* ---- the tree, climbed (genealogy.js) ---- */
-[data-theme="genealogy"] .river { --rv-water: var(--gn-gold); --rv-lit: var(--gn-gold-hi); --rv-lit-halo: var(--gn-gold); --rv-glow: var(--gn-living); }
-/* The woods behind the tree, from the treetops to the roots: what the page
-   shows before its script has drawn the far trees over it. */
+[data-theme="genealogy"] .river { --rv-water: var(--gn-gold); --rv-lit: var(--gn-lit); --rv-lit-halo: var(--gn-lit-halo); --rv-glow: var(--gn-living); }
+/* The stage's dark, a little light where the scroll stands: what the page
+   shows before its script has drawn the picture, and round it. */
 .river[data-view="scroll"] .rv-canvas {
-  background-color: var(--gn-stage-mid);
-  background-image: linear-gradient(180deg, var(--gn-stage-top) 0%, var(--gn-stage-mid) 55%, var(--gn-stage-low) 100%);
+  background-color: var(--gn-stage);
+  background-image: radial-gradient(38% 55% at 50% 50%, var(--gn-stage-lit), var(--gn-stage) 100%);
   background-size: 100% 100%;
 }
-.river[data-view="scroll"] .rv-bar-root { background: var(--gn-root-core); }
+.river[data-view="scroll"] .rv-bar-root { background: var(--gn-bar-root); }
 .river[data-view="scroll"] .rv-bar-trunk { background: var(--gn-gold-hi); }
-.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-leaf-2); }
-.gn-svg .gn-bark-dark { stop-color: var(--gn-bark-dark); }
-.gn-svg .gn-bark-mid { stop-color: var(--gn-bark-mid); }
-.gn-svg .gn-bark-lit { stop-color: var(--gn-bark-lit); }
-.gn-svg .gn-trunk { stroke: var(--gn-bark-dark); stroke-width: 1.2; }
-.gn-svg .gn-grain { fill: none; stroke: var(--gn-grain); stroke-width: 1.4; stroke-opacity: 0.55; stroke-linecap: round; }
-.gn-svg .gn-ring { fill: none; stroke: var(--gn-ring); stroke-width: 1; stroke-opacity: 0.22; stroke-dasharray: 2 5; }
-.gn-svg .gn-ring-0 { stroke-opacity: 0.45; }
-.gn-svg .gn-gen { fill: var(--gn-gen); }
-.gn-svg .gn-gen-0 { fill: var(--gn-gold-hi); }
-.gn-svg .gn-branch { fill: none; stroke: var(--gn-branch); stroke-linecap: round; }
-.gn-svg .gn-branch-core { fill: none; stroke: var(--gn-branch-core); stroke-linecap: round; }
-.gn-svg .gn-root { stroke: var(--gn-root); }
-.gn-svg .gn-root-core { stroke: var(--gn-root-core); }
-.gn-svg .gn-faint { stroke-opacity: 0.9; }
-.gn-svg .gn-leaf-1 { fill: var(--gn-leaf-1); }
-.gn-svg .gn-leaf-2 { fill: var(--gn-leaf-2); }
-.gn-svg .gn-leaf-3 { fill: var(--gn-leaf-3); }
-.gn-svg .gn-tip { fill: var(--gn-branch-core); }
-.gn-svg .gn-end { fill: var(--gn-stage-mid); stroke: var(--gn-branch-core); stroke-width: 1.2; }
-.gn-svg .gn-knot { fill: var(--gn-gold-hi); stroke: var(--gn-branch); stroke-width: 1; }
+.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-bar-crown); }
+.gn-svg .gn-gen { fill: var(--gn-gen); stroke: var(--gn-gen-halo); stroke-width: 3; stroke-linejoin: round; }
+.gn-svg .gn-gen-0 { fill: var(--gn-gen-0); }
+/* A line: the parchment's light, then the ink, as sure as the parentage is
+   known; a knot of gold ringed in ink where a family's lines meet. */
+.gn-svg .gn-wire-halo { fill: none; stroke: var(--gn-wire-halo); stroke-width: 3.6; stroke-opacity: 0.7; stroke-linejoin: round; stroke-linecap: round; }
+.gn-svg .gn-wire { fill: none; stroke: var(--gn-wire); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.gn-svg .gn-wire-d { stroke-dasharray: 5 3.5; }
+.gn-svg .gn-wire-s { stroke-dasharray: 0.1 4.5; stroke-width: 2.2; }
+.gn-svg .gn-node { fill: var(--gn-node); stroke: var(--gn-node-rim); stroke-width: 1.1; }
+.gn-svg .gn-tip { fill: var(--gn-wire); }
+.gn-svg .gn-end { fill: var(--gn-wire-halo); stroke: var(--gn-wire); stroke-width: 1.2; }
+.gn-svg .gn-count .k-data { fill: var(--gn-wire); }
+.gn-svg .gn-count .k-halo { stroke: var(--gn-wire-halo); }
 .gn-svg .gn-card { fill: var(--gn-card); stroke: var(--gn-card-line); stroke-width: 0.9; }
 .gn-svg .gn-card-centre { stroke: var(--gn-gold); stroke-width: 1.6; }
-.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.35; }
+.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.28; }
 .gn-svg .gn-name { fill: var(--gn-ink); font-family: var(--serif); }
 .gn-svg .gn-centre { fill: var(--gn-centre); }
 .gn-svg .gn-years { fill: var(--gn-ink-2); }
-.gn-svg .gn-portrait { fill: var(--gn-portrait); stroke: var(--gn-gold); stroke-width: 1.8; }
+/* A portrait: a sepia print in a cream mount with a fine gold edge, as on
+   the reference; the living's edge green, the gone's gold, the hidden's an
+   empty mount. */
+.gn-svg .gn-mount { fill: var(--gn-mount); stroke: var(--gn-mount-line); stroke-width: 1.1; }
+.gn-svg .gn-mount-centre { stroke: var(--gn-gold); stroke-width: 2.4; }
+.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 1.6; }
 .gn-svg .gn-gone { stroke: var(--gn-gone); }
-.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 2.2; }
-.gn-svg .gn-portrait-centre { stroke: var(--gn-gold-hi); stroke-width: 2.8; }
-.gn-svg .gn-sparse { fill: var(--gn-portrait-inner); }
-.gn-svg .gn-hidden { fill: var(--gn-hidden-fill); stroke: var(--gn-hidden); stroke-width: 1.4; }
-.gn-svg .gn-portrait-inner { fill: none; stroke: var(--gn-portrait-inner); stroke-width: 1; }
+.gn-svg .gn-hidden { fill: var(--gn-hidden-fill); stroke: var(--gn-hidden); stroke-width: 1.2; }
+.gn-svg .gn-print-hi { stop-color: var(--gn-print-hi); }
+.gn-svg .gn-print-lo { stop-color: var(--gn-print); }
+.gn-svg .gn-sparse { fill: var(--gn-print-sparse); }
 .gn-svg .gn-initials { fill: var(--gn-initials); font-family: var(--serif); letter-spacing: 0.04em; pointer-events: none; }
-.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.2; }
-.gn-svg .gn-again { stroke: var(--gn-gold); }
-.gn-svg a.rv-p:hover .gn-portrait { stroke: var(--gn-gold-hi); }
+.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.28; }
+.gn-svg .gn-again { stroke: var(--gn-wire); }
+.gn-svg a.rv-p:hover .gn-mount { stroke: var(--gn-gold); stroke-width: 2; }
 .gn-svg a.rv-p:focus-visible .gn-card { stroke: var(--focus-ring); stroke-width: 2; }
+/* The names river.js adds, on cards like the drawing's own. */
+.gn-svg .rv-name-box { fill: var(--gn-card); fill-opacity: 0.96; stroke: var(--gn-card-line); }
+.gn-svg .rv-name-text { fill: var(--gn-ink); font-family: var(--serif); }
+.gn-svg .rv-name-thread { stroke: var(--gn-wire); }
+.gn-svg .rv-hl-box { fill: var(--gn-card); fill-opacity: 0.96; stroke: var(--gn-lit); stroke-opacity: 0.6; }
+.gn-svg .rv-hl .k-halo { stroke: var(--gn-lit-halo); }
 /* While only the near generations are named, a far person keeps their
    portrait and its initials, and their card waits for the pointer. */
 .river.rv-names-near .rv-svg a.rv-p[data-far] .gn-plate { display: none; }

@@ -1423,6 +1423,12 @@ pub async fn notes_clarity_jpg() -> Response {
     picture("image/jpeg", render::NOTES_CLARITY_JPG)
 }
 
+/// `GET /static/img/fusion-lab.jpg` — the room the tree's glass stands in,
+/// under Fusion.
+pub async fn fusion_lab_jpg() -> Response {
+    picture("image/jpeg", render::FUSION_LAB_JPG)
+}
+
 /// `GET /static/img/river-ground.jpg` — the river's ground. The same picture
 /// behind every person: nothing in it depends on the archive.
 pub async fn river_ground_jpg() -> Response {

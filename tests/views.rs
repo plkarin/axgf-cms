@@ -257,6 +257,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
     for jpg in [
         "/static/img/fusion-hero.jpg",
         "/static/img/fusion-cta.jpg",
+        "/static/img/fusion-lab.jpg",
         "/static/img/galaxy-hero.jpg",
         "/static/img/galaxy-cta.jpg",
         "/static/img/summit-hero.jpg",
@@ -320,4 +321,42 @@ fn a_view_gives_river_js_everything_it_asks_for() {
 fn the_colour_scanner_finds_colours_and_leaves_ids_alone() {
     assert_eq!(colours("fill:#fff; stroke:#a1b2c3"), ["#fff", "#a1b2c3"]);
     assert!(colours("url(#tv-soil) '#gx-neb-a' charAt(0) !== '#' #deadline").is_empty());
+}
+
+/// Fusion's tree stands in a glass that turns as the reader travels, over
+/// its laboratory's picture (2026-10-23); Clarity's counts and the lines
+/// beyond its last slice lie over the glass, not under it.
+#[test]
+fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
+    let fusion = read("static/fusion.js");
+    assert!(
+        fusion.contains("window.axgfView.tween = tween3;"),
+        "Fusion blends frames in its glass"
+    );
+    assert!(
+        fusion.contains("'/static/img/fusion-lab.jpg?v=1'"),
+        "over its laboratory"
+    );
+    assert!(
+        fusion.contains("ground.className = 'rv-ground';"),
+        "with a room that moves under the drawing"
+    );
+    let river = read("static/river.js");
+    assert!(
+        river.contains(
+            "view && view.tween ? view.tween(A, B, ease(t), tween) : tween(A, B, ease(t))"
+        ),
+        "river.js lets a view blend two frames from its own blend"
+    );
+    let clarity = read("static/clarity.js");
+    let order = clarity
+        .find("out + base + bands + beam + figs + tails + links + '<g class=\"rv-lit\"></g>' + unions + marks + nodes")
+        .is_some();
+    assert!(order, "the funnel's tails and counts over the glass");
+    assert!(
+        clarity.contains("ground.className = 'rv-ground';"),
+        "and its laboratory under it"
+    );
 }

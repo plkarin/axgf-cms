@@ -538,6 +538,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/img/canopee-cta.jpg", get(public::canopee_cta_jpg))
         .route("/static/img/fusion-hero.jpg", get(public::fusion_hero_jpg))
         .route("/static/img/fusion-cta.jpg", get(public::fusion_cta_jpg))
+        .route("/static/img/fusion-lab.jpg", get(public::fusion_lab_jpg))
         .route("/static/img/galaxy-hero.jpg", get(public::galaxy_hero_jpg))
         .route("/static/img/galaxy-cta.jpg", get(public::galaxy_cta_jpg))
         .route("/static/img/summit-hero.jpg", get(public::summit_hero_jpg))

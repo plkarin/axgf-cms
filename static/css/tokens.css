@@ -383,6 +383,11 @@
   --tv-leaf-hidden: #6a7482;
   --tv-soil: #ff5f3a;
   --tv-teal: #2ee6c5;
+  /* The glass the tree stands in (2026-10-23): its cold light, the panels
+     the names are written on, and their edge. */
+  --tv-glass: #4aa8ff;
+  --tv-panel: #0a1420;
+  --tv-panel-line: #2f6fa8;
 }
 
 /* --- galaxy ---------------------------------------------------------------- */

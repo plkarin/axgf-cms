@@ -6008,11 +6008,24 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 .cl-svg .cl-link { stroke: var(--cl-link); stroke-opacity: 0.78; }
 .cl-svg .cl-link-d { stroke-opacity: 0.6; }
 .cl-svg .cl-link-s { stroke: var(--cl-link); stroke-opacity: 0.45; }
-.cl-svg .cl-union { fill: var(--cl-link); }
-.cl-svg .cl-tail { fill: none; stroke: var(--cl-link); stroke-opacity: 0.5; stroke-width: 1.2; }
-.cl-svg .cl-tail-tip { fill: var(--cl-link); }
+.cl-svg .cl-union { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 0.8; }
+.cl-svg .cl-tail { fill: none; stroke: var(--cl-link); stroke-opacity: 0.85; stroke-width: 1.4; }
+.cl-svg .cl-tail-tip { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 1.2; }
 .cl-svg .cl-stub { stroke-dasharray: 2 2; }
-.cl-svg .cl-end { fill: var(--cl-bead); stroke: var(--cl-hidden); stroke-width: 1.4; }
+.cl-svg .cl-end { fill: var(--cl-bead); stroke: var(--cl-link); stroke-width: 1.6; }
+/* A count on the glass: the figure's own ink, the page's ground around it. */
+.cl-svg .cl-count .k-data { fill: var(--cl-figure); font-weight: var(--weight-semi); }
+/* The projector under the narrow end, its rings and the beam up the axis;
+   the gauge's ticks beside each opening. */
+.cl-svg .cl-base-glow { fill: var(--cl-slice-3); fill-opacity: 0.1; }
+.cl-svg .cl-base-ring { fill: none; stroke: var(--cl-slice-2); stroke-width: 1; stroke-opacity: 0.5; stroke-dasharray: 3 5; }
+.cl-svg .cl-base-ring-2 { stroke: var(--cl-slice-3); stroke-opacity: 0.4; }
+.cl-svg .cl-base-ring-3 { stroke: var(--cl-slice-4); stroke-opacity: 0.3; stroke-dasharray: 1 6; }
+.cl-svg .cl-base { fill: var(--cl-slice-1); fill-opacity: 0.22; stroke: var(--cl-slice-1); stroke-opacity: 0.75; stroke-width: 1.5; }
+.cl-svg .cl-beam-edge { stop-color: var(--cl-gloss); stop-opacity: 0; }
+.cl-svg .cl-beam-mid { stop-color: var(--cl-gloss); stop-opacity: 0.5; }
+.cl-svg .cl-axis { stroke: var(--cl-gloss); stroke-width: 1.2; stroke-opacity: 0.85; stroke-dasharray: 1 4; }
+.cl-svg .cl-tick { fill: none; stroke: var(--cl-slice-2); stroke-width: 2; stroke-opacity: 0.32; stroke-dasharray: 1 7; }
 .cl-svg .cl-bead { fill: var(--cl-bead); }
 .cl-svg .cl-bead.cl-living { stroke: var(--cl-living); }
 .cl-svg .cl-bead-glow.cl-living { fill: var(--cl-living); fill-opacity: 0.22; }

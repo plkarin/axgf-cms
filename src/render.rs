@@ -96,6 +96,10 @@ pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");
+/// Fusion's laboratory (2026-10-23), made in the operator's Canva: a dark
+/// room, blue panels at its sides and a projector glowing red on the floor,
+/// under the tree's glass (fusion.js stands the glass on the projector).
+pub const FUSION_LAB_JPG: &[u8] = include_bytes!("../static/img/fusion-lab.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
 /// Behind the family's notes and contributions (docs/adr/0014), one per
 /// theme, made in the operator's Canva: soft and nearly plain, under a veil of

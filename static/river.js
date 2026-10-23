@@ -687,7 +687,10 @@
         if (cut || reduce) return done();
         var t0 = performance.now();
         (function tick(now) {
-          var t = Math.min(1, (now - t0) / 560), fr = tween(A, B, ease(t));
+          // A view may blend two frames in its own space (Fusion's glass
+          // turns round its axis), from the river's own blend.
+          var t = Math.min(1, (now - t0) / (view && view.tween ? 900 : 560));
+          var fr = view && view.tween ? view.tween(A, B, ease(t), tween) : tween(A, B, ease(t));
           if (cam.z > 1 && c0.x !== null && c1) { cam.x = c0.x + (c1.x - c0.x) * ease(t); cam.y = c0.y + (c1.y - c0.y) * ease(t); }
           place(setSvg(view ? view.paint(fr, api, false) : paint(fr)), fr.meta);
           if (t < 1) raf = requestAnimationFrame(tick); else done();

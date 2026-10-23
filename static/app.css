@@ -5921,37 +5921,42 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background: var(--accent-soft);
 }
 
-/* ---- the living tree (fusion.js) ---- */
-.tv-svg .tv-bg { fill: var(--surface-page); fill-opacity: 0.5; }
-.tv-svg .tv-soil { stroke: var(--tv-soil); stroke-width: 1.2; stroke-opacity: 0.7; }
-.tv-svg .tv-soil-top { stop-color: var(--tv-soil); stop-opacity: 0.07; }
-.tv-svg .tv-crown-in { stop-color: var(--tv-leaf-living); stop-opacity: 0.1; }
-.tv-svg .tv-crown-out { stop-color: var(--tv-leaf-living); stop-opacity: 0; }
-.tv-svg .tv-dot.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.75; }
-.tv-svg .tv-dot.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.6; }
-.tv-svg .tv-dot.tv-hidden { fill: var(--tv-leaf-hidden); fill-opacity: 0.45; }
-.tv-svg .tv-dot.tv-root { fill: var(--tv-teal); fill-opacity: 0.45; }
-.tv-svg .tv-soil-end { stop-color: var(--tv-soil); stop-opacity: 0; }
-.tv-svg .tv-bark { fill: var(--tv-bark); }
-.tv-svg .tv-bark-line { stroke: var(--tv-bark); }
-.tv-svg .tv-ridge { stroke: var(--tv-bark-lit); stroke-opacity: 0.55; }
+/* ---- the tree in its glass (fusion.js) ---- */
+.tv-svg .tv-veil { fill: var(--surface-page); fill-opacity: 0.38; }
+.tv-svg .tv-glass-edge { stop-color: var(--tv-glass); stop-opacity: 0.1; }
+.tv-svg .tv-glass-mid { stop-color: var(--tv-glass); stop-opacity: 0.02; }
+.tv-svg .tv-wall { stroke: var(--tv-glass); stroke-opacity: 0.35; stroke-width: 1; }
+.tv-svg :is(.tv-rim, .tv-floor) { fill: none; stroke: var(--tv-glass); }
+.tv-svg .tv-rim.tv-ring-front { stroke-opacity: 0.55; stroke-width: 1.4; }
+.tv-svg .tv-rim.tv-ring-back { stroke-opacity: 0.3; stroke-width: 1; }
+.tv-svg .tv-floor.tv-ring-front { stroke-opacity: 0.42; stroke-width: 1; stroke-dasharray: 6 4; }
+.tv-svg .tv-floor.tv-ring-back { stroke-opacity: 0.2; stroke-width: 0.8; stroke-dasharray: 2 5; }
+.tv-svg .tv-floor-0 { stroke: var(--tv-vein); }
+.tv-svg .tv-column-glow { stroke: var(--tv-vein); stroke-opacity: 0.16; stroke-width: 16; stroke-linecap: round; }
+.tv-svg .tv-column { stroke: var(--tv-vein-soft); stroke-opacity: 0.85; stroke-width: 2; }
+.tv-svg .tv-branch-glow { fill: none; stroke: var(--tv-vein); stroke-opacity: 0.14; stroke-linecap: round; }
+.tv-svg .tv-branch { fill: none; stroke: var(--tv-bark-lit); stroke-opacity: 0.85; }
 .tv-svg .tv-faint { opacity: 0.45; }
-.tv-svg .tv-vein { stroke: var(--tv-vein); stroke-opacity: 0.9; }
+.tv-svg .tv-vein { fill: none; stroke: var(--tv-vein); stroke-opacity: 0.95; }
 .tv-svg .tv-vein-d { stroke-opacity: 0.7; }
 .tv-svg .tv-vein-s { stroke: var(--tv-vein-soft); stroke-opacity: 0.55; }
-.tv-svg .tv-twig { stroke: var(--tv-bark-lit); stroke-opacity: 0.6; }
-.tv-svg .tv-ring-arc { stroke: var(--tv-bark-lit); stroke-opacity: 0.35; stroke-width: 0.8; stroke-dasharray: 1.5 5; }
-.tv-svg .tv-twig-tip { fill: var(--tv-bark-lit); }
+.tv-svg .tv-twig { fill: none; stroke: var(--tv-glass); stroke-opacity: 0.7; }
+.tv-svg .tv-twig-tip { fill: var(--tv-glass); }
 .tv-svg .tv-bud { stroke-dasharray: 2 2; }
-.tv-svg .tv-end { fill: var(--surface-page); stroke: var(--tv-bark-lit); stroke-width: 1.4; }
+.tv-svg .tv-end { fill: var(--surface-page); stroke: var(--tv-glass); stroke-width: 1.4; }
+.tv-svg .tv-count .k-data { fill: var(--text-primary); }
 .tv-svg .tv-leaf.tv-living { fill: var(--tv-leaf-living); }
-.tv-svg .tv-leaf-glow.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.2; }
+.tv-svg .tv-leaf-glow.tv-living { fill: var(--tv-leaf-living); fill-opacity: 0.22; }
 .tv-svg .tv-leaf.tv-gone { fill: var(--tv-leaf-gone); }
-.tv-svg .tv-leaf-glow.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.12; }
+.tv-svg .tv-leaf-glow.tv-gone { fill: var(--tv-leaf-gone); fill-opacity: 0.16; }
 .tv-svg .tv-leaf.tv-hidden { fill: var(--surface-page); stroke: var(--tv-leaf-hidden); }
-.tv-svg .tv-halo { fill: var(--accent); fill-opacity: 0.12; }
+.tv-svg .tv-halo { fill: var(--accent); fill-opacity: 0.16; }
 .tv-svg .tv-ring { stroke: var(--accent); }
 .tv-svg .tv-heart { fill: var(--accent); }
+/* The panels the names are written on, as the reference's floating screens. */
+.tv-svg .tv-panel { fill: var(--tv-panel); fill-opacity: 0.86; stroke: var(--tv-panel-line); stroke-opacity: 0.9; stroke-width: 1; }
+.tv-svg .tv-panel-centre { stroke: var(--accent); stroke-width: 1.4; }
+.tv-svg .tv-leader { stroke: var(--tv-panel-line); stroke-width: 1; stroke-opacity: 0.9; }
 .tv-svg .tv-name { fill: var(--text-primary); font-family: var(--face); }
 .tv-svg .tv-data { fill: var(--text-secondary); }
 

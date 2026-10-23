@@ -102,6 +102,21 @@ Administrators only; the accounts follow the new name, a change made
 meanwhile is not overwritten unknowingly, and the history says who changed
 what. The file's own counts and dates are still the export's.
 
+**Fusion's tree in its glass** (docs/adr/0015): the family stands in a glass
+cylinder in a laboratory (a picture made in Canva, its projector under the
+glass). The person at the centre is on the axis in a column of light,
+descendants climb the glass a floor per generation and ancestors go down it
+as roots; on each floor the river's order becomes an angle round the axis,
+so the child in the middle continues the column and the others stand round
+to their side. The front of the glass is named on small glass panels, the
+back is dimmed. Travelling turns the glass: whoever the reader goes to comes
+round to the front and the climb goes on upward. Motes turn round the
+glass, a scanner goes round each floor and embers rise from the projector.
+
+**Clarity's funnel in its laboratory** (docs/adr/0015): the cone stands on a
+projector with a beam up its axis, over a floor of light lines, rings
+rising from the projector and a drifting network of data points.
+
 **`bootstrap.sh`**: downloads a private repository's releases through the
 API with a token (`AXGF_CMS_GITHUB_TOKEN` or `/etc/axgf-cms/github-token`,
 never printed); installs the upgrade helper, and removes it on
@@ -403,6 +418,8 @@ is out.
 
 ### Fixed
 
+- Clarity's funnel drew the lines beyond its last slice, and their counts,
+  under the glass, in the glass's own colour: they are drawn over it now.
 - An export's button said "Working…" for ever: a file arriving does not
   unload the page. The server now answers the page's token in a short-lived
   cookie once the file starts, and the button is idle again.
@@ -492,6 +509,9 @@ extra margin those themes gave.
 
 ### Tests
 
+- `views.rs`: Fusion blends frames in its glass over its laboratory, river.js
+  lets a view blend two frames, and the funnel draws its tails and counts
+  over the glass.
 - `manifest.rs`: an administrator names the family and the accounts follow;
   a wrong field or a change made meanwhile keeps what was typed; only an
   administrator may; an export tells the page its file has started.

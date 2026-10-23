@@ -130,6 +130,16 @@ the period covered is the births', counted; the licence is one of ten, with
 a sentence beside it saying what it lets others do, its address recorded
 from the list, and the account that chose it and when.
 
+**Hebrew, Swahili and Lingala**: three more interface languages, complete
+and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
+left like Arabic, addresses the reader in the plural so that no gender is
+assumed, and writes all four of the plural forms its rules use (one, two,
+many, other). Swahili and Lingala take the names of countries and languages
+from CLDR; Lingala writes e and o for ɛ and ɔ, without tone marks, and the
+languages CLDR does not name in Lingala in French. Each file's header lists
+the words it chose for a union, a source, a record, ancestors and
+descendants, for a speaker to correct.
+
 **Clarity's funnel in its laboratory** (docs/adr/0015): the cone stands on a
 projector with a beam up its axis, over a floor of light lines, rings
 rising from the projector and a drifting network of data points.

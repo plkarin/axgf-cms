@@ -338,7 +338,7 @@ Three styles set the density:
 Every reader chooses for themselves, and a signed-in reader's theme and
 language follow them to every device.
 
-### In eleven languages, right to left included
+### In fourteen languages, right to left included
 
 [![The same profile in Arabic (right to left), Japanese, Polish, French, Chinese and Russian](docs/screenshots/languages.jpg)](docs/screenshots/languages.jpg)
 
@@ -568,11 +568,11 @@ service. While the repository is private, the helper needs a GitHub token in
 
 ## Languages
 
-The site speaks eleven languages. **Two of them, English and French, have
-been reviewed by someone who speaks them. The other nine (Polish, Russian,
-German, Italian, Spanish, Portuguese, Chinese, Japanese and Arabic) are
-complete but unreviewed:** every message is translated, and nobody has checked
-them. In genealogy that matters, because the right word for a union, a
+The site speaks fourteen languages. **Two of them, English and French, have
+been reviewed by someone who speaks them. The other twelve (Polish, Russian,
+German, Italian, Spanish, Portuguese, Chinese, Japanese, Arabic, Hebrew,
+Swahili and Lingala) are complete but unreviewed:** every message is
+translated, and nobody has checked them. In genealogy that matters, because the right word for a union, a
 godparent or a primary source depends on each country's record-keeping
 tradition. The language menu marks which is which, and
 [CONTRIBUTING.md](CONTRIBUTING.md) says where to start if you can help.

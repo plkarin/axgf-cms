@@ -18,8 +18,8 @@
  *   snow line: read from the year the river itself rests on, and only when
  *   this reader may see it (`meta.era`). Without one, the snow keeps to the
  *   heights, whoever is at the camp;
- * - the sun rises with the itinerary. Every person travelled to brings the
- *   dawn on, from the last stars to full light.
+ * - the sun follows the climb: travelling up to a descendant raises it,
+ *   down to an ancestor lowers it, between the last stars and full light.
  *
  * The mountain is a photograph: a wall of peaks above a forest and a misty
  * valley, at dawn (static/img/summit-panorama.jpg, made in the operator's
@@ -58,11 +58,35 @@
   var stage = document.getElementById('rv-canvas');
 
   /* ---- the climb's two readings ---- */
-  // How far the sun has risen: one more step of dawn for every person on
-  // the itinerary (river.js keeps a chip for each), up to full light.
+  // How far the sun has risen: with how high the reader has climbed since
+  // they came, a step of dawn for every generation up toward the summit and
+  // one back for every generation down toward the valley, between the last
+  // stars and full light. It used to count the itinerary's people, so that
+  // going down to the ancestors raised the sun as well, and after six it
+  // stood still (the operator's review, 2026-10-23).
+  // The climb is kept within what the sky can show, so that a reader who
+  // went on down in the night sees the sun rise again at their first step
+  // back up, and one who went on up in full light sees it lower at their
+  // first step down.
+  var climbed = 0, lastCentre = null, lastGen = null, lastYear = null;
   function dawn() {
-    var n = root.querySelectorAll('.rv-trail li').length || 1;
-    return Math.min(1, 0.12 + (n - 1) * 0.18);
+    return Math.max(0.12, Math.min(1, 0.42 + climbed * 0.15));
+  }
+  // A new layout: if its fixed point is someone else, how many generations
+  // up (or down) that person stood in the drawing the reader left — or, if
+  // they were not in it, the years between the two, a generation every 29,
+  // only when this reader may see both.
+  function track(fr) {
+    var m = fr.meta, c = m.centre;
+    if (lastCentre !== null && c !== lastCentre) {
+      var d = lastGen && (c in lastGen) ? lastGen[c] : null;
+      if (d === null && m.era && isFinite(m.year) && lastYear !== null) d = Math.round((m.year - lastYear) / 29);
+      climbed = Math.max(-2, Math.min(4, climbed + (d || 0)));
+    }
+    lastCentre = c;
+    lastGen = {};
+    fr.persons.forEach(function (p) { if (!(p.id in lastGen)) lastGen[p.id] = p.gen; });
+    lastYear = m.era && isFinite(m.year) ? m.year : null;
   }
   // How far the snow comes down, 0.12 (the summit's tip) to 1 (down to the
   // camp), from the year the river rests on: the nearer the present, the
@@ -159,6 +183,7 @@
 
   /* ---- where everyone stands ---- */
   function shape(fr) {
+    track(fr);
     var m = fr.meta, hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0];
     var cx = C ? C.x : hl + hw / 2, cy = C ? C.y : m.cy, step0 = m.step || 100;

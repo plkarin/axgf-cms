@@ -489,6 +489,10 @@ is out.
 
 ### Fixed
 
+- Summit's sun only ever rose: it counted the itinerary's people, so going
+  down to the ancestors raised it too, and after six it stood still. It now
+  follows the climb, a step up for every generation toward the summit and a
+  step down for every generation toward the valley.
 - Clarity's funnel drew the lines beyond its last slice, and their counts,
   under the glass, in the glass's own colour: they are drawn over it now.
 - An export's button said "Working…" for ever: a file arriving does not

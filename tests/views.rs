@@ -453,3 +453,26 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
         "[data-theme=\"genealogy\"]:not([data-style=\"paper\"]) :is(.card, .rec-section,"
     ));
 }
+
+/// Summit's sun follows the climb: a step up toward the descendants raises
+/// it, a step down toward the ancestors lowers it (the operator's review,
+/// 2026-10-23). It used to count the itinerary's people, so that going down
+/// raised it too and, after six, it stood still.
+#[test]
+fn the_sun_goes_down_with_the_reader() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let summit = std::fs::read_to_string(root.join("static/summit.js")).expect("summit.js");
+    assert!(
+        summit.contains("function shape(fr) {\n    track(fr);"),
+        "every layout tells the sun where the reader went"
+    );
+    assert!(summit.contains("return Math.max(0.12, Math.min(1, 0.42 + climbed * 0.15));"));
+    assert!(
+        summit.contains("climbed = Math.max(-2, Math.min(4, climbed + (d || 0)));"),
+        "within what the sky can show, so the first step back answers"
+    );
+    assert!(
+        !summit.contains("rv-trail"),
+        "the itinerary's length no longer moves the sun"
+    );
+}

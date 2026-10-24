@@ -155,15 +155,19 @@ climbs.
     line in dark ink with the parchment's light under it, as on the
     reference: broken where it is inferred, a line of knots where it is
     speculative.
-  - **The climb.** Travelling up to a descendant, the camera rises into
-    the crown; toward an ancestor, it goes down to the roots. The blend is
-    done in the tree's own space.
+  - **The climb.** The tree is nearly the window's width, so the window
+    shows a part of it. The camera climbs it with the reader, one step per
+    generation: up into the crown toward descendants, down to the roots
+    toward ancestors. It stays where the reader arrives. The blend is done
+    in the tree's own space.
   - **The scene.** Gold leaves fall from the crown and a glint runs along
     every attested line, still on the river's terms.
   - **How it got here.** The first version drew gold lines the colour of
     the picture under them. The second, a trunk through the window with
     thin branches, looked to the operator like a stem. The third, a tree
     drawn of the family's wood, looked like a cartoon.
+- The record beside the tree keeps the page's green: its blocks are the
+  page's raised green edged in gold, not cream cards.
 - Two palettes: the page's, dark, measured as every theme is (tightest
   4.3:1), and the cards', cream with a sepia ink, every colour token's twin
   given on a card and measured the same way (`genealogy_cards_read`,

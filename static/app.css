@@ -6567,8 +6567,10 @@ a.kpi:hover { border-color: var(--border-strong); }
 /* The cards: cream stock in the page's green. Every colour token takes its
    `--gn-l-` twin on a card (tokens.css), so whatever a card holds — text,
    fields, buttons, chips, a chart — reads as it would on a light theme.
-   Not in the paper style, which draws no cards. */
-[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog) {
+   Not in the paper style, which draws no cards; nor in the record beside
+   the tree, which keeps the page's green and gold as its other blocks do
+   (the operator's review, 2026-10-24: a cream block there did not match). */
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog):not(.tree-panel *) {
   color-scheme: light;
   --surface-page: var(--gn-l-surface-page);
   --surface-raised: var(--gn-l-surface-raised);
@@ -6616,10 +6618,16 @@ a.kpi:hover { border-color: var(--border-strong); }
 }
 /* A card's double rule, as old card stock is printed: an edge, a cream
    gap and a hairline of the ink inside it, and a shadow on the green. */
-[data-theme="genealogy"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls) {
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls):not(.tree-panel *) {
   background-color: var(--surface-raised);
   border: 1px solid var(--border-hairline);
   box-shadow: inset 0 0 0 4px var(--surface-raised), inset 0 0 0 5px color-mix(in srgb, var(--border-strong) 30%, transparent), 0 14px 26px -18px rgb(var(--shadow-rgb) / 0.9);
+}
+/* In the record beside the tree, a block is the page's own: its raised
+   green, edged in a hairline of gold. */
+[data-theme="genealogy"]:not([data-style="paper"]) .tree-panel :is(.rec-section, .card) {
+  background-color: var(--surface-raised);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border-hairline));
 }
 /* A notice is a card of its own: opaque cream, tinted by its kind, rather
    than the kit's veil, which over this green reads as grey. */

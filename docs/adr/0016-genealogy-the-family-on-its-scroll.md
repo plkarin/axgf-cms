@@ -91,11 +91,21 @@ the first version) under ADR 0007's contract, from the river's own layout.
   the colour of the picture under them): 4.5:1 or more on the parchment,
   3:1 or more on the leaves. An inferred parentage is broken, a speculative
   one a line of knots. The cards hold their words at 7:1 or more.
-- **Travelling, the reader climbs**: toward a descendant the camera rises
-  into the crown, the picture lifting in relief, and the person travelled
-  to comes down to the trunk; toward an ancestor it goes down to the roots.
-  The blend is done in the tree's own space — each person's place round
-  the trunk and height on it (`window.axgfView.tween`).
+- **Travelling, the reader climbs.** The picture is nearly the window's
+  width (or 1.7 times its height on a narrow one), so the window shows a
+  part of the tree, and the camera's place on it follows the reader: at
+  the trunk where they came in, up into the crown by as many generations
+  as they have climbed since, down to the roots by as many as they have
+  gone down. It moves a step at a time, with the travel, and stays where
+  the reader arrives; the top and the foot of the tree are never left
+  behind (`camV`, a hyperbolic tangent of the generations climbed). The
+  relief leans with it: up in the crown the leaves stand out a little
+  more. The family's blend is done in the tree's own space — each person's
+  place round the trunk and height on it (`window.axgfView.tween`). The
+  operator's review of 2026-10-24 asked for both: the tree was too small,
+  and the climb should go up or down the tree progressively (the first
+  picture fitted the window's height and came back to the trunk after
+  every travel).
 
 Its living scene: gold leaves falling from the crown across the parchment,
 a little gold dust in its light, and a glint run along every attested
@@ -120,7 +130,9 @@ the sunken surface, 3.7:1).
 The record beside the river and beside the grid is not a card: it stays on
 the page's palette, where its name and its header read (the first version
 put it on the cards' and left its header's dark words on the dark page).
-The cards inside it are cream.
+So do the blocks inside it, the page's raised green edged in a hairline of
+gold, like its notices: a cream block there did not match the rest of it
+(the operator's review, 2026-10-24).
 
 A card carries a double rule, as old card stock is printed; titles are in a
 book face; portraits are oval. A notice is an opaque card tinted by its

@@ -455,6 +455,13 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
     assert!(js.contains("function lift(l) { return l >= 0 ? PIC.up * (1 - Math.exp(-l / PIC.ku)) : -PIC.down * (1 - Math.exp(l / PIC.kd)); }"));
     assert!(js.contains("return [[x1, y1], [x1, my], [x2, my], [x2, y2]];"));
     assert!(js.contains("class=\"gn-wire-halo\""));
+    // The picture is nearly the window's width, and the camera climbs it a
+    // step at a time with the reader, staying where they arrive (the
+    // operator's review, 2026-10-24: the tree was too small, and the climb
+    // should go up or down the tree progressively).
+    assert!(js.contains("PH = Math.max(hw * 0.88 / PIC.aspect, vh * 1.7)"));
+    assert!(js.contains("var camV = PIC.v - PIC.climb * Math.tanh((G.world || 0) / PIC.pace);"));
+    assert!(js.contains("py = (G.y0 - camV * G.PH - v.y) * s"));
     // Still, the picture still stands in relief; the pointer leans it only
     // when motion is allowed.
     assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
@@ -471,6 +478,12 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
     ));
     assert!(css.contains(
         "[data-theme=\"genealogy\"]:not([data-style=\"paper\"]) :is(.card, .rec-section,"
+    ));
+    // The record beside the tree keeps the page's green, its blocks edged
+    // in gold, rather than cream cards (2026-10-24).
+    assert!(css.contains(".search-suggest, dialog):not(.tree-panel *) {"));
+    assert!(css.contains(
+        "[data-theme=\"genealogy\"]:not([data-style=\"paper\"]) .tree-panel :is(.rec-section, .card) {"
     ));
 }
 

@@ -55,8 +55,11 @@
   // width) and where on it the fixed point is set (v, a share of its
   // height); how far up the crown reaches from there and down the roots
   // (shares of its height); how quickly further generations close in
-  // (ku up, kd down). Read from the picture and its depth map.
-  var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1', aspect: 1088 / 1456, u: 0.53, v: 0.57, up: 0.5, down: 0.4, ku: 1.53, kd: 1.35 };
+  // (ku up, kd down). Read from the picture and its depth map. And the
+  // climb: how far up the picture (or down) the camera goes, at most, as the
+  // reader travels up the generations (or down), and how many generations
+  // take it half of that way (pace, roughly).
+  var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1', aspect: 1088 / 1456, u: 0.53, v: 0.57, up: 0.5, down: 0.4, ku: 1.53, kd: 1.35, climb: 0.31, pace: 2.4 };
   // SHRINK: how much smaller a generation further away is. THETA: how far
   // round the trunk a generation's people reach, either side of the front.
   // DEPTH: how much smaller someone round the side is than someone at the
@@ -125,12 +128,16 @@
       return { w: w, members: members };
     }
     if (C) { crown(C.key, 0); roots(C.key, 0); }
-    // The picture a little taller than the window, its trunk on the
-    // window's middle, the fixed point set into the trunk; round the
-    // trunk, the widest side reaches THETA either way, a place never more
-    // than a quarter turn wide.
-    var H = vh * 1.06, Wp = H * PIC.aspect, R = clamp(Math.max(hw * 0.4, Wp * 0.5), 160, 560);
-    var G = { x0: hl + hw / 2, y0: vt + (vh - H) / 2 + PIC.v * H, R: R, H: H, W: Wp, nd: nd, na: na };
+    // The family's levels over a little more than the window's height, the
+    // fixed point a little under its middle. The picture much larger (PH,
+    // PW): nearly the window's width, or well over its height on a narrow
+    // one, so that the window shows a part of the tree, and the camera
+    // climbs it (scene, picture()). Round the trunk, the widest side
+    // reaches THETA either way, a place never more than a quarter turn
+    // wide.
+    var H = vh * 1.06, PH = Math.max(hw * 0.88 / PIC.aspect, vh * 1.7), PW = PH * PIC.aspect;
+    var R = clamp(Math.max(hw * 0.4, PW * 0.36), 160, 560);
+    var G = { x0: hl + hw / 2, y0: vt + (vh - H) / 2 + PIC.v * H, R: R, H: H, PH: PH, PW: PW, nd: nd, na: na };
     function per(X) {
       if (!C || !(C.key in X)) return 0.4;
       var reach = 0;
@@ -268,7 +275,7 @@
     var f = api.f, esc = api.esc, PM = api.byKey(fr.persons), m = fr.meta;
     var vt = m.view[0], vh = m.view[1], hl = m.hview[0], hw = m.hview[1];
     if (rest && pending) { world += pending; pending = 0; }
-    var G = m.gn || GEO || { x0: hl + hw / 2, y0: vt + vh * 0.57, R: hw / 3, H: vh, W: vh * PIC.aspect, nd: 0, na: 0 };
+    var G = m.gn || GEO || { x0: hl + hw / 2, y0: vt + vh * 0.57, R: hw / 3, H: vh, PH: vh * 1.7, PW: vh * 1.7 * PIC.aspect, nd: 0, na: 0 };
     GEO = Object.assign({}, G, { world: G.world !== undefined ? G.world : world, e: rest ? 0 : G.e || 0, lc: rest ? 0 : G.lc || 0 });
     var C = PM[m.centre] || centreOf(fr);
     var boxes = [];
@@ -655,13 +662,20 @@
   function picture(moving) {
     var v = view(), G = GEO;
     if (!v || !G) return;
-    var s = v.k * dpr, swing = G.lc ? (G.lc > 0 ? 1 : -1) * Math.sin(Math.PI * (G.e || 0)) : 0;
+    var s = v.k * dpr;
     lean[0] += (leanTo[0] - lean[0]) * (moving ? 0.08 : 1); lean[1] += (leanTo[1] - lean[1]) * (moving ? 0.08 : 1);
     var sway = moving ? Math.sin(clock * 0.31) * 0.35 : 0;
-    // The picture's place on the window, in its pixels: the drawing's frame,
-    // moved down a little as the camera rises.
-    var px = (G.x0 - PIC.u * G.W - v.x) * s, py = (G.y0 - PIC.v * G.H - v.y + swing * G.H * 0.045) * s, pw = G.W * s, ph = G.H * s;
-    var camX = (lean[0] * 9 + sway * 6) * s, camY = (lean[1] * 6 - swing * 22) * s;
+    // Where on the tree the camera stands: the trunk, where the reader came
+    // in; up into the crown by as many generations as they have climbed
+    // since, down to the roots by as many as they have gone down, step by
+    // step as they travel (the world's level runs on through a climb), the
+    // tree's top and foot never left behind. That height of the picture
+    // stands at the fixed point's.
+    var camV = PIC.v - PIC.climb * Math.tanh((G.world || 0) / PIC.pace);
+    var px = (G.x0 - PIC.u * G.PW - v.x) * s, py = (G.y0 - camV * G.PH - v.y) * s, pw = G.PW * s, ph = G.PH * s;
+    // Up in the crown the leaves stand out a little more, down in the roots
+    // the roots do: the relief leans with the climb.
+    var camX = (lean[0] * 9 + sway * 6) * s, camY = (lean[1] * 6 + (PIC.v - camV) * 36) * s;
     if (gl) {
       gl.viewport(0, 0, ground.width, ground.height);
       if (!hasPic) { var W0 = rgb('--gn-stage', [20, 37, 25]); gl.clearColor(W0[0] / 255, W0[1] / 255, W0[2] / 255, 1); gl.clear(gl.COLOR_BUFFER_BIT); return; }

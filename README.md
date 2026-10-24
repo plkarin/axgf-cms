@@ -19,7 +19,7 @@ How sure each fact is stays in plain sight.
 <a href="#more">Documentation</a>
 </p>
 
-[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as white threads of light through pale contoured zones over a forested mountain valley seen from the air at golden hour, its terraces, golden meadow and turquoise streams and ponds under them, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
+[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as rivers of clear turquoise water with a ribbon of white and gold light down their middle, through pale contoured zones over a forested mountain valley seen from the air at golden hour, its terraces, golden meadow and turquoise streams and ponds under them, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
 
 <sub>Every screenshot on this page shows the same fictional family: about 250
 people from Brittany and Poland, from the 1640s to today. It was generated
@@ -87,10 +87,12 @@ follows you.
 **The river is alive** *(new in 0.5.0)*. Under the drawing lies a
 forested mountain valley seen from the air at golden hour, with terraces, a
 golden meadow, and turquoise streams and ponds. It is a 4K photograph drawn
-in relief by WebGL, so it stays sharp. Ripples run down its streams and the
-sun glints on them. The family's rivers light the forest around them, pulses
-of light run down every attested line from the sources toward the living,
-and a ring of light opens around each person. The pointer leans the
+in relief by WebGL, so it stays sharp. The family's lines are rivers carved
+into it: clear turquoise water in its bed, rippling toward the living, a
+ribbon of white and gold light down its middle that lights the forest
+around it, as wide as its flow. An inferred link runs underground and out
+again, and a speculative one is a trail of pools. Ripples run down the
+valley's own streams too, and a ring of light opens around each person. The pointer leans the
 landscape a little, the sun's rays turn and the mist drifts. It holds still for readers
 who ask their system for less motion, and with the river's own pause button.
 Nothing moves while the river is off screen.

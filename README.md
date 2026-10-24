@@ -19,7 +19,7 @@ How sure each fact is stays in plain sight.
 <a href="#more">Documentation</a>
 </p>
 
-[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, over a forest seen from above. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
+[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as white threads of light through pale contoured zones over a forested mountainside seen from the air at golden hour, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
 
 <sub>Every screenshot on this page shows the same fictional family: about 250
 people from Brittany and Poland, from the 1640s to today. It was generated
@@ -81,21 +81,20 @@ at the top numbers where you have been, and the record beside the river
 follows you.
 
 <p align="center">
-<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: pulses of light run down the attested lines toward the living, and the forest underneath sways in the wind.">
+<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: pulses of light run down the attested lines toward the living, over the forested mountainside and its drifting mist.">
 </p>
 
-**The river is alive** *(new in 0.5.0)*. Under the drawing, a forest
-seen from above is computed in WebGL at your screen's own resolution, so it is
-never soft and never pixelated. Low sun on the crowns, hills under the
-forest, clearings and wet ground along every line, and mist in the corners.
-Gusts cross the canopy, and pulses of light run down every attested line from
-the sources toward the living. It holds still for readers who ask their system
-for less motion, and with the river's own pause button. Nothing moves while
-the river is off screen.
+**The river is alive** *(new in 0.5.0)*. Under the drawing lies a
+forested mountainside seen from the air at golden hour. It is a 4K
+photograph drawn in relief by WebGL, so it stays sharp. The pointer leans it
+a little, mist drifts over its valleys, and pulses of light run down every
+attested line from the sources toward the living. It holds still for readers
+who ask their system for less motion, and with the river's own pause button.
+Nothing moves while the river is off screen.
 
 | Zoom in, and the names keep their size, as on a map | On a phone: the river, a record, its charts, the tree |
 |---|---|
-| [![The river zoomed in around Hélène Delaunay, born 1952: her line, her cousins' lines and the canopy in detail, her photograph in the record beside it](docs/screenshots/river-zoom.jpg)](docs/screenshots/river-zoom.jpg) | [![Four phone screens: the river with its range, zoom and pause button; Lucien Delaunay's record; Zofia Zając's physique chart and its table; the tree around Lucien](docs/screenshots/mobile.jpg)](docs/screenshots/mobile.jpg) |
+| [![The river zoomed in around Hélène Delaunay, born 1952: her line, her cousins' lines and the forest under them in detail, her photograph in the record beside it](docs/screenshots/river-zoom.jpg)](docs/screenshots/river-zoom.jpg) | [![Four phone screens: the river with its range, zoom and pause button; Lucien Delaunay's record; Zofia Zając's physique chart and its table; the tree around Lucien](docs/screenshots/mobile.jpg)](docs/screenshots/mobile.jpg) |
 
 The river reaches 2, 3 or 5 generations each way. To zoom from 1× to 3×,
 use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,

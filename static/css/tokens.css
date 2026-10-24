@@ -162,15 +162,16 @@
      ground's photograph so that every ink above keeps its contrast. */
   --rv-core: #fdf3d8; --rv-lit-halo: #f2cf86; --rv-contour: #6f9a8c;
   --rv-zone-down: #66bfab; --rv-zone-up: #f2c879;
+  /* After Selva Verde (Canopée, 2026-10-24): the zones' pale contour lines,
+     and the attested water's white thread of light and its glow. */
+  --rv-contour-hi: #e4efe9; --rv-thread: #fffbef; --rv-thread-glow: #ffe8b5;
   --rv-shade-rgb: 10 17 14;
   /* The mist in two corners of the ground, as over Selva Verde's forest. */
   --rv-mist-rgb: 214 226 220;
-  /* The living ground (river-scene.js, docs/adr/0004 §11): the forest floor,
-     a crown in shade and in light, the few that take the sun warm, the
-     low sun itself, and the wet ground of a bank. Read by the script, so
-     the drawing and the ground share one palette. */
-  --rv-canopy-deep: #050d0a; --rv-canopy-mid: #16301f; --rv-canopy-lit: #3a6644;
-  --rv-canopy-warm: #7c8046; --rv-sun: #ffe1ad; --rv-bank: #10211b;
+  /* The living ground (river-scene.js, docs/adr/0004 §12): the low sun's
+     light over the photograph. Read by the script, so the drawing and the
+     ground share one palette. */
+  --rv-sun: #ffe1ad;
   --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* Study 06 on the river itself, under every theme: anything drawn inside

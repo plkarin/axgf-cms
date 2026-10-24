@@ -1,17 +1,21 @@
-/* The river's living ground (v0.5.0, docs/adr/0004 §11).
+/* The river's living ground (v0.5.0, docs/adr/0004 §11; redrawn 2026-10-24).
  *
- * Under the drawing, a forest seen from above, computed for every pixel of
- * the screen it is shown on: never a picture stretched to fit, so never soft
- * and never in steps. Crowns lit by a low sun, shadows between them, gusts
- * crossing the canopy and leaning the trees as they pass, mist drifting in
- * two corners, and banks where the water runs. Over the drawing, the water's
+ * Under the drawing, the ground of the operator's Selva Verde reference: a
+ * forested mountainside seen from the air at golden hour, its spine of
+ * clearings down the middle, mist over the valleys at both edges, the low
+ * sun in the upper right (static/img/river-ground.jpg, made in the
+ * operator's Canva from a description of the reference, not from it). It is
+ * drawn in relief: a depth map of it (river-ground-depth.jpg) moves its
+ * near parts more than its far ones as the pointer leans it and as the
+ * river is zoomed, the mist drifts over it, and the shade every ink above
+ * was measured on deepens toward the edges. Over the drawing, the water's
  * light: glints moving down every attested line from the sources toward the
  * living, as Selva Verde's path is lit.
  *
  * Decoration, and the client's alone. The server's SVG and payload are
- * unchanged (ADR 0001); everything here is drawn from the edges river.js
+ * unchanged (ADR 0001); the glints are drawn from the edges river.js
  * already holds, at the places it draws them. Without WebGL, or in print,
- * the photograph and the ink stay as they were.
+ * the photograph (as the stage's background) and the ink stay as they were.
  * prefers-reduced-motion, "Cut" in the settings, or the river's own pause
  * button draw the ground once and hold it still; nothing moves while the
  * river is off screen or the tab is hidden.
@@ -41,121 +45,46 @@
     }
     return out.length === 3 && out.every(function (n) { return n >= 0 && n <= 1; }) ? out : fallback;
   }
-  var GREY = [0.1, 0.12, 0.11];
   var P = {
-    deep: colour('--rv-canopy-deep', GREY), mid: colour('--rv-canopy-mid', GREY),
-    lit: colour('--rv-canopy-lit', GREY), warm: colour('--rv-canopy-warm', GREY),
-    sun: colour('--rv-sun', [1, 1, 1]), bank: colour('--rv-bank', GREY),
-    mist: colour('--rv-mist-rgb', [0.85, 0.88, 0.86]), shade: colour('--rv-shade-rgb', [0.04, 0.07, 0.05]),
-    core: colour('--rv-core', [1, 0.95, 0.85])
+    sun: colour('--rv-sun', [1, 1, 1]), mist: colour('--rv-mist-rgb', [0.85, 0.88, 0.86]),
+    shade: colour('--rv-shade-rgb', [0.04, 0.07, 0.05]), core: colour('--rv-core', [1, 0.95, 0.85])
   };
+  // The photograph and its depth map; how much larger than the stage it is
+  // drawn, so that leaning and zooming never show its edge.
+  var PIC = { src: '/static/img/river-ground.jpg?v=4', depth: '/static/img/river-ground-depth.jpg?v=1', aspect: 1680 / 944, over: 1.1 };
 
   /* ---- the ground: one triangle and one fragment shader ---- */
   var VERT = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
   var FRAG = [
     'precision highp float;',
-    'uniform vec2 uRes;uniform vec4 uView;uniform float uTime;uniform float uWind;',
-    'uniform sampler2D uMask;uniform vec4 uMaskRect;',
-    'uniform vec3 uDeep,uMid,uLit,uWarm,uSun,uMist,uBank,uShade;',
-    // A tree every CELL units; the wind blows toward the upper right; the
-    // sun is low in the upper right too, as over Selva Verde.
-    'const float CELL=11.0;const vec2 WIND=vec2(0.86,-0.51);',
-    'const vec3 SUN=vec3(0.55,-0.62,0.56);',
+    'uniform vec2 uRes;uniform float uTime;uniform vec4 uRect;uniform vec2 uCam;uniform float uDep;',
+    'uniform sampler2D uPic;uniform sampler2D uDepth;uniform vec3 uSun,uMist,uShade;',
     'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
-    'vec2 hash2(vec2 p){return vec2(hash(p),hash(p+19.19));}',
     'float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
     ' return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y);}',
-    // Value noise with its derivatives, for the hills' slopes.
-    'vec3 noised(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f),du=6.0*f*(1.0-f);',
-    ' float a=hash(i),b=hash(i+vec2(1.0,0.0)),c=hash(i+vec2(0.0,1.0)),d=hash(i+vec2(1.0,1.0));',
-    ' return vec3(a+(b-a)*u.x+(c-a)*u.y+(a-b-c+d)*u.x*u.y,du*(vec2(b-a,c-a)+(a-b-c+d)*u.yx));}',
-    'vec3 hills(vec2 p){float s=0.0,a=0.5,k=1.0;vec2 d=vec2(0.0);',
-    ' for(int i=0;i<4;i++){vec3 n=noised(p);s+=a*n.x;d+=a*k*n.yz;p=p*2.03+vec2(13.1,7.7);k*=2.03;a*=0.5;}',
-    ' return vec3(s,d);}',
-    'float fbm(vec2 p){float s=0.0,a=0.5;for(int i=0;i<4;i++){s+=a*noise(p);p=p*2.07+vec2(17.3,9.1);a*=0.5;}return s;}',
-    // How near the water a point is (0 far, 1 on it): the mask river-scene.js
-    // draws from the edges.
-    'float wet(vec2 w){return texture2D(uMask,(w-uMaskRect.xy)*uMaskRect.zw).r;}',
-    // A gust: a band of wind travelling across the forest; and each tree's
-    // own sway, small, at its own rhythm.
-    'vec2 sway(vec2 c,out float g){',
-    ' g=smoothstep(0.42,0.92,noise(c*0.08-WIND*uTime*0.45));',
-    ' float own=sin(uTime*(1.1+0.7*hash(c+2.3))+6.2831*hash(c+8.7));',
-    ' return WIND*uWind*(0.035*own*(0.4+g)+0.12*g);}',
-    // One tree: where its crown is, how wide, how tall, and whether it stands
-    // at all (not in the water, thinning on a bank).
-    'float tree(vec2 c,vec2 g,vec2 fp,out vec2 d,out float rad,out float tall,out vec2 sw,out float gu){',
-    ' float room=1.0-smoothstep(0.1,0.5,wet((c+0.5)*CELL));',
-    ' sw=sway(c,gu);',
-    ' d=fp-(g+0.2+0.6*hash2(c)+sw);',
-    ' rad=(0.46+0.34*hash(c+4.1))*mix(0.8,1.22,noise(c*0.06))*mix(0.6,1.0,room);',
-    ' tall=(0.55+0.45*hash(c+7.7))*room;',
-    // A conifer seen from above: a crown with points, not a disc.
-    ' float an=atan(d.y,d.x)+6.2831*hash(c+3.3);',
-    ' float sp=1.0+0.09*sin(an*9.0)+0.07*sin(an*4.0+2.0*hash(c+5.9))+0.05*sin(an*13.0);',
-    ' return room<0.06?2.0:dot(d,d)/(rad*rad*sp*sp);}',
-    // The canopy over p (in cells): the height of the tallest crown there,
-    // its normal, a per-tree tone, and the gust it is in.
-    'float canopy(vec2 p,out vec3 n,out float tone,out float gst){',
-    ' vec2 ip=floor(p),fp=fract(p);float best=0.0;n=vec3(0.0,0.0,1.0);tone=0.0;gst=0.0;',
-    ' for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){',
-    '  vec2 g=vec2(float(i),float(j)),c=ip+g,d,sw;float rad,tall,gu;',
-    '  float q=tree(c,g,fp,d,rad,tall,sw,gu);',
-    '  if(q>=1.0)continue;',
-    '  float s=sqrt(1.0-q),z=tall*(0.3+0.7*s);',
-    '  if(z>best){best=z;n=normalize(vec3(tall*0.7*d/(rad*rad*max(s,0.12))+sw*2.6,1.0));tone=hash(c+1.3);gst=gu;}',
-    ' }',
-    ' return best;}',
-    // The height alone, for the shadow a crown casts on its neighbours.
-    'float height(vec2 p){',
-    ' vec2 ip=floor(p),fp=fract(p);float best=0.0;',
-    ' for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){',
-    '  vec2 g=vec2(float(i),float(j)),c=ip+g,d,sw;float rad,tall,gu;',
-    '  float q=tree(c,g,fp,d,rad,tall,sw,gu);',
-    '  if(q<1.0)best=max(best,tall*(0.3+0.7*sqrt(1.0-q)));',
-    ' }',
-    ' return best;}',
+    'float fbm(vec2 p){float s=0.0,a=0.5;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.07+vec2(17.3,9.1);a*=0.5;}return s;}',
     'void main(){',
     ' vec2 px=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);',
-    ' vec2 w=uView.xy+px*uView.zw;',
     ' vec2 uv=px/uRes;',
-    ' vec3 L=normalize(SUN);',
-    // The hills under the forest: their slopes, lit by the same sun.
-    ' vec3 hl=hills(w*0.0032);',
-    ' vec3 hn=normalize(vec3(-hl.yz*0.0032*270.0,1.0));',
-    ' float hs=clamp(dot(hn,L)*1.25,0.0,1.4);',
-    ' vec3 n;float tone,gst;',
-    ' float h=canopy(w/CELL,n,tone,gst);',
-    // Needles: a fine bump on every crown.
-    ' float l0=noise(w*0.5),lx=noise(w*0.5+vec2(0.6,0.0)),ly=noise(w*0.5+vec2(0.0,0.6));',
-    ' n=normalize(n+vec3((lx-l0)*1.3,(ly-l0)*1.3,0.0));',
-    ' float diff=max(dot(n,L),0.0);',
-    ' vec3 alb=mix(uMid,uLit,smoothstep(0.3,1.0,tone)*0.85);',
-    ' alb=mix(alb,uWarm,smoothstep(0.955,0.99,fract(tone*7.31))*0.75);',
-    // Valleys are greener and deeper, ridges catch the light.
-    ' alb*=mix(0.72,1.12,smoothstep(0.25,0.75,hl.x));',
-    ' alb*=1.0+0.24*gst*uWind;',
-    ' float ao=smoothstep(0.0,0.85,h);',
-    ' vec3 col=alb*(0.17+0.46*ao)+alb*uSun*diff*0.86;',
-    ' col+=uSun*pow(max(dot(reflect(-L,n),vec3(0.0,0.0,1.0)),0.0),14.0)*0.045*ao;',
-    // A crown upsun of this point, taller than it, shades it.
-    ' float sh=height(w/CELL+vec2(0.34,-0.38));',
-    ' col*=1.0-0.5*smoothstep(0.06,0.3,sh-h);',
-    // The forest floor, and the wet ground of a bank.
-    ' float mk=wet(w);',
-    ' vec3 floorc=mix(uDeep,uBank,smoothstep(0.08,0.55,mk))*(0.8+0.35*noise(w*0.3));',
-    ' col=h>0.0?col:floorc;',
-    ' col*=mix(0.48,1.34,hs/1.4);',
-    // Mist, drifting, thickest in two corners and warm where the sun is; a
-    // breath of it everywhere.
-    ' float m=fbm(w*0.004+vec2(uTime*0.011,uTime*0.004));',
-    ' float bl=1.0-smoothstep(0.0,0.7,length((uv-vec2(0.0,1.0))*vec2(1.0,1.4)));',
-    ' float tr=1.0-smoothstep(0.0,0.62,length((uv-vec2(1.0,0.0))*vec2(1.1,1.5)));',
-    ' col=mix(col,uMist,clamp(smoothstep(0.3,0.74,m)*bl*0.85+0.05*m,0.0,0.8));',
-    ' col=mix(col,mix(uMist,uSun,0.45),clamp(smoothstep(0.28,0.74,m)*tr*0.75+tr*0.12,0.0,0.75));',
+    // The photograph, each pixel looked up where the camera's shift, scaled
+    // by how near it is, takes it: the spine and the near trees move more
+    // than the valleys.
+    ' vec2 p=(px-uRect.xy)/uRect.zw,s=uCam/uRect.zw;',
+    ' float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);',
+    ' if(uDep>0.5){d=texture2D(uDepth,clamp(q,0.0,1.0)).r;q=p-s*(d-0.5);}',
+    ' vec3 col=texture2D(uPic,clamp(q,0.0,1.0)).rgb;',
+    // Mist drifting over the valleys at both edges and into the lower
+    // corners, warm where the sun is, a breath of it everywhere.
+    ' vec2 w=px/uRes.y;',
+    ' float m=fbm(w*2.6+vec2(uTime*0.018,uTime*0.006));',
+    ' float side=max(1.0-smoothstep(0.0,0.3,uv.x),smoothstep(0.7,1.0,uv.x))*(0.55+0.45*smoothstep(0.2,1.0,uv.y));',
+    ' col=mix(col,mix(uMist,uSun,0.35*smoothstep(0.5,1.0,uv.x)*(1.0-uv.y)),clamp(smoothstep(0.38,0.78,m)*side*0.6+0.04*m,0.0,0.6));',
+    // The low sun's light from the upper right.
+    ' float sun=1.0-smoothstep(0.0,0.8,length((uv-vec2(1.0,0.0))*vec2(1.0,1.35)));',
+    ' col+=uSun*sun*sun*0.1;',
     // The shade every ink above was measured on, deeper at the edges.
-    ' float v=smoothstep(0.42,1.05,length((uv-0.5)*vec2(1.0,1.15)));',
-    ' col=mix(col,uShade,0.12+0.48*v);',
+    ' float v=smoothstep(0.38,1.05,length((uv-0.5)*vec2(1.0,1.15)));',
+    ' col=mix(col,uShade,0.2+0.42*v);',
     // Dither, so a dark gradient never shows its steps.
     ' col+=(hash(gl_FragCoord.xy+fract(uTime)*91.7)-0.5)/255.0;',
     ' gl_FragColor=vec4(col,1.0);',
@@ -185,19 +114,50 @@
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   var U = {};
-  ['uRes', 'uView', 'uTime', 'uWind', 'uMask', 'uMaskRect', 'uDeep', 'uMid', 'uLit', 'uWarm', 'uSun', 'uMist', 'uBank', 'uShade']
+  ['uRes', 'uTime', 'uRect', 'uCam', 'uDep', 'uPic', 'uDepth', 'uSun', 'uMist', 'uShade']
     .forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
-  [['uDeep', 'deep'], ['uMid', 'mid'], ['uLit', 'lit'], ['uWarm', 'warm'], ['uSun', 'sun'], ['uMist', 'mist'], ['uBank', 'bank'], ['uShade', 'shade']]
-    .forEach(function (p) { gl.uniform3fv(U[p[0]], P[p[1]]); });
-  var tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
-  gl.uniform1i(U.uMask, 0);
-  var maskRect = [0, 0, 1, 1];
+  [['uSun', 'sun'], ['uMist', 'mist'], ['uShade', 'shade']].forEach(function (p) { gl.uniform3fv(U[p[0]], P[p[1]]); });
+  gl.uniform1i(U.uPic, 0); gl.uniform1i(U.uDepth, 1);
+  // The photograph arrives once. For the graphics card it is redrawn at a
+  // power of two each way, so that it can be filtered as it shrinks (its
+  // aspect is the stage's rectangle's, not the texture's). Until it is
+  // here, the stage's own background shows: the ground is not drawn.
+  function texture(unit) {
+    var t = gl.createTexture();
+    gl.activeTexture(unit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    return t;
+  }
+  var picT = texture(gl.TEXTURE0), depT = texture(gl.TEXTURE1), hasPic = false, hasDep = false;
+  var pic = new Image(), dep = new Image();
+  pic.onload = function () {
+    if (gl.isContextLost()) return;
+    var big = Math.max(stage.clientWidth, 800) * Math.min(window.devicePixelRatio || 1, 2) > 1700;
+    var c = document.createElement('canvas');
+    c.width = big ? 4096 : 2048; c.height = big ? 2048 : 1024;
+    var cx = c.getContext('2d');
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(pic, 0, 0, c.width, c.height);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, picT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, c);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    hasPic = true;
+    stage.classList.add('rv-alive');
+    if (!running) draw(false);
+  };
+  dep.onload = function () {
+    if (gl.isContextLost()) return;
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, depT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, gl.LUMINANCE, gl.UNSIGNED_BYTE, dep);
+    hasDep = true;
+    if (!running) draw(false);
+  };
+  pic.src = PIC.src;
+  dep.src = PIC.depth;
 
   /* ---- the water's light: a 2D canvas over the drawing ---- */
   var water = document.createElement('canvas');
@@ -223,7 +183,6 @@
 
   stage.insertBefore(ground, stage.firstChild);
   stage.appendChild(water);
-  stage.classList.add('rv-alive');
 
   /* ---- the layout river.js holds ---- */
   var WIDTHS = [0, 1.6, 3, 5, 8, 12];
@@ -246,11 +205,8 @@
   function layout(L) {
     if (!L || !L.edges) return;
     var rects = blockers(), dots = L.persons || [];
-    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     flows = [];
     L.edges.forEach(function (e) {
-      x0 = Math.min(x0, e.x1, e.x2); x1 = Math.max(x1, e.x1, e.x2);
-      y0 = Math.min(y0, e.y1, e.y2); y1 = Math.max(y1, e.y1, e.y2);
       if (e.conf !== 'a') return;
       var est = Math.hypot(e.x2 - e.x1, e.y2 - e.y1) * 1.25 + 4, n = Math.max(6, Math.ceil(est / STEP));
       var xs = new Float32Array(n + 1), ys = new Float32Array(n + 1), cum = new Float32Array(n + 1), ok = new Uint8Array(n + 1);
@@ -274,34 +230,8 @@
       flows.push({ x: xs, y: ys, cum: cum, ok: ok, n: n, len: len, w: WIDTHS[cls(e.d)],
         k: Math.max(1, Math.round(len / 70)), phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
     });
-    if (x0 === Infinity) { x0 = 0; y0 = 0; x1 = 1; y1 = 1; }
-    mask(L.edges, x0 - 90, y0 - 90, x1 + 90, y1 + 90);
     request();
   }
-  // How near the water every point is, drawn at half a pixel per unit and
-  // softened: the trees thin out on a bank, and the floor there is wet.
-  function mask(edges, x0, y0, x1, y1) {
-    var S = 0.5, W = Math.max(2, Math.ceil((x1 - x0) * S)), H = Math.max(2, Math.ceil((y1 - y0) * S));
-    var c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    var m = c.getContext('2d');
-    m.fillStyle = 'black'; m.fillRect(0, 0, W, H);
-    if ('filter' in m) m.filter = 'blur(3px)';
-    m.setTransform(S, 0, 0, S, -x0 * S, -y0 * S);
-    m.lineCap = 'round'; m.strokeStyle = 'white';
-    [[30, 0.16], [18, 0.3], [9, 0.55], [3, 1]].forEach(function (pass) {
-      m.globalAlpha = pass[1];
-      edges.forEach(function (e) {
-        var mid = (e.y1 + e.y2) / 2;
-        m.lineWidth = WIDTHS[cls(e.d)] + pass[0];
-        m.beginPath(); m.moveTo(e.x1, e.y1); m.bezierCurveTo(e.x1, mid, e.x2, mid, e.x2, e.y2); m.stroke();
-      });
-    });
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
-    maskRect = [x0, y0, 1 / (x1 - x0), 1 / (y1 - y0)];
-  }
-
   /* ---- drawing ---- */
   var dpr = 1, cw = 0, ch = 0, clock = 0, lastNow = 0, cap = 2;
   function size() {
@@ -321,18 +251,40 @@
     var k = Math.min(cw / vb.width, ch / vb.height);
     return { x: vb.x - (cw / k - vb.width) / 2, y: vb.y - (ch / k - vb.height) / 2, k: k };
   }
+  // The photograph covers the stage, a little larger. Zoomed, it grows and
+  // follows the camera a third as much as the drawing does, as distant
+  // ground would; the pointer leans it, and while the scene lives it
+  // sways a little.
+  var lean = [0, 0], leanTo = [0, 0], rest = null;
+  if (!reduce && !cut) {
+    stage.addEventListener('pointermove', function (ev) {
+      var r = stage.getBoundingClientRect();
+      leanTo = [Math.max(-1, Math.min(1, (ev.clientX - r.left) / r.width * 2 - 1)), Math.max(-1, Math.min(1, (ev.clientY - r.top) / r.height * 2 - 1))];
+      if (!running) draw(false);
+    }, { passive: true });
+    stage.addEventListener('pointerleave', function () { leanTo = [0, 0]; if (!running) draw(false); });
+  }
   function draw(moving) {
     size();
     var v = view();
-    if (!v) return;
-    gl.viewport(0, 0, ground.width, ground.height);
-    gl.uniform2f(U.uRes, ground.width, ground.height);
-    gl.uniform4f(U.uView, v.x, v.y, 1 / (v.k * dpr), 1 / (v.k * dpr));
+    if (!v || !hasPic) return;
+    var svg = stage.querySelector('svg.rv-svg'), zoomed = svg && svg.hasAttribute('data-zoom');
+    var cx = v.x + cw / (2 * v.k), cy = v.y + ch / (2 * v.k);
+    if (!zoomed || !rest) rest = { x: cx, y: cy, k: v.k };
+    var z = Math.max(1, v.k / rest.k), grow = 1 + (z - 1) / 3;
+    var W = ground.width, H = ground.height, sc = Math.max(W / PIC.aspect, H) * PIC.over * grow;
+    var pw = sc * PIC.aspect, ph = sc;
+    var px = (W - pw) / 2 - (cx - rest.x) * rest.k * dpr * (z - 1) / 3, py = (H - ph) / 2 - (cy - rest.y) * rest.k * dpr * (z - 1) / 3;
+    lean[0] += (leanTo[0] - lean[0]) * (moving ? 0.08 : 1); lean[1] += (leanTo[1] - lean[1]) * (moving ? 0.08 : 1);
+    var sway = moving ? Math.sin(clock * 0.27) : 0;
+    gl.viewport(0, 0, W, H);
+    gl.uniform2f(U.uRes, W, H);
     gl.uniform1f(U.uTime, clock);
-    gl.uniform1f(U.uWind, moving ? 1 : 0);
-    gl.uniform4f(U.uMaskRect, maskRect[0], maskRect[1], maskRect[2], maskRect[3]);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.uniform4f(U.uRect, px, py, pw, ph);
+    gl.uniform2f(U.uCam, (lean[0] * 14 + sway * 5) * dpr, (lean[1] * 9) * dpr);
+    gl.uniform1f(U.uDep, hasDep ? 1 : 0);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, picT);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, depT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     wctx.setTransform(1, 0, 0, 1, 0, 0);
     wctx.clearRect(0, 0, water.width, water.height);

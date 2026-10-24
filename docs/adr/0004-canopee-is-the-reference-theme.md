@@ -384,3 +384,50 @@ Measured, in Chromium with WebGL (software rendering):
 Two frames 0.9 s apart differ on 7 % of the ground's pixels: the gusts and
 the pulses. The software renderer is far slower than a graphics card, so
 frame rates were not measured here.
+
+## 12. Selva Verde's own ground (the operator's third review)
+
+On 24 October 2026 the operator set the river beside Selva Verde again and
+asked for its background and its mesh to look like the reference's. The
+computed forest of §11 was a forest seen straight down, crowns as a
+pattern; Selva Verde is a photograph of a forested mountainside seen at an
+angle, at golden hour, mist over the valleys at both edges, its spine of
+clearings down the middle, the paths a white thread of light through pale,
+translucent zones.
+
+**The ground is a photograph again, in relief.** `river-ground.jpg` is made
+anew in the operator's Canva, from a description of the reference's
+landscape (not from the reference, whose author holds it): a forested
+mountainside from the air at golden hour, a spine of small clearings down
+the middle, mist at the left and right edges, the sun in the upper right;
+no text, buildings or paths. It is enlarged as ADR 0017's pictures are, to
+3,840 × 2,160. `river-scene.js` draws it with WebGL, covering the stage and
+a tenth more, in relief by its depth map (`river-ground-depth.jpg`, Depth
+Anything V2, `tools/pictures/depth.py`): the spine and the near trees move
+more than the valleys as the pointer leans the ground (only where motion is
+allowed) and as it sways while the scene lives. Zoomed, it grows and follows
+the camera a third as much as the drawing does, as distant ground would.
+Over it the mist still drifts, thickest at both edges and in the lower
+corners and warm on the sun's side, the sun's light falls from the upper
+right, and the shade every ink was measured on deepens toward the edges.
+
+This undoes §11's "never a picture stretched to fit": the photograph is
+four times its Canva size and filtered by the graphics card as it shrinks,
+so it is no longer scaled up on any screen up to two device pixels per CSS
+pixel. The computed forest, its gusts and its banks' mask are gone; its
+tokens with them (`--rv-canopy-*`, `--rv-bank`). The glints along the water
+are unchanged.
+
+**The mesh after the reference** (Canopée only, `app.css`):
+
+- the zones are a light wash of teal under the fixed point and ochre over
+  it, with fine pale contour lines (`--rv-contour-hi`) rather than lines in
+  their own colour, the last one dotted;
+- the attested water is a white thread (`--rv-thread`) with a warm glow
+  (`--rv-thread-glow`), the dark banks barely there;
+- each person is a dot in a ring of light;
+- over the photograph the half-century bands are only a veil: their rules
+  and years still carry the time, without striping the ground.
+
+The server's river is unchanged (ADR 0001): all of it is the client's, and
+without WebGL the photograph is the stage's background, as before.

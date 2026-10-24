@@ -1069,6 +1069,29 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
     assert!(js.contains("root.dataset.riverMotion === 'cut'"));
     assert!(js.contains("document.hidden"));
+    // The ground is Selva Verde's (the operator's review, 2026-10-24): a
+    // photograph of a forested mountainside, drawn in relief by its depth
+    // map, the pointer leaning it only where motion is allowed.
+    assert!(js.contains(
+        "var PIC = { src: '/static/img/river-ground.jpg?v=4', depth: '/static/img/river-ground-depth.jpg?v=1',"
+    ));
+    assert!(js
+        .contains("float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);"));
+    assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
+    for (img, len) in [
+        (
+            "/static/img/river-ground.jpg",
+            axgf_cms::render::RIVER_GROUND_JPG.len(),
+        ),
+        (
+            "/static/img/river-ground-depth.jpg",
+            axgf_cms::render::RIVER_GROUND_DEPTH_JPG.len(),
+        ),
+    ] {
+        let resp = get(&app, img).await;
+        assert_eq!(resp.status(), StatusCode::OK, "{img}");
+        assert!(len > 10_000, "{img}");
+    }
     // A decoration: it never takes a pointer from the drawing.
     let css = include_str!("../static/app.css");
     assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));

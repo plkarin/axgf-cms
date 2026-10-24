@@ -62,6 +62,9 @@ tree became a picture the same day (ADR 0016) and is made as below, at
 
 ## Consequences
 
+- Canopée's ground was made anew the next day, after Selva Verde's
+  landscape (ADR 0004 §12), and enlarged the same way; it has a depth map
+  beside it.
 - The binary is about 4 MiB larger. A visitor fetches one of these
   pictures once a day, under the theme they read.
 - Making a view's picture again means: export the Canva page as PNG, run

@@ -180,6 +180,17 @@ climbs.
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
 
+**Canopée after Selva Verde's ground** (docs/adr/0004 §12): the river's ground
+is now a photograph of a forested mountainside at golden hour, seen from the
+air, made in Canva from a description of the operator's reference. It has
+mist over the valleys at both edges and the sun in the upper right, and is
+drawn in relief by its depth map. The pointer leans it a little, and it
+grows a third as much as the drawing when zoomed. The mesh follows the
+reference: a light wash of teal and ochre with fine pale contour lines, the
+attested water a white thread of light, each person a dot in a ring of
+light, and the half-century bands only a veil over the photograph. The
+computed forest seen from above, its gusts and its tokens are gone.
+
 **Sharp pictures under the views** (docs/adr/0017): Canopée's forest,
 Fusion's laboratory and Summit's mountain were made at 1,680 to 1,776
 pixels wide and shown up to twice that on a dense screen. Each is now

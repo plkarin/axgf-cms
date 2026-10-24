@@ -19,7 +19,7 @@ How sure each fact is stays in plain sight.
 <a href="#more">Documentation</a>
 </p>
 
-[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as white threads of light through pale contoured zones over a forested mountainside seen from the air at golden hour, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
+[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as white threads of light through pale contoured zones over a forested mountain valley seen from the air at golden hour, its terraces, golden meadow and turquoise streams and ponds under them, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
 
 <sub>Every screenshot on this page shows the same fictional family: about 250
 people from Brittany and Poland, from the 1640s to today. It was generated
@@ -81,14 +81,17 @@ at the top numbers where you have been, and the record beside the river
 follows you.
 
 <p align="center">
-<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: pulses of light run down the attested lines toward the living, over the forested mountainside and its drifting mist.">
+<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: pulses of light run down the attested lines toward the living, rings of light open around each person, ripples run down the valley's turquoise streams and the mist drifts.">
 </p>
 
 **The river is alive** *(new in 0.5.0)*. Under the drawing lies a
-forested mountainside seen from the air at golden hour. It is a 4K
-photograph drawn in relief by WebGL, so it stays sharp. The pointer leans it
-a little, mist drifts over its valleys, and pulses of light run down every
-attested line from the sources toward the living. It holds still for readers
+forested mountain valley seen from the air at golden hour, with terraces, a
+golden meadow, and turquoise streams and ponds. It is a 4K photograph drawn
+in relief by WebGL, so it stays sharp. Ripples run down its streams and the
+sun glints on them. The family's rivers light the forest around them, pulses
+of light run down every attested line from the sources toward the living,
+and a ring of light opens around each person. The pointer leans the
+landscape a little, the sun's rays turn and the mist drifts. It holds still for readers
 who ask their system for less motion, and with the river's own pause button.
 Nothing moves while the river is off screen.
 

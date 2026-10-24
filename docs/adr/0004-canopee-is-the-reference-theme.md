@@ -402,7 +402,7 @@ mountainside from the air at golden hour, a spine of small clearings down
 the middle, mist at the left and right edges, the sun in the upper right;
 no text, buildings or paths. It is enlarged as ADR 0017's pictures are, to
 3,840 × 2,160. `river-scene.js` draws it with WebGL, covering the stage and
-a tenth more, in relief by its depth map (`river-ground-depth.jpg`, Depth
+a tenth more, in relief by its depth map (red in `river-ground-maps.jpg`, Depth
 Anything V2, `tools/pictures/depth.py`): the spine and the near trees move
 more than the valleys as the pointer leans the ground (only where motion is
 allowed) and as it sways while the scene lives. Zoomed, it grows and follows
@@ -431,3 +431,33 @@ are unchanged.
 
 The server's river is unchanged (ADR 0001): all of it is the client's, and
 without WebGL the photograph is the stage's background, as before.
+
+**The same picture, animated** (the operator's next message, the same day:
+"not only the style of the view, but the river, the several rivers and the
+animations around it — really the same image, animated"). The ground was
+made again, closer to the reference's composition: a valley running down
+the middle between dark pine forest, curved terraces on the left, a golden
+meadow in the lower left, turquoise streams winding down the right into a
+few ponds, a rocky outcrop with a round stone platform at the bottom, mist
+at the edges and in the lower corners, the sun in the upper right (again
+from a description; no text, no path, no buildings, no people). Beside it,
+`river-ground-maps.jpg` carries its depth (red) and its water (green: the
+ponds by their turquoise, the streams by their foam, found once with
+`tools/pictures/water.py`). What moves:
+
+- the landscape's water: ripples run down the streams and the ponds, the
+  photograph trembling under them, and the sun glints on them;
+- the family's rivers light the forest around them, as the reference's path
+  does, the light coming up them in slow waves from the sources toward the
+  living (a soft mask drawn from the river's own edges, the attested ones
+  brighter), and pulses of light still run along every attested line;
+- each person is a marker of light, as the reference's stations are: a ring
+  opens from it and fades every few seconds, the fixed point's wider;
+- the sun's rays turn slowly across the ground from the upper right, and
+  the mist drifts over the edges.
+
+All of it holds still on the river's terms (reduced motion, "Cut", the
+pause, a hidden tab, a river off screen, a machine too slow). The family's
+lines keep the river's own geometry: the reference's single path is the
+family's many rivers, branching as the family does; the server draws them
+and decides where they run.

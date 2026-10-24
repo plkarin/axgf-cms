@@ -584,8 +584,8 @@ fn routes(state: Shared) -> Router {
             get(public::river_ground_jpg),
         )
         .route(
-            "/static/img/river-ground-depth.jpg",
-            get(public::river_ground_depth_jpg),
+            "/static/img/river-ground-maps.jpg",
+            get(public::river_ground_maps_jpg),
         )
         .route(
             "/static/img/river-contours.svg",

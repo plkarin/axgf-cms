@@ -1,16 +1,20 @@
 /* The river's living ground (v0.5.0, docs/adr/0004 §11; redrawn 2026-10-24).
  *
  * Under the drawing, the ground of the operator's Selva Verde reference: a
- * forested mountainside seen from the air at golden hour, its spine of
- * clearings down the middle, mist over the valleys at both edges, the low
- * sun in the upper right (static/img/river-ground.jpg, made in the
- * operator's Canva from a description of the reference, not from it). It is
- * drawn in relief: a depth map of it (river-ground-depth.jpg) moves its
- * near parts more than its far ones as the pointer leans it and as the
- * river is zoomed, the mist drifts over it, and the shade every ink above
- * was measured on deepens toward the edges. Over the drawing, the water's
- * light: glints moving down every attested line from the sources toward the
- * living, as Selva Verde's path is lit.
+ * forested mountain valley seen from the air at golden hour, terraces and a
+ * golden meadow on its left, turquoise streams and ponds on its right, a
+ * rocky outcrop at its foot, mist at its edges, the low sun in the upper
+ * right (static/img/river-ground.jpg, made in the operator's Canva from a
+ * description of the reference, not from it). It is drawn in relief: a
+ * depth map of it (red in river-ground-maps.jpg) moves its near parts more
+ * than its far ones as the pointer leans it and as the river is zoomed.
+ * And it moves: ripples run down its water (green in the same maps) and the
+ * sun glints on it; the family's rivers light the forest around them in
+ * slow waves; the sun's rays turn; the mist drifts; the shade every ink
+ * above was measured on deepens toward the edges. Over the drawing, the
+ * water's light: glints moving down every attested line from the sources
+ * toward the living, as Selva Verde's path is lit, and each person a marker
+ * of light whose ring opens every few seconds.
  *
  * Decoration, and the client's alone. The server's SVG and payload are
  * unchanged (ADR 0001); the glints are drawn from the edges river.js
@@ -47,18 +51,21 @@
   }
   var P = {
     sun: colour('--rv-sun', [1, 1, 1]), mist: colour('--rv-mist-rgb', [0.85, 0.88, 0.86]),
-    shade: colour('--rv-shade-rgb', [0.04, 0.07, 0.05]), core: colour('--rv-core', [1, 0.95, 0.85])
+    shade: colour('--rv-shade-rgb', [0.04, 0.07, 0.05]), core: colour('--rv-core', [1, 0.95, 0.85]),
+    thread: colour('--rv-thread-glow', [1, 0.91, 0.71])
   };
-  // The photograph and its depth map; how much larger than the stage it is
-  // drawn, so that leaning and zooming never show its edge.
-  var PIC = { src: '/static/img/river-ground.jpg?v=4', depth: '/static/img/river-ground-depth.jpg?v=1', aspect: 1680 / 944, over: 1.1 };
+  // The photograph and its maps (red: how near each pixel is; green: where
+  // its water is, the streams and the ponds); how much larger than the
+  // stage it is drawn, so that leaning and zooming never show its edge.
+  var PIC = { src: '/static/img/river-ground.jpg?v=5', maps: '/static/img/river-ground-maps.jpg?v=1', aspect: 1680 / 944, over: 1.1 };
 
   /* ---- the ground: one triangle and one fragment shader ---- */
   var VERT = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
   var FRAG = [
     'precision highp float;',
     'uniform vec2 uRes;uniform float uTime;uniform vec4 uRect;uniform vec2 uCam;uniform float uDep;',
-    'uniform sampler2D uPic;uniform sampler2D uDepth;uniform vec3 uSun,uMist,uShade;',
+    'uniform sampler2D uPic;uniform sampler2D uDepth;uniform vec3 uSun,uMist,uShade,uThread;',
+    'uniform sampler2D uGlow;uniform vec4 uView;uniform vec4 uGlowRect;',
     'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
     'float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
     ' return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y);}',
@@ -73,18 +80,39 @@
     ' float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);',
     ' if(uDep>0.5){d=texture2D(uDepth,clamp(q,0.0,1.0)).r;q=p-s*(d-0.5);}',
     ' vec3 col=texture2D(uPic,clamp(q,0.0,1.0)).rgb;',
+    // The landscape's own water, its streams and its ponds: ripples running
+    // down it, the photograph trembling under them, and the sun glinting on
+    // it.
+    ' float wm=uDep>0.5?smoothstep(0.25,0.75,texture2D(uDepth,clamp(q,0.0,1.0)).g):0.0;',
+    ' if(wm>0.01){',
+    '  vec2 r=q*vec2(260.0,150.0)+vec2(0.0,-uTime*2.2);',
+    '  vec2 off=vec2(noise(r)-0.5,noise(r+7.3)-0.5)*0.0024*wm;',
+    '  col=mix(col,texture2D(uPic,clamp(q+off,0.0,1.0)).rgb,wm);',
+    '  float sp=pow(noise(q*vec2(520.0,300.0)+vec2(uTime*0.6,-uTime*3.1)),9.0);',
+    '  col+=uSun*sp*1.6*wm+vec3(0.02,0.06,0.07)*wm*(0.5+0.5*sin(uTime*1.7+q.y*90.0));',
+    ' }',
     // Mist drifting over the valleys at both edges and into the lower
     // corners, warm where the sun is, a breath of it everywhere.
     ' vec2 w=px/uRes.y;',
-    ' float m=fbm(w*2.6+vec2(uTime*0.018,uTime*0.006));',
+    ' float m=fbm(w*2.6+vec2(uTime*0.03,uTime*0.01));',
     ' float side=max(1.0-smoothstep(0.0,0.3,uv.x),smoothstep(0.7,1.0,uv.x))*(0.55+0.45*smoothstep(0.2,1.0,uv.y));',
     ' col=mix(col,mix(uMist,uSun,0.35*smoothstep(0.5,1.0,uv.x)*(1.0-uv.y)),clamp(smoothstep(0.38,0.78,m)*side*0.6+0.04*m,0.0,0.6));',
-    // The low sun's light from the upper right.
+    // The low sun's light from the upper right, and its rays across the
+    // ground, slowly turning.
     ' float sun=1.0-smoothstep(0.0,0.8,length((uv-vec2(1.0,0.0))*vec2(1.0,1.35)));',
     ' col+=uSun*sun*sun*0.1;',
+    ' vec2 sd=uv-vec2(1.04,-0.1);float ang=atan(sd.y,sd.x);',
+    ' float ray=smoothstep(0.55,0.95,noise(vec2(ang*11.0,uTime*0.07)))*smoothstep(1.3,0.15,length(sd));',
+    ' col+=uSun*ray*0.07;',
+    // The family's rivers light the forest around them, as Selva Verde's
+    // path does, the light coming up them in slow waves from the sources
+    // toward the living.
+    ' vec2 wp=uView.xy+px*uView.zw;',
+    ' float gw=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).r;',
+    ' col+=uThread*gw*gw*(0.2+0.06*sin(uTime*1.3+wp.y*0.025));',
     // The shade every ink above was measured on, deeper at the edges.
     ' float v=smoothstep(0.38,1.05,length((uv-0.5)*vec2(1.0,1.15)));',
-    ' col=mix(col,uShade,0.2+0.42*v);',
+    ' col=mix(col,uShade,0.14+0.38*v);',
     // Dither, so a dark gradient never shows its steps.
     ' col+=(hash(gl_FragCoord.xy+fract(uTime)*91.7)-0.5)/255.0;',
     ' gl_FragColor=vec4(col,1.0);',
@@ -114,10 +142,10 @@
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   var U = {};
-  ['uRes', 'uTime', 'uRect', 'uCam', 'uDep', 'uPic', 'uDepth', 'uSun', 'uMist', 'uShade']
+  ['uRes', 'uTime', 'uRect', 'uCam', 'uDep', 'uPic', 'uDepth', 'uSun', 'uMist', 'uShade', 'uThread', 'uGlow', 'uView', 'uGlowRect']
     .forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
-  [['uSun', 'sun'], ['uMist', 'mist'], ['uShade', 'shade']].forEach(function (p) { gl.uniform3fv(U[p[0]], P[p[1]]); });
-  gl.uniform1i(U.uPic, 0); gl.uniform1i(U.uDepth, 1);
+  [['uSun', 'sun'], ['uMist', 'mist'], ['uShade', 'shade'], ['uThread', 'thread']].forEach(function (p) { gl.uniform3fv(U[p[0]], P[p[1]]); });
+  gl.uniform1i(U.uPic, 0); gl.uniform1i(U.uDepth, 1); gl.uniform1i(U.uGlow, 2);
   // The photograph arrives once. For the graphics card it is redrawn at a
   // power of two each way, so that it can be filtered as it shrinks (its
   // aspect is the stage's rectangle's, not the texture's). Until it is
@@ -131,7 +159,9 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     return t;
   }
-  var picT = texture(gl.TEXTURE0), depT = texture(gl.TEXTURE1), hasPic = false, hasDep = false;
+  var picT = texture(gl.TEXTURE0), depT = texture(gl.TEXTURE1), glowT = texture(gl.TEXTURE2), hasPic = false, hasDep = false;
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+  var glowRect = [0, 0, 1, 1];
   var pic = new Image(), dep = new Image();
   pic.onload = function () {
     if (gl.isContextLost()) return;
@@ -152,12 +182,12 @@
   dep.onload = function () {
     if (gl.isContextLost()) return;
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, depT);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, gl.LUMINANCE, gl.UNSIGNED_BYTE, dep);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, dep);
     hasDep = true;
     if (!running) draw(false);
   };
   pic.src = PIC.src;
-  dep.src = PIC.depth;
+  dep.src = PIC.maps;
 
   /* ---- the water's light: a 2D canvas over the drawing ---- */
   var water = document.createElement('canvas');
@@ -180,6 +210,7 @@
     return c;
   }
   var halo = spindle(colour('--rv-lit-halo', P.core), 0.55, 0.22), spark = spindle(P.core, 1, 0.5);
+  var coreRgb = 'rgb(' + P.core.map(function (v) { return Math.round(v * 255); }).join(',') + ')';
 
   stage.insertBefore(ground, stage.firstChild);
   stage.appendChild(water);
@@ -206,6 +237,8 @@
     if (!L || !L.edges) return;
     var rects = blockers(), dots = L.persons || [];
     flows = [];
+    rings = dots.filter(function (d) { return d.x !== undefined; }).map(function (d, i) { return { x: d.x, y: d.y, c: d.role === 'centre', ph: Math.abs(Math.sin(d.x * 3.17 + d.y * 7.31 + i)) % 1 }; });
+    glow(L.edges);
     L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
       var est = Math.hypot(e.x2 - e.x1, e.y2 - e.y1) * 1.25 + 4, n = Math.max(6, Math.ceil(est / STEP));
@@ -231,6 +264,34 @@
         k: Math.max(1, Math.round(len / 70)), phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
     });
     request();
+  }
+  // Where the family's rivers light the ground: every line drawn wide and
+  // soft into a mask, the attested ones brighter, at half a pixel per unit.
+  var rings = [];
+  function glow(edges) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    edges.forEach(function (e) { x0 = Math.min(x0, e.x1, e.x2); x1 = Math.max(x1, e.x1, e.x2); y0 = Math.min(y0, e.y1, e.y2); y1 = Math.max(y1, e.y1, e.y2); });
+    if (x0 === Infinity) return;
+    x0 -= 80; y0 -= 80; x1 += 80; y1 += 80;
+    var S = 0.5, W = Math.max(2, Math.ceil((x1 - x0) * S)), H = Math.max(2, Math.ceil((y1 - y0) * S));
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var m = c.getContext('2d');
+    m.fillStyle = 'black'; m.fillRect(0, 0, W, H);
+    if ('filter' in m) m.filter = 'blur(6px)';
+    m.setTransform(S, 0, 0, S, -x0 * S, -y0 * S);
+    m.lineCap = 'round'; m.strokeStyle = 'white';
+    [[34, 0.22], [16, 0.45]].forEach(function (pass) {
+      edges.forEach(function (e) {
+        var mid = (e.y1 + e.y2) / 2;
+        m.globalAlpha = pass[1] * (e.conf === 'a' ? 1 : 0.4);
+        m.lineWidth = WIDTHS[cls(e.d)] + pass[0];
+        m.beginPath(); m.moveTo(e.x1, e.y1); m.bezierCurveTo(e.x1, mid, e.x2, mid, e.x2, e.y2); m.stroke();
+      });
+    });
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, glowT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+    glowRect = [x0, y0, 1 / (x1 - x0), 1 / (y1 - y0)];
   }
   /* ---- drawing ---- */
   var dpr = 1, cw = 0, ch = 0, clock = 0, lastNow = 0, cap = 2;
@@ -283,8 +344,11 @@
     gl.uniform4f(U.uRect, px, py, pw, ph);
     gl.uniform2f(U.uCam, (lean[0] * 14 + sway * 5) * dpr, (lean[1] * 9) * dpr);
     gl.uniform1f(U.uDep, hasDep ? 1 : 0);
+    gl.uniform4f(U.uView, v.x, v.y, 1 / (v.k * dpr), 1 / (v.k * dpr));
+    gl.uniform4f(U.uGlowRect, glowRect[0], glowRect[1], glowRect[2], glowRect[3]);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, picT);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, depT);
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, glowT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     wctx.setTransform(1, 0, 0, 1, 0, 0);
     wctx.clearRect(0, 0, water.width, water.height);
@@ -319,7 +383,17 @@
         wctx.drawImage(spark, -32, -16);
       }
     }
+    // Each person a marker of light, as the reference's stations are: a
+    // ring opening from it and fading, every few seconds, the fixed
+    // point's wider.
     wctx.setTransform(1, 0, 0, 1, 0, 0);
+    wctx.strokeStyle = coreRgb;
+    for (var q = 0; q < rings.length; q++) {
+      var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1, rad = (rg.c ? 11 : 6) + tt * (rg.c ? 14 : 8);
+      wctx.globalAlpha = (rg.c ? 0.55 : 0.4) * (1 - tt) * Math.min(1, tt * 6);
+      wctx.lineWidth = (rg.c ? 1.6 : 1.1) * dpr;
+      wctx.beginPath(); wctx.arc(rg.x * s + ox, rg.y * s + oy, rad * s, 0, 6.283); wctx.stroke();
+    }
     wctx.globalAlpha = 1;
     wctx.globalCompositeOperation = 'source-over';
   }

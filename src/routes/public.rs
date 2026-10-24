@@ -1459,9 +1459,9 @@ pub async fn fusion_lab_jpg() -> Response {
 pub async fn river_ground_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_JPG)
 }
-/// `GET /static/img/river-ground-depth.jpg` — its depth map.
-pub async fn river_ground_depth_jpg() -> Response {
-    picture("image/jpeg", render::RIVER_GROUND_DEPTH_JPG)
+/// `GET /static/img/river-ground-maps.jpg` — its depth and its water.
+pub async fn river_ground_maps_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_GROUND_MAPS_JPG)
 }
 
 /// `GET /static/img/river-contours.svg` — the contour lines over the river's

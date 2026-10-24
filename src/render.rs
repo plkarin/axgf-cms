@@ -119,8 +119,9 @@ pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-pano
 /// under the tree's glass (fusion.js stands the glass on the projector).
 pub const FUSION_LAB_JPG: &[u8] = include_bytes!("../static/img/fusion-lab.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
-/// Its depth map (river-scene.js draws the ground in relief by it).
-pub const RIVER_GROUND_DEPTH_JPG: &[u8] = include_bytes!("../static/img/river-ground-depth.jpg");
+/// Its maps: how near each pixel is (red), by which river-scene.js draws the
+/// ground in relief, and where its water is (green), which it animates.
+pub const RIVER_GROUND_MAPS_JPG: &[u8] = include_bytes!("../static/img/river-ground-maps.jpg");
 /// Behind the family's notes and contributions (docs/adr/0014), one per
 /// theme, made in the operator's Canva: soft and nearly plain, under a veil of
 /// the theme's surface, so text over them reads as it does anywhere else.

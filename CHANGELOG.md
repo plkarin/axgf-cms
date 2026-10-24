@@ -180,11 +180,15 @@ climbs.
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
 
-**Canopée after Selva Verde's ground** (docs/adr/0004 §12): the river's ground
-is now a photograph of a forested mountainside at golden hour, seen from the
-air, made in Canva from a description of the operator's reference. It has
-mist over the valleys at both edges and the sun in the upper right, and is
-drawn in relief by its depth map. The pointer leans it a little, and it
+**Canopée after Selva Verde, animated** (docs/adr/0004 §12): the river's ground
+is now a photograph of a forested mountain valley at golden hour, seen from
+the air, made in Canva from a description of the operator's reference:
+terraces, a golden meadow, turquoise streams and ponds, a rocky outcrop,
+mist at the edges. It is drawn in relief by its depth map, and it moves:
+ripples run down its streams and ponds and the sun glints on them, the
+family's rivers light the forest around them in slow waves, each person is
+a marker of light whose ring opens every few seconds, and the sun's rays
+turn across the ground. The pointer leans it a little, and it
 grows a third as much as the drawing when zoomed. The mesh follows the
 reference: a light wash of teal and ochre with fine pale contour lines, the
 attested water a white thread of light, each person a dot in a ring of

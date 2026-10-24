@@ -1069,12 +1069,19 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
     assert!(js.contains("root.dataset.riverMotion === 'cut'"));
     assert!(js.contains("document.hidden"));
-    // The ground is Selva Verde's (the operator's review, 2026-10-24): a
-    // photograph of a forested mountainside, drawn in relief by its depth
-    // map, the pointer leaning it only where motion is allowed.
+    // The ground is Selva Verde's (the operator's reviews, 2026-10-24): a
+    // photograph of a forested mountain valley with its streams and ponds,
+    // drawn in relief by its depth map, its water moving, the family's
+    // rivers lighting the forest around them, each person a marker of
+    // light; the pointer leans it only where motion is allowed.
     assert!(js.contains(
-        "var PIC = { src: '/static/img/river-ground.jpg?v=4', depth: '/static/img/river-ground-depth.jpg?v=1',"
+        "var PIC = { src: '/static/img/river-ground.jpg?v=5', maps: '/static/img/river-ground-maps.jpg?v=1',"
     ));
+    assert!(js.contains(
+        "float wm=uDep>0.5?smoothstep(0.25,0.75,texture2D(uDepth,clamp(q,0.0,1.0)).g):0.0;"
+    ));
+    assert!(js.contains("float gw=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).r;"));
+    assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
     assert!(js
         .contains("float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);"));
     assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
@@ -1084,8 +1091,8 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
             axgf_cms::render::RIVER_GROUND_JPG.len(),
         ),
         (
-            "/static/img/river-ground-depth.jpg",
-            axgf_cms::render::RIVER_GROUND_DEPTH_JPG.len(),
+            "/static/img/river-ground-maps.jpg",
+            axgf_cms::render::RIVER_GROUND_MAPS_JPG.len(),
         ),
     ] {
         let resp = get(&app, img).await;

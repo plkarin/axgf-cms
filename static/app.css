@@ -5067,8 +5067,8 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    zones a light wash of teal and ochre with fine pale contour lines, the
    attested water a white thread of light with its glow, the banks barely
    there, and each person a dot in a ring of light. */
-[data-theme="canopee"] .rv-svg .rv-zone.z0 { fill-opacity: 0.2; stroke: var(--rv-contour-hi); stroke-opacity: 0.55; stroke-width: 1; }
-[data-theme="canopee"] .rv-svg .rv-zone.z1 { fill-opacity: 0.1; stroke: var(--rv-contour-hi); stroke-opacity: 0.32; stroke-width: 0.7; }
+[data-theme="canopee"] .rv-svg .rv-zone.z0 { fill-opacity: 0.14; stroke: var(--rv-contour-hi); stroke-opacity: 0.55; stroke-width: 1; }
+[data-theme="canopee"] .rv-svg .rv-zone.z1 { fill-opacity: 0.07; stroke: var(--rv-contour-hi); stroke-opacity: 0.32; stroke-width: 0.7; }
 [data-theme="canopee"] .rv-svg .rv-zone.z2 { fill-opacity: 0.07; stroke: var(--rv-contour-hi); stroke-opacity: 0.28; stroke-width: 0.6; }
 [data-theme="canopee"] .rv-svg .rv-zone.z3 { stroke: var(--rv-contour-hi); stroke-opacity: 0.3; stroke-width: 0.6; stroke-dasharray: 1.5 3.5; }
 [data-theme="canopee"] .rv-svg .rv-banks { stroke-opacity: 0.22; }
@@ -5081,6 +5081,17 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    time. */
 [data-theme="canopee"] .rv-canvas.rv-alive .rv-svg .k-band-odd { fill-opacity: 0.1; }
 [data-theme="canopee"] .rv-canvas.rv-alive .rv-svg .k-band-live { fill-opacity: 0.14; }
+/* The family's lines as rivers (docs/adr/0004 §13): the scene draws each
+   one in the ground, with its water, its banks and its light, and the
+   drawing's own lines step aside while it does; they come back for a
+   travel, in print, and wherever the scene cannot draw. */
+[data-theme="canopee"] .river { --rv-rivers-3d: 1; }
+[data-theme="canopee"] .rv-svg > :is(path, g:not([class])),
+[data-theme="canopee"] .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path) { transition: opacity 260ms var(--ease); }
+@media screen {
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path) { opacity: 0; }
+}
 @media print {
   .rv-canvas { background-image: none; }
   .rv-canvas::before { display: none; }

@@ -461,3 +461,51 @@ pause, a hidden tab, a river off screen, a machine too slow). The family's
 lines keep the river's own geometry: the reference's single path is the
 family's many rivers, branching as the family does; the server draws them
 and decides where they run.
+
+## 13. The family's lines are the rivers (the operator's fourth review)
+
+The same day, the operator corrected the reading of their request: the
+lines between the people are the rivers, and it is their appearance that
+should be modelled in 3D after the reference — not only the landscape
+under them.
+
+**Each line is a river in the ground.** Under Canopée (`--rv-rivers-3d: 1`),
+`river-scene.js` draws every one of the family's lines, and every line the
+record continues past the window, as a river carved into the landscape. It
+is a strip of triangles along the river's own curve (river.js's `vc`, so
+the lit route and the glints follow the same water), drawn by the graphics
+card under the drawing:
+
+- its water, clear turquoise (`--rv-river-shallow`), darker toward its banks
+  (`--rv-river-deep`), with a little of the line's own colour in it, so the
+  ramp of the years still reads;
+- ripples running downstream, from the sources toward the living, and the
+  sun glinting on them; its wet edge lit on the side that faces the sun
+  (upper right), shaded on the other, so that it lies in its bed;
+- down its middle, Selva Verde's path: a white and gold ribbon of light
+  (`--rv-thread`, `--rv-thread-glow`), its light running toward the living
+  in slow pulses, and a warm halo on the forest round it (the ground's own
+  glow, so that it never folds at a bend);
+- its banks of wet earth (`--rv-river-bank`);
+- its width the line's flow (the legend's five widths), the thinner rivers
+  drawn first so that a tributary runs into the river it joins, its two
+  ends round.
+
+How sure a parentage is still shows: an attested one is a river with its
+ribbon of light; an inferred one a stream that runs underground and out
+again, its light fainter; a speculative one a dry trail of small pools. A
+line the record continues past the window runs on and fades, its arrow
+and count kept; a line it ends dries up before its last mark.
+
+**The drawing's own lines step aside** while the scene draws the rivers,
+on screen only (the stage's `rv-rivers` class). They come back for a
+travel, which the scene does not follow frame by frame, and the rivers
+return at rest; in print; and wherever the scene cannot draw (no WebGL).
+The server's SVG and payload are unchanged (ADR 0001).
+
+Measured in Chromium with software rendering, on the fictional family at
+±2:
+
+- at rest, frames at the screen's rate (median 16.7 ms);
+- through a travel, the same median;
+- no script error.

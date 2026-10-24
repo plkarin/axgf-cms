@@ -556,8 +556,9 @@
   function sceneLayout() {
     var fr = here;
     return {
-      edges: edges(fr, byKey(fr.persons)).map(function (e) { return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf }; }),
-      persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role, gen: p.gen, living: !!(p.s && p.s.living) }; })
+      edges: edges(fr, byKey(fr.persons)).map(function (e) { return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf, c: e.c, a: e.a }; }),
+      persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role, gen: p.gen, living: !!(p.s && p.s.living) }; }),
+      tails: fr.tails.map(function (t) { return { x1: t.x1, y1: t.y1, x2: t.x2, y2: t.y2, d: t.d, c: fr.meta.era ? ramp(t.year) : '#86b08f', a: t.a === undefined ? 1 : t.a, kind: t.kind }; })
     };
   }
   // Zoom to `z` about a point on screen, which stays where it is under the

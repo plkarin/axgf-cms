@@ -180,6 +180,16 @@ climbs.
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
 
+**Canopée's lines are rivers** (docs/adr/0004 §13): under Canopée each line
+between two people is drawn in the ground as a river after the operator's
+Selva Verde reference. It is clear turquoise water rippling downstream
+toward the living, lying in its bed with its banks lit by the sun, a white
+and gold ribbon of light down its middle with a warm halo on the forest,
+and as wide as its flow. An inferred parentage runs underground and out
+again, a speculative one is a trail of pools, and lines continuing past
+the window run on and fade. The drawing's flat lines step aside on screen
+only, and come back for a travel, in print and without WebGL.
+
 **Canopée after Selva Verde, animated** (docs/adr/0004 §12): the river's ground
 is now a photograph of a forested mountain valley at golden hour, seen from
 the air, made in Canva from a description of the operator's reference:

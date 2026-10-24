@@ -1080,8 +1080,25 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains(
         "float wm=uDep>0.5?smoothstep(0.25,0.75,texture2D(uDepth,clamp(q,0.0,1.0)).g):0.0;"
     ));
-    assert!(js.contains("float gw=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).r;"));
+    assert!(
+        js.contains("vec3 gt=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).rgb;float gw=gt.r;")
+    );
     assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
+    // The family's lines are rivers (the operator's review, 2026-10-24): under
+    // Canopée the scene draws each one in the ground — its water, its banks,
+    // its light — and the drawing's own lines step aside on screen only
+    // while it does, so a travel, print, and a browser without WebGL keep
+    // them. The same curve as river.js's, so the lit route follows the water.
+    assert!(js.contains(
+        "var RIVERS = getComputedStyle(root).getPropertyValue('--rv-rivers-3d').trim() === '1';"
+    ));
+    assert!(js.contains("function rivers(edges, tails) {"));
+    assert!(js.contains("stage.classList.toggle('rv-rivers', rready);"));
+    assert!(js
+        .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));
+    let river_js = include_str!("../static/river.js");
+    assert!(river_js.contains("conf: e.conf, c: e.c, a: e.a }; }),"));
+    assert!(river_js.contains("      tails: fr.tails.map(function (t) {"));
     assert!(js
         .contains("float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);"));
     assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
@@ -1101,5 +1118,7 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     }
     // A decoration: it never takes a pointer from the drawing.
     let css = include_str!("../static/app.css");
+    assert!(css.contains("[data-theme=\"canopee\"] .river { --rv-rivers-3d: 1; }"));
+    assert!(css.contains("@media screen {\n  [data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),"));
     assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));
 }

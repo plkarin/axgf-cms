@@ -556,6 +556,19 @@ is out.
 
 ### Fixed
 
+- **Phones** (the operator's review, 2026-10-25): the pieces of the page lay
+  scattered at phone width. Now:
+  - the masthead is a tidy grid: the logo, the name and the account (its
+    initials) on one row, the sections spread across the next, the search
+    the whole width, and the language, theme, density and settings one even
+    row;
+  - the river's buttons share their row without breaking a word;
+  - a record's two dates no longer break in the middle;
+  - tables whose cells carry their labels (notes, accounts, the archive's
+    lists) become a list of cards instead of columns a few letters wide;
+  - the tree page arrives on the person it stands on rather than on the
+    tree's left edge.
+
 - Summit's sun only ever rose: it counted the itinerary's people, so going
   down to the ancestors raised it too, and after six it stood still. It now
   follows the climb, a step up for every generation toward the summit and a

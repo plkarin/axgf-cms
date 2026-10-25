@@ -336,3 +336,22 @@ fn the_rivers_controls_are_two_ordered_rows_and_the_legend_a_grid() {
     assert!(at(r#"id="rv-back""#) < at(r#"class="rv-range""#));
     assert!(at(r#"class="rv-range""#) < at(r#"class="rv-tools-end""#));
 }
+
+/// At phone width the river's buttons share their row and never break a
+/// word, a table whose cells carry their labels becomes a list of cards, and
+/// the tree arrives on the person it stands on (2026-10-25).
+#[test]
+fn on_a_phone_the_controls_line_up() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let css = std::fs::read_to_string(root.join("static/app.css")).expect("app.css");
+    assert!(css.contains(
+        ".rv-tools-end > .btn { flex: 1 1 auto; justify-content: center; text-align: center; white-space: nowrap; }"
+    ));
+    assert!(css.contains(
+        ".table-wrap > table:has(> tbody > tr > td[data-label]) > thead { display: none; }"
+    ));
+    let tree = std::fs::read_to_string(root.join("static/tree.js")).expect("tree.js");
+    assert!(tree.contains(
+        "centreOn(document.querySelector('#tree-canvas .tcard.is-selected') || document.querySelector('#tree-canvas .tcard.is-root'));"
+    ));
+}

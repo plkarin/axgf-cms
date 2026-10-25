@@ -230,3 +230,24 @@ fn on_a_phone_the_bar_scrolls_away_with_the_page() {
         .find(|block| block.contains(".masthead { position: static; }"));
     assert!(phone.is_some(), "no phone-width rule unpins the masthead");
 }
+
+/// At phone width the bar is a small grid (the operator's review,
+/// 2026-10-25: its pieces lay scattered): the logo, the name and the account
+/// on one row, the sections across the next, the search the whole width, and
+/// the three reading controls with the settings one even row.
+#[test]
+fn on_a_phone_the_bar_is_a_tidy_grid() {
+    let css = css();
+    let phone = css
+        .match_indices("@media (max-width: 640px) {")
+        .map(|(i, _)| &css[i..i + css[i..].find("\n}").expect("the block's end")])
+        .find(|block| block.contains(".masthead { position: static; }"))
+        .expect("the phone-width block");
+    assert!(phone.contains(
+        "grid-template-areas: \"mark brand account\" \"nav nav nav\" \"tools tools tools\";"
+    ));
+    assert!(phone.contains("grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;"));
+    assert!(phone.contains(
+        ".masthead .masthead-inner > .chrome-nav { grid-area: account; justify-self: end; }"
+    ));
+}

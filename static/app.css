@@ -531,8 +531,48 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 }
 .prefs-more:hover { color: var(--text-primary); }
 @media (max-width: 640px) {
-  .masthead-tools { flex: 1 1 100%; }
-  .masthead-tools .masthead-search { flex: 1 1 100%; }
+  /* At phone width the bar is a small grid (the operator's review,
+     2026-10-25: its pieces lay scattered, each on a line of its own, the
+     account alone at the right): the logo and the name on the left and the
+     account on the right on the first row; the sections spread across the
+     second; the search the whole width; the three reading controls and the
+     settings one even row under it. */
+  .masthead .masthead-inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "mark brand account" "nav nav nav" "tools tools tools";
+    align-items: center;
+    gap: 0.65rem 0.6rem;
+    padding-block: 0.6rem 0.8rem;
+  }
+  .masthead .masthead-inner > .brand-mark { grid-area: mark; margin-inline-end: 0; }
+  .masthead .masthead-inner > .brand { grid-area: brand; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .masthead .masthead-inner > nav:not(.chrome-nav) {
+    grid-area: nav;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0.9rem;
+  }
+  .masthead .masthead-inner > .spacer { display: none; }
+  .masthead .masthead-inner > .chrome-nav { grid-area: account; justify-self: end; }
+  /* The account: its initials and the menu's caret; the name is still read
+     out, and shown in the menu's own page. */
+  .masthead .account-name {
+    position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .masthead-tools { grid-area: tools; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.55rem; }
+  .masthead-tools .masthead-search { margin-inline-start: 0; }
+  .masthead-tools .search-box > input[type="search"] { flex: 1 1 auto; inline-size: auto; min-inline-size: 0; max-inline-size: none; }
+  .masthead-tools .reading-prefs {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 0.45rem;
+  }
+  .masthead-tools .reading-prefs .pref-form,
+  .masthead-tools .reading-prefs .pref-form select { inline-size: 100%; max-inline-size: none; }
   /* At this width the masthead wraps to five rows, a third of a phone's
      screen. Pinned, it hid that third of every page, and Canopée's
      translucent ground showed the page passing under it. Here it scrolls
@@ -1154,6 +1194,36 @@ td.num, th.num { text-align: end; }
 /* Positioned, so what is absolutely placed inside (the screen-reader text)
    scrolls with the table instead of widening the page. */
 .table-wrap { overflow-x: auto; position: relative; }
+/* At phone width a table whose cells say what they are (`data-label`) is a
+   list of cards, one per row, each cell its label over its value, rather
+   than columns squeezed to a few letters (2026-10-25: the notes' titles
+   broke every three letters). */
+@media (max-width: 640px) {
+  .table-wrap > table:has(> tbody > tr > td[data-label]),
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody,
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr,
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td { display: block; inline-size: 100%; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > thead { display: none; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr {
+    padding: 0.7rem max(0.75rem, var(--section-pad-x, 0.75rem));
+    border-block-start: 1px solid var(--border-hairline);
+  }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td {
+    padding: 0.15rem 0;
+    border: 0;
+  }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td:is(:first-child, :last-child) { padding-inline: 0; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td:empty { display: none; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--mono);
+    font-size: var(--type-label);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+  }
+}
 
 /* ---------- forms ---------- */
 
@@ -2075,6 +2145,12 @@ bdi.date { unicode-bidi: isolate; }
 }
 .person-vitals { margin: 0.35rem 0 0; font-size: var(--type-body); }
 .person-vitals .sep { color: var(--text-tertiary); }
+/* A life's two dates stay together, each on its own line only when the
+   line is too short for both (2026-10-25: at phone width the pill broke
+   each date in two). */
+.person-vitals .pv-dates { flex-wrap: wrap; row-gap: 0; }
+.person-vitals .pv-dates > * { white-space: nowrap; }
+@media (max-width: 640px) { .person-vitals .pv-dates { border-radius: 14px; } }
 .person-head .lede { margin: 0.3rem 0 0; }
 .person-placing {
   margin: 0.3rem 0 0;
@@ -4001,6 +4077,26 @@ a.tcard:hover {
 }
 @media print {
   .rv-controls, .rv-record { display: none; }
+}
+
+/* At phone width the river's tools are two even rows (2026-10-25): the
+   range and the zoom, then the buttons side by side, each its share of the
+   width, rather than wherever the wrap left them. */
+@media (max-width: 640px) {
+  .rv-tools { gap: 10px 16px; }
+  .rv-zoom { flex: 1 1 auto; display: inline-flex; align-items: center; gap: 0.5rem; }
+  .rv-zoom input[type="range"] { flex: 1 1 auto; inline-size: auto; min-inline-size: 5rem; }
+  .rv-tools-end {
+    margin-inline-start: 0;
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  /* Each button its share of the row, never a word broken: three that do
+     not fit side by side make two rows, the last one the whole width. */
+  .rv-tools-end > .btn { flex: 1 1 auto; justify-content: center; text-align: center; white-space: nowrap; }
+  .rv-itinerary { gap: 10px; }
 }
 
 /* The masthead search and its suggestions. */

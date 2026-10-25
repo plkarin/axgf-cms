@@ -155,21 +155,23 @@
   // the forest. An inferred parentage is a stream that runs underground
   // and out again; a speculative one, a dry trail of small pools.
   var RVERT = [
-    'attribute vec2 aP;attribute vec2 aSV;attribute vec2 aWB;attribute vec4 aCol;attribute vec4 aMeta;attribute vec2 aN;',
+    'attribute vec2 aP;attribute vec2 aSV;attribute vec2 aWB;attribute vec4 aCol;attribute vec4 aMeta;attribute vec2 aN;attribute float aK;',
     'uniform vec2 uRes;uniform vec3 uView;',
-    'varying vec2 vSV;varying vec2 vWB;varying vec4 vCol;varying vec4 vMeta;varying vec2 vN;',
+    'varying vec2 vSV;varying vec2 vWB;varying vec4 vCol;varying vec4 vMeta;varying vec2 vN;varying float vK;',
     'void main(){vec2 px=(aP-uView.xy)*uView.z;gl_Position=vec4(px.x/uRes.x*2.0-1.0,1.0-px.y/uRes.y*2.0,0.0,1.0);',
-    ' vSV=aSV;vWB=aWB;vCol=aCol;vMeta=aMeta;vN=aN;}'
+    ' vSV=aSV;vWB=aWB;vCol=aCol;vMeta=aMeta;vN=aN;vK=aK;}'
   ].join('\n');
   var RFRAG = [
     'precision highp float;',
-    'varying vec2 vSV;varying vec2 vWB;varying vec4 vCol;varying vec4 vMeta;varying vec2 vN;',
+    'varying vec2 vSV;varying vec2 vWB;varying vec4 vCol;varying vec4 vMeta;varying vec2 vN;varying float vK;',
     'uniform float uTime,uK;uniform vec3 uDeep,uShallow,uBank,uLight,uGlowC,uSun;',
     'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
     'float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
     ' return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y);}',
     'void main(){',
-    ' float s=vSV.x,v=vSV.y,len=vMeta.y,W=vWB.x,B=vWB.y,aa=1.0/uK,conf=vCol.a,ph=vMeta.z;',
+    ' float s=vSV.x,v=vSV.y,len=vMeta.y,W=vWB.x,B=vWB.y,aa=1.0/uK,conf=vCol.a,ph=vMeta.z,riv=vK;',
+    // Its width breathes along its course, as no water keeps one width.
+    ' W*=0.8+0.4*noise(vec2(v*(riv>0.5?0.025:0.06),ph*13.0));',
     ' float fade=vMeta.w>0.5?1.0-smoothstep(0.0,len,v)*(vMeta.w>1.5?1.0:0.7):1.0;',
     // How far from the river's middle, round at its two ends.
     ' float d=v<0.0?length(vec2(v,s)):(v>len?length(vec2(v-len,s)):abs(s));',
@@ -185,13 +187,21 @@
     // The water: clear turquoise, darker toward its banks where it runs
     // deep under them, a little of the line's own colour in it (the river's
     // ramp of the years).
-    ' vec3 water=mix(uShallow,uDeep,smoothstep(0.25,1.0,t)*0.85);',
+    ' vec3 water=mix(uShallow,uDeep,smoothstep(0.25,1.0,t)*(riv>0.5?0.9:0.55));',
     ' water=mix(water,tint,0.14);',
-    // Ripples running downstream, and the sun glinting on them.
-    ' vec2 rq=vec2(s*0.9,(v-uTime*16.0)*0.3);',
+    // A stream runs fast and white down its slope; a river runs slow and
+    // smooth. Ripples running downstream, and the sun glinting on them.
+    ' vec2 rq=riv>0.5?vec2(s*0.7,(v-uTime*11.0)*0.22):vec2(s*1.7,(v-uTime*32.0)*0.7);',
     ' float rip=noise(rq)*0.65+noise(rq*2.3+3.1)*0.35;',
     ' water*=0.86+0.28*rip;',
-    ' water+=uSun*pow(smoothstep(0.6,1.0,rip),3.0)*0.7;',
+    ' water+=uSun*pow(smoothstep(0.6,1.0,rip),3.0)*(riv>0.5?0.75:0.5);',
+    ' if(riv<0.5){',
+    '  water=mix(water,vec3(0.8,0.95,0.93),0.22);',
+    // Its foam, and the small falls where the slope steepens.
+    '  float foam=pow(noise(vec2(s*2.6,(v-uTime*44.0)*0.9)),5.0);',
+    '  float cv=fract((v+ph*97.0)/(34.0+46.0*ph));float fall=exp(-pow((cv-0.5)*16.0,2.0))*(0.6+0.4*noise(vec2(s*3.0,uTime*6.0)));',
+    '  water=mix(water,vec3(0.97,1.0,0.99),clamp(foam*1.4+fall*0.85,0.0,0.9));',
+    ' }',
     // Its edge, wet, catching the light on the side that faces the sun, in
     // shade on the other: the river lies in its bed.
     ' water=mix(water,vec3(0.92,0.98,0.95),smoothstep(0.78,1.0,t)*smoothstep(0.45,1.0,lit)*0.45);',
@@ -200,12 +210,14 @@
     // gold ribbon where the parentage is attested (fainter where it is only
     // inferred), its light running toward the living in slow pulses.
     ' float pulse=0.84+0.16*sin((v-uTime*26.0)*0.06+ph*6.283);',
-    ' float core=(conf<0.5?1.0:(conf<1.5?0.5:0.0))*exp(-pow(d/(W*0.24+0.5),2.0));',
+    ' float core=(conf<0.5?1.0:(conf<1.5?0.5:0.0))*(riv>0.5?1.0:0.55)*exp(-pow(d/(W*(riv>0.5?0.24:0.3)+0.45),2.0));',
     ' vec3 lightC=mix(uLight,uGlowC,0.15+0.3*rip)*1.6;',
     ' water=mix(water,lightC,clamp(core*pulse*1.15,0.0,1.0));',
     // The banks: wet earth, the slope facing the sun lit; a dry bed where
     // the water has gone under.
     ' vec3 bank=uBank*(0.55+0.9*lit);',
+    // A stream's banks are stony; a river's, earth.
+    ' if(riv<0.5)bank=mix(bank,vec3(0.46,0.45,0.4)*(0.6+0.6*lit),step(0.62,noise(vec2(s*2.2,v*0.7)))*0.7);',
     ' float bankA=(1.0-smoothstep(W,W+B+aa,d))*(conf>1.5?0.25:0.5);',
     // The water is clear: the ground shows through it, less where the light
     // runs.
@@ -227,13 +239,63 @@
       if (!gl.getProgramParameter(rprog, gl.LINK_STATUS)) rprog = null;
     }
     if (rprog) {
-      ['aP', 'aSV', 'aWB', 'aCol', 'aMeta', 'aN'].forEach(function (k) { RA[k] = gl.getAttribLocation(rprog, k); });
+      ['aP', 'aSV', 'aWB', 'aCol', 'aMeta', 'aN', 'aK'].forEach(function (k) { RA[k] = gl.getAttribLocation(rprog, k); });
       ['uRes', 'uView', 'uTime', 'uK', 'uDeep', 'uShallow', 'uBank', 'uLight', 'uGlowC', 'uSun'].forEach(function (k) { RU[k] = gl.getUniformLocation(rprog, k); });
       gl.useProgram(rprog);
       [['uDeep', 'deep'], ['uShallow', 'shallow'], ['uBank', 'bank'], ['uLight', 'light'], ['uGlowC', 'thread'], ['uSun', 'sun']].forEach(function (q) { gl.uniform3fv(RU[q[0]], P[q[1]]); });
       rbuf = gl.createBuffer();
       gl.useProgram(prog);
     }
+  }
+  // Each line's course (docs/adr/0004 §14): the river's own curve, bent into
+  // a watercourse of its own. A stream — a parent's line to their family —
+  // winds in tight, uneven bends, as water finds its way down a steep slope;
+  // a river — a family's line to a child, where both parents' streams meet —
+  // in broad, calm ones. No two alike: the bends come from the line's own
+  // ends. The course leaves and reaches each end as the curve does, and its
+  // bends are never tighter than the water and its banks can follow.
+  var COURSES = {};
+  function hsh(k, i) { var h = Math.sin(k * 127.1 + i * 311.7) * 43758.5453; return h - Math.floor(h); }
+  function noise1(x) { var i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hsh(i, 0.37) + (hsh(i + 1, 0.37) - hsh(i, 0.37)) * u; }
+  function keyOf(x1, y1, x2, y2) { return [x1, y1, x2, y2].map(function (v) { return Math.round(v * 10); }).join(','); }
+  function widthOf(e) {
+    var w = WIDTHS[cls(e.d)] * 0.7 + 1.2;
+    return e.river ? w * 1.25 + 0.8 : Math.max(1.1, w * 0.55);
+  }
+  function course(e) {
+    var key = keyOf(e.x1, e.y1, e.x2, e.y2);
+    if (COURSES[key]) return COURSES[key];
+    var river = !!e.river, k = (Math.abs(Math.sin(e.x1 * 12.9898 + e.y1 * 4.1414 + e.x2 * 78.233 + e.y2 * 37.719)) * 43758.5453) % 1000;
+    var est = Math.hypot(e.x2 - e.x1, e.y2 - e.y1) * 1.3 + 4, n = Math.max(12, Math.min(240, Math.ceil(est / 1.5)));
+    var base = [], L = 0, i;
+    for (i = 0; i <= n; i++) {
+      var b = bez(e, i / n);
+      if (i) L += Math.hypot(b[0] - base[i - 1][0], b[1] - base[i - 1][1]);
+      base.push(b);
+    }
+    // The strip round the water: a river's reaches out to its halo; a
+    // stream's, narrow, hugs it, so that it can wind tightly.
+    var W = widthOf(e), T = river ? W + 1.0 + W * 0.25 + 2.5 + W * 0.9 : W + 1.0 + W * 0.25 + 1.4;
+    var waves = river ? 0.8 + 1.2 * hsh(k, 1) : 1.6 + 2.4 * hsh(k, 1) * Math.min(1, L / 90), h2 = river ? 0.2 : 0.3, f2 = 1.7 + 0.8 * hsh(k, 3);
+    var kk = 2 * Math.PI * waves / Math.max(L, 1);
+    var A = (river ? 0.11 : 0.14) * L * (0.6 + 0.55 * hsh(k, 2));
+    A = Math.min(A, river ? 26 : 20, 1 / (T * 0.85 * (1 + h2 * f2 * f2 + (river ? 0 : 0.5)) * kk * kk));
+    var ph1 = hsh(k, 4) * 6.283, ph2 = hsh(k, 5) * 6.283, side = hsh(k, 6) < 0.5 ? -1 : 1;
+    var pts = [], cum = 0;
+    for (i = 0; i <= n; i++) {
+      var t = i / n, a0 = base[Math.max(0, i - 1)], b0 = base[Math.min(n, i + 1)], dx = b0[0] - a0[0], dy = b0[1] - a0[1], dl = Math.hypot(dx, dy) || 1;
+      var a = 6.283 * waves * t + ph1;
+      var off = side * A * Math.pow(Math.sin(Math.PI * t), 1.3) * (Math.sin(a) + h2 * Math.sin(a * f2 + ph2) + (river ? 0 : 0.3 * (noise1(k + t * waves * 2.5) - 0.5) * 2));
+      var x = base[i][0] - dy / dl * off, y = base[i][1] + dx / dl * off;
+      if (i) cum += Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]);
+      pts.push([x, y, cum]);
+    }
+    return (COURSES[key] = { pts: pts, len: cum, n: n, river: river, W: W, T: T });
+  }
+  // The course as a path, for the lit route (river.js).
+  function coursePath(x1, y1, x2, y2) {
+    var c = COURSES[keyOf(x1, y1, x2, y2)] || course({ x1: x1, y1: y1, x2: x2, y2: y2, d: 1 });
+    return 'M' + c.pts.map(function (q) { return (Math.round(q[0] * 10) / 10) + ' ' + (Math.round(q[1] * 10) / 10); }).join('L');
   }
   // A line's colour, as river.js gives it (#rrggbb, or rgb()).
   function rgb01(c) {
@@ -247,31 +309,24 @@
   // units, reaching past the water and its banks to the end of its glow,
   // and past its two ends so that they are round. The thinner rivers
   // first, so that a tributary runs into the river it joins.
-  var FLOAT = 16;
+  var FLOAT = 17;
   function rivers(edges, tails) {
     if (!rprog) return;
     // A line the record continues past the window runs on and fades; a line
     // it ends dries up before its last mark.
     var list = edges.slice().concat((tails || []).map(function (t) { return Object.assign({ conf: 'a', tail: t.kind === 'cont' ? 1 : 2 }, t); }));
-    list.sort(function (p, q) { return (p.d || 0) - (q.d || 0); });
+    list.sort(function (p, q) { return (p.river ? 1 : 0) - (q.river ? 1 : 0) || (p.d || 0) - (q.d || 0); });
     var out = [];
     function push(x, y, s, v, W, B, col, conf, a, len, ph, nx, ny) {
-      out.push(x, y, s, v, W, B, col[0], col[1], col[2], conf, a, len, ph, fade, nx, ny);
+      out.push(x, y, s, v, W, B, col[0], col[1], col[2], conf, a, len, ph, fade, nx, ny, kind);
     }
-    var fade = 0;
+    var fade = 0, kind = 0;
     list.forEach(function (e) {
-      var stroke = WIDTHS[cls(e.d)], W = stroke * 0.7 + 1.2, B = 1.0 + W * 0.25, T = W + B + 2.5 + W * 0.9;
+      var c = course(e), W = c.W, B = 1.0 + W * 0.25, T = c.T;
       var conf = e.conf === 'a' ? 0 : e.conf === 'd' ? 1 : 2, col = rgb01(e.c), a = e.a === undefined ? 1 : e.a;
-      var est = Math.hypot(e.x2 - e.x1, e.y2 - e.y1) * 1.3 + 4, n = Math.max(8, Math.min(140, Math.ceil(est / 3)));
-      var pts = [], cum = 0;
-      for (var i = 0; i <= n; i++) {
-        var p = bez(e, i / n);
-        if (i) cum += Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]);
-        pts.push([p[0], p[1], cum]);
-      }
-      var len = cum, ph = Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1;
+      var pts = c.pts, n = c.n, len = c.len, ph = Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1;
       if (len < 0.5) return;
-      fade = e.tail || 0;
+      fade = e.tail || 0; kind = c.river ? 1 : 0;
       function tangent(i) {
         var a0 = pts[Math.max(0, i - 1)], b0 = pts[Math.min(n, i + 1)], dx = b0[0] - a0[0], dy = b0[1] - a0[1], dl = Math.hypot(dx, dy) || 1;
         return [dx / dl, dy / dl];
@@ -303,7 +358,7 @@
     gl.useProgram(rprog);
     gl.bindBuffer(gl.ARRAY_BUFFER, rbuf);
     var stride = FLOAT * 4;
-    [['aP', 2, 0], ['aSV', 2, 2], ['aWB', 2, 4], ['aCol', 4, 6], ['aMeta', 4, 10], ['aN', 2, 14]].forEach(function (q) {
+    [['aP', 2, 0], ['aSV', 2, 2], ['aWB', 2, 4], ['aCol', 4, 6], ['aMeta', 4, 10], ['aN', 2, 14], ['aK', 1, 16]].forEach(function (q) {
       if (RA[q[0]] < 0) return;
       gl.enableVertexAttribArray(RA[q[0]]);
       gl.vertexAttribPointer(RA[q[0]], q[1], gl.FLOAT, false, stride, q[2] * 4);
@@ -316,7 +371,7 @@
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, rcount);
     gl.disable(gl.BLEND);
-    ['aP', 'aSV', 'aWB', 'aCol', 'aMeta', 'aN'].forEach(function (k) { if (RA[k] >= 0) gl.disableVertexAttribArray(RA[k]); });
+    ['aP', 'aSV', 'aWB', 'aCol', 'aMeta', 'aN', 'aK'].forEach(function (k) { if (RA[k] >= 0) gl.disableVertexAttribArray(RA[k]); });
     gl.useProgram(prog);
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.enableVertexAttribArray(loc);
@@ -420,14 +475,15 @@
     var rects = blockers(), dots = L.persons || [];
     flows = [];
     rings = dots.filter(function (d) { return d.x !== undefined; }).map(function (d, i) { return { x: d.x, y: d.y, c: d.role === 'centre', ph: Math.abs(Math.sin(d.x * 3.17 + d.y * 7.31 + i)) % 1 }; });
+    COURSES = {};
     glow(L.edges);
     rivers(L.edges, L.tails);
     L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
-      var est = Math.hypot(e.x2 - e.x1, e.y2 - e.y1) * 1.25 + 4, n = Math.max(6, Math.ceil(est / STEP));
+      var C = RIVERS ? course(e) : null, n = C ? C.n : Math.max(6, Math.ceil((Math.hypot(e.x2 - e.x1, e.y2 - e.y1) * 1.25 + 4) / STEP));
       var xs = new Float32Array(n + 1), ys = new Float32Array(n + 1), cum = new Float32Array(n + 1), ok = new Uint8Array(n + 1);
       for (var i = 0; i <= n; i++) {
-        var p = bez(e, i / n);
+        var p = C ? C.pts[i] : bez(e, i / n);
         xs[i] = p[0]; ys[i] = p[1];
         if (i) cum[i] = cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
         var free = true;
@@ -471,10 +527,12 @@
       if ('filter' in m) m.filter = 'blur(' + pass[3] + 'px)';
       m.strokeStyle = pass[2];
       edges.forEach(function (e) {
-        var mid = (e.y1 + e.y2) / 2;
-        m.globalAlpha = pass[1] * (e.conf === 'a' ? 1 : 0.35);
-        m.lineWidth = WIDTHS[cls(e.d)] + pass[0];
-        m.beginPath(); m.moveTo(e.x1, e.y1); m.bezierCurveTo(e.x1, mid, e.x2, mid, e.x2, e.y2); m.stroke();
+        var c = course(e);
+        m.globalAlpha = pass[1] * (e.conf === 'a' ? 1 : 0.35) * (c.river ? 1 : 0.7);
+        m.lineWidth = c.W * 2 + pass[0];
+        m.beginPath();
+        c.pts.forEach(function (q, i) { if (i) m.lineTo(q[0], q[1]); else m.moveTo(q[0], q[1]); });
+        m.stroke();
       });
     });
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, glowT);
@@ -658,6 +716,8 @@
     layout: function (L) { travelling = false; layout(L); if (!running) draw(false); },
     // A travel begins: the glints wait for the river to come to rest.
     travel: function () { travelling = true; stage.classList.remove('rv-rivers'); if (!running) draw(false); },
+    // A line's course, as the scene draws it: the lit route follows it.
+    edge: RIVERS ? coursePath : null,
     // The window moved (zoom, pan, resize): draw it now if nothing runs.
     view: function () { if (!running) draw(false); }
   };

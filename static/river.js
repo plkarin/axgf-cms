@@ -554,9 +554,14 @@
   }
   // The layout the living ground draws its banks and its light from.
   function sceneLayout() {
-    var fr = here;
+    var fr = here, PM = byKey(fr.persons);
+    // A line from a parent to their family is a stream; the line from a
+    // family to a child, where both parents' streams meet, a river.
     return {
-      edges: edges(fr, byKey(fr.persons)).map(function (e) { return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf, c: e.c, a: e.a }; }),
+      edges: edges(fr, PM).map(function (e) {
+        var both = !e.from && e.cp && e.cp.parents.filter(function (k) { return PM[k]; }).length >= 2;
+        return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf, c: e.c, a: e.a, river: both };
+      }),
       persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role, gen: p.gen, living: !!(p.s && p.s.living) }; }),
       tails: fr.tails.map(function (t) { return { x1: t.x1, y1: t.y1, x2: t.x2, y2: t.y2, d: t.d, c: fr.meta.era ? ramp(t.year) : '#86b08f', a: t.a === undefined ? 1 : t.a, kind: t.kind }; })
     };
@@ -679,7 +684,10 @@
     hl.setAttribute('class', 'rv-hl');
     var fr = here, on = id && route(fr, id), PM = byKey(fr.persons), html = '', labels = '';
     if (view && view.light) { view.light(svg, fr, on, id, api); return; }
-    var curve = view && view.edge ? view.edge : vc;
+    // Where the scene draws the family's lines as streams and rivers in the
+    // ground (Canopée, docs/adr/0004 §14), the lit route follows their course.
+    var course = window.axgfRiverScene && window.axgfRiverScene.edge && canvas.classList.contains('rv-rivers') ? window.axgfRiverScene.edge : null;
+    var curve = view && view.edge ? view.edge : course || vc;
     if (on) {
       edges(fr, PM).forEach(function (e) {
         var c = e.cp, hit = e.from ? on[e.from] && (c.kids.some(function (k) { return on[k]; }) || c.parents.some(function (q) { return q !== e.from && on[q]; })) : on[e.to] && c.parents.some(function (q) { return on[q]; });

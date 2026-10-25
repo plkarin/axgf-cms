@@ -346,7 +346,9 @@ fn a_view_gives_river_js_everything_it_asks_for() {
     }
     let river = read("static/river.js");
     assert!(river.contains("T = view && view.named ? view.named() : tiers(fr);"));
-    assert!(river.contains("var curve = view && view.edge ? view.edge : vc;"));
+    // A view's own curve first; else the scene's courses (Canopée's streams
+    // and rivers, while they are drawn); else the river's curve.
+    assert!(river.contains("var curve = view && view.edge ? view.edge : course || vc;"));
 }
 
 #[test]

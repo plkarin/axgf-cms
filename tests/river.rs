@@ -1093,11 +1093,22 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
         "var RIVERS = getComputedStyle(root).getPropertyValue('--rv-rivers-3d').trim() === '1';"
     ));
     assert!(js.contains("function rivers(edges, tails) {"));
+    // Each line its own watercourse (2026-10-25): a parent's line to their
+    // family a winding stream, the family's line to a child — where both
+    // parents' streams meet — a broader river; no two alike, and the lit
+    // route follows the same course.
+    assert!(js.contains("function course(e) {"));
+    assert!(js.contains("return e.river ? w * 1.25 + 0.8 : Math.max(1.1, w * 0.55);"));
+    assert!(js.contains("edge: RIVERS ? coursePath : null,"));
     assert!(js.contains("stage.classList.toggle('rv-rivers', rready);"));
     assert!(js
         .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));
     let river_js = include_str!("../static/river.js");
-    assert!(river_js.contains("conf: e.conf, c: e.c, a: e.a }; }),"));
+    assert!(river_js.contains(
+        "var both = !e.from && e.cp && e.cp.parents.filter(function (k) { return PM[k]; }).length >= 2;"
+    ));
+    assert!(river_js.contains("var curve = view && view.edge ? view.edge : course || vc;"));
+    assert!(river_js.contains("conf: e.conf, c: e.c, a: e.a, river: both };"));
     assert!(river_js.contains("      tails: fr.tails.map(function (t) {"));
     assert!(js
         .contains("float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);"));

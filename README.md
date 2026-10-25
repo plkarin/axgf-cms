@@ -87,10 +87,11 @@ follows you.
 **The river is alive** *(new in 0.5.0)*. Under the drawing lies a
 forested mountain valley seen from the air at golden hour, with terraces, a
 golden meadow, and turquoise streams and ponds. It is a 4K photograph drawn
-in relief by WebGL, so it stays sharp. The family's lines are rivers carved
-into it: clear turquoise water in its bed, rippling toward the living, a
-ribbon of white and gold light down its middle that lights the forest
-around it, as wide as its flow. An inferred link runs underground and out
+in relief by WebGL, so it stays sharp. The family's lines are watercourses
+carved into it. Each parent's line is a small winding stream, fast, white
+and stony. Where two parents' streams meet, the line to their child becomes
+a broader, calmer river with a ribbon of white and gold light down its
+middle that lights the forest around it. No two of them wind alike. An inferred link runs underground and out
 again, and a speculative one is a trail of pools. Ripples run down the
 valley's own streams too, and a ring of light opens around each person. The pointer leans the
 landscape a little, the sun's rays turn and the mist drifts. It holds still for readers

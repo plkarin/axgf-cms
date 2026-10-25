@@ -180,6 +180,13 @@ climbs.
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
 
+**Streams that meet as rivers** (docs/adr/0004 §14): a parent's line to their
+family is a small winding stream, fast and white, with foam, small falls
+and stony banks. The family's line to a child, where both parents' streams
+meet, is a broader, calmer river with a ribbon of light, and the pattern
+repeats each generation. Every line winds in its own way, the same on
+every visit, and the route the pointer lights follows it.
+
 **Canopée's lines are rivers** (docs/adr/0004 §13): under Canopée each line
 between two people is drawn in the ground as a river after the operator's
 Selva Verde reference. It is clear turquoise water rippling downstream

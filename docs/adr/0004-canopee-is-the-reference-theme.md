@@ -509,3 +509,42 @@ Measured in Chromium with software rendering, on the fictional family at
 - at rest, frames at the screen's rate (median 16.7 ms);
 - through a travel, the same median;
 - no script error.
+
+## 14. Streams and rivers, each its own (the operator's fifth review)
+
+On 25 October 2026 the operator described the watercourse they meant: the
+family's path itself. A parent's line to their family is a small stream
+running down steep ground; where the two parents' streams meet to give a
+child, the line to the child becomes a river; and so on, generation after
+generation, no two streams and no two rivers alike, so that the whole reads
+as natural, beautiful and original.
+
+**Which water each line is.** river.js tells the scene, for each line,
+whether it is a parent's line to a family (from a parent) or a family's
+line to a child, and how many of the family's parents are drawn. A
+family's line to a child with both parents drawn is a river; every other
+line, and every line the record continues past the window, a stream. A
+river is broader (1.25 times the flow's width and more), a stream narrower
+(0.55 times); within each, the width still follows the flow, as the legend
+says. Streams are drawn first, so that they run into the rivers.
+
+**Its own course.** Each line keeps its two ends and leaves and reaches
+them as the river's curve does, but between them it winds (`course`): a
+stream in tight, uneven bends, with a little noise in them, as water finds
+its way down a slope; a river in broad, calm ones. The bends come from the
+line's own ends, so the same family is drawn the same way on every visit,
+and no two lines alike. A bend is never tighter than the water and its
+banks can follow, so the strip never folds. Its width breathes along its
+course.
+
+**How each looks.** A stream runs fast, light and white: its ripples small
+and quick, foam on it, and here and there a small fall where the slope
+steepens, its banks stony, its ribbon of light thin. A river runs slow and
+deep: broad ripples, the sun's sheen on it, Selva Verde's ribbon of light
+full down its middle. How sure a parentage is still shows as in §13.
+
+**The lit route follows the course.** While the rivers are drawn, the
+scene gives river.js each line's course (`axgfRiverScene.edge`), and the
+route the pointer lights runs along it; in a travel, in print and without
+WebGL, along the river's curve as before. The glints and the forest's glow
+follow the courses too.

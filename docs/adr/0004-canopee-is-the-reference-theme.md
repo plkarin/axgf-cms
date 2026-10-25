@@ -589,3 +589,27 @@ How sure a parentage is still shows: an inferred one runs underground and
 out again, its bed dry where it does; a speculative one is a trail of
 pools. The lines toward brothers and sisters not drawn are short streams
 that fade.
+
+## 16. The ground follows the water
+
+The operator, the same day: the background must follow the rivers drawn
+from the relations, or it looks wrong. A photograph cannot know where a
+family's streams will run, so the ground is shaped around them as it is
+drawn:
+
+- **Valleys.** The courses, drawn wide and soft into a third field of the
+  scene's mask (blue), are a height field: each stream and river runs in a
+  valley it has carved. The ground's shader lights that field as the hills
+  were lit, with the same sun in the upper right: the slopes facing the sun
+  brighter, the others in shade, the floor lower and darker. A river's
+  valley is wider than a stream's; a valley is carved however sure the
+  parentage is.
+- **Wetter ground.** Along the water the vegetation is darker and greener
+  (§15).
+- **Never apart.** The relief of §12 slides the photograph as the pointer
+  leans it. Where the family's water runs, the ground now holds still, so
+  that the valleys and the water stay together; the further from the
+  water, the more the landscape moves.
+
+All of it is computed in the drawing's own units, so it follows the water
+at every zoom and after every travel.

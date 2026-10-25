@@ -81,6 +81,11 @@
     // by how near it is, takes it: the spine and the near trees move more
     // than the valleys.
     ' vec2 p=(px-uRect.xy)/uRect.zw,s=uCam/uRect.zw;',
+    // Where the family's water runs the ground holds still, so that the
+    // valleys it carved stay under it as the pointer leans the landscape.
+    ' vec2 wp=uView.xy+px*uView.zw;vec2 gq=(wp-uGlowRect.xy)*uGlowRect.zw;',
+    ' vec3 gt=texture2D(uGlow,gq).rgb;',
+    ' s*=1.0-clamp(gt.b*1.6,0.0,0.9);',
     ' float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);',
     ' if(uDep>0.5){d=texture2D(uDepth,clamp(q,0.0,1.0)).r;q=p-s*(d-0.5);}',
     ' vec3 col=texture2D(uPic,clamp(q,0.0,1.0)).rgb;',
@@ -98,11 +103,22 @@
     ' vec2 sd=uv-vec2(1.04,-0.1);float ang=atan(sd.y,sd.x);',
     ' float ray=smoothstep(0.55,0.95,noise(vec2(ang*11.0,uTime*0.07)))*smoothstep(1.3,0.15,length(sd));',
     ' col+=uSun*ray*0.07;',
-    // Along the family's streams and rivers the ground is wetter: the
-    // vegetation darker and greener, as it grows along water.
-    ' vec2 wp=uView.xy+px*uView.zw;',
-    ' vec3 gt=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).rgb;float gw=gt.r;',
-    ' col=mix(col,col*uGreen,clamp(gt.g*0.55+gw*gw*0.25,0.0,0.6));',
+    // The ground follows the family's water (docs/adr/0004 §16): each
+    // stream and river runs in a valley it has carved, its slopes facing
+    // the sun lit and the others in shade, its floor lower and wetter, and
+    // along it the vegetation darker and greener, as it grows along water.
+    // The valley is a height field from the blurred courses (blue), lit as
+    // the hills were.
+    ' float gw=gt.r;',
+    ' vec2 e=vec2(uGlowRect.z*3.0,uGlowRect.w*3.0);',
+    ' float hx=texture2D(uGlow,gq+vec2(e.x,0.0)).b-texture2D(uGlow,gq-vec2(e.x,0.0)).b;',
+    ' float hy=texture2D(uGlow,gq+vec2(0.0,e.y)).b-texture2D(uGlow,gq-vec2(0.0,e.y)).b;',
+    ' vec3 vn=normalize(vec3(hx*14.0,hy*14.0,1.0));',
+    ' vec3 SUNV=normalize(vec3(0.55,-0.62,0.56));',
+    ' float slope=clamp(1.0+(dot(vn,SUNV)-SUNV.z)*2.6,0.5,1.5);',
+    ' col*=mix(1.0,slope,clamp(gt.b*2.2,0.0,1.0));',
+    ' col*=1.0-0.3*gt.b*gt.b;',
+    ' col=mix(col,col*uGreen,clamp(gt.g*0.6+gw*gw*0.3,0.0,0.65));',
     // The shade every ink above was measured on, deeper at the edges.
     ' float v=smoothstep(0.38,1.05,length((uv-0.5)*vec2(1.0,1.15)));',
     ' col=mix(col,uShade,0.14+0.38*v);',
@@ -163,14 +179,15 @@
     ' float d=v<0.0?length(vec2(v,s)):(v>len?length(vec2(v-len,s)):abs(s));',
     // Its edge is the ground's, never a ruled line: it breathes along the
     // course and frays where the water meets earth and stone.
-    ' float R=(W0+B)*(0.82+0.36*noise(vec2(v*(riv>0.5?0.025:0.06),ph*13.0)))*(0.93+0.14*noise(vec2(v*0.6,s*0.2+ph*7.0)));',
+    ' float R=(W0+B)*(0.82+0.36*noise(vec2(v*(riv>0.5?0.025:0.06),ph*13.0)))*(0.96+0.08*noise(vec2(v*0.18,ph*7.0)));',
     // The water itself: a photograph of a stream or of a river laid along
     // the course, its banks at the edges of the picture, repeating down it.
     // Each is its own: a stretch of the photograph of its own, mirrored or
     // not, its water a little deeper or lighter.
     ' float flip=ph>0.5?-1.0:1.0;',
     ' float x=clamp(0.5+flip*s/(2.0*R)*0.96,0.0,1.0);',
-    ' float tile=(riv>0.5?3.2:3.6)*R*(0.85+0.3*fract(ph*7.13));',
+    // The picture runs a little long down the course, as moving water reads.
+    ' float tile=(riv>0.5?9.0:6.5)*R*(0.85+0.3*fract(ph*7.13));',
     ' float y=(v+ph*1730.0)/tile;',
     ' vec3 col;',
     ' if(riv>0.5){',
@@ -210,7 +227,7 @@
     ' float wet=1.0;',
     ' if(conf>0.5&&conf<1.5){float seg=fract((v+ph*31.0)/(10.0+R*2.4));wet=smoothstep(0.0,0.05,seg)*(1.0-smoothstep(0.62,0.68,seg));}',
     ' if(conf>1.5){float m=mod(v+ph*17.0,7.0)-3.5;wet=1.0-smoothstep(1.4,1.4+aa*1.5,length(vec2(m,s)));}',
-    ' float inside=1.0-smoothstep(R-aa*1.5,R+aa*1.5,d);',
+    ' float inside=1.0-smoothstep(R-aa*1.5-R*0.08,R+aa*1.5,d);',
     ' float a=inside*mix(conf>1.5?0.0:0.28,1.0,wet)*vMeta.x*fade;',
     ' col=mix(col*0.55+vec3(0.06,0.05,0.03),col,wet);',
     // Its bed lies in the ground: a shadow of wet earth just outside it.
@@ -537,16 +554,19 @@
     if ('filter' in m) m.filter = 'blur(6px)';
     m.setTransform(S, 0, 0, S, -x0 * S, -y0 * S);
     m.lineCap = 'round'; m.strokeStyle = 'white';
-    // Two lights: a wide one, in red, for the forest round the river, and a
-    // near one, in green, for the warm halo along it.
+    // Three fields along the courses: a wide one (red) and a near one
+    // (green) for the wetter ground, and the valleys the water carved
+    // (blue), wide and soft, as a height field.
     m.globalCompositeOperation = 'lighter';
-    [[34, 0.22, 'rgb(255,0,0)', 6], [16, 0.45, 'rgb(255,0,0)', 6], [6, 0.8, 'rgb(0,255,0)', 3]].forEach(function (pass) {
+    [[34, 0.22, 'rgb(255,0,0)', 6], [16, 0.45, 'rgb(255,0,0)', 6], [6, 0.8, 'rgb(0,255,0)', 3], [60, 0.35, 'rgb(0,0,255)', 12], [24, 0.4, 'rgb(0,0,255)', 7]].forEach(function (pass) {
       if ('filter' in m) m.filter = 'blur(' + pass[3] + 'px)';
       m.strokeStyle = pass[2];
       edges.forEach(function (e) {
         var c = course(e);
-        m.globalAlpha = pass[1] * (e.conf === 'a' ? 1 : 0.35) * (c.river ? 1 : 0.7);
-        m.lineWidth = c.W * 2 + pass[0];
+        var valley = pass[2] === 'rgb(0,0,255)';
+        // A valley is carved however sure the parentage; a river's is wider.
+        m.globalAlpha = pass[1] * (valley ? 1 : e.conf === 'a' ? 1 : 0.35) * (c.river ? 1 : 0.7);
+        m.lineWidth = c.W * 2 + pass[0] * (valley && c.river ? 1.25 : 1);
         m.beginPath();
         c.pts.forEach(function (q, i) { if (i) m.lineTo(q[0], q[1]); else m.moveTo(q[0], q[1]); });
         m.stroke();

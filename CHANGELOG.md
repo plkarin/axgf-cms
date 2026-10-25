@@ -180,9 +180,11 @@ climbs.
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
 
-**Water that is water** (docs/adr/0004 §15): the valley under Canopée's river
-is now dry, so the family's streams and rivers are its only water, and the
-vegetation along them is greener. Their water is photographed (made in
+**Water that is water** (docs/adr/0004 §15, §16): the valley under Canopée's
+river is now dry, so the family's streams and rivers are its only water. The
+ground follows them: each runs in a valley it has carved, lit by the sun, and
+the vegetation along it is greener. Where the water runs, the ground holds
+still as the pointer leans the landscape, so the two never part. Their water is photographed (made in
 Canva): a turquoise mountain stream over stones, with foam, for a parent's
 line, and a calm deep river with its banks for a family's line to a child.
 Both are laid along each course and run down it, and each takes its own

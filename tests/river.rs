@@ -1081,7 +1081,7 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
         !js.contains("float wm="),
         "the ground animates no water of its own"
     );
-    assert!(js.contains("col=mix(col,col*uGreen,clamp(gt.g*0.55+gw*gw*0.25,0.0,0.6));"));
+    assert!(js.contains("col=mix(col,col*uGreen,clamp(gt.g*0.6+gw*gw*0.3,0.0,0.65));"));
     assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
     // The family's lines are rivers (the operator's review, 2026-10-24): under
     // Canopée the scene draws each one in the ground — its water, its banks,
@@ -1106,6 +1106,11 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
         "var WATER = { stream: '/static/img/river-water-stream.jpg?v=1', river: '/static/img/river-water-river.jpg?v=1' };"
     ));
     assert!(js.contains("gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);"));
+    // The ground follows the water (2026-10-25): each course runs in a valley
+    // it carved, lit by the sun, and where the water runs the ground holds
+    // still as the pointer leans the landscape, so they never part.
+    assert!(js.contains("' s*=1.0-clamp(gt.b*1.6,0.0,0.9);',"));
+    assert!(js.contains("' col*=mix(1.0,slope,clamp(gt.b*2.2,0.0,1.0));',"));
     assert!(js.contains("stage.classList.toggle('rv-rivers', rready && waterIn >= 2);"));
     assert!(js
         .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));

@@ -1459,9 +1459,17 @@ pub async fn fusion_lab_jpg() -> Response {
 pub async fn river_ground_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_JPG)
 }
-/// `GET /static/img/river-ground-maps.jpg` — its depth and its water.
+/// `GET /static/img/river-ground-maps.jpg` — its depth.
 pub async fn river_ground_maps_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_MAPS_JPG)
+}
+/// `GET /static/img/river-water-stream.jpg` and `river-water-river.jpg` — the
+/// water of the family's streams and rivers.
+pub async fn river_water_stream_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_WATER_STREAM_JPG)
+}
+pub async fn river_water_river_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_WATER_RIVER_JPG)
 }
 
 /// `GET /static/img/river-contours.svg` — the contour lines over the river's

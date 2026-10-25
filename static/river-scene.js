@@ -52,24 +52,23 @@
   var P = {
     sun: colour('--rv-sun', [1, 1, 1]), mist: colour('--rv-mist-rgb', [0.85, 0.88, 0.86]),
     shade: colour('--rv-shade-rgb', [0.04, 0.07, 0.05]), core: colour('--rv-core', [1, 0.95, 0.85]),
-    thread: colour('--rv-thread-glow', [1, 0.91, 0.71]),
-    deep: colour('--rv-river-deep', [0.05, 0.25, 0.25]), shallow: colour('--rv-river-shallow', [0.3, 0.7, 0.66]),
-    bank: colour('--rv-river-bank', [0.16, 0.14, 0.09]), light: colour('--rv-thread', [1, 0.98, 0.94])
+    green: colour('--rv-riparian', [0.62, 0.8, 0.6])
   };
   // The family's lines drawn as rivers in the ground (docs/adr/0004 §13),
   // where the theme asks for them: Canopée.
   var RIVERS = getComputedStyle(root).getPropertyValue('--rv-rivers-3d').trim() === '1';
-  // The photograph and its maps (red: how near each pixel is; green: where
-  // its water is, the streams and the ponds); how much larger than the
-  // stage it is drawn, so that leaning and zooming never show its edge.
-  var PIC = { src: '/static/img/river-ground.jpg?v=5', maps: '/static/img/river-ground-maps.jpg?v=1', aspect: 1680 / 944, over: 1.1 };
+  // The photograph and its map (red: how near each pixel is); how much
+  // larger than the stage it is drawn, so that leaning and zooming never
+  // show its edge. The ground holds no water of its own: the family's
+  // streams and rivers are its only water (docs/adr/0004 §15).
+  var PIC = { src: '/static/img/river-ground.jpg?v=6', maps: '/static/img/river-ground-maps.jpg?v=2', aspect: 1680 / 944, over: 1.1 };
 
   /* ---- the ground: one triangle and one fragment shader ---- */
   var VERT = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
   var FRAG = [
     'precision highp float;',
     'uniform vec2 uRes;uniform float uTime;uniform vec4 uRect;uniform vec2 uCam;uniform float uDep;',
-    'uniform sampler2D uPic;uniform sampler2D uDepth;uniform vec3 uSun,uMist,uShade,uThread;',
+    'uniform sampler2D uPic;uniform sampler2D uDepth;uniform vec3 uSun,uMist,uShade,uGreen;',
     'uniform sampler2D uGlow;uniform vec4 uView;uniform vec4 uGlowRect;',
     'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
     'float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
@@ -85,17 +84,7 @@
     ' float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);',
     ' if(uDep>0.5){d=texture2D(uDepth,clamp(q,0.0,1.0)).r;q=p-s*(d-0.5);}',
     ' vec3 col=texture2D(uPic,clamp(q,0.0,1.0)).rgb;',
-    // The landscape's own water, its streams and its ponds: ripples running
-    // down it, the photograph trembling under them, and the sun glinting on
-    // it.
-    ' float wm=uDep>0.5?smoothstep(0.25,0.75,texture2D(uDepth,clamp(q,0.0,1.0)).g):0.0;',
-    ' if(wm>0.01){',
-    '  vec2 r=q*vec2(260.0,150.0)+vec2(0.0,-uTime*2.2);',
-    '  vec2 off=vec2(noise(r)-0.5,noise(r+7.3)-0.5)*0.0024*wm;',
-    '  col=mix(col,texture2D(uPic,clamp(q+off,0.0,1.0)).rgb,wm);',
-    '  float sp=pow(noise(q*vec2(520.0,300.0)+vec2(uTime*0.6,-uTime*3.1)),9.0);',
-    '  col+=uSun*sp*1.6*wm+vec3(0.02,0.06,0.07)*wm*(0.5+0.5*sin(uTime*1.7+q.y*90.0));',
-    ' }',
+
     // Mist drifting over the valleys at both edges and into the lower
     // corners, warm where the sun is, a breath of it everywhere.
     ' vec2 w=px/uRes.y;',
@@ -109,12 +98,11 @@
     ' vec2 sd=uv-vec2(1.04,-0.1);float ang=atan(sd.y,sd.x);',
     ' float ray=smoothstep(0.55,0.95,noise(vec2(ang*11.0,uTime*0.07)))*smoothstep(1.3,0.15,length(sd));',
     ' col+=uSun*ray*0.07;',
-    // The family's rivers light the forest around them, as Selva Verde's
-    // path does, the light coming up them in slow waves from the sources
-    // toward the living.
+    // Along the family's streams and rivers the ground is wetter: the
+    // vegetation darker and greener, as it grows along water.
     ' vec2 wp=uView.xy+px*uView.zw;',
     ' vec3 gt=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).rgb;float gw=gt.r;',
-    ' col+=uThread*(gw*gw*0.32+gt.g*0.7)*(0.86+0.14*sin(uTime*1.3+wp.y*0.025));',
+    ' col=mix(col,col*uGreen,clamp(gt.g*0.55+gw*gw*0.25,0.0,0.6));',
     // The shade every ink above was measured on, deeper at the edges.
     ' float v=smoothstep(0.38,1.05,length((uv-0.5)*vec2(1.0,1.15)));',
     ' col=mix(col,uShade,0.14+0.38*v);',
@@ -164,70 +152,70 @@
   var RFRAG = [
     'precision highp float;',
     'varying vec2 vSV;varying vec2 vWB;varying vec4 vCol;varying vec4 vMeta;varying vec2 vN;varying float vK;',
-    'uniform float uTime,uK;uniform vec3 uDeep,uShallow,uBank,uLight,uGlowC,uSun;',
+    'uniform float uTime,uK;uniform sampler2D uTexS,uTexR;uniform vec3 uSun;',
     'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
     'float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
     ' return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y);}',
     'void main(){',
-    ' float s=vSV.x,v=vSV.y,len=vMeta.y,W=vWB.x,B=vWB.y,aa=1.0/uK,conf=vCol.a,ph=vMeta.z,riv=vK;',
-    // Its width breathes along its course, as no water keeps one width.
-    ' W*=0.8+0.4*noise(vec2(v*(riv>0.5?0.025:0.06),ph*13.0));',
+    ' float s=vSV.x,v=vSV.y,len=vMeta.y,W0=vWB.x,B=vWB.y,aa=1.0/uK,conf=vCol.a,ph=vMeta.z,riv=vK;',
     ' float fade=vMeta.w>0.5?1.0-smoothstep(0.0,len,v)*(vMeta.w>1.5?1.0:0.7):1.0;',
-    // How far from the river's middle, round at its two ends.
+    // How far from its middle, round at its two ends.
     ' float d=v<0.0?length(vec2(v,s)):(v>len?length(vec2(v-len,s)):abs(s));',
-    // The sun is in the upper right; a bank's slope faces the river.
-    ' vec2 L=normalize(vec2(0.62,-0.78));vec2 nrm=normalize(vN)*(s<0.0?-1.0:1.0);',
-    ' float lit=0.5+0.5*dot(-nrm,L);',
-    ' float wet=1.0;',
-    ' if(conf>0.5&&conf<1.5){float seg=fract((v+ph*31.0)/(10.0+W*2.4));wet=smoothstep(0.0,0.05,seg)*(1.0-smoothstep(0.62,0.68,seg));}',
-    ' if(conf>1.5){float m=mod(v+ph*17.0,7.0)-3.5;wet=1.0-smoothstep(1.4,1.4+aa*1.5,length(vec2(m,s)));}',
-    ' float inW=(1.0-smoothstep(W-aa,W+aa,d))*wet;',
-    ' float t=clamp(d/max(W,0.01),0.0,1.0);',
-    ' vec3 tint=vCol.rgb;',
-    // The water: clear turquoise, darker toward its banks where it runs
-    // deep under them, a little of the line's own colour in it (the river's
-    // ramp of the years).
-    ' vec3 water=mix(uShallow,uDeep,smoothstep(0.25,1.0,t)*(riv>0.5?0.9:0.55));',
-    ' water=mix(water,tint,0.14);',
-    // A stream runs fast and white down its slope; a river runs slow and
-    // smooth. Ripples running downstream, and the sun glinting on them.
-    ' vec2 rq=riv>0.5?vec2(s*0.7,(v-uTime*11.0)*0.22):vec2(s*1.7,(v-uTime*32.0)*0.7);',
-    ' float rip=noise(rq)*0.65+noise(rq*2.3+3.1)*0.35;',
-    ' water*=0.86+0.28*rip;',
-    ' water+=uSun*pow(smoothstep(0.6,1.0,rip),3.0)*(riv>0.5?0.75:0.5);',
-    ' if(riv<0.5){',
-    '  water=mix(water,vec3(0.8,0.95,0.93),0.22);',
-    // Its foam, and the small falls where the slope steepens.
-    '  float foam=pow(noise(vec2(s*2.6,(v-uTime*44.0)*0.9)),5.0);',
-    '  float cv=fract((v+ph*97.0)/(34.0+46.0*ph));float fall=exp(-pow((cv-0.5)*16.0,2.0))*(0.6+0.4*noise(vec2(s*3.0,uTime*6.0)));',
-    '  water=mix(water,vec3(0.97,1.0,0.99),clamp(foam*1.4+fall*0.85,0.0,0.9));',
+    // Its edge is the ground's, never a ruled line: it breathes along the
+    // course and frays where the water meets earth and stone.
+    ' float R=(W0+B)*(0.82+0.36*noise(vec2(v*(riv>0.5?0.025:0.06),ph*13.0)))*(0.93+0.14*noise(vec2(v*0.6,s*0.2+ph*7.0)));',
+    // The water itself: a photograph of a stream or of a river laid along
+    // the course, its banks at the edges of the picture, repeating down it.
+    // Each is its own: a stretch of the photograph of its own, mirrored or
+    // not, its water a little deeper or lighter.
+    ' float flip=ph>0.5?-1.0:1.0;',
+    ' float x=clamp(0.5+flip*s/(2.0*R)*0.96,0.0,1.0);',
+    ' float tile=(riv>0.5?3.2:3.6)*R*(0.85+0.3*fract(ph*7.13));',
+    ' float y=(v+ph*1730.0)/tile;',
+    ' vec3 col;',
+    ' if(riv>0.5){',
+    // A river: its water slides downstream, its banks stay where they are.
+    '  float cw=1.0-smoothstep(0.24,0.36,abs(x-0.5));',
+    '  vec2 rp=vec2(x*9.0,(v-uTime*7.0)*0.18);',
+    '  vec2 off=vec2(noise(rp)-0.5,noise(rp+5.1)-0.5)*0.012*cw;',
+    '  vec3 still=texture2D(uTexR,vec2(x,y)).rgb;',
+    '  vec3 run=texture2D(uTexR,vec2(x,y-uTime*7.0/tile)+off).rgb;',
+    '  col=mix(still,run,cw);',
+    '  col+=uSun*pow(smoothstep(0.62,1.0,noise(vec2(x*28.0,(v-uTime*9.0)*0.9))),4.0)*0.35*cw;',
+    // Clear mountain water: toward turquoise where it runs open.
+    '  col=mix(col,col*vec3(0.82,1.04,1.16),0.6*cw);',
+    ' }else{',
+    // A stream: the water trembles over its stones, foam runs down it, and
+    // here and there it falls a step.
+    '  float cw=1.0-smoothstep(0.2,0.34,abs(x-0.5));',
+    '  vec2 rp=vec2(x*14.0,(v-uTime*24.0)*0.5);',
+    '  vec2 off=vec2(noise(rp)-0.5,noise(rp+3.7)-0.5)*0.016*cw;',
+    '  col=texture2D(uTexS,vec2(x,y)+off).rgb;',
+    '  float foam=pow(noise(vec2(x*22.0,(v-uTime*38.0)*0.8)),5.0)*cw;',
+    '  float cv=fract((v+ph*97.0)/(34.0+46.0*ph));float fall=exp(-pow((cv-0.5)*16.0,2.0))*(0.55+0.45*noise(vec2(x*18.0,uTime*6.0)))*cw;',
+    '  col=mix(col,vec3(0.95,0.99,0.98),clamp(foam*1.3+fall*0.7,0.0,0.85));',
+    '  col+=uSun*pow(smoothstep(0.6,1.0,noise(vec2(x*30.0,(v-uTime*30.0)*1.2))),4.0)*0.3*cw;',
     ' }',
-    // Its edge, wet, catching the light on the side that faces the sun, in
-    // shade on the other: the river lies in its bed.
-    ' water=mix(water,vec3(0.92,0.98,0.95),smoothstep(0.78,1.0,t)*smoothstep(0.45,1.0,lit)*0.45);',
-    ' water*=1.0-smoothstep(0.7,1.0,t)*(1.0-lit)*0.45;',
-    // The light down its middle, as Selva Verde's path is lit: a white and
-    // gold ribbon where the parentage is attested (fainter where it is only
-    // inferred), its light running toward the living in slow pulses.
-    ' float pulse=0.84+0.16*sin((v-uTime*26.0)*0.06+ph*6.283);',
-    ' float core=(conf<0.5?1.0:(conf<1.5?0.5:0.0))*(riv>0.5?1.0:0.55)*exp(-pow(d/(W*(riv>0.5?0.24:0.3)+0.45),2.0));',
-    ' vec3 lightC=mix(uLight,uGlowC,0.15+0.3*rip)*1.6;',
-    ' water=mix(water,lightC,clamp(core*pulse*1.15,0.0,1.0));',
-    // The banks: wet earth, the slope facing the sun lit; a dry bed where
-    // the water has gone under.
-    ' vec3 bank=uBank*(0.55+0.9*lit);',
-    // A stream's banks are stony; a river's, earth.
-    ' if(riv<0.5)bank=mix(bank,vec3(0.46,0.45,0.4)*(0.6+0.6*lit),step(0.62,noise(vec2(s*2.2,v*0.7)))*0.7);',
-    ' float bankA=(1.0-smoothstep(W,W+B+aa,d))*(conf>1.5?0.25:0.5);',
-    // The water is clear: the ground shows through it, less where the light
-    // runs.
-    ' float wa=inW*(0.72+0.28*clamp(core*1.4,0.0,1.0));',
-    ' vec3 col=mix(bank,water,inW);float a=max(wa,bankA*(1.0-inW))*vMeta.x*fade;',
-    // Its light spilling round it (the forest around is lit by the ground's
-    // own glow, river-scene's mask).
-    ' float g=exp(-max(0.0,d-W*0.15)/(1.0+W*0.3))*(conf<0.5?0.75:(conf<1.5?0.25:0.05))*pulse*vMeta.x*fade;',
-    ' vec3 glow=mix(uGlowC,uLight,0.35)*g;',
-    ' gl_FragColor=vec4(col*a+glow*(1.0-0.5*a),a);',
+    // Its own depth of water, and a little of the line's own colour (the
+    // river's ramp of the years).
+    ' col*=0.9+0.22*fract(ph*3.71);',
+    // Clear water in the low sun: a little more colour and light than the
+    // photographs carry, so that it shines in the valley.
+    ' col=mix(vec3(dot(col,vec3(0.299,0.587,0.114))),col,1.3)*1.12;',
+    ' col=mix(col,col*0.7+vCol.rgb*0.3,0.12);',
+    // The sun's sheen on its open water, brighter toward the light.
+    ' col+=uSun*0.06*(1.0-smoothstep(0.0,1.0,abs(s)/R));',
+    // How sure the parentage is: an inferred one runs underground and out
+    // again, leaving a dry bed; a speculative one, a trail of small pools.
+    ' float wet=1.0;',
+    ' if(conf>0.5&&conf<1.5){float seg=fract((v+ph*31.0)/(10.0+R*2.4));wet=smoothstep(0.0,0.05,seg)*(1.0-smoothstep(0.62,0.68,seg));}',
+    ' if(conf>1.5){float m=mod(v+ph*17.0,7.0)-3.5;wet=1.0-smoothstep(1.4,1.4+aa*1.5,length(vec2(m,s)));}',
+    ' float inside=1.0-smoothstep(R-aa*1.5,R+aa*1.5,d);',
+    ' float a=inside*mix(conf>1.5?0.0:0.28,1.0,wet)*vMeta.x*fade;',
+    ' col=mix(col*0.55+vec3(0.06,0.05,0.03),col,wet);',
+    // Its bed lies in the ground: a shadow of wet earth just outside it.
+    ' float sh=(1.0-smoothstep(R,R+2.2+R*0.25,d))*(1.0-inside)*0.38*vMeta.x*fade;',
+    ' gl_FragColor=vec4(col*a,max(a,sh));',
     '}'
   ].join('\n');
   var rprog = null, rbuf = null, RA = {}, RU = {}, rcount = 0, rready = false;
@@ -240,9 +228,10 @@
     }
     if (rprog) {
       ['aP', 'aSV', 'aWB', 'aCol', 'aMeta', 'aN', 'aK'].forEach(function (k) { RA[k] = gl.getAttribLocation(rprog, k); });
-      ['uRes', 'uView', 'uTime', 'uK', 'uDeep', 'uShallow', 'uBank', 'uLight', 'uGlowC', 'uSun'].forEach(function (k) { RU[k] = gl.getUniformLocation(rprog, k); });
+      ['uRes', 'uView', 'uTime', 'uK', 'uTexS', 'uTexR', 'uSun'].forEach(function (k) { RU[k] = gl.getUniformLocation(rprog, k); });
       gl.useProgram(rprog);
-      [['uDeep', 'deep'], ['uShallow', 'shallow'], ['uBank', 'bank'], ['uLight', 'light'], ['uGlowC', 'thread'], ['uSun', 'sun']].forEach(function (q) { gl.uniform3fv(RU[q[0]], P[q[1]]); });
+      gl.uniform3fv(RU.uSun, P.sun);
+      gl.uniform1i(RU.uTexS, 3); gl.uniform1i(RU.uTexR, 4);
       rbuf = gl.createBuffer();
       gl.useProgram(prog);
     }
@@ -275,7 +264,7 @@
     }
     // The strip round the water: a river's reaches out to its halo; a
     // stream's, narrow, hugs it, so that it can wind tightly.
-    var W = widthOf(e), T = river ? W + 1.0 + W * 0.25 + 2.5 + W * 0.9 : W + 1.0 + W * 0.25 + 1.4;
+    var W = widthOf(e), T = (W + 1.0 + W * 0.25) * 1.25 + 3.2;
     var waves = river ? 0.8 + 1.2 * hsh(k, 1) : 1.6 + 2.4 * hsh(k, 1) * Math.min(1, L / 90), h2 = river ? 0.2 : 0.3, f2 = 1.7 + 0.8 * hsh(k, 3);
     var kk = 2 * Math.PI * waves / Math.max(L, 1);
     var A = (river ? 0.11 : 0.14) * L * (0.6 + 0.55 * hsh(k, 2));
@@ -297,6 +286,32 @@
     var c = COURSES[keyOf(x1, y1, x2, y2)] || course({ x1: x1, y1: y1, x2: x2, y2: y2, d: 1 });
     return 'M' + c.pts.map(function (q) { return (Math.round(q[0] * 10) / 10) + ' ' + (Math.round(q[1] * 10) / 10); }).join('L');
   }
+  // The water of the streams and of the rivers: two photographs, seen from
+  // above, that repeat down a watercourse without a seam
+  // (tools/pictures/tileable.py). Until they are here, no river is drawn.
+  var WATER = { stream: '/static/img/river-water-stream.jpg?v=1', river: '/static/img/river-water-river.jpg?v=1' };
+  var texS = null, texR = null, waterIn = 0;
+  function waterTex(src, unit) {
+    var t = gl.createTexture(), im = new Image();
+    gl.activeTexture(unit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([40, 110, 100, 255]));
+    im.onload = function () {
+      if (gl.isContextLost()) return;
+      gl.activeTexture(unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, im);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      waterIn++;
+      if (waterIn >= 2 && rready && !travelling) stage.classList.add('rv-rivers');
+      if (!running) draw(false);
+    };
+    im.src = src;
+    return t;
+  }
+  if (rprog) { texS = waterTex(WATER.stream, gl.TEXTURE3); texR = waterTex(WATER.river, gl.TEXTURE4); }
   // A line's colour, as river.js gives it (#rrggbb, or rgb()).
   function rgb01(c) {
     if (typeof c !== 'string') return [0.53, 0.69, 0.56];
@@ -351,11 +366,13 @@
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(out), gl.STATIC_DRAW);
     rcount = out.length / FLOAT;
     rready = rcount > 0;
-    stage.classList.toggle('rv-rivers', rready);
+    stage.classList.toggle('rv-rivers', rready && waterIn >= 2);
   }
   function drawRivers(v) {
-    if (!rprog || !rready || travelling) return;
+    if (!rprog || !rready || travelling || waterIn < 2) return;
     gl.useProgram(rprog);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texS);
+    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, texR);
     gl.bindBuffer(gl.ARRAY_BUFFER, rbuf);
     var stride = FLOAT * 4;
     [['aP', 2, 0], ['aSV', 2, 2], ['aWB', 2, 4], ['aCol', 4, 6], ['aMeta', 4, 10], ['aN', 2, 14], ['aK', 1, 16]].forEach(function (q) {
@@ -379,9 +396,9 @@
   }
 
   var U = {};
-  ['uRes', 'uTime', 'uRect', 'uCam', 'uDep', 'uPic', 'uDepth', 'uSun', 'uMist', 'uShade', 'uThread', 'uGlow', 'uView', 'uGlowRect']
+  ['uRes', 'uTime', 'uRect', 'uCam', 'uDep', 'uPic', 'uDepth', 'uSun', 'uMist', 'uShade', 'uGreen', 'uGlow', 'uView', 'uGlowRect']
     .forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
-  [['uSun', 'sun'], ['uMist', 'mist'], ['uShade', 'shade'], ['uThread', 'thread']].forEach(function (p) { gl.uniform3fv(U[p[0]], P[p[1]]); });
+  [['uSun', 'sun'], ['uMist', 'mist'], ['uShade', 'shade'], ['uGreen', 'green']].forEach(function (p) { gl.uniform3fv(U[p[0]], P[p[1]]); });
   gl.uniform1i(U.uPic, 0); gl.uniform1i(U.uDepth, 1); gl.uniform1i(U.uGlow, 2);
   // The photograph arrives once. For the graphics card it is redrawn at a
   // power of two each way, so that it can be filtered as it shrinks (its
@@ -609,7 +626,7 @@
   function glints(v) {
     var s = v.k * dpr, ox = -v.x * s, oy = -v.y * s;
     wctx.globalCompositeOperation = 'lighter';
-    for (var f = 0; f < flows.length; f++) {
+    for (var f = 0; f < (rready ? 0 : flows.length); f++) {
       var e = flows[f];
       for (var j = 0; j < e.k; j++) {
         var pos = ((e.phase + j / e.k) * e.len + clock * SPEED) % e.len;

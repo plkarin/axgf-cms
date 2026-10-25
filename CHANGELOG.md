@@ -180,6 +180,15 @@ climbs.
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
 
+**Water that is water** (docs/adr/0004 §15): the valley under Canopée's river
+is now dry, so the family's streams and rivers are its only water, and the
+vegetation along them is greener. Their water is photographed (made in
+Canva): a turquoise mountain stream over stones, with foam, for a parent's
+line, and a calm deep river with its banks for a family's line to a child.
+Both are laid along each course and run down it, and each takes its own
+stretch of the picture. Streams tremble, foam and fall in small steps;
+rivers slide slowly past their banks.
+
 **Streams that meet as rivers** (docs/adr/0004 §14): a parent's line to their
 family is a small winding stream, fast and white, with foam, small falls
 and stony banks. The family's line to a child, where both parents' streams

@@ -563,7 +563,12 @@
         return { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, d: e.d, conf: e.conf, c: e.c, a: e.a, river: both };
       }),
       persons: fr.persons.map(function (p) { return { x: p.x, y: p.y, role: p.role, gen: p.gen, living: !!(p.s && p.s.living) }; }),
+      // Lines the record continues past the window, and the short lines
+      // toward brothers and sisters not drawn: streams that run on and fade.
       tails: fr.tails.map(function (t) { return { x1: t.x1, y1: t.y1, x2: t.x2, y2: t.y2, d: t.d, c: fr.meta.era ? ramp(t.year) : '#86b08f', a: t.a === undefined ? 1 : t.a, kind: t.kind }; })
+        .concat(fr.couples.filter(function (c) { return c.stub; }).map(function (c) {
+          return { x1: c.x, y1: c.y, x2: c.x + c.stub_dx, y2: c.y + c.stub_dy, d: c.stub_d, c: fr.meta.era ? ramp(c.stub_year) : '#86b08f', a: (c.a === undefined ? 1 : c.a) * 0.8, kind: 'cont' };
+        }))
     };
   }
   // Zoom to `z` about a point on screen, which stays where it is under the

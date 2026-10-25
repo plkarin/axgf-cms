@@ -165,9 +165,10 @@
   /* After Selva Verde (Canopée, 2026-10-24): the zones' pale contour lines,
      and the attested water's white thread of light and its glow. */
   --rv-contour-hi: #e4efe9; --rv-thread: #fffbef; --rv-thread-glow: #ffe8b5;
-  /* The family's lines as rivers in the ground (river-scene.js, docs/adr/0004
-     §13): their water, deep and shallow, and the wet earth of their banks. */
-  --rv-river-deep: #072b2a; --rv-river-shallow: #1f8079; --rv-river-bank: #241f12;
+  /* Along the family's streams and rivers (river-scene.js, docs/adr/0004
+     §15), the ground's vegetation, darker and greener: what it is
+     multiplied by. */
+  --rv-riparian: #9ecc98;
   --rv-shade-rgb: 10 17 14;
   /* The mist in two corners of the ground, as over Selva Verde's forest. */
   --rv-mist-rgb: 214 226 220;

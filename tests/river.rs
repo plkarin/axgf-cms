@@ -1069,20 +1069,19 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
     assert!(js.contains("root.dataset.riverMotion === 'cut'"));
     assert!(js.contains("document.hidden"));
-    // The ground is Selva Verde's (the operator's reviews, 2026-10-24): a
-    // photograph of a forested mountain valley with its streams and ponds,
-    // drawn in relief by its depth map, its water moving, the family's
-    // rivers lighting the forest around them, each person a marker of
-    // light; the pointer leans it only where motion is allowed.
+    // The ground is Selva Verde's valley (the operator's reviews, 2026-10-24
+    // and 25): a photograph drawn in relief by its depth map, with no water
+    // of its own — the family's streams and rivers are its only water, the
+    // vegetation greener along them; each person a marker of light; the
+    // pointer leans it only where motion is allowed.
     assert!(js.contains(
-        "var PIC = { src: '/static/img/river-ground.jpg?v=5', maps: '/static/img/river-ground-maps.jpg?v=1',"
-    ));
-    assert!(js.contains(
-        "float wm=uDep>0.5?smoothstep(0.25,0.75,texture2D(uDepth,clamp(q,0.0,1.0)).g):0.0;"
+        "var PIC = { src: '/static/img/river-ground.jpg?v=6', maps: '/static/img/river-ground-maps.jpg?v=2',"
     ));
     assert!(
-        js.contains("vec3 gt=texture2D(uGlow,(wp-uGlowRect.xy)*uGlowRect.zw).rgb;float gw=gt.r;")
+        !js.contains("float wm="),
+        "the ground animates no water of its own"
     );
+    assert!(js.contains("col=mix(col,col*uGreen,clamp(gt.g*0.55+gw*gw*0.25,0.0,0.6));"));
     assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
     // The family's lines are rivers (the operator's review, 2026-10-24): under
     // Canopée the scene draws each one in the ground — its water, its banks,
@@ -1100,7 +1099,14 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("function course(e) {"));
     assert!(js.contains("return e.river ? w * 1.25 + 0.8 : Math.max(1.1, w * 0.55);"));
     assert!(js.contains("edge: RIVERS ? coursePath : null,"));
-    assert!(js.contains("stage.classList.toggle('rv-rivers', rready);"));
+    // Their water is water (2026-10-25): two photographs seen from above, a
+    // mountain stream over stones and a calm river with its banks, laid
+    // along each course and running down it, each its own stretch of them.
+    assert!(js.contains(
+        "var WATER = { stream: '/static/img/river-water-stream.jpg?v=1', river: '/static/img/river-water-river.jpg?v=1' };"
+    ));
+    assert!(js.contains("gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);"));
+    assert!(js.contains("stage.classList.toggle('rv-rivers', rready && waterIn >= 2);"));
     assert!(js
         .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));
     let river_js = include_str!("../static/river.js");
@@ -1121,6 +1127,14 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
         (
             "/static/img/river-ground-maps.jpg",
             axgf_cms::render::RIVER_GROUND_MAPS_JPG.len(),
+        ),
+        (
+            "/static/img/river-water-stream.jpg",
+            axgf_cms::render::RIVER_WATER_STREAM_JPG.len(),
+        ),
+        (
+            "/static/img/river-water-river.jpg",
+            axgf_cms::render::RIVER_WATER_RIVER_JPG.len(),
         ),
     ] {
         let resp = get(&app, img).await;

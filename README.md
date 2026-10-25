@@ -19,7 +19,7 @@ How sure each fact is stays in plain sight.
 <a href="#more">Documentation</a>
 </p>
 
-[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as rivers of clear turquoise water with a ribbon of white and gold light down their middle, through pale contoured zones over a forested mountain valley seen from the air at golden hour, its terraces, golden meadow and turquoise streams and ponds under them, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
+[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as winding turquoise mountain streams that meet as broader rivers, through pale contoured zones over a forested mountain valley seen from the air at golden hour, its terraces and golden meadow under them, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
 
 <sub>Every screenshot on this page shows the same fictional family: about 250
 people from Brittany and Poland, from the 1640s to today. It was generated
@@ -81,22 +81,22 @@ at the top numbers where you have been, and the record beside the river
 follows you.
 
 <p align="center">
-<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: pulses of light run down the attested lines toward the living, rings of light open around each person, ripples run down the valley's turquoise streams and the mist drifts.">
+<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: the family's streams run and foam down to the rivers they meet, the rivers slide past their banks, rings of light open around each person and the mist drifts.">
 </p>
 
 **The river is alive** *(new in 0.5.0)*. Under the drawing lies a
-forested mountain valley seen from the air at golden hour, with terraces, a
-golden meadow, and turquoise streams and ponds. It is a 4K photograph drawn
-in relief by WebGL, so it stays sharp. The family's lines are watercourses
-carved into it. Each parent's line is a small winding stream, fast, white
-and stony. Where two parents' streams meet, the line to their child becomes
-a broader, calmer river with a ribbon of white and gold light down its
-middle that lights the forest around it. No two of them wind alike. An inferred link runs underground and out
-again, and a speculative one is a trail of pools. Ripples run down the
-valley's own streams too, and a ring of light opens around each person. The pointer leans the
-landscape a little, the sun's rays turn and the mist drifts. It holds still for readers
-who ask their system for less motion, and with the river's own pause button.
-Nothing moves while the river is off screen.
+forested mountain valley seen from the air at golden hour, with terraces and
+a golden meadow: a 4K photograph drawn in relief by WebGL, so it stays
+sharp. Its only water is the family's. Each parent's line is a small winding
+mountain stream of clear turquoise water over stones, with foam and small
+falls. Where two parents' streams meet, the line to their child becomes a
+broader, calmer river sliding past its banks. The forest is greener along
+them, and no two of them wind alike. An inferred link runs underground and
+out again, and a speculative one is a trail of pools. A ring of light opens
+around each person, the pointer leans the landscape a little, the sun's
+rays turn and the mist drifts. It holds still for readers who ask their
+system for less motion, and with the river's own pause button. Nothing
+moves while the river is off screen.
 
 | Zoom in, and the names keep their size, as on a map | On a phone: the river, a record, its charts, the tree |
 |---|---|

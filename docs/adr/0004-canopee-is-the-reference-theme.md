@@ -548,3 +548,44 @@ scene gives river.js each line's course (`axgfRiverScene.edge`), and the
 route the pointer lights runs along it; in a travel, in print and without
 WebGL, along the river's curve as before. The glints and the forest's glow
 follow the courses too.
+
+## 15. Water that is water (the operator's sixth review)
+
+The same day the operator asked for the rivers to be taken out of the
+background, and for the family's streams and rivers to look like rivers —
+not only to move like them; everything should rest on the real thing.
+
+**The ground holds no water.** `river-ground.jpg` is made once more, the
+same valley (terraces, golden meadow, rocky outcrop, forest, mist) but dry:
+no streams, no ponds (again in Canva, from a description). Its map keeps
+its depth only; the water mask and `tools/pictures/water.py` are gone. The
+family's streams and rivers are its only water, and along them the
+vegetation is darker and greener (`--rv-riparian`), as it grows along
+water.
+
+**Their water is photographed.** Two pictures made in Canva, seen straight
+from above: a clear turquoise mountain stream over pebbles and mossy stones,
+with foam (`river-water-stream.jpg`), and a calm, deep green-turquoise
+river with its sandy, grassy banks (`river-water-river.jpg`). Each is made
+to repeat down its length without a seam (`tools/pictures/tileable.py`:
+its end crossfaded into its beginning), at 512 × 1024. The scene lays them
+along each course: across the course, the picture's width, its banks at
+the course's edges; along it, the picture repeating. So that no two are
+alike, each course takes its own stretch of the picture, is mirrored or
+not, and has its water a little deeper or lighter.
+
+**What moves.** A stream's water trembles over its stones and runs fast,
+foam runs down it, and here and there it falls a step. A river's water
+slides slowly downstream while its banks stay where they are, with the
+sun's sheen on it. The pulses of light along the lines (§11) are not drawn
+where the water is; the rings of light round the people stay.
+
+**Their edges are the ground's.** The water's edge breathes along the
+course and frays, never a ruled line, and a shadow of wet earth lies just
+outside it. The stylised ribbon of light and the drawn banks of §13 are
+gone: the photographs carry the light and the banks.
+
+How sure a parentage is still shows: an inferred one runs underground and
+out again, its bed dry where it does; a speculative one is a trail of
+pools. The lines toward brothers and sisters not drawn are short streams
+that fade.

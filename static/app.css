@@ -5087,10 +5087,13 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    travel, in print, and wherever the scene cannot draw. */
 [data-theme="canopee"] .river { --rv-rivers-3d: 1; }
 [data-theme="canopee"] .rv-svg > :is(path, g:not([class])),
-[data-theme="canopee"] .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path) { transition: opacity 260ms var(--ease); }
+[data-theme="canopee"] .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { transition: opacity 260ms var(--ease); }
 @media screen {
   [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),
-  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path) { opacity: 0; }
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { opacity: 0; }
+  /* Over the water, the zones keep their contour lines and lose most of
+     their wash, so that the water keeps its own colour. */
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg .rv-zone { fill-opacity: 0.035; }
 }
 @media print {
   .rv-canvas { background-image: none; }

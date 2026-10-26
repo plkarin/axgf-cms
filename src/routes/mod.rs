@@ -568,12 +568,32 @@ fn routes(state: Shared) -> Router {
             get(public::genealogy_vine_r_jpg),
         )
         .route(
+            "/static/img/genealogy-tree.jpg",
+            get(public::genealogy_tree_jpg),
+        )
+        .route(
+            "/static/img/genealogy-tree-depth.jpg",
+            get(public::genealogy_tree_depth_jpg),
+        )
+        .route(
             "/static/img/summit-panorama.jpg",
             get(public::summit_panorama_jpg),
         )
         .route(
             "/static/img/river-ground.jpg",
             get(public::river_ground_jpg),
+        )
+        .route(
+            "/static/img/river-ground-maps.jpg",
+            get(public::river_ground_maps_jpg),
+        )
+        .route(
+            "/static/img/river-water-stream.jpg",
+            get(public::river_water_stream_jpg),
+        )
+        .route(
+            "/static/img/river-water-river.jpg",
+            get(public::river_water_river_jpg),
         )
         .route(
             "/static/img/river-contours.svg",

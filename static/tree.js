@@ -269,6 +269,11 @@ function axgfTreeWidth() {
     }
   });
 
+  // The page arrives on the person it stands on, in the middle of the
+  // tree's column when the tree is wider than it — on a phone, always:
+  // before, it arrived on the tree's left edge, rows of empty boxes.
+  centreOn(document.querySelector('#tree-canvas .tcard.is-selected') || document.querySelector('#tree-canvas .tcard.is-root'));
+
   // The back and forward buttons walk the people visited.
   window.addEventListener('popstate', function () {
     var root = new URLSearchParams(window.location.search).get('root');

@@ -134,7 +134,16 @@ the heights, whoever is at the camp.
 
 ### 3. The sun rises with the climb
 
-Each person on the itinerary brings the dawn on:
+The sun follows how high the reader has climbed since they came (amended
+2026-10-23): each generation travelled up toward the summit brings the dawn
+on a step, and each generation down toward the valley takes it back one.
+The climb is counted from the drawing the reader leaves — the generation
+the person travelled to stood at in it — or, for someone who was not in it,
+from the years between the two, when this reader may see both. It is
+kept within what the sky can show, so the sun answers the first step either
+way. Until then each person on the itinerary brought the dawn on, so that
+going down to the ancestors raised the sun as well and, after six, it stood
+still. As the dawn comes on:
 
 - the sky warms and the last stars fade;
 - the sun rises beside the summit, from behind the crest to above it;
@@ -144,8 +153,8 @@ Each person on the itinerary brings the dawn on:
 
 The dawn shown comes on toward the dawn reached over a second or so, rather
 than at a stroke. A climb starts in the night and reaches its summit at
-sunrise. River.js already keeps the itinerary, one chip per person, so
-nothing new is stored.
+sunrise, and climbing down takes the reader back toward the night. Nothing
+is stored: the climb lives in the page, as the itinerary does.
 
 ### 4. The scene, and when it holds still
 

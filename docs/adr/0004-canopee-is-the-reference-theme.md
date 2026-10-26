@@ -384,3 +384,232 @@ Measured, in Chromium with WebGL (software rendering):
 Two frames 0.9 s apart differ on 7 % of the ground's pixels: the gusts and
 the pulses. The software renderer is far slower than a graphics card, so
 frame rates were not measured here.
+
+## 12. Selva Verde's own ground (the operator's third review)
+
+On 24 October 2026 the operator set the river beside Selva Verde again and
+asked for its background and its mesh to look like the reference's. The
+computed forest of §11 was a forest seen straight down, crowns as a
+pattern; Selva Verde is a photograph of a forested mountainside seen at an
+angle, at golden hour, mist over the valleys at both edges, its spine of
+clearings down the middle, the paths a white thread of light through pale,
+translucent zones.
+
+**The ground is a photograph again, in relief.** `river-ground.jpg` is made
+anew in the operator's Canva, from a description of the reference's
+landscape (not from the reference, whose author holds it): a forested
+mountainside from the air at golden hour, a spine of small clearings down
+the middle, mist at the left and right edges, the sun in the upper right;
+no text, buildings or paths. It is enlarged as ADR 0017's pictures are, to
+3,840 × 2,160. `river-scene.js` draws it with WebGL, covering the stage and
+a tenth more, in relief by its depth map (red in `river-ground-maps.jpg`, Depth
+Anything V2, `tools/pictures/depth.py`): the spine and the near trees move
+more than the valleys as the pointer leans the ground (only where motion is
+allowed) and as it sways while the scene lives. Zoomed, it grows and follows
+the camera a third as much as the drawing does, as distant ground would.
+Over it the mist still drifts, thickest at both edges and in the lower
+corners and warm on the sun's side, the sun's light falls from the upper
+right, and the shade every ink was measured on deepens toward the edges.
+
+This undoes §11's "never a picture stretched to fit": the photograph is
+four times its Canva size and filtered by the graphics card as it shrinks,
+so it is no longer scaled up on any screen up to two device pixels per CSS
+pixel. The computed forest, its gusts and its banks' mask are gone; its
+tokens with them (`--rv-canopy-*`, `--rv-bank`). The glints along the water
+are unchanged.
+
+**The mesh after the reference** (Canopée only, `app.css`):
+
+- the zones are a light wash of teal under the fixed point and ochre over
+  it, with fine pale contour lines (`--rv-contour-hi`) rather than lines in
+  their own colour, the last one dotted;
+- the attested water is a white thread (`--rv-thread`) with a warm glow
+  (`--rv-thread-glow`), the dark banks barely there;
+- each person is a dot in a ring of light;
+- over the photograph the half-century bands are only a veil: their rules
+  and years still carry the time, without striping the ground.
+
+The server's river is unchanged (ADR 0001): all of it is the client's, and
+without WebGL the photograph is the stage's background, as before.
+
+**The same picture, animated** (the operator's next message, the same day:
+"not only the style of the view, but the river, the several rivers and the
+animations around it — really the same image, animated"). The ground was
+made again, closer to the reference's composition: a valley running down
+the middle between dark pine forest, curved terraces on the left, a golden
+meadow in the lower left, turquoise streams winding down the right into a
+few ponds, a rocky outcrop with a round stone platform at the bottom, mist
+at the edges and in the lower corners, the sun in the upper right (again
+from a description; no text, no path, no buildings, no people). Beside it,
+`river-ground-maps.jpg` carries its depth (red) and its water (green: the
+ponds by their turquoise, the streams by their foam, found once with
+`tools/pictures/water.py`). What moves:
+
+- the landscape's water: ripples run down the streams and the ponds, the
+  photograph trembling under them, and the sun glints on them;
+- the family's rivers light the forest around them, as the reference's path
+  does, the light coming up them in slow waves from the sources toward the
+  living (a soft mask drawn from the river's own edges, the attested ones
+  brighter), and pulses of light still run along every attested line;
+- each person is a marker of light, as the reference's stations are: a ring
+  opens from it and fades every few seconds, the fixed point's wider;
+- the sun's rays turn slowly across the ground from the upper right, and
+  the mist drifts over the edges.
+
+All of it holds still on the river's terms (reduced motion, "Cut", the
+pause, a hidden tab, a river off screen, a machine too slow). The family's
+lines keep the river's own geometry: the reference's single path is the
+family's many rivers, branching as the family does; the server draws them
+and decides where they run.
+
+## 13. The family's lines are the rivers (the operator's fourth review)
+
+The same day, the operator corrected the reading of their request: the
+lines between the people are the rivers, and it is their appearance that
+should be modelled in 3D after the reference — not only the landscape
+under them.
+
+**Each line is a river in the ground.** Under Canopée (`--rv-rivers-3d: 1`),
+`river-scene.js` draws every one of the family's lines, and every line the
+record continues past the window, as a river carved into the landscape. It
+is a strip of triangles along the river's own curve (river.js's `vc`, so
+the lit route and the glints follow the same water), drawn by the graphics
+card under the drawing:
+
+- its water, clear turquoise (`--rv-river-shallow`), darker toward its banks
+  (`--rv-river-deep`), with a little of the line's own colour in it, so the
+  ramp of the years still reads;
+- ripples running downstream, from the sources toward the living, and the
+  sun glinting on them; its wet edge lit on the side that faces the sun
+  (upper right), shaded on the other, so that it lies in its bed;
+- down its middle, Selva Verde's path: a white and gold ribbon of light
+  (`--rv-thread`, `--rv-thread-glow`), its light running toward the living
+  in slow pulses, and a warm halo on the forest round it (the ground's own
+  glow, so that it never folds at a bend);
+- its banks of wet earth (`--rv-river-bank`);
+- its width the line's flow (the legend's five widths), the thinner rivers
+  drawn first so that a tributary runs into the river it joins, its two
+  ends round.
+
+How sure a parentage is still shows: an attested one is a river with its
+ribbon of light; an inferred one a stream that runs underground and out
+again, its light fainter; a speculative one a dry trail of small pools. A
+line the record continues past the window runs on and fades, its arrow
+and count kept; a line it ends dries up before its last mark.
+
+**The drawing's own lines step aside** while the scene draws the rivers,
+on screen only (the stage's `rv-rivers` class). They come back for a
+travel, which the scene does not follow frame by frame, and the rivers
+return at rest; in print; and wherever the scene cannot draw (no WebGL).
+The server's SVG and payload are unchanged (ADR 0001).
+
+Measured in Chromium with software rendering, on the fictional family at
+±2:
+
+- at rest, frames at the screen's rate (median 16.7 ms);
+- through a travel, the same median;
+- no script error.
+
+## 14. Streams and rivers, each its own (the operator's fifth review)
+
+On 25 October 2026 the operator described the watercourse they meant: the
+family's path itself. A parent's line to their family is a small stream
+running down steep ground; where the two parents' streams meet to give a
+child, the line to the child becomes a river; and so on, generation after
+generation, no two streams and no two rivers alike, so that the whole reads
+as natural, beautiful and original.
+
+**Which water each line is.** river.js tells the scene, for each line,
+whether it is a parent's line to a family (from a parent) or a family's
+line to a child, and how many of the family's parents are drawn. A
+family's line to a child with both parents drawn is a river; every other
+line, and every line the record continues past the window, a stream. A
+river is broader (1.25 times the flow's width and more), a stream narrower
+(0.55 times); within each, the width still follows the flow, as the legend
+says. Streams are drawn first, so that they run into the rivers.
+
+**Its own course.** Each line keeps its two ends and leaves and reaches
+them as the river's curve does, but between them it winds (`course`): a
+stream in tight, uneven bends, with a little noise in them, as water finds
+its way down a slope; a river in broad, calm ones. The bends come from the
+line's own ends, so the same family is drawn the same way on every visit,
+and no two lines alike. A bend is never tighter than the water and its
+banks can follow, so the strip never folds. Its width breathes along its
+course.
+
+**How each looks.** A stream runs fast, light and white: its ripples small
+and quick, foam on it, and here and there a small fall where the slope
+steepens, its banks stony, its ribbon of light thin. A river runs slow and
+deep: broad ripples, the sun's sheen on it, Selva Verde's ribbon of light
+full down its middle. How sure a parentage is still shows as in §13.
+
+**The lit route follows the course.** While the rivers are drawn, the
+scene gives river.js each line's course (`axgfRiverScene.edge`), and the
+route the pointer lights runs along it; in a travel, in print and without
+WebGL, along the river's curve as before. The glints and the forest's glow
+follow the courses too.
+
+## 15. Water that is water (the operator's sixth review)
+
+The same day the operator asked for the rivers to be taken out of the
+background, and for the family's streams and rivers to look like rivers —
+not only to move like them; everything should rest on the real thing.
+
+**The ground holds no water.** `river-ground.jpg` is made once more, the
+same valley (terraces, golden meadow, rocky outcrop, forest, mist) but dry:
+no streams, no ponds (again in Canva, from a description). Its map keeps
+its depth only; the water mask and `tools/pictures/water.py` are gone. The
+family's streams and rivers are its only water, and along them the
+vegetation is darker and greener (`--rv-riparian`), as it grows along
+water.
+
+**Their water is photographed.** Two pictures made in Canva, seen straight
+from above: a clear turquoise mountain stream over pebbles and mossy stones,
+with foam (`river-water-stream.jpg`), and a calm, deep green-turquoise
+river with its sandy, grassy banks (`river-water-river.jpg`). Each is made
+to repeat down its length without a seam (`tools/pictures/tileable.py`:
+its end crossfaded into its beginning), at 512 × 1024. The scene lays them
+along each course: across the course, the picture's width, its banks at
+the course's edges; along it, the picture repeating. So that no two are
+alike, each course takes its own stretch of the picture, is mirrored or
+not, and has its water a little deeper or lighter.
+
+**What moves.** A stream's water trembles over its stones and runs fast,
+foam runs down it, and here and there it falls a step. A river's water
+slides slowly downstream while its banks stay where they are, with the
+sun's sheen on it. The pulses of light along the lines (§11) are not drawn
+where the water is; the rings of light round the people stay.
+
+**Their edges are the ground's.** The water's edge breathes along the
+course and frays, never a ruled line, and a shadow of wet earth lies just
+outside it. The stylised ribbon of light and the drawn banks of §13 are
+gone: the photographs carry the light and the banks.
+
+How sure a parentage is still shows: an inferred one runs underground and
+out again, its bed dry where it does; a speculative one is a trail of
+pools. The lines toward brothers and sisters not drawn are short streams
+that fade.
+
+## 16. The ground follows the water
+
+The operator, the same day: the background must follow the rivers drawn
+from the relations, or it looks wrong. A photograph cannot know where a
+family's streams will run, so the ground is shaped around them as it is
+drawn:
+
+- **Valleys.** The courses, drawn wide and soft into a third field of the
+  scene's mask (blue), are a height field: each stream and river runs in a
+  valley it has carved. The ground's shader lights that field as the hills
+  were lit, with the same sun in the upper right: the slopes facing the sun
+  brighter, the others in shade, the floor lower and darker. A river's
+  valley is wider than a stream's; a valley is carved however sure the
+  parentage is.
+- **Wetter ground.** Along the water the vegetation is darker and greener
+  (§15).
+- **Never apart.** The relief of §12 slides the photograph as the pointer
+  leans it. Where the family's water runs, the ground now holds still, so
+  that the valleys and the water stay together; the further from the
+  water, the more the landscape moves.
+
+All of it is computed in the drawing's own units, so it follows the water
+at every zoom and after every travel.

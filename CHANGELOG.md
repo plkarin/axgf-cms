@@ -139,20 +139,35 @@ from their frame pack: a dark green page with cream cards, oval portraits
 and antique vines along its edges, and the family on a tree the reader
 climbs.
 
-- `static/genealogy.js`, a view under ADR 0007's contract: a tree drawn in
-  perspective, its trunk through the person at the fixed point; a level
-  per generation round the trunk, descendants up in the branches and
-  ancestors down toward the roots, further generations closer together and
-  smaller, as seen from where the reader stands. Travelling, the camera
-  climbs the trunk to the person travelled to, or goes down it; the blend
-  is done in the tree's own space and the far woods behind follow, more
-  slowly. Each person is an oval gold frame (their initials: the payload
-  carries no picture) with a cream card that names them; a branch is lit
-  wood edged in bark, whole, broken or knotted as surely as the parentage
-  is known. Gold motes rise, leaves fall, a glint runs up every attested
-  branch, still on the river's terms. No picture: the first version, a
-  tree on a parchment picture, drew gold lines the colour of the picture
-  under it, and the operator could not read it.
+- `static/genealogy.js`, a view under ADR 0007's contract: the reference's
+  tree, in relief, which the reader climbs.
+  - **The tree.** An old tree with a twisted trunk and a crown of gold
+    leaves grows out of a parchment scroll. It was made in Canva from a
+    description of the operator's reference, not from the reference
+    itself, then cut out and set on the stage's green.
+  - **The relief.** The graphics card draws it in relief by its depth map:
+    the crown and the roots stand off the parchment as the camera moves,
+    and the pointer leans it a little.
+  - **The family.** The person at the fixed point sits on the trunk, the
+    descendants up in the crown, the ancestors among the roots. Each person
+    is a sepia print in a cream mount (their initials: the payload carries
+    no picture) beside a cream card. A parentage is a fine square-cornered
+    line in dark ink with the parchment's light under it, as on the
+    reference: broken where it is inferred, a line of knots where it is
+    speculative.
+  - **The climb.** The tree is nearly the window's width, so the window
+    shows a part of it. The camera climbs it with the reader, one step per
+    generation: up into the crown toward descendants, down to the roots
+    toward ancestors. It stays where the reader arrives. The blend is done
+    in the tree's own space.
+  - **The scene.** Gold leaves fall from the crown and a glint runs along
+    every attested line, still on the river's terms.
+  - **How it got here.** The first version drew gold lines the colour of
+    the picture under them. The second, a trunk through the window with
+    thin branches, looked to the operator like a stem. The third, a tree
+    drawn of the family's wood, looked like a cartoon.
+- The record beside the tree keeps the page's green: its blocks are the
+  page's raised green edged in gold, not cream cards.
 - Two palettes: the page's, dark, measured as every theme is (tightest
   4.3:1), and the cards', cream with a sepia ink, every colour token's twin
   given on a card and measured the same way (`genealogy_cards_read`,
@@ -164,6 +179,58 @@ climbs.
   and a tall vine and its mirror along the page's edges, drawn at a third
   of their size so they stay sharp on a dense screen. Its words in fourteen
   languages.
+
+**Water that is water** (docs/adr/0004 §15, §16): the valley under Canopée's
+river is now dry, so the family's streams and rivers are its only water. The
+ground follows them: each runs in a valley it has carved, lit by the sun, and
+the vegetation along it is greener. Where the water runs, the ground holds
+still as the pointer leans the landscape, so the two never part. Their water is photographed (made in
+Canva): a turquoise mountain stream over stones, with foam, for a parent's
+line, and a calm deep river with its banks for a family's line to a child.
+Both are laid along each course and run down it, and each takes its own
+stretch of the picture. Streams tremble, foam and fall in small steps;
+rivers slide slowly past their banks.
+
+**Streams that meet as rivers** (docs/adr/0004 §14): a parent's line to their
+family is a small winding stream, fast and white, with foam, small falls
+and stony banks. The family's line to a child, where both parents' streams
+meet, is a broader, calmer river with a ribbon of light, and the pattern
+repeats each generation. Every line winds in its own way, the same on
+every visit, and the route the pointer lights follows it.
+
+**Canopée's lines are rivers** (docs/adr/0004 §13): under Canopée each line
+between two people is drawn in the ground as a river after the operator's
+Selva Verde reference. It is clear turquoise water rippling downstream
+toward the living, lying in its bed with its banks lit by the sun, a white
+and gold ribbon of light down its middle with a warm halo on the forest,
+and as wide as its flow. An inferred parentage runs underground and out
+again, a speculative one is a trail of pools, and lines continuing past
+the window run on and fade. The drawing's flat lines step aside on screen
+only, and come back for a travel, in print and without WebGL.
+
+**Canopée after Selva Verde, animated** (docs/adr/0004 §12): the river's ground
+is now a photograph of a forested mountain valley at golden hour, seen from
+the air, made in Canva from a description of the operator's reference:
+terraces, a golden meadow, turquoise streams and ponds, a rocky outcrop,
+mist at the edges. It is drawn in relief by its depth map, and it moves:
+ripples run down its streams and ponds and the sun glints on them, the
+family's rivers light the forest around them in slow waves, each person is
+a marker of light whose ring opens every few seconds, and the sun's rays
+turn across the ground. The pointer leans it a little, and it
+grows a third as much as the drawing when zoomed. The mesh follows the
+reference: a light wash of teal and ochre with fine pale contour lines, the
+attested water a white thread of light, each person a dot in a ring of
+light, and the half-century bands only a veil over the photograph. The
+computed forest seen from above, its gusts and its tokens are gone.
+
+**Sharp pictures under the views** (docs/adr/0017): Canopée's forest,
+Fusion's laboratory and Summit's mountain were made at 1,680 to 1,776
+pixels wide and shown up to twice that on a dense screen. Each is now
+served at 3,840 × 2,160 (Summit's at 4,096 × 2,048), enlarged four times
+from the lossless original by a super-resolution model, then brought back
+to the original's tones; the tools are in `tools/pictures`. Genealogy's
+tree is made the same way. Fusion's laboratory is out of focus by design:
+it loses its compression blocks, not its depth of field.
 
 **Hebrew, Swahili and Lingala**: three more interface languages, complete
 and unreviewed, so the site now speaks fourteen. Hebrew is laid out right to
@@ -489,6 +556,23 @@ is out.
 
 ### Fixed
 
+- **Phones** (the operator's review, 2026-10-25): the pieces of the page lay
+  scattered at phone width. Now:
+  - the masthead is a tidy grid: the logo, the name and the account (its
+    initials) on one row, the sections spread across the next, the search
+    the whole width, and the language, theme, density and settings one even
+    row;
+  - the river's buttons share their row without breaking a word;
+  - a record's two dates no longer break in the middle;
+  - tables whose cells carry their labels (notes, accounts, the archive's
+    lists) become a list of cards instead of columns a few letters wide;
+  - the tree page arrives on the person it stands on rather than on the
+    tree's left edge.
+
+- Summit's sun only ever rose: it counted the itinerary's people, so going
+  down to the ancestors raised it too, and after six it stood still. It now
+  follows the climb, a step up for every generation toward the summit and a
+  step down for every generation toward the valley.
 - Clarity's funnel drew the lines beyond its last slice, and their counts,
   under the glass, in the glass's own colour: they are drawn over it now.
 - An export's button said "Working…" for ever: a file arriving does not
@@ -604,6 +688,10 @@ extra margin those themes gave.
 
 ### Tests
 
+- `views.rs`: Genealogy's tree is its picture and its depth map, served as
+  JPEGs, drawn in relief; its levels close in on the tree; its lines are
+  square-cornered with the parchment's light under them; the pointer leans
+  it only where motion is allowed.
 - `views.rs`: Fusion blends frames in its glass over its laboratory, river.js
   lets a view blend two frames, and the funnel draws its tails and counts
   over the glass.

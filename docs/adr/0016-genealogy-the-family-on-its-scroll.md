@@ -37,47 +37,82 @@ colour of the picture under them and could not be read, the picture was
 ugly, and what they wanted was "a tree in 3D that one climbs as one moves
 through it, or goes down". The vines were pixelated on their screen.
 
+The second version drew that tree: a trunk through the whole window, the
+person at the fixed point on it, a level per generation round it and thin
+branches out to each person. The operator's next review, the same evening:
+it "does not look like a tree at all, more like an ugly stem". A third,
+drawn as a tree made of the family's own wood (a trunk, limbs as thick as
+what they bore, a dome of leaves, roots under the ground), looked "very
+cartoon". The operator asked for the reference's tree itself, through
+Canva, as "a serious 3D tree".
+
+The reference's tree belongs to its author, and the operator holds no
+licence to it. The operator chose (2026-10-23) to follow it faithfully
+without copying it: a new picture made in Canva from a description of
+it, never from the picture itself. And, between a picture in relief and a
+true 3D model (Blender, WebGL with three.js), the picture in relief: no
+new dependency, and hours rather than days.
+
 ## Decision
 
-### 1. The view: a tree the reader climbs
+### 1. The view: the reference's tree, in relief, which the reader climbs
 
 `static/genealogy.js` registers `window.axgfView` (name `scroll`, kept from
-the first version) under ADR 0007's contract, from the river's own layout,
-and draws no picture:
+the first version) under ADR 0007's contract, from the river's own layout.
 
-- a tree in perspective, its trunk running through the person at the fixed
-  point; the camera stands at that person's height, a little in front of
-  the trunk;
-- a level per generation round the trunk: descendants up in the branches,
-  ancestors down toward the roots. Each level's people stand round the
-  trunk in the river's order, by the same tidy hierarchy as Fusion's tiers
-  (ADR 0015), the nearest at the front and those round the side smaller. A
-  generation further up or down is further along the trunk from the camera,
-  so it is drawn closer to the last and smaller;
-- a branch is lit wood edged in dark bark, as wide as it is near the trunk,
-  and says what the parentage is worth: whole for an attested one, broken
-  for an inferred one, a line of knots for a speculative one. Below the
-  fixed point the wood is the roots' darker grain. The wood is measured
-  against the woods behind it (4.5:1 or more), and the cream cards against
-  their words (7:1 or more): nothing is the colour of what it lies on;
-- each person is a portrait in an oval gold frame — their initials, since
-  the payload carries no picture (§4) — with a cream card beside it,
-  outward from the trunk; the person at the fixed point has a larger frame,
-  a halo and their card under it; a card that would cover another is left
-  out, as everywhere, and the pointer or "All names" (ADR 0015 §4) names
-  whoever has none;
-- travelling, the reader climbs: the camera rises along the trunk to the
-  person travelled to, or goes down it, the tree sliding past and that
-  person growing as they come level with it. The blend is done in the
-  tree's own space — each person's place round the trunk and height on it
-  — rather than between two pictures (`window.axgfView.tween`), and the
-  trunk's grain and the far woods move with the camera, the woods more
-  slowly, as distant things do.
+- **The tree is a picture**, made in the operator's Canva (§3): an old tree
+  with a twisted trunk and a crown of gold leaves, growing out of a
+  parchment scroll whose roots spill over its lower roll, in sepia, cream
+  and gold. It stands on the stage's own green, its wall cut away, as an
+  exhibit lit in the dark: the page's green beyond its edges is the
+  picture's own.
+- **In relief.** A depth map of the picture (Depth Anything V2, §3) tells,
+  for each of its pixels, how near it is. The picture is drawn by the
+  graphics card, each pixel looked up where the camera's shift, scaled by
+  how near that pixel is, takes it: the crown and the roots stand off the
+  parchment, and the parchment off the stage. The pointer leans it a little;
+  a slow sway keeps it alive while the scene moves; without WebGL it is
+  drawn flat.
+- **The family is set on it**: the person at the fixed point on the trunk,
+  the descendants up in the crown, the ancestors down among the roots. A
+  level's height is a share of the picture that closes in as generations
+  go further (`lift`), so that any number of them stays on the tree; each
+  level's people spread round the trunk in the river's order, the nearest
+  at the front and larger, by the same tidy hierarchy as Fusion's tiers
+  (ADR 0015). Each family's knot sits on the wood of the person it grows
+  from (over them, the partner's line joining it there); below, where the
+  line parts toward the two parents.
+- **As on the reference**, each person is a sepia print in a cream mount
+  with a fine gold edge (their initials, since the payload carries no
+  picture, §4) beside a cream card that names them, and a parentage is a
+  fine square-cornered line with a knot of gold where a family's lines
+  meet. Its ink is dark, with the parchment's light under it, so that it
+  reads on the leaves as on the paper (the first version's gold lines were
+  the colour of the picture under them): 4.5:1 or more on the parchment,
+  3:1 or more on the leaves. An inferred parentage is broken, a speculative
+  one a line of knots. The cards hold their words at 7:1 or more.
+- **Travelling, the reader climbs.** The picture is nearly the window's
+  width (or 1.7 times its height on a narrow one), so the window shows a
+  part of the tree, and the camera's place on it follows the reader: at
+  the trunk where they came in, up into the crown by as many generations
+  as they have climbed since, down to the roots by as many as they have
+  gone down. It moves a step at a time, with the travel, and stays where
+  the reader arrives; the top and the foot of the tree are never left
+  behind (`camV`, a hyperbolic tangent of the generations climbed). The
+  relief leans with it: up in the crown the leaves stand out a little
+  more. The family's blend is done in the tree's own space — each person's
+  place round the trunk and height on it (`window.axgfView.tween`). The
+  operator's review of 2026-10-24 asked for both: the tree was too small,
+  and the climb should go up or down the tree progressively (the first
+  picture fitted the window's height and came back to the trunk after
+  every travel).
 
-Its living scene: two rows of far trees behind the tree, a band of mist,
-gold motes rising, leaves falling, and a glint run up every attested
-branch. It holds still on the river's terms: reduced motion, "Cut", the
-pause, a hidden tab, a tree off screen, a machine too slow for it.
+Its living scene: gold leaves falling from the crown across the parchment,
+a little gold dust in its light, and a glint run along every attested
+line. It holds still on the river's terms: reduced motion, "Cut", the
+pause, a hidden tab, a tree off screen, a machine too slow for it. Still,
+the picture keeps its relief; the pointer leans it only where motion is
+allowed.
 
 ### 2. Two palettes: a dark page, cream cards
 
@@ -95,7 +130,9 @@ the sunken surface, 3.7:1).
 The record beside the river and beside the grid is not a card: it stays on
 the page's palette, where its name and its header read (the first version
 put it on the cards' and left its header's dark words on the dark page).
-The cards inside it are cream.
+So do the blocks inside it, the page's raised green edged in a hairline of
+gold, like its notices: a cream block there did not match the rest of it
+(the operator's review, 2026-10-24).
 
 A card carries a double rule, as old card stock is printed; titles are in a
 book face; portraits are oval. A notice is an opaque card tinted by its
@@ -122,10 +159,27 @@ the working design), none edited from the reference:
 | `genealogy-cta.jpg` | old letters, sepia photographs, a magnifying glass, a pen | the overview's last band |
 | `genealogy-vine-l.jpg`, `genealogy-vine-r.jpg` | a tall climbing vine with rose blossoms on dark green, and its mirror | the page's edges |
 | `notes-genealogy.jpg` | aged cream parchment with faint writing | behind the family's notes |
+| `genealogy-tree.jpg` | an old tree with a twisted trunk and a crown of gold leaves growing out of a parchment scroll, on the stage's green | the climbed tree, 2,392 × 3,200 |
+| `genealogy-tree-depth.jpg` | the same, as depth: near light, far dark | the tree's relief, 544 × 728 |
 
 The photographs in `genealogy-cta.jpg` are generated: nobody in them
 exists. The tree on its scroll and the wide vine ground of the first
 version are gone.
+
+The tree was generated from a description of the reference (an old tree
+with a twisted trunk and gold leaves growing out of an upright parchment
+scroll, its roots over the bottom roll; sepia, cream, antique gold; no
+text, no portraits, no buildings), the first of two candidates. It was
+then:
+
+1. enlarged four times as ADR 0017's pictures are;
+2. cut out along the mask Canva's "remove background" made of it;
+3. set on the stage's green (`--gn-stage`), with a soft light behind the
+   scroll and the scroll's shadow (`tools/pictures/compose.py`).
+
+Its depth map comes from Depth Anything V2 (small), smoothed a little
+(`tools/pictures/depth.py`). Should the stage's green change, the picture
+is composed again on the new one.
 
 ### 4. Not done here: real portraits on the tree
 
@@ -142,6 +196,10 @@ decided separately. Until then the frames hold initials.
 - Six themes. Genealogy is the second to change the page's polarity inside
   a component (the cards); a new component that should look like a card
   joins the list in `app.css`, or it stays on the dark page.
+- The tree weighs 1.1 MiB, its depth 31 KiB, fetched once a day.
+- A wider family than the crown spreads past the scroll onto the stage's
+  green, where the cards and the lines (with their light under them) still
+  read.
 - The view adds two hooks to `river.js` that any view may use: a card
   (`rect.gn-card`) counts as a placed word for "All names", and a
   portrait's initials (`text.gn-initials`) do not count as a person's name.

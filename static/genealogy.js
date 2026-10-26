@@ -1,40 +1,45 @@
 /* Genealogy's tree, climbed (v0.5.0, docs/adr/0016; redrawn 2026-10-23).
  *
+ * After the operator's frame pack: an old tree, its trunk twisted, its crown
+ * in gold leaves, growing out of a parchment scroll, and the family's
+ * portraits on the parchment joined to it by fine lines. The tree is a
+ * picture (static/img/genealogy-tree.jpg, made in the operator's Canva in
+ * the spirit of their reference, not from it), drawn in relief: a depth map
+ * of it (genealogy-tree-depth.jpg) moves its near parts more than its far
+ * ones as the camera moves, the crown and the roots standing off the
+ * parchment and the parchment off the wall.
+ *
  * The river's own people — from the same payload, through the same reader's
- * lens, in the same order from left to right — on a tree drawn in
- * perspective, which the reader climbs: the camera stands at the height of
- * the person at the fixed point, a little in front of the trunk, and the
- * trunk runs through that person. Descendants are up the tree, on branches
- * that climb and spread; ancestors are down it, toward the roots. A
- * generation further up or down is further along the trunk from the camera:
- * drawn closer to the last and smaller, as it would look from where the
- * reader stands. Each generation is a level around the trunk, its people
- * spread round it in the river's order, the nearest at the front.
+ * lens, in the same order from left to right — are set on the tree: the
+ * person at the fixed point on its trunk, the descendants up in the crown,
+ * the ancestors down among the roots, a generation a level, each further
+ * one closer to the last, and each level's people spread round the trunk in
+ * the river's order, the nearest at the front and larger. Each is a sepia
+ * portrait in a cream mount — their initials, since the payload carries no
+ * picture — with a cream card that names them; whom the drawing has no room
+ * for, the pointer names, or river.js when every name is asked for. A
+ * parentage is a fine line, square-cornered as on the reference, dark ink
+ * edged in the parchment's light so that it reads on the leaves and the
+ * paper alike: whole for an attested one, broken for an inferred one, a
+ * line of knots for a speculative one.
  *
- * Travelling up to a descendant, the reader climbs: the camera rises along
- * the trunk, the tree slides down past it and the person travelled to grows
- * as they come level with it; travelling to an ancestor, the reader climbs
- * down. The blend is done in the tree's own space (`tween3`, through
- * river.js's travel), and the far woods behind the tree move with the
- * climb, more slowly, as distant things do.
- *
- * Each person is a portrait in an oval gold frame — their initials, since
- * the payload carries no picture — with a cream card beside it, outward
- * from the trunk, that names them; whom the drawing has no room for, the
- * pointer names, or river.js when every name is asked for. A branch is lit
- * wood edged in dark bark, as wide as it is near the trunk, and says what
- * the parentage is worth: whole for an attested one, broken for an inferred
- * one, a line of knots for a speculative one.
+ * Travelling up to a descendant, the reader climbs: the camera rises into
+ * the crown and the tree slides down past it, the person travelled to
+ * coming down to the trunk; to an ancestor, the camera goes down toward the
+ * roots. The blend is done in the tree's own space (`tween3`, through
+ * river.js's travel), and the picture moves with the camera, in relief.
  *
  * Two things the page knows by name:
  * - `window.axgfView` (river.js): where everyone stands (`shape`), how a
- *   branch bends (`edge`, which the lit route follows too), how a frame is
+ *   line runs (`edge`, which the lit route follows too), how a frame is
  *   painted at rest and in travel, which people the drawing named, the
  *   dashboard at rest, and how two frames blend (`tween`).
- * - `window.axgfRiverScene`: the woods' life — the far trees behind, gold
- *   motes rising, leaves falling, and a glint run up every attested branch.
- *   It holds still as the river's ground does: reduced motion, "Cut", the
- *   pause, a hidden tab, a tree off screen, a machine too slow for it.
+ * - `window.axgfRiverScene`: under the drawing, the picture in relief, with
+ *   gold leaves falling from the crown and a little gold dust; over it, a
+ *   glint run along every attested line. It holds still as the river's
+ *   ground does: reduced motion, "Cut", the pause, a hidden tab, a tree off
+ *   screen, a machine too slow for it. Still, the picture still stands in
+ *   its relief; the pointer tilts it a little, unless motion is reduced.
  *
  * No colour is named here: every one is a token of the theme (`--gn-*`,
  * tokens.css), read from the page or set by class in app.css.
@@ -45,16 +50,27 @@
   if (!root || root.dataset.view !== 'scroll') return;
   var stage = document.getElementById('rv-canvas');
 
-  /* ---- the tree in perspective ---- */
-  // FALL: how a generation's height above or below the camera is drawn —
-  // the first nearly a whole step, each further one less. SHRINK: how much
-  // smaller a generation further away is. THETA: how far round the trunk a
-  // generation's people reach, either side of the front. DEPTH: how much
-  // smaller someone round the side is than someone at the front.
-  var FALL = 2.4, SHRINK = 0.14, THETA = 1.25, DEPTH = 0.26;
+  /* ---- the tree, on its picture ---- */
+  // The picture: its aspect; where its trunk stands (u, a share of its
+  // width) and where on it the fixed point is set (v, a share of its
+  // height); how far up the crown reaches from there and down the roots
+  // (shares of its height); how quickly further generations close in
+  // (ku up, kd down). Read from the picture and its depth map. And the
+  // climb: how far up the picture (or down) the camera goes, at most, as the
+  // reader travels up the generations (or down), and how many generations
+  // take it half of that way (pace, roughly).
+  var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1', aspect: 1088 / 1456, u: 0.53, v: 0.57, up: 0.5, down: 0.4, ku: 1.53, kd: 1.35, climb: 0.31, pace: 2.4 };
+  // SHRINK: how much smaller a generation further away is. THETA: how far
+  // round the trunk a generation's people reach, either side of the front.
+  // DEPTH: how much smaller someone round the side is than someone at the
+  // front.
+  var SHRINK = 0.1, THETA = 1.25, DEPTH = 0.22;
   var GEO = null, world = 0, pending = 0;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-  function lift(l) { var a = Math.abs(l); return (l < 0 ? -1 : 1) * FALL * (1 - Math.exp(-a / FALL)); }
+  // A level's height above the fixed point, as a share of the picture: up
+  // into the crown, down into the roots, each further level closer to the
+  // last, so that any number of them stays on the tree.
+  function lift(l) { return l >= 0 ? PIC.up * (1 - Math.exp(-l / PIC.ku)) : -PIC.down * (1 - Math.exp(l / PIC.kd)); }
   function proj(G, th, l) {
     var z = Math.cos(th), kl = Math.exp(-SHRINK * Math.abs(l));
     return { x: G.x0 + G.R * Math.sin(th) * kl, y: G.y0 - lift(l) * G.H, z: z, k: kl * (1 - DEPTH * (1 - z)) };
@@ -112,12 +128,16 @@
       return { w: w, members: members };
     }
     if (C) { crown(C.key, 0); roots(C.key, 0); }
-    // Round the trunk: the widest side reaches THETA either way, a place
-    // never more than a quarter turn wide.
-    var R = clamp(hw * 0.46, 160, 640);
-    var top = lift(nd), bottom = lift(na), H = clamp((vh - 150) / Math.max(1, top + bottom), 60, 210);
-    var y0 = vt + 74 + top * H + Math.max(0, (vh - 150 - (top + bottom) * H) / 2);
-    var G = { x0: hl + hw / 2, y0: y0, R: R, H: H, nd: nd, na: na };
+    // The family's levels over a little more than the window's height, the
+    // fixed point a little under its middle. The picture much larger (PH,
+    // PW): nearly the window's width, or well over its height on a narrow
+    // one, so that the window shows a part of the tree, and the camera
+    // climbs it (scene, picture()). Round the trunk, the widest side
+    // reaches THETA either way, a place never more than a quarter turn
+    // wide.
+    var H = vh * 1.06, PH = Math.max(hw * 0.88 / PIC.aspect, vh * 1.7), PW = PH * PIC.aspect;
+    var R = clamp(Math.max(hw * 0.4, PW * 0.36), 160, 560);
+    var G = { x0: hl + hw / 2, y0: vt + (vh - H) / 2 + PIC.v * H, R: R, H: H, PH: PH, PW: PW, nd: nd, na: na };
     function per(X) {
       if (!C || !(C.key in X)) return 0.4;
       var reach = 0;
@@ -139,10 +159,21 @@
       return Object.assign({}, p, { x: q.x, y: q.y, z: q.z, k: q.k, th: th, lv: l });
     });
     var NK = byKey(persons);
+    function mean(list) { return list.reduce(function (s, q) { return s + q.th; }, 0) / list.length; }
     var couples = fr.couples.map(function (c) {
       var ps = c.parents.map(function (k) { return NK[k]; }).filter(Boolean), ks = c.kids.map(function (k) { return NK[k]; }).filter(Boolean);
-      var from = ps.length ? ps : ks, th = from.length ? from.reduce(function (s, q) { return s + q.th; }, 0) / from.length : (c.x - cx) / reachR * THETA;
-      var l = lev(c.y), q = proj(G, th, l);
+      var from = ps.length ? ps : ks, th = from.length ? mean(from) : (c.x - cx) / reachR * THETA;
+      var l = lev(c.y);
+      // Where a family's wood parts. Above someone, on their own wood, the
+      // partner's twig joining it there — the fixed point's families at the
+      // top of the trunk, where the limbs leave it. Below, where the root
+      // parts toward the two parents, under the child.
+      var blood = ps.filter(function (q) { return q.role === 'centre' || q.role === 'desc'; })[0];
+      if (l > 0 && blood) {
+        var others = ps.filter(function (q) { return q !== blood; }), mo = others.length ? mean(others) : blood.th;
+        th = blood.role === 'centre' ? (blood.th + mo) / 2 * 0.15 : blood.th + (mo - blood.th) * 0.2;
+      } else if (l < 0 && ks.length && ps.length) th = (mean(ks) + mean(ps)) / 2;
+      var q = proj(G, th, l);
       at[c.x + ',' + c.y] = [th, l];
       var o = Object.assign({}, c, { x: q.x, y: q.y, z: q.z, k: q.k, th: th, lv: l });
       if (c.stub) {
@@ -169,10 +200,19 @@
     t.count_at = t.kind === 'cont' ? { x: b.x, y: b.y + (up ? -6 : 13), anchor: 0, halo: true } : null;
     return t;
   }
-  // A branch leaves and reaches each end upright, as wood grows.
+  // A line runs as on the reference: straight down (or up) from one end,
+  // across, and straight to the other, its corners a little rounded. The
+  // points it turns at, for the glints.
+  function wire(x1, y1, x2, y2) {
+    var my = (y1 + y2) / 2;
+    return [[x1, y1], [x1, my], [x2, my], [x2, y2]];
+  }
   function edge(x1, y1, x2, y2) {
-    var r = function (v) { return Math.round(v * 10) / 10; }, my = (y1 + y2) / 2;
-    return 'M' + r(x1) + ' ' + r(y1) + 'C' + r(x1) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(y2);
+    var r = function (v) { return Math.round(v * 10) / 10; }, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1;
+    if (Math.abs(dx) < 0.6) return 'M' + r(x1) + ' ' + r(y1) + 'L' + r(x2) + ' ' + r(y2);
+    var c = Math.min(6, Math.abs(dx) / 2, Math.abs(dy) / 4), sx = dx < 0 ? -1 : 1, sy = dy < 0 ? -1 : 1;
+    return 'M' + r(x1) + ' ' + r(y1) + 'L' + r(x1) + ' ' + r(my - sy * c) + 'Q' + r(x1) + ' ' + r(my) + ' ' + r(x1 + sx * c) + ' ' + r(my)
+      + 'L' + r(x2 - sx * c) + ' ' + r(my) + 'Q' + r(x2) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(my + sy * c) + 'L' + r(x2) + ' ' + r(y2);
   }
   // Two frames blended as the reader climbs: each person's place round the
   // trunk and height on it blended in the tree's own space, the camera
@@ -209,21 +249,18 @@
       var w1 = a && b ? mix(a.lv1, b.lv1 + lc) : a ? a.lv1 : b.lv1 + lc, w2 = a && b ? mix(a.lv2, b.lv2 + lc) : a ? a.lv2 : b.lv2 + lc;
       place(Object.assign(o, { th1: s.th1, th2: s.th2, lv1: w1 - cam, lv2: w2 - cam }), G);
     });
-    fr.meta = Object.assign({}, fr.meta, { gn: Object.assign({}, G, { world: world + cam }) });
+    fr.meta = Object.assign({}, fr.meta, { gn: Object.assign({}, G, { world: world + cam, e: e, lc: lc }) });
     pending = lc;
     return fr;
   }
 
   /* ---- the drawing ---- */
-  // A branch's width: the trunk's near the fixed point, narrowing a level
-  // further out each time, never under a twig's.
-  function thick(gen) { return Math.max(1.6, 9 * Math.pow(0.64, Math.abs(gen))); }
-  // A portrait's frame: the heart's the largest, then smaller with distance
-  // along the trunk and round it, never wider than the places allow.
+  // A portrait's mount: the heart's the largest, then smaller with distance
+  // along the trunk and round it. Half its width and half its height.
   function frameOf(p) {
-    var g = Math.abs(p.gen), base = p.role === 'centre' ? 23 : g <= 1 ? 17 : g === 2 ? 14 : 12;
+    var g = Math.abs(p.gen), base = p.role === 'centre' ? 25 : g <= 1 ? 17 : g === 2 ? 14 : 12;
     var rx = Math.max(7, base * (p.k || 1));
-    return { rx: rx, ry: rx * 1.2 };
+    return { rx: rx, ry: rx * 1.22 };
   }
   // Initials for the portrait: the first letter of the first and of the
   // last word of the name.
@@ -233,26 +270,14 @@
     var a = Array.from(w[0])[0] || '', b = w.length > 1 ? Array.from(w[w.length - 1])[0] || '' : '';
     return (a + b).toUpperCase();
   }
-  // The same small numbers on every visit, from a person's key.
-  function hash(s, i) {
-    var h = 2166136261;
-    for (var j = 0; j < s.length; j++) { h ^= s.charCodeAt(j); h = Math.imul(h, 16777619); }
-    h ^= i * 374761393; h = Math.imul(h ^ (h >>> 13), 1274126177);
-    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-  }
   var named = {};
   function paint(fr, api, rest) {
     var f = api.f, esc = api.esc, PM = api.byKey(fr.persons), m = fr.meta;
     var vt = m.view[0], vh = m.view[1], hl = m.hview[0], hw = m.hview[1];
     if (rest && pending) { world += pending; pending = 0; }
-    var G = m.gn || GEO || { x0: hl + hw / 2, y0: vt + vh / 2, R: hw / 3, H: 120, nd: 0, na: 0 };
-    var W = G.world !== undefined ? G.world : world;
-    GEO = Object.assign({}, G, { world: W });
-    var climb = W * G.H;
-    var ringsBack = '', ringsFront = '', trunk = '', branches = '', leaves = '', tw = '', marks = '', rail = '';
-    // The levels: a faint ring round the trunk at each generation's height,
-    // its back half behind the trunk and its front half before it; and the
-    // generation's number at the right, as the river's rail.
+    var G = m.gn || GEO || { x0: hl + hw / 2, y0: vt + vh * 0.57, R: hw / 3, H: vh, PH: vh * 1.7, PW: vh * 1.7 * PIC.aspect, nd: 0, na: 0 };
+    GEO = Object.assign({}, G, { world: G.world !== undefined ? G.world : world, e: rest ? 0 : G.e || 0, lc: rest ? 0 : G.lc || 0 });
+    var C = PM[m.centre] || centreOf(fr);
     var boxes = [];
     function hit(box) {
       for (var i = 0; i < boxes.length; i++) {
@@ -261,91 +286,52 @@
       }
       return false;
     }
+    // The generations' numbers at the right, as the river's rail.
+    var rail = '';
     for (var l = -G.na; l <= G.nd; l++) {
-      var ly = G.y0 - lift(l) * G.H, kl = Math.exp(-SHRINK * Math.abs(l)), rx = G.R * kl * 1.02, ry = rx * 0.07;
-      var cls = 'gn-ring' + (l === 0 ? ' gn-ring-0' : '');
-      ringsBack += '<path class="' + cls + '" d="M' + f(G.x0 - rx) + ' ' + f(ly) + 'A' + f(rx) + ' ' + f(ry) + ' 0 0 1 ' + f(G.x0 + rx) + ' ' + f(ly) + '"/>';
-      ringsFront += '<path class="' + cls + '" d="M' + f(G.x0 - rx) + ' ' + f(ly) + 'A' + f(rx) + ' ' + f(ry) + ' 0 0 0 ' + f(G.x0 + rx) + ' ' + f(ly) + '"/>';
-      var word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0 ◂', gx = hl + hw - 44;
-      rail += '<text x="' + f(gx) + '" y="' + f(ly + 3.5) + '" font-family="' + api.mono + '" font-size="10" class="gn-gen' + (l === 0 ? ' gn-gen-0' : '') + '">' + word + '</text>';
+      var ly = G.y0 - lift(l) * G.H, word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0 ◂', gx = hl + hw - 44;
+      rail += '<text x="' + f(gx) + '" y="' + f(ly + 3.5) + '" font-family="' + api.mono + '" font-size="10" paint-order="stroke" class="gn-gen' + (l === 0 ? ' gn-gen-0' : '') + '">' + word + '</text>';
       boxes.push([gx - 2, ly - 8, gx + 34, ly + 5]);
     }
-    // The trunk, the whole height of the window: wider toward the roots,
-    // swaying a little, its bark lit from the left. The sway and the bark's
-    // grain belong to the tree, so they slide past as the reader climbs.
-    function sway(y) { return Math.sin((y + climb) / 190) * 7 + Math.sin((y + climb) / 77) * 2.5; }
-    function girth(y) { var t = clamp((y - vt) / vh, 0, 1); return 22 + 46 * t * t + 10 * t; }
-    var y1 = vt - 20, y2 = vt + vh + 20, L = [], Rr = [];
-    for (var y = y1; y <= y2 + 0.1; y += 18) {
-      var c = G.x0 + sway(y), w = girth(y);
-      L.push(f(c - w / 2) + ' ' + f(y)); Rr.unshift(f(c + w / 2) + ' ' + f(y));
-    }
-    trunk += '<path class="gn-trunk" d="M' + L.join('L') + 'L' + Rr.join('L') + 'Z" fill="url(#gn-bark)"/>';
-    // The grain: lines down the trunk, each a fraction of the way across it.
-    [0.18, 0.34, 0.52, 0.68, 0.84].forEach(function (fx, i) {
-      var pts = [];
-      for (var y = y1; y <= y2 + 0.1; y += 14) {
-        var w = girth(y), c = G.x0 + sway(y);
-        pts.push(f(c - w / 2 + w * fx + Math.sin((y + climb) / (23 + i * 7) + i) * w * 0.035) + ' ' + f(y));
-      }
-      trunk += '<path class="gn-grain" d="M' + pts.join('L') + '"/>';
-    });
 
+    // The lines: the parchment's light under each, then its ink, as sure as
+    // the parentage is known; each family a knot of gold where its lines
+    // meet.
+    var halo = '', ink = '', knots = '';
+    api.edges(fr, PM).forEach(function (e) {
+      var d = edge(e.x1, e.y1, e.x2, e.y2), o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      halo += '<path d="' + d + '" class="gn-wire-halo"' + o + '/>';
+      ink += '<path d="' + d + '" class="gn-wire' + (e.conf === 'd' ? ' gn-wire-d' : e.conf === 's' ? ' gn-wire-s' : '') + '"' + o + '/>';
+    });
+    fr.couples.forEach(function (c) {
+      if (c.parents.length + c.kids.length > 1) knots += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="' + f(Math.max(2.2, 3.4 * (c.k || 1))) + '" class="gn-node" opacity="' + f(c.a) + '"/>';
+    });
     // Lines the record continues past the last level, and lines it ends.
-    var counts = [];
+    var counts = [], tw = '';
     fr.tails.forEach(function (t) {
-      var dx = t.x2 - t.x1, dy = t.y2 - t.y1, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len, w = Math.max(1.4, 2.4 * (t.k || 1));
-      tw += '<g opacity="' + f(t.a) + '"><path d="M' + f(t.x1) + ' ' + f(t.y1) + 'L' + f(t.x2) + ' ' + f(t.y2) + '" class="gn-branch" stroke-width="' + f(w + 1.6) + '"/>'
-        + '<path d="M' + f(t.x1) + ' ' + f(t.y1) + 'L' + f(t.x2) + ' ' + f(t.y2) + '" class="gn-branch-core" stroke-width="' + f(w * 0.55) + '"/>';
+      var dx = t.x2 - t.x1, dy = t.y2 - t.y1, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+      var d = 'M' + f(t.x1) + ' ' + f(t.y1) + 'L' + f(t.x2) + ' ' + f(t.y2);
+      tw += '<g opacity="' + f(t.a) + '"><path d="' + d + '" class="gn-wire-halo"/><path d="' + d + '" class="gn-wire"/>';
       if (t.kind === 'cont') {
-        tw += '<polygon class="gn-tip" points="' + f(t.x2 - uy * 4) + ',' + f(t.y2 + ux * 4) + ' ' + f(t.x2 + uy * 4) + ',' + f(t.y2 - ux * 4) + ' ' + f(t.x2 + ux * 6) + ',' + f(t.y2 + uy * 6) + '"/>';
+        tw += '<polygon class="gn-tip" points="' + f(t.x2 - uy * 3.6) + ',' + f(t.y2 + ux * 3.6) + ' ' + f(t.x2 + uy * 3.6) + ',' + f(t.y2 - ux * 3.6) + ' ' + f(t.x2 + ux * 5.5) + ',' + f(t.y2 + uy * 5.5) + '"/>';
         if (t.count_at) counts.push({ mk: t.count_at, text: '+' + t.count, size: 9.5, dx: t.cref ? t.x2 - t.cref[0] : 0, dy: t.cref ? t.y2 - t.cref[1] : 0, a: t.a });
       } else {
-        tw += '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3" class="gn-end"/>';
+        tw += '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="2.8" class="gn-end"/>';
       }
       tw += '</g>';
     });
     fr.couples.forEach(function (c) {
       if (!c.stub) return;
-      var sx = c.x + (c.stub_side || 1) * 22 * (c.k || 1), sy = c.y - (c.stub_up || 1) * 16 * (c.k || 1);
-      tw += '<g opacity="' + f(c.a) + '"><path d="' + edge(c.x, c.y, sx, sy) + '" class="gn-branch" stroke-width="3"/><path d="' + edge(c.x, c.y, sx, sy) + '" class="gn-branch-core" stroke-width="1.4"/></g>';
+      var sx = c.x + (c.stub_side || 1) * 22 * (c.k || 1), sy = c.y - (c.stub_up || 1) * 16 * (c.k || 1), d = edge(c.x, c.y, sx, sy);
+      tw += '<g opacity="' + f(c.a) + '"><path d="' + d + '" class="gn-wire-halo"/><path d="' + d + '" class="gn-wire"/></g>';
       counts.push({ mk: { x: sx + (c.stub_side || 1) * 6, y: sy + 3.5, anchor: c.stub_side || 1, halo: true }, text: '+' + c.stub, size: 10, dx: 0, dy: 0, a: c.a });
-    });
-
-    // The branches: dark bark round lit wood, as wide as they are near the
-    // trunk; below the fixed point the wood is the roots' darker grain.
-    api.edges(fr, PM).forEach(function (e) {
-      var a = e.from ? PM[e.from] : null, k = e.to ? PM[e.to] : null, cp = e.cp || {};
-      var gen = Math.max(a ? Math.abs(a.gen) : 0, k ? Math.abs(k.gen) : 0), kk = ((a ? a.k : cp.k || 1) + (k ? k.k : cp.k || 1)) / 2;
-      var w = thick(gen) * (kk || 1);
-      if (a && (a.role === 'spouse' || a.role === 'dspouse')) w *= 0.65;
-      var low = (e.y1 + e.y2) / 2 > G.y0 + 2, d = edge(e.x1, e.y1, e.x2, e.y2), o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
-      branches += '<path d="' + d + '" class="gn-branch' + (low ? ' gn-root' : '') + '" stroke-width="' + f(w + 2.4) + '"' + o + '/>';
-      if (e.conf === 'a') branches += '<path d="' + d + '" class="gn-branch-core' + (low ? ' gn-root-core' : '') + '" stroke-width="' + f(Math.max(1.1, w * 0.55)) + '"' + o + '/>';
-      else if (e.conf === 'd') branches += '<path d="' + d + '" class="gn-branch-core' + (low ? ' gn-root-core' : '') + '" stroke-width="' + f(Math.max(1.1, w * 0.55)) + '" stroke-dasharray="6 4"' + o + '/>';
-      else branches += '<path d="' + d + '" class="gn-branch-core gn-faint" stroke-width="' + f(Math.max(1.6, w * 0.5)) + '" stroke-dasharray="0.1 6"' + o + '/>';
-    });
-    // Each family a knot where its branches meet.
-    var knots = '';
-    fr.couples.forEach(function (c) {
-      if (c.parents.length + c.kids.length > 1) knots += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="' + f(Math.max(2.2, 4 * (c.k || 1))) + '" class="gn-knot" opacity="' + f(c.a) + '"/>';
-    });
-    // Leaves round every descendant, the same on every visit.
-    fr.persons.forEach(function (p) {
-      if (!(p.gen > 0) || (p.s && p.s.redacted)) return;
-      var fm = frameOf(p), n = 7;
-      for (var i = 0; i < n; i++) {
-        var an = (i / n) * 6.283 + hash(p.key, i) * 0.9, rr = fm.rx * (1.55 + 0.6 * hash(p.key, i + 9));
-        var lx = p.x + Math.cos(an) * rr, ly = p.y - fm.ry * 0.35 + Math.sin(an) * rr * 0.75, s = fm.rx * (0.42 + 0.3 * hash(p.key, i + 17));
-        leaves += '<ellipse cx="' + f(lx) + '" cy="' + f(ly) + '" rx="' + f(s) + '" ry="' + f(s * 0.55) + '" transform="rotate(' + f(an * 57.3 + 30) + ' ' + f(lx) + ' ' + f(ly) + ')" class="gn-leaf-' + (1 + (i % 3)) + '" opacity="' + f(0.8 * p.a) + '"/>';
-      }
     });
 
     // Cards beside the portraits, outward from the trunk: the heart's first,
     // under its portrait, then the nearest levels'. A card that would cover
     // another is left out, as the river leaves out a word it has no room
     // for; the pointer brings it back.
-    var keep = {}, C = centreOf(fr), cs = C && C.s || {};
+    var keep = {}, cs = C && C.s || {};
     var F = {};
     fr.persons.forEach(function (p) {
       var fm = frameOf(p);
@@ -354,7 +340,7 @@
     });
     if (C && !cs.redacted) {
       var cf = F[C.key], cn = api.clip(cs.names[2], 240), cw = Math.max(api.width(cn, 15, true), api.width(cs.years, 10.5, true)) + 22;
-      var at = null, least = Infinity, tries = [];
+      var spot = null, least = Infinity, tries = [];
       [8, 30].forEach(function (gap) {
         tries.push([C.x - cw / 2, C.y + cf.ry + gap, 0]);
         tries.push([C.x - cw / 2, C.y - cf.ry - gap - 36, 0]);
@@ -368,11 +354,11 @@
         var box = [o[0] - 2, o[1] - 2, o[0] + cw + 2, o[1] + 38], n = 0;
         if (box[0] < hl + 2 || box[2] > hl + hw - 48 || box[1] < vt + 2 || box[3] > vt + vh - 2) return;
         boxes.forEach(function (q) { if (box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1]) n++; });
-        if (n < least) { least = n; at = { x: o[0], y: o[1], side: o[2], box: box }; }
+        if (n < least) { least = n; spot = { x: o[0], y: o[1], side: o[2], box: box }; }
       });
-      if (!at) at = { x: C.x - cw / 2, y: C.y + cf.ry + 8, side: 0, box: [C.x - cw / 2 - 2, C.y + cf.ry + 6, C.x + cw / 2 + 2, C.y + cf.ry + 46] };
-      keep[C.key] = { x: at.x, y: at.y, w: cw, h: 36, side: at.side, centre: true, word: cn, both: true };
-      boxes.push(at.box);
+      if (!spot) spot = { x: C.x - cw / 2, y: C.y + cf.ry + 8, side: 0, box: [C.x - cw / 2 - 2, C.y + cf.ry + 6, C.x + cw / 2 + 2, C.y + cf.ry + 46] };
+      keep[C.key] = { x: spot.x, y: spot.y, w: cw, h: 36, side: spot.side, centre: true, word: cn, both: true };
+      boxes.push(spot.box);
     }
     fr.persons.slice().sort(function (a, b) { return Math.abs(a.gen) - Math.abs(b.gen) || b.z - a.z; }).forEach(function (p) {
       var s = p.s || {}, gd = Math.abs(p.gen), fm = F[p.key];
@@ -394,32 +380,35 @@
     });
     // The counts: never left out — the only sign of the people beyond —
     // but stepped aside from a card rather than written over it.
+    var marks = '';
     counts.forEach(function (c) {
-      var mk = c.mk, w = api.width(c.text, c.size, true), at = [0, 0], spot = null;
+      var mk = c.mk, w = api.width(c.text, c.size, true), off = [0, 0], room = null;
       [[0, 0], [0, 11], [0, -11], [14, 0], [-14, 0], [0, 22], [0, -22], [28, 0], [-28, 0], [0, 34], [0, -34], [42, 0], [-42, 0]].some(function (o) {
         var x = mk.x + c.dx + o[0], y = mk.y + c.dy + o[1];
         var x0 = mk.anchor < 0 ? x - w : mk.anchor === 0 ? x - w / 2 : x, box = [x0 - 1, y - c.size, x0 + w + 1, y + 2];
-        if (!spot) spot = box;
+        if (!room) room = box;
         if (hit(box)) return false;
-        at = o; spot = box;
+        off = o; room = box;
         return true;
       });
-      boxes.push(spot);
-      marks += '<g class="gn-count" opacity="' + f(c.a) + '">' + api.mark(Object.assign({}, mk, { x: mk.x + at[0], y: mk.y + at[1] }), c.text, c.size, c.dx, c.dy) + '</g>';
+      boxes.push(room);
+      marks += '<g class="gn-count" opacity="' + f(c.a) + '">' + api.mark(Object.assign({}, mk, { x: mk.x + off[0], y: mk.y + off[1] }), c.text, c.size, c.dx, c.dy) + '</g>';
     });
 
     // People, the furthest first: a card, then the portrait over its inner
-    // edge, so the two read as one; the person this reader may not see as
-    // an empty frame.
+    // edge, so the two read as one — a sepia print in a cream mount with a
+    // fine gold edge, as on the reference, its shadow on the parchment; the
+    // person this reader may not see as an empty mount.
     var people = '';
     fr.persons.slice().sort(function (a, b) { return (a.k || 1) - (b.k || 1); }).forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', fm = F[p.key], x = f(p.x), y = f(p.y), g = '<g opacity="' + f(p.a) + '">';
-      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx + 6) + '" ry="' + f(fm.ry + 6) + '" fill="transparent"/>';
+      var bx = p.x - fm.rx, by = p.y - fm.ry, bw = fm.rx * 2, bh = fm.ry * 2, inset = Math.max(2, fm.rx * 0.16);
+      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><rect x="' + f(bx - 6) + '" y="' + f(by - 6) + '" width="' + f(bw + 12) + '" height="' + f(bh + 12) + '" fill="transparent"/>';
       var Lb = keep[p.key];
       if (Lb && !s.redacted) {
         g += '<g class="gn-plate">';
-        g += '<rect class="gn-card-shade" x="' + f(Lb.x + 1.5) + '" y="' + f(Lb.y + 2.5) + '" width="' + f(Lb.w) + '" height="' + f(Lb.h) + '" rx="3"/>';
-        g += '<rect class="gn-card' + (Lb.centre ? ' gn-card-centre' : '') + '" x="' + f(Lb.x) + '" y="' + f(Lb.y) + '" width="' + f(Lb.w) + '" height="' + f(Lb.h) + '" rx="3"/>';
+        g += '<rect class="gn-card-shade" x="' + f(Lb.x + 1.5) + '" y="' + f(Lb.y + 2.5) + '" width="' + f(Lb.w) + '" height="' + f(Lb.h) + '" rx="2"/>';
+        g += '<rect class="gn-card' + (Lb.centre ? ' gn-card-centre' : '') + '" x="' + f(Lb.x) + '" y="' + f(Lb.y) + '" width="' + f(Lb.w) + '" height="' + f(Lb.h) + '" rx="2"/>';
         if (Lb.centre) {
           g += '<text x="' + f(Lb.x + Lb.w / 2) + '" y="' + f(Lb.y + 16) + '" text-anchor="middle" font-size="15" font-weight="600" class="gn-name gn-centre">' + esc(Lb.word) + '</text>'
             + '<text x="' + f(Lb.x + Lb.w / 2) + '" y="' + f(Lb.y + 29) + '" text-anchor="middle" font-family="' + api.mono + '" font-size="10.5" class="gn-years">' + esc(s.years) + '</text>';
@@ -430,16 +419,17 @@
         }
         g += '</g>';
       }
-      if (p.repeat > 1) g += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx + 3.2) + '" ry="' + f(fm.ry + 3.2) + '" fill="none" class="gn-again" stroke-width="1"/>';
-      if (p.again) g += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx + 3.2 + (p.repeat > 1 ? 2.4 : 0)) + '" ry="' + f(fm.ry + 3.2 + (p.repeat > 1 ? 2.4 : 0)) + '" fill="none" class="gn-again" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
-      if (isC) g += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx + 10) + '" ry="' + f(fm.ry + 10) + '" class="gn-halo"/>';
+      if (p.repeat > 1) g += '<rect x="' + f(bx - 3.2) + '" y="' + f(by - 3.2) + '" width="' + f(bw + 6.4) + '" height="' + f(bh + 6.4) + '" rx="2" fill="none" class="gn-again" stroke-width="1"/>';
+      if (p.again) g += '<rect x="' + f(bx - 3.2 - (p.repeat > 1 ? 2.4 : 0)) + '" y="' + f(by - 3.2 - (p.repeat > 1 ? 2.4 : 0)) + '" width="' + f(bw + 6.4 + (p.repeat > 1 ? 4.8 : 0)) + '" height="' + f(bh + 6.4 + (p.repeat > 1 ? 4.8 : 0)) + '" rx="2" fill="none" class="gn-again" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
+      if (isC) g += '<rect x="' + f(bx - 9) + '" y="' + f(by - 9) + '" width="' + f(bw + 18) + '" height="' + f(bh + 18) + '" rx="6" class="gn-halo"/>';
+      g += '<rect x="' + f(bx + 1.5) + '" y="' + f(by + 2.5) + '" width="' + f(bw) + '" height="' + f(bh) + '" rx="1.5" class="gn-card-shade"/>';
       if (s.redacted) {
-        g += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx) + '" ry="' + f(fm.ry) + '" class="gn-portrait gn-hidden" stroke-dasharray="1.8 1.8"/>';
+        g += '<rect x="' + f(bx) + '" y="' + f(by) + '" width="' + f(bw) + '" height="' + f(bh) + '" rx="1.5" class="gn-mount gn-hidden" stroke-dasharray="1.8 1.8"/>';
       } else {
-        g += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx) + '" ry="' + f(fm.ry) + '" class="gn-portrait' + (isC ? ' gn-portrait-centre' : s.living ? ' gn-living' : ' gn-gone') + (s.sparse ? ' gn-sparse' : '') + '"/>';
-        g += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + f(fm.rx - 2.6) + '" ry="' + f(fm.ry - 2.6) + '" class="gn-portrait-inner"/>';
+        g += '<rect x="' + f(bx) + '" y="' + f(by) + '" width="' + f(bw) + '" height="' + f(bh) + '" rx="1.5" class="gn-mount' + (isC ? ' gn-mount-centre' : s.living ? ' gn-living' : ' gn-gone') + '"/>';
+        g += '<rect x="' + f(bx + inset) + '" y="' + f(by + inset) + '" width="' + f(bw - 2 * inset) + '" height="' + f(bh - 2 * inset) + '" fill="url(#gn-print-g)" class="gn-print' + (s.sparse ? ' gn-sparse' : '') + '"/>';
         var ini = initials(s.names && s.names[2]);
-        if (ini && fm.rx >= 8.5) g += '<text x="' + x + '" y="' + f(p.y + fm.rx * 0.36) + '" text-anchor="middle" font-size="' + f(fm.rx * 0.9) + '" class="gn-initials">' + esc(ini) + '</text>';
+        if (ini && fm.rx >= 8.5) g += '<text x="' + x + '" y="' + f(p.y + fm.rx * 0.34) + '" text-anchor="middle" font-size="' + f(fm.rx * 0.86) + '" class="gn-initials">' + esc(ini) + '</text>';
       }
       if (rest) g += '</a>';
       people += g + '</g>';
@@ -448,14 +438,15 @@
       named = {};
       Object.keys(keep).forEach(function (k) { if (!keep[k].centre) named[k] = keep[k]; });
     }
-    var defs = '<linearGradient id="gn-bark" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="gn-bark-dark"/><stop offset="0.28" class="gn-bark-lit"/><stop offset="0.55" class="gn-bark-mid"/><stop offset="1" class="gn-bark-dark"/></linearGradient>';
     var head = '<svg class="rv-svg gn-svg" data-view="scroll" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
       + (rest ? 'role="img" aria-label="' + esc(label() + (C && C.s && !C.s.redacted ? ' — ' + C.s.names[2] : '')) + '"' : 'aria-hidden="true"')
-      + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>';
-    // While the camera climbs, the far woods follow it (the scene, below).
+      + ' xmlns="http://www.w3.org/2000/svg"><defs>'
+      // A print lighter at its middle, as an old photograph is.
+      + '<radialGradient id="gn-print-g" cx="0.5" cy="0.42" r="0.62"><stop offset="0" class="gn-print-hi"/><stop offset="1" class="gn-print-lo"/></radialGradient></defs>';
+    // While the camera climbs, the picture follows it (the scene, below).
     if (!rest && window.axgfRiverScene) window.axgfRiverScene.view();
-    // The lit route lies over the branches and under the people (river.js).
-    return head + ringsBack + trunk + ringsFront + rail + tw + branches + leaves + knots + '<g class="rv-lit"></g>' + marks + people + '</svg>';
+    // The lit route lies over the lines and under the people (river.js).
+    return head + rail + halo + ink + tw + knots + '<g class="rv-lit"></g>' + marks + people + '</svg>';
   }
   function label() {
     var s = root.querySelector('.rv-stage');
@@ -505,7 +496,7 @@
   window.axgfView = { name: 'scroll', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; } };
   window.axgfView.tween = tween3;
 
-  /* ---- the woods' life ---- */
+  /* ---- the picture in relief, and its life ---- */
   if (!stage) return;
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cut = root.dataset.riverMotion === 'cut';
@@ -519,36 +510,119 @@
     if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
     return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
   }
-  var GOLD = rgb('--gn-gold', [200, 160, 80]), GLINT = rgb('--gn-glint', GOLD), LEAF = rgb('--gn-leaf', GOLD);
-  var FAR = rgb('--gn-far', [30, 50, 35]), FAR2 = rgb('--gn-far-2', FAR), MIST = rgb('--gn-mist', [150, 170, 150]);
+  var GOLD = rgb('--gn-gold', [200, 160, 80]), GLINT = rgb('--gn-glint', GOLD), LEAF = rgb('--gn-leaf', GOLD), DUST = rgb('--gn-dust', GOLD);
   function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
 
-  // Under the drawing, the far woods, the mist, the motes and the leaves;
-  // over it, the glints up the branches.
+  // Under the drawing, the picture (WebGL, in relief) and the leaves and
+  // dust (a canvas over it); over the drawing, the glints along the lines.
   var ground = document.createElement('canvas');
   ground.className = 'rv-ground';
   ground.setAttribute('aria-hidden', 'true');
   stage.insertBefore(ground, stage.firstChild);
+  var drift = document.createElement('canvas');
+  drift.className = 'rv-ground rv-drift';
+  drift.setAttribute('aria-hidden', 'true');
+  stage.insertBefore(drift, ground.nextSibling);
   var layer = document.createElement('canvas');
   layer.className = 'rv-water';
   layer.setAttribute('aria-hidden', 'true');
   stage.appendChild(layer);
   stage.classList.add('rv-alive');
-  var gx = ground.getContext('2d'), ctx = layer.getContext('2d');
-  if (!ctx || !gx) return;
-  // The same woods, motes and leaves on every visit.
+  var dx = drift.getContext('2d'), ctx = layer.getContext('2d');
+  if (!ctx || !dx) return;
+  // The same leaves and dust on every visit.
   function rnd(i, j) { var h = Math.abs(Math.sin(i * 12.9898 + j * 78.233) * 43758.5453); return h - Math.floor(h); }
   var LEAVES = [], MOTES = [];
-  for (var li = 0; li < 18; li++) LEAVES.push({ u: rnd(li, 1), v: rnd(li, 2), fall: 0.016 + 0.02 * rnd(li, 3), sway: 0.6 + 1.2 * rnd(li, 4), size: 3 + 3.5 * rnd(li, 5), spin: 0.4 + rnd(li, 6) });
-  for (var mi = 0; mi < 40; mi++) MOTES.push({ u: rnd(mi, 7), v: rnd(mi, 8), rise: 0.008 + 0.014 * rnd(mi, 9), r: 0.7 + 1.4 * rnd(mi, 10), ph: rnd(mi, 11) * 6.283 });
+  for (var li = 0; li < 16; li++) LEAVES.push({ u: 0.2 + 0.65 * rnd(li, 1), v: rnd(li, 2), fall: 0.012 + 0.016 * rnd(li, 3), sway: 0.6 + 1.2 * rnd(li, 4), size: 2.6 + 3 * rnd(li, 5), spin: 0.4 + rnd(li, 6) });
+  for (var mi = 0; mi < 26; mi++) MOTES.push({ u: rnd(mi, 7), v: rnd(mi, 8), rise: 0.006 + 0.01 * rnd(mi, 9), r: 0.6 + 1.1 * rnd(mi, 10), ph: rnd(mi, 11) * 6.283 });
+
+  // The picture: a quad over the window, each pixel looking the picture up
+  // where the camera's shift, scaled by how near that pixel is (the depth
+  // map), takes it; past the picture's edges its wall runs on.
+  var gl = ground.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: false, powerPreference: 'low-power' });
+  var prog = null, picT = null, depT = null, hasPic = false, hasDep = false, UL = {};
+  function shader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+  }
+  if (gl) {
+    var vs = shader(gl.VERTEX_SHADER, 'attribute vec2 a;uniform vec2 uRes;varying vec2 vP;void main(){vP=vec2((a.x+1.0)*0.5*uRes.x,(1.0-a.y)*0.5*uRes.y);gl_Position=vec4(a,0.0,1.0);}');
+    var fs = shader(gl.FRAGMENT_SHADER, 'precision mediump float;uniform sampler2D uT;uniform sampler2D uD;uniform vec4 uRect;uniform vec2 uCam;uniform float uDep;uniform vec3 uWall;varying vec2 vP;'
+      + 'void main(){vec2 p=(vP-uRect.xy)/uRect.zw;vec2 s=uCam/uRect.zw;float d=uDep>0.5?texture2D(uD,clamp(p,0.0,1.0)).r:0.35;vec2 q=p-s*(d-0.35);'
+      + 'if(uDep>0.5){d=texture2D(uD,clamp(q,0.0,1.0)).r;q=p-s*(d-0.35);}'
+      + 'vec3 c=texture2D(uT,clamp(q,vec2(0.0),vec2(1.0))).rgb;'
+      // The picture stands on the stage's own green (it was set on it, its
+      // wall cut away): past its edges, that green.
+      + 'float o=step(0.0,q.x)*step(q.x,1.0)*step(0.0,q.y)*step(q.y,1.0);'
+      + 'gl_FragColor=vec4(mix(uWall,c,o),1.0);}');
+    if (vs && fs) {
+      prog = gl.createProgram();
+      gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) prog = null;
+    }
+    if (prog) {
+      gl.useProgram(prog);
+      var buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      var aLoc = gl.getAttribLocation(prog, 'a');
+      gl.enableVertexAttribArray(aLoc);
+      gl.vertexAttribPointer(aLoc, 2, gl.FLOAT, false, 0, 0);
+      ['uRes', 'uT', 'uD', 'uRect', 'uCam', 'uDep', 'uWall'].forEach(function (n) { UL[n] = gl.getUniformLocation(prog, n); });
+      gl.uniform1i(UL.uT, 0); gl.uniform1i(UL.uD, 1);
+      var WALL = rgb('--gn-stage', [20, 37, 25]);
+      gl.uniform3f(UL.uWall, WALL[0] / 255, WALL[1] / 255, WALL[2] / 255);
+      picT = gl.createTexture(); depT = gl.createTexture();
+    } else gl = null;
+  }
+  var g2 = gl ? null : ground.getContext('2d');
+  // The picture arrives once. For the graphics card it is redrawn at a
+  // power of two each way, so that it can be filtered as it shrinks (its
+  // aspect is the quad's, not the texture's).
+  var pic = new Image(), dep = new Image();
+  pic.onload = function () {
+    hasPic = true;
+    if (gl && !gl.isContextLost()) {
+      var big = Math.max(stage.clientHeight, 600) * Math.min(window.devicePixelRatio || 1, 2) > 1100;
+      var c = document.createElement('canvas');
+      c.width = big ? 2048 : 1024; c.height = big ? 4096 : 2048;
+      var cx2 = c.getContext('2d');
+      cx2.imageSmoothingQuality = 'high';
+      cx2.drawImage(pic, 0, 0, c.width, c.height);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, picT);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, c);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    if (!running) draw(false);
+  };
+  dep.onload = function () {
+    if (!gl || gl.isContextLost()) return;
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, depT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, gl.LUMINANCE, gl.UNSIGNED_BYTE, dep);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    hasDep = true;
+    if (!running) draw(false);
+  };
+  pic.src = PIC.src;
+  if (gl) dep.src = PIC.depth;
 
   var flows = [], dpr = 1, cw = 0, ch = 0, clock = 0, travelling = false;
   function size() {
     var w = stage.clientWidth, h = stage.clientHeight, r = Math.min(window.devicePixelRatio || 1, 2);
     if (w === cw && h === ch && r === dpr) return false;
     cw = w; ch = h; dpr = r;
-    layer.width = ground.width = Math.max(1, Math.round(w * dpr));
-    layer.height = ground.height = Math.max(1, Math.round(h * dpr));
+    layer.width = ground.width = drift.width = Math.max(1, Math.round(w * dpr));
+    layer.height = ground.height = drift.height = Math.max(1, Math.round(h * dpr));
     return true;
   }
   function view() {
@@ -557,101 +631,116 @@
     var k = Math.min(cw / vb.width, ch / vb.height);
     return { x: vb.x - (cw / k - vb.width) / 2, y: vb.y - (ch / k - vb.height) / 2, k: k };
   }
-  // A glint runs up every attested branch, from its lower end to its upper:
-  // roots to trunk to crown.
+  // A glint runs along every attested line, from its lower end to its
+  // upper: roots to trunk to crown.
   function layout(L) {
     flows = [];
     if (!L || !L.edges) return;
     L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
-      var a = e.y1 >= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1], my = (a[1] + a[3]) / 2;
-      var c = [a[0], a[1], a[0], my, a[2], my, a[2], a[3]], n = 22, xs = [], ys = [], cum = [0];
-      for (var i = 0; i <= n; i++) {
-        var t = i / n, u = 1 - t;
-        xs.push(u * u * u * c[0] + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]);
-        ys.push(u * u * u * c[1] + 3 * u * u * t * c[3] + 3 * u * t * t * c[5] + t * t * t * c[7]);
-        if (i) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
-      }
-      if (cum[n] < 12) return;
-      flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
+      var P = e.y1 >= e.y2 ? wire(e.x1, e.y1, e.x2, e.y2) : wire(e.x2, e.y2, e.x1, e.y1), xs = [], ys = [], cum = [0];
+      P.forEach(function (q, i) { xs.push(q[0]); ys.push(q[1]); if (i) cum.push(cum[i - 1] + Math.hypot(q[0] - P[i - 1][0], q[1] - P[i - 1][1])); });
+      if (cum[3] < 12) return;
+      flows.push({ x: xs, y: ys, cum: cum, n: 3, len: cum[3], phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
     });
     request();
   }
-  var SPEED = 30;
-  // The woods: two rows of far crowns behind the tree, the further darker
-  // and slower, each sliding as the camera climbs; a band of mist; motes
-  // rising; leaves falling.
-  function woods(moving) {
-    var Wd = ground.width, Hh = ground.height, t = moving ? clock : 4.2, v = view(), G = GEO;
-    gx.setTransform(1, 0, 0, 1, 0, 0);
-    gx.clearRect(0, 0, Wd, Hh);
-    if (!v) return;
-    var climb = G ? (G.world || 0) * G.H * v.k * dpr : 0;
-    [[FAR2, 0.12, 150, 0.55], [FAR, 0.26, 110, 0.7]].forEach(function (row, ri) {
-      var col = row[0], par = row[1], step = row[2] * dpr, alpha = row[3], span = 300 * dpr;
-      var off = ((climb * par) % span + span) % span;
-      for (var band = -1; band <= Math.ceil(Hh / span) + 1; band++) {
-        var base = band * span + off;
-        for (var x = -step; x < Wd + step; x += step * 0.55) {
-          var i = Math.round(x / (step * 0.55)), h = (0.5 + 0.5 * rnd(i + ri * 31, band * 7 + 3)) * step * 1.4, cxp = x + rnd(i, band + 11) * step * 0.3;
-          var g = gx.createLinearGradient(0, base - h, 0, base + span * 0.4);
-          g.addColorStop(0, rgba(col, alpha));
-          g.addColorStop(1, rgba(col, 0));
-          gx.fillStyle = g;
-          gx.beginPath();
-          gx.ellipse(cxp, base, step * 0.42, h, 0, 0, 6.283);
-          gx.fill();
-        }
-      }
+  // The camera: where the pointer leans the tree (a little), a slow sway
+  // while the scene lives, and the climb — up into the crown as the reader
+  // travels to a descendant, down to the roots toward an ancestor, settling
+  // as the person travelled to comes to the trunk.
+  var lean = [0, 0], leanTo = [0, 0];
+  if (!reduce && !cut) {
+    stage.addEventListener('pointermove', function (ev) {
+      var r = stage.getBoundingClientRect();
+      leanTo = [clamp((ev.clientX - r.left) / r.width * 2 - 1, -1, 1), clamp((ev.clientY - r.top) / r.height * 2 - 1, -1, 1)];
+      if (!running) draw(false);
     });
-    // Mist across the middle of the window, drifting.
-    var my = Hh * 0.58 + Math.sin(t * 0.15) * 12 * dpr, mg = gx.createLinearGradient(0, my - 90 * dpr, 0, my + 90 * dpr);
-    mg.addColorStop(0, rgba(MIST, 0)); mg.addColorStop(0.5, rgba(MIST, 0.07)); mg.addColorStop(1, rgba(MIST, 0));
-    gx.fillStyle = mg; gx.fillRect(0, my - 90 * dpr, Wd, 180 * dpr);
-    // Motes rising, and leaves falling across the whole window.
-    gx.globalCompositeOperation = 'lighter';
+    stage.addEventListener('pointerleave', function () { leanTo = [0, 0]; if (!running) draw(false); });
+  }
+  var SPEED = 34;
+  function picture(moving) {
+    var v = view(), G = GEO;
+    if (!v || !G) return;
+    var s = v.k * dpr;
+    lean[0] += (leanTo[0] - lean[0]) * (moving ? 0.08 : 1); lean[1] += (leanTo[1] - lean[1]) * (moving ? 0.08 : 1);
+    var sway = moving ? Math.sin(clock * 0.31) * 0.35 : 0;
+    // Where on the tree the camera stands: the trunk, where the reader came
+    // in; up into the crown by as many generations as they have climbed
+    // since, down to the roots by as many as they have gone down, step by
+    // step as they travel (the world's level runs on through a climb), the
+    // tree's top and foot never left behind. That height of the picture
+    // stands at the fixed point's.
+    var camV = PIC.v - PIC.climb * Math.tanh((G.world || 0) / PIC.pace);
+    var px = (G.x0 - PIC.u * G.PW - v.x) * s, py = (G.y0 - camV * G.PH - v.y) * s, pw = G.PW * s, ph = G.PH * s;
+    // Up in the crown the leaves stand out a little more, down in the roots
+    // the roots do: the relief leans with the climb.
+    var camX = (lean[0] * 9 + sway * 6) * s, camY = (lean[1] * 6 + (PIC.v - camV) * 36) * s;
+    if (gl) {
+      gl.viewport(0, 0, ground.width, ground.height);
+      if (!hasPic) { var W0 = rgb('--gn-stage', [20, 37, 25]); gl.clearColor(W0[0] / 255, W0[1] / 255, W0[2] / 255, 1); gl.clear(gl.COLOR_BUFFER_BIT); return; }
+      gl.useProgram(prog);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, picT);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, depT);
+      gl.uniform2f(UL.uRes, ground.width, ground.height);
+      gl.uniform4f(UL.uRect, px, py, pw, ph);
+      gl.uniform2f(UL.uCam, camX, camY);
+      gl.uniform1f(UL.uDep, hasDep ? 1 : 0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    } else if (g2) {
+      g2.setTransform(1, 0, 0, 1, 0, 0);
+      g2.clearRect(0, 0, ground.width, ground.height);
+      if (hasPic) g2.drawImage(pic, px, py, pw, ph);
+    }
+    return { px: px, py: py, pw: pw, ph: ph };
+  }
+  // Gold leaves falling from the crown across the parchment, and a little
+  // gold dust in its light.
+  function leaves(moving, P) {
+    var Wd = drift.width, Hh = drift.height, t = moving ? clock : 4.2;
+    dx.setTransform(1, 0, 0, 1, 0, 0);
+    dx.clearRect(0, 0, Wd, Hh);
+    if (!P || !moving) return;
     MOTES.forEach(function (mo) {
-      var y = (1.05 - ((mo.v + t * mo.rise) % 1.1)) * Hh, x = (mo.u + 0.02 * Math.sin(t * 0.7 + mo.ph)) * Wd;
-      gx.fillStyle = rgba(GOLD, 0.25 + 0.3 * (0.5 + 0.5 * Math.sin(t * 1.3 + mo.ph)));
-      gx.beginPath(); gx.arc(x, y, mo.r * dpr, 0, 6.283); gx.fill();
+      var y = P.py + (1.02 - ((mo.v + t * mo.rise) % 1.04)) * P.ph * 0.8, x = P.px + (mo.u + 0.02 * Math.sin(t * 0.7 + mo.ph)) * P.pw;
+      dx.fillStyle = rgba(DUST, 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.3 + mo.ph)));
+      dx.beginPath(); dx.arc(x, y, mo.r * dpr, 0, 6.283); dx.fill();
     });
-    gx.globalCompositeOperation = 'source-over';
     LEAVES.forEach(function (lf) {
-      var y = ((lf.v + t * lf.fall) % 1.1 - 0.05) * Hh, x = (lf.u + 0.03 * Math.sin(t * 0.5 * lf.sway + lf.u * 9)) * Wd;
-      var a = 0.55 * Math.min(1, (y / Hh + 0.05) * 6, (1.05 - y / Hh) * 4), r = lf.size * dpr, turn = t * lf.spin + lf.u * 6.283;
-      gx.save();
-      gx.translate(x, y);
-      gx.rotate(turn);
-      gx.scale(1, 0.45 + 0.35 * Math.abs(Math.sin(turn)));
-      gx.fillStyle = rgba(LEAF, Math.max(0, a));
-      gx.beginPath(); gx.ellipse(0, 0, r, r * 0.48, 0, 0, 6.283); gx.fill();
-      gx.restore();
+      var fy = (lf.v + t * lf.fall) % 1, y = P.py + (0.12 + fy * 0.84) * P.ph, x = P.px + (lf.u + 0.04 * Math.sin(t * 0.5 * lf.sway + lf.u * 9)) * P.pw;
+      var a = 0.85 * Math.min(1, fy * 8, (1 - fy) * 5), r = lf.size * dpr, turn = t * lf.spin + lf.u * 6.283;
+      dx.save();
+      dx.translate(x, y);
+      dx.rotate(turn);
+      dx.scale(1, 0.45 + 0.35 * Math.abs(Math.sin(turn)));
+      dx.fillStyle = rgba(LEAF, Math.max(0, a));
+      dx.beginPath(); dx.ellipse(0, 0, r, r * 0.5, 0, 0, 6.283); dx.fill();
+      dx.restore();
     });
   }
   function draw(moving) {
     size();
-    woods(moving);
+    var P = picture(moving);
+    leaves(moving, P);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, layer.width, layer.height);
     var v = view();
     if (!v || !moving || travelling) return;
     var s = v.k * dpr, ox = -v.x * s, oy = -v.y * s;
-    ctx.globalCompositeOperation = 'lighter';
     flows.forEach(function (fl) {
       var pos = (fl.phase * fl.len + clock * SPEED) % (fl.len + 80), i = 1;
       if (pos > fl.len) return;
       while (i < fl.n && fl.cum[i] < pos) i++;
       var u = (pos - fl.cum[i - 1]) / ((fl.cum[i] - fl.cum[i - 1]) || 1);
       var x = (fl.x[i - 1] + (fl.x[i] - fl.x[i - 1]) * u) * s + ox, y = (fl.y[i - 1] + (fl.y[i] - fl.y[i - 1]) * u) * s + oy;
-      var fade = Math.min(1, pos / 16, (fl.len - pos) / 16), r = 2.8 * v.k * dpr;
+      var fade = Math.min(1, pos / 16, (fl.len - pos) / 16), r = 2.6 * v.k * dpr;
       var g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.6);
       g.addColorStop(0, rgba(GLINT, 0.95 * fade));
-      g.addColorStop(0.4, rgba(GOLD, 0.45 * fade));
+      g.addColorStop(0.4, rgba(GOLD, 0.5 * fade));
       g.addColorStop(1, rgba(GOLD, 0));
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, 6.283); ctx.fill();
     });
-    ctx.globalCompositeOperation = 'source-over';
   }
 
   /* ---- when it moves: as the river's ground (river-scene.js) ---- */

@@ -2,7 +2,7 @@
 
 The campaign of 22 October 2026: every kind of GEDCOM file a family holds,
 through the CMS's reading (`src/gedcom_in.rs`), the conversion of axgf-rs
-0.5.0 (`axgf_rs::convert_gedcom`), the validator, the export, the import back,
+0.5.0 (`axgf_rs::convert_gedcom`, mended in 0.6.1), the validator, the export, the import back,
 and every page that serves the family it makes. What it found, what was
 mended here, and what is the library's to mend.
 
@@ -33,9 +33,9 @@ Every file in it is invented: the corpus is generated
   depth, refusals), `tests/gedcom_conversion.rs` (9 and one in release:
   the conversion page, markup, the findings list, the server's answers
   during a conversion, every odd family served, documents never served, the
-  largest file the upload takes), and `tests/gedcom_known_defects.rs` (31,
-  ignored: the converter's defects below, each stated as what a faithful
-  conversion does). `.github/workflows/ci.yml` runs the suite on every push
+  largest file the upload takes), and `tests/gedcom_known_defects.rs` (31:
+  the converter's defects below, each stated as what a faithful conversion
+  does; ignored until axgf-rs 0.6.1 mended them). `.github/workflows/ci.yml` runs the suite on every push
   and pull request, and the release-mode stress test beside it.
 
 ## What held
@@ -67,13 +67,17 @@ dialect the converter reads, or in the conversion page.
 | **A messy file's result page listed every data-quality finding**: 32,000 of them for 20,000 people, a 4.7 MB page. | The count is whole; the first 200 are listed, and the data-quality page lists every one once the file is served. |
 | **A conversion held a thread that answers requests**: 7.5 s for 40,000 people, so two uploads at once held both threads of a two-core server, and nobody was answered for as long. | The reading, conversion, analyses and export run on the blocking pool; the server answers throughout. |
 
-## The library's to mend: axgf-rs 0.5.0
+## The library's to mend: axgf-rs 0.5.0, mended in 0.6.1
 
 Not worked around here: each is a reading of what GEDCOM means, and the
 conversion is the library's (the same rule as `DEDUP-UPSTREAM.md`). Each has
-a test in `tests/gedcom_known_defects.rs`, ignored with its reason, to be
-unignored when a release mends it; `cargo test --test gedcom_known_defects
--- --ignored` shows where the library stands. All 31 fail today.
+a test in `tests/gedcom_known_defects.rs`, ignored with its reason while
+0.5.0 failed it. **axgf-rs 0.6.1 mends all 31** (its own
+`tests/gedcom_fidelity.rs` holds the same cases): the tests are no longer
+ignored, and go through this application's reading first. What 0.6.1 still
+does not carry it now reports, once per tag (`left out 2 INDI.RESN
+line(s)`), so the conversion page's list of what was left behind is whole.
+What follows is what 0.5.0 did.
 
 **Data dropped without a word.** The converter carries BIRT, DEAT, OCCU, the
 first MARR, NAME, SEX, NOTE, TITL, FACT and OBJE, and warns only about a
@@ -137,5 +141,5 @@ python3 scripts/gedcom-corpus.py CORPUS            # add --large for the slow on
 PROBE_DIR=CORPUS PROBE_OUT=REPORTS \
   cargo test --release --test gedcom_probe -- --ignored --exact probe_all --nocapture
 cargo test --release --test gedcom_conversion -- --ignored   # the upload limit
-cargo test --test gedcom_known_defects -- --ignored          # the library's state
+cargo test --test gedcom_known_defects                      # the library's fidelity
 ```

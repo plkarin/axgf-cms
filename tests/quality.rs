@@ -226,7 +226,7 @@ fn the_operators_archive_per_rule() {
     let mut flat = json!({"persons": {}, "families": {}, "places": {}, "events": {}, "occupations": {}, "links": {}});
     for i in 0..zip.len() {
         let mut e = zip.by_index(i).unwrap();
-        let name = e.name().to_string();
+        let name = e.name().unwrap().into_owned();
         let Some((kind, _)) = name.split_once('/') else {
             continue;
         };

@@ -618,7 +618,10 @@ async fn families_in_every_shape_are_served_and_the_impossible_named() {
     let v = axgf_rs::validate(&bundle.to_string());
     let codes: Vec<&str> = v.diagnostics.iter().map(|d| d.code.as_str()).collect();
     assert!(codes.contains(&"CYCLE_DETECTED"), "{codes:?}");
-    assert!(codes.contains(&"DANGLING_REFERENCE"), "{codes:?}");
+    // A pointer to nothing is not linked: axgf-rs 0.6.1 reports it at the
+    // conversion instead of writing a reference the validator then finds
+    // dangling (0.5.0 did).
+    assert!(!codes.contains(&"DANGLING_REFERENCE"), "{codes:?}");
     let wide = bundle["families"]
         .as_object()
         .unwrap()

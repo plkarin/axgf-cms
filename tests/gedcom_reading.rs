@@ -290,7 +290,7 @@ fn zip_of(files: &[(&str, &[u8])]) -> Vec<u8> {
     {
         let mut z = zip::ZipWriter::new(&mut buf);
         for (name, bytes) in files {
-            z.start_file(*name, zip::write::FileOptions::default())
+            z.start_file(*name, zip::write::SimpleFileOptions::default())
                 .unwrap();
             z.write_all(bytes).unwrap();
         }
@@ -1068,7 +1068,7 @@ fn a_zip_bomb_is_refused_without_being_unpacked() {
             let mut z = zip::ZipWriter::new(&mut buf);
             z.start_file(
                 "gedcom.ged",
-                zip::write::FileOptions::default()
+                zip::write::SimpleFileOptions::default()
                     .compression_method(zip::CompressionMethod::Deflated),
             )
             .unwrap();

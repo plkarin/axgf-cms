@@ -1,13 +1,13 @@
-//! What the GEDCOM converter of axgf-rs 0.5.0 gets wrong, found by the
-//! stress campaign of 22 October 2026 (docs/GEDCOM-IMPORT.md).
+//! What the GEDCOM converter of axgf-rs 0.5.0 got wrong, found by the
+//! stress campaign of 22 October 2026 (docs/GEDCOM-IMPORT.md), and 0.6.1
+//! mends.
 //!
-//! Each test states what a faithful conversion does and is ignored with the
-//! reason it fails today: the conversion is the library's
-//! (`axgf_rs::convert_gedcom`), and these are not mended on the CMS side
-//! because each is a reading of GEDCOM's meaning, not of its layout. When a
-//! release of the library mends one, its test is unignored here, and the
-//! CMS's dependency moves with it. `cargo test --test gedcom_known_defects --
-//! --ignored` shows where the library stands.
+//! Each test states what a faithful conversion does. They were ignored
+//! while the library got them wrong; the conversion is the library's
+//! (`axgf_rs::convert_gedcom`, where `tests/gedcom_fidelity.rs` holds the
+//! same 31), and they stay here because they go through the CMS's own
+//! reading first (`gedcom_in::read`): what the reader passes on, the
+//! converter must still read faithfully.
 //!
 //! Every name, place and date here is invented.
 
@@ -104,7 +104,6 @@ fn born(date: &str) -> Converted {
 
 /// "ABT 12 MAR 1850" is about a day, not about a year.
 #[test]
-#[ignore = "axgf-rs 0.5.0: ABT keeps precision \"year\" whatever the date says"]
 fn an_approximate_full_date_keeps_its_precision() {
     let c = born("ABT 12 MAR 1850");
     assert_eq!(c.birth("Date Cas")["value"], "1850-03-12");
@@ -116,7 +115,6 @@ fn an_approximate_full_date_keeps_its_precision() {
 
 /// GEDCOM's other two approximations: calculated and estimated.
 #[test]
-#[ignore = "axgf-rs 0.5.0: CAL and EST are not read; the date is kept only as a note"]
 fn calculated_and_estimated_dates_are_dates() {
     for d in ["CAL 1850", "EST 1850"] {
         let c = born(d);
@@ -127,7 +125,6 @@ fn calculated_and_estimated_dates_are_dates() {
 
 /// A period: FROM … TO …, FROM …, TO ….
 #[test]
-#[ignore = "axgf-rs 0.5.0: FROM/TO periods are not read; kept only as a note"]
 fn periods_are_ranges() {
     let c = born("FROM 1850 TO 1860");
     assert_eq!(c.birth("Date Cas")["range"]["earliest"]["value"], "1850");
@@ -136,7 +133,6 @@ fn periods_are_ranges() {
 
 /// An interpreted date: the date, and the words it was read from.
 #[test]
-#[ignore = "axgf-rs 0.5.0: INT is not read; the date is kept only as a note"]
 fn an_interpreted_date_keeps_its_date_and_its_phrase() {
     let c = born("INT 1850 (selon la famille)");
     assert_eq!(c.birth("Date Cas")["value"], "1850");
@@ -148,7 +144,6 @@ fn an_interpreted_date_keeps_its_date_and_its_phrase() {
 
 /// A dual year, before the new year moved to January.
 #[test]
-#[ignore = "axgf-rs 0.5.0: dual years (1750/51) are not read"]
 fn a_dual_year_is_a_date() {
     let c = born("12 FEB 1750/51");
     assert!(
@@ -163,7 +158,6 @@ fn a_dual_year_is_a_date() {
 /// AXGF has calendars for Julian, French Republican and Hebrew dates;
 /// GEDCOM marks them with an escape.
 #[test]
-#[ignore = "axgf-rs 0.5.0: calendar escapes are not read; the date is kept only as a note"]
 fn dates_in_other_calendars_are_read_in_their_calendar() {
     for (d, cal) in [
         ("@#DJULIAN@ 1 JAN 1700", "julian"),
@@ -177,7 +171,6 @@ fn dates_in_other_calendars_are_read_in_their_calendar() {
 
 /// The thirty-first of February is not an exact date.
 #[test]
-#[ignore = "axgf-rs 0.5.0: impossible dates (31 FEB, 0 JAN, 32 JAN) are written as exact"]
 fn an_impossible_date_is_not_taken_as_exact() {
     for d in ["31 FEB 1900", "0 JAN 1900", "32 JAN 1900"] {
         let c = born(d);
@@ -192,7 +185,6 @@ fn an_impossible_date_is_not_taken_as_exact() {
 
 /// A year outside 0–9999 has no ISO 8601 form the schema accepts.
 #[test]
-#[ignore = "axgf-rs 0.5.0: years past 9999 or below 0 are written as values the schema refuses"]
 fn a_year_out_of_range_does_not_make_the_bundle_invalid() {
     for d in ["12 MAR 99999", "12 MAR -5"] {
         assert!(
@@ -207,7 +199,6 @@ fn a_year_out_of_range_does_not_make_the_bundle_invalid() {
 
 /// "Jean /Dupont/ Jr.": the schema has no `suffix` component.
 #[test]
-#[ignore = "axgf-rs 0.5.0: a name with a suffix gets a \"suffix\" component the schema refuses"]
 fn a_name_with_a_suffix_makes_a_valid_bundle() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -220,7 +211,6 @@ fn a_name_with_a_suffix_makes_a_valid_bundle() {
 
 /// A name written as its pieces, with no NAME value.
 #[test]
-#[ignore = "axgf-rs 0.5.0: GIVN/SURN pieces are ignored; the person is \"[Unknown]\""]
 fn a_name_written_as_pieces_is_a_name() {
     let c = convert(&["0 @I1@ INDI", "1 NAME", "2 GIVN Pièces", "2 SURN Séparées"]);
     assert_eq!(
@@ -231,7 +221,6 @@ fn a_name_written_as_pieces_is_a_name() {
 
 /// A name with no closing slash, or two surnames: no slash in a component.
 #[test]
-#[ignore = "axgf-rs 0.5.0: an unclosed or doubled /surname/ leaves slashes inside components"]
 fn no_component_keeps_a_slash() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -248,7 +237,6 @@ fn no_component_keeps_a_slash() {
 
 /// A birth name and a married name are typed as such.
 #[test]
-#[ignore = "axgf-rs 0.5.0: NAME.TYPE is ignored; every other name is an \"alias\""]
 fn a_birth_name_is_typed_birth() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -270,7 +258,6 @@ fn a_birth_name_is_typed_birth() {
 
 /// GEDCOM 7's `SEX X`.
 #[test]
-#[ignore = "axgf-rs 0.5.0: SEX X (GEDCOM 7) becomes U, unknown"]
 fn gedcom_7_sex_x_is_not_unknown() {
     let c = convert(&["0 @I1@ INDI", "1 NAME Sexe /X/", "1 SEX X"]);
     assert_ne!(c.persons()[0]["identity"]["gender"]["value"], "U");
@@ -283,7 +270,6 @@ fn gedcom_7_sex_x_is_not_unknown() {
 /// without a diagnostic, and the conversion page tells the reader that the
 /// skipped tags it lists prove nothing was silently dropped.
 #[test]
-#[ignore = "axgf-rs 0.5.0: events other than BIRT, DEAT and the first MARR are dropped with no diagnostic"]
 fn every_event_is_carried_or_reported() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -317,7 +303,6 @@ fn every_event_is_carried_or_reported() {
 
 /// Someone buried or cremated has died, even with no DEAT line.
 #[test]
-#[ignore = "axgf-rs 0.5.0: is_living is \"no DEAT line\"; a burial does not count"]
 fn a_burial_means_a_death() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -330,7 +315,6 @@ fn a_burial_means_a_death() {
 
 /// The cause of a death.
 #[test]
-#[ignore = "axgf-rs 0.5.0: DEAT.CAUS is dropped"]
 fn the_cause_of_death_is_kept() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -344,7 +328,6 @@ fn the_cause_of_death_is_kept() {
 
 /// A divorce ends a union.
 #[test]
-#[ignore = "axgf-rs 0.5.0: DIV is dropped; the union never ends"]
 fn a_divorce_ends_the_union() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -368,7 +351,6 @@ fn a_divorce_ends_the_union() {
 
 /// An occupation held from one year to another.
 #[test]
-#[ignore = "axgf-rs 0.5.0: OCCU FROM/TO is kept as an unparsed note under valid_from"]
 fn an_occupation_period_has_both_ends() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -391,7 +373,6 @@ fn an_occupation_period_has_both_ends() {
 /// A citation on a birth (which source, which page, how sure) is evidence;
 /// the source itself is carried, the citation is not.
 #[test]
-#[ignore = "axgf-rs 0.5.0: citations (SOUR @S@ with PAGE, QUAY) under events are dropped"]
 fn a_citation_on_an_event_is_kept() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -415,7 +396,6 @@ fn a_citation_on_an_event_is_kept() {
 
 /// An adoption recorded where GEDCOM 5.5.1 puts it: on the child's FAMC.
 #[test]
-#[ignore = "axgf-rs 0.5.0: INDI.FAMC.PEDI is ignored; only a non-standard FAM.CHIL.PEDI is read"]
 fn an_adoption_on_the_childs_famc_is_its_lineage() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -435,7 +415,6 @@ fn an_adoption_on_the_childs_famc_is_its_lineage() {
 
 /// A child listed twice in one family is one child.
 #[test]
-#[ignore = "axgf-rs 0.5.0: a child listed twice is a child twice"]
 fn a_child_listed_twice_is_one_child() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -450,7 +429,6 @@ fn a_child_listed_twice_is_one_child() {
 /// A child whose own record names the family, though the family's record
 /// forgot it.
 #[test]
-#[ignore = "axgf-rs 0.5.0: INDI.FAMC is ignored; a child the FAM record omits is lost to it"]
 fn a_child_linked_only_from_its_own_record_belongs_to_the_family() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -470,7 +448,6 @@ fn a_child_linked_only_from_its_own_record_belongs_to_the_family() {
 
 /// A FAM record whose HUSB is a family and whose CHIL is a source.
 #[test]
-#[ignore = "axgf-rs 0.5.0: pointers to records of the wrong kind are linked as people, and the validator accepts it"]
 fn a_pointer_to_the_wrong_kind_of_record_is_not_a_person() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -506,7 +483,6 @@ fn a_pointer_to_the_wrong_kind_of_record_is_not_a_person() {
 
 /// Two records under one cross-reference: the first is lost without a word.
 #[test]
-#[ignore = "axgf-rs 0.5.0: a duplicated xref keeps the last record and says nothing"]
 fn a_duplicated_cross_reference_is_reported() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -523,7 +499,6 @@ fn a_duplicated_cross_reference_is_reported() {
 
 /// An INDI with no cross-reference is still somebody.
 #[test]
-#[ignore = "axgf-rs 0.5.0: an INDI without an xref is dropped without a word"]
 fn a_person_without_a_cross_reference_is_kept_or_reported() {
     let c = convert(&["0 INDI", "1 NAME Sans /Référence/"]);
     assert!(c.n("persons") == 1 || !c.diagnostics.is_empty());
@@ -531,7 +506,6 @@ fn a_person_without_a_cross_reference_is_kept_or_reported() {
 
 /// A note whose text happens to start and end with `@`.
 #[test]
-#[ignore = "axgf-rs 0.5.0: a note \"@home@\" is taken for a pointer and lost"]
 fn a_note_that_looks_like_a_pointer_is_kept() {
     let c = convert(&["0 @I1@ INDI", "1 NAME Note /Trompeuse/", "1 NOTE @home@"]);
     assert_eq!(c.persons()[0]["notes"], "@home@");
@@ -541,7 +515,6 @@ fn a_note_that_looks_like_a_pointer_is_kept() {
 
 /// A place's coordinates.
 #[test]
-#[ignore = "axgf-rs 0.5.0: PLAC.MAP.LATI/LONG are dropped"]
 fn a_places_coordinates_are_kept() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -570,7 +543,6 @@ fn a_places_coordinates_are_kept() {
 
 /// One town written three ways is one place.
 #[test]
-#[ignore = "axgf-rs 0.5.0: places are merged only when written identically"]
 fn one_town_written_three_ways_is_one_place() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -591,7 +563,6 @@ fn one_town_written_three_ways_is_one_place() {
 
 /// An empty PLAC is no place.
 #[test]
-#[ignore = "axgf-rs 0.5.0: an empty PLAC makes a place with an empty name"]
 fn an_empty_place_is_no_place() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -607,7 +578,6 @@ fn an_empty_place_is_no_place() {
 
 /// One photograph attached twice to one person is attached once.
 #[test]
-#[ignore = "axgf-rs 0.5.0: a media record referenced twice is attached twice"]
 fn a_photograph_referenced_twice_is_attached_once() {
     let c = convert(&[
         "0 @I1@ INDI",
@@ -622,7 +592,6 @@ fn a_photograph_referenced_twice_is_attached_once() {
 
 /// A file named by a Windows path is named by its last segment.
 #[test]
-#[ignore = "axgf-rs 0.5.0: a Windows path keeps its backslashes in the file's name"]
 fn a_windows_path_names_the_file_by_its_last_segment() {
     let c = convert(&[
         "0 @I1@ INDI",

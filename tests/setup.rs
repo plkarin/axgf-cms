@@ -71,7 +71,7 @@ fn fixture(name: &str) -> Vec<u8> {
 async fn exported(app: &axum::Router, cookie: &str) -> Vec<(String, Value)> {
     let bytes = body_bytes(get_with_cookie(app, "/admin/export", cookie).await).await;
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("the export is a zip");
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip.file_names().map(|n| n.unwrap().into_owned()).collect();
     names
         .into_iter()
         .filter(|n| {
@@ -251,9 +251,9 @@ async fn an_archive_sets_a_family_up_photographs_and_all() {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(archive)).unwrap();
     let name = zip
         .file_names()
+        .map(|n| n.unwrap().into_owned())
         .find(|n| n.ends_with(".jpg"))
-        .unwrap()
-        .to_string();
+        .unwrap();
     let mut original = Vec::new();
     zip.by_name(&name)
         .unwrap()

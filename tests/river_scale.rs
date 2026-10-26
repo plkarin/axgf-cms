@@ -31,7 +31,7 @@ fn flat_from(path: &str) -> Value {
     let mut families = Map::new();
     for i in 0..zip.len() {
         let mut entry = zip.by_index(i).expect("entry");
-        let name = entry.name().to_string();
+        let name = entry.name().unwrap().into_owned();
         let target = if name.starts_with("persons/") && name.ends_with(".json") {
             &mut persons
         } else if name.starts_with("families/") && name.ends_with(".json") {

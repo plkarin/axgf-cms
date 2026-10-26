@@ -4,7 +4,9 @@ name: ci
 # suite, as release.yml's gate runs them on a tag — so that a red commit is
 # seen when it is pushed, not when a release is cut. A second job runs, in
 # release, the stress tests the suite leaves out for their length: the GEDCOM
-# import at the upload limit (docs/GEDCOM-IMPORT.md).
+# import at the upload limit (docs/GEDCOM-IMPORT.md). A third builds on the
+# declared MSRV, and a fourth runs `cargo audit` (the advisories knowingly
+# lived with, and why, are in .cargo/audit.toml).
 #
 # The same two actions release.yml trusts, and no others.
 on:
@@ -20,7 +22,7 @@ jobs:
     name: fmt, clippy and the suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
@@ -35,7 +37,27 @@ jobs:
     name: stress tests, in release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - name: The largest GEDCOM the upload takes, converted and served
         run: cargo test --release --locked --test gedcom_conversion -- --ignored
+
+  msrv:
+    name: MSRV 1.92
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@1.92.0
+      - name: cargo check on the MSRV
+        run: cargo check --locked --all-targets
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - name: install cargo-audit
+        run: cargo install --locked cargo-audit
+      - name: cargo audit
+        run: cargo audit

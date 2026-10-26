@@ -195,9 +195,25 @@ fn write_atomic(target: &Path, body: &str) -> std::io::Result<()> {
     std::fs::rename(&tmp, target)
 }
 
-/// Whether the root helper is installed, so the button can work.
+/// Whether the root helper is installed *for this installation*, so the
+/// button can work: bootstrap.sh's unit, watching this data directory's
+/// `upgrade.request`, or `helper.json` beside it (a hand install, the
+/// tests). A unit watching another directory is another installation's
+/// helper: the preview, the demo or a test suite on the same host would
+/// otherwise offer a button nothing answers.
 pub fn helper_installed(dir: &Path) -> bool {
-    Path::new(HELPER_UNIT).exists() || path(dir, "helper.json").exists()
+    path(dir, "helper.json").exists() || unit_watches(Path::new(HELPER_UNIT), dir)
+}
+
+/// Whether the path unit at `unit` watches `dir`'s request file.
+fn unit_watches(unit: &Path, dir: &Path) -> bool {
+    let Ok(text) = std::fs::read_to_string(unit) else {
+        return false;
+    };
+    let want = path(dir, "upgrade.request");
+    text.lines()
+        .filter_map(|l| l.trim().strip_prefix("PathExists="))
+        .any(|p| Path::new(p.trim()) == want)
 }
 
 /// Ask the helper for a fresh list.
@@ -361,6 +377,25 @@ pub fn status(dir: &Path) -> Option<Status> {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn a_helper_unit_serves_the_directory_it_watches_and_no_other() {
+        let tmp = crate::scratch::Dir::new("helper-unit");
+        let unit = tmp.join("axgf-cms-upgrade.path");
+        let ours = tmp.join("data");
+        std::fs::write(
+            &unit,
+            format!(
+                "[Path]\nPathExists={}\nUnit=axgf-cms-upgrade.service\n",
+                ours.join("upgrade.request").display()
+            ),
+        )
+        .unwrap();
+        assert!(unit_watches(&unit, &ours));
+        assert!(!unit_watches(&unit, &tmp.join("preview")));
+        assert!(!unit_watches(&tmp.join("absent.path"), &ours));
+    }
+
     use super::*;
     use std::cmp::Ordering;
 

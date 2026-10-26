@@ -2241,6 +2241,9 @@ pub struct Words {
     pub living_band: String,
     /// The circa prefix: "c." / "v.".
     pub circa: String,
+    /// What a person the reader may not see is called to a screen reader:
+    /// "Private" / "Privé" (QA-33).
+    pub private: String,
 }
 
 /// One person, as this reader may see them, ready to draw.
@@ -2761,13 +2764,23 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
         let (x, y) = (num(p.x), num(p.y));
         // A link, so that the river travels without JavaScript too: the page
         // re-centred on this person, at the same range.
+        // Named for a screen reader whatever the label shows: a name cut
+        // for room, or none at all, is still somebody (QA-33).
+        let said = if s.redacted || s.names[2].is_empty() {
+            words.private.clone()
+        } else if s.years.is_empty() {
+            s.names[2].clone()
+        } else {
+            format!("{}, {}", s.names[2], s.years)
+        };
         let _ = write!(
             out,
-            r#"<a class="rv-p" data-id="{}" data-key="{}" href="{RIVER_PATH}?p={}&amp;n={}"><circle cx="{x}" cy="{y}" r="20" fill="transparent"/>"#,
+            r#"<a class="rv-p" data-id="{}" data-key="{}" href="{RIVER_PATH}?p={}&amp;n={}" aria-label="{}"><circle cx="{x}" cy="{y}" r="20" fill="transparent"/>"#,
             html_escape(&p.id),
             html_escape(&p.key),
             url_component(&p.id),
-            l.meta.n
+            l.meta.n,
+            html_escape(&said)
         );
         // A person drawn more than once is ringed: a solid ring where two
         // or more lines reach them (pedigree collapse), a dashed ring where
@@ -2851,7 +2864,7 @@ pub fn render_svg(l: &Layout, shown: &[Shown], words: &Words, aria_label: &str) 
     }
 
     format!(
-        r#"<svg class="rv-svg" viewBox="{left} {top} {w} {h}" width="100%" role="img" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect class="k-bg" x="{left}" y="{top}" width="{w}" height="{h}"/>{out}</svg>"#,
+        r#"<svg class="rv-svg" viewBox="{left} {top} {w} {h}" width="100%" role="group" aria-label="{a}" xmlns="http://www.w3.org/2000/svg"><defs>{defs}</defs><rect class="k-bg" x="{left}" y="{top}" width="{w}" height="{h}"/>{out}</svg>"#,
         left = num(h_left),
         top = num(v_top),
         w = num(h_w),

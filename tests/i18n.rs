@@ -984,3 +984,182 @@ fn every_key_the_console_names_in_rust_is_defined() {
         missing.join("\n")
     );
 }
+
+/// QA-35: every message English defines is reachable — named in the code, a
+/// template, a script or a test; used inside another message; or built from a
+/// family name the code appends a value to (`vocab(lang, "source-type", v)`,
+/// `"kind-" ~ kind`, `format!("diff-{n}")`). A key nothing reaches is a
+/// sentence fourteen catalogues translate for nobody.
+#[test]
+fn every_english_key_is_reachable() {
+    fn quoted(src: &str) -> Vec<String> {
+        // Every run of key characters inside quotes, cut at a `{`: the whole
+        // of "record-name", the family of "kind-{kind}".
+        let mut out = Vec::new();
+        let b = src.as_bytes();
+        let mut i = 0;
+        while i < b.len() {
+            if matches!(b[i], b'"' | b'\'' | b'`') {
+                let mut j = i + 1;
+                while j < b.len()
+                    && (b[j].is_ascii_lowercase() || b[j].is_ascii_digit() || b[j] == b'-')
+                {
+                    j += 1;
+                }
+                if j > i + 1 && j < b.len() && matches!(b[j], b'"' | b'\'' | b'`' | b'{') {
+                    out.push(src[i + 1..j].to_string());
+                }
+                i = j.max(i + 1);
+            } else {
+                i += 1;
+            }
+        }
+        out
+    }
+    let root = repo_root();
+    let english = ids_of(&root.join("locales/en.ftl"));
+    let ftl = std::fs::read_to_string(root.join("locales/en.ftl")).unwrap();
+    let mut sources = String::new();
+    for dir in [
+        "src",
+        "src/routes",
+        "src/profile",
+        "templates",
+        "static",
+        "tests",
+    ] {
+        let Ok(rd) = std::fs::read_dir(root.join(dir)) else {
+            continue;
+        };
+        for e in rd.flatten() {
+            let p = e.path();
+            if p.extension()
+                .is_some_and(|x| x == "rs" || x == "html" || x == "js")
+            {
+                sources.push_str(&std::fs::read_to_string(&p).unwrap_or_default());
+                sources.push('\n');
+            }
+        }
+    }
+    let literals: BTreeSet<String> = quoted(&sources).into_iter().collect();
+    // A family: a quoted name with a dash that is not itself a key, or one a
+    // `vocab(…)` call is handed, or a prefix that ends in its dash.
+    let mut families: Vec<String> = literals
+        .iter()
+        .filter(|l| l.contains('-') && !english.contains(*l))
+        .map(|l| {
+            if l.ends_with('-') {
+                l.clone()
+            } else {
+                format!("{l}-")
+            }
+        })
+        .collect();
+    for (i, _) in sources.match_indices("vocab(") {
+        if let Some(name) = quoted(&sources[i..(i + 120).min(sources.len())]).first() {
+            families.push(format!("{name}-"));
+        }
+    }
+    let inside: BTreeSet<&str> = ftl
+        .split('{')
+        .skip(1)
+        .filter_map(|s| s.split('}').next())
+        .map(|s| s.trim().trim_start_matches('-'))
+        .collect();
+    let dead: Vec<&String> = english
+        .iter()
+        .filter(|k| {
+            !literals.contains(*k)
+                && !inside.contains(k.as_str())
+                && !families.iter().any(|f| k.starts_with(f.as_str()))
+        })
+        .collect();
+    assert!(dead.is_empty(), "nothing reaches {dead:?}");
+}
+
+fn said(lang: &str, key: &str, args: &[(&str, fluent::FluentValue<'static>)]) -> String {
+    axgf_cms::i18n::warm();
+    let mut a = fluent::FluentArgs::new();
+    for (k, v) in args {
+        a.set(*k, v.clone());
+    }
+    // Fluent isolates each placeable for bidirectional text; compare words.
+    axgf_cms::i18n::translate(lang, key, Some(&a)).replace(['\u{2068}', '\u{2069}'], "")
+}
+
+/// QA-17: an age takes its language's plural — "1 an", "1 год", "21 год",
+/// "5 лет" — where it used to read "1 ans" and "1 лет".
+#[test]
+fn an_age_takes_the_plural_its_number_needs() {
+    for (lang, n, want) in [
+        ("en", 1, "1 year old"),
+        ("en", 5, "5 years old"),
+        ("fr", 0, "0 an"),
+        ("fr", 1, "1 an"),
+        ("fr", 2, "2 ans"),
+        ("de", 1, "1 Jahr alt"),
+        ("es", 1, "1 año"),
+        ("it", 21, "21 anni"),
+        ("pt", 1, "1 ano"),
+        ("pl", 1, "1 rok"),
+        ("pl", 2, "2 lata"),
+        ("pl", 5, "5 lat"),
+        ("pl", 22, "22 lata"),
+        ("ru", 1, "1 год"),
+        ("ru", 2, "2 года"),
+        ("ru", 5, "5 лет"),
+        ("ru", 21, "21 год"),
+    ] {
+        assert_eq!(
+            said(
+                lang,
+                "person-age-now",
+                &[("n", n.into()), ("gender", "U".into())]
+            ),
+            want,
+            "{lang} {n}"
+        );
+    }
+    assert_eq!(
+        said(
+            "fr",
+            "person-age-at-death",
+            &[("n", 1.into()), ("gender", "F".into())]
+        ),
+        "morte à 1 an"
+    );
+    assert_eq!(
+        said(
+            "ru",
+            "person-age-at-death",
+            &[("n", 21.into()), ("gender", "M".into())]
+        ),
+        "умер в 21 год"
+    );
+}
+
+/// QA-16: a woman is "née", "vivante", "décédée"; the record's own gender
+/// chooses, and an unknown one keeps the form the catalogue had.
+#[test]
+fn a_womans_vitals_agree_with_her() {
+    for (lang, key, want_f, want_m) in [
+        ("fr", "person-born-in", "née à Lyon", "né à Lyon"),
+        ("fr", "record-living-yes", "vivante", "vivant"),
+        ("fr", "record-deceased", "décédée", "décédé"),
+        ("es", "person-born-in", "nacida en Lyon", "nacido en Lyon"),
+        ("it", "person-died-in", "morta a Lyon", "morto a Lyon"),
+        ("pt", "record-living-yes", "viva", "vivo"),
+        ("pl", "person-died-in", "zmarła w Lyon", "zmarł w Lyon"),
+        ("ru", "person-born-in", "родилась в Lyon", "родился в Lyon"),
+        ("ar", "person-born-in", "وُلدت في Lyon", "وُلد في Lyon"),
+        ("he", "record-deceased", "נפטרה", "נפטר"),
+    ] {
+        let args = |g: &'static str| [("place", "Lyon".into()), ("gender", g.into())];
+        assert_eq!(said(lang, key, &args("F")), want_f, "{lang} {key} F");
+        assert_eq!(said(lang, key, &args("M")), want_m, "{lang} {key} M");
+    }
+    assert_eq!(
+        said("es", "record-deceased", &[("gender", "U".into())]),
+        "fallecido/a"
+    );
+}

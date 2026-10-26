@@ -116,8 +116,3 @@ debug = "line-tables-only"
 lto = "thin"
 codegen-units = 1
 strip = true
-
-# Until axgf-rs 0.6.1 is on crates.io: its pull request's branch. Removed,
-# with `cargo update -p axgf-rs`, once it is published.
-[patch.crates-io]
-axgf-rs = { git = "https://github.com/plkarin/axgf-lib", branch = "gedcom-fidelity" }

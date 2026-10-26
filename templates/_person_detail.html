@@ -536,7 +536,7 @@
     {% for h in history %}
     <li>
       <strong>{{ h.who }}</strong> {{ h.summary }}
-      <span class="small muted">{{ t("record-history-entry-meta", at=h.at) }}
+      <span class="small muted">{{ t("record-history-entry-meta", at=h.at | localdatetime(lang)) }}
         {%- if h.version_num %}{{ t("record-history-entry-version", version=t("admin-version", version=h.version_num)) }}{% endif %}</span>
       {% if h.changes %}
       <details>

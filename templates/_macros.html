@@ -7,7 +7,7 @@
   <span class="conf-inline" title="{{ said }}">
     <span class="conf-bar" data-band="{{ c.band }}" role="img"
           aria-label="{{ said }}"><i style="width:{{ c.percent }}%"></i></span>
-    <span class="conf-pct">{{ c.percent }}%</span>
+    <span class="conf-pct">{{ t("conf-percent", percent=c.percent) }}</span>
   </span>
   {%- endif -%}
 {% endmacro %}
@@ -238,7 +238,7 @@
       answers now and a yes/no can hold two of them, so the label changed with
       the values: "no" for a person the record calls living and the arithmetic
       calls dead throws away the one interesting thing about that record. #}
-  <div class="fc"><dt>{{ t("record-life-status") }}</dt><dd>{{ t(p.living_key) }}</dd></div>
+  <div class="fc"><dt>{{ t("record-life-status") }}</dt><dd>{{ t(p.living_key, gender=p.sex) }}</dd></div>
   {%- if p.visibility %}
   <div class="fc"><dt>{{ t("record-visibility") }}</dt><dd>{{ p.visibility }}</dd></div>
   {%- endif %}

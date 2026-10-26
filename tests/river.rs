@@ -135,6 +135,7 @@ fn words() -> Words {
     Words {
         living_band: "VIVANTS".into(),
         circa: "v.".into(),
+        private: "Private".into(),
     }
 }
 

@@ -39,22 +39,18 @@ settings-title = 设置
 edit-mode-label = 编辑模式 — 保存的内容会更改家族记录
 display-menu-label = 语言和显示
 display-settings = 主题和显示…
-settings-tabs-label = 设置的各节
 settings-tab-theme = 配色
 settings-tab-language = 语言
 settings-tab-appearance = 外观
 settings-done = 完成
 prefs-language = 语言
 prefs-theme = 配色
-prefs-background = 背景
 prefs-background-on = 页面背后一层淡淡的色晕
 prefs-apply = 应用
 busy-saving = 正在保存…
 busy-working = 处理中…
-prefs-reviewed = 已校订
 prefs-machine = 机器翻译，{ $coverage }%
 prefs-machine-complete = 已译全，尚未校订
-prefs-machine-title = 未经母语者校订的翻译。家谱学词汇尤其可能有误：表示婚姻关系、教父母或原始史料的词，各国记录传统各不相同。欢迎指正，CONTRIBUTING.md 说明了从何入手。
 
 theme-canopee = 林冠
 theme-canopee-note = 深色 · 森林绿 · 默认
@@ -71,7 +67,6 @@ tree-title-around = { $name }的周边
 tree-title-whole = 整棵家谱
 tree-lede-focused = 祖先{ $ancestors }人、后代{ $descendants }人、配偶或伴侣{ $spouses }人，每个方向{ $depth }代。
 tree-filter-label = 筛选可见的卡片
-tree-centre-on = 以此人为中心
 tree-depth = 每个方向的代数
 tree-show = 显示
 tree-hidden-notice = 有{ $n }人只显示姓名而不显示细节
@@ -80,7 +75,6 @@ tree-hidden-because-anonymous = ，因为他们并未公开。
 tree-hidden-sign-in = 如果您有账户，请登录。
 tree-restricted-card = 此人的记录对您不可见
 tree-empty = 还没有可以绘制的人。
-tree-unplaced = 不属于任何已记录的家庭
 
 ## 记录
 
@@ -93,21 +87,15 @@ record-places = 地点
 record-sources-documents = 来源与文献
 record-notes = 笔记
 record-history = 修改历史
-record-raw = 原始数据
-record-raw-summary-note = 生成本页所依据的 JSON
 
 record-identity-help = 每一个已记录的姓名，连同其类别、使用的时期和支持它的来源；原文文字与拉丁转写不同的，并列显示。此外还有性别、是否在世和可见范围。
 record-life-events-help = 出生、去世，以及此人参与的每一件事，按日期排列，各自标明其身份——这样一场他只是见证的婚礼，会与他自己的婚礼并排出现。没有日期的事实排在最后，而不是假装排在最前。
-life-nothing-recorded = 此人没有记录任何事件、职业或地点。在转换而来的文件中这很常见：GEDCOM 只承载有人写下的内容，而多数条目只是姓名和日期。
-life-add-first = 记录第一件事
 record-family-help = 父母与兄弟姐妹，然后是每一段婚姻关系的类别、日期、地点、结束方式，以及按出生顺序排列的子女。
 record-other-relationships-help = 每一条以此人为一端的关联，都从他这一侧来读：同一条记录从一端看是「某人的教父」，从另一端看是「某人的教子」。
-record-occupations-help = 职业以时间段的形式落在同一根轴上，两段任职可以一眼比较；缺少端点的，条形保持开口。
 record-places-help = 这条记录触及的每一个地点，连同在那里发生的事，以及使一个地方在不同时代仍可理解的疆界变迁。
 record-sources-documents-help = 每条来源都列出本页中依赖于它的事实，按证据的强弱排列。
 record-notes-help = 关于这条记录的笔记，包括任何转换器都无法解读、因而原样保留而非丢弃的文字。
 record-history-help = 这条记录每一次保存的修改，最新的在前。谁改了什么，是关于维护家谱的人的事实，而不是关于其中家族的事实，因此它留在导出的档案之外，只向已登录的亲属显示。
-record-raw-help = 这里没有为显示而生成的内容：这就是记录被保存时的样子，直到字段名。若有朝一日您需要不借助本站阅读档案，看到的正是这些。
 record-help-toggle = 本节显示的内容
 
 record-gender = 性别
@@ -129,6 +117,7 @@ record-restricted-person = 私密
 record-restricted-title = 此人的记录对您不可见
 record-absent-person-title = 在本家谱中被提到，但没有自己的记录
 record-confidence = 可信度
+conf-percent = { $percent }%
 record-source = 来源
 record-download = 下载
 
@@ -230,7 +219,6 @@ admin-operations = 操作
 admin-validate = 校验
 admin-deduplicate = 合并重复
 admin-export = 导出档案
-admin-accounts = 账户
 admin-roles-note = 校验、合并重复、导出、删除和账户管理仅限管理员。编辑者可以到达这里的其他每一个页面。
 admin-dedup-confirm = 合并重复会融合记录并重写档案。是否继续？
 admin-recent-changes = 最近的修改
@@ -247,7 +235,6 @@ admin-raw-json-help = 整条记录，因此没有什么是不能编辑的——�
 admin-save = 保存
 admin-cancel = 取消
 place-editor-title = 编辑地点
-place-add-detail = 补充此地点的信息
 place-names = 名称
 place-name-primary = 主要
 place-name-lang = 语言
@@ -323,15 +310,10 @@ person-tab-life = 事件
 person-tab-media = 媒体
 person-tab-tree = 家系
 person-tab-history = 历史
-person-tree-depth = 上下各 { $n } 代。完整的家系图在下方。
-person-tree-alone = 这条记录未载父母、配偶或子女，因此周围没有可画的形状。
 
-record-no-evidence = 这条记录没有任何附件——既无来源，也无文件。对于转换而来的文件，这是常态而非缺陷：GEDCOM 带走了事实，把佐证它们的东西留在了原处。
-record-no-evidence-signed-out = 登录后可添加附件。
 admin-delete = 删除
 admin-not-set = —— 未设置 ——
 admin-edit = 编辑
-admin-page-of = 第 { $page } 页，共 { $pages } 页
 list-select-row = 选择 { $name }
 list-kind-label = 类型
 list-select-page = 选择本页所有行
@@ -429,7 +411,6 @@ conflict-history-of = 这条{ $kind }的历史
 convert-title = 导入家族文件
 convert-submit = 导入
 convert-result-title = 导入报告
-convert-download = 下载档案
 
 ## 日期
 
@@ -479,7 +460,6 @@ error-export-unreadable-detail = { $error }
 ## 家谱页（续）
 
 tree-title-suffix = 家谱
-tree-back-to-focused = 回到以一个人为中心的视图
 tree-show-all = 显示全部{ $n }人
 tree-width-notice = 此视图宽{ $width }像素——在1500像素的屏幕上相当于{ $screens }屏的横向滚动。
 tree-confidence-label = 可信度：
@@ -504,8 +484,6 @@ tree-edge-parentage = 已记录的亲子关系
 
 home-empty = 尚无任何记录。
 home-count = 记录{ $total }条，装在一个属于这个家族的文件里。
-home-browse = 浏览家谱
-home-convert = 导入家族文件
 home-unnamed-family = 这棵家谱
 home-in-this-tree = 这个家族到目前为止记录了什么
 home-showcase-title = 这棵家谱已经说出的，不止是姓名和日期
@@ -566,10 +544,6 @@ record-read-as = 读作
 record-note = 笔记
 record-living-yes = 在世
 record-deceased = 已故
-record-centre-tree-here = 以此为家谱中心
-record-centre-tree-title = 移动家谱，使其以此人为中心
-record-see-in-tree = 在家谱中查看
-record-see-in-tree-title = 打开以此人为中心的卡片网格
 record-open-full-page = 打开完整页面 ↗
 record-open-full-title = 打开可单独分享的页面
 record-edit = 编辑
@@ -578,7 +552,6 @@ view-tree-see = 在生命之树中查看
 view-galaxy-see = 在星系中查看
 view-summit-see = 在山峰上查看
 panel-empty = 选择一张卡片，即可在此看到那个人的完整记录。
-person-see-in-tree = 在家谱中查看此人
 person-visibility-inline = 可见范围：
 person-age-at-death = { $n }岁去世
 person-age-now = { $n }岁
@@ -631,10 +604,6 @@ record-file = 文件
 record-status = 状态
 record-size = 大小
 record-absent-document = 此人提到过，但并未保存在此。
-record-no-file = 无文件
-record-attach-document = 附加文献
-record-upload = 上传
-record-upload-help = 每个文件最多{ $mb } MB。附件保存在家谱旁边，导出时写回档案，因此一张照片会随它所属的家族一同移动。文件类型从其自身内容读出，而不是文件名：可接受图像、PDF、纯文本、音频和视频。SVG 会被拒绝，因为 SVG 可以携带脚本。
 record-upload-help-short = 最多{ $mb } MB。SVG 会被拒绝。
 record-verbatim-note = 完全按记录原样保留，因为没有任何转换器能解读它。
 record-file-to-attach = 要附加的文件
@@ -671,7 +640,6 @@ list-filter = 筛选
 list-clear = 清除
 list-summary = 摘要
 list-id = 标识
-list-actions = 操作
 list-nothing = 这里什么都没有。
 list-nothing-matching = 这里没有与「{ $q }」匹配的内容。
 list-delete-confirm = 要删除这条{ $kind }吗？请选择引用它的记录该如何处理：
@@ -738,7 +706,6 @@ admin-dedup-refused = 重复项合并被拒绝
 record-birth-order = 出生次序
 record-start-not-recorded = 起始未记录
 record-end-not-recorded = 结束未记录
-record-document-no-file = 文献已在此记录，但文件本身并不在
 panel-selected-person = 选中的人物
 
 ## 世代带
@@ -817,7 +784,6 @@ source-label = { $title } —— { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } —— { $type }
 document-label-untitled = 无题{ $type }
-list-unnamed = 未命名的{ $kind }
 
 ## 列表中使用的规范词汇
 
@@ -923,7 +889,6 @@ phys-field-religion = 宗教或所属
 phys-field-health-notes = 备注
 admin-export-health-note = 普通导出会略去所有敏感类别——健康与信仰、生物特征数据、基因组数据和犯罪记录——以及任何在世者的行为画像，因此发给亲属的文件不含其中任何一项。请勾选某个文件应包含的内容；档案本身会记录哪些类别被略去。
 avatar-picker-title = 选择一张图片
-avatar-choose-link = 选择图片
 avatar-choose = 用哪张图片代表这个人
 avatar-mode-auto = 交由程序挑选
 avatar-mode-auto-note = 第一张肖像；若没有，则取与此记录相连的第一张图片。
@@ -1025,7 +990,6 @@ precision-decade = 精确到十年
 precision-century = 精确到世纪
 precision-unknown = 未知
 record-precision = 精确度
-record-approximate = 约略
 record-place = 地点
 
 ## The relationships editor
@@ -1130,13 +1094,11 @@ documents-attached = 已关联到本记录
 documents-upload = 上传文件
 documents-upload-help = 最大 { $mb } MB。文件将存入档案并关联到本记录。
 documents-caption = 说明文字
-documents-edit-link = 关联与解除文件
 events-edit-link = 编辑事件
 
 ## Presentation styles: density, never colour
 
 prefs-style = 疏密
-prefs-style-help = 页面占用多少空间。与只关乎颜色的主题相互独立，因此可以任意搭配。
 style-comfortable = 舒适
 style-comfortable-note = 默认，留有阅读空间
 style-compact = 紧凑
@@ -2785,8 +2747,6 @@ dedup-manual-review = { $n } 个情况留待人工审阅
 dedup-nothing = 没有需要报告的内容。
 record-union-duplicate = 一对夫妻，多条记录。
 record-union-duplicate-detail = 存档为这两人保存了不同的家庭记录。这是数据缺陷，而非第二段结合。
-record-union-duplicate-action = 合并重复项
-record-union-duplicate-confirm = 对整个存档去重？库能合并的每一对都会合并，其余将予报告。
 dedup-pair-merged = 所指的一对现已合并为一条记录。
 dedup-pair-refused = 所指的一对未被合并：库拒绝合并，留待人工审核。
 
@@ -3084,7 +3044,6 @@ view-summit-still = 让山峰静止
 river-whole = 整个家族
 river-names-all = 全部姓名
 river-zoom-hint = 缩放：Ctrl + 滚轮、双指捏合或 + / − · 放大后拖动即可移动
-river-grid-link = 网格视图
 river-tab-sources = 来源
 river-legend-title = 如何阅读河流
 view-tree-name = 生命之树

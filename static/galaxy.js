@@ -219,7 +219,7 @@
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', x = f(p.x), y = f(p.y), r = 5;
       var k = '<g opacity="' + f(p.a) + '">';
-      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>';
+      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>';
       if (isC) {
         k += '<circle cx="' + x + '" cy="' + y + '" r="34" class="gx-corona gx-corona-3"/><circle cx="' + x + '" cy="' + y + '" r="24" class="gx-corona gx-corona-2"/>'
           + '<circle cx="' + x + '" cy="' + y + '" r="16" class="gx-sun"/><circle cx="' + x + '" cy="' + y + '" r="7" class="gx-sun-core"/>';
@@ -248,7 +248,7 @@
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cn = C && C.s && !C.s.redacted ? C.s.names[2] : '';
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg gx-svg" data-view="galaxy" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="img" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="group" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>' + out + links + '<g class="rv-lit"></g>' + nodes + '</svg>';
   }
 

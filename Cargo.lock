@@ -240,7 +240,8 @@ dependencies = [
 [[package]]
 name = "axgf-rs"
 version = "0.6.1"
-source = "git+https://github.com/plkarin/axgf-lib?branch=gedcom-fidelity#7048f8563280d994f23e97fce0745d4eaa344411"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88f06d881147643d48f15a969f6b176ecf77bfe08eceefd2aa79fa61e587848e"
 dependencies = [
  "base64 0.21.7",
  "jsonschema",

@@ -36,22 +36,18 @@ settings-title = Bobongisi
 edit-mode-label = Kobongola — oyo okobomba ekobongola mikanda ya libota
 display-menu-label = Lokota mpe komonana
 display-settings = Lolenge mpe komonana…
-settings-tabs-label = Biteni ya bobongisi
 settings-tab-theme = Lolenge
 settings-tab-language = Lokota
 settings-tab-appearance = Komonana
 settings-done = Esili
 prefs-language = Lokota
 prefs-theme = Lolenge
-prefs-background = Nsima
 prefs-background-on = Langi ya pepele na nsima ya lokasa
 prefs-apply = Salela
 busy-saving = Ezali kobomba…
 busy-working = Ezali kosala…
-prefs-reviewed = etalami
 prefs-machine = masini, { $coverage }%
 prefs-machine-complete = mobimba, natango etalami te
-prefs-machine-title = Ebongolami kozanga ete moto oyo aloba lokota yango atala yango. Mingi mingi maloba ya bankoko ekoki kozala na mabunga — maloba mpo na boyokani, tata to mama ya batisimo to liziba ya liboso ekeseni na lolenge ya kobomba mikanda ya mboka moko na moko. Bobongisi ezali kolandama malamu, mpe CONTRIBUTING.md elobi esika ya kobanda.
 
 theme-canopee = Canopy
 theme-canopee-note = molili, langi ya zamba · oyo ya ebandeli
@@ -75,7 +71,6 @@ tree-lede-focused = { $ancestors ->
        *[other] balongani { $spouses }
     }, nkola { $depth } na ngambo moko na moko.
 tree-filter-label = Pona bakarte oyo ezali komonana
-tree-centre-on = Tia na kati
 tree-depth = Nkola na ngambo moko na moko
 tree-show = Lakisa
 tree-hidden-notice = { $n ->
@@ -87,7 +82,6 @@ tree-hidden-because-anonymous = , mpo bazali ya bato nyonso te.
 tree-hidden-sign-in = Kota soki ozali na konti.
 tree-restricted-card = Mokanda ya moto oyo ezali komonana epai na yo te
 tree-empty = Natango moto ya kobenda azali te.
-tree-unplaced = Azali na libota moko te oyo ekomami
 
 record-identity = Bomoto
 record-life-events = Makambo ya bomoi
@@ -98,21 +92,15 @@ record-places = Bisika
 record-sources-documents = Maziba mpe mikanda
 record-notes = Makomi
 record-history = Lisolo
-record-raw = Mokanda ya ebandeli
-record-raw-summary-note = JSON oyo lokasa oyo etongamaki na yango
 
 record-identity-help = Nkombo nyonso ekomami elongo na lolenge na yango, ntango esalelamaki mpe liziba na yango, makomi ya ebandeli mpe kobongola na yango na makomi ya Latin pembeni na pembeni soki ekeseni, elongo na mobali to mwasi, soki azali na bomoi mpe komonana.
 record-life-events-help = Kobotama, kokufa mpe likambo nyonso oyo moto oyo asangani na yango, na molongo ya mikolo, moko na moko na mosala na ye — boye libala oyo atalaki kaka emonani pembeni ya libala na ye moko. Likambo ezanga mokolo etiamaka na suka na esika ya komimonisa lokola ya liboso.
-life-nothing-recorded = Likambo, mosala to esika moko te ekomami mpo na moto oyo. Na fisyé oyo ebongolami yango ezali likambo ya momesano: GEDCOM ememaka oyo moto akomaki, mpe mikanda mingi ezali nkombo mpe mokolo.
-life-add-first = Koma likambo ya liboso
 record-family-help = Baboti mpe bandeko, sima boyokani moko na moko elongo na lolenge na yango, mikolo, esika, ndenge esilaki mpe bana na yango na molongo ya kobotama.
 record-other-relationships-help = Boyokani nyonso oyo moto oyo azali na suka moko na yango, etangami na ngambo na ye, boye mokanda moko emonanaka lokola "tata ya batisimo ya" na ngambo moko mpe "mwana ya batisimo ya" na ngambo mosusu.
-record-occupations-help = Misala lokola ntango na molongo moko ya bato nyonso, mpo misala mibale ekoka kokokanisama na miso, na milongo ya kofungwama soki suka moko ezangi.
 record-places-help = Esika nyonso oyo mokanda oyo esimbi, elongo na oyo esalemaki na esika moko na moko mpe lisolo ya ndelo oyo epesaka esika ntina na boumeli ya ntango.
 record-sources-documents-help = Liziba moko na moko elobi makambo ya lokasa oyo oyo etelemi likolo na yango, na molongo ya makasi ya litatoli.
 record-notes-help = Makomi mpo na mokanda oyo, elongo na makomi oyo mobongoli akokaki kotanga te mpe abombaki ndenge ezalaki na esika ya kobwaka yango.
 record-history-help = Mbongwana nyonso oyo ebombami na mokanda oyo, oyo ya sika liboso. Nani abongisaki nini ezali likambo ya bato oyo babatelaka nzete, kasi ya libota oyo ezali kati na yango te, yango wana ezali te na ebombelo oyo ekotisami libanda mpe emonanaka kaka na bandeko oyo bakoti.
-record-raw-help = Eloko moko te awa esalemi mpo na komonisa: oyo ezali mokanda ndenge ebombami, kino na nkombo ya bisika. Soki mokolo mosusu osengeli kotanga ebombelo kozanga site oyo, oyo nde okomona.
 record-help-toggle = Eteni oyo emonisaka nini
 
 record-gender = Mobali to mwasi
@@ -134,6 +122,7 @@ record-restricted-person = Ya sekele
 record-restricted-title = Mokanda ya moto oyo ezali komonana epai na yo te
 record-absent-person-title = Atangami na nzete oyo kasi akomami kati na yango te
 record-confidence = Bondimi
+conf-percent = { $percent }%
 record-source = Liziba
 record-download = Kokitisa
 
@@ -230,7 +219,6 @@ admin-operations = Misala
 admin-validate = Kondimisa
 admin-deduplicate = Kolongola mibale
 admin-export = Kobimisa ebombelo
-admin-accounts = Bakonti
 admin-roles-note = Kondimisa, kolongola mibale, kobimisa, kolongola mpe kokamba bakonti ezali kaka mpo na bakambi. Mosungi akomaka na lokasa nyonso mosusu awa.
 admin-dedup-confirm = Kolongola mibale esangisaka mikanda mpe ekomaka lisusu ebombelo. Kokoba?
 admin-recent-changes = Mbongwana ya sika
@@ -256,7 +244,6 @@ admin-raw-json-help = Mokanda mobimba, boye eloko moko te ezangi kobongolama —
 admin-save = Bomba
 admin-cancel = Tika
 place-editor-title = Bongola esika
-place-add-detail = Bakisa makambo na esika oyo
 place-names = Bankombo
 place-name-primary = Ya liboso
 place-name-lang = Lokota
@@ -336,15 +323,10 @@ person-tab-life = Makambo
 person-tab-media = Bafoto mpe mikanda
 person-tab-tree = Nzete
 person-tab-history = Lisolo
-person-tree-depth = Nkola { $n } na ngambo moko na moko. Nzete mobimba ezali awa na nse.
-person-tree-alone = Mokanda oyo etangi baboti, balongani to bana te, yango wana elilingi moko te ya kobenda zingazinga na yango.
 
-record-no-evidence = Eloko moko te ekangisami na mokanda oyo — liziba te mpe mokanda te. Oyo ezali lolenge ya momesano ya fisyé oyo ebongolami, kasi mabe na yango te: GEDCOM ememaka makambo mpe etikaka nsima oyo endimisaki yango.
-record-no-evidence-signed-out = Kota mpo na kokangisa moko.
 admin-delete = Longola
 admin-not-set = — etiami te —
 admin-edit = Bongola
-admin-page-of = Lokasa { $page } kati na { $pages }
 list-select-row = Pona { $name }
 list-kind-label = Lolenge
 list-select-page = Pona milongo nyonso ya lokasa oyo
@@ -451,7 +433,6 @@ conflict-history-of = Lisolo ya { $kind } oyo
 convert-title = Kotisa fisyé ya libota
 convert-submit = Kotisa
 convert-result-title = Lapolo ya kokotisa
-convert-download = Kokitisa ebombelo
 
 date-unknown = Mokolo eyebani te
 date-not-recorded = Ekomami te
@@ -523,7 +504,6 @@ error-export-unreadable-title = Ekokaki kotanga ebombelo oyo ebimisami te
 error-export-unreadable-detail = { $error }
 
 tree-title-suffix = nzete
-tree-back-to-focused = Zonga na komonana oyo eponami
 tree-show-all = Lakisa nyonso { $n }
 tree-width-notice = Komonana oyo ezali na bonene ya pikseli { $width } — na ekrani ya pikseli 1500, ezali { $screens ->
         [one] ekrani moko
@@ -558,8 +538,6 @@ home-count = { $total ->
         [one] Mokanda moko
        *[other] Mikanda { $total }
     }, ebombami na fisyé moko oyo libota ezali nkolo na yango.
-home-browse = Tala nzete
-home-convert = Kotisa fisyé ya libota
 home-unnamed-family = Nzete oyo ya libota
 home-in-this-tree = Oyo libota ekomi kino sikoyo
 home-showcase-title = Esika nzete oyo esili koloba koleka bankombo mpe mikolo
@@ -638,10 +616,6 @@ record-read-as = tanga lokola
 record-note = Makomi
 record-living-yes = na bomoi
 record-deceased = akufa
-record-centre-tree-here = Tia nzete na kati awa
-record-centre-tree-title = Tambolisa nzete mpo ezala na kati na moto oyo
-record-see-in-tree = Tala na nzete
-record-see-in-tree-title = Fungola etando ya bakarte zingazinga ya moto oyo
 record-open-full-page = Fungola lokasa mobimba ↗
 record-open-full-title = Fungola lokasa oyo ezali yango moko, oyo ekoki kokabolama
 record-edit = Bongola
@@ -650,10 +624,15 @@ view-tree-see = Tala na nzete
 view-galaxy-see = Tala na galaksi
 view-summit-see = Tala na ngomba
 panel-empty = Pona karte mpo na komona mokanda mobimba ya moto yango awa.
-person-see-in-tree = Tala moto oyo na nzete
 person-visibility-inline = komonana:
-person-age-at-death = akufaki na mibu { $n }
-person-age-now = azali na mibu { $n }
+person-age-at-death = { $n ->
+        [one] akufaki na mobu { $n }
+       *[other] akufaki na mibu { $n }
+    }
+person-age-now = { $n ->
+        [one] azali na mobu { $n }
+       *[other] azali na mibu { $n }
+    }
 person-born-in = abotamaki na { $place }
 person-died-in = akufaki na { $place }
 person-children-count = { $n ->
@@ -703,10 +682,6 @@ record-file = Fisyé
 record-status = Lolenge
 record-size = Bonene
 record-absent-document = Etangami na moto oyo kasi ebombami awa te.
-record-no-file = fisyé ezali te
-record-attach-document = Kangisa mokanda
-record-upload = Tinda
-record-upload-help = Kino MB { $mb } mpo na fisyé moko. Biloko ekangisami ebombamaka pembeni ya nzete mpe ekomamaka lisusu na ebombelo ntango okobimisa, boye foto etambolaka elongo na libota na yango. Lolenge ya fisyé etangamaka na makambo na yango, kasi na nkombo na yango te: bilili, PDF, makomi ya pete, mongongo mpe video endimami. SVG eboyamaka, mpo SVG ekoki komema script.
 record-upload-help-short = Kino MB { $mb }. SVG eboyamaka.
 record-verbatim-note = Ebatelami ndenge mokanda elobaki, mpo mobongoli moko te akokaki kososola yango.
 record-file-to-attach = Fisyé ya kokangisa
@@ -765,7 +740,6 @@ list-filter = Pona
 list-clear = Longola
 list-summary = Mokuse
 list-id = Elembo
-list-actions = Misala
 list-nothing = Eloko ezali awa te.
 list-nothing-matching = Eloko ezali awa te oyo eyokani na “{ $q }”.
 list-delete-confirm = Kolongola { $kind } oyo? Pona oyo ekosalema na mikanda oyo etangi yango:
@@ -845,7 +819,6 @@ admin-dedup-refused = Kolongola mibale eboyami
 record-birth-order = molongo ya kobotama
 record-start-not-recorded = ebandeli ekomami te
 record-end-not-recorded = suka ekomami te
-record-document-no-file = Mokanda ekomami awa, kasi fisyé yango moko ebombami te
 panel-selected-person = Moto oyo aponami
 
 tree-band-generation = Nkola { $g }
@@ -940,7 +913,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = { $type } ezangi nkombo
-list-unnamed = { $kind } ezangi nkombo
 
 event-category-birth = Kobotama
 event-category-death = Kokufa
@@ -1058,7 +1030,6 @@ phys-field-religion = Losambo to masanga
 phys-field-health-notes = Makomi
 admin-export-health-note = Bobimisi ya pete etikaka mitindo nyonso ya makambo ya bokebi — bokolongono mpe kondima, makambo ya nzoto, makambo ya bankoko ya makila mpe mikanda ya bosambisi — mpe lolenge ya bizaleli ya moto nyonso oyo azali na bomoi, boye fisyé oyo etindami na ndeko ememaka moko te kati na yango. Pona oyo fisyé moko esengeli komema; ebombelo yango moko ekomaka mitindo nini etikamaki.
 avatar-picker-title = Pona elilingi
-avatar-choose-link = Pona elilingi
 avatar-choose = Elilingi nini emonisaka moto oyo
 avatar-mode-auto = Tika programe epona
 avatar-mode-auto-note = Foto ya elongi ya liboso, to soki ezali te elilingi ya liboso oyo ekangisami na mokanda oyo.
@@ -1149,7 +1120,6 @@ precision-decade = kino na mibu zomi
 precision-century = kino na ekeke
 precision-unknown = eyebani te
 record-precision = Bosikisiki
-record-approximate = Pene na pene
 record-place = Esika
 
 family-editor-title = Libota mpe boyokani
@@ -1248,11 +1218,9 @@ documents-attached = Ekangisami na mokanda oyo
 documents-upload = Tinda fisyé
 documents-upload-help = Kino MB { $mb }. Fisyé ebombamaka na ebombelo mpe ekangisamaka na mokanda oyo.
 documents-caption = Maloba ya foto
-documents-edit-link = Kangisa mpe kabola mikanda
 events-edit-link = Bongola makambo
 
 prefs-style = Bopikami
-prefs-style-help = Esika boni lokasa ezwaka. Ekeseni na lolenge, oyo etali kaka langi, boye okoki kozala na moko kati na oyo elongo na moko kati na wana.
 style-comfortable = Na esika
 style-comfortable-note = oyo ya ebandeli, na esika ya kotanga
 style-compact = Ekangami
@@ -2924,8 +2892,6 @@ dedup-manual-review = { $n ->
 dedup-nothing = Eloko ya koyebisa ezali te.
 record-union-duplicate = Balongani mibale, mikanda koleka moko.
 record-union-duplicate-detail = Ebombelo ezali na mikanda ya Libota ekeseni mpo na bato oyo mibale. Yango ezali libunga na ba-données, kasi boyokani ya mibale te.
-record-union-duplicate-action = Sangisa oyo ezongelami
-record-union-duplicate-confirm = Longola oyo ezongelami na ebombelo mobimba? Mibale nyonso oyo biblioteke ekoki kosangisa ekosangisama; oyo etikali ekoyebisama.
 dedup-pair-merged = Mibale oyo otunaki ezali sikoyo mokanda moko.
 dedup-pair-refused = Mibale oyo otunaki esangisamaki te: biblioteke eboyaki mpe etikaki yango mpo moto atala.
 validate-errors = { $n ->
@@ -3235,7 +3201,6 @@ view-summit-still = Tika ngomba kimya
 river-whole = Libota mobimba
 river-names-all = Bankombo nyonso
 river-zoom-hint = Zoom: Ctrl + roulette, kokanga na misapi, to + / − · soki ozali na zoom, benda mpo na koningisa
-river-grid-link = Lolenge ya grille
 river-tab-sources = Maziba
 river-legend-title = Ndenge ya kotanga ebale
 view-tree-name = Nzete ya bomoi

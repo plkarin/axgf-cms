@@ -31,22 +31,18 @@ settings-title = Mipangilio
 edit-mode-label = Uhariri — unachohifadhi kinabadilisha rekodi za familia
 display-menu-label = Lugha na mwonekano
 display-settings = Mandhari na mwonekano…
-settings-tabs-label = Sehemu za mipangilio
 settings-tab-theme = Mandhari
 settings-tab-language = Lugha
 settings-tab-appearance = Mwonekano
 settings-done = Imekamilika
 prefs-language = Lugha
 prefs-theme = Mandhari
-prefs-background = Mandharinyuma
 prefs-background-on = Rangi laini nyuma ya ukurasa
 prefs-apply = Tumia
 busy-saving = Inahifadhi…
 busy-working = Inafanya kazi…
-prefs-reviewed = imekaguliwa
 prefs-machine = mashine, { $coverage }%
 prefs-machine-complete = kamili, bado haijakaguliwa
-prefs-machine-title = Imetafsiriwa bila kukaguliwa na mzungumzaji asilia. Hasa msamiati wa nasaba unaweza kuwa na makosa — maneno ya muungano, mzazi wa ubatizo au chanzo cha msingi hutofautiana kulingana na desturi ya kila nchi ya kuweka kumbukumbu. Masahihisho yanakaribishwa, na CONTRIBUTING.md inaeleza pa kuanzia.
 
 theme-canopee = Canopy
 theme-canopee-note = giza, kijani cha msitu · chaguo-msingi
@@ -70,7 +66,6 @@ tree-lede-focused = { $ancestors ->
        *[other] wenzi { $spouses }
     }, vizazi { $depth } kila upande.
 tree-filter-label = Chuja kadi zinazoonekana
-tree-centre-on = Weka katikati
 tree-depth = Vizazi kila upande
 tree-show = Onyesha
 tree-hidden-notice = { $n ->
@@ -82,7 +77,6 @@ tree-hidden-because-anonymous = , kwa sababu si wa hadharani.
 tree-hidden-sign-in = Ingia ikiwa una akaunti.
 tree-restricted-card = Rekodi ya mtu huyu haionekani kwako
 tree-empty = Bado hakuna mtu wa kuchora.
-tree-unplaced = Hayupo katika familia yoyote iliyorekodiwa
 
 record-identity = Utambulisho
 record-life-events = Matukio ya maisha
@@ -93,21 +87,15 @@ record-places = Mahali
 record-sources-documents = Vyanzo na hati
 record-notes = Maelezo
 record-history = Historia
-record-raw = Rekodi ghafi
-record-raw-summary-note = JSON ambayo ukurasa huu ulijengwa kutoka kwayo
 
 record-identity-help = Kila jina lililorekodiwa pamoja na aina yake, kipindi lilipotumika na chanzo chake, maandishi asilia na unukuzi wake wa Kilatini kando kwa kando yanapotofautiana, pamoja na jinsia, hali ya kuwa hai na mwonekano.
 record-life-events-help = Kuzaliwa, kifo na kila tukio ambalo mtu huyu alishiriki, kwa mpangilio wa tarehe, kila moja na nafasi yake — kwa hiyo harusi aliyoishuhudia tu inaonekana kando ya harusi yake mwenyewe. Jambo lisilo na tarehe huwekwa mwisho badala ya kujifanya ni la kwanza.
-life-nothing-recorded = Hakuna tukio, kazi wala mahali palipoandikwa kwa mtu huyu. Kwa faili iliyobadilishwa hili ni la kawaida: GEDCOM hubeba kile ambacho mtu aliandika, na rekodi nyingi ni jina na tarehe.
-life-add-first = Rekodi tukio la kwanza
 record-family-help = Wazazi na ndugu, kisha kila muungano pamoja na aina yake, tarehe, mahali, jinsi ulivyoisha na watoto wake kwa mpangilio wa kuzaliwa.
 record-other-relationships-help = Kila kiungo chenye mtu huyu upande wowote, kikisomwa kutoka upande wake, ili rekodi ileile ionekane kama "mzazi wa ubatizo wa" upande mmoja na "mtoto wa ubatizo wa" upande mwingine.
-record-occupations-help = Kazi kama vipindi kwenye mhimili mmoja wa pamoja, ili nyadhifa mbili zilinganishwe kwa macho, na mistari iliyo wazi pale mpaka mmoja unapokosekana.
 record-places-help = Kila mahali ambapo rekodi hii inagusa, pamoja na kilichotokea katika kila pahali na historia ya mipaka inayofanya mahali kuwa na maana kwa wakati.
 record-sources-documents-help = Kila chanzo kinataja mambo ya ukurasa huu yanayotegemea chanzo hicho, kwa mpangilio wa nguvu ya ushahidi.
 record-notes-help = Maelezo kuhusu rekodi hii, pamoja na maandishi ambayo kigeuzi hakikuweza kuyachanganua na kikayahifadhi kama yalivyo badala ya kuyaacha.
 record-history-help = Kila badiliko lililohifadhiwa kwenye rekodi hii, la karibuni kwanza. Nani alirekebisha nini ni ukweli kuhusu watu wanaotunza mti, si kuhusu familia iliyomo, kwa hiyo hauwekwi kwenye kumbukumbu inayohamishwa na unaonyeshwa tu kwa jamaa walioingia.
-record-raw-help = Hakuna kitu hapa kinachotengenezwa kwa ajili ya kuonyeshwa: hii ni rekodi kama ilivyohifadhiwa, hadi majina ya sehemu. Ukihitaji siku moja kusoma kumbukumbu bila tovuti hii, hiki ndicho utakachoona.
 record-help-toggle = Sehemu hii inaonyesha nini
 
 record-gender = Jinsia
@@ -129,6 +117,7 @@ record-restricted-person = Binafsi
 record-restricted-title = Rekodi ya mtu huyu haionekani kwako
 record-absent-person-title = Ametajwa katika mti huu lakini hajarekodiwa ndani yake
 record-confidence = Uhakika
+conf-percent = { $percent }%
 record-source = Chanzo
 record-download = Pakua
 
@@ -225,7 +214,6 @@ admin-operations = Shughuli
 admin-validate = Hakiki
 admin-deduplicate = Ondoa nakala
 admin-export = Hamisha kumbukumbu
-admin-accounts = Akaunti
 admin-roles-note = Kuhakiki, kuondoa nakala, kuhamisha, kufuta na kusimamia akaunti ni kwa wasimamizi tu. Mchangiaji hufikia kila ukurasa mwingine hapa.
 admin-dedup-confirm = Kuondoa nakala huunganisha rekodi na kuandika upya kumbukumbu. Uendelee?
 admin-recent-changes = Mabadiliko ya karibuni
@@ -251,7 +239,6 @@ admin-raw-json-help = Rekodi nzima, ili hakuna kisichoweza kuhaririwa — orodha
 admin-save = Hifadhi
 admin-cancel = Ghairi
 place-editor-title = Hariri mahali
-place-add-detail = Ongeza maelezo ya mahali hapa
 place-names = Majina
 place-name-primary = Kuu
 place-name-lang = Lugha
@@ -331,15 +318,10 @@ person-tab-life = Matukio
 person-tab-media = Vyombo vya habari
 person-tab-tree = Mti
 person-tab-history = Historia
-person-tree-depth = Vizazi { $n } kila upande. Mti mzima uko hapa chini.
-person-tree-alone = Rekodi hii haitaji wazazi, wenzi wala watoto, kwa hiyo hakuna umbo la kuchora kuizunguka.
 
-record-no-evidence = Hakuna kilichoambatishwa kwenye rekodi hii — hakuna chanzo wala hati. Hiyo ni hali ya kawaida ya faili iliyobadilishwa, si kasoro yake: GEDCOM hubeba mambo na kuacha nyuma kilichoyathibitisha.
-record-no-evidence-signed-out = Ingia ili kuambatisha.
 admin-delete = Futa
 admin-not-set = — haijawekwa —
 admin-edit = Hariri
-admin-page-of = Ukurasa { $page } kati ya { $pages }
 list-select-row = Chagua { $name }
 list-kind-label = Aina
 list-select-page = Chagua kila mstari kwenye ukurasa huu
@@ -446,7 +428,6 @@ conflict-history-of = Historia ya { $kind } hii
 convert-title = Leta faili ya familia
 convert-submit = Leta
 convert-result-title = Ripoti ya kuleta
-convert-download = Pakua kumbukumbu
 
 date-unknown = Tarehe haijulikani
 date-not-recorded = Haijarekodiwa
@@ -518,7 +499,6 @@ error-export-unreadable-title = Haikuweza kusoma kumbukumbu iliyohamishwa
 error-export-unreadable-detail = { $error }
 
 tree-title-suffix = mti
-tree-back-to-focused = Rudi kwenye mwonekano uliolengwa
 tree-show-all = Onyesha zote { $n }
 tree-width-notice = Mwonekano huu una upana wa pikseli { $width } — kwenye skrini ya pikseli 1500, ni { $screens ->
         [one] skrini moja
@@ -553,8 +533,6 @@ home-count = { $total ->
         [one] Rekodi moja
        *[other] Rekodi { $total }
     }, zimehifadhiwa katika faili moja ambayo familia inamiliki.
-home-browse = Vinjari mti
-home-convert = Leta faili ya familia
 home-unnamed-family = Mti huu wa familia
 home-in-this-tree = Kile familia imerekodi hadi sasa
 home-showcase-title = Mahali mti huu tayari unasema zaidi ya majina na tarehe
@@ -633,10 +611,6 @@ record-read-as = soma kama
 record-note = Maelezo
 record-living-yes = yu hai
 record-deceased = amefariki
-record-centre-tree-here = Weka mti katikati hapa
-record-centre-tree-title = Sogeza mti uwe katikati kwa mtu huyu
-record-see-in-tree = Tazama kwenye mti
-record-see-in-tree-title = Fungua gridi ya kadi kumzunguka mtu huyu
 record-open-full-page = Fungua ukurasa kamili ↗
 record-open-full-title = Fungua ukurasa unaojitegemea, unaoweza kushirikiwa
 record-edit = Hariri
@@ -645,10 +619,15 @@ view-tree-see = Tazama kwenye mti
 view-galaxy-see = Tazama kwenye galaksi
 view-summit-see = Tazama mlimani
 panel-empty = Chagua kadi kuona rekodi kamili ya mtu huyo hapa.
-person-see-in-tree = Mwone mtu huyu kwenye mti
 person-visibility-inline = mwonekano:
-person-age-at-death = alifariki akiwa na miaka { $n }
-person-age-now = ana miaka { $n }
+person-age-at-death = { $n ->
+        [one] alifariki akiwa na mwaka { $n }
+       *[other] alifariki akiwa na miaka { $n }
+    }
+person-age-now = { $n ->
+        [one] ana mwaka { $n }
+       *[other] ana miaka { $n }
+    }
 person-born-in = alizaliwa { $place }
 person-died-in = alifariki { $place }
 person-children-count = { $n ->
@@ -698,10 +677,6 @@ record-file = Faili
 record-status = Hali
 record-size = Ukubwa
 record-absent-document = Imetajwa na mtu huyu lakini haijahifadhiwa hapa.
-record-no-file = hakuna faili
-record-attach-document = Ambatisha hati
-record-upload = Pakia
-record-upload-help = Hadi MB { $mb } kwa kila faili. Viambatisho huhifadhiwa kando ya mti na kuandikwa tena ndani ya kumbukumbu unapohamisha, kwa hiyo picha husafiri pamoja na familia yake. Aina ya faili husomwa kutoka kwenye maudhui yake, si jina lake: picha, PDF, maandishi ya kawaida, sauti na video zinakubaliwa. SVG inakataliwa, kwa sababu SVG inaweza kubeba hati ya programu.
 record-upload-help-short = Hadi MB { $mb }. SVG inakataliwa.
 record-verbatim-note = Imehifadhiwa kama rekodi ilivyosema, kwa sababu hakuna kigeuzi kilichoweza kuitafsiri.
 record-file-to-attach = Faili ya kuambatisha
@@ -760,7 +735,6 @@ list-filter = Chuja
 list-clear = Futa
 list-summary = Muhtasari
 list-id = Kitambulisho
-list-actions = Vitendo
 list-nothing = Hakuna kitu hapa.
 list-nothing-matching = Hakuna kitu hapa kinacholingana na “{ $q }”.
 list-delete-confirm = Futa { $kind } hii? Chagua kitakachotokea kwa rekodi zinazoirejelea:
@@ -840,7 +814,6 @@ admin-dedup-refused = Kuondoa nakala kumekataliwa
 record-birth-order = mpangilio wa kuzaliwa
 record-start-not-recorded = mwanzo haujarekodiwa
 record-end-not-recorded = mwisho haujarekodiwa
-record-document-no-file = Hati imerekodiwa hapa, lakini faili yenyewe haijahifadhiwa
 panel-selected-person = Mtu aliyechaguliwa
 
 tree-band-generation = Kizazi { $g }
@@ -935,7 +908,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = { $type } isiyo na jina
-list-unnamed = { $kind } isiyo na jina
 
 event-category-birth = Kuzaliwa
 event-category-death = Kifo
@@ -1053,7 +1025,6 @@ phys-field-religion = Dini au uanachama
 phys-field-health-notes = Maelezo
 admin-export-health-note = Uhamishaji wa kawaida huacha kila aina nyeti — afya na imani, data ya kibayometriki, data ya kijenetiki na rekodi za uhalifu — na wasifu wa tabia wa yeyote aliye hai, kwa hiyo faili inayotumwa kwa jamaa haibebi chochote kati ya hivyo. Weka alama kwa kile ambacho faili fulani inapaswa kubeba; kumbukumbu yenyewe hurekodi aina zipi ziliachwa.
 avatar-picker-title = Chagua picha
-avatar-choose-link = Chagua picha
 avatar-choose = Picha ipi inamwakilisha mtu huyu
 avatar-mode-auto = Acha programu ichague
 avatar-mode-auto-note = Picha ya kwanza ya uso, au isipokuwepo picha ya kwanza iliyounganishwa na rekodi hii.
@@ -1144,7 +1115,6 @@ precision-decade = hadi muongo
 precision-century = hadi karne
 precision-unknown = haijulikani
 record-precision = Usahihi
-record-approximate = Takriban
 record-place = Mahali
 
 family-editor-title = Familia na mahusiano
@@ -1243,11 +1213,9 @@ documents-attached = Zimeambatishwa kwenye rekodi hii
 documents-upload = Pakia faili
 documents-upload-help = Hadi MB { $mb }. Faili huhifadhiwa kwenye kumbukumbu na kuambatishwa kwenye rekodi hii.
 documents-caption = Maelezo mafupi
-documents-edit-link = Ambatisha na tenganisha hati
 events-edit-link = Hariri matukio
 
 prefs-style = Msongamano
-prefs-style-help = Ukurasa unachukua nafasi kiasi gani. Ni tofauti na mandhari, ambayo inahusu rangi tu, kwa hiyo unaweza kuwa na yoyote kati ya hizi pamoja na yoyote kati ya zile.
 style-comfortable = Starehe
 style-comfortable-note = chaguo-msingi, na nafasi ya kusoma
 style-compact = Kubanana
@@ -2919,8 +2887,6 @@ dedup-manual-review = { $n ->
 dedup-nothing = Hakuna cha kuripoti.
 record-union-duplicate = Wenzi mmoja, zaidi ya rekodi moja.
 record-union-duplicate-detail = Kifurushi kina rekodi tofauti za Familia kwa watu hawa wawili. Hiyo ni kasoro katika data, si muungano wa pili.
-record-union-duplicate-action = Unganisha nakala
-record-union-duplicate-confirm = Ondoa nakala katika kifurushi kizima? Kila jozi ambayo maktaba inaweza kuunganisha itaunganishwa; zilizobaki zitaripotiwa.
 dedup-pair-merged = Jozi uliyouliza sasa ni rekodi moja.
 dedup-pair-refused = Jozi uliyouliza haikuunganishwa: maktaba ilikataa na kuiacha ili mtu aikague.
 validate-errors = { $n ->
@@ -3230,7 +3196,6 @@ view-summit-still = Simamisha mlima
 river-whole = Familia nzima
 river-names-all = Majina yote
 river-zoom-hint = Kuza: Ctrl + gurudumu, bana, au + / − · ukiwa umekuza, buruta ili kusogeza
-river-grid-link = Mwonekano wa gridi
 river-tab-sources = Vyanzo
 river-legend-title = Jinsi ya kusoma mto
 view-tree-name = Mti hai

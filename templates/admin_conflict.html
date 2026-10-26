@@ -4,7 +4,7 @@
 {% block content %}
 
 <h1>{{ t("conflict-title") }}</h1>
-<p class="lede">{{ t("conflict-lede", who=who, kind=t("kind-" ~ kind), when=when) }}</p>
+<p class="lede">{{ t("conflict-lede", who=who, kind=t("kind-" ~ kind), when=when | localdatetime(lang)) }}</p>
 
 <div class="notice warn">
   <p>{{ t("conflict-no-merge") }}</p>

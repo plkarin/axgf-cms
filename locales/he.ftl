@@ -30,22 +30,18 @@ settings-title = הגדרות
 edit-mode-label = מצב עריכה — מה שתשמרו משנה את רשומות המשפחה
 display-menu-label = שפה ותצוגה
 display-settings = ערכת נושא ותצוגה…
-settings-tabs-label = חלקי ההגדרות
 settings-tab-theme = ערכת נושא
 settings-tab-language = שפה
 settings-tab-appearance = מראה
 settings-done = סיום
 prefs-language = שפה
 prefs-theme = ערכת נושא
-prefs-background = רקע
 prefs-background-on = גוון צבע רך מאחורי הדף
 prefs-apply = החלה
 busy-saving = שומר…
 busy-working = עובד…
-prefs-reviewed = נבדק
 prefs-machine = מכונה, { $coverage }%
 prefs-machine-complete = מלא, עדיין לא נבדק
-prefs-machine-title = תורגם ללא בדיקה של דובר שפת אם. אוצר המילים הגנאלוגי במיוחד עלול להיות שגוי — המילים לקשר זוגי, לסנדק או למקור ראשוני משתנות לפי מסורת הרישום של כל מדינה. תיקונים יתקבלו בברכה, והקובץ CONTRIBUTING.md מסביר מאיפה להתחיל.
 
 theme-canopee = Canopée
 theme-canopee-note = כהה, ירוק יער · ברירת המחדל
@@ -75,7 +71,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } בני זוג
     }, { $depth } דורות לכל כיוון.
 tree-filter-label = סינון הכרטיסים הנראים
-tree-centre-on = מרכוז על
 tree-depth = דורות לכל כיוון
 tree-show = הצגה
 tree-hidden-notice = { $n ->
@@ -89,7 +84,6 @@ tree-hidden-because-anonymous = , כי הם אינם ציבוריים.
 tree-hidden-sign-in = התחברו אם יש לכם חשבון.
 tree-restricted-card = הרשומה של אדם זה אינה גלויה לכם
 tree-empty = עדיין אין את מי לצייר.
-tree-unplaced = לא שייך לאף משפחה רשומה
 
 record-identity = זהות
 record-life-events = אירועי חיים
@@ -100,21 +94,15 @@ record-places = מקומות
 record-sources-documents = מקורות ומסמכים
 record-notes = הערות
 record-history = היסטוריה
-record-raw = ישות גולמית
-record-raw-summary-note = ה-JSON שממנו נבנה הדף הזה
 
 record-identity-help = כל שם רשום עם סוגו, התקופה שבה שימש והמקור שמאחוריו, עם הכתב המקורי והתעתיק הלטיני שלו זה לצד זה כשהם שונים, וגם מגדר, מצב חיים ונראות.
 record-life-events-help = לידה, פטירה וכל אירוע שאדם זה השתתף בו, לפי סדר התאריכים, כל אחד עם תפקידו — כך שחתונה שבה רק היה עד מופיעה לצד חתונתו שלו. עובדה ללא תאריך מופיעה אחרונה במקום להעמיד פנים שהיא ראשונה.
-life-nothing-recorded = לא נרשם לאדם זה שום אירוע, עיסוק או מקום. בקובץ שהומר זה רגיל: GEDCOM נושא את מה שמישהו רשם, ורוב הרשומות הן שם ותאריך.
-life-add-first = רישום האירוע הראשון
 record-family-help = הורים ואחים, ואחר כך כל קשר זוגי עם סוגו, תאריכיו, מקומו, האופן שבו הסתיים וילדיו לפי סדר הלידה.
 record-other-relationships-help = כל קשר שאדם זה נמצא באחד מקצותיו, כפי שהוא נקרא מצדו, כך שאותה רשומה מופיעה כ"סנדק של" מצד אחד וכ"בן הסנדקות של" מהצד השני.
-record-occupations-help = עיסוקים כטווחי זמן על ציר משותף אחד, כדי שאפשר יהיה להשוות שני תפקידים במבט, עם פסים פתוחים כשאחד הגבולות חסר.
 record-places-help = כל מקום שהרשומה הזאת נוגעת בו, עם מה שקרה בכל אחד וההיסטוריה של הגבולות שנותנת למקום משמעות לאורך הזמן.
 record-sources-documents-help = כל מקור מציין את העובדות בדף הזה שנשענות עליו, לפי חוזק הראיה.
 record-notes-help = הערות על הרשומה הזאת, כולל טקסט שממיר לא הצליח לפענח ושנשמר כלשונו במקום להימחק.
 record-history-help = כל שינוי שנשמר ברשומה הזאת, החדש ביותר ראשון. מי תיקן מה הוא עובדה על האנשים שמתחזקים את העץ ולא על המשפחה שבו, ולכן הוא אינו נכלל בארכיון המיוצא ומוצג רק לבני משפחה מחוברים.
-record-raw-help = שום דבר כאן אינו נוצר לתצוגה: זו הרשומה בדיוק כפי שהיא שמורה, עד לשמות השדות. אם אי פעם תצטרכו לקרוא את הארכיון בלי האתר הזה, זה מה שתראו.
 record-help-toggle = מה החלק הזה מציג
 
 record-gender = מגדר
@@ -136,6 +124,7 @@ record-restricted-person = פרטי
 record-restricted-title = הרשומה של אדם זה אינה גלויה לכם
 record-absent-person-title = נזכר בעץ הזה אך אינו רשום בו
 record-confidence = רמת ודאות
+conf-percent = { $percent }%
 record-source = מקור
 record-download = הורדה
 
@@ -234,7 +223,6 @@ admin-operations = פעולות
 admin-validate = אימות
 admin-deduplicate = איחוד כפילויות
 admin-export = ייצוא הארכיון
-admin-accounts = חשבונות
 admin-roles-note = אימות, איחוד כפילויות, ייצוא, מחיקה וניהול חשבונות שמורים למנהלים. תורם מגיע לכל דף אחר כאן.
 admin-dedup-confirm = איחוד כפילויות ממזג רשומות וכותב מחדש את הארכיון. להמשיך?
 admin-recent-changes = שינויים אחרונים
@@ -266,7 +254,6 @@ admin-raw-json-help = הישות כולה, כך ששום דבר אינו בלת�
 admin-save = שמירה
 admin-cancel = ביטול
 place-editor-title = עריכת מקום
-place-add-detail = הוספת פרטים למקום הזה
 place-names = שמות
 place-name-primary = ראשי
 place-name-lang = שפה
@@ -348,15 +335,10 @@ person-tab-life = אירועים
 person-tab-media = מדיה
 person-tab-tree = עץ
 person-tab-history = היסטוריה
-person-tree-depth = { $n } דורות לכל כיוון. העץ כולו למטה.
-person-tree-alone = הרשומה הזאת אינה מזכירה הורים, בני זוג או ילדים, ולכן אין צורה לצייר סביבה.
 
-record-no-evidence = שום דבר לא מצורף לרשומה הזאת — לא מקור ולא מסמך. זה המצב הרגיל של קובץ שהומר ולא פגם בו: GEDCOM נושא את העובדות ומשאיר מאחור את מה שהוכיח אותן.
-record-no-evidence-signed-out = התחברו כדי לצרף אחד.
 admin-delete = מחיקה
 admin-not-set = — לא הוגדר —
 admin-edit = עריכה
-admin-page-of = עמוד { $page } מתוך { $pages }
 list-select-row = בחירת { $name }
 list-kind-label = סוג
 list-select-page = בחירת כל השורות בעמוד הזה
@@ -473,7 +455,6 @@ conflict-history-of = ההיסטוריה של ה{ $kind } הזה
 convert-title = ייבוא קובץ משפחה
 convert-submit = ייבוא
 convert-result-title = דוח ייבוא
-convert-download = הורדת הארכיון
 
 date-unknown = תאריך לא ידוע
 date-not-recorded = לא נרשם
@@ -545,7 +526,6 @@ error-export-unreadable-title = לא ניתן היה לקרוא את הארכי�
 error-export-unreadable-detail = { $error }
 
 tree-title-suffix = עץ
-tree-back-to-focused = חזרה לתצוגה הממוקדת
 tree-show-all = הצגת כל ה-{ $n }
 tree-width-notice = התצוגה הזאת ברוחב { $width } פיקסלים — במסך של 1500 פיקסלים, { $screens ->
         [one] מסך אחד
@@ -588,8 +568,6 @@ home-count = { $total ->
         [many] { $total } רשומות
        *[other] { $total } רשומות
     }, שמורות בקובץ אחד שהמשפחה מחזיקה בו.
-home-browse = עיון בעץ
-home-convert = ייבוא קובץ משפחה
 home-unnamed-family = עץ המשפחה הזה
 home-in-this-tree = מה שהמשפחה רשמה עד כה
 home-showcase-title = היכן העץ הזה כבר אומר יותר משמות ותאריכים
@@ -681,11 +659,11 @@ record-display-name = שם תצוגה
 record-read-as = נקרא כ-
 record-note = הערה
 record-living-yes = בחיים
-record-deceased = נפטר/ה
-record-centre-tree-here = מרכוז העץ כאן
-record-centre-tree-title = הזזת העץ כך שיתמרכז באדם הזה
-record-see-in-tree = צפייה בעץ
-record-see-in-tree-title = פתיחת רשת הכרטיסים סביב האדם הזה
+record-deceased = { $gender ->
+        [F] נפטרה
+        [M] נפטר
+       *[other] נפטר/ה
+    }
 record-open-full-page = פתיחת הדף המלא ↗
 record-open-full-title = פתיחת הדף העצמאי שאפשר לשתף
 record-edit = עריכה
@@ -694,12 +672,42 @@ view-tree-see = צפייה בעץ
 view-galaxy-see = צפייה בגלקסיה
 view-summit-see = צפייה בהר
 panel-empty = בחרו כרטיס כדי לראות כאן את הרשומה המלאה של אותו אדם.
-person-see-in-tree = צפייה באדם הזה בעץ
 person-visibility-inline = נראות:
-person-age-at-death = נפטר/ה בגיל { $n }
-person-age-now = בן/בת { $n }
-person-born-in = נולד/ה ב{ $place }
-person-died-in = נפטר/ה ב{ $place }
+person-age-at-death = { $gender ->
+        [F] נפטרה בגיל { $n }
+        [M] נפטר בגיל { $n }
+       *[other] נפטר/ה בגיל { $n }
+    }
+person-age-now = { $gender ->
+        [F] { $n ->
+            [one] בת שנה
+            [two] בת שנתיים
+            [many] בת { $n }
+           *[other] בת { $n }
+        }
+        [M] { $n ->
+            [one] בן שנה
+            [two] בן שנתיים
+            [many] בן { $n }
+           *[other] בן { $n }
+        }
+       *[other] { $n ->
+            [one] בן/בת שנה
+            [two] בן/בת שנתיים
+            [many] בן/בת { $n }
+           *[other] בן/בת { $n }
+        }
+    }
+person-born-in = { $gender ->
+        [F] נולדה ב{ $place }
+        [M] נולד ב{ $place }
+       *[other] נולד/ה ב{ $place }
+    }
+person-died-in = { $gender ->
+        [F] נפטרה ב{ $place }
+        [M] נפטר ב{ $place }
+       *[other] נפטר/ה ב{ $place }
+    }
 person-children-count = { $n ->
         [one] ילד אחד
         [two] שני ילדים
@@ -751,10 +759,6 @@ record-file = קובץ
 record-status = מצב
 record-size = גודל
 record-absent-document = מוזכר בידי אדם זה אך אינו שמור כאן.
-record-no-file = אין קובץ
-record-attach-document = צירוף מסמך
-record-upload = העלאה
-record-upload-help = עד { $mb } MB לקובץ. קבצים מצורפים נשמרים לצד העץ ונכתבים חזרה לארכיון בעת ייצוא, כך שתצלום נוסע עם המשפחה שאליה הוא שייך. סוג הקובץ נקרא מתוכנו ולא משמו: תמונות, PDF, טקסט פשוט, שמע ווידאו מתקבלים. SVG נדחה, כי SVG יכול לשאת סקריפט.
 record-upload-help-short = עד { $mb } MB. ‏SVG נדחה.
 record-verbatim-note = נשמר בדיוק כפי שהרשומה ציינה, כי אף ממיר לא הצליח לפרש אותו.
 record-file-to-attach = קובץ לצירוף
@@ -831,7 +835,6 @@ list-filter = סינון
 list-clear = ניקוי
 list-summary = תקציר
 list-id = מזהה
-list-actions = פעולות
 list-nothing = אין כאן דבר.
 list-nothing-matching = אין כאן דבר שמתאים ל„{ $q }”.
 list-delete-confirm = למחוק את ה{ $kind } הזה? בחרו מה יקרה לישויות שמפנות אליו:
@@ -923,7 +926,6 @@ admin-dedup-refused = איחוד הכפילויות נדחה
 record-birth-order = סדר לידה
 record-start-not-recorded = ההתחלה לא נרשמה
 record-end-not-recorded = הסוף לא נרשם
-record-document-no-file = המסמך רשום כאן, אך הקובץ עצמו אינו שמור
 panel-selected-person = האדם שנבחר
 
 tree-band-generation = דור { $g }
@@ -1038,7 +1040,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = { $type } ללא כותרת
-list-unnamed = { $kind } ללא שם
 
 event-category-birth = לידה
 event-category-death = פטירה
@@ -1168,7 +1169,6 @@ phys-field-religion = דת או השתייכויות
 phys-field-health-notes = הערות
 admin-export-health-note = הייצוא הפשוט משמיט כל סוג מידע רגיש — בריאות ואמונה, נתונים ביומטריים, נתונים גנומיים ורישום פלילי — ואת הפרופיל ההתנהגותי של כל אדם חי, כך שקובץ שנשלח לקרוב משפחה אינו נושא אף אחד מהם. סמנו מה קובץ מסוים צריך לשאת; הארכיון עצמו רושם אילו סוגים הושמטו.
 avatar-picker-title = בחירת תמונה
-avatar-choose-link = בחירת תמונה
 avatar-choose = איזו תמונה מייצגת את האדם הזה
 avatar-mode-auto = לתת לתוכנה לבחור
 avatar-mode-auto-note = הדיוקן הראשון, ואם אין — התמונה הראשונה המקושרת לרשומה הזאת.
@@ -1204,7 +1204,11 @@ ai-portraits-back = חזרה לתמונות הבינה המלאכותית
 record-history-withheld = מוסתר מכם
 
 record-life-status = מצב
-record-presumed-deceased = נפטר/ה ככל הנראה
+record-presumed-deceased = { $gender ->
+        [F] נפטרה ככל הנראה
+        [M] נפטר ככל הנראה
+       *[other] נפטר/ה ככל הנראה
+    }
 record-presumed-short = משוער
 record-presumed-why = לא נרשמה פטירה והלידה הייתה לפני יותר מ-{ $years } שנים, ולכן הרשומה הזאת אינה יכולה להיות נכונה. החבילה לא השתנתה: זה מה שהדף מסיק, לא מה שהמקור אומר.
 
@@ -1259,7 +1263,6 @@ precision-decade = עד העשור
 precision-century = עד המאה
 precision-unknown = לא ידוע
 record-precision = דיוק
-record-approximate = משוער
 record-place = מקום
 
 family-editor-title = משפחה וקשרים
@@ -1358,11 +1361,9 @@ documents-attached = מצורפים לרשומה הזאת
 documents-upload = העלאת קובץ
 documents-upload-help = עד { $mb } MB. הקובץ נשמר בארכיון ומצורף לרשומה הזאת.
 documents-caption = כיתוב
-documents-edit-link = צירוף וניתוק מסמכים
 events-edit-link = עריכת אירועים
 
 prefs-style = צפיפות
-prefs-style-help = כמה מקום הדף תופס. נפרד מערכת הנושא, שעוסקת רק בצבע, כך שאפשר לשלב כל אחת מאלה עם כל אחת מאלה.
 style-comfortable = מרווח
 style-comfortable-note = ברירת המחדל, עם מקום לקרוא
 style-compact = דחוס
@@ -3050,8 +3051,6 @@ dedup-manual-review = { $n ->
 dedup-nothing = אין מה לדווח.
 record-union-duplicate = זוג אחד, יותר מרשומה אחת.
 record-union-duplicate-detail = החבילה מחזיקה רשומות משפחה נפרדות לשני האנשים האלה. זה פגם בנתונים, לא קשר זוגי שני.
-record-union-duplicate-action = מיזוג כפילויות
-record-union-duplicate-confirm = להסיר כפילויות בכל החבילה? כל זוג שהספרייה יכולה למזג ימוזג; השאר ידווחו.
 dedup-pair-merged = הזוג ששאלתם עליו הוא עכשיו רשומה אחת.
 dedup-pair-refused = הזוג ששאלתם עליו לא מוזג: הספרייה סירבה והשאירה אותו לבדיקה של אדם.
 validate-errors = { $n ->
@@ -3373,7 +3372,6 @@ view-summit-still = עצירת ההר
 river-whole = כל המשפחה
 river-names-all = כל השמות
 river-zoom-hint = זום: Ctrl + גלגלת, צביטה, או + / − · כשמוגדל, גררו כדי לזוז
-river-grid-link = תצוגת רשת
 river-tab-sources = מקורות
 river-legend-title = איך לקרוא את הנהר
 view-tree-name = עץ חי

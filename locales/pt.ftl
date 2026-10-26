@@ -41,22 +41,18 @@ settings-title = Definições
 edit-mode-label = Edição: o que guardar altera as fichas da família
 display-menu-label = Idioma e apresentação
 display-settings = Tema e apresentação…
-settings-tabs-label = Secções das definições
 settings-tab-theme = Tema
 settings-tab-language = Língua
 settings-tab-appearance = Aspecto
 settings-done = Concluído
 prefs-language = Língua
 prefs-theme = Tema
-prefs-background = Fundo
 prefs-background-on = Um véu suave de cor por trás da página
 prefs-apply = Aplicar
 busy-saving = A guardar…
 busy-working = Em curso…
-prefs-reviewed = revista
 prefs-machine = automática, { $coverage } %
 prefs-machine-complete = completa, ainda por rever
-prefs-machine-title = Traduzida sem revisão por uma pessoa de língua materna. O vocabulário genealógico em particular pode estar errado: as palavras para uma união, um padrinho ou uma fonte primária mudam conforme a tradição arquivística de cada país. Correcções são bem-vindas, e o CONTRIBUTING.md diz por onde começar.
 
 theme-canopee = Dossel
 theme-canopee-note = escuro, verde floresta · predefinido
@@ -82,7 +78,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } parceiros
     }, { $depth } gerações para cada lado.
 tree-filter-label = Filtrar as fichas visíveis
-tree-centre-on = Centrar em
 tree-depth = Gerações para cada lado
 tree-show = Mostrar
 tree-hidden-notice = { $n ->
@@ -94,7 +89,6 @@ tree-hidden-because-anonymous = , porque não são públicas.
 tree-hidden-sign-in = Entre, se tiver conta.
 tree-restricted-card = Esta ficha não lhe é visível
 tree-empty = Ainda não há ninguém para desenhar.
-tree-unplaced = Em nenhuma família registada
 
 ## A ficha
 
@@ -107,21 +101,15 @@ record-places = Lugares
 record-sources-documents = Fontes e documentos
 record-notes = Notas
 record-history = Histórico de alterações
-record-raw = Dados em bruto
-record-raw-summary-note = o JSON com que esta página foi construída
 
 record-identity-help = Cada nome registado com o seu tipo, o período em que foi usado e a fonte que o sustenta, com a escrita própria ao lado da transliteração latina onde diferem, além do género, se está vivo e a visibilidade.
 record-life-events-help = Nascimento, óbito e cada facto em que esta pessoa tomou parte, por data, cada um com o seu papel — assim um casamento de que foi apenas testemunha aparece ao lado do seu próprio. Um dado sem data vai para o fim, em vez de fingir que vem primeiro.
-life-nothing-recorded = Não consta qualquer facto, ofício ou lugar para esta pessoa. Num ficheiro convertido é o comum: o GEDCOM transporta o que alguém anotou, e a maioria das entradas é um nome e uma data.
-life-add-first = Registar o primeiro facto
 record-family-help = Pais e irmãos, depois cada união com o seu tipo, as datas, o lugar, como terminou e os filhos por ordem de nascimento.
 record-other-relationships-help = Cada vínculo com esta pessoa numa das pontas, lido do seu lado: a mesma ficha aparece como «padrinho de» de uma ponta e «afilhado de» da outra.
-record-occupations-help = As ocupações como períodos sobre um mesmo eixo, de modo que dois empregos se comparem a olho; onde falta um extremo a barra fica aberta.
 record-places-help = Cada lugar que esta ficha toca, com o que ali aconteceu e com a história das fronteiras que faz um lugar ter sentido ao longo do tempo.
 record-sources-documents-help = Cada fonte nomeia os factos desta página que nela se apoiam, por ordem da força da prova.
 record-notes-help = Notas sobre esta ficha, incluindo o texto que nenhum conversor soube interpretar e que foi guardado à letra em vez de descartado.
 record-history-help = Cada alteração guardada desta ficha, a mais recente primeiro. Quem corrigiu o quê é um facto sobre as pessoas que mantêm a árvore, não sobre a família que nela está: por isso fica fora do arquivo exportado e só é mostrado aos parentes com sessão iniciada.
-record-raw-help = Aqui não há nada gerado para mostrar: esta é a ficha exactamente como está guardada, até aos nomes dos campos. Se um dia tiver de ler o arquivo sem este sítio, é isto que veria.
 record-help-toggle = O que esta secção mostra
 
 record-gender = Género
@@ -143,6 +131,7 @@ record-restricted-person = Reservada
 record-restricted-title = Esta ficha não lhe é visível
 record-absent-person-title = Nomeado nesta árvore mas sem ficha própria
 record-confidence = Certeza
+conf-percent = { $percent }%
 record-source = Fonte
 record-download = Transferir
 
@@ -247,7 +236,6 @@ admin-operations = Operações
 admin-validate = Verificar
 admin-deduplicate = Juntar duplicados
 admin-export = Exportar o arquivo
-admin-accounts = Contas
 admin-roles-note = Verificar, juntar duplicados, exportar, apagar e gerir contas é só do administrador. Um colaborador chega a todas as outras páginas daqui.
 admin-dedup-confirm = Juntar duplicados funde fichas e reescreve o arquivo. Continuar?
 admin-recent-changes = Alterações recentes
@@ -274,7 +262,6 @@ admin-raw-json-help = O elemento inteiro, para que nada fique por editar: listas
 admin-save = Guardar
 admin-cancel = Cancelar
 place-editor-title = Editar um lugar
-place-add-detail = Completar este lugar
 place-names = Nomes
 place-name-primary = Principal
 place-name-lang = Língua
@@ -353,15 +340,10 @@ person-tab-life = Eventos
 person-tab-media = Média
 person-tab-tree = Árvore
 person-tab-history = Histórico
-person-tree-depth = { $n } gerações para cada lado. A árvore inteira está mais abaixo.
-person-tree-alone = Esta ficha não nomeia pais, cônjuges nem filhos, por isso não há forma nenhuma a desenhar à sua volta.
 
-record-no-evidence = A esta ficha não está anexado nada — nem fonte nem documento. É o estado comum de um ficheiro convertido, não um defeito seu: o GEDCOM leva os factos e deixa para trás o que os provava.
-record-no-evidence-signed-out = Inicie sessão para anexar algo.
 admin-delete = Apagar
 admin-not-set = — por definir —
 admin-edit = Editar
-admin-page-of = Página { $page } de { $pages }
 list-select-row = Selecionar { $name }
 list-kind-label = Tipo
 list-select-page = Selecionar todas as linhas desta página
@@ -478,7 +460,6 @@ conflict-history-of = Histórico deste elemento ({ $kind })
 convert-title = Importar um ficheiro familiar
 convert-submit = Importar
 convert-result-title = Relatório de importação
-convert-download = Transferir o arquivo
 
 ## Datas
 
@@ -556,7 +537,6 @@ error-export-unreadable-detail = { $error }
 ## Página da árvore, continuação
 
 tree-title-suffix = árvore
-tree-back-to-focused = Voltar à vista à volta de uma pessoa
 tree-show-all = Mostrar as { $n }
 tree-width-notice = Esta vista tem { $width } pixéis de largura: num ecrã de 1500 pixéis são { $screens ->
         [one] um ecrã
@@ -593,8 +573,6 @@ home-count = { $total ->
         [one] Uma ficha
        *[other] { $total } fichas
     }, num único ficheiro que é da família.
-home-browse = Percorrer a árvore
-home-convert = Importar um ficheiro familiar
 home-unnamed-family = Esta árvore de família
 home-in-this-tree = O que a família registou até agora
 home-showcase-title = Onde esta árvore já diz mais do que nomes e datas
@@ -674,12 +652,15 @@ record-borders-moved = Fronteiras movidas:
 record-display-name = nome mostrado
 record-read-as = lido como
 record-note = Nota
-record-living-yes = vivo
-record-deceased = falecido/a
-record-centre-tree-here = Centrar a árvore aqui
-record-centre-tree-title = Mover a árvore para a centrar nesta pessoa
-record-see-in-tree = Ver na árvore
-record-see-in-tree-title = Abrir a grelha de fichas em torno desta pessoa
+record-living-yes = { $gender ->
+        [F] viva
+       *[other] vivo
+    }
+record-deceased = { $gender ->
+        [F] falecida
+        [M] falecido
+       *[other] falecido/a
+    }
 record-open-full-page = Abrir a página inteira ↗
 record-open-full-title = Abrir a página independente que se pode partilhar
 record-edit = Editar
@@ -688,11 +669,19 @@ view-tree-see = Ver na árvore
 view-galaxy-see = Ver na galáxia
 view-summit-see = Ver na montanha
 panel-empty = Escolha uma ficha para ver aqui o documento completo dessa pessoa.
-person-see-in-tree = Ver esta pessoa na árvore
 person-visibility-inline = visibilidade:
-person-age-at-death = morreu aos { $n }
-person-age-now = { $n } anos
-person-born-in = nascido em { $place }
+person-age-at-death = { $n ->
+        [one] morreu com { $n } ano
+       *[other] morreu aos { $n } anos
+    }
+person-age-now = { $n ->
+        [one] { $n } ano
+       *[other] { $n } anos
+    }
+person-born-in = { $gender ->
+        [F] nascida em { $place }
+       *[other] nascido em { $place }
+    }
 person-died-in = morreu em { $place }
 person-children-count = { $n ->
         [one] um filho
@@ -747,10 +736,6 @@ record-file = Ficheiro
 record-status = Estado
 record-size = Tamanho
 record-absent-document = Nomeado por esta pessoa mas não guardado aqui.
-record-no-file = sem ficheiro
-record-attach-document = Anexar um documento
-record-upload = Enviar
-record-upload-help = Até { $mb } MB por ficheiro. Os anexos ficam ao lado da árvore e são reescritos no arquivo ao exportar, por isso uma fotografia viaja com a família a que pertence. A espécie de ficheiro lê-se do seu próprio conteúdo e não do nome: aceitam-se imagens, PDF, texto simples, áudio e vídeo. O SVG é recusado, porque um SVG pode levar um script.
 record-upload-help-short = Até { $mb } MB. O SVG é recusado.
 record-verbatim-note = Guardado tal como a ficha o dava, porque nenhum conversor o soube interpretar.
 record-file-to-attach = Ficheiro a anexar
@@ -814,7 +799,6 @@ list-filter = Filtrar
 list-clear = Limpar
 list-summary = Descrição
 list-id = Identificador
-list-actions = Acções
 list-nothing = Aqui não há nada.
 list-nothing-matching = Aqui não há nada que corresponda a «{ $q }».
 list-delete-confirm = Apagar este elemento ({ $kind })? Escolha o que acontece aos elementos que o citam:
@@ -899,7 +883,6 @@ admin-dedup-refused = Junção de duplicados recusada
 record-birth-order = ordem de nascimento
 record-start-not-recorded = princípio não registado
 record-end-not-recorded = fim não registado
-record-document-no-file = O documento está registado aqui, mas o ficheiro em si não está
 panel-selected-person = Pessoa escolhida
 
 ## Faixas de geração
@@ -1002,7 +985,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = { $type } sem título
-list-unnamed = { $kind } sem nome
 
 ## Vocabulários da especificação nas listagens
 
@@ -1126,7 +1108,6 @@ phys-field-religion = Religião ou filiação
 phys-field-health-notes = Notas
 admin-export-health-note = A exportação simples deixa de fora todas as categorias sensíveis — saúde e crenças, dados biométricos, dados genómicos e registo criminal — e também o perfil comportamental de qualquer pessoa viva, pelo que um ficheiro enviado a um familiar não contém nenhuma delas. Assinale o que um ficheiro concreto deve conter; o próprio arquivo regista que categorias foram omitidas.
 avatar-picker-title = Escolher uma imagem
-avatar-choose-link = Escolher imagem
 avatar-choose = Que imagem representa esta pessoa
 avatar-mode-auto = Deixar o programa escolher
 avatar-mode-auto-note = O primeiro retrato ou, na falta dele, a primeira imagem ligada a esta ficha.
@@ -1228,7 +1209,6 @@ precision-decade = à década
 precision-century = ao século
 precision-unknown = desconhecida
 record-precision = Precisão
-record-approximate = Aproximado
 record-place = Lugar
 
 ## The relationships editor
@@ -1333,13 +1313,11 @@ documents-attached = Anexados a este registo
 documents-upload = Carregar um ficheiro
 documents-upload-help = Até { $mb } MB. O ficheiro é guardado no arquivo e anexado a este registo.
 documents-caption = Legenda
-documents-edit-link = Anexar e desligar documentos
 events-edit-link = Editar acontecimentos
 
 ## Presentation styles: density, never colour
 
 prefs-style = Densidade
-prefs-style-help = Quanto espaço a página ocupa. Separado do tema, que é só sobre cor, por isso qualquer combinação é possível.
 style-comfortable = Confortável
 style-comfortable-note = por omissão, com espaço para ler
 style-compact = Compacta
@@ -3016,8 +2994,6 @@ dedup-manual-review = { $n ->
 dedup-nothing = Nada a assinalar.
 record-union-duplicate = Um casal, mais do que um registo.
 record-union-duplicate-detail = O pacote guarda registos de Família distintos para estas duas pessoas. É um defeito dos dados, não uma segunda união.
-record-union-duplicate-action = Fundir duplicados
-record-union-duplicate-confirm = Desduplicar todo o pacote? Cada par que a biblioteca conseguir fundir será fundido; os restantes serão comunicados.
 dedup-pair-merged = O par em questão é agora um único registo.
 dedup-pair-refused = O par em questão não foi fundido: a biblioteca recusou e deixou-o para revisão por uma pessoa.
 
@@ -3336,7 +3312,6 @@ view-summit-still = Parar a montanha
 river-whole = Toda a família
 river-names-all = Todos os nomes
 river-zoom-hint = Zoom: Ctrl + roda, pinçar ou + / − · com zoom, arraste para mover
-river-grid-link = Vista em grelha
 river-tab-sources = Fontes
 river-legend-title = Como ler o rio
 view-tree-name = Árvore viva

@@ -361,6 +361,10 @@ pub struct PersonView {
     pub names: Vec<NameView>,
     pub gender: Option<String>,
     pub gender_note: Option<String>,
+    /// The recorded gender as its code (`M`, `F`, `NB`, `U`), for the
+    /// catalogue's selectors: "née" for a woman, "né" for a man (QA-16).
+    /// Never shown as such.
+    pub sex: String,
     /// Whether to *show* this person as living. Not what a reader may read:
     /// see [`crate::living`] for why those are two questions.
     pub is_living: bool,
@@ -595,6 +599,13 @@ pub fn build_in(
         names,
         gender,
         gender_note,
+        sex: identity
+            .and_then(|i| i.get("gender"))
+            .and_then(|g| g.get("value"))
+            .and_then(Value::as_str)
+            .filter(|g| matches!(*g, "M" | "F" | "NB"))
+            .unwrap_or("U")
+            .to_string(),
         is_living,
         living_presumed: living.is_presumed(),
         living_key: living.key(),

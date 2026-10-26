@@ -104,6 +104,13 @@ pub const GENEALOGY_HERO_JPG: &[u8] = include_bytes!("../static/img/genealogy-he
 pub const GENEALOGY_CTA_JPG: &[u8] = include_bytes!("../static/img/genealogy-cta.jpg");
 pub const GENEALOGY_VINE_L_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-l.jpg");
 pub const GENEALOGY_VINE_R_JPG: &[u8] = include_bytes!("../static/img/genealogy-vine-r.jpg");
+/// Genealogy's tree (docs/adr/0016 §1, 2026-10-23): an old tree with a
+/// twisted trunk and a crown of gold leaves growing out of a parchment scroll,
+/// set on the stage's green; and its depth map, which `genealogy.js` moves it
+/// in relief by.
+pub const GENEALOGY_TREE_JPG: &[u8] = include_bytes!("../static/img/genealogy-tree.jpg");
+pub const GENEALOGY_TREE_DEPTH_JPG: &[u8] =
+    include_bytes!("../static/img/genealogy-tree-depth.jpg");
 /// And the mountain its ascent climbs (docs/adr/0010 §1): a wall of peaks
 /// above a forest and a misty valley at dawn, under the scene of `summit.js`.
 pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-panorama.jpg");
@@ -112,6 +119,14 @@ pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-pano
 /// under the tree's glass (fusion.js stands the glass on the projector).
 pub const FUSION_LAB_JPG: &[u8] = include_bytes!("../static/img/fusion-lab.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
+/// Its map: how near each pixel is (red), by which river-scene.js draws the
+/// ground in relief.
+pub const RIVER_GROUND_MAPS_JPG: &[u8] = include_bytes!("../static/img/river-ground-maps.jpg");
+/// The water of the family's streams and rivers under Canopée (docs/adr/0004
+/// §15): a mountain stream and a calm river seen from above, each repeating
+/// down its length without a seam.
+pub const RIVER_WATER_STREAM_JPG: &[u8] = include_bytes!("../static/img/river-water-stream.jpg");
+pub const RIVER_WATER_RIVER_JPG: &[u8] = include_bytes!("../static/img/river-water-river.jpg");
 /// Behind the family's notes and contributions (docs/adr/0014), one per
 /// theme, made in the operator's Canva: soft and nearly plain, under a veil of
 /// the theme's surface, so text over them reads as it does anywhere else.

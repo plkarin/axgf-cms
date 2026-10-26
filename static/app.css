@@ -531,8 +531,48 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 }
 .prefs-more:hover { color: var(--text-primary); }
 @media (max-width: 640px) {
-  .masthead-tools { flex: 1 1 100%; }
-  .masthead-tools .masthead-search { flex: 1 1 100%; }
+  /* At phone width the bar is a small grid (the operator's review,
+     2026-10-25: its pieces lay scattered, each on a line of its own, the
+     account alone at the right): the logo and the name on the left and the
+     account on the right on the first row; the sections spread across the
+     second; the search the whole width; the three reading controls and the
+     settings one even row under it. */
+  .masthead .masthead-inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "mark brand account" "nav nav nav" "tools tools tools";
+    align-items: center;
+    gap: 0.65rem 0.6rem;
+    padding-block: 0.6rem 0.8rem;
+  }
+  .masthead .masthead-inner > .brand-mark { grid-area: mark; margin-inline-end: 0; }
+  .masthead .masthead-inner > .brand { grid-area: brand; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .masthead .masthead-inner > nav:not(.chrome-nav) {
+    grid-area: nav;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0.9rem;
+  }
+  .masthead .masthead-inner > .spacer { display: none; }
+  .masthead .masthead-inner > .chrome-nav { grid-area: account; justify-self: end; }
+  /* The account: its initials and the menu's caret; the name is still read
+     out, and shown in the menu's own page. */
+  .masthead .account-name {
+    position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .masthead-tools { grid-area: tools; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.55rem; }
+  .masthead-tools .masthead-search { margin-inline-start: 0; }
+  .masthead-tools .search-box > input[type="search"] { flex: 1 1 auto; inline-size: auto; min-inline-size: 0; max-inline-size: none; }
+  .masthead-tools .reading-prefs {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 0.45rem;
+  }
+  .masthead-tools .reading-prefs .pref-form,
+  .masthead-tools .reading-prefs .pref-form select { inline-size: 100%; max-inline-size: none; }
   /* At this width the masthead wraps to five rows, a third of a phone's
      screen. Pinned, it hid that third of every page, and Canopée's
      translucent ground showed the page passing under it. Here it scrolls
@@ -1154,6 +1194,36 @@ td.num, th.num { text-align: end; }
 /* Positioned, so what is absolutely placed inside (the screen-reader text)
    scrolls with the table instead of widening the page. */
 .table-wrap { overflow-x: auto; position: relative; }
+/* At phone width a table whose cells say what they are (`data-label`) is a
+   list of cards, one per row, each cell its label over its value, rather
+   than columns squeezed to a few letters (2026-10-25: the notes' titles
+   broke every three letters). */
+@media (max-width: 640px) {
+  .table-wrap > table:has(> tbody > tr > td[data-label]),
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody,
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr,
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td { display: block; inline-size: 100%; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > thead { display: none; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr {
+    padding: 0.7rem max(0.75rem, var(--section-pad-x, 0.75rem));
+    border-block-start: 1px solid var(--border-hairline);
+  }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td {
+    padding: 0.15rem 0;
+    border: 0;
+  }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td:is(:first-child, :last-child) { padding-inline: 0; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td:empty { display: none; }
+  .table-wrap > table:has(> tbody > tr > td[data-label]) > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--mono);
+    font-size: var(--type-label);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+  }
+}
 
 /* ---------- forms ---------- */
 
@@ -2075,6 +2145,12 @@ bdi.date { unicode-bidi: isolate; }
 }
 .person-vitals { margin: 0.35rem 0 0; font-size: var(--type-body); }
 .person-vitals .sep { color: var(--text-tertiary); }
+/* A life's two dates stay together, each on its own line only when the
+   line is too short for both (2026-10-25: at phone width the pill broke
+   each date in two). */
+.person-vitals .pv-dates { flex-wrap: wrap; row-gap: 0; }
+.person-vitals .pv-dates > * { white-space: nowrap; }
+@media (max-width: 640px) { .person-vitals .pv-dates { border-radius: 14px; } }
 .person-head .lede { margin: 0.3rem 0 0; }
 .person-placing {
   margin: 0.3rem 0 0;
@@ -4003,6 +4079,26 @@ a.tcard:hover {
   .rv-controls, .rv-record { display: none; }
 }
 
+/* At phone width the river's tools are two even rows (2026-10-25): the
+   range and the zoom, then the buttons side by side, each its share of the
+   width, rather than wherever the wrap left them. */
+@media (max-width: 640px) {
+  .rv-tools { gap: 10px 16px; }
+  .rv-zoom { flex: 1 1 auto; display: inline-flex; align-items: center; gap: 0.5rem; }
+  .rv-zoom input[type="range"] { flex: 1 1 auto; inline-size: auto; min-inline-size: 5rem; }
+  .rv-tools-end {
+    margin-inline-start: 0;
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  /* Each button its share of the row, never a word broken: three that do
+     not fit side by side make two rows, the last one the whole width. */
+  .rv-tools-end > .btn { flex: 1 1 auto; justify-content: center; text-align: center; white-space: nowrap; }
+  .rv-itinerary { gap: 10px; }
+}
+
 /* The masthead search and its suggestions. */
 .masthead-search { position: relative; margin-inline-start: 1rem; }
 /* Its label is visible, beside the field, like every other field's. */
@@ -5014,7 +5110,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
     radial-gradient(36% 28% at 100% 0%, rgb(var(--rv-mist-rgb) / 0.22), transparent 72%),
     radial-gradient(125% 92% at 50% 48%, transparent 40%, rgb(var(--rv-shade-rgb) / 0.62) 100%),
     linear-gradient(rgb(var(--rv-shade-rgb) / 0.34), rgb(var(--rv-shade-rgb) / 0.34)),
-    url("/static/img/river-ground.jpg?v=2");
+    url("/static/img/river-ground.jpg?v=4");
   background-size: cover;
   background-position: center;
 }
@@ -5063,6 +5159,38 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 /* The glow under the cores (river.js): the lit route's warm light, faint,
    on attested water only. */
 .rv-svg .rv-glow { stroke: var(--rv-lit-halo); pointer-events: none; }
+/* Canopée after Selva Verde (the operator's review, 2026-10-24): the
+   zones a light wash of teal and ochre with fine pale contour lines, the
+   attested water a white thread of light with its glow, the banks barely
+   there, and each person a dot in a ring of light. */
+[data-theme="canopee"] .rv-svg .rv-zone.z0 { fill-opacity: 0.14; stroke: var(--rv-contour-hi); stroke-opacity: 0.55; stroke-width: 1; }
+[data-theme="canopee"] .rv-svg .rv-zone.z1 { fill-opacity: 0.07; stroke: var(--rv-contour-hi); stroke-opacity: 0.32; stroke-width: 0.7; }
+[data-theme="canopee"] .rv-svg .rv-zone.z2 { fill-opacity: 0.07; stroke: var(--rv-contour-hi); stroke-opacity: 0.28; stroke-width: 0.6; }
+[data-theme="canopee"] .rv-svg .rv-zone.z3 { stroke: var(--rv-contour-hi); stroke-opacity: 0.3; stroke-width: 0.6; stroke-dasharray: 1.5 3.5; }
+[data-theme="canopee"] .rv-svg .rv-banks { stroke-opacity: 0.22; }
+[data-theme="canopee"] .rv-svg .k-core { stroke: var(--rv-thread); }
+[data-theme="canopee"] .rv-svg .rv-glow { stroke: var(--rv-thread-glow); }
+[data-theme="canopee"] .rv-svg a.rv-p circle.k-halo { stroke: var(--rv-thread); stroke-opacity: 0.85; }
+[data-theme="canopee"] .rv-svg .rv-name-box { fill-opacity: 0.62; stroke: var(--rv-contour-hi); stroke-opacity: 0.45; }
+/* Over the photograph the half-century bands are barely a veil, as Selva
+   Verde's ground carries no stripes; their rules and years still tell the
+   time. */
+[data-theme="canopee"] .rv-canvas.rv-alive .rv-svg .k-band-odd { fill-opacity: 0.1; }
+[data-theme="canopee"] .rv-canvas.rv-alive .rv-svg .k-band-live { fill-opacity: 0.14; }
+/* The family's lines as rivers (docs/adr/0004 §13): the scene draws each
+   one in the ground, with its water, its banks and its light, and the
+   drawing's own lines step aside while it does; they come back for a
+   travel, in print, and wherever the scene cannot draw. */
+[data-theme="canopee"] .river { --rv-rivers-3d: 1; }
+[data-theme="canopee"] .rv-svg > :is(path, g:not([class])),
+[data-theme="canopee"] .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { transition: opacity 260ms var(--ease); }
+@media screen {
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { opacity: 0; }
+  /* Over the water, the zones keep their contour lines and lose most of
+     their wash, so that the water keeps its own colour. */
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg .rv-zone { fill-opacity: 0.035; }
+}
 @media print {
   .rv-canvas { background-image: none; }
   .rv-canvas::before { display: none; }
@@ -6567,8 +6695,10 @@ a.kpi:hover { border-color: var(--border-strong); }
 /* The cards: cream stock in the page's green. Every colour token takes its
    `--gn-l-` twin on a card (tokens.css), so whatever a card holds — text,
    fields, buttons, chips, a chart — reads as it would on a light theme.
-   Not in the paper style, which draws no cards. */
-[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog) {
+   Not in the paper style, which draws no cards; nor in the record beside
+   the tree, which keeps the page's green and gold as its other blocks do
+   (the operator's review, 2026-10-24: a cream block there did not match). */
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.card, .rec-section, .tree-controls, .stat, .feature-card, .cta-banner, .hero-card, .stat-strip, .kpi, .radar-card, .notice, .completeness, .notes-block, .menu-panel, .search-suggest, dialog):not(.tree-panel *) {
   color-scheme: light;
   --surface-page: var(--gn-l-surface-page);
   --surface-raised: var(--gn-l-surface-raised);
@@ -6616,10 +6746,16 @@ a.kpi:hover { border-color: var(--border-strong); }
 }
 /* A card's double rule, as old card stock is printed: an edge, a cream
    gap and a hairline of the ink inside it, and a shadow on the green. */
-[data-theme="genealogy"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls) {
+[data-theme="genealogy"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls):not(.tree-panel *) {
   background-color: var(--surface-raised);
   border: 1px solid var(--border-hairline);
   box-shadow: inset 0 0 0 4px var(--surface-raised), inset 0 0 0 5px color-mix(in srgb, var(--border-strong) 30%, transparent), 0 14px 26px -18px rgb(var(--shadow-rgb) / 0.9);
+}
+/* In the record beside the tree, a block is the page's own: its raised
+   green, edged in a hairline of gold. */
+[data-theme="genealogy"]:not([data-style="paper"]) .tree-panel :is(.rec-section, .card) {
+  background-color: var(--surface-raised);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border-hairline));
 }
 /* A notice is a card of its own: opaque cream, tinted by its kind, rather
    than the kit's veil, which over this green reads as grey. */
@@ -6657,55 +6793,58 @@ a.kpi:hover { border-color: var(--border-strong); }
 }
 
 /* ---- the tree, climbed (genealogy.js) ---- */
-[data-theme="genealogy"] .river { --rv-water: var(--gn-gold); --rv-lit: var(--gn-gold-hi); --rv-lit-halo: var(--gn-gold); --rv-glow: var(--gn-living); }
-/* The woods behind the tree, from the treetops to the roots: what the page
-   shows before its script has drawn the far trees over it. */
+[data-theme="genealogy"] .river { --rv-water: var(--gn-gold); --rv-lit: var(--gn-lit); --rv-lit-halo: var(--gn-lit-halo); --rv-glow: var(--gn-living); }
+/* The stage's dark, a little light where the scroll stands: what the page
+   shows before its script has drawn the picture, and round it. */
 .river[data-view="scroll"] .rv-canvas {
-  background-color: var(--gn-stage-mid);
-  background-image: linear-gradient(180deg, var(--gn-stage-top) 0%, var(--gn-stage-mid) 55%, var(--gn-stage-low) 100%);
+  background-color: var(--gn-stage);
+  background-image: radial-gradient(38% 55% at 50% 50%, var(--gn-stage-lit), var(--gn-stage) 100%);
   background-size: 100% 100%;
 }
-.river[data-view="scroll"] .rv-bar-root { background: var(--gn-root-core); }
+.river[data-view="scroll"] .rv-bar-root { background: var(--gn-bar-root); }
 .river[data-view="scroll"] .rv-bar-trunk { background: var(--gn-gold-hi); }
-.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-leaf-2); }
-.gn-svg .gn-bark-dark { stop-color: var(--gn-bark-dark); }
-.gn-svg .gn-bark-mid { stop-color: var(--gn-bark-mid); }
-.gn-svg .gn-bark-lit { stop-color: var(--gn-bark-lit); }
-.gn-svg .gn-trunk { stroke: var(--gn-bark-dark); stroke-width: 1.2; }
-.gn-svg .gn-grain { fill: none; stroke: var(--gn-grain); stroke-width: 1.4; stroke-opacity: 0.55; stroke-linecap: round; }
-.gn-svg .gn-ring { fill: none; stroke: var(--gn-ring); stroke-width: 1; stroke-opacity: 0.22; stroke-dasharray: 2 5; }
-.gn-svg .gn-ring-0 { stroke-opacity: 0.45; }
-.gn-svg .gn-gen { fill: var(--gn-gen); }
-.gn-svg .gn-gen-0 { fill: var(--gn-gold-hi); }
-.gn-svg .gn-branch { fill: none; stroke: var(--gn-branch); stroke-linecap: round; }
-.gn-svg .gn-branch-core { fill: none; stroke: var(--gn-branch-core); stroke-linecap: round; }
-.gn-svg .gn-root { stroke: var(--gn-root); }
-.gn-svg .gn-root-core { stroke: var(--gn-root-core); }
-.gn-svg .gn-faint { stroke-opacity: 0.9; }
-.gn-svg .gn-leaf-1 { fill: var(--gn-leaf-1); }
-.gn-svg .gn-leaf-2 { fill: var(--gn-leaf-2); }
-.gn-svg .gn-leaf-3 { fill: var(--gn-leaf-3); }
-.gn-svg .gn-tip { fill: var(--gn-branch-core); }
-.gn-svg .gn-end { fill: var(--gn-stage-mid); stroke: var(--gn-branch-core); stroke-width: 1.2; }
-.gn-svg .gn-knot { fill: var(--gn-gold-hi); stroke: var(--gn-branch); stroke-width: 1; }
+.river[data-view="scroll"] .rv-bar-crown { background: var(--gn-bar-crown); }
+.gn-svg .gn-gen { fill: var(--gn-gen); stroke: var(--gn-gen-halo); stroke-width: 3; stroke-linejoin: round; }
+.gn-svg .gn-gen-0 { fill: var(--gn-gen-0); }
+/* A line: the parchment's light, then the ink, as sure as the parentage is
+   known; a knot of gold ringed in ink where a family's lines meet. */
+.gn-svg .gn-wire-halo { fill: none; stroke: var(--gn-wire-halo); stroke-width: 3.6; stroke-opacity: 0.7; stroke-linejoin: round; stroke-linecap: round; }
+.gn-svg .gn-wire { fill: none; stroke: var(--gn-wire); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.gn-svg .gn-wire-d { stroke-dasharray: 5 3.5; }
+.gn-svg .gn-wire-s { stroke-dasharray: 0.1 4.5; stroke-width: 2.2; }
+.gn-svg .gn-node { fill: var(--gn-node); stroke: var(--gn-node-rim); stroke-width: 1.1; }
+.gn-svg .gn-tip { fill: var(--gn-wire); }
+.gn-svg .gn-end { fill: var(--gn-wire-halo); stroke: var(--gn-wire); stroke-width: 1.2; }
+.gn-svg .gn-count .k-data { fill: var(--gn-wire); }
+.gn-svg .gn-count .k-halo { stroke: var(--gn-wire-halo); }
 .gn-svg .gn-card { fill: var(--gn-card); stroke: var(--gn-card-line); stroke-width: 0.9; }
 .gn-svg .gn-card-centre { stroke: var(--gn-gold); stroke-width: 1.6; }
-.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.35; }
+.gn-svg .gn-card-shade { fill: var(--gn-card-shade); fill-opacity: 0.28; }
 .gn-svg .gn-name { fill: var(--gn-ink); font-family: var(--serif); }
 .gn-svg .gn-centre { fill: var(--gn-centre); }
 .gn-svg .gn-years { fill: var(--gn-ink-2); }
-.gn-svg .gn-portrait { fill: var(--gn-portrait); stroke: var(--gn-gold); stroke-width: 1.8; }
+/* A portrait: a sepia print in a cream mount with a fine gold edge, as on
+   the reference; the living's edge green, the gone's gold, the hidden's an
+   empty mount. */
+.gn-svg .gn-mount { fill: var(--gn-mount); stroke: var(--gn-mount-line); stroke-width: 1.1; }
+.gn-svg .gn-mount-centre { stroke: var(--gn-gold); stroke-width: 2.4; }
+.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 1.6; }
 .gn-svg .gn-gone { stroke: var(--gn-gone); }
-.gn-svg .gn-living { stroke: var(--gn-living); stroke-width: 2.2; }
-.gn-svg .gn-portrait-centre { stroke: var(--gn-gold-hi); stroke-width: 2.8; }
-.gn-svg .gn-sparse { fill: var(--gn-portrait-inner); }
-.gn-svg .gn-hidden { fill: var(--gn-hidden-fill); stroke: var(--gn-hidden); stroke-width: 1.4; }
-.gn-svg .gn-portrait-inner { fill: none; stroke: var(--gn-portrait-inner); stroke-width: 1; }
+.gn-svg .gn-hidden { fill: var(--gn-hidden-fill); stroke: var(--gn-hidden); stroke-width: 1.2; }
+.gn-svg .gn-print-hi { stop-color: var(--gn-print-hi); }
+.gn-svg .gn-print-lo { stop-color: var(--gn-print); }
+.gn-svg .gn-sparse { fill: var(--gn-print-sparse); }
 .gn-svg .gn-initials { fill: var(--gn-initials); font-family: var(--serif); letter-spacing: 0.04em; pointer-events: none; }
-.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.2; }
-.gn-svg .gn-again { stroke: var(--gn-gold); }
-.gn-svg a.rv-p:hover .gn-portrait { stroke: var(--gn-gold-hi); }
+.gn-svg .gn-halo { fill: var(--gn-gold-hi); fill-opacity: 0.28; }
+.gn-svg .gn-again { stroke: var(--gn-wire); }
+.gn-svg a.rv-p:hover .gn-mount { stroke: var(--gn-gold); stroke-width: 2; }
 .gn-svg a.rv-p:focus-visible .gn-card { stroke: var(--focus-ring); stroke-width: 2; }
+/* The names river.js adds, on cards like the drawing's own. */
+.gn-svg .rv-name-box { fill: var(--gn-card); fill-opacity: 0.96; stroke: var(--gn-card-line); }
+.gn-svg .rv-name-text { fill: var(--gn-ink); font-family: var(--serif); }
+.gn-svg .rv-name-thread { stroke: var(--gn-wire); }
+.gn-svg .rv-hl-box { fill: var(--gn-card); fill-opacity: 0.96; stroke: var(--gn-lit); stroke-opacity: 0.6; }
+.gn-svg .rv-hl .k-halo { stroke: var(--gn-lit-halo); }
 /* While only the near generations are named, a far person keeps their
    portrait and its initials, and their card waits for the pointer. */
 .river.rv-names-near .rv-svg a.rv-p[data-far] .gn-plate { display: none; }

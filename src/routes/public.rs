@@ -1412,6 +1412,14 @@ pub async fn genealogy_vine_l_jpg() -> Response {
 pub async fn genealogy_vine_r_jpg() -> Response {
     picture("image/jpeg", render::GENEALOGY_VINE_R_JPG)
 }
+/// `GET /static/img/genealogy-tree.jpg` and its depth map: Genealogy's tree,
+/// the same picture behind every person.
+pub async fn genealogy_tree_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_TREE_JPG)
+}
+pub async fn genealogy_tree_depth_jpg() -> Response {
+    picture("image/jpeg", render::GENEALOGY_TREE_DEPTH_JPG)
+}
 /// `GET /static/img/summit-panorama.jpg` — the mountain under Summit's
 /// ascent. The same picture behind every person: nothing in it depends on the
 /// archive.
@@ -1450,6 +1458,18 @@ pub async fn fusion_lab_jpg() -> Response {
 /// behind every person: nothing in it depends on the archive.
 pub async fn river_ground_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_JPG)
+}
+/// `GET /static/img/river-ground-maps.jpg` — its depth.
+pub async fn river_ground_maps_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_GROUND_MAPS_JPG)
+}
+/// `GET /static/img/river-water-stream.jpg` and `river-water-river.jpg` — the
+/// water of the family's streams and rivers.
+pub async fn river_water_stream_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_WATER_STREAM_JPG)
+}
+pub async fn river_water_river_jpg() -> Response {
+    picture("image/jpeg", render::RIVER_WATER_RIVER_JPG)
 }
 
 /// `GET /static/img/river-contours.svg` — the contour lines over the river's

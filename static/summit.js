@@ -104,15 +104,17 @@
   }
 
   /* ---- the photograph ---- */
-  // Made at 1776 × 896 and shown at that aspect; served at 2048 × 1024 so
-  // that the graphics card can filter it. Where its summit is, where a camp
+  // Made at 1776 × 896 and shown at that aspect; served at 4096 × 2048 so
+  // that the graphics card can filter it, and so that it stays sharp on a
+  // dense screen (2026-10-23: enlarged four times by a super-resolution
+  // model, then brought back to the original's tones). Where its summit is, where a camp
   // stands on it (the foot of its rock, as a share of its height), from
   // where down its crest leaves the whole wall to stand on (`wall`), and its
   // skyline: in each of 1024 columns, the first row that is no longer sky,
   // as a share of its height, 16 bits little-endian. It was read from the
   // photograph itself: the first row of each column that departs from the
   // sky above it, and stays departed.
-  var PHOTO = { src: '/static/img/summit-panorama.jpg?v=1', aspect: 1776 / 896, su: 0.4907, sv: 0.0739, camp: 0.58, wall: 0.27 };
+  var PHOTO = { src: '/static/img/summit-panorama.jpg?v=2', aspect: 1776 / 896, su: 0.4907, sv: 0.0739, camp: 0.58, wall: 0.27 };
   var SKYLINE = 'tze3N7c3tzcAOAM4gTi3OCQ5bDm1OSA6nzrbOoM7HDybPFg94T0XPtw+Xj+xP/A/AEAAQP4/AEAAQIY/JD/bPpw+HT7nPWg9' +
     '6Ty0PDU8tjs3OyQ7FTvbOmA6STpJOgg6QDkkOR452zhpOEk4Rzg3OG047DhrOek54Dm3Obc55TlkOuM6YTsKPJI82zzbPNo8' +
     'kjxLPEk8STxJPEk8ADy3O2U75jqwOkk6/Dm3OW05JDncOF04JzgAOLw3hjckN9I2kjZmNmI2lzYWN5U3FDjcOCQ5uDg5OLs3' +

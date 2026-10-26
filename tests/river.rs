@@ -1069,7 +1069,86 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
     assert!(js.contains("root.dataset.riverMotion === 'cut'"));
     assert!(js.contains("document.hidden"));
+    // The ground is Selva Verde's valley (the operator's reviews, 2026-10-24
+    // and 25): a photograph drawn in relief by its depth map, with no water
+    // of its own — the family's streams and rivers are its only water, the
+    // vegetation greener along them; each person a marker of light; the
+    // pointer leans it only where motion is allowed.
+    assert!(js.contains(
+        "var PIC = { src: '/static/img/river-ground.jpg?v=6', maps: '/static/img/river-ground-maps.jpg?v=2',"
+    ));
+    assert!(
+        !js.contains("float wm="),
+        "the ground animates no water of its own"
+    );
+    assert!(js.contains("col=mix(col,col*uGreen,clamp(gt.g*0.6+gw*gw*0.3,0.0,0.65));"));
+    assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
+    // The family's lines are rivers (the operator's review, 2026-10-24): under
+    // Canopée the scene draws each one in the ground — its water, its banks,
+    // its light — and the drawing's own lines step aside on screen only
+    // while it does, so a travel, print, and a browser without WebGL keep
+    // them. The same curve as river.js's, so the lit route follows the water.
+    assert!(js.contains(
+        "var RIVERS = getComputedStyle(root).getPropertyValue('--rv-rivers-3d').trim() === '1';"
+    ));
+    assert!(js.contains("function rivers(edges, tails) {"));
+    // Each line its own watercourse (2026-10-25): a parent's line to their
+    // family a winding stream, the family's line to a child — where both
+    // parents' streams meet — a broader river; no two alike, and the lit
+    // route follows the same course.
+    assert!(js.contains("function course(e) {"));
+    assert!(js.contains("return e.river ? w * 1.25 + 0.8 : Math.max(1.1, w * 0.55);"));
+    assert!(js.contains("edge: RIVERS ? coursePath : null,"));
+    // Their water is water (2026-10-25): two photographs seen from above, a
+    // mountain stream over stones and a calm river with its banks, laid
+    // along each course and running down it, each its own stretch of them.
+    assert!(js.contains(
+        "var WATER = { stream: '/static/img/river-water-stream.jpg?v=1', river: '/static/img/river-water-river.jpg?v=1' };"
+    ));
+    assert!(js.contains("gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);"));
+    // The ground follows the water (2026-10-25): each course runs in a valley
+    // it carved, lit by the sun, and where the water runs the ground holds
+    // still as the pointer leans the landscape, so they never part.
+    assert!(js.contains("' s*=1.0-clamp(gt.b*1.6,0.0,0.9);',"));
+    assert!(js.contains("' col*=mix(1.0,slope,clamp(gt.b*2.2,0.0,1.0));',"));
+    assert!(js.contains("stage.classList.toggle('rv-rivers', rready && waterIn >= 2);"));
+    assert!(js
+        .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));
+    let river_js = include_str!("../static/river.js");
+    assert!(river_js.contains(
+        "var both = !e.from && e.cp && e.cp.parents.filter(function (k) { return PM[k]; }).length >= 2;"
+    ));
+    assert!(river_js.contains("var curve = view && view.edge ? view.edge : course || vc;"));
+    assert!(river_js.contains("conf: e.conf, c: e.c, a: e.a, river: both };"));
+    assert!(river_js.contains("      tails: fr.tails.map(function (t) {"));
+    assert!(js
+        .contains("float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);"));
+    assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
+    for (img, len) in [
+        (
+            "/static/img/river-ground.jpg",
+            axgf_cms::render::RIVER_GROUND_JPG.len(),
+        ),
+        (
+            "/static/img/river-ground-maps.jpg",
+            axgf_cms::render::RIVER_GROUND_MAPS_JPG.len(),
+        ),
+        (
+            "/static/img/river-water-stream.jpg",
+            axgf_cms::render::RIVER_WATER_STREAM_JPG.len(),
+        ),
+        (
+            "/static/img/river-water-river.jpg",
+            axgf_cms::render::RIVER_WATER_RIVER_JPG.len(),
+        ),
+    ] {
+        let resp = get(&app, img).await;
+        assert_eq!(resp.status(), StatusCode::OK, "{img}");
+        assert!(len > 10_000, "{img}");
+    }
     // A decoration: it never takes a pointer from the drawing.
     let css = include_str!("../static/app.css");
+    assert!(css.contains("[data-theme=\"canopee\"] .river { --rv-rivers-3d: 1; }"));
+    assert!(css.contains("@media screen {\n  [data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),"));
     assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));
 }

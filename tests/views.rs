@@ -293,6 +293,8 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/genealogy-cta.jpg",
         "/static/img/genealogy-vine-l.jpg",
         "/static/img/genealogy-vine-r.jpg",
+        "/static/img/genealogy-tree.jpg",
+        "/static/img/genealogy-tree-depth.jpg",
         "/static/img/notes-genealogy.jpg",
     ] {
         let resp = get(&app, jpg).await;
@@ -344,7 +346,9 @@ fn a_view_gives_river_js_everything_it_asks_for() {
     }
     let river = read("static/river.js");
     assert!(river.contains("T = view && view.named ? view.named() : tiers(fr);"));
-    assert!(river.contains("var curve = view && view.edge ? view.edge : vc;"));
+    // A view's own curve first; else the scene's courses (Canopée's streams
+    // and rivers, while they are drawn); else the river's curve.
+    assert!(river.contains("var curve = view && view.edge ? view.edge : course || vc;"));
 }
 
 #[test]
@@ -366,7 +370,7 @@ fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
         "Fusion blends frames in its glass"
     );
     assert!(
-        fusion.contains("'/static/img/fusion-lab.jpg?v=1'"),
+        fusion.contains("'/static/img/fusion-lab.jpg?v=2'"),
         "over its laboratory"
     );
     assert!(
@@ -434,10 +438,35 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
         "the camera rises (or goes down) to the person travelled to"
     );
     assert!(js.contains("return proj(G, th, w - cam);"));
-    assert!(
-        !js.contains("/static/img/"),
-        "the tree is drawn, not a picture"
+    // The tree of the operator's reference, in relief (2026-10-23): a
+    // picture of it made in Canva, its depth map moving its near parts more
+    // than its far ones as the camera climbs; the family set on it, the
+    // fixed point on the trunk, the lines square-cornered as on the
+    // reference, in ink with the parchment's light under it.
+    assert!(js.contains(
+        "var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1',"
+    ));
+    assert_eq!(
+        js.matches("/static/img/").count(),
+        2,
+        "the tree and its depth"
     );
+    assert!(
+        js.contains("float d=uDep>0.5?texture2D(uD,clamp(p,0.0,1.0)).r:0.35;vec2 q=p-s*(d-0.35);")
+    );
+    assert!(js.contains("function lift(l) { return l >= 0 ? PIC.up * (1 - Math.exp(-l / PIC.ku)) : -PIC.down * (1 - Math.exp(l / PIC.kd)); }"));
+    assert!(js.contains("return [[x1, y1], [x1, my], [x2, my], [x2, y2]];"));
+    assert!(js.contains("class=\"gn-wire-halo\""));
+    // The picture is nearly the window's width, and the camera climbs it a
+    // step at a time with the reader, staying where they arrive (the
+    // operator's review, 2026-10-24: the tree was too small, and the climb
+    // should go up or down the tree progressively).
+    assert!(js.contains("PH = Math.max(hw * 0.88 / PIC.aspect, vh * 1.7)"));
+    assert!(js.contains("var camV = PIC.v - PIC.climb * Math.tanh((G.world || 0) / PIC.pace);"));
+    assert!(js.contains("py = (G.y0 - camV * G.PH - v.y) * s"));
+    // Still, the picture still stands in relief; the pointer leans it only
+    // when motion is allowed.
+    assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
     assert!(js.contains("ground.className = 'rv-ground';"));
     let river = read("static/river.js");
     assert!(river.contains("svg.querySelectorAll('text, rect.tv-panel, rect.gn-card')"));
@@ -452,6 +481,35 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
     assert!(css.contains(
         "[data-theme=\"genealogy\"]:not([data-style=\"paper\"]) :is(.card, .rec-section,"
     ));
+    // The record beside the tree keeps the page's green, its blocks edged
+    // in gold, rather than cream cards (2026-10-24).
+    assert!(css.contains(".search-suggest, dialog):not(.tree-panel *) {"));
+    assert!(css.contains(
+        "[data-theme=\"genealogy\"]:not([data-style=\"paper\"]) .tree-panel :is(.rec-section, .card) {"
+    ));
+}
+
+/// Summit's sun follows the climb: a step up toward the descendants raises
+/// it, a step down toward the ancestors lowers it (the operator's review,
+/// 2026-10-23). It used to count the itinerary's people, so that going down
+/// raised it too and, after six, it stood still.
+#[test]
+fn the_sun_goes_down_with_the_reader() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let summit = std::fs::read_to_string(root.join("static/summit.js")).expect("summit.js");
+    assert!(
+        summit.contains("function shape(fr) {\n    track(fr);"),
+        "every layout tells the sun where the reader went"
+    );
+    assert!(summit.contains("return Math.max(0.12, Math.min(1, 0.42 + climbed * 0.15));"));
+    assert!(
+        summit.contains("climbed = Math.max(-2, Math.min(4, climbed + (d || 0)));"),
+        "within what the sky can show, so the first step back answers"
+    );
+    assert!(
+        !summit.contains("rv-trail"),
+        "the itinerary's length no longer moves the sun"
+    );
 }
 
 /// Summit's sun follows the climb: a step up toward the descendants raises

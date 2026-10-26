@@ -161,6 +161,8 @@
       count.textContent = forms.forms[forms.index[n < 200 ? n : 100 + (n % 100)]].replace("{n}", String(n));
       bar.hidden = n === 0;
       head.hidden = n > 0;
+      // A merge takes exactly two records.
+      bulk.querySelectorAll("[data-bulk-pair]").forEach(function (b) { b.disabled = n !== 2; });
       all.checked = n > 0 && n === list.length;
       all.indeterminate = n > 0 && n < list.length;
     };

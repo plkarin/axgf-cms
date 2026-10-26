@@ -8,6 +8,7 @@ mod console;
 mod convert;
 mod editors;
 mod entry;
+mod merge;
 mod notes;
 mod person_editor;
 mod prefs;
@@ -519,6 +520,17 @@ fn routes(state: Shared) -> Router {
         // large as an upload and the fields around it.
         .route("/admin/person/new", get(person_editor::new_form))
         .route("/admin/person/bulk", post(person_editor::bulk))
+        // Before `/admin/person/:id` and `/admin/place/:id` take "merge" for
+        // an id, as they would "bulk".
+        .route(
+            "/admin/person/merge",
+            get(merge::plan_person).post(merge::apply_person),
+        )
+        .route(
+            "/admin/place/merge",
+            get(merge::plan_place).post(merge::apply_place),
+        )
+        .route("/admin/place/bulk", post(merge::place_bulk))
         .route("/admin/person/:id/edit", get(person_editor::edit))
         .route(
             "/admin/person/:id",
@@ -532,6 +544,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/:kind/:id", post(admin::update))
         .route("/admin/:kind/:id/delete", post(admin::delete))
         .route("/admin/:kind/bulk", post(admin::bulk))
+        .route("/admin/:kind/merge", get(merge::plan).post(merge::apply))
         .route("/static/css/tokens.css", get(public::tokens_css))
         .route("/static/app.css", get(public::css))
         .route(

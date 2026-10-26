@@ -138,7 +138,7 @@ fn fingerprint(bundle: &Path) -> Fingerprint {
     let mut zip = zip::ZipArchive::new(std::fs::File::open(bundle).expect("open")).expect("zip");
     for i in 0..zip.len() {
         let mut m = zip.by_index(i).expect("member");
-        let name = m.name().to_string();
+        let name = m.name().unwrap().into_owned();
         if !name.starts_with("documents/files/") {
             continue;
         }
@@ -331,7 +331,7 @@ fn an_archive_with_no_manifest_is_not_treated_as_one_of_ours() {
     {
         let f = std::fs::File::create(&path).expect("create");
         let mut z = zip::ZipWriter::new(f);
-        z.start_file("family.axgf", zip::write::FileOptions::default())
+        z.start_file("family.axgf", zip::write::SimpleFileOptions::default())
             .unwrap();
         std::io::Write::write_all(&mut z, b"whatever").unwrap();
         z.finish().unwrap();
@@ -349,10 +349,10 @@ fn rebuild_archive_with(archive: &Path, member: &str, content: &[u8]) {
         let mut out = zip::ZipWriter::new(std::fs::File::create(&tmp).unwrap());
         for i in 0..src.len() {
             let mut m = src.by_index(i).unwrap();
-            let name = m.name().to_string();
+            let name = m.name().unwrap().into_owned();
             let mut bytes = Vec::new();
             m.read_to_end(&mut bytes).unwrap();
-            out.start_file(&name, zip::write::FileOptions::default())
+            out.start_file(&name, zip::write::SimpleFileOptions::default())
                 .unwrap();
             if name == member {
                 out.write_all(content).unwrap();

@@ -246,7 +246,7 @@ cargo clippy --all-targets -- -D warnings
 cargo fmt --check
 ```
 
-Rust edition 2021, MSRV 1.88 (inherited from axgf-rs).
+Rust edition 2021, MSRV 1.92: krilla, which draws a note's PDF, asks for it (axgf-rs asks only 1.88). CI checks it.
 
 To regenerate the demonstration bundle after editing `deploy/sample.ged`:
 

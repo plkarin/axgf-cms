@@ -399,7 +399,7 @@ fn every_word_on_the_operators_river_fits_the_frame() {
     let (mut persons, mut families) = (Map::new(), Map::new());
     for i in 0..zip.len() {
         let mut e = zip.by_index(i).unwrap();
-        let name = e.name().to_string();
+        let name = e.name().unwrap().into_owned();
         let target = if name.starts_with("persons/") && name.ends_with(".json") {
             &mut persons
         } else if name.starts_with("families/") && name.ends_with(".json") {

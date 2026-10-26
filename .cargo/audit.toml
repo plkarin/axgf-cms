@@ -1,0 +1,17 @@
+# `cargo audit` (CI's audit job): the advisories this application knowingly
+# lives with, each with why. Reviewed 2026-10-26; look again whenever rpgp
+# (`pgp`) moves, since both come through it.
+[advisories]
+ignore = [
+    # rsa 0.9 — the Marvin attack: the timing of RSA *decryption and
+    # signing* can leak a private key. This application only encrypts
+    # backups to a recipient's public key (src/seal.rs) and never holds an
+    # RSA private key. No fixed rsa release exists.
+    "RUSTSEC-2023-0071",
+    # crypto-bigint 0.5 — operations meant to be constant-time are not
+    # always. It comes through rpgp 0.21's elliptic curves; the fix (0.7.6)
+    # is a major version rpgp 0.21, the latest, cannot take. The only secret
+    # those curves handle here is the ephemeral key of one encryption,
+    # drawn and used once on the server.
+    "RUSTSEC-2026-0387",
+]

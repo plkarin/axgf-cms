@@ -4,6 +4,44 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Merging two records a person says are one** (docs/adr/0018). The
+  listing's bulk bar offers "Merge" for two ticked persons, families, places
+  or sources. The plan page shows what axgf-rs 0.6's `plan_merge` says:
+  each disagreement a choice pre-set to the library's suggestion and why,
+  what they agree on, what else changes, and any refusal. Nothing changes
+  until the administrator confirms. The absorbed record goes to the journal
+  and is shown as it was; its old address says where it went.
+
+### Changed
+
+- **axgf-rs 0.5.0 → 0.6.1.** The GEDCOM conversion keeps what the file says:
+  the 31 defects of `tests/gedcom_known_defects.rs` are mended, and those
+  tests are no longer ignored (docs/GEDCOM-IMPORT.md). What it still leaves
+  out, the conversion page now lists whole.
+- **Dependencies.** zip 0.6 → 9.1 (RUSTSEC-2026-0367/0368/0369), rustls
+  0.23.46, rustls-webpki 0.103.16, webpki-roots 1.0.11, tokio 1.54, and the
+  rest of the tree, now that `cargo update` resolves again. Two advisories
+  are knowingly lived with, and why, in `.cargo/audit.toml` (rsa's Marvin
+  attack: this application only encrypts to a public key; crypto-bigint's
+  timing: through rpgp, with no release that takes the fix).
+- **CI** builds on the MSRV and runs `cargo audit`; its actions run on
+  Node 24.
+- **The MSRV is 1.92**, as krilla (a note's PDF) has asked since 0.5.0; the
+  manifest said 1.89.
+
+### Fixed
+
+- The places listing's bulk bar (delete, export) answered 404:
+  `/admin/place/:id` took "bulk" for a place.
+- The Infrastructure page offered the upgrade button on any instance of a
+  host where the production one has its helper — the preview, the demo, the
+  test suite. The helper is this installation's only when its unit watches
+  this data directory.
+
 ## [0.5.0] — 2026-10-23
 
 Canopée, the reference theme, and a river that reads like a landscape. Five

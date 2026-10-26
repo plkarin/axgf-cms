@@ -51,8 +51,9 @@ pub fn facts(flat: &Value, bundle: &std::path::Path) -> Facts {
         .map(|z| {
             let schema = z
                 .file_names()
+                .filter_map(Result::ok)
                 .find(|n| n.starts_with("schema/") && n.ends_with(".json"))
-                .map(str::to_string);
+                .map(std::borrow::Cow::into_owned);
             (schema, z.len())
         })
         .unwrap_or((None, 0));

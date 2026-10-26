@@ -4173,6 +4173,32 @@ a.tcard:hover {
 .bulk-list { list-style: none; padding: 0; margin: 1rem 0; }
 .bulk-list li { padding: 0.45rem 0; border-bottom: 1px solid var(--border-hairline); }
 
+/* The merge screen (src/routes/merge.rs): the two records side by side, one
+   fieldset per disagreement, each choice a whole row to click. */
+.merge-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+.merge-side h2 { margin: 0 0 0.35rem; font-size: var(--type-label); color: var(--text-secondary); }
+.merge-side p { margin: 0.15rem 0; overflow-wrap: anywhere; }
+.merge-swap { grid-column: 1 / -1; margin: 0; }
+.merge-conflict { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 0.6rem 0.9rem; margin: 0 0 0.9rem; }
+.merge-conflict legend { padding: 0 0.35rem; font-weight: var(--weight-semi); }
+/* Each choice is a whole sentence to read, not a field's caption: none of
+   the form label's mono capitals. */
+.merge-choice { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.4rem 0.35rem; margin: 0; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-size: var(--type-minor); letter-spacing: normal; text-transform: none; color: var(--text-primary); }
+.merge-choice:hover, .merge-choice:has(input:checked) { background: var(--surface-hover); }
+.merge-choice-label { flex: none; min-inline-size: 7rem; font-weight: var(--weight-semi); }
+.merge-value { overflow-wrap: anywhere; color: var(--text-secondary); }
+.merge-facts { margin: 0; }
+.merge-facts > div { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border-hairline); }
+.merge-facts dt { color: var(--text-secondary); overflow-wrap: normal; }
+.merge-facts dd { margin: 0 0 0 auto; text-align: end; }
+.merge-facts .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.merge-record { max-block-size: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .merge-pair { grid-template-columns: 1fr; }
+  .merge-choice { flex-wrap: wrap; }
+  .merge-choice-label { min-inline-size: 0; }
+}
+
 /* The quality page's filters: two selects and the downloads, on one row. */
 .quality-filter { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
 .quality-filter [hidden] { display: none; }

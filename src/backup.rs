@@ -441,11 +441,11 @@ fn write_archive(files: &StateFiles, file: fs::File) -> Result<Manifest> {
 
     // The bundle is itself a ZIP of deflated members, so deflating it again
     // buys nothing and costs a pass over 400 MB.
-    let stored = zip::write::FileOptions::default()
+    let stored = zip::write::SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Stored)
         .large_file(true);
-    let deflated =
-        zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+    let deflated = zip::write::SimpleFileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated);
 
     for (name, path) in files.members() {
         if !path.exists() {

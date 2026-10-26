@@ -561,6 +561,7 @@ pub async fn list(
             per_page => page.per_page,
             q => q.q,
             is_person => kind == "person",
+            can_merge => _viewer.is_admin() && super::merge::mergeable(k),
         },
     )
 }
@@ -660,6 +661,11 @@ pub async fn bulk(
             .collect()
     });
     match action {
+        // Two records a person says are one: the plan, on a page of its own.
+        "merge" if super::merge::mergeable(k) => {
+            let ids: Vec<String> = items.iter().map(|(id, _)| id.clone()).collect();
+            super::merge::from_bulk(&chrome, &kind, &ids)
+        }
         "export" => {
             // By id, whatever order they were ticked in.
             let records: std::collections::BTreeMap<String, Value> = stored
@@ -1877,7 +1883,7 @@ pub(super) fn field_views(
 /// So the resolver takes `flat` and looks the members up. That costs a map
 /// lookup per reference, which at this scale is nothing next to the render
 /// that follows.
-fn summarize(flat: &Value, lang: &str, kind: axgf_rs::EntityKind, e: &Value) -> String {
+pub(super) fn summarize(flat: &Value, lang: &str, kind: axgf_rs::EntityKind, e: &Value) -> String {
     use axgf_rs::EntityKind as K;
     let s = |k: &str| e.get(k).and_then(Value::as_str).unwrap_or("");
     let t = |key: &str, args: &[(&str, fluent::FluentValue<'_>)]| -> String {

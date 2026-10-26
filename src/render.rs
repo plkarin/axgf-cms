@@ -188,6 +188,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_login.html",
     "admin_users.html",
     "admin_bulk.html",
+    "admin_merge.html",
+    "admin_merge_done.html",
     "merged.html",
     "admin_conflict.html",
     "admin_dashboard.html",

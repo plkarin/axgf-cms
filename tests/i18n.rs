@@ -491,6 +491,39 @@ fn every_dynamic_key_family_is_fully_defined() {
         expected.push(format!("infra-compute-nnp-{switch}"));
         expected.push(format!("infra-compute-seccomp-{switch}"));
     }
+    // The merge screen names what the library's plan says by building the
+    // key (src/routes/merge.rs); a value a newer library adds shows as
+    // itself, but every value 0.6 sends has words.
+    for reason in [
+        "ancestor",
+        "spouse-and-child",
+        "spouses",
+        "siblings",
+        "different-couples",
+        "child-is-spouse",
+        "same-record",
+    ] {
+        expected.push(format!("merge-refusal-{reason}"));
+    }
+    for because in [
+        "higher-confidence",
+        "sourced",
+        "kept-record",
+        "more-restrictive",
+        "protective",
+        "both-kept",
+    ] {
+        expected.push(format!("merge-because-{because}"));
+    }
+    for becomes in ["alias", "event"] {
+        expected.push(format!("merge-becomes-{becomes}"));
+    }
+    for from in ["keep", "absorb", "both", "joined", "combined"] {
+        expected.push(format!("merge-from-{from}"));
+    }
+    for choice in ["keep", "absorb", "both"] {
+        expected.push(format!("merge-choice-{choice}"));
+    }
     for code in DIAGNOSTIC_CODES {
         assert!(
             axgf_rs::boundary::envelope::DiagnosticCode::from_wire(code).is_some(),
@@ -591,6 +624,10 @@ const DIAGNOSTIC_CODES: &[&str] = &[
     "GEDCOM_PARSE_ERROR",
     "GEDCOM_UNRECOGNIZED_TAG",
     "INTERNAL",
+    "MERGE_REFUSED",
+    "MERGE_UNRESOLVED",
+    "MERGE_UNSUPPORTED",
+    "STALE_PLAN",
 ];
 
 #[test]

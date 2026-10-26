@@ -212,7 +212,11 @@ pub fn read(bytes: &[u8], limit: usize) -> Result<Read, Refusal> {
 fn unzip_dataset(bytes: &[u8], limit: usize) -> Result<(Vec<u8>, usize), Refusal> {
     let mut zip =
         zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|_| Refusal::NotGedcom)?;
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|n| n.map(std::borrow::Cow::into_owned))
+        .collect::<Result<_, _>>()
+        .map_err(|_| Refusal::NotGedcom)?;
     let geds: Vec<&String> = names
         .iter()
         .filter(|n| n.to_ascii_lowercase().ends_with(".ged"))
@@ -995,7 +999,7 @@ mod tests {
         {
             let mut z = zip::ZipWriter::new(&mut buf);
             for (name, bytes) in files {
-                z.start_file(*name, zip::write::FileOptions::default())
+                z.start_file(*name, zip::write::SimpleFileOptions::default())
                     .unwrap();
                 z.write_all(bytes).unwrap();
             }

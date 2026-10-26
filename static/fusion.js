@@ -365,7 +365,7 @@
     fr.persons.slice().sort(function (a, b) { return a.z - b.z; }).forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', k = p.k || 1, r = (isC ? 8 : 4.6) * k, x = f(p.x), y = f(p.y);
       var fade = p.z < -0.15 ? 0.5 : 1, g = '<g opacity="' + f(p.a * fade) + '">';
-      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><circle cx="' + x + '" cy="' + y + '" r="18" fill="transparent"/>';
+      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="18" fill="transparent"/>';
       if (p.repeat > 1) g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6) + '" fill="none" class="k-data-line" stroke-width="1"/>';
       if (p.again) g += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 2.6 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" class="k-data-line" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
       if (isC) {
@@ -401,7 +401,7 @@
     }
     var defs = '<linearGradient id="tv-glass" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="tv-glass-edge"/><stop offset="0.5" class="tv-glass-mid"/><stop offset="1" class="tv-glass-edge"/></linearGradient>';
     var head = '<svg class="rv-svg tv-svg" data-view="tree" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="img" aria-label="' + esc(label() + (C && C.s && !C.s.redacted ? ' — ' + C.s.names[2] : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="group" aria-label="' + esc(label() + (C && C.s && !C.s.redacted ? ' — ' + C.s.names[2] : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>';
     // The lit route lies over the branches and under the people (river.js).
     return head + out + ringsBack + far + ringsFront + tw + near + '<g class="rv-lit"></g>' + marks + people + '</svg>';

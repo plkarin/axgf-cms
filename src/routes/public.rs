@@ -1604,6 +1604,7 @@ fn river_words(lang: &str) -> crate::river::Words {
     crate::river::Words {
         living_band: crate::i18n::translate(lang, "river-band-living", None),
         circa: crate::i18n::translate(lang, "river-circa", None),
+        private: crate::i18n::translate(lang, "record-restricted-person", None),
     }
 }
 

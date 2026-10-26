@@ -565,7 +565,7 @@
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', x = f(p.x), y = f(p.y), r = 4.8;
       var k = '<g opacity="' + f(p.a) + '">';
-      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>';
+      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>';
       if (isC) {
         k += '<circle cx="' + x + '" cy="' + y + '" r="26" class="sm-camp-halo"/><circle cx="' + x + '" cy="' + y + '" r="14" class="sm-camp-halo sm-camp-halo-2"/>'
           + '<path d="M' + x + ' ' + y + 'V' + f(p.y - 22) + '" class="sm-pole sm-pole-camp"/>'
@@ -594,7 +594,7 @@
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cn = C && C.s && !C.s.redacted ? C.s.names[2] : '';
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg sm-svg" data-view="summit" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="img" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="group" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>' + out + links + '<g class="rv-lit"></g>' + nodes + '</svg>';
   }
 

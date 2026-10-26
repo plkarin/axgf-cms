@@ -175,7 +175,7 @@
       <a href="/admin/{{ e.kind }}/{{ e.entity_id }}/edit">{{ e.label if e.label else e.entity_id }}</a>
     {% endif %}
     <span class="small muted">
-      {{ t("admin-history-meta", kind=t("kind-" ~ e.kind), at=e.at) }}
+      {{ t("admin-history-meta", kind=t("kind-" ~ e.kind), at=e.at | localdatetime(lang)) }}
       {%- if e.version_num %}{{ t("record-history-entry-version",
            version=t("admin-version", version=e.version_num)) }}{% endif %}
     </span>

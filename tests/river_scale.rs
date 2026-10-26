@@ -153,6 +153,7 @@ fn the_river_at_the_operators_scale() {
     let words = Words {
         living_band: "VIVANTS".into(),
         circa: "v.".into(),
+        private: "Private".into(),
     };
 
     let t0 = Instant::now();

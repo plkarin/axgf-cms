@@ -101,10 +101,16 @@ fn value_text(chrome: &render::Chrome, flat: &Value, v: &Value) -> String {
             Value::Bool(b) => {
                 out.push(label(chrome.t(if *b { "record-yes" } else { "record-no" })))
             }
+            // A confidence in the reader's words: "Degré de certitude 85 % — …".
+            Value::Number(n) if key == "confidence" => out.push(
+                crate::view::Confidence::new(n.as_f64().unwrap_or(0.0)).describe(chrome.lang),
+            ),
             Value::Number(n) => out.push(label(n.to_string())),
-            Value::String(s) if key.ends_with("_id") => out.push(label(
-                named(flat, chrome.lang, s).unwrap_or_else(|| s.clone()),
-            )),
+            // A reference by the name of what it names; the key says nothing
+            // a reader needs.
+            Value::String(s) if key.ends_with("_id") => {
+                out.push(named(flat, chrome.lang, s).unwrap_or_else(|| s.clone()))
+            }
             Value::String(s) => out.push(label(s.clone())),
             Value::Array(items) => {
                 for item in items {
@@ -113,9 +119,9 @@ fn value_text(chrome: &render::Chrome, flat: &Value, v: &Value) -> String {
             }
             Value::Object(m) => {
                 // A date is read as a date; a name by its display.
-                if m.contains_key("precision") || m.contains_key("range") {
+                if key == "date" || m.contains_key("precision") || m.contains_key("range") {
                     let d = crate::view::render_date_in(v, chrome.lang);
-                    out.push(label(d.text));
+                    out.push(d.text);
                     return;
                 }
                 if let Some(display) = m.get("display").and_then(Value::as_str) {
@@ -148,6 +154,10 @@ fn field_label(chrome: &render::Chrome, field: &str) -> String {
         "identity.gender" => "record-gender",
         "identity.visibility" => "record-visibility",
         "identity.is_living" => "record-living",
+        "identity" => "record-identity",
+        "identity.names" => "identity-other-names",
+        "documents" => "record-documents",
+        "names" => "place-names",
         _ => return field.to_string(),
     };
     chrome.t(key)

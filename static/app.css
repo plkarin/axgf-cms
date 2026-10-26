@@ -4181,14 +4181,17 @@ a.tcard:hover {
 .merge-swap { grid-column: 1 / -1; margin: 0; }
 .merge-conflict { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 0.6rem 0.9rem; margin: 0 0 0.9rem; }
 .merge-conflict legend { padding: 0 0.35rem; font-weight: var(--weight-semi); }
-.merge-choice { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.4rem 0.35rem; border-radius: var(--radius); cursor: pointer; }
+/* Each choice is a whole sentence to read, not a field's caption: none of
+   the form label's mono capitals. */
+.merge-choice { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.4rem 0.35rem; margin: 0; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-size: var(--type-minor); letter-spacing: normal; text-transform: none; color: var(--text-primary); }
 .merge-choice:hover, .merge-choice:has(input:checked) { background: var(--surface-hover); }
 .merge-choice-label { flex: none; min-inline-size: 7rem; font-weight: var(--weight-semi); }
 .merge-value { overflow-wrap: anywhere; color: var(--text-secondary); }
 .merge-facts { margin: 0; }
-.merge-facts > div { display: flex; gap: 1rem; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border-hairline); }
-.merge-facts dt { color: var(--text-secondary); }
-.merge-facts dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: end; }
+.merge-facts > div { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border-hairline); }
+.merge-facts dt { color: var(--text-secondary); overflow-wrap: normal; }
+.merge-facts dd { margin: 0 0 0 auto; text-align: end; }
+.merge-facts .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .merge-record { max-block-size: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 640px) {
   .merge-pair { grid-template-columns: 1fr; }

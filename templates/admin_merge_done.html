@@ -12,7 +12,7 @@
 {% if facts %}
 <section class="rec-section">
   <dl class="merge-facts">
-    {% for f in facts %}<div><dt>{{ f.label }}</dt><dd>{{ f.n }}</dd></div>{% endfor %}
+    {% for f in facts %}<div><dt>{{ f.label }}</dt><dd class="num">{{ f.n }}</dd></div>{% endfor %}
   </dl>
 </section>
 {% endif %}

@@ -71,10 +71,10 @@
   <section class="rec-section">
     <h2>{{ t("merge-effects") }}</h2>
     <dl class="merge-facts">
-      {% for r in references %}<div><dt>{{ t("merge-effect-references") }}</dt><dd>{{ r.label }}</dd></div>{% endfor %}
-      <div><dt>{{ t("merge-effect-self-links") }}</dt><dd>{{ self_links }}</dd></div>
-      <div><dt>{{ t("merge-effect-listed-twice") }}</dt><dd>{{ listed_twice }}</dd></div>
-      <div><dt>{{ t("merge-effect-same-couple") }}</dt><dd>{{ same_couple }}</dd></div>
+      {% for r in references %}<div><dt>{{ t("merge-effect-references") }}</dt><dd><span class="num">{{ r.n }}</span> {{ r.label }}</dd></div>{% endfor %}
+      <div><dt>{{ t("merge-effect-self-links") }}</dt><dd class="num">{{ self_links }}</dd></div>
+      <div><dt>{{ t("merge-effect-listed-twice") }}</dt><dd class="num">{{ listed_twice }}</dd></div>
+      <div><dt>{{ t("merge-effect-same-couple") }}</dt><dd class="num">{{ same_couple }}</dd></div>
     </dl>
   </section>
 

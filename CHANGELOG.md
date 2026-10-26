@@ -4,7 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.0] — 2026-10-26
+
+Two records a person says are one become one, by the library's plan and the
+administrator's decisions, with nothing chosen silently and nothing lost
+(docs/adr/0018). The GEDCOM conversion keeps what the file says, on
+axgf-rs 0.6.1. Records agree with the people they describe: a woman is
+"née", an age takes its plural, a time and a percentage read as the
+reader's language writes them, and every person in a view has a name a
+screen reader can say. The dependencies are current and audited on every
+push. Nothing about the AXGF file changes.
 
 ### Added
 

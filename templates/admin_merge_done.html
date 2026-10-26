@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ title }} — {{ t("app-name") }}{% endblock %}
+
+{# After a merge: what the library did, and the absorbed record as it was —
+   also in the journal, field by field. #}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="notice ok"><p><bdi>{{ lede }}</bdi></p></div>
+
+{% if facts %}
+<section class="rec-section">
+  <dl class="merge-facts">
+    {% for f in facts %}<div><dt>{{ f.label }}</dt><dd>{{ f.n }}</dd></div>{% endfor %}
+  </dl>
+</section>
+{% endif %}
+
+{% if diagnostics %}
+<h2>{{ t("result-diagnostics") }}</h2>
+{{ m.diagnostics(diagnostics) }}
+{% endif %}
+
+<details class="rec-section">
+  <summary>{{ t("merge-absorbed-record") }}</summary>
+  <pre class="mono small merge-record">{{ absorbed }}</pre>
+</details>
+
+<div class="cta-row">
+  <a class="btn primary" href="{{ kept_href }}">{{ t("merge-open-kept") }}</a>
+  <a class="btn" href="{{ list_back }}">{{ t("result-continue") }}</a>
+</div>
+{% endblock %}

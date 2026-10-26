@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ t("app-name") }}{% endblock %}
+
+{# Two records a person says are one: the library's plan, and nothing changed
+   until the administrator confirms (src/routes/merge.rs). Each disagreement
+   is a choice, pre-set to the library's suggestion and saying why; nothing is
+   decided here that the page does not show. #}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<p class="lede">{{ t("merge-lede") }}</p>
+
+<section class="rec-section merge-pair">
+  <div class="merge-side">
+    <h2>{{ t("merge-keep") }}</h2>
+    <p><a href="{{ keep.href }}"><bdi>{{ keep.summary }}</bdi></a></p>
+    <p class="mono small muted">{{ keep.id }}</p>
+  </div>
+  <div class="merge-side">
+    <h2>{{ t("merge-absorb") }}</h2>
+    <p><a href="{{ absorb.href }}"><bdi>{{ absorb.summary }}</bdi></a></p>
+    <p class="mono small muted">{{ absorb.id }}</p>
+  </div>
+  <p class="merge-swap"><a class="btn small" href="{{ swap_href }}">{{ t("merge-swap") }}</a></p>
+</section>
+
+{% if refusals %}
+<div class="notice error">
+  <p>{{ t("merge-refused") }}</p>
+  <ul>
+    {% for r in refusals %}<li><strong>{{ r.reason }}</strong> <span class="small muted">{{ r.message }}</span></li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post" action="/admin/{{ kind }}/merge">
+  <input type="hidden" name="keep" value="{{ keep.id }}">
+  <input type="hidden" name="absorb" value="{{ absorb.id }}">
+  <input type="hidden" name="fingerprint" value="{{ fingerprint }}">
+
+  <section class="rec-section">
+    <h2>{{ t("merge-conflicts") }}</h2>
+    {% if conflicts %}
+    {% for c in conflicts %}
+    <fieldset class="merge-conflict">
+      <legend>{{ c.label }}</legend>
+      {% for ch in c.choices %}
+      <label class="merge-choice">
+        <input type="radio" name="choice:{{ c.field }}" value="{{ ch.value }}" {{ "checked" if ch.checked }} required>
+        <span class="merge-choice-label">{{ ch.label }}</span>
+        {% if ch.text %}<span class="merge-value"><bdi>{{ ch.text }}</bdi></span>{% endif %}
+      </label>
+      {% endfor %}
+      {% if c.because or c.becomes %}<p class="small muted">{{ c.because or "" }}{% if c.because and c.becomes %} {% endif %}{{ c.becomes or "" }}</p>{% endif %}
+    </fieldset>
+    {% endfor %}
+    {% else %}
+    <p class="muted">{{ t("merge-nothing") }}</p>
+    {% endif %}
+  </section>
+
+  {% if agreements %}
+  <section class="rec-section">
+    <h2>{{ t("merge-agreements") }}</h2>
+    <dl class="merge-facts">
+      {% for a in agreements %}<div><dt>{{ a.label }}</dt><dd>{{ a.from }}</dd></div>{% endfor %}
+    </dl>
+  </section>
+  {% endif %}
+
+  <section class="rec-section">
+    <h2>{{ t("merge-effects") }}</h2>
+    <dl class="merge-facts">
+      {% for r in references %}<div><dt>{{ t("merge-effect-references") }}</dt><dd>{{ r.label }}</dd></div>{% endfor %}
+      <div><dt>{{ t("merge-effect-self-links") }}</dt><dd>{{ self_links }}</dd></div>
+      <div><dt>{{ t("merge-effect-listed-twice") }}</dt><dd>{{ listed_twice }}</dd></div>
+      <div><dt>{{ t("merge-effect-same-couple") }}</dt><dd>{{ same_couple }}</dd></div>
+    </dl>
+  </section>
+
+  {% if blocked %}
+  <div class="cta-row">
+    <a class="btn" href="{{ list_back }}">{{ t("admin-cancel") }}</a>
+  </div>
+  {% else %}
+  {% if confirm %}
+  <p><label>{{ t("merge-confirm-label", name=confirm) }}
+    <input type="text" name="confirm" autocomplete="off" required></label></p>
+  {% endif %}
+  <div class="cta-row">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("merge-go") }}</button>
+    <a class="btn" href="{{ list_back }}">{{ t("admin-cancel") }}</a>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}

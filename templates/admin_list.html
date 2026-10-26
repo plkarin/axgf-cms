@@ -58,6 +58,11 @@
       <th colspan="{{ columns }}"><div class="bulk-inner">
         <span class="bulk-count" data-bulk-count data-forms="{{ selected_forms }}">{{ t("list-selected", n=0) }}</span>
         <button class="btn small" form="bulk" type="submit" name="action" value="export">{{ t("list-export") }}</button>
+        {%- if can_merge %}
+        {#- Two records a person says are one: enabled with exactly two
+            ticked (ui.js); without scripts the server says so. #}
+        <button class="btn small" form="bulk" type="submit" name="action" value="merge" data-bulk-pair title="{{ t('merge-needs-two') }}">{{ t("merge-action") }}</button>
+        {%- endif %}
         <button class="btn small danger" form="bulk" type="submit" name="action" value="confirm">{{ t("admin-delete") }}</button>
         <span class="bulk-esc">{{ t("list-escape") }}</span>
       </div></th>

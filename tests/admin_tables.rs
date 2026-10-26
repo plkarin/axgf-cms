@@ -75,15 +75,15 @@ async fn a_listing_selects_rows_and_draws_filiation_in_the_rivers_lines() {
     assert!(html.contains("data-bulk-all"));
     assert!(html.contains(r#"<tr class="bulk-bar" data-bulk-bar data-js-hidden>"#));
     assert!(html.contains(r#"value="export""#) && html.contains(r#"value="confirm""#));
-    // Exactly those two. No merge, not even a disabled one: the library has
-    // no record merge, and a control that cannot work is not shipped.
+    // And a merge, since axgf-rs 0.6 merges two records (docs/adr/0018):
+    // families are one of the four kinds it merges. Not disabled in the page:
+    // ui.js enables it for exactly two ticked rows, and without scripts the
+    // server says why anything else is refused.
     let bar = &html[html.find("data-bulk-bar").unwrap()..];
     let bar = &bar[..bar.find("</tr>").unwrap()];
-    assert_eq!(bar.matches("<button").count(), 2, "{bar}");
-    assert!(
-        !bar.contains("disabled") && !bar.to_lowercase().contains("merge"),
-        "{bar}"
-    );
+    assert_eq!(bar.matches("<button").count(), 3, "{bar}");
+    assert!(bar.contains(r#"value="merge" data-bulk-pair"#), "{bar}");
+    assert!(!bar.contains("disabled"), "{bar}");
     // 0.95, 0.6, 0.3: attested, inferred, speculative — solid, dashed, dotted.
     let cell = &html[html
         .find(r#"<td class="filiation">"#)

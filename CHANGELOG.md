@@ -555,6 +555,7 @@ is out.
   centre's 30; they are now 14 and 18, as at 1280.
 
 ### Fixed
+
 - **Phones** (the operator's review, 2026-10-25): the pieces of the page lay
   scattered at phone width. Now:
   - the masthead is a tidy grid: the logo, the name and the account (its
@@ -567,6 +568,7 @@ is out.
     lists) become a list of cards instead of columns a few letters wide;
   - the tree page arrives on the person it stands on rather than on the
     tree's left edge.
+
 - Summit's sun only ever rose: it counted the itinerary's people, so going
   down to the ancestors raised it too, and after six it stood still. It now
   follows the climb, a step up for every generation toward the summit and a

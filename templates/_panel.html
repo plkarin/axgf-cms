@@ -33,9 +33,9 @@
          Identity section below, and saying it twice in a narrow column is how
          a header turns into a run-on string. #}
       {% set facts = [p.gender] if p.gender else [] %}
-      {% if p.living_presumed %}{% set facts = facts + [t("record-presumed-deceased")] %}
-      {% elif p.is_living %}{% set facts = facts + [t("record-living-yes")] %}
-      {% elif p.death.present %}{% set facts = facts + [t("record-deceased")] %}{% endif %}
+      {% if p.living_presumed %}{% set facts = facts + [t("record-presumed-deceased", gender=p.sex)] %}
+      {% elif p.is_living %}{% set facts = facts + [t("record-living-yes", gender=p.sex)] %}
+      {% elif p.death.present %}{% set facts = facts + [t("record-deceased", gender=p.sex)] %}{% endif %}
       {% if facts %}<p class="lede small">{{ facts | join(" · ") }}</p>{% endif %}
     </div>
     </div>

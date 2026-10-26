@@ -403,7 +403,7 @@
     fr.persons.slice().sort(function (a, b) { return (a.k || 1) - (b.k || 1); }).forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', fm = F[p.key], x = f(p.x), y = f(p.y), g = '<g opacity="' + f(p.a) + '">';
       var bx = p.x - fm.rx, by = p.y - fm.ry, bw = fm.rx * 2, bh = fm.ry * 2, inset = Math.max(2, fm.rx * 0.16);
-      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><rect x="' + f(bx - 6) + '" y="' + f(by - 6) + '" width="' + f(bw + 12) + '" height="' + f(bh + 12) + '" fill="transparent"/>';
+      if (rest) g += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><rect x="' + f(bx - 6) + '" y="' + f(by - 6) + '" width="' + f(bw + 12) + '" height="' + f(bh + 12) + '" fill="transparent"/>';
       var Lb = keep[p.key];
       if (Lb && !s.redacted) {
         g += '<g class="gn-plate">';
@@ -439,7 +439,7 @@
       Object.keys(keep).forEach(function (k) { if (!keep[k].centre) named[k] = keep[k]; });
     }
     var head = '<svg class="rv-svg gn-svg" data-view="scroll" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="img" aria-label="' + esc(label() + (C && C.s && !C.s.redacted ? ' — ' + C.s.names[2] : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="group" aria-label="' + esc(label() + (C && C.s && !C.s.redacted ? ' — ' + C.s.names[2] : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>'
       // A print lighter at its middle, as an old photograph is.
       + '<radialGradient id="gn-print-g" cx="0.5" cy="0.42" r="0.62"><stop offset="0" class="gn-print-hi"/><stop offset="1" class="gn-print-lo"/></radialGradient></defs>';

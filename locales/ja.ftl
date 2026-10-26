@@ -40,22 +40,18 @@ settings-title = 設定
 edit-mode-label = 編集中 — 保存した内容は家族の記録を変更します
 display-menu-label = 言語と表示
 display-settings = テーマと表示…
-settings-tabs-label = 設定の節
 settings-tab-theme = 配色
 settings-tab-language = 言語
 settings-tab-appearance = 表示
 settings-done = 完了
 prefs-language = 言語
 prefs-theme = 配色
-prefs-background = 背景
 prefs-background-on = ページの背後にごく淡い色のぼかしを敷く
 prefs-apply = 適用
 busy-saving = 保存中…
 busy-working = 処理中…
-prefs-reviewed = 校閲済み
 prefs-machine = 機械翻訳、{ $coverage }%
 prefs-machine-complete = 全項目訳出、未校閲
-prefs-machine-title = 母語話者の校閲を経ずに翻訳されています。とくに系譜学の語彙は誤っている可能性があります。婚姻関係、代父母、一次資料を表す語は、国ごとの記録の伝統によって異なります。訂正を歓迎します。CONTRIBUTING.md に着手点を記しています。
 
 theme-canopee = 林冠
 theme-canopee-note = 暗い・森の緑・既定
@@ -72,7 +68,6 @@ tree-title-around = { $name }の周辺
 tree-title-whole = 家系図の全体
 tree-lede-focused = 祖先{ $ancestors }名、子孫{ $descendants }名、配偶者・伴侶{ $spouses }名、各方向{ $depth }世代。
 tree-filter-label = 表示中のカードを絞り込む
-tree-centre-on = 中心にする人
 tree-depth = 各方向の世代数
 tree-show = 表示
 tree-hidden-notice = { $n }名は詳細を伏せて表示されています
@@ -81,7 +76,6 @@ tree-hidden-because-anonymous = 。公開されていないためです。
 tree-hidden-sign-in = アカウントをお持ちならログインしてください。
 tree-restricted-card = この人の記録は閲覧できません
 tree-empty = まだ描く相手がいません。
-tree-unplaced = どの家族にも記録されていない
 
 ## 記録
 
@@ -94,21 +88,15 @@ record-places = 場所
 record-sources-documents = 出典と資料
 record-notes = 覚書
 record-history = 変更履歴
-record-raw = 生データ
-record-raw-summary-note = このページの元になった JSON
 
 record-identity-help = 記録されたすべての名前と、その種別、使われた期間、裏づけとなる出典。原文の文字とラテン文字転写が異なる場合は並べて示します。性別、存命かどうか、公開範囲も含みます。
 record-life-events-help = 出生、死亡、そしてこの人が関わったすべての出来事を日付順に、それぞれの立場とともに示します。証人として立ち会っただけの結婚も、本人の結婚と並びます。日付のない事実は先頭を装わず、末尾に置かれます。
-life-nothing-recorded = この人物には出来事も職業も場所も記録されていません。変換されたファイルでは珍しくありません。GEDCOM は誰かが書き留めたものを運ぶだけで、その多くは名前と日付です。
-life-add-first = 最初の出来事を記録する
 record-family-help = 両親ときょうだい、続いて各婚姻関係の種別、日付、場所、終わり方、そして出生順の子どもたち。
 record-other-relationships-help = この人が一方の端にあるすべての関連を、その人の側から読んだもの。同じ記録が一方から見れば「〜の代父」、他方から見れば「〜の代子」となります。
-record-occupations-help = 職業を一本の共通軸の上の期間として示すので、二つの勤めを目で比べられます。端が不明なものは棒が開いたままになります。
 record-places-help = この記録が触れるすべての場所と、そこで起きたこと、そして時代をまたいで場所の意味を支える国境の変遷。
 record-sources-documents-help = 各出典は、そのページ上でその出典に依拠している事実を、根拠の強さの順に挙げます。
 record-notes-help = この記録についての覚書。どの変換器も解釈できず、捨てる代わりに原文のまま保存された文字列も含みます。
 record-history-help = この記録に保存されたすべての変更を新しい順に。誰が何を直したかは、家系図を管理する人についての事実であって、そこに記された家族についての事実ではありません。そのため書き出されるアーカイブには含めず、ログインした親族にのみ表示します。
-record-raw-help = ここに表示用に作られたものはありません。項目名に至るまで、保存されているままの記録です。将来このサイトなしでアーカイブを読む必要が生じたとき、目にするのはこれです。
 record-help-toggle = この節に表示される内容
 
 record-gender = 性別
@@ -130,6 +118,7 @@ record-restricted-person = 非公開
 record-restricted-title = この人の記録は閲覧できません
 record-absent-person-title = この家系図に名前は出るが記録はない
 record-confidence = 確度
+conf-percent = { $percent }%
 record-source = 出典
 record-download = ダウンロード
 
@@ -231,7 +220,6 @@ admin-operations = 操作
 admin-validate = 検証
 admin-deduplicate = 重複を統合
 admin-export = アーカイブを書き出す
-admin-accounts = アカウント
 admin-roles-note = 検証、重複の統合、書き出し、削除、アカウント管理は管理者のみが行えます。編集者はここにあるその他すべてのページを利用できます。
 admin-dedup-confirm = 重複の統合は記録を融合し、アーカイブを書き換えます。続けますか。
 admin-recent-changes = 最近の変更
@@ -248,7 +236,6 @@ admin-raw-json-help = 記録の全体です。編集できないものは何も�
 admin-save = 保存
 admin-cancel = 取消
 place-editor-title = 場所を編集
-place-add-detail = この場所を補う
 place-names = 名称
 place-name-primary = 主
 place-name-lang = 言語
@@ -324,15 +311,10 @@ person-tab-life = 出来事
 person-tab-media = メディア
 person-tab-tree = 系図
 person-tab-history = 履歴
-person-tree-depth = 上下それぞれ { $n } 世代。系図の全体は下にあります。
-person-tree-alone = この記録には親も配偶者も子も記されていないため、まわりに描く形がありません。
 
-record-no-evidence = この記録には何も添付されていません。出典も資料もありません。変換されたファイルではこれが通常の状態であり、欠陥ではありません。GEDCOM は事実を運び、それを裏づけたものを置き去りにします。
-record-no-evidence-signed-out = 添付するにはサインインしてください。
 admin-delete = 削除
 admin-not-set = — 未設定 —
 admin-edit = 編集
-admin-page-of = { $pages }ページ中{ $page }ページ目
 list-select-row = { $name }を選択
 list-kind-label = 種類
 list-select-page = このページの行をすべて選択
@@ -430,7 +412,6 @@ conflict-history-of = この{ $kind }の履歴
 convert-title = 家族のファイルを取り込む
 convert-submit = 取り込む
 convert-result-title = 取り込み報告
-convert-download = アーカイブをダウンロード
 
 ## 日付
 
@@ -480,7 +461,6 @@ error-export-unreadable-detail = { $error }
 ## 家系図のページ（続き）
 
 tree-title-suffix = 家系図
-tree-back-to-focused = 一人を中心とした表示に戻る
 tree-show-all = { $n }名すべてを表示
 tree-width-notice = この表示は幅{ $width }ピクセルです。幅1500ピクセルの画面なら{ $screens }画面分の横スクロールにあたります。
 tree-confidence-label = 確度:
@@ -505,8 +485,6 @@ tree-edge-parentage = 記録された親子関係
 
 home-empty = まだ何も記録されていません。
 home-count = 記録{ $total }件。家族のものである一つのファイルに収まっています。
-home-browse = 家系図を見る
-home-convert = 家族のファイルを取り込む
 home-unnamed-family = この家系図
 home-in-this-tree = 家族がこれまでに記録したもの
 home-showcase-title = この家系図がすでに名前と日付以上を語っているところ
@@ -567,10 +545,6 @@ record-read-as = 読み
 record-note = 覚書
 record-living-yes = 存命
 record-deceased = 故人
-record-centre-tree-here = ここを家系図の中心にする
-record-centre-tree-title = この人を中心にして家系図を動かす
-record-see-in-tree = 家系図で見る
-record-see-in-tree-title = この人を中心にカード一覧を開く
 record-open-full-page = 単独のページで開く ↗
 record-open-full-title = 共有できる単独のページを開く
 record-edit = 編集
@@ -579,7 +553,6 @@ view-tree-see = 木で見る
 view-galaxy-see = 銀河で見る
 view-summit-see = 山で見る
 panel-empty = カードを選ぶと、その人の記録の全体がここに表示されます。
-person-see-in-tree = この人を家系図で見る
 person-visibility-inline = 公開範囲:
 person-age-at-death = { $n }歳で死去
 person-age-now = { $n }歳
@@ -632,10 +605,6 @@ record-file = ファイル
 record-status = 状態
 record-size = サイズ
 record-absent-document = この人が挙げているが、ここには保存されていません。
-record-no-file = ファイルなし
-record-attach-document = 資料を添付する
-record-upload = アップロード
-record-upload-help = 1ファイルにつき{ $mb } MB まで。添付は家系図の隣に保管され、書き出しのときアーカイブへ書き戻されるので、写真はそれが属する家族と一緒に移動します。種類はファイル名ではなく中身から判定し、画像、PDF、平文テキスト、音声、動画を受け付けます。SVG はスクリプトを含みうるため拒否します。
 record-upload-help-short = { $mb } MB まで。SVG は拒否します。
 record-verbatim-note = どの変換器も解釈できなかったため、記録にあったとおりに残してあります。
 record-file-to-attach = 添付するファイル
@@ -672,7 +641,6 @@ list-filter = 絞り込む
 list-clear = 解除
 list-summary = 概要
 list-id = 識別子
-list-actions = 操作
 list-nothing = ここには何もありません。
 list-nothing-matching = 「{ $q }」に該当するものはここにありません。
 list-delete-confirm = この{ $kind }を削除しますか。これを参照している記録の扱いを選んでください:
@@ -739,7 +707,6 @@ admin-dedup-refused = 重複の統合は行われませんでした
 record-birth-order = 出生順
 record-start-not-recorded = 開始は未記録
 record-end-not-recorded = 終了は未記録
-record-document-no-file = 資料はここに記録されていますが、ファイル自体はありません
 panel-selected-person = 選択中の人物
 
 ## 世代の帯
@@ -818,7 +785,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = 無題の{ $type }
-list-unnamed = 名称のない{ $kind }
 
 ## 一覧で使う仕様の語彙
 
@@ -923,7 +889,6 @@ phys-field-religion = 宗教または所属
 phys-field-health-notes = 備考
 admin-export-health-note = 通常の書き出しでは、すべての機微な区分（健康と信条、生体情報、ゲノムデータ、犯罪歴）と、存命の人の行動プロファイルを除くため、親族に送るファイルにはそのいずれも入りません。特定のファイルに含めるものにチェックを入れてください。どの区分を除いたかはアーカイブ自体に記録されます。
 avatar-picker-title = 画像を選ぶ
-avatar-choose-link = 画像を選ぶ
 avatar-choose = この人を表す画像
 avatar-mode-auto = ソフトウェアに任せる
 avatar-mode-auto-note = 最初の肖像、なければこの記録に結び付けられた最初の画像。
@@ -1025,7 +990,6 @@ precision-decade = 十年単位
 precision-century = 世紀単位
 precision-unknown = 不明
 record-precision = 精度
-record-approximate = おおよそ
 record-place = 場所
 
 ## The relationships editor
@@ -1130,13 +1094,11 @@ documents-attached = この記録に添付
 documents-upload = ファイルをアップロード
 documents-upload-help = { $mb } MB まで。ファイルは書庫に収められ、この記録に添付されます。
 documents-caption = 説明
-documents-edit-link = 資料の添付と取り外し
 events-edit-link = 出来事を編集
 
 ## Presentation styles: density, never colour
 
 prefs-style = 密度
-prefs-style-help = ページがどれだけ場所を取るか。色だけを扱うテーマとは別なので、どの組み合わせも選べます。
 style-comfortable = ゆったり
 style-comfortable-note = 既定。読むための余白があります
 style-compact = 詰めて
@@ -2785,8 +2747,6 @@ dedup-manual-review = { $n } 件を人による確認のために残しました
 dedup-nothing = 報告することはありません。
 record-union-duplicate = 一組の夫婦に、複数の記録。
 record-union-duplicate-detail = この二人について、別々の家族記録が保存されています。データの不備であり、二度目の関係ではありません。
-record-union-duplicate-action = 重複を統合
-record-union-duplicate-confirm = パッケージ全体の重複を解消しますか。ライブラリが統合できる組はすべて統合され、残りは報告されます。
 dedup-pair-merged = 対象の組は一つの記録になりました。
 dedup-pair-refused = 対象の組は統合されませんでした。ライブラリが拒否し、人の判断に委ねました。
 
@@ -3084,7 +3044,6 @@ view-summit-still = 山を止める
 river-whole = 家族全員
 river-names-all = すべての名前
 river-zoom-hint = ズーム：Ctrl＋ホイール、ピンチ、または + / − ・拡大中はドラッグで移動
-river-grid-link = グリッド表示
 river-tab-sources = 出典
 river-legend-title = 流れの読み方
 view-tree-name = 生命の木

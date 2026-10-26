@@ -1039,9 +1039,17 @@
   }
   // What a view may use of this file: the river's own helpers, so that a
   // view's words, curves and counts are measured and placed as the river's.
+  // What a person is called to a screen reader, whatever their label shows:
+  // a name cut for room, or none, is still somebody (QA-33). The server's
+  // river says the same in its SVG.
+  function said(p) {
+    var s = (p && p.s) || {};
+    if (s.redacted || !s.names || !s.names[2]) return privateWord;
+    return s.names[2] + (s.years ? ', ' + s.years : '');
+  }
   var api = { f: f, vc: vc, esc: esc, cls: cls, widths: WIDTHS, mono: MONO, byKey: byKey, edges: edges,
     tiers: tiers, width: width, clip: clip, mark: mark, privateWord: privateWord, base: base,
-    words: function () { return cur.words; } };
+    said: said, words: function () { return cur.words; } };
   // The masthead search (ui.js) travels here rather than reloading the page.
   window.axgfRiver = { travel: function (id, n) { travel(id, n); }, layout: sceneLayout };
   here = shaped(cur);

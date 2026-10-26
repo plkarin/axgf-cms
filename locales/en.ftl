@@ -30,22 +30,18 @@ settings-title = Settings
 edit-mode-label = Editing — what you save changes the family's records
 display-menu-label = Language and display
 display-settings = Theme and display…
-settings-tabs-label = Settings sections
 settings-tab-theme = Theme
 settings-tab-language = Language
 settings-tab-appearance = Appearance
 settings-done = Done
 prefs-language = Language
 prefs-theme = Theme
-prefs-background = Background
 prefs-background-on = A soft wash of colour behind the page
 prefs-apply = Apply
 busy-saving = Saving…
 busy-working = Working…
-prefs-reviewed = reviewed
 prefs-machine = machine, { $coverage }%
 prefs-machine-complete = complete, not yet reviewed
-prefs-machine-title = Translated without review by a native speaker. Genealogical vocabulary especially may be wrong — the words for a union, a godparent or a primary source differ by national record-keeping tradition. Corrections are welcome, and CONTRIBUTING.md says where to start.
 
 theme-canopee = Canopy
 theme-canopee-note = dark, forest green · the default
@@ -71,7 +67,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } partners
     }, { $depth } generations each way.
 tree-filter-label = Filter visible cards
-tree-centre-on = Centre on
 tree-depth = Generations each way
 tree-show = Show
 tree-hidden-notice = { $n ->
@@ -83,7 +78,6 @@ tree-hidden-because-anonymous = , because they are not public.
 tree-hidden-sign-in = Sign in if you have an account.
 tree-restricted-card = This person's record is not visible to you
 tree-empty = There is nobody to draw yet.
-tree-unplaced = In no recorded family
 
 ## The record
 
@@ -96,21 +90,15 @@ record-places = Places
 record-sources-documents = Sources and documents
 record-notes = Notes
 record-history = History
-record-raw = Raw entity
-record-raw-summary-note = the JSON this page was built from
 
 record-identity-help = Every recorded name with its type, the period it was used and the source behind it, with the native script and its Latin transliteration side by side where they differ, plus gender, living status and visibility.
 record-life-events-help = Birth, death and every event this person took part in, in date order, each with their role — so a marriage they merely witnessed appears alongside their own. An undated fact sorts last rather than pretending to come first.
-life-nothing-recorded = No event, occupation or place is recorded for this person. On a converted file that is ordinary: GEDCOM carries what somebody wrote down, and most entries are a name and a date.
-life-add-first = Record the first event
 record-family-help = Parents and siblings, then each union with its type, dates, place, how it ended and its children in birth order.
 record-other-relationships-help = Every link with this person at either end, read from their side, so the same record shows as "godfather of" from one end and "godchild of" from the other.
-record-occupations-help = Occupations as spans on one shared axis, so two posts can be compared by eye, with open-ended bars where a bound is missing.
 record-places-help = Every place this record touches, with what happened at each and the border history that makes a place meaningful across time.
 record-sources-documents-help = Every source names the facts on this page that rest on it, ordered by how strong the evidence is.
 record-notes-help = Notes on this record, including text a converter could not parse and kept verbatim rather than dropping.
 record-history-help = Every saved change to this record, newest first. Who corrected what is a fact about the people keeping the tree rather than about the family in it, so it is kept out of the exported archive and shown only to relatives who are signed in.
-record-raw-help = Nothing here is generated for display: this is the record exactly as it is stored, down to the field names. If you ever need to read the archive without this site, this is what you would see.
 record-help-toggle = What this section shows
 
 record-gender = Gender
@@ -132,6 +120,7 @@ record-restricted-person = Private
 record-restricted-title = This person's record is not visible to you
 record-absent-person-title = Named in this tree but not recorded in it
 record-confidence = Confidence
+conf-percent = { $percent }%
 record-source = Source
 record-download = Download
 
@@ -236,7 +225,6 @@ admin-operations = Operations
 admin-validate = Validate
 admin-deduplicate = Deduplicate
 admin-export = Export the archive
-admin-accounts = Accounts
 admin-roles-note = Validate, deduplicate, export, delete and account management are administrator-only. A contributor reaches every other page here.
 admin-dedup-confirm = Deduplicating merges records and rewrites the archive. Continue?
 admin-recent-changes = Recent changes
@@ -262,7 +250,6 @@ admin-raw-json-help = The whole entity, so nothing is uneditable — lists such 
 admin-save = Save
 admin-cancel = Cancel
 place-editor-title = Edit a place
-place-add-detail = Add detail to this place
 place-names = Names
 place-name-primary = Primary
 place-name-lang = Language
@@ -341,15 +328,10 @@ person-tab-life = Events
 person-tab-media = Media
 person-tab-tree = Tree
 person-tab-history = History
-person-tree-depth = { $n } generations either way. The whole tree is below.
-person-tree-alone = This record names no parents, partners or children, so there is no shape to draw around it.
 
-record-no-evidence = Nothing is attached to this record — no source and no document. That is the ordinary state of a converted file rather than a fault in it: GEDCOM carries the facts and leaves behind whatever proved them.
-record-no-evidence-signed-out = Sign in to attach one.
 admin-delete = Delete
 admin-not-set = — not set —
 admin-edit = Edit
-admin-page-of = Page { $page } of { $pages }
 list-select-row = Select { $name }
 list-kind-label = Type
 list-select-page = Select every row on this page
@@ -462,7 +444,6 @@ conflict-history-of = This { $kind }'s history
 convert-title = Import a family file
 convert-submit = Import
 convert-result-title = Import report
-convert-download = Download the archive
 
 ## Dates
 #
@@ -556,7 +537,6 @@ error-export-unreadable-detail = { $error }
 ## Tree page, continued
 
 tree-title-suffix = tree
-tree-back-to-focused = Back to the focused view
 tree-show-all = Show all { $n }
 tree-width-notice = This view is { $width }px wide — on a 1500px screen, { $screens ->
         [one] one screen
@@ -593,8 +573,6 @@ home-count = { $total ->
         [one] One record
        *[other] { $total } records
     }, held in one file the family owns.
-home-browse = Browse the tree
-home-convert = Import a family file
 home-unnamed-family = This family tree
 home-in-this-tree = What the family has recorded so far
 home-showcase-title = Where this tree already says more than names and dates
@@ -676,10 +654,6 @@ record-read-as = read as
 record-note = Note
 record-living-yes = living
 record-deceased = deceased
-record-centre-tree-here = Centre the tree here
-record-centre-tree-title = Move the tree to centre on this person
-record-see-in-tree = See in the tree
-record-see-in-tree-title = Open the grid of cards around this person
 record-open-full-page = Open full page ↗
 record-open-full-title = Open the standalone, shareable page
 record-edit = Edit
@@ -688,10 +662,12 @@ view-tree-see = See in the tree
 view-galaxy-see = See in the galaxy
 view-summit-see = See on the mountain
 panel-empty = Select a card to see that person's full record here.
-person-see-in-tree = See this person in the tree
 person-visibility-inline = visibility:
 person-age-at-death = died at { $n }
-person-age-now = { $n } years old
+person-age-now = { $n ->
+        [one] { $n } year old
+       *[other] { $n } years old
+    }
 person-born-in = born in { $place }
 person-died-in = died in { $place }
 person-children-count = { $n ->
@@ -747,10 +723,6 @@ record-file = File
 record-status = Status
 record-size = Size
 record-absent-document = Named by this person but not held here.
-record-no-file = no file
-record-attach-document = Attach a document
-record-upload = Upload
-record-upload-help = Up to { $mb } MB per file. Attachments are held beside the tree and written back into the archive when you export, so a photograph travels with the family it belongs to. The kind of file is read from its own contents rather than its name: images, PDF, plain text, audio and video are accepted. SVG is refused, because an SVG can carry a script.
 record-upload-help-short = Up to { $mb } MB. SVG is refused.
 record-verbatim-note = Kept exactly as the record stated it, because no converter could interpret it.
 record-file-to-attach = File to attach
@@ -817,7 +789,6 @@ list-filter = Filter
 list-clear = Clear
 list-summary = Summary
 list-id = Id
-list-actions = Actions
 list-nothing = Nothing here.
 list-nothing-matching = Nothing here matching “{ $q }”.
 list-delete-confirm = Delete this { $kind }? Choose what happens to entities that reference it:
@@ -902,7 +873,6 @@ admin-dedup-refused = Deduplication refused
 record-birth-order = birth order
 record-start-not-recorded = start not recorded
 record-end-not-recorded = end not recorded
-record-document-no-file = The document is recorded here, but the file itself is not held
 panel-selected-person = Selected person
 
 ## Tree bands
@@ -1020,7 +990,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = Untitled { $type }
-list-unnamed = Unnamed { $kind }
 
 ## Specification vocabularies used in listings
 #
@@ -1156,7 +1125,6 @@ phys-field-religion = Religion or affiliations
 phys-field-health-notes = Notes
 admin-export-health-note = The plain export leaves out every sensitive class — health and belief, biometrics, genomic data and criminal records — and the behavioural profile of anyone living, so a file sent to a relative carries none of them. Tick what one particular file should carry; the archive itself records which classes were left out.
 avatar-picker-title = Choose a picture
-avatar-choose-link = Choose picture
 avatar-choose = Which picture stands for this person
 avatar-mode-auto = Let the software pick
 avatar-mode-auto-note = The first portrait, or failing that the first image linked to this record.
@@ -1260,7 +1228,6 @@ precision-decade = to the decade
 precision-century = to the century
 precision-unknown = not known
 record-precision = Precision
-record-approximate = Approximate
 record-place = Place
 
 ## The relationships editor
@@ -1365,13 +1332,11 @@ documents-attached = Attached to this record
 documents-upload = Upload a file
 documents-upload-help = Up to { $mb } MB. The file is stored in the archive and attached to this record.
 documents-caption = Caption
-documents-edit-link = Attach and detach documents
 events-edit-link = Edit events
 
 ## Presentation styles: density, never colour
 
 prefs-style = Density
-prefs-style-help = How much room the page takes. Separate from the theme, which is only about colour, so you can have any of these with any of those.
 style-comfortable = Comfortable
 style-comfortable-note = the default, with room to read
 style-compact = Compact
@@ -3044,8 +3009,6 @@ dedup-manual-review = { $n ->
 dedup-nothing = Nothing to report.
 record-union-duplicate = One couple, more than one record.
 record-union-duplicate-detail = The bundle keeps separate Family records for these two people. That is a defect in the data, not a second union.
-record-union-duplicate-action = Merge duplicates
-record-union-duplicate-confirm = Deduplicate the whole bundle? Every pair the library can merge is merged; the rest are reported.
 dedup-pair-merged = The pair you asked about is now one record.
 dedup-pair-refused = The pair you asked about was not merged: the library refused it and left it for a person to review.
 
@@ -3364,7 +3327,6 @@ view-summit-still = Hold the mountain still
 river-whole = Whole family
 river-names-all = All names
 river-zoom-hint = Zoom: Ctrl + wheel, pinch, or + / − · zoomed in, drag to move
-river-grid-link = Grid view
 river-tab-sources = Sources
 river-legend-title = How to read the river
 view-tree-name = Living tree

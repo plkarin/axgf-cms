@@ -52,27 +52,27 @@
       <span class="pv-dates">
         {{- m.date(p.birth.date) if born -}}
         {%- if born and (died or p.is_living or p.living_presumed) %}<span class="sep"> – </span>{% elif not born %}<span class="sep">– </span>{% endif -%}
-        {%- if p.is_living %}{{ t("record-living-yes") }}
+        {%- if p.is_living %}{{ t("record-living-yes", gender=p.sex) }}
         {%- elif died %}{{ m.date(p.death.date) }}
         {%- elif p.living_presumed %}<span class="presumed"
-            title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased") }}</span>
+            title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-deceased", gender=p.sex) }}</span>
         {%- endif -%}
       </span>
       {%- endif %}
       {%- if p.header.age is not none %}
-      <span class="sep"> · </span>{% if p.header.age_is_current %}{{ t("person-age-now", n=p.header.age) }}
-      {%- else %}{{ t("person-age-at-death", n=p.header.age) }}{% endif %}
+      <span class="sep"> · </span>{% if p.header.age_is_current %}{{ t("person-age-now", n=p.header.age, gender=p.sex) }}
+      {%- else %}{{ t("person-age-at-death", n=p.header.age, gender=p.sex) }}{% endif %}
       {%- endif %}
     </p>
 
     {#- What is recorded about them, joined by middots: whatever is absent
         leaves no separator behind. Visibility is an editing concern, so it is
         shown to the people who can act on it and to nobody else. -#}
-    {% set presumed = t("record-presumed-deceased") %}
+    {% set presumed = t("record-presumed-deceased", gender=p.sex) %}
     {% set facts = [p.gender] if p.gender else [] %}
-    {% if p.is_living %}{% set facts = facts + [t("record-living-yes")] %}
+    {% if p.is_living %}{% set facts = facts + [t("record-living-yes", gender=p.sex)] %}
     {% elif p.living_presumed %}{% set facts = facts + [presumed] %}
-    {% elif p.death.present %}{% set facts = facts + [t("record-deceased")] %}{% endif %}
+    {% elif p.death.present %}{% set facts = facts + [t("record-deceased", gender=p.sex)] %}{% endif %}
     {% if p.gender_note %}{% set facts = facts + [p.gender_note] %}{% endif %}
     {% if p.visibility and may_write %}{% set facts = facts + [t("person-visibility-inline") ~ " " ~ p.visibility] %}{% endif %}
     {% if facts %}
@@ -86,8 +86,8 @@
     {# Where they were, and how the record sits in the family. Each part is
        omitted when the bundle does not state it. #}
     {% set placing = [] %}
-    {% if p.birth.place %}{% set placing = placing + [t("person-born-in", place=p.birth.place.name)] %}{% endif %}
-    {% if p.death.place %}{% set placing = placing + [t("person-died-in", place=p.death.place.name)] %}{% endif %}
+    {% if p.birth.place %}{% set placing = placing + [t("person-born-in", place=p.birth.place.name, gender=p.sex)] %}{% endif %}
+    {% if p.death.place %}{% set placing = placing + [t("person-died-in", place=p.death.place.name, gender=p.sex)] %}{% endif %}
     {% if p.header.children %}{% set placing = placing + [t("person-children-count", n=p.header.children)] %}{% endif %}
     {% if p.header.generations_below %}{% set placing = placing + [t("person-generations-below", n=p.header.generations_below)] %}{% endif %}
     {% if placing %}

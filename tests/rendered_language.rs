@@ -66,6 +66,9 @@ const UNIVERSAL: &[&str] = &[
     "BMI",
     "SVG",
     "PDF",
+    // The time standard, as every catalogue writes it after an hour
+    // (`date-time-utc`); Chinese and Japanese write it too.
+    "UTC",
     // The product's one name in every language (`app-name`), and services
     // and registries named as themselves.
     "genealogy",

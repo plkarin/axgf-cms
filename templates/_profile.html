@@ -46,7 +46,7 @@
       {% if p.gender %}<div class="fc"><dt>{{ t("record-gender") }}</dt><dd>{{ p.gender }}</dd></div>{% endif %}
       {% if p.birth.present %}<div class="fc"><dt>{{ t("record-born") }}</dt><dd>{{ m.date(p.birth.date) }}
         {%- if p.birth.place %} · {{ m.place(p.birth.place) }}{% endif %}</dd></div>{% endif %}
-      <div class="fc"><dt>{{ t("record-life-status") }}</dt><dd>{{ t(p.living_key) }}</dd></div>
+      <div class="fc"><dt>{{ t("record-life-status") }}</dt><dd>{{ t(p.living_key, gender=p.sex) }}</dd></div>
     </dl>
   {% endif %}
 

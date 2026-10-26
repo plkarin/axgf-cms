@@ -35,6 +35,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A woman's record agrees with her** (QA-16): "née à Lyon", "vivante",
+  "décédée", "morte à 80 ans" in French, and the same in Spanish, Italian,
+  Portuguese, Polish, Russian, Arabic and Hebrew, chosen by the record's
+  recorded gender; an unknown one keeps the form the catalogue had.
+- **An age takes its plural** (QA-17): "1 an", "1 year old", "21 год",
+  "2 lata" in every catalogue, where it read "1 ans" and "1 лет".
+- **Times read as times** (QA-18): the dashboard's recent edits, a record's
+  history and the "someone changed this first" page give a date and an hour
+  in the reader's language, not `2026-10-19T21:12:11.261722189Z`.
+- **A percentage is written as the language writes it** (QA-22): "85 %"
+  in French, "85%" in English, on every confidence bar and the import's
+  starting confidence, which read "0.8".
+- **Every person in a view has a name a screen reader can say** (QA-33):
+  the river's links and the five views' carry "Name, years" (or "Private"),
+  and a drawing that holds links is a group rather than an image. The
+  river's SVG changes by those attributes alone (tests/fixtures/river-12.svg).
+- **42 translations nothing displayed** are gone from the fourteen
+  catalogues, and a test keeps every English key reachable (QA-35). The
+  review counted 95; the rest are built from a family name
+  (`source-type-*`, `reliability-*`, `calendar-*`, `diff-summary-*`) and are
+  used.
 - The places listing's bulk bar (delete, export) answered 404:
   `/admin/place/:id` took "bulk" for a place.
 - The Infrastructure page offered the upgrade button on any instance of a

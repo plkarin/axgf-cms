@@ -36,19 +36,16 @@ settings-title = الإعدادات
 edit-mode-label = وضع التحرير — ما تحفظه يغيّر سجلات العائلة
 display-menu-label = اللغة والعرض
 display-settings = السمة والعرض…
-settings-tabs-label = أقسام الإعدادات
 settings-tab-theme = السمة
 settings-tab-language = اللغة
 settings-tab-appearance = المظهر
 settings-done = تم
 prefs-language = اللغة
 prefs-theme = السمة
-prefs-background = الخلفية
 prefs-background-on = تدرّج لوني خفيف خلف الصفحة
 prefs-apply = تطبيق
 busy-saving = جارٍ الحفظ…
 busy-working = جارٍ التنفيذ…
-prefs-reviewed = مُراجَعة
 prefs-machine = آلية، { $coverage }٪
 
 theme-canopee = ظُلّة الغابة
@@ -85,7 +82,6 @@ tree-lede-focused = { $ancestors ->
        *[other] { $spouses } زوج
     }، { $depth } أجيال في كل اتجاه.
 tree-filter-label = تصفية البطاقات الظاهرة
-tree-centre-on = التمركز حول
 tree-depth = أجيال في كل اتجاه
 tree-show = إظهار
 tree-hidden-notice = { $n ->
@@ -101,7 +97,6 @@ tree-hidden-because-anonymous = ، لأنهم ليسوا علنيين.
 tree-hidden-sign-in = سجّل الدخول إن كان لديك حساب.
 tree-restricted-card = سجل هذا الشخص غير مرئي لك
 tree-empty = لا يحتوي هذا الملف على أحد لرسمه.
-tree-unplaced = ليس ضمن أي أسرة مسجّلة
 
 record-identity = الهوية
 record-life-events = أحداث الحياة
@@ -112,8 +107,6 @@ record-places = الأماكن
 record-sources-documents = المصادر والوثائق
 record-notes = ملاحظات
 record-history = سجل التعديلات
-record-raw = السجل الخام
-record-raw-summary-note = ملف JSON الذي بُنيت منه هذه الصفحة
 record-sources-documents-help = كل مصدر يسمّي ما في هذه الصفحة من وقائع تستند إليه، مرتّبة بحسب قوة الدليل.
 record-notes-help = ملاحظات على هذا السجل، ومنها نص عجز كل محوّل عن تفسيره فحُفظ بحرفه بدلًا من إسقاطه.
 record-help-toggle = ما يعرضه هذا القسم
@@ -137,6 +130,7 @@ record-restricted-person = خاص
 record-restricted-title = سجل هذا الشخص غير مرئي لك
 record-absent-person-title = مذكور في هذا الملف لكنه غير موجود فيه
 record-confidence = درجة اليقين
+conf-percent = { $percent }٪
 record-source = المصدر
 record-download = تنزيل
 
@@ -221,7 +215,6 @@ admin-operations = العمليات
 admin-validate = تحقّق
 admin-deduplicate = دمج المكرّرات
 admin-export = تصدير الملف
-admin-accounts = الحسابات
 admin-dedup-confirm = دمج المكرّرات يدمج السجلات ويعيد كتابة الملف. أتريد المتابعة؟
 admin-recent-changes = أحدث التغييرات
 admin-sessions-open = { $n ->
@@ -247,7 +240,6 @@ form-more-fields = { $n ->
 admin-save = حفظ
 admin-cancel = إلغاء
 place-editor-title = تحرير مكان
-place-add-detail = أضف تفاصيل لهذا المكان
 place-names = الأسماء
 place-name-primary = الاسم الأساسي
 place-name-lang = اللغة
@@ -330,15 +322,10 @@ person-tab-life = الأحداث
 person-tab-media = الوسائط
 person-tab-tree = الشجرة
 person-tab-history = السجل
-person-tree-depth = { $n } أجيال في كل اتجاه. الشجرة كاملةً في الأسفل.
-person-tree-alone = لا يسمّي هذا السجل والدين ولا أزواجًا ولا أبناء، فليس حوله شكل يُرسم.
 
-record-no-evidence = لا شيء مرفق بهذا السجل — لا مصدر ولا وثيقة. هذه هي الحال المعتادة لملف محوَّل، لا عيب فيه: يحمل GEDCOM الوقائع ويترك خلفه ما كان يثبتها.
-record-no-evidence-signed-out = سجّل الدخول لإرفاق شيء.
 admin-delete = حذف
 admin-not-set = — غير محدَّد —
 admin-edit = تحرير
-admin-page-of = صفحة { $page } من { $pages }
 list-select-row = تحديد { $name }
 list-kind-label = النوع
 list-select-page = تحديد كل صفوف هذه الصفحة
@@ -516,7 +503,6 @@ tree-band-unplaced-note = { $n ->
 ## بقية نصوص الشجرة
 
 tree-show-all = عرض الكل ({ $n })
-tree-back-to-focused = العودة إلى العرض المركّز
 tree-confidence-label = درجة اليقين:
 tree-band-certain = مؤكَّد
 tree-band-high = عالٍ
@@ -552,10 +538,6 @@ gender-U = غير مسجّل
 
 ## بقية نصوص السجل
 
-record-centre-tree-here = اجعل الشجرة تتمركز هنا
-record-centre-tree-title = حرّك الشجرة لتتمركز على هذا الشخص
-record-see-in-tree = اعرض في الشجرة
-record-see-in-tree-title = افتح شبكة البطاقات حول هذا الشخص
 record-open-full-page = افتح الصفحة الكاملة ↗
 record-open-full-title = افتح الصفحة المستقلة القابلة للمشاركة
 record-edit = تحرير
@@ -564,7 +546,10 @@ view-tree-see = عرض في الشجرة
 view-galaxy-see = عرض في المجرّة
 view-summit-see = عرض على الجبل
 record-living-yes = على قيد الحياة
-record-deceased = متوفّى
+record-deceased = { $gender ->
+        [F] متوفّاة
+       *[other] متوفّى
+    }
 record-display-name = الاسم المعروض
 record-read-as = يُقرأ
 record-also-recorded-as = مسجَّل أيضًا بوصفه
@@ -587,17 +572,43 @@ record-documents = الوثائق
 record-file = الملف
 record-status = الحالة
 record-size = الحجم
-record-no-file = لا ملف
-record-attach-document = إرفاق وثيقة
-record-upload = رفع
 panel-empty = اختر بطاقة لترى هنا السجل الكامل لذلك الشخص.
 panel-selected-person = الشخص المختار
-person-see-in-tree = انظر هذا الشخص في الشجرة
 person-visibility-inline = الظهور:
-person-age-at-death = تُوفّي عن { $n } عامًا
-person-age-now = { $n } عامًا
-person-born-in = وُلد في { $place }
-person-died-in = تُوفّي في { $place }
+person-age-at-death = { $gender ->
+        [F] { $n ->
+            [zero] تُوفّيت عن { $n } عام
+            [one] تُوفّيت عن عام واحد
+            [two] تُوفّيت عن عامين
+            [few] تُوفّيت عن { $n } أعوام
+            [many] تُوفّيت عن { $n } عامًا
+           *[other] تُوفّيت عن { $n } عام
+        }
+       *[other] { $n ->
+            [zero] تُوفّي عن { $n } عام
+            [one] تُوفّي عن عام واحد
+            [two] تُوفّي عن عامين
+            [few] تُوفّي عن { $n } أعوام
+            [many] تُوفّي عن { $n } عامًا
+           *[other] تُوفّي عن { $n } عام
+        }
+    }
+person-age-now = { $n ->
+        [zero] { $n } عام
+        [one] عام واحد
+        [two] عامان
+        [few] { $n } أعوام
+        [many] { $n } عامًا
+       *[other] { $n } عام
+    }
+person-born-in = { $gender ->
+        [F] وُلدت في { $place }
+       *[other] وُلد في { $place }
+    }
+person-died-in = { $gender ->
+        [F] تُوفّيت في { $place }
+       *[other] تُوفّي في { $place }
+    }
 person-children-count = { $n ->
         [zero] لا أطفال
         [one] طفل واحد
@@ -678,20 +689,15 @@ nav-convert = استيراد
 footer-credit = © 2026 · تصميم وتطوير: { $author }
 footer-format-link = صيغة AXGF على GitHub
 prefs-machine-complete = كاملة، لم تُراجَع بعد
-prefs-machine-title = تُرجمت دون مراجعة ممن العربية لغته الأولى. ومفردات علم الأنساب على وجه الخصوص قد تكون خاطئة: فألفاظ الاقتران والعرّاب والمصدر الأوّلي تختلف باختلاف تقاليد حفظ السجلات في كل بلد. التصويبات مرحّب بها، وملف CONTRIBUTING.md يبيّن من أين تبدأ.
 
 ## شروح أقسام السجل
 
 record-identity-help = كل اسم مسجَّل مع نوعه والمدة التي استُعمل فيها والمصدر الذي يسنده، مع الخط الأصلي إلى جانب النقل الحرفي اللاتيني حيث يختلفان، إضافة إلى النوع وحال الحياة ومدى الظهور.
 record-life-events-help = الميلاد والوفاة وكل واقعة شارك فيها هذا الشخص، مرتّبة بالتاريخ، كلٌّ مع دوره فيها — فزواجٌ شهده فحسب يقف إلى جانب زواجه هو. والواقعة بلا تاريخ تأتي في الآخر بدل أن تتظاهر بالأسبقية.
-life-nothing-recorded = لا حدث ولا مهنة ولا مكان مسجَّل لهذا الشخص. هذا هو المعتاد في ملف محوَّل: يحمل GEDCOM ما دوَّنه أحدهم، ومعظم المدخلات اسم وتاريخ.
-life-add-first = سجِّل الحدث الأول
 record-family-help = الوالدان والإخوة، ثم كل اقتران بنوعه وتواريخه ومكانه وكيف انتهى وأبنائه بترتيب الميلاد.
 record-other-relationships-help = كل صلة يقف هذا الشخص في أحد طرفيها، مقروءة من جهته: السجل نفسه يظهر «عرّابًا لـ» من طرف و«ابنًا بالعمادة لـ» من الطرف الآخر.
-record-occupations-help = المهن بوصفها مددًا على محور واحد مشترك، فتُقارَن وظيفتان بالعين؛ وحيث ينقص أحد الطرفين يبقى الشريط مفتوحًا.
 record-places-help = كل مكان يمسّه هذا السجل، مع ما جرى فيه ومع تاريخ الحدود الذي يجعل للمكان معنى عبر الزمن.
 record-history-help = كل تغيير محفوظ على هذا السجل، الأحدث أولًا. ومن صحّح ماذا حقيقةٌ عن القائمين على الشجرة لا عن العائلة التي فيها، ولذلك يبقى خارج الأرشيف المُصدَّر ولا يُعرض إلا لمن سجّل دخوله من الأقارب.
-record-raw-help = ليس هنا شيء مُولَّد للعرض: هذا هو السجل كما هو محفوظ تمامًا، حتى أسماء الحقول. ولو احتجت يومًا إلى قراءة الأرشيف من دون هذا الموقع، فهذا ما سترى.
 
 ## الوصول
 
@@ -771,7 +777,6 @@ conflict-reapply-hint = هذا تحريرك أنت، منقولًا إلى ال�
 convert-title = استيراد ملف عائلي
 convert-submit = استيراد
 convert-result-title = تقرير الاستيراد
-convert-download = تنزيل الأرشيف
 convert-page-title = استيراد ملف عائلي
 convert-lede = انقل شجرة قائمة من ملف GEDCOM — وهو التصدير الذي تنتجه معظم برامج الأنساب. لا يُحفظ هنا شيء، والشجرة التي يعرضها هذا الموقع تبقى كما هي تمامًا.
 convert-file-label = ملف عائلي (‎.ged‎)
@@ -852,8 +857,6 @@ home-count = { $total ->
         [many] { $total } سجلًا
        *[other] { $total } سجل
     }، في ملف واحد تملكه العائلة.
-home-browse = تصفّح الشجرة
-home-convert = استيراد ملف عائلي
 home-unnamed-family = شجرة العائلة هذه
 home-in-this-tree = ما سجّلته العائلة حتى الآن
 home-showcase-title = حيث تقول هذه الشجرة أكثر من الأسماء والتواريخ
@@ -966,7 +969,6 @@ result-dashboard = اللوحة
 
 record-notes-title = ما يُذكر عن هذا السجل:
 record-absent-document = ذكره هذا الشخص لكنه غير محفوظ هنا.
-record-upload-help = حتى { $mb } ميغابايت للملف. تُحفظ المرفقات بجوار الشجرة وتُكتب في الأرشيف عند التصدير، فتسافر الصورة مع العائلة التي تخصّها. ويُقرأ نوع الملف من محتواه لا من اسمه: تُقبل الصور وPDF والنص الصِّرف والصوت والفيديو. أما SVG فمرفوض، لأنه قد يحمل سكربتًا.
 record-upload-help-short = حتى { $mb } ميغابايت. وSVG مرفوض.
 record-verbatim-note = محفوظ كما جاء في السجل تمامًا، لأن أي محوِّل لم يستطع تأويله.
 record-file-to-attach = الملف المراد إرفاقه
@@ -1066,7 +1068,6 @@ list-filter = ترشيح
 list-clear = مسح
 list-summary = الوصف
 list-id = المعرّف
-list-actions = إجراءات
 list-nothing = لا شيء هنا.
 list-nothing-matching = لا شيء هنا يطابق «{ $q }».
 list-delete-confirm = أتحذف هذا السجل ({ $kind })؟ اختر ما يحلّ بالسجلات التي تشير إليه:
@@ -1130,7 +1131,6 @@ admin-dedup-refused = رُفضت إزالة التكرار
 record-birth-order = ترتيب الميلاد
 record-start-not-recorded = البداية غير مسجَّلة
 record-end-not-recorded = النهاية غير مسجَّلة
-record-document-no-file = المستند مسجَّل هنا، لكن الملف نفسه غير محفوظ
 
 ## ملاحظات على السجل
 
@@ -1197,7 +1197,6 @@ source-label = { $title } — { $reliability }
 source-label-plain = { $title }
 document-label = { $filename } — { $type }
 document-label-untitled = { $type } بلا عنوان
-list-unnamed = { $kind } بلا اسم
 
 ## مفردات المواصفة في القوائم
 
@@ -1345,7 +1344,6 @@ phys-field-religion = الدين أو الانتماء
 phys-field-health-notes = ملاحظات
 admin-export-health-note = يستبعد التصدير العادي كل فئة حساسة — الصحة والمعتقد، والبيانات البيومترية، والبيانات الجينومية، والسجل الجنائي — وكذلك الملف السلوكي لأي شخص على قيد الحياة، فلا يحمل ملفٌّ يُرسَل إلى قريبٍ أيًّا منها. حدِّد ما ينبغي أن يحمله ملف بعينه؛ ويسجّل الملف نفسه الفئات التي استُبعدت.
 avatar-picker-title = اختر صورة
-avatar-choose-link = اختر صورة
 avatar-choose = أي صورة تمثّل هذا الشخص
 avatar-mode-auto = دع البرنامج يختار
 avatar-mode-auto-note = أول صورة شخصية، وإلا فأول صورة مرتبطة بهذا السجل.
@@ -1447,7 +1445,6 @@ precision-decade = إلى العقد
 precision-century = إلى القرن
 precision-unknown = غير معروفة
 record-precision = الدقة
-record-approximate = تقريبي
 record-place = المكان
 
 ## The relationships editor
@@ -1552,13 +1549,11 @@ documents-attached = مرفقة بهذا السجل
 documents-upload = ارفع ملفًا
 documents-upload-help = حتى { $mb } ميغابايت. يُحفظ الملف في الأرشيف ويُرفق بهذا السجل.
 documents-caption = التعليق
-documents-edit-link = أرفق الوثائق وافصلها
 events-edit-link = حرّر الأحداث
 
 ## Presentation styles: density, never colour
 
 prefs-style = الكثافة
-prefs-style-help = كم تأخذ الصفحة من مساحة. مستقلة عن السمة التي تخص اللون وحده، فأي مزيج ممكن.
 style-comfortable = مريحة
 style-comfortable-note = الافتراضية، بمساحة للقراءة
 style-compact = مضغوطة
@@ -3270,8 +3265,6 @@ dedup-manual-review = { $n ->
 dedup-nothing = لا شيء يستحق الذكر.
 record-union-duplicate = زوجان واحدان، أكثر من سجل.
 record-union-duplicate-detail = تحتفظ الحزمة بسجلَّي عائلة منفصلين لهذين الشخصين. هذا خلل في البيانات، وليس ارتباطًا ثانيًا.
-record-union-duplicate-action = دمج المكرَّر
-record-union-duplicate-confirm = إزالة التكرار من الحزمة كلها؟ سيُدمج كل زوج تستطيع المكتبة دمجه، ويُبلَّغ عن الباقي.
 dedup-pair-merged = صار الزوج المقصود سجلًّا واحدًا.
 dedup-pair-refused = لم يُدمج الزوج المقصود: رفضت المكتبة دمجه وتركته لمراجعة إنسان.
 
@@ -3611,7 +3604,6 @@ view-summit-still = إيقاف حركة الجبل
 river-whole = العائلة كلها
 river-names-all = كل الأسماء
 river-zoom-hint = التكبير: Ctrl مع العجلة، أو القرص بإصبعين، أو + / − · بعد التكبير، اسحب للتنقل
-river-grid-link = عرض الشبكة
 river-tab-sources = المصادر
 river-legend-title = كيف يُقرأ النهر
 view-tree-name = الشجرة الحيّة

@@ -291,7 +291,7 @@
     fr.persons.forEach(function (p) {
       var s = p.s || {}, isC = p.role === 'centre', x = f(p.x), y = f(p.y), r = 5;
       var k = '<g opacity="' + f(p.a) + '">';
-      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '"><circle cx="' + x + '" cy="' + y + '" r="18" fill="transparent"/>';
+      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="18" fill="transparent"/>';
       if (isC) {
         k += '<circle cx="' + x + '" cy="' + y + '" r="20" class="cl-halo"/><circle cx="' + x + '" cy="' + y + '" r="11" class="cl-centre"/><circle cx="' + x + '" cy="' + y + '" r="4.5" class="cl-centre-core"/>';
       } else {
@@ -323,7 +323,7 @@
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cn = C && C.s && !C.s.redacted ? C.s.names[2] : '';
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg cl-svg" data-view="funnel" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="img" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="group" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>' + out + base + bands + beam + figs + tails + links + '<g class="rv-lit"></g>' + unions + marks + nodes + '</svg>';
   }
 

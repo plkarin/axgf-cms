@@ -192,7 +192,13 @@
   // element as it moves, so a slider has a number beside it.
   function mirror(input) {
     var out = document.getElementById(input.getAttribute("data-output"));
-    if (out) out.textContent = input.value;
+    if (!out) return;
+    // A confidence slider says its value as the page's language writes a
+    // percentage ("80 %" in French), from the catalogue's own pattern.
+    var fmt = out.getAttribute("data-format");
+    out.textContent = fmt
+      ? fmt.replace("{n}", String(Math.round(parseFloat(input.value) * 100)))
+      : input.value;
   }
   document.addEventListener("input", function (ev) {
     var input = ev.target.closest("[data-output]");

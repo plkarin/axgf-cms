@@ -126,7 +126,13 @@
       <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
       <span class="rv-scale" data-rv-scale hidden><b></b>{{ t("river-legend-generation") }}</span>
       {%- endif %}
-      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}{{ t("river-legend-direction") if view == "river" else t("view-" ~ view ~ "-direction") }}</span>
+      {#- Fusion and Galaxy draw the two sides of the person in the middle in
+          two colours (2026-10-27); their legend's two halves wear them. -#}
+      {%- set direction = t("river-legend-direction") if view == "river" else t("view-" ~ view ~ "-direction") %}
+      {%- set halves = direction|split(" · ", 1) if view in ["tree", "galaxy"] else [] %}
+      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}
+        {%- if halves|length == 2 %}<span class="rv-dir rv-dir-down"><i aria-hidden="true"></i>{{ halves[0] }}</span> · <span class="rv-dir rv-dir-up"><i aria-hidden="true"></i>{{ halves[1] }}</span>
+        {%- else %}{{ direction }}{% endif %}</span>
       <span class="rv-hint" data-rv-zoom-wrap hidden>{{ t("river-zoom-hint") }}</span>
     </div>
   </section>

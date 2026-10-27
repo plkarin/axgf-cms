@@ -876,6 +876,24 @@ admin-value-not-set = non renseigné
 ## Bandes de l'arbre
 
 tree-band-generation = Génération { $g }
+tree-level-self = Même génération
+tree-level-up = { $n ->
+        [1] Enfants
+        [2] Petits-enfants
+        [3] Arrière-petits-enfants
+       *[other] Descendants, { $n }ᵉ génération
+    }
+tree-level-down = { $n ->
+        [1] Parents
+        [2] Grands-parents
+        [3] Arrière-grands-parents
+       *[other] Ancêtres, { $n }ᵉ génération
+    }
+tree-card-centre = Centrer l’arbre ici
+tree-card-same = La même personne, dessinée une seconde fois
+tree-zoom-out = Dézoomer
+tree-zoom-in = Zoomer
+tree-zoom-fit = Ajuster
 tree-band-people = { $n ->
         [one] une personne
        *[other] { $n } personnes

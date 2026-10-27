@@ -129,6 +129,26 @@ easily readable drawing, and that the theme be stylised further in Canva.
   3,840 × 2,160 (ADR 0017); the glass's foot ring stands on the
   projector's lit face, and the embers rise from it.
 
+### 6. Down in orange, up in green (the operator's second review, 2026-10-27)
+
+The operator asked for the vertical bar in the middle to go. They also
+asked for the flows below the person in the middle to be orange and those
+above to be green, so that down and up read at a glance.
+
+- **No column on the axis.** Its light and its glow are gone, and so are
+  the embers that rose along it.
+- **Two sides.** A branch below the person at the fixed point, toward
+  their ancestors, is orange (`--tv-down`). A branch above, toward their
+  descendants, is green (`--tv-up`). This holds for the vein, the branch
+  (the colour mixed into the bark) and the glow alike. A branch's side is
+  where its middle stands, so the line from the person to their parents'
+  couple is orange, and the one to their own children's couple is green.
+- **The light** running up the attested branches takes its branch's
+  colour, and each floor's scanner takes its floor's side.
+- **The legend** shows the two colours against "↓ the roots" and "↑ the
+  crown". The dashboard's bars take them too: the roots orange, the person
+  in the middle in the vein's colour, the crown green.
+
 ## Consequences
 
 - Every name a view draws stands clear of the others; with every name

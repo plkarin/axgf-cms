@@ -929,6 +929,24 @@ record-end-not-recorded = הסוף לא נרשם
 panel-selected-person = האדם שנבחר
 
 tree-band-generation = דור { $g }
+tree-level-self = אותו דור
+tree-level-up = { $n ->
+        [1] ילדים
+        [2] נכדים
+        [3] נינים
+       *[other] צאצאים, דור { $n }
+    }
+tree-level-down = { $n ->
+        [1] הורים
+        [2] סבים וסבתות
+        [3] הורי הסבים
+       *[other] אבות קדמונים, דור { $n }
+    }
+tree-card-centre = מרכוז העץ כאן
+tree-card-same = אותו אדם, מצויר פעם שנייה
+tree-zoom-out = הקטנה
+tree-zoom-in = הגדלה
+tree-zoom-fit = התאמה
 tree-band-people = { $n ->
         [one] אדם אחד
         [two] שני אנשים

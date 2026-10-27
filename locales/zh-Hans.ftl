@@ -711,6 +711,24 @@ panel-selected-person = 选中的人物
 ## 世代带
 
 tree-band-generation = 第{ $g }代
+tree-level-self = 同辈
+tree-level-up = { $n ->
+        [1] 子女
+        [2] 孙辈
+        [3] 曾孙辈
+       *[other] 后代（第{ $n }代）
+    }
+tree-level-down = { $n ->
+        [1] 父母
+        [2] 祖父母
+        [3] 曾祖父母
+       *[other] 祖先（第{ $n }代）
+    }
+tree-card-centre = 以此为中心
+tree-card-same = 同一个人，第二次绘出
+tree-zoom-out = 缩小
+tree-zoom-in = 放大
+tree-zoom-fit = 适应宽度
 tree-band-people = { $n }人
 tree-band-unplaced = 未归位
 tree-band-unplaced-note = 不属于任何家庭的{ $n }人 —— 予以显示而非略去

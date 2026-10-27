@@ -1462,35 +1462,233 @@ abbr.presumed { text-decoration: none; }
 .band-label span { margin-inline-start: 0.4rem; text-transform: none; letter-spacing: 0; }
 .band-label.unplaced strong { color: var(--warning); }
 
-.tcard {
-  position: absolute;
-  /* Width is written inline, per card: a full card is 132px and a person the
-     reader may not read is a 34px marker. Both come from the same layout pass
-     that positioned them, so the connectors meet them where they are. */
-  /* Fixed height for every card, so a two-line name never makes a row ragged.
-     Tall enough to show both clamped lines plus the dates without the card's
-     own overflow clipping the ellipsis. Matches CARD_H in tree.rs. */
-  height: 66px;
-  box-sizing: border-box;
-  padding: 0.35rem 0.45rem;
-  border: 1px solid var(--sex-u-line);
-  background: var(--sex-u);
-  border-radius: 5px;
-  color: var(--text-primary);
-  text-decoration: none;
+/* The classic chart (src/chart.rs, the operator's review of 2026-10-27, after
+   the kit made in Canva): each row a faint band a little taller than its
+   cards, its name at its start — "Parents", "Grandchildren" — in spaced
+   capitals in the accent, the count under it. */
+.band-zone.relative {
+  box-sizing: content-box;
+  padding-block: 16px;
+  transform: translateY(-16px);
+  inset-inline-start: 4px;
+}
+.band-label.relative {
+  transform: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.1rem;
-  overflow: hidden;
+  gap: 0.15rem;
+  inline-size: 104px;
+  inset-inline-start: 12px;
+  white-space: normal;
+  line-height: 1.15;
+}
+.band-label.relative strong {
+  color: var(--accent);
+  font-size: var(--type-micro);
+  letter-spacing: 0.16em;
+}
+.band-label.relative span { margin-inline-start: 0; font-size: var(--type-micro); }
+.band-label.relative.is-centre strong { color: var(--text-primary); }
+.tree-gutter {
+  position: sticky;
+  inset-inline-start: 0;
+  inline-size: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+.tree-gutter .band-label.relative {
+  inset-inline-start: 0;
+  padding: 0.3rem 0.65rem 0.3rem 0.75rem;
+  box-sizing: border-box;
+  inline-size: 116px;
+  border-start-end-radius: 12px;
+  border-end-end-radius: 12px;
+  background: color-mix(in srgb, var(--surface-raised) 86%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+/* On a phone the row names are small tags above their rows, not a column
+   that would hide a third of the screen. */
+@media (max-width: 640px) {
+  .tree-gutter .band-label.relative {
+    block-size: auto !important;
+    inline-size: auto;
+    max-inline-size: 70vw;
+    flex-direction: row;
+    padding: 0.12rem 0.55rem;
+    transform: translateY(-30px);
+    white-space: nowrap;
+  }
+  .tree-gutter .band-label.relative span { display: none; }
+}
+.tc-zoom { display: flex; gap: 0.35rem; align-items: flex-end; margin-inline-start: auto; }
+.tc-zoom .btn { min-inline-size: 2.4rem; }
+/* The chart's lines in the accent, the way a drawn family chart is inked;
+   a couple's union node, two rings on their line. */
+.tree-canvas[data-chart] .wire { stroke: color-mix(in srgb, var(--accent) 62%, var(--text-tertiary)); stroke-width: 1.6; }
+.tree-canvas[data-chart] .wire-spouse { stroke-width: 1.8; }
+.wire-node circle { fill: var(--surface-raised); stroke: color-mix(in srgb, var(--accent) 80%, transparent); stroke-width: 1.3; }
+.wire-node .ring { fill: none; stroke: var(--accent); stroke-width: 1.4; }
+
+/* A card, folded: one line, the first given name and the family name's
+   initial, a slim strip of its person's hue at its start and the
+   confidence dot at its end. Matches CARD_H in tree.rs and chart.rs. */
+.tcard {
+  position: absolute;
+  height: 40px;
+  box-sizing: border-box;
+  border: 1px solid var(--sex-u-line);
+  background: var(--sex-u);
+  border-radius: 12px;
+  color: var(--text-primary);
   z-index: 2;
   transition: box-shadow 0.1s, opacity 0.1s;
 }
+.tcard::before {
+  content: "";
+  position: absolute;
+  inset-block: 9px;
+  inset-inline-start: 5px;
+  inline-size: 3px;
+  border-radius: 3px;
+  background: var(--sex-u-line);
+  pointer-events: none;
+}
+.tc-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  block-size: 100%;
+  padding-inline: 0.9rem 0.6rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: inherit;
+}
+.tcard .tname {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-size: var(--type-small);
+  font-weight: var(--weight-semi);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.tcard .conf-dot { flex: none; }
+/* The same person drawn a second time: dashed, and a small turning arrow. */
+.tcard.is-dup { border-style: dashed; }
+.tc-dup { flex: none; font-size: var(--type-small); color: var(--text-tertiary); }
 
-/* The card is itself the anchor now, so a click anywhere on it opens the
-   record in the panel; the text inside takes no pointer events of its own,
-   which keeps the event target the card rather than a span. */
-.tcard .tname, .tcard .tdates { pointer-events: none; }
+/* Open: the same card grown over its neighbours — on the pointer after a
+   short wait, so that moving across the chart opens nothing; at once on
+   focus, or pinned by a click. The portrait in its laurels (the kit's, a
+   mask in the accent), the full name, the dates, and two ways on. */
+.tc-more {
+  position: absolute;
+  inset-block-start: -12px;
+  inset-inline-start: 50%;
+  inline-size: 252px;
+  box-sizing: border-box;
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 0.9rem 0.9rem 0.85rem;
+  text-align: center;
+  background: var(--surface-raised);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 16px;
+  box-shadow: 0 22px 48px -22px rgb(var(--shadow-rgb) / 0.75), 0 2px 6px rgb(var(--shadow-rgb) / 0.2);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(6px) scale(0.97);
+  transition: opacity 140ms var(--ease), transform 160ms var(--ease), visibility 0s linear 160ms;
+}
+[dir="rtl"] .tc-more { transform: translateX(50%) translateY(6px) scale(0.97); }
+.tcard:is(:hover, :focus-within, .is-open) { z-index: 30; }
+.tcard:is(:hover, :focus-within, .is-open) .tc-more {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%);
+  transition: opacity 160ms var(--ease) 0.22s, transform 180ms var(--ease) 0.22s, visibility 0s linear 0.22s;
+}
+[dir="rtl"] .tcard:is(:hover, :focus-within, .is-open) .tc-more { transform: translateX(50%); }
+.tcard:is(:focus-within, .is-open) .tc-more { transition-delay: 0s; }
+/* Near the chart's edges the open card grows the other way (tree.js). */
+.tcard.tc-up .tc-more { inset-block-start: auto; inset-block-end: -12px; }
+.tcard.tc-start .tc-more,
+.tcard.tc-start:is(:hover, :focus-within, .is-open) .tc-more { inset-inline-start: -10px; transform: none; }
+.tcard.tc-end .tc-more,
+.tcard.tc-end:is(:hover, :focus-within, .is-open) .tc-more { inset-inline-start: auto; inset-inline-end: -10px; transform: none; }
+.tc-portrait {
+  position: relative;
+  inline-size: 88px;
+  block-size: 88px;
+  display: grid;
+  place-items: center;
+}
+.tc-portrait::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  -webkit-mask: url("/static/img/laurel-ring.png?v=1") center / contain no-repeat;
+  mask: url("/static/img/laurel-ring.png?v=1") center / contain no-repeat;
+  pointer-events: none;
+}
+.tc-portrait img,
+.tc-initials {
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-raised));
+}
+.tc-initials {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-weight: var(--weight-semi);
+  font-size: var(--type-sub);
+  letter-spacing: 0.04em;
+}
+.tc-full {
+  font-family: var(--rv-serif);
+  font-size: var(--type-body);
+  font-weight: var(--weight-semi);
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.tc-dates {
+  display: grid;
+  gap: 0.15rem;
+  font-size: var(--type-small);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.tc-sym { color: var(--accent); margin-inline-end: 0.3rem; }
+.tc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-block-start: 0.35rem;
+}
+.tc-actions a {
+  font-size: var(--type-label);
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tc-actions .tc-centre { border-color: var(--accent); color: var(--accent); }
+.tc-actions a:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
 
 .tcard.is-root {
   box-shadow: 0 0 0 2px var(--accent);
@@ -1521,9 +1719,12 @@ abbr.presumed { text-decoration: none; }
      difference between a 24,124px canvas of the word "Private" and a legible
      one. The dash still reads at this size; the name never fitted anyway, and
      the title and accessible name still say what the marker is. */
+  display: flex;
   align-items: center;
+  justify-content: center;
   padding-inline: 0.15rem;
 }
+.tcard.is-restricted::before { display: none; }
 .tcard.is-restricted .tdates { justify-content: center; color: var(--text-tertiary); }
 .tcard.is-restricted:hover { box-shadow: none; z-index: 2; }
 
@@ -1536,16 +1737,14 @@ abbr.presumed { text-decoration: none; }
 
 .tcard[data-sex="a"] { background: var(--sex-a); border-color: var(--sex-a-line); }
 .tcard[data-sex="b"] { background: var(--sex-b); border-color: var(--sex-b-line); }
-.tcard:hover { box-shadow: 0 0 0 2px var(--accent); z-index: 3; }
+.tcard[data-sex="a"]::before { background: var(--sex-a-line); }
+.tcard[data-sex="b"]::before { background: var(--sex-b-line); }
+.tcard:hover { box-shadow: 0 0 0 2px var(--accent); }
 
 .tname {
   font-size: var(--type-small);
   font-weight: var(--weight-semi);
   line-height: 1.2;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .tdates {
   font-size: var(--type-label);
@@ -3412,10 +3611,9 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
               transform var(--tempo) var(--ease),
               opacity var(--tempo) var(--ease);
 }
-a.tcard:hover {
+.tcard:hover {
   box-shadow: 0 0 0 2px var(--accent),
               0 3px 10px rgb(var(--shadow-rgb) / calc(var(--shadow-a) * 1.8));
-  z-index: 3;
 }
 
 
@@ -6054,13 +6252,17 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   background-size: 100% 100%, 100% 100%, 48px 48px;
   background-position: center, center, 0 0;
 }
+/* Galaxy's sky (2026-10-27): a galaxy made in Canva, its core behind the
+   sun, a little darkened so that the drawing reads over its arms. */
+[data-theme="galaxy"] { --gx-sky: url("/static/img/galaxy-sky.jpg?v=1"); }
 .river[data-view="galaxy"] .rv-canvas {
   background-color: var(--surface-page);
   background-image:
-    radial-gradient(48% 42% at 26% 28%, color-mix(in srgb, var(--gx-nebula-a) 55%, transparent), transparent 72%),
-    radial-gradient(44% 40% at 76% 74%, color-mix(in srgb, var(--gx-nebula-b) 50%, transparent), transparent 72%),
-    radial-gradient(30% 30% at 50% 50%, color-mix(in srgb, var(--gx-sun) 10%, transparent), transparent 70%);
-  background-size: 100% 100%;
+    linear-gradient(color-mix(in srgb, var(--gx-well) 30%, transparent), color-mix(in srgb, var(--gx-well) 30%, transparent)),
+    var(--gx-sky);
+  background-size: 100% 100%, cover;
+  background-position: center, center;
+  background-repeat: no-repeat;
 }
 /* The dawn behind the mountain: the sky summit.js paints, for a page whose
    script has not run yet. */
@@ -6117,14 +6319,22 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 .tv-svg .tv-floor.tv-ring-front { stroke-opacity: 0.42; stroke-width: 1; stroke-dasharray: 6 4; }
 .tv-svg .tv-floor.tv-ring-back { stroke-opacity: 0.2; stroke-width: 0.8; stroke-dasharray: 2 5; }
 .tv-svg .tv-floor-0 { stroke: var(--tv-vein); }
-.tv-svg .tv-column-glow { stroke: var(--tv-vein); stroke-opacity: 0.16; stroke-width: 16; stroke-linecap: round; }
-.tv-svg .tv-column { stroke: var(--tv-vein-soft); stroke-opacity: 0.85; stroke-width: 2; }
 .tv-svg .tv-branch-glow { fill: none; stroke: var(--tv-vein); stroke-opacity: 0.14; stroke-linecap: round; }
 .tv-svg .tv-branch { fill: none; stroke: var(--tv-bark-lit); stroke-opacity: 0.85; }
 .tv-svg .tv-faint { opacity: 0.45; }
 .tv-svg .tv-vein { fill: none; stroke: var(--tv-vein); stroke-opacity: 0.95; }
 .tv-svg .tv-vein-d { stroke-opacity: 0.7; }
 .tv-svg .tv-vein-s { stroke: var(--tv-vein-soft); stroke-opacity: 0.55; }
+/* A branch's side of the person in the middle (2026-10-27): below, toward
+   the ancestors, orange; above, toward the descendants, green. */
+.tv-svg .tv-branch-glow.tv-down { stroke: var(--tv-down); stroke-opacity: 0.2; }
+.tv-svg .tv-branch-glow.tv-up { stroke: var(--tv-up); stroke-opacity: 0.2; }
+.tv-svg .tv-branch.tv-down { stroke: color-mix(in srgb, var(--tv-down) 42%, var(--tv-bark-lit)); }
+.tv-svg .tv-branch.tv-up { stroke: color-mix(in srgb, var(--tv-up) 42%, var(--tv-bark-lit)); }
+.tv-svg .tv-vein.tv-down { stroke: var(--tv-down); }
+.tv-svg .tv-vein.tv-up { stroke: var(--tv-up); }
+.tv-svg .tv-vein-s.tv-down { stroke: var(--tv-down-soft); }
+.tv-svg .tv-vein-s.tv-up { stroke: var(--tv-up-soft); }
 .tv-svg .tv-twig { fill: none; stroke: var(--tv-glass); stroke-opacity: 0.7; }
 .tv-svg .tv-twig-tip { fill: var(--tv-glass); }
 .tv-svg .tv-bud { stroke-dasharray: 2 2; }
@@ -6147,85 +6357,133 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 
 /* ---- the solar system (galaxy.js) ---- */
 .gx-svg .gx-bg { fill: var(--surface-page); fill-opacity: 0; }
-.gx-svg .gx-nebula { opacity: 0.6; }
-.gx-svg .gx-neb-a-in { stop-color: var(--gx-nebula-a); stop-opacity: 0.5; }
-.gx-svg .gx-neb-b-in { stop-color: var(--gx-nebula-b); stop-opacity: 0.5; }
-.gx-svg .gx-neb-out { stop-color: var(--surface-page); stop-opacity: 0; }
-.gx-svg .gx-orbit { fill: none; stroke: var(--gx-orbit); stroke-width: 1; stroke-dasharray: 3 5; }
-.gx-svg .gx-orbit-0 { stroke-dasharray: none; stroke-opacity: 0.6; }
-.gx-svg .gx-link { stroke: var(--gx-link); stroke-opacity: 0.75; }
-.gx-svg .gx-link-d { stroke-opacity: 0.55; }
-.gx-svg .gx-link-s { stroke: var(--gx-link-hot); stroke-opacity: 0.45; }
-.gx-svg .gx-union { fill: var(--gx-link); fill-opacity: 0.8; }
-.gx-svg .gx-tail { fill: none; stroke: var(--gx-orbit); stroke-width: 1.2; }
+/* A dark well round the sun, under the drawing, over the galaxy's core. */
+.gx-svg .gx-well-in { stop-color: var(--gx-well); stop-opacity: 0.62; }
+.gx-svg .gx-well-mid { stop-color: var(--gx-well); stop-opacity: 0.42; }
+.gx-svg .gx-well-out { stop-color: var(--gx-well); stop-opacity: 0; }
+.gx-svg .gx-orbit { fill: none; stroke: var(--gx-orbit); stroke-opacity: 0.55; stroke-width: 1; stroke-dasharray: 3 5; }
+.gx-svg .gx-orbit-0 { stroke-dasharray: 1 4; }
+/* A star's field, wider as more descendants come from it. */
+.gx-svg .gx-field-in { stop-color: var(--gx-field); stop-opacity: 0; }
+.gx-svg .gx-field-mid { stop-color: var(--gx-field); stop-opacity: 0.03; }
+.gx-svg .gx-field-out { stop-color: var(--gx-field); stop-opacity: 0.1; }
+.gx-svg .gx-field-edge { fill: none; stroke: var(--gx-field); stroke-opacity: 0.38; stroke-width: 0.8; stroke-dasharray: 1.5 3.5; }
+.gx-svg .gx-field-inner { stroke-opacity: 0.2; }
+/* The filaments: violet toward the descendants, white toward the ancestors
+   (2026-10-27), each with a halo and, when attested, a thread of light. */
+.gx-svg .gx-link-halo { fill: none; stroke-opacity: 0.16; }
+.gx-svg .gx-link-halo.gx-up { stroke: var(--gx-up); }
+.gx-svg .gx-link-halo.gx-down { stroke: var(--gx-down); stroke-opacity: 0.1; }
+.gx-svg .gx-link { stroke-opacity: 0.85; }
+.gx-svg .gx-link.gx-up { stroke: var(--gx-up); }
+.gx-svg .gx-link.gx-down { stroke: var(--gx-down); }
+.gx-svg .gx-link-d { stroke-opacity: 0.65; }
+.gx-svg .gx-link-s { stroke-opacity: 0.55; }
+.gx-svg .gx-thread { fill: none; stroke: var(--gx-sun-core); stroke-opacity: 0.8; }
+.gx-svg .gx-union { stroke: none; }
+.gx-svg .gx-union.gx-up { fill: var(--gx-up); }
+.gx-svg .gx-union.gx-down { fill: var(--gx-down); }
+.gx-svg .gx-tail { fill: none; stroke: var(--gx-orbit); stroke-opacity: 0.8; stroke-width: 1.2; }
 .gx-svg .gx-tail-tip { fill: var(--gx-link); }
 .gx-svg .gx-stub { stroke-dasharray: 2 2; }
 .gx-svg .gx-end { fill: var(--surface-page); stroke: var(--gx-planet-hidden); stroke-width: 1.4; }
+/* The sun: corona, rays, a lit disc, its heart. */
 .gx-svg .gx-corona { fill: var(--gx-sun); }
 .gx-svg .gx-corona-3 { fill-opacity: 0.07; }
 .gx-svg .gx-corona-2 { fill-opacity: 0.15; }
-.gx-svg .gx-sun { fill: var(--gx-sun); }
+.gx-svg .gx-sun-rays { fill: none; stroke: var(--gx-sun); stroke-opacity: 0.6; stroke-width: 1.2; stroke-linecap: round; }
+.gx-svg .gx-sun { fill: url(#gx-sun-disc); }
+.gx-svg .gx-sun-hi { stop-color: var(--gx-sun-core); }
+.gx-svg .gx-sun-edge { stop-color: var(--gx-sun); }
 .gx-svg .gx-sun-core { fill: var(--gx-sun-core); }
-.gx-svg .gx-planet.gx-living { fill: var(--gx-planet-living); }
+/* The stars: lit spheres; the living with four rays, those gone with a
+   ring. */
+.gx-svg .gx-sph-hi { stop-color: var(--gx-sun-core); }
+.gx-svg .gx-sph-living { stop-color: var(--gx-planet-living); }
+.gx-svg .gx-sph-living-deep { stop-color: color-mix(in srgb, var(--gx-planet-living) 55%, var(--gx-well)); }
+.gx-svg .gx-sph-gone { stop-color: var(--gx-planet-gone); }
+.gx-svg .gx-sph-gone-deep { stop-color: color-mix(in srgb, var(--gx-planet-gone) 50%, var(--gx-well)); }
+.gx-svg .gx-planet.gx-living { fill: url(#gx-sphere-living); }
 .gx-svg .gx-planet-glow.gx-living { fill: var(--gx-planet-living); fill-opacity: 0.2; }
-.gx-svg .gx-planet.gx-gone { fill: var(--gx-planet-gone); }
+.gx-svg .gx-spikes { fill: none; stroke: var(--gx-planet-living); stroke-opacity: 0.6; stroke-width: 0.8; stroke-linecap: round; }
+.gx-svg .gx-planet.gx-gone { fill: url(#gx-sphere-gone); }
 .gx-svg .gx-planet-glow.gx-gone { fill: var(--gx-planet-gone); fill-opacity: 0.18; }
+.gx-svg .gx-planet-ring { fill: none; stroke: var(--gx-planet-gone); stroke-opacity: 0.75; stroke-width: 0.9; }
 .gx-svg .gx-planet.gx-hidden { fill: var(--surface-page); stroke: var(--gx-planet-hidden); }
 .gx-svg .gx-name { fill: var(--text-primary); font-family: var(--face); }
 .gx-svg .gx-data { fill: var(--text-secondary); }
 
-/* ---- the funnel (clarity.js) ---- */
+/* ---- the funnel (clarity.js), redrawn 2026-10-27 after a kit made in
+   Canva: rings of tinted glass apart from one another, each a thin disc
+   with a light along its far side and fine rims; pearls on their fronts;
+   threads of ink edged in light; names on small frosted labels. ---- */
 .cl-svg .cl-bg { fill: var(--cl-stage); fill-opacity: 0; }
-.cl-svg .cl-slice { stroke: var(--cl-rim); stroke-opacity: 0.55; stroke-width: 1; }
-.cl-svg .cl-edge { stop-opacity: 0.94; }
-.cl-svg .cl-mid { stop-opacity: 0.7; }
-.cl-svg .cl-hi { stop-color: var(--cl-gloss); stop-opacity: 0.72; }
+.cl-svg .cl-edge { stop-opacity: 0.62; }
+.cl-svg .cl-mid { stop-opacity: 0.22; }
+.cl-svg .cl-hi { stop-color: var(--cl-gloss); stop-opacity: 0.62; }
 .cl-svg .cl-s1 { stop-color: var(--cl-slice-1); }
 .cl-svg .cl-s2 { stop-color: var(--cl-slice-2); }
 .cl-svg .cl-s3 { stop-color: var(--cl-slice-3); }
 .cl-svg .cl-s4 { stop-color: var(--cl-slice-4); }
 .cl-svg .cl-s5 { stop-color: var(--cl-slice-5); }
-.cl-svg .cl-rim { stroke: var(--cl-rim); stroke-width: 1.4; stroke-opacity: 0.9; fill-opacity: 0.55; }
+.cl-svg .cl-ring { stroke: none; }
+.cl-svg .cl-ring-edge { fill-opacity: 0.8; stroke: var(--cl-rim); stroke-opacity: 0.55; stroke-width: 0.6; }
 .cl-svg .cl-rim-1 { fill: var(--cl-slice-1); }
 .cl-svg .cl-rim-2 { fill: var(--cl-slice-2); }
 .cl-svg .cl-rim-3 { fill: var(--cl-slice-3); }
 .cl-svg .cl-rim-4 { fill: var(--cl-slice-4); }
 .cl-svg .cl-rim-5 { fill: var(--cl-slice-5); }
-.cl-svg .cl-gloss { fill: var(--cl-gloss); fill-opacity: 0.16; }
-.cl-svg .cl-leader { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 2 3; }
+.cl-svg .cl-ring-light { fill: none; stroke: var(--cl-gloss); stroke-width: 1.4; stroke-opacity: 0.6; stroke-linecap: round; }
+.cl-svg .cl-rim-back { fill: none; stroke: var(--cl-rim); stroke-width: 0.9; stroke-opacity: 0.7; }
+.cl-svg .cl-rim-front { fill: none; stroke: var(--cl-rim); stroke-width: 1.5; }
+.cl-svg .cl-leader { stroke: var(--cl-figure); stroke-width: 0.8; stroke-opacity: 0.5; }
+.cl-svg .cl-leader-tip { fill: var(--cl-figure); fill-opacity: 0.7; }
 .cl-svg .cl-figure { fill: var(--cl-figure); font-family: var(--face); font-variant-numeric: tabular-nums; }
 .cl-svg .cl-gen { fill: var(--text-tertiary); }
-.cl-svg .cl-link { stroke: var(--cl-link); stroke-opacity: 0.78; }
-.cl-svg .cl-link-d { stroke-opacity: 0.6; }
-.cl-svg .cl-link-s { stroke: var(--cl-link); stroke-opacity: 0.45; }
-.cl-svg .cl-union { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 0.8; }
-.cl-svg .cl-tail { fill: none; stroke: var(--cl-link); stroke-opacity: 0.85; stroke-width: 1.4; }
-.cl-svg .cl-tail-tip { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 1.2; }
+.cl-svg :is(.cl-figure, .cl-gen, .cl-count .k-data) {
+  paint-order: stroke;
+  stroke: var(--surface-raised);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.cl-svg .cl-link-halo { fill: none; stroke: var(--cl-rim); stroke-opacity: 0.6; stroke-linecap: round; }
+.cl-svg .cl-link { stroke: var(--cl-link); stroke-opacity: 0.92; }
+.cl-svg .cl-link-d { stroke-opacity: 0.8; }
+.cl-svg .cl-link-s { stroke: var(--cl-link); stroke-opacity: 0.72; }
+.cl-svg .cl-union { fill: var(--cl-bead); stroke: var(--cl-link); stroke-width: 1.3; }
+.cl-svg .cl-tail { fill: none; stroke: var(--cl-link); stroke-opacity: 0.8; stroke-width: 1.2; }
+.cl-svg .cl-tail-tip { fill: var(--cl-link); stroke: var(--cl-bead); stroke-width: 1.1; }
 .cl-svg .cl-stub { stroke-dasharray: 2 2; }
-.cl-svg .cl-end { fill: var(--cl-bead); stroke: var(--cl-link); stroke-width: 1.6; }
+.cl-svg .cl-end { fill: var(--cl-bead); stroke: var(--cl-link); stroke-width: 1.4; }
 /* A count on the glass: the figure's own ink, the page's ground around it. */
 .cl-svg .cl-count .k-data { fill: var(--cl-figure); font-weight: var(--weight-semi); }
-/* The projector under the narrow end, its rings and the beam up the axis;
-   the gauge's ticks beside each opening. */
-.cl-svg .cl-base-glow { fill: var(--cl-slice-3); fill-opacity: 0.1; }
-.cl-svg .cl-base-ring { fill: none; stroke: var(--cl-slice-2); stroke-width: 1; stroke-opacity: 0.5; stroke-dasharray: 3 5; }
-.cl-svg .cl-base-ring-2 { stroke: var(--cl-slice-3); stroke-opacity: 0.4; }
-.cl-svg .cl-base-ring-3 { stroke: var(--cl-slice-4); stroke-opacity: 0.3; stroke-dasharray: 1 6; }
-.cl-svg .cl-base { fill: var(--cl-slice-1); fill-opacity: 0.22; stroke: var(--cl-slice-1); stroke-opacity: 0.75; stroke-width: 1.5; }
-.cl-svg .cl-beam-edge { stop-color: var(--cl-gloss); stop-opacity: 0; }
-.cl-svg .cl-beam-mid { stop-color: var(--cl-gloss); stop-opacity: 0.5; }
-.cl-svg .cl-axis { stroke: var(--cl-gloss); stroke-width: 1.2; stroke-opacity: 0.85; stroke-dasharray: 1 4; }
-.cl-svg .cl-tick { fill: none; stroke: var(--cl-slice-2); stroke-width: 2; stroke-opacity: 0.32; stroke-dasharray: 1 7; }
-.cl-svg .cl-bead { fill: var(--cl-bead); }
+/* The pedestal of light under the narrow end. */
+.cl-svg .cl-base-glow { fill: var(--cl-gloss); fill-opacity: 0.22; }
+.cl-svg .cl-base-ring { fill: none; stroke: var(--cl-gloss); stroke-width: 1; stroke-opacity: 0.75; }
+.cl-svg .cl-base { fill: var(--cl-gloss); fill-opacity: 0.3; stroke: var(--cl-gloss); stroke-opacity: 0.95; stroke-width: 1.2; }
+/* The people: pearls lit from the upper left, ringed by what is known of
+   them — living, gone, or not to be shown. */
+.cl-svg .cl-pearl-0 { stop-color: var(--cl-gloss); }
+.cl-svg .cl-pearl-1 { stop-color: var(--cl-bead); }
+.cl-svg .cl-pearl-2 { stop-color: var(--cl-slice-3); }
+.cl-svg .cl-bead { fill: url(#cl-pearl); }
 .cl-svg .cl-bead.cl-living { stroke: var(--cl-living); }
-.cl-svg .cl-bead-glow.cl-living { fill: var(--cl-living); fill-opacity: 0.22; }
+.cl-svg .cl-bead-glow.cl-living { fill: var(--cl-living); fill-opacity: 0.2; }
 .cl-svg .cl-bead.cl-gone { stroke: var(--cl-gone); }
 .cl-svg .cl-bead.cl-hidden { stroke: var(--cl-hidden); }
 .cl-svg .cl-halo { fill: var(--cl-centre); fill-opacity: 0.16; }
-.cl-svg .cl-centre { fill: var(--cl-bead); stroke: var(--cl-centre); stroke-width: 3; }
+.cl-svg .cl-centre { fill: url(#cl-pearl); stroke: var(--cl-centre); stroke-width: 3; }
 .cl-svg .cl-centre-core { fill: var(--cl-centre); }
+/* A name on its small frosted label. */
+.cl-svg .cl-pill { fill: var(--surface-raised); fill-opacity: 0.82; stroke: var(--cl-rim); stroke-width: 0.8; }
+.cl-svg .cl-pill-centre { fill-opacity: 0.9; stroke: var(--cl-centre); stroke-opacity: 0.55; stroke-width: 1; }
 .cl-svg .cl-name { fill: var(--text-primary); font-family: var(--face); }
 .cl-svg .cl-data { fill: var(--text-secondary); }
+.cl-svg .cl-label-thread { stroke: var(--cl-link); stroke-width: 0.8; stroke-opacity: 0.55; }
+/* A name the river adds wears the same label. */
+.cl-svg .rv-name-box { rx: 7.5px; fill: var(--surface-raised); fill-opacity: 0.82; stroke: var(--cl-rim); stroke-width: 0.8; }
+.cl-svg .rv-name-text { fill: var(--text-primary); }
+.cl-svg .rv-name-thread { stroke: var(--cl-link); stroke-opacity: 0.55; }
 
 /* ---- Clarity, the prism (the operator's review of 2026-10-27) ----
    "White on white is ugly; stylise the pictures, give the theme contrast."
@@ -6274,28 +6532,6 @@ html[data-theme="clarity"][data-style="paper"]:is([data-route], :not([data-route
   background-size: cover;
   background-position: center;
 }
-.cl-svg .cl-slice { stroke: var(--cl-rim); stroke-opacity: 0.9; stroke-width: 1.2; }
-.cl-svg .cl-edge { stop-opacity: 0.62; }
-.cl-svg .cl-mid { stop-opacity: 0.2; }
-.cl-svg .cl-hi { stop-opacity: 0.66; }
-.cl-svg .cl-rim { stroke-width: 1.8; stroke-opacity: 1; fill-opacity: 0.36; }
-.cl-svg .cl-gloss { fill-opacity: 0.3; }
-.cl-svg .cl-tick { stroke: var(--cl-rim); stroke-opacity: 0.55; }
-.cl-svg .cl-base-glow { fill: var(--cl-gloss); fill-opacity: 0.22; }
-.cl-svg :is(.cl-base-ring, .cl-base-ring-2, .cl-base-ring-3) { stroke: var(--cl-gloss); stroke-opacity: 0.7; }
-.cl-svg .cl-base { fill: var(--cl-gloss); fill-opacity: 0.3; stroke: var(--cl-gloss); stroke-opacity: 0.95; }
-.cl-svg .cl-axis { stroke-opacity: 0.95; }
-.cl-svg .cl-link-halo { fill: none; stroke: var(--cl-rim); stroke-opacity: 0.6; stroke-linecap: round; }
-.cl-svg .cl-link { stroke-opacity: 0.95; }
-.cl-svg .cl-link-d { stroke-opacity: 0.85; }
-.cl-svg .cl-link-s { stroke-opacity: 0.75; }
-.cl-svg :is(.cl-figure, .cl-gen, .cl-count .k-data) {
-  paint-order: stroke;
-  stroke: var(--surface-raised);
-  stroke-width: 3px;
-  stroke-linejoin: round;
-}
-.cl-svg .cl-leader { stroke: var(--surface-raised); stroke-opacity: 0.9; }
 
 /* ---- the ascent (summit.js) ---- */
 .sm-svg .sm-range-far { fill: var(--sm-range-far); }
@@ -6392,12 +6628,18 @@ html[data-theme="clarity"][data-style="paper"]:is([data-route], :not([data-route
   background: var(--surface-raised);
 }
 .rv-hud-bars i { flex: 1 1 0; min-inline-size: 4px; border-radius: 2px 2px 0 0; opacity: 0.85; }
-.river[data-view="tree"] .rv-bar-root { background: var(--tv-teal); }
-.river[data-view="tree"] .rv-bar-trunk { background: var(--tv-leaf-living); }
-.river[data-view="tree"] .rv-bar-crown { background: var(--tv-vein); }
-.river[data-view="galaxy"] .rv-bar-root { background: var(--gx-link); }
+.river[data-view="tree"] .rv-bar-root { background: var(--tv-down); }
+.river[data-view="tree"] .rv-bar-trunk { background: var(--tv-vein); }
+.river[data-view="tree"] .rv-bar-crown { background: var(--tv-up); }
+.river[data-view="galaxy"] .rv-bar-root { background: var(--gx-down); }
 .river[data-view="galaxy"] .rv-bar-trunk { background: var(--gx-sun); }
-.river[data-view="galaxy"] .rv-bar-crown { background: var(--gx-link-hot); }
+.river[data-view="galaxy"] .rv-bar-crown { background: var(--gx-up); }
+/* Which way is which, in the colours of the two sides (Fusion, Galaxy). */
+.rv-dir i { display: inline-block; inline-size: 14px; block-size: 3px; border-radius: 2px; vertical-align: middle; margin-inline-end: 0.35rem; }
+.river[data-view="tree"] .rv-dir-down i { background: var(--tv-down); }
+.river[data-view="tree"] .rv-dir-up i { background: var(--tv-up); }
+.river[data-view="galaxy"] .rv-dir-down i { background: var(--gx-down); }
+.river[data-view="galaxy"] .rv-dir-up i { background: var(--gx-up); }
 .river[data-view="funnel"] .rv-bar-root { background: var(--cl-ink-3); }
 .river[data-view="funnel"] .rv-bar-trunk { background: var(--cl-centre); }
 .river[data-view="funnel"] .rv-bar-crown { background: var(--cl-ink-1); }

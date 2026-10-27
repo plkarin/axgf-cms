@@ -1026,6 +1026,24 @@ panel-selected-person = Wybrana osoba
 ## Pasy pokoleń
 
 tree-band-generation = Pokolenie { $g }
+tree-level-self = To samo pokolenie
+tree-level-up = { $n ->
+        [1] Dzieci
+        [2] Wnuki
+        [3] Prawnuki
+       *[other] Potomkowie, { $n }. pokolenie
+    }
+tree-level-down = { $n ->
+        [1] Rodzice
+        [2] Dziadkowie
+        [3] Pradziadkowie
+       *[other] Przodkowie, { $n }. pokolenie
+    }
+tree-card-centre = Wyśrodkuj drzewo tutaj
+tree-card-same = Ta sama osoba, narysowana po raz drugi
+tree-zoom-out = Pomniejsz
+tree-zoom-in = Powiększ
+tree-zoom-fit = Dopasuj
 tree-band-people = { $n ->
         [one] jedna osoba
         [few] { $n } osoby

@@ -28,6 +28,7 @@ pub mod ai_portrait;
 pub mod auth;
 pub mod avatar;
 pub mod backup;
+pub mod chart;
 pub mod completeness;
 pub mod config;
 pub mod conformity;

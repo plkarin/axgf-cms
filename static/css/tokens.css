@@ -391,6 +391,13 @@
   --tv-leaf-hidden: #6a7482;
   --tv-soil: #ff5f3a;
   --tv-teal: #2ee6c5;
+  /* The two sides of the person in the middle (2026-10-27): the branches
+     and their light toward the ancestors, below, and toward the
+     descendants, above. */
+  --tv-down: #ff8a1f;
+  --tv-down-soft: #ffb35c;
+  --tv-up: #36d67c;
+  --tv-up-soft: #8eeeb6;
   /* The glass the tree stands in (2026-10-23): its cold light, the panels
      the names are written on, and their edge. */
   --tv-glass: #4aa8ff;
@@ -475,14 +482,19 @@
      planet that is alive, one that is not, one this reader may not see. */
   --gx-sun: #ffb347;
   --gx-sun-core: #fff1c9;
-  --gx-orbit: #2c3570;
+  --gx-orbit: #6d78c7;
   --gx-link: #8b7bff;
   --gx-link-hot: #f472b6;
   --gx-planet-living: #4ef0c5;
   --gx-planet-gone: #8b7bff;
   --gx-planet-hidden: #6b74ba;
-  --gx-nebula-a: #3b1f7a;
-  --gx-nebula-b: #0f3d66;
+  /* The two sides of the sun (2026-10-27): violet toward the descendants,
+     white toward the ancestors; a star's field; the dark well under the
+     drawing. The orbits are lighter since, over the galaxy's picture. */
+  --gx-up: #a78bfa;
+  --gx-down: #eef0ff;
+  --gx-field: #c9bcff;
+  --gx-well: #07061a;
 }
 
 /* --- summit ---------------------------------------------------------------- */

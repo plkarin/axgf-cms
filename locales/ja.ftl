@@ -712,6 +712,24 @@ panel-selected-person = 選択中の人物
 ## 世代の帯
 
 tree-band-generation = 第{ $g }世代
+tree-level-self = 同世代
+tree-level-up = { $n ->
+        [1] 子
+        [2] 孫
+        [3] ひ孫
+       *[other] 子孫（{ $n }世代）
+    }
+tree-level-down = { $n ->
+        [1] 両親
+        [2] 祖父母
+        [3] 曾祖父母
+       *[other] 祖先（{ $n }世代）
+    }
+tree-card-centre = ここを中心に表示
+tree-card-same = 同じ人物をもう一度描いたもの
+tree-zoom-out = 縮小
+tree-zoom-in = 拡大
+tree-zoom-fit = 全体を表示
 tree-band-people = { $n }名
 tree-band-unplaced = 未配置
 tree-band-unplaced-note = どの家族にも属さない{ $n }名 — 省かずに表示しています

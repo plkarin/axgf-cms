@@ -6,11 +6,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-The four themes the operator found wanting are redrawn (their review of
-27 October 2026). Nothing about the AXGF file, the server's river or what a
-reader may see changes.
+The four themes the operator found wanting are redrawn, and the tree page
+becomes a classic family chart (their reviews of 27 October 2026). Nothing
+about the AXGF file, the server's river or what a reader may see changes.
 
 ### Changed
+
+- **The tree page: a classic family chart** (docs/adr/0019). The ancestors
+  are drawn below the person and the descendants above, and each subtree
+  has its own band of the page. The lines run at right angles and never
+  cross, and a couple's line carries a union node. Each row is named from
+  the person in the middle ("Parents", "Grandchildren"), and the names stay
+  in view while the chart scrolls. A card shows "First name L." and opens
+  on the pointer, on focus or on a click. Open, it shows the portrait in a
+  laurel ring, the full name, the dates, and two actions: centre the tree
+  on the person, or open their record. The chart can be made smaller,
+  larger or fitted to the column. The kit was drawn in Canva first.
+- **Clarity: rings apart, names on the glass** (docs/adr/0013 §6).
+  - The funnel is wider and finer: one ring of tinted glass per generation,
+    with the rings set apart.
+  - A generation's people are spread evenly along the front of their ring,
+    family by family, so they no longer bunch into knots.
+  - Every name is on a small frosted label on the glass or beside its
+    ring, never across an outline.
+  - The figures stand in a column on threads.
+  - The kit was drawn in Canva first.
+- **Fusion: down in orange, up in green** (docs/adr/0015 §6). The column of
+  light on the axis is gone. The branches below the person in the middle,
+  toward their ancestors, are orange; those above, toward their
+  descendants, are green, along with the light that runs along them, the
+  legend and the dashboard.
+- **Galaxy: two sides, fields and a galaxy behind** (docs/adr/0007 §7).
+  - The filaments toward the descendants are violet and those toward the
+    ancestors white, each with a halo and a thread of light.
+  - Every star holds a field that grows with its descendants.
+  - The living are lit spheres with rays, and those who are gone are
+    ringed planets. The sun has rays.
+  - The sky is a spiral galaxy made in Canva, 4K.
 
 - **Canopée: the valley seen at 60°, and alive** (docs/adr/0004 §17). The
   family's streams and rivers lie on the valley's ground at the picture's

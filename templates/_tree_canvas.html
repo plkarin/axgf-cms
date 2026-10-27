@@ -9,8 +9,22 @@
    The canvas is positioned absolutely inside a box the caller sizes, so the
    caller owns the scroll container and this owns everything inside it. #}
   <div id="tree-canvas" class="tree-canvas" data-content
+       {%- if layout.bands and layout.bands[0].relative is not none %} data-chart{% endif %}
        style="width:{{ layout.width }}px;height:{{ layout.height }}px">
 
+    {#- The classic chart's row names ("Parents", "Grandchildren") stay at the
+        start of the column while a wide chart scrolls under them. -#}
+    {%- if layout.bands and layout.bands[0].relative is not none %}
+    <div class="tree-gutter" style="height:{{ layout.height }}px" aria-hidden="true">
+      {%- for band in layout.bands %}
+      <div class="band-label relative{% if band.relative == 0 %} is-centre{% endif %}"
+           style="top:{{ band.y }}px;height:{{ band.height }}px">
+        <strong>{{ band.label }}</strong>
+        <span class="muted">{{ band.sublabel }}</span>
+      </div>
+      {%- endfor %}
+    </div>
+    {%- endif %}
     <svg class="tree-wires" width="{{ layout.width }}" height="{{ layout.height }}"
          viewBox="0 0 {{ layout.width }} {{ layout.height }}" aria-hidden="true">
       {% for e in layout.edges %}
@@ -19,6 +33,14 @@
             data-band="{{ e.band }}" data-from="{{ e.from }}" data-to="{{ e.to }}"
             data-base="{{ e.opacity }}"
             style="opacity:{{ e.opacity }}"><title>{{ e.title }}</title></path>
+      {%- if e.node %}
+      {# A couple's union node: two rings on the line between them (the
+         operator's kit, made in Canva, 2026-10-27). #}
+      <g class="wire-node" data-from="{{ e.from }}" data-to="{{ e.to }}"
+         transform="translate({{ e.node[0] }} {{ e.node[1] }})">
+        <circle r="10"/><circle class="ring" cx="-2.6" r="4.2"/><circle class="ring" cx="2.6" r="4.2"/>
+      </g>
+      {%- endif %}
       {% endfor %}
     </svg>
 
@@ -28,15 +50,18 @@
          spanning it. The tint alternates so two adjacent bands cannot be read
          as one, and the gap between bands is three times the gap between rows
          inside a band — that difference is what says "these four rows are the
-         same generation, and the next block is not". #}
-      <div class="band-zone{% if band.unplaced %} unplaced{% endif %}{% if band.rows > 1 %} wrapped{% endif %}"
+         same generation, and the next block is not". The classic chart names
+         its rows from the person in the middle ("Parents"), at their start. #}
+      <div class="band-zone{% if band.unplaced %} unplaced{% endif %}{% if band.rows > 1 %} wrapped{% endif %}{% if band.relative is not none %} relative{% endif %}"
            style="top:{{ band.y }}px;height:{{ band.height }}px"
            data-rows="{{ band.rows }}" aria-hidden="true"></div>
-      <div class="band-label {% if band.unplaced %}unplaced{% endif %}"
+      {%- if band.relative is none %}
+      <div class="band-label{% if band.unplaced %} unplaced{% endif %}"
            style="top:{{ band.y }}px">
         <strong>{{ band.label }}</strong>
         <span class="muted">{{ band.sublabel }}</span>
       </div>
+      {%- endif %}
       {% for c in band.cards %}
       {% if c.restricted %}
       {# A person this reader may not read keeps their place in the tree, so
@@ -51,29 +76,45 @@
         <span class="tdates" dir="ltr"><span class="sep">·</span></span>
       </div>
       {% else %}
-      {# The whole card is one link that moves the tree onto that person, in
-         the same drawing (the operator's review, 2026-10-23: "on avance
-         proprement, sous le même format"): tree.js makes it a move rather
-         than a reload, and without scripts it is the same page re-rooted.
-         The record is one step further, in the panel. #}
-      <a class="tcard{% if c.is_root %} is-root{% endif %}{% if c.id == selected %} is-selected{% endif %}"
-         href="/tree?root={{ c.id }}{% if not show_all %}&amp;depth={{ depth }}{% endif %}&amp;sel={{ c.id }}"
-         data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
-         data-name="{{ c.name }}"
-         style="inset-inline-start:{{ c.x }}px;top:{{ c.y }}px;width:{{ c.w }}px"
-         title="{{ c.name }}">
-        <span class="tname"><bdi>{{ c.name }}</bdi></span>
-        <span class="tdates" dir="ltr">
-          {{ c.birth if c.birth else "?" }}<span class="sep">–</span>
-          {%- if c.presumed_deceased %}<abbr class="presumed"
-              title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-short") }}</abbr>
-          {%- else %}{{ c.death if c.death else "?" }}{% endif %}
-          {% if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
+      {#- A card, folded and open (the operator's review, 2026-10-27, after
+          the kit made in Canva): folded, the first given name and the family
+          name's initial; open — on the pointer, on focus, or on a click that
+          pins it — the same card grown over its neighbours, with the
+          portrait in its laurels, the full name, the dates and two ways on:
+          centring the tree on this person, or their record. Without scripts
+          the face is a link that centres the tree here. -#}
+      <div class="tcard{% if c.is_root %} is-root{% endif %}{% if c.id == selected %} is-selected{% endif %}{% if c.dup %} is-dup{% endif %}"
+           data-id="{{ c.id }}" data-sex="{{ c.sex }}" data-search="{{ c.search }}"
+           data-name="{{ c.name }}"
+           style="inset-inline-start:{{ c.x }}px;top:{{ c.y }}px;width:{{ c.w }}px">
+        <a class="tc-face" href="/tree?root={{ c.id }}{% if not show_all %}&amp;depth={{ depth }}{% endif %}&amp;sel={{ c.id }}"
+           aria-expanded="false" title="{{ c.name }}">
+          <span class="tname"><bdi>{{ c.short if c.short else c.name }}</bdi></span>
+          {%- if c.dup %}<span class="tc-dup" title="{{ t('tree-card-same') }}" aria-label="{{ t('tree-card-same') }}">↺</span>{% endif %}
+          {%- if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
               style="--conf-pct:{{ c.conf_pct }}"
               title="{{ c.conf_label }}"
               role="img" aria-label="{{ c.conf_label }}"></i>{% endif %}
-        </span>
-      </a>
+        </a>
+        <div class="tc-more">
+          <span class="tc-portrait" aria-hidden="true">
+            {%- if c.portrait %}<img alt="" data-src="{{ c.portrait }}" loading="lazy" decoding="async"
+                {%- if c.focal %} style="object-position:{{ c.focal }}"{% endif %}>
+            {%- else %}<span class="tc-initials">{{ c.initials }}</span>{% endif -%}
+          </span>
+          <strong class="tc-full"><bdi>{{ c.name }}</bdi></strong>
+          <span class="tc-dates" dir="auto">
+            {%- if c.birth_text or c.birth %}<span class="tc-born"><span class="tc-sym" aria-hidden="true">✦</span><span class="sr-only">{{ t("record-born") }}</span> {{ c.birth_text if c.birth_text else c.birth }}</span>{% endif %}
+            {%- if c.presumed_deceased %}<span class="tc-died"><span class="tc-sym" aria-hidden="true">†</span> <abbr class="presumed"
+                title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-short") }}</abbr></span>
+            {%- elif c.death_text or (c.death and c.death != "—") %}<span class="tc-died"><span class="tc-sym" aria-hidden="true">†</span><span class="sr-only">{{ t("record-died") }}</span> {{ c.death_text if c.death_text else c.death }}</span>{% endif -%}
+          </span>
+          <span class="tc-actions">
+            <a class="tc-centre" href="/tree?root={{ c.id }}{% if not show_all %}&amp;depth={{ depth }}{% endif %}&amp;sel={{ c.id }}">{{ t("tree-card-centre") }}</a>
+            <a class="tc-open" href="/person/{{ c.id }}">{{ t("record-open-full-page") }}</a>
+          </span>
+        </div>
+      </div>
       {% endif %}
       {% endfor %}
     {% endfor %}

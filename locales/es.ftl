@@ -883,6 +883,24 @@ panel-selected-person = Persona elegida
 ## Franjas de generación
 
 tree-band-generation = Generación { $g }
+tree-level-self = Misma generación
+tree-level-up = { $n ->
+        [1] Hijos
+        [2] Nietos
+        [3] Bisnietos
+       *[other] Descendientes, generación { $n }
+    }
+tree-level-down = { $n ->
+        [1] Padres
+        [2] Abuelos
+        [3] Bisabuelos
+       *[other] Antepasados, generación { $n }
+    }
+tree-card-centre = Centrar el árbol aquí
+tree-card-same = La misma persona, dibujada por segunda vez
+tree-zoom-out = Alejar
+tree-zoom-in = Acercar
+tree-zoom-fit = Ajustar
 tree-band-people = { $n ->
         [one] una persona
        *[other] { $n } personas

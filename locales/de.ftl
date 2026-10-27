@@ -870,6 +870,24 @@ panel-selected-person = Gewählte Person
 ## Generationenbänder
 
 tree-band-generation = Generation { $g }
+tree-level-self = Gleiche Generation
+tree-level-up = { $n ->
+        [1] Kinder
+        [2] Enkel
+        [3] Urenkel
+       *[other] Nachkommen, { $n }. Generation
+    }
+tree-level-down = { $n ->
+        [1] Eltern
+        [2] Großeltern
+        [3] Urgroßeltern
+       *[other] Vorfahren, { $n }. Generation
+    }
+tree-card-centre = Den Baum hier zentrieren
+tree-card-same = Dieselbe Person, ein zweites Mal gezeichnet
+tree-zoom-out = Verkleinern
+tree-zoom-in = Vergrößern
+tree-zoom-fit = Einpassen
 tree-band-people = { $n ->
         [one] eine Person
        *[other] { $n } Personen

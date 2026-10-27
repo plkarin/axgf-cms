@@ -5,7 +5,7 @@
  * glass cylinder, seen from the front and a little above, as a hologram in a
  * laboratory (static/img/fusion-lab.jpg, made in the operator's Canva; the
  * glass stands on its projector). The person at the fixed point is on the
- * axis, in a column of light. The tree is a hierarchy in tiers, a floor of
+ * axis. The tree is a hierarchy in tiers, a floor of
  * the glass per generation, straight across: descendants above, each
  * family's children side by side over it with the parents centred under
  * them; ancestors below, each person's father and mother under them. The
@@ -18,7 +18,10 @@
  * screens; whom the drawing has no room for, the pointer names, or river.js
  * when every name is asked for. A branch carries what its parentage is
  * worth: an attested link a vein of light, an inferred one a broken vein, a
- * speculative one a trace.
+ * speculative one a trace; and its side of the person at the fixed point —
+ * below, toward the ancestors, in orange; above, toward the descendants, in
+ * green (the operator's review, 2026-10-27), so that which way is down and
+ * which way is up reads at a glance.
  *
  * Two things the page knows by name:
  * - `window.axgfView` (river.js): where everyone stands (`shape`), how a
@@ -26,8 +29,8 @@
  *   painted at rest and in travel, which people the drawing named, the
  *   dashboard at rest, and how two frames blend (`tween`).
  * - `window.axgfRiverScene`: the life of the laboratory — motes turning
- *   round the glass, embers rising from the projector, a scanner's arc on
- *   each floor, and light drawn up every attested branch. It holds still as
+ *   round the glass, a scanner's arc on each floor, and light drawn up every
+ *   attested branch in its side's colour. It holds still as
  *   the river's ground does: reduced motion, "Cut", the pause, a hidden tab,
  *   a tree off screen, a machine too slow for it.
  *
@@ -205,7 +208,7 @@
   }
 
   /* ---- the drawing ---- */
-  // A branch's width: the column's at the fixed point, narrowing a floor
+  // A branch's width: the trunk's at the fixed point, narrowing a floor
   // further out each time, never under a hairline.
   function thick(gen) { return Math.max(1.3, 6.5 * Math.pow(0.68, Math.abs(gen))); }
   var named = {};
@@ -224,8 +227,9 @@
     var Wi = Hi * LAB.aspect;
     out += '<image class="tv-lab" href="' + LAB.src + '" x="' + f(G.x0 - LAB.su * Wi) + '" y="' + f(plat - LAB.sv * Hi) + '" width="' + f(Wi) + '" height="' + f(Hi) + '" preserveAspectRatio="none"/>';
     out += '<rect class="tv-veil" x="' + f(hl) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(vh) + '"/>';
-    // The glass: its walls, a ring per floor — the back half faint and
-    // broken, the front half lit — and the column of light on the axis.
+    // The glass: its walls, and a ring per floor — the back half faint and
+    // broken, the front half lit. No column on the axis (the operator's
+    // review, 2026-10-27): the flows say which way is which.
     var wallTop = top - 0.25 * G.H, wallBot = bottom + 0.15 * G.H;
     out += '<rect class="tv-glass" x="' + f(G.x0 - G.R) + '" y="' + f(wallTop) + '" width="' + f(2 * G.R) + '" height="' + f(wallBot - wallTop) + '" fill="url(#tv-glass)"/>';
     out += '<line class="tv-wall" x1="' + f(G.x0 - G.R) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0 - G.R) + '" y2="' + f(wallBot) + '"/>'
@@ -253,8 +257,6 @@
       out += '<text x="' + f(gx) + '" y="' + f(ly + 3.5) + '" font-family="' + api.mono + '" font-size="10" class="' + (l === 0 ? 'k-accent' : 'k-band-text tv-gen') + '">' + word + '</text>';
       boxes.push([gx - 2, ly - 8, gx + 30, ly + 5]);
     }
-    out += '<line class="tv-column-glow" x1="' + f(G.x0) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0) + '" y2="' + f(plat) + '"/>'
-      + '<line class="tv-column" x1="' + f(G.x0) + '" y1="' + f(wallTop) + '" x2="' + f(G.x0) + '" y2="' + f(plat) + '"/>';
 
     // Lines the record continues past the last floor, and lines it ends.
     var counts = [];
@@ -284,15 +286,18 @@
       if (a && (a.role === 'spouse' || a.role === 'dspouse')) w *= 0.6;
       return { e: e, z: z, w: w };
     }).sort(function (a, b) { return a.z - b.z; });
+    // Each branch says its side of the person in the middle (the operator's
+    // review, 2026-10-27): below them, toward their ancestors, in orange;
+    // above them, toward their descendants, in green.
     B.forEach(function (b) {
       var e = b.e, d = edge(e.x1, e.y1, e.x2, e.y2), back = b.z < -0.15;
       var o = (e.a < 1 || back) ? ' opacity="' + f((e.a < 1 ? e.a : 1) * (back ? 0.42 : 1)) + '"' : '';
-      var faint = e.conf === 's' ? ' tv-faint' : '', s = '';
+      var faint = (e.conf === 's' ? ' tv-faint' : '') + ((e.y1 + e.y2) / 2 > G.y0 ? ' tv-down' : ' tv-up'), s = '';
       s += '<path d="' + d + '" class="tv-branch-glow' + faint + '" stroke-width="' + f(b.w * 3.2) + '"' + o + '/>';
       s += '<path d="' + d + '" class="tv-branch' + faint + '" stroke-width="' + f(b.w) + '" stroke-linejoin="miter" stroke-linecap="square"' + o + '/>';
-      if (e.conf === 'a') s += '<path d="' + d + '" class="tv-vein" stroke-width="1.1" stroke-linejoin="miter"' + o + '/>';
-      else if (e.conf === 'd') s += '<path d="' + d + '" class="tv-vein tv-vein-d" stroke-width="1.1" stroke-dasharray="4.5 3"' + o + '/>';
-      else s += '<path d="' + d + '" class="tv-vein tv-vein-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
+      if (e.conf === 'a') s += '<path d="' + d + '" class="tv-vein' + faint + '" stroke-width="1.1" stroke-linejoin="miter"' + o + '/>';
+      else if (e.conf === 'd') s += '<path d="' + d + '" class="tv-vein tv-vein-d' + faint + '" stroke-width="1.1" stroke-dasharray="4.5 3"' + o + '/>';
+      else s += '<path d="' + d + '" class="tv-vein tv-vein-s' + faint + '" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
       if (back) far += s; else near += s;
     });
 
@@ -483,9 +488,12 @@
     return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
   }
   var SAP = rgb('--tv-vein', [255, 255, 255]), SAP2 = rgb('--tv-vein-soft', SAP), COLD = rgb('--tv-glass', rgb('--tv-teal', SAP));
+  // The two sides of the person in the middle: toward the ancestors, toward
+  // the descendants.
+  var DOWN = rgb('--tv-down', SAP), DOWN2 = rgb('--tv-down-soft', SAP2), UP = rgb('--tv-up', COLD), UP2 = rgb('--tv-up-soft', UP);
   function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
 
-  // Under the drawing, the room's motes, embers and scanners; over it, the
+  // Under the drawing, the room's motes and scanners; over it, the
   // light up the branches.
   var ground = document.createElement('canvas');
   ground.className = 'rv-ground';
@@ -522,7 +530,8 @@
     return { x: vb.x - (cw / k - vb.width) / 2, y: vb.y - (ch / k - vb.height) / 2, k: k };
   }
   // Light is drawn up every attested branch, from its lower end to its
-  // upper, as sap rises: roots to column to crown.
+  // upper, as sap rises: roots to trunk to crown, orange below the person
+  // in the middle and green above.
   function layout(L) {
     flows = [];
     if (!L || !L.edges) return;
@@ -542,7 +551,7 @@
       for (var i = 1; i < xs.length; i++) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
       var n = xs.length - 1;
       if (cum[n] < 10) return;
-      flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], k: Math.max(1, Math.round(cum[n] / 90)), phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
+      flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], k: Math.max(1, Math.round(cum[n] / 90)), phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1, my: (a[1] + a[3]) / 2 });
     });
     request();
   }
@@ -562,19 +571,12 @@
       gx.fillStyle = rgba(mo.hot ? SAP2 : COLD, a);
       gx.beginPath(); gx.arc(q[0], q[1], mo.r * dpr * (1 + 0.3 * q[2]), 0, 6.283); gx.fill();
     });
-    // A scanner's arc going round each floor's ring.
+    // A scanner's arc going round each floor's ring, in its side's colour.
     for (var l = -G.na; l <= G.nd; l++) {
       var cy = (G.y0 - l * G.H) * s + oy, rx = G.R * 0.98 * s, ry = rx * TILT, a0 = t * 0.7 + l * 1.3;
-      gx.strokeStyle = rgba(l > 0 ? SAP : COLD, 0.32);
+      gx.strokeStyle = rgba(l > 0 ? UP : l < 0 ? DOWN : COLD, 0.32);
       gx.lineWidth = 1.6 * dpr;
       gx.beginPath(); gx.ellipse(G.x0 * s + ox, cy, rx, ry, 0, a0, a0 + 0.9); gx.stroke();
-    }
-    // Embers rising from the projector up the column.
-    var plat = (G.y0 + (G.na + 0.65) * G.H) * s + oy, span = plat - ((G.y0 - (G.nd + 0.75) * G.H) * s + oy);
-    for (var e = 0; e < 26; e++) {
-      var ph = ((e * 0.618 + t * (0.05 + (e % 5) * 0.012)) % 1), x = G.x0 * s + ox + Math.sin(e * 3.7 + t * 0.8) * G.R * 0.12 * s * (1 - ph);
-      gx.fillStyle = rgba(e % 4 ? SAP : SAP2, 0.5 * (1 - ph));
-      gx.beginPath(); gx.arc(x, plat - span * ph, (1.4 + (e % 3) * 0.6) * dpr, 0, 6.283); gx.fill();
     }
     gx.globalCompositeOperation = 'source-over';
   }
@@ -588,6 +590,7 @@
     var s = v.k * dpr, ox = -v.x * s, oy = -v.y * s;
     ctx.globalCompositeOperation = 'lighter';
     flows.forEach(function (fl) {
+      var down = GEO && fl.my > GEO.y0, c1 = down ? DOWN2 : UP2, c2 = down ? DOWN : UP;
       for (var j = 0; j < fl.k; j++) {
         var pos = ((fl.phase + j / fl.k) * fl.len + clock * SPEED) % fl.len, i = 1;
         while (i < fl.n && fl.cum[i] < pos) i++;
@@ -595,9 +598,9 @@
         var x = (fl.x[i - 1] + (fl.x[i] - fl.x[i - 1]) * u) * s + ox, y = (fl.y[i - 1] + (fl.y[i] - fl.y[i - 1]) * u) * s + oy;
         var fade = Math.min(1, pos / 18, (fl.len - pos) / 18), r = 3 * v.k * dpr;
         var g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.4);
-        g.addColorStop(0, rgba(SAP2, 0.9 * fade));
-        g.addColorStop(0.35, rgba(SAP, 0.45 * fade));
-        g.addColorStop(1, rgba(SAP, 0));
+        g.addColorStop(0, rgba(c1, 0.9 * fade));
+        g.addColorStop(0.35, rgba(c2, 0.45 * fade));
+        g.addColorStop(1, rgba(c2, 0));
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(x, y, r * 2.4, 0, 6.283); ctx.fill();
       }

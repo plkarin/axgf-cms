@@ -482,6 +482,24 @@ date-century = القرن { $century }
 ## بطاقات الشجرة
 
 tree-band-generation = الجيل { $g }
+tree-level-self = الجيل نفسه
+tree-level-up = { $n ->
+        [1] الأبناء
+        [2] الأحفاد
+        [3] أبناء الأحفاد
+       *[other] الذرية، الجيل { $n }
+    }
+tree-level-down = { $n ->
+        [1] الوالدان
+        [2] الأجداد
+        [3] آباء الأجداد
+       *[other] الأسلاف، الجيل { $n }
+    }
+tree-card-centre = توسيط الشجرة هنا
+tree-card-same = الشخص نفسه، مرسوم مرة ثانية
+tree-zoom-out = تصغير
+tree-zoom-in = تكبير
+tree-zoom-fit = ملاءمة
 tree-band-people = { $n ->
         [zero] لا أحد
         [one] شخص واحد

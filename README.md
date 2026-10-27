@@ -124,20 +124,24 @@ use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
 
 - **Fusion** grows the family as a tree in tiers inside a glass cylinder, on
   the projector of a laboratory. The person you are visiting stands on the
-  axis in a column of light; their descendants climb the glass a floor per
-  generation and their ancestors go down it as roots, joined by branches
-  drawn at right angles as on a family chart. The living are green leaves,
-  and the glass turns as you travel.
-- **Galaxy** makes that person a sun, with one orbit per generation:
-  descendants above, ancestors below.
+  axis. Their descendants climb the glass a floor per generation and their
+  ancestors go down it as roots, joined by branches drawn at right angles
+  as on a family chart. The branches up are green and the ones down are
+  orange. The glass turns as you travel.
+- **Galaxy** makes that person a sun, with one orbit per generation, over
+  a spiral galaxy. The descendants are above, on violet filaments, and the
+  ancestors below, on white ones. Every star holds a field that grows with
+  its descendants.
 - **Summit** is an ascent at sunrise over a photographed mountain: the
   ancestors in the valley, the descendants climbing toward the summit, and
   the snow coming further down the more recently the person was born.
-- **Clarity** is a funnel of crystal over a prism of light: one slice per
-  generation, the oldest at the narrow end below, the newest at the wide
-  mouth above, every parentage a line meshed from one slice to the next.
-  Each slice says how many people it holds, as the stages of a funnel chart
-  do, and the page around it is frosted glass.
+- **Clarity** is a funnel of glass rings over a prism of light: one ring
+  per generation, the oldest at the narrow end below and the newest at the
+  wide mouth above. Each generation's people are pearls spread along their
+  ring, family by family, and every parentage is a fine thread from one
+  ring to the next. Every name is on a small frosted label, never across an
+  outline. Each ring says how many people it holds, as the stages of a
+  funnel chart do, and the page around it is frosted glass.
 - **Genealogy** is an old tree growing out of a parchment scroll, drawn in
   relief and seen close: the person you are visiting sits on its trunk,
   their descendants up in its crown of gold leaves and their ancestors among
@@ -201,7 +205,7 @@ The charts are honest by construction:
 
 ### The tree, the overview, and what is worth a look
 
-| The tree, generation by generation, with the record beside it | The overview: the family in figures, and how sure each parentage is |
+| The tree: a classic family chart, a card open, the record beside it | The overview: the family in figures, and how sure each parentage is |
 |---|---|
 | [![The tree around Lucien Delaunay: two generations each way as cards with dates and a certainty mark, a filter, and his record in the side panel](docs/screenshots/tree.png)](docs/screenshots/tree.png) | [![The overview page: "Every life is a source. Every family, a river." over terraced hills, with 250 persons, 78 families and 7 documents, and a card showing 152 parentages practically certain, 10 plausible and 6 hypothetical](docs/screenshots/overview.jpg)](docs/screenshots/overview.jpg) |
 

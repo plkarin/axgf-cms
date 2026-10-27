@@ -253,14 +253,103 @@ function axgfTreeWidth() {
       });
   }
 
+  /* A card, folded and open (the operator's review, 2026-10-27). A click on
+   * its face opens it and pins it open — its portrait in its laurels, its
+   * dates, two ways on — and shows the person's record in the panel, the
+   * tree staying where it is; a second click folds it. "Centre the tree
+   * here" moves the tree onto them, as a click on a card used to. Near the
+   * chart's edges the open card grows the other way; its portrait is
+   * fetched the first time it opens. */
+  // Folds every open card but the one `inside` is in (the card itself, or
+  // a click's target): a click elsewhere, or Escape, folds them all.
+  function close(inside) {
+    var open = document.querySelectorAll('#tree-canvas .tcard.is-open');
+    for (var i = 0; i < open.length; i++) {
+      if (inside && open[i].contains(inside)) continue;
+      open[i].classList.remove('is-open');
+      var f = open[i].querySelector('.tc-face');
+      if (f) f.setAttribute('aria-expanded', 'false');
+    }
+  }
+  function prepare(card) {
+    if (!card || card.dataset.ready) return;
+    card.dataset.ready = '1';
+    var img = card.querySelector('.tc-portrait img[data-src]');
+    if (img) { img.src = img.getAttribute('data-src'); img.removeAttribute('data-src'); }
+  }
+  function place(card) {
+    var scroll = document.querySelector('.tree-scroll');
+    if (!card || !scroll) return;
+    var s = scroll.getBoundingClientRect(), c = card.getBoundingClientRect();
+    var rtl = document.documentElement.dir === 'rtl';
+    var room = 132; // half the open card, and a margin
+    var before = rtl ? s.right - (c.left + c.width / 2) : (c.left + c.width / 2) - s.left;
+    var after = rtl ? (c.left + c.width / 2) - s.left : s.right - (c.left + c.width / 2);
+    card.classList.toggle('tc-start', before < room);
+    card.classList.toggle('tc-end', before >= room && after < room);
+    card.classList.toggle('tc-up', s.bottom - c.top < 236 && c.top - s.top > 236);
+  }
+  function select(card) {
+    var id = card && card.dataset.id;
+    var panel = document.getElementById('tree-panel');
+    if (!id || !panel) return;
+    var cards = document.querySelectorAll('#tree-canvas .tcard');
+    for (var i = 0; i < cards.length; i++) cards[i].classList.toggle('is-selected', cards[i].dataset.id === id);
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.set('sel', id);
+      history.replaceState(history.state, '', u.pathname + u.search);
+    } catch (err) { /* the address bar stays as it was */ }
+    fetch('/tree/panel/' + encodeURIComponent(id), { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error('panel'); return r.text(); })
+      .then(function (html) { panel.innerHTML = html; })
+      .catch(function () { /* the record stays the one shown */ });
+  }
+  // A folded card is only its face, so the pointer or the keyboard reaches
+  // the face first: the card learns then which way to grow, and fetches its
+  // portrait. The card itself is never claimed — its links stay links.
+  document.addEventListener('mouseover', function (e) {
+    var face = e.target.closest && e.target.closest('#tree-canvas .tc-face');
+    if (face && !face.contains(e.relatedTarget)) { place(face.parentNode); prepare(face.parentNode); }
+  });
+  document.addEventListener('focusin', function (e) {
+    var face = e.target.closest && e.target.closest('#tree-canvas .tc-face');
+    if (face) { place(face.parentNode); prepare(face.parentNode); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') close(null);
+  });
+
   // Cards, and a relative's name in the panel: the tree moves onto them.
   document.addEventListener('click', function (e) {
-    var card = e.target.closest && e.target.closest('#tree-canvas .tcard[data-id]');
-    if (card && card.tagName === 'A' && plainClick(e)) {
+    var centre = e.target.closest && e.target.closest('#tree-canvas .tc-centre');
+    if (centre && plainClick(e)) {
+      var cc = centre.closest('.tcard[data-id]');
+      if (cc) {
+        e.preventDefault();
+        close(null);
+        go(cc.dataset.id, true, cc);
+        return;
+      }
+    }
+    var face = e.target.closest && e.target.closest('#tree-canvas .tc-face');
+    if (face && plainClick(e)) {
+      var card = face.parentNode;
       e.preventDefault();
-      go(card.dataset.id, true, card);
+      if (card.classList.contains('is-open')) {
+        card.classList.remove('is-open');
+        face.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      close(card);
+      place(card);
+      prepare(card);
+      card.classList.add('is-open');
+      face.setAttribute('aria-expanded', 'true');
+      select(card);
       return;
     }
+    close(e.target);
     var link = e.target.closest && e.target.closest('#tree-panel a[href^="/person/"]');
     if (link && plainClick(e) && !link.classList.contains('panel-open-full')) {
       e.preventDefault();
@@ -281,6 +370,36 @@ function axgfTreeWidth() {
   });
 })();
 
+/* The chart's size (2026-10-27): smaller to see a wide family whole, or
+ * fitted to the column, remembered from one visit to the next. CSS `zoom`
+ * scales the chart and its lines together, so the cards stay on them. */
+function axgfTreeZoom() {
+  var box = document.querySelector('[data-tree-zoom]');
+  var canvas = document.getElementById('tree-canvas');
+  var scroll = document.querySelector('.tree-scroll');
+  if (!box || !canvas || !scroll) return;
+  box.hidden = false;
+  var z = 1;
+  try { z = parseFloat(localStorage.getItem('axgf-tree-zoom')) || 1; } catch (e) { /* private window */ }
+  function apply(v) {
+    z = Math.max(0.5, Math.min(1.5, Math.round(v * 20) / 20));
+    canvas.style.zoom = z === 1 ? '' : String(z);
+    try { localStorage.setItem('axgf-tree-zoom', String(z)); } catch (e) { /* private window */ }
+  }
+  apply(z);
+  box.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('button[data-z]');
+    if (!b) return;
+    e.preventDefault();
+    if (b.dataset.z === 'fit') {
+      var w = parseFloat(canvas.style.width) || canvas.scrollWidth;
+      apply(Math.min(1, (scroll.clientWidth - 8) / w));
+    } else {
+      apply(z + (b.dataset.z === '+' ? 0.1 : -0.1));
+    }
+  });
+}
+
 /* Everything above that reads the page runs on the page as it arrives, and
  * again on every page the tree moves to. */
 function wire() {
@@ -290,5 +409,6 @@ function wire() {
   axgfTreeFilter();
   axgfTreeHover();
   axgfTreeWidth();
+  axgfTreeZoom();
 }
 wire();

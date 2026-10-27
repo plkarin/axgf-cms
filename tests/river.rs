@@ -1082,7 +1082,9 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
         !js.contains("float wm="),
         "the ground animates no water of its own"
     );
-    assert!(js.contains("col=mix(col,col*uGreen,clamp(smoothstep(0.6,0.95,gt.g)*0.45+gw*gw*0.25,0.0,0.6));"));
+    assert!(js.contains(
+        "col=mix(col,col*uGreen,clamp(smoothstep(0.6,0.95,gt.g)*0.45+gw*gw*0.25,0.0,0.6));"
+    ));
     assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
     // The family's lines are rivers (the operator's review, 2026-10-24): under
     // Canopée the scene draws each one in the ground — its water, its banks,
@@ -1153,7 +1155,8 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     // the distance's haze.
     assert!(js.contains("float clearAt(vec2 p){"));
     assert!(js.contains("'  col=mix(col,grass*(1.0-0.22*shd),clear);',"));
-    assert!(js.contains("' float a=inB*mix(conf>1.5?0.0:0.28,1.0,wet)*vMeta.x*fade*(1.0-0.85*crown);',"));
+    assert!(js
+        .contains("' float a=inB*mix(conf>1.5?0.0:0.28,1.0,wet)*vMeta.x*fade*(1.0-0.85*crown);',"));
     assert!(js.contains("' col=mix(col,env*1.3+uSky*0.08,0.28);',"));
     assert!(js.contains("' col=mix(col,env,far);',"));
     assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
@@ -1187,6 +1190,8 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     let css = include_str!("../static/app.css");
     assert!(css.contains("[data-theme=\"canopee\"] .river { --rv-rivers-3d: 1; }"));
     assert!(css.contains("@media screen {\n  [data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),"));
-    assert!(css.contains("[data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg .rv-zones { opacity: 0; }"));
+    assert!(css.contains(
+        "[data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg .rv-zones { opacity: 0; }"
+    ));
     assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));
 }

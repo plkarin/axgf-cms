@@ -817,6 +817,24 @@ record-end-not-recorded = mwisho haujarekodiwa
 panel-selected-person = Mtu aliyechaguliwa
 
 tree-band-generation = Kizazi { $g }
+tree-level-self = Kizazi hicho hicho
+tree-level-up = { $n ->
+        [1] Watoto
+        [2] Wajukuu
+        [3] Vitukuu
+       *[other] Vizazi, kizazi cha { $n }
+    }
+tree-level-down = { $n ->
+        [1] Wazazi
+        [2] Babu na bibi
+        [3] Wazazi wa babu na bibi
+       *[other] Mababu, kizazi cha { $n }
+    }
+tree-card-centre = Weka mti katikati hapa
+tree-card-same = Mtu yule yule, amechorwa mara ya pili
+tree-zoom-out = Punguza
+tree-zoom-in = Kuza
+tree-zoom-fit = Tosheleza
 tree-band-people = { $n ->
         [one] mtu mmoja
        *[other] watu { $n }

@@ -1036,6 +1036,24 @@ panel-selected-person = Выбранный человек
 ## Полосы поколений
 
 tree-band-generation = Поколение { $g }
+tree-level-self = То же поколение
+tree-level-up = { $n ->
+        [1] Дети
+        [2] Внуки
+        [3] Правнуки
+       *[other] Потомки, { $n }-е поколение
+    }
+tree-level-down = { $n ->
+        [1] Родители
+        [2] Бабушки и дедушки
+        [3] Прабабушки и прадедушки
+       *[other] Предки, { $n }-е поколение
+    }
+tree-card-centre = Отцентрировать древо здесь
+tree-card-same = Тот же человек, нарисованный второй раз
+tree-zoom-out = Уменьшить
+tree-zoom-in = Увеличить
+tree-zoom-fit = Вписать
 tree-band-people = { $n ->
         [one] один человек
         [few] { $n } человека

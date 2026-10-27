@@ -447,6 +447,8 @@
         return [[d, -h / 2], [-d - w, -h / 2], [-w / 2, -d - h], [-w / 2, d], [d * 0.7, -d * 0.7 - h], [-d * 0.7 - w, -d * 0.7 - h], [d * 0.7, d * 0.7], [-d * 0.7 - w, d * 0.7]].some(function (o) {
           var b = [p.x + o[0], p.y + o[1], p.x + o[0] + w, p.y + o[1] + h];
           if (b[0] < lo || b[2] > hi || b[1] < top || b[3] > bot) return false;
+          // A view may keep names off its own shapes (the funnel's rims).
+          if (view && view.keepOut && view.keepOut(b)) return false;
           var n = overlap(b);
           if (n < least) { least = n; best = b; }
           return n === 0;

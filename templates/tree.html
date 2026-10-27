@@ -52,6 +52,12 @@
     </select>
   </div>
   <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("tree-show") }}</button>
+  {#- The chart's size, for a wide family (2026-10-27): shown by tree.js. -#}
+  <div class="tc-zoom" data-tree-zoom hidden>
+    <button class="btn small" type="button" data-z="-" aria-label="{{ t('tree-zoom-out') }}" title="{{ t('tree-zoom-out') }}">−</button>
+    <button class="btn small" type="button" data-z="fit">{{ t("tree-zoom-fit") }}</button>
+    <button class="btn small" type="button" data-z="+" aria-label="{{ t('tree-zoom-in') }}" title="{{ t('tree-zoom-in') }}">+</button>
+  </div>
 </form>
 
 {% if show_all and layout.person_count > 40 %}

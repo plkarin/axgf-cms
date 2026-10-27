@@ -121,6 +121,9 @@ pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-pano
 /// room, blue panels at its sides and a projector glowing red on the floor,
 /// under the tree's glass (fusion.js stands the glass on the projector).
 pub const FUSION_LAB_JPG: &[u8] = include_bytes!("../static/img/fusion-lab.jpg");
+/// Galaxy's sky (2026-10-27, docs/adr/0007 §7), made in the operator's Canva:
+/// a spiral galaxy, its core behind the sun.
+pub const GALAXY_SKY_JPG: &[u8] = include_bytes!("../static/img/galaxy-sky.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
 /// Its maps: how near each pixel is (red), by which river-scene.js draws the
 /// ground in relief; its trees (green) and its meadows (blue), where the wind
@@ -130,6 +133,10 @@ pub const RIVER_GROUND_MAPS_JPG: &[u8] = include_bytes!("../static/img/river-gro
 /// deer, chamois and ibex, wild horses and an eagle, made in the operator's
 /// Canva and cut out, in one atlas.
 pub const RIVER_LIFE_PNG: &[u8] = include_bytes!("../static/img/river-life.png");
+/// The laurels round a portrait on the tree's open cards (2026-10-27), made in
+/// the operator's Canva: white on transparent, a mask the stylesheet colours
+/// with each theme's accent.
+pub const LAUREL_RING_PNG: &[u8] = include_bytes!("../static/img/laurel-ring.png");
 /// The water of the family's streams and rivers under Canopée (docs/adr/0004
 /// §15): a mountain stream and a calm river seen from above, each repeating
 /// down its length without a seam.

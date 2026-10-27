@@ -878,6 +878,24 @@ panel-selected-person = Selected person
 ## Tree bands
 
 tree-band-generation = Generation { $g }
+tree-level-self = Same generation
+tree-level-up = { $n ->
+        [1] Children
+        [2] Grandchildren
+        [3] Great-grandchildren
+       *[other] Descendants, generation { $n }
+    }
+tree-level-down = { $n ->
+        [1] Parents
+        [2] Grandparents
+        [3] Great-grandparents
+       *[other] Ancestors, generation { $n }
+    }
+tree-card-centre = Centre the tree here
+tree-card-same = The same person, drawn a second time
+tree-zoom-out = Zoom out
+tree-zoom-in = Zoom in
+tree-zoom-fit = Fit
 tree-band-people = { $n ->
         [one] one person
        *[other] { $n } people

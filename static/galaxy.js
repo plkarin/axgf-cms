@@ -7,7 +7,11 @@
  * descendants on the upper half of the sky, the ancestors on the lower half,
  * each orbit's people in the river's own order from left to right. Partners
  * stand beside the sun. Every parentage is a filament from parent to union to
- * child, lit as surely as it is known: solid, broken or a trace.
+ * child, lit as surely as it is known: solid, broken or a trace; violet on
+ * the upper sky, toward the descendants, white on the lower, toward the
+ * ancestors (the operator's review, 2026-10-27), so that up and down read
+ * at a glance. Every star holds a field round it, wider as more descendants
+ * come from it. The sky is a galaxy made in Canva (static/img/galaxy-sky.jpg).
  *
  * Two things the page knows by name:
  * - `window.axgfView` (river.js): where its people stand (`shape`), how a
@@ -114,9 +118,9 @@
     var S = m.sun || [hl + hw / 2, vt + vh / 2], R0 = m.r0 || 30, step = m.orbit || 50;
     SUN = S;
     out += '<rect class="gx-bg" x="' + f(hl) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(vh) + '"/>';
-    // Two clouds of the nebula, either side of the sun.
-    out += '<ellipse class="gx-nebula" cx="' + f(S[0] - hw * 0.22) + '" cy="' + f(S[1] - vh * 0.18) + '" rx="' + f(hw * 0.32) + '" ry="' + f(vh * 0.26) + '" fill="url(#gx-neb-a)"/>'
-      + '<ellipse class="gx-nebula" cx="' + f(S[0] + hw * 0.24) + '" cy="' + f(S[1] + vh * 0.2) + '" rx="' + f(hw * 0.3) + '" ry="' + f(vh * 0.24) + '" fill="url(#gx-neb-b)"/>';
+    // The sky is the stage's picture (app.css); a dark well round the sun
+    // keeps the drawing readable over the galaxy's bright core.
+    out += '<circle class="gx-well" cx="' + f(S[0]) + '" cy="' + f(S[1]) + '" r="' + f(R0 + (m.n + 0.6) * step) + '" fill="url(#gx-well)"/>';
     // Orbits: the partners' close one, then one per generation each way.
     out += '<circle class="gx-orbit gx-orbit-0" cx="' + f(S[0]) + '" cy="' + f(S[1]) + '" r="' + f(R0) + '"/>';
     for (var g = 1; g <= m.n; g++) {
@@ -138,15 +142,34 @@
       out += '<g opacity="' + f(c.a) + '"><path d="' + edge(c.x, c.y, c.x + c.stub_dx, c.y + c.stub_dy) + '" fill="none" class="gx-tail gx-stub"/></g>';
       if (c.stub_at) counts.push({ mk: c.stub_at, text: '+' + c.stub, size: 10, dx: c.sref ? c.x - c.sref[0] : 0, dy: c.sref ? c.y - c.sref[1] : 0, a: c.a });
     });
-    // Filaments: parent to union, union to child.
-    api.edges(fr, PM).forEach(function (e) {
-      var d = edge(e.x1, e.y1, e.x2, e.y2), w = f(0.7 + api.widths[api.cls(e.d)] * 0.32), o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
-      if (e.conf === 'a') links += '<path d="' + d + '" fill="none" class="gx-link" stroke-width="' + w + '" stroke-linecap="round"' + o + '/>';
-      else if (e.conf === 'd') links += '<path d="' + d + '" fill="none" class="gx-link gx-link-d" stroke-width="' + w + '" stroke-dasharray="5 3.5"' + o + '/>';
-      else links += '<path d="' + d + '" fill="none" class="gx-link gx-link-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
+    // Every star's field: a disc of faint light and its edge, wider as more
+    // descendants come from the star (the river's own count, `d`, is the
+    // descendants and the person), never wider than most of an orbit's step.
+    fr.persons.forEach(function (p) {
+      if (p.role === 'centre' || (p.s && p.s.redacted)) return;
+      var desc = Math.max(0, (p.d || 1) - 1);
+      if (!desc) return;
+      var rf = Math.min(step * 0.56, 9 + 4 * Math.sqrt(desc)), o = ' opacity="' + f(p.a) + '"';
+      out += '<circle class="gx-field" cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + f(rf) + '" fill="url(#gx-field)"' + o + '/>'
+        + '<circle class="gx-field-edge" cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + f(rf) + '"' + o + '/>';
+      if (desc >= 6) out += '<circle class="gx-field-edge gx-field-inner" cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + f(rf * 0.62) + '"' + o + '/>';
     });
+    // Filaments: parent to union, union to child — violet on the upper sky,
+    // toward the descendants, white on the lower, toward the ancestors; a
+    // halo, the filament, and a thread of light down an attested one.
+    api.edges(fr, PM).forEach(function (e) {
+      var d = edge(e.x1, e.y1, e.x2, e.y2), w = 0.7 + api.widths[api.cls(e.d)] * 0.32, o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      var side = (e.y1 + e.y2) / 2 > S[1] ? ' gx-down' : ' gx-up';
+      links += '<path d="' + d + '" fill="none" class="gx-link-halo' + side + '" stroke-width="' + f(w + 4) + '" stroke-linecap="round"' + o + '/>';
+      if (e.conf === 'a') links += '<path d="' + d + '" fill="none" class="gx-link' + side + '" stroke-width="' + f(w) + '" stroke-linecap="round"' + o + '/>'
+        + '<path d="' + d + '" fill="none" class="gx-thread' + side + '" stroke-width="' + f(Math.max(0.6, w * 0.35)) + '" stroke-linecap="round"' + o + '/>';
+      else if (e.conf === 'd') links += '<path d="' + d + '" fill="none" class="gx-link gx-link-d' + side + '" stroke-width="' + f(w) + '" stroke-dasharray="5 3.5"' + o + '/>';
+      else links += '<path d="' + d + '" fill="none" class="gx-link gx-link-s' + side + '" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
+    });
+    // Where a couple's filaments meet: a small four-pointed spark.
     fr.couples.forEach(function (c) {
-      out += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="1.8" class="gx-union" opacity="' + f(c.a) + '"/>';
+      var x = c.x, y = c.y, side = c.y > S[1] ? ' gx-down' : ' gx-up';
+      links += '<path class="gx-union' + side + '" d="M' + f(x) + ' ' + f(y - 4) + 'L' + f(x + 1.2) + ' ' + f(y - 1.2) + 'L' + f(x + 4) + ' ' + f(y) + 'L' + f(x + 1.2) + ' ' + f(y + 1.2) + 'L' + f(x) + ' ' + f(y + 4) + 'L' + f(x - 1.2) + ' ' + f(y + 1.2) + 'L' + f(x - 4) + ' ' + f(y) + 'L' + f(x - 1.2) + ' ' + f(y - 1.2) + 'Z" opacity="' + f(c.a) + '"/>';
     });
     // Names stand outward from the sun, along the line from it: the near
     // orbits named first, the next ones while there is room, and a name that
@@ -221,14 +244,31 @@
       var k = '<g opacity="' + f(p.a) + '">';
       if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="20" fill="transparent"/>';
       if (isC) {
+        // The sun: its corona, its rays, its disc and its heart.
+        var rays = '';
+        for (var ri = 0; ri < 8; ri++) {
+          var ra = ri * Math.PI / 4, rl = ri % 2 ? 30 : 46;
+          rays += 'M' + f(p.x + Math.cos(ra) * 18) + ' ' + f(p.y + Math.sin(ra) * 18) + 'L' + f(p.x + Math.cos(ra) * rl) + ' ' + f(p.y + Math.sin(ra) * rl);
+        }
         k += '<circle cx="' + x + '" cy="' + y + '" r="34" class="gx-corona gx-corona-3"/><circle cx="' + x + '" cy="' + y + '" r="24" class="gx-corona gx-corona-2"/>'
-          + '<circle cx="' + x + '" cy="' + y + '" r="16" class="gx-sun"/><circle cx="' + x + '" cy="' + y + '" r="7" class="gx-sun-core"/>';
+          + '<path class="gx-sun-rays" d="' + rays + '"/>'
+          + '<circle cx="' + x + '" cy="' + y + '" r="16" class="gx-sun" fill="url(#gx-sun-disc)"/><circle cx="' + x + '" cy="' + y + '" r="7" class="gx-sun-core"/>';
       } else {
         if (p.repeat > 1) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3) + '" fill="none" class="k-data-line" stroke-width="1"/>';
         if (p.again) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" class="k-data-line" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
         if (s.redacted || s.sparse) k += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="gx-planet gx-hidden" stroke-width="1.5" stroke-dasharray="1.6 1.6"/>';
-        else if (s.living) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 5) + '" class="gx-planet-glow gx-living"/><circle cx="' + x + '" cy="' + y + '" r="' + f(r + 0.6) + '" class="gx-planet gx-living"/>';
-        else k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3.5) + '" class="gx-planet-glow gx-gone"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="gx-planet gx-gone"/>';
+        else if (s.living) {
+          // A living star: its glow, four rays, and its lit sphere.
+          var sl = r + 9;
+          k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 5) + '" class="gx-planet-glow gx-living"/>'
+            + '<path class="gx-spikes gx-living" d="M' + f(p.x - sl) + ' ' + y + 'L' + f(p.x + sl) + ' ' + y + 'M' + x + ' ' + f(p.y - sl) + 'L' + x + ' ' + f(p.y + sl) + '"/>'
+            + '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 0.6) + '" class="gx-planet gx-living" fill="url(#gx-sphere-living)"/>';
+        } else {
+          // One that is gone: a cooler sphere with its ring, tilted.
+          k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3.5) + '" class="gx-planet-glow gx-gone"/>'
+            + '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="gx-planet gx-gone" fill="url(#gx-sphere-gone)"/>'
+            + '<ellipse class="gx-planet-ring" cx="' + x + '" cy="' + y + '" rx="' + f(r + 4.5) + '" ry="' + f((r + 4.5) * 0.32) + '" transform="rotate(-22 ' + x + ' ' + y + ')"/>';
+        }
       }
       var halo = ' paint-order="stroke" stroke-width="4" stroke-linejoin="round"';
       if (isC && !s.redacted) {
@@ -243,8 +283,11 @@
       nodes += k + '</g>';
     });
     if (rest) named = keep;
-    var defs = '<radialGradient id="gx-neb-a"><stop offset="0" class="gx-neb-a-in"/><stop offset="1" class="gx-neb-out"/></radialGradient>'
-      + '<radialGradient id="gx-neb-b"><stop offset="0" class="gx-neb-b-in"/><stop offset="1" class="gx-neb-out"/></radialGradient>';
+    var defs = '<radialGradient id="gx-well"><stop offset="0" class="gx-well-in"/><stop offset="0.72" class="gx-well-mid"/><stop offset="1" class="gx-well-out"/></radialGradient>'
+      + '<radialGradient id="gx-field"><stop offset="0" class="gx-field-in"/><stop offset="0.7" class="gx-field-mid"/><stop offset="1" class="gx-field-out"/></radialGradient>'
+      + '<radialGradient id="gx-sphere-living" cx="0.36" cy="0.34" r="0.75"><stop offset="0" class="gx-sph-hi"/><stop offset="0.5" class="gx-sph-living"/><stop offset="1" class="gx-sph-living-deep"/></radialGradient>'
+      + '<radialGradient id="gx-sphere-gone" cx="0.36" cy="0.34" r="0.75"><stop offset="0" class="gx-sph-hi"/><stop offset="0.5" class="gx-sph-gone"/><stop offset="1" class="gx-sph-gone-deep"/></radialGradient>'
+      + '<radialGradient id="gx-sun-disc" cx="0.42" cy="0.4" r="0.7"><stop offset="0" class="gx-sun-hi"/><stop offset="1" class="gx-sun-edge"/></radialGradient>';
     var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cn = C && C.s && !C.s.redacted ? C.s.names[2] : '';
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg gx-svg" data-view="galaxy" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
@@ -307,6 +350,9 @@
     return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
   }
   var WHITE = rgb('--text-primary', [255, 255, 255]), LINK = rgb('--gx-link', WHITE), HOT = rgb('--gx-link-hot', LINK);
+  // The two sides of the sun (2026-10-27): violet toward the descendants,
+  // white toward the ancestors.
+  var UP = rgb('--gx-up', LINK), DOWN = rgb('--gx-down', WHITE);
   var SUNC = rgb('--gx-sun', WHITE), ORBIT = rgb('--gx-planet-living', LINK);
   function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
 
@@ -347,7 +393,8 @@
     return [u * u * x1 + 2 * u * t * qx + t * t * x2, u * u * y1 + 2 * u * t * qy + t * t * y2];
   }
   // Light runs from the ancestors toward the living: from the lower end of
-  // a link to its upper one, inward on the lower sky, outward on the upper.
+  // a link to its upper one, inward on the lower sky, outward on the upper;
+  // white on the lower, violet on the upper.
   function layout(L) {
     flows = []; orbits = []; sun = null;
     if (!L || !L.edges) return;
@@ -362,7 +409,7 @@
         if (i) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
       }
       if (cum[n] < 8) return;
-      flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
+      flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1, my: (a[1] + a[3]) / 2 });
     });
     // One comet per orbit, each at its own pace, the outer ones slower.
     var gens = {};
@@ -406,8 +453,8 @@
       var t = (pos - fl.cum[i - 1]) / ((fl.cum[i] - fl.cum[i - 1]) || 1);
       var x = (fl.x[i - 1] + (fl.x[i] - fl.x[i - 1]) * t) * s + ox, y = (fl.y[i - 1] + (fl.y[i] - fl.y[i - 1]) * t) * s + oy;
       var fade = Math.min(1, pos / 14, (fl.len - pos) / 14), r = 6 * v.k * dpr;
-      var pg = go.createRadialGradient(x, y, 0, x, y, r);
-      pg.addColorStop(0, rgba(HOT, 0.85 * fade)); pg.addColorStop(0.4, rgba(LINK, 0.35 * fade)); pg.addColorStop(1, rgba(LINK, 0));
+      var pg = go.createRadialGradient(x, y, 0, x, y, r), c = sun && fl.my > sun[1] ? DOWN : UP;
+      pg.addColorStop(0, rgba(WHITE, 0.85 * fade)); pg.addColorStop(0.4, rgba(c, 0.45 * fade)); pg.addColorStop(1, rgba(c, 0));
       go.fillStyle = pg; go.beginPath(); go.arc(x, y, r, 0, 6.283); go.fill();
     });
     go.globalCompositeOperation = 'source-over';

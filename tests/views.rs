@@ -237,7 +237,17 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
             river.contains(&format!("{still}</button>")),
             "{theme}: {still}"
         );
-        assert!(river.contains(compass), "{theme}: {compass}");
+        // Fusion and Galaxy draw the two sides of the person in the middle in
+        // two colours (2026-10-27): their legend says each half in its own.
+        if theme == "fusion" || theme == "galaxy" {
+            let (down, up) = compass.split_once(" · ").expect("two halves");
+            for (side, half) in [("down", down), ("up", up)] {
+                let key = format!("rv-dir-{side}\"><i aria-hidden=\"true\"></i>{half}</span>");
+                assert!(river.contains(&key), "{theme}: {half}");
+            }
+        } else {
+            assert!(river.contains(compass), "{theme}: {compass}");
+        }
         assert!(river.contains(hint), "{theme}: {hint}");
         // A river's width is its discharge and its height is time: keys to
         // what a view does not draw are the river's alone.
@@ -284,6 +294,7 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/fusion-lab.jpg",
         "/static/img/galaxy-hero.jpg",
         "/static/img/galaxy-cta.jpg",
+        "/static/img/galaxy-sky.jpg",
         "/static/img/summit-hero.jpg",
         "/static/img/summit-cta.jpg",
         "/static/img/summit-panorama.jpg",
@@ -464,7 +475,9 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
     // arrive (the operator's reviews, 2026-10-24 and 27: the tree was too
     // small, and the climb should go up or down the tree progressively).
     assert!(js.contains("PH = Math.max(hw * 2.2 / PIC.aspect, vh * PIC.zoom)"));
-    assert!(js.contains("camV = PIC.v - (wl > 0 ? PIC.climbUp : PIC.climbDown) * Math.tanh(wl / PIC.pace);"));
+    assert!(js.contains(
+        "camV = PIC.v - (wl > 0 ? PIC.climbUp : PIC.climbDown) * Math.tanh(wl / PIC.pace);"
+    ));
     assert!(js.contains("py = (G.y0 - camV * G.PH - v.y) * s"));
     // Still, the picture still stands in relief; the pointer leans it only
     // when motion is allowed.

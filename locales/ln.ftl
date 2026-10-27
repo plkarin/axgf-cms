@@ -822,6 +822,24 @@ record-end-not-recorded = suka ekomami te
 panel-selected-person = Moto oyo aponami
 
 tree-band-generation = Nkola { $g }
+tree-level-self = Nkola moko
+tree-level-up = { $n ->
+        [1] Bana
+        [2] Bankoko
+        [3] Bana ya bankoko
+       *[other] Bakitani, nkola { $n }
+    }
+tree-level-down = { $n ->
+        [1] Baboti
+        [2] Bankoko
+        [3] Baboti ya bankoko
+       *[other] Bankoko ya kala, nkola { $n }
+    }
+tree-card-centre = Tia nzete awa na kati
+tree-card-same = Moto moko, abendami mbala ya mibale
+tree-zoom-out = Kokitisa
+tree-zoom-in = Kobakisa
+tree-zoom-fit = Kobongisa
 tree-band-people = { $n ->
         [one] moto moko
        *[other] bato { $n }

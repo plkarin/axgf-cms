@@ -4,6 +4,43 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The four themes the operator found wanting are redrawn (their review of
+27 October 2026). Nothing about the AXGF file, the server's river or what a
+reader may see changes.
+
+### Changed
+
+- **Canopée: the valley seen at 60°, and alive** (docs/adr/0004 §17). The
+  family's streams and rivers lie on the valley's ground at the picture's
+  own angle, in perspective, while every person stays where the drawing
+  puts them. Each bank is its own, with pools, bars of gravel in the bends
+  and boulders breaking the water; where two streams meet, the river starts
+  under a fall with its spray, in a still pool or down rapids. A new
+  valley made in Canva (forest, meadows, larches, granite, a bed of sand),
+  4K; the wind runs through its trees and over its meadows, clouds cross it
+  with their shadows, herds of red deer, wild horses, chamois and ibex graze
+  and wander, an eagle circles, birds pass, a fish rises. The zones' flat
+  contour lines step aside under the rivers. All of it still on request.
+- **Fusion: right angles and room** (docs/adr/0015 §5). Branches climb in
+  straight runs at right angles, as on a family chart; names are one-line
+  panels against their points, spaced; the glass is wider and less tilted,
+  and stands on the projector of a laboratory made anew in Canva, 4K.
+- **Clarity: a prism under the page** (docs/adr/0013 §5). The page stands
+  on a vivid prism of light made in Canva, 4K, its masthead and cards
+  frosted glass; the funnel's slices are tinted, edged and lit, its links a
+  deep indigo with a halo; new pictures behind the overview and the notes.
+- **Genealogy: closer to the tree** (docs/adr/0016 §5). The tree is drawn
+  far larger, so that the trunk, the crown or the roots fill the
+  background as the reader climbs; its frames stand well apart round the
+  trunk, in quincunx where a generation is wide.
+
+### Added
+
+- `tools/pictures/masks.py` (the ground's maps of trees and meadows) and
+  `tools/pictures/sprites.py` (the animals' atlas).
+
 ## [0.6.0] — 2026-10-26
 
 Two records a person says are one become one, by the library's plan and the
@@ -4070,6 +4107,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.6.0
 [0.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0
 [0.4.3]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3
 [0.4.2]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.2

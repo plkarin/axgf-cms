@@ -176,6 +176,9 @@
      light over the photograph. Read by the script, so the drawing and the
      ground share one palette. */
   --rv-sun: #ffe1ad;
+  /* The sky the family's water reflects as it runs away from the viewer
+     (docs/adr/0004 §17). */
+  --rv-sky-rgb: 200 216 220;
   --rv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --rv-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   /* Study 06 on the river itself, under every theme: anything drawn inside
@@ -663,14 +666,14 @@
      (blue) to the narrow end (pink), the gloss, the rim, the mesh and the
      light running up it, the beads of the living, the dead and the hidden,
      the person at the fixed point, the stage's ground and its figures. */
-  --cl-slice-1: #3b82f6;
-  --cl-slice-2: #6366f1;
-  --cl-slice-3: #8b5cf6;
-  --cl-slice-4: #c254e8;
-  --cl-slice-5: #ec4899;
+  --cl-slice-1: #dce7ff;
+  --cl-slice-2: #e3defe;
+  --cl-slice-3: #ecdafd;
+  --cl-slice-4: #f8d9f3;
+  --cl-slice-5: #ffd9e6;
   --cl-gloss: #ffffff;
   --cl-rim: #ffffff;
-  --cl-link: #0f3b47;
+  --cl-link: #241a6b;
   --cl-link-hot: #f97316;
   --cl-bead: #ffffff;
   --cl-living: #ea580c;

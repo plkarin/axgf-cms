@@ -5136,7 +5136,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
     radial-gradient(36% 28% at 100% 0%, rgb(var(--rv-mist-rgb) / 0.22), transparent 72%),
     radial-gradient(125% 92% at 50% 48%, transparent 40%, rgb(var(--rv-shade-rgb) / 0.62) 100%),
     linear-gradient(rgb(var(--rv-shade-rgb) / 0.34), rgb(var(--rv-shade-rgb) / 0.34)),
-    url("/static/img/river-ground.jpg?v=4");
+    url("/static/img/river-ground.jpg?v=7");
   background-size: cover;
   background-position: center;
 }
@@ -5209,13 +5209,15 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
    travel, in print, and wherever the scene cannot draw. */
 [data-theme="canopee"] .river { --rv-rivers-3d: 1; }
 [data-theme="canopee"] .rv-svg > :is(path, g:not([class])),
-[data-theme="canopee"] .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { transition: opacity 260ms var(--ease); }
+[data-theme="canopee"] .rv-svg :is(.rv-zones, .rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { transition: opacity 260ms var(--ease); }
 @media screen {
   [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),
   [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg :is(.rv-banks, .rv-glow, .rv-cores, g.rv-tail > path, g.rv-stub > path) { opacity: 0; }
-  /* Over the water, the zones keep their contour lines and lose most of
-     their wash, so that the water keeps its own colour. */
-  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg .rv-zone { fill-opacity: 0.035; }
+  /* The ground is seen at 60° under the rivers (docs/adr/0004 §17): the
+     zones' contour lines, a map's seen from straight above, step aside
+     with the drawing's lines; the valleys the water carved are in the
+     ground itself. */
+  [data-theme="canopee"] .rv-canvas.rv-rivers .rv-svg .rv-zones { opacity: 0; }
 }
 @media print {
   .rv-canvas { background-image: none; }
@@ -5864,10 +5866,10 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
   --radius-lg: 16px;
   --tempo: 150ms;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --kit-hero: url("/static/img/clarity-hero.jpg");
-  --kit-cta: url("/static/img/clarity-cta.jpg");
+  --kit-hero: url("/static/img/clarity-hero.jpg?v=2");
+  --kit-cta: url("/static/img/clarity-cta.jpg?v=2");
   /* Behind the family's notes (docs/adr/0014): soft, neutral, its own. */
-  --notes-bg: url("/static/img/notes-clarity.jpg");
+  --notes-bg: url("/static/img/notes-clarity.jpg?v=2");
 }
 /* Clarity's frames (the operator's second look, 2026-10-22: "the theme is
    white and the background is white also … it feels like we are writing on
@@ -6225,6 +6227,76 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 .cl-svg .cl-name { fill: var(--text-primary); font-family: var(--face); }
 .cl-svg .cl-data { fill: var(--text-secondary); }
 
+/* ---- Clarity, the prism (the operator's review of 2026-10-27) ----
+   "White on white is ugly; stylise the pictures, give the theme contrast."
+   The page stands on a vivid prism of glass (clarity-prism.jpg), softened
+   by a veil that keeps every word on the page readable; every box is
+   frosted glass over it, a white that now stands off its ground; the
+   funnel's stage shows the prism whole, and the funnel is crystal on it:
+   pale tinted slices you see the colours through, lit rims, an ink mesh
+   edged in light. The paper style keeps its own, boxless page. */
+[data-theme="clarity"] { --cl-prism: url("/static/img/clarity-prism.jpg?v=2"); }
+/* As specific as the wash's own switches ([data-wash="off"][data-route]),
+   which would otherwise take the prism away with the wash. */
+html[data-theme="clarity"]:is([data-route], :not([data-route])) {
+  background-color: var(--cl-ink-2);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--surface-raised) 52%, transparent), color-mix(in srgb, var(--surface-raised) 52%, transparent)),
+    var(--cl-prism);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+}
+html[data-theme="clarity"][data-style="paper"]:is([data-route], :not([data-route])) {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--surface-raised) 80%, transparent), color-mix(in srgb, var(--surface-raised) 80%, transparent)),
+    var(--cl-prism);
+}
+[data-theme="clarity"] .masthead {
+  background: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  border-bottom-color: color-mix(in srgb, var(--surface-raised) 55%, transparent);
+  box-shadow: 0 8px 28px -18px rgb(var(--shadow-rgb) / 0.5);
+}
+[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section, .card, .hero-card, .stat-strip, .radar-card, .kpi, .stat, .tree-controls) {
+  background-color: color-mix(in srgb, var(--surface-raised) 84%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  backdrop-filter: blur(16px) saturate(1.35);
+  border-color: color-mix(in srgb, var(--surface-raised) 65%, transparent);
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.1), 0 22px 44px -24px rgb(var(--shadow-rgb) / 0.5);
+}
+/* The funnel's stage: the prism itself, unveiled. */
+.river[data-view="funnel"] .rv-canvas {
+  background-color: var(--cl-ink-2);
+  background-image: var(--cl-prism);
+  background-size: cover;
+  background-position: center;
+}
+.cl-svg .cl-slice { stroke: var(--cl-rim); stroke-opacity: 0.9; stroke-width: 1.2; }
+.cl-svg .cl-edge { stop-opacity: 0.62; }
+.cl-svg .cl-mid { stop-opacity: 0.2; }
+.cl-svg .cl-hi { stop-opacity: 0.66; }
+.cl-svg .cl-rim { stroke-width: 1.8; stroke-opacity: 1; fill-opacity: 0.36; }
+.cl-svg .cl-gloss { fill-opacity: 0.3; }
+.cl-svg .cl-tick { stroke: var(--cl-rim); stroke-opacity: 0.55; }
+.cl-svg .cl-base-glow { fill: var(--cl-gloss); fill-opacity: 0.22; }
+.cl-svg :is(.cl-base-ring, .cl-base-ring-2, .cl-base-ring-3) { stroke: var(--cl-gloss); stroke-opacity: 0.7; }
+.cl-svg .cl-base { fill: var(--cl-gloss); fill-opacity: 0.3; stroke: var(--cl-gloss); stroke-opacity: 0.95; }
+.cl-svg .cl-axis { stroke-opacity: 0.95; }
+.cl-svg .cl-link-halo { fill: none; stroke: var(--cl-rim); stroke-opacity: 0.6; stroke-linecap: round; }
+.cl-svg .cl-link { stroke-opacity: 0.95; }
+.cl-svg .cl-link-d { stroke-opacity: 0.85; }
+.cl-svg .cl-link-s { stroke-opacity: 0.75; }
+.cl-svg :is(.cl-figure, .cl-gen, .cl-count .k-data) {
+  paint-order: stroke;
+  stroke: var(--surface-raised);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.cl-svg .cl-leader { stroke: var(--surface-raised); stroke-opacity: 0.9; }
+
 /* ---- the ascent (summit.js) ---- */
 .sm-svg .sm-range-far { fill: var(--sm-range-far); }
 .sm-svg .sm-range-mid { fill: var(--sm-range-mid); }
@@ -6326,9 +6398,9 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 .river[data-view="galaxy"] .rv-bar-root { background: var(--gx-link); }
 .river[data-view="galaxy"] .rv-bar-trunk { background: var(--gx-sun); }
 .river[data-view="galaxy"] .rv-bar-crown { background: var(--gx-link-hot); }
-.river[data-view="funnel"] .rv-bar-root { background: var(--cl-slice-5); }
+.river[data-view="funnel"] .rv-bar-root { background: var(--cl-ink-3); }
 .river[data-view="funnel"] .rv-bar-trunk { background: var(--cl-centre); }
-.river[data-view="funnel"] .rv-bar-crown { background: var(--cl-slice-1); }
+.river[data-view="funnel"] .rv-bar-crown { background: var(--cl-ink-1); }
 /* Summit's profile of the climb, valley to summit, as the reference's
    temperature trend: a line in the first light, its ground under it, and
    the camp marked on it. */

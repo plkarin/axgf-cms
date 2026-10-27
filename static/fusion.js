@@ -43,9 +43,9 @@
   /* ---- the glass ---- */
   // How much of a ring's depth shows (its height against its width), and
   // how much larger the front of the glass looks than its back.
-  var TILT = 0.26, NEAR = 0.32;
+  var TILT = 0.2, NEAR = 0.32;
   // The laboratory's picture, and where its projector is in it.
-  var LAB = { src: '/static/img/fusion-lab.jpg?v=2', aspect: 1680 / 944, su: 0.5, sv: 0.8 };
+  var LAB = { src: '/static/img/fusion-lab.jpg?v=3', aspect: 3840 / 2160, su: 0.5, sv: 0.72 };
   var GEO = null;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   // A point on the glass's wall, on the page (the room's motes): its angle
@@ -118,8 +118,8 @@
     if (C) { crown(C.key, 0); roots(C.key, 0); }
     // Each side spread over the glass's width from the axis, its places as
     // wide as the side allows and never wider than a name needs.
-    var R = clamp(Math.min(hw * 0.44, vh * 0.62), 120, 560);
-    var span = nd + na + 0.9, H = Math.min(150, Math.max(24, (vh - 96 - 2 * R * TILT) / Math.max(1, span)));
+    var R = clamp(Math.min(hw * 0.47, vh * 0.66), 120, 600);
+    var span = nd + na + 0.9, H = Math.min(170, Math.max(24, (vh - 56 - 1.3 * R * TILT) / Math.max(1, span)));
     var y0 = vt + 48 + R * TILT + (nd + 0.45) * H;
     var G = { x0: hl + hw / 2, y0: y0, R: R, H: H, nd: nd, na: na };
     function unit(X) {
@@ -173,11 +173,17 @@
   function markAt(x, y, side, vertical) {
     return { x: x + side * 6, y: y + (side ? 3.5 : vertical > 0 ? 13 : -6), anchor: side, halo: true };
   }
-  // A branch climbs from one floor to the next: it leaves and reaches each
-  // end upright, as a stem does.
+  // A branch climbs from one floor to the next in straight runs at right
+  // angles (the operator's review of 2026-10-27): up from one end to half
+  // way, across, and up to the other — so that two partners meet on one
+  // bar, and a family's children hang from one bus, as a drawn family tree.
+  function corners(x1, y1, x2, y2) {
+    var my = (y1 + y2) / 2;
+    return Math.abs(x2 - x1) < 0.5 ? [[x1, y1], [x2, y2]] : [[x1, y1], [x1, my], [x2, my], [x2, y2]];
+  }
   function edge(x1, y1, x2, y2) {
-    var r = function (v) { return Math.round(v * 10) / 10; }, my = (y1 + y2) / 2;
-    return 'M' + r(x1) + ' ' + r(y1) + 'C' + r(x1) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(y2);
+    var r = function (v) { return Math.round(v * 10) / 10; };
+    return corners(x1, y1, x2, y2).map(function (q, i) { return (i ? 'L' : 'M') + r(q[0]) + ' ' + r(q[1]); }).join('');
   }
   // Two frames blended as the glass turns: the river's own blend, then the
   // whole tree turned round the axis toward the side the person travelled
@@ -210,9 +216,10 @@
     GEO = G;
     var out = '', far = '', near = '', ringsBack = '', ringsFront = '', tw = '', marks = '';
     var top = G.y0 - (G.nd + 0.5) * G.H, bottom = G.y0 + (G.na + 0.5) * G.H;
-    // The laboratory: its picture, the projector under the glass, and a
-    // veil that keeps the drawing readable over it.
-    var plat = bottom + G.R * TILT + 10;
+    // The laboratory: its picture, the projector under the glass — its lit
+    // face where the glass's foot ring is — and a veil that keeps the
+    // drawing readable over it.
+    var plat = bottom + 0.15 * G.H;
     var Hi = Math.max(vh * 1.02, (plat - vt) / LAB.sv + 2, (vt + vh - plat) / (1 - LAB.sv) + 2, hw / LAB.aspect);
     var Wi = Hi * LAB.aspect;
     out += '<image class="tv-lab" href="' + LAB.src + '" x="' + f(G.x0 - LAB.su * Wi) + '" y="' + f(plat - LAB.sv * Hi) + '" width="' + f(Wi) + '" height="' + f(Hi) + '" preserveAspectRatio="none"/>';
@@ -282,8 +289,8 @@
       var o = (e.a < 1 || back) ? ' opacity="' + f((e.a < 1 ? e.a : 1) * (back ? 0.42 : 1)) + '"' : '';
       var faint = e.conf === 's' ? ' tv-faint' : '', s = '';
       s += '<path d="' + d + '" class="tv-branch-glow' + faint + '" stroke-width="' + f(b.w * 3.2) + '"' + o + '/>';
-      s += '<path d="' + d + '" class="tv-branch' + faint + '" stroke-width="' + f(b.w) + '" stroke-linecap="round"' + o + '/>';
-      if (e.conf === 'a') s += '<path d="' + d + '" class="tv-vein" stroke-width="1.1" stroke-linecap="round"' + o + '/>';
+      s += '<path d="' + d + '" class="tv-branch' + faint + '" stroke-width="' + f(b.w) + '" stroke-linejoin="miter" stroke-linecap="square"' + o + '/>';
+      if (e.conf === 'a') s += '<path d="' + d + '" class="tv-vein" stroke-width="1.1" stroke-linejoin="miter"' + o + '/>';
       else if (e.conf === 'd') s += '<path d="' + d + '" class="tv-vein tv-vein-d" stroke-width="1.1" stroke-dasharray="4.5 3"' + o + '/>';
       else s += '<path d="' + d + '" class="tv-vein tv-vein-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
       if (back) far += s; else near += s;
@@ -326,20 +333,27 @@
       keep[C.key] = { x: at.x, y: C.y - 17 + at.dy, w: cw, h: 34, side: at.side, centre: true, word: cn, both: true };
       boxes.push(at.box);
     }
+    // Everyone else: a one-line panel against their point, outward from the
+    // axis or else inward, the full given name and initial or else the given
+    // name alone; years only beside the partners of the fixed point. Never
+    // moved off its point, so that no leader crosses the runs (2026-10-27).
     fr.persons.slice().sort(function (a, b) { return Math.abs(a.gen) - Math.abs(b.gen) || b.z - a.z; }).forEach(function (p) {
       var s = p.s || {}, gd = Math.abs(p.gen);
       if (p.role === 'centre' || s.redacted || p.z < -0.2 || gd > 3) return;
-      var side = p.x < G.x0 - 3 ? -1 : p.x > G.x0 + 3 ? 1 : (p.w && p.w[0] < 0 ? -1 : 1);
-      var word = gd >= 3 ? s.names[0] : s.names[1], both = gd <= 1 && !!s.years;
-      var w = Math.max(api.width(word, 11.5, false), both ? api.width(s.years, 9, true) : 0) + 14, h = both ? 28 : 17;
-      var gap = 10 + 5 * (p.k || 1);
-      for (var tries = 0; tries < 3; tries++) {
-        var dy = tries === 0 ? 0 : tries === 1 ? -(h + 4) : h + 4;
-        var x0 = side > 0 ? p.x + gap : p.x - gap - w, y0 = p.y - h / 2 + dy, box = [x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2];
-        if (box[0] < hl + 2 || box[2] > hl + hw - 2 || hit(box)) continue;
-        boxes.push(box);
-        keep[p.key] = { x: x0, y: y0, w: w, h: h, side: side, word: word, both: both };
-        return;
+      var out = p.x < G.x0 - 3 ? -1 : p.x > G.x0 + 3 ? 1 : (p.w && p.w[0] < 0 ? -1 : 1);
+      var both = gd === 0 && !!s.years, gap = 6 + 4 * (p.k || 1);
+      var words = gd >= 2 ? [s.names[0]] : [s.names[1], s.names[0]];
+      for (var wi = 0; wi < words.length; wi++) {
+        var word = words[wi];
+        var w = Math.max(api.width(word, 11.5, false), both ? api.width(s.years, 9, true) : 0) + 12, h = both ? 28 : 17;
+        for (var si = 0; si < 2; si++) {
+          var side = si ? -out : out;
+          var x0 = side > 0 ? p.x + gap : p.x - gap - w, y0 = p.y - h / 2, box = [x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2];
+          if (box[0] < hl + 2 || box[2] > hl + hw - 2 || hit(box)) continue;
+          boxes.push(box);
+          keep[p.key] = { x: x0, y: y0, w: w, h: h, side: side, word: word, both: both, close: true };
+          return;
+        }
       }
     });
     // The counts: never left out — the only sign of the people beyond —
@@ -382,7 +396,7 @@
       if (L && !s.redacted) {
         var ex = L.side > 0 ? L.x : L.side < 0 ? L.x + L.w : L.x + L.w / 2, ey = L.side ? L.y + L.h / 2 : L.y > p.y ? L.y : L.y + L.h;
         var sx = p.x + L.side * (r + 2), sy = L.side ? p.y : p.y + (L.y > p.y ? r + 2 : -r - 2);
-        g += '<line class="tv-leader" x1="' + f(sx) + '" y1="' + f(sy) + '" x2="' + f(ex) + '" y2="' + f(ey) + '"/>';
+        if (!L.close) g += '<line class="tv-leader" x1="' + f(sx) + '" y1="' + f(sy) + '" x2="' + f(ex) + '" y2="' + f(ey) + '"/>';
         g += '<rect class="tv-panel' + (L.centre ? ' tv-panel-centre' : '') + '" x="' + f(L.x) + '" y="' + f(L.y) + '" width="' + f(L.w) + '" height="' + f(L.h) + '" rx="4"/>';
         if (L.centre) {
           g += '<text x="' + f(L.x + 10) + '" y="' + f(L.y + 15) + '" font-size="15" font-weight="600" class="tv-name tv-centre">' + esc(L.word) + '</text>'
@@ -514,14 +528,19 @@
     if (!L || !L.edges) return;
     L.edges.forEach(function (e) {
       if (e.conf !== 'a') return;
-      var a = e.y1 >= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1], my = (a[1] + a[3]) / 2;
-      var c = [a[0], a[1], a[0], my, a[2], my, a[2], a[3]], n = 22, xs = [], ys = [], cum = [0];
-      for (var i = 0; i <= n; i++) {
-        var t = i / n, u = 1 - t;
-        xs.push(u * u * u * c[0] + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]);
-        ys.push(u * u * u * c[1] + 3 * u * u * t * c[3] + 3 * u * t * t * c[5] + t * t * t * c[7]);
-        if (i) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
+      var a = e.y1 >= e.y2 ? [e.x1, e.y1, e.x2, e.y2] : [e.x2, e.y2, e.x1, e.y1];
+      var P = corners(a[0], a[1], a[2], a[3]), xs = [], ys = [], cum = [0];
+      // The runs at right angles, walked in short steps so the light keeps
+      // its pace round each corner.
+      for (var j = 1; j < P.length; j++) {
+        var steps = Math.max(1, Math.round(Math.hypot(P[j][0] - P[j - 1][0], P[j][1] - P[j - 1][1]) / 8));
+        for (var q = j === 1 ? 0 : 1; q <= steps; q++) {
+          xs.push(P[j - 1][0] + (P[j][0] - P[j - 1][0]) * q / steps);
+          ys.push(P[j - 1][1] + (P[j][1] - P[j - 1][1]) * q / steps);
+        }
       }
+      for (var i = 1; i < xs.length; i++) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
+      var n = xs.length - 1;
       if (cum[n] < 10) return;
       flows.push({ x: xs, y: ys, cum: cum, n: n, len: cum[n], k: Math.max(1, Math.round(cum[n] / 90)), phase: Math.abs(Math.sin(e.x1 * 12.9898 + e.y2 * 78.233)) % 1 });
     });
@@ -551,7 +570,7 @@
       gx.beginPath(); gx.ellipse(G.x0 * s + ox, cy, rx, ry, 0, a0, a0 + 0.9); gx.stroke();
     }
     // Embers rising from the projector up the column.
-    var plat = (G.y0 + (G.na + 0.5) * G.H + G.R * TILT + 10) * s + oy, span = plat - ((G.y0 - (G.nd + 0.75) * G.H) * s + oy);
+    var plat = (G.y0 + (G.na + 0.65) * G.H) * s + oy, span = plat - ((G.y0 - (G.nd + 0.75) * G.H) * s + oy);
     for (var e = 0; e < 26; e++) {
       var ph = ((e * 0.618 + t * (0.05 + (e % 5) * 0.012)) % 1), x = G.x0 * s + ox + Math.sin(e * 3.7 + t * 0.8) * G.R * 0.12 * s * (1 - ph);
       gx.fillStyle = rgba(e % 4 ? SAP : SAP2, 0.5 * (1 - ph));

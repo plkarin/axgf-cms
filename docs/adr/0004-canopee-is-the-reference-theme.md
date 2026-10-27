@@ -3,8 +3,9 @@
 **Status:** accepted · **Applies to:** `static/css/tokens.css`,
 `static/app.css`, `src/theme.rs`, `templates/home.html`,
 `templates/_icons.html`, `templates/river.html`, `static/river.js`,
-`static/ui.js`, `static/img/`, `tests/controls.rs`, `tests/masthead.rs`,
-`tests/themes.rs`, `tests/design_tokens.rs`
+`static/river-scene.js`, `static/ui.js`, `static/img/`, `tools/pictures/`,
+`tests/controls.rs`, `tests/masthead.rs`, `tests/themes.rs`,
+`tests/design_tokens.rs`, `tests/river.rs`
 
 On 18 October 2026 the operator asked for a reference theme built on three
 references, cut apart and reworked in Canva:
@@ -613,3 +614,82 @@ drawn:
 
 All of it is computed in the drawing's own units, so it follows the water
 at every zoom and after every travel.
+
+## 17. Seen at 60°, and alive (the operator's seventh review)
+
+On 27 October 2026 the operator found that the rivers were seen from
+straight above while the landscape under them was seen at an angle, about
+60° from straight down, and asked for the rivers to be seen at the
+landscape's angle. Asked how far to go, they chose to tilt everything. They
+also asked for falls and other kinds of water where the streams meet, for
+water that looks natural — "not framed by straight or parallel lines for
+banks", with the colours of foam and of different waters, after an aerial
+photograph of a river they showed as a reference (a reference only, not a
+picture used) — for wind through the trees, for small herds of animals
+moving below, "a whole natural ecosystem, diverse and varied, so as to
+forget the static notion of the path", and for rocky and sandy ground.
+
+**The camera.** The people stay where the drawing puts them — the layout,
+the names, the bands and every invariant of ADR 0001 are unchanged — and
+under them the ground is tilted as the photograph's is: 60° from straight
+down, its horizon 0.8 of the drawing's height above its first row. A point
+of the screen is a point of that ground; each line's curve is laid back on
+the ground, bent there into its stream or river (§14), and seen again
+through the camera, on the graphics card, perspective and all
+(`river-scene.js`, `toGround`, `toScreen`). A river is wider in the
+foreground than in the distance, a reach across the view flatter than one
+running away from it, and its water, its stones and its foam are
+foreshortened with it; the sky shows more in the water toward the
+distance. The valleys the water carved (§16) are carved in the same tilted
+ground; the rings of light round the people lie on it as ellipses; the
+lit route follows the courses as they are seen. The zones' contour lines,
+a map's seen from straight above, step aside under the rivers with the
+drawing's own lines; they return for a travel, in print, and without WebGL.
+
+**Water that is water.** Each bank of each course is its own: it wanders,
+opens into pools where the water slows, closes in where it races. On the
+inside of a bend, and here and there along a bank, the water leaves a bar
+of gravel and pale sand, wet and darker near it. Stones lie in the bed and
+boulders break the surface, each with its pillow of white water and its
+wake; the bed is seen through the shallows at the edge; the water is
+deeper and greener in the pools, turquoise where it runs open, and white
+where it races. Past the bank there is only the uneven shadow of the bed.
+Where a family's streams meet, the river they make starts in one of three
+ways, the same at every visit: under a fall, its water churning white and
+its spray rising and drifting with the wind; in a still, deep pool; or down
+rapids. The stream nearing a fall hurries and breaks; down a stream, steps
+of small falls, each with its pool.
+
+**A living valley.** The ground is made anew in Canva, the same mood seen
+from the same angle: forest, meadows, larches turning gold, granite
+outcrops, a bed of pale sand, mist in the distance, the low sun behind the
+valley on the left (`river-ground.jpg`, 3,840 × 2,160, enlarged as ADR 0017
+says). Its maps carry its depth and, new, its trees and its meadows
+(`tools/pictures/masks.py`). On them:
+
+- the wind comes from the left with the clouds: gusts run through the
+  trees, which bend and show the paler side of their leaves, and over the
+  meadows in waves;
+- clouds cross the valley with their shadows under them, over the forest,
+  the family's water and the herds;
+- herds keep to their own ground: red deer and wild horses on the meadows,
+  chamois and ibex on the rocks and the grass round them, grazing, raising
+  their heads, walking on a few steps, each herd drifting across its ground
+  over the minutes, each animal with its shade away from the sun, smaller
+  and hazier toward the distance; an eagle circles over the far valley,
+  its shade far below it; now and then a flock of small birds crosses with
+  the wind; here and there a fish rises on a river. The animals were made
+  in Canva, seen from above at the landscape's angle, cut out, and packed
+  in one atlas (`river-life.png`, `tools/pictures/sprites.py`); the birds
+  are drawn.
+
+Nothing of it says anything about the family: the herds are not people,
+the falls are where parents' lines meet, as the lines say. All of it holds
+still when stillness is asked for, as §11 says, and is drawn once,
+unmoving; the clock that moves the herds runs only while the scene moves.
+
+Measured in Chromium with software rendering (no graphics card) at
+1,016 × 594 pixels, on the fictional family at ±2: a frame takes about
+180 ms, against about 110 ms before, so that such a machine falls back to
+a still ground sooner (§11). Most of it is the ground and the water; the
+herds take about 2 ms. It was not measured on a graphics card here.

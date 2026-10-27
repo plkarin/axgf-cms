@@ -71,6 +71,15 @@ tree became a picture the same day (ADR 0016) and is made as below, at
   `tools/pictures/upscale.py`, then `tools/pictures/finalize.py` at the
   sizes above, and change the address's version. The tools need a Python
   environment with PyTorch, and are not part of the build or the tests.
+- On 27 October 2026 the operator asked for the themes to be stylised
+  further in Canva. Three pictures were made anew and enlarged this way,
+  each at 3,840 × 2,160: Fusion's laboratory (in focus this time, which
+  answers consequence 5 above), Clarity's prism under its pages (ADR 0013
+  §5), and Canopée's valley (ADR 0004 §17), whose maps are made at
+  1,024 × 576 by `tools/pictures/depth.py` and `tools/pictures/masks.py`.
+  The animals of Canopée's valley are an atlas made by
+  `tools/pictures/sprites.py` from cut-out sheets; they are drawn small, and
+  are not enlarged.
 - The model draws plausible detail, not recorded detail. That is right for
   the landscapes behind the views, which show no one. It would be wrong for
   a family's own pictures, which are never enlarged this way (ADR 0009

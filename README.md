@@ -19,7 +19,7 @@ How sure each fact is stays in plain sight.
 <a href="#more">Documentation</a>
 </p>
 
-[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below in teal, his children and grandchildren branching above in ochre, as winding turquoise mountain streams that meet as broader rivers, through pale contoured zones over a forested mountain valley seen from the air at golden hour, its terraces and golden meadow under them, mist at its edges. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
+[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below, his children and grandchildren branching above, as winding mountain streams that meet as broader rivers, laid in perspective on a mountain valley seen from the air at golden hour: forest, meadows where red deer graze, granite outcrops, mist in the distance. The streams narrow toward the distance, their banks uneven with bars of gravel, and white water rises where two streams meet. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
 
 <sub>Every screenshot on this page shows the same fictional family: about 250
 people from Brittany and Poland, from the 1640s to today. It was generated
@@ -81,26 +81,35 @@ at the top numbers where you have been, and the record beside the river
 follows you.
 
 <p align="center">
-<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: the family's streams run and foam down to the rivers they meet, the rivers slide past their banks, rings of light open around each person and the mist drifts.">
+<img src="docs/screenshots/river-flow.webp" width="826" alt="The river moving: the family's streams run and foam down to the rivers they meet, spray rises where they fall, the rivers slide past their banks, the wind runs through the trees, clouds cross the valley, rings of light open on the ground around each person and the mist drifts.">
 </p>
 
 **The river is alive** *(new in 0.5.0)*. Under the drawing lies a
-forested mountain valley seen from the air at golden hour, with terraces and
-a golden meadow: a 4K photograph drawn in relief by WebGL, so it stays
-sharp. Its only water is the family's. Each parent's line is a small winding
-mountain stream of clear turquoise water over stones, with foam and small
-falls. Where two parents' streams meet, the line to their child becomes a
-broader, calmer river sliding past its banks. The forest is greener along
-them, and no two of them wind alike. An inferred link runs underground and
-out again, and a speculative one is a trail of pools. A ring of light opens
-around each person, the pointer leans the landscape a little, the sun's
-rays turn and the mist drifts. It holds still for readers who ask their
-system for less motion, and with the river's own pause button. Nothing
-moves while the river is off screen.
+mountain valley seen from the air at golden hour — forest, meadows, larches
+turning gold, granite outcrops, a bed of pale sand: a 4K picture drawn in
+relief by WebGL, so it stays sharp. Its only water is the family's, and it
+lies on the valley's ground at the picture's own angle, 60° from straight
+down: narrower and flatter toward the distance, its banks seen sideways.
+Each parent's line is a small winding mountain stream over stones, with
+foam and small falls. Where two parents' streams meet, the line to their
+child becomes a broader, calmer river: it starts under a fall, its spray
+rising, or in a still pool, or down rapids. Every bank is its own, with
+pools, bars of gravel in the bends, and boulders breaking the water. The
+forest is greener along the water, and no two courses wind alike. An
+inferred link runs underground and out again, and a speculative one is a
+trail of pools.
+
+The valley lives too: the wind runs through its trees and in waves over its
+meadows, clouds cross it with their shadows, herds of red deer, wild horses,
+chamois and ibex graze and wander on their own ground, an eagle circles and
+birds pass. A ring of light opens on the ground around each person, and the
+pointer leans the landscape a little. It holds still for readers who ask
+their system for less motion, and with the river's own pause button.
+Nothing moves while the river is off screen.
 
 | Zoom in, and the names keep their size, as on a map | On a phone: the river, a record, its charts, the tree |
 |---|---|
-| [![The river zoomed in around Hélène Delaunay, born 1952: her line, her cousins' lines and the forest under them in detail, her photograph in the record beside it](docs/screenshots/river-zoom.jpg)](docs/screenshots/river-zoom.jpg) | [![Four phone screens: the river with its range, zoom and pause button; Lucien Delaunay's record; Zofia Zając's physique chart and its table; the tree around Lucien](docs/screenshots/mobile.jpg)](docs/screenshots/mobile.jpg) |
+| [![The river zoomed in around Hélène Delaunay, born 1952: her line and her cousins' lines as streams and rivers on the valley's ground, with their pools, bars of gravel and white water, wild horses grazing beside her river, the forest and the rocks in detail; her photograph in the record beside it](docs/screenshots/river-zoom.jpg)](docs/screenshots/river-zoom.jpg) | [![Four phone screens: the river on its valley with its range, zoom and pause button; Lucien Delaunay's record; Zofia Zając's physique chart and its table; the tree around Lucien](docs/screenshots/mobile.jpg)](docs/screenshots/mobile.jpg) |
 
 The river reaches 2, 3 or 5 generations each way. To zoom from 1× to 3×,
 use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
@@ -110,25 +119,27 @@ use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,
 
 *(New in 0.5.0.)* Five themes draw the landing page their own way.
 
-- **Fusion** grows the family as a tree in tiers inside a glass cylinder, in
-  a laboratory. The person you are visiting stands on the axis in a column of
-  light; their descendants climb the glass a floor per generation and their
-  ancestors go down it as roots. The living are green leaves, and the glass
-  turns as you travel.
+- **Fusion** grows the family as a tree in tiers inside a glass cylinder, on
+  the projector of a laboratory. The person you are visiting stands on the
+  axis in a column of light; their descendants climb the glass a floor per
+  generation and their ancestors go down it as roots, joined by branches
+  drawn at right angles as on a family chart. The living are green leaves,
+  and the glass turns as you travel.
 - **Galaxy** makes that person a sun, with one orbit per generation:
   descendants above, ancestors below.
 - **Summit** is an ascent at sunrise over a photographed mountain: the
   ancestors in the valley, the descendants climbing toward the summit, and
   the snow coming further down the more recently the person was born.
-- **Clarity** is a funnel of glass: one slice per generation, the oldest at
-  the narrow end below, the newest at the wide mouth above, every parentage
-  a line meshed from one slice to the next. Each slice says how many people
-  it holds, as the stages of a funnel chart do.
+- **Clarity** is a funnel of crystal over a prism of light: one slice per
+  generation, the oldest at the narrow end below, the newest at the wide
+  mouth above, every parentage a line meshed from one slice to the next.
+  Each slice says how many people it holds, as the stages of a funnel chart
+  do, and the page around it is frosted glass.
 - **Genealogy** is an old tree growing out of a parchment scroll, drawn in
-  relief: the person you are visiting sits on its trunk, their descendants
-  up in its crown of gold leaves and their ancestors among its roots,
-  joined by fine lines as on an old family chart. Travelling to someone
-  climbs the tree to them, or goes down to the roots.
+  relief and seen close: the person you are visiting sits on its trunk,
+  their descendants up in its crown of gold leaves and their ancestors among
+  its roots, joined by fine lines as on an old family chart. Travelling to
+  someone climbs the tree to them, or goes down to the roots.
 
 Underneath, all five are the river:
 
@@ -142,11 +153,11 @@ opens the widest range in one click.
 
 | Fusion: a tree in its glass, a floor per generation | Galaxy: a solar system, one orbit per generation |
 |---|---|
-| [![The Fusion theme: the family as a tree in tiers inside a glass cylinder, over a dark laboratory whose projector glows red under the glass. Lucien Delaunay is on the axis in a column of red light, his children, grandchildren and great-grandchildren climbing the glass a floor per generation with the living as green leaves, his parents and grandparents below as roots; the front of the glass is named on small glass panels. A dashboard above counts 10 ancestors, 15 descendants, 7 generations, 22 living and 100 % attested links. His record is open beside it.](docs/screenshots/fusion-tree.jpg)](docs/screenshots/fusion-tree.jpg) | [![The Galaxy theme: Lucien Delaunay as a sun at the centre, his wife Zofia Zając on the innermost orbit, descendants on the orbits above and ancestors on those below, joined by violet links, over a starfield with a nebula. The same dashboard sits above, and his record beside it.](docs/screenshots/galaxy-system.jpg)](docs/screenshots/galaxy-system.jpg) |
+| [![The Fusion theme: the family as a tree in tiers inside a glass cylinder, in a dark laboratory lit blue at its sides. Lucien Delaunay is on the axis in a column of red light, his children, grandchildren and great-grandchildren climbing the glass a floor per generation with the living as green leaves, his parents below as roots, joined by branches drawn at right angles; the names stand on small glass panels beside their points. A dashboard above counts 10 ancestors, 15 descendants, 7 generations, 22 living and 100 % attested links. His record is open beside it.](docs/screenshots/fusion-tree.jpg)](docs/screenshots/fusion-tree.jpg) | [![The Galaxy theme: Lucien Delaunay as a sun at the centre, his wife Zofia Zając on the innermost orbit, descendants on the orbits above and ancestors on those below, joined by violet links, over a starfield with a nebula. The same dashboard sits above, and his record beside it.](docs/screenshots/galaxy-system.jpg)](docs/screenshots/galaxy-system.jpg) |
 | **Summit: an ascent, the oldest in the valley** | **Clarity: a funnel, the oldest at the narrow end** |
-| [![The Summit theme: Lucien Delaunay at a camp on a photographed snowy range before dawn, his ancestors below him toward the valley and his children, grandchildren and great-grandchildren climbing toward the summit along gold trails, the flag on the highest peak. The dashboard sits above, and his record beside it.](docs/screenshots/summit-ascent.jpg)](docs/screenshots/summit-ascent.jpg) | [![The Clarity theme, light: a funnel of glass slices from blue at the wide mouth to pink at the narrow end. Lucien Delaunay at the front of his own slice, his wife Zofia Zając beside him, his children, grandchildren and great-grandchildren in the wider slices above and his ancestors in the narrower ones below, joined by dark teal lines. Each slice is labelled on the right with its number of people: 6, 10, 6, 2, 2, 4. His record is open beside it.](docs/screenshots/clarity-funnel.jpg)](docs/screenshots/clarity-funnel.jpg) |
+| [![The Summit theme: Lucien Delaunay at a camp on a photographed snowy range before dawn, his ancestors below him toward the valley and his children, grandchildren and great-grandchildren climbing toward the summit along gold trails, the flag on the highest peak. The dashboard sits above, and his record beside it.](docs/screenshots/summit-ascent.jpg)](docs/screenshots/summit-ascent.jpg) | [![The Clarity theme, light: a funnel of crystal slices, pale blue to pink, over a prism of violet, blue, pink and orange light. Lucien Delaunay at the front of his own slice, his wife Zofia Zając beside him, his children, grandchildren and great-grandchildren in the wider slices above and his ancestors in the narrower ones below, joined by deep indigo lines. Each slice is labelled on the right with its number of people: 6, 10, 6, 2, 2, 4. The page around it is frosted glass, and his record is open beside it.](docs/screenshots/clarity-funnel.jpg)](docs/screenshots/clarity-funnel.jpg) |
 | **Genealogy: a tree to climb, the oldest at the roots** | **The whole family, under Fusion** |
-| [![The Genealogy theme: an old tree with a twisted trunk and a crown of gold leaves growing out of a parchment scroll, nearly the stage's width on its dark green. Lucien Delaunay is a sepia print with his initials in a cream mount on the trunk, his name and years on a cream card under it, Zofia Zając beside him. His children, grandchildren and great-grandchildren are up in the crown, each a sepia print beside a cream card, joined by fine dark lines with square corners and small gold knots; the trunk runs down toward the roots below. The dashboard sits above, and his record beside it.](docs/screenshots/genealogy-climb.jpg)](docs/screenshots/genealogy-climb.jpg) | [![Whole family, under Fusion: nine generations in the glass, from the great-great-great-grandparents at the foot of the cylinder to the great-grandchildren on its top floor, the dashboard counting 16 ancestors, 15 descendants, 9 generations and 22 living, with the legend reading: the roots, ancestors; the crown, descendants.](docs/screenshots/fusion-whole.jpg)](docs/screenshots/fusion-whole.jpg) |
+| [![The Genealogy theme: an old tree growing out of a parchment scroll, seen close, its twisted trunk filling the stage. Lucien Delaunay is a sepia print with his initials in a cream mount on the trunk, his name and years on a cream card under it, Zofia Zając beside him. His children, grandchildren and great-grandchildren are up in its branches, each a sepia print beside a cream card, well apart, joined by fine dark lines with square corners and small gold knots; the trunk runs down toward the roots below. The dashboard sits above, and his record beside it.](docs/screenshots/genealogy-climb.jpg)](docs/screenshots/genealogy-climb.jpg) | [![Whole family, under Fusion: nine generations in the glass, from the great-great-great-grandparents at the foot of the cylinder to the great-grandchildren on its top floor, joined by branches at right angles, the glass standing on its glowing projector; the dashboard counts 16 ancestors, 15 descendants, 9 generations and 22 living, and the legend reads: the roots, ancestors; the crown, descendants.](docs/screenshots/fusion-whole.jpg)](docs/screenshots/fusion-whole.jpg) |
 
 
 ### Every person, a record
@@ -310,7 +321,7 @@ claim someone else's.
 
 ### Make it yours
 
-[![The overview page under the six themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a glass funnel from blue to pink, in orange, its white card on a blue-grey ground. Genealogy: "Every life is a portrait. Every family, a tree to climb." in a book face and gold beside a golden tree and empty oval frames, on dark green with antique vines along the page's edges, its cards cream.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
+[![The overview page under the six themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a crystal funnel lit pink and blue, in orange, its frosted card over a prism of violet, pink and orange light. Genealogy: "Every life is a portrait. Every family, a tree to climb." in a book face and gold beside a golden tree and empty oval frames, on dark green with antique vines along the page's edges, its cards cream.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
 
 There are six themes.
 

@@ -1398,6 +1398,9 @@ pub async fn clarity_hero_jpg() -> Response {
 pub async fn clarity_cta_jpg() -> Response {
     picture("image/jpeg", render::CLARITY_CTA_JPG)
 }
+pub async fn clarity_prism_jpg() -> Response {
+    picture("image/jpeg", render::CLARITY_PRISM_JPG)
+}
 pub async fn genealogy_hero_jpg() -> Response {
     picture("image/jpeg", render::GENEALOGY_HERO_JPG)
 }
@@ -1459,9 +1462,14 @@ pub async fn fusion_lab_jpg() -> Response {
 pub async fn river_ground_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_JPG)
 }
-/// `GET /static/img/river-ground-maps.jpg` — its depth.
+/// `GET /static/img/river-ground-maps.jpg` — its depth, its trees and its
+/// meadows.
 pub async fn river_ground_maps_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_MAPS_JPG)
+}
+/// `GET /static/img/river-life.png` — the herds and the eagle on it.
+pub async fn river_life_png() -> Response {
+    picture("image/png", render::RIVER_LIFE_PNG)
 }
 /// `GET /static/img/river-water-stream.jpg` and `river-water-river.jpg` — the
 /// water of the family's streams and rivers.

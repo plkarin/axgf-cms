@@ -226,6 +226,9 @@
     // The mesh: parent to union, union to child.
     api.edges(fr, PM).forEach(function (e) {
       var d = edge(e.x1, e.y1, e.x2, e.y2), w = f(0.8 + api.widths[api.cls(e.d)] * 0.3), o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      // Edged in light, so that the ink reads on the deep and the bright
+      // parts of the prism alike (2026-10-27).
+      links += '<path d="' + d + '" class="cl-link-halo" stroke-width="' + f(+w + 2.6) + '"' + o + '/>';
       if (e.conf === 'a') links += '<path d="' + d + '" fill="none" class="cl-link" stroke-width="' + w + '" stroke-linecap="round"' + o + '/>';
       else if (e.conf === 'd') links += '<path d="' + d + '" fill="none" class="cl-link cl-link-d" stroke-width="' + w + '" stroke-dasharray="5 3.5"' + o + '/>';
       else links += '<path d="' + d + '" fill="none" class="cl-link cl-link-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';

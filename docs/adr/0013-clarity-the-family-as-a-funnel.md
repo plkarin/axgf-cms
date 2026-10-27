@@ -108,6 +108,33 @@ blue to pink, on white, behind the overview's headline ("Every generation
 is a ring. Every family, a funnel."); translucent ribbons with orange beads
 of light for the last band.
 
+### 5. A prism under the page (the operator's review, 2026-10-27)
+
+The operator found Clarity "very ugly": the family's navigation frame and
+the page's ground white on white. They asked for stylised pictures and a
+very beautiful theme with contrast, made freely in Canva.
+
+- **The ground.** The page stands on a vivid prism of glass, violet, blue,
+  pink and orange light (`clarity-prism.jpg`, made in Canva, 3,840 × 2,160
+  as ADR 0017 says), fixed to the window, under a veil of the page's
+  surface (52 %; 80 % in the paper style), so that it reads as light and
+  colour, never as a picture behind the words.
+- **Frosted glass.** The masthead and every card are frosted glass over it
+  (the surface at 72 % and 84 %, blurred and saturated behind): the words
+  stand on them, never on the picture. The paper style keeps its cards flat.
+- **The funnel.** Its stage shows the prism itself; its slices are tinted
+  in five pastel tokens from blue to pink (`--cl-slice-1` to `5`), edged in
+  the rim's ink, lit along their rims; its links are a deep indigo
+  (`--cl-link`) over a halo of the rim, so that they cross the glass and
+  the light alike; its figures and its generations' numbers stand on a
+  stroke of the surface. The dashboard's bars take the funnel's inks.
+- **The pictures** behind the overview's headline, its last band and the
+  notes are made again in Canva: a crystal funnel on deep violet,
+  iridescent ribbons, calm deep-blue glass.
+
+No colour is named outside the tokens (`tests/design_tokens.rs`), and the
+theme is measured as every theme is.
+
 ## Consequences
 
 - Five themes, one light. ADR 0008's "every theme is dark" no longer holds;

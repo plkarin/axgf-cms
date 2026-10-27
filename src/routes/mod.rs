@@ -565,6 +565,10 @@ fn routes(state: Shared) -> Router {
         )
         .route("/static/img/clarity-cta.jpg", get(public::clarity_cta_jpg))
         .route(
+            "/static/img/clarity-prism.jpg",
+            get(public::clarity_prism_jpg),
+        )
+        .route(
             "/static/img/genealogy-hero.jpg",
             get(public::genealogy_hero_jpg),
         )
@@ -599,6 +603,10 @@ fn routes(state: Shared) -> Router {
         .route(
             "/static/img/river-ground-maps.jpg",
             get(public::river_ground_maps_jpg),
+        )
+        .route(
+            "/static/img/river-life.png",
+            get(public::river_life_png),
         )
         .route(
             "/static/img/river-water-stream.jpg",

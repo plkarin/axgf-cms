@@ -378,6 +378,9 @@ function axgfTreeZoom() {
   var canvas = document.getElementById('tree-canvas');
   var scroll = document.querySelector('.tree-scroll');
   if (!box || !canvas || !scroll) return;
+  // On a phone the chart is a column of generations (app.css): nothing to
+  // zoom, and a size remembered from a wide screen would only shrink it.
+  if (window.matchMedia && matchMedia('(max-width: 640px)').matches) { canvas.style.zoom = ''; return; }
   box.hidden = false;
   var z = 1;
   try { z = parseFloat(localStorage.getItem('axgf-tree-zoom')) || 1; } catch (e) { /* private window */ }

@@ -3061,6 +3061,8 @@ view-galaxy-still = 让星空静止
 view-summit-still = 让山峰静止
 river-whole = 整个家族
 river-names-all = 全部姓名
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = 以此为中心
 river-zoom-hint = 缩放：Ctrl + 滚轮、双指捏合或 + / − · 放大后拖动即可移动
 river-tab-sources = 来源
 river-legend-title = 如何阅读河流

@@ -3389,6 +3389,8 @@ view-galaxy-still = עצירת השמיים
 view-summit-still = עצירת ההר
 river-whole = כל המשפחה
 river-names-all = כל השמות
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = מרכז כאן
 river-zoom-hint = זום: Ctrl + גלגלת, צביטה, או + / − · כשמוגדל, גררו כדי לזוז
 river-tab-sources = מקורות
 river-legend-title = איך לקרוא את הנהר

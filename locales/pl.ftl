@@ -3525,6 +3525,8 @@ view-galaxy-still = Zatrzymaj niebo
 view-summit-still = Zatrzymaj górę
 river-whole = Cała rodzina
 river-names-all = Wszystkie imiona
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Wyśrodkuj tutaj
 river-zoom-hint = Powiększenie: Ctrl + kółko, uszczypnięcie lub + / − · po powiększeniu przeciągnij, by się przesunąć
 river-tab-sources = Źródła
 river-legend-title = Jak czytać rzekę

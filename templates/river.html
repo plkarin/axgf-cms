@@ -100,6 +100,17 @@
     {% endif %}
     <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}
     </div>
+    {#- On a touch screen a first tap on a person looks at them: their route
+        is lit, and here, under the drawing, their name and the two ways on
+        (2026-10-27) — a finger has no hover, and a lit route alone looked
+        like nothing happening. river.js fills it and shows it. -#}
+    <div class="rv-pick" data-rv-pick hidden>
+      <p class="rv-pick-who"><strong data-rv-pick-name></strong> <span class="rv-pick-years" data-rv-pick-years></span></p>
+      <div class="rv-pick-go">
+        <button type="button" class="btn small" data-rv-pick-centre>{{ t("river-pick-centre") }}</button>
+        <a class="btn small" data-rv-pick-open href="/person/{{ centre_q }}">{{ t("record-open-full-page") }}</a>
+      </div>
+    </div>
 
     <div class="rv-legend" role="note" aria-labelledby="rv-legend-title">
       {#- A cartographer's legend (v0.5.0, docs/adr/0004 §5): a title, the

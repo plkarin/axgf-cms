@@ -3530,6 +3530,8 @@ view-galaxy-still = Остановить небо
 view-summit-still = Остановить гору
 river-whole = Вся семья
 river-names-all = Все имена
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Поставить в центр
 river-zoom-hint = Масштаб: Ctrl + колесо, щипок или + / − · при увеличении перетаскивайте
 river-tab-sources = Источники
 river-legend-title = Как читать реку

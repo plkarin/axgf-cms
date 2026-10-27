@@ -69,7 +69,17 @@ kit to be drawn in Canva first.
 5. **The chart's size is the reader's.** Smaller, larger or fitted to the
    column, applied with CSS `zoom` so the cards stay on their lines, and
    remembered from one visit to the next.
-6. **The kit was drawn first.** The card, folded and open, the laurel ring,
+6. **On a phone, a column of generations** (the operator's review the same
+   evening: the tree ran off the screen sideways). Under 640 px the chart
+   has no lines, zones or name column. Each generation is a block with its
+   name and its count, its cards two to a line, the newest at the top and
+   the oldest at the foot, the person's own block outlined in the accent.
+   Nothing scrolls sideways. An open card is a sheet at the foot of the
+   screen, and the zoom is hidden. The markup is the same: each
+   generation's cards sit in a `.tree-row`, which on a wide screen is no
+   box at all (`display: contents`), so every card stands where the layout
+   put it.
+7. **The kit was drawn first.** The card, folded and open, the laurel ring,
    the union node and the row labels were drawn in Canva (2026-10-27). The
    laurel ring is served as `static/img/laurel-ring.png`, white on
    transparent at 256 px, and used as a mask.

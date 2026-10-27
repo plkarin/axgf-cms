@@ -22,6 +22,13 @@ about the AXGF file, the server's river or what a reader may see changes.
   laurel ring, the full name, the dates, and two actions: centre the tree
   on the person, or open their record. The chart can be made smaller,
   larger or fitted to the column. The kit was drawn in Canva first.
+- **On a phone** (the operator's review the same evening).
+  - The tree page is a column of generations, with no sideways scroll.
+    Each generation is a block with its name, its cards two to a line, and
+    an open card is a sheet at the foot of the screen (docs/adr/0019 §6).
+  - In every view, a first tap on a person names them under the drawing,
+    with "Centre here" and "Open full page"; before, it only lit their
+    route (docs/adr/0002 §6).
 - **Clarity: rings apart, names on the glass** (docs/adr/0013 §6).
   - The funnel is wider and finer: one ring of tinted glass per generation,
     with the rings set apart.

@@ -3320,6 +3320,8 @@ view-galaxy-still = Figer le ciel
 view-summit-still = Figer la montagne
 river-whole = Toute la famille
 river-names-all = Tous les noms
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Centrer ici
 river-zoom-hint = Zoom : Ctrl + molette, pincer ou + / − · zoomé, glisser pour se déplacer
 river-tab-sources = Sources
 river-legend-title = Lire la rivière

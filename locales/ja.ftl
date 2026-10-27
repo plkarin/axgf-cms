@@ -3061,6 +3061,8 @@ view-galaxy-still = 星空を止める
 view-summit-still = 山を止める
 river-whole = 家族全員
 river-names-all = すべての名前
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = ここを中心に
 river-zoom-hint = ズーム：Ctrl＋ホイール、ピンチ、または + / − ・拡大中はドラッグで移動
 river-tab-sources = 出典
 river-legend-title = 流れの読み方

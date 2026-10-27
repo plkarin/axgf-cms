@@ -1512,19 +1512,71 @@ abbr.presumed { text-decoration: none; }
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
-/* On a phone the row names are small tags above their rows, not a column
-   that would hide a third of the screen. */
+/* A generation's block (_tree_canvas.html): no box at all on a wide
+   screen, where every card stands where the layout put it. */
+.tree-row { display: contents; }
+.tree-row-name { display: none; }
+/* A phone (the operator's review, 2026-10-27: the tree ran off the screen
+   sideways). The chart becomes a column of generations, the newest at the
+   top and the oldest at the foot as the chart has them, the person's own
+   in the middle. Its lines, zones and column of names give way to each
+   block's own name; the cards stand two to a line and the canvas takes the
+   column's width, so nothing scrolls sideways. An open card is a sheet at
+   the foot of the screen. */
 @media (max-width: 640px) {
-  .tree-gutter .band-label.relative {
-    block-size: auto !important;
-    inline-size: auto;
-    max-inline-size: 70vw;
-    flex-direction: row;
-    padding: 0.12rem 0.55rem;
-    transform: translateY(-30px);
-    white-space: nowrap;
+  .tree-scroll {
+    position: static;
+    overflow: visible;
+    will-change: auto;
+    padding-bottom: 0;
   }
-  .tree-gutter .band-label.relative span { display: none; }
+  .tree-scroll .tree-canvas {
+    inline-size: auto !important;
+    block-size: auto !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .tree-canvas :is(.tree-wires, .band-zone, .tree-gutter),
+  .tree-canvas > .band-label { display: none; }
+  .tree-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.6rem 0.65rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
+  }
+  .tree-row.is-centre { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+  .tree-row-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 0.5rem;
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: var(--type-label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .tree-row-name strong { color: var(--accent); font-weight: var(--weight-semi); }
+  .tree-row-name .muted { letter-spacing: 0; text-transform: none; }
+  .tree-row .tcard {
+    position: relative;
+    inset: auto !important;
+    inline-size: auto !important;
+    width: auto !important;
+  }
+  .tree-row .tcard .tc-more,
+  .tree-row .tcard:is(:hover, :focus-within, .is-open) .tc-more {
+    position: fixed;
+    inset: auto 12px 12px 12px !important;
+    inline-size: auto;
+    transform: none !important;
+  }
+  .tc-zoom { display: none; }
 }
 .tc-zoom { display: flex; gap: 0.35rem; align-items: flex-end; margin-inline-start: auto; }
 .tc-zoom .btn { min-inline-size: 2.4rem; }
@@ -4179,6 +4231,27 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
 .rv-canvas { flex: 0 0 auto; }
 .rv-canvas svg { display: block; }
 .rv-canvas .rv-p { cursor: pointer; }
+/* The person a tap looked at (river.js, 2026-10-27): named under the
+   drawing with the two ways on, kept at the foot of the screen while the
+   drawing above it is in view. */
+.rv-pick {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface-raised);
+  border-block-start: 1px solid var(--border-strong);
+  box-shadow: 0 -12px 26px -20px rgb(var(--shadow-rgb) / 0.7);
+}
+.rv-pick-who { margin: 0; min-inline-size: 0; }
+.rv-pick-who strong { font-weight: var(--weight-semi); color: var(--text-primary); }
+.rv-pick-years { color: var(--text-secondary); font-size: var(--type-small); font-variant-numeric: tabular-nums; }
+.rv-pick-go { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 /* The drawing's inks. src/river.rs (and river.js, its port for frames in
    motion) mark each non-water colour with a class; the colours themselves
    are the river's palette in tokens.css. */

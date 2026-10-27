@@ -1486,7 +1486,11 @@ abbr.presumed { text-decoration: none; }
 .band-label.relative strong {
   color: var(--accent);
   font-size: var(--type-micro);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
+  /* A row's name breaks between its words, never inside one: the longest
+     word of any language's names (13 letters, "Grandchildren",
+     "Descendientes", "Pradziadkowie") fits the column on one line. */
+  overflow-wrap: normal;
 }
 .band-label.relative span { margin-inline-start: 0; font-size: var(--type-micro); }
 .band-label.relative.is-centre strong { color: var(--text-primary); }
@@ -1501,7 +1505,7 @@ abbr.presumed { text-decoration: none; }
   inset-inline-start: 0;
   padding: 0.3rem 0.65rem 0.3rem 0.75rem;
   box-sizing: border-box;
-  inline-size: 116px;
+  inline-size: 124px;
   border-start-end-radius: 12px;
   border-end-end-radius: 12px;
   background: color-mix(in srgb, var(--surface-raised) 86%, transparent);

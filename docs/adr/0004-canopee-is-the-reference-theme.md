@@ -693,3 +693,42 @@ Measured in Chromium with software rendering (no graphics card) at
 180 ms, against about 110 ms before, so that such a machine falls back to
 a still ground sooner (§11). Most of it is the ground and the water; the
 herds take about 2 ms. It was not measured on a graphics card here.
+
+## 18. The water bound into its valley (the operator's eighth review)
+
+The same day the operator found the rest right, and one thing wrong: the
+water still lay on the picture rather than in it. It ran through the
+trees and over the rocky hills, "a plain sheet of tracing paper with no
+relation to the scenery round it". They asked for the river and the
+background to be one.
+
+The courses still go where the family's lines go; it is the valley that
+makes room for them and the water that belongs to the valley:
+
+- **The water clears its way.** Along every stream and river the ground's
+  mask holds a clearing (its near field, wider than the water). Where the
+  photograph shows a tree whose foot stands in the clearing, the tree is
+  gone: the ground there is grass in the photograph's own meadows' tone,
+  moss, and gravel toward the water, in the shade of the trees beyond. A
+  tree's foot is under its crown, a third of the tree's height lower on
+  the photograph and to either side of it, the tree's height following
+  the photograph's distance.
+- **The trees of the near bank lean over it.** Where the photograph shows
+  a crown whose foot stands outside the clearing, the water there is
+  transparent and the crown, drawn by the ground, hides the water's edge.
+  The middle of the water always shows, so that the family's line is never
+  lost. The ground and the water use the same test, so that the crown kept
+  by the one is the crown that hides the other.
+- **It takes the colours and the light round it.** The water picks up the
+  photograph's own tones around it, blurred, and its light: darker and
+  greener under the forest, golden through the meadows. It always holds a
+  little of the sky down its middle. The trees beyond it, toward the low
+  sun, shade it. Over bare rock it runs white, as a torrent in its gorge,
+  and its bars are of that rock. Far off it fades into the haze, as the
+  photograph's distance does.
+- **The valley's shading is softer** and the water's band of darker,
+  greener growth narrower, so that a clearing reads as grass in the light
+  and not as a stain.
+
+Measured as in §17: about 150 ms a frame with software rendering, the
+costly tests made only where a crown, a clearing or rock can be.

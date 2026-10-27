@@ -19,7 +19,7 @@ How sure each fact is stays in plain sight.
 <a href="#more">Documentation</a>
 </p>
 
-[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below, his children and grandchildren branching above, as winding mountain streams that meet as broader rivers, laid in perspective on a mountain valley seen from the air at golden hour: forest, meadows where red deer graze, granite outcrops, mist in the distance. The streams narrow toward the distance, their banks uneven with bars of gravel, and white water rises where two streams meet. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
+[![The river, the landing page: Lucien Delaunay at the fixed point, his parents and grandparents flowing in from below, his children and grandchildren branching above, as winding mountain streams that meet as broader rivers, laid in perspective on a mountain valley seen from the air at golden hour: forest, meadows where red deer graze, granite outcrops, mist in the distance. The streams narrow toward the distance and run in clearings through the forest, trees leaning over their banks, and white water rises where two streams meet. His record is open beside it with his portrait.](docs/screenshots/river-hero.jpg)](docs/screenshots/river-hero.jpg)
 
 <sub>Every screenshot on this page shows the same fictional family: about 250
 people from Brittany and Poland, from the 1640s to today. It was generated
@@ -95,7 +95,10 @@ foam and small falls. Where two parents' streams meet, the line to their
 child becomes a broader, calmer river: it starts under a fall, its spray
 rising, or in a still pool, or down rapids. Every bank is its own, with
 pools, bars of gravel in the bends, and boulders breaking the water. The
-forest is greener along the water, and no two courses wind alike. An
+water belongs to its valley: it clears its way through the forest, the
+trees of the near bank lean over it, it takes the colours and the light
+around it, runs white over rock and fades into the haze in the distance.
+No two courses wind alike. An
 inferred link runs underground and out again, and a speculative one is a
 trail of pools.
 
@@ -109,7 +112,7 @@ Nothing moves while the river is off screen.
 
 | Zoom in, and the names keep their size, as on a map | On a phone: the river, a record, its charts, the tree |
 |---|---|
-| [![The river zoomed in around Hélène Delaunay, born 1952: her line and her cousins' lines as streams and rivers on the valley's ground, with their pools, bars of gravel and white water, wild horses grazing beside her river, the forest and the rocks in detail; her photograph in the record beside it](docs/screenshots/river-zoom.jpg)](docs/screenshots/river-zoom.jpg) | [![Four phone screens: the river on its valley with its range, zoom and pause button; Lucien Delaunay's record; Zofia Zając's physique chart and its table; the tree around Lucien](docs/screenshots/mobile.jpg)](docs/screenshots/mobile.jpg) |
+| [![The river zoomed in around Hélène Delaunay, born 1952: her line and her cousins' lines as streams and rivers in the valley, in clearings through the forest, with their pools and white water, wild horses grazing beside her river, the forest and the rocks in detail; her photograph in the record beside it](docs/screenshots/river-zoom.jpg)](docs/screenshots/river-zoom.jpg) | [![Four phone screens: the river on its valley with its range, zoom and pause button; Lucien Delaunay's record; Zofia Zając's physique chart and its table; the tree around Lucien](docs/screenshots/mobile.jpg)](docs/screenshots/mobile.jpg) |
 
 The river reaches 2, 3 or 5 generations each way. To zoom from 1× to 3×,
 use Ctrl (⌘) and the wheel, a trackpad, two fingers, the slider, or the `+`,

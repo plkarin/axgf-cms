@@ -23,6 +23,10 @@ reader may see changes.
   with their shadows, herds of red deer, wild horses, chamois and ibex graze
   and wander, an eagle circles, birds pass, a fish rises. The zones' flat
   contour lines step aside under the rivers. All of it still on request.
+  The water is bound into the valley (§18): it clears its way through the
+  forest, the trees of the near bank lean over its edge, it takes the
+  colours and the light round it, runs white over rock, lies in the shade
+  of the trees beyond and fades into the distance's haze.
 - **Fusion: right angles and room** (docs/adr/0015 §5). Branches climb in
   straight runs at right angles, as on a family chart; names are one-line
   panels against their points, spaced; the glass is wider and less tilted,

@@ -1,6 +1,6 @@
 # ADR 0018 — A merge is planned, then decided by a person
 
-**Status:** proposed (2026-10-26) · **Builds on:** axgf-rs 0.6.0's
+**Status:** accepted, v0.6.0 (2026-10-26) · **Builds on:** axgf-rs 0.6.0's
 `plan_merge` / `merge_entities`, and the journal's `merged_into` (B7) ·
 **Applies to:** `src/routes/merge.rs`, `src/routes/admin.rs`,
 `src/routes/mod.rs`, `src/render.rs`, `templates/admin_merge.html`,

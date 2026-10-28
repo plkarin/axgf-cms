@@ -497,9 +497,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = توسيط الشجرة هنا
 tree-card-same = الشخص نفسه، مرسوم مرة ثانية
-tree-zoom-out = تصغير
-tree-zoom-in = تكبير
-tree-zoom-fit = ملاءمة
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = الخطوط:
+tree-key-son = ابن
+tree-key-daughter = ابنة
+tree-key-adoptive = تبنٍّ
+tree-key-foster = رعاية أو وصاية
+tree-key-step = ربيب
+tree-key-union = ارتباط
 tree-band-people = { $n ->
         [zero] لا أحد
         [one] شخص واحد

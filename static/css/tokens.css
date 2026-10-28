@@ -103,6 +103,12 @@
   --sex-b-line: #7d6c52;
   --sex-u: #2a2926;
   --sex-u-line: #6e6a63;
+  /* The tree's lines and strips (2026-10-28: "a boy blue, a girl red"):
+     a son, a daughter, anyone else. Bright enough on every dark ground;
+     Clarity, light, has its own. */
+  --kin-boy: #5e9bff;
+  --kin-girl: #ff6b81;
+  --kin-other: #a3aab0;
 
   /* Residual edge crossings: the Okabe–Ito set, chosen to stay apart under
      each form of colour blindness, and paired with dash patterns in app.css
@@ -269,6 +275,9 @@
   --sex-b-line: #8c7858;
   --sex-u: #232a25;
   --sex-u-line: #77807a;
+  --kin-boy: #5e9bff;
+  --kin-girl: #ff6b81;
+  --kin-other: #a3aab0;
 
   --hue-1: #56b4e9;
   --hue-2: #e69f00;
@@ -343,6 +352,9 @@
   --sex-b-line: #9c6a5d;
   --sex-u: #1e2126;
   --sex-u-line: #77808b;
+  --kin-boy: #5e9bff;
+  --kin-girl: #ff6b81;
+  --kin-other: #a3aab0;
 
   --hue-1: #4cc9f0;
   --hue-2: #ff9f1c;
@@ -443,6 +455,9 @@
   --sex-b-line: #b06fc0;
   --sex-u: #171c33;
   --sex-u-line: #7a80b0;
+  --kin-boy: #5e9bff;
+  --kin-girl: #ff6b81;
+  --kin-other: #a3aab0;
 
   --hue-1: #67e8f9;
   --hue-2: #f472b6;
@@ -537,6 +552,9 @@
   --sex-b-line: #b88672;
   --sex-u: #172231;
   --sex-u-line: #7d8798;
+  --kin-boy: #5e9bff;
+  --kin-girl: #ff6b81;
+  --kin-other: #a3aab0;
 
   --hue-1: #6fc4ec;
   --hue-2: #f0a35e;
@@ -636,6 +654,9 @@
   --sex-b-line: #b0566e;
   --sex-u: #eef1f4;
   --sex-u-line: #68798a;
+  --kin-boy: #1f5fc4;
+  --kin-girl: #c8304d;
+  --kin-other: #5f6b78;
 
   --hue-1: #2563eb;
   --hue-2: #c2410c;
@@ -752,6 +773,9 @@
   --sex-b-line: #94805a;
   --sex-u: #242a1f;
   --sex-u-line: #7d8270;
+  --kin-boy: #5e9bff;
+  --kin-girl: #ff6b81;
+  --kin-other: #a3aab0;
 
   --hue-1: #7fb8d8;
   --hue-2: #e3a43c;

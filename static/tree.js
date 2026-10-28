@@ -73,11 +73,18 @@ function axgfTreeHover() {
   var wires = Array.prototype.slice.call(canvas.querySelectorAll('.wire'));
   if (!wires.length) return;
 
+  // A line from a couple names both of them, and a family's shared stem
+  // every child it leads to (space-separated): it is any of theirs.
+  function has(list, id) { return !!list && (' ' + list + ' ').indexOf(' ' + id + ' ') >= 0; }
+  // The chart's lines never cross, so the others only step back and its
+  // shape stays readable (2026-10-28); the whole family's lines cross by
+  // the hundred, and all but the person's nearly vanish.
+  var dim = canvas.hasAttribute('data-chart') ? '0.22' : '0.06';
   function highlight(id) {
     for (var i = 0; i < wires.length; i++) {
       var w = wires[i];
-      var mine = w.dataset.from === id || w.dataset.to === id;
-      w.style.opacity = mine ? '1' : '0.06';
+      var mine = has(w.dataset.from, id) || w.dataset.to === id || has(w.dataset.kids, id);
+      w.style.opacity = mine ? '1' : dim;
       if (mine) {
         w.classList.add('lit');
       } else {
@@ -242,9 +249,14 @@ function axgfTreeWidth() {
           });
         }
         // Keep the reader where the tree is: bring its top back into view
-        // when the new page starts above them.
+        // when the new page starts above them, and the person the tree now
+        // stands on into the window when the chart is taller than it.
         var split = document.querySelector('.tree-split');
         if (split && split.getBoundingClientRect().top < 0) split.scrollIntoView({ block: 'start' });
+        if (card) {
+          var rc = card.getBoundingClientRect();
+          if (rc.bottom > window.innerHeight || rc.top < 0) card.scrollIntoView({ block: 'center' });
+        }
         busy = false;
       })
       .catch(function () {
@@ -287,7 +299,9 @@ function axgfTreeWidth() {
     var after = rtl ? (c.left + c.width / 2) - s.left : s.right - (c.left + c.width / 2);
     card.classList.toggle('tc-start', before < room);
     card.classList.toggle('tc-end', before >= room && after < room);
-    card.classList.toggle('tc-up', s.bottom - c.top < 236 && c.top - s.top > 236);
+    // The chart is read down the page: near the foot of the window the
+    // open card grows upward instead.
+    card.classList.toggle('tc-up', window.innerHeight - c.top < 250 && c.top > 250);
   }
   function select(card) {
     var id = card && card.dataset.id;
@@ -370,38 +384,74 @@ function axgfTreeWidth() {
   });
 })();
 
-/* The chart's size (2026-10-27): smaller to see a wide family whole, or
- * fitted to the column, remembered from one visit to the next. CSS `zoom`
- * scales the chart and its lines together, so the cards stay on them. */
-function axgfTreeZoom() {
-  var box = document.querySelector('[data-tree-zoom]');
+/* The tree fits its column (the operator's review, 2026-10-28): it is read
+ * down the page, never across a scrollbar, and nobody in it is ever cut
+ * off. A drawing wider than its column — many generations, a narrow window,
+ * the whole family before its width is known — is scaled down to fit (CSS
+ * `zoom` scales its lines with its cards), never up, and an open card keeps
+ * its own size. Never so far that a name is hard to read: before that the
+ * record moves under the tree, which takes the page's width; and when even
+ * that is not enough, the tree is drawn as the phone's column of
+ * generations. On a phone it is that column already (app.css). Without
+ * scripts nothing measures the drawing, and its column scrolls. */
+var FIT_MIN = 0.75;
+function axgfTreeFit() {
+  var split = document.querySelector('.tree-split');
   var canvas = document.getElementById('tree-canvas');
   var scroll = document.querySelector('.tree-scroll');
-  if (!box || !canvas || !scroll) return;
-  // On a phone the chart is a column of generations (app.css): nothing to
-  // zoom, and a size remembered from a wide screen would only shrink it.
-  if (window.matchMedia && matchMedia('(max-width: 640px)').matches) { canvas.style.zoom = ''; return; }
-  box.hidden = false;
-  var z = 1;
-  try { z = parseFloat(localStorage.getItem('axgf-tree-zoom')) || 1; } catch (e) { /* private window */ }
-  function apply(v) {
-    z = Math.max(0.5, Math.min(1.5, Math.round(v * 20) / 20));
-    canvas.style.zoom = z === 1 ? '' : String(z);
-    try { localStorage.setItem('axgf-tree-zoom', String(z)); } catch (e) { /* private window */ }
-  }
-  apply(z);
-  box.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('button[data-z]');
-    if (!b) return;
-    e.preventDefault();
-    if (b.dataset.z === 'fit') {
-      var w = parseFloat(canvas.style.width) || canvas.scrollWidth;
-      apply(Math.min(1, (scroll.clientWidth - 8) / w));
-    } else {
-      apply(z + (b.dataset.z === '+' ? 0.1 : -0.1));
+  if (!split || !canvas || !scroll) return;
+  canvas.style.zoom = '';
+  canvas.style.removeProperty('--tree-unzoom');
+  split.setAttribute('data-fit', '');
+  fit();
+  axgfTreeNames(canvas);
+  // Nothing scrolls sideways now: the server's warning that this view is
+  // several screens wide no longer holds.
+  var wide = document.querySelectorAll('[data-tree-wide]');
+  for (var i = 0; i < wide.length; i++) wide[i].hidden = true;
+
+  function fit() {
+    if (window.matchMedia && matchMedia('(max-width: 640px)').matches) return;
+    var w = canvas.offsetWidth;
+    var scale = function () { return Math.min(1, Math.floor(scroll.clientWidth / w * 1000) / 1000); };
+    var z = scale();
+    if (z < FIT_MIN && !split.classList.contains('no-panel')) {
+      split.setAttribute('data-fit', 'wide');
+      z = scale();
     }
-  });
+    if (z >= 1) return;
+    if (z < FIT_MIN) {
+      split.setAttribute('data-fit', 'stack');
+      return;
+    }
+    canvas.style.zoom = String(z);
+    canvas.style.setProperty('--tree-unzoom', String(Math.round(1000 / z) / 1000));
+  }
 }
+
+/* A folded name too long for its card ("Marguerite M.") is set a size
+ * smaller rather than cut (2026-10-28), and the rare one still too long a
+ * size smaller again: a reader of any age reads the whole of it. Measured
+ * after the tree is fitted, since a column of generations gives a card more
+ * room than the chart. All the reads, then all the writes: one layout per
+ * step, however many cards. */
+function axgfTreeNames(canvas) {
+  var names = canvas.querySelectorAll('.tcard .tname');
+  var i;
+  for (i = 0; i < names.length; i++) names[i].classList.remove('is-long', 'is-longer');
+  var over = function (list) {
+    var out = [];
+    for (var j = 0; j < list.length; j++) {
+      if (list[j].scrollWidth > list[j].clientWidth + 0.5) out.push(list[j]);
+    }
+    return out;
+  };
+  var long = over(names);
+  for (i = 0; i < long.length; i++) long[i].classList.add('is-long');
+  var longer = over(long);
+  for (i = 0; i < longer.length; i++) longer[i].classList.add('is-longer');
+}
+window.addEventListener('resize', function () { axgfTreeFit(); });
 
 /* Everything above that reads the page runs on the page as it arrives, and
  * again on every page the tree moves to. */
@@ -412,6 +462,6 @@ function wire() {
   axgfTreeFilter();
   axgfTreeHover();
   axgfTreeWidth();
-  axgfTreeZoom();
+  axgfTreeFit();
 }
 wire();

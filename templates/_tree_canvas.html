@@ -12,15 +12,16 @@
        {%- if layout.bands and layout.bands[0].relative is not none %} data-chart{% endif %}
        style="width:{{ layout.width }}px;height:{{ layout.height }}px">
 
-    {#- The classic chart's row names ("Parents", "Grandchildren") stay at the
-        start of the column while a wide chart scrolls under them. -#}
+    {#- The classic chart's columns, named from the person in the middle
+        ("Parents", "Grandchildren") at their head, which stays in view while
+        the page scrolls down the chart (2026-10-28). -#}
     {%- if layout.bands and layout.bands[0].relative is not none %}
-    <div class="tree-gutter" style="height:{{ layout.height }}px" aria-hidden="true">
+    <div class="tree-colheads" aria-hidden="true">
       {%- for band in layout.bands %}
-      <div class="band-label relative{% if band.relative == 0 %} is-centre{% endif %}"
-           style="top:{{ band.y }}px;height:{{ band.height }}px">
+      <div class="tree-colhead{% if band.relative == 0 %} is-centre{% endif %}"
+           style="inset-inline-start:{{ band.x - 20 }}px;width:{{ band.w + 40 }}px">
         <strong>{{ band.label }}</strong>
-        <span class="muted">{{ band.sublabel }}</span>
+        <span>{{ band.sublabel }}</span>
       </div>
       {%- endfor %}
     </div>
@@ -28,17 +29,22 @@
     <svg class="tree-wires" width="{{ layout.width }}" height="{{ layout.height }}"
          viewBox="0 0 {{ layout.width }} {{ layout.height }}" aria-hidden="true">
       {% for e in layout.edges %}
-      <path d="{{ e.d }}" class="wire wire-{{ e.kind }}{% if e.hue %} wire-crossing{% endif %}"
+      {#- A line to a child says who the child is to the family (the
+          operator's review, 2026-10-28): its colour their side, a son or a
+          daughter (`tone`), its pattern how they belong to it when it is
+          not by birth (`line`). A family's shared stem lists its children. -#}
+      <path d="{{ e.d }}" class="wire wire-{{ e.kind }}{% if e.hue %} wire-crossing{% endif %}{% if e.tone %} wire-tone-{{ e.tone }}{% endif %}{% if e.line %} wire-line-{{ e.line }}{% endif %}"
             {%- if e.hue %} data-hue="{{ e.hue }}"{% endif %}
             data-band="{{ e.band }}" data-from="{{ e.from }}" data-to="{{ e.to }}"
+            {%- if e.kids %} data-kids="{{ e.kids }}"{% endif %}
             data-base="{{ e.opacity }}"
-            style="opacity:{{ e.opacity }}"><title>{{ e.title }}</title></path>
+            style="opacity:{{ e.opacity }}">{% if e.title %}<title>{{ e.title }}</title>{% endif %}</path>
       {%- if e.node %}
-      {# A couple's union node: two rings on the line between them (the
-         operator's kit, made in Canva, 2026-10-27). #}
+      {# A couple's knot: two rings on their bracket (the operator's kit,
+         made in Canva, 2026-10-27). #}
       <g class="wire-node" data-from="{{ e.from }}" data-to="{{ e.to }}"
          transform="translate({{ e.node[0] }} {{ e.node[1] }})">
-        <circle r="10"/><circle class="ring" cx="-2.6" r="4.2"/><circle class="ring" cx="2.6" r="4.2"/>
+        <circle r="7"/><circle class="ring" cx="-1.9" r="3"/><circle class="ring" cx="1.9" r="3"/>
       </g>
       {%- endif %}
       {% endfor %}
@@ -52,9 +58,15 @@
          inside a band — that difference is what says "these four rows are the
          same generation, and the next block is not". The classic chart names
          its rows from the person in the middle ("Parents"), at their start. #}
-      <div class="band-zone{% if band.unplaced %} unplaced{% endif %}{% if band.rows > 1 %} wrapped{% endif %}{% if band.relative is not none %} relative{% endif %}"
+      {%- if band.relative is not none %}
+      <div class="band-zone relative{% if band.relative == 0 %} is-centre{% endif %}"
+           style="inset-inline-start:{{ band.x - 10 }}px;width:{{ band.w + 20 }}px;top:{{ band.y }}px;height:{{ band.height }}px"
+           aria-hidden="true"></div>
+      {%- else %}
+      <div class="band-zone{% if band.unplaced %} unplaced{% endif %}{% if band.rows > 1 %} wrapped{% endif %}"
            style="top:{{ band.y }}px;height:{{ band.height }}px"
            data-rows="{{ band.rows }}" aria-hidden="true"></div>
+      {%- endif %}
       {%- if band.relative is none %}
       <div class="band-label{% if band.unplaced %} unplaced{% endif %}"
            style="top:{{ band.y }}px">
@@ -98,10 +110,6 @@
            aria-expanded="false" title="{{ c.name }}">
           <span class="tname"><bdi>{{ c.short if c.short else c.name }}</bdi></span>
           {%- if c.dup %}<span class="tc-dup" title="{{ t('tree-card-same') }}" aria-label="{{ t('tree-card-same') }}">↺</span>{% endif %}
-          {%- if c.conf_band %}<i class="conf-dot" data-band="{{ c.conf_band }}"
-              style="--conf-pct:{{ c.conf_pct }}"
-              title="{{ c.conf_label }}"
-              role="img" aria-label="{{ c.conf_label }}"></i>{% endif %}
         </a>
         <div class="tc-more">
           <span class="tc-portrait" aria-hidden="true">
@@ -115,6 +123,10 @@
             {%- if c.presumed_deceased %}<span class="tc-died"><span class="tc-sym" aria-hidden="true">†</span> <abbr class="presumed"
                 title="{{ t('record-presumed-why', years=presume_after) }}">{{ t("record-presumed-short") }}</abbr></span>
             {%- elif c.death_text or (c.death and c.death != "—") %}<span class="tc-died"><span class="tc-sym" aria-hidden="true">†</span><span class="sr-only">{{ t("record-died") }}</span> {{ c.death_text if c.death_text else c.death }}</span>{% endif -%}
+            {#- How sure the record is of the birth, in the open card only
+                (2026-10-28): the folded card keeps its width for the name. -#}
+            {%- if c.conf_band %}<span class="tc-conf"><i class="conf-dot" data-band="{{ c.conf_band }}"
+                style="--conf-pct:{{ c.conf_pct }}" aria-hidden="true"></i> {{ c.conf_label }}</span>{% endif -%}
           </span>
           <span class="tc-actions">
             <a class="tc-centre" href="/tree?root={{ c.id }}{% if not show_all %}&amp;depth={{ depth }}{% endif %}&amp;sel={{ c.id }}">{{ t("tree-card-centre") }}</a>

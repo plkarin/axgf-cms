@@ -1462,65 +1462,138 @@ abbr.presumed { text-decoration: none; }
 .band-label span { margin-inline-start: 0.4rem; text-transform: none; letter-spacing: 0; }
 .band-label.unplaced strong { color: var(--warning); }
 
-/* The classic chart (src/chart.rs, the operator's review of 2026-10-27, after
-   the kit made in Canva): each row a faint band a little taller than its
-   cards, its name at its start — "Parents", "Grandchildren" — in spaced
-   capitals in the accent, the count under it. */
+/* The classic chart's columns (src/chart.rs; the operator's reviews of 27
+   and 28 October 2026): one generation each, the oldest at the left, a
+   faint band down the page behind its cards, the person's own tinted with
+   the accent. Its name heads it in spaced capitals in the accent, the
+   count under it, and the head stays in view while the page scrolls down
+   the chart. */
 .band-zone.relative {
-  box-sizing: content-box;
-  padding-block: 16px;
-  transform: translateY(-16px);
-  inset-inline-start: 4px;
+  inset-inline-end: auto;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--text-primary) 3.5%, transparent);
 }
-.band-label.relative {
-  transform: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.15rem;
-  inline-size: 104px;
-  inset-inline-start: 12px;
-  white-space: normal;
-  line-height: 1.15;
-}
-.band-label.relative strong {
-  color: var(--accent);
-  font-size: var(--type-micro);
-  letter-spacing: 0.12em;
-  /* A row's name breaks between its words, never inside one: the longest
-     word of any language's names (13 letters, "Grandchildren",
-     "Descendientes", "Pradziadkowie") fits the column on one line. */
-  overflow-wrap: normal;
-}
-.band-label.relative span { margin-inline-start: 0; font-size: var(--type-micro); }
-.band-label.relative.is-centre strong { color: var(--text-primary); }
-.tree-gutter {
+.band-zone.relative.is-centre { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.tree-colheads {
   position: sticky;
-  inset-inline-start: 0;
-  inline-size: 0;
-  z-index: 6;
+  inset-block-start: var(--stick-top);
+  z-index: 8;
+  block-size: 56px; /* HEAD in chart.rs */
   pointer-events: none;
 }
-.tree-gutter .band-label.relative {
-  inset-inline-start: 0;
-  padding: 0.3rem 0.65rem 0.3rem 0.75rem;
+.tree-colhead {
+  position: absolute;
+  inset-block-start: 4px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  min-block-size: 44px;
+  padding: 0.2rem 0.35rem;
   box-sizing: border-box;
-  inline-size: 124px;
-  border-start-end-radius: 12px;
-  border-end-end-radius: 12px;
-  background: color-mix(in srgb, var(--surface-raised) 86%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
+  text-align: center;
+  line-height: 1.15;
+}
+.tree-colhead strong {
+  color: var(--accent);
+  font-size: var(--type-micro);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* A name breaks between its words, never inside one. */
+  overflow-wrap: normal;
+}
+.tree-colhead span { color: var(--text-secondary); font-size: var(--type-micro); }
+.tree-colhead.is-centre strong { color: var(--text-primary); }
+/* The chart is read down the page (2026-10-28), and the record beside it is
+   narrower, growing with the page as it always has (one page scroll, not
+   three: tests/panel_layout.rs). */
+.tree-scroll:has(> .tree-canvas[data-chart]) {
+  position: static;
+  will-change: auto;
+}
+.tree-split:has(.tree-canvas[data-chart]) {
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 380px);
+}
+/* Narrower than this, the chart takes the page's width and the record
+   follows it, below: beside it, the chart would be scaled too small. */
+@media (max-width: 1200px) {
+  .tree-split:has(.tree-canvas[data-chart]) { grid-template-columns: minmax(0, 1fr); }
+}
+/* Fitted by tree.js (`data-fit`): the drawing was scaled to its column or
+   redrawn as a column of generations, so the column is clipped across,
+   never scrolled — a card's open sheet, laid out though hidden, must not
+   widen the page — and nobody in it is cut off. Down the page nothing is
+   clipped, and the chart's column heads stick to the window. Without
+   scripts the column scrolls instead. */
+.tree-split[data-fit] .tree-scroll {
+  overflow-x: clip;
+  overflow-y: visible;
+  padding-bottom: 0;
+}
+/* Scaled down, the drawing keeps an open card at its own size. */
+.tree-canvas .tcard .tc-more { zoom: var(--tree-unzoom, 1); }
+/* Beside the record the drawing would be scaled too small to read: the
+   record moves under it, and the drawing takes the page's width. */
+.tree-split[data-fit="wide"]:has(.tree-canvas) { grid-template-columns: minmax(0, 1fr); }
+.tree-split[data-fit="wide"] .tree-scroll { position: static; }
+/* Too many generations even for the page's width: the drawing becomes the
+   phone's column of generations (below), its cards as many to a line as
+   fit, a card opening over its neighbours as on the chart. Every name
+   keeps its own size. */
+.tree-split[data-fit="stack"] .tree-scroll { position: static; }
+.tree-split[data-fit="stack"] .tree-canvas {
+  inline-size: auto !important;
+  block-size: auto !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.tree-split[data-fit="stack"] .tree-canvas :is(.tree-wires, .band-zone, .tree-colheads),
+.tree-split[data-fit="stack"] .tree-canvas > .band-label { display: none; }
+.tree-split[data-fit="stack"] .tree-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.5rem;
+  padding: 0.6rem 0.65rem 0.7rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
+}
+.tree-split[data-fit="stack"] .tree-row.is-centre { border-color: color-mix(in srgb, var(--accent) 55%, var(--border-hairline)); }
+.tree-split[data-fit="stack"] .tree-row-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.5rem;
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--type-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.tree-split[data-fit="stack"] .tree-row-name strong { color: var(--accent); font-weight: var(--weight-semi); }
+.tree-split[data-fit="stack"] .tree-row-name .muted { letter-spacing: 0; text-transform: none; }
+.tree-split[data-fit="stack"] .tree-row .tcard {
+  position: relative;
+  inset: auto !important;
+  inline-size: auto !important;
+  width: auto !important;
 }
 /* A generation's block (_tree_canvas.html): no box at all on a wide
    screen, where every card stands where the layout put it. */
 .tree-row { display: contents; }
 .tree-row-name { display: none; }
 /* A phone (the operator's review, 2026-10-27: the tree ran off the screen
-   sideways). The chart becomes a column of generations, the newest at the
-   top and the oldest at the foot as the chart has them, the person's own
-   in the middle. Its lines, zones and column of names give way to each
-   block's own name; the cards stand two to a line and the canvas takes the
+   sideways). The chart becomes a column of generations, in the order its
+   columns read — the oldest first, the newest last — the person's own in
+   the middle. Its lines, zones and column heads give way to each block's
+   own name; the cards stand two to a line and the canvas takes the
    column's width, so nothing scrolls sideways. An open card is a sheet at
    the foot of the screen. */
 @media (max-width: 640px) {
@@ -1537,18 +1610,18 @@ abbr.presumed { text-decoration: none; }
     flex-direction: column;
     gap: 0.6rem;
   }
-  .tree-canvas :is(.tree-wires, .band-zone, .tree-gutter),
+  .tree-canvas :is(.tree-wires, .band-zone, .tree-colheads),
   .tree-canvas > .band-label { display: none; }
   .tree-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
     padding: 0.6rem 0.65rem 0.7rem;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-hairline);
     border-radius: 14px;
     background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
   }
-  .tree-row.is-centre { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+  .tree-row.is-centre { border-color: color-mix(in srgb, var(--accent) 55%, var(--border-hairline)); }
   .tree-row-name {
     display: flex;
     flex-wrap: wrap;
@@ -1576,27 +1649,47 @@ abbr.presumed { text-decoration: none; }
     inline-size: auto;
     transform: none !important;
   }
-  .tc-zoom { display: none; }
 }
-.tc-zoom { display: flex; gap: 0.35rem; align-items: flex-end; margin-inline-start: auto; }
-.tc-zoom .btn { min-inline-size: 2.4rem; }
-/* The chart's lines in the accent, the way a drawn family chart is inked;
-   a couple's union node, two rings on their line. */
-.tree-canvas[data-chart] .wire { stroke: color-mix(in srgb, var(--accent) 62%, var(--text-tertiary)); stroke-width: 1.6; }
-.tree-canvas[data-chart] .wire-spouse { stroke-width: 1.8; }
-.wire-node circle { fill: var(--surface-raised); stroke: color-mix(in srgb, var(--accent) 80%, transparent); stroke-width: 1.3; }
-.wire-node .ring { fill: none; stroke: var(--accent); stroke-width: 1.4; }
+/* The chart's lines (the operator's review, 2026-10-28: "a boy blue, a
+   girl red, an adoption dotted"). A couple's bracket and a family's comb
+   are inked in the page's grey, as a drawn family chart is; the line to each
+   child is in the child's colour — a son blue, a daughter red, anyone else
+   grey — and, when they belong to the family other than by birth, in its
+   pattern: an adoption dashed, a fostering or a guardianship dotted, a
+   step-child dash and dot. A couple's knot is two rings on the bracket.
+   The legend draws the same lines, with the same classes. */
+/* The brackets and combs in the page's own grey, never in an accent that
+   could pass for a son's blue or a daughter's red (Galaxy's violet,
+   Fusion's red): only the children's own lines carry a colour. */
+.tree-canvas[data-chart] .wire { stroke: color-mix(in srgb, var(--text-secondary) 85%, transparent); stroke-width: 1.8; }
+:is(.tree-canvas, .kin-key) .wire.wire-tone-a { stroke: var(--kin-boy); }
+:is(.tree-canvas, .kin-key) .wire.wire-tone-b { stroke: var(--kin-girl); }
+:is(.tree-canvas, .kin-key) .wire.wire-tone-u { stroke: var(--kin-other); }
+:is(.tree-canvas, .kin-key) .wire.wire-parent { stroke-width: 2.4; }
+/* A person's own lines, under the pointer, stand out from the rest. */
+.tree-canvas[data-chart] .wire.lit { stroke-width: 3.2; }
+:is(.tree-canvas, .kin-key) .wire.wire-line-adoptive { stroke-dasharray: 6 4; }
+:is(.tree-canvas, .kin-key) .wire:is(.wire-line-foster, .wire-line-guardianship) { stroke-dasharray: 0.1 4.6; stroke-linecap: round; stroke-width: 3; }
+:is(.tree-canvas, .kin-key) .wire.wire-line-step { stroke-dasharray: 8 3 1.5 3; }
+.wire-node circle { fill: var(--surface-raised); stroke: color-mix(in srgb, var(--accent) 80%, transparent); stroke-width: 1.2; }
+.wire-node .ring { fill: none; stroke: var(--accent); stroke-width: 1.3; }
+.tree-legend-kin { display: inline-flex; align-items: center; gap: 0.35rem 0.9rem; flex-wrap: wrap; }
+.kin-key { inline-size: 24px; block-size: 8px; overflow: visible; flex: none; }
+.kin-key .wire { fill: none; }
+.kin-key.kin-knot { inline-size: 16px; block-size: 16px; }
 
-/* A card, folded: one line, the first given name and the family name's
-   initial, a slim strip of its person's hue at its start and the
-   confidence dot at its end. Matches CARD_H in tree.rs and chart.rs. */
+/* A card, folded (2026-10-28, "more compact still"): one line, the first
+   given name and the family name's initial in the strongest ink on a
+   plain ground, a strip of the person's colour at its start — blue, red or
+   grey, as their lines are — and the confidence dot at its end. Matches
+   CARD_H in tree.rs and chart.rs. */
 .tcard {
   position: absolute;
-  height: 40px;
+  height: 30px;
   box-sizing: border-box;
-  border: 1px solid var(--sex-u-line);
-  background: var(--sex-u);
-  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface-raised) 90%, var(--text-primary));
+  border-radius: 8px;
   color: var(--text-primary);
   z-index: 2;
   transition: box-shadow 0.1s, opacity 0.1s;
@@ -1604,20 +1697,20 @@ abbr.presumed { text-decoration: none; }
 .tcard::before {
   content: "";
   position: absolute;
-  inset-block: 9px;
-  inset-inline-start: 5px;
+  inset-block: 6px;
+  inset-inline-start: 4px;
   inline-size: 3px;
   border-radius: 3px;
-  background: var(--sex-u-line);
+  background: var(--kin-other);
   pointer-events: none;
 }
 .tc-face {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.3rem;
   block-size: 100%;
-  padding-inline: 0.9rem 0.6rem;
+  padding-inline: 0.62rem 0.35rem;
   color: inherit;
   text-decoration: none;
   border-radius: inherit;
@@ -1633,7 +1726,11 @@ abbr.presumed { text-decoration: none; }
   text-overflow: ellipsis;
   pointer-events: none;
 }
-.tcard .conf-dot { flex: none; }
+/* A name too long for its card is a size smaller, not cut (tree.js). */
+.tcard .tname.is-long bdi { font-size: 0.88em; letter-spacing: -0.01em; }
+.tcard .tname.is-longer bdi { font-size: 0.78em; }
+.tc-conf { display: block; color: var(--text-secondary); }
+.tc-conf .conf-dot { margin-inline-end: 0.3rem; vertical-align: -1px; }
 /* The same person drawn a second time: dashed, and a small turning arrow. */
 .tcard.is-dup { border-style: dashed; }
 .tc-dup { flex: none; font-size: var(--type-small); color: var(--text-tertiary); }
@@ -1654,7 +1751,7 @@ abbr.presumed { text-decoration: none; }
   padding: 0.9rem 0.9rem 0.85rem;
   text-align: center;
   background: var(--surface-raised);
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border-strong));
   border-radius: 16px;
   box-shadow: 0 22px 48px -22px rgb(var(--shadow-rgb) / 0.75), 0 2px 6px rgb(var(--shadow-rgb) / 0.2);
   opacity: 0;
@@ -1791,10 +1888,8 @@ abbr.presumed { text-decoration: none; }
   border-bottom: 1px dashed var(--border-strong);
 }
 
-.tcard[data-sex="a"] { background: var(--sex-a); border-color: var(--sex-a-line); }
-.tcard[data-sex="b"] { background: var(--sex-b); border-color: var(--sex-b-line); }
-.tcard[data-sex="a"]::before { background: var(--sex-a-line); }
-.tcard[data-sex="b"]::before { background: var(--sex-b-line); }
+.tcard[data-sex="a"]::before { background: var(--kin-boy); }
+.tcard[data-sex="b"]::before { background: var(--kin-girl); }
 .tcard:hover { box-shadow: 0 0 0 2px var(--accent); }
 
 .tname {
@@ -2779,6 +2874,18 @@ a.stat:hover { border-color: var(--accent); }
 }
 .tc-field select { min-width: 12rem; }
 #depth { min-width: 5rem; }
+/* The legend in the controls' bar (2026-10-28): one band above the chart,
+   the depth at its start and the key after it, with no frame of its own. */
+.tree-controls { align-items: center; gap: 0.6rem 1.5rem; }
+.tree-controls .tree-legend {
+  flex: 1 1 30rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  gap: 0.45rem 1rem;
+}
 
 
 /* ---------- completeness readout ---------- */
@@ -5924,7 +6031,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 
 /* ---------- the tree ---------- */
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .tcard {
-  border-radius: 10px;
+  border-radius: 8px;
   transition: transform var(--tempo) var(--ease), border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease);
 }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .tcard:hover {

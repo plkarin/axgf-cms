@@ -27,13 +27,14 @@ use crate::view::{self, Confidence};
 
 // Card geometry. Positions are computed server-side because the SVG
 // connectors must line up with the cards without a layout pass in the browser.
-const CARD_W: f64 = 132.0;
+const CARD_W: f64 = 120.0;
 // One line since the operator's review of 2026-10-27: a card shows the first
 // given name and the family name's initial ("Marie D."), and opens, over its
-// neighbours, to the full name, the dates and the portrait. The connector
-// geometry and row pitch are both derived from this, so cards and wires stay
-// aligned. The classic chart (`crate::chart`) uses the same height.
-const CARD_H: f64 = 40.0;
+// neighbours, to the full name, the dates and the portrait. Smaller again on
+// 2026-10-28 ("more compact still"). The connector geometry and row pitch are
+// both derived from this, so cards and wires stay aligned. The classic chart
+// (`crate::chart`) uses the same card.
+const CARD_H: f64 = 30.0;
 const H_GAP: f64 = 14.0;
 /// Gap between one generation and the next. A band's own rows sit `ROW_GAP`
 /// apart, which is a third of this — the difference is what tells a reader
@@ -182,6 +183,10 @@ pub(crate) struct FamilyEdges {
     pub(crate) parents: Vec<String>,
     pub(crate) children: Vec<(String, Option<f64>)>,
     pub(crate) union_confidence: Option<f64>,
+    /// How each child belongs to the family, when AXGF 1.1's `lineage` says
+    /// something other than a birth: `adoptive`, `foster`, `step`,
+    /// `guardianship`. A child absent here was born to it, or nobody said.
+    pub(crate) lineage: BTreeMap<String, String>,
 }
 
 /// Read the families of a flat bundle into parent/child lists.
@@ -220,10 +225,25 @@ pub(crate) fn family_edges(flat: &Value) -> Vec<FamilyEdges> {
                 .get("union")
                 .and_then(|u| u.get("confidence"))
                 .and_then(Value::as_f64);
+            let lineage = f
+                .get("children")
+                .and_then(Value::as_array)
+                .map(|cs| {
+                    cs.iter()
+                        .filter_map(|c| {
+                            let id = c.get("person_id").and_then(Value::as_str)?;
+                            let term = c.get("lineage").and_then(Value::as_str)?;
+                            matches!(term, "adoptive" | "foster" | "step" | "guardianship")
+                                .then(|| (id.to_string(), term.to_string()))
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
             FamilyEdges {
                 parents,
                 children,
                 union_confidence,
+                lineage,
             }
         })
         .collect()
@@ -656,6 +676,19 @@ pub struct Edge {
     /// with a dash pattern as well as a hue: under a colour-blind theme the
     /// dash is what carries the distinction.
     pub hue: Option<u8>,
+    /// The child's side of a parentage, for its colour (the operator's
+    /// review, 2026-10-28: "a boy blue, a girl red"): "a" a son, "b" a
+    /// daughter, "u" anyone else — and anyone this reader may not see, whose
+    /// card says no more ([`redact_in`]). `None` on a couple's line and on a
+    /// family's shared stem.
+    pub tone: Option<&'static str>,
+    /// How the child belongs to the family when it is not by birth
+    /// (`adoptive`, `foster`, `step`, `guardianship`): the line's pattern.
+    /// `None` for a birth, an unstated lineage, or a hidden child.
+    pub line: Option<String>,
+    /// A family's shared stem in the classic chart: the children it leads
+    /// to, space-separated, so that the highlight lights it with any of them.
+    pub kids: Option<String>,
     /// Where a couple's line carries its union node, the two rings drawn on
     /// it (the classic chart, 2026-10-27). `None` for every other line.
     pub node: Option<[f64; 2]>,
@@ -688,6 +721,11 @@ pub struct Band {
     /// label names it ("Parents", "Grandchildren") instead of numbering the
     /// bundle's generation.
     pub relative: Option<i64>,
+    /// The classic chart's columns (2026-10-28): where this generation's
+    /// column starts across the page, and how wide it is. Zero for a row of
+    /// the whole-family layout, which runs the page's width.
+    pub x: f64,
+    pub w: f64,
 }
 
 /// The complete laid-out tree.
@@ -1649,6 +1687,8 @@ pub fn layout_subset(
             height,
             unplaced: generation.is_none(),
             relative: None,
+            x: 0.0,
+            w: 0.0,
         });
         row_y += height + V_GAP;
     }
@@ -1673,6 +1713,10 @@ pub fn layout_subset(
     // Connectors are derived from `placed`, which only holds the people that
     // were drawn, so an edge to someone outside the subtree is dropped rather
     // than dangling off the canvas.
+    let tones: BTreeMap<String, &'static str> = persons
+        .iter()
+        .map(|(id, p)| (id.clone(), tone_of(Some(p))))
+        .collect();
     let edges = build_edges(
         &families,
         &placed,
@@ -1680,6 +1724,7 @@ pub fn layout_subset(
         width,
         &generations.gen,
         &ordering.hues,
+        &tones,
     );
 
     let drawn = by_gen.values().map(Vec::len).sum::<usize>() + unplaced.len();
@@ -1966,11 +2011,21 @@ pub fn localise(layout: &mut TreeLayout, lang: &str) {
         names.insert(card.id.clone(), card.name.clone());
     }
     for edge in &mut layout.edges {
-        let name = |id: &str| {
-            names
-                .get(id)
-                .cloned()
-                .unwrap_or_else(|| crate::i18n::translate(lang, crate::person::UNKNOWN_KEY, None))
+        // A family's shared stem leads to several children: the children's
+        // own lines carry the words.
+        if edge.kind == "stem" {
+            continue;
+        }
+        // From a couple, both of them ("Jean & Mathilde").
+        let name = |ids: &str| {
+            ids.split_whitespace()
+                .map(|id| {
+                    names.get(id).cloned().unwrap_or_else(|| {
+                        crate::i18n::translate(lang, crate::person::UNKNOWN_KEY, None)
+                    })
+                })
+                .collect::<Vec<_>>()
+                .join(" & ")
         };
         let args = FluentArgs::from_iter([
             ("from", FluentValue::from(name(&edge.from))),
@@ -2055,16 +2110,7 @@ pub(crate) fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root
     // `1898–—` says the person is 128. See [`crate::living`].
     let living = crate::living::status(p);
 
-    let sex = match p
-        .get("identity")
-        .and_then(|i| i.get("gender"))
-        .and_then(|g| g.get("value"))
-        .and_then(Value::as_str)
-    {
-        Some("M") => "a",
-        Some("F") => "b",
-        _ => "u",
-    };
+    let sex = tone_of(Some(p));
 
     // The card shows the birth fact's confidence, which is the one most
     // readers scan for.
@@ -2162,8 +2208,14 @@ pub fn redact_in(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>, la
     // An edge title names both ends. The edge itself stays — it is the shape,
     // and the shape is not what is being withheld — but it stops saying who.
     for edge in &mut layout.edges {
-        let a = hidden.contains(edge.from.as_str());
+        let a = edge.from.split_whitespace().any(|id| hidden.contains(id));
         let b = hidden.contains(edge.to.as_str());
+        // A hidden child's line is neither blue nor red, nor dashed for an
+        // adoption: the card does not say, and the line must not either.
+        if b {
+            edge.tone = edge.tone.map(|_| "u");
+            edge.line = None;
+        }
         if !a && !b {
             continue;
         }
@@ -2192,6 +2244,7 @@ fn build_edges(
     canvas_w: f64,
     gen: &BTreeMap<String, i64>,
     hues: &BTreeMap<(String, String), u8>,
+    tones: &BTreeMap<String, &'static str>,
 ) -> Vec<Edge> {
     let mut edges = Vec::new();
     let present = |id: &str| pos.contains_key(id);
@@ -2230,6 +2283,9 @@ fn build_edges(
                     from: pair[0].clone(),
                     to: pair[1].clone(),
                     hue: None,
+                    tone: None,
+                    line: None,
+                    kids: None,
                     node: None,
                 });
             }
@@ -2315,11 +2371,29 @@ fn build_edges(
                 from: parent.clone(),
                 to: child.clone(),
                 hue: hues.get(&(parent.clone(), child.clone())).copied(),
+                tone: Some(tones.get(child).copied().unwrap_or("u")),
+                line: f.lineage.get(child).cloned(),
+                kids: None,
                 node: None,
             });
         }
     }
     edges
+}
+
+/// A person's recorded side, as cards and lines encode it: "a" male, "b"
+/// female, "u" unrecorded (or unknown to the bundle).
+pub(crate) fn tone_of(p: Option<&Value>) -> &'static str {
+    match p
+        .and_then(|p| p.get("identity"))
+        .and_then(|i| i.get("gender"))
+        .and_then(|g| g.get("value"))
+        .and_then(Value::as_str)
+    {
+        Some("M") => "a",
+        Some("F") => "b",
+        _ => "u",
+    }
 }
 
 /// Map a confidence to line opacity.

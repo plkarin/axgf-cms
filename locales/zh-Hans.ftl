@@ -726,9 +726,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = 以此为中心
 tree-card-same = 同一个人，第二次绘出
-tree-zoom-out = 缩小
-tree-zoom-in = 放大
-tree-zoom-fit = 适应宽度
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = 连线：
+tree-key-son = 儿子
+tree-key-daughter = 女儿
+tree-key-adoptive = 收养
+tree-key-foster = 寄养或监护
+tree-key-step = 继子女
+tree-key-union = 婚姻
 tree-band-people = { $n }人
 tree-band-unplaced = 未归位
 tree-band-unplaced-note = 不属于任何家庭的{ $n }人 —— 予以显示而非略去

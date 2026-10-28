@@ -572,6 +572,9 @@ pub async fn tree(
             show_all,
             max_depth => MAX_DEPTH,
             full_width => full_width.round() as i64,
+            // The column the whole family was folded to: the warning is for
+            // a view that still came out wider than it (2026-10-28).
+            wrap_w => row_w.round() as i64,
             p => panel,
             selected,
             // How many people this reader is not being shown. Stated rather

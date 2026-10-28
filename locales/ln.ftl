@@ -837,9 +837,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = Tia nzete awa na kati
 tree-card-same = Moto moko, abendami mbala ya mibale
-tree-zoom-out = Kokitisa
-tree-zoom-in = Kobakisa
-tree-zoom-fit = Kobongisa
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Milɔngɔ:
+tree-key-son = Mwana mobali
+tree-key-daughter = Mwana mwasi
+tree-key-adoptive = Kozwa mwana
+tree-key-foster = Kobokola to kokɛngɛla
+tree-key-step = Mwana ya libala
+tree-key-union = Libala
 tree-band-people = { $n ->
         [one] moto moko
        *[other] bato { $n }

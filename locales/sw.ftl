@@ -832,9 +832,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = Weka mti katikati hapa
 tree-card-same = Mtu yule yule, amechorwa mara ya pili
-tree-zoom-out = Punguza
-tree-zoom-in = Kuza
-tree-zoom-fit = Tosheleza
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Mistari:
+tree-key-son = Mwana
+tree-key-daughter = Binti
+tree-key-adoptive = Kuasili
+tree-key-foster = Malezi au ulezi
+tree-key-step = Mtoto wa kambo
+tree-key-union = Muungano
 tree-band-people = { $n ->
         [one] mtu mmoja
        *[other] watu { $n }

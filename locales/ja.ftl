@@ -727,9 +727,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = ここを中心に表示
 tree-card-same = 同じ人物をもう一度描いたもの
-tree-zoom-out = 縮小
-tree-zoom-in = 拡大
-tree-zoom-fit = 全体を表示
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = 線：
+tree-key-son = 息子
+tree-key-daughter = 娘
+tree-key-adoptive = 養子縁組
+tree-key-foster = 里親・後見
+tree-key-step = 継子
+tree-key-union = 婚姻
 tree-band-people = { $n }名
 tree-band-unplaced = 未配置
 tree-band-unplaced-note = どの家族にも属さない{ $n }名 — 省かずに表示しています

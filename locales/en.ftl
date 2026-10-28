@@ -893,9 +893,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = Centre the tree here
 tree-card-same = The same person, drawn a second time
-tree-zoom-out = Zoom out
-tree-zoom-in = Zoom in
-tree-zoom-fit = Fit
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Lines:
+tree-key-son = Son
+tree-key-daughter = Daughter
+tree-key-adoptive = Adoption
+tree-key-foster = Fostering or guardianship
+tree-key-step = Step-child
+tree-key-union = Union
 tree-band-people = { $n ->
         [one] one person
        *[other] { $n } people

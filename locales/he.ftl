@@ -944,9 +944,14 @@ tree-level-down = { $n ->
     }
 tree-card-centre = מרכוז העץ כאן
 tree-card-same = אותו אדם, מצויר פעם שנייה
-tree-zoom-out = הקטנה
-tree-zoom-in = הגדלה
-tree-zoom-fit = התאמה
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = קווים:
+tree-key-son = בן
+tree-key-daughter = בת
+tree-key-adoptive = אימוץ
+tree-key-foster = אומנה או אפוטרופסות
+tree-key-step = בן חורג
+tree-key-union = קשר
 tree-band-people = { $n ->
         [one] אדם אחד
         [two] שני אנשים

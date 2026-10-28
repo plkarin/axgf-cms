@@ -12,20 +12,35 @@ about the AXGF file, the server's river or what a reader may see changes.
 
 ### Changed
 
-- **The tree page: a classic family chart** (docs/adr/0019). The ancestors
-  are drawn below the person and the descendants above, and each subtree
-  has its own band of the page. The lines run at right angles and never
-  cross, and a couple's line carries a union node. Each row is named from
-  the person in the middle ("Parents", "Grandchildren"), and the names stay
-  in view while the chart scrolls. A card shows "First name L." and opens
-  on the pointer, on focus or on a click. Open, it shows the portrait in a
-  laurel ring, the full name, the dates, and two actions: centre the tree
-  on the person, or open their record. The chart can be made smaller,
-  larger or fitted to the column. The kit was drawn in Canva first.
+- **The tree page: a classic family chart** (docs/adr/0019).
+  - **Layout.** One column per generation, the oldest on the left: the
+    ancestors to the person's left, the descendants to their right. Each
+    subtree has its own band, so the lines never cross.
+  - **Read down the page.** There is no horizontal scrollbar, and nobody
+    is ever cut off. A chart wider than its column is scaled to fit, never
+    so far that a name is hard to read. Before that, the record moves
+    under the chart; past that, the chart becomes the phone's column of
+    generations. The whole-family view fits the same way. The
+    generations' names stay at the top of the window.
+  - **A family starts level with its couple.** The person stays at the top
+    of their own family, their children below. A second partner stands
+    beside their own children.
+  - **Lines.** A couple is joined by a bracket with a knot of two rings.
+    The line to each child is a son blue, a daughter red and anyone else
+    grey. A child adopted, fostered or under guardianship, or a step-child,
+    gets a dashed, dotted or dash-and-dot line. One legend, in the
+    controls' bar, explains them.
+  - **Cards.** Compact cards (120 × 30 px) read "First name L." beside a
+    strip of the person's colour; a name too long for its card is a size
+    smaller, never cut. They open on the pointer, on focus or on a click,
+    at their own size whatever the chart's scale, showing the portrait in
+    a laurel ring, the full name, the dates, how sure the birth is, and
+    two actions: centre the tree on the person, or open their record.
+  - **The kit** was drawn in Canva first.
 - **On a phone** (the operator's review the same evening).
   - The tree page is a column of generations, with no sideways scroll.
     Each generation is a block with its name, its cards two to a line, and
-    an open card is a sheet at the foot of the screen (docs/adr/0019 §6).
+    an open card is a sheet at the foot of the screen (docs/adr/0019 §5).
   - In every view, a first tap on a person names them under the drawing,
     with "Centre here" and "Open full page"; before, it only lit their
     route (docs/adr/0002 §6).

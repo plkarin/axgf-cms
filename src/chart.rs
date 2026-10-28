@@ -1,5 +1,5 @@
-//! The family around one person as a classic chart (the operator's review of
-//! 27 October 2026, docs/adr/0019).
+//! The family around one person as a classic chart (the operator's reviews of
+//! 27 and 28 October 2026, docs/adr/0019).
 //!
 //! The tree page used to lay out the family around a person by the bundle's
 //! own generation numbers ([`crate::tree`]): everyone of one generation on one
@@ -9,22 +9,31 @@
 //! operator asked for the classic family chart instead: ordered, its lines
 //! clean, never crossing.
 //!
-//! A family around one person is two trees joined at that person, and that is
-//! how it is drawn here:
+//! A family around one person is two trees joined at that person, drawn
+//! across the page, one column per generation, the oldest on the left:
 //!
-//! * **Ancestors**, below them — the oldest at the bottom, as everywhere in
-//!   this application: under each person their father and mother side by
-//!   side, each over their own parents. An ancestor's other partners stand
-//!   beside them, on the outer side.
-//! * **Descendants**, above them: the person and their partners on one row,
-//!   each couple's children over the couple, each child with their own
-//!   partners and children, and so on.
+//! * **Ancestors**, to their left: beside each person their father and
+//!   mother, the father above, each beside their own parents further left.
+//!   An ancestor's other partners stand with them in their column, on the
+//!   outer side.
+//! * **Descendants**, to their right: the person and their partners one above
+//!   the other in their column, each couple's children in the next column,
+//!   the first level with the couple and the others below, each child with
+//!   their own partners and children, and so on.
 //!
-//! Every person's subtree has a band of the page to itself and the bands of
-//! two people never overlap, so a couple's line or a family's bus never
-//! crosses another. A person the chart reaches a second time — cousins who
-//! married, an ancestor on two lines — is drawn again where the line needs
-//! them, marked as the same person, and not followed further.
+//! A generation is a column, so the chart is as wide as the generations it
+//! shows and never as wide as its largest family: it is read down the page,
+//! never across a scrollbar that hides people (2026-10-28; until then the
+//! generations were rows, and ten grandchildren side by side ran off the
+//! screen). Every person's subtree has a band of the page to itself and the
+//! bands of two people never overlap, so a couple's bracket or a family's
+//! comb never crosses another. A person the chart reaches a second time —
+//! cousins who married, an ancestor on two lines — is drawn again where the
+//! line needs them, marked as the same person, and not followed further.
+//!
+//! Each line to a child says who the child is to the family: its colour the
+//! child's side (a son, a daughter), its pattern how they belong to it when
+//! it is not by birth (adoption, fostering, guardianship, a step-child).
 //!
 //! The chart reads the structure the band layout reads and returns the same
 //! [`TreeLayout`], so the page, its filter and its highlight keep working; the
@@ -37,36 +46,43 @@ use serde_json::Value;
 use crate::tree::{Band, Card, Edge, FamilyEdges, TreeLayout};
 use crate::view::{self, Confidence};
 
-/// A card, folded: one line, the first given name and an initial.
-pub const CARD_W: f64 = 140.0;
-pub const CARD_H: f64 = 40.0;
-/// Between brothers and sisters.
-const GAP: f64 = 16.0;
-/// Between partners: room for the couple's line and its union node.
-const PARTNER_GAP: f64 = 36.0;
+/// A card, folded: one line, the first given name and an initial — lower on
+/// 2026-10-28 ("more compact still"), and as wide as the whole family's
+/// cards: narrower, one name in fifteen of a real family was cut.
+pub const CARD_W: f64 = 120.0;
+pub const CARD_H: f64 = 30.0;
+/// How far a card reaches down its column.
+const SPAN: f64 = CARD_H;
+/// Between brothers and sisters, one above the other.
+const GAP: f64 = 8.0;
+/// Between partners: their bracket stands beside them, so they stand close.
+const PARTNER_GAP: f64 = 8.0;
 /// Between two families' children, and between the two sides of a couple's
 /// ancestry.
-const GROUP: f64 = 36.0;
-/// From one generation's row to the next: room for a family's bus between
-/// them, well clear of both rows.
-const PITCH: f64 = CARD_H + 84.0;
-const MARGIN: f64 = 28.0;
-/// Room at the start of each row for its name ("Grandparents").
-pub const GUTTER: f64 = 116.0;
+const GROUP: f64 = 20.0;
+/// From one generation's column to the next: a couple's bracket and its
+/// knot, the family's comb, and each child's own coloured branch.
+const LINK_W: f64 = 40.0;
+/// How far a couple's bracket stands out from their cards.
+const BRACKET: f64 = 11.0;
+const MARGIN: f64 = 10.0;
+/// Room above the columns for each one's name ("Grandparents").
+pub const HEAD: f64 = 56.0;
 
-/// One card in a block, its x (left edge) relative to the block.
+/// One card in a block, where it stands down its column relative to the
+/// block.
 #[derive(Debug, Clone)]
 struct Slot {
     key: usize,
     id: String,
-    x: f64,
+    at: f64,
     level: i64,
     dup: bool,
 }
 
-/// Where a line to a child starts, on the parents' row: a couple's line (its
-/// middle) or one parent's card (its top).
-#[derive(Debug, Clone, Copy)]
+/// Where a line to a child leaves from, in the parents' column: a couple's
+/// knot or one parent's card.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum From {
     Card(usize),
     Union(usize, usize),
@@ -74,51 +90,55 @@ enum From {
 
 #[derive(Debug, Clone)]
 enum Wire {
-    /// Two partners on one row.
+    /// Two partners in one column, joined by a bracket.
     Union {
         a: usize,
         b: usize,
         conf: Option<f64>,
     },
-    /// A parentage: from the parents' row, up to the child's row.
+    /// A parentage: from the parents' column to the child's, the next one
+    /// to the right.
     Parent {
         from: From,
+        /// The parents' ids, space-separated: the highlight lights the line
+        /// with either of them.
         parent: String,
         child: usize,
         conf: Option<f64>,
+        lineage: Option<String>,
     },
 }
 
 /// A laid-out subtree: its cards and lines, and the band of the page it
-/// takes, every level included.
+/// takes down every column.
 #[derive(Debug, Clone, Default)]
 struct Block {
     slots: Vec<Slot>,
     wires: Vec<Wire>,
-    left: f64,
-    right: f64,
+    lo: f64,
+    hi: f64,
 }
 
 impl Block {
-    fn row(slots: Vec<Slot>) -> Block {
-        let left = slots.iter().map(|s| s.x).fold(f64::INFINITY, f64::min);
-        let right = slots
+    fn line(slots: Vec<Slot>) -> Block {
+        let lo = slots.iter().map(|s| s.at).fold(f64::INFINITY, f64::min);
+        let hi = slots
             .iter()
-            .map(|s| s.x + CARD_W)
+            .map(|s| s.at + SPAN)
             .fold(f64::NEG_INFINITY, f64::max);
         Block {
             slots,
             wires: Vec::new(),
-            left,
-            right,
+            lo,
+            hi,
         }
     }
-    fn shift(&mut self, dx: f64) {
+    fn shift(&mut self, d: f64) {
         for s in &mut self.slots {
-            s.x += dx;
+            s.at += d;
         }
-        self.left += dx;
-        self.right += dx;
+        self.lo += d;
+        self.hi += d;
     }
     fn absorb(&mut self, other: Block) {
         if other.slots.is_empty() {
@@ -126,24 +146,24 @@ impl Block {
             return;
         }
         if self.slots.is_empty() {
-            self.left = other.left;
-            self.right = other.right;
+            self.lo = other.lo;
+            self.hi = other.hi;
         } else {
-            self.left = self.left.min(other.left);
-            self.right = self.right.max(other.right);
+            self.lo = self.lo.min(other.lo);
+            self.hi = self.hi.max(other.hi);
         }
         self.slots.extend(other.slots);
         self.wires.extend(other.wires);
     }
-    fn x_of(&self, key: usize) -> f64 {
+    fn at_of(&self, key: usize) -> f64 {
         self.slots
             .iter()
             .find(|s| s.key == key)
-            .map(|s| s.x)
+            .map(|s| s.at)
             .unwrap_or(0.0)
     }
     fn centre_of(&self, key: usize) -> f64 {
-        self.x_of(key) + CARD_W / 2.0
+        self.at_of(key) + SPAN / 2.0
     }
     fn id_of(&self, key: usize) -> String {
         self.slots
@@ -173,7 +193,7 @@ impl Chart<'_> {
         Slot {
             key: self.next,
             id: id.to_string(),
-            x: 0.0,
+            at: 0.0,
             level,
             dup,
         }
@@ -191,19 +211,12 @@ impl Chart<'_> {
         (k, p.map(view::person_display_name).unwrap_or_default())
     }
 
-    /// Father first, then anyone unstated, then mother: the father on the
-    /// left, as charts are drawn.
+    /// Father first, then anyone unstated, then mother: the father above,
+    /// as charts are drawn.
     fn side(&self, id: &str) -> u8 {
-        match self
-            .persons
-            .get(id)
-            .and_then(|p| p.get("identity"))
-            .and_then(|i| i.get("gender"))
-            .and_then(|g| g.get("value"))
-            .and_then(Value::as_str)
-        {
-            Some("M") => 0,
-            Some("F") => 2,
+        match crate::tree::tone_of(self.persons.get(id)) {
+            "a" => 0,
+            "b" => 2,
             _ => 1,
         }
     }
@@ -238,51 +251,50 @@ impl Chart<'_> {
         cs
     }
 
-    /// `id` on `level`, their partners beside them, and above them each
-    /// couple's children, as far as `self.down`. Returns the block and the
-    /// key of `id`'s own card.
+    /// `id` in column `level`, their partners with them, and in the next
+    /// column each couple's children, as far as `self.down`. Returns the
+    /// block and the key of `id`'s own card.
     fn descend(&mut self, id: &str, level: i64) -> (Block, usize) {
         let me = self.slot(id, level);
         let key = me.key;
         if me.dup {
-            return (Block::row(vec![me]), key);
+            return (Block::line(vec![me]), key);
         }
         let fams = self.unions(id);
-        // The row: the person, and the partner of each union — the first
-        // union's on the left when there are several, the others on the
-        // right, in order.
-        let mut left: Vec<(usize, Slot)> = Vec::new();
-        let mut right: Vec<(usize, Slot)> = Vec::new();
+        // The column: the person, and the partner of each union — the first
+        // union's above when there are several, the others below, in order.
+        let mut above: Vec<(usize, Slot)> = Vec::new();
+        let mut below: Vec<(usize, Slot)> = Vec::new();
         let mut alone: Vec<usize> = Vec::new();
         for (i, &f) in fams.iter().enumerate() {
             match self.partner_in(f, id) {
                 Some(q) => {
                     let s = self.slot(&q, level);
                     if i == 0 && fams.len() > 1 {
-                        left.push((i, s));
+                        above.push((i, s));
                     } else {
-                        right.push((i, s));
+                        below.push((i, s));
                     }
                 }
                 None => alone.push(i),
             }
         }
-        let mut row: Vec<Slot> = Vec::new();
+        let mut col: Vec<Slot> = Vec::new();
         let mut partner: Vec<Option<usize>> = vec![None; fams.len()];
-        for (i, s) in left.into_iter().rev() {
+        for (i, s) in above.into_iter().rev() {
             partner[i] = Some(s.key);
-            row.push(s);
+            col.push(s);
         }
-        row.push(me);
-        for (i, s) in right {
+        col.push(me);
+        for (i, s) in below {
             partner[i] = Some(s.key);
-            row.push(s);
+            col.push(s);
         }
-        for (j, s) in row.iter_mut().enumerate() {
-            s.x = j as f64 * (CARD_W + PARTNER_GAP);
+        for (j, s) in col.iter_mut().enumerate() {
+            s.at = j as f64 * (SPAN + PARTNER_GAP);
         }
-        let mut block = Block::row(row);
-        let me_x = block.x_of(key);
+        let mut block = Block::line(col);
+        let me_at = block.at_of(key);
         let mut wires: Vec<Wire> = Vec::new();
         for (i, p) in partner.iter().enumerate() {
             if let Some(q) = p {
@@ -294,73 +306,78 @@ impl Chart<'_> {
             }
         }
 
-        // Each union's children, over the couple: in the order of the
-        // couples' lines, left to right, each group centred over its own
-        // couple where the groups before it allow.
-        let mut groups: Vec<(f64, usize)> = Vec::new();
-        for (i, p) in partner.iter().enumerate() {
-            let ux = match p {
-                Some(q) => union_x(me_x, block.x_of(*q)),
-                None => {
-                    let nth = alone.iter().position(|&a| a == i).unwrap_or(0);
-                    me_x + CARD_W / 2.0 + 10.0 * nth as f64
-                }
-            };
-            groups.push((ux, i));
-        }
+        // Each union's children, beside the couple: in the order of the
+        // couples' brackets, top to bottom, each family starting level with
+        // its own couple where the families before it allow.
+        let knot = |block: &Block, i: usize| match partner[i] {
+            Some(q) => union_at(me_at, block.at_of(q)),
+            None => {
+                let nth = alone.iter().position(|&a| a == i).unwrap_or(0);
+                me_at + SPAN / 2.0 + 6.0 * nth as f64
+            }
+        };
+        let mut groups: Vec<(f64, usize)> = (0..fams.len()).map(|i| (knot(&block, i), i)).collect();
         groups.sort_by(|a, b| a.0.total_cmp(&b.0));
 
         let mut boundary = f64::NEG_INFINITY;
         if level < self.down {
-            for &(ux0, i) in &groups {
-                // A couple whose line comes after a wider group moves along,
-                // so that its own line to its children never meets that
-                // group's bus.
-                let mut ux = ux0;
-                if let Some(q) = partner[i] {
-                    let qx = block.x_of(q);
-                    let need = boundary + GROUP / 2.0;
-                    if ux < need && qx > me_x {
-                        let d = 2.0 * (need - ux);
-                        for s in &mut block.slots {
-                            if s.level == level && s.x >= qx {
-                                s.x += d;
-                            }
-                        }
-                        block.right += d;
-                        ux += d / 2.0;
-                    }
-                }
-                let from = match partner[i] {
-                    Some(q) => From::Union(key, q),
-                    None => From::Card(key),
+            for &(_, i) in &groups {
+                let (from, parents) = match partner[i] {
+                    Some(q) => (From::Union(key, q), format!("{id} {}", block.id_of(q))),
+                    None => (From::Card(key), id.to_string()),
                 };
                 let mut group = Block::default();
-                let mut x = 0.0;
+                let mut at = 0.0;
                 let mut kids: Vec<usize> = Vec::new();
                 for (c, conf) in self.children(fams[i]) {
+                    let lineage = self.families[fams[i]].lineage.get(&c).cloned();
                     let (mut b, ck) = self.descend(&c, level + 1);
-                    b.shift(x - b.left);
-                    x = b.right + GAP;
+                    b.shift(at - b.lo);
+                    at = b.hi + GAP;
                     kids.push(ck);
                     group.absorb(b);
                     wires.push(Wire::Parent {
                         from,
-                        parent: id.to_string(),
+                        parent: parents.clone(),
                         child: ck,
                         conf,
+                        lineage,
                     });
                 }
-                let (Some(&k0), Some(&k1)) = (kids.first(), kids.last()) else {
+                let Some(&k0) = kids.first() else {
                     continue;
                 };
-                let mid = (group.centre_of(k0) + group.centre_of(k1)) / 2.0;
-                let mut dx = ux - mid;
-                if group.left + dx < boundary + GROUP {
-                    dx = boundary + GROUP - group.left;
+                // The first child level with the couple's knot and the others
+                // below (2026-10-28): the chart is read down the page, and a
+                // person stays at the top of their own family rather than in
+                // the middle of it — with seventeen children, the person in
+                // the middle of the page had sunk below the first screen.
+                let mut d = knot(&block, i) - group.centre_of(k0);
+                // A family after a taller one starts below it, so that its
+                // comb never meets that family's...
+                if group.lo + d < boundary + GROUP {
+                    d = boundary + GROUP - group.lo;
                 }
-                group.shift(dx);
-                boundary = group.right;
+                group.shift(d);
+                // ...and a later partner moves down with their children, level
+                // with the first, the knot beside them: never twice as far, as
+                // the middle of a bracket stretched past that family would put
+                // them (`chart` sets each knot level with the first child).
+                if let Some(q) = partner[i] {
+                    let qa = block.at_of(q);
+                    let m = group.centre_of(k0) - (qa + SPAN / 2.0);
+                    if qa > me_at && m > 0.0 {
+                        let mut hi = block.hi;
+                        for s in block.slots.iter_mut() {
+                            if s.level == level && s.at >= qa {
+                                s.at += m;
+                                hi = hi.max(s.at + SPAN);
+                            }
+                        }
+                        block.hi = hi;
+                    }
+                }
+                boundary = group.hi;
                 block.absorb(group);
             }
         }
@@ -368,10 +385,16 @@ impl Chart<'_> {
         (block, key)
     }
 
-    /// The parents of `child` (their first family) on `level`, side by side,
-    /// each over their own ancestry, as far as `-self.up`. Returns the block,
-    /// the parents' card keys, and how sure the child's parentage is.
-    fn parents_of(&mut self, child: &str, level: i64) -> Option<(Block, Vec<usize>, Option<f64>)> {
+    /// The parents of `child` (their first family) in column `level`, one
+    /// above the other, each beside their own ancestry, as far as
+    /// `-self.up`. Returns the block, the parents' card keys, how sure the
+    /// child's parentage is, and how the child belongs to the family.
+    #[allow(clippy::type_complexity)]
+    fn parents_of(
+        &mut self,
+        child: &str,
+        level: i64,
+    ) -> Option<(Block, Vec<usize>, Option<f64>, Option<String>)> {
         if level < -self.up {
             return None;
         }
@@ -381,6 +404,7 @@ impl Chart<'_> {
             .iter()
             .find(|(c, _)| c == child)
             .and_then(|(_, c)| *c);
+        let lineage = self.families[f].lineage.get(child).cloned();
         let mut parents = self.families[f].parents.clone();
         if parents.is_empty() {
             return None;
@@ -389,12 +413,12 @@ impl Chart<'_> {
         let n = parents.len();
         let mut block = Block::default();
         let mut keys = Vec::new();
-        let mut x = 0.0;
+        let mut at = 0.0;
         for (i, p) in parents.iter().enumerate() {
             let outer = if n == 1 || i > 0 { 1 } else { -1 };
             let (mut b, k) = self.ancestor(p, level, f, outer);
-            b.shift(x - b.left);
-            x = b.right + GROUP;
+            b.shift(at - b.lo);
+            at = b.hi + GROUP;
             keys.push(k);
             block.absorb(b);
         }
@@ -405,16 +429,44 @@ impl Chart<'_> {
                 conf: self.families[f].union_confidence,
             });
         }
-        Some((block, keys, conf))
+        Some((block, keys, conf, lineage))
     }
 
-    /// One ancestor on `level`: their card, their other partners beside
-    /// them on the `outer` side, and their own parents below.
+    /// The line from `child`'s parents to `child`: from the couple's knot,
+    /// or from a lone parent's card.
+    fn to_child(
+        pb: &Block,
+        pkeys: &[usize],
+        child: usize,
+        conf: Option<f64>,
+        lineage: Option<String>,
+    ) -> Wire {
+        let parent = pkeys
+            .iter()
+            .map(|&k| pb.id_of(k))
+            .collect::<Vec<_>>()
+            .join(" ");
+        let from = match pkeys {
+            [a, b, ..] => From::Union(*a, *b),
+            [a] => From::Card(*a),
+            [] => From::Card(child),
+        };
+        Wire::Parent {
+            from,
+            parent,
+            child,
+            conf,
+            lineage,
+        }
+    }
+
+    /// One ancestor in column `level`: their card, their other partners with
+    /// them on the `outer` side, and their own parents to the left.
     fn ancestor(&mut self, id: &str, level: i64, via: usize, outer: i32) -> (Block, usize) {
         let me = self.slot(id, level);
         let key = me.key;
         if me.dup {
-            return (Block::row(vec![me]), key);
+            return (Block::line(vec![me]), key);
         }
         let others: Vec<(String, Option<f64>)> = self
             .unions(id)
@@ -432,52 +484,54 @@ impl Chart<'_> {
             unions.push((s.key, *conf));
             beside.push(s);
         }
-        let mut row: Vec<Slot> = Vec::new();
+        let mut col: Vec<Slot> = Vec::new();
         if outer < 0 {
-            row.extend(beside.into_iter().rev());
-            row.push(me);
+            col.extend(beside.into_iter().rev());
+            col.push(me);
         } else {
-            row.push(me);
-            row.extend(beside);
+            col.push(me);
+            col.extend(beside);
         }
-        for (j, s) in row.iter_mut().enumerate() {
-            s.x = j as f64 * (CARD_W + PARTNER_GAP);
+        for (j, s) in col.iter_mut().enumerate() {
+            s.at = j as f64 * (SPAN + PARTNER_GAP);
         }
-        let mut block = Block::row(row);
+        let mut block = Block::line(col);
         for (q, conf) in unions {
             block.wires.push(Wire::Union { a: key, b: q, conf });
         }
-        if let Some((mut pb, pkeys, conf)) = self.parents_of(id, level - 1) {
+        if let Some((mut pb, pkeys, conf, lineage)) = self.parents_of(id, level - 1) {
             let (Some(&p0), Some(&p1)) = (pkeys.first(), pkeys.last()) else {
                 return (block, key);
             };
-            let mid = (pb.centre_of(p0) + pb.centre_of(p1)) / 2.0;
+            let mid = parents_mid(&pb, p0, p1);
             pb.shift(block.centre_of(key) - mid);
-            for &pk in &pkeys {
-                block.wires.push(Wire::Parent {
-                    from: From::Card(pk),
-                    parent: pb.id_of(pk),
-                    child: key,
-                    conf,
-                });
-            }
+            block
+                .wires
+                .push(Self::to_child(&pb, &pkeys, key, conf, lineage));
             block.absorb(pb);
         }
         (block, key)
     }
 }
 
-/// The middle of the line between two partners side by side.
-fn union_x(a: f64, b: f64) -> f64 {
-    if a <= b {
-        (a + CARD_W + b) / 2.0
+/// Down the column, the middle of the bracket between two partners.
+fn union_at(a: f64, b: f64) -> f64 {
+    (a.min(b) + a.max(b) + SPAN) / 2.0
+}
+
+/// Where a child stands level with their parents: the middle of the couple's
+/// bracket, or of a lone parent's card.
+fn parents_mid(pb: &Block, p0: usize, p1: usize) -> f64 {
+    if p0 == p1 {
+        pb.centre_of(p0)
     } else {
-        (b + CARD_W + a) / 2.0
+        union_at(pb.at_of(p0), pb.at_of(p1))
     }
 }
 
-/// The family around `root`: `up` generations of ancestors under them, `down`
-/// generations of descendants over them, everyone's partners beside them.
+/// The family around `root`: `up` generations of ancestors in the columns to
+/// their left, `down` generations of descendants to their right, everyone's
+/// partners in their own column.
 pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
     let empty = serde_json::Map::new();
     let persons = flat
@@ -506,34 +560,32 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
         down: down as i64,
     };
     let (mut block, rk) = c.descend(root, 0);
-    if let Some((mut pb, pkeys, conf)) = c.parents_of(root, -1) {
+    if let Some((mut pb, pkeys, conf, lineage)) = c.parents_of(root, -1) {
         if let (Some(&p0), Some(&p1)) = (pkeys.first(), pkeys.last()) {
-            let mid = (pb.centre_of(p0) + pb.centre_of(p1)) / 2.0;
+            let mid = parents_mid(&pb, p0, p1);
             pb.shift(block.centre_of(rk) - mid);
-            for &pk in &pkeys {
-                block.wires.push(Wire::Parent {
-                    from: From::Card(pk),
-                    parent: pb.id_of(pk),
-                    child: rk,
-                    conf,
-                });
-            }
+            block
+                .wires
+                .push(Chart::to_child(&pb, &pkeys, rk, conf, lineage));
             block.absorb(pb);
         }
     }
-    block.shift(GUTTER + MARGIN - block.left);
+    block.shift(-block.lo);
 
-    let top = block.slots.iter().map(|s| s.level).max().unwrap_or(0);
-    let bottom = block.slots.iter().map(|s| s.level).min().unwrap_or(0);
-    let y_of = |level: i64| MARGIN + (top - level) as f64 * PITCH;
-    let pos: BTreeMap<usize, (f64, i64, String)> = block
+    let newest = block.slots.iter().map(|s| s.level).max().unwrap_or(0);
+    let oldest = block.slots.iter().map(|s| s.level).min().unwrap_or(0);
+    let x_of = |level: i64| MARGIN + (level - oldest) as f64 * (CARD_W + LINK_W);
+    let top = HEAD + MARGIN;
+    let body = block.hi - block.lo;
+    let pos: BTreeMap<usize, (f64, f64, i64, String)> = block
         .slots
         .iter()
-        .map(|s| (s.key, (s.x, s.level, s.id.clone())))
+        .map(|s| (s.key, (x_of(s.level), top + s.at, s.level, s.id.clone())))
         .collect();
 
+    // The columns, the oldest first, as the page reads them.
     let mut bands: Vec<Band> = Vec::new();
-    for level in (bottom..=top).rev() {
+    for level in oldest..=newest {
         let mut cards: Vec<Card> = block
             .slots
             .iter()
@@ -542,8 +594,8 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
                 let mut card = crate::tree::card_for(
                     &s.id,
                     persons.get(&s.id),
-                    s.x,
-                    y_of(level),
+                    x_of(level),
+                    top + s.at,
                     s.id == root && !s.dup,
                 );
                 card.w = CARD_W;
@@ -551,104 +603,195 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
                 card
             })
             .collect();
-        cards.sort_by(|a, b| a.x.total_cmp(&b.x));
+        cards.sort_by(|a, b| a.y.total_cmp(&b.y));
         bands.push(Band {
             label: String::new(),
             sublabel: String::new(),
             count: cards.len(),
             generation: None,
             cards,
-            y: y_of(level),
+            y: HEAD,
             rows: 1,
-            height: CARD_H,
+            height: body + 2.0 * MARGIN,
             unplaced: false,
             relative: Some(level),
+            x: x_of(level),
+            w: CARD_W,
         });
     }
 
     let mut edges: Vec<Edge> = Vec::new();
+    let edge = |kind: &'static str, d: String, c: &Confidence, from: String, to: String| Edge {
+        kind,
+        d,
+        opacity: line_opacity(c),
+        band: c.band,
+        pct: c.percent,
+        title: String::new(),
+        from,
+        to,
+        hue: None,
+        tone: None,
+        line: None,
+        kids: None,
+        node: None,
+    };
+    // A couple's bracket, beside their cards, and the knot on it.
+    let bracket = |a: &(f64, f64, i64, String), b: &(f64, f64, i64, String)| {
+        let (y1, y2) = (a.1.min(b.1) + CARD_H / 2.0, a.1.max(b.1) + CARD_H / 2.0);
+        let x0 = a.0 + CARD_W;
+        (x0, x0 + BRACKET, y1, y2)
+    };
+    let mut unions: Vec<(usize, usize, Option<f64>)> = Vec::new();
+    let mut combs: BTreeMap<From, Vec<Kid>> = BTreeMap::new();
     for w in &block.wires {
         match w {
-            Wire::Union { a, b, conf } => {
-                let (Some(pa), Some(pb)) = (pos.get(a), pos.get(b)) else {
-                    continue;
-                };
-                let (x1, x2) = if pa.0 <= pb.0 {
-                    (pa.0 + CARD_W, pb.0)
-                } else {
-                    (pb.0 + CARD_W, pa.0)
-                };
-                let y = y_of(pa.1) + CARD_H / 2.0;
-                let c = Confidence::new(conf.unwrap_or(0.8));
-                // The union's node, the two rings, where the line has room
-                // for it.
-                let node = (x2 - x1 >= PARTNER_GAP - 0.5).then_some([(x1 + x2) / 2.0, y]);
-                edges.push(Edge {
-                    kind: "spouse",
-                    d: format!("M {x1:.1} {y:.1} L {x2:.1} {y:.1}"),
-                    opacity: crate::tree::opacity_for(&c),
-                    band: c.band,
-                    pct: c.percent,
-                    title: String::new(),
-                    from: pa.2.clone(),
-                    to: pb.2.clone(),
-                    hue: None,
-                    node,
-                });
-            }
+            Wire::Union { a, b, conf } => unions.push((*a, *b, *conf)),
             Wire::Parent {
                 from,
                 parent,
                 child,
                 conf,
-            } => {
-                let Some(pc) = pos.get(child) else { continue };
-                let (sx, sy, level) = match from {
-                    From::Card(k) => {
-                        let Some(p) = pos.get(k) else { continue };
-                        (p.0 + CARD_W / 2.0, y_of(p.1), p.1)
-                    }
-                    From::Union(a, b) => {
-                        let (Some(pa), Some(pb)) = (pos.get(a), pos.get(b)) else {
-                            continue;
-                        };
-                        (union_x(pa.0, pb.0), y_of(pa.1) + CARD_H / 2.0, pa.1)
-                    }
-                };
-                let cx = pc.0 + CARD_W / 2.0;
-                let cy = y_of(pc.1) + CARD_H;
-                let bus = (cy + y_of(level)) / 2.0;
-                let c = Confidence::new(conf.unwrap_or(0.8));
-                edges.push(Edge {
-                    kind: "parent",
-                    d: format!("M {sx:.1} {sy:.1} V {bus:.1} H {cx:.1} V {cy:.1}"),
-                    opacity: crate::tree::opacity_for(&c),
-                    band: c.band,
-                    pct: c.percent,
-                    title: String::new(),
-                    from: parent.clone(),
-                    to: pc.2.clone(),
-                    hue: None,
-                    node: None,
-                });
-            }
+                lineage,
+            } => combs.entry(*from).or_default().push(Kid {
+                key: *child,
+                parents: parent.clone(),
+                conf: *conf,
+                lineage: lineage.clone(),
+            }),
+        }
+    }
+    // A couple's knot stands on their bracket level with their first child:
+    // in its middle above the ancestors, whose child stands there, and lower
+    // for a later couple whose family starts below a taller one.
+    let knot = |a: usize, b: usize| {
+        let (x0, xb, y1, y2) = bracket(pos.get(&a)?, pos.get(&b)?);
+        let first = combs
+            .get(&From::Union(a, b))
+            .into_iter()
+            .flatten()
+            .filter_map(|kid| pos.get(&kid.key))
+            .map(|p| p.1 + CARD_H / 2.0)
+            .reduce(f64::min);
+        let at = first.map_or((y1 + y2) / 2.0, |y| y.clamp(y1, y2));
+        Some((x0, xb, y1, y2, at))
+    };
+    for &(a, b, conf) in &unions {
+        let Some((x0, xb, y1, y2, at)) = knot(a, b) else {
+            continue;
+        };
+        let c = Confidence::new(conf.unwrap_or(0.8));
+        let mut e = edge(
+            "spouse",
+            format!("M {x0:.1} {y1:.1} H {xb:.1} V {y2:.1} H {x0:.1}"),
+            &c,
+            pos[&a].3.clone(),
+            pos[&b].3.clone(),
+        );
+        e.node = Some([xb, at]);
+        edges.push(e);
+    }
+    // Each family's lines: from the couple's knot (or a lone parent's card)
+    // to a comb, and from the comb to each child, in the child's own colour
+    // and pattern. An only child's line is theirs all the way.
+    for (from, kids) in &combs {
+        let source = match from {
+            From::Card(k) => pos.get(k).map(|p| (p.0 + CARD_W, p.1 + CARD_H / 2.0)),
+            From::Union(a, b) => knot(*a, *b).map(|(_, xb, _, _, at)| (xb, at)),
+        };
+        let Some((sx, sy)) = source else { continue };
+        let ends: Vec<End> = kids
+            .iter()
+            .filter_map(|kid| {
+                pos.get(&kid.key).map(|p| End {
+                    x: p.0,
+                    y: p.1 + CARD_H / 2.0,
+                    id: p.3.clone(),
+                    kid,
+                })
+            })
+            .collect();
+        let Some(cx) = ends.first().map(|e| e.x) else {
+            continue;
+        };
+        let bx = sx + (cx - sx) * 0.45;
+        let branch = |d: String, end: &End| {
+            let c = Confidence::new(end.kid.conf.unwrap_or(0.8));
+            let mut e = edge("parent", d, &c, end.kid.parents.clone(), end.id.clone());
+            e.tone = Some(crate::tree::tone_of(persons.get(&end.id)));
+            e.line = end.kid.lineage.clone();
+            e
+        };
+        if let [only] = ends.as_slice() {
+            let cy = only.y;
+            edges.push(branch(
+                format!("M {sx:.1} {sy:.1} H {bx:.1} V {cy:.1} H {cx:.1}"),
+                only,
+            ));
+            continue;
+        }
+        let y0 = ends.iter().map(|e| e.y).fold(sy, f64::min);
+        let y1 = ends.iter().map(|e| e.y).fold(sy, f64::max);
+        let mut stem = edge(
+            "stem",
+            format!("M {sx:.1} {sy:.1} H {bx:.1} V {y0:.1} V {y1:.1}"),
+            &Confidence::new(1.0),
+            ends[0].kid.parents.clone(),
+            String::new(),
+        );
+        stem.kids = Some(
+            ends.iter()
+                .map(|e| e.id.clone())
+                .collect::<Vec<_>>()
+                .join(" "),
+        );
+        edges.push(stem);
+        for e in &ends {
+            let cy = e.y;
+            edges.push(branch(format!("M {bx:.1} {cy:.1} H {cx:.1}"), e));
         }
     }
 
     let generations = crate::tree::assign_generations(flat);
     let drawn = block.slots.iter().filter(|s| !s.dup).count();
     TreeLayout {
-        width: block.right + MARGIN,
-        height: y_of(bottom) + CARD_H + MARGIN,
+        // The newest column's couples keep their brackets and knots, beside
+        // their cards, inside the drawing.
+        width: x_of(newest) + CARD_W + LINK_W / 2.0 + MARGIN,
+        height: top + body + MARGIN,
         bands,
         edges,
         person_count: drawn,
         total_person_count: persons.len(),
-        generation_count: (top - bottom + 1) as usize,
+        generation_count: (newest - oldest + 1) as usize,
         unplaced_count: 0,
         truncated: generations.truncated,
         contradictions: generations.contradictions,
     }
+}
+
+/// A child on a family's comb: their card, their parents' ids, how sure the
+/// parentage is, and how they belong to the family.
+struct Kid {
+    key: usize,
+    parents: String,
+    conf: Option<f64>,
+    lineage: Option<String>,
+}
+
+/// Where a child's branch ends: their card's start across the page and its
+/// middle down it.
+struct End<'a> {
+    x: f64,
+    y: f64,
+    id: String,
+    kid: &'a Kid,
+}
+
+/// A line's opacity in the chart: as sure as the record is, never so faint
+/// that its colour cannot be told.
+fn line_opacity(c: &Confidence) -> f64 {
+    0.5 + 0.5 * c.value
 }
 
 /// The cards' own dress, for the chart and the whole family alike (the
@@ -825,42 +968,70 @@ mod tests {
         out
     }
 
+    /// A card's column (its left edge) and its middle down the page.
     fn at(l: &TreeLayout, id: &str) -> (f64, f64) {
         l.bands
             .iter()
             .flat_map(|b| &b.cards)
             .find(|c| c.id == id && !c.dup)
-            .map(|c| (c.x + CARD_W / 2.0, c.y))
+            .map(|c| (c.x, c.y + CARD_H / 2.0))
             .unwrap()
     }
 
     #[test]
-    fn the_chart_puts_ancestors_under_and_descendants_over_the_person() {
+    fn the_chart_puts_ancestors_left_and_descendants_right() {
         let l = chart(&family(), "root", 3, 3);
-        assert!(at(&l, "dad").1 > at(&l, "root").1 && at(&l, "gd1").1 > at(&l, "dad").1);
-        assert!(at(&l, "k1").1 < at(&l, "root").1 && at(&l, "g1").1 < at(&l, "k1").1);
-        assert_eq!(at(&l, "wife").1, at(&l, "root").1, "a partner beside");
+        assert!(at(&l, "dad").0 < at(&l, "root").0 && at(&l, "gd1").0 < at(&l, "dad").0);
+        assert!(at(&l, "k1").0 > at(&l, "root").0 && at(&l, "g1").0 > at(&l, "k1").0);
         assert_eq!(
-            at(&l, "gm1b").1,
-            at(&l, "gd1").1,
-            "an ancestor's other partner beside them"
+            at(&l, "wife").0,
+            at(&l, "root").0,
+            "a partner in their column"
         );
-        assert_eq!(l.bands.first().unwrap().relative, Some(2));
-        assert_eq!(l.bands.last().unwrap().relative, Some(-2));
-        // A child stands between their father and mother.
-        assert!(at(&l, "dad").0 < at(&l, "root").0 && at(&l, "root").0 < at(&l, "mum").0);
+        assert_eq!(
+            at(&l, "gm1b").0,
+            at(&l, "gd1").0,
+            "an ancestor's other partner in their column"
+        );
+        assert_eq!(l.bands.first().unwrap().relative, Some(-2));
+        assert_eq!(l.bands.last().unwrap().relative, Some(2));
+        // A child stands level with their parents' knot, the father above.
+        let (dad, mum, root) = (at(&l, "dad").1, at(&l, "mum").1, at(&l, "root").1);
+        assert!(dad < root && root < mum);
+        assert!((root - (dad + mum) / 2.0).abs() < 0.5);
+        // A family starts level with its couple's knot, the person at the top
+        // of their family: the first child of the first marriage is level
+        // with the knot between the wife (above) and the person.
+        let (wife, k1) = (at(&l, "wife").1, at(&l, "k1").1);
+        assert!(wife < root);
+        assert!((k1 - (wife + root) / 2.0).abs() < 0.5);
+        assert!(at(&l, "k2").1 > k1 && at(&l, "k3").1 > at(&l, "k2").1);
+        // The second wife's family starts below the first's, and she stands
+        // beside it, level with her child and their knot: not twice as far
+        // down, below her own family.
+        let (wife2, k4) = (at(&l, "wife2").1, at(&l, "k4").1);
+        assert!(k4 > at(&l, "g3").1 && k4 > at(&l, "k3").1);
+        assert!((wife2 - k4).abs() < 0.5, "wife2 {wife2}, k4 {k4}");
+        let knot = l
+            .edges
+            .iter()
+            .find(|e| e.kind == "spouse" && e.to == "wife2")
+            .and_then(|e| e.node)
+            .unwrap();
+        assert!((knot[1] - k4).abs() < 0.5);
+        assert!(l.height < k4 + CARD_H / 2.0 + MARGIN + 0.5);
     }
 
     #[test]
     fn no_two_cards_overlap_and_no_two_lines_cross() {
         let l = chart(&family(), "root", 3, 3);
         for b in &l.bands {
-            let mut xs: Vec<f64> = b.cards.iter().map(|c| c.x).collect();
-            xs.sort_by(f64::total_cmp);
-            for w in xs.windows(2) {
+            let mut ys: Vec<f64> = b.cards.iter().map(|c| c.y).collect();
+            ys.sort_by(f64::total_cmp);
+            for w in ys.windows(2) {
                 assert!(
-                    w[1] - w[0] >= CARD_W + GAP - 0.01,
-                    "cards overlap on row {:?}",
+                    w[1] - w[0] >= CARD_H + GAP.min(PARTNER_GAP) - 0.01,
+                    "cards overlap in column {:?}",
                     b.relative
                 );
             }
@@ -884,6 +1055,76 @@ mod tests {
                 assert!(!crosses, "a line of {} crosses a line of {}", h.2, v.2);
             }
         }
+    }
+
+    /// The operator's review of 2026-10-28: the chart is read down the page.
+    /// A family of twelve children takes more of the page's height, never
+    /// more of its width.
+    #[test]
+    fn the_chart_is_as_wide_as_its_generations_not_its_largest_family() {
+        let small = chart(&family(), "root", 3, 3);
+        let mut b = family();
+        let mut kids = vec![
+            json!({"person_id": "k1"}),
+            json!({"person_id": "k2"}),
+            json!({"person_id": "k3"}),
+        ];
+        for i in 0..9 {
+            let id = format!("x{i}");
+            b["persons"][&id] = person(&id, "Jules", "Delaunay", "M", "1965").1;
+            kids.push(json!({"person_id": id}));
+        }
+        b["families"]["f0"]["children"] = json!(kids);
+        let big = chart(&b, "root", 3, 3);
+        assert_eq!(big.width, small.width);
+        assert!(big.height > small.height);
+    }
+
+    #[test]
+    fn a_line_to_a_child_says_their_side_and_how_they_belong() {
+        let mut b = family();
+        b["families"]["f0"]["children"][0]["lineage"] = json!("adoptive");
+        let l = chart(&b, "root", 3, 3);
+        let to = |l: &TreeLayout, id: &str| {
+            l.edges
+                .iter()
+                .find(|e| e.kind == "parent" && e.to == id)
+                .cloned()
+                .unwrap()
+        };
+        assert_eq!(to(&l, "k1").tone, Some("b"));
+        assert_eq!(to(&l, "k1").line.as_deref(), Some("adoptive"));
+        assert_eq!(to(&l, "k2").tone, Some("a"));
+        assert_eq!(to(&l, "k2").line, None);
+        // Three children share one comb, which names both parents and every
+        // child, so the highlight finds it from any of them.
+        let stem = l
+            .edges
+            .iter()
+            .find(|e| {
+                e.kind == "stem"
+                    && e.kids
+                        .as_deref()
+                        .is_some_and(|k| k.split(' ').any(|c| c == "k1"))
+            })
+            .unwrap();
+        assert!(
+            stem.from.split(' ').any(|p| p == "root") && stem.from.split(' ').any(|p| p == "wife")
+        );
+        // A hidden child's line keeps its place and says no more than their
+        // card: neither a daughter's colour nor an adoption's pattern.
+        let visible: BTreeSet<String> = b["persons"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .filter(|id| id.as_str() != "k1")
+            .cloned()
+            .collect();
+        let mut hidden = l.clone();
+        crate::tree::redact_in(&mut hidden, Some(&visible), "en");
+        assert_eq!(to(&hidden, "k1").tone, Some("u"));
+        assert_eq!(to(&hidden, "k1").line, None);
+        assert_eq!(to(&hidden, "k2").tone, Some("a"));
     }
 
     #[test]

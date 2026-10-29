@@ -817,6 +817,29 @@ record-end-not-recorded = mwisho haujarekodiwa
 panel-selected-person = Mtu aliyechaguliwa
 
 tree-band-generation = Kizazi { $g }
+tree-level-self = Kizazi hicho hicho
+tree-level-up = { $n ->
+        [1] Watoto
+        [2] Wajukuu
+        [3] Vitukuu
+       *[other] Vizazi, kizazi cha { $n }
+    }
+tree-level-down = { $n ->
+        [1] Wazazi
+        [2] Babu na bibi
+        [3] Wazazi wa babu na bibi
+       *[other] Mababu, kizazi cha { $n }
+    }
+tree-card-centre = Weka mti katikati hapa
+tree-card-same = Mtu yule yule, amechorwa mara ya pili
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Mistari:
+tree-key-son = Mwana
+tree-key-daughter = Binti
+tree-key-adoptive = Kuasili
+tree-key-foster = Malezi au ulezi
+tree-key-step = Mtoto wa kambo
+tree-key-union = Muungano
 tree-band-people = { $n ->
         [one] mtu mmoja
        *[other] watu { $n }
@@ -3195,6 +3218,8 @@ view-galaxy-still = Simamisha anga
 view-summit-still = Simamisha mlima
 river-whole = Familia nzima
 river-names-all = Majina yote
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Weka katikati hapa
 river-zoom-hint = Kuza: Ctrl + gurudumu, bana, au + / − · ukiwa umekuza, buruta ili kusogeza
 river-tab-sources = Vyanzo
 river-legend-title = Jinsi ya kusoma mto

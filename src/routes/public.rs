@@ -392,6 +392,7 @@ pub async fn tree(
             if show_all {
                 let mut l = crate::tree::layout_with(flat, opts);
                 crate::tree::localise(&mut l, chrome.lang);
+                crate::chart::dress(&mut l, flat, lens, chrome.lang);
                 crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                 return (l, None, roster, None, None, hidden);
             }
@@ -422,8 +423,12 @@ pub async fn tree(
             match root {
                 Some(root) => {
                     let sub = crate::tree::select_subtree(flat, &root, depth, depth);
-                    let mut l = crate::tree::layout_focused_with(flat, &sub, opts);
+                    // The family around one person as a classic chart: their
+                    // ancestors under them, their descendants over them, no
+                    // two lines crossing (the operator's review, 2026-10-27).
+                    let mut l = crate::chart::chart(flat, &root, depth, depth);
                     crate::tree::localise(&mut l, chrome.lang);
+                    crate::chart::dress(&mut l, flat, lens, chrome.lang);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     let name = if lens.sees_person(&root) {
                         flat.get("persons")
@@ -466,6 +471,7 @@ pub async fn tree(
                 None => {
                     let mut l = crate::tree::layout_with(flat, opts);
                     crate::tree::localise(&mut l, chrome.lang);
+                    crate::chart::dress(&mut l, flat, lens, chrome.lang);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     (l, None, roster, None, None, hidden)
                 }
@@ -566,6 +572,9 @@ pub async fn tree(
             show_all,
             max_depth => MAX_DEPTH,
             full_width => full_width.round() as i64,
+            // The column the whole family was folded to: the warning is for
+            // a view that still came out wider than it (2026-10-28).
+            wrap_w => row_w.round() as i64,
             p => panel,
             selected,
             // How many people this reader is not being shown. Stated rather
@@ -1398,6 +1407,9 @@ pub async fn clarity_hero_jpg() -> Response {
 pub async fn clarity_cta_jpg() -> Response {
     picture("image/jpeg", render::CLARITY_CTA_JPG)
 }
+pub async fn clarity_prism_jpg() -> Response {
+    picture("image/jpeg", render::CLARITY_PRISM_JPG)
+}
 pub async fn genealogy_hero_jpg() -> Response {
     picture("image/jpeg", render::GENEALOGY_HERO_JPG)
 }
@@ -1454,14 +1466,29 @@ pub async fn fusion_lab_jpg() -> Response {
     picture("image/jpeg", render::FUSION_LAB_JPG)
 }
 
+/// `GET /static/img/galaxy-sky.jpg` — the galaxy Galaxy's sun stands in.
+pub async fn galaxy_sky_jpg() -> Response {
+    picture("image/jpeg", render::GALAXY_SKY_JPG)
+}
+
 /// `GET /static/img/river-ground.jpg` — the river's ground. The same picture
 /// behind every person: nothing in it depends on the archive.
 pub async fn river_ground_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_JPG)
 }
-/// `GET /static/img/river-ground-maps.jpg` — its depth.
+/// `GET /static/img/river-ground-maps.jpg` — its depth, its trees and its
+/// meadows.
 pub async fn river_ground_maps_jpg() -> Response {
     picture("image/jpeg", render::RIVER_GROUND_MAPS_JPG)
+}
+/// `GET /static/img/river-life.png` — the herds and the eagle on it.
+pub async fn river_life_png() -> Response {
+    picture("image/png", render::RIVER_LIFE_PNG)
+}
+/// `GET /static/img/laurel-ring.png` — the laurels round a portrait on the
+/// tree's open cards.
+pub async fn laurel_ring_png() -> Response {
+    picture("image/png", render::LAUREL_RING_PNG)
 }
 /// `GET /static/img/river-water-stream.jpg` and `river-water-river.jpg` — the
 /// water of the family's streams and rivers.

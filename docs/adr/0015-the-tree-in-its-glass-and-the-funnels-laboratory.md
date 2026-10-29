@@ -105,6 +105,50 @@ stay where it put them; river.js hides the far ones and sets each name the
 drawing left out on a ground of its own beside its person, to the side free
 of names and people, with a thread back to it.
 
+### 5. Right angles and room (the operator's review, 2026-10-27)
+
+The operator asked that the tree's navigation trace no curves, but
+segments at right angles between the people, for a clean, spaced and
+easily readable drawing, and that the theme be stylised further in Canva.
+
+- **Branches at right angles.** A branch climbs from one floor to the next
+  in straight runs: up from one end to half way, across, and up to the
+  other end, so that two partners meet on one bar and a family's children
+  hang from one bus, as a drawn family tree does. Its joins are mitred and
+  its ends square; the light running up the attested branches follows the
+  corners.
+- **Room to read.** The glass is wider (up to 0.47 of the window) and
+  tilted less (0.2), its floors as tall as the window allows. A person's
+  name is a one-line panel set against their point, on the outward side
+  first, without a leader line: the given name and the family name's
+  initial, or the given name alone where that does not fit, and the given
+  name alone two floors and more from the fixed point; the years only on
+  the fixed point's floor.
+- **The laboratory** is made anew in Canva — a dark corridor of glass, its
+  panels lit blue, a projector glowing on the floor — and enlarged to
+  3,840 × 2,160 (ADR 0017); the glass's foot ring stands on the
+  projector's lit face, and the embers rise from it.
+
+### 6. Down in orange, up in green (the operator's second review, 2026-10-27)
+
+The operator asked for the vertical bar in the middle to go. They also
+asked for the flows below the person in the middle to be orange and those
+above to be green, so that down and up read at a glance.
+
+- **No column on the axis.** Its light and its glow are gone, and so are
+  the embers that rose along it.
+- **Two sides.** A branch below the person at the fixed point, toward
+  their ancestors, is orange (`--tv-down`). A branch above, toward their
+  descendants, is green (`--tv-up`). This holds for the vein, the branch
+  (the colour mixed into the bark) and the glow alike. A branch's side is
+  where its middle stands, so the line from the person to their parents'
+  couple is orange, and the one to their own children's couple is green.
+- **The light** running up the attested branches takes its branch's
+  colour, and each floor's scanner takes its floor's side.
+- **The legend** shows the two colours against "↓ the roots" and "↑ the
+  crown". The dashboard's bars take them too: the roots orange, the person
+  in the middle in the vein's colour, the crown green.
+
 ## Consequences
 
 - Every name a view draws stands clear of the others; with every name

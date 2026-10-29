@@ -198,6 +198,35 @@ Each theme then has its own:
 pixel. The tightest pair in both is a control's edge (`--border-strong`) on
 the third wash (`--wash-3`): 3.6:1 for Fusion and 4.0:1 for Galaxy.
 
+### 7. Galaxy, amended (the operator's review, 2026-10-27)
+
+The operator asked for the flows up and down to be told apart, in violet
+and white, for a mesh with more style, a background made in Canva, more
+design for the stars, and a gravitational field round each star that
+grows with its descendants.
+
+- **Two sides of the sun.** A filament on the upper sky, toward the
+  descendants, is violet (`--gx-up`). One on the lower sky, toward the
+  ancestors, is white (`--gx-down`). Each has a halo of its colour. An
+  attested one also carries a fine thread of light. A couple's meeting
+  point is a small four-pointed spark of its side's colour. The light
+  running along the attested filaments takes their colour. The legend and
+  the dashboard's bars show the two colours.
+- **A field round every star.** A disc of faint light with a dotted edge,
+  wider as more descendants come from the star. Its radius is 9 + 4·√n
+  units for n descendants (the river's own count, `d`, less the person),
+  never more than 0.56 of an orbit's step. A second ring shows inside it
+  from six descendants on. Ancestors, from whom the whole visible family
+  comes, hold the widest fields.
+- **Stars.** A living person is a lit sphere with a glow and four fine
+  rays. A person who is gone is a cooler sphere with a tilted ring. The
+  sun has a corona, eight rays, a lit disc and its heart.
+- **The sky** is a spiral galaxy made in Canva, its core behind the sun
+  (`static/img/galaxy-sky.jpg`, enlarged to 3,840 × 2,160 as ADR 0017
+  says). It is a little darkened, and a dark well round the sun keeps the
+  drawing readable over the galaxy's bright core. The orbits are drawn
+  lighter over it. The stars still twinkle over the picture.
+
 ## Consequences
 
 - **A view needs scripts.** Without them the page is the river. It waits

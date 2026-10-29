@@ -482,6 +482,29 @@ date-century = القرن { $century }
 ## بطاقات الشجرة
 
 tree-band-generation = الجيل { $g }
+tree-level-self = الجيل نفسه
+tree-level-up = { $n ->
+        [1] الأبناء
+        [2] الأحفاد
+        [3] أبناء الأحفاد
+       *[other] الذرية، الجيل { $n }
+    }
+tree-level-down = { $n ->
+        [1] الوالدان
+        [2] الأجداد
+        [3] آباء الأجداد
+       *[other] الأسلاف، الجيل { $n }
+    }
+tree-card-centre = توسيط الشجرة هنا
+tree-card-same = الشخص نفسه، مرسوم مرة ثانية
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = الخطوط:
+tree-key-son = ابن
+tree-key-daughter = ابنة
+tree-key-adoptive = تبنٍّ
+tree-key-foster = رعاية أو وصاية
+tree-key-step = ربيب
+tree-key-union = ارتباط
 tree-band-people = { $n ->
         [zero] لا أحد
         [one] شخص واحد
@@ -3603,6 +3626,8 @@ view-galaxy-still = إيقاف حركة السماء
 view-summit-still = إيقاف حركة الجبل
 river-whole = العائلة كلها
 river-names-all = كل الأسماء
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = اجعله في المركز
 river-zoom-hint = التكبير: Ctrl مع العجلة، أو القرص بإصبعين، أو + / − · بعد التكبير، اسحب للتنقل
 river-tab-sources = المصادر
 river-legend-title = كيف يُقرأ النهر

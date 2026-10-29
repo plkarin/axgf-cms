@@ -585,16 +585,30 @@ async fn the_sample_bundle_serves_every_page() {
     assert!(home.contains("relationships beyond the family"), "{home}");
     assert!(home.contains("jobs with a start and an end"));
 
-    // And a person page should show a link section with real content.
+    // And a person page should show a link section with real content: some
+    // person on the tree has relationships beyond the family. Which card
+    // comes first depends on the chart's layout (its columns since
+    // 2026-10-28), so every card on it is a candidate.
     let tree = common::body_string(common::get(&app, "/tree").await).await;
-    let id = tree
+    let ids: Vec<&str> = tree
         .split("class=\"tcard")
-        .nth(1)
-        .and_then(|s| s.split("data-id=\"").nth(1))
-        .and_then(|s| s.split('"').next())
-        .expect("a person's card");
-    let page = common::every_tab(&app, &format!("/person/{id}"), None).await;
-    assert!(page.contains("links-section"));
+        .skip(1)
+        .filter_map(|s| s.split("data-id=\"").nth(1))
+        .filter_map(|s| s.split('"').next())
+        .collect();
+    assert!(!ids.is_empty(), "a person's card");
+    let mut linked = false;
+    for id in ids {
+        let page = common::every_tab(&app, &format!("/person/{id}"), None).await;
+        if page.contains("links-section") {
+            linked = true;
+            break;
+        }
+    }
+    assert!(
+        linked,
+        "a person on the tree shows their relationships beyond the family"
+    );
 }
 
 #[test]

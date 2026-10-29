@@ -888,6 +888,29 @@ panel-selected-person = Pessoa escolhida
 ## Faixas de geração
 
 tree-band-generation = Geração { $g }
+tree-level-self = Mesma geração
+tree-level-up = { $n ->
+        [1] Filhos
+        [2] Netos
+        [3] Bisnetos
+       *[other] Descendentes, { $n }.ª geração
+    }
+tree-level-down = { $n ->
+        [1] Pais
+        [2] Avós
+        [3] Bisavós
+       *[other] Antepassados, { $n }.ª geração
+    }
+tree-card-centre = Centrar a árvore aqui
+tree-card-same = A mesma pessoa, desenhada uma segunda vez
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Linhas:
+tree-key-son = Filho
+tree-key-daughter = Filha
+tree-key-adoptive = Adoção
+tree-key-foster = Acolhimento ou tutela
+tree-key-step = Enteado
+tree-key-union = União
 tree-band-people = { $n ->
         [one] uma pessoa
        *[other] { $n } pessoas
@@ -3311,6 +3334,8 @@ view-galaxy-still = Parar o céu
 view-summit-still = Parar a montanha
 river-whole = Toda a família
 river-names-all = Todos os nomes
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Centrar aqui
 river-zoom-hint = Zoom: Ctrl + roda, pinçar ou + / − · com zoom, arraste para mover
 river-tab-sources = Fontes
 river-legend-title = Como ler o rio

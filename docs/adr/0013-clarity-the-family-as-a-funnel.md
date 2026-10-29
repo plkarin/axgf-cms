@@ -108,6 +108,79 @@ blue to pink, on white, behind the overview's headline ("Every generation
 is a ring. Every family, a funnel."); translucent ribbons with orange beads
 of light for the last band.
 
+### 5. A prism under the page (the operator's review, 2026-10-27)
+
+The operator found Clarity "very ugly": the family's navigation frame and
+the page's ground white on white. They asked for stylised pictures and a
+very beautiful theme with contrast, made freely in Canva.
+
+- **The ground.** The page stands on a vivid prism of glass, violet, blue,
+  pink and orange light (`clarity-prism.jpg`, made in Canva, 3,840 × 2,160
+  as ADR 0017 says), fixed to the window, under a veil of the page's
+  surface (52 %; 80 % in the paper style), so that it reads as light and
+  colour, never as a picture behind the words.
+- **Frosted glass.** The masthead and every card are frosted glass over it
+  (the surface at 72 % and 84 %, blurred and saturated behind): the words
+  stand on them, never on the picture. The paper style keeps its cards flat.
+- **The funnel.** Its stage shows the prism itself; its slices are tinted
+  in five pastel tokens from blue to pink (`--cl-slice-1` to `5`), edged in
+  the rim's ink, lit along their rims; its links are a deep indigo
+  (`--cl-link`) over a halo of the rim, so that they cross the glass and
+  the light alike; its figures and its generations' numbers stand on a
+  stroke of the surface. The dashboard's bars take the funnel's inks.
+- **The pictures** behind the overview's headline, its last band and the
+  notes are made again in Canva: a crystal funnel on deep violet,
+  iridescent ribbons, calm deep-blue glass.
+
+No colour is named outside the tokens (`tests/design_tokens.rs`), and the
+theme is measured as every theme is.
+
+### 6. Rings apart, names on the glass (the operator's second review, 2026-10-27)
+
+The operator found the funnel too condensed. The names sat on its
+outlines, where they could not be read, and several people of one
+generation bunched into knots. They asked for a wider, finer funnel,
+redrawn in Canva, and a clearer mesh. The kit was drawn in Canva first:
+rings of glass apart from one another, pearls along their fronts, names
+on small frosted labels inside the rings, and the figures on threads to
+the right.
+
+- **One ring per generation, apart.** Each ring is a thin disc of tinted
+  glass. Its face carries the slice's gradient, its edge a little depth,
+  its far side a light, and it has fine rims, the near one bright. The
+  rings no longer join into a cone. A ring is seen a little from above:
+  its depth is at most 0.15 of its half-width and 0.44 of the room
+  between two rings, so the rings never touch.
+- **Wider, as wide as its people need.** The mouth spans up to 0.42 of the
+  stage, the narrow end at least 0.15. A ring is wide enough to give each
+  of its people 40 units, and wider than the ring below it. If that would
+  take the mouth past its width, every ring is narrowed together.
+- **People spread evenly.** A generation keeps the river's order from left
+  to right, the order that crosses its lines least. Its people are spaced
+  evenly along the front of their ring, no closer than the ring allows and
+  no further apart than 96 units. Brothers and sisters, and partners, stand
+  side by side, with a little room (0.7 of a place) between one family and
+  the next. The person at the fixed point stands at the front of their
+  ring. A couple's threads meet over the middle of the two of them.
+  Everything else (a line the record continues, a count) keeps its place
+  among its generation's people.
+- **Names never on an outline.** A name is a small frosted label. It goes
+  on its own ring's glass above its pearl, else beside it, else beside its
+  ring on a thread, else below. It is never written across any ring's
+  outline, over a pearl or over another name. A name with no such place is
+  left out; the pointer brings it back. The names `river.js` adds (every
+  name, or one the drawing had no room for) wear the same label and keep
+  off the outlines through the view's `keepOut`. The person at the fixed
+  point has a larger label, with the years.
+- **Pearls and threads.** People are pearls lit from the upper left, ringed
+  as before: living, gone or not to be shown. The threads are thin, of
+  ink, edged in light, and a couple's knot is a small ring. The figures
+  stand in a column on the right, each on a thread from its ring, as in
+  the kit.
+- **The light** still rises along the attested threads. The sheen crosses
+  only the rings' glass, and the pedestal of light under the narrow end is
+  smaller.
+
 ## Consequences
 
 - Five themes, one light. ADR 0008's "every theme is dark" no longer holds;

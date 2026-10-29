@@ -447,6 +447,8 @@
         return [[d, -h / 2], [-d - w, -h / 2], [-w / 2, -d - h], [-w / 2, d], [d * 0.7, -d * 0.7 - h], [-d * 0.7 - w, -d * 0.7 - h], [d * 0.7, d * 0.7], [-d * 0.7 - w, d * 0.7]].some(function (o) {
           var b = [p.x + o[0], p.y + o[1], p.x + o[0] + w, p.y + o[1] + h];
           if (b[0] < lo || b[2] > hi || b[1] < top || b[3] > bot) return false;
+          // A view may keep names off its own shapes (the funnel's rims).
+          if (view && view.keepOut && view.keepOut(b)) return false;
           var n = overlap(b);
           if (n < least) { least = n; best = b; }
           return n === 0;
@@ -752,6 +754,8 @@
     n = n || cur.layout.meta.n;
     if (busy || (id === cur.layout.meta.centre && n === cur.layout.meta.n)) return;
     busy = true;
+    // A person a tap looked at is no longer the one in question.
+    if (pick) { pick.hidden = true; picked = null; looked = null; }
     // Where the river is going, ripples (the reference's loader), if the
     // answer is slow enough to be waited for. The first frame of the travel
     // takes them away.
@@ -889,6 +893,29 @@
   // route from the centre and shows their dropped label — and a second tap
   // on the same person travels there. A tap on open water clears it.
   var looked = null;
+  // What the tap looked at, named under the drawing with the two ways on
+  // (2026-10-27): centre the drawing on them, or open their record.
+  var pick = root.querySelector('[data-rv-pick]'), picked = null;
+  var pickName = pick && pick.querySelector('[data-rv-pick-name]'), pickYears = pick && pick.querySelector('[data-rv-pick-years]');
+  var pickCentre = pick && pick.querySelector('[data-rv-pick-centre]'), pickOpen = pick && pick.querySelector('[data-rv-pick-open]');
+  function showPick(id) {
+    picked = id;
+    if (!pick) return;
+    var p = id && here.persons.filter(function (q) { return q.id === id; })[0];
+    if (!p) { pick.hidden = true; return; }
+    var s = p.s || {};
+    pickName.textContent = s.redacted ? privateWord : (s.names && s.names[2]) || '';
+    pickYears.textContent = s.redacted ? '' : s.years || '';
+    pickOpen.hidden = !!s.redacted;
+    pickOpen.setAttribute('href', '/person/' + encodeURIComponent(id));
+    pick.hidden = false;
+  }
+  if (pickCentre) pickCentre.addEventListener('click', function () {
+    var id = picked;
+    looked = null;
+    showPick(null);
+    if (id) travel(id);
+  });
   canvas.addEventListener('click', function (e) {
     // The click a drag or a pinch ends with is not a choice of person.
     if (performance.now() - dragged < 400) { e.preventDefault(); return; }
@@ -896,16 +923,18 @@
     var id = a ? a.getAttribute('data-id') : touch ? nearest(e) : null;
     if (touch && !busy) {
       e.preventDefault();
-      if (!id) { looked = null; light(null); return; }
+      if (!id) { looked = null; light(null); showPick(null); return; }
       if (id !== looked) {
         looked = id;
         var p = here.persons.filter(function (q) { return q.id === id; })[0];
         light(a ? a.getAttribute('data-key') : p && p.key);
+        showPick(id);
         return;
       }
     }
     if (!id) return;
     looked = null;
+    showPick(null);
     e.preventDefault(); travel(id);
   });
   // Hover is a mouse's (or a pen's): a finger's taps are handled above, and

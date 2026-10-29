@@ -878,6 +878,29 @@ panel-selected-person = Selected person
 ## Tree bands
 
 tree-band-generation = Generation { $g }
+tree-level-self = Same generation
+tree-level-up = { $n ->
+        [1] Children
+        [2] Grandchildren
+        [3] Great-grandchildren
+       *[other] Descendants, generation { $n }
+    }
+tree-level-down = { $n ->
+        [1] Parents
+        [2] Grandparents
+        [3] Great-grandparents
+       *[other] Ancestors, generation { $n }
+    }
+tree-card-centre = Centre the tree here
+tree-card-same = The same person, drawn a second time
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Lines:
+tree-key-son = Son
+tree-key-daughter = Daughter
+tree-key-adoptive = Adoption
+tree-key-foster = Fostering or guardianship
+tree-key-step = Step-child
+tree-key-union = Union
 tree-band-people = { $n ->
         [one] one person
        *[other] { $n } people
@@ -3326,6 +3349,8 @@ view-galaxy-still = Hold the sky still
 view-summit-still = Hold the mountain still
 river-whole = Whole family
 river-names-all = All names
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Centre here
 river-zoom-hint = Zoom: Ctrl + wheel, pinch, or + / − · zoomed in, drag to move
 river-tab-sources = Sources
 river-legend-title = How to read the river

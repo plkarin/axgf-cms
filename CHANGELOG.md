@@ -4,6 +4,106 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] — 2026-10-29
+
+The first major version. The tree page becomes a family chart read down the
+page: a column per generation, each line to a child in the child's colour
+and pattern, compact cards that open, and nobody cut off at any width. On a
+phone it is a column of generations. Five themes are redrawn: Canopée's
+valley at 60° with its living water, Clarity's funnel in rings, Fusion and
+Galaxy in two colours, Genealogy closer to its tree (the operator's reviews
+of 27 and 28 October 2026). Nothing about the AXGF file, the server's
+settings and river, or what a reader may see changes.
+
+### Changed
+
+- **The tree page: a classic family chart** (docs/adr/0019).
+  - **Layout.** One column per generation, the oldest on the left: the
+    ancestors to the person's left, the descendants to their right. Each
+    subtree has its own band, so the lines never cross.
+  - **Read down the page.** There is no horizontal scrollbar, and nobody
+    is ever cut off. A chart wider than its column is scaled to fit, never
+    so far that a name is hard to read. Before that, the record moves
+    under the chart; past that, the chart becomes the phone's column of
+    generations. The whole-family view fits the same way. The
+    generations' names stay at the top of the window.
+  - **A family starts level with its couple.** The person stays at the top
+    of their own family, their children below. A second partner stands
+    beside their own children.
+  - **Lines.** A couple is joined by a bracket with a knot of two rings.
+    The line to each child is a son blue, a daughter red and anyone else
+    grey. A child adopted, fostered or under guardianship, or a step-child,
+    gets a dashed, dotted or dash-and-dot line. One legend, in the
+    controls' bar, explains them.
+  - **Cards.** Compact cards (120 × 30 px) read "First name L." beside a
+    strip of the person's colour; a name too long for its card is a size
+    smaller, never cut. They open on the pointer, on focus or on a click,
+    at their own size whatever the chart's scale, showing the portrait in
+    a laurel ring, the full name, the dates, how sure the birth is, and
+    two actions: centre the tree on the person, or open their record.
+  - **The kit** was drawn in Canva first.
+- **On a phone** (the operator's review the same evening).
+  - The tree page is a column of generations, with no sideways scroll.
+    Each generation is a block with its name, its cards two to a line, and
+    an open card is a sheet at the foot of the screen (docs/adr/0019 §5).
+  - In every view, a first tap on a person names them under the drawing,
+    with "Centre here" and "Open full page"; before, it only lit their
+    route (docs/adr/0002 §6).
+- **Clarity: rings apart, names on the glass** (docs/adr/0013 §6).
+  - The funnel is wider and finer: one ring of tinted glass per generation,
+    with the rings set apart.
+  - A generation's people are spread evenly along the front of their ring,
+    family by family, so they no longer bunch into knots.
+  - Every name is on a small frosted label on the glass or beside its
+    ring, never across an outline.
+  - The figures stand in a column on threads.
+  - The kit was drawn in Canva first.
+- **Fusion: down in orange, up in green** (docs/adr/0015 §6). The column of
+  light on the axis is gone. The branches below the person in the middle,
+  toward their ancestors, are orange; those above, toward their
+  descendants, are green, along with the light that runs along them, the
+  legend and the dashboard.
+- **Galaxy: two sides, fields and a galaxy behind** (docs/adr/0007 §7).
+  - The filaments toward the descendants are violet and those toward the
+    ancestors white, each with a halo and a thread of light.
+  - Every star holds a field that grows with its descendants.
+  - The living are lit spheres with rays, and those who are gone are
+    ringed planets. The sun has rays.
+  - The sky is a spiral galaxy made in Canva, 4K.
+
+- **Canopée: the valley seen at 60°, and alive** (docs/adr/0004 §17). The
+  family's streams and rivers lie on the valley's ground at the picture's
+  own angle, in perspective, while every person stays where the drawing
+  puts them. Each bank is its own, with pools, bars of gravel in the bends
+  and boulders breaking the water; where two streams meet, the river starts
+  under a fall with its spray, in a still pool or down rapids. A new
+  valley made in Canva (forest, meadows, larches, granite, a bed of sand),
+  4K; the wind runs through its trees and over its meadows, clouds cross it
+  with their shadows, herds of red deer, wild horses, chamois and ibex graze
+  and wander, an eagle circles, birds pass, a fish rises. The zones' flat
+  contour lines step aside under the rivers. All of it still on request.
+  The water is bound into the valley (§18): it clears its way through the
+  forest, the trees of the near bank lean over its edge, it takes the
+  colours and the light round it, runs white over rock, lies in the shade
+  of the trees beyond and fades into the distance's haze.
+- **Fusion: right angles and room** (docs/adr/0015 §5). Branches climb in
+  straight runs at right angles, as on a family chart; names are one-line
+  panels against their points, spaced; the glass is wider and less tilted,
+  and stands on the projector of a laboratory made anew in Canva, 4K.
+- **Clarity: a prism under the page** (docs/adr/0013 §5). The page stands
+  on a vivid prism of light made in Canva, 4K, its masthead and cards
+  frosted glass; the funnel's slices are tinted, edged and lit, its links a
+  deep indigo with a halo; new pictures behind the overview and the notes.
+- **Genealogy: closer to the tree** (docs/adr/0016 §5). The tree is drawn
+  far larger, so that the trunk, the crown or the roots fill the
+  background as the reader climbs; its frames stand well apart round the
+  trunk, in quincunx where a generation is wide.
+
+### Added
+
+- `tools/pictures/masks.py` (the ground's maps of trees and meadows) and
+  `tools/pictures/sprites.py` (the animals' atlas).
+
 ## [0.6.0] — 2026-10-26
 
 Two records a person says are one become one, by the library's plan and the
@@ -4070,6 +4170,9 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0
+[0.6.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.6.0
 [0.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0
 [0.4.3]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3
 [0.4.2]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.2

@@ -712,6 +712,29 @@ panel-selected-person = 選択中の人物
 ## 世代の帯
 
 tree-band-generation = 第{ $g }世代
+tree-level-self = 同世代
+tree-level-up = { $n ->
+        [1] 子
+        [2] 孫
+        [3] ひ孫
+       *[other] 子孫（{ $n }世代）
+    }
+tree-level-down = { $n ->
+        [1] 両親
+        [2] 祖父母
+        [3] 曾祖父母
+       *[other] 祖先（{ $n }世代）
+    }
+tree-card-centre = ここを中心に表示
+tree-card-same = 同じ人物をもう一度描いたもの
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = 線：
+tree-key-son = 息子
+tree-key-daughter = 娘
+tree-key-adoptive = 養子縁組
+tree-key-foster = 里親・後見
+tree-key-step = 継子
+tree-key-union = 婚姻
 tree-band-people = { $n }名
 tree-band-unplaced = 未配置
 tree-band-unplaced-note = どの家族にも属さない{ $n }名 — 省かずに表示しています
@@ -3043,6 +3066,8 @@ view-galaxy-still = 星空を止める
 view-summit-still = 山を止める
 river-whole = 家族全員
 river-names-all = すべての名前
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = ここを中心に
 river-zoom-hint = ズーム：Ctrl＋ホイール、ピンチ、または + / − ・拡大中はドラッグで移動
 river-tab-sources = 出典
 river-legend-title = 流れの読み方

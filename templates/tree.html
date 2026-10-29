@@ -52,27 +52,47 @@
     </select>
   </div>
   <button class="btn small" type="submit" data-autosubmit-go data-js-hidden>{{ t("tree-show") }}</button>
+  {#- The legend shares the controls' bar (2026-10-28): one band above the
+      chart, not two. -#}
+  <div class="tree-legend small">
+    {#- What a line says (the operator's review, 2026-10-28): its colour the
+        child's side, its pattern how they belong to the family when it is
+        not by birth; a couple's bracket carries its knot. The swatches are
+        the lines themselves, drawn with the lines' own classes. -#}
+    <span class="tree-legend-kin">
+      <span class="muted">{{ t("tree-key-lines") }}</span>
+      <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-a" d="M 1 4 H 23"/></svg>{{ t("tree-key-son") }}</span>
+      <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-b" d="M 1 4 H 23"/></svg>{{ t("tree-key-daughter") }}</span>
+      <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-u wire-line-adoptive" d="M 1 4 H 23"/></svg>{{ t("tree-key-adoptive") }}</span>
+      <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-u wire-line-foster" d="M 1 4 H 23"/></svg>{{ t("tree-key-foster") }}</span>
+      <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-u wire-line-step" d="M 1 4 H 23"/></svg>{{ t("tree-key-step") }}</span>
+      <span class="lg"><svg class="kin-key kin-knot" viewBox="0 0 16 16" aria-hidden="true"><g class="wire-node" transform="translate(8 8)"><circle r="7"/><circle class="ring" cx="-1.9" r="3"/><circle class="ring" cx="1.9" r="3"/></g></svg>{{ t("tree-key-union") }}</span>
+    </span>
+    <span class="muted">{{ t("tree-confidence-label") }}</span>
+    <span class="lg"><i class="conf-dot" data-band="certain" style="--conf-pct:97"></i> {{ t("tree-band-certain") }}</span>
+    <span class="lg"><i class="conf-dot" data-band="high" style="--conf-pct:82"></i> {{ t("tree-band-high") }}</span>
+    <span class="lg"><i class="conf-dot" data-band="medium" style="--conf-pct:62"></i> {{ t("tree-band-medium") }}</span>
+    <span class="lg"><i class="conf-dot" data-band="low" style="--conf-pct:30"></i> {{ t("tree-band-low") }}</span>
+    <span class="muted tree-legend-counts">
+      {{ t("tree-counts", drawn=layout.person_count, total=layout.total_person_count,
+            generations=layout.generation_count) }}
+      {%- if layout.unplaced_count %} · {{ t("tree-unplaced-count", n=layout.unplaced_count) }}{% endif %}
+    </span>
+  </div>
 </form>
 
-{% if show_all and layout.person_count > 40 %}
-<div class="notice warn">
+{#- Only a view that is wider than the column it was folded to scrolls
+    sideways; one that fits says nothing (2026-10-28). With scripts nothing
+    scrolls sideways at all — tree.js fits the view to its column — and the
+    script takes the notice away. -#}
+{% if show_all and layout.person_count > 40 and full_width > wrap_w + 40 %}
+<div class="notice warn" data-tree-wide>
   <p>{{ t("tree-width-notice", width=full_width,
            screens=(full_width / 1500) | round | int) }}</p>
 </div>
 {% endif %}
 
-<div class="tree-legend small">
-  <span class="muted">{{ t("tree-confidence-label") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="certain" style="--conf-pct:97"></i> {{ t("tree-band-certain") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="high" style="--conf-pct:82"></i> {{ t("tree-band-high") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="medium" style="--conf-pct:62"></i> {{ t("tree-band-medium") }}</span>
-  <span class="lg"><i class="conf-dot" data-band="low" style="--conf-pct:30"></i> {{ t("tree-band-low") }}</span>
-  <span class="muted tree-legend-counts">
-    {{ t("tree-counts", drawn=layout.person_count, total=layout.total_person_count,
-          generations=layout.generation_count) }}
-    {%- if layout.unplaced_count %} · {{ t("tree-unplaced-count", n=layout.unplaced_count) }}{% endif %}
-  </span>
-</div>
+
 
 {# Shown only to readers who can act on it — see the note in routes/public.rs.
    `contradictions` is null for everybody else, banner and all. #}

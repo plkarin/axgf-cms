@@ -929,6 +929,29 @@ record-end-not-recorded = הסוף לא נרשם
 panel-selected-person = האדם שנבחר
 
 tree-band-generation = דור { $g }
+tree-level-self = אותו דור
+tree-level-up = { $n ->
+        [1] ילדים
+        [2] נכדים
+        [3] נינים
+       *[other] צאצאים, דור { $n }
+    }
+tree-level-down = { $n ->
+        [1] הורים
+        [2] סבים וסבתות
+        [3] הורי הסבים
+       *[other] אבות קדמונים, דור { $n }
+    }
+tree-card-centre = מרכוז העץ כאן
+tree-card-same = אותו אדם, מצויר פעם שנייה
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = קווים:
+tree-key-son = בן
+tree-key-daughter = בת
+tree-key-adoptive = אימוץ
+tree-key-foster = אומנה או אפוטרופסות
+tree-key-step = בן חורג
+tree-key-union = קשר
 tree-band-people = { $n ->
         [one] אדם אחד
         [two] שני אנשים
@@ -3371,6 +3394,8 @@ view-galaxy-still = עצירת השמיים
 view-summit-still = עצירת ההר
 river-whole = כל המשפחה
 river-names-all = כל השמות
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = מרכז כאן
 river-zoom-hint = זום: Ctrl + גלגלת, צביטה, או + / − · כשמוגדל, גררו כדי לזוז
 river-tab-sources = מקורות
 river-legend-title = איך לקרוא את הנהר

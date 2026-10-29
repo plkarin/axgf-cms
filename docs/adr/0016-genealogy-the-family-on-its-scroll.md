@@ -191,6 +191,25 @@ document to the payload, through the same lens that decides who may see
 the record — a server change of its own, with its privacy surface, to be
 decided separately. Until then the frames hold initials.
 
+### 5. Closer to the tree (the operator's review, 2026-10-27)
+
+The operator found the frames too close to each other, the whole compact
+and cramped, and the tree too small: the zoom should be larger, so that
+the background shows almost only the trunk and the leaves, or the roots,
+as the reader climbs or goes down.
+
+- **The tree fills the window.** The picture is 3.6 times the window's
+  height (and at least 2.2 times its width): at rest the trunk and its
+  first branches fill the background, climbing shows the crown, going down
+  the roots. The camera climbs up to 0.36 of the picture and down 0.3, a
+  step at a time with the reader.
+- **Room between the frames.** The people of a level stand round the trunk
+  nearly evenly by angle (`across`), up to 0.47 of the window from it; a
+  level of five or more is set in quincunx, every other person a quarter
+  of a level up or down, so that no two frames touch.
+- The large texture is always used, since the picture is always drawn
+  large.
+
 ## Consequences
 
 - Six themes. Genealogy is the second to change the page's polarity inside

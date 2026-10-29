@@ -822,6 +822,29 @@ record-end-not-recorded = suka ekomami te
 panel-selected-person = Moto oyo aponami
 
 tree-band-generation = Nkola { $g }
+tree-level-self = Nkola moko
+tree-level-up = { $n ->
+        [1] Bana
+        [2] Bankoko
+        [3] Bana ya bankoko
+       *[other] Bakitani, nkola { $n }
+    }
+tree-level-down = { $n ->
+        [1] Baboti
+        [2] Bankoko
+        [3] Baboti ya bankoko
+       *[other] Bankoko ya kala, nkola { $n }
+    }
+tree-card-centre = Tia nzete awa na kati
+tree-card-same = Moto moko, abendami mbala ya mibale
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Milɔngɔ:
+tree-key-son = Mwana mobali
+tree-key-daughter = Mwana mwasi
+tree-key-adoptive = Kozwa mwana
+tree-key-foster = Kobokola to kokɛngɛla
+tree-key-step = Mwana ya libala
+tree-key-union = Libala
 tree-band-people = { $n ->
         [one] moto moko
        *[other] bato { $n }
@@ -3200,6 +3223,8 @@ view-galaxy-still = Tika likolo kimya
 view-summit-still = Tika ngomba kimya
 river-whole = Libota mobimba
 river-names-all = Bankombo nyonso
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Tia awa na katikati
 river-zoom-hint = Zoom: Ctrl + roulette, kokanga na misapi, to + / − · soki ozali na zoom, benda mpo na koningisa
 river-tab-sources = Maziba
 river-legend-title = Ndenge ya kotanga ebale

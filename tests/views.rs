@@ -237,7 +237,17 @@ async fn no_river_is_named_where_a_tree_or_a_sky_is_drawn() {
             river.contains(&format!("{still}</button>")),
             "{theme}: {still}"
         );
-        assert!(river.contains(compass), "{theme}: {compass}");
+        // Fusion and Galaxy draw the two sides of the person in the middle in
+        // two colours (2026-10-27): their legend says each half in its own.
+        if theme == "fusion" || theme == "galaxy" {
+            let (down, up) = compass.split_once(" · ").expect("two halves");
+            for (side, half) in [("down", down), ("up", up)] {
+                let key = format!("rv-dir-{side}\"><i aria-hidden=\"true\"></i>{half}</span>");
+                assert!(river.contains(&key), "{theme}: {half}");
+            }
+        } else {
+            assert!(river.contains(compass), "{theme}: {compass}");
+        }
         assert!(river.contains(hint), "{theme}: {hint}");
         // A river's width is its discharge and its height is time: keys to
         // what a view does not draw are the river's alone.
@@ -284,11 +294,13 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
         "/static/img/fusion-lab.jpg",
         "/static/img/galaxy-hero.jpg",
         "/static/img/galaxy-cta.jpg",
+        "/static/img/galaxy-sky.jpg",
         "/static/img/summit-hero.jpg",
         "/static/img/summit-cta.jpg",
         "/static/img/summit-panorama.jpg",
         "/static/img/clarity-hero.jpg",
         "/static/img/clarity-cta.jpg",
+        "/static/img/clarity-prism.jpg",
         "/static/img/genealogy-hero.jpg",
         "/static/img/genealogy-cta.jpg",
         "/static/img/genealogy-vine-l.jpg",
@@ -370,7 +382,7 @@ fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
         "Fusion blends frames in its glass"
     );
     assert!(
-        fusion.contains("'/static/img/fusion-lab.jpg?v=2'"),
+        fusion.contains("'/static/img/fusion-lab.jpg?v=3'"),
         "over its laboratory"
     );
     assert!(
@@ -457,12 +469,15 @@ fn the_family_stands_on_a_tree_the_reader_climbs() {
     assert!(js.contains("function lift(l) { return l >= 0 ? PIC.up * (1 - Math.exp(-l / PIC.ku)) : -PIC.down * (1 - Math.exp(l / PIC.kd)); }"));
     assert!(js.contains("return [[x1, y1], [x1, my], [x2, my], [x2, y2]];"));
     assert!(js.contains("class=\"gn-wire-halo\""));
-    // The picture is nearly the window's width, and the camera climbs it a
-    // step at a time with the reader, staying where they arrive (the
-    // operator's review, 2026-10-24: the tree was too small, and the climb
-    // should go up or down the tree progressively).
-    assert!(js.contains("PH = Math.max(hw * 0.88 / PIC.aspect, vh * 1.7)"));
-    assert!(js.contains("var camV = PIC.v - PIC.climb * Math.tanh((G.world || 0) / PIC.pace);"));
+    // The picture is far larger than the window, so that only the trunk
+    // and its branches, the crown or the roots fill the background, and the
+    // camera climbs it a step at a time with the reader, staying where they
+    // arrive (the operator's reviews, 2026-10-24 and 27: the tree was too
+    // small, and the climb should go up or down the tree progressively).
+    assert!(js.contains("PH = Math.max(hw * 2.2 / PIC.aspect, vh * PIC.zoom)"));
+    assert!(js.contains(
+        "camV = PIC.v - (wl > 0 ? PIC.climbUp : PIC.climbDown) * Math.tanh(wl / PIC.pace);"
+    ));
     assert!(js.contains("py = (G.y0 - camV * G.PH - v.y) * s"));
     // Still, the picture still stands in relief; the pointer leans it only
     // when motion is allowed.

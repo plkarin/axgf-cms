@@ -876,6 +876,29 @@ admin-value-not-set = non renseigné
 ## Bandes de l'arbre
 
 tree-band-generation = Génération { $g }
+tree-level-self = Même génération
+tree-level-up = { $n ->
+        [1] Enfants
+        [2] Petits-enfants
+        [3] Arrière-petits-enfants
+       *[other] Descendants, { $n }ᵉ génération
+    }
+tree-level-down = { $n ->
+        [1] Parents
+        [2] Grands-parents
+        [3] Arrière-grands-parents
+       *[other] Ancêtres, { $n }ᵉ génération
+    }
+tree-card-centre = Centrer l’arbre ici
+tree-card-same = La même personne, dessinée une seconde fois
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Liens :
+tree-key-son = Fils
+tree-key-daughter = Fille
+tree-key-adoptive = Adoption
+tree-key-foster = Accueil ou tutelle
+tree-key-step = Par alliance
+tree-key-union = Union
 tree-band-people = { $n ->
         [one] une personne
        *[other] { $n } personnes
@@ -3302,6 +3325,8 @@ view-galaxy-still = Figer le ciel
 view-summit-still = Figer la montagne
 river-whole = Toute la famille
 river-names-all = Tous les noms
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Centrer ici
 river-zoom-hint = Zoom : Ctrl + molette, pincer ou + / − · zoomé, glisser pour se déplacer
 river-tab-sources = Sources
 river-legend-title = Lire la rivière

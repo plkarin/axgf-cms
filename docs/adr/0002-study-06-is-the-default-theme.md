@@ -130,6 +130,16 @@ there, and a tap on open water clears the selection.
 **Deviation from Study 06.** The study reveals labels and lights the route on
 hover only, and a tablet has no hover.
 
+**Amended 2026-10-27 (the operator's review, on a phone: "the mesh cannot
+be clicked").** A lit route alone looked like nothing happening. The first
+tap now also names the person under the drawing: their full name and
+years, and two ways on, "Centre here" (travel) and "Open full page" (their
+record, absent for a person this reader may not see). The bar stays at the
+foot of the screen while the drawing is in view (`.rv-pick`, river.js). A
+second tap on the same person still travels; a tap on open water, or any
+travel, puts the bar away. It holds under every view, since `river.js`
+owns every touch rule.
+
 ## 7. Reading and editing are two modes
 
 These changes come from the minimalism pass. They are not deviations from

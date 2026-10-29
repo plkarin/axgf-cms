@@ -557,6 +557,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/img/fusion-lab.jpg", get(public::fusion_lab_jpg))
         .route("/static/img/galaxy-hero.jpg", get(public::galaxy_hero_jpg))
         .route("/static/img/galaxy-cta.jpg", get(public::galaxy_cta_jpg))
+        .route("/static/img/galaxy-sky.jpg", get(public::galaxy_sky_jpg))
         .route("/static/img/summit-hero.jpg", get(public::summit_hero_jpg))
         .route("/static/img/summit-cta.jpg", get(public::summit_cta_jpg))
         .route(
@@ -564,6 +565,10 @@ fn routes(state: Shared) -> Router {
             get(public::clarity_hero_jpg),
         )
         .route("/static/img/clarity-cta.jpg", get(public::clarity_cta_jpg))
+        .route(
+            "/static/img/clarity-prism.jpg",
+            get(public::clarity_prism_jpg),
+        )
         .route(
             "/static/img/genealogy-hero.jpg",
             get(public::genealogy_hero_jpg),
@@ -600,6 +605,8 @@ fn routes(state: Shared) -> Router {
             "/static/img/river-ground-maps.jpg",
             get(public::river_ground_maps_jpg),
         )
+        .route("/static/img/river-life.png", get(public::river_life_png))
+        .route("/static/img/laurel-ring.png", get(public::laurel_ring_png))
         .route(
             "/static/img/river-water-stream.jpg",
             get(public::river_water_stream_jpg),

@@ -100,6 +100,17 @@
     {% endif %}
     <div class="rv-canvas" id="rv-canvas" data-content>{{ svg|safe }}
     </div>
+    {#- On a touch screen a first tap on a person looks at them: their route
+        is lit, and here, under the drawing, their name and the two ways on
+        (2026-10-27) — a finger has no hover, and a lit route alone looked
+        like nothing happening. river.js fills it and shows it. -#}
+    <div class="rv-pick" data-rv-pick hidden>
+      <p class="rv-pick-who"><strong data-rv-pick-name></strong> <span class="rv-pick-years" data-rv-pick-years></span></p>
+      <div class="rv-pick-go">
+        <button type="button" class="btn small" data-rv-pick-centre>{{ t("river-pick-centre") }}</button>
+        <a class="btn small" data-rv-pick-open href="/person/{{ centre_q }}">{{ t("record-open-full-page") }}</a>
+      </div>
+    </div>
 
     <div class="rv-legend" role="note" aria-labelledby="rv-legend-title">
       {#- A cartographer's legend (v0.5.0, docs/adr/0004 §5): a title, the
@@ -126,7 +137,13 @@
       <span class="rv-widths"><i style="inline-size:1.6px"></i><i style="inline-size:3px"></i><i style="inline-size:5px"></i><i style="inline-size:8px"></i><i style="inline-size:12px"></i>{{ t("river-legend-discharge") }} 1 · 2–5 · 6–20 · 21–80 · 81+</span>
       <span class="rv-scale" data-rv-scale hidden><b></b>{{ t("river-legend-generation") }}</span>
       {%- endif %}
-      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}{{ t("river-legend-direction") if view == "river" else t("view-" ~ view ~ "-direction") }}</span>
+      {#- Fusion and Galaxy draw the two sides of the person in the middle in
+          two colours (2026-10-27); their legend's two halves wear them. -#}
+      {%- set direction = t("river-legend-direction") if view == "river" else t("view-" ~ view ~ "-direction") %}
+      {%- set halves = direction|split(" · ", 1) if view in ["tree", "galaxy"] else [] %}
+      <span class="rv-direction rv-compass">{{ ic.icon("compass") }}
+        {%- if halves|length == 2 %}<span class="rv-dir rv-dir-down"><i aria-hidden="true"></i>{{ halves[0] }}</span> · <span class="rv-dir rv-dir-up"><i aria-hidden="true"></i>{{ halves[1] }}</span>
+        {%- else %}{{ direction }}{% endif %}</span>
       <span class="rv-hint" data-rv-zoom-wrap hidden>{{ t("river-zoom-hint") }}</span>
     </div>
   </section>

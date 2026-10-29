@@ -1036,6 +1036,29 @@ panel-selected-person = Выбранный человек
 ## Полосы поколений
 
 tree-band-generation = Поколение { $g }
+tree-level-self = То же поколение
+tree-level-up = { $n ->
+        [1] Дети
+        [2] Внуки
+        [3] Правнуки
+       *[other] Потомки, { $n }-е поколение
+    }
+tree-level-down = { $n ->
+        [1] Родители
+        [2] Бабушки и дедушки
+        [3] Прабабушки и прадедушки
+       *[other] Предки, { $n }-е поколение
+    }
+tree-card-centre = Отцентрировать древо здесь
+tree-card-same = Тот же человек, нарисованный второй раз
+# The tree page's legend: what a line to a child says (2026-10-28).
+tree-key-lines = Линии:
+tree-key-son = Сын
+tree-key-daughter = Дочь
+tree-key-adoptive = Усыновление
+tree-key-foster = Приёмная семья или опека
+tree-key-step = Пасынок
+tree-key-union = Союз
 tree-band-people = { $n ->
         [one] один человек
         [few] { $n } человека
@@ -3512,6 +3535,8 @@ view-galaxy-still = Остановить небо
 view-summit-still = Остановить гору
 river-whole = Вся семья
 river-names-all = Все имена
+# A tap on a person in a view, on a touch screen: the drawing moves onto them.
+river-pick-centre = Поставить в центр
 river-zoom-hint = Масштаб: Ctrl + колесо, щипок или + / − · при увеличении перетаскивайте
 river-tab-sources = Источники
 river-legend-title = Как читать реку

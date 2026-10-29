@@ -59,21 +59,27 @@
   // climb: how far up the picture (or down) the camera goes, at most, as the
   // reader travels up the generations (or down), and how many generations
   // take it half of that way (pace, roughly).
-  var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1', aspect: 1088 / 1456, u: 0.53, v: 0.57, up: 0.5, down: 0.4, ku: 1.53, kd: 1.35, climb: 0.31, pace: 2.4 };
+  // ZOOM (2026-10-27, the operator's review): the picture's height in
+  // windows, large enough that the window shows the trunk at rest, the
+  // leaves as the reader climbs and the roots as they go down.
+  var PIC = { src: '/static/img/genealogy-tree.jpg?v=1', depth: '/static/img/genealogy-tree-depth.jpg?v=1', aspect: 1088 / 1456, u: 0.53, v: 0.57, up: 0.58, down: 0.44, ku: 2.6, kd: 2.2, climbUp: 0.36, climbDown: 0.3, pace: 2.2, zoom: 3.6 };
   // SHRINK: how much smaller a generation further away is. THETA: how far
   // round the trunk a generation's people reach, either side of the front.
   // DEPTH: how much smaller someone round the side is than someone at the
   // front.
-  var SHRINK = 0.1, THETA = 1.25, DEPTH = 0.22;
+  var SHRINK = 0.05, THETA = 1.25, DEPTH = 0.22;
   var GEO = null, world = 0, pending = 0;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   // A level's height above the fixed point, as a share of the picture: up
   // into the crown, down into the roots, each further level closer to the
   // last, so that any number of them stays on the tree.
   function lift(l) { return l >= 0 ? PIC.up * (1 - Math.exp(-l / PIC.ku)) : -PIC.down * (1 - Math.exp(l / PIC.kd)); }
+  // Round the trunk, but spaced nearly evenly: a pure sine bunched the
+  // people at the sides together (the operator's review of 2026-10-27).
+  function across(th) { return 0.3 * Math.sin(th) + 0.7 * Math.sin(THETA) * th / THETA; }
   function proj(G, th, l) {
     var z = Math.cos(th), kl = Math.exp(-SHRINK * Math.abs(l));
-    return { x: G.x0 + G.R * Math.sin(th) * kl, y: G.y0 - lift(l) * G.H, z: z, k: kl * (1 - DEPTH * (1 - z)) };
+    return { x: G.x0 + G.R * across(th) * kl, y: G.y0 - lift(l) * G.H, z: z, k: kl * (1 - DEPTH * (1 - z)) };
   }
   function centreOf(fr) { return fr.persons.filter(function (p) { return p.role === 'centre'; })[0]; }
   function byKey(list) { var o = {}; list.forEach(function (p) { o[p.key] = p; }); return o; }
@@ -135,8 +141,8 @@
     // climbs it (scene, picture()). Round the trunk, the widest side
     // reaches THETA either way, a place never more than a quarter turn
     // wide.
-    var H = vh * 1.06, PH = Math.max(hw * 0.88 / PIC.aspect, vh * 1.7), PW = PH * PIC.aspect;
-    var R = clamp(Math.max(hw * 0.4, PW * 0.36), 160, 560);
+    var H = vh * 1.06, PH = Math.max(hw * 2.2 / PIC.aspect, vh * PIC.zoom), PW = PH * PIC.aspect;
+    var R = clamp(hw * 0.47, 160, 640);
     var G = { x0: hl + hw / 2, y0: vt + (vh - H) / 2 + PIC.v * H, R: R, H: H, PH: PH, PW: PW, nd: nd, na: na };
     function per(X) {
       if (!C || !(C.key in X)) return 0.4;
@@ -154,9 +160,22 @@
       if (p.key in XD && Math.round(l) >= 0) th = (XD[p.key] - oD) * uD;
       else if (p.key in XA) th = (XA[p.key] - oA) * uA;
       else th = (p.x - cx) / reachR * THETA;
-      var q = proj(G, th, l);
-      at[p.x + ',' + p.y] = [th, l];
-      return Object.assign({}, p, { x: q.x, y: q.y, z: q.z, k: q.k, th: th, lv: l });
+      return { p: p, th: th, l: l };
+    });
+    // A crowded level hangs its portraits in quincunx, every other one a
+    // little higher, so that each has room for its card beside it (the
+    // operator's review of 2026-10-27: the frames stood too close).
+    var rows = {};
+    persons.forEach(function (o) { var r = Math.round(o.l); if (r) (rows[r] = rows[r] || []).push(o); });
+    Object.keys(rows).forEach(function (r) {
+      var row = rows[r].sort(function (a, b) { return a.th - b.th; });
+      if (row.length < 5) return;
+      row.forEach(function (o, i) { o.l += (i % 2 ? 0.24 : -0.24) * (+r > 0 ? 1 : -1); });
+    });
+    persons = persons.map(function (o) {
+      var p = o.p, q = proj(G, o.th, o.l);
+      at[p.x + ',' + p.y] = [o.th, o.l];
+      return Object.assign({}, p, { x: q.x, y: q.y, z: q.z, k: q.k, th: o.th, lv: o.l });
     });
     var NK = byKey(persons);
     function mean(list) { return list.reduce(function (s, q) { return s + q.th; }, 0) / list.length; }
@@ -584,7 +603,9 @@
   pic.onload = function () {
     hasPic = true;
     if (gl && !gl.isContextLost()) {
-      var big = Math.max(stage.clientHeight, 600) * Math.min(window.devicePixelRatio || 1, 2) > 1100;
+      // The window shows a part of the picture, magnified: the large
+      // texture always.
+      var big = true;
       var c = document.createElement('canvas');
       c.width = big ? 2048 : 1024; c.height = big ? 4096 : 2048;
       var cx2 = c.getContext('2d');
@@ -671,7 +692,7 @@
     // step as they travel (the world's level runs on through a climb), the
     // tree's top and foot never left behind. That height of the picture
     // stands at the fixed point's.
-    var camV = PIC.v - PIC.climb * Math.tanh((G.world || 0) / PIC.pace);
+    var wl = G.world || 0, camV = PIC.v - (wl > 0 ? PIC.climbUp : PIC.climbDown) * Math.tanh(wl / PIC.pace);
     var px = (G.x0 - PIC.u * G.PW - v.x) * s, py = (G.y0 - camV * G.PH - v.y) * s, pw = G.PW * s, ph = G.PH * s;
     // Up in the crown the leaves stand out a little more, down in the roots
     // the roots do: the relief leans with the climb.

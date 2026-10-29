@@ -435,6 +435,77 @@ pub fn build(flat: &Value, id: &str, lens: &crate::access::Lens) -> Option<Perso
     build_in(flat, id, lens, crate::i18n::DEFAULT)
 }
 
+/// The pictures that stand for people on the tree's cards (2026-10-27), as a
+/// relative's does in a record: their chosen portrait, else the heuristic's,
+/// among the pictures of theirs this reader may see, and where the face is in
+/// it (a CSS `object-position`).
+///
+/// One reading of the file for the whole drawing. Which documents this reader
+/// may not see, and which name each person in `linked_to`, are questions about
+/// the whole file; asked once a card, they took the whole family of the
+/// full-size fixture to 1.8 s.
+pub struct Portraits<'a> {
+    ctx: Ctx<'a>,
+    index: DocIndex<'a>,
+}
+
+impl<'a> Portraits<'a> {
+    pub fn new(flat: &'a Value, lens: &'a crate::access::Lens) -> Self {
+        Portraits {
+            ctx: Ctx {
+                flat,
+                lang: crate::i18n::DEFAULT,
+                lens,
+            },
+            index: DocIndex::new(flat, lens),
+        }
+    }
+
+    /// The picture for `id`; `None` for a person this reader may not see.
+    pub fn of(&self, id: &str) -> Option<(String, Option<String>)> {
+        if !self.ctx.lens.sees_person(id) {
+            return None;
+        }
+        self.ctx.portrait_in(&self.index, id)
+    }
+}
+
+/// What a person's documents list needs from the whole file: the documents
+/// this reader may not see, and for each person the documents that name them
+/// in `linked_to`, in the file's order.
+struct DocIndex<'a> {
+    withheld: BTreeSet<String>,
+    linked: BTreeMap<&'a str, Vec<&'a str>>,
+}
+
+impl<'a> DocIndex<'a> {
+    fn new(flat: &'a Value, lens: &crate::access::Lens) -> Self {
+        let mut linked: BTreeMap<&'a str, Vec<&'a str>> = BTreeMap::new();
+        if let Some(docs) = flat.get("documents").and_then(Value::as_object) {
+            for (did, d) in docs {
+                let Some(links) = d.get("linked_to").and_then(Value::as_array) else {
+                    continue;
+                };
+                for l in links {
+                    if l.get("entity_type").and_then(Value::as_str) != Some("person") {
+                        continue;
+                    }
+                    if let Some(pid) = l.get("entity_id").and_then(Value::as_str) {
+                        let list = linked.entry(pid).or_default();
+                        if list.last() != Some(&did.as_str()) {
+                            list.push(did.as_str());
+                        }
+                    }
+                }
+            }
+        }
+        DocIndex {
+            withheld: crate::access::withheld_documents(flat, lens.ceiling()),
+            linked,
+        }
+    }
+}
+
 /// [`build`] in a given interface language.
 pub fn build_in(
     flat: &Value,
@@ -831,7 +902,7 @@ fn auto_avatar(images: &[DocumentView]) -> Option<DocumentView> {
 /// as recorded rather than transliterated: a Japanese name yields a Japanese
 /// initial and an Arabic one an Arabic letter. Characters, not bytes, so a
 /// multi-byte first letter survives.
-fn initials_of(name: &str) -> String {
+pub(crate) fn initials_of(name: &str) -> String {
     let words: Vec<&str> = name
         .split_whitespace()
         .filter(|w| w.chars().any(char::is_alphanumeric))
@@ -1061,11 +1132,22 @@ impl Ctx<'_> {
         if r.restricted || !r.known {
             return r;
         }
-        let Some(p) = self.collection("persons").and_then(|m| m.get(&r.id)) else {
-            return r;
-        };
+        if let Some((src, focal)) = self.portrait(&r.id) {
+            r.portrait = Some(src);
+            r.focal = focal;
+        }
+        r
+    }
+
+    /// The picture that stands for `id` on a card, and where the face is in it.
+    fn portrait(&self, id: &str) -> Option<(String, Option<String>)> {
+        self.portrait_in(&DocIndex::new(self.flat, self.lens), id)
+    }
+
+    fn portrait_in(&self, index: &DocIndex, id: &str) -> Option<(String, Option<String>)> {
+        let p = self.collection("persons").and_then(|m| m.get(id))?;
         let images: Vec<DocumentView> = self
-            .documents_for(&r.id, p)
+            .documents_in(index, id, p)
             .into_iter()
             .filter(|d| d.is_image && d.has_payload)
             .collect();
@@ -1082,11 +1164,7 @@ impl Ctx<'_> {
                 .or_else(|| auto_avatar(&images)),
             crate::avatar::Choice::Auto => auto_avatar(&images),
         };
-        if let Some(d) = chosen {
-            r.portrait = Some(format!("/document/{}/thumb", d.id));
-            r.focal = d.focal;
-        }
-        r
+        chosen.map(|d| (format!("/document/{}/thumb", d.id), d.focal))
     }
 
     /// Resolve a place id, including the country history that makes a place
@@ -1824,6 +1902,10 @@ impl Ctx<'_> {
 
     /// Documents attached to this person, from either direction.
     fn documents_for(&self, id: &str, person: &Value) -> Vec<DocumentView> {
+        self.documents_in(&DocIndex::new(self.flat, self.lens), id, person)
+    }
+
+    fn documents_in(&self, index: &DocIndex, id: &str, person: &Value) -> Vec<DocumentView> {
         let Some(docs) = self.collection("documents") else {
             return Vec::new();
         };
@@ -1832,7 +1914,7 @@ impl Ctx<'_> {
         // A document that class data this reader may not read refers to — a
         // fingerprint card, a genome file — is not listed at all. Its filename
         // and type say what it is, and the bytes behind it are refused anyway.
-        let withheld = crate::access::withheld_documents(self.flat, self.lens.ceiling());
+        let withheld = &index.withheld;
 
         let mut push = |doc_id: &str, role: Option<String>| {
             if seen.iter().any(|s| s == doc_id) || withheld.contains(doc_id) {
@@ -1910,20 +1992,8 @@ impl Ctx<'_> {
                 }
             }
         }
-        for (did, d) in docs.iter() {
-            let linked = d
-                .get("linked_to")
-                .and_then(Value::as_array)
-                .map(|arr| {
-                    arr.iter().any(|l| {
-                        l.get("entity_id").and_then(Value::as_str) == Some(id)
-                            && l.get("entity_type").and_then(Value::as_str) == Some("person")
-                    })
-                })
-                .unwrap_or(false);
-            if linked {
-                push(did, None);
-            }
+        for did in index.linked.get(id).into_iter().flatten() {
+            push(did, None);
         }
         out
     }
@@ -2960,6 +3030,31 @@ mod tests {
         assert!(photo.is_image && photo.has_payload);
         assert_eq!(photo.size_human.as_deref(), Some("20.0 KB"));
         assert_eq!(v.images.len(), 1, "only the image goes in the gallery");
+    }
+
+    /// The tree's cards take the picture the record's own masthead takes,
+    /// read once for the whole drawing (`Portraits`), whether the person
+    /// lists the document or the document names the person.
+    #[test]
+    fn a_card_takes_the_records_own_portrait() {
+        let mut flat = bundle();
+        flat["documents"]["d-kid"] = json!({
+            "id": "d-kid", "type": "document", "axgf_version": "1.0",
+            "filename": "kid.jpg", "mime_type": "image/jpeg", "document_type": "photo",
+            "status": "present", "file": {"path": "documents/files/d-kid.jpg", "size_bytes": 10},
+            "linked_to": [{"entity_type": "person", "entity_id": "p-kid1"}]});
+        let lens = open();
+        let cards = Portraits::new(&flat, &lens);
+        for id in ["p-jules", "p-kid1", "p-wife", "nobody"] {
+            let record = build(&flat, id, &lens)
+                .and_then(|v| v.header.avatar)
+                .map(|d| format!("/document/{}/thumb", d.id));
+            assert_eq!(cards.of(id).map(|(src, _)| src), record, "{id}");
+        }
+        assert_eq!(
+            cards.of("p-kid1").map(|(src, _)| src).as_deref(),
+            Some("/document/d-kid/thumb")
+        );
     }
 
     #[test]

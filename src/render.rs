@@ -95,6 +95,9 @@ pub const SUMMIT_CTA_JPG: &[u8] = include_bytes!("../static/img/summit-cta.jpg")
 /// references: a glass funnel of light on white, and a bright, airy band.
 pub const CLARITY_HERO_JPG: &[u8] = include_bytes!("../static/img/clarity-hero.jpg");
 pub const CLARITY_CTA_JPG: &[u8] = include_bytes!("../static/img/clarity-cta.jpg");
+/// Clarity's prism (2026-10-27): the vivid glass behind the funnel and,
+/// softened, behind every page of the theme.
+pub const CLARITY_PRISM_JPG: &[u8] = include_bytes!("../static/img/clarity-prism.jpg");
 /// Genealogy's (docs/adr/0016), made in the operator's Canva after their
 /// frame pack: a golden tree beside a scroll and empty oval frames, a desk
 /// of old letters and photographs, and the vine along each edge of its pages (a tall strip
@@ -118,10 +121,22 @@ pub const SUMMIT_PANORAMA_JPG: &[u8] = include_bytes!("../static/img/summit-pano
 /// room, blue panels at its sides and a projector glowing red on the floor,
 /// under the tree's glass (fusion.js stands the glass on the projector).
 pub const FUSION_LAB_JPG: &[u8] = include_bytes!("../static/img/fusion-lab.jpg");
+/// Galaxy's sky (2026-10-27, docs/adr/0007 §7), made in the operator's Canva:
+/// a spiral galaxy, its core behind the sun.
+pub const GALAXY_SKY_JPG: &[u8] = include_bytes!("../static/img/galaxy-sky.jpg");
 pub const RIVER_GROUND_JPG: &[u8] = include_bytes!("../static/img/river-ground.jpg");
-/// Its map: how near each pixel is (red), by which river-scene.js draws the
-/// ground in relief.
+/// Its maps: how near each pixel is (red), by which river-scene.js draws the
+/// ground in relief; its trees (green) and its meadows (blue), where the wind
+/// runs and the herds graze (docs/adr/0004 §17).
 pub const RIVER_GROUND_MAPS_JPG: &[u8] = include_bytes!("../static/img/river-ground-maps.jpg");
+/// The life on the river's ground under Canopée (docs/adr/0004 §17): red
+/// deer, chamois and ibex, wild horses and an eagle, made in the operator's
+/// Canva and cut out, in one atlas.
+pub const RIVER_LIFE_PNG: &[u8] = include_bytes!("../static/img/river-life.png");
+/// The laurels round a portrait on the tree's open cards (2026-10-27), made in
+/// the operator's Canva: white on transparent, a mask the stylesheet colours
+/// with each theme's accent.
+pub const LAUREL_RING_PNG: &[u8] = include_bytes!("../static/img/laurel-ring.png");
 /// The water of the family's streams and rivers under Canopée (docs/adr/0004
 /// §15): a mountain stream and a calm river seen from above, each repeating
 /// down its length without a seam.

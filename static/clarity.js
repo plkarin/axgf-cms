@@ -28,24 +28,38 @@
   if (!root || root.dataset.view !== 'funnel') return;
   var stage = document.getElementById('rv-canvas');
 
-  /* ---- the cone ---- */
-  // How far the slices are seen from above: the height of a slice's opening
-  // against its half-width.
-  var TILT = 0.17;
-  // The cone as the last frame drew it, for the edges and the scene.
+  /* ---- the rings (redrawn 2026-10-27, after a kit made in Canva) ----
+   * One ring of glass per generation, seen a little from above: the oldest
+   * at the narrow end below, the newest at the wide mouth above, each apart
+   * from the next so that it reads as its own. */
+  // How far a ring is seen from above: its depth against its half-width,
+  // and never more than this share of the room between two rings.
+  var TILT = 0.15, DEEP = 0.44;
+  // Between two families on one ring, in places (a place is one person).
+  var FAMILY = 0.7;
+  // People along a ring: never closer than MINSP, never further apart than
+  // MAXSP, and never past this share of the ring's half-width.
+  var MINSP = 40, MAXSP = 96, SPREAD = 0.86;
+  // The rings as the last frame drew them, for the edges and the scene.
   var GEO = null;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-  // The mouth is the newest generation shown, the narrow end the oldest:
-  // `lo`..`hi` in levels (up is newer), mapped onto the stage.
+  // `lo`..`hi` in levels (up is newer), mapped onto the stage; a ring's
+  // half-width at each level (`widths`), between them in proportion.
   function geometry(m) {
-    var g = m.funnel;
+    var g = m.funnel, ws = g.widths, P = (g.bottom - g.top) / (g.hi - g.lo + 1);
+    var dw0 = g.hi > g.lo ? ws[g.lo + 1] - ws[g.lo] : 12, dw1 = g.hi > g.lo ? ws[g.hi] - ws[g.hi - 1] : 12;
+    function W(l) {
+      if (l <= g.lo) return Math.max(ws[g.lo] * 0.6, ws[g.lo] - (g.lo - l) * dw0);
+      if (l >= g.hi) return ws[g.hi] + (l - g.hi) * dw1;
+      var a = Math.floor(l);
+      return ws[a] + (ws[a + 1] - ws[a]) * (l - a);
+    }
+    function R(l) { return Math.min(W(l) * TILT, P * DEEP); }
+    function Y(l) { return g.top + (g.hi + 0.5 - l) * P; }
     return {
-      sx: g.sx, lo: g.lo, hi: g.hi,
-      Y: function (l) { return g.top + (g.hi + 0.5 - l) / (g.hi - g.lo + 1) * (g.bottom - g.top); },
-      W: function (l) {
-        var t = clamp((l - (g.lo - 0.5)) / (g.hi - g.lo + 1), 0, 1);
-        return g.wbot + (g.wtop - g.wbot) * t;
-      }
+      sx: g.sx, lo: g.lo, hi: g.hi, P: P, W: W, R: R, Y: Y, wmax: W(g.ghi === undefined ? g.hi : g.ghi),
+      // The front of a ring, nearest the reader, at `x`.
+      front: function (l, x) { var e = (x - g.sx) / (W(l) || 1); return Y(l) + R(l) * Math.sqrt(Math.max(0, 1 - e * e)); }
     };
   }
 
@@ -59,62 +73,92 @@
     var lo = 0, hi = 0;
     fr.persons.forEach(function (p) { var l = Math.round(lev(p.y)); lo = Math.min(lo, l); hi = Math.max(hi, l); });
     // Room for what goes beyond: a line the record continues runs past the
-    // last slice, and its count is written past its end.
+    // last ring, and its count is written past its end.
     var rlo = lo, rhi = hi;
     function reach(y) { var l = lev(y); rlo = Math.min(rlo, Math.floor(l + 0.4)); rhi = Math.max(rhi, Math.ceil(l - 0.4)); }
     fr.tails.forEach(function (t) { reach(t.y2); if (t.count_at) reach(t.count_at.y); });
     fr.couples.forEach(function (c) { if (c.stub) { reach(c.y + c.stub_dy); if (c.stub_at) reach(c.stub_at.y); } });
-    // The cone stands a little left of the middle: its stages' figures take
-    // the right, as a funnel chart's do.
-    var funnel = {
-      sx: hl + hw * 0.45,
-      top: vt + vh * 0.06,
-      // Room below for the projector the cone stands on.
-      bottom: vt + vh * 0.85,
-      wtop: hw * 0.35,
-      wbot: hw * 0.1,
-      lo: rlo,
-      hi: rhi
-    };
-    var G = geometry({ funnel: funnel });
-    // Each generation keeps the river's order from left to right across its
-    // own slice; a point between two generations (a union) between theirs.
-    var range = {};
-    fr.persons.forEach(function (p) {
-      var g = Math.round(lev(p.y)), r = range[g] || (range[g] = [Infinity, -Infinity]);
-      r[0] = Math.min(r[0], p.x); r[1] = Math.max(r[1], p.x);
+
+    // Each generation's people in the river's order, left to right, and the
+    // place each takes along its ring: brothers and sisters, and partners,
+    // side by side, and a little room between one family and the next. The
+    // river's order is the one that crosses its lines least; spacing it
+    // evenly is what keeps a family from bunching into a knot of beads.
+    var asKid = {}, asParent = {};
+    fr.couples.forEach(function (c) {
+      c.kids.forEach(function (k) { (asKid[k] = asKid[k] || []).push(c.key); });
+      c.parents.forEach(function (k) { (asParent[k] = asParent[k] || []).push(c.key); });
     });
-    var gens = Object.keys(range).map(Number).sort(function (a, b) { return a - b; });
-    function rangeAt(l) {
-      if (!gens.length) return [hl, hl + hw];
-      if (l <= gens[0]) return range[gens[0]];
-      if (l >= gens[gens.length - 1]) return range[gens[gens.length - 1]];
-      for (var i = 1; i < gens.length; i++) {
-        if (l <= gens[i]) {
-          var a = range[gens[i - 1]], b = range[gens[i]], k = (l - gens[i - 1]) / (gens[i] - gens[i - 1]);
-          return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+    function share(a, b, M) { return (M[a] || []).some(function (k) { return (M[b] || []).indexOf(k) >= 0; }); }
+    var rows = {}, slot = {}, mid = {}, half = {};
+    fr.persons.forEach(function (p) { var l = Math.round(lev(p.y)); (rows[l] = rows[l] || []).push(p); });
+    var gens = Object.keys(rows).map(Number).sort(function (a, b) { return a - b; });
+    gens.forEach(function (l) {
+      var row = rows[l].sort(function (a, b) { return a.x - b.x; }), s = 0;
+      row.forEach(function (p, i) {
+        if (i) s += 1 + (share(row[i - 1].key, p.key, asKid) || share(row[i - 1].key, p.key, asParent) ? 0 : FAMILY);
+        slot[p.key] = s;
+      });
+      // The person at the fixed point stands at the front of their ring.
+      mid[l] = l === 0 && C && (C.key in slot) ? slot[C.key] : s / 2;
+      half[l] = Math.max(mid[l], s - mid[l]);
+    });
+    // The rings: each wide enough for its people, each wider than the one
+    // below it, and the mouth no wider than the stage allows; the funnel
+    // stands a little left of the middle, its stages' figures on the right.
+    var WMAX = hw * 0.42, WMIN = hw * 0.15, widths = {};
+    for (var l = rlo; l <= rhi; l++) {
+      var need = (l in half) ? half[l] * MINSP / SPREAD + 18 : 0;
+      widths[l] = Math.max(WMIN + (WMAX - WMIN) * (l - rlo + 0.5) / (rhi - rlo + 1), need, l > rlo ? widths[l - 1] + 10 : 0);
+    }
+    if (widths[rhi] > WMAX) {
+      var shrink = WMAX / widths[rhi];
+      for (l = rlo; l <= rhi; l++) widths[l] *= shrink;
+    }
+    var funnel = { sx: hl + hw * 0.44, top: vt + vh * 0.05, bottom: vt + vh * 0.9, lo: rlo, hi: rhi, glo: lo, ghi: hi, widths: widths };
+    var G = geometry({ funnel: funnel });
+    var at = {}, pos = {};
+    gens.forEach(function (l) {
+      var d = half[l] > 0 ? Math.min(MAXSP, G.W(l) * SPREAD / half[l]) : 0;
+      rows[l].forEach(function (p) {
+        var X = G.sx + (slot[p.key] - mid[l]) * d;
+        at[p.key] = [X, G.front(l, X)];
+        pos[Math.round(p.x * 2) + ',' + Math.round(p.y * 2)] = at[p.key];
+      });
+    });
+    // Anything else on the drawing (where a couple's lines meet, a line the
+    // record continues, a count) keeps its place among its generation's
+    // people: between two of them, it stays between them; between two
+    // generations, it is between the two.
+    var knots = {};
+    gens.forEach(function (l) {
+      knots[l] = rows[l].map(function (p) { return [p.x, (at[p.key][0] - G.sx) / G.W(l)]; });
+    });
+    function across(l, x) {
+      var ks = knots[l];
+      if (ks.length === 1) return clamp(ks[0][1] + (x - ks[0][0]) / (hw * 0.6), -0.96, 0.96);
+      var i = 1;
+      while (i < ks.length - 1 && x > ks[i][0]) i++;
+      var a = ks[i - 1], b = ks[i], k = b[0] === a[0] ? 0.5 : (x - a[0]) / (b[0] - a[0]);
+      return clamp(a[1] + (b[1] - a[1]) * k, -0.96, 0.96);
+    }
+    function place(x, y) {
+      var exact = pos[Math.round(x * 2) + ',' + Math.round(y * 2)];
+      if (exact) return exact;
+      var l = lev(y), e = 0;
+      if (gens.length) {
+        var a = gens[0], b = gens[gens.length - 1];
+        if (l <= a) e = across(a, x);
+        else if (l >= b) e = across(b, x);
+        else {
+          var i = 1;
+          while (i < gens.length - 1 && l > gens[i]) i++;
+          var g0 = gens[i - 1], g1 = gens[i], k = (l - g0) / (g1 - g0);
+          e = across(g0, x) * (1 - k) + across(g1, x) * k;
         }
       }
-      return range[gens[gens.length - 1]];
-    }
-    var cx = C ? C.x : hl + hw / 2;
-    function place(x, y) {
-      var l = lev(y), r = rangeAt(l), span = r[1] - r[0];
-      var u = span > 1 ? clamp((x - r[0]) / span, 0, 1) : 0.5;
-      var W = G.W(l), X = G.sx + (u - 0.5) * 2 * W * 0.84;
-      // The person at the fixed point stands at the front of their slice,
-      // partners either side; between their slice and the next ones the
-      // two placings blend, so that a union sits where its lines meet.
-      var al = Math.abs(l);
-      if (al < 1) {
-        var dx = x - cx, ad = Math.abs(dx);
-        var X0 = ad < 1 ? G.sx : G.sx + (dx < 0 ? -1 : 1) * W * Math.min(0.84, 0.3 + 0.54 * Math.min(1, ad / 260));
-        var k = al < 0.25 ? 0 : (al - 0.25) / 0.75;
-        X = X0 + (X - X0) * k;
-      }
-      var e = (X - G.sx) / (W || 1);
-      // On the front of the slice's ring: the middle nearest the reader.
-      return [X, G.Y(l) + W * TILT * 0.8 * Math.sqrt(Math.max(0, 1 - e * e))];
+      var X = G.sx + e * G.W(l);
+      return [X, G.front(l, X)];
     }
     function moved(o) { var q = place(o.x, o.y); return Object.assign({}, o, { x: q[0], y: q[1] }); }
     function markAt(mk) {
@@ -124,9 +168,17 @@
       return out;
     }
     return {
-      persons: fr.persons.map(function (p) { return Object.assign(moved(p), { lv: Math.round(lev(p.y)) }); }),
+      persons: fr.persons.map(function (p) {
+        return Object.assign({}, p, { x: at[p.key][0], y: at[p.key][1], lv: Math.round(lev(p.y)) });
+      }),
       couples: fr.couples.map(function (c) {
         var o = moved(c);
+        // A couple's lines meet over the middle of the two of them.
+        var ps = c.parents.filter(function (k) { return at[k]; });
+        if (ps.length) {
+          o.x = ps.reduce(function (s, k) { return s + at[k][0]; }, 0) / ps.length;
+          o.y = G.front(lev(c.y), o.x);
+        }
         if (c.stub) {
           var e = place(c.x + c.stub_dx, c.y + c.stub_dy);
           o.stub_dx = e[0] - o.x; o.stub_dy = e[1] - o.y; o.stub_at = markAt(c.stub_at);
@@ -137,11 +189,11 @@
         var a = place(t.x1, t.y1), b = place(t.x2, t.y2);
         return Object.assign({}, t, { x1: a[0], y1: a[1], x2: b[0], y2: b[1], count_at: markAt(t.count_at) });
       }),
-      meta: Object.assign({}, m, { funnel: Object.assign(funnel, { glo: lo, ghi: hi }) })
+      meta: Object.assign({}, m, { funnel: funnel })
     };
   }
-  // A link runs up or down the cone's wall from one slice to the next: an
-  // S, as a mesh drawn on a surface of revolution.
+  // A link runs from one ring to the next: an S, as a thread drawn on the
+  // funnel's wall.
   function edge(x1, y1, x2, y2) {
     var r = function (v) { return Math.round(v * 10) / 10; }, my = (y1 + y2) / 2;
     return 'M' + r(x1) + ' ' + r(y1) + 'C' + r(x1) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(my) + ' ' + r(x2) + ' ' + r(y2);
@@ -149,13 +201,30 @@
 
   /* ---- the drawing ---- */
   var named = {};
-  // A slice's colour, from the mouth (1, blue) to the narrow end (5, pink).
+  // A ring's colour, from the mouth (1, blue) to the narrow end (5, pink).
   function tone(l, lo, hi) { return hi === lo ? 3 : 1 + Math.round(4 * (hi - l) / (hi - lo)); }
+  // Whether a box would sit across the outline of a ring: some of it on
+  // the glass, some of it off. A name is never written over an outline.
+  function overRim(rings, b) {
+    var pts = [];
+    for (var i = 0; i <= 4; i++) { var x = b[0] + (b[2] - b[0]) * i / 4; pts.push([x, b[1]], [x, b[3]]); }
+    pts.push([b[0], (b[1] + b[3]) / 2], [b[2], (b[1] + b[3]) / 2]);
+    for (var r = 0; r < rings.length; r++) {
+      var q = rings[r], inside = 0;
+      for (var j = 0; j < pts.length; j++) {
+        var dx = (pts[j][0] - q[0]) / q[2], dy = (pts[j][1] - q[1]) / q[3];
+        if (dx * dx + dy * dy < 1) inside++;
+      }
+      if (inside && inside < pts.length) return true;
+    }
+    return false;
+  }
+  var RINGS = [];
   function paint(fr, api, rest) {
     var f = api.f, esc = api.esc, m = fr.meta, PM = api.byKey(fr.persons), out = '', links = '', nodes = '', bands = '', figs = '';
     // Above the glass, in this order: what the record continues past the
-    // last slice, the mesh, the unions, then the counts. Drawn under the
-    // slices, they were lost in the glass's own colour.
+    // last ring, the threads, the knots where a couple's threads meet, then
+    // the counts.
     var tails = '', unions = '', marks = '', base = '', beam = '';
     var hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
     var G = geometry(m);
@@ -170,51 +239,43 @@
       count[p.lv] = (count[p.lv] || 0) + 1;
     });
     var glo = m.funnel.glo, ghi = m.funnel.ghi;
-    // The projector the cone stands on: a platform under the narrow end, its
-    // rings, and a beam of light up the cone's axis to the mouth.
-    var yLow = G.Y(glo - 0.44), wLow = G.W(glo - 0.44), yTop = G.Y(ghi + 0.44), wTop = G.W(ghi + 0.44);
-    // Below the lines the record continues past the narrow end, so that
-    // their counts stand clear of the platform.
-    var pr = wLow * 1.45, py = Math.min(vt + vh - 6 - pr * 1.3 * TILT * 1.6, Math.max(yLow + 18, G.Y(m.funnel.lo - 0.5) + 12));
-    base += '<ellipse class="cl-base-glow" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * 1.25) + '" ry="' + f(pr * 1.25 * TILT * 1.6) + '"/>';
-    for (var ri = 3; ri >= 1; ri--) {
-      base += '<ellipse class="cl-base-ring cl-base-ring-' + ri + '" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * (0.45 + ri * 0.28)) + '" ry="' + f(pr * (0.45 + ri * 0.28) * TILT * 1.6) + '"/>';
-    }
-    base += '<ellipse class="cl-base" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * 0.5) + '" ry="' + f(pr * 0.5 * TILT * 1.6) + '"/>';
+    // The pedestal of light the funnel stands on, under its narrow end and
+    // the lines that run past it.
+    var pr = G.W(glo) * 0.92, py = Math.min(vt + vh - 8 - pr * TILT, Math.max(G.Y(glo) + G.R(glo) + 16, G.Y(m.funnel.lo - 0.5) + 10));
+    base += '<ellipse class="cl-base-glow" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * 1.3) + '" ry="' + f(pr * 1.3 * TILT * 1.4) + '"/>'
+      + '<ellipse class="cl-base-ring" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr) + '" ry="' + f(pr * TILT * 1.4) + '"/>'
+      + '<ellipse class="cl-base" cx="' + f(G.sx) + '" cy="' + f(py) + '" rx="' + f(pr * 0.55) + '" ry="' + f(pr * 0.55 * TILT * 1.4) + '"/>';
     G.py = py; G.pr = pr;
-    beam += '<rect class="cl-beam" x="' + f(G.sx - wLow * 0.22) + '" y="' + f(yTop) + '" width="' + f(wLow * 0.44) + '" height="' + f(py - yTop) + '" fill="url(#cl-beam)"/>'
-      + '<line class="cl-axis" x1="' + f(G.sx) + '" y1="' + f(yTop - wTop * TILT) + '" x2="' + f(G.sx) + '" y2="' + f(py) + '"/>';
-    // The slices, back to front: the narrow end first, so a wider slice above
-    // overlaps the one below as glass does.
-    var boxes = [];
+    // The rings, the narrow end first, so that a wider ring above lies over
+    // the one below as glass does: a thin disc, its face tinted, a light
+    // along its far side, a fine rim; and the stage's figures in a column
+    // on the right, each on a thread from its ring.
+    var boxes = [], rings = [], fx = G.sx + G.W(ghi) + 34;
     for (var l = glo; l <= ghi; l++) {
-      var t = tone(l, glo, ghi), yT = G.Y(l + 0.44), yB = G.Y(l - 0.44), wT = G.W(l + 0.44), wB = G.W(l - 0.44);
-      var rT = wT * TILT, rB = wB * TILT, sx = G.sx;
-      bands += '<path class="cl-slice" fill="url(#cl-g' + t + ')" d="M' + f(sx - wT) + ' ' + f(yT) + 'L' + f(sx - wB) + ' ' + f(yB)
-        + 'A' + f(wB) + ' ' + f(rB) + ' 0 0 0 ' + f(sx + wB) + ' ' + f(yB) + 'L' + f(sx + wT) + ' ' + f(yT)
-        + 'A' + f(wT) + ' ' + f(rT) + ' 0 0 0 ' + f(sx - wT) + ' ' + f(yT) + 'Z"/>';
-      // The opening, and the gloss along the upper half of the glass.
-      bands += '<ellipse class="cl-rim cl-rim-' + t + '" cx="' + f(sx) + '" cy="' + f(yT) + '" rx="' + f(wT) + '" ry="' + f(rT) + '"/>';
-      // A gauge's ticks just outside the opening, as an instrument's ring.
-      bands += '<ellipse class="cl-tick" cx="' + f(sx) + '" cy="' + f(yT) + '" rx="' + f(wT + 7) + '" ry="' + f(rT + 7 * TILT) + '"/>';
-      bands += '<path class="cl-gloss" d="M' + f(sx - wT * 0.86) + ' ' + f(yT + rT * 0.9) + 'Q' + f(sx) + ' ' + f(yT + rT * 1.9) + ' ' + f(sx + wT * 0.86) + ' ' + f(yT + rT * 0.9)
-        + 'L' + f(sx + wB * 0.8) + ' ' + f(yB - (yB - yT) * 0.45) + 'Q' + f(sx) + ' ' + f(yB - (yB - yT) * 0.3) + ' ' + f(sx - wB * 0.8) + ' ' + f(yB - (yB - yT) * 0.45) + 'Z"/>';
-      // The stage's figures, at its right: its generation and its people.
-      var fx = sx + G.W(l) + 26, fy = G.Y(l), word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0';
-      var n = count[l] || 0, num;
+      var t = tone(l, glo, ghi), Y = G.Y(l), W = G.W(l), R = G.R(l), sx = G.sx, th = 2.4 + W * 0.012;
+      rings.push([sx, Y, W, R]);
+      var front = 'M' + f(sx - W) + ' ' + f(Y) + 'A' + f(W) + ' ' + f(R) + ' 0 0 0 ' + f(sx + W) + ' ' + f(Y);
+      bands += '<path class="cl-ring-edge cl-rim-' + t + '" d="' + front + 'L' + f(sx + W) + ' ' + f(Y + th) + 'A' + f(W) + ' ' + f(R) + ' 0 0 1 ' + f(sx - W) + ' ' + f(Y + th) + 'Z"/>'
+        + '<ellipse class="cl-ring" cx="' + f(sx) + '" cy="' + f(Y) + '" rx="' + f(W) + '" ry="' + f(R) + '" fill="url(#cl-g' + t + ')"/>'
+        + '<path class="cl-ring-light" d="M' + f(sx - W * 0.8) + ' ' + f(Y - R * 0.42) + 'Q' + f(sx) + ' ' + f(Y - R * 1.3) + ' ' + f(sx + W * 0.8) + ' ' + f(Y - R * 0.42) + '"/>'
+        + '<path class="cl-rim-back" d="M' + f(sx - W) + ' ' + f(Y) + 'A' + f(W) + ' ' + f(R) + ' 0 0 1 ' + f(sx + W) + ' ' + f(Y) + '"/>'
+        + '<path class="cl-rim-front" d="' + front + '"/>';
+      var word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0', n = count[l] || 0, num;
       try { num = n.toLocaleString(document.documentElement.lang || undefined); } catch (e) { num = String(n); }
-      figs += '<line class="cl-leader" x1="' + f(sx + G.W(l) + 4) + '" y1="' + f(fy) + '" x2="' + f(fx - 6) + '" y2="' + f(fy) + '"/>'
-        + '<text x="' + f(fx) + '" y="' + f(fy - 3) + '" font-size="19" font-weight="600" class="cl-figure">' + esc(num) + '</text>'
-        + '<text x="' + f(fx) + '" y="' + f(fy + 11) + '" font-family="' + api.mono + '" font-size="9.5" class="k-band-text cl-gen">' + word + '</text>';
-      boxes.push([fx - 2, fy - 20, fx + Math.max(api.width(num, 19, false), 22) + 2, fy + 14]);
+      figs += '<line class="cl-leader" x1="' + f(sx + W + 6) + '" y1="' + f(Y) + '" x2="' + f(fx - 9) + '" y2="' + f(Y) + '"/>'
+        + '<circle class="cl-leader-tip" cx="' + f(fx - 9) + '" cy="' + f(Y) + '" r="1.8"/>'
+        + '<text x="' + f(fx) + '" y="' + f(Y + 1) + '" font-size="17" font-weight="600" class="cl-figure">' + esc(num) + '</text>'
+        + '<text x="' + f(fx) + '" y="' + f(Y + 13) + '" font-family="' + api.mono + '" font-size="9.5" class="k-band-text cl-gen">' + word + '</text>';
+      boxes.push([fx - 2, Y - 15, fx + Math.max(api.width(num, 17, false), 22) + 2, Y + 16]);
     }
-    // Lines the record continues past the last slice, and lines it ends.
+    RINGS = rings;
+    // Lines the record continues past the last ring, and lines it ends.
     var counts = [];
     fr.tails.forEach(function (t) {
       tails += '<g opacity="' + f(t.a) + '"><path d="' + edge(t.x1, t.y1, t.x2, t.y2) + '" fill="none" class="cl-tail"/>';
       tails += t.kind === 'cont'
-        ? '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="2.6" class="cl-tail-tip"/>'
-        : '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3.4" class="cl-end"/>';
+        ? '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="2.4" class="cl-tail-tip"/>'
+        : '<circle cx="' + f(t.x2) + '" cy="' + f(t.y2) + '" r="3.2" class="cl-end"/>';
       tails += '</g>';
       if (t.kind === 'cont' && t.count_at) counts.push({ mk: t.count_at, text: '+' + t.count, size: 9.5, dx: t.cref ? t.x2 - t.cref[0] : 0, dy: t.cref ? t.y2 - t.cref[1] : 0, a: t.a });
     });
@@ -223,21 +284,25 @@
       tails += '<g opacity="' + f(c.a) + '"><path d="' + edge(c.x, c.y, c.x + c.stub_dx, c.y + c.stub_dy) + '" fill="none" class="cl-tail cl-stub"/></g>';
       if (c.stub_at) counts.push({ mk: c.stub_at, text: '+' + c.stub, size: 10, dx: c.sref ? c.x - c.sref[0] : 0, dy: c.sref ? c.y - c.sref[1] : 0, a: c.a });
     });
-    // The mesh: parent to union, union to child.
+    // The threads: parent to the couple's knot, the knot to each child.
     api.edges(fr, PM).forEach(function (e) {
-      var d = edge(e.x1, e.y1, e.x2, e.y2), w = f(0.8 + api.widths[api.cls(e.d)] * 0.3), o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      var d = edge(e.x1, e.y1, e.x2, e.y2), w = f(0.7 + api.widths[api.cls(e.d)] * 0.24), o = e.a < 1 ? ' opacity="' + f(e.a) + '"' : '';
+      // Edged in light, so that the ink reads on the deep and the bright
+      // parts of the prism alike.
+      links += '<path d="' + d + '" class="cl-link-halo" stroke-width="' + f(+w + 2.2) + '"' + o + '/>';
       if (e.conf === 'a') links += '<path d="' + d + '" fill="none" class="cl-link" stroke-width="' + w + '" stroke-linecap="round"' + o + '/>';
       else if (e.conf === 'd') links += '<path d="' + d + '" fill="none" class="cl-link cl-link-d" stroke-width="' + w + '" stroke-dasharray="5 3.5"' + o + '/>';
-      else links += '<path d="' + d + '" fill="none" class="cl-link cl-link-s" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"' + o + '/>';
+      else links += '<path d="' + d + '" fill="none" class="cl-link cl-link-s" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="0.1 4.5"' + o + '/>';
     });
     fr.couples.forEach(function (c) {
-      unions += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="2.2" class="cl-union" opacity="' + f(c.a) + '"/>';
+      unions += '<circle cx="' + f(c.x) + '" cy="' + f(c.y) + '" r="2.7" class="cl-union" opacity="' + f(c.a) + '"/>';
     });
-    // Names stand beside their person, outward from the cone's axis: the
-    // near generations first, the next while there is room, and a name that
-    // would cover one already placed — or a stage's figure — is dropped, as
-    // the river drops a word it has no room for. The pointer brings it back.
-    var keep = {};
+    // Every bead, every knot and every figure is a place no name may cover.
+    fr.persons.forEach(function (p) {
+      var rr = p.role === 'centre' ? 13 : 7;
+      boxes.push([p.x - rr, p.y - rr, p.x + rr, p.y + rr]);
+    });
+    fr.couples.forEach(function (c) { boxes.push([c.x - 3.5, c.y - 3.5, c.x + 3.5, c.y + 3.5]); });
     function hit(box) {
       for (var i = 0; i < boxes.length; i++) {
         var b = boxes[i];
@@ -245,28 +310,52 @@
       }
       return false;
     }
-    // Every bead first: a name beside its own never reaches it, and one that
-    // would cover another person's is a name too many.
-    fr.persons.forEach(function (p) {
-      var rr = p.role === 'centre' ? 12 : 7;
-      boxes.push([p.x - rr, p.y - rr, p.x + rr, p.y + rr]);
-    });
-    var C0 = fr.persons.filter(function (p) { return p.role === 'centre'; })[0];
-    if (C0 && C0.s && !C0.s.redacted) {
-      var cw0 = api.width(api.clip(C0.s.names[2], 260), 16, true);
-      boxes.push([C0.x - cw0 / 2, C0.y + 16, C0.x + cw0 / 2, C0.y + 46]);
+    function free(b) {
+      return b[0] >= hl + 2 && b[2] <= hl + hw - 2 && b[1] >= vt + 2 && b[3] <= vt + vh - 2 && !hit(b) && !overRim(rings, b);
     }
-    fr.persons.slice().sort(function (a, b) { return Math.abs(a.lv) - Math.abs(b.lv) || a.x - b.x; }).forEach(function (p) {
+    // Names (2026-10-27): each on a small frosted label, on its own ring's
+    // glass above its bead when there is room — or beside it, beside its
+    // ring, or below — and never across an outline, over a bead or over
+    // another name. A name with no such place is left out, as the river
+    // leaves out a word it has no room for; the pointer brings it back.
+    var keep = {}, PH = 15;
+    function spots(p, w, h) {
+      var Wl = G.W(p.lv), e = (p.x - G.sx) / (Wl || 1), out = [];
+      var o = e < 0 ? -1 : 1;
+      out.push([p.x - w / 2, p.y - 7 - h]);
+      out.push([o < 0 ? p.x - 4 - w : p.x + 4, p.y - 7 - h]);
+      out.push([o < 0 ? p.x + 4 : p.x - 4 - w, p.y - 7 - h]);
+      if (Math.abs(e) > 0.4) out.push([o < 0 ? G.sx - Wl - 8 - w : G.sx + Wl + 8, p.y - h / 2]);
+      out.push([p.x - w / 2, p.y - 10 - 2 * h]);
+      out.push([p.x - w / 2, p.y + 8]);
+      out.push([o < 0 ? p.x - 10 - w : p.x + 10, p.y - h / 2]);
+      return out.map(function (q) { return [q[0], q[1], q[0] + w, q[1] + h]; });
+    }
+    // The person at the fixed point: their full name and years on a larger
+    // label, on their ring's glass above them, else below; on one line
+    // where two do not fit, as on the flat rings of the whole family.
+    var C0 = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cpill = null;
+    if (C0 && C0.s && !C0.s.redacted) {
+      var cn = api.clip(C0.s.names[2], 260), line = cn + (C0.s.years ? ' · ' + C0.s.years : '');
+      var w2 = Math.max(api.width(cn, 15, true), api.width(C0.s.years, 10.5, true)) + 24, w1 = api.width(line, 13.5, true) + 22;
+      var cs = [[w2, 30, -13, 2], [w2, 30, 14, 2], [w1, 20, -11, 1], [w1, 20, 13, 1]].map(function (q) {
+        var y0 = q[2] < 0 ? C0.y + q[2] - q[1] : C0.y + q[2];
+        return { box: [C0.x - q[0] / 2, y0, C0.x + q[0] / 2, y0 + q[1]], lines: q[3] };
+      });
+      cpill = cs.filter(function (c) { return free(c.box); })[0] || cs[2];
+      cpill.text = line;
+      boxes.push(cpill.box);
+    }
+    fr.persons.slice().sort(function (a, b) {
+      return Math.abs(a.lv) - Math.abs(b.lv) || (b.role === 'spouse') - (a.role === 'spouse') || a.x - b.x;
+    }).forEach(function (p) {
       var s = p.s || {}, gd = Math.abs(p.lv);
-      if (p.role === 'centre' || s.redacted || !(gd <= 2 || p.role === 'spouse')) return;
-      var side = p.x < G.sx - 4 ? -1 : p.x > G.sx + 4 ? 1 : 0, anchor = side < 0 ? 'end' : side > 0 ? 'start' : 'middle';
-      var lx = p.x + side * 10, ly = side ? p.y + 4 : p.y + 19;
-      var word = gd <= 1 || p.role === 'spouse' ? s.names[1] : s.names[0], both = gd <= 1;
-      var w = Math.max(api.width(word, 12, false), both ? api.width(s.years, 9.5, true) : 0);
-      var x0 = anchor === 'end' ? lx - w : anchor === 'middle' ? lx - w / 2 : lx, box = [x0 - 2, ly - 11, x0 + w + 2, ly + (both ? 14 : 3)];
-      if (hit(box)) return;
-      boxes.push(box);
-      keep[p.key] = { x: lx, y: ly, anchor: anchor, word: word, both: both };
+      if (p.role === 'centre' || s.redacted || !s.names) return;
+      var word = gd <= 1 || p.role === 'spouse' ? s.names[1] : s.names[0], w = api.width(word, 11.5, false) + 14;
+      var spot = spots(p, w, PH).filter(free)[0];
+      if (!spot) return;
+      boxes.push(spot);
+      keep[p.key] = { box: spot, word: word };
     });
     // The counts: never dropped, the only sign of the people beyond, but
     // stepped aside from a name rather than written over it.
@@ -286,44 +375,56 @@
       if (mk.leader) mv.leader = [mk.leader[0], mk.leader[1], mk.leader[2] + at[0], mk.leader[3] + at[1]];
       marks += '<g class="cl-count" opacity="' + f(c.a) + '">' + api.mark(mv, c.text, c.size, c.dx, c.dy) + '</g>';
     });
-    // The people: a bead on the glass, and the person at the fixed point a
-    // larger one with the theme's ring.
+    // The people: a pearl on the front of their ring, and the person at the
+    // fixed point a larger one with the theme's ring.
     fr.persons.forEach(function (p) {
-      var s = p.s || {}, isC = p.role === 'centre', x = f(p.x), y = f(p.y), r = 5;
+      var s = p.s || {}, isC = p.role === 'centre', x = f(p.x), y = f(p.y), r = 5.2;
       var k = '<g opacity="' + f(p.a) + '">';
-      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="18" fill="transparent"/>';
+      if (rest) k += '<a class="rv-p" data-id="' + esc(p.id) + '" data-key="' + esc(p.key) + '" href="' + api.base + '?p=' + encodeURIComponent(p.id) + '&amp;n=' + m.n + '" aria-label="' + esc(api.said(p)) + '"><circle cx="' + x + '" cy="' + y + '" r="16" fill="transparent"/>';
       if (isC) {
-        k += '<circle cx="' + x + '" cy="' + y + '" r="20" class="cl-halo"/><circle cx="' + x + '" cy="' + y + '" r="11" class="cl-centre"/><circle cx="' + x + '" cy="' + y + '" r="4.5" class="cl-centre-core"/>';
+        k += '<circle cx="' + x + '" cy="' + y + '" r="19" class="cl-halo"/><circle cx="' + x + '" cy="' + y + '" r="10.5" class="cl-centre"/><circle cx="' + x + '" cy="' + y + '" r="4.2" class="cl-centre-core"/>';
       } else {
         if (p.repeat > 1) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3) + '" fill="none" class="k-data-line" stroke-width="1"/>';
         if (p.again) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3 + (p.repeat > 1 ? 2.2 : 0)) + '" fill="none" class="k-data-line" stroke-width="1" stroke-dasharray="2.4 1.8"/>';
-        if (s.redacted || s.sparse) k += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="cl-bead cl-hidden" stroke-width="1.5" stroke-dasharray="1.6 1.6"/>';
-        else if (s.living) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 4) + '" class="cl-bead-glow cl-living"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="cl-bead cl-living" stroke-width="2.2"/>';
-        else k += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="cl-bead cl-gone" stroke-width="2"/>';
+        if (s.redacted || s.sparse) k += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="cl-bead cl-hidden" stroke-width="1.4" stroke-dasharray="1.6 1.6"/>';
+        else if (s.living) k += '<circle cx="' + x + '" cy="' + y + '" r="' + f(r + 3.6) + '" class="cl-bead-glow cl-living"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="cl-bead cl-living" stroke-width="1.8"/>';
+        else k += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" class="cl-bead cl-gone" stroke-width="1.6"/>';
       }
-      var halo = ' paint-order="stroke" stroke-width="4" stroke-linejoin="round"';
-      if (isC && !s.redacted) {
-        k += '<text x="' + x + '" y="' + f(p.y + 32) + '" text-anchor="middle" font-size="16" font-weight="600" class="cl-name cl-centre-name k-halo"' + halo + '>' + esc(api.clip(s.names[2], 260)) + '</text>'
-          + '<text x="' + x + '" y="' + f(p.y + 45) + '" text-anchor="middle" font-family="' + api.mono + '" font-size="11" class="cl-data k-halo"' + halo + '>' + esc(s.years) + '</text>';
+      if (isC && cpill) {
+        var cb = cpill.box, cx0 = f((cb[0] + cb[2]) / 2);
+        k += '<g class="k-name"><rect class="cl-pill cl-pill-centre" x="' + f(cb[0]) + '" y="' + f(cb[1]) + '" width="' + f(cb[2] - cb[0]) + '" height="' + f(cb[3] - cb[1]) + '" rx="' + (cpill.lines === 2 ? 9 : 10) + '"/>';
+        if (cpill.lines === 2) {
+          k += '<text x="' + cx0 + '" y="' + f(cb[1] + 14) + '" text-anchor="middle" font-size="15" font-weight="600" class="cl-name cl-centre-name">' + esc(api.clip(s.names[2], 260)) + '</text>'
+            + '<text x="' + cx0 + '" y="' + f(cb[1] + 26) + '" text-anchor="middle" font-family="' + api.mono + '" font-size="10.5" class="cl-data">' + esc(s.years) + '</text>';
+        } else {
+          k += '<text x="' + cx0 + '" y="' + f(cb[1] + 14.5) + '" text-anchor="middle" font-size="13.5" font-weight="600" class="cl-name cl-centre-name">' + esc(cpill.text) + '</text>';
+        }
+        k += '</g>';
       } else if (keep[p.key]) {
-        var L = keep[p.key], an = L.anchor !== 'start' ? ' text-anchor="' + L.anchor + '"' : '';
-        k += '<text x="' + f(L.x) + '" y="' + f(L.y) + '"' + an + ' font-size="12" class="cl-name k-halo"' + halo + '>' + esc(L.word) + '</text>';
-        if (L.both) k += '<text x="' + f(L.x) + '" y="' + f(L.y + 11.5) + '"' + an + ' font-family="' + api.mono + '" font-size="9.5" class="cl-data k-halo"' + halo + '>' + esc(s.years) + '</text>';
+        var L = keep[p.key], b = L.box;
+        // A name that stands off its bead (beside its ring) hangs on a thread.
+        var tx = clamp(p.x, b[0], b[2]), ty = clamp(p.y, b[1], b[3]), dl = Math.hypot(tx - p.x, ty - p.y);
+        k += '<g class="k-name">';
+        if (dl > 12) k += '<line class="tv-leader cl-label-thread" x1="' + f(p.x + (tx - p.x) / dl * 7) + '" y1="' + f(p.y + (ty - p.y) / dl * 7) + '" x2="' + f(tx) + '" y2="' + f(ty) + '"/>';
+        k += '<rect class="tv-panel cl-pill" x="' + f(b[0]) + '" y="' + f(b[1]) + '" width="' + f(b[2] - b[0]) + '" height="' + f(b[3] - b[1]) + '" rx="' + f((b[3] - b[1]) / 2) + '"/>'
+          + '<text x="' + f((b[0] + b[2]) / 2) + '" y="' + f(b[1] + 11) + '" text-anchor="middle" font-size="11.5" class="cl-name">' + esc(L.word) + '</text></g>';
       }
       if (rest) k += '</a>';
       nodes += k + '</g>';
     });
     if (rest) named = keep;
-    var defs = '<linearGradient id="cl-beam" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="cl-beam-edge"/><stop offset="0.5" class="cl-beam-mid"/><stop offset="1" class="cl-beam-edge"/></linearGradient>';
+    var defs = '';
     for (var i = 1; i <= 5; i++) {
       defs += '<linearGradient id="cl-g' + i + '" x1="0" x2="1" y1="0" y2="0">'
         + '<stop offset="0" class="cl-s' + i + ' cl-edge"/><stop offset="0.3" class="cl-s' + i + ' cl-mid"/>'
         + '<stop offset="0.47" class="cl-hi"/><stop offset="0.64" class="cl-s' + i + ' cl-mid"/><stop offset="1" class="cl-s' + i + ' cl-edge"/></linearGradient>';
     }
-    var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cn = C && C.s && !C.s.redacted ? C.s.names[2] : '';
+    // A pearl: lit from the upper left.
+    defs += '<radialGradient id="cl-pearl" cx="0.36" cy="0.32" r="0.78"><stop offset="0" class="cl-pearl-0"/><stop offset="0.55" class="cl-pearl-1"/><stop offset="1" class="cl-pearl-2"/></radialGradient>';
+    var C = fr.persons.filter(function (p) { return p.role === 'centre'; })[0], cname = C && C.s && !C.s.redacted ? C.s.names[2] : '';
     var lbl = (root.querySelector('.rv-stage') || root).getAttribute('aria-label') || '';
     return '<svg class="rv-svg cl-svg" data-view="funnel" viewBox="' + f(hl) + ' ' + f(vt) + ' ' + f(hw) + ' ' + f(vh) + '" width="100%" '
-      + (rest ? 'role="group" aria-label="' + esc(lbl + (cn ? ' — ' + cn : '')) + '"' : 'aria-hidden="true"')
+      + (rest ? 'role="group" aria-label="' + esc(lbl + (cname ? ' — ' + cname : '')) + '"' : 'aria-hidden="true"')
       + ' xmlns="http://www.w3.org/2000/svg"><defs>' + defs + '</defs>' + out + base + bands + beam + figs + tails + links + '<g class="rv-lit"></g>' + unions + marks + nodes + '</svg>';
   }
 
@@ -368,6 +469,9 @@
   }
 
   window.axgfView = { name: 'funnel', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; } };
+  // A name the river adds (every name, or one the drawing had no room for)
+  // keeps off the rings' outlines too.
+  window.axgfView.keepOut = function (b) { return overRim(RINGS, b); };
 
   /* ---- the light ---- */
   if (!stage) return;
@@ -521,12 +625,14 @@
     // cone's outline only.
     var ph = (clock % SWEEP) / SWEEP;
     if (ph < 0.45) {
-      var G = GEO, yT = G.Y(G.hi + 0.5), yB = G.Y(G.lo - 0.5), wT = G.W(G.hi + 0.5), wB = G.W(G.lo - 0.5);
+      var G = GEO, yT = G.Y(G.hi + 0.5), yB = G.Y(G.lo - 0.5), wT = G.W(G.hi + 0.5);
       go.save();
       go.beginPath();
-      go.moveTo((G.sx - wT) * s + ox, yT * s + oy); go.lineTo((G.sx + wT) * s + ox, yT * s + oy);
-      go.lineTo((G.sx + wB) * s + ox, yB * s + oy); go.lineTo((G.sx - wB) * s + ox, yB * s + oy);
-      go.closePath(); go.clip();
+      RINGS.forEach(function (q) {
+        go.moveTo((q[0] + q[2]) * s + ox, q[1] * s + oy);
+        go.ellipse(q[0] * s + ox, q[1] * s + oy, q[2] * s, q[3] * s, 0, 0, 6.283);
+      });
+      go.clip();
       var x = (G.sx - wT + (2 * wT + 120) * (ph / 0.45)) * s + ox, band = 60 * s;
       var g = go.createLinearGradient(x - band, 0, x + band, 0);
       g.addColorStop(0, rgba(SHEEN, 0)); g.addColorStop(0.5, rgba(SHEEN, 0.32)); g.addColorStop(1, rgba(SHEEN, 0));

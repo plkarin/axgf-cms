@@ -1070,19 +1070,21 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("matchMedia('(prefers-reduced-motion: reduce)')"));
     assert!(js.contains("root.dataset.riverMotion === 'cut'"));
     assert!(js.contains("document.hidden"));
-    // The ground is Selva Verde's valley (the operator's reviews, 2026-10-24
-    // and 25): a photograph drawn in relief by its depth map, with no water
-    // of its own — the family's streams and rivers are its only water, the
-    // vegetation greener along them; each person a marker of light; the
+    // The ground is Selva Verde's valley (the operator's reviews, 2026-10-24,
+    // 25 and 27): a photograph drawn in relief by its depth map, with no
+    // water of its own — the family's streams and rivers are its only water,
+    // the vegetation greener along them; each person a marker of light; the
     // pointer leans it only where motion is allowed.
     assert!(js.contains(
-        "var PIC = { src: '/static/img/river-ground.jpg?v=6', maps: '/static/img/river-ground-maps.jpg?v=2',"
+        "var PIC = { src: '/static/img/river-ground.jpg?v=7', maps: '/static/img/river-ground-maps.jpg?v=3',"
     ));
     assert!(
         !js.contains("float wm="),
         "the ground animates no water of its own"
     );
-    assert!(js.contains("col=mix(col,col*uGreen,clamp(gt.g*0.6+gw*gw*0.3,0.0,0.65));"));
+    assert!(js.contains(
+        "col=mix(col,col*uGreen,clamp(smoothstep(0.6,0.95,gt.g)*0.45+gw*gw*0.25,0.0,0.6));"
+    ));
     assert!(js.contains("var rg = rings[q], tt = (clock / 3.2 + rg.ph) % 1"));
     // The family's lines are rivers (the operator's review, 2026-10-24): under
     // Canopée the scene draws each one in the ground — its water, its banks,
@@ -1111,7 +1113,7 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     // it carved, lit by the sun, and where the water runs the ground holds
     // still as the pointer leans the landscape, so they never part.
     assert!(js.contains("' s*=1.0-clamp(gt.b*1.6,0.0,0.9);',"));
-    assert!(js.contains("' col*=mix(1.0,slope,clamp(gt.b*2.2,0.0,1.0));',"));
+    assert!(js.contains("' col*=mix(1.0,slope,clamp(gt.b*1.6,0.0,0.8));',"));
     assert!(js.contains("stage.classList.toggle('rv-rivers', rready && waterIn >= 2);"));
     assert!(js
         .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));
@@ -1122,8 +1124,41 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(river_js.contains("var curve = view && view.edge ? view.edge : course || vc;"));
     assert!(river_js.contains("conf: e.conf, c: e.c, a: e.a, river: both };"));
     assert!(river_js.contains("      tails: fr.tails.map(function (t) {"));
+    assert!(js.contains("' float d=uDep>0.5?mp.r:0.5;vec2 q=p-s*(d-0.5);',"));
+    // Seen as the photograph sees it, from 60° (the operator's review,
+    // 2026-10-27, docs/adr/0004 §17): the people stay where the drawing puts
+    // them, and the water lies on the tilted ground under them, laid on it
+    // and seen through the camera, perspective and all; the zones' flat
+    // contour lines step aside with the drawing's own lines.
+    assert!(js.contains("var COS = Math.cos(Math.PI / 3), HOR = 0.8;"));
+    assert!(js.contains("function toGround(x, y) { var k = kAt(y); return [(x - CAM.x0) / k, (y - CAM.y0) / (COS * k)]; }"));
+    assert!(js.contains("' gl_Position=vec4(px.x/uRes.x*2.0-q,q-px.y/uRes.y*2.0,0.0,q);',"));
+    assert!(js.contains("return 'M' + c.spts.map(function (q) {"));
+    // Natural water (the same review): banks of their own, bars in the
+    // bends, stones and their wakes, and where two streams meet a fall, a
+    // still pool or rapids, the same at every visit.
+    assert!(js.contains("float stones(vec2 sv,float W0,float ph,float sw,float aa,float speed,out vec3 stone,inout float foam){"));
+    assert!(js.contains("m.style = m.ins >= 2 ? (h < 0.6 ? 1 : h < 0.85 ? 0.5 : 0) : 0.5;"));
+    // A living valley (the same review): the wind in the trees and over the
+    // meadows, clouds crossing with their shadows, herds on their own ground,
+    // an eagle, birds; all of it still when stillness is asked for, since
+    // the clock only runs while the scene moves.
+    assert!(js.contains("' q+=vec2(1.0,0.12)*tr*gust*(0.55+0.45*sway)*0.0024/gz;',"));
+    assert!(js.contains("function drawClouds(rect) {"));
+    assert!(js.contains("var LIFE = { src: '/static/img/river-life.png?v=1', w: 1024, h: 512 };"));
+    assert!(js.contains("if (moving && MAP && animals.length) live("));
+    // The water bound into its valley (the operator's review of the same
+    // day, docs/adr/0004 §18): it clears its way through the forest, a tree
+    // of the near bank still leaning over its edge while its middle always
+    // shows; it takes the colours and the light of what is round it, runs
+    // white over rock, lies in the shade of the trees beyond, and fades into
+    // the distance's haze.
+    assert!(js.contains("float clearAt(vec2 p){"));
+    assert!(js.contains("'  col=mix(col,grass*(1.0-0.22*shd),clear);',"));
     assert!(js
-        .contains("float d=uDep>0.5?texture2D(uDepth,clamp(p,0.0,1.0)).r:0.5;vec2 q=p-s*(d-0.5);"));
+        .contains("' float a=inB*mix(conf>1.5?0.0:0.28,1.0,wet)*vMeta.x*fade*(1.0-0.85*crown);',"));
+    assert!(js.contains("' col=mix(col,env*1.3+uSky*0.08,0.28);',"));
+    assert!(js.contains("' col=mix(col,env,far);',"));
     assert!(js.contains("if (!reduce && !cut) {\n    stage.addEventListener('pointermove'"));
     for (img, len) in [
         (
@@ -1142,6 +1177,10 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
             "/static/img/river-water-river.jpg",
             axgf_cms::render::RIVER_WATER_RIVER_JPG.len(),
         ),
+        (
+            "/static/img/river-life.png",
+            axgf_cms::render::RIVER_LIFE_PNG.len(),
+        ),
     ] {
         let resp = get(&app, img).await;
         assert_eq!(resp.status(), StatusCode::OK, "{img}");
@@ -1151,5 +1190,8 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     let css = include_str!("../static/app.css");
     assert!(css.contains("[data-theme=\"canopee\"] .river { --rv-rivers-3d: 1; }"));
     assert!(css.contains("@media screen {\n  [data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg > :is(path, g:not([class])),"));
+    assert!(css.contains(
+        "[data-theme=\"canopee\"] .rv-canvas.rv-rivers .rv-svg .rv-zones { opacity: 0; }"
+    ));
     assert!(css.contains(".rv-canvas :is(.rv-ground, .rv-water) {\n  position: absolute;\n  inset: 0;\n  inline-size: 100%;\n  block-size: 100%;\n  pointer-events: none;\n}"));
 }

@@ -381,21 +381,26 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v0.6.0**. Over v0.5.0 it adds:
+The latest release is **v1.0.0**, the first major version. Over v0.6.0 it
+adds:
 
-- merging two records a person says are one: the plan, each disagreement
-  decided by the administrator, the absorbed record kept in the journal;
-- the GEDCOM conversion of axgf-rs 0.6.1, which keeps what the file says or
-  says what it left out;
-- records that agree with the people they describe, ages in their plural,
-  times and percentages in the reader's language, and every person in a
-  view named for a screen reader;
-- current, audited dependencies (zip 9, rustls, tokio), and CI on the MSRV
-  (1.92) and `cargo audit`.
+- the tree page as a family chart read down the page: a column per
+  generation, the line to each child in their colour (a son blue, a daughter
+  red) and, for an adoption, a fostering or a step-child, its pattern;
+  compact cards that open on the portrait, the dates and the record; nobody
+  cut off at any width;
+- on a phone, the tree as a column of generations, and in every view a first
+  tap on a person that names them;
+- five themes redrawn: Canopy's valley seen at 60°, its water and its
+  herds alive; Clarity's funnel in rings, names on the glass; Fusion in
+  right angles, orange down and green up; Galaxy's two sides, fields and a
+  spiral galaxy; Genealogy closer to its tree.
 
-v0.5.0 brought the living river and its zoom, the six themes, fourteen
-languages, the family's notes, the administration console, registration and
-sign-in with a service, and the GEDCOM reader for every version.
+v0.6.0 brought the merge of two records, the GEDCOM conversion of axgf-rs
+0.6.1 and records that agree with the people they describe. v0.5.0 brought
+the living river and its zoom, the six themes, fourteen languages, the
+family's notes, the administration console, registration and sign-in with a
+service, and the GEDCOM reader for every version.
 
 The installer installs releases. `--from-source` builds `main`.
 [CHANGELOG.md](CHANGELOG.md) has the details, version by version.
@@ -413,7 +418,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v0.6.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.0.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -621,7 +626,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v0.6.0`](https://github.com/plkarin/axgf-cms/releases/tag/v0.6.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.0.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

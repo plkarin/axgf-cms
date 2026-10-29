@@ -1,6 +1,6 @@
 # ADR 0019 — The tree page as a classic family chart
 
-**Status:** accepted (2026-10-27), amended 2026-10-28 · **Builds on:** the
+**Status:** accepted, v1.0.0 (2026-10-27), amended 2026-10-28 · **Builds on:** the
 band layout of `src/tree.rs`, the side panel of the tree page · **Applies
 to:** `src/chart.rs`, `src/tree.rs`, `src/person.rs`,
 `src/routes/public.rs`, `src/routes/mod.rs`, `src/render.rs`,

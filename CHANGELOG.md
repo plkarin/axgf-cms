@@ -4,11 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] — 2026-10-29
 
-The four themes the operator found wanting are redrawn, and the tree page
-becomes a classic family chart (their reviews of 27 October 2026). Nothing
-about the AXGF file, the server's river or what a reader may see changes.
+The first major version. The tree page becomes a family chart read down the
+page: a column per generation, each line to a child in the child's colour
+and pattern, compact cards that open, and nobody cut off at any width. On a
+phone it is a column of generations. Five themes are redrawn: Canopée's
+valley at 60° with its living water, Clarity's funnel in rings, Fusion and
+Galaxy in two colours, Genealogy closer to its tree (the operator's reviews
+of 27 and 28 October 2026). Nothing about the AXGF file, the server's
+settings and river, or what a reader may see changes.
 
 ### Changed
 
@@ -4165,7 +4170,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0
 [0.6.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.6.0
 [0.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0
 [0.4.3]: https://github.com/plkarin/axgf-cms/releases/tag/v0.4.3

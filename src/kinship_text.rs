@@ -342,7 +342,7 @@ fn affinity(lang: &str, core: &Kind, a_side: bool, b_side: bool, sex: Sex, c: &C
             // The same word agreeing with B, for languages that say "an aunt
             // by marriage" rather than "the wife of an uncle".
             let relative_b = say(&inner, sex, lang).term;
-            let vowel = starts_with_vowel(&relative);
+            let vowel = takes_an(&relative);
             said(
                 "kin-partner-of-relative",
                 "in-laws",
@@ -431,6 +431,21 @@ pub fn starts_with_vowel(s: &str) -> bool {
         .find(|c| c.is_alphabetic())
         .map(|c| c.to_lowercase().next().unwrap_or(c))
         .is_some_and(|c| "aeiouyhàâäáéèêëíìîïóòôöúùûüœæ".contains(c))
+}
+
+/// Whether English says "an" rather than "a" before a word of kinship (the
+/// `rvowel` of `kin-partner-of-relative`): a vowel sound, which neither
+/// "half-" nor "great-" makes, and which "8×", "11×" and "18×" do.
+fn takes_an(s: &str) -> bool {
+    let s = s.trim_start();
+    let digits: String = s.chars().take_while(|c| c.is_ascii_digit()).collect();
+    if !digits.is_empty() {
+        return digits.starts_with('8') || digits == "11" || digits == "18";
+    }
+    s.chars()
+        .find(|c| c.is_alphabetic())
+        .map(|c| c.to_lowercase().next().unwrap_or(c))
+        .is_some_and(|c| "aeiou".contains(c))
 }
 
 /// One relative in a person's list.
@@ -684,6 +699,16 @@ mod tests {
         assert_eq!(of("Anna", "fr"), "d’Anna");
         assert_eq!(of("Hélène", "fr"), "d’Hélène");
         assert_eq!(of("Anna", "en"), "of Anna");
+    }
+
+    #[test]
+    fn english_says_a_half_nephew_and_an_aunt() {
+        // The wife of ego's son, seen from ego's half-brother.
+        assert_eq!(said("en", "half", "kidw"), vec!["wife of a half-nephew"]);
+        // The husband of h1's father's sister.
+        assert_eq!(said("en", "h1", "g2h"), vec!["husband of an aunt"]);
+        assert!(takes_an("8× great-uncle"));
+        assert!(!takes_an("3× great-uncle"));
     }
 
     #[test]

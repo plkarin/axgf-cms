@@ -4982,3 +4982,50 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Vormundschaft
 kin-rite-guardian-note = Vormund, wie der Eintrag es sagt.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] Mitehemann
+        [F] Mitehefrau
+       *[other] Mitehegatte
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Mitehefrau
+           *[other] Mitehefrauen
+        }
+        [M] { $n ->
+            [one] Mitehemann
+           *[other] Mitehemänner
+        }
+       *[other] { $n ->
+            [one] Mitehegatte
+           *[other] Mitehegatten
+        }
+    }
+tree-key-polygamous = Polygame Ehe
+family-primary = Im Mittelpunkt der Ehe
+family-primary-hint = In einer polygamen Ehe die Person, die mit jeder der anderen verheiratet ist. Die anderen sind nicht miteinander verheiratet.
+family-child-parent = Anderer Elternteil
+family-child-parent-hint = In einer polygamen Ehe der Ehegatte, der der andere Elternteil dieses Kindes ist. Ohne Auswahl sagt der Datensatz es nicht.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Emblem oder Wappen
+emblem-family-title = Das Emblem der Familie
+emblem-archive-title = Das Emblem der Familie des Archivs
+emblem-archive-edit = Emblem oder Wappen der Familie
+emblem-saved = Das Emblem ist gespeichert.
+emblem-choose = Das Bild, das für die Familie steht
+emblem-help = Ein Wappen, ein Zeichen, eine Fotografie: was für diese Familie steht. Es wird ganz gezeigt, neben der Ehe auf jedem Datensatz und am Knoten des Paares im Stammbaum.
+emblem-archive-help = Ein Wappen, ein Zeichen, eine Fotografie: was für die Familie steht, von der dieses Archiv handelt. Es wird ganz am Kopf jeder Seite und in der Übersicht gezeigt, für alle Besucher.
+emblem-mode-auto-note = Das Bild, das diese Familie als ihr Emblem verknüpft, falls es eines gibt.
+emblem-mode-none = Kein Emblem
+emblem-no-images = Noch kein Bild: Fügen Sie unten eines hinzu.
+emblem-upload-title = Ein Bild hinzufügen
+emblem-upload-button = Hinzufügen und verwenden
+emblem-not-an-image = Ein Emblem ist ein Bild: PNG, JPEG, GIF, WebP oder BMP.
+emblem-back = Zurück zum Emblem
+emblem-no-family-title = Familie nicht gefunden
+emblem-no-family-detail = Diese Familie ist nicht im Archiv oder für Sie nicht sichtbar.

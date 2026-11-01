@@ -4785,3 +4785,50 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Bobateli
 kin-rite-guardian-note = Mobateli, ndenge mokanda elobi.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] mobali mosusu ya mwasi
+        [F] mbanda
+       *[other] molongani mosusu
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Mbanda
+           *[other] Bambanda
+        }
+        [M] { $n ->
+            [one] Mobali mosusu
+           *[other] Mibali misusu
+        }
+       *[other] { $n ->
+            [one] Molongani mosusu
+           *[other] Balongani basusu
+        }
+    }
+tree-key-polygamous = Libala ya balongani ebele
+family-primary = Na kati ya libala
+family-primary-hint = Na libala ya balongani ebele, moto oyo abalá moko na moko ya basusu. Basusu babalana te bango na bango.
+family-child-parent = Moboti mosusu
+family-child-parent-hint = Na libala ya balongani ebele, molongani oyo azali moboti mosusu ya mwana oyo. Soki oponi te, rekodi elobi yango te.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Elembo to nkɔ́ta ya libota
+emblem-family-title = Elembo ya libota
+emblem-archive-title = Elembo ya libota ya archive
+emblem-archive-edit = Elembo to nkɔ́ta ya libota
+emblem-saved = Elembo ebombami.
+emblem-choose = Elilingi oyo emonisi libota
+emblem-help = Nkɔ́ta, elembo, foto: oyo emonisi libota oyo. Emonani mobimba, pembeni ya libala na rekodi nyonso mpe na nsinga ya balongani na nzete.
+emblem-archive-help = Nkɔ́ta, elembo, foto: oyo emonisi libota oyo archive oyo elobeli. Emonani mobimba na likoló ya lokasa nyonso mpe na botali ya mobimba, mpo na bapaya nyonso.
+emblem-mode-auto-note = Elilingi oyo libota oyo ekangisi lokola elembo na yango, soki ezali.
+emblem-mode-none = Elembo te
+emblem-no-images = Elilingi ezali naino te: bakisa moko awa na nse.
+emblem-upload-title = Bakisa elilingi
+emblem-upload-button = Bakisa mpe salela yango
+emblem-not-an-image = Elembo ezali elilingi: PNG, JPEG, GIF, WebP to BMP.
+emblem-back = Zonga na elembo
+emblem-no-family-title = Libota emonani te
+emblem-no-family-detail = Libota oyo ezali na archive te, to okoki komona yango te.

@@ -284,60 +284,59 @@ impl Graph {
         if let Some(families) = families {
             let mut fam_ids: Vec<&String> = families.keys().collect();
             fam_ids.sort();
+            let persons = flat.get("persons").and_then(Value::as_object);
             for fid in &fam_ids {
                 let f = &families[fid.as_str()];
-                let mut parents: Vec<usize> = f
-                    .get("union")
-                    .and_then(|u| u.get("persons"))
-                    .and_then(Value::as_array)
-                    .map(|ps| {
-                        ps.iter()
-                            .filter_map(|p| p.get("person_id").and_then(Value::as_str))
-                            .filter_map(|id| index.get(id).copied())
-                            .collect()
-                    })
-                    .unwrap_or_default();
-                parents.dedup();
-                // Father first. A stable sort on the slot keeps the union's own
-                // order wherever the records say nothing.
-                parents.sort_by_key(|&p| shape[p].slot.unwrap_or(0));
-                // Children in the order the family records them: its own
-                // `birth_order`, then the order of the list. Never by birth
-                // date: a hidden child's date would then move a visible
-                // sibling, and the order of two hidden siblings would state
-                // which is older (tests/river.rs, the hidden-dates invariant).
-                let mut kids: Vec<(usize, Conf, Option<f64>, RecordOrder)> = f
-                    .get("children")
-                    .and_then(Value::as_array)
-                    .map(|cs| {
-                        cs.iter()
-                            .enumerate()
-                            .filter_map(|(pos, c)| {
-                                let id = c.get("person_id").and_then(Value::as_str)?;
-                                let i = *index.get(id)?;
-                                let conf = c.get("confidence").and_then(Value::as_f64);
-                                let order = c
-                                    .get("birth_order")
-                                    .and_then(Value::as_i64)
-                                    .unwrap_or(i64::MAX);
-                                Some((i, Conf::of(conf), conf, (order, pos)))
-                            })
-                            .collect()
-                    })
-                    .unwrap_or_default();
-                kids.sort_by_key(|k| k.3);
-                let kids = kids.into_iter().map(|(i, c, raw, _)| (i, c, raw)).collect();
-                let start_sort = f
-                    .get("union")
-                    .and_then(|u| u.get("start"))
-                    .map(|s| crate::view::render_date_field(s, "date"))
-                    .and_then(|d| d.sort);
-                fams.push(Fam {
-                    id: (*fid).clone(),
-                    parents,
-                    kids,
-                    start_sort,
-                });
+                // One stream per couple: a polygamous union's wives each
+                // join their husband on their own (crate::unions,
+                // docs/adr/0021).
+                for (n, couple) in crate::unions::couples(f, persons).into_iter().enumerate() {
+                    let mut parents: Vec<usize> = couple
+                        .partners
+                        .iter()
+                        .filter_map(|id| index.get(*id).copied())
+                        .collect();
+                    parents.dedup();
+                    // Father first. A stable sort on the slot keeps the union's
+                    // own order wherever the records say nothing.
+                    parents.sort_by_key(|&p| shape[p].slot.unwrap_or(0));
+                    // Children in the order the family records them: its own
+                    // `birth_order`, then the order of the list. Never by birth
+                    // date: a hidden child's date would then move a visible
+                    // sibling, and the order of two hidden siblings would state
+                    // which is older (tests/river.rs, the hidden-dates invariant).
+                    let mut kids: Vec<(usize, Conf, Option<f64>, RecordOrder)> = couple
+                        .children
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(pos, c)| {
+                            let id = c.get("person_id").and_then(Value::as_str)?;
+                            let i = *index.get(id)?;
+                            let conf = c.get("confidence").and_then(Value::as_f64);
+                            let order = c
+                                .get("birth_order")
+                                .and_then(Value::as_i64)
+                                .unwrap_or(i64::MAX);
+                            Some((i, Conf::of(conf), conf, (order, pos)))
+                        })
+                        .collect();
+                    kids.sort_by_key(|k| k.3);
+                    let kids = kids.into_iter().map(|(i, c, raw, _)| (i, c, raw)).collect();
+                    let start_sort = couple
+                        .field(f, "start")
+                        .map(|s| crate::view::render_date_field(s, "date"))
+                        .and_then(|d| d.sort);
+                    fams.push(Fam {
+                        id: if n == 0 {
+                            (*fid).clone()
+                        } else {
+                            format!("{fid}~c{n}")
+                        },
+                        parents,
+                        kids,
+                        start_sort,
+                    });
+                }
             }
         }
 

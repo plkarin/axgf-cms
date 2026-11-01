@@ -5051,3 +5051,50 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Tutela
 kin-rite-guardian-note = Tutor ou tutora, como diz o registo.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] coesposo
+        [F] coesposa
+       *[other] coesposo
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Coesposa
+           *[other] Coesposas
+        }
+        [M] { $n ->
+            [one] Coesposo
+           *[other] Coesposos
+        }
+       *[other] { $n ->
+            [one] Coesposo
+           *[other] Coesposos
+        }
+    }
+tree-key-polygamous = União poligâmica
+family-primary = No centro da união
+family-primary-hint = Numa união poligâmica, a pessoa casada com cada um dos outros. Os outros não são casados entre si.
+family-child-parent = Outro progenitor
+family-child-parent-hint = Numa união poligâmica, o cônjuge que é o outro progenitor desta criança. Sem escolha, o registo não o diz.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Emblema ou brasão
+emblem-family-title = O emblema da família
+emblem-archive-title = O emblema da família do arquivo
+emblem-archive-edit = Emblema ou brasão da família
+emblem-saved = O emblema está guardado.
+emblem-choose = A imagem que representa a família
+emblem-help = Um brasão, uma marca, uma fotografia: o que representa esta família. É mostrado inteiro, junto à união em cada registo e no nó do casal na árvore.
+emblem-archive-help = Um brasão, uma marca, uma fotografia: o que representa a família de que trata este arquivo. É mostrado inteiro no topo de cada página e na vista geral, a todos os visitantes.
+emblem-mode-auto-note = A imagem que esta família liga como seu emblema, se houver uma.
+emblem-mode-none = Sem emblema
+emblem-no-images = Ainda não há imagem: acrescente uma abaixo.
+emblem-upload-title = Acrescentar uma imagem
+emblem-upload-button = Acrescentar e usar
+emblem-not-an-image = Um emblema é uma imagem: PNG, JPEG, GIF, WebP ou BMP.
+emblem-back = Voltar ao emblema
+emblem-no-family-title = Família não encontrada
+emblem-no-family-detail = Esta família não está no arquivo, ou não a pode ver.

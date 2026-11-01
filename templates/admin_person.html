@@ -73,6 +73,7 @@
       <h3>{% if b.href %}<a href="{{ b.href }}">{{ b.title }}</a>{% else %}{{ b.title }}{% endif %}</h3>
       {% if b.subtitle %}<span class="small muted">{{ b.subtitle }}</span>{% endif %}
     </div>
+    {% if b.link %}<a class="ed-block-link small" href="{{ b.link.href }}">{{ b.link.label }}</a>{% endif %}
     {% if b.avatar %}<label class="ed-avatar-pick"><input type="radio" name="avatar.choice" value="{{ b.avatar.value }}"{% if b.avatar.checked %} checked{% endif %}><span>{{ t("edit-avatar") }}</span></label>{% endif %}
     {% if b.remove %}{{ action(b.remove) }}{% endif %}
   </header>

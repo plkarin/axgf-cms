@@ -723,17 +723,9 @@ pub fn scope_set(flat: &Value, roots: &[String]) -> Option<BTreeSet<String>> {
     Some(out)
 }
 
+/// Every spouse, a polygamous union's `unions[]` included (docs/adr/0021).
 fn union_person_ids(family: &Value) -> Vec<&str> {
-    family
-        .get("union")
-        .and_then(|u| u.get("persons"))
-        .and_then(Value::as_array)
-        .map(|ps| {
-            ps.iter()
-                .filter_map(|p| p.get("person_id").and_then(Value::as_str))
-                .collect()
-        })
-        .unwrap_or_default()
+    crate::unions::members(family)
 }
 
 fn child_person_ids(family: &Value) -> Vec<&str> {

@@ -128,6 +128,8 @@ struct Partner {
     to: usize,
     married: bool,
     ended: bool,
+    /// A marriage of a polygamous union (docs/adr/0021).
+    polygamous: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -172,6 +174,9 @@ pub enum Kind {
         /// Some step of the way is an adoption.
         adoptive: bool,
     },
+    /// Two partners of one person in polygamous unions: co-wives, or
+    /// co-husbands (docs/adr/0021).
+    CoSpouse,
     /// Partners in a union.
     Partner { married: bool, ended: bool },
     /// By marriage: the relationship by descent between A, or A's partner
@@ -248,6 +253,7 @@ impl Relation {
             Kind::Partner { .. } => 0,
             Kind::Care { .. } => 1,
             Kind::Affinity { .. } => 2,
+            Kind::CoSpouse => 2,
             Kind::Rite { .. } => 3,
             Kind::Chain => 4,
         };
@@ -282,6 +288,11 @@ pub struct Kin<'a> {
     /// Each person's children, by their strongest tie.
     downs: Vec<Vec<Up>>,
     partners: Vec<Vec<Partner>>,
+    /// Each person's co-spouses: (the other, the partner they share).
+    co_spouses: Vec<Vec<(usize, usize)>>,
+    /// The couples whose children's other parent is not recorded: two paths
+    /// through one of them are neither full nor half (docs/adr/0021).
+    open: BTreeSet<usize>,
     ties: Vec<Vec<Tie>>,
 }
 
@@ -318,60 +329,62 @@ impl<'a> Kin<'a> {
         };
 
         let mut parent_links: Vec<(usize, usize, Line, usize)> = Vec::new();
-        let mut unions: Vec<(usize, usize, bool, bool)> = Vec::new();
+        let mut unions: Vec<(usize, usize, Partner)> = Vec::new();
+        // Each couple of a family is a family of its own here: a polygamous
+        // union's wives each make one with their husband, so that their
+        // children are half-siblings and the wives are not married to one
+        // another (crate::unions, docs/adr/0021).
+        let mut open: BTreeSet<usize> = BTreeSet::new();
+        let mut next_key = 0;
         let families = flat.get("families").and_then(Value::as_object);
         for (fi, f) in families.into_iter().flat_map(|m| m.values()).enumerate() {
             let union = f.get("union");
-            let parents: Vec<usize> = union
-                .and_then(|u| u.get("persons"))
-                .and_then(Value::as_array)
-                .map(|ps| {
-                    ps.iter()
-                        .filter_map(|p| p.get("person_id").and_then(Value::as_str))
+            let kind = union.and_then(|u| u.get("type")).and_then(Value::as_str);
+            let married = matches!(kind, Some("marriage" | "religious_only" | "polygamous"));
+            for couple in crate::unions::couples(f, Some(persons)) {
+                let key = next_key;
+                next_key += 1;
+                if couple.open {
+                    open.insert(key);
+                }
+                // Children whose parents nobody recorded are still brothers
+                // and sisters: a family with no union at all (1.0 §4.2.3).
+                let parents: Vec<usize> = if union.is_none() && couple.children.len() >= 2 {
+                    vec![add(&format!("{UNRECORDED}{fi}"), &mut ids, &mut index)]
+                } else {
+                    couple
+                        .partners
+                        .iter()
                         .map(|id| add(id, &mut ids, &mut index))
                         .collect()
-                })
-                .unwrap_or_default();
-            // Children whose parents nobody recorded are still brothers and
-            // sisters: a family with no union at all (1.0 §4.2.3).
-            let children = f.get("children").and_then(Value::as_array).map_or(0, |cs| {
-                cs.iter()
-                    .filter(|c| c.get("person_id").and_then(Value::as_str).is_some())
-                    .count()
-            });
-            let parents = if union.is_none() && children >= 2 {
-                vec![add(&format!("{UNRECORDED}{fi}"), &mut ids, &mut index)]
-            } else {
-                parents
-            };
-            let kind = union.and_then(|u| u.get("type")).and_then(Value::as_str);
-            let status = union.and_then(|u| u.get("status")).and_then(Value::as_str);
-            let married = matches!(kind, Some("marriage" | "religious_only" | "polygamous"));
-            let ended = matches!(
-                status,
-                Some("ended_by_divorce" | "ended_by_separation" | "annulled")
-            );
-            for (i, &a) in parents.iter().enumerate() {
-                for &b in parents.iter().skip(i + 1) {
-                    if a != b {
-                        unions.push((a, b, married, ended));
+                };
+                let ended = matches!(
+                    couple.status(f),
+                    Some("ended_by_divorce" | "ended_by_separation" | "annulled")
+                );
+                for (i, &a) in parents.iter().enumerate() {
+                    for &b in parents.iter().skip(i + 1) {
+                        if a != b {
+                            let tie = Partner {
+                                to: b,
+                                married,
+                                ended,
+                                polygamous: couple.polygamous,
+                            };
+                            unions.push((a, b, tie));
+                        }
                     }
                 }
-            }
-            for c in f
-                .get("children")
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-            {
-                let Some(cid) = c.get("person_id").and_then(Value::as_str) else {
-                    continue;
-                };
-                let child = add(cid, &mut ids, &mut index);
-                let line = Line::of(c.get("lineage").and_then(Value::as_str));
-                for &p in &parents {
-                    if p != child {
-                        parent_links.push((child, p, line, fi));
+                for c in &couple.children {
+                    let Some(cid) = c.get("person_id").and_then(Value::as_str) else {
+                        continue;
+                    };
+                    let child = add(cid, &mut ids, &mut index);
+                    let line = Line::of(c.get("lineage").and_then(Value::as_str));
+                    for &p in &parents {
+                        if p != child {
+                            parent_links.push((child, p, line, key));
+                        }
                     }
                 }
             }
@@ -405,14 +418,23 @@ impl<'a> Kin<'a> {
             }
         }
         let mut partners: Vec<Vec<Partner>> = vec![Vec::new(); n];
-        for (a, b, married, ended) in unions {
+        for (a, b, tie) in unions {
             for (x, y) in [(a, b), (b, a)] {
                 if !partners[x].iter().any(|p| p.to == y) {
-                    partners[x].push(Partner {
-                        to: y,
-                        married,
-                        ended,
-                    });
+                    partners[x].push(Partner { to: y, ..tie });
+                }
+            }
+        }
+        // Two partners of one person in polygamous unions are co-spouses:
+        // the wives of one husband, never each other's.
+        let mut co_spouses: Vec<Vec<(usize, usize)>> = vec![Vec::new(); n];
+        for (via, list) in partners.iter().enumerate() {
+            let poly: Vec<usize> = list.iter().filter(|p| p.polygamous).map(|p| p.to).collect();
+            for &x in &poly {
+                for &y in &poly {
+                    if x != y && !co_spouses[x].contains(&(y, via)) {
+                        co_spouses[x].push((y, via));
+                    }
                 }
             }
         }
@@ -439,11 +461,9 @@ impl<'a> Kin<'a> {
                     // to each partner of it.
                     Some("family") => families
                         .and_then(|m| m.get(id))
-                        .and_then(|f| f.pointer("/union/persons"))
-                        .and_then(Value::as_array)
+                        .map(crate::unions::members)
+                        .unwrap_or_default()
                         .into_iter()
-                        .flatten()
-                        .filter_map(|p| p.get("person_id").and_then(Value::as_str))
                         .filter_map(|id| index.get(id).copied())
                         .collect(),
                     _ => Vec::new(),
@@ -485,6 +505,8 @@ impl<'a> Kin<'a> {
             ups,
             downs,
             partners,
+            co_spouses,
+            open,
             ties,
         }
     }
@@ -582,8 +604,13 @@ impl<'a> Kin<'a> {
                     // is full. Through two unions of one ancestor, it is half.
                     let fa = wa.families.last().copied();
                     let fb = wb.families.last().copied();
+                    // A couple whose children's other parent nobody recorded
+                    // says neither: they may share a mother, or not.
                     let (half, shared_family) = match (fa, fb) {
-                        (Some(x), Some(y)) => (x != y, (x == y).then_some(x)),
+                        (Some(x), Some(y)) => (
+                            x != y && !self.open.contains(&x) && !self.open.contains(&y),
+                            (x == y).then_some(x),
+                        ),
                         _ => (false, None),
                     };
                     let key = (below_a.to_vec(), below_b.to_vec(), shared_family);
@@ -765,6 +792,41 @@ impl<'a> Kin<'a> {
                         ended: p.ended,
                     },
                 }],
+                common: Vec::new(),
+                context: Context {
+                    b_elder: self.older(b, a),
+                    ..Context::default()
+                },
+            });
+        }
+
+        // Co-spouses: another wife, or husband, of one's own partner in a
+        // polygamous union. The way is through the partner they share.
+        for &(_, via) in self.co_spouses[a].iter().filter(|(o, _)| *o == b) {
+            let hop = |x: usize, y: usize| {
+                self.partners[x]
+                    .iter()
+                    .find(|p| p.to == y)
+                    .map(|p| Hop::Partner {
+                        married: p.married,
+                        ended: p.ended,
+                    })
+            };
+            let (Some(first), Some(second)) = (hop(a, via), hop(via, b)) else {
+                continue;
+            };
+            out.push(Relation {
+                kind: Kind::CoSpouse,
+                path: vec![
+                    Step {
+                        person: self.ids[via].clone(),
+                        hop: first,
+                    },
+                    Step {
+                        person: self.ids[b].clone(),
+                        hop: second,
+                    },
+                ],
                 common: Vec::new(),
                 context: Context {
                     b_elder: self.older(b, a),

@@ -5547,3 +5547,62 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = الوصاية
 kin-rite-guardian-note = وصي كما يذكر السجل.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] زوج آخر
+        [F] ضَرّة
+       *[other] شريك آخر في الزواج
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [zero] الضرائر
+            [one] الضَّرّة
+            [two] الضَّرّتان
+            [few] الضرائر
+            [many] الضرائر
+           *[other] الضرائر
+        }
+        [M] { $n ->
+            [zero] الأزواج الآخرون
+            [one] الزوج الآخر
+            [two] الزوجان الآخران
+            [few] الأزواج الآخرون
+            [many] الأزواج الآخرون
+           *[other] الأزواج الآخرون
+        }
+       *[other] { $n ->
+            [zero] الشركاء الآخرون في الزواج
+            [one] الشريك الآخر في الزواج
+            [two] الشريكان الآخران في الزواج
+            [few] الشركاء الآخرون في الزواج
+            [many] الشركاء الآخرون في الزواج
+           *[other] الشركاء الآخرون في الزواج
+        }
+    }
+tree-key-polygamous = زواج متعدد
+family-primary = في مركز الزواج
+family-primary-hint = في الزواج المتعدد، الشخص المتزوج من كل واحد من الآخرين. والآخرون ليسوا متزوجين فيما بينهم.
+family-child-parent = الوالد الآخر
+family-child-parent-hint = في الزواج المتعدد، الزوج الذي هو الوالد الآخر لهذا الطفل. إن لم يُختر، فالسجل لا يذكره.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = شعار أو شارة نبالة
+emblem-family-title = شعار العائلة
+emblem-archive-title = شعار عائلة الأرشيف
+emblem-archive-edit = شعار العائلة أو شارة نبالتها
+emblem-saved = حُفظ الشعار.
+emblem-choose = الصورة التي تمثل العائلة
+emblem-help = شارة نبالة أو علامة أو صورة: ما يمثل هذه العائلة. تُعرض كاملة بجانب الزواج في كل سجل وعلى عقدة الزوجين في الشجرة.
+emblem-archive-help = شارة نبالة أو علامة أو صورة: ما يمثل العائلة التي يتحدث عنها هذا الأرشيف. تُعرض كاملة أعلى كل صفحة وفي النظرة العامة، لكل الزوار.
+emblem-mode-auto-note = الصورة التي تربطها هذه العائلة شعارًا لها، إن وُجدت.
+emblem-mode-none = بلا شعار
+emblem-no-images = لا صورة بعد: أضف واحدة أدناه.
+emblem-upload-title = إضافة صورة
+emblem-upload-button = إضافتها واستخدامها
+emblem-not-an-image = الشعار صورة: PNG أو JPEG أو GIF أو WebP أو BMP.
+emblem-back = العودة إلى الشعار
+emblem-no-family-title = لا توجد هذه العائلة
+emblem-no-family-detail = هذه العائلة ليست في الأرشيف، أو لا يُسمح لك برؤيتها.

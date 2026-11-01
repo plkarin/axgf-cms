@@ -39,7 +39,7 @@ pub(super) fn require(
     let viewer = auth::viewer(state, headers);
     // Resolved even on the refusal path, because a refusal is a page too and
     // it has to be in the reader's language and theme like any other.
-    let chrome = render::Chrome::resolve(&viewer, headers, "/admin");
+    let chrome = render::Chrome::resolve(&viewer, headers, "/admin").with_archive(state);
     let ok = match need {
         Need::Write => viewer.may_write(),
         Need::Admin => viewer.is_admin(),
@@ -169,7 +169,7 @@ pub(super) fn check_scope(
 /// `GET /admin/login`
 pub async fn login_form(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/admin/login");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/admin/login").with_archive(&state);
     if viewer.may_write() {
         return Redirect::to("/admin").into_response();
     }
@@ -227,7 +227,8 @@ pub async fn login(
     // cookie and Accept-Language alone — which is exactly right: the sign-in
     // page should already be in the reader's language before they have an
     // account to store it on.
-    let chrome = render::Chrome::resolve(&auth::viewer(&state, &headers), &headers, "/admin/login");
+    let chrome = render::Chrome::resolve(&auth::viewer(&state, &headers), &headers, "/admin/login")
+        .with_archive(&state);
 
     // Throttled before anything is compared, and before the token branch
     // rather than after it: the token used to be checked above this gate, so
@@ -2573,6 +2574,11 @@ struct DocUpload {
     /// The person's version on the page the upload came from, for that second
     /// write.
     base_version: Option<u64>,
+    /// The manifest's fingerprint on the page, for the archive's emblem
+    /// (docs/adr/0022).
+    token: String,
+    /// The record the family's emblem page was opened from.
+    back: String,
 }
 
 /// `POST /admin/person/:id/document` — attach a file to a person.
@@ -2839,6 +2845,8 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
             "base_version" => {
                 out.base_version = field.text().await.ok().and_then(|v| v.trim().parse().ok())
             }
+            "token" => out.token = field.text().await.unwrap_or_default().trim().to_string(),
+            "back" => out.back = field.text().await.unwrap_or_default().trim().to_string(),
             _ => {
                 let _ = field.bytes().await;
             }
@@ -4164,4 +4172,661 @@ pub async fn quality_mark_rule(
         ),
         Err(e) => io_error(&chrome, &e),
     }
+}
+
+// ---------------------------------------------------------------------------
+// emblems: a family's, and the archive's (docs/adr/0022)
+// ---------------------------------------------------------------------------
+
+/// A record id as a page may carry it back: letters, digits and hyphens, or
+/// nothing. It only ever goes into a path on this site.
+fn back_id(raw: &str) -> Option<&str> {
+    let raw = raw.trim();
+    (!raw.is_empty()
+        && raw.len() <= 64
+        && raw.chars().all(|c| c.is_ascii_alphanumeric() || c == '-'))
+    .then_some(raw)
+}
+
+/// Who a family is, for a page: its own name, else its people's names.
+fn emblem_family_label(
+    flat: &Value,
+    lens: &crate::access::Lens,
+    lang: &str,
+    fam: &Value,
+) -> String {
+    if let Some(name) = fam
+        .get("name")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|n| !n.is_empty())
+    {
+        return name.to_string();
+    }
+    let names: Vec<String> = crate::unions::members(fam)
+        .into_iter()
+        .map(|p| {
+            let l = crate::access::river_label(flat, lens, p);
+            if l.redacted || l.full.is_empty() {
+                crate::i18n::translate(lang, crate::person::RESTRICTED_KEY, None)
+            } else {
+                l.full
+            }
+        })
+        .collect();
+    names.join(" · ")
+}
+
+/// The family's people this reader may see: none, and the family is not
+/// theirs to see either.
+fn family_seen(lens: &crate::access::Lens, fam: &Value) -> bool {
+    let children = fam
+        .get("children")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|c| c.get("person_id").and_then(Value::as_str));
+    crate::unions::members(fam)
+        .into_iter()
+        .chain(children)
+        .any(|p| lens.sees_person(p))
+}
+
+/// The choice an emblem page posts.
+#[derive(Debug, Default, Deserialize)]
+pub struct EmblemForm {
+    #[serde(default)]
+    choice: String,
+    #[serde(default)]
+    focal_x: Option<String>,
+    #[serde(default)]
+    focal_y: Option<String>,
+    #[serde(default)]
+    base_version: Option<String>,
+    #[serde(default)]
+    token: String,
+    #[serde(default)]
+    back: String,
+}
+
+impl EmblemForm {
+    fn focal(&self) -> crate::avatar::Focal {
+        let parse = |v: &Option<String>| v.as_deref().and_then(|s| s.parse::<f64>().ok());
+        match (parse(&self.focal_x), parse(&self.focal_y)) {
+            (Some(x), Some(y)) => crate::avatar::Focal::new(x, y),
+            _ => crate::avatar::Focal::default(),
+        }
+    }
+}
+
+/// The picker, for a family or for the archive.
+#[allow(clippy::too_many_arguments)]
+fn emblem_page(
+    chrome: &render::Chrome,
+    title: String,
+    subject: String,
+    actions: (String, String, String),
+    images: Vec<Value>,
+    choice: &crate::avatar::Choice,
+    allow_auto: bool,
+    version: (u64, String),
+    back: Option<&str>,
+    saved: bool,
+) -> Response {
+    let (choose_action, upload_action, cancel_href) = actions;
+    let (chosen_id, focal) = match choice {
+        crate::avatar::Choice::Document { id, focal } => (Some(id.clone()), *focal),
+        _ => (None, crate::avatar::Focal::default()),
+    };
+    render::page_with(
+        chrome,
+        "admin_emblem.html",
+        context! {
+            nav => "admin",
+            title,
+            subject,
+            choose_action,
+            upload_action,
+            cancel_href,
+            images,
+            chosen_id,
+            mode => match choice {
+                crate::avatar::Choice::Auto => "auto",
+                crate::avatar::Choice::None => "none",
+                crate::avatar::Choice::Document { .. } => "document",
+            },
+            allow_auto,
+            focal_x => focal.x,
+            focal_y => focal.y,
+            base_version => version.0,
+            token => version.1,
+            back,
+            saved,
+            max_upload_mb => documents::MAX_UPLOAD / (1024 * 1024),
+        },
+    )
+}
+
+/// An image as the picker lists it.
+fn image_json(d: &Value) -> Value {
+    json!({
+        "id": d.get("id"),
+        "caption": d.get("caption"),
+        "filename": d.get("filename"),
+    })
+}
+
+/// `GET /admin/family/:id/avatar` — the picture that stands for a family.
+pub async fn family_emblem_picker(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(fid): Path<String>,
+    Query(q): Query<HashMap<String, String>>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let found = state.read_as(viewer.ceiling(), |flat, lens| {
+        let fam = flat.get("families")?.get(&fid)?;
+        if !family_seen(lens, fam) {
+            return None;
+        }
+        let images: Vec<Value> = crate::emblem::family_images(flat, &fid)
+            .into_iter()
+            .filter(|d| {
+                d.get("id")
+                    .and_then(Value::as_str)
+                    .is_some_and(|id| crate::access::may_read_document(flat, lens, true, id))
+            })
+            .map(image_json)
+            .collect();
+        Some((
+            emblem_family_label(flat, lens, chrome.lang, fam),
+            images,
+            crate::avatar::read(fam),
+            crate::state::version_of(fam),
+        ))
+    });
+    let Some((name, images, choice, version)) = found else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "emblem-no-family-title",
+            "emblem-no-family-detail",
+        );
+    };
+    let back = q.get("back").and_then(|b| back_id(b));
+    let cancel = match back {
+        Some(b) => format!("/admin/person/{b}/edit#famille"),
+        None => "/admin".to_string(),
+    };
+    emblem_page(
+        &chrome,
+        chrome.t("emblem-family-title"),
+        name,
+        (
+            format!("/admin/family/{fid}/avatar"),
+            format!("/admin/family/{fid}/document"),
+            cancel,
+        ),
+        images,
+        &choice,
+        true,
+        (version, String::new()),
+        back,
+        q.contains_key("saved"),
+    )
+}
+
+/// Write a family's choice through the checked update path.
+#[allow(clippy::result_large_err)]
+fn set_family_emblem(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    fid: &str,
+    stored: &Value,
+    choice: &crate::avatar::Choice,
+    base_version: u64,
+) -> Result<(), Response> {
+    let mut entity = crate::avatar::apply(stored, choice);
+    entity["id"] = Value::String(fid.to_string());
+    check_scope(
+        state,
+        chrome,
+        viewer,
+        axgf_rs::EntityKind::Family,
+        &entity,
+        Some(stored),
+    )?;
+    let outcome = state
+        .update_checked(
+            axgf_rs::EntityKind::Family,
+            fid,
+            base_version,
+            entity.clone(),
+            viewer.name(),
+            None,
+        )
+        .map_err(|e| io_error(chrome, &e))?;
+    match outcome {
+        crate::state::UpdateOutcome::Applied { .. } => Ok(()),
+        crate::state::UpdateOutcome::Conflict {
+            current,
+            current_version,
+            expected_version,
+        } => Err(conflict_page(
+            state,
+            chrome,
+            "family",
+            axgf_rs::EntityKind::Family,
+            fid,
+            Some(stored),
+            &current,
+            &entity,
+            current_version,
+            expected_version,
+            viewer.ceiling(),
+        )),
+        crate::state::UpdateOutcome::Refused { diagnostics } => Err(result_page(
+            chrome,
+            "family",
+            &chrome.t("admin-not-saved"),
+            &MutationOutcome {
+                applied: false,
+                diagnostics,
+                data: Value::Null,
+            },
+            Some(format!("/admin/family/{fid}/avatar")),
+        )),
+        crate::state::UpdateOutcome::Missing => Err(render::error_page_in(
+            chrome,
+            StatusCode::NOT_FOUND,
+            "emblem-no-family-title",
+            "emblem-no-family-detail",
+        )),
+    }
+}
+
+/// Where a family's emblem page goes once it has saved.
+fn family_emblem_done(fid: &str, back: Option<&str>) -> Response {
+    match back {
+        Some(b) => Redirect::to(&format!("/person/{b}?tab=family")).into_response(),
+        None => Redirect::to(&format!("/admin/family/{fid}/avatar?saved=1")).into_response(),
+    }
+}
+
+/// `POST /admin/family/:id/avatar` — record the family's choice.
+pub async fn family_emblem_set(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(fid): Path<String>,
+    Form(f): Form<EmblemForm>,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let Some(stored) = state.read(|flat| flat.get("families").and_then(|c| c.get(&fid)).cloned())
+    else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "emblem-no-family-title",
+            "emblem-no-family-detail",
+        );
+    };
+    let choice = match f.choice.trim() {
+        "" | "auto" => crate::avatar::Choice::Auto,
+        "none" => crate::avatar::Choice::None,
+        doc => {
+            // One of the family's own images, and one this reader may see.
+            let ok = state.read_as(viewer.ceiling(), |flat, lens| {
+                crate::emblem::family_images(flat, &fid)
+                    .iter()
+                    .any(|d| d.get("id").and_then(Value::as_str) == Some(doc))
+                    && crate::access::may_read_document(flat, lens, true, doc)
+            });
+            if !ok {
+                return render::error_page_in(
+                    &chrome,
+                    StatusCode::FORBIDDEN,
+                    "avatar-not-available-title",
+                    "avatar-not-available-detail",
+                );
+            }
+            crate::avatar::Choice::Document {
+                id: doc.to_string(),
+                focal: f.focal(),
+            }
+        }
+    };
+    let base_version = f
+        .base_version
+        .as_deref()
+        .and_then(|v| v.trim().parse().ok())
+        .unwrap_or(u64::MAX);
+    if let Err(r) = set_family_emblem(
+        &state,
+        &chrome,
+        &viewer,
+        &fid,
+        &stored,
+        &choice,
+        base_version,
+    ) {
+        return r;
+    }
+    family_emblem_done(&fid, back_id(&f.back))
+}
+
+/// The bytes of an emblem upload, refused as an error page with the way back.
+fn emblem_refused(
+    chrome: &render::Chrome,
+    back: &str,
+    status: StatusCode,
+    key: &str,
+    args: &[(&str, fluent::FluentValue<'_>)],
+) -> Response {
+    render::error_page_back_in(
+        chrome,
+        status,
+        "error-upload-title",
+        key,
+        args,
+        Some((back, "emblem-back")),
+    )
+}
+
+/// An uploaded picture as a Document entity, checked: an image, within the
+/// size limit. `linked_to` says what it stands for.
+#[allow(clippy::result_large_err)]
+fn emblem_document(
+    chrome: &render::Chrome,
+    back: &str,
+    up: &DocUpload,
+    linked_to: Value,
+) -> Result<(Value, String), Response> {
+    if up.too_large || up.bytes.len() > documents::MAX_UPLOAD {
+        return Err(emblem_refused(
+            chrome,
+            back,
+            StatusCode::PAYLOAD_TOO_LARGE,
+            "error-upload-too-large",
+            &[(
+                "mb",
+                ((documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
+            )],
+        ));
+    }
+    if up.bytes.is_empty() {
+        return Err(emblem_refused(
+            chrome,
+            back,
+            StatusCode::BAD_REQUEST,
+            "error-upload-none",
+            &[],
+        ));
+    }
+    let Some(kind) = documents::sniff(&up.bytes).filter(|k| k.raster_image) else {
+        return Err(emblem_refused(
+            chrome,
+            back,
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            "emblem-not-an-image",
+            &[],
+        ));
+    };
+    let doc_id = uuid::Uuid::new_v4().to_string();
+    let mut entity = json!({
+        "id": doc_id,
+        "type": "document",
+        "axgf_version": "1.0",
+        "filename": clean_filename(&up.filename, kind.ext),
+        "mime_type": kind.mime,
+        "document_type": "photo",
+        "status": "present",
+        "file": {
+            "path": documents::attachment_path(&doc_id, kind.ext),
+            "size_bytes": up.bytes.len() as u64,
+            "sha256": documents::sha256_hex(&up.bytes),
+        },
+    });
+    if linked_to.as_array().is_some_and(|a| !a.is_empty()) {
+        entity["linked_to"] = linked_to;
+    }
+    if !up.caption.trim().is_empty() {
+        entity["caption"] = json!(up.caption.trim());
+    }
+    Ok((entity, doc_id))
+}
+
+/// `POST /admin/family/:id/document` — add a picture to a family, and make
+/// it its emblem.
+pub async fn family_emblem_upload(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(fid): Path<String>,
+    multipart: axum::extract::Multipart,
+) -> Response {
+    let (viewer, chrome) = guard!(state, headers);
+    let Some(stored) = state.read(|flat| flat.get("families").and_then(|c| c.get(&fid)).cloned())
+    else {
+        return render::error_page_in(
+            &chrome,
+            StatusCode::NOT_FOUND,
+            "emblem-no-family-title",
+            "emblem-no-family-detail",
+        );
+    };
+    // Adding a picture to a family is a write against the family.
+    if let Err(r) = check_scope(
+        &state,
+        &chrome,
+        &viewer,
+        axgf_rs::EntityKind::Family,
+        &stored,
+        None,
+    ) {
+        return r;
+    }
+    let up = read_document_upload(multipart).await;
+    let back = back_id(&up.back).map(str::to_string);
+    let page = match &back {
+        Some(b) => format!("/admin/family/{fid}/avatar?back={b}"),
+        None => format!("/admin/family/{fid}/avatar"),
+    };
+    let linked = json!([{"entity_type": "family", "entity_id": fid, "role": crate::emblem::ROLE}]);
+    let (entity, _) = match emblem_document(&chrome, &page, &up, linked) {
+        Ok(e) => e,
+        Err(r) => return r,
+    };
+    let (out, new_id) = match state.add_document(&entity, &up.bytes) {
+        Ok(o) => o,
+        Err(e) => return io_error(&chrome, &e),
+    };
+    if !out.applied {
+        return emblem_refused(
+            &chrome,
+            &page,
+            StatusCode::BAD_REQUEST,
+            "error-upload-refused",
+            &[(
+                "reason",
+                crate::state::format_diagnostics(&out.diagnostics).into(),
+            )],
+        );
+    }
+    state.journal_mutation(&crate::journal::entry_for(crate::journal::Record {
+        who: viewer.name(),
+        action: "upload",
+        kind: "family",
+        entity_id: &fid,
+        label: new_id.clone(),
+        version_num: None,
+        before: None,
+        after: None,
+    }));
+    if up.set_avatar {
+        if let Some(doc_id) = new_id {
+            let choice = crate::avatar::Choice::Document {
+                id: doc_id,
+                focal: crate::avatar::Focal::default(),
+            };
+            let base_version = up.base_version.unwrap_or(u64::MAX);
+            if let Err(r) = set_family_emblem(
+                &state,
+                &chrome,
+                &viewer,
+                &fid,
+                &stored,
+                &choice,
+                base_version,
+            ) {
+                return r;
+            }
+        }
+    }
+    Redirect::to(&page).into_response()
+}
+
+/// `GET /admin/bundle/emblem` — the emblem of the family the archive is
+/// about, at the head of every page.
+pub async fn archive_emblem_picker(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<HashMap<String, String>>,
+) -> Response {
+    let (_viewer, chrome) = guard_admin!(state, headers);
+    let (name, images, choice) = state.read(|flat| {
+        let name = flat
+            .pointer("/manifest/family/name")
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|n| !n.is_empty())
+            .map(str::to_string)
+            .unwrap_or_else(|| chrome.t("home-unnamed-family"));
+        let current = crate::emblem::archive_document(flat)
+            .and_then(|id| flat.get("documents")?.get(id))
+            .map(image_json);
+        let choice = match crate::emblem::of_archive(flat) {
+            Some((id, focal)) => crate::avatar::Choice::Document { id, focal },
+            None => crate::avatar::Choice::None,
+        };
+        (name, current.into_iter().collect::<Vec<_>>(), choice)
+    });
+    let token = crate::state::manifest_token(&state.manifest_editable());
+    emblem_page(
+        &chrome,
+        chrome.t("emblem-archive-title"),
+        name,
+        (
+            "/admin/bundle/emblem".to_string(),
+            "/admin/bundle/emblem/upload".to_string(),
+            "/admin/bundle#family".to_string(),
+        ),
+        images,
+        &choice,
+        false,
+        (0, token),
+        None,
+        q.contains_key("saved"),
+    )
+}
+
+/// Write the archive's emblem into the manifest, provided it is still the
+/// manifest the page was drawn from.
+fn set_archive_emblem(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &Viewer,
+    token: &str,
+    choice: Option<(&str, crate::avatar::Focal)>,
+) -> Response {
+    match state.update_manifest(viewer.name(), token, |m| {
+        crate::emblem::set_archive(m, choice)
+    }) {
+        Ok(crate::state::ManifestOutcome::Applied | crate::state::ManifestOutcome::Unchanged) => {
+            Redirect::to("/admin/bundle/emblem?saved=1").into_response()
+        }
+        Ok(crate::state::ManifestOutcome::Conflict) => render::error_page_back_in(
+            chrome,
+            StatusCode::CONFLICT,
+            "error-upload-title",
+            "manifest-error-stale",
+            &[],
+            Some(("/admin/bundle/emblem", "emblem-back")),
+        ),
+        Err(e) => io_error(chrome, &e),
+    }
+}
+
+/// `POST /admin/bundle/emblem` — choose the archive's emblem, or none.
+pub async fn archive_emblem_set(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<EmblemForm>,
+) -> Response {
+    let (viewer, chrome) = guard_admin!(state, headers);
+    let choice = match f.choice.trim() {
+        "" | "none" | "auto" => None,
+        doc => {
+            let ok = state.read(|flat| {
+                flat.get("documents")
+                    .and_then(|d| d.get(doc))
+                    .and_then(|d| d.get("mime_type"))
+                    .and_then(Value::as_str)
+                    .is_some_and(|m| m.starts_with("image/") && m != "image/svg+xml")
+            });
+            if !ok {
+                return render::error_page_in(
+                    &chrome,
+                    StatusCode::FORBIDDEN,
+                    "avatar-not-available-title",
+                    "avatar-not-available-detail",
+                );
+            }
+            Some(doc)
+        }
+    };
+    set_archive_emblem(
+        &state,
+        &chrome,
+        &viewer,
+        &f.token,
+        choice.map(|d| (d, f.focal())),
+    )
+}
+
+/// `POST /admin/bundle/emblem/upload` — a new picture for the archive's
+/// emblem.
+pub async fn archive_emblem_upload(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    multipart: axum::extract::Multipart,
+) -> Response {
+    let (viewer, chrome) = guard_admin!(state, headers);
+    let up = read_document_upload(multipart).await;
+    let (entity, _) = match emblem_document(&chrome, "/admin/bundle/emblem", &up, json!([])) {
+        Ok(e) => e,
+        Err(r) => return r,
+    };
+    let (out, new_id) = match state.add_document(&entity, &up.bytes) {
+        Ok(o) => o,
+        Err(e) => return io_error(&chrome, &e),
+    };
+    let Some(doc_id) = new_id.filter(|_| out.applied) else {
+        return emblem_refused(
+            &chrome,
+            "/admin/bundle/emblem",
+            StatusCode::BAD_REQUEST,
+            "error-upload-refused",
+            &[(
+                "reason",
+                crate::state::format_diagnostics(&out.diagnostics).into(),
+            )],
+        );
+    };
+    set_archive_emblem(
+        &state,
+        &chrome,
+        &viewer,
+        &up.token,
+        Some((&doc_id, crate::avatar::Focal::default())),
+    )
 }

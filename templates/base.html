@@ -38,6 +38,9 @@
     {#- The logo (docs/adr/0006): in its own colours under Canopée, in ink
         like the wordmark under every other theme. -#}
     {{ logo.mark("mh", "brand-mark") }}<span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
+    {#- The emblem of the family the archive is about, beside the product's
+        name (docs/adr/0022): a picture, not a control. -#}
+    {%- if site_emblem %}<img class="masthead-emblem" src="/document/{{ site_emblem.id }}/thumb" alt="" width="30" height="30" title="{{ site_family }}">{% endif %}
     <nav>
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>

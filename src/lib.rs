@@ -36,6 +36,7 @@ pub mod convert;
 pub mod coords;
 pub mod diff;
 pub mod documents;
+pub mod emblem;
 pub mod events;
 pub mod findings;
 pub mod forms;
@@ -78,6 +79,7 @@ pub mod style;
 pub mod text;
 pub mod theme;
 pub mod tree;
+pub mod unions;
 pub mod view;
 
 use std::path::Path;

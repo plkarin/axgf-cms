@@ -51,6 +51,8 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |
 | `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy — *admin* |
 | `POST /admin/person/:id/document` | Attach a file to a person — multipart upload, stored inside the bundle |
+| `GET/POST /admin/family/:id/avatar`, `POST /admin/family/:id/document` | A family's emblem (docs/adr/0022): choose among the family's images, `none` or `auto`, written as `extensions["axgf-cms:avatar/v1"]` on the Family; or upload a raster image, stored as a Document whose `linked_to` names the family in the role `emblem`, and used at once. `?back=<person id>` returns to that record |
+| `GET/POST /admin/bundle/emblem`, `POST /admin/bundle/emblem/upload` | The archive's emblem, at the head of every page (docs/adr/0022): `manifest.family.extensions["axgf-cms:emblem/v1"]`, checked against the manifest's token like the family form — *admin* |
 | `GET/POST /admin/person/:id/links`, `POST /admin/person/:id/links/:lid` | The person's links, the relations that are not family: list, create, change. The form's `rite` field (`<rite>:<role>`, the role `sponsor`, `sponsored` or `mutual`; the 27 rites are in `src/rites.rs`) records a tie of rite: the nearest AXGF 1.1 `relation` and its `category`, the rite's words in `label` and `label_reverse` when they are left empty, `bidirectional` for a mutual tie, and `extensions["axgf-cms:kinship/v1"]` = `{"rite": <key>, "sponsor": "from" or "to"}`, without `sponsor` for a mutual tie (docs/adr/0020) |
 | `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks — *admin* |
 | `GET /admin/export` | Download the live bundle — *admin* |
@@ -58,6 +60,17 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 
 `:kind` is one of `person`, `family`, `event`, `link`, `occupation`, `source`,
 `place`, `document`.
+
+A union of type `polygamous` (docs/adr/0021) is read as one marriage per
+spouse. The record editor writes three fields beyond AXGF 1.1, proposed for
+1.2 (axgf-spec proposals/0003), and keeps them through every editor:
+
+- `union.primary_person_id`: the person married to each of the others, from
+  the field `fam.<id>.primary`;
+- `union.unions[]`: each spouse's own marriage (`spouse_id`, `start`, `end`,
+  `status`), kept and read;
+- `children[].parent_ids`: the child's parents within the union, from
+  `fam.<id>.child.<n>.parent`.
 
 ---
 

@@ -29,7 +29,7 @@ pub async fn home(
     Query(hq): Query<HomeQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/about");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/about").with_archive(&state);
     let counts = state.counts();
     let total: usize = counts.iter().map(|(_, n)| n).sum();
 
@@ -358,7 +358,7 @@ pub async fn tree(
     Query(q): Query<TreeQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string()).with_archive(&state);
     // The page's one select offers the depths and, last, the whole family as
     // depth 0 (the minimalism pass); `all=1` is the older spelling of it.
     let show_all =
@@ -393,6 +393,7 @@ pub async fn tree(
                 let mut l = crate::tree::layout_with(flat, opts);
                 crate::tree::localise(&mut l, chrome.lang);
                 crate::chart::dress(&mut l, flat, lens, chrome.lang);
+                crate::chart::emblems(&mut l, flat, lens);
                 crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                 return (l, None, roster, None, None, hidden);
             }
@@ -429,6 +430,7 @@ pub async fn tree(
                     let mut l = crate::chart::chart(flat, &root, depth, depth);
                     crate::tree::localise(&mut l, chrome.lang);
                     crate::chart::dress(&mut l, flat, lens, chrome.lang);
+                    crate::chart::emblems(&mut l, flat, lens);
                     // What each person is to the one in the middle, said on
                     // their open card (docs/adr/0020).
                     crate::chart::relate(&mut l, flat, lens, chrome.lang, &root);
@@ -477,6 +479,7 @@ pub async fn tree(
                     let mut l = crate::tree::layout_with(flat, opts);
                     crate::tree::localise(&mut l, chrome.lang);
                     crate::chart::dress(&mut l, flat, lens, chrome.lang);
+                    crate::chart::emblems(&mut l, flat, lens);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     (l, None, roster, None, None, hidden)
                 }
@@ -622,7 +625,8 @@ pub async fn tree_panel(
     Query(q): Query<PanelQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/tree?sel={id}"));
+    let chrome =
+        render::Chrome::resolve(&viewer, &headers, &format!("/tree?sel={id}")).with_archive(&state);
     // The panel fetch is a read path like any other, and it is the one most
     // easily forgotten: it returns a fragment rather than a page, so a
     // template-level check would never have covered it. It resolves its own
@@ -829,7 +833,7 @@ pub async fn person(
         crate::person::RecordTab::Fiche => format!("/person/{id}"),
         other => format!("/person/{id}?tab={}", other.slug()),
     };
-    let chrome = render::Chrome::resolve(&viewer, &headers, &here);
+    let chrome = render::Chrome::resolve(&viewer, &headers, &here).with_archive(&state);
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
         if flat.get("persons").and_then(|p| p.get(&id)).is_none() {
             return Reading::Absent;
@@ -1019,7 +1023,7 @@ pub async fn document_raw(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page_in(
             &chrome,
@@ -1109,7 +1113,7 @@ pub async fn document_view(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page_in(
             &chrome,
@@ -1156,7 +1160,7 @@ pub async fn document_thumb(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     let Some(doc) = stored_document(&state, &viewer, &id) else {
         return render::error_page_in(
             &chrome,
@@ -1592,7 +1596,7 @@ pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Respo
     // Even a 404 is rendered in the reader's language and theme. It is a page
     // like any other, and it is one of the more likely ones to be seen.
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     render::error_page_in(
         &chrome,
         StatusCode::NOT_FOUND,
@@ -1801,7 +1805,7 @@ pub async fn river(
     Query(q): Query<RiverQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string()).with_archive(&state);
     let started = std::time::Instant::now();
     let Some(v) = river_view(&state, &viewer, chrome.lang, &q, true) else {
         return home(State(state), headers, Query(HomeQuery::default())).await;
@@ -1868,7 +1872,7 @@ pub async fn river_data(
     Query(q): Query<RiverQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     match river_view(&state, &viewer, chrome.lang, &q, false) {
         Some(v) => {
             let mut body = v.payload;
@@ -1918,7 +1922,7 @@ pub async fn quality(
     Query(q): Query<QualityQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string()).with_archive(&state);
     let Some(all) = quality_findings(&state, &viewer) else {
         return Redirect::to("/admin/login").into_response();
     };
@@ -1987,7 +1991,7 @@ pub async fn quality(
 /// `GET /quality.csv` — the same list, to work through offline.
 pub async fn quality_csv(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/quality");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/quality").with_archive(&state);
     let Some(all) = quality_findings(&state, &viewer) else {
         return Redirect::to("/admin/login").into_response();
     };
@@ -2008,7 +2012,7 @@ pub async fn quality_csv(State(state): State<Shared>, headers: HeaderMap) -> Res
 /// `GET /quality.json` — the same list, with each finding's arguments.
 pub async fn quality_json(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/quality");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/quality").with_archive(&state);
     let Some(all) = quality_findings(&state, &viewer) else {
         return Redirect::to("/admin/login").into_response();
     };
@@ -2065,7 +2069,7 @@ pub async fn search(
     Query(q): Query<SearchQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string());
+    let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string()).with_archive(&state);
     let hits = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::search::people(flat, lens, &q.q, SEARCH_PAGE)
     });
@@ -2092,7 +2096,7 @@ pub async fn search_json(
         crate::search::people_counted(flat, lens, &q.q, SEARCH_SUGGESTIONS)
     });
     // The suggestions' footer (B3): how many matched, and the two keys.
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     let summary = chrome.t_args("search-summary", &[("n", (total as i64).into())]);
     (
         [(header::CACHE_CONTROL, "no-store")],

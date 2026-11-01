@@ -7,10 +7,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 Kinship: how any two people of the family are related, every relative of
-one, and the ties a culture makes by rite and custom (the operator's request
-of 1 November 2026, docs/adr/0020). Nothing about the AXGF file changes: a
-tie of rite is a 1.1 Link, and its rite is kept in this application's
-extension.
+one, and the ties a culture makes by rite and custom; polygamous unions
+told apart from a couple; and the emblem of a family and of the archive (the
+operator's requests of 1 November 2026, docs/adr/0020 to 0022). Every bundle
+stays valid AXGF 1.1. Ties of rite, polygamous unions and emblems use 1.1's
+own fields and this application's extensions, and axgf-spec proposals 0002
+to 0004 ask 1.2 to name them.
 
 ### Added
 
@@ -51,6 +53,26 @@ extension.
 - **axgf-spec proposals/0002** (branch `ritual-kinship`) proposes naming
   these rites in AXGF 1.2, and the spec's KINSHIP.md explains to other
   programs how relationships are read from a bundle.
+- **Polygamous unions** (the operator's request, docs/adr/0021), told apart
+  from a couple: one marriage per spouse, with its own dates and end. The
+  wives of one husband are each other's co-wives, never wives. The children
+  of two wives are half-siblings, and a child whose mother nobody recorded is
+  never said full or half. The record frames each marriage apart and names
+  the co-wives. The tree draws each marriage's bracket in long and short
+  strokes, with a knot of three rings, and says so in the legend. The editor
+  asks who is at the centre of the union and each child's other parent. The
+  specification's own shape (`primary_person_id`, `unions[]`) is read, a
+  household recorded as one family per marriage too, and axgf-spec
+  proposals/0003 asks AXGF 1.2 to define them with `children[].parent_ids`.
+- **Emblems** (the operator's request, docs/adr/0022): a coat of arms, a
+  mark or a photograph that stands for a family.
+  - The archive's emblem is shown at the head of every page and on the
+    overview, and set in the Archive room.
+  - Each family's emblem is shown beside its union on the record and on its
+    couple's knot in the tree, and set from the union in the record editor.
+  - A family's pictures are read by whoever may read its people; the
+    archive's emblem by every visitor. axgf-spec proposals/0004 asks AXGF
+    1.2 for a `coat_of_arms` document type and an emblem in the manifest.
 - **Documentation.** The README explains both tools, how the words are
   worked out and the 27 ties. docs/FAMILY.md tells the family how to read
   the Kinship tab and add a godparent. docs/REFERENCE.md documents the link
@@ -61,6 +83,10 @@ extension.
 
 - A template that failed inside an include logged only "could not render
   include"; the error now carries every cause beneath it.
+- The older relationships editor rebuilt a union from its form, and dropped
+  every field the form did not draw: a polygamous union's
+  `primary_person_id` and `unions[]`, a child's `parent_ids`, any field
+  another tool wrote. It keeps them now (1.0 P9).
 
 ## [1.0.0] — 2026-10-29
 

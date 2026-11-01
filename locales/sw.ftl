@@ -4766,3 +4766,50 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Ulezi
 kin-rite-guardian-note = Mlezi, kama kumbukumbu inavyosema.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] mume mwenza
+        [F] mke mwenza
+       *[other] mwenza wa ndoa
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Mke mwenza
+           *[other] Wake wenza
+        }
+        [M] { $n ->
+            [one] Mume mwenza
+           *[other] Waume wenza
+        }
+       *[other] { $n ->
+            [one] Mwenza wa ndoa
+           *[other] Wenza wa ndoa
+        }
+    }
+tree-key-polygamous = Ndoa ya mitala
+family-primary = Kiini cha ndoa
+family-primary-hint = Katika ndoa ya mitala, mtu aliyefunga ndoa na kila mmoja wa wengine. Wengine hawajaoana wao kwa wao.
+family-child-parent = Mzazi mwingine
+family-child-parent-hint = Katika ndoa ya mitala, mwenza aliye mzazi mwingine wa mtoto huyu. Bila kuchagua, rekodi haisemi.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Nembo au ngao ya ukoo
+emblem-family-title = Nembo ya familia
+emblem-archive-title = Nembo ya familia ya kumbukumbu
+emblem-archive-edit = Nembo au ngao ya familia
+emblem-saved = Nembo imehifadhiwa.
+emblem-choose = Picha inayowakilisha familia
+emblem-help = Ngao ya ukoo, alama, picha: kinachowakilisha familia hii. Huonyeshwa yote, kando ya ndoa kwenye kila rekodi na kwenye fundo la wanandoa kwenye mti.
+emblem-archive-help = Ngao ya ukoo, alama, picha: kinachowakilisha familia ambayo kumbukumbu hii inaihusu. Huonyeshwa yote juu ya kila ukurasa na kwenye muhtasari, kwa kila mgeni.
+emblem-mode-auto-note = Picha ambayo familia hii inaiunganisha kama nembo yake, ikiwa ipo.
+emblem-mode-none = Hakuna nembo
+emblem-no-images = Bado hakuna picha: ongeza moja hapa chini.
+emblem-upload-title = Ongeza picha
+emblem-upload-button = Iongeze na uitumie
+emblem-not-an-image = Nembo ni picha: PNG, JPEG, GIF, WebP au BMP.
+emblem-back = Rudi kwenye nembo
+emblem-no-family-title = Familia haipatikani
+emblem-no-family-detail = Familia hii haimo kwenye kumbukumbu, au huruhusiwi kuiona.

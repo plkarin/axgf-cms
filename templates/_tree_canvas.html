@@ -41,10 +41,21 @@
             style="opacity:{{ e.opacity }}">{% if e.title %}<title>{{ e.title }}</title>{% endif %}</path>
       {%- if e.node %}
       {# A couple's knot: two rings on their bracket (the operator's kit,
-         made in Canva, 2026-10-27). #}
-      <g class="wire-node" data-from="{{ e.from }}" data-to="{{ e.to }}"
+         made in Canva, 2026-10-27). One marriage of a polygamous union has
+         three, and its bracket a pattern of its own (docs/adr/0021). #}
+      <g class="wire-node{% if e.line == 'polygamous' %} is-polygamous{% endif %}" data-from="{{ e.from }}" data-to="{{ e.to }}"
          transform="translate({{ e.node[0] }} {{ e.node[1] }})">
+        {%- if e.emblem %}
+        {#- The family's emblem in place of the rings (docs/adr/0022), whole,
+            in a disc a little larger than the knot. -#}
+        <clipPath id="knot-clip-{{ loop.index }}"><circle r="10.5"/></clipPath>
+        <circle class="knot-emblem-disc" r="11.5"/>
+        <image href="/document/{{ e.emblem }}/thumb" x="-10.5" y="-10.5" width="21" height="21" preserveAspectRatio="xMidYMid meet" clip-path="url(#knot-clip-{{ loop.index }})"/>
+        {%- elif e.line == "polygamous" %}
+        <circle r="8.5"/><circle class="ring" cx="-3.3" r="2.6"/><circle class="ring" r="2.6"/><circle class="ring" cx="3.3" r="2.6"/>
+        {%- else %}
         <circle r="7"/><circle class="ring" cx="-1.9" r="3"/><circle class="ring" cx="1.9" r="3"/>
+        {%- endif %}
       </g>
       {%- endif %}
       {% endfor %}

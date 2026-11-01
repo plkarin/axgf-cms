@@ -852,3 +852,151 @@ async fn the_picker_opened_from_the_editor_goes_back_to_it() {
     );
     assert_eq!(avatar_of(&app, &cookie, KID).await["focal"]["y"], 0.2);
 }
+
+// ---------------------------------------------------------------------------
+// A polygamous union (docs/adr/0021)
+// ---------------------------------------------------------------------------
+
+const HUSBAND: &str = "a0000000-0000-4000-8000-000000000011";
+const WIFE1: &str = "a0000000-0000-4000-8000-000000000012";
+const WIFE2: &str = "a0000000-0000-4000-8000-000000000013";
+const SON: &str = "a0000000-0000-4000-8000-000000000014";
+const DAUGHTER: &str = "a0000000-0000-4000-8000-000000000015";
+const HOUSEHOLD: &str = "f0000000-0000-4000-8000-000000000011";
+
+/// A fictional household: one husband, two wives, a son of the first and a
+/// daughter of the second. `said` writes who is at the centre and each
+/// child's mother; without it the record says neither.
+fn household(tag: &str, said: bool) -> common::Scratch {
+    let dir = scratch(tag);
+    let path = dir.join("household.axgf");
+    let sexed = |id: &str, name: &str, sex: &str| {
+        let mut p = person(id, name);
+        p["identity"]["gender"] = json!({"value": sex});
+        p
+    };
+    let mut family = json!({"id": HOUSEHOLD, "type": "family", "axgf_version": "1.0",
+        "union": {"type": "polygamous", "persons": [
+            {"person_id": HUSBAND, "role": "spouse"},
+            {"person_id": WIFE1, "role": "spouse"},
+            {"person_id": WIFE2, "role": "spouse"}]},
+        "children": [{"person_id": SON}, {"person_id": DAUGHTER}]});
+    if said {
+        family["union"]["primary_person_id"] = json!(HUSBAND);
+        family["union"]["unions"] = json!([
+            {"spouse_id": WIFE1, "start": {"date": {"value": "1890", "precision": "year"}}},
+            {"spouse_id": WIFE2, "start": {"date": {"value": "1896", "precision": "year"}}}]);
+        family["children"][0]["parent_ids"] = json!([HUSBAND, WIFE1]);
+        family["children"][1]["parent_ids"] = json!([HUSBAND, WIFE2]);
+    }
+    let flat = json!({
+        "manifest": {"axgf": "1.1"},
+        "persons": {
+            HUSBAND: sexed(HUSBAND, "Kofi Mensah", "M"),
+            WIFE1: sexed(WIFE1, "Ama Boateng", "F"),
+            WIFE2: sexed(WIFE2, "Efua Owusu", "F"),
+            SON: sexed(SON, "Kwame Mensah", "M"),
+            DAUGHTER: sexed(DAUGHTER, "Akosua Mensah", "F"),
+        },
+        "families": {HOUSEHOLD: family},
+        "events": {}, "links": {}, "occupations": {}, "sources": {}, "places": {}, "documents": {}
+    });
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&flat.to_string()).expect("export"),
+    )
+    .expect("write");
+    dir.pointing_at(path)
+}
+
+/// The record editor's Family tab says who is at the centre of a polygamous
+/// union and which wife is each child's mother, and taking a wife out of the
+/// union forgets her everywhere she was named.
+#[tokio::test]
+async fn the_editor_records_the_centre_of_a_polygamous_union_and_each_childs_mother() {
+    let src = household("poly-edit-src", false);
+    let (app, _p) = app_with_bundle("poly-edit", &src);
+    let cookie = admin_cookie(&app).await;
+    let mut pairs = drawn(&app, &cookie, HUSBAND).await;
+    for field in ["primary", "child.0.parent", "child.1.parent"] {
+        let name = format!("fam.{HOUSEHOLD}.{field}");
+        assert!(pairs.iter().any(|(k, _)| *k == name), "{name} drawn");
+    }
+    set(&mut pairs, &format!("fam.{HOUSEHOLD}.primary"), HUSBAND);
+    set(
+        &mut pairs,
+        &format!("fam.{HOUSEHOLD}.child.0.parent"),
+        WIFE1,
+    );
+    set(
+        &mut pairs,
+        &format!("fam.{HOUSEHOLD}.child.1.parent"),
+        WIFE2,
+    );
+    set(&mut pairs, "tab", "famille");
+    assert_eq!(
+        save(&app, &cookie, HUSBAND, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    let fam = flat(&app, &cookie, &format!("family/{HOUSEHOLD}")).await;
+    assert_eq!(fam["union"]["primary_person_id"], HUSBAND);
+    assert_eq!(fam["children"][0]["parent_ids"], json!([HUSBAND, WIFE1]));
+    assert_eq!(fam["children"][1]["parent_ids"], json!([HUSBAND, WIFE2]));
+
+    // The second wife leaves the union: her daughter's mother is no longer
+    // in it, and nothing names her there.
+    let mut pairs = drawn(&app, &cookie, HUSBAND).await;
+    set(
+        &mut pairs,
+        &format!("fam.{HOUSEHOLD}.partner.2.remove"),
+        "on",
+    );
+    set(&mut pairs, "tab", "famille");
+    assert_eq!(
+        save(&app, &cookie, HUSBAND, &pairs).await,
+        StatusCode::SEE_OTHER
+    );
+    let fam = flat(&app, &cookie, &format!("family/{HOUSEHOLD}")).await;
+    let persons = fam["union"]["persons"].to_string();
+    assert!(!persons.contains(WIFE2), "{persons}");
+    assert!(fam["children"][1].get("parent_ids").is_none(), "{fam}");
+    assert_eq!(fam["children"][0]["parent_ids"], json!([HUSBAND, WIFE1]));
+}
+
+/// Read: one marriage per wife on the husband's record, the other wife on
+/// each wife's, each child's own mother, half-siblings, and the tree's
+/// polygamous knot.
+#[tokio::test]
+async fn a_polygamous_union_reads_as_one_marriage_per_wife() {
+    let src = household("poly-read-src", true);
+    let (app, _p) = app_with_bundle("poly-read", &src);
+    let page = |path: String| {
+        let app = app.clone();
+        async move { body_string(get(&app, &path).await).await }
+    };
+    let wife = page(format!("/person/{WIFE1}?tab=family")).await;
+    assert!(wife.contains("union is-polygamous"), "{wife}");
+    assert!(wife.contains("fam-co-spouses"));
+    assert!(wife.contains("Efua Owusu"));
+    assert!(wife.contains("Co-wife</h4>"));
+    let husband = page(format!("/person/{HUSBAND}?tab=family")).await;
+    assert_eq!(
+        husband.matches("union is-polygamous").count(),
+        2,
+        "{husband}"
+    );
+    assert!(!husband.contains("fam-co-spouses"));
+    let son = page(format!("/person/{SON}?tab=family")).await;
+    assert!(son.contains("Ama Boateng") && son.contains("Kofi Mensah"));
+    assert!(
+        !son.contains("Efua Owusu"),
+        "his father's other wife is not his mother"
+    );
+    let kin = page(format!("/person/{SON}?tab=kinship&with={DAUGHTER}")).await;
+    assert!(kin.contains("half-sister"), "{kin}");
+    let kin = page(format!("/person/{WIFE1}?tab=kinship&with={WIFE2}")).await;
+    assert!(kin.contains("co-wife"), "{kin}");
+    let tree = page(format!("/tree?root={HUSBAND}")).await;
+    assert!(tree.contains("wire-line-polygamous"), "{tree}");
+    assert!(tree.contains("wire-node is-polygamous"));
+}

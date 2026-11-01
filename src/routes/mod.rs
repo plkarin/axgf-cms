@@ -140,7 +140,8 @@ async fn same_site_writes(
                     "refused a form posted from another site"
                 );
                 let viewer = crate::auth::viewer(&state, headers);
-                let chrome = crate::render::Chrome::resolve(&viewer, headers, "/");
+                let chrome =
+                    crate::render::Chrome::resolve(&viewer, headers, "/").with_archive(&state);
                 return crate::render::error_page_in(
                     &chrome,
                     axum::http::StatusCode::FORBIDDEN,
@@ -508,6 +509,28 @@ fn routes(state: Shared) -> Router {
         .route(
             "/admin/person/:id/avatar",
             get(admin::avatar_picker).post(admin::avatar_set),
+        )
+        // The picture that stands for a family, and for the archive's
+        // (docs/adr/0022).
+        .route(
+            "/admin/family/:id/avatar",
+            get(admin::family_emblem_picker).post(admin::family_emblem_set),
+        )
+        .route(
+            "/admin/family/:id/document",
+            post(admin::family_emblem_upload).layer(DefaultBodyLimit::max(
+                crate::documents::MAX_UPLOAD + 64 * 1024,
+            )),
+        )
+        .route(
+            "/admin/bundle/emblem",
+            get(admin::archive_emblem_picker).post(admin::archive_emblem_set),
+        )
+        .route(
+            "/admin/bundle/emblem/upload",
+            post(admin::archive_emblem_upload).layer(DefaultBodyLimit::max(
+                crate::documents::MAX_UPLOAD + 64 * 1024,
+            )),
         )
         // Before `/admin/place/:id`, which takes POST only and otherwise
         // matched "new" as an id: the place list's "New place" answered 405.

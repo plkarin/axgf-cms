@@ -283,6 +283,16 @@ pub struct Block {
     /// picture. Not one of the block's fields, so choosing a picture never
     /// counts as changing the document.
     pub avatar: Option<AvatarPick>,
+    /// A page of its own for part of the record: a union's emblem
+    /// (docs/adr/0022).
+    pub link: Option<BlockLink>,
+}
+
+/// A link from a block to the page that edits part of it.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct BlockLink {
+    pub href: String,
+    pub label: String,
 }
 
 impl Block {
@@ -984,20 +994,57 @@ fn union_block(cx: &Ctx, fid: &str, fam: &Value) -> Block {
         .and_then(Value::as_array)
         .cloned()
         .unwrap_or_default();
+    // A polygamous union (docs/adr/0021): who is married to each of the
+    // others, and which spouse is each child's other parent.
+    let polygamous = crate::unions::is_polygamous(fam);
+    let persons = cx.flat.get("persons").and_then(Value::as_object);
+    let members = crate::unions::members(fam);
+    let primary = crate::unions::primary(fam, persons);
+    let spouses: Vec<&str> = members
+        .iter()
+        .copied()
+        .filter(|m| Some(*m) != primary)
+        .collect();
+    let parent_field = |name: String, child: Option<&Value>| {
+        let named = child.map(crate::unions::parent_ids).unwrap_or_default();
+        let value = spouses
+            .iter()
+            .find(|s| named.contains(s))
+            .copied()
+            .unwrap_or_default();
+        Field {
+            hint: cx.t("family-child-parent-hint"),
+            ..Field::select(
+                name,
+                cx.t("family-child-parent"),
+                value,
+                std::iter::once(cx.not_set())
+                    .chain(spouses.iter().map(|s| Opt {
+                        value: (*s).to_string(),
+                        label: cx.person_name(s),
+                    }))
+                    .collect(),
+            )
+        }
+    };
     let mut child_rows = Vec::new();
     for (i, c) in kids.iter().enumerate() {
         let Some(pid) = c.get("person_id").and_then(Value::as_str) else {
             continue;
         };
+        let mut fields = child_fields(
+            cx,
+            &format!("{prefix}.child.{i}"),
+            c.get("lineage").and_then(Value::as_str).unwrap_or_default(),
+            c.get("confidence").and_then(Value::as_f64),
+        );
+        if polygamous && spouses.len() > 1 {
+            fields.push(parent_field(format!("{prefix}.child.{i}.parent"), Some(c)));
+        }
         child_rows.push(Row {
             title: cx.person_name(pid),
             href: cx.person_href(pid),
-            fields: child_fields(
-                cx,
-                &format!("{prefix}.child.{i}"),
-                c.get("lineage").and_then(Value::as_str).unwrap_or_default(),
-                c.get("confidence").and_then(Value::as_f64),
-            ),
+            fields,
             remove: Some(check(
                 format!("{prefix}.child.{i}.remove"),
                 cx.t("edit-remove"),
@@ -1027,6 +1074,24 @@ fn union_block(cx: &Ctx, fid: &str, fam: &Value) -> Block {
         &cx.t("family-started"),
         fam.pointer("/union/start/date"),
     ));
+    if polygamous && members.len() > 1 {
+        fields.push(Field {
+            hint: cx.t("family-primary-hint"),
+            ..Field::select(
+                format!("{prefix}.primary"),
+                cx.t("family-primary"),
+                fam.pointer("/union/primary_person_id")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default(),
+                std::iter::once(cx.not_set())
+                    .chain(members.iter().map(|m| Opt {
+                        value: (*m).to_string(),
+                        label: cx.person_name(m),
+                    }))
+                    .collect(),
+            )
+        });
+    }
     fields.push(hidden(
         format!("{prefix}.v"),
         crate::state::version_of(fam).to_string(),
@@ -1072,6 +1137,10 @@ fn union_block(cx: &Ctx, fid: &str, fam: &Value) -> Block {
                         )
                     })
                     .chain(child_fields(cx, &format!("{prefix}.child.new"), "", None))
+                    .chain(
+                        (polygamous && spouses.len() > 1)
+                            .then(|| parent_field(format!("{prefix}.child.new.parent"), None)),
+                    )
                     .collect(),
                     ..Default::default()
                 }),
@@ -1079,6 +1148,15 @@ fn union_block(cx: &Ctx, fid: &str, fam: &Value) -> Block {
             },
         ],
         remove: Some(check(format!("{prefix}.leave"), cx.t("family-leave"))),
+        // The family's emblem, beside its name, and the page that chooses it
+        // (docs/adr/0022).
+        thumb: crate::emblem::of_family(cx.flat, fid)
+            .filter(|(d, _)| crate::access::may_read_document(cx.flat, cx.lens, true, d))
+            .map(|(d, _)| format!("/document/{d}/thumb")),
+        link: Some(BlockLink {
+            href: format!("/admin/family/{fid}/avatar?back={}", cx.id),
+            label: cx.t("emblem-family-edit"),
+        }),
         ..Default::default()
     }
 }
@@ -1687,6 +1765,7 @@ fn apply_union(
         .cloned()
         .unwrap_or_default();
     let mut persons = Vec::new();
+    let mut taken_out: Vec<String> = Vec::new();
     for (i, p) in stored.into_iter().enumerate() {
         let is_me = p.get("person_id").and_then(Value::as_str) == Some(me);
         let gone = if is_me {
@@ -1694,7 +1773,13 @@ fn apply_union(
         } else {
             on(sub, &format!("partner.{i}.remove"))
         };
-        if !gone {
+        if gone {
+            taken_out.extend(
+                p.get("person_id")
+                    .and_then(Value::as_str)
+                    .map(str::to_string),
+            );
+        } else {
             persons.push(p);
         }
     }
@@ -1711,6 +1796,53 @@ fn apply_union(
         return Err("family-error-last-partner");
     }
     union.insert("persons".into(), json!(persons));
+    // A polygamous union's primary person (docs/adr/0021): one of its
+    // members, or nobody named. Any other union has none.
+    let polygamous = union.get("type").and_then(Value::as_str) == Some(crate::unions::POLYGAMOUS);
+    match text(sub, "primary") {
+        Some(p) if polygamous => {
+            union.insert("primary_person_id".into(), json!(p));
+        }
+        _ if polygamous && sub.contains_key("primary") => {
+            union.remove("primary_person_id");
+        }
+        _ if !polygamous => {
+            union.remove("primary_person_id");
+        }
+        _ => {}
+    }
+    for gone in &taken_out {
+        crate::unions::forget(fam, gone);
+    }
+    crate::unions::list_every_spouse(fam);
+    if let Some(p) = fam
+        .pointer("/union/primary_person_id")
+        .and_then(Value::as_str)
+    {
+        if !crate::unions::members(fam).contains(&p) {
+            if let Some(u) = fam.get_mut("union").and_then(Value::as_object_mut) {
+                u.remove("primary_person_id");
+            }
+        }
+    }
+    // Each child's other parent, among the spouses: `parent_ids` names the
+    // primary person and that spouse.
+    let primary = crate::unions::primary(fam, flat.get("persons").and_then(Value::as_object))
+        .map(str::to_string);
+    let members: Vec<String> = crate::unions::members(fam)
+        .into_iter()
+        .map(str::to_string)
+        .collect();
+    let parents_for = |spouse: Option<&str>| -> Option<Value> {
+        let s = spouse?;
+        if !members.iter().any(|m| m == s) || primary.as_deref() == Some(s) {
+            return None;
+        }
+        Some(match &primary {
+            Some(p) => json!([p, s]),
+            None => json!([s]),
+        })
+    };
 
     let stored: Vec<Value> = fam
         .get("children")
@@ -1733,6 +1865,10 @@ fn apply_union(
             "confidence",
             confidence_of(sub, &format!("child.{i}.confidence")),
         );
+        let field = format!("child.{i}.parent");
+        if polygamous && sub.contains_key(&field) {
+            set_or_remove(&mut c, "parent_ids", parents_for(text(sub, &field)));
+        }
         kids.push(Value::Object(c));
     }
     if let Some(raw) = text(sub, "child.new.person") {
@@ -1749,6 +1885,13 @@ fn apply_union(
                 "confidence",
                 confidence_of(sub, "child.new.confidence"),
             );
+            if polygamous {
+                set_or_remove(
+                    &mut c,
+                    "parent_ids",
+                    parents_for(text(sub, "child.new.parent")),
+                );
+            }
             kids.push(Value::Object(c));
         }
     }

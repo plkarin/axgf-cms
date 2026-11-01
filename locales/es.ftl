@@ -5079,3 +5079,50 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Tutela
 kin-rite-guardian-note = Tutor o tutora, como dice el registro.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] coesposo
+        [F] coesposa
+       *[other] coesposo
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Coesposa
+           *[other] Coesposas
+        }
+        [M] { $n ->
+            [one] Coesposo
+           *[other] Coesposos
+        }
+       *[other] { $n ->
+            [one] Coesposo
+           *[other] Coesposos
+        }
+    }
+tree-key-polygamous = Unión polígama
+family-primary = En el centro de la unión
+family-primary-hint = En una unión polígama, la persona casada con cada uno de los demás. Los demás no están casados entre sí.
+family-child-parent = Otro progenitor
+family-child-parent-hint = En una unión polígama, el cónyuge que es el otro progenitor de este hijo. Sin elegir, el registro no lo dice.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Emblema o escudo
+emblem-family-title = El emblema de la familia
+emblem-archive-title = El emblema de la familia del archivo
+emblem-archive-edit = Emblema o escudo de la familia
+emblem-saved = El emblema está guardado.
+emblem-choose = La imagen que representa a la familia
+emblem-help = Un escudo, una marca, una fotografía: lo que representa a esta familia. Se muestra entero, junto a la unión en cada ficha y en el nudo de la pareja en el árbol.
+emblem-archive-help = Un escudo, una marca, una fotografía: lo que representa a la familia de la que trata este archivo. Se muestra entero en la cabecera de cada página y en la vista general, a todos los visitantes.
+emblem-mode-auto-note = La imagen que esta familia vincula como su emblema, si la hay.
+emblem-mode-none = Sin emblema
+emblem-no-images = Aún no hay imagen: añada una abajo.
+emblem-upload-title = Añadir una imagen
+emblem-upload-button = Añadirla y usarla
+emblem-not-an-image = Un emblema es una imagen: PNG, JPEG, GIF, WebP o BMP.
+emblem-back = Volver al emblema
+emblem-no-family-title = Familia no encontrada
+emblem-no-family-detail = Esta familia no está en el archivo, o no puede verla.

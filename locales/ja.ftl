@@ -4585,3 +4585,41 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = 後見
 kin-rite-guardian-note = 記録にある後見人。
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] 同じ妻の夫
+        [F] 同じ夫の妻
+       *[other] 配偶者を同じくする人
+    }
+union-co-spouses = { $sex ->
+        [F] 同じ夫の他の妻
+        [M] 同じ妻の他の夫
+       *[other] 同じ配偶者の他の配偶者
+    }
+tree-key-polygamous = 複婚
+family-primary = 婚姻の中心
+family-primary-hint = 複婚で、ほかの各人と結婚している人。ほかの人どうしは互いに結婚していません。
+family-child-parent = もう一人の親
+family-child-parent-hint = 複婚で、この子のもう一人の親である配偶者。選ばなければ、記録はそれを示していません。
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = 紋章・エンブレム
+emblem-family-title = 家族のエンブレム
+emblem-archive-title = アーカイブの家族のエンブレム
+emblem-archive-edit = 家族の紋章・エンブレム
+emblem-saved = エンブレムを保存しました。
+emblem-choose = 家族を表す画像
+emblem-help = 紋章、しるし、写真など、この家族を表すもの。各記録の婚姻のそばと、系図の夫婦の結び目に、全体が表示されます。
+emblem-archive-help = 紋章、しるし、写真など、このアーカイブが語る家族を表すもの。すべてのページの上部と概要に、すべての訪問者へ全体が表示されます。
+emblem-mode-auto-note = この家族がエンブレムとして結びつけている画像（あれば）。
+emblem-mode-none = エンブレムなし
+emblem-no-images = まだ画像がありません。下から追加してください。
+emblem-upload-title = 画像を追加
+emblem-upload-button = 追加して使う
+emblem-not-an-image = エンブレムは画像です：PNG、JPEG、GIF、WebP、BMP。
+emblem-back = エンブレムに戻る
+emblem-no-family-title = 家族が見つかりません
+emblem-no-family-detail = この家族はアーカイブにないか、閲覧できません。

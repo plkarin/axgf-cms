@@ -534,6 +534,11 @@ pub fn may_read_document(flat: &Value, lens: &Lens, signed_in: bool, document_id
     if withheld_documents(flat, lens.ceiling()).contains(document_id) {
         return false;
     }
+    // The archive's emblem stands at the head of every page, as the family's
+    // name does (docs/adr/0022).
+    if crate::emblem::archive_document(flat) == Some(document_id) {
+        return true;
+    }
     let vis = lens.visible();
     if vis.is_all() {
         return true;
@@ -585,6 +590,27 @@ pub fn may_read_document(flat: &Value, lens: &Lens, signed_in: bool, document_id
             }
             if check(pid) {
                 return true;
+            }
+        }
+    }
+
+    // Direction three: a family's own documents — its emblem, a photograph
+    // of the household — follow the people of the family (docs/adr/0022).
+    if let Some(families) = flat.get("families").and_then(Value::as_object) {
+        for fid in crate::emblem::families_linking(flat, document_id) {
+            let Some(f) = families.get(fid) else {
+                continue;
+            };
+            let children = f
+                .get("children")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(|c| c.get("person_id").and_then(Value::as_str));
+            for pid in crate::unions::members(f).into_iter().chain(children) {
+                if persons.contains_key(pid) && check(pid) {
+                    return true;
+                }
             }
         }
     }
@@ -731,13 +757,13 @@ pub fn subjects_of(kind: axgf_rs::EntityKind, entity: &Value) -> Vec<String> {
     match kind {
         K::Person => out.extend(str_at(entity, "id")),
         K::Family => {
-            if let Some(ps) = entity
-                .get("union")
-                .and_then(|u| u.get("persons"))
-                .and_then(Value::as_array)
-            {
-                out.extend(ps.iter().filter_map(|p| str_at(p, "person_id")));
-            }
+            // Every spouse, a polygamous union's `unions[]` included
+            // (docs/adr/0021).
+            out.extend(
+                crate::unions::members(entity)
+                    .into_iter()
+                    .map(str::to_string),
+            );
             if let Some(cs) = entity.get("children").and_then(Value::as_array) {
                 out.extend(cs.iter().filter_map(|c| str_at(c, "person_id")));
             }
@@ -912,6 +938,39 @@ mod tests {
             may_read_document(&flat, &vis, true, "orphan"),
             "…but a signed-in account may fetch it"
         );
+    }
+
+    /// A family's emblem follows the family's people; the archive's is
+    /// every visitor's (docs/adr/0022).
+    #[test]
+    fn a_familys_document_is_readable_through_its_people_and_the_archives_emblem_by_all() {
+        let flat = json!({
+            "manifest": {"family": {"name": "M",
+                "extensions": {"axgf-cms:emblem/v1": {"document_id": "arms"}}}},
+            "persons": {
+                "seen": {"identity": {"visibility": "public"}},
+                "hidden": {"identity": {"visibility": "private"}},
+                "hidden2": {"identity": {"visibility": "private"}}
+            },
+            "families": {
+                "open": {"union": {"type": "marriage", "persons": [
+                    {"person_id": "seen", "role": "spouse"}, {"person_id": "hidden", "role": "spouse"}]}},
+                "closed": {"union": {"type": "marriage", "persons": [
+                    {"person_id": "hidden", "role": "spouse"}, {"person_id": "hidden2", "role": "spouse"}]}}
+            },
+            "documents": {
+                "crest": {"linked_to": [{"entity_type": "family", "entity_id": "open", "role": "emblem"}]},
+                "seal": {"linked_to": [{"entity_type": "family", "entity_id": "closed", "role": "emblem"}]},
+                "arms": {}
+            }
+        });
+        let vis = Lens::resolve(&flat, Visibility::Public);
+        assert!(may_read_document(&flat, &vis, false, "crest"));
+        assert!(
+            !may_read_document(&flat, &vis, true, "seal"),
+            "a family nobody of which this reader may see keeps its emblem"
+        );
+        assert!(may_read_document(&flat, &vis, false, "arms"));
     }
 
     #[test]

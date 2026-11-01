@@ -4691,3 +4691,41 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = 监护
 kin-rite-guardian-note = 记录所载的监护人。
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] 同妻之夫
+        [F] 同夫之妻
+       *[other] 共同配偶者
+    }
+union-co-spouses = { $sex ->
+        [F] 丈夫的其他妻子
+        [M] 妻子的其他丈夫
+       *[other] 配偶的其他配偶
+    }
+tree-key-polygamous = 多偶婚姻
+family-primary = 婚姻的中心人物
+family-primary-hint = 在多偶婚姻中，与其他每个人都结婚的人。其他人彼此之间没有婚姻关系。
+family-child-parent = 另一位家长
+family-child-parent-hint = 在多偶婚姻中，作为这个孩子另一位家长的配偶。未选择时，记录没有说明。
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = 徽章或纹章
+emblem-family-title = 家族徽章
+emblem-archive-title = 档案家族的徽章
+emblem-archive-edit = 家族的徽章或纹章
+emblem-saved = 徽章已保存。
+emblem-choose = 代表家族的图片
+emblem-help = 纹章、标记或照片：代表这个家族的东西。它会完整显示在每份记录的婚姻旁和家谱中夫妻的结上。
+emblem-archive-help = 纹章、标记或照片：代表本档案所讲述家族的东西。它会完整显示在每个页面顶部和概览中，向所有访客展示。
+emblem-mode-auto-note = 这个家族作为徽章关联的图片（如果有）。
+emblem-mode-none = 无徽章
+emblem-no-images = 还没有图片：请在下方添加一张。
+emblem-upload-title = 添加图片
+emblem-upload-button = 添加并使用
+emblem-not-an-image = 徽章是一张图片：PNG、JPEG、GIF、WebP 或 BMP。
+emblem-back = 返回徽章
+emblem-no-family-title = 找不到这个家族
+emblem-no-family-detail = 这个家族不在档案中，或者您无权查看。

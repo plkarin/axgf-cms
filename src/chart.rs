@@ -95,6 +95,8 @@ enum Wire {
         a: usize,
         b: usize,
         conf: Option<f64>,
+        /// One marriage of a polygamous union (docs/adr/0021).
+        poly: bool,
     },
     /// A parentage: from the parents' column to the child's, the next one
     /// to the right.
@@ -302,6 +304,7 @@ impl Chart<'_> {
                     a: key,
                     b: *q,
                     conf: self.families[fams[i]].union_confidence,
+                    poly: self.families[fams[i]].polygamous,
                 });
             }
         }
@@ -427,6 +430,7 @@ impl Chart<'_> {
                 a: w[0],
                 b: w[1],
                 conf: self.families[f].union_confidence,
+                poly: self.families[f].polygamous,
             });
         }
         Some((block, keys, conf, lineage))
@@ -468,20 +472,21 @@ impl Chart<'_> {
         if me.dup {
             return (Block::line(vec![me]), key);
         }
-        let others: Vec<(String, Option<f64>)> = self
+        let others: Vec<(String, Option<f64>, bool)> = self
             .unions(id)
             .into_iter()
             .filter(|&f| f != via)
             .filter_map(|f| {
+                let fam = &self.families[f];
                 self.partner_in(f, id)
-                    .map(|q| (q, self.families[f].union_confidence))
+                    .map(|q| (q, fam.union_confidence, fam.polygamous))
             })
             .collect();
-        let mut unions: Vec<(usize, Option<f64>)> = Vec::new();
+        let mut unions: Vec<(usize, Option<f64>, bool)> = Vec::new();
         let mut beside: Vec<Slot> = Vec::new();
-        for (q, conf) in &others {
+        for (q, conf, poly) in &others {
             let s = self.slot(q, level);
-            unions.push((s.key, *conf));
+            unions.push((s.key, *conf, *poly));
             beside.push(s);
         }
         let mut col: Vec<Slot> = Vec::new();
@@ -496,8 +501,13 @@ impl Chart<'_> {
             s.at = j as f64 * (SPAN + PARTNER_GAP);
         }
         let mut block = Block::line(col);
-        for (q, conf) in unions {
-            block.wires.push(Wire::Union { a: key, b: q, conf });
+        for (q, conf, poly) in unions {
+            block.wires.push(Wire::Union {
+                a: key,
+                b: q,
+                conf,
+                poly,
+            });
         }
         if let Some((mut pb, pkeys, conf, lineage)) = self.parents_of(id, level - 1) {
             let (Some(&p0), Some(&p1)) = (pkeys.first(), pkeys.last()) else {
@@ -635,6 +645,7 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
         line: None,
         kids: None,
         node: None,
+        emblem: None,
     };
     // A couple's bracket, beside their cards, and the knot on it.
     let bracket = |a: &(f64, f64, i64, String), b: &(f64, f64, i64, String)| {
@@ -642,11 +653,11 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
         let x0 = a.0 + CARD_W;
         (x0, x0 + BRACKET, y1, y2)
     };
-    let mut unions: Vec<(usize, usize, Option<f64>)> = Vec::new();
+    let mut unions: Vec<(usize, usize, Option<f64>, bool)> = Vec::new();
     let mut combs: BTreeMap<From, Vec<Kid>> = BTreeMap::new();
     for w in &block.wires {
         match w {
-            Wire::Union { a, b, conf } => unions.push((*a, *b, *conf)),
+            Wire::Union { a, b, conf, poly } => unions.push((*a, *b, *conf, *poly)),
             Wire::Parent {
                 from,
                 parent,
@@ -676,7 +687,7 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
         let at = first.map_or((y1 + y2) / 2.0, |y| y.clamp(y1, y2));
         Some((x0, xb, y1, y2, at))
     };
-    for &(a, b, conf) in &unions {
+    for &(a, b, conf, poly) in &unions {
         let Some((x0, xb, y1, y2, at)) = knot(a, b) else {
             continue;
         };
@@ -689,6 +700,11 @@ pub fn chart(flat: &Value, root: &str, up: usize, down: usize) -> TreeLayout {
             pos[&b].3.clone(),
         );
         e.node = Some([xb, at]);
+        // A polygamous union's marriage: its own pattern and knot, apart
+        // from a couple's (docs/adr/0021).
+        if poly {
+            e.line = Some("polygamous".to_string());
+        }
         edges.push(e);
     }
     // Each family's lines: from the couple's knot (or a lone parent's card)
@@ -862,6 +878,7 @@ pub fn relate(
                 line: None,
                 kids: None,
                 node: None,
+                emblem: None,
             });
         }
     }
@@ -957,6 +974,27 @@ pub fn short_name(given: &str, surname: &str, display: &str) -> String {
             Some(i) => format!("{head} {i}"),
             None => (*head).to_string(),
         },
+    }
+}
+
+/// Each couple's node carries its family's emblem, when the family has one
+/// this reader may see (docs/adr/0022). The couple's family is the one whose
+/// union holds them both; a polygamous household's marriages share its
+/// emblem.
+pub fn emblems(layout: &mut TreeLayout, flat: &Value, lens: &crate::access::Lens) {
+    let Some(families) = flat.get("families").and_then(Value::as_object) else {
+        return;
+    };
+    for e in layout.edges.iter_mut().filter(|e| e.node.is_some()) {
+        e.emblem = families
+            .iter()
+            .filter(|(_, f)| {
+                let members = crate::unions::members(f);
+                members.contains(&e.from.as_str()) && members.contains(&e.to.as_str())
+            })
+            .find_map(|(fid, _)| crate::emblem::of_family(flat, fid))
+            .filter(|(d, _)| crate::access::may_read_document(flat, lens, false, d))
+            .map(|(d, _)| d);
     }
 }
 

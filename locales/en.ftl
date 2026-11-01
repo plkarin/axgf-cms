@@ -4994,3 +4994,50 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Guardianship
 kin-rite-guardian-note = Legal guardian, as the record states it.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] co-husband
+        [F] co-wife
+       *[other] co-spouse
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Co-wife
+           *[other] Co-wives
+        }
+        [M] { $n ->
+            [one] Co-husband
+           *[other] Co-husbands
+        }
+       *[other] { $n ->
+            [one] Co-spouse
+           *[other] Co-spouses
+        }
+    }
+tree-key-polygamous = Polygamous union
+family-primary = At the centre of the union
+family-primary-hint = In a polygamous union, the person married to each of the others. The others are not married to one another.
+family-child-parent = Other parent
+family-child-parent-hint = In a polygamous union, the spouse who is this child's other parent. Left unset, the record does not say.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Emblem or coat of arms
+emblem-family-title = The family's emblem
+emblem-archive-title = The emblem of the archive's family
+emblem-archive-edit = Emblem or coat of arms of the family
+emblem-saved = The emblem is saved.
+emblem-choose = The picture that stands for the family
+emblem-help = A coat of arms, a mark, a photograph: whatever stands for this family. It is shown whole, beside the union on each record and on the couple's knot in the tree.
+emblem-archive-help = A coat of arms, a mark, a photograph: whatever stands for the family this archive is about. It is shown whole at the head of every page and on the overview, to every visitor.
+emblem-mode-auto-note = The picture this family links as its emblem, if there is one.
+emblem-mode-none = No emblem
+emblem-no-images = No picture yet: add one below.
+emblem-upload-title = Add a picture
+emblem-upload-button = Add it and use it
+emblem-not-an-image = An emblem is a picture: PNG, JPEG, GIF, WebP or BMP.
+emblem-back = Back to the emblem
+emblem-no-family-title = No such family
+emblem-no-family-detail = This family is not in the archive, or not one you may see.

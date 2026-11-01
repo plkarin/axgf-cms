@@ -571,6 +571,9 @@ fn detach_from_family(stored: &Value, person_id: &str) -> Result<Value, &'static
             return Err("family-error-last-partner");
         }
         out["union"]["persons"] = Value::Array(kept);
+        // Nothing left pointing at them: a polygamous union's `unions[]`,
+        // its primary person, a child's parents (docs/adr/0021).
+        crate::unions::forget(&mut out, person_id);
         return Ok(out);
     }
     let kids: Vec<Value> = out
@@ -667,6 +670,26 @@ fn build_family(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'st
     {
         union.insert("source_id".into(), json!(s));
     }
+    // What this form does not draw is the record's, not the form's to drop:
+    // a polygamous union's primary person and each spouse's own marriage
+    // (docs/adr/0021), and any field a later version or another tool wrote
+    // (1.0 P9).
+    const DRAWN: [&str; 7] = [
+        "type",
+        "status",
+        "persons",
+        "start",
+        "end",
+        "confidence",
+        "source_id",
+    ];
+    if let Some(old) = stored.get("union").and_then(Value::as_object) {
+        for (k, v) in old {
+            if !DRAWN.contains(&k.as_str()) {
+                union.insert(k.clone(), v.clone());
+            }
+        }
+    }
     out["union"] = Value::Object(union);
 
     // Children, in the order the form draws them. `birth_order` is the
@@ -697,6 +720,24 @@ fn build_family(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'st
         if let Some(l) = forms::field(&r, "lineage").filter(|l| LINEAGE.contains(l)) {
             c.insert("lineage".into(), json!(l));
         }
+        // The child's own fields this form does not draw, `parent_ids` among
+        // them, are kept from the entry the record already had.
+        if let Some(old) = stored
+            .get("children")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_object)
+            .find(|o| o.get("person_id").and_then(Value::as_str) == Some(pid.as_str()))
+        {
+            for (k, v) in old {
+                if !["person_id", "birth_order", "confidence", "note", "lineage"]
+                    .contains(&k.as_str())
+                {
+                    c.insert(k.clone(), v.clone());
+                }
+            }
+        }
         kids.push(Value::Object(c));
     }
     if kids.is_empty() {
@@ -704,6 +745,22 @@ fn build_family(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'st
     } else {
         out["children"] = Value::Array(kids);
     }
+    // A partner the form took out of `persons` is forgotten everywhere it was
+    // named; a spouse only `unions[]` names was never a row here, and stays.
+    let listed = |v: &Value| -> Vec<String> {
+        v.pointer("/union/persons")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|p| p.get("person_id").and_then(Value::as_str))
+            .map(str::to_string)
+            .collect()
+    };
+    let now = listed(&out);
+    for gone in listed(stored).iter().filter(|p| !now.contains(p)) {
+        crate::unions::forget(&mut out, gone);
+    }
+    crate::unions::list_every_spouse(&mut out);
 
     for (key, field) in [("name", "name"), ("description", "description")] {
         match form.get(field).map(|s| s.trim()).filter(|s| !s.is_empty()) {

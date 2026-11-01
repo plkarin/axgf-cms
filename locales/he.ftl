@@ -5173,3 +5173,56 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = אפוטרופסות
 kin-rite-guardian-note = אפוטרופוס, כפי שכתוב ברשומה.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] בעל נוסף
+        [F] צרה
+       *[other] בן זוג נוסף
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] צרה
+            [two] צרות
+            [many] צרות
+           *[other] צרות
+        }
+        [M] { $n ->
+            [one] בעל נוסף
+            [two] בעלים נוספים
+            [many] בעלים נוספים
+           *[other] בעלים נוספים
+        }
+       *[other] { $n ->
+            [one] בן זוג נוסף
+            [two] בני זוג נוספים
+            [many] בני זוג נוספים
+           *[other] בני זוג נוספים
+        }
+    }
+tree-key-polygamous = נישואים פוליגמיים
+family-primary = במרכז הנישואים
+family-primary-hint = בנישואים פוליגמיים, האדם הנשוי לכל אחד מהאחרים. האחרים אינם נשואים זה לזה.
+family-child-parent = ההורה השני
+family-child-parent-hint = בנישואים פוליגמיים, בן הזוג שהוא ההורה השני של הילד. אם לא נבחר, הרשומה אינה אומרת.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = סמל או שלט גיבורים
+emblem-family-title = סמל המשפחה
+emblem-archive-title = סמל המשפחה של הארכיון
+emblem-archive-edit = סמל המשפחה או שלט הגיבורים שלה
+emblem-saved = הסמל נשמר.
+emblem-choose = התמונה שמייצגת את המשפחה
+emblem-help = שלט גיבורים, סימן, תצלום: מה שמייצג את המשפחה הזו. הוא מוצג בשלמותו, ליד הנישואים בכל רשומה ועל הקשר של בני הזוג בעץ.
+emblem-archive-help = שלט גיבורים, סימן, תצלום: מה שמייצג את המשפחה שהארכיון הזה עוסק בה. הוא מוצג בשלמותו בראש כל עמוד ובסקירה, לכל המבקרים.
+emblem-mode-auto-note = התמונה שהמשפחה הזו מקשרת כסמל שלה, אם יש כזו.
+emblem-mode-none = ללא סמל
+emblem-no-images = אין עדיין תמונה: הוסיפו אחת למטה.
+emblem-upload-title = הוספת תמונה
+emblem-upload-button = להוסיף ולהשתמש
+emblem-not-an-image = סמל הוא תמונה: PNG, JPEG, GIF, WebP או BMP.
+emblem-back = חזרה לסמל
+emblem-no-family-title = המשפחה לא נמצאה
+emblem-no-family-detail = המשפחה הזו אינה בארכיון, או שאינכם רשאים לראות אותה.

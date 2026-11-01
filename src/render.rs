@@ -227,6 +227,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_events.html",
     "admin_documents.html",
     "admin_avatar.html",
+    "admin_emblem.html",
     "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",
@@ -393,6 +394,11 @@ pub struct Chrome {
     /// templates need it and one of them is a tree card drawn a thousand times
     /// a page. See [`crate::living`].
     pub presume_after: i64,
+    /// The emblem of the family the archive is about, at the head of every
+    /// page (docs/adr/0022). Set by [`Chrome::with_archive`].
+    pub site_emblem: Option<crate::emblem::EmblemView>,
+    /// That family's name, said by the emblem.
+    pub site_family: String,
 }
 
 impl Chrome {
@@ -456,7 +462,28 @@ impl Chrome {
             style: style.id,
             styles: crate::style::selector_entries(),
             presume_after: crate::living::max_age_years(),
+            site_emblem: None,
+            site_family: String::new(),
         }
+    }
+
+    /// The archive's emblem and its family's name, read once for this page
+    /// (docs/adr/0022).
+    pub fn with_archive(mut self, state: &crate::state::AppState) -> Self {
+        let (emblem, family) = state.read(|flat| {
+            (
+                crate::emblem::of_archive(flat)
+                    .map(|(id, focal)| crate::emblem::EmblemView::new(&id, focal)),
+                flat.pointer("/manifest/family/name")
+                    .and_then(serde_json::Value::as_str)
+                    .map(str::trim)
+                    .unwrap_or_default()
+                    .to_string(),
+            )
+        });
+        self.site_emblem = emblem;
+        self.site_family = family;
+        self
     }
 
     /// The interface language, for code that needs to translate outside a

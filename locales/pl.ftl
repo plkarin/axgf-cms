@@ -5337,3 +5337,56 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Opieka prawna
 kin-rite-guardian-note = Opiekun prawny, jak mówi zapis.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] współmąż
+        [F] współżona
+       *[other] współmałżonek
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Współżona
+            [few] Współżony
+            [many] Współżony
+           *[other] Współżony
+        }
+        [M] { $n ->
+            [one] Współmąż
+            [few] Współmężowie
+            [many] Współmężowie
+           *[other] Współmężowie
+        }
+       *[other] { $n ->
+            [one] Współmałżonek
+            [few] Współmałżonkowie
+            [many] Współmałżonkowie
+           *[other] Współmałżonkowie
+        }
+    }
+tree-key-polygamous = Związek poligamiczny
+family-primary = W centrum związku
+family-primary-hint = W związku poligamicznym osoba poślubiona każdej z pozostałych. Pozostali nie są małżonkami między sobą.
+family-child-parent = Drugi rodzic
+family-child-parent-hint = W związku poligamicznym małżonek, który jest drugim rodzicem tego dziecka. Bez wyboru zapis tego nie mówi.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Godło lub herb
+emblem-family-title = Godło rodziny
+emblem-archive-title = Godło rodziny archiwum
+emblem-archive-edit = Godło lub herb rodziny
+emblem-saved = Godło zapisano.
+emblem-choose = Obraz, który przedstawia rodzinę
+emblem-help = Herb, znak, fotografia: to, co przedstawia tę rodzinę. Jest pokazywane w całości, obok związku na każdym zapisie i na węźle pary w drzewie.
+emblem-archive-help = Herb, znak, fotografia: to, co przedstawia rodzinę, o której jest to archiwum. Jest pokazywane w całości u góry każdej strony i w przeglądzie, wszystkim odwiedzającym.
+emblem-mode-auto-note = Obraz, który ta rodzina łączy jako swoje godło, jeśli taki jest.
+emblem-mode-none = Bez godła
+emblem-no-images = Jeszcze nie ma obrazu: dodaj go poniżej.
+emblem-upload-title = Dodaj obraz
+emblem-upload-button = Dodaj i użyj
+emblem-not-an-image = Godło to obraz: PNG, JPEG, GIF, WebP lub BMP.
+emblem-back = Wróć do godła
+emblem-no-family-title = Nie ma takiej rodziny
+emblem-no-family-detail = Tej rodziny nie ma w archiwum albo nie możesz jej zobaczyć.

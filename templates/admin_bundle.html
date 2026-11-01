@@ -55,6 +55,11 @@
 <section class="rec-section" id="family">
 <h2>{{ t("manifest-title") }}</h2>
 <p class="small muted">{{ t("manifest-intro") }}</p>
+{#- The family's emblem, at the head of every page (docs/adr/0022): its
+    own page, as a person's picture has one. -#}
+<p class="manifest-emblem">
+  {%- if site_emblem %}<img class="union-emblem" src="/document/{{ site_emblem.id }}/thumb" alt="" width="44" height="44">{% endif %}
+  <a class="btn small" href="/admin/bundle/emblem">{{ t("emblem-archive-edit") }}</a></p>
 <form class="manifest-form" method="post" action="/admin/bundle/family" autocomplete="off">
   {%- set fm = family.form %}
   <input type="hidden" name="token" value="{{ fm.token }}">

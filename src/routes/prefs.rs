@@ -42,7 +42,7 @@ pub async fn settings(
 
     // `Chrome::resolve`'s `back` is what the forms post. Pointing it at this
     // page is the whole of "stay here after applying".
-    let chrome = render::Chrome::resolve(&viewer, &headers, &self_url);
+    let chrome = render::Chrome::resolve(&viewer, &headers, &self_url).with_archive(&state);
 
     let river_cut = crate::session::named_cookie(&headers, super::public::RIVER_MOTION_COOKIE)
         .as_deref()
@@ -276,7 +276,7 @@ fn respond(headers: &HeaderMap, name: &str, value: &str, back: &str) -> Response
 /// says no.
 fn bad_choice(state: &Shared, headers: &HeaderMap) -> Response {
     let viewer = auth::viewer(state, headers);
-    let chrome = render::Chrome::resolve(&viewer, headers, "/");
+    let chrome = render::Chrome::resolve(&viewer, headers, "/").with_archive(state);
     render::error_page_in(
         &chrome,
         StatusCode::BAD_REQUEST,

@@ -29,7 +29,7 @@ pub async fn page(
     if !viewer.signed_in() {
         return Redirect::to("/admin/login").into_response();
     }
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/account");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
     let notice = match q.done.as_deref() {
         Some("linked") => Some(chrome.t("account-person-linked")),
         Some("unlinked") => Some(chrome.t("account-person-unlinked")),
@@ -109,7 +109,7 @@ pub async fn person(
     if !viewer.signed_in() {
         return Redirect::to("/admin/login").into_response();
     }
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/account");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
     let Some(id) = viewer.user.as_ref().map(|u| u.id.clone()) else {
         // The emergency token is no one: there is no account to link.
         return render_page(

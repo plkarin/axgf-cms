@@ -5379,3 +5379,56 @@ kin-rite-guardian = { $role ->
     }
 kin-rite-guardian-name = Опека
 kin-rite-guardian-note = Опекун, как сказано в записи.
+
+## Polygamous unions (docs/adr/0021): one marriage per spouse, the
+## co-spouses, the editor's two fields.
+kin-co-spouse = { $sex ->
+        [M] другой муж
+        [F] другая жена
+       *[other] другой супруг
+    }
+union-co-spouses = { $sex ->
+        [F] { $n ->
+            [one] Другая жена
+            [few] Другие жёны
+            [many] Другие жёны
+           *[other] Другие жёны
+        }
+        [M] { $n ->
+            [one] Другой муж
+            [few] Другие мужья
+            [many] Другие мужья
+           *[other] Другие мужья
+        }
+       *[other] { $n ->
+            [one] Другой супруг
+            [few] Другие супруги
+            [many] Другие супруги
+           *[other] Другие супруги
+        }
+    }
+tree-key-polygamous = Полигамный брак
+family-primary = В центре брака
+family-primary-hint = В полигамном браке — человек, состоящий в браке с каждым из остальных. Остальные не состоят в браке между собой.
+family-child-parent = Другой родитель
+family-child-parent-hint = В полигамном браке — супруг, который является другим родителем этого ребёнка. Если не выбрано, запись этого не говорит.
+
+## Emblems (docs/adr/0022): the picture that stands for a family, and for
+## the archive's.
+emblem-family-edit = Эмблема или герб
+emblem-family-title = Эмблема семьи
+emblem-archive-title = Эмблема семьи архива
+emblem-archive-edit = Эмблема или герб семьи
+emblem-saved = Эмблема сохранена.
+emblem-choose = Изображение, которое представляет семью
+emblem-help = Герб, знак, фотография — то, что представляет эту семью. Показывается целиком: рядом с браком на каждой записи и на узле пары в древе.
+emblem-archive-help = Герб, знак, фотография — то, что представляет семью, о которой этот архив. Показывается целиком вверху каждой страницы и в обзоре, всем посетителям.
+emblem-mode-auto-note = Изображение, которое эта семья связывает как свою эмблему, если оно есть.
+emblem-mode-none = Без эмблемы
+emblem-no-images = Изображения пока нет: добавьте его ниже.
+emblem-upload-title = Добавить изображение
+emblem-upload-button = Добавить и использовать
+emblem-not-an-image = Эмблема — это изображение: PNG, JPEG, GIF, WebP или BMP.
+emblem-back = Назад к эмблеме
+emblem-no-family-title = Семья не найдена
+emblem-no-family-detail = Этой семьи нет в архиве, или вам нельзя её видеть.

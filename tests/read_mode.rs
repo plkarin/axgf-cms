@@ -412,6 +412,9 @@ const ALLOWED: &[&str] = &[
     "source-type-letter",
     "source-type-oral_tradition",
     "source-type-photograph",
+    // The other spouses of a polygamous union (docs/adr/0021): people who
+    // are there.
+    "union-co-spouses",
     "source-type-published_genealogy",
     "union-role-spouse",
     "union-status-ended_by_divorce",

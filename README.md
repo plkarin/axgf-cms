@@ -292,12 +292,58 @@ The decisions are in
 for the family explains the tab in plain words
 ([docs/FAMILY.md](docs/FAMILY.md#how-are-we-related)).
 
-Three limits. A tie of rite is drawn as a line on the tree only when both
+Two limits. A tie of rite is drawn as a line on the tree only when both
 people are on it; otherwise the open card lists it. The river views do not
-draw ties of rite. And a polygamous union recorded as one family cannot say
-which wife bore which child, nor that two co-wives are not married to each
-other: its children are read as full brothers and sisters, and its
-partners as partners of one another. One family per couple avoids both.
+draw ties of rite.
+
+### Polygamous unions
+
+A polygamous union is never read as a couple writ large. The archive reads
+it as **one marriage per spouse** (AXGF 1.0 §4.2.2):
+
+- **The person at the centre** is married to each of the others. The
+  others are not married to one another: they are each other's
+  **co-wives** (or co-husbands).
+- **Each marriage has its own dates and its own end**, so one wife can be
+  divorced while the others are not.
+- **Each child belongs to their own mother's marriage.** The children of
+  two wives are half-brothers and half-sisters. A child whose mother the
+  record does not name is a brother or a sister of the others, and the
+  archive never says whether full or half.
+
+On the record, each marriage is its own block, framed with a double rule,
+and a wife's block names her co-wives. On the tree, the bracket of each
+marriage has a long-and-short pattern and its knot three rings, and the
+legend says so. In the record editor's Family tab, a union typed
+*polygamous* asks two more things: who is **at the centre of the union**,
+and, for each child, the **other parent**.
+
+In the file, the union lists everyone in `persons`. It names the person at
+the centre in `primary_person_id` and each spouse's own marriage in
+`unions[]`, as the specification's own example does, and each child's
+parents in `parent_ids`. A household recorded as one family per marriage,
+as GEDCOM records it, reads the same when each is typed `polygamous`.
+[ADR 0021](docs/adr/0021-polygamous-unions.md) has the details, and axgf-spec's
+proposal 0003 asks AXGF 1.2 to define these fields.
+
+### The family's emblem
+
+**The archive** can have a coat of arms, or any picture that stands for the
+family it is about. It shows at the head of every page, beside the name of
+the application, and above the family's name on the overview, for every
+visitor. An administrator sets it in *Administration → Archive*, with
+*Emblem or coat of arms of the family*.
+
+**Each family the archive records** can have its own emblem too. It shows
+beside the union on every record and on the couple's knot in the tree, to
+whoever may see that family's people. It is set in the record editor's
+Family tab, with *Emblem or coat of arms* on the union.
+
+Both pages work like a person's picture. You can choose a picture already
+there, add one and use it at once, or choose *No emblem*. An emblem is shown whole, because a coat of arms is a whole shape.
+[ADR 0022](docs/adr/0022-family-emblems.md) has the details, and axgf-spec's
+proposal 0004 asks AXGF 1.2 for a `coat_of_arms` document type and an
+emblem in the manifest.
 
 ### Charts from the record
 

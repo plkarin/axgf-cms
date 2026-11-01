@@ -38,7 +38,7 @@ fn register_key(client: &str) -> String {
 }
 
 fn chrome_for(state: &Shared, headers: &HeaderMap, path: &str) -> render::Chrome {
-    render::Chrome::resolve(&auth::viewer(state, headers), headers, path)
+    render::Chrome::resolve(&auth::viewer(state, headers), headers, path).with_archive(state)
 }
 
 /// The services a visitor can use here, ready ones only, in the page's order.

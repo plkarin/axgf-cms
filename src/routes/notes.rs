@@ -750,7 +750,8 @@ pub async fn show(
     Query(q): Query<NoteQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/notes/{id}"));
+    let chrome =
+        render::Chrome::resolve(&viewer, &headers, &format!("/notes/{id}")).with_archive(&state);
     let Some((note, doc)) = full(&state, &viewer, chrome.lang, &id) else {
         return no_note(&chrome);
     };
@@ -779,7 +780,8 @@ pub async fn pdf(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, &format!("/notes/{id}"));
+    let chrome =
+        render::Chrome::resolve(&viewer, &headers, &format!("/notes/{id}")).with_archive(&state);
     let Some((note, _)) = full(&state, &viewer, chrome.lang, &id) else {
         return no_note(&chrome);
     };

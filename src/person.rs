@@ -334,6 +334,18 @@ pub struct UnionView {
     pub source: Option<SourceView>,
     /// Children of this union, in birth order where the record states one.
     pub children: Vec<PersonRef>,
+    /// One marriage of a polygamous union (docs/adr/0021).
+    pub polygamous: bool,
+    /// The other spouses of the person this one is married to, in a
+    /// polygamous union: co-wives, or co-husbands. Empty otherwise, and for
+    /// the person at the centre of the union, whose marriages are each
+    /// drawn on their own.
+    pub co_spouses: Vec<PersonRef>,
+    /// Their heading: "Co-wives", "Co-husbands", "Co-spouses".
+    pub co_label: String,
+    /// The picture that stands for the family: its coat of arms, its mark
+    /// (docs/adr/0022).
+    pub emblem: Option<crate::emblem::EmblemView>,
 }
 
 /// The Family records describing one couple — normally exactly one.
@@ -1464,6 +1476,24 @@ impl Ctx<'_> {
         crate::i18n::vocab(self.lang, "union-role", role)
     }
 
+    /// The heading over a polygamous union's other spouses: co-wives when
+    /// every one of them is a woman, co-husbands when every one is a man.
+    fn co_label(&self, ids: &[&str]) -> String {
+        let persons = self.collection("persons");
+        let sexes: Vec<crate::kinship::Sex> = ids
+            .iter()
+            .map(|q| crate::kinship::Sex::of_person(persons.and_then(|m| m.get(*q))))
+            .collect();
+        let sex = match sexes.first() {
+            Some(first) if sexes.iter().all(|s| s == first) => first.as_str(),
+            _ => "U",
+        };
+        self.tr(
+            "union-co-spouses",
+            &[("sex", sex.into()), ("n", (ids.len() as i64).into())],
+        )
+    }
+
     /// A `lineage` term in the reader's language.
     fn lineage(&self, term: Option<&str>) -> Option<String> {
         term.map(|t| {
@@ -1488,61 +1518,91 @@ impl Ctx<'_> {
             return (parents, siblings, group_unions(unions));
         };
 
-        for (fam_id, fam) in families {
-            let union = fam.get("union");
-            let partners: Vec<(&str, Option<&str>)> = union
-                .and_then(|u| u.get("persons"))
-                .and_then(Value::as_array)
-                .map(|ps| {
-                    ps.iter()
-                        .filter_map(|p| {
-                            let pid = p.get("person_id").and_then(Value::as_str)?;
-                            Some((pid, p.get("role").and_then(Value::as_str)))
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
-
-            let kids: Vec<ChildEntry> = fam
-                .get("children")
-                .and_then(Value::as_array)
-                .map(|cs| {
-                    cs.iter()
-                        .filter_map(|c| {
-                            Some(ChildEntry {
-                                id: c.get("person_id").and_then(Value::as_str)?,
-                                confidence: c.get("confidence").and_then(Value::as_f64),
-                                note: str_field(c, "note"),
-                                birth_order: c.get("birth_order").and_then(Value::as_i64),
-                                lineage: c.get("lineage").and_then(Value::as_str),
-                            })
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
-
-            let is_partner = partners.iter().any(|(p, _)| *p == id);
-            let as_child = kids.iter().find(|c| c.id == id);
-
-            if let Some(me) = as_child {
-                // Parents, and the confidence of *this* person's parentage.
-                for (p, role) in &partners {
-                    let mut parent =
-                        self.person_ref(p, me.confidence, role.map(|r| self.union_role(r)));
-                    if !parent.restricted {
-                        parent.lineage = self.lineage(me.lineage);
-                    }
-                    parents.push(self.with_portrait(parent));
-                }
-                for c in &kids {
-                    if c.id != id {
-                        siblings.push(self.with_portrait(self.child_ref(c)));
-                    }
-                }
+        let persons = self.collection("persons");
+        // Each family read as its couples (crate::unions): a polygamous
+        // union is one marriage per spouse, and the spouses of one person's
+        // polygamous marriages are each other's co-spouses, never partners
+        // (docs/adr/0021).
+        let read: Vec<(&String, &Value, Vec<crate::unions::Couple>)> = families
+            .iter()
+            .map(|(fid, fam)| (fid, fam, crate::unions::couples(fam, persons)))
+            .collect();
+        let mut polygamous: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+        for couple in read.iter().flat_map(|(_, _, cs)| cs.iter()) {
+            if let (true, [a, b]) = (couple.polygamous, couple.partners.as_slice()) {
+                polygamous.entry(*a).or_default().push(*b);
+                polygamous.entry(*b).or_default().push(*a);
             }
+        }
 
-            if is_partner {
-                let spouse = partners.iter().find(|(p, _)| *p != id).map(|(p, role)| {
+        for (fam_id, fam, couples) in &read {
+            let union = fam.get("union");
+            for couple in couples {
+                let partners: Vec<(&str, Option<&str>)> = couple
+                    .partners
+                    .iter()
+                    .map(|p| (*p, crate::unions::role_of(fam, p)))
+                    .collect();
+                let kids: Vec<ChildEntry> = couple
+                    .children
+                    .iter()
+                    .filter_map(|c| {
+                        Some(ChildEntry {
+                            id: c.get("person_id").and_then(Value::as_str)?,
+                            confidence: c.get("confidence").and_then(Value::as_f64),
+                            note: str_field(c, "note"),
+                            birth_order: c.get("birth_order").and_then(Value::as_i64),
+                            lineage: c.get("lineage").and_then(Value::as_str),
+                        })
+                    })
+                    .collect();
+
+                let is_partner = partners.iter().any(|(p, _)| *p == id);
+                let as_child = kids.iter().find(|c| c.id == id);
+
+                if let Some(me) = as_child {
+                    // Parents, and the confidence of *this* person's parentage.
+                    for (p, role) in &partners {
+                        let mut parent =
+                            self.person_ref(p, me.confidence, role.map(|r| self.union_role(r)));
+                        if !parent.restricted {
+                            parent.lineage = self.lineage(me.lineage);
+                        }
+                        parents.push(self.with_portrait(parent));
+                    }
+                    for c in &kids {
+                        if c.id != id {
+                            siblings.push(self.with_portrait(self.child_ref(c)));
+                        }
+                    }
+                }
+
+                if !is_partner {
+                    continue;
+                }
+                // The marriage this couple is: the union's own record, with a
+                // polygamous spouse's own start, end and status over it. The
+                // children whose other parent is not recorded have no
+                // marriage to date.
+                let marriage = union.map(|u| {
+                    let mut m = u.clone();
+                    if let Some(o) = m.as_object_mut() {
+                        if couple.open {
+                            for key in ["start", "end", "status"] {
+                                o.remove(key);
+                            }
+                        }
+                        for key in ["start", "end", "status"] {
+                            if let Some(v) = couple.own.and_then(|own| own.get(key)) {
+                                o.insert(key.into(), v.clone());
+                            }
+                        }
+                    }
+                    m
+                });
+                let marriage = marriage.as_ref();
+                let other = partners.iter().find(|(p, _)| *p != id);
+                let spouse = other.map(|(p, role)| {
                     self.with_portrait(
                         self.person_ref(
                             p,
@@ -1553,6 +1613,25 @@ impl Ctx<'_> {
                         ),
                     )
                 });
+                // The other spouses of the person this one is married to.
+                let co_ids: Vec<&str> = match other {
+                    Some((p, _)) if couple.polygamous => polygamous
+                        .get(p)
+                        .into_iter()
+                        .flatten()
+                        .filter(|q| **q != id)
+                        .fold(Vec::new(), |mut seen: Vec<&str>, q| {
+                            if !seen.contains(q) {
+                                seen.push(*q);
+                            }
+                            seen
+                        }),
+                    _ => Vec::new(),
+                };
+                let co_spouses: Vec<PersonRef> = co_ids
+                    .iter()
+                    .map(|q| self.with_portrait(self.person_ref(q, None, None)))
+                    .collect();
                 let mut children: Vec<PersonRef> = kids
                     .iter()
                     .map(|c| self.with_portrait(self.child_ref(c)))
@@ -1564,33 +1643,45 @@ impl Ctx<'_> {
                 let view = UnionView {
                     spouse,
                     kind: union.and_then(|u| union_type(u, self.lang)),
-                    status: union_status(union, self.lang),
-                    start: union
+                    status: union_status(marriage, self.lang),
+                    start: marriage
                         .and_then(|u| u.get("start"))
                         .filter(|v| !v.is_null())
                         .map(|s| view::render_date_field_in(s, "date", self.lang)),
-                    start_place: union
+                    start_place: marriage
                         .and_then(|u| u.get("start"))
                         .and_then(|s| s.get("place_id"))
                         .and_then(Value::as_str)
                         .and_then(|p| self.place(Some(p))),
-                    end: union
+                    end: marriage
                         .and_then(|u| u.get("end"))
                         .filter(|v| !v.is_null())
                         .map(|e| view::render_date_field_in(e, "date", self.lang)),
-                    end_note: union
+                    end_note: marriage
                         .and_then(|u| u.get("end"))
                         .and_then(|e| str_field(e, "note")),
                     confidence: union.and_then(|u| Confidence::from_field(u, "confidence")),
                     source: union.and_then(|u| self.source_of(u)),
                     children,
+                    polygamous: couple.polygamous,
+                    co_label: self.co_label(&co_ids),
+                    co_spouses,
+                    emblem: crate::emblem::of_family(self.flat, fam_id)
+                        .filter(|(d, _)| {
+                            crate::access::may_read_document(self.flat, self.lens, false, d)
+                        })
+                        .map(|(d, focal)| crate::emblem::EmblemView::new(&d, focal)),
                 };
                 let mut signature: Vec<String> =
                     partners.iter().map(|(p, _)| (*p).to_string()).collect();
                 signature.sort();
                 signature.dedup();
-                let persons = self.collection("persons");
-                let start = union
+                if couple.open {
+                    // The children of no recorded marriage: never the same
+                    // couple as another family of the same parent.
+                    signature.push(format!("\u{0}open:{fam_id}"));
+                }
+                let start = marriage
                     .and_then(|u| u.get("start"))
                     .and_then(|s| s.get("date"))
                     .and_then(|d| d.get("value"))
@@ -1614,7 +1705,7 @@ impl Ctx<'_> {
                         .or(first_child)
                         .unwrap_or_else(|| "\u{10ffff}".to_string())
                 ));
-                unions.push((signature, fam_id.clone(), view));
+                unions.push((signature, (*fam_id).clone(), view));
             }
         }
 

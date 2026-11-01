@@ -11,6 +11,8 @@ and a password. Keep this page open beside the site the first time.
 - [What a person's page shows you](#what-a-persons-page-shows-you)
 - [How are we related?](#how-are-we-related)
 - [Godparents and the other ties of rite](#godparents-and-the-other-ties-of-rite)
+- [A polygamous union](#a-polygamous-union)
+- [The family's emblem](#the-familys-emblem)
 - [Correcting something](#correcting-something)
 - [Adding a photograph](#adding-a-photograph)
 - [The little "confidence" marker](#the-little-confidence-marker)
@@ -181,6 +183,61 @@ godparents, sworn siblings, the name-giver, the *nakōdo*), African
 (namesakes, initiation, the blood pact), Indigenous and Pacific (*hānai*,
 *hunka*), and civil (civil godparenthood, guardianship). If yours is not
 there, choose *None: a plain relation* and write the words yourself.
+
+## A polygamous union
+
+When a man had several wives at once (or a woman several husbands), the
+archive does not read it as one big couple. It reads it as **one marriage
+per wife**:
+
+- the husband is married to each wife, and the wives are not married to
+  one another: each is the others' **co-wife**;
+- each marriage has its own dates and its own end;
+- each child belongs to their mother's marriage, so the children of two
+  wives are **half**-brothers and half-sisters.
+
+On a wife's page, her union shows her husband and, below him, her
+**co-wives**. On the husband's page, each marriage is a block of its own,
+with a double line down its side. In the tree, the bracket that joins a
+husband and a wife is drawn in long and short strokes, and its knot has
+three rings instead of two.
+
+**To record one** (you need to be allowed to edit):
+
+1. Open the husband's page and click **Edit**.
+2. In the **Family** tab, on the union, set the type to *polygamous* and add
+   each wife as a partner. Press **Save**.
+3. The union now asks two more things. In **At the centre of the union**,
+   choose the husband. For each child, in **Other parent**, choose the
+   child's mother; leave it unset if nobody knows.
+4. Press **Save**.
+
+If the family was recorded as one family per marriage (that is how GEDCOM
+files arrive), set the type of each of those unions to *polygamous*. The
+archive reads them the same way.
+
+## The family's emblem
+
+A family can have an **emblem**: a coat of arms, a mark, or a photograph
+that stands for it.
+
+- **The archive's own emblem** shows at the head of every page and above the
+  family's name on the overview. Whoever looks after the site sets it, in
+  *Administration → Archive → Emblem or coat of arms of the family*.
+- **Each family** can have one too. It shows beside the union on the
+  family's pages, and on the couple's knot in the tree.
+
+**To give a family its emblem** (you need to be allowed to edit):
+
+1. Open the page of one of the couple and click **Edit**.
+2. In the **Family** tab, on the union, click **Emblem or coat of arms**.
+3. Either choose a picture already attached to the family, or, under **Add a
+   picture**, choose the file and press **Add it and use it**.
+4. Press **Save**. **No emblem** takes it away again.
+
+A coat of arms is shown whole, never cut to fit. Who can see a family's
+emblem is the same as who can see its people; the archive's emblem is shown
+to every visitor.
 
 ## Correcting something
 

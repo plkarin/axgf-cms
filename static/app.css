@@ -1671,12 +1671,21 @@ abbr.presumed { text-decoration: none; }
 :is(.tree-canvas, .kin-key) .wire.wire-line-adoptive { stroke-dasharray: 6 4; }
 :is(.tree-canvas, .kin-key) .wire:is(.wire-line-foster, .wire-line-guardianship) { stroke-dasharray: 0.1 4.6; stroke-linecap: round; stroke-width: 3; }
 :is(.tree-canvas, .kin-key) .wire.wire-line-step { stroke-dasharray: 8 3 1.5 3; }
+/* One marriage of a polygamous union (docs/adr/0021): the bracket in long
+   and short strokes, the knot with three rings. */
+:is(.tree-canvas, .kin-key) .wire.wire-spouse.wire-line-polygamous { stroke-dasharray: 11 3 3 3; stroke-width: 2.2; }
+.wire-node.is-polygamous .ring { stroke-width: 1.2; }
+/* A couple's node with its family's emblem (docs/adr/0022); a polygamous
+   union's keeps its own pattern on the bracket and a broken ring here. */
+.wire-node .knot-emblem-disc { fill: var(--surface-raised); stroke: var(--accent); stroke-width: 1.4; }
+.wire-node.is-polygamous .knot-emblem-disc { stroke-dasharray: 5 2.5; }
 .wire-node circle { fill: var(--surface-raised); stroke: color-mix(in srgb, var(--accent) 80%, transparent); stroke-width: 1.2; }
 .wire-node .ring { fill: none; stroke: var(--accent); stroke-width: 1.3; }
 .tree-legend-kin { display: inline-flex; align-items: center; gap: 0.35rem 0.9rem; flex-wrap: wrap; }
 .kin-key { inline-size: 24px; block-size: 8px; overflow: visible; flex: none; }
 .kin-key .wire { fill: none; }
 .kin-key.kin-knot { inline-size: 16px; block-size: 16px; }
+.kin-key.kin-knot-poly { inline-size: 34px; block-size: 18px; }
 
 /* A tie of rite or custom (docs/adr/0020): a godmother, a milk brother, a
    namesake, from the same family or another. It is not descent, so it is
@@ -3377,6 +3386,23 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius);
 }
+/* One marriage of a polygamous union (docs/adr/0021): a double rule down its
+   leading edge, as the tree gives it a knot of three rings. */
+.union.is-polygamous { border-inline-start: 4px double var(--border-strong); }
+/* A family's emblem (docs/adr/0022): a coat of arms is a whole shape, so it
+   is shown whole, on the surface it was drawn for. */
+.union-emblem, .masthead-emblem, .hero-emblem {
+  object-fit: contain;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  flex: none;
+}
+.union-emblem { inline-size: 44px; block-size: 44px; float: inline-end; margin-inline-start: 0.5rem; }
+.masthead-emblem { inline-size: 30px; block-size: 30px; margin-inline-start: 0.5rem; padding: 2px; }
+.hero-emblem { display: block; inline-size: 104px; block-size: 104px; margin-block-end: 0.85rem; padding: 4px; }
+.manifest-emblem { display: flex; align-items: center; gap: 0.75rem; }
+.manifest-emblem .union-emblem { float: none; margin: 0; }
 /* Two Family records for one couple.
 
    The bracket is what makes the two blocks one thing: without it they are two

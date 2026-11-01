@@ -178,7 +178,8 @@ pub struct Generations {
     pub contradictions: Vec<(String, String)>,
 }
 
-/// One family reduced to the two lists the layout cares about.
+/// One family reduced to the two lists the layout cares about. A polygamous
+/// union is one of these per spouse ([`crate::unions::couples`]).
 pub(crate) struct FamilyEdges {
     pub(crate) parents: Vec<String>,
     pub(crate) children: Vec<(String, Option<f64>)>,
@@ -187,66 +188,54 @@ pub(crate) struct FamilyEdges {
     /// something other than a birth: `adoptive`, `foster`, `step`,
     /// `guardianship`. A child absent here was born to it, or nobody said.
     pub(crate) lineage: BTreeMap<String, String>,
+    /// One marriage of a polygamous union (docs/adr/0021): drawn apart from a
+    /// couple's.
+    pub(crate) polygamous: bool,
 }
 
-/// Read the families of a flat bundle into parent/child lists.
+/// Read the families of a flat bundle into parent/child lists, one per
+/// couple.
 pub(crate) fn family_edges(flat: &Value) -> Vec<FamilyEdges> {
     let Some(families) = flat.get("families").and_then(Value::as_object) else {
         return Vec::new();
     };
-    families
-        .values()
-        .map(|f| {
-            let parents = f
-                .get("union")
-                .and_then(|u| u.get("persons"))
-                .and_then(Value::as_array)
-                .map(|ps| {
-                    ps.iter()
-                        .filter_map(|p| p.get("person_id").and_then(Value::as_str))
-                        .map(str::to_string)
-                        .collect()
+    let persons = flat.get("persons").and_then(Value::as_object);
+    let mut out = Vec::new();
+    for f in families.values() {
+        let union_confidence = f
+            .get("union")
+            .and_then(|u| u.get("confidence"))
+            .and_then(Value::as_f64);
+        for couple in crate::unions::couples(f, persons) {
+            let children = couple
+                .children
+                .iter()
+                .filter_map(|c| {
+                    let id = c.get("person_id").and_then(Value::as_str)?;
+                    let conf = c.get("confidence").and_then(Value::as_f64);
+                    Some((id.to_string(), conf))
                 })
-                .unwrap_or_default();
-            let children = f
-                .get("children")
-                .and_then(Value::as_array)
-                .map(|cs| {
-                    cs.iter()
-                        .filter_map(|c| {
-                            let id = c.get("person_id").and_then(Value::as_str)?;
-                            let conf = c.get("confidence").and_then(Value::as_f64);
-                            Some((id.to_string(), conf))
-                        })
-                        .collect()
+                .collect();
+            let lineage = couple
+                .children
+                .iter()
+                .filter_map(|c| {
+                    let id = c.get("person_id").and_then(Value::as_str)?;
+                    let term = c.get("lineage").and_then(Value::as_str)?;
+                    matches!(term, "adoptive" | "foster" | "step" | "guardianship")
+                        .then(|| (id.to_string(), term.to_string()))
                 })
-                .unwrap_or_default();
-            let union_confidence = f
-                .get("union")
-                .and_then(|u| u.get("confidence"))
-                .and_then(Value::as_f64);
-            let lineage = f
-                .get("children")
-                .and_then(Value::as_array)
-                .map(|cs| {
-                    cs.iter()
-                        .filter_map(|c| {
-                            let id = c.get("person_id").and_then(Value::as_str)?;
-                            let term = c.get("lineage").and_then(Value::as_str)?;
-                            matches!(term, "adoptive" | "foster" | "step" | "guardianship")
-                                .then(|| (id.to_string(), term.to_string()))
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
-            FamilyEdges {
-                parents,
+                .collect();
+            out.push(FamilyEdges {
+                parents: couple.partners.iter().map(|p| p.to_string()).collect(),
                 children,
                 union_confidence,
                 lineage,
-            }
-        })
-        .collect()
+                polygamous: couple.polygamous,
+            });
+        }
+    }
+    out
 }
 
 /// Assign a generation to every person in the bundle.
@@ -708,6 +697,9 @@ pub struct Edge {
     /// Where a couple's line carries its union node, the two rings drawn on
     /// it (the classic chart, 2026-10-27). `None` for every other line.
     pub node: Option<[f64; 2]>,
+    /// The document id of the family's emblem on its couple's node, when it
+    /// has one this reader may see (docs/adr/0022).
+    pub emblem: Option<String>,
 }
 
 /// One generation, on one row or several.
@@ -2312,6 +2304,7 @@ fn build_edges(
                     line: None,
                     kids: None,
                     node: None,
+                    emblem: None,
                 });
             }
         }
@@ -2400,6 +2393,7 @@ fn build_edges(
                 line: f.lineage.get(child).cloned(),
                 kids: None,
                 node: None,
+                emblem: None,
             });
         }
     }

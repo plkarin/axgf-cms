@@ -15,7 +15,7 @@ use crate::{auth, render};
 /// `GET /convert` — the upload form.
 pub async fn form(State(state): State<Shared>, headers: HeaderMap) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert").with_archive(&state);
     render::page_with(
         &chrome,
         "convert.html",
@@ -42,7 +42,7 @@ pub async fn gedcom(
     multipart: Multipart,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert").with_archive(&state);
     convert_and_show(&state, &chrome, multipart, Purpose::Download).await
 }
 
@@ -325,7 +325,7 @@ pub async fn download(
     Path(id): Path<String>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
-    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert");
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/convert").with_archive(&state);
     match state.conversions().get(&id) {
         Some((name, bytes)) => render::bundle_download(&name, bytes),
         None => render::error_page_in(

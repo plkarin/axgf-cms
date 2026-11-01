@@ -67,6 +67,9 @@
       <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-u wire-line-foster" d="M 1 4 H 23"/></svg>{{ t("tree-key-foster") }}</span>
       <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-parent wire-tone-u wire-line-step" d="M 1 4 H 23"/></svg>{{ t("tree-key-step") }}</span>
       <span class="lg"><svg class="kin-key kin-knot" viewBox="0 0 16 16" aria-hidden="true"><g class="wire-node" transform="translate(8 8)"><circle r="7"/><circle class="ring" cx="-1.9" r="3"/><circle class="ring" cx="1.9" r="3"/></g></svg>{{ t("tree-key-union") }}</span>
+      {#- One marriage of a polygamous union: three rings, and a bracket
+          of its own pattern (docs/adr/0021). -#}
+      <span class="lg"><svg class="kin-key kin-knot-poly" viewBox="0 0 34 18" aria-hidden="true"><path class="wire wire-spouse wire-line-polygamous" d="M 1 2 H 16 V 16 H 1"/><g class="wire-node is-polygamous" transform="translate(16 9)"><circle r="8.5"/><circle class="ring" cx="-3.3" r="2.6"/><circle class="ring" r="2.6"/><circle class="ring" cx="3.3" r="2.6"/></g></svg>{{ t("tree-key-polygamous") }}</span>
       {#- A tie of rite or custom: curved, dotted, in a colour of its own
           (docs/adr/0020). -#}
       <span class="lg"><svg class="kin-key" viewBox="0 0 24 8" aria-hidden="true"><path class="wire wire-rite" d="M 1 6 C 8 0 16 0 23 6"/></svg>{{ t("kin-legend-rite") }}</span>

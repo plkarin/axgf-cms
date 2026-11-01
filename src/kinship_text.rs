@@ -124,6 +124,17 @@ pub fn say(rel: &Relation, sex: Sex, lang: &str) -> Said {
             b_side,
         } => affinity(lang, core, *a_side, *b_side, sex, c),
         Kind::Care { line, up } => care(lang, *line, *up, sex),
+        Kind::CoSpouse => Said {
+            term: tr(
+                lang,
+                "kin-co-spouse",
+                &vec![("sex", FluentValue::from(sex.as_str()))],
+            ),
+            note: None,
+            group: "in-laws",
+            degree: None,
+            native: None,
+        },
         Kind::Rite { rite, role } => Said {
             term: rite_word(lang, rite, *role, sex),
             note: None,
@@ -763,6 +774,83 @@ mod tests {
         let mut ids: Vec<String> = k.relatives("ann").into_iter().map(|(id, _)| id).collect();
         ids.sort();
         assert_eq!(ids, vec!["bob", "bobw", "kid"]);
+    }
+
+    /// A polygamous union (docs/adr/0021): the wives of one husband are each
+    /// other's co-wives, never wives; their children are half-siblings; a
+    /// child whose mother the record does not name is a brother, no more.
+    #[test]
+    fn a_polygamous_union_is_one_marriage_per_wife() {
+        let mut ps = serde_json::Map::new();
+        for (id, s, b) in [
+            ("h", "M", "1860"),
+            ("w1", "F", "1865"),
+            ("w2", "F", "1870"),
+            ("a", "M", "1890"),
+            ("b", "M", "1892"),
+            ("c", "F", "1894"),
+            ("d", "M", "1896"),
+        ] {
+            let (k, v) = crate::kinship::tests::person(id, s, b);
+            ps.insert(k, v);
+        }
+        let f = serde_json::json!({
+            "persons": ps,
+            "families": {
+                "p": {"id": "p", "type": "family", "axgf_version": "1.0",
+                      "union": {"type": "polygamous", "primary_person_id": "h",
+                                "persons": [{"person_id": "h", "role": "husband"},
+                                            {"person_id": "w1", "role": "wife"},
+                                            {"person_id": "w2", "role": "wife"}],
+                                "unions": [{"spouse_id": "w1"},
+                                           {"spouse_id": "w2", "status": "ended_by_divorce"}]},
+                      "children": [{"person_id": "a", "parent_ids": ["h", "w1"]},
+                                   {"person_id": "b", "parent_ids": ["h", "w1"]},
+                                   {"person_id": "c", "parent_ids": ["h", "w2"]},
+                                   {"person_id": "d"}]}
+            },
+            "links": {}
+        });
+        let lens = Lens::unrestricted();
+        let k = Kin::new(&f, &lens);
+        let words = |a: &str, b: &str, lang: &str| -> Vec<String> {
+            k.between(a, b)
+                .iter()
+                .map(|r| say(r, k.sex_of(b), lang).term)
+                .collect()
+        };
+        assert_eq!(words("w1", "w2", "en"), vec!["co-wife"]);
+        assert_eq!(words("w1", "w2", "fr"), vec!["coépouse"]);
+        assert_eq!(words("h", "w1", "en"), vec!["wife"]);
+        assert_eq!(words("h", "w2", "en"), vec!["former wife"]);
+        assert_eq!(words("a", "b", "en"), vec!["brother"]);
+        assert_eq!(words("a", "c", "en"), vec!["half-sister"]);
+        // Nobody says whose son d is: a brother, neither full nor half.
+        assert_eq!(words("a", "d", "en"), vec!["brother"]);
+        assert_eq!(words("w1", "c", "en"), vec!["stepdaughter"]);
+        // The co-wife's way goes through the husband they share.
+        let way = found(&k, &f, &lens, "en", "w1", "w2");
+        let steps: Vec<&str> = way[0].path.iter().map(|s| s.word.as_str()).collect();
+        assert_eq!(steps, vec!["husband", "former wife"]);
+        // One household recorded as one family per couple reads the same.
+        let mut g = f.clone();
+        g["families"] = serde_json::json!({
+            "p1": {"id": "p1", "type": "family", "axgf_version": "1.0",
+                   "union": {"type": "polygamous", "persons": [
+                       {"person_id": "h", "role": "spouse"}, {"person_id": "w1", "role": "spouse"}]},
+                   "children": [{"person_id": "a"}]},
+            "p2": {"id": "p2", "type": "family", "axgf_version": "1.0",
+                   "union": {"type": "polygamous", "persons": [
+                       {"person_id": "h", "role": "spouse"}, {"person_id": "w2", "role": "spouse"}]},
+                   "children": [{"person_id": "c"}]}
+        });
+        let k = Kin::new(&g, &lens);
+        let co: Vec<String> = k
+            .between("w2", "w1")
+            .iter()
+            .map(|r| say(r, k.sex_of("w1"), "en").term)
+            .collect();
+        assert_eq!(co, vec!["co-wife"]);
     }
 
     /// A GEDCOM import often keeps a sibling group beside the family that

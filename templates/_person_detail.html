@@ -186,12 +186,17 @@
     {% endif %}
 
     {% for u in g.records %}
-    <div class="union">
+    {#- One marriage of a polygamous union (docs/adr/0021): framed apart from
+        a couple's, and naming the other spouses of the person this one is
+        married to. -#}
+    <div class="union{% if u.polygamous %} is-polygamous{% endif %}">
       <div class="fam-block-head">
         <ul class="fam-cards fam-partner" data-content>
           {%- if u.spouse %}{{ m.person_card(u.spouse) }}{% endif -%}
         </ul>
         <div class="fam-union-facts">
+          {#- The family's emblem (docs/adr/0022). -#}
+          {% if u.emblem %}<img class="union-emblem" src="/document/{{ u.emblem.id }}/thumb" alt="" width="44" height="44" loading="lazy">{% endif %}
           <div class="fam-union-kind">
             {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
             {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
@@ -208,6 +213,10 @@
           {% if u.source %}<div>{{ m.source_chip(u.source) }}</div>{% endif %}
         </div>
       </div>
+      {% if u.co_spouses %}
+      <h4 class="fam-title">{{ u.co_label }}</h4>
+      <ul class="fam-cards fam-co-spouses" data-content>{% for c in u.co_spouses %}{{ m.person_card(c) }}{% endfor %}</ul>
+      {% endif %}
       {% if u.children %}
       <h4 class="fam-title">{{ t("record-children") }}</h4>
       <ul class="fam-cards" data-content>{% for c in u.children %}{{ m.person_card(c) }}{% endfor %}</ul>

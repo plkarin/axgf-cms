@@ -3400,7 +3400,37 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
 }
 .union-emblem { inline-size: 44px; block-size: 44px; float: inline-end; margin-inline-start: 0.5rem; }
 .masthead-emblem { inline-size: 30px; block-size: 30px; margin-inline-start: 0.5rem; padding: 2px; }
-.hero-emblem { display: block; inline-size: 104px; block-size: 104px; margin-block-end: 0.85rem; padding: 4px; }
+.hero-emblem { display: block; inline-size: 104px; block-size: 104px; padding: 4px; }
+/* The overview's hero is a grid of named areas: the emblem stands in its
+   corner, on the side the lines end, and the title keeps clear of it. On a
+   narrow screen it joins the chip's row, smaller. */
+.hero .hero-emblem {
+  position: absolute;
+  inset-block-start: calc(var(--step) * 5);
+  inset-inline-end: calc(var(--step) * 4);
+  z-index: 1;
+}
+.hero:has(.hero-emblem) .hero-title { padding-inline-end: 120px; }
+@media (max-width: 860px) {
+  .hero .hero-emblem {
+    position: static;
+    grid-area: chip;
+    justify-self: end;
+    inline-size: 52px;
+    block-size: 52px;
+  }
+  .hero:has(.hero-emblem) .hero-title { padding-inline-end: 0; }
+  .hero:has(.hero-emblem) .eyebrow-chip { max-inline-size: calc(100% - 64px); }
+}
+/* At phone width the masthead is a grid of named areas: the archive's
+   emblem takes a column of its own between the name and the account. */
+@media (max-width: 640px) {
+  .masthead .masthead-inner:has(> .masthead-emblem) {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "mark brand emblem account" "nav nav nav nav" "tools tools tools tools";
+  }
+  .masthead .masthead-inner > .masthead-emblem { grid-area: emblem; margin-inline-start: 0; }
+}
 .manifest-emblem { display: flex; align-items: center; gap: 0.75rem; }
 .manifest-emblem .union-emblem { float: none; margin: 0; }
 /* Two Family records for one couple.

@@ -328,6 +328,10 @@ proposal 0003 asks AXGF 1.2 to define these fields.
 
 ### The family's emblem
 
+| The archive's emblem, at the head of every page and on the overview | A family's emblem, beside its union on the record |
+|---|---|
+| [![The overview under Canopée: an invented coat of arms, azure with a golden chevron between three golden stars, stands in the corner of the hero and again, small, beside the name ax·genealogy in the bar at the top](docs/screenshots/emblem-archive.jpg)](docs/screenshots/emblem-archive.jpg) | [![Lucien Delaunay's union with Zofia Zając on his record: beside the "married" chip, the couple's own invented arms, red with a silver bend and two roundels, and below them their three children](docs/screenshots/emblem-family.png)](docs/screenshots/emblem-family.png) |
+
 **The archive** can have a coat of arms, or any picture that stands for the
 family it is about. It shows at the head of every page, beside the name of
 the application, and above the family's name on the overview, for every

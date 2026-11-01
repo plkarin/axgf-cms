@@ -178,19 +178,126 @@ events, sources, media and a profile. Photographs get thumbnails.
 Certificates, census pages, letters, gravestones and parish registers are
 kept with the person they belong to.
 
+### How two people are related, and every relative
+
 | Kinship: how two people are related, step by step, and every relative | Ties of rite and custom, apart from the family and dotted |
 |---|---|
 | [![The Kinship tab of Lucien Delaunay's record: Catherine Bernard chosen in the list, "First cousin once removed of Lucien Delaunay", their shared ancestors Henri Delaunay and Hélène Rouxel, and the link step by step: Lucien, his father Jean, his father Henri, his son Louis, his daughter Augustine, her daughter Catherine; kinship in the 5th degree. Below, every relative of Lucien Delaunay, 234 people, by group](docs/screenshots/kinship.png)](docs/screenshots/kinship.png) | [![The Rite and custom section of the same record: his godmother Hélène Rouxel (baptism, Christian), his milk sister Augustine Delaunay with the Arabic words for it (milk siblings, Islamic), and his namesake Lucien Riou (ndoyi, somo, African), each in a dotted frame](docs/screenshots/rites.png)](docs/screenshots/rites.png) |
 
-**Kinship** answers "how are these two related?" for anyone of the family:
-"second cousin", "first cousin of the father", "sister-in-law",
-"godmother". The link is shown step by step, through the ancestors the two
-share. The tab also lists every relative, by group. The words agree in each
-of the fourteen languages, down to the side of the family and the elder or
-the younger where a language tells them apart. Ties of rite and custom are
-recorded and drawn apart from the family, dotted: godparents, and also milk
-kinship, the compadre, the kum, the sandek, rakhi, the namesake, hānai and
-others, 27 in ten traditions (docs/adr/0020).
+A record with any family or tie of rite has a **Kinship** tab, and so does
+the record that opens beside the river. It holds two tools.
+
+- **How are they related?** Choose anyone of the family in the list. The
+  answer gives the word ("second cousin", "first cousin of the father",
+  "wife of a half-nephew", "godmother"), whose relative that is, the
+  ancestors the two share, the link step by step from one to the other, and
+  the degree of kinship. Two people related in more than one way get every
+  way, the closest first: an aunt who is also a godmother is both, aunt
+  first.
+- **Every relative**, by group: partners, ancestors, descendants, brothers
+  and sisters, uncles and aunts, nephews and nieces, cousins, family by
+  marriage, stepfamily, fostering and guardianship, rite and custom, and
+  those the records connect otherwise. Each line gives the relative's
+  years, the word, any other way they are related, and *Show the link*.
+
+The tree says it too. An open card says what that person is to the one in
+the middle of the tree, and the side panel adds *The link, step by step*.
+
+How the words are worked out:
+
+- **Descent** counts birth and adoption. Two people who share a couple are
+  full siblings; one shared parent makes them half-siblings, and the
+  children of half-siblings half-cousins. The children of one family are
+  brothers and sisters even when nobody recorded their parents. An adopted
+  child is a child, said "adoptive" where it matters.
+- **Cousins** are counted by the generations up to the ancestors they
+  share: first, second, third cousins, *once removed* when one of the two
+  is a generation further down. A language that says it its own way gets
+  its own words: French has *cousine issue de germain* for a second
+  cousin, and *fils d'une cousine issue de germain* for her son.
+- **A union** makes in-laws: a partner's relatives, and a relative's
+  partner. A union that ended in divorce, separation or annulment gives a
+  former husband or wife.
+- **A stepparent, a foster parent or a guardian** the family records for
+  the child (its `lineage`, AXGF 1.1) is named as such, never as a parent
+  by birth. A parent's partner who is not a parent is a stepparent by
+  marriage.
+- **The degree** is the civil one: the generations up to the shared
+  ancestor plus the generations down.
+- When the records tie two people in no way that has a name, the tab gives
+  the chain of facts that connects them.
+- Someone a visitor may not see keeps their place in a path, as "a person
+  you may not see", and is never named.
+
+The words agree in each of the fourteen languages with whatever the
+language needs: the sex of each person, the side of the family, the elder
+or the younger, the parent a half-sibling shares. English and French were
+written by hand; the other twelve are complete and unreviewed
+([Languages](#languages)).
+
+### Ties of rite and custom
+
+A godparent ties a child to another family. Many traditions make ties of
+that kind, and the archive records them **apart from the family**: they
+never make anyone a parent, and they are drawn **dotted**, in a colour no
+family line uses. On the record they have a section of their own, *Rite
+and custom*, one dotted frame for each tie, with the tradition's own words
+where it has them (кум, κουμπάρος, أخت من الرضاعة, 干爹, ndoyi). On the
+tree a dotted curve joins two people who are both drawn, and the legend
+says what it is.
+
+There are 27 ties in ten traditions:
+
+| Tradition | Ties |
+|---|---|
+| Christian | godparent (as the record states it); godparent at a baptism; sponsor at a confirmation or chrismation; sponsor of a marriage |
+| Orthodox Christian | kum (kumstvo binds two families); koumbaros |
+| Hispanic and Filipino | padrino and madrina; compadrazgo, the bond between a child's parents and the child's godparents; ninong and ninang |
+| Jewish | the sandek, who holds the child at the brit milah; the kvatter, who carries the child in |
+| Islamic | milk kinship: a milk mother, and milk siblings, a family in Islamic law that forbids marriage as birth does; kafala, raising a child without the filiation of an adoption |
+| South Asian | rakhi; guru and disciple |
+| East Asian | gan qin, godparents taken to protect a child; sworn siblings (jiebai); the name-giver (nazuke-oya); the nakōdo, who arranged and witnessed a marriage |
+| African | namesakes (ndoyi, somo), a bond of gifts and care; initiation; the blood pact |
+| Indigenous and Pacific | hānai, raised as their own by Hawaiian custom; hunka, made a relative in the Lakota ceremony |
+| Civil and secular | civil godparenthood; legal guardianship |
+
+**To record one**, open the person's editor and, in its Family tab, choose
+*Edit links*. Under *A new link*, choose the other person and a *Rite or
+custom*. The list is
+grouped by tradition, and each choice says what this person is to the
+other: *Baptism: godparent*, *Baptism: godchild*. Choosing one fills in
+the kind of tie and the words both ways. Words typed in *What it is*, the
+record's own, are kept instead.
+
+**In the file**, each tie is an ordinary AXGF 1.1 Link: the nearest
+`relation` the format names (`godparent`, `godchild`, `guardian`, `ward`,
+`mentor`, `apprentice`, `witness` or `other`), its `category`, the words in
+`label` and `label_reverse`, and `bidirectional` for a tie that runs both
+ways. The rite itself is kept in `extensions["axgf-cms:kinship/v1"]`:
+
+```json
+{ "rite": "baptism", "sponsor": "from" }
+```
+
+`sponsor` says which end of the Link is the godparent or sponsor; a mutual
+tie (milk siblings, compadres, namesakes) has none. Any other AXGF reader
+still sees a godparent, a guardian or the words, so nothing is lost on the
+way. Proposal 0002 in
+[axgf-spec](https://github.com/plkarin/axgf-spec/tree/main/proposals) asks
+AXGF 1.2 to name these ties itself, and the spec's
+[KINSHIP.md](https://github.com/plkarin/axgf-spec/blob/main/KINSHIP.md)
+explains to any other program how relationships are read from a bundle.
+The decisions are in
+[ADR 0020](docs/adr/0020-kinship-and-the-ties-of-rite.md), and the guide
+for the family explains the tab in plain words
+([docs/FAMILY.md](docs/FAMILY.md#how-are-we-related)).
+
+Three limits. A tie of rite is drawn as a line on the tree only when both
+people are on it; otherwise the open card lists it. The river views do not
+draw ties of rite. And a polygamous union recorded as one family cannot say
+which wife bore which child, nor that two co-wives are not married to each
+other: its children are read as full brothers and sisters, and its
+partners as partners of one another. One family per couple avoids both.
 
 ### Charts from the record
 

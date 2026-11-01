@@ -105,6 +105,17 @@ impl Line {
     }
 }
 
+/// The parent that stands for the unrecorded parents of a sibling group
+/// (AXGF 1.0 §4.2.3: a family with children and no union). Its children are
+/// brothers and sisters through it. It is named by nobody and listed
+/// nowhere, and a way through it is shown as the siblings' own step.
+const UNRECORDED: &str = "unrecorded-parents:";
+
+/// Whether `id` is the unrecorded parent of a sibling group.
+pub fn is_unrecorded(id: &str) -> bool {
+    id.starts_with(UNRECORDED)
+}
+
 #[derive(Debug, Clone, Copy)]
 struct Up {
     parent: usize,
@@ -224,17 +235,20 @@ pub struct Relation {
 }
 
 impl Relation {
-    /// How close: fewer steps first, a step by marriage or rite counting
-    /// more than one by descent; then descent before rite before marriage;
-    /// then the nearer generation. A grandmother who is also a godmother is
-    /// first a grandmother.
+    /// How close: fewer steps first, a step of care, marriage or rite
+    /// counting more than one by descent; then descent before care before
+    /// marriage before rite; then the nearer generation. A tie of rite
+    /// weighs as much as four steps of descent, the way to a first cousin:
+    /// a grandmother, an aunt or a first cousin who is also a godmother is
+    /// first a grandmother, an aunt or a cousin, and a second cousin is first
+    /// a godmother.
     pub fn rank(&self) -> (u32, u32, u32) {
         let class = match &self.kind {
             Kind::Blood { .. } => 0,
             Kind::Partner { .. } => 0,
-            Kind::Rite { .. } => 1,
             Kind::Care { .. } => 1,
             Kind::Affinity { .. } => 2,
+            Kind::Rite { .. } => 3,
             Kind::Chain => 4,
         };
         let steps = self.path.len() as u32;
@@ -318,6 +332,18 @@ impl<'a> Kin<'a> {
                         .collect()
                 })
                 .unwrap_or_default();
+            // Children whose parents nobody recorded are still brothers and
+            // sisters: a family with no union at all (1.0 §4.2.3).
+            let children = f.get("children").and_then(Value::as_array).map_or(0, |cs| {
+                cs.iter()
+                    .filter(|c| c.get("person_id").and_then(Value::as_str).is_some())
+                    .count()
+            });
+            let parents = if union.is_none() && children >= 2 {
+                vec![add(&format!("{UNRECORDED}{fi}"), &mut ids, &mut index)]
+            } else {
+                parents
+            };
             let kind = union.and_then(|u| u.get("type")).and_then(Value::as_str);
             let status = union.and_then(|u| u.get("status")).and_then(Value::as_str);
             let married = matches!(kind, Some("marriage" | "religious_only" | "polygamous"));
@@ -1293,6 +1319,29 @@ pub(crate) mod tests {
                 role: Role::Mutual
             }]
         );
+    }
+
+    /// Godparents are most often aunts and uncles: the family comes first,
+    /// out to a first cousin, and the rite after it.
+    #[test]
+    fn an_aunt_who_is_a_godmother_is_first_an_aunt() {
+        let mut f = family();
+        for (id, from) in [("l3", "p2"), ("l4", "cous")] {
+            f["links"][id] = serde_json::json!({
+                "id": id, "type": "link", "axgf_version": "1.1",
+                "from": {"entity_type": "person", "entity_id": from},
+                "to": {"entity_type": "person", "entity_id": "ego"},
+                "label": "marraine", "relation": "godparent", "category": "spiritual"});
+        }
+        let lens = all();
+        let k = Kin::new(&f, &lens);
+        let aunt = kinds(&k, "ego", "p2");
+        assert_eq!(aunt[0], blood(2, 1), "{aunt:?}");
+        assert!(matches!(aunt[1], Kind::Rite { .. }), "{aunt:?}");
+        // A second cousin is six steps away: the godmother comes first.
+        let cousin = kinds(&k, "ego", "cous");
+        assert!(matches!(cousin[0], Kind::Rite { .. }), "{cousin:?}");
+        assert_eq!(cousin[1], blood(3, 3));
     }
 
     #[test]

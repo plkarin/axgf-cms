@@ -9,6 +9,8 @@ and a password. Keep this page open beside the site the first time.
 - [Signing in](#signing-in)
 - [Finding a person](#finding-a-person)
 - [What a person's page shows you](#what-a-persons-page-shows-you)
+- [How are we related?](#how-are-we-related)
+- [Godparents and the other ties of rite](#godparents-and-the-other-ties-of-rite)
 - [Correcting something](#correcting-something)
 - [Adding a photograph](#adding-a-photograph)
 - [The little "confidence" marker](#the-little-confidence-marker)
@@ -66,26 +68,119 @@ of those.
 
 ## What a person's page shows you
 
-The page opens on **Record**: names, dates, places, parents, partners,
-children, and whatever else has been written down. Above it are six tabs:
+The page opens on **Record**: names, dates, places, and whatever else has
+been written down. Above it are tabs, and a tab is there only when the
+record holds something for it:
 
 | Tab | What is behind it |
 | --- | --- |
-| **Record** | The facts. |
-| **Life** | The same facts as a timeline, in order. |
+| **Record** | Who the person was: names, the main facts, notes. |
+| **Family** | Parents, brothers and sisters, partners and children, each with how sure the link is; godparents and the other ties of rite, in dotted frames; anyone else the record is linked to. |
+| **Kinship** | How anyone in the family is related to this person, and every relative they have. See [How are we related?](#how-are-we-related) |
+| **Events** | The life in order: births, marriages, moves, deaths. |
+| **Sources** | The registers, certificates and letters the facts come from. |
 | **Media** | Photographs and scanned documents attached to this person. |
 | **Profile** | What they were like: build, colouring, temperament, skills. Most records have little or nothing here, and that is normal. |
-| **Tree** | The family drawn around this one person. |
-| **History** | Every change ever made to this record, who made it and when. Empty on a record nobody has edited yet. |
 
-**History** is worth knowing about. Nothing in this archive is quietly
-overwritten: if you change a date and somebody disagrees next month, the
-original is still there with your name against it.
+Nothing in this archive is quietly overwritten. Every saved change is kept
+with the name of whoever made it: if you change a date and somebody
+disagrees next month, the original is still there with your name against
+it.
 
 Some records show a line saying that something is being withheld. That is not
 a fault. A living person's private details are shown only to people allowed to
 see them, and the page says so rather than pretending the information does not
 exist.
+
+## How are we related?
+
+Open a person's page and choose the **Kinship** tab. It answers two
+questions.
+
+**How is this person related to someone else?** Under *How are they
+related?*, choose the other person in the list. The answer appears
+straight away (if it does not, press **Show the link**):
+
+- the word: *second cousin*, *great-aunt*, *wife of a nephew*, *godmother*;
+- whose relative that is;
+- the ancestors the two of them share, if they share any;
+- the way from one to the other, a step at a time: *father*, *mother*,
+  *daughter*… Every name on the way opens that person's page;
+- the degree of kinship: the steps up to the shared ancestor, plus the
+  steps back down.
+
+When two people are related in several ways (a cousin who is also a
+godmother, say), every way is listed, the closest first.
+
+**Who are all this person's relatives?** Below, the tab lists them in
+groups: partners, ancestors, descendants, brothers and sisters, uncles and
+aunts, nephews and nieces, cousins, family by marriage, stepfamily,
+fostering and guardianship, rite and custom, and people connected some other
+way. A long group is folded: click its name to open it. **Show the link**
+beside anyone gives you the way to them.
+
+The tree says it too. Click a box in the tree and the card that opens says
+what that person is to the person in the middle; the panel at the side has a
+link reading **The link, step by step**.
+
+Some words, explained:
+
+- **Half-brother, half-sister**: one parent in common rather than two.
+  Children the record lists in one family are brothers and sisters even
+  when nobody knows who their parents were.
+- **Once removed**: a generation apart. Your father's first cousin is your
+  first cousin once removed, and so is your first cousin's child.
+- **Adoptive**: said where it matters. An adopted child is a child of the
+  family.
+- **Stepfather, foster mother, guardian**: when the family's record says
+  the child belongs to that household as a stepchild, a foster child or a
+  ward.
+- **A person you may not see**: somebody on the way whose details are
+  private. The link is still shown; the name is not.
+- If the records connect two people in no way that has a name, the tab
+  shows how they are connected, fact by fact.
+
+The words are in the language you chose. English and French have been read
+by people who speak them; the other languages have not been yet.
+
+## Godparents and the other ties of rite
+
+A godmother, a *kum*, a milk sister, a namesake: many families keep ties
+made by a ceremony or a custom rather than by birth. The archive records
+them beside the family, never inside it. A godmother is never shown as a
+mother, and these ties are drawn **dotted**.
+
+On a person's page, the **Family** tab has a section *Rite and custom*. Each
+tie sits in a dotted frame: what the other person is (*godmother*), the
+rite (*Baptism*), the tradition (*Christian*), and the record's own words
+when it gave any (*matka chrzestna*). In the tree, a dotted curved line
+joins the two people when both are drawn, in a colour no family line uses,
+and the legend at the top says what it is.
+
+**To add one** (you need to be allowed to edit):
+
+1. Open the person's page and click **Edit**.
+2. In the **Family** tab of the editor, click **Edit links**.
+3. Under **A new link**, choose the other person in **The other end**.
+4. In **Rite or custom**, choose the tie. The list is grouped by
+   tradition, and each choice says what *this* person is to the other:
+   *Baptism: godparent* if this person is the godmother, *Baptism:
+   godchild* if this person is the godchild.
+5. Leave **What it is** empty to use the usual words, or type the record's
+   own: *marraine*, *matka chrzestna*.
+6. Press **Create the link**.
+
+The tie then shows on both people's pages.
+
+Twenty-seven ties are on the list, from ten traditions: Christian
+(godparents at a baptism or a confirmation, sponsors of a marriage),
+Orthodox (*kum*, *koumbaros*), Hispanic and Filipino (*padrino*,
+*compadre*, *ninong*), Jewish (*sandek*, *kvatter*), Islamic (milk kinship,
+*kafala*), South Asian (*rakhi*, the guru), East Asian (*gan qin*
+godparents, sworn siblings, the name-giver, the *nakōdo*), African
+(namesakes, initiation, the blood pact), Indigenous and Pacific (*hānai*,
+*hunka*), and civil (civil godparenthood, guardianship). If yours is not
+there, choose *None: a plain relation* and write the words yourself.
 
 ## Correcting something
 

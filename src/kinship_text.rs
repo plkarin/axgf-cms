@@ -18,7 +18,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::access::Lens;
-use crate::kinship::{Context, Hop, Kin, Kind, Line, Relation, Sex, Step};
+use crate::kinship::{is_unrecorded, Context, Hop, Kin, Kind, Line, Relation, Sex, Step};
 use crate::rites::{Rite, Role};
 
 /// A relationship, said.
@@ -539,26 +539,44 @@ pub fn found(kin: &Kin, flat: &Value, lens: &Lens, lang: &str, a: &str, b: &str)
             let common: Vec<String> = rel
                 .common
                 .iter()
+                .filter(|c| !is_unrecorded(c))
                 .map(|c| label(flat, lens, c, lang).0)
                 .collect();
-            let path = rel
-                .path
-                .iter()
-                .map(|step| {
-                    let (name, _, hidden) = label(flat, lens, &step.person, lang);
-                    PathStep {
-                        id: if hidden {
-                            String::new()
-                        } else {
-                            step.person.clone()
-                        },
-                        name,
-                        hidden,
-                        word: hop(step, kin.sex_of(&step.person), lang),
-                        common: rel.common.contains(&step.person),
-                    }
-                })
-                .collect();
+            // The unrecorded parent of a sibling group is no step anyone can
+            // read: the way goes from one child straight to the other, and
+            // that step says what they are to each other.
+            let mut path = Vec::new();
+            let mut before: &str = a;
+            let mut sibling = false;
+            for step in &rel.path {
+                if is_unrecorded(&step.person) {
+                    sibling = true;
+                    continue;
+                }
+                let step_sex = kin.sex_of(&step.person);
+                let word = if sibling {
+                    kin.between(before, &step.person)
+                        .first()
+                        .map(|r| say(r, step_sex, lang).term)
+                        .unwrap_or_else(|| hop(step, step_sex, lang))
+                } else {
+                    hop(step, step_sex, lang)
+                };
+                let (name, _, hidden) = label(flat, lens, &step.person, lang);
+                path.push(PathStep {
+                    id: if hidden {
+                        String::new()
+                    } else {
+                        step.person.clone()
+                    },
+                    name,
+                    hidden,
+                    word,
+                    common: rel.common.contains(&step.person),
+                });
+                sibling = false;
+                before = &step.person;
+            }
             let rite_note = match &rel.kind {
                 Kind::Rite { rite, .. } => Some(rite_note(lang, rite)),
                 _ => None,
@@ -699,6 +717,52 @@ mod tests {
         assert_eq!(of("Anna", "fr"), "d’Anna");
         assert_eq!(of("Hélène", "fr"), "d’Hélène");
         assert_eq!(of("Anna", "en"), "of Anna");
+    }
+
+    /// A sibling group (AXGF 1.0 §4.2.3): nobody recorded the parents, and
+    /// the children are brother and sister all the same.
+    #[test]
+    fn children_whose_parents_nobody_recorded_are_brother_and_sister() {
+        let mut ps = serde_json::Map::new();
+        for (id, s, b) in [
+            ("ann", "F", "1900"),
+            ("bob", "M", "1902"),
+            ("bobw", "F", "1903"),
+            ("kid", "M", "1930"),
+        ] {
+            let (k, v) = crate::kinship::tests::person(id, s, b);
+            ps.insert(k, v);
+        }
+        let f = serde_json::json!({
+            "persons": ps,
+            "families": {
+                "g": {"id": "g", "type": "family", "axgf_version": "1.0",
+                      "children": [{"person_id": "ann"}, {"person_id": "bob"}]},
+                "h": {"id": "h", "type": "family", "axgf_version": "1.0",
+                      "union": {"type": "marriage", "persons": [
+                          {"person_id": "bob", "role": "spouse"},
+                          {"person_id": "bobw", "role": "spouse"}]},
+                      "children": [{"person_id": "kid"}]}
+            },
+            "links": {}
+        });
+        let lens = Lens::unrestricted();
+        let k = Kin::new(&f, &lens);
+        let brother = found(&k, &f, &lens, "en", "ann", "bob");
+        assert_eq!(brother[0].said.term, "brother");
+        // Nobody stands between them, and nobody is named as shared.
+        assert_eq!(brother[0].path.len(), 1);
+        assert_eq!(brother[0].path[0].word, "brother");
+        assert!(brother[0].common.is_empty());
+        let nephew = found(&k, &f, &lens, "en", "ann", "kid");
+        assert_eq!(nephew[0].said.term, "nephew");
+        let words: Vec<&str> = nephew[0].path.iter().map(|s| s.word.as_str()).collect();
+        assert_eq!(words, vec!["brother", "son"]);
+        // Her relatives: her brother, his wife and their son, and not the
+        // parent nobody recorded.
+        let mut ids: Vec<String> = k.relatives("ann").into_iter().map(|(id, _)| id).collect();
+        ids.sort();
+        assert_eq!(ids, vec!["bob", "bobw", "kid"]);
     }
 
     #[test]

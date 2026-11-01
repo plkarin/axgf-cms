@@ -3,13 +3,13 @@
 ## Translations
 
 This is where help is most useful, and where the honest position needs stating
-plainly: **eleven interface languages are complete. Two of them have been read
-by someone who speaks them. The other nine have not.**
+plainly: **fourteen interface languages are complete. Two of them have been
+read by someone who speaks them. The other twelve have not.**
 
 Complete is not the same as reviewed, and the language selector says both — a
 finished machine translation is still a machine translation, and a bare "100%"
 would read as a quality score rather than as a count. English and French are
-complete and read. The other nine were translated without a native speaker.
+complete and read. The other twelve were translated without a native speaker.
 
 The risk is not that a button says the wrong thing; a wrong button is obvious.
 The risk is genealogical vocabulary, where a plausible-looking wrong word is
@@ -19,17 +19,20 @@ worse than an English one because nobody notices it.
 
 | Tag | Language | | Messages | Coverage | Reviewed |
 |---|---|---|---|---|---|
-| `en` | English | English | 553 / 553 | 100% | yes |
-| `fr` | French | Français | 553 / 553 | 100% | yes |
-| `pl` | Polish | Polski | 553 / 553 | 100% | **no — machine quality** |
-| `ru` | Russian | Русский | 553 / 553 | 100% | **no — machine quality** |
-| `de` | German | Deutsch | 553 / 553 | 100% | **no — machine quality** |
-| `it` | Italian | Italiano | 553 / 553 | 100% | **no — machine quality** |
-| `es` | Spanish | Español | 553 / 553 | 100% | **no — machine quality** |
-| `pt` | Portuguese | Português | 553 / 553 | 100% | **no — machine quality** |
-| `zh-Hans` | Chinese (Simplified) | 简体中文 | 553 / 553 | 100% | **no — machine quality** |
-| `ja` | Japanese | 日本語 | 553 / 553 | 100% | **no — machine quality** |
-| `ar` | Arabic | العربية | 553 / 553 | 100% | **no — machine quality** |
+| `en` | English | English | 3851 / 3851 | 100% | yes |
+| `fr` | French | Français | 3851 / 3851 | 100% | yes |
+| `pl` | Polish | Polski | 3851 / 3851 | 100% | **no — machine quality** |
+| `ru` | Russian | Русский | 3851 / 3851 | 100% | **no — machine quality** |
+| `de` | German | Deutsch | 3851 / 3851 | 100% | **no — machine quality** |
+| `it` | Italian | Italiano | 3851 / 3851 | 100% | **no — machine quality** |
+| `es` | Spanish | Español | 3851 / 3851 | 100% | **no — machine quality** |
+| `pt` | Portuguese | Português | 3851 / 3851 | 100% | **no — machine quality** |
+| `zh-Hans` | Chinese (Simplified) | 简体中文 | 3851 / 3851 | 100% | **no — machine quality** |
+| `ja` | Japanese | 日本語 | 3851 / 3851 | 100% | **no — machine quality** |
+| `ar` | Arabic | العربية | 3851 / 3851 | 100% | **no — machine quality** |
+| `he` | Hebrew | עברית | 3851 / 3851 | 100% | **no — machine quality** |
+| `sw` | Swahili | Kiswahili | 3851 / 3851 | 100% | **no — machine quality** |
+| `ln` | Lingala | Lingála | 3851 / 3851 | 100% | **no — machine quality** |
 
 Coverage is the share of English's messages that the locale defines. It is
 computed from the files, shown in the language selector, and asserted by a
@@ -61,6 +64,7 @@ disagree with.
 | visibility, members, contributors, private | These are permission levels. Prefer the plainest word over a technical one. |
 | circa, before, after, between | Date qualifiers. They must stay four distinct statements. |
 | generation, ancestor, descendant, sibling | Usually settled, but check the plural forms. |
+| cousin once removed, half-brother, in-law, stepfather, godparent, milk sibling (the `kin-*` messages) | The words of kinship (docs/adr/0020). Does your language count cousins by degree, by generation or by the side of the family? Does it tell an elder sibling from a younger, a father's brother from a mother's? Each `kin-*` message receives every fact a language may agree it with (sex, side, elder or younger, the parent a half-sibling shares), listed in the comment that opens the section in `en.ftl`: use the ones your language needs. A rite's name (`kin-rite-*`) should be the word families use; a tradition's own word (кум, κουμπάρος, ndoyi) stays as it is. |
 
 Prefer the plainer word over a false-friend cognate. If you are unsure, say so
 in the pull request rather than guessing — an English fallback is honest, and a

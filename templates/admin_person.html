@@ -228,6 +228,13 @@
     </p>
     {% endif %}
     {% for b in tb.blocks %}{{ block(b) }}{% endfor %}
+    {% if tb.key == "famille" %}
+    {#- Godparents and the other ties of rite are Links, kept on a page of
+        their own; this is where somebody adding a godmother looks for them
+        (docs/adr/0020). -#}
+    <p class="small ed-ties" data-content>{{ t("kin-rites-help") }}
+      <a href="/admin/person/{{ id }}/links">{{ t("links-edit-link") }}</a></p>
+    {% endif %}
     {% endif %}
 
   </section>

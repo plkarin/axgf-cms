@@ -7,8 +7,8 @@ AXGF 1.1 §5.13 (`lineage`, Link `relation`) · **Applies to:**
 `src/routes/editors.rs`, `templates/_kinship.html`,
 `templates/_person_detail.html`, `templates/_panel.html`,
 `templates/_tree_canvas.html`, `templates/tree.html`,
-`templates/_macros.html`, `static/app.css`, `static/css/tokens.css`,
-`static/tree.js`, `locales/*.ftl`
+`templates/_macros.html`, `templates/admin_person.html`, `static/app.css`,
+`static/css/tokens.css`, `static/tree.js`, `locales/*.ftl`
 
 ## Context
 
@@ -42,6 +42,10 @@ sister-in-law or the godson of an uncle.
        so.
      - A family that married into itself gives two paths, and both are
        kept.
+     - The children of a family with no recorded parent (a sibling group,
+       AXGF 1.0 §4.2.3) meet at a parent that stands for the unrecorded
+       ones. It is named by nobody and listed nowhere, and the way between
+       two of them is one step: "brother", "sister".
    - **By marriage.** A partner; a relative of A's partner; the partner of
      A's relative. Both ends by marriage are named only when no nearer way
      exists.
@@ -50,6 +54,12 @@ sister-in-law or the godson of an uncle.
    - **By rite or custom** (§3).
    - **Otherwise**, if the records connect the two at all, the shortest
      chain of facts between them.
+   - **Every way is kept, the closest first**: by the steps of its path,
+     a step of care, marriage or rite counting more than one by descent.
+     A tie of rite weighs as much as the four steps to a first cousin:
+     godparents are most often aunts and uncles, and an aunt who is also a
+     godmother is first an aunt, while a second cousin who is one is first
+     a godmother.
 2. **Words that agree** (`src/kinship_text.rs`).
    - **Every word is a Fluent message** in the fourteen languages. Each
      receives every fact a language may make it agree with:
@@ -121,7 +131,8 @@ sister-in-law or the godson of an uncle.
    person is to the other ("Baptism: godparent", "Baptism: godchild").
    Choosing one sets the relation, the category and the extension, and
    writes the words in the editor's language when the form leaves them
-   empty.
+   empty. The record editor's Family tab leads to the link form, where
+   somebody adding a godmother looks for it.
 
 ## Consequences
 
@@ -135,6 +146,10 @@ sister-in-law or the godson of an uncle.
   per card it draws.
 - **A tie of rite outside the chart** is not drawn as a line. The open card
   and the record say it.
+- **A polygamous union recorded as one Family** cannot say which wife bore
+  which child, nor that co-wives are not married to each other. Its
+  children are read as full siblings and every two of its partners as
+  partners. One Family per couple reads right.
 - **A format proposal.** The format has no word for most of these rites.
   axgf-spec's proposals/0002 asks for them in AXGF 1.2. Until then the
   extension carries them, and a 1.2 reader can map it back.

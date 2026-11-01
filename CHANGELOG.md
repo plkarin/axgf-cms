@@ -16,12 +16,14 @@ extension.
 
 - **Kinship tab**, on the record and in the record beside the river.
   - **"How are they related?"** Choose any relative and the link is said:
-    "second cousin", "first cousin of the father", "son of a second
-    cousin", "sister-in-law", "godmother". It is shown step by step, from
+    "second cousin", "first cousin of the father", "second cousin once
+    removed", "wife of a half-nephew", "godmother". It is shown step by step, from
     the person to the ancestors the two share and down to the other, every
     person on the way named. Every way two people are related is listed:
     by descent, half or full, by adoption, by marriage, by care, by rite.
-    The degree of kinship is counted as civil law counts it.
+    The children of one family are brothers and sisters even when nobody
+    recorded their parents (AXGF 1.0 §4.2.3). The degree of kinship is
+    counted as civil law counts it.
   - **"Every relative"**, by group: partners, ancestors, descendants,
     brothers and sisters, uncles and aunts, nephews and nieces, cousins,
     by marriage, the stepfamily, fostering and guardianship, rite and
@@ -40,13 +42,20 @@ extension.
   the namesake (ndoyi, somo), initiation, the blood pact, hānai, hunka and
   civil godparenthood.
   - **The link editor** offers them by tradition, and writes their words
-    when the form leaves them empty.
+    when the form leaves them empty. The record editor's Family tab leads
+    to it.
   - **On the record** they have a section of their own, apart from the
     family, each in a dotted frame, with the tradition's own word.
   - **On the tree** a tie between two people both drawn is a curve, in
     pairs of dots, in a colour no family line has.
 - **axgf-spec proposals/0002** (branch `ritual-kinship`) proposes naming
-  these rites in AXGF 1.2.
+  these rites in AXGF 1.2, and the spec's KINSHIP.md explains to other
+  programs how relationships are read from a bundle.
+- **Documentation.** The README explains both tools, how the words are
+  worked out and the 27 ties. docs/FAMILY.md tells the family how to read
+  the Kinship tab and add a godparent. docs/REFERENCE.md documents the link
+  editor's `rite` field and the extension. CONTRIBUTING.md lists the words
+  of kinship to review first, and the fourteen languages as they stand.
 
 ### Fixed
 

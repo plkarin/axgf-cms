@@ -421,3 +421,25 @@ async fn the_kinship_tab_names_a_relative_and_shows_the_way() {
         "the legend draws the tie of rite"
     );
 }
+
+/// Somebody adding a godmother opens the record's editor on Family: the
+/// links page, where ties of rite are made, is one click from there.
+#[tokio::test]
+async fn the_editors_family_tab_leads_to_the_ties_of_rite() {
+    let (app, _p) = app("rite-way-in");
+    let page = expect_status(
+        get_admin(&app, &format!("/admin/person/{CHILD}/edit")).await,
+        StatusCode::OK,
+        "editor",
+    )
+    .await;
+    let family = page
+        .split("id=\"famille\"")
+        .nth(1)
+        .and_then(|rest| rest.split("class=\"ed-panel").next())
+        .expect("a Family tab");
+    assert!(
+        family.contains(&format!("href=\"/admin/person/{CHILD}/links\"")),
+        "{family}"
+    );
+}

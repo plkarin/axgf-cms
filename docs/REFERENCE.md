@@ -51,6 +51,7 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |
 | `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy — *admin* |
 | `POST /admin/person/:id/document` | Attach a file to a person — multipart upload, stored inside the bundle |
+| `GET/POST /admin/person/:id/links`, `POST /admin/person/:id/links/:lid` | The person's links, the relations that are not family: list, create, change. The form's `rite` field (`<rite>:<role>`, the role `sponsor`, `sponsored` or `mutual`; the 27 rites are in `src/rites.rs`) records a tie of rite: the nearest AXGF 1.1 `relation` and its `category`, the rite's words in `label` and `label_reverse` when they are left empty, `bidirectional` for a mutual tie, and `extensions["axgf-cms:kinship/v1"]` = `{"rite": <key>, "sponsor": "from" or "to"}`, without `sponsor` for a mutual tie (docs/adr/0020) |
 | `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks — *admin* |
 | `GET /admin/export` | Download the live bundle — *admin* |
 | `GET /admin/users`, `POST /admin/users`, `POST /admin/users/:id` | Accounts: create, change a role, a branch, a status or a password — *admin* |

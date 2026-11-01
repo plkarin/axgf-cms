@@ -173,10 +173,24 @@ opens the widest range in one click.
 |---|---|
 | [![Lucien Delaunay's record, 1924–1998: his portrait, born in Plouguerneau and died in Paris, the Family tab open on his parents, his sister, his wife Zofia Zając and their three children, each link with its certainty](docs/screenshots/record.png)](docs/screenshots/record.png) | [![The Media tab of the same record: Lucien and Zofia's wedding photograph from 1950 and his portrait from 1949](docs/screenshots/record-media.png)](docs/screenshots/record-media.png) |
 
-Tabs show only what the record holds: the record itself, family, events,
-sources, media and a profile. Photographs get thumbnails. Certificates,
-census pages, letters, gravestones and parish registers are kept with the
-person they belong to.
+Tabs show only what the record holds: the record itself, family, kinship,
+events, sources, media and a profile. Photographs get thumbnails.
+Certificates, census pages, letters, gravestones and parish registers are
+kept with the person they belong to.
+
+| Kinship: how two people are related, step by step, and every relative | Ties of rite and custom, apart from the family and dotted |
+|---|---|
+| [![The Kinship tab of Lucien Delaunay's record: Catherine Bernard chosen in the list, "First cousin once removed of Lucien Delaunay", their shared ancestors Henri Delaunay and Hélène Rouxel, and the link step by step: Lucien, his father Jean, his father Henri, his son Louis, his daughter Augustine, her daughter Catherine; kinship in the 5th degree. Below, every relative of Lucien Delaunay, 234 people, by group](docs/screenshots/kinship.png)](docs/screenshots/kinship.png) | [![The Rite and custom section of the same record: his godmother Hélène Rouxel (baptism, Christian), his milk sister Augustine Delaunay with the Arabic words for it (milk siblings, Islamic), and his namesake Lucien Riou (ndoyi, somo, African), each in a dotted frame](docs/screenshots/rites.png)](docs/screenshots/rites.png) |
+
+**Kinship** answers "how are these two related?" for anyone of the family:
+"second cousin", "first cousin of the father", "sister-in-law",
+"godmother". The link is shown step by step, through the ancestors the two
+share. The tab also lists every relative, by group. The words agree in each
+of the fourteen languages, down to the side of the family and the elder or
+the younger where a language tells them apart. Ties of rite and custom are
+recorded and drawn apart from the family, dotted: godparents, and also milk
+kinship, the compadre, the kum, the sandek, rakhi, the namesake, hānai and
+others, 27 in ten traditions (docs/adr/0020).
 
 ### Charts from the record
 

@@ -78,6 +78,7 @@ async fn stored(app: &axum::Router, kind: &str, id: &str) -> Value {
         .replace("&#39;", "'")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
+        .replace("&#x2f;", "/")
         .replace("&amp;", "&");
     serde_json::from_str(&raw).expect("the textarea holds the entity")
 }
@@ -334,4 +335,89 @@ async fn upload_forms_offer_only_the_schemas_document_types() {
     let avatar =
         body_string(get_admin(&app, &format!("/admin/person/{MOTHER}/avatar")).await).await;
     assert!(!avatar.contains("value=\"portrait\""));
+}
+
+/// A tie of rite or custom (docs/adr/0020): stored as the AXGF 1.1 relation
+/// nearest to it, its category, and the rite itself in this application's
+/// extension; its words written for it when the form leaves them empty.
+#[tokio::test]
+async fn a_rite_is_stored_as_the_nearest_relation_and_keeps_its_name() {
+    let (app, _p) = app("rite");
+    let resp = post_form(
+        &app,
+        &format!("/admin/person/{CHILD}/links"),
+        &format!("to={GODFATHER}&rite=milk-sibling:mutual&label="),
+        true,
+    )
+    .await;
+    let page = expect_status(resp, StatusCode::OK, "rite create").await;
+    assert!(!page.contains("SPEC_VERSION_MISMATCH"), "{page}");
+    let (_id, link) = only_entity_of(&app, "link").await;
+    assert_eq!(link["relation"], "other");
+    assert_eq!(link["category"], "spiritual");
+    assert_eq!(link["bidirectional"], true);
+    assert_eq!(
+        link["extensions"]["axgf-cms:kinship/v1"]["rite"],
+        "milk-sibling"
+    );
+    assert_eq!(
+        link["label"], "milk sibling",
+        "the words are written for it"
+    );
+    assert_eq!(link["axgf_version"], "1.1");
+
+    // The record shows it apart from the family, with the tradition's word.
+    let family = body_string(get(&app, &format!("/person/{CHILD}?tab=family")).await).await;
+    assert!(family.contains("rites-section"), "{family}");
+    assert!(family.contains("rite-card"));
+    assert!(family.contains("أخ من الرضاعة"));
+}
+
+/// From the godchild's own page: the child is the sponsored end, and the
+/// stored link says so in both its relation and its extension.
+#[tokio::test]
+async fn a_rite_drawn_from_the_godchild_is_stored_from_their_end() {
+    let (app, _p) = app("rite-reverse");
+    post_form(
+        &app,
+        &format!("/admin/person/{CHILD}/links"),
+        &format!("to={GODFATHER}&rite=baptism:sponsored&label="),
+        true,
+    )
+    .await;
+    let (_id, link) = only_entity_of(&app, "link").await;
+    assert_eq!(link["relation"], "godchild");
+    assert_eq!(link["extensions"]["axgf-cms:kinship/v1"]["sponsor"], "to");
+    // The godfather's word is the reverse one.
+    assert_eq!(link["label_reverse"], "godparent");
+    // On the godfather's page the child is his godchild.
+    let page = body_string(get(&app, &format!("/person/{GODFATHER}?tab=family")).await).await;
+    assert!(page.contains("godchild"), "{page}");
+}
+
+/// The Kinship tab: every relative by group, and the way to one of them,
+/// step by step (docs/adr/0020).
+#[tokio::test]
+async fn the_kinship_tab_names_a_relative_and_shows_the_way() {
+    let (app, _p) = app("kinship-tab");
+    let page = body_string(get(&app, &format!("/person/{MOTHER}?tab=kinship")).await).await;
+    assert!(page.contains("kin-group-descendants"), "{page}");
+    assert!(page.contains("Ada Brandt"));
+    assert!(page.contains("Karol Brandt"));
+
+    let page =
+        body_string(get(&app, &format!("/person/{CHILD}?tab=kinship&with={FATHER}")).await).await;
+    assert!(page.contains("id=\"kin-result\""), "{page}");
+    assert!(page.contains("class=\"kin-path\""));
+    assert!(
+        page.contains(">parent<"),
+        "the father's sex is not recorded: {page}"
+    );
+    // The tree says it on the open card.
+    let tree = body_string(get(&app, &format!("/tree?root={CHILD}")).await).await;
+    assert!(tree.contains("class=\"tc-kin\""), "{tree}");
+    assert!(
+        tree.contains("wire wire-rite"),
+        "the legend draws the tie of rite"
+    );
 }

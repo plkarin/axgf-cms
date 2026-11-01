@@ -194,6 +194,26 @@ pub struct LinkView {
     pub confidence: Option<Confidence>,
     pub source: Option<SourceView>,
     pub note: Option<String>,
+    /// A tie of rite or custom (docs/adr/0020): drawn apart from the
+    /// family, in a dotted line of its own.
+    pub rite: Option<RiteView>,
+    /// The record's own word for the other end ("matka chrzestna"), shown
+    /// beside the rite's word when they differ.
+    pub other_label: Option<String>,
+}
+
+/// What a tie of rite or custom is, from the record's side.
+#[derive(Debug, Clone, Serialize)]
+pub struct RiteView {
+    /// What the other person is to this one: "godmother", "milk brother".
+    pub term: String,
+    /// The rite: "Baptism", "Kumstvo".
+    pub name: String,
+    pub tradition: String,
+    /// The tradition's own word, untranslated.
+    pub native: Option<&'static str>,
+    /// What it is, in one line.
+    pub note: String,
 }
 
 /// An occupation, which is a span with a duration rather than an event.
@@ -1656,6 +1676,28 @@ impl Ctx<'_> {
                 continue;
             };
             let Some(other_id) = other_id else { continue };
+            let rite = crate::rites::read(l).map(|(rite, from_role)| {
+                // The word is what the other end is to this person.
+                let role = if direction == "outgoing" {
+                    from_role.other()
+                } else {
+                    from_role
+                };
+                let sex = crate::kinship::Sex::of_person(
+                    self.collection("persons").and_then(|m| m.get(other_id)),
+                );
+                RiteView {
+                    term: crate::kinship_text::rite_word(self.lang, rite, role, sex),
+                    name: crate::i18n::translate(
+                        self.lang,
+                        &format!("kin-rite-{}-name", rite.key),
+                        None,
+                    ),
+                    tradition: crate::kinship_text::tradition(self.lang, rite.tradition),
+                    native: (!rite.native.is_empty()).then_some(rite.native),
+                    note: crate::kinship_text::rite_note(self.lang, rite),
+                }
+            });
 
             out.push(LinkView {
                 label: shown_label,
@@ -1681,6 +1723,12 @@ impl Ctx<'_> {
                 confidence: Confidence::from_field(l, "confidence"),
                 source: self.source_of(l),
                 note: str_field(l, "note"),
+                rite,
+                other_label: if direction == "outgoing" {
+                    reverse.map(str::to_string)
+                } else {
+                    Some(label.clone())
+                },
             });
         }
         out.sort_by(|a, b| a.label.cmp(&b.label).then(a.other.name.cmp(&b.other.name)));
@@ -2354,12 +2402,16 @@ pub enum RecordTab {
     /// The AXGF 1.1 profile: its filled groups and, on the record page, the
     /// radars that hold three axes or more.
     Profile,
+    /// How anyone of the family is related to this person, and every
+    /// relative they have (docs/adr/0020).
+    Kinship,
 }
 
 /// The tabs, in the order they are shown.
 pub const RECORD_TABS: &[RecordTab] = &[
     RecordTab::Fiche,
     RecordTab::Family,
+    RecordTab::Kinship,
     RecordTab::Life,
     RecordTab::Sources,
     RecordTab::Media,
@@ -2387,6 +2439,7 @@ impl RecordTab {
             Self::Sources => "sources",
             Self::Media => "media",
             Self::Profile => "profile",
+            Self::Kinship => "kinship",
         }
     }
 
@@ -2399,6 +2452,7 @@ impl RecordTab {
             Self::Sources => "river-tab-sources",
             Self::Media => "person-tab-media",
             Self::Profile => "person-tab-profile",
+            Self::Kinship => "kin-tab",
         }
     }
 
@@ -2415,6 +2469,7 @@ impl RecordTab {
             Some("sources") => Self::Sources,
             Some("media") => Self::Media,
             Some("profile") => Self::Profile,
+            Some("kinship") => Self::Kinship,
             _ => Self::Fiche,
         }
     }
@@ -2435,6 +2490,9 @@ impl RecordTab {
             // `images` are among `documents`.
             Self::Media => p.documents.len(),
             Self::Profile => p.profile_count,
+            // Counting every relative means walking the whole family: the
+            // tab says what it holds when it is opened.
+            Self::Kinship => 0,
         }
     }
 }
@@ -2461,6 +2519,13 @@ pub fn tabs_for(p: &PersonView, profile: bool) -> Vec<TabView> {
                 }
                 RecordTab::Media => !p.documents.is_empty() || !p.images.is_empty(),
                 RecordTab::Profile => profile,
+                // Anyone the records tie this person to.
+                RecordTab::Kinship => {
+                    !p.parents.is_empty()
+                        || !p.siblings.is_empty()
+                        || !p.unions.is_empty()
+                        || p.links.iter().any(|l| l.rite.is_some())
+                }
                 _ => n > 0,
             };
             holds.then(|| TabView {
@@ -3188,7 +3253,9 @@ mod tests {
         let v = build_in(&bundle(), "p-jules", &open(), "en").expect("built");
         let tabs = tabs_for(&v, v.profile_count > 0);
         for t in &tabs {
-            if t.slug != "record" && t.slug != "profile" {
+            // The fiche is a summary; the profile may hold only a chart; the
+            // kinship tab counts its relatives when it is opened.
+            if !matches!(t.slug, "record" | "profile" | "kinship") {
                 assert!(
                     t.count.is_some_and(|n| n > 0),
                     "{} drawn with a count",
@@ -3196,6 +3263,10 @@ mod tests {
                 );
             }
         }
+        assert!(
+            tabs.iter().any(|t| t.slug == "kinship"),
+            "a person with a family has kin"
+        );
         assert_eq!(
             current_tab(Some("family"), &tabs).slug(),
             if tabs.iter().any(|t| t.slug == "family") {

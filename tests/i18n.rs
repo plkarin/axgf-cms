@@ -392,6 +392,19 @@ fn every_dynamic_key_family_is_fully_defined() {
     for field in axgf_cms::physical::LEGACY_FIELDS {
         expected.push(axgf_cms::physical::label_key(field));
     }
+    // Kinship (docs/adr/0020): every rite's words, name and note, every
+    // tradition, every group of relatives — keys built in Rust.
+    for rite in axgf_cms::rites::RITES {
+        expected.push(format!("kin-rite-{}", rite.key));
+        expected.push(format!("kin-rite-{}-name", rite.key));
+        expected.push(format!("kin-rite-{}-note", rite.key));
+    }
+    for tradition in axgf_cms::rites::TRADITIONS {
+        expected.push(format!("kin-tradition-{tradition}"));
+    }
+    for group in axgf_cms::kinship_text::GROUPS {
+        expected.push(format!("kin-group-{group}"));
+    }
     // Every group, attribute, field, term and unit the AXGF 1.1 profile can
     // name, derived from the library's registry rather than listed here.
     expected.extend(axgf_cms::profile::every_key());

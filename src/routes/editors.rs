@@ -941,12 +941,13 @@ pub async fn links_create(
     let (viewer, chrome) = writer!(state, headers);
     let person = person!(state, chrome, id);
     let flat = state.read(|f| f.clone());
-    let mut entity = match build_link(&form, &Value::Null, &flat) {
+    // The near end is always this person: the page is theirs, and letting the
+    // form retarget it would make "add a link here" mean something else.
+    let near = json!({"type": "link", "from": {"entity_type": "person", "entity_id": id}});
+    let mut entity = match build_link(&form, &near, &flat, &id, chrome.lang) {
         Ok(v) => v,
         Err(key) => return render_links(&state, &chrome, &viewer, &id, &person, Some(key)),
     };
-    // The near end is always this person: the page is theirs, and letting the
-    // form retarget it would make "add a link here" mean something else.
     entity["from"] = json!({"entity_type": "person", "entity_id": id});
     add_entity(
         &state,
@@ -976,7 +977,7 @@ pub async fn links_update(
         );
     };
     let flat = state.read(|f| f.clone());
-    let mut entity = match build_link(&form, &stored, &flat) {
+    let mut entity = match build_link(&form, &stored, &flat, &id, chrome.lang) {
         Ok(v) => v,
         Err(key) => return render_links(&state, &chrome, &viewer, &id, &person, Some(key)),
     };
@@ -995,25 +996,80 @@ pub async fn links_update(
     )
 }
 
-/// Build one Link from its form.
-fn build_link(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'static str> {
-    let label = form
-        .get("label")
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .ok_or("link-error-no-label")?;
+/// Build one Link from its form. `page` is the person whose page the form is
+/// on, and `lang` the editor's language, in which a rite's words are written
+/// when the form leaves them empty.
+fn build_link(
+    form: &Body,
+    stored: &Value,
+    flat: &Value,
+    page: &str,
+    lang: &str,
+) -> Result<Value, &'static str> {
     let other = form
         .get("to")
         .map(String::as_str)
         .ok_or("pick-error-empty")?;
     let (kind, other_id) = forms::resolve_linkable(other, flat).map_err(|e| e.key())?;
 
-    let mut out = if stored.is_object() {
+    let mut out = if stored.get("id").is_some() {
         stored.clone()
     } else {
         json!({"type": "link", "axgf_version": "1.0"})
     };
     out["to"] = json!({"entity_type": kind, "entity_id": other_id});
+
+    // A rite or custom (docs/adr/0020): "baptism:sponsored" is what the
+    // page's person is to the other. Stored as the AXGF 1.1 relation closest
+    // to it, its category, and the rite itself in this application's
+    // extension.
+    let rite = form
+        .get("rite")
+        .and_then(|v| v.split_once(':'))
+        .and_then(|(key, role)| {
+            let rite = crate::rites::find(key)?;
+            let role = match role {
+                "sponsor" => crate::rites::Role::Sponsor,
+                "sponsored" => crate::rites::Role::Sponsored,
+                _ => crate::rites::Role::Mutual,
+            };
+            Some((
+                rite,
+                if rite.mutual {
+                    crate::rites::Role::Mutual
+                } else {
+                    role
+                },
+            ))
+        });
+    let from_id = stored
+        .pointer("/from/entity_id")
+        .and_then(Value::as_str)
+        .unwrap_or(page)
+        .to_string();
+    let words = rite.map(|(rite, page_role)| {
+        // The role of the `from` end: the page's person's own, unless the
+        // link was drawn from the other end.
+        let from_role = if from_id == page {
+            page_role
+        } else {
+            page_role.other()
+        };
+        let sex =
+            |id: &str| crate::kinship::Sex::of_person(flat.get("persons").and_then(|p| p.get(id)));
+        let to_id = other_id.as_str();
+        (
+            crate::kinship_text::rite_word(lang, rite, from_role, sex(&from_id)),
+            crate::kinship_text::rite_word(lang, rite, from_role.other(), sex(to_id)),
+            crate::rites::stored(rite, from_role),
+        )
+    });
+    let label = form
+        .get("label")
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .or_else(|| words.as_ref().map(|w| w.0.clone()))
+        .ok_or("link-error-no-label")?;
     out["label"] = json!(label);
 
     for (key, field) in [
@@ -1026,6 +1082,11 @@ fn build_link(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'stat
             None => {
                 out.as_object_mut().map(|o| o.remove(key));
             }
+        }
+    }
+    if let Some((_, reverse, _)) = &words {
+        if out.get("label_reverse").is_none() {
+            out["label_reverse"] = json!(reverse);
         }
     }
     match form
@@ -1056,6 +1117,27 @@ fn build_link(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'stat
         form.get("bidirectional").map(String::as_str),
         Some("on" | "true" | "1")
     ));
+    // The rite decides the relation and the category, and is kept; a link
+    // that no longer names one loses this application's mark of it.
+    match &words {
+        Some((_, _, (relation, category, ext))) => {
+            out["relation"] = json!(relation);
+            out["category"] = json!(category);
+            out["bidirectional"] = json!(rite.is_some_and(|(r, _)| r.mutual));
+            if !out.get("extensions").is_some_and(Value::is_object) {
+                out["extensions"] = json!({});
+            }
+            out["extensions"][crate::rites::EXT_KEY] = ext.clone();
+        }
+        None => {
+            if let Some(ext) = out.get_mut("extensions").and_then(Value::as_object_mut) {
+                ext.remove(crate::rites::EXT_KEY);
+                if ext.is_empty() {
+                    out.as_object_mut().map(|o| o.remove("extensions"));
+                }
+            }
+        }
+    }
     match forms::confidence(&as_row(form, "confidence"), "confidence") {
         Some(c) => out["confidence"] = c,
         None => {
@@ -1116,6 +1198,14 @@ fn render_links(
                     "source_id": l.get("source_id").and_then(Value::as_str).unwrap_or_default(),
                     "note": l.get("note").and_then(Value::as_str).unwrap_or_default(),
                     "reversed": ends("from") != Some(id),
+                    // The rite as the form offers it: what this page's person
+                    // is to the other.
+                    "rite": crate::rites::read(l)
+                        .map(|(rite, from_role)| {
+                            let role = if ends("from") == Some(id) { from_role } else { from_role.other() };
+                            format!("{}:{}", rite.key, role.as_str())
+                        })
+                        .unwrap_or_default(),
                     "to": far.map(|f| linkable_label(flat, lens, f)).unwrap_or_default(),
                     "from_date": date_fields(l.pointer("/valid_from/date")),
                     "until_date": date_fields(l.pointer("/valid_until/date")),
@@ -1142,9 +1232,48 @@ fn render_links(
             problem,
             categories => LINK_CATEGORIES,
             relations => crate::profile::form::vocabulary_options(chrome.lang, &LINK_RELATION),
+            rites => rite_options(chrome.lang),
             precisions => PRECISIONS,
         },
     )
+}
+
+/// The rites the link form offers, by tradition: one option per role a
+/// person can take in each ("Baptism: godparent", "Baptism: godchild").
+fn rite_options(lang: &str) -> Vec<Value> {
+    use crate::rites::{Role, RITES, TRADITIONS};
+    TRADITIONS
+        .iter()
+        .map(|tradition| {
+            let options: Vec<Value> = RITES
+                .iter()
+                .filter(|r| r.tradition == *tradition)
+                .flat_map(|r| {
+                    let roles: &[Role] = if r.mutual {
+                        &[Role::Mutual]
+                    } else {
+                        &[Role::Sponsor, Role::Sponsored]
+                    };
+                    roles.iter().map(move |&role| {
+                        let name =
+                            crate::i18n::translate(lang, &format!("kin-rite-{}-name", r.key), None);
+                        let word =
+                            crate::kinship_text::rite_word(lang, r, role, crate::kinship::Sex::U);
+                        let label = crate::i18n::translate(
+                            lang,
+                            "kin-editor-rite-option",
+                            Some(&crate::i18n::args(&[
+                                ("rite", name.into()),
+                                ("word", word.into()),
+                            ])),
+                        );
+                        json!({"value": format!("{}:{}", r.key, role.as_str()), "label": label})
+                    })
+                })
+                .collect();
+            json!({"title": crate::kinship_text::tradition(lang, tradition), "options": options})
+        })
+        .collect()
 }
 
 /// One entity as a picker label, whatever kind it turns out to be.

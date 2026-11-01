@@ -3939,3 +3939,755 @@ merge-report-links = 移除的链接
 merge-report-tidied = 整理的条目
 merge-absorbed-record = 被合并的记录（原样）
 merge-open-kept = 打开保留的记录
+
+## 亲属关系 (docs/adr/0020)
+
+kin-tab = 亲属关系
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] 养父
+            [F] 养母
+           *[other] 养父母
+        }
+       *[no] { $sex ->
+            [M] 父亲
+            [F] 母亲
+           *[other] 父母
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $sex ->
+            [M] 祖父
+            [F] 祖母
+           *[other] 祖父母
+        }
+        [3] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $sex ->
+            [M] 曾祖父
+            [F] 曾祖母
+           *[other] 曾祖父母
+        }
+        [4] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $sex ->
+            [M] 高祖父
+            [F] 高祖母
+           *[other] 高祖父母
+        }
+       *[other] 上{ $n }代祖先
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] 养子
+            [F] 养女
+           *[other] 养子女
+        }
+       *[no] { $sex ->
+            [M] 儿子
+            [F] 女儿
+           *[other] 子女
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $sex ->
+            [M] 孙子
+            [F] 孙女
+           *[other] 孙辈
+        }
+        [3] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $sex ->
+            [M] 曾孙
+            [F] 曾孙女
+           *[other] 曾孙辈
+        }
+        [4] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $sex ->
+            [M] 玄孙
+            [F] 玄孙女
+           *[other] 玄孙辈
+        }
+       *[other] 下{ $n }代后代
+    }
+kin-sibling = { $half ->
+        [yes] { $side ->
+            [M] 同父异母的
+            [F] 同母异父的
+           *[other] 同父母一方的
+        }{ $sex ->
+            [M] { $elder ->
+                [yes] 哥哥
+                [no] 弟弟
+               *[other] 兄弟
+            }
+            [F] { $elder ->
+                [yes] 姐姐
+                [no] 妹妹
+               *[other] 姐妹
+            }
+           *[other] 兄弟姐妹
+        }
+       *[no] { $adoptive ->
+            [yes] 领养的{ $sex ->
+                [M] { $elder ->
+                    [yes] 哥哥
+                    [no] 弟弟
+                   *[other] 兄弟
+                }
+                [F] { $elder ->
+                    [yes] 姐姐
+                    [no] 妹妹
+                   *[other] 姐妹
+                }
+               *[other] 兄弟姐妹
+            }
+           *[no] { $sex ->
+                [M] { $elder ->
+                    [yes] 哥哥
+                    [no] 弟弟
+                   *[other] 兄弟
+                }
+                [F] { $elder ->
+                    [yes] 姐姐
+                    [no] 妹妹
+                   *[other] 姐妹
+                }
+               *[other] 兄弟姐妹
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $side ->
+            [M] { $sex ->
+                [M] { $turnelder ->
+                    [yes] 伯父
+                    [no] 叔父
+                   *[other] 伯父或叔父
+                }
+                [F] 姑母
+               *[other] 伯叔或姑母
+            }
+            [F] { $sex ->
+                [M] 舅父
+                [F] { $turnelder ->
+                    [yes] 大姨
+                    [no] 小姨
+                   *[other] 姨母
+                }
+               *[other] 舅父或姨母
+            }
+           *[other] { $sex ->
+                [M] 伯叔或舅父
+                [F] 姑母或姨母
+               *[other] 父母的兄弟姐妹
+            }
+        }
+        [2] { $side ->
+            [F] 外
+           *[other] {""}
+        }{ $turna ->
+            [M] 祖父
+            [F] 祖母
+           *[other] 祖父母
+        }的{ $sex ->
+            [M] 兄弟
+            [F] 姐妹
+           *[other] 兄弟姐妹
+        }
+        [3] 曾祖辈的兄弟姐妹
+       *[other] 祖先的兄弟姐妹
+    }
+kin-nephew = { $n ->
+        [1] { $via ->
+            [M] { $sex ->
+                [M] 侄子
+                [F] 侄女
+               *[other] 侄子女
+            }
+            [F] { $sex ->
+                [M] 外甥
+                [F] 外甥女
+               *[other] 外甥子女
+            }
+           *[other] { $sex ->
+                [M] 侄子或外甥
+                [F] 侄女或外甥女
+               *[other] 兄弟姐妹的子女
+            }
+        }
+        [2] { $via ->
+            [M] { $sex ->
+                [M] 侄孙
+                [F] 侄孙女
+               *[other] 侄孙辈
+            }
+            [F] { $sex ->
+                [M] 外甥孙
+                [F] 外甥孙女
+               *[other] 外甥孙辈
+            }
+           *[other] 兄弟姐妹的孙辈
+        }
+        [3] 兄弟姐妹的曾孙辈
+       *[other] 兄弟姐妹的后代
+    }
+kin-cousin = { $k ->
+        [1] { $line ->
+            [yes] 堂
+           *[no] 表
+        }{ $sex ->
+            [M] { $elder ->
+                [yes] 兄
+                [no] 弟
+               *[other] 兄弟
+            }
+            [F] { $elder ->
+                [yes] 姐
+                [no] 妹
+               *[other] 姐妹
+            }
+           *[other] 亲
+        }
+       *[other] 远房{ $line ->
+            [yes] 堂
+           *[no] 表
+        }{ $sex ->
+            [M] { $elder ->
+                [yes] 兄
+                [no] 弟
+               *[other] 兄弟
+            }
+            [F] { $elder ->
+                [yes] 姐
+                [no] 妹
+               *[other] 姐妹
+            }
+           *[other] 亲
+        }
+    }
+kin-cousin-removed = { $older ->
+        [yes] { $forebear }的{ $line ->
+            [yes] 堂亲
+           *[no] 表亲
+        }
+       *[no] { $line ->
+            [yes] 堂亲
+           *[no] 表亲
+        }的{ $descendant }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] 父亲
+            [F] 母亲
+           *[other] 父母
+        }
+        [2] { $sex ->
+            [M] 祖父
+            [F] 祖母
+           *[other] 祖父母
+        }
+        [3] { $sex ->
+            [M] 曾祖父
+            [F] 曾祖母
+           *[other] 曾祖父母
+        }
+       *[other] 祖先
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] 儿子
+            [F] 女儿
+           *[other] 子女
+        }
+        [2] { $sex ->
+            [M] 孙子
+            [F] 孙女
+           *[other] 孙辈
+        }
+       *[other] 后代
+    }
+kin-of-cousin = 表亲
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] 前夫
+                [F] 前妻
+               *[other] 前配偶
+            }
+           *[no] 前伴侣
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] 丈夫
+                [F] 妻子
+               *[other] 配偶
+            }
+           *[no] 伴侣
+        }
+    }
+kin-parent-in-law = { $via ->
+        [F] { $sex ->
+            [M] 岳父
+            [F] 岳母
+           *[other] 岳父母
+        }
+        [M] { $sex ->
+            [M] 公公
+            [F] 婆婆
+           *[other] 公婆
+        }
+       *[other] { $sex ->
+            [M] 配偶的父亲
+            [F] 配偶的母亲
+           *[other] 配偶的父母
+        }
+    }
+kin-child-in-law = { $sex ->
+        [M] 女婿
+        [F] 儿媳
+       *[other] 子女的配偶
+    }
+kin-sibling-in-law = { $kind ->
+        [partner-sibling] { $via ->
+            [F] { $sex ->
+                [M] 妻子的兄弟
+                [F] 妻子的姐妹
+               *[other] 妻子的兄弟姐妹
+            }
+            [M] { $sex ->
+                [M] 丈夫的兄弟
+                [F] 丈夫的姐妹
+               *[other] 丈夫的兄弟姐妹
+            }
+           *[other] 配偶的兄弟姐妹
+        }
+       *[other] { $sex ->
+            [M] 姐妹的丈夫
+            [F] 兄弟的妻子
+           *[other] 兄弟姐妹的配偶
+        }
+    }
+kin-step-parent = { $sex ->
+        [M] 继父
+        [F] 继母
+       *[other] 继父母
+    }
+kin-step-child = { $sex ->
+        [M] 继子
+        [F] 继女
+       *[other] 继子女
+    }
+kin-note-step-parent = { $next ->
+        [M] 父亲
+        [F] 母亲
+       *[other] 父母一方
+    }的配偶
+kin-note-step-child = { $via ->
+        [M] 丈夫
+        [F] 妻子
+       *[other] 配偶
+    }的子女
+kin-foster-parent = { $sex ->
+        [M] 寄养父亲
+        [F] 寄养母亲
+       *[other] 寄养父母
+    }
+kin-foster-child = { $sex ->
+        [M] 寄养儿子
+        [F] 寄养女儿
+       *[other] 寄养子女
+    }
+kin-guardian = 监护人
+kin-ward = 被监护人
+kin-relative-of-partner = { $via ->
+        [M] 丈夫
+        [F] 妻子
+       *[other] 配偶
+    }的{ $relative }
+kin-partner-of-relative = { $relative }的{ $sex ->
+        [M] 丈夫
+        [F] 妻子
+       *[other] 配偶
+    }
+kin-affine = 姻亲
+kin-related = 经家族记录相连
+kin-note-adoptive = 经收养
+kin-of = 相对于{ $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] 养父
+            [F] 养母
+           *[other] 养父母
+        }
+        [foster] { $sex ->
+            [M] 寄养父亲
+            [F] 寄养母亲
+           *[other] 寄养父母
+        }
+        [guardianship] 监护人
+        [step] { $sex ->
+            [M] 继父
+            [F] 继母
+           *[other] 继父母
+        }
+       *[other] { $sex ->
+            [M] 父亲
+            [F] 母亲
+           *[other] 父母
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] 养子
+            [F] 养女
+           *[other] 养子女
+        }
+        [foster] { $sex ->
+            [M] 寄养儿子
+            [F] 寄养女儿
+           *[other] 寄养子女
+        }
+        [guardianship] 被监护人
+        [step] { $sex ->
+            [M] 继子
+            [F] 继女
+           *[other] 继子女
+        }
+       *[other] { $sex ->
+            [M] 儿子
+            [F] 女儿
+           *[other] 子女
+        }
+    }
+kin-group-partners = 配偶
+kin-group-ancestors = 祖先
+kin-group-descendants = 后代
+kin-group-siblings = 兄弟姐妹
+kin-group-uncles = 叔伯姑舅姨
+kin-group-nephews = 侄甥
+kin-group-cousins = 堂表亲
+kin-group-in-laws = 姻亲
+kin-group-step = 重组家庭
+kin-group-care = 寄养与监护
+kin-group-rites = 仪式与习俗
+kin-group-others = 其他关联
+kin-find-title = 是什么亲属关系？
+kin-find-lede = 选择家族中的一人：将一步步说明此人与{ $name }之间的关系。
+kin-find-label = 人物
+kin-find-choose = 选择一人…
+kin-find-go = 查看关系
+kin-find-none = 家族记录中，{ $a }与{ $b }之间没有关联。
+kin-path = 关系，一步一步
+kin-degree = { $n }亲等
+kin-all-title = { $name }的全部亲属
+kin-all-count = { $n } 人
+kin-common-list = 共同祖先：{ $names }
+kin-also-list = 另为 { $list }
+kin-rites-help = 教父母以及传统在非血缘之人之间缔结的其他纽带。家谱以独特的点线绘出。
+kin-rite-recorded = 记录写的是“{ $label }”。
+kin-hidden = 您无权查看的人
+kin-native = 传统中的原称
+kin-legend-rite = 教父母、仪式或习俗
+kin-tree-root = { $of }：{ $term }
+kin-editor-rite = 仪式或习俗
+kin-editor-rite-none = 无：普通关系
+kin-editor-rite-hint = 此人对另一人而言是什么。选择后会填入关系与称谓，记录会保留该仪式。
+kin-editor-rite-option = { $rite }：{ $word }
+kin-tradition-christian = 基督教
+kin-tradition-orthodox = 东正教
+kin-tradition-hispanic = 西班牙语世界与菲律宾
+kin-tradition-jewish = 犹太教
+kin-tradition-islamic = 伊斯兰教
+kin-tradition-south-asian = 南亚
+kin-tradition-east-asian = 东亚
+kin-tradition-african = 非洲
+kin-tradition-indigenous = 原住民与太平洋
+kin-tradition-civil = 民事与世俗
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] { $sex ->
+            [M] 教父
+            [F] 教母
+           *[other] 教父母
+        }
+    }
+kin-rite-godparent-name = 教父母
+kin-rite-godparent-note = 记录所载的教父或教母。
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] { $sex ->
+            [M] 教父
+            [F] 教母
+           *[other] 教父母
+        }
+    }
+kin-rite-baptism-name = 洗礼
+kin-rite-baptism-note = 洗礼时的教父母。
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] 领坚振者
+            [F] 领坚振者
+           *[other] 领坚振者
+        }
+       *[other] { $sex ->
+            [M] 坚振代父
+            [F] 坚振代母
+           *[other] 坚振代父母
+        }
+    }
+kin-rite-confirmation-name = 坚振
+kin-rite-confirmation-note = 坚振礼或傅油礼时的代父母。
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] 新郎
+            [F] 新娘
+           *[other] 新人
+        }
+       *[other] { $sex ->
+            [M] 婚礼代父
+            [F] 婚礼代母
+           *[other] 婚礼代父母
+        }
+    }
+kin-rite-wedding-sponsor-name = 婚礼代父母
+kin-rite-wedding-sponsor-note = 婚姻的担保人，如西语国家的婚礼教父、菲律宾的尼农、希腊的昆巴罗斯。
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] { $sex ->
+            [M] 教父
+            [F] 教母
+           *[other] 教父母
+        }
+    }
+kin-rite-kum-name = 库姆教亲
+kin-rite-kum-note = 东正教斯拉夫传统中的教父母或证婚人；库姆教亲连结两个家族。
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] { $sex ->
+            [M] 教父
+            [F] 教母
+           *[other] 教父母
+        }
+    }
+kin-rite-koumbaros-name = 昆巴罗斯
+kin-rite-koumbaros-note = 希腊东正教传统中的证婚人或教父母。
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] { $sex ->
+            [M] 教父
+            [F] 教母
+           *[other] 教父母
+        }
+    }
+kin-rite-padrino-name = 帕德里诺
+kin-rite-padrino-note = 帕德里诺或马德里娜：洗礼、初领圣体、十五岁成人礼时。
+kin-rite-compadre = 教亲
+kin-rite-compadre-name = 教亲关系
+kin-rite-compadre-note = 孩子的父母与其教父母之间的纽带。
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] { $sex ->
+            [M] 教父
+            [F] 教母
+           *[other] 教父母
+        }
+    }
+kin-rite-ninong-name = 尼农
+kin-rite-ninong-note = 尼农或尼南：菲律宾洗礼、坚振或婚礼中的教父母。
+kin-rite-sandek = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] 桑德克
+    }
+kin-rite-sandek-name = 割礼：桑德克
+kin-rite-sandek-note = 割礼时抱着婴儿。
+kin-rite-kvatter = { $role ->
+        [sponsored] { $sex ->
+            [M] 教子
+            [F] 教女
+           *[other] 教子女
+        }
+       *[other] 克瓦特
+    }
+kin-rite-kvatter-name = 割礼：克瓦特
+kin-rite-kvatter-note = 把婴儿抱进割礼。
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] 乳子
+            [F] 乳女
+           *[other] 乳儿
+        }
+       *[other] { $sex ->
+            [M] 乳父
+            [F] 乳母
+           *[other] 乳父母
+        }
+    }
+kin-rite-milk-parent-name = 乳亲
+kin-rite-milk-parent-note = 曾哺乳该儿童：在伊斯兰法中，乳亲关系如同出生一样构成家庭并禁止通婚。
+kin-rite-milk-sibling = { $sex ->
+        [M] 乳兄弟
+        [F] 乳姐妹
+       *[other] 乳亲兄弟姐妹
+    }
+kin-rite-milk-sibling-name = 乳亲兄弟姐妹
+kin-rite-milk-sibling-note = 由同一位女性哺乳。
+kin-rite-kafala = { $role ->
+        [sponsored] 被担保儿童（卡法拉）
+       *[other] 担保监护人（卡法拉）
+    }
+kin-rite-kafala-name = 卡法拉
+kin-rite-kafala-note = 依伊斯兰法收留并抚育儿童，但不建立收养的亲子关系。
+kin-rite-rakhi = { $sex ->
+        [M] 拉基兄弟
+        [F] 拉基姐妹
+       *[other] 拉基兄弟姐妹
+    }
+kin-rite-rakhi-name = 拉基
+kin-rite-rakhi-note = 在护身符节，姐妹在兄弟腕上系上拉基，兄弟发誓保护她。
+kin-rite-guru = { $role ->
+        [sponsored] 弟子
+       *[other] 上师
+    }
+kin-rite-guru-name = 上师
+kin-rite-guru-note = 精神导师与弟子。
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] 干儿子
+            [F] 干女儿
+           *[other] 干儿女
+        }
+       *[other] { $sex ->
+            [M] 干爹
+            [F] 干妈
+           *[other] 干亲
+        }
+    }
+kin-rite-gan-parent-name = 干亲
+kin-rite-gan-parent-note = 在中国及华人家庭中认的干亲，常为保佑孩子。
+kin-rite-sworn-sibling = { $sex ->
+        [M] 结拜兄弟
+        [F] 结拜姐妹
+       *[other] 结拜兄弟姐妹
+    }
+kin-rite-sworn-sibling-name = 结拜
+kin-rite-sworn-sibling-note = 以誓言结为兄弟姐妹（结拜）。
+kin-rite-name-giver = { $role ->
+        [sponsored] 被命名的孩子
+       *[other] 命名人
+    }
+kin-rite-name-giver-name = 命名
+kin-rite-name-giver-note = 为孩子取名（日本的名付け親）。
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] 新郎
+            [F] 新娘
+           *[other] 新人
+        }
+       *[other] 媒人
+    }
+kin-rite-nakodo-name = 仲人
+kin-rite-nakodo-note = 促成并见证了婚姻（日本的仲人）。
+kin-rite-namesake = 同名人
+kin-rite-namesake-name = 同名
+kin-rite-namesake-note = 同名之人：在中部与东部非洲是互赠礼物、彼此照应的纽带（恩多伊、索莫）。
+kin-rite-initiation = { $role ->
+        [sponsored] 受礼者
+       *[other] 成年礼引导人
+    }
+kin-rite-initiation-name = 成年礼
+kin-rite-initiation-note = 引导此人完成成年礼。
+kin-rite-blood-pact = { $sex ->
+        [M] 歃血兄弟
+        [F] 歃血姐妹
+       *[other] 歃血兄弟姐妹
+    }
+kin-rite-blood-pact-name = 歃血为盟
+kin-rite-blood-pact-note = 以血盟结为一体。
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] 哈奈儿子
+            [F] 哈奈女儿
+           *[other] 哈奈子女
+        }
+       *[other] { $sex ->
+            [M] 哈奈父亲
+            [F] 哈奈母亲
+           *[other] 哈奈父母
+        }
+    }
+kin-rite-hanai-name = 哈奈
+kin-rite-hanai-note = 依夏威夷习俗被视如己出地抚养，未经法律收养。
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] 洪卡儿子
+            [F] 洪卡女儿
+           *[other] 洪卡子女
+        }
+       *[other] { $sex ->
+            [M] 洪卡父亲
+            [F] 洪卡母亲
+           *[other] 洪卡父母
+        }
+    }
+kin-rite-hunka-name = 洪卡
+kin-rite-hunka-note = 在拉科塔人的洪卡仪式中被认作亲人。
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] 民事教子
+            [F] 民事教女
+           *[other] 民事教子女
+        }
+       *[other] { $sex ->
+            [M] 民事教父
+            [F] 民事教母
+           *[other] 民事教父母
+        }
+    }
+kin-rite-civil-sponsor-name = 民事教父母
+kin-rite-civil-sponsor-note = 民事命名仪式中的教父母。
+kin-rite-guardian = { $role ->
+        [sponsored] 被监护人
+       *[other] 监护人
+    }
+kin-rite-guardian-name = 监护
+kin-rite-guardian-note = 记录所载的监护人。

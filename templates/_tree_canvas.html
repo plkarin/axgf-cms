@@ -118,6 +118,8 @@
             {%- else %}<span class="tc-initials">{{ c.initials }}</span>{% endif -%}
           </span>
           <strong class="tc-full"><bdi>{{ c.name }}</bdi></strong>
+          {#- What this person is to the one in the middle (docs/adr/0020). -#}
+          {%- if c.kin and focus and focus.root_of %}<span class="tc-kin">{{ t("kin-tree-root", term=c.kin, of=focus.root_of) }}{% if c.kin_note %} <span class="tc-kin-note">· {{ c.kin_note }}</span>{% endif %}</span>{% endif %}
           <span class="tc-dates" dir="auto">
             {%- if c.birth_text or c.birth %}<span class="tc-born"><span class="tc-sym" aria-hidden="true">✦</span><span class="sr-only">{{ t("record-born") }}</span> {{ c.birth_text if c.birth_text else c.birth }}</span>{% endif %}
             {%- if c.presumed_deceased %}<span class="tc-died"><span class="tc-sym" aria-hidden="true">†</span> <abbr class="presumed"
@@ -128,6 +130,11 @@
             {%- if c.conf_band %}<span class="tc-conf"><i class="conf-dot" data-band="{{ c.conf_band }}"
                 style="--conf-pct:{{ c.conf_pct }}" aria-hidden="true"></i> {{ c.conf_label }}</span>{% endif -%}
           </span>
+          {#- Their godparents and the other ties of rite: what each is to them,
+              in the dotted frame those ties are drawn in. -#}
+          {%- if c.rites %}<span class="tc-rites">
+            {%- for r in c.rites %}<span class="tc-rite"><span class="tc-rite-term">{{ r.term }}</span> <bdi>{{ r.name }}</bdi></span>{% endfor -%}
+          </span>{% endif %}
           <span class="tc-actions">
             <a class="tc-centre" href="/tree?root={{ c.id }}{% if not show_all %}&amp;depth={{ depth }}{% endif %}&amp;sel={{ c.id }}">{{ t("tree-card-centre") }}</a>
             <a class="tc-open" href="/person/{{ c.id }}">{{ t("record-open-full-page") }}</a>

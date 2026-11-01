@@ -4433,3 +4433,743 @@ merge-report-links = קישורים שהוסרו
 merge-report-tidied = רשומות שסודרו
 merge-absorbed-record = הרשומה שאוחדה, כפי שהייתה
 merge-open-kept = פתיחת הרשומה שנשמרה
+
+## קרבה (docs/adr/0020)
+
+kin-tab = קרבה
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] אב מאמץ
+            [F] אם מאמצת
+           *[other] הורה מאמץ
+        }
+       *[no] { $sex ->
+            [M] אב
+            [F] אם
+           *[other] הורה
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] סבא
+            [F] סבתא
+           *[other] סבא או סבתא
+        }
+        [3] { $sex ->
+            [M] סבא רבא
+            [F] סבתא רבתא
+           *[other] סבא רבא או סבתא רבתא
+        }
+        [4] { $sex ->
+            [M] אבי סבא רבא
+            [F] אם סבתא רבתא
+           *[other] הורה של סבא רבא
+        }
+       *[other] אב קדמון בדור ה־{ $n }
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] בן מאומץ
+            [F] בת מאומצת
+           *[other] ילד מאומץ
+        }
+       *[no] { $sex ->
+            [M] בן
+            [F] בת
+           *[other] ילד
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $sex ->
+            [M] נכד
+            [F] נכדה
+           *[other] נכד או נכדה
+        }
+        [3] { $sex ->
+            [M] נין
+            [F] נינה
+           *[other] נין או נינה
+        }
+        [4] { $sex ->
+            [M] בן נין
+            [F] בת נין
+           *[other] ילד של נין
+        }
+       *[other] צאצא בדור ה־{ $n }
+    }
+kin-sibling = { $half ->
+        [yes] { $sex ->
+            [M] אח למחצה
+            [F] אחות למחצה
+           *[other] אח או אחות למחצה
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] אח מאומץ
+                [F] אחות מאומצת
+               *[other] אח או אחות מאומצים
+            }
+           *[no] { $sex ->
+                [M] אח
+                [F] אחות
+               *[other] אח או אחות
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $sex ->
+            [M] דוד
+            [F] דודה
+           *[other] דוד או דודה
+        }
+        [2] { $sex ->
+            [M] אח
+            [F] אחות
+           *[other] אח או אחות
+        } של { $turna ->
+            [M] סבא
+            [F] סבתא
+           *[other] סבא או סבתא
+        }
+        [3] { $sex ->
+            [M] אח
+            [F] אחות
+           *[other] אח או אחות
+        } של { $turna ->
+            [M] סבא רבא
+            [F] סבתא רבתא
+           *[other] סבא רבא או סבתא רבתא
+        }
+       *[other] { $sex ->
+            [M] אח של אב קדמון
+            [F] אחות של אב קדמון
+           *[other] אח או אחות של אב קדמון
+        }
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] אחיין
+            [F] אחיינית
+           *[other] אחיין או אחיינית
+        }
+        [2] { $sex ->
+            [M] נכד
+            [F] נכדה
+           *[other] נכד
+        } של { $via ->
+            [M] האח
+            [F] האחות
+           *[other] אח או אחות
+        }
+        [3] { $sex ->
+            [M] נין
+            [F] נינה
+           *[other] נין
+        } של { $via ->
+            [M] האח
+            [F] האחות
+           *[other] אח או אחות
+        }
+       *[other] צאצא של אח או אחות
+    }
+kin-cousin = { $sex ->
+        [F] { $k ->
+            [1] בת דודה
+            [2] בת דודה שנייה
+            [3] בת דודה שלישית
+           *[other] בת דודה מדרגה { $k }
+        }
+       *[other] { $k ->
+            [1] בן דוד
+            [2] בן דוד שני
+            [3] בן דוד שלישי
+           *[other] בן דוד מדרגה { $k }
+        }
+    }
+kin-cousin-removed = { $older ->
+        [yes] { $cousin } של { $forebear }
+       *[no] { $descendant } של { $ofcousin }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] אבא
+            [F] אמא
+           *[other] אחד ההורים
+        }
+        [2] { $sex ->
+            [M] סבא
+            [F] סבתא
+           *[other] סבא או סבתא
+        }
+        [3] { $sex ->
+            [M] סבא רבא
+            [F] סבתא רבתא
+           *[other] סבא רבא או סבתא רבתא
+        }
+       *[other] אב קדמון
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] בן
+            [F] בת
+           *[other] ילד
+        }
+        [2] { $sex ->
+            [M] נכד
+            [F] נכדה
+           *[other] נכד
+        }
+        [3] { $sex ->
+            [M] נין
+            [F] נינה
+           *[other] נין
+        }
+       *[other] צאצא
+    }
+kin-of-cousin = { $sex ->
+        [F] { $k ->
+            [1] בת דודה
+            [2] בת דודה שנייה
+            [3] בת דודה שלישית
+           *[other] בת דודה מדרגה { $k }
+        }
+       *[other] { $k ->
+            [1] בן דוד
+            [2] בן דוד שני
+            [3] בן דוד שלישי
+           *[other] בן דוד מדרגה { $k }
+        }
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] בעל לשעבר
+                [F] אישה לשעבר
+               *[other] בן זוג לשעבר
+            }
+           *[no] { $sex ->
+                [M] בן זוג לשעבר
+                [F] בת זוג לשעבר
+               *[other] בן זוג לשעבר
+            }
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] בעל
+                [F] אישה
+               *[other] בן זוג
+            }
+           *[no] { $sex ->
+                [M] בן זוג
+                [F] בת זוג
+               *[other] בן זוג
+            }
+        }
+    }
+kin-parent-in-law = { $via ->
+        [F] { $sex ->
+            [M] חותן
+            [F] חותנת
+           *[other] הורה של האישה
+        }
+        [M] { $sex ->
+            [M] חם
+            [F] חמות
+           *[other] הורה של הבעל
+        }
+       *[other] { $sex ->
+            [M] חותן או חם
+            [F] חותנת או חמות
+           *[other] הורה של בן הזוג
+        }
+    }
+kin-child-in-law = { $sex ->
+        [M] חתן
+        [F] כלה
+       *[other] חתן או כלה
+    }
+kin-sibling-in-law = { $sex ->
+        [M] גיס
+        [F] גיסה
+       *[other] גיס או גיסה
+    }
+kin-step-parent = { $sex ->
+        [M] אב חורג
+        [F] אם חורגת
+       *[other] הורה חורג
+    }
+kin-step-child = { $sex ->
+        [M] בן חורג
+        [F] בת חורגת
+       *[other] ילד חורג
+    }
+kin-note-step-parent = { $sex ->
+        [F] בת הזוג
+       *[other] בן הזוג
+    } { $next ->
+        [M] של האב
+        [F] של האם
+       *[other] של אחד ההורים
+    }
+kin-note-step-child = ילד { $via ->
+        [M] של הבעל
+        [F] של האישה
+       *[other] של בן הזוג
+    }
+kin-foster-parent = { $sex ->
+        [M] אב אומנה
+        [F] אם אומנה
+       *[other] הורה אומנה
+    }
+kin-foster-child = { $sex ->
+        [M] ילד אומנה
+        [F] ילדת אומנה
+       *[other] ילד אומנה
+    }
+kin-guardian = { $sex ->
+        [F] אפוטרופסית
+       *[other] אפוטרופוס
+    }
+kin-ward = { $sex ->
+        [F] חסויה
+       *[other] חסוי
+    }
+kin-relative-of-partner = { $relative } של { $via ->
+        [M] הבעל
+        [F] האישה
+       *[other] בן הזוג
+    }
+kin-partner-of-relative = { $sex ->
+        [M] בעל
+        [F] אישה
+       *[other] בן זוג
+    } של { $relative }
+kin-affine = { $sex ->
+        [F] קרובת משפחה מנישואים
+       *[other] קרוב משפחה מנישואים
+    }
+kin-related = { $sex ->
+        [F] קשורה דרך רשומות המשפחה
+       *[other] קשור דרך רשומות המשפחה
+    }
+kin-note-adoptive = באימוץ
+kin-of = של { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] אב מאמץ
+            [F] אם מאמצת
+           *[other] הורה מאמץ
+        }
+        [foster] { $sex ->
+            [M] אב אומנה
+            [F] אם אומנה
+           *[other] הורה אומנה
+        }
+        [guardianship] { $sex ->
+            [F] אפוטרופסית
+           *[other] אפוטרופוס
+        }
+        [step] { $sex ->
+            [M] אב חורג
+            [F] אם חורגת
+           *[other] הורה חורג
+        }
+       *[other] { $sex ->
+            [M] אב
+            [F] אם
+           *[other] הורה
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] בן מאומץ
+            [F] בת מאומצת
+           *[other] ילד מאומץ
+        }
+        [foster] { $sex ->
+            [M] ילד אומנה
+            [F] ילדת אומנה
+           *[other] ילד אומנה
+        }
+        [guardianship] { $sex ->
+            [F] חסויה
+           *[other] חסוי
+        }
+        [step] { $sex ->
+            [M] בן חורג
+            [F] בת חורגת
+           *[other] ילד חורג
+        }
+       *[other] { $sex ->
+            [M] בן
+            [F] בת
+           *[other] ילד
+        }
+    }
+kin-group-partners = בני זוג
+kin-group-ancestors = אבות קדמונים
+kin-group-descendants = צאצאים
+kin-group-siblings = אחים ואחיות
+kin-group-uncles = דודים ודודות
+kin-group-nephews = אחיינים ואחייניות
+kin-group-cousins = בני דודים
+kin-group-in-laws = קרובים מנישואים
+kin-group-step = משפחה חורגת
+kin-group-care = אומנה ואפוטרופסות
+kin-group-rites = טקס ומנהג
+kin-group-others = קשרים אחרים
+kin-find-title = מה הקרבה?
+kin-find-lede = בחרו אדם מהמשפחה: הקשר שלו אל { $name } יוסבר צעד אחר צעד.
+kin-find-label = אדם
+kin-find-choose = בחירת אדם…
+kin-find-go = הצגת הקשר
+kin-find-none = רשומות המשפחה אינן מקשרות בין { $a } לבין { $b }.
+kin-path = הקשר, צעד אחר צעד
+kin-degree = קרבה מדרגה { $n }
+kin-all-title = כל הקרובים של { $name }
+kin-all-count = { $n ->
+        [one] אדם אחד
+        [two] שני אנשים
+        [many] { $n } אנשים
+       *[other] { $n } אנשים
+    }
+kin-common-list = אבות קדמונים משותפים: { $names }
+kin-also-list = וגם { $list }
+kin-rites-help = סנדקים, שושבינים ושאר קשרים שמסורת יוצרת בין אנשים שלא נולדו זה מזה. העץ מצייר אותם בקו מנוקד משלהם.
+kin-rite-recorded = ברשומה כתוב: „{ $label }”.
+kin-hidden = אדם שאינך רשאי לראות
+kin-native = במילות המסורת
+kin-legend-rite = סנדק, טקס או מנהג
+kin-tree-root = { $term } { $of }
+kin-editor-rite = טקס או מנהג
+kin-editor-rite-none = אין: קשר פשוט
+kin-editor-rite-hint = מה האדם הזה לאחר. הבחירה ממלאת את הקשר ואת המילים, והרשומה שומרת את הטקס.
+kin-editor-rite-option = { $rite }: { $word }
+kin-tradition-christian = נוצרית
+kin-tradition-orthodox = נוצרית אורתודוקסית
+kin-tradition-hispanic = היספנית ופיליפינית
+kin-tradition-jewish = יהודית
+kin-tradition-islamic = מוסלמית
+kin-tradition-south-asian = דרום אסייתית
+kin-tradition-east-asian = מזרח אסייתית
+kin-tradition-african = אפריקאית
+kin-tradition-indigenous = עמים ילידים ואוקיינוס השקט
+kin-tradition-civil = אזרחית וחילונית
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-godparent-name = סנדקות
+kin-rite-godparent-note = סנדק או סנדקית, כפי שכתוב ברשומה.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-baptism-name = טבילה
+kin-rite-baptism-note = סנדק בטבילה.
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] מאושר
+            [F] מאושרת
+           *[other] מאושר
+        }
+       *[other] { $sex ->
+            [M] סנדק אשרור
+            [F] סנדקית אשרור
+           *[other] סנדק אשרור
+        }
+    }
+kin-rite-confirmation-name = אשרור
+kin-rite-confirmation-note = סנדק בטקס אשרור או משיחה.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] חתן
+            [F] כלה
+           *[other] חתן או כלה
+        }
+       *[other] { $sex ->
+            [M] שושבין
+            [F] שושבינה
+           *[other] שושבין
+        }
+    }
+kin-rite-wedding-sponsor-name = שושבינות
+kin-rite-wedding-sponsor-note = שושבין של נישואים: padrino de boda, ninong, koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-kum-name = קומסטבו
+kin-rite-kum-note = סנדק או עד נישואים במסורת האורתודוקסית הסלאבית; הקומסטבו מקשר בין שתי משפחות.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-koumbaros-name = קומבארוס
+kin-rite-koumbaros-note = שושבין או סנדק במסורת היוונית האורתודוקסית.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-padrino-name = פדרינו
+kin-rite-padrino-note = פדרינו או מדרינה: בטבילה, בקומוניה הראשונה, בקינסיאניירה.
+kin-rite-compadre = { $sex ->
+        [M] שותף לסנדקות
+        [F] שותפה לסנדקות
+       *[other] שותף לסנדקות
+    }
+kin-rite-compadre-name = קומפדרסגו
+kin-rite-compadre-note = הקשר בין הורי הילד לבין הסנדקים שלו.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-ninong-name = נינונג
+kin-rite-ninong-note = נינונג או נינאנג: סנדק בטבילה, באשרור או בנישואים בפיליפינים.
+kin-rite-sandek = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] סנדק
+    }
+kin-rite-sandek-name = ברית מילה: סנדק
+kin-rite-sandek-note = מחזיק את התינוק בעת ברית המילה.
+kin-rite-kvatter = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [F] קוואטערין
+           *[other] קוואטער
+        }
+    }
+kin-rite-kvatter-name = ברית מילה: קוואטער
+kin-rite-kvatter-note = מכניס את התינוק לברית המילה.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] בן חלב
+            [F] בת חלב
+           *[other] ילד חלב
+        }
+       *[other] { $sex ->
+            [M] אב חלב
+            [F] אם חלב
+           *[other] הורה חלב
+        }
+    }
+kin-rite-milk-parent-name = קרבת חלב
+kin-rite-milk-parent-note = הניקה את הילד: בהלכה המוסלמית קרבת החלב יוצרת משפחה ואוסרת נישואים כמו הלידה.
+kin-rite-milk-sibling = { $sex ->
+        [M] אח חלב
+        [F] אחות חלב
+       *[other] אח או אחות חלב
+    }
+kin-rite-milk-sibling-name = אחים בחלב
+kin-rite-milk-sibling-note = הונקו על ידי אותה אישה.
+kin-rite-kafala = { $role ->
+        [sponsored] { $sex ->
+            [F] חסויה (כפאלה)
+           *[other] חסוי (כפאלה)
+        }
+       *[other] { $sex ->
+            [F] אפוטרופסית (כפאלה)
+           *[other] אפוטרופוס (כפאלה)
+        }
+    }
+kin-rite-kafala-name = כפאלה
+kin-rite-kafala-note = מקבל ומגדל ילד בלי הייחוס של אימוץ, לפי ההלכה המוסלמית.
+kin-rite-rakhi = { $sex ->
+        [M] אח ראקהי
+        [F] אחות ראקהי
+       *[other] אח או אחות ראקהי
+    }
+kin-rite-rakhi-name = ראקהי
+kin-rite-rakhi-note = בראקשה בנדהן אחות קושרת ראקהי על פרק ידו של אח, והוא נשבע להגן עליה.
+kin-rite-guru = { $role ->
+        [sponsored] { $sex ->
+            [M] תלמיד
+            [F] תלמידה
+           *[other] תלמיד
+        }
+       *[other] גורו
+    }
+kin-rite-guru-name = גורו
+kin-rite-guru-note = מורה רוחני ותלמיד.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הסנדקות
+            [F] בת הסנדקות
+           *[other] ילד הסנדקות
+        }
+       *[other] { $sex ->
+            [M] סנדק
+            [F] סנדקית
+           *[other] סנדק או סנדקית
+        }
+    }
+kin-rite-gan-parent-name = גאן צ׳ין
+kin-rite-gan-parent-note = סנדקים הנבחרים בסין ובמשפחות סיניות, לעיתים קרובות כדי להגן על הילד.
+kin-rite-sworn-sibling = { $sex ->
+        [M] אח בשבועה
+        [F] אחות בשבועה
+       *[other] אח או אחות בשבועה
+    }
+kin-rite-sworn-sibling-name = אחווה בשבועה
+kin-rite-sworn-sibling-note = אחים או אחיות בשבועה (ג׳ייבאי).
+kin-rite-name-giver = { $role ->
+        [sponsored] { $sex ->
+            [M] הילד שנקרא בשם
+            [F] הילדה שנקראה בשם
+           *[other] הילד שנקרא בשם
+        }
+       *[other] { $sex ->
+            [F] נותנת השם
+           *[other] נותן השם
+        }
+    }
+kin-rite-name-giver-name = מתן שם
+kin-rite-name-giver-note = נתן לילד את שמו (נאזוקה-אויה ביפן).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] חתן
+            [F] כלה
+           *[other] חתן או כלה
+        }
+       *[other] { $sex ->
+            [F] שדכנית
+           *[other] שדכן
+        }
+    }
+kin-rite-nakodo-name = נאקודו
+kin-rite-nakodo-note = סידר את הנישואים והעיד עליהם (נאקודו ביפן).
+kin-rite-namesake = { $sex ->
+        [F] בעלת אותו שם
+       *[other] בעל אותו שם
+    }
+kin-rite-namesake-name = שם זהה
+kin-rite-namesake-note = נושא את אותו שם: במרכז אפריקה ובמזרחה, קשר של מתנות ודאגה (ndoyi, somo).
+kin-rite-initiation = { $role ->
+        [sponsored] { $sex ->
+            [F] חניכה
+           *[other] חניך
+        }
+       *[other] { $sex ->
+            [F] מדריכת החניכה
+           *[other] מדריך החניכה
+        }
+    }
+kin-rite-initiation-name = חניכה
+kin-rite-initiation-note = הדריך את האדם בטקס חניכה.
+kin-rite-blood-pact = { $sex ->
+        [M] אח בדם
+        [F] אחות בדם
+       *[other] אח או אחות בדם
+    }
+kin-rite-blood-pact-name = ברית דם
+kin-rite-blood-pact-note = קשורים בברית דם.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] בן האנאי
+            [F] בת האנאי
+           *[other] ילד האנאי
+        }
+       *[other] { $sex ->
+            [M] אב האנאי
+            [F] אם האנאי
+           *[other] הורה האנאי
+        }
+    }
+kin-rite-hanai-name = האנאי
+kin-rite-hanai-note = גודל כילד שלהם לפי המנהג ההוואי, בלי אימוץ חוקי.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] בן הונקה
+            [F] בת הונקה
+           *[other] ילד הונקה
+        }
+       *[other] { $sex ->
+            [M] אב הונקה
+            [F] אם הונקה
+           *[other] הורה הונקה
+        }
+    }
+kin-rite-hunka-name = הונקה
+kin-rite-hunka-note = נעשה קרוב בטקס ההונקה של בני הלקוטה.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] בן סנדקות אזרחית
+            [F] בת סנדקות אזרחית
+           *[other] ילד סנדקות אזרחית
+        }
+       *[other] { $sex ->
+            [M] סנדק אזרחי
+            [F] סנדקית אזרחית
+           *[other] סנדק אזרחי
+        }
+    }
+kin-rite-civil-sponsor-name = סנדקות אזרחית
+kin-rite-civil-sponsor-note = סנדק בטקס אזרחי למתן שם.
+kin-rite-guardian = { $role ->
+        [sponsored] { $sex ->
+            [F] חסויה
+           *[other] חסוי
+        }
+       *[other] { $sex ->
+            [F] אפוטרופסית
+           *[other] אפוטרופוס
+        }
+    }
+kin-rite-guardian-name = אפוטרופסות
+kin-rite-guardian-note = אפוטרופוס, כפי שכתוב ברשומה.

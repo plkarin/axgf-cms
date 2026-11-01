@@ -1678,6 +1678,164 @@ abbr.presumed { text-decoration: none; }
 .kin-key .wire { fill: none; }
 .kin-key.kin-knot { inline-size: 16px; block-size: 16px; }
 
+/* A tie of rite or custom (docs/adr/0020): a godmother, a milk brother, a
+   namesake, from the same family or another. It is not descent, so it is
+   drawn as no family line is: a curve, in pairs of dots, in a hue of its own
+   (--kin-rite) — never the theme's accent, never a son's blue or a
+   daughter's red. */
+:is(.tree-canvas, .kin-key) .wire.wire-rite {
+  fill: none;
+  stroke: var(--kin-rite);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 3.4 0.1 8;
+}
+.tree-canvas[data-chart] .wire.wire-rite.lit { stroke-width: 3.4; }
+
+/* The open card says what the person is to the one in the middle, and names
+   their ties of rite in the same dotted frame the line has. */
+.tc-kin {
+  display: block;
+  color: var(--accent);
+  font-weight: var(--weight-semi);
+  font-size: var(--type-small);
+}
+.tc-kin-note { color: var(--text-secondary); font-weight: var(--weight-normal); }
+.tc-rites { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
+.tc-rite {
+  padding: 0.1rem 0.5rem;
+  border: 2px dotted var(--kin-rite);
+  border-radius: 999px;
+  font-size: var(--type-label);
+}
+.tc-rite-term { color: var(--text-secondary); }
+
+/* The tree's side panel: what the selected person is to the one in the
+   middle, and the way to see the link step by step. */
+.panel-kin { margin: 0.25rem 0 0; font-size: var(--type-small); }
+.panel-kin-term { color: var(--accent); font-weight: var(--weight-semi); }
+.panel-kin-path { margin-inline-start: 0.4rem; white-space: nowrap; }
+
+/* The record's ties of rite and custom, apart from the family and framed as
+   the tree draws them: dotted, in their own hue. */
+.rite-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rite-card {
+  padding: 0.75rem 0.9rem;
+  border: 2px dotted var(--kin-rite);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--kin-rite) 6%, var(--surface-raised));
+}
+.rite-card p { margin: 0.15rem 0; }
+.rite-term { font-size: var(--type-sub); font-weight: var(--weight-semi); }
+.rite-term::first-letter { text-transform: uppercase; }
+.kin-native {
+  display: inline-block;
+  padding: 0 0.45rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: 999px;
+  font-size: var(--type-label);
+  font-weight: var(--weight-normal);
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* The Kinship tab: how two people are related, step by step, and every
+   relative by group. Large, plain words first — the relationship is the
+   answer — and the way to it beneath. */
+.kin { display: grid; gap: 1.5rem; }
+.kin-title { margin: 0 0 0.35rem; font-size: var(--type-sub); }
+.kin-form { display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem; margin: 0.6rem 0 0; }
+.kin-field { display: grid; gap: 0.25rem; flex: 1 1 18rem; min-inline-size: 0; }
+.kin-field-label { font-size: var(--type-label); color: var(--text-secondary); letter-spacing: 0.04em; }
+.kin-field select { inline-size: 100%; }
+.kin-result { display: grid; gap: 0.9rem; margin-block-start: 1rem; scroll-margin-block-start: 5rem; }
+.kin-way {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-hairline);
+  border-inline-start: 4px solid var(--accent);
+  border-radius: 14px;
+  background: var(--surface-raised);
+}
+.kin-way.is-rite { border: 2px dotted var(--kin-rite); }
+.kin-way p { margin: 0.2rem 0; }
+.kin-who-line { font-size: var(--type-body); }
+.kin-term {
+  font-size: var(--type-major);
+  font-weight: var(--weight-semi);
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.kin-term::first-letter { text-transform: uppercase; }
+.kin-of { color: var(--text-secondary); }
+/* The way: each person a chip, the word for what they are to the one before
+   above the arrow that leads to them; the shared ancestors marked. */
+.kin-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.4rem 0.2rem;
+  margin: 0.75rem 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+.kin-step { display: inline-flex; align-items: flex-end; gap: 0.2rem; }
+.kin-hop {
+  display: inline-grid;
+  justify-items: center;
+  padding: 0 0.15rem;
+  font-size: var(--type-label);
+  color: var(--text-secondary);
+}
+.kin-hop::after { content: "→"; color: var(--text-tertiary); font-size: var(--type-small); }
+[dir="rtl"] .kin-hop::after { content: "←"; }
+.kin-person {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-page);
+  font-size: var(--type-small);
+  white-space: nowrap;
+}
+.kin-step.is-start .kin-person,
+.kin-step.is-end .kin-person { border-color: var(--accent); font-weight: var(--weight-semi); }
+.kin-step.is-common .kin-person {
+  border-style: double;
+  border-width: 3px;
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border-strong));
+}
+.kin-person.is-hidden { font-style: italic; color: var(--text-tertiary); }
+.kin-group { border-block-start: 1px solid var(--border-hairline); padding-block: 0.4rem; }
+.kin-group > summary { cursor: pointer; padding-block: 0.3rem; font-weight: var(--weight-semi); }
+.kin-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.35rem 1.25rem;
+  margin: 0.3rem 0 0.4rem;
+  padding: 0;
+  list-style: none;
+}
+.kin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.1rem 0.5rem;
+  padding: 0.35rem 0;
+  border-block-end: 1px dashed var(--border-hairline);
+}
+.kin-name { font-weight: var(--weight-semi); }
+.kin-years { font-size: var(--type-label); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.kin-word { flex: 1 1 100%; color: var(--text-primary); font-size: var(--type-small); }
+.kin-group-rites .kin-row { border-block-end-style: dotted; border-color: var(--kin-rite); }
+.kin-also { flex: 1 1 100%; font-size: var(--type-label); color: var(--text-secondary); }
+.kin-show { font-size: var(--type-label); color: var(--text-secondary); }
+
 /* A card, folded (2026-10-28, "more compact still"): one line, the first
    given name and the family name's initial in the strongest ink on a
    plain ground, a strip of the person's colour at its start — blue, red or

@@ -109,6 +109,9 @@
   --kin-boy: #5e9bff;
   --kin-girl: #ff6b81;
   --kin-other: #a3aab0;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #3fd4b0;
 
   /* Residual edge crossings: the Okabe–Ito set, chosen to stay apart under
      each form of colour blindness, and paired with dash patterns in app.css
@@ -278,6 +281,9 @@
   --kin-boy: #5e9bff;
   --kin-girl: #ff6b81;
   --kin-other: #a3aab0;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #3fd4b0;
 
   --hue-1: #56b4e9;
   --hue-2: #e69f00;
@@ -355,6 +361,9 @@
   --kin-boy: #5e9bff;
   --kin-girl: #ff6b81;
   --kin-other: #a3aab0;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #3fd4b0;
 
   --hue-1: #4cc9f0;
   --hue-2: #ff9f1c;
@@ -458,6 +467,9 @@
   --kin-boy: #5e9bff;
   --kin-girl: #ff6b81;
   --kin-other: #a3aab0;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #3fd4b0;
 
   --hue-1: #67e8f9;
   --hue-2: #f472b6;
@@ -555,6 +567,9 @@
   --kin-boy: #5e9bff;
   --kin-girl: #ff6b81;
   --kin-other: #a3aab0;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #3fd4b0;
 
   --hue-1: #6fc4ec;
   --hue-2: #f0a35e;
@@ -657,6 +672,9 @@
   --kin-boy: #1f5fc4;
   --kin-girl: #c8304d;
   --kin-other: #5f6b78;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #0c7f6e;
 
   --hue-1: #2563eb;
   --hue-2: #c2410c;
@@ -776,6 +794,9 @@
   --kin-boy: #5e9bff;
   --kin-girl: #ff6b81;
   --kin-other: #a3aab0;
+  /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
+     A hue no family line has, never the accent. */
+  --kin-rite: #3fd4b0;
 
   --hue-1: #7fb8d8;
   --hue-2: #e3a43c;

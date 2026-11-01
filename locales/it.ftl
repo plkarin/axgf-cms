@@ -4342,3 +4342,706 @@ merge-report-links = Collegamenti rimossi
 merge-report-tidied = Voci riordinate
 merge-absorbed-record = La scheda unita, com’era
 merge-open-kept = Apri la scheda conservata
+
+## Parentela (docs/adr/0020)
+
+kin-tab = Parentela
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] padre adottivo
+            [F] madre adottiva
+           *[other] genitore adottivo
+        }
+       *[no] { $sex ->
+            [M] padre
+            [F] madre
+           *[other] genitore
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] nonno
+            [F] nonna
+           *[other] nonno o nonna
+        }
+        [3] { $sex ->
+            [M] bisnonno
+            [F] bisnonna
+           *[other] bisnonno o bisnonna
+        }
+        [4] { $sex ->
+            [M] trisnonno
+            [F] trisnonna
+           *[other] trisnonno o trisnonna
+        }
+       *[other] { $sex ->
+            [F] antenata alla { $n }ª generazione
+           *[other] antenato alla { $n }ª generazione
+        }
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] figlio adottivo
+            [F] figlia adottiva
+           *[other] figlio adottivo
+        }
+       *[no] { $sex ->
+            [M] figlio
+            [F] figlia
+           *[other] figlio o figlia
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $sex ->
+            [M] nipote (figlio di un figlio)
+            [F] nipote (figlia di un figlio)
+           *[other] nipote
+        }
+        [3] pronipote
+        [4] trisnipote
+       *[other] discendente alla { $n }ª generazione
+    }
+kin-sibling = { $half ->
+        [yes] { $sex ->
+            [M] fratellastro
+            [F] sorellastra
+           *[other] fratellastro o sorellastra
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] fratello adottivo
+                [F] sorella adottiva
+               *[other] fratello o sorella adottivi
+            }
+           *[no] { $sex ->
+                [M] fratello
+                [F] sorella
+               *[other] fratello o sorella
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $sex ->
+            [M] zio
+            [F] zia
+           *[other] zio o zia
+        }
+        [2] { $sex ->
+            [M] prozio
+            [F] prozia
+           *[other] prozio o prozia
+        }
+        [3] { $sex ->
+            [M] fratello di un bisnonno
+            [F] sorella di un bisnonno
+           *[other] fratello o sorella di un bisnonno
+        }
+       *[other] { $sex ->
+            [M] fratello di un antenato
+            [F] sorella di un antenato
+           *[other] fratello o sorella di un antenato
+        }
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] figlio
+            [F] figlia
+           *[other] figlio o figlia
+        } { $via ->
+            [M] del fratello
+            [F] della sorella
+           *[other] di un fratello o di una sorella
+        }
+        [2] { $sex ->
+            [M] nipote
+            [F] nipote
+           *[other] nipote
+        } { $via ->
+            [M] del fratello
+            [F] della sorella
+           *[other] di un fratello o di una sorella
+        }
+       *[other] discendente di un fratello o di una sorella
+    }
+kin-cousin = { $sex ->
+        [F] { $k ->
+            [1] cugina di primo grado
+            [2] cugina di secondo grado
+            [3] cugina di terzo grado
+           *[other] cugina di { $k }° grado
+        }
+       *[other] { $k ->
+            [1] cugino di primo grado
+            [2] cugino di secondo grado
+            [3] cugino di terzo grado
+           *[other] cugino di { $k }° grado
+        }
+    }
+kin-cousin-removed = { $older ->
+        [yes] { $cousin } { $forebear }
+       *[no] { $descendant } { $ofcousin }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] del padre
+            [F] della madre
+           *[other] di un genitore
+        }
+        [2] { $sex ->
+            [M] del nonno
+            [F] della nonna
+           *[other] di un nonno
+        }
+        [3] { $sex ->
+            [M] del bisnonno
+            [F] della bisnonna
+           *[other] di un bisnonno
+        }
+       *[other] di un antenato
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] figlio
+            [F] figlia
+           *[other] figlio
+        }
+        [2] nipote
+        [3] pronipote
+       *[other] discendente
+    }
+kin-of-cousin = { $sex ->
+        [F] di una { $k ->
+            [1] cugina di primo grado
+            [2] cugina di secondo grado
+            [3] cugina di terzo grado
+           *[other] cugina di { $k }° grado
+        }
+       *[other] di un { $k ->
+            [1] cugino di primo grado
+            [2] cugino di secondo grado
+            [3] cugino di terzo grado
+           *[other] cugino di { $k }° grado
+        }
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] ex marito
+                [F] ex moglie
+               *[other] ex coniuge
+            }
+           *[no] { $sex ->
+                [M] ex compagno
+                [F] ex compagna
+               *[other] ex partner
+            }
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] marito
+                [F] moglie
+               *[other] coniuge
+            }
+           *[no] { $sex ->
+                [M] compagno
+                [F] compagna
+               *[other] partner
+            }
+        }
+    }
+kin-parent-in-law = { $sex ->
+        [M] suocero
+        [F] suocera
+       *[other] suocero o suocera
+    }
+kin-child-in-law = { $sex ->
+        [M] genero
+        [F] nuora
+       *[other] genero o nuora
+    }
+kin-sibling-in-law = { $sex ->
+        [M] cognato
+        [F] cognata
+       *[other] cognato o cognata
+    }
+kin-step-parent = { $sex ->
+        [M] patrigno
+        [F] matrigna
+       *[other] patrigno o matrigna
+    }
+kin-step-child = { $sex ->
+        [M] figliastro
+        [F] figliastra
+       *[other] figliastro o figliastra
+    }
+kin-note-step-parent = { $sex ->
+        [F] compagna
+       *[other] compagno
+    } { $next ->
+        [M] del padre
+        [F] della madre
+       *[other] di un genitore
+    }
+kin-note-step-child = figlio { $via ->
+        [M] del marito
+        [F] della moglie
+       *[other] del coniuge
+    }
+kin-foster-parent = { $sex ->
+        [M] padre affidatario
+        [F] madre affidataria
+       *[other] genitore affidatario
+    }
+kin-foster-child = { $sex ->
+        [M] figlio in affido
+        [F] figlia in affido
+       *[other] minore in affido
+    }
+kin-guardian = { $sex ->
+        [F] tutrice
+       *[other] tutore
+    }
+kin-ward = { $sex ->
+        [F] pupilla
+       *[other] pupillo
+    }
+kin-relative-of-partner = { $relative } { $via ->
+        [M] del marito
+        [F] della moglie
+       *[other] del coniuge
+    }
+kin-partner-of-relative = { $sex ->
+        [M] marito
+        [F] moglie
+       *[other] coniuge
+    } { $rsex ->
+        [F] di una
+       *[other] di un
+    } { $relative }
+kin-affine = { $sex ->
+        [F] parente acquisita
+       *[other] parente acquisito
+    }
+kin-related = { $sex ->
+        [F] collegata dai registri della famiglia
+       *[other] collegato dai registri della famiglia
+    }
+kin-note-adoptive = per adozione
+kin-of = di { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] padre adottivo
+            [F] madre adottiva
+           *[other] genitore adottivo
+        }
+        [foster] { $sex ->
+            [M] padre affidatario
+            [F] madre affidataria
+           *[other] genitore affidatario
+        }
+        [guardianship] { $sex ->
+            [F] tutrice
+           *[other] tutore
+        }
+        [step] { $sex ->
+            [M] patrigno
+            [F] matrigna
+           *[other] patrigno o matrigna
+        }
+       *[other] { $sex ->
+            [M] padre
+            [F] madre
+           *[other] genitore
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] figlio adottivo
+            [F] figlia adottiva
+           *[other] figlio adottivo
+        }
+        [foster] { $sex ->
+            [M] figlio in affido
+            [F] figlia in affido
+           *[other] minore in affido
+        }
+        [guardianship] { $sex ->
+            [F] pupilla
+           *[other] pupillo
+        }
+        [step] { $sex ->
+            [M] figliastro
+            [F] figliastra
+           *[other] figliastro o figliastra
+        }
+       *[other] { $sex ->
+            [M] figlio
+            [F] figlia
+           *[other] figlio o figlia
+        }
+    }
+kin-group-partners = Coniugi e compagni
+kin-group-ancestors = Ascendenti
+kin-group-descendants = Discendenti
+kin-group-siblings = Fratelli e sorelle
+kin-group-uncles = Zii e zie
+kin-group-nephews = Figli di fratelli e sorelle
+kin-group-cousins = Cugini e cugine
+kin-group-in-laws = Parenti acquisiti
+kin-group-step = Famiglia ricomposta
+kin-group-care = Affido e tutela
+kin-group-rites = Riti e usanze
+kin-group-others = Altri legami
+kin-find-title = Che parentela c’è?
+kin-find-lede = Scegli una persona della famiglia: il suo legame con { $name } è spiegato passo per passo.
+kin-find-label = Persona
+kin-find-choose = Scegli una persona…
+kin-find-go = Mostra il legame
+kin-find-none = I registri della famiglia non collegano { $a } e { $b }.
+kin-path = Il legame, passo per passo
+kin-degree = parentela di { $n }° grado
+kin-all-title = Tutta la parentela di { $name }
+kin-all-count = { $n ->
+        [one] una persona
+       *[other] { $n } persone
+    }
+kin-common-list = Antenati comuni: { $names }
+kin-also-list = anche { $list }
+kin-rites-help = Padrini e altri legami che una tradizione crea tra persone che non sono nate l’una dall’altra. L’albero li disegna con un tratteggio a punti tutto loro.
+kin-rite-recorded = Il registro dice «{ $label }».
+kin-hidden = una persona che non puoi vedere
+kin-native = Nelle parole della tradizione
+kin-legend-rite = Padrino, rito o usanza
+kin-tree-root = { $term } { $of }
+kin-editor-rite = Rito o usanza
+kin-editor-rite-none = Nessuno: un semplice legame
+kin-editor-rite-hint = Che cosa questa persona è per l’altra. La scelta compila la relazione e le parole, e il registro conserva il rito.
+kin-editor-rite-option = { $rite }: { $word }
+kin-tradition-christian = Cristiana
+kin-tradition-orthodox = Cristiana ortodossa
+kin-tradition-hispanic = Ispanica e filippina
+kin-tradition-jewish = Ebraica
+kin-tradition-islamic = Islamica
+kin-tradition-south-asian = Dell’Asia meridionale
+kin-tradition-east-asian = Dell’Asia orientale
+kin-tradition-african = Africana
+kin-tradition-indigenous = Indigena e del Pacifico
+kin-tradition-civil = Civile e laica
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-godparent-name = Padrinato
+kin-rite-godparent-note = Padrino o madrina, come dice il registro.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-baptism-name = Battesimo
+kin-rite-baptism-note = Padrino o madrina di battesimo.
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] cresimando
+            [F] cresimanda
+           *[other] cresimando
+        }
+       *[other] { $sex ->
+            [M] padrino di cresima
+            [F] madrina di cresima
+           *[other] padrino o madrina di cresima
+        }
+    }
+kin-rite-confirmation-name = Cresima
+kin-rite-confirmation-note = Padrino o madrina di cresima o di crismazione.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio di nozze
+            [F] figlioccia di nozze
+           *[other] figlioccio di nozze
+        }
+       *[other] { $sex ->
+            [M] padrino di nozze
+            [F] madrina di nozze
+           *[other] padrino o madrina di nozze
+        }
+    }
+kin-rite-wedding-sponsor-name = Padrinato di nozze
+kin-rite-wedding-sponsor-note = Padrino o madrina di un matrimonio: padrino de boda, ninong, koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-kum-name = Kumstvo
+kin-rite-kum-note = Padrino o testimone di nozze nella tradizione ortodossa slava; il kumstvo lega due famiglie.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-koumbaros-name = Koumbaros
+kin-rite-koumbaros-note = Testimone di nozze o padrino nella tradizione ortodossa greca.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-padrino-name = Padrino
+kin-rite-padrino-note = Padrino o madrina: al battesimo, alla prima comunione, alla quinceañera.
+kin-rite-compadre = { $sex ->
+        [M] compare
+        [F] comare
+       *[other] compare o comare
+    }
+kin-rite-compadre-name = Compadrazgo
+kin-rite-compadre-note = Il legame tra i genitori di un bambino e i suoi padrini.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-ninong-name = Ninong
+kin-rite-ninong-note = Ninong o ninang: padrino di battesimo, cresima o nozze nelle Filippine.
+kin-rite-sandek = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio
+        }
+       *[other] sandek
+    }
+kin-rite-sandek-name = Brit milà: sandek
+kin-rite-sandek-note = Tiene il bambino durante il brit milà.
+kin-rite-kvatter = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio
+        }
+       *[other] { $sex ->
+            [F] kvatterin
+           *[other] kvatter
+        }
+    }
+kin-rite-kvatter-name = Brit milà: kvatter
+kin-rite-kvatter-note = Porta il bambino al brit milà.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] figlio di latte
+            [F] figlia di latte
+           *[other] figlio di latte
+        }
+       *[other] { $sex ->
+            [M] padre di latte
+            [F] madre di latte
+           *[other] genitore di latte
+        }
+    }
+kin-rite-milk-parent-name = Parentela di latte
+kin-rite-milk-parent-note = Ha allattato il bambino: nel diritto islamico la parentela di latte crea una famiglia e vieta il matrimonio, come la nascita.
+kin-rite-milk-sibling = { $sex ->
+        [M] fratello di latte
+        [F] sorella di latte
+       *[other] fratello o sorella di latte
+    }
+kin-rite-milk-sibling-name = Fratelli di latte
+kin-rite-milk-sibling-note = Allattati dalla stessa donna.
+kin-rite-kafala = { $role ->
+        [sponsored] { $sex ->
+            [F] pupilla (kafala)
+           *[other] pupillo (kafala)
+        }
+       *[other] { $sex ->
+            [F] tutrice (kafala)
+           *[other] tutore (kafala)
+        }
+    }
+kin-rite-kafala-name = Kafala
+kin-rite-kafala-note = Accoglie e cresce un bambino senza la filiazione di un’adozione, secondo il diritto islamico.
+kin-rite-rakhi = { $sex ->
+        [M] fratello di rakhi
+        [F] sorella di rakhi
+       *[other] fratello o sorella di rakhi
+    }
+kin-rite-rakhi-name = Rakhi
+kin-rite-rakhi-note = A Raksha Bandhan una sorella lega un rakhi al polso di un fratello, che promette di proteggerla.
+kin-rite-guru = { $role ->
+        [sponsored] { $sex ->
+            [M] discepolo
+            [F] discepola
+           *[other] discepolo
+        }
+       *[other] guru
+    }
+kin-rite-guru-name = Guru
+kin-rite-guru-note = Maestro spirituale e discepolo.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio
+            [F] figlioccia
+           *[other] figlioccio o figlioccia
+        }
+       *[other] { $sex ->
+            [M] padrino
+            [F] madrina
+           *[other] padrino o madrina
+        }
+    }
+kin-rite-gan-parent-name = Gan qin
+kin-rite-gan-parent-note = Padrini scelti in Cina e nelle famiglie cinesi, spesso per proteggere un bambino.
+kin-rite-sworn-sibling = { $sex ->
+        [M] fratello giurato
+        [F] sorella giurata
+       *[other] fratello o sorella giurati
+    }
+kin-rite-sworn-sibling-name = Fratellanza giurata
+kin-rite-sworn-sibling-note = Fratelli o sorelle per giuramento (jiebai).
+kin-rite-name-giver = { $role ->
+        [sponsored] { $sex ->
+            [M] bambino nominato
+            [F] bambina nominata
+           *[other] bambino nominato
+        }
+       *[other] { $sex ->
+            [F] madrina del nome
+           *[other] padrino del nome
+        }
+    }
+kin-rite-name-giver-name = Imposizione del nome
+kin-rite-name-giver-note = Ha dato il nome al bambino (nazuke-oya in Giappone).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] sposo combinato
+            [F] sposa combinata
+           *[other] coniuge combinato
+        }
+       *[other] { $sex ->
+            [F] mediatrice di nozze
+           *[other] mediatore di nozze
+        }
+    }
+kin-rite-nakodo-name = Nakōdo
+kin-rite-nakodo-note = Ha combinato il matrimonio e ne è stato testimone (nakōdo in Giappone).
+kin-rite-namesake = { $sex ->
+        [F] omonima
+       *[other] omonimo
+    }
+kin-rite-namesake-name = Omonimo
+kin-rite-namesake-note = Porta lo stesso nome: in Africa centrale e orientale, un legame di doni e di cure (ndoyi, somo).
+kin-rite-initiation = { $role ->
+        [sponsored] { $sex ->
+            [F] iniziata
+           *[other] iniziato
+        }
+       *[other] { $sex ->
+            [F] madrina d’iniziazione
+           *[other] padrino d’iniziazione
+        }
+    }
+kin-rite-initiation-name = Iniziazione
+kin-rite-initiation-note = Ha guidato la persona in un’iniziazione.
+kin-rite-blood-pact = { $sex ->
+        [M] fratello di sangue
+        [F] sorella di sangue
+       *[other] fratello o sorella di sangue
+    }
+kin-rite-blood-pact-name = Patto di sangue
+kin-rite-blood-pact-note = Uniti da un patto di sangue.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] figlio hānai
+            [F] figlia hānai
+           *[other] figlio hānai
+        }
+       *[other] { $sex ->
+            [M] padre hānai
+            [F] madre hānai
+           *[other] genitore hānai
+        }
+    }
+kin-rite-hanai-name = Hānai
+kin-rite-hanai-note = Cresciuto come figlio proprio secondo l’usanza hawaiana, senza adozione legale.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] figlio hunka
+            [F] figlia hunka
+           *[other] figlio hunka
+        }
+       *[other] { $sex ->
+            [M] padre hunka
+            [F] madre hunka
+           *[other] genitore hunka
+        }
+    }
+kin-rite-hunka-name = Hunka
+kin-rite-hunka-note = Reso parente nella cerimonia lakota dello hunka.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] figlioccio civile
+            [F] figlioccia civile
+           *[other] figlioccio civile
+        }
+       *[other] { $sex ->
+            [M] padrino civile
+            [F] madrina civile
+           *[other] padrino civile
+        }
+    }
+kin-rite-civil-sponsor-name = Padrinato civile
+kin-rite-civil-sponsor-note = Padrino o madrina in una cerimonia civile del nome.
+kin-rite-guardian = { $role ->
+        [sponsored] { $sex ->
+            [F] pupilla
+           *[other] pupillo
+        }
+       *[other] { $sex ->
+            [F] tutrice
+           *[other] tutore
+        }
+    }
+kin-rite-guardian-name = Tutela
+kin-rite-guardian-note = Tutore o tutrice, come dice il registro.

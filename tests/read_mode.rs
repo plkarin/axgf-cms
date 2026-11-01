@@ -596,7 +596,7 @@ async fn check_every_person(app: &axum::Router, bundle: &Path) -> Sweep {
                     .entry(node.clone())
                     .or_insert_with(|| messages_in(&node, &data, &cat));
                 for keys in groups.iter() {
-                    if let Some(k) = keys.iter().find(|k| ALLOWED.contains(&k.as_str())) {
+                    if let Some(k) = keys.iter().find(|k| allowed(k)) {
                         *sweep.seen.entry(k.clone()).or_default() += 1;
                     } else {
                         sweep
@@ -712,7 +712,15 @@ fn the_catalogue_is_read_variant_by_variant() {
     // whatever its wording.
     let found = messages_in("dates unrecorded", &[], &cat);
     assert!(!found.is_empty());
-    assert!(found
-        .iter()
-        .all(|keys| keys.iter().all(|k| !ALLOWED.contains(&k.as_str()))));
+    assert!(found.iter().all(|keys| keys.iter().all(|k| !allowed(k))));
+}
+
+/// Whether a catalogue key may appear on a read page: one of [`ALLOWED`], or a
+/// word of kinship (docs/adr/0020). The Kinship tab and the family's ties of
+/// rite say what the records connect — a cousin, a godmother, a tradition,
+/// the groups of a person's relatives — and every one of those words names
+/// something that is there. The only ways of saying "nothing here" the tab
+/// had are gone: a person with no relative to show has no list.
+fn allowed(k: &str) -> bool {
+    ALLOWED.contains(&k) || (k.starts_with("kin-") && !matches!(k, "kin-find-none" | "kin-hidden"))
 }

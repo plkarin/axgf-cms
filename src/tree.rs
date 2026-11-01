@@ -643,6 +643,22 @@ pub struct Card {
     /// an ancestor on two lines): drawn again where the line needs them,
     /// marked as the same person, and not followed further.
     pub dup: bool,
+    /// What this person is to the one in the middle of the chart ("first
+    /// cousin"), and what that needs added, said on the open card. Written
+    /// by [`crate::chart::relate`] (docs/adr/0020).
+    pub kin: String,
+    pub kin_note: String,
+    /// Their ties of rite and custom: what the other person is to them, and
+    /// who.
+    pub rites: Vec<CardRite>,
+}
+
+/// One tie of rite or custom on an open card.
+#[derive(Debug, Clone, Serialize)]
+pub struct CardRite {
+    pub term: String,
+    pub id: String,
+    pub name: String,
 }
 
 /// A connector between two cards.
@@ -2098,6 +2114,9 @@ pub(crate) fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root
             focal: None,
             initials: String::new(),
             dup: false,
+            kin: String::new(),
+            kin_note: String::new(),
+            rites: Vec::new(),
         };
     };
 
@@ -2148,6 +2167,9 @@ pub(crate) fn card_for(id: &str, person: Option<&Value>, x: f64, y: f64, is_root
         focal: None,
         initials: String::new(),
         dup: false,
+        kin: String::new(),
+        kin_note: String::new(),
+        rites: Vec::new(),
     }
 }
 
@@ -2190,6 +2212,9 @@ pub fn redact_in(layout: &mut TreeLayout, visible: Option<&BTreeSet<String>>, la
             card.portrait = None;
             card.focal = None;
             card.initials = String::new();
+            card.kin = String::new();
+            card.kin_note = String::new();
+            card.rites = Vec::new();
             // "a"/"b" encode recorded sex on the card; "u" is the same thing
             // an unrecorded gender gets, so a redacted card is not
             // distinguishable from an incomplete one.

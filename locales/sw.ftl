@@ -4185,3 +4185,584 @@ merge-report-links = Viungo vilivyoondolewa
 merge-report-tidied = Maingizo yaliyopangwa
 merge-absorbed-record = Rekodi iliyounganishwa, kama ilivyokuwa
 merge-open-kept = Fungua rekodi iliyobaki
+
+## Undugu (docs/adr/0020)
+
+kin-tab = Undugu
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] baba wa kuasili
+            [F] mama wa kuasili
+           *[other] mzazi wa kuasili
+        }
+       *[no] { $sex ->
+            [M] baba
+            [F] mama
+           *[other] mzazi
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] babu
+            [F] bibi
+           *[other] babu au bibi
+        }
+        [3] { $sex ->
+            [M] babu mkuu
+            [F] bibi mkuu
+           *[other] babu au bibi mkuu
+        }
+        [4] { $sex ->
+            [M] babu wa babu
+            [F] bibi wa bibi
+           *[other] mzazi wa babu
+        }
+       *[other] { $sex ->
+            [F] bibi wa kizazi cha { $n }
+           *[other] babu wa kizazi cha { $n }
+        }
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] mtoto wa kiume wa kuasili
+            [F] mtoto wa kike wa kuasili
+           *[other] mtoto wa kuasili
+        }
+       *[no] { $sex ->
+            [M] mtoto wa kiume
+            [F] mtoto wa kike
+           *[other] mtoto
+        }
+    }
+kin-descendant = { $n ->
+        [2] mjukuu
+        [3] kitukuu
+        [4] kilembwe
+       *[other] mzao wa kizazi cha { $n }
+    }
+kin-sibling = { $half ->
+        [yes] { $sex ->
+            [M] kaka
+            [F] dada
+           *[other] ndugu
+        } { $side ->
+            [M] wa baba mmoja
+            [F] wa mama mmoja
+           *[other] wa mzazi mmoja
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] kaka wa kuasili
+                [F] dada wa kuasili
+               *[other] ndugu wa kuasili
+            }
+           *[no] { $sex ->
+                [M] kaka
+                [F] dada
+               *[other] ndugu
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $side ->
+            [M] { $sex ->
+                [M] { $turnelder ->
+                    [yes] baba mkubwa
+                    [no] baba mdogo
+                   *[other] baba mdogo au mkubwa
+                }
+                [F] shangazi
+               *[other] ndugu wa baba
+            }
+            [F] { $sex ->
+                [M] mjomba
+                [F] { $turnelder ->
+                    [yes] mama mkubwa
+                    [no] mama mdogo
+                   *[other] mama mdogo au mkubwa
+                }
+               *[other] ndugu wa mama
+            }
+           *[other] { $sex ->
+                [M] mjomba
+                [F] shangazi
+               *[other] ndugu wa mzazi
+            }
+        }
+        [2] { $sex ->
+            [M] kaka
+            [F] dada
+           *[other] ndugu
+        } wa { $turna ->
+            [M] babu
+            [F] bibi
+           *[other] babu au bibi
+        }
+        [3] { $sex ->
+            [M] kaka
+            [F] dada
+           *[other] ndugu
+        } wa babu mkuu
+       *[other] ndugu wa babu wa zamani
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] mpwa wa kiume
+            [F] mpwa wa kike
+           *[other] mpwa
+        }
+        [2] mjukuu wa { $via ->
+            [M] kaka
+            [F] dada
+           *[other] ndugu
+        }
+        [3] kitukuu wa { $via ->
+            [M] kaka
+            [F] dada
+           *[other] ndugu
+        }
+       *[other] mzao wa ndugu
+    }
+kin-cousin = { $k ->
+        [1] binamu
+       *[other] binamu wa daraja la { $k }
+    }
+kin-cousin-removed = { $older ->
+        [yes] binamu wa { $forebear }
+       *[no] { $descendant } wa { $ofcousin }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] baba
+            [F] mama
+           *[other] mzazi
+        }
+        [2] { $sex ->
+            [M] babu
+            [F] bibi
+           *[other] babu au bibi
+        }
+        [3] { $sex ->
+            [M] babu mkuu
+            [F] bibi mkuu
+           *[other] babu au bibi mkuu
+        }
+       *[other] babu wa zamani
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] mtoto wa kiume
+            [F] mtoto wa kike
+           *[other] mtoto
+        }
+        [2] mjukuu
+        [3] kitukuu
+       *[other] mzao
+    }
+kin-of-cousin = { $k ->
+        [1] binamu
+       *[other] binamu wa daraja la { $k }
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] mume wa zamani
+                [F] mke wa zamani
+               *[other] mwenzi wa zamani
+            }
+           *[no] mwenzi wa zamani
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] mume
+                [F] mke
+               *[other] mwenzi wa ndoa
+            }
+           *[no] mwenzi
+        }
+    }
+kin-parent-in-law = { $sex ->
+        [M] baba mkwe
+        [F] mama mkwe
+       *[other] mkwe
+    }
+kin-child-in-law = mkwe
+kin-sibling-in-law = shemeji
+kin-step-parent = { $sex ->
+        [M] baba wa kambo
+        [F] mama wa kambo
+       *[other] mzazi wa kambo
+    }
+kin-step-child = mtoto wa kambo
+kin-note-step-parent = mwenzi wa { $next ->
+        [M] baba
+        [F] mama
+       *[other] mzazi
+    }
+kin-note-step-child = mtoto wa { $via ->
+        [M] mume
+        [F] mke
+       *[other] mwenzi
+    }
+kin-foster-parent = { $sex ->
+        [M] baba wa malezi
+        [F] mama wa malezi
+       *[other] mzazi wa malezi
+    }
+kin-foster-child = mtoto wa malezi
+kin-guardian = mlezi
+kin-ward = aliye chini ya ulezi
+kin-relative-of-partner = { $relative } wa { $via ->
+        [M] mume
+        [F] mke
+       *[other] mwenzi
+    }
+kin-partner-of-relative = { $sex ->
+        [M] mume
+        [F] mke
+       *[other] mwenzi
+    } wa { $relative }
+kin-affine = ndugu kwa ndoa
+kin-related = anahusiana kupitia kumbukumbu za familia
+kin-note-adoptive = kwa kuasili
+kin-of = wa { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] baba wa kuasili
+            [F] mama wa kuasili
+           *[other] mzazi wa kuasili
+        }
+        [foster] { $sex ->
+            [M] baba wa malezi
+            [F] mama wa malezi
+           *[other] mzazi wa malezi
+        }
+        [guardianship] mlezi
+        [step] { $sex ->
+            [M] baba wa kambo
+            [F] mama wa kambo
+           *[other] mzazi wa kambo
+        }
+       *[other] { $sex ->
+            [M] baba
+            [F] mama
+           *[other] mzazi
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] mtoto wa kuasili
+        [foster] mtoto wa malezi
+        [guardianship] aliye chini ya ulezi
+        [step] mtoto wa kambo
+       *[other] { $sex ->
+            [M] mtoto wa kiume
+            [F] mtoto wa kike
+           *[other] mtoto
+        }
+    }
+kin-group-partners = Wenzi
+kin-group-ancestors = Wahenga
+kin-group-descendants = Wazao
+kin-group-siblings = Ndugu
+kin-group-uncles = Wajomba, mashangazi na wazazi wadogo
+kin-group-nephews = Wapwa
+kin-group-cousins = Binamu
+kin-group-in-laws = Wakwe na mashemeji
+kin-group-step = Familia ya kambo
+kin-group-care = Malezi na ulezi
+kin-group-rites = Desturi na mila
+kin-group-others = Mahusiano mengine
+kin-find-title = Wana uhusiano gani?
+kin-find-lede = Chagua mtu wa familia: uhusiano wake na { $name } utaelezwa hatua kwa hatua.
+kin-find-label = Mtu
+kin-find-choose = Chagua mtu…
+kin-find-go = Onyesha uhusiano
+kin-find-none = Kumbukumbu za familia haziwaunganishi { $a } na { $b }.
+kin-path = Uhusiano, hatua kwa hatua
+kin-degree = undugu wa daraja la { $n }
+kin-all-title = Ndugu wote wa { $name }
+kin-all-count = { $n ->
+        [one] mtu mmoja
+       *[other] watu { $n }
+    }
+kin-common-list = Wahenga wa pamoja: { $names }
+kin-also-list = pia { $list }
+kin-rites-help = Wazazi wa ubatizo na mafungamano mengine ambayo desturi huunda kati ya watu wasiozaliwa mmoja na mwingine. Mti huyachora kwa vitone vyake.
+kin-rite-recorded = Kumbukumbu inasema “{ $label }”.
+kin-hidden = mtu usiyeruhusiwa kumwona
+kin-native = Kwa maneno ya desturi
+kin-legend-rite = Mzazi wa ubatizo, desturi au mila
+kin-tree-root = { $term } { $of }
+kin-editor-rite = Desturi au mila
+kin-editor-rite-none = Hakuna: uhusiano wa kawaida
+kin-editor-rite-hint = Mtu huyu ni nani kwa mwingine. Uchaguzi hujaza uhusiano na maneno, na kumbukumbu huhifadhi desturi.
+kin-editor-rite-option = { $rite }: { $word }
+kin-tradition-christian = Kikristo
+kin-tradition-orthodox = Kikristo cha Orthodoksi
+kin-tradition-hispanic = Kihispania na Kifilipino
+kin-tradition-jewish = Kiyahudi
+kin-tradition-islamic = Kiislamu
+kin-tradition-south-asian = Asia Kusini
+kin-tradition-east-asian = Asia Mashariki
+kin-tradition-african = Kiafrika
+kin-tradition-indigenous = Wenyeji na Pasifiki
+kin-tradition-civil = Kiraia na kisekula
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-godparent-name = Uzazi wa ubatizo
+kin-rite-godparent-note = Mzazi wa ubatizo, kama kumbukumbu inavyosema.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-baptism-name = Ubatizo
+kin-rite-baptism-note = Mzazi wa ubatizo katika ubatizo.
+kin-rite-confirmation = { $role ->
+        [sponsored] mpokea kipaimara
+       *[other] msimamizi wa kipaimara
+    }
+kin-rite-confirmation-name = Kipaimara
+kin-rite-confirmation-note = Msimamizi katika kipaimara au mpako.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] bwana harusi
+            [F] bibi harusi
+           *[other] maharusi
+        }
+       *[other] msimamizi wa ndoa
+    }
+kin-rite-wedding-sponsor-name = Usimamizi wa ndoa
+kin-rite-wedding-sponsor-note = Msimamizi wa ndoa: padrino de boda, ninong, koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-kum-name = Kumstvo
+kin-rite-kum-note = Mzazi wa ubatizo au shahidi wa ndoa katika mapokeo ya Kiorthodoksi ya Kislavoni; kumstvo huunganisha familia mbili.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-koumbaros-name = Koumbaros
+kin-rite-koumbaros-note = Shahidi wa ndoa au mzazi wa ubatizo katika mapokeo ya Kiorthodoksi ya Kigiriki.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-padrino-name = Padrino
+kin-rite-padrino-note = Padrino au madrina: katika ubatizo, komunyo ya kwanza, quinceañera.
+kin-rite-compadre = mzazi mwenza
+kin-rite-compadre-name = Compadrazgo
+kin-rite-compadre-note = Uhusiano kati ya wazazi wa mtoto na wazazi wake wa ubatizo.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-ninong-name = Ninong
+kin-rite-ninong-note = Ninong au ninang: mzazi wa ubatizo katika ubatizo, kipaimara au ndoa nchini Ufilipino.
+kin-rite-sandek = { $role ->
+        [sponsored] mtoto wa ubatizo
+       *[other] sandek
+    }
+kin-rite-sandek-name = Brit milah: sandek
+kin-rite-sandek-note = Humshika mtoto wakati wa brit milah.
+kin-rite-kvatter = { $role ->
+        [sponsored] mtoto wa ubatizo
+       *[other] { $sex ->
+            [F] kvatterin
+           *[other] kvatter
+        }
+    }
+kin-rite-kvatter-name = Brit milah: kvatter
+kin-rite-kvatter-note = Humbeba mtoto kuingia kwenye brit milah.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa kunyonyesha
+            [F] mtoto wa kunyonyesha
+           *[other] mtoto wa kunyonyesha
+        }
+       *[other] { $sex ->
+            [M] baba wa kunyonyesha
+            [F] mama wa kunyonyesha
+           *[other] mzazi wa kunyonyesha
+        }
+    }
+kin-rite-milk-parent-name = Undugu wa kunyonyesha
+kin-rite-milk-parent-note = Alimnyonyesha mtoto: katika sheria ya Kiislamu, undugu wa kunyonyesha huunda familia na kukataza ndoa kama kuzaliwa.
+kin-rite-milk-sibling = { $sex ->
+        [M] kaka wa kunyonyesha
+        [F] dada wa kunyonyesha
+       *[other] ndugu wa kunyonyesha
+    }
+kin-rite-milk-sibling-name = Ndugu wa kunyonyesha
+kin-rite-milk-sibling-note = Walinyonyeshwa na mwanamke mmoja.
+kin-rite-kafala = { $role ->
+        [sponsored] aliye chini ya ulezi (kafala)
+       *[other] mlezi (kafala)
+    }
+kin-rite-kafala-name = Kafala
+kin-rite-kafala-note = Humpokea na kumlea mtoto bila nasaba ya kuasili, kwa sheria ya Kiislamu.
+kin-rite-rakhi = { $sex ->
+        [M] kaka wa rakhi
+        [F] dada wa rakhi
+       *[other] ndugu wa rakhi
+    }
+kin-rite-rakhi-name = Rakhi
+kin-rite-rakhi-note = Katika Raksha Bandhan dada humfunga kaka rakhi kwenye kifundo cha mkono, naye huapa kumlinda.
+kin-rite-guru = { $role ->
+        [sponsored] mwanafunzi
+       *[other] guru
+    }
+kin-rite-guru-name = Guru
+kin-rite-guru-note = Mwalimu wa kiroho na mwanafunzi wake.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo
+            [F] mtoto wa ubatizo
+           *[other] mtoto wa ubatizo
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo
+            [F] mama wa ubatizo
+           *[other] mzazi wa ubatizo
+        }
+    }
+kin-rite-gan-parent-name = Gan qin
+kin-rite-gan-parent-note = Wazazi wa ubatizo wanaochaguliwa nchini China na katika familia za Kichina, mara nyingi kumlinda mtoto.
+kin-rite-sworn-sibling = { $sex ->
+        [M] kaka wa kiapo
+        [F] dada wa kiapo
+       *[other] ndugu wa kiapo
+    }
+kin-rite-sworn-sibling-name = Udugu wa kiapo
+kin-rite-sworn-sibling-note = Ndugu kwa kiapo (jiebai).
+kin-rite-name-giver = { $role ->
+        [sponsored] mtoto aliyepewa jina
+       *[other] mtoaji wa jina
+    }
+kin-rite-name-giver-name = Kupewa jina
+kin-rite-name-giver-note = Alimpa mtoto jina lake (nazuke-oya nchini Japani).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] bwana harusi
+            [F] bibi harusi
+           *[other] maharusi
+        }
+       *[other] mshenga
+    }
+kin-rite-nakodo-name = Nakōdo
+kin-rite-nakodo-note = Alipanga ndoa na kuishuhudia (nakōdo nchini Japani).
+kin-rite-namesake = somo
+kin-rite-namesake-name = Somo
+kin-rite-namesake-note = Ana jina lilelile: katika Afrika ya Kati na Mashariki, kifungo cha zawadi na matunzo (ndoyi, somo).
+kin-rite-initiation = { $role ->
+        [sponsored] mwanafunzi wa kungwi
+       *[other] kungwi
+    }
+kin-rite-initiation-name = Unyago na jando
+kin-rite-initiation-note = Alimwongoza mtu katika unyago au jando.
+kin-rite-blood-pact = { $sex ->
+        [M] kaka wa damu
+        [F] dada wa damu
+       *[other] ndugu wa damu
+    }
+kin-rite-blood-pact-name = Agano la damu
+kin-rite-blood-pact-note = Wamefungwa kwa agano la damu.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa hānai
+            [F] mtoto wa hānai
+           *[other] mtoto wa hānai
+        }
+       *[other] { $sex ->
+            [M] baba wa hānai
+            [F] mama wa hānai
+           *[other] mzazi wa hānai
+        }
+    }
+kin-rite-hanai-name = Hānai
+kin-rite-hanai-note = Alilelewa kama mtoto wao kwa desturi ya Kihawai, bila kuasili kisheria.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa hunka
+            [F] mtoto wa hunka
+           *[other] mtoto wa hunka
+        }
+       *[other] { $sex ->
+            [M] baba wa hunka
+            [F] mama wa hunka
+           *[other] mzazi wa hunka
+        }
+    }
+kin-rite-hunka-name = Hunka
+kin-rite-hunka-note = Alifanywa ndugu katika sherehe ya hunka ya Walakota.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] mtoto wa ubatizo wa kiraia
+            [F] mtoto wa ubatizo wa kiraia
+           *[other] mtoto wa ubatizo wa kiraia
+        }
+       *[other] { $sex ->
+            [M] baba wa ubatizo wa kiraia
+            [F] mama wa ubatizo wa kiraia
+           *[other] mzazi wa ubatizo wa kiraia
+        }
+    }
+kin-rite-civil-sponsor-name = Uzazi wa ubatizo wa kiraia
+kin-rite-civil-sponsor-note = Mzazi wa ubatizo katika sherehe ya kiraia ya kupewa jina.
+kin-rite-guardian = { $role ->
+        [sponsored] aliye chini ya ulezi
+       *[other] mlezi
+    }
+kin-rite-guardian-name = Ulezi
+kin-rite-guardian-note = Mlezi, kama kumbukumbu inavyosema.

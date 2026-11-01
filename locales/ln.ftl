@@ -4190,3 +4190,598 @@ merge-report-links = Makangisi oyo elongolami
 merge-report-tidied = Makomi oyo ebongisami
 merge-absorbed-record = Mokanda oyo esangisami, ndenge ezalaki
 merge-open-kept = Kofungola mokanda oyo etikali
+
+## Bondeko (docs/adr/0020)
+
+kin-tab = Bondeko
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] tata ya adopsyo
+            [F] mama ya adopsyo
+           *[other] moboti ya adopsyo
+        }
+       *[no] { $sex ->
+            [M] tata
+            [F] mama
+           *[other] moboti
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] nkɔkɔ mobali
+            [F] nkɔkɔ mwasi
+           *[other] nkɔkɔ
+        }
+        [3] { $sex ->
+            [M] tata ya nkɔkɔ
+            [F] mama ya nkɔkɔ
+           *[other] moboti ya nkɔkɔ
+        }
+        [4] nkɔkɔ ya nkɔkɔ
+       *[other] nkɔkɔ ya kala ya libota { $n }
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] mwana mobali ya adopsyo
+            [F] mwana mwasi ya adopsyo
+           *[other] mwana ya adopsyo
+        }
+       *[no] { $sex ->
+            [M] mwana mobali
+            [F] mwana mwasi
+           *[other] mwana
+        }
+    }
+kin-descendant = { $n ->
+        [2] mwana ya mwana
+        [3] mwana ya mwana ya mwana
+       *[other] mokitani ya libota { $n }
+    }
+kin-sibling = { $half ->
+        [yes] { $sex ->
+            [M] ndeko mobali
+            [F] ndeko mwasi
+           *[other] ndeko
+        } { $side ->
+            [M] ya tata moko
+            [F] ya mama moko
+           *[other] ya moboti moko
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] ndeko mobali ya adopsyo
+                [F] ndeko mwasi ya adopsyo
+               *[other] ndeko ya adopsyo
+            }
+           *[no] { $sex ->
+                [M] { $elder ->
+                    [yes] yaya mobali
+                    [no] leki mobali
+                   *[other] ndeko mobali
+                }
+                [F] { $elder ->
+                    [yes] yaya mwasi
+                    [no] leki mwasi
+                   *[other] ndeko mwasi
+                }
+               *[other] ndeko
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $side ->
+            [M] { $sex ->
+                [M] { $turnelder ->
+                    [yes] tata mokolo
+                    [no] tata leki
+                   *[other] tata
+                }
+                [F] tata mwasi
+               *[other] ndeko ya tata
+            }
+            [F] { $sex ->
+                [M] nɔkɔ
+                [F] { $turnelder ->
+                    [yes] mama mokolo
+                    [no] mama leki
+                   *[other] mama
+                }
+               *[other] ndeko ya mama
+            }
+           *[other] { $sex ->
+                [M] nɔkɔ to tata
+                [F] tata mwasi to mama
+               *[other] ndeko ya moboti
+            }
+        }
+        [2] ndeko ya { $turna ->
+            [M] nkɔkɔ mobali
+            [F] nkɔkɔ mwasi
+           *[other] nkɔkɔ
+        }
+        [3] ndeko ya tata ya nkɔkɔ
+       *[other] ndeko ya nkɔkɔ ya kala
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] mwana mobali
+            [F] mwana mwasi
+           *[other] mwana
+        } ya { $via ->
+            [M] ndeko mobali
+            [F] ndeko mwasi
+           *[other] ndeko
+        }
+        [2] mwana ya mwana ya { $via ->
+            [M] ndeko mobali
+            [F] ndeko mwasi
+           *[other] ndeko
+        }
+       *[other] mokitani ya ndeko
+    }
+kin-cousin = { $sex ->
+        [M] kozo mobali
+        [F] kozo mwasi
+       *[other] kozo
+    }{ $k ->
+        [1] {""}
+       *[other] {" "}ya ndenge ya { $k }
+    }
+kin-cousin-removed = { $older ->
+        [yes] kozo ya { $forebear }
+       *[no] { $descendant } ya { $ofcousin }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] tata
+            [F] mama
+           *[other] moboti
+        }
+        [2] { $sex ->
+            [M] nkɔkɔ mobali
+            [F] nkɔkɔ mwasi
+           *[other] nkɔkɔ
+        }
+        [3] { $sex ->
+            [M] tata ya nkɔkɔ
+            [F] mama ya nkɔkɔ
+           *[other] moboti ya nkɔkɔ
+        }
+       *[other] nkɔkɔ ya kala
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] mwana mobali
+            [F] mwana mwasi
+           *[other] mwana
+        }
+        [2] mwana ya mwana
+       *[other] mokitani
+    }
+kin-of-cousin = { $k ->
+        [1] kozo
+       *[other] kozo ya ndenge ya { $k }
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] mobali ya kala
+                [F] mwasi ya kala
+               *[other] molongani ya kala
+            }
+           *[no] molingami ya kala
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] mobali
+                [F] mwasi
+               *[other] molongani
+            }
+           *[no] molingami
+        }
+    }
+kin-parent-in-law = { $sex ->
+        [M] bokilo mobali
+        [F] bokilo mwasi
+       *[other] bokilo
+    }
+kin-child-in-law = { $sex ->
+        [M] mobali ya mwana
+        [F] mwasi ya mwana
+       *[other] molongani ya mwana
+    }
+kin-sibling-in-law = semeki
+kin-step-parent = { $sex ->
+        [M] mobali ya mama
+        [F] mwasi ya tata
+       *[other] molongani ya moboti
+    }
+kin-step-child = mwana ya molongani
+kin-note-step-parent = molongani ya { $next ->
+        [M] tata
+        [F] mama
+       *[other] moboti
+    }
+kin-note-step-child = mwana ya { $via ->
+        [M] mobali
+        [F] mwasi
+       *[other] molongani
+    }
+kin-foster-parent = { $sex ->
+        [M] tata ya kobɔkɔla
+        [F] mama ya kobɔkɔla
+       *[other] moboti ya kobɔkɔla
+    }
+kin-foster-child = mwana ya kobɔkɔla
+kin-guardian = mobateli
+kin-ward = mwana na bobateli
+kin-relative-of-partner = { $relative } ya { $via ->
+        [M] mobali
+        [F] mwasi
+       *[other] molongani
+    }
+kin-partner-of-relative = { $sex ->
+        [M] mobali
+        [F] mwasi
+       *[other] molongani
+    } ya { $relative }
+kin-affine = ndeko na libala
+kin-related = akangami na mikanda ya libota
+kin-note-adoptive = na adopsyo
+kin-of = ya { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] tata ya adopsyo
+            [F] mama ya adopsyo
+           *[other] moboti ya adopsyo
+        }
+        [foster] { $sex ->
+            [M] tata ya kobɔkɔla
+            [F] mama ya kobɔkɔla
+           *[other] moboti ya kobɔkɔla
+        }
+        [guardianship] mobateli
+        [step] { $sex ->
+            [M] mobali ya mama
+            [F] mwasi ya tata
+           *[other] molongani ya moboti
+        }
+       *[other] { $sex ->
+            [M] tata
+            [F] mama
+           *[other] moboti
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] mwana ya adopsyo
+        [foster] mwana ya kobɔkɔla
+        [guardianship] mwana na bobateli
+        [step] mwana ya molongani
+       *[other] { $sex ->
+            [M] mwana mobali
+            [F] mwana mwasi
+           *[other] mwana
+        }
+    }
+kin-group-partners = Balongani
+kin-group-ancestors = Bankɔkɔ
+kin-group-descendants = Bakitani
+kin-group-siblings = Bandeko
+kin-group-uncles = Bandeko ya baboti
+kin-group-nephews = Bana ya bandeko
+kin-group-cousins = Bakozo
+kin-group-in-laws = Bokilo
+kin-group-step = Libota oyo esangani
+kin-group-care = Kobɔkɔla mpe bobateli
+kin-group-rites = Mimeseno mpe milulu
+kin-group-others = Boyokani mosusu
+kin-find-title = Bazali bandeko ndenge nini?
+kin-find-lede = Pona moto moko ya libota: boyokani na ye na { $name } ekolimbolama etape na etape.
+kin-find-label = Moto
+kin-find-choose = Pona moto…
+kin-find-go = Lakisa boyokani
+kin-find-none = Mikanda ya libota ekangisi { $a } mpe { $b } te.
+kin-path = Boyokani, etape na etape
+kin-degree = bondeko ya ndenge ya { $n }
+kin-all-title = Bandeko nyonso ya { $name }
+kin-all-count = { $n ->
+        [one] moto { $n }
+       *[other] bato { $n }
+    }
+kin-common-list = Bankɔkɔ oyo bazali na bango nyonso mibale: { $names }
+kin-also-list = lisusu { $list }
+kin-rites-help = Batata mpe bamama ya batisimo, mpe bokangami mosusu oyo bonkɔkɔ esalaka kati na bato oyo babotama moko na mosusu te. Nzete ekomaka yango na mitoni na yango moko.
+kin-rite-recorded = Mokanda elobi « { $label } ».
+kin-hidden = moto oyo okoki komona te
+kin-native = Na maloba ya bonkɔkɔ
+kin-legend-rite = Tata ya batisimo, molulu to momeseno
+kin-tree-root = { $term } { $of }
+kin-editor-rite = Molulu to momeseno
+kin-editor-rite-none = Ata moko te: boyokani ya pamba
+kin-editor-rite-hint = Moto oyo azali nini mpo na mosusu. Kopona ekotondisa boyokani mpe maloba, mpe mokanda ekobatela molulu.
+kin-editor-rite-option = { $rite }: { $word }
+kin-tradition-christian = Boklisto
+kin-tradition-orthodox = Boklisto ya ortodɔksi
+kin-tradition-hispanic = Mokili ya Espanyɔlɔ mpe Filipine
+kin-tradition-jewish = Boyuda
+kin-tradition-islamic = Boislamu
+kin-tradition-south-asian = Azia ya Sudi
+kin-tradition-east-asian = Azia ya Ɛsti
+kin-tradition-african = Afrika
+kin-tradition-indigenous = Bato ya mboka mpe Pasifiki
+kin-tradition-civil = Ya leta mpe ya mokili
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-godparent-name = Bobateli ya batisimo
+kin-rite-godparent-note = Tata to mama ya batisimo, ndenge mokanda elobi.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-baptism-name = Batisimo
+kin-rite-baptism-note = Tata to mama ya batisimo na batisimo.
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya konfirmasyo
+            [F] mwana ya konfirmasyo
+           *[other] mwana ya konfirmasyo
+        }
+       *[other] { $sex ->
+            [M] tata ya konfirmasyo
+            [F] mama ya konfirmasyo
+           *[other] moboti ya konfirmasyo
+        }
+    }
+kin-rite-confirmation-name = Konfirmasyo
+kin-rite-confirmation-note = Tata to mama ya konfirmasyo to ya mafuta ya bulɛɛ.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya libala
+            [F] mwana ya libala
+           *[other] mwana ya libala
+        }
+       *[other] { $sex ->
+            [M] tata ya libala
+            [F] mama ya libala
+           *[other] mobateli ya libala
+        }
+    }
+kin-rite-wedding-sponsor-name = Bobateli ya libala
+kin-rite-wedding-sponsor-note = Mobateli ya libala: padrino de boda, ninong, koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-kum-name = Kumstvo
+kin-rite-kum-note = Tata ya batisimo to motatoli ya libala na bonkɔkɔ ya ortodɔksi ya Baslave; kumstvo ekangisaka mabota mibale.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-koumbaros-name = Koumbaros
+kin-rite-koumbaros-note = Motatoli ya libala to tata ya batisimo na bonkɔkɔ ya ortodɔksi ya Bagrɛki.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-padrino-name = Padrino
+kin-rite-padrino-note = Padrino to madrina: na batisimo, na komunyo ya liboso, na quinceañera.
+kin-rite-compadre = ndeko ya batisimo
+kin-rite-compadre-name = Compadrazgo
+kin-rite-compadre-note = Bokangami kati na baboti ya mwana mpe batata mpe bamama ya batisimo na ye.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-ninong-name = Ninong
+kin-rite-ninong-note = Ninong to ninang: tata to mama ya batisimo na batisimo, konfirmasyo to libala na Filipine.
+kin-rite-sandek = { $role ->
+        [sponsored] mwana
+       *[other] sandek
+    }
+kin-rite-sandek-name = Brit milah: sandek
+kin-rite-sandek-note = Asimbaka mwana na ntango ya brit milah.
+kin-rite-kvatter = { $role ->
+        [sponsored] mwana
+       *[other] { $sex ->
+            [F] kvatterin
+           *[other] kvatter
+        }
+    }
+kin-rite-kvatter-name = Brit milah: kvatter
+kin-rite-kvatter-note = Amemaka mwana na brit milah.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya mabɛlɛ
+            [F] mwana ya mabɛlɛ
+           *[other] mwana ya mabɛlɛ
+        }
+       *[other] { $sex ->
+            [M] tata ya mabɛlɛ
+            [F] mama ya mabɛlɛ
+           *[other] moboti ya mabɛlɛ
+        }
+    }
+kin-rite-milk-parent-name = Bondeko ya mabɛlɛ
+kin-rite-milk-parent-note = Amɛlisaki mwana mabɛlɛ: na mibeko ya Boislamu, bondeko ya mabɛlɛ esalaka libota mpe epekisaka libala, lokola mbotama.
+kin-rite-milk-sibling = { $sex ->
+        [M] ndeko mobali ya mabɛlɛ
+        [F] ndeko mwasi ya mabɛlɛ
+       *[other] ndeko ya mabɛlɛ
+    }
+kin-rite-milk-sibling-name = Bandeko ya mabɛlɛ
+kin-rite-milk-sibling-note = Bamɛlaki mabɛlɛ ya mwasi moko.
+kin-rite-kafala = { $role ->
+        [sponsored] mwana na bobateli (kafala)
+       *[other] mobateli (kafala)
+    }
+kin-rite-kafala-name = Kafala
+kin-rite-kafala-note = Azwaka mpe abɔkɔlaka mwana kozanga bondeko ya adopsyo, na mibeko ya Boislamu.
+kin-rite-rakhi = { $sex ->
+        [M] ndeko mobali ya rakhi
+        [F] ndeko mwasi ya rakhi
+       *[other] ndeko ya rakhi
+    }
+kin-rite-rakhi-name = Rakhi
+kin-rite-rakhi-note = Na Raksha Bandhan, ndeko mwasi akangaka rakhi na lobɔkɔ ya ndeko mobali, mpe ye alakaka kobatela ye.
+kin-rite-guru = { $role ->
+        [sponsored] moyekoli
+       *[other] guru
+    }
+kin-rite-guru-name = Guru
+kin-rite-guru-note = Molakisi ya molimo mpe moyekoli na ye.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo
+            [F] mwana ya batisimo
+           *[other] mwana ya batisimo
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo
+            [F] mama ya batisimo
+           *[other] moboti ya batisimo
+        }
+    }
+kin-rite-gan-parent-name = Gan qin
+kin-rite-gan-parent-note = Batata mpe bamama ya batisimo oyo baponamaka na Shine mpe na mabota ya Bashinwa, mbala mingi mpo na kobatela mwana.
+kin-rite-sworn-sibling = { $sex ->
+        [M] ndeko mobali ya ndai
+        [F] ndeko mwasi ya ndai
+       *[other] ndeko ya ndai
+    }
+kin-rite-sworn-sibling-name = Bondeko ya ndai
+kin-rite-sworn-sibling-note = Bandeko na ndai (jiebai).
+kin-rite-name-giver = { $role ->
+        [sponsored] mwana oyo apesamaki nkombo
+       *[other] mopesi nkombo
+    }
+kin-rite-name-giver-name = Kopesa nkombo
+kin-rite-name-giver-note = Apesaki mwana nkombo na ye (nazuke-oya na Zapɔ).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] mobali ya libala
+            [F] mwasi ya libala
+           *[other] molongani ya libala
+        }
+       *[other] mosangisi ya libala
+    }
+kin-rite-nakodo-name = Nakōdo
+kin-rite-nakodo-note = Abongisaki libala mpe azalaki motatoli na yango (nakōdo na Zapɔ).
+kin-rite-namesake = ndoyi
+kin-rite-namesake-name = Ndoyi
+kin-rite-namesake-note = Azali na nkombo moko: na Afrika ya Katikati mpe ya Ɛsti, bokangami ya makabo mpe ya kobatela (ndoyi, somo).
+kin-rite-initiation = { $role ->
+        [sponsored] mokɔti
+       *[other] { $sex ->
+            [M] tata ya bokɔti
+            [F] mama ya bokɔti
+           *[other] mobateli ya bokɔti
+        }
+    }
+kin-rite-initiation-name = Bokɔti
+kin-rite-initiation-note = Akambaki moto na bokɔti.
+kin-rite-blood-pact = { $sex ->
+        [M] ndeko mobali ya makila
+        [F] ndeko mwasi ya makila
+       *[other] ndeko ya makila
+    }
+kin-rite-blood-pact-name = Boyokani ya makila
+kin-rite-blood-pact-note = Bakangami na boyokani ya makila.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya hānai
+            [F] mwana ya hānai
+           *[other] mwana ya hānai
+        }
+       *[other] { $sex ->
+            [M] tata ya hānai
+            [F] mama ya hānai
+           *[other] moboti ya hānai
+        }
+    }
+kin-rite-hanai-name = Hānai
+kin-rite-hanai-note = Abɔkɔlamaki lokola mwana na bango na momeseno ya Hawai, kozanga adopsyo ya mibeko.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya hunka
+            [F] mwana ya hunka
+           *[other] mwana ya hunka
+        }
+       *[other] { $sex ->
+            [M] tata ya hunka
+            [F] mama ya hunka
+           *[other] moboti ya hunka
+        }
+    }
+kin-rite-hunka-name = Hunka
+kin-rite-hunka-note = Akómaki ndeko na molulu ya hunka ya Balakota.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] mwana ya batisimo ya leta
+            [F] mwana ya batisimo ya leta
+           *[other] mwana ya batisimo ya leta
+        }
+       *[other] { $sex ->
+            [M] tata ya batisimo ya leta
+            [F] mama ya batisimo ya leta
+           *[other] moboti ya batisimo ya leta
+        }
+    }
+kin-rite-civil-sponsor-name = Bobateli ya batisimo ya leta
+kin-rite-civil-sponsor-note = Tata to mama ya batisimo na molulu ya leta ya kopesa nkombo.
+kin-rite-guardian = { $role ->
+        [sponsored] mwana na bobateli
+       *[other] mobateli
+    }
+kin-rite-guardian-name = Bobateli
+kin-rite-guardian-note = Mobateli, ndenge mokanda elobi.

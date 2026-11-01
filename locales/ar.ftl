@@ -4751,3 +4751,799 @@ merge-report-links = روابط أُزيلت
 merge-report-tidied = مدخلات رُتّبت
 merge-absorbed-record = السجل المدموج كما كان
 merge-open-kept = فتح السجل المحتفظ به
+
+## القرابة (docs/adr/0020)
+
+kin-tab = القرابة
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] أب بالتبني
+            [F] أم بالتبني
+           *[other] والد بالتبني
+        }
+       *[no] { $sex ->
+            [M] أب
+            [F] أم
+           *[other] والد
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] { $side ->
+                [M] جد لأب
+                [F] جد لأم
+               *[other] جد
+            }
+            [F] { $side ->
+                [M] جدة لأب
+                [F] جدة لأم
+               *[other] جدة
+            }
+           *[other] جد أو جدة
+        }
+        [3] { $sex ->
+            [M] جد الأب أو الأم
+            [F] جدة الأب أو الأم
+           *[other] جد أكبر
+        }
+        [4] { $sex ->
+            [M] جد أعلى
+            [F] جدة عليا
+           *[other] جد أعلى
+        }
+       *[other] سلف من الجيل { $n }
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] ابن بالتبني
+            [F] ابنة بالتبني
+           *[other] ولد بالتبني
+        }
+       *[no] { $sex ->
+            [M] ابن
+            [F] ابنة
+           *[other] ولد
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $sex ->
+            [M] حفيد
+            [F] حفيدة
+           *[other] حفيد أو حفيدة
+        }
+        [3] { $sex ->
+            [M] ابن الحفيد
+            [F] ابنة الحفيد
+           *[other] ولد الحفيد
+        }
+        [4] { $sex ->
+            [M] حفيد الحفيد
+            [F] حفيدة الحفيد
+           *[other] حفيد الحفيد
+        }
+       *[other] خلف من الجيل { $n }
+    }
+kin-sibling = { $half ->
+        [yes] { $sex ->
+            [M] { $side ->
+                [M] أخ لأب
+                [F] أخ لأم
+               *[other] أخ غير شقيق
+            }
+            [F] { $side ->
+                [M] أخت لأب
+                [F] أخت لأم
+               *[other] أخت غير شقيقة
+            }
+           *[other] أخ أو أخت غير شقيقين
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] أخ بالتبني
+                [F] أخت بالتبني
+               *[other] أخ أو أخت بالتبني
+            }
+           *[no] { $sex ->
+                [M] أخ
+                [F] أخت
+               *[other] أخ أو أخت
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $side ->
+            [M] { $sex ->
+                [M] عم
+                [F] عمة
+               *[other] عم أو عمة
+            }
+            [F] { $sex ->
+                [M] خال
+                [F] خالة
+               *[other] خال أو خالة
+            }
+           *[other] { $sex ->
+                [M] عم أو خال
+                [F] عمة أو خالة
+               *[other] عم أو خال
+            }
+        }
+        [2] { $sex ->
+            [M] أخو
+            [F] أخت
+           *[other] أخو أو أخت
+        } { $turna ->
+            [M] الجد
+            [F] الجدة
+           *[other] الجد أو الجدة
+        }
+        [3] { $sex ->
+            [M] أخو الجد الأكبر
+            [F] أخت الجد الأكبر
+           *[other] أخو الجد الأكبر أو أخته
+        }
+       *[other] { $sex ->
+            [M] أخو سلف
+            [F] أخت سلف
+           *[other] أخو سلف أو أخته
+        }
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] ابن
+            [F] ابنة
+           *[other] ولد
+        } { $via ->
+            [M] الأخ
+            [F] الأخت
+           *[other] الأخ أو الأخت
+        }
+        [2] { $sex ->
+            [M] حفيد
+            [F] حفيدة
+           *[other] حفيد
+        } { $via ->
+            [M] الأخ
+            [F] الأخت
+           *[other] الأخ أو الأخت
+        }
+       *[other] خلف الأخ أو الأخت
+    }
+kin-cousin = { $k ->
+        [1] { $sex ->
+            [M] { $side ->
+                [M] { $via ->
+                    [M] ابن العم
+                    [F] ابن العمة
+                   *[other] ابن العم أو العمة
+                }
+                [F] { $via ->
+                    [M] ابن الخال
+                    [F] ابن الخالة
+                   *[other] ابن الخال أو الخالة
+                }
+               *[other] ابن عمومة أو خؤولة
+            }
+            [F] { $side ->
+                [M] { $via ->
+                    [M] بنت العم
+                    [F] بنت العمة
+                   *[other] بنت العم أو العمة
+                }
+                [F] { $via ->
+                    [M] بنت الخال
+                    [F] بنت الخالة
+                   *[other] بنت الخال أو الخالة
+                }
+               *[other] بنت عمومة أو خؤولة
+            }
+           *[other] ابن عمومة أو خؤولة
+        }
+       *[other] { $sex ->
+            [M] ابن عمومة
+            [F] ابنة عمومة
+           *[other] قريب
+        } من الدرجة { $k }
+    }
+kin-cousin-removed = { $older ->
+        [yes] { $k ->
+            [1] { $sex ->
+                [M] ابن عمومة
+                [F] ابنة عمومة
+               *[other] قريب
+            } { $forebear }
+           *[other] { $sex ->
+                [M] ابن عمومة
+                [F] ابنة عمومة
+               *[other] قريب
+            } من الدرجة { $k }، من جيل { $r ->
+                [1] الوالدين
+                [2] الأجداد
+               *[other] أقدم
+            }
+        }
+       *[no] { $k ->
+            [1] { $descendant } { $ofcousin }
+           *[other] { $sex ->
+                [M] ابن عمومة
+                [F] ابنة عمومة
+               *[other] قريب
+            } من الدرجة { $k }، من جيل { $r ->
+                [1] الأبناء
+                [2] الأحفاد
+               *[other] أحدث
+            }
+        }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] الأب
+            [F] الأم
+           *[other] أحد الوالدين
+        }
+        [2] { $sex ->
+            [M] الجد
+            [F] الجدة
+           *[other] أحد الأجداد
+        }
+       *[other] أحد الأسلاف
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] ابن
+            [F] ابنة
+           *[other] ولد
+        }
+        [2] { $sex ->
+            [M] حفيد
+            [F] حفيدة
+           *[other] حفيد
+        }
+       *[other] خلف
+    }
+kin-of-cousin = { $sex ->
+        [F] ابنة العمومة
+       *[other] ابن العمومة
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] زوج سابق
+                [F] زوجة سابقة
+               *[other] زوج سابق
+            }
+           *[no] { $sex ->
+                [M] شريك سابق
+                [F] شريكة سابقة
+               *[other] شريك سابق
+            }
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] زوج
+                [F] زوجة
+               *[other] زوج أو زوجة
+            }
+           *[no] { $sex ->
+                [M] شريك
+                [F] شريكة
+               *[other] شريك
+            }
+        }
+    }
+kin-parent-in-law = { $sex ->
+        [M] حمو
+        [F] حماة
+       *[other] أحد الأصهار
+    }
+kin-child-in-law = { $sex ->
+        [M] صهر
+        [F] كنّة
+       *[other] صهر أو كنّة
+    }
+kin-sibling-in-law = { $kind ->
+        [partner-sibling] { $via ->
+            [F] { $sex ->
+                [M] أخو الزوجة
+                [F] أخت الزوجة
+               *[other] أخو الزوجة أو أختها
+            }
+            [M] { $sex ->
+                [M] أخو الزوج
+                [F] أخت الزوج
+               *[other] أخو الزوج أو أخته
+            }
+           *[other] { $sex ->
+                [M] أخو الشريك
+                [F] أخت الشريك
+               *[other] أخو الشريك أو أخته
+            }
+        }
+       *[other] { $sex ->
+            [M] زوج الأخت
+            [F] زوجة الأخ
+           *[other] زوج الأخ أو الأخت
+        }
+    }
+kin-step-parent = { $sex ->
+        [M] زوج الأم
+        [F] زوجة الأب
+       *[other] زوج أحد الوالدين
+    }
+kin-step-child = { $sex ->
+        [M] ربيب
+        [F] ربيبة
+       *[other] ربيب أو ربيبة
+    }
+kin-note-step-parent = { $sex ->
+        [F] زوجة
+       *[other] زوج
+    } { $next ->
+        [M] الأب
+        [F] الأم
+       *[other] أحد الوالدين
+    }
+kin-note-step-child = ولد { $via ->
+        [M] الزوج
+        [F] الزوجة
+       *[other] الشريك
+    }
+kin-foster-parent = { $sex ->
+        [M] أب حاضن
+        [F] أم حاضنة
+       *[other] حاضن
+    }
+kin-foster-child = { $sex ->
+        [M] طفل محتضن
+        [F] طفلة محتضنة
+       *[other] طفل محتضن
+    }
+kin-guardian = { $sex ->
+        [F] وصية
+       *[other] وصي
+    }
+kin-ward = { $sex ->
+        [F] قاصرة تحت الوصاية
+       *[other] قاصر تحت الوصاية
+    }
+kin-relative-of-partner = { $relative } من جهة { $via ->
+        [M] الزوج
+        [F] الزوجة
+       *[other] الشريك
+    }
+kin-partner-of-relative = { $sex ->
+        [M] زوج
+        [F] زوجة
+       *[other] شريك
+    } { $relative }
+kin-affine = { $sex ->
+        [F] قريبة بالمصاهرة
+       *[other] قريب بالمصاهرة
+    }
+kin-related = { $sex ->
+        [F] مرتبطة عبر سجلات العائلة
+       *[other] مرتبط عبر سجلات العائلة
+    }
+kin-note-adoptive = بالتبني
+kin-of = بالنسبة إلى { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] أب بالتبني
+            [F] أم بالتبني
+           *[other] والد بالتبني
+        }
+        [foster] { $sex ->
+            [M] أب حاضن
+            [F] أم حاضنة
+           *[other] حاضن
+        }
+        [guardianship] { $sex ->
+            [F] وصية
+           *[other] وصي
+        }
+        [step] { $sex ->
+            [M] زوج الأم
+            [F] زوجة الأب
+           *[other] زوج أحد الوالدين
+        }
+       *[other] { $sex ->
+            [M] أب
+            [F] أم
+           *[other] والد
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] ابن بالتبني
+            [F] ابنة بالتبني
+           *[other] ولد بالتبني
+        }
+        [foster] { $sex ->
+            [M] طفل محتضن
+            [F] طفلة محتضنة
+           *[other] طفل محتضن
+        }
+        [guardianship] { $sex ->
+            [F] قاصرة تحت الوصاية
+           *[other] قاصر تحت الوصاية
+        }
+        [step] { $sex ->
+            [M] ربيب
+            [F] ربيبة
+           *[other] ربيب أو ربيبة
+        }
+       *[other] { $sex ->
+            [M] ابن
+            [F] ابنة
+           *[other] ولد
+        }
+    }
+kin-group-partners = الأزواج
+kin-group-ancestors = الأصول
+kin-group-descendants = الفروع
+kin-group-siblings = الإخوة والأخوات
+kin-group-uncles = الأعمام والأخوال
+kin-group-nephews = أبناء الإخوة والأخوات
+kin-group-cousins = أبناء العمومة والخؤولة
+kin-group-in-laws = الأصهار
+kin-group-step = الأسرة المركبة
+kin-group-care = الحضانة والوصاية
+kin-group-rites = الشعائر والأعراف
+kin-group-others = روابط أخرى
+kin-find-title = ما صلة القرابة؟
+kin-find-lede = اختر شخصًا من العائلة: تُشرح صلته بـ{ $name } خطوة بخطوة.
+kin-find-label = الشخص
+kin-find-choose = اختر شخصًا…
+kin-find-go = اعرض الصلة
+kin-find-none = لا تربط سجلات العائلة بين { $a } و{ $b }.
+kin-path = الصلة خطوة بخطوة
+kin-degree = قرابة من الدرجة { $n }
+kin-all-title = كل أقارب { $name }
+kin-all-count = { $n ->
+        [zero] لا أحد
+        [one] شخص واحد
+        [two] شخصان
+        [few] { $n } أشخاص
+        [many] { $n } شخصًا
+       *[other] { $n } شخص
+    }
+kin-common-list = الأسلاف المشتركون: { $names }
+kin-also-list = وأيضًا { $list }
+kin-rites-help = العرّابون وسائر الروابط التي تنشئها التقاليد بين أشخاص لم يولدوا بعضهم من بعض. ترسمها الشجرة بخط منقّط خاص بها.
+kin-rite-recorded = يقول السجل: «{ $label }».
+kin-hidden = شخص لا يمكنك رؤيته
+kin-native = بكلمات التقليد
+kin-legend-rite = عرّاب أو شعيرة أو عرف
+kin-tree-root = { $term } { $of }
+kin-editor-rite = شعيرة أو عرف
+kin-editor-rite-none = لا شيء: علاقة بسيطة
+kin-editor-rite-hint = ما يكونه هذا الشخص للآخر. يملأ الاختيار العلاقة والكلمات، ويحتفظ السجل بالشعيرة.
+kin-editor-rite-option = { $rite }: { $word }
+kin-tradition-christian = مسيحية
+kin-tradition-orthodox = مسيحية أرثوذكسية
+kin-tradition-hispanic = إسبانية وفلبينية
+kin-tradition-jewish = يهودية
+kin-tradition-islamic = إسلامية
+kin-tradition-south-asian = من جنوب آسيا
+kin-tradition-east-asian = من شرق آسيا
+kin-tradition-african = أفريقية
+kin-tradition-indigenous = الشعوب الأصلية والمحيط الهادئ
+kin-tradition-civil = مدنية وعلمانية
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-godparent-name = العرابة
+kin-rite-godparent-note = عرّاب أو عرّابة كما يذكر السجل.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-baptism-name = المعمودية
+kin-rite-baptism-note = عرّاب في المعمودية.
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] مثبَّت
+            [F] مثبَّتة
+           *[other] مثبَّت
+        }
+       *[other] { $sex ->
+            [M] عرّاب التثبيت
+            [F] عرّابة التثبيت
+           *[other] عرّاب التثبيت
+        }
+    }
+kin-rite-confirmation-name = التثبيت
+kin-rite-confirmation-note = عرّاب في التثبيت أو الميرون.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] عريس
+            [F] عروس
+           *[other] عريس أو عروس
+        }
+       *[other] { $sex ->
+            [M] إشبين
+            [F] إشبينة
+           *[other] إشبين
+        }
+    }
+kin-rite-wedding-sponsor-name = الإشبينية
+kin-rite-wedding-sponsor-note = إشبين الزواج: padrino de boda، ninong، koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-kum-name = كومستفو
+kin-rite-kum-note = عرّاب أو شاهد زواج في التقليد الأرثوذكسي السلافي؛ الكومستفو يربط عائلتين.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-koumbaros-name = كومباروس
+kin-rite-koumbaros-note = شاهد زواج أو عرّاب في التقليد الأرثوذكسي اليوناني.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-padrino-name = بادرينو
+kin-rite-padrino-note = بادرينو أو مادرينا: في المعمودية والمناولة الأولى والكينسينييرا.
+kin-rite-compadre = { $sex ->
+        [M] شريك في الأبوة الروحية
+        [F] شريكة في الأمومة الروحية
+       *[other] شريك في الأبوة الروحية
+    }
+kin-rite-compadre-name = كومبادرازغو
+kin-rite-compadre-note = الرابطة بين والدي الطفل وعرّابيه.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-ninong-name = نينونغ
+kin-rite-ninong-note = نينونغ أو نينانغ: عرّاب في المعمودية أو التثبيت أو الزواج في الفلبين.
+kin-rite-sandek = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون
+        }
+       *[other] ساندك
+    }
+kin-rite-sandek-name = بريت ميلا: ساندك
+kin-rite-sandek-note = يحمل الطفل أثناء البريت ميلا.
+kin-rite-kvatter = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون
+        }
+       *[other] { $sex ->
+            [F] كفاترين
+           *[other] كفاتر
+        }
+    }
+kin-rite-kvatter-name = بريت ميلا: كفاتر
+kin-rite-kvatter-note = يحمل الطفل إلى البريت ميلا.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] ابن من الرضاعة
+            [F] ابنة من الرضاعة
+           *[other] ولد من الرضاعة
+        }
+       *[other] { $sex ->
+            [M] أب من الرضاعة
+            [F] أم من الرضاعة
+           *[other] والد من الرضاعة
+        }
+    }
+kin-rite-milk-parent-name = القرابة من الرضاعة
+kin-rite-milk-parent-note = أرضعت الطفل: في الشريعة الإسلامية تنشئ الرضاعة قرابة وتحرّم الزواج كما تحرّمه الولادة.
+kin-rite-milk-sibling = { $sex ->
+        [M] أخ من الرضاعة
+        [F] أخت من الرضاعة
+       *[other] أخ أو أخت من الرضاعة
+    }
+kin-rite-milk-sibling-name = الإخوة من الرضاعة
+kin-rite-milk-sibling-note = أرضعتهما المرأة نفسها.
+kin-rite-kafala = { $role ->
+        [sponsored] { $sex ->
+            [F] مكفولة
+           *[other] مكفول
+        }
+       *[other] { $sex ->
+            [F] كافلة
+           *[other] كافل
+        }
+    }
+kin-rite-kafala-name = الكفالة
+kin-rite-kafala-note = يكفل طفلًا ويربيه دون نسب التبني، وفق الشريعة الإسلامية.
+kin-rite-rakhi = { $sex ->
+        [M] أخ الراخي
+        [F] أخت الراخي
+       *[other] أخ أو أخت الراخي
+    }
+kin-rite-rakhi-name = راخي
+kin-rite-rakhi-note = في راكشا بندهن تربط الأخت الراخي على معصم أخيها، فيتعهد بحمايتها.
+kin-rite-guru = { $role ->
+        [sponsored] { $sex ->
+            [M] تلميذ
+            [F] تلميذة
+           *[other] تلميذ
+        }
+       *[other] غورو
+    }
+kin-rite-guru-name = غورو
+kin-rite-guru-note = معلّم روحي وتلميذه.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون
+            [F] فليونة
+           *[other] فليون أو فليونة
+        }
+       *[other] { $sex ->
+            [M] عرّاب
+            [F] عرّابة
+           *[other] عرّاب أو عرّابة
+        }
+    }
+kin-rite-gan-parent-name = غان تشين
+kin-rite-gan-parent-note = عرّابون يُختارون في الصين والعائلات الصينية، غالبًا لحماية الطفل.
+kin-rite-sworn-sibling = { $sex ->
+        [M] أخ بالقسم
+        [F] أخت بالقسم
+       *[other] أخ أو أخت بالقسم
+    }
+kin-rite-sworn-sibling-name = الأخوّة بالقسم
+kin-rite-sworn-sibling-note = إخوة أو أخوات بالقسم (جيباي).
+kin-rite-name-giver = { $role ->
+        [sponsored] { $sex ->
+            [M] الطفل المُسمّى
+            [F] الطفلة المُسمّاة
+           *[other] الطفل المُسمّى
+        }
+       *[other] { $sex ->
+            [F] مُسمّية
+           *[other] مُسمّي
+        }
+    }
+kin-rite-name-giver-name = التسمية
+kin-rite-name-giver-note = أعطى الطفل اسمه (ناتسوكي-أويا في اليابان).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] عريس
+            [F] عروس
+           *[other] عريس أو عروس
+        }
+       *[other] { $sex ->
+            [F] خاطبة
+           *[other] خاطب
+        }
+    }
+kin-rite-nakodo-name = ناكودو
+kin-rite-nakodo-note = رتّب الزواج وشهد عليه (ناكودو في اليابان).
+kin-rite-namesake = { $sex ->
+        [F] سميّة
+       *[other] سميّ
+    }
+kin-rite-namesake-name = السميّ
+kin-rite-namesake-note = يحمل الاسم نفسه: في وسط أفريقيا وشرقها رابطة هدايا ورعاية (ndoyi، somo).
+kin-rite-initiation = { $role ->
+        [sponsored] { $sex ->
+            [F] مُكرَّسة
+           *[other] مُكرَّس
+        }
+       *[other] { $sex ->
+            [F] مرشدة التكريس
+           *[other] مرشد التكريس
+        }
+    }
+kin-rite-initiation-name = التكريس
+kin-rite-initiation-note = رافق الشخص في طقس تكريس.
+kin-rite-blood-pact = { $sex ->
+        [M] أخ بالدم
+        [F] أخت بالدم
+       *[other] أخ أو أخت بالدم
+    }
+kin-rite-blood-pact-name = ميثاق الدم
+kin-rite-blood-pact-note = يجمعهما ميثاق دم.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] ابن هاناي
+            [F] ابنة هاناي
+           *[other] ولد هاناي
+        }
+       *[other] { $sex ->
+            [M] أب هاناي
+            [F] أم هاناي
+           *[other] والد هاناي
+        }
+    }
+kin-rite-hanai-name = هاناي
+kin-rite-hanai-note = رُبّي كابن لهم بحسب العرف الهاوايي، دون تبنٍّ قانوني.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] ابن هونكا
+            [F] ابنة هونكا
+           *[other] ولد هونكا
+        }
+       *[other] { $sex ->
+            [M] أب هونكا
+            [F] أم هونكا
+           *[other] والد هونكا
+        }
+    }
+kin-rite-hunka-name = هونكا
+kin-rite-hunka-note = صار قريبًا في طقس الهونكا لدى اللاكوتا.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] فليون مدني
+            [F] فليونة مدنية
+           *[other] فليون مدني
+        }
+       *[other] { $sex ->
+            [M] عرّاب مدني
+            [F] عرّابة مدنية
+           *[other] عرّاب مدني
+        }
+    }
+kin-rite-civil-sponsor-name = العرابة المدنية
+kin-rite-civil-sponsor-note = عرّاب في مراسم تسمية مدنية.
+kin-rite-guardian = { $role ->
+        [sponsored] { $sex ->
+            [F] قاصرة تحت الوصاية
+           *[other] قاصر تحت الوصاية
+        }
+       *[other] { $sex ->
+            [F] وصية
+           *[other] وصي
+        }
+    }
+kin-rite-guardian-name = الوصاية
+kin-rite-guardian-note = وصي كما يذكر السجل.

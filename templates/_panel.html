@@ -37,6 +37,12 @@
       {% elif p.is_living %}{% set facts = facts + [t("record-living-yes", gender=p.sex)] %}
       {% elif p.death.present %}{% set facts = facts + [t("record-deceased", gender=p.sex)] %}{% endif %}
       {% if facts %}<p class="lede small">{{ facts | join(" · ") }}</p>{% endif %}
+      {#- On the tree: what this person is to the one in its middle, and the
+          way to see the link step by step (docs/adr/0020). -#}
+      {% if root_kin and root_kin.relations %}{% set rk = root_kin.relations[0] %}
+      <p class="panel-kin" data-content><span class="panel-kin-term">{{ rk.said.term }}</span> {{ rk.of_a }}
+        <a class="panel-kin-path" href="/person/{{ root_kin.root }}?tab=kinship&amp;with={{ p.id }}#kin-result">{{ t("kin-path") }}</a></p>
+      {% endif %}
     </div>
     </div>
     <div class="panel-actions">

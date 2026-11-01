@@ -314,7 +314,11 @@ function axgfTreeWidth() {
       u.searchParams.set('sel', id);
       history.replaceState(history.state, '', u.pathname + u.search);
     } catch (err) { /* the address bar stays as it was */ }
-    fetch('/tree/panel/' + encodeURIComponent(id), { credentials: 'same-origin' })
+    // The panel says what the person is to the one in the middle.
+    var rootCard = document.querySelector('#tree-canvas .tcard.is-root');
+    var root = rootCard && rootCard.dataset.id;
+    fetch('/tree/panel/' + encodeURIComponent(id) + (root ? '?root=' + encodeURIComponent(root) : ''),
+          { credentials: 'same-origin' })
       .then(function (r) { if (!r.ok) throw new Error('panel'); return r.text(); })
       .then(function (html) { panel.innerHTML = html; })
       .catch(function () { /* the record stays the one shown */ });

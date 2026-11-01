@@ -219,12 +219,42 @@
 </section>
 {% endif %}
 
+{# ---------------------------------------------------- RITE AND CUSTOM #}
+{#- Godparents and the other ties a culture makes between people who are not
+    born to one another (the operator's request of 1 November 2026,
+    docs/adr/0020): apart from the family above, each in a dotted frame of its
+    own colour, as the tree draws them. The word is what the other person is
+    to this one, in the reader's language; the tradition's own word beside it,
+    untranslated. -#}
+{% set rite_links = p.links | selectattr("rite") | list %}
+{% set other_links = p.links | rejectattr("rite") | list %}
+{% if (tab is undefined or tab == "family") and rite_links %}
+<section class="rec-section rites-section" id="rites">
+  {{ m.sec(t, t("kin-group-rites"), compact, t("kin-rites-help")) }}
+  <ul class="rite-cards" data-content>
+    {% for l in rite_links %}
+    <li class="rite-card">
+      <p class="rite-term">{{ l.rite.term }}{% if l.rite.native %} <span class="kin-native" title="{{ t('kin-native') }}" lang="und"><bdi>{{ l.rite.native }}</bdi></span>{% endif %}</p>
+      <p class="rite-who">{{ m.person_link(l.other) }}</p>
+      <p class="small muted">{{ l.rite.name }} · {{ l.rite.tradition }}</p>
+      {% if not compact %}<p class="small">{{ l.rite.note }}</p>{% endif %}
+      {% if l.other_label and l.other_label != l.rite.term %}<p class="small muted">{{ t("kin-rite-recorded", label=l.other_label) }}</p>{% endif %}
+      {% if l.from_date %}<p class="small">{{ t("record-occupation-from") }} {{ m.date(l.from_date) }}</p>{% endif %}
+      {% if l.confidence %}<div>{{ m.conf_bar(l.confidence) }}</div>{% endif %}
+      {% if l.source %}<div>{{ m.source_chip(l.source) }}</div>{% endif %}
+      {% if l.note %}<p class="small muted">{{ l.note }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 {# --------------------------------------------------- OTHER RELATIONSHIPS #}
-{% if (tab is undefined or tab == "family") and (p.links) %}
+{% if (tab is undefined or tab == "family") and other_links %}
 <section class="links-section rec-section" id="relationships">
   {{ m.sec(t, t("record-other-relationships"), compact, t("record-other-relationships-help")) }}
   <div class="grid cols-2">
-    {% for l in p.links %}
+    {% for l in other_links %}
     <div class="link-card" data-dir="{{ l.direction }}">
       <div class="link-head">
         <span class="link-label">{{ l.label }}</span>
@@ -247,6 +277,9 @@
   </div>
 </section>
 {% endif %}
+
+{# ------------------------------------------------------------- KINSHIP #}
+{% if tab == "kinship" %}{% include "_kinship.html" %}{% endif %}
 
 {# ------------------------------------------------------------- CHARTS #}
 {# At the foot of the record tab, and only there: the side panel is one glance

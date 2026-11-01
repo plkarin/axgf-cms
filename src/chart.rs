@@ -794,6 +794,102 @@ fn line_opacity(c: &Confidence) -> f64 {
     0.5 + 0.5 * c.value
 }
 
+/// What each person on the chart is to the one in its middle, said on their
+/// open card, and their ties of rite and custom (docs/adr/0020). A tie of
+/// rite whose two people are both drawn is a line of its own between them:
+/// curved and dotted, in a colour no family line has, so that a godmother
+/// from another family never reads as a parent.
+pub fn relate(
+    layout: &mut TreeLayout,
+    flat: &Value,
+    lens: &crate::access::Lens,
+    lang: &str,
+    root: &str,
+) {
+    let kin = crate::kinship::Kin::new(flat, lens);
+    let mut drawn: BTreeMap<String, (f64, f64)> = BTreeMap::new();
+    for card in layout.bands.iter_mut().flat_map(|b| b.cards.iter_mut()) {
+        if !card.dup {
+            drawn.entry(card.id.clone()).or_insert((card.x, card.y));
+        }
+        if !card.known || !lens.sees_person(&card.id) {
+            continue;
+        }
+        if card.id != root {
+            if let Some(first) = kin.between(root, &card.id).first() {
+                let said = crate::kinship_text::say(first, kin.sex_of(&card.id), lang);
+                card.kin = said.term;
+                card.kin_note = said.note.unwrap_or_default();
+            }
+        }
+        card.rites = kin
+            .ties_of(&card.id)
+            .into_iter()
+            .filter(|(other, _, _)| lens.sees_person(other))
+            .map(|(other, rite, role)| crate::tree::CardRite {
+                term: crate::kinship_text::rite_word(lang, rite, role, kin.sex_of(&other)),
+                name: crate::access::river_label(flat, lens, &other).full,
+                id: other,
+            })
+            .collect();
+    }
+    // The ties between two people both on the chart, each once.
+    let mut seen: BTreeSet<(String, String)> = BTreeSet::new();
+    for (a, &(ax, ay)) in &drawn {
+        for (b, rite, _) in kin.ties_of(a) {
+            let Some(&(bx, by)) = drawn.get(&b) else {
+                continue;
+            };
+            let key = if *a < b {
+                (a.clone(), b.clone())
+            } else {
+                (b.clone(), a.clone())
+            };
+            if !seen.insert(key) {
+                continue;
+            }
+            layout.edges.push(Edge {
+                kind: "rite",
+                d: rite_arc((ax, ay), (bx, by)),
+                opacity: 1.0,
+                band: "high",
+                pct: 100,
+                title: crate::i18n::translate(lang, &format!("kin-rite-{}-name", rite.key), None),
+                from: a.clone(),
+                to: b,
+                hue: None,
+                tone: None,
+                line: None,
+                kids: None,
+                node: None,
+            });
+        }
+    }
+}
+
+/// A tie of rite between two cards, at their top-left corners: a curve, so
+/// that it never runs along a family's straight lines. In one column it
+/// bows out from the cards' start; between two columns it goes from the
+/// earlier card's end to the later card's start.
+fn rite_arc(a: (f64, f64), b: (f64, f64)) -> String {
+    let mid = CARD_H / 2.0;
+    let (ay, by) = (a.1 + mid, b.1 + mid);
+    if (a.0 - b.0).abs() < 1.0 {
+        let x = a.0;
+        let bow = 18.0 + ((by - ay).abs() / 12.0).min(22.0);
+        return format!(
+            "M {x:.1} {ay:.1} C {:.1} {ay:.1} {:.1} {by:.1} {x:.1} {by:.1}",
+            x - bow,
+            x - bow
+        );
+    }
+    let (l, r) = if a.0 < b.0 { (a, b) } else { (b, a) };
+    let (sx, sy) = (l.0 + CARD_W, l.1 + mid);
+    let (ex, ey) = (r.0, r.1 + mid);
+    let cx = (sx + ex) / 2.0;
+    format!("M {sx:.1} {sy:.1} C {cx:.1} {sy:.1} {cx:.1} {ey:.1} {ex:.1} {ey:.1}")
+}
+
 /// The cards' own dress, for the chart and the whole family alike (the
 /// operator's review, 2026-10-27): the folded name ("Marie D."), the dates in
 /// words, and the portrait the record would show, among the pictures of

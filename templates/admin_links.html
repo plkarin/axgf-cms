@@ -30,7 +30,7 @@
   <fieldset class="ed-group">
     <legend>{{ l.label }}</legend>
     {% if l.reversed %}<p class="ed-elsewhere">{{ t("links-reversed") }}</p>{% endif %}
-    {{ m.link_fields(t, l, categories, relations, precisions, sources) }}
+    {{ m.link_fields(t, l, categories, relations, precisions, sources, rites) }}
     <div class="ed-actions">
       <button type="submit" class="btn" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
     </div>
@@ -48,7 +48,7 @@
 <form method="post" action="/admin/person/{{ id }}/links" class="editor">
   <fieldset class="ed-group">
     <legend>{{ t("links-new") }}</legend>
-    {{ m.link_fields(t, none, categories, relations, precisions, sources) }}
+    {{ m.link_fields(t, none, categories, relations, precisions, sources, rites) }}
     <div class="ed-actions">
       <button type="submit" class="btn primary" data-busy="{{ t('busy-working') }}">{{ t("links-create") }}</button>
     </div>

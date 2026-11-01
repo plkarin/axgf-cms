@@ -3939,3 +3939,649 @@ merge-report-links = 削除したリンク
 merge-report-tidied = 整理した項目
 merge-absorbed-record = 統合された記録（元の内容）
 merge-open-kept = 残した記録を開く
+
+## 続柄 (docs/adr/0020)
+
+kin-tab = 続柄
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] 養父
+            [F] 養母
+           *[other] 養親
+        }
+       *[no] { $sex ->
+            [M] 父
+            [F] 母
+           *[other] 親
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] 祖父
+            [F] 祖母
+           *[other] 祖父母
+        }
+        [3] { $sex ->
+            [M] 曽祖父
+            [F] 曽祖母
+           *[other] 曽祖父母
+        }
+        [4] { $sex ->
+            [M] 高祖父
+            [F] 高祖母
+           *[other] 高祖父母
+        }
+       *[other] { $n }代前の先祖
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] 養子
+            [F] 養女
+           *[other] 養子
+        }
+       *[no] { $sex ->
+            [M] 息子
+            [F] 娘
+           *[other] 子
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $sex ->
+            [M] 孫息子
+            [F] 孫娘
+           *[other] 孫
+        }
+        [3] 曾孫
+        [4] 玄孫
+       *[other] { $n }代後の子孫
+    }
+kin-sibling = { $half ->
+        [yes] { $side ->
+            [M] 異母
+            [F] 異父
+           *[other] 片親違いの
+        }{ $sex ->
+            [M] { $elder ->
+                [yes] 兄
+                [no] 弟
+               *[other] 兄弟
+            }
+            [F] { $elder ->
+                [yes] 姉
+                [no] 妹
+               *[other] 姉妹
+            }
+           *[other] きょうだい
+        }
+       *[no] { $adoptive ->
+            [yes] 養子縁組による{ $sex ->
+                [M] { $elder ->
+                    [yes] 兄
+                    [no] 弟
+                   *[other] 兄弟
+                }
+                [F] { $elder ->
+                    [yes] 姉
+                    [no] 妹
+                   *[other] 姉妹
+                }
+               *[other] きょうだい
+            }
+           *[no] { $sex ->
+                [M] { $elder ->
+                    [yes] 兄
+                    [no] 弟
+                   *[other] 兄弟
+                }
+                [F] { $elder ->
+                    [yes] 姉
+                    [no] 妹
+                   *[other] 姉妹
+                }
+               *[other] きょうだい
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $sex ->
+            [M] { $turnelder ->
+                [yes] 伯父
+                [no] 叔父
+               *[other] おじ
+            }
+            [F] { $turnelder ->
+                [yes] 伯母
+                [no] 叔母
+               *[other] おば
+            }
+           *[other] おじ・おば
+        }
+        [2] { $sex ->
+            [M] 大おじ
+            [F] 大おば
+           *[other] 大おじ・大おば
+        }
+        [3] 曽祖父母のきょうだい
+       *[other] 先祖のきょうだい
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] 甥
+            [F] 姪
+           *[other] 甥・姪
+        }
+        [2] { $sex ->
+            [M] 大甥
+            [F] 大姪
+           *[other] 大甥・大姪
+        }
+        [3] きょうだいの曾孫
+       *[other] きょうだいの子孫
+    }
+kin-cousin = { $k ->
+        [1] { $sex ->
+            [M] { $elder ->
+                [yes] 従兄
+                [no] 従弟
+               *[other] いとこ
+            }
+            [F] { $elder ->
+                [yes] 従姉
+                [no] 従妹
+               *[other] いとこ
+            }
+           *[other] いとこ
+        }
+        [2] はとこ
+        [3] みいとこ
+       *[other] 遠縁
+    }
+kin-cousin-removed = { $older ->
+        [yes] { $forebear }の{ $k ->
+            [1] いとこ
+            [2] はとこ
+           *[other] 遠縁
+        }
+       *[no] { $k ->
+            [1] いとこ
+            [2] はとこ
+           *[other] 遠縁
+        }の{ $descendant }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] 父
+            [F] 母
+           *[other] 親
+        }
+        [2] { $sex ->
+            [M] 祖父
+            [F] 祖母
+           *[other] 祖父母
+        }
+        [3] { $sex ->
+            [M] 曽祖父
+            [F] 曽祖母
+           *[other] 曽祖父母
+        }
+       *[other] 先祖
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] 息子
+            [F] 娘
+           *[other] 子
+        }
+        [2] 孫
+        [3] 曾孫
+       *[other] 子孫
+    }
+kin-of-cousin = { $k ->
+        [1] いとこ
+        [2] はとこ
+       *[other] 遠縁
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] 元夫
+                [F] 元妻
+               *[other] 元配偶者
+            }
+           *[no] 元パートナー
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] 夫
+                [F] 妻
+               *[other] 配偶者
+            }
+           *[no] パートナー
+        }
+    }
+kin-parent-in-law = { $sex ->
+        [M] 義父
+        [F] 義母
+       *[other] 義理の親
+    }
+kin-child-in-law = { $sex ->
+        [M] 婿
+        [F] 嫁
+       *[other] 子の配偶者
+    }
+kin-sibling-in-law = { $sex ->
+        [M] { $elder ->
+            [yes] 義兄
+            [no] 義弟
+           *[other] 義理の兄弟
+        }
+        [F] { $elder ->
+            [yes] 義姉
+            [no] 義妹
+           *[other] 義理の姉妹
+        }
+       *[other] 義理のきょうだい
+    }
+kin-step-parent = { $sex ->
+        [M] 継父
+        [F] 継母
+       *[other] 継親
+    }
+kin-step-child = { $sex ->
+        [M] 継子
+        [F] 継娘
+       *[other] 継子
+    }
+kin-note-step-parent = { $next ->
+        [M] 父
+        [F] 母
+       *[other] 親
+    }の配偶者
+kin-note-step-child = { $via ->
+        [M] 夫
+        [F] 妻
+       *[other] 配偶者
+    }の子
+kin-foster-parent = { $sex ->
+        [M] 里父
+        [F] 里母
+       *[other] 里親
+    }
+kin-foster-child = 里子
+kin-guardian = 後見人
+kin-ward = 被後見人
+kin-relative-of-partner = { $via ->
+        [M] 夫
+        [F] 妻
+       *[other] 配偶者
+    }の{ $relative }
+kin-partner-of-relative = { $relative }の{ $sex ->
+        [M] 夫
+        [F] 妻
+       *[other] 配偶者
+    }
+kin-affine = 姻族
+kin-related = 家族の記録でつながる人
+kin-note-adoptive = 養子縁組による
+kin-of = { $name }から見て
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] 養父
+            [F] 養母
+           *[other] 養親
+        }
+        [foster] { $sex ->
+            [M] 里父
+            [F] 里母
+           *[other] 里親
+        }
+        [guardianship] 後見人
+        [step] { $sex ->
+            [M] 継父
+            [F] 継母
+           *[other] 継親
+        }
+       *[other] { $sex ->
+            [M] 父
+            [F] 母
+           *[other] 親
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] 養子
+            [F] 養女
+           *[other] 養子
+        }
+        [foster] 里子
+        [guardianship] 被後見人
+        [step] { $sex ->
+            [M] 継子
+            [F] 継娘
+           *[other] 継子
+        }
+       *[other] { $sex ->
+            [M] 息子
+            [F] 娘
+           *[other] 子
+        }
+    }
+kin-group-partners = 配偶者
+kin-group-ancestors = 先祖
+kin-group-descendants = 子孫
+kin-group-siblings = きょうだい
+kin-group-uncles = おじ・おば
+kin-group-nephews = 甥・姪
+kin-group-cousins = いとこ
+kin-group-in-laws = 姻族
+kin-group-step = ステップファミリー
+kin-group-care = 里親と後見
+kin-group-rites = 儀礼と慣習
+kin-group-others = その他のつながり
+kin-find-title = どんな続柄？
+kin-find-lede = 家族の中から一人を選ぶと、{ $name }との関係が一歩ずつ説明されます。
+kin-find-label = 人物
+kin-find-choose = 人物を選ぶ…
+kin-find-go = 関係を見る
+kin-find-none = 家族の記録では { $a } と { $b } はつながっていません。
+kin-path = 関係を一歩ずつ
+kin-degree = { $n }親等
+kin-all-title = { $name }のすべての親族
+kin-all-count = { $n }人
+kin-common-list = 共通の先祖：{ $names }
+kin-also-list = ほかに { $list }
+kin-rites-help = 代父母など、生まれによらない人々のあいだに伝統が結ぶ絆。系図では独自の点線で描かれます。
+kin-rite-recorded = 記録には「{ $label }」とあります。
+kin-hidden = 閲覧できない人物
+kin-native = 伝統の言葉で
+kin-legend-rite = 代父母・儀礼・慣習
+kin-tree-root = { $of }：{ $term }
+kin-editor-rite = 儀礼・慣習
+kin-editor-rite-none = なし：単なる関係
+kin-editor-rite-hint = この人物が相手にとって何にあたるか。選ぶと関係と言葉が入力され、記録には儀礼が残ります。
+kin-editor-rite-option = { $rite }：{ $word }
+kin-tradition-christian = キリスト教
+kin-tradition-orthodox = 正教会
+kin-tradition-hispanic = ヒスパニック・フィリピン
+kin-tradition-jewish = ユダヤ教
+kin-tradition-islamic = イスラム教
+kin-tradition-south-asian = 南アジア
+kin-tradition-east-asian = 東アジア
+kin-tradition-african = アフリカ
+kin-tradition-indigenous = 先住民・太平洋
+kin-tradition-civil = 民事・世俗
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] 代子
+            [F] 代子
+           *[other] 代子
+        }
+       *[other] { $sex ->
+            [M] 代父
+            [F] 代母
+           *[other] 代父母
+        }
+    }
+kin-rite-godparent-name = 代父母
+kin-rite-godparent-note = 記録にある代父母。
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] 代子
+            [F] 代子
+           *[other] 代子
+        }
+       *[other] { $sex ->
+            [M] 代父
+            [F] 代母
+           *[other] 代父母
+        }
+    }
+kin-rite-baptism-name = 洗礼
+kin-rite-baptism-note = 洗礼の代父母。
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] 受堅者
+            [F] 受堅者
+           *[other] 受堅者
+        }
+       *[other] { $sex ->
+            [M] 堅信の代父
+            [F] 堅信の代母
+           *[other] 堅信の代父母
+        }
+    }
+kin-rite-confirmation-name = 堅信
+kin-rite-confirmation-note = 堅信または傅膏の代父母。
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] 新郎
+            [F] 新婦
+           *[other] 新郎新婦
+        }
+       *[other] { $sex ->
+            [M] 婚礼の代父
+            [F] 婚礼の代母
+           *[other] 婚礼の代父母
+        }
+    }
+kin-rite-wedding-sponsor-name = 婚礼の後見
+kin-rite-wedding-sponsor-note = 結婚の後見人。スペイン語圏のパドリーノ、フィリピンのニノン、ギリシャのクンバロスなど。
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] 代子
+            [F] 代子
+           *[other] 代子
+        }
+       *[other] { $sex ->
+            [M] 代父
+            [F] 代母
+           *[other] 代父母
+        }
+    }
+kin-rite-kum-name = クムストヴォ
+kin-rite-kum-note = 正教会スラブの伝統での代父母または結婚の立会人。クムストヴォは二つの家族を結ぶ。
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] 代子
+            [F] 代子
+           *[other] 代子
+        }
+       *[other] { $sex ->
+            [M] 代父
+            [F] 代母
+           *[other] 代父母
+        }
+    }
+kin-rite-koumbaros-name = クンバロス
+kin-rite-koumbaros-note = ギリシャ正教の伝統での結婚の立会人または代父母。
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] 代子
+            [F] 代子
+           *[other] 代子
+        }
+       *[other] { $sex ->
+            [M] 代父
+            [F] 代母
+           *[other] 代父母
+        }
+    }
+kin-rite-padrino-name = パドリーノ
+kin-rite-padrino-note = パドリーノまたはマドリーナ：洗礼、初聖体、キンセアニェーラで。
+kin-rite-compadre = { $sex ->
+        [M] コンパドレ
+        [F] コマドレ
+       *[other] コンパドレ
+    }
+kin-rite-compadre-name = コンパドラスゴ
+kin-rite-compadre-note = 子の両親と代父母とのあいだの絆。
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] 代子
+            [F] 代子
+           *[other] 代子
+        }
+       *[other] { $sex ->
+            [M] 代父
+            [F] 代母
+           *[other] 代父母
+        }
+    }
+kin-rite-ninong-name = ニノン
+kin-rite-ninong-note = ニノン／ニナン：フィリピンでの洗礼・堅信・結婚の代父母。
+kin-rite-sandek = { $role ->
+        [sponsored] 代子
+       *[other] サンデク
+    }
+kin-rite-sandek-name = ブリット・ミラー：サンデク
+kin-rite-sandek-note = ブリット・ミラーのあいだ子を抱く。
+kin-rite-kvatter = { $role ->
+        [sponsored] 代子
+       *[other] { $sex ->
+            [F] クヴァテリン
+           *[other] クヴァター
+        }
+    }
+kin-rite-kvatter-name = ブリット・ミラー：クヴァター
+kin-rite-kvatter-note = ブリット・ミラーへ子を運ぶ。
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] 乳子
+            [F] 乳子
+           *[other] 乳子
+        }
+       *[other] { $sex ->
+            [M] 乳父
+            [F] 乳母
+           *[other] 乳親
+        }
+    }
+kin-rite-milk-parent-name = 乳親族
+kin-rite-milk-parent-note = 子に授乳した。イスラム法では乳による親族関係が家族をつくり、出生と同じく結婚を禁じる。
+kin-rite-milk-sibling = { $sex ->
+        [M] 乳兄弟
+        [F] 乳姉妹
+       *[other] 乳きょうだい
+    }
+kin-rite-milk-sibling-name = 乳きょうだい
+kin-rite-milk-sibling-note = 同じ女性に授乳された。
+kin-rite-kafala = { $role ->
+        [sponsored] 被保護者（カファーラ）
+       *[other] 保護者（カファーラ）
+    }
+kin-rite-kafala-name = カファーラ
+kin-rite-kafala-note = イスラム法にもとづき、養子の親子関係なしに子を引き取り育てる。
+kin-rite-rakhi = { $sex ->
+        [M] ラキの兄弟
+        [F] ラキの姉妹
+       *[other] ラキのきょうだい
+    }
+kin-rite-rakhi-name = ラキ
+kin-rite-rakhi-note = ラクシャー・バンダンで姉妹が兄弟の手首にラキを結び、兄弟は彼女を守ると誓う。
+kin-rite-guru = { $role ->
+        [sponsored] 弟子
+       *[other] グル
+    }
+kin-rite-guru-name = グル
+kin-rite-guru-note = 霊的な師と弟子。
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] 仮子
+            [F] 仮子
+           *[other] 仮子
+        }
+       *[other] { $sex ->
+            [M] 仮親
+            [F] 仮親
+           *[other] 仮親
+        }
+    }
+kin-rite-gan-parent-name = 干親
+kin-rite-gan-parent-note = 中国や中国系の家族で選ばれる仮親。しばしば子を守るため。
+kin-rite-sworn-sibling = { $sex ->
+        [M] 義兄弟
+        [F] 義姉妹
+       *[other] 義兄弟
+    }
+kin-rite-sworn-sibling-name = 義兄弟の契り
+kin-rite-sworn-sibling-note = 誓いによる兄弟姉妹（結拝）。
+kin-rite-name-giver = { $role ->
+        [sponsored] 名付け子
+       *[other] 名付け親
+    }
+kin-rite-name-giver-name = 命名
+kin-rite-name-giver-note = 子に名を付けた（日本の名付け親）。
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] 新郎
+            [F] 新婦
+           *[other] 新郎新婦
+        }
+       *[other] 仲人
+    }
+kin-rite-nakodo-name = 仲人
+kin-rite-nakodo-note = 結婚をとりもち、立ち会った（日本の仲人）。
+kin-rite-namesake = 同名の人
+kin-rite-namesake-name = 同名
+kin-rite-namesake-note = 同じ名を持つ。中部・東アフリカでは贈り物と世話の絆（ンドイ、ソモ）。
+kin-rite-initiation = { $role ->
+        [sponsored] 通過儀礼を受けた人
+       *[other] 通過儀礼の導き手
+    }
+kin-rite-initiation-name = 通過儀礼
+kin-rite-initiation-note = 通過儀礼を通して導いた。
+kin-rite-blood-pact = { $sex ->
+        [M] 血盟の兄弟
+        [F] 血盟の姉妹
+       *[other] 血盟のきょうだい
+    }
+kin-rite-blood-pact-name = 血盟
+kin-rite-blood-pact-note = 血の盟約で結ばれた。
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] ハーナイの子
+            [F] ハーナイの子
+           *[other] ハーナイの子
+        }
+       *[other] { $sex ->
+            [M] ハーナイの父
+            [F] ハーナイの母
+           *[other] ハーナイの親
+        }
+    }
+kin-rite-hanai-name = ハーナイ
+kin-rite-hanai-note = 法的な養子縁組なしに、ハワイの慣習で実子として育てられた。
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] フンカの子
+            [F] フンカの子
+           *[other] フンカの子
+        }
+       *[other] { $sex ->
+            [M] フンカの父
+            [F] フンカの母
+           *[other] フンカの親
+        }
+    }
+kin-rite-hunka-name = フンカ
+kin-rite-hunka-note = ラコタのフンカの儀式で親族とされた。
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] 市民の代子
+            [F] 市民の代子
+           *[other] 市民の代子
+        }
+       *[other] { $sex ->
+            [M] 市民の代父
+            [F] 市民の代母
+           *[other] 市民の代父母
+        }
+    }
+kin-rite-civil-sponsor-name = 市民の代父母
+kin-rite-civil-sponsor-note = 市民的な命名式での代父母。
+kin-rite-guardian = { $role ->
+        [sponsored] 被後見人
+       *[other] 後見人
+    }
+kin-rite-guardian-name = 後見
+kin-rite-guardian-note = 記録にある後見人。

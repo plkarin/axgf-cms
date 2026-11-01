@@ -189,6 +189,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "quality.html",
     "person.html",
     "_person_detail.html",
+    "_kinship.html",
     "_profile.html",
     "_profile_read.html",
     "_radar.html",
@@ -526,6 +527,19 @@ pub fn page_with(chrome: &Chrome, name: &str, ctx: impl Serialize) -> Response {
     page(name, merged)
 }
 
+/// A template error with every cause under it: an include's own error is
+/// otherwise reported as only "could not render include".
+fn error_chain(e: &minijinja::Error) -> String {
+    let mut out = e.to_string();
+    let mut cause = std::error::Error::source(e);
+    while let Some(c) = cause {
+        out.push_str(" → ");
+        out.push_str(&c.to_string());
+        cause = c.source();
+    }
+    out
+}
+
 /// Render a template to an HTML response.
 ///
 /// A template failure is a programming error, not a user error, so it renders
@@ -534,12 +548,13 @@ pub fn page(name: &str, ctx: impl Serialize) -> Response {
     match env().get_template(name).and_then(|t| t.render(ctx)) {
         Ok(body) => Html(body).into_response(),
         Err(e) => {
+            let e = error_chain(&e);
             tracing::error!(template = name, error = %e, "template render failed");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Html(format!(
                     "<h1>Template error</h1><pre>{}</pre>",
-                    html_escape(&e.to_string())
+                    html_escape(&e)
                 )),
             )
                 .into_response()

@@ -4586,3 +4586,796 @@ merge-report-links = Удалённые связи
 merge-report-tidied = Упорядоченные записи
 merge-absorbed-record = Объединённая карточка в прежнем виде
 merge-open-kept = Открыть сохранённую карточку
+
+## Родство (docs/adr/0020)
+
+kin-tab = Родство
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] приёмный отец
+            [F] приёмная мать
+           *[other] приёмный родитель
+        }
+       *[no] { $sex ->
+            [M] отец
+            [F] мать
+           *[other] родитель
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] дедушка
+            [F] бабушка
+           *[other] дедушка или бабушка
+        }
+        [3] { $sex ->
+            [M] прадедушка
+            [F] прабабушка
+           *[other] прадедушка или прабабушка
+        }
+        [4] { $sex ->
+            [M] прапрадедушка
+            [F] прапрабабушка
+           *[other] прапрадедушка или прапрабабушка
+        }
+       *[other] предок в { $n }-м поколении
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] приёмный сын
+            [F] приёмная дочь
+           *[other] приёмный ребёнок
+        }
+       *[no] { $sex ->
+            [M] сын
+            [F] дочь
+           *[other] ребёнок
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $sex ->
+            [M] внук
+            [F] внучка
+           *[other] внук или внучка
+        }
+        [3] { $sex ->
+            [M] правнук
+            [F] правнучка
+           *[other] правнук или правнучка
+        }
+        [4] { $sex ->
+            [M] праправнук
+            [F] праправнучка
+           *[other] праправнук или праправнучка
+        }
+       *[other] потомок в { $n }-м поколении
+    }
+kin-sibling = { $half ->
+        [yes] { $side ->
+            [M] { $sex ->
+                [M] единокровный брат
+                [F] единокровная сестра
+               *[other] единокровный брат или сестра
+            }
+            [F] { $sex ->
+                [M] единоутробный брат
+                [F] единоутробная сестра
+               *[other] единоутробный брат или сестра
+            }
+           *[other] { $sex ->
+                [M] неполнородный брат
+                [F] неполнородная сестра
+               *[other] неполнородный брат или сестра
+            }
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] приёмный брат
+                [F] приёмная сестра
+               *[other] приёмный брат или сестра
+            }
+           *[no] { $sex ->
+                [M] брат
+                [F] сестра
+               *[other] брат или сестра
+            }
+        }
+    }
+kin-uncle = { $n ->
+        [1] { $sex ->
+            [M] дядя
+            [F] тётя
+           *[other] дядя или тётя
+        }
+        [2] { $sex ->
+            [M] двоюродный дедушка
+            [F] двоюродная бабушка
+           *[other] двоюродный дедушка или бабушка
+        }
+        [3] { $sex ->
+            [M] двоюродный прадедушка
+            [F] двоюродная прабабушка
+           *[other] двоюродный прадедушка или прабабушка
+        }
+       *[other] { $sex ->
+            [M] брат предка
+            [F] сестра предка
+           *[other] брат или сестра предка
+        }
+    }
+kin-nephew = { $n ->
+        [1] { $sex ->
+            [M] племянник
+            [F] племянница
+           *[other] племянник или племянница
+        }
+        [2] { $sex ->
+            [M] внучатый племянник
+            [F] внучатая племянница
+           *[other] внучатый племянник или племянница
+        }
+        [3] { $sex ->
+            [M] правнучатый племянник
+            [F] правнучатая племянница
+           *[other] правнучатый племянник или племянница
+        }
+       *[other] потомок брата или сестры
+    }
+kin-cousin = { $k ->
+        [1] { $sex ->
+            [M] двоюродный брат
+            [F] двоюродная сестра
+           *[other] двоюродный брат или сестра
+        }
+        [2] { $sex ->
+            [M] троюродный брат
+            [F] троюродная сестра
+           *[other] троюродный брат или сестра
+        }
+        [3] { $sex ->
+            [M] четвероюродный брат
+            [F] четвероюродная сестра
+           *[other] четвероюродный брат или сестра
+        }
+        [4] { $sex ->
+            [M] пятиюродный брат
+            [F] пятиюродная сестра
+           *[other] пятиюродный брат или сестра
+        }
+       *[other] { $sex ->
+            [F] родственница { $k }-го колена
+           *[other] родственник { $k }-го колена
+        }
+    }
+kin-cousin-removed = { $older ->
+        [yes] { $r ->
+            [1] { $k ->
+                [1] { $sex ->
+                    [M] двоюродный дядя
+                    [F] двоюродная тётя
+                   *[other] двоюродный дядя или тётя
+                }
+                [2] { $sex ->
+                    [M] троюродный дядя
+                    [F] троюродная тётя
+                   *[other] троюродный дядя или тётя
+                }
+               *[other] { $cousin } { $forebear }
+            }
+           *[other] { $cousin } { $forebear }
+        }
+       *[no] { $r ->
+            [1] { $k ->
+                [1] { $sex ->
+                    [M] двоюродный племянник
+                    [F] двоюродная племянница
+                   *[other] двоюродный племянник или племянница
+                }
+                [2] { $sex ->
+                    [M] троюродный племянник
+                    [F] троюродная племянница
+                   *[other] троюродный племянник или племянница
+                }
+               *[other] { $descendant } { $ofcousin }
+            }
+           *[other] { $descendant } { $ofcousin }
+        }
+    }
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] отца
+            [F] матери
+           *[other] родителя
+        }
+        [2] { $sex ->
+            [M] дедушки
+            [F] бабушки
+           *[other] дедушки или бабушки
+        }
+        [3] { $sex ->
+            [M] прадедушки
+            [F] прабабушки
+           *[other] прадедушки или прабабушки
+        }
+       *[other] предка
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] сын
+            [F] дочь
+           *[other] ребёнок
+        }
+        [2] { $sex ->
+            [M] внук
+            [F] внучка
+           *[other] внук
+        }
+        [3] { $sex ->
+            [M] правнук
+            [F] правнучка
+           *[other] правнук
+        }
+       *[other] потомок
+    }
+kin-of-cousin = { $sex ->
+        [F] { $k ->
+            [1] двоюродной сестры
+            [2] троюродной сестры
+            [3] четвероюродной сестры
+           *[other] родственницы { $k }-го колена
+        }
+       *[other] { $k ->
+            [1] двоюродного брата
+            [2] троюродного брата
+            [3] четвероюродного брата
+           *[other] родственника { $k }-го колена
+        }
+    }
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] бывший муж
+                [F] бывшая жена
+               *[other] бывший супруг
+            }
+           *[no] { $sex ->
+                [M] бывший партнёр
+                [F] бывшая партнёрша
+               *[other] бывший партнёр
+            }
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] муж
+                [F] жена
+               *[other] супруг
+            }
+           *[no] { $sex ->
+                [M] партнёр
+                [F] партнёрша
+               *[other] партнёр
+            }
+        }
+    }
+kin-parent-in-law = { $via ->
+        [F] { $sex ->
+            [M] тесть
+            [F] тёща
+           *[other] родитель жены
+        }
+        [M] { $sex ->
+            [M] свёкор
+            [F] свекровь
+           *[other] родитель мужа
+        }
+       *[other] { $sex ->
+            [M] свёкор или тесть
+            [F] свекровь или тёща
+           *[other] родитель супруга
+        }
+    }
+kin-child-in-law = { $sex ->
+        [M] зять
+        [F] невестка
+       *[other] зять или невестка
+    }
+kin-sibling-in-law = { $kind ->
+        [partner-sibling] { $via ->
+            [F] { $sex ->
+                [M] шурин
+                [F] свояченица
+               *[other] брат или сестра жены
+            }
+            [M] { $sex ->
+                [M] деверь
+                [F] золовка
+               *[other] брат или сестра мужа
+            }
+           *[other] { $sex ->
+                [M] брат супруга
+                [F] сестра супруга
+               *[other] брат или сестра супруга
+            }
+        }
+       *[other] { $sex ->
+            [M] зять
+            [F] невестка
+           *[other] супруг брата или сестры
+        }
+    }
+kin-step-parent = { $sex ->
+        [M] отчим
+        [F] мачеха
+       *[other] отчим или мачеха
+    }
+kin-step-child = { $sex ->
+        [M] пасынок
+        [F] падчерица
+       *[other] пасынок или падчерица
+    }
+kin-note-step-parent = { $sex ->
+        [F] супруга
+       *[other] супруг
+    } { $next ->
+        [M] отца
+        [F] матери
+       *[other] родителя
+    }
+kin-note-step-child = ребёнок { $via ->
+        [M] мужа
+        [F] жены
+       *[other] супруга
+    }
+kin-foster-parent = { $sex ->
+        [M] патронатный воспитатель
+        [F] патронатная воспитательница
+       *[other] патронатный воспитатель
+    }
+kin-foster-child = { $sex ->
+        [M] воспитанник
+        [F] воспитанница
+       *[other] воспитанник
+    }
+kin-guardian = { $sex ->
+        [F] опекунша
+       *[other] опекун
+    }
+kin-ward = { $sex ->
+        [F] подопечная
+       *[other] подопечный
+    }
+kin-relative-of-partner = { $relative } { $via ->
+        [M] мужа
+        [F] жены
+       *[other] супруга
+    }
+kin-partner-of-relative = { $sex ->
+        [M] муж
+        [F] жена
+       *[other] супруг
+    } { $rsex ->
+        [F] родственницы
+       *[other] родственника
+    }: { $relative }
+kin-affine = { $sex ->
+        [F] свойственница
+       *[other] свойственник
+    }
+kin-related = { $sex ->
+        [F] связана записями семьи
+       *[other] связан записями семьи
+    }
+kin-note-adoptive = по усыновлению
+kin-of = относительно: { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] приёмный отец
+            [F] приёмная мать
+           *[other] приёмный родитель
+        }
+        [foster] { $sex ->
+            [M] патронатный воспитатель
+            [F] патронатная воспитательница
+           *[other] патронатный воспитатель
+        }
+        [guardianship] { $sex ->
+            [F] опекунша
+           *[other] опекун
+        }
+        [step] { $sex ->
+            [M] отчим
+            [F] мачеха
+           *[other] отчим или мачеха
+        }
+       *[other] { $sex ->
+            [M] отец
+            [F] мать
+           *[other] родитель
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] приёмный сын
+            [F] приёмная дочь
+           *[other] приёмный ребёнок
+        }
+        [foster] { $sex ->
+            [M] воспитанник
+            [F] воспитанница
+           *[other] воспитанник
+        }
+        [guardianship] { $sex ->
+            [F] подопечная
+           *[other] подопечный
+        }
+        [step] { $sex ->
+            [M] пасынок
+            [F] падчерица
+           *[other] пасынок или падчерица
+        }
+       *[other] { $sex ->
+            [M] сын
+            [F] дочь
+           *[other] ребёнок
+        }
+    }
+kin-group-partners = Супруги и партнёры
+kin-group-ancestors = Предки
+kin-group-descendants = Потомки
+kin-group-siblings = Братья и сёстры
+kin-group-uncles = Дяди и тёти
+kin-group-nephews = Племянники
+kin-group-cousins = Двоюродные и дальние родственники
+kin-group-in-laws = Свойственники
+kin-group-step = Отчимы, мачехи и неродные дети
+kin-group-care = Опека и воспитание
+kin-group-rites = Обряды и обычаи
+kin-group-others = Иные связи
+kin-find-title = Какое родство?
+kin-find-lede = Выберите человека из семьи: его связь с человеком { $name } объясняется шаг за шагом.
+kin-find-label = Человек
+kin-find-choose = Выберите человека…
+kin-find-go = Показать связь
+kin-find-none = Записи семьи не связывают: { $a } и { $b }.
+kin-path = Связь, шаг за шагом
+kin-degree = родство { $n }-й степени
+kin-all-title = Вся родня: { $name }
+kin-all-count = { $n ->
+        [one] { $n } человек
+        [few] { $n } человека
+        [many] { $n } человек
+       *[other] { $n } человека
+    }
+kin-common-list = Общие предки: { $names }
+kin-also-list = также { $list }
+kin-rites-help = Крёстные и другие узы, которые традиция создаёт между людьми, не рождёнными друг от друга. Древо рисует их особым пунктиром.
+kin-rite-recorded = В записи сказано: «{ $label }».
+kin-hidden = человек, которого вам не показывают
+kin-native = Словами традиции
+kin-legend-rite = Крёстный, обряд или обычай
+kin-tree-root = { $term } { $of }
+kin-editor-rite = Обряд или обычай
+kin-editor-rite-none = Нет: простая связь
+kin-editor-rite-hint = Кем этот человек приходится другому. Выбор заполняет связь и слова, а запись сохраняет обряд.
+kin-editor-rite-option = { $rite }: { $word }
+kin-tradition-christian = Христианская
+kin-tradition-orthodox = Православная
+kin-tradition-hispanic = Испанская и филиппинская
+kin-tradition-jewish = Иудейская
+kin-tradition-islamic = Исламская
+kin-tradition-south-asian = Южноазиатская
+kin-tradition-east-asian = Восточноазиатская
+kin-tradition-african = Африканская
+kin-tradition-indigenous = Коренные народы и Океания
+kin-tradition-civil = Гражданская и светская
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] крёстный
+            [F] крёстная
+           *[other] крёстный или крёстная
+        }
+    }
+kin-rite-godparent-name = Крёстное родство
+kin-rite-godparent-note = Крёстный или крёстная, как сказано в записи.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] крёстный
+            [F] крёстная
+           *[other] крёстный или крёстная
+        }
+    }
+kin-rite-baptism-name = Крещение
+kin-rite-baptism-note = Восприемник при крещении.
+kin-rite-confirmation = { $role ->
+        [sponsored] { $sex ->
+            [M] конфирмант
+            [F] конфирмантка
+           *[other] конфирмант
+        }
+       *[other] { $sex ->
+            [M] восприемник при конфирмации
+            [F] восприемница при конфирмации
+           *[other] восприемник при конфирмации
+        }
+    }
+kin-rite-confirmation-name = Конфирмация
+kin-rite-confirmation-note = Восприемник при конфирмации или миропомазании.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] жених
+            [F] невеста
+           *[other] новобрачный
+        }
+       *[other] { $sex ->
+            [M] посажёный отец
+            [F] посажёная мать
+           *[other] посажёный родитель
+        }
+    }
+kin-rite-wedding-sponsor-name = Свадебное покровительство
+kin-rite-wedding-sponsor-note = Покровитель брака: padrino de boda, ninong, koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] кум
+            [F] кума
+           *[other] кум или кума
+        }
+    }
+kin-rite-kum-name = Кумовство
+kin-rite-kum-note = Крёстный или свадебный свидетель в православной славянской традиции; кумовство связывает две семьи.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] крёстный
+            [F] крёстная
+           *[other] крёстный или крёстная
+        }
+    }
+kin-rite-koumbaros-name = Кумбарос
+kin-rite-koumbaros-note = Свадебный свидетель или крёстный в греческой православной традиции.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] крёстный
+            [F] крёстная
+           *[other] крёстный или крёстная
+        }
+    }
+kin-rite-padrino-name = Падрино
+kin-rite-padrino-note = Падрино или мадрина: на крещении, первом причастии, кинсеаньере.
+kin-rite-compadre = { $sex ->
+        [M] кум
+        [F] кума
+       *[other] кум или кума
+    }
+kin-rite-compadre-name = Компадрасго
+kin-rite-compadre-note = Узы между родителями ребёнка и его крёстными.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] крёстный
+            [F] крёстная
+           *[other] крёстный или крёстная
+        }
+    }
+kin-rite-ninong-name = Нинонг
+kin-rite-ninong-note = Нинонг или нинанг: крёстный на крещении, конфирмации или свадьбе на Филиппинах.
+kin-rite-sandek = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник
+        }
+       *[other] сандак
+    }
+kin-rite-sandek-name = Брит мила: сандак
+kin-rite-sandek-note = Держит ребёнка во время брит милы.
+kin-rite-kvatter = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник
+        }
+       *[other] { $sex ->
+            [F] кватерин
+           *[other] кватер
+        }
+    }
+kin-rite-kvatter-name = Брит мила: кватер
+kin-rite-kvatter-note = Вносит ребёнка на брит милу.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] молочный сын
+            [F] молочная дочь
+           *[other] молочный ребёнок
+        }
+       *[other] { $sex ->
+            [M] молочный отец
+            [F] молочная мать
+           *[other] молочный родитель
+        }
+    }
+kin-rite-milk-parent-name = Молочное родство
+kin-rite-milk-parent-note = Кормила ребёнка грудью: в исламском праве молочное родство создаёт семью и запрещает брак, как рождение.
+kin-rite-milk-sibling = { $sex ->
+        [M] молочный брат
+        [F] молочная сестра
+       *[other] молочный брат или сестра
+    }
+kin-rite-milk-sibling-name = Молочные братья и сёстры
+kin-rite-milk-sibling-note = Вскормлены одной женщиной.
+kin-rite-kafala = { $role ->
+        [sponsored] { $sex ->
+            [F] подопечная (кафала)
+           *[other] подопечный (кафала)
+        }
+       *[other] { $sex ->
+            [F] опекунша (кафала)
+           *[other] опекун (кафала)
+        }
+    }
+kin-rite-kafala-name = Кафала
+kin-rite-kafala-note = Принимает и растит ребёнка без родства, которое даёт усыновление, по исламскому праву.
+kin-rite-rakhi = { $sex ->
+        [M] брат по ракхи
+        [F] сестра по ракхи
+       *[other] брат или сестра по ракхи
+    }
+kin-rite-rakhi-name = Ракхи
+kin-rite-rakhi-note = В Ракшабандхан сестра повязывает ракхи на запястье брата, и он клянётся её защищать.
+kin-rite-guru = { $role ->
+        [sponsored] { $sex ->
+            [M] ученик
+            [F] ученица
+           *[other] ученик
+        }
+       *[other] гуру
+    }
+kin-rite-guru-name = Гуру
+kin-rite-guru-note = Духовный учитель и ученик.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] крестник
+            [F] крестница
+           *[other] крестник или крестница
+        }
+       *[other] { $sex ->
+            [M] крёстный
+            [F] крёстная
+           *[other] крёстный или крёстная
+        }
+    }
+kin-rite-gan-parent-name = Ганьцинь
+kin-rite-gan-parent-note = Крёстные, выбираемые в Китае и китайских семьях, часто для защиты ребёнка.
+kin-rite-sworn-sibling = { $sex ->
+        [M] побратим
+        [F] посестра
+       *[other] побратим или посестра
+    }
+kin-rite-sworn-sibling-name = Побратимство
+kin-rite-sworn-sibling-note = Братья или сёстры по клятве (цзебай).
+kin-rite-name-giver = { $role ->
+        [sponsored] наречённый ребёнок
+       *[other] { $sex ->
+            [F] давшая имя
+           *[other] давший имя
+        }
+    }
+kin-rite-name-giver-name = Наречение имени
+kin-rite-name-giver-note = Дал ребёнку имя (надзукэ-оя в Японии).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] сосватанный жених
+            [F] сосватанная невеста
+           *[other] сосватанный супруг
+        }
+       *[other] { $sex ->
+            [F] сваха
+           *[other] сват
+        }
+    }
+kin-rite-nakodo-name = Накодо
+kin-rite-nakodo-note = Устроил брак и был его свидетелем (накодо в Японии).
+kin-rite-namesake = тёзка
+kin-rite-namesake-name = Тёзка
+kin-rite-namesake-note = Носит то же имя: в Центральной и Восточной Африке — узы подарков и заботы (ndoyi, somo).
+kin-rite-initiation = { $role ->
+        [sponsored] { $sex ->
+            [F] посвящённая
+           *[other] посвящённый
+        }
+       *[other] { $sex ->
+            [F] наставница посвящения
+           *[other] наставник посвящения
+        }
+    }
+kin-rite-initiation-name = Посвящение
+kin-rite-initiation-note = Провёл человека через посвящение.
+kin-rite-blood-pact = { $sex ->
+        [M] брат по крови
+        [F] сестра по крови
+       *[other] брат или сестра по крови
+    }
+kin-rite-blood-pact-name = Кровный союз
+kin-rite-blood-pact-note = Связаны кровным союзом.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] сын ханаи
+            [F] дочь ханаи
+           *[other] ребёнок ханаи
+        }
+       *[other] { $sex ->
+            [M] отец ханаи
+            [F] мать ханаи
+           *[other] родитель ханаи
+        }
+    }
+kin-rite-hanai-name = Ханаи
+kin-rite-hanai-note = Воспитан как свой по гавайскому обычаю, без юридического усыновления.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] сын хунка
+            [F] дочь хунка
+           *[other] ребёнок хунка
+        }
+       *[other] { $sex ->
+            [M] отец хунка
+            [F] мать хунка
+           *[other] родитель хунка
+        }
+    }
+kin-rite-hunka-name = Хунка
+kin-rite-hunka-note = Принят в родство в обряде хунка у лакота.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] гражданский крестник
+            [F] гражданская крестница
+           *[other] гражданский крестник
+        }
+       *[other] { $sex ->
+            [M] гражданский крёстный
+            [F] гражданская крёстная
+           *[other] гражданский крёстный
+        }
+    }
+kin-rite-civil-sponsor-name = Гражданское крёстное родство
+kin-rite-civil-sponsor-note = Крёстный на гражданской церемонии наречения.
+kin-rite-guardian = { $role ->
+        [sponsored] { $sex ->
+            [F] подопечная
+           *[other] подопечный
+        }
+       *[other] { $sex ->
+            [F] опекунша
+           *[other] опекун
+        }
+    }
+kin-rite-guardian-name = Опека
+kin-rite-guardian-note = Опекун, как сказано в записи.

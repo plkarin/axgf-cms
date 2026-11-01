@@ -429,6 +429,9 @@ pub async fn tree(
                     let mut l = crate::chart::chart(flat, &root, depth, depth);
                     crate::tree::localise(&mut l, chrome.lang);
                     crate::chart::dress(&mut l, flat, lens, chrome.lang);
+                    // What each person is to the one in the middle, said on
+                    // their open card (docs/adr/0020).
+                    crate::chart::relate(&mut l, flat, lens, chrome.lang, &root);
                     crate::tree::redact_in(&mut l, lens.set(), chrome.lang);
                     let name = if lens.sees_person(&root) {
                         flat.get("persons")
@@ -446,6 +449,8 @@ pub async fn tree(
                     };
                     let focus = json!({
                         "root": root,
+                        // "of Lucien", for what each card is to them.
+                        "root_of": crate::kinship_text::of(&name, chrome.lang),
                         "root_name": name,
                         "ancestors": sub.ancestor_count,
                         "descendants": sub.descendant_count,
@@ -554,11 +559,26 @@ pub async fn tree(
         Value::Null
     };
 
+    // The panel's first line: what the selected person is to the one in the
+    // middle.
+    let root_kin = match (
+        focus
+            .as_ref()
+            .and_then(|f| f.get("root"))
+            .and_then(Value::as_str),
+        selected.as_deref(),
+    ) {
+        (Some(root), Some(sel)) if root != sel && panel.is_some() => {
+            Some(root_kin(&state, &viewer, chrome.lang, root, sel))
+        }
+        _ => None,
+    };
     render::page_with(
         &chrome,
         "tree.html",
         context! {
             nav => "tree",
+            root_kin,
             // This page is a diagram six thousand pixels tall, and following a
             // line while panning it is the task. The ambient drift is held off
             // it for that reason — see the note beside the rule in app.css,
@@ -627,15 +647,28 @@ pub async fn tree_panel(
                 let n =
                     q.n.filter(|n| crate::river::RANGES.contains(n))
                         .unwrap_or(crate::river::DEFAULT_RANGE);
-                river_tab_context(&state, &viewer, chrome.lang, &p, n, q.tab.as_deref())
+                river_tab_context(
+                    &state,
+                    &viewer,
+                    chrome.lang,
+                    &p,
+                    n,
+                    q.tab.as_deref(),
+                    q.with.as_deref(),
+                )
             } else {
                 context! {}
             };
+            let root_kin = q
+                .root
+                .as_deref()
+                .map(|root| root_kin(&state, &viewer, chrome.lang, root, &id));
             render::page_with(
                 &chrome,
                 "_panel.html",
                 context! {
                     p,
+                    root_kin,
                     compact => true,
                     max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
                     document_types => crate::documents::document_type_options(chrome.lang),
@@ -771,11 +804,14 @@ fn person_roster(flat: &Value, lens: &crate::access::Lens) -> Vec<Value> {
         .collect()
 }
 
-/// `?tab=` on the person page.
+/// `?tab=` on the person page, and `?with=` on its Kinship tab: the person
+/// whose link to this one is asked for.
 #[derive(Debug, serde::Deserialize)]
 pub struct PersonQuery {
     #[serde(default)]
     tab: Option<String>,
+    #[serde(default)]
+    with: Option<String>,
 }
 
 /// `GET /person/:id` — everything known about one person.
@@ -818,6 +854,13 @@ pub async fn person(
             let charts = p.radars.iter().any(|c| c.present >= 3);
             let tabs = crate::person::tabs_for(&p, !profile_groups.is_empty() || charts);
             let tab = crate::person::current_tab(q.tab.as_deref(), &tabs);
+            // Every relative, and the way to one if asked: walked only when
+            // the tab is open (docs/adr/0020).
+            let kinship = (tab == crate::person::RecordTab::Kinship).then(|| {
+                state.read_as(viewer.ceiling(), |flat, lens| {
+                    crate::kinship_text::page(flat, lens, chrome.lang, &id, q.with.as_deref())
+                })
+            });
             // The places this person's record actually locates. Usually
             // none: on a converted bundle one place in 123 carries a position,
             // so the map appears when there is something to put on it and is
@@ -851,6 +894,7 @@ pub async fn person(
                     // Modifier opens the editor on the tab being read.
                     edit_tab => super::person_editor::fragment_for(tab.slug()),
                     profile_groups,
+                    kinship,
                     full_record => true,
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
@@ -1561,8 +1605,9 @@ pub async fn not_found(State(state): State<Shared>, headers: HeaderMap) -> Respo
 // The river
 // ---------------------------------------------------------------------------
 
-/// Query parameters for `/tree/panel/:id`. All optional: the grid sends
-/// none, the river sends `river=1` and its tab.
+/// Query parameters for `/tree/panel/:id`. All optional: the tree sends the
+/// person in its middle (`root`), whose link to this one the panel says; the
+/// river sends `river=1`, its tab and, on the Kinship tab, `with`.
 #[derive(serde::Deserialize)]
 pub struct PanelQuery {
     #[serde(default)]
@@ -1571,6 +1616,10 @@ pub struct PanelQuery {
     n: Option<usize>,
     #[serde(default)]
     tab: Option<String>,
+    #[serde(default)]
+    with: Option<String>,
+    #[serde(default)]
+    root: Option<String>,
 }
 
 /// Query parameters for `/` and `/river/data`.
@@ -1585,6 +1634,9 @@ pub struct RiverQuery {
     /// The record tab in the panel; kept as the reader travels.
     #[serde(default)]
     tab: Option<String>,
+    /// On the Kinship tab, the person whose link is asked for.
+    #[serde(default)]
+    with: Option<String>,
 }
 
 /// What `_panel.html` needs to know beside the river: that it is beside the
@@ -1599,12 +1651,18 @@ fn river_tab_context(
     p: &crate::person::PersonView,
     n: usize,
     requested: Option<&str>,
+    with: Option<&str>,
 ) -> minijinja::Value {
     let profile_groups = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::person::profile_groups_filled(flat, &p.id, lens, lang)
     });
     let tabs = crate::person::tabs_for(p, !profile_groups.is_empty());
     let tab = crate::person::current_tab(requested, &tabs);
+    let kinship = (tab == crate::person::RecordTab::Kinship).then(|| {
+        state.read_as(viewer.ceiling(), |flat, lens| {
+            crate::kinship_text::page(flat, lens, lang, &p.id, with)
+        })
+    });
     context! {
         river_tabs => true,
         river_n => n,
@@ -1612,7 +1670,31 @@ fn river_tab_context(
         tab => tab.slug(),
         edit_tab => super::person_editor::fragment_for(tab.slug()),
         profile_groups,
+        kinship,
     }
+}
+
+/// What `id` is to the person in the middle of the tree, `root`, for the
+/// panel's first line: every way, the closest first. Empty for the root
+/// itself or a person the records do not connect.
+fn root_kin(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    lang: &str,
+    root: &str,
+    id: &str,
+) -> minijinja::Value {
+    state.read_as(viewer.ceiling(), |flat, lens| {
+        if root == id || !lens.sees_person(root) {
+            return minijinja::Value::from(());
+        }
+        let kin = crate::kinship::Kin::new(flat, lens);
+        let found = crate::kinship_text::found(&kin, flat, lens, lang, root, id);
+        context! {
+            root,
+            relations => found,
+        }
+    })
 }
 
 /// One river, resolved for one reader.
@@ -1734,7 +1816,17 @@ pub async fn river(
     let tab_ctx = v
         .panel
         .as_ref()
-        .map(|p| river_tab_context(&state, &viewer, chrome.lang, p, v.n, q.tab.as_deref()))
+        .map(|p| {
+            river_tab_context(
+                &state,
+                &viewer,
+                chrome.lang,
+                p,
+                v.n,
+                q.tab.as_deref(),
+                q.with.as_deref(),
+            )
+        })
         .unwrap_or_else(|| context! {});
     // The reader's choice between travel and cut, remembered across pages
     // and reloads ([`RIVER_MOTION_COOKIE`]); prefers-reduced-motion still

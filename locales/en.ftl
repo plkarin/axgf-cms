@@ -4330,3 +4330,667 @@ merge-report-links = Links removed
 merge-report-tidied = Entries tidied
 merge-absorbed-record = The merged record, as it was
 merge-open-kept = Open the kept record
+
+## Kinship (docs/adr/0020): how two people are related, every relative of
+## one, and the ties of rite and custom. Each word receives every fact a
+## language may make it agree with, and uses what it needs: $sex (M, F, U),
+## $half and $adoptive (yes, no), $side (the sex of A's parent the line
+## climbs through), $via (the child of the shared ancestor on B's side),
+## $next (B's neighbour on the way), $line (one male line: yes, no),
+## $elder (B older than A: yes, no, unknown) and $turnelder (the uncle older
+## than A's parent).
+
+kin-tab = Kinship
+kin-parent = { $adoptive ->
+        [yes] { $sex ->
+            [M] adoptive father
+            [F] adoptive mother
+           *[other] adoptive parent
+        }
+       *[no] { $sex ->
+            [M] father
+            [F] mother
+           *[other] parent
+        }
+    }
+kin-ancestor = { $n ->
+        [2] { $sex ->
+            [M] grandfather
+            [F] grandmother
+           *[other] grandparent
+        }
+        [3] { $sex ->
+            [M] great-grandfather
+            [F] great-grandmother
+           *[other] great-grandparent
+        }
+        [4] { $sex ->
+            [M] great-great-grandfather
+            [F] great-great-grandmother
+           *[other] great-great-grandparent
+        }
+       *[other] { $sex ->
+            [M] { $g }× great-grandfather
+            [F] { $g }× great-grandmother
+           *[other] { $g }× great-grandparent
+        }
+    }
+kin-child = { $adoptive ->
+        [yes] { $sex ->
+            [M] adoptive son
+            [F] adoptive daughter
+           *[other] adoptive child
+        }
+       *[no] { $sex ->
+            [M] son
+            [F] daughter
+           *[other] child
+        }
+    }
+kin-descendant = { $n ->
+        [2] { $sex ->
+            [M] grandson
+            [F] granddaughter
+           *[other] grandchild
+        }
+        [3] { $sex ->
+            [M] great-grandson
+            [F] great-granddaughter
+           *[other] great-grandchild
+        }
+        [4] { $sex ->
+            [M] great-great-grandson
+            [F] great-great-granddaughter
+           *[other] great-great-grandchild
+        }
+       *[other] { $sex ->
+            [M] { $g }× great-grandson
+            [F] { $g }× great-granddaughter
+           *[other] { $g }× great-grandchild
+        }
+    }
+kin-sibling = { $half ->
+        [yes] { $sex ->
+            [M] half-brother
+            [F] half-sister
+           *[other] half-sibling
+        }
+       *[no] { $adoptive ->
+            [yes] { $sex ->
+                [M] adoptive brother
+                [F] adoptive sister
+               *[other] adoptive sibling
+            }
+           *[no] { $sex ->
+                [M] brother
+                [F] sister
+               *[other] sibling
+            }
+        }
+    }
+kin-uncle = { $half ->
+        [yes] half-
+       *[no] {""}
+    }{ $n ->
+        [1] { $sex ->
+            [M] uncle
+            [F] aunt
+           *[other] uncle or aunt
+        }
+        [2] { $sex ->
+            [M] great-uncle
+            [F] great-aunt
+           *[other] great-uncle or great-aunt
+        }
+        [3] { $sex ->
+            [M] great-great-uncle
+            [F] great-great-aunt
+           *[other] great-great-uncle or great-great-aunt
+        }
+       *[other] { $sex ->
+            [M] { $g }× great-uncle
+            [F] { $g }× great-aunt
+           *[other] { $g }× great-uncle or aunt
+        }
+    }
+kin-nephew = { $half ->
+        [yes] half-
+       *[no] {""}
+    }{ $n ->
+        [1] { $sex ->
+            [M] nephew
+            [F] niece
+           *[other] nephew or niece
+        }
+        [2] { $sex ->
+            [M] great-nephew
+            [F] great-niece
+           *[other] great-nephew or great-niece
+        }
+        [3] { $sex ->
+            [M] great-great-nephew
+            [F] great-great-niece
+           *[other] great-great-nephew or niece
+        }
+       *[other] { $sex ->
+            [M] { $g }× great-nephew
+            [F] { $g }× great-niece
+           *[other] { $g }× great-nephew or niece
+        }
+    }
+kin-cousin = { $half ->
+        [yes] half {""}
+       *[no] {""}
+    }{ $k ->
+        [1] first
+        [2] second
+        [3] third
+        [4] fourth
+        [5] fifth
+        [6] sixth
+       *[other] { $k }th
+    } cousin
+kin-cousin-removed = { $half ->
+        [yes] half {""}
+       *[no] {""}
+    }{ $k ->
+        [1] first
+        [2] second
+        [3] third
+        [4] fourth
+        [5] fifth
+        [6] sixth
+       *[other] { $k }th
+    } cousin { $r ->
+        [1] once
+        [2] twice
+       *[other] { $r } times
+    } removed
+kin-of-forebear = { $n ->
+        [1] { $sex ->
+            [M] of the father
+            [F] of the mother
+           *[other] of a parent
+        }
+        [2] { $sex ->
+            [M] of the grandfather
+            [F] of the grandmother
+           *[other] of a grandparent
+        }
+       *[other] of an ancestor
+    }
+kin-descendant-word = { $n ->
+        [1] { $sex ->
+            [M] son
+            [F] daughter
+           *[other] child
+        }
+        [2] { $sex ->
+            [M] grandson
+            [F] granddaughter
+           *[other] grandchild
+        }
+       *[other] descendant
+    }
+kin-of-cousin = of a { $k ->
+        [1] first
+        [2] second
+        [3] third
+       *[other] { $k }th
+    } cousin
+kin-partner = { $ended ->
+        [yes] { $married ->
+            [yes] { $sex ->
+                [M] former husband
+                [F] former wife
+               *[other] former spouse
+            }
+           *[no] former partner
+        }
+       *[no] { $married ->
+            [yes] { $sex ->
+                [M] husband
+                [F] wife
+               *[other] spouse
+            }
+           *[no] partner
+        }
+    }
+kin-parent-in-law = { $sex ->
+        [M] father-in-law
+        [F] mother-in-law
+       *[other] parent-in-law
+    }
+kin-child-in-law = { $sex ->
+        [M] son-in-law
+        [F] daughter-in-law
+       *[other] child-in-law
+    }
+kin-sibling-in-law = { $sex ->
+        [M] brother-in-law
+        [F] sister-in-law
+       *[other] sibling-in-law
+    }
+kin-step-parent = { $sex ->
+        [M] stepfather
+        [F] stepmother
+       *[other] step-parent
+    }
+kin-step-child = { $sex ->
+        [M] stepson
+        [F] stepdaughter
+       *[other] stepchild
+    }
+kin-note-step-parent = partner of { $next ->
+        [M] the father
+        [F] the mother
+       *[other] a parent
+    }
+kin-note-step-child = child of { $via ->
+        [M] the husband
+        [F] the wife
+       *[other] the partner
+    }
+kin-foster-parent = { $sex ->
+        [M] foster father
+        [F] foster mother
+       *[other] foster parent
+    }
+kin-foster-child = { $sex ->
+        [M] foster son
+        [F] foster daughter
+       *[other] foster child
+    }
+kin-guardian = guardian
+kin-ward = ward
+kin-relative-of-partner = { $via ->
+        [M] husband’s { $relative }
+        [F] wife’s { $relative }
+       *[other] partner’s { $relative }
+    }
+kin-partner-of-relative = { $sex ->
+        [M] husband
+        [F] wife
+       *[other] partner
+    } of { $rvowel ->
+        [yes] an
+       *[no] a
+    } { $relative }
+kin-affine = relative by marriage
+kin-related = connected by the family’s records
+kin-note-adoptive = by adoption
+kin-of = of { $name }
+kin-hop-parent = { $line ->
+        [adoption] { $sex ->
+            [M] adoptive father
+            [F] adoptive mother
+           *[other] adoptive parent
+        }
+        [foster] { $sex ->
+            [M] foster father
+            [F] foster mother
+           *[other] foster parent
+        }
+        [guardianship] guardian
+        [step] { $sex ->
+            [M] stepfather
+            [F] stepmother
+           *[other] step-parent
+        }
+       *[other] { $sex ->
+            [M] father
+            [F] mother
+           *[other] parent
+        }
+    }
+kin-hop-child = { $line ->
+        [adoption] { $sex ->
+            [M] adoptive son
+            [F] adoptive daughter
+           *[other] adoptive child
+        }
+        [foster] { $sex ->
+            [M] foster son
+            [F] foster daughter
+           *[other] foster child
+        }
+        [guardianship] ward
+        [step] { $sex ->
+            [M] stepson
+            [F] stepdaughter
+           *[other] stepchild
+        }
+       *[other] { $sex ->
+            [M] son
+            [F] daughter
+           *[other] child
+        }
+    }
+kin-group-partners = Partners
+kin-group-ancestors = Ancestors
+kin-group-descendants = Descendants
+kin-group-siblings = Brothers and sisters
+kin-group-uncles = Uncles and aunts
+kin-group-nephews = Nephews and nieces
+kin-group-cousins = Cousins
+kin-group-in-laws = By marriage
+kin-group-step = Stepfamily
+kin-group-care = Fostering and guardianship
+kin-group-rites = Rite and custom
+kin-group-others = Otherwise connected
+kin-find-title = How are they related?
+kin-find-lede = Choose a person of the family: the link between { $name } and them is spelled out, step by step.
+kin-find-label = Person
+kin-find-choose = Choose a person…
+kin-find-go = Show the link
+kin-find-none = The family’s records do not connect { $a } and { $b }.
+kin-path = The link, step by step
+kin-degree = kinship in the { $n ->
+        [1] 1st
+        [2] 2nd
+        [3] 3rd
+        [21] 21st
+        [22] 22nd
+        [23] 23rd
+       *[other] { $n }th
+    } degree
+kin-all-title = Every relative of { $name }
+kin-all-count = { $n ->
+        [one] One person
+       *[other] { $n } people
+    }
+kin-common-list = Shared ancestors: { $names }
+kin-also-list = also { $list }
+kin-rites-help = Godparents and the other ties a tradition makes between people who are not born to one another. The tree draws them in a dotted line of their own.
+kin-rite-recorded = The record says “{ $label }”.
+kin-hidden = a person you may not see
+kin-native = In the tradition’s own words
+kin-legend-rite = Godparent, rite or custom
+kin-tree-root = { $term } { $of }
+kin-editor-rite = Rite or custom
+kin-editor-rite-none = None: a plain relation
+kin-editor-rite-hint = What this person is to the other. Choosing one fills in the relation and the words, and the record keeps the rite.
+kin-editor-rite-option = { $rite }: { $word }
+
+kin-tradition-christian = Christian
+kin-tradition-orthodox = Orthodox Christian
+kin-tradition-hispanic = Hispanic and Filipino
+kin-tradition-jewish = Jewish
+kin-tradition-islamic = Islamic
+kin-tradition-south-asian = South Asian
+kin-tradition-east-asian = East Asian
+kin-tradition-african = African
+kin-tradition-indigenous = Indigenous and Pacific
+kin-tradition-civil = Civil and secular
+
+kin-rite-godparent = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-godparent-name = Godparenthood
+kin-rite-godparent-note = A godparent, as the record states it.
+kin-rite-baptism = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-baptism-name = Baptism
+kin-rite-baptism-note = Godparent at a baptism.
+kin-rite-confirmation = { $role ->
+        [sponsored] confirmand
+       *[other] confirmation sponsor
+    }
+kin-rite-confirmation-name = Confirmation
+kin-rite-confirmation-note = Sponsor at a confirmation or a chrismation.
+kin-rite-wedding-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] wedding godson
+            [F] wedding goddaughter
+           *[other] wedding godchild
+        }
+       *[other] wedding sponsor
+    }
+kin-rite-wedding-sponsor-name = Wedding sponsorship
+kin-rite-wedding-sponsor-note = Sponsor of a marriage: padrino de boda, ninong, koumbaros.
+kin-rite-kum = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-kum-name = Kumstvo
+kin-rite-kum-note = Godparent or wedding sponsor in the Orthodox Slavic tradition; kumstvo binds two families.
+kin-rite-koumbaros = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-koumbaros-name = Koumbaros
+kin-rite-koumbaros-note = Wedding sponsor or godparent in the Greek Orthodox tradition.
+kin-rite-padrino = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-padrino-name = Padrino
+kin-rite-padrino-note = Padrino or madrina: at a baptism, a first communion, a quinceañera.
+kin-rite-compadre = { $sex ->
+        [M] co-father
+        [F] co-mother
+       *[other] co-parent
+    }
+kin-rite-compadre-name = Compadrazgo
+kin-rite-compadre-note = The bond between a child’s parents and the child’s godparents.
+kin-rite-ninong = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-ninong-name = Ninong
+kin-rite-ninong-note = Ninong or ninang: sponsor at a Filipino baptism, confirmation or wedding.
+kin-rite-sandek = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] sandek
+    }
+kin-rite-sandek-name = Brit milah: sandek
+kin-rite-sandek-note = Holds the child during the brit milah.
+kin-rite-kvatter = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [F] kvatterin
+           *[other] kvatter
+        }
+    }
+kin-rite-kvatter-name = Brit milah: kvatter
+kin-rite-kvatter-note = Carries the child in to the brit milah.
+kin-rite-milk-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] milk son
+            [F] milk daughter
+           *[other] milk child
+        }
+       *[other] { $sex ->
+            [M] milk father
+            [F] milk mother
+           *[other] milk parent
+        }
+    }
+kin-rite-milk-parent-name = Milk kinship
+kin-rite-milk-parent-note = Nursed the child: in Islamic law milk kinship makes a family, and forbids marriage as birth does.
+kin-rite-milk-sibling = { $sex ->
+        [M] milk brother
+        [F] milk sister
+       *[other] milk sibling
+    }
+kin-rite-milk-sibling-name = Milk siblings
+kin-rite-milk-sibling-note = Nursed by the same woman.
+kin-rite-kafala = { $role ->
+        [sponsored] ward under kafala
+       *[other] guardian under kafala
+    }
+kin-rite-kafala-name = Kafala
+kin-rite-kafala-note = Takes in and raises a child without the filiation of an adoption, under Islamic law.
+kin-rite-rakhi = { $sex ->
+        [M] rakhi brother
+        [F] rakhi sister
+       *[other] rakhi sibling
+    }
+kin-rite-rakhi-name = Rakhi
+kin-rite-rakhi-note = At Raksha Bandhan a sister ties a rakhi on a brother’s wrist, and he vows to protect her.
+kin-rite-guru = { $role ->
+        [sponsored] disciple
+       *[other] guru
+    }
+kin-rite-guru-name = Guru
+kin-rite-guru-note = Spiritual teacher and disciple.
+kin-rite-gan-parent = { $role ->
+        [sponsored] { $sex ->
+            [M] godson
+            [F] goddaughter
+           *[other] godchild
+        }
+       *[other] { $sex ->
+            [M] godfather
+            [F] godmother
+           *[other] godparent
+        }
+    }
+kin-rite-gan-parent-name = Gan qin
+kin-rite-gan-parent-note = Godparents taken in China and in Chinese families, often to protect a child.
+kin-rite-sworn-sibling = { $sex ->
+        [M] sworn brother
+        [F] sworn sister
+       *[other] sworn sibling
+    }
+kin-rite-sworn-sibling-name = Sworn siblings
+kin-rite-sworn-sibling-note = Brothers or sisters by oath (jiebai).
+kin-rite-name-giver = { $role ->
+        [sponsored] named child
+       *[other] name-giver
+    }
+kin-rite-name-giver-name = Name-giving
+kin-rite-name-giver-note = Gave the child their name (nazuke-oya in Japan).
+kin-rite-nakodo = { $role ->
+        [sponsored] { $sex ->
+            [M] groom they matched
+            [F] bride they matched
+           *[other] spouse they matched
+        }
+       *[other] go-between
+    }
+kin-rite-nakodo-name = Nakōdo
+kin-rite-nakodo-note = Arranged the marriage and stood witness to it (nakōdo in Japan).
+kin-rite-namesake = namesake
+kin-rite-namesake-name = Namesake
+kin-rite-namesake-note = Bears the same name: in Central and East Africa a bond of gifts and care (ndoyi, somo).
+kin-rite-initiation = { $role ->
+        [sponsored] initiate
+       *[other] initiation sponsor
+    }
+kin-rite-initiation-name = Initiation
+kin-rite-initiation-note = Guided the person through an initiation.
+kin-rite-blood-pact = { $sex ->
+        [M] blood brother
+        [F] blood sister
+       *[other] blood sibling
+    }
+kin-rite-blood-pact-name = Blood pact
+kin-rite-blood-pact-note = Bound by a pact of blood.
+kin-rite-hanai = { $role ->
+        [sponsored] { $sex ->
+            [M] hānai son
+            [F] hānai daughter
+           *[other] hānai child
+        }
+       *[other] { $sex ->
+            [M] hānai father
+            [F] hānai mother
+           *[other] hānai parent
+        }
+    }
+kin-rite-hanai-name = Hānai
+kin-rite-hanai-note = Raised as their own by Hawaiian custom, without a legal adoption.
+kin-rite-hunka = { $role ->
+        [sponsored] { $sex ->
+            [M] hunka son
+            [F] hunka daughter
+           *[other] hunka child
+        }
+       *[other] { $sex ->
+            [M] hunka father
+            [F] hunka mother
+           *[other] hunka parent
+        }
+    }
+kin-rite-hunka-name = Hunka
+kin-rite-hunka-note = Made a relative in the Lakota hunka ceremony.
+kin-rite-civil-sponsor = { $role ->
+        [sponsored] { $sex ->
+            [M] civil godson
+            [F] civil goddaughter
+           *[other] civil godchild
+        }
+       *[other] { $sex ->
+            [M] civil godfather
+            [F] civil godmother
+           *[other] civil godparent
+        }
+    }
+kin-rite-civil-sponsor-name = Civil godparenthood
+kin-rite-civil-sponsor-note = Godparent at a civil naming ceremony.
+kin-rite-guardian = { $role ->
+        [sponsored] ward
+       *[other] guardian
+    }
+kin-rite-guardian-name = Guardianship
+kin-rite-guardian-note = Legal guardian, as the record states it.

@@ -4,6 +4,55 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Kinship: how any two people of the family are related, every relative of
+one, and the ties a culture makes by rite and custom (the operator's request
+of 1 November 2026, docs/adr/0020). Nothing about the AXGF file changes: a
+tie of rite is a 1.1 Link, and its rite is kept in this application's
+extension.
+
+### Added
+
+- **Kinship tab**, on the record and in the record beside the river.
+  - **"How are they related?"** Choose any relative and the link is said:
+    "second cousin", "first cousin of the father", "son of a second
+    cousin", "sister-in-law", "godmother". It is shown step by step, from
+    the person to the ancestors the two share and down to the other, every
+    person on the way named. Every way two people are related is listed:
+    by descent, half or full, by adoption, by marriage, by care, by rite.
+    The degree of kinship is counted as civil law counts it.
+  - **"Every relative"**, by group: partners, ancestors, descendants,
+    brothers and sisters, uncles and aunts, nephews and nieces, cousins,
+    by marriage, the stepfamily, fostering and guardianship, rite and
+    custom.
+- **The words agree in the fourteen languages**: with the person's sex,
+  the side of the family (عم and خال, *mjomba*, 外), elder or younger (兄 and
+  弟, 伯父 and 叔父), one male line (堂 and 表), the shared parent of a
+  half-sibling, the sibling a nephew comes from.
+- **The tree** says on each open card what the person is to the one in the
+  middle ("first cousin of Lucien"), and so does the side panel, with the
+  way to see the link step by step.
+- **Ties of rite and custom**: 27 rites in ten traditions. Among them
+  godparents at a baptism or a confirmation, wedding sponsors, kum,
+  koumbaros, padrino, compadre, ninong, sandek, kvatter, milk kinship,
+  kafala, rakhi, guru, gān qīn, sworn siblings, nakōdo, the name-giver,
+  the namesake (ndoyi, somo), initiation, the blood pact, hānai, hunka and
+  civil godparenthood.
+  - **The link editor** offers them by tradition, and writes their words
+    when the form leaves them empty.
+  - **On the record** they have a section of their own, apart from the
+    family, each in a dotted frame, with the tradition's own word.
+  - **On the tree** a tie between two people both drawn is a curve, in
+    pairs of dots, in a colour no family line has.
+- **axgf-spec proposals/0002** (branch `ritual-kinship`) proposes naming
+  these rites in AXGF 1.2.
+
+### Fixed
+
+- A template that failed inside an include logged only "could not render
+  include"; the error now carries every cause beneath it.
+
 ## [1.0.0] — 2026-10-29
 
 The first major version. The tree page becomes a family chart read down the

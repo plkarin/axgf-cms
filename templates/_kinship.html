@@ -1,0 +1,97 @@
+{#- The Kinship tab (the operator's request of 1 November 2026,
+    docs/adr/0020): two tools, on the record page and beside the river.
+
+    The first answers "how is this person related to that one": choose a
+    relative, and the link is said — "second cousin", "godmother", "wife of a
+    first cousin" — then shown step by step, from this person up to the
+    ancestors they share and down to the other, every person on the way named
+    (or, if this reader may not see them, said to be there). Every way they
+    are related is listed, the closest first.
+
+    The second lists every relative this person has, by group: partners,
+    ancestors, descendants, brothers and sisters, uncles and aunts, nephews
+    and nieces, cousins of every degree, by marriage, the stepfamily, fostering
+    and guardianship, rite and custom, and anyone else the records connect.
+
+    Context: `kinship` (crate::kinship_text::KinPage), and beside the river
+    `river_tabs` and `river_n`, which the form and the links go back to.
+    Everything here is the record's content: `data-content`. -#}
+{% set k = kinship %}
+{% if k %}
+{% if river_tabs %}{% set here = "/?p=" ~ k.id ~ "&n=" ~ river_n ~ "&tab=kinship" %}
+{% else %}{% set here = "/person/" ~ k.id ~ "?tab=kinship" %}{% endif %}
+<section class="rec-section kin" id="kinship" data-content>
+  <div class="kin-find">
+    <h3 class="kin-title">{{ t("kin-find-title") }}</h3>
+    <p class="muted small">{{ t("kin-find-lede", name=k.name) }}</p>
+    {% if k.groups %}
+    <form class="kin-form" method="get" action="{{ '/' if river_tabs else '/person/' ~ k.id }}">
+      {% if river_tabs %}<input type="hidden" name="p" value="{{ k.id }}"><input type="hidden" name="n" value="{{ river_n }}">{% endif %}
+      <input type="hidden" name="tab" value="kinship">
+      <label class="kin-field"><span class="kin-field-label">{{ t("kin-find-label") }}</span>
+        <select name="with" data-autosubmit>
+          <option value="">{{ t("kin-find-choose") }}</option>
+          {% for g in k.groups %}
+          <optgroup label="{{ g.title }}">
+            {% for r in g.rows %}
+            <option value="{{ r.id }}"{% if k.finding and k.finding.id == r.id %} selected{% endif %}>{{ r.name }}{% if r.years %} ({{ r.years }}){% endif %} · {{ r.said.term }}</option>
+            {% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="btn" type="submit" data-autosubmit-go>{{ t("kin-find-go") }}</button>
+    </form>
+    {% endif %}
+
+    {% if k.finding %}
+    <div class="kin-result" id="kin-result">
+      {% if k.finding.relations %}
+      {% for f in k.finding.relations %}
+      <article class="kin-way{% if f.said.group == 'rites' %} is-rite{% endif %}">
+        <p class="kin-who-line"><a href="/person/{{ k.finding.id }}"><bdi>{{ k.finding.name }}</bdi></a></p>
+        <p class="kin-term">{{ f.said.term }}{% if f.said.native %} <span class="kin-native" title="{{ t('kin-native') }}" lang="und"><bdi>{{ f.said.native }}</bdi></span>{% endif %}</p>
+        <p class="kin-of">{{ f.of_a }}{% if f.said.note %} <span class="muted">· {{ f.said.note }}</span>{% endif %}</p>
+        {% if f.rite_note %}<p class="small muted">{{ f.rite_note }}</p>{% endif %}
+        {% if f.common %}<p class="small kin-common">{{ t("kin-common-list", names=(f.common | join(" & "))) }}</p>{% endif %}
+        <ol class="kin-path" aria-label="{{ t('kin-path') }}">
+          <li class="kin-step is-start"><span class="kin-person"><bdi>{{ k.name }}</bdi></span></li>
+          {% for s in f.path %}
+          <li class="kin-step{% if s.common %} is-common{% endif %}{% if loop.last %} is-end{% endif %}">
+            <span class="kin-hop">{{ s.word }}</span>
+            {% if s.hidden %}<span class="kin-person is-hidden">{{ s.name }}</span>
+            {% else %}<a class="kin-person" href="/person/{{ s.id }}"><bdi>{{ s.name }}</bdi></a>{% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+        {% if f.degree %}<p class="small muted">{{ f.degree }}</p>{% endif %}
+      </article>
+      {% endfor %}
+      {% else %}
+      <p class="notice">{{ t("kin-find-none", a=k.name, b=k.finding.name) }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="kin-all">
+    {% if k.groups %}<h3 class="kin-title">{{ t("kin-all-title", name=k.name) }} <span class="tab-count">{{ t("kin-all-count", n=k.count) }}</span></h3>{% endif %}
+    {% for g in k.groups %}
+    <details class="kin-group kin-group-{{ g.key }}"{% if g.rows | length <= 40 %} open{% endif %}>
+      <summary><span class="kin-group-title">{{ g.title }}</span> <span class="tab-count">{{ g.rows | length }}</span></summary>
+      <ul class="kin-rows">
+        {% for r in g.rows %}
+        <li class="kin-row">
+          <a class="kin-name" href="/person/{{ r.id }}"><bdi>{{ r.name }}</bdi></a>
+          {%- if r.years %} <span class="kin-years">{{ r.years }}</span>{% endif %}
+          <span class="kin-word">{{ r.said.term }}{% if r.said.native %} <span class="kin-native" lang="und"><bdi>{{ r.said.native }}</bdi></span>{% endif %}{% if r.said.note %} <span class="muted">· {{ r.said.note }}</span>{% endif %}</span>
+          {%- if r.also %} <span class="kin-also">{{ t("kin-also-list", list=(r.also | join(", "))) }}</span>{% endif %}
+          <a class="kin-show" href="{{ here }}&amp;with={{ r.id }}#kin-result">{{ t("kin-find-go") }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

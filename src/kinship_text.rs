@@ -765,6 +765,47 @@ mod tests {
         assert_eq!(ids, vec!["bob", "bobw", "kid"]);
     }
 
+    /// A GEDCOM import often keeps a sibling group beside the family that
+    /// has the parents. The recorded parents give the way; the group adds
+    /// the child only it holds.
+    #[test]
+    fn a_sibling_group_beside_the_parents_family_adds_no_second_way() {
+        let mut ps = serde_json::Map::new();
+        for (id, s, b) in [
+            ("pa", "M", "1870"),
+            ("ma", "F", "1872"),
+            ("bob", "M", "1902"),
+            ("cat", "F", "1904"),
+            ("dan", "M", "1906"),
+        ] {
+            let (k, v) = crate::kinship::tests::person(id, s, b);
+            ps.insert(k, v);
+        }
+        let f = serde_json::json!({
+            "persons": ps,
+            "families": {
+                "r": {"id": "r", "type": "family", "axgf_version": "1.0",
+                      "union": {"type": "marriage", "persons": [
+                          {"person_id": "pa", "role": "spouse"},
+                          {"person_id": "ma", "role": "spouse"}]},
+                      "children": [{"person_id": "bob"}, {"person_id": "cat"}]},
+                "g": {"id": "g", "type": "family", "axgf_version": "1.0",
+                      "children": [{"person_id": "bob"}, {"person_id": "cat"},
+                                   {"person_id": "dan"}]}
+            },
+            "links": {}
+        });
+        let lens = Lens::unrestricted();
+        let k = Kin::new(&f, &lens);
+        let sister = found(&k, &f, &lens, "en", "bob", "cat");
+        assert_eq!(sister.len(), 1, "one way, through their parents");
+        assert_eq!(sister[0].said.term, "sister");
+        assert_eq!(sister[0].common, vec!["pa".to_string(), "ma".to_string()]);
+        let brother = found(&k, &f, &lens, "en", "cat", "dan");
+        assert_eq!(brother.len(), 1);
+        assert_eq!(brother[0].said.term, "brother");
+    }
+
     #[test]
     fn english_says_a_half_nephew_and_an_aunt() {
         // The wife of ego's son, seen from ego's half-brother.

@@ -45,7 +45,10 @@ sister-in-law or the godson of an uncle.
      - The children of a family with no recorded parent (a sibling group,
        AXGF 1.0 §4.2.3) meet at a parent that stands for the unrecorded
        ones. It is named by nobody and listed nowhere, and the way between
-       two of them is one step: "brother", "sister".
+       two of them is one step: "brother", "sister". A GEDCOM import often
+       keeps such a group beside the family that has the parents: the
+       recorded parents then give the way, and the group adds only the
+       children it alone holds.
    - **By marriage.** A partner; a relative of A's partner; the partner of
      A's relative. Both ends by marriage are named only when no nearer way
      exists.

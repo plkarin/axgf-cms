@@ -734,6 +734,22 @@ impl<'a> Kin<'a> {
         anc(a, memo);
         anc(b, memo);
         let mut out = self.blood(a, b, &memo[&a], &memo[&b]);
+        // A sibling group often repeats children whom a family with parents
+        // already holds (a GEDCOM import keeps both). A way through the
+        // unrecorded parent then says nothing the recorded parents do not.
+        let unrecorded = |r: &Relation| r.common.iter().any(|c| is_unrecorded(c));
+        let recorded: Vec<(u32, u32)> = out
+            .iter()
+            .filter(|r| !unrecorded(r))
+            .filter_map(|r| match &r.kind {
+                Kind::Blood { up, down, .. } => Some((*up, *down)),
+                _ => None,
+            })
+            .collect();
+        out.retain(|r| match &r.kind {
+            Kind::Blood { up, down, .. } => !unrecorded(r) || !recorded.contains(&(*up, *down)),
+            _ => true,
+        });
 
         // Partners.
         for p in self.partners[a].iter().filter(|p| p.to == b) {

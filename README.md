@@ -485,9 +485,18 @@ There are five ways, and each is spoken to in its own way:
 
 | Way | What you fill in |
 |---|---|
-| An address: **Ollama** | The address (`http://127.0.0.1:11434` unless you say otherwise) and, if you like, a model. |
-| An address, an API key and a model: **OpenAI**, **Mistral**, **vLLM**, **Claude** (the Anthropic API), **Gemini** | The usual address is already there. The key is kept with the accounts and never shown again. |
-| A coding agent already signed in on this machine: **Claude Code**, **Codex**, **OpenCode** | A model; an effort in the agent's own words (`low` to `max`, `minimal` to `xhigh`, a variant); and the program, which the room finds by itself. |
+| An address: **Ollama** | The address (`http://127.0.0.1:11434` unless you say otherwise) and, if you like, a model and whether it thinks. |
+| An address, an API key and a model: **OpenAI**, **Mistral**, **vLLM**, **Claude** (the Anthropic API), **Gemini** | The usual address is already there. The key is kept with the accounts and never shown again. An effort, if you like. |
+| A coding agent already signed in on this machine: **Claude Code**, **Codex**, **OpenCode** | A model; an effort in the agent's own words; and the program, which the room finds by itself. |
+
+**The models of the moment are suggested** *(new since 1.1.0, not yet released)*. The model field
+lists, for the way you chose, the current models of each maker, the one to
+start with first: for Claude, `claude-opus-5-5`, `claude-fable-5-1`,
+`claude-sonnet-5-5` and `claude-haiku-5-5`. The effort field then lists the
+efforts that model takes, its usual one marked *default*. You can still
+write any other name or effort. It is sent as written, and the room says it
+is not one of the suggestions, which catches a mistyped name. The list is
+read again from the makers' pages for each release.
 
 **The test** sends the archive as it is: every JSON file of the `.axgf`,
 without the photographs. It asks "Give me the top 3 families with the most
@@ -532,7 +541,8 @@ Before you press it:
   ([how](docs/OPERATOR.md#the-afg-where-its-computing-runs)).
 
 Why it works this way: [where the computing comes from](docs/adr/0023-the-artificial-family-genealogist.md),
-[the brains, the window and who may talk to it](docs/adr/0024-the-afgs-brains.md).
+[the brains, the window and who may talk to it](docs/adr/0024-the-afgs-brains.md),
+[the models of the moment and their efforts](docs/adr/0025-the-models-of-the-moment.md).
 
 ### Let the family in: registration and sign-in services
 

@@ -1,5 +1,6 @@
-//! The Artificial family genealogist's room (docs/adr/0023, 0024): only an
-//! administrator reaches it; its key is kept and never shown; its test sends
+//! The Artificial family genealogist's room (docs/adr/0023 to 0025): only an
+//! administrator reaches it; its key is kept and never shown; it suggests the
+//! models of the moment and their efforts, and keeps any other; its test sends
 //! the archive and the asker's brain to a service or an agent, and shows what
 //! came back in a window; each account's brain is its own, on disk; and the
 //! accounts page says who may talk to the AFG.
@@ -436,8 +437,8 @@ async fn the_key_is_kept_never_shown_and_forgotten_on_request() {
             "The program must be the agent's own",
         ),
         (
-            vec![("kind", "claude-code"), ("effort", "turbo")],
-            "This agent does not know that effort.",
+            vec![("kind", "claude-code"), ("effort", "--turbo")],
+            "An effort is written in letters, digits and",
         ),
         (
             vec![("kind", "ollama"), ("url", "ftp://127.0.0.1/")],
@@ -528,6 +529,134 @@ async fn a_test_sends_the_archive_to_ollama_and_shows_its_answer() {
     assert!(
         !room.contains("data-afg-dialog"),
         "no window unless asked for"
+    );
+}
+
+/// The values of a list the page suggests, in order.
+fn suggested(page: &str, id: &str) -> Vec<String> {
+    let start = page
+        .find(&format!(r#"<datalist id="{id}""#))
+        .unwrap_or_else(|| panic!("no list {id}"));
+    let list = &page[start..start + page[start..].find("</datalist>").unwrap()];
+    list.split(r#"<option value=""#)
+        .skip(1)
+        .map(|o| o[..o.find('"').unwrap()].replace("&#x2f;", "/"))
+        .collect()
+}
+
+#[tokio::test]
+async fn the_room_suggests_the_models_of_the_moment_and_keeps_any_other() {
+    site_secret_in_env();
+    let (url, seen) = fake_service(ollama);
+    let (app, _bundle) = app_with_bundle("afg-suggestions", &sample());
+    let admin = admin_cookie(&app).await;
+
+    // Each way of computing has its list of models, each with its efforts;
+    // the field points at the chosen way's, and the efforts offered are its
+    // model's, its usual one marked.
+    let (status, page) = configure(
+        &app,
+        &admin,
+        &[
+            ("kind", "claude-code"),
+            ("model", "claude-opus-5-5"),
+            ("effort", "high"),
+        ],
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    for slug in [
+        "ollama",
+        "openai",
+        "mistral",
+        "vllm",
+        "anthropic",
+        "gemini",
+        "claude-code",
+        "codex",
+        "opencode",
+    ] {
+        assert!(!suggested(&page, &format!("afg-models-{slug}")).is_empty());
+    }
+    assert!(page.contains(r#"list="afg-models-claude-code""#));
+    let models = suggested(&page, "afg-models-claude-code");
+    assert_eq!(models[0], "claude-opus-5-5", "the one to start with first");
+    assert!(models.contains(&"opus".to_string()), "and the aliases");
+    assert!(suggested(&page, "afg-models-opencode").contains(&"anthropic/claude-opus-5-5".into()));
+    assert_eq!(
+        suggested(&page, "afg-efforts"),
+        ["low", "medium", "high", "xhigh", "max"]
+    );
+    assert!(
+        page.contains(r#"<option value="medium" label="default">"#),
+        "Opus 5.5 thinks at medium unless told otherwise"
+    );
+    for field in ["model", "effort"] {
+        assert!(
+            page.contains(&format!(r#"data-afg-unlisted="{field}" hidden"#)),
+            "{field}: suggested, nothing to say"
+        );
+    }
+
+    // A model and an effort that are not suggested are kept as written,
+    // and the room says they are not suggestions.
+    let (status, page) = configure(
+        &app,
+        &admin,
+        &[
+            ("kind", "claude-code"),
+            ("model", "opus-5"),
+            ("effort", "turbo"),
+        ],
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    assert!(page.contains(r#"value="opus-5""#) && page.contains(r#"value="turbo""#));
+    for field in ["model", "effort"] {
+        assert!(
+            !page.contains(&format!(r#"data-afg-unlisted="{field}" hidden"#)),
+            "{field}: said not to be a suggestion"
+        );
+    }
+    assert!(page.contains("Not one of the suggestions: sent as written."));
+    // But never an effort a program could read as an option.
+    let (status, page) = configure(
+        &app,
+        &admin,
+        &[("kind", "claude-code"), ("effort", "--max")],
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(page.contains("An effort is written in letters"), "{page}");
+
+    // A service is given its effort too: Ollama's `think`.
+    let (status, page) = configure(
+        &app,
+        &admin,
+        &[
+            ("kind", "ollama"),
+            ("url", &url),
+            ("model", "qwen3.8"),
+            ("effort", "false"),
+            ("timeout", "60"),
+        ],
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    assert_eq!(
+        suggested(&page, "afg-efforts"),
+        ["false", "true"],
+        "Qwen thinks or does not"
+    );
+    let (window, _) = run_test(&app, &admin).await;
+    assert!(window.contains("Success"), "{window}");
+    let seen = seen.lock().unwrap().clone();
+    let (_, path, body) = seen.last().unwrap();
+    assert_eq!(path, "/api/chat");
+    let body: Value = serde_json::from_str(body).unwrap();
+    assert_eq!(
+        (&body["model"], &body["think"]),
+        (&"qwen3.8".into(), &false.into())
     );
 }
 

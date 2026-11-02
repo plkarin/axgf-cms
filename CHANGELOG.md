@@ -4,6 +4,39 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The AFG's models of the moment, and their efforts (the operator's request
+of 2 November 2026, docs/adr/0025).
+
+### Added
+
+- **The AFG room suggests the models of the moment.** For each way of
+  computing, the model field lists the current models of each maker, the
+  one to start with first. Examples: Claude Opus 5.5, Fable 5.1, Sonnet 5.5
+  and Haiku 5.5; GPT-6.1 Sol and GPT-6 Astra; Gemini 4 Argon; Mistral Large
+  4; gpt-oss and Qwen 3.8 for Ollama and vLLM; and each agent's names. The
+  list was read from the makers' pages on 2 November 2026, and is read again
+  for each release.
+- **The efforts follow the model.** The effort field lists the efforts the
+  chosen model takes, its usual one marked *default*.
+- **Any other name or effort is kept**, sent as written, and the room says
+  it is not a suggestion, which catches a mistyped name such as `opus-5`.
+- **Every service takes an effort**, in its own setting: Ollama's `think`,
+  `reasoning_effort` for OpenAI, Mistral and vLLM, `output_config.effort`
+  for Claude, `thinkingLevel` for Gemini. Left empty, the model's default
+  holds.
+
+### Changed
+
+- **An effort is checked for how it is written, no longer against a list.**
+  The old lists had aged: Codex takes `max` and `ultra` now.
+- **An effort saved earlier is now sent to a service.** Before, the field
+  was hidden for services, and a value left in it was ignored. Empty it to
+  keep the service's default.
+- **Claude's answers may run to 32,000 tokens** instead of 8,192. Its
+  thinking counts within that number, and grows with the effort.
+
 ## [1.1.0] — 2026-11-02
 
 Kinship, and the first part of the Artificial family genealogist (the

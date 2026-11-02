@@ -1,6 +1,8 @@
 # ADR 0023 — The Artificial family genealogist: where its computing comes from
 
-**Status:** accepted, v1.1.0 (2026-11-02) · **Builds on:** the administration
+**Status:** accepted, v1.1.0 (2026-11-02); amended by
+[ADR 0025](0025-the-models-of-the-moment.md), which suggests the models of the
+moment and gives every kind an effort · **Builds on:** the administration
 console (docs/adr/0011), the shared export (`state::export_copy`), the
 sign-in services' secrets (`src/site.rs`) · **Applies to:** `src/afg.rs`,
 `src/routes/afg.rs`, `src/routes/console.rs`, `src/routes/mod.rs`,

@@ -13,6 +13,9 @@
 //!   * OpenAI, Mistral and vLLM speak OpenAI's `POST /chat/completions`;
 //!   * Claude speaks Anthropic's `POST /v1/messages`;
 //!   * Gemini speaks Google's `POST /v1beta/models/{model}:generateContent`.
+//!
+//!   Each takes an effort too, in the setting its protocol names for it
+//!   (Ollama's `think` among them; docs/adr/0025).
 //! * **A coding agent already signed in on this machine**, with a model and an
 //!   effort, run as the command line it is:
 //!   * Claude Code: `claude -p`, with no tool and no MCP server at all;
@@ -179,8 +182,8 @@ impl Kind {
     /// The fields that mean something to it, for the page's script.
     pub fn uses(self) -> &'static str {
         match self.group() {
-            "address" => "url model",
-            "service" => "url key model",
+            "address" => "url model effort",
+            "service" => "url key model effort",
             "agent" => "model effort program",
             _ => "",
         }
@@ -208,17 +211,16 @@ impl Kind {
         }
     }
 
-    /// The effort levels the agent's own command line accepts:
-    /// `claude --effort`, Codex's `model_reasoning_effort`, and the variants
-    /// OpenCode's providers most often name (`opencode run --variant` is
-    /// provider-specific, so any plain word goes for it).
-    pub fn efforts(self) -> &'static [&'static str] {
-        match self {
-            Kind::ClaudeCode => &["low", "medium", "high", "xhigh", "max"],
-            Kind::Codex => &["minimal", "low", "medium", "high", "xhigh"],
-            Kind::Opencode => &["minimal", "low", "medium", "high", "xhigh", "max"],
-            _ => &[],
-        }
+    /// The models of the moment the room suggests for it, each with the
+    /// efforts it takes ([`crate::afg_models`]).
+    pub fn suggestions(self) -> &'static [crate::afg_models::Suggestion] {
+        crate::afg_models::of(self)
+    }
+
+    /// Every effort its suggestions take, the lightest first. Suggestions
+    /// only: any effort written plainly is sent as it is.
+    pub fn efforts(self) -> Vec<&'static str> {
+        crate::afg_models::efforts_of(self)
     }
 }
 
@@ -354,12 +356,12 @@ impl Config {
         if !model.is_empty() && !plain(model) {
             return Some("afg-error-model");
         }
+        // Any effort, as any model: the room suggests, it does not decide
+        // (docs/adr/0025). Written plainly, it is never read as an option
+        // nor breaks out of the TOML string Codex is given it in.
         let effort = self.effort.trim();
-        if k.is_agent() && !effort.is_empty() {
-            let known = k.efforts().contains(&effort);
-            if !(known || (k == Kind::Opencode && plain(effort))) {
-                return Some("afg-error-effort");
-            }
+        if !effort.is_empty() && !plain(effort) {
+            return Some("afg-error-effort");
         }
         let program = self.program.trim();
         if k.is_agent() && !program.is_empty() {
@@ -620,14 +622,20 @@ fn num_ctx(tokens: usize) -> usize {
     (tokens + tokens / 5 + 4096).clamp(8192, 131_072)
 }
 
+/// What Anthropic's models may write: the answer, and the thinking each
+/// current model does first, which counts within it and grows with the
+/// effort.
+const ANTHROPIC_MAX_TOKENS: u32 = 32_000;
+
 pub fn http_call(cfg: &Config, model: &str, p: &Prompt, tokens: usize) -> Option<HttpCall> {
     let url = cfg.call_url(model)?;
     let key = cfg.api_key.trim();
+    let effort = cfg.effort.trim();
     let messages = json!([
         {"role": "system", "content": p.system},
         {"role": "user", "content": p.user()},
     ]);
-    Some(match cfg.kind.protocol() {
+    let mut call = match cfg.kind.protocol() {
         Protocol::Ollama => HttpCall {
             url,
             headers: Vec::new(),
@@ -649,7 +657,7 @@ pub fn http_call(cfg: &Config, model: &str, p: &Prompt, tokens: usize) -> Option
                 ("x-api-key".into(), key.to_string()),
                 ("anthropic-version".into(), "2023-06-01".into()),
             ],
-            body: json!({"model": model, "max_tokens": 8192, "system": p.system,
+            body: json!({"model": model, "max_tokens": ANTHROPIC_MAX_TOKENS, "system": p.system,
                          "messages": [{"role": "user", "content": p.user()}]}),
         },
         Protocol::Gemini => HttpCall {
@@ -659,7 +667,28 @@ pub fn http_call(cfg: &Config, model: &str, p: &Prompt, tokens: usize) -> Option
                          "contents": [{"role": "user", "parts": [{"text": p.user()}]}]}),
         },
         _ => return None,
-    })
+    };
+    // The effort, in the setting each protocol names for it; without one,
+    // the model's own default.
+    if !effort.is_empty() {
+        let body = &mut call.body;
+        match cfg.kind.protocol() {
+            Protocol::Ollama => {
+                body["think"] = match effort {
+                    "true" => json!(true),
+                    "false" => json!(false),
+                    level => json!(level),
+                }
+            }
+            Protocol::OpenAi => body["reasoning_effort"] = json!(effort),
+            Protocol::Anthropic => body["output_config"] = json!({"effort": effort}),
+            Protocol::Gemini => {
+                body["generationConfig"] = json!({"thinkingConfig": {"thinkingLevel": effort}})
+            }
+            _ => {}
+        }
+    }
+    Some(call)
 }
 
 /// What came back.
@@ -1470,7 +1499,8 @@ mod tests {
             .problem(),
             None
         );
-        // An agent's effort is one its command line knows, its program its own.
+        // Any effort written plainly, suggested or not (docs/adr/0025); never
+        // one read as an option. An agent's program is its own.
         let mut c = Config {
             kind: Kind::ClaudeCode,
             effort: "high".into(),
@@ -1478,7 +1508,11 @@ mod tests {
         };
         assert_eq!(c.problem(), None);
         c.effort = "turbo".into();
-        assert_eq!(c.problem(), Some("afg-error-effort"));
+        assert_eq!(c.problem(), None, "not suggested, sent as it is");
+        for wrong in ["--max", "high\" model=\"x", "a b"] {
+            c.effort = wrong.into();
+            assert_eq!(c.problem(), Some("afg-error-effort"), "{wrong}");
+        }
         c.effort = "max".into();
         c.program = "/bin/sh".into();
         assert_eq!(c.problem(), Some("afg-error-program"));
@@ -1492,6 +1526,9 @@ mod tests {
             ..Config::default()
         };
         assert_eq!(c.problem(), None, "OpenCode's variants are its providers'");
+        let mut c = cfg(Kind::Mistral);
+        c.effort = "none".into();
+        assert_eq!(c.problem(), None, "a service takes an effort too");
         assert!(!plain("--model"), "never read as an option");
     }
 
@@ -1545,6 +1582,38 @@ mod tests {
         );
         assert_eq!(call.headers[0].0, "x-goog-api-key");
         assert_eq!(call.body["systemInstruction"]["parts"][0]["text"], "SYS");
+    }
+
+    #[test]
+    fn each_service_is_given_the_effort_in_its_own_setting() {
+        let p = sample();
+        let with = |kind, effort: &str| {
+            let mut c = cfg(kind);
+            c.effort = effort.into();
+            http_call(&c, "m1", &p, 10).unwrap().body
+        };
+        // Without one, nothing is said and the model's own default holds.
+        for kind in [Kind::Ollama, Kind::Openai, Kind::Anthropic, Kind::Gemini] {
+            let body = with(kind, "");
+            for field in ["think", "reasoning_effort", "output_config"] {
+                assert!(body.get(field).is_none(), "{kind:?} {field}");
+            }
+            assert!(body.get("generationConfig").is_none(), "{kind:?}");
+        }
+        // Ollama's `think`: a switch, or a level the model names.
+        assert_eq!(with(Kind::Ollama, "false")["think"], json!(false));
+        assert_eq!(with(Kind::Ollama, "true")["think"], json!(true));
+        assert_eq!(with(Kind::Ollama, "high")["think"], json!("high"));
+        for kind in [Kind::Openai, Kind::Mistral, Kind::Vllm] {
+            assert_eq!(with(kind, "xhigh")["reasoning_effort"], "xhigh", "{kind:?}");
+        }
+        let body = with(Kind::Anthropic, "max");
+        assert_eq!(body["output_config"], json!({"effort": "max"}));
+        assert_eq!(body["max_tokens"], 32_000, "room for its thinking");
+        assert_eq!(
+            with(Kind::Gemini, "minimal")["generationConfig"],
+            json!({"thinkingConfig": {"thinkingLevel": "minimal"}})
+        );
     }
 
     #[test]

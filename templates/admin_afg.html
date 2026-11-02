@@ -90,19 +90,28 @@
     {% if cfg.key_hint %}<label class="inline"><input type="checkbox" name="clear_key"> {{ t("afg-key-clear") }}</label>{% endif %}
   </div>
 
+  {#- The models of the moment and their efforts, suggested and never
+      imposed (docs/adr/0025): a list per way of computing, the field
+      pointed at the chosen one's; each model carries its efforts and the
+      one it takes by default, which afg.js offers when it is chosen. -#}
   <div class="field" data-afg-field="model">
     <label for="afg-model">{{ t("afg-model") }}</label>
-    <input id="afg-model" name="model" type="text" spellcheck="false" class="mono" value="{{ cfg.model }}">
-    <div class="hint">{{ t("afg-model-hint") }}</div>
+    <input id="afg-model" name="model" type="text" spellcheck="false" autocomplete="off" class="mono" list="afg-models-{{ cfg.kind }}" value="{{ cfg.model }}">
+    {%- for k in kinds if k.suggestions %}
+    <datalist id="afg-models-{{ k.slug }}">
+      {%- for s in k.suggestions %}<option value="{{ s.model }}" label="{{ s.maker }}" data-efforts="{{ s.efforts | join(' ') }}" data-default="{{ s.default or '' }}"></option>{% endfor -%}
+    </datalist>
+    {%- endfor %}
+    <div class="hint">{{ t("afg-model-hint") }} <span class="lvl lvl-warn" data-afg-unlisted="model"{% if not cfg.model_unlisted %} hidden{% endif %}>{{ t("afg-model-unlisted") }}</span></div>
   </div>
 
   <div class="field" data-afg-field="effort">
     <label for="afg-effort">{{ t("afg-effort") }}</label>
-    <input id="afg-effort" name="effort" type="text" spellcheck="false" class="mono" list="afg-efforts" value="{{ cfg.effort }}">
-    <datalist id="afg-efforts">
-      {%- for k in kinds if k.slug == cfg.kind %}{% for e in k.efforts %}<option value="{{ e }}"></option>{% endfor %}{% endfor -%}
+    <input id="afg-effort" name="effort" type="text" spellcheck="false" autocomplete="off" class="mono" list="afg-efforts" value="{{ cfg.effort }}">
+    <datalist id="afg-efforts" data-default-label="{{ t('afg-effort-default') }}">
+      {%- for e in cfg.efforts %}<option value="{{ e }}"{% if e == cfg.default_effort %} label="{{ t('afg-effort-default') }}"{% endif %}></option>{% endfor -%}
     </datalist>
-    <div class="hint">{{ t("afg-effort-hint") }}</div>
+    <div class="hint">{{ t("afg-effort-hint") }} <span class="lvl lvl-warn" data-afg-unlisted="effort"{% if not cfg.effort_unlisted %} hidden{% endif %}>{{ t("afg-effort-unlisted") }}</span></div>
   </div>
 
   <div class="field" data-afg-field="program">

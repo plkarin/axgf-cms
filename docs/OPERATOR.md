@@ -399,6 +399,10 @@ Everything else in the sandbox stays as it is. If a test still fails, its
 page shows what the service or the agent said: the end of what the program
 printed on its error output.
 
+An agent whose network is closed does not always fail at once. Claude Code
+retries a refused connection until the time allowed runs out, and the test
+then says only "no answer after 600 s". Check the sandbox first.
+
 ### An agent on this machine
 
 The service runs as the system user `axgf-cms`. Its home is the data
@@ -438,6 +442,15 @@ What each agent may do while it reads the archive:
 - **OpenCode** has every tool denied except reading its own working
   directory, through which its attachment is read. It loads no plugins and
   no project files.
+
+**Models and efforts.** The room suggests the models of the moment for each
+way of computing, and each model's efforts (docs/adr/0025). Any other name
+is kept and sent as written, and the room says it is not a suggestion. A
+name a model does not have, such as `opus-5`, then fails at the test.
+Claude Code's aliases (`opus`, `sonnet`, `haiku`, `fable`) name the latest
+model the installed version knows: `opus` is Opus 4.7 for 2.1.131 and
+Opus 5.5 for 2.1.300. A full name, such as `claude-opus-5-5`, is the same
+for every version.
 
 **Brains.** The AFG keeps a brain for each account that talks to it
 (docs/adr/0024). That is a folder `family.brains/<username>/` in the data

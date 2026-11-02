@@ -7248,6 +7248,12 @@ a.kpi:hover { border-color: var(--border-strong); }
 .lvl-warn::before { background: var(--warning); }
 .lvl-fail::before { background: var(--danger); }
 .lvl-fail { color: var(--danger); }
+/* Said under a field, a state may be a sentence: it wraps, its dot on its
+   first line. */
+.hint .lvl {
+  white-space: normal;
+  align-items: baseline;
+}
 
 /* How many of each, as one bar: green, warning, critical. */
 .health-bar {

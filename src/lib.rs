@@ -25,6 +25,7 @@ pub mod access;
 pub mod acl;
 pub mod admin;
 pub mod afg;
+pub mod afg_models;
 pub mod ai_portrait;
 pub mod auth;
 pub mod avatar;

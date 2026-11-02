@@ -30,7 +30,8 @@ macro_rules! admin_only {
 }
 
 /// The kinds, as the page offers them: grouped as the operator named them,
-/// each with the fields it uses and its usual address.
+/// each with the fields it uses, its usual address, and the models of the
+/// moment it suggests with their efforts (docs/adr/0025).
 fn kinds_json() -> Vec<serde_json::Value> {
     Kind::ALL
         .iter()
@@ -41,6 +42,7 @@ fn kinds_json() -> Vec<serde_json::Value> {
                 "uses": k.uses(),
                 "default_url": k.default_url(),
                 "path": k.path(),
+                "suggestions": k.suggestions(),
                 "efforts": k.efforts(),
                 "program": k.program(),
             })
@@ -49,8 +51,13 @@ fn kinds_json() -> Vec<serde_json::Value> {
 }
 
 /// The configuration as the page shows it: everything but the key, which is
-/// said as set or not.
+/// said as set or not. With the efforts offered for its model, and whether
+/// its model and its effort are among the suggestions: either may be
+/// another, which is sent as it is.
 fn config_json(cfg: &Config) -> serde_json::Value {
+    let model = cfg.model.trim();
+    let effort = cfg.effort.trim();
+    let (efforts, default_effort) = crate::afg_models::efforts_for(cfg.kind, model);
     json!({
         "kind": cfg.kind.slug(),
         "group": cfg.kind.group(),
@@ -63,6 +70,14 @@ fn config_json(cfg: &Config) -> serde_json::Value {
         "timeout": cfg.timeout().as_secs(),
         "endpoint": cfg.endpoint(),
         "base_url": cfg.base_url(),
+        "efforts": efforts,
+        "default_effort": default_effort,
+        "model_unlisted": !model.is_empty()
+            && !cfg.kind.suggestions().is_empty()
+            && crate::afg_models::find(cfg.kind, model).is_none(),
+        "effort_unlisted": !effort.is_empty()
+            && !efforts.is_empty()
+            && !efforts.contains(&effort),
     })
 }
 

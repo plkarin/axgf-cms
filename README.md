@@ -478,7 +478,7 @@ AFG room, and tests it. The second part will bring it to the pages, one use
 at a time.
 
 <p align="center">
-<a href="docs/screenshots/afg-room.jpg"><img src="docs/screenshots/afg-room.jpg" width="720" alt="The AFG room under Canopy. Three tiles: computing, Ollama, ready; 638 files sent, 370 KB, about 126,421 tokens; last test, none yet. Below, the form: the way of computing set to Ollama, its address left empty with the address it calls written underneath, a model, the box for the sensitive classes and the time allowed. Then the test: what it sends (638 JSON files, 250 persons and 78 families, the sensitive classes left out, the question), the warning that living people's records are sent too, and the button."></a>
+<a href="docs/screenshots/afg-room.jpg"><img src="docs/screenshots/afg-room.jpg" width="720" alt="The AFG room under Canopy. Three tiles: computing, Ollama, ready; 638 files sent, 370 KB, about 126,421 tokens; last test, none yet. Below, the form: the way of computing set to Ollama, its address left empty with the address it calls written underneath, a model (gpt-oss:20b) and its effort (medium), each with its list of suggestions, the box for the sensitive classes and the time allowed. Then the test: what it sends (638 JSON files, 250 persons and 78 families, the sensitive classes left out, the question), the warning that living people's records are sent too, and the button."></a>
 </p>
 
 There are five ways, and each is spoken to in its own way:

@@ -1,16 +1,29 @@
 {% extends "base.html" %}
 {% import "_icons.html" as ic %}
 {% block title %}{{ t("afg-title") }} — {{ t("app-name") }}{% endblock %}
+{#- Without scripting, a test still awaited is asked for again every three
+    seconds; with it, afg.js asks for its window alone. -#}
+{% block head %}{% if run and run.state == "running" %}<noscript><meta http-equiv="refresh" content="3"></noscript>{% endif %}{% endblock %}
 
 {#- The Artificial family genealogist's room (the operator's request of
     2 November 2026, docs/adr/0023): where its computing comes from, and a
-    test that sends it the archive and one question. Each field says which
-    ways of computing use it; with scripting on, afg.js hides the others. -#}
+    test that sends it the archive and one question, its result in a window
+    (docs/adr/0024). Each field says which ways of computing use it; with
+    scripting on, afg.js hides the others. -#}
 
 {% block content %}
 {% include "_admin_nav.html" %}
 <h1>{{ t("afg-title") }}</h1>
 <p class="lede">{{ t("afg-lede") }}</p>
+
+{#- A test's result, over the room: modal with scripting, open in place
+    without it. -#}
+{% if run %}
+<dialog class="afg-dialog" data-afg-dialog data-run="{{ run.id }}" open aria-labelledby="afg-result-title">
+  <div class="afg-dialog-body" data-afg-dialog-body>{% include "_afg_result.html" %}</div>
+  <form method="dialog" class="afg-dialog-foot"><button class="btn" type="submit">{{ t("afg-result-close") }}</button></form>
+</dialog>
+{% endif %}
 
 {% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
 {% if notice %}<div class="notice ok"><p>{{ notice }}</p></div>{% endif %}
@@ -29,16 +42,23 @@
     <span class="kpi-note">{% if archive %}{{ t("afg-kpi-sent-note", kb=((archive.bytes // 1024) | localnum(lang)), tokens=(archive.tokens | localnum(lang))) }}{% endif %}</span>
   </div>
   <div class="kpi">
+    <span class="kpi-label">{{ t("afg-kpi-brain") }}</span>
+    <span class="kpi-icon">{{ ic.icon("brain") }}</span>
+    <span class="kpi-value kpi-value-text">{% if brain %}{{ t("afg-brain-exchanges", n=brain.exchanges) }}{% else %}—{% endif %}</span>
+    <span class="kpi-note">{% if brain %}{{ t("afg-brain-note", facts=brain.facts, brains=brain_count) }}{% else %}{{ t("afg-brain-no-account") }}{% endif %}</span>
+  </div>
+  <div class="kpi">
     <span class="kpi-label">{{ t("afg-kpi-last") }}</span>
     <span class="kpi-icon">{{ ic.icon("pulse") }}</span>
     <span class="kpi-value kpi-value-text">{% if latest %}{{ t("afg-run-state-" ~ latest.state) }}{% else %}{{ t("afg-never") }}{% endif %}</span>
-    <span class="kpi-note">{% if latest %}<a href="/admin/afg/run/{{ latest.id }}">{{ t("afg-run-open") }}</a>{% endif %}</span>
+    <span class="kpi-note">{% if latest %}<a href="/admin/afg?run={{ latest.id }}">{{ t("afg-run-open") }}</a>{% endif %}</span>
   </div>
 </div>
 
 <section class="rec-section" id="source">
 <h2>{{ t("afg-source") }}</h2>
 <p class="small muted">{{ t("afg-source-intro") }}</p>
+<p class="small muted">{{ t("afg-access-count", n=allowed) }} <a href="/admin/users#existing-accounts">{{ t("afg-access-set") }}</a></p>
 <form method="post" action="/admin/afg" autocomplete="off" class="afg-form" data-afg-form>
   <div class="field">
     <label for="afg-kind">{{ t("afg-kind") }}</label>

@@ -5034,7 +5034,7 @@ emblem-no-family-detail = Diese Familie ist nicht im Archiv oder für Sie nicht 
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Künstlicher Familiengenealoge
-afg-lede = Der AFG liest das Archiv der Familie und gibt darüber Auskunft. Hier: woher seine Rechenleistung kommt, und ein Test.
+afg-lede = Der AFG kennt die Familie aus ihrem Archiv und erinnert sich an jede Person, die mit ihm spricht, in einem eigenen Gedächtnis. Hier: woher seine Rechenleistung kommt, und ein Test.
 afg-kpi-source = Rechenquelle
 afg-ready = bereit
 afg-off-note = Wählen Sie, woher die Rechenleistung kommt.
@@ -5081,7 +5081,7 @@ afg-sensitive-hint = Gesundheit, Biometrie, Genomik, Rechtliches und Verhalten b
 afg-timeout = Erlaubte Zeit (Sekunden)
 afg-timeout-hint = Wie lange eine Antwort dauern darf, bevor aufgegeben wird.
 afg-test = Test
-afg-test-intro = Sendet das Archiv, wie es jetzt ist, jede seiner JSON-Dateien ohne die Fotos, und stellt eine Frage.
+afg-test-intro = Sendet das Archiv, wie es jetzt ist, jede seiner JSON-Dateien ohne die Fotos, mit Ihrem Gedächtnis, und stellt eine Frage. Die Antwort öffnet sich in einem Fenster.
 afg-sent-files = Dateien
 afg-sent-files-value = { $n ->
         [one] { $n } JSON-Datei
@@ -5114,8 +5114,6 @@ afg-error-key = Dieser Dienst braucht einen API-Schlüssel.
 afg-error-model = Hier wird ein Modell gebraucht, geschrieben mit Buchstaben, Ziffern und . _ : / @ [ ] + -
 afg-error-effort = Diesen Aufwand kennt der Agent nicht.
 afg-error-program = Das Programm muss das des Agenten sein (claude, codex oder opencode), mit vollständigem Pfad.
-afg-run-title = AFG-Test
-afg-run-state = Stand
 afg-run-state-running = Wartet auf die Antwort
 afg-run-state-done = Beantwortet
 afg-run-state-failed = Fehlgeschlagen
@@ -5124,9 +5122,36 @@ afg-run-usage = Gelesene Tokens
 afg-run-usage-out = { $n } geschrieben
 afg-run-cost = { $usd } USD
 afg-run-waiting = Das Archiv ist gesendet; die Antwort erscheint hier. Diese Seite fragt alle drei Sekunden neu.
-afg-run-answer = Antwort
 afg-run-model = Modell:
 afg-run-failed-hint = Prüfen Sie den Rechenweg, das Netz, das diese Seite erreichen darf, und bei einem Agenten, dass er installiert und unter dem Konto dieser Seite angemeldet ist.
-afg-back = Zurück zum AFG
-afg-run-gone-title = Test nicht gefunden
 afg-run-gone-detail = Tests werden für die Lebensdauer des Prozesses aufbewahrt, die letzten zehn. Senden Sie einen neuen.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = Ihr Gedächtnis
+afg-brain-exchanges = { $n ->
+        [one] { $n } Gespräch
+       *[other] { $n } Gespräche
+    }
+afg-brain-note = { $facts ->
+        [one] { $facts } gemerkte Tatsache
+       *[other] { $facts } gemerkte Tatsachen
+    } · { $brains ->
+        [one] { $brains } Konto mit Gedächtnis
+       *[other] { $brains } Konten mit Gedächtnis
+    }
+afg-brain-no-account = Diese Sitzung hat kein Konto und daher kein Gedächtnis.
+afg-access-count = { $n ->
+        [one] { $n } Konto darf mit dem AFG sprechen.
+       *[other] { $n } Konten dürfen mit dem AFG sprechen.
+    }
+afg-access-set = Einstellbar auf der Seite Konten
+afg-result-ok = Erfolg
+afg-result-error = Fehler
+afg-result-close = Schließen
+afg-result-remembered = Im Gedächtnis von { $name } behalten:
+afg-result-nothing-kept = Nichts Neues im Gedächtnis von { $name } behalten.
+accounts-afg = AFG
+accounts-afg-allowed = Darf mit dem AFG sprechen
+accounts-afg-yes = ja
+accounts-afg-no = nein
+accounts-afg-hint = Aus, solange nicht angekreuzt. Was der AFG sich über dieses Konto merkt, liegt in dessen eigenem Gedächtnis: einem Ordner auf der Platte neben dem Archiv.

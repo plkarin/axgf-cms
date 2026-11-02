@@ -55,6 +55,7 @@
   <dt><i class="vol-swatch vol-2"></i>{{ t("accounts-role-contributor") }}</dt><dd>{{ stats.contributors | localnum(lang) }}</dd>
   <dt><i class="vol-swatch vol-1"></i>{{ t("accounts-role-admin") }}</dt><dd>{{ stats.admins | localnum(lang) }}</dd>
 </dl>
+<p class="small muted">{{ t("afg-access-count", n=stats.afg) }} {{ t("accounts-afg-hint") }}</p>
 </section>
 
 {#- Who may open an account by themselves (docs/adr/0012). -#}
@@ -100,6 +101,7 @@
     <tr>
       <th>{{ t("accounts-username") }}</th><th>{{ t("accounts-role") }}</th>
       <th>{{ t("accounts-status") }}</th><th>{{ t("accounts-branch") }}</th>
+      <th>{{ t("accounts-afg") }}</th>
       <th>{{ t("accounts-sign-in") }}</th>
       <th>{{ t("accounts-last-seen") }}</th><th>{{ t("accounts-change") }}</th>
     </tr>
@@ -124,6 +126,9 @@
         {% else %}
           <span class="muted">{{ t("accounts-whole-tree") }}</span>
         {% endif %}
+      </td>
+      <td data-label="{{ t('accounts-afg') }}">
+        {%- if u.afg %}{{ t("accounts-afg-yes") }}{% else %}<span class="muted">{{ t("accounts-afg-no") }}</span>{% endif -%}
       </td>
       <td data-label="{{ t('accounts-sign-in') }}">
         {%- if u.password %}<span class="small">{{ t("accounts-sign-in-password") }}</span>{% endif %}
@@ -152,6 +157,7 @@
           <label>{{ t("accounts-branch") }}
             <textarea name="family_scope" rows="2">{{ u.family_scope | join("\n") }}</textarea>
             <span class="hint">{{ t("accounts-branch-placeholder") }}</span></label>
+          <label class="inline"><input type="checkbox" name="afg"{% if u.afg %} checked{% endif %}> {{ t("accounts-afg-allowed") }}</label>
           <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
         </form>
       </td>

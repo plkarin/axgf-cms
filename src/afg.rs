@@ -477,13 +477,26 @@ pub fn archive(flat: &Value, sensitive: bool) -> anyhow::Result<Archive> {
 pub struct Prompt {
     pub system: String,
     pub bundle: String,
+    /// The asker's brain (docs/adr/0024), said after the archive; empty when
+    /// nobody's is given.
+    pub brain: String,
     pub question: String,
 }
 
 impl Prompt {
-    /// The archive, then the question.
+    /// The archive, then the asker's brain: what the AFG reads before the
+    /// question.
+    pub fn context(&self) -> String {
+        if self.brain.is_empty() {
+            self.bundle.clone()
+        } else {
+            format!("{}\n\n{}", self.bundle, self.brain)
+        }
+    }
+
+    /// The archive, the brain, then the question.
     pub fn user(&self) -> String {
-        format!("{}\n\nQuestion: {}", self.bundle, self.question)
+        format!("{}\n\nQuestion: {}", self.context(), self.question)
     }
 
     /// All of it, for an agent with no separate system prompt.
@@ -492,16 +505,84 @@ impl Prompt {
     }
 }
 
-pub fn prompt(archive: &Archive, question: &str, empty_answer: &str) -> Prompt {
-    let system = format!(
+/// Who asks (docs/adr/0024): their account's name, the person in the tree
+/// they say they are, and what the AFG remembers of them.
+#[derive(Debug, Clone, Copy)]
+pub struct Asker<'a> {
+    pub name: &'a str,
+    /// The person's id and name, when the account says who it is.
+    pub person: Option<(&'a str, &'a str)>,
+    pub recall: &'a crate::brain::Recall,
+}
+
+/// The brain as the AFG reads it, after the archive.
+fn brain_section(a: &Asker) -> String {
+    let mut out = format!("=== brain: {} ===\n", a.name);
+    match a.person {
+        Some((id, name)) => out.push_str(&format!(
+            "You are talking to {}, who says they are {name} (persons/{id}.json) in the \
+             archive.\n",
+            a.name
+        )),
+        None => out.push_str(&format!("You are talking to {}.\n", a.name)),
+    }
+    if a.recall.memory.is_empty() && a.recall.recent.is_empty() {
+        out.push_str("You have no memory of them yet: this is your first exchange.\n");
+        return out;
+    }
+    out.push_str("What you noted about them:\n");
+    if a.recall.memory.is_empty() {
+        out.push_str("(nothing yet)\n");
+    } else {
+        out.push_str(&a.recall.memory);
+        out.push('\n');
+    }
+    if !a.recall.recent.is_empty() {
+        out.push_str("Your last exchanges with them, oldest first:\n");
+        for e in &a.recall.recent {
+            out.push_str(&format!(
+                "--- {}, {}\nQuestion: {}\nAnswer: {}\n",
+                e.at, e.context, e.question, e.answer
+            ));
+        }
+    }
+    out
+}
+
+pub fn prompt(
+    archive: &Archive,
+    question: &str,
+    empty_answer: &str,
+    asker: Option<&Asker>,
+) -> Prompt {
+    let mut system = String::from(
         "You are the Artificial family genealogist (AFG) of an ax·genealogy archive. \
-         You are given the archive's AXGF bundle: every JSON file of it (the manifest, \
-         the persons, the families, the events, the links, the sources, the places, the \
-         occupations and the documents' descriptions), without the photographs. Answer \
-         from the bundle only, in the language of the question, and name the records your \
-         answer rests on. If the bundle holds no person and no family, answer exactly: \
-         {empty_answer}"
+         What you know of the family is its archive: the AXGF bundle given below, every \
+         JSON file of it (the manifest, the persons, the families, the events, the links, \
+         the sources, the places, the occupations and the documents' descriptions), \
+         without the photographs. ",
     );
+    if asker.is_some() {
+        system.push_str(
+            "What you remember of the person asking is their brain, given after the \
+             bundle: what you chose to note about them and your last exchanges with them. \
+             Each account has a brain of its own, and you are only ever given the asker's. ",
+        );
+    }
+    system.push_str(&format!(
+        "Answer from the bundle only, in the language of the question, and name the \
+         records your answer rests on. If the bundle holds no person and no family, answer \
+         exactly: {empty_answer}"
+    ));
+    if asker.is_some() {
+        system.push_str(
+            "\n\nWhen this exchange taught you something about the person asking that will \
+             help you next time (who they are in the family, what they are looking for, how \
+             they like to be answered), end your answer with a <memory> block, one new fact \
+             per line, and nothing after it. It is taken out of your answer and kept in their \
+             brain. Never put in it what the bundle already says.",
+        );
+    }
     let mut bundle = format!(
         "The AXGF bundle: {} JSON files, {} persons, {} families.\n",
         archive.count, archive.persons, archive.families
@@ -516,6 +597,7 @@ pub fn prompt(archive: &Archive, question: &str, empty_answer: &str) -> Prompt {
     Prompt {
         system,
         bundle,
+        brain: asker.map(brain_section).unwrap_or_default(),
         question: question.to_string(),
     }
 }
@@ -910,7 +992,7 @@ pub fn cli_call(cfg: &Config, p: &Prompt, work: &Path, help: &str) -> Option<Cli
                 s("--file"),
                 work.join(OPENCODE_FILE).to_string_lossy().into_owned(),
             ]);
-            call.files.push((s(OPENCODE_FILE), p.bundle.clone()));
+            call.files.push((s(OPENCODE_FILE), p.context()));
             call.env.push((s("OPENCODE_PERMISSION"), s(OPENCODE_DENY)));
             // Nobody's plugins, project files, Claude skills or updates.
             for k in [
@@ -1233,10 +1315,15 @@ pub struct Run {
     pub archive: Archive,
     pub answer: Option<Answer>,
     pub failure: Option<Failure>,
+    /// Whose brain the test went through (docs/adr/0024): the asking
+    /// account's name; none for a session with no account.
+    pub brain: Option<String>,
+    /// What the AFG kept in that brain from its answer.
+    pub remembered: Vec<String>,
 }
 
 impl Run {
-    pub fn new(cfg: &Config, archive: &Archive, question: &str) -> Self {
+    pub fn new(cfg: &Config, archive: &Archive, question: &str, brain: Option<&str>) -> Self {
         Run {
             id: uuid::Uuid::new_v4().to_string(),
             kind: cfg.kind.slug(),
@@ -1251,6 +1338,8 @@ impl Run {
             archive: archive.summary(),
             answer: None,
             failure: None,
+            brain: brain.map(str::to_string),
+            remembered: Vec::new(),
         }
     }
 }
@@ -1278,7 +1367,8 @@ impl Runs {
         Ok(())
     }
 
-    pub fn end(&self, id: &str, outcome: Result<Answer, Failure>) {
+    /// A test answered or failed, and what its brain kept.
+    pub fn end(&self, id: &str, outcome: Result<Answer, Failure>, remembered: Vec<String>) {
         let mut runs = self.runs.lock().unwrap_or_else(|e| e.into_inner());
         if let Some(r) = runs.iter_mut().find(|r| r.id == id) {
             r.seconds = r.since.elapsed().as_secs();
@@ -1286,6 +1376,7 @@ impl Runs {
                 Ok(a) => {
                     r.state = "done";
                     r.answer = Some(a);
+                    r.remembered = remembered;
                 }
                 Err(f) => {
                     r.state = "failed";
@@ -1331,6 +1422,7 @@ mod tests {
         Prompt {
             system: "SYS".into(),
             bundle: "BUNDLE".into(),
+            brain: String::new(),
             question: "Q?".into(),
         }
     }
@@ -1725,9 +1817,57 @@ mod tests {
         assert_eq!((a.persons, a.families, a.is_empty()), (1, 0, false));
         let with = archive(&flat, true).unwrap();
         assert!(with.files.iter().any(|(_, c)| c.contains("blood_group")));
-        let p = prompt(&a, "Combien ?", "Bundle vide");
+        let p = prompt(&a, "Combien ?", "Bundle vide", None);
         assert!(p.system.ends_with("answer exactly: Bundle vide"));
         assert!(p.bundle.contains("=== manifest.json ==="));
+        assert!(
+            p.brain.is_empty() && !p.system.contains("<memory>"),
+            "nobody's brain"
+        );
+        // With the asker's brain: after the archive, before the question.
+        let recall = crate::brain::Recall {
+            memory: "- [2026-11-01] Researches the Exemple branch".into(),
+            recent: vec![crate::brain::Exchange {
+                at: "2026-11-01T10:00:00Z".into(),
+                context: "test".into(),
+                question: "Who is the eldest?".into(),
+                answer: "Ama.".into(),
+                ..Default::default()
+            }],
+        };
+        let asker = Asker {
+            name: "marie",
+            person: Some(("a0000000-0000-4000-8000-000000000001", "Ama")),
+            recall: &recall,
+        };
+        let p = prompt(&a, "Combien ?", "Bundle vide", Some(&asker));
+        assert!(p.system.contains("their brain") && p.system.contains("<memory> block"));
+        let user = p.user();
+        let (bundle_at, brain_at, question_at) = (
+            user.find("=== manifest.json ===").unwrap(),
+            user.find("=== brain: marie ===").unwrap(),
+            user.find("Question: Combien ?").unwrap(),
+        );
+        assert!(bundle_at < brain_at && brain_at < question_at, "{user}");
+        for said in [
+            "who says they are Ama",
+            "Researches the Exemple branch",
+            "Who is the eldest?",
+        ] {
+            assert!(p.brain.contains(said), "{said}");
+        }
+        let first = crate::brain::Recall::default();
+        let p = prompt(
+            &a,
+            "Q",
+            "Bundle vide",
+            Some(&Asker {
+                name: "lea",
+                person: None,
+                recall: &first,
+            }),
+        );
+        assert!(p.brain.contains("first exchange"));
         let empty = json!({"manifest": {"axgf": "1.1"}, "persons": {}, "families": {}});
         assert!(archive(&empty, false).unwrap().is_empty());
     }
@@ -1744,11 +1884,12 @@ mod tests {
             families: 0,
             sensitive: false,
         };
-        let first = Run::new(&cfg(Kind::Openai), &a, "Q");
+        let first = Run::new(&cfg(Kind::Openai), &a, "Q", Some("marie"));
         let id = first.id.clone();
         runs.begin(first).unwrap();
         assert!(
-            runs.begin(Run::new(&cfg(Kind::Openai), &a, "Q")).is_err(),
+            runs.begin(Run::new(&cfg(Kind::Openai), &a, "Q", None))
+                .is_err(),
             "one at a time"
         );
         runs.end(
@@ -1757,13 +1898,19 @@ mod tests {
                 text: "A".into(),
                 ..Answer::default()
             }),
+            vec!["Writes in French".into()],
         );
-        assert_eq!(runs.get(&id).unwrap().state, "done");
+        let done = runs.get(&id).unwrap();
+        assert_eq!(done.state, "done");
+        assert_eq!(
+            (done.brain.as_deref(), done.remembered.len()),
+            (Some("marie"), 1)
+        );
         for _ in 0..12 {
-            let r = Run::new(&cfg(Kind::Openai), &a, "Q");
+            let r = Run::new(&cfg(Kind::Openai), &a, "Q", None);
             let rid = r.id.clone();
             runs.begin(r).unwrap();
-            runs.end(&rid, Err(Failure::new("no")));
+            runs.end(&rid, Err(Failure::new("no")), Vec::new());
         }
         assert!(runs.get(&id).is_none(), "only the last ten");
         assert_eq!(runs.latest().unwrap().state, "failed");

@@ -219,6 +219,12 @@ pub struct User {
     /// each one's word. Absent for an account that is no one in the tree.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub person_id: Option<String>,
+    /// Whether this account may talk to the Artificial family genealogist
+    /// (docs/adr/0024): set by an administrator on the accounts page, off
+    /// until then. The AFG's test in the administration is an administrator's
+    /// check of its setup and does not ask for it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub afg: bool,
 }
 
 /// One provider's identifier for an account's person.
@@ -601,6 +607,7 @@ pub fn new_user(username: &str, password: &str, role: Role) -> Result<User> {
         identities: Vec::new(),
         created_via: None,
         person_id: None,
+        afg: false,
     })
 }
 
@@ -632,6 +639,7 @@ pub fn new_provider_user(username: &str, identity: Identity, email: Option<Strin
         created_via: Some(format!("sso:{}", identity.provider)),
         person_id: None,
         identities: vec![identity],
+        afg: false,
     }
 }
 

@@ -4837,7 +4837,7 @@ emblem-no-family-detail = Libota oyo ezali na archive te, to okoki komona yango 
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Moyebi ya mabota ya masini
-afg-lede = AFG etángaka ebombelo ya libota mpe ezongisaka biyano na ntina na yango. Awa: wapi kalkile na yango euti, mpe bomeki moko.
+afg-lede = AFG eyebi libota na nzela ya ebombelo na yango, mpe ekanisaka moto nyonso oyo asololaka na yango na bɔ́ngɔ na ye moko. Awa: wapi kalkile na yango euti, mpe bomeki moko.
 afg-kpi-source = Kalkile
 afg-ready = ebongi
 afg-off-note = Pona wapi kalkile euti.
@@ -4884,7 +4884,7 @@ afg-sensitive-hint = Bokolɔngɔnɔ, biometri, genomi, mikanda ya bosambisi mpe 
 afg-timeout = Ntango endimami (sekonde)
 afg-timeout-hint = Ntango eyano ekoki kozwa liboso ya kotika yango.
 afg-test = Bomeki
-afg-test-intro = Etindaka ebombelo ndenge ezali sikoyo, bafisyé na yango nyonso ya JSON kozanga bafoto, mpe etunaka motuna moko.
+afg-test-intro = Etindaka ebombelo ndenge ezali sikoyo, bafisyé na yango nyonso ya JSON kozanga bafoto, elongo na bɔ́ngɔ na yo, mpe etunaka motuna moko. Eyano efungwamaka na lininisa.
 afg-sent-files = Bafisyé
 afg-sent-files-value = { $n ->
         [one] fisyé { $n } ya JSON
@@ -4917,8 +4917,6 @@ afg-error-key = Esaleli oyo esengi fungola ya API.
 afg-error-model = Modɛ́lɛ esengeli awa, ekomami na balɛ́tɛlɛ, bitalɛlɛ mpe . _ : / @ [ ] + -
 afg-error-effort = Agent oyo ayebi makasi wana te.
 afg-error-program = Programu esengeli kozala ya agent ye moko (claude, codex to opencode), na nzela na yango mobimba.
-afg-run-title = Bomeki ya AFG
-afg-run-state = Ezalela
 afg-run-state-running = Ezali kozela eyano
 afg-run-state-done = Eyano epesami
 afg-run-state-failed = Elongi te
@@ -4927,9 +4925,36 @@ afg-run-usage = Bitoken etángami
 afg-run-usage-out = { $n } ekomami
 afg-run-cost = USD { $usd }
 afg-run-waiting = Ebombelo etindami; eyano ekobima awa. Lokasa oyo etunaka lisusu nsima ya sekonde misato nyonso.
-afg-run-answer = Eyano
 afg-run-model = Modɛ́lɛ:
 afg-run-failed-hint = Tala lolenge ya kalkile, réseau oyo site oyo ekoki kokóma, mpe mpo na agent, ete atiami mpe asili kokɔta na compte oyo site oyo ezali kosala na yango.
-afg-back = Zonga na AFG
-afg-run-gone-title = Bomeki yango ezali te
 afg-run-gone-detail = Bomeki ebombamaka ntango nyonso processus ezali kosala, zomi ya nsuka. Tinda mosusu.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = Bɔ́ngɔ na yo
+afg-brain-exchanges = { $n ->
+        [one] lisolo { $n }
+       *[other] masolo { $n }
+    }
+afg-brain-note = { $facts ->
+        [one] likambo { $facts } ebombami
+       *[other] makambo { $facts } ebombami
+    } · { $brains ->
+        [one] compte { $brains } na bɔ́ngɔ
+       *[other] ba-compte { $brains } na bɔ́ngɔ
+    }
+afg-brain-no-account = Session oyo ezali na compte te, yango wana ezali na bɔ́ngɔ te.
+afg-access-count = { $n ->
+        [one] Compte { $n } ekoki kosolola na AFG.
+       *[other] Ba-compte { $n } ekoki kosolola na AFG.
+    }
+afg-access-set = Ebongisamaka na lokasa ya Ba-compte
+afg-result-ok = Elongi
+afg-result-error = Libunga
+afg-result-close = Kanga
+afg-result-remembered = Ebombami na bɔ́ngɔ ya { $name }:
+afg-result-nothing-kept = Eloko ya sika ebombami te na bɔ́ngɔ ya { $name }.
+accounts-afg = AFG
+accounts-afg-allowed = Akoki kosolola na AFG
+accounts-afg-yes = ɛɛ
+accounts-afg-no = te
+accounts-afg-hint = Ekangami soki otii elembo te. Oyo AFG ebombaka na ntina na compte oyo ezali na bɔ́ngɔ na yango moko: dosie na disque pembeni ya ebombelo.

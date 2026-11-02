@@ -467,9 +467,15 @@ each would say first.
 ### The Artificial family genealogist (AFG)
 
 *(New after 1.0.0: the first part.)* An agent that reads the family's
-archive and answers about it. This first part sets where its computing comes
-from, in the administration's AFG room, and tests it. The second part will
-bring it to the pages, one use at a time.
+archive and answers about it. It draws on two kinds of knowledge:
+
+- **The archive** is what it knows of the family.
+- **A brain**, one for each account that talks to it, is what it remembers
+  of that person.
+
+This first part sets where its computing comes from, in the administration's
+AFG room, and tests it. The second part will bring it to the pages, one use
+at a time.
 
 <p align="center">
 <a href="docs/screenshots/afg-room.jpg"><img src="docs/screenshots/afg-room.jpg" width="720" alt="The AFG room under Canopy. Three tiles: computing, Ollama, ready; 638 files sent, 370 KB, about 126,421 tokens; last test, none yet. Below, the form: the way of computing set to Ollama, its address left empty with the address it calls written underneath, a model, the box for the sensitive classes and the time allowed. Then the test: what it sends (638 JSON files, 250 persons and 78 families, the sensitive classes left out, the question), the warning that living people's records are sent too, and the button."></a>
@@ -487,8 +493,26 @@ There are five ways, and each is spoken to in its own way:
 without the photographs. It asks "Give me the top 3 families with the most
 declared individuals" (in French, *Donne-moi le top 3 des familles disposant
 du plus grand nombre d'individus déclarés*). An empty archive is answered
-*Empty bundle* (*Bundle vide*). The page shows what was sent, then the
-answer and the tokens read. Claude Code also reports its cost.
+*Empty bundle* (*Bundle vide*). The result opens in a window over the room:
+**success**, with the answer drawn from its Markdown, the model and the
+tokens read (Claude Code also reports its cost), or **error**, with what the
+service or the agent said.
+
+**Each account's brain** is a folder on disk, `family.brains/<username>/`,
+beside the archive, readable by the service only:
+
+- `memory.md` holds what the AFG chose to remember of the person, one fact a
+  line.
+- `conversations.jsonl` holds every exchange.
+
+The AFG reads the asker's brain after the archive, and asks to remember
+something by ending its answer with a `<memory>` block. The block is taken
+out of what is shown, and the window says what was kept. A test is an
+exchange like any other: the first one makes the administrator's brain.
+
+**Who may talk to the AFG** is a yes or no for each account, on the Accounts
+page, and is off until you tick it. The test in the AFG room is an
+administrator's check of the setup and does not ask for it.
 
 Before you press it:
 
@@ -502,7 +526,8 @@ Before you press it:
   internet, or an agent, needs the operator to open the way
   ([how](docs/OPERATOR.md#the-afg-where-its-computing-runs)).
 
-[Why it works this way](docs/adr/0023-the-artificial-family-genealogist.md).
+Why it works this way: [where the computing comes from](docs/adr/0023-the-artificial-family-genealogist.md),
+[the brains, the window and who may talk to it](docs/adr/0024-the-afgs-brains.md).
 
 ### Let the family in: registration and sign-in services
 

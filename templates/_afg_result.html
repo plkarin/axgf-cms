@@ -1,0 +1,43 @@
+{#- A test of the AFG in the room's window (docs/adr/0023, 0024): waiting,
+    then a success with the answer drawn from its Markdown, or an error with
+    what the service or the agent said. The room draws it, and its script
+    asks for it again while the answer is awaited. -#}
+{% import "_icons.html" as ic %}
+<div class="afg-result" data-afg-result data-state="{{ run.state }}">
+  <h2 class="afg-result-title" id="afg-result-title">
+    {%- if run.state == "done" %}<span class="lvl lvl-ok">{{ t("afg-result-ok") }}</span>
+    {%- elif run.state == "failed" %}<span class="lvl lvl-fail">{{ t("afg-result-error") }}</span>
+    {%- else %}{{ t("afg-run-state-running") }}{% endif -%}
+  </h2>
+  <p class="small muted">{{ t("afg-kind-" ~ run.kind) }}{% if run.model %} · <span class="mono">{{ run.model }}</span>{% endif %} · {{ t("afg-run-seconds", s=run.seconds) }}</p>
+  <p class="afg-result-question"><span class="muted">{{ t("afg-sent-question") }}</span> {{ run.question }}</p>
+  {%- if run.state == "running" %}
+  <div class="notice" role="status"><p>{{ t("afg-run-waiting") }}</p></div>
+  {%- elif run.state == "done" %}
+  <div class="afg-answer note-text">{{ run.answer_html | safe }}</div>
+  <p class="small muted">
+    {%- if run.answer.model %}{{ t("afg-run-model") }} <span class="mono">{{ run.answer.model }}</span>{% endif %}
+    {%- if run.answer.input_tokens %} · {{ t("afg-run-usage") }} {{ run.answer.input_tokens | localnum(lang) }}{% endif %}
+    {%- if run.answer.output_tokens %} · {{ t("afg-run-usage-out", n=(run.answer.output_tokens | localnum(lang))) }}{% endif %}
+    {%- if run.answer.cost_usd %} · {{ t("afg-run-cost", usd=(run.answer.cost_usd | round(3))) }}{% endif -%}
+  </p>
+  {%- if run.brain %}
+  {%- if run.remembered %}
+  <div class="afg-remembered">
+    <p class="small">{{ ic.icon("brain") }} {{ t("afg-result-remembered", name=run.brain) }}</p>
+    <ul class="small">{% for f in run.remembered %}<li>{{ f }}</li>{% endfor %}</ul>
+  </div>
+  {%- else %}
+  <p class="small muted">{{ t("afg-result-nothing-kept", name=run.brain) }}</p>
+  {%- endif %}
+  {%- else %}
+  <p class="small muted">{{ t("afg-brain-no-account") }}</p>
+  {%- endif %}
+  {%- else %}
+  <div class="notice error" role="alert">
+    <p>{{ run.failure.message }}</p>
+    {%- if run.failure.detail %}<pre class="afg-detail">{{ run.failure.detail }}</pre>{% endif %}
+  </div>
+  <p class="small muted">{{ t("afg-run-failed-hint") }}</p>
+  {%- endif %}
+</div>

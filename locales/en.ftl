@@ -5046,7 +5046,7 @@ emblem-no-family-detail = This family is not in the archive, or not one you may 
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Artificial family genealogist
-afg-lede = The AFG reads the family's archive and answers about it. Here: where its computing comes from, and a test.
+afg-lede = The AFG knows the family through its archive, and remembers each person who talks to it in a brain of their own. Here: where its computing comes from, and a test.
 afg-kpi-source = Computing
 afg-ready = ready
 afg-off-note = Choose where the computing comes from.
@@ -5093,7 +5093,7 @@ afg-sensitive-hint = Health, biometrics, genomics, legal records and behaviour s
 afg-timeout = Time allowed (seconds)
 afg-timeout-hint = How long an answer may take before it is given up.
 afg-test = Test
-afg-test-intro = Sends the archive as it is now, every JSON file of it without the photographs, and asks one question.
+afg-test-intro = Sends the archive as it is now, every JSON file of it without the photographs, with your brain, and asks one question. The answer opens in a window.
 afg-sent-files = Files
 afg-sent-files-value = { $n ->
         [one] { $n } JSON file
@@ -5126,8 +5126,6 @@ afg-error-key = This service needs an API key.
 afg-error-model = A model is needed here, written in letters, digits and . _ : / @ [ ] + -
 afg-error-effort = This agent does not know that effort.
 afg-error-program = The program must be the agent's own (claude, codex or opencode), by its full path.
-afg-run-title = AFG test
-afg-run-state = State
 afg-run-state-running = Waiting for the answer
 afg-run-state-done = Answered
 afg-run-state-failed = Failed
@@ -5136,9 +5134,36 @@ afg-run-usage = Tokens read
 afg-run-usage-out = { $n } written
 afg-run-cost = { $usd } USD
 afg-run-waiting = The archive is sent; the answer will appear here. This page asks again every three seconds.
-afg-run-answer = Answer
 afg-run-model = Model:
 afg-run-failed-hint = Check the way of computing, the network this site may reach and, for an agent, that it is installed and signed in under the account this site runs as.
-afg-back = Back to the AFG
-afg-run-gone-title = No such test
 afg-run-gone-detail = Tests are kept for the life of the process, the last ten. Send a new one.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = Your brain
+afg-brain-exchanges = { $n ->
+        [one] { $n } exchange
+       *[other] { $n } exchanges
+    }
+afg-brain-note = { $facts ->
+        [one] { $facts } fact kept
+       *[other] { $facts } facts kept
+    } · { $brains ->
+        [one] { $brains } brain on disk
+       *[other] { $brains } brains on disk
+    }
+afg-brain-no-account = This session has no account, so no brain.
+afg-access-count = { $n ->
+        [one] { $n } account may talk to the AFG.
+       *[other] { $n } accounts may talk to the AFG.
+    }
+afg-access-set = Set on the Accounts page
+afg-result-ok = Success
+afg-result-error = Error
+afg-result-close = Close
+afg-result-remembered = Kept in { $name }'s brain:
+afg-result-nothing-kept = Nothing new kept in { $name }'s brain.
+accounts-afg = AFG
+accounts-afg-allowed = May talk to the AFG
+accounts-afg-yes = yes
+accounts-afg-no = no
+accounts-afg-hint = Off unless ticked. What the AFG remembers of this account is kept in a brain of its own: a folder on disk beside the archive.

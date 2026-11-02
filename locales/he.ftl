@@ -5231,7 +5231,7 @@ emblem-no-family-detail = המשפחה הזו אינה בארכיון, או שא
 ## its computing comes from, and a test.
 admin-nav-afg = גנאלוג מלאכותי
 afg-title = גנאלוג משפחתי מלאכותי
-afg-lede = הגנאלוג המלאכותי (AFG) קורא את ארכיון המשפחה ועונה עליו. כאן: מאין מגיע החישוב שלו, ובדיקה.
+afg-lede = הגנאלוג המלאכותי (AFG) מכיר את המשפחה מתוך הארכיון שלה, וזוכר כל אדם שמדבר איתו בזיכרון משלו. כאן: מאין מגיע החישוב שלו, ובדיקה.
 afg-kpi-source = חישוב
 afg-ready = מוכן
 afg-off-note = בחרו מאין מגיע החישוב.
@@ -5278,7 +5278,7 @@ afg-sensitive-hint = בריאות, ביומטריה, גנומיקה, רישומ�
 afg-timeout = זמן מותר (שניות)
 afg-timeout-hint = כמה זמן תשובה יכולה להימשך לפני שמוותרים עליה.
 afg-test = בדיקה
-afg-test-intro = שולח את הארכיון כפי שהוא עכשיו, את כל קובצי ה־JSON שלו בלי התמונות, ושואל שאלה אחת.
+afg-test-intro = שולח את הארכיון כפי שהוא עכשיו, את כל קובצי ה־JSON שלו בלי התמונות, יחד עם הזיכרון שלכם, ושואל שאלה אחת. התשובה נפתחת בחלון.
 afg-sent-files = קבצים
 afg-sent-files-value = { $n ->
         [one] קובץ JSON אחד
@@ -5317,8 +5317,6 @@ afg-error-key = השירות הזה צריך מפתח API.
 afg-error-model = נדרש כאן מודל, כתוב באותיות, ספרות ו־. _ : / @ [ ] + -
 afg-error-effort = הסוכן הזה לא מכיר את המאמץ הזה.
 afg-error-program = התוכנה חייבת להיות של הסוכן עצמו (claude, codex או opencode), לפי הנתיב המלא שלה.
-afg-run-title = בדיקת הגנאלוג המלאכותי
-afg-run-state = מצב
 afg-run-state-running = ממתין לתשובה
 afg-run-state-done = נענה
 afg-run-state-failed = נכשל
@@ -5327,9 +5325,44 @@ afg-run-usage = טוקנים שנקראו
 afg-run-usage-out = { $n } נכתבו
 afg-run-cost = { $usd } דולר
 afg-run-waiting = הארכיון נשלח; התשובה תופיע כאן. הדף הזה שואל שוב כל שלוש שניות.
-afg-run-answer = תשובה
 afg-run-model = מודל:
 afg-run-failed-hint = בדקו את אופן החישוב, את הרשת שהאתר הזה יכול להגיע אליה, ובסוכן — שהוא מותקן ומחובר תחת החשבון שבו האתר הזה רץ.
-afg-back = חזרה לגנאלוג המלאכותי
-afg-run-gone-title = אין בדיקה כזו
 afg-run-gone-detail = בדיקות נשמרות כל עוד התהליך חי, עשר האחרונות. שלחו בדיקה חדשה.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = הזיכרון שלכם
+afg-brain-exchanges = { $n ->
+        [one] שיחה אחת
+        [two] { $n } שיחות
+        [many] { $n } שיחות
+       *[other] { $n } שיחות
+    }
+afg-brain-note = { $facts ->
+        [one] עובדה אחת שנשמרה
+        [two] { $facts } עובדות שנשמרו
+        [many] { $facts } עובדות שנשמרו
+       *[other] { $facts } עובדות שנשמרו
+    } · { $brains ->
+        [one] חשבון אחד עם זיכרון
+        [two] { $brains } חשבונות עם זיכרון
+        [many] { $brains } חשבונות עם זיכרון
+       *[other] { $brains } חשבונות עם זיכרון
+    }
+afg-brain-no-account = לסשן הזה אין חשבון, ולכן אין לו זיכרון.
+afg-access-count = { $n ->
+        [one] חשבון אחד יכול לדבר עם הגנאלוג המלאכותי.
+        [two] { $n } חשבונות יכולים לדבר עם הגנאלוג המלאכותי.
+        [many] { $n } חשבונות יכולים לדבר עם הגנאלוג המלאכותי.
+       *[other] { $n } חשבונות יכולים לדבר עם הגנאלוג המלאכותי.
+    }
+afg-access-set = מגדירים בדף החשבונות
+afg-result-ok = הצלחה
+afg-result-error = שגיאה
+afg-result-close = סגירה
+afg-result-remembered = נשמר בזיכרון של { $name }:
+afg-result-nothing-kept = שום דבר חדש לא נשמר בזיכרון של { $name }.
+accounts-afg = גנאלוג מלאכותי
+accounts-afg-allowed = יכול לדבר עם הגנאלוג המלאכותי
+accounts-afg-yes = כן
+accounts-afg-no = לא
+accounts-afg-hint = כבוי אלא אם מסומן. מה שהגנאלוג המלאכותי זוכר על החשבון הזה נשמר בזיכרון משלו: תיקייה בדיסק לצד הארכיון.

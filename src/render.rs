@@ -231,7 +231,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_avatar.html",
     "admin_emblem.html",
     "admin_afg.html",
-    "admin_afg_run.html",
+    "_afg_result.html",
     "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",
@@ -569,6 +569,20 @@ fn error_chain(e: &minijinja::Error) -> String {
         cause = c.source();
     }
     out
+}
+
+/// Render a template to a string with the page's chrome, for a fragment a
+/// script asks for (the AFG's window, docs/adr/0024).
+pub fn fragment_with(chrome: &Chrome, name: &str, ctx: impl Serialize) -> Result<String, String> {
+    let merged = context! { ..MjValue::from_serialize(chrome), ..MjValue::from_serialize(&ctx) };
+    env()
+        .get_template(name)
+        .and_then(|t| t.render(merged))
+        .map_err(|e| {
+            let e = error_chain(&e);
+            tracing::error!(template = name, error = %e, "template render failed");
+            e
+        })
 }
 
 /// Render a template to an HTML response.

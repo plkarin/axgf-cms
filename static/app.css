@@ -2978,9 +2978,34 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 }
 
 .prose { white-space: pre-wrap; max-width: 72ch; }
-/* The AFG's answer (docs/adr/0023): a model's text, its lines kept, and an
-   address in it wrapped rather than widening the page. */
+/* The AFG's answer (docs/adr/0023): a model's Markdown drawn as a note's
+   is, an address in it wrapped rather than widening the page. */
 .afg-answer { overflow-wrap: anywhere; }
+
+/* A test's result over the room (docs/adr/0024), drawn as a note's window.
+   Open in place without scripting; modal, on its backdrop, with it. */
+.afg-dialog {
+  inline-size: min(46rem, calc(100vw - 2rem));
+  max-block-size: calc(100vh - 3rem);
+  padding: 0;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: 0 24px 60px -24px rgb(var(--shadow-rgb, 0 0 0) / 0.55);
+  z-index: 50;
+}
+.afg-dialog::backdrop { background: rgb(var(--shadow-rgb, 0 0 0) / 0.5); }
+.afg-dialog-body { max-block-size: calc(100vh - 8rem); overflow: auto; padding: clamp(1rem, 3vw, 1.75rem); }
+.afg-dialog-foot { display: flex; justify-content: flex-end; padding: 0.75rem clamp(1rem, 3vw, 1.75rem); border-block-start: 1px solid var(--border-hairline); }
+.afg-result-title { margin-block: 0 0.25rem; }
+/* Success or error, said as the window's title rather than as a tag. */
+.afg-result-title .lvl { font-size: inherit; }
+.afg-result-title .lvl::before { inline-size: 0.85rem; block-size: 0.85rem; }
+.afg-result-question { margin-block: 0.75rem 1rem; }
+.afg-remembered { margin-block-start: 1rem; padding: 0.6rem 0.9rem; border-inline-start: 3px solid var(--accent); }
+.afg-remembered p { margin: 0 0 0.3rem; }
+.afg-remembered ul { margin: 0; padding-inline-start: 1.2rem; }
 .muted-prose { color: var(--text-secondary); font-size: var(--type-minor); }
 
 @media (max-width: 700px) {

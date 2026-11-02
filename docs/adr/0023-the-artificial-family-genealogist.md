@@ -138,7 +138,9 @@ name (`claude`, `codex`, `opencode`): this field never runs anything else.
 ### 6. A test runs on its own
 
 Pressing the button opens the test's page, which asks again every three
-seconds until the answer is there. The question and what was sent are on
+seconds until the answer is there. (Since docs/adr/0024 the result opens in
+a window over the room instead, success or error, and the test goes through
+the asker's brain.) The question and what was sent are on
 that page, then the answer and its usage, or the failure with the end of
 what the program said on its error output. One test runs at a time. The
 last ten are kept for the life of the process. The time allowed is 600

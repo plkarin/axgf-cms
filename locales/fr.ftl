@@ -5090,7 +5090,7 @@ emblem-no-family-detail = Cette famille n’est pas dans l’archive, ou vous ne
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Généalogiste familial artificiel
-afg-lede = L’AFG lit l’archive de la famille et répond à son sujet. Ici : d’où vient son calcul, et un essai.
+afg-lede = L’AFG connaît la famille par son archive, et se souvient de chaque personne qui lui parle dans un cerveau qui lui est propre. Ici : d’où vient son calcul, et un essai.
 afg-kpi-source = Calcul
 afg-ready = prêt
 afg-off-note = Choisissez d’où vient le calcul.
@@ -5137,7 +5137,7 @@ afg-sensitive-hint = Santé, biométrie, génétique, dossiers judiciaires et co
 afg-timeout = Temps accordé (secondes)
 afg-timeout-hint = Le temps qu’une réponse peut prendre avant qu’on y renonce.
 afg-test = Essai
-afg-test-intro = Envoie l’archive telle qu’elle est, tous ses fichiers JSON sans les photographies, et pose une question.
+afg-test-intro = Envoie l’archive telle qu’elle est, tous ses fichiers JSON sans les photographies, avec votre cerveau, et pose une question. La réponse s’ouvre dans une fenêtre.
 afg-sent-files = Fichiers
 afg-sent-files-value = { $n ->
         [one] { $n } fichier JSON
@@ -5170,8 +5170,6 @@ afg-error-key = Ce service demande une clé d’API.
 afg-error-model = Un modèle est demandé ici, écrit avec des lettres, des chiffres et . _ : / @ [ ] + -
 afg-error-effort = Cet agent ne connaît pas cet effort.
 afg-error-program = Le programme doit être celui de l’agent (claude, codex ou opencode), par son chemin complet.
-afg-run-title = Essai de l’AFG
-afg-run-state = État
 afg-run-state-running = En attente de la réponse
 afg-run-state-done = Répondu
 afg-run-state-failed = Échec
@@ -5180,9 +5178,36 @@ afg-run-usage = Tokens lus
 afg-run-usage-out = { $n } écrits
 afg-run-cost = { $usd } USD
 afg-run-waiting = L’archive est envoyée ; la réponse s’affichera ici. Cette page se recharge toutes les trois secondes.
-afg-run-answer = Réponse
 afg-run-model = Modèle :
 afg-run-failed-hint = Vérifiez le mode de calcul, le réseau que ce site peut joindre et, pour un agent, qu’il est installé et connecté sous le compte qui fait tourner ce site.
-afg-back = Retour à l’AFG
-afg-run-gone-title = Essai introuvable
 afg-run-gone-detail = Les essais sont gardés le temps de vie du processus, les dix derniers. Envoyez-en un nouveau.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = Votre cerveau
+afg-brain-exchanges = { $n ->
+        [one] { $n } échange
+       *[other] { $n } échanges
+    }
+afg-brain-note = { $facts ->
+        [one] { $facts } fait retenu
+       *[other] { $facts } faits retenus
+    } · { $brains ->
+        [one] { $brains } cerveau sur le disque
+       *[other] { $brains } cerveaux sur le disque
+    }
+afg-brain-no-account = Cette session n’a pas de compte, donc pas de cerveau.
+afg-access-count = { $n ->
+        [one] { $n } compte peut parler à l’AFG.
+       *[other] { $n } comptes peuvent parler à l’AFG.
+    }
+afg-access-set = À régler sur la page Comptes
+afg-result-ok = Succès
+afg-result-error = Erreur
+afg-result-close = Fermer
+afg-result-remembered = Retenu dans le cerveau de { $name } :
+afg-result-nothing-kept = Rien de nouveau retenu dans le cerveau de { $name }.
+accounts-afg = AFG
+accounts-afg-allowed = Peut parler à l’AFG
+accounts-afg-yes = oui
+accounts-afg-no = non
+accounts-afg-hint = Désactivé tant que la case n’est pas cochée. Ce que l’AFG retient de ce compte est gardé dans un cerveau à lui : un dossier sur le disque, à côté de l’archive.

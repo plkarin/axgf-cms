@@ -56,9 +56,10 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 | `GET/POST /admin/person/:id/links`, `POST /admin/person/:id/links/:lid` | The person's links, the relations that are not family: list, create, change. The form's `rite` field (`<rite>:<role>`, the role `sponsor`, `sponsored` or `mutual`; the 27 rites are in `src/rites.rs`) records a tie of rite: the nearest AXGF 1.1 `relation` and its `category`, the rite's words in `label` and `label_reverse` when they are left empty, `bidirectional` for a mutual tie, and `extensions["axgf-cms:kinship/v1"]` = `{"rite": <key>, "sponsor": "from" or "to"}`, without `sponsor` for a mutual tie (docs/adr/0020) |
 | `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks — *admin* |
 | `GET /admin/export` | Download the live bundle — *admin* |
-| `GET /admin/users`, `POST /admin/users`, `POST /admin/users/:id` | Accounts: create, change a role, a branch, a status or a password — *admin* |
+| `GET /admin/users`, `POST /admin/users`, `POST /admin/users/:id` | Accounts: create, change a role, a branch, a status or a password, and whether the account may talk to the AFG (`afg=on`, a checkbox: absent is no; docs/adr/0024) — *admin* |
 | `GET/POST /admin/afg` | The Artificial family genealogist (docs/adr/0023): where its computing comes from (`kind` = `off`, `ollama`, `openai`, `mistral`, `vllm`, `anthropic`, `gemini`, `claude-code`, `codex` or `opencode`; `url`, `api_key`, `clear_key`, `model`, `effort`, `program`, `sensitive`, `timeout`), kept in `family.acl` under the site settings. An empty `api_key` keeps the stored one, which is never rendered — *admin* |
-| `POST /admin/afg/test`, `GET /admin/afg/run/:id` | Send the archive's JSON files and the test question to the AFG, then the test's page, which reloads every three seconds until the answer or the failure is there. One test at a time; the last ten are kept in memory — *admin* |
+| `POST /admin/afg/test` | Send the archive's JSON files, the asker's brain and the test question to the AFG (docs/adr/0024), then open the room on `?run=<id>`, the result in a window: waiting, success with the answer's Markdown drawn, or error. One test at a time; the last ten are kept in memory — *admin* |
+| `GET /admin/afg/run/:id` | The window's script asks it while the answer is awaited: `{"id", "state": "running"/"done"/"failed", "html"}`, the window drawn; `404 {"state": "gone"}` for a test no longer kept — *admin* |
 
 `:kind` is one of `person`, `family`, `event`, `link`, `occupation`, `source`,
 `place`, `document`.
@@ -154,6 +155,16 @@ store. Passwords are Argon2id at the OWASP 2024 parameters (m=19456, t=2, p=1),
 never a fast hash. The server refuses to start if the `.acl` is readable by
 anyone but its owner, and says which `chmod` fixes it. Encryption at rest is
 GPG's job and out of scope here.
+
+Beside them, once anyone has talked to the AFG, a third (docs/adr/0024):
+
+    family.brains/   the AFG's memory of each account — mode 700, shared with nobody
+      <username>/brain.json            whose brain: the account's id and name
+      <username>/memory.md             what the AFG chose to keep, one fact a line
+      <username>/conversations.jsonl   every exchange, one JSON object a line
+
+A brain belongs to its account's id, not to its name. The nightly backup does
+not hold it.
 
 ### The first account
 

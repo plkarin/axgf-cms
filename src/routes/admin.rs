@@ -2930,6 +2930,8 @@ pub(super) fn render_users(
                     "password": crate::acl::has_password(u),
                     "services": u.identities.iter().map(|i| i.provider.clone()).collect::<Vec<_>>(),
                     "created_via": u.created_via.as_deref().map(|v| v.split(':').next().unwrap_or(v).to_string()),
+                    // May talk to the AFG (docs/adr/0024).
+                    "afg": u.afg,
                 })
             })
             .collect::<Vec<_>>()
@@ -2952,6 +2954,7 @@ pub(super) fn render_users(
             "admins": role(crate::acl::Role::Admin),
             "linked": active.iter().filter(|u| !u.identities.is_empty()).count(),
             "registered": acl.users.iter().filter(|u| u.created_via.as_deref().is_some_and(|v| v == "register" || v.starts_with("sso:"))).count(),
+            "afg": active.iter().filter(|u| u.afg).count(),
         })
     });
     let site = state.site();
@@ -2999,6 +3002,9 @@ pub struct NewUserForm {
     role: String,
     #[serde(default)]
     family_scope: String,
+    /// May talk to the AFG: a checkbox, absent when not ticked.
+    #[serde(default)]
+    afg: Option<String>,
 }
 
 /// `POST /admin/users` — create an account.
@@ -3048,6 +3054,7 @@ pub async fn create_user(
         user.email = Some(email.to_string());
     }
     user.family_scope = parse_scope(&f.family_scope);
+    user.afg = f.afg.is_some();
 
     let username = user.username.clone();
     if let Err(e) = state.acl_mutate(|acl| acl.users.push(user)) {
@@ -3087,6 +3094,9 @@ pub struct EditUserForm {
     /// Blank leaves the password alone.
     #[serde(default)]
     password: String,
+    /// May talk to the AFG: a checkbox, absent when not ticked.
+    #[serde(default)]
+    afg: Option<String>,
 }
 
 /// `POST /admin/users/:id` — change a role, a scope, a status or a password.
@@ -3148,10 +3158,12 @@ pub async fn update_user(
 
     let email = f.email.trim().to_string();
     let scope = parse_scope(&f.family_scope);
+    let afg = f.afg.is_some();
     let id2 = id.clone();
     if let Err(e) = state.acl_mutate(move |acl| {
         if let Some(u) = acl.users.iter_mut().find(|u| u.id == id2) {
             u.role = role;
+            u.afg = afg;
             u.status = if disabling {
                 crate::acl::Status::Disabled
             } else {

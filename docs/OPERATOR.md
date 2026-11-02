@@ -439,6 +439,23 @@ What each agent may do while it reads the archive:
   directory, through which its attachment is read. It loads no plugins and
   no project files.
 
+**Brains.** The AFG keeps a brain for each account that talks to it
+(docs/adr/0024). That is a folder `family.brains/<username>/` in the data
+directory, mode 700, holding:
+
+- `memory.md`: what the AFG chose to remember of the person, one fact a
+  line;
+- `conversations.jsonl`: every exchange.
+
+It is personal data about a living person. Four things to know:
+
+- **Backups.** The nightly backup does not hold brains. Copy
+  `/var/lib/axgf-cms/family.brains` with the rest if you want them kept.
+- **Forgetting.** Forgetting someone is deleting their folder.
+- **A name given again.** The new account starts from nothing. The old
+  folder is moved aside under `<name>@<its account>`, and you may delete it.
+- **Who may talk to the AFG** is set for each account on the Accounts page.
+
 **Size.** A family of a thousand people is over a megabyte of JSON, some
 400,000 tokens. That is more than many models read at once. The room says
 the size before you send. Ollama is asked for a context large enough for the

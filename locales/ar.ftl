@@ -5611,7 +5611,7 @@ emblem-no-family-detail = هذه العائلة ليست في الأرشيف، �
 ## its computing comes from, and a test.
 admin-nav-afg = النسّابة الذكي
 afg-title = النسّابة الاصطناعي للعائلة
-afg-lede = يقرأ النسّابة الاصطناعي (AFG) أرشيف العائلة ويجيب عنه. هنا: من أين تأتي حوسبته، واختبار.
+afg-lede = يعرف النسّابة الاصطناعي (AFG) العائلة من أرشيفها، ويتذكر كل شخص يتحدث إليه في ذاكرة خاصة به. هنا: من أين تأتي حوسبته، واختبار.
 afg-kpi-source = الحوسبة
 afg-ready = جاهز
 afg-off-note = اختر مصدر الحوسبة.
@@ -5658,7 +5658,7 @@ afg-sensitive-hint = تبقى الصحة والقياسات الحيوية وا�
 afg-timeout = الوقت المسموح (بالثواني)
 afg-timeout-hint = المدة التي قد يستغرقها الجواب قبل التخلي عنه.
 afg-test = اختبار
-afg-test-intro = يرسل الأرشيف كما هو الآن، كل ملفات JSON فيه دون الصور، ويطرح سؤالًا واحدًا.
+afg-test-intro = يرسل الأرشيف كما هو الآن، كل ملفات JSON فيه دون الصور، مع ذاكرتك، ويطرح سؤالًا واحدًا. يُفتح الجواب في نافذة.
 afg-sent-files = الملفات
 afg-sent-files-value = { $n ->
         [zero] لا ملفات بصيغة JSON
@@ -5703,8 +5703,6 @@ afg-error-key = تحتاج هذه الخدمة إلى مفتاح API.
 afg-error-model = يلزم نموذج هنا، مكتوب بحروف وأرقام و . _ : / @ [ ] + -
 afg-error-effort = لا يعرف هذا الوكيل هذا الجهد.
 afg-error-program = يجب أن يكون البرنامج برنامج الوكيل نفسه (claude أو codex أو opencode)، بمساره الكامل.
-afg-run-title = اختبار النسّابة الاصطناعي
-afg-run-state = الحالة
 afg-run-state-running = بانتظار الجواب
 afg-run-state-done = أُجيب
 afg-run-state-failed = فشل
@@ -5713,9 +5711,52 @@ afg-run-usage = الرموز المقروءة
 afg-run-usage-out = { $n } مكتوبة
 afg-run-cost = { $usd } دولار أمريكي
 afg-run-waiting = أُرسل الأرشيف؛ وسيظهر الجواب هنا. تعيد هذه الصفحة السؤال كل ثلاث ثوانٍ.
-afg-run-answer = الجواب
 afg-run-model = النموذج:
 afg-run-failed-hint = تحقّق من طريقة الحوسبة، ومن الشبكة التي يمكن لهذا الموقع بلوغها، وبالنسبة إلى الوكيل، من أنه مثبَّت ومسجَّل الدخول تحت الحساب الذي يعمل به هذا الموقع.
-afg-back = العودة إلى النسّابة الاصطناعي
-afg-run-gone-title = لا يوجد اختبار كهذا
 afg-run-gone-detail = تُحفظ الاختبارات طوال عمر العملية، آخر عشرة منها. أرسل اختبارًا جديدًا.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = ذاكرتك
+afg-brain-exchanges = { $n ->
+        [zero] لا تبادلات
+        [one] تبادل واحد
+        [two] تبادلان
+        [few] { $n } تبادلات
+        [many] { $n } تبادلًا
+       *[other] { $n } تبادل
+    }
+afg-brain-note = { $facts ->
+        [zero] لا حقائق محفوظة
+        [one] حقيقة واحدة محفوظة
+        [two] حقيقتان محفوظتان
+        [few] { $facts } حقائق محفوظة
+        [many] { $facts } حقيقةً محفوظة
+       *[other] { $facts } حقيقة محفوظة
+    } · { $brains ->
+        [zero] لا حسابات بذاكرة
+        [one] حساب واحد بذاكرة
+        [two] حسابان بذاكرة
+        [few] { $brains } حسابات بذاكرة
+        [many] { $brains } حسابًا بذاكرة
+       *[other] { $brains } حساب بذاكرة
+    }
+afg-brain-no-account = لا حساب لهذه الجلسة، فلا ذاكرة لها.
+afg-access-count = { $n ->
+        [zero] لا يمكن لأي حساب التحدث إلى النسّابة الذكي.
+        [one] يمكن لحساب واحد التحدث إلى النسّابة الذكي.
+        [two] يمكن لحسابين التحدث إلى النسّابة الذكي.
+        [few] يمكن لـ { $n } حسابات التحدث إلى النسّابة الذكي.
+        [many] يمكن لـ { $n } حسابًا التحدث إلى النسّابة الذكي.
+       *[other] يمكن لـ { $n } حساب التحدث إلى النسّابة الذكي.
+    }
+afg-access-set = يُضبط في صفحة الحسابات
+afg-result-ok = نجاح
+afg-result-error = خطأ
+afg-result-close = إغلاق
+afg-result-remembered = حُفظ في ذاكرة { $name }:
+afg-result-nothing-kept = لم يُحفظ شيء جديد في ذاكرة { $name }.
+accounts-afg = النسّابة الذكي
+accounts-afg-allowed = يمكنه التحدث إلى النسّابة الذكي
+accounts-afg-yes = نعم
+accounts-afg-no = لا
+accounts-afg-hint = معطّل ما لم يُحدَّد. ما يتذكره النسّابة الذكي عن هذا الحساب يُحفظ في ذاكرة خاصة به: مجلد على القرص بجانب الأرشيف.

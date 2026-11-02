@@ -1,6 +1,8 @@
-//! The Artificial family genealogist's room (docs/adr/0023): only an
+//! The Artificial family genealogist's room (docs/adr/0023, 0024): only an
 //! administrator reaches it; its key is kept and never shown; its test sends
-//! the archive to a service or an agent and shows what came back.
+//! the archive and the asker's brain to a service or an agent, and shows what
+//! came back in a window; each account's brain is its own, on disk; and the
+//! accounts page says who may talk to the AFG.
 //!
 //! A fake stands in for each: a local HTTP server for Ollama, a shell script
 //! named `claude` for Claude Code. Nothing here leaves the machine, and every
@@ -64,28 +66,82 @@ async fn configure(
     (status, body_string(resp).await)
 }
 
-/// Press the test button and wait for the answer: the run page, once it no
-/// longer asks to be reloaded.
-async fn run_test(app: &axum::Router, cookie: &str) -> String {
+/// Press the test button and wait for the answer as the room's window does:
+/// the room opens on `?run=<id>` with the window over it, and the window is
+/// asked for until it no longer waits. Returns the window, then the room.
+async fn run_test(app: &axum::Router, cookie: &str) -> (String, String) {
     let resp = post_form_as(app, cookie, "/admin/afg/test", "").await;
     assert_eq!(
         resp.status(),
         StatusCode::SEE_OTHER,
-        "the test goes to its page"
+        "the test opens the room with its window"
     );
     let at = resp.headers()[header::LOCATION]
         .to_str()
         .unwrap()
         .to_string();
-    assert!(at.starts_with("/admin/afg/run/"), "{at}");
+    let id = at
+        .strip_prefix("/admin/afg?run=")
+        .unwrap_or_else(|| panic!("{at}"))
+        .to_string();
+    let first = body_string(get_with_cookie(app, &at, cookie).await).await;
+    assert!(
+        first.contains("data-afg-dialog"),
+        "the window, over the room"
+    );
     for _ in 0..200 {
-        let page = body_string(get_with_cookie(app, &at, cookie).await).await;
-        if !page.contains(r#"http-equiv="refresh""#) {
-            return page;
+        let resp = get_with_cookie(app, &format!("/admin/afg/run/{id}"), cookie).await;
+        assert_eq!(resp.status(), StatusCode::OK);
+        let v: Value = serde_json::from_str(&body_string(resp).await).expect("JSON");
+        if v["state"] != "running" {
+            let room = body_string(get_with_cookie(app, &at, cookie).await).await;
+            assert!(
+                !room.contains(r#"http-equiv="refresh""#),
+                "an answered test is not asked for again"
+            );
+            return (v["html"].as_str().unwrap_or_default().to_string(), room);
         }
         tokio::time::sleep(Duration::from_millis(50)).await;
     }
-    panic!("the test at {at} never finished");
+    panic!("the test {id} never finished");
+}
+
+/// An app over the sample whose accounts are these, and a session for each.
+async fn app_with(
+    tag: &str,
+    users: &[(&str, axgf_cms::acl::Role)],
+) -> (axum::Router, Scratch, Vec<(String, String)>) {
+    use axgf_cms::acl::{new_user, Acl};
+    let dir = scratch(tag);
+    let path = dir.join("family.axgf");
+    std::fs::copy(sample(), &path).unwrap();
+    let mut acl = Acl::default();
+    for (name, role) in users {
+        acl.users.push(new_user(name, PASSWORD, *role).unwrap());
+    }
+    let ids: Vec<String> = acl.users.iter().map(|u| u.id.clone()).collect();
+    acl.save(&Acl::path_for(&path)).unwrap();
+    let app = build_app(&path).unwrap();
+    let mut sessions = Vec::new();
+    for ((name, _), id) in users.iter().zip(ids) {
+        let login = post_form(
+            &app,
+            "/admin/login",
+            &format!("username={name}&password={PASSWORD}"),
+            false,
+        )
+        .await;
+        assert!(login.status().is_redirection(), "{name} signs in");
+        let cookie = login.headers()[header::SET_COOKIE]
+            .to_str()
+            .unwrap()
+            .split(';')
+            .next()
+            .unwrap()
+            .to_string();
+        sessions.push((id, cookie));
+    }
+    (app, dir.pointing_at(path), sessions)
 }
 
 /// What a fake service was sent: method, path and body of each request.
@@ -147,6 +203,23 @@ fn ollama(method: &str, path: &str) -> (u16, String) {
                "content":"1. La famille Exemple — 3 personnes"},
                "prompt_eval_count":1500,"eval_count":42,"done":true}"#
                 .into(),
+        ),
+        _ => (404, r#"{"error":"no such path"}"#.into()),
+    }
+}
+
+/// An Ollama that answers in Markdown and asks to remember something.
+fn ollama_that_remembers(method: &str, path: &str) -> (u16, String) {
+    match (method, path) {
+        ("POST", "/api/chat") => (
+            200,
+            serde_json::json!({
+                "model": "fausse-famille:1b",
+                "message": {"role": "assistant", "content":
+                    "**1.** La famille *Exemple*\n\n<memory>\n- Cherche la branche Exemple\n</memory>"},
+                "done": true
+            })
+            .to_string(),
         ),
         _ => (404, r#"{"error":"no such path"}"#.into()),
     }
@@ -396,9 +469,17 @@ async fn a_test_sends_the_archive_to_ollama_and_shows_its_answer() {
     .await;
     assert_eq!(status, StatusCode::OK, "{page}");
 
-    let page = run_test(&app, &admin).await;
-    assert!(page.contains("Répondu"), "{page}");
-    assert!(page.contains("1. La famille Exemple — 3 personnes"));
+    let (page, room) = run_test(&app, &admin).await;
+    assert!(page.contains("Succès"), "{page}");
+    assert!(page.contains("La famille Exemple — 3 personnes"));
+    assert!(
+        page.contains("Cette session n’a pas de compte, donc pas de cerveau."),
+        "the emergency token has no brain"
+    );
+    assert!(
+        !_bundle.with_extension("brains").exists(),
+        "and none is made"
+    );
     assert!(
         page.contains("fausse-famille:1b"),
         "the model that answered"
@@ -440,9 +521,14 @@ async fn a_test_sends_the_archive_to_ollama_and_shows_its_answer() {
         "Question: Donne-moi le top 3 des familles disposant du plus grand nombre d’individus déclarés."
     ));
 
-    // The room says how the last test went.
+    // The room says how the last test went, and opens it again.
+    assert!(room.contains("data-afg-dialog") && room.contains("Succès"));
     let room = body_string(get_with_cookie(&app, "/admin/afg", &admin).await).await;
-    assert!(room.contains("Répondu") && room.contains("/admin/afg/run/"));
+    assert!(room.contains("Répondu") && room.contains("/admin/afg?run="));
+    assert!(
+        !room.contains("data-afg-dialog"),
+        "no window unless asked for"
+    );
 }
 
 #[tokio::test]
@@ -457,8 +543,8 @@ async fn what_a_service_says_when_it_fails_is_shown() {
         &[("kind", "ollama"), ("url", &url), ("model", "absent:7b")],
     )
     .await;
-    let page = run_test(&app, &admin).await;
-    assert!(page.contains("Failed"), "{page}");
+    let (page, _room) = run_test(&app, &admin).await;
+    assert!(page.contains("Error"), "{page}");
     assert!(
         page.replace("&quot;", "\"")
             .contains(r#"HTTP 404: model "absent:7b" not found"#),
@@ -490,10 +576,10 @@ async fn claude_code_reads_the_archive_on_its_input_and_an_empty_one_is_said_so(
         "the program is found where it was said"
     );
 
-    let page = run_test(&app, &admin).await;
-    assert!(page.contains("Répondu"), "{page}");
+    let (page, _room) = run_test(&app, &admin).await;
+    assert!(page.contains("Succès"), "{page}");
     assert!(
-        page.contains(r#"<div class="afg-answer prose">Bundle vide</div>"#),
+        page.contains(r#"<div class="afg-answer note-text"><p>Bundle vide</p>"#),
         "{page}"
     );
 
@@ -535,4 +621,146 @@ async fn claude_code_reads_the_archive_on_its_input_and_an_empty_one_is_said_so(
         .filter(|e| e.file_name().to_string_lossy().starts_with(".afg-"))
         .collect();
     assert!(left.is_empty(), "{left:?}");
+}
+
+#[tokio::test]
+async fn each_account_has_a_brain_that_the_afg_reads_and_writes() {
+    site_secret_in_env();
+    use axgf_cms::acl::Role;
+    let (url, seen) = fake_service(ollama_that_remembers);
+    let (app, bundle, sessions) = app_with("afg-brain", &[("marie", Role::Admin)]).await;
+    let (marie_id, cookie) = sessions[0].clone();
+    let cookie = format!("{cookie}; axgf_lang=fr");
+    let (status, page) = configure(
+        &app,
+        &cookie,
+        &[
+            ("kind", "ollama"),
+            ("url", &url),
+            ("model", "fausse-famille:1b"),
+        ],
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    assert!(page.contains("0 échange"), "a brain not made yet");
+
+    // The first exchange makes the brain, and the answer's Markdown is drawn.
+    let (window, _room) = run_test(&app, &cookie).await;
+    assert!(window.contains("Succès"), "{window}");
+    assert!(window.contains("<strong>1.</strong>") && window.contains("<em>Exemple</em>"));
+    assert!(
+        !window.contains("memory&gt;") && !window.contains("<memory>"),
+        "the block is not shown"
+    );
+    assert!(window.contains("Retenu dans le cerveau de marie"));
+    assert!(window.contains("<li>Cherche la branche Exemple</li>"));
+
+    let brain = bundle.with_extension("brains").join("marie");
+    let card = std::fs::read_to_string(brain.join("brain.json")).unwrap();
+    assert!(card.contains(&marie_id), "her account's, by its id");
+    let memory = std::fs::read_to_string(brain.join("memory.md")).unwrap();
+    assert!(memory.contains("Cherche la branche Exemple"), "{memory}");
+    let log = std::fs::read_to_string(brain.join("conversations.jsonl")).unwrap();
+    assert_eq!(log.lines().count(), 1);
+    let first: Value = serde_json::from_str(log.lines().next().unwrap()).unwrap();
+    assert_eq!(first["context"], "test");
+    assert_eq!(
+        first["answer"], "**1.** La famille *Exemple*",
+        "kept as answered"
+    );
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = |p: &Path| std::fs::metadata(p).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode(&brain), 0o700);
+        assert_eq!(mode(&brain.join("memory.md")), 0o600);
+    }
+
+    // The next question carries the brain back, after the archive.
+    let (window, room) = run_test(&app, &cookie).await;
+    assert!(
+        window.contains("Rien de nouveau retenu dans le cerveau de marie."),
+        "a fact is kept once: {window}"
+    );
+    let bodies: Vec<String> = seen
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|(_, _, b)| b.clone())
+        .collect();
+    assert_eq!(bodies.len(), 2);
+    let second: Value = serde_json::from_str(&bodies[1]).unwrap();
+    let system = second["messages"][0]["content"].as_str().unwrap();
+    assert!(system.contains("their brain") && system.contains("<memory> block"));
+    let user = second["messages"][1]["content"].as_str().unwrap();
+    let brain_at = user.find("=== brain: marie ===").expect("the brain");
+    assert!(
+        user.find("=== manifest.json ===").unwrap() < brain_at,
+        "after the archive"
+    );
+    assert!(user[brain_at..].contains("Cherche la branche Exemple"));
+    assert!(user[brain_at..].contains("Your last exchanges with them"));
+    assert!(user.ends_with("individus déclarés."));
+    assert!(room.contains("2 échanges"), "the room counts them");
+    assert!(room.contains("1 fait retenu · 1 cerveau sur le disque"));
+}
+
+#[tokio::test]
+async fn the_accounts_page_says_who_may_talk_to_the_afg() {
+    site_secret_in_env();
+    use axgf_cms::acl::Role;
+    let (app, bundle, sessions) = app_with(
+        "afg-access",
+        &[("marie", Role::Admin), ("vera", Role::Viewer)],
+    )
+    .await;
+    let admin = format!("{}; axgf_lang=en", sessions[0].1);
+    let vera = sessions[1].0.clone();
+    let flag = |name: &str| {
+        let acl = axgf_cms::acl::Acl::load(&axgf_cms::acl::Acl::path_for(&bundle)).unwrap();
+        acl.users.iter().find(|u| u.username == name).unwrap().afg
+    };
+    let page = body_string(get_with_cookie(&app, "/admin/users", &admin).await).await;
+    assert!(page.contains("May talk to the AFG"));
+    assert!(page.contains("0 accounts may talk to the AFG."));
+    assert!(!flag("vera"), "off until an administrator says so");
+
+    let change = |afg: bool| {
+        let mut f = "role=viewer&status=active&email=&family_scope=&password=".to_string();
+        if afg {
+            f.push_str("&afg=on");
+        }
+        f
+    };
+    let resp = post_form_as(&app, &admin, &format!("/admin/users/{vera}"), &change(true)).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let page = body_string(resp).await;
+    assert!(flag("vera"));
+    assert!(page.contains("1 account may talk to the AFG."), "{page}");
+    post_form_as(
+        &app,
+        &admin,
+        &format!("/admin/users/{vera}"),
+        &change(false),
+    )
+    .await;
+    assert!(!flag("vera"), "and off again");
+
+    let made = post_form_as(
+        &app,
+        &admin,
+        "/admin/users",
+        "username=lea&password=correct-horse-battery&role=viewer&email=&family_scope=&afg=on",
+    )
+    .await;
+    assert!(made.status().is_success() || made.status().is_redirection());
+    assert!(flag("lea"), "set as the account is made");
+
+    // A test that is gone says so, to the room and to its script.
+    let resp = get_with_cookie(&app, "/admin/afg/run/no-such-test", &admin).await;
+    assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+    let v: Value = serde_json::from_str(&body_string(resp).await).unwrap();
+    assert_eq!(v["state"], "gone");
+    let room =
+        body_string(get_with_cookie(&app, "/admin/afg?run=no-such-test", &admin).await).await;
+    assert!(room.contains("Tests are kept for the life of the process"));
 }

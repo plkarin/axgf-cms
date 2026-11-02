@@ -4818,7 +4818,7 @@ emblem-no-family-detail = Familia hii haimo kwenye kumbukumbu, au huruhusiwi kui
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Mtaalamu bandia wa nasaba ya familia
-afg-lede = AFG husoma kifurushi cha familia na kujibu maswali kukihusu. Hapa: uchakataji wake unatoka wapi, na jaribio.
+afg-lede = AFG inaijua familia kupitia kifurushi chake, na humkumbuka kila mtu anayezungumza nayo kwenye ubongo wake mwenyewe. Hapa: uchakataji wake unatoka wapi, na jaribio.
 afg-kpi-source = Uchakataji
 afg-ready = tayari
 afg-off-note = Chagua uchakataji unatoka wapi.
@@ -4865,7 +4865,7 @@ afg-sensitive-hint = Afya, bayometriki, jenomu, kumbukumbu za kisheria na tabia 
 afg-timeout = Muda unaoruhusiwa (sekunde)
 afg-timeout-hint = Muda ambao jibu linaweza kuchukua kabla ya kuachwa.
 afg-test = Jaribio
-afg-test-intro = Hutuma kifurushi kama kilivyo sasa, kila faili yake ya JSON bila picha, na kuuliza swali moja.
+afg-test-intro = Hutuma kifurushi kama kilivyo sasa, kila faili yake ya JSON bila picha, pamoja na ubongo wako, na kuuliza swali moja. Jibu hufunguka kwenye dirisha.
 afg-sent-files = Faili
 afg-sent-files-value = { $n ->
         [one] faili { $n } ya JSON
@@ -4898,8 +4898,6 @@ afg-error-key = Huduma hii inahitaji ufunguo wa API.
 afg-error-model = Modeli inahitajika hapa, imeandikwa kwa herufi, tarakimu na . _ : / @ [ ] + -
 afg-error-effort = Wakala huyu hajui juhudi hiyo.
 afg-error-program = Programu lazima iwe ya wakala mwenyewe (claude, codex au opencode), kwa njia yake kamili.
-afg-run-title = Jaribio la AFG
-afg-run-state = Hali
 afg-run-state-running = Inasubiri jibu
 afg-run-state-done = Limejibiwa
 afg-run-state-failed = Limeshindwa
@@ -4908,9 +4906,36 @@ afg-run-usage = Tokeni zilizosomwa
 afg-run-usage-out = { $n } zimeandikwa
 afg-run-cost = USD { $usd }
 afg-run-waiting = Kifurushi kimetumwa; jibu litaonekana hapa. Ukurasa huu huuliza tena kila sekunde tatu.
-afg-run-answer = Jibu
 afg-run-model = Modeli:
 afg-run-failed-hint = Kagua njia ya uchakataji, mtandao ambao tovuti hii inaweza kufikia, na kwa wakala, kwamba amesakinishwa na ameingia chini ya akaunti inayoendesha tovuti hii.
-afg-back = Rudi kwa AFG
-afg-run-gone-title = Jaribio hilo halipo
 afg-run-gone-detail = Majaribio huhifadhiwa muda wote mchakato unapoendelea, kumi ya mwisho. Tuma jipya.
+
+## The AFG's brains, its window and who may use it (docs/adr/0024).
+afg-kpi-brain = Ubongo wako
+afg-brain-exchanges = { $n ->
+        [one] mazungumzo { $n }
+       *[other] mazungumzo { $n }
+    }
+afg-brain-note = { $facts ->
+        [one] jambo { $facts } limekumbukwa
+       *[other] mambo { $facts } yamekumbukwa
+    } · { $brains ->
+        [one] akaunti { $brains } yenye ubongo
+       *[other] akaunti { $brains } zenye ubongo
+    }
+afg-brain-no-account = Kipindi hiki hakina akaunti, kwa hiyo hakina ubongo.
+afg-access-count = { $n ->
+        [one] Akaunti { $n } inaweza kuzungumza na AFG.
+       *[other] Akaunti { $n } zinaweza kuzungumza na AFG.
+    }
+afg-access-set = Huwekwa kwenye ukurasa wa Akaunti
+afg-result-ok = Imefaulu
+afg-result-error = Hitilafu
+afg-result-close = Funga
+afg-result-remembered = Imehifadhiwa kwenye ubongo wa { $name }:
+afg-result-nothing-kept = Hakuna jipya lililohifadhiwa kwenye ubongo wa { $name }.
+accounts-afg = AFG
+accounts-afg-allowed = Anaweza kuzungumza na AFG
+accounts-afg-yes = ndiyo
+accounts-afg-no = hapana
+accounts-afg-hint = Imezimwa isipokuwa imewekewa alama. Kile AFG inachokumbuka kuhusu akaunti hii huhifadhiwa kwenye ubongo wake yenyewe: folda kwenye diski kando ya kifurushi.

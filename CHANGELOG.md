@@ -13,8 +13,9 @@ operator's requests of 1 November 2026, docs/adr/0020 to 0022). Every bundle
 stays valid AXGF 1.1. Ties of rite, polygamous unions and emblems use 1.1's
 own fields and this application's extensions, and axgf-spec proposals 0002
 to 0004 ask 1.2 to name them. Then the first part of the Artificial family
-genealogist (the operator's request of 2 November 2026, docs/adr/0023):
-where its computing comes from, and a test.
+genealogist (the operator's requests of 2 November 2026, docs/adr/0023 and
+0024): where its computing comes from, a test whose result opens in a
+window, a brain on disk for each account that talks to it, and who may.
 
 ### Added
 
@@ -98,6 +99,28 @@ where its computing comes from, and a test.
   - docs/OPERATOR.md explains how to open the service's sandbox for a model
     on the internet or an agent, and how to sign an agent in as the
     service's user.
+- **The AFG's brains** (docs/adr/0024).
+  - **Two kinds of knowledge.** The archive is what the AFG knows of the
+    family. A brain, one for each account that talks to it, is what it
+    remembers of that person.
+  - **On disk.** A brain is a folder, `family.brains/<username>/`, mode 700,
+    holding:
+    - `brain.json`: whose brain, by the account's id;
+    - `memory.md`: one fact a line;
+    - `conversations.jsonl`: every exchange.
+
+    It is made at the account's first exchange. A name given again never
+    reads the old account's brain.
+  - **How it is used.** The AFG reads the asker's brain after the archive.
+    It asks to remember something with a `<memory>` block at the end of its
+    answer, which is taken out of what is shown and kept, each fact once.
+- **The test's result opens in a window** over the room: waiting, then
+  success with the answer's Markdown drawn, or error with what the service
+  or the agent said, and what was kept in the asker's brain. It is modal
+  with scripting, and asks again every three seconds without it. The test's
+  own page is gone.
+- **Who may talk to the AFG**: a yes or no on each account of the Accounts
+  page, off until ticked, counted above the list.
 - **Documentation.** The README explains both tools, how the words are
   worked out and the 27 ties. docs/FAMILY.md tells the family how to read
   the Kinship tab and add a godparent. docs/REFERENCE.md documents the link

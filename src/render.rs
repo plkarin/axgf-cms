@@ -51,6 +51,8 @@ pub const MAP_JS: &str = include_str!("../static/map.js");
 
 /// The avatar picker's focal-point control. Enhancement only.
 pub const AVATAR_JS: &str = include_str!("../static/avatar.js");
+/// The AFG room's fields (docs/adr/0023).
+pub const AFG_JS: &str = include_str!("../static/afg.js");
 
 /// The profile editor's "add another entry", enhancement only.
 pub const PROFILE_JS: &str = include_str!("../static/profile.js");
@@ -228,6 +230,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_documents.html",
     "admin_avatar.html",
     "admin_emblem.html",
+    "admin_afg.html",
+    "admin_afg_run.html",
     "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",

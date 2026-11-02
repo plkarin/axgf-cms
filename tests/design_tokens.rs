@@ -93,6 +93,7 @@ fn pages() -> Vec<(&'static str, String, bool)> {
         ("admin list", "/admin/person".into(), true),
         ("admin edit", format!("/admin/person/{P}/edit"), true),
         ("admin users", "/admin/users".into(), true),
+        ("admin afg", "/admin/afg".into(), true),
         ("404", "/no-such-page".into(), false),
         ("settings", "/settings?tab=theme".into(), false),
         ("quality", "/quality".into(), true),

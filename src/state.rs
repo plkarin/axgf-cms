@@ -130,6 +130,8 @@ pub struct AppState {
     /// The release check's answer, when this process made one itself
     /// (docs/adr/0011 §5). Read from disk otherwise.
     release_check: std::sync::Mutex<Option<std::time::Instant>>,
+    /// The AFG's tests, in this process's life (docs/adr/0023).
+    afg_runs: crate::afg::Runs,
 }
 
 /// A copy of the bundle carrying only the sensitive scopes in `include`.
@@ -701,6 +703,7 @@ impl AppState {
                 flows: crate::sso::Flows::new(),
                 events: crate::events::Events::new(),
                 release_check: std::sync::Mutex::new(None),
+                afg_runs: crate::afg::Runs::default(),
             },
             report,
         ))
@@ -784,6 +787,11 @@ impl AppState {
         let last = *g;
         *g = Some(std::time::Instant::now());
         last
+    }
+
+    /// The AFG's tests (docs/adr/0023).
+    pub fn afg_runs(&self) -> &crate::afg::Runs {
+        &self.afg_runs
     }
 
     /// Live sessions and the login throttle.

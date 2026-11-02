@@ -4832,3 +4832,104 @@ emblem-not-an-image = Elembo ezali elilingi: PNG, JPEG, GIF, WebP to BMP.
 emblem-back = Zonga na elembo
 emblem-no-family-title = Libota emonani te
 emblem-no-family-detail = Libota oyo ezali na archive te, to okoki komona yango te.
+
+## The Artificial family genealogist, AFG (docs/adr/0023): its room, where
+## its computing comes from, and a test.
+admin-nav-afg = AFG
+afg-title = Moyebi ya mabota ya masini
+afg-lede = AFG etángaka ebombelo ya libota mpe ezongisaka biyano na ntina na yango. Awa: wapi kalkile na yango euti, mpe bomeki moko.
+afg-kpi-source = Kalkile
+afg-ready = ebongi
+afg-off-note = Pona wapi kalkile euti.
+afg-not-ready = esili te
+afg-kpi-sent = Bafisyé oyo etindami
+afg-kpi-sent-note = KB { $kb }, pene na bitoken { $tokens }
+afg-kpi-last = Bomeki ya nsuka
+afg-never = naino te
+afg-run-open = Fungola yango
+afg-source = Wapi kalkile euti
+afg-source-intro = Adrési moko; adrési elongo na fungola ya API mpe modɛ́lɛ; to agent ya kodi oyo asili kokɔta na masini oyo. Moko na moko asololaka na lolenge na ye.
+afg-kind = Lolenge ya kalkile
+afg-kind-hint = Esaleli ezali kosala esika mosusu mpe tokomaka epai na yango na nzela ya réseau. Agent azali kosala na masini oyo, na compte oyo site oyo ezali kosala na yango, mpe asengeli kozala asili kokɔta kuna.
+afg-kind-off = Eloko te
+afg-kind-anthropic = Claude (API ya Anthropic)
+afg-kind-ollama = Ollama
+afg-kind-openai = OpenAI
+afg-kind-mistral = Mistral
+afg-kind-vllm = vLLM
+afg-kind-gemini = Gemini
+afg-kind-claude-code = Claude Code
+afg-kind-codex = Codex
+afg-kind-opencode = OpenCode
+afg-group-address = Adrési moko
+afg-group-service = Adrési, fungola ya API mpe modɛ́lɛ
+afg-group-agent = Agent ya kodi na masini oyo
+afg-url = Adrési
+afg-url-hint = Soki ezali pamba: adrési ya momesano ya esaleli. Ebengami:
+afg-key = Fungola ya API
+afg-key-set = Fungola moko ebombami, esukaka na { $end }.
+afg-key-unset = Fungola moko te ebombami.
+afg-key-hint = Soki otiki yango pamba, fungola oyo ebombami etikali. Ebombamaka elongo na ba-compte, soko moke te na ebombelo, mpe ekomonisama lisusu te.
+afg-key-clear = Bosana fungola
+afg-model = Modɛ́lɛ
+afg-model-hint = Nkombo ya modɛ́lɛ ndenge esaleli to agent ekomaka yango. Soki ezali pamba, Ollama ezwaka modɛ́lɛ na yango ya liboso mpe agent oyo ya ye moko.
+afg-effort = Makasi
+afg-effort-hint = Ndenge agent akanisaka na bozindo, na maloba na ye moko: Claude Code banda low tii max, Codex banda minimal tii xhigh, OpenCode lolenge ya mopesi na ye.
+afg-program = Programu
+afg-program-found = Emonani:
+afg-program-missing = Emonani te na masini oyo.
+afg-program-hint = Soki ezali pamba, balukaka yango esika installateur na yango atiaka yango. Soki te, nzela mobimba ya programu ya agent.
+afg-sensitive = Tinda mpe bakalasi ya makama
+afg-sensitive-hint = Bokolɔngɔnɔ, biometri, genomi, mikanda ya bosambisi mpe bizaleli etindamaka te soki otii elembo awa te, ndenge ekɔtaka te na export oyo bakabolaka.
+afg-timeout = Ntango endimami (sekonde)
+afg-timeout-hint = Ntango eyano ekoki kozwa liboso ya kotika yango.
+afg-test = Bomeki
+afg-test-intro = Etindaka ebombelo ndenge ezali sikoyo, bafisyé na yango nyonso ya JSON kozanga bafoto, mpe etunaka motuna moko.
+afg-sent-files = Bafisyé
+afg-sent-files-value = { $n ->
+        [one] fisyé { $n } ya JSON
+       *[other] bafisyé { $n } ya JSON
+    }, KB { $kb }
+afg-sent-tokens = Bitoken, pene na
+afg-sent-records = Mikanda
+afg-sent-records-value = { $persons ->
+        [one] moto { $persons }
+       *[other] bato { $persons }
+    }, { $families ->
+        [one] libota { $families }
+       *[other] mabota { $families }
+    }
+afg-sent-classes = Bakalasi ya makama
+afg-sent-classes-in = etindami
+afg-sent-classes-out = etikami
+afg-sent-question = Motuna
+afg-privacy = Bomeki etindaka mikanda ya libota, ata ya bato oyo bazali na bomoi, epai ya kalkile oyo eponami likolo. Esaleli moko na internet, mpe agent ya masini oyo oyo abengaka yango, etángaka yango na ba-serveur ya mokonzi na yango.
+afg-test-button = Tinda bomeki
+afg-test-needs = Bomba liboso lolenge ya kalkile oyo ekoki.
+afg-test-question = Pesa ngai mabota 3 oyo ezali na motango monene ya bato bakomami.
+afg-test-empty = Ebombelo ezali pamba
+afg-saved = Ebombami.
+afg-error-not-saved = Ebombami te: { $error }
+afg-error-off = Lolenge moko te ya kalkile eponami.
+afg-error-archive = Ebombelo ekokaki kotángama te: { $error }
+afg-error-url = Adrési esengeli kobanda na http:// to https://.
+afg-error-key = Esaleli oyo esengi fungola ya API.
+afg-error-model = Modɛ́lɛ esengeli awa, ekomami na balɛ́tɛlɛ, bitalɛlɛ mpe . _ : / @ [ ] + -
+afg-error-effort = Agent oyo ayebi makasi wana te.
+afg-error-program = Programu esengeli kozala ya agent ye moko (claude, codex to opencode), na nzela na yango mobimba.
+afg-run-title = Bomeki ya AFG
+afg-run-state = Ezalela
+afg-run-state-running = Ezali kozela eyano
+afg-run-state-done = Eyano epesami
+afg-run-state-failed = Elongi te
+afg-run-seconds = sekonde { $s }
+afg-run-usage = Bitoken etángami
+afg-run-usage-out = { $n } ekomami
+afg-run-cost = USD { $usd }
+afg-run-waiting = Ebombelo etindami; eyano ekobima awa. Lokasa oyo etunaka lisusu nsima ya sekonde misato nyonso.
+afg-run-answer = Eyano
+afg-run-model = Modɛ́lɛ:
+afg-run-failed-hint = Tala lolenge ya kalkile, réseau oyo site oyo ekoki kokóma, mpe mpo na agent, ete atiami mpe asili kokɔta na compte oyo site oyo ezali kosala na yango.
+afg-back = Zonga na AFG
+afg-run-gone-title = Bomeki yango ezali te
+afg-run-gone-detail = Bomeki ebombamaka ntango nyonso processus ezali kosala, zomi ya nsuka. Tinda mosusu.

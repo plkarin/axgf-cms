@@ -1284,6 +1284,19 @@ pub async fn ui_js() -> Response {
         .into_response()
 }
 
+/// `GET /static/afg.js` — the AFG room's fields, shown for the way of
+/// computing chosen (docs/adr/0023).
+pub async fn afg_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::AFG_JS,
+    )
+        .into_response()
+}
+
 /// `GET /static/avatar.js` — the picker's focal-point control.
 pub async fn avatar_js() -> Response {
     (

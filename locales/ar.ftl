@@ -5606,3 +5606,116 @@ emblem-not-an-image = الشعار صورة: PNG أو JPEG أو GIF أو WebP أ
 emblem-back = العودة إلى الشعار
 emblem-no-family-title = لا توجد هذه العائلة
 emblem-no-family-detail = هذه العائلة ليست في الأرشيف، أو لا يُسمح لك برؤيتها.
+
+## The Artificial family genealogist, AFG (docs/adr/0023): its room, where
+## its computing comes from, and a test.
+admin-nav-afg = النسّابة الذكي
+afg-title = النسّابة الاصطناعي للعائلة
+afg-lede = يقرأ النسّابة الاصطناعي (AFG) أرشيف العائلة ويجيب عنه. هنا: من أين تأتي حوسبته، واختبار.
+afg-kpi-source = الحوسبة
+afg-ready = جاهز
+afg-off-note = اختر مصدر الحوسبة.
+afg-not-ready = غير مكتمل
+afg-kpi-sent = الملفات المرسلة
+afg-kpi-sent-note = { $kb } كيلوبايت، ونحو { $tokens } من الرموز
+afg-kpi-last = آخر اختبار
+afg-never = لا شيء بعد
+afg-run-open = فتحه
+afg-source = من أين تأتي الحوسبة
+afg-source-intro = عنوان؛ أو عنوان مع مفتاح API ونموذج؛ أو وكيل برمجة مسجَّل الدخول مسبقًا على هذا الجهاز. يُخاطَب كلٌّ منها بطريقته الخاصة.
+afg-kind = طريقة الحوسبة
+afg-kind-hint = الخدمة تعمل في مكان آخر ويُوصَل إليها عبر الشبكة. الوكيل يعمل على هذا الجهاز، تحت الحساب الذي يعمل به هذا الموقع، ويجب أن يكون مسجَّل الدخول فيه مسبقًا.
+afg-kind-off = لا شيء
+afg-kind-anthropic = Claude (واجهة Anthropic البرمجية)
+afg-kind-ollama = Ollama
+afg-kind-openai = OpenAI
+afg-kind-mistral = Mistral
+afg-kind-vllm = vLLM
+afg-kind-gemini = Gemini
+afg-kind-claude-code = Claude Code
+afg-kind-codex = Codex
+afg-kind-opencode = OpenCode
+afg-group-address = عنوان
+afg-group-service = عنوان ومفتاح API ونموذج
+afg-group-agent = وكيل برمجة على هذا الجهاز
+afg-url = العنوان
+afg-url-hint = إذا تُرك فارغًا: العنوان المعتاد للخدمة. الاستدعاء:
+afg-key = مفتاح API
+afg-key-set = مفتاح محفوظ ينتهي بـ { $end }.
+afg-key-unset = لا يوجد مفتاح محفوظ.
+afg-key-hint = إذا تُرك فارغًا يبقى المفتاح المحفوظ. يُحفظ مع الحسابات، لا في الأرشيف أبدًا، ولا يُعرض مرة أخرى.
+afg-key-clear = نسيان المفتاح
+afg-model = النموذج
+afg-model-hint = اسم النموذج كما تكتبه الخدمة أو الوكيل. إذا تُرك فارغًا يأخذ Ollama أول نماذجه ويأخذ الوكيل نموذجه الخاص.
+afg-effort = الجهد
+afg-effort-hint = مدى عمق تفكير الوكيل، بكلماته الخاصة: Claude Code من low إلى max، وCodex من minimal إلى xhigh، وOpenCode متغيّر مزوّده.
+afg-program = البرنامج
+afg-program-found = وُجد:
+afg-program-missing = غير موجود على هذا الجهاز.
+afg-program-hint = إذا تُرك فارغًا يُبحث عنه حيث يضعه مثبِّته. وإلا فالمسار الكامل لبرنامج الوكيل.
+afg-sensitive = إرسال الفئات الحساسة أيضًا
+afg-sensitive-hint = تبقى الصحة والقياسات الحيوية والجينوم والسجلات القضائية والسلوك خارج ما يُرسَل ما لم يُحدَّد هذا الخيار، كما تبقى خارج التصدير المشترك.
+afg-timeout = الوقت المسموح (بالثواني)
+afg-timeout-hint = المدة التي قد يستغرقها الجواب قبل التخلي عنه.
+afg-test = اختبار
+afg-test-intro = يرسل الأرشيف كما هو الآن، كل ملفات JSON فيه دون الصور، ويطرح سؤالًا واحدًا.
+afg-sent-files = الملفات
+afg-sent-files-value = { $n ->
+        [zero] لا ملفات بصيغة JSON
+        [one] ملف واحد بصيغة JSON
+        [two] ملفان بصيغة JSON
+        [few] { $n } ملفات بصيغة JSON
+        [many] { $n } ملفًا بصيغة JSON
+       *[other] { $n } ملف بصيغة JSON
+    }، { $kb } كيلوبايت
+afg-sent-tokens = الرموز، تقريبًا
+afg-sent-records = السجلات
+afg-sent-records-value = { $persons ->
+        [zero] لا أشخاص
+        [one] شخص واحد
+        [two] شخصان
+        [few] { $persons } أشخاص
+        [many] { $persons } شخصًا
+       *[other] { $persons } شخص
+    }، { $families ->
+        [zero] لا أسر
+        [one] أسرة واحدة
+        [two] أسرتان
+        [few] { $families } أسر
+        [many] { $families } أسرة
+       *[other] { $families } أسرة
+    }
+afg-sent-classes = الفئات الحساسة
+afg-sent-classes-in = تُرسَل
+afg-sent-classes-out = مستبعدة
+afg-sent-question = السؤال
+afg-privacy = يرسل الاختبار سجلات العائلة، بما فيها الأحياء، إلى مصدر الحوسبة المختار أعلاه. الخدمة على الإنترنت، وكذلك الوكيل على هذا الجهاز الذي يستدعي واحدة منها، تقرؤها على خوادم مشغّلها.
+afg-test-button = إرسال الاختبار
+afg-test-needs = احفظ أولًا طريقة حوسبة كاملة.
+afg-test-question = أعطني أكثر ثلاث عائلات من حيث عدد الأفراد المسجَّلين.
+afg-test-empty = الحزمة فارغة
+afg-saved = تم الحفظ.
+afg-error-not-saved = لم يُحفظ: { $error }
+afg-error-off = لم تُختر أي طريقة حوسبة.
+afg-error-archive = تعذّرت قراءة الأرشيف: { $error }
+afg-error-url = يجب أن يبدأ العنوان بـ http:// أو https://.
+afg-error-key = تحتاج هذه الخدمة إلى مفتاح API.
+afg-error-model = يلزم نموذج هنا، مكتوب بحروف وأرقام و . _ : / @ [ ] + -
+afg-error-effort = لا يعرف هذا الوكيل هذا الجهد.
+afg-error-program = يجب أن يكون البرنامج برنامج الوكيل نفسه (claude أو codex أو opencode)، بمساره الكامل.
+afg-run-title = اختبار النسّابة الاصطناعي
+afg-run-state = الحالة
+afg-run-state-running = بانتظار الجواب
+afg-run-state-done = أُجيب
+afg-run-state-failed = فشل
+afg-run-seconds = { $s } ث
+afg-run-usage = الرموز المقروءة
+afg-run-usage-out = { $n } مكتوبة
+afg-run-cost = { $usd } دولار أمريكي
+afg-run-waiting = أُرسل الأرشيف؛ وسيظهر الجواب هنا. تعيد هذه الصفحة السؤال كل ثلاث ثوانٍ.
+afg-run-answer = الجواب
+afg-run-model = النموذج:
+afg-run-failed-hint = تحقّق من طريقة الحوسبة، ومن الشبكة التي يمكن لهذا الموقع بلوغها، وبالنسبة إلى الوكيل، من أنه مثبَّت ومسجَّل الدخول تحت الحساب الذي يعمل به هذا الموقع.
+afg-back = العودة إلى النسّابة الاصطناعي
+afg-run-gone-title = لا يوجد اختبار كهذا
+afg-run-gone-detail = تُحفظ الاختبارات طوال عمر العملية، آخر عشرة منها. أرسل اختبارًا جديدًا.

@@ -405,6 +405,17 @@ fn every_dynamic_key_family_is_fully_defined() {
     for group in axgf_cms::kinship_text::GROUPS {
         expected.push(format!("kin-group-{group}"));
     }
+    // The Artificial family genealogist (docs/adr/0023): every way of
+    // computing, its group, and a test's state.
+    for kind in axgf_cms::afg::Kind::ALL {
+        expected.push(format!("afg-kind-{}", kind.slug()));
+    }
+    for group in ["address", "service", "agent"] {
+        expected.push(format!("afg-group-{group}"));
+    }
+    for state in ["running", "done", "failed"] {
+        expected.push(format!("afg-run-state-{state}"));
+    }
     // Every group, attribute, field, term and unit the AXGF 1.1 profile can
     // name, derived from the library's registry rather than listed here.
     expected.extend(axgf_cms::profile::every_key());

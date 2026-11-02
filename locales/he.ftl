@@ -5226,3 +5226,110 @@ emblem-not-an-image = סמל הוא תמונה: PNG, JPEG, GIF, WebP או BMP.
 emblem-back = חזרה לסמל
 emblem-no-family-title = המשפחה לא נמצאה
 emblem-no-family-detail = המשפחה הזו אינה בארכיון, או שאינכם רשאים לראות אותה.
+
+## The Artificial family genealogist, AFG (docs/adr/0023): its room, where
+## its computing comes from, and a test.
+admin-nav-afg = גנאלוג מלאכותי
+afg-title = גנאלוג משפחתי מלאכותי
+afg-lede = הגנאלוג המלאכותי (AFG) קורא את ארכיון המשפחה ועונה עליו. כאן: מאין מגיע החישוב שלו, ובדיקה.
+afg-kpi-source = חישוב
+afg-ready = מוכן
+afg-off-note = בחרו מאין מגיע החישוב.
+afg-not-ready = לא שלם
+afg-kpi-sent = קבצים שנשלחים
+afg-kpi-sent-note = { $kb } KB, כ־{ $tokens } טוקנים
+afg-kpi-last = בדיקה אחרונה
+afg-never = עדיין אין
+afg-run-open = פתיחה
+afg-source = מאין מגיע החישוב
+afg-source-intro = כתובת; כתובת עם מפתח API ומודל; או סוכן קוד שכבר מחובר במחשב הזה. לכל אחד פונים בדרכו.
+afg-kind = אופן החישוב
+afg-kind-hint = שירות רץ במקום אחר ומגיעים אליו דרך הרשת. סוכן רץ במחשב הזה, תחת החשבון שבו האתר הזה רץ, וחייב להיות כבר מחובר בו.
+afg-kind-off = ללא
+afg-kind-anthropic = Claude (ה־API של Anthropic)
+afg-kind-ollama = Ollama
+afg-kind-openai = OpenAI
+afg-kind-mistral = Mistral
+afg-kind-vllm = vLLM
+afg-kind-gemini = Gemini
+afg-kind-claude-code = Claude Code
+afg-kind-codex = Codex
+afg-kind-opencode = OpenCode
+afg-group-address = כתובת
+afg-group-service = כתובת, מפתח API ומודל
+afg-group-agent = סוכן קוד במחשב הזה
+afg-url = כתובת
+afg-url-hint = ריקה: הכתובת הרגילה של השירות. קריאה:
+afg-key = מפתח API
+afg-key-set = שמור מפתח שמסתיים ב־{ $end }.
+afg-key-unset = לא שמור מפתח.
+afg-key-hint = אם נשאר ריק, המפתח השמור נשאר. הוא נשמר עם החשבונות, לעולם לא בארכיון, ולא מוצג שוב.
+afg-key-clear = לשכוח את המפתח
+afg-model = מודל
+afg-model-hint = שם המודל כפי שהשירות או הסוכן כותבים אותו. אם נשאר ריק, Ollama לוקח את המודל הראשון שלו, וסוכן את שלו.
+afg-effort = מאמץ
+afg-effort-hint = כמה לעומק הסוכן חושב, במילים שלו: Claude Code מ־low עד max, Codex מ־minimal עד xhigh, OpenCode הגרסה של הספק שלו.
+afg-program = תוכנה
+afg-program-found = נמצא:
+afg-program-missing = לא נמצא במחשב הזה.
+afg-program-hint = אם נשאר ריק, מחפשים אותו במקום שבו המתקין שלו שם אותו. אחרת, הנתיב המלא של התוכנה של הסוכן.
+afg-sensitive = לשלוח גם את המחלקות הרגישות
+afg-sensitive-hint = בריאות, ביומטריה, גנומיקה, רישומים משפטיים והתנהגות נשארים מחוץ למשלוח אם זה לא מסומן, כפי שהם נשארים מחוץ לייצוא משותף.
+afg-timeout = זמן מותר (שניות)
+afg-timeout-hint = כמה זמן תשובה יכולה להימשך לפני שמוותרים עליה.
+afg-test = בדיקה
+afg-test-intro = שולח את הארכיון כפי שהוא עכשיו, את כל קובצי ה־JSON שלו בלי התמונות, ושואל שאלה אחת.
+afg-sent-files = קבצים
+afg-sent-files-value = { $n ->
+        [one] קובץ JSON אחד
+        [two] { $n } קובצי JSON
+        [many] { $n } קובצי JSON
+       *[other] { $n } קובצי JSON
+    }, { $kb } KB
+afg-sent-tokens = טוקנים, בערך
+afg-sent-records = רשומות
+afg-sent-records-value = { $persons ->
+        [one] אדם אחד
+        [two] { $persons } אנשים
+        [many] { $persons } אנשים
+       *[other] { $persons } אנשים
+    }, { $families ->
+        [one] משפחה אחת
+        [two] { $families } משפחות
+        [many] { $families } משפחות
+       *[other] { $families } משפחות
+    }
+afg-sent-classes = מחלקות רגישות
+afg-sent-classes-in = נשלחות
+afg-sent-classes-out = מושמטות
+afg-sent-question = שאלה
+afg-privacy = הבדיקה שולחת את רשומות המשפחה, כולל אנשים חיים, אל מקור החישוב שנבחר למעלה. שירות באינטרנט, וגם סוכן במחשב הזה שפונה לשירות כזה, קורא אותן בשרתים של המפעיל שלו.
+afg-test-button = שליחת הבדיקה
+afg-test-needs = שמרו קודם אופן חישוב שלם.
+afg-test-question = תן לי את שלוש המשפחות שיש בהן הכי הרבה אנשים רשומים.
+afg-test-empty = החבילה ריקה
+afg-saved = נשמר.
+afg-error-not-saved = לא נשמר: { $error }
+afg-error-off = לא נבחר אופן חישוב.
+afg-error-archive = לא ניתן היה לקרוא את הארכיון: { $error }
+afg-error-url = הכתובת חייבת להתחיל ב־http:// או https://.
+afg-error-key = השירות הזה צריך מפתח API.
+afg-error-model = נדרש כאן מודל, כתוב באותיות, ספרות ו־. _ : / @ [ ] + -
+afg-error-effort = הסוכן הזה לא מכיר את המאמץ הזה.
+afg-error-program = התוכנה חייבת להיות של הסוכן עצמו (claude, codex או opencode), לפי הנתיב המלא שלה.
+afg-run-title = בדיקת הגנאלוג המלאכותי
+afg-run-state = מצב
+afg-run-state-running = ממתין לתשובה
+afg-run-state-done = נענה
+afg-run-state-failed = נכשל
+afg-run-seconds = { $s } שנ׳
+afg-run-usage = טוקנים שנקראו
+afg-run-usage-out = { $n } נכתבו
+afg-run-cost = { $usd } דולר
+afg-run-waiting = הארכיון נשלח; התשובה תופיע כאן. הדף הזה שואל שוב כל שלוש שניות.
+afg-run-answer = תשובה
+afg-run-model = מודל:
+afg-run-failed-hint = בדקו את אופן החישוב, את הרשת שהאתר הזה יכול להגיע אליה, ובסוכן — שהוא מותקן ומחובר תחת החשבון שבו האתר הזה רץ.
+afg-back = חזרה לגנאלוג המלאכותי
+afg-run-gone-title = אין בדיקה כזו
+afg-run-gone-detail = בדיקות נשמרות כל עוד התהליך חי, עשר האחרונות. שלחו בדיקה חדשה.

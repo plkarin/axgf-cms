@@ -5041,3 +5041,104 @@ emblem-not-an-image = An emblem is a picture: PNG, JPEG, GIF, WebP or BMP.
 emblem-back = Back to the emblem
 emblem-no-family-title = No such family
 emblem-no-family-detail = This family is not in the archive, or not one you may see.
+
+## The Artificial family genealogist, AFG (docs/adr/0023): its room, where
+## its computing comes from, and a test.
+admin-nav-afg = AFG
+afg-title = Artificial family genealogist
+afg-lede = The AFG reads the family's archive and answers about it. Here: where its computing comes from, and a test.
+afg-kpi-source = Computing
+afg-ready = ready
+afg-off-note = Choose where the computing comes from.
+afg-not-ready = incomplete
+afg-kpi-sent = Files sent
+afg-kpi-sent-note = { $kb } KB, about { $tokens } tokens
+afg-kpi-last = Last test
+afg-never = none yet
+afg-run-open = Open it
+afg-source = Where the computing comes from
+afg-source-intro = An address; an address with an API key and a model; or a coding agent already signed in on this machine. Each is spoken to in its own way.
+afg-kind = Way of computing
+afg-kind-hint = A service runs elsewhere and is reached over the network. An agent runs on this machine, under the account this site runs as, and must already be signed in there.
+afg-kind-off = None
+afg-kind-anthropic = Claude (Anthropic API)
+afg-kind-ollama = Ollama
+afg-kind-openai = OpenAI
+afg-kind-mistral = Mistral
+afg-kind-vllm = vLLM
+afg-kind-gemini = Gemini
+afg-kind-claude-code = Claude Code
+afg-kind-codex = Codex
+afg-kind-opencode = OpenCode
+afg-group-address = An address
+afg-group-service = An address, an API key and a model
+afg-group-agent = A coding agent on this machine
+afg-url = Address
+afg-url-hint = Left empty, the service's usual address. Called:
+afg-key = API key
+afg-key-set = A key is kept, ending { $end }.
+afg-key-unset = No key is kept.
+afg-key-hint = Left empty, the kept key stays. It is kept with the accounts, never in the archive, and never shown again.
+afg-key-clear = Forget the key
+afg-model = Model
+afg-model-hint = The model's name as the service or the agent writes it. Left empty, Ollama takes its first model and an agent its own.
+afg-effort = Effort
+afg-effort-hint = How hard the agent thinks, in its own words: Claude Code low to max, Codex minimal to xhigh, OpenCode its provider's variant.
+afg-program = Program
+afg-program-found = Found:
+afg-program-missing = Not found on this machine.
+afg-program-hint = Left empty, it is looked for where its installer puts it. Otherwise, the full path of the agent's own program.
+afg-sensitive = Send the sensitive classes too
+afg-sensitive-hint = Health, biometrics, genomics, legal records and behaviour stay out of what is sent unless this is ticked, as they stay out of a shared export.
+afg-timeout = Time allowed (seconds)
+afg-timeout-hint = How long an answer may take before it is given up.
+afg-test = Test
+afg-test-intro = Sends the archive as it is now, every JSON file of it without the photographs, and asks one question.
+afg-sent-files = Files
+afg-sent-files-value = { $n ->
+        [one] { $n } JSON file
+       *[other] { $n } JSON files
+    }, { $kb } KB
+afg-sent-tokens = Tokens, about
+afg-sent-records = Records
+afg-sent-records-value = { $persons ->
+        [one] { $persons } person
+       *[other] { $persons } persons
+    }, { $families ->
+        [one] { $families } family
+       *[other] { $families } families
+    }
+afg-sent-classes = Sensitive classes
+afg-sent-classes-in = sent
+afg-sent-classes-out = left out
+afg-sent-question = Question
+afg-privacy = The test sends the family's records, living people included, to the computing chosen above. A service on the internet, and an agent on this machine that calls one, reads them on its owner's servers.
+afg-test-button = Send the test
+afg-test-needs = Save a complete way of computing first.
+afg-test-question = Give me the top 3 families with the most declared individuals.
+afg-test-empty = Empty bundle
+afg-saved = Saved.
+afg-error-not-saved = Not saved: { $error }
+afg-error-off = No way of computing is chosen.
+afg-error-archive = The archive could not be read: { $error }
+afg-error-url = The address must begin with http:// or https://.
+afg-error-key = This service needs an API key.
+afg-error-model = A model is needed here, written in letters, digits and . _ : / @ [ ] + -
+afg-error-effort = This agent does not know that effort.
+afg-error-program = The program must be the agent's own (claude, codex or opencode), by its full path.
+afg-run-title = AFG test
+afg-run-state = State
+afg-run-state-running = Waiting for the answer
+afg-run-state-done = Answered
+afg-run-state-failed = Failed
+afg-run-seconds = { $s } s
+afg-run-usage = Tokens read
+afg-run-usage-out = { $n } written
+afg-run-cost = { $usd } USD
+afg-run-waiting = The archive is sent; the answer will appear here. This page asks again every three seconds.
+afg-run-answer = Answer
+afg-run-model = Model:
+afg-run-failed-hint = Check the way of computing, the network this site may reach and, for an agent, that it is installed and signed in under the account this site runs as.
+afg-back = Back to the AFG
+afg-run-gone-title = No such test
+afg-run-gone-detail = Tests are kept for the life of the process, the last ten. Send a new one.

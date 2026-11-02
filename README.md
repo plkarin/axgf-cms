@@ -426,8 +426,8 @@ evidence. In the archive, each one is a Document that says what it is
 
 ### Run it from the browser: the administration console
 
-*(New in 0.5.0.)* An administrator finds five rooms behind one
-strip. The overview opens on a tile for each of the four others, with what
+*(New in 0.5.0.)* An administrator finds six rooms behind one
+strip. The overview opens on a tile for each of the five others, with what
 each would say first.
 
 | Infrastructure: health, version, storage and computing | The AXGF bundle: conformity, anomalies, export |
@@ -461,6 +461,48 @@ each would say first.
 - **Accounts.** Who may do what, at a glance, and how each account signs in.
 - **Connectivity.** The site's public address, the sign-in rules and the
   sign-in services (below).
+- **AFG.** The Artificial family genealogist: where its computing comes
+  from, and a test (below).
+
+### The Artificial family genealogist (AFG)
+
+*(New after 1.0.0: the first part.)* An agent that reads the family's
+archive and answers about it. This first part sets where its computing comes
+from, in the administration's AFG room, and tests it. The second part will
+bring it to the pages, one use at a time.
+
+<p align="center">
+<a href="docs/screenshots/afg-room.jpg"><img src="docs/screenshots/afg-room.jpg" width="720" alt="The AFG room under Canopy. Three tiles: computing, Ollama, ready; 638 files sent, 370 KB, about 126,421 tokens; last test, none yet. Below, the form: the way of computing set to Ollama, its address left empty with the address it calls written underneath, a model, the box for the sensitive classes and the time allowed. Then the test: what it sends (638 JSON files, 250 persons and 78 families, the sensitive classes left out, the question), the warning that living people's records are sent too, and the button."></a>
+</p>
+
+There are five ways, and each is spoken to in its own way:
+
+| Way | What you fill in |
+|---|---|
+| An address: **Ollama** | The address (`http://127.0.0.1:11434` unless you say otherwise) and, if you like, a model. |
+| An address, an API key and a model: **OpenAI**, **Mistral**, **vLLM**, **Claude** (the Anthropic API), **Gemini** | The usual address is already there. The key is kept with the accounts and never shown again. |
+| A coding agent already signed in on this machine: **Claude Code**, **Codex**, **OpenCode** | A model; an effort in the agent's own words (`low` to `max`, `minimal` to `xhigh`, a variant); and the program, which the room finds by itself. |
+
+**The test** sends the archive as it is: every JSON file of the `.axgf`,
+without the photographs. It asks "Give me the top 3 families with the most
+declared individuals" (in French, *Donne-moi le top 3 des familles disposant
+du plus grand nombre d'individus déclarés*). An empty archive is answered
+*Empty bundle* (*Bundle vide*). The page shows what was sent, then the
+answer and the tokens read. Claude Code also reports its cost.
+
+Before you press it:
+
+- **Living people's records are sent too**, to wherever the computing runs.
+  Health, biometrics, genomics, legal records and behaviour stay out unless
+  you tick them in.
+- **An agent reads the archive and nothing else.** Claude Code runs without
+  any tool. Codex runs without a shell. OpenCode has every tool denied but
+  reading its own folder.
+- **The installed service reaches only this machine.** A model on the
+  internet, or an agent, needs the operator to open the way
+  ([how](docs/OPERATOR.md#the-afg-where-its-computing-runs)).
+
+[Why it works this way](docs/adr/0023-the-artificial-family-genealogist.md).
 
 ### Let the family in: registration and sign-in services
 

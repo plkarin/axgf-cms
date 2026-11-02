@@ -4813,3 +4813,104 @@ emblem-not-an-image = Nembo ni picha: PNG, JPEG, GIF, WebP au BMP.
 emblem-back = Rudi kwenye nembo
 emblem-no-family-title = Familia haipatikani
 emblem-no-family-detail = Familia hii haimo kwenye kumbukumbu, au huruhusiwi kuiona.
+
+## The Artificial family genealogist, AFG (docs/adr/0023): its room, where
+## its computing comes from, and a test.
+admin-nav-afg = AFG
+afg-title = Mtaalamu bandia wa nasaba ya familia
+afg-lede = AFG husoma kifurushi cha familia na kujibu maswali kukihusu. Hapa: uchakataji wake unatoka wapi, na jaribio.
+afg-kpi-source = Uchakataji
+afg-ready = tayari
+afg-off-note = Chagua uchakataji unatoka wapi.
+afg-not-ready = haujakamilika
+afg-kpi-sent = Faili zinazotumwa
+afg-kpi-sent-note = KB { $kb }, takriban tokeni { $tokens }
+afg-kpi-last = Jaribio la mwisho
+afg-never = bado hakuna
+afg-run-open = Lifungue
+afg-source = Uchakataji unatoka wapi
+afg-source-intro = Anwani; anwani pamoja na ufunguo wa API na modeli; au wakala wa msimbo ambaye tayari ameingia kwenye mashine hii. Kila mmoja huzungumzwa kwa njia yake.
+afg-kind = Njia ya uchakataji
+afg-kind-hint = Huduma huendeshwa mahali pengine na hufikiwa kupitia mtandao. Wakala huendeshwa kwenye mashine hii, chini ya akaunti inayoendesha tovuti hii, na lazima awe ameshaingia humo.
+afg-kind-off = Hakuna
+afg-kind-anthropic = Claude (API ya Anthropic)
+afg-kind-ollama = Ollama
+afg-kind-openai = OpenAI
+afg-kind-mistral = Mistral
+afg-kind-vllm = vLLM
+afg-kind-gemini = Gemini
+afg-kind-claude-code = Claude Code
+afg-kind-codex = Codex
+afg-kind-opencode = OpenCode
+afg-group-address = Anwani
+afg-group-service = Anwani, ufunguo wa API na modeli
+afg-group-agent = Wakala wa msimbo kwenye mashine hii
+afg-url = Anwani
+afg-url-hint = Ikiachwa tupu: anwani ya kawaida ya huduma. Inayoitwa:
+afg-key = Ufunguo wa API
+afg-key-set = Ufunguo umehifadhiwa, unaoishia na { $end }.
+afg-key-unset = Hakuna ufunguo uliohifadhiwa.
+afg-key-hint = Ukiachwa tupu, ufunguo uliohifadhiwa unabaki. Unahifadhiwa pamoja na akaunti, kamwe si ndani ya kifurushi, na hauonyeshwi tena.
+afg-key-clear = Sahau ufunguo
+afg-model = Modeli
+afg-model-hint = Jina la modeli kama huduma au wakala anavyoliandika. Likiachwa tupu, Ollama huchukua modeli yake ya kwanza na wakala huchukua yake mwenyewe.
+afg-effort = Juhudi
+afg-effort-hint = Jinsi wakala anavyofikiri kwa kina, kwa maneno yake mwenyewe: Claude Code kutoka low hadi max, Codex kutoka minimal hadi xhigh, OpenCode lahaja ya mtoa huduma wake.
+afg-program = Programu
+afg-program-found = Imepatikana:
+afg-program-missing = Haipatikani kwenye mashine hii.
+afg-program-hint = Ikiachwa tupu, hutafutwa pale kisakinishi chake kinapoiweka. Vinginevyo, njia kamili ya programu ya wakala.
+afg-sensitive = Tuma pia madaraja nyeti
+afg-sensitive-hint = Afya, bayometriki, jenomu, kumbukumbu za kisheria na tabia hazitumwi isipokuwa hiki kimewekewa alama, kama vile haziingii kwenye uhamishaji unaoshirikiwa.
+afg-timeout = Muda unaoruhusiwa (sekunde)
+afg-timeout-hint = Muda ambao jibu linaweza kuchukua kabla ya kuachwa.
+afg-test = Jaribio
+afg-test-intro = Hutuma kifurushi kama kilivyo sasa, kila faili yake ya JSON bila picha, na kuuliza swali moja.
+afg-sent-files = Faili
+afg-sent-files-value = { $n ->
+        [one] faili { $n } ya JSON
+       *[other] faili { $n } za JSON
+    }, KB { $kb }
+afg-sent-tokens = Tokeni, takriban
+afg-sent-records = Kumbukumbu
+afg-sent-records-value = { $persons ->
+        [one] mtu { $persons }
+       *[other] watu { $persons }
+    }, { $families ->
+        [one] familia { $families }
+       *[other] familia { $families }
+    }
+afg-sent-classes = Madaraja nyeti
+afg-sent-classes-in = yanatumwa
+afg-sent-classes-out = yameachwa
+afg-sent-question = Swali
+afg-privacy = Jaribio hutuma kumbukumbu za familia, pamoja na watu walio hai, kwa uchakataji uliochaguliwa hapo juu. Huduma iliyo kwenye intaneti, na wakala wa mashine hii anayeiita, huzisoma kwenye seva za mwendeshaji wake.
+afg-test-button = Tuma jaribio
+afg-test-needs = Hifadhi kwanza njia kamili ya uchakataji.
+afg-test-question = Nipe familia 3 bora zenye idadi kubwa zaidi ya watu waliosajiliwa.
+afg-test-empty = Kifurushi kitupu
+afg-saved = Imehifadhiwa.
+afg-error-not-saved = Haijahifadhiwa: { $error }
+afg-error-off = Hakuna njia ya uchakataji iliyochaguliwa.
+afg-error-archive = Kifurushi hakikuweza kusomwa: { $error }
+afg-error-url = Anwani lazima ianze na http:// au https://.
+afg-error-key = Huduma hii inahitaji ufunguo wa API.
+afg-error-model = Modeli inahitajika hapa, imeandikwa kwa herufi, tarakimu na . _ : / @ [ ] + -
+afg-error-effort = Wakala huyu hajui juhudi hiyo.
+afg-error-program = Programu lazima iwe ya wakala mwenyewe (claude, codex au opencode), kwa njia yake kamili.
+afg-run-title = Jaribio la AFG
+afg-run-state = Hali
+afg-run-state-running = Inasubiri jibu
+afg-run-state-done = Limejibiwa
+afg-run-state-failed = Limeshindwa
+afg-run-seconds = sekunde { $s }
+afg-run-usage = Tokeni zilizosomwa
+afg-run-usage-out = { $n } zimeandikwa
+afg-run-cost = USD { $usd }
+afg-run-waiting = Kifurushi kimetumwa; jibu litaonekana hapa. Ukurasa huu huuliza tena kila sekunde tatu.
+afg-run-answer = Jibu
+afg-run-model = Modeli:
+afg-run-failed-hint = Kagua njia ya uchakataji, mtandao ambao tovuti hii inaweza kufikia, na kwa wakala, kwamba amesakinishwa na ameingia chini ya akaunti inayoendesha tovuti hii.
+afg-back = Rudi kwa AFG
+afg-run-gone-title = Jaribio hilo halipo
+afg-run-gone-detail = Majaribio huhifadhiwa muda wote mchakato unapoendelea, kumi ya mwisho. Tuma jipya.

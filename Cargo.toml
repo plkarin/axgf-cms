@@ -37,7 +37,7 @@ serde = { version = "1", features = ["derive"] }
 # this too; declaring it here makes the dependency explicit rather than
 # inherited by feature unification.
 serde_json = { version = "1", features = ["preserve_order"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "fs"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "fs", "process", "io-util", "time"] }
 tower-http = { version = "0.5", features = ["compression-gzip", "fs", "limit", "set-header", "trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

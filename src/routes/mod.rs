@@ -2,6 +2,7 @@
 
 mod account;
 mod admin;
+mod afg;
 mod ai_portraits;
 mod connectivity;
 mod console;
@@ -379,6 +380,10 @@ fn routes(state: Shared) -> Router {
         .route("/admin/users", get(admin::users).post(admin::create_user))
         // The console's own rooms (v0.5.0, docs/adr/0011).
         .route("/admin/bundle", get(console::bundle))
+        // The Artificial family genealogist (docs/adr/0023).
+        .route("/admin/afg", get(afg::page).post(afg::save))
+        .route("/admin/afg/test", post(afg::test))
+        .route("/admin/afg/run/:id", get(afg::run))
         .route("/admin/bundle/sealed", post(console::sealed))
         .route("/admin/bundle/family", post(console::family))
         .route(
@@ -683,6 +688,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/genealogy.js", get(public::genealogy_js))
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
+        .route("/static/afg.js", get(public::afg_js))
         .route("/static/profile.js", get(public::profile_js))
         .route("/static/editor.js", get(public::editor_js))
         .route("/static/notes.js", get(public::notes_js))

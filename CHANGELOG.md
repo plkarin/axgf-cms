@@ -12,7 +12,9 @@ told apart from a couple; and the emblem of a family and of the archive (the
 operator's requests of 1 November 2026, docs/adr/0020 to 0022). Every bundle
 stays valid AXGF 1.1. Ties of rite, polygamous unions and emblems use 1.1's
 own fields and this application's extensions, and axgf-spec proposals 0002
-to 0004 ask 1.2 to name them.
+to 0004 ask 1.2 to name them. Then the first part of the Artificial family
+genealogist (the operator's request of 2 November 2026, docs/adr/0023):
+where its computing comes from, and a test.
 
 ### Added
 
@@ -73,6 +75,29 @@ to 0004 ask 1.2 to name them.
   - A family's pictures are read by whoever may read its people; the
     archive's emblem by every visitor. axgf-spec proposals/0004 asks AXGF
     1.2 for a `coat_of_arms` document type and an emblem in the manifest.
+- **The Artificial family genealogist (AFG)**, the administration's sixth
+  room (docs/adr/0023), with a tile on the overview. Its computing comes
+  from one of five ways, each spoken to in its own protocol:
+  - **an address:** Ollama;
+  - **an address, an API key and a model:** OpenAI, Mistral, vLLM, Claude
+    (Anthropic API) or Gemini;
+  - **a coding agent already signed in on this machine:** Claude Code,
+    Codex or OpenCode, with a model and an effort.
+
+  The key is kept in `family.acl` with the sign-in services' secrets and is
+  never shown again. **The test** sends the archive's JSON files, without
+  the photographs and, unless chosen, without the sensitive classes. It
+  asks for the three families with the most people recorded, and an empty
+  archive is answered "Bundle vide" ("Empty bundle").
+  - **An agent is given nothing to act with:** Claude Code has no tool and
+    no MCP server, Codex no shell, no web search and none of the account's
+    `config.toml`, OpenCode every tool denied but reading its own folder.
+    The archive reaches it on its standard input or in a private folder,
+    never on its command line, and this site's `AXGF_*` settings, the
+    emergency token among them, are not passed on.
+  - docs/OPERATOR.md explains how to open the service's sandbox for a model
+    on the internet or an agent, and how to sign an agent in as the
+    service's user.
 - **Documentation.** The README explains both tools, how the words are
   worked out and the 27 ties. docs/FAMILY.md tells the family how to read
   the Kinship tab and add a godparent. docs/REFERENCE.md documents the link

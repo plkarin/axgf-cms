@@ -505,6 +505,7 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
         }
         out.push("/admin/place/new".into());
         out.push("/admin/users".into());
+        out.push("/admin/afg".into());
     } else {
         out.push("/admin/login".into());
     }
@@ -841,7 +842,7 @@ struct Chrome {
     /// The site footer's own: its one link, the acknowledgement the format's
     /// licence asks for (v0.5.0). Counted apart, like the masthead, and capped.
     footer: usize,
-    /// The administration's own strip (v0.5.0, docs/adr/0011): its five rooms,
+    /// The administration's own strip (v0.5.0, docs/adr/0011): its six rooms,
     /// on every administration page an administrator opens. Section chrome,
     /// counted apart like the masthead, and capped.
     admin_nav: usize,
@@ -986,8 +987,9 @@ const OWN_READ: usize = 5;
 /// footer was plain text, and one more link there is one more on every screen,
 /// so it is held to that one.
 const FOOTER: usize = 1;
-/// The administration strip's cap: its five rooms (docs/adr/0011 §1).
-const ADMIN_NAV: usize = 5;
+/// The administration strip's cap: its six rooms (docs/adr/0011 §1; the
+/// sixth, the Artificial family genealogist, docs/adr/0023).
+const ADMIN_NAV: usize = 6;
 const OWN_EDIT: usize = 13;
 
 #[tokio::test]

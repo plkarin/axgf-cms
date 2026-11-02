@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% import "_icons.html" as ic %}
+{#- A test of the AFG (docs/adr/0023): the page waits for the answer, and
+    asks again every few seconds while it does. -#}
+{% block head %}{% if run.state == "running" %}<meta http-equiv="refresh" content="3">{% endif %}{% endblock %}
+{% block title %}{{ t("afg-run-title") }} — {{ t("app-name") }}{% endblock %}
+
+{% block content %}
+{% include "_admin_nav.html" %}
+<h1>{{ t("afg-run-title") }}</h1>
+<p class="lede">{{ t("afg-kind-" ~ run.kind) }}{% if run.model %} · <span class="mono">{{ run.model }}</span>{% endif %}{% if run.effort %} · <span class="mono">{{ run.effort }}</span>{% endif %}</p>
+
+<div class="kpis">
+  <div class="kpi">
+    <span class="kpi-label">{{ t("afg-run-state") }}</span>
+    <span class="kpi-icon">{{ ic.icon("pulse") }}</span>
+    <span class="kpi-value kpi-value-text">{% if run.state == "done" %}<span class="lvl lvl-ok">{{ t("afg-run-state-done") }}</span>{% elif run.state == "failed" %}<span class="lvl lvl-fail">{{ t("afg-run-state-failed") }}</span>{% else %}{{ t("afg-run-state-running") }}{% endif %}</span>
+    <span class="kpi-note">{{ t("afg-run-seconds", s=run.seconds) }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("afg-kpi-sent") }}</span>
+    <span class="kpi-icon">{{ ic.icon("archive") }}</span>
+    <span class="kpi-value">{{ run.archive.count | localnum(lang) }}</span>
+    <span class="kpi-note">{{ t("afg-kpi-sent-note", kb=((run.archive.bytes // 1024) | localnum(lang)), tokens=(run.archive.tokens | localnum(lang))) }}</span>
+  </div>
+  {% if run.answer and (run.answer.input_tokens or run.answer.cost_usd) %}
+  <div class="kpi">
+    <span class="kpi-label">{{ t("afg-run-usage") }}</span>
+    <span class="kpi-icon">{{ ic.icon("gauge") }}</span>
+    <span class="kpi-value">{% if run.answer.input_tokens %}{{ run.answer.input_tokens | localnum(lang) }}{% else %}—{% endif %}</span>
+    <span class="kpi-note">{% if run.answer.output_tokens %}{{ t("afg-run-usage-out", n=(run.answer.output_tokens | localnum(lang))) }}{% endif %}{% if run.answer.cost_usd %} · {{ t("afg-run-cost", usd=(run.answer.cost_usd | round(3))) }}{% endif %}</span>
+  </div>
+  {% endif %}
+</div>
+
+<section class="rec-section">
+<h2>{{ t("afg-sent-question") }}</h2>
+<p>{{ run.question }}</p>
+{% if run.state == "running" %}
+<div class="notice" role="status"><p>{{ t("afg-run-waiting") }}</p></div>
+{% elif run.state == "done" %}
+<h2>{{ t("afg-run-answer") }}</h2>
+<div class="afg-answer prose">{{ run.answer.text }}</div>
+{% if run.answer.model %}<p class="small muted">{{ t("afg-run-model") }} <span class="mono">{{ run.answer.model }}</span></p>{% endif %}
+{% else %}
+<div class="notice error" role="alert">
+  <p><strong>{{ t("afg-run-state-failed") }}</strong> {{ run.failure.message }}</p>
+  {% if run.failure.detail %}<pre class="afg-detail">{{ run.failure.detail }}</pre>{% endif %}
+</div>
+<p class="small muted">{{ t("afg-run-failed-hint") }}</p>
+{% endif %}
+</section>
+
+<p><a class="btn" href="/admin/afg">{{ t("afg-back") }}</a></p>
+{% endblock %}

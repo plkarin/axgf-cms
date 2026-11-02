@@ -16,6 +16,7 @@ regularly and nothing else here can hurt you very much.
 - [Health, and plugging it into a monitor](#health-and-plugging-it-into-a-monitor)
 - [When the disk fills](#when-the-disk-fills)
 - [Publishing it: TLS and a reverse proxy](#publishing-it-tls-and-a-reverse-proxy)
+- [The AFG: where its computing runs](#the-afg-where-its-computing-runs)
 - [When to worry](#when-to-worry)
 - [Uninstalling](#uninstalling)
 
@@ -352,6 +353,97 @@ keep if you write your own:
   CSP headers are enforced as the intersection of the two — which breaks the
   page in a way nothing reports. HSTS is the exception: only the thing
   terminating TLS can promise that, so the proxy adds it.
+
+## The AFG: where its computing runs
+
+The administration's AFG room, the Artificial family genealogist
+(docs/adr/0023), sends the archive to a model and shows its answer. Where
+that model runs is your choice. The service's sandbox, as the installer
+writes it, allows only the first of these:
+
+| Where | What it needs from this machine |
+| --- | --- |
+| **Ollama or vLLM on this machine** (`http://127.0.0.1:…`) | Nothing: the service may reach localhost. |
+| **A service on the internet**: OpenAI, Mistral, Claude, Gemini, or an Ollama or vLLM elsewhere | Outbound network. The unit allows localhost only. |
+| **A coding agent on this machine**: Claude Code, Codex, OpenCode | The agent installed where the service can see it, and signed in as the service's user. Outbound network. For Claude Code and OpenCode, which are built with Bun, memory that is written and then run. |
+
+**What leaves the machine.** A test sends every record of the archive, the
+living included, to the model you chose. The health, biometric, genomic,
+legal and behavioural classes stay out unless the administrator ticks the
+box for them. A service on the internet reads the records on its owner's
+servers, and so does an agent that calls one. Decide this with the family
+before you open the way.
+
+### Opening the sandbox for it
+
+Widen the unit deliberately, with a drop-in, rather than by editing it:
+
+```sh
+sudo systemctl edit axgf-cms
+```
+
+```ini
+[Service]
+# The AFG's service, or the one its agent calls, is on the internet.
+IPAddressAllow=any
+# Claude Code and OpenCode only: their JavaScript engine writes code and then
+# runs it.
+MemoryDenyWriteExecute=no
+```
+
+```sh
+sudo systemctl restart axgf-cms
+```
+
+Everything else in the sandbox stays as it is. If a test still fails, its
+page shows what the service or the agent said: the end of what the program
+printed on its error output.
+
+### An agent on this machine
+
+The service runs as the system user `axgf-cms`. Its home is the data
+directory, `/var/lib/axgf-cms`, and it cannot see `/home`. So:
+
+1. **Install the agent where the service can see it.** That is
+   `/usr/local/bin`, or the service user's own `~/.local/bin`
+   (`/var/lib/axgf-cms/.local/bin`). The room says whether it found the
+   program, and where. Otherwise give its full path in the **Program** field,
+   which accepts only the agent's own program: `claude`, `codex` or
+   `opencode`.
+2. **Sign it in as the service user**, once. Its credentials are then kept in
+   that home, under the data directory:
+
+   ```sh
+   sudo -u axgf-cms -H claude auth login          # check: claude auth status
+   sudo -u axgf-cms -H codex login --device-auth  # check: codex login status
+   sudo -u axgf-cms -H opencode auth login        # check: opencode auth list
+   ```
+
+   An agent that reads its key from the environment can be given it in the
+   same drop-in, with `Environment=`: `ANTHROPIC_API_KEY`,
+   `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`) or
+   `OPENAI_API_KEY`. The agent inherits the service's environment, except
+   this site's own settings. Every `AXGF_*` variable is removed, and the
+   emergency token is one of them.
+
+What each agent may do while it reads the archive:
+
+- **Claude Code** has no tool and no MCP server, and keeps no session. A
+  version that knows `--safe-mode` also reads none of the account's
+  CLAUDE.md, skills, hooks or plugins. An older one, such as 2.1.131, still
+  runs the account's hooks and reads its CLAUDE.md.
+- **Codex** has no shell and no web search. It reads no `config.toml`, and
+  so none of its MCP servers. It runs in a read-only sandbox and keeps
+  nothing.
+- **OpenCode** has every tool denied except reading its own working
+  directory, through which its attachment is read. It loads no plugins and
+  no project files.
+
+**Size.** A family of a thousand people is over a megabyte of JSON, some
+400,000 tokens. That is more than many models read at once. The room says
+the size before you send. Ollama is asked for a context large enough for the
+archive, up to 131,072 tokens. Beyond what a model reads, the test shows its
+refusal. A test is given 600 seconds unless the room says otherwise.
 
 ## When to worry
 

@@ -57,6 +57,8 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 | `POST /admin/validate`, `POST /admin/dedup` | Run the library's checks — *admin* |
 | `GET /admin/export` | Download the live bundle — *admin* |
 | `GET /admin/users`, `POST /admin/users`, `POST /admin/users/:id` | Accounts: create, change a role, a branch, a status or a password — *admin* |
+| `GET/POST /admin/afg` | The Artificial family genealogist (docs/adr/0023): where its computing comes from (`kind` = `off`, `ollama`, `openai`, `mistral`, `vllm`, `anthropic`, `gemini`, `claude-code`, `codex` or `opencode`; `url`, `api_key`, `clear_key`, `model`, `effort`, `program`, `sensitive`, `timeout`), kept in `family.acl` under the site settings. An empty `api_key` keeps the stored one, which is never rendered — *admin* |
+| `POST /admin/afg/test`, `GET /admin/afg/run/:id` | Send the archive's JSON files and the test question to the AFG, then the test's page, which reloads every three seconds until the answer or the failure is there. One test at a time; the last ten are kept in memory — *admin* |
 
 `:kind` is one of `person`, `family`, `event`, `link`, `occupation`, `source`,
 `place`, `document`.

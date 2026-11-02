@@ -81,6 +81,17 @@ const UNIVERSAL: &[&str] = &[
     "GeoNames",
     "URI",
     "alpha",
+    // The services and agents the AFG can compute with (docs/adr/0023),
+    // named as themselves; "Claude Code" is read as one name below.
+    "Ollama",
+    "OpenAI",
+    "Mistral",
+    "vLLM",
+    "Gemini",
+    "Anthropic",
+    "Claude",
+    "Codex",
+    "OpenCode",
     // The profile's clinical, psychometric and genomic instruments, written
     // the same in a Chinese clinic or laboratory as anywhere else: blood
     // groups, units, test and scale names, reference genomes, file formats,
@@ -239,6 +250,7 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
         "/convert".into(),
         "/admin".into(),
         "/admin/users".into(),
+        "/admin/afg".into(),
         "/admin/person".into(),
         "/admin/family".into(),
         "/admin/event".into(),
@@ -316,6 +328,8 @@ fn english_in(html: &str) -> Vec<String> {
     // The author credited in the footer (v0.5.0): a person's name is theirs
     // in every language.
     text = text.replace(axgf_cms::render::AUTHOR, " ");
+    // One product's name in two words, which "Code" alone is not.
+    text = text.replace("Claude Code", " ");
     let mut spoken = Vec::new();
     // What a screen reader says or a tooltip shows is read too.
     for attr in ["title", "aria-label", "placeholder", "alt"] {

@@ -2978,6 +2978,9 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 }
 
 .prose { white-space: pre-wrap; max-width: 72ch; }
+/* The AFG's answer (docs/adr/0023): a model's text, its lines kept, and an
+   address in it wrapped rather than widening the page. */
+.afg-answer { overflow-wrap: anywhere; }
 .muted-prose { color: var(--text-secondary); font-size: var(--type-minor); }
 
 @media (max-width: 700px) {

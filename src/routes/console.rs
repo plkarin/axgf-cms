@@ -106,9 +106,10 @@ pub(super) fn bundle_items(
     })
 }
 
-/// The four rooms in a line each, for the overview (docs/adr/0011 §1): the
-/// bundle's verdict, the infrastructure's, the version, the accounts and the
-/// ways in. Administrators only; the dashboard asks for it for them alone.
+/// The other rooms in a line each, for the overview (docs/adr/0011 §1): the
+/// bundle's verdict, the infrastructure's, the version, the accounts, the
+/// ways in and where the AFG's computing comes from (docs/adr/0023).
+/// Administrators only; the dashboard asks for it for them alone.
 pub(super) fn overview(
     state: &Shared,
     headers: &HeaderMap,
@@ -149,6 +150,10 @@ pub(super) fn overview(
             "services": site.providers.ready().len(),
             "https": site.public_is_https(),
             "address": site.public_base().is_some(),
+        },
+        "afg": {
+            "kind": site.afg.kind.slug(),
+            "ready": site.afg.kind != crate::afg::Kind::Off && site.afg.problem().is_none(),
         },
     })
 }

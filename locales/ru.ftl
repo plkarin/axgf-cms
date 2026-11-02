@@ -5432,3 +5432,110 @@ emblem-not-an-image = Эмблема — это изображение: PNG, JPE
 emblem-back = Назад к эмблеме
 emblem-no-family-title = Семья не найдена
 emblem-no-family-detail = Этой семьи нет в архиве, или вам нельзя её видеть.
+
+## The Artificial family genealogist, AFG (docs/adr/0023): its room, where
+## its computing comes from, and a test.
+admin-nav-afg = ИИ-генеалог
+afg-title = Искусственный семейный генеалог
+afg-lede = ИИ-генеалог (AFG) читает архив семьи и отвечает на вопросы о нём. Здесь: откуда берутся его вычисления, и проверка.
+afg-kpi-source = Вычисления
+afg-ready = готово
+afg-off-note = Выберите, откуда берутся вычисления.
+afg-not-ready = не завершено
+afg-kpi-sent = Отправляемые файлы
+afg-kpi-sent-note = { $kb } КБ, около { $tokens } токенов
+afg-kpi-last = Последняя проверка
+afg-never = ещё не было
+afg-run-open = Открыть
+afg-source = Откуда берутся вычисления
+afg-source-intro = Адрес; адрес с API-ключом и моделью; или агент для программирования, уже авторизованный на этой машине. С каждым говорят его собственным способом.
+afg-kind = Способ вычислений
+afg-kind-hint = Сервис работает в другом месте и доступен по сети. Агент работает на этой машине, под учётной записью, под которой работает этот сайт, и должен быть уже авторизован в ней.
+afg-kind-off = Нет
+afg-kind-anthropic = Claude (API Anthropic)
+afg-kind-ollama = Ollama
+afg-kind-openai = OpenAI
+afg-kind-mistral = Mistral
+afg-kind-vllm = vLLM
+afg-kind-gemini = Gemini
+afg-kind-claude-code = Claude Code
+afg-kind-codex = Codex
+afg-kind-opencode = OpenCode
+afg-group-address = Адрес
+afg-group-service = Адрес, API-ключ и модель
+afg-group-agent = Агент для программирования на этой машине
+afg-url = Адрес
+afg-url-hint = Если пусто — обычный адрес сервиса. Вызов:
+afg-key = API-ключ
+afg-key-set = Сохранён ключ, оканчивающийся на { $end }.
+afg-key-unset = Ключ не сохранён.
+afg-key-hint = Если оставить пустым, сохранённый ключ останется. Он хранится вместе с учётными записями, никогда в архиве, и больше никогда не показывается.
+afg-key-clear = Забыть ключ
+afg-model = Модель
+afg-model-hint = Название модели в том виде, в каком его пишет сервис или агент. Если пусто, Ollama берёт свою первую модель, а агент — свою.
+afg-effort = Усилие
+afg-effort-hint = Насколько глубоко думает агент, его собственными словами: Claude Code от low до max, Codex от minimal до xhigh, OpenCode — вариант своего провайдера.
+afg-program = Программа
+afg-program-found = Найдено:
+afg-program-missing = Не найдено на этой машине.
+afg-program-hint = Если пусто, программа ищется там, куда её ставит установщик. Иначе — полный путь к программе агента.
+afg-sensitive = Отправлять и чувствительные классы
+afg-sensitive-hint = Здоровье, биометрия, геномика, судебные сведения и поведение не отправляются, пока это не отмечено, — так же, как они не попадают в общий экспорт.
+afg-timeout = Допустимое время (секунды)
+afg-timeout-hint = Сколько может длиться ответ, прежде чем от него откажутся.
+afg-test = Проверка
+afg-test-intro = Отправляет архив в его нынешнем виде, все его файлы JSON без фотографий, и задаёт один вопрос.
+afg-sent-files = Файлы
+afg-sent-files-value = { $n ->
+        [one] { $n } файл JSON
+        [few] { $n } файла JSON
+        [many] { $n } файлов JSON
+       *[other] { $n } файла JSON
+    }, { $kb } КБ
+afg-sent-tokens = Токены, около
+afg-sent-records = Записи
+afg-sent-records-value = { $persons ->
+        [one] { $persons } человек
+        [few] { $persons } человека
+        [many] { $persons } человек
+       *[other] { $persons } человека
+    }, { $families ->
+        [one] { $families } семья
+        [few] { $families } семьи
+        [many] { $families } семей
+       *[other] { $families } семьи
+    }
+afg-sent-classes = Чувствительные классы
+afg-sent-classes-in = отправляются
+afg-sent-classes-out = не отправляются
+afg-sent-question = Вопрос
+afg-privacy = Проверка отправляет записи семьи, включая живых людей, выбранному выше источнику вычислений. Сервис в интернете, как и агент на этой машине, который его вызывает, читает их на серверах своего владельца.
+afg-test-button = Отправить проверку
+afg-test-needs = Сначала сохраните полный способ вычислений.
+afg-test-question = Назови топ-3 семей с наибольшим числом записанных людей.
+afg-test-empty = Архив пуст
+afg-saved = Сохранено.
+afg-error-not-saved = Не сохранено: { $error }
+afg-error-off = Способ вычислений не выбран.
+afg-error-archive = Не удалось прочитать архив: { $error }
+afg-error-url = Адрес должен начинаться с http:// или https://.
+afg-error-key = Этому сервису нужен API-ключ.
+afg-error-model = Здесь нужна модель, записанная буквами, цифрами и . _ : / @ [ ] + -
+afg-error-effort = Этот агент не знает такого усилия.
+afg-error-program = Программа должна быть программой самого агента (claude, codex или opencode), с полным путём.
+afg-run-title = Проверка ИИ-генеалога
+afg-run-state = Состояние
+afg-run-state-running = Ожидание ответа
+afg-run-state-done = Ответ получен
+afg-run-state-failed = Не удалось
+afg-run-seconds = { $s } с
+afg-run-usage = Прочитано токенов
+afg-run-usage-out = написано { $n }
+afg-run-cost = { $usd } USD
+afg-run-waiting = Архив отправлен; ответ появится здесь. Эта страница спрашивает снова каждые три секунды.
+afg-run-answer = Ответ
+afg-run-model = Модель:
+afg-run-failed-hint = Проверьте способ вычислений, сеть, доступную этому сайту, а для агента — что он установлен и авторизован под учётной записью этого сайта.
+afg-back = Назад к ИИ-генеалогу
+afg-run-gone-title = Такой проверки нет
+afg-run-gone-detail = Проверки хранятся, пока работает процесс, последние десять. Отправьте новую.

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% import "_icons.html" as ic %}
+{% block title %}{{ t("afg-title") }} — {{ t("app-name") }}{% endblock %}
+
+{#- The Artificial family genealogist's room (the operator's request of
+    2 November 2026, docs/adr/0023): where its computing comes from, and a
+    test that sends it the archive and one question. Each field says which
+    ways of computing use it; with scripting on, afg.js hides the others. -#}
+
+{% block content %}
+{% include "_admin_nav.html" %}
+<h1>{{ t("afg-title") }}</h1>
+<p class="lede">{{ t("afg-lede") }}</p>
+
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% if notice %}<div class="notice ok"><p>{{ notice }}</p></div>{% endif %}
+
+<div class="kpis">
+  <div class="kpi">
+    <span class="kpi-label">{{ t("afg-kpi-source") }}</span>
+    <span class="kpi-icon">{{ ic.icon("afg") }}</span>
+    <span class="kpi-value kpi-value-text">{{ t("afg-kind-" ~ saved_kind) }}</span>
+    <span class="kpi-note">{% if ready %}<span class="lvl lvl-ok">{{ t("afg-ready") }}</span>{% elif saved_kind == "off" %}{{ t("afg-off-note") }}{% else %}<span class="lvl lvl-warn">{{ t("afg-not-ready") }}</span>{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("afg-kpi-sent") }}</span>
+    <span class="kpi-icon">{{ ic.icon("archive") }}</span>
+    <span class="kpi-value">{% if archive %}{{ archive.count | localnum(lang) }}{% else %}—{% endif %}</span>
+    <span class="kpi-note">{% if archive %}{{ t("afg-kpi-sent-note", kb=((archive.bytes // 1024) | localnum(lang)), tokens=(archive.tokens | localnum(lang))) }}{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">{{ t("afg-kpi-last") }}</span>
+    <span class="kpi-icon">{{ ic.icon("pulse") }}</span>
+    <span class="kpi-value kpi-value-text">{% if latest %}{{ t("afg-run-state-" ~ latest.state) }}{% else %}{{ t("afg-never") }}{% endif %}</span>
+    <span class="kpi-note">{% if latest %}<a href="/admin/afg/run/{{ latest.id }}">{{ t("afg-run-open") }}</a>{% endif %}</span>
+  </div>
+</div>
+
+<section class="rec-section" id="source">
+<h2>{{ t("afg-source") }}</h2>
+<p class="small muted">{{ t("afg-source-intro") }}</p>
+<form method="post" action="/admin/afg" autocomplete="off" class="afg-form" data-afg-form>
+  <div class="field">
+    <label for="afg-kind">{{ t("afg-kind") }}</label>
+    <select id="afg-kind" name="kind" data-afg-kind>
+      {%- for k in kinds if k.group == "off" %}
+      <option value="{{ k.slug }}" data-uses="{{ k.uses }}"{% if k.slug == cfg.kind %} selected{% endif %}>{{ t("afg-kind-" ~ k.slug) }}</option>
+      {%- endfor %}
+      {%- for group in ["address", "service", "agent"] %}
+      <optgroup label="{{ t('afg-group-' ~ group) }}">
+        {%- for k in kinds if k.group == group %}
+        <option value="{{ k.slug }}" data-uses="{{ k.uses }}" data-url="{{ k.default_url }}" data-path="{{ k.path }}" data-efforts="{{ k.efforts | join(' ') }}"{% if k.slug == cfg.kind %} selected{% endif %}>{{ t("afg-kind-" ~ k.slug) }}</option>
+        {%- endfor %}
+      </optgroup>
+      {%- endfor %}
+    </select>
+    <div class="hint">{{ t("afg-kind-hint") }}</div>
+  </div>
+
+  <div class="field" data-afg-field="url">
+    <label for="afg-url">{{ t("afg-url") }}</label>
+    <input id="afg-url" name="url" type="url" inputmode="url" spellcheck="false" value="{{ cfg.url }}">
+    <div class="hint">{{ t("afg-url-hint") }} <span class="mono" data-afg-endpoint>{{ cfg.endpoint or "" }}</span></div>
+  </div>
+
+  <div class="field" data-afg-field="key">
+    <label for="afg-key">{{ t("afg-key") }}</label>
+    <input id="afg-key" name="api_key" type="password" autocomplete="new-password" spellcheck="false" value="">
+    <div class="hint">{% if cfg.key_hint %}{{ t("afg-key-set", end=cfg.key_hint) }}{% else %}{{ t("afg-key-unset") }}{% endif %} {{ t("afg-key-hint") }}</div>
+    {% if cfg.key_hint %}<label class="inline"><input type="checkbox" name="clear_key"> {{ t("afg-key-clear") }}</label>{% endif %}
+  </div>
+
+  <div class="field" data-afg-field="model">
+    <label for="afg-model">{{ t("afg-model") }}</label>
+    <input id="afg-model" name="model" type="text" spellcheck="false" class="mono" value="{{ cfg.model }}">
+    <div class="hint">{{ t("afg-model-hint") }}</div>
+  </div>
+
+  <div class="field" data-afg-field="effort">
+    <label for="afg-effort">{{ t("afg-effort") }}</label>
+    <input id="afg-effort" name="effort" type="text" spellcheck="false" class="mono" list="afg-efforts" value="{{ cfg.effort }}">
+    <datalist id="afg-efforts">
+      {%- for k in kinds if k.slug == cfg.kind %}{% for e in k.efforts %}<option value="{{ e }}"></option>{% endfor %}{% endfor -%}
+    </datalist>
+    <div class="hint">{{ t("afg-effort-hint") }}</div>
+  </div>
+
+  <div class="field" data-afg-field="program">
+    <label for="afg-program">{{ t("afg-program") }}</label>
+    <input id="afg-program" name="program" type="text" spellcheck="false" class="mono" value="{{ cfg.program }}">
+    <div class="hint">{% if program %}{{ t("afg-program-found") }} <span class="mono">{{ program }}</span>{% elif cfg.group == "agent" %}<span class="lvl lvl-warn">{{ t("afg-program-missing") }}</span>{% endif %} {{ t("afg-program-hint") }}</div>
+  </div>
+
+  <div class="field">
+    <label class="inline"><input type="checkbox" name="sensitive"{% if cfg.sensitive %} checked{% endif %}> {{ t("afg-sensitive") }}</label>
+    <div class="hint">{{ t("afg-sensitive-hint") }}</div>
+  </div>
+
+  <div class="field">
+    <label for="afg-timeout">{{ t("afg-timeout") }}</label>
+    <input id="afg-timeout" name="timeout" type="number" min="30" max="3600" step="30" value="{{ cfg.timeout }}">
+    <div class="hint">{{ t("afg-timeout-hint") }}</div>
+  </div>
+
+  <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
+</form>
+</section>
+
+<section class="rec-section" id="test">
+<h2>{{ t("afg-test") }}</h2>
+<p class="small muted">{{ t("afg-test-intro") }}</p>
+{% if archive %}
+<dl class="facts afg-sent">
+  <dt>{{ t("afg-sent-files") }}</dt><dd>{{ t("afg-sent-files-value", n=archive.count, kb=((archive.bytes // 1024) | localnum(lang))) }}</dd>
+  <dt>{{ t("afg-sent-tokens") }}</dt><dd>{{ archive.tokens | localnum(lang) }}</dd>
+  <dt>{{ t("afg-sent-records") }}</dt><dd>{{ t("afg-sent-records-value", persons=archive.persons, families=archive.families) }}</dd>
+  <dt>{{ t("afg-sent-classes") }}</dt><dd>{{ t("afg-sent-classes-in") if archive.sensitive else t("afg-sent-classes-out") }}</dd>
+  <dt>{{ t("afg-sent-question") }}</dt><dd>{{ question }}</dd>
+</dl>
+{% endif %}
+{% if archive_error %}<div class="notice error" role="alert"><p>{{ archive_error }}</p></div>{% endif %}
+<div class="notice warn"><p>{{ t("afg-privacy") }}</p></div>
+<form method="post" action="/admin/afg/test">
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}"{% if not ready %} disabled{% endif %}>{{ t("afg-test-button") }}</button>
+</form>
+{% if not ready %}<p class="small muted">{{ t("afg-test-needs") }}</p>{% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/afg.js"></script>
+{% endblock %}

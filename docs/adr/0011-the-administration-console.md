@@ -40,7 +40,9 @@ administration already opened on, which now leads to the other four.
 works) and `/admin/connectivity`, joined by a strip of five links that only
 an administrator receives (`_admin_nav.html`): a contributor's dashboard
 does not show doors that answer 403. The strip is counted apart from the
-chrome budget (`tests/interactive_walk.rs`, `ADMIN_NAV`).
+chrome budget (`tests/interactive_walk.rs`, `ADMIN_NAV`). A sixth room joined
+them on 2 November 2026: `/admin/afg`, the Artificial family genealogist
+(docs/adr/0023).
 
 The overview opens on one tile per room — the bundle's verdict, the
 infrastructure's, the version, the accounts, the ways in — for an

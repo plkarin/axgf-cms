@@ -17,8 +17,9 @@
 <p class="lede">{{ t("admin-lede", path=bundle_path, total=total,
      files=attachment_count, size=bundle_size) }}</p>
 
-{#- The console's four other rooms in a tile each (docs/adr/0011 §1), for an
-    administrator: what each would say first, and the way in. -#}
+{#- The console's other rooms in a tile each (docs/adr/0011 §1; the AFG's,
+    docs/adr/0023), for an administrator: what each would say first, and the
+    way in. -#}
 {% if console %}
 <div class="kpis kpis-five" data-content>
   <a class="kpi" href="/admin/bundle">
@@ -50,6 +51,12 @@
     <span class="kpi-icon">{{ ic.icon("connectivity") }}</span>
     <span class="kpi-value">{{ console.entry.services | localnum(lang) }}</span>
     <span class="kpi-note">{{ t("connectivity-kpi-services-note", n=console.entry.services) }} · {% if not console.entry.address %}{{ t("connectivity-address-unset") }}{% elif console.entry.https %}{{ t("connectivity-address-https") }}{% else %}{{ t("connectivity-address-plain") }}{% endif %}</span>
+  </a>
+  <a class="kpi" href="/admin/afg">
+    <span class="kpi-label">{{ t("admin-nav-afg") }}</span>
+    <span class="kpi-icon">{{ ic.icon("afg") }}</span>
+    <span class="kpi-value kpi-value-text">{{ t("afg-kind-" ~ console.afg.kind) }}</span>
+    <span class="kpi-note">{% if console.afg.ready %}{{ t("afg-ready") }}{% elif console.afg.kind == "off" %}{{ t("afg-off-note") }}{% else %}{{ t("afg-not-ready") }}{% endif %}</span>
   </a>
 </div>
 {% endif %}

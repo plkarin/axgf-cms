@@ -284,6 +284,11 @@ pub struct Site {
     /// one does not need it pasted again. A public key: nothing secret.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub export_recipient: String,
+    /// Where the Artificial family genealogist's computing comes from
+    /// (docs/adr/0023). Its API key is a secret of the same kind as a sign-in
+    /// service's, kept here for the same reasons.
+    #[serde(default, skip_serializing_if = "crate::afg::Config::is_default")]
+    pub afg: crate::afg::Config,
 }
 
 impl Site {

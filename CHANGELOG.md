@@ -138,6 +138,11 @@ window, a brain on disk for each account that talks to it, and who may.
 
 ### Fixed
 
+- **pulldown-cmark 0.13.6** (RUSTSEC-2026-0433, published on 28 October):
+  0.13.5 parses nested image wikilinks in quadratic time. This application
+  never turns wikilinks on: notes and the AFG's answers use tables and
+  strikethrough only. But `cargo audit` failed on the version, and so did
+  CI. Only the lock file changes.
 - A template that failed inside an include logged only "could not render
   include"; the error now carries every cause beneath it.
 - The older relationships editor rebuilt a union from its form, and dropped

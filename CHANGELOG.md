@@ -4,18 +4,23 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] — 2026-11-02
 
-Kinship: how any two people of the family are related, every relative of
-one, and the ties a culture makes by rite and custom; polygamous unions
-told apart from a couple; and the emblem of a family and of the archive (the
-operator's requests of 1 November 2026, docs/adr/0020 to 0022). Every bundle
-stays valid AXGF 1.1. Ties of rite, polygamous unions and emblems use 1.1's
-own fields and this application's extensions, and axgf-spec proposals 0002
-to 0004 ask 1.2 to name them. Then the first part of the Artificial family
-genealogist (the operator's requests of 2 November 2026, docs/adr/0023 and
-0024): where its computing comes from, a test whose result opens in a
-window, a brain on disk for each account that talks to it, and who may.
+Kinship, and the first part of the Artificial family genealogist (the
+operator's requests of 1 and 2 November 2026, docs/adr/0020 to 0024).
+
+- **Kinship:** how any two people of the family are related, every relative
+  of one, and the ties a culture makes by rite and custom.
+- **Unions and emblems:** polygamous unions told apart from a couple, and the
+  emblem of a family and of the archive.
+- **The AFG:** where its computing comes from, a test whose result opens in a
+  window, a brain on disk for each account that talks to it, which each
+  account sees and forgets on its own page, and who may talk to it.
+
+Every bundle stays valid AXGF 1.1. Ties of rite, polygamous unions and
+emblems use 1.1's own fields and this application's extensions, and
+axgf-spec proposals 0002 to 0004 ask 1.2 to name them. The server's settings
+do not change, and the AFG stays off until an administrator sets it up.
 
 ### Added
 
@@ -4316,7 +4321,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.1.0
 [1.0.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0
 [0.6.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.6.0
 [0.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.5.0

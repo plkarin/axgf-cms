@@ -1,6 +1,6 @@
 # ADR 0022 — A family's emblem, and the archive's
 
-**Status:** accepted (2026-11-01) · **Builds on:** the person's avatar
+**Status:** accepted, v1.1.0 (2026-11-01) · **Builds on:** the person's avatar
 (`src/avatar.rs`), AXGF 1.0 §3 (manifest), §4.2 (family documents), §5.5
 (documents) · **Proposes:** axgf-spec proposals/0004 · **Applies to:**
 `src/emblem.rs`, `src/access.rs`, `src/render.rs`, `src/person.rs`,

@@ -184,7 +184,7 @@ kept with the person they belong to.
 |---|---|
 | [![The Kinship tab of Lucien Delaunay's record: Catherine Bernard chosen in the list, "First cousin once removed of Lucien Delaunay", their shared ancestors Henri Delaunay and Hélène Rouxel, and the link step by step: Lucien, his father Jean, his father Henri, his son Louis, his daughter Augustine, her daughter Catherine; kinship in the 5th degree. Below, every relative of Lucien Delaunay, 234 people, by group](docs/screenshots/kinship.png)](docs/screenshots/kinship.png) | [![The Rite and custom section of the same record: his godmother Hélène Rouxel (baptism, Christian), his milk sister Augustine Delaunay with the Arabic words for it (milk siblings, Islamic), and his namesake Lucien Riou (ndoyi, somo, African), each in a dotted frame](docs/screenshots/rites.png)](docs/screenshots/rites.png) |
 
-A record with any family or tie of rite has a **Kinship** tab, and so does
+*(New in 1.1.0.)* A record with any family or tie of rite has a **Kinship** tab, and so does
 the record that opens beside the river. It holds two tools.
 
 - **How are they related?** Choose anyone of the family in the list. The
@@ -298,7 +298,7 @@ draw ties of rite.
 
 ### Polygamous unions
 
-A polygamous union is never read as a couple writ large. The archive reads
+*(New in 1.1.0.)* A polygamous union is never read as a couple writ large. The archive reads
 it as **one marriage per spouse** (AXGF 1.0 §4.2.2):
 
 - **The person at the centre** is married to each of the others. The
@@ -332,7 +332,7 @@ proposal 0003 asks AXGF 1.2 to define these fields.
 |---|---|
 | [![The overview under Canopée: an invented coat of arms, azure with a golden chevron between three golden stars, stands in the corner of the hero and again, small, beside the name ax·genealogy in the bar at the top](docs/screenshots/emblem-archive.jpg)](docs/screenshots/emblem-archive.jpg) | [![Lucien Delaunay's union with Zofia Zając on his record: beside the "married" chip, the couple's own invented arms, red with a silver bend and two roundels, and below them their three children](docs/screenshots/emblem-family.png)](docs/screenshots/emblem-family.png) |
 
-**The archive** can have a coat of arms, or any picture that stands for the
+*(New in 1.1.0.)* **The archive** can have a coat of arms, or any picture that stands for the
 family it is about. It shows at the head of every page, beside the name of
 the application, and above the family's name on the overview, for every
 visitor. An administrator sets it in *Administration → Archive*, with
@@ -466,7 +466,7 @@ each would say first.
 
 ### The Artificial family genealogist (AFG)
 
-*(New after 1.0.0: the first part.)* An agent that reads the family's
+*(New in 1.1.0: the first part.)* An agent that reads the family's
 archive and answers about it. It draws on two kinds of knowledge:
 
 - **The archive** is what it knows of the family.
@@ -624,23 +624,28 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.0.0**, the first major version. Over v0.6.0 it
-adds:
+The latest release is **v1.1.0**. Over v1.0.0 it adds:
 
-- the tree page as a family chart read down the page: a column per
-  generation, the line to each child in their colour (a son blue, a daughter
-  red) and, for an adoption, a fostering or a step-child, its pattern;
-  compact cards that open on the portrait, the dates and the record; nobody
-  cut off at any width;
-- on a phone, the tree as a column of generations, and in every view a first
-  tap on a person that names them;
-- five themes redrawn: Canopy's valley seen at 60°, its water and its
-  herds alive; Clarity's funnel in rings, names on the glass; Fusion in
-  right angles, orange down and green up; Galaxy's two sides, fields and a
-  spiral galaxy; Genealogy closer to its tree.
+- **kinship**: how any two people of the family are related, step by step,
+  and every relative of one, the words agreeing in fourteen languages;
+- **27 ties of rite and custom** in ten traditions (godparents, kum,
+  koumbaros, milk kinship, kafala, the namesake…), kept apart from the family
+  and drawn dotted;
+- **polygamous unions** told apart from a couple, one marriage per spouse;
+- **the emblem** of a family and of the archive;
+- **the Artificial family genealogist**, first part:
+  - where its computing comes from: Ollama, OpenAI, Mistral, vLLM, Claude,
+    Gemini, or Claude Code, Codex and OpenCode on the machine;
+  - a test whose result opens in a window;
+  - a brain on disk for each account that talks to it, which each account
+    sees and forgets on its own page;
+  - who may talk to it.
 
-v0.6.0 brought the merge of two records, the GEDCOM conversion of axgf-rs
-0.6.1 and records that agree with the people they describe. v0.5.0 brought
+v1.0.0, the first major version, brought the tree page as a family chart
+read down the page, the column of generations on a phone, and five themes
+redrawn. v0.6.0 brought the merge of two records, the GEDCOM conversion of
+axgf-rs 0.6.1 and records that agree with the people they describe. v0.5.0
+brought
 the living river and its zoom, the six themes, fourteen languages, the
 family's notes, the administration console, registration and sign-in with a
 service, and the GEDCOM reader for every version.
@@ -661,7 +666,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.0.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.1.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -869,7 +874,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.0.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.1.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.1.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

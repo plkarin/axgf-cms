@@ -1,6 +1,6 @@
 # ADR 0020 — Kinship: how two people are related, every relative, and the ties of rite
 
-**Status:** accepted (2026-11-01) · **Builds on:** ADR 0019 (the tree page),
+**Status:** accepted, v1.1.0 (2026-11-01) · **Builds on:** ADR 0019 (the tree page),
 AXGF 1.1 §5.13 (`lineage`, Link `relation`) · **Applies to:**
 `src/kinship.rs`, `src/kinship_text.rs`, `src/rites.rs`, `src/person.rs`,
 `src/chart.rs`, `src/tree.rs`, `src/routes/public.rs`,

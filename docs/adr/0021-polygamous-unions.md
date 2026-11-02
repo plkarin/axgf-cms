@@ -1,6 +1,6 @@
 # ADR 0021 — Polygamous unions: one marriage per spouse, never a "full" union
 
-**Status:** accepted (2026-11-01) · **Builds on:** AXGF 1.0 §4.2.1–§4.2.2,
+**Status:** accepted, v1.1.0 (2026-11-01) · **Builds on:** AXGF 1.0 §4.2.1–§4.2.2,
 ADR 0020 (kinship) · **Proposes:** axgf-spec proposals/0003 · **Applies
 to:** `src/unions.rs`, `src/kinship.rs`, `src/kinship_text.rs`,
 `src/person.rs`, `src/tree.rs`, `src/chart.rs`, `src/river.rs`,

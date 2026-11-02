@@ -1,6 +1,6 @@
 # ADR 0024 — The AFG's brains, its window, and who may talk to it
 
-**Status:** accepted (2026-11-02) · **Builds on:** docs/adr/0023 (where the
+**Status:** accepted, v1.1.0 (2026-11-02) · **Builds on:** docs/adr/0023 (where the
 AFG's computing comes from, and its test) · **Applies to:** `src/brain.rs`,
 `src/afg.rs`, `src/acl.rs`, `src/render.rs`, `src/routes/afg.rs`,
 `src/routes/admin.rs`, `src/routes/account.rs`, `templates/account.html`,

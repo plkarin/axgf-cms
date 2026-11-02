@@ -19,13 +19,35 @@
 //! The AFG writes to its memory the one way every kind of computing can: it
 //! ends an answer with a `<memory>` block, one fact a line
 //! ([`take_memory`]), which is taken out of the answer and kept here.
+//!
+//! Each account sees its own brain on its account page and forgets what it
+//! chooses: a fact, an exchange, or all of it (2026-11-02, docs/adr/0024 §6).
 
 use std::fs;
 use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, MutexGuard};
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+
+/// One writer at a time over the brains of this process: an answer being
+/// kept and a fact being forgotten must not both rewrite the same file.
+static WRITING: Mutex<()> = Mutex::new(());
+
+fn writing() -> MutexGuard<'static, ()> {
+    WRITING.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+/// A line's mark, to name it in a form without saying it.
+fn mark(line: &str) -> String {
+    Sha256::digest(line.as_bytes())
+        .iter()
+        .take(8)
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
 
 /// How much of `memory.md` goes back to the AFG with each question: the
 /// most recent part when it is longer.
@@ -108,6 +130,23 @@ pub struct Recall {
     pub memory: String,
     /// The last exchanges, oldest first, each answer cut short.
     pub recent: Vec<Exchange>,
+}
+
+/// A fact as its owner sees it, to forget by its mark.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Fact {
+    pub id: String,
+    /// The day it was kept, `YYYY-MM-DD`.
+    pub date: String,
+    pub text: String,
+}
+
+/// An exchange as its owner sees it, to forget by its mark.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct Listed {
+    pub id: String,
+    #[serde(flatten)]
+    pub exchange: Exchange,
 }
 
 /// A brain at a glance, for the room.
@@ -249,17 +288,30 @@ impl Brains {
         })
     }
 
-    /// The account's brain at a glance, without making it.
-    pub fn peek(&self, owner: &Owner) -> Option<Stats> {
+    /// The account's brain if it has one, without making it: never another
+    /// account's under the same name.
+    pub fn existing(&self, owner: &Owner) -> Option<Brain> {
         let dir = self.root.join(folder_name(&owner.name));
         let card = read_card(&dir)?;
-        (card.account_id == owner.id).then(|| {
-            Brain {
-                dir,
-                owner: owner.clone(),
-            }
-            .stats()
+        (card.account_id == owner.id).then(|| Brain {
+            dir,
+            owner: owner.clone(),
         })
+    }
+
+    /// The account's brain at a glance, without making it.
+    pub fn peek(&self, owner: &Owner) -> Option<Stats> {
+        self.existing(owner).map(|b| b.stats())
+    }
+
+    /// Forget everything the AFG remembers of the account: its folder goes,
+    /// and its next exchange starts a new one. Whether there was one.
+    pub fn forget_all(&self, owner: &Owner) -> io::Result<bool> {
+        let _w = writing();
+        match self.existing(owner) {
+            Some(b) => fs::remove_dir_all(&b.dir).map(|()| true),
+            None => Ok(false),
+        }
     }
 
     /// How many accounts have a brain.
@@ -343,9 +395,97 @@ impl Brain {
         Recall { memory, recent }
     }
 
+    /// Write `memory.md` whole: its heading, then these facts.
+    fn write_memory(&self, facts: &[String]) -> io::Result<()> {
+        let body = format!(
+            "# What the AFG remembers of {}\n\n{}\n",
+            self.owner.name,
+            facts.join("\n")
+        );
+        write_private(&self.dir.join(MEMORY), body.as_bytes())
+    }
+
+    /// The facts, oldest first, each with its mark.
+    pub fn listed_facts(&self) -> Vec<Fact> {
+        self.facts()
+            .iter()
+            .map(|line| {
+                let rest = line.trim_start_matches("- ");
+                let (date, text) = match rest.strip_prefix('[').and_then(|r| r.split_once("] ")) {
+                    Some((d, t)) => (d.to_string(), t.to_string()),
+                    None => (String::new(), rest.to_string()),
+                };
+                Fact {
+                    id: mark(line),
+                    date,
+                    text,
+                }
+            })
+            .collect()
+    }
+
+    /// The exchanges, most recent first, each with its mark: at most `n` of
+    /// them, and how many there are in all.
+    pub fn listed_exchanges(&self, n: usize) -> (Vec<Listed>, usize) {
+        let text = fs::read_to_string(self.dir.join(CONVERSATIONS)).unwrap_or_default();
+        let lines: Vec<&str> = text.lines().filter(|l| !l.trim().is_empty()).collect();
+        let listed = lines
+            .iter()
+            .rev()
+            .take(n)
+            .filter_map(|l| {
+                serde_json::from_str(l).ok().map(|exchange| Listed {
+                    id: mark(l),
+                    exchange,
+                })
+            })
+            .collect();
+        (listed, lines.len())
+    }
+
+    /// Forget one fact, by its mark: it is no longer told to the AFG.
+    /// Whether it was there.
+    pub fn forget_fact(&self, id: &str) -> io::Result<bool> {
+        let _w = writing();
+        let facts = self.facts();
+        let kept: Vec<String> = facts.iter().filter(|l| mark(l) != id).cloned().collect();
+        if kept.len() == facts.len() {
+            return Ok(false);
+        }
+        self.write_memory(&kept)?;
+        Ok(true)
+    }
+
+    /// Forget one exchange, by its mark: it is no longer kept, nor told to
+    /// the AFG. Whether it was there.
+    pub fn forget_exchange(&self, id: &str) -> io::Result<bool> {
+        let _w = writing();
+        let path = self.dir.join(CONVERSATIONS);
+        let text = match fs::read_to_string(&path) {
+            Ok(t) => t,
+            Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(false),
+            Err(e) => return Err(e),
+        };
+        let mut found = false;
+        let mut out = String::with_capacity(text.len());
+        for line in text.lines() {
+            if mark(line) == id {
+                found = true;
+                continue;
+            }
+            out.push_str(line);
+            out.push('\n');
+        }
+        if found {
+            write_private(&path, out.as_bytes())?;
+        }
+        Ok(found)
+    }
+
     /// Keep an exchange, and the facts the AFG asked to remember from it.
     /// Returns the facts kept: those it did not already hold.
     pub fn remember(&self, exchange: &Exchange, facts: &[String]) -> io::Result<Vec<String>> {
+        let _w = writing();
         let mut known = self.facts();
         let held: Vec<String> = known.iter().map(|l| fact_text(l).to_lowercase()).collect();
         let date: String = exchange.at.chars().take(10).collect();
@@ -368,12 +508,7 @@ impl Brain {
                 size -= known[0].len() + 1;
                 known.remove(0);
             }
-            let body = format!(
-                "# What the AFG remembers of {}\n\n{}\n",
-                self.owner.name,
-                known.join("\n")
-            );
-            write_private(&self.dir.join(MEMORY), body.as_bytes())?;
+            self.write_memory(&known)?;
         }
         let mut entry = exchange.clone();
         entry.remembered = kept.clone();
@@ -554,6 +689,54 @@ mod tests {
             let mode = fs::metadata(b.dir().join(f)).unwrap().permissions().mode() & 0o777;
             assert_eq!(mode, 0o600, "{f}");
         }
+    }
+
+    #[test]
+    fn its_owner_sees_its_brain_and_forgets_what_they_choose() {
+        let dir = scratch("forget");
+        let brains = Brains::beside(&dir.join("family.axgf"));
+        let o = owner("a1", "marie");
+        assert!(brains.existing(&o).is_none());
+        let b = brains.of(&o).unwrap();
+        for (i, q) in ["Q1", "Q2", "Q3"].iter().enumerate() {
+            let ex = Exchange {
+                at: format!("2026-11-0{}T10:00:00Z", i + 1),
+                context: "test".into(),
+                question: q.to_string(),
+                answer: "A".into(),
+                ..Exchange::default()
+            };
+            b.remember(&ex, &[format!("Fact {i}")]).unwrap();
+        }
+        let facts = b.listed_facts();
+        let texts: Vec<&str> = facts.iter().map(|f| f.text.as_str()).collect();
+        assert_eq!(texts, ["Fact 0", "Fact 1", "Fact 2"]);
+        assert_eq!(facts[0].date, "2026-11-01");
+        let (ex, total) = b.listed_exchanges(2);
+        assert_eq!(total, 3);
+        let questions: Vec<&str> = ex.iter().map(|e| e.exchange.question.as_str()).collect();
+        assert_eq!(questions, ["Q3", "Q2"], "most recent first");
+
+        assert!(b.forget_fact(&facts[1].id).unwrap());
+        assert!(!b.forget_fact(&facts[1].id).unwrap(), "already forgotten");
+        assert!(!b.recall().memory.contains("Fact 1"), "no longer told");
+        assert!(b.recall().memory.contains("Fact 2"));
+        assert!(b.forget_exchange(&ex[0].id).unwrap());
+        assert!(b.recall().recent.iter().all(|e| e.question != "Q3"));
+        assert_eq!(
+            b.stats(),
+            Stats {
+                exchanges: 2,
+                facts: 2
+            }
+        );
+
+        // Another account under the same name neither sees nor forgets it.
+        assert!(brains.existing(&owner("other", "marie")).is_none());
+        assert!(!brains.forget_all(&owner("other", "marie")).unwrap());
+        assert!(brains.forget_all(&o).unwrap());
+        assert!(brains.existing(&o).is_none() && !b.dir().exists());
+        assert!(!brains.forget_all(&o).unwrap(), "nothing left to forget");
     }
 
     #[test]

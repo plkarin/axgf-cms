@@ -1,6 +1,11 @@
 //! An account's own page (2026-10-23): who it is, and which person in the
 //! tree it says it is. Any signed-in account has one, whatever its role; the
 //! link to a record is each account's own word and nobody checks it.
+//!
+//! And what the AFG remembers of it, its brain (2026-11-02, docs/adr/0024
+//! §6): the account's own to see and to forget, a fact, an exchange or all
+//! of it. Nobody sees another account's brain here, administrators
+//! included.
 
 use axum::extract::{Form, Query, State};
 use axum::http::{HeaderMap, StatusCode};
@@ -12,7 +17,11 @@ use serde_json::json;
 use crate::routes::Shared;
 use crate::{auth, render, view};
 
-/// `?done=linked|unlinked`: back from the form.
+/// How many of an account's exchanges with the AFG its page lists, the most
+/// recent first.
+const EXCHANGES_LISTED: usize = 200;
+
+/// `?done=linked|unlinked|forgotten|forgotten-all|already`: back from a form.
 #[derive(Deserialize, Default)]
 pub struct AccountQuery {
     #[serde(default)]
@@ -33,6 +42,9 @@ pub async fn page(
     let notice = match q.done.as_deref() {
         Some("linked") => Some(chrome.t("account-person-linked")),
         Some("unlinked") => Some(chrome.t("account-person-unlinked")),
+        Some("forgotten") => Some(chrome.t("account-brain-forgotten")),
+        Some("forgotten-all") => Some(chrome.t("account-brain-forgotten-all")),
+        Some("already") => Some(chrome.t("account-brain-already")),
         _ => None,
     };
     render_page(&state, &chrome, &viewer, notice, None, StatusCode::OK)
@@ -66,6 +78,31 @@ fn render_page(
             });
         (options, person)
     });
+    // The AFG's brain of this account, and only of this one.
+    let brain = user.as_ref().map(|u| {
+        let b =
+            crate::brain::Brains::beside(state.bundle_path()).existing(&crate::brain::Owner::of(u));
+        let (listed, total) = b
+            .as_ref()
+            .map(|b| b.listed_exchanges(EXCHANGES_LISTED))
+            .unwrap_or_default();
+        let exchanges: Vec<serde_json::Value> = listed
+            .iter()
+            .map(|l| {
+                let mut v = serde_json::to_value(l).unwrap_or_default();
+                v["answer_html"] = json!(crate::notes::to_html(&l.exchange.answer, &|_| None));
+                v
+            })
+            .collect();
+        json!({
+            "allowed": u.afg,
+            "exists": b.is_some(),
+            "facts": b.as_ref().map(|b| b.listed_facts()).unwrap_or_default(),
+            "older": total.saturating_sub(exchanges.len()),
+            "total": total,
+            "exchanges": exchanges,
+        })
+    });
     let mut resp = render::page_with(
         chrome,
         "account.html",
@@ -80,6 +117,7 @@ fn render_page(
             })),
             person,
             options,
+            brain,
             notice,
             error,
         },
@@ -180,4 +218,95 @@ pub async fn person(
         "/account?done=unlinked"
     })
     .into_response()
+}
+
+#[derive(Deserialize, Default)]
+pub struct ForgetForm {
+    /// A fact's mark, from the list.
+    #[serde(default)]
+    fact: Option<String>,
+    /// An exchange's mark, from the list.
+    #[serde(default)]
+    exchange: Option<String>,
+    /// Present to forget everything, with `confirm`.
+    #[serde(default)]
+    all: Option<String>,
+    #[serde(default)]
+    confirm: Option<String>,
+}
+
+/// `POST /account/brain/forget` — forget a fact, an exchange, or everything
+/// the AFG remembers of this account (docs/adr/0024 §6). Whose brain is the
+/// session's account, never a field of the form.
+pub async fn forget(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(form): Form<ForgetForm>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    if !viewer.signed_in() {
+        return Redirect::to("/admin/login").into_response();
+    }
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
+    let Some(user) = viewer.user.as_ref() else {
+        // The emergency token is no one: it has no brain.
+        return render_page(
+            &state,
+            &chrome,
+            &viewer,
+            None,
+            Some(chrome.t("account-emergency-page")),
+            StatusCode::BAD_REQUEST,
+        );
+    };
+    let owner = crate::brain::Owner::of(user);
+    let brains = crate::brain::Brains::beside(state.bundle_path());
+    let said = |done: bool, what: &'static str| if done { what } else { "already" };
+    let (what, outcome) = if form.all.is_some() {
+        if form.confirm.is_none() {
+            return render_page(
+                &state,
+                &chrome,
+                &viewer,
+                None,
+                Some(chrome.t("account-brain-confirm-needed")),
+                StatusCode::BAD_REQUEST,
+            );
+        }
+        (
+            "all",
+            brains.forget_all(&owner).map(|d| said(d, "forgotten-all")),
+        )
+    } else {
+        match (
+            brains.existing(&owner),
+            form.fact.as_deref(),
+            form.exchange.as_deref(),
+        ) {
+            (Some(b), Some(id), _) => ("fact", b.forget_fact(id).map(|d| said(d, "forgotten"))),
+            (Some(b), None, Some(id)) => (
+                "exchange",
+                b.forget_exchange(id).map(|d| said(d, "forgotten")),
+            ),
+            _ => ("nothing", Ok("already")),
+        }
+    };
+    match outcome {
+        Ok(done) => {
+            // That the account forgot, and what kind of thing; never what.
+            tracing::info!(account = %user.username, what, done, "AFG brain: forgotten by its owner");
+            Redirect::to(&format!("/account?done={done}#account-brain")).into_response()
+        }
+        Err(e) => {
+            tracing::error!(error = %e, account = %user.username, "AFG brain: could not forget");
+            render_page(
+                &state,
+                &chrome,
+                &viewer,
+                None,
+                Some(chrome.t_args("account-brain-error", &[("error", e.to_string().into())])),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
 }

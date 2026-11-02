@@ -5760,3 +5760,33 @@ accounts-afg-allowed = يمكنه التحدث إلى النسّابة الذك�
 accounts-afg-yes = نعم
 accounts-afg-no = لا
 accounts-afg-hint = معطّل ما لم يُحدَّد. ما يتذكره النسّابة الذكي عن هذا الحساب يُحفظ في ذاكرة خاصة به: مجلد على القرص بجانب الأرشيف.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = ذاكرة النسّابة الذكي الخاصة بك
+account-brain-intro = ما يتذكره النسّابة الذكي عنك: الحقائق التي اختار الاحتفاظ بها، ومحادثاتك معه. يُعطى الاثنان له من جديد مع كل سؤال تطرحه. اجعله ينسى ما لم تعد تريده أن يعرفه. لا يرى ذلك على الموقع أحد غيرك.
+account-brain-no-access = النسّابة الذكي غير متاح لحسابك: يقرر ذلك مسؤول في صفحة الحسابات.
+account-brain-none = لا يتذكر النسّابة الذكي شيئًا عنك بعد.
+account-brain-facts = ما يتذكره
+account-brain-facts-none = لم يحتفظ بأي حقيقة عنك.
+account-brain-exchanges = محادثاتك معه
+account-brain-exchanges-none = لا توجد محادثات محفوظة.
+account-brain-older = { $n ->
+        [zero] لا محادثات أقدم محفوظة.
+        [one] محادثة أقدم واحدة محفوظة وغير مدرجة هنا.
+        [two] محادثتان أقدم محفوظتان وغير مدرجتين هنا.
+        [few] { $n } محادثات أقدم محفوظة وغير مدرجة هنا.
+        [many] { $n } محادثةً أقدم محفوظة وغير مدرجة هنا.
+       *[other] { $n } محادثة أقدم محفوظة وغير مدرجة هنا.
+    }
+account-brain-context-test = اختبار في قاعة النسّابة الذكي
+account-brain-answer = جوابه
+account-brain-forget = نسيان
+account-brain-forget-all = نسيان كل شيء…
+account-brain-forget-all-confirm = نعم، انسَ كل ما يتذكره النسّابة الذكي عني
+account-brain-forget-all-button = نسيان كل شيء
+account-brain-forgotten = نُسي: لن يُخبَر النسّابة الذكي به بعد الآن.
+account-brain-forgotten-all = لم يعد النسّابة الذكي يتذكر شيئًا عنك.
+account-brain-already = كان ذلك منسيًّا من قبل.
+account-brain-confirm-needed = حدّد المربع لنسيان كل شيء.
+account-brain-error = لم يُنسَ شيء: { $error }
+afg-brain-see = عرض ونسيان

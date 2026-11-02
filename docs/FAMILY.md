@@ -13,6 +13,7 @@ and a password. Keep this page open beside the site the first time.
 - [Godparents and the other ties of rite](#godparents-and-the-other-ties-of-rite)
 - [A polygamous union](#a-polygamous-union)
 - [The family's emblem](#the-familys-emblem)
+- [What the AFG remembers of you](#what-the-afg-remembers-of-you)
 - [Correcting something](#correcting-something)
 - [Adding a photograph](#adding-a-photograph)
 - [The little "confidence" marker](#the-little-confidence-marker)
@@ -238,6 +239,23 @@ that stands for it.
 A coat of arms is shown whole, never cut to fit. Who can see a family's
 emblem is the same as who can see its people; the archive's emblem is shown
 to every visitor.
+
+## What the AFG remembers of you
+
+The **AFG**, the Artificial family genealogist, is an assistant that reads
+the family's archive and answers questions about it. Whoever looks after the
+site decides which accounts may talk to it.
+
+It keeps a memory of each person who talks to it, its *brain*: a few facts
+it chose to remember about you, and your last exchanges with it. They help
+it pick up where you left off. To see them, open **My account**, at the top
+right, then **Your AFG's brain**.
+
+- **Forget** beside a fact or an exchange removes it. The AFG will no longer
+  be told it.
+- **Forget everything…** removes all of it, once you tick the box.
+
+Nobody else sees your brain on the site, not even an administrator.
 
 ## Correcting something
 

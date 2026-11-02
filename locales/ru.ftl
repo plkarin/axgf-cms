@@ -5572,3 +5572,31 @@ accounts-afg-allowed = Может говорить с ИИ-генеалогом
 accounts-afg-yes = да
 accounts-afg-no = нет
 accounts-afg-hint = Выключено, пока не отмечено. То, что ИИ-генеалог помнит об этой учётной записи, хранится в её собственной памяти — папке на диске рядом с архивом.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = Память вашего ИИ-генеалога
+account-brain-intro = Что ИИ-генеалог помнит о вас: факты, которые он решил сохранить, и ваши разговоры с ним. И то и другое он получает снова с каждым вашим вопросом. Заставьте его забыть то, что он больше не должен знать. На сайте это видите только вы.
+account-brain-no-access = ИИ-генеалог не открыт для вашей учётной записи: это решает администратор на странице учётных записей.
+account-brain-none = ИИ-генеалог пока ничего о вас не помнит.
+account-brain-facts = Что он помнит
+account-brain-facts-none = Он не сохранил о вас ни одного факта.
+account-brain-exchanges = Ваши разговоры с ним
+account-brain-exchanges-none = Ни один разговор не сохранён.
+account-brain-older = { $n ->
+        [one] { $n } более старый разговор сохранён и здесь не показан.
+        [few] { $n } более старых разговора сохранены и здесь не показаны.
+        [many] { $n } более старых разговоров сохранены и здесь не показаны.
+       *[other] { $n } более старого разговора сохранены и здесь не показаны.
+    }
+account-brain-context-test = Проверка в разделе ИИ-генеалога
+account-brain-answer = Его ответ
+account-brain-forget = Забыть
+account-brain-forget-all = Забыть всё…
+account-brain-forget-all-confirm = Да, забыть всё, что ИИ-генеалог помнит обо мне
+account-brain-forget-all-button = Забыть всё
+account-brain-forgotten = Забыто: ИИ-генеалогу это больше не будет сообщаться.
+account-brain-forgotten-all = ИИ-генеалог больше ничего о вас не помнит.
+account-brain-already = Это уже забыто.
+account-brain-confirm-needed = Отметьте поле, чтобы забыть всё.
+account-brain-error = Ничего не забыто: { $error }
+afg-brain-see = Посмотреть и забыть

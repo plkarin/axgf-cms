@@ -46,6 +46,8 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 |---|---|
 | `GET /admin` | Counts, bundle completeness, validation report, operations |
 | `GET/POST /admin/login`, `POST /admin/logout` | Session |
+| `GET /account`, `POST /account/person` | The signed-in account's own page: who it is, which person in the tree it says it is, and its AFG brain (docs/adr/0024 §6) — *any account* |
+| `POST /account/brain/forget` | Forget one fact (`fact=<mark>`) or one exchange (`exchange=<mark>`) of the AFG's brain of the signed-in account, or all of it (`all=1&confirm=on`). A mark is the first 16 hex digits of the line's SHA-256. Always the session's own brain; answers `303` to `/account?done=forgotten|forgotten-all|already#account-brain` — *any account* |
 | `GET /admin/:kind` | Paginated, filterable listing |
 | `GET /admin/:kind/new`, `POST /admin/:kind` | Create |
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |

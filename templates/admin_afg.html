@@ -45,7 +45,7 @@
     <span class="kpi-label">{{ t("afg-kpi-brain") }}</span>
     <span class="kpi-icon">{{ ic.icon("brain") }}</span>
     <span class="kpi-value kpi-value-text">{% if brain %}{{ t("afg-brain-exchanges", n=brain.exchanges) }}{% else %}—{% endif %}</span>
-    <span class="kpi-note">{% if brain %}{{ t("afg-brain-note", facts=brain.facts, brains=brain_count) }}{% else %}{{ t("afg-brain-no-account") }}{% endif %}</span>
+    <span class="kpi-note">{% if brain %}{{ t("afg-brain-note", facts=brain.facts, brains=brain_count) }}{% if brain.exchanges or brain.facts %} · <a href="/account#account-brain">{{ t("afg-brain-see") }}</a>{% endif %}{% else %}{{ t("afg-brain-no-account") }}{% endif %}</span>
   </div>
   <div class="kpi">
     <span class="kpi-label">{{ t("afg-kpi-last") }}</span>

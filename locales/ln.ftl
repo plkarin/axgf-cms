@@ -4958,3 +4958,29 @@ accounts-afg-allowed = Akoki kosolola na AFG
 accounts-afg-yes = ɛɛ
 accounts-afg-no = te
 accounts-afg-hint = Ekangami soki otii elembo te. Oyo AFG ebombaka na ntina na compte oyo ezali na bɔ́ngɔ na yango moko: dosie na disque pembeni ya ebombelo.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = Bɔ́ngɔ ya AFG na yo
+account-brain-intro = Oyo AFG ekanisaka na ntina na yo: makambo oyo eponaki kobomba, mpe masolo na yo elongo na yango. Nyonso mibale epesamaka na yango lisusu na motuna nyonso ya yo. Tika ebosana oyo olingi te ete eyeba lisusu. Na site, moto mosusu te amonaka yango, kaka yo.
+account-brain-no-access = AFG efungwami te mpo na compte na yo: mokambi moko nde azwaka mokano na lokasa ya Ba-compte.
+account-brain-none = AFG ekanisi naino eloko te na ntina na yo.
+account-brain-facts = Oyo ekanisaka
+account-brain-facts-none = Ebombi likambo moko te na ntina na yo.
+account-brain-exchanges = Masolo na yo elongo na yango
+account-brain-exchanges-none = Lisolo moko te ebombami.
+account-brain-older = { $n ->
+        [one] Lisolo { $n } ya kala ebombami mpe emonisami awa te.
+       *[other] Masolo { $n } ya kala ebombami mpe emonisami awa te.
+    }
+account-brain-context-test = Bomeki na ndako ya AFG
+account-brain-answer = Eyano na yango
+account-brain-forget = Bosana
+account-brain-forget-all = Bosana nyonso…
+account-brain-forget-all-confirm = Ɛɛ, bosana nyonso oyo AFG ekanisaka na ntina na ngai
+account-brain-forget-all-button = Bosana nyonso
+account-brain-forgotten = Ebosani: bakoyebisa yango lisusu AFG te.
+account-brain-forgotten-all = AFG ekanisaka lisusu eloko te na ntina na yo.
+account-brain-already = Yango esilaki kobosana.
+account-brain-confirm-needed = Tia elembo na kesi mpo na kobosana nyonso.
+account-brain-error = Eloko moko te ebosani: { $error }
+afg-brain-see = Tala mpe bosana

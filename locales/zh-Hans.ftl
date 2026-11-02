@@ -4834,3 +4834,26 @@ accounts-afg-allowed = 可以与 AI 家谱师对话
 accounts-afg-yes = 是
 accounts-afg-no = 否
 accounts-afg-hint = 除非勾选，否则关闭。AI 家谱师关于该账户的记忆保存在它自己的记忆中：归档旁边磁盘上的一个文件夹。
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = 您的 AI 家谱师的记忆
+account-brain-intro = AI 家谱师关于您记住的内容：它选择保留的事实，以及您与它的对话。每次您提问时，这两者都会再次提供给它。请让它忘记您不再希望它知道的内容。在本站上，只有您能看到这些。
+account-brain-no-access = 您的账户不能使用 AI 家谱师：由管理员在账户页面决定。
+account-brain-none = AI 家谱师还没有记住关于您的任何内容。
+account-brain-facts = 它记住的内容
+account-brain-facts-none = 它没有保留关于您的任何事实。
+account-brain-exchanges = 您与它的对话
+account-brain-exchanges-none = 没有保留任何对话。
+account-brain-older = 另有 { $n } 次较早的对话已保留，未在此列出。
+account-brain-context-test = 在 AI 家谱师页面中的测试
+account-brain-answer = 它的回答
+account-brain-forget = 忘记
+account-brain-forget-all = 全部忘记…
+account-brain-forget-all-confirm = 是的，忘记 AI 家谱师记住的关于我的一切
+account-brain-forget-all-button = 全部忘记
+account-brain-forgotten = 已忘记：AI 家谱师将不再得知此内容。
+account-brain-forgotten-all = AI 家谱师不再记得关于您的任何内容。
+account-brain-already = 这已经被忘记了。
+account-brain-confirm-needed = 请勾选此框以全部忘记。
+account-brain-error = 没有忘记任何内容：{ $error }
+afg-brain-see = 查看并忘记

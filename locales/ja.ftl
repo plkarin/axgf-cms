@@ -4728,3 +4728,26 @@ accounts-afg-allowed = AI 家系研究家と話せる
 accounts-afg-yes = はい
 accounts-afg-no = いいえ
 accounts-afg-hint = チェックしない限りオフです。AI 家系研究家がこのアカウントについて覚えていることは、専用の記憶（アーカイブの隣にあるディスク上のフォルダー）に保存されます。
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = あなたの AI 家系研究家の記憶
+account-brain-intro = AI 家系研究家があなたについて覚えていること：残すと決めた事実と、あなたとのやり取りです。どちらも、あなたが質問するたびに渡されます。もう知られたくないことは忘れさせてください。サイト上では、あなた以外には見えません。
+account-brain-no-access = あなたのアカウントでは AI 家系研究家を使えません。管理者がアカウントのページで決めます。
+account-brain-none = AI 家系研究家はまだあなたについて何も覚えていません。
+account-brain-facts = 覚えていること
+account-brain-facts-none = あなたについての事実は何も残していません。
+account-brain-exchanges = あなたとのやり取り
+account-brain-exchanges-none = 残っているやり取りはありません。
+account-brain-older = それより古いやり取りが { $n } 件残っていますが、ここには表示していません。
+account-brain-context-test = AI 家系研究家の部屋でのテスト
+account-brain-answer = 回答
+account-brain-forget = 忘れる
+account-brain-forget-all = すべて忘れる…
+account-brain-forget-all-confirm = はい、AI 家系研究家が覚えている私のことをすべて忘れます
+account-brain-forget-all-button = すべて忘れる
+account-brain-forgotten = 忘れました：AI 家系研究家にはもう伝えられません。
+account-brain-forgotten-all = AI 家系研究家はもうあなたについて何も覚えていません。
+account-brain-already = すでに忘れられていました。
+account-brain-confirm-needed = すべて忘れるには、チェックボックスをオンにしてください。
+account-brain-error = 何も忘れられませんでした: { $error }
+afg-brain-see = 見る・忘れる

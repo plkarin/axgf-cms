@@ -451,7 +451,8 @@ It is personal data about a living person. Four things to know:
 
 - **Backups.** The nightly backup does not hold brains. Copy
   `/var/lib/axgf-cms/family.brains` with the rest if you want them kept.
-- **Forgetting.** Forgetting someone is deleting their folder.
+- **Forgetting.** Each person forgets from *My account*: a fact, an
+  exchange, or everything. You can also delete a folder by hand.
 - **A name given again.** The new account starts from nothing. The old
   folder is moved aside under `<name>@<its account>`, and you may delete it.
 - **Who may talk to the AFG** is set for each account on the Accounts page.

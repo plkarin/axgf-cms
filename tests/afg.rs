@@ -764,3 +764,207 @@ async fn the_accounts_page_says_who_may_talk_to_the_afg() {
         body_string(get_with_cookie(&app, "/admin/afg?run=no-such-test", &admin).await).await;
     assert!(room.contains("Tests are kept for the life of the process"));
 }
+
+/// The marks a page names for one kind of thing to forget, in order.
+fn marks(page: &str, what: &str) -> Vec<String> {
+    let needle = format!(r#"name="{what}" value=""#);
+    page.match_indices(&needle)
+        .map(|(i, _)| {
+            page[i + needle.len()..]
+                .chars()
+                .take_while(|c| *c != '"')
+                .collect()
+        })
+        .collect()
+}
+
+#[tokio::test]
+async fn each_account_sees_and_forgets_its_own_brain() {
+    site_secret_in_env();
+    use axgf_cms::acl::Role;
+    let (url, seen) = fake_service(ollama_that_remembers);
+    let (app, bundle, sessions) = app_with(
+        "afg-forget",
+        &[("marie", Role::Admin), ("vera", Role::Viewer)],
+    )
+    .await;
+    let marie = format!("{}; axgf_lang=fr", sessions[0].1);
+    let vera = format!("{}; axgf_lang=fr", sessions[1].1);
+    let vera_id = sessions[1].0.clone();
+
+    // No access and no brain: nothing to show.
+    let page = body_string(get_with_cookie(&app, "/account", &vera).await).await;
+    assert!(
+        !page.contains(r#"id="account-brain""#),
+        "vera may not talk to it yet"
+    );
+    let allow = format!("/admin/users/{vera_id}");
+    post_form_as(
+        &app,
+        &marie,
+        &allow,
+        "role=viewer&status=active&email=&family_scope=&password=&afg=on",
+    )
+    .await;
+    let vera = format!("{}; axgf_lang=fr", sign_in(&app, "vera").await);
+    let page = body_string(get_with_cookie(&app, "/account", &vera).await).await;
+    assert!(
+        page.contains(r#"id="account-brain""#)
+            && page.contains("L’AFG ne retient encore rien de vous.")
+    );
+
+    // Marie's first exchange makes her brain; a second fact is added beside it.
+    configure(
+        &app,
+        &marie,
+        &[
+            ("kind", "ollama"),
+            ("url", &url),
+            ("model", "fausse-famille:1b"),
+        ],
+    )
+    .await;
+    run_test(&app, &marie).await;
+    let owner = axgf_cms::brain::Owner {
+        id: sessions[0].0.clone(),
+        name: "marie".into(),
+        person_id: None,
+    };
+    let brain = axgf_cms::brain::Brains::beside(&bundle).of(&owner).unwrap();
+    let extra = axgf_cms::brain::Exchange {
+        at: "2026-11-02T12:00:00Z".into(),
+        context: "test".into(),
+        question: "Qui est l’aînée ?".into(),
+        answer: "Ama.".into(),
+        ..Default::default()
+    };
+    brain
+        .remember(&extra, &["Préfère les réponses courtes".into()])
+        .unwrap();
+
+    let page = body_string(get_with_cookie(&app, "/account", &marie).await).await;
+    assert!(page.contains("Le cerveau de votre AFG"));
+    assert!(
+        page.contains("Cherche la branche Exemple")
+            && page.contains("Préfère les réponses courtes")
+    );
+    assert!(page.contains("Donne-moi le top 3") && page.contains("Qui est l’aînée ?"));
+    let facts = marks(&page, "fact");
+    let exchanges = marks(&page, "exchange");
+    assert_eq!((facts.len(), exchanges.len()), (2, 2), "{page}");
+    assert!(
+        page.find("Qui est l’aînée ?").unwrap() < page.find("Donne-moi le top 3").unwrap(),
+        "the most recent exchange first"
+    );
+
+    // Vera cannot reach Marie's brain, whatever she posts.
+    let resp = post_form_as(
+        &app,
+        &vera,
+        "/account/brain/forget",
+        &format!("fact={}", facts[0]),
+    )
+    .await;
+    assert_eq!(
+        resp.headers()[header::LOCATION],
+        "/account?done=already#account-brain"
+    );
+    assert_eq!(brain.listed_facts().len(), 2, "untouched");
+
+    // Marie forgets a fact: it is no longer sent with her next question.
+    let resp = post_form_as(
+        &app,
+        &marie,
+        "/account/brain/forget",
+        &format!("fact={}", facts[0]),
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER);
+    assert_eq!(
+        resp.headers()[header::LOCATION],
+        "/account?done=forgotten#account-brain"
+    );
+    let page = body_string(get_with_cookie(&app, "/account?done=forgotten", &marie).await).await;
+    assert!(page.contains("Oublié : l’AFG ne le saura plus."));
+    assert!(!page.contains("Cherche la branche Exemple"));
+    let again = post_form_as(
+        &app,
+        &marie,
+        "/account/brain/forget",
+        &format!("fact={}", facts[0]),
+    )
+    .await;
+    assert_eq!(
+        again.headers()[header::LOCATION],
+        "/account?done=already#account-brain"
+    );
+    run_test(&app, &marie).await;
+    let sent = seen.lock().unwrap().last().unwrap().2.clone();
+    let body: Value = serde_json::from_str(&sent).unwrap();
+    let user = body["messages"][1]["content"].as_str().unwrap();
+    let brain_part = &user[user.find("=== brain: marie ===").unwrap()..];
+    assert!(
+        !brain_part.contains("Cherche la branche Exemple"),
+        "forgotten, not told"
+    );
+    assert!(
+        brain_part.contains("Préfère les réponses courtes"),
+        "the rest still is"
+    );
+
+    // An exchange, then everything, which asks to be sure.
+    let page = body_string(get_with_cookie(&app, "/account", &marie).await).await;
+    let before = brain.listed_exchanges(100).1;
+    let first = marks(&page, "exchange")[0].clone();
+    post_form_as(
+        &app,
+        &marie,
+        "/account/brain/forget",
+        &format!("exchange={first}"),
+    )
+    .await;
+    assert_eq!(brain.listed_exchanges(100).1, before - 1);
+    let unsure = post_form_as(&app, &marie, "/account/brain/forget", "all=1").await;
+    assert_eq!(unsure.status(), StatusCode::BAD_REQUEST);
+    assert!(body_string(unsure)
+        .await
+        .contains("Cochez la case pour tout oublier."));
+    assert!(brain.dir().exists());
+    let resp = post_form_as(&app, &marie, "/account/brain/forget", "all=1&confirm=on").await;
+    assert_eq!(
+        resp.headers()[header::LOCATION],
+        "/account?done=forgotten-all#account-brain"
+    );
+    assert!(!brain.dir().exists(), "the folder is gone");
+    let page =
+        body_string(get_with_cookie(&app, "/account?done=forgotten-all", &marie).await).await;
+    assert!(page.contains("L’AFG ne retient plus rien de vous."));
+    assert!(
+        !page.contains(r#"id="account-brain""#),
+        "marie may not talk to it herself: with no brain left, nothing to show"
+    );
+
+    // The emergency token is no one, and has no brain to forget.
+    let token = format!("{}; axgf_lang=fr", admin_cookie(&app).await);
+    let resp = post_form_as(&app, &token, "/account/brain/forget", "all=1&confirm=on").await;
+    assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+}
+
+/// Sign an account of `app_with` in again, for a fresh session.
+async fn sign_in(app: &axum::Router, name: &str) -> String {
+    let login = post_form(
+        app,
+        "/admin/login",
+        &format!("username={name}&password={PASSWORD}"),
+        false,
+    )
+    .await;
+    assert!(login.status().is_redirection(), "{name} signs in");
+    login.headers()[header::SET_COOKIE]
+        .to_str()
+        .unwrap()
+        .split(';')
+        .next()
+        .unwrap()
+        .to_string()
+}

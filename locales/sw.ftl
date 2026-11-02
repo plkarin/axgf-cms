@@ -4939,3 +4939,29 @@ accounts-afg-allowed = Anaweza kuzungumza na AFG
 accounts-afg-yes = ndiyo
 accounts-afg-no = hapana
 accounts-afg-hint = Imezimwa isipokuwa imewekewa alama. Kile AFG inachokumbuka kuhusu akaunti hii huhifadhiwa kwenye ubongo wake yenyewe: folda kwenye diski kando ya kifurushi.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = Ubongo wa AFG yako
+account-brain-intro = Kile AFG inachokumbuka kuhusu wewe: mambo iliyoamua kuhifadhi, na mazungumzo yako nayo. Yote mawili hupewa tena kwa kila swali lako. Ifanye isahau kile usichotaka tena ijue. Kwenye tovuti, hakuna mwingine anayeyaona isipokuwa wewe.
+account-brain-no-access = AFG haijafunguliwa kwa akaunti yako: msimamizi huamua hilo kwenye ukurasa wa Akaunti.
+account-brain-none = AFG bado haikumbuki chochote kuhusu wewe.
+account-brain-facts = Inachokumbuka
+account-brain-facts-none = Haijahifadhi jambo lolote kuhusu wewe.
+account-brain-exchanges = Mazungumzo yako nayo
+account-brain-exchanges-none = Hakuna mazungumzo yaliyohifadhiwa.
+account-brain-older = { $n ->
+        [one] Mazungumzo { $n } ya zamani zaidi yamehifadhiwa na hayajaorodheshwa hapa.
+       *[other] Mazungumzo { $n } ya zamani zaidi yamehifadhiwa na hayajaorodheshwa hapa.
+    }
+account-brain-context-test = Jaribio katika chumba cha AFG
+account-brain-answer = Jibu lake
+account-brain-forget = Sahau
+account-brain-forget-all = Sahau yote…
+account-brain-forget-all-confirm = Ndiyo, sahau yote ambayo AFG inakumbuka kuhusu mimi
+account-brain-forget-all-button = Sahau yote
+account-brain-forgotten = Imesahaulika: AFG haitaambiwa tena.
+account-brain-forgotten-all = AFG haikumbuki tena chochote kuhusu wewe.
+account-brain-already = Hilo lilikuwa limeshasahaulika.
+account-brain-confirm-needed = Weka alama kwenye kisanduku ili kusahau yote.
+account-brain-error = Hakuna kilichosahaulika: { $error }
+afg-brain-see = Ona na usahau

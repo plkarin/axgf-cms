@@ -5155,3 +5155,29 @@ accounts-afg-allowed = Darf mit dem AFG sprechen
 accounts-afg-yes = ja
 accounts-afg-no = nein
 accounts-afg-hint = Aus, solange nicht angekreuzt. Was der AFG sich über dieses Konto merkt, liegt in dessen eigenem Gedächtnis: einem Ordner auf der Platte neben dem Archiv.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = Das Gedächtnis Ihres AFG
+account-brain-intro = Was der AFG sich über Sie merkt: die Tatsachen, die er behalten hat, und Ihre Gespräche mit ihm. Beides bekommt er bei jeder Ihrer Fragen wieder. Lassen Sie ihn vergessen, was er nicht mehr wissen soll. Auf der Seite sieht das niemand außer Ihnen.
+account-brain-no-access = Der AFG ist für Ihr Konto nicht freigegeben: Darüber entscheidet ein Administrator auf der Seite Konten.
+account-brain-none = Der AFG hat sich noch nichts über Sie gemerkt.
+account-brain-facts = Was er sich merkt
+account-brain-facts-none = Er hat keine Tatsache über Sie behalten.
+account-brain-exchanges = Ihre Gespräche mit ihm
+account-brain-exchanges-none = Kein Gespräch ist gespeichert.
+account-brain-older = { $n ->
+        [one] { $n } älteres Gespräch ist gespeichert und hier nicht aufgeführt.
+       *[other] { $n } ältere Gespräche sind gespeichert und hier nicht aufgeführt.
+    }
+account-brain-context-test = Test im AFG-Raum
+account-brain-answer = Seine Antwort
+account-brain-forget = Vergessen
+account-brain-forget-all = Alles vergessen …
+account-brain-forget-all-confirm = Ja, alles vergessen, was der AFG sich über mich merkt
+account-brain-forget-all-button = Alles vergessen
+account-brain-forgotten = Vergessen: Der AFG erfährt es nicht mehr.
+account-brain-forgotten-all = Der AFG merkt sich nichts mehr über Sie.
+account-brain-already = Das war bereits vergessen.
+account-brain-confirm-needed = Kreuzen Sie das Kästchen an, um alles zu vergessen.
+account-brain-error = Nichts wurde vergessen: { $error }
+afg-brain-see = Ansehen und vergessen

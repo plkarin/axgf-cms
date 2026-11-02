@@ -3,7 +3,8 @@
 **Status:** accepted (2026-11-02) · **Builds on:** docs/adr/0023 (where the
 AFG's computing comes from, and its test) · **Applies to:** `src/brain.rs`,
 `src/afg.rs`, `src/acl.rs`, `src/render.rs`, `src/routes/afg.rs`,
-`src/routes/admin.rs`, `templates/admin_afg.html`,
+`src/routes/admin.rs`, `src/routes/account.rs`, `templates/account.html`,
+`templates/admin_afg.html`,
 `templates/_afg_result.html`, `templates/admin_users.html`,
 `templates/_icons.html`, `static/afg.js`, `static/app.css`,
 `locales/*.ftl`, `tests/afg.rs`
@@ -22,6 +23,10 @@ The operator, the same day as ADR 0023, asked for four things:
   family. The brain is what it remembers of the person in front of it.
 - **Who may talk to the AFG** is a simple yes or no for each account, set on
   the accounts page.
+
+Later the same day the operator asked that every account see this
+"secondary brain" of its AFG on its own account page, and be able to remove
+some subjects from it, or not (§6).
 
 Where the AFG appears, and what it helps with there, is the next step.
 
@@ -131,14 +136,43 @@ way all ten can.
 - **The administrator's test does not ask for it.** It is a check of the
   configuration, not a conversation.
 
+### 6. Each account sees its brain, and forgets what it chooses
+
+*My account* (`/account`) has a section, **Your AFG's brain**. It shows when
+the account may talk to the AFG, or when the AFG remembers something of it.
+
+- **What it shows.**
+  - The **facts** kept, oldest first, each with its date.
+  - The **exchanges**, most recent first (the last 200, with how many older
+    ones are kept). Each shows its date, where it was asked, the question,
+    and the answer drawn, folded.
+- **Forgetting one thing.** Each line has its **Forget** button, posted to
+  `POST /account/brain/forget` with the line's mark: the first 16 hex digits
+  of the line's SHA-256, never the text itself.
+  - A fact forgotten is no longer told to the AFG.
+  - An exchange forgotten leaves `conversations.jsonl`, and so no longer
+    goes back with the last exchanges.
+  - Forgetting an exchange does not forget the facts it gave. They are
+    their own lines.
+- **Forgetting everything** asks for a box to be ticked, then removes the
+  brain's folder. The next exchange starts a new one.
+- **Whose brain.** It is always the session's account's, never a field of
+  the form. Another account's mark forgets nothing, and says it was
+  already forgotten. Administrators see no one's brain but their own here.
+  The emergency token has none.
+- **Keeping and forgetting together.** One writer at a time rewrites a
+  brain, keeping or forgetting, so that an answer kept while a fact is
+  forgotten loses neither. The journal records that an account forgot, and
+  what kind of thing, never what.
+
 ## Consequences
 
 - **Brains are kept beside the archive and are not in its backups.** The
   nightly backup holds the bundle, the accounts and the journal. Brains are
   for the operator to add to it, or to copy themselves.
 - **A brain is personal data about a living person.** It is readable only by
-  the service's user. Forgetting it is deleting its folder, and the page to
-  do it from belongs with the pages the AFG will come to.
+  the service's user. Its owner forgets from their account page (§6). The
+  operator can still delete a folder by hand.
 - **The memory is the model's own wording.** What it chooses to keep can be
   wrong. The window shows what was kept after every answer.
 - **The room's own run page is gone.** Its address now answers the window's

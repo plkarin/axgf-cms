@@ -5366,3 +5366,31 @@ accounts-afg-allowed = יכול לדבר עם הגנאלוג המלאכותי
 accounts-afg-yes = כן
 accounts-afg-no = לא
 accounts-afg-hint = כבוי אלא אם מסומן. מה שהגנאלוג המלאכותי זוכר על החשבון הזה נשמר בזיכרון משלו: תיקייה בדיסק לצד הארכיון.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = הזיכרון של הגנאלוג המלאכותי שלכם
+account-brain-intro = מה שהגנאלוג המלאכותי זוכר עליכם: העובדות שבחר לשמור, והשיחות שלכם איתו. שניהם ניתנים לו שוב עם כל שאלה שלכם. גרמו לו לשכוח את מה שאינכם רוצים עוד שיידע. באתר, רק אתם רואים זאת.
+account-brain-no-access = הגנאלוג המלאכותי אינו פתוח לחשבון שלכם: מנהל מחליט על כך בדף החשבונות.
+account-brain-none = הגנאלוג המלאכותי עדיין לא זוכר עליכם דבר.
+account-brain-facts = מה שהוא זוכר
+account-brain-facts-none = הוא לא שמר שום עובדה עליכם.
+account-brain-exchanges = השיחות שלכם איתו
+account-brain-exchanges-none = לא נשמרה שום שיחה.
+account-brain-older = { $n ->
+        [one] שיחה ישנה אחת נשמרת ואינה מופיעה כאן.
+        [two] { $n } שיחות ישנות נשמרות ואינן מופיעות כאן.
+        [many] { $n } שיחות ישנות נשמרות ואינן מופיעות כאן.
+       *[other] { $n } שיחות ישנות נשמרות ואינן מופיעות כאן.
+    }
+account-brain-context-test = בדיקה בחדר הגנאלוג המלאכותי
+account-brain-answer = התשובה שלו
+account-brain-forget = לשכוח
+account-brain-forget-all = לשכוח הכול…
+account-brain-forget-all-confirm = כן, לשכוח את כל מה שהגנאלוג המלאכותי זוכר עליי
+account-brain-forget-all-button = לשכוח הכול
+account-brain-forgotten = נשכח: הגנאלוג המלאכותי לא יידע זאת עוד.
+account-brain-forgotten-all = הגנאלוג המלאכותי כבר לא זוכר עליכם דבר.
+account-brain-already = זה כבר נשכח.
+account-brain-confirm-needed = סמנו את התיבה כדי לשכוח הכול.
+account-brain-error = דבר לא נשכח: { $error }
+afg-brain-see = צפייה ושכחה

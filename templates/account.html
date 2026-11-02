@@ -38,5 +38,56 @@
 </form>
 <datalist id="account-persons">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
 </section>
+
+{#- What the AFG remembers of this account, its brain (docs/adr/0024 §6):
+    the account's own to see and to forget, a fact, an exchange or all of
+    it. Shown when the account may talk to the AFG, or the AFG remembers
+    something of it. -#}
+{% if brain and (brain.allowed or brain.exists) %}
+<section class="rec-section" id="account-brain">
+<h2>{{ t("account-brain-title") }}</h2>
+<p class="small muted">{{ t("account-brain-intro") }}</p>
+{% if not brain.allowed %}<p class="small muted">{{ t("account-brain-no-access") }}</p>{% endif %}
+{% if not brain.exists %}
+<p class="muted">{{ t("account-brain-none") }}</p>
+{% else %}
+<h3>{{ t("account-brain-facts") }} <span class="small muted">{{ brain.facts | length | localnum(lang) }}</span></h3>
+{% if brain.facts %}
+<ul class="brain-list" data-content>
+  {%- for f in brain.facts %}
+  <li class="brain-row">
+    <span class="brain-text">{% if f.date %}<span class="small muted">{{ f.date | localdate(lang) }}</span> {% endif %}{{ f.text }}</span>
+    <form method="post" action="/account/brain/forget" class="inline-form"><input type="hidden" name="fact" value="{{ f.id }}"><button class="btn small ghost" type="submit">{{ t("account-brain-forget") }}</button></form>
+  </li>
+  {%- endfor %}
+</ul>
+{% else %}<p class="small muted">{{ t("account-brain-facts-none") }}</p>{% endif %}
+<h3>{{ t("account-brain-exchanges") }} <span class="small muted">{{ brain.total | localnum(lang) }}</span></h3>
+{% if brain.exchanges %}
+<ul class="brain-list" data-content>
+  {%- for e in brain.exchanges %}
+  <li class="brain-row">
+    <div class="brain-text">
+      <div class="small muted">{{ e.at | localdatetime(lang) }} · {% if e.context == "test" %}{{ t("account-brain-context-test") }}{% else %}{{ e.context }}{% endif %}</div>
+      <div><strong>{{ e.question }}</strong></div>
+      <details class="brain-answer"><summary>{{ t("account-brain-answer") }}</summary><div class="note-text">{{ e.answer_html | safe }}</div></details>
+    </div>
+    <form method="post" action="/account/brain/forget" class="inline-form"><input type="hidden" name="exchange" value="{{ e.id }}"><button class="btn small ghost" type="submit">{{ t("account-brain-forget") }}</button></form>
+  </li>
+  {%- endfor %}
+</ul>
+{% if brain.older %}<p class="small muted">{{ t("account-brain-older", n=brain.older) }}</p>{% endif %}
+{% else %}<p class="small muted">{{ t("account-brain-exchanges-none") }}</p>{% endif %}
+<details class="brain-forget-all">
+  <summary>{{ t("account-brain-forget-all") }}</summary>
+  <form method="post" action="/account/brain/forget">
+    <input type="hidden" name="all" value="1">
+    <label class="inline"><input type="checkbox" name="confirm" required> {{ t("account-brain-forget-all-confirm") }}</label>
+    <button class="btn danger" type="submit">{{ t("account-brain-forget-all-button") }}</button>
+  </form>
+</details>
+{% endif %}
+</section>
+{% endif %}
 {% endif %}
 {% endblock %}

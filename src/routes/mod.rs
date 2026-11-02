@@ -350,6 +350,8 @@ fn routes(state: Shared) -> Router {
         .route("/settings", get(prefs::settings))
         .route("/account", get(account::page))
         .route("/account/person", post(account::person))
+        // The AFG's brain of the account, its own to forget (docs/adr/0024).
+        .route("/account/brain/forget", post(account::forget))
         .route("/prefs/language", post(prefs::language))
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))

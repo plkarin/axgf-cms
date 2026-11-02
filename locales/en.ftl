@@ -5167,3 +5167,29 @@ accounts-afg-allowed = May talk to the AFG
 accounts-afg-yes = yes
 accounts-afg-no = no
 accounts-afg-hint = Off unless ticked. What the AFG remembers of this account is kept in a brain of its own: a folder on disk beside the archive.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = Your AFG's brain
+account-brain-intro = What the AFG remembers of you: the facts it chose to keep, and your exchanges with it. Both go back to it with each of your questions. Forget what you no longer want it to know. Nobody but you sees them on this site.
+account-brain-no-access = The AFG is not open to your account: an administrator decides it on the Accounts page.
+account-brain-none = The AFG remembers nothing of you yet.
+account-brain-facts = What it remembers
+account-brain-facts-none = It has kept no fact about you.
+account-brain-exchanges = Your exchanges with it
+account-brain-exchanges-none = No exchange is kept.
+account-brain-older = { $n ->
+        [one] { $n } older exchange is kept and not listed here.
+       *[other] { $n } older exchanges are kept and not listed here.
+    }
+account-brain-context-test = Test in the AFG room
+account-brain-answer = Its answer
+account-brain-forget = Forget
+account-brain-forget-all = Forget everything…
+account-brain-forget-all-confirm = Yes, forget everything the AFG remembers of me
+account-brain-forget-all-button = Forget everything
+account-brain-forgotten = Forgotten: the AFG will no longer be told it.
+account-brain-forgotten-all = The AFG remembers nothing of you any more.
+account-brain-already = That was already forgotten.
+account-brain-confirm-needed = Tick the box to forget everything.
+account-brain-error = Nothing was forgotten: { $error }
+afg-brain-see = See and forget

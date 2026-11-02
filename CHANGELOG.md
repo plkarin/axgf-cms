@@ -121,6 +121,15 @@ window, a brain on disk for each account that talks to it, and who may.
   own page is gone.
 - **Who may talk to the AFG**: a yes or no on each account of the Accounts
   page, off until ticked, counted above the list.
+- **Each account sees its AFG's brain** on *My account* (docs/adr/0024 §6).
+  - **What it shows:** the facts kept, with their dates, and the exchanges,
+    the most recent first, each answer folded.
+  - **What it forgets:** a fact or an exchange, each with its **Forget**
+    button, or everything, once a box is ticked. What is forgotten is no
+    longer told to the AFG.
+  - **Whose:** always the session's own brain. Nobody sees another's,
+    administrators included.
+  - The AFG room's brain tile leads there.
 - **Documentation.** The README explains both tools, how the words are
   worked out and the 27 ties. docs/FAMILY.md tells the family how to read
   the Kinship tab and add a godparent. docs/REFERENCE.md documents the link

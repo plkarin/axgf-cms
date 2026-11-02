@@ -510,6 +510,11 @@ something by ending its answer with a `<memory>` block. The block is taken
 out of what is shown, and the window says what was kept. A test is an
 exchange like any other: the first one makes the administrator's brain.
 
+**Each person sees their own brain** on *My account*: what the AFG
+remembers of them, and their exchanges with it. They can **forget** a fact,
+an exchange, or everything. Nobody sees anyone else's, administrators
+included.
+
 **Who may talk to the AFG** is a yes or no for each account, on the Accounts
 page, and is off until you tick it. The test in the AFG room is an
 administrator's check of the setup and does not ask for it.

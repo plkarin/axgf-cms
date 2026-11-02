@@ -5530,3 +5530,31 @@ accounts-afg-allowed = Może rozmawiać z AFG
 accounts-afg-yes = tak
 accounts-afg-no = nie
 accounts-afg-hint = Wyłączone, dopóki pole nie jest zaznaczone. To, co AFG pamięta o tym koncie, jest przechowywane w jego własnej pamięci: folderze na dysku obok archiwum.
+
+## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
+account-brain-title = Pamięć Twojego AFG
+account-brain-intro = To, co AFG pamięta o Tobie: fakty, które postanowił zachować, i Twoje rozmowy z nim. Jedno i drugie dostaje z powrotem przy każdym Twoim pytaniu. Każ mu zapomnieć to, czego nie chcesz, by dalej wiedział. Na stronie nikt poza Tobą tego nie widzi.
+account-brain-no-access = AFG nie jest dostępny dla Twojego konta: decyduje o tym administrator na stronie Konta.
+account-brain-none = AFG nie pamięta jeszcze niczego o Tobie.
+account-brain-facts = Co pamięta
+account-brain-facts-none = Nie zachował żadnego faktu o Tobie.
+account-brain-exchanges = Twoje rozmowy z nim
+account-brain-exchanges-none = Żadna rozmowa nie jest przechowywana.
+account-brain-older = { $n ->
+        [one] { $n } starsza rozmowa jest przechowywana i nie ma jej tu na liście.
+        [few] { $n } starsze rozmowy są przechowywane i nie ma ich tu na liście.
+        [many] { $n } starszych rozmów jest przechowywanych i nie ma ich tu na liście.
+       *[other] { $n } starszej rozmowy jest przechowywane i nie ma ich tu na liście.
+    }
+account-brain-context-test = Test w pokoju AFG
+account-brain-answer = Jego odpowiedź
+account-brain-forget = Zapomnij
+account-brain-forget-all = Zapomnij wszystko…
+account-brain-forget-all-confirm = Tak, zapomnij wszystko, co AFG pamięta o mnie
+account-brain-forget-all-button = Zapomnij wszystko
+account-brain-forgotten = Zapomniane: AFG już się tego nie dowie.
+account-brain-forgotten-all = AFG nie pamięta już niczego o Tobie.
+account-brain-already = To było już zapomniane.
+account-brain-confirm-needed = Zaznacz pole, aby zapomnieć wszystko.
+account-brain-error = Nic nie zostało zapomniane: { $error }
+afg-brain-see = Zobacz i zapomnij

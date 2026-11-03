@@ -4,10 +4,12 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] — 2026-11-03
 
 The AFG's memory, backed up apart from the family's archive (the operator's
-decision of 3 November 2026, docs/adr/0027).
+decision of 3 November 2026, docs/adr/0027). The AFG's room suggests the
+models as read from their makers on 3 November 2026, for v1.2.0 the same
+day.
 
 ### Added
 
@@ -4394,7 +4396,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.3.0
 [1.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.2.0
 [1.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.1.0
 [1.0.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0

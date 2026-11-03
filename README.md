@@ -661,18 +661,22 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.2.0**. Over v1.1.0 it adds:
+The latest release is **v1.3.0**. Over v1.2.0 it adds **the AFG's memory,
+backed up apart**: each night, after the family's archive, the brains and the
+personal assistants go into an archive of their own, checked, kept and
+restored the same way, and the family's archive is exactly what it was.
 
-- **My personal assistant**: each account the AFG is open to has its own
-  chat with the AFG, from its account page:
-  - projects, each with a code of conduct and a memory the AFG keeps;
-  - conversations taken up again at any time, the answer shown as it is
-    written;
-  - documents, photographs, sound and film sent with a message;
-  - seventy-two avatars made with Canva, or a picture of one's own;
-- **the models of the moment**, suggested for each way of computing, and the
-  efforts each model takes, now sent to every service.
+v1.2.0 brought **My personal assistant**, each account's own chat with the
+AFG:
 
+- projects, each with a code of conduct and a memory the AFG keeps;
+- conversations taken up again at any time, the answer shown as it is
+  written;
+- documents, photographs, sound and film sent with a message;
+- seventy-two avatars made with Canva, or a picture of one's own.
+
+It also brought **the models of the moment**, suggested for each way of
+computing, with the efforts each model takes, now sent to every service.
 v1.1.0 brought kinship (how any two people are related, and every relative
 of one), 27 ties of rite and custom, polygamous unions, the emblem of a
 family and of the archive, and the first part of the Artificial family
@@ -702,7 +706,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.2.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.3.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -845,7 +849,7 @@ else is public. Check that is what you want.
 Backups happen on their own: one verified archive a day, kept as 7 daily,
 4 weekly and 12 monthly, in `/var/lib/axgf-cms/backups/`. Each is a plain ZIP
 holding the family file, the accounts and the edit history, and is read back
-in full before it is kept. *(New since 1.2.0, not yet released.)* The AFG's
+in full before it is kept. *(New in 1.3.0.)* The AFG's
 memory, its brains and the personal assistants, goes into an archive of its
 own beside it, `axgf-memory-…`, checked and kept the same way
 ([why](docs/adr/0027-the-afgs-memory-backed-up-apart.md)). To back up right
@@ -916,7 +920,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.2.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.2.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.3.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.3.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

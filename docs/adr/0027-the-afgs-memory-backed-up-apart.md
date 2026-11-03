@@ -1,6 +1,6 @@
 # ADR 0027 — The AFG's memory, backed up apart
 
-**Status:** proposed (2026-11-03) · **Builds on:** docs/adr/0024 (the AFG's
+**Status:** accepted, v1.3.0 (2026-11-03) · **Builds on:** docs/adr/0024 (the AFG's
 brains), docs/adr/0026 (My personal assistant) · **Amends:** docs/adr/0024
 and docs/adr/0026, which left the AFG's memory out of every backup ·
 **Applies to:** `src/memory_backup.rs`, `src/backup.rs`, `src/main.rs`,

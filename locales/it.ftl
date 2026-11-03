@@ -5247,3 +5247,112 @@ account-brain-already = Era già dimenticato.
 account-brain-confirm-needed = Spuntate la casella per dimenticare tutto.
 account-brain-error = Non è stato dimenticato nulla: { $error }
 afg-brain-see = Vedi e dimentica
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = Il mio assistente personale
+assistant-entry = I vostri progetti e le vostre conversazioni con l’AFG: chiedete, inviate documenti e foto, riprendete da dove eravate rimasti.
+assistant-lede = I vostri progetti con l’AFG. Ognuno ha il suo codice di condotta e la sua memoria, e in ognuno conversazioni che riprendete da dove le avete lasciate.
+assistant-shut-no-account = Questa sessione non ha un account, quindi nessun assistente personale. Accedete con il vostro account.
+assistant-shut-not-open = L’AFG non è aperto al vostro account: lo decide un amministratore nella pagina Account.
+assistant-shut-broken = Il vostro spazio non si è potuto aprire. Riprovate tra un momento; se continua, avvisate un amministratore.
+assistant-shut-gone = Qui non c’è nulla: questo progetto o questa conversazione non esiste, o non è vostro.
+assistant-back-account = Torna al mio account
+assistant-new-project = Nuovo progetto
+assistant-not-ready = L’elaborazione dell’AFG non è ancora impostata: potete leggere le vostre conversazioni, non inviare messaggi. Un amministratore la imposta.
+assistant-conversations-count = { $n ->
+        [one] { $n } conversazione
+       *[other] { $n } conversazioni
+    }
+assistant-conduct-set = codice di condotta impostato
+assistant-empty = Ancora nessun progetto. Un progetto raccoglie le conversazioni su uno stesso tema — la storia della famiglia, una questione di salute, una ricerca di lavoro — sotto uno stesso codice di condotta.
+assistant-project-name = Nome del progetto
+assistant-create = Crea il progetto
+assistant-facts-count = { $n ->
+        [one] { $n } fatto ricordato
+       *[other] { $n } fatti ricordati
+    }
+assistant-archive-on = con l’archivio della famiglia
+assistant-start = Inizia una conversazione
+assistant-conversations = Conversazioni
+assistant-no-conversation = Ancora nessuna conversazione: la vostra prima domanda ne apre una.
+assistant-conduct = Codice di condotta
+assistant-conduct-label = Come deve comportarsi l’AFG in questo progetto
+assistant-conduct-hint = Le vostre istruzioni per ogni conversazione di questo progetto: il tono, la lingua, a cosa guardare, cosa lasciare da parte. L’AFG le segue, a meno che non gli chiedano di ingannarvi o di nuocere.
+assistant-save = Salva
+assistant-memory = Memoria del progetto
+assistant-memory-intro = Ciò che l’AFG ha scelto di conservare dalle conversazioni di questo progetto: il suo secondo cervello. Gli viene ridata a ogni messaggio del progetto. Fategli dimenticare ciò che non volete più che sappia.
+assistant-forget = Dimentica
+assistant-forget-all = Dimentica tutto…
+assistant-forget-all-confirm = Sì, dimentica tutto ciò che l’AFG ricorda di questo progetto
+assistant-forget-all-button = Dimentica tutto
+assistant-memory-none = L’AFG non ricorda ancora nulla di questo progetto.
+assistant-settings = Impostazioni
+assistant-archive = Dare all’AFG l’archivio della famiglia in questo progetto
+assistant-archive-hint = Ogni scheda dell’archivio, viventi compresi, va allora con ogni messaggio là dove l’AFG elabora. Le classi sensibili restano fuori, a meno che un amministratore non abbia deciso altrimenti.
+assistant-archive-size = File JSON: { $files }; token per messaggio: circa { $tokens }.
+assistant-avatar-upload = Un’immagine vostra come avatar
+assistant-avatar-send = Usa questa immagine
+assistant-delete-project = Elimina il progetto
+assistant-delete-project-confirm = Sì, elimina questo progetto, le sue conversazioni, i loro file e la sua memoria
+assistant-delete = Elimina
+assistant-conversation-settings = Impostazioni della conversazione
+assistant-conversation-title = Titolo della conversazione
+assistant-delete-conversation = Elimina la conversazione
+assistant-delete-conversation-confirm = Sì, elimina questa conversazione e i suoi messaggi
+assistant-thread = La conversazione
+assistant-reply = Il vostro messaggio
+assistant-sending = Invio…
+assistant-attach = Allega
+assistant-send = Invia
+assistant-composer-hint = Invio manda, Maiusc+Invio va a capo. Documenti, foto, suono o video: trascinateli, incollateli o allegateli, al massimo { $n } file, { $mb } MB ciascuno.
+assistant-avatar-choose = Scegli il suo avatar
+assistant-avatar = Avatar
+assistant-avatar-auto = Scelto per lui
+assistant-avatar-own = La vostra immagine
+assistant-kept = { $n ->
+        [one] Conservato nella memoria del progetto: { $n } fatto
+       *[other] Conservati nella memoria del progetto: { $n } fatti
+    }
+assistant-error-answer = L’AFG non ha potuto rispondere.
+assistant-retry = Chiedi di nuovo
+assistant-unanswered = Questo messaggio è rimasto senza risposta.
+assistant-writing = L’AFG sta scrivendo
+assistant-saved = Salvato.
+assistant-project-deleted = Il progetto è eliminato.
+assistant-conversation-deleted = La conversazione è eliminata.
+assistant-memory-forgotten = Dimenticato: l’AFG non lo riceverà più.
+assistant-memory-forgotten-all = L’AFG non ricorda più nulla di questo progetto.
+assistant-avatar-saved = L’avatar è salvato.
+assistant-error-name = Serve un nome.
+assistant-error-too-many = Ce ne sono già quanti un account può conservarne.
+assistant-error-not-saved = Non salvato: il server non ha potuto scriverlo. Riprovate tra un momento.
+assistant-error-conduct-long = Il codice di condotta è troppo lungo.
+assistant-error-confirm = Spuntate la casella per confermare.
+assistant-error-too-big = Il messaggio è troppo pesante.
+assistant-error-file-big = Un file è troppo pesante.
+assistant-error-too-many-files = Troppi file in un solo messaggio.
+assistant-error-text-long = Il messaggio è troppo lungo.
+assistant-error-empty = Scrivete un messaggio o allegate un file.
+assistant-error-busy = L’AFG risponde già a tutte le conversazioni che può. Riprovate tra un momento.
+assistant-error-wait = L’AFG sta ancora rispondendo in questa conversazione.
+assistant-error-picture = Questo file non è un’immagine che il sito sappia leggere.
+assistant-domain-genealogy = Genealogia
+assistant-domain-medicine = Salute e medicina
+assistant-domain-work = Lavoro e carriera
+assistant-domain-money = Denaro
+assistant-domain-law = Diritto e documenti
+assistant-domain-learning = Imparare
+assistant-domain-home = Casa
+assistant-domain-cooking = Cucina
+assistant-domain-travel = Viaggi
+assistant-domain-nature = Natura e giardino
+assistant-domain-wellbeing = Benessere
+assistant-domain-family = Vita di famiglia
+assistant-domain-arts = Arte e cultura
+assistant-domain-sports = Sport
+assistant-domain-tech = Tecnologia
+assistant-domain-science = Scienza
+assistant-domain-history = Storia e memoria
+assistant-domain-admin = Pratiche
+assistant-domain-pets = Animali
+assistant-domain-rites = Feste e riti

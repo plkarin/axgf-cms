@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% import "_icons.html" as ic %}
+{% block title %}{% if conversation %}{{ conversation.title }} — {% elif project %}{{ project.name }} — {% endif %}{{ t("assistant-title") }} — {{ t("app-name") }}{% endblock %}
+{#- While the AFG writes, a page without scripting asks again every three
+    seconds; with it, assistant.js asks for what is new alone. -#}
+{% block head %}{% if live %}<noscript><meta http-equiv="refresh" content="3"></noscript>{% endif %}{% endblock %}
+
+{#- My personal assistant (the operator's request of 3 November 2026,
+    docs/adr/0026): the account's projects, each with its code of conduct
+    and its memory, and their conversations with the AFG, in the codes of a
+    chat and as few controls as it takes. Everything here is the account's
+    own. -#}
+
+{% block content %}
+{% if screen == "shut" %}
+<section class="as-shut">
+  <img class="as-shut-art" src="/static/avatars/{{ 'genealogy-tree' }}.webp" alt="" width="96" height="96">
+  <h1>{{ t("assistant-title") }}</h1>
+  <p class="lede">{{ t("assistant-shut-" ~ why) }}</p>
+  <p><a class="btn" href="/account">{{ t("assistant-back-account") }}</a></p>
+</section>
+{% else %}
+<div class="as-shell" data-assistant data-screen="{{ screen }}">
+  <aside class="as-side" aria-labelledby="as-side-title">
+    <a class="as-brand" href="/account/assistant"{% if screen == "home" %} aria-current="page"{% endif %}>{{ ic.icon("afg") }}<span id="as-side-title">{{ t("assistant-title") }}</span></a>
+    {% if projects %}
+    <ul class="as-side-list" data-content>
+      {%- for p in projects %}
+      <li><a href="/account/assistant/{{ p.id }}"{% if project and project.id == p.id %} aria-current="page"{% endif %}><img class="as-av" src="{{ p.avatar_url }}" alt="" width="28" height="28" loading="lazy"><span class="as-side-name">{{ p.name }}</span></a></li>
+      {%- endfor %}
+    </ul>
+    {% endif %}
+    <a class="btn ghost as-new" href="/account/assistant#new-project">{{ ic.icon("plus") }}<span>{{ t("assistant-new-project") }}</span></a>
+  </aside>
+
+  <div class="as-main">
+    {% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+    {% if notice %}<div class="notice ok" role="status"><p>{{ notice }}</p></div>{% endif %}
+    {% if not ready %}<div class="notice warn"><p>{{ t("assistant-not-ready") }}</p></div>{% endif %}
+
+{% if screen == "home" %}
+    <header class="as-hero">
+      <h1>{{ t("assistant-title") }}</h1>
+      <p class="lede">{{ t("assistant-lede") }}</p>
+    </header>
+    {% if projects %}
+    <ul class="as-grid" data-content>
+      {%- for p in projects %}
+      <li class="as-card"><a href="/account/assistant/{{ p.id }}">
+        <img class="as-av as-av-lg" src="{{ p.avatar_url }}" alt="" width="56" height="56" loading="lazy">
+        <span class="as-card-name">{{ p.name }}</span>
+        <span class="as-card-meta small muted">{{ t("assistant-conversations-count", n=p.conversations) }}{% if p.conduct %} · {{ t("assistant-conduct-set") }}{% endif %}</span>
+      </a></li>
+      {%- endfor %}
+    </ul>
+    {% else %}
+    <div class="as-empty">
+      <div class="as-empty-art" aria-hidden="true">{% for name in ["genealogy-tree", "medicine-heart", "work-briefcase", "learning-book", "home-house", "money-piggy"] %}<img src="/static/avatars/{{ name }}.webp" alt="" width="56" height="56">{% endfor %}</div>
+      <p>{{ t("assistant-empty") }}</p>
+    </div>
+    {% endif %}
+    <section class="as-newproject" id="new-project">
+      <h2>{{ t("assistant-new-project") }}</h2>
+      <form method="post" action="/account/assistant" class="as-form">
+        <label class="field"><span class="field-label">{{ t("assistant-project-name") }}</span>
+          <input type="text" name="name" maxlength="{{ limits.name }}" required autocomplete="off"></label>
+        {% with picker_current = "" %}{% include "_assistant_avatars.html" %}{% endwith %}
+        <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-create") }}</button>
+      </form>
+    </section>
+
+{% elif screen == "project" %}
+    <header class="as-head">
+      <img class="as-av as-av-xl" src="{{ project.avatar_url }}" alt="" width="64" height="64">
+      <div class="as-head-text">
+        <h1>{{ project.name }}</h1>
+        <p class="small muted">{{ t("assistant-conversations-count", n=conversations | length) }} · {{ t("assistant-facts-count", n=facts | length) }}{% if project.archive %} · {{ t("assistant-archive-on") }}{% endif %}</p>
+      </div>
+    </header>
+
+    {% with action = "/account/assistant/" ~ project.id ~ "/c", label = t("assistant-start"), first = true %}{% include "_assistant_composer.html" %}{% endwith %}
+
+    <section class="as-convs-wrap" aria-labelledby="as-convs-title">
+      <h2 id="as-convs-title">{{ t("assistant-conversations") }}</h2>
+      {% if conversations %}
+      <ul class="as-convs" data-content>
+        {%- for c in conversations %}
+        <li><a href="/account/assistant/{{ project.id }}/c/{{ c.id }}"><img class="as-av" src="{{ c.avatar_url }}" alt="" width="36" height="36" loading="lazy"><span class="as-conv-title">{{ c.title }}</span><span class="as-conv-meta small muted">{{ c.updated_at | localdatetime(lang) }}</span></a></li>
+        {%- endfor %}
+      </ul>
+      {% else %}<p class="muted">{{ t("assistant-no-conversation") }}</p>{% endif %}
+    </section>
+
+    <div class="as-panels">
+      <details class="as-panel" id="conduct">
+        <summary>{{ ic.icon("pen") }}<span>{{ t("assistant-conduct") }}</span>{% if project.conduct %}<span class="lvl lvl-ok">{{ t("assistant-conduct-set") }}</span>{% endif %}</summary>
+        <form method="post" action="/account/assistant/{{ project.id }}" class="as-form">
+          <input type="hidden" name="part" value="conduct">
+          <label class="field" for="as-conduct"><span class="field-label">{{ t("assistant-conduct-label") }}</span></label>
+          <textarea id="as-conduct" name="conduct" rows="8" maxlength="{{ limits.conduct }}">{{ project.conduct }}</textarea>
+          <p class="hint">{{ t("assistant-conduct-hint") }}</p>
+          <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-save") }}</button>
+        </form>
+      </details>
+
+      <details class="as-panel" id="memory">
+        <summary>{{ ic.icon("brain") }}<span>{{ t("assistant-memory") }}</span><span class="small muted">{{ facts | length | localnum(lang) }}</span></summary>
+        <p class="small muted">{{ t("assistant-memory-intro") }}</p>
+        {% if facts %}
+        <ul class="brain-list" data-content>
+          {%- for f in facts %}
+          <li class="brain-row">
+            <span class="brain-text">{% if f.date %}<span class="small muted">{{ f.date | localdate(lang) }}</span> {% endif %}{{ f.text }}</span>
+            <form method="post" action="/account/assistant/{{ project.id }}/memory/forget" class="inline-form"><input type="hidden" name="fact" value="{{ f.id }}"><button class="btn small ghost" type="submit">{{ t("assistant-forget") }}</button></form>
+          </li>
+          {%- endfor %}
+        </ul>
+        <details class="brain-forget-all">
+          <summary>{{ t("assistant-forget-all") }}</summary>
+          <form method="post" action="/account/assistant/{{ project.id }}/memory/forget">
+            <input type="hidden" name="all" value="1">
+            <label class="inline"><input type="checkbox" name="confirm" required> {{ t("assistant-forget-all-confirm") }}</label>
+            <button class="btn danger" type="submit">{{ t("assistant-forget-all-button") }}</button>
+          </form>
+        </details>
+        {% else %}<p class="small muted">{{ t("assistant-memory-none") }}</p>{% endif %}
+      </details>
+
+      <details class="as-panel" id="settings">
+        <summary>{{ ic.icon("overview") }}<span>{{ t("assistant-settings") }}</span></summary>
+        <form method="post" action="/account/assistant/{{ project.id }}" class="as-form">
+          <input type="hidden" name="part" value="settings">
+          <label class="field"><span class="field-label">{{ t("assistant-project-name") }}</span>
+            <input type="text" name="name" value="{{ project.name }}" maxlength="{{ limits.name }}" required autocomplete="off"></label>
+          {% with picker_current = project.avatar %}{% include "_assistant_avatars.html" %}{% endwith %}
+          <label class="inline"><input type="checkbox" name="archive"{% if project.archive %} checked{% endif %}> {{ t("assistant-archive") }}</label>
+          <p class="hint">{{ t("assistant-archive-hint") }}{% if archive %} {{ t("assistant-archive-size", files=archive.count, tokens=archive.tokens) }}{% endif %}</p>
+          <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-save") }}</button>
+        </form>
+        <form method="post" action="/account/assistant/{{ project.id }}/avatar" enctype="multipart/form-data" class="as-form as-upload">
+          <label class="field"><span class="field-label">{{ t("assistant-avatar-upload") }}</span>
+            <input type="file" name="picture" accept="image/png,image/jpeg,image/webp,image/gif" required></label>
+          <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-avatar-send") }}</button>
+        </form>
+        <details class="as-danger">
+          <summary>{{ ic.icon("trash") }}<span>{{ t("assistant-delete-project") }}</span></summary>
+          <form method="post" action="/account/assistant/{{ project.id }}/delete">
+            <label class="inline"><input type="checkbox" name="confirm" required> {{ t("assistant-delete-project-confirm") }}</label>
+            <button class="btn danger" type="submit">{{ t("assistant-delete") }}</button>
+          </form>
+        </details>
+      </details>
+    </div>
+
+{% else %}
+    <header class="as-head as-head-conv">
+      <a class="as-back" href="/account/assistant/{{ project.id }}">{{ ic.icon("back") }}<img class="as-av as-av-sm" src="{{ project.avatar_url }}" alt="" width="22" height="22"><span>{{ project.name }}</span></a>
+      <div class="as-head-row">
+        <img class="as-av as-av-lg" src="{{ conversation.avatar_url }}" alt="" width="44" height="44">
+        <h1 class="as-conv-h1">{{ conversation.title }}</h1>
+        <details class="as-menu">
+          <summary aria-label="{{ t('assistant-conversation-settings') }}" title="{{ t('assistant-conversation-settings') }}">{{ ic.icon("pen") }}</summary>
+          <div class="as-menu-panel">
+            <form method="post" action="/account/assistant/{{ project.id }}/c/{{ conversation.id }}/edit" class="as-form">
+              <label class="field"><span class="field-label">{{ t("assistant-conversation-title") }}</span>
+                <input type="text" name="title" value="{{ conversation.title }}" maxlength="120" required autocomplete="off"></label>
+              {% with picker_current = conversation.avatar %}{% include "_assistant_avatars.html" %}{% endwith %}
+              <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-save") }}</button>
+            </form>
+            <form method="post" action="/account/assistant/{{ project.id }}/c/{{ conversation.id }}/avatar" enctype="multipart/form-data" class="as-form as-upload">
+              <label class="field"><span class="field-label">{{ t("assistant-avatar-upload") }}</span>
+                <input type="file" name="picture" accept="image/png,image/jpeg,image/webp,image/gif" required></label>
+              <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-avatar-send") }}</button>
+            </form>
+            <details class="as-danger">
+              <summary>{{ ic.icon("trash") }}<span>{{ t("assistant-delete-conversation") }}</span></summary>
+              <form method="post" action="/account/assistant/{{ project.id }}/c/{{ conversation.id }}/delete">
+                <label class="inline"><input type="checkbox" name="confirm" required> {{ t("assistant-delete-conversation-confirm") }}</label>
+                <button class="btn danger" type="submit">{{ t("assistant-delete") }}</button>
+              </form>
+            </details>
+          </div>
+        </details>
+      </div>
+    </header>
+
+    <div class="as-thread" role="log" aria-live="polite" aria-label="{{ t('assistant-thread') }}" data-content data-thread data-messages="{{ thread | length }}" data-state="/account/assistant/{{ project.id }}/c/{{ conversation.id }}/state">
+      {%- for html in thread %}{{ html | safe }}{% endfor -%}
+      {%- if live %}{{ live | safe }}{% endif -%}
+    </div>
+    {%- if orphan %}
+    <form class="as-orphan" method="post" action="/account/assistant/{{ project.id }}/c/{{ conversation.id }}/retry" data-retry>
+      <span class="small muted">{{ t("assistant-unanswered") }}</span>
+      <button class="btn small" type="submit">{{ t("assistant-retry") }}</button>
+    </form>
+    {%- endif %}
+
+    {% with action = "/account/assistant/" ~ project.id ~ "/c/" ~ conversation.id, label = t("assistant-reply"), first = false %}{% include "_assistant_composer.html" %}{% endwith %}
+{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/assistant.js"></script>
+{% endblock %}

@@ -5603,3 +5603,118 @@ account-brain-already = Это уже забыто.
 account-brain-confirm-needed = Отметьте поле, чтобы забыть всё.
 account-brain-error = Ничего не забыто: { $error }
 afg-brain-see = Посмотреть и забыть
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = Мой личный помощник
+assistant-entry = Ваши проекты и разговоры с ИИ-генеалогом: спрашивайте, отправляйте документы и фотографии, продолжайте с того места, где остановились.
+assistant-lede = Ваши собственные проекты с ИИ-генеалогом. У каждого свой кодекс поведения и своя память, а в каждом — разговоры, которые вы продолжаете с того места, где их оставили.
+assistant-shut-no-account = У этого сеанса нет учётной записи, поэтому нет и личного помощника. Войдите под своей учётной записью.
+assistant-shut-not-open = ИИ-генеалог не открыт для вашей учётной записи: это решает администратор на странице учётных записей.
+assistant-shut-broken = Не удалось открыть ваше пространство. Попробуйте ещё раз чуть позже; если это продолжится, сообщите администратору.
+assistant-shut-gone = Здесь ничего нет: этого проекта или разговора не существует, или он не ваш.
+assistant-back-account = Назад к моей учётной записи
+assistant-new-project = Новый проект
+assistant-not-ready = Вычисления ИИ-генеалога ещё не настроены: вы можете читать свои разговоры, но не отправлять сообщения. Их настраивает администратор.
+assistant-conversations-count = { $n ->
+        [one] { $n } разговор
+        [few] { $n } разговора
+        [many] { $n } разговоров
+       *[other] { $n } разговора
+    }
+assistant-conduct-set = кодекс поведения задан
+assistant-empty = Пока нет ни одного проекта. Проект собирает разговоры на одну тему — история семьи, вопрос здоровья, поиск работы — под одним кодексом поведения.
+assistant-project-name = Название проекта
+assistant-create = Создать проект
+assistant-facts-count = { $n ->
+        [one] { $n } запомненный факт
+        [few] { $n } запомненных факта
+        [many] { $n } запомненных фактов
+       *[other] { $n } запомненного факта
+    }
+assistant-archive-on = с архивом семьи
+assistant-start = Начать разговор
+assistant-conversations = Разговоры
+assistant-no-conversation = Разговоров пока нет: ваш первый вопрос начнёт новый.
+assistant-conduct = Кодекс поведения
+assistant-conduct-label = Как ИИ-генеалог должен вести себя в этом проекте
+assistant-conduct-hint = Ваши указания для каждого разговора этого проекта: тон, язык, на что смотреть, что оставить в стороне. ИИ-генеалог следует им, если только они не требуют обмануть вас или причинить вред.
+assistant-save = Сохранить
+assistant-memory = Память проекта
+assistant-memory-intro = То, что ИИ-генеалог решил сохранить из разговоров этого проекта: его второй мозг. Она возвращается к нему с каждым сообщением проекта. Попросите его забыть то, чего ему больше не нужно знать.
+assistant-forget = Забыть
+assistant-forget-all = Забыть всё…
+assistant-forget-all-confirm = Да, забыть всё, что ИИ-генеалог помнит об этом проекте
+assistant-forget-all-button = Забыть всё
+assistant-memory-none = ИИ-генеалог пока ничего не помнит об этом проекте.
+assistant-settings = Настройки
+assistant-archive = Дать ИИ-генеалогу архив семьи в этом проекте
+assistant-archive-hint = Тогда каждая запись архива, включая живых, уходит с каждым сообщением туда, где работают вычисления ИИ-генеалога. Чувствительные классы остаются в стороне, если администратор не решил иначе.
+assistant-archive-size = Файлы JSON: { $files }; токенов на сообщение: около { $tokens }.
+assistant-avatar-upload = Своё изображение в качестве аватара
+assistant-avatar-send = Использовать это изображение
+assistant-delete-project = Удалить проект
+assistant-delete-project-confirm = Да, удалить этот проект, его разговоры, их файлы и его память
+assistant-delete = Удалить
+assistant-conversation-settings = Настройки разговора
+assistant-conversation-title = Название разговора
+assistant-delete-conversation = Удалить разговор
+assistant-delete-conversation-confirm = Да, удалить этот разговор и его сообщения
+assistant-thread = Разговор
+assistant-reply = Ваше сообщение
+assistant-sending = Отправка…
+assistant-attach = Прикрепить
+assistant-send = Отправить
+assistant-composer-hint = Enter отправляет, Shift+Enter начинает новую строку. Документы, фотографии, звук или видео: перетащите, вставьте или прикрепите их; файлов не больше: { $n }, размер каждого: до { $mb } МБ.
+assistant-avatar-choose = Выбрать аватар
+assistant-avatar = Аватар
+assistant-avatar-auto = Выбран для него
+assistant-avatar-own = Ваше изображение
+assistant-kept = { $n ->
+        [one] Сохранено в памяти проекта: { $n } факт
+        [few] Сохранено в памяти проекта: { $n } факта
+        [many] Сохранено в памяти проекта: { $n } фактов
+       *[other] Сохранено в памяти проекта: { $n } факта
+    }
+assistant-error-answer = ИИ-генеалог не смог ответить.
+assistant-retry = Спросить снова
+assistant-unanswered = Это сообщение осталось без ответа.
+assistant-writing = ИИ-генеалог пишет
+assistant-saved = Сохранено.
+assistant-project-deleted = Проект удалён.
+assistant-conversation-deleted = Разговор удалён.
+assistant-memory-forgotten = Забыто: ИИ-генеалог больше этого не получит.
+assistant-memory-forgotten-all = ИИ-генеалог больше ничего не помнит об этом проекте.
+assistant-avatar-saved = Аватар сохранён.
+assistant-error-name = Нужно название.
+assistant-error-too-many = Их уже столько, сколько может хранить учётная запись.
+assistant-error-not-saved = Не сохранено: сервер не смог это записать. Попробуйте ещё раз чуть позже.
+assistant-error-conduct-long = Кодекс поведения слишком длинный.
+assistant-error-confirm = Отметьте поле, чтобы подтвердить.
+assistant-error-too-big = Сообщение слишком большое.
+assistant-error-file-big = Файл слишком большой.
+assistant-error-too-many-files = Слишком много файлов в одном сообщении.
+assistant-error-text-long = Сообщение слишком длинное.
+assistant-error-empty = Напишите сообщение или прикрепите файл.
+assistant-error-busy = ИИ-генеалог уже отвечает в стольких разговорах, сколько может. Попробуйте ещё раз чуть позже.
+assistant-error-wait = ИИ-генеалог ещё отвечает в этом разговоре.
+assistant-error-picture = Этот файл — не изображение, которое этот сайт умеет читать.
+assistant-domain-genealogy = Генеалогия
+assistant-domain-medicine = Здоровье и медицина
+assistant-domain-work = Работа и карьера
+assistant-domain-money = Деньги
+assistant-domain-law = Право и документы
+assistant-domain-learning = Учёба
+assistant-domain-home = Дом
+assistant-domain-cooking = Кухня
+assistant-domain-travel = Путешествия
+assistant-domain-nature = Природа и сад
+assistant-domain-wellbeing = Самочувствие
+assistant-domain-family = Семейная жизнь
+assistant-domain-arts = Искусство и культура
+assistant-domain-sports = Спорт
+assistant-domain-tech = Техника
+assistant-domain-science = Наука
+assistant-domain-history = История и память
+assistant-domain-admin = Бумажные дела
+assistant-domain-pets = Животные
+assistant-domain-rites = Праздники и обряды

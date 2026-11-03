@@ -470,6 +470,17 @@ It is personal data about a living person. Four things to know:
   folder is moved aside under `<name>@<its account>`, and you may delete it.
 - **Who may talk to the AFG** is set for each account on the Accounts page.
 
+**Personal assistants.** Each account the AFG is open to has a personal
+assistant (docs/adr/0026): projects and conversations with the AFG. They
+are kept in `family.assistant/<username>/` in the data directory, mode 700,
+with the files the member sent (6 a message at most, 20 MB each). Like the
+brains, they are personal, and **not in the nightly backup**: copy
+`/var/lib/axgf-cms/family.assistant` too if you want them kept. Every
+message sends the conversation's recent history, its files and the
+project's memory to the AFG's computing. The family's archive goes too only
+when the project's member chose it. The site writes at most four answers at
+once.
+
 **Size.** A family of a thousand people is over a megabyte of JSON, some
 400,000 tokens. That is more than many models read at once. The room says
 the size before you send. Ollama is asked for a context large enough for the

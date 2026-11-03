@@ -48,6 +48,17 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 | `GET/POST /admin/login`, `POST /admin/logout` | Session |
 | `GET /account`, `POST /account/person` | The signed-in account's own page: who it is, which person in the tree it says it is, and its AFG brain (docs/adr/0024 §6) — *any account* |
 | `POST /account/brain/forget` | Forget one fact (`fact=<mark>`) or one exchange (`exchange=<mark>`) of the AFG's brain of the signed-in account, or all of it (`all=1&confirm=on`). A mark is the first 16 hex digits of the line's SHA-256. Always the session's own brain; answers `303` to `/account?done=forgotten|forgotten-all|already#account-brain` — *any account* |
+| `GET /account/assistant`, `POST /account/assistant` | My personal assistant (docs/adr/0026): the account's projects, and a new one (`name`, `avatar` = a pack avatar's name, or empty for the one its id picks). Every route under it is the session's own space: another account's project, conversation or file answers 404 — *an account the AFG is open to* |
+| `GET/POST /account/assistant/:project` | A project: its conversations, its code of conduct, its memory. A POST saves its settings (`part=settings`: `name`, `avatar`, `archive=on` to send the family's archive with its messages) or its code of conduct (`part=conduct`: `conduct`, 8,000 characters at most) — *its account* |
+| `POST /account/assistant/:project/delete` | The project and all of it, with `confirm=on` — *its account* |
+| `POST /account/assistant/:project/memory/forget` | Forget one fact of the project's second brain (`fact=<mark>`, the first 16 hex digits of the line's SHA-256), or all of it (`all=1&confirm=on`) — *its account* |
+| `GET/POST /account/assistant/:project/avatar` | Its picture of its own: a multipart `picture` of 8 MB at most, kept as a 256 px JPEG — *its account* |
+| `POST /account/assistant/:project/c` | A new conversation, on its first message: a multipart `text` (32,000 characters) and up to six `files` (20 MB each, 40 MB in all). Answers a redirect to the conversation, or `{"redirect"}` with `Accept: application/json` — *its account* |
+| `GET/POST /account/assistant/:project/c/:conversation` | The conversation; the next message, as above. With `Accept: application/json`: `{"message": {"id", "html"}, "count", "answering"}`; `409` while the AFG still writes in it, `503` while the site writes four answers already — *its account* |
+| `GET /account/assistant/:project/c/:conversation/state?after=N` | What the page does not show yet: `{"count", "messages": [{"id", "role", "html"}], "answering", "live"}`, `live` being the answer being written, drawn — *its account* |
+| `POST /account/assistant/:project/c/:conversation/retry`, `…/edit`, `…/delete`, `GET/POST …/avatar` | Ask again after a failed answer; its `title` and `avatar`; its deletion with `confirm=on`; its picture of its own — *its account* |
+| `GET /account/assistant/:project/f/:file` | A file a message carried: a picture inline, anything else as a download, `nosniff` and a sandboxing CSP — *its account* |
+| `GET /static/avatars/:name.webp` | An avatar of the pack (docs/adr/0026 §8) — *anyone* |
 | `GET /admin/:kind` | Paginated, filterable listing |
 | `GET /admin/:kind/new`, `POST /admin/:kind` | Create |
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |

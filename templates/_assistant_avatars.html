@@ -1,0 +1,21 @@
+{#- The avatar of a project or a conversation: one of the pack's eighty,
+    by domain, or the one its id stands for; a picture of the account's own
+    is sent by its own form. Closed until it is opened. -#}
+<details class="as-picker">
+  <summary>{{ t("assistant-avatar-choose") }}</summary>
+  <fieldset class="as-picker-grid">
+    <legend class="sr-only">{{ t("assistant-avatar") }}</legend>
+    <label class="as-pick as-pick-auto"><input type="radio" name="avatar" value=""{% if not picker_current %} checked{% endif %}><span>{{ t("assistant-avatar-auto") }}</span></label>
+    {% if picker_current == "own" %}<label class="as-pick as-pick-auto"><input type="radio" name="avatar" value="own" checked><span>{{ t("assistant-avatar-own") }}</span></label>{% endif %}
+    {%- for d in pack %}
+    <div class="as-pick-domain">
+      <span class="as-pick-label small muted">{{ t("assistant-domain-" ~ d.domain) }}</span>
+      <div class="as-pick-row">
+      {%- for a in d.avatars %}
+        <label class="as-pick" title="{{ t('assistant-domain-' ~ d.domain) }}"><input type="radio" name="avatar" value="{{ a.name }}"{% if picker_current == a.name %} checked{% endif %}><img src="{{ a.url }}" alt="{{ t('assistant-domain-' ~ d.domain) }} {{ loop.index }}" width="44" height="44" loading="lazy"></label>
+      {%- endfor %}
+      </div>
+    </div>
+    {%- endfor %}
+  </fieldset>
+</details>

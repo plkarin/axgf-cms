@@ -5281,3 +5281,112 @@ account-brain-already = Ya estaba olvidado.
 account-brain-confirm-needed = Marque la casilla para olvidarlo todo.
 account-brain-error = No se olvidó nada: { $error }
 afg-brain-see = Ver y olvidar
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = Mi asistente personal
+assistant-entry = Sus proyectos y conversaciones con el AFG: pregunte, envíe documentos y fotos, retome donde lo dejó.
+assistant-lede = Sus propios proyectos con el AFG. Cada uno tiene su código de conducta y su memoria, y en cada uno, conversaciones que retoma donde las dejó.
+assistant-shut-no-account = Esta sesión no tiene cuenta, así que no tiene asistente personal. Inicie sesión con su propia cuenta.
+assistant-shut-not-open = El AFG no está abierto a su cuenta: lo decide un administrador en la página Cuentas.
+assistant-shut-broken = No se pudo abrir su espacio. Vuelva a intentarlo en un momento; si continúa, avise a un administrador.
+assistant-shut-gone = Aquí no hay nada: este proyecto o esta conversación no existe, o no es suyo.
+assistant-back-account = Volver a mi cuenta
+assistant-new-project = Nuevo proyecto
+assistant-not-ready = El cómputo del AFG aún no está configurado: puede leer sus conversaciones, no enviar mensajes. Un administrador lo configura.
+assistant-conversations-count = { $n ->
+        [one] { $n } conversación
+       *[other] { $n } conversaciones
+    }
+assistant-conduct-set = código de conducta definido
+assistant-empty = Aún no hay proyectos. Un proyecto reúne las conversaciones sobre un mismo tema — la historia de la familia, una cuestión de salud, una búsqueda de empleo — bajo un mismo código de conducta.
+assistant-project-name = Nombre del proyecto
+assistant-create = Crear el proyecto
+assistant-facts-count = { $n ->
+        [one] { $n } dato recordado
+       *[other] { $n } datos recordados
+    }
+assistant-archive-on = con el archivo de la familia
+assistant-start = Empezar una conversación
+assistant-conversations = Conversaciones
+assistant-no-conversation = Aún no hay conversaciones: su primera pregunta abre una.
+assistant-conduct = Código de conducta
+assistant-conduct-label = Cómo debe comportarse el AFG en este proyecto
+assistant-conduct-hint = Sus instrucciones para todas las conversaciones de este proyecto: el tono, el idioma, en qué fijarse, qué dejar de lado. El AFG las sigue, salvo si le piden engañarle o causar daño.
+assistant-save = Guardar
+assistant-memory = Memoria del proyecto
+assistant-memory-intro = Lo que el AFG decidió guardar de las conversaciones de este proyecto: su segundo cerebro. Se le vuelve a dar con cada mensaje del proyecto. Haga que olvide lo que ya no quiera que sepa.
+assistant-forget = Olvidar
+assistant-forget-all = Olvidarlo todo…
+assistant-forget-all-confirm = Sí, olvidar todo lo que el AFG recuerda de este proyecto
+assistant-forget-all-button = Olvidarlo todo
+assistant-memory-none = El AFG aún no recuerda nada de este proyecto.
+assistant-settings = Ajustes
+assistant-archive = Dar al AFG el archivo de la familia en este proyecto
+assistant-archive-hint = Cada registro del archivo, incluidos los vivos, va entonces con cada mensaje adonde calcula el AFG. Las clases sensibles quedan fuera, salvo que un administrador haya decidido otra cosa.
+assistant-archive-size = Archivos JSON: { $files }; tokens por mensaje: unos { $tokens }.
+assistant-avatar-upload = Una imagen suya como avatar
+assistant-avatar-send = Usar esta imagen
+assistant-delete-project = Eliminar el proyecto
+assistant-delete-project-confirm = Sí, eliminar este proyecto, sus conversaciones, sus archivos y su memoria
+assistant-delete = Eliminar
+assistant-conversation-settings = Ajustes de la conversación
+assistant-conversation-title = Título de la conversación
+assistant-delete-conversation = Eliminar la conversación
+assistant-delete-conversation-confirm = Sí, eliminar esta conversación y sus mensajes
+assistant-thread = La conversación
+assistant-reply = Su mensaje
+assistant-sending = Enviando…
+assistant-attach = Adjuntar
+assistant-send = Enviar
+assistant-composer-hint = Intro envía, Mayús+Intro cambia de línea. Documentos, fotos, sonido o vídeo: suéltelos, péguelos o adjúntelos, { $n } archivos como máximo, { $mb } MB cada uno.
+assistant-avatar-choose = Elegir su avatar
+assistant-avatar = Avatar
+assistant-avatar-auto = Elegido para él
+assistant-avatar-own = Su imagen
+assistant-kept = { $n ->
+        [one] Guardado en la memoria del proyecto: { $n } dato
+       *[other] Guardado en la memoria del proyecto: { $n } datos
+    }
+assistant-error-answer = El AFG no pudo responder.
+assistant-retry = Volver a preguntar
+assistant-unanswered = Este mensaje se quedó sin respuesta.
+assistant-writing = El AFG está escribiendo
+assistant-saved = Guardado.
+assistant-project-deleted = El proyecto está eliminado.
+assistant-conversation-deleted = La conversación está eliminada.
+assistant-memory-forgotten = Olvidado: el AFG ya no lo recibirá.
+assistant-memory-forgotten-all = El AFG ya no recuerda nada de este proyecto.
+assistant-avatar-saved = El avatar está guardado.
+assistant-error-name = Hace falta un nombre.
+assistant-error-too-many = Ya hay tantos como una cuenta puede guardar.
+assistant-error-not-saved = No guardado: el servidor no pudo escribirlo. Vuelva a intentarlo en un momento.
+assistant-error-conduct-long = El código de conducta es demasiado largo.
+assistant-error-confirm = Marque la casilla para confirmar.
+assistant-error-too-big = El mensaje es demasiado pesado.
+assistant-error-file-big = Un archivo es demasiado pesado.
+assistant-error-too-many-files = Demasiados archivos en un solo mensaje.
+assistant-error-text-long = El mensaje es demasiado largo.
+assistant-error-empty = Escriba un mensaje o adjunte un archivo.
+assistant-error-busy = El AFG ya responde a tantas conversaciones como puede. Vuelva a intentarlo en un momento.
+assistant-error-wait = El AFG todavía está respondiendo en esta conversación.
+assistant-error-picture = Ese archivo no es una imagen que este sitio sepa leer.
+assistant-domain-genealogy = Genealogía
+assistant-domain-medicine = Salud y medicina
+assistant-domain-work = Trabajo y carrera
+assistant-domain-money = Dinero
+assistant-domain-law = Derecho y papeles
+assistant-domain-learning = Aprender
+assistant-domain-home = Hogar
+assistant-domain-cooking = Cocina
+assistant-domain-travel = Viajes
+assistant-domain-nature = Naturaleza y jardín
+assistant-domain-wellbeing = Bienestar
+assistant-domain-family = Vida familiar
+assistant-domain-arts = Artes y cultura
+assistant-domain-sports = Deporte
+assistant-domain-tech = Tecnología
+assistant-domain-science = Ciencia
+assistant-domain-history = Historia y memoria
+assistant-domain-admin = Trámites
+assistant-domain-pets = Animales
+assistant-domain-rites = Fiestas y ritos

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ t("account-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 {#- An account's own page (2026-10-23): who it is, and which person in the
@@ -10,6 +11,15 @@
 {% if emergency %}
 <p class="lede">{{ t("account-emergency-page") }}</p>
 {% else %}
+{#- The account's personal assistant (docs/adr/0026), when the AFG is open
+    to it. -#}
+{% if brain and brain.allowed %}
+<a class="as-entry" href="/account/assistant">
+  <span class="as-entry-mark" aria-hidden="true">{{ ic.icon("afg") }}</span>
+  <span class="as-entry-text"><strong>{{ t("assistant-title") }}</strong><span class="small muted">{{ t("assistant-entry") }}</span></span>
+  <span class="as-entry-go" aria-hidden="true">{{ ic.icon("send") }}</span>
+</a>
+{% endif %}
 <section class="rec-section" id="account-who">
 <h2>{{ t("account-who") }}</h2>
 <dl class="facts">

@@ -5240,3 +5240,112 @@ account-brain-already = C’était déjà oublié.
 account-brain-confirm-needed = Cochez la case pour tout oublier.
 account-brain-error = Rien n’a été oublié : { $error }
 afg-brain-see = Voir et oublier
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = Mon assistant personnel
+assistant-entry = Vos projets et vos conversations avec l’AFG : posez vos questions, envoyez documents et photos, reprenez là où vous en étiez.
+assistant-lede = Vos projets à vous avec l’AFG. Chacun a son code de conduite et sa mémoire, et dans chacun, des conversations que vous reprenez là où vous les avez laissées.
+assistant-shut-no-account = Cette session n’a pas de compte, donc pas d’assistant personnel. Connectez-vous avec votre propre compte.
+assistant-shut-not-open = L’AFG n’est pas ouvert à votre compte : c’est un administrateur qui en décide, sur la page Comptes.
+assistant-shut-broken = Votre espace n’a pas pu être ouvert. Réessayez dans un instant ; si cela dure, prévenez un administrateur.
+assistant-shut-gone = Il n’y a rien ici : ce projet ou cette conversation n’existe pas, ou n’est pas le vôtre.
+assistant-back-account = Retour à mon compte
+assistant-new-project = Nouveau projet
+assistant-not-ready = Le calcul de l’AFG n’est pas encore réglé : vous pouvez lire vos conversations, pas envoyer de message. Un administrateur s’en charge.
+assistant-conversations-count = { $n ->
+        [one] { $n } conversation
+       *[other] { $n } conversations
+    }
+assistant-conduct-set = code de conduite défini
+assistant-empty = Aucun projet pour l’instant. Un projet réunit les conversations sur un même sujet — l’histoire de la famille, une question de santé, une recherche d’emploi — sous un même code de conduite.
+assistant-project-name = Nom du projet
+assistant-create = Créer le projet
+assistant-facts-count = { $n ->
+        [one] { $n } fait retenu
+       *[other] { $n } faits retenus
+    }
+assistant-archive-on = avec l’archive de la famille
+assistant-start = Commencer une conversation
+assistant-conversations = Conversations
+assistant-no-conversation = Aucune conversation pour l’instant : votre première question en ouvre une.
+assistant-conduct = Code de conduite
+assistant-conduct-label = Comment l’AFG doit se comporter dans ce projet
+assistant-conduct-hint = Vos consignes pour toutes les conversations de ce projet : le ton, la langue, ce qu’il faut regarder, ce qu’il faut laisser de côté. L’AFG les suit, sauf si elles lui demandent de vous tromper ou de nuire.
+assistant-save = Enregistrer
+assistant-memory = Mémoire du projet
+assistant-memory-intro = Ce que l’AFG a choisi de retenir des conversations de ce projet : son second cerveau. Elle lui est redonnée à chaque message du projet. Faites-lui oublier ce que vous ne voulez plus qu’il sache.
+assistant-forget = Oublier
+assistant-forget-all = Tout oublier…
+assistant-forget-all-confirm = Oui, oublier tout ce que l’AFG retient de ce projet
+assistant-forget-all-button = Tout oublier
+assistant-memory-none = L’AFG ne retient encore rien de ce projet.
+assistant-settings = Réglages
+assistant-archive = Donner l’archive de la famille à l’AFG dans ce projet
+assistant-archive-hint = Toutes les fiches de l’archive, vivants compris, partent alors avec chaque message vers le calcul de l’AFG. Les classes sensibles restent dehors, sauf si un administrateur en a décidé autrement.
+assistant-archive-size = Fichiers JSON : { $files } ; jetons par message : environ { $tokens }.
+assistant-avatar-upload = Une image à vous comme avatar
+assistant-avatar-send = Utiliser cette image
+assistant-delete-project = Supprimer le projet
+assistant-delete-project-confirm = Oui, supprimer ce projet, ses conversations, leurs fichiers et sa mémoire
+assistant-delete = Supprimer
+assistant-conversation-settings = Réglages de la conversation
+assistant-conversation-title = Titre de la conversation
+assistant-delete-conversation = Supprimer la conversation
+assistant-delete-conversation-confirm = Oui, supprimer cette conversation et ses messages
+assistant-thread = La conversation
+assistant-reply = Votre message
+assistant-sending = Envoi…
+assistant-attach = Joindre
+assistant-send = Envoyer
+assistant-composer-hint = Entrée envoie, Maj+Entrée va à la ligne. Documents, photos, son ou vidéo : déposez-les, collez-les ou joignez-les, { $n } fichiers au plus, { $mb } Mo chacun.
+assistant-avatar-choose = Choisir son avatar
+assistant-avatar = Avatar
+assistant-avatar-auto = Choisi pour lui
+assistant-avatar-own = Votre image
+assistant-kept = { $n ->
+        [one] Retenu dans la mémoire du projet : { $n } fait
+       *[other] Retenu dans la mémoire du projet : { $n } faits
+    }
+assistant-error-answer = L’AFG n’a pas pu répondre.
+assistant-retry = Redemander
+assistant-unanswered = Ce message est resté sans réponse.
+assistant-writing = L’AFG écrit
+assistant-saved = Enregistré.
+assistant-project-deleted = Le projet est supprimé.
+assistant-conversation-deleted = La conversation est supprimée.
+assistant-memory-forgotten = Oublié : l’AFG ne le recevra plus.
+assistant-memory-forgotten-all = L’AFG ne retient plus rien de ce projet.
+assistant-avatar-saved = L’avatar est enregistré.
+assistant-error-name = Un nom est nécessaire.
+assistant-error-too-many = Il y en a déjà autant qu’un compte peut en garder.
+assistant-error-not-saved = Non enregistré : le serveur n’a pas pu l’écrire. Réessayez dans un instant.
+assistant-error-conduct-long = Le code de conduite est trop long.
+assistant-error-confirm = Cochez la case pour confirmer.
+assistant-error-too-big = Le message est trop lourd.
+assistant-error-file-big = Un fichier est trop lourd.
+assistant-error-too-many-files = Trop de fichiers dans un seul message.
+assistant-error-text-long = Le message est trop long.
+assistant-error-empty = Écrivez un message ou joignez un fichier.
+assistant-error-busy = L’AFG répond déjà à autant de conversations qu’il peut. Réessayez dans un instant.
+assistant-error-wait = L’AFG est encore en train de répondre dans cette conversation.
+assistant-error-picture = Ce fichier n’est pas une image que ce site sait lire.
+assistant-domain-genealogy = Généalogie
+assistant-domain-medicine = Santé et médecine
+assistant-domain-work = Travail et carrière
+assistant-domain-money = Argent
+assistant-domain-law = Droit et papiers
+assistant-domain-learning = Apprendre
+assistant-domain-home = Maison
+assistant-domain-cooking = Cuisine
+assistant-domain-travel = Voyages
+assistant-domain-nature = Nature et jardin
+assistant-domain-wellbeing = Bien-être
+assistant-domain-family = Vie de famille
+assistant-domain-arts = Arts et culture
+assistant-domain-sports = Sport
+assistant-domain-tech = Technologie
+assistant-domain-science = Sciences
+assistant-domain-history = Histoire et mémoire
+assistant-domain-admin = Démarches
+assistant-domain-pets = Animaux
+assistant-domain-rites = Fêtes et rites

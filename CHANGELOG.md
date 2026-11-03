@@ -7,9 +7,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 The AFG's models of the moment, and their efforts (the operator's request
-of 2 November 2026, docs/adr/0025).
+of 2 November 2026, docs/adr/0025), and each member's personal assistant
+(the operator's request of 3 November 2026, docs/adr/0026).
 
 ### Added
+
+- **My personal assistant.** Each account the AFG is open to has, from its
+  account page, its own chat with the AFG:
+  - **projects** it creates and names, each with an avatar, a **code of
+    conduct** the AFG follows in every conversation of the project, and a
+    **memory**: the second brain the AFG keeps from the project's
+    conversations, which the member reads and forgets fact by fact;
+  - **conversations** in each project, opened by a first question and taken
+    up again at any time. The AFG's answer appears as it is written, and a
+    message carries documents, photographs, sound or film (dropped, pasted
+    or attached; no microphone);
+  - **eighty avatars** made for the site with Canva, four for each of twenty
+    domains, or a picture of the member's own;
+  - an answer that failed, or a message left without one when the site
+    stopped, is **asked again** from the thread.
+
+  Everything in it is the account's own. The family's archive goes with a
+  project's messages only when its member says so.
+- **Every way of computing streams its answer**: Ollama, OpenAI, Mistral,
+  vLLM, Claude, Gemini and Claude Code. Pictures go to every service, PDF
+  documents to Claude, Gemini and OpenAI, sound and film to Gemini.
 
 - **The AFG room suggests the models of the moment.** For each way of
   computing, the model field lists the current models of each maker, the

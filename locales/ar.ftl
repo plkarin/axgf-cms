@@ -5793,3 +5793,124 @@ account-brain-already = كان ذلك منسيًّا من قبل.
 account-brain-confirm-needed = حدّد المربع لنسيان كل شيء.
 account-brain-error = لم يُنسَ شيء: { $error }
 afg-brain-see = عرض ونسيان
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = مساعدي الشخصي
+assistant-entry = مشاريعك ومحادثاتك مع النسّابة الاصطناعي: اسأل، وأرسل المستندات والصور، وتابع من حيث توقفت.
+assistant-lede = مشاريعك الخاصة مع النسّابة الاصطناعي. لكل منها مدونة سلوك وذاكرة، وفي كل منها محادثات تتابعها من حيث تركتها.
+assistant-shut-no-account = لا حساب لهذه الجلسة، فلا مساعد شخصي لها. سجّل الدخول بحسابك الخاص.
+assistant-shut-not-open = النسّابة الاصطناعي غير متاح لحسابك: يقرر ذلك مسؤول في صفحة الحسابات.
+assistant-shut-broken = تعذّر فتح مساحتك. أعد المحاولة بعد قليل؛ وإن استمر ذلك فأخبر مسؤولًا.
+assistant-shut-gone = لا شيء هنا: هذا المشروع أو هذه المحادثة غير موجودة، أو ليست لك.
+assistant-back-account = العودة إلى حسابي
+assistant-new-project = مشروع جديد
+assistant-not-ready = لم يُضبط بعد مصدر حوسبة النسّابة الاصطناعي: يمكنك قراءة محادثاتك لا إرسال رسالة. يضبطه مسؤول.
+assistant-conversations-count = { $n ->
+        [zero] لا محادثات
+        [one] محادثة واحدة
+        [two] محادثتان
+        [few] { $n } محادثات
+        [many] { $n } محادثة
+       *[other] { $n } محادثة
+    }
+assistant-conduct-set = مدونة السلوك محددة
+assistant-empty = لا مشاريع بعد. يجمع المشروع المحادثات حول موضوع واحد — تاريخ العائلة، مسألة صحية، البحث عن عمل — تحت مدونة سلوك واحدة.
+assistant-project-name = اسم المشروع
+assistant-create = إنشاء المشروع
+assistant-facts-count = { $n ->
+        [zero] لا حقائق محفوظة
+        [one] حقيقة واحدة محفوظة
+        [two] حقيقتان محفوظتان
+        [few] { $n } حقائق محفوظة
+        [many] { $n } حقيقة محفوظة
+       *[other] { $n } حقيقة محفوظة
+    }
+assistant-archive-on = مع أرشيف العائلة
+assistant-start = بدء محادثة
+assistant-conversations = المحادثات
+assistant-no-conversation = لا محادثات بعد: سؤالك الأول يبدأ واحدة.
+assistant-conduct = مدونة السلوك
+assistant-conduct-label = كيف ينبغي أن يتصرف النسّابة الاصطناعي في هذا المشروع
+assistant-conduct-hint = تعليماتك لكل محادثات هذا المشروع: النبرة، واللغة، وما يُنظر إليه، وما يُترك جانبًا. يتبعها النسّابة الاصطناعي ما لم تطلب منه خداعك أو إلحاق الأذى.
+assistant-save = حفظ
+assistant-memory = ذاكرة المشروع
+assistant-memory-intro = ما اختار النسّابة الاصطناعي حفظه من محادثات هذا المشروع: دماغه الثاني. تُعاد إليه مع كل رسالة في المشروع. اجعله ينسى ما لم تعد تريده أن يعرفه.
+assistant-forget = نسيان
+assistant-forget-all = نسيان كل شيء…
+assistant-forget-all-confirm = نعم، انسَ كل ما يتذكره النسّابة الاصطناعي عن هذا المشروع
+assistant-forget-all-button = نسيان كل شيء
+assistant-memory-none = لا يتذكر النسّابة الاصطناعي شيئًا عن هذا المشروع بعد.
+assistant-settings = الإعدادات
+assistant-archive = إعطاء النسّابة الاصطناعي أرشيف العائلة في هذا المشروع
+assistant-archive-hint = عندها يذهب كل سجل في الأرشيف، الأحياء منهم أيضًا، مع كل رسالة إلى حيث يحسب النسّابة الاصطناعي. تبقى الفئات الحساسة خارجًا ما لم يقرر مسؤول غير ذلك.
+assistant-archive-size = ملفات JSON: { $files }؛ الرموز لكل رسالة: نحو { $tokens }.
+assistant-avatar-upload = صورة خاصة بك صورةً رمزية
+assistant-avatar-send = استخدام هذه الصورة
+assistant-delete-project = حذف المشروع
+assistant-delete-project-confirm = نعم، احذف هذا المشروع ومحادثاته وملفاتها وذاكرته
+assistant-delete = حذف
+assistant-conversation-settings = إعدادات المحادثة
+assistant-conversation-title = عنوان المحادثة
+assistant-delete-conversation = حذف المحادثة
+assistant-delete-conversation-confirm = نعم، احذف هذه المحادثة ورسائلها
+assistant-thread = المحادثة
+assistant-reply = رسالتك
+assistant-sending = جارٍ الإرسال…
+assistant-attach = إرفاق
+assistant-send = إرسال
+assistant-composer-hint = ‏Enter يرسل، وShift+Enter يبدأ سطرًا جديدًا. المستندات والصور والصوت والفيديو: أفلتها أو الصقها أو أرفقها؛ عدد الملفات لا يتجاوز: { $n }، وحجم كل ملف حتى { $mb } MB.
+assistant-avatar-choose = اختيار الصورة الرمزية
+assistant-avatar = الصورة الرمزية
+assistant-avatar-auto = مختارة له
+assistant-avatar-own = صورتك
+assistant-kept = { $n ->
+        [zero] لم يُحفظ شيء في ذاكرة المشروع
+        [one] حُفظت في ذاكرة المشروع حقيقة واحدة
+        [two] حُفظت في ذاكرة المشروع حقيقتان
+        [few] حُفظت في ذاكرة المشروع { $n } حقائق
+        [many] حُفظت في ذاكرة المشروع { $n } حقيقة
+       *[other] حُفظت في ذاكرة المشروع { $n } حقيقة
+    }
+assistant-error-answer = تعذّر على النسّابة الاصطناعي أن يجيب.
+assistant-retry = السؤال مجددًا
+assistant-unanswered = بقيت هذه الرسالة بلا جواب.
+assistant-writing = النسّابة الاصطناعي يكتب
+assistant-saved = تم الحفظ.
+assistant-project-deleted = حُذف المشروع.
+assistant-conversation-deleted = حُذفت المحادثة.
+assistant-memory-forgotten = نُسي: لن يتلقاه النسّابة الاصطناعي بعد الآن.
+assistant-memory-forgotten-all = لم يعد النسّابة الاصطناعي يتذكر شيئًا عن هذا المشروع.
+assistant-avatar-saved = حُفظت الصورة الرمزية.
+assistant-error-name = يلزم اسم.
+assistant-error-too-many = هناك بالفعل العدد الذي يمكن لحساب أن يحتفظ به.
+assistant-error-not-saved = لم يُحفظ: لم يتمكن الخادم من كتابته. أعد المحاولة بعد قليل.
+assistant-error-conduct-long = مدونة السلوك طويلة جدًا.
+assistant-error-confirm = ضع علامة في المربع للتأكيد.
+assistant-error-too-big = الرسالة كبيرة جدًا.
+assistant-error-file-big = ملف كبير جدًا.
+assistant-error-too-many-files = ملفات كثيرة جدًا في رسالة واحدة.
+assistant-error-text-long = الرسالة طويلة جدًا.
+assistant-error-empty = اكتب رسالة أو أرفق ملفًا.
+assistant-error-busy = يجيب النسّابة الاصطناعي بالفعل في أكبر عدد يستطيعه من المحادثات. أعد المحاولة بعد قليل.
+assistant-error-wait = لا يزال النسّابة الاصطناعي يجيب في هذه المحادثة.
+assistant-error-picture = هذا الملف ليس صورة يستطيع هذا الموقع قراءتها.
+assistant-domain-genealogy = علم الأنساب
+assistant-domain-medicine = الصحة والطب
+assistant-domain-work = العمل والمسيرة المهنية
+assistant-domain-money = المال
+assistant-domain-law = القانون والأوراق
+assistant-domain-learning = التعلّم
+assistant-domain-home = المنزل
+assistant-domain-cooking = الطبخ
+assistant-domain-travel = السفر
+assistant-domain-nature = الطبيعة والحديقة
+assistant-domain-wellbeing = الرفاه
+assistant-domain-family = الحياة العائلية
+assistant-domain-arts = الفنون والثقافة
+assistant-domain-sports = الرياضة
+assistant-domain-tech = التقنية
+assistant-domain-science = العلوم
+assistant-domain-history = التاريخ والذاكرة
+assistant-domain-admin = المعاملات
+assistant-domain-pets = الحيوانات
+assistant-domain-rites = الأعياد والطقوس

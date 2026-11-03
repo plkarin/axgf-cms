@@ -41,7 +41,7 @@ fn writing() -> MutexGuard<'static, ()> {
 }
 
 /// A line's mark, to name it in a form without saying it.
-fn mark(line: &str) -> String {
+pub(crate) fn mark(line: &str) -> String {
     Sha256::digest(line.as_bytes())
         .iter()
         .take(8)
@@ -184,7 +184,7 @@ pub fn folder_name(username: &str) -> String {
     }
 }
 
-fn make_dir(dir: &Path) -> io::Result<()> {
+pub(crate) fn make_dir(dir: &Path) -> io::Result<()> {
     fs::DirBuilder::new()
         .recursive(true)
         .mode(0o700)
@@ -197,7 +197,7 @@ fn read_card(dir: &Path) -> Option<Card> {
 }
 
 /// Write a whole file readable by its owner only.
-fn write_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
+pub(crate) fn write_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
     let tmp = path.with_extension("tmp");
     {
         let mut f = fs::OpenOptions::new()
@@ -213,7 +213,7 @@ fn write_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
 }
 
 /// Add to the end of a file readable by its owner only.
-fn append_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
+pub(crate) fn append_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
     let mut f = fs::OpenOptions::new()
         .append(true)
         .create(true)
@@ -224,7 +224,7 @@ fn append_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
 }
 
 /// The first `n` characters of a text, said to be cut when they are.
-fn cut(s: &str, n: usize) -> String {
+pub(crate) fn cut(s: &str, n: usize) -> String {
     if s.chars().count() <= n {
         return s.to_string();
     }

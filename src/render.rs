@@ -53,6 +53,7 @@ pub const MAP_JS: &str = include_str!("../static/map.js");
 pub const AVATAR_JS: &str = include_str!("../static/avatar.js");
 /// The AFG room's fields (docs/adr/0023).
 pub const AFG_JS: &str = include_str!("../static/afg.js");
+pub const ASSISTANT_JS: &str = include_str!("../static/assistant.js");
 
 /// The profile editor's "add another entry", enhancement only.
 pub const PROFILE_JS: &str = include_str!("../static/profile.js");
@@ -232,6 +233,11 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_emblem.html",
     "admin_afg.html",
     "_afg_result.html",
+    "assistant.html",
+    "_assistant_message.html",
+    "_assistant_live.html",
+    "_assistant_avatars.html",
+    "_assistant_composer.html",
     "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",
@@ -372,6 +378,9 @@ pub struct Chrome {
     pub signed_in: bool,
     pub may_write: bool,
     pub is_admin: bool,
+    /// Whether the account signed in may talk to the AFG, which gives it its
+    /// personal assistant (docs/adr/0026).
+    pub assistant: bool,
     /// Who is signed in, for the masthead's account menu: the username, or
     /// the emergency session's name in the interface language. Empty when
     /// nobody is.
@@ -450,6 +459,7 @@ impl Chrome {
             signed_in: viewer.signed_in(),
             may_write: viewer.may_write(),
             is_admin: viewer.is_admin(),
+            assistant: viewer.user.as_ref().is_some_and(|u| u.afg),
             settings_url: crate::settings::entry_url(&safe_back(back)),
             back: safe_back(back),
             locales: crate::i18n::selector_entries(),

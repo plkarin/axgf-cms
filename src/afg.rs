@@ -377,7 +377,7 @@ impl Config {
 }
 
 /// A Gemini model as its URL names it.
-fn gemini_model(m: &str) -> &str {
+pub(crate) fn gemini_model(m: &str) -> &str {
     let m = m.trim();
     m.strip_prefix("models/").unwrap_or(m)
 }
@@ -618,14 +618,14 @@ pub struct HttpCall {
 
 /// Ollama reads only `num_ctx` tokens of what it is given and drops the rest
 /// without a word: room for the whole archive, within what models offer.
-fn num_ctx(tokens: usize) -> usize {
+pub(crate) fn num_ctx(tokens: usize) -> usize {
     (tokens + tokens / 5 + 4096).clamp(8192, 131_072)
 }
 
 /// What Anthropic's models may write: the answer, and the thinking each
 /// current model does first, which counts within it and grows with the
 /// effort.
-const ANTHROPIC_MAX_TOKENS: u32 = 32_000;
+pub(crate) const ANTHROPIC_MAX_TOKENS: u32 = 32_000;
 
 pub fn http_call(cfg: &Config, model: &str, p: &Prompt, tokens: usize) -> Option<HttpCall> {
     let url = cfg.call_url(model)?;
@@ -668,27 +668,31 @@ pub fn http_call(cfg: &Config, model: &str, p: &Prompt, tokens: usize) -> Option
         },
         _ => return None,
     };
-    // The effort, in the setting each protocol names for it; without one,
-    // the model's own default.
-    if !effort.is_empty() {
-        let body = &mut call.body;
-        match cfg.kind.protocol() {
-            Protocol::Ollama => {
-                body["think"] = match effort {
-                    "true" => json!(true),
-                    "false" => json!(false),
-                    level => json!(level),
-                }
-            }
-            Protocol::OpenAi => body["reasoning_effort"] = json!(effort),
-            Protocol::Anthropic => body["output_config"] = json!({"effort": effort}),
-            Protocol::Gemini => {
-                body["generationConfig"] = json!({"thinkingConfig": {"thinkingLevel": effort}})
-            }
-            _ => {}
-        }
-    }
+    apply_effort(cfg.kind.protocol(), &mut call.body, effort);
     Some(call)
+}
+
+/// The effort, in the setting each protocol names for it; without one, the
+/// model's own default.
+pub(crate) fn apply_effort(protocol: Protocol, body: &mut Value, effort: &str) {
+    if effort.is_empty() {
+        return;
+    }
+    match protocol {
+        Protocol::Ollama => {
+            body["think"] = match effort {
+                "true" => json!(true),
+                "false" => json!(false),
+                level => json!(level),
+            }
+        }
+        Protocol::OpenAi => body["reasoning_effort"] = json!(effort),
+        Protocol::Anthropic => body["output_config"] = json!({"effort": effort}),
+        Protocol::Gemini => {
+            body["generationConfig"] = json!({"thinkingConfig": {"thinkingLevel": effort}})
+        }
+        _ => {}
+    }
 }
 
 /// What came back.
@@ -719,7 +723,7 @@ impl Failure {
 }
 
 /// The last `n` characters of a text, for a failure's detail.
-fn tail(s: &str, n: usize) -> String {
+pub(crate) fn tail(s: &str, n: usize) -> String {
     let count = s.chars().count();
     if count <= n {
         return s.trim().to_string();
@@ -728,7 +732,7 @@ fn tail(s: &str, n: usize) -> String {
 }
 
 /// A service's own words for what went wrong.
-fn error_message(v: &Value) -> Option<String> {
+pub(crate) fn error_message(v: &Value) -> Option<String> {
     v.pointer("/error/message")
         .or_else(|| v.get("error").filter(|e| e.is_string()))
         .or_else(|| v.get("message"))
@@ -736,15 +740,24 @@ fn error_message(v: &Value) -> Option<String> {
         .map(str::to_string)
 }
 
+/// A refusal, in the service's own words when it gave any.
+pub(crate) fn http_error(status: u16, body: &str) -> String {
+    let said = serde_json::from_str::<Value>(body)
+        .ok()
+        .as_ref()
+        .and_then(error_message)
+        .unwrap_or_else(|| tail(body, 400));
+    format!("HTTP {status}: {said}")
+}
+
 pub fn parse_http(protocol: Protocol, status: u16, body: &str) -> Result<Answer, String> {
+    if !(200..300).contains(&status) {
+        return Err(http_error(status, body));
+    }
     let v: Value = match serde_json::from_str(body) {
         Ok(v) => v,
         Err(_) => return Err(format!("HTTP {status}: {}", tail(body, 400))),
     };
-    if !(200..300).contains(&status) {
-        let said = error_message(&v).unwrap_or_else(|| tail(body, 400));
-        return Err(format!("HTTP {status}: {said}"));
-    }
     let n = |p: &str| v.pointer(p).and_then(Value::as_u64);
     let model = |p: &str| v.pointer(p).and_then(Value::as_str).map(str::to_string);
     let joined = |parts: Option<&Value>, key: &str| -> String {
@@ -817,7 +830,7 @@ pub fn parse_http(protocol: Protocol, status: u16, body: &str) -> Result<Answer,
     Ok(answer)
 }
 
-fn http_agent(timeout: Duration) -> ureq::Agent {
+pub(crate) fn http_agent(timeout: Duration) -> ureq::Agent {
     ureq::Agent::new_with_config(
         ureq::Agent::config_builder()
             .timeout_global(Some(timeout))
@@ -832,7 +845,7 @@ fn http_agent(timeout: Duration) -> ureq::Agent {
 }
 
 /// The first model an Ollama server has installed.
-fn ollama_model(agent: &ureq::Agent, base: &str) -> Result<String, Failure> {
+pub(crate) fn ollama_model(agent: &ureq::Agent, base: &str) -> Result<String, Failure> {
     let url = format!("{base}/api/tags");
     let mut resp = agent
         .get(&url)
@@ -898,7 +911,7 @@ pub struct CliCall {
 /// OpenCode's permissions while it reads the archive: every tool denied but
 /// reading, which its attachment goes through, and reading outside its
 /// private working directory (`external_directory`) is denied with the rest.
-const OPENCODE_DENY: &str = r#"{"*":"deny","read":"allow"}"#;
+pub(crate) const OPENCODE_DENY: &str = r#"{"*":"deny","read":"allow"}"#;
 
 /// The file OpenCode is given the archive in.
 const OPENCODE_FILE: &str = "axgf-bundle.txt";
@@ -910,7 +923,7 @@ const CODEX_ANSWER: &str = "answer.md";
 /// came with later versions of an agent: those are passed only when the
 /// program in hand names them. A version without one of the others says so
 /// itself, in the test's failure.
-fn knows(help: &str, option: &str) -> bool {
+pub(crate) fn knows(help: &str, option: &str) -> bool {
     help.split(|c: char| c.is_whitespace() || matches!(c, ',' | '=' | '[' | ']'))
         .any(|w| w == option)
 }
@@ -920,7 +933,7 @@ fn knows(help: &str, option: &str) -> bool {
 /// account's CLAUDE.md, skills, hooks or plugins (`--safe-mode`, which 2.1.131
 /// did not know yet); no MCP server; no skill; nobody to ask for a
 /// permission.
-const CLAUDE_KEEP_OUT: &[&[&str]] = &[
+pub(crate) const CLAUDE_KEEP_OUT: &[&[&str]] = &[
     &["--no-session-persistence"],
     &["--safe-mode"],
     &["--strict-mcp-config"],
@@ -930,7 +943,7 @@ const CLAUDE_KEEP_OUT: &[&[&str]] = &[
 
 /// Codex's, likewise: not the account's `config.toml` (its MCP servers), and
 /// nothing kept.
-const CODEX_KEEP_OUT: &[&str] = &["--ignore-user-config", "--ephemeral"];
+pub(crate) const CODEX_KEEP_OUT: &[&str] = &["--ignore-user-config", "--ephemeral"];
 
 /// `help` is what the agent's own help printed (`claude --help`,
 /// `codex exec --help`), for the options only some versions know.
@@ -1042,7 +1055,7 @@ pub fn cli_call(cfg: &Config, p: &Prompt, work: &Path, help: &str) -> Option<Cli
 }
 
 /// Terminal colours, which an agent's plain output may still carry.
-fn strip_ansi(s: &str) -> String {
+pub(crate) fn strip_ansi(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     let mut chars = s.chars().peekable();
     while let Some(c) = chars.next() {
@@ -1162,7 +1175,7 @@ pub fn find_program(kind: Kind, configured: &str) -> Option<PathBuf> {
 /// An agent's command, run in its working directory, without this site's own
 /// settings in its environment: the service's environment file holds the
 /// emergency token.
-fn agent_command(program: &Path, work: &Path) -> tokio::process::Command {
+pub(crate) fn agent_command(program: &Path, work: &Path) -> tokio::process::Command {
     let mut cmd = tokio::process::Command::new(program);
     cmd.current_dir(work).kill_on_drop(true);
     for (k, _) in std::env::vars_os() {
@@ -1174,7 +1187,7 @@ fn agent_command(program: &Path, work: &Path) -> tokio::process::Command {
 }
 
 /// What an agent's help says, for the options its version knows (`knows`).
-async fn help_of(program: &Path, args: &[&str], work: &Path) -> String {
+pub(crate) async fn help_of(program: &Path, args: &[&str], work: &Path) -> String {
     let mut cmd = agent_command(program, work);
     cmd.args(args)
         .stdin(std::process::Stdio::null())

@@ -1,0 +1,37 @@
+{% import "_icons.html" as ic %}
+{#- One message of a conversation (docs/adr/0026): the member's words and
+    files on one side, the AFG's answer drawn from its Markdown on the
+    other, or what kept it from answering. -#}
+<article class="as-msg as-msg-{{ m.role }}" data-msg="{{ m.id }}" data-role="{{ m.role }}">
+{%- if m.role == "user" %}
+  <div class="as-bubble">
+    {%- if m.files %}
+    <div class="as-files">
+      {%- for f in m.files %}
+      {%- if f.image %}<a class="as-file-img" href="{{ f.url }}"><img src="{{ f.url }}" alt="{{ f.name }}" loading="lazy"></a>
+      {%- else %}<a class="as-file" href="{{ f.url }}">{{ ic.icon("document") }}<span class="as-file-name">{{ f.name }}</span><span class="as-file-size">{{ f.size_text }}</span></a>{% endif %}
+      {%- endfor %}
+    </div>
+    {%- endif %}
+    {%- if m.text %}<div class="as-text">{{ m.text }}</div>{% endif %}
+  </div>
+{%- elif m.role == "assistant" %}
+  <div class="as-mark" aria-hidden="true">{{ ic.icon("afg") }}</div>
+  <div class="as-answer">
+    <div class="note-text as-md">{{ m.html | safe }}</div>
+    <div class="as-meta small muted">{% if m.model %}{{ m.model }}{% endif %}{% if m.seconds is not none %}{% if m.model %} · {% endif %}{{ t("afg-run-seconds", s=m.seconds) }}{% endif %}</div>
+    {%- if m.remembered %}
+    <details class="as-kept small"><summary>{{ ic.icon("brain") }}<span>{{ t("assistant-kept", n=m.remembered | length) }}</span></summary><ul>{% for r in m.remembered %}<li>{{ r }}</li>{% endfor %}</ul></details>
+    {%- endif %}
+  </div>
+{%- else %}
+  <div class="as-mark as-mark-error" aria-hidden="true">{{ ic.icon("alert") }}</div>
+  <div class="as-answer as-error">
+    <p><strong>{{ t("assistant-error-answer") }}</strong></p>
+    <pre class="as-error-text">{{ m.text }}</pre>
+    {%- if last %}
+    <form method="post" action="/account/assistant/{{ pid }}/c/{{ cid }}/retry" data-retry><button class="btn small" type="submit">{{ t("assistant-retry") }}</button></form>
+    {%- endif %}
+  </div>
+{%- endif %}
+</article>

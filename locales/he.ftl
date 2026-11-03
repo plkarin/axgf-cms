@@ -5397,3 +5397,118 @@ account-brain-already = זה כבר נשכח.
 account-brain-confirm-needed = סמנו את התיבה כדי לשכוח הכול.
 account-brain-error = דבר לא נשכח: { $error }
 afg-brain-see = צפייה ושכחה
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = העוזר האישי שלי
+assistant-entry = הפרויקטים והשיחות שלך עם הגנאלוג המלאכותי: לשאול, לשלוח מסמכים ותמונות, ולהמשיך מאיפה שהפסקת.
+assistant-lede = הפרויקטים שלך עם הגנאלוג המלאכותי. לכל אחד קוד התנהגות וזיכרון משלו, ובכל אחד שיחות שאפשר להמשיך מהמקום שבו נעצרו.
+assistant-shut-no-account = לסשן הזה אין חשבון, ולכן אין עוזר אישי. יש להיכנס עם החשבון שלך.
+assistant-shut-not-open = הגנאלוג המלאכותי לא פתוח לחשבון שלך: מנהל מחליט על כך בדף החשבונות.
+assistant-shut-broken = לא היה אפשר לפתוח את המרחב שלך. כדאי לנסות שוב בעוד רגע; אם זה נמשך, יש לפנות למנהל.
+assistant-shut-gone = אין כאן כלום: הפרויקט או השיחה הזו לא קיימים, או שאינם שלך.
+assistant-back-account = חזרה לחשבון שלי
+assistant-new-project = פרויקט חדש
+assistant-not-ready = החישוב של הגנאלוג המלאכותי עוד לא הוגדר: אפשר לקרוא את השיחות, לא לשלוח הודעה. מנהל מגדיר אותו.
+assistant-conversations-count = { $n ->
+        [one] שיחה אחת
+        [two] { $n } שיחות
+        [many] { $n } שיחות
+       *[other] { $n } שיחות
+    }
+assistant-conduct-set = קוד התנהגות הוגדר
+assistant-empty = אין עדיין פרויקטים. פרויקט מאגד את השיחות על נושא אחד — תולדות המשפחה, שאלה רפואית, חיפוש עבודה — תחת קוד התנהגות אחד.
+assistant-project-name = שם הפרויקט
+assistant-create = יצירת הפרויקט
+assistant-facts-count = { $n ->
+        [one] עובדה אחת שנשמרה
+        [two] { $n } עובדות שנשמרו
+        [many] { $n } עובדות שנשמרו
+       *[other] { $n } עובדות שנשמרו
+    }
+assistant-archive-on = עם הארכיון של המשפחה
+assistant-start = התחלת שיחה
+assistant-conversations = שיחות
+assistant-no-conversation = אין עדיין שיחות: השאלה הראשונה שלך פותחת אחת.
+assistant-conduct = קוד התנהגות
+assistant-conduct-label = איך הגנאלוג המלאכותי צריך להתנהג בפרויקט הזה
+assistant-conduct-hint = ההנחיות שלך לכל שיחה בפרויקט: הטון, השפה, במה להתמקד ומה להשאיר בצד. הגנאלוג המלאכותי ממלא אותן, אלא אם הן מבקשות ממנו להטעות אותך או להזיק.
+assistant-save = שמירה
+assistant-memory = הזיכרון של הפרויקט
+assistant-memory-intro = מה שהגנאלוג המלאכותי בחר לשמור משיחות הפרויקט: המוח השני שלו. הזיכרון חוזר אליו עם כל הודעה בפרויקט. אפשר לגרום לו לשכוח את מה שאינך רוצה שידע.
+assistant-forget = לשכוח
+assistant-forget-all = לשכוח הכול…
+assistant-forget-all-confirm = כן, לשכוח את כל מה שהגנאלוג המלאכותי זוכר על הפרויקט הזה
+assistant-forget-all-button = לשכוח הכול
+assistant-memory-none = הגנאלוג המלאכותי עוד לא זוכר דבר על הפרויקט הזה.
+assistant-settings = הגדרות
+assistant-archive = לתת לגנאלוג המלאכותי את הארכיון של המשפחה בפרויקט הזה
+assistant-archive-hint = כל רשומה בארכיון, כולל החיים, נשלחת אז עם כל הודעה למקום שבו הגנאלוג המלאכותי מחשב. המחלקות הרגישות נשארות בחוץ, אלא אם מנהל החליט אחרת.
+assistant-archive-size = קובצי JSON: { $files }; אסימונים להודעה: כ־{ $tokens }.
+assistant-avatar-upload = תמונה משלך כאווטאר
+assistant-avatar-send = להשתמש בתמונה הזו
+assistant-delete-project = מחיקת הפרויקט
+assistant-delete-project-confirm = כן, למחוק את הפרויקט, את השיחות שלו, את הקבצים שלהן ואת הזיכרון שלו
+assistant-delete = מחיקה
+assistant-conversation-settings = הגדרות השיחה
+assistant-conversation-title = כותרת השיחה
+assistant-delete-conversation = מחיקת השיחה
+assistant-delete-conversation-confirm = כן, למחוק את השיחה הזו ואת ההודעות שלה
+assistant-thread = השיחה
+assistant-reply = ההודעה שלך
+assistant-sending = שולח…
+assistant-attach = צירוף
+assistant-send = שליחה
+assistant-composer-hint = Enter שולח, Shift+Enter מתחיל שורה חדשה. מסמכים, תמונות, קול או וידאו: לגרור, להדביק או לצרף; קבצים לכל היותר: { $n }, עד { $mb } MB כל אחד.
+assistant-avatar-choose = בחירת אווטאר
+assistant-avatar = אווטאר
+assistant-avatar-auto = נבחר עבורו
+assistant-avatar-own = התמונה שלך
+assistant-kept = { $n ->
+        [one] נשמרה בזיכרון הפרויקט עובדה אחת
+        [two] נשמרו בזיכרון הפרויקט { $n } עובדות
+        [many] נשמרו בזיכרון הפרויקט { $n } עובדות
+       *[other] נשמרו בזיכרון הפרויקט { $n } עובדות
+    }
+assistant-error-answer = הגנאלוג המלאכותי לא הצליח לענות.
+assistant-retry = לשאול שוב
+assistant-unanswered = ההודעה הזו נשארה ללא תשובה.
+assistant-writing = הגנאלוג המלאכותי כותב
+assistant-saved = נשמר.
+assistant-project-deleted = הפרויקט נמחק.
+assistant-conversation-deleted = השיחה נמחקה.
+assistant-memory-forgotten = נשכח: הגנאלוג המלאכותי לא יקבל את זה יותר.
+assistant-memory-forgotten-all = הגנאלוג המלאכותי כבר לא זוכר דבר על הפרויקט הזה.
+assistant-avatar-saved = האווטאר נשמר.
+assistant-error-name = נדרש שם.
+assistant-error-too-many = יש כבר כמה שחשבון יכול לשמור.
+assistant-error-not-saved = לא נשמר: השרת לא הצליח לכתוב את זה. כדאי לנסות שוב בעוד רגע.
+assistant-error-conduct-long = קוד ההתנהגות ארוך מדי.
+assistant-error-confirm = יש לסמן את התיבה כדי לאשר.
+assistant-error-too-big = ההודעה גדולה מדי.
+assistant-error-file-big = קובץ גדול מדי.
+assistant-error-too-many-files = יותר מדי קבצים בהודעה אחת.
+assistant-error-text-long = ההודעה ארוכה מדי.
+assistant-error-empty = יש לכתוב הודעה או לצרף קובץ.
+assistant-error-busy = הגנאלוג המלאכותי כבר עונה בכמה שיחות שהוא יכול. כדאי לנסות שוב בעוד רגע.
+assistant-error-wait = הגנאלוג המלאכותי עדיין עונה בשיחה הזו.
+assistant-error-picture = הקובץ הזה אינו תמונה שהאתר יודע לקרוא.
+assistant-domain-genealogy = גנאלוגיה
+assistant-domain-medicine = בריאות ורפואה
+assistant-domain-work = עבודה וקריירה
+assistant-domain-money = כסף
+assistant-domain-law = משפט ומסמכים
+assistant-domain-learning = לימודים
+assistant-domain-home = בית
+assistant-domain-cooking = בישול
+assistant-domain-travel = טיולים
+assistant-domain-nature = טבע וגינה
+assistant-domain-wellbeing = רווחה
+assistant-domain-family = חיי משפחה
+assistant-domain-arts = אמנות ותרבות
+assistant-domain-sports = ספורט
+assistant-domain-tech = טכנולוגיה
+assistant-domain-science = מדע
+assistant-domain-history = היסטוריה וזיכרון
+assistant-domain-admin = סידורים
+assistant-domain-pets = בעלי חיים
+assistant-domain-rites = חגים וטקסים

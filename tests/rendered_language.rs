@@ -276,8 +276,25 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
         format!("/admin/place/{PLACE}/edit"),
     ];
 
+    // And then a member's personal assistant (docs/adr/0026): its account,
+    // its projects, a project, a conversation. The member is made once the
+    // administration has been read, which is read with no account.
+    let mut visits: std::collections::VecDeque<(String, String)> =
+        pages.iter().map(|p| (p.clone(), cookie.clone())).collect();
+    let mut member_made = false;
+
     let mut report = Vec::new();
-    for uri in &pages {
+    loop {
+        if visits.is_empty() && !member_made {
+            member_made = true;
+            let (member, member_pages) = assistant_member(&app, &admin_cookie(&app).await).await;
+            let member = format!("{member}; axgf_lang=zh-Hans");
+            visits.extend(member_pages.into_iter().map(|p| (p, member.clone())));
+        }
+        let Some((uri, cookie)) = visits.pop_front() else {
+            break;
+        };
+        let uri = &uri;
         let resp = get_with_cookie(&app, uri, &cookie).await;
         let status = resp.status();
         let mut html = body_string(resp).await;

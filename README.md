@@ -544,6 +544,33 @@ Why it works this way: [where the computing comes from](docs/adr/0023-the-artifi
 [the brains, the window and who may talk to it](docs/adr/0024-the-afgs-brains.md),
 [the models of the moment and their efforts](docs/adr/0025-the-models-of-the-moment.md).
 
+### My personal assistant
+
+*(New since 1.1.0, not yet released.)* Each account the AFG is open to
+has, from its account page, its own chat with the AFG: **My personal
+assistant**.
+
+- **Projects** you create and name. Each has an avatar, a **code of
+  conduct** the AFG follows in every conversation of the project, and a
+  **memory**: the second brain the AFG keeps from the project's
+  conversations, which you read and forget fact by fact.
+- **Conversations** in each project, opened by a first question and taken
+  up again at any time. The thread reads like a chat, the AFG's answer
+  appears as it is written, and a message carries documents, photographs,
+  sound or film (dropped, pasted or attached; no microphone).
+- **Avatars**: a picture of your own, or one of eighty made for the site
+  with Canva, four for each of twenty domains (genealogy, health, work,
+  money, travel…).
+
+<p align="center">
+<a href="docs/screenshots/assistant.jpg"><img src="docs/screenshots/assistant.jpg" width="720" alt="My personal assistant under Canopy, with the demonstration family. On the left, the member's projects, each with its avatar: Meunier family, Trip to Lyon, Grandma's health, Moving house, and New project. On the right, a conversation of the Meunier family project: the member asks whether Jules is really Aymeric's son and sends the photograph of a faded letter. The AFG answers that it is not proven: the archive links them with a confidence of only 0.42; it gives the parents' marriage around 1822 and Jules's on 15 June 1848, says the letter is too faded to read, and keeps one fact in the project's memory. Below, the composer, with Attach and Send."></a>
+</p>
+
+Everything in it is the account's own: nobody else sees it, administrators
+included. The family's archive goes with a project's messages only when its
+member says so. Why it works this way:
+[My personal assistant](docs/adr/0026-my-personal-assistant.md).
+
 ### Let the family in: registration and sign-in services
 
 *(New in 0.5.0.)* You choose, on the Accounts page, whether

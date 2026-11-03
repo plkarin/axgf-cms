@@ -4,6 +4,7 @@ mod account;
 mod admin;
 mod afg;
 mod ai_portraits;
+mod assistant;
 mod connectivity;
 mod console;
 mod convert;
@@ -352,6 +353,72 @@ fn routes(state: Shared) -> Router {
         .route("/account/person", post(account::person))
         // The AFG's brain of the account, its own to forget (docs/adr/0024).
         .route("/account/brain/forget", post(account::forget))
+        // My personal assistant (docs/adr/0026): the account's projects and
+        // their conversations with the AFG, its own and nobody else's. A
+        // message carries up to six files, forty megabytes in all.
+        .route(
+            "/account/assistant",
+            get(assistant::home).post(assistant::create_project),
+        )
+        .route(
+            "/account/assistant/:pid",
+            get(assistant::project).post(assistant::save_project),
+        )
+        .route(
+            "/account/assistant/:pid/delete",
+            post(assistant::delete_project),
+        )
+        .route(
+            "/account/assistant/:pid/memory/forget",
+            post(assistant::forget),
+        )
+        .route(
+            "/account/assistant/:pid/avatar",
+            get(assistant::project_avatar)
+                .post(assistant::upload_project_avatar)
+                .layer(DefaultBodyLimit::max(
+                    crate::assistant::AVATAR_MAX + 64 * 1024,
+                )),
+        )
+        .route("/account/assistant/:pid/f/:fid", get(assistant::file))
+        .route(
+            "/account/assistant/:pid/c",
+            post(assistant::start_conversation).layer(DefaultBodyLimit::max(
+                crate::assistant::MESSAGE_FILES_MAX + 1024 * 1024,
+            )),
+        )
+        .route(
+            "/account/assistant/:pid/c/:cid",
+            get(assistant::conversation)
+                .post(assistant::send)
+                .layer(DefaultBodyLimit::max(
+                    crate::assistant::MESSAGE_FILES_MAX + 1024 * 1024,
+                )),
+        )
+        .route(
+            "/account/assistant/:pid/c/:cid/state",
+            get(assistant::state_of),
+        )
+        .route(
+            "/account/assistant/:pid/c/:cid/retry",
+            post(assistant::retry),
+        )
+        .route(
+            "/account/assistant/:pid/c/:cid/edit",
+            post(assistant::edit_conversation),
+        )
+        .route(
+            "/account/assistant/:pid/c/:cid/delete",
+            post(assistant::delete_conversation),
+        )
+        .route(
+            "/account/assistant/:pid/c/:cid/avatar",
+            get(assistant::conversation_avatar)
+                .post(assistant::upload_conversation_avatar)
+                .layer(DefaultBodyLimit::max(
+                    crate::assistant::AVATAR_MAX + 64 * 1024,
+                )),
+        )
         .route("/prefs/language", post(prefs::language))
         .route("/prefs/theme", post(prefs::theme))
         .route("/prefs/style", post(prefs::style))
@@ -691,6 +758,8 @@ fn routes(state: Shared) -> Router {
         .route("/static/map.js", get(public::map_js))
         .route("/static/avatar.js", get(public::avatar_js))
         .route("/static/afg.js", get(public::afg_js))
+        .route("/static/assistant.js", get(public::assistant_js))
+        .route("/static/avatars/:file", get(assistant::pack_avatar))
         .route("/static/profile.js", get(public::profile_js))
         .route("/static/editor.js", get(public::editor_js))
         .route("/static/notes.js", get(public::notes_js))

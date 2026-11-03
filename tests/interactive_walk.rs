@@ -512,6 +512,24 @@ fn pages(signed_in: bool, converted: Option<&str>) -> Vec<String> {
     out
 }
 
+/// Who walks the site, in this order: signed out, the emergency session
+/// with every administration page, and a member of the family with a
+/// personal assistant (docs/adr/0026), its project and a conversation in
+/// it. The member is made only once the administration has been walked,
+/// which is walked with no account, as it always was.
+const WALKERS: [&str; 3] = ["signed out", "signed in", "member"];
+
+async fn walker(app: &axum::Router, admin: &str, who: &str) -> (Option<String>, Vec<String>) {
+    match who {
+        "signed out" => (None, pages(false, None)),
+        "signed in" => (Some(admin.to_string()), pages(true, None)),
+        _ => {
+            let (member, its_pages) = assistant_member(app, admin).await;
+            (Some(member), its_pages)
+        }
+    }
+}
+
 const BOUNDARY: &str = "----axgfwalkboundary";
 
 /// The import flow's second page: a GEDCOM converted, with its download.
@@ -592,10 +610,12 @@ async fn every_interactive_element_does_something_signed_out_and_signed_in() {
     let cookie = admin_cookie(&app).await;
     let mut report = Vec::new();
     let mut dead = Vec::new();
-    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
+    for who in WALKERS {
+        let (c, walked) = walker(&app, &cookie, who).await;
+        let c = c.as_deref();
         let mut tally = Tally::default();
         let mut links = BTreeMap::new();
-        for page in pages(c.is_some(), None) {
+        for page in walked {
             walk(&app, &page, c, who, &mut links, &mut tally).await;
         }
         let result = convert_once(&app, c).await;
@@ -649,8 +669,10 @@ async fn no_page_has_more_than_one_primary_button() {
     let primary = Selector::parse(".btn.primary").unwrap();
     let mut over = Vec::new();
     let mut seen = 0;
-    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
-        for page in pages(c.is_some(), None) {
+    for who in WALKERS {
+        let (c, walked) = walker(&app, &cookie, who).await;
+        let c = c.as_deref();
+        for page in walked {
             let (status, html, _) = fetch(&app, &page, c).await;
             assert_eq!(status, StatusCode::OK, "{who} {page}");
             let doc = Html::parse_document(&html);
@@ -728,8 +750,10 @@ async fn every_field_has_a_visible_label_and_none_a_placeholder() {
     let header = Selector::parse("thead th").unwrap();
     let mut bare = Vec::new();
     let mut seen = 0;
-    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
-        for page in pages(c.is_some(), None) {
+    for who in WALKERS {
+        let (c, walked) = walker(&app, &cookie, who).await;
+        let c = c.as_deref();
+        for page in walked {
             let (_, html, _) = fetch(&app, &page, c).await;
             assert!(
                 !html.contains(" placeholder="),
@@ -833,7 +857,11 @@ fn is_content(el: &ElementRef) -> bool {
 /// Everything else (edit screens, administration, settings, import, sign-in):
 /// 20.
 fn read_only(page: &str) -> bool {
-    !(page.starts_with("/admin") || page.starts_with("/settings") || page.starts_with("/convert"))
+    !(page.starts_with("/admin")
+        || page.starts_with("/settings")
+        || page.starts_with("/convert")
+        // The personal assistant, where its member writes (docs/adr/0026).
+        || page.starts_with("/account/assistant"))
 }
 
 struct Chrome {
@@ -1002,8 +1030,10 @@ async fn every_screen_keeps_its_chrome_budget() {
         "{:<44} {:>6} {:>9} {:>6}",
         "screen", "own", "masthead", "budget"
     );
-    for (who, c) in [("signed out", None), ("signed in", Some(cookie.as_str()))] {
-        for page in pages(c.is_some(), None) {
+    for who in WALKERS {
+        let (c, walked) = walker(&app, &cookie, who).await;
+        let c = c.as_deref();
+        for page in walked {
             let (status, html, _) = fetch(&app, &page, c).await;
             if status != StatusCode::OK {
                 continue;

@@ -4968,3 +4968,112 @@ account-brain-already = Hilo lilikuwa limeshasahaulika.
 account-brain-confirm-needed = Weka alama kwenye kisanduku ili kusahau yote.
 account-brain-error = Hakuna kilichosahaulika: { $error }
 afg-brain-see = Ona na usahau
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = Msaidizi wangu binafsi
+assistant-entry = Miradi yako na mazungumzo yako na AFG: uliza, tuma hati na picha, endelea pale ulipoishia.
+assistant-lede = Miradi yako mwenyewe na AFG. Kila mmoja una kanuni zake za mwenendo na kumbukumbu yake, na ndani ya kila mmoja mazungumzo unayoendeleza pale ulipoyaacha.
+assistant-shut-no-account = Kipindi hiki hakina akaunti, kwa hiyo hakina msaidizi binafsi. Ingia kwa akaunti yako mwenyewe.
+assistant-shut-not-open = AFG haijafunguliwa kwa akaunti yako: msimamizi huamua hilo kwenye ukurasa wa Akaunti.
+assistant-shut-broken = Nafasi yako haikuweza kufunguliwa. Jaribu tena baada ya muda mfupi; ikiendelea, mjulishe msimamizi.
+assistant-shut-gone = Hakuna kitu hapa: mradi huu au mazungumzo haya hayapo, au si yako.
+assistant-back-account = Rudi kwenye akaunti yangu
+assistant-new-project = Mradi mpya
+assistant-not-ready = Uchakataji wa AFG bado haujawekwa: unaweza kusoma mazungumzo yako, si kutuma ujumbe. Msimamizi ndiye anayeuweka.
+assistant-conversations-count = { $n ->
+        [one] mazungumzo { $n }
+       *[other] mazungumzo { $n }
+    }
+assistant-conduct-set = kanuni za mwenendo zimewekwa
+assistant-empty = Bado hakuna mradi. Mradi hukusanya mazungumzo ya mada moja — historia ya familia, swali la afya, kutafuta kazi — chini ya kanuni moja za mwenendo.
+assistant-project-name = Jina la mradi
+assistant-create = Unda mradi
+assistant-facts-count = { $n ->
+        [one] jambo { $n } limekumbukwa
+       *[other] mambo { $n } yamekumbukwa
+    }
+assistant-archive-on = pamoja na kifurushi cha familia
+assistant-start = Anza mazungumzo
+assistant-conversations = Mazungumzo
+assistant-no-conversation = Bado hakuna mazungumzo: swali lako la kwanza linaanzisha moja.
+assistant-conduct = Kanuni za mwenendo
+assistant-conduct-label = Jinsi AFG inavyopaswa kuenenda katika mradi huu
+assistant-conduct-hint = Maagizo yako kwa kila mazungumzo ya mradi huu: sauti, lugha, nini cha kuangalia, nini cha kuacha. AFG huyafuata, isipokuwa yakiitaka ikudanganye au idhuru.
+assistant-save = Hifadhi
+assistant-memory = Kumbukumbu ya mradi
+assistant-memory-intro = Kile AFG ilichoamua kuhifadhi kutoka kwa mazungumzo ya mradi huu: ubongo wake wa pili. Hupewa tena kwa kila ujumbe wa mradi. Ifanye isahau kile usichotaka tena ijue.
+assistant-forget = Sahau
+assistant-forget-all = Sahau yote…
+assistant-forget-all-confirm = Ndiyo, sahau yote ambayo AFG inakumbuka kuhusu mradi huu
+assistant-forget-all-button = Sahau yote
+assistant-memory-none = AFG bado haikumbuki chochote kuhusu mradi huu.
+assistant-settings = Mipangilio
+assistant-archive = Ipe AFG kifurushi cha familia katika mradi huu
+assistant-archive-hint = Kisha kila rekodi ya kifurushi, pamoja na walio hai, huenda na kila ujumbe kule AFG inakochakata. Madaraja nyeti hubaki nje, isipokuwa msimamizi ameamua vinginevyo.
+assistant-archive-size = Faili za JSON: { $files }; tokeni kwa kila ujumbe: takriban { $tokens }.
+assistant-avatar-upload = Picha yako mwenyewe kama avatari
+assistant-avatar-send = Tumia picha hii
+assistant-delete-project = Futa mradi
+assistant-delete-project-confirm = Ndiyo, futa mradi huu, mazungumzo yake, faili zake na kumbukumbu yake
+assistant-delete = Futa
+assistant-conversation-settings = Mipangilio ya mazungumzo
+assistant-conversation-title = Kichwa cha mazungumzo
+assistant-delete-conversation = Futa mazungumzo
+assistant-delete-conversation-confirm = Ndiyo, futa mazungumzo haya na jumbe zake
+assistant-thread = Mazungumzo
+assistant-reply = Ujumbe wako
+assistant-sending = Inatuma…
+assistant-attach = Ambatisha
+assistant-send = Tuma
+assistant-composer-hint = Enter hutuma, Shift+Enter huanza mstari mpya. Hati, picha, sauti au video: ziangushe, zibandike au uziambatishe; faili zisizozidi: { $n }, kila moja hadi { $mb } MB.
+assistant-avatar-choose = Chagua avatari
+assistant-avatar = Avatari
+assistant-avatar-auto = Imechaguliwa kwa ajili yake
+assistant-avatar-own = Picha yako
+assistant-kept = { $n ->
+        [one] Limehifadhiwa kwenye kumbukumbu ya mradi: jambo { $n }
+       *[other] Yamehifadhiwa kwenye kumbukumbu ya mradi: mambo { $n }
+    }
+assistant-error-answer = AFG haikuweza kujibu.
+assistant-retry = Uliza tena
+assistant-unanswered = Ujumbe huu haukupata jibu.
+assistant-writing = AFG inaandika
+assistant-saved = Imehifadhiwa.
+assistant-project-deleted = Mradi umefutwa.
+assistant-conversation-deleted = Mazungumzo yamefutwa.
+assistant-memory-forgotten = Imesahauliwa: AFG haitapewa tena.
+assistant-memory-forgotten-all = AFG haikumbuki tena chochote kuhusu mradi huu.
+assistant-avatar-saved = Avatari imehifadhiwa.
+assistant-error-name = Jina linahitajika.
+assistant-error-too-many = Tayari kuna mingi kadiri akaunti inavyoweza kuhifadhi.
+assistant-error-not-saved = Haijahifadhiwa: seva haikuweza kuiandika. Jaribu tena baada ya muda mfupi.
+assistant-error-conduct-long = Kanuni za mwenendo ni ndefu mno.
+assistant-error-confirm = Weka alama kwenye kisanduku kuthibitisha.
+assistant-error-too-big = Ujumbe ni mkubwa mno.
+assistant-error-file-big = Faili ni kubwa mno.
+assistant-error-too-many-files = Faili nyingi mno katika ujumbe mmoja.
+assistant-error-text-long = Ujumbe ni mrefu mno.
+assistant-error-empty = Andika ujumbe au ambatisha faili.
+assistant-error-busy = AFG tayari inajibu mazungumzo mengi kadiri inavyoweza. Jaribu tena baada ya muda mfupi.
+assistant-error-wait = AFG bado inajibu katika mazungumzo haya.
+assistant-error-picture = Faili hii si picha ambayo tovuti hii inaweza kusoma.
+assistant-domain-genealogy = Nasaba
+assistant-domain-medicine = Afya na tiba
+assistant-domain-work = Kazi na taaluma
+assistant-domain-money = Pesa
+assistant-domain-law = Sheria na nyaraka
+assistant-domain-learning = Kujifunza
+assistant-domain-home = Nyumbani
+assistant-domain-cooking = Upishi
+assistant-domain-travel = Safari
+assistant-domain-nature = Mazingira na bustani
+assistant-domain-wellbeing = Ustawi
+assistant-domain-family = Maisha ya familia
+assistant-domain-arts = Sanaa na utamaduni
+assistant-domain-sports = Michezo
+assistant-domain-tech = Teknolojia
+assistant-domain-science = Sayansi
+assistant-domain-history = Historia na kumbukumbu
+assistant-domain-admin = Taratibu za ofisini
+assistant-domain-pets = Wanyama
+assistant-domain-rites = Sherehe na taratibu za jadi

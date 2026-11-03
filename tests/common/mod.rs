@@ -327,3 +327,118 @@ pub async fn every_tab(app: &axum::Router, uri: &str, cookie: Option<&str>) -> S
     }
     out
 }
+
+/// A member the AFG is open to (`w1`), signed in; and its pages: its account, its
+/// assistant, a project, and a conversation whose first message carried a
+/// picture. The AFG is off here, so its answer is the failure said in the
+/// thread, with the way to ask again. Its words are Chinese, so that a page
+/// rendered in Chinese shows no Latin word that is its data.
+pub async fn assistant_member(app: &axum::Router, admin: &str) -> (String, Vec<String>) {
+    let pw = "correct-horse-battery-staple";
+    let made = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(axum::http::Method::POST)
+                .uri("/admin/users")
+                .header(header::COOKIE, admin)
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .body(Body::from(format!(
+                    "username=w1&password={pw}&role=viewer&afg=on"
+                )))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert!(made.status().is_success(), "the member is made");
+    let login = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(axum::http::Method::POST)
+                .uri("/admin/login")
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .body(Body::from(format!("username=w1&password={pw}")))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let cookie = login.headers()[header::SET_COOKIE]
+        .to_str()
+        .unwrap()
+        .split(';')
+        .next()
+        .unwrap()
+        .to_string();
+    let made = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(axum::http::Method::POST)
+                .uri("/account/assistant")
+                .header(header::COOKIE, &cookie)
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .body(Body::from("name=%E9%A1%B9%E7%9B%AE&avatar=genealogy-tree"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let project = made.headers()[header::LOCATION]
+        .to_str()
+        .unwrap()
+        .to_string();
+    let png = {
+        let img = image::RgbImage::from_pixel(8, 8, image::Rgb([120, 90, 60]));
+        let mut out = std::io::Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgb8(img)
+            .write_to(&mut out, image::ImageFormat::Png)
+            .unwrap();
+        out.into_inner()
+    };
+    let b = "----axgfwalkmember";
+    let mut body = format!(
+        "--{b}\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\n你好\r\n\
+         --{b}\r\nContent-Disposition: form-data; name=\"files\"; filename=\"照片.png\"\r\n\
+         Content-Type: image/png\r\n\r\n"
+    )
+    .into_bytes();
+    body.extend_from_slice(&png);
+    body.extend(format!("\r\n--{b}--\r\n").bytes());
+    let sent = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(axum::http::Method::POST)
+                .uri(format!("{project}/c"))
+                .header(header::COOKIE, &cookie)
+                .header(
+                    header::CONTENT_TYPE,
+                    format!("multipart/form-data; boundary={b}"),
+                )
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let conversation = sent.headers()[header::LOCATION]
+        .to_str()
+        .unwrap()
+        .to_string();
+    // The answer, a failure here, is written before the walk.
+    for _ in 0..100 {
+        let state = get_with_cookie(app, &format!("{conversation}/state"), &cookie).await;
+        let v: serde_json::Value =
+            serde_json::from_str(&body_string(state).await).unwrap_or_default();
+        if v["answering"] == false {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+    }
+    let pages = vec![
+        "/account".to_string(),
+        "/account/assistant".to_string(),
+        project,
+        conversation,
+    ];
+    (cookie, pages)
+}

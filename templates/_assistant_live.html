@@ -1,0 +1,13 @@
+{% import "_icons.html" as ic %}
+{#- The answer the AFG is writing, as far as it has written it. -#}
+<article class="as-msg as-msg-assistant as-live" data-live aria-busy="true">
+  <div class="as-mark as-mark-live" aria-hidden="true">{{ ic.icon("afg") }}</div>
+  <div class="as-answer">
+    {%- if html %}
+    <div class="note-text as-md">{{ html | safe }}<span class="as-caret" aria-hidden="true"></span></div>
+    {%- else %}
+    <div class="as-typing" aria-hidden="true"><i></i><i></i><i></i></div>
+    {%- endif %}
+    <div class="as-meta small muted">{{ t("assistant-writing") }} · {{ t("afg-run-seconds", s=seconds) }}</div>
+  </div>
+</article>

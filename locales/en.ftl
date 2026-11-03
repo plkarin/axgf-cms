@@ -5196,3 +5196,112 @@ account-brain-already = That was already forgotten.
 account-brain-confirm-needed = Tick the box to forget everything.
 account-brain-error = Nothing was forgotten: { $error }
 afg-brain-see = See and forget
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = My personal assistant
+assistant-entry = Your projects and conversations with the AFG: ask, send documents and photographs, pick up where you left off.
+assistant-lede = Your own projects with the AFG. Each has its code of conduct and its memory, and in each, conversations you can pick up where you left them.
+assistant-shut-no-account = This session has no account, so no personal assistant. Sign in with your own account.
+assistant-shut-not-open = The AFG is not open to your account: an administrator decides it on the Accounts page.
+assistant-shut-broken = Your space could not be opened. Try again in a moment; if it lasts, tell an administrator.
+assistant-shut-gone = There is nothing here: this project or this conversation does not exist, or is not yours.
+assistant-back-account = Back to my account
+assistant-new-project = New project
+assistant-not-ready = The AFG's computing is not set up yet: you can read your conversations, not send a message. An administrator sets it up.
+assistant-conversations-count = { $n ->
+        [one] { $n } conversation
+       *[other] { $n } conversations
+    }
+assistant-conduct-set = code of conduct set
+assistant-empty = No project yet. A project gathers the conversations on one subject — the family's history, a question of health, a job search — under one code of conduct.
+assistant-project-name = Name of the project
+assistant-create = Create the project
+assistant-facts-count = { $n ->
+        [one] { $n } fact remembered
+       *[other] { $n } facts remembered
+    }
+assistant-archive-on = with the family's archive
+assistant-start = Start a conversation
+assistant-conversations = Conversations
+assistant-no-conversation = No conversation yet: your first question starts one.
+assistant-conduct = Code of conduct
+assistant-conduct-label = How the AFG should behave in this project
+assistant-conduct-hint = Your instructions for every conversation of this project: its tone, its language, what to look at, what to leave aside. The AFG follows them unless they ask it to deceive you or to cause harm.
+assistant-save = Save
+assistant-memory = Memory of the project
+assistant-memory-intro = What the AFG chose to keep from this project's conversations: its second brain. It goes back to the AFG with each message of the project. Forget what you no longer want it to know.
+assistant-forget = Forget
+assistant-forget-all = Forget everything…
+assistant-forget-all-confirm = Yes, forget everything the AFG remembers of this project
+assistant-forget-all-button = Forget everything
+assistant-memory-none = The AFG remembers nothing of this project yet.
+assistant-settings = Settings
+assistant-archive = Give the AFG the family's archive in this project
+assistant-archive-hint = Every record of the archive, the living included, then goes with each message to wherever the AFG's computing runs. The sensitive classes stay out unless an administrator chose otherwise.
+assistant-archive-size = JSON files: { $files }; tokens a message: about { $tokens }.
+assistant-avatar-upload = A picture of your own as its avatar
+assistant-avatar-send = Use this picture
+assistant-delete-project = Delete the project
+assistant-delete-project-confirm = Yes, delete this project, its conversations, their files and its memory
+assistant-delete = Delete
+assistant-conversation-settings = Settings of the conversation
+assistant-conversation-title = Title of the conversation
+assistant-delete-conversation = Delete the conversation
+assistant-delete-conversation-confirm = Yes, delete this conversation and its messages
+assistant-thread = The conversation
+assistant-reply = Your message
+assistant-sending = Sending…
+assistant-attach = Attach
+assistant-send = Send
+assistant-composer-hint = Enter sends, Shift+Enter starts a new line. Documents, photographs, sound or film: drop, paste or attach them, { $n } files at most, { $mb } MB each.
+assistant-avatar-choose = Choose its avatar
+assistant-avatar = Avatar
+assistant-avatar-auto = Chosen for it
+assistant-avatar-own = Your picture
+assistant-kept = { $n ->
+        [one] Kept in the project's memory: { $n } fact
+       *[other] Kept in the project's memory: { $n } facts
+    }
+assistant-error-answer = The AFG could not answer.
+assistant-retry = Ask again
+assistant-unanswered = This message was left without an answer.
+assistant-writing = The AFG is writing
+assistant-saved = Saved.
+assistant-project-deleted = The project is deleted.
+assistant-conversation-deleted = The conversation is deleted.
+assistant-memory-forgotten = Forgotten: the AFG will no longer be told it.
+assistant-memory-forgotten-all = The AFG remembers nothing of this project any more.
+assistant-avatar-saved = The avatar is saved.
+assistant-error-name = A name is needed.
+assistant-error-too-many = There are already as many as an account may keep.
+assistant-error-not-saved = Not saved: the server could not write it. Try again in a moment.
+assistant-error-conduct-long = The code of conduct is too long.
+assistant-error-confirm = Tick the box to confirm.
+assistant-error-too-big = The message is too large.
+assistant-error-file-big = A file is too large.
+assistant-error-too-many-files = Too many files in one message.
+assistant-error-text-long = The message is too long.
+assistant-error-empty = Write a message or attach a file.
+assistant-error-busy = The AFG is answering as many conversations as it can. Try again in a moment.
+assistant-error-wait = The AFG is still answering in this conversation.
+assistant-error-picture = That file is not a picture this site can read.
+assistant-domain-genealogy = Genealogy
+assistant-domain-medicine = Health and medicine
+assistant-domain-work = Work and career
+assistant-domain-money = Money
+assistant-domain-law = Law and papers
+assistant-domain-learning = Learning
+assistant-domain-home = Home
+assistant-domain-cooking = Cooking
+assistant-domain-travel = Travel
+assistant-domain-nature = Nature and garden
+assistant-domain-wellbeing = Well-being
+assistant-domain-family = Family life
+assistant-domain-arts = Arts and culture
+assistant-domain-sports = Sport
+assistant-domain-tech = Technology
+assistant-domain-science = Science
+assistant-domain-history = History and memory
+assistant-domain-admin = Paperwork
+assistant-domain-pets = Animals
+assistant-domain-rites = Celebrations and rites

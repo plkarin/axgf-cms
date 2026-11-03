@@ -4987,3 +4987,112 @@ account-brain-already = Yango esilaki kobosana.
 account-brain-confirm-needed = Tia elembo na kesi mpo na kobosana nyonso.
 account-brain-error = Eloko moko te ebosani: { $error }
 afg-brain-see = Tala mpe bosana
+
+## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
+assistant-title = Mosungi na ngai ya moko
+assistant-entry = Mabongisi na yo mpe masolo na yo elongo na AFG: tuna mituna, tinda mikanda mpe bafoto, kobá epai otikaki.
+assistant-lede = Mabongisi na yo moko elongo na AFG. Moko na moko ezali na mibeko na yango ya etamboli mpe makanisi na yango, mpe na kati na moko na moko masolo oyo okobaka epai otikaki yango.
+assistant-shut-no-account = Session oyo ezali na compte te, yango wana ezali na mosungi ya moko te. Kɔtá na compte na yo moko.
+assistant-shut-not-open = AFG efungwami te mpo na compte na yo: mokambi moko nde azwaka mokano na lokasa ya Ba-compte.
+assistant-shut-broken = Esika na yo efungwami te. Meka lisusu mwa moke sima; soki ekobi, yebisa mokambi.
+assistant-shut-gone = Eloko moko te awa: libongisi oyo to lisolo oyo ezali te, to ezali ya yo te.
+assistant-back-account = Zonga na compte na ngai
+assistant-new-project = Libongisi ya sika
+assistant-not-ready = Kalkile ya AFG ebongisami naino te: okoki kotanga masolo na yo, kasi kotinda nsango te. Mokambi nde abongisaka yango.
+assistant-conversations-count = { $n ->
+        [one] lisolo { $n }
+       *[other] masolo { $n }
+    }
+assistant-conduct-set = mibeko ya etamboli etyami
+assistant-empty = Libongisi moko te naino. Libongisi esangisaka masolo na likambo moko — lisolo ya libota, motuna ya bokolongono, koluka mosala — na nse ya mibeko moko ya etamboli.
+assistant-project-name = Nkombo ya libongisi
+assistant-create = Salá libongisi
+assistant-facts-count = { $n ->
+        [one] likambo { $n } ebombami
+       *[other] makambo { $n } ebombami
+    }
+assistant-archive-on = elongo na ebombelo ya libota
+assistant-start = Banda lisolo
+assistant-conversations = Masolo
+assistant-no-conversation = Lisolo moko te naino: motuna na yo ya liboso efungolaka moko.
+assistant-conduct = Mibeko ya etamboli
+assistant-conduct-label = Ndenge AFG esengeli kotambola na libongisi oyo
+assistant-conduct-hint = Malako na yo mpo na masolo nyonso ya libongisi oyo: ndenge ya koloba, monoko, oyo ya kotala, oyo ya kotika. AFG elandaka yango, longola se soki esɛngi yango kokosa yo to kosala mabe.
+assistant-save = Bomba
+assistant-memory = Makanisi ya libongisi
+assistant-memory-intro = Oyo AFG eponaki kobomba na masolo ya libongisi oyo: bɔ́ngɔ na yango ya mibale. Epesamaka na yango lisusu na nsango nyonso ya libongisi. Tika ebosana oyo olingi lisusu te ete eyeba.
+assistant-forget = Bosana
+assistant-forget-all = Bosana nyonso…
+assistant-forget-all-confirm = Ɛɛ, bosana nyonso oyo AFG ekanisaka na ntina na libongisi oyo
+assistant-forget-all-button = Bosana nyonso
+assistant-memory-none = AFG ekanisi naino eloko te na ntina na libongisi oyo.
+assistant-settings = Mabongisi ya kosalela
+assistant-archive = Pesá AFG ebombelo ya libota na libongisi oyo
+assistant-archive-hint = Na yango, mokanda nyonso ya ebombelo, ata ya bato ya bomoi, ekendaka na nsango nyonso epai AFG esalaka kalkile. Mitindo ya makambo ya kobombama etikalaka libanda, longola se soki mokambi azwaki mokano mosusu.
+assistant-archive-size = Ba-fisyé JSON: { $files }; ba-token na nsango: pene na { $tokens }.
+assistant-avatar-upload = Elilingi na yo moko lokola avatar
+assistant-avatar-send = Salelá elilingi oyo
+assistant-delete-project = Longolá libongisi
+assistant-delete-project-confirm = Ɛɛ, longolá libongisi oyo, masolo na yango, ba-fisyé na yango mpe makanisi na yango
+assistant-delete = Longolá
+assistant-conversation-settings = Mabongisi ya lisolo
+assistant-conversation-title = Motó ya lisolo
+assistant-delete-conversation = Longolá lisolo
+assistant-delete-conversation-confirm = Ɛɛ, longolá lisolo oyo mpe ba-nsango na yango
+assistant-thread = Lisolo
+assistant-reply = Nsango na yo
+assistant-sending = Ezali kotinda…
+assistant-attach = Kangisá
+assistant-send = Tindá
+assistant-composer-hint = Enter etindaka, Shift+Enter ebandaka molongo ya sika. Mikanda, bafoto, makɛlɛlɛ to video: tika yango, kangisá to kangisa yango; ba-fisyé koleka te: { $n }, moko na moko tii { $mb } MB.
+assistant-avatar-choose = Poná avatar
+assistant-avatar = Avatar
+assistant-avatar-auto = Eponami mpo na yango
+assistant-avatar-own = Elilingi na yo
+assistant-kept = { $n ->
+        [one] Ebombami na makanisi ya libongisi: likambo { $n }
+       *[other] Ebombami na makanisi ya libongisi: makambo { $n }
+    }
+assistant-error-answer = AFG ekokaki koyanola te.
+assistant-retry = Tuná lisusu
+assistant-unanswered = Nsango oyo ezwaki eyano te.
+assistant-writing = AFG ezali kokoma
+assistant-saved = Ebombami.
+assistant-project-deleted = Libongisi elongwe.
+assistant-conversation-deleted = Lisolo elongwe.
+assistant-memory-forgotten = Ebosanami: AFG ekozwa yango lisusu te.
+assistant-memory-forgotten-all = AFG ekanisaka lisusu eloko te na ntina na libongisi oyo.
+assistant-avatar-saved = Avatar ebombami.
+assistant-error-name = Nkombo esengeli.
+assistant-error-too-many = Ezali kala ebele ndenge compte ekoki kobomba.
+assistant-error-not-saved = Ebombami te: serveur ekokaki kokoma yango te. Meka lisusu mwa moke sima.
+assistant-error-conduct-long = Mibeko ya etamboli eleki molai.
+assistant-error-confirm = Tyá elembo na kesi mpo na kondima.
+assistant-error-too-big = Nsango eleki monene.
+assistant-error-file-big = Fisyé moko eleki monene.
+assistant-error-too-many-files = Ba-fisyé ebele koleka na nsango moko.
+assistant-error-text-long = Nsango eleki molai.
+assistant-error-empty = Komá nsango to kangisá fisyé.
+assistant-error-busy = AFG ezali kala koyanola na masolo ebele ndenge ekoki. Meka lisusu mwa moke sima.
+assistant-error-wait = AFG ezali naino koyanola na lisolo oyo.
+assistant-error-picture = Fisyé oyo ezali elilingi te oyo site oyo eyebi kotanga.
+assistant-domain-genealogy = Bankoko
+assistant-domain-medicine = Bokolongono mpe minganga
+assistant-domain-work = Mosala
+assistant-domain-money = Mbongo
+assistant-domain-law = Mibeko mpe mikanda
+assistant-domain-learning = Koyekola
+assistant-domain-home = Ndako
+assistant-domain-cooking = Kolamba
+assistant-domain-travel = Mibembo
+assistant-domain-nature = Bozalisi mpe elanga
+assistant-domain-wellbeing = Bolamu ya nzoto
+assistant-domain-family = Bomoi ya libota
+assistant-domain-arts = Mayele ya bokeli mpe bonkoko
+assistant-domain-sports = Masano
+assistant-domain-tech = Tekiniki
+assistant-domain-science = Siansi
+assistant-domain-history = Lisolo mpe bokundoli
+assistant-domain-admin = Makambo ya biro
+assistant-domain-pets = Banyama
+assistant-domain-rites = Bafɛti mpe milulu

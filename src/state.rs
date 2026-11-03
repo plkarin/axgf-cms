@@ -132,6 +132,8 @@ pub struct AppState {
     release_check: std::sync::Mutex<Option<std::time::Instant>>,
     /// The AFG's tests, in this process's life (docs/adr/0023).
     afg_runs: crate::afg::Runs,
+    /// The answers the personal assistant is writing (docs/adr/0026).
+    assistant_answering: crate::assistant::Answering,
 }
 
 /// A copy of the bundle carrying only the sensitive scopes in `include`.
@@ -704,6 +706,7 @@ impl AppState {
                 events: crate::events::Events::new(),
                 release_check: std::sync::Mutex::new(None),
                 afg_runs: crate::afg::Runs::default(),
+                assistant_answering: crate::assistant::Answering::default(),
             },
             report,
         ))
@@ -792,6 +795,11 @@ impl AppState {
     /// The AFG's tests (docs/adr/0023).
     pub fn afg_runs(&self) -> &crate::afg::Runs {
         &self.afg_runs
+    }
+
+    /// The answers the personal assistant is writing (docs/adr/0026).
+    pub fn assistant_answering(&self) -> &crate::assistant::Answering {
+        &self.assistant_answering
     }
 
     /// Live sessions and the login throttle.

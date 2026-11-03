@@ -692,7 +692,7 @@ impl AppState {
                 payloads: cache,
                 acl: RwLock::new(acl),
                 acl_path,
-                sessions: crate::session::SessionStore::new(),
+                sessions: crate::session::SessionStore::beside(path),
                 lenses: RwLock::new(LensCache::default()),
                 generation: std::sync::atomic::AtomicU64::new(0),
                 journal: crate::journal::Journal::new(crate::journal::Journal::path_for(path)),

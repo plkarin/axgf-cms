@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Staying signed in (the operator's report of 3 November 2026: signed out at
+every reload, docs/adr/0028).
+
+### Fixed
+
+- **A restart no longer signs anyone out.** The sessions are kept beside the
+  bundle, in `family.sessions` (mode 600), with the secret that signs their
+  cookies. Signing out, and a session closed by a password changed or an
+  account disabled, holds after a restart too. The emergency token's session
+  still ends with the process.
+- **Two installations on one machine no longer sign each other out.** A
+  browser keeps one cookie per host whatever the port, so a production and a
+  preview side by side overwrote each other's. The cookie's name now carries
+  the installation's own mark.
+
+### Changed
+
+- **A session lasts 30 days without use, and each use moves that on**,
+  instead of ending 12 hours after signing in. The browser keeps the cookie
+  as long as browsers allow; the server's expiry is what ends it.
+
 ## [1.3.0] — 2026-11-03
 
 The AFG's memory, backed up apart from the family's archive (the operator's

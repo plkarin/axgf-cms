@@ -109,6 +109,27 @@ journalctl -u axgf-cms | grep -i 'emergency admin token'
 Once somebody can sign in normally, delete that line and restart. Until you
 do, the admin dashboard says so on every visit.
 
+### Sessions
+
+A restart signs nobody out: the accounts' sessions are kept beside the
+bundle, in `/var/lib/axgf-cms/family.sessions`, mode 600, with the secret
+that signs their cookies (docs/adr/0028).
+
+- **How long:** a session lasts 30 days without use, and each use moves that
+  on.
+- **Not backed up, and disposable:** if the file is lost or unreadable,
+  everyone signs in again, nothing else.
+- **To sign everyone out:**
+
+  ```sh
+  sudo systemctl stop axgf-cms
+  sudo rm /var/lib/axgf-cms/family.sessions
+  sudo systemctl start axgf-cms
+  ```
+
+- **The emergency token's session** is never written there, and still ends
+  with the process.
+
 ## What systemctl status tells you
 
 ```

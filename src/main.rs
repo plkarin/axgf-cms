@@ -97,6 +97,11 @@ async fn main() -> Result<()> {
     // and the claim being made is specifically "a server is serving this".
     let _instance = axgf_cms::lockfile::InstanceLock::acquire(&bundle)?;
 
+    // This installation's own cookie name (docs/adr/0028): a browser keeps
+    // one cookie per host whatever the port, so two installations on one
+    // machine would otherwise sign each other's visitors out.
+    axgf_cms::session::set_instance(&bundle);
+
     let seed = cfg.seed_sample.then_some(axgf_cms::SAMPLE_BUNDLE);
     let (state, payloads) = AppState::load(&bundle, token.clone(), seed, cfg.cache_dir.as_deref())
         .context("initialising application state")?;

@@ -461,6 +461,46 @@ async fn a_forged_session_cookie_is_refused() {
 }
 
 #[tokio::test]
+async fn a_restart_keeps_everyone_signed_in_and_a_disabled_account_out() {
+    // docs/adr/0028: the sessions are kept beside the bundle, so the service
+    // restarting (an upgrade, a setting changed) no longer signs anyone out.
+    // A revocation made before the restart holds after it.
+    use axgf_cms::acl::Role;
+    let (app, scratch) = app_with_accounts(
+        "acc-restart",
+        &[("ada", Role::Admin, &[]), ("carl", Role::Contributor, &[])],
+    );
+    let ada = sign_in(&app, "ada").await;
+    let carl = sign_in(&app, "carl").await;
+    assert_eq!(get_as(&app, &ada, "/admin").await.status(), StatusCode::OK);
+
+    // Ada disables Carl, then the process ends.
+    let list = body_string(get_as(&app, &ada, "/admin/users").await).await;
+    let id = user_id_of(&list, "carl");
+    let resp = post_as(
+        &app,
+        &ada,
+        &format!("/admin/users/{id}"),
+        "role=contributor&status=disabled&email=&family_scope=&password=",
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    drop(app);
+
+    let again = build_app(&scratch).expect("the next run");
+    assert_eq!(
+        get_as(&again, &ada, "/admin").await.status(),
+        StatusCode::OK,
+        "still signed in after a restart"
+    );
+    assert_ne!(
+        get_as(&again, &carl, "/admin").await.status(),
+        StatusCode::OK,
+        "the disabled account stays out"
+    );
+}
+
+#[tokio::test]
 async fn disabling_an_account_takes_effect_on_the_next_request() {
     // A live cookie that outlived the change would make the change advisory.
     use axgf_cms::acl::Role;

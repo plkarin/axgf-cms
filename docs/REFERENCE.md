@@ -233,10 +233,15 @@ alone, and the two are kept apart on purpose.
 ### Sessions
 
 A signed, `HttpOnly`, `SameSite=Strict` cookie, `Secure` when the request
-arrived over TLS. Sessions are held in memory, so restarting signs everyone
-out. Failed logins are throttled per username and per client address.
-Disabling an account, lowering its role or changing its password closes its
-open sessions immediately.
+arrived over TLS. Its name carries the installation's own mark
+(`axgf_session_<8 hex digits>`), so two installations on one machine do not
+sign each other's visitors out. A session lasts 30 days without use, and each
+use moves that on. Sessions are kept beside the bundle in `family.sessions`
+(mode 600), so a restart signs nobody out (docs/adr/0028); the emergency
+token's session still ends with the process. Failed logins are throttled per
+username and per client address. Disabling an account, lowering its role or
+changing its password closes its open sessions immediately, and that holds
+after a restart.
 
 ### The emergency token
 

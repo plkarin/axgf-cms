@@ -1,6 +1,6 @@
 # ADR 0026 — My personal assistant
 
-**Status:** proposed (2026-11-03) · **Builds on:** docs/adr/0023 (where the
+**Status:** accepted, v1.2.0 (2026-11-03) · **Builds on:** docs/adr/0023 (where the
 AFG's computing comes from), docs/adr/0024 (brains, and who may talk to the
 AFG), docs/adr/0025 (models and efforts) · **Applies to:**
 `src/assistant.rs`, `src/afg_chat.rs`, `src/avatar_pack.rs`, `src/afg.rs`,

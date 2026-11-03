@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] — 2026-11-03
 
 The AFG's models of the moment, and their efforts (the operator's request
 of 2 November 2026, docs/adr/0025), and each member's personal assistant
@@ -39,7 +39,7 @@ of 2 November 2026, docs/adr/0025), and each member's personal assistant
   and Haiku 5.5; GPT-6.1 Sol and GPT-6 Astra; Gemini 4 Argon; Mistral Large
   4; gpt-oss and Qwen 3.8 for Ollama and vLLM; and each agent's names. The
   list was read from the makers' pages on 2 November 2026, and is read again
-  for each release.
+  for each release: for this one on 3 November 2026, unchanged.
 - **The efforts follow the model.** The effort field lists the efforts the
   chosen model takes, its usual one marked *default*.
 - **Any other name or effort is kept**, sent as written, and the room says
@@ -4376,7 +4376,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.2.0
 [1.1.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.1.0
 [1.0.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.0.0
 [0.6.0]: https://github.com/plkarin/axgf-cms/releases/tag/v0.6.0

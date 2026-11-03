@@ -1,6 +1,6 @@
 # ADR 0025 — The AFG's models of the moment, and their efforts
 
-**Status:** proposed (2026-11-02) · **Builds on:** docs/adr/0023 (where the
+**Status:** accepted, v1.2.0 (2026-11-03) · **Builds on:** docs/adr/0023 (where the
 AFG's computing comes from) · **Applies to:** `src/afg_models.rs`,
 `src/afg.rs`, `src/routes/afg.rs`, `templates/admin_afg.html`,
 `static/afg.js`, `static/app.css`, `locales/*.ftl`, `tests/afg.rs`

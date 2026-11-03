@@ -489,7 +489,7 @@ There are five ways, and each is spoken to in its own way:
 | An address, an API key and a model: **OpenAI**, **Mistral**, **vLLM**, **Claude** (the Anthropic API), **Gemini** | The usual address is already there. The key is kept with the accounts and never shown again. An effort, if you like. |
 | A coding agent already signed in on this machine: **Claude Code**, **Codex**, **OpenCode** | A model; an effort in the agent's own words; and the program, which the room finds by itself. |
 
-**The models of the moment are suggested** *(new since 1.1.0, not yet released)*. The model field
+**The models of the moment are suggested** *(new in 1.2.0)*. The model field
 lists, for the way you chose, the current models of each maker, the one to
 start with first: for Claude, `claude-opus-5-5`, `claude-fable-5-1`,
 `claude-sonnet-5-5` and `claude-haiku-5-5`. The effort field then lists the
@@ -546,7 +546,7 @@ Why it works this way: [where the computing comes from](docs/adr/0023-the-artifi
 
 ### My personal assistant
 
-*(New since 1.1.0, not yet released.)* Each account the AFG is open to
+*(New in 1.2.0.)* Each account the AFG is open to
 has, from its account page, its own chat with the AFG: **My personal
 assistant**.
 
@@ -661,31 +661,30 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.1.0**. Over v1.0.0 it adds:
+The latest release is **v1.2.0**. Over v1.1.0 it adds:
 
-- **kinship**: how any two people of the family are related, step by step,
-  and every relative of one, the words agreeing in fourteen languages;
-- **27 ties of rite and custom** in ten traditions (godparents, kum,
-  koumbaros, milk kinship, kafala, the namesake…), kept apart from the family
-  and drawn dotted;
-- **polygamous unions** told apart from a couple, one marriage per spouse;
-- **the emblem** of a family and of the archive;
-- **the Artificial family genealogist**, first part:
-  - where its computing comes from: Ollama, OpenAI, Mistral, vLLM, Claude,
-    Gemini, or Claude Code, Codex and OpenCode on the machine;
-  - a test whose result opens in a window;
-  - a brain on disk for each account that talks to it, which each account
-    sees and forgets on its own page;
-  - who may talk to it.
+- **My personal assistant**: each account the AFG is open to has its own
+  chat with the AFG, from its account page:
+  - projects, each with a code of conduct and a memory the AFG keeps;
+  - conversations taken up again at any time, the answer shown as it is
+    written;
+  - documents, photographs, sound and film sent with a message;
+  - seventy-two avatars made with Canva, or a picture of one's own;
+- **the models of the moment**, suggested for each way of computing, and the
+  efforts each model takes, now sent to every service.
 
-v1.0.0, the first major version, brought the tree page as a family chart
-read down the page, the column of generations on a phone, and five themes
-redrawn. v0.6.0 brought the merge of two records, the GEDCOM conversion of
-axgf-rs 0.6.1 and records that agree with the people they describe. v0.5.0
-brought
-the living river and its zoom, the six themes, fourteen languages, the
-family's notes, the administration console, registration and sign-in with a
-service, and the GEDCOM reader for every version.
+v1.1.0 brought kinship (how any two people are related, and every relative
+of one), 27 ties of rite and custom, polygamous unions, the emblem of a
+family and of the archive, and the first part of the Artificial family
+genealogist: where its computing comes from, its test, a brain for each
+account, and who may talk to it. v1.0.0, the first major version, brought
+the tree page as a family chart read down the page, the column of
+generations on a phone, and five themes redrawn. v0.6.0 brought the merge
+of two records, the GEDCOM conversion of axgf-rs 0.6.1 and records that
+agree with the people they describe. v0.5.0 brought the living river and
+its zoom, the six themes, fourteen languages, the family's notes, the
+administration console, registration and sign-in with a service, and the
+GEDCOM reader for every version.
 
 The installer installs releases. `--from-source` builds `main`.
 [CHANGELOG.md](CHANGELOG.md) has the details, version by version.
@@ -703,7 +702,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.1.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.2.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -911,7 +910,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.1.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.1.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.2.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.2.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

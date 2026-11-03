@@ -311,7 +311,7 @@ ask for: it is part of deploying.
    is never taken from `main`.
 
    ```sh
-   V=v1.1.0
+   V=v1.2.0
    curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/bootstrap.sh
    curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/bootstrap.sh.sha256
    curl -fsSLO https://github.com/plkarin/axgf-cms/releases/download/$V/rehearse-rollback.sh

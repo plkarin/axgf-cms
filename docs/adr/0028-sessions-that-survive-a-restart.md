@@ -1,6 +1,6 @@
 # ADR 0028 — Sessions that survive a restart
 
-**Status:** proposed (2026-11-03) · **Reverses:** the sessions held in memory
+**Status:** accepted, v1.3.1 (2026-11-03) · **Reverses:** the sessions held in memory
 only (`src/session.rs`, "In memory, on purpose") · **Applies to:**
 `src/session.rs`, `src/state.rs`, `src/main.rs`, `tests/accounts.rs`
 

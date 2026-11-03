@@ -558,9 +558,9 @@ assistant**.
   up again at any time. The thread reads like a chat, the AFG's answer
   appears as it is written, and a message carries documents, photographs,
   sound or film (dropped, pasted or attached; no microphone).
-- **Avatars**: a picture of your own, or one of eighty made for the site
-  with Canva, four for each of twenty domains (genealogy, health, work,
-  money, travel…).
+- **Avatars**: a picture of your own, or one of seventy-two made for the
+  site with Canva, four for each of eighteen domains (genealogy, health,
+  work, money, travel…).
 
 <p align="center">
 <a href="docs/screenshots/assistant.jpg"><img src="docs/screenshots/assistant.jpg" width="720" alt="My personal assistant under Canopy, with the demonstration family. On the left, the member's projects, each with its avatar: Meunier family, Trip to Lyon, Grandma's health, Moving house, and New project. On the right, a conversation of the Meunier family project: the member asks whether Jules is really Aymeric's son and sends the photograph of a faded letter. The AFG answers that it is not proven: the archive links them with a confidence of only 0.42; it gives the parents' marriage around 1822 and Jules's on 15 June 1848, says the letter is too faded to read, and keeps one fact in the project's memory. Below, the composer, with Attach and Send."></a>

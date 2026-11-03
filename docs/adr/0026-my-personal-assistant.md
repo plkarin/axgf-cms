@@ -188,11 +188,15 @@ The page takes the codes of Claude's web interface, minimal:
 
 ### 8. Avatars
 
-- **The pack.** Eighty pictures were made for this site with Canva
-  (`generate-image`), four for each of twenty domains: genealogy, health,
+- **The pack.** Seventy-two pictures were made for this site with Canva
+  (`generate-image`), four for each of eighteen domains: genealogy, health,
   work, money, law, learning, home, cooking, travel, nature, well-being,
-  family life, arts, sport, technology, science, history, paperwork, animals,
-  celebrations and rites.
+  family life, arts, sport, technology, science, history and paperwork.
+- **Two domains wait.** Eighty were asked for. The Canva plan's quota ran
+  out on 3 November 2026 at seventy-two, so animals, and celebrations and
+  rites, have no pictures yet. Their names are already translated in every
+  language, and the pack's build script takes their pictures as soon as
+  they are made.
 - **The style.** One symbol on a gradient of its domain's colour, in one
   flat style.
 - **The files.** Each is a 192 px WebP, embedded in the binary

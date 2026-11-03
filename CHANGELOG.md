@@ -22,8 +22,8 @@ of 2 November 2026, docs/adr/0025), and each member's personal assistant
     up again at any time. The AFG's answer appears as it is written, and a
     message carries documents, photographs, sound or film (dropped, pasted
     or attached; no microphone);
-  - **eighty avatars** made for the site with Canva, four for each of twenty
-    domains, or a picture of the member's own;
+  - **seventy-two avatars** made for the site with Canva, four for each of
+    eighteen domains, or a picture of the member's own;
   - an answer that failed, or a message left without one when the site
     stopped, is **asked again** from the thread.
 

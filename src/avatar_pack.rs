@@ -1,7 +1,7 @@
 //! The pictures a personal assistant's project or conversation may take as
 //! its avatar (the operator's request of 3 November 2026, docs/adr/0026):
-//! made for this site with Canva, four for each of twenty domains of a
-//! family's life, 192 pixels square. Written by the pack's build script from
+//! made for this site with Canva, four for each of the domains of a family's
+//! life below, 192 pixels square. Written by the pack's build script from
 //! `static/avatars/`; a picture of the account's own is kept in its space
 //! instead ([`crate::assistant`]).
 
@@ -394,6 +394,11 @@ pub const PACK: &[Avatar] = &[
         name: "admin-calendar",
         domain: "admin",
         bytes: include_bytes!("../static/avatars/admin-calendar.webp"),
+    },
+    Avatar {
+        name: "admin-id",
+        domain: "admin",
+        bytes: include_bytes!("../static/avatars/admin-id.webp"),
     },
 ];
 

@@ -785,7 +785,9 @@ Everything else an operator needs is in [docs/OPERATOR.md](docs/OPERATOR.md).
   family.axgf        the family — the only file that matters
   family.acl         the accounts (password hashes), mode 600
   family.journal     who changed what, and when
-  backups/           the daily archives
+  family.brains/     the AFG's brain for each account that talks to it
+  family.assistant/  each account's personal assistant
+  backups/           the daily archives, the family's and the AFG's memory's
   .axgf-cms-cache/   photographs unpacked for serving; rebuilt if deleted
 ```
 
@@ -843,7 +845,11 @@ else is public. Check that is what you want.
 Backups happen on their own: one verified archive a day, kept as 7 daily,
 4 weekly and 12 monthly, in `/var/lib/axgf-cms/backups/`. Each is a plain ZIP
 holding the family file, the accounts and the edit history, and is read back
-in full before it is kept. To back up right now:
+in full before it is kept. *(New since 1.2.0, not yet released.)* The AFG's
+memory, its brains and the personal assistants, goes into an archive of its
+own beside it, `axgf-memory-…`, checked and kept the same way
+([why](docs/adr/0027-the-afgs-memory-backed-up-apart.md)). To back up right
+now:
 
 ```sh
 sudo systemctl start axgf-cms-backup.service

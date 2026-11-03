@@ -41,6 +41,11 @@ pub enum Command {
     ///
     /// Safe to run against a live installation: it takes the same write lock a
     /// save takes, so the three files in the archive agree with each other.
+    ///
+    /// Then, unless it is a pre-upgrade archive, one of the AFG's memory: the
+    /// brains and the personal assistants, in an archive of their own
+    /// (`axgf-memory-…`), kept by the same retention as a set of its own
+    /// (docs/adr/0027).
     Backup {
         /// Directory to write the archive into. Created if absent. Defaults to
         /// --backup-dir, then to AXGF_CMS_BACKUP_DIR.
@@ -67,7 +72,9 @@ pub enum Command {
     /// Put a backup archive back, keeping the current state aside first.
     ///
     /// Refuses to run while an instance is serving the bundle. Stop the
-    /// service, restore, start it again.
+    /// service, restore, start it again. An archive of the AFG's memory
+    /// (`axgf-memory-…`) puts back the brains and the assistants instead, and
+    /// leaves the bundle as it is.
     Restore {
         /// The archive to restore.
         #[arg(value_name = "ARCHIVE")]

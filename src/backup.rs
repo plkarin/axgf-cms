@@ -219,7 +219,7 @@ fn is_journal_member(name: &str) -> bool {
 }
 
 /// UTC timestamp in the form the filenames use: `20260921T143005Z`.
-fn stamp() -> String {
+pub(crate) fn stamp() -> String {
     let now = time::OffsetDateTime::now_utc();
     format!(
         "{:04}{:02}{:02}T{:02}{:02}{:02}Z",
@@ -388,6 +388,12 @@ pub fn run_as(bundle: &Path, dest: &Path, retention: Retention, kind: Kind) -> R
 /// archive out from under it or leave a dead one lying for an hour. This is
 /// the same reasoning [`crate::lockfile`] gives for using flock at all.
 pub fn sweep_orphaned_parts(dest: &Path) -> (usize, u64) {
+    sweep_parts(dest, &[PREFIX, PRE_UPGRADE_PREFIX])
+}
+
+/// [`sweep_orphaned_parts`], for the sets whose names start with one of
+/// `prefixes`: each set's run reclaims its own parts only.
+pub(crate) fn sweep_parts(dest: &Path, prefixes: &[&str]) -> (usize, u64) {
     let Ok(entries) = fs::read_dir(dest) else {
         return (0, 0);
     };
@@ -396,9 +402,7 @@ pub fn sweep_orphaned_parts(dest: &Path) -> (usize, u64) {
         let path = entry.path();
         let name = entry.file_name();
         let Some(name) = name.to_str() else { continue };
-        if !(name.starts_with(PREFIX) || name.starts_with(PRE_UPGRADE_PREFIX))
-            || !name.ends_with(".zip.part")
-        {
+        if !prefixes.iter().any(|p| name.starts_with(p)) || !name.ends_with(".zip.part") {
             continue;
         }
         let Ok(file) = fs::OpenOptions::new().read(true).write(true).open(&path) else {
@@ -507,14 +511,23 @@ fn write_archive(files: &StateFiles, file: fs::File) -> Result<Manifest> {
 /// A fixed buffer, because the file on the other end of it is the whole
 /// genealogy: reading it into memory to hash it would undo the streaming the
 /// rest of this application is built around.
-fn copy_hashing<W: Write>(path: &Path, out: &mut W) -> Result<(u64, String)> {
-    use sha2::{Digest, Sha256};
+pub(crate) fn copy_hashing<W: Write>(path: &Path, out: &mut W) -> Result<(u64, String)> {
     let mut f = fs::File::open(path).with_context(|| format!("opening {}", path.display()))?;
+    copy_hashing_reader(&mut f, out)
+}
+
+/// [`copy_hashing`], from anything that reads: a file, or a member of an
+/// archive being read back.
+pub(crate) fn copy_hashing_reader<R: Read, W: Write>(
+    r: &mut R,
+    out: &mut W,
+) -> Result<(u64, String)> {
+    use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     let mut buf = vec![0u8; 256 * 1024];
     let mut total = 0u64;
     loop {
-        let n = f.read(&mut buf).with_context(|| "reading")?;
+        let n = r.read(&mut buf).with_context(|| "reading")?;
         if n == 0 {
             break;
         }
@@ -821,7 +834,13 @@ pub fn list(dir: &Path) -> Result<Vec<Archive>> {
 
 /// Every archive of one set in `dir`, newest first.
 pub fn list_kind(dir: &Path, kind: Kind) -> Result<Vec<Archive>> {
-    let prefix = kind.prefix();
+    list_prefixed(dir, kind.prefix())
+}
+
+/// Every archive in `dir` whose name starts with `prefix`, newest first: the
+/// listing behind each set, the AFG's memory's included
+/// ([`crate::memory_backup`]).
+pub fn list_prefixed(dir: &Path, prefix: &str) -> Result<Vec<Archive>> {
     let mut out = Vec::new();
     let entries = match fs::read_dir(dir) {
         Ok(e) => e,
@@ -1081,7 +1100,7 @@ fn restrict_if_secret(name: &str, path: &Path) {
 /// write lock, so the lock cannot detect it; and a bundle on a machine where
 /// nothing is listening may still be mid-save by a `backup` run. Together they
 /// cover both.
-fn refuse_if_running(bundle: &Path) -> Result<()> {
+pub(crate) fn refuse_if_running(bundle: &Path) -> Result<()> {
     // Is anything holding the write lock right now?
     if WriteLock::acquire_for(bundle, std::time::Duration::from_millis(200)).is_err() {
         bail!(

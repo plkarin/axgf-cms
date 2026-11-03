@@ -230,6 +230,12 @@ There is no database to dump and no schema to migrate. Back up both: restoring
 only the `.axgf` gives you the tree back with every account gone, and nobody
 able to sign in but the emergency token.
 
+Two folders beside them hold the AFG's memory: `family.brains/` and
+`family.assistant/`. They are personal data about the people who talk to it,
+not the genealogy. The installer's nightly backup puts them in an archive of
+their own, `axgf-memory-<stamp>.zip` (docs/adr/0027). By hand, copy them
+too, as the service user.
+
 The payload cache under `<bundle_dir>/.axgf-cms-cache/` (or wherever
 `--cache-dir` points) is **derived data** — the `.axgf` holds the authoritative
 copy of every attached file — so it does not need backing up. Exclude it; the

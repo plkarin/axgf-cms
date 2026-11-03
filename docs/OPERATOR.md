@@ -142,6 +142,20 @@ each member's SHA-256 against the manifest, the bundle re-imported and
 validated — and one that fails is deleted rather than left looking like a
 backup. Retention keeps 7 daily, 4 weekly and 12 monthly.
 
+**The AFG's memory has an archive of its own** (docs/adr/0027). The same run
+then writes `axgf-memory-<stamp>.zip` beside it:
+
+- **What it holds:** the brains (`family.brains/`) and the personal
+  assistants (`family.assistant/`), every file with its SHA-256 in the
+  archive's manifest.
+- **How it is checked:** it is read back the same way before it is kept.
+- **Retention:** the same, as a set of its own.
+- **The bundle's archive stays exactly what it was.**
+
+An installation where nobody has talked to the AFG yet has no such archive.
+A run whose memory archive fails says so and fails, even though the bundle's
+archive was written.
+
 You can open one with `unzip`. That is deliberate: the day a backup is needed
 is the worst possible day to discover that reading it needs this program.
 
@@ -171,7 +185,8 @@ backup of a mistake.
 
 Once a week, `axgf-cms-verify.service` loads the bundle and validates it,
 checks the payload cache against what the bundle declares, and reads the newest
-archive back in full. It fails the unit if any of that is wrong:
+archive back in full, the newest archive of the AFG's memory too. It fails the
+unit if any of that is wrong:
 
 ```sh
 systemctl is-failed axgf-cms-verify     # "failed" is the answer you act on
@@ -194,6 +209,18 @@ sudo systemctl start axgf-cms
 What it replaced is moved into a timestamped directory beside the bundle, not
 deleted: restoring the wrong archive at three in the morning has to be
 reversible.
+
+The same command puts the AFG's memory back from an `axgf-memory-…` archive,
+and leaves the bundle as it is. The brains and the assistants that are there
+now go aside, into `axgf-memory-replaced-<stamp>/`:
+
+```sh
+sudo systemctl stop axgf-cms
+sudo -u axgf-cms axgf-cms restore \
+  --bundle /var/lib/axgf-cms/family.axgf \
+  /var/lib/axgf-cms/backups/axgf-memory-20261104T033012Z.zip
+sudo systemctl start axgf-cms
+```
 
 ## Upgrading
 
@@ -462,8 +489,9 @@ directory, mode 700, holding:
 
 It is personal data about a living person. Four things to know:
 
-- **Backups.** The nightly backup does not hold brains. Copy
-  `/var/lib/axgf-cms/family.brains` with the rest if you want them kept.
+- **Backups.** The nightly run backs them up apart from the family's
+  archive, in `axgf-memory-<stamp>.zip` (see Backups above). A fact
+  forgotten stays in the archives that held it until they age out.
 - **Forgetting.** Each person forgets from *My account*: a fact, an
   exchange, or everything. You can also delete a folder by hand.
 - **A name given again.** The new account starts from nothing. The old
@@ -474,8 +502,8 @@ It is personal data about a living person. Four things to know:
 assistant (docs/adr/0026): projects and conversations with the AFG. They
 are kept in `family.assistant/<username>/` in the data directory, mode 700,
 with the files the member sent (6 a message at most, 20 MB each). Like the
-brains, they are personal, and **not in the nightly backup**: copy
-`/var/lib/axgf-cms/family.assistant` too if you want them kept. Every
+brains, they are personal, and backed up with the brains, apart from the
+family's archive, in `axgf-memory-<stamp>.zip` (see Backups above). Every
 message sends the conversation's recent history, its files and the
 project's memory to the AFG's computing. The family's archive goes too only
 when the project's member chose it. The site writes at most four answers at

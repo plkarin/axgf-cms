@@ -176,8 +176,9 @@ Beside them, once anyone has talked to the AFG, a third (docs/adr/0024):
       <username>/memory.md             what the AFG chose to keep, one fact a line
       <username>/conversations.jsonl   every exchange, one JSON object a line
 
-A brain belongs to its account's id, not to its name. The nightly backup does
-not hold it.
+A brain belongs to its account's id, not to its name. The nightly backup
+keeps the brains and the assistants apart from the family's archive, in an
+archive of their own, `axgf-memory-<stamp>.zip` (docs/adr/0027).
 
 ### The first account
 

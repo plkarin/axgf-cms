@@ -56,6 +56,7 @@ pub mod kinship;
 pub mod kinship_text;
 pub mod living;
 pub mod lockfile;
+pub mod memory_backup;
 pub mod note_pdf;
 pub mod notes;
 pub mod notify;

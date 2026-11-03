@@ -946,3 +946,85 @@ fn every_archive_is_0600_whatever_the_umask() {
         assert_eq!(mode, 0o600, "{} is {mode:o}", a.display());
     }
 }
+
+/// The command the nightly timer runs: the bundle's archive, then the AFG's
+/// memory in an archive of its own (docs/adr/0027), which `verify` and
+/// `restore` read for what it is.
+#[test]
+fn the_nightly_command_backs_up_the_afgs_memory_apart_and_restores_it() {
+    let bundle = seeded("br-memory");
+    let dest = scratch("br-memory-dest");
+    let brain = bundle.with_extension("brains").join("greta");
+    std::fs::create_dir_all(&brain).expect("brain");
+    std::fs::write(brain.join("memory.md"), "[2026-11-03] keeps the archive\n").expect("fact");
+    let project = bundle
+        .with_extension("assistant")
+        .join("greta")
+        .join("projects")
+        .join("0123456789abcdef");
+    std::fs::create_dir_all(&project).expect("project");
+    std::fs::write(project.join("project.json"), "{\"name\":\"Archives\"}").expect("project");
+
+    let bin = env!("CARGO_BIN_EXE_axgf-cms");
+    let run = |args: &[&std::ffi::OsStr]| {
+        let out = std::process::Command::new(bin)
+            .args(args)
+            .output()
+            .expect("run axgf-cms");
+        let err = String::from_utf8_lossy(&out.stderr).into_owned();
+        assert!(out.status.success(), "{args:?}: {err}");
+        err
+    };
+    run(&[
+        "backup".as_ref(),
+        "--bundle".as_ref(),
+        bundle.as_os_str(),
+        "--dest".as_ref(),
+        dest.dir().as_os_str(),
+    ]);
+
+    let names: Vec<String> = std::fs::read_dir(dest.dir())
+        .expect("list")
+        .flatten()
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .collect();
+    let memory: Vec<&String> = names
+        .iter()
+        .filter(|n| n.starts_with("axgf-memory-"))
+        .collect();
+    let bundles: Vec<&String> = names
+        .iter()
+        .filter(|n| n.starts_with("axgf-backup-"))
+        .collect();
+    assert_eq!((memory.len(), bundles.len()), (1, 1), "{names:?}");
+
+    // The bundle's archive is the family's state, and nothing of the memory.
+    let family = backup::verify(&dest.join(bundles[0])).expect("the bundle's archive");
+    assert!(
+        family
+            .manifest
+            .sha256
+            .keys()
+            .all(|m| !m.contains("brains") && !m.contains("assistant")),
+        "{:?}",
+        family.manifest.sha256.keys()
+    );
+
+    let archive = dest.join(memory[0]);
+    let said = run(&["verify".as_ref(), archive.as_os_str()]);
+    assert!(said.contains("archive of the AFG's memory"), "{said}");
+
+    // A fact forgotten, then the memory restored.
+    std::fs::write(brain.join("memory.md"), "").expect("forget");
+    run(&[
+        "restore".as_ref(),
+        "--bundle".as_ref(),
+        bundle.as_os_str(),
+        archive.as_os_str(),
+    ]);
+    assert_eq!(
+        std::fs::read_to_string(brain.join("memory.md")).expect("restored"),
+        "[2026-11-03] keeps the archive\n"
+    );
+    assert!(project.join("project.json").exists());
+}

@@ -169,7 +169,9 @@ the account may talk to the AFG, or when the AFG remembers something of it.
 
 - **Brains are kept beside the archive and are not in its backups.** The
   nightly backup holds the bundle, the accounts and the journal. Brains are
-  for the operator to add to it, or to copy themselves.
+  for the operator to add to it, or to copy themselves. *Amended by
+  docs/adr/0027:* the nightly run now writes the brains, with the
+  assistants, into an archive of their own, apart from the bundle's.
 - **A brain is personal data about a living person.** It is readable only by
   the service's user. Its owner forgets from their account page (§6). The
   operator can still delete a folder by hand.

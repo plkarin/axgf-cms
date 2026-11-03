@@ -74,8 +74,9 @@ family.assistant/                beside family.axgf, as family.brains is
   names another account is set aside, as a brain is.
 - **It is not the account's AFG brain.** Forgetting that brain on the
   account page leaves the projects as they are.
-- **It is not in the nightly backup either, as brains are not.** Whether
-  both should be is the operator's decision.
+- **It is backed up apart from the bundle, with the brains.** The
+  operator decided on 3 November 2026 that both should be: the nightly run
+  writes them into an archive of their own (docs/adr/0027).
 
 ### 3. A project
 
@@ -216,7 +217,8 @@ The page takes the codes of Claude's web interface, minimal:
 - **Cost grows with the conversation.** The history is sent again with each
   message, within its limits. The archive is the heaviest part, and is off
   by default.
-- **Not in the backups.** The projects, their files and their memories are
-  in no nightly backup until the operator decides they should be.
+- **Backed up apart.** The projects, their files and their memories go into
+  the nightly archive of the AFG's memory, not into the bundle's
+  (docs/adr/0027).
 - **Not in this part:** sharing a project with another account, a search
   across conversations, and voice. There is no microphone, as asked.

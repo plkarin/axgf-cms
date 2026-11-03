@@ -411,16 +411,64 @@ fn run_backup(
             );
         }
     }
+
+    // The AFG's memory, in an archive of its own (docs/adr/0027), after the
+    // bundle's, which it never touches. Not before an upgrade: that archive
+    // is the bundle's alone.
+    let memory = (kind == axgf_cms::backup::Kind::Scheduled)
+        .then(|| axgf_cms::memory_backup::run(bundle, &dest, retention));
+    match &memory {
+        Some(Ok(Some(r))) => {
+            let m = &r.manifest;
+            eprintln!();
+            eprintln!("  the AFG's memory, in an archive of its own");
+            eprintln!();
+            eprintln!("    archive    {}", r.archive.display());
+            eprintln!(
+                "    size       {}",
+                axgf_cms::documents::human_size(r.bytes)
+            );
+            for (folder, n) in &m.accounts {
+                eprintln!("    {folder:<18} {n} account(s)");
+            }
+            eprintln!("    files      {}", m.sha256.len());
+            if !r.pruned.is_empty() {
+                eprintln!(
+                    "    retention removed {} older archive(s) of the memory",
+                    r.pruned.len()
+                );
+            }
+        }
+        Some(Ok(None)) => {
+            eprintln!();
+            eprintln!("  the AFG's memory: no brain and no assistant yet, so no archive");
+        }
+        Some(Err(e)) => {
+            eprintln!();
+            eprintln!("  the AFG's memory: NOT backed up");
+            eprintln!("    {e:#}");
+        }
+        None => {}
+    }
     eprintln!();
     eprintln!("  An archive on the same disk as the bundle does not survive that");
     eprintln!("  disk. Copy it off the machine — see docs/OPERATOR.md.");
     eprintln!("─────────────────────────────────────────────────────────");
+    if let Some(Err(e)) = memory {
+        return Err(e).context(
+            "the bundle's archive was written and verified, but the AFG's memory was not \
+             backed up",
+        );
+    }
     Ok(())
 }
 
 /// `axgf-cms restore <archive>`
 fn run_restore(cfg: &Config, archive: &std::path::Path, force: bool) -> Result<()> {
     let bundle = cfg.bundle()?;
+    if axgf_cms::memory_backup::is_memory_archive(archive) {
+        return run_restore_memory(bundle, archive, force);
+    }
     let plan = axgf_cms::backup::restore(archive, bundle, force)?;
     let v = &plan.verified;
     eprintln!("─────────────────────────────────────────────────────────");
@@ -443,8 +491,59 @@ fn run_restore(cfg: &Config, archive: &std::path::Path, force: bool) -> Result<(
     Ok(())
 }
 
+/// `axgf-cms restore <archive>` for an archive of the AFG's memory.
+fn run_restore_memory(
+    bundle: &std::path::Path,
+    archive: &std::path::Path,
+    force: bool,
+) -> Result<()> {
+    let plan = axgf_cms::memory_backup::restore(archive, bundle, force)?;
+    let m = &plan.verified.manifest;
+    eprintln!("─────────────────────────────────────────────────────────");
+    eprintln!("  restored the AFG's memory from {}", archive.display());
+    eprintln!();
+    eprintln!("    taken      {}", m.created_at);
+    for (folder, n) in &m.accounts {
+        eprintln!("    {folder:<18} {n} account(s)");
+    }
+    eprintln!("    files      {}", plan.verified.files);
+    eprintln!();
+    match &plan.aside {
+        Some(aside) => {
+            eprintln!("  The folders that were there are not deleted. They are in");
+            eprintln!("    {}", aside.display());
+            eprintln!("  If this was the wrong archive, move them back.");
+        }
+        None => eprintln!("  There was nothing there to set aside."),
+    }
+    eprintln!("─────────────────────────────────────────────────────────");
+    Ok(())
+}
+
 /// `axgf-cms verify <archive>`
 fn run_verify(archive: &std::path::Path) -> Result<()> {
+    if axgf_cms::memory_backup::is_memory_archive(archive) {
+        let v = axgf_cms::memory_backup::verify(archive)?;
+        eprintln!("─────────────────────────────────────────────────────────");
+        eprintln!(
+            "  {} is a readable archive of the AFG's memory",
+            archive.display()
+        );
+        eprintln!();
+        eprintln!("    taken      {}", v.manifest.created_at);
+        eprintln!("    written by {}", v.manifest.written_by);
+        eprintln!("    beside     {}", v.manifest.source_bundle);
+        for (folder, n) in &v.manifest.accounts {
+            eprintln!("    {folder:<18} {n} account(s)");
+        }
+        eprintln!("    files      {}", v.files);
+        eprintln!(
+            "    size       {}",
+            axgf_cms::documents::human_size(v.bytes)
+        );
+        eprintln!("─────────────────────────────────────────────────────────");
+        return Ok(());
+    }
     let v = axgf_cms::backup::verify(archive)?;
     eprintln!("─────────────────────────────────────────────────────────");
     eprintln!("  {} is a readable backup", archive.display());
@@ -523,6 +622,25 @@ fn run_self_check(cfg: &Config) -> Result<()> {
                 }
             },
             None => eprintln!("\n    no archive in {} to read back", dir.display()),
+        }
+        // The AFG's memory, when there is any: its newest archive, every
+        // file against the SHA-256 its manifest recorded.
+        if let Some(a) = axgf_cms::memory_backup::latest(dir) {
+            match axgf_cms::memory_backup::verify(&a.path) {
+                Ok(v) => eprintln!(
+                    "    newest archive of the AFG's memory {} — readable, {} files",
+                    a.path.file_name().unwrap_or_default().to_string_lossy(),
+                    v.files
+                ),
+                Err(e) => {
+                    eprintln!(
+                        "    newest archive of the AFG's memory {} — UNREADABLE",
+                        a.path.display()
+                    );
+                    eprintln!("    {e:#}");
+                    worst = axgf_cms::health::Level::Fail;
+                }
+            }
         }
     }
     eprintln!("─────────────────────────────────────────────────────────");

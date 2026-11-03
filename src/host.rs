@@ -182,7 +182,11 @@ fn backups(dir: &Path) -> (Backups, Vec<(SystemTime, u64)>) {
         if name.starts_with("axgf-backup-") {
             history.push((at, meta.len()));
         }
-        if newest.as_ref().is_none_or(|(t, _, _)| at > *t) {
+        // The newest archive of the family's state: the AFG's memory is an
+        // archive of its own (docs/adr/0027), written just after it.
+        if !name.starts_with(crate::memory_backup::PREFIX)
+            && newest.as_ref().is_none_or(|(t, _, _)| at > *t)
+        {
             newest = Some((at, name.clone(), meta.len()));
         }
         if oldest.is_none_or(|t| at < t) {

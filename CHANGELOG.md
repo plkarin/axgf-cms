@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The AFG's memory, backed up apart from the family's archive (the operator's
+decision of 3 November 2026, docs/adr/0027).
+
+### Added
+
+- **The AFG's memory is backed up, apart from the family's archive.** The
+  nightly run writes, after the bundle's archive, one of its own,
+  `axgf-memory-<stamp>.zip`, holding the brains and the personal assistants:
+  - read back before it is kept, every file against its SHA-256;
+  - kept by the same retention, as a set of its own;
+  - read back again by the weekly check;
+  - put back by `axgf-cms restore`, which knows it by its manifest, sets
+    aside the folders it replaces, and never touches the bundle.
+
+  The bundle's archive is exactly what it was.
+
 ## [1.2.0] — 2026-11-03
 
 The AFG's models of the moment, and their efforts (the operator's request

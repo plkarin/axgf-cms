@@ -63,8 +63,44 @@ fn draft_from(
 
 /// Whether this account may change this note: an administrator any, a
 /// contributor the ones they wrote.
-fn may_change(viewer: &crate::access::Viewer, doc: &Value) -> bool {
+pub(super) fn may_change(viewer: &crate::access::Viewer, doc: &Value) -> bool {
     viewer.is_admin() || notes::author(doc).as_deref() == Some(viewer.name())
+}
+
+/// Where a writer goes once done, and what they are writing (docs/adr/0029):
+/// carried by the form, so that a note written, changed or deleted from a
+/// person's record goes back to it, and a summary started there is one.
+#[derive(Debug, Clone, Default)]
+pub(super) struct Way {
+    back: Option<String>,
+    summary: bool,
+}
+
+impl Way {
+    fn read(back: Option<&str>, kind: Option<&str>) -> Self {
+        Way {
+            back: back.and_then(safe_back),
+            summary: kind.map(str::trim) == Some("summary"),
+        }
+    }
+
+    fn from_fields(fields: &[(String, String)]) -> Self {
+        let get = |k: &str| fields.iter().find(|(f, _)| f == k).map(|(_, v)| v.as_str());
+        Way::read(get("back"), get("kind"))
+    }
+}
+
+/// A page to go back to: one of this site's records, nothing else, so the
+/// form cannot be made to send a writer anywhere.
+pub(super) fn safe_back(s: &str) -> Option<String> {
+    let s = s.trim();
+    let tail = s.strip_prefix("/person/")?;
+    (!tail.is_empty()
+        && s.len() <= 300
+        && !s.contains("//")
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || "-_/?=&#.%".contains(c)))
+    .then(|| s.to_string())
 }
 
 // ---------------------------------------------------------------------------
@@ -118,10 +154,22 @@ pub async fn list(
 pub struct NewQuery {
     #[serde(default)]
     person: Option<String>,
+    /// `summary` for a person's summary (docs/adr/0029).
+    #[serde(default)]
+    kind: Option<String>,
+    #[serde(default)]
+    back: Option<String>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct EditQuery {
+    #[serde(default)]
+    back: Option<String>,
 }
 
 /// The writing form's context: the note as it stands (or the draft sent
 /// back with an error), the people pickable, the categories offered.
+#[allow(clippy::too_many_arguments)]
 fn form_page(
     state: &Shared,
     viewer: &crate::access::Viewer,
@@ -129,6 +177,7 @@ fn form_page(
     id: Option<&str>,
     version: u64,
     d: &Draft,
+    way: &Way,
     error: Option<(String, StatusCode)>,
 ) -> Response {
     let status = error.as_ref().map_or(StatusCode::OK, |e| e.1);
@@ -173,13 +222,18 @@ fn form_page(
             preview,
             error,
             max_image_mb => notes::MAX_IMAGE / (1024 * 1024),
+            // Not `back`: the page's chrome has one, the way a preference
+            // form returns, and it would win.
+            return_to => way.back,
+            summary => way.summary,
         },
     );
     *resp.status_mut() = status;
     resp
 }
 
-/// `GET /admin/notes/new` — a blank note, about a person when one is named.
+/// `GET /admin/notes/new` — a blank note, about a person when one is named;
+/// with `kind=summary`, that person's summary (docs/adr/0029).
 pub async fn new_form(
     State(state): State<Shared>,
     headers: HeaderMap,
@@ -189,14 +243,30 @@ pub async fn new_form(
         Ok(v) => v,
         Err(r) => return r,
     };
+    let mut way = Way::read(q.back.as_deref(), q.kind.as_deref());
     let mut d = Draft::default();
-    if let Some(p) = q
-        .person
-        .filter(|p| state.read(|flat| flat.pointer(&format!("/persons/{p}")).is_some()))
-    {
+    let person = q.person.and_then(|p| {
+        state.read_as(viewer.ceiling(), |flat, lens| {
+            let found = flat.get("persons")?.get(&p)?;
+            Some((
+                p.clone(),
+                lens.sees_person(&p)
+                    .then(|| crate::view::person_display_name(found)),
+            ))
+        })
+    });
+    if let Some((p, name)) = person {
+        if way.summary {
+            if let Some(name) = name {
+                d.title = chrome.t_args("summary-note-title", &[("name", name.into())]);
+                d.category = chrome.t("summary-category");
+            }
+        }
         d.persons.push(p);
     }
-    form_page(&state, &viewer, &chrome, None, 0, &d, None)
+    // A summary is one person's: without one, this is a note like another.
+    way.summary &= d.persons.len() == 1;
+    form_page(&state, &viewer, &chrome, None, 0, &d, &way, None)
 }
 
 /// `GET /admin/notes/:id/edit`
@@ -204,6 +274,7 @@ pub async fn edit_form(
     State(state): State<Shared>,
     headers: HeaderMap,
     Path(id): Path<String>,
+    Query(q): Query<EditQuery>,
 ) -> Response {
     let (viewer, chrome) = match require(&state, &headers, Need::Write) {
         Ok(v) => v,
@@ -235,7 +306,8 @@ pub async fn edit_form(
         markdown: text,
     };
     let version = crate::state::version_of(&doc);
-    form_page(&state, &viewer, &chrome, Some(&id), version, &d, None)
+    let way = Way::read(q.back.as_deref(), None);
+    form_page(&state, &viewer, &chrome, Some(&id), version, &d, &way, None)
 }
 
 /// The pictures a text names: those pasted since the page opened become
@@ -339,6 +411,7 @@ async fn save(
         .find(|(k, _)| k == "base_version")
         .and_then(|(_, v)| v.parse().ok())
         .unwrap_or(0);
+    let way = Way::from_fields(fields);
     let mut d = match draft_from(state, fields) {
         Ok(d) => d,
         Err((typed, key)) => {
@@ -364,6 +437,7 @@ async fn save(
                 id.as_deref(),
                 version,
                 &d,
+                &way,
                 Some((msg, StatusCode::BAD_REQUEST)),
             );
         }
@@ -376,6 +450,7 @@ async fn save(
             id.as_deref(),
             version,
             &d,
+            &way,
             Some((chrome.t(key), StatusCode::BAD_REQUEST)),
         );
     }
@@ -406,6 +481,7 @@ async fn save(
                 id.as_deref(),
                 version,
                 &d,
+                &way,
                 Some((chrome.t(key), StatusCode::BAD_REQUEST)),
             )
         }
@@ -428,6 +504,19 @@ async fn save(
         entity["created_at"] = json!(crate::view::now_iso8601());
         entity["updated_at"] = json!(crate::view::now_iso8601());
         entity["version_num"] = json!(1);
+        // A summary started from a person's record (docs/adr/0029).
+        if way.summary && d.persons.len() == 1 {
+            crate::afg_record::mark_summary(&mut entity, &d.persons[0], None, None);
+        }
+    } else if stored.as_ref().is_some_and(crate::afg_record::is_summary) {
+        // A summary the AFG wrote and a member rewrote is the member's.
+        let before = stored
+            .as_ref()
+            .and_then(notes::text_path)
+            .and_then(|p| state.attachment(&p));
+        if before.as_deref() != Some(text.as_slice()) {
+            crate::afg_record::summary_edited(&mut entity);
+        }
     }
     if let Err(r) = check_scope(
         state,
@@ -462,7 +551,8 @@ async fn save(
     }) {
         Ok(BatchOutcome::Applied { .. }) => {
             state.note_images().take(viewer.name(), &pics.tokens);
-            return Redirect::to(&format!("/notes/{note_id}")).into_response();
+            let to = way.back.unwrap_or_else(|| format!("/notes/{note_id}"));
+            return Redirect::to(&to).into_response();
         }
         Ok(BatchOutcome::Conflict { .. }) => (chrome.t("notes-error-stale"), StatusCode::CONFLICT),
         Ok(BatchOutcome::Refused { diagnostics, .. }) => (
@@ -479,12 +569,13 @@ async fn save(
         id.as_deref(),
         version,
         &d,
+        &way,
         Some((message, status)),
     )
 }
 
 /// The pictures a note had that its text no longer shows.
-fn pictures_dropped(state: &Shared, note_id: &str, markdown: &str) -> Vec<Op> {
+pub(super) fn pictures_dropped(state: &Shared, note_id: &str, markdown: &str) -> Vec<Op> {
     let shown = notes::refs(markdown, notes::DOCUMENT_REF);
     state.read(|flat| {
         let Some(doc) = flat.get("documents").and_then(|d| d.get(note_id)) else {
@@ -508,6 +599,9 @@ fn pictures_dropped(state: &Shared, note_id: &str, markdown: &str) -> Vec<Op> {
 pub struct DeleteForm {
     #[serde(default)]
     base_version: u64,
+    /// The record it was deleted from, to go back to (docs/adr/0029).
+    #[serde(default)]
+    back: String,
 }
 
 /// `POST /admin/notes/:id/delete` — the note and its pictures.
@@ -558,7 +652,10 @@ pub async fn delete(
     match state.commit(ops, viewer.name(), |kind, e| {
         super::admin::label_for(kind, e)
     }) {
-        Ok(BatchOutcome::Applied { .. }) => Redirect::to("/admin/notes?deleted=1").into_response(),
+        Ok(BatchOutcome::Applied { .. }) => {
+            Redirect::to(&safe_back(&form.back).unwrap_or_else(|| "/admin/notes?deleted=1".into()))
+                .into_response()
+        }
         Ok(BatchOutcome::Conflict { .. }) => render::error_page_in(
             &chrome,
             StatusCode::CONFLICT,
@@ -701,6 +798,12 @@ pub async fn preview(
 pub struct NoteQuery {
     #[serde(default)]
     frame: Option<String>,
+    /// Opened from a record's Fiche, which only reads notes (docs/adr/0029).
+    #[serde(default)]
+    read: Option<String>,
+    /// Where its edit returns: the record's Médias tab it was opened from.
+    #[serde(default)]
+    back: Option<String>,
 }
 
 /// The note, whole, for this reader — or nothing, whether it is not there or
@@ -755,7 +858,8 @@ pub async fn show(
     let Some((note, doc)) = full(&state, &viewer, chrome.lang, &id) else {
         return no_note(&chrome);
     };
-    let may = viewer.may_write() && may_change(&viewer, &doc);
+    let may = q.read.is_none() && viewer.may_write() && may_change(&viewer, &doc);
+    let back = q.back.as_deref().and_then(safe_back);
     let template = if q.frame.is_some() {
         "_note_frame.html"
     } else {
@@ -764,7 +868,7 @@ pub async fn show(
     let mut resp = render::page_with(
         &chrome,
         template,
-        context! { nav => "about", note, may_change => may },
+        context! { nav => "about", note, may_change => may, return_to => back },
     );
     resp.headers_mut().insert(
         header::CACHE_CONTROL,

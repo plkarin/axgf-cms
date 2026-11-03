@@ -2,12 +2,17 @@
 {% import "_icons.html" as ic %}
 {% block title %}{{ t("notes-edit-title") if id else t("notes-new-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
-<p class="small"><a href="/admin/notes">← {{ t("notes-admin-title") }}</a></p>
-<h1>{{ t("notes-edit-title") if id else t("notes-new-title") }}</h1>
+{#- Opened from a person's record (docs/adr/0029): saving, cancelling and
+    deleting all go back there. -#}
+{% if return_to %}<p class="small"><a href="{{ return_to }}">← {{ t("afg-record-back") }}</a></p>
+{% else %}<p class="small"><a href="/admin/notes">← {{ t("notes-admin-title") }}</a></p>{% endif %}
+<h1>{{ t("summary-edit-title") if summary else (t("notes-edit-title") if id else t("notes-new-title")) }}</h1>
 {% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
 
 <form method="post" action="{{ '/admin/notes/' ~ id if id else '/admin/notes' }}" class="note-form" data-note-form>
   <input type="hidden" name="base_version" value="{{ note_version }}">
+  {%- if return_to %}<input type="hidden" name="back" value="{{ return_to }}">{% endif %}
+  {%- if summary %}<input type="hidden" name="kind" value="summary">{% endif %}
   <section class="rec-section" id="note-about">
     <h2>{{ t("notes-section-about") }}</h2>
     <div class="note-form-grid">
@@ -58,13 +63,14 @@
 
   <div class="cta-row">
     <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("notes-save") }}</button>
-    <a class="btn" href="{{ '/notes/' ~ id if id else '/admin/notes' }}">{{ t("notes-cancel") }}</a>
+    <a class="btn" href="{{ return_to if return_to else ('/notes/' ~ id if id else '/admin/notes') }}">{{ t("notes-cancel") }}</a>
   </div>
 </form>
 
 {% if id %}
 <form method="post" action="/admin/notes/{{ id }}/delete" class="note-delete">
   <input type="hidden" name="base_version" value="{{ note_version }}">
+  {%- if return_to %}<input type="hidden" name="back" value="{{ return_to }}">{% endif %}
   <details class="danger-zone">
     <summary>{{ t("notes-delete") }}</summary>
     <p>{{ t("notes-delete-confirm") }}</p>

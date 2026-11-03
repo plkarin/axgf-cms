@@ -3661,7 +3661,8 @@ pub async fn avatar_picker(
             nav => "admin",
             person_id => id,
             person_name => view.name,
-            images => view.images,
+            // A picture an AI made is never the face (docs/adr/0029).
+            images => view.images.iter().filter(|d| !d.ai).collect::<Vec<_>>(),
             initials => view.header.initials,
             current => view.header.avatar,
             chosen_id,
@@ -3731,7 +3732,7 @@ pub async fn avatar_set(
             // point a record at any file in the bundle.
             let ok = state.read_as(viewer.ceiling(), |flat, lens| {
                 crate::person::build_in(flat, &id, lens, chrome.lang)
-                    .is_some_and(|v| v.images.iter().any(|d| d.id == doc))
+                    .is_some_and(|v| v.images.iter().any(|d| d.id == doc && !d.ai))
             });
             if !ok {
                 return render::error_page_in(

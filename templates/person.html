@@ -117,6 +117,17 @@
     {% endif %}
     {% if may_write %}
     <a class="btn small person-ai-add" href="/admin/person/{{ p.id }}/ai-portraits">{{ t("ai-portraits-manage") if p.ai_portraits else t("ai-portraits-upload") }}</a>
+    {#- The AFG restores the face itself, its colours put back and its
+        lines sharpened, and the picture joins the band as one uploaded
+        would (docs/adr/0029). -#}
+    {% if afg_user and p.header.avatar %}
+    <form method="post" action="/admin/person/{{ p.id }}/ai-rework" class="person-ai-rework">
+      <button class="btn small" type="submit" data-busy="{{ t('afg-rework-busy') }}"
+        {%- if not afg_images %} disabled title="{{ t('afg-record-images-off') }}"
+        {%- elif p.ai_portraits | length >= ai_portraits_max %} disabled title="{{ t('ai-portraits-too-many') }}"{% endif %}>{{ t("afg-rework") }}</button>
+    </form>
+    {% if not afg_images and is_admin %}<p class="small muted person-ai-note"><a href="/admin/afg#images">{{ t("afg-images-off-admin") }}</a></p>{% endif %}
+    {% endif %}
     {% endif %}
   </section>
   {% endif %}

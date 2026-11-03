@@ -134,6 +134,21 @@ const ALLOWED: &[&str] = &[
     "ai-portraits-manage",
     "ai-portraits-not-evidence",
     "ai-portraits-upload",
+    // The AFG on the record (docs/adr/0029), for a writer it is open to:
+    // the summary that is there, and the ways to write it, restore a
+    // picture or read a document, which are edit controls as
+    // `ai-portraits-upload` is.
+    "afg-read",
+    "afg-read-category",
+    "afg-retouch",
+    "afg-retouched",
+    "afg-rework",
+    "afg-summary",
+    "summary-by-ai",
+    "summary-edit",
+    "summary-language",
+    "summary-title",
+    "summary-write",
     "confidence-certain",
     "confidence-high",
     "confidence-low",
@@ -194,6 +209,8 @@ const ALLOWED: &[&str] = &[
     "note-names",
     "note-occupations",
     "notes-add-about",
+    "notes-delete-short",
+    "notes-manage-in-media",
     "notes-by",
     "notes-section-title",
     "occupations-editor-title",

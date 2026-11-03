@@ -270,6 +270,11 @@ pub struct DocumentView {
     pub size_bytes: Option<u64>,
     /// "1.4 MB", or `None` when the record does not state a size.
     pub size_human: Option<String>,
+    /// True for a picture an AI made: a reworked portrait, or a copy of a
+    /// photograph the AFG restored (`crate::afg_record`, docs/adr/0029).
+    /// Marked so on the page, and never the person's face.
+    #[serde(default)]
+    pub ai: bool,
 }
 
 /// What the top of a record states at a glance.
@@ -786,15 +791,30 @@ pub fn profile_groups_filled(
     lens: &crate::access::Lens,
     lang: &str,
 ) -> Vec<crate::profile::view::GroupView> {
+    profile_groups_within(flat, id, lens, lang, crate::sensitive::Scopes::EVERY)
+}
+
+/// [`profile_groups_filled`], the class data read only within `allowed`:
+/// what the AFG may be told of one person (docs/adr/0029) follows the box
+/// the AFG room has for the sensitive classes (docs/adr/0023), as the
+/// archive it is sent does.
+pub fn profile_groups_within(
+    flat: &Value,
+    id: &str,
+    lens: &crate::access::Lens,
+    lang: &str,
+    allowed: crate::sensitive::Scopes,
+) -> Vec<crate::profile::view::GroupView> {
     let Some(person) = flat.get("persons").and_then(|p| p.get(id)) else {
         return Vec::new();
     };
     let lifted = crate::profile::lift::lift(person);
     let withheld_documents = crate::access::withheld_documents(flat, lens.ceiling());
+    let readable = crate::access::readable_scopes(person, lens.ceiling());
     let reader = crate::profile::view::Reader {
         flat,
         lang,
-        readable: crate::access::readable_scopes(person, lens.ceiling()),
+        readable: readable.without(crate::sensitive::Scopes::EVERY.without(allowed)),
         withheld_documents: &withheld_documents,
     };
     crate::profile::view::tabs(&lifted, &reader)
@@ -885,19 +905,7 @@ fn build_header(
     // disclosing that a restricted document exists. The same fallback covers
     // the document simply having been deleted, which is the case the brief
     // asks for and is indistinguishable from this one at this point.
-    let avatar = match crate::avatar::read(person) {
-        crate::avatar::Choice::None => None,
-        crate::avatar::Choice::Document { ref id, focal } => images
-            .iter()
-            .find(|d| &d.id == id)
-            .cloned()
-            .map(|mut d| {
-                d.focal = Some(focal.css());
-                d
-            })
-            .or_else(|| auto_avatar(images)),
-        crate::avatar::Choice::Auto => auto_avatar(images),
-    };
+    let avatar = face(person, images);
 
     let children: usize = unions
         .iter()
@@ -912,6 +920,27 @@ fn build_header(
         age_is_current: is_living,
         children,
         generations_below: ctx.generations_below(id),
+    }
+}
+
+/// The picture that stands for a person: the one chosen, else the
+/// heuristic's. Never a picture an AI made (docs/adr/0009, 0029), even
+/// chosen: a choice that points at one falls back to the heuristic, as a
+/// choice of a deleted file does.
+fn face(person: &Value, images: &[DocumentView]) -> Option<DocumentView> {
+    let photographs: Vec<DocumentView> = images.iter().filter(|d| !d.ai).cloned().collect();
+    match crate::avatar::read(person) {
+        crate::avatar::Choice::None => None,
+        crate::avatar::Choice::Document { ref id, focal } => photographs
+            .iter()
+            .find(|d| &d.id == id)
+            .cloned()
+            .map(|mut d| {
+                d.focal = Some(focal.css());
+                d
+            })
+            .or_else(|| auto_avatar(&photographs)),
+        crate::avatar::Choice::Auto => auto_avatar(&photographs),
     }
 }
 
@@ -1183,20 +1212,7 @@ impl Ctx<'_> {
             .into_iter()
             .filter(|d| d.is_image && d.has_payload)
             .collect();
-        let chosen = match crate::avatar::read(p) {
-            crate::avatar::Choice::None => None,
-            crate::avatar::Choice::Document { ref id, focal } => images
-                .iter()
-                .find(|d| &d.id == id)
-                .cloned()
-                .map(|mut d| {
-                    d.focal = Some(focal.css());
-                    d
-                })
-                .or_else(|| auto_avatar(&images)),
-            crate::avatar::Choice::Auto => auto_avatar(&images),
-        };
-        chosen.map(|d| (format!("/document/{}/thumb", d.id), d.focal))
+        face(p, &images).map(|d| (format!("/document/{}/thumb", d.id), d.focal))
     }
 
     /// Resolve a place id, including the country history that makes a place
@@ -2033,6 +2049,7 @@ impl Ctx<'_> {
                     known: true,
                     size_bytes: size,
                     size_human: size.map(|b| human_size(b, self.lang)),
+                    ai: true,
                 }
             })
             .filter(|d| d.is_image && d.has_payload)
@@ -2085,6 +2102,7 @@ impl Ctx<'_> {
                     focal: None,
                     size_bytes: None,
                     size_human: None,
+                    ai: false,
                 });
                 return;
             };
@@ -2121,6 +2139,7 @@ impl Ctx<'_> {
                 known: true,
                 size_bytes: size,
                 size_human: size.map(|b| human_size(b, self.lang)),
+                ai: crate::afg_record::is_ai_retouch(d),
             });
         };
 
@@ -2594,11 +2613,18 @@ impl RecordTab {
 /// withheld group, or — on the record page — a radar with three axes or more.
 /// The caller knows which of those the surface draws; a tab that would hold
 /// only radars below that line is not drawn.
-pub fn tabs_for(p: &PersonView, profile: bool) -> Vec<TabView> {
+///
+/// `notes` is how many notes about the person the surface keeps up on the
+/// Médias tab (docs/adr/0029): the record page's, for a reader who is signed
+/// in; none elsewhere.
+pub fn tabs_for(p: &PersonView, profile: bool, notes: usize) -> Vec<TabView> {
     RECORD_TABS
         .iter()
         .filter_map(|&t| {
-            let n = t.count(p);
+            let n = match t {
+                RecordTab::Media => t.count(p) + notes,
+                _ => t.count(p),
+            };
             let holds = match t {
                 // What the fiche draws: the showcase strip, the identity
                 // section, the notes.
@@ -2608,7 +2634,7 @@ pub fn tabs_for(p: &PersonView, profile: bool) -> Vec<TabView> {
                         || p.gender.is_some()
                         || !p.notes.is_empty()
                 }
-                RecordTab::Media => !p.documents.is_empty() || !p.images.is_empty(),
+                RecordTab::Media => !p.documents.is_empty() || !p.images.is_empty() || notes > 0,
                 RecordTab::Profile => profile,
                 // Anyone the records tie this person to.
                 RecordTab::Kinship => {
@@ -3329,20 +3355,20 @@ mod tests {
         let flat = json!({"persons": {"p": {"id": "p", "type": "person",
             "identity": {"name": {"display": "Bare"}}}}});
         let v = build_in(&flat, "p", &open(), "en").expect("built");
-        let tabs = tabs_for(&v, false);
+        let tabs = tabs_for(&v, false, 0);
         assert_eq!(tabs.iter().map(|t| t.slug).collect::<Vec<_>>(), ["record"]);
         assert_eq!(tabs[0].count, None);
         // Asked for a tab it does not have, the reader gets the fiche.
         assert_eq!(current_tab(Some("media"), &tabs), RecordTab::Fiche);
         // A profile that would draw something is a tab; one that would not
         // is not.
-        assert_eq!(tabs_for(&v, true).len(), 2);
+        assert_eq!(tabs_for(&v, true, 0).len(), 2);
     }
 
     #[test]
     fn a_rich_person_has_a_tab_for_each_thing_recorded() {
         let v = build_in(&bundle(), "p-jules", &open(), "en").expect("built");
-        let tabs = tabs_for(&v, v.profile_count > 0);
+        let tabs = tabs_for(&v, v.profile_count > 0, 0);
         for t in &tabs {
             // The fiche is a summary; the profile may hold only a chart; the
             // kinship tab counts its relatives when it is opened.

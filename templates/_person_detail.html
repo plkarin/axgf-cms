@@ -27,6 +27,52 @@
 </div>
 {% endif %}
 
+{# ----------------------------------------------------------------- SUMMARY #}
+{#- A few lines about the person, first on the record (docs/adr/0029):
+    written by a member in the notes' editor, or by the AFG from the record
+    and the notes, in the language asked. A note like the others, so for the
+    family's members only; `person_summary` is given by the record's own
+    page. With none yet, a writer gets the ways to write it and no heading
+    over an empty section: read mode draws what is there. -#}
+{% if (tab is undefined or tab == "record") and person_summary is defined and (person_summary or may_write) %}
+{% set summary_back = "/person/" ~ p.id ~ "#summary" %}
+{% if person_summary %}
+<section id="summary" class="rec-section person-summary">
+  <div class="sec-head">
+    <h2>{{ t("summary-title") }}</h2>
+    {%- if person_summary.generator %} <span class="ai-chip" title="{{ t('summary-by-ai', generator=person_summary.generator) }}">{{ t("ai-badge") }}</span>{% endif %}
+  </div>
+  <div class="note-text summary-text"{% if person_summary.lang %} lang="{{ person_summary.lang }}" dir="{{ person_summary.dir }}"{% else %} dir="auto"{% endif %}>{{ person_summary.html | safe }}</div>
+  {%- if person_summary.generator %}
+  <p class="small muted summary-by">{{ t("summary-by-ai", generator=person_summary.generator) }}</p>
+  {%- endif %}
+{% else %}
+<div id="summary" class="summary-add">
+{% endif %}
+  {% if may_write and (not person_summary or person_summary.may_change) %}
+  <div class="summary-actions">
+    {% if person_summary %}
+    <a class="btn small" href="/admin/notes/{{ person_summary.id }}/edit?back={{ summary_back | urlencode }}">{{ t("summary-edit") }}</a>
+    {% else %}
+    <a class="btn small" href="/admin/notes/new?person={{ p.id | urlencode }}&amp;kind=summary&amp;back={{ summary_back | urlencode }}">{{ t("summary-write") }}</a>
+    {% endif %}
+    {#- The AFG writes it, in one of the site's languages: the page's
+        unless another is chosen. Replacing a summary is its author's or an
+        administrator's, as changing any note is. -#}
+    {% if afg_user %}
+    <form method="post" action="/admin/person/{{ p.id }}/summary/ai" class="summary-ai">
+      <label class="summary-lang"><span class="field-label">{{ t("summary-language") }}</span>
+        <select name="lang">
+          {%- for l in summary_languages %}<option value="{{ l.tag }}" lang="{{ l.tag }}"{% if l.tag == lang %} selected{% endif %}>{{ l.name }}</option>{% endfor -%}
+        </select></label>
+      <button class="btn small" type="submit" data-busy="{{ t('afg-summary-busy') }}"{% if not afg_text %} disabled title="{{ t('afg-record-text-off') }}"{% endif %}>{{ t("afg-summary") }}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+{% if person_summary %}</section>{% else %}</div>{% endif %}
+{% endif %}
+
 {# ---------------------------------------------------------------- IDENTITY #}
 {% if (tab is undefined or tab == "record") and (p.names or p.gender) %}
 <section id="identity" class="rec-section">
@@ -100,17 +146,19 @@
 {% if (tab is undefined or tab == "record") and person_notes is defined %}
 {% if person_notes %}
 {% import "_notes.html" as nt %}
-<section id="person-notes" class="rec-section notes-person" data-notes>
+<section id="person-notes" class="rec-section notes-person" data-notes data-notes-read>
   <div class="sec-head">
     <h2>{{ t("notes-section-title") }}</h2>
-    {%- if may_write %}<a class="btn small" href="/admin/notes/new?person={{ p.id }}">{{ t("notes-add-about") }}</a>{% endif %}
+    {#- Read here; written, changed and deleted on the Médias tab
+        (docs/adr/0029). -#}
+    {%- if may_write %}<a class="small" href="/person/{{ p.id }}?tab=media#media-notes">{{ t("notes-manage-in-media") }}</a>{% endif %}
   </div>
   <ul class="notes-grid" data-notes-list data-content>{% for n in person_notes %}{{ nt.card(t, n) }}{% endfor %}</ul>
   {{ nt.dialog(t) }}
 </section>
 <script src="/static/notes.js" defer></script>
 {% elif may_write %}
-<p class="notes-person-add" id="person-notes"><a class="btn small" href="/admin/notes/new?person={{ p.id }}">{{ t("notes-add-about") }}</a></p>
+<p class="notes-person-add" id="person-notes"><a class="btn small" href="/admin/notes/new?person={{ p.id | urlencode }}&amp;back={{ ('/person/' ~ p.id ~ '?tab=media#media-notes') | urlencode }}">{{ t("notes-add-about") }}</a></p>
 {% endif %}
 {% endif %}
 
@@ -486,16 +534,29 @@
   <h3>{{ t("record-photographs") }}</h3>
   <div class="gallery">
     {% for d in p.images %}
-    <figure class="shot">
+    <figure class="shot{% if d.ai %} is-ai{% endif %}">
       {# Full size opens the orientation-corrected view; the download link in
          the documents table below serves the byte-identical original. #}
       <a href="/document/{{ d.id }}/view" target="_blank" rel="noopener">
         <img src="/document/{{ d.id }}/thumb" loading="lazy"
              alt="{{ d.caption if d.caption else d.filename }}">
+        {%- if d.ai %}<span class="ai-badge" title="{{ t('afg-retouched') }}">{{ t("ai-badge") }}</span>{% endif %}
       </a>
       <figcaption>
         {{ d.caption if d.caption else d.filename }}
-        <span class="small muted">{{ d.document_type_label }}{% if d.size_human %} · {{ d.size_human }}{% endif %}</span>
+        <span class="small muted">{% if d.ai %}{{ d.filename }} · {% endif %}{{ d.document_type_label }}{% if d.size_human %} · {{ d.size_human }}{% endif %}</span>
+        {#- The AFG on one photograph (docs/adr/0029): a restored copy beside
+            it, or its text read into a note. Not on a copy an AI made. -#}
+        {%- if afg_user and not d.ai and d.has_payload %}
+        <span class="shot-ai">
+          <form method="post" action="/admin/person/{{ p.id }}/document/{{ d.id }}/ai-retouch">
+            <button class="btn small" type="submit" data-busy="{{ t('afg-retouch-busy') }}"{% if not afg_images %} disabled title="{{ t('afg-record-images-off') }}"{% endif %}>{{ t("afg-retouch") }}</button>
+          </form>
+          <form method="post" action="/admin/person/{{ p.id }}/document/{{ d.id }}/ai-read">
+            <button class="btn small" type="submit" data-busy="{{ t('afg-read-busy') }}"{% if not afg_text %} disabled title="{{ t('afg-record-text-off') }}"{% endif %}>{{ t("afg-read") }}</button>
+          </form>
+        </span>
+        {%- endif %}
       </figcaption>
     </figure>
     {% endfor %}
@@ -511,6 +572,7 @@
       {% for d in p.documents %}
       <tr>
         <td data-label="{{ t('record-file') }}">{{ d.filename }}
+            {% if d.ai %} <span class="ai-chip" title="{{ t('afg-retouched') }}">{{ t("ai-badge") }}</span>{% endif %}
             {% if d.role %} <span class="chip small">{{ d.role }}</span>{% endif %}
             {% if d.caption %}<div class="small">{{ d.caption }}</div>{% endif %}
             {% if d.note %}<div class="small muted">{{ d.note }}</div>{% endif %}
@@ -523,8 +585,14 @@
         {% if d.has_payload %}
         <td class="small" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
         <td class="small" data-label="{{ t('record-size') }}">{{ d.size_human if d.size_human }}</td>
-        {# No `data-label`: an action is not a field. #}
-        <td class="small"><a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a></td>
+        {# No `data-label`: an action is not a field. A PDF is read by the
+           AFG from here; a picture, from the gallery above. #}
+        <td class="small"><a href="/document/{{ d.id }}/raw">{{ t("record-download") }}</a>
+          {%- if afg_user and not d.ai and d.mime_type == "application/pdf" %}
+          <form method="post" action="/admin/person/{{ p.id }}/document/{{ d.id }}/ai-read" class="doc-ai">
+            <button class="btn small" type="submit" data-busy="{{ t('afg-read-busy') }}"{% if not afg_text %} disabled title="{{ t('afg-record-text-off') }}"{% endif %}>{{ t("afg-read") }}</button>
+          </form>
+          {%- endif %}</td>
         {% else %}
         <td class="small" colspan="3" data-label="{{ t('record-status') }}">{{ d.status_label }}</td>
         {% endif %}
@@ -537,6 +605,28 @@
 
 
 </section>
+{% endif %}
+
+{# ------------------------------------------------- NOTES, KEPT UP (MEDIA) #}
+{#- The notes about this person where they are written, changed and deleted
+    (docs/adr/0029): the Fiche reads them, this tab keeps them up, the AFG's
+    transcriptions among them. Given by the record's own page only. -#}
+{% if tab == "media" and media_notes is defined and (media_notes or may_write) %}
+{% import "_notes.html" as nt %}
+{% set media_back = "/person/" ~ p.id ~ "?tab=media#media-notes" %}
+<section id="media-notes" class="rec-section notes-person" data-notes data-notes-back="{{ media_back }}">
+  <div class="sec-head">
+    <h2>{{ t("notes-section-title") }}</h2>
+    {%- if may_write %}<a class="btn small" href="/admin/notes/new?person={{ p.id | urlencode }}&amp;back={{ media_back | urlencode }}">{{ t("notes-add-about") }}</a>{% endif %}
+  </div>
+  {% if media_notes %}
+  <ul class="notes-grid" data-notes-list data-content>{% for k in media_notes %}{{ nt.kept(t, k, media_back) }}{% endfor %}</ul>
+  {{ nt.dialog(t) }}
+  {% else %}
+  <p class="small muted">{{ t("notes-none-yet") }}</p>
+  {% endif %}
+</section>
+<script src="/static/notes.js" defer></script>
 {% endif %}
 
 {# ------------------------------------------------------------------- NOTES #}

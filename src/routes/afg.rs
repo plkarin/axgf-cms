@@ -15,7 +15,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use super::admin::{require, Need};
-use crate::afg::{Config, Kind};
+use crate::afg::{Config, ImageConfig, ImageKind, Kind};
 use crate::render;
 use crate::routes::Shared;
 
@@ -81,6 +81,27 @@ fn config_json(cfg: &Config) -> serde_json::Value {
     })
 }
 
+/// The picture service as the page shows it (docs/adr/0029): everything but
+/// the key, which is said as set or not.
+fn images_json(cfg: &ImageConfig) -> serde_json::Value {
+    json!({
+        "kind": cfg.kind.slug(),
+        "url": cfg.url,
+        "key_hint": cfg.key_hint(),
+        "model": cfg.model,
+        "default_url": cfg.kind.default_url(),
+        "default_model": cfg.kind.models().first(),
+    })
+}
+
+/// The picture services, with the models of the moment each suggests.
+fn image_kinds_json() -> Vec<serde_json::Value> {
+    ImageKind::ALL
+        .iter()
+        .map(|k| json!({"slug": k.slug(), "models": k.models()}))
+        .collect()
+}
+
 /// What the room says besides its form: a notice, an error, a test's
 /// result in its window.
 #[derive(Default)]
@@ -88,6 +109,8 @@ struct Said {
     notice: Option<String>,
     error: Option<String>,
     run: Option<serde_json::Value>,
+    /// Said by the picture service's form, whose section then opens.
+    images: bool,
 }
 
 impl Said {
@@ -176,6 +199,10 @@ fn render_room(
             run => said.run,
             notice => said.notice,
             error => said.error,
+            images => images_json(&shown.images),
+            image_kinds => image_kinds_json(),
+            images_ready => stored.images.ready(),
+            images_open => said.images,
         },
     );
     *resp.status_mut() = status;
@@ -295,6 +322,98 @@ pub async fn save(
         StatusCode::OK,
         &saved,
         Said::notice(chrome.t("afg-saved")),
+    )
+}
+
+/// The picture service's form (docs/adr/0029).
+#[derive(Debug, Default, Deserialize)]
+pub struct ImagesForm {
+    #[serde(default)]
+    kind: String,
+    #[serde(default)]
+    url: String,
+    #[serde(default)]
+    api_key: String,
+    #[serde(default)]
+    clear_key: Option<String>,
+    #[serde(default)]
+    model: String,
+}
+
+/// `POST /admin/afg/images` — where the AFG's pictures are made. A key
+/// belongs to the service it was given for: another service, or none, forgets
+/// it unless a new one comes with the change.
+pub async fn save_images(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<ImagesForm>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let stored = state.site().afg;
+    let mut images = stored.images.clone();
+    images.kind = ImageKind::parse(&f.kind).unwrap_or(ImageKind::Off);
+    images.url = match f.url.trim().trim_end_matches('/') {
+        u if u == images.kind.default_url() => String::new(),
+        u => u.to_string(),
+    };
+    if f.clear_key.is_some() || (images.kind != stored.images.kind && f.api_key.trim().is_empty()) {
+        images.api_key.clear();
+    } else if !f.api_key.trim().is_empty() {
+        images.api_key = f.api_key.trim().to_string();
+    }
+    images.model = f.model.trim().to_string();
+    if images.kind == ImageKind::Off {
+        images = ImageConfig::default();
+    }
+    let mut proposed = stored.clone();
+    proposed.images = images;
+    if let Some(key) = proposed.images.problem() {
+        return render_room(
+            &state,
+            &chrome,
+            &viewer,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            &proposed,
+            Said {
+                images: true,
+                ..Said::error(chrome.t(key))
+            },
+        );
+    }
+    if let Err(e) = state.site_mutate(|s| s.afg.images = proposed.images.clone()) {
+        return render_room(
+            &state,
+            &chrome,
+            &viewer,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &proposed,
+            Said {
+                images: true,
+                ..Said::error(
+                    chrome.t_args("afg-error-not-saved", &[("error", e.to_string().into())]),
+                )
+            },
+        );
+    }
+    // Who changed where the family's photographs may be sent; never the key.
+    tracing::warn!(
+        by = viewer.name(),
+        kind = proposed.images.kind.slug(),
+        model = %proposed.images.model,
+        key_changed = proposed.images.api_key != stored.images.api_key,
+        "AFG picture service changed"
+    );
+    let saved = state.site().afg;
+    render_room(
+        &state,
+        &chrome,
+        &viewer,
+        StatusCode::OK,
+        &saved,
+        Said {
+            images: true,
+            ..Said::notice(chrome.t("afg-images-saved"))
+        },
     )
 }
 

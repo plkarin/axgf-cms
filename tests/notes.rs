@@ -819,8 +819,12 @@ async fn the_dashboard_and_the_record_lead_a_writer_to_the_notes() {
         "a contributor finds the notes on the dashboard"
     );
     let record = body_string(get_with_cookie(&app, &format!("/person/{LUC}"), &cora).await).await;
+    // The way back is the record's Médias tab, where its notes are kept up
+    // (docs/adr/0029).
     assert!(
-        record.contains(&format!(r#"href="/admin/notes/new?person={LUC}""#)),
+        record.contains(&format!(
+            r#"href="/admin/notes/new?person={LUC}&amp;back=%2Fperson%2F{LUC}%3Ftab%3Dmedia"#
+        )),
         "and on a record, the way to write about that person"
     );
     let form =

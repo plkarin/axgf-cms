@@ -63,7 +63,12 @@
       if (!open || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
       var id = open.getAttribute('data-note-open');
-      fetch('/notes/' + encodeURIComponent(id) + '?frame=1', { credentials: 'same-origin' })
+      // A record's Fiche reads its notes, its Médias tab keeps them up
+      // (docs/adr/0029): the window says which, and where an edit returns.
+      var extra = root.hasAttribute('data-notes-read') ? '&read=1' : '';
+      var back = root.getAttribute('data-notes-back');
+      if (back) extra += '&back=' + encodeURIComponent(back);
+      fetch('/notes/' + encodeURIComponent(id) + '?frame=1' + extra, { credentials: 'same-origin' })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
         .then(function (html) {
           body.innerHTML = html;

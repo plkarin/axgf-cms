@@ -1,6 +1,8 @@
 # ADR 0009 — Portraits reworked by an AI are shown, and are never evidence
 
-**Status:** accepted, v0.5.0 (2026-10-19) · **Applies to:**
+**Status:** accepted, v0.5.0 (2026-10-19) · **Amended by:**
+[ADR 0029](0029-the-afg-on-a-persons-record.md): a photograph the AFG
+restored is kept in the Media tab, marked, and never the face · **Applies to:**
 `src/ai_portrait.rs`, `src/person.rs`, `src/routes/ai_portraits.rs`,
 `src/routes/public.rs`, `src/routes/person_editor.rs`,
 `src/routes/editors.rs`, `src/routes/mod.rs`, `templates/person.html`,

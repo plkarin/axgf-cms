@@ -135,6 +135,52 @@
 </form>
 </section>
 
+{#- Where the AFG's pictures are made (docs/adr/0029). Claude and the coding
+    agents write text only, so a photograph restored on a person's record
+    comes from a picture service of its own, with its own key. -#}
+<section class="rec-section" id="images">
+<h2>{{ t("afg-images") }}</h2>
+<p class="small muted">{{ t("afg-images-intro") }}</p>
+<p class="small">{{ t("afg-images-ready") if images_ready else t("afg-images-not-ready") }}</p>
+{#- Chosen once and seldom changed: behind a disclosure, open when its own
+    save has just spoken. -#}
+<details class="afg-images"{% if images_open %} open{% endif %}>
+<summary>{{ t("afg-images-choose") }}</summary>
+<form method="post" action="/admin/afg/images" autocomplete="off" class="afg-form">
+  <div class="field">
+    <label for="afg-image-kind">{{ t("afg-image-kind") }}</label>
+    <select id="afg-image-kind" name="kind">
+      {%- for k in image_kinds %}
+      <option value="{{ k.slug }}"{% if k.slug == images.kind %} selected{% endif %}>{{ t("afg-image-kind-" ~ k.slug) }}</option>
+      {%- endfor %}
+    </select>
+    <div class="hint">{{ t("afg-image-kind-hint") }}</div>
+  </div>
+  <div class="field">
+    <label for="afg-image-url">{{ t("afg-url") }}</label>
+    <input id="afg-image-url" name="url" type="url" inputmode="url" spellcheck="false" value="{{ images.url }}"{% if images.default_url %} placeholder="{{ images.default_url }}"{% endif %}>
+    <div class="hint">{{ t("afg-image-url-hint") }}</div>
+  </div>
+  <div class="field">
+    <label for="afg-image-key">{{ t("afg-key") }}</label>
+    <input id="afg-image-key" name="api_key" type="password" autocomplete="new-password" spellcheck="false" value="">
+    <div class="hint">{% if images.key_hint %}{{ t("afg-key-set", end=images.key_hint) }}{% else %}{{ t("afg-key-unset") }}{% endif %} {{ t("afg-image-key-hint") }}</div>
+    {% if images.key_hint %}<label class="inline"><input type="checkbox" name="clear_key"> {{ t("afg-key-clear") }}</label>{% endif %}
+  </div>
+  <div class="field">
+    <label for="afg-image-model">{{ t("afg-model") }}</label>
+    <input id="afg-image-model" name="model" type="text" spellcheck="false" autocomplete="off" class="mono" list="afg-image-models" value="{{ images.model }}"{% if images.default_model %} placeholder="{{ images.default_model }}"{% endif %}>
+    <datalist id="afg-image-models">
+      {%- for k in image_kinds %}{% for m in k.models %}<option value="{{ m }}" label="{{ t('afg-image-kind-' ~ k.slug) }}"></option>{% endfor %}{% endfor -%}
+    </datalist>
+    <div class="hint">{{ t("afg-image-model-hint") }}</div>
+  </div>
+  <div class="notice warn"><p>{{ t("afg-images-privacy") }}</p></div>
+  <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
+</form>
+</details>
+</section>
+
 <section class="rec-section" id="test">
 <h2>{{ t("afg-test") }}</h2>
 <p class="small muted">{{ t("afg-test-intro") }}</p>

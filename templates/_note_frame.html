@@ -16,7 +16,7 @@
   <div class="note-text">{{ note.html|safe }}</div>
   <footer class="note-actions">
     <a class="btn primary" href="/notes/{{ note.id }}/pdf" download>{{ t("notes-pdf") }}</a>
-    {%- if may_change %}<a class="btn" href="/admin/notes/{{ note.id }}/edit">{{ t("notes-edit") }}</a>{% endif %}
+    {%- if may_change %}<a class="btn" href="/admin/notes/{{ note.id }}/edit{% if return_to %}?back={{ return_to | urlencode }}{% endif %}">{{ t("notes-edit") }}</a>{% endif %}
     <button type="button" class="btn ghost note-close" data-note-close>{{ t("notes-close") }}</button>
   </footer>
 </article>

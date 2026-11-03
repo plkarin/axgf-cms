@@ -268,10 +268,154 @@ pub struct Config {
     /// Seconds an answer may take; 0 is ten minutes.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub timeout_secs: u64,
+    /// Where the AFG's pictures are made (docs/adr/0029).
+    #[serde(default, skip_serializing_if = "ImageConfig::is_off")]
+    pub images: ImageConfig,
 }
 
 fn is_zero(n: &u64) -> bool {
     *n == 0
+}
+
+/// Where the AFG's pictures are made (docs/adr/0029): a service that takes a
+/// photograph and gives it back restored, its colours put back and its lines
+/// sharpened. Claude and the coding agents write text only, so pictures have
+/// a source of their own, chosen in the same room.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ImageKind {
+    /// No pictures: the buttons that ask for one are not drawn.
+    #[default]
+    Off,
+    /// OpenAI's GPT Image models, `POST /images/edits`.
+    Openai,
+    /// Google's Gemini image models, `generateContent`.
+    Gemini,
+}
+
+impl ImageKind {
+    pub const ALL: [ImageKind; 3] = [ImageKind::Off, ImageKind::Openai, ImageKind::Gemini];
+
+    pub fn slug(self) -> &'static str {
+        match self {
+            ImageKind::Off => "off",
+            ImageKind::Openai => "openai",
+            ImageKind::Gemini => "gemini",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<ImageKind> {
+        ImageKind::ALL.into_iter().find(|k| k.slug() == s.trim())
+    }
+
+    /// The service's usual address.
+    pub fn default_url(self) -> &'static str {
+        match self {
+            ImageKind::Off => "",
+            ImageKind::Openai => "https://api.openai.com/v1",
+            ImageKind::Gemini => "https://generativelanguage.googleapis.com/v1beta",
+        }
+    }
+
+    /// The models of the moment, the one to start with first (read from the
+    /// makers' pages on 3 November 2026). Google's newest,
+    /// `gemini-nano-banana-2.1`, is shown there through its Interactions
+    /// API only; `gemini-3.1-flash-image` is the one `generateContent` is
+    /// known to answer with a picture, so it comes first.
+    pub fn models(self) -> &'static [&'static str] {
+        match self {
+            ImageKind::Off => &[],
+            ImageKind::Openai => &["gpt-image-2.5-sunburst", "gpt-image-2.5-flare"],
+            ImageKind::Gemini => &[
+                "gemini-3.1-flash-image",
+                "gemini-nano-banana-2.1",
+                "gemini-3-pro-image",
+            ],
+        }
+    }
+}
+
+/// The picture service's settings. Its `Debug` leaves the key out.
+#[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct ImageConfig {
+    #[serde(default)]
+    pub kind: ImageKind,
+    /// The service's address; empty means the kind's usual one.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub url: String,
+    /// Never on a page, as the AFG's own key.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub api_key: String,
+    /// Empty means the kind's first suggestion.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub model: String,
+}
+
+impl std::fmt::Debug for ImageConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ImageConfig")
+            .field("kind", &self.kind)
+            .field("url", &self.url)
+            .field("api_key", &self.key_hint())
+            .field("model", &self.model)
+            .finish()
+    }
+}
+
+impl ImageConfig {
+    pub fn is_off(&self) -> bool {
+        self == &ImageConfig::default()
+    }
+
+    /// The address, or the kind's usual one, without a trailing slash.
+    pub fn base_url(&self) -> String {
+        let u = match self.url.trim() {
+            "" => self.kind.default_url(),
+            u => u,
+        };
+        u.trim_end_matches('/').to_string()
+    }
+
+    /// The model asked for: the one written, else the kind's first.
+    pub fn model(&self) -> &str {
+        match self.model.trim() {
+            "" => self.kind.models().first().copied().unwrap_or(""),
+            m => m,
+        }
+    }
+
+    /// The end of the key, so an administrator can tell which one is set.
+    pub fn key_hint(&self) -> Option<String> {
+        let k = self.api_key.trim();
+        match k.chars().count() {
+            0 => None,
+            n if n >= 12 => Some(format!("…{}", k.chars().skip(n - 4).collect::<String>())),
+            _ => Some("…".to_string()),
+        }
+    }
+
+    /// What is wrong with it, as a catalogue key; `None` when it may run or
+    /// is off.
+    pub fn problem(&self) -> Option<&'static str> {
+        if self.kind == ImageKind::Off {
+            return None;
+        }
+        if !plausible_url(&self.base_url()) {
+            return Some("afg-error-url");
+        }
+        if self.api_key.trim().is_empty() {
+            return Some("afg-error-key");
+        }
+        if !plain(self.model()) || self.model().is_empty() {
+            return Some("afg-error-model");
+        }
+        None
+    }
+
+    /// Whether a picture can be asked for.
+    pub fn ready(&self) -> bool {
+        self.kind != ImageKind::Off && self.problem().is_none()
+    }
 }
 
 impl std::fmt::Debug for Config {
@@ -285,6 +429,7 @@ impl std::fmt::Debug for Config {
             .field("program", &self.program)
             .field("sensitive", &self.sensitive)
             .field("timeout_secs", &self.timeout_secs)
+            .field("images", &self.images)
             .finish()
     }
 }

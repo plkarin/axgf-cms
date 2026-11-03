@@ -665,11 +665,36 @@ pub fn register_filters(env: &mut Environment<'static>) {
     });
     env.add_filter("localdate", |v: String, lang: String| local_date(&v, &lang));
     env.add_filter("localnum", |n: i64, lang: String| local_number(n, &lang));
+    env.add_filter("urlencode", |v: String| query_value(&v));
+}
+
+/// A text as a query string's value: every byte but the unreserved ones
+/// percent-encoded, so a path with its own `?` and `#` travels whole.
+pub fn query_value(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for b in s.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                out.push(b as char)
+            }
+            _ => out.push_str(&format!("%{b:02X}")),
+        }
+    }
+    out
 }
 
 #[cfg(test)]
 mod local_tests {
     use super::*;
+
+    #[test]
+    fn a_path_travels_whole_as_a_query_value() {
+        assert_eq!(
+            query_value("/person/p1?tab=media#notes"),
+            "%2Fperson%2Fp1%3Ftab%3Dmedia%23notes"
+        );
+        assert_eq!(query_value("é"), "%C3%A9");
+    }
 
     #[test]
     fn numbers_are_grouped_as_the_language_groups_them() {

@@ -536,6 +536,41 @@ the size before you send. Ollama is asked for a context large enough for the
 archive, up to 131,072 tokens. Beyond what a model reads, the test shows its
 refusal. A test is given 600 seconds unless the room says otherwise.
 
+### The AFG on a person's record
+
+A member the AFG is open to, who may write, finds its buttons on a person's
+record (docs/adr/0029):
+
+- **Under the reworked portraits**, "Rework the image with AI": the face,
+  restored, joins those portraits.
+- **On the Media tab**, under each photograph:
+  - "AI retouch": a restored copy, `<name>_IA`, beside it;
+  - "Read the document": its text, transcribed in its own language, as a
+    note. A PDF is read from its row.
+- **Above Identity**, "Write it with the AI": the person's summary, in the
+  language chosen, from the record and the notes about them.
+
+Reading and summaries go to the AFG's computing as it is set. Pictures do
+not: Claude and the coding agents write text only. A picture needs a
+**picture service**, chosen in the room's **Images** section:
+
+- **OpenAI** (GPT Image) or **Google Gemini** (Nano Banana), each with its
+  own API key. Each picture is billed to that key's account by the service.
+- Leave the address empty for the service's usual one, and the model empty
+  for the first suggested.
+- The key is never shown again. Changing service forgets it unless you give
+  the new one at the same time. "None" forgets everything.
+
+Until a service is set, the picture buttons are greyed out.
+
+**What leaves the machine.** Each request sends its photograph to the
+picture service, or its document, or the person's record and notes, to the
+AFG's computing. The health, biometric, genomic, legal and behavioural
+classes reach a summary only if the room's box allows them. A picture service
+on the internet needs the outbound network the AFG's does (see "Opening the
+sandbox for it" above). The log says who sent what to which service, never
+what it held.
+
 ## When to worry
 
 | What you see | How bad | What to do |

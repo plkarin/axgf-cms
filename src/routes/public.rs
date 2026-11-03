@@ -856,7 +856,13 @@ pub async fn person(
             // radars that hold three axes or more; with neither, it is not a
             // tab.
             let charts = p.radars.iter().any(|c| c.present >= 3);
-            let tabs = crate::person::tabs_for(&p, !profile_groups.is_empty() || charts);
+            // The notes about them, their summary apart (docs/adr/0014,
+            // 0029), and the AFG's buttons for a member it is open to.
+            let notes = record_notes(&state, &viewer, chrome.lang, &id);
+            let afg = state.site().afg;
+            let afg_user = viewer.may_write() && viewer.user.as_ref().is_some_and(|u| u.afg);
+            let tabs =
+                crate::person::tabs_for(&p, !profile_groups.is_empty() || charts, notes.kept.len());
             let tab = crate::person::current_tab(q.tab.as_deref(), &tabs);
             // Every relative, and the way to one if asked: walked only when
             // the tab is open (docs/adr/0020).
@@ -913,10 +919,24 @@ pub async fn person(
                         .unwrap_or_else(|_| "[]".to_string()),
                     place_points,
                     // Notes and contributions about this person, for the
-                    // family's members (docs/adr/0014), under Identity.
-                    person_notes => person_notes(&state, &viewer, chrome.lang, &id),
+                    // family's members (docs/adr/0014): read under Identity,
+                    // kept up on the Médias tab, their summary above
+                    // Identity (docs/adr/0029).
+                    person_notes => notes.read,
+                    media_notes => notes.kept,
+                    person_summary => notes.summary,
                     signed_in => viewer.signed_in(),
                     may_write => viewer.may_write(),
+                    is_admin => viewer.is_admin(),
+                    // The AFG on the record (docs/adr/0029).
+                    afg_user,
+                    afg_text => afg.kind != crate::afg::Kind::Off && afg.problem().is_none(),
+                    afg_images => afg.images.ready(),
+                    ai_portraits_max => crate::ai_portrait::MAX,
+                    summary_languages => crate::i18n::LOCALES
+                        .iter()
+                        .map(|l| json!({"tag": l.tag, "name": l.native_name}))
+                        .collect::<Vec<_>>(),
                 },
             )
         }
@@ -925,22 +945,70 @@ pub async fn person(
     }
 }
 
-/// The notes about one person this reader may read, newest first.
-fn person_notes(
+/// What a record page shows of the notes about its person, for a reader who
+/// is signed in (docs/adr/0014, 0029).
+#[derive(Default)]
+struct RecordNotes {
+    /// Their summary, above Identity.
+    summary: Option<Value>,
+    /// The others, newest first, read on the Fiche.
+    read: Vec<crate::notes::NoteView>,
+    /// The same, with what keeping them up on the Médias tab needs: the
+    /// version a deletion names, and whether this reader may change them.
+    kept: Vec<Value>,
+}
+
+fn record_notes(
     state: &Shared,
     viewer: &crate::access::Viewer,
     lang: &str,
     id: &str,
-) -> Vec<crate::notes::NoteView> {
+) -> RecordNotes {
     if !viewer.signed_in() {
-        return Vec::new();
+        return RecordNotes::default();
     }
-    state.read_as(viewer.ceiling(), |flat, lens| {
-        crate::notes::notes_about(flat, lens, true, id)
-            .into_iter()
-            .map(|(nid, d)| crate::notes::view_of(flat, nid, d, lang))
-            .collect()
-    })
+    let (summary, read, kept) = state.read_as(viewer.ceiling(), |flat, lens| {
+        let summary = crate::afg_record::summary_of_person(flat, lens, id)
+            .map(|(sid, d)| (sid.to_string(), d.clone()));
+        let mut read = Vec::new();
+        let mut kept = Vec::new();
+        for (nid, d) in crate::notes::notes_about(flat, lens, true, id) {
+            if crate::afg_record::is_summary_of(d, id) {
+                continue;
+            }
+            let v = crate::notes::view_of(flat, nid, d, lang);
+            kept.push(json!({
+                "view": v,
+                "version": crate::state::version_of(d),
+                "may_change": viewer.may_write() && super::notes::may_change(viewer, d),
+                "transcription": crate::afg_record::transcribed_from(d).is_some(),
+            }));
+            read.push(v);
+        }
+        (summary, read, kept)
+    });
+    // Its text read once the archive is let go.
+    let summary = summary.map(|(sid, d)| {
+        let markdown = crate::notes::text_path(&d)
+            .and_then(|p| state.attachment(&p))
+            .map(|b| String::from_utf8_lossy(&b).into_owned())
+            .unwrap_or_default();
+        let language =
+            crate::afg_record::summary_language(&d).and_then(crate::afg_record::language);
+        json!({
+            "id": sid,
+            "html": crate::notes::to_html(&markdown, &crate::notes::resolve_for_page),
+            "may_change": viewer.may_write() && super::notes::may_change(viewer, &d),
+            "generator": crate::afg_record::summary_generator(&d),
+            "lang": language.map(|l| l.tag),
+            "dir": language.map(|l| l.dir.as_str()),
+        })
+    });
+    RecordNotes {
+        summary,
+        read,
+        kept,
+    }
 }
 
 /// A document's metadata and the ZIP path its payload is cached under.
@@ -1686,7 +1754,7 @@ fn river_tab_context(
     let profile_groups = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::person::profile_groups_filled(flat, &p.id, lens, lang)
     });
-    let tabs = crate::person::tabs_for(p, !profile_groups.is_empty());
+    let tabs = crate::person::tabs_for(p, !profile_groups.is_empty(), 0);
     let tab = crate::person::current_tab(requested, &tabs);
     let kinship = (tab == crate::person::RecordTab::Kinship).then(|| {
         state.read_as(viewer.ceiling(), |flat, lens| {

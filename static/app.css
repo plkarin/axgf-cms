@@ -2781,6 +2781,49 @@ bdi.date { unicode-bidi: isolate; }
 .ai-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1rem; padding: 0; list-style: none; }
 .ai-card { display: grid; gap: 0.4rem; justify-items: start; max-inline-size: 140px; overflow-wrap: anywhere; }
 
+/* The AFG on the record (docs/adr/0029): the face restored under the band's
+   upload, a photograph restored or read under its picture, the summary
+   above Identity, and the notes kept up on the Médias tab. */
+.person-ai-rework { margin: 0; }
+.person-summary .sec-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.summary-text { max-inline-size: 72ch; }
+.summary-text > :first-child { margin-block-start: 0; }
+.summary-text > :last-child { margin-block-end: 0; }
+.summary-by { margin: 0.5rem 0 0; }
+.summary-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-block-start: 0.85rem; }
+.summary-add { margin-block: 0.25rem 1.25rem; }
+.summary-add .summary-actions { margin-block-start: 0; }
+.summary-ai { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0; }
+.summary-lang { display: flex; align-items: center; gap: 0.45rem; }
+.summary-lang .field-label { font-size: var(--type-minor); color: var(--text-secondary); white-space: nowrap; }
+.shot.is-ai > a { position: relative; display: block; }
+.shot-ai { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-block-start: 0.4rem; }
+.shot-ai form,
+.doc-ai { margin: 0; }
+.doc-ai { display: inline-block; margin-inline-start: 0.5rem; }
+.note-card.is-kept {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  transition: border-color var(--tempo, 140ms) ease;
+}
+.note-card.is-kept:has(.note-card-in:hover) { border-color: var(--accent); }
+.note-card.is-kept .note-card-in { border: 0; border-radius: 0; background: none; }
+.note-card.is-kept .note-card-in:hover { transform: none; }
+.note-card-mark { display: flex; align-items: center; gap: 0.4rem; padding: 0 0.95rem 0.6rem; font-size: var(--type-minor); color: var(--text-secondary); }
+.note-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block-start: auto;
+  padding: 0.6rem 0.95rem 0.8rem;
+  border-block-start: 1px solid var(--border-hairline);
+}
+.note-card-actions form { margin: 0; }
+
 /* Narrower, the band goes under the facts rather than squeezing them. */
 @media (max-width: 1100px) {
   .person-head.has-ai { grid-template-columns: auto minmax(0, 1fr) auto; }

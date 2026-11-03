@@ -4,6 +4,38 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The AFG on a person's record (the operator's request of 3 November 2026,
+docs/adr/0029), for the signed-in members it is open to.
+
+### Added
+
+- **The face, reworked with the AI.** Under the button that uploads
+  reworked portraits, "Rework the image with AI" sends the person's face to a
+  picture service. It comes back in colour and sharpened, and joins the band
+  as an uploaded portrait would.
+- **A photograph restored, a document read.** Under each photograph of the
+  Media tab:
+  - "AI retouch" keeps a restored copy beside it, under its name with `_IA`,
+    marked AI and never the person's face;
+  - "Read the document" has the AFG transcribe the text, in the document's
+    own language, into a note about the person, dated as the document is. A
+    PDF is read from its row, by computing that reads one.
+- **A summary, first on the record.** A few lines about the person, above
+  Identity: written by hand in the notes' editor, or by the AFG from the
+  record and the notes, files left out, in any of the site's fourteen
+  languages. A summary rewritten by hand is no longer marked as the AI's.
+- **Where pictures are made.** The AFG room's new Images section chooses the
+  picture service, OpenAI (GPT Image) or Google Gemini, with its own key,
+  never shown again. Claude and the coding agents write text only.
+
+### Changed
+
+- **Notes are kept up on the Media tab.** They are written, edited and
+  deleted there, each act coming back to the tab. The Fiche reads them. The
+  Media tab is drawn for notes alone.
+
 ## [1.3.1] — 2026-11-03
 
 Staying signed in (the operator's report of 3 November 2026: signed out at

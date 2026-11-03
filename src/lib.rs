@@ -27,6 +27,7 @@ pub mod admin;
 pub mod afg;
 pub mod afg_chat;
 pub mod afg_models;
+pub mod afg_record;
 pub mod ai_portrait;
 pub mod assistant;
 pub mod auth;

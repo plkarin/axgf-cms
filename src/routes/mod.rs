@@ -3,6 +3,7 @@
 mod account;
 mod admin;
 mod afg;
+mod afg_record;
 mod ai_portraits;
 mod assistant;
 mod connectivity;
@@ -452,6 +453,7 @@ fn routes(state: Shared) -> Router {
         // The Artificial family genealogist (docs/adr/0023).
         .route("/admin/afg", get(afg::page).post(afg::save))
         .route("/admin/afg/test", post(afg::test))
+        .route("/admin/afg/images", post(afg::save_images))
         .route("/admin/afg/run/:id", get(afg::run))
         .route("/admin/bundle/sealed", post(console::sealed))
         .route("/admin/bundle/family", post(console::family))
@@ -520,6 +522,18 @@ fn routes(state: Shared) -> Router {
                     crate::ai_portrait::MAX * crate::documents::MAX_UPLOAD + 256 * 1024,
                 )),
         )
+        // The AFG on the record (docs/adr/0029): the face restored, one of
+        // the photographs restored or a document read, the summary written.
+        .route("/admin/person/:id/ai-rework", post(afg_record::rework))
+        .route(
+            "/admin/person/:id/document/:did/ai-retouch",
+            post(afg_record::retouch),
+        )
+        .route(
+            "/admin/person/:id/document/:did/ai-read",
+            post(afg_record::read),
+        )
+        .route("/admin/person/:id/summary/ai", post(afg_record::summary))
         // The structured Place editor. Declared before the ":kind" forms so
         // the literal "place" segment wins: a place is mostly lists — several
         // names, a border history — and the generic one-input-per-path form

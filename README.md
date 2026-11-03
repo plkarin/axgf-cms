@@ -571,6 +571,26 @@ included. The family's archive goes with a project's messages only when its
 member says so. Why it works this way:
 [My personal assistant](docs/adr/0026-my-personal-assistant.md).
 
+### The AFG on a person's record
+
+*(New in 1.4.0.)* For the members the AFG is open to, on each record:
+
+- **The face, reworked with the AI**: in colour and sharpened, it joins the
+  portraits an AI reworked, beside the face.
+- **A photograph restored**: a copy beside it in the Media tab, under its
+  name with `_IA`, marked AI, never the person's face.
+- **A document read**: a letter photographed, transcribed in its own language
+  into a note about the person.
+- **A summary**, first on the record, above Identity: written by hand, or by
+  the AFG from the record and the notes, in any of the site's fourteen
+  languages.
+
+The notes are kept up on the Media tab and read on the Fiche. Reading and
+summaries use the AFG's computing; pictures need a picture service of their
+own (OpenAI or Google Gemini), chosen in the AFG room, because Claude and
+the coding agents write text only. Why it works this way:
+[The AFG on a person's record](docs/adr/0029-the-afg-on-a-persons-record.md).
+
 ### Let the family in: registration and sign-in services
 
 *(New in 0.5.0.)* You choose, on the Accounts page, whether

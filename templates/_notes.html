@@ -1,8 +1,7 @@
 {#- Notes and contributions (docs/adr/0014): a note as a card, and the
     window one opens in. `t` is passed in, as an imported macro does not see
     the including template's context. -#}
-{% macro card(t, n) %}
-<li class="note-card" data-note data-letter="{{ n.letter }}" data-haystack="{{ n.haystack }}">
+{% macro card_in(t, n) %}
   <a class="note-card-in" href="/notes/{{ n.id }}" data-note-open="{{ n.id }}">
     {%- if n.thumb %}<span class="note-thumb"><img src="{{ n.thumb }}" alt="" loading="lazy"></span>{% endif %}
     <span class="note-card-body">
@@ -19,6 +18,32 @@
       </span>
     </span>
   </a>
+{% endmacro %}
+
+{% macro card(t, n) %}
+<li class="note-card" data-note data-letter="{{ n.letter }}" data-haystack="{{ n.haystack }}">
+{{ card_in(t, n) }}
+</li>
+{% endmacro %}
+
+{#- A note where it is kept up (a record's Médias tab, docs/adr/0029): the
+    card, and for a writer who may change it the way to change or delete it,
+    both coming back to `return_to`. `k` is `{view, version, may_change,
+    transcription}`. -#}
+{% macro kept(t, k, return_to) %}
+<li class="note-card is-kept" data-note data-letter="{{ k.view.letter }}" data-haystack="{{ k.view.haystack }}">
+{{ card_in(t, k.view) }}
+  {%- if k.transcription %}<span class="note-card-mark"><span class="ai-chip">{{ t("ai-badge") }}</span> {{ t("afg-read-category") }}</span>{% endif %}
+  {%- if k.may_change %}
+  <div class="note-card-actions">
+    <a class="btn small" href="/admin/notes/{{ k.view.id }}/edit?back={{ return_to | urlencode }}">{{ t("notes-edit") }}</a>
+    <form method="post" action="/admin/notes/{{ k.view.id }}/delete" data-confirm="{{ t('notes-delete-confirm') }}">
+      <input type="hidden" name="base_version" value="{{ k.version }}">
+      <input type="hidden" name="back" value="{{ return_to }}">
+      <button class="btn small danger" type="submit" data-busy="{{ t('busy-working') }}">{{ t("notes-delete-short") }}</button>
+    </form>
+  </div>
+  {%- endif %}
 </li>
 {% endmacro %}
 

@@ -416,6 +416,10 @@ fn every_dynamic_key_family_is_fully_defined() {
     for state in ["running", "done", "failed"] {
         expected.push(format!("afg-run-state-{state}"));
     }
+    // Where its pictures are made (docs/adr/0029).
+    for kind in axgf_cms::afg::ImageKind::ALL {
+        expected.push(format!("afg-image-kind-{}", kind.slug()));
+    }
     // Every group, attribute, field, term and unit the AXGF 1.1 profile can
     // name, derived from the library's registry rather than listed here.
     expected.extend(axgf_cms::profile::every_key());

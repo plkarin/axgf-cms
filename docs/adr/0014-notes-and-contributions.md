@@ -3,7 +3,9 @@
 **Status:** accepted, v0.5.0 (2026-10-22) · **Builds on:**
 [ADR 0009](0009-ai-reworked-portraits-are-never-evidence.md), whose marked
 documents are the precedent for documents a record does not list ·
-**Applies to:** `src/notes.rs`, `src/note_pdf.rs`, `src/routes/notes.rs`,
+**Amended by:** [ADR 0029](0029-the-afg-on-a-persons-record.md): a
+person's notes are kept up on the Media tab and read on the Fiche, and one
+of them may be their summary · **Applies to:** `src/notes.rs`, `src/note_pdf.rs`, `src/routes/notes.rs`,
 `src/routes/public.rs`, `src/routes/admin.rs`, `src/routes/mod.rs`,
 `src/state.rs`, `src/person.rs`, `src/render.rs`, `templates/_notes.html`,
 `templates/_note_frame.html`, `templates/note.html`,

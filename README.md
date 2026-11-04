@@ -689,8 +689,13 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.4.0**, which brings **the AFG to a person's
-record**, for the members it is open to:
+The latest release is **v1.5.0**, which lets the AFG make its pictures
+with **Canva**, connected once with your account, or on **a machine of the
+family's own**: Ollama (experimental), any server compatible with OpenAI, or
+ComfyUI running your workflow, the photograph staying on your network.
+
+v1.4.0 brought **the AFG to a person's record**, for the members it is open
+to:
 
 - the face reworked with the AI, in colour and sharpened, beside the face;
 - a photograph restored beside itself, `_IA`, and a document read into a
@@ -699,8 +704,7 @@ record**, for the members it is open to:
   the site's fourteen languages;
 - the notes kept up on the Media tab and read on the Fiche.
 
-Pictures need a picture service of their own (OpenAI or Google Gemini),
-chosen in the AFG room.
+Pictures need a picture service of their own, chosen in the AFG room.
 
 v1.3.1 **keeps you signed in**: a restart signs nobody out, a session lasts
 30 days without use and each visit moves that on, and two installations on
@@ -751,7 +755,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.4.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.5.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -965,7 +969,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.4.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.4.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.5.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.5.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

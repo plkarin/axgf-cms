@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.1] — 2026-11-04
 
 Fixes from the to-do list of 4 November 2026: Canva's first retouch, a
 browser keeping an older stylesheet after an upgrade, an empty brain left by

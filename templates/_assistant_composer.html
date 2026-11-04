@@ -1,17 +1,25 @@
 {% import "_icons.html" as ic %}
 {#- Where a message is written: words, and files dropped, pasted or chosen
     (docs/adr/0026). Without scripting it is an ordinary form that sends
-    them; with it, assistant.js sends them while the page stays. -#}
+    them; with it, assistant.js sends them while the page stays. On a
+    person's page (docs/adr/0031), words only (`no_files`), and a `hint` of
+    its own under it. -#}
 <form class="as-composer" method="post" action="{{ action }}" enctype="multipart/form-data" data-composer{% if first %} data-first{% endif %} data-max-files="{{ limits.files }}" data-max-mb="{{ limits.file_mb }}" data-too-many="{{ t('assistant-error-too-many-files') }}" data-too-big="{{ t('assistant-error-file-big') }}" data-sending="{{ t('assistant-sending') }}">
   <label class="as-composer-label" for="as-text">{{ label }}</label>
   <div class="as-composer-box" data-composer-box>
     <ul class="as-chips" data-chips hidden></ul>
     <textarea id="as-text" name="text" rows="1" maxlength="{{ limits.text }}" data-composer-text{% if not ready %} disabled{% endif %}></textarea>
     <div class="as-composer-bar">
+      {%- if not no_files %}
       <label class="as-attach">{{ ic.icon("clip") }}<span>{{ t("assistant-attach") }}</span><input class="as-file-input" type="file" name="files" multiple accept="image/*,application/pdf,audio/*,video/*,.txt,.md,.csv,.json,.ged,.html,.xml,.srt,.vtt" data-composer-files{% if not ready %} disabled{% endif %}></label>
+      {%- endif %}
       <span class="as-composer-note small muted" data-composer-note aria-live="polite"></span>
       <button class="btn primary as-send" type="submit" data-busy="{{ t('assistant-sending') }}"{% if not ready %} disabled{% endif %}>{{ ic.icon("send") }}<span>{{ t("assistant-send") }}</span></button>
     </div>
   </div>
+  {%- if hint %}
+  <p class="as-composer-hint small muted">{{ hint }}</p>
+  {%- elif not no_files %}
   <p class="as-composer-hint small muted">{{ t("assistant-composer-hint", n=limits.files, mb=limits.file_mb) }}</p>
+  {%- endif %}
 </form>

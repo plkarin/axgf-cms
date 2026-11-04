@@ -8176,3 +8176,26 @@ a.kpi:hover { border-color: var(--border-strong); }
   .as-typing i, .as-caret, .as-empty-art img, .as-shut-art, .as-mark-live .ico, .as-chip { animation: none; }
   .as-msg, .as-card a, .as-pick img { transition: none; }
 }
+
+/* ── The AFG on a person's page (docs/adr/0031) ──────────────────────────
+   The assistant's thread and composer (docs/adr/0026), in the record's
+   column: the reader's own conversations about the person. */
+.pa { max-width: 48rem; }
+.pa-head h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; }
+.pa-head .lede { margin: 0 0 0.4rem; }
+.pa-thread { min-height: 0; }
+.pa-thread ~ .as-composer {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 5;
+}
+.pa-thread ~ .as-composer::before {
+  content: "";
+  position: absolute;
+  inset: -1.5rem -0.5rem -0.75rem;
+  z-index: -1;
+  background: linear-gradient(to bottom, transparent, var(--surface-page) 45%);
+}
+.pa-convs { margin-top: 1.5rem; }
+.pa-convs h3 { margin: 0 0 0.4rem; }
+.pa-delete-all { margin-top: 0.75rem; }

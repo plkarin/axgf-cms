@@ -157,6 +157,8 @@
   {% if tab == "profile" %}
   {% include "_radar.html" %}
   {% include "_profile_read.html" %}
+  {% elif tab == "afg" and afg_chat %}
+  {% include "_person_afg.html" %}
   {% else %}
   {% include "_person_detail.html" %}
   {% endif %}
@@ -168,9 +170,13 @@
 
 {% block head %}
 {% if map and place_points %}<link rel="stylesheet" href="/static/vendor/leaflet.css?v={{ version }}">{% endif %}
+{#- While the AFG writes on its tab, a page without scripting asks again
+    every three seconds; with it, assistant.js asks for what is new alone. -#}
+{% if afg_chat and afg_chat.live %}<noscript><meta http-equiv="refresh" content="3"></noscript>{% endif %}
 {% endblock %}
 
 {% block scripts %}
+{% if tab == "afg" and afg_chat %}<script src="/static/assistant.js?v={{ version }}"></script>{% endif %}
 {% if map and place_points %}
 <script src="/static/vendor/leaflet.js?v={{ version }}"></script>
 <script src="/static/map.js?v={{ version }}"></script>

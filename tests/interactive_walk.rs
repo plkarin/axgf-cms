@@ -524,7 +524,9 @@ async fn walker(app: &axum::Router, admin: &str, who: &str) -> (Option<String>, 
         "signed out" => (None, pages(false, None)),
         "signed in" => (Some(admin.to_string()), pages(true, None)),
         _ => {
-            let (member, its_pages) = assistant_member(app, admin).await;
+            let (member, mut its_pages) = assistant_member(app, admin).await;
+            // The AFG's tab on a record (docs/adr/0031), the AFG off here.
+            its_pages.push(format!("/person/{P}?tab=afg"));
             (Some(member), its_pages)
         }
     }

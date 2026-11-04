@@ -65,6 +65,7 @@ pub mod notes;
 pub mod notify;
 pub mod payloads;
 pub mod person;
+pub mod person_chat;
 pub mod physical;
 pub mod place;
 pub mod profile;

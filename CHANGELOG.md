@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The AFG in conversation on a person's page (the operator's request of
+4 November 2026, docs/adr/0031).
+
+### Added
+
+- **An AFG tab on every record**, for the accounts the AFG is open to. Ask
+  about the person: their life, their family, their times. The operator's
+  example: *in which regiment was he, at the battle his notes mention?*
+- **What the AFG reads** with each question, made from what the member may
+  read and nothing more:
+  - the person's record and the notes about them;
+  - their close relatives, with the notes about them;
+  - one line for each person of the family.
+
+  The AFG says what the archive says and where, says when it goes beyond
+  it, and links the persons it names.
+- **Each member's conversations about the person, kept on the tab.** Take
+  one up again, begin another, rename it, delete it, or delete them all.
+  Nobody else reads them. They are kept in the member's assistant space and
+  backed up with it.
+
 ## [1.5.1] — 2026-11-04
 
 Fixes from the to-do list of 4 November 2026: Canva's first retouch, a

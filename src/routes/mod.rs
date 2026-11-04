@@ -13,6 +13,7 @@ mod editors;
 mod entry;
 mod merge;
 mod notes;
+mod person_chat;
 mod person_editor;
 mod prefs;
 mod profile;
@@ -335,6 +336,15 @@ fn routes(state: Shared) -> Router {
         .route("/search.json", get(public::search_json))
         .route("/tree/panel/:id", get(public::tree_panel))
         .route("/person/:id", get(public::person))
+        // The AFG on a person's page (docs/adr/0031): the member's own
+        // conversations about the person, on the record's AFG tab.
+        .route("/person/:id/afg", post(person_chat::start))
+        .route("/person/:id/afg/delete", post(person_chat::delete_all))
+        .route("/person/:id/afg/:cid", post(person_chat::send))
+        .route("/person/:id/afg/:cid/state", get(person_chat::state_of))
+        .route("/person/:id/afg/:cid/retry", post(person_chat::retry))
+        .route("/person/:id/afg/:cid/edit", post(person_chat::rename))
+        .route("/person/:id/afg/:cid/delete", post(person_chat::delete))
         .route("/document/:id/raw", get(public::document_raw))
         .route("/document/:id/view", get(public::document_view))
         .route("/document/:id/thumb", get(public::document_thumb))

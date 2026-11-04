@@ -292,7 +292,10 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
     loop {
         if visits.is_empty() && !member_made {
             member_made = true;
-            let (member, member_pages) = assistant_member(&app, &admin_cookie(&app).await).await;
+            let (member, mut member_pages) =
+                assistant_member(&app, &admin_cookie(&app).await).await;
+            // The AFG's tab on a record (docs/adr/0031).
+            member_pages.push(format!("/person/{A}?tab=afg"));
             let member = format!("{member}; axgf_lang=zh-Hans");
             visits.extend(member_pages.into_iter().map(|p| (p, member.clone())));
         }

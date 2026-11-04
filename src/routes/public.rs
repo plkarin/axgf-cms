@@ -816,6 +816,12 @@ pub struct PersonQuery {
     tab: Option<String>,
     #[serde(default)]
     with: Option<String>,
+    /// On the AFG tab: the conversation open (docs/adr/0031).
+    #[serde(default)]
+    c: Option<String>,
+    /// On the AFG tab: what was just done, to be said.
+    #[serde(default)]
+    done: Option<String>,
 }
 
 /// `GET /person/:id` — everything known about one person.
@@ -826,12 +832,21 @@ pub async fn person(
     Query(q): Query<PersonQuery>,
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
+    // The AFG tab (docs/adr/0031), for an account the AFG is open to, and
+    // the conversation open on it.
+    let chat = super::person_chat::open_to(&viewer);
+    let on_chat = chat && q.tab.as_deref() == Some("afg");
+    let open =
+        q.c.as_deref()
+            .filter(|c| on_chat && crate::assistant::is_id(c));
     // The tab travels in the path Chrome remembers, so switching language on
     // the media tab comes back to the media tab.
     let asked = crate::person::RecordTab::from_query(q.tab.as_deref());
-    let here = match asked {
-        crate::person::RecordTab::Fiche => format!("/person/{id}"),
-        other => format!("/person/{id}?tab={}", other.slug()),
+    let here = match (on_chat, open, asked) {
+        (true, Some(c), _) => format!("/person/{id}?tab=afg&c={c}"),
+        (true, None, _) => format!("/person/{id}?tab=afg"),
+        (_, _, crate::person::RecordTab::Fiche) => format!("/person/{id}"),
+        (_, _, other) => format!("/person/{id}?tab={}", other.slug()),
     };
     let chrome = render::Chrome::resolve(&viewer, &headers, &here).with_archive(&state);
     let outcome = state.read_as(viewer.ceiling(), |flat, lens| {
@@ -861,9 +876,23 @@ pub async fn person(
             let notes = record_notes(&state, &viewer, chrome.lang, &id);
             let afg = state.site().afg;
             let afg_user = viewer.may_write() && viewer.user.as_ref().is_some_and(|u| u.afg);
-            let tabs =
+            let mut tabs =
                 crate::person::tabs_for(&p, !profile_groups.is_empty() || charts, notes.kept.len());
             let tab = crate::person::current_tab(q.tab.as_deref(), &tabs);
+            // The AFG's tab comes last, for the account it is open to, with
+            // the number of its conversations about this person.
+            if chat {
+                let n = super::person_chat::count(&state, &viewer, &id);
+                tabs.push(crate::person::TabView {
+                    slug: "afg",
+                    key: "person-tab-afg",
+                    count: (n > 0).then_some(n),
+                });
+            }
+            let tab_slug = if on_chat { "afg" } else { tab.slug() };
+            let afg_chat = on_chat.then(|| {
+                super::person_chat::tab(&state, &viewer, &chrome, &id, open, q.done.as_deref())
+            });
             // Every relative, and the way to one if asked: walked only when
             // the tab is open (docs/adr/0020).
             let kinship = (tab == crate::person::RecordTab::Kinship).then(|| {
@@ -900,9 +929,11 @@ pub async fn person(
                     // profile group, under the tabs that hold them, and no
                     // edit history — that is an editing concern.
                     tabs,
-                    tab => tab.slug(),
+                    tab => tab_slug,
                     // Modifier opens the editor on the tab being read.
-                    edit_tab => super::person_editor::fragment_for(tab.slug()),
+                    edit_tab => super::person_editor::fragment_for(tab_slug),
+                    // The AFG on this page (docs/adr/0031): what its tab holds.
+                    afg_chat,
                     profile_groups,
                     kinship,
                     full_record => true,

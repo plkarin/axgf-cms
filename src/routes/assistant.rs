@@ -28,7 +28,7 @@ use crate::{auth, render};
 pub const BASE: &str = "/account/assistant";
 
 /// The language of a page, by its name in English, for the AFG.
-fn language_name(code: &str) -> &'static str {
+pub(crate) fn language_name(code: &str) -> &'static str {
     match code {
         "fr" => "French",
         "de" => "German",
@@ -48,14 +48,14 @@ fn language_name(code: &str) -> &'static str {
 }
 
 /// Whether a script asked, and wants JSON back.
-fn wants_json(headers: &HeaderMap) -> bool {
+pub(crate) fn wants_json(headers: &HeaderMap) -> bool {
     headers
         .get(header::ACCEPT)
         .and_then(|v| v.to_str().ok())
         .is_some_and(|a| a.contains("application/json"))
 }
 
-fn json_reply(status: StatusCode, v: Value) -> Response {
+pub(crate) fn json_reply(status: StatusCode, v: Value) -> Response {
     (
         status,
         [
@@ -192,7 +192,7 @@ fn pack_json() -> Value {
 
 /// What is left of an answer being written once its memory block, which is
 /// not shown, is cut off.
-fn shown_partial(partial: &str) -> &str {
+pub(crate) fn shown_partial(partial: &str) -> &str {
     match partial.to_ascii_lowercase().find("<memory>") {
         Some(i) => &partial[..i],
         None => partial,
@@ -211,13 +211,36 @@ fn size_text(bytes: u64) -> String {
 /// One message as the thread draws it; `last` when nothing follows it, the
 /// only place an answer that failed may be asked for again.
 fn message_html(m: &Member, pid: &str, cid: &str, msg: &Message, last: bool) -> String {
+    message_fragment(
+        &m.chrome,
+        &format!("{BASE}/{pid}/f"),
+        pid,
+        cid,
+        None,
+        msg,
+        last,
+    )
+}
+
+/// One message as a thread draws it, here or on a person's page
+/// (docs/adr/0031): its files under `files_at`, and, on a person's page,
+/// the way to ask again there.
+pub(crate) fn message_fragment(
+    chrome: &render::Chrome,
+    files_at: &str,
+    pid: &str,
+    cid: &str,
+    person: Option<&str>,
+    msg: &Message,
+    last: bool,
+) -> String {
     let files: Vec<Value> = msg
         .files
         .iter()
         .map(|f| {
             json!({
                 "name": f.name,
-                "url": format!("{BASE}/{pid}/f/{}", f.id),
+                "url": format!("{files_at}/{}", f.id),
                 "image": f.kind == FileKind::Image,
                 "kind": f.kind,
                 "size_text": size_text(f.size),
@@ -229,7 +252,7 @@ fn message_html(m: &Member, pid: &str, cid: &str, msg: &Message, last: bool) -> 
         _ => String::new(),
     };
     render::fragment_with(
-        &m.chrome,
+        chrome,
         "_assistant_message.html",
         context! {
             m => json!({
@@ -245,6 +268,7 @@ fn message_html(m: &Member, pid: &str, cid: &str, msg: &Message, last: bool) -> 
             }),
             pid,
             cid,
+            person,
             last,
         },
     )
@@ -253,22 +277,24 @@ fn message_html(m: &Member, pid: &str, cid: &str, msg: &Message, last: bool) -> 
 
 /// The answer being written, as the thread draws it.
 fn live_html(m: &Member, partial: &str, seconds: u64) -> String {
+    live_fragment(&m.chrome, partial, seconds)
+}
+
+/// The answer being written, as a thread draws it, here or on a person's
+/// page.
+pub(crate) fn live_fragment(chrome: &render::Chrome, partial: &str, seconds: u64) -> String {
     let shown = shown_partial(partial);
     let html = if shown.trim().is_empty() {
         String::new()
     } else {
         crate::notes::to_html(shown, &|_| None)
     };
-    render::fragment_with(
-        &m.chrome,
-        "_assistant_live.html",
-        context! { html, seconds },
-    )
-    .unwrap_or_default()
+    render::fragment_with(chrome, "_assistant_live.html", context! { html, seconds })
+        .unwrap_or_default()
 }
 
 /// Whether the AFG can answer: its computing set, and complete.
-fn ready(state: &Shared) -> bool {
+pub(crate) fn ready(state: &Shared) -> bool {
     let cfg = state.site().afg;
     cfg.kind != crate::afg::Kind::Off && cfg.problem().is_none()
 }
@@ -907,21 +933,46 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         language: language_name(m.chrome.lang),
     };
     let prompt = assistant::chat_prompt(&m.space, &asker, project, &messages, archive.as_ref());
-    let runner = state.clone();
-    let space = m.space.clone();
-    let account = m.user.id.clone();
-    let pid = project.id.clone();
-    let cid = cid.to_string();
-    let base = state.data_dir().to_path_buf();
-    let kind = cfg.kind.slug();
-    let model = cfg.model.trim().to_string();
     tracing::info!(
         account = %m.user.username,
-        kind,
+        kind = cfg.kind.slug(),
         turns = prompt.turns.len(),
         archive = archive.is_some(),
         "assistant: a message sent to the AFG"
     );
+    run_answer(
+        state,
+        m.space.clone(),
+        m.user.id.clone(),
+        project.id.clone(),
+        cid.to_string(),
+        prompt,
+        live,
+        true,
+    );
+    true
+}
+
+/// Write a conversation's next answer in the background, into `live` as it
+/// comes, then into the conversation: here, and on a person's page
+/// (docs/adr/0031). `remember`: whether a `<memory>` block goes into the
+/// project's second brain; on a person's page, nothing is asked to be kept.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn run_answer(
+    state: &Shared,
+    space: Space,
+    account: String,
+    pid: String,
+    cid: String,
+    prompt: crate::afg_chat::ChatPrompt,
+    live: std::sync::Arc<assistant::Live>,
+    remember: bool,
+) {
+    let cfg = state.site().afg;
+    let runner = state.clone();
+    let base = state.data_dir().to_path_buf();
+    let kind = cfg.kind.slug();
+    let model = cfg.model.trim().to_string();
     tokio::spawn(async move {
         let outcome = if cfg.kind == crate::afg::Kind::Off || cfg.problem().is_some() {
             Err(crate::afg::Failure::new(
@@ -934,13 +985,17 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         let msg = match outcome {
             Ok(answer) => {
                 let (shown, facts) = crate::brain::take_memory(&answer.text);
-                let space2 = space.clone();
-                let pid2 = pid.clone();
-                let kept = tokio::task::spawn_blocking(move || space2.remember(&pid2, &facts))
-                    .await
-                    .ok()
-                    .and_then(Result::ok)
-                    .unwrap_or_default();
+                let kept = if remember {
+                    let space2 = space.clone();
+                    let pid2 = pid.clone();
+                    tokio::task::spawn_blocking(move || space2.remember(&pid2, &facts))
+                        .await
+                        .ok()
+                        .and_then(Result::ok)
+                        .unwrap_or_default()
+                } else {
+                    Vec::new()
+                };
                 let mut msg = Message::new(Role::Assistant, shown, Vec::new());
                 msg.kind = kind.to_string();
                 msg.model = answer.model.unwrap_or(model);
@@ -972,7 +1027,6 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         }
         runner.assistant_answering().end(&account, &pid, &cid);
     });
-    true
 }
 
 /// A message refused: said to the script, or on the page.

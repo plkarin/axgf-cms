@@ -1,0 +1,78 @@
+{% import "_icons.html" as ic %}
+{#- The AFG on this person's page (the operator's request of 4 November
+    2026, docs/adr/0031): the reader's own conversations about the person,
+    the one open, and where the next question is written. The AFG reads,
+    with every message, what this reader may read of the person and of the
+    family. Everything here is the reader's own.
+
+    Context: `p`, and `afg_chat` (routes/person_chat.rs `tab`). -#}
+<section class="pa" id="afg" aria-labelledby="pa-title">
+  {% if afg_chat.notice %}<div class="notice ok" role="status"><p>{{ afg_chat.notice }}</p></div>{% endif %}
+  {% if not afg_chat.ready %}<div class="notice warn"><p>{{ t("assistant-not-ready") }}</p></div>{% endif %}
+
+{% if afg_chat.conversation %}
+  <header class="as-head as-head-conv pa-head">
+    <a class="as-back" href="/person/{{ p.id }}?tab=afg">{{ ic.icon("back") }}<span>{{ t("person-afg-all") }}</span></a>
+    <div class="as-head-row">
+      <h2 class="as-conv-h1" id="pa-title">{{ afg_chat.conversation.title }}</h2>
+      <details class="as-menu">
+        <summary aria-label="{{ t('assistant-conversation-settings') }}" title="{{ t('assistant-conversation-settings') }}">{{ ic.icon("pen") }}</summary>
+        <div class="as-menu-panel">
+          <form method="post" action="/person/{{ p.id }}/afg/{{ afg_chat.conversation.id }}/edit" class="as-form">
+            <label class="field"><span class="field-label">{{ t("assistant-conversation-title") }}</span>
+              <input type="text" name="title" value="{{ afg_chat.conversation.title }}" maxlength="120" required autocomplete="off"></label>
+            <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-save") }}</button>
+          </form>
+          <details class="as-danger">
+            <summary>{{ ic.icon("trash") }}<span>{{ t("assistant-delete-conversation") }}</span></summary>
+            <form method="post" action="/person/{{ p.id }}/afg/{{ afg_chat.conversation.id }}/delete">
+              <label class="inline"><input type="checkbox" name="confirm" required> {{ t("assistant-delete-conversation-confirm") }}</label>
+              <button class="btn danger" type="submit">{{ t("assistant-delete") }}</button>
+            </form>
+          </details>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <div class="as-thread pa-thread" role="log" aria-live="polite" aria-label="{{ t('assistant-thread') }}" data-thread data-messages="{{ afg_chat.thread | length }}" data-state="/person/{{ p.id }}/afg/{{ afg_chat.conversation.id }}/state">
+    {%- for html in afg_chat.thread %}{{ html | safe }}{% endfor -%}
+    {%- if afg_chat.live %}{{ afg_chat.live | safe }}{% endif -%}
+  </div>
+  {%- if afg_chat.orphan %}
+  <form class="as-orphan" method="post" action="/person/{{ p.id }}/afg/{{ afg_chat.conversation.id }}/retry" data-retry>
+    <span class="small muted">{{ t("assistant-unanswered") }}</span>
+    <button class="btn small" type="submit">{{ t("assistant-retry") }}</button>
+  </form>
+  {%- endif %}
+
+  {% with action = "/person/" ~ p.id ~ "/afg/" ~ afg_chat.conversation.id, label = t("assistant-reply"), first = false, no_files = true, hint = "", ready = afg_chat.ready, limits = afg_chat.limits %}{% include "_assistant_composer.html" %}{% endwith %}
+
+{% else %}
+  <header class="pa-head">
+    <h2 id="pa-title">{{ ic.icon("afg") }}<span>{{ t("person-afg-title", name=p.name) }}</span></h2>
+    <p class="lede small">{{ t("person-afg-lede", name=p.name) }}</p>
+    {% if afg_chat.reads %}<p class="small muted">{{ t("person-afg-reads", notes=afg_chat.reads.notes | localnum(lang), relatives=afg_chat.reads.relatives | localnum(lang), persons=afg_chat.reads.persons | localnum(lang), tokens=afg_chat.reads.tokens | localnum(lang)) }}</p>{% endif %}
+  </header>
+
+  {% with action = "/person/" ~ p.id ~ "/afg", label = t("person-afg-ask", name=p.name), first = true, no_files = true, hint = t("person-afg-example", name=p.name), ready = afg_chat.ready, limits = afg_chat.limits %}{% include "_assistant_composer.html" %}{% endwith %}
+
+  <section class="pa-convs" aria-labelledby="pa-convs-title">
+    <h3 id="pa-convs-title">{{ t("person-afg-conversations") }}</h3>
+    {% if afg_chat.conversations %}
+    <ul class="as-convs">
+      {%- for c in afg_chat.conversations %}
+      <li><a href="/person/{{ p.id }}?tab=afg&amp;c={{ c.id }}"><span class="as-conv-title">{{ c.title }}</span><span class="as-conv-meta small muted">{{ c.updated_at | localdatetime(lang) }}</span></a></li>
+      {%- endfor %}
+    </ul>
+    <details class="as-danger pa-delete-all">
+      <summary>{{ ic.icon("trash") }}<span>{{ t("person-afg-delete-all", name=p.name) }}</span></summary>
+      <form method="post" action="/person/{{ p.id }}/afg/delete">
+        <label class="inline"><input type="checkbox" name="confirm" required> {{ t("person-afg-delete-all-confirm") }}</label>
+        <button class="btn danger" type="submit">{{ t("assistant-delete") }}</button>
+      </form>
+    </details>
+    {% else %}<p class="muted">{{ t("person-afg-none") }}</p>{% endif %}
+  </section>
+{% endif %}
+</section>

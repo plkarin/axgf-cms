@@ -22,6 +22,11 @@
 //!       files/<f>.json           its name, type and size
 //! ```
 //!
+//! A person's page (docs/adr/0031) keeps the account's conversations about
+//! that person in a project of its own, `person.json`'s id derived from the
+//! person's (`person_project_id`), marked with the person it is about and
+//! left out of the assistant's own list of projects.
+//!
 //! A space is its account's, not its name's: one whose `owner.json` names
 //! another account is set aside under `<name>@<its account>`, as a brain is
 //! (docs/adr/0024). Nobody reads another account's space, administrators
@@ -145,8 +150,25 @@ pub struct Project {
     /// Whether the family's archive goes with each message.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub archive: bool,
+    /// The person whose page holds this project's conversations
+    /// (docs/adr/0031); none for a project of the assistant's own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub person: Option<String>,
     pub created_at: String,
     pub updated_at: String,
+}
+
+/// The id of the project that holds an account's conversations about one
+/// person (docs/adr/0031): the same every time, so that the person's page
+/// finds it without a list to look it up in, and 16 hexadecimal digits, as
+/// every project's id is.
+pub fn person_project_id(person_id: &str) -> String {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(format!("person:{person_id}").as_bytes())
+        .iter()
+        .take(8)
+        .map(|b| format!("{b:02x}"))
+        .collect()
 }
 
 /// A conversation: its first question, its avatar, its dates.
@@ -520,7 +542,8 @@ impl Space {
 
     // -- projects -----------------------------------------------------------
 
-    /// Every project, the most recently used first.
+    /// Every project of the assistant's own, the most recently used first:
+    /// a person's page keeps its conversations apart (docs/adr/0031).
     pub fn projects(&self) -> Vec<ProjectSummary> {
         let Ok(entries) = fs::read_dir(self.dir.join(PROJECTS)) else {
             return Vec::new();
@@ -528,7 +551,7 @@ impl Space {
         let mut out: Vec<ProjectSummary> = entries
             .flatten()
             .filter_map(|e| read_json::<Project>(&e.path().join(PROJECT)))
-            .filter(|p| is_id(&p.id))
+            .filter(|p| is_id(&p.id) && p.person.is_none())
             .map(|p| ProjectSummary {
                 conversations: self.conversation_count(&p.id),
                 facts: self.facts(&p.id).len(),
@@ -560,11 +583,45 @@ impl Space {
             avatar: avatar.to_string(),
             conduct: String::new(),
             archive: false,
+            person: None,
             created_at: at.clone(),
             updated_at: at,
         };
         write_json(&dir.join(PROJECT), &project)?;
         Ok(Some(project))
+    }
+
+    /// The project of this account's conversations about one person, if it
+    /// has one (docs/adr/0031).
+    pub fn person_project(&self, person_id: &str) -> Option<Project> {
+        self.project(&person_project_id(person_id))
+            .filter(|p| p.person.as_deref() == Some(person_id))
+    }
+
+    /// The same, made the first time a conversation about the person begins,
+    /// under the person's name as the page shows it.
+    pub fn open_person_project(&self, person_id: &str, name: &str) -> io::Result<Project> {
+        if let Some(p) = self.person_project(person_id) {
+            return Ok(p);
+        }
+        let _w = writing();
+        let id = person_project_id(person_id);
+        let dir = self.dir.join(PROJECTS).join(&id);
+        make_dir(&dir.join(CONVERSATIONS))?;
+        make_dir(&dir.join(FILES))?;
+        let at = now();
+        let project = Project {
+            id,
+            name: clean_name(name, NAME_MAX),
+            avatar: String::new(),
+            conduct: String::new(),
+            archive: false,
+            person: Some(person_id.to_string()),
+            created_at: at.clone(),
+            updated_at: at,
+        };
+        write_json(&dir.join(PROJECT), &project)?;
+        Ok(project)
     }
 
     /// Write a project back, its date of use renewed.

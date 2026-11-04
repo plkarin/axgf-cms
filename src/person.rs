@@ -2352,7 +2352,7 @@ impl Ctx<'_> {
 }
 
 /// "1881–1962", for the family lists, or `None` when neither date is recorded.
-fn lifespan_of(person: &Value, lang: &str) -> Option<String> {
+pub(crate) fn lifespan_of(person: &Value, lang: &str) -> Option<String> {
     let year = |key: &str, y: &str| {
         let args = fluent::FluentArgs::from_iter([("year", fluent::FluentValue::from(y))]);
         crate::i18n::translate(lang, key, Some(&args))

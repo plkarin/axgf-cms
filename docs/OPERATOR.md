@@ -603,6 +603,29 @@ on the internet needs the outbound network the AFG's does (see "Opening the
 sandbox for it" above). The log says who sent what to which service, never
 what it held.
 
+### The AFG in conversation on a person's page
+
+Every account the AFG is open to, whether it may write or not, has an
+**AFG** tab on each record it may read (docs/adr/0031). There it asks
+questions about the person, and finds its own conversations about them
+again, to carry them on, rename them or delete them. Nobody else reads them,
+administrators included.
+
+With every question the AFG reads a dossier, made from what that account may
+read and nothing more:
+
+- the person's record and the notes about them;
+- their close relatives, with the notes about them;
+- one line for each person of the family.
+
+The tab says how large it is before the first question: at most about
+50,000 tokens. It goes to the AFG's computing as the room sets it. A local
+model with a small window may not take a large family's whole index.
+
+The conversations are kept in the account's assistant space, so the nightly
+backup of the AFG's memory takes them (docs/adr/0027). The log says who asked
+about whom, and how much the dossier held, never what was asked.
+
 ## When to worry
 
 | What you see | How bad | What to do |

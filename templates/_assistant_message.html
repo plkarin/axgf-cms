@@ -30,7 +30,7 @@
     <p><strong>{{ t("assistant-error-answer") }}</strong></p>
     <pre class="as-error-text">{{ m.text }}</pre>
     {%- if last %}
-    <form method="post" action="/account/assistant/{{ pid }}/c/{{ cid }}/retry" data-retry><button class="btn small" type="submit">{{ t("assistant-retry") }}</button></form>
+    <form method="post" action="{% if person %}/person/{{ person }}/afg/{{ cid }}/retry{% else %}/account/assistant/{{ pid }}/c/{{ cid }}/retry{% endif %}" data-retry><button class="btn small" type="submit">{{ t("assistant-retry") }}</button></form>
     {%- endif %}
   </div>
 {%- endif %}

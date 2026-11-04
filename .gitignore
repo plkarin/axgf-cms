@@ -1,3 +1,6 @@
 /target
 **/*.rs.bk
 *.axgf.tmp
+
+# Cookie jars from trying the site by hand with curl: each holds a session.
+cookie*.txt

@@ -66,8 +66,9 @@ family.brains/            beside family.axgf, as family.acl is
     conversations.jsonl   every exchange, one JSON object a line
 ```
 
-- **When it is made.** At the account's first exchange: today, the first
-  test it runs.
+- **When it is made.** When the account's first exchange has its answer:
+  today, the first test that succeeds. Until v1.5.1 it was made before the
+  question was sent, so a test that failed left an empty brain.
 - **Its name.** The folder takes the username. A username's alphabet is safe
   for a path, but `..` is a valid username, so a name that starts with a dot
   gets a `_` in front.

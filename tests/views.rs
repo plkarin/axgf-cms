@@ -102,7 +102,12 @@ async fn each_theme_loads_the_view_it_brings_and_no_other() {
             html.contains(&format!(r#"data-view="{view}""#)),
             "{theme}: the page says which drawing it carries"
         );
-        let at = |src: &str| html.find(&format!(r#"<script src="{src}" defer></script>"#));
+        let at = |src: &str| {
+            html.find(&format!(
+                r#"<script src="{src}?v={}" defer></script>"#,
+                env!("CARGO_PKG_VERSION")
+            ))
+        };
         let river = at("/static/river.js").expect("river.js, under every theme");
         let (fusion, galaxy, summit, clarity, scene) = (
             at("/static/fusion.js"),

@@ -167,12 +167,12 @@
 {% endblock %}
 
 {% block head %}
-{% if map and place_points %}<link rel="stylesheet" href="/static/vendor/leaflet.css">{% endif %}
+{% if map and place_points %}<link rel="stylesheet" href="/static/vendor/leaflet.css?v={{ version }}">{% endif %}
 {% endblock %}
 
 {% block scripts %}
 {% if map and place_points %}
-<script src="/static/vendor/leaflet.js"></script>
-<script src="/static/map.js"></script>
+<script src="/static/vendor/leaflet.js?v={{ version }}"></script>
+<script src="/static/map.js?v={{ version }}"></script>
 {% endif %}
 {% endblock %}

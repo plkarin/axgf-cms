@@ -10,6 +10,9 @@ mod common;
 use axum::http::StatusCode;
 use common::*;
 
+/// The version every script and stylesheet is asked for with (QA-09).
+const V: &str = env!("CARGO_PKG_VERSION");
+
 fn sample() -> &'static std::path::Path {
     std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/deploy/sample.axgf"))
 }
@@ -78,11 +81,13 @@ async fn with_a_tile_source_it_loads_exactly_the_two_assets_this_binary_serves()
 
     let body = body_string(get_admin(&app, &format!("/admin/place/{id}/edit")).await).await;
     assert!(
-        body.contains(r#"<script src="/static/vendor/leaflet.js"></script>"#),
+        body.contains(&format!(
+            r#"<script src="/static/vendor/leaflet.js?v={V}"></script>"#
+        )),
         "the library comes from this binary, not a CDN: {body}"
     );
-    assert!(body.contains(r#"href="/static/vendor/leaflet.css""#));
-    assert!(body.contains(r#"<script src="/static/map.js"></script>"#));
+    assert!(body.contains(&format!(r#"href="/static/vendor/leaflet.css?v={V}""#)));
+    assert!(body.contains(&format!(r#"<script src="/static/map.js?v={V}"></script>"#)));
     assert!(
         body.contains("tile.example.org")
             && body.contains("{z}")

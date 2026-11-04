@@ -14,8 +14,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ t("app-name") }}{% endblock %}</title>
-<link rel="stylesheet" href="/static/css/tokens.css">
-<link rel="stylesheet" href="/static/app.css">
+<link rel="stylesheet" href="/static/css/tokens.css?v={{ version }}">
+<link rel="stylesheet" href="/static/app.css?v={{ version }}">
 {# Only the pages that need it pull the map stylesheet in, so an ordinary page
    still costs exactly one CSS request. #}
 {% block head %}{% endblock %}
@@ -118,7 +118,7 @@
 {# Loaded on every page: it is 1 kB and it is what lets the
    Content-Security-Policy say `script-src 'self'` with no `unsafe-inline`.
    `defer` because none of it touches the document before load. #}
-<script src="/static/ui.js" defer></script>
+<script src="/static/ui.js?v={{ version }}" defer></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

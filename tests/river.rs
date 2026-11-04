@@ -1063,7 +1063,10 @@ fn a_tap_lights_the_route_and_a_second_tap_on_it_travels() {
 async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     let (app, _d) = app("river-scene");
     let body = expect_status(get(&app, "/?p=p07&n=3").await, StatusCode::OK, "GET /").await;
-    assert!(body.contains(r#"<script src="/static/river-scene.js" defer></script>"#));
+    assert!(body.contains(&format!(
+        r#"<script src="/static/river-scene.js?v={}" defer></script>"#,
+        env!("CARGO_PKG_VERSION")
+    )));
     assert!(body.contains(r#"aria-pressed="false" data-rv-still hidden>"#));
     assert!(body.contains(r#"<span class="rv-zoom" data-rv-zoom-wrap hidden>"#));
     let js = axgf_cms::render::RIVER_SCENE_JS;

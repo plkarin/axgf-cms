@@ -203,7 +203,7 @@
       <form method="post" action="/admin/afg/canva/finish" autocomplete="off" class="afg-form">
         <label for="afg-canva-returned" class="afg-canva-paste">{{ t("afg-canva-step-paste") }}</label>
         <input id="afg-canva-returned" name="returned" type="url" inputmode="url" spellcheck="false" required>
-        <div class="hint">{{ t("afg-canva-paste-hint") }}</div>
+        <div class="hint">{{ t("afg-canva-paste-hint") }} {{ t("afg-canva-finish-wait") }}</div>
         <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("afg-canva-finish") }}</button>
       </form>
     </div>
@@ -246,5 +246,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/afg.js"></script>
+<script src="/static/afg.js?v={{ version }}"></script>
 {% endblock %}

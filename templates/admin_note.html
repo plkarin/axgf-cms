@@ -81,5 +81,5 @@
 
 <datalist id="pick-persons">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
 <datalist id="note-categories">{% for c in categories %}<option value="{{ c }}"></option>{% endfor %}</datalist>
-<script src="/static/notes.js" defer></script>
+<script src="/static/notes.js?v={{ version }}" defer></script>
 {% endblock %}

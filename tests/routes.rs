@@ -130,6 +130,46 @@ async fn stylesheet_is_served_from_the_binary() {
     );
 }
 
+/// QA-09: the pages ask for every stylesheet and script with this release's
+/// version, and what is asked for that way may be kept for good; the same
+/// file asked for without it, or with another version, still for an hour.
+#[tokio::test]
+async fn scripts_and_stylesheets_are_asked_for_with_the_release() {
+    let (app, _p) = app_with_empty_bundle("asset-versions");
+    let v = env!("CARGO_PKG_VERSION");
+    let html = body_string(get(&app, "/").await).await;
+    for asset in ["/static/css/tokens.css", "/static/app.css", "/static/ui.js"] {
+        assert!(
+            html.contains(&format!("\"{asset}?v={v}\"")),
+            "{asset} is asked for with v={v}"
+        );
+    }
+    let cache = |resp: &axum::response::Response| {
+        resp.headers()
+            .get(axum::http::header::CACHE_CONTROL)
+            .and_then(|h| h.to_str().ok())
+            .unwrap_or("")
+            .to_string()
+    };
+    for asset in ["/static/app.css", "/static/ui.js", "/static/css/tokens.css"] {
+        let kept = get(&app, &format!("{asset}?v={v}")).await;
+        assert_eq!(kept.status(), StatusCode::OK, "{asset}");
+        assert_eq!(
+            cache(&kept),
+            "public, max-age=31536000, immutable",
+            "{asset}"
+        );
+        for other in [asset.to_string(), format!("{asset}?v=0.0.1")] {
+            let resp = get(&app, &other).await;
+            assert_eq!(resp.status(), StatusCode::OK, "{other}");
+            assert_ne!(cache(&resp), cache(&kept), "{other} is not kept for good");
+        }
+    }
+    // A missing file is not kept, whatever it is asked with.
+    let missing = get(&app, &format!("/static/no-such.js?v={v}")).await;
+    assert_ne!(cache(&missing), "public, max-age=31536000, immutable");
+}
+
 #[tokio::test]
 async fn unknown_paths_render_a_404_page_not_a_panic() {
     let (app, _p) = app_with_empty_bundle("404");

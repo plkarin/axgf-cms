@@ -330,12 +330,12 @@
 {% endblock %}
 
 {% block head %}
-{% if map %}<link rel="stylesheet" href="/static/vendor/leaflet.css">{% endif %}
+{% if map %}<link rel="stylesheet" href="/static/vendor/leaflet.css?v={{ version }}">{% endif %}
 {% endblock %}
 
 {% block scripts %}
 {% if map %}
-<script src="/static/vendor/leaflet.js"></script>
-<script src="/static/map.js"></script>
+<script src="/static/vendor/leaflet.js?v={{ version }}"></script>
+<script src="/static/map.js?v={{ version }}"></script>
 {% endif %}
 {% endblock %}

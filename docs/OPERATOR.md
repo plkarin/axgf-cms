@@ -563,11 +563,15 @@ not: Claude and the coding agents write text only. A picture needs a
   3. Canva sends you back to an address on `localhost`. If the page does not
      load, which is expected unless you reach the site at `localhost`, paste
      its address into the room.
+  4. **Finish connecting** takes up to a minute: it also makes, in Canva,
+     the page every picture is laid on.
 
-  Each picture spends one of the account's AI credits, and the first one
-  also makes the page every picture is laid on. When the credits come too
-  fast, Canva holds them back for some minutes (`quota_cooldown`), and the
-  retouch says so. What Canva makes is filed in the account's folder
+  Each picture spends one of the account's AI credits, and each connection
+  one more, for that page. When the credits come too fast, Canva holds them
+  back for some minutes (`quota_cooldown`), and the record says so in the
+  reader's language: try again a few minutes later. Canva's own words are in
+  the journal, in the `F_ERROR` field (`journalctl -u axgf-cms -o
+  verbose`). What Canva makes is filed in the account's folder
   `ax-genealogy`. The photographs sent stay in its uploads; clear them from
   Canva when you like. One connection serves the whole family, while Canva's
   usage policy expects one per person: connecting yours for the AFG, you

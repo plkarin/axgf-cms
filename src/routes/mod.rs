@@ -227,12 +227,25 @@ fn is_own_origin(origin: &str, headers: &HeaderMap, public: Option<&str>) -> boo
 /// computer after the reader signed out. Every HTML page that does not say
 /// otherwise is `no-store` for a signed-in reader and `no-cache` for anyone
 /// else. Stylesheets, scripts and pictures say their own.
+///
+/// Except one asked for with this version (QA-09): the pages name every
+/// stylesheet and script with `?v=<version>`, so that one is the file of this
+/// release and no other, and a browser may keep it as long as it likes. The
+/// next release names it with another version, and the browser asks again.
 async fn cache_policy(
     req: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> axum::response::Response {
     let signed_in = crate::session::cookie_value(req.headers()).is_some();
+    let this_release = req.uri().path().starts_with("/static/") && versioned(req.uri().query());
     let mut resp = next.run(req).await;
+    if this_release && resp.status() == axum::http::StatusCode::OK {
+        resp.headers_mut().insert(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=31536000, immutable"),
+        );
+        return resp;
+    }
     let html = resp
         .headers()
         .get(header::CONTENT_TYPE)
@@ -245,6 +258,15 @@ async fn cache_policy(
         );
     }
     resp
+}
+
+/// Whether a query names this release: `v=<version>` (QA-09). A page from an
+/// older release asks with its own version, and is answered as before.
+fn versioned(query: Option<&str>) -> bool {
+    query.is_some_and(|q| {
+        q.split('&')
+            .any(|pair| pair == concat!("v=", env!("CARGO_PKG_VERSION")))
+    })
 }
 
 /// The security headers, and why each one is here.

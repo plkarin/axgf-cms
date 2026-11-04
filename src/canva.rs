@@ -29,8 +29,8 @@
 //!
 //! Only `generate-image`, and `create-design` once, spend the account's AI
 //! credits: Canva holds them back for a while when they come too fast
-//! (`quota_cooldown`), so the base design is made before the picture is
-//! asked for, never after.
+//! (`quota_cooldown`), so the base design is made when the account is
+//! connected (1.5.1), or before the picture is asked for, never after.
 
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
@@ -59,6 +59,10 @@ const BASE_FORMAT: &str = "Instagram Post (Portrait)";
 
 /// How long an authorization started in the room waits for its return.
 const PENDING_TTL: Duration = Duration::from_secs(20 * 60);
+
+/// How long connecting waits for the base design before leaving it to the
+/// first retouch: Canva made one in about 40 seconds on 4 November 2026.
+const BASE_DESIGN_WAIT: Duration = Duration::from_secs(150);
 
 /// The most an answer of the server, or a picture it exports, may weigh.
 const ANSWER_MAX: u64 = 64 * 1024 * 1024;
@@ -384,6 +388,22 @@ pub async fn finish(
                 .and_then(Value::as_str)
                 .unwrap_or_default()
                 .to_string();
+        }
+        // The page every picture is laid on, made now rather than by the
+        // first retouch (1.5.1). Canva holds an account's AI credits back
+        // for a while after a design is made, and on 4 November 2026 the
+        // first retouch, asking for a picture straight after making it, was
+        // refused. Made later when it cannot be made now.
+        let _one = base_lock().lock().unwrap_or_else(|e| e.into_inner());
+        match base_design(&mut mcp, Instant::now() + BASE_DESIGN_WAIT) {
+            Ok(id) => {
+                file_away(&mut mcp, &[id.as_str()]);
+                mcp.link.base_design_id = id;
+            }
+            Err(f) => tracing::warn!(
+                error = %f.message,
+                "AFG: no Canva base design yet; the first retouch makes it"
+            ),
         }
         Ok(mcp.link)
     })
@@ -933,15 +953,19 @@ fn cut_out(page: &[u8], pw: f64, ph: f64, placed: (f64, f64)) -> Result<Vec<u8>,
 /// a reason to fail: a folder gone is made again the next time.
 fn file_away(mcp: &mut Mcp, items: &[&str]) {
     if mcp.link.folder_id.is_empty() {
-        let made = mcp.call(
-            "create-folder",
-            json!({"name": FOLDER, "parent_folder_id": "root"}),
-        );
-        match made.ok().and_then(|f| {
-            f.pointer("/folder/id")
-                .and_then(Value::as_str)
-                .map(str::to_string)
-        }) {
+        let folder = existing_folder(mcp).or_else(|| {
+            mcp.call(
+                "create-folder",
+                json!({"name": FOLDER, "parent_folder_id": "root"}),
+            )
+            .ok()
+            .and_then(|f| {
+                f.pointer("/folder/id")
+                    .and_then(Value::as_str)
+                    .map(str::to_string)
+            })
+        });
+        match folder {
             Some(id) => mcp.link.folder_id = id,
             None => return,
         }
@@ -956,6 +980,39 @@ fn file_away(mcp: &mut Mcp, items: &[&str]) {
             return;
         }
     }
+}
+
+/// The account's own folder of that name, the one made last when there are
+/// several (1.5.1): a connection made again, after "Disconnect Canva", files
+/// into the folder it had rather than into another of the same name. None
+/// when there is none, or when the server cannot be asked.
+fn existing_folder(mcp: &mut Mcp) -> Option<String> {
+    let found = mcp
+        .call(
+            "search-folders",
+            json!({"query": FOLDER, "ownership": "owned", "limit": 20}),
+        )
+        .ok()?;
+    found
+        .get("items")
+        .or_else(|| found.get("folders"))
+        .and_then(Value::as_array)?
+        .iter()
+        .map(|f| f.get("folder").unwrap_or(f))
+        .filter(|f| f.get("name").and_then(Value::as_str) == Some(FOLDER))
+        .max_by_key(|f| f.get("created_at").and_then(Value::as_u64).unwrap_or(0))
+        .and_then(|f| f.get("id").and_then(Value::as_str))
+        .map(str::to_string)
+}
+
+/// Canva's word, in a tool's answer, for an account's AI credits held back
+/// for a while (docs/adr/0030).
+pub const COOLDOWN: &str = "quota_cooldown";
+
+/// Whether a failure is Canva holding the account's AI credits back for a
+/// while, which the page says in the reader's language (1.5.1).
+pub fn cooling_down(f: &Failure) -> bool {
+    f.message.contains(COOLDOWN)
 }
 
 #[cfg(test)]

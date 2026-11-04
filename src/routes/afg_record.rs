@@ -89,6 +89,17 @@ fn failed(
     )
 }
 
+/// Why the AI did not succeed, for the page: Canva holding the account's AI
+/// credits back for a while said in the reader's language (1.5.1), anything
+/// else in the service's own words.
+fn reason(chrome: &Chrome, f: &crate::afg::Failure) -> String {
+    if crate::canva::cooling_down(f) {
+        chrome.t("afg-canva-cooldown")
+    } else {
+        f.message.clone()
+    }
+}
+
 /// Write it, and go back to where the button was.
 fn commit(state: &Shared, viewer: &Viewer, chrome: &Chrome, ops: Vec<Op>, back: &str) -> Response {
     match state.commit(ops, viewer.name(), |kind, e| {
@@ -264,7 +275,7 @@ pub async fn rework(
                 &chrome,
                 StatusCode::BAD_GATEWAY,
                 "afg-record-failed",
-                &[("reason", f.message.into())],
+                &[("reason", reason(&chrome, &f).into())],
                 &back,
             );
         }
@@ -372,7 +383,7 @@ pub async fn retouch(
                 &chrome,
                 StatusCode::BAD_GATEWAY,
                 "afg-record-failed",
-                &[("reason", f.message.into())],
+                &[("reason", reason(&chrome, &f).into())],
                 &back,
             );
         }
@@ -475,7 +486,7 @@ pub async fn read(
                 &chrome,
                 StatusCode::BAD_GATEWAY,
                 "afg-record-failed",
-                &[("reason", f.message.into())],
+                &[("reason", reason(&chrome, &f).into())],
                 &back,
             );
         }
@@ -676,7 +687,7 @@ pub async fn summary(
                 &chrome,
                 StatusCode::BAD_GATEWAY,
                 "afg-record-failed",
-                &[("reason", f.message.into())],
+                &[("reason", reason(&chrome, &f).into())],
                 &back,
             );
         }

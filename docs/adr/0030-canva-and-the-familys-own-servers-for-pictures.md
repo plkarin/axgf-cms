@@ -1,6 +1,7 @@
 # ADR 0030 — Canva and the family's own servers make the AFG's pictures
 
-**Status:** accepted, v1.5.0 (2026-11-04) · **Builds on:**
+**Status:** accepted, v1.5.0 (2026-11-04); amended in v1.5.1 (see the
+end) · **Builds on:**
 [ADR 0029](0029-the-afg-on-a-persons-record.md), whose picture service had
 two choices, OpenAI and Gemini · **Applies to:** `src/afg.rs`,
 `src/canva.rs`, `src/comfyui.rs`, `src/afg_record.rs`, `src/routes/afg.rs`,
@@ -82,6 +83,8 @@ forgets everything.
      room.
 4. The code is exchanged for tokens, and the account's name is asked for
    the room.
+5. Since v1.5.1, the base design is made then (step 0 below). Connecting
+   takes up to a minute.
 
 The tokens are kept with the AFG's settings in `family.acl`. No page shows
 them. A token within a minute of its end is renewed before use. A connection
@@ -91,8 +94,10 @@ started more than 20 minutes ago, or not started by this server, is refused.
 **A retouch** takes these steps, one at a time for the whole site:
 
 0. **The base design**, a page that every picture is laid on in turn, is made
-   once with `create-design` and filed. It is made before a picture is asked
-   for, so that a cooldown there costs no picture's credit.
+   once with `create-design` and filed. Since v1.5.1 it is made when the
+   account is connected. When Canva cannot make it then, the first retouch
+   makes it, before a picture is asked for, so that a cooldown there costs
+   no picture's credit.
 1. **Upload.** `create-upload-url`, then the photograph is posted to it.
 2. **Restoration.** `generate-image`, with the restoration instruction of
    ADR 0029 and the photograph as its reference, then
@@ -104,11 +109,15 @@ started more than 20 minutes ago, or not started by this server, is refused.
 4. **The file.** `export-design` exports the page as PNG, at the scale that
    gives the picture its own size. The picture is cut out of it here and
    kept as a JPEG.
-5. **Filing.** The picture is moved to the account's folder `ax-genealogy`,
-   which is made when there is none.
+5. **Filing.** The picture is moved to the account's folder `ax-genealogy`.
+   Since v1.5.1 that is the account's own folder of that name, found with
+   `search-folders` (the one made last when there are several), and one is
+   made only when there is none.
 
-A refusal is said in Canva's own words: `quota_cooldown`, a failed job, a
-refused token. After every retouch, whether it succeeded or not, the
+A refusal is said in Canva's own words: a failed job, a refused token.
+`quota_cooldown` is the exception since v1.5.1: the page says, in the
+reader's language, that Canva has paused the account's AI credits for a few
+minutes. After every retouch, whether it succeeded or not, the
 connection is kept as it now stands: a renewed token may have made the one
 before it worthless.
 
@@ -155,7 +164,7 @@ A restored copy's `generator`, and a reworked portrait's, name the service:
 ## Consequences
 
 - **Canva spends the account's credits:** one picture a retouch, and one
-  design the first time. A cooldown refuses a retouch for some minutes.
+  design each time the account is connected. A cooldown refuses a retouch for some minutes.
 - **What stays in Canva:**
   - the restored pictures and the base design, in the folder `ax-genealogy`;
   - the photographs sent. The MCP server can neither move nor delete them,
@@ -175,3 +184,21 @@ A restored copy's `generator`, and a reworked portrait's, name the service:
     came back at its own size (720 × 912) in 27 seconds, its token renewed
     on the way;
   - Ollama, OpenAI-compatible servers and ComfyUI only against fakes.
+
+## Amendment, v1.5.1 (4 November 2026)
+
+The first retouch in production, that afternoon, was refused with
+`quota_cooldown`. It had made the base design and asked for the picture
+straight after: Canva holds an account's AI credits back for a while after a
+design is made. The connection had been finished 40 seconds before.
+
+- **The base design is made when the account is connected** (step 5 of
+  connecting). The administrator waits for it there, up to a minute. When
+  Canva cannot make it then, the connection is kept and the first retouch
+  makes it, as before. The room then says only that Canva is connected.
+- **The cooldown is said in the reader's language**, in the fourteen
+  catalogues (`afg-canva-cooldown`): Canva's own sentence is English, and the
+  family reads the record in theirs. The journal keeps Canva's words.
+- **The folder is found again.** A connection made again after "Disconnect
+  Canva" had forgotten its folder and made a second `ax-genealogy`. The
+  folder is now looked for by its name first.

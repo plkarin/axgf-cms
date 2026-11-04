@@ -153,6 +153,10 @@ fn form_of(body: &str) -> Vec<(String, String)> {
 #[derive(Default)]
 struct CanvaState {
     polled: usize,
+    /// Folders made: `search-folders` finds them.
+    folders: usize,
+    /// Canva holding the account's AI credits back: `create-design` refused.
+    cool: bool,
 }
 
 /// A tool's answer: structured, or as JSON text only (Canva does both).
@@ -166,7 +170,11 @@ fn tool(id: &Value, out: Value, structured: bool) -> Reply {
 }
 
 fn canva_fake() -> (String, Log) {
-    let state = Arc::new(Mutex::new(CanvaState::default()));
+    canva_fake_with(Arc::default())
+}
+
+/// The fake Canva, with its state in the test's hands.
+fn canva_fake_with(state: Arc<Mutex<CanvaState>>) -> (String, Log) {
     serve(Arc::new(move |r: &Req| {
         let base = &r.base;
         match (r.method.as_str(), r.path.as_str()) {
@@ -262,6 +270,12 @@ fn canva_fake() -> (String, Log) {
                                 json!({"asset": {"id": "M-restored", "metadata": {"width": 60, "height": 60}}}),
                                 false,
                             ),
+                            "create-design" if state.lock().unwrap().cool => tool(
+                                &id,
+                                json!({"status": "failed", "failure": {"code": "quota_cooldown",
+                                                  "message": "Credit quota cooldown is active"}}),
+                                true,
+                            ),
                             "create-design" => tool(
                                 &id,
                                 json!({"job_id": "dj1", "status": "pending", "continuation_token": "c1",
@@ -300,11 +314,24 @@ fn canva_fake() -> (String, Log) {
                                                "urls": [format!("{base}/export/page.png")]}}),
                                 true,
                             ),
-                            "create-folder" => tool(
-                                &id,
-                                json!({"folder": {"id": "F1", "name": "ax-genealogy"}}),
-                                true,
-                            ),
+                            "create-folder" => {
+                                state.lock().unwrap().folders += 1;
+                                tool(
+                                    &id,
+                                    json!({"folder": {"id": "F1", "name": "ax-genealogy"}}),
+                                    true,
+                                )
+                            }
+                            // Another folder whose name only begins the same.
+                            "search-folders" => {
+                                let mut items = vec![
+                                    json!({"id": "FX", "name": "ax-genealogy old", "created_at": 9}),
+                                ];
+                                if state.lock().unwrap().folders > 0 {
+                                    items.push(json!({"id": "F1", "name": "ax-genealogy", "created_at": 1}));
+                                }
+                                tool(&id, json!({"items": items}), false)
+                            }
                             "move-item-to-folder" => tool(&id, json!({"moved": true}), true),
                             _ => reply_json(
                                 200,
@@ -581,6 +608,10 @@ async fn canva_is_connected_once_and_restores_through_one_page_reused() {
         !room.contains("at-1") && !room.contains("rt-1"),
         "no token on a page"
     );
+    // The page every picture is laid on, made and filed on connecting (1.5.1).
+    assert!(room.contains("sa page de travail est prête"), "{room}");
+    let kept = acl_text(&dir);
+    assert!(kept.contains("DBASE") && kept.contains("\"F1\""));
     // Given a token about to expire, the connection renewed it at once.
     let kept = acl_text(&dir);
     assert!(
@@ -703,7 +734,7 @@ async fn canva_is_connected_once_and_restores_through_one_page_reused() {
 }
 
 #[tokio::test]
-async fn a_canva_refusal_is_said_in_its_words_and_spends_nothing_more() {
+async fn canva_holding_its_credits_back_is_said_in_the_readers_language() {
     let (app, dir, cookies) = family("afg-images-canva-cool").await;
     let ana = &cookies[0];
     // A Canva cooling down: every AI call refused in the answer.
@@ -755,13 +786,145 @@ async fn a_canva_refusal_is_said_in_its_words_and_spends_nothing_more() {
     )
     .await;
     assert_eq!(resp.status(), StatusCode::BAD_GATEWAY);
-    assert!(body_string(resp).await.contains("quota_cooldown"));
+    let page = body_string(resp).await;
+    assert!(
+        page.contains("Canva a suspendu les crédits IA de ce compte pour quelques minutes."),
+        "{page}"
+    );
+    assert!(
+        !page.contains("Credit quota cooldown"),
+        "not in Canva's English"
+    );
     let names: Vec<String> = tools_called(&log).into_iter().map(|(n, _)| n).collect();
     assert_eq!(
         names,
         ["create-design"],
         "refused at the page: no picture asked for"
     );
+}
+
+/// Connect Canva as an administrator does: the way to it, then its return
+/// pasted in the room. The room it ends on.
+async fn connect(app: &axum::Router, cookie: &str, canva: &str) -> (StatusCode, String) {
+    let (status, room) = post(app, cookie, "/admin/afg/canva/connect", &[]).await;
+    assert_eq!(status, StatusCode::OK);
+    let room = unescape(&room);
+    let at = room
+        .find(&format!("{canva}/authorize?"))
+        .expect("the way to Canva");
+    let state = room[at..]
+        .split("state=")
+        .nth(1)
+        .unwrap()
+        .split(['&', '"'])
+        .next()
+        .unwrap()
+        .to_string();
+    post(
+        app,
+        cookie,
+        "/admin/afg/canva/finish",
+        &[(
+            "returned",
+            &format!("http://localhost/admin/afg/canva/callback?code=fake%3Acode&state={state}"),
+        )],
+    )
+    .await
+}
+
+/// 1.5.1: connected again after "Disconnect Canva", the site files into the
+/// folder it had, found by its name, rather than making another.
+#[tokio::test]
+async fn canva_connected_again_files_into_the_folder_it_had() {
+    let (app, dir, cookies) = family("afg-images-canva-again").await;
+    let ana = &cookies[0];
+    let (canva, log) = canva_fake();
+    post(
+        &app,
+        ana,
+        "/admin/afg/images",
+        &[("kind", "canva"), ("url", &canva)],
+    )
+    .await;
+    let (status, _) = connect(&app, ana, &canva).await;
+    assert_eq!(status, StatusCode::OK);
+    let (status, _) = post(&app, ana, "/admin/afg/canva/disconnect", &[]).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        !acl_text(&dir).contains("\"F1\""),
+        "forgotten with the account"
+    );
+    let (status, room) = connect(&app, ana, &canva).await;
+    assert_eq!(status, StatusCode::OK, "{room}");
+    let kept = acl_text(&dir);
+    assert!(
+        kept.contains("\"F1\"") && !kept.contains("\"FX\""),
+        "the folder of that name"
+    );
+    let count = |tool: &str| tools_called(&log).iter().filter(|(n, _)| n == tool).count();
+    assert_eq!(
+        count("create-folder"),
+        1,
+        "no second folder of the same name"
+    );
+    assert_eq!(count("create-design"), 2, "a page for each connection");
+}
+
+/// 1.5.1: a Canva that cannot make the page yet still connects, and the
+/// first retouch makes it.
+#[tokio::test]
+async fn canva_holding_its_credits_back_at_connection_still_connects() {
+    let (app, dir, cookies) = family("afg-images-canva-cool-connect").await;
+    let ana = &cookies[0];
+    let state = Arc::new(Mutex::new(CanvaState {
+        cool: true,
+        ..CanvaState::default()
+    }));
+    let (canva, log) = canva_fake_with(state.clone());
+    post(
+        &app,
+        ana,
+        "/admin/afg/images",
+        &[("kind", "canva"), ("url", &canva)],
+    )
+    .await;
+    let (status, room) = connect(&app, ana, &canva).await;
+    assert_eq!(status, StatusCode::OK, "{room}");
+    assert!(room.contains("Canva est connecté."), "{room}");
+    assert!(!room.contains("sa page de travail est prête"));
+    let kept = acl_text(&dir);
+    assert!(
+        kept.contains("rt-2") && !kept.contains("DBASE"),
+        "connected, no page yet"
+    );
+
+    state.lock().unwrap().cool = false;
+    let did = attach(&app, ana, png(50, 50)).await;
+    let resp = post_form_as(
+        &app,
+        ana,
+        &format!("/admin/person/{LUC}/document/{did}/ai-retouch"),
+        "",
+    )
+    .await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::SEE_OTHER,
+        "{}",
+        body_string(resp).await
+    );
+    assert_eq!(copies(&app, ana).await.len(), 1);
+    let names: Vec<String> = tools_called(&log).into_iter().map(|(n, _)| n).collect();
+    let made: Vec<usize> = names
+        .iter()
+        .enumerate()
+        .filter(|(_, n)| *n == "create-design")
+        .map(|(i, _)| i)
+        .collect();
+    let asked = names.iter().position(|n| n == "generate-image").unwrap();
+    assert_eq!(made.len(), 2, "refused on connecting, made by the retouch");
+    assert!(made[1] < asked, "and before the picture is asked for");
+    assert!(acl_text(&dir).contains("DBASE"));
 }
 
 // ---------------------------------------------------------------------------

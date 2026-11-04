@@ -4,6 +4,44 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Fixes from the to-do list of 4 November 2026: Canva's first retouch, a
+browser keeping an older stylesheet after an upgrade, an empty brain left by
+a failed test, and the dependencies.
+
+### Fixed
+
+- **Canva's first retouch.** On 4 November 2026 the first retouch in
+  production was refused with `quota_cooldown`. It had made the page every
+  picture is laid on, then asked for the picture straight after, and Canva
+  holds an account's AI credits back for a while after a design is made.
+  That page is now made when the account is connected, so "Finish
+  connecting" takes up to a minute. When Canva cannot make it then, the first
+  retouch makes it, as before.
+- **Canva holding its credits back is said in the reader's language**, not
+  in Canva's English: try again in a few minutes.
+- **One folder `ax-genealogy`.** Connected again after "Disconnect Canva",
+  the site files into the account's folder of that name instead of making
+  another one.
+- **A browser no longer mixes two releases (QA-09).** Every stylesheet and
+  script is asked for with the release's version (`/static/app.css?v=1.5.1`).
+  Asked for that way, a browser may keep it for good, and the next release's
+  pages ask for the next one. Before, a browser could keep an older
+  stylesheet or script for up to an hour after an upgrade.
+- **A test that fails leaves no brain behind.** The AFG test made the
+  asker's brain before asking. A test that failed (a program not signed in, a
+  key refused) left an empty one. A brain is now made once an exchange has
+  its answer.
+
+### Changed
+
+- **Dependencies:** 19 updated within their versions (`cargo update`), among
+  them `ureq` 3.5.1 and `zip` 9.3.0. `cargo audit` finds no vulnerability.
+- **Two curl cookie jars** committed by accident in September are gone from
+  the repository, and `.gitignore` keeps such files out (QA-05). The
+  sessions in them had long expired.
+
 ## [1.5.0] — 2026-11-04
 
 Canva and the family's own servers make the AFG's pictures (the operator's

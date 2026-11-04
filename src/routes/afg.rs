@@ -597,7 +597,12 @@ async fn canva_finished(
                     },
                 );
             }
-            tracing::warn!(by = viewer.name(), "AFG: a Canva account connected");
+            let ready = !link.base_design_id.is_empty();
+            tracing::warn!(
+                by = viewer.name(),
+                base_design = ready,
+                "AFG: a Canva account connected"
+            );
             let saved = state.site().afg;
             render_room(
                 state,
@@ -607,7 +612,11 @@ async fn canva_finished(
                 &saved,
                 Said {
                     images: true,
-                    ..Said::notice(chrome.t("afg-canva-done"))
+                    ..Said::notice(chrome.t(if ready {
+                        "afg-canva-done-ready"
+                    } else {
+                        "afg-canva-done"
+                    }))
                 },
             )
         }
@@ -688,19 +697,20 @@ pub async fn test(State(state): State<Shared>, headers: HeaderMap) -> Response {
             )
         }
     };
-    // The asker's brain (docs/adr/0024), made at their first exchange. A
-    // session with no account has none, and a brain that cannot be made
-    // leaves the test to go without one rather than fail.
-    let brain = viewer.user.as_ref().and_then(|u| {
+    // The asker's brain (docs/adr/0024): what it remembers goes with the
+    // question. It is made once an exchange has an answer, not before: a test
+    // that fails (a program not signed in, a key refused) leaves no empty
+    // brain behind. A session with no account has none.
+    let owner = viewer.user.as_ref().map(crate::brain::Owner::of);
+    let recall = owner.as_ref().map(|o| {
         brains(&state)
-            .of(&crate::brain::Owner::of(u))
-            .map_err(|e| tracing::warn!(error = %e, user = %u.username, "AFG: no brain"))
-            .ok()
+            .existing(o)
+            .map(|b| b.recall())
+            .unwrap_or_default()
     });
-    let recall = brain.as_ref().map(crate::brain::Brain::recall);
-    let person = brain
+    let person = owner
         .as_ref()
-        .and_then(|b| b.owner.person_id.clone())
+        .and_then(|o| o.person_id.clone())
         .and_then(|pid| {
             state.read(|flat| {
                 flat.get("persons")
@@ -709,9 +719,9 @@ pub async fn test(State(state): State<Shared>, headers: HeaderMap) -> Response {
             })
         });
     let question = chrome.t("afg-test-question");
-    let asker = match (&brain, &recall) {
-        (Some(b), Some(r)) => Some(crate::afg::Asker {
-            name: &b.owner.name,
+    let asker = match (&owner, &recall) {
+        (Some(o), Some(r)) => Some(crate::afg::Asker {
+            name: &o.name,
             person: person
                 .as_ref()
                 .map(|(id, name)| (id.as_str(), name.as_str())),
@@ -729,7 +739,7 @@ pub async fn test(State(state): State<Shared>, headers: HeaderMap) -> Response {
         &cfg,
         &archive,
         &question,
-        brain.as_ref().map(|b| b.owner.name.as_str()),
+        owner.as_ref().map(|o| o.name.as_str()),
     );
     let id = run.id.clone();
     if let Err(running) = state.afg_runs().begin(run) {
@@ -741,7 +751,7 @@ pub async fn test(State(state): State<Shared>, headers: HeaderMap) -> Response {
         files = archive.count,
         bytes = archive.bytes,
         sensitive = archive.sensitive,
-        brain = brain.is_some(),
+        brain = owner.is_some(),
         "AFG test sent"
     );
     let runner = state.clone();
@@ -760,7 +770,8 @@ pub async fn test(State(state): State<Shared>, headers: HeaderMap) -> Response {
                 if !shown.is_empty() {
                     answer.text = shown;
                 }
-                if let Some(b) = brain {
+                if let Some(o) = owner {
+                    let all = brains(&runner);
                     let exchange = crate::brain::Exchange {
                         at: crate::view::now_iso8601(),
                         context: "test".into(),
@@ -771,7 +782,10 @@ pub async fn test(State(state): State<Shared>, headers: HeaderMap) -> Response {
                         remembered: Vec::new(),
                         run: run_id.clone(),
                     };
-                    match tokio::task::spawn_blocking(move || b.remember(&exchange, &facts)).await {
+                    let kept = tokio::task::spawn_blocking(move || {
+                        all.of(&o).and_then(|b| b.remember(&exchange, &facts))
+                    });
+                    match kept.await {
                         Ok(Ok(kept)) => remembered = kept,
                         Ok(Err(e)) => tracing::warn!(error = %e, "AFG: the brain was not written"),
                         Err(e) => tracing::warn!(error = %e, "AFG: the brain was not written"),

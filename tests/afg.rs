@@ -681,6 +681,29 @@ async fn what_a_service_says_when_it_fails_is_shown() {
     );
 }
 
+/// A test that fails leaves no brain behind (1.5.1): on 3 November 2026 a
+/// program not yet signed in left an account an empty one.
+#[tokio::test]
+async fn a_test_that_fails_makes_no_brain() {
+    site_secret_in_env();
+    use axgf_cms::acl::Role;
+    let (url, _seen) = fake_service(ollama_without_the_model);
+    let (app, bundle, sessions) = app_with("afg-fails-no-brain", &[("marie", Role::Admin)]).await;
+    let cookie = format!("{}; axgf_lang=en", sessions[0].1);
+    configure(
+        &app,
+        &cookie,
+        &[("kind", "ollama"), ("url", &url), ("model", "absent:7b")],
+    )
+    .await;
+    let (page, _room) = run_test(&app, &cookie).await;
+    assert!(page.contains("Error"), "{page}");
+    assert!(
+        !bundle.with_extension("brains").join("marie").exists(),
+        "no brain for an exchange that did not happen"
+    );
+}
+
 #[tokio::test]
 async fn claude_code_reads_the_archive_on_its_input_and_an_empty_one_is_said_so() {
     site_secret_in_env();

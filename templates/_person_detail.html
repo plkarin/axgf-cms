@@ -156,7 +156,7 @@
   <ul class="notes-grid" data-notes-list data-content>{% for n in person_notes %}{{ nt.card(t, n) }}{% endfor %}</ul>
   {{ nt.dialog(t) }}
 </section>
-<script src="/static/notes.js" defer></script>
+<script src="/static/notes.js?v={{ version }}" defer></script>
 {% elif may_write %}
 <p class="notes-person-add" id="person-notes"><a class="btn small" href="/admin/notes/new?person={{ p.id | urlencode }}&amp;back={{ ('/person/' ~ p.id ~ '?tab=media#media-notes') | urlencode }}">{{ t("notes-add-about") }}</a></p>
 {% endif %}
@@ -626,7 +626,7 @@
   <p class="small muted">{{ t("notes-none-yet") }}</p>
   {% endif %}
 </section>
-<script src="/static/notes.js" defer></script>
+<script src="/static/notes.js?v={{ version }}" defer></script>
 {% endif %}
 
 {# ------------------------------------------------------------------- NOTES #}

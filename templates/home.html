@@ -97,7 +97,7 @@
   {% endif %}
   {{ nt.dialog(t) }}
 </section>
-<script src="/static/notes.js" defer></script>
+<script src="/static/notes.js?v={{ version }}" defer></script>
 {% elif not notes.signed_in and notes.exist %}
 <section class="notes-block notes-locked" id="notes" aria-labelledby="notes-title">
   <h2 class="home-h2" id="notes-title">{{ t("notes-section-title") }}</h2>

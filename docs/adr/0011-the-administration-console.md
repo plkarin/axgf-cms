@@ -147,6 +147,12 @@ Every POST, PUT, PATCH and DELETE whose `Origin` (else `Referer`) is not
 this site is refused with 403 and counted (the cross-site check above).
 An HTML page served to a signed-in reader is `no-store`.
 
+Since v1.5.1 (QA-09), the pages name every stylesheet and script with the
+release, `?v=<version>`. Asked for with this release's version, the file is
+`public, max-age=31536000, immutable`. Asked for otherwise, it keeps its own
+hour. A browser therefore never pairs one release's page with another's
+stylesheet.
+
 ## Consequences
 
 - An installation upgraded to 0.5.0 by hand gets the helper with it; until

@@ -153,6 +153,8 @@ fn assets(html: &str) -> BTreeSet<String> {
         for (at, _) in html.match_indices(attr) {
             let v = &html[at + attr.len()..];
             let v = &v[..v.find('"').unwrap_or(0)];
+            // Asked for with the version (QA-09); served the same without.
+            let v = v.split('?').next().unwrap_or(v);
             if v.starts_with("/static/") && (v.ends_with(".css") || v.ends_with(".js")) {
                 out.insert(v.to_string());
             }

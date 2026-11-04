@@ -92,6 +92,11 @@ const UNIVERSAL: &[&str] = &[
     "Claude",
     "Codex",
     "OpenCode",
+    // Where its pictures are made (docs/adr/0030): two products named as
+    // themselves, and the ComfyUI node a workflow loads its picture with.
+    "Canva",
+    "ComfyUI",
+    "LoadImage",
     // The profile's clinical, psychometric and genomic instruments, written
     // the same in a Chinese clinic or laboratory as anywhere else: blood
     // groups, units, test and scale names, reference genomes, file formats,

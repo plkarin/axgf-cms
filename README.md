@@ -586,10 +586,18 @@ member says so. Why it works this way:
   languages.
 
 The notes are kept up on the Media tab and read on the Fiche. Reading and
-summaries use the AFG's computing; pictures need a picture service of their
-own (OpenAI or Google Gemini), chosen in the AFG room, because Claude and
-the coding agents write text only. Why it works this way:
-[The AFG on a person's record](docs/adr/0029-the-afg-on-a-persons-record.md).
+summaries use the AFG's computing. Pictures need a picture service of their
+own, chosen in the AFG room, because Claude and the coding agents write text
+only:
+
+- OpenAI or Google Gemini;
+- Canva, connected once with your account (*new in 1.5.0*);
+- a machine of the family's own: Ollama, any server compatible with OpenAI,
+  or ComfyUI with your workflow (*new in 1.5.0*).
+
+Why it works this way:
+[The AFG on a person's record](docs/adr/0029-the-afg-on-a-persons-record.md),
+[Canva and the family's own servers](docs/adr/0030-canva-and-the-familys-own-servers-for-pictures.md).
 
 ### Let the family in: registration and sign-in services
 

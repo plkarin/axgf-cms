@@ -143,41 +143,84 @@
 <p class="small muted">{{ t("afg-images-intro") }}</p>
 <p class="small">{{ t("afg-images-ready") if images_ready else t("afg-images-not-ready") }}</p>
 {#- Chosen once and seldom changed: behind a disclosure, open when its own
-    save has just spoken. -#}
+    save has just spoken. Each field says which services use it
+    (`data-image-field`); afg.js shows those of the service chosen, and
+    without it every field is there. -#}
 <details class="afg-images"{% if images_open %} open{% endif %}>
 <summary>{{ t("afg-images-choose") }}</summary>
-<form method="post" action="/admin/afg/images" autocomplete="off" class="afg-form">
+<form method="post" action="/admin/afg/images" autocomplete="off" class="afg-form" data-afg-images>
   <div class="field">
     <label for="afg-image-kind">{{ t("afg-image-kind") }}</label>
-    <select id="afg-image-kind" name="kind">
+    <select id="afg-image-kind" name="kind" data-afg-image-kind>
       {%- for k in image_kinds %}
-      <option value="{{ k.slug }}"{% if k.slug == images.kind %} selected{% endif %}>{{ t("afg-image-kind-" ~ k.slug) }}</option>
+      <option value="{{ k.slug }}" data-uses="{{ k.uses }}" data-url="{{ k.default_url }}"{% if k.slug == images.kind %} selected{% endif %}>{{ t("afg-image-kind-" ~ k.slug) }}</option>
       {%- endfor %}
     </select>
     <div class="hint">{{ t("afg-image-kind-hint") }}</div>
   </div>
-  <div class="field">
+  <div class="field" data-image-field="url">
     <label for="afg-image-url">{{ t("afg-url") }}</label>
     <input id="afg-image-url" name="url" type="url" inputmode="url" spellcheck="false" value="{{ images.url }}"{% if images.default_url %} placeholder="{{ images.default_url }}"{% endif %}>
     <div class="hint">{{ t("afg-image-url-hint") }}</div>
   </div>
-  <div class="field">
+  <div class="field" data-image-field="key key-optional">
     <label for="afg-image-key">{{ t("afg-key") }}</label>
     <input id="afg-image-key" name="api_key" type="password" autocomplete="new-password" spellcheck="false" value="">
     <div class="hint">{% if images.key_hint %}{{ t("afg-key-set", end=images.key_hint) }}{% else %}{{ t("afg-key-unset") }}{% endif %} {{ t("afg-image-key-hint") }}</div>
+    <div class="hint" data-image-field="key-optional">{{ t("afg-image-key-optional-hint") }}</div>
     {% if images.key_hint %}<label class="inline"><input type="checkbox" name="clear_key"> {{ t("afg-key-clear") }}</label>{% endif %}
   </div>
-  <div class="field">
+  <div class="field" data-image-field="model">
     <label for="afg-image-model">{{ t("afg-model") }}</label>
-    <input id="afg-image-model" name="model" type="text" spellcheck="false" autocomplete="off" class="mono" list="afg-image-models" value="{{ images.model }}"{% if images.default_model %} placeholder="{{ images.default_model }}"{% endif %}>
-    <datalist id="afg-image-models">
-      {%- for k in image_kinds %}{% for m in k.models %}<option value="{{ m }}" label="{{ t('afg-image-kind-' ~ k.slug) }}"></option>{% endfor %}{% endfor -%}
+    <input id="afg-image-model" name="model" type="text" spellcheck="false" autocomplete="off" class="mono" list="afg-image-models-{{ images.kind }}" value="{{ images.model }}"{% if images.default_model %} placeholder="{{ images.default_model }}"{% endif %}>
+    {%- for k in image_kinds if k.models %}
+    <datalist id="afg-image-models-{{ k.slug }}">
+      {%- for m in k.models %}<option value="{{ m }}"></option>{% endfor -%}
     </datalist>
+    {%- endfor %}
     <div class="hint">{{ t("afg-image-model-hint") }}</div>
   </div>
-  <div class="notice warn"><p>{{ t("afg-images-privacy") }}</p></div>
+  <div class="field" data-image-field="workflow">
+    <label for="afg-image-workflow">{{ t("afg-image-workflow") }}</label>
+    <textarea id="afg-image-workflow" name="workflow" rows="8" spellcheck="false" class="mono">{{ images.workflow }}</textarea>
+    <div class="hint">{{ t("afg-image-workflow-hint") }} <code>{{ comfyui_placeholder }}</code></div>
+  </div>
+  <div class="notice warn" data-image-field="away"><p>{{ t("afg-images-privacy") }}</p></div>
+  <div class="notice" data-image-field="home"><p>{{ t("afg-images-at-home") }}</p></div>
   <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
 </form>
+
+{#- Canva's account (docs/adr/0030): connected once for the AFG, which
+    retouches for the whole family with it. -#}
+{% if images.kind == "canva" %}
+<div class="afg-canva">
+  <p class="small">{% if images.canva_connected %}{% if images.canva_account %}{{ t("afg-canva-connected", account=images.canva_account) }}{% else %}{{ t("afg-canva-connected-unnamed") }}{% endif %}{% else %}{{ t("afg-canva-not-connected") }}{% endif %}</p>
+  {% if canva_authorize %}
+  {#- The steps carry their numbers in their words. -#}
+  <div class="afg-canva-steps">
+    <div><a class="btn" href="{{ canva_authorize }}" target="_blank" rel="noopener">{{ t("afg-canva-step-open") }}</a></div>
+    <div>
+      <form method="post" action="/admin/afg/canva/finish" autocomplete="off" class="afg-form">
+        <label for="afg-canva-returned" class="afg-canva-paste">{{ t("afg-canva-step-paste") }}</label>
+        <input id="afg-canva-returned" name="returned" type="url" inputmode="url" spellcheck="false" required>
+        <div class="hint">{{ t("afg-canva-paste-hint") }}</div>
+        <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("afg-canva-finish") }}</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <form method="post" action="/admin/afg/canva/connect" class="afg-canva-connect">
+    <button class="btn{% if not images.canva_connected %} primary{% endif %}" type="submit" data-busy="{{ t('busy-working') }}">{{ t("afg-canva-connect") }}</button>
+  </form>
+  {% endif %}
+  {% if images.canva_connected %}
+  <form method="post" action="/admin/afg/canva/disconnect" class="afg-canva-connect" data-confirm="{{ t('afg-canva-disconnect-confirm') }}">
+    <button class="btn" type="submit">{{ t("afg-canva-disconnect") }}</button>
+  </form>
+  {% endif %}
+  <p class="small muted">{{ t("afg-canva-policy") }}</p>
+</div>
+{% endif %}
 </details>
 </section>
 

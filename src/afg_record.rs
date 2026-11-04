@@ -37,7 +37,7 @@ use std::time::Duration;
 use base64::Engine as _;
 use serde_json::{json, Value};
 
-use crate::afg::{self, Config, Failure, ImageConfig, ImageKind, Kind};
+use crate::afg::{self, CanvaLink, Config, Failure, ImageConfig, ImageKind, Kind};
 use crate::afg_chat::{ChatPrompt, Part, Speaker, Turn};
 
 /// What a restored photograph is asked for.
@@ -288,22 +288,52 @@ pub struct Picture {
     pub generator: String,
 }
 
-/// Ask the picture service to restore a photograph.
+/// Ask the picture service to restore a photograph. With Canva, the
+/// connection comes back too, whether the picture came or not, as it now
+/// stands (its token renewed, its folder and base design made), for the
+/// caller to keep.
 pub async fn restore(
     cfg: &ImageConfig,
     timeout: Duration,
     mime: &str,
     bytes: &[u8],
-) -> Result<Picture, Failure> {
+) -> (Result<Picture, Failure>, Option<CanvaLink>) {
     let cfg = cfg.clone();
     let (mime, bytes) = for_service(mime, bytes);
-    tokio::task::spawn_blocking(move || match cfg.kind {
-        ImageKind::Openai => openai_restore(&cfg, timeout, &mime, &bytes),
-        ImageKind::Gemini => gemini_restore(&cfg, timeout, &mime, &bytes),
-        ImageKind::Off => Err(Failure::new("no picture service is set up")),
-    })
-    .await
-    .map_err(|e| Failure::new(e.to_string()))?
+    let joined = |r: Result<Result<Picture, Failure>, tokio::task::JoinError>| {
+        r.unwrap_or_else(|e| Err(Failure::new(e.to_string())))
+    };
+    match cfg.kind {
+        ImageKind::Canva => {
+            let (bytes, link) = crate::canva::restore(cfg, timeout, RESTORE, bytes).await;
+            let picture = bytes.map(|bytes| Picture {
+                bytes,
+                generator: "Canva".into(),
+            });
+            (picture, link)
+        }
+        ImageKind::Comfyui => {
+            let bytes = crate::comfyui::restore(cfg, timeout, RESTORE, mime, bytes).await;
+            let picture = bytes.map(|bytes| Picture {
+                bytes,
+                generator: "ComfyUI".into(),
+            });
+            (picture, None)
+        }
+        ImageKind::Openai | ImageKind::Ollama | ImageKind::OpenaiCompatible => {
+            let r =
+                tokio::task::spawn_blocking(move || openai_restore(&cfg, timeout, &mime, &bytes))
+                    .await;
+            (joined(r), None)
+        }
+        ImageKind::Gemini => {
+            let r =
+                tokio::task::spawn_blocking(move || gemini_restore(&cfg, timeout, &mime, &bytes))
+                    .await;
+            (joined(r), None)
+        }
+        ImageKind::Off => (Err(Failure::new("no picture service is set up")), None),
+    }
 }
 
 /// The photograph as a service takes it: within [`SEND_EDGE`], as a JPEG
@@ -376,22 +406,31 @@ fn answer_text(resp: &mut ureq::http::Response<ureq::Body>) -> Result<(u16, Stri
     Ok((status, text))
 }
 
-/// OpenAI: the photograph and the instruction as a form, the picture back
-/// in base64.
+/// OpenAI, and the servers that answer as it does (Ollama's routes, an
+/// image-editing model served at home): the photograph and the instruction
+/// as a form, the picture back in base64 or at an address. OpenAI's own is
+/// sent as its documentation shows (`image[]`, a key); the others as its
+/// libraries send one picture (`image`), with a key only when one is set and
+/// the picture asked for in base64.
 fn openai_restore(
     cfg: &ImageConfig,
     timeout: Duration,
     mime: &str,
     bytes: &[u8],
 ) -> Result<Picture, Failure> {
+    let openai = cfg.kind == ImageKind::Openai;
     let boundary = format!("axgf{}", uuid::Uuid::new_v4().simple());
     let ext = match mime {
         "image/png" => "png",
         "image/webp" => "webp",
         _ => "jpg",
     };
+    let mut fields = vec![("model", cfg.model()), ("prompt", RESTORE)];
+    if !openai {
+        fields.push(("response_format", "b64_json"));
+    }
     let mut body = Vec::new();
-    for (name, value) in [("model", cfg.model()), ("prompt", RESTORE)] {
+    for (name, value) in fields {
         body.extend_from_slice(
             format!(
                 "--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n"
@@ -399,9 +438,10 @@ fn openai_restore(
             .as_bytes(),
         );
     }
+    let field = if openai { "image[]" } else { "image" };
     body.extend_from_slice(
         format!(
-            "--{boundary}\r\nContent-Disposition: form-data; name=\"image[]\"; \
+            "--{boundary}\r\nContent-Disposition: form-data; name=\"{field}\"; \
              filename=\"photograph.{ext}\"\r\nContent-Type: {mime}\r\n\r\n"
         )
         .as_bytes(),
@@ -410,13 +450,15 @@ fn openai_restore(
     body.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
 
     let url = format!("{}/images/edits", cfg.base_url());
-    let mut resp = afg::http_agent(timeout)
-        .post(&url)
-        .header("Authorization", format!("Bearer {}", cfg.api_key.trim()))
-        .header(
-            "Content-Type",
-            format!("multipart/form-data; boundary={boundary}"),
-        )
+    let agent = afg::http_agent(timeout);
+    let mut req = agent.post(&url).header(
+        "Content-Type",
+        format!("multipart/form-data; boundary={boundary}"),
+    );
+    if openai || !cfg.api_key.trim().is_empty() {
+        req = req.header("Authorization", format!("Bearer {}", cfg.api_key.trim()));
+    }
+    let mut resp = req
         .send(&body[..])
         .map_err(|e| Failure::new(format!("{url}: {e}")))?;
     let (status, text) = answer_text(&mut resp)?;
@@ -425,13 +467,35 @@ fn openai_restore(
     }
     let v: Value = serde_json::from_str(&text)
         .map_err(|e| Failure::new(format!("the service's answer is not JSON: {e}")))?;
-    let data = v
-        .pointer("/data/0/b64_json")
-        .and_then(Value::as_str)
-        .ok_or_else(|| Failure::new("the service sent no picture back"))?;
+    let bytes = if let Some(data) = v.pointer("/data/0/b64_json").and_then(Value::as_str) {
+        unb64(data)?
+    } else if let Some(at) = v.pointer("/data/0/url").and_then(Value::as_str) {
+        let mut resp = agent
+            .get(at)
+            .call()
+            .map_err(|e| Failure::new(format!("{at}: {e}")))?;
+        let status = resp.status().as_u16();
+        let got = resp
+            .body_mut()
+            .with_config()
+            .limit(ANSWER_MAX)
+            .read_to_vec()
+            .map_err(|e| Failure::new(format!("{at}: {e}")))?;
+        if !(200..300).contains(&status) {
+            return Err(Failure::new(format!("{at}: HTTP {status}")));
+        }
+        got
+    } else {
+        return Err(Failure::new("the service sent no picture back"));
+    };
+    let maker = match cfg.kind {
+        ImageKind::Openai => "OpenAI",
+        ImageKind::Ollama => "Ollama",
+        _ => "OpenAI-compatible",
+    };
     Ok(Picture {
-        bytes: unb64(data)?,
-        generator: format!("OpenAI {}", cfg.model()),
+        bytes,
+        generator: format!("{maker} {}", cfg.model()),
     })
 }
 

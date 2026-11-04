@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Canva and the family's own servers make the AFG's pictures (the operator's
+request of 4 November 2026, docs/adr/0030).
+
+### Added
+
+- **Canva as the picture service.** In the AFG room's Images section, Canva
+  is connected once, from the room ("Connect Canva": accept in Canva, then
+  paste the address it sends you back to). A photograph is then restored by
+  Canva's AI and brought back at its own size. It is filed in the account's
+  folder `ax-genealogy`, and the account's tokens are never shown.
+- **The family's own servers:**
+  - **Ollama**, experimental (it does not yet edit a picture it is given);
+  - **any server compatible with OpenAI's `/images/edits`**, a key only if
+    it asks for one;
+  - **ComfyUI**, running the restoration workflow the administrator pastes,
+    in its API format.
+
+  With these, the photograph stays on the family's network.
+
+### Changed
+
+- **The Images section asks for what the chosen service uses:** a key, a
+  model, a workflow, or Canva's connection.
+
 ## [1.4.0] — 2026-11-04
 
 The AFG on a person's record (the operator's request of 3 November 2026,

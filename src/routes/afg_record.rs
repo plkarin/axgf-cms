@@ -164,6 +164,21 @@ fn source(state: &Shared, viewer: &Viewer, chrome: &Chrome, id: &str, did: &str)
     })
 }
 
+/// Keep Canva's connection as a picture left it (docs/adr/0030): its token
+/// renewed, its folder and base design made. Only while Canva is still the
+/// service chosen: one changed meanwhile has forgotten the account.
+fn keep_canva(state: &Shared, link: Option<crate::afg::CanvaLink>) {
+    let Some(link) = link else { return };
+    let kept = state.site_mutate(|s| {
+        if s.afg.images.kind == crate::afg::ImageKind::Canva && s.afg.images.canva.connected() {
+            s.afg.images.canva = link;
+        }
+    });
+    if let Err(e) = kept {
+        tracing::warn!(error = %e, "AFG: Canva's connection not kept");
+    }
+}
+
 /// A picture back from the service, as a Document's file and its bytes.
 fn stored_picture(bytes: Vec<u8>) -> Option<(String, crate::documents::Kind, Value, Vec<u8>)> {
     let (kind, bytes) = rec::keepable(bytes)?;
@@ -238,7 +253,10 @@ pub async fn rework(
         service = cfg.images.kind.slug(),
         "AFG: a face sent to be restored"
     );
-    let pic = match rec::restore(&cfg.images, cfg.timeout(), src.kind.mime, &src.bytes).await {
+    let (restored, link) =
+        rec::restore(&cfg.images, cfg.timeout(), src.kind.mime, &src.bytes).await;
+    keep_canva(&state, link);
+    let pic = match restored {
         Ok(p) => p,
         Err(f) => {
             tracing::warn!(person = %id, error = %f.message, "AFG: no restored face");
@@ -343,7 +361,10 @@ pub async fn retouch(
         service = cfg.images.kind.slug(),
         "AFG: a photograph sent to be restored"
     );
-    let pic = match rec::restore(&cfg.images, cfg.timeout(), src.kind.mime, &src.bytes).await {
+    let (restored, link) =
+        rec::restore(&cfg.images, cfg.timeout(), src.kind.mime, &src.bytes).await;
+    keep_canva(&state, link);
+    let pic = match restored {
         Ok(p) => p,
         Err(f) => {
             tracing::warn!(person = %id, error = %f.message, "AFG: no restored photograph");

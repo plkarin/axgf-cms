@@ -89,16 +89,33 @@ fn images_json(cfg: &ImageConfig) -> serde_json::Value {
         "url": cfg.url,
         "key_hint": cfg.key_hint(),
         "model": cfg.model,
+        "workflow": cfg.workflow,
         "default_url": cfg.kind.default_url(),
         "default_model": cfg.kind.models().first(),
+        // Canva's connection: whether there is one, and whose; never its
+        // tokens (docs/adr/0030).
+        "canva_connected": cfg.canva.connected(),
+        "canva_account": cfg.canva.account,
     })
 }
 
-/// The picture services, with the models of the moment each suggests.
+/// The picture services, with the fields each uses, the models of the
+/// moment it suggests, and whether it runs at home.
 fn image_kinds_json() -> Vec<serde_json::Value> {
     ImageKind::ALL
         .iter()
-        .map(|k| json!({"slug": k.slug(), "models": k.models()}))
+        .map(|k| {
+            let mut uses: Vec<&str> = k.uses().to_vec();
+            if *k != ImageKind::Off {
+                uses.push(if k.at_home() { "home" } else { "away" });
+            }
+            json!({
+                "slug": k.slug(),
+                "models": k.models(),
+                "uses": uses.join(" "),
+                "default_url": k.default_url(),
+            })
+        })
         .collect()
 }
 
@@ -111,6 +128,8 @@ struct Said {
     run: Option<serde_json::Value>,
     /// Said by the picture service's form, whose section then opens.
     images: bool,
+    /// Where to send the administrator to connect Canva (docs/adr/0030).
+    canva_authorize: Option<String>,
 }
 
 impl Said {
@@ -202,7 +221,9 @@ fn render_room(
             images => images_json(&shown.images),
             image_kinds => image_kinds_json(),
             images_ready => stored.images.ready(),
-            images_open => said.images,
+            images_open => said.images || said.canva_authorize.is_some(),
+            canva_authorize => said.canva_authorize,
+            comfyui_placeholder => crate::comfyui::PLACEHOLDER,
         },
     );
     *resp.status_mut() = status;
@@ -338,6 +359,9 @@ pub struct ImagesForm {
     clear_key: Option<String>,
     #[serde(default)]
     model: String,
+    /// ComfyUI's workflow, in its API format.
+    #[serde(default)]
+    workflow: String,
 }
 
 /// `POST /admin/afg/images` — where the AFG's pictures are made. A key
@@ -362,12 +386,27 @@ pub async fn save_images(
         images.api_key = f.api_key.trim().to_string();
     }
     images.model = f.model.trim().to_string();
+    images.workflow = if images.kind == ImageKind::Comfyui {
+        f.workflow.trim().to_string()
+    } else {
+        String::new()
+    };
+    // Canva's account goes with the service: another one forgets it.
+    if images.kind != ImageKind::Canva {
+        images.canva.forget_account();
+    }
     if images.kind == ImageKind::Off {
         images = ImageConfig::default();
     }
     let mut proposed = stored.clone();
     proposed.images = images;
-    if let Some(key) = proposed.images.problem() {
+    // Canva is chosen first and connected after: its connection is not a
+    // reason to refuse the choice.
+    if let Some(key) = proposed
+        .images
+        .problem()
+        .filter(|k| *k != "afg-error-canva")
+    {
         return render_room(
             &state,
             &chrome,
@@ -412,7 +451,206 @@ pub async fn save_images(
         &saved,
         Said {
             images: true,
-            ..Said::notice(chrome.t("afg-images-saved"))
+            ..Said::notice(chrome.t(
+                if saved.images.kind == ImageKind::Canva && !saved.images.canva.connected() {
+                    "afg-images-saved-canva"
+                } else {
+                    "afg-images-saved"
+                },
+            ))
+        },
+    )
+}
+
+/// `POST /admin/afg/canva/connect` — begin connecting a Canva account
+/// (docs/adr/0030): this site registered with Canva when it was not, and the
+/// room opened with the way to Canva and the field its return is pasted in.
+pub async fn canva_connect(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let cfg = state.site().afg;
+    if cfg.images.kind != ImageKind::Canva {
+        return render_room(
+            &state,
+            &chrome,
+            &viewer,
+            StatusCode::CONFLICT,
+            &cfg,
+            Said {
+                images: true,
+                ..Said::error(chrome.t("afg-canva-save-first"))
+            },
+        );
+    }
+    let host = headers
+        .get(axum::http::header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("localhost");
+    let redirect = crate::canva::redirect_uri_for(host);
+    match crate::canva::start(
+        cfg.images.clone(),
+        redirect,
+        cfg.timeout().min(std::time::Duration::from_secs(60)),
+    )
+    .await
+    {
+        Ok((url, link)) => {
+            // The registration kept, whether or not the account follows.
+            let _ = state.site_mutate(|s| {
+                if s.afg.images.kind == ImageKind::Canva {
+                    s.afg.images.canva.client_id = link.client_id.clone();
+                    s.afg.images.canva.redirect_uri = link.redirect_uri.clone();
+                }
+            });
+            tracing::warn!(by = viewer.name(), "AFG: a Canva connection started");
+            let shown = state.site().afg;
+            render_room(
+                &state,
+                &chrome,
+                &viewer,
+                StatusCode::OK,
+                &shown,
+                Said {
+                    canva_authorize: Some(url),
+                    ..Said::default()
+                },
+            )
+        }
+        Err(f) => render_room(
+            &state,
+            &chrome,
+            &viewer,
+            StatusCode::BAD_GATEWAY,
+            &cfg,
+            Said {
+                images: true,
+                ..Said::error(chrome.t_args("afg-record-failed", &[("reason", f.message.into())]))
+            },
+        ),
+    }
+}
+
+/// The form the return from Canva is pasted in.
+#[derive(Debug, Default, Deserialize)]
+pub struct CanvaFinishForm {
+    #[serde(default)]
+    returned: String,
+}
+
+/// `POST /admin/afg/canva/finish` — the address Canva sent the administrator
+/// back to, pasted: the account connected.
+pub async fn canva_finish(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<CanvaFinishForm>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    canva_finished(&state, &chrome, &viewer, f.returned).await
+}
+
+/// `GET /admin/afg/canva/callback` — the same return, reached directly when
+/// the administrator's browser finds this site at `localhost`.
+pub async fn canva_callback(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    axum::extract::RawQuery(query): axum::extract::RawQuery,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    canva_finished(&state, &chrome, &viewer, query.unwrap_or_default()).await
+}
+
+async fn canva_finished(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &crate::access::Viewer,
+    returned: String,
+) -> Response {
+    let cfg = state.site().afg;
+    if cfg.images.kind != ImageKind::Canva {
+        return render_room(
+            state,
+            chrome,
+            viewer,
+            StatusCode::CONFLICT,
+            &cfg,
+            Said {
+                images: true,
+                ..Said::error(chrome.t("afg-canva-save-first"))
+            },
+        );
+    }
+    let timeout = cfg.timeout().min(std::time::Duration::from_secs(60));
+    match crate::canva::finish(cfg.images.clone(), returned, timeout).await {
+        Ok(link) => {
+            if let Err(e) = state.site_mutate(|s| s.afg.images.canva = link.clone()) {
+                return render_room(
+                    state,
+                    chrome,
+                    viewer,
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    &cfg,
+                    Said {
+                        images: true,
+                        ..Said::error(
+                            chrome
+                                .t_args("afg-error-not-saved", &[("error", e.to_string().into())]),
+                        )
+                    },
+                );
+            }
+            tracing::warn!(by = viewer.name(), "AFG: a Canva account connected");
+            let saved = state.site().afg;
+            render_room(
+                state,
+                chrome,
+                viewer,
+                StatusCode::OK,
+                &saved,
+                Said {
+                    images: true,
+                    ..Said::notice(chrome.t("afg-canva-done"))
+                },
+            )
+        }
+        Err(f) => render_room(
+            state,
+            chrome,
+            viewer,
+            StatusCode::BAD_REQUEST,
+            &cfg,
+            Said {
+                images: true,
+                ..Said::error(chrome.t_args("afg-record-failed", &[("reason", f.message.into())]))
+            },
+        ),
+    }
+}
+
+/// `POST /admin/afg/canva/disconnect` — the account let go: its tokens
+/// forgotten, this site's registration kept.
+pub async fn canva_disconnect(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    if let Err(e) = state.site_mutate(|s| s.afg.images.canva.forget_account()) {
+        let cfg = state.site().afg;
+        return render_room(
+            &state,
+            &chrome,
+            &viewer,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &cfg,
+            Said::error(chrome.t_args("afg-error-not-saved", &[("error", e.to_string().into())])),
+        );
+    }
+    tracing::warn!(by = viewer.name(), "AFG: the Canva account let go");
+    let cfg = state.site().afg;
+    render_room(
+        &state,
+        &chrome,
+        &viewer,
+        StatusCode::OK,
+        &cfg,
+        Said {
+            images: true,
+            ..Said::notice(chrome.t("afg-canva-gone"))
         },
     )
 }

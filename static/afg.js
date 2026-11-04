@@ -147,3 +147,32 @@
     window.location.replace("/admin/afg");
   });
 })();
+
+/* Where the AFG's pictures are made (docs/adr/0029, 0030): the fields the
+   chosen service uses, the address it calls when none is written, and its
+   models of the moment. Without scripting every field is shown. */
+(function () {
+  "use strict";
+  var form = document.querySelector("[data-afg-images]");
+  if (!form) return;
+  var kind = form.querySelector("[data-afg-image-kind]");
+  var url = form.querySelector("#afg-image-url");
+  var model = form.querySelector("#afg-image-model");
+  if (!kind) return;
+  function show() {
+    var opt = kind.options[kind.selectedIndex];
+    var uses = (opt.getAttribute("data-uses") || "").split(/\s+/).filter(Boolean);
+    form.querySelectorAll("[data-image-field]").forEach(function (el) {
+      var wants = el.getAttribute("data-image-field").split(/\s+/);
+      el.hidden = !wants.some(function (w) { return uses.indexOf(w) !== -1; });
+    });
+    if (url) url.placeholder = opt.getAttribute("data-url") || "";
+    if (model) {
+      var list = "afg-image-models-" + kind.value;
+      if (document.getElementById(list)) model.setAttribute("list", list);
+      else model.removeAttribute("list");
+    }
+  }
+  kind.addEventListener("change", show);
+  show();
+})();

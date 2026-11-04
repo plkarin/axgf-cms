@@ -552,14 +552,42 @@ record (docs/adr/0029):
 
 Reading and summaries go to the AFG's computing as it is set. Pictures do
 not: Claude and the coding agents write text only. A picture needs a
-**picture service**, chosen in the room's **Images** section:
+**picture service**, chosen in the room's **Images** section
+(docs/adr/0029, 0030):
 
 - **OpenAI** (GPT Image) or **Google Gemini** (Nano Banana), each with its
   own API key. Each picture is billed to that key's account by the service.
-- Leave the address empty for the service's usual one, and the model empty
+- **Canva**, through its AI and your Canva account (Pro or above):
+  1. Choose Canva and save.
+  2. Press **Connect Canva**, open Canva from the link and accept.
+  3. Canva sends you back to an address on `localhost`. If the page does not
+     load, which is expected unless you reach the site at `localhost`, paste
+     its address into the room.
+
+  Each picture spends one of the account's AI credits, and the first one
+  also makes the page every picture is laid on. When the credits come too
+  fast, Canva holds them back for some minutes (`quota_cooldown`), and the
+  retouch says so. What Canva makes is filed in the account's folder
+  `ax-genealogy`. The photographs sent stay in its uploads; clear them from
+  Canva when you like. One connection serves the whole family, while Canva's
+  usage policy expects one per person: connecting yours for the AFG, you
+  take that on.
+- **A machine of the family's** with a graphics card, which keeps the
+  photograph on your network:
+  - **Ollama** (experimental): its address, by default
+    `http://127.0.0.1:11434/v1`. Ollama does not yet edit a picture it is
+    given; the choice is ready for when it does.
+  - **A server of your own**, compatible with OpenAI's `/images/edits` (for
+    example a server running Qwen-Image-Edit or FLUX.1 Kontext): its address
+    ending in `/v1`, a model, and a key only if it asks for one.
+  - **ComfyUI**: its address, by default `http://127.0.0.1:8188`, and your
+    restoration workflow, exported with "Save (API Format)". The photograph
+    goes into every `LoadImage` node, and `{{restore}}` in a text becomes the
+    restoration instruction.
+- Leave an address empty for the service's usual one, and the model empty
   for the first suggested.
-- The key is never shown again. Changing service forgets it unless you give
-  the new one at the same time. "None" forgets everything.
+- A key, or a Canva account, is never shown again. Changing service forgets
+  it unless you give a new key at the same time. "None" forgets everything.
 
 Until a service is set, the picture buttons are greyed out.
 

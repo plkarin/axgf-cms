@@ -1,6 +1,9 @@
 # ADR 0029 — The AFG on a person's record
 
-**Status:** accepted, v1.4.0 (2026-11-04) · **Builds on:** docs/adr/0009
+**Status:** accepted, v1.4.0 (2026-11-04) · **Amended by:**
+[ADR 0030](0030-canva-and-the-familys-own-servers-for-pictures.md): the
+picture service may also be Canva or a machine of the family's own ·
+**Builds on:** docs/adr/0009
 (portraits an AI reworked), docs/adr/0014 (notes), docs/adr/0023 (the AFG),
 docs/adr/0026 (My personal assistant) · **Amends:** docs/adr/0009, which kept
 every picture an AI made out of the Media tab; docs/adr/0014, which wrote

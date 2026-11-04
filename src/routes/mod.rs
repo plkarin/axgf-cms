@@ -454,6 +454,11 @@ fn routes(state: Shared) -> Router {
         .route("/admin/afg", get(afg::page).post(afg::save))
         .route("/admin/afg/test", post(afg::test))
         .route("/admin/afg/images", post(afg::save_images))
+        // Canva's account, for the AFG's pictures (docs/adr/0030).
+        .route("/admin/afg/canva/connect", post(afg::canva_connect))
+        .route("/admin/afg/canva/finish", post(afg::canva_finish))
+        .route("/admin/afg/canva/callback", get(afg::canva_callback))
+        .route("/admin/afg/canva/disconnect", post(afg::canva_disconnect))
         .route("/admin/afg/run/:id", get(afg::run))
         .route("/admin/bundle/sealed", post(console::sealed))
         .route("/admin/bundle/family", post(console::family))

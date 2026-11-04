@@ -277,30 +277,60 @@ fn is_zero(n: &u64) -> bool {
     *n == 0
 }
 
-/// Where the AFG's pictures are made (docs/adr/0029): a service that takes a
-/// photograph and gives it back restored, its colours put back and its lines
-/// sharpened. Claude and the coding agents write text only, so pictures have
-/// a source of their own, chosen in the same room.
+/// Where the AFG's pictures are made (docs/adr/0029, 0030): a service that
+/// takes a photograph and gives it back restored, its colours put back and
+/// its lines sharpened. Claude and the coding agents write text only, so
+/// pictures have a source of their own, chosen in the same room.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
 pub enum ImageKind {
-    /// No pictures: the buttons that ask for one are not drawn.
+    /// No pictures: the buttons that ask for one are greyed.
     #[default]
+    #[serde(rename = "off")]
     Off,
     /// OpenAI's GPT Image models, `POST /images/edits`.
+    #[serde(rename = "openai")]
     Openai,
     /// Google's Gemini image models, `generateContent`.
+    #[serde(rename = "gemini")]
     Gemini,
+    /// Canva's AI, through its MCP server and the account connected in the
+    /// room (docs/adr/0030).
+    #[serde(rename = "canva")]
+    Canva,
+    /// Ollama on the family's own machine, through the `/images/edits` of
+    /// its OpenAI-compatible routes. Experimental: Ollama's pictures are
+    /// young, and it does not yet edit a picture it is given.
+    #[serde(rename = "ollama")]
+    Ollama,
+    /// Any server of the family's that answers OpenAI's `/images/edits`:
+    /// an image-editing model served at home.
+    #[serde(rename = "openai-compatible")]
+    OpenaiCompatible,
+    /// ComfyUI, running the workflow the administrator gave it.
+    #[serde(rename = "comfyui")]
+    Comfyui,
 }
 
 impl ImageKind {
-    pub const ALL: [ImageKind; 3] = [ImageKind::Off, ImageKind::Openai, ImageKind::Gemini];
+    pub const ALL: [ImageKind; 7] = [
+        ImageKind::Off,
+        ImageKind::Openai,
+        ImageKind::Gemini,
+        ImageKind::Canva,
+        ImageKind::Ollama,
+        ImageKind::OpenaiCompatible,
+        ImageKind::Comfyui,
+    ];
 
     pub fn slug(self) -> &'static str {
         match self {
             ImageKind::Off => "off",
             ImageKind::Openai => "openai",
             ImageKind::Gemini => "gemini",
+            ImageKind::Canva => "canva",
+            ImageKind::Ollama => "ollama",
+            ImageKind::OpenaiCompatible => "openai-compatible",
+            ImageKind::Comfyui => "comfyui",
         }
     }
 
@@ -308,12 +338,16 @@ impl ImageKind {
         ImageKind::ALL.into_iter().find(|k| k.slug() == s.trim())
     }
 
-    /// The service's usual address.
+    /// The service's usual address. A server of the family's own has none:
+    /// its address is the one it was given.
     pub fn default_url(self) -> &'static str {
         match self {
-            ImageKind::Off => "",
+            ImageKind::Off | ImageKind::OpenaiCompatible => "",
             ImageKind::Openai => "https://api.openai.com/v1",
             ImageKind::Gemini => "https://generativelanguage.googleapis.com/v1beta",
+            ImageKind::Canva => "https://mcp.canva.com",
+            ImageKind::Ollama => "http://127.0.0.1:11434/v1",
+            ImageKind::Comfyui => "http://127.0.0.1:8188",
         }
     }
 
@@ -321,21 +355,112 @@ impl ImageKind {
     /// makers' pages on 3 November 2026). Google's newest,
     /// `gemini-nano-banana-2.1`, is shown there through its Interactions
     /// API only; `gemini-3.1-flash-image` is the one `generateContent` is
-    /// known to answer with a picture, so it comes first.
+    /// known to answer with a picture, so it comes first. Canva and ComfyUI
+    /// take no model: Canva chooses its own, the workflow names its own.
     pub fn models(self) -> &'static [&'static str] {
         match self {
-            ImageKind::Off => &[],
+            ImageKind::Off | ImageKind::Canva | ImageKind::Comfyui => &[],
             ImageKind::Openai => &["gpt-image-2.5-sunburst", "gpt-image-2.5-flare"],
             ImageKind::Gemini => &[
                 "gemini-3.1-flash-image",
                 "gemini-nano-banana-2.1",
                 "gemini-3-pro-image",
             ],
+            ImageKind::Ollama => &["x/flux2-klein"],
+            ImageKind::OpenaiCompatible => &[
+                "Qwen/Qwen-Image-Edit",
+                "black-forest-labs/FLUX.1-Kontext-dev",
+            ],
         }
+    }
+
+    /// The fields the room asks for this service: `url`, `key` (a key it
+    /// requires), `key-optional`, `model`, `workflow`, `connect` (Canva's
+    /// connection).
+    pub fn uses(self) -> &'static [&'static str] {
+        match self {
+            ImageKind::Off => &[],
+            ImageKind::Openai | ImageKind::Gemini => &["url", "key", "model"],
+            ImageKind::Canva => &["connect"],
+            ImageKind::Ollama => &["url", "model"],
+            ImageKind::OpenaiCompatible => &["url", "key-optional", "model"],
+            ImageKind::Comfyui => &["url", "workflow"],
+        }
+    }
+
+    /// Whether the picture comes from a machine of the family's own, which
+    /// no outside company sees.
+    pub fn at_home(self) -> bool {
+        matches!(
+            self,
+            ImageKind::Ollama | ImageKind::OpenaiCompatible | ImageKind::Comfyui
+        )
     }
 }
 
-/// The picture service's settings. Its `Debug` leaves the key out.
+/// The Canva account the AFG makes its pictures with (docs/adr/0030): the
+/// client this site registered with Canva's authorization server, the tokens
+/// it was given, and the folder and design it works in. Its `Debug` leaves
+/// the tokens out, and no page shows them.
+#[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct CanvaLink {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub client_id: String,
+    /// The address Canva sends the administrator back to, as registered.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub redirect_uri: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub access_token: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub refresh_token: String,
+    /// When the access token stops being accepted, in seconds since 1970.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub expires_at: u64,
+    /// The account's name, as Canva says it, for the room.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub account: String,
+    /// The folder the AFG files its work in, in that account.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub folder_id: String,
+    /// The design each picture's page is cut from.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub base_design_id: String,
+}
+
+impl std::fmt::Debug for CanvaLink {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CanvaLink")
+            .field("client_id", &self.client_id)
+            .field("connected", &self.connected())
+            .field("expires_at", &self.expires_at)
+            .field("account", &self.account)
+            .finish()
+    }
+}
+
+impl CanvaLink {
+    pub fn is_empty(&self) -> bool {
+        self == &CanvaLink::default()
+    }
+
+    /// Whether an account is connected: the tokens are there.
+    pub fn connected(&self) -> bool {
+        !self.access_token.trim().is_empty() && !self.refresh_token.trim().is_empty()
+    }
+
+    /// The account let go: the tokens and what was made with them, the
+    /// registration kept for the next connection.
+    pub fn forget_account(&mut self) {
+        *self = CanvaLink {
+            client_id: std::mem::take(&mut self.client_id),
+            redirect_uri: std::mem::take(&mut self.redirect_uri),
+            ..CanvaLink::default()
+        };
+    }
+}
+
+/// The picture service's settings. Its `Debug` leaves the key and the
+/// tokens out.
 #[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct ImageConfig {
     #[serde(default)]
@@ -349,6 +474,12 @@ pub struct ImageConfig {
     /// Empty means the kind's first suggestion.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub model: String,
+    /// ComfyUI's workflow, in its API format.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub workflow: String,
+    /// Canva's connection.
+    #[serde(default, skip_serializing_if = "CanvaLink::is_empty")]
+    pub canva: CanvaLink,
 }
 
 impl std::fmt::Debug for ImageConfig {
@@ -358,9 +489,14 @@ impl std::fmt::Debug for ImageConfig {
             .field("url", &self.url)
             .field("api_key", &self.key_hint())
             .field("model", &self.model)
+            .field("workflow", &self.workflow.len())
+            .field("canva", &self.canva)
             .finish()
     }
 }
+
+/// The most a ComfyUI workflow may weigh.
+pub const WORKFLOW_MAX: usize = 1024 * 1024;
 
 impl ImageConfig {
     pub fn is_off(&self) -> bool {
@@ -397,17 +533,29 @@ impl ImageConfig {
     /// What is wrong with it, as a catalogue key; `None` when it may run or
     /// is off.
     pub fn problem(&self) -> Option<&'static str> {
+        let uses = self.kind.uses();
         if self.kind == ImageKind::Off {
             return None;
         }
-        if !plausible_url(&self.base_url()) {
+        if uses.contains(&"url") && !plausible_url(&self.base_url()) {
             return Some("afg-error-url");
         }
-        if self.api_key.trim().is_empty() {
+        if uses.contains(&"key") && self.api_key.trim().is_empty() {
             return Some("afg-error-key");
         }
-        if !plain(self.model()) || self.model().is_empty() {
+        if uses.contains(&"model") && (!plain(self.model()) || self.model().is_empty()) {
             return Some("afg-error-model");
+        }
+        if uses.contains(&"workflow") && workflow_problem(&self.workflow) {
+            return Some("afg-error-workflow");
+        }
+        if uses.contains(&"connect") {
+            if !plausible_url(&self.base_url()) {
+                return Some("afg-error-url");
+            }
+            if !self.canva.connected() {
+                return Some("afg-error-canva");
+            }
         }
         None
     }
@@ -416,6 +564,25 @@ impl ImageConfig {
     pub fn ready(&self) -> bool {
         self.kind != ImageKind::Off && self.problem().is_none()
     }
+}
+
+/// Whether a ComfyUI workflow cannot be run: not JSON, too heavy, not in the
+/// API format (an object of nodes, each with its `class_type`), or without
+/// the node that loads the photograph.
+pub fn workflow_problem(workflow: &str) -> bool {
+    if workflow.len() > WORKFLOW_MAX {
+        return true;
+    }
+    let Ok(Value::Object(nodes)) = serde_json::from_str::<Value>(workflow) else {
+        return true;
+    };
+    nodes.is_empty()
+        || !nodes
+            .values()
+            .all(|n| n.get("class_type").and_then(Value::as_str).is_some())
+        || !nodes
+            .values()
+            .any(|n| n.get("class_type").and_then(Value::as_str) == Some("LoadImage"))
 }
 
 impl std::fmt::Debug for Config {

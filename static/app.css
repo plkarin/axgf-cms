@@ -2785,6 +2785,15 @@ bdi.date { unicode-bidi: isolate; }
    upload, a photograph restored or read under its picture, the summary
    above Identity, and the notes kept up on the Médias tab. */
 .person-ai-rework { margin: 0; }
+/* Canva's account, in the AFG room (docs/adr/0030). */
+.afg-canva { display: grid; gap: 0.6rem; margin-block-start: 1rem; padding-block-start: 0.85rem; border-block-start: 1px solid var(--border-hairline); }
+.afg-canva p { margin: 0; }
+.afg-canva-steps { display: grid; gap: 0.85rem; }
+.afg-canva-steps form { display: grid; gap: 0.4rem; justify-items: start; margin: 0; }
+.afg-canva-steps input { inline-size: 100%; }
+/* A sentence, not a field's name: in the reading text's case and face. */
+.afg-canva-paste { text-transform: none; letter-spacing: normal; font-family: inherit; font-size: var(--type-body); color: var(--text-primary); }
+.afg-canva-connect { display: inline-block; margin: 0; }
 .person-summary .sec-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .summary-text { max-inline-size: 72ch; }
 .summary-text > :first-child { margin-block-start: 0; }

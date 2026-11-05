@@ -14,7 +14,7 @@
   <header class="as-head as-head-conv pa-head">
     <a class="as-back" href="/person/{{ p.id }}?tab=afg">{{ ic.icon("back") }}<span>{{ t("person-afg-all") }}</span></a>
     <div class="as-head-row">
-      <h2 class="as-conv-h1" id="pa-title">{{ afg_chat.conversation.title }}</h2>
+      <h2 class="as-conv-h1" id="pa-title"><bdi>{{ afg_chat.conversation.title }}</bdi></h2>
       <details class="as-menu">
         <summary aria-label="{{ t('assistant-conversation-settings') }}" title="{{ t('assistant-conversation-settings') }}">{{ ic.icon("pen") }}</summary>
         <div class="as-menu-panel">
@@ -62,7 +62,7 @@
     {% if afg_chat.conversations %}
     <ul class="as-convs">
       {%- for c in afg_chat.conversations %}
-      <li><a href="/person/{{ p.id }}?tab=afg&amp;c={{ c.id }}"><span class="as-conv-title">{{ c.title }}</span><span class="as-conv-meta small muted">{{ c.updated_at | localdatetime(lang) }}</span></a></li>
+      <li><a href="/person/{{ p.id }}?tab=afg&amp;c={{ c.id }}"><span class="as-conv-icon" aria-hidden="true">{{ ic.icon("chat") }}</span><span class="as-conv-text"><span class="as-conv-title"><bdi>{{ c.title }}</bdi></span><span class="as-conv-meta small muted">{{ c.updated_at | localdatetime(lang) }}</span></span><span class="as-conv-go" aria-hidden="true">{{ ic.icon("back") }}</span></a></li>
       {%- endfor %}
     </ul>
     <details class="as-danger pa-delete-all">

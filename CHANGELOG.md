@@ -27,6 +27,15 @@ The AFG in conversation on a person's page (the operator's request of
   Nobody else reads them. They are kept in the member's assistant space and
   backed up with it.
 
+### Changed
+
+- **Conversations are bubbles** (the operator's request of 5 November 2026),
+  on a person's AFG tab and in the personal assistant's projects. Each one
+  is a raised bubble with a border and a speech bubble's tail, and an arrow
+  says it opens. Hovered, its border takes the theme's accent. Right to
+  left, the tail and the arrow turn round, and a title keeps its own
+  direction.
+
 ## [1.5.1] — 2026-11-04
 
 Fixes from the to-do list of 4 November 2026: Canva's first retouch, a

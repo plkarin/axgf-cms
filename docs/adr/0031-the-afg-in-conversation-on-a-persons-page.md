@@ -102,7 +102,10 @@ family.assistant/<username>/projects/<id>/
 ### 4. Managing them
 
 On the tab, the account's conversations about the person, the most recent
-first. Each opens on its thread. From there it is carried on, renamed, or
+first. Each is a bubble that opens it: a raised surface with its border, a
+speech bubble's tail, and an arrow. The personal assistant's projects show
+theirs the same way (the operator's request of 5 November 2026). Each opens
+on its thread. From there it is carried on, renamed, or
 deleted once confirmed. All of them can be deleted at once, once confirmed:
 the person's project goes, whole. An answer that failed, or a question left
 without one because the site stopped, is asked again, as in the assistant.

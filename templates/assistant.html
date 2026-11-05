@@ -85,7 +85,7 @@
       {% if conversations %}
       <ul class="as-convs" data-content>
         {%- for c in conversations %}
-        <li><a href="/account/assistant/{{ project.id }}/c/{{ c.id }}"><img class="as-av" src="{{ c.avatar_url }}" alt="" width="36" height="36" loading="lazy"><span class="as-conv-title">{{ c.title }}</span><span class="as-conv-meta small muted">{{ c.updated_at | localdatetime(lang) }}</span></a></li>
+        <li><a href="/account/assistant/{{ project.id }}/c/{{ c.id }}"><img class="as-av" src="{{ c.avatar_url }}" alt="" width="36" height="36" loading="lazy"><span class="as-conv-text"><span class="as-conv-title"><bdi>{{ c.title }}</bdi></span><span class="as-conv-meta small muted">{{ c.updated_at | localdatetime(lang) }}</span></span><span class="as-conv-go" aria-hidden="true">{{ ic.icon("back") }}</span></a></li>
         {%- endfor %}
       </ul>
       {% else %}<p class="muted">{{ t("assistant-no-conversation") }}</p>{% endif %}
@@ -157,7 +157,7 @@
       <a class="as-back" href="/account/assistant/{{ project.id }}">{{ ic.icon("back") }}<img class="as-av as-av-sm" src="{{ project.avatar_url }}" alt="" width="22" height="22"><span>{{ project.name }}</span></a>
       <div class="as-head-row">
         <img class="as-av as-av-lg" src="{{ conversation.avatar_url }}" alt="" width="44" height="44">
-        <h1 class="as-conv-h1">{{ conversation.title }}</h1>
+        <h1 class="as-conv-h1"><bdi>{{ conversation.title }}</bdi></h1>
         <details class="as-menu">
           <summary aria-label="{{ t('assistant-conversation-settings') }}" title="{{ t('assistant-conversation-settings') }}">{{ ic.icon("pen") }}</summary>
           <div class="as-menu-panel">

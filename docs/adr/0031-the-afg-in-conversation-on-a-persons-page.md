@@ -1,6 +1,6 @@
 # ADR 0031 — The AFG in conversation on a person's page
 
-**Status:** accepted (unreleased) · **Builds on:**
+**Status:** accepted, v1.6.0 (2026-11-05) · **Builds on:**
 [ADR 0024](0024-the-afgs-brains.md) (who may talk to the AFG),
 [ADR 0026](0026-my-personal-assistant.md) (conversations, the answer as it
 is written), [ADR 0029](0029-the-afg-on-a-persons-record.md) (the record as

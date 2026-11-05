@@ -564,8 +564,13 @@ mod tests {
             "a rich bundle deserves a different sentence: {}",
             r.headline
         );
+        // Its scores vary, and the note says by how much, in one line.
         let c = metric(&r, "confidence");
-        assert!(c.note.contains("real, varying uncertainty"), "{}", c.note);
+        assert!(
+            c.note.contains("differ from") && c.note.contains("levels"),
+            "{}",
+            c.note
+        );
     }
 
     #[test]

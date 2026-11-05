@@ -214,7 +214,7 @@ admin-operations = Shughuli
 admin-validate = Hakiki
 admin-deduplicate = Ondoa nakala
 admin-export = Hamisha kumbukumbu
-admin-roles-note = Kuhakiki, kuondoa nakala, kuhamisha, kufuta na kusimamia akaunti ni kwa wasimamizi tu. Mchangiaji hufikia kila ukurasa mwingine hapa.
+admin-roles-note = Kuthibitisha, kuunganisha nakala, kusafirisha, kufuta na akaunti ni kwa wasimamizi tu.
 admin-dedup-confirm = Kuondoa nakala huunganisha rekodi na kuandika upya kumbukumbu. Uendelee?
 admin-recent-changes = Mabadiliko ya karibuni
 admin-recent-note = { $shown } za mwisho kati ya { $total ->
@@ -225,7 +225,7 @@ admin-sessions-open = { $n ->
         [one] Kipindi kimoja kiko wazi sasa.
        *[other] Vipindi { $n } viko wazi sasa.
     }
-admin-no-changes-yet = Bado hakuna kilichobadilishwa kupitia programu hii. Kila uhifadhi kuanzia sasa unarekodiwa katika { $path }.
+admin-no-changes-yet = Bado hakuna mabadiliko. Kila uhifadhi hurekodiwa katika { $path }.
 admin-last-validation = Uhakiki wa mwisho
 admin-bundle-heavy = Kumbukumbu hii ni { $size }. Yote hupakiwa wakati wa kuanza na kushikiliwa kwenye kumbukumbu ya kompyuta, kwa hiyo zaidi ya takriban { $warn } tovuti huanza kutumia kumbukumbu halisi na kuanzisha upya huchukua muda. Hilo linafaa kumbukumbu ya familia, si maktaba ya vyombo vya habari — viambatisho vikikua bila kikomo, viweke kwenye hifadhi ya faili na kumbukumbu ielekeze kwao.
 
@@ -319,10 +319,17 @@ person-tab-media = Vyombo vya habari
 person-tab-tree = Mti
 person-tab-history = Historia
 person-tab-afg = AFG
+person-tab-status = Hali
+status-check = Ya kukagua
+status-know = Ya kujua
+status-fix = Rekebisha
+status-open = Fungua
+status-dismissed = Zilizowekwa alama «kawaida kwetu»: { $n }
+status-panel = Ya kukagua: { $n }
 person-afg-title = Muulize AFG kuhusu { $name }
 person-afg-title-short = Mazungumzo na AFG
-person-afg-lede = Uliza kuhusu maisha ya { $name }, familia yake na zama zake. AFG hujibu kutokana na kile unachoruhusiwa kusoma katika kumbukumbu, na husema inapovuka hapo. Mazungumzo yako hapa ni yako peke yako: endelea na moja au anza mengine.
-person-afg-reads = Kwa kila ujumbe, AFG husoma rekodi hii, maelezo yake ({ $notes }), jamaa wa karibu ({ $relatives }) na orodha ya familia ({ $persons }): takriban tokeni { $tokens }, zinazotumwa mahali hesabu ya AFG inapofanyika.
+person-afg-lede = Uliza kuhusu maisha ya { $name }, familia yake na zama zake. Mazungumzo yako hapa ni yako peke yako.
+person-afg-reads = Husomwa kwa kila ujumbe: rekodi, maelezo ({ $notes }), jamaa wa karibu ({ $relatives }), familia ({ $persons }) · takriban tokeni { $tokens }.
 person-afg-ask = Swali lako kuhusu { $name }
 person-afg-example = Kwa mfano: “{ $name } alikuwa katika kikosi gani katika vita vinavyotajwa kwenye maelezo?”
 person-afg-conversations = Mazungumzo yako
@@ -378,7 +385,7 @@ admin-to = Kwenda
 admin-version = toleo { $version }
 
 accounts-title = Akaunti
-accounts-lede = Zimehifadhiwa katika { $path }, kwa ruhusa 600, kando ya kumbukumbu na kamwe si ndani yake. Kumbukumbu hunakiliwa, hutumwa na kuchapishwa; heshi za nenosiri zikisafiri ndani yake zingefanya kila nakala ya mti wa familia kuwa nakala ya taarifa za kuingia.
+accounts-lede = Imehifadhiwa katika { $path } (hali 600), kando ya kumbukumbu na kamwe si ndani yake.
 accounts-existing = Zilizopo
 accounts-username = Jina la mtumiaji
 accounts-role = Nafasi
@@ -396,8 +403,8 @@ accounts-roots = { $n ->
        *[other] mizizi { $n }
     }
 accounts-add = Ongeza akaunti
-accounts-no-registration = Wageni hawawezi kufungua akaunti wenyewe; usajili umewekwa hapo juu. Kwa familia nyingi msimamizi anayemjua kila mtu anatosha.
-accounts-password-hint = Acha wazi na moja itatengenezwa na kuonyeshwa mara moja. Angalau herufi { $min } ukiiweka mwenyewe.
+accounts-no-registration = Wageni hawawezi kufungua akaunti wenyewe; usajili huwekwa hapo juu.
+accounts-password-hint = Tupu: nenosiri huundwa na kuonyeshwa mara moja. Vinginevyo angalau herufi { $min }.
 accounts-new-password-placeholder = nenosiri jipya (wazi = acha lilivyo)
 accounts-email = Barua pepe
 accounts-optional = (si lazima)
@@ -409,7 +416,7 @@ accounts-branch-hint = Inaweka kikomo cha kile akaunti hii inaweza kuhariri kwa 
 accounts-branch-reading = Haiweki kikomo cha wanachoweza kusoma — hilo huamuliwa na mwonekano wa kila rekodi, na hayo mawili yanatenganishwa kwa makusudi.
 accounts-branch-placeholder = kitambulisho kimoja cha mtu kwa kila mstari
 accounts-ids-in-bundle = Vitambulisho vya watu katika mti huu
-accounts-emergency-warning = Umeingia kwa tokeni ya dharura. Inatoa haki za msimamizi kwa kipindi hiki lakini si akaunti: haina mapendeleo, na daftari la mabadiliko litarekodi mabadiliko yako kama emergency-token badala ya mtu. Jiundie akaunti halisi hapa chini na uingie nayo.
+accounts-emergency-warning = Umeingia kwa tokeni ya dharura, si kwa akaunti: unda akaunti halisi hapa chini uitumie.
 accounts-created-with-password = { $username } ameundwa. Nenosiri lake ni { $password } — linaonyeshwa mara moja na kuhifadhiwa tu kama heshi ya Argon2id, kwa hiyo mpe sasa.
 accounts-created = { $username } ameundwa.
 accounts-updated = { $username } amesasishwa. Kila kipindi alichokuwa nacho wazi kimefungwa.
@@ -530,8 +537,8 @@ tree-counts = Watu { $drawn } kati ya { $total } · { $generations ->
     }
 tree-unplaced-count = { $n } bila mahali
 tree-contradicts-title = Mti huu unajipinga wenyewe.
-tree-contradicts-detail = Hakuna mpangilio wa mistari unaoweza kutimiza hilo, kwa hiyo uhusiano ulio hapa chini uliachwa nje ya hesabu ya vizazi na baadhi ya mistari huenda imechorwa mahali pasipo pake. Sahihisha rekodi yoyote kati ya hizo mbili iliyo na kosa.
-tree-contradicts-pair = Wamerekodiwa kama wanandoa na pia kama mzazi na mtoto:
+tree-contradicts-detail = Uhusiano huu umeachwa nje ya hesabu ya vizazi, na baadhi ya safu huenda zimekaa vibaya. Rekebisha rekodi yenye kosa.
+tree-contradicts-pair = Wanandoa na mzazi na mtoto kwa wakati mmoja:
 tree-contradicts-more = { $n ->
         [one] Mgongano mmoja zaidi haujaorodheshwa.
        *[other] Migongano { $n } zaidi haijaorodheshwa.
@@ -673,7 +680,6 @@ name-part-pen_name = jina la kalamu
 name-type-pen_name = jina la kalamu
 gender-U = Haijarekodiwa
 
-record-notes-title = Maelezo kuhusu rekodi hii:
 record-name = Jina
 record-type = Aina
 record-cause = Sababu:
@@ -762,7 +768,7 @@ list-policy-orphan-detail = — ifute lakini ubakize rekodi zinazoirejelea, kiun
 
 completeness-dates-title = Tarehe, kwa umbo zilizonalo kweli
 completeness-no-dates = Bado hakuna tarehe zilizorekodiwa.
-completeness-dates-note = Tarehe ambayo mtu aliibana hadi siku moja na tarehe ambayo mtu aliweza tu kuiweka katika muongo mmoja ni madai tofauti, na zote mbili huhifadhiwa kama zilivyotolewa. Maandishi yasiyoweza kusomwa kama tarehe kabisa huhifadhiwa neno kwa neno badala ya kutupwa.
+completeness-dates-note = Tarehe hubaki kama zilivyotolewa, kwa siku au kwa muongo; maandishi yasiyo tarehe hubaki neno kwa neno.
 completeness-shape-exact = halisi
 completeness-shape-exact-note = siku kamili ya kalenda
 completeness-shape-approximate = takriban
@@ -775,7 +781,7 @@ completeness-shape-unknown = haijulikani
 completeness-shape-unknown-note = imerekodiwa kama haijulikani
 
 convert-page-title = Leta faili ya familia
-convert-lede = Leta mti uliopo kutoka faili ya GEDCOM — faili ambayo programu nyingi za nasaba huhamisha. Hakuna kinachohifadhiwa hapa, na mti ambao tovuti hii tayari inaonyesha unabaki kama ulivyokuwa.
+convert-lede = Leta mti kutoka faili la GEDCOM. Hakuna kinachohifadhiwa, na mti wa tovuti haubadiliki.
 convert-file-label = Faili ya familia (.ged)
 convert-file-hint = Hadi MB { $mb }. Mti wa watu 767 ni takriban KB 320.
 convert-confidence-label = Uhakika wa mambo haya, kwa kuanzia
@@ -890,25 +896,13 @@ name-type-religious = la kidini
 name-type-transliteration = unukuzi
 name-type-nickname = jina la utani
 
-note-links = { $n ->
-        [one] uhusiano mmoja nje ya familia, wenye tarehe na vyanzo vyake
-       *[other] mahusiano { $n } nje ya familia, yenye tarehe na vyanzo vyake
-    }
-note-occupations = { $n ->
-        [one] kazi moja iliyorekodiwa na mwanzo na mwisho
-       *[other] kazi { $n } zilizorekodiwa na mwanzo na mwisho
-    }
-note-birth-imprecise = tarehe ya kuzaliwa ambayo chanzo hakikuweza kuithibitisha, inaonyeshwa kama ilivyorekodiwa
-note-death-imprecise = tarehe ya kifo ambayo chanzo hakikuweza kuithibitisha, inaonyeshwa kama ilivyorekodiwa
-note-names = { $n ->
-        [one] jina moja lililorekodiwa
-       *[other] majina { $n } yaliyorekodiwa
-    }
-note-transliteration = jina katika maandishi yake asilia kando ya unukuzi wake wa Kilatini
-note-witnessed = { $n ->
-        [one] tukio moja alilolishuhudia badala ya kulimiliki
-       *[other] matukio { $n } aliyoyashuhudia badala ya kuyamiliki
-    }
+note-links = Mahusiano nje ya familia: { $n }
+note-occupations = Kazi zenye tarehe: { $n }
+note-birth-imprecise = Tarehe ya kuzaliwa haiko sahihi katika chanzo
+note-death-imprecise = Tarehe ya kifo haiko sahihi katika chanzo
+note-names = Majina yaliyorekodiwa: { $n }
+note-transliteration = Jina katika maandishi yake asilia, pamoja na unukuzi wake
+note-witnessed = Matukio kama shahidi: { $n }
 
 visibility-public = hadharani
 visibility-members = wanafamilia
@@ -999,14 +993,11 @@ completeness-metric-confidence = Uhakika wa kila jambo
 completeness-metric-confidence-none = Hakuna kati ya mambo { $slots } hapa linalosema lina uhakika kiasi gani. Tarehe ambayo mtu aliisoma kwenye cheti na ile ambayo mtu aliikisia zinaonekana sawa hadi siku zinapotofautiana.
 completeness-metric-confidence-uniform = Mambo { $with } kati ya { $slots } yana alama na yote yana nambari ileile ({ $modal }). Hicho ndicho uletaji wa jumla huacha nyuma: kishika nafasi ambacho hakuna aliyerudi kukitazama. Hakuna lililopimwa peke yake bado.
 completeness-metric-confidence-some = Mambo { $with } kati ya { $slots } yana alama. { $modal_count } yanashiriki thamani moja ({ $modal }); { $assessed } yanatofautiana nayo na kwa hiyo yametazamwa moja moja.
-completeness-metric-confidence-many = Mambo { $with } kati ya { $slots } yana alama, { $assessed } kati yake yakitofautiana na thamani ya kawaida zaidi ({ $modal }) katika viwango { $distinct } tofauti. Mti huu unarekodi shaka halisi inayobadilika.
+completeness-metric-confidence-many = Ukweli { $with } kati ya { $slots } una alama: { $assessed } hutofautiana na { $modal }, katika viwango { $distinct }.
 
 completeness-metric-parentage = Uhakika wa kila kiungo cha mzazi na mtoto
 completeness-metric-parentage-none = Hakuna uzazi hapa unaosema una uhakika kiasi gani. Kuasili, ukoo unaobishaniwa na kujenga upya kutokana na kutajwa mara moja ndipo hasa familia inahitaji kurekodi shaka — na mti huchora kiungo chenye uhakika mdogo kama mstari hafifu zaidi.
-completeness-metric-parentage-some = { $n ->
-        [one] Uzazi mmoja una alama yake
-       *[other] Uzazi { $n } una alama zake
-    }, kwa hiyo mstari wa kukisia unaonekana dhaifu kuliko uliothibitishwa kwa hati.
+completeness-metric-parentage-some = Nasaba zenye alama yao wenyewe: { $n }
 
 completeness-metric-links = Mahusiano zaidi ya damu na ndoa
 completeness-metric-links-none = Wazazi wa ubatizo, waajiri, mashahidi, walezi, walinzi. Hakuna hata mmoja aliyerekodiwa bado. Kila mmoja anaweza kubeba tarehe zake, chanzo chake na uhakika wako.
@@ -1021,11 +1012,11 @@ completeness-metric-occupations-undated = { $total ->
         [one] Kazi moja imerekodiwa, bila tarehe
        *[other] Kazi { $total } zimerekodiwa, bila tarehe
     }. Ongeza mwanzo na mwisho na zitaweza kulinganishwa kando kwa kando kwenye mstari mmoja wa wakati.
-completeness-metric-occupations-some = { $span } kati ya { $total } zina mwanzo au mwisho, kwa hiyo zinaweza kulinganishwa kando kwa kando kwenye mstari mmoja wa wakati.
+completeness-metric-occupations-some = { $span } kati ya { $total } zina mwanzo au mwisho.
 
 completeness-metric-sources = Vyanzo vilivyopimwa kwa uaminifu wake
 completeness-metric-sources-none = Hakuna vyanzo vilivyorekodiwa. Kutaja jambo lilitoka wapi ndiko kunakomwezesha jamaa kulikagua baadaye — au kutokubaliana nalo na kusema kwa nini.
-completeness-metric-sources-some = { $graded } kati ya { $total } vinasema vina nguvu kiasi gani, kwa hiyo dai linalotegemea cheti cha kuzaliwa linaonekana tofauti na lile linalotegemea kumbukumbu ya mtu.
+completeness-metric-sources-some = { $graded } kati ya { $total } zinasema zina nguvu kiasi gani.
 
 completeness-what-is-recorded = Kile rekodi inaweza kusema
 completeness-in-this-tree = Katika mti huu
@@ -1061,7 +1052,7 @@ phys-field-operations = Upasuaji na majeraha
 phys-field-cause-of-death = Sababu ya kifo
 phys-field-religion = Dini au uanachama
 phys-field-health-notes = Maelezo
-admin-export-health-note = Uhamishaji wa kawaida huacha kila aina nyeti — afya na imani, data ya kibayometriki, data ya kijenetiki na rekodi za uhalifu — na wasifu wa tabia wa yeyote aliye hai, kwa hiyo faili inayotumwa kwa jamaa haibebi chochote kati ya hivyo. Weka alama kwa kile ambacho faili fulani inapaswa kubeba; kumbukumbu yenyewe hurekodi aina zipi ziliachwa.
+admin-export-health-note = Usafirishaji wa kawaida huacha kila kundi nyeti na tabia za walio hai. Weka alama kwa kile faili hili linapaswa kubeba.
 avatar-picker-title = Chagua picha
 avatar-choose = Picha ipi inamwakilisha mtu huyu
 avatar-mode-auto = Acha programu ichague
@@ -2782,7 +2773,7 @@ profile-group-filled = { $n } zimejazwa
 profile-problems = Baadhi ya ulichoingiza hakikuweza kuhifadhiwa. Kila tatizo limetajwa kando ya sehemu yake, na hakuna kilichoandikwa.
 profile-editor-withheld = Kundi hili pia lina { $classes } kwa mtu huyu, ambayo huruhusiwi kusoma. Haionyeshwi hapa, na kuhifadhi fomu hii kunaiacha kama ilivyo kabisa.
 profile-living-class-note = Mtu huyu amerekodiwa kuwa hai. Unachoingiza hapa katika kundi nyeti huonyeshwa kwa wasimamizi tu.
-profile-relationships-elsewhere = Wazazi, wenzi, watoto, wazazi wa ubatizo na mashahidi hawahifadhiwi kwenye mtu huyu. Ni familia, viungo na matukio yanayowataja — kwa hiyo kila badiliko hapa linabadilisha pia rekodi ya kila mtu mwingine aliye ndani yake.
+profile-relationships-elsewhere = Jamaa, wazazi wa ubatizo na mashahidi wako katika familia, viungo na matukio: kuwabadilisha hapa hubadilisha rekodi hizo pia.
 profile-documents-first = Kitu cha kidijitali kinaelekeza kwenye hati iliyoambatishwa kwa mtu huyu. Ambatisha faili kwanza.
 profile-editor-nothing = Hakuna chochote katika kundi hili unachoruhusiwa kuhariri.
 profile-new-entry = Kipengele kipya
@@ -3053,7 +3044,7 @@ field-person-display-name-hint = Jina linaloonyeshwa kila mahali kwenye tovuti.
 field-person-gender = Jinsia
 field-person-living = Yu hai
 field-person-birth-date = Tarehe ya kuzaliwa
-field-date-value-hint = Mwaka, mwaka na mwezi, au tarehe kamili: 1923, 1923-04 au 1923-04-12. Acha wazi ikiwa hakuna anayejua.
+field-date-value-hint = 1923, 1923-04 au 1923-04-12; acha tupu kama haijulikani.
 field-person-birth-precision = Usahihi wa kuzaliwa
 field-precision-hint = Jinsi chanzo kinavyolieleza kwa usahihi.
 field-person-birth-circa = Kuzaliwa ni takriban
@@ -3183,7 +3174,7 @@ record-link-outgoing = kutoka kwa mtu huyu
 record-link-incoming = kwa mtu huyu
 
 health-attention = Inahitaji kushughulikiwa:
-health-standing-token = Tokeni ya dharura ya msimamizi bado imewekwa. Inaingia kupita kila akaunti na kila ruhusa — ndiyo kazi yake siku ambayo hakuna anayeweza kuingia, na si kitu cha kuacha mahali pake sasa kwa kuwa kuna anayeweza. Iondoe kwenye faili ya mazingira ya huduma na uanzishe upya.
+health-standing-token = Tokeni ya dharura bado imewekwa na inapita kila akaunti. Iondoe kwenye faili la mazingira la huduma kisha uanzishe upya.
 health-bundle-invalid = { $errors ->
         [one] Data ya familia haipiti tena uthibitishaji: kosa moja, limeorodheshwa chini ya Uthibitishaji hapa chini.
        *[other] Data ya familia haipiti tena uthibitishaji: makosa { $errors }, yameorodheshwa chini ya Uthibitishaji hapa chini.
@@ -3271,7 +3262,7 @@ search-empty-query = Andika jina ili kutafuta.
 nav-quality = Ubora wa data
 quality-title = Mambo yanayofaa kuangaliwa
 quality-none = Hakuna kinachofaa kuangaliwa: kila ukaguzi umepita.
-quality-intro = Hakuna kinachobadilishwa kwa niaba yako hapa. Kila mstari ni mtindo unaofaa kukaguliwa — mara nyingi kuna sababu nzuri. Fungua rekodi na uamue, au weka alama kuwa imekaguliwa.
+quality-intro = Mambo yanayofaa kukaguliwa; mara nyingi kuna sababu nzuri. Fungua rekodi, au weka alama kuwa limekaguliwa.
 quality-groups-label = Aina za matokeo
 quality-all = Zote
 quality-show-label = Onyesha
@@ -3290,39 +3281,39 @@ quality-show-list = Onyesha orodha
 quality-after-import = Hakuna kilichobadilishwa katika faili. Ikishakuwa kumbukumbu ya tovuti, ukurasa wa ubora wa data unaorodhesha mambo hayo hayo pamoja na kiungo cha kila rekodi.
 quality-file-list-cut = Ni { $shown } za kwanza tu zinazoorodheshwa hapa. Faili ikishakuwa kumbukumbu ya tovuti, ukurasa wa ubora wa data unaziorodhesha zote.
 quality-rule-name-sentence = Sentensi katika sehemu ya jina
-quality-name-sentence = “{ $value }” inaonekana zaidi kama sentensi kuliko jina: ikiwa ni maelezo, acha jina katika sehemu hiyo na uhamishe mengine kwenye dokezo.
+quality-name-sentence = “{ $value }” inaonekana kama sentensi, si jina.
 quality-rule-union-parent-child = Wenzi ambao pia ni mzazi na mtoto
-quality-union-parent-child = { $parent } na { $child } wanaonekana kama wenzi na pia kama mzazi na mtoto: inafaa kukagua ni uhusiano upi vyanzo vinaunga mkono.
+quality-union-parent-child = { $parent } na { $child }: wanandoa na mzazi na mtoto kwa wakati mmoja.
 quality-rule-child-listed-twice = Mtoto aliyeorodheshwa mara mbili
-quality-child-listed-twice = { $child } anaonekana mara mbili kati ya watoto wa familia hii: ikiwa ni mtoto yuleyule, kipengele kimoja kinaweza kuondolewa.
+quality-child-listed-twice = { $child } ameorodheshwa mara mbili kati ya watoto.
 quality-rule-duplicate-union = Wenzi walewale wamerekodiwa mara mbili
-quality-duplicate-union = { $a } na { $b } wana miungano { $count } iliyorekodiwa: ikiwa walioana mara moja tu, huenda huu ni muungano mmoja ulioingizwa mara mbili.
+quality-duplicate-union = { $a } na { $b }: ndoa zilizorekodiwa: { $count }.
 quality-rule-partner-twice = Mtu mmoja pande zote mbili za muungano
-quality-partner-twice = { $person } anaonekana pande zote mbili za muungano huu: inafaa kukagua mwenzi mwingine alikuwa nani, au kuacha upande huo wazi ikiwa hakuna anayejua.
+quality-partner-twice = { $person } yuko pande zote mbili za ndoa.
 quality-rule-foreign-surnames = Jina la ukoo la mwana lisilolingana na la mzazi yeyote
-quality-foreign-surnames = Jina la ukoo lisilolingana na la mzazi yeyote: { $who }. Hilo linaweza kuwa la kawaida — kubadilisha jina, mtoto wa kambo, tahajia tofauti — lakini linafaa kuangaliwa. (Mabinti hawajajumuishwa, kwa kuwa jina la ndoa ndiyo sababu ya kawaida.)
+quality-foreign-surnames = Jina la ukoo lisilolingana na la mzazi yeyote: { $who }.
 quality-rule-death-before-birth = Kifo kabla ya kuzaliwa
-quality-death-before-birth = { $person } ana kifo mwaka { $death }, kabla ya kuzaliwa kwake mwaka { $birth }: moja ya tarehe hizo mbili huenda imeandikwa vibaya; inafaa kukaguliwa dhidi ya vyanzo.
+quality-death-before-birth = { $person }: kifo ({ $death }) kabla ya kuzaliwa ({ $birth }).
 quality-rule-child-before-parent = Mtoto aliyezaliwa kabla ya mzazi
-quality-child-before-parent = { $child } (alizaliwa { $childborn }) anaonekana kuzaliwa kabla ya mzazi wake { $parent } (alizaliwa { $parentborn }): inafaa kukagua tarehe au uzazi.
+quality-child-before-parent = { $child } ({ $childborn }) alizaliwa kabla ya mzazi wake { $parent } ({ $parentborn }).
 quality-rule-parent-too-young = Mzazi mwenye umri chini ya miaka kumi na mbili
-quality-parent-too-young = { $parent } angekuwa na miaka { $age } { $child } alipozaliwa, jambo lisilo la kawaida: inafaa kukagua tarehe au uzazi.
+quality-parent-too-young = { $parent } alikuwa na miaka { $age } { $child } alipozaliwa.
 quality-rule-parent-too-old = Mzazi mwenye umri zaidi ya miaka sitini na mitano
-quality-parent-too-old = { $parent } angekuwa na miaka { $age } { $child } alipozaliwa, jambo lisilo la kawaida: inafaa kukagua tarehe au uzazi.
+quality-parent-too-old = { $parent } alikuwa na miaka { $age } { $child } alipozaliwa.
 quality-rule-marriage-before-birth = Ndoa kabla ya kuzaliwa kwa mwenzi
-quality-marriage-before-birth = Ndoa hii ina tarehe { $married }, kabla { $person } hajazaliwa mwaka { $born }: inafaa kukagua tarehe ya ndoa.
+quality-marriage-before-birth = Ndoa ({ $married }) kabla ya kuzaliwa kwa { $person } ({ $born }).
 quality-rule-isolated-record = Rekodi isiyo na tarehe wala mahusiano
-quality-isolated-record = { $person } hana tarehe wala kiungo na yeyote katika familia: inafaa kuongeza jinsi anavyohusika, au kuondoa rekodi ikiwa iliingizwa kwa makosa.
+quality-isolated-record = { $person }: hakuna tarehe wala uhusiano.
 quality-rule-place-no-region = Mahali pasipo na eneo
-quality-place-no-region = { $place } hapana eneo: kuongeza moja kunasaidia kutofautisha mahali wenye jina moja.
+quality-place-no-region = { $place }: hakuna eneo.
 quality-rule-region-free-text = Eneo linalosomeka kama dokezo
-quality-region-free-text = Eneo la { $place } linasema “{ $value }”, ambalo linaonekana zaidi kama dokezo kuliko eneo: inafaa kuhamisha dokezo kwenye rekodi linaloielezea.
+quality-region-free-text = Eneo la { $place }: “{ $value }” linaonekana kama maelezo.
 quality-rule-place-near-duplicate = Mahali ambapo huenda ni pamoja
-quality-place-near-duplicate = { $names } huenda ni mahali pamoja palipoandikwa tofauti: ikiwa ndivyo, panaweza kuunganishwa kuwa pamoja.
+quality-place-near-duplicate = Huenda ni mahali pamoja: { $names }.
 quality-rule-not-a-place = Kipengele ambacho huenda si mahali
-quality-not-a-place = “{ $place }” kiko kwenye orodha ya mahali lakini huenda si mahali — kinaanza kwa herufi ndogo, jambo ambalo majina ya mahali kwa kawaida hayafanyi: inafaa kukagua ikiwa ni dokezo kuhusu mahali.
+quality-not-a-place = “{ $place }” huenda si mahali.
 quality-rule-certain-without-source = Hakika, bila chanzo
-quality-certain-without-source = { $record } ina dai lililowekwa alama ya hakika kamili ({ $claims }) bila chanzo kilichoambatishwa: inafaa kuambatisha chanzo, au kupunguza uhakika.
+quality-certain-without-source = { $record }: hakika ({ $claims }) bila chanzo.
 quality-dismiss = Imekaguliwa — ni kawaida kwetu
 quality-restore = Ionyeshe tena
 quality-note-label = Kwa nini (si lazima)
@@ -3384,7 +3375,7 @@ admin-nav-accounts = Akaunti
 admin-nav-connectivity = Muunganisho
 
 bundle-title = Kifurushi cha AXGF
-bundle-lede = Kumbukumbu ya familia kama tovuti hii inavyoishikilia: { $path }. Inalingana na nini, kinachoonekana si sawa, na njia mbili za kuchukua nakala.
+bundle-lede = Kumbukumbu ya familia: { $path }. Ulinganifu wake, kinachoonekana si sahihi, na jinsi ya kuchukua nakala.
 bundle-unset-title = Bado hakuna familia.
 bundle-unset-detail = Usakinishaji huu una kifurushi tupu, kwa hiyo bado hakuna cha kukagua. Kianzishe kutoka kumbukumbu, kutoka faili ya GEDCOM au kutoka mwanzo.
 bundle-kpi-conformity = Ulinganifu
@@ -3559,7 +3550,7 @@ infra-transport-title = Jinsi tovuti inavyofikiwa
 infra-transport-ok = Ukurasa huu ulifika kupitia HTTPS.
 infra-transport-exposed = Ukurasa huu ulifika bila usimbaji, na seva inasikiliza kwenye { $bind }, nje ya mashine hii: nywila na vidakuzi vya kikao vinapita mtandaoni wazi.
 infra-transport-exposed-fix = Weka proksi ya kinyume ya HTTPS (Caddy, nginx, HAProxy) mbele yake, na uifunge huduma tena kwa 127.0.0.1: endesha bootstrap.sh upya ukitumia --bind 127.0.0.1:8080, au ondoa faili ya drop-in iliyoipanua.
-infra-transport-plain = Ukurasa huu ulifika bila usimbaji, kutoka kwa seva inayosikiliza kwenye { $bind }. Hilo ni sawa kwenye mashine hii peke yake, na huko tu.
+infra-transport-plain = Bila usimbaji, kutoka { $bind }: sawa kwenye mashine hii tu.
 infra-transport-plain-fix = Fikia tovuti kupitia anwani yake ya HTTPS. Ikiwa proksi inakamilisha TLS, iwekee kutuma X-Forwarded-Proto: https ili seva hii ijue.
 infra-forwarded-title = Anwani zinazopitishwa
 infra-forwarded-ok = Seva inasikiliza kwenye mashine hii tu, kwa hiyo anwani ya mteja ambayo proksi inapitisha inaweza kuaminiwa ili kupunguza kasi ya majaribio ya kuingia yaliyoshindwa mara kwa mara.
@@ -3581,8 +3572,8 @@ infra-sso-ok = { $n ->
 infra-sso-no-https = Huduma ya kuingia imewashwa, lakini anwani ya umma si HTTPS: watoa huduma hukataa kutuma jibu lao kwa anwani isiyosimbwa, na kuingia kunashindwa.
 infra-sso-fix = Chini ya Muunganisho, weka anwani ya umma kuwa anwani ya https:// ambayo wasomaji hutumia.
 infra-admins-title = Wasimamizi
-infra-admins-none = Hakuna akaunti hai inayoweza kusimamia tovuti hii. Ni tokeni ya dharura tu inayoweza, na wakati imewekwa tu.
-infra-admins-none-fix = Ingia kwa tokeni ya dharura, unda msimamizi chini ya Akaunti, kisha ondoa tokeni.
+infra-admins-none = Hakuna akaunti hai inayoweza kusimamia tovuti hii; ni tokeni ya dharura tu inayoweza.
+infra-admins-none-fix = Ingia kwa tokeni ya dharura, unda msimamizi, kisha ondoa tokeni.
 infra-admins-one = Msimamizi mmoja. Mtu huyo akiwa hayupo au akipoteza nywila, hakuna anayeweza kusimamia tovuti.
 infra-admins-one-fix = Mpe mtu wa pili unayemwamini nafasi ya msimamizi chini ya Akaunti.
 infra-admins-ok = { $n ->
@@ -3591,7 +3582,7 @@ infra-admins-ok = { $n ->
     }
 infra-token-title = Tokeni ya dharura
 infra-token-generated = Hakuna tokeni ya dharura iliyowekwa.
-infra-token-only-way = Tokeni ya dharura imewekwa, na bila akaunti ya msimamizi ndiyo njia pekee ya kuingia. Ibakize hadi msimamizi awepo.
+infra-token-only-way = Tokeni ya dharura ndiyo njia pekee ya kuingia hadi akaunti ya msimamizi iwepo.
 infra-token-standing = Tokeni ya dharura bado imewekwa. Inaingia kupita kila akaunti na kila ruhusa.
 infra-token-fix = Ondoa AXGF_CMS_ADMIN_TOKEN kwenye faili ya mazingira ya huduma, kisha anzisha huduma upya.
 infra-registration-title = Kujisajili
@@ -3666,7 +3657,7 @@ infra-clock-wrong = Saa ya mfumo inaonyesha { $year }: tarehe, umri wa nakala na
 infra-clock-fix = Washa usawazishaji wa muda: timedatectl set-ntp true.
 
 infra-title = Miundombinu
-infra-lede = Mashine ambayo tovuti hii inaendeshwa juu yake, ikikaguliwa kila ukurasa huu unapofunguliwa: jinsi inavyofikiwa, nani anashikilia funguo, kama data iko salama na bado inatosha, toleo gani linaendeshwa, na mazingira yaliyotengwa yanayoizunguka.
+infra-lede = Mashine ya tovuti hii: ufikiaji, funguo, data, toleo na kizuizi, hukaguliwa kila ukurasa unapofunguliwa.
 infra-kpi-health = Afya
 infra-kpi-version = Toleo
 infra-kpi-version-newer = { $version } inapatikana
@@ -3683,7 +3674,7 @@ infra-kpi-load = Mzigo { $load }
 infra-kpi-rss = { $size } zinatumika
 infra-unknown = Haijulikani
 infra-health = Afya
-infra-health-intro = Kijani ni sawa, onyo linafaa kuangaliwa, hatari inahitaji kushughulikiwa sasa. Kila tokeo linafunguka kwenye cha kufanya kuhusu jambo hilo.
+infra-health-intro = Kijani ni salama, onyo linafaa kutazamwa, hatari inahitaji hatua sasa.
 infra-json = Ukaguzi uleule kama JSON, kwa mfumo wa ufuatiliaji
 infra-version = Toleo
 infra-version-running = Linaloendeshwa
@@ -3718,14 +3709,14 @@ infra-relation-older = la zamani zaidi
 infra-prerelease = toleo la majaribio
 infra-releases-none = Bado hakuna orodha ya matoleo.
 infra-upgrade = Badilisha toleo
-infra-upgrade-intro = Kitufe kinamwomba msaidizi wa kupandisha toleo, anayeendeshwa kama root nje ya mazingira yaliyotengwa ya tovuti hii. Anachukua nakala, anasakinisha toleo baada ya checksum yake kuthibitishwa, anaanzisha huduma upya na kuikagua; toleo jipya lisipojibu, la awali linarudishwa.
+infra-upgrade-intro = Msaidizi wa kusasisha huhifadhi nakala, husakinisha toleo lililothibitishwa, huanzisha upya na kukagua; likishindwa, toleo la awali hurudi.
 infra-upgrade-version = Toleo la kusakinisha
 infra-upgrade-confirm = Ili kurudi kwenye toleo la zamani, andika lebo yake tena
 infra-upgrade-confirm-hint = Haihitajiki kwa toleo jipya zaidi. Toleo la zamani huenda lisisome data iliyoandikwa na jipya: soma maelezo yake kwanza.
 infra-upgrade-go = Sakinisha toleo hili
 infra-upgrade-safety = Tovuti haipatikani kwa sekunde chache huduma inapoanzishwa upya.
 infra-upgrade-manual = Msaidizi wa kupandisha toleo hajasakinishwa kwenye seva hii, kwa hiyo ukurasa huu hauwezi kubadilisha toleo. Kama root, kwenye seva:
-infra-upgrade-manual-helper = Kuendesha bootstrap.sh ya sasa mara moja kunasakinisha msaidizi, na kitufe hiki kinafanya kazi tangu hapo.
+infra-upgrade-manual-helper = Endesha bootstrap.sh ya sasa mara moja ili kusakinisha msaidizi.
 infra-upgrade-asked = { $version } imeombwa. Msaidizi wa kupandisha toleo anaichukua ndani ya sekunde chache; ukurasa huu unaonyesha jinsi ilivyokwenda.
 infra-upgrade-no-helper = Msaidizi wa kupandisha toleo hajasakinishwa, kwa hiyo { $version } haiwezi kusakinishwa kutoka hapa.
 infra-upgrade-unknown-version = { $version } haipo kwenye orodha ya matoleo yaliyochapishwa.
@@ -3785,7 +3776,7 @@ infra-compute-nnp-off = ruhusa zinaweza kupatikana
 infra-compute-seccomp-on = miito ya mfumo imechujwa
 infra-compute-seccomp-off = miito ya mfumo haijachujwa
 infra-activity = Shughuli
-infra-activity-intro = Imehesabiwa katika { $span }: huduma hubakiza siku moja, na huanza tena kutoka sifuri inapoanzishwa upya.
+infra-activity-intro = Katika { $span }; huanza tena kutoka sifuri huduma inapoanzishwa upya.
 infra-activity-sessions = Vikao vilivyo wazi
 infra-activity-signed-in = Kuingia
 infra-activity-failed = Majaribio ya kuingia yaliyoshindwa
@@ -3801,7 +3792,7 @@ sso-error-invalid = Jibu la huduma ya kuingia halikupita ukaguzi wa tovuti hii, 
 infra-upgrade-already-pending = { $version } tayari inasubiri msaidizi wa kupandisha toleo. Subiri imalizike kabla ya kuomba toleo jingine.
 
 connectivity-title = Muunganisho
-connectivity-lede = Jinsi wasomaji wanavyofikia tovuti hii na jinsi wanavyoingia: anwani ya umma, huduma za kuingia na kanuni ambazo kila kuingia hufuata, zikiwemo za wasimamizi.
+connectivity-lede = Jinsi wasomaji wanavyofika kwenye tovuti hii na kuingia: anwani ya umma, huduma za kuingia na kanuni.
 connectivity-kpi-address = Anwani ya umma
 connectivity-address-unset = Haijawekwa
 connectivity-address-https = HTTPS
@@ -3818,7 +3809,7 @@ connectivity-policy-short-non-admins = Si wasimamizi
 connectivity-policy-short-nobody = Hakuna
 connectivity-policy-note-everyone = Kila akaunti inaweza kuingia kwa nywila yake, na pia kwa huduma iliyounganishwa.
 connectivity-policy-note-non-admins = Wasimamizi huingia kupitia huduma tu; wengine wote bado wanaweza kutumia nywila. Nywila ya msimamizi iliyoibwa basi haifungui chochote.
-connectivity-policy-note-nobody = Kila mtu huingia kupitia huduma. Akaunti isiyo na huduma iliyounganishwa wala anwani ya kuunganisha nayo haiwezi kuingia.
+connectivity-policy-note-nobody = Kila mtu huingia kupitia huduma; akaunti isiyo na huduma iliyounganishwa haiwezi kuingia.
 connectivity-kpi-admins-linked = { $n ->
         [one] Msimamizi { $n } mwenye huduma iliyounganishwa
        *[other] Wasimamizi { $n } wenye huduma iliyounganishwa
@@ -3829,30 +3820,30 @@ registration-short-closed = Wasimamizi tu
 registration-short-secret = Kwa siri ya familia
 registration-short-open = Wazi kwa wageni
 connectivity-address = Anwani ya umma
-connectivity-address-intro = Anwani ambayo wasomaji huandika, kama wanavyoiandika: https://family.example. Huduma za kuingia huwarudisha wasomaji kwake, kwa hiyo lazima iwe anwani ya umma, si ile ambayo seva hii inasikiliza.
+connectivity-address-intro = Anwani ya umma ambayo wasomaji huandika, kama https://family.example; huduma za kuingia huwarudisha huko.
 connectivity-address-label = Anwani ya umma
 connectivity-address-hint = Iache wazi wakati hakuna anayeingia kupitia huduma.
 connectivity-address-invalid = Hiyo si anwani ya http au https yenye jina la mwenyeji.
 connectivity-address-saved = Anwani ya umma imehifadhiwa.
 connectivity-policy = Kanuni za kuingia
-connectivity-policy-intro = Zinatumika kwa kila akaunti, zikiwemo za wasimamizi. Kanuni ambayo ingeacha bila msimamizi yeyote anayeweza kuingia inakataliwa.
+connectivity-policy-intro = Zinahusu kila akaunti; kanuni ambayo isingemwacha msimamizi yeyote kuingia hukataliwa.
 connectivity-policy-passwords = Nani anaweza kuingia kwa nywila
 connectivity-policy-without-way = { $n ->
         [one] Akaunti { $n } hai haina huduma iliyounganishwa wala anwani: chini ya “Hakuna” haingeweza kuingia.
        *[other] Akaunti { $n } hai hazina huduma iliyounganishwa wala anwani: chini ya “Hakuna” hazingeweza kuingia.
     }
 connectivity-link-by-email = Unganisha huduma na akaunti yenye anwani ileile iliyothibitishwa
-connectivity-link-by-email-note = Hivi ndivyo ndugu anavyopata kuingia kwa kubofya mara moja bila usajili wowote: unda akaunti yake kwa anwani yake, na kuingia kwake kwa kwanza kupitia huduma iliyothibitisha anwani hiyo kunaiunganisha. Ni anwani iliyoandikwa na msimamizi au iliyothibitishwa na huduma tu ndiyo hulinganishwa.
+connectivity-link-by-email-note = Unda akaunti ya jamaa kwa anwani yake: kuingia kwake kwa kwanza kupitia huduma inayoithibitisha huiunganisha.
 connectivity-domains = Vikoa vinavyoruhusiwa kufungua akaunti
-connectivity-domains-hint = Kimoja kwa kila mstari, kama family.example. Tupu: chochote. Vikiwekwa, ni anwani tu iliyothibitishwa na huduma katika mojawapo ya vikoa hivi inayoweza kufungua akaunti, na fomu ya usajili haitolewi.
+connectivity-domains-hint = Moja kwa kila mstari (family.example). Tupu: zote. Vinginevyo, anwani zilizothibitishwa za vikoa hivi tu ndizo zinaweza kufungua akaunti.
 connectivity-domain-invalid = “{ $domain }” si jina la kikoa.
 connectivity-policy-unknown = Chagua nani anaweza kuingia kwa nywila.
 connectivity-policy-lockout = Imekataliwa: kwa badiliko hili hakuna msimamizi hai ambaye angeweza kuingia. Kwanza unganisha huduma ya kuingia na akaunti ya msimamizi, kwa kuingia kupitia huduma hiyo mara moja, au bakiza nywila kwa wasimamizi.
 connectivity-policy-saved = Kanuni za kuingia zimehifadhiwa.
 connectivity-not-saved = Haijahifadhiwa: { $error }
 connectivity-services = Huduma za kuingia
-connectivity-services-intro = Sajili tovuti hii kwenye dashibodi ya huduma yenyewe ukitumia anwani ya kurudisha iliyoonyeshwa, kisha bandika kitambulisho cha mteja na siri hapa. Wageni wataona “Endelea na …” kwenye kurasa za kuingia na usajili.
-connectivity-outbound-note = Kuingia kupitia huduma kunahitaji seva hii kufikia huduma. Unit ambayo bootstrap.sh huandika inakataa miunganisho ya kutoka nje (IPAddressDeny=any): iruhusu kwa sudo systemctl edit axgf-cms, ukiongeza IPAddressAllow=any chini ya [Service], kisha uanzishe upya. Kitufe cha jaribio kinasema kama inaweza.
+connectivity-services-intro = Sajili tovuti hii kwenye dashibodi ya huduma kwa anwani ya kurudisha iliyoonyeshwa, kisha bandika hapa kitambulisho cha mteja na siri.
+connectivity-outbound-note = Kuingia kupitia huduma kunahitaji miunganisho ya kutoka: endesha sudo systemctl edit axgf-cms, ongeza IPAddressAllow=any chini ya [Service], kisha anzisha upya.
 connectivity-service-ready = Tayari
 connectivity-service-incomplete = Haijakamilika
 connectivity-service-off = Imezimwa
@@ -3879,10 +3870,10 @@ connectivity-provider-saved = { $name } imehifadhiwa.
 connectivity-test-ok = { $name } imejibu: { $answer }.
 connectivity-test-failed = { $name } haikuweza kufikiwa kutoka seva hii: { $detail }
 registration-title = Usajili
-registration-intro = Kama mgeni anaweza kufungua akaunti hapa mwenyewe. Akaunti kama hiyo ni ya mwanachama: inasoma kile wanachama wanachosoma na haibadilishi chochote. Kuipa nafasi nyingine ni uamuzi wa msimamizi, hapa chini.
+registration-intro = Kama wageni wanaweza kufungua akaunti ya mwanachama wenyewe; msimamizi anaweza kuipa jukumu jingine hapa chini.
 registration-who = Nani anaweza kufungua akaunti
 registration-note-closed = Msimamizi pekee ndiye huunda akaunti, kwenye ukurasa huu.
-registration-note-secret = Mgeni anayejua siri ya familia anaweza kufungua akaunti ya mwanachama. Shiriki siri kama ambavyo ungeshiriki msimbo wa mlango.
+registration-note-secret = Anayejua siri ya familia anaweza kufungua akaunti ya mwanachama. Ishiriki kama msimbo wa mlango.
 registration-note-open = Mgeni yeyote anaweza kufungua akaunti ya mwanachama. Wanachama husoma rekodi zinazohifadhiwa kwa wanachama.
 registration-rotate = Tengeneza siri mpya
 registration-secret = Siri ya familia
@@ -4027,13 +4018,13 @@ notes-field-title = Kichwa
 notes-field-category = Kundi
 notes-field-category-hint = Maandishi huru; makundi yaliyokwisha kutumika yanapendekezwa.
 notes-field-date = Tarehe
-notes-field-date-hint = Mwaka, mwezi au siku: 1952, 1952-06 au 1952-06-14. Acha wazi ikiwa dokezo halina tarehe.
+notes-field-date-hint = 1952, 1952-06 au 1952-06-14; tupu kama hakuna.
 notes-field-people = Watu wanaohusika
-notes-field-people-hint = Andika jina na ulichague kutoka kwenye orodha. Bila mtu yeyote kutajwa, dokezo ni la familia nzima.
+notes-field-people-hint = Andika jina na ulichague. Bila mtu aliyetajwa, maelezo ni ya familia nzima.
 notes-person-add = Ongeza
 notes-person-remove = Ondoa mtu huyu
 notes-field-text = Maandishi
-notes-text-hint = Herufi nzito, za mlalo, vichwa, orodha na viungo huandikwa kwa Markdown; vitufe vilivyo juu vinakuandikia. Bandika au dondosha picha ndani ya maandishi ili kuiongeza, hadi MB { $mb } kila moja.
+notes-text-hint = Markdown, au vitufe vilivyo juu. Bandika au dondosha picha, hadi MB { $mb } kila moja.
 notes-tool-bold = Herufi nzito
 notes-tool-italic = Herufi za mlalo
 notes-tool-heading = Kichwa
@@ -4071,7 +4062,7 @@ notes-dashboard-open = Andika na usimamie madokezo
 
 kind-bundle = kumbukumbu
 manifest-title = Familia
-manifest-intro = Kile ambacho kumbukumbu inasema kuhusu familia inayoibeba. Jina lake ndilo linaloonyeshwa kwenye ukurasa wa Familia, vichwa vya kurasa na PDF ya kila dokezo; mengine husafiri pamoja na faili. Takwimu na tarehe za faili yenyewe huhesabiwa inapoandikwa.
+manifest-intro = Kile kumbukumbu inasema kuhusu familia yake. Jina lake linaonekana kwenye ukurasa wa Familia, vichwa na PDF za maelezo.
 manifest-name = Jina la familia
 manifest-name-hint = Huonyeshwa kwenye ukurasa wa Familia na kwenye vichwa. Akaunti hufuata jina jipya.
 manifest-description = Maelezo
@@ -4081,7 +4072,7 @@ manifest-place = Mahali pakuu
 manifest-place-hint = Bara ambalo familia iliishi zaidi.
 
 manifest-span = Kipindi kinachohusika
-manifest-span-hint = Kuanzia kuzaliwa kwa mapema zaidi hadi kwa karibuni zaidi kunakorekodiwa na kumbukumbu; kunahesabiwa, na kuandikwa kwenye faili maelezo yanapohifadhiwa.
+manifest-span-hint = Kuanzia kuzaliwa kwa awali hadi kwa karibuni; huhesabiwa wakati wa kuhifadhi.
 manifest-license = Leseni
 manifest-license-type = Leseni
 manifest-save = Hifadhi maelezo ya familia
@@ -4135,7 +4126,7 @@ account-who = Akaunti
 account-email = Anwani ya barua pepe
 account-since = Tangu
 account-person-title = Rekodi yangu kwenye mti
-account-person-intro = Sema wewe ni mtu yupi kwenye mti. Hakuna anayekagua: kila akaunti huchagua rekodi yake, kwa jukumu lake, na inaweza kuibadilisha au kuiondoa wakati wowote.
+account-person-intro = Wewe ni nani kwenye mti? Chaguo lako, bila ukaguzi; unaweza kulibadilisha wakati wowote.
 account-person-is = Akaunti hii inasema ni
 account-person-unlink = Ondoa kiungo
 account-person-pick = Mtu kwenye mti
@@ -4488,7 +4479,7 @@ kin-group-care = Malezi na ulezi
 kin-group-rites = Desturi na mila
 kin-group-others = Mahusiano mengine
 kin-find-title = Wana uhusiano gani?
-kin-find-lede = Chagua mtu wa familia: uhusiano wake na { $name } utaelezwa hatua kwa hatua.
+kin-find-lede = Chagua mtu: uhusiano wake na { $name }, hatua kwa hatua.
 kin-find-label = Mtu
 kin-find-choose = Chagua mtu…
 kin-find-go = Onyesha uhusiano
@@ -4502,7 +4493,7 @@ kin-all-count = { $n ->
     }
 kin-common-list = Wahenga wa pamoja: { $names }
 kin-also-list = pia { $list }
-kin-rites-help = Wazazi wa ubatizo na mafungamano mengine ambayo desturi huunda kati ya watu wasiozaliwa mmoja na mwingine. Mti huyachora kwa vitone vyake.
+kin-rites-help = Wazazi wa ubatizo na mafungamano mengine ya mila; mti huyachora kwa vitone.
 kin-rite-recorded = Kumbukumbu inasema “{ $label }”.
 kin-hidden = mtu usiyeruhusiwa kumwona
 kin-native = Kwa maneno ya desturi
@@ -4833,7 +4824,7 @@ emblem-no-family-detail = Familia hii haimo kwenye kumbukumbu, au huruhusiwi kui
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Mtaalamu bandia wa nasaba ya familia
-afg-lede = AFG inaijua familia kupitia kifurushi chake, na humkumbuka kila mtu anayezungumza nayo kwenye ubongo wake mwenyewe. Hapa: uchakataji wake unatoka wapi, na jaribio.
+afg-lede = Hesabu ya AFG inatoka wapi, na jaribio.
 afg-kpi-source = Uchakataji
 afg-ready = tayari
 afg-off-note = Chagua uchakataji unatoka wapi.
@@ -4844,9 +4835,9 @@ afg-kpi-last = Jaribio la mwisho
 afg-never = bado hakuna
 afg-run-open = Lifungue
 afg-source = Uchakataji unatoka wapi
-afg-source-intro = Anwani; anwani pamoja na ufunguo wa API na modeli; au wakala wa msimbo ambaye tayari ameingia kwenye mashine hii. Kila mmoja huzungumzwa kwa njia yake.
+afg-source-intro = Anwani; anwani yenye ufunguo na modeli; au wakala aliyeingia kwenye mashine hii.
 afg-kind = Njia ya uchakataji
-afg-kind-hint = Huduma huendeshwa mahali pengine na hufikiwa kupitia mtandao. Wakala huendeshwa kwenye mashine hii, chini ya akaunti inayoendesha tovuti hii, na lazima awe ameshaingia humo.
+afg-kind-hint = Huduma hufikiwa kupitia mtandao; wakala huendeshwa kwenye mashine hii na lazima awe ameingia humo.
 afg-kind-off = Hakuna
 afg-kind-anthropic = Claude (API ya Anthropic)
 afg-kind-ollama = Ollama
@@ -4865,25 +4856,25 @@ afg-url-hint = Ikiachwa tupu: anwani ya kawaida ya huduma. Inayoitwa:
 afg-key = Ufunguo wa API
 afg-key-set = Ufunguo umehifadhiwa, unaoishia na { $end }.
 afg-key-unset = Hakuna ufunguo uliohifadhiwa.
-afg-key-hint = Ukiachwa tupu, ufunguo uliohifadhiwa unabaki. Unahifadhiwa pamoja na akaunti, kamwe si ndani ya kifurushi, na hauonyeshwi tena.
+afg-key-hint = Tupu huhifadhi ufunguo uliopo, ambao hautaonyeshwa tena.
 afg-key-clear = Sahau ufunguo
 afg-model = Modeli
-afg-model-hint = Jina la modeli kama huduma au wakala anavyoliandika. Orodha inapendekeza modeli za sasa; jina lingine lolote hutumwa kama lilivyoandikwa. Likiachwa tupu, Ollama huchukua modeli yake ya kwanza na wakala huchukua yake mwenyewe.
+afg-model-hint = Jina la modeli kama huduma inavyoliandika. Jina lolote hutumwa kama lilivyo; tupu, la chaguo-msingi.
 afg-model-unlisted = Si mojawapo ya mapendekezo: litatumwa kama lilivyoandikwa.
 afg-effort = Juhudi
-afg-effort-hint = Jinsi modeli inavyofikiri kwa kina, kwa maneno ya mtengenezaji wake. Orodha hufuata modeli iliyochaguliwa na kuonyesha juhudi yake ya kawaida; neno lingine lolote hutumwa kama lilivyoandikwa. Ikiachwa tupu, juhudi ya chaguo-msingi ya modeli hutumika.
+afg-effort-hint = Jinsi modeli inavyofikiri kwa kina. Neno lolote hutumwa kama lilivyo; tupu, chaguo-msingi la modeli.
 afg-effort-unlisted = Si mojawapo ya juhudi za modeli hii: itatumwa kama ilivyoandikwa.
 afg-effort-default = chaguo-msingi
 afg-program = Programu
 afg-program-found = Imepatikana:
 afg-program-missing = Haipatikani kwenye mashine hii.
-afg-program-hint = Ikiachwa tupu, hutafutwa pale kisakinishi chake kinapoiweka. Vinginevyo, njia kamili ya programu ya wakala.
+afg-program-hint = Tupu: hutafutwa pale kisakinishi chake kinapoiweka. Vinginevyo, njia kamili ya programu.
 afg-sensitive = Tuma pia madaraja nyeti
-afg-sensitive-hint = Afya, bayometriki, jenomu, kumbukumbu za kisheria na tabia hazitumwi isipokuwa hiki kimewekewa alama, kama vile haziingii kwenye uhamishaji unaoshirikiwa.
+afg-sensitive-hint = Bila alama, afya, bayometriki, jenetiki, rekodi za kisheria na tabia hubaki nje, kama katika usafirishaji wa kushirikiwa.
 afg-timeout = Muda unaoruhusiwa (sekunde)
 afg-timeout-hint = Muda ambao jibu linaweza kuchukua kabla ya kuachwa.
 afg-test = Jaribio
-afg-test-intro = Hutuma kifurushi kama kilivyo sasa, kila faili yake ya JSON bila picha, pamoja na ubongo wako, na kuuliza swali moja. Jibu hufunguka kwenye dirisha.
+afg-test-intro = Hutuma kumbukumbu (JSON, bila picha) na ubongo wako pamoja na swali moja; jibu hufunguka kwenye dirisha.
 afg-sent-files = Faili
 afg-sent-files-value = { $n ->
         [one] faili { $n } ya JSON
@@ -4902,7 +4893,7 @@ afg-sent-classes = Madaraja nyeti
 afg-sent-classes-in = yanatumwa
 afg-sent-classes-out = yameachwa
 afg-sent-question = Swali
-afg-privacy = Jaribio hutuma kumbukumbu za familia, pamoja na watu walio hai, kwa uchakataji uliochaguliwa hapo juu. Huduma iliyo kwenye intaneti, na wakala wa mashine hii anayeiita, huzisoma kwenye seva za mwendeshaji wake.
+afg-privacy = Jaribio hutuma rekodi za familia, pamoja na walio hai, kwa hesabu iliyochaguliwa hapo juu.
 afg-test-button = Tuma jaribio
 afg-test-needs = Hifadhi kwanza njia kamili ya uchakataji.
 afg-test-question = Nipe familia 3 bora zenye idadi kubwa zaidi ya watu waliosajiliwa.
@@ -4942,10 +4933,7 @@ afg-brain-note = { $facts ->
        *[other] akaunti { $brains } zenye ubongo
     }
 afg-brain-no-account = Kipindi hiki hakina akaunti, kwa hiyo hakina ubongo.
-afg-access-count = { $n ->
-        [one] Akaunti { $n } inaweza kuzungumza na AFG.
-       *[other] Akaunti { $n } zinaweza kuzungumza na AFG.
-    }
+afg-access-count = Akaunti zinazoweza kuzungumza na AFG: { $n }
 afg-access-set = Huwekwa kwenye ukurasa wa Akaunti
 afg-result-ok = Imefaulu
 afg-result-error = Hitilafu
@@ -4956,11 +4944,11 @@ accounts-afg = AFG
 accounts-afg-allowed = Anaweza kuzungumza na AFG
 accounts-afg-yes = ndiyo
 accounts-afg-no = hapana
-accounts-afg-hint = Imezimwa isipokuwa imewekewa alama. Kile AFG inachokumbuka kuhusu akaunti hii huhifadhiwa kwenye ubongo wake yenyewe: folda kwenye diski kando ya kifurushi.
+accounts-afg-hint = Imezimwa isipowekwa alama. Kumbukumbu yake huhifadhiwa kando, karibu na kumbukumbu ya familia.
 
 ## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
 account-brain-title = Ubongo wa AFG yako
-account-brain-intro = Kile AFG inachokumbuka kuhusu wewe: mambo iliyoamua kuhifadhi, na mazungumzo yako nayo. Yote mawili hupewa tena kwa kila swali lako. Ifanye isahau kile usichotaka tena ijue. Kwenye tovuti, hakuna mwingine anayeyaona isipokuwa wewe.
+account-brain-intro = Kile AFG inachokumbuka kukuhusu, hupewa tena kwa kila swali. Futa unachotaka; hakuna mwingine anayekiona.
 account-brain-no-access = AFG haijafunguliwa kwa akaunti yako: msimamizi huamua hilo kwenye ukurasa wa Akaunti.
 account-brain-none = AFG bado haikumbuki chochote kuhusu wewe.
 account-brain-facts = Inachokumbuka
@@ -4986,21 +4974,21 @@ afg-brain-see = Ona na usahau
 
 ## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
 assistant-title = Msaidizi wangu binafsi
-assistant-entry = Miradi yako na mazungumzo yako na AFG: uliza, tuma hati na picha, endelea pale ulipoishia.
-assistant-lede = Miradi yako mwenyewe na AFG. Kila mmoja una kanuni zake za mwenendo na kumbukumbu yake, na ndani ya kila mmoja mazungumzo unayoendeleza pale ulipoyaacha.
+assistant-entry = Miradi na mazungumzo yako na AFG.
+assistant-lede = Miradi yako na AFG, kila mmoja na kanuni zake za mwenendo, kumbukumbu na mazungumzo.
 assistant-shut-no-account = Kipindi hiki hakina akaunti, kwa hiyo hakina msaidizi binafsi. Ingia kwa akaunti yako mwenyewe.
 assistant-shut-not-open = AFG haijafunguliwa kwa akaunti yako: msimamizi huamua hilo kwenye ukurasa wa Akaunti.
 assistant-shut-broken = Nafasi yako haikuweza kufunguliwa. Jaribu tena baada ya muda mfupi; ikiendelea, mjulishe msimamizi.
 assistant-shut-gone = Hakuna kitu hapa: mradi huu au mazungumzo haya hayapo, au si yako.
 assistant-back-account = Rudi kwenye akaunti yangu
 assistant-new-project = Mradi mpya
-assistant-not-ready = Uchakataji wa AFG bado haujawekwa: unaweza kusoma mazungumzo yako, si kutuma ujumbe. Msimamizi ndiye anayeuweka.
+assistant-not-ready = Hesabu ya AFG bado haijawekwa: kwa sasa ni kusoma tu.
 assistant-conversations-count = { $n ->
         [one] mazungumzo { $n }
        *[other] mazungumzo { $n }
     }
 assistant-conduct-set = kanuni za mwenendo zimewekwa
-assistant-empty = Bado hakuna mradi. Mradi hukusanya mazungumzo ya mada moja — historia ya familia, swali la afya, kutafuta kazi — chini ya kanuni moja za mwenendo.
+assistant-empty = Bado hakuna mradi. Mradi hukusanya mazungumzo ya mada moja.
 assistant-project-name = Jina la mradi
 assistant-create = Unda mradi
 assistant-facts-count = { $n ->
@@ -5135,7 +5123,7 @@ afg-record-stale = Rekodi imebadilika wakati huo. Pakia ukurasa upya kisha ujari
 afg-record-refused = Hifadhi ya kumbukumbu imeikataa: { $reason }
 afg-record-summary-not-yours = Mwanachama mwingine aliandika muhtasari huu: ni mwandishi wake au msimamizi tu wanaoweza kuubadilisha.
 afg-images = Picha
-afg-images-intro = Picha za AFG zinatoka wapi: uso au picha inayorejeshwa kwenye rekodi ya mtu. Claude na mawakala huandika maandishi tu, kwa hiyo picha zinahitaji huduma yake: ya kulipia (OpenAI, Google, Canva) au mashine ya familia yenye kadi ya michoro.
+afg-images-intro = Picha za AFG zinatoka wapi: huduma ya kulipia (OpenAI, Google, Canva) au kompyuta ya familia yenye kadi ya michoro.
 afg-image-kind = Huduma ya picha
 afg-image-kind-hint = Miundo ya OpenAI na Google, AI ya Canva kupitia akaunti yako, au seva ya familia: Ollama, seva yoyote inayoendana na OpenAI, ComfyUI.
 afg-image-kind-off = Hakuna

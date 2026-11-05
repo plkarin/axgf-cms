@@ -4,6 +4,43 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+A Status tab on the record, and fewer words on every page (the operator's
+request of 5 November 2026, docs/adr/0032).
+
+### Added
+
+- **A Status tab on every record.** "To check" lists the data-quality
+  findings about the person (a death before a birth, a couple who are also
+  parent and child, a claim certain without a source…), one line each, with
+  the way to correct it. "Good to know" lists what the record holds that is
+  worth knowing. The tab counts the findings to check. A reader who is not
+  signed in is shown no finding.
+
+### Changed
+
+- **Fewer words**, in all fourteen languages: 91 help and information texts
+  are now one short line each. A line keeps what to do and drops why.
+  - On the members' pages: the AFG tab, the personal assistant, the account
+    page, the Quality and import pages, the kinship tab, the tree's
+    contradiction notice, and every data-quality finding.
+  - In the administration: the AFG room, the accounts, the connections, the
+    infrastructure, the archive's page, the completeness metrics and the
+    notes' editor.
+
+### Removed
+
+- **The "Notes on this record" strip** at the top of the fiche, and its box
+  in the tree's panel. Its points are on the Status tab, and the panel keeps
+  one line that leads there.
+
+### Fixed
+
+- **A tree with nobody above its root** said "Un ascendant" in French, and
+  the same in Portuguese and Lingala, whose plural rules put zero with one.
+  Zero is now said in words: "Aucun ascendant".
+
 ## [1.6.0] — 2026-11-05
 
 The AFG in conversation on a person's page (the operator's request of

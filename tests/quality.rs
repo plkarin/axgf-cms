@@ -510,3 +510,111 @@ async fn a_whole_rule_is_marked_as_checked_in_one_save_or_not_at_all() {
         .filter(|f| f["rule"] == "place-no-region")
         .all(|f| f["dismissed"].is_null()));
 }
+
+/// A page's HTML as a browser reads its attributes: the templates write `/`
+/// as `&#x2f;` in one.
+async fn page_of(app: &axum::Router, uri: &str, cookie: Option<&str>) -> String {
+    let resp = match cookie {
+        Some(c) => common::get_with_cookie(app, uri, c).await,
+        None => common::get(app, uri).await,
+    };
+    common::body_string(resp).await.replace("&#x2f;", "/")
+}
+
+/// The record's Statut tab (the operator's request of 5 November 2026): a
+/// finding about the person in one line, with the way to correct it, and
+/// counted on the tab; nothing of it for a reader who is not signed in; and,
+/// once marked as normal, gone with the record's new version.
+#[tokio::test]
+async fn a_records_status_tab_lists_its_findings_and_follows_a_dismissal() {
+    let src = common::scratch("status-tab-src");
+    let path = src.join("q.axgf");
+    std::fs::write(
+        &path,
+        axgf_cms::state::export_to_bytes(&one_of_each().to_string()).unwrap(),
+    )
+    .unwrap();
+    let (app, _s) = common::app_with_bundle("status-tab", &path);
+    drop(src);
+    let cookie = format!("{}; axgf_lang=en", common::admin_cookie(&app).await);
+
+    let counted = "href=\"/person/x1?tab=status\">Status <span class=\"tab-count\">1</span>";
+    let record = page_of(&app, "/person/x1", Some(&cookie)).await;
+    assert!(record.contains(counted), "the tab, one finding to check");
+    let tab = page_of(&app, "/person/x1?tab=status", Some(&cookie)).await;
+    assert!(tab.contains("To check"));
+    assert!(tab.contains("Death before birth"));
+    assert!(
+        tab.contains("Karol Mak: death (1890) before birth (1900)."),
+        "{tab}"
+    );
+    assert!(
+        tab.contains("href=\"/admin/person/x1/edit\""),
+        "the way to correct it"
+    );
+    // Its dates contradict each other, so both are shown as recorded: that
+    // is worth knowing, for everyone.
+    assert!(tab.contains("Birth date imprecise in the source"));
+
+    // The tree's panel has no tabs: one line leads there, whether the panel
+    // is drawn with the page or fetched when a card is clicked.
+    let line = "<p class=\"status-line\"><a href=\"/person/x1?tab=status\">To check: 1</a></p>";
+    for uri in ["/tree?root=x1&sel=x1", "/tree/panel/x1"] {
+        let panel = page_of(&app, uri, Some(&cookie)).await;
+        assert!(panel.contains(line), "{uri}");
+    }
+
+    // Not signed in: what is worth knowing, and no finding.
+    let out = page_of(&app, "/person/x1?tab=status", None).await;
+    assert!(out.contains("Good to know"));
+    assert!(!out.contains("To check") && !out.contains("Death before birth"));
+    for uri in ["/tree?root=x1&sel=x1", "/tree/panel/x1"] {
+        let panel = page_of(&app, uri, None).await;
+        assert!(!panel.contains("status-line"), "{uri}, signed out");
+    }
+
+    // Marked as normal through the Quality page.
+    let body =
+        common::body_string(common::get_with_cookie(&app, "/quality.json", &cookie).await).await;
+    let all: Vec<Value> = serde_json::from_str(&body).unwrap();
+    let f = all
+        .iter()
+        .find(|f| f["rule"] == "death-before-birth")
+        .expect("Karol Mak's");
+    let form = format!(
+        "kind=person&id=x1&fingerprint={}&base_version={}&note=ours&back=/quality",
+        f["fingerprint"].as_str().unwrap().replace(':', "%3A"),
+        f["version"].as_u64().unwrap()
+    );
+    let resp = common::post_form_as(&app, &cookie, "/quality/dismiss", &form).await;
+    assert!(resp.status().is_redirection(), "{}", resp.status());
+    // The findings follow the record's new version.
+    let record = page_of(&app, "/person/x1", Some(&cookie)).await;
+    assert!(!record.contains(counted), "nothing left to check");
+    let tab = page_of(&app, "/person/x1?tab=status", Some(&cookie)).await;
+    assert!(!tab.contains("Death before birth"));
+    assert!(tab.contains("Marked “normal for us”: 1"), "{tab}");
+}
+
+/// What is worth knowing about a record is on its Statut tab, not on its
+/// fiche, and a reader who is not signed in is shown no finding there.
+#[tokio::test]
+async fn whats_worth_knowing_about_a_record_is_on_its_status_tab() {
+    let sample = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("deploy/sample.axgf");
+    let (app, _s) = common::app_with_bundle("status-know", &sample);
+    let id = "25249f60-8614-401f-892d-209ca3db58b6";
+    let fiche = page_of(&app, &format!("/person/{id}"), None).await;
+    assert!(fiche.contains(&format!("href=\"/person/{id}?tab=status\"")));
+    assert!(
+        !fiche.contains("Birth date imprecise in the source"),
+        "not on the fiche"
+    );
+    let tab = page_of(&app, &format!("/person/{id}?tab=status"), None).await;
+    assert!(tab.contains("Good to know"));
+    assert!(tab.contains("Birth date imprecise in the source"), "{tab}");
+    assert!(tab.contains("Dated occupations: 1"));
+    assert!(
+        !tab.contains("To check"),
+        "no finding for a reader not signed in"
+    );
+}

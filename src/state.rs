@@ -91,6 +91,10 @@ pub struct AppState {
     lenses: RwLock<LensCache>,
     /// Bumped whenever `inner` is replaced. What tells the cache it is stale.
     generation: std::sync::atomic::AtomicU64,
+    /// The data-quality findings of the bundle as it was at a generation:
+    /// every record's Status tab reads them (the operator's request of
+    /// 5 November 2026), and they change only with the bundle.
+    quality: RwLock<Option<(u64, std::sync::Arc<Vec<crate::quality::Finding>>)>>,
     /// The append-only edit journal, beside the bundle rather than in it.
     journal: crate::journal::Journal,
     /// Where backups are expected to be, when the operator said so. Read by
@@ -695,6 +699,7 @@ impl AppState {
                 sessions: crate::session::SessionStore::beside(path),
                 lenses: RwLock::new(LensCache::default()),
                 generation: std::sync::atomic::AtomicU64::new(0),
+                quality: RwLock::new(None),
                 journal: crate::journal::Journal::new(crate::journal::Journal::path_for(path)),
                 geocoder: None,
                 map: None,
@@ -969,6 +974,21 @@ impl AppState {
     fn invalidate_lenses(&self) {
         self.generation
             .fetch_add(1, std::sync::atomic::Ordering::Release);
+    }
+
+    /// Every data-quality finding of the bundle as it is ([`crate::quality::detect`]),
+    /// worked out once for each version of the bundle. Nothing is filtered
+    /// for a reader here.
+    pub fn quality_findings(&self) -> std::sync::Arc<Vec<crate::quality::Finding>> {
+        let now = self.generation.load(std::sync::atomic::Ordering::Acquire);
+        if let Some((at, found)) = &*self.quality.read().unwrap_or_else(|e| e.into_inner()) {
+            if *at == now {
+                return found.clone();
+            }
+        }
+        let found = std::sync::Arc::new(self.read(crate::quality::detect));
+        *self.quality.write().unwrap_or_else(|e| e.into_inner()) = Some((now, found.clone()));
+        found
     }
 
     /// Serialize the current flat bundle to a JSON string.

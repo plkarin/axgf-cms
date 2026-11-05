@@ -244,7 +244,7 @@ admin-operations = Operacje
 admin-validate = Sprawdź poprawność
 admin-deduplicate = Usuń duplikaty
 admin-export = Eksportuj archiwum
-admin-roles-note = Sprawdzanie poprawności, usuwanie duplikatów, eksport, usuwanie i zarządzanie kontami są wyłącznie dla administratora. Współtwórca dociera do każdej innej strony tutaj.
+admin-roles-note = Sprawdzanie, łączenie duplikatów, eksport, usuwanie i konta są tylko dla administratorów.
 admin-dedup-confirm = Usuwanie duplikatów scala wpisy i przepisuje archiwum. Kontynuować?
 admin-recent-changes = Ostatnie zmiany
 admin-recent-note = Ostatnie { $shown } z { $total ->
@@ -259,7 +259,7 @@ admin-sessions-open = { $n ->
         [many] Otwartych { $n } sesji.
        *[other] Otwartych { $n } sesji.
     }
-admin-no-changes-yet = Przez tę aplikację nic jeszcze nie zostało zmienione. Każdy kolejny zapis zostanie odnotowany w { $path }.
+admin-no-changes-yet = Jeszcze żadnych zmian. Każdy zapis trafia do { $path }.
 admin-last-validation = Ostatnie sprawdzenie
 admin-bundle-heavy = To archiwum waży { $size }. Całość jest wczytywana przy starcie i trzymana w pamięci, więc powyżej mniej więcej { $warn } strona zaczyna kosztować realną pamięć, a restarty stają się wolne. To rozwiązanie pasuje do archiwum rodzinnego, nie do biblioteki multimediów — jeśli załączniki rosną bez ograniczeń, trzymaj je w magazynie plików, a archiwum niech na nie wskazuje.
 
@@ -356,10 +356,17 @@ person-tab-media = Media
 person-tab-tree = Drzewo
 person-tab-history = Historia
 person-tab-afg = AFG
+person-tab-status = Status
+status-check = Do sprawdzenia
+status-know = Warto wiedzieć
+status-fix = Popraw
+status-open = Otwórz
+status-dismissed = Oznaczone „u nas normalne”: { $n }
+status-panel = Do sprawdzenia: { $n }
 person-afg-title = Pytania do AFG: { $name }
 person-afg-title-short = Rozmowy z AFG
-person-afg-lede = Pytaj o życie tej osoby ({ $name }), jej rodzinę, jej czasy. AFG odpowiada na podstawie tego, co możesz czytać w archiwum, i mówi, kiedy wykracza poza nie. Twoje rozmowy tutaj są tylko Twoje: wróć do jednej albo zacznij nową.
-person-afg-reads = Z każdą wiadomością AFG czyta ten wpis, jego notatki ({ $notes }), bliskich krewnych ({ $relatives }) i listę rodziny ({ $persons }): około { $tokens } tokenów, wysyłanych tam, gdzie działa AFG.
+person-afg-lede = Pytaj o życie tej osoby ({ $name }), jej rodzinę, jej czasy. Twoje rozmowy tutaj są tylko Twoje.
+person-afg-reads = Czytane przy każdej wiadomości: wpis, notatki ({ $notes }), bliscy krewni ({ $relatives }), rodzina ({ $persons }) · około { $tokens } tokenów.
 person-afg-ask = Twoje pytanie o tę osobę ({ $name })
 person-afg-example = Na przykład: „W jakim pułku służyła ta osoba ({ $name }) w bitwie, o której mówią notatki?”
 person-afg-conversations = Twoje rozmowy
@@ -425,7 +432,7 @@ admin-version = wersja { $version }
 ## Konta
 
 accounts-title = Konta
-accounts-lede = Przechowywane w { $path }, z prawami 600, obok archiwum i nigdy w środku. Archiwum się kopiuje, wysyła i publikuje; skróty haseł podróżujące w jego wnętrzu zamieniłyby każdą kopię drzewa rodzinnego w kopię danych logowania.
+accounts-lede = Zapisane w { $path } (tryb 600), obok archiwum i nigdy w nim.
 accounts-existing = Istniejące
 accounts-username = Nazwa użytkownika
 accounts-role = Rola
@@ -445,8 +452,8 @@ accounts-roots = { $n ->
        *[other] { $n } korzeni
     }
 accounts-add = Dodaj konto
-accounts-no-registration = Odwiedzający nie mogą sami zakładać kont; rejestrację ustawia się wyżej. W większości rodzin wystarczy administrator, który zna wszystkich.
-accounts-password-hint = Zostaw puste, a hasło zostanie wygenerowane i pokazane raz. Co najmniej { $min } znaków, jeśli ustawiasz je sam.
+accounts-no-registration = Odwiedzający nie mogą sami zakładać kont; rejestrację ustawia się wyżej.
+accounts-password-hint = Puste: hasło zostanie wygenerowane i pokazane raz. W przeciwnym razie co najmniej { $min } znaków.
 accounts-new-password-placeholder = nowe hasło (puste = bez zmiany)
 accounts-email = E-mail
 accounts-optional = (opcjonalnie)
@@ -458,7 +465,7 @@ accounts-branch-hint = Ogranicza to, co konto może edytować, do tych osób, ic
 accounts-branch-reading = Nie ogranicza tego, co mogą czytać — o tym decyduje widoczność każdego wpisu, a te dwie rzeczy są celowo rozdzielone.
 accounts-branch-placeholder = jeden identyfikator osoby w wierszu
 accounts-ids-in-bundle = Identyfikatory osób w tym drzewie
-accounts-emergency-warning = Jesteś zalogowany tokenem awaryjnym. Daje on prawa administratora na tę sesję, ale nie jest kontem: nie ma własnych ustawień, a dziennik zmian zapisze Twoje zmiany jako emergency-token, a nie jako osobę. Załóż sobie poniżej prawdziwe konto i zaloguj się na nie.
+accounts-emergency-warning = Zalogowano Cię tokenem awaryjnym, nie kontem: załóż poniżej prawdziwe konto i używaj go.
 accounts-created-with-password = Utworzono { $username }. Hasło to { $password } — pokazywane jest raz i przechowywane wyłącznie jako skrót Argon2id, więc przekaż je teraz.
 accounts-created = Utworzono { $username }.
 accounts-updated = Zaktualizowano { $username }. Każda otwarta sesja tego konta została wylogowana.
@@ -642,8 +649,8 @@ tree-counts = { $drawn } z { $total } osób · { $generations ->
     }
 tree-unplaced-count = { $n } bez miejsca
 tree-contradicts-title = To drzewo samo sobie przeczy.
-tree-contradicts-detail = Żaden układ rzędów tego nie spełni, więc poniższa relacja została pominięta w numerowaniu pokoleń i niektóre rzędy mogą być narysowane w złym miejscu. Popraw ten z dwóch wpisów, który jest błędny.
-tree-contradicts-pair = Zapisani zarazem jako para i jako rodzic z dzieckiem:
+tree-contradicts-detail = Te związki pominięto w numeracji, więc niektóre rzędy mogą stać nie na miejscu. Popraw błędny wpis.
+tree-contradicts-pair = Jednocześnie para oraz rodzic i dziecko:
 tree-contradicts-more = { $n ->
         [one] Jedna dalsza sprzeczność nie została wymieniona.
         [few] { $n } dalsze sprzeczności nie zostały wymienione.
@@ -840,7 +847,6 @@ gender-U = Nie zapisano
 
 ## Sekcje wpisu, szczegóły
 
-record-notes-title = Uwagi do tego wpisu:
 record-name = Nazwa
 record-type = Typ
 record-cause = Przyczyna:
@@ -954,7 +960,7 @@ list-policy-orphan-detail = — usuń go, ale zachowaj przywołujące wpisy z wy
 
 completeness-dates-title = Daty według kształtu, jaki naprawdę mają
 completeness-no-dates = Nie zapisano jeszcze żadnych dat.
-completeness-dates-note = Data, którą ktoś ustalił co do dnia, i data, którą ktoś potrafił umieścić tylko w dekadzie, to dwa różne twierdzenia — oba zachowane tak, jak zostały podane. Tekst, którego w ogóle nie dało się odczytać jako daty, zachowywany jest słowo w słowo, zamiast zostać usunięty.
+completeness-dates-note = Daty zostają takie, jak podano, co do dnia lub dekady; tekst, który nie jest datą, zostaje słowo w słowo.
 completeness-shape-exact = dokładna
 completeness-shape-exact-note = pełny dzień kalendarzowy
 completeness-shape-approximate = przybliżona
@@ -969,7 +975,7 @@ completeness-shape-unknown-note = zapisana jako nieznana
 ## Strona importu
 
 convert-page-title = Importuj plik rodzinny
-convert-lede = Przenieś istniejące drzewo z pliku GEDCOM — to eksport, który tworzy większość programów genealogicznych. Nic nie jest tu przechowywane, a drzewo, które ta strona już pokazuje, zostaje dokładnie takie, jakie było.
+convert-lede = Zaimportuj drzewo z pliku GEDCOM. Nic nie jest zapisywane, a drzewo serwisu się nie zmienia.
 convert-file-label = Plik rodzinny (.ged)
 convert-file-hint = Do { $mb } MB. Drzewo 767 osób to około 320 KB.
 convert-confidence-label = Jak pewne są te fakty na początek
@@ -1107,33 +1113,13 @@ name-type-nickname = przezwisko
 
 ## Uwagi do wpisu
 
-note-links = { $n ->
-        [one] relacja spoza rodziny, z własnymi datami i źródłami
-        [few] { $n } relacje spoza rodziny, z własnymi datami i źródłami
-        [many] { $n } relacji spoza rodziny, z własnymi datami i źródłami
-       *[other] { $n } relacji spoza rodziny, z własnymi datami i źródłami
-    }
-note-occupations = { $n ->
-        [one] zawód zapisany z początkiem i końcem
-        [few] { $n } zawody zapisane z początkiem i końcem
-        [many] { $n } zawodów zapisanych z początkiem i końcem
-       *[other] { $n } zawodów zapisanych z początkiem i końcem
-    }
-note-birth-imprecise = data urodzenia, której źródło nie potrafiło ustalić, pokazana tak, jak ją zapisano
-note-death-imprecise = data śmierci, której źródło nie potrafiło ustalić, pokazana tak, jak ją zapisano
-note-names = { $n ->
-        [one] jedna zapisana nazwa
-        [few] { $n } zapisane nazwy
-        [many] { $n } zapisanych nazw
-       *[other] { $n } zapisanych nazw
-    }
-note-transliteration = nazwa w swoim własnym piśmie obok transliteracji łacińskiej
-note-witnessed = { $n ->
-        [one] wydarzenie, którego była świadkiem, a nie bohaterem
-        [few] { $n } wydarzenia, których była świadkiem, a nie bohaterem
-        [many] { $n } wydarzeń, których była świadkiem, a nie bohaterem
-       *[other] { $n } wydarzeń, których była świadkiem, a nie bohaterem
-    }
+note-links = Relacje poza rodziną: { $n }
+note-occupations = Datowane zawody: { $n }
+note-birth-imprecise = Data urodzenia w źródle nieprecyzyjna
+note-death-imprecise = Data śmierci w źródle nieprecyzyjna
+note-names = Zapisane imiona i nazwiska: { $n }
+note-transliteration = Imię i nazwisko w oryginalnym piśmie, z transliteracją
+note-witnessed = Wydarzenia jako świadek: { $n }
 
 visibility-public = publiczne
 visibility-members = członkowie rodziny
@@ -1244,16 +1230,11 @@ completeness-metric-confidence = Jak pewny jest każdy fakt
 completeness-metric-confidence-none = Żaden z { $slots } faktów tutaj nie mówi, jak jest pewny. Data odczytana z aktu i data zgadnięta wyglądają tak samo — do chwili, gdy przestają.
 completeness-metric-confidence-uniform = { $with } z { $slots } faktów niesie ocenę i każda z nich to ta sama liczba ({ $modal }). Tyle zostawia po sobie import masowy: wartość zastępcza, do której nikt nie wrócił. Żaden nie został jeszcze oceniony pojedynczo.
 completeness-metric-confidence-some = { $with } z { $slots } faktów niesie ocenę. { $modal_count } dzieli jedną wartość ({ $modal }); { $assessed } różni się od niej, więc zostały obejrzane po kolei.
-completeness-metric-confidence-many = { $with } z { $slots } faktów niesie ocenę, z czego { $assessed } różni się od najczęstszej wartości ({ $modal }), w { $distinct } odrębnych poziomach. To drzewo zapisuje prawdziwą, zróżnicowaną niepewność.
+completeness-metric-confidence-many = Faktów z oceną: { $with } z { $slots }; od { $modal } odbiega { $assessed }, na poziomach: { $distinct }.
 
 completeness-metric-parentage = Jak pewne jest każde powiązanie rodzic–dziecko
 completeness-metric-parentage-none = Żadne pochodzenie tutaj nie mówi, jak jest pewne. Adopcje, linie sporne i rekonstrukcje z jednej wzmianki to dokładnie te miejsca, w których rodzina musi zapisać wątpliwość — a drzewo rysuje mniej pewne powiązanie bledszą linią.
-completeness-metric-parentage-some = { $n ->
-        [one] Jedno pochodzenie niesie własną ocenę
-        [few] { $n } pochodzenia niosą własną ocenę
-        [many] { $n } pochodzeń niesie własną ocenę
-       *[other] { $n } pochodzeń niesie własną ocenę
-    }, więc linia przypuszczalna jest widocznie słabsza niż udokumentowana.
+completeness-metric-parentage-some = Pochodzenia z własną oceną: { $n }
 
 completeness-metric-links = Relacje poza krwią i małżeństwem
 completeness-metric-links-none = Rodzice chrzestni, pracodawcy, świadkowie, mentorzy, opiekunowie. Żadnych jeszcze nie zapisano. Każda może nieść własne daty, swoje źródło i Twój stopień pewności.
@@ -1272,11 +1253,11 @@ completeness-metric-occupations-undated = { $total ->
         [many] Zapisano { $total } zawodów, bez dat
        *[other] Zapisano { $total } zawodów, bez dat
     }. Dodaj początek i koniec, a da się je porównać obok siebie na jednej osi czasu.
-completeness-metric-occupations-some = { $span } z { $total } ma początek albo koniec, więc da się je porównać obok siebie na jednej osi czasu.
+completeness-metric-occupations-some = Z początkiem lub końcem: { $span } z { $total }.
 
 completeness-metric-sources = Źródła z oceną wiarygodności
 completeness-metric-sources-none = Nie zapisano żadnych źródeł. Wskazanie, skąd wziął się fakt, pozwala krewnemu sprawdzić go później — albo się z nim nie zgodzić i powiedzieć dlaczego.
-completeness-metric-sources-some = { $graded } z { $total } mówi, jak są mocne, więc twierdzenie oparte na akcie urodzenia widocznie nie jest tym samym co oparte na wspomnieniu.
+completeness-metric-sources-some = Mówiących, jak są wiarygodne: { $graded } z { $total }.
 
 completeness-what-is-recorded = Co zapis może powiedzieć
 completeness-in-this-tree = W tym drzewie
@@ -1314,7 +1295,7 @@ phys-field-operations = Operacje i urazy
 phys-field-cause-of-death = Przyczyna zgonu
 phys-field-religion = Religia lub przynależność
 phys-field-health-notes = Uwagi
-admin-export-health-note = Zwykły eksport pomija wszystkie kategorie wrażliwe — zdrowie i przekonania, dane biometryczne, dane genetyczne i karalność — oraz profil behawioralny każdej osoby żyjącej, więc plik wysłany krewnemu nie zawiera żadnej z nich. Zaznacz, co ma zawierać konkretny plik; samo archiwum zapisuje, które kategorie pominięto.
+admin-export-health-note = Zwykły eksport pomija każdą kategorię wrażliwą i zachowanie żyjących. Zaznacz, co ma zawierać ten plik.
 avatar-picker-title = Wybierz zdjęcie
 avatar-choose = Które zdjęcie reprezentuje tę osobę
 avatar-mode-auto = Niech wybierze program
@@ -3062,7 +3043,7 @@ profile-group-filled = { $n ->
 profile-problems = Części wprowadzonych danych nie udało się zapisać. Każdy problem opisano przy jego polu i nic nie zostało zapisane.
 profile-editor-withheld = Ten dział zawiera też dla tej osoby dane z kategorii: { $classes }, do których nie masz dostępu. Nie są tu pokazane, a zapisanie formularza pozostawi je bez zmian.
 profile-living-class-note = Ta osoba jest zapisana jako żyjąca. To, co wpiszesz tutaj w kategorii wrażliwej, zobaczą tylko administratorzy.
-profile-relationships-elsewhere = Rodzice, partnerzy, dzieci, rodzice chrzestni i świadkowie nie są zapisani przy tej osobie. To rodziny, powiązania i wydarzenia, które ją wymieniają — dlatego każda zmiana tutaj zmienia też zapis wszystkich pozostałych osób, których dotyczy.
+profile-relationships-elsewhere = Krewni, chrzestni i świadkowie są w rodzinach, powiązaniach i wydarzeniach: zmiana tutaj zmienia też te wpisy.
 profile-documents-first = Artefakt odsyła do dokumentu dołączonego do tej osoby. Najpierw dołącz plik.
 profile-editor-nothing = Nic w tym dziale nie jest do edycji dla ciebie.
 profile-new-entry = Nowy wpis
@@ -3354,7 +3335,7 @@ field-person-display-name-hint = Nazwa pokazywana wszędzie w serwisie.
 field-person-gender = Płeć
 field-person-living = Żyje
 field-person-birth-date = Data urodzenia
-field-date-value-hint = Rok, rok i miesiąc albo pełna data: 1923, 1923-04 lub 1923-04-12. Zostaw puste, jeśli nikt jej nie zna.
+field-date-value-hint = 1923, 1923-04 lub 1923-04-12; puste, jeśli nieznana.
 field-person-birth-precision = Dokładność daty urodzenia
 field-precision-hint = Jak dokładnie źródło to ustala.
 field-person-birth-circa = Data urodzenia przybliżona
@@ -3487,7 +3468,7 @@ record-link-outgoing = od tej osoby
 record-link-incoming = do tej osoby
 # Ostrzeżenie eksploatacyjne w panelu administracyjnym.
 health-attention = Wymaga uwagi:
-health-standing-token = Awaryjny token administratora jest nadal ustawiony. Loguje z pominięciem każdego konta i każdego uprawnienia — na to jest w dniu, w którym nikt nie może się zalogować, a nie po to, by zostać, gdy już ktoś może. Usuń go z pliku środowiska usługi i uruchom ją ponownie.
+health-standing-token = Token awaryjny jest nadal ustawiony i omija każde konto. Usuń go z pliku środowiska usługi i uruchom ją ponownie.
 health-bundle-invalid = { $errors ->
         [one] Dane rodzinne nie przechodzą już walidacji: jeden błąd, wypisany niżej pod „Sprawdź”.
         [few] Dane rodzinne nie przechodzą już walidacji: { $errors } błędy, wypisane niżej pod „Sprawdź”.
@@ -3587,7 +3568,7 @@ search-empty-query = Wpisz imię lub nazwisko, aby wyszukać.
 nav-quality = Jakość danych
 quality-title = Rzeczy warte uwagi
 quality-none = Nic do sprawdzenia: wszystkie kontrole przeszły.
-quality-intro = Nic nie jest tu zmieniane za Ciebie. Każdy wiersz to przypadek wart sprawdzenia — często jest dla niego dobry powód. Otwórz kartę i zdecyduj albo oznacz go jako sprawdzony.
+quality-intro = Punkty warte sprawdzenia; często jest dobry powód. Otwórz wpis albo oznacz punkt jako sprawdzony.
 quality-groups-label = Rodzaje uwag
 quality-all = Wszystko
 quality-show-label = Pokaż
@@ -3606,39 +3587,39 @@ quality-show-list = Pokaż listę
 quality-after-import = Niczego w pliku nie zmieniono. Gdy stanie się archiwum strony, strona jakości danych pokaże te same uwagi z odnośnikiem do każdej karty.
 quality-file-list-cut = Wymieniono tu tylko pierwsze uwagi (do { $shown }). Gdy plik stanie się archiwum strony, strona jakości danych pokaże wszystkie.
 quality-rule-name-sentence = Zdanie w polu imienia lub nazwiska
-quality-name-sentence = „{ $value }” wygląda bardziej na zdanie niż na imię lub nazwisko: jeśli to wyjaśnienie, zostaw w polu samo imię lub nazwisko, a resztę przenieś do notatki.
+quality-name-sentence = „{ $value }” wygląda na zdanie, nie na imię ani nazwisko.
 quality-rule-union-parent-child = Para, która jest też rodzicem i dzieckiem
-quality-union-parent-child = { $parent } i { $child } występują jednocześnie jako para oraz jako rodzic i dziecko: warto sprawdzić, który związek potwierdzają źródła.
+quality-union-parent-child = { $parent } i { $child }: jednocześnie para oraz rodzic i dziecko.
 quality-rule-child-listed-twice = Dziecko wpisane dwa razy
-quality-child-listed-twice = { $child } występuje dwa razy wśród dzieci tej rodziny: jeśli to to samo dziecko, jeden wpis można usunąć.
+quality-child-listed-twice = { $child } figuruje dwa razy wśród dzieci.
 quality-rule-duplicate-union = Ta sama para zapisana dwa razy
-quality-duplicate-union = { $a } i { $b } mają zapisanych { $count } związków: jeśli pobrali się tylko raz, może to być jeden związek wpisany dwukrotnie.
+quality-duplicate-union = { $a } i { $b }: zapisanych związków: { $count }.
 quality-rule-partner-twice = Ta sama osoba po obu stronach związku
-quality-partner-twice = { $person } występuje po obu stronach tego związku: warto sprawdzić, kim był drugi partner, albo zostawić tę stronę pustą, jeśli nikt nie wie.
+quality-partner-twice = { $person } jest po obu stronach związku.
 quality-rule-foreign-surnames = Syn o nazwisku innym niż obojga rodziców
-quality-foreign-surnames = Nazwisko inne niż obojga rodziców: { $who }. To może być normalne — zmiana nazwiska, pasierb, inna pisownia — ale warto rzucić okiem. (Córki są pominięte, bo zwykle chodzi o nazwisko po mężu.)
+quality-foreign-surnames = Nazwisko różne od nazwisk obojga rodziców: { $who }.
 quality-rule-death-before-birth = Zgon przed urodzeniem
-quality-death-before-birth = { $person } ma zgon w { $death }, przed urodzeniem w { $birth }: jedna z dat może być źle wpisana; warto sprawdzić w źródłach.
+quality-death-before-birth = { $person }: śmierć ({ $death }) przed urodzeniem ({ $birth }).
 quality-rule-child-before-parent = Dziecko urodzone przed rodzicem
-quality-child-before-parent = { $child } (ur. { $childborn }) wydaje się urodzony przed rodzicem { $parent } (ur. { $parentborn }): warto sprawdzić daty albo pokrewieństwo.
+quality-child-before-parent = Urodzenie: { $child } ({ $childborn }) przed rodzicem: { $parent } ({ $parentborn }).
 quality-rule-parent-too-young = Rodzic młodszy niż dwanaście lat
-quality-parent-too-young = { $parent } miałby { $age } lat w chwili narodzin { $child }, co jest nietypowe: warto sprawdzić daty albo pokrewieństwo.
+quality-parent-too-young = { $parent }: wiek { $age } przy narodzinach: { $child }.
 quality-rule-parent-too-old = Rodzic starszy niż sześćdziesiąt pięć lat
-quality-parent-too-old = { $parent } miałby { $age } lat w chwili narodzin { $child }, co jest nietypowe: warto sprawdzić daty albo pokrewieństwo.
+quality-parent-too-old = { $parent }: wiek { $age } przy narodzinach: { $child }.
 quality-rule-marriage-before-birth = Ślub przed urodzeniem jednego z małżonków
-quality-marriage-before-birth = Ten ślub ma datę { $married }, sprzed urodzenia { $person } w { $born }: warto sprawdzić datę ślubu.
+quality-marriage-before-birth = Małżeństwo ({ $married }) przed urodzeniem: { $person } ({ $born }).
 quality-rule-isolated-record = Karta bez daty i bez powiązań
-quality-isolated-record = { $person } nie ma daty ani powiązania z nikim w rodzinie: warto dodać, jak ta osoba należy do rodziny, albo usunąć kartę, jeśli powstała przez pomyłkę.
+quality-isolated-record = { $person }: brak dat i powiązań.
 quality-rule-place-no-region = Miejsce bez regionu
-quality-place-no-region = { $place } nie ma regionu: dodanie go pomaga odróżnić miejsca o tej samej nazwie.
+quality-place-no-region = { $place }: brak regionu.
 quality-rule-region-free-text = Region, który wygląda na notatkę
-quality-region-free-text = Region miejsca { $place } brzmi „{ $value }”, co wygląda bardziej na notatkę niż region: warto przenieść notatkę do karty, której dotyczy.
+quality-region-free-text = Region miejsca { $place }: „{ $value }” wygląda na notatkę.
 quality-rule-place-near-duplicate = Miejsca, które mogą być tym samym
-quality-place-near-duplicate = { $names } to może być to samo miejsce zapisane inaczej: jeśli tak, można je połączyć w jedno.
+quality-place-near-duplicate = Być może jedno miejsce: { $names }.
 quality-rule-not-a-place = Wpis, który może nie być miejscem
-quality-not-a-place = „{ $place }” jest na liście miejsc, ale może nie być miejscem — zaczyna się małą literą, czego nazwy miejsc zwykle nie robią: warto sprawdzić, czy to nie notatka o miejscu.
+quality-not-a-place = „{ $place }” to być może nie miejsce.
 quality-rule-certain-without-source = Pewne, bez źródła
-quality-certain-without-source = { $record } ma informację oznaczoną jako całkowicie pewna ({ $claims }) bez źródła: warto dołączyć źródło albo obniżyć pewność.
+quality-certain-without-source = { $record }: pewne ({ $claims }) bez źródła.
 quality-dismiss = Sprawdzone — u nas to normalne
 quality-restore = Pokaż ponownie
 quality-note-label = Dlaczego (opcjonalnie)
@@ -3712,7 +3693,7 @@ admin-nav-connectivity = Łączność
 
 # Administration console: the AXGF bundle (v0.5.0, docs/adr/0011)
 bundle-title = Archiwum AXGF
-bundle-lede = Archiwum rodziny, tak jak przechowuje je ta witryna: { $path }. Z czym jest zgodne, co wygląda na błędne i dwa sposoby zabrania kopii.
+bundle-lede = Archiwum rodziny: { $path }. Jego zgodność, co wygląda na błąd i jak zabrać kopię.
 bundle-unset-title = Nie ma jeszcze rodziny.
 bundle-unset-detail = Ta instalacja ma puste archiwum, więc nie ma jeszcze czego sprawdzać. Uruchom ją z archiwum, z pliku GEDCOM albo od zera.
 bundle-kpi-conformity = Zgodność
@@ -3912,7 +3893,7 @@ infra-transport-title = Jak dociera się do witryny
 infra-transport-ok = Ta strona przyszła przez HTTPS.
 infra-transport-exposed = Ta strona przyszła bez szyfrowania, a serwer nasłuchuje na { $bind }, poza tą maszyną: hasła i ciasteczka sesji idą przez sieć jawnym tekstem.
 infra-transport-exposed-fix = Postaw przed nim odwrotne proxy HTTPS (Caddy, nginx, HAProxy) i z powrotem przypisz usługę do 127.0.0.1: uruchom ponownie bootstrap.sh z --bind 127.0.0.1:8080 albo usuń drop-in, który ją otworzył.
-infra-transport-plain = Ta strona przyszła bez szyfrowania z serwera nasłuchującego na { $bind }. To w porządku tylko na tej maszynie.
+infra-transport-plain = Bez szyfrowania, z { $bind }: w porządku tylko na tym komputerze.
 infra-transport-plain-fix = Wchodź na witrynę przez jej adres HTTPS. Jeśli proxy kończy TLS, niech wysyła X-Forwarded-Proto: https, aby ten serwer o tym wiedział.
 infra-forwarded-title = Przekazywane adresy
 infra-forwarded-ok = Serwer nasłuchuje tylko na tej maszynie, więc adresowi klienta przekazanemu przez proxy można ufać przy spowalnianiu powtarzanych nieudanych logowań.
@@ -3938,8 +3919,8 @@ infra-sso-ok = { $n ->
 infra-sso-no-https = Usługa logowania jest włączona, ale adres publiczny nie jest HTTPS: dostawcy nie wyślą odpowiedzi na nieszyfrowany adres i logowanie się nie uda.
 infra-sso-fix = W sekcji Łączność ustaw jako adres publiczny adres https://, którego używają czytelnicy.
 infra-admins-title = Administratorzy
-infra-admins-none = Żadne aktywne konto nie może administrować tą witryną. Może to tylko token awaryjny i tylko dopóki jest ustawiony.
-infra-admins-none-fix = Zaloguj się tokenem awaryjnym, utwórz administratora w sekcji Konta, a potem usuń token.
+infra-admins-none = Żadne aktywne konto nie może administrować tą witryną; może to tylko token awaryjny.
+infra-admins-none-fix = Zaloguj się tokenem awaryjnym, utwórz administratora, a potem usuń token.
 infra-admins-one = Jeden administrator. Jeśli ta osoba będzie nieobecna albo zgubi hasło, nikt nie zarządzi witryną.
 infra-admins-one-fix = Nadaj rolę administratora drugiej zaufanej osobie w sekcji Konta.
 infra-admins-ok = { $n ->
@@ -3950,7 +3931,7 @@ infra-admins-ok = { $n ->
     }
 infra-token-title = Token awaryjny
 infra-token-generated = Token awaryjny nie jest ustawiony.
-infra-token-only-way = Token awaryjny jest ustawiony i bez konta administratora to jedyne wejście. Zachowaj go, dopóki nie powstanie administrator.
+infra-token-only-way = Token awaryjny jest jedynym wejściem, dopóki nie istnieje konto administratora.
 infra-token-standing = Token awaryjny jest wciąż ustawiony. Loguje z pominięciem wszystkich kont i uprawnień.
 infra-token-fix = Usuń AXGF_CMS_ADMIN_TOKEN z pliku środowiska usługi, a następnie uruchom usługę ponownie.
 infra-registration-title = Samodzielna rejestracja
@@ -4038,7 +4019,7 @@ infra-clock-fix = Włącz synchronizację czasu: timedatectl set-ntp true.
 
 # Administration console: the Infrastructure page (v0.5.0, docs/adr/0011)
 infra-title = Infrastruktura
-infra-lede = Maszyna, na której działa ta witryna, sprawdzana przy każdym otwarciu tej strony: jak się do niej dociera, kto ma klucze, czy dane są bezpieczne i wciąż się mieszczą, która wersja działa i jaka piaskownica ją otacza.
+infra-lede = Komputer tej witryny: dostęp, klucze, dane, wersja i piaskownica, sprawdzane przy każdym otwarciu strony.
 infra-kpi-health = Stan
 infra-kpi-version = Wersja
 infra-kpi-version-newer = Dostępna { $version }
@@ -4057,7 +4038,7 @@ infra-kpi-load = Obciążenie { $load }
 infra-kpi-rss = W użyciu { $size }
 infra-unknown = Nieznane
 infra-health = Stan
-infra-health-intro = Zielone jest w porządku, ostrzeżenie warto obejrzeć, krytyczne wymaga uwagi od razu. Każde ustalenie rozwija się na to, co zrobić.
+infra-health-intro = Zielony: w porządku; ostrzeżenie: warto zerknąć; krytyczny: działaj od razu.
 infra-json = Te same kontrole w JSON, dla monitoringu
 infra-version = Wersja
 infra-version-running = Działa
@@ -4092,14 +4073,14 @@ infra-relation-older = starsza
 infra-prerelease = wydanie kandydujące
 infra-releases-none = Nie ma jeszcze listy wydań.
 infra-upgrade = Zmień wersję
-infra-upgrade-intro = Przycisk prosi pomocnika aktualizacji, który działa jako root poza piaskownicą tej witryny. Robi kopię, instaluje wydanie po sprawdzeniu sumy kontrolnej, uruchamia usługę ponownie i ją sprawdza; jeśli nowa wersja nie odpowiada, przywraca poprzednią.
+infra-upgrade-intro = Pomocnik aktualizacji robi kopię, instaluje zweryfikowane wydanie, uruchamia ponownie i sprawdza; jeśli się nie uda, wraca poprzednia wersja.
 infra-upgrade-version = Wersja do zainstalowania
 infra-upgrade-confirm = Aby wrócić do starszej wersji, wpisz ponownie jej tag
 infra-upgrade-confirm-hint = Niepotrzebne przy nowszej wersji. Starsza wersja może nie odczytać danych zapisanych przez nowszą: najpierw przeczytaj jej informacje.
 infra-upgrade-go = Zainstaluj tę wersję
 infra-upgrade-safety = Witryna jest niedostępna przez kilka sekund, gdy usługa się restartuje.
 infra-upgrade-manual = Pomocnik aktualizacji nie jest zainstalowany na tym serwerze, więc ta strona nie może zmienić wersji. Jako root, na serwerze:
-infra-upgrade-manual-helper = Jednorazowe uruchomienie bieżącego bootstrap.sh instaluje pomocnika i od tej pory przycisk tutaj działa.
+infra-upgrade-manual-helper = Uruchom raz bieżący bootstrap.sh, aby zainstalować pomocnika.
 infra-upgrade-asked = Zażądano { $version }. Pomocnik aktualizacji podejmie to w ciągu kilku sekund; ta strona pokaże, jak poszło.
 infra-upgrade-no-helper = Pomocnik aktualizacji nie jest zainstalowany, więc { $version } nie da się stąd zainstalować.
 infra-upgrade-unknown-version = { $version } nie ma na liście opublikowanych wydań.
@@ -4160,7 +4141,7 @@ infra-compute-nnp-off = można zdobyć uprawnienia
 infra-compute-seccomp-on = wywołania systemowe filtrowane
 infra-compute-seccomp-off = wywołania systemowe niefiltrowane
 infra-activity = Aktywność
-infra-activity-intro = Liczone z okresu: { $span }. Usługa pamięta jedną dobę i zaczyna od zera po każdym restarcie.
+infra-activity-intro = Za okres { $span }; liczenie zaczyna się od zera po restarcie usługi.
 infra-activity-sessions = Otwarte sesje
 infra-activity-signed-in = Logowania
 infra-activity-failed = Nieudane logowania
@@ -4178,7 +4159,7 @@ infra-upgrade-already-pending = { $version } już czeka na pomocnika aktualizacj
 
 # Administration console: Connectivity, sign-in services and registration (v0.5.0, docs/adr/0012)
 connectivity-title = Łączność
-connectivity-lede = Jak czytelnicy docierają do tej witryny i jak się logują: adres publiczny, usługi logowania i zasady każdego logowania, także administratorów.
+connectivity-lede = Jak czytelnicy docierają do witryny i logują się: adres publiczny, usługi logowania i reguły.
 connectivity-kpi-address = Adres publiczny
 connectivity-address-unset = Nieustawiony
 connectivity-address-https = HTTPS
@@ -4197,7 +4178,7 @@ connectivity-policy-short-non-admins = Bez administratorów
 connectivity-policy-short-nobody = Nikt
 connectivity-policy-note-everyone = Każde konto może logować się hasłem, a także przez powiązaną usługę.
 connectivity-policy-note-non-admins = Administratorzy logują się wyłącznie przez usługę; pozostali mogą nadal używać hasła. Skradzione hasło administratora niczego wtedy nie otwiera.
-connectivity-policy-note-nobody = Wszyscy logują się przez usługę. Konto bez powiązanej usługi i bez adresu do powiązania nie może się zalogować.
+connectivity-policy-note-nobody = Wszyscy logują się przez usługę; konto bez powiązanej usługi nie może się zalogować.
 connectivity-kpi-admins-linked = { $n ->
     [one] { $n } administrator z powiązaną usługą
     [few] { $n } administratorów z powiązaną usługą
@@ -4210,13 +4191,13 @@ registration-short-closed = Tylko administratorzy
 registration-short-secret = Z sekretem rodziny
 registration-short-open = Otwarta dla odwiedzających
 connectivity-address = Adres publiczny
-connectivity-address-intro = Adres, który wpisują czytelnicy, dokładnie tak, jak go wpisują: https://family.example. Usługi logowania odsyłają na niego czytelników, więc musi to być adres publiczny, a nie ten, na którym nasłuchuje ten serwer.
+connectivity-address-intro = Publiczny adres, który wpisują czytelnicy, np. https://family.example; usługi logowania odsyłają ich tam.
 connectivity-address-label = Adres publiczny
 connectivity-address-hint = Zostaw puste, dopóki nikt nie loguje się przez usługę.
 connectivity-address-invalid = To nie jest adres http ani https z nazwą hosta.
 connectivity-address-saved = Adres publiczny zapisano.
 connectivity-policy = Zasady logowania
-connectivity-policy-intro = Dotyczą każdego konta, także administratorów. Zasada, po której żaden administrator nie mógłby się zalogować, zostanie odrzucona.
+connectivity-policy-intro = Dotyczą każdego konta; reguła, która nie pozwoliłaby zalogować się żadnemu administratorowi, jest odrzucana.
 connectivity-policy-passwords = Kto może logować się hasłem
 connectivity-policy-without-way = { $n ->
     [one] { $n } aktywne konto nie ma powiązanej usługi ani adresu: przy „Nikt” nie mogłoby się zalogować.
@@ -4225,17 +4206,17 @@ connectivity-policy-without-way = { $n ->
     *[other] { $n } aktywnego konta nie ma powiązanej usługi ani adresu: przy „Nikt” nie mogłyby się zalogować.
     }
 connectivity-link-by-email = Wiąż usługę z kontem o tym samym zweryfikowanym adresie
-connectivity-link-by-email-note = Tak krewny dostaje logowanie jednym kliknięciem bez rejestracji: utwórz mu konto z jego adresem, a pierwsze logowanie przez usługę, która ten adres zweryfikowała, powiąże je. Porównywany jest tylko adres wpisany przez administratora lub zweryfikowany przez usługę.
+connectivity-link-by-email-note = Załóż konto krewnego z jego adresem: pierwsze logowanie przez usługę, która go potwierdzi, połączy konto.
 connectivity-domains = Domeny, z których można założyć konto
-connectivity-domains-hint = Jedna w wierszu, np. family.example. Puste: dowolne. Jeśli są ustawione, konto może założyć tylko adres z tych domen zweryfikowany przez usługę, a formularz rejestracji nie jest oferowany.
+connectivity-domains-hint = Jedna w wierszu (family.example). Puste: wszystkie. W przeciwnym razie konto mogą założyć tylko adresy potwierdzone w tych domenach.
 connectivity-domain-invalid = „{ $domain }” nie jest nazwą domeny.
 connectivity-policy-unknown = Wybierz, kto może logować się hasłem.
 connectivity-policy-lockout = Odrzucono: po tej zmianie żaden aktywny administrator nie mógłby się zalogować. Najpierw powiąż usługę logowania z kontem administratora, logując się przez nią raz, albo zachowaj hasła dla administratorów.
 connectivity-policy-saved = Zasady logowania zapisano.
 connectivity-not-saved = Nie zapisano: { $error }
 connectivity-services = Usługi logowania
-connectivity-services-intro = Zarejestruj tę witrynę w konsoli usługi z podanym adresem przekierowania, a potem wklej tu identyfikator klienta i sekret. Odwiedzający zobaczą wtedy „Kontynuuj z …” na stronach logowania i rejestracji.
-connectivity-outbound-note = Logowanie przez usługę wymaga, by ten serwer docierał do usługi. Jednostka zapisywana przez bootstrap.sh odrzuca połączenia wychodzące (IPAddressDeny=any): zezwól na nie przez sudo systemctl edit axgf-cms, dodając IPAddressAllow=any w [Service], i uruchom usługę ponownie. Przycisk testu pokaże, czy się udaje.
+connectivity-services-intro = Zarejestruj witrynę w konsoli usługi z pokazanym adresem przekierowania, potem wklej tu identyfikator klienta i sekret.
+connectivity-outbound-note = Logowanie przez usługę wymaga połączeń wychodzących: sudo systemctl edit axgf-cms, dodaj IPAddressAllow=any w sekcji [Service], potem uruchom ponownie.
 connectivity-service-ready = Gotowa
 connectivity-service-incomplete = Niekompletna
 connectivity-service-off = Wyłączona
@@ -4262,10 +4243,10 @@ connectivity-provider-saved = Zapisano { $name }.
 connectivity-test-ok = { $name } odpowiedział: { $answer }.
 connectivity-test-failed = Nie udało się połączyć z { $name } z tego serwera: { $detail }
 registration-title = Rejestracja
-registration-intro = Czy odwiedzający może sam założyć tu konto. Takie konto jest kontem członka: czyta to, co czytają członkowie, i niczego nie zmienia. Nadanie mu innej roli należy do administratora, niżej.
+registration-intro = Czy odwiedzający mogą sami założyć konto członka; administrator może nadać mu inną rolę poniżej.
 registration-who = Kto może założyć konto
 registration-note-closed = Konta zakłada tylko administrator, na tej stronie.
-registration-note-secret = Odwiedzający, który zna sekret rodziny, może założyć konto członka. Przekazuj sekret tak jak kod do drzwi.
+registration-note-secret = Kto zna rodzinny sekret, może założyć konto członka. Udostępniaj go jak kod do drzwi.
 registration-note-open = Każdy odwiedzający może założyć konto członka. Członkowie czytają rekordy przeznaczone dla członków.
 registration-rotate = Wylosuj nowy sekret
 registration-secret = Sekret rodziny
@@ -4421,13 +4402,13 @@ notes-field-title = Tytuł
 notes-field-category = Kategoria
 notes-field-category-hint = Dowolny tekst; podpowiadane są kategorie już użyte.
 notes-field-date = Data
-notes-field-date-hint = Rok, miesiąc albo dzień: 1952, 1952-06 lub 1952-06-14. Zostaw puste, jeśli notatka nie ma daty.
+notes-field-date-hint = 1952, 1952-06 lub 1952-06-14; puste, jeśli brak.
 notes-field-people = Osoby, których dotyczy
-notes-field-people-hint = Wpisz nazwisko i wybierz je z listy. Bez wskazanej osoby notatka należy do całej rodziny.
+notes-field-people-hint = Wpisz imię i wybierz je. Bez nikogo wskazanego notatka należy do całej rodziny.
 notes-person-add = Dodaj
 notes-person-remove = Usuń tę osobę
 notes-field-text = Tekst
-notes-text-hint = Pogrubienie, kursywę, nagłówki, listy i linki zapisuje się w Markdown; przyciski powyżej robią to za Ciebie. Wklej albo upuść obraz w tekście, aby go dodać, do { $mb } MB każdy.
+notes-text-hint = Markdown albo przyciski powyżej. Wklej lub upuść obrazy, do { $mb } MB każdy.
 notes-tool-bold = Pogrubienie
 notes-tool-italic = Kursywa
 notes-tool-heading = Nagłówek
@@ -4466,7 +4447,7 @@ notes-dashboard-open = Pisz notatki i zarządzaj nimi
 # The family the archive describes: the bundle room's form (2026-10-23)
 kind-bundle = archiwum
 manifest-title = Rodzina
-manifest-intro = Co archiwum mówi o rodzinie, którą zawiera. Jej nazwa to ta, którą pokazują strona Rodzina, tytuły stron i PDF każdej notatki; reszta podróżuje z plikiem. Liczby i daty samego pliku są liczone przy jego zapisie.
+manifest-intro = Co archiwum mówi o swojej rodzinie. Jego nazwa jest na stronie Rodzina, w tytułach i w PDF-ach notatek.
 manifest-name = Nazwa rodziny
 manifest-name-hint = Wyświetlana na stronie Rodzina i w tytułach. Konta podążają za nową nazwą.
 manifest-description = Opis
@@ -4475,7 +4456,7 @@ manifest-culture-hint = Znacznik języka: fr, pl, pt-BR…
 manifest-place = Główne miejsce
 manifest-place-hint = Kontynent, na którym rodzina głównie mieszkała.
 manifest-span = Obejmowany okres
-manifest-span-hint = Od najwcześniejszego do najpóźniejszego urodzenia zapisanego w archiwum; obliczany i zapisywany w pliku przy zapisie danych.
+manifest-span-hint = Od najwcześniejszego do najpóźniejszego urodzenia; liczone przy zapisie.
 manifest-license = Licencja
 manifest-license-type = Licencja
 manifest-save = Zapisz dane rodziny
@@ -4531,7 +4512,7 @@ account-who = Konto
 account-email = Adres e-mail
 account-since = Od
 account-person-title = Mój wpis w drzewie
-account-person-intro = Wskaż, którą osobą w drzewie jesteś. Nikt tego nie sprawdza: każde konto wybiera swój wpis na własną odpowiedzialność i może go w każdej chwili zmienić lub usunąć.
+account-person-intro = Którą osobą w drzewie jesteś? Twój wybór, bez weryfikacji; możesz go zmienić w każdej chwili.
 account-person-is = To konto deklaruje, że jest:
 account-person-unlink = Usuń powiązanie
 account-person-pick = Osoba w drzewie
@@ -5002,7 +4983,7 @@ kin-group-care = Piecza zastępcza i opieka
 kin-group-rites = Obrzędy i zwyczaje
 kin-group-others = Inne powiązania
 kin-find-title = Jakie to pokrewieństwo?
-kin-find-lede = Wybierz osobę z rodziny: krok po kroku zobaczysz jej związek z osobą { $name }.
+kin-find-lede = Wybierz osobę: jak jest spokrewniona z tą osobą ({ $name }), krok po kroku.
 kin-find-label = Osoba
 kin-find-choose = Wybierz osobę…
 kin-find-go = Pokaż związek
@@ -5018,7 +4999,7 @@ kin-all-count = { $n ->
     }
 kin-common-list = Wspólni przodkowie: { $names }
 kin-also-list = także { $list }
-kin-rites-help = Rodzice chrzestni i inne więzi, które tradycja tworzy między osobami niezrodzonymi jedna z drugiej. Drzewo rysuje je własną kropkowaną linią.
+kin-rites-help = Chrzestni i inne więzi tworzone przez tradycję; drzewo rysuje je kropkami.
 kin-rite-recorded = Zapis mówi: „{ $label }”.
 kin-hidden = osoba, której nie możesz zobaczyć
 kin-native = Słowami tradycji
@@ -5410,7 +5391,7 @@ emblem-no-family-detail = Tej rodziny nie ma w archiwum albo nie możesz jej zob
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Sztuczny genealog rodzinny
-afg-lede = AFG zna rodzinę z jej archiwum i pamięta każdą osobę, która z nim rozmawia, w jej własnej pamięci. Tutaj: skąd pochodzą jego obliczenia, oraz test.
+afg-lede = Skąd pochodzą obliczenia AFG, i test.
 afg-kpi-source = Obliczenia
 afg-ready = gotowe
 afg-off-note = Wybierz, skąd pochodzą obliczenia.
@@ -5421,9 +5402,9 @@ afg-kpi-last = Ostatni test
 afg-never = jeszcze żadnego
 afg-run-open = Otwórz
 afg-source = Skąd pochodzą obliczenia
-afg-source-intro = Adres; adres z kluczem API i modelem; albo agent programistyczny już zalogowany na tej maszynie. Do każdego zwraca się jego własnym sposobem.
+afg-source-intro = Adres; adres z kluczem i modelem; albo agent zalogowany na tym komputerze.
 afg-kind = Sposób obliczeń
-afg-kind-hint = Usługa działa gdzie indziej i łączy się z nią przez sieć. Agent działa na tej maszynie, na koncie, na którym działa ta witryna, i musi być tam już zalogowany.
+afg-kind-hint = Usługa jest osiągana przez sieć; agent działa na tym komputerze i musi być na nim zalogowany.
 afg-kind-off = Brak
 afg-kind-anthropic = Claude (API Anthropic)
 afg-kind-ollama = Ollama
@@ -5442,25 +5423,25 @@ afg-url-hint = Pozostawiony pusty: zwykły adres usługi. Wywołanie:
 afg-key = Klucz API
 afg-key-set = Zachowany jest klucz kończący się na { $end }.
 afg-key-unset = Nie zachowano żadnego klucza.
-afg-key-hint = Pozostawiony pusty, zachowany klucz zostaje. Jest przechowywany razem z kontami, nigdy w archiwum, i nigdy więcej nie jest wyświetlany.
+afg-key-hint = Puste zachowuje zapisany klucz, który nie będzie już pokazywany.
 afg-key-clear = Zapomnij klucz
 afg-model = Model
-afg-model-hint = Nazwa modelu w takiej postaci, w jakiej zapisuje ją usługa lub agent. Lista podpowiada aktualne modele; każda inna nazwa zostanie wysłana tak, jak ją zapisano. Pozostawiona pusta: Ollama bierze swój pierwszy model, a agent swój własny.
+afg-model-hint = Nazwa modelu w zapisie usługi. Każda nazwa jest wysyłana dosłownie; puste — domyślna.
 afg-model-unlisted = Spoza podpowiedzi: zostanie wysłana tak, jak ją zapisano.
 afg-effort = Wysiłek
-afg-effort-hint = Jak intensywnie model myśli, słowami jego producenta. Lista podąża za wybranym modelem i zaznacza jego zwykły wysiłek; każde inne słowo zostanie wysłane tak, jak je zapisano. Pozostawione puste: obowiązuje domyślny wysiłek modelu.
+afg-effort-hint = Jak intensywnie model myśli. Każde słowo jest wysyłane dosłownie; puste — ustawienie modelu.
 afg-effort-unlisted = Spoza wysiłków tego modelu: zostanie wysłany tak, jak go zapisano.
 afg-effort-default = domyślny
 afg-program = Program
 afg-program-found = Znaleziono:
 afg-program-missing = Nie znaleziono na tej maszynie.
-afg-program-hint = Pozostawiony pusty, jest szukany tam, gdzie umieszcza go instalator. W przeciwnym razie pełna ścieżka do programu agenta.
+afg-program-hint = Puste: szukany tam, gdzie umieszcza go instalator. W przeciwnym razie pełna ścieżka programu.
 afg-sensitive = Wysyłaj także klasy wrażliwe
-afg-sensitive-hint = Zdrowie, biometria, genomika, dane sądowe i zachowanie nie są wysyłane, dopóki to pole nie jest zaznaczone, tak jak nie trafiają do udostępnianego eksportu.
+afg-sensitive-hint = Bez zaznaczenia zdrowie, biometria, genetyka, akta sądowe i zachowanie zostają poza wysyłką, jak w udostępnianym eksporcie.
 afg-timeout = Dozwolony czas (sekundy)
 afg-timeout-hint = Jak długo może trwać odpowiedź, zanim się z niej zrezygnuje.
 afg-test = Test
-afg-test-intro = Wysyła archiwum w obecnym stanie, wszystkie jego pliki JSON bez zdjęć, wraz z Twoją pamięcią, i zadaje jedno pytanie. Odpowiedź otwiera się w oknie.
+afg-test-intro = Wysyła archiwum (JSON, bez zdjęć) i Twoją pamięć z jednym pytaniem; odpowiedź otwiera się w oknie.
 afg-sent-files = Pliki
 afg-sent-files-value = { $n ->
         [one] { $n } plik JSON
@@ -5485,7 +5466,7 @@ afg-sent-classes = Klasy wrażliwe
 afg-sent-classes-in = wysyłane
 afg-sent-classes-out = pominięte
 afg-sent-question = Pytanie
-afg-privacy = Test wysyła rekordy rodziny, łącznie z osobami żyjącymi, do wybranego powyżej źródła obliczeń. Usługa w internecie, a także agent na tej maszynie, który ją wywołuje, czyta je na serwerach swojego operatora.
+afg-privacy = Test wysyła wpisy rodziny, z żyjącymi włącznie, do wybranych wyżej obliczeń.
 afg-test-button = Wyślij test
 afg-test-needs = Najpierw zapisz kompletny sposób obliczeń.
 afg-test-question = Podaj top 3 rodzin z największą liczbą zadeklarowanych osób.
@@ -5531,12 +5512,7 @@ afg-brain-note = { $facts ->
        *[other] { $brains } konta z pamięcią
     }
 afg-brain-no-account = Ta sesja nie ma konta, więc nie ma pamięci.
-afg-access-count = { $n ->
-        [one] { $n } konto może rozmawiać z AFG.
-        [few] { $n } konta mogą rozmawiać z AFG.
-        [many] { $n } kont może rozmawiać z AFG.
-       *[other] { $n } konta może rozmawiać z AFG.
-    }
+afg-access-count = Konta, które mogą rozmawiać z AFG: { $n }
 afg-access-set = Ustawia się na stronie Konta
 afg-result-ok = Sukces
 afg-result-error = Błąd
@@ -5547,11 +5523,11 @@ accounts-afg = AFG
 accounts-afg-allowed = Może rozmawiać z AFG
 accounts-afg-yes = tak
 accounts-afg-no = nie
-accounts-afg-hint = Wyłączone, dopóki pole nie jest zaznaczone. To, co AFG pamięta o tym koncie, jest przechowywane w jego własnej pamięci: folderze na dysku obok archiwum.
+accounts-afg-hint = Wyłączone, dopóki nie zaznaczone. Jego pamięć jest przechowywana osobno, obok archiwum.
 
 ## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
 account-brain-title = Pamięć Twojego AFG
-account-brain-intro = To, co AFG pamięta o Tobie: fakty, które postanowił zachować, i Twoje rozmowy z nim. Jedno i drugie dostaje z powrotem przy każdym Twoim pytaniu. Każ mu zapomnieć to, czego nie chcesz, by dalej wiedział. Na stronie nikt poza Tobą tego nie widzi.
+account-brain-intro = To, co AFG pamięta o Tobie, przypominane przy każdym pytaniu. Usuń, co chcesz; nikt inny tego nie widzi.
 account-brain-no-access = AFG nie jest dostępny dla Twojego konta: decyduje o tym administrator na stronie Konta.
 account-brain-none = AFG nie pamięta jeszcze niczego o Tobie.
 account-brain-facts = Co pamięta
@@ -5579,15 +5555,15 @@ afg-brain-see = Zobacz i zapomnij
 
 ## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
 assistant-title = Mój osobisty asystent
-assistant-entry = Twoje projekty i rozmowy z AFG: pytaj, wysyłaj dokumenty i zdjęcia, wracaj tam, gdzie skończyłeś.
-assistant-lede = Twoje własne projekty z AFG. Każdy ma swój kodeks postępowania i swoją pamięć, a w każdym rozmowy, które podejmujesz tam, gdzie je zostawiłeś.
+assistant-entry = Twoje projekty i rozmowy z AFG.
+assistant-lede = Twoje projekty z AFG, każdy z własnym kodeksem postępowania, pamięcią i rozmowami.
 assistant-shut-no-account = Ta sesja nie ma konta, więc nie ma osobistego asystenta. Zaloguj się na własne konto.
 assistant-shut-not-open = AFG nie jest dostępny dla Twojego konta: decyduje o tym administrator na stronie Konta.
 assistant-shut-broken = Nie udało się otworzyć Twojej przestrzeni. Spróbuj ponownie za chwilę; jeśli to potrwa, powiadom administratora.
 assistant-shut-gone = Nic tu nie ma: ten projekt lub ta rozmowa nie istnieje albo nie jest Twoja.
 assistant-back-account = Wróć do mojego konta
 assistant-new-project = Nowy projekt
-assistant-not-ready = Obliczenia AFG nie są jeszcze skonfigurowane: możesz czytać swoje rozmowy, ale nie wysyłać wiadomości. Konfiguruje je administrator.
+assistant-not-ready = Obliczenia AFG nie są jeszcze skonfigurowane: na razie tylko odczyt.
 assistant-conversations-count = { $n ->
         [one] { $n } rozmowa
         [few] { $n } rozmowy
@@ -5595,7 +5571,7 @@ assistant-conversations-count = { $n ->
        *[other] { $n } rozmowy
     }
 assistant-conduct-set = kodeks postępowania ustalony
-assistant-empty = Nie ma jeszcze żadnego projektu. Projekt zbiera rozmowy na jeden temat — historia rodziny, sprawa zdrowia, szukanie pracy — pod jednym kodeksem postępowania.
+assistant-empty = Jeszcze żadnego projektu. Projekt zbiera rozmowy na jeden temat.
 assistant-project-name = Nazwa projektu
 assistant-create = Utwórz projekt
 assistant-facts-count = { $n ->
@@ -5734,7 +5710,7 @@ afg-record-stale = Zapis zmienił się w międzyczasie. Odśwież stronę i spr�
 afg-record-refused = Archiwum to odrzuciło: { $reason }
 afg-record-summary-not-yours = To podsumowanie napisał inny członek: zastąpić je może tylko jego autor lub administrator.
 afg-images = Obrazy
-afg-images-intro = Skąd pochodzą obrazy AFG: twarz lub zdjęcie odnowione w zapisie osoby. Claude i agenci piszą tylko tekst, więc obrazy wymagają osobnej usługi: płatnej (OpenAI, Google, Canva) albo komputera rodziny z kartą graficzną.
+afg-images-intro = Skąd pochodzą obrazy AFG: płatna usługa (OpenAI, Google, Canva) albo rodzinny komputer z kartą graficzną.
 afg-image-kind = Usługa obrazów
 afg-image-kind-hint = Modele OpenAI i Google, SI Canva przez Twoje konto, albo serwer rodziny: Ollama, dowolny serwer zgodny z OpenAI, ComfyUI.
 afg-image-kind-off = Brak

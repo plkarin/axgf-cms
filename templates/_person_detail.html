@@ -20,11 +20,33 @@
    CSS scoped to `.tree-panel`. #}
 {% import "_macros.html" as m %}
 
-{% if p.showcase_notes and (tab is undefined or tab == "record") %}
-<div class="showcase-strip">
-  <strong>{{ t("record-notes-title") }}</strong>
-  {% for n in p.showcase_notes %}<span class="chip">{{ n }}</span>{% endfor %}
-</div>
+{#- What is worth checking on the record, and knowing about it, has a tab of
+    its own (the operator's request of 5 November 2026). The tree's panel,
+    which draws every section and no tab, says in one line how much is to
+    check, and leads there. -#}
+{% if tab is undefined and status and status.count %}
+<p class="status-line"><a href="/person/{{ p.id }}?tab=status">{{ t("status-panel", n=status.count) }}</a></p>
+{% endif %}
+
+{% if tab == "status" and status %}
+<section id="status" class="rec-section status-tab">
+  {% if status.check %}
+  <h2 class="status-h">{{ t("status-check") }}</h2>
+  <ul class="status-list">
+    {%- for f in status.check %}
+    <li class="status-item">
+      <span class="status-text"><strong>{{ f.title }}</strong><span class="status-detail">{{ f.detail }}</span></span>
+      {%- if f.link %}<a class="btn small" href="{{ f.link }}">{{ t("status-fix") if may_write else t("status-open") }}</a>{% endif %}
+    </li>
+    {%- endfor %}
+  </ul>
+  {% endif %}
+  {% if status.dismissed %}<p class="small muted"><a href="/quality?show=dismissed">{{ t("status-dismissed", n=status.dismissed) }}</a></p>{% endif %}
+  {% if status.know %}
+  <h2 class="status-h">{{ t("status-know") }}</h2>
+  <ul class="status-know">{% for n in status.know %}<li>{{ n }}</li>{% endfor %}</ul>
+  {% endif %}
+</section>
 {% endif %}
 
 {# ----------------------------------------------------------------- SUMMARY #}

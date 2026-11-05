@@ -261,6 +261,7 @@ const ALLOWED: &[&str] = &[
     "person-tab-media",
     "person-tab-profile",
     "person-tab-record",
+    "person-tab-status",
     "person-visibility-inline",
     "pf-agreeableness",
     "pf-body-region",
@@ -383,7 +384,6 @@ const ALLOWED: &[&str] = &[
     "record-note-death-date-as-recorded",
     "record-note-event-date-as-recorded",
     "record-notes",
-    "record-notes-title",
     "record-occupation-from",
     "record-occupation-until",
     "record-occupations",
@@ -742,5 +742,10 @@ fn the_catalogue_is_read_variant_by_variant() {
 /// something that is there. The only ways of saying "nothing here" the tab
 /// had are gone: a person with no relative to show has no list.
 fn allowed(k: &str) -> bool {
-    ALLOWED.contains(&k) || (k.starts_with("kin-") && !matches!(k, "kin-find-none" | "kin-hidden"))
+    ALLOWED.contains(&k)
+        || (k.starts_with("kin-") && !matches!(k, "kin-find-none" | "kin-hidden"))
+        // The Statut tab (the operator's request of 5 November 2026): each
+        // finding names what is recorded and what to check in it.
+        || (k.starts_with("quality-") && !k.starts_with("quality-group-"))
+        || k.starts_with("status-")
 }

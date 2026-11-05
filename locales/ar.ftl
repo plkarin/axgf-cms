@@ -225,7 +225,7 @@ admin-sessions-open = { $n ->
         [many] { $n } جلسة مفتوحة الآن.
        *[other] { $n } جلسة مفتوحة الآن.
     }
-admin-no-changes-yet = لم يُغيَّر شيء بعد عبر هذا التطبيق. كل حفظ من الآن يُسجَّل في { $path }.
+admin-no-changes-yet = لا تعديل بعد. يُسجَّل كل حفظ في { $path }.
 admin-last-validation = آخر تحقّق
 admin-fields = الحقول
 admin-raw-json = JSON الخام
@@ -323,10 +323,17 @@ person-tab-media = الوسائط
 person-tab-tree = الشجرة
 person-tab-history = السجل
 person-tab-afg = النسّابة الذكي
+person-tab-status = الحالة
+status-check = للتحقق
+status-know = للعلم
+status-fix = صحّح
+status-open = افتح
+status-dismissed = عُلّمت «عادية عندنا»: { $n }
+status-panel = للتحقق: { $n }
 person-afg-title = اسأل النسّابة الذكي عن { $name }
 person-afg-title-short = محادثات مع النسّابة الذكي
-person-afg-lede = اسأل عن حياة { $name } وعائلته وعصره. يجيب النسّابة الذكي مما يحق لك قراءته من الأرشيف، ويقول متى يتجاوزه. محادثاتك هنا لك وحدك: استأنف إحداها أو ابدأ أخرى.
-person-afg-reads = مع كل رسالة يقرأ النسّابة الذكي هذا السجل وملاحظاته ({ $notes }) والأقارب المقرّبين ({ $relatives }) وقائمة العائلة ({ $persons }): نحو { $tokens } رمزًا تُرسل إلى حيث يجري حساب النسّابة الذكي.
+person-afg-lede = اسأل عن حياة { $name } وعائلته وعصره. محادثاتك هنا لك وحدك.
+person-afg-reads = يُقرأ مع كل رسالة: السجل، والملاحظات ({ $notes })، والأقارب المقرّبون ({ $relatives })، والعائلة ({ $persons }) · نحو { $tokens } رمزًا.
 person-afg-ask = سؤالك عن { $name }
 person-afg-example = مثلًا: «في أي فوج كان { $name } في المعركة التي تذكرها الملاحظات؟»
 person-afg-conversations = محادثاتك
@@ -419,7 +426,7 @@ accounts-roots = { $n ->
        *[other] { $n } جذر
     }
 accounts-add = إضافة حساب
-accounts-password-hint = اتركها فارغة فتُولَّد وتُعرض مرة واحدة. وإن حدّدتها بنفسك فلا تقل عن { $min } محرفًا.
+accounts-password-hint = فارغ: تُولَّد كلمة مرور وتُعرض مرة واحدة. وإلا فعلى الأقل { $min } محارف.
 accounts-new-password-placeholder = كلمة مرور جديدة (فارغ = دون تغيير)
 accounts-email = البريد الإلكتروني
 accounts-optional = (اختياري)
@@ -696,25 +703,11 @@ name-type-nickname = لقب
 
 ## ملاحظات العرض
 
-note-birth-imprecise = تاريخ ميلاد لم تستطع المصادر تحديده، معروض كما سُجّل
-note-death-imprecise = تاريخ وفاة لم تستطع المصادر تحديده، معروض كما سُجّل
-note-names = { $n ->
-        [zero] لا أسماء مسجَّلة
-        [one] اسم واحد مسجَّل
-        [two] اسمان مسجَّلان
-        [few] { $n } أسماء مسجَّلة
-        [many] { $n } اسمًا مسجَّلًا
-       *[other] { $n } اسم مسجَّل
-    }
-note-transliteration = اسم بخطّه الأصلي إلى جانب نقحرته اللاتينية
-note-witnessed = { $n ->
-        [zero] لا أحداث شهدها
-        [one] حدث واحد شهده دون أن يكون صاحبه
-        [two] حدثان شهدهما دون أن يكون صاحبهما
-        [few] { $n } أحداث شهدها دون أن يكون صاحبها
-        [many] { $n } حدثًا شهدها دون أن يكون صاحبها
-       *[other] { $n } حدث شهدها دون أن يكون صاحبها
-    }
+note-birth-imprecise = تاريخ الميلاد غير دقيق في المصدر
+note-death-imprecise = تاريخ الوفاة غير دقيق في المصدر
+note-names = أسماء مسجلة: { $n }
+note-transliteration = اسم بخطه الأصلي، مع نقحرته
+note-witnessed = أحداث بصفة شاهد: { $n }
 
 visibility-public = علني
 visibility-members = الأعضاء
@@ -783,7 +776,7 @@ admin-lede = تحرير { $path } — { $total } سجلًا، { $files ->
         [many] و{ $files } ملفًا مرفقًا
        *[other] و{ $files } ملف مرفق
     }، { $size } على القرص. كل تغيير يُكتب دفعة واحدة؛ والتغيير المرفوض يترك الملف كما هو.
-admin-roles-note = التحقق وإزالة التكرار والتصدير والحذف وإدارة الحسابات للمدير وحده. أما المساهم فيبلغ كل صفحة أخرى هنا.
+admin-roles-note = التحقق ودمج المكرر والتصدير والحذف والحسابات للمديرين وحدهم.
 admin-recent-note = آخر { $shown } من { $total ->
         [zero] لا تغييرات مسجَّلة
         [one] تغيير مسجَّل واحد
@@ -794,11 +787,11 @@ admin-recent-note = آخر { $shown } من { $total ->
     }، من { $path }.
 admin-bundle-heavy = حجم هذا الأرشيف { $size }. ويُقرأ كاملًا عند الإقلاع ويبقى في الذاكرة، فبعد { $warn } تقريبًا يبدأ الموقع يكلّف ذاكرة حقيقية وتبطؤ عمليات إعادة التشغيل. وهذا يناسب أرشيفًا عائليًا لا مكتبة وسائط — فإن كانت المرفقات تنمو بلا حد فاحفظها في مخزن ملفات واجعل الأرشيف يشير إليها.
 admin-raw-json-help = السجل كاملًا، فلا شيء يتعذّر تحريره — القوائم مثل شركاء العائلة وأبنائها، أو تاريخ حدود مكان، تعيش هنا. وهذا هو المستند الأصل؛ ثم تُكتب الحقول أعلاه فوق المسارات التي تخصّها، فحرّر القيمة في أحد الموضعين لا في كليهما. ولا بد أن يُقرأ بصيغة JSON وإلا لم يُحفظ شيء.
-accounts-lede = محفوظة في { $path }، بأذونات 600، بجوار الأرشيف لا داخله أبدًا. فالأرشيف يُنسخ ويُرسل ويُنشر؛ ولو سافرت بصمات كلمات السر في داخله لصارت كل نسخة من شجرة العائلة نسخةً من بيانات الدخول.
-accounts-no-registration = لا يستطيع الزوار فتح حسابات بأنفسهم؛ ويُضبط التسجيل أعلاه. ويكفي معظم العائلات مسؤول يعرف الجميع.
+accounts-lede = محفوظ في { $path } (الوضع 600)، بجانب الأرشيف لا داخله.
+accounts-no-registration = لا يمكن للزوار فتح حسابات بأنفسهم؛ يُضبط التسجيل أعلاه.
 accounts-branch-hint = يقصر ما يستطيع هذا الحساب تحريره على أولئك الأشخاص وذريتهم وأزواجهم.
 accounts-branch-reading = ولا يقصر ما يستطيع قراءته — فذاك يحكمه مدى ظهور كل سجل، والأمران مفصولان عن قصد.
-accounts-emergency-warning = أنت داخل بالرمز الطارئ. يمنحك صلاحيات المدير في هذه الجلسة لكنه ليس حسابًا: لا تفضيلات له، وسجل التحرير سيقيّد تغييراتك بوصفها emergency-token لا بوصفها شخصًا. أنشئ لنفسك حسابًا حقيقيًا أدناه وادخل به.
+accounts-emergency-warning = دخلت برمز الطوارئ لا بحساب: أنشئ حسابًا حقيقيًا أدناه واستعمله.
 accounts-created-with-password = أُنشئ { $username }. وكلمة السر هي { $password } — تُعرض مرة واحدة ولا تُحفظ إلا بصمةً بخوارزمية Argon2id، فسلّمها الآن.
 accounts-last-admin = هذا هو المدير الفعّال الوحيد. رقِّ شخصًا آخر أولًا — فالتنصيب بلا مدير لا يُستعاد إلا بتحرير ملف ‎.acl‎ أو باستعمال الرمز الطارئ.
 
@@ -816,7 +809,7 @@ convert-title = استيراد ملف عائلي
 convert-submit = استيراد
 convert-result-title = تقرير الاستيراد
 convert-page-title = استيراد ملف عائلي
-convert-lede = انقل شجرة قائمة من ملف GEDCOM — وهو التصدير الذي تنتجه معظم برامج الأنساب. لا يُحفظ هنا شيء، والشجرة التي يعرضها هذا الموقع تبقى كما هي تمامًا.
+convert-lede = استورد شجرة من ملف GEDCOM. لا يُحفظ شيء، وتبقى شجرة الموقع كما هي.
 convert-file-label = ملف عائلي (‎.ged‎)
 convert-file-hint = حتى { $mb } ميغابايت. شجرة من 767 شخصًا نحو 320 كيلوبايت.
 convert-confidence-label = ما مقدار الثقة بهذه الوقائع في البداية
@@ -875,8 +868,8 @@ tree-width-notice = عرض هذا العرض { $width } بكسل — فعلى ش
        *[other] { $screens } شاشة
     } من التمرير الأفقي.
 tree-contradicts-title = هذه الشجرة تناقض نفسها.
-tree-contradicts-detail = لا ترتيب للصفوف يفي بذلك، فتُركت الصلة أدناه خارج ترقيم الأجيال وقد تكون بعض الصفوف مرسومة في غير موضعها. صحّح أيًّا من السجلين هو الخطأ.
-tree-contradicts-pair = مسجَّلان زوجين ووالدًا وولدًا في آن:
+tree-contradicts-detail = استُبعدت هذه الروابط من ترقيم الأجيال، وقد تكون بعض الصفوف في غير موضعها. صحّح السجل الخاطئ.
+tree-contradicts-pair = زوجان ووالد وولد في آن:
 tree-contradicts-more = { $n ->
         [zero] لا تناقضات أخرى غير مذكورة.
         [one] تناقض آخر غير مذكور.
@@ -1005,7 +998,6 @@ result-dashboard = اللوحة
 
 ## تفاصيل السجل
 
-record-notes-title = ما يُذكر عن هذا السجل:
 record-absent-document = ذكره هذا الشخص لكنه غير محفوظ هنا.
 record-upload-help-short = حتى { $mb } ميغابايت. وSVG مرفوض.
 record-verbatim-note = محفوظ كما جاء في السجل تمامًا، لأن أي محوِّل لم يستطع تأويله.
@@ -1120,7 +1112,7 @@ list-policy-orphan-detail = — احذفه وأبقِ السجلات المشي�
 
 completeness-dates-title = التواريخ بحسب الصورة التي هي عليها فعلًا
 completeness-no-dates = لا تواريخ مسجَّلة بعد.
-completeness-dates-note = تاريخٌ استطاع أحدهم تحديده إلى اليوم، وتاريخٌ لم يستطع وضعه إلا في عقد، عبارتان مختلفتان، وكلتاهما تُحفظ كما جاءت. والنص الذي تعذّرت قراءته تاريخًا يُحفظ كلمةً بكلمة بدل أن يُطرح.
+completeness-dates-note = تُحفظ التواريخ كما أُعطيت، باليوم أو بالعقد؛ والنص الذي ليس تاريخًا يُحفظ حرفيًا.
 completeness-shape-exact = محدَّد
 completeness-shape-exact-note = يوم تقويمي كامل
 completeness-shape-approximate = تقريبي
@@ -1172,22 +1164,8 @@ record-end-not-recorded = النهاية غير مسجَّلة
 
 ## ملاحظات على السجل
 
-note-links = { $n ->
-        [zero] لا صلات خارج العائلة، لها تواريخها ومصادرها
-        [one] صلة واحدة خارج العائلة، لها تواريخها ومصادرها
-        [two] صلتان خارج العائلة، لهما تواريخهما ومصادرهما
-        [few] { $n } صلات خارج العائلة، لها تواريخها ومصادرها
-        [many] { $n } صلةً خارج العائلة، لها تواريخها ومصادرها
-       *[other] { $n } صلة خارج العائلة، لها تواريخها ومصادرها
-    }
-note-occupations = { $n ->
-        [zero] لا مهن مسجَّلة ببداية ونهاية
-        [one] مهنة واحدة مسجَّلة ببداية ونهاية
-        [two] مهنتان مسجَّلتان ببداية ونهاية
-        [few] { $n } مهن مسجَّلة ببداية ونهاية
-        [many] { $n } مهنةً مسجَّلة ببداية ونهاية
-       *[other] { $n } مهنة مسجَّلة ببداية ونهاية
-    }
+note-links = علاقات خارج العائلة: { $n }
+note-occupations = مهن مؤرخة: { $n }
 
 ## عناوين صفوف قوائم الإدارة
 
@@ -1304,18 +1282,11 @@ completeness-metric-confidence = ما مقدار الثقة بكل واقعة
 completeness-metric-confidence-none = ليس في الوقائع الـ{ $slots } هنا واحدة تقول ما مقدار الثقة بها. فتاريخٌ نُقل عن وثيقة وتاريخٌ خُمّن يبدوان سواءً، إلى أن يكفّا عن ذلك.
 completeness-metric-confidence-uniform = { $with } من { $slots } واقعة تحمل درجة، وكلها الرقم نفسه ({ $modal }). وهذا ما يخلّفه استيراد بالجملة: قيمة افتراضية لم يعد إليها أحد. ولم تُقيَّم واحدة منها على حدة بعد.
 completeness-metric-confidence-some = { $with } من { $slots } واقعة تحمل درجة. منها { $modal_count } تشترك في قيمة واحدة ({ $modal })، و{ $assessed } تخالفها فنُظر إليها واحدةً واحدة.
-completeness-metric-confidence-many = { $with } من { $slots } واقعة تحمل درجة، منها { $assessed } تخالف القيمة الأشيع ({ $modal })، على { $distinct } مستوى متمايزًا. وهذه الشجرة تسجّل عدم يقين حقيقيًا متفاوتًا.
+completeness-metric-confidence-many = { $with } من { $slots } حقيقة تحمل درجة: { $assessed } منها تخالف { $modal }، على { $distinct } مستويات.
 
 completeness-metric-parentage = ما مقدار الثقة بكل صلة والدية
 completeness-metric-parentage-none = ليس في صلات النسب هنا واحدة تقول ما مقدار الثقة بها. والتبنّي والخطوط المتنازع عليها وما أُعيد بناؤه من ذكرٍ واحد هي بعينها المواضع التي تحتاج فيها عائلة إلى تسجيل الشك — والشجرة ترسم الصلة الأقل يقينًا خطًا أبهت.
-completeness-metric-parentage-some = { $n ->
-        [zero] لا صلات نسب تحمل درجتها الخاصة
-        [one] صلة نسب واحدة تحمل درجتها الخاصة
-        [two] صلتا نسب تحملان درجتيهما الخاصة
-        [few] { $n } صلات نسب تحمل درجاتها الخاصة
-        [many] { $n } صلةَ نسب تحمل درجاتها الخاصة
-       *[other] { $n } صلة نسب تحمل درجتها الخاصة
-    }، فالخط المفترَض أضعف في العين من الخط الموثَّق.
+completeness-metric-parentage-some = أنساب بدرجتها الخاصة: { $n }
 
 completeness-metric-links = صلات وراء الدم والزواج
 completeness-metric-links-none = عرّابون وأرباب عمل وشهود ومعلّمون وأوصياء. ولم تُسجَّل واحدة بعد. ولكلٍّ منها أن تحمل تواريخها ومصدرها ودرجة ثقتك بها.
@@ -1338,11 +1309,11 @@ completeness-metric-occupations-undated = { $total ->
         [many] { $total } مهنةً مسجَّلة، بلا تواريخ
        *[other] { $total } مهنة مسجَّلة، بلا تواريخ
     }. أضف بداية ونهاية فتُقارَن جنبًا إلى جنب على محور زمني واحد.
-completeness-metric-occupations-some = { $span } من { $total } لها بداية أو نهاية، فيمكن مقارنتها جنبًا إلى جنب على محور زمني واحد.
+completeness-metric-occupations-some = { $span } من { $total } لها بداية أو نهاية.
 
 completeness-metric-sources = مصادر مقدَّرة الموثوقية
 completeness-metric-sources-none = لا مصادر مسجَّلة. وتسميةُ ما جاءت منه الواقعة هي ما يتيح لقريب أن يتحقق منها لاحقًا — أو أن يخالفها ويقول لماذا.
-completeness-metric-sources-some = { $graded } من { $total } تقول ما قوّتها، فالدعوى القائمة على شهادة ميلاد ليست في العين كالدعوى القائمة على ذكرى.
+completeness-metric-sources-some = { $graded } من { $total } تذكر مدى متانتها.
 
 completeness-what-is-recorded = ما يستطيع السجل قوله
 completeness-in-this-tree = في هذه الشجرة
@@ -1380,7 +1351,7 @@ phys-field-operations = العمليات والإصابات
 phys-field-cause-of-death = سبب الوفاة
 phys-field-religion = الدين أو الانتماء
 phys-field-health-notes = ملاحظات
-admin-export-health-note = يستبعد التصدير العادي كل فئة حساسة — الصحة والمعتقد، والبيانات البيومترية، والبيانات الجينومية، والسجل الجنائي — وكذلك الملف السلوكي لأي شخص على قيد الحياة، فلا يحمل ملفٌّ يُرسَل إلى قريبٍ أيًّا منها. حدِّد ما ينبغي أن يحمله ملف بعينه؛ ويسجّل الملف نفسه الفئات التي استُبعدت.
+admin-export-health-note = يستبعد التصدير البسيط كل فئة حساسة وسلوك الأحياء. حدّد ما يجب أن يحمله هذا الملف.
 avatar-picker-title = اختر صورة
 avatar-choose = أي صورة تمثّل هذا الشخص
 avatar-mode-auto = دع البرنامج يختار
@@ -3134,7 +3105,7 @@ profile-group-filled = { $n ->
 profile-problems = تعذّر حفظ جزء مما أُدخل. كل مشكلة مذكورة بجوار حقلها، ولم يُكتب شيء.
 profile-editor-withheld = يضم هذا القسم أيضًا لهذا الشخص بيانات من فئة { $classes } لا يحق لك قراءتها. لا تظهر هنا، وحفظ هذا النموذج يتركها كما هي.
 profile-living-class-note = هذا الشخص مسجّل على قيد الحياة. ما تُدخله هنا في فئة حساسة لا يراه إلا المشرفون.
-profile-relationships-elsewhere = الوالدان والأزواج والأبناء والعرّابون والشهود ليسوا مخزّنين في سجل هذا الشخص، بل هم عائلات وروابط وأحداث تذكره — ولذلك فإن كل تعديل هنا يغيّر أيضًا سجل كل من يشاركه فيها.
+profile-relationships-elsewhere = الأقارب والعرّابون والشهود مسجلون في العائلات والروابط والأحداث: تغييرهم هنا يغيّر تلك السجلات أيضًا.
 profile-documents-first = يشير الأثر إلى وثيقة مرفقة بهذا الشخص. أرفق الملف أولًا.
 profile-editor-nothing = لا شيء في هذا القسم يمكنك تعديله.
 profile-new-entry = إدخال جديد
@@ -3444,7 +3415,7 @@ field-person-display-name-hint = الاسم الظاهر في كل مكان من
 field-person-gender = الجنس
 field-person-living = على قيد الحياة
 field-person-birth-date = تاريخ الميلاد
-field-date-value-hint = سنة، أو سنة وشهر، أو تاريخ كامل: 1923 أو 1923-04 أو 1923-04-12. اتركه فارغًا إن لم يعرفه أحد.
+field-date-value-hint = 1923 أو 1923-04 أو 1923-04-12؛ فارغ إن كان مجهولًا.
 field-person-birth-precision = دقة تاريخ الميلاد
 field-precision-hint = مدى الدقة التي يحدد بها المصدر ذلك.
 field-person-birth-circa = الميلاد تقريبي
@@ -3577,7 +3548,7 @@ record-link-outgoing = من هذا الشخص
 record-link-incoming = إلى هذا الشخص
 # تحذير التشغيل في لوحة الإدارة.
 health-attention = يحتاج إلى انتباه:
-health-standing-token = ما زال رمز إدارة الطوارئ مُعدًّا. إنه يدخل متجاوزًا كل حساب وكل صلاحية — وهذا غرضه في اليوم الذي لا يستطيع فيه أحد الدخول، لا أن يبقى بعد أن صار الدخول ممكنًا. أزِله من ملف بيئة الخدمة وأعد تشغيلها.
+health-standing-token = ما زال رمز الطوارئ مُعدًّا ويتجاوز كل حساب. احذفه من ملف بيئة الخدمة ثم أعد التشغيل.
 health-bundle-invalid = { $errors ->
         [zero] لم تعد بيانات العائلة تجتاز التحقق.
         [one] لم تعد بيانات العائلة تجتاز التحقق: خطأ واحد، مذكور أدناه تحت «تحقق».
@@ -3685,7 +3656,7 @@ search-empty-query = اكتب اسمًا للبحث.
 nav-quality = جودة البيانات
 quality-title = أمور تستحق النظر
 quality-none = لا شيء يستحق النظر: اجتازت كل الفحوص.
-quality-intro = لا يُغيَّر هنا شيء نيابة عنك. كل سطر حالة تستحق التحقق — وكثيرًا ما يكون لها سبب وجيه. افتح السجل وقرر، أو علّمها بأنها تم التحقق منها.
+quality-intro = نقاط تستحق التحقق؛ وكثيرًا ما يكون لها سبب وجيه. افتح السجل أو علّم النقطة كمُتحقَّق منها.
 quality-groups-label = أنواع الملاحظات
 quality-all = الكل
 quality-show-label = عرض
@@ -3704,39 +3675,39 @@ quality-show-list = اعرض القائمة
 quality-after-import = لم يُغيَّر شيء في الملف. حين يصبح أرشيف الموقع، تعرض صفحة جودة البيانات الأمور نفسها مع رابط إلى كل سجل.
 quality-file-list-cut = لا يُعرض هنا إلا الأوائل حتى { $shown }. وحين يصبح الملف أرشيف الموقع، تعرضها صفحة جودة البيانات كلها.
 quality-rule-name-sentence = جملة في حقل الاسم
-quality-name-sentence = يبدو «{ $value }» جملةً أكثر منه اسمًا: إن كان شرحًا فأبقِ الاسم وحده في الحقل وانقل الباقي إلى ملاحظة.
+quality-name-sentence = «{ $value }» يبدو جملة لا اسمًا.
 quality-rule-union-parent-child = زوجان هما أيضًا والد وولد
-quality-union-parent-child = يظهر { $parent } و{ $child } زوجين ووالدًا وولدًا في آن: يستحق التحقق من الصلة التي تؤيدها المصادر.
+quality-union-parent-child = { $parent } و{ $child }: زوجان ووالد وولد في آن.
 quality-rule-child-listed-twice = طفل مذكور مرتين
-quality-child-listed-twice = يظهر { $child } مرتين بين أبناء هذه العائلة: إن كان الولد نفسه فيمكن حذف أحد الإدخالين.
+quality-child-listed-twice = { $child } مذكور مرتين بين الأبناء.
 quality-rule-duplicate-union = الزوجان نفسهما مسجلان مرتين
-quality-duplicate-union = سُجِّل لـ { $a } و{ $b } عدد { $count } من الزيجات: إن تزوجا مرة واحدة فقد يكون الزواج نفسه أُدخل مرتين.
+quality-duplicate-union = { $a } و{ $b }: عدد الزيجات المسجلة: { $count }.
 quality-rule-partner-twice = شخص واحد في طرفي الزواج
-quality-partner-twice = يظهر { $person } في طرفي هذا الزواج: يستحق التحقق من هوية الشريك الآخر، أو ترك ذلك الطرف فارغًا إن لم يعرفه أحد.
+quality-partner-twice = { $person } على طرفي الزواج.
 quality-rule-foreign-surnames = ابن لا يطابق لقبه أيًّا من الوالدين
-quality-foreign-surnames = لقب لا يطابق لقب أيٍّ من الوالدين: { $who }. قد يكون ذلك طبيعيًا — تغيير لقب أو ابن زوج أو كتابة مختلفة — لكنه يستحق نظرة. (البنات غير محسوبات، فلقب الزواج هو السبب المعتاد.)
+quality-foreign-surnames = لقب لا يطابق لقب أيّ من الوالدين: { $who }.
 quality-rule-death-before-birth = وفاة قبل الولادة
-quality-death-before-birth = وفاة { $person } مسجلة عام { $death }، قبل ولادته عام { $birth }: ربما أُدخل أحد التاريخين خطأً؛ يستحق التحقق في المصادر.
+quality-death-before-birth = { $person }: الوفاة ({ $death }) قبل الميلاد ({ $birth }).
 quality-rule-child-before-parent = ولد مولود قبل أحد والديه
-quality-child-before-parent = يبدو أن { $child } (مولود { $childborn }) وُلد قبل والده { $parent } (مولود { $parentborn }): يستحق التحقق من التواريخ أو النسب.
+quality-child-before-parent = ميلاد { $child } ({ $childborn }) قبل ميلاد أحد والديه { $parent } ({ $parentborn }).
 quality-rule-parent-too-young = والد دون الثانية عشرة
-quality-parent-too-young = كان { $parent } سيبلغ { $age } عامًا حين وُلد { $child }، وهذا غير معتاد: يستحق التحقق من التواريخ أو النسب.
+quality-parent-too-young = كان عمر { $parent } { $age } عند ميلاد { $child }.
 quality-rule-parent-too-old = والد تجاوز الخامسة والستين
-quality-parent-too-old = كان { $parent } سيبلغ { $age } عامًا حين وُلد { $child }، وهذا غير معتاد: يستحق التحقق من التواريخ أو النسب.
+quality-parent-too-old = كان عمر { $parent } { $age } عند ميلاد { $child }.
 quality-rule-marriage-before-birth = زواج قبل ولادة أحد الزوجين
-quality-marriage-before-birth = أُرِّخ هذا الزواج بعام { $married }، قبل ولادة { $person } عام { $born }: يستحق التحقق من تاريخ الزواج.
+quality-marriage-before-birth = زواج ({ $married }) قبل ميلاد { $person } ({ $born }).
 quality-rule-isolated-record = سجل بلا تاريخ ولا صلات
-quality-isolated-record = لا تاريخ لـ { $person } ولا صلة بأحد في العائلة: يستحق إضافة ما يربطه بها، أو حذف السجل إن أُنشئ خطأً.
+quality-isolated-record = { $person }: لا تاريخ ولا صلة.
 quality-rule-place-no-region = مكان بلا منطقة
-quality-place-no-region = لا منطقة لـ { $place }: إضافة واحدة تساعد على تمييز الأماكن التي تحمل الاسم نفسه.
+quality-place-no-region = { $place }: لا منطقة.
 quality-rule-region-free-text = منطقة تبدو كملاحظة
-quality-region-free-text = منطقة { $place } مكتوبة «{ $value }»، وهذا يبدو ملاحظةً أكثر منه منطقة: يستحق نقل الملاحظة إلى السجل الذي تصفه.
+quality-region-free-text = منطقة { $place }: «{ $value }» تبدو ملاحظة.
 quality-rule-place-near-duplicate = أماكن قد تكون واحدًا
-quality-place-near-duplicate = قد يكون { $names } المكان نفسه مكتوبًا بطرق مختلفة: إن كان كذلك فيمكن دمجها في مكان واحد.
+quality-place-near-duplicate = ربما مكان واحد: { $names }.
 quality-rule-not-a-place = إدخال قد لا يكون مكانًا
-quality-not-a-place = «{ $place }» في قائمة الأماكن لكنه قد لا يكون مكانًا — يبدأ بحرف صغير، وأسماء الأماكن نادرًا ما تفعل ذلك: يستحق التحقق مما إذا كان ملاحظة عن مكان.
+quality-not-a-place = «{ $place }» قد لا يكون مكانًا.
 quality-rule-certain-without-source = مؤكد بلا مصدر
-quality-certain-without-source = في { $record } معلومة مؤكدة تمامًا ({ $claims }) بلا مصدر: يستحق إرفاق المصدر أو خفض درجة اليقين.
+quality-certain-without-source = { $record }: مؤكَّد ({ $claims }) بلا مصدر.
 quality-dismiss = تم التحقق — طبيعي لدينا
 quality-restore = أظهره مجددًا
 quality-note-label = السبب (اختياري)
@@ -3818,7 +3789,7 @@ admin-nav-connectivity = الاتصال
 
 # Administration console: the AXGF bundle (v0.5.0, docs/adr/0011)
 bundle-title = أرشيف AXGF
-bundle-lede = أرشيف العائلة كما يحفظه هذا الموقع: { $path }. ما يطابقه، وما يبدو خاطئًا، والطريقتان لأخذ نسخة منه.
+bundle-lede = أرشيف العائلة: { $path }. مطابقته، وما يبدو خاطئًا، وكيف تُؤخذ نسخة منه.
 bundle-unset-title = لا توجد عائلة بعد.
 bundle-unset-detail = تحتوي هذه التثبيتة على أرشيف فارغ، فلا شيء للتحقق منه بعد. هيّئها من أرشيف أو من ملف GEDCOM أو من الصفر.
 bundle-kpi-conformity = المطابقة
@@ -4046,7 +4017,7 @@ infra-transport-title = كيف يُوصَل إلى الموقع
 infra-transport-ok = وصلت هذه الصفحة عبر HTTPS.
 infra-transport-exposed = وصلت هذه الصفحة دون تشفير، والخادم يستمع على { $bind } خارج هذا الجهاز: كلمات المرور وملفات تعريف الجلسة تعبر الشبكة نصًّا واضحًا.
 infra-transport-exposed-fix = ضع أمامه وكيلًا عكسيًا يعمل بـ HTTPS (Caddy أو nginx أو HAProxy)، وأعد ربط الخدمة بـ 127.0.0.1: شغّل bootstrap.sh من جديد مع ‎--bind 127.0.0.1:8080، أو احذف ملف drop-in الذي وسّعها.
-infra-transport-plain = وصلت هذه الصفحة دون تشفير من خادم يستمع على { $bind }. هذا مقبول على هذا الجهاز وحده، وهناك فقط.
+infra-transport-plain = غير مشفّر، من { $bind }: مقبول على هذا الجهاز وحده.
 infra-transport-plain-fix = ادخل إلى الموقع عبر عنوانه بـ HTTPS. وإن كان وكيلٌ ينهي TLS فاجعله يرسل X-Forwarded-Proto: https ليعرف هذا الخادم ذلك.
 infra-forwarded-title = العناوين المُمرَّرة
 infra-forwarded-ok = لا يستمع الخادم إلا على هذا الجهاز، لذا يمكن الوثوق بعنوان العميل الذي يمرّره الوكيل لإبطاء محاولات الدخول الفاشلة المتكررة.
@@ -4076,8 +4047,8 @@ infra-sso-ok = { $n ->
 infra-sso-no-https = خدمة تسجيل دخول مفعّلة، لكن العنوان العام ليس HTTPS: يرفض المزوّدون إرسال ردّهم إلى عنوان غير مشفّر، فيفشل تسجيل الدخول.
 infra-sso-fix = في صفحة الاتصال، اجعل العنوان العام هو عنوان https://‎ الذي يستعمله القرّاء.
 infra-admins-title = المسؤولون
-infra-admins-none = لا يستطيع أي حساب نشط إدارة هذا الموقع. وحده رمز الطوارئ يستطيع، وما دام مضبوطًا فقط.
-infra-admins-none-fix = سجّل الدخول برمز الطوارئ، وأنشئ مسؤولًا في صفحة الحسابات، ثم احذف الرمز.
+infra-admins-none = لا يستطيع أي حساب نشط إدارة هذا الموقع؛ وحده رمز الطوارئ يستطيع.
+infra-admins-none-fix = ادخل برمز الطوارئ، وأنشئ مديرًا، ثم احذف الرمز.
 infra-admins-one = مسؤول واحد فقط. إن غاب هذا الشخص أو فقد كلمة مروره فلن يستطيع أحد إدارة الموقع.
 infra-admins-one-fix = امنح دور المسؤول لشخص ثانٍ موثوق في صفحة الحسابات.
 infra-admins-ok = { $n ->
@@ -4090,7 +4061,7 @@ infra-admins-ok = { $n ->
     }
 infra-token-title = رمز الطوارئ
 infra-token-generated = لا رمز طوارئ مضبوط.
-infra-token-only-way = رمز طوارئ مضبوط، ومع غياب أي حساب مسؤول فهو المدخل الوحيد. احتفظ به حتى يوجد مسؤول.
+infra-token-only-way = رمز الطوارئ هو المدخل الوحيد إلى أن يوجد حساب مدير.
 infra-token-standing = ما زال رمز الطوارئ مضبوطًا. إنه يدخل متجاوزًا كل حساب وكل صلاحية.
 infra-token-fix = احذف AXGF_CMS_ADMIN_TOKEN من ملف بيئة الخدمة، ثم أعد تشغيل الخدمة.
 infra-registration-title = التسجيل الذاتي
@@ -4190,7 +4161,7 @@ infra-clock-fix = فعّل مزامنة الوقت: timedatectl set-ntp true.
 
 # Administration console: the Infrastructure page (v0.5.0, docs/adr/0011)
 infra-title = البنية التحتية
-infra-lede = الجهاز الذي يعمل عليه هذا الموقع، يُفحص كلما فُتحت هذه الصفحة: كيف يُوصل إليه، ومن يملك المفاتيح، وهل البيانات آمنة وما زالت تتسع، وأي إصدار يعمل، والعزل المحيط به.
+infra-lede = جهاز هذا الموقع: الوصول والمفاتيح والبيانات والإصدار والعزل، تُفحص عند كل فتح للصفحة.
 infra-kpi-health = الحالة
 infra-kpi-version = الإصدار
 infra-kpi-version-newer = { $version } متاح
@@ -4211,7 +4182,7 @@ infra-kpi-load = الحِمل { $load }
 infra-kpi-rss = قيد الاستعمال { $size }
 infra-unknown = غير معروف
 infra-health = الحالة
-infra-health-intro = الأخضر سليم، والتحذير يستحق نظرة، والحرج يحتاج إلى انتباه الآن. وكل نتيجة تنفتح على ما ينبغي فعله.
+infra-health-intro = الأخضر سليم، والتحذير يستحق نظرة، والحرج يحتاج إجراءً فوريًا.
 infra-json = الفحوص نفسها بصيغة JSON، لأداة مراقبة
 infra-version = الإصدار
 infra-version-running = قيد التشغيل
@@ -4246,14 +4217,14 @@ infra-relation-older = أقدم
 infra-prerelease = إصدار مرشّح
 infra-releases-none = لا توجد قائمة إصدارات بعد.
 infra-upgrade = تغيير الإصدار
-infra-upgrade-intro = يطلب الزرُّ ذلك من مساعد الترقية، الذي يعمل بصلاحيات root خارج عزل هذا الموقع. فيأخذ نسخة احتياطية، ويثبّت الإصدار بعد التحقق من مجموعه الاختباري، ويعيد تشغيل الخدمة ويفحصها؛ وإن لم يستجب الإصدار الجديد أعاد السابق.
+infra-upgrade-intro = يأخذ مساعد التحديث نسخة احتياطية، ويثبّت الإصدار المُتحقَّق منه، ويعيد التشغيل ويفحص؛ وإن فشل عاد الإصدار السابق.
 infra-upgrade-version = الإصدار المراد تثبيته
 infra-upgrade-confirm = للعودة إلى إصدار أقدم، اكتب وسمه مرة أخرى
 infra-upgrade-confirm-hint = لا حاجة إليه لإصدار أحدث. قد لا يقرأ الإصدار الأقدم بيانات كتبها إصدار أحدث: اقرأ ملاحظاته أولًا.
 infra-upgrade-go = تثبيت هذا الإصدار
 infra-upgrade-safety = يتعذّر الوصول إلى الموقع بضع ثوانٍ أثناء إعادة تشغيل الخدمة.
 infra-upgrade-manual = مساعد الترقية غير مثبّت على هذا الخادم، لذا لا تستطيع هذه الصفحة تغيير الإصدار. بصلاحيات root على الخادم:
-infra-upgrade-manual-helper = تشغيل bootstrap.sh الحالي مرة واحدة يثبّت المساعد، ويعمل الزر هنا من بعدها.
+infra-upgrade-manual-helper = شغّل bootstrap.sh الحالي مرة واحدة لتثبيت المساعد.
 infra-upgrade-asked = طُلب الإصدار { $version }. يتسلّمه مساعد الترقية خلال ثوانٍ؛ وتُظهر هذه الصفحة كيف جرى ذلك.
 infra-upgrade-no-helper = مساعد الترقية غير مثبّت، لذا لا يمكن تثبيت { $version } من هنا.
 infra-upgrade-unknown-version = { $version } ليس في قائمة الإصدارات المنشورة.
@@ -4316,7 +4287,7 @@ infra-compute-nnp-off = يمكن اكتساب صلاحيات
 infra-compute-seccomp-on = استدعاءات النظام مُرشَّحة
 infra-compute-seccomp-off = استدعاءات النظام غير مُرشَّحة
 infra-activity = النشاط
-infra-activity-intro = محسوبة على مدى { $span }: تحتفظ الخدمة بيوم واحد، وتبدأ من الصفر عند كل إعادة تشغيل.
+infra-activity-intro = على مدى { $span }؛ يبدأ من الصفر عند إعادة تشغيل الخدمة.
 infra-activity-sessions = الجلسات المفتوحة
 infra-activity-signed-in = عمليات الدخول
 infra-activity-failed = محاولات الدخول الفاشلة
@@ -4334,7 +4305,7 @@ infra-upgrade-already-pending = { $version } ينتظر مساعد الترقي�
 
 # Administration console: Connectivity, sign-in services and registration (v0.5.0, docs/adr/0012)
 connectivity-title = الاتصال
-connectivity-lede = كيف يصل القرّاء إلى هذا الموقع وكيف يدخلون: العنوان العام، وخدمات تسجيل الدخول، والقواعد التي يتبعها كل دخول، بما فيها دخول المسؤولين.
+connectivity-lede = كيف يصل القرّاء إلى هذا الموقع ويدخلون: العنوان العام وخدمات الدخول والقواعد.
 connectivity-kpi-address = العنوان العام
 connectivity-address-unset = غير مضبوط
 connectivity-address-https = HTTPS
@@ -4355,7 +4326,7 @@ connectivity-policy-short-non-admins = عدا المسؤولين
 connectivity-policy-short-nobody = لا أحد
 connectivity-policy-note-everyone = يستطيع كل حساب الدخول بكلمة مروره، وبخدمة مرتبطة أيضًا.
 connectivity-policy-note-non-admins = يدخل المسؤولون عبر خدمة فقط؛ ويبقى للآخرين استعمال كلمة المرور. فلا تفتح كلمة مرور مسؤول مسروقة شيئًا.
-connectivity-policy-note-nobody = يدخل الجميع عبر خدمة. والحساب الذي لا خدمة مرتبطة به ولا عنوان يُربط به لا يستطيع الدخول.
+connectivity-policy-note-nobody = يدخل الجميع عبر خدمة؛ والحساب بلا خدمة مربوطة لا يمكنه الدخول.
 connectivity-kpi-admins-linked = { $n ->
     [zero] لا مسؤول لديه خدمة مرتبطة
     [one] مسؤول واحد لديه خدمة مرتبطة
@@ -4370,13 +4341,13 @@ registration-short-closed = المسؤولون فقط
 registration-short-secret = بسرّ العائلة
 registration-short-open = مفتوح للزوار
 connectivity-address = العنوان العام
-connectivity-address-intro = العنوان الذي يكتبه القرّاء كما يكتبونه: https://family.example. تعيد خدمات تسجيل الدخول القرّاء إليه، لذا يجب أن يكون العنوان العام لا العنوان الذي يستمع عليه هذا الخادم.
+connectivity-address-intro = العنوان العام الذي يكتبه القرّاء، مثل https://family.example؛ وتعيدهم خدمات الدخول إليه.
 connectivity-address-label = العنوان العام
 connectivity-address-hint = اتركه فارغًا ما دام لا أحد يدخل عبر خدمة.
 connectivity-address-invalid = هذا ليس عنوان http أو https فيه اسم مضيف.
 connectivity-address-saved = حُفظ العنوان العام.
 connectivity-policy = قواعد تسجيل الدخول
-connectivity-policy-intro = تنطبق على كل حساب، بما فيها حسابات المسؤولين. وتُرفض أي قاعدة لا تترك مسؤولًا قادرًا على الدخول.
+connectivity-policy-intro = تسري على كل الحسابات؛ وتُرفض أي قاعدة لا تترك مديرًا قادرًا على الدخول.
 connectivity-policy-passwords = من يستطيع الدخول بكلمة مرور
 connectivity-policy-without-way = { $n ->
     [zero] لا حساب نشطًا بلا خدمة مرتبطة ولا عنوان.
@@ -4387,17 +4358,17 @@ connectivity-policy-without-way = { $n ->
     *[other] { $n } حساب نشط بلا خدمة مرتبطة ولا عنوان: مع «لا أحد» لن تستطيع الدخول.
     }
 connectivity-link-by-email = ربط الخدمة بالحساب الذي يحمل العنوان المؤكَّد نفسه
-connectivity-link-by-email-note = هكذا يحصل قريبٌ على دخول بنقرة واحدة دون تسجيل: أنشئ حسابه بعنوانه، فيربطه أول دخول له عبر خدمة أكّدت ذلك العنوان. ولا يُطابَق إلا عنوان كتبه مسؤول أو أكّدته خدمة.
+connectivity-link-by-email-note = أنشئ حساب القريب بعنوانه: أول دخول له عبر خدمة تتحقق من العنوان يربطه.
 connectivity-domains = النطاقات المسموح لها بفتح حساب
-connectivity-domains-hint = واحد في كل سطر، مثل family.example. فارغ: أي نطاق. وعند ضبطها لا يفتح حسابًا إلا عنوان أكّدته خدمة في أحد هذه النطاقات، ولا يُعرض نموذج التسجيل.
+connectivity-domains-hint = واحد في كل سطر (family.example). فارغ: الكل. وإلا فلا يفتح حسابًا إلا عنوان مُتحقَّق منه في هذه النطاقات.
 connectivity-domain-invalid = «{ $domain }» ليس اسم نطاق.
 connectivity-policy-unknown = اختر من يستطيع الدخول بكلمة مرور.
 connectivity-policy-lockout = مرفوض: مع هذا التغيير لن يستطيع أي مسؤول نشط الدخول. اربط أولًا خدمة تسجيل دخول بحساب مسؤول بالدخول عبرها مرة، أو أبقِ كلمات المرور للمسؤولين.
 connectivity-policy-saved = حُفظت قواعد تسجيل الدخول.
 connectivity-not-saved = لم يُحفظ: { $error }
 connectivity-services = خدمات تسجيل الدخول
-connectivity-services-intro = سجّل هذا الموقع في لوحة الخدمة بعنوان إعادة التوجيه المبيَّن، ثم الصق هنا معرّف العميل والسرّ. فيرى الزوار «المتابعة باستخدام …» في صفحتي الدخول والتسجيل.
-connectivity-outbound-note = يتطلب الدخول عبر خدمةٍ أن يصل هذا الخادم إلى الخدمة. والوحدة التي يكتبها bootstrap.sh ترفض الاتصالات الصادرة (IPAddressDeny=any): اسمح بها عبر sudo systemctl edit axgf-cms بإضافة IPAddressAllow=any تحت [Service]، ثم أعد التشغيل. ويخبرك زر الاختبار إن كان ذلك ممكنًا.
+connectivity-services-intro = سجّل هذا الموقع في لوحة الخدمة بعنوان إعادة التوجيه الظاهر، ثم الصق هنا معرّف العميل والسر.
+connectivity-outbound-note = يتطلب الدخول عبر خدمة اتصالات صادرة: نفّذ sudo systemctl edit axgf-cms، وأضف IPAddressAllow=any تحت [Service]، ثم أعد التشغيل.
 connectivity-service-ready = جاهزة
 connectivity-service-incomplete = غير مكتملة
 connectivity-service-off = معطّلة
@@ -4424,10 +4395,10 @@ connectivity-provider-saved = حُفظ { $name }.
 connectivity-test-ok = أجاب { $name }: { $answer }.
 connectivity-test-failed = تعذّر الوصول إلى { $name } من هذا الخادم: { $detail }
 registration-title = التسجيل
-registration-intro = هل يستطيع الزائر فتح حساب هنا بنفسه. وحساب كهذا حساب عضو: يقرأ ما يقرؤه الأعضاء ولا يغيّر شيئًا. ومنحه دورًا آخر قرار المسؤول، أدناه.
+registration-intro = هل يمكن للزائر فتح حساب عضو بنفسه؛ ويمكن للمدير منحه دورًا آخر أدناه.
 registration-who = من يستطيع فتح حساب
 registration-note-closed = لا يُنشئ الحسابات إلا المسؤول، في هذه الصفحة.
-registration-note-secret = يستطيع الزائر الذي يعرف سرّ العائلة فتح حساب عضو. شارك السرّ كما تشارك رمز باب.
+registration-note-secret = من يعرف سرّ العائلة يمكنه فتح حساب عضو. شاركه كما تشارك رمز باب.
 registration-note-open = يستطيع أي زائر فتح حساب عضو. ويقرأ الأعضاء السجلات المخصّصة للأعضاء.
 registration-rotate = توليد سرّ جديد
 registration-secret = سرّ العائلة
@@ -4591,13 +4562,13 @@ notes-field-title = العنوان
 notes-field-category = الفئة
 notes-field-category-hint = نص حر؛ تُقترح الفئات المستخدمة من قبل.
 notes-field-date = التاريخ
-notes-field-date-hint = سنة أو شهر أو يوم: 1952 أو 1952-06 أو 1952-06-14. اتركه فارغًا إن لم يكن للملاحظة تاريخ.
+notes-field-date-hint = 1952 أو 1952-06 أو 1952-06-14؛ فارغ إن لم يوجد.
 notes-field-people = الأشخاص المعنيّون
-notes-field-people-hint = اكتب اسمًا واختره من القائمة. إن لم يُذكر أحد، فالملاحظة تخص العائلة كلها.
+notes-field-people-hint = اكتب اسمًا واختره. إن لم يُذكر أحد، فالملاحظة للعائلة كلها.
 notes-person-add = إضافة
 notes-person-remove = إزالة هذا الشخص
 notes-field-text = النص
-notes-text-hint = الخط العريض والمائل والعناوين والقوائم والروابط تُكتب بلغة Markdown؛ والأزرار أعلاه تكتبها عنك. الصق صورة في النص أو أفلتها فيه لإضافتها، حتى { $mb } ميغابايت لكل صورة.
+notes-text-hint = Markdown أو الأزرار أعلاه. الصق الصور أو أفلتها، حتى { $mb } م.ب لكل منها.
 notes-tool-bold = عريض
 notes-tool-italic = مائل
 notes-tool-heading = عنوان فرعي
@@ -4636,7 +4607,7 @@ notes-dashboard-open = كتابة الملاحظات وإدارتها
 # The family the archive describes: the bundle room's form (2026-10-23)
 kind-bundle = الأرشيف
 manifest-title = العائلة
-manifest-intro = ما يقوله الأرشيف عن العائلة التي يحويها. اسمها هو الذي تعرضه صفحة العائلة وعناوين الصفحات وملف PDF لكل ملاحظة؛ والباقي ينتقل مع الملف. أما أرقام الملف نفسه وتواريخه فتُحسب عند كتابته.
+manifest-intro = ما يقوله الأرشيف عن عائلته. يظهر اسمه في صفحة العائلة وعناوين الصفحات وملفات PDF للملاحظات.
 manifest-name = اسم العائلة
 manifest-name-hint = يظهر في صفحة العائلة وفي العناوين. تتبع الحسابات الاسم الجديد.
 manifest-description = الوصف
@@ -4645,7 +4616,7 @@ manifest-culture-hint = وسم لغة: fr أو pl أو pt-BR…
 manifest-place = المكان الرئيسي
 manifest-place-hint = القارة التي عاشت فيها العائلة في الغالب.
 manifest-span = الفترة المشمولة
-manifest-span-hint = من أقدم ولادة إلى أحدث ولادة يسجّلها الأرشيف؛ تُحسب وتُكتب في الملف عند حفظ البيانات.
+manifest-span-hint = من أقدم ميلاد إلى أحدثه؛ يُحسب عند الحفظ.
 manifest-license = الترخيص
 manifest-license-type = الترخيص
 manifest-save = حفظ بيانات العائلة
@@ -4701,7 +4672,7 @@ account-who = الحساب
 account-email = عنوان البريد الإلكتروني
 account-since = منذ
 account-person-title = سجلّي في الشجرة
-account-person-intro = حدّد أيّ شخص في الشجرة أنت. لا أحد يتحقق من ذلك: كل حساب يختار سجلّه بنفسه وعلى مسؤوليته، ويمكنه تغييره أو إزالته في أي وقت.
+account-person-intro = من أنت في الشجرة؟ اختيارك، بلا تحقق؛ يمكنك تغييره متى شئت.
 account-person-is = يقول هذا الحساب إنه
 account-person-unlink = إزالة الربط
 account-person-pick = شخص في الشجرة
@@ -5206,7 +5177,7 @@ kin-group-care = الحضانة والوصاية
 kin-group-rites = الشعائر والأعراف
 kin-group-others = روابط أخرى
 kin-find-title = ما صلة القرابة؟
-kin-find-lede = اختر شخصًا من العائلة: تُشرح صلته بـ{ $name } خطوة بخطوة.
+kin-find-lede = اختر شخصًا: صلته بـ{ $name } خطوةً خطوة.
 kin-find-label = الشخص
 kin-find-choose = اختر شخصًا…
 kin-find-go = اعرض الصلة
@@ -5224,7 +5195,7 @@ kin-all-count = { $n ->
     }
 kin-common-list = الأسلاف المشتركون: { $names }
 kin-also-list = وأيضًا { $list }
-kin-rites-help = العرّابون وسائر الروابط التي تنشئها التقاليد بين أشخاص لم يولدوا بعضهم من بعض. ترسمها الشجرة بخط منقّط خاص بها.
+kin-rites-help = العرّابون وروابط أخرى تنشئها التقاليد؛ ترسمها الشجرة بخط منقّط.
 kin-rite-recorded = يقول السجل: «{ $label }».
 kin-hidden = شخص لا يمكنك رؤيته
 kin-native = بكلمات التقليد
@@ -5626,7 +5597,7 @@ emblem-no-family-detail = هذه العائلة ليست في الأرشيف، �
 ## its computing comes from, and a test.
 admin-nav-afg = النسّابة الذكي
 afg-title = النسّابة الاصطناعي للعائلة
-afg-lede = يعرف النسّابة الاصطناعي (AFG) العائلة من أرشيفها، ويتذكر كل شخص يتحدث إليه في ذاكرة خاصة به. هنا: من أين تأتي حوسبته، واختبار.
+afg-lede = من أين يأتي حساب النسّابة الاصطناعي، واختبار.
 afg-kpi-source = الحوسبة
 afg-ready = جاهز
 afg-off-note = اختر مصدر الحوسبة.
@@ -5637,9 +5608,9 @@ afg-kpi-last = آخر اختبار
 afg-never = لا شيء بعد
 afg-run-open = فتحه
 afg-source = من أين تأتي الحوسبة
-afg-source-intro = عنوان؛ أو عنوان مع مفتاح API ونموذج؛ أو وكيل برمجة مسجَّل الدخول مسبقًا على هذا الجهاز. يُخاطَب كلٌّ منها بطريقته الخاصة.
+afg-source-intro = عنوان؛ أو عنوان بمفتاح ونموذج؛ أو وكيل مسجّل الدخول على هذا الجهاز.
 afg-kind = طريقة الحوسبة
-afg-kind-hint = الخدمة تعمل في مكان آخر ويُوصَل إليها عبر الشبكة. الوكيل يعمل على هذا الجهاز، تحت الحساب الذي يعمل به هذا الموقع، ويجب أن يكون مسجَّل الدخول فيه مسبقًا.
+afg-kind-hint = تُبلغ الخدمة عبر الشبكة؛ أما الوكيل فيعمل على هذا الجهاز ويجب أن يكون مسجّل الدخول فيه.
 afg-kind-off = لا شيء
 afg-kind-anthropic = Claude (واجهة Anthropic البرمجية)
 afg-kind-ollama = Ollama
@@ -5658,25 +5629,25 @@ afg-url-hint = إذا تُرك فارغًا: العنوان المعتاد لل�
 afg-key = مفتاح API
 afg-key-set = مفتاح محفوظ ينتهي بـ { $end }.
 afg-key-unset = لا يوجد مفتاح محفوظ.
-afg-key-hint = إذا تُرك فارغًا يبقى المفتاح المحفوظ. يُحفظ مع الحسابات، لا في الأرشيف أبدًا، ولا يُعرض مرة أخرى.
+afg-key-hint = الفراغ يُبقي المفتاح المحفوظ، ولن يُعرض مجددًا.
 afg-key-clear = نسيان المفتاح
 afg-model = النموذج
-afg-model-hint = اسم النموذج كما تكتبه الخدمة أو الوكيل. تقترح القائمة النماذج الحالية؛ ويُرسَل أي اسم آخر كما كُتب. إذا تُرك فارغًا يأخذ Ollama أول نماذجه ويأخذ الوكيل نموذجه الخاص.
+afg-model-hint = اسم النموذج كما تكتبه الخدمة. يُرسل أي اسم كما هو؛ والفراغ يعني الافتراضي.
 afg-model-unlisted = ليس من الاقتراحات: يُرسَل كما كُتب.
 afg-effort = الجهد
-afg-effort-hint = مدى عمق تفكير النموذج، بكلمات الجهة المصنِّعة له. تتبع القائمة النموذج المختار وتُعلِّم جهده المعتاد؛ وتُرسَل أي كلمة أخرى كما كُتبت. إذا تُرك فارغًا يُطبَّق الجهد الافتراضي للنموذج.
+afg-effort-hint = مدى عمق تفكير النموذج. تُرسل أي كلمة كما هي؛ والفراغ يعني إعداد النموذج.
 afg-effort-unlisted = ليس من جهود هذا النموذج: يُرسَل كما كُتب.
 afg-effort-default = افتراضي
 afg-program = البرنامج
 afg-program-found = وُجد:
 afg-program-missing = غير موجود على هذا الجهاز.
-afg-program-hint = إذا تُرك فارغًا يُبحث عنه حيث يضعه مثبِّته. وإلا فالمسار الكامل لبرنامج الوكيل.
+afg-program-hint = فارغ: يُبحث عنه حيث يضعه مثبّته. وإلا فالمسار الكامل للبرنامج.
 afg-sensitive = إرسال الفئات الحساسة أيضًا
-afg-sensitive-hint = تبقى الصحة والقياسات الحيوية والجينوم والسجلات القضائية والسلوك خارج ما يُرسَل ما لم يُحدَّد هذا الخيار، كما تبقى خارج التصدير المشترك.
+afg-sensitive-hint = دون تحديد، تبقى الصحة والقياسات الحيوية والوراثة والسجلات القضائية والسلوك خارج الإرسال، كما في تصدير مشترك.
 afg-timeout = الوقت المسموح (بالثواني)
 afg-timeout-hint = المدة التي قد يستغرقها الجواب قبل التخلي عنه.
 afg-test = اختبار
-afg-test-intro = يرسل الأرشيف كما هو الآن، كل ملفات JSON فيه دون الصور، مع ذاكرتك، ويطرح سؤالًا واحدًا. يُفتح الجواب في نافذة.
+afg-test-intro = يرسل الأرشيف (JSON، دون صور) وذاكرتك مع سؤال واحد؛ ويُفتح الجواب في نافذة.
 afg-sent-files = الملفات
 afg-sent-files-value = { $n ->
         [zero] لا ملفات بصيغة JSON
@@ -5707,7 +5678,7 @@ afg-sent-classes = الفئات الحساسة
 afg-sent-classes-in = تُرسَل
 afg-sent-classes-out = مستبعدة
 afg-sent-question = السؤال
-afg-privacy = يرسل الاختبار سجلات العائلة، بما فيها الأحياء، إلى مصدر الحوسبة المختار أعلاه. الخدمة على الإنترنت، وكذلك الوكيل على هذا الجهاز الذي يستدعي واحدة منها، تقرؤها على خوادم مشغّلها.
+afg-privacy = يرسل الاختبار سجلات العائلة، بما فيها الأحياء، إلى الحساب المختار أعلاه.
 afg-test-button = إرسال الاختبار
 afg-test-needs = احفظ أولًا طريقة حوسبة كاملة.
 afg-test-question = أعطني أكثر ثلاث عائلات من حيث عدد الأفراد المسجَّلين.
@@ -5759,14 +5730,7 @@ afg-brain-note = { $facts ->
        *[other] { $brains } حساب بذاكرة
     }
 afg-brain-no-account = لا حساب لهذه الجلسة، فلا ذاكرة لها.
-afg-access-count = { $n ->
-        [zero] لا يمكن لأي حساب التحدث إلى النسّابة الذكي.
-        [one] يمكن لحساب واحد التحدث إلى النسّابة الذكي.
-        [two] يمكن لحسابين التحدث إلى النسّابة الذكي.
-        [few] يمكن لـ { $n } حسابات التحدث إلى النسّابة الذكي.
-        [many] يمكن لـ { $n } حسابًا التحدث إلى النسّابة الذكي.
-       *[other] يمكن لـ { $n } حساب التحدث إلى النسّابة الذكي.
-    }
+afg-access-count = الحسابات التي يمكنها محادثة النسّابة الاصطناعي: { $n }
 afg-access-set = يُضبط في صفحة الحسابات
 afg-result-ok = نجاح
 afg-result-error = خطأ
@@ -5777,11 +5741,11 @@ accounts-afg = النسّابة الذكي
 accounts-afg-allowed = يمكنه التحدث إلى النسّابة الذكي
 accounts-afg-yes = نعم
 accounts-afg-no = لا
-accounts-afg-hint = معطّل ما لم يُحدَّد. ما يتذكره النسّابة الذكي عن هذا الحساب يُحفظ في ذاكرة خاصة به: مجلد على القرص بجانب الأرشيف.
+accounts-afg-hint = معطّل ما لم يُحدَّد. تُحفظ ذاكرته منفصلة، بجانب الأرشيف.
 
 ## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
 account-brain-title = ذاكرة النسّابة الذكي الخاصة بك
-account-brain-intro = ما يتذكره النسّابة الذكي عنك: الحقائق التي اختار الاحتفاظ بها، ومحادثاتك معه. يُعطى الاثنان له من جديد مع كل سؤال تطرحه. اجعله ينسى ما لم تعد تريده أن يعرفه. لا يرى ذلك على الموقع أحد غيرك.
+account-brain-intro = ما يتذكره النسّابة الاصطناعي عنك، ويُعاد إليه مع كل سؤال. احذف ما تشاء؛ لا يراه غيرك.
 account-brain-no-access = النسّابة الذكي غير متاح لحسابك: يقرر ذلك مسؤول في صفحة الحسابات.
 account-brain-none = لا يتذكر النسّابة الذكي شيئًا عنك بعد.
 account-brain-facts = ما يتذكره
@@ -5811,15 +5775,15 @@ afg-brain-see = عرض ونسيان
 
 ## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
 assistant-title = مساعدي الشخصي
-assistant-entry = مشاريعك ومحادثاتك مع النسّابة الاصطناعي: اسأل، وأرسل المستندات والصور، وتابع من حيث توقفت.
-assistant-lede = مشاريعك الخاصة مع النسّابة الاصطناعي. لكل منها مدونة سلوك وذاكرة، وفي كل منها محادثات تتابعها من حيث تركتها.
+assistant-entry = مشاريعك ومحادثاتك مع النسّابة الاصطناعي.
+assistant-lede = مشاريعك مع النسّابة الاصطناعي، لكل منها مدونة سلوك وذاكرة ومحادثات.
 assistant-shut-no-account = لا حساب لهذه الجلسة، فلا مساعد شخصي لها. سجّل الدخول بحسابك الخاص.
 assistant-shut-not-open = النسّابة الاصطناعي غير متاح لحسابك: يقرر ذلك مسؤول في صفحة الحسابات.
 assistant-shut-broken = تعذّر فتح مساحتك. أعد المحاولة بعد قليل؛ وإن استمر ذلك فأخبر مسؤولًا.
 assistant-shut-gone = لا شيء هنا: هذا المشروع أو هذه المحادثة غير موجودة، أو ليست لك.
 assistant-back-account = العودة إلى حسابي
 assistant-new-project = مشروع جديد
-assistant-not-ready = لم يُضبط بعد مصدر حوسبة النسّابة الاصطناعي: يمكنك قراءة محادثاتك لا إرسال رسالة. يضبطه مسؤول.
+assistant-not-ready = حساب النسّابة الاصطناعي لم يُضبط بعد: القراءة فقط حاليًا.
 assistant-conversations-count = { $n ->
         [zero] لا محادثات
         [one] محادثة واحدة
@@ -5829,7 +5793,7 @@ assistant-conversations-count = { $n ->
        *[other] { $n } محادثة
     }
 assistant-conduct-set = مدونة السلوك محددة
-assistant-empty = لا مشاريع بعد. يجمع المشروع المحادثات حول موضوع واحد — تاريخ العائلة، مسألة صحية، البحث عن عمل — تحت مدونة سلوك واحدة.
+assistant-empty = لا مشروع بعد. يجمع المشروع المحادثات حول موضوع واحد.
 assistant-project-name = اسم المشروع
 assistant-create = إنشاء المشروع
 assistant-facts-count = { $n ->
@@ -5972,7 +5936,7 @@ afg-record-stale = تغيّر السجل في الأثناء. أعد تحميل 
 afg-record-refused = رفضه الأرشيف: { $reason }
 afg-record-summary-not-yours = كتب هذا الملخّص عضو آخر: لا يستبدله إلا كاتبه أو مسؤول.
 afg-images = الصور
-afg-images-intro = من أين تأتي صور النسّابة الذكي: وجه أو صورة تُرمَّم في سجل شخص. لا يكتب Claude والوكلاء إلا نصًا، لذا تحتاج الصور إلى خدمة خاصة بها: مدفوعة (OpenAI، Google، Canva) أو جهاز للعائلة مزوّد ببطاقة رسوميات.
+afg-images-intro = من أين تأتي صور النسّابة الاصطناعي: خدمة مدفوعة (OpenAI أو Google أو Canva) أو جهاز للعائلة ببطاقة رسوميات.
 afg-image-kind = خدمة الصور
 afg-image-kind-hint = نماذج OpenAI وGoogle، أو ذكاء Canva الاصطناعي عبر حسابك، أو خادم للعائلة: Ollama، أو أي خادم متوافق مع OpenAI، أو ComfyUI.
 afg-image-kind-off = لا شيء

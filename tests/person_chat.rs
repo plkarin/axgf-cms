@@ -351,7 +351,7 @@ async fn the_afg_tab_is_for_the_accounts_it_is_open_to() {
     );
     assert!(tab.contains(&format!("action=\"/person/{JEAN}/afg\"")));
     assert!(
-        tab.contains("ses notes (1), les proches (2)"),
+        tab.contains("les notes (1), les proches (2)"),
         "the notes and the relatives vera may read"
     );
     assert!(tab.contains("Aucune conversation pour l’instant"));

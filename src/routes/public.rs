@@ -576,12 +576,17 @@ pub async fn tree(
         }
         _ => None,
     };
+    // The panel's line that leads to the Status tab, as the fetched panel has.
+    let status = panel
+        .as_ref()
+        .map(|p| person_status(&state, &viewer, chrome.lang, p));
     render::page_with(
         &chrome,
         "tree.html",
         context! {
             nav => "tree",
             root_kin,
+            status,
             // This page is a diagram six thousand pixels tall, and following a
             // line while panning it is the task. The ambient drift is held off
             // it for that reason — see the note beside the rule in app.css,
@@ -667,12 +672,14 @@ pub async fn tree_panel(
                 .root
                 .as_deref()
                 .map(|root| root_kin(&state, &viewer, chrome.lang, root, &id));
+            let status = person_status(&state, &viewer, chrome.lang, &p);
             render::page_with(
                 &chrome,
                 "_panel.html",
                 context! {
                     p,
                     root_kin,
+                    status,
                     compact => true,
                     max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
                     document_types => crate::documents::document_type_options(chrome.lang),
@@ -876,8 +883,14 @@ pub async fn person(
             let notes = record_notes(&state, &viewer, chrome.lang, &id);
             let afg = state.site().afg;
             let afg_user = viewer.may_write() && viewer.user.as_ref().is_some_and(|u| u.afg);
-            let mut tabs =
-                crate::person::tabs_for(&p, !profile_groups.is_empty() || charts, notes.kept.len());
+            // What is worth checking on it, and knowing about it.
+            let status = person_status(&state, &viewer, chrome.lang, &p);
+            let mut tabs = crate::person::tabs_for(
+                &p,
+                !profile_groups.is_empty() || charts,
+                notes.kept.len(),
+                status["count"].as_u64().unwrap_or(0) as usize,
+            );
             let tab = crate::person::current_tab(q.tab.as_deref(), &tabs);
             // The AFG's tab comes last, for the account it is open to, with
             // the number of its conversations about this person.
@@ -934,6 +947,8 @@ pub async fn person(
                     edit_tab => super::person_editor::fragment_for(tab_slug),
                     // The AFG on this page (docs/adr/0031): what its tab holds.
                     afg_chat,
+                    // The Statut tab: what is worth checking, and knowing.
+                    status,
                     profile_groups,
                     kinship,
                     full_record => true,
@@ -1785,7 +1800,9 @@ fn river_tab_context(
     let profile_groups = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::person::profile_groups_filled(flat, &p.id, lens, lang)
     });
-    let tabs = crate::person::tabs_for(p, !profile_groups.is_empty(), 0);
+    let status = person_status(state, viewer, lang, p);
+    let count = status["count"].as_u64().unwrap_or(0) as usize;
+    let tabs = crate::person::tabs_for(p, !profile_groups.is_empty(), 0, count);
     let tab = crate::person::current_tab(requested, &tabs);
     let kinship = (tab == crate::person::RecordTab::Kinship).then(|| {
         state.read_as(viewer.ceiling(), |flat, lens| {
@@ -1795,12 +1812,58 @@ fn river_tab_context(
     context! {
         river_tabs => true,
         river_n => n,
+        status,
         tabs,
         tab => tab.slug(),
         edit_tab => super::person_editor::fragment_for(tab.slug()),
         profile_groups,
         kinship,
     }
+}
+
+/// What the record's Statut tab says (the operator's request of 5 November
+/// 2026): the data-quality findings about the person this reader may be
+/// shown, those still open and how many were marked as normal, then what is
+/// worth knowing about the record. A reader who is not signed in is shown no
+/// finding, as on the Quality page.
+fn person_status(
+    state: &Shared,
+    viewer: &crate::access::Viewer,
+    lang: &str,
+    p: &crate::person::PersonView,
+) -> Value {
+    let (check, dismissed) = if viewer.signed_in() {
+        let all = state.quality_findings();
+        state.read_as(viewer.ceiling(), |_, lens| {
+            let mine = crate::quality::about_person(&all, lens, &p.id);
+            let own = format!("/person/{}", p.id);
+            let check: Vec<Value> = mine
+                .iter()
+                .filter(|f| f.dismissed.is_none())
+                .map(|f| {
+                    json!({
+                        "title": crate::i18n::translate(
+                            lang,
+                            &format!("quality-rule-{}", f.rule.slug()),
+                            None
+                        ),
+                        "detail": crate::quality::message(f, lang),
+                        "link": crate::quality::link(f, viewer.may_write()).filter(|l| *l != own),
+                    })
+                })
+                .collect();
+            let dismissed = mine.iter().filter(|f| f.dismissed.is_some()).count();
+            (check, dismissed)
+        })
+    } else {
+        (Vec::new(), 0)
+    };
+    json!({
+        "count": check.len(),
+        "check": check,
+        "dismissed": dismissed,
+        "know": p.showcase_notes,
+    })
 }
 
 /// What `id` is to the person in the middle of the tree, `root`, for the

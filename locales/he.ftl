@@ -223,7 +223,7 @@ admin-operations = פעולות
 admin-validate = אימות
 admin-deduplicate = איחוד כפילויות
 admin-export = ייצוא הארכיון
-admin-roles-note = אימות, איחוד כפילויות, ייצוא, מחיקה וניהול חשבונות שמורים למנהלים. תורם מגיע לכל דף אחר כאן.
+admin-roles-note = אימות, איחוד כפילויות, ייצוא, מחיקה וחשבונות שמורים למנהלים בלבד.
 admin-dedup-confirm = איחוד כפילויות ממזג רשומות וכותב מחדש את הארכיון. להמשיך?
 admin-recent-changes = שינויים אחרונים
 admin-recent-note = { $shown } האחרונים מתוך { $total ->
@@ -238,7 +238,7 @@ admin-sessions-open = { $n ->
         [many] { $n } סשנים פתוחים כעת.
        *[other] { $n } סשנים פתוחים כעת.
     }
-admin-no-changes-yet = עדיין לא שונה דבר דרך היישום הזה. כל שמירה מעכשיו נרשמת ב-{ $path }.
+admin-no-changes-yet = אין עדיין שינויים. כל שמירה נרשמת ב־{ $path }.
 admin-last-validation = אימות אחרון
 admin-bundle-heavy = הארכיון הזה הוא { $size }. כולו נטען בהפעלה ומוחזק בזיכרון, ולכן מעבר לכ-{ $warn } האתר מתחיל לעלות בזיכרון של ממש וההפעלות מחדש מתארכות. זה מתאים לארכיון משפחתי ולא לספריית מדיה — אם הקבצים המצורפים גדלים בלי גבול, שמרו אותם במאגר קבצים ותנו לארכיון להצביע עליהם.
 
@@ -336,10 +336,17 @@ person-tab-media = מדיה
 person-tab-tree = עץ
 person-tab-history = היסטוריה
 person-tab-afg = הגנאלוג המלאכותי
+person-tab-status = מצב
+status-check = לבדיקה
+status-know = כדאי לדעת
+status-fix = תיקון
+status-open = פתיחה
+status-dismissed = סומנו „רגיל אצלנו”: { $n }
+status-panel = לבדיקה: { $n }
 person-afg-title = לשאול את הגנאלוג המלאכותי על { $name }
 person-afg-title-short = שיחות עם הגנאלוג המלאכותי
-person-afg-lede = שאלו על חייו של { $name }, על משפחתו ועל תקופתו. הגנאלוג המלאכותי עונה ממה שמותר לכם לקרוא בארכיון, ואומר מתי הוא חורג ממנו. השיחות שלכם כאן הן שלכם בלבד: חזרו לאחת מהן או התחילו חדשה.
-person-afg-reads = בכל הודעה הגנאלוג המלאכותי קורא את הרשומה הזאת, את ההערות שלה ({ $notes }), את קרובי המשפחה הקרובים ({ $relatives }) ואת רשימת המשפחה ({ $persons }): כ־{ $tokens } טוקנים, הנשלחים למקום שבו פועל החישוב של הגנאלוג המלאכותי.
+person-afg-lede = שאלו על חייו של { $name }, על משפחתו ועל תקופתו. השיחות שלכם כאן הן שלכם בלבד.
+person-afg-reads = נקרא עם כל הודעה: הרשומה, ההערות ({ $notes }), קרובי המשפחה ({ $relatives }), המשפחה ({ $persons }) · כ־{ $tokens } טוקנים.
 person-afg-ask = השאלה שלכם על { $name }
 person-afg-example = למשל: „באיזה רגימנט היה { $name } בקרב שההערות מזכירות?”
 person-afg-conversations = השיחות שלכם
@@ -403,7 +410,7 @@ admin-to = אל
 admin-version = גרסה { $version }
 
 accounts-title = חשבונות
-accounts-lede = נשמרים ב-{ $path }, בהרשאות 600, ליד הארכיון ולעולם לא בתוכו. ארכיון מועתק, נשלח ומתפרסם; גיבובי סיסמאות שנוסעים בתוכו היו הופכים כל עותק של עץ המשפחה לעותק של פרטי ההתחברות.
+accounts-lede = נשמר ב־{ $path } (מצב 600), ליד הארכיון ולעולם לא בתוכו.
 accounts-existing = קיימים
 accounts-username = שם משתמש
 accounts-role = תפקיד
@@ -423,8 +430,8 @@ accounts-roots = { $n ->
        *[other] { $n } שורשים
     }
 accounts-add = הוספת חשבון
-accounts-no-registration = מבקרים אינם יכולים לפתוח חשבונות בעצמם; ההרשמה מוגדרת למעלה. לרוב המשפחות מספיק מנהל שמכיר את כולם.
-accounts-password-hint = השאירו ריק ותיווצר סיסמה שתוצג פעם אחת. לפחות { $min } תווים אם אתם קובעים אותה בעצמכם.
+accounts-no-registration = מבקרים אינם יכולים לפתוח חשבונות בעצמם; ההרשמה נקבעת למעלה.
+accounts-password-hint = ריק: תיווצר סיסמה ותוצג פעם אחת. אחרת לפחות { $min } תווים.
 accounts-new-password-placeholder = סיסמה חדשה (ריק = ללא שינוי)
 accounts-email = דוא״ל
 accounts-optional = (רשות)
@@ -436,7 +443,7 @@ accounts-branch-hint = מגביל את מה שהחשבון הזה רשאי לע�
 accounts-branch-reading = הוא אינו מגביל את מה שהם רשאים לקרוא — זה נקבע לפי הנראות של כל רשומה, והשניים נשמרים נפרדים בכוונה.
 accounts-branch-placeholder = מזהה אדם אחד בכל שורה
 accounts-ids-in-bundle = מזהי האנשים בעץ הזה
-accounts-emergency-warning = התחברתם עם אסימון החירום. הוא מעניק הרשאות מנהל לסשן הזה אך אינו חשבון: אין לו העדפות, ויומן העריכה ירשום את השינויים שלכם כ-emergency-token ולא כאדם. צרו לעצמכם חשבון אמיתי למטה והתחברו איתו.
+accounts-emergency-warning = התחברתם עם אסימון החירום, לא עם חשבון: צרו למטה חשבון אמיתי והשתמשו בו.
 accounts-created-with-password = { $username } נוצר. הסיסמה היא { $password } — היא מוצגת פעם אחת ונשמרת רק כגיבוב Argon2id, לכן העבירו אותה עכשיו.
 accounts-created = { $username } נוצר.
 accounts-updated = { $username } עודכן. כל סשן שהיה פתוח לו נותק.
@@ -561,8 +568,8 @@ tree-counts = { $drawn } מתוך { $total } אנשים · { $generations ->
     }
 tree-unplaced-count = { $n } ללא מקום
 tree-contradicts-title = העץ הזה סותר את עצמו.
-tree-contradicts-detail = שום סידור של שורות אינו יכול לקיים זאת, ולכן הקשר שלמטה הושמט ממספור הדורות וייתכן שחלק מהשורות מצוירות במקום הלא נכון. תקנו את הרשומה השגויה מבין השתיים.
-tree-contradicts-pair = נרשמו גם כזוג וגם כהורה וילד:
+tree-contradicts-detail = קשרים אלה הוצאו ממספור הדורות, וייתכן שחלק מהשורות אינן במקומן. תקנו את הרשומה השגויה.
+tree-contradicts-pair = גם זוג וגם הורה וילד:
 tree-contradicts-more = { $n ->
         [one] סתירה נוספת אחת אינה מופיעה ברשימה.
         [two] שתי סתירות נוספות אינן מופיעות ברשימה.
@@ -755,7 +762,6 @@ name-part-pen_name = שם עט
 name-type-pen_name = שם עט
 gender-U = לא נרשם
 
-record-notes-title = הערות על הרשומה הזאת:
 record-name = שם
 record-type = סוג
 record-cause = סיבה:
@@ -862,7 +868,7 @@ list-policy-orphan-detail = — למחוק אותו אך לשמור את הרש�
 
 completeness-dates-title = תאריכים, לפי הצורה שיש להם בפועל
 completeness-no-dates = עדיין לא נרשמו תאריכים.
-completeness-dates-note = תאריך שמישהו קבע ליום מסוים ותאריך שמישהו יכול היה למקם רק בעשור הם טענות שונות, ושניהם נשמרים כפי שנמסרו. טקסט שלא ניתן היה לקרוא כתאריך כלל נשמר מילה במילה במקום להימחק.
+completeness-dates-note = התאריכים נשמרים כפי שניתנו, ברמת יום או עשור; טקסט שאינו תאריך נשמר מילה במילה.
 completeness-shape-exact = מדויק
 completeness-shape-exact-note = יום מלא בלוח השנה
 completeness-shape-approximate = משוער
@@ -875,7 +881,7 @@ completeness-shape-unknown = לא ידוע
 completeness-shape-unknown-note = נרשם כלא ידוע
 
 convert-page-title = ייבוא קובץ משפחה
-convert-lede = הביאו עץ קיים מקובץ GEDCOM — הייצוא שרוב תוכנות הגנאלוגיה מפיקות. שום דבר לא נשמר כאן, והעץ שהאתר הזה כבר מציג נשאר בדיוק כפי שהיה.
+convert-lede = ייבאו עץ מקובץ GEDCOM. דבר אינו נשמר, והעץ באתר אינו משתנה.
 convert-file-label = קובץ משפחה (‎.ged)
 convert-file-hint = עד { $mb } MB. עץ של 767 אנשים הוא כ-320 KB.
 convert-confidence-label = מידת הוודאות של העובדות האלה, להתחלה
@@ -1006,33 +1012,13 @@ name-type-religious = דתי
 name-type-transliteration = תעתיק
 name-type-nickname = כינוי
 
-note-links = { $n ->
-        [one] קשר מחוץ למשפחה, עם תאריכים ומקורות משלו
-        [two] שני קשרים מחוץ למשפחה, עם תאריכים ומקורות משלהם
-        [many] { $n } קשרים מחוץ למשפחה, עם תאריכים ומקורות משלהם
-       *[other] { $n } קשרים מחוץ למשפחה, עם תאריכים ומקורות משלהם
-    }
-note-occupations = { $n ->
-        [one] עבודה שנרשמה עם התחלה וסוף
-        [two] שתי עבודות שנרשמו עם התחלה וסוף
-        [many] { $n } עבודות שנרשמו עם התחלה וסוף
-       *[other] { $n } עבודות שנרשמו עם התחלה וסוף
-    }
-note-birth-imprecise = תאריך לידה שהמקור לא הצליח לקבוע, מוצג כפי שנרשם
-note-death-imprecise = תאריך פטירה שהמקור לא הצליח לקבוע, מוצג כפי שנרשם
-note-names = { $n ->
-        [one] שם רשום אחד
-        [two] שני שמות רשומים
-        [many] { $n } שמות רשומים
-       *[other] { $n } שמות רשומים
-    }
-note-transliteration = שם בכתב המקורי שלו לצד התעתיק הלטיני
-note-witnessed = { $n ->
-        [one] אירוע שבו היו עדים ולא בעלי האירוע
-        [two] שני אירועים שבהם היו עדים ולא בעלי האירוע
-        [many] { $n } אירועים שבהם היו עדים ולא בעלי האירוע
-       *[other] { $n } אירועים שבהם היו עדים ולא בעלי האירוע
-    }
+note-links = קשרים מחוץ למשפחה: { $n }
+note-occupations = עיסוקים מתוארכים: { $n }
+note-birth-imprecise = תאריך הלידה במקור אינו מדויק
+note-death-imprecise = תאריך הפטירה במקור אינו מדויק
+note-names = שמות רשומים: { $n }
+note-transliteration = שם בכתבו המקורי, עם תעתיק
+note-witnessed = אירועים כעד: { $n }
 
 visibility-public = ציבורי
 visibility-members = חברים
@@ -1137,16 +1123,11 @@ completeness-metric-confidence = עד כמה כל עובדה ודאית
 completeness-metric-confidence-none = אף אחת מ-{ $slots } העובדות כאן אינה אומרת עד כמה היא ודאית. תאריך שמישהו קרא מתעודה ותאריך שמישהו ניחש נראים אותו דבר — עד שכבר לא.
 completeness-metric-confidence-uniform = { $with } מתוך { $slots } עובדות נושאות ציון וכולן באותו מספר ({ $modal }). זה מה שייבוא גורף משאיר אחריו: ערך זמני שאיש לא חזר אליו. אף אחת עדיין לא נשפטה בנפרד.
 completeness-metric-confidence-some = { $with } מתוך { $slots } עובדות נושאות ציון. { $modal_count } חולקות ערך אחד ({ $modal }); { $assessed } שונות ממנו ולכן נבחנו אחת אחת.
-completeness-metric-confidence-many = { $with } מתוך { $slots } עובדות נושאות ציון, { $assessed } מהן שונות מהערך הנפוץ ביותר ({ $modal }) על פני { $distinct } רמות שונות. העץ הזה רושם אי-ודאות אמיתית ומשתנה.
+completeness-metric-confidence-many = ל־{ $with } מתוך { $slots } עובדות יש ציון: { $assessed } שונות מ־{ $modal }, ב־{ $distinct } רמות.
 
 completeness-metric-parentage = עד כמה כל קשר הורה–ילד ודאי
 completeness-metric-parentage-none = אף הורות כאן אינה אומרת עד כמה היא ודאית. אימוצים, שושלות שנויות במחלוקת ושחזורים מאזכור יחיד הם בדיוק המקום שבו משפחה צריכה לרשום ספק — והעץ מצייר קשר פחות ודאי בקו דהוי יותר.
-completeness-metric-parentage-some = { $n ->
-        [one] הורות אחת נושאת ציון משלה
-        [two] שתי הורויות נושאות ציון משלהן
-        [many] { $n } הורויות נושאות ציון משלהן
-       *[other] { $n } הורויות נושאות ציון משלהן
-    }, כך שקו משוער נראה חלש יותר מקו מתועד.
+completeness-metric-parentage-some = הורות עם ציון משלה: { $n }
 
 completeness-metric-links = קשרים מעבר לדם ולנישואין
 completeness-metric-links-none = סנדקים, מעסיקים, עדים, חונכים, אפוטרופסים. אף אחד עדיין לא נרשם. כל אחד יכול לשאת תאריכים משלו, את המקור שלו ואת מידת הוודאות שלכם.
@@ -1165,11 +1146,11 @@ completeness-metric-occupations-undated = { $total ->
         [many] { $total } עיסוקים רשומים, ללא תאריכים
        *[other] { $total } עיסוקים רשומים, ללא תאריכים
     }. הוסיפו התחלה וסוף ואפשר יהיה להשוות ביניהם על ציר זמן אחד.
-completeness-metric-occupations-some = ל-{ $span } מתוך { $total } יש התחלה או סוף, כך שאפשר להשוות ביניהם על ציר זמן אחד.
+completeness-metric-occupations-some = ל־{ $span } מתוך { $total } יש התחלה או סוף.
 
 completeness-metric-sources = מקורות שדורגו לפי מהימנותם
 completeness-metric-sources-none = לא נרשמו מקורות. ציון מאיפה הגיעה עובדה הוא מה שמאפשר לקרוב משפחה לבדוק אותה אחר כך — או לחלוק עליה ולומר מדוע.
-completeness-metric-sources-some = { $graded } מתוך { $total } אומרים עד כמה הם חזקים, כך שטענה הנשענת על תעודת לידה נראית שונה מטענה הנשענת על זיכרון.
+completeness-metric-sources-some = { $graded } מתוך { $total } מציינים עד כמה הם מוצקים.
 
 completeness-what-is-recorded = מה שהרשומה יכולה לומר
 completeness-in-this-tree = בעץ הזה
@@ -1205,7 +1186,7 @@ phys-field-operations = ניתוחים ופציעות
 phys-field-cause-of-death = סיבת המוות
 phys-field-religion = דת או השתייכויות
 phys-field-health-notes = הערות
-admin-export-health-note = הייצוא הפשוט משמיט כל סוג מידע רגיש — בריאות ואמונה, נתונים ביומטריים, נתונים גנומיים ורישום פלילי — ואת הפרופיל ההתנהגותי של כל אדם חי, כך שקובץ שנשלח לקרוב משפחה אינו נושא אף אחד מהם. סמנו מה קובץ מסוים צריך לשאת; הארכיון עצמו רושם אילו סוגים הושמטו.
+admin-export-health-note = הייצוא הפשוט משמיט כל קטגוריה רגישה ואת התנהגות החיים. סמנו מה הקובץ הזה צריך לכלול.
 avatar-picker-title = בחירת תמונה
 avatar-choose = איזו תמונה מייצגת את האדם הזה
 avatar-mode-auto = לתת לתוכנה לבחור
@@ -2934,7 +2915,7 @@ profile-group-filled = { $n } מולאו
 profile-problems = חלק ממה שהוזן לא נשמר. כל בעיה מצוינת ליד השדה שלה, ושום דבר לא נכתב.
 profile-editor-withheld = הקבוצה הזאת מכילה לאדם הזה גם { $classes }, שאינכם רשאים לקרוא. זה לא מוצג כאן, ושמירת הטופס משאירה זאת בדיוק כפי שהוא.
 profile-living-class-note = האדם הזה רשום כחי. מה שתזינו כאן בקטגוריה רגישה מוצג למנהלים בלבד.
-profile-relationships-elsewhere = הורים, בני זוג, ילדים, סנדקים ועדים אינם נשמרים על האדם הזה. הם משפחות, קשרים ואירועים שמזכירים אותו — כך שכל שינוי כאן משנה גם את הרשומה של כל מי שנמצא בהם.
+profile-relationships-elsewhere = קרובים, סנדקים ועדים רשומים במשפחות, בקשרים ובאירועים: שינוי כאן משנה גם את הרשומות האלה.
 profile-documents-first = תוצר מפנה למסמך שמצורף לאדם הזה. צרפו קודם את הקובץ.
 profile-editor-nothing = אין בקבוצה הזאת דבר שאתם רשאים לערוך.
 profile-new-entry = רשומה חדשה
@@ -3223,7 +3204,7 @@ field-person-display-name-hint = השם שמוצג בכל מקום באתר.
 field-person-gender = מגדר
 field-person-living = בחיים
 field-person-birth-date = תאריך לידה
-field-date-value-hint = שנה, שנה וחודש, או תאריך מלא: 1923, ‏1923-04 או 1923-04-12. השאירו ריק כשאיש אינו יודע.
+field-date-value-hint = 1923, 1923-04 או 1923-04-12; ריק אם לא ידוע.
 field-person-birth-precision = דיוק הלידה
 field-precision-hint = עד כמה המקור מדייק בזה.
 field-person-birth-circa = הלידה משוערת
@@ -3353,7 +3334,7 @@ record-link-outgoing = מהאדם הזה
 record-link-incoming = אל האדם הזה
 
 health-attention = דורש תשומת לב:
-health-standing-token = עדיין מוגדר אסימון מנהל לשעת חירום. הוא מתחבר מעבר לכל חשבון ולכל הרשאה — זה בדיוק תפקידו ביום שבו איש אינו יכול להתחבר, ולא משהו להשאיר במקומו עכשיו כשמישהו כן יכול. הסירו אותו מקובץ הסביבה של השירות והפעילו מחדש.
+health-standing-token = אסימון חירום עדיין מוגדר ועוקף כל חשבון. הסירו אותו מקובץ הסביבה של השירות והפעילו מחדש.
 health-bundle-invalid = { $errors ->
         [one] נתוני המשפחה כבר לא עוברים אימות: שגיאה אחת, שמפורטת תחת „אימות” למטה.
         [two] נתוני המשפחה כבר לא עוברים אימות: שתי שגיאות, שמפורטות תחת „אימות” למטה.
@@ -3449,7 +3430,7 @@ search-empty-query = הקלידו שם כדי לחפש.
 nav-quality = איכות הנתונים
 quality-title = דברים ששווה לבדוק
 quality-none = אין מה לבדוק: כל הבדיקות עברו.
-quality-intro = שום דבר כאן לא משתנה בשבילכם. כל שורה היא דפוס ששווה לבדוק — לעיתים קרובות יש לו סיבה טובה. פתחו את הרשומה והחליטו, או סמנו שנבדק.
+quality-intro = נקודות ששווה לבדוק; לעיתים קרובות יש סיבה טובה. פתחו את הרשומה או סמנו את הנקודה כנבדקה.
 quality-groups-label = סוגי ממצאים
 quality-all = הכול
 quality-show-label = הצגה
@@ -3468,39 +3449,39 @@ quality-show-list = הצגת הרשימה
 quality-after-import = שום דבר בקובץ לא שונה. כשהוא יהיה הארכיון של האתר, דף איכות הנתונים יציג את אותם דברים עם קישור לכל רשומה.
 quality-file-list-cut = רק { $shown } הראשונים מפורטים כאן. כשהקובץ יהיה הארכיון של האתר, דף איכות הנתונים יפרט את כולם.
 quality-rule-name-sentence = משפט בשדה של שם
-quality-name-sentence = „{ $value }” נראה יותר כמו משפט מאשר שם: אם זה הסבר, השאירו את השם בשדה והעבירו את השאר להערה.
+quality-name-sentence = „{ $value }” נראה כמו משפט, לא כמו שם.
 quality-rule-union-parent-child = זוג שהם גם הורה וילד
-quality-union-parent-child = { $parent } ו{ $child } מופיעים גם כזוג וגם כהורה וילד: כדאי לבדוק איזה קשר המקורות תומכים בו.
+quality-union-parent-child = { $parent } ו־{ $child }: גם זוג וגם הורה וילד.
 quality-rule-child-listed-twice = ילד שרשום פעמיים
-quality-child-listed-twice = { $child } מופיע פעמיים בין ילדי המשפחה הזאת: אם זה אותו ילד, אפשר להסיר רשומה אחת.
+quality-child-listed-twice = { $child }: פעמיים ברשימת הילדים.
 quality-rule-duplicate-union = אותו זוג נרשם פעמיים
-quality-duplicate-union = ל{ $a } ול{ $b } רשומים { $count } קשרים זוגיים: אם הם נישאו רק פעם אחת, ייתכן שזה קשר אחד שהוזן פעמיים.
+quality-duplicate-union = { $a } ו־{ $b }: נרשמו קשרים: { $count }.
 quality-rule-partner-twice = אדם אחד בשני הצדדים של קשר זוגי
-quality-partner-twice = { $person } מופיע בשני הצדדים של הקשר הזה: כדאי לבדוק מי היה בן הזוג האחר, או להשאיר את הצד הזה ריק אם איש אינו יודע.
+quality-partner-twice = { $person }: משני צדי הקשר.
 quality-rule-foreign-surnames = שם משפחה של בן שאינו תואם אף הורה
-quality-foreign-surnames = שם משפחה שאינו תואם את זה של אף הורה: { $who }. זה יכול להיות רגיל — שינוי שם, ילד חורג, איות אחר — אבל שווה לבדוק. (בנות אינן נכללות, כי שם נישואין הוא הסיבה הרגילה.)
+quality-foreign-surnames = שם משפחה שאינו תואם אף הורה: { $who }.
 quality-rule-death-before-birth = פטירה לפני לידה
-quality-death-before-birth = ל{ $person } רשומה פטירה ב-{ $death }, לפני הלידה ב-{ $birth }: ייתכן שאחד משני התאריכים הוקלד בטעות; כדאי לבדוק מול המקורות.
+quality-death-before-birth = { $person }: פטירה ({ $death }) לפני הלידה ({ $birth }).
 quality-rule-child-before-parent = ילד שנולד לפני הורה
-quality-child-before-parent = { $child } (נולד/ה { $childborn }) נראה שנולד לפני ההורה { $parent } (נולד/ה { $parentborn }): כדאי לבדוק את התאריכים או את ההורות.
+quality-child-before-parent = לידת { $child } ({ $childborn }) לפני לידת ההורה { $parent } ({ $parentborn }).
 quality-rule-parent-too-young = הורה צעיר מגיל שתים-עשרה
-quality-parent-too-young = { $parent } היה בן/בת { $age } כש{ $child } נולד/ה, וזה חריג: כדאי לבדוק את התאריכים או את ההורות.
+quality-parent-too-young = { $parent }: גיל { $age } בלידת { $child }.
 quality-rule-parent-too-old = הורה מבוגר מגיל שישים וחמש
-quality-parent-too-old = { $parent } היה בן/בת { $age } כש{ $child } נולד/ה, וזה חריג: כדאי לבדוק את התאריכים או את ההורות.
+quality-parent-too-old = { $parent }: גיל { $age } בלידת { $child }.
 quality-rule-marriage-before-birth = נישואין לפני לידת אחד מבני הזוג
-quality-marriage-before-birth = הנישואין האלה מתוארכים ל-{ $married }, לפני ש{ $person } נולד/ה ב-{ $born }: כדאי לבדוק את תאריך הנישואין.
+quality-marriage-before-birth = נישואים ({ $married }) לפני לידת { $person } ({ $born }).
 quality-rule-isolated-record = רשומה בלי תאריך ובלי קשרים
-quality-isolated-record = ל{ $person } אין תאריך ואין קשר לאף אחד במשפחה: כדאי להוסיף איך הוא שייך, או להסיר את הרשומה אם הוזנה בטעות.
+quality-isolated-record = { $person }: בלי תאריך ובלי קשר.
 quality-rule-place-no-region = מקום בלי אזור
-quality-place-no-region = ל{ $place } אין אזור: הוספת אזור עוזרת להבחין בין מקומות באותו שם.
+quality-place-no-region = { $place }: אין אזור.
 quality-rule-region-free-text = אזור שנראה כמו הערה
-quality-region-free-text = האזור של { $place } הוא „{ $value }”, וזה נראה יותר כמו הערה מאשר אזור: כדאי להעביר את ההערה לרשומה שהיא מתארת.
+quality-region-free-text = האזור של { $place }: „{ $value }” נראה כמו הערה.
 quality-rule-place-near-duplicate = מקומות שאולי הם אותו מקום
-quality-place-near-duplicate = { $names } אולי הם אותו מקום שנכתב באופן שונה: אם כן, אפשר למזג אותם לאחד.
+quality-place-near-duplicate = אולי מקום אחד: { $names }.
 quality-rule-not-a-place = רשומה שאולי אינה מקום
-quality-not-a-place = „{ $place }” נמצא ברשימת המקומות אבל אולי אינו מקום — הוא מתחיל באות קטנה, ושמות מקומות בדרך כלל לא: כדאי לבדוק אם זו הערה על מקום.
+quality-not-a-place = „{ $place }” אולי אינו מקום.
 quality-rule-certain-without-source = ודאי, בלי מקור
-quality-certain-without-source = ל{ $record } יש טענה שמסומנת כוודאית לחלוטין ({ $claims }) בלי מקור מצורף: כדאי לצרף את המקור, או להוריד את רמת הוודאות.
+quality-certain-without-source = { $record }: ודאי ({ $claims }) בלי מקור.
 quality-dismiss = נבדק — רגיל אצלנו
 quality-restore = להציג שוב
 quality-note-label = למה (רשות)
@@ -3570,7 +3551,7 @@ admin-nav-accounts = חשבונות
 admin-nav-connectivity = קישוריות
 
 bundle-title = חבילת AXGF
-bundle-lede = הארכיון של המשפחה כפי שהאתר הזה מחזיק אותו: { $path }. למה הוא תואם, מה נראה שגוי, ושתי הדרכים לקחת עותק.
+bundle-lede = הארכיון של המשפחה: { $path }. התאימות שלו, מה שנראה שגוי, ואיך לקחת עותק.
 bundle-unset-title = עדיין אין משפחה.
 bundle-unset-detail = ההתקנה הזאת מחזיקה חבילה ריקה, ולכן עדיין אין מה לבדוק. הקימו אותה מארכיון, מקובץ GEDCOM או מכלום.
 bundle-kpi-conformity = תאימות
@@ -3771,7 +3752,7 @@ infra-transport-title = איך מגיעים לאתר
 infra-transport-ok = הדף הזה הגיע דרך HTTPS.
 infra-transport-exposed = הדף הזה הגיע לא מוצפן, והשרת מאזין ב-{ $bind }, מעבר למכונה הזאת: סיסמאות ועוגיות הפעלה עוברות ברשת בגלוי.
 infra-transport-exposed-fix = הציבו לפניו פרוקסי הפוך עם HTTPS ‏(Caddy, ‏nginx, ‏HAProxy), וקשרו שוב את השירות ל-127.0.0.1: הריצו שוב את bootstrap.sh עם ‎--bind 127.0.0.1:8080, או הסירו את קובץ ה-drop-in שהרחיב אותו.
-infra-transport-plain = הדף הזה הגיע לא מוצפן, משרת שמאזין ב-{ $bind }. זה בסדר על המכונה הזאת בלבד, ורק שם.
+infra-transport-plain = לא מוצפן, מ־{ $bind }: תקין רק במחשב הזה.
 infra-transport-plain-fix = היכנסו לאתר דרך כתובת ה-HTTPS שלו. אם פרוקסי אכן מסיים TLS, הגדירו אותו לשלוח X-Forwarded-Proto: https כדי שהשרת הזה יידע.
 infra-forwarded-title = כתובות מועברות
 infra-forwarded-ok = השרת מאזין רק על המכונה הזאת, ולכן אפשר לסמוך על כתובת הלקוח שפרוקסי מעביר כדי להאט ניסיונות התחברות כושלים חוזרים.
@@ -3797,8 +3778,8 @@ infra-sso-ok = { $n ->
 infra-sso-no-https = שירות התחברות מופעל, אבל הכתובת הציבורית אינה HTTPS: הספקים מסרבים לשלוח את תשובתם לכתובת לא מוצפנת, וההתחברות נכשלת.
 infra-sso-fix = תחת „קישוריות”, הגדירו את הכתובת הציבורית לכתובת ה-https:// שהקוראים משתמשים בה.
 infra-admins-title = מנהלים
-infra-admins-none = אף חשבון פעיל אינו יכול לנהל את האתר הזה. רק אסימון החירום יכול, ורק כל עוד הוא מוגדר.
-infra-admins-none-fix = התחברו עם אסימון החירום, צרו מנהל תחת „חשבונות”, ואז הסירו את האסימון.
+infra-admins-none = אף חשבון פעיל אינו יכול לנהל את האתר; רק אסימון החירום יכול.
+infra-admins-none-fix = התחברו עם אסימון החירום, צרו מנהל, ואז הסירו את האסימון.
 infra-admins-one = מנהל אחד. אם האדם הזה אינו זמין או מאבד את הסיסמה, איש אינו יכול לנהל את האתר.
 infra-admins-one-fix = תנו לאדם שני, מהימן, את תפקיד המנהל תחת „חשבונות”.
 infra-admins-ok = { $n ->
@@ -3809,7 +3790,7 @@ infra-admins-ok = { $n ->
     }
 infra-token-title = אסימון חירום
 infra-token-generated = לא מוגדר אסימון חירום.
-infra-token-only-way = מוגדר אסימון חירום, ובלי חשבון מנהל הוא הדרך היחידה להיכנס. השאירו אותו עד שיהיה מנהל.
+infra-token-only-way = אסימון החירום הוא הכניסה היחידה עד שיהיה חשבון מנהל.
 infra-token-standing = עדיין מוגדר אסימון חירום. הוא מתחבר מעבר לכל חשבון ולכל הרשאה.
 infra-token-fix = הסירו את AXGF_CMS_ADMIN_TOKEN מקובץ הסביבה של השירות, ואז הפעילו מחדש את השירות.
 infra-registration-title = הרשמה עצמית
@@ -3896,7 +3877,7 @@ infra-clock-wrong = שעון המערכת מראה { $year }: התאריכים, 
 infra-clock-fix = הפעילו סנכרון זמן: timedatectl set-ntp true.
 
 infra-title = תשתית
-infra-lede = המכונה שהאתר הזה רץ עליה, נבדקת בכל פעם שהדף הזה נפתח: איך מגיעים אליה, מי מחזיק במפתחות, אם הנתונים בטוחים ועדיין נכנסים, איזו גרסה רצה, וארגז החול שסביבה.
+infra-lede = המחשב של האתר: גישה, מפתחות, נתונים, גרסה וארגז חול, נבדקים בכל פתיחה של הדף.
 infra-kpi-health = תקינות
 infra-kpi-version = גרסה
 infra-kpi-version-newer = { $version } זמינה
@@ -3915,7 +3896,7 @@ infra-kpi-load = עומס { $load }
 infra-kpi-rss = { $size } בשימוש
 infra-unknown = לא ידוע
 infra-health = תקינות
-infra-health-intro = ירוק זה בסדר, אזהרה שווה מבט, קריטי דורש טיפול עכשיו. כל ממצא נפתח על מה לעשות בעניינו.
+infra-health-intro = ירוק תקין, אזהרה שווה מבט, קריטי דורש טיפול מיד.
 infra-json = אותן בדיקות כ-JSON, עבור מערכת ניטור
 infra-version = גרסה
 infra-version-running = רצה
@@ -3950,14 +3931,14 @@ infra-relation-older = ישנה יותר
 infra-prerelease = גרסה מועמדת
 infra-releases-none = עדיין אין רשימת גרסאות.
 infra-upgrade = החלפת גרסה
-infra-upgrade-intro = הכפתור פונה לעוזר השדרוג, שרץ כ-root מחוץ לארגז החול של האתר. הוא לוקח גיבוי, מתקין את הגרסה אחרי שסכום הביקורת שלה אומת, מפעיל מחדש את השירות ובודק אותו; אם הגרסה החדשה לא עונה, הקודמת מוחזרת.
+infra-upgrade-intro = עוזר העדכון מגבה, מתקין את הגרסה המאומתת, מפעיל מחדש ובודק; אם זה נכשל, הגרסה הקודמת חוזרת.
 infra-upgrade-version = גרסה להתקנה
 infra-upgrade-confirm = כדי לחזור לגרסה ישנה יותר, הקלידו שוב את התג שלה
 infra-upgrade-confirm-hint = לא נדרש לגרסה חדשה יותר. גרסה ישנה יותר אולי לא תקרא נתונים שגרסה חדשה כתבה: קראו קודם את ההערות שלה.
 infra-upgrade-go = התקנת הגרסה הזאת
 infra-upgrade-safety = האתר אינו זמין לכמה שניות בזמן שהשירות מופעל מחדש.
 infra-upgrade-manual = עוזר השדרוג אינו מותקן על השרת הזה, ולכן הדף הזה אינו יכול להחליף את הגרסה. כ-root, על השרת:
-infra-upgrade-manual-helper = הרצה אחת של bootstrap.sh הנוכחי מתקינה את העוזר, ומאז הכפתור כאן עובד.
+infra-upgrade-manual-helper = הריצו פעם אחת את bootstrap.sh הנוכחי כדי להתקין את העוזר.
 infra-upgrade-asked = התבקשה { $version }. עוזר השדרוג קולט את הבקשה תוך כמה שניות; הדף הזה מראה איך זה הלך.
 infra-upgrade-no-helper = עוזר השדרוג אינו מותקן, ולכן אי אפשר להתקין את { $version } מכאן.
 infra-upgrade-unknown-version = { $version } אינה ברשימת הגרסאות שפורסמו.
@@ -4019,7 +4000,7 @@ infra-compute-nnp-off = אפשר לקבל הרשאות
 infra-compute-seccomp-on = קריאות מערכת מסוננות
 infra-compute-seccomp-off = קריאות מערכת לא מסוננות
 infra-activity = פעילות
-infra-activity-intro = נספר לאורך { $span }: השירות שומר יממה אחת, ומתחיל שוב מאפס כשהוא מופעל מחדש.
+infra-activity-intro = לאורך { $span }; מתחיל מאפס כשהשירות מופעל מחדש.
 infra-activity-sessions = הפעלות פתוחות
 infra-activity-signed-in = התחברויות
 infra-activity-failed = התחברויות כושלות
@@ -4035,7 +4016,7 @@ sso-error-invalid = התשובה של שירות ההתחברות לא עברה 
 infra-upgrade-already-pending = { $version } כבר ממתינה לעוזר השדרוג. חכו שהיא תסתיים לפני שתבקשו גרסה אחרת.
 
 connectivity-title = קישוריות
-connectivity-lede = איך הקוראים מגיעים לאתר הזה ואיך הם מתחברים: הכתובת הציבורית, שירותי ההתחברות והכללים שכל התחברות פועלת לפיהם, כולל של מנהלים.
+connectivity-lede = איך קוראים מגיעים לאתר ומתחברים: כתובת ציבורית, שירותי התחברות וכללים.
 connectivity-kpi-address = כתובת ציבורית
 connectivity-address-unset = לא הוגדרה
 connectivity-address-https = HTTPS
@@ -4054,7 +4035,7 @@ connectivity-policy-short-non-admins = לא מנהלים
 connectivity-policy-short-nobody = אף אחד
 connectivity-policy-note-everyone = כל חשבון רשאי להתחבר עם הסיסמה שלו, וגם עם שירות מקושר.
 connectivity-policy-note-non-admins = מנהלים מתחברים רק דרך שירות; כל השאר עדיין רשאים להשתמש בסיסמה. סיסמת מנהל גנובה לא פותחת אז דבר.
-connectivity-policy-note-nobody = כולם מתחברים דרך שירות. חשבון בלי שירות מקושר ובלי כתובת לקשר לפיה אינו יכול להתחבר.
+connectivity-policy-note-nobody = כולם מתחברים דרך שירות; חשבון בלי שירות מקושר אינו יכול להתחבר.
 connectivity-kpi-admins-linked = { $n ->
         [one] מנהל אחד עם שירות מקושר
         [two] { $n } מנהלים עם שירות מקושר
@@ -4067,13 +4048,13 @@ registration-short-closed = מנהלים בלבד
 registration-short-secret = עם הסוד של המשפחה
 registration-short-open = פתוח למבקרים
 connectivity-address = כתובת ציבורית
-connectivity-address-intro = הכתובת שהקוראים מקלידים, כפי שהם מקלידים אותה: https://family.example. שירותי ההתחברות מחזירים אליה את הקוראים, ולכן היא חייבת להיות הכתובת הציבורית, לא זו שהשרת הזה מאזין בה.
+connectivity-address-intro = הכתובת הציבורית שהקוראים מקלידים, כמו https://family.example; שירותי ההתחברות מחזירים אותם אליה.
 connectivity-address-label = כתובת ציבורית
 connectivity-address-hint = השאירו ריק כל עוד איש אינו מתחבר דרך שירות.
 connectivity-address-invalid = זו אינה כתובת http או https עם שם מארח.
 connectivity-address-saved = הכתובת הציבורית נשמרה.
 connectivity-policy = כללי התחברות
-connectivity-policy-intro = הם חלים על כל חשבון, כולל של מנהלים. כלל שהיה משאיר אף מנהל שאינו יכול להתחבר נדחה.
+connectivity-policy-intro = הם חלים על כל החשבונות; כלל שלא היה מאפשר לאף מנהל להתחבר נדחה.
 connectivity-policy-passwords = מי רשאי להתחבר עם סיסמה
 connectivity-policy-without-way = { $n ->
         [one] לחשבון פעיל אחד אין שירות מקושר ואין כתובת: תחת „אף אחד” הוא לא יוכל להתחבר.
@@ -4082,17 +4063,17 @@ connectivity-policy-without-way = { $n ->
        *[other] ל-{ $n } חשבונות פעילים אין שירות מקושר ואין כתובת: תחת „אף אחד” הם לא יוכלו להתחבר.
     }
 connectivity-link-by-email = קישור שירות לחשבון עם אותה כתובת מאומתת
-connectivity-link-by-email-note = כך קרוב משפחה מקבל התחברות בלחיצה אחת בלי שום הרשמה: צרו את החשבון שלו עם הכתובת שלו, וההתחברות הראשונה שלו דרך שירות שאימת את הכתובת הזאת מקשרת אותו. רק כתובת שהקליד מנהל או שאימת שירות מותאמת אי פעם.
+connectivity-link-by-email-note = צרו את חשבון הקרוב עם הכתובת שלו: ההתחברות הראשונה דרך שירות שמאמת אותה מקשרת אותו.
 connectivity-domains = דומיינים שרשאים לפתוח חשבון
-connectivity-domains-hint = אחד בכל שורה, למשל family.example. ריק: כל דומיין. כשמוגדר, רק כתובת ששירות אימת באחד מהדומיינים האלה יכולה לפתוח חשבון, וטופס ההרשמה אינו מוצע.
+connectivity-domains-hint = אחד בכל שורה (family.example). ריק: כולם. אחרת, רק כתובות מאומתות בדומיינים האלה יכולות לפתוח חשבון.
 connectivity-domain-invalid = „{ $domain }” אינו שם דומיין.
 connectivity-policy-unknown = בחרו מי רשאי להתחבר עם סיסמה.
 connectivity-policy-lockout = נדחה: עם השינוי הזה אף מנהל פעיל לא יוכל להתחבר. קשרו קודם שירות התחברות לחשבון של מנהל, על ידי התחברות דרכו פעם אחת, או השאירו סיסמאות למנהלים.
 connectivity-policy-saved = כללי ההתחברות נשמרו.
 connectivity-not-saved = לא נשמר: { $error }
 connectivity-services = שירותי התחברות
-connectivity-services-intro = רשמו את האתר הזה במסוף של השירות עם כתובת ההפניה שמוצגת, ואז הדביקו כאן את מזהה הלקוח ואת הסוד. המבקרים יראו אז „המשך עם …” בדפי ההתחברות וההרשמה.
-connectivity-outbound-note = התחברות דרך שירות דורשת שהשרת הזה יגיע לשירות. היחידה ש-bootstrap.sh כותב מסרבת לחיבורים יוצאים (IPAddressDeny=any): אפשרו אותם עם sudo systemctl edit axgf-cms, והוסיפו IPAddressAllow=any תחת [Service], ואז הפעילו מחדש. כפתור הבדיקה אומר אם זה אפשרי.
+connectivity-services-intro = רשמו את האתר במסוף השירות עם כתובת ההפניה שמוצגת, ואז הדביקו כאן את מזהה הלקוח והסוד.
+connectivity-outbound-note = התחברות דרך שירות דורשת חיבורים יוצאים: sudo systemctl edit axgf-cms, הוסיפו IPAddressAllow=any תחת [Service], ואז הפעילו מחדש.
 connectivity-service-ready = מוכן
 connectivity-service-incomplete = לא שלם
 connectivity-service-off = כבוי
@@ -4119,10 +4100,10 @@ connectivity-provider-saved = { $name } נשמר.
 connectivity-test-ok = { $name } ענה: { $answer }.
 connectivity-test-failed = לא ניתן היה להגיע אל { $name } מהשרת הזה: { $detail }
 registration-title = הרשמה
-registration-intro = האם מבקר רשאי לפתוח כאן חשבון בעצמו. חשבון כזה הוא של חבר: הוא קורא את מה שחברים קוראים ואינו משנה דבר. מתן תפקיד אחר הוא החלטה של מנהל, למטה.
+registration-intro = האם מבקרים יכולים לפתוח בעצמם חשבון חבר; מנהל יכול לתת לו תפקיד אחר למטה.
 registration-who = מי רשאי לפתוח חשבון
 registration-note-closed = רק מנהל יוצר חשבונות, בדף הזה.
-registration-note-secret = מבקר שיודע את הסוד של המשפחה רשאי לפתוח חשבון חבר. שתפו את הסוד כמו שהייתם משתפים קוד של דלת.
+registration-note-secret = מי שיודע את סוד המשפחה יכול לפתוח חשבון חבר. שתפו אותו כמו קוד לדלת.
 registration-note-open = כל מבקר רשאי לפתוח חשבון חבר. חברים קוראים את הרשומות שנשמרות לחברים.
 registration-rotate = הגרלת סוד חדש
 registration-secret = הסוד של המשפחה
@@ -4275,13 +4256,13 @@ notes-field-title = כותרת
 notes-field-category = קטגוריה
 notes-field-category-hint = טקסט חופשי; הקטגוריות שכבר בשימוש מוצעות.
 notes-field-date = תאריך
-notes-field-date-hint = שנה, חודש או יום: 1952, ‏1952-06 או 1952-06-14. השאירו ריק אם להערה אין תאריך.
+notes-field-date-hint = 1952, 1952-06 או 1952-06-14; ריק אם אין.
 notes-field-people = אנשים שנוגעים בדבר
-notes-field-people-hint = הקלידו שם ובחרו אותו מהרשימה. אם איש אינו מצוין, ההערה שייכת לכל המשפחה.
+notes-field-people-hint = הקלידו שם ובחרו בו. בלי אף אחד, ההערה שייכת לכל המשפחה.
 notes-person-add = הוספה
 notes-person-remove = הסרת האדם הזה
 notes-field-text = טקסט
-notes-text-hint = הדגשה, נטוי, כותרות, רשימות וקישורים נכתבים ב-Markdown; הכפתורים שלמעלה כותבים אותם בשבילכם. הדביקו או גררו תמונה לתוך הטקסט כדי להוסיף אותה, עד { $mb } MB כל אחת.
+notes-text-hint = Markdown, או הכפתורים למעלה. הדביקו או גררו תמונות, עד { $mb } MB כל אחת.
 notes-tool-bold = מודגש
 notes-tool-italic = נטוי
 notes-tool-heading = כותרת
@@ -4319,7 +4300,7 @@ notes-dashboard-open = כתיבה וניהול של ההערות
 
 kind-bundle = ארכיון
 manifest-title = המשפחה
-manifest-intro = מה שהארכיון אומר על המשפחה שהוא מחזיק. השם שלו הוא השם שמוצג בדף „משפחה”, בכותרות הדפים וב-PDF של כל הערה; השאר נוסע עם הקובץ. המספרים והתאריכים של הקובץ עצמו נספרים כשהוא נכתב.
+manifest-intro = מה שהארכיון אומר על משפחתו. שמו מופיע בדף המשפחה, בכותרות ובקובצי ה־PDF של ההערות.
 manifest-name = שם המשפחה
 manifest-name-hint = מוצג בדף „משפחה” ובכותרות. החשבונות עוקבים אחרי השם החדש.
 manifest-description = תיאור
@@ -4329,7 +4310,7 @@ manifest-place = המקום העיקרי
 manifest-place-hint = היבשת שבה המשפחה חיה בעיקר.
 
 manifest-span = התקופה המכוסה
-manifest-span-hint = מהלידה המוקדמת ביותר ועד המאוחרת ביותר שהארכיון רושם; נספרת, ונכתבת לקובץ כשהפרטים נשמרים.
+manifest-span-hint = מהלידה המוקדמת ביותר עד המאוחרת ביותר; מחושב בשמירה.
 manifest-license = רישיון
 manifest-license-type = רישיון
 manifest-save = שמירת פרטי המשפחה
@@ -4383,7 +4364,7 @@ account-who = החשבון
 account-email = כתובת דוא״ל
 account-since = מאז
 account-person-title = הרשומה שלי בעץ
-account-person-intro = ציינו מי מהאנשים בעץ אתם. איש אינו בודק זאת: כל חשבון בוחר את הרשומה שלו, באחריותו, ורשאי לשנות או להסיר אותה בכל עת.
+account-person-intro = מי אתם בעץ? הבחירה שלכם, בלי בדיקה; אפשר לשנות בכל עת.
 account-person-is = החשבון הזה אומר שהוא
 account-person-unlink = הסרת הקישור
 account-person-pick = אדם בעץ
@@ -4834,7 +4815,7 @@ kin-group-care = אומנה ואפוטרופסות
 kin-group-rites = טקס ומנהג
 kin-group-others = קשרים אחרים
 kin-find-title = מה הקרבה?
-kin-find-lede = בחרו אדם מהמשפחה: הקשר שלו אל { $name } יוסבר צעד אחר צעד.
+kin-find-lede = בחרו אדם: הקשר שלו אל { $name }, שלב אחר שלב.
 kin-find-label = אדם
 kin-find-choose = בחירת אדם…
 kin-find-go = הצגת הקשר
@@ -4850,7 +4831,7 @@ kin-all-count = { $n ->
     }
 kin-common-list = אבות קדמונים משותפים: { $names }
 kin-also-list = וגם { $list }
-kin-rites-help = סנדקים, שושבינים ושאר קשרים שמסורת יוצרת בין אנשים שלא נולדו זה מזה. העץ מצייר אותם בקו מנוקד משלהם.
+kin-rites-help = סנדקים וקשרים אחרים שמסורת יוצרת; העץ משרטט אותם בקו מנוקד.
 kin-rite-recorded = ברשומה כתוב: „{ $label }”.
 kin-hidden = אדם שאינך רשאי לראות
 kin-native = במילות המסורת
@@ -5246,7 +5227,7 @@ emblem-no-family-detail = המשפחה הזו אינה בארכיון, או שא
 ## its computing comes from, and a test.
 admin-nav-afg = גנאלוג מלאכותי
 afg-title = גנאלוג משפחתי מלאכותי
-afg-lede = הגנאלוג המלאכותי (AFG) מכיר את המשפחה מתוך הארכיון שלה, וזוכר כל אדם שמדבר איתו בזיכרון משלו. כאן: מאין מגיע החישוב שלו, ובדיקה.
+afg-lede = מאין בא החישוב של הגנאלוג המלאכותי, ובדיקה.
 afg-kpi-source = חישוב
 afg-ready = מוכן
 afg-off-note = בחרו מאין מגיע החישוב.
@@ -5257,9 +5238,9 @@ afg-kpi-last = בדיקה אחרונה
 afg-never = עדיין אין
 afg-run-open = פתיחה
 afg-source = מאין מגיע החישוב
-afg-source-intro = כתובת; כתובת עם מפתח API ומודל; או סוכן קוד שכבר מחובר במחשב הזה. לכל אחד פונים בדרכו.
+afg-source-intro = כתובת; כתובת עם מפתח ומודל; או סוכן שמחובר במחשב הזה.
 afg-kind = אופן החישוב
-afg-kind-hint = שירות רץ במקום אחר ומגיעים אליו דרך הרשת. סוכן רץ במחשב הזה, תחת החשבון שבו האתר הזה רץ, וחייב להיות כבר מחובר בו.
+afg-kind-hint = לשירות מגיעים דרך הרשת; סוכן רץ על המחשב הזה וצריך להיות מחובר בו.
 afg-kind-off = ללא
 afg-kind-anthropic = Claude (ה־API של Anthropic)
 afg-kind-ollama = Ollama
@@ -5278,25 +5259,25 @@ afg-url-hint = ריקה: הכתובת הרגילה של השירות. קריאה
 afg-key = מפתח API
 afg-key-set = שמור מפתח שמסתיים ב־{ $end }.
 afg-key-unset = לא שמור מפתח.
-afg-key-hint = אם נשאר ריק, המפתח השמור נשאר. הוא נשמר עם החשבונות, לעולם לא בארכיון, ולא מוצג שוב.
+afg-key-hint = ריק משאיר את המפתח השמור, שלא יוצג שוב.
 afg-key-clear = לשכוח את המפתח
 afg-model = מודל
-afg-model-hint = שם המודל כפי שהשירות או הסוכן כותבים אותו. הרשימה מציעה את המודלים העדכניים; כל שם אחר נשלח כפי שנכתב. אם נשאר ריק, Ollama לוקח את המודל הראשון שלו, וסוכן את שלו.
+afg-model-hint = שם המודל כפי שהשירות כותב אותו. כל שם נשלח כפי שהוא; ריק — ברירת המחדל.
 afg-model-unlisted = לא אחת מההצעות: נשלח כפי שנכתב.
 afg-effort = מאמץ
-afg-effort-hint = כמה לעומק המודל חושב, במילים של היצרן שלו. הרשימה עוקבת אחרי המודל שנבחר ומסמנת את המאמץ הרגיל שלו; כל מילה אחרת נשלחת כפי שנכתבה. אם נשאר ריק, חל מאמץ ברירת המחדל של המודל.
+afg-effort-hint = כמה לעומק המודל חושב. כל מילה נשלחת כפי שהיא; ריק — ברירת המחדל של המודל.
 afg-effort-unlisted = לא אחד מהמאמצים של המודל הזה: נשלח כפי שנכתב.
 afg-effort-default = ברירת מחדל
 afg-program = תוכנה
 afg-program-found = נמצא:
 afg-program-missing = לא נמצא במחשב הזה.
-afg-program-hint = אם נשאר ריק, מחפשים אותו במקום שבו המתקין שלו שם אותו. אחרת, הנתיב המלא של התוכנה של הסוכן.
+afg-program-hint = ריק: מחפשים היכן שהמתקין שלו שם אותו. אחרת, הנתיב המלא של התוכנה.
 afg-sensitive = לשלוח גם את המחלקות הרגישות
-afg-sensitive-hint = בריאות, ביומטריה, גנומיקה, רישומים משפטיים והתנהגות נשארים מחוץ למשלוח אם זה לא מסומן, כפי שהם נשארים מחוץ לייצוא משותף.
+afg-sensitive-hint = בלי סימון, בריאות, ביומטריה, גנטיקה, רישומים משפטיים והתנהגות נשארים מחוץ לשליחה, כמו בייצוא משותף.
 afg-timeout = זמן מותר (שניות)
 afg-timeout-hint = כמה זמן תשובה יכולה להימשך לפני שמוותרים עליה.
 afg-test = בדיקה
-afg-test-intro = שולח את הארכיון כפי שהוא עכשיו, את כל קובצי ה־JSON שלו בלי התמונות, יחד עם הזיכרון שלכם, ושואל שאלה אחת. התשובה נפתחת בחלון.
+afg-test-intro = שולח את הארכיון (JSON, בלי תמונות) ואת הזיכרון שלכם עם שאלה אחת; התשובה נפתחת בחלון.
 afg-sent-files = קבצים
 afg-sent-files-value = { $n ->
         [one] קובץ JSON אחד
@@ -5321,7 +5302,7 @@ afg-sent-classes = מחלקות רגישות
 afg-sent-classes-in = נשלחות
 afg-sent-classes-out = מושמטות
 afg-sent-question = שאלה
-afg-privacy = הבדיקה שולחת את רשומות המשפחה, כולל אנשים חיים, אל מקור החישוב שנבחר למעלה. שירות באינטרנט, וגם סוכן במחשב הזה שפונה לשירות כזה, קורא אותן בשרתים של המפעיל שלו.
+afg-privacy = הבדיקה שולחת את רשומות המשפחה, כולל החיים, לחישוב שנבחר למעלה.
 afg-test-button = שליחת הבדיקה
 afg-test-needs = שמרו קודם אופן חישוב שלם.
 afg-test-question = תן לי את שלוש המשפחות שיש בהן הכי הרבה אנשים רשומים.
@@ -5367,12 +5348,7 @@ afg-brain-note = { $facts ->
        *[other] { $brains } חשבונות עם זיכרון
     }
 afg-brain-no-account = לסשן הזה אין חשבון, ולכן אין לו זיכרון.
-afg-access-count = { $n ->
-        [one] חשבון אחד יכול לדבר עם הגנאלוג המלאכותי.
-        [two] { $n } חשבונות יכולים לדבר עם הגנאלוג המלאכותי.
-        [many] { $n } חשבונות יכולים לדבר עם הגנאלוג המלאכותי.
-       *[other] { $n } חשבונות יכולים לדבר עם הגנאלוג המלאכותי.
-    }
+afg-access-count = חשבונות שיכולים לדבר עם הגנאלוג המלאכותי: { $n }
 afg-access-set = מגדירים בדף החשבונות
 afg-result-ok = הצלחה
 afg-result-error = שגיאה
@@ -5383,11 +5359,11 @@ accounts-afg = גנאלוג מלאכותי
 accounts-afg-allowed = יכול לדבר עם הגנאלוג המלאכותי
 accounts-afg-yes = כן
 accounts-afg-no = לא
-accounts-afg-hint = כבוי אלא אם מסומן. מה שהגנאלוג המלאכותי זוכר על החשבון הזה נשמר בזיכרון משלו: תיקייה בדיסק לצד הארכיון.
+accounts-afg-hint = כבוי אלא אם מסומן. הזיכרון שלו נשמר בנפרד, ליד הארכיון.
 
 ## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
 account-brain-title = הזיכרון של הגנאלוג המלאכותי שלכם
-account-brain-intro = מה שהגנאלוג המלאכותי זוכר עליכם: העובדות שבחר לשמור, והשיחות שלכם איתו. שניהם ניתנים לו שוב עם כל שאלה שלכם. גרמו לו לשכוח את מה שאינכם רוצים עוד שיידע. באתר, רק אתם רואים זאת.
+account-brain-intro = מה שהגנאלוג המלאכותי זוכר עליכם, ומקבל בכל שאלה. מחקו מה שתרצו; איש מלבדכם אינו רואה זאת.
 account-brain-no-access = הגנאלוג המלאכותי אינו פתוח לחשבון שלכם: מנהל מחליט על כך בדף החשבונות.
 account-brain-none = הגנאלוג המלאכותי עדיין לא זוכר עליכם דבר.
 account-brain-facts = מה שהוא זוכר
@@ -5415,15 +5391,15 @@ afg-brain-see = צפייה ושכחה
 
 ## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
 assistant-title = העוזר האישי שלי
-assistant-entry = הפרויקטים והשיחות שלך עם הגנאלוג המלאכותי: לשאול, לשלוח מסמכים ותמונות, ולהמשיך מאיפה שהפסקת.
-assistant-lede = הפרויקטים שלך עם הגנאלוג המלאכותי. לכל אחד קוד התנהגות וזיכרון משלו, ובכל אחד שיחות שאפשר להמשיך מהמקום שבו נעצרו.
+assistant-entry = הפרויקטים והשיחות שלכם עם הגנאלוג המלאכותי.
+assistant-lede = הפרויקטים שלכם עם הגנאלוג המלאכותי, לכל אחד קוד התנהגות, זיכרון ושיחות.
 assistant-shut-no-account = לסשן הזה אין חשבון, ולכן אין עוזר אישי. יש להיכנס עם החשבון שלך.
 assistant-shut-not-open = הגנאלוג המלאכותי לא פתוח לחשבון שלך: מנהל מחליט על כך בדף החשבונות.
 assistant-shut-broken = לא היה אפשר לפתוח את המרחב שלך. כדאי לנסות שוב בעוד רגע; אם זה נמשך, יש לפנות למנהל.
 assistant-shut-gone = אין כאן כלום: הפרויקט או השיחה הזו לא קיימים, או שאינם שלך.
 assistant-back-account = חזרה לחשבון שלי
 assistant-new-project = פרויקט חדש
-assistant-not-ready = החישוב של הגנאלוג המלאכותי עוד לא הוגדר: אפשר לקרוא את השיחות, לא לשלוח הודעה. מנהל מגדיר אותו.
+assistant-not-ready = החישוב של הגנאלוג המלאכותי עדיין לא הוגדר: לעת עתה קריאה בלבד.
 assistant-conversations-count = { $n ->
         [one] שיחה אחת
         [two] { $n } שיחות
@@ -5431,7 +5407,7 @@ assistant-conversations-count = { $n ->
        *[other] { $n } שיחות
     }
 assistant-conduct-set = קוד התנהגות הוגדר
-assistant-empty = אין עדיין פרויקטים. פרויקט מאגד את השיחות על נושא אחד — תולדות המשפחה, שאלה רפואית, חיפוש עבודה — תחת קוד התנהגות אחד.
+assistant-empty = עדיין אין פרויקט. פרויקט מרכז שיחות על נושא אחד.
 assistant-project-name = שם הפרויקט
 assistant-create = יצירת הפרויקט
 assistant-facts-count = { $n ->
@@ -5570,7 +5546,7 @@ afg-record-stale = הרשומה השתנתה בינתיים. יש לטעון מ�
 afg-record-refused = הארכיון דחה זאת: { $reason }
 afg-record-summary-not-yours = חבר אחר כתב את התקציר הזה: רק הכותב או מנהל יכולים להחליף אותו.
 afg-images = תמונות
-afg-images-intro = מאין מגיעות התמונות של הגנאלוג המלאכותי: פנים או תצלום שמשוחזרים ברשומה של אדם. Claude והסוכנים כותבים רק טקסט, ולכן התמונות דורשות שירות נפרד: בתשלום (OpenAI, Google, Canva) או מחשב של המשפחה עם כרטיס גרפי.
+afg-images-intro = מאין באות התמונות של הגנאלוג המלאכותי: שירות בתשלום (OpenAI, Google, Canva) או מחשב משפחתי עם כרטיס גרפי.
 afg-image-kind = שירות תמונות
 afg-image-kind-hint = המודלים של OpenAI ו־Google, הבינה המלאכותית של Canva דרך החשבון שלך, או שרת של המשפחה: Ollama, כל שרת תואם OpenAI, ComfyUI.
 afg-image-kind-off = ללא

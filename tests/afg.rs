@@ -873,7 +873,7 @@ async fn the_accounts_page_says_who_may_talk_to_the_afg() {
     };
     let page = body_string(get_with_cookie(&app, "/admin/users", &admin).await).await;
     assert!(page.contains("May talk to the AFG"));
-    assert!(page.contains("0 accounts may talk to the AFG."));
+    assert!(page.contains("Accounts that may talk to the AFG: 0"));
     assert!(!flag("vera"), "off until an administrator says so");
 
     let change = |afg: bool| {
@@ -887,7 +887,10 @@ async fn the_accounts_page_says_who_may_talk_to_the_afg() {
     assert_eq!(resp.status(), StatusCode::OK);
     let page = body_string(resp).await;
     assert!(flag("vera"));
-    assert!(page.contains("1 account may talk to the AFG."), "{page}");
+    assert!(
+        page.contains("Accounts that may talk to the AFG: 1"),
+        "{page}"
+    );
     post_form_as(
         &app,
         &admin,

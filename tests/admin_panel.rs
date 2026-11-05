@@ -1058,7 +1058,7 @@ async fn the_dashboard_says_so_while_an_emergency_token_is_still_set() {
     let (app, _p) = app_with_ops("dash-token", None, true);
     let page = body_string(get_admin(&app, "/admin").await).await;
     assert!(
-        page.contains("emergency administrator token is still set"),
+        page.contains("emergency token is still set"),
         "the dashboard must surface a standing emergency token"
     );
 

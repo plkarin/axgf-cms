@@ -1166,6 +1166,49 @@ fn an_age_takes_the_plural_its_number_needs() {
     );
 }
 
+/// Zero is not one: French, Portuguese and Lingala put 0 in the plural
+/// category "one", so a tree with nobody above its root said "Un ascendant"
+/// (5 November 2026). Their catalogues say zero in words.
+#[test]
+fn a_tree_with_nobody_above_says_so() {
+    let counts = |a: i32, d: i32, s: i32| {
+        [
+            ("ancestors", a.into()),
+            ("descendants", d.into()),
+            ("spouses", s.into()),
+            ("depth", 3.into()),
+        ]
+    };
+    for (lang, want) in [
+        (
+            "en",
+            "0 ancestors, 5 descendants and 0 partners, 3 generations each way.",
+        ),
+        (
+            "fr",
+            "Aucun ascendant, 5 descendants et aucun conjoint, 3 générations de chaque côté.",
+        ),
+        (
+            "pt",
+            "Nenhum antepassado, 5 descendentes e nenhum parceiro, 3 gerações para cada lado.",
+        ),
+        (
+            "ln",
+            "Nkoko ata moko te, bakitani 5 mpe molongani ata moko te, nkola 3 na ngambo moko na moko.",
+        ),
+    ] {
+        assert_eq!(
+            said(lang, "tree-lede-focused", &counts(0, 5, 0)),
+            want,
+            "{lang}"
+        );
+    }
+    assert_eq!(
+        said("fr", "tree-lede-focused", &counts(1, 1, 1)),
+        "Un ascendant, un descendant et un conjoint, 3 générations de chaque côté."
+    );
+}
+
 /// QA-16: a woman is "née", "vivante", "décédée"; the record's own gender
 /// chooses, and an unknown one keeps the form the catalogue had.
 #[test]

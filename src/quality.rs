@@ -257,6 +257,17 @@ pub fn for_reader(flat: &Value, lens: &Lens) -> Vec<Finding> {
         .collect()
 }
 
+/// The findings about one person (the record's Status tab, the operator's
+/// request of 5 November 2026): those that name them, or are on their own
+/// record, and that this reader may be shown, every person they name being
+/// readable.
+pub fn about_person<'a>(all: &'a [Finding], lens: &Lens, id: &str) -> Vec<&'a Finding> {
+    all.iter()
+        .filter(|f| f.persons.iter().any(|p| p == id) || (f.kind == "person" && f.id == id))
+        .filter(|f| f.persons.iter().all(|p| lens.sees_person(p)))
+        .collect()
+}
+
 fn run_on(b: &Bundle, rule: Rule) -> Vec<Finding> {
     match rule {
         Rule::NameSentence => name_sentence(b),

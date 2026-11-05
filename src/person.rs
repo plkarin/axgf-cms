@@ -2515,6 +2515,9 @@ pub enum RecordTab {
     /// How anyone of the family is related to this person, and every
     /// relative they have (docs/adr/0020).
     Kinship,
+    /// What is worth checking on the record, and what is worth knowing about
+    /// it (the operator's request of 5 November 2026).
+    Status,
 }
 
 /// The tabs, in the order they are shown.
@@ -2526,6 +2529,7 @@ pub const RECORD_TABS: &[RecordTab] = &[
     RecordTab::Sources,
     RecordTab::Media,
     RecordTab::Profile,
+    RecordTab::Status,
 ];
 
 /// One tab as a template draws it.
@@ -2550,6 +2554,7 @@ impl RecordTab {
             Self::Media => "media",
             Self::Profile => "profile",
             Self::Kinship => "kinship",
+            Self::Status => "status",
         }
     }
 
@@ -2563,6 +2568,7 @@ impl RecordTab {
             Self::Media => "person-tab-media",
             Self::Profile => "person-tab-profile",
             Self::Kinship => "kin-tab",
+            Self::Status => "person-tab-status",
         }
     }
 
@@ -2580,6 +2586,7 @@ impl RecordTab {
             Some("media") => Self::Media,
             Some("profile") => Self::Profile,
             Some("kinship") => Self::Kinship,
+            Some("status") => Self::Status,
             _ => Self::Fiche,
         }
     }
@@ -2603,6 +2610,8 @@ impl RecordTab {
             // Counting every relative means walking the whole family: the
             // tab says what it holds when it is opened.
             Self::Kinship => 0,
+            // The findings are the caller's to count: see [`tabs_for`].
+            Self::Status => 0,
         }
     }
 }
@@ -2617,12 +2626,16 @@ impl RecordTab {
 /// `notes` is how many notes about the person the surface keeps up on the
 /// Médias tab (docs/adr/0029): the record page's, for a reader who is signed
 /// in; none elsewhere.
-pub fn tabs_for(p: &PersonView, profile: bool, notes: usize) -> Vec<TabView> {
+///
+/// `status` is how many findings this reader is shown on the Statut tab:
+/// the tab is drawn when there is one, or something worth knowing.
+pub fn tabs_for(p: &PersonView, profile: bool, notes: usize, status: usize) -> Vec<TabView> {
     RECORD_TABS
         .iter()
         .filter_map(|&t| {
             let n = match t {
                 RecordTab::Media => t.count(p) + notes,
+                RecordTab::Status => status,
                 _ => t.count(p),
             };
             let holds = match t {
@@ -2636,6 +2649,7 @@ pub fn tabs_for(p: &PersonView, profile: bool, notes: usize) -> Vec<TabView> {
                 }
                 RecordTab::Media => !p.documents.is_empty() || !p.images.is_empty() || notes > 0,
                 RecordTab::Profile => profile,
+                RecordTab::Status => status > 0 || !p.showcase_notes.is_empty(),
                 // Anyone the records tie this person to.
                 RecordTab::Kinship => {
                     !p.parents.is_empty()
@@ -3273,10 +3287,7 @@ mod tests {
         let v = jules();
         let joined = v.showcase_notes.join(" | ");
         assert!(joined.contains("outside the family"), "{joined}");
-        assert!(
-            joined.contains("recorded with a start and an end"),
-            "{joined}"
-        );
+        assert!(joined.contains("Dated occupations"), "{joined}");
         assert!(joined.contains("transliteration"), "{joined}");
         assert!(joined.contains("witnessed"), "{joined}");
     }
@@ -3355,24 +3366,25 @@ mod tests {
         let flat = json!({"persons": {"p": {"id": "p", "type": "person",
             "identity": {"name": {"display": "Bare"}}}}});
         let v = build_in(&flat, "p", &open(), "en").expect("built");
-        let tabs = tabs_for(&v, false, 0);
+        let tabs = tabs_for(&v, false, 0, 0);
         assert_eq!(tabs.iter().map(|t| t.slug).collect::<Vec<_>>(), ["record"]);
         assert_eq!(tabs[0].count, None);
         // Asked for a tab it does not have, the reader gets the fiche.
         assert_eq!(current_tab(Some("media"), &tabs), RecordTab::Fiche);
         // A profile that would draw something is a tab; one that would not
         // is not.
-        assert_eq!(tabs_for(&v, true, 0).len(), 2);
+        assert_eq!(tabs_for(&v, true, 0, 0).len(), 2);
     }
 
     #[test]
     fn a_rich_person_has_a_tab_for_each_thing_recorded() {
         let v = build_in(&bundle(), "p-jules", &open(), "en").expect("built");
-        let tabs = tabs_for(&v, v.profile_count > 0, 0);
+        let tabs = tabs_for(&v, v.profile_count > 0, 0, 0);
         for t in &tabs {
             // The fiche is a summary; the profile may hold only a chart; the
-            // kinship tab counts its relatives when it is opened.
-            if !matches!(t.slug, "record" | "profile" | "kinship") {
+            // kinship tab counts its relatives when it is opened; the status
+            // tab counts findings to check, and has none to count here.
+            if !matches!(t.slug, "record" | "profile" | "kinship" | "status") {
                 assert!(
                     t.count.is_some_and(|n| n > 0),
                     "{} drawn with a count",

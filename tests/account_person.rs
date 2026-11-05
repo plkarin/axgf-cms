@@ -78,7 +78,7 @@ async fn an_account_links_itself_to_its_record_and_may_take_it_back() {
     assert!(home.contains(r#"href="/account""#));
     let page = body_string(get_with_cookie(&app, "/account", &vera).await).await;
     assert!(page.contains("My record in the tree"));
-    assert!(page.contains("Nobody checks it"), "each account's own word");
+    assert!(page.contains("unchecked"), "each account's own word");
     assert!(
         page.contains("Lucien Fabre"),
         "the records it may read are offered"

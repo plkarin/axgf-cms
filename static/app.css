@@ -2852,20 +2852,27 @@ bdi.date { unicode-bidi: isolate; }
   .person-head.has-ai .person-head-actions { grid-column: 1 / -1; grid-row: auto; }
 }
 
-.showcase-strip {
+/* The record's Statut tab (the operator's request of 5 November 2026): what
+   is worth checking, a line each with the way to correct it, and what is
+   worth knowing, as short labels. The tree's panel keeps one line. */
+.status-line { margin: 0.4rem 0 1rem; font-size: var(--type-minor); }
+.status-line a { color: var(--accent); }
+.status-h { font-size: var(--type-sub); margin: 0.2rem 0 0.6rem; }
+.status-list { list-style: none; margin: 0 0 1.2rem; padding: 0; display: grid; gap: 0.5rem; }
+.status-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
   border: 1px solid var(--border-hairline);
   border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius);
   background: var(--surface-raised);
-  padding: 0.6rem 0.9rem;
-  margin: 1rem 0 1.5rem;
-  font-size: var(--type-minor);
 }
-.showcase-strip strong { color: var(--text-secondary); font-weight: var(--weight-semi); }
+.status-text { display: grid; gap: 0.15rem; min-width: 0; }
+.status-detail { color: var(--text-secondary); font-size: var(--type-minor); overflow-wrap: anywhere; }
+.status-know { margin: 0 0 1rem; padding-inline-start: 1.1rem; display: grid; gap: 0.25rem; color: var(--text-secondary); }
 
 .chip {
   display: inline-block;
@@ -4298,18 +4305,6 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
 .tree-panel .rec-section > .table-wrap td:first-child { padding-inline-start: 0.9rem; }
 .tree-panel .rec-section > .table-wrap th:last-child,
 .tree-panel .rec-section > .table-wrap td:last-child { padding-inline-end: 0.9rem; }
-
-/* A chip holds a whole sentence on the record page — "a birth date the source
-   could not pin down, shown as recorded" — and at 390px that sentence is
-   wider than the phone. `white-space` on .chip kept it on one line and it ran
-   out of its own strip. Chips wrap internally now; the strip already wraps
-   between them. Pre-existing, and visible from the moment the strip had a
-   frame for the text to escape from. */
-.showcase-strip .chip {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  max-width: 100%;
-}
 
 /* ── Body and health ──────────────────────────────────────────────────────
    A field with one entry is a line; a field with several is a series, and the

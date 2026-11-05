@@ -208,11 +208,14 @@ async fn every_tab_renders_in_edit_mode_even_with_nothing_in_it() {
             .count();
         assert!(adds > 0, "{key} offers something to fill");
     }
-    // Reading the same person hides those empty tabs.
+    // Reading the same person hides those empty tabs. What it does draw is
+    // the Status tab: a record with no date and no link is worth a look.
     let read = body_string(get_with_cookie(&app, &format!("/person/{LONE}"), &cookie).await).await;
+    let tabs = tab_hrefs(&read);
     assert!(
-        tab_hrefs(&read).is_empty(),
-        "reading draws no strip for one tab"
+        tabs.iter()
+            .all(|h| h == &format!("/person/{LONE}") || h.ends_with("?tab=status")),
+        "reading draws no empty tab: {tabs:?}"
     );
 }
 

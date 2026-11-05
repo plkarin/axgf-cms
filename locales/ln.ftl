@@ -61,12 +61,15 @@ theme-summit-note = molili, ntongo ya wolo · komata
 tree-title-around = Zingazinga ya { $name }
 tree-title-whole = Nzete mobimba
 tree-lede-focused = { $ancestors ->
+        [0] Nkoko ata moko te
         [one] Nkoko moko
        *[other] Bankoko { $ancestors }
     }, { $descendants ->
+        [0] mokitani ata moko te
         [one] mokitani moko
        *[other] bakitani { $descendants }
     } mpe { $spouses ->
+        [0] molongani ata moko te
         [one] molongani moko
        *[other] balongani { $spouses }
     }, nkola { $depth } na ngambo moko na moko.
@@ -219,7 +222,7 @@ admin-operations = Misala
 admin-validate = Kondimisa
 admin-deduplicate = Kolongola mibale
 admin-export = Kobimisa ebombelo
-admin-roles-note = Kondimisa, kolongola mibale, kobimisa, kolongola mpe kokamba bakonti ezali kaka mpo na bakambi. Mosungi akomaka na lokasa nyonso mosusu awa.
+admin-roles-note = Kotalela, kosangisa oyo ezali mibale, kobimisa, kolongola mpe ba-compte ezali kaka mpo na bakambi.
 admin-dedup-confirm = Kolongola mibale esangisaka mikanda mpe ekomaka lisusu ebombelo. Kokoba?
 admin-recent-changes = Mbongwana ya sika
 admin-recent-note = { $shown } ya suka kati na { $total ->
@@ -230,7 +233,7 @@ admin-sessions-open = { $n ->
         [one] Ntango moko ya kokota efungwami sikoyo.
        *[other] Ntango { $n } ya kokota efungwami sikoyo.
     }
-admin-no-changes-yet = Natango eloko moko te ebongolami na nzela ya programe oyo. Kobomba nyonso uta sikoyo ekomamaka na { $path }.
+admin-no-changes-yet = Naino mbongwana moko te. Kobomba nyonso ekomamaka na { $path }.
 admin-last-validation = Kondimisa ya suka
 admin-bundle-heavy = Ebombelo oyo ezali { $size }. Mobimba na yango ekotaka na ebandeli mpe ebombamaka na mayele ya masini, yango wana soki eleki pene na { $warn } site ebandaka kosalela mayele mingi mpe kobanda lisusu ezwaka ntango. Yango ebongi mpo na ebombelo ya libota, kasi mpo na ebombelo ya bafoto mingi te — soki biloko ekangisami ezali kokola kozanga suka, bomba yango na ebombelo ya bafisyé mpe ebombelo elakisa yango.
 
@@ -324,10 +327,17 @@ person-tab-media = Bafoto mpe mikanda
 person-tab-tree = Nzete
 person-tab-history = Lisolo
 person-tab-afg = AFG
+person-tab-status = Ezalela
+status-check = Ya kotala
+status-know = Ya koyeba
+status-fix = Bongisa
+status-open = Fungola
+status-dismissed = Etiamaki elembo « ezali malamu epai na biso »: { $n }
+status-panel = Ya kotala: { $n }
 person-afg-title = Tuna AFG mpo na { $name }
 person-afg-title-short = Masolo na AFG
-person-afg-lede = Tuna mituna mpo na bomoi ya { $name }, libota na ye mpe ntango na ye. AFG ezongisaka eyano na oyo ozali na ndingisa ya kotánga na archive, mpe elobaka ntango ezali koleka yango. Masolo na yo awa ezali kaka ya yo: zongela moko to banda mosusu.
-person-afg-reads = Na nsango nyonso, AFG etángaka fiche oyo, ba-note na yango ({ $notes }), bandeko ya pene ({ $relatives }) mpe liste ya libota ({ $persons }): pene na ba-token { $tokens }, oyo etindamaka epai AFG esalaka misala na yango.
+person-afg-lede = Tuna mpo na bomoi ya { $name }, libota na ye mpe ntango na ye. Masolo na yo awa ezali kaka ya yo.
+person-afg-reads = Etángamaka na nsango nyonso: fiche, ba-note ({ $notes }), bandeko ya pene ({ $relatives }), libota ({ $persons }) · pene na ba-token { $tokens }.
 person-afg-ask = Motuna na yo mpo na { $name }
 person-afg-example = Ndakisa: « Na régiment nini { $name } azalaki na etumba oyo ba-note elobeli? »
 person-afg-conversations = Masolo na yo
@@ -383,7 +393,7 @@ admin-to = Kino
 admin-version = version { $version }
 
 accounts-title = Bakonti
-accounts-lede = Ebombami na { $path }, na ndingisa 600, pembeni ya ebombelo mpe soko moke te kati na yango. Ebombelo ezwamaka kopi, etindamaka mpe ebimisamaka; soki bilembo ya maloba ya sekele ezali kotambola kati na yango, kopi nyonso ya nzete ya libota ekokoma kopi ya makambo ya kokota.
+accounts-lede = Ebombami na { $path } (mode 600), pembeni ya archive mpe soki moke te na kati.
 accounts-existing = Oyo ezali
 accounts-username = Nkombo ya mosaleli
 accounts-role = Mosala
@@ -401,8 +411,8 @@ accounts-roots = { $n ->
        *[other] misisa { $n }
     }
 accounts-add = Bakisa konti
-accounts-no-registration = Bapaya bakoki kofungola bakonti bango moko te; komikomisa ebongisami likolo. Mpo na mabota mingi mokambi oyo ayebi bato nyonso akoki.
-accounts-password-hint = Tika mpamba mpe moko ekosalema mpe ekomonisama mbala moko. Ata bilembo { $min } soki otie yango yo moko.
+accounts-no-registration = Bapaya bakoki kofungola ba-compte bango moko te; komikomisa ebongisamaka likolo.
+accounts-password-hint = Pamba: mot de passe ekosalema mpe ekomonisama mbala moko. Soki te, ata bilembo { $min }.
 accounts-new-password-placeholder = liloba ya sekele ya sika (mpamba = tika ndenge ezali)
 accounts-email = Imeli
 accounts-optional = (ezali na makasi te)
@@ -414,7 +424,7 @@ accounts-branch-hint = Ekangaka oyo konti oyo ekoki kobongola kaka na bato wana,
 accounts-branch-reading = Ekangaka te oyo bakoki kotanga — yango ekatamaka na komonana ya mokanda moko na moko, mpe makambo mibale wana ekabolami na mokano.
 accounts-branch-placeholder = elembo moko ya moto na molongo moko na moko
 accounts-ids-in-bundle = Bilembo ya bato na nzete oyo
-accounts-emergency-warning = Okoti na elembo ya likama. Epesaka makoki ya mokambi mpo na ntango oyo kasi ezali konti te: ezali na baposa te, mpe buku ya mbongwana ekokoma mbongwana na yo lokola emergency-token kasi lokola moto te. Misalela konti ya solo awa na nse mpe kota na yango.
+accounts-emergency-warning = Okoti na token ya likama, kasi na compte te: sala compte ya solo awa na nse mpe salela yango.
 accounts-created-with-password = { $username } asalemi. Liloba na ye ya sekele ezali { $password } — emonisami mbala moko mpe ebombami kaka lokola elembo ya Argon2id, yango wana pesa ye yango sikoyo.
 accounts-created = { $username } asalemi.
 accounts-updated = { $username } abongolami. Ntango nyonso ya kokota oyo ezalaki ya kofungwama ekangami.
@@ -535,8 +545,8 @@ tree-counts = Bato { $drawn } kati na { $total } · { $generations ->
     }
 tree-unplaced-count = { $n } bazangi esika
 tree-contradicts-title = Nzete oyo ezali komiwangana.
-tree-contradicts-detail = Ndenge moko te ya kotia milongo ekoki kokokisa yango, yango wana boyokani oyo ezali awa na nse etikamaki libanda ya kotanga nkola mpe milongo mosusu ekoki kozala ebendami esika mabe. Bongisa mokanda oyo ezali na libunga kati na mibale.
-tree-contradicts-pair = Bakomami lokola mobali na mwasi mpe lokola moboti na mwana:
+tree-contradicts-detail = Boyokani oyo etikami libanda ya motango ya mabota, mpe milongo mosusu ekoki kozala na esika mabe. Bongisa fiche oyo ezali na libunga.
+tree-contradicts-pair = Mobali na mwasi mpe moboti na mwana na mbala moko:
 tree-contradicts-more = { $n ->
         [one] Bowangani moko lisusu etangami te.
        *[other] Bowangani { $n } lisusu etangami te.
@@ -678,7 +688,6 @@ name-part-pen_name = nkombo ya mokomi
 name-type-pen_name = nkombo ya mokomi
 gender-U = Ekomami te
 
-record-notes-title = Makomi mpo na mokanda oyo:
 record-name = Nkombo
 record-type = Lolenge
 record-cause = Ntina:
@@ -767,7 +776,7 @@ list-policy-orphan-detail = — longola yango kasi batela mikanda oyo etangaki y
 
 completeness-dates-title = Mikolo, na lolenge oyo ezali na yango mpenza
 completeness-no-dates = Natango mikolo moko te ekomami.
-completeness-dates-note = Mokolo oyo moto atiaki kino na mokolo moko mpe mokolo oyo moto akokaki kotia kaka na mibu zomi ezali maloba ekeseni, mpe nyonso mibale ebatelamaka ndenge epesamaki. Makomi oyo ekokaki kotangama lokola mokolo te ebatelamaka liloba na liloba na esika ya kobwakama.
+completeness-dates-note = Mikolo etikalaka ndenge epesamaki, na mokolo to na mibu zomi; makomi oyo ezali mokolo te etikalaka liloba na liloba.
 completeness-shape-exact = sikisiki
 completeness-shape-exact-note = mokolo mobimba ya manaka
 completeness-shape-approximate = pene na pene
@@ -780,7 +789,7 @@ completeness-shape-unknown = eyebani te
 completeness-shape-unknown-note = ekomami lokola eyebani te
 
 convert-page-title = Kotisa fisyé ya libota
-convert-lede = Memá nzete oyo ezali uta na fisyé GEDCOM — fisyé oyo baprograme mingi ya bankoko ebimisaka. Eloko moko te ebombamaka awa, mpe nzete oyo site oyo emonisaka kala etikalaka ndenge ezalaki.
+convert-lede = Mema nzete uta na fisye GEDCOM. Eloko moko ebombamaka te, mpe nzete ya site ebongwanaka te.
 convert-file-label = Fisyé ya libota (.ged)
 convert-file-hint = Kino MB { $mb }. Nzete ya bato 767 ezali pene na KB 320.
 convert-confidence-label = Bondimi na makambo oyo, mpo na kobanda
@@ -895,25 +904,13 @@ name-type-religious = ya losambo
 name-type-transliteration = kobongola makomi
 name-type-nickname = nkombo ya kosakana
 
-note-links = { $n ->
-        [one] boyokani moko libanda ya libota, na mikolo mpe maziba na yango
-       *[other] boyokani { $n } libanda ya libota, na mikolo mpe maziba na yango
-    }
-note-occupations = { $n ->
-        [one] mosala moko ekomami na ebandeli mpe suka
-       *[other] misala { $n } ekomami na ebandeli mpe suka
-    }
-note-birth-imprecise = mokolo ya kobotama oyo liziba ekokaki kotia sikisiki te, emonisami ndenge ekomamaki
-note-death-imprecise = mokolo ya kokufa oyo liziba ekokaki kotia sikisiki te, emonisami ndenge ekomamaki
-note-names = { $n ->
-        [one] nkombo moko ekomami
-       *[other] bankombo { $n } ekomami
-    }
-note-transliteration = nkombo na makomi na yango moko pembeni ya kobongola na yango na makomi ya Latin
-note-witnessed = { $n ->
-        [one] likambo moko oyo atatolaki kasi ezalaki ya ye te
-       *[other] makambo { $n } oyo atatolaki kasi ezalaki ya ye te
-    }
+note-links = Boyokani libanda ya libota: { $n }
+note-occupations = Misala na mikolo: { $n }
+note-birth-imprecise = Mokolo ya kobotama ezali sikisiki te na liziba
+note-death-imprecise = Mokolo ya kokufa ezali sikisiki te na liziba
+note-names = Bankombo ekomami: { $n }
+note-transliteration = Nkombo na makomi na yango ya ebandeli, elongo na kobongola na yango
+note-witnessed = Makambo lokola motatoli: { $n }
 
 visibility-public = ya bato nyonso
 visibility-members = bato ya libota
@@ -1004,14 +1001,11 @@ completeness-metric-confidence = Bondimi na likambo moko na moko
 completeness-metric-confidence-none = Moko te kati na makambo { $slots } awa elobi ndenge ezali sikisiki. Mokolo oyo moto atangaki na mokanda ya ndingisa mpe oyo moto akanisaki emonanaka ndenge moko kino mokolo ekeseni.
 completeness-metric-confidence-uniform = Makambo { $with } kati na { $slots } ezali na motuya mpe nyonso ezali na motuya moko ({ $modal }). Yango nde bokotisi ya mbala moko etikaka sima: motuya ya kotia esika oyo moto moko te azongeli. Moko te esambisami naino yango moko.
 completeness-metric-confidence-some = Makambo { $with } kati na { $slots } ezali na motuya. { $modal_count } ekabolaka motuya moko ({ $modal }); { $assessed } ekeseni na yango mpe yango wana etalamaki moko moko.
-completeness-metric-confidence-many = Makambo { $with } kati na { $slots } ezali na motuya, { $assessed } kati na yango ekeseni na motuya oyo ezali mingi ({ $modal }) na mitindo { $distinct } ekeseni. Nzete oyo ekomaka ntembe ya solo oyo ebongwanaka.
+completeness-metric-confidence-many = Makambo { $with } na { $slots } ezali na motango: { $assessed } ekeseni na { $modal }, na mitindo { $distinct }.
 
 completeness-metric-parentage = Bondimi na boyokani moko na moko ya moboti na mwana
 completeness-metric-parentage-none = Bomoboti moko te awa elobi ndenge ezali sikisiki. Kozwa mwana ya kobokola, mabota oyo ezali na ntembe mpe kotonga lisusu uta na litangi moko nde mpenza esika libota esengeli kokoma ntembe — mpe nzete ebendaka boyokani oyo ezali sikisiki te lokola molongo ya pepele.
-completeness-metric-parentage-some = { $n ->
-        [one] Bomoboti moko ezali na motuya na yango
-       *[other] Bomoboti { $n } ezali na motuya na yango
-    }, boye molongo ya likanisi emonanaka na bolembu koleka oyo endimisami na mikanda.
+completeness-metric-parentage-some = Mabotami na motango na yango moko: { $n }
 
 completeness-metric-links = Boyokani koleka makila mpe libala
 completeness-metric-links-none = Batata mpe bamama ya batisimo, bankolo mosala, batatoli, balakisi, babateli. Moko te ekomami naino. Moko na moko ekoki komema mikolo na yango, liziba na yango mpe bondimi na yo.
@@ -1026,11 +1020,11 @@ completeness-metric-occupations-undated = { $total ->
         [one] Mosala moko ekomami, kozanga mikolo
        *[other] Misala { $total } ekomami, kozanga mikolo
     }. Bakisa ebandeli mpe suka mpe ekoki kokokanisama pembeni na pembeni na molongo moko ya ntango.
-completeness-metric-occupations-some = { $span } kati na { $total } ezali na ebandeli to suka, boye ekoki kokokanisama pembeni na pembeni na molongo moko ya ntango.
+completeness-metric-occupations-some = { $span } na { $total } ezali na ebandeli to nsuka.
 
 completeness-metric-sources = Maziba oyo emekami na bondimi na yango
 completeness-metric-sources-none = Maziba moko te ekomami. Kotanga esika likambo eutaki nde epesaka ndeko nzela ya kotala yango sima — to koyokana na yango te mpe koloba ntina.
-completeness-metric-sources-some = { $graded } kati na { $total } elobi ndenge ezali makasi, boye likambo oyo etelemi na mokanda ya kobotama emonanaka ekeseni na oyo etelemi na bokundoli.
+completeness-metric-sources-some = { $graded } na { $total } elobaka ndenge nini ezali makasi.
 
 completeness-what-is-recorded = Oyo mokanda ekoki koloba
 completeness-in-this-tree = Na nzete oyo
@@ -1066,7 +1060,7 @@ phys-field-operations = Kokata nzoto mpe bampota
 phys-field-cause-of-death = Ntina ya kokufa
 phys-field-religion = Losambo to masanga
 phys-field-health-notes = Makomi
-admin-export-health-note = Bobimisi ya pete etikaka mitindo nyonso ya makambo ya bokebi — bokolongono mpe kondima, makambo ya nzoto, makambo ya bankoko ya makila mpe mikanda ya bosambisi — mpe lolenge ya bizaleli ya moto nyonso oyo azali na bomoi, boye fisyé oyo etindami na ndeko ememaka moko te kati na yango. Pona oyo fisyé moko esengeli komema; ebombelo yango moko ekomaka mitindo nini etikamaki.
+admin-export-health-note = Kobimisa ya pete etikaka biloko nyonso ya sekele mpe etamboli ya bato ya bomoi. Tia elembo na oyo fisye oyo esengeli kozala na yango.
 avatar-picker-title = Pona elilingi
 avatar-choose = Elilingi nini emonisaka moto oyo
 avatar-mode-auto = Tika programe epona
@@ -2787,7 +2781,7 @@ profile-group-filled = { $n } etondisami
 profile-problems = Ndambo ya oyo okotisaki ekokaki kobombama te. Mokakatano moko na moko etangami pembeni ya esika na yango, mpe eloko moko te ekomami.
 profile-editor-withheld = Etuluku oyo ezali mpe na { $classes } mpo na moto oyo, oyo opesami ndingisa ya kotanga te. Emonisami awa te, mpe kobomba formulaire oyo etikaka yango ndenge ezali.
 profile-living-class-note = Moto oyo akomami lokola azali na bomoi. Oyo okokotisa awa na etuluku ya sekele emonisamaka kaka epai ya bakambi.
-profile-relationships-elsewhere = Baboti, balongani, bana, baboti ya batisimo mpe batatoli babombamaka na moto oyo te. Bazali mabota, boyokani mpe makambo oyo etangi bango — boye mbongwana nyonso awa ebongolaka mpe mokanda ya moto nyonso mosusu oyo azali kati na yango.
+profile-relationships-elsewhere = Bandeko, batata mpe bamama ya batisimo mpe batatoli bazali na mabota, boyokani mpe makambo: kobongola bango awa ebongolaka mpe ba-fiche wana.
 profile-documents-first = Eloko ya numérique elakisaka mokanda oyo ekangisami na moto oyo. Kangisa fisyé liboso.
 profile-editor-nothing = Eloko moko te na etuluku oyo opesami ndingisa ya kobongola.
 profile-new-entry = Eteni ya sika
@@ -3058,7 +3052,7 @@ field-person-display-name-hint = Nkombo oyo emonanaka bisika nyonso na site.
 field-person-gender = Mobali to mwasi
 field-person-living = Azali na bomoi
 field-person-birth-date = Mokolo ya kobotama
-field-date-value-hint = Mobu, mobu mpe sanza, to mokolo mobimba: 1923, 1923-04 to 1923-04-12. Tika mpamba soki moto moko te ayebi.
+field-date-value-hint = 1923, 1923-04 to 1923-04-12; tika pamba soki eyebani te.
 field-person-birth-precision = Bosikisiki ya kobotama
 field-precision-hint = Ndenge nini liziba elobi yango na bosikisiki.
 field-person-birth-circa = Kobotama ezali pene na pene
@@ -3188,7 +3182,7 @@ record-link-outgoing = uta na moto oyo
 record-link-incoming = epai ya moto oyo
 
 health-attention = Esengeli kotala:
-health-standing-token = Jeton ya mokambi ya likama ezali naino. Ekotaka koleka compte nyonso mpe ndingisa nyonso — yango nde mosala na yango na mokolo oyo moto moko te akoki kokota, kasi eloko ya kotika te sikoyo ete moto akoki kokota. Longola yango na fisyé ya zingazinga ya service mpe banda lisusu.
+health-standing-token = Token ya likama ezali naino mpe elekaka compte nyonso. Longola yango na fisye ya environnement ya mosala, sima zongisa mosala.
 health-bundle-invalid = { $errors ->
         [one] Ba-données ya libota elongi lisusu bomeki te: libunga moko, etangami na nse ya Bomeki.
        *[other] Ba-données ya libota elongi lisusu bomeki te: mabunga { $errors }, etangami na nse ya Bomeki.
@@ -3276,7 +3270,7 @@ search-empty-query = Koma nkombo mpo na koluka.
 nav-quality = Bolamu ya ba-données
 quality-title = Makambo ya kotala
 quality-none = Eloko ya kotala ezali te: bomeki nyonso elongi.
-quality-intro = Eloko moko awa ebongwanaka te na esika na yo. Molongo moko na moko ezali ndenge ya kotala — mbala mingi ezali na ntina malamu. Fungola mokanda mpe zwa mokano, to tia elembo ete etalami.
+quality-intro = Makambo ya kotala; mbala mingi ezali na ntina malamu. Fungola fiche, to tia elembo ete etalami.
 quality-groups-label = Mitindo ya makambo emonani
 quality-all = Nyonso
 quality-show-label = Monisa
@@ -3295,39 +3289,39 @@ quality-show-list = Monisa molongo
 quality-after-import = Eloko moko te ebongolamaki na fisyé. Soki ekomi ebombelo ya site, lokasa ya bolamu ya ba-données ekotanga makambo yango moko na lien ya mokanda moko na moko.
 quality-file-list-cut = Kaka { $shown } ya liboso etangami awa. Soki fisyé ekomi ebombelo ya site, lokasa ya bolamu ya ba-données ekotanga yango nyonso.
 quality-rule-name-sentence = Fraze na esika ya nkombo
-quality-name-sentence = “{ $value }” ezali lokola fraze koleka nkombo: soki ezali ndimbola, tika nkombo na esika na yango mpe tia oyo etikali na likomi.
+quality-name-sentence = « { $value } » ekoki kozala fraze, kasi nkombo te.
 quality-rule-union-parent-child = Balongani oyo bazali mpe moboti na mwana
-quality-union-parent-child = { $parent } mpe { $child } bamonani lokola balongani mpe lokola moboti na mwana: ebongi kotala boyokani nini maziba endimisaka.
+quality-union-parent-child = { $parent } na { $child }: mobali na mwasi mpe moboti na mwana na mbala moko.
 quality-rule-child-listed-twice = Mwana atangami mbala mibale
-quality-child-listed-twice = { $child } amonani mbala mibale kati na bana ya libota oyo: soki ezali mwana yango moko, eteni moko ekoki kolongolama.
+quality-child-listed-twice = { $child } ekomami mbala mibale na kati ya bana.
 quality-rule-duplicate-union = Balongani yango moko bakomami mbala mibale
-quality-duplicate-union = { $a } mpe { $b } bazali na boyokani { $count } ekomami: soki babalanaki mbala moko kaka, ekoki kozala boyokani moko ekotisami mbala mibale.
+quality-duplicate-union = { $a } na { $b }: libala ekomami: { $count }.
 quality-rule-partner-twice = Moto moko na ngambo nyonso mibale ya boyokani
-quality-partner-twice = { $person } amonani na ngambo nyonso mibale ya boyokani oyo: ebongi kotala nani azalaki molongani mosusu, to kotika ngambo wana mpamba soki moto moko te ayebi.
+quality-partner-twice = { $person } azali na ngámbo nyonso mibale ya libala.
 quality-rule-foreign-surnames = Nkombo ya libota ya mwana mobali oyo eyokani na ya moboti moko te
-quality-foreign-surnames = Nkombo ya libota oyo eyokani na ya moboti moko te: { $who }. Yango ekoki kozala malamu — kobongola nkombo, mwana ya libala ya sika, makomi ekeseni — kasi ebongi kotala. (Bana basi batangami te, mpo nkombo ya libala ezali ntina oyo emonanaka mingi.)
+quality-foreign-surnames = Nkombo ya libota ekokani na ya moboti moko te: { $who }.
 quality-rule-death-before-birth = Kokufa liboso ya kobotama
-quality-death-before-birth = { $person } azali na kokufa na { $death }, liboso ya kobotama na ye na { $birth }: moko kati na mikolo mibale ekoki kozala ekomami mabe; ebongi kotala yango na maziba.
+quality-death-before-birth = { $person }: liwa ({ $death }) liboso ya kobotama ({ $birth }).
 quality-rule-child-before-parent = Mwana abotami liboso ya moboti
-quality-child-before-parent = { $child } (abotama { $childborn }) amonani lokola abotamaki liboso ya moboti na ye { $parent } (abotama { $parentborn }): ebongi kotala mikolo to bomoboti.
+quality-child-before-parent = { $child } ({ $childborn }) abotamaki liboso ya moboti na ye { $parent } ({ $parentborn }).
 quality-rule-parent-too-young = Moboti oyo azali na mibu na nse ya zomi na mibale
-quality-parent-too-young = { $parent } alingaki kozala na mibu { $age } ntango { $child } abotamaki, likambo oyo emonanaka mingi te: ebongi kotala mikolo to bomoboti.
+quality-parent-too-young = { $parent } azalaki na mbula { $age } ntango { $child } abotamaki.
 quality-rule-parent-too-old = Moboti oyo aleki mibu ntuku motoba na mitano
-quality-parent-too-old = { $parent } alingaki kozala na mibu { $age } ntango { $child } abotamaki, likambo oyo emonanaka mingi te: ebongi kotala mikolo to bomoboti.
+quality-parent-too-old = { $parent } azalaki na mbula { $age } ntango { $child } abotamaki.
 quality-rule-marriage-before-birth = Libala liboso ya kobotama ya molongani
-quality-marriage-before-birth = Libala oyo ezali na mokolo { $married }, liboso { $person } abotama na { $born }: ebongi kotala mokolo ya libala.
+quality-marriage-before-birth = Libala ({ $married }) liboso { $person } abotama ({ $born }).
 quality-rule-isolated-record = Mokanda ezangi mokolo mpe boyokani
-quality-isolated-record = { $person } azali na mokolo te mpe na boyokani te na moto moko na libota: ebongi kobakisa ndenge azali na libota, to kolongola mokanda soki ekotisamaki na libunga.
+quality-isolated-record = { $person }: mokolo te mpe boyokani te.
 quality-rule-place-no-region = Esika ezangi etuka
-quality-place-no-region = { $place } ezali na etuka te: kobakisa moko esalisaka kokesenisa bisika oyo ezali na nkombo moko.
+quality-place-no-region = { $place }: etúká te.
 quality-rule-region-free-text = Etuka oyo etangamaka lokola likomi
-quality-region-free-text = Etuka ya { $place } elobi “{ $value }”, oyo ezali lokola likomi koleka etuka: ebongi kotia likomi yango na mokanda oyo ezali kolimbola.
+quality-region-free-text = Etúká ya { $place }: « { $value } » ekoki kozala note.
 quality-rule-place-near-duplicate = Bisika oyo ekoki kozala esika moko
-quality-place-near-duplicate = { $names } ekoki kozala esika moko ekomami na ndenge ekeseni: soki ezali bongo, ekoki kosangisama na moko.
+quality-place-near-duplicate = Mbele esika moko: { $names }.
 quality-rule-not-a-place = Eteni oyo ekoki kozala esika te
-quality-not-a-place = “{ $place }” ezali na molongo ya bisika kasi ekoki kozala esika te — ebandi na lilembo moke, oyo bankombo ya bisika esalaka mingi te: ebongi kotala soki ezali likomi mpo na esika moko.
+quality-not-a-place = « { $place } » mbele ezali esika te.
 quality-rule-certain-without-source = Ya solo, kozanga liziba
-quality-certain-without-source = { $record } ezali na liloba oyo etiami elembo ya solo mobimba ({ $claims }) kozanga liziba ekangisami: ebongi kokangisa liziba, to kokitisa bondimi.
+quality-certain-without-source = { $record }: sikisiki ({ $claims }) kozanga liziba.
 quality-dismiss = Etalami — ezali malamu epai na biso
 quality-restore = Monisa yango lisusu
 quality-note-label = Mpo na nini (ezali na makasi te)
@@ -3389,7 +3383,7 @@ admin-nav-accounts = Ba-compte
 admin-nav-connectivity = Bokangisi
 
 bundle-title = Ebombelo AXGF
-bundle-lede = Ebombelo ya libota ndenge site oyo esimbi yango: { $path }. Na nini eyokani, nini emonani mabe, mpe nzela mibale ya kozwa kopi.
+bundle-lede = Archive ya libota: { $path }. Boyokani na yango, oyo emonani mabe, mpe ndenge ya kozwa kopi.
 bundle-unset-title = Libota ezali naino te.
 bundle-unset-detail = Installation oyo ezali na ebombelo mpamba, yango wana eloko ya kotala ezali naino te. Bandisa yango uta na ebombelo, uta na fisyé ya GEDCOM to uta na eloko te.
 bundle-kpi-conformity = Boyokani na mibeko
@@ -3564,7 +3558,7 @@ infra-transport-title = Ndenge bato bakomaka na site
 infra-transport-ok = Lokasa oyo eyaki na nzela ya HTTPS.
 infra-transport-exposed = Lokasa oyo eyaki kozanga sekele, mpe serveur ezali koyoka na { $bind }, libanda ya masini oyo: ba-mot de passe mpe ba-cookie ya session ezali koleka na réseau na polele.
 infra-transport-exposed-fix = Tia proxy ya HTTPS (Caddy, nginx, HAProxy) liboso na yango, mpe kangisa lisusu service na 127.0.0.1: banda lisusu bootstrap.sh na --bind 127.0.0.1:8080, to longola fisyé ya drop-in oyo efungolaki yango.
-infra-transport-plain = Lokasa oyo eyaki kozanga sekele, uta na serveur oyo ezali koyoka na { $bind }. Yango ezali malamu kaka na masini oyo, mpe kaka kuna.
+infra-transport-plain = Na ndenge ya polele, uta na { $bind }: malamu kaka na masini oyo.
 infra-transport-plain-fix = Kende na site na nzela ya adresi na yango ya HTTPS. Soki proxy esukisaka TLS, sala ete etinda X-Forwarded-Proto: https mpo serveur oyo eyeba.
 infra-forwarded-title = Ba-adresi oyo etindami
 infra-forwarded-ok = Serveur ezali koyoka kaka na masini oyo, yango wana adresi ya client oyo proxy etindaka ekoki kondimama mpo na kokitisa lombangu ya bomeki ya kokota oyo elongi te mbala na mbala.
@@ -3586,8 +3580,8 @@ infra-sso-ok = { $n ->
 infra-sso-no-https = Service ya kokota epelisami, kasi adresi ya polele ezali HTTPS te: bapesi ya service baboyaka kotinda eyano na bango na adresi ezangi sekele, mpe kokota elongaka te.
 infra-sso-fix = Na nse ya Bokangisi, tia adresi ya polele lokola adresi ya https:// oyo batangi basalelaka.
 infra-admins-title = Bakambi
-infra-admins-none = Compte moko te ya bomoi ekoki kokamba site oyo. Kaka jeton ya likama ekoki, mpe kaka ntango etiami.
-infra-admins-none-fix = Kota na jeton ya likama, sala mokambi na nse ya Ba-compte, sima longola jeton.
+infra-admins-none = Compte moko te ya bomoi ekoki kokamba site oyo; kaka token ya likama.
+infra-admins-none-fix = Kota na token ya likama, sala mokambi, sima longola token.
 infra-admins-one = Mokambi moko. Soki moto yango azali te to abungisi mot de passe, moto moko te akoki kokamba site.
 infra-admins-one-fix = Pesa moto ya mibale oyo ondimaka mokumba ya mokambi na nse ya Ba-compte.
 infra-admins-ok = { $n ->
@@ -3596,7 +3590,7 @@ infra-admins-ok = { $n ->
     }
 infra-token-title = Jeton ya likama
 infra-token-generated = Jeton ya likama etiami te.
-infra-token-only-way = Jeton ya likama etiami, mpe soki compte ya mokambi ezali te ezali nzela kaka moko ya kokota. Batela yango kino mokambi azala.
+infra-token-only-way = Token ya likama ezali kaka nzela ya kokota kino compte ya mokambi ezala.
 infra-token-standing = Jeton ya likama ezali naino. Ekotaka koleka compte nyonso mpe ndingisa nyonso.
 infra-token-fix = Longola AXGF_CMS_ADMIN_TOKEN na fisyé ya zingazinga ya service, sima banda service lisusu.
 infra-registration-title = Komikomisa
@@ -3671,7 +3665,7 @@ infra-clock-wrong = Ngonga ya système elakisi { $year }: mikolo, mibu ya bakopi
 infra-clock-fix = Pelisa boyokanisi ya ngonga: timedatectl set-ntp true.
 
 infra-title = Bisaleli
-infra-lede = Masini oyo site oyo esalaka likolo na yango, etalami mbala nyonso oyo lokasa oyo efungwami: ndenge bato bakomaka na yango, nani asimbi bafungola, soki ba-données ezali na bokengi mpe ekoki naino, version nini ezali kosala, mpe esika ekangami oyo ezingi yango.
+infra-lede = Masini ya site oyo: kokota, bafungola, ba-donnée, version mpe sandbox, etalelamaka ntango nyonso lokasa efungwami.
 infra-kpi-health = Bokolongono
 infra-kpi-version = Version
 infra-kpi-version-newer = { $version } ezali
@@ -3688,7 +3682,7 @@ infra-kpi-load = Kilo ya mosala { $load }
 infra-kpi-rss = { $size } ezali kosalelama
 infra-unknown = Eyebani te
 infra-health = Bokolongono
-infra-health-intro = Malamu ezali malamu, likebisi ebongi kotala, likama esengeli kotalama sikoyo. Likambo moko na moko efungwamaka na oyo ya kosala.
+infra-health-intro = Langi ya mai ezali malamu, likebisi esengeli kotalama, likama esengeli kosala sikoyo.
 infra-json = Bomeki yango moko lokola JSON, mpo na système ya bokengi
 infra-version = Version
 infra-version-running = Ezali kosala
@@ -3723,14 +3717,14 @@ infra-relation-older = ya kala koleka
 infra-prerelease = version ya komeka
 infra-releases-none = Molongo ya ba-version ezali naino te.
 infra-upgrade = Bongola version
-infra-upgrade-intro = Bouton esengaka mosalisi ya komata version, oyo asalaka lokola root libanda ya esika ekangami ya site oyo. Azwaka kopi, atiaka version sima ya kondimisa checksum na yango, abandaka service lisusu mpe atalaka yango; soki version ya sika eyanoli te, oyo ya liboso ezongisamaka.
+infra-upgrade-intro = Mosalisi ya kobongisa abombaka kopi, atiaka version oyo etalelami, azongisaka mosala mpe atalaka; soki elongi te, version ya liboso ezongaka.
 infra-upgrade-version = Version ya kotia
 infra-upgrade-confirm = Mpo na kozonga na version ya kala, koma lisusu elembo na yango
 infra-upgrade-confirm-hint = Esengeli te mpo na version ya sika koleka. Version ya kala ekoki kotanga te ba-données oyo version ya sika ekomaki: tanga liboso makomi na yango.
 infra-upgrade-go = Tia version oyo
 infra-upgrade-safety = Site ezali te mpo na basekonde moke ntango service ezali kobanda lisusu.
 infra-upgrade-manual = Mosalisi ya komata version atiami te na serveur oyo, yango wana lokasa oyo ekoki kobongola version te. Lokola root, na serveur:
-infra-upgrade-manual-helper = Kobanda bootstrap.sh ya sikoyo mbala moko etiaka mosalisi, mpe bouton awa esalaka uta wana.
+infra-upgrade-manual-helper = Salisa bootstrap.sh ya sikoyo mbala moko mpo na kotia mosalisi.
 infra-upgrade-asked = { $version } esengami. Mosalisi ya komata version azwaka yango na basekonde moke; lokasa oyo elakisaka ndenge esalemaki.
 infra-upgrade-no-helper = Mosalisi ya komata version atiami te, yango wana { $version } ekoki kotiama awa te.
 infra-upgrade-unknown-version = { $version } ezali na molongo ya ba-version ebimisami te.
@@ -3790,7 +3784,7 @@ infra-compute-nnp-off = ndingisa ekoki kozwama
 infra-compute-seccomp-on = mabengi ya système ekangami
 infra-compute-seccomp-off = mabengi ya système ekangami te
 infra-activity = Misala
-infra-activity-intro = Etangami na { $span }: service ebatelaka mokolo moko, mpe ebandaka lisusu na zero ntango ebandi lisusu.
+infra-activity-intro = Na { $span }; ebandaka lisusu na zero ntango mosala ezongisami.
 infra-activity-sessions = Ba-session efungwami
 infra-activity-signed-in = Bokoti
 infra-activity-failed = Bomeki ya kokota elongi te
@@ -3806,7 +3800,7 @@ sso-error-invalid = Eyano ya service ya kokota elongaki bomeki ya site oyo te, y
 infra-upgrade-already-pending = { $version } ezali kala kozela mosalisi ya komata version. Zela esila liboso ya kosenga version mosusu.
 
 connectivity-title = Bokangisi
-connectivity-lede = Ndenge batangi bakomaka na site oyo mpe ndenge bakotaka: adresi ya polele, ba-service ya kokota mpe mibeko oyo kokota nyonso elandaka, ata ya bakambi.
+connectivity-lede = Ndenge batángi bakomaka na site oyo mpe bakotaka: adresi ya bato nyonso, misala ya kokota mpe mibeko.
 connectivity-kpi-address = Adresi ya polele
 connectivity-address-unset = Etiami te
 connectivity-address-https = HTTPS
@@ -3823,7 +3817,7 @@ connectivity-policy-short-non-admins = Bakambi te
 connectivity-policy-short-nobody = Moto moko te
 connectivity-policy-note-everyone = Compte nyonso ekoki kokota na mot de passe na yango, mpe na service ekangisami lisusu.
 connectivity-policy-note-non-admins = Bakambi bakotaka kaka na nzela ya service; basusu nyonso bakoki kaka kosalela mot de passe. Mot de passe ya mokambi oyo eyibami efungolaka eloko te.
-connectivity-policy-note-nobody = Moto nyonso akotaka na nzela ya service. Compte ezangi service ekangisami mpe adresi ya kokangisa ekoki kokota te.
+connectivity-policy-note-nobody = Moto nyonso akotaka na nzela ya mosala; compte oyo ezali na mosala te ekoki kokota te.
 connectivity-kpi-admins-linked = { $n ->
         [one] Mokambi { $n } na service ekangisami
        *[other] Bakambi { $n } na service ekangisami
@@ -3834,30 +3828,30 @@ registration-short-closed = Kaka bakambi
 registration-short-secret = Na sekele ya libota
 registration-short-open = Polele mpo na bapaya
 connectivity-address = Adresi ya polele
-connectivity-address-intro = Adresi oyo batangi bakomaka, ndenge bakomaka yango: https://family.example. Ba-service ya kokota bazongisaka batangi kuna, yango wana esengeli kozala adresi ya polele, kasi oyo serveur oyo eyokaka te.
+connectivity-address-intro = Adresi ya bato nyonso oyo batángi bakomaka, lokola https://family.example; misala ya kokota ezongisaka bango kuna.
 connectivity-address-label = Adresi ya polele
 connectivity-address-hint = Tika yango mpamba soki moto moko te akotaka na nzela ya service.
 connectivity-address-invalid = Wana ezali adresi ya http to https na nkombo ya hôte te.
 connectivity-address-saved = Adresi ya polele ebombami.
 connectivity-policy = Mibeko ya kokota
-connectivity-policy-intro = Esalaka mpo na compte nyonso, ata ya bakambi. Mobeko oyo ekotika mokambi moko te oyo akoki kokota eboyamaka.
+connectivity-policy-intro = Etali ba-compte nyonso; mobeko oyo ekotika mokambi moko te akota eboyamaka.
 connectivity-policy-passwords = Nani akoki kokota na mot de passe
 connectivity-policy-without-way = { $n ->
         [one] Compte { $n } ya bomoi ezali na service ekangisami te mpe na adresi te: na nse ya “Moto moko te” ekokaki kokota te.
        *[other] Ba-compte { $n } ya bomoi ezali na service ekangisami te mpe na adresi te: na nse ya “Moto moko te” ekokaki kokota te.
     }
 connectivity-link-by-email = Kangisa service na compte oyo ezali na adresi yango moko endimisami
-connectivity-link-by-email-note = Ndenge ndeko azwaka kokota na kofina mbala moko kozanga bokomisi: sala compte na ye na adresi na ye, mpe kokota na ye ya liboso na nzela ya service oyo endimisaki adresi yango ekangisaka yango. Kaka adresi oyo mokambi akomaki to service endimisaki nde eyokanisamaka.
+connectivity-link-by-email-note = Sala compte ya ndeko na adresi na ye: kokota na ye ya liboso na nzela ya mosala oyo etalelaka adresi yango ekangisaka yango.
 connectivity-domains = Ba-domaine oyo ekoki kofungola compte
-connectivity-domains-hint = Moko na molongo moko, lokola family.example. Mpamba: nyonso. Soki etiami, kaka adresi oyo service endimisaki na moko ya ba-domaine oyo ekoki kofungola compte, mpe formulaire ya bokomisi epesamaka te.
+connectivity-domains-hint = Moko na molongo nyonso (family.example). Pamba: nyonso. Soki te, kaka ba-adresi oyo etalelami na ba-domaine oyo ekoki kofungola compte.
 connectivity-domain-invalid = “{ $domain }” ezali nkombo ya domaine te.
 connectivity-policy-unknown = Pona nani akoki kokota na mot de passe.
 connectivity-policy-lockout = Eboyami: na mbongwana oyo mokambi moko te ya bomoi akokaki kokota. Kangisa liboso service ya kokota na compte ya mokambi, na kokota na nzela na yango mbala moko, to batela ba-mot de passe mpo na bakambi.
 connectivity-policy-saved = Mibeko ya kokota ebombami.
 connectivity-not-saved = Ebombami te: { $error }
 connectivity-services = Ba-service ya kokota
-connectivity-services-intro = Komisa site oyo na console ya service yango moko na adresi ya bozongisi oyo emonisami, sima tia awa client ID mpe sekele. Bapaya bakomona “Kokoba na …” na nkasa ya kokota mpe ya bokomisi.
-connectivity-outbound-note = Kokota na nzela ya service esengi ete serveur oyo ekoma na service. Unit oyo bootstrap.sh ekomaka eboyaka bokangisi ya kobima (IPAddressDeny=any): pesa ndingisa na sudo systemctl edit axgf-cms, na kobakisa IPAddressAllow=any na nse ya [Service], sima banda lisusu. Bouton ya komeka elobaka soki ekoki.
+connectivity-services-intro = Komisa site oyo na console ya mosala na adresi ya kozongisa oyo emonisami, sima tia awa ID ya client mpe sekele.
+connectivity-outbound-note = Kokota na nzela ya mosala esengeli bokangisi oyo ebimaka: salisa sudo systemctl edit axgf-cms, bakisa IPAddressAllow=any na nse ya [Service], sima zongisa mosala.
 connectivity-service-ready = Ebongami
 connectivity-service-incomplete = Esili te
 connectivity-service-off = Ekufi
@@ -3884,10 +3878,10 @@ connectivity-provider-saved = { $name } ebombami.
 connectivity-test-ok = { $name } eyanoli: { $answer }.
 connectivity-test-failed = { $name } ekokaki kokomama te uta na serveur oyo: { $detail }
 registration-title = Bokomisi
-registration-intro = Soki mopaya akoki kofungola compte awa ye moko. Compte ya ndenge wana ezali ya ndeko ya lisanga: etangaka oyo bandeko ya lisanga batangaka mpe ebongolaka eloko te. Kopesa yango mokumba mosusu ezali mokano ya mokambi, na nse.
+registration-intro = Soki bapaya bakoki kofungola bango moko compte ya mosangani; mokambi akoki kopesa yango mosala mosusu awa na nse.
 registration-who = Nani akoki kofungola compte
 registration-note-closed = Kaka mokambi asalaka ba-compte, na lokasa oyo.
-registration-note-secret = Mopaya oyo ayebi sekele ya libota akoki kofungola compte ya ndeko ya lisanga. Kabola sekele ndenge okokabola code ya ekuke.
+registration-note-secret = Moto oyo ayebi sekele ya libota akoki kofungola compte ya mosangani. Kabola yango lokola code ya porte.
 registration-note-open = Mopaya nyonso akoki kofungola compte ya ndeko ya lisanga. Bandeko ya lisanga batangaka mikanda oyo ebatelami mpo na bango.
 registration-rotate = Sala sekele ya sika
 registration-secret = Sekele ya libota
@@ -4032,13 +4026,13 @@ notes-field-title = Motó
 notes-field-category = Lolenge
 notes-field-category-hint = Makomi ya bonsomi; mitindo oyo esalelami kala epesami lokola makanisi.
 notes-field-date = Mokolo
-notes-field-date-hint = Mobu, sanza to mokolo: 1952, 1952-06 to 1952-06-14. Tika mpamba soki likomi ezali na mokolo te.
+notes-field-date-hint = 1952, 1952-06 to 1952-06-14; pamba soki ezali te.
 notes-field-people = Bato oyo etali
-notes-field-people-hint = Koma nkombo mpe pona yango na molongo. Soki moto moko te atangami, likomi ezali ya libota mobimba.
+notes-field-people-hint = Koma nkombo mpe pona yango. Soki moto moko te, note ezali ya libota mobimba.
 notes-person-add = Bakisa
 notes-person-remove = Longola moto oyo
 notes-field-text = Makomi
-notes-text-hint = Makomi minene, ya kogumbama, mitó, milongo mpe ba-lien ekomamaka na Markdown; ba-bouton oyo ezali likolo ekomaka yango mpo na yo. Tia to bwaka foto kati na makomi mpo na kobakisa yango, kino { $mb } MB moko na moko.
+notes-text-hint = Markdown, to babuto oyo ezali likolo. Kanga to tika bilili, kino { $mb } MB mokomoko.
 notes-tool-bold = Makomi minene
 notes-tool-italic = Makomi ya kogumbama
 notes-tool-heading = Motó
@@ -4076,7 +4070,7 @@ notes-dashboard-open = Koma mpe kamba makomi
 
 kind-bundle = ebombelo
 manifest-title = Libota
-manifest-intro = Oyo ebombelo elobi mpo na libota oyo esimbi. Nkombo na yango nde emonanaka na lokasa ya Libota, na mitó ya nkasa mpe na PDF ya likomi nyonso; oyo etikali etambolaka elongo na fisyé. Mitango mpe mikolo ya fisyé yango moko etangamaka ntango ekomami.
+manifest-intro = Oyo archive elobaka mpo na libota na yango. Nkombo na yango emonanaka na lokasa Libota, na mitó mpe na PDF ya ba-note.
 manifest-name = Nkombo ya libota
 manifest-name-hint = Emonanaka na lokasa ya Libota mpe na mitó. Ba-compte elandaka nkombo ya sika.
 manifest-description = Ndimbola
@@ -4086,7 +4080,7 @@ manifest-place = Esika monene
 manifest-place-hint = Mokili monene oyo libota efandaki mingi.
 
 manifest-span = Ntango oyo etalami
-manifest-span-hint = Uta na kobotama ya kala koleka kino na oyo ya sika koleka oyo ebombelo ekomi; etangami, mpe ekomami na fisyé ntango makambo ebombami.
+manifest-span-hint = Uta na kobotama ya kala koleka kino na oyo ya sika; etangamaka ntango ya kobomba.
 manifest-license = Licence
 manifest-license-type = Licence
 manifest-save = Bomba makambo ya libota
@@ -4140,7 +4134,7 @@ account-who = Compte
 account-email = Adresi ya email
 account-since = Uta
 account-person-title = Mokanda na ngai na nzete
-account-person-intro = Loba moto nini na nzete ozali. Moto moko te atalaka yango: compte moko na moko eponaka mokanda na yango, na mokumba na yango moko, mpe ekoki kobongola to kolongola yango ntango nyonso.
+account-person-intro = Ozali nani na nzete? Ponó na yo, kotalela te; okoki kobongola yango ntango nyonso.
 account-person-is = Compte oyo elobi ete ezali
 account-person-unlink = Longola bokangisi
 account-person-pick = Moto na nzete
@@ -4491,7 +4485,7 @@ kin-group-care = Kobɔkɔla mpe bobateli
 kin-group-rites = Mimeseno mpe milulu
 kin-group-others = Boyokani mosusu
 kin-find-title = Bazali bandeko ndenge nini?
-kin-find-lede = Pona moto moko ya libota: boyokani na ye na { $name } ekolimbolama etape na etape.
+kin-find-lede = Pona moto: boyokani na ye na { $name }, etape na etape.
 kin-find-label = Moto
 kin-find-choose = Pona moto…
 kin-find-go = Lakisa boyokani
@@ -4505,7 +4499,7 @@ kin-all-count = { $n ->
     }
 kin-common-list = Bankɔkɔ oyo bazali na bango nyonso mibale: { $names }
 kin-also-list = lisusu { $list }
-kin-rites-help = Batata mpe bamama ya batisimo, mpe bokangami mosusu oyo bonkɔkɔ esalaka kati na bato oyo babotama moko na mosusu te. Nzete ekomaka yango na mitoni na yango moko.
+kin-rites-help = Batata mpe bamama ya batisimo mpe boyokani mosusu oyo mimeseno esalaka; nzete ebendaka yango na matóni.
 kin-rite-recorded = Mokanda elobi « { $label } ».
 kin-hidden = moto oyo okoki komona te
 kin-native = Na maloba ya bonkɔkɔ
@@ -4852,7 +4846,7 @@ emblem-no-family-detail = Libota oyo ezali na archive te, to okoki komona yango 
 ## its computing comes from, and a test.
 admin-nav-afg = AFG
 afg-title = Moyebi ya mabota ya masini
-afg-lede = AFG eyebi libota na nzela ya ebombelo na yango, mpe ekanisaka moto nyonso oyo asololaka na yango na bɔ́ngɔ na ye moko. Awa: wapi kalkile na yango euti, mpe bomeki moko.
+afg-lede = Misala ya AFG euti wapi, mpe komeka.
 afg-kpi-source = Kalkile
 afg-ready = ebongi
 afg-off-note = Pona wapi kalkile euti.
@@ -4863,9 +4857,9 @@ afg-kpi-last = Bomeki ya nsuka
 afg-never = naino te
 afg-run-open = Fungola yango
 afg-source = Wapi kalkile euti
-afg-source-intro = Adrési moko; adrési elongo na fungola ya API mpe modɛ́lɛ; to agent ya kodi oyo asili kokɔta na masini oyo. Moko na moko asololaka na lolenge na ye.
+afg-source-intro = Adresi; adresi na fungola mpe modele; to agent oyo akoti na masini oyo.
 afg-kind = Lolenge ya kalkile
-afg-kind-hint = Esaleli ezali kosala esika mosusu mpe tokomaka epai na yango na nzela ya réseau. Agent azali kosala na masini oyo, na compte oyo site oyo ezali kosala na yango, mpe asengeli kozala asili kokɔta kuna.
+afg-kind-hint = Mosala ekomamaka na nzela ya réseau; agent esalaka na masini oyo mpe esengeli kokota na yango.
 afg-kind-off = Eloko te
 afg-kind-anthropic = Claude (API ya Anthropic)
 afg-kind-ollama = Ollama
@@ -4884,25 +4878,25 @@ afg-url-hint = Soki ezali pamba: adrési ya momesano ya esaleli. Ebengami:
 afg-key = Fungola ya API
 afg-key-set = Fungola moko ebombami, esukaka na { $end }.
 afg-key-unset = Fungola moko te ebombami.
-afg-key-hint = Soki otiki yango pamba, fungola oyo ebombami etikali. Ebombamaka elongo na ba-compte, soko moke te na ebombelo, mpe ekomonisama lisusu te.
+afg-key-hint = Soki ezali pamba, fungola oyo ebombami etikalaka, mpe ekomonana lisusu te.
 afg-key-clear = Bosana fungola
 afg-model = Modɛ́lɛ
-afg-model-hint = Nkombo ya modɛ́lɛ ndenge esaleli to agent ekomaka yango. Molongo epesaka bamodɛ́lɛ ya sikoyo lokola makanisi; nkombo mosusu nyonso etindamaka ndenge ekomami. Soki ezali pamba, Ollama ezwaka modɛ́lɛ na yango ya liboso mpe agent oyo ya ye moko.
+afg-model-hint = Nkombo ya modele ndenge mosala ekomaka yango. Nkombo nyonso etindamaka ndenge ezali; soki ezali pamba, oyo ya liboso.
 afg-model-unlisted = Ezali na kati ya makanisi te: etindamaka ndenge ekomami.
 afg-effort = Makasi
-afg-effort-hint = Ndenge modɛ́lɛ ekanisaka na bozindo, na maloba ya mosali na yango. Molongo elandaka modɛ́lɛ oyo eponami mpe elakisaka makasi na yango ya momeseno; liloba mosusu nyonso etindamaka ndenge ekomami. Soki ezali pamba, modɛ́lɛ esalelaka makasi na yango ya ebandeli.
+afg-effort-hint = Ndenge nini modele ekanisaka na bozindo. Liloba nyonso etindamaka ndenge ezali; soki ezali pamba, oyo ya modele.
 afg-effort-unlisted = Ezali na kati ya makasi ya modɛ́lɛ oyo te: etindamaka ndenge ekomami.
 afg-effort-default = oyo ya ebandeli
 afg-program = Programu
 afg-program-found = Emonani:
 afg-program-missing = Emonani te na masini oyo.
-afg-program-hint = Soki ezali pamba, balukaka yango esika installateur na yango atiaka yango. Soki te, nzela mobimba ya programu ya agent.
+afg-program-hint = Pamba: eluki epai installateur na yango etiaka yango. Soki te, nzela mobimba ya programme.
 afg-sensitive = Tinda mpe bakalasi ya makama
-afg-sensitive-hint = Bokolɔngɔnɔ, biometri, genomi, mikanda ya bosambisi mpe bizaleli etindamaka te soki otii elembo awa te, ndenge ekɔtaka te na export oyo bakabolaka.
+afg-sensitive-hint = Soki elembo ezali te, nzoto kolongono, biométrie, génétique, mikanda ya bosambisi mpe etamboli etikalaka libanda, lokola na kobimisa oyo ekabolami.
 afg-timeout = Ntango endimami (sekonde)
 afg-timeout-hint = Ntango eyano ekoki kozwa liboso ya kotika yango.
 afg-test = Bomeki
-afg-test-intro = Etindaka ebombelo ndenge ezali sikoyo, bafisyé na yango nyonso ya JSON kozanga bafoto, elongo na bɔ́ngɔ na yo, mpe etunaka motuna moko. Eyano efungwamaka na lininisa.
+afg-test-intro = Etindaka archive (JSON, bilili te) mpe bongo na yo elongo na motuna moko; eyano efungwamaka na lininisa.
 afg-sent-files = Bafisyé
 afg-sent-files-value = { $n ->
         [one] fisyé { $n } ya JSON
@@ -4921,7 +4915,7 @@ afg-sent-classes = Bakalasi ya makama
 afg-sent-classes-in = etindami
 afg-sent-classes-out = etikami
 afg-sent-question = Motuna
-afg-privacy = Bomeki etindaka mikanda ya libota, ata ya bato oyo bazali na bomoi, epai ya kalkile oyo eponami likolo. Esaleli moko na internet, mpe agent ya masini oyo oyo abengaka yango, etángaka yango na ba-serveur ya mokonzi na yango.
+afg-privacy = Komeka etindaka ba-fiche ya libota, bato ya bomoi elongo, epai ya misala oyo eponami likolo.
 afg-test-button = Tinda bomeki
 afg-test-needs = Bomba liboso lolenge ya kalkile oyo ekoki.
 afg-test-question = Pesa ngai mabota 3 oyo ezali na motango monene ya bato bakomami.
@@ -4961,10 +4955,7 @@ afg-brain-note = { $facts ->
        *[other] ba-compte { $brains } na bɔ́ngɔ
     }
 afg-brain-no-account = Session oyo ezali na compte te, yango wana ezali na bɔ́ngɔ te.
-afg-access-count = { $n ->
-        [one] Compte { $n } ekoki kosolola na AFG.
-       *[other] Ba-compte { $n } ekoki kosolola na AFG.
-    }
+afg-access-count = Ba-compte oyo ekoki kosolola na AFG: { $n }
 afg-access-set = Ebongisamaka na lokasa ya Ba-compte
 afg-result-ok = Elongi
 afg-result-error = Libunga
@@ -4975,11 +4966,11 @@ accounts-afg = AFG
 accounts-afg-allowed = Akoki kosolola na AFG
 accounts-afg-yes = ɛɛ
 accounts-afg-no = te
-accounts-afg-hint = Ekangami soki otii elembo te. Oyo AFG ebombaka na ntina na compte oyo ezali na bɔ́ngɔ na yango moko: dosie na disque pembeni ya ebombelo.
+accounts-afg-hint = Ekangami soki elembo ezali te. Makanisi na yango ebombamaka pembeni, pembeni ya archive.
 
 ## An account's AFG brain on its own page: seen and forgotten (docs/adr/0024 §6).
 account-brain-title = Bɔ́ngɔ ya AFG na yo
-account-brain-intro = Oyo AFG ekanisaka na ntina na yo: makambo oyo eponaki kobomba, mpe masolo na yo elongo na yango. Nyonso mibale epesamaka na yango lisusu na motuna nyonso ya yo. Tika ebosana oyo olingi te ete eyeba lisusu. Na site, moto mosusu te amonaka yango, kaka yo.
+account-brain-intro = Oyo AFG ebombaka mpo na yo, epesamaka lisusu na motuna nyonso. Longola oyo olingi; moto mosusu amonaka yango te.
 account-brain-no-access = AFG efungwami te mpo na compte na yo: mokambi moko nde azwaka mokano na lokasa ya Ba-compte.
 account-brain-none = AFG ekanisi naino eloko te na ntina na yo.
 account-brain-facts = Oyo ekanisaka
@@ -5005,21 +4996,21 @@ afg-brain-see = Tala mpe bosana
 
 ## My personal assistant: projects, conversations, code of conduct, second brain (docs/adr/0026).
 assistant-title = Mosungi na ngai ya moko
-assistant-entry = Mabongisi na yo mpe masolo na yo elongo na AFG: tuna mituna, tinda mikanda mpe bafoto, kobá epai otikaki.
-assistant-lede = Mabongisi na yo moko elongo na AFG. Moko na moko ezali na mibeko na yango ya etamboli mpe makanisi na yango, mpe na kati na moko na moko masolo oyo okobaka epai otikaki yango.
+assistant-entry = Ba-projet mpe masolo na yo elongo na AFG.
+assistant-lede = Ba-projet na yo elongo na AFG, moko na moko na mibeko ya etamboli, makanisi mpe masolo na yango.
 assistant-shut-no-account = Session oyo ezali na compte te, yango wana ezali na mosungi ya moko te. Kɔtá na compte na yo moko.
 assistant-shut-not-open = AFG efungwami te mpo na compte na yo: mokambi moko nde azwaka mokano na lokasa ya Ba-compte.
 assistant-shut-broken = Esika na yo efungwami te. Meka lisusu mwa moke sima; soki ekobi, yebisa mokambi.
 assistant-shut-gone = Eloko moko te awa: libongisi oyo to lisolo oyo ezali te, to ezali ya yo te.
 assistant-back-account = Zonga na compte na ngai
 assistant-new-project = Libongisi ya sika
-assistant-not-ready = Kalkile ya AFG ebongisami naino te: okoki kotanga masolo na yo, kasi kotinda nsango te. Mokambi nde abongisaka yango.
+assistant-not-ready = Misala ya AFG ebongisami naino te: kaka kotánga mpo na sikoyo.
 assistant-conversations-count = { $n ->
         [one] lisolo { $n }
        *[other] masolo { $n }
     }
 assistant-conduct-set = mibeko ya etamboli etyami
-assistant-empty = Libongisi moko te naino. Libongisi esangisaka masolo na likambo moko — lisolo ya libota, motuna ya bokolongono, koluka mosala — na nse ya mibeko moko ya etamboli.
+assistant-empty = Naino projet moko te. Projet esangisaka masolo na likambo moko.
 assistant-project-name = Nkombo ya libongisi
 assistant-create = Salá libongisi
 assistant-facts-count = { $n ->
@@ -5154,7 +5145,7 @@ afg-record-stale = Mokanda ebongwani na ntango yango. Fungola lokasa lisusu mpe 
 afg-record-refused = Ebombelo eboyi yango: { $reason }
 afg-record-summary-not-yours = Mosangani mosusu akomaki na mokuse oyo: kaka mokomi na yango to mokambi bakoki kobongola yango.
 afg-images = Bililingi
-afg-images-intro = Bililingi ya AFG euti wapi: elongi to foto oyo ebongisami na mokanda ya moto. Claude mpe ba-agent bakomaka kaka makomi, yango wana bililingi esengeli na mosala na yango moko: oyo efutamaka (OpenAI, Google, Canva) to masini ya libota oyo ezali na carte graphique.
+afg-images-intro = Bilili ya AFG euti wapi: mosala ya kofuta (OpenAI, Google, Canva) to masini ya libota na carte graphique.
 afg-image-kind = Mosala ya bililingi
 afg-image-kind-hint = Ba-modèle ya OpenAI mpe Google, AI ya Canva na konti na yo, to serveur ya libota: Ollama, serveur nyonso oyo ekokani na OpenAI, ComfyUI.
 afg-image-kind-off = Moko te

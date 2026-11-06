@@ -1,6 +1,6 @@
 # ADR 0032 — A Status tab, and fewer words
 
-**Status:** accepted (unreleased) · **Builds on:** the data-quality screen
+**Status:** accepted, v1.7.0 (2026-11-06) · **Builds on:** the data-quality screen
 (`src/quality.rs`), the record's tabs (v0.4.1) · **Applies to:**
 `src/person.rs`, `src/quality.rs`, `src/state.rs`, `src/routes/public.rs`,
 `templates/_person_detail.html`, `static/app.css`, `locales/*.ftl`,

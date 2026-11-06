@@ -115,6 +115,8 @@
 {% macro place(p) %}
   {%- if p -%}
     {%- if p.known -%}
+      {#- Its present-day country's flag (docs/adr/0035). -#}
+      {%- if p.flag %}<img class="flag" src="{{ p.flag }}" alt="" width="20" height="15"> {% endif -%}
       {{ p.name }}
       {%- if p.place_type %} <span class="small muted">({{ p.place_type }})</span>{% endif -%}
       {%- if p.country_history %}

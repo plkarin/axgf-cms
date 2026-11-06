@@ -8361,3 +8361,44 @@ a.kpi:hover { border-color: var(--border-strong); }
   position: absolute; inset-inline: 2.4rem 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-size: var(--type-micro); line-height: 18px; color: var(--text-secondary);
 }
+/* The graduation (docs/adr/0035): a line across the columns for each year
+   where a year has room, every ten stronger; a mark on the axis for each. */
+.ip-gl { position: absolute; inset-inline: 0; border-block-start: 1px solid var(--border-hairline); opacity: 0.35; pointer-events: none; }
+.ip-gl-strong { opacity: 0.8; }
+.ip-mt { position: absolute; inset-inline-end: 0; inline-size: 0.35rem; border-block-start: 1px solid var(--text-tertiary); pointer-events: none; }
+.ip-mt-strong { inline-size: 0.7rem; }
+/* What is pointed at: its years on the axis and across the timeline, its
+   bar lit. */
+.ip-axis-span {
+  position: absolute; inset-inline: 0.3rem 0; z-index: 1; border-radius: 3px;
+  background: var(--accent-soft); border-inline-end: 3px solid var(--accent);
+}
+.ip-axis-from {
+  position: absolute; inset-block-start: 0; inset-inline-start: 0; padding: 0 0.25rem;
+  border-radius: 3px; background: var(--accent); color: var(--on-accent);
+  font-size: var(--type-micro); font-weight: var(--weight-semi); white-space: nowrap;
+}
+.ip-band-ev { opacity: 0.45; border-block-color: var(--ip-k, var(--accent)); }
+.ip-bar.ip-lit { opacity: 1; inline-size: 6px; }
+.ip-ev { cursor: pointer; }
+.ip-ev.ip-lit { z-index: 6; box-shadow: 0 0 0 1px var(--accent), 0 4px 14px rgba(var(--shadow-rgb), 0.25); }
+.ip-more { display: none; }
+.ip-hint { margin: 0.35rem 0 0; }
+/* A landmark's window. */
+.ip-dialog {
+  max-inline-size: min(36rem, calc(100vw - 2rem)); padding: 1rem 1.25rem;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--surface-raised); color: var(--text-primary);
+  box-shadow: 0 12px 40px rgba(var(--shadow-rgb), 0.35);
+}
+.ip-dialog::backdrop { background: rgba(var(--shadow-rgb), 0.45); }
+.ip-dialog-close { float: inline-end; margin: 0 0 0.5rem 0.75rem; }
+.ip-more-name { margin: 0 0 0.2rem; font-size: var(--type-sub); }
+.ip-more-when { margin: 0 0 0.6rem; color: var(--text-secondary); font-size: var(--type-small); }
+.ip-dialog-body h3 { margin: 0.8rem 0 0.2rem; font-size: var(--type-label); font-weight: var(--weight-semi); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.ip-dialog-body p { margin: 0 0 0.4rem; }
+/* A country's flag beside its name, on the timeline and on a record. */
+.flag {
+  display: inline-block; inline-size: 1.25em; block-size: auto; aspect-ratio: 4 / 3;
+  vertical-align: -0.12em; border-radius: 2px; box-shadow: 0 0 0 1px var(--border-hairline);
+}

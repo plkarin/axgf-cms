@@ -1,26 +1,53 @@
-{#- A column of landmarks on the Impact timeline (docs/adr/0034): each
+{#- A column of landmarks on the Impact timeline (docs/adr/0034, 0035): each
     period's bar at its true years, each label at its year or, where the
-    labels above it leave no room, below it on a thread. Positions come from
-    crate::impact; nothing is drawn on a canvas. -#}
+    labels above it leave no room, below it on a thread. Pointing at a label
+    lights its years across the timeline and on the axis; choosing it opens
+    its window, with the context, what was at stake and the victims, kept in
+    the label until then. Positions come from crate::impact; nothing is drawn
+    on a canvas. -#}
 {% macro column(col, cls) -%}
 <div class="ip-col {{ cls }}" style="--ip-lane: {{ col.lane }}px">
   {%- for m in col.marks %}
-  {%- if m.bar %}<span class="ip-bar ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.bar_top }}px; height: {{ m.bar_height }}px; left: {{ m.bar_x }}px" data-from="{{ m.from }}" data-to="{{ m.to }}" aria-hidden="true"></span>{% endif %}
+  {%- if m.bar %}<span class="ip-bar ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.bar_top }}px; height: {{ m.bar_height }}px; left: {{ m.bar_x }}px" data-key="{{ m.key }}" data-from="{{ m.from }}" data-to="{{ m.to }}" aria-hidden="true"></span>{% endif %}
   {%- if m.moved %}<span class="ip-thread" style="top: {{ m.y }}px; height: {{ m.top - m.y }}px; left: {{ m.x }}px" aria-hidden="true"></span>{% endif %}
-  <div class="ip-ev ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.top }}px; left: {{ m.x }}px" data-from="{{ m.from }}" data-to="{{ m.to }}" title="{{ m.name }} · {{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}">
+  <div class="ip-ev ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.top }}px; left: {{ m.x }}px" data-key="{{ m.key }}" data-from="{{ m.from }}" data-to="{{ m.to }}" data-top="{{ m.bar_top }}" data-height="{{ m.bar_height if m.bar else 0 }}" data-span="{{ m.dates }}" tabindex="0" role="button" aria-haspopup="dialog" title="{{ m.name }} · {{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}">
     <span class="ip-ev-name">{{ m.name }}</span>
-    <span class="ip-ev-when">{{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}{% if m.tag_label %} · <span{% if m.tag | length == 2 %} data-country="{{ m.tag }}"{% endif %}>{{ m.tag_label }}</span>{% endif %}{% if m.age %} · <strong>{{ m.age }}</strong>{% endif %}</span>
+    <span class="ip-ev-when">{{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}{% if m.tag_label %} · {% if m.tag_flag %}<img class="flag" src="{{ m.tag_flag }}" alt="" width="16" height="12"> {% endif %}<span{% if m.tag | length == 2 %} data-country="{{ m.tag }}"{% endif %}>{{ m.tag_label }}</span>{% endif %}{% if m.age %} · <strong>{{ m.age }}</strong>{% endif %}</span>
     {%- if m.note %}<span class="ip-ev-note">{{ m.note }}</span>{% endif %}
+    <div class="ip-more" hidden>
+      <h2 class="ip-more-name">{{ m.name }}</h2>
+      <p class="ip-more-when">{{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}{% if m.tag_label %} · {% if m.tag_flag %}<img class="flag" src="{{ m.tag_flag }}" alt="" width="20" height="15"> {% endif %}{{ m.tag_label }}{% endif %}{% if m.age %} · <strong>{{ m.age }}</strong>{% endif %}</p>
+      {%- if m.note %}<p>{{ m.note }}</p>{% endif %}
+      {%- if m.context %}<h3>{{ t("impact-context") }}</h3><p>{{ m.context }}</p>{% endif %}
+      {%- if m.stakes %}<h3>{{ t("impact-stakes") }}</h3><p>{{ m.stakes }}</p>{% endif %}
+      {%- if m.victims %}<h3>{{ t("impact-victims") }}</h3><p>{{ m.victims }}</p>{% endif %}
+    </div>
   </div>
   {%- endfor %}
 </div>
 {%- endmacro %}
 
-{% macro axis(ticks) -%}
-{%- for k in ticks %}<span class="ip-rule" style="top: {{ k.y }}px" aria-hidden="true"></span>{% endfor %}
-<div class="ip-axis">{% for k in ticks %}<span class="ip-tick" style="top: {{ k.y }}px">{{ k.label }}</span>{% endfor %}</div>
+{#- The graduation (docs/adr/0035): a line across every column for each
+    year wherever a year has room, every ten of them stronger, and the years
+    written on the axis. The axis keeps the span of what is pointed at. -#}
+{% macro axis(ticks, grid) -%}
+{%- for g in grid %}<span class="ip-gl{{ ' ip-gl-strong' if g.strong }}" style="top: {{ g.y }}px" aria-hidden="true"></span>{% endfor %}
+<div class="ip-axis">
+  {%- for g in grid %}<span class="ip-mt{{ ' ip-mt-strong' if g.strong }}" style="top: {{ g.y }}px" aria-hidden="true"></span>{% endfor %}
+  {%- for k in ticks %}<span class="ip-tick" style="top: {{ k.y }}px">{{ k.label }}</span>{% endfor %}
+  <span class="ip-axis-span" hidden aria-hidden="true"><span class="ip-axis-from"></span><span class="ip-axis-to"></span></span>
+</div>
 {%- endmacro %}
 
 {% macro legend(kinds) -%}
 <ul class="ip-legend">{% for k in kinds %}<li class="ip-k-{{ k }}">{{ t("impact-kind-" ~ k) }}</li>{% endfor %}</ul>
+<p class="small muted ip-hint">{{ t("impact-hint") }}</p>
+{%- endmacro %}
+
+{#- The window a label opens: one for the page, filled from the label. -#}
+{% macro dialog() -%}
+<dialog class="ip-dialog" aria-labelledby="ip-dialog-title">
+  <form method="dialog" class="ip-dialog-close"><button class="btn small" value="close">{{ t("impact-close") }}</button></form>
+  <div class="ip-dialog-body" id="ip-dialog-title"></div>
+</dialog>
 {%- endmacro %}

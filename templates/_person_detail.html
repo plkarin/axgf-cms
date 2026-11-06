@@ -459,7 +459,7 @@
   <div class="grid cols-3">
     {% for pu in p.places %}
     <div class="card place-card">
-      <strong>{{ pu.place.name }}</strong>
+      {% if pu.place.flag %}<img class="flag" src="{{ pu.place.flag }}" alt="" width="20" height="15"> {% endif %}<strong>{{ pu.place.name }}</strong>
       {% if pu.place.place_type %}<span class="small muted">{{ pu.place.place_type }}</span>{% endif %}
       <ul class="plain small">{% for u in pu.uses %}<li>{{ u }}</li>{% endfor %}</ul>
       {% if pu.place.country_history %}

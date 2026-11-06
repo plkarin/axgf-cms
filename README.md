@@ -1063,3 +1063,11 @@ Developing: `cargo test`, `cargo clippy --all-targets -- -D warnings`,
 ## Licence
 
 Apache-2.0. See [LICENSE](LICENSE).
+
+Two sets of data are other people's, carried with their own licences: the
+countries' flags of the Impact timeline (`static/flags/`), from
+[flag-icons](https://github.com/lipis/flag-icons) under the MIT licence
+(`static/flags/LICENSE`); and the names of the populated places it reads a
+village's country from (`src/impact_places.txt`), from
+[GeoNames](https://www.geonames.org/) under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

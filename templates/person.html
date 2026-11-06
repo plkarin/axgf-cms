@@ -85,13 +85,16 @@
 
     {# Where they were, and how the record sits in the family. Each part is
        omitted when the bundle does not state it. #}
+    {#- A place is said with its country's flag (docs/adr/0035). #}
     {% set placing = [] %}
-    {% if p.birth.place %}{% set placing = placing + [t("person-born-in", place=p.birth.place.name, gender=p.sex)] %}{% endif %}
-    {% if p.death.place %}{% set placing = placing + [t("person-died-in", place=p.death.place.name, gender=p.sex)] %}{% endif %}
-    {% if p.header.children %}{% set placing = placing + [t("person-children-count", n=p.header.children)] %}{% endif %}
-    {% if p.header.generations_below %}{% set placing = placing + [t("person-generations-below", n=p.header.generations_below)] %}{% endif %}
+    {% if p.birth.place %}{% set placing = placing + [[p.birth.place.flag, t("person-born-in", place=p.birth.place.name, gender=p.sex)]] %}{% endif %}
+    {% if p.death.place %}{% set placing = placing + [[p.death.place.flag, t("person-died-in", place=p.death.place.name, gender=p.sex)]] %}{% endif %}
+    {% if p.header.children %}{% set placing = placing + [[none, t("person-children-count", n=p.header.children)]] %}{% endif %}
+    {% if p.header.generations_below %}{% set placing = placing + [[none, t("person-generations-below", n=p.header.generations_below)]] %}{% endif %}
     {% if placing %}
-    <p class="person-placing small muted">{{ placing | join(" · ") }}</p>
+    <p class="person-placing small muted">
+      {%- for flag, said in placing %}{% if not loop.first %} · {% endif %}{% if flag %}<img class="flag" src="{{ flag }}" alt="" width="20" height="15"> {% endif %}{{ said }}{% endfor -%}
+    </p>
     {% endif %}
   </div>
 

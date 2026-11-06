@@ -85,6 +85,10 @@ pub struct PlaceView {
     /// region, no country, no position. The commonest shape in a converted
     /// bundle, and the prompt for an editor to fill it in.
     pub thin: bool,
+    /// Its present-day country, as the Impact timeline reads it
+    /// (`impact::country_of_place`), and that country's flag.
+    pub country: Option<String>,
+    pub flag: Option<String>,
 }
 
 /// One period during which a state held a place.
@@ -1227,6 +1231,8 @@ impl Ctx<'_> {
                 known: false,
                 place_type: None,
                 country_current: None,
+                country: None,
+                flag: None,
                 country_history: Vec::new(),
                 note: None,
                 lat: None,
@@ -1292,6 +1298,8 @@ impl Ctx<'_> {
             known: true,
             place_type: str_field(p, "place_type").map(|t| t.replace('_', " ")),
             country_current: str_field(p, "country_current"),
+            country: crate::impact::country_of_place(p),
+            flag: crate::impact::country_of_place(p).and_then(|c| crate::impact::flag_url(&c)),
             country_history: history,
             note: str_field(p, "note"),
             lat,

@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Impact: the years, the windows and the flags (the operator's request of
+6 November 2026, docs/adr/0035).
+
+### Added
+
+- **A landmark pointed at** lights its true years across the timeline and on
+  the axis, and its bar, even when its label sits below them.
+- **A window for every landmark**, on a click or with Enter: its context,
+  what was at stake and its victims, for all 313 landmarks, in English and
+  French.
+- **A graduation by the year**: a line for each year wherever there is room,
+  every ten stronger, on every view.
+- **Flags**: the countries' flags beside a person's countries on the
+  timeline, and beside every place on a record.
+
+### Changed
+
+- **A village's country is found** from its name alone, in the populated
+  places of Poland, France, Belgium, Ukraine, the DR Congo and Haiti
+  (GeoNames), and from a place's region.
+
 ## [1.9.0] — 2026-11-06
 
 **Impact**, the Universal Synoptic Timeline (the operator's request of

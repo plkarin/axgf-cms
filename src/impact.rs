@@ -187,23 +187,25 @@ pub struct Landmark {
     notes: [String; 2],
 }
 
-impl Landmark {
-    fn pick<'a>(pair: &'a [String; 2], lang: &str) -> &'a str {
-        if lang.starts_with("fr") && !pair[1].is_empty() {
-            &pair[1]
-        } else {
-            &pair[0]
-        }
+/// The French of a pair when the reader reads French and there is one, the
+/// English otherwise.
+fn pick<'a>(pair: &'a [String; 2], lang: &str) -> &'a str {
+    if lang.starts_with("fr") && !pair[1].is_empty() {
+        &pair[1]
+    } else {
+        &pair[0]
     }
+}
 
+impl Landmark {
     /// Its name in the reader's language: French or English.
     pub fn name(&self, lang: &str) -> &str {
-        Self::pick(&self.names, lang)
+        pick(&self.names, lang)
     }
 
     /// Its explanation, when the catalogue gives one.
     pub fn note(&self, lang: &str) -> &str {
-        Self::pick(&self.notes, lang)
+        pick(&self.notes, lang)
     }
 
     pub fn start(&self) -> f64 {
@@ -329,6 +331,68 @@ pub fn catalogue() -> &'static [Landmark] {
                 }
             })
             .collect()
+    })
+}
+
+/// What a landmark's window says of it (the operator's request of
+/// 6 November 2026): the context, what was at stake, and the victims where
+/// there were, in English and French.
+#[derive(Debug, Clone, Default)]
+pub struct Details {
+    pub context: [String; 2],
+    pub stakes: [String; 2],
+    pub victims: [String; 2],
+}
+
+const DETAILS: &str = include_str!("impact_details.txt");
+
+/// The details, read: by landmark key, or what is wrong with a line.
+pub fn parsed_details() -> Result<HashMap<String, Details>, String> {
+    let mut out: HashMap<String, Details> = HashMap::new();
+    let mut key: Option<String> = None;
+    for (i, line) in DETAILS.lines().enumerate() {
+        let line = line.trim_end();
+        if line.is_empty() || (line.starts_with('#') && !line.starts_with("## ")) {
+            continue;
+        }
+        if let Some(k) = line.strip_prefix("## ") {
+            let k = k.trim().to_string();
+            if out.contains_key(&k) {
+                return Err(format!("line {}: {k} twice", i + 1));
+            }
+            out.insert(k.clone(), Details::default());
+            key = Some(k);
+            continue;
+        }
+        let f: Vec<&str> = line.split('|').map(str::trim).collect();
+        let which = match f.first() {
+            Some(&"en") => 0,
+            Some(&"fr") => 1,
+            _ => return Err(format!("line {}: {line:?}", i + 1)),
+        };
+        if f.len() != 4 || f[1].is_empty() {
+            return Err(format!("line {}: {} fields", i + 1, f.len()));
+        }
+        let d = key
+            .as_ref()
+            .and_then(|k| out.get_mut(k))
+            .ok_or_else(|| format!("line {}: no landmark", i + 1))?;
+        d.context[which] = f[1].to_string();
+        d.stakes[which] = f[2].to_string();
+        d.victims[which] = f[3].to_string();
+    }
+    Ok(out)
+}
+
+/// The details, read once; none when they cannot be read (the unit tests
+/// say why).
+pub fn details() -> &'static HashMap<String, Details> {
+    static DETAILED: OnceLock<HashMap<String, Details>> = OnceLock::new();
+    DETAILED.get_or_init(|| {
+        parsed_details().unwrap_or_else(|e| {
+            tracing::warn!(error = %e, "impact: the landmarks' details left out");
+            HashMap::new()
+        })
     })
 }
 
@@ -1018,8 +1082,98 @@ fn lookup(table: &[(&str, &'static str)], name: &str) -> Option<&'static str> {
     table.iter().find(|(k, _)| *k == f).map(|(_, iso)| *iso)
 }
 
+/// Every populated place of a few countries (Poland, France, Belgium,
+/// Ukraine, the DR Congo, Haiti), by its folded name, from GeoNames
+/// (geonames.org, CC BY 4.0): the villages a family's records name alone.
+/// A name two of them share is not in it.
+const GAZETTEER: &str = include_str!("impact_places.txt");
+
+/// Words a record writes for a country or a continent, never looked for in
+/// the gazetteer.
+const NOT_VILLAGES: &[&str] = &[
+    "congo", "europe", "afrique", "africa", "amerique", "america", "asie", "asia", "oceanie",
+];
+
+fn gazetteer() -> &'static HashMap<&'static str, &'static str> {
+    static PLACES: OnceLock<HashMap<&'static str, &'static str>> = OnceLock::new();
+    PLACES.get_or_init(|| {
+        let mut m = HashMap::new();
+        for line in GAZETTEER.lines().filter(|l| !l.starts_with('#')) {
+            let mut fields = line.split('|');
+            let Some(iso) = fields.next() else {
+                continue;
+            };
+            for name in fields {
+                m.insert(name, iso);
+            }
+        }
+        m
+    })
+}
+
+/// A country's flag as an SVG, for the countries the resolver can name
+/// (flag-icons 7.2.3, MIT: `static/flags/LICENSE`).
+pub fn flag_svg(iso: &str) -> Option<&'static str> {
+    Some(match iso {
+        "AO" => include_str!("../static/flags/ao.svg"),
+        "AR" => include_str!("../static/flags/ar.svg"),
+        "AT" => include_str!("../static/flags/at.svg"),
+        "AU" => include_str!("../static/flags/au.svg"),
+        "BE" => include_str!("../static/flags/be.svg"),
+        "BI" => include_str!("../static/flags/bi.svg"),
+        "BR" => include_str!("../static/flags/br.svg"),
+        "BY" => include_str!("../static/flags/by.svg"),
+        "CA" => include_str!("../static/flags/ca.svg"),
+        "CD" => include_str!("../static/flags/cd.svg"),
+        "CG" => include_str!("../static/flags/cg.svg"),
+        "CH" => include_str!("../static/flags/ch.svg"),
+        "CI" => include_str!("../static/flags/ci.svg"),
+        "CM" => include_str!("../static/flags/cm.svg"),
+        "CN" => include_str!("../static/flags/cn.svg"),
+        "CZ" => include_str!("../static/flags/cz.svg"),
+        "DE" => include_str!("../static/flags/de.svg"),
+        "DZ" => include_str!("../static/flags/dz.svg"),
+        "ES" => include_str!("../static/flags/es.svg"),
+        "FR" => include_str!("../static/flags/fr.svg"),
+        "GB" => include_str!("../static/flags/gb.svg"),
+        "GR" => include_str!("../static/flags/gr.svg"),
+        "HT" => include_str!("../static/flags/ht.svg"),
+        "HU" => include_str!("../static/flags/hu.svg"),
+        "IE" => include_str!("../static/flags/ie.svg"),
+        "IL" => include_str!("../static/flags/il.svg"),
+        "IN" => include_str!("../static/flags/in.svg"),
+        "IT" => include_str!("../static/flags/it.svg"),
+        "JP" => include_str!("../static/flags/jp.svg"),
+        "LB" => include_str!("../static/flags/lb.svg"),
+        "LT" => include_str!("../static/flags/lt.svg"),
+        "LU" => include_str!("../static/flags/lu.svg"),
+        "MA" => include_str!("../static/flags/ma.svg"),
+        "MX" => include_str!("../static/flags/mx.svg"),
+        "NL" => include_str!("../static/flags/nl.svg"),
+        "PL" => include_str!("../static/flags/pl.svg"),
+        "PT" => include_str!("../static/flags/pt.svg"),
+        "RO" => include_str!("../static/flags/ro.svg"),
+        "RU" => include_str!("../static/flags/ru.svg"),
+        "RW" => include_str!("../static/flags/rw.svg"),
+        "SN" => include_str!("../static/flags/sn.svg"),
+        "TN" => include_str!("../static/flags/tn.svg"),
+        "TR" => include_str!("../static/flags/tr.svg"),
+        "UA" => include_str!("../static/flags/ua.svg"),
+        "US" => include_str!("../static/flags/us.svg"),
+        "VN" => include_str!("../static/flags/vn.svg"),
+        "ZA" => include_str!("../static/flags/za.svg"),
+        _ => return None,
+    })
+}
+
+/// Where the page finds a country's flag, when there is one.
+pub fn flag_url(iso: &str) -> Option<String> {
+    flag_svg(iso).map(|_| format!("/static/flags/{}.svg", iso.to_ascii_lowercase()))
+}
+
 /// The present-day country of a place: the one it states, the one the last
-/// part of its name names, or the one a well-known city in it is in.
+/// part of its name names, the one a well-known city in it is in, the one
+/// its region names, or the one a populated place of that name is in.
 pub fn country_of_place(place: &Value) -> Option<String> {
     if let Some(c) = place.get("country_current").and_then(Value::as_str) {
         let c = c.trim();
@@ -1047,6 +1201,31 @@ pub fn country_of_place(place: &Value) -> Option<String> {
             return Some(iso.to_string());
         }
         if let Some(iso) = parts.first().and_then(|p| lookup(CITIES, p)) {
+            return Some(iso.to_string());
+        }
+    }
+    if let Some(iso) = place
+        .get("region")
+        .and_then(Value::as_str)
+        .and_then(|r| lookup(COUNTRY_NAMES, r))
+    {
+        return Some(iso.to_string());
+    }
+    for n in names.into_iter().flatten() {
+        let first = n
+            .get("value")
+            .and_then(Value::as_str)
+            .and_then(|v| v.split(',').map(str::trim).find(|p| !p.is_empty()));
+        let Some(name) = first.map(fold) else {
+            continue;
+        };
+        // A word that names a country or a continent rather than a place
+        // ("Congo" could be either Congo, and a hamlet in Haiti) is not
+        // looked for as a village.
+        if NOT_VILLAGES.contains(&name.as_str()) {
+            continue;
+        }
+        if let Some(iso) = gazetteer().get(name.as_str()) {
             return Some(iso.to_string());
         }
     }
@@ -1366,6 +1545,31 @@ impl Scale {
         }
         kept
     }
+
+    /// The graduation (the operator's request of 6 November 2026): a mark
+    /// for every year wherever a year has four pixels, for every five, ten,
+    /// twenty-five… years where it has not. Each with its step.
+    pub fn grid(&self) -> Vec<(f64, f64)> {
+        const STEPS: [f64; 9] = [1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1_000.0];
+        let mut out = Vec::new();
+        for w in self.stops.windows(2) {
+            let ((y0, p0), (y1, p1)) = (w[0], w[1]);
+            if y1 <= y0 {
+                continue;
+            }
+            let per_year = (p1 - p0) / (y1 - y0);
+            let step = STEPS
+                .into_iter()
+                .find(|s| s * per_year >= 4.0)
+                .unwrap_or(2_500.0);
+            let mut t = (y0 / step).ceil() * step;
+            while t < y1 {
+                out.push((t, step));
+                t += step;
+            }
+        }
+        out
+    }
 }
 
 /// A year written on the axis.
@@ -1373,6 +1577,26 @@ impl Scale {
 pub struct Tick {
     pub y: i64,
     pub label: String,
+}
+
+/// A line of the graduation, across every column; the strong ones every ten
+/// marks.
+#[derive(Debug, Clone, Serialize)]
+pub struct GridLine {
+    pub y: i64,
+    pub strong: bool,
+}
+
+fn grid(scale: &Scale) -> Vec<GridLine> {
+    scale
+        .grid()
+        .into_iter()
+        .map(|(t, step)| GridLine {
+            y: scale.y(t).round() as i64,
+            strong: (t / (step * 10.0)).fract() == 0.0
+                || step >= 100.0 && (t / 1_000.0).fract() == 0.0,
+        })
+        .collect()
 }
 
 fn ticks(scale: &Scale, lang: &str) -> Vec<Tick> {
@@ -1459,6 +1683,12 @@ pub struct Mark {
     /// that holds several: its key, and its name for the page.
     pub tag: String,
     pub tag_label: String,
+    /// The country's flag, when it is about one.
+    pub tag_flag: Option<String>,
+    /// What its window says: the context, what was at stake, the victims.
+    pub context: String,
+    pub stakes: String,
+    pub victims: String,
     /// Its years, for the page's script.
     pub from: f64,
     pub to: f64,
@@ -1534,6 +1764,7 @@ fn column(
         .map(|(i, (l, tag))| {
             let (lane, top) = placed[i];
             let bar_at = periods.iter().position(|&p| p == i);
+            let more = details().get(&l.key);
             let to_year = l.to.map(|t| t.year);
             Mark {
                 key: l.key.clone(),
@@ -1547,6 +1778,16 @@ fn column(
                 },
                 tag: tag.clone(),
                 tag_label: tag_label(tag, lang),
+                tag_flag: (tag.len() == 2).then(|| flag_url(tag)).flatten(),
+                context: more
+                    .map(|d| pick(&d.context, lang).to_string())
+                    .unwrap_or_default(),
+                stakes: more
+                    .map(|d| pick(&d.stakes, lang).to_string())
+                    .unwrap_or_default(),
+                victims: more
+                    .map(|d| pick(&d.victims, lang).to_string())
+                    .unwrap_or_default(),
                 from: l.start(),
                 to: l.end(now),
                 bar: bar_at.is_some(),
@@ -1593,6 +1834,7 @@ pub struct LifeMark {
 pub struct Family {
     pub height: i64,
     pub ticks: Vec<Tick>,
+    pub grid: Vec<GridLine>,
     pub world: Column,
     pub continents: Column,
     /// The continents the family lived on, the commonest first.
@@ -1703,6 +1945,7 @@ pub fn family(flat: &Value, lens: &Lens, lang: &str, span: Span, now: f64) -> Fa
     Family {
         height: scale.height().ceil() as i64,
         ticks: ticks(&scale, lang),
+        grid: grid(&scale),
         world,
         continents: continents_col,
         continent_keys: continents.iter().map(|c| c.slug()).collect(),
@@ -1736,6 +1979,14 @@ pub struct Held {
     pub states: Vec<String>,
 }
 
+/// A country of a person's life, for the page.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct Country {
+    pub iso: String,
+    pub name: String,
+    pub flag: Option<String>,
+}
+
 /// One person's view.
 #[derive(Debug, Clone, Serialize)]
 pub struct Person {
@@ -1744,12 +1995,13 @@ pub struct Person {
     pub years: String,
     pub height: i64,
     pub ticks: Vec<Tick>,
+    pub grid: Vec<GridLine>,
     pub life: LifeMark,
     pub milestones: Vec<Milestone>,
     pub wide: Column,
     pub near: Column,
     /// (ISO code, name) of their countries.
-    pub countries: Vec<(String, String)>,
+    pub countries: Vec<Country>,
     pub continent_keys: Vec<&'static str>,
     pub held: Vec<Held>,
 }
@@ -2033,6 +2285,7 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
         years: life.years.clone(),
         height: scale.height().ceil() as i64,
         ticks: ticks(&scale, lang),
+        grid: grid(&scale),
         life: life_mark,
         milestones,
         wide: wide_col,
@@ -2040,7 +2293,11 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
         countries: life
             .countries
             .iter()
-            .map(|c| (c.clone(), country_name(c, lang)))
+            .map(|c| Country {
+                iso: c.clone(),
+                name: country_name(c, lang),
+                flag: flag_url(c),
+            })
             .collect(),
         continent_keys: continents.iter().map(|c| c.slug()).collect(),
         held: held(flat, p, &life, idx.places.get(id)),
@@ -2080,6 +2337,76 @@ mod tests {
         assert!(world
             .iter()
             .any(|l| l.name("en") == "Russian invasion of Ukraine" && l.ongoing));
+    }
+
+    #[test]
+    fn every_landmark_opens_on_its_context_in_both_languages() {
+        let details = parsed_details().unwrap_or_else(|e| panic!("{e}"));
+        let keys: std::collections::HashSet<&str> =
+            catalogue().iter().map(|l| l.key.as_str()).collect();
+        for k in details.keys() {
+            assert!(keys.contains(k.as_str()), "{k}: no such landmark");
+        }
+        for l in catalogue() {
+            let d = details
+                .get(&l.key)
+                .unwrap_or_else(|| panic!("{}: no details", l.key));
+            for i in 0..2 {
+                assert!(!d.context[i].is_empty(), "{}: context", l.key);
+                assert!(!d.stakes[i].is_empty(), "{}: stakes", l.key);
+            }
+            assert_eq!(
+                d.victims[0].is_empty(),
+                d.victims[1].is_empty(),
+                "{}: victims in one language only",
+                l.key
+            );
+        }
+        // A war says who died.
+        let ww2 = &details["1939-09-01-second-world-war"];
+        assert!(ww2.victims[1].starts_with("70 à 85 millions"));
+    }
+
+    #[test]
+    fn a_village_named_alone_finds_its_country_and_its_flag() {
+        let place = |v: Value| country_of_place(&v);
+        assert_eq!(
+            place(json!({"names": [{"value": "Słomniki"}]})),
+            Some("PL".into())
+        );
+        assert_eq!(
+            place(json!({"names": [{"value": "Miechów"}]})),
+            Some("PL".into())
+        );
+        assert_eq!(
+            place(json!({"names": [{"value": "Sainte-Colombe-sur-Gand"}]})),
+            Some("FR".into())
+        );
+        assert_eq!(
+            place(json!({"names": [{"value": "x"}], "region": "Pologne"})),
+            Some("PL".into())
+        );
+        assert_eq!(flag_url("PL").as_deref(), Some("/static/flags/pl.svg"));
+        assert!(flag_svg("FR").is_some_and(|s| s.contains("<svg")));
+        assert_eq!(flag_url("ZZ"), None);
+    }
+
+    #[test]
+    fn the_graduation_marks_every_year_where_a_year_has_room() {
+        let s = Scale::linear(1900.0, 1950.0, 12.0);
+        let g = s.grid();
+        assert_eq!(g.len(), 50, "a line a year");
+        assert!(g.iter().all(|(_, step)| *step == 1.0));
+        let lines = grid(&s);
+        assert!(
+            lines.iter().filter(|l| l.strong).count() == 5,
+            "every ten years"
+        );
+        // All of history: years where the family lived, centuries at the top.
+        let h = Scale::history(2026.0);
+        let g = h.grid();
+        assert!(g.iter().any(|(t, step)| *t == 1914.0 && *step == 1.0));
+        assert!(g.iter().all(|(t, step)| *t >= -3_500.0 || *step >= 100.0));
     }
 
     #[test]
@@ -2247,7 +2574,14 @@ mod tests {
         let flat = family_flat();
         let lens = Lens::unrestricted();
         let p = person(&flat, &lens, "a", "fr", 2026.0).unwrap();
-        assert_eq!(p.countries, [("PL".to_string(), "Pologne".to_string())]);
+        assert_eq!(
+            p.countries,
+            [Country {
+                iso: "PL".into(),
+                name: "Pologne".into(),
+                flag: Some("/static/flags/pl.svg".into()),
+            }]
+        );
         let ww1 = p
             .wide
             .marks

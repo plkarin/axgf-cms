@@ -818,6 +818,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/editor.js", get(public::editor_js))
         .route("/static/notes.js", get(public::notes_js))
         .route("/static/impact.js", get(impact::script))
+        .route("/static/flags/:file", get(impact::flag))
         .route("/static/ui.js", get(public::ui_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))

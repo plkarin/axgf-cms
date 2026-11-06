@@ -13,7 +13,7 @@
   <p class="small"><a href="/impact">{{ t("impact-back") }}</a></p>
   <h1>{{ t("impact-person-title", name=p.name) }}</h1>
   <p class="lede">{{ p.years }}
-    {%- for c in p.countries %}{{ " · " if loop.first else ", " }}<span data-country="{{ c[0] }}">{{ c[1] }}</span>{% endfor %}</p>
+    {%- for c in p.countries %}{{ " · " if loop.first else ", " }}{% if c.flag %}<img class="flag" src="{{ c.flag }}" alt="" width="20" height="15"> {% endif %}<span data-country="{{ c.iso }}">{{ c.name }}</span>{% endfor %}</p>
   <p><a class="btn" href="/person/{{ p.id }}">{{ t("impact-record") }}</a></p>
   {%- if p.held %}
   <details class="ip-held">
@@ -30,10 +30,11 @@
     <span class="ip-h">{{ t("impact-col-world") }}
       {%- for c in p.continent_keys %} · {{ t("impact-continent-" ~ c) }}{% endfor %}</span>
     <span class="ip-h">{{ t("impact-col-life") }}</span>
-    <span class="ip-h">{{ t("impact-col-country") }}</span>
+    <span class="ip-h">{{ t("impact-col-country") }}{% for c in p.countries %}{% if c.flag %} <img class="flag" src="{{ c.flag }}" alt="" width="20" height="15">{% endif %}{% endfor %}</span>
     <div class="ip-time" style="height: {{ p.height }}px" data-impact data-from="{{ p.life.from }}" data-to="{{ p.life.to }}">
-      {{ ip.axis(p.ticks) }}
+      {{ ip.axis(p.ticks, p.grid) }}
       <div class="ip-band ip-band-own" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" aria-hidden="true"></div>
+      <div class="ip-band ip-band-ev" hidden></div>
       {{ ip.column(p.wide, "ip-wide") }}
       <div class="ip-col ip-own">
         <span class="ip-life ip-life-own{{ ' ip-pin' if p.life.pin }}{{ ' ip-living' if p.life.living }}{{ ' ip-fuzzy-from' if p.life.fuzzy_from }}{{ ' ip-fuzzy-to' if p.life.fuzzy_to }}" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" title="{{ p.name }} · {{ p.years }}"></span>
@@ -45,6 +46,7 @@
     </div>
   </div>
 </div>
+{{ ip.dialog() }}
 {% endblock %}
 
 {% block scripts %}<script src="/static/impact.js?v={{ version }}"></script>{% endblock %}

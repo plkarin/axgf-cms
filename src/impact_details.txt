@@ -1,0 +1,944 @@
+# What each landmark's window says (docs/adr/0035): under "## <key>" (the
+# landmark's year and English name, as src/impact.rs keys it), one line per
+# language, en|context|stakes|victims and fr|context|stakes|victims. The
+# victims may be empty: a period or a moment had none to count.
+
+## -10000-end-of-the-last-ice-age-and-the-neolithic-revolution
+en|As the ice retreated, people in the Fertile Crescent began to farm, herd animals and live in villages.|Settled life, food surpluses and rising populations: the ground of every later civilisation.|
+fr|Avec le recul des glaces, des groupes du Croissant fertile se mettent à cultiver, à élever et à vivre en villages.|La sédentarité, les surplus et la croissance démographique, socle de toutes les civilisations suivantes.|
+## -9500-gobekli-tepe-monumental-site-in-anatolia
+en|Hunter-gatherers raised carved stone pillars in circles on a hill of south-eastern Turkey.|The oldest known monumental site, older than farming there: belief may have come before the field.|
+fr|Des chasseurs-cueilleurs dressent en cercles des piliers de pierre sculptés sur une colline du sud-est de la Turquie.|Le plus ancien site monumental connu, antérieur à l'agriculture sur place : la croyance a peut-être précédé le champ.|
+## -8000-neolithic-migrations-from-the-near-east-to-europe
+en|Farmers from Anatolia spread across Europe over millennia, mixing with its hunter-gatherers.|Farming, pottery and new genes reached Europe; most Europeans descend in part from these farmers.|
+fr|Des agriculteurs venus d'Anatolie se répandent en Europe pendant des millénaires et s'y mêlent aux chasseurs-cueilleurs.|L'agriculture, la poterie et de nouveaux gènes gagnent l'Europe ; la plupart des Européens descendent en partie de ces paysans.|
+## -5000-austronesian-expansion-from-south-east-asia-to-the-pacific
+en|Seafarers from Taiwan and the Philippines sailed outrigger canoes across the Pacific and the Indian Ocean.|The widest spread of one language family before 1500, from Madagascar to Easter Island.|
+fr|Des navigateurs partis de Taïwan et des Philippines traversent le Pacifique et l'océan Indien en pirogues à balancier.|La plus vaste diffusion d'une famille de langues avant 1500, de Madagascar à l'île de Pâques.|
+## -3500-sumerian-civilisation-and-cuneiform-writing
+en|In Mesopotamia, city-states such as Uruk grew around temples and irrigation; scribes pressed signs into clay.|Writing was born to count goods and became the memory of laws, myths and history.|
+fr|En Mésopotamie, des cités-États comme Uruk grandissent autour des temples et de l'irrigation ; les scribes impriment des signes dans l'argile.|L'écriture naît pour compter et devient la mémoire des lois, des mythes et de l'histoire.|
+## -3100-ancient-egypt-from-unification-to-the-roman-conquest
+en|Upper and Lower Egypt were united under the pharaohs, a kingdom living from the Nile's yearly flood.|Three thousand years of state, writing, monuments and religion, ended by Rome in 30 BC.|
+fr|La Haute et la Basse-Égypte sont unies sous les pharaons, un royaume qui vit de la crue annuelle du Nil.|Trois mille ans d'État, d'écriture, de monuments et de religion, auxquels Rome met fin en 30 av. J.-C.|
+## -2600-the-great-pyramid-of-khufu
+en|Built at Giza as the tomb of the pharaoh Khufu by tens of thousands of organised workers.|The power of a state able to command such labour; the tallest building on earth for 3,800 years.|
+fr|Bâtie à Gizeh pour le tombeau du pharaon Khéops par des dizaines de milliers d'ouvriers organisés.|La puissance d'un État capable de mobiliser un tel travail ; le plus haut édifice du monde pendant 3 800 ans.|
+## -2500-indus-valley-civilisation-harappa
+en|Planned brick cities with drains and granaries along the Indus, in today's Pakistan and India.|One of the first urban civilisations; its script is still undeciphered.|
+fr|Des villes de brique planifiées, avec égouts et greniers, le long de l'Indus, au Pakistan et en Inde actuels.|L'une des premières civilisations urbaines ; son écriture n'est toujours pas déchiffrée.|
+## -2334-akkadian-empire
+en|Sargon of Akkad united the cities of Mesopotamia under one ruler.|Often called the first empire: one king over many peoples.|
+fr|Sargon d'Akkad réunit les cités de Mésopotamie sous un seul souverain.|Souvent dit le premier empire : un seul roi pour de nombreux peuples.|
+## -1792-height-of-babylon-code-of-hammurabi
+en|King Hammurabi made Babylon the centre of Mesopotamia and had his laws carved on stone.|One of the oldest written codes of law, with set penalties.|
+fr|Le roi Hammurabi fait de Babylone le centre de la Mésopotamie et fait graver ses lois dans la pierre.|L'un des plus anciens codes de lois écrits, avec des peines fixées.|
+## -1600-shang-dynasty-in-china
+en|Bronze-working kings ruled the Yellow River plain and consulted oracle bones.|The first Chinese writing that survives, ancestor of today's characters.|
+fr|Des rois maîtres du bronze règnent sur la plaine du fleuve Jaune et consultent des os oraculaires.|La plus ancienne écriture chinoise conservée, ancêtre des caractères actuels.|
+## -1500-olmec-civilisation-mesoamerica
+en|On the Gulf coast of Mexico, the Olmecs built ceremonial centres and carved colossal stone heads.|A mother culture of Mesoamerica, whose gods and calendars later peoples inherited.|
+fr|Sur la côte du golfe du Mexique, les Olmèques bâtissent des centres cérémoniels et sculptent des têtes colossales.|Une culture mère de la Mésoamérique, dont les peuples suivants héritent dieux et calendriers.|
+## -1200-late-bronze-age-collapse
+en|Within a few decades, palaces and kingdoms around the eastern Mediterranean fell, amid drought, raids and revolts.|The end of the Hittites and the Mycenaeans; a dark age before the Greek and Phoenician revival.|Unknown; cities burnt and abandoned.
+fr|En quelques décennies, palais et royaumes de Méditerranée orientale s'effondrent, entre sécheresses, raids et révoltes.|La fin des Hittites et des Mycéniens ; un âge sombre avant le renouveau grec et phénicien.|Inconnues ; des villes incendiées et abandonnées.
+## -1000-nok-culture-west-africa
+en|In today's Nigeria, the Nok people smelted iron and made striking terracotta sculptures.|Early ironworking south of the Sahara and one of Africa's oldest sculpture traditions.|
+fr|Dans l'actuel Nigeria, le peuple nok fond le fer et façonne de remarquables sculptures en terre cuite.|Une métallurgie du fer précoce au sud du Sahara et l'une des plus anciennes traditions sculpturales d'Afrique.|
+## -1000-kingdom-of-kush-and-the-rise-of-aksum
+en|Kush, on the Nile in today's Sudan, ruled Egypt for a century; later Aksum rose in the Ethiopian highlands.|African kingdoms trading between the Mediterranean, Arabia and India; Aksum became Christian in the 4th century.|
+fr|Koush, sur le Nil dans l'actuel Soudan, gouverne l'Égypte pendant un siècle ; plus tard Aksoum s'élève sur les hauts plateaux éthiopiens.|Des royaumes africains commerçant entre Méditerranée, Arabie et Inde ; Aksoum devient chrétien au IVᵉ siècle.|
+## -814-carthage
+en|A Phoenician colony in today's Tunisia that grew into a maritime power.|Rome's great rival for the western Mediterranean, destroyed in 146 BC.|
+fr|Une colonie phénicienne de l'actuelle Tunisie devenue une puissance maritime.|La grande rivale de Rome en Méditerranée occidentale, détruite en 146 av. J.-C.|
+## -776-first-ancient-olympic-games
+en|Greek city-states held games at Olympia in honour of Zeus, under a sacred truce.|A shared Greek identity; the Greeks later counted years in Olympiads.|
+fr|Les cités grecques organisent des jeux à Olympie en l'honneur de Zeus, sous une trêve sacrée.|Une identité grecque commune ; les Grecs comptent ensuite les années en olympiades.|
+## -753-rome-foundation-republic-empire
+en|By legend founded in 753 BC, Rome became a republic, then an empire around the Mediterranean.|Its law, roads, Latin and, later, Christianity shaped Europe; the West fell in 476.|
+fr|Fondée selon la légende en 753 av. J.-C., Rome devient une république puis un empire autour de la Méditerranée.|Son droit, ses routes, le latin puis le christianisme façonnent l'Europe ; l'Occident tombe en 476.|
+## -500-birth-of-buddhism-and-confucianism
+en|The Buddha in India and Confucius in China taught around the 6th and 5th centuries BC.|Two ways of life and thought that still guide hundreds of millions of people.|
+fr|Le Bouddha en Inde et Confucius en Chine enseignent vers les VIᵉ et Vᵉ siècles av. J.-C.|Deux voies de vie et de pensée qui guident encore des centaines de millions de personnes.|
+## -539-achaemenid-empire-persia
+en|Cyrus the Great took Babylon and founded an empire from the Indus to the Aegean.|The largest empire of its time, known for its roads and its tolerance of local customs.|
+fr|Cyrus le Grand prend Babylone et fonde un empire de l'Indus à la mer Égée.|Le plus vaste empire de son temps, connu pour ses routes et sa tolérance envers les coutumes locales.|
+## -322-maurya-empire-india
+en|Chandragupta united most of India; his grandson Ashoka embraced Buddhism after a bloody war.|India's first great empire; Ashoka's edicts spread Buddhism across Asia.|
+fr|Chandragupta unifie l'essentiel de l'Inde ; son petit-fils Ashoka embrasse le bouddhisme après une guerre sanglante.|Le premier grand empire indien ; les édits d'Ashoka diffusent le bouddhisme en Asie.|
+## -221-qin-dynasty-china-unified-the-great-wall
+en|The king of Qin conquered the warring states and became China's first emperor.|One script, one currency, one law: the unified China that lasted; early walls joined against the north.|
+fr|Le roi de Qin conquiert les royaumes combattants et devient le premier empereur de Chine.|Une écriture, une monnaie, une loi : la Chine unifiée qui a duré ; de premières murailles réunies face au nord.|
+## -202-han-dynasty-and-the-silk-road
+en|The Han ruled China for four centuries and opened trade routes to Central Asia and Rome.|Silk, ideas and religions travelled the Silk Road; the Chinese still call themselves Han.|
+fr|Les Han gouvernent la Chine pendant quatre siècles et ouvrent des routes commerciales vers l'Asie centrale et Rome.|Soie, idées et religions circulent sur la route de la soie ; les Chinois se disent encore Han.|
+## 100-teotihuacan-and-classic-maya-civilisation
+en|Teotihuacan, near today's Mexico City, was one of the world's largest cities; the Maya built cities in the forests to the south.|Writing, astronomy and calendars of great precision in the Americas.|
+fr|Teotihuacan, près de l'actuelle Mexico, est l'une des plus grandes villes du monde ; les Mayas bâtissent leurs cités dans les forêts du sud.|L'écriture, l'astronomie et des calendriers d'une grande précision dans les Amériques.|
+## 320-gupta-empire-india
+en|The Gupta kings ruled northern India in a time of peace and learning.|A classical age: the decimal system with zero, Sanskrit literature, temples.|
+fr|Les rois Gupta règnent sur l'Inde du Nord dans une période de paix et de savoir.|Un âge classique : la numération décimale avec le zéro, la littérature sanskrite, les temples.|
+## 375-migration-period-barbarian-invasions
+en|Pushed by the Huns, Goths, Franks, Vandals and other peoples entered the Roman Empire.|The Western Empire broke into kingdoms that became the nations of Europe.|
+fr|Poussés par les Huns, Goths, Francs, Vandales et d'autres peuples entrent dans l'Empire romain.|L'Empire d'Occident se brise en royaumes, futurs pays d'Europe.|
+## 476-fall-of-the-western-roman-empire
+en|The Germanic general Odoacer deposed Romulus Augustulus, the last emperor in the West.|The conventional end of Antiquity; the Eastern Empire lasted until 1453.|
+fr|Le général germanique Odoacre dépose Romulus Augustule, dernier empereur d'Occident.|La fin conventionnelle de l'Antiquité ; l'Empire d'Orient dure jusqu'en 1453.|
+## 500-bantu-migrations-central-and-southern-africa
+en|Bantu-speaking farmers and ironworkers spread from West-Central Africa across the south of the continent over centuries.|Today most of central, eastern and southern Africa speaks Bantu languages, Lingala and Swahili among them.|
+fr|Des agriculteurs et forgerons de langues bantoues se répandent pendant des siècles de l'Afrique centrale occidentale vers le sud du continent.|Aujourd'hui, l'essentiel de l'Afrique centrale, orientale et australe parle des langues bantoues, dont le lingala et le swahili.|
+## -499-greco-persian-wars
+en|Greek cities, led by Athens and Sparta, resisted Persian invasions at Marathon, Thermopylae and Salamis.|Greek independence, and the confidence of classical Athens.|Unknown; tens of thousands in the great battles.
+fr|Les cités grecques, menées par Athènes et Sparte, repoussent les invasions perses à Marathon, aux Thermopyles et à Salamine.|L'indépendance grecque et l'assurance de l'Athènes classique.|Inconnues ; des dizaines de milliers dans les grandes batailles.
+## -431-peloponnesian-war
+en|Athens and its maritime league fought Sparta and its allies for dominance over Greece.|Sparta won; the Greek cities came out exhausted.|The plague of Athens alone killed perhaps a quarter of its people.
+fr|Athènes et sa ligue maritime affrontent Sparte et ses alliés pour la domination de la Grèce.|Sparte l'emporte ; les cités grecques en sortent épuisées.|La seule peste d'Athènes tue peut-être un quart de ses habitants.
+## -334-campaigns-of-alexander-the-great
+en|Alexander of Macedon conquered the Persian Empire, Egypt and lands up to the Indus in eleven years.|Greek language and culture spread across the East: the Hellenistic world.|Unknown; hundreds of thousands in battles and sieges.
+fr|Alexandre de Macédoine conquiert l'Empire perse, l'Égypte et des terres jusqu'à l'Indus en onze ans.|La langue et la culture grecques gagnent l'Orient : le monde hellénistique.|Inconnues ; des centaines de milliers dans les batailles et les sièges.
+## -264-punic-wars
+en|Three wars between Rome and Carthage, including Hannibal's march over the Alps.|Rome became master of the western Mediterranean; Carthage was razed in 146 BC.|Hundreds of thousands; Carthage's last 50,000 people were enslaved.
+fr|Trois guerres entre Rome et Carthage, dont la traversée des Alpes par Hannibal.|Rome devient maîtresse de la Méditerranée occidentale ; Carthage est rasée en 146 av. J.-C.|Des centaines de milliers ; les 50 000 derniers Carthaginois sont réduits en esclavage.
+## -58-gallic-wars
+en|Julius Caesar conquered Gaul, defeating Vercingetorix at Alesia in 52 BC.|Gaul became Roman and Latin-speaking: the root of French.|By ancient accounts, a million Gauls killed and a million enslaved.
+fr|Jules César conquiert la Gaule et bat Vercingétorix à Alésia en 52 av. J.-C.|La Gaule devient romaine et latine : la racine du français.|Selon les auteurs antiques, un million de Gaulois tués et un million réduits en esclavage.
+## -49-caesar-s-civil-war
+en|Caesar crossed the Rubicon and fought Pompey and the Senate's party.|One man's rule over the Republic; Caesar was murdered in 44 BC.|Tens of thousands of soldiers.
+fr|César franchit le Rubicon et combat Pompée et le parti du Sénat.|Le pouvoir d'un seul sur la République ; César est assassiné en 44 av. J.-C.|Des dizaines de milliers de soldats.
+## -32-last-civil-war-of-the-roman-republic
+en|Octavian fought Mark Antony and Cleopatra, defeating them at Actium.|The end of the Republic and of Ptolemaic Egypt; Octavian became Augustus, the first emperor.|Thousands, at Actium and in Egypt.
+fr|Octave affronte Marc Antoine et Cléopâtre et les bat à Actium.|La fin de la République et de l'Égypte ptolémaïque ; Octave devient Auguste, premier empereur.|Des milliers, à Actium et en Égypte.
+## 66-first-jewish-roman-war
+en|Judaea rose against Rome; the legions besieged Jerusalem.|The Temple was destroyed in 70; Jewish life turned to the synagogue and the diaspora.|Ancient writers speak of hundreds of thousands dead.
+fr|La Judée se soulève contre Rome ; les légions assiègent Jérusalem.|Le Temple est détruit en 70 ; la vie juive se tourne vers la synagogue et la diaspora.|Les auteurs antiques parlent de centaines de milliers de morts.
+## 220-wars-of-the-three-kingdoms-china
+en|After the Han fell, the states of Wei, Shu and Wu fought for China.|A divided China for decades, later the stuff of a great novel.|China's recorded population fell from about 56 to 16 million, partly a collapse of the census.
+fr|Après la chute des Han, les royaumes de Wei, Shu et Wu se disputent la Chine.|Une Chine divisée pendant des décennies, plus tard la matière d'un grand roman.|La population recensée tombe d'environ 56 à 16 millions, en partie par effondrement du recensement.
+## 622-the-hijra-beginning-of-islam
+en|The Prophet Muhammad left Mecca for Medina, where the first Muslim community took shape.|Year one of the Islamic calendar; a faith that united Arabia and spread over three continents.|
+fr|Le prophète Mahomet quitte La Mecque pour Médine, où se forme la première communauté musulmane.|L'an un du calendrier musulman ; une foi qui unit l'Arabie et gagne trois continents.|
+## 618-tang-dynasty-china
+en|The Tang reunited China and opened it to the world from their capital Chang'an.|A golden age of poetry, trade and Buddhism, and printing.|
+fr|Les Tang réunifient la Chine et l'ouvrent au monde depuis leur capitale, Chang'an.|Un âge d'or de la poésie, du commerce, du bouddhisme et de l'imprimerie.|
+## 661-umayyad-caliphate
+en|From Damascus, the Umayyad caliphs ruled from Spain to the Indus.|Arabic and Islam spread across the conquered lands.|
+fr|Depuis Damas, les califes omeyyades règnent de l'Espagne à l'Indus.|L'arabe et l'islam se répandent dans les terres conquises.|
+## 750-abbasid-caliphate-baghdad
+en|The Abbasids took power and built Baghdad, a centre of science and translation.|Greek, Persian and Indian knowledge kept and advanced; the city was sacked by the Mongols in 1258.|Baghdad's sack in 1258 killed tens or hundreds of thousands.
+fr|Les Abbassides prennent le pouvoir et bâtissent Bagdad, centre de science et de traduction.|Les savoirs grec, perse et indien conservés et enrichis ; la ville est saccagée par les Mongols en 1258.|Le sac de Bagdad en 1258 fait des dizaines ou des centaines de milliers de morts.
+## 700-swahili-city-states-indian-ocean
+en|Trading towns such as Kilwa and Mombasa grew on the East African coast, linked to Arabia, India and China.|A Swahili culture and language, African and Muslim, born of the ocean trade.|
+fr|Des villes marchandes comme Kilwa et Mombasa grandissent sur la côte est-africaine, reliées à l'Arabie, l'Inde et la Chine.|Une culture et une langue swahilies, africaines et musulmanes, nées du commerce océanique.|
+## 793-viking-age
+en|Scandinavian seafarers raided, traded and settled from Ireland to Russia and reached America.|Normandy, Danish England and the first Russian states bear their mark.|Thousands, in raids on monasteries and towns.
+fr|Des marins scandinaves pillent, commercent et s'installent de l'Irlande à la Russie, et touchent l'Amérique.|La Normandie, l'Angleterre danoise et les premiers États russes portent leur marque.|Des milliers, dans les raids sur les monastères et les villes.
+## 800-coronation-of-charlemagne
+en|Pope Leo III crowned the Frankish king Charlemagne emperor in Rome.|The idea of a Christian empire in the West, ancestor of France and Germany.|
+fr|Le pape Léon III couronne empereur le roi franc Charlemagne à Rome.|L'idée d'un empire chrétien d'Occident, ancêtre de la France et de l'Allemagne.|
+## 800-ghana-empire
+en|In today's Mauritania and Mali, Ghana grew rich on the gold and salt trade across the Sahara.|The first of the great West African empires.|
+fr|Dans les actuels Mauritanie et Mali, le Ghana s'enrichit du commerce de l'or et du sel à travers le Sahara.|Le premier des grands empires d'Afrique de l'Ouest.|
+## 960-song-dynasty-china
+en|The Song ruled a populous, urban China of merchants and scholars.|Paper money, the compass, gunpowder and printing with movable type.|
+fr|Les Song gouvernent une Chine peuplée et urbaine de marchands et de lettrés.|Le papier-monnaie, la boussole, la poudre et l'imprimerie à caractères mobiles.|
+## 1000-great-zimbabwe
+en|Shona builders raised great stone enclosures in southern Africa, a centre of the gold trade.|Proof of a powerful African state, long denied by colonial writers.|
+fr|Des bâtisseurs shona élèvent de grandes enceintes de pierre en Afrique australe, centre du commerce de l'or.|La preuve d'un puissant État africain, longtemps niée par les auteurs coloniaux.|
+## 1192-kamakura-shogunate-japan
+en|The shogun, a military ruler, took real power in Japan while the emperor reigned in name.|Seven centuries of warrior rule; the samurai class.|
+fr|Le shogun, chef militaire, prend le pouvoir réel au Japon tandis que l'empereur règne de nom.|Sept siècles de pouvoir guerrier ; la classe des samouraïs.|
+## 1206-mongol-empire-pax-mongolica
+en|Genghis Khan united the Mongol tribes and founded the largest land empire in history.|Once conquered, Eurasia was open to trade and travel, Marco Polo's among them.|
+fr|Gengis Khan unit les tribus mongoles et fonde le plus vaste empire terrestre de l'histoire.|Une fois conquise, l'Eurasie s'ouvre au commerce et aux voyages, dont ceux de Marco Polo.|
+## 1235-mali-empire-mansa-musa
+en|Sundiata founded Mali; Mansa Musa's pilgrimage to Mecca in 1324 dazzled the world with its gold.|Timbuktu became a centre of Muslim learning.|
+fr|Soundiata fonde le Mali ; le pèlerinage de Mansa Moussa à La Mecque en 1324 éblouit le monde par son or.|Tombouctou devient un centre du savoir musulman.|
+## 1299-foundation-of-the-ottoman-empire
+en|Osman, a Turkish chief in Anatolia, founded the state that bore his name.|An empire that took Constantinople and lasted until 1922.|
+fr|Osman, chef turc d'Anatolie, fonde l'État qui porte son nom.|Un empire qui prend Constantinople et dure jusqu'en 1922.|
+## 1346-the-black-death
+en|Plague, carried by fleas on rats along trade routes, swept from Central Asia to Europe and North Africa.|Labour grew scarce and wages rose; faith, medicine and society were shaken.|Between a third and a half of Europe's people; perhaps 75 to 200 million worldwide.
+fr|La peste, portée par les puces des rats le long des routes commerciales, déferle de l'Asie centrale sur l'Europe et l'Afrique du Nord.|La main-d'œuvre se raréfie et les salaires montent ; foi, médecine et société sont ébranlées.|Entre un tiers et la moitié des Européens ; peut-être 75 à 200 millions dans le monde.
+## 1368-ming-dynasty-china
+en|The Ming drove out the Mongols and ruled China for three centuries.|The Forbidden City, the Great Wall as it stands, and Zheng He's voyages.|
+fr|Les Ming chassent les Mongols et gouvernent la Chine pendant trois siècles.|La Cité interdite, la Grande Muraille telle qu'elle est, et les voyages de Zheng He.|
+## 1390-kingdom-of-kongo
+en|A kingdom around the Congo's mouth, which became Christian after the Portuguese came in 1483.|A great African state, weakened by the slave trade and divided by colonisation.|
+fr|Un royaume autour de l'embouchure du Congo, devenu chrétien après l'arrivée des Portugais en 1483.|Un grand État africain, affaibli par la traite et partagé par la colonisation.|
+## 1400-inca-empire
+en|From Cuzco, the Incas ruled the Andes with roads, terraces and knotted-cord records.|The largest empire of the pre-Columbian Americas.|
+fr|Depuis Cuzco, les Incas gouvernent les Andes grâce à leurs routes, leurs terrasses et leurs cordelettes à nœuds.|Le plus vaste empire de l'Amérique précolombienne.|
+## 1428-aztec-empire
+en|From Tenochtitlan, on a lake where Mexico City now stands, the Aztecs dominated central Mexico.|A city of 200,000 people, larger than any in Spain.|
+fr|Depuis Tenochtitlan, sur un lac où s'élève aujourd'hui Mexico, les Aztèques dominent le Mexique central.|Une ville de 200 000 habitants, plus grande que toutes celles d'Espagne.|
+## 1453-05-29-fall-of-constantinople
+en|The Ottoman sultan Mehmed II took Constantinople after a siege of seven weeks.|The end of the Byzantine Empire; Greek scholars carried its books to Italy.|Thousands of defenders killed; much of the population enslaved.
+fr|Le sultan ottoman Mehmed II prend Constantinople après un siège de sept semaines.|La fin de l'Empire byzantin ; les lettrés grecs emportent ses livres en Italie.|Des milliers de défenseurs tués ; une grande partie des habitants réduits en esclavage.
+## 1464-songhai-empire
+en|Songhai, centred on Gao on the Niger, succeeded Mali as West Africa's great power.|The largest empire in African history until a Moroccan invasion in 1591.|
+fr|Le Songhaï, centré sur Gao au bord du Niger, succède au Mali comme grande puissance d'Afrique de l'Ouest.|Le plus vaste empire de l'histoire africaine, jusqu'à une invasion marocaine en 1591.|
+## 1492-10-12-christopher-columbus-reaches-the-americas
+en|Sailing west for Spain, Columbus landed in the Caribbean, believing he had reached Asia.|The meeting of two worlds: conquest, trade, and the exchange of plants, animals and diseases.|Within a century, epidemics and conquest killed most of the Americas' native peoples.
+fr|Naviguant vers l'ouest pour l'Espagne, Colomb aborde aux Caraïbes en croyant atteindre l'Asie.|La rencontre de deux mondes : conquête, commerce, échanges de plantes, d'animaux et de maladies.|En un siècle, épidémies et conquête tuent la plupart des peuples autochtones des Amériques.
+## 632-early-muslim-conquests
+en|After Muhammad's death, Arab armies took Persia, Syria, Egypt, North Africa and Spain.|One of history's fastest expansions; Arabic and Islam took root across these lands.|Unknown.
+fr|Après la mort de Mahomet, les armées arabes prennent la Perse, la Syrie, l'Égypte, l'Afrique du Nord et l'Espagne.|L'une des expansions les plus rapides de l'histoire ; l'arabe et l'islam s'y enracinent.|Inconnues.
+## 711-the-iberian-reconquista
+en|Christian kingdoms of the north slowly took back the Iberian peninsula from Muslim states.|Spain and Portugal were born of it; Granada fell in 1492, the year Jews were expelled.|Unknown over eight centuries.
+fr|Les royaumes chrétiens du nord reprennent lentement la péninsule Ibérique aux États musulmans.|L'Espagne et le Portugal en naissent ; Grenade tombe en 1492, l'année de l'expulsion des Juifs.|Inconnues sur huit siècles.
+## 1066-09-28-norman-conquest-of-england
+en|William, Duke of Normandy, landed in England and defeated King Harold at Hastings.|A Norman French elite ruled England; English took thousands of French words.|Thousands at Hastings; many more in the harrying of the North.
+fr|Guillaume, duc de Normandie, débarque en Angleterre et bat le roi Harold à Hastings.|Une élite normande francophone gouverne l'Angleterre ; l'anglais emprunte des milliers de mots français.|Des milliers à Hastings ; bien plus lors du ravage du Nord.
+## 1096-the-crusades
+en|Western Christians launched armed pilgrimages to take Jerusalem and the Holy Land.|Crusader states for two centuries; lasting hostility between Christians, Muslims and the Byzantines.|Perhaps 1 to 3 million over two centuries, including massacres of Jews in Europe.
+fr|Les chrétiens d'Occident lancent des pèlerinages armés pour prendre Jérusalem et la Terre sainte.|Des États croisés pendant deux siècles ; une hostilité durable entre chrétiens, musulmans et Byzantins.|Peut-être 1 à 3 millions en deux siècles, dont des massacres de Juifs en Europe.
+## 1206-mongol-conquests
+en|Genghis Khan and his heirs conquered China, Central Asia, Persia and Russia.|An empire from the Pacific to Europe, built by terror and kept by trade.|Perhaps 30 to 40 million dead.
+fr|Gengis Khan et ses héritiers conquièrent la Chine, l'Asie centrale, la Perse et la Russie.|Un empire du Pacifique à l'Europe, fondé par la terreur et tenu par le commerce.|Peut-être 30 à 40 millions de morts.
+## 1274-mongol-invasions-of-japan-1274-and-1281
+en|Kublai Khan sent two fleets against Japan; both were wrecked by typhoons.|Japan stayed free; the "divine wind", kamikaze, entered its legend.|Tens of thousands of invaders drowned.
+fr|Kubilai Khan envoie deux flottes contre le Japon ; toutes deux sont détruites par des typhons.|Le Japon reste libre ; le « vent divin », kamikaze, entre dans sa légende.|Des dizaines de milliers d'envahisseurs noyés.
+## 1337-hundred-years-war
+en|The kings of England and France fought over the French crown and lands; Joan of Arc turned the tide.|France came out a stronger monarchy; England lost its lands on the continent.|Perhaps 2 to 3 million dead, with famine and plague.
+fr|Les rois d'Angleterre et de France se disputent la couronne et les terres de France ; Jeanne d'Arc renverse le cours.|La France en sort monarchie plus forte ; l'Angleterre perd ses terres du continent.|Peut-être 2 à 3 millions de morts, avec la famine et la peste.
+## 1455-wars-of-the-roses
+en|The houses of Lancaster and York fought for the English throne.|Henry Tudor won in 1485 and founded the Tudor dynasty.|Tens of thousands, many nobles among them.
+fr|Les maisons de Lancastre et d'York se disputent le trône d'Angleterre.|Henri Tudor l'emporte en 1485 et fonde la dynastie Tudor.|Des dizaines de milliers, dont beaucoup de nobles.
+## 1500-transatlantic-slave-trade
+en|European traders bought captives in Africa and shipped them to work on American plantations.|Fortunes in Europe and the Americas built on forced labour; Africa bled of its people.|About 12.5 million people embarked; some 1.8 million died at sea.
+fr|Des marchands européens achètent des captifs en Afrique et les envoient travailler dans les plantations d'Amérique.|Des fortunes en Europe et en Amérique bâties sur le travail forcé ; une Afrique saignée de ses habitants.|Environ 12,5 millions de personnes embarquées ; quelque 1,8 million meurent en mer.
+## 1526-mughal-empire-india
+en|Babur, from Central Asia, founded the Mughal dynasty; Akbar ruled most of India.|A Muslim empire over a Hindu majority; the Taj Mahal; later absorbed by Britain.|
+fr|Babur, venu d'Asie centrale, fonde la dynastie moghole ; Akbar règne sur l'essentiel de l'Inde.|Un empire musulman sur une majorité hindoue ; le Taj Mahal ; plus tard absorbé par les Britanniques.|
+## 1603-tokugawa-era-and-sakoku-japan
+en|The Tokugawa shoguns ruled a Japan at peace and almost closed to foreigners.|Two centuries of isolation, ended by American warships in 1853.|
+fr|Les shoguns Tokugawa gouvernent un Japon en paix et presque fermé aux étrangers.|Deux siècles d'isolement, que des navires de guerre américains terminent en 1853.|
+## 1644-qing-dynasty-china
+en|Manchus from the north overthrew the Ming and ruled China until 1912.|China's largest extent; then decline under Western and Japanese pressure.|
+fr|Des Mandchous venus du nord renversent les Ming et gouvernent la Chine jusqu'en 1912.|La plus grande étendue de la Chine, puis le déclin sous la pression occidentale et japonaise.|
+## 1652-foundation-of-cape-town
+en|The Dutch East India Company set up a supply station at the Cape of Good Hope.|The start of European settlement in southern Africa, and of the Afrikaners.|
+fr|La Compagnie néerlandaise des Indes orientales établit une escale de ravitaillement au cap de Bonne-Espérance.|Le début de la colonisation européenne en Afrique australe, et des Afrikaners.|
+## 1700-ashanti-dahomey-and-oyo-kingdoms
+en|Strong West African kingdoms rose, trading gold, palm oil and captives with Europeans.|Organised states, armies and courts, before colonisation took them.|
+fr|De puissants royaumes d'Afrique de l'Ouest s'élèvent, échangeant or, huile de palme et captifs avec les Européens.|Des États organisés, avec armées et cours, avant que la colonisation ne les prenne.|
+## 1776-07-04-independence-of-the-united-states
+en|Thirteen British colonies declared themselves free and united.|The first modern republic, founded on the rights of man, but slavery kept.|
+fr|Treize colonies britanniques se déclarent libres et unies.|La première république moderne, fondée sur les droits de l'homme, mais qui garde l'esclavage.|
+## 1789-the-french-revolution
+en|Bankruptcy and hunger led to the Estates-General, the storming of the Bastille and the end of the monarchy.|Equality before the law, the rights of man, the nation; then the Terror and war.|Tens of thousands executed; hundreds of thousands in civil war.
+fr|La faillite et la faim mènent aux États généraux, à la prise de la Bastille et à la fin de la monarchie.|L'égalité devant la loi, les droits de l'homme, la nation ; puis la Terreur et la guerre.|Des dizaines de milliers d'exécutions ; des centaines de milliers dans la guerre civile.
+## 1519-spanish-conquest-of-the-aztec-empire
+en|Hernán Cortés, with native allies, took Tenochtitlan after a siege.|New Spain was born; Mexico's peoples under colonial rule for three centuries.|Millions, above all from smallpox.
+fr|Hernán Cortés, avec des alliés autochtones, prend Tenochtitlan après un siège.|La Nouvelle-Espagne naît ; les peuples du Mexique sous domination coloniale pendant trois siècles.|Des millions, avant tout par la variole.
+## 1532-spanish-conquest-of-the-inca-empire
+en|Francisco Pizarro seized the Inca ruler Atahualpa and conquered the Andes.|Spanish rule and the silver of Potosí, which enriched Europe.|Millions, from epidemics, war and forced labour.
+fr|Francisco Pizarro capture le souverain inca Atahualpa et conquiert les Andes.|La domination espagnole et l'argent de Potosí, qui enrichit l'Europe.|Des millions, par les épidémies, la guerre et le travail forcé.
+## 1568-eighty-years-war
+en|The Dutch provinces rose against Spanish rule and Catholic repression.|The Dutch Republic was born, a power of trade and tolerance.|Hundreds of thousands.
+fr|Les provinces néerlandaises se soulèvent contre la domination espagnole et la répression catholique.|La République des Provinces-Unies naît, puissance du commerce et de la tolérance.|Des centaines de milliers.
+## 1592-imjin-war-korea-japan
+en|Japan invaded Korea twice; Korea and Ming China fought back, Admiral Yi's ships at sea.|Japan withdrew; Korea was left ruined.|Perhaps a million Koreans dead.
+fr|Le Japon envahit deux fois la Corée ; la Corée et la Chine des Ming résistent, avec les navires de l'amiral Yi.|Le Japon se retire ; la Corée sort ruinée.|Peut-être un million de Coréens morts.
+## 1618-thirty-years-war
+en|A war of religion in the Holy Roman Empire became a European war for power.|The Peace of Westphalia set the rule of sovereign states in Europe.|4.5 to 8 million dead; parts of Germany lost a third of their people.
+fr|Une guerre de religion dans le Saint-Empire devient une guerre européenne de puissance.|La paix de Westphalie fonde l'ordre des États souverains en Europe.|4,5 à 8 millions de morts ; des régions d'Allemagne perdent un tiers de leurs habitants.
+## 1642-english-civil-wars
+en|King Charles I fought Parliament; he was tried and beheaded in 1649.|Parliament's power over the crown, after Cromwell's republic.|About 200,000 dead in England, far more in Ireland.
+fr|Le roi Charles Iᵉʳ combat le Parlement ; il est jugé et décapité en 1649.|Le pouvoir du Parlement sur la couronne, après la république de Cromwell.|Environ 200 000 morts en Angleterre, bien plus en Irlande.
+## 1700-great-northern-war
+en|Russia and its allies fought Sweden for the Baltic.|Russia under Peter the Great became a European power; Sweden's empire ended.|Hundreds of thousands, with plague.
+fr|La Russie et ses alliés combattent la Suède pour la Baltique.|La Russie de Pierre le Grand devient une puissance européenne ; l'empire suédois prend fin.|Des centaines de milliers, avec la peste.
+## 1701-war-of-the-spanish-succession
+en|Europe fought over who would inherit the Spanish throne: a French Bourbon or an Austrian Habsburg.|A Bourbon kept Spain, but France and Spain were never to be united.|Some 400,000 to 700,000 soldiers.
+fr|L'Europe se dispute l'héritage du trône d'Espagne : un Bourbon français ou un Habsbourg autrichien.|Un Bourbon garde l'Espagne, mais la France et l'Espagne ne seront jamais unies.|Quelque 400 000 à 700 000 soldats.
+## 1756-seven-years-war
+en|Britain and Prussia fought France, Austria and Russia in Europe, America and India.|Britain won Canada and India: a British world empire.|About a million dead.
+fr|La Grande-Bretagne et la Prusse affrontent la France, l'Autriche et la Russie en Europe, en Amérique et en Inde.|La Grande-Bretagne gagne le Canada et l'Inde : un empire britannique mondial.|Environ un million de morts.
+## 1775-american-war-of-independence
+en|The thirteen colonies fought Britain for their independence, with France's help.|The United States won recognition in 1783; France's debt helped bring its revolution.|About 25,000 American soldiers, most from disease.
+fr|Les treize colonies combattent la Grande-Bretagne pour leur indépendance, avec l'aide de la France.|Les États-Unis sont reconnus en 1783 ; la dette de la France pèse dans sa révolution.|Environ 25 000 soldats américains, surtout de maladie.
+## 1791-haitian-revolution
+en|Enslaved people of Saint-Domingue, France's richest colony, rose up; Toussaint Louverture then Dessalines led them.|The only successful slave revolt in history, founding the first Black republic in 1804.|Perhaps 100,000 to 200,000 dead, including tens of thousands of French soldiers.
+fr|Les esclaves de Saint-Domingue, la plus riche colonie française, se soulèvent ; Toussaint Louverture puis Dessalines les mènent.|La seule révolte d'esclaves victorieuse de l'histoire, qui fonde en 1804 la première république noire.|Peut-être 100 000 à 200 000 morts, dont des dizaines de milliers de soldats français.
+## 1792-french-revolutionary-wars
+en|Revolutionary France fought the monarchies of Europe, raising mass armies of citizens.|The Republic survived and spread its ideas; Bonaparte rose through these wars.|About a million soldiers and civilians.
+fr|La France révolutionnaire combat les monarchies d'Europe en levant des armées de citoyens.|La République survit et répand ses idées ; Bonaparte s'élève par ces guerres.|Environ un million de soldats et de civils.
+## 1450-gutenberg-s-printing-press
+en|In Mainz, Johannes Gutenberg printed books with movable metal type.|Books became cheap and many: the Reformation, science and literacy spread.|
+fr|À Mayence, Johannes Gutenberg imprime des livres avec des caractères mobiles en métal.|Le livre devient bon marché et abondant : la Réforme, les sciences et l'alphabétisation se répandent.|
+## 1517-10-31-the-protestant-reformation-begins
+en|Martin Luther's 95 theses against the sale of indulgences began a split in Western Christianity.|Protestant churches, wars of religion, and a new relation to the Bible in the vernacular.|
+fr|Les 95 thèses de Martin Luther contre la vente des indulgences ouvrent une fracture dans la chrétienté occidentale.|Les Églises protestantes, les guerres de Religion, un nouveau rapport à la Bible en langue du peuple.|
+## 1648-10-24-peace-of-westphalia
+en|Treaties signed in Münster and Osnabrück ended the Thirty Years' War.|Sovereign states, each choosing its religion: the basis of the European order.|
+fr|Des traités signés à Münster et Osnabrück mettent fin à la guerre de Trente Ans.|Des États souverains, chacun maître de sa religion : le socle de l'ordre européen.|
+## 1830-mass-european-emigration-to-the-americas
+en|Poverty, famine and persecution drove Europeans across the Atlantic by steamship.|The Americas were peopled anew; families divided between two continents.|About 50 million emigrants; many died on the voyage.
+fr|La misère, la famine et les persécutions poussent les Européens à traverser l'Atlantique en bateau à vapeur.|Les Amériques se peuplent à nouveau ; des familles partagées entre deux continents.|Environ 50 millions d'émigrants ; beaucoup meurent pendant la traversée.
+## 1840-industrial-revolutions
+en|Steam, coal, iron and railways transformed work, towns and the countryside.|Factories, workers' movements, growth of cities; families left the land.|Hard labour, child work and urban disease took a heavy toll.
+fr|La vapeur, le charbon, le fer et le chemin de fer transforment le travail, les villes et les campagnes.|Les usines, le mouvement ouvrier, l'essor des villes ; les familles quittent la terre.|Le travail pénible, celui des enfants et les maladies urbaines font de nombreuses victimes.
+## 1845-great-famine-in-ireland
+en|Potato blight destroyed the main food of Ireland's poor, while food was still exported.|A nation emptied by death and emigration; lasting bitterness towards Britain.|About a million dead; one to two million emigrated.
+fr|Le mildiou détruit la pomme de terre, nourriture des pauvres d'Irlande, alors que des vivres sont encore exportés.|Une nation vidée par la mort et l'émigration ; une rancœur durable envers la Grande-Bretagne.|Environ un million de morts ; un à deux millions d'émigrants.
+## 1884-11-15-berlin-conference-africa-partitioned
+en|European powers met in Berlin to set rules for claiming Africa; no African was present.|Borders drawn by Europeans; the Congo given to King Leopold II.|The colonial conquest that followed killed millions.
+fr|Les puissances européennes se réunissent à Berlin pour fixer les règles du partage de l'Afrique ; aucun Africain n'est présent.|Des frontières tracées par les Européens ; le Congo confié au roi Léopold II.|La conquête coloniale qui suit tue des millions de personnes.
+## 1918-spanish-flu
+en|An influenza pandemic spread with troops at the end of the First World War, killing young adults above all.|The deadliest pandemic of the 20th century; it touched almost every family.|About 50 million dead (estimates range from 17 to 100 million).
+fr|Une pandémie de grippe se répand avec les troupes à la fin de la Première Guerre mondiale, frappant surtout les jeunes adultes.|La pandémie la plus meurtrière du XXᵉ siècle ; elle touche presque chaque famille.|Environ 50 millions de morts (les estimations vont de 17 à 100 millions).
+## 1929-10-24-wall-street-crash
+en|Share prices collapsed on the New York Stock Exchange after years of speculation.|The start of the Great Depression; banks failed in a chain.|
+fr|Les cours s'effondrent à la Bourse de New York après des années de spéculation.|Le début de la Grande Dépression ; les banques tombent en chaîne.|
+## 1947-08-15-partition-of-india-and-pakistan
+en|British India became independent as two states, India and Pakistan, divided by religion.|Independence, and one of the largest migrations in history.|Between 200,000 and 2 million dead; 10 to 20 million people displaced.
+fr|L'Inde britannique devient indépendante en deux États, l'Inde et le Pakistan, partagés selon la religion.|L'indépendance, et l'une des plus grandes migrations de l'histoire.|Entre 200 000 et 2 millions de morts ; 10 à 20 millions de personnes déplacées.
+## 1950-worldwide-decolonisation
+en|Colonies of Africa and Asia won independence, through negotiation or war.|New states and new borders; families moved between colonies and former colonial powers.|Wars of independence killed hundreds of thousands.
+fr|Les colonies d'Afrique et d'Asie obtiennent leur indépendance, par la négociation ou par la guerre.|De nouveaux États et de nouvelles frontières ; des familles circulent entre colonies et anciennes métropoles.|Les guerres d'indépendance font des centaines de milliers de morts.
+## 1989-fall-of-the-soviet-bloc
+en|Communist regimes of Eastern Europe fell, from Poland to the Berlin Wall; the Soviet Union broke up in 1991.|The end of the Cold War; freedom to travel and to vote in the East.|Few, except in Romania and later in wars of the former Yugoslavia.
+fr|Les régimes communistes d'Europe de l'Est tombent, de la Pologne au mur de Berlin ; l'Union soviétique éclate en 1991.|La fin de la guerre froide ; la liberté de voyager et de voter à l'Est.|Peu, sauf en Roumanie et, plus tard, dans les guerres de l'ex-Yougoslavie.
+## 1990-digital-age-and-the-internet
+en|The World Wide Web, then mobile phones, connected most of humanity.|Information, work and family ties changed; genealogy itself went online.|
+fr|Le Web, puis les téléphones mobiles, relient la plus grande partie de l'humanité.|L'information, le travail et les liens familiaux changent ; la généalogie elle-même passe en ligne.|
+## 2019-12-covid-19-pandemic
+en|A new coronavirus spread from Wuhan; lockdowns closed countries.|Health systems strained, lives confined, vaccines made in record time.|About 7 million deaths reported; the WHO estimates 15 million excess deaths in 2020–2021.
+fr|Un nouveau coronavirus se répand depuis Wuhan ; les confinements ferment les pays.|Des systèmes de santé saturés, des vies confinées, des vaccins mis au point en un temps record.|Environ 7 millions de décès déclarés ; l'OMS estime à 15 millions la surmortalité en 2020-2021.
+## 1815-04-10-tambora-erupts-the-year-without-a-summer
+en|The eruption of Mount Tambora in Indonesia filled the sky with ash; 1816 had no summer in Europe and North America.|Failed harvests, famine and emigration.|About 70,000 to 90,000 dead in Indonesia; many more from hunger elsewhere.
+fr|L'éruption du Tambora en Indonésie emplit le ciel de cendres ; 1816 n'a pas d'été en Europe et en Amérique du Nord.|Des récoltes perdues, la famine et l'émigration.|Environ 70 000 à 90 000 morts en Indonésie ; bien plus de faim ailleurs.
+## 1817-first-cholera-pandemic
+en|Cholera spread from the Ganges delta across Asia and to the edge of Europe.|The first of seven cholera pandemics, carried by trade and armies.|Hundreds of thousands.
+fr|Le choléra part du delta du Gange, traverse l'Asie et atteint les portes de l'Europe.|La première des sept pandémies de choléra, portées par le commerce et les armées.|Des centaines de milliers.
+## 1826-second-cholera-pandemic
+en|Cholera reached Russia, Poland, France and Britain, and crossed to America.|Cities learned that dirty water kills: the birth of public hygiene.|Hundreds of thousands in Europe; about 18,000 in Paris in 1832.
+fr|Le choléra atteint la Russie, la Pologne, la France et la Grande-Bretagne, puis l'Amérique.|Les villes apprennent que l'eau sale tue : la naissance de l'hygiène publique.|Des centaines de milliers en Europe ; environ 18 000 à Paris en 1832.
+## 1848-revolutions-of-1848-spring-of-nations
+en|Revolutions broke out in Paris, Vienna, Berlin, Milan, Budapest and Poznań.|Most were crushed, but serfdom ended in Austria and national ideas spread.|Thousands in the fighting.
+fr|Des révolutions éclatent à Paris, Vienne, Berlin, Milan, Budapest et Poznań.|La plupart sont écrasées, mais le servage prend fin en Autriche et les idées nationales se répandent.|Des milliers dans les combats.
+## 1869-11-17-opening-of-the-suez-canal
+en|A canal through Egypt linked the Mediterranean to the Red Sea.|The way to India and Asia shortened; Egypt indebted and later occupied by Britain.|Thousands of forced labourers died digging it.
+fr|Un canal à travers l'Égypte relie la Méditerranée à la mer Rouge.|La route de l'Inde et de l'Asie raccourcie ; l'Égypte endettée, puis occupée par la Grande-Bretagne.|Des milliers de travailleurs forcés meurent en le creusant.
+## 1873-long-depression
+en|A financial crash in Vienna and New York began two decades of falling prices.|Rural hardship and emigration; protectionism and colonial expansion.|
+fr|Un krach à Vienne et à New York ouvre deux décennies de baisse des prix.|La misère rurale et l'émigration ; le protectionnisme et l'expansion coloniale.|
+## 1889-russian-flu-pandemic
+en|An influenza pandemic spread from Russia along the new railways.|The first pandemic of the railway age, carried in weeks across Europe.|About a million dead.
+fr|Une pandémie de grippe se répand depuis la Russie le long des nouvelles voies ferrées.|La première pandémie de l'âge du rail, portée en quelques semaines à travers l'Europe.|Environ un million de morts.
+## 1917-11-07-october-revolution-in-russia
+en|The Bolsheviks led by Lenin seized power in Petrograd.|The first communist state; Russia left the war; civil war followed.|The civil war and terror that followed killed millions.
+fr|Les bolcheviks de Lénine prennent le pouvoir à Petrograd.|Le premier État communiste ; la Russie sort de la guerre ; la guerre civile suit.|La guerre civile et la terreur qui suivent font des millions de morts.
+## 1929-great-depression
+en|After the crash, output and trade collapsed across the world.|Mass unemployment, poverty, and the rise of extremism, Nazism among it.|A quarter of workers jobless in the United States, more in Germany.
+fr|Après le krach, la production et le commerce s'effondrent dans le monde.|Le chômage de masse, la misère et la montée des extrémismes, dont le nazisme.|Un quart des travailleurs sans emploi aux États-Unis, davantage en Allemagne.
+## 1941-the-holocaust
+en|Nazi Germany and its collaborators set out to murder the Jews of Europe, in shootings, ghettos and death camps.|A genocide planned by a state; the origin of the idea of crimes against humanity.|Six million Jews; hundreds of thousands of Roma, and other victims of Nazi persecution.
+fr|L'Allemagne nazie et ses collaborateurs entreprennent d'assassiner les Juifs d'Europe, par fusillades, ghettos et camps d'extermination.|Un génocide planifié par un État ; à l'origine de la notion de crime contre l'humanité.|Six millions de Juifs ; des centaines de milliers de Roms et d'autres victimes de la persécution nazie.
+## 1945-08-06-atomic-bombings-of-hiroshima-and-nagasaki
+en|The United States dropped atomic bombs on two Japanese cities; Japan surrendered.|The end of the Second World War and the start of the nuclear age.|110,000 to 210,000 dead by the end of 1945.
+fr|Les États-Unis larguent des bombes atomiques sur deux villes japonaises ; le Japon capitule.|La fin de la Seconde Guerre mondiale et le début de l'ère nucléaire.|110 000 à 210 000 morts à la fin de 1945.
+## 1945-10-24-founding-of-the-united-nations
+en|Fifty-one states founded the United Nations to keep the peace after the war.|A world forum, human rights declared in 1948, and peacekeeping.|
+fr|Cinquante et un États fondent l'Organisation des Nations unies pour préserver la paix après la guerre.|Un forum mondial, les droits de l'homme proclamés en 1948, le maintien de la paix.|
+## 1957-asian-flu-pandemic
+en|A new influenza virus spread from China across the world.|Vaccines were made quickly for the first time in a pandemic.|One to four million dead.
+fr|Un nouveau virus grippal part de Chine et fait le tour du monde.|Pour la première fois dans une pandémie, des vaccins sont produits rapidement.|Un à quatre millions de morts.
+## 1968-hong-kong-flu-pandemic
+en|An influenza virus from Hong Kong spread worldwide in two waves.|A pandemic largely forgotten, in a world busy with other events.|One to four million dead.
+fr|Un virus grippal venu de Hong Kong se répand dans le monde en deux vagues.|Une pandémie largement oubliée, dans un monde occupé par d'autres événements.|Un à quatre millions de morts.
+## 1969-07-20-first-steps-on-the-moon
+en|The astronauts Neil Armstrong and Buzz Aldrin walked on the Moon, watched live by hundreds of millions.|The space race between the United States and the Soviet Union; a shared moment for humanity.|
+fr|Les astronautes Neil Armstrong et Buzz Aldrin marchent sur la Lune, suivis en direct par des centaines de millions de personnes.|La course à l'espace entre les États-Unis et l'Union soviétique ; un moment partagé par l'humanité.|
+## 1973-10-first-oil-shock
+en|Arab oil producers cut supplies during the Yom Kippur War; the price of oil quadrupled.|The end of the post-war boom in the West: inflation and unemployment.|
+fr|Les producteurs arabes réduisent leurs livraisons pendant la guerre du Kippour ; le prix du pétrole quadruple.|La fin de la croissance d'après-guerre en Occident : inflation et chômage.|
+## 1981-hiv-aids-pandemic
+en|A new virus, HIV, was identified as the cause of AIDS; it spread worldwide, above all in Africa.|Stigma and activism; treatments since 1996 made it a chronic illness where they are available.|About 42 million dead since the start.
+fr|Un nouveau virus, le VIH, est identifié comme cause du sida ; il se répand dans le monde, surtout en Afrique.|La stigmatisation et la mobilisation ; depuis 1996, les traitements en font une maladie chronique là où ils sont accessibles.|Environ 42 millions de morts depuis le début.
+## 2001-09-11-september-11-attacks
+en|Al-Qaeda terrorists hijacked four airliners and crashed them into the World Trade Center and the Pentagon.|The "war on terror", wars in Afghanistan and Iraq, and new security everywhere.|2,977 people killed.
+fr|Des terroristes d'al-Qaïda détournent quatre avions de ligne et les précipitent sur le World Trade Center et le Pentagone.|La « guerre contre le terrorisme », les guerres d'Afghanistan et d'Irak, de nouvelles mesures de sécurité partout.|2 977 personnes tuées.
+## 2004-12-26-indian-ocean-tsunami
+en|An undersea earthquake off Sumatra raised waves that struck fourteen countries.|One of the deadliest natural disasters in history; warning systems built since.|About 230,000 dead.
+fr|Un séisme sous-marin au large de Sumatra soulève des vagues qui frappent quatorze pays.|L'une des catastrophes naturelles les plus meurtrières de l'histoire ; des systèmes d'alerte construits depuis.|Environ 230 000 morts.
+## 2008-global-financial-crisis
+en|The collapse of the US housing market brought down banks across the world.|Recession, unemployment, public debt, and distrust of finance.|
+fr|L'effondrement du marché immobilier américain entraîne la chute de banques dans le monde entier.|La récession, le chômage, la dette publique et la défiance envers la finance.|
+## 1803-05-18-napoleonic-wars
+en|Napoleon's France fought coalitions of European powers, from Spain to Russia.|French rule over much of Europe, the Civil Code spread, then defeat at Waterloo in 1815.|3.5 to 6.5 million soldiers and civilians.
+fr|La France de Napoléon combat des coalitions de puissances européennes, de l'Espagne à la Russie.|La domination française sur une grande partie de l'Europe, le Code civil diffusé, puis la défaite de Waterloo en 1815.|3,5 à 6,5 millions de soldats et de civils.
+## 1810-spanish-american-wars-of-independence
+en|Spain's colonies, from Mexico to Argentina, fought for independence under Bolívar, San Martín and others.|A score of new republics in Latin America.|Hundreds of thousands.
+fr|Les colonies espagnoles, du Mexique à l'Argentine, luttent pour leur indépendance sous Bolívar, San Martín et d'autres.|Une vingtaine de nouvelles républiques en Amérique latine.|Des centaines de milliers.
+## 1839-09-04-first-opium-war
+en|Britain went to war when China tried to stop the opium trade.|China lost Hong Kong and had to open its ports: the "century of humiliation" began.|Tens of thousands, most of them Chinese.
+fr|La Grande-Bretagne entre en guerre lorsque la Chine tente d'arrêter le commerce de l'opium.|La Chine perd Hong Kong et doit ouvrir ses ports : le « siècle d'humiliation » commence.|Des dizaines de milliers, surtout chinois.
+## 1846-04-25-mexican-american-war
+en|The United States went to war with Mexico over Texas and the lands to the west.|Mexico lost half of its territory, from California to New Mexico.|About 25,000 Mexican and 13,000 American dead, most from disease.
+fr|Les États-Unis entrent en guerre contre le Mexique pour le Texas et les terres de l'Ouest.|Le Mexique perd la moitié de son territoire, de la Californie au Nouveau-Mexique.|Environ 25 000 morts mexicains et 13 000 américains, surtout de maladie.
+## 1850-taiping-rebellion
+en|A religious movement led by Hong Xiuquan rose against the Qing dynasty in southern China.|The Qing survived, weakened; the deadliest civil war of the 19th century.|20 to 30 million dead.
+fr|Un mouvement religieux mené par Hong Xiuquan se soulève contre la dynastie Qing dans le sud de la Chine.|Les Qing survivent, affaiblis ; la guerre civile la plus meurtrière du XIXᵉ siècle.|20 à 30 millions de morts.
+## 1853-10-16-crimean-war
+en|France, Britain and the Ottomans fought Russia, above all at the siege of Sevastopol.|Russia checked in the Black Sea; Florence Nightingale and modern nursing.|About 650,000 dead, most of them from disease.
+fr|La France, la Grande-Bretagne et les Ottomans combattent la Russie, surtout au siège de Sébastopol.|La Russie contenue en mer Noire ; Florence Nightingale et les soins infirmiers modernes.|Environ 650 000 morts, surtout de maladie.
+## 1856-10-08-second-opium-war
+en|Britain and France fought China again; their troops burnt the Summer Palace in Beijing.|More Chinese ports opened, opium legalised, Russia took lands in the north.|Tens of thousands.
+fr|La Grande-Bretagne et la France combattent de nouveau la Chine ; leurs troupes incendient le palais d'Été à Pékin.|D'autres ports chinois ouverts, l'opium légalisé, la Russie prend des terres au nord.|Des dizaines de milliers.
+## 1861-04-12-american-civil-war
+en|Eleven southern states seceded to keep slavery; the Union fought to restore the country.|The Union won; slavery was abolished in 1865.|About 620,000 to 750,000 soldiers dead.
+fr|Onze États du Sud font sécession pour garder l'esclavage ; l'Union combat pour rétablir le pays.|L'Union l'emporte ; l'esclavage est aboli en 1865.|Environ 620 000 à 750 000 soldats morts.
+## 1864-paraguayan-war
+en|Paraguay fought Brazil, Argentina and Uruguay together.|Paraguay was crushed and lost territory.|Paraguay lost perhaps half of its people.
+fr|Le Paraguay affronte ensemble le Brésil, l'Argentine et l'Uruguay.|Le Paraguay est écrasé et perd des territoires.|Le Paraguay perd peut-être la moitié de sa population.
+## 1870-07-19-franco-prussian-war
+en|Prussia and the German states defeated France; Napoleon III was captured at Sedan.|The German Empire proclaimed at Versailles; France lost Alsace-Moselle; the Third Republic was born.|About 180,000 soldiers and many civilians.
+fr|La Prusse et les États allemands battent la France ; Napoléon III est fait prisonnier à Sedan.|L'Empire allemand proclamé à Versailles ; la France perd l'Alsace-Moselle ; la IIIᵉ République naît.|Environ 180 000 soldats et de nombreux civils.
+## 1879-04-05-war-of-the-pacific
+en|Chile fought Bolivia and Peru over the nitrate-rich Atacama desert.|Chile won the coast; Bolivia lost its access to the sea.|Some 15,000 to 20,000 dead.
+fr|Le Chili affronte la Bolivie et le Pérou pour le désert d'Atacama, riche en nitrates.|Le Chili gagne la côte ; la Bolivie perd son accès à la mer.|Quelque 15 000 à 20 000 morts.
+## 1894-07-25-first-sino-japanese-war
+en|Japan and China fought over Korea.|Japan won Taiwan and rose as a power; China's weakness was laid bare.|About 35,000 Chinese and 13,000 Japanese, most of the latter from disease.
+fr|Le Japon et la Chine se disputent la Corée.|Le Japon gagne Taïwan et devient une puissance ; la faiblesse de la Chine est révélée.|Environ 35 000 Chinois et 13 000 Japonais, ces derniers surtout de maladie.
+## 1899-10-11-second-boer-war
+en|Britain fought the Boer republics of South Africa for their gold and land.|Britain won; concentration camps for civilians shocked the world.|About 22,000 British and 7,000 Boer soldiers; 26,000 Boer and 20,000 Black civilians in the camps.
+fr|La Grande-Bretagne combat les républiques boers d'Afrique du Sud pour leur or et leurs terres.|La Grande-Bretagne l'emporte ; les camps de concentration pour civils choquent le monde.|Environ 22 000 soldats britanniques et 7 000 boers ; 26 000 civils boers et 20 000 civils noirs dans les camps.
+## 1904-02-08-russo-japanese-war
+en|Japan and Russia fought over Manchuria and Korea; Russia's fleet was sunk at Tsushima.|The first defeat of a European power by an Asian one; revolution in Russia in 1905.|About 130,000 to 170,000 soldiers.
+fr|Le Japon et la Russie se disputent la Mandchourie et la Corée ; la flotte russe est coulée à Tsushima.|La première défaite d'une puissance européenne face à une puissance asiatique ; révolution en Russie en 1905.|Environ 130 000 à 170 000 soldats.
+## 1911-10-10-xinhai-revolution
+en|An uprising in Wuchang spread across China and ended the Qing dynasty.|The end of two thousand years of empire; the Republic of China.|Tens of thousands.
+fr|Un soulèvement à Wuchang gagne la Chine et met fin à la dynastie Qing.|La fin de deux mille ans d'empire ; la République de Chine.|Des dizaines de milliers.
+## 1912-10-08-balkan-wars
+en|Balkan states drove the Ottomans out of Europe, then fought each other over the spoils.|New borders and grievances that led to 1914.|Some 120,000 to 200,000 dead.
+fr|Les États balkaniques chassent les Ottomans d'Europe, puis se disputent le butin.|De nouvelles frontières et des rancœurs qui mènent à 1914.|Quelque 120 000 à 200 000 morts.
+## 1914-07-28-first-world-war
+en|Rival alliances, empires and nationalism turned the murder of an archduke in Sarajevo into a world war of trenches.|Four empires fell; new states, Poland among them; the seeds of the next war.|About 20 million dead, half of them soldiers; 21 million wounded.
+fr|Les alliances rivales, les empires et les nationalismes font de l'assassinat d'un archiduc à Sarajevo une guerre mondiale des tranchées.|Quatre empires tombent ; de nouveaux États, dont la Pologne ; les germes de la guerre suivante.|Environ 20 millions de morts, pour moitié des soldats ; 21 millions de blessés.
+## 1917-11-07-russian-civil-war
+en|The Bolshevik Reds fought the Whites and many other forces across the former empire.|The Bolsheviks won and founded the Soviet Union in 1922.|7 to 12 million dead, with famine and epidemics.
+fr|Les Rouges bolcheviks combattent les Blancs et bien d'autres forces dans l'ancien empire.|Les bolcheviks l'emportent et fondent l'Union soviétique en 1922.|7 à 12 millions de morts, avec la famine et les épidémies.
+## 1936-07-17-spanish-civil-war
+en|Nationalist generals led by Franco rose against the Spanish Republic.|Franco won and ruled Spain until 1975; a rehearsal for the world war.|About 500,000 dead; 450,000 refugees crossed into France in 1939.
+fr|Les généraux nationalistes menés par Franco se soulèvent contre la République espagnole.|Franco l'emporte et gouverne l'Espagne jusqu'en 1975 ; une répétition de la guerre mondiale.|Environ 500 000 morts ; 450 000 réfugiés passent en France en 1939.
+## 1937-07-07-second-sino-japanese-war
+en|Japan invaded China after a clash at the Marco Polo Bridge; Nanjing was massacred in 1937.|China resisted until Japan's surrender in 1945; then civil war resumed.|15 to 20 million Chinese dead.
+fr|Le Japon envahit la Chine après un incident au pont Marco-Polo ; Nankin est massacrée en 1937.|La Chine résiste jusqu'à la capitulation du Japon en 1945 ; puis la guerre civile reprend.|15 à 20 millions de morts chinois.
+## 1939-09-01-second-world-war
+en|Nazi Germany invaded Poland; the war spread to Europe, Africa, Asia and the Pacific.|The defeat of Nazism and of Japan; the Holocaust; a world divided between the United States and the Soviet Union.|70 to 85 million dead, most of them civilians.
+fr|L'Allemagne nazie envahit la Pologne ; la guerre gagne l'Europe, l'Afrique, l'Asie et le Pacifique.|La défaite du nazisme et du Japon ; la Shoah ; un monde partagé entre les États-Unis et l'Union soviétique.|70 à 85 millions de morts, en majorité des civils.
+## 1945-09-23-first-indochina-war
+en|France fought the Viet Minh to keep its colony of Indochina.|France's defeat at Dien Bien Phu; Vietnam divided at the 17th parallel.|Several hundred thousand dead, about 75,000 of them on the French Union's side.
+fr|La France combat le Viêt-minh pour garder sa colonie d'Indochine.|La défaite française à Diên Biên Phu ; le Viêt Nam partagé au 17ᵉ parallèle.|Plusieurs centaines de milliers de morts, dont environ 75 000 du côté de l'Union française.
+## 1946-06-26-chinese-civil-war
+en|The Communists of Mao Zedong fought the Nationalists of Chiang Kai-shek.|The People's Republic of China in 1949; the Nationalists withdrew to Taiwan.|Several million dead.
+fr|Les communistes de Mao Zedong combattent les nationalistes de Tchang Kaï-chek.|La République populaire de Chine en 1949 ; les nationalistes se replient à Taïwan.|Plusieurs millions de morts.
+## 1947-10-22-first-indo-pakistani-war
+en|India and Pakistan fought over Kashmir just after independence.|Kashmir divided along a ceasefire line, still disputed today.|Several thousand soldiers.
+fr|L'Inde et le Pakistan se disputent le Cachemire juste après l'indépendance.|Le Cachemire partagé par une ligne de cessez-le-feu, toujours disputée aujourd'hui.|Plusieurs milliers de soldats.
+## 1947-03-12-the-cold-war
+en|The United States and the Soviet Union opposed each other in arms, ideas and influence, without fighting directly.|A divided Europe and world, the nuclear threat, wars fought by proxy.|No war between the two; millions dead in the wars fought in their shadow.
+fr|Les États-Unis et l'Union soviétique s'opposent par les armes, les idées et l'influence, sans s'affronter directement.|Une Europe et un monde coupés en deux, la menace nucléaire, des guerres par procuration.|Aucune guerre entre les deux ; des millions de morts dans les guerres menées dans leur ombre.
+## 1948-05-15-first-arab-israeli-war
+en|Arab states attacked the newly declared State of Israel.|Israel survived and grew; Palestinians lost their homes in the Nakba.|About 6,000 Israeli and 10,000 to 15,000 Arab dead; 700,000 Palestinians displaced.
+fr|Des États arabes attaquent l'État d'Israël tout juste proclamé.|Israël survit et s'agrandit ; les Palestiniens perdent leurs foyers dans la Nakba.|Environ 6 000 morts israéliens et 10 000 à 15 000 arabes ; 700 000 Palestiniens déplacés.
+## 1950-06-25-korean-war
+en|Communist North Korea invaded the South; the United Nations and China joined the fighting.|An armistice in 1953, no peace: Korea still divided.|About 3 million dead, most of them civilians.
+fr|La Corée du Nord communiste envahit le Sud ; les Nations unies et la Chine entrent dans les combats.|Un armistice en 1953, sans paix : la Corée toujours divisée.|Environ 3 millions de morts, en majorité des civils.
+## 1954-11-01-algerian-war
+en|The FLN fought for Algeria's independence from France; torture, attacks and civil strife on both shores.|Independence in 1962; the Fifth Republic in France; a million Europeans left Algeria.|250,000 to 400,000 Algerian dead by most historians' estimates; about 25,000 French soldiers.
+fr|Le FLN se bat pour l'indépendance de l'Algérie face à la France ; torture, attentats et déchirements sur les deux rives.|L'indépendance en 1962 ; la Vᵉ République en France ; un million d'Européens quittent l'Algérie.|250 000 à 400 000 morts algériens selon la plupart des historiens ; environ 25 000 soldats français.
+## 1955-11-01-vietnam-war
+en|Communist North Vietnam and the Viet Cong fought South Vietnam and the United States.|Saigon fell in 1975; Vietnam was united under communist rule.|Between 1.3 and 3 million dead.
+fr|Le Nord-Viêt Nam communiste et le Viêt-cong combattent le Sud-Viêt Nam et les États-Unis.|Saïgon tombe en 1975 ; le Viêt Nam est unifié sous un régime communiste.|Entre 1,3 et 3 millions de morts.
+## 1961-02-04-portuguese-colonial-war
+en|Portugal fought independence movements in Angola, Mozambique and Guinea-Bissau.|The wars brought down the dictatorship in Lisbon in 1974; the colonies became free.|Tens of thousands of soldiers and civilians.
+fr|Le Portugal combat les mouvements d'indépendance en Angola, au Mozambique et en Guinée-Bissau.|Ces guerres font tomber la dictature à Lisbonne en 1974 ; les colonies deviennent libres.|Des dizaines de milliers de soldats et de civils.
+## 1967-06-05-six-day-war
+en|Israel struck Egypt, Syria and Jordan as tension mounted.|Israel took Sinai, Gaza, the West Bank, East Jerusalem and the Golan.|About 20,000 Arab and 1,000 Israeli dead.
+fr|Israël frappe l'Égypte, la Syrie et la Jordanie alors que la tension monte.|Israël prend le Sinaï, Gaza, la Cisjordanie, Jérusalem-Est et le Golan.|Environ 20 000 morts arabes et 1 000 israéliens.
+## 1973-10-06-yom-kippur-war
+en|Egypt and Syria attacked Israel on the holiest day of the Jewish year.|Israel held; the oil shock followed, and later peace between Egypt and Israel.|About 2,700 Israeli and 10,000 to 20,000 Arab dead.
+fr|L'Égypte et la Syrie attaquent Israël le jour le plus saint de l'année juive.|Israël tient ; le choc pétrolier suit, puis la paix entre l'Égypte et Israël.|Environ 2 700 morts israéliens et 10 000 à 20 000 arabes.
+## 1979-12-24-soviet-afghan-war
+en|The Soviet army entered Afghanistan to prop up a communist government against mujahideen.|The Soviets withdrew in 1989; civil war and the Taliban followed.|Half a million to two million Afghans; about 15,000 Soviet soldiers.
+fr|L'armée soviétique entre en Afghanistan pour soutenir un gouvernement communiste face aux moudjahidines.|Les Soviétiques se retirent en 1989 ; la guerre civile et les talibans suivent.|Un demi-million à deux millions d'Afghans ; environ 15 000 soldats soviétiques.
+## 1980-09-22-iran-iraq-war
+en|Saddam Hussein's Iraq invaded revolutionary Iran.|Eight years of trench war and chemical weapons, for no gain to either.|Half a million to a million dead.
+fr|L'Irak de Saddam Hussein envahit l'Iran révolutionnaire.|Huit ans de guerre de tranchées et d'armes chimiques, sans gain pour personne.|Un demi-million à un million de morts.
+## 1990-08-02-gulf-war
+en|Iraq invaded Kuwait; a United Nations coalition led by the United States drove it out.|Kuwait freed; sanctions on Iraq; American forces in the Gulf.|Some 25,000 Iraqi soldiers and a few hundred coalition soldiers; thousands of civilians.
+fr|L'Irak envahit le Koweït ; une coalition des Nations unies menée par les États-Unis l'en chasse.|Le Koweït libéré ; des sanctions contre l'Irak ; des forces américaines dans le Golfe.|Quelque 25 000 soldats irakiens et quelques centaines de soldats de la coalition ; des milliers de civils.
+## 1991-03-31-yugoslav-wars
+en|Yugoslavia broke apart in wars between Serbs, Croats, Bosniaks and Kosovars.|Seven states; ethnic cleansing, and a genocide at Srebrenica in 1995.|About 130,000 to 140,000 dead; millions displaced.
+fr|La Yougoslavie éclate dans des guerres entre Serbes, Croates, Bosniaques et Kosovars.|Sept États ; le nettoyage ethnique, et un génocide à Srebrenica en 1995.|Environ 130 000 à 140 000 morts ; des millions de déplacés.
+## 1994-04-07-genocide-against-the-tutsi-in-rwanda
+en|After the president's plane was shot down, Hutu extremists organised the killing of the Tutsi and of moderate Hutu.|The world failed to act; the Rwandan Patriotic Front ended it; war spread to the Congo.|About 800,000 people murdered in a hundred days.
+fr|Après la destruction de l'avion du président, des extrémistes hutu organisent le massacre des Tutsi et des Hutu modérés.|Le monde n'agit pas ; le Front patriotique rwandais y met fin ; la guerre gagne le Congo.|Environ 800 000 personnes assassinées en cent jours.
+## 1998-08-02-second-congo-war
+en|Rwanda, Uganda and other states fought over the DR Congo and its minerals, with many local militias.|The deadliest war since 1945; eastern Congo still unsettled.|Up to 5 million dead, mostly from disease and hunger.
+fr|Le Rwanda, l'Ouganda et d'autres États se disputent la RD Congo et ses minerais, avec de nombreuses milices locales.|La guerre la plus meurtrière depuis 1945 ; l'est du Congo toujours instable.|Jusqu'à 5 millions de morts, surtout de maladie et de faim.
+## 2001-10-07-war-in-afghanistan
+en|After 11 September, the United States and allies overthrew the Taliban and stayed for twenty years.|The Taliban returned to power in 2021.|About 175,000 dead in the fighting, some 46,000 of them civilians.
+fr|Après le 11 septembre, les États-Unis et leurs alliés renversent les talibans et restent vingt ans.|Les talibans reviennent au pouvoir en 2021.|Environ 175 000 morts dans les combats, dont quelque 46 000 civils.
+## 2003-03-20-iraq-war
+en|The United States and Britain invaded Iraq and overthrew Saddam Hussein.|Occupation, insurgency, civil strife and the rise of the Islamic State.|Estimates range from 150,000 to over 600,000 violent deaths.
+fr|Les États-Unis et le Royaume-Uni envahissent l'Irak et renversent Saddam Hussein.|L'occupation, l'insurrection, les violences confessionnelles et l'essor de l'État islamique.|Les estimations vont de 150 000 à plus de 600 000 morts violentes.
+## 2011-03-15-syrian-civil-war
+en|Peaceful protests were crushed by Bashar al-Assad's regime; war spread with foreign powers involved.|Millions of refugees reached Turkey, Lebanon and Europe; Assad fell in December 2024.|About 500,000 to 600,000 dead; 13 million displaced.
+fr|Des manifestations pacifiques sont écrasées par le régime de Bachar el-Assad ; la guerre s'étend avec l'intervention de puissances étrangères.|Des millions de réfugiés gagnent la Turquie, le Liban et l'Europe ; Assad tombe en décembre 2024.|Environ 500 000 à 600 000 morts ; 13 millions de déplacés.
+## 2022-02-24-russian-invasion-of-ukraine
+en|Russia launched a full-scale invasion of Ukraine after occupying Crimea and part of the Donbas in 2014.|Ukraine's independence and Europe's security; the largest war in Europe since 1945.|Hundreds of thousands of soldiers killed or wounded; over 12,000 civilians confirmed killed; millions of refugees.
+fr|La Russie lance une invasion à grande échelle de l'Ukraine, après avoir occupé la Crimée et une partie du Donbass en 2014.|L'indépendance de l'Ukraine et la sécurité de l'Europe ; la plus grande guerre en Europe depuis 1945.|Des centaines de milliers de soldats tués ou blessés ; plus de 12 000 civils tués confirmés ; des millions de réfugiés.
+## 1315-great-famine-in-europe
+en|Years of cold and rain ruined harvests across northern Europe.|The end of two centuries of growth; weakened people before the Black Death.|Perhaps a tenth to a quarter of the people in some regions.
+fr|Des années de froid et de pluie ruinent les récoltes dans le nord de l'Europe.|La fin de deux siècles de croissance ; une population affaiblie avant la peste noire.|Peut-être un dixième à un quart des habitants de certaines régions.
+## 1683-09-12-battle-of-vienna
+en|An Ottoman army besieged Vienna; a relief army led by King Jan III Sobieski of Poland broke the siege.|The end of Ottoman advances into Europe.|Tens of thousands in the siege and the battle.
+fr|Une armée ottomane assiège Vienne ; une armée de secours menée par le roi de Pologne Jean III Sobieski brise le siège.|La fin des avancées ottomanes en Europe.|Des dizaines de milliers dans le siège et la bataille.
+## 1806-08-06-end-of-the-holy-roman-empire
+en|Defeated by Napoleon, Francis II laid down the crown of the Holy Roman Empire.|A thousand-year empire ended; the German states were reshaped.|
+fr|Vaincu par Napoléon, François II dépose la couronne du Saint-Empire.|Un empire millénaire prend fin ; les États allemands sont remodelés.|
+## 1814-09-congress-of-vienna
+en|The victors over Napoleon redrew the map of Europe.|A balance of power that kept Europe from general war for a century; Poland divided again.|
+fr|Les vainqueurs de Napoléon redessinent la carte de l'Europe.|Un équilibre des puissances qui évite à l'Europe une guerre générale pendant un siècle ; la Pologne de nouveau partagée.|
+## 1918-11-fall-of-the-empires-birth-of-new-states
+en|The German, Austro-Hungarian, Russian and Ottoman empires collapsed at the end of the war.|Poland, Czechoslovakia, Yugoslavia and the Baltic states were born, with new borders and minorities.|
+fr|Les empires allemand, austro-hongrois, russe et ottoman s'effondrent à la fin de la guerre.|La Pologne, la Tchécoslovaquie, la Yougoslavie et les pays baltes naissent, avec de nouvelles frontières et des minorités.|
+## 1945-the-iron-curtain
+en|Europe was divided between the Soviet-dominated East and the democratic West.|Families separated, borders closed, two economies and two worlds.|Hundreds died trying to cross it.
+fr|L'Europe est coupée entre l'Est dominé par les Soviétiques et l'Ouest démocratique.|Des familles séparées, des frontières fermées, deux économies et deux mondes.|Des centaines de personnes meurent en tentant de le franchir.
+## 1957-03-25-treaty-of-rome-european-economic-community
+en|Six countries founded the European Economic Community.|A common market, the root of today's European Union.|
+fr|Six pays fondent la Communauté économique européenne.|Un marché commun, racine de l'actuelle Union européenne.|
+## 1993-11-01-european-union-maastricht
+en|The Maastricht Treaty created the European Union.|European citizenship, freedom to live and work in other member states.|
+fr|Le traité de Maastricht crée l'Union européenne.|La citoyenneté européenne, la liberté de vivre et de travailler dans les autres États membres.|
+## 2002-01-01-the-euro-in-everyone-s-pocket
+en|Euro coins and notes replaced the franc, the mark, the lira and other currencies.|One currency for hundreds of millions of Europeans.|
+fr|Les pièces et billets en euros remplacent le franc, le mark, la lire et d'autres monnaies.|Une seule monnaie pour des centaines de millions d'Européens.|
+## 1755-11-01-lisbon-earthquake
+en|An earthquake, fires and a tsunami destroyed Lisbon on All Saints' Day.|Philosophers questioned providence; Lisbon was rebuilt on a modern plan.|About 30,000 to 50,000 dead.
+fr|Un séisme, des incendies et un tsunami détruisent Lisbonne le jour de la Toussaint.|Les philosophes interrogent la Providence ; Lisbonne est reconstruite sur un plan moderne.|Environ 30 000 à 50 000 morts.
+## 1881-scramble-for-africa
+en|European powers conquered almost all of Africa in a few decades.|Colonial rule, borders drawn from outside, extraction of resources and forced labour.|Millions died in conquest, forced labour and famine.
+fr|Les puissances européennes conquièrent presque toute l'Afrique en quelques décennies.|La domination coloniale, des frontières tracées de l'extérieur, l'exploitation des ressources et le travail forcé.|Des millions de morts dans la conquête, le travail forcé et les famines.
+## 1957-03-06-independence-of-ghana
+en|The Gold Coast became Ghana, led by Kwame Nkrumah.|The first independence in sub-Saharan Africa, a signal to the continent.|
+fr|La Côte-de-l'Or devient le Ghana, mené par Kwame Nkrumah.|La première indépendance d'Afrique subsaharienne, un signal pour tout le continent.|
+## 1960-year-of-africa-seventeen-independences
+en|Seventeen African countries became independent in one year, among them the Congo and most of French Africa.|New states with colonial borders; the hopes and struggles of independence.|
+fr|Dix-sept pays africains deviennent indépendants en une année, dont le Congo et l'essentiel de l'Afrique française.|De nouveaux États aux frontières coloniales ; les espoirs et les luttes de l'indépendance.|
+## 1963-05-25-organisation-of-african-unity-founded
+en|Independent African states founded the OAU in Addis Ababa.|African solidarity, support for liberation movements, colonial borders kept.|
+fr|Les États africains indépendants fondent l'OUA à Addis-Abeba.|La solidarité africaine, le soutien aux mouvements de libération, le maintien des frontières coloniales.|
+## 1948-apartheid-in-south-africa
+en|South Africa's government made racial segregation the law of the land.|A system of white minority rule, ended in 1994 with Nelson Mandela's election.|Thousands killed in repression; 3.5 million people forcibly moved.
+fr|Le gouvernement sud-africain fait de la ségrégation raciale la loi du pays.|Un système de domination de la minorité blanche, aboli en 1994 avec l'élection de Nelson Mandela.|Des milliers de tués dans la répression ; 3,5 millions de personnes déplacées de force.
+## 1967-07-06-nigerian-civil-war-biafra
+en|The south-east of Nigeria seceded as Biafra; Nigeria besieged it.|Nigeria stayed united; images of starving children moved the world.|One to three million dead, mostly from famine.
+fr|Le sud-est du Nigeria fait sécession sous le nom de Biafra ; le Nigeria l'assiège.|Le Nigeria reste uni ; les images d'enfants affamés bouleversent le monde.|Un à trois millions de morts, surtout de famine.
+## 2002-07-09-african-union-founded
+en|The OAU became the African Union.|A union that may intervene against genocide and coups.|
+fr|L'OUA devient l'Union africaine.|Une union qui peut intervenir contre les génocides et les coups d'État.|
+## 2014-ebola-epidemic-in-west-africa
+en|Ebola spread in Guinea, Liberia and Sierra Leone, reaching cities for the first time.|Weak health systems laid bare; a vaccine followed.|About 11,300 dead.
+fr|Ebola se répand en Guinée, au Liberia et en Sierra Leone, atteignant pour la première fois des villes.|Des systèmes de santé fragiles mis à nu ; un vaccin suit.|Environ 11 300 morts.
+## 1607-jamestown-first-lasting-english-colony
+en|English settlers founded Jamestown in Virginia.|The start of English America, and soon of slavery there.|Most of the first settlers died of hunger and disease.
+fr|Des colons anglais fondent Jamestown en Virginie.|Le début de l'Amérique anglaise, et bientôt de l'esclavage sur place.|La plupart des premiers colons meurent de faim et de maladie.
+## 1888-05-13-abolition-of-slavery-in-brazil
+en|Brazil's Golden Law abolished slavery, the last country in the Americas to do so.|Freedom without land or compensation for the formerly enslaved.|
+fr|La « Loi d'or » abolit l'esclavage au Brésil, dernier pays des Amériques à le faire.|La liberté, sans terre ni réparation pour les anciens esclaves.|
+## 1910-mexican-revolution
+en|A revolt against the dictator Porfirio Díaz became a long civil war; Zapata and Villa among its leaders.|Land reform and a new constitution in 1917.|About a million dead.
+fr|Une révolte contre le dictateur Porfirio Díaz devient une longue guerre civile ; Zapata et Villa parmi ses chefs.|La réforme agraire et une nouvelle constitution en 1917.|Environ un million de morts.
+## 1959-01-01-cuban-revolution
+en|Fidel Castro's rebels overthrew the dictator Batista.|A communist state allied with the Soviet Union, ninety miles from the United States.|Thousands in the war and the executions after it.
+fr|Les rebelles de Fidel Castro renversent le dictateur Batista.|Un État communiste allié à l'Union soviétique, à 150 km des États-Unis.|Des milliers dans la guerre et les exécutions qui suivent.
+## 1964-military-dictatorships-in-south-america
+en|Military coups put juntas in power in Brazil, Chile, Argentina, Uruguay and elsewhere.|Repression in the name of anti-communism; democracy returned in the 1980s.|Tens of thousands killed or disappeared, about 30,000 in Argentina.
+fr|Des coups d'État militaires portent des juntes au pouvoir au Brésil, au Chili, en Argentine, en Uruguay et ailleurs.|La répression au nom de l'anticommunisme ; la démocratie revient dans les années 1980.|Des dizaines de milliers de tués ou disparus, environ 30 000 en Argentine.
+## 1868-meiji-restoration-japan
+en|The shogunate fell and the emperor was restored to power.|Japan modernised in a generation and became an industrial and military power.|
+fr|Le shogunat tombe et l'empereur retrouve le pouvoir.|Le Japon se modernise en une génération et devient une puissance industrielle et militaire.|
+## 1922-11-01-end-of-the-ottoman-empire
+en|The sultanate was abolished; the Republic of Turkey was proclaimed in 1923.|The end of a six-century empire; new states in the Middle East.|The empire's last years saw the Armenian genocide and great population exchanges.
+fr|Le sultanat est aboli ; la République de Turquie est proclamée en 1923.|La fin d'un empire de six siècles ; de nouveaux États au Moyen-Orient.|Les dernières années de l'empire voient le génocide des Arméniens et de grands échanges de populations.
+## 1948-05-14-independence-of-israel-and-the-nakba
+en|Israel declared its independence; war followed with its Arab neighbours.|A Jewish state after the Holocaust; for the Palestinians, the Nakba, the catastrophe.|About 700,000 Palestinians fled or were expelled.
+fr|Israël proclame son indépendance ; la guerre suit avec ses voisins arabes.|Un État juif après la Shoah ; pour les Palestiniens, la Nakba, la catastrophe.|Environ 700 000 Palestiniens fuient ou sont expulsés.
+## 1949-10-01-people-s-republic-of-china-proclaimed
+en|Mao Zedong proclaimed the People's Republic in Beijing.|Communist rule over the most populous country.|
+fr|Mao Zedong proclame la République populaire à Pékin.|Un régime communiste sur le pays le plus peuplé du monde.|
+## 1966-cultural-revolution-china
+en|Mao launched the Red Guards against "bourgeois" elements in party and society.|A decade of chaos, persecution and destruction of culture.|Hundreds of thousands to about 2 million dead.
+fr|Mao lance les gardes rouges contre les éléments « bourgeois » du parti et de la société.|Une décennie de chaos, de persécutions et de destruction de la culture.|De centaines de milliers à environ 2 millions de morts.
+## 1975-khmer-rouge-regime-cambodia
+en|The Khmer Rouge emptied the cities and forced the people into rural labour camps.|A genocide; ended by Vietnam's invasion in 1979.|1.5 to 2 million dead, about a quarter of the people.
+fr|Les Khmers rouges vident les villes et envoient la population dans des camps de travail ruraux.|Un génocide ; auquel met fin l'invasion vietnamienne en 1979.|1,5 à 2 millions de morts, environ un quart de la population.
+## 1979-02-11-iranian-revolution
+en|The Shah was overthrown; Ayatollah Khomeini founded an Islamic Republic.|A theocracy, hostage crisis with the United States, war with Iraq.|Thousands in the revolution and the repression after it.
+fr|Le chah est renversé ; l'ayatollah Khomeini fonde une République islamique.|Une théocratie, la crise des otages avec les États-Unis, la guerre avec l'Irak.|Des milliers dans la révolution et la répression qui suit.
+## 1788-01-26-first-fleet-british-settlement-of-australia
+en|British ships brought convicts to Sydney Cove to found a penal colony.|Australia was settled from Britain; Aboriginal peoples were dispossessed.|Aboriginal people died in great numbers from disease and violence.
+fr|Des navires britanniques amènent des bagnards à Sydney Cove pour fonder une colonie pénitentiaire.|L'Australie est colonisée depuis la Grande-Bretagne ; les peuples aborigènes sont dépossédés.|Les Aborigènes meurent en grand nombre de maladies et de violences.
+## 1840-02-06-treaty-of-waitangi-new-zealand
+en|Māori chiefs and the British Crown signed a treaty at Waitangi.|The founding document of New Zealand, its meaning still debated.|Land wars with the Māori followed in the 1860s.
+fr|Des chefs maoris et la Couronne britannique signent un traité à Waitangi.|Le texte fondateur de la Nouvelle-Zélande, dont le sens reste débattu.|Des guerres foncières avec les Maoris suivent dans les années 1860.
+## 1562-wars-of-religion
+en|Eight wars between Catholics and Protestants (Huguenots), with the Saint Bartholomew's Day massacre in 1572.|Henry IV converted, and the Edict of Nantes granted Protestants freedom of worship.|Perhaps 2 to 4 million dead, with famine and disease; thousands in the massacre of 1572.
+fr|Huit guerres entre catholiques et protestants (huguenots), dont le massacre de la Saint-Barthélemy en 1572.|Henri IV se convertit et l'édit de Nantes accorde aux protestants la liberté de culte.|Peut-être 2 à 4 millions de morts, avec la famine et les épidémies ; des milliers dans le massacre de 1572.
+## 1643-reign-of-louis-xiv
+en|The "Sun King" reigned 72 years, ruling as absolute monarch from Versailles.|France the first power of Europe, at the cost of wars, debt and the poverty of the peasants.|His wars and the famines of 1693 and 1709 killed millions.
+fr|Le « Roi-Soleil » règne 72 ans en monarque absolu depuis Versailles.|La France première puissance d'Europe, au prix de guerres, de dettes et de la misère paysanne.|Ses guerres et les famines de 1693 et 1709 font des millions de morts.
+## 1685-10-18-revocation-of-the-edict-of-nantes
+en|Louis XIV banned Protestant worship and had temples destroyed; forced conversions followed.|France lost craftsmen and merchants to Prussia, England, the Netherlands and Switzerland.|About 200,000 Huguenots fled; persecution and the galleys for those caught.
+fr|Louis XIV interdit le culte protestant et fait détruire les temples ; les conversions forcées suivent.|La France perd des artisans et des marchands au profit de la Prusse, de l'Angleterre, des Provinces-Unies et de la Suisse.|Environ 200 000 huguenots s'exilent ; persécutions et galères pour ceux qui sont pris.
+## 1693-great-famine-of-1693-1694
+en|Cold, rain and failed harvests, with war taxes, starved the French countryside.|One of the worst mortality crises in modern France.|About 1.3 million dead out of some 20 million.
+fr|Le froid, la pluie et les mauvaises récoltes, avec les impôts de guerre, affament les campagnes françaises.|L'une des pires crises de mortalité de la France moderne.|Environ 1,3 million de morts sur quelque 20 millions d'habitants.
+## 1709-great-winter-of-1709
+en|An extreme frost froze rivers, vines and seed in the ground across France.|Famine and epidemics in a kingdom already at war.|About 600,000 dead in France.
+fr|Un froid extrême gèle les rivières, les vignes et les semences en terre dans toute la France.|La famine et les épidémies dans un royaume déjà en guerre.|Environ 600 000 morts en France.
+## 1720-plague-of-marseille
+en|Plague arrived on the merchant ship Grand-Saint-Antoine and spread from Marseille across Provence.|A wall was built to contain it; the last great plague in Western Europe.|About 100,000 dead in Provence, half of them in Marseille.
+fr|La peste arrive sur le navire marchand Grand-Saint-Antoine et se répand de Marseille dans toute la Provence.|Un mur est élevé pour la contenir ; la dernière grande peste d'Europe occidentale.|Environ 100 000 morts en Provence, dont la moitié à Marseille.
+## 1792-09-20-civil-registers-pass-to-the-state
+en|A law of the Revolution took the keeping of births, marriages and deaths from the parish priests and gave it to the town halls.|Civil registers for every French person, whatever their religion: the genealogist's main source since.|
+fr|Une loi révolutionnaire retire aux curés la tenue des naissances, mariages et décès pour la confier aux mairies.|Des registres civils pour chaque Français, quelle que soit sa religion : la première source du généalogiste depuis.|
+## 1793-the-terror
+en|Facing war and revolt, the Committee of Public Safety ruled by fear; the Revolutionary Tribunal sent thousands to the guillotine.|The Republic saved by force; Robespierre himself executed in 1794.|About 17,000 executed after trial; some 40,000 dead with prisons and summary killings.
+fr|Face à la guerre et aux révoltes, le Comité de salut public gouverne par la peur ; le Tribunal révolutionnaire envoie des milliers de personnes à la guillotine.|La République sauvée par la force ; Robespierre lui-même exécuté en 1794.|Environ 17 000 exécutions après jugement ; quelque 40 000 morts avec les prisons et les exécutions sommaires.
+## 1793-war-in-the-vendee
+en|The levy of men and the attacks on the Church set the Catholic and royalist West against the Republic.|The rising was crushed with great brutality, the "infernal columns" among it.|About 170,000 to 200,000 dead.
+fr|La levée en masse et les atteintes à l'Église dressent l'Ouest catholique et royaliste contre la République.|Le soulèvement est écrasé avec une grande brutalité, dont les « colonnes infernales ».|Environ 170 000 à 200 000 morts.
+## 1804-first-empire-napoleon-i
+en|Napoleon crowned himself emperor and dominated Europe.|The Civil Code, prefects, lycées; endless wars and conscription; defeat in 1815.|Hundreds of thousands of French soldiers died in his wars.
+fr|Napoléon se sacre empereur et domine l'Europe.|Le Code civil, les préfets, les lycées ; des guerres sans fin et la conscription ; la défaite en 1815.|Des centaines de milliers de soldats français meurent dans ses guerres.
+## 1815-restoration-and-july-monarchy
+en|The Bourbons returned; the revolution of July 1830 brought Louis-Philippe, the "citizens' king".|A constitutional monarchy of the well-to-do; industry grows; revolution again in 1848.|Hundreds died in the July Days of 1830.
+fr|Les Bourbons reviennent ; la révolution de juillet 1830 porte au pouvoir Louis-Philippe, le « roi-citoyen ».|Une monarchie constitutionnelle des notables ; l'industrie grandit ; nouvelle révolution en 1848.|Des centaines de morts pendant les Trois Glorieuses de 1830.
+## 1832-cholera-in-paris
+en|Cholera reached Paris in the spring of 1832, striking the crowded poor districts hardest.|Fear, riots and a new concern for sewers and clean water; the Prime Minister died of it.|About 18,000 dead in Paris, some 100,000 in France.
+fr|Le choléra atteint Paris au printemps 1832 et frappe surtout les quartiers pauvres et surpeuplés.|La peur, des émeutes et un nouveau souci des égouts et de l'eau propre ; le président du Conseil en meurt.|Environ 18 000 morts à Paris, quelque 100 000 en France.
+## 1848-04-27-slavery-abolished-in-the-french-colonies
+en|Under the Second Republic, Victor Schœlcher's decree ended slavery in the French colonies for good.|Freedom for some 250,000 people in the Antilles, Guiana and Réunion; slave owners were compensated, not the enslaved.|
+fr|Sous la IIᵉ République, le décret de Victor Schœlcher met définitivement fin à l'esclavage dans les colonies françaises.|La liberté pour quelque 250 000 personnes aux Antilles, en Guyane et à La Réunion ; les propriétaires sont indemnisés, pas les esclaves.|
+## 1852-second-empire-napoleon-iii
+en|Louis-Napoléon Bonaparte, elected president in 1848, made himself emperor after a coup.|Railways, Haussmann's Paris and colonies; ended by the defeat of 1870.|
+fr|Louis-Napoléon Bonaparte, élu président en 1848, se fait empereur après un coup d'État.|Les chemins de fer, le Paris d'Haussmann et les colonies ; la défaite de 1870 y met fin.|
+## 1871-03-18-paris-commune
+en|After the defeat, Paris rose and governed itself; the government at Versailles retook it by force.|A symbol for the workers' movement; the Republic founded in repression.|10,000 to 20,000 killed in the "Bloody Week"; thousands deported.
+fr|Après la défaite, Paris se soulève et se gouverne elle-même ; le gouvernement de Versailles la reprend par la force.|Un symbole pour le mouvement ouvrier ; la République fondée dans la répression.|10 000 à 20 000 tués pendant la « Semaine sanglante » ; des milliers de déportés.
+## 1871-05-10-alsace-moselle-annexed-by-germany
+en|By the Treaty of Frankfurt, France gave Alsace and part of Lorraine to the German Empire.|Inhabitants had to choose: stay German or leave for France; the "lost provinces" until 1918.|About 130,000 people opted for France and left.
+fr|Par le traité de Francfort, la France cède l'Alsace et une partie de la Lorraine à l'Empire allemand.|Les habitants doivent choisir : rester allemands ou partir pour la France ; les « provinces perdues » jusqu'en 1918.|Environ 130 000 personnes optent pour la France et partent.
+## 1882-03-28-free-compulsory-secular-school
+en|Jules Ferry's laws made primary school free, compulsory and secular for girls and boys aged 6 to 13.|Universal literacy in French; regional languages pushed back.|
+fr|Les lois de Jules Ferry rendent l'école primaire gratuite, obligatoire et laïque pour les filles et les garçons de 6 à 13 ans.|L'alphabétisation de tous en français ; les langues régionales reculent.|
+## 1905-12-09-separation-of-church-and-state
+en|The Republic stopped paying or recognising any religion and guaranteed freedom of conscience.|French secularism, laïcité, still debated today.|
+fr|La République cesse de salarier et de reconnaître les cultes et garantit la liberté de conscience.|La laïcité française, encore débattue aujourd'hui.|
+## 1916-02-21-battle-of-verdun
+en|Germany attacked Verdun to bleed the French army; ten months of artillery and trench fighting followed.|France held; Verdun became the symbol of the soldiers' endurance.|About 300,000 dead and 400,000 wounded on both sides.
+fr|L'Allemagne attaque Verdun pour saigner l'armée française ; dix mois de bombardements et de combats de tranchées suivent.|La France tient ; Verdun devient le symbole de l'endurance des soldats.|Environ 300 000 morts et 400 000 blessés dans les deux camps.
+## 1936-06-20-popular-front-paid-holidays
+en|The Popular Front government of Léon Blum gave workers two weeks of paid holiday and the 40-hour week.|Leisure for working families, the first trips to the sea.|
+fr|Le gouvernement de Front populaire de Léon Blum accorde aux ouvriers deux semaines de congés payés et la semaine de 40 heures.|Les loisirs pour les familles ouvrières, les premiers départs à la mer.|
+## 1940-06-22-occupation-and-the-vichy-regime
+en|After defeat, France was occupied; Marshal Pétain's regime at Vichy collaborated with Nazi Germany.|Collaboration and Resistance; the deportation of the Jews of France; Liberation in 1944.|About 76,000 Jews deported from France; tens of thousands of résistants, hostages and civilians killed.
+fr|Après la défaite, la France est occupée ; le régime du maréchal Pétain à Vichy collabore avec l'Allemagne nazie.|La collaboration et la Résistance ; la déportation des Juifs de France ; la Libération en 1944.|Environ 76 000 Juifs déportés de France ; des dizaines de milliers de résistants, d'otages et de civils tués.
+## 1944-04-21-women-s-right-to-vote
+en|An ordinance of the provisional government gave French women the right to vote and stand for office.|Women voted for the first time in 1945, a century after men.|
+fr|Une ordonnance du gouvernement provisoire accorde aux Françaises le droit de vote et d'éligibilité.|Les femmes votent pour la première fois en 1945, un siècle après les hommes.|
+## 1958-10-04-fifth-republic
+en|In the crisis of the Algerian War, de Gaulle returned and gave France a new constitution.|A strong presidency, elected by the people from 1962.|
+fr|Dans la crise de la guerre d'Algérie, de Gaulle revient et donne à la France une nouvelle constitution.|Une présidence forte, élue par le peuple à partir de 1962.|
+## 1968-05-may-1968
+en|Student protests in Paris spread to a general strike of ten million workers.|Higher wages and a shift in morals, family and authority.|A few dead in the clashes.
+fr|Les manifestations étudiantes à Paris gagnent une grève générale de dix millions de travailleurs.|Des hausses de salaires et un basculement des mœurs, de la famille et de l'autorité.|Quelques morts dans les affrontements.
+## 1981-10-09-death-penalty-abolished
+en|Led by the justice minister Robert Badinter, Parliament abolished the death penalty.|France among the last in Western Europe to do so; the guillotine retired.|
+fr|Sous l'impulsion du garde des Sceaux Robert Badinter, le Parlement abolit la peine de mort.|La France parmi les derniers pays d'Europe occidentale à le faire ; la guillotine à la retraite.|
+## 1569-07-01-polish-lithuanian-commonwealth
+en|By the Union of Lublin, Poland and Lithuania became one state with an elected king.|A nobles' republic, tolerant in religion, stretching from the Baltic to the Black Sea.|
+fr|Par l'union de Lublin, la Pologne et la Lituanie forment un seul État au roi élu.|Une république nobiliaire, tolérante en religion, étendue de la Baltique à la mer Noire.|
+## 1655-the-deluge-swedish-invasion
+en|Sweden invaded the Commonwealth, while Russia and Cossacks attacked from the east.|The Commonwealth survived but never recovered its strength.|Poland lost perhaps a quarter of its people or more, by war, plague and famine.
+fr|La Suède envahit la République, tandis que la Russie et les Cosaques attaquent à l'est.|La République survit mais ne retrouve jamais sa force.|La Pologne perd peut-être un quart de sa population ou davantage, par la guerre, la peste et la famine.
+## 1772-08-05-first-partition-of-poland
+en|Russia, Prussia and Austria took about a third of the Commonwealth's land.|A weakened state, which tried to reform itself.|
+fr|La Russie, la Prusse et l'Autriche s'emparent d'environ un tiers des terres de la République.|Un État affaibli, qui tente de se réformer.|
+## 1791-05-03-constitution-of-3-may
+en|The Sejm adopted a constitution limiting the nobles' veto and strengthening the state.|A hope of reform that Russia answered with war.|
+fr|La Diète adopte une constitution qui limite le veto des nobles et renforce l'État.|Un espoir de réforme auquel la Russie répond par la guerre.|
+## 1793-01-23-second-partition
+en|After a war lost against Russia, Russia and Prussia took more Polish land.|What remained of Poland was a small state under Russian control.|
+fr|Après une guerre perdue contre la Russie, la Russie et la Prusse prennent de nouvelles terres polonaises.|Ce qui reste de la Pologne n'est plus qu'un petit État sous contrôle russe.|
+## 1794-03-24-kosciuszko-uprising
+en|Tadeusz Kościuszko led a national rising, with peasants armed with scythes, against Russia and Prussia.|Its defeat brought the end of the state.|Tens of thousands; the massacre of Praga in Warsaw killed thousands of civilians.
+fr|Tadeusz Kościuszko mène un soulèvement national, avec des paysans armés de faux, contre la Russie et la Prusse.|Sa défaite entraîne la fin de l'État.|Des dizaines de milliers ; le massacre de Praga à Varsovie tue des milliers de civils.
+## 1795-10-24-third-partition-poland-disappears
+en|Russia, Prussia and Austria divided what was left; Poland vanished from the map.|Poles lived under three empires, with three laws and three languages of record.|
+fr|La Russie, la Prusse et l'Autriche se partagent le reste ; la Pologne disparaît de la carte.|Les Polonais vivent sous trois empires, avec trois droits et trois langues d'état civil.|
+## 1807-duchy-of-warsaw
+en|Napoleon made a Polish state out of Prussian lands, under the King of Saxony.|The Napoleonic Code and civil registers from 1808; hopes of rebirth, ended in 1815.|Many Polish soldiers fell in Napoleon's campaigns, in Spain and Russia.
+fr|Napoléon crée un État polonais à partir de terres prussiennes, sous le roi de Saxe.|Le Code Napoléon et l'état civil dès 1808 ; des espoirs de renaissance, brisés en 1815.|De nombreux soldats polonais tombent dans les campagnes de Napoléon, en Espagne et en Russie.
+## 1815-congress-poland-under-russia
+en|The Congress of Vienna made a Kingdom of Poland whose king was the Russian tsar.|Autonomy, then repression after each uprising; Russian in the records from 1868.|
+fr|Le congrès de Vienne crée un royaume de Pologne dont le roi est le tsar de Russie.|Une autonomie, puis la répression après chaque soulèvement ; le russe dans les actes dès 1868.|
+## 1830-11-29-november-uprising
+en|Officer cadets in Warsaw rose against Russian rule; a year of war followed.|Defeat, the end of autonomy, and the Great Emigration of the elites.|About 40,000 Poles dead in the fighting.
+fr|Des élèves officiers de Varsovie se soulèvent contre la domination russe ; une année de guerre suit.|La défaite, la fin de l'autonomie et la Grande Émigration des élites.|Environ 40 000 Polonais morts dans les combats.
+## 1831-the-great-emigration
+en|After 1831, thousands of Polish soldiers, politicians and artists went into exile, above all in France.|Chopin, Mickiewicz and others kept Polish culture alive in Paris.|
+fr|Après 1831, des milliers de soldats, d'hommes politiques et d'artistes polonais s'exilent, surtout en France.|Chopin, Mickiewicz et d'autres font vivre la culture polonaise à Paris.|
+## 1863-01-22-january-uprising
+en|A guerrilla war against Russia, sparked by forced conscription into the Russian army.|Crushed; Russification of schools and offices followed.|About 20,000 to 30,000 insurgents killed; tens of thousands exiled to Siberia.
+fr|Une guérilla contre la Russie, déclenchée par la conscription forcée dans l'armée russe.|Écrasée ; la russification des écoles et des administrations suit.|Environ 20 000 à 30 000 insurgés tués ; des dizaines de milliers d'exilés en Sibérie.
+## 1870-emigration-for-bread
+en|Landless peasants left Polish lands to work in America, Germany and France.|Polish communities in Chicago, the Ruhr and Brazil; families divided between continents.|About 3.5 million left before 1914.
+fr|Des paysans sans terre quittent les terres polonaises pour travailler en Amérique, en Allemagne et en France.|Des communautés polonaises à Chicago, dans la Ruhr et au Brésil ; des familles partagées entre les continents.|Environ 3,5 millions de départs avant 1914.
+## 1918-11-11-independence-of-poland
+en|As the empires fell, Józef Piłsudski took command in Warsaw: Poland was free after 123 years.|A reborn state to unite three parts with different laws, and to defend its borders.|
+fr|Alors que les empires s'effondrent, Józef Piłsudski prend le commandement à Varsovie : la Pologne est libre après 123 ans.|Un État renaissant qui doit unir trois parties aux droits différents et défendre ses frontières.|
+## 1919-02-14-polish-soviet-war
+en|Poland and Soviet Russia fought over the eastern borderlands; the Red Army reached Warsaw in 1920.|Poland won at the Vistula and kept its independence; the Treaty of Riga set its eastern border.|About 100,000 dead on both sides.
+fr|La Pologne et la Russie soviétique se disputent les confins orientaux ; l'Armée rouge atteint Varsovie en 1920.|La Pologne l'emporte sur la Vistule et garde son indépendance ; le traité de Riga fixe sa frontière orientale.|Environ 100 000 morts des deux côtés.
+## 1919-polish-miners-in-northern-france
+en|France, short of men after the war, recruited Polish workers for the mines of the Nord and Pas-de-Calais.|Polish towns within French towns, with their churches, schools and associations.|Many died in mine accidents and of silicosis.
+fr|La France, privée d'hommes après la guerre, recrute des ouvriers polonais pour les mines du Nord et du Pas-de-Calais.|Des villes polonaises dans les villes françaises, avec leurs églises, écoles et associations.|Beaucoup meurent dans les accidents de mine et de la silicose.
+## 1939-09-01-german-and-soviet-occupation
+en|Germany invaded Poland from the west, the Soviet Union from the east; the country was divided and terrorised.|The Holocaust was carried out largely on Polish soil; the Polish elites were murdered, at Katyń among others.|About six million Polish citizens killed, half of them Jews.
+fr|L'Allemagne envahit la Pologne par l'ouest, l'Union soviétique par l'est ; le pays est partagé et terrorisé.|La Shoah se déroule en grande partie sur le sol polonais ; les élites polonaises sont assassinées, à Katyń notamment.|Environ six millions de citoyens polonais tués, dont la moitié juifs.
+## 1944-08-01-warsaw-uprising
+en|The Home Army rose against the Germans as the Red Army stood at the Vistula.|The uprising was crushed; the Germans then destroyed most of the city.|About 16,000 insurgents and 150,000 to 200,000 civilians killed.
+fr|L'Armée de l'intérieur se soulève contre les Allemands alors que l'Armée rouge attend sur la Vistule.|Le soulèvement est écrasé ; les Allemands détruisent ensuite l'essentiel de la ville.|Environ 16 000 insurgés et 150 000 à 200 000 civils tués.
+## 1945-people-s-republic-of-poland
+en|Poland, moved westward, came under a communist regime installed by the Soviet Union.|Rebuilding, nationalisation, censorship; crises in 1956, 1970 and 1980.|Millions were moved from the lost east to the former German west.
+fr|La Pologne, déplacée vers l'ouest, passe sous un régime communiste installé par l'Union soviétique.|La reconstruction, les nationalisations, la censure ; des crises en 1956, 1970 et 1980.|Des millions de personnes déplacées de l'est perdu vers l'ancien ouest allemand.
+## 1980-08-31-solidarnosc
+en|Strikes at the Gdańsk shipyard won the right to a free trade union, led by Lech Wałęsa.|Ten million members; the first crack in the Soviet bloc.|
+fr|Les grèves du chantier naval de Gdańsk obtiennent le droit à un syndicat libre, mené par Lech Wałęsa.|Dix millions d'adhérents ; la première fissure dans le bloc soviétique.|
+## 1981-12-13-martial-law
+en|General Jaruzelski declared martial law to crush Solidarity.|Arrests, curfews and shortages; the movement survived underground.|Dozens killed; about 10,000 interned.
+fr|Le général Jaruzelski proclame la loi martiale pour écraser Solidarność.|Arrestations, couvre-feu et pénuries ; le mouvement survit dans la clandestinité.|Des dizaines de tués ; environ 10 000 internés.
+## 1989-06-04-first-partly-free-elections
+en|After round-table talks, Solidarity swept the seats open to free vote.|The first non-communist government of the bloc; the fall of the regimes followed.|
+fr|Après la table ronde, Solidarność remporte les sièges ouverts au vote libre.|Le premier gouvernement non communiste du bloc ; la chute des régimes suit.|
+## 2004-05-01-poland-joins-the-european-union
+en|Poland and nine other countries joined the European Union.|Freedom to live and work across Europe; a new emigration to Britain and Ireland.|
+fr|La Pologne et neuf autres pays entrent dans l'Union européenne.|La liberté de vivre et de travailler dans toute l'Europe ; une nouvelle émigration vers le Royaume-Uni et l'Irlande.|
+## 1830-10-04-independence-of-belgium
+en|The southern provinces of the Kingdom of the Netherlands rose and declared independence.|A new kingdom under Leopold I, neutral, Catholic and quickly industrial.|Hundreds dead in the fighting.
+fr|Les provinces du sud du royaume des Pays-Bas se soulèvent et proclament leur indépendance.|Un nouveau royaume sous Léopold Iᵉʳ, neutre, catholique et vite industriel.|Des centaines de morts dans les combats.
+## 1885-congo-free-state
+en|King Leopold II of Belgium ruled the Congo as his own property.|Rubber and ivory extracted by forced labour, hostages and mutilation; an international scandal.|Millions died; the population may have fallen by several million.
+fr|Le roi des Belges Léopold II gouverne le Congo comme sa propriété personnelle.|Le caoutchouc et l'ivoire extraits par le travail forcé, les otages et les mutilations ; un scandale international.|Des millions de morts ; la population a peut-être baissé de plusieurs millions.
+## 1908-belgian-congo
+en|Under international pressure, Belgium took the Congo from its king and made it a colony.|Mining, missions and the colonial order; independence in 1960.|Forced labour continued long after 1908.
+fr|Sous la pression internationale, la Belgique reprend le Congo à son roi et en fait une colonie.|Les mines, les missions et l'ordre colonial ; l'indépendance en 1960.|Le travail forcé se poursuit longtemps après 1908.
+## 1914-08-04-belgium-occupied
+en|Germany invaded neutral Belgium to reach France; the Yser front held a sliver of it free.|Four years of occupation, requisitions and deportations to work in Germany.|About 6,500 civilians massacred in 1914; some 40,000 Belgian dead in the war.
+fr|L'Allemagne envahit la Belgique neutre pour atteindre la France ; le front de l'Yser en garde une bande libre.|Quatre ans d'occupation, de réquisitions et de déportations pour le travail en Allemagne.|Environ 6 500 civils massacrés en 1914 ; quelque 40 000 morts belges dans la guerre.
+## 1940-05-10-belgium-occupied-again
+en|Germany invaded Belgium again; King Leopold III surrendered after eighteen days.|Occupation, collaboration and resistance; Liberation in September 1944.|About 25,000 Jews deported; tens of thousands of other dead.
+fr|L'Allemagne envahit de nouveau la Belgique ; le roi Léopold III capitule après dix-huit jours.|Occupation, collaboration et résistance ; la Libération en septembre 1944.|Environ 25 000 Juifs déportés ; des dizaines de milliers d'autres morts.
+## 1950-the-royal-question
+en|Leopold III's conduct in the war divided the country over his return.|Strikes and riots; he abdicated in favour of his son Baudouin.|Four strikers killed.
+fr|La conduite de Léopold III pendant la guerre divise le pays sur son retour.|Grèves et émeutes ; il abdique en faveur de son fils Baudouin.|Quatre grévistes tués.
+## 1482-the-portuguese-reach-the-kongo-kingdom
+en|The navigator Diogo Cão reached the mouth of the Congo river and contacted the Kongo kingdom.|Trade, Christianity, then the slave trade between Kongo and Portugal.|
+fr|Le navigateur Diogo Cão atteint l'embouchure du fleuve Congo et entre en contact avec le royaume du Kongo.|Le commerce, le christianisme, puis la traite entre le Kongo et le Portugal.|
+## 1960-06-30-independence-of-the-congo
+en|The Belgian Congo became independent; Patrice Lumumba spoke of the humiliations of colonial rule.|A huge country with few trained administrators, soon in crisis.|
+fr|Le Congo belge devient indépendant ; Patrice Lumumba dénonce les humiliations de la colonisation.|Un immense pays avec peu de cadres formés, bientôt en crise.|
+## 1960-07-congo-crisis
+en|Mutiny, the secession of Katanga and Kasai, foreign intervention and the murder of Lumumba in 1961.|The Congo held together; Mobutu took power in 1965.|About 100,000 dead.
+fr|Mutinerie, sécession du Katanga et du Kasaï, interventions étrangères et assassinat de Lumumba en 1961.|Le Congo reste uni ; Mobutu prend le pouvoir en 1965.|Environ 100 000 morts.
+## 1965-11-24-mobutu-regime
+en|Joseph-Désiré Mobutu took power in a coup and ruled for thirty-two years.|One party, "authenticity" (Zaire, Mobutu Sese Seko), enrichment of the ruler, decay of the state.|Opponents killed or tortured.
+fr|Joseph-Désiré Mobutu prend le pouvoir par un coup d'État et règne trente-deux ans.|Le parti unique, l'« authenticité » (Zaïre, Mobutu Sese Seko), l'enrichissement du chef, la déliquescence de l'État.|Des opposants tués ou torturés.
+## 1976-first-known-ebola-outbreak-yambuku
+en|A new virus appeared around the mission of Yambuku, in the north of the country; it was named after a nearby river.|The discovery of Ebola and of how it spreads through care and burials.|280 dead.
+fr|Un nouveau virus apparaît autour de la mission de Yambuku, dans le nord du pays ; il prend le nom d'une rivière voisine.|La découverte d'Ebola et de sa transmission par les soins et les funérailles.|280 morts.
+## 1996-10-first-congo-war
+en|Rwanda and Uganda backed Laurent-Désiré Kabila's rebels, who marched across the country.|Mobutu fell; Zaire became the Democratic Republic of the Congo again.|Some 200,000 dead, many of them Hutu refugees.
+fr|Le Rwanda et l'Ouganda soutiennent les rebelles de Laurent-Désiré Kabila, qui traversent le pays.|Mobutu tombe ; le Zaïre redevient la République démocratique du Congo.|Quelque 200 000 morts, dont beaucoup de réfugiés hutu.
+## 2006-07-30-first-free-elections-since-independence
+en|After the wars, the Congolese voted in multiparty elections; Joseph Kabila was elected.|A fragile return of the vote; violence continued in the east.|
+fr|Après les guerres, les Congolais votent lors d'élections pluralistes ; Joseph Kabila est élu.|Un retour fragile du vote ; les violences continuent dans l'est.|
+## 1880-french-congo
+en|Pierre Savorgnan de Brazza signed treaties with the Makoko of the Téké; France took the north bank of the Congo.|A colony of concession companies and forced labour, Brazzaville as capital.|Forced labour on the Congo-Océan railway killed some 15,000 to 20,000 workers.
+fr|Pierre Savorgnan de Brazza signe des traités avec le Makoko des Téké ; la France prend la rive nord du Congo.|Une colonie des compagnies concessionnaires et du travail forcé, avec Brazzaville pour capitale.|Le travail forcé du chemin de fer Congo-Océan tue quelque 15 000 à 20 000 ouvriers.
+## 1960-08-15-independence-of-the-republic-of-the-congo
+en|French Congo became the Republic of the Congo, with Brazzaville as capital.|Independence, then a Marxist-Leninist republic from 1969.|
+fr|Le Congo français devient la République du Congo, avec Brazzaville pour capitale.|L'indépendance, puis une république marxiste-léniniste à partir de 1969.|
+## 1697-saint-domingue-becomes-french
+en|By the Treaty of Ryswick, Spain gave the western third of Hispaniola to France.|Saint-Domingue became the world's richest colony, on the backs of enslaved Africans.|Hundreds of thousands of enslaved people worked to death.
+fr|Par le traité de Ryswick, l'Espagne cède à la France le tiers occidental d'Hispaniola.|Saint-Domingue devient la plus riche colonie du monde, sur le dos des Africains réduits en esclavage.|Des centaines de milliers d'esclaves meurent à la tâche.
+## 1804-01-01-independence-of-haiti
+en|Jean-Jacques Dessalines proclaimed the independence of Haiti, the Taíno name of the island.|The first Black republic and the second independent state of the Americas.|
+fr|Jean-Jacques Dessalines proclame l'indépendance d'Haïti, du nom taïno de l'île.|La première république noire et le deuxième État indépendant des Amériques.|
+## 1825-the-independence-debt-to-france
+en|Under threat of French warships, Haiti agreed to pay 150 million francs to compensate former slave owners.|A debt and its loans weighed on Haiti's economy until the mid-20th century.|
+fr|Sous la menace des navires de guerre français, Haïti accepte de verser 150 millions de francs pour indemniser les anciens colons.|Une dette et ses emprunts pèsent sur l'économie haïtienne jusqu'au milieu du XXᵉ siècle.|
+## 1915-united-states-occupation
+en|After the murder of a president, the United States landed marines and ran Haiti for nineteen years.|Roads and a new army, but forced labour and the control of Haiti's finances.|About 3,000 Haitians killed resisting, in the Caco wars.
+fr|Après l'assassinat d'un président, les États-Unis débarquent des marines et dirigent Haïti pendant dix-neuf ans.|Des routes et une nouvelle armée, mais aussi le travail forcé et le contrôle des finances haïtiennes.|Environ 3 000 Haïtiens tués dans la résistance, lors des guerres des Cacos.
+## 1957-duvalier-dictatorship
+en|François "Papa Doc" Duvalier, then his son "Baby Doc", ruled by terror with the Tontons Macoutes militia.|Poverty, exile of the educated, and a diaspora in New York, Montreal and Paris.|About 30,000 to 60,000 killed.
+fr|François « Papa Doc » Duvalier, puis son fils « Baby Doc », gouvernent par la terreur avec la milice des Tontons macoutes.|La misère, l'exil des diplômés et une diaspora à New York, Montréal et Paris.|Environ 30 000 à 60 000 tués.
+## 2010-01-12-earthquake-of-12-january-2010
+en|A magnitude 7 earthquake struck near Port-au-Prince, destroying much of the capital.|A country devastated; massive aid, then a cholera epidemic.|More than 200,000 dead; 1.5 million homeless.
+fr|Un séisme de magnitude 7 frappe près de Port-au-Prince et détruit une grande partie de la capitale.|Un pays dévasté ; une aide massive, puis une épidémie de choléra.|Plus de 200 000 morts ; 1,5 million de sans-abri.
+## 1871-01-18-german-empire-proclaimed
+en|After defeating France, the German states united under the King of Prussia, proclaimed emperor at Versailles.|A united Germany, the first power of the continent.|
+fr|Après la victoire sur la France, les États allemands s'unissent sous le roi de Prusse, proclamé empereur à Versailles.|Une Allemagne unie, première puissance du continent.|
+## 1918-11-09-weimar-republic
+en|The emperor abdicated; a democratic republic was founded at Weimar.|A fragile democracy, burdened by defeat, reparations and crisis.|
+fr|L'empereur abdique ; une république démocratique est fondée à Weimar.|Une démocratie fragile, accablée par la défaite, les réparations et les crises.|
+## 1923-hyperinflation
+en|Prices doubled every few days; a loaf of bread cost billions of marks.|Savings wiped out; the middle classes ruined and embittered.|
+fr|Les prix doublent en quelques jours ; un pain coûte des milliards de marks.|L'épargne anéantie ; les classes moyennes ruinées et aigries.|
+## 1933-nazi-germany
+en|Hitler became chancellor and set up a dictatorship based on racism and terror.|Persecution of the Jews, war of conquest, the Holocaust.|Tens of millions dead in the war and genocide it caused.
+fr|Hitler devient chancelier et instaure une dictature fondée sur le racisme et la terreur.|La persécution des Juifs, une guerre de conquête, la Shoah.|Des dizaines de millions de morts dans la guerre et le génocide qu'elle provoque.
+## 1949-two-german-states
+en|Germany was divided into the Federal Republic in the west and the communist GDR in the east.|Two states, two systems, families separated for forty years.|
+fr|L'Allemagne est partagée entre la République fédérale à l'ouest et la RDA communiste à l'est.|Deux États, deux systèmes, des familles séparées pendant quarante ans.|
+## 1961-08-13-the-berlin-wall
+en|East Germany walled off West Berlin overnight to stop its people from fleeing.|The symbol of the Cold War, until it fell on 9 November 1989.|At least 140 people killed trying to cross.
+fr|La RDA emmure Berlin-Ouest en une nuit pour empêcher sa population de fuir.|Le symbole de la guerre froide, jusqu'à sa chute le 9 novembre 1989.|Au moins 140 personnes tuées en tentant de passer.
+## 1990-10-03-reunification
+en|The GDR joined the Federal Republic: Germany was one country again.|Rebuilding the east, and Germany at the centre of Europe.|
+fr|La RDA rejoint la République fédérale : l'Allemagne redevient un seul pays.|La reconstruction de l'est, et l'Allemagne au centre de l'Europe.|
+## 1861-03-17-kingdom-of-italy-unification
+en|After wars and Garibaldi's expedition, Victor Emmanuel II was proclaimed King of Italy.|A united Italy; Rome became its capital in 1870.|
+fr|Après des guerres et l'expédition de Garibaldi, Victor-Emmanuel II est proclamé roi d'Italie.|Une Italie unie ; Rome devient sa capitale en 1870.|
+## 1880-great-italian-emigration
+en|Poverty, above all in the south, drove Italians to the Americas, France and beyond.|Italian communities in New York, Buenos Aires, São Paulo and Marseille.|About 14 million emigrants between 1876 and 1915.
+fr|La misère, surtout dans le sud, pousse les Italiens vers les Amériques, la France et au-delà.|Des communautés italiennes à New York, Buenos Aires, São Paulo et Marseille.|Environ 14 millions d'émigrants entre 1876 et 1915.
+## 1922-fascist-italy
+en|After the March on Rome, Mussolini set up the first fascist dictatorship.|One party, the cult of the leader, colonial wars, alliance with Hitler.|Hundreds of thousands in Ethiopia and in the war.
+fr|Après la marche sur Rome, Mussolini instaure la première dictature fasciste.|Le parti unique, le culte du chef, les guerres coloniales, l'alliance avec Hitler.|Des centaines de milliers en Éthiopie et dans la guerre.
+## 1946-06-02-italian-republic
+en|Italians voted in a referendum to replace the monarchy with a republic; women voted for the first time.|A democratic republic and its constitution of 1948.|
+fr|Les Italiens votent par référendum pour remplacer la monarchie par une république ; les femmes votent pour la première fois.|Une république démocratique et sa constitution de 1948.|
+## 1808-peninsular-war
+en|Napoleon placed his brother on the Spanish throne; Spain rose, with British help.|A guerrilla war that drained Napoleon's armies.|About 500,000 dead, many of them civilians.
+fr|Napoléon place son frère sur le trône d'Espagne ; l'Espagne se soulève, avec l'aide britannique.|Une guérilla qui épuise les armées de Napoléon.|Environ 500 000 morts, dont beaucoup de civils.
+## 1939-franco-s-dictatorship
+en|After the civil war, General Franco ruled Spain as dictator until his death in 1975.|Repression, the Catholic Church in power, isolation, then growth from the 1960s.|Tens of thousands executed after the war; many more imprisoned.
+fr|Après la guerre civile, le général Franco gouverne l'Espagne en dictateur jusqu'à sa mort en 1975.|La répression, l'Église catholique au pouvoir, l'isolement, puis la croissance à partir des années 1960.|Des dizaines de milliers d'exécutions après la guerre ; bien plus d'emprisonnés.
+## 1978-democratic-constitution
+en|Spaniards approved a democratic constitution, under King Juan Carlos.|Democracy, regional autonomy and entry into Europe in 1986.|
+fr|Les Espagnols approuvent une constitution démocratique, sous le roi Juan Carlos.|La démocratie, les autonomies régionales et l'entrée dans l'Europe en 1986.|
+## 1974-04-25-carnation-revolution
+en|Army officers overthrew Portugal's dictatorship almost without bloodshed; people put carnations in their rifles.|Democracy in Portugal and independence for its African colonies.|Four killed.
+fr|Des officiers renversent la dictature portugaise presque sans violence ; la foule glisse des œillets dans les fusils.|La démocratie au Portugal et l'indépendance de ses colonies africaines.|Quatre tués.
+## 1665-great-plague-of-london
+en|Bubonic plague spread through London in the summer of 1665.|The last great plague in England; the court and the rich fled the city.|About 100,000 dead, nearly a quarter of London.
+fr|La peste bubonique se répand dans Londres à l'été 1665.|La dernière grande peste d'Angleterre ; la cour et les riches fuient la ville.|Environ 100 000 morts, près d'un quart de Londres.
+## 1666-09-02-great-fire-of-london
+en|A fire from a bakery burnt for four days through the City of London.|London rebuilt in brick and stone; St Paul's by Christopher Wren.|Few recorded deaths; 70,000 homeless.
+fr|Un incendie parti d'une boulangerie brûle quatre jours dans la Cité de Londres.|Londres reconstruite en brique et en pierre ; la cathédrale Saint-Paul de Christopher Wren.|Peu de morts recensés ; 70 000 sans-abri.
+## 1707-05-01-union-of-england-and-scotland
+en|The Acts of Union joined England and Scotland in the Kingdom of Great Britain.|One parliament in London; Scotland kept its law and church.|
+fr|Les Actes d'Union réunissent l'Angleterre et l'Écosse dans le royaume de Grande-Bretagne.|Un seul parlement à Londres ; l'Écosse garde son droit et son Église.|
+## 1760-first-industrial-revolution
+en|Machines, coal and steam transformed textile, iron and transport in Britain first.|The factory system, the growth of cities and a new working class.|Child labour and urban misery; life expectancy fell in industrial towns.
+fr|Les machines, le charbon et la vapeur transforment le textile, la métallurgie et les transports, d'abord en Grande-Bretagne.|Le système de l'usine, l'essor des villes et une nouvelle classe ouvrière.|Le travail des enfants et la misère urbaine ; l'espérance de vie baisse dans les villes industrielles.
+## 1837-victorian-era
+en|Queen Victoria reigned 63 years over Britain and a world empire.|Industry, empire, reforms and a strict morality.|
+fr|La reine Victoria règne 63 ans sur la Grande-Bretagne et un empire mondial.|L'industrie, l'empire, les réformes et une morale stricte.|
+## 1940-07-10-battle-of-britain
+en|The German air force tried to win control of the sky before an invasion; the RAF held.|Britain stayed in the war; the Blitz bombed its cities into 1941.|About 1,500 aircrew killed; some 40,000 civilians in the Blitz.
+fr|L'aviation allemande tente de gagner la maîtrise du ciel avant une invasion ; la RAF tient bon.|La Grande-Bretagne reste dans la guerre ; le Blitz bombarde ses villes jusqu'en 1941.|Environ 1 500 aviateurs tués ; quelque 40 000 civils sous le Blitz.
+## 1948-07-05-national-health-service
+en|Britain founded the NHS, a health service free for all at the point of use.|A model of the post-war welfare state.|
+fr|La Grande-Bretagne fonde le NHS, un service de santé gratuit pour tous.|Un modèle de l'État-providence d'après-guerre.|
+## 2020-01-31-brexit
+en|After the 2016 referendum, the United Kingdom left the European Union.|The end of free movement with the EU; new borders, new papers for families.|
+fr|Après le référendum de 2016, le Royaume-Uni quitte l'Union européenne.|La fin de la libre circulation avec l'UE ; de nouvelles frontières, de nouveaux papiers pour les familles.|
+## 1916-04-24-easter-rising
+en|Irish republicans rose in Dublin during Easter week; the British executed their leaders.|The executions turned opinion towards independence.|About 500 dead.
+fr|Des républicains irlandais se soulèvent à Dublin pendant la semaine de Pâques ; les Britanniques exécutent leurs chefs.|Les exécutions retournent l'opinion en faveur de l'indépendance.|Environ 500 morts.
+## 1922-12-06-irish-free-state
+en|After a war of independence, a treaty created the Irish Free State; the north stayed British.|Independence, at the price of partition and civil war.|
+fr|Après une guerre d'indépendance, un traité crée l'État libre d'Irlande ; le nord reste britannique.|L'indépendance, au prix de la partition et de la guerre civile.|
+## 1922-06-28-irish-civil-war
+en|Supporters and opponents of the treaty with Britain fought each other.|The Free State won; lasting divisions in Irish politics.|Some 1,500 to 2,000 dead.
+fr|Partisans et adversaires du traité avec la Grande-Bretagne s'affrontent.|L'État libre l'emporte ; des divisions durables dans la vie politique irlandaise.|Quelque 1 500 à 2 000 morts.
+## 1968-the-troubles-northern-ireland
+en|Violence between nationalists, mostly Catholic, and unionists, mostly Protestant, with the British army.|Ended by the Good Friday Agreement in 1998.|About 3,500 dead.
+fr|Des violences entre nationalistes, surtout catholiques, et unionistes, surtout protestants, avec l'armée britannique.|L'accord du Vendredi saint y met fin en 1998.|Environ 3 500 morts.
+## 1613-romanov-dynasty
+en|After the Time of Troubles, Michael Romanov was elected tsar.|Three centuries of autocracy and expansion, until the revolution of 1917.|
+fr|Après le Temps des troubles, Michel Romanov est élu tsar.|Trois siècles d'autocratie et d'expansion, jusqu'à la révolution de 1917.|
+## 1812-06-24-napoleon-s-invasion-of-russia
+en|Napoleon invaded Russia with some 600,000 men from all over Europe and reached a burning Moscow.|The retreat in winter destroyed the Grande Armée and turned the tide against Napoleon.|About 400,000 to 500,000 soldiers of the Grande Armée died; Russian losses as heavy.
+fr|Napoléon envahit la Russie avec quelque 600 000 hommes venus de toute l'Europe et atteint Moscou en flammes.|La retraite d'hiver détruit la Grande Armée et retourne le sort contre Napoléon.|Environ 400 000 à 500 000 soldats de la Grande Armée meurent ; des pertes russes aussi lourdes.
+## 1861-03-03-serfdom-abolished
+en|Tsar Alexander II freed the serfs of the Russian Empire.|Freedom, but land to be paid for; peasants left for the towns.|
+fr|Le tsar Alexandre II affranchit les serfs de l'Empire russe.|La liberté, mais une terre à racheter ; des paysans partent vers les villes.|
+## 1905-revolution-of-1905
+en|After defeat by Japan and the "Bloody Sunday" massacre, strikes and mutinies shook Russia.|A parliament, the Duma, conceded by the tsar; a rehearsal for 1917.|Thousands killed.
+fr|Après la défaite face au Japon et le massacre du « Dimanche rouge », grèves et mutineries secouent la Russie.|Un parlement, la Douma, concédé par le tsar ; une répétition de 1917.|Des milliers de tués.
+## 1921-famine-of-1921-1922
+en|Drought, war and requisitions starved the Volga region and Ukraine.|International aid, and a retreat from war communism.|About 5 million dead.
+fr|La sécheresse, la guerre et les réquisitions affament la région de la Volga et l'Ukraine.|L'aide internationale et l'abandon du communisme de guerre.|Environ 5 millions de morts.
+## 1922-12-30-soviet-union
+en|Russia, Ukraine, Belarus and Transcaucasia formed the Union of Soviet Socialist Republics.|A one-party state over a sixth of the world's land, until 1991.|Tens of millions died in famines, purges and the Gulag.
+fr|La Russie, l'Ukraine, la Biélorussie et la Transcaucasie forment l'Union des républiques socialistes soviétiques.|Un État à parti unique sur un sixième des terres émergées, jusqu'en 1991.|Des dizaines de millions de morts dans les famines, les purges et le Goulag.
+## 1932-holodomor
+en|Stalin's forced collectivisation and grain seizures caused a famine in Ukraine.|Recognised by many countries as a genocide against Ukrainians.|About 3.5 to 5 million dead in Ukraine.
+fr|La collectivisation forcée et les réquisitions de grain de Staline provoquent une famine en Ukraine.|Reconnu par de nombreux pays comme un génocide contre les Ukrainiens.|Environ 3,5 à 5 millions de morts en Ukraine.
+## 1936-the-great-terror
+en|Stalin's purges struck the party, the army and ordinary people, with show trials and quotas of arrests.|Fear at every level of society; the Gulag filled.|About 680,000 to 750,000 executed; over a million sent to camps.
+fr|Les purges de Staline frappent le parti, l'armée et les gens ordinaires, avec des procès spectacles et des quotas d'arrestations.|La peur à tous les niveaux de la société ; le Goulag se remplit.|Environ 680 000 à 750 000 exécutions ; plus d'un million de déportés dans les camps.
+## 1941-06-22-the-war-against-germany
+en|Germany invaded the Soviet Union; the war in the east was the largest and deadliest of all.|The Red Army reached Berlin in 1945; Soviet power over Eastern Europe.|About 27 million Soviet dead.
+fr|L'Allemagne envahit l'Union soviétique ; la guerre à l'est est la plus vaste et la plus meurtrière.|L'Armée rouge atteint Berlin en 1945 ; la puissance soviétique sur l'Europe de l'Est.|Environ 27 millions de morts soviétiques.
+## 1986-04-26-chernobyl-disaster
+en|A reactor exploded at Chernobyl in Ukraine, spreading radioactive fallout over Europe.|An exclusion zone, hidden truths, and doubts about nuclear power.|31 immediate deaths; estimates of later cancer deaths run to thousands.
+fr|Un réacteur explose à Tchernobyl en Ukraine et répand des retombées radioactives sur l'Europe.|Une zone d'exclusion, des vérités cachées et des doutes sur le nucléaire.|31 morts immédiates ; les estimations des décès par cancer ultérieurs vont jusqu'à des milliers.
+## 1991-08-24-independence-of-ukraine
+en|After the failed coup in Moscow, Ukraine declared independence; 90% approved it in December.|A sovereign Ukraine, its borders recognised, including Crimea.|
+fr|Après le putsch manqué de Moscou, l'Ukraine proclame son indépendance ; 90 % l'approuvent en décembre.|Une Ukraine souveraine, aux frontières reconnues, Crimée comprise.|
+## 2014-crimea-annexed-war-in-the-donbas
+en|After the Maidan revolution, Russia annexed Crimea and backed armed separatists in the Donbas.|The start of the war that became an invasion in 2022.|About 14,000 dead by 2021.
+fr|Après la révolution de Maïdan, la Russie annexe la Crimée et soutient des séparatistes armés dans le Donbass.|Le début de la guerre qui devient une invasion en 2022.|Environ 14 000 morts jusqu'en 2021.
+## 1803-louisiana-purchase
+en|Napoleon sold France's Louisiana territory to the United States.|The United States doubled in size, opening the West.|
+fr|Napoléon vend le territoire français de Louisiane aux États-Unis.|Les États-Unis doublent leur superficie et s'ouvrent l'Ouest.|
+## 1865-12-06-slavery-abolished
+en|The 13th Amendment abolished slavery in the United States.|Freedom for four million people, then segregation in the South.|
+fr|Le 13ᵉ amendement abolit l'esclavage aux États-Unis.|La liberté pour quatre millions de personnes, puis la ségrégation dans le Sud.|
+## 1892-ellis-island
+en|The immigration station in New York harbour received newcomers from Europe for sixty years.|Its registers are a treasure for the families of millions of Americans.|About twelve million passed through; few were turned back.
+fr|Le centre d'immigration du port de New York accueille les arrivants d'Europe pendant soixante ans.|Ses registres sont un trésor pour les familles de millions d'Américains.|Environ douze millions de passages ; peu de refoulés.
+## 1920-08-18-women-s-right-to-vote
+en|The 19th Amendment gave American women the right to vote.|The victory of decades of suffragist struggle.|
+fr|Le 19ᵉ amendement accorde aux Américaines le droit de vote.|La victoire de décennies de lutte des suffragettes.|
+## 1933-the-new-deal
+en|President Roosevelt answered the Depression with public works, aid and regulation.|The federal state took a new role in the economy and social life.|
+fr|Le président Roosevelt répond à la Dépression par les grands travaux, l'aide sociale et la régulation.|L'État fédéral prend un nouveau rôle dans l'économie et la vie sociale.|
+## 1954-civil-rights-movement
+en|African Americans fought segregation, from the Montgomery bus boycott to Martin Luther King's marches.|Civil rights laws of 1964 and 1965.|Activists killed, Martin Luther King among them in 1968.
+fr|Les Afro-Américains combattent la ségrégation, du boycott des bus de Montgomery aux marches de Martin Luther King.|Les lois sur les droits civiques de 1964 et 1965.|Des militants tués, dont Martin Luther King en 1968.
+## 1963-11-22-assassination-of-john-f-kennedy
+en|President Kennedy was shot dead in Dallas.|A national shock, and enduring questions.|
+fr|Le président Kennedy est abattu à Dallas.|Un choc national, et des questions qui demeurent.|
+## 1830-french-algeria
+en|France conquered Algeria from 1830 and made it French departments settled by Europeans.|132 years of colonisation, with unequal rights for Muslims and Europeans.|The conquest killed hundreds of thousands of Algerians.
+fr|La France conquiert l'Algérie à partir de 1830 et en fait des départements français peuplés d'Européens.|132 ans de colonisation, avec des droits inégaux entre musulmans et Européens.|La conquête tue des centaines de milliers d'Algériens.
+## 1962-07-05-independence-of-algeria
+en|After the Évian agreements and a referendum, Algeria became independent.|About 800,000 pieds-noirs and tens of thousands of harkis left for France.|Thousands of harkis killed after independence.
+fr|Après les accords d'Évian et un référendum, l'Algérie devient indépendante.|Environ 800 000 pieds-noirs et des dizaines de milliers de harkis partent pour la France.|Des milliers de harkis tués après l'indépendance.
+## 1991-12-algerian-civil-war
+en|The army cancelled elections the Islamists were winning; armed groups and the state fought for a decade.|The "black decade": massacres, terror and exile.|About 150,000 to 200,000 dead.
+fr|L'armée annule des élections que gagnent les islamistes ; groupes armés et État s'affrontent pendant dix ans.|La « décennie noire » : massacres, terreur et exil.|Environ 150 000 à 200 000 morts.

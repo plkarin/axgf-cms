@@ -96,8 +96,20 @@ async fn a_person_is_seen_in_their_times() {
     assert!(html.contains("href=\"/impact\""));
     assert!(html.contains(&format!("href=\"/person/{AYMERIC}\"")));
 
+    // Each landmark carries its years for the pointer, and its window: the
+    // context, what was at stake, the victims (docs/adr/0035).
+    assert!(html.contains("data-key=\"1803-05-18-napoleonic-wars\""));
+    assert!(html.contains("<dialog class=\"ip-dialog\""));
+    assert!(html.contains("France fought coalitions of European powers"));
+    assert!(html.contains("<h3>Victims</h3><p>3.5 to 6.5 million soldiers and civilians.</p>"));
+    assert!(html.contains("class=\"ip-gl"), "a line a year");
+    // Their country's flag.
+    assert!(html.contains("src=\"/static/flags/fr.svg\""));
+
     // The record offers the way.
     let (_, record) = page(&app, &format!("/person/{AYMERIC}"), None).await;
+    // A place on the record is said with its country's flag.
+    assert!(record.contains("<img class=\"flag\" src=\"/static/flags/fr.svg\""));
     assert!(record.contains(&format!(
         "<a class=\"btn\" href=\"/impact/{AYMERIC}\">See the impact</a>"
     )));
@@ -161,4 +173,25 @@ async fn the_timeline_reads_through_the_readers_lens() {
     let (status, html) = page(&app, "/impact/p2", Some(&admin)).await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("Ewa Nowak in their times"));
+}
+
+#[tokio::test]
+async fn a_flag_is_served_for_a_country_and_nothing_else() {
+    let (app, _s) = sample();
+    let resp = get(&app, "/static/flags/pl.svg").await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    assert_eq!(resp.headers()["content-type"], "image/svg+xml");
+    assert!(body_string(resp).await.contains("<svg"));
+    for bad in [
+        "/static/flags/zz.svg",
+        "/static/flags/PL.svg",
+        "/static/flags/pl.png",
+        "/static/flags/pol.svg",
+    ] {
+        assert_eq!(
+            get(&app, bad).await.status(),
+            StatusCode::NOT_FOUND,
+            "{bad}"
+        );
+    }
 }

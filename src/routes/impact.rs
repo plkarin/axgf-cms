@@ -117,6 +117,26 @@ pub fn offered(flat: &Value, id: &str) -> bool {
     impact::placeable(flat, id)
 }
 
+/// `GET /static/flags/:file` — a country's flag (`pl.svg`), from the set the
+/// binary carries.
+pub async fn flag(Path(file): Path<String>) -> Response {
+    let iso = file
+        .strip_suffix(".svg")
+        .filter(|c| c.len() == 2 && c.chars().all(|x| x.is_ascii_lowercase()));
+    match iso.and_then(|c| impact::flag_svg(&c.to_ascii_uppercase())) {
+        Some(svg) => (
+            [
+                (header::CONTENT_TYPE, "image/svg+xml"),
+                (header::CACHE_CONTROL, "public, max-age=86400"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            svg,
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
 /// `GET /static/impact.js` — the band of a life across the timeline.
 pub async fn script() -> Response {
     (

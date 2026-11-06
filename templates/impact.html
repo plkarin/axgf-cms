@@ -31,8 +31,9 @@
       {%- for c in tl.continent_keys %}{{ " · " if loop.first else ", " }}{{ t("impact-continent-" ~ c) }}{% endfor %}</span>
     <span class="ip-h">{{ t("impact-col-family") }}</span>
     <div class="ip-time" style="height: {{ tl.height }}px" data-impact>
-      {{ ip.axis(tl.ticks) }}
+      {{ ip.axis(tl.ticks, tl.grid) }}
       <div class="ip-band" hidden></div>
+      <div class="ip-band ip-band-ev" hidden></div>
       {{ ip.column(tl.world, "ip-world") }}
       {{ ip.column(tl.continents, "ip-continents") }}
       <div class="ip-col ip-lives">
@@ -44,6 +45,7 @@
     </div>
   </div>
 </div>
+{{ ip.dialog() }}
 {% endblock %}
 
 {% block scripts %}<script src="/static/impact.js?v={{ version }}"></script>{% endblock %}

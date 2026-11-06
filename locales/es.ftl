@@ -5481,3 +5481,62 @@ afg-canva-save-first = Elija primero Canva como servicio de imágenes y guarde.
 afg-canva-policy = Una sola conexión sirve a toda la familia: los retoques pasan por esta cuenta de Canva, sus créditos y su carpeta «ax-genealogy». La política de uso de Canva prevé que cada persona conecte su propia cuenta; al conectar la suya para el AFG, usted asume esa responsabilidad.
 afg-error-workflow = Falta el workflow de ComfyUI o no está en formato API (necesita al menos un nodo LoadImage).
 afg-error-canva = Canva no está conectado: use «Conectar Canva».
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = Impacto
+impact-title = Impacto
+impact-lede = Las vidas de la familia a lo largo de la historia del mundo.
+impact-span-all = Toda la historia
+impact-span-family = Los siglos de la familia
+impact-placed = Personas situadas: { $n }
+impact-undated = Sin fecha: { $n }
+impact-hidden = No mostradas: { $n }
+impact-empty = Aún no se conoce ninguna fecha: no se puede situar a nadie.
+impact-col-world = Mundo
+impact-col-continents = Continentes
+impact-col-family = La familia
+impact-col-life = Su vida
+impact-col-country = Su país
+impact-continent-europe = Europa
+impact-continent-africa = África
+impact-continent-asia = Asia
+impact-continent-americas = Américas
+impact-continent-oceania = Oceanía
+impact-kind-era = Civilizaciones y periodos
+impact-kind-war = Guerras
+impact-kind-epidemic = Epidemias
+impact-kind-migration = Migraciones
+impact-kind-event = Hitos
+impact-kind-economy = Economía y sociedad
+impact-kind-disaster = Hambrunas y catástrofes
+impact-person-title = { $name } en su tiempo
+impact-back = Toda la familia
+impact-record = Abrir la ficha
+impact-states = Estados que tuvieron sus lugares
+impact-countries-none = No se encontró ningún país en sus lugares.
+impact-unplaced = No se conoce ninguna fecha: esta persona no se puede situar.
+impact-see = Ver el impacto
+impact-year-bc = { $year } a. C.
+impact-now = hoy
+impact-years = { $n ->
+        [one] { $n } año
+       *[other] { $n } años
+    }
+impact-months = { $n ->
+        [one] { $n } mes
+       *[other] { $n } meses
+    }
+impact-days = { $n ->
+        [one] { $n } día
+       *[other] { $n } días
+    }
+impact-age = { $n ->
+        [one] con { $n } año
+       *[other] con { $n } años
+    }
+impact-under-way = ya en curso a su nacimiento
+impact-milestone-birth = Nacimiento
+impact-milestone-death = Fallecimiento
+impact-milestone-marriage = Matrimonio
+impact-milestone-child = Nacimiento de { $name }

@@ -11,6 +11,7 @@ mod console;
 mod convert;
 mod editors;
 mod entry;
+mod impact;
 mod merge;
 mod notes;
 mod person_chat;
@@ -326,6 +327,8 @@ fn routes(state: Shared) -> Router {
         .route("/", get(public::river))
         .route("/river/data", get(public::river_data))
         .route("/about", get(public::home))
+        .route("/impact", get(impact::family))
+        .route("/impact/:id", get(impact::person))
         .route("/tree", get(public::tree))
         .route("/quality", get(public::quality))
         .route("/quality.csv", get(public::quality_csv))
@@ -814,6 +817,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/profile.js", get(public::profile_js))
         .route("/static/editor.js", get(public::editor_js))
         .route("/static/notes.js", get(public::notes_js))
+        .route("/static/impact.js", get(impact::script))
         .route("/static/ui.js", get(public::ui_js))
         .route("/static/vendor/leaflet.js", get(public::leaflet_js))
         .route("/static/vendor/leaflet.css", get(public::leaflet_css))

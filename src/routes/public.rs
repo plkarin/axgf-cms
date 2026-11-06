@@ -776,7 +776,7 @@ enum Reading {
 }
 
 /// The page shown for a record this reader may not read.
-fn restricted_page(chrome: &render::Chrome, signed_in: bool) -> Response {
+pub(crate) fn restricted_page(chrome: &render::Chrome, signed_in: bool) -> Response {
     // Two different sentences, because two different readers: one can do
     // something about it by signing in, the other needs an administrator.
     let detail = if signed_in {
@@ -949,6 +949,9 @@ pub async fn person(
                     afg_chat,
                     // The Statut tab: what is worth checking, and knowing.
                     status,
+                    // The way to the person's times on the Impact timeline,
+                    // when they can be placed on it (docs/adr/0034).
+                    impact => state.read(|flat| super::impact::offered(flat, &p.id)),
                     profile_groups,
                     kinship,
                     full_record => true,

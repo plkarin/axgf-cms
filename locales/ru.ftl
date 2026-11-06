@@ -5797,3 +5797,70 @@ afg-canva-save-first = Сначала выберите Canva как сервис
 afg-canva-policy = Одно подключение служит всей семье: ретушь идёт через эту учётную запись Canva, её кредиты и папку «ax-genealogy». Правила использования Canva предполагают, что каждый подключает свою учётную запись; подключая свою для ИИ-генеалога, вы берёте на себя эту ответственность.
 afg-error-workflow = Рабочий процесс ComfyUI отсутствует или не в формате API (нужен хотя бы один узел LoadImage).
 afg-error-canva = Canva не подключён: используйте «Подключить Canva».
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = Влияние
+impact-title = Влияние
+impact-lede = Жизни семьи на фоне мировой истории.
+impact-span-all = Вся история
+impact-span-family = Века семьи
+impact-placed = Размещено людей: { $n }
+impact-undated = Без даты: { $n }
+impact-hidden = Не показано: { $n }
+impact-empty = Пока не известна ни одна дата: никого нельзя разместить.
+impact-col-world = Мир
+impact-col-continents = Континенты
+impact-col-family = Семья
+impact-col-life = Жизнь
+impact-col-country = Страна
+impact-continent-europe = Европа
+impact-continent-africa = Африка
+impact-continent-asia = Азия
+impact-continent-americas = Америка
+impact-continent-oceania = Океания
+impact-kind-era = Цивилизации и эпохи
+impact-kind-war = Войны
+impact-kind-epidemic = Эпидемии
+impact-kind-migration = Миграции
+impact-kind-event = Вехи
+impact-kind-economy = Экономика и общество
+impact-kind-disaster = Голод и катастрофы
+impact-person-title = { $name } и эпоха
+impact-back = Вся семья
+impact-record = Открыть запись
+impact-states = Государства, которым принадлежали места
+impact-countries-none = В местах не найдено ни одной страны.
+impact-unplaced = Дата неизвестна: этого человека нельзя разместить.
+impact-see = Посмотреть влияние
+impact-year-bc = { $year } до н. э.
+impact-now = наши дни
+impact-years = { $n ->
+        [one] { $n } год
+        [few] { $n } года
+        [many] { $n } лет
+       *[other] { $n } года
+    }
+impact-months = { $n ->
+        [one] { $n } месяц
+        [few] { $n } месяца
+        [many] { $n } месяцев
+       *[other] { $n } месяца
+    }
+impact-days = { $n ->
+        [one] { $n } день
+        [few] { $n } дня
+        [many] { $n } дней
+       *[other] { $n } дня
+    }
+impact-age = { $n ->
+        [one] в { $n } год
+        [few] в { $n } года
+        [many] в { $n } лет
+       *[other] в { $n } года
+    }
+impact-under-way = шло уже при рождении
+impact-milestone-birth = Рождение
+impact-milestone-death = Смерть
+impact-milestone-marriage = Брак
+impact-milestone-child = Рождение: { $name }

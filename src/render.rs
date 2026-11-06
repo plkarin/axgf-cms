@@ -65,6 +65,10 @@ pub const EDITOR_JS: &str = include_str!("../static/editor.js");
 /// pictures, the preview) and reading them (the filter, the letters, the
 /// window). Enhancement only.
 pub const NOTES_JS: &str = include_str!("../static/notes.js");
+/// The Impact timeline (docs/adr/0034): the band of a life across the
+/// world's history, and the countries in the reader's language.
+/// Enhancement only.
+pub const IMPACT_JS: &str = include_str!("../static/impact.js");
 
 /// The six behaviours that were inline `onclick`/`oninput`/`onsubmit`
 /// attributes until the Content-Security-Policy stopped allowing inline
@@ -187,6 +191,8 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "home.html",
     "error.html",
     "tree.html",
+    "impact.html",
+    "impact_person.html",
     "river.html",
     "search.html",
     "quality.html",
@@ -242,6 +248,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",
+    "_impact.html",
     "_icons.html",
     "_admin_nav.html",
     "_checks.html",

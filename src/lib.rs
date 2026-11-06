@@ -54,6 +54,7 @@ pub mod geocode;
 pub mod health;
 pub mod host;
 pub mod i18n;
+pub mod impact;
 pub mod journal;
 pub mod kinship;
 pub mod kinship_text;

@@ -1,0 +1,26 @@
+{#- A column of landmarks on the Impact timeline (docs/adr/0034): each
+    period's bar at its true years, each label at its year or, where the
+    labels above it leave no room, below it on a thread. Positions come from
+    crate::impact; nothing is drawn on a canvas. -#}
+{% macro column(col, cls) -%}
+<div class="ip-col {{ cls }}" style="--ip-lane: {{ col.lane }}px">
+  {%- for m in col.marks %}
+  {%- if m.bar %}<span class="ip-bar ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.bar_top }}px; height: {{ m.bar_height }}px; left: {{ m.bar_x }}px" data-from="{{ m.from }}" data-to="{{ m.to }}" aria-hidden="true"></span>{% endif %}
+  {%- if m.moved %}<span class="ip-thread" style="top: {{ m.y }}px; height: {{ m.top - m.y }}px; left: {{ m.x }}px" aria-hidden="true"></span>{% endif %}
+  <div class="ip-ev ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.top }}px; left: {{ m.x }}px" data-from="{{ m.from }}" data-to="{{ m.to }}" title="{{ m.name }} · {{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}">
+    <span class="ip-ev-name">{{ m.name }}</span>
+    <span class="ip-ev-when">{{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}{% if m.tag_label %} · <span{% if m.tag | length == 2 %} data-country="{{ m.tag }}"{% endif %}>{{ m.tag_label }}</span>{% endif %}{% if m.age %} · <strong>{{ m.age }}</strong>{% endif %}</span>
+    {%- if m.note %}<span class="ip-ev-note">{{ m.note }}</span>{% endif %}
+  </div>
+  {%- endfor %}
+</div>
+{%- endmacro %}
+
+{% macro axis(ticks) -%}
+{%- for k in ticks %}<span class="ip-rule" style="top: {{ k.y }}px" aria-hidden="true"></span>{% endfor %}
+<div class="ip-axis">{% for k in ticks %}<span class="ip-tick" style="top: {{ k.y }}px">{{ k.label }}</span>{% endfor %}</div>
+{%- endmacro %}
+
+{% macro legend(kinds) -%}
+<ul class="ip-legend">{% for k in kinds %}<li class="ip-k-{{ k }}">{{ t("impact-kind-" ~ k) }}</li>{% endfor %}</ul>
+{%- endmacro %}

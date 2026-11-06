@@ -8241,3 +8241,123 @@ a.kpi:hover { border-color: var(--border-strong); }
 .pa-convs { margin-top: 1.5rem; }
 .pa-convs h3 { margin: 0 0 0.4rem; }
 .pa-delete-all { margin-top: 0.75rem; }
+
+/* ---- Impact: the Universal Synoptic Timeline (docs/adr/0034) -----------
+   The world's history on a vertical axis, the family's lives beside it.
+   Every position is computed in crate::impact and written as a style; the
+   grid holds the columns side by side, and the axis and the headings stay
+   pinned while the timeline scrolls in its own frame. No colour is named
+   here: each kind of landmark takes one of the theme's hues. */
+.ip-head { margin-block-end: 1rem; }
+.ip-spans { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0; }
+.ip-spans a {
+  padding: 0.25rem 0.8rem; border: 1px solid var(--border-strong); border-radius: 999px;
+  color: var(--text-primary); text-decoration: none; font-size: var(--type-small);
+}
+.ip-spans a[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ip-legend {
+  display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; list-style: none; margin: 0.5rem 0 0; padding: 0;
+  font-size: var(--type-small); color: var(--text-secondary);
+}
+.ip-legend li::before {
+  content: ""; display: inline-block; inline-size: 0.7rem; block-size: 0.7rem; border-radius: 2px;
+  background: var(--ip-k); margin-inline-end: 0.35rem; vertical-align: -0.05em;
+}
+.ip-k-era { --ip-k: var(--hue-1); }
+.ip-k-war { --ip-k: var(--danger); }
+.ip-k-epidemic { --ip-k: var(--hue-3); }
+.ip-k-migration { --ip-k: var(--hue-4); }
+.ip-k-event { --ip-k: var(--accent); }
+.ip-k-economy { --ip-k: var(--hue-6); }
+.ip-k-disaster { --ip-k: var(--hue-7); }
+.ip-held { margin-block-start: 0.6rem; font-size: var(--type-small); }
+.ip-held ul { margin: 0.4rem 0 0; padding-inline-start: 1.1rem; }
+
+.ip-scroll {
+  overflow: auto; max-block-size: calc(100vh - 8rem);
+  border: 1px solid var(--border-hairline); border-radius: var(--radius); background: var(--surface-raised);
+}
+.ip-grid {
+  display: grid; grid-template-columns: 7rem var(--ip-a) var(--ip-b) var(--ip-c);
+  inline-size: max-content; min-inline-size: 100%;
+}
+.ip-h {
+  position: sticky; inset-block-start: 0; z-index: 4; padding: 0.55rem 0.6rem;
+  background: var(--surface-raised); border-block-end: 1px solid var(--border-strong);
+  font-size: var(--type-label); font-weight: var(--weight-semi); color: var(--text-secondary); white-space: nowrap;
+}
+.ip-h-axis { inset-inline-start: 0; z-index: 5; }
+.ip-time { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; position: relative; }
+.ip-axis {
+  position: sticky; inset-inline-start: 0; z-index: 3;
+  background: var(--surface-raised); border-inline-end: 1px solid var(--border-hairline);
+}
+.ip-tick {
+  position: absolute; inset-inline-end: 0.5rem; transform: translateY(-50%); white-space: nowrap;
+  font-size: var(--type-micro); color: var(--text-tertiary); font-variant-numeric: tabular-nums;
+}
+.ip-rule { position: absolute; inset-inline: 0; border-block-start: 1px dashed var(--border-hairline); pointer-events: none; }
+.ip-col { position: relative; border-inline-end: 1px solid var(--border-hairline); }
+.ip-bar { position: absolute; inline-size: 4px; border-radius: 2px; background: var(--ip-k); opacity: 0.55; }
+.ip-thread { position: absolute; inline-size: 0; border-inline-start: 1px dotted var(--text-tertiary); }
+.ip-ev {
+  position: absolute; inline-size: calc(var(--ip-lane) - 10px); block-size: 20px; overflow: hidden;
+  padding: 0 0.35rem; border-inline-start: 3px solid var(--ip-k); border-radius: 3px;
+  background: var(--surface-page); color: var(--text-primary);
+  font-size: var(--type-micro); line-height: 20px; white-space: nowrap; text-overflow: ellipsis;
+}
+.ip-ev-name { font-weight: var(--weight-semi); }
+.ip-ev-when { margin-inline-start: 0.4em; color: var(--text-secondary); }
+.ip-ev-note { display: none; }
+.ip-ev:hover {
+  block-size: auto; z-index: 6; white-space: normal;
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), 0.25);
+}
+.ip-ev:hover .ip-ev-note { display: block; color: var(--text-secondary); }
+/* A person's view: cards, two lines on the world's side, three on their
+   country's, the note in full under the pointer. */
+.ip-wide .ip-ev, .ip-near .ip-ev {
+  display: flex; flex-direction: column; padding: 0.2rem 0.45rem; line-height: 1.3; white-space: normal;
+}
+.ip-wide .ip-ev { block-size: 42px; }
+.ip-near .ip-ev { block-size: 62px; }
+.ip-wide .ip-ev-name, .ip-near .ip-ev-name, .ip-wide .ip-ev-when, .ip-near .ip-ev-when {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0;
+}
+.ip-near .ip-ev-note {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  color: var(--text-secondary);
+}
+.ip-wide .ip-ev:hover, .ip-near .ip-ev:hover { block-size: auto; }
+.ip-near .ip-ev:hover .ip-ev-note { display: block; -webkit-line-clamp: unset; }
+/* The band of a life: the landmarks it crossed stand out, the others step
+   back. A person's view is crossed from the start. */
+.ip-time[data-from] .ip-ev:not(.ip-hit), .ip-time.ip-crossing .ip-ev:not(.ip-hit) { opacity: 0.4; }
+.ip-time[data-from] .ip-bar:not(.ip-hit), .ip-time.ip-crossing .ip-bar:not(.ip-hit) { opacity: 0.18; }
+.ip-band {
+  position: absolute; inset-inline: 0; pointer-events: none;
+  background: var(--accent-soft); border-block: 1px solid var(--accent); opacity: 0.6;
+}
+.ip-band-own { opacity: 0.4; }
+.ip-tip {
+  position: absolute; z-index: 7; margin: 0; padding: 0.25rem 0.5rem; pointer-events: none; white-space: nowrap;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-page);
+  font-size: var(--type-small); box-shadow: 0 4px 14px rgba(var(--shadow-rgb), 0.25);
+}
+/* Lives: a window from birth to death, a pin for a single moment; a date
+   only approximate fades the window's end. */
+.ip-life { position: absolute; inline-size: 10px; border-radius: 3px; background: var(--accent); opacity: 0.75; }
+.ip-life:hover { opacity: 1; }
+.ip-life.ip-living { background: var(--hue-2); }
+.ip-life.ip-pin { inline-size: 14px; border-radius: 50%; }
+.ip-life.ip-fuzzy-from { mask-image: linear-gradient(to bottom, transparent, currentColor 14px); }
+.ip-life.ip-fuzzy-to { mask-image: linear-gradient(to top, transparent, currentColor 14px); }
+.ip-life.ip-fuzzy-from.ip-fuzzy-to:not(.ip-pin) {
+  mask-image: linear-gradient(to bottom, transparent, currentColor 14px, currentColor calc(100% - 14px), transparent);
+}
+.ip-life-name { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+.ip-own .ip-life-own { inset-inline-start: 1rem; inline-size: 14px; opacity: 1; }
+.ip-stone {
+  position: absolute; inset-inline: 2.4rem 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--type-micro); line-height: 18px; color: var(--text-secondary);
+}

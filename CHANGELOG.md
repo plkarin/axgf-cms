@@ -7,9 +7,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 The AFG reads a person's photographs (the operator's request of
-6 November 2026, docs/adr/0033).
+6 November 2026, docs/adr/0033), and **Impact**, the Universal Synoptic
+Timeline (the same day, docs/adr/0034).
 
 ### Added
+
+- **Impact**, a new section between Family and Import: the family's lives
+  laid along the history of the world, on a vertical axis from 10,000 BC at
+  the top to today at the bottom.
+  - The world's landmarks: civilisations, migrations, epidemics and wars,
+    each with its length. The family's continents are beside them.
+  - Each person is a window from birth to death, or a pin where only one
+    moment is known. Pointing at a life lights the band of its years across
+    the world's history.
+  - A person's own view: their life and its milestones, the world's and
+    their continent's landmarks, and their countries', each with what it
+    meant and their age when it began.
+  - A record that can be placed offers "See the impact".
+  - About 330 landmarks in English and French; the page's words in all
+    fourteen languages.
 
 - **The AFG reads the photographs of the person's record** with each
   question on the record's AFG tab. Up to twelve go with the message being

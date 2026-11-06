@@ -164,7 +164,8 @@
   {% endif %}
 </div>
 
-<p class="record-foot"><a class="btn" href="/?p={{ p.id }}">{{ t("record-see-in-river") if view == "river" else t("view-" ~ view ~ "-see") }}</a></p>
+<p class="record-foot"><a class="btn" href="/?p={{ p.id }}">{{ t("record-see-in-river") if view == "river" else t("view-" ~ view ~ "-see") }}</a>
+{%- if impact %} <a class="btn" href="/impact/{{ p.id }}">{{ t("impact-see") }}</a>{% endif %}</p>
 
 {% endblock %}
 

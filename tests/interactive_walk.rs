@@ -1002,11 +1002,12 @@ fn profile_group_controls(html: &str, over: &mut Vec<String>, at: &str) -> usize
     n.min(most)
 }
 
-/// The masthead's cap: ten since v0.4.3 — four sections, the search, the
-/// language, the theme and the density, the settings, and the account. The
-/// three in the middle are the accessibility controls, and a menu hid them
-/// from the reader who most needs them (docs/adr/0002 §9).
-const MASTHEAD: usize = 10;
+/// The masthead's cap: eleven since v1.9.0 — five sections (Impact, the
+/// fifth, the operator's request of 6 November 2026, docs/adr/0034), the
+/// search, the language, the theme and the density, the settings, and the
+/// account. The three in the middle are the accessibility controls, and a
+/// menu hid them from the reader who most needs them (docs/adr/0002 §9).
+const MASTHEAD: usize = 11;
 
 /// What a page may add of its own, beside the masthead: unchanged by v0.4.3,
 /// which raised the masthead's cap and nobody else's. These are the old

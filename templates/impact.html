@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "_impact.html" as ip %}
+{% block title %}{{ t("impact-title") }} — {{ t("app-name") }}{% endblock %}
+{% block main_class %}wide impact{% endblock %}
+
+{% block content %}
+{#- The Universal Synoptic Timeline (docs/adr/0034): the world's history on
+    a vertical axis, the end of the last ice age at the top and today at the
+    bottom, the family's lives beside it. A life's window runs from its
+    birth to its death; a pin marks the one moment known of a life. Pointing
+    at a life lights the band of its years across the world's landmarks
+    (impact.js); following it opens that person's own view. -#}
+<header class="ip-head">
+  <h1>{{ t("impact-title") }}</h1>
+  <p class="lede">{{ t("impact-lede") }}</p>
+  <p class="ip-spans">
+    <a href="/impact"{% if span == "all" %} aria-current="page"{% endif %}>{{ t("impact-span-all") }}</a>
+    <a href="/impact?span=family"{% if span == "family" %} aria-current="page"{% endif %}>{{ t("impact-span-family") }}</a>
+  </p>
+  <p class="small muted">{{ t("impact-placed", n=tl.placed) }}
+    {%- if tl.undated %} · {{ t("impact-undated", n=tl.undated) }}{% endif %}
+    {%- if tl.hidden %} · {{ t("impact-hidden", n=tl.hidden) }}{% endif %}</p>
+  {{ ip.legend(kinds) }}
+</header>
+{% if not tl.placed %}<p class="muted">{{ t("impact-empty") }}</p>{% endif %}
+<div class="ip-scroll" data-content>
+  <div class="ip-grid" style="--ip-a: {{ tl.world.width }}px; --ip-b: {{ tl.continents.width }}px; --ip-c: {{ tl.lives_width }}px">
+    <span class="ip-h ip-h-axis" aria-hidden="true"></span>
+    <span class="ip-h">{{ t("impact-col-world") }}</span>
+    <span class="ip-h">{{ t("impact-col-continents") }}
+      {%- for c in tl.continent_keys %}{{ " · " if loop.first else ", " }}{{ t("impact-continent-" ~ c) }}{% endfor %}</span>
+    <span class="ip-h">{{ t("impact-col-family") }}</span>
+    <div class="ip-time" style="height: {{ tl.height }}px" data-impact>
+      {{ ip.axis(tl.ticks) }}
+      <div class="ip-band" hidden></div>
+      {{ ip.column(tl.world, "ip-world") }}
+      {{ ip.column(tl.continents, "ip-continents") }}
+      <div class="ip-col ip-lives">
+        {%- for l in tl.lives %}
+        <a class="ip-life{{ ' ip-pin' if l.pin }}{{ ' ip-living' if l.living }}{{ ' ip-fuzzy-from' if l.fuzzy_from }}{{ ' ip-fuzzy-to' if l.fuzzy_to }}" href="/impact/{{ l.id }}" style="top: {{ l.top }}px; height: {{ l.height }}px; left: {{ l.x }}px" data-from="{{ l.from }}" data-to="{{ l.to }}" title="{{ l.name }} · {{ l.years }}"><span class="ip-life-name">{{ l.name }}</span></a>
+        {%- endfor %}
+      </div>
+      <p class="ip-tip" hidden></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/impact.js?v={{ version }}"></script>{% endblock %}

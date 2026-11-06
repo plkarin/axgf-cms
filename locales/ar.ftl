@@ -5981,3 +5981,71 @@ afg-canva-save-first = اختر Canva أولًا خدمةً للصور، ثم ا
 afg-canva-policy = ربط واحد يخدم العائلة كلها: تمر عمليات التنقيح عبر حساب Canva هذا وأرصدته ومجلده «ax-genealogy». تنص سياسة استخدام Canva على أن يربط كل شخص حسابه الخاص؛ وبربط حسابك للنسّابة الذكي تتحمل أنت هذه المسؤولية.
 afg-error-workflow = سير عمل ComfyUI مفقود، أو ليس بصيغة API (يحتاج إلى عقدة LoadImage واحدة على الأقل).
 afg-error-canva = Canva غير متصل: استخدم «ربط Canva».
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = الأثر
+impact-title = الأثر
+impact-lede = حياة العائلة على امتداد تاريخ العالم.
+impact-span-all = التاريخ كله
+impact-span-family = قرون العائلة
+impact-placed = الأشخاص الموضوعون: { $n }
+impact-undated = بلا تاريخ: { $n }
+impact-hidden = غير معروضين: { $n }
+impact-empty = لا يُعرف أي تاريخ بعد: لا يمكن وضع أحد.
+impact-col-world = العالم
+impact-col-continents = القارات
+impact-col-family = العائلة
+impact-col-life = الحياة
+impact-col-country = البلد
+impact-continent-europe = أوروبا
+impact-continent-africa = أفريقيا
+impact-continent-asia = آسيا
+impact-continent-americas = الأمريكتان
+impact-continent-oceania = أوقيانوسيا
+impact-kind-era = حضارات وعصور
+impact-kind-war = حروب
+impact-kind-epidemic = أوبئة
+impact-kind-migration = هجرات
+impact-kind-event = محطات
+impact-kind-economy = اقتصاد ومجتمع
+impact-kind-disaster = مجاعات وكوارث
+impact-person-title = زمن { $name }
+impact-back = العائلة كلها
+impact-record = فتح السجل
+impact-states = الدول التي تبعتها الأماكن
+impact-countries-none = لم يُعثر على أي بلد في الأماكن.
+impact-unplaced = لا يُعرف أي تاريخ: لا يمكن وضع هذا الشخص على الخط الزمني.
+impact-see = رؤية الأثر
+impact-year-bc = { $year } ق.م
+impact-now = اليوم
+impact-years = { $n ->
+        [zero] { $n } سنة
+        [one] سنة واحدة
+        [two] سنتان
+        [few] { $n } سنوات
+        [many] { $n } سنة
+       *[other] { $n } سنة
+    }
+impact-months = { $n ->
+        [zero] { $n } شهر
+        [one] شهر واحد
+        [two] شهران
+        [few] { $n } أشهر
+        [many] { $n } شهرًا
+       *[other] { $n } شهر
+    }
+impact-days = { $n ->
+        [zero] { $n } يوم
+        [one] يوم واحد
+        [two] يومان
+        [few] { $n } أيام
+        [many] { $n } يومًا
+       *[other] { $n } يوم
+    }
+impact-age = في سن { $n }
+impact-under-way = كان جاريًا عند الولادة
+impact-milestone-birth = الولادة
+impact-milestone-death = الوفاة
+impact-milestone-marriage = الزواج
+impact-milestone-child = ولادة { $name }

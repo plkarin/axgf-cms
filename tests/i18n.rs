@@ -552,6 +552,14 @@ fn every_dynamic_key_family_is_fully_defined() {
     for choice in ["keep", "absorb", "both"] {
         expected.push(format!("merge-choice-{choice}"));
     }
+    // The Impact timeline (docs/adr/0034): a name for each kind of
+    // landmark and each continent.
+    for k in axgf_cms::impact::Kind::ALL {
+        expected.push(format!("impact-kind-{}", k.slug()));
+    }
+    for c in axgf_cms::impact::Continent::ALL {
+        expected.push(format!("impact-continent-{}", c.slug()));
+    }
     for code in DIAGNOSTIC_CODES {
         assert!(
             axgf_rs::boundary::envelope::DiagnosticCode::from_wire(code).is_some(),

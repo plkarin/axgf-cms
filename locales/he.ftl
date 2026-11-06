@@ -5591,3 +5591,65 @@ afg-canva-save-first = יש לבחור קודם ב־Canva כשירות התמו�
 afg-canva-policy = חיבור אחד משרת את כל המשפחה: הריטושים עוברים דרך חשבון ה־Canva הזה, הקרדיטים שלו והתיקייה „ax-genealogy”. מדיניות השימוש של Canva מצפה שכל אדם יחבר חשבון משלו; בחיבור החשבון שלך עבור הגנאלוג המלאכותי, האחריות עליך.
 afg-error-workflow = תהליך העבודה של ComfyUI חסר, או שאינו בפורמט API (נדרש לפחות צומת LoadImage אחד).
 afg-error-canva = Canva אינו מחובר: יש להשתמש ב„חיבור Canva”.
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = השפעה
+impact-title = השפעה
+impact-lede = חיי המשפחה לאורך תולדות העולם.
+impact-span-all = כל ההיסטוריה
+impact-span-family = מאות השנים של המשפחה
+impact-placed = אנשים שמוקמו: { $n }
+impact-undated = ללא תאריך: { $n }
+impact-hidden = לא מוצגים: { $n }
+impact-empty = עדיין לא ידוע אף תאריך: אי אפשר למקם איש.
+impact-col-world = העולם
+impact-col-continents = יבשות
+impact-col-family = המשפחה
+impact-col-life = החיים
+impact-col-country = הארץ
+impact-continent-europe = אירופה
+impact-continent-africa = אפריקה
+impact-continent-asia = אסיה
+impact-continent-americas = אמריקה
+impact-continent-oceania = אוקיאניה
+impact-kind-era = תרבויות ותקופות
+impact-kind-war = מלחמות
+impact-kind-epidemic = מגפות
+impact-kind-migration = הגירות
+impact-kind-event = ציוני דרך
+impact-kind-economy = כלכלה וחברה
+impact-kind-disaster = רעב ואסונות
+impact-person-title = התקופה של { $name }
+impact-back = כל המשפחה
+impact-record = פתיחת הרשומה
+impact-states = המדינות שאליהן השתייכו המקומות
+impact-countries-none = לא נמצאה מדינה במקומות.
+impact-unplaced = לא ידוע אף תאריך: אי אפשר למקם את האדם הזה על ציר הזמן.
+impact-see = לראות את ההשפעה
+impact-year-bc = { $year } לפנה״ס
+impact-now = היום
+impact-years = { $n ->
+        [one] שנה אחת
+        [two] שנתיים
+        [many] { $n } שנים
+       *[other] { $n } שנים
+    }
+impact-months = { $n ->
+        [one] חודש אחד
+        [two] חודשיים
+        [many] { $n } חודשים
+       *[other] { $n } חודשים
+    }
+impact-days = { $n ->
+        [one] יום אחד
+        [two] יומיים
+        [many] { $n } ימים
+       *[other] { $n } ימים
+    }
+impact-age = בגיל { $n }
+impact-under-way = כבר התרחש בעת הלידה
+impact-milestone-birth = לידה
+impact-milestone-death = פטירה
+impact-milestone-marriage = נישואים
+impact-milestone-child = לידת { $name }

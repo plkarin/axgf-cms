@@ -45,13 +45,15 @@
       <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") }}</a>
       <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
       <a href="/about" {% if nav == "about" %}aria-current="page"{% endif %}>{{ t("nav-home") }}</a>
+      <a href="/impact" {% if nav == "impact" %}aria-current="page"{% endif %}>{{ t("nav-impact") }}</a>
       <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>
     </nav>
     {#- Then the reader's own controls, each on its own (v0.4.3): the
         person search, the language, the theme and the density. The last
         three are the accessibility controls, and a menu hid them from the
-        reader who most needs them (docs/adr/0002 §9). Ten controls at most:
-        four sections, these four, the settings and the account. -#}
+        reader who most needs them (docs/adr/0002 §9). Eleven controls at
+        most: five sections (Impact, the fifth, docs/adr/0034), these four,
+        the settings and the account. -#}
     <div class="masthead-tools">
     {#- People by name, through the reader's lens. A plain GET form, so it
         works with scripting off; ui.js adds suggestions, where Enter travels

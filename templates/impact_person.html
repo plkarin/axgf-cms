@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% import "_impact.html" as ip %}
+{% block title %}{{ t("impact-person-title", name=p.name) }} — {{ t("app-name") }}{% endblock %}
+{% block main_class %}wide impact{% endblock %}
+
+{% block content %}
+{#- One person in their times (docs/adr/0034): their life and its
+    milestones in the middle; the world's and their continent's landmarks
+    on one side (macro); their countries', each with what it meant and their
+    age when it began, on the other (micro). The band of their years runs
+    across all three. -#}
+<header class="ip-head">
+  <p class="small"><a href="/impact">{{ t("impact-back") }}</a></p>
+  <h1>{{ t("impact-person-title", name=p.name) }}</h1>
+  <p class="lede">{{ p.years }}
+    {%- for c in p.countries %}{{ " · " if loop.first else ", " }}<span data-country="{{ c[0] }}">{{ c[1] }}</span>{% endfor %}</p>
+  <p><a class="btn" href="/person/{{ p.id }}">{{ t("impact-record") }}</a></p>
+  {%- if p.held %}
+  <details class="ip-held">
+    <summary>{{ t("impact-states") }}</summary>
+    <ul>{% for h in p.held %}<li><strong>{{ h.place }}</strong> · {{ h.states | join(" → ") }}</li>{% endfor %}</ul>
+  </details>
+  {%- endif %}
+  {{ ip.legend(kinds) }}
+</header>
+{% if not p.countries %}<p class="small muted">{{ t("impact-countries-none") }}</p>{% endif %}
+<div class="ip-scroll" data-content>
+  <div class="ip-grid ip-grid-person" style="--ip-a: {{ p.wide.width }}px; --ip-b: 15rem; --ip-c: {{ p.near.width }}px">
+    <span class="ip-h ip-h-axis" aria-hidden="true"></span>
+    <span class="ip-h">{{ t("impact-col-world") }}
+      {%- for c in p.continent_keys %} · {{ t("impact-continent-" ~ c) }}{% endfor %}</span>
+    <span class="ip-h">{{ t("impact-col-life") }}</span>
+    <span class="ip-h">{{ t("impact-col-country") }}</span>
+    <div class="ip-time" style="height: {{ p.height }}px" data-impact data-from="{{ p.life.from }}" data-to="{{ p.life.to }}">
+      {{ ip.axis(p.ticks) }}
+      <div class="ip-band ip-band-own" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" aria-hidden="true"></div>
+      {{ ip.column(p.wide, "ip-wide") }}
+      <div class="ip-col ip-own">
+        <span class="ip-life ip-life-own{{ ' ip-pin' if p.life.pin }}{{ ' ip-living' if p.life.living }}{{ ' ip-fuzzy-from' if p.life.fuzzy_from }}{{ ' ip-fuzzy-to' if p.life.fuzzy_to }}" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" title="{{ p.name }} · {{ p.years }}"></span>
+        {%- for s in p.milestones %}
+        <span class="ip-stone" style="top: {{ s.top }}px">{{ s.year }} · {% if s.link %}<a href="/impact/{{ s.link }}">{{ s.label }}</a>{% else %}{{ s.label }}{% endif %}</span>
+        {%- endfor %}
+      </div>
+      {{ ip.column(p.near, "ip-near") }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/impact.js?v={{ version }}"></script>{% endblock %}

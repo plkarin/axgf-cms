@@ -5190,3 +5190,59 @@ afg-canva-save-first = Pona liboso Canva lokola mosala ya bililingi, mpe bomba.
 afg-canva-policy = Bokangisi moko esalelaka libota mobimba: babongisi elekaka na konti oyo ya Canva, ba-crédit na yango mpe dossier na yango „ax-genealogy”. Mibeko ya Canva elingi ete moto na moto akangisa konti na ye moko; soki okangisi oyo ya yo mpo na AFG, ozwi mokumba yango.
 afg-error-workflow = Workflow ya ComfyUI ezali te, to ezali na lolenge ya API te (esengeli ata nœud moko ya LoadImage).
 afg-error-canva = Canva ekangisami te: salelá „Kangisa Canva”.
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = Impact
+impact-title = Impact
+impact-lede = Bomoi ya libota na kati ya lisolo ya mokili.
+impact-span-all = Lisolo mobimba
+impact-span-family = Bikeke ya libota
+impact-placed = Bato oyo batiami: { $n }
+impact-undated = Kozanga mokolo: { $n }
+impact-hidden = Bamonisami te: { $n }
+impact-empty = Mokolo moko te eyebani naino: moto moko te akoki kotiama.
+impact-col-world = Mokili
+impact-col-continents = Bikólo
+impact-col-family = Libota
+impact-col-life = Bomoi
+impact-col-country = Mboka
+impact-continent-europe = Mpoto
+impact-continent-africa = Afrika
+impact-continent-asia = Azia
+impact-continent-americas = Amerika
+impact-continent-oceania = Oseania
+impact-kind-era = Bokoli mpe ntango
+impact-kind-war = Bitumba
+impact-kind-epidemic = Bokono ya kopalangana
+impact-kind-migration = Bolongwi ya bato
+impact-kind-event = Makambo minene
+impact-kind-economy = Nkita mpe bato
+impact-kind-disaster = Nzala mpe makama
+impact-person-title = { $name } na ntango na ye
+impact-back = Libota mobimba
+impact-record = Fungola fiche
+impact-states = Mikili oyo ezalaki na bisika na ye
+impact-countries-none = Mboka moko te emonani na bisika na ye.
+impact-unplaced = Mokolo moko te eyebani: moto oyo akoki kotiama na molongo ya ntango te.
+impact-see = Tala impact
+impact-year-bc = { $year } liboso ya Klisto
+impact-now = lelo
+impact-years = { $n ->
+        [one] mobu { $n }
+       *[other] mibu { $n }
+    }
+impact-months = { $n ->
+        [one] sanza { $n }
+       *[other] sanza { $n }
+    }
+impact-days = { $n ->
+        [one] mokolo { $n }
+       *[other] mikolo { $n }
+    }
+impact-age = na mibu { $n }
+impact-under-way = ezalaki kokoba ntango abotamaki
+impact-milestone-birth = Mbotama
+impact-milestone-death = Liwa
+impact-milestone-marriage = Libala
+impact-milestone-child = Mbotama ya { $name }

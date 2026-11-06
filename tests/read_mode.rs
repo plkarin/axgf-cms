@@ -399,6 +399,8 @@ const ALLOWED: &[&str] = &[
     "record-places",
     "record-presumed-deceased",
     "record-see-in-river",
+    // The way to the person in their times (docs/adr/0034).
+    "impact-see",
     "record-siblings",
     "record-size",
     "record-source",

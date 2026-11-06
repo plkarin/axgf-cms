@@ -1,0 +1,355 @@
+# The Universal Synoptic Timeline's landmarks (docs/adr/0034): one per line,
+#   kind|from|to|scopes|name in English|name in French|note in English|note in French
+#
+# kind    era, war, epidemic, migration, event, economy or disaster.
+# from    a year (-3500 is 3500 BC), or a year, month and day (1914-07-28).
+# to      empty for a moment; "now" for what goes on; otherwise as `from`.
+#         With a day, it is the day after the last one, so that the length
+#         reads as the history books give it (1967-06-05 to 1967-06-11:
+#         six days).
+# scopes  world, a continent (europe, africa, asia, americas, oceania) or a
+#         present-day country's ISO 3166 code, comma-separated. "world" is
+#         the operator's repertoire, on every timeline; a continent is shown
+#         where the family lived on it, a country to those who lived there.
+# notes   optional: the micro explanation shown beside a country's landmark.
+
+# --- A. Antiquity, from -10000 to 500 --------------------------------------
+era|-10000|-8000|world|End of the last ice age and the Neolithic revolution|Fin de la dernière période glaciaire et révolution néolithique
+event|-9500||world,asia|Göbekli Tepe, monumental site in Anatolia|Site monumental de Göbekli Tepe (Anatolie)
+migration|-8000|-5000|world,europe|Neolithic migrations from the Near East to Europe|Migrations néolithiques du Proche-Orient vers l'Europe
+migration|-5000|-2000|world,asia,oceania|Austronesian expansion, from South-East Asia to the Pacific|Expansion des peuples austronésiens, de l'Asie du Sud-Est vers le Pacifique
+era|-3500|-3000|world,asia|Sumerian civilisation and cuneiform writing|Civilisation sumérienne et écriture cunéiforme
+era|-3100|-30|world,africa|Ancient Egypt, from unification to the Roman conquest|Égypte ancienne, de l'unification à la conquête romaine
+event|-2600||world,africa|The Great Pyramid of Khufu|Construction de la Grande Pyramide de Khéops
+era|-2500|-1500|world,asia|Indus Valley civilisation (Harappa)|Civilisation de la vallée de l'Indus (Harappa)
+era|-2334|-2154|world,asia|Akkadian Empire|Empire d'Akkad
+era|-1792|-1750|world,asia|Height of Babylon (Code of Hammurabi)|Apogée de Babylone (Code de Hammurabi)
+era|-1600|-1046|world,asia|Shang dynasty in China|Dynastie Shang en Chine
+era|-1500|-400|world,americas|Olmec civilisation (Mesoamerica)|Civilisation olmèque (Mésoamérique)
+event|-1200||world,europe,asia|Late Bronze Age collapse|Effondrement de l'âge du bronze
+era|-1000|-300|world,africa|Nok culture (West Africa)|Culture Nok (Afrique de l'Ouest)
+era|-1000|350|world,africa|Kingdom of Kush and the rise of Aksum|Royaume de Koush et essor d'Aksoum
+era|-814|-146|world,africa,europe|Carthage|Carthage
+event|-776||world,europe|First ancient Olympic Games|Premiers Jeux olympiques antiques
+era|-753|476|world,europe|Rome: foundation, Republic, Empire|Rome : fondation, République, Empire
+event|-500||world,asia|Birth of Buddhism and Confucianism|Naissance du bouddhisme et du confucianisme
+era|-539|-330|world,asia|Achaemenid Empire (Persia)|Empire achéménide (Perse)
+era|-322|-185|world,asia|Maurya Empire (India)|Empire Maurya (Inde)
+era|-221|-206|world,asia|Qin dynasty: China unified, the Great Wall|Dynastie Qin : unification de la Chine, Grande Muraille
+era|-202|220|world,asia|Han dynasty and the Silk Road|Dynastie Han et route de la soie
+era|100|900|world,americas|Teotihuacan and classic Maya civilisation|Teotihuacan et civilisation maya classique
+era|320|550|world,asia|Gupta Empire (India)|Empire des Gupta (Inde)
+migration|375|568|world,europe|Migration Period ("barbarian invasions")|Grandes migrations (« invasions barbares »)
+event|476||world,europe|Fall of the Western Roman Empire|Chute de l'Empire romain d'Occident
+migration|500|1500|world,africa|Bantu migrations (central and southern Africa)|Migrations bantoues (Afrique centrale et australe)
+war|-499|-449|world,europe,asia|Greco-Persian Wars|Guerres médiques
+war|-431|-404|world,europe|Peloponnesian War|Guerre du Péloponnèse
+war|-334|-323|world,europe,asia|Campaigns of Alexander the Great|Campagnes d'Alexandre le Grand
+war|-264|-146|world,europe,africa|Punic Wars|Guerres puniques
+war|-58|-50|world,europe|Gallic Wars|Guerre des Gaules
+war|-49|-45|world,europe|Caesar's civil war|Guerre civile de César
+war|-32|-30|world,europe|Last civil war of the Roman Republic|Dernière guerre civile de la République romaine
+war|66|73|world,asia|First Jewish–Roman War|Première guerre judéo-romaine
+war|220|280|world,asia|Wars of the Three Kingdoms (China)|Guerres des Trois Royaumes (Chine)
+
+# --- B. Middle Ages, from 500 to 1500 ---------------------------------------
+event|622||world,asia|The Hijra: beginning of Islam|L'Hégire : naissance de l'islam
+era|618|907|world,asia|Tang dynasty (China)|Dynastie Tang (Chine)
+era|661|750|world,asia|Umayyad Caliphate|Califat omeyyade
+era|750|1258|world,asia|Abbasid Caliphate (Baghdad)|Califat abbasside (Bagdad)
+era|700|1500|world,africa|Swahili city-states (Indian Ocean)|Cités-États swahilies (océan Indien)
+era|793|1066|world,europe|Viking Age|Âge des Vikings
+event|800||world,europe|Coronation of Charlemagne|Couronnement de Charlemagne
+era|800|1076|world,africa|Ghana Empire|Empire du Ghana
+era|960|1279|world,asia|Song dynasty (China)|Dynastie Song (Chine)
+era|1000|1450|world,africa|Great Zimbabwe|Grand Zimbabwe
+era|1192|1333|world,asia|Kamakura shogunate (Japan)|Shogunat de Kamakura (Japon)
+era|1206|1368|world,asia|Mongol Empire (Pax Mongolica)|Empire mongol (Pax Mongolica)
+era|1235|1670|world,africa|Mali Empire (Mansa Musa)|Empire du Mali (Mansa Moussa)
+event|1299||world,asia,europe|Foundation of the Ottoman Empire|Fondation de l'Empire ottoman
+epidemic|1346|1353|world,europe,asia,africa|The Black Death|Pandémie de la peste noire
+era|1368|1644|world,asia|Ming dynasty (China)|Dynastie Ming (Chine)
+era|1390|1914|world,africa|Kingdom of Kongo|Royaume du Kongo
+era|1400|1533|world,americas|Inca Empire|Empire inca
+era|1428|1521|world,americas|Aztec Empire|Empire aztèque
+event|1453-05-29||world,europe,asia|Fall of Constantinople|Chute de Constantinople
+era|1464|1591|world,africa|Songhai Empire|Empire songhaï
+event|1492-10-12||world,americas,europe|Christopher Columbus reaches the Americas|Arrivée de Christophe Colomb aux Amériques
+war|632|750|world,asia,africa,europe|Early Muslim conquests|Conquêtes musulmanes
+war|711|1492|world,europe|The Iberian Reconquista|La Reconquista ibérique
+war|1066-09-28|1066-12-25|world,europe|Norman conquest of England|Conquête normande de l'Angleterre
+war|1096|1291|world,europe,asia|The Crusades|Les croisades
+war|1206|1279|world,asia,europe|Mongol conquests|Conquêtes mongoles
+war|1274|1281|world,asia|Mongol invasions of Japan (1274 and 1281)|Invasions mongoles du Japon (1274 et 1281)
+war|1337|1453|world,europe|Hundred Years' War|Guerre de Cent Ans
+war|1455|1487|world,europe|Wars of the Roses|Guerre des Deux-Roses
+
+# --- C. Early modern period, from 1500 to 1800 ------------------------------
+migration|1500|1866|world,africa,americas|Transatlantic slave trade|Traite négrière transatlantique
+era|1526|1857|world,asia|Mughal Empire (India)|Empire moghol (Inde)
+era|1603|1868|world,asia|Tokugawa era and sakoku (Japan)|Ère Tokugawa et sakoku (Japon)
+era|1644|1912|world,asia|Qing dynasty (China)|Dynastie Qing (Chine)
+event|1652||world,africa|Foundation of Cape Town|Fondation du Cap (Afrique australe)
+era|1700|1850|world,africa|Ashanti, Dahomey and Oyo kingdoms|Royaumes ashanti, du Dahomey et d'Oyo
+event|1776-07-04||world,americas|Independence of the United States|Indépendance des États-Unis
+event|1789|1799|world,europe|The French Revolution|La Révolution française
+war|1519|1521|world,americas|Spanish conquest of the Aztec Empire|Conquête espagnole de l'Empire aztèque
+war|1532|1572|world,americas|Spanish conquest of the Inca Empire|Conquête espagnole de l'Empire inca
+war|1568|1648|world,europe|Eighty Years' War|Guerre de Quatre-Vingts Ans
+war|1592|1598|world,asia|Imjin War (Korea, Japan)|Guerre Imjin (Corée, Japon)
+war|1618|1648|world,europe|Thirty Years' War|Guerre de Trente Ans
+war|1642|1651|world,europe|English Civil Wars|Guerres civiles anglaises
+war|1700|1721|world,europe|Great Northern War|Grande guerre du Nord
+war|1701|1714|world,europe|War of the Spanish Succession|Guerre de Succession d'Espagne
+war|1756|1763|world,europe,americas,asia|Seven Years' War|Guerre de Sept Ans
+war|1775|1783|world,americas|American War of Independence|Guerre d'indépendance des États-Unis
+war|1791|1804|world,americas|Haitian Revolution|Révolution haïtienne
+war|1792|1802|world,europe|French Revolutionary Wars|Guerres de la Révolution française
+event|1450||world,europe|Gutenberg's printing press|L'imprimerie de Gutenberg
+event|1517-10-31||world,europe|The Protestant Reformation begins|Début de la Réforme protestante
+event|1648-10-24||world,europe|Peace of Westphalia|Traités de Westphalie
+
+# --- D. Contemporary period, from 1800 to now --------------------------------
+migration|1830|1914|world,europe,americas|Mass European emigration to the Americas|Migration européenne massive vers les Amériques
+economy|1840|1900|world,europe,americas|Industrial revolutions|Révolutions industrielles
+disaster|1845|1852|world,europe|Great Famine in Ireland|Grande famine en Irlande
+event|1884-11-15|1885-02-27|world,africa,europe|Berlin Conference: Africa partitioned|Conférence de Berlin : partage de l'Afrique
+epidemic|1918|1920|world|Spanish flu|Grippe espagnole
+economy|1929-10-24||world,americas|Wall Street Crash|Krach de Wall Street
+event|1947-08-15||world,asia|Partition of India and Pakistan|Partition de l'Inde et du Pakistan
+event|1950|1975|world,africa,asia|Worldwide decolonisation|Décolonisation mondiale
+event|1989|1991|world,europe|Fall of the Soviet bloc|Chute du bloc soviétique
+economy|1990|now|world|Digital age and the Internet|Ère numérique et Internet
+epidemic|2019-12|2022|world|COVID-19 pandemic|Pandémie de COVID-19
+disaster|1815-04-10|1817|world|Tambora erupts: the year without a summer|Éruption du Tambora : « l'année sans été »
+epidemic|1817|1824|world,asia|First cholera pandemic|Première pandémie de choléra
+epidemic|1826|1837|world,europe,asia|Second cholera pandemic|Deuxième pandémie de choléra
+event|1848|1849|world,europe|Revolutions of 1848 (Spring of Nations)|Révolutions de 1848 (Printemps des peuples)
+event|1869-11-17||world,africa|Opening of the Suez Canal|Ouverture du canal de Suez
+economy|1873|1896|world,europe,americas|Long Depression|Grande Dépression de la fin du XIXᵉ siècle
+epidemic|1889|1890|world,europe|"Russian flu" pandemic|Pandémie de « grippe russe »
+event|1917-11-07||world,europe|October Revolution in Russia|Révolution d'Octobre en Russie
+economy|1929|1939|world|Great Depression|Grande Dépression
+event|1941|1945|world,europe|The Holocaust|La Shoah
+event|1945-08-06||world,asia|Atomic bombings of Hiroshima and Nagasaki|Bombardements atomiques d'Hiroshima et Nagasaki
+event|1945-10-24||world|Founding of the United Nations|Fondation de l'Organisation des Nations unies
+epidemic|1957|1958|world|Asian flu pandemic|Pandémie de grippe asiatique
+epidemic|1968|1969|world|Hong Kong flu pandemic|Pandémie de grippe de Hong Kong
+event|1969-07-20||world|First steps on the Moon|Premiers pas sur la Lune
+economy|1973-10||world|First oil shock|Premier choc pétrolier
+epidemic|1981|now|world|HIV/AIDS pandemic|Pandémie de VIH/sida
+event|2001-09-11||world,americas|September 11 attacks|Attentats du 11 septembre
+disaster|2004-12-26||world,asia|Indian Ocean tsunami|Tsunami de l'océan Indien
+economy|2008|2009|world|Global financial crisis|Crise financière mondiale
+war|1803-05-18|1815-11-20|world,europe|Napoleonic Wars|Guerres napoléoniennes
+war|1810|1826|world,americas|Spanish American wars of independence|Guerres d'indépendance hispano-américaines
+war|1839-09-04|1842-08-29|world,asia|First Opium War|Première guerre de l'opium
+war|1846-04-25|1848-02-02|world,americas|Mexican–American War|Guerre américano-mexicaine
+war|1850|1864|world,asia|Taiping Rebellion|Révolte des Taiping
+war|1853-10-16|1856-03-30|world,europe,asia|Crimean War|Guerre de Crimée
+war|1856-10-08|1860-10-24|world,asia|Second Opium War|Seconde guerre de l'opium
+war|1861-04-12|1865-04-09|world,americas|American Civil War|Guerre de Sécession
+war|1864|1870|world,americas|Paraguayan War|Guerre du Paraguay
+war|1870-07-19|1871-01-28|world,europe|Franco-Prussian War|Guerre franco-allemande
+war|1879-04-05|1884-04-04|world,americas|War of the Pacific|Guerre du Pacifique
+war|1894-07-25|1895-04-17|world,asia|First Sino-Japanese War|Première guerre sino-japonaise
+war|1899-10-11|1902-05-31|world,africa|Second Boer War|Seconde guerre des Boers
+war|1904-02-08|1905-09-05|world,asia,europe|Russo-Japanese War|Guerre russo-japonaise
+war|1911-10-10|1912-02-12|world,asia|Xinhai Revolution|Révolution Xinhai
+war|1912-10-08|1913-08-10|world,europe|Balkan Wars|Guerres balkaniques
+war|1914-07-28|1918-11-11|world|First World War|Première Guerre mondiale
+war|1917-11-07|1922-10-25|world,europe,asia|Russian Civil War|Guerre civile russe
+war|1936-07-17|1939-04-01|world,europe|Spanish Civil War|Guerre civile espagnole
+war|1937-07-07|1945-09-02|world,asia|Second Sino-Japanese War|Seconde guerre sino-japonaise
+war|1939-09-01|1945-09-02|world|Second World War|Deuxième Guerre mondiale
+war|1945-09-23|1954-07-21|world,asia|First Indochina War|Guerre d'Indochine
+war|1946-06-26|1949-12-07|world,asia|Chinese Civil War|Guerre civile chinoise
+war|1947-10-22|1949-01-01|world,asia|First Indo-Pakistani War|Première guerre indo-pakistanaise
+war|1947-03-12|1991-12-26|world|The Cold War|La guerre froide
+war|1948-05-15|1949-03-10|world,asia|First Arab–Israeli War|Première guerre israélo-arabe
+war|1950-06-25|1953-07-27|world,asia|Korean War|Guerre de Corée
+war|1954-11-01|1962-07-05|world,africa,europe|Algerian War|Guerre d'Algérie
+war|1955-11-01|1975-04-30|world,asia|Vietnam War|Guerre du Viêt Nam
+war|1961-02-04|1974-04-25|world,africa,europe|Portuguese Colonial War|Guerres coloniales portugaises
+war|1967-06-05|1967-06-11|world,asia|Six-Day War|Guerre des Six Jours
+war|1973-10-06|1973-10-25|world,asia|Yom Kippur War|Guerre du Kippour
+war|1979-12-24|1989-02-15|world,asia|Soviet–Afghan War|Guerre soviétique en Afghanistan
+war|1980-09-22|1988-08-20|world,asia|Iran–Iraq War|Guerre Iran-Irak
+war|1990-08-02|1991-02-28|world,asia|Gulf War|Guerre du Golfe
+war|1991-03-31|2001-11-12|world,europe|Yugoslav Wars|Guerres de Yougoslavie
+war|1994-04-07|1994-07-16|world,africa|Genocide against the Tutsi in Rwanda|Génocide des Tutsi au Rwanda
+war|1998-08-02|2003-07-18|world,africa|Second Congo War|Deuxième guerre du Congo
+war|2001-10-07|2021-08-30|world,asia|War in Afghanistan|Guerre d'Afghanistan
+war|2003-03-20|2011-12-15|world,asia|Iraq War|Guerre d'Irak
+war|2011-03-15|now|world,asia|Syrian civil war|Guerre civile syrienne
+war|2022-02-24|now|world,europe|Russian invasion of Ukraine|Invasion de l'Ukraine par la Russie
+
+# --- Continents --------------------------------------------------------------
+disaster|1315|1317|europe|Great Famine in Europe|Grande famine en Europe|Three years of rain and ruined harvests.|Trois années de pluies et de récoltes perdues.
+event|1683-09-12||europe,PL|Battle of Vienna|Bataille de Vienne|Jan III Sobieski breaks the Ottoman siege.|Jean III Sobieski brise le siège ottoman.
+event|1806-08-06||europe,DE|End of the Holy Roman Empire|Fin du Saint-Empire romain germanique
+event|1814-09|1815-06|europe|Congress of Vienna|Congrès de Vienne|Europe's borders redrawn after Napoleon.|Les frontières de l'Europe redessinées après Napoléon.
+event|1918-11|1919-06|europe|Fall of the empires, birth of new states|Chute des empires, naissance de nouveaux États|Poland, Czechoslovakia, Yugoslavia and the Baltic states appear.|La Pologne, la Tchécoslovaquie, la Yougoslavie et les pays baltes apparaissent.
+event|1945|1989|europe|The Iron Curtain|Le rideau de fer|Europe divided between East and West.|L'Europe coupée entre l'Est et l'Ouest.
+event|1957-03-25||europe|Treaty of Rome (European Economic Community)|Traité de Rome (Communauté économique européenne)
+event|1993-11-01||europe|European Union (Maastricht)|Union européenne (Maastricht)
+economy|2002-01-01||europe|The euro in everyone's pocket|L'euro en circulation
+disaster|1755-11-01||europe,PT|Lisbon earthquake|Tremblement de terre de Lisbonne|The city destroyed by the quake, the fires and the tsunami.|La ville détruite par le séisme, les incendies et le tsunami.
+event|1881|1914|africa|Scramble for Africa|Partage colonial de l'Afrique|Almost the whole continent under European rule.|Presque tout le continent sous domination européenne.
+event|1957-03-06||africa|Independence of Ghana|Indépendance du Ghana|First in sub-Saharan Africa.|La première d'Afrique subsaharienne.
+event|1960||africa|"Year of Africa": seventeen independences|« Année de l'Afrique » : dix-sept indépendances
+event|1963-05-25||africa|Organisation of African Unity founded|Fondation de l'Organisation de l'unité africaine
+event|1948|1994|africa|Apartheid in South Africa|Apartheid en Afrique du Sud
+war|1967-07-06|1970-01-15|africa|Nigerian Civil War (Biafra)|Guerre du Biafra
+event|2002-07-09||africa|African Union founded|Fondation de l'Union africaine
+epidemic|2014|2016|africa|Ebola epidemic in West Africa|Épidémie d'Ebola en Afrique de l'Ouest
+event|1607||americas,US|Jamestown, first lasting English colony|Jamestown, première colonie anglaise durable
+event|1888-05-13||americas|Abolition of slavery in Brazil|Abolition de l'esclavage au Brésil|The last in the Americas.|La dernière des Amériques.
+war|1910|1920|americas|Mexican Revolution|Révolution mexicaine
+event|1959-01-01||americas|Cuban Revolution|Révolution cubaine
+event|1964|1990|americas|Military dictatorships in South America|Dictatures militaires en Amérique du Sud
+event|1868||asia|Meiji Restoration (Japan)|Restauration de Meiji (Japon)
+event|1922-11-01||asia,europe|End of the Ottoman Empire|Fin de l'Empire ottoman
+event|1948-05-14||asia|Independence of Israel and the Nakba|Indépendance d'Israël et Nakba
+event|1949-10-01||asia|People's Republic of China proclaimed|Proclamation de la République populaire de Chine
+event|1966|1976|asia|Cultural Revolution (China)|Révolution culturelle (Chine)
+event|1975|1979|asia|Khmer Rouge regime (Cambodia)|Régime des Khmers rouges (Cambodge)
+event|1979-02-11||asia|Iranian Revolution|Révolution iranienne
+event|1788-01-26||oceania|First Fleet: British settlement of Australia|Première flotte : colonisation britannique de l'Australie
+event|1840-02-06||oceania|Treaty of Waitangi (New Zealand)|Traité de Waitangi (Nouvelle-Zélande)
+
+# --- France -----------------------------------------------------------------
+war|1562|1598|FR|Wars of Religion|Guerres de Religion|Catholics and Protestants at war, until the Edict of Nantes.|Catholiques et protestants s'affrontent, jusqu'à l'édit de Nantes.
+event|1643|1715|FR|Reign of Louis XIV|Règne de Louis XIV|Absolute monarchy, Versailles, long wars.|Monarchie absolue, Versailles, longues guerres.
+event|1685-10-18||FR|Revocation of the Edict of Nantes|Révocation de l'édit de Nantes|Hundreds of thousands of Protestants leave France.|Des centaines de milliers de protestants quittent la France.
+disaster|1693|1695|FR|Great famine of 1693–1694|Grande famine de 1693-1694|About 1.3 million dead.|Environ 1,3 million de morts.
+disaster|1709|1710|FR|Great Winter of 1709|Grand hiver de 1709|Frost, famine and epidemics.|Gel, famine et épidémies.
+epidemic|1720|1722|FR|Plague of Marseille|Peste de Marseille|The last great plague in France: about 100,000 dead in Provence.|La dernière grande peste en France : environ 100 000 morts en Provence.
+event|1792-09-20||FR|Civil registers pass to the State|L'état civil passe à l'État|Town halls, not parishes, now record births, marriages and deaths.|Les mairies, et non plus les paroisses, enregistrent naissances, mariages et décès.
+event|1793|1794|FR|The Terror|La Terreur|Revolutionary government; tens of thousands executed.|Gouvernement révolutionnaire ; des dizaines de milliers d'exécutions.
+war|1793|1796|FR|War in the Vendée|Guerre de Vendée|A royalist rising in the West, crushed by the Republic.|Un soulèvement royaliste de l'Ouest, écrasé par la République.
+event|1804|1815|FR|First Empire (Napoleon I)|Premier Empire (Napoléon Iᵉʳ)|Civil Code, conscription, wars across Europe.|Code civil, conscription, guerres dans toute l'Europe.
+event|1815|1848|FR|Restoration and July Monarchy|Restauration et monarchie de Juillet|The kings return; revolution of 1830.|Retour des rois ; révolution de 1830.
+epidemic|1832||FR|Cholera in Paris|Choléra à Paris|About 18,000 dead in a few months.|Environ 18 000 morts en quelques mois.
+event|1848-04-27||FR|Slavery abolished in the French colonies|Abolition de l'esclavage dans les colonies françaises|Decree of Victor Schœlcher.|Décret de Victor Schœlcher.
+event|1852|1870|FR|Second Empire (Napoleon III)|Second Empire (Napoléon III)|Railways, Haussmann's Paris, colonial expansion.|Chemins de fer, Paris d'Haussmann, expansion coloniale.
+event|1871-03-18|1871-05-29|FR|Paris Commune|Commune de Paris|Crushed in the "Bloody Week".|Écrasée pendant la « Semaine sanglante ».
+event|1871-05-10||FR,DE|Alsace-Moselle annexed by Germany|Annexion de l'Alsace-Moselle par l'Allemagne|Until 1918; families chose between leaving and staying.|Jusqu'en 1918 ; les familles choisissent entre partir et rester.
+event|1882-03-28||FR|Free, compulsory, secular school|École gratuite, obligatoire et laïque|Jules Ferry's laws.|Lois de Jules Ferry.
+event|1905-12-09||FR|Separation of Church and State|Séparation des Églises et de l'État
+war|1916-02-21|1916-12-19|FR|Battle of Verdun|Bataille de Verdun|About 300,000 dead on both sides.|Environ 300 000 morts dans les deux camps.
+event|1936-06-20||FR|Popular Front: paid holidays|Front populaire : congés payés
+war|1940-06-22|1944-08-26|FR|Occupation and the Vichy regime|Occupation et régime de Vichy|Armistice, deportations, the Resistance, then Liberation.|Armistice, déportations, Résistance, puis Libération.
+event|1944-04-21||FR|Women's right to vote|Droit de vote des femmes|First used in 1945.|Exercé pour la première fois en 1945.
+event|1958-10-04||FR|Fifth Republic|Cinquième République|General de Gaulle's constitution.|La constitution du général de Gaulle.
+event|1968-05||FR|May 1968|Mai 68|Student revolt and general strike.|Révolte étudiante et grève générale.
+event|1981-10-09||FR|Death penalty abolished|Abolition de la peine de mort
+
+# --- Poland -----------------------------------------------------------------
+era|1569-07-01|1795|PL|Polish–Lithuanian Commonwealth|République des Deux Nations|Born of the Union of Lublin, one of Europe's largest states.|Née de l'union de Lublin, l'un des plus grands États d'Europe.
+war|1655|1660|PL|The Deluge (Swedish invasion)|Le Déluge (invasion suédoise)|Swedish and Russian armies ravage the country.|Les armées suédoises et russes ravagent le pays.
+event|1772-08-05||PL|First Partition of Poland|Premier partage de la Pologne|Russia, Prussia and Austria take a third of it.|La Russie, la Prusse et l'Autriche en prennent un tiers.
+event|1791-05-03||PL|Constitution of 3 May|Constitution du 3 mai|Europe's first modern written constitution.|La première constitution écrite moderne d'Europe.
+event|1793-01-23||PL|Second Partition|Deuxième partage
+war|1794-03-24|1794-11-17|PL|Kościuszko Uprising|Insurrection de Kościuszko|Defeated; the third partition follows.|Écrasée ; le troisième partage suit.
+event|1795-10-24||PL|Third Partition: Poland disappears|Troisième partage : la Pologne disparaît|For 123 years, Poles live under Russia, Prussia or Austria.|Pendant 123 ans, les Polonais vivent sous la Russie, la Prusse ou l'Autriche.
+era|1807|1815|PL|Duchy of Warsaw|Duché de Varsovie|Napoleon's Polish state; civil registers from 1808.|L'État polonais de Napoléon ; registres d'état civil dès 1808.
+era|1815|1915|PL|Congress Poland, under Russia|Royaume du Congrès, sous la Russie|Registers kept in Polish, then in Russian from 1868.|Registres tenus en polonais, puis en russe dès 1868.
+war|1830-11-29|1831-10-22|PL|November Uprising|Insurrection de Novembre|Its defeat drives the Great Emigration.|Sa défaite entraîne la Grande Émigration.
+migration|1831|1870|PL,FR|The Great Emigration|La Grande Émigration|Polish elites settle in Paris and across Europe.|Les élites polonaises s'installent à Paris et dans toute l'Europe.
+war|1863-01-22|1864-10|PL|January Uprising|Insurrection de Janvier|Repression, confiscations, exile to Siberia.|Répression, confiscations, exil en Sibérie.
+migration|1870|1914|PL|Emigration "for bread"|Émigration « pour le pain »|Millions leave for America and the mines of France and Germany.|Des millions partent vers l'Amérique et les mines de France et d'Allemagne.
+event|1918-11-11||PL|Independence of Poland|Indépendance de la Pologne|The Second Republic is born.|Naissance de la IIᵉ République.
+war|1919-02-14|1921-03-18|PL|Polish–Soviet War|Guerre polono-soviétique|"Miracle on the Vistula", 1920.|« Miracle de la Vistule », 1920.
+migration|1919|1939|PL,FR|Polish miners in northern France|Mineurs polonais dans le Nord de la France|About 500,000 Poles settle in France.|Environ 500 000 Polonais s'installent en France.
+war|1939-09-01|1945-05-09|PL|German and Soviet occupation|Occupation allemande et soviétique|About six million Polish citizens killed, half of them Jews.|Environ six millions de citoyens polonais tués, dont la moitié juifs.
+war|1944-08-01|1944-10-03|PL|Warsaw Uprising|Insurrection de Varsovie|63 days of fighting; the city then razed.|63 jours de combats ; la ville ensuite rasée.
+era|1945|1989|PL|People's Republic of Poland|République populaire de Pologne|Communist rule; borders moved west.|Régime communiste ; frontières déplacées vers l'ouest.
+event|1980-08-31||PL|Solidarność|Solidarność|The first free trade union of the Soviet bloc.|Le premier syndicat libre du bloc soviétique.
+event|1981-12-13|1983-07-22|PL|Martial law|Loi martiale
+event|1989-06-04||PL|First partly free elections|Premières élections partiellement libres
+event|2004-05-01||PL|Poland joins the European Union|La Pologne entre dans l'Union européenne
+
+# --- Belgium and the two Congos ---------------------------------------------
+event|1830-10-04||BE|Independence of Belgium|Indépendance de la Belgique
+era|1885|1908|CD,BE|Congo Free State|État indépendant du Congo|Leopold II's own colony: forced labour and atrocities for rubber.|La colonie personnelle de Léopold II : travail forcé et atrocités pour le caoutchouc.
+era|1908|1960-06-30|CD,BE|Belgian Congo|Congo belge|A colony of Belgium.|Une colonie de la Belgique.
+war|1914-08-04|1918-11-11|BE|Belgium occupied|Belgique occupée|Massacres of 1914; the Yser front.|Massacres de 1914 ; front de l'Yser.
+war|1940-05-10|1944-09-04|BE|Belgium occupied again|Belgique de nouveau occupée
+event|1950|1951|BE|The Royal Question|La Question royale|Leopold III abdicates in 1951.|Léopold III abdique en 1951.
+event|1482||CD,CG,africa|The Portuguese reach the Kongo kingdom|Les Portugais atteignent le royaume du Kongo|Diogo Cão at the mouth of the river.|Diogo Cão à l'embouchure du fleuve.
+event|1960-06-30||CD|Independence of the Congo|Indépendance du Congo|Patrice Lumumba, Prime Minister.|Patrice Lumumba, Premier ministre.
+war|1960-07|1965-11|CD|Congo Crisis|Crise congolaise|Katanga secedes; Lumumba murdered in 1961.|Sécession du Katanga ; assassinat de Lumumba en 1961.
+era|1965-11-24|1997-05-17|CD|Mobutu regime|Régime de Mobutu|The country is Zaire from 1971.|Le pays devient le Zaïre en 1971.
+epidemic|1976||CD|First known Ebola outbreak (Yambuku)|Première épidémie connue d'Ebola (Yambuku)
+war|1996-10|1997-05-17|CD|First Congo War|Première guerre du Congo|Mobutu falls; Laurent-Désiré Kabila takes power.|Chute de Mobutu ; Laurent-Désiré Kabila prend le pouvoir.
+event|2006-07-30||CD|First free elections since independence|Premières élections libres depuis l'indépendance
+era|1880|1960-08-15|CG|French Congo|Congo français|From Brazza's treaties to independence.|Des traités de Brazza à l'indépendance.
+event|1960-08-15||CG|Independence of the Republic of the Congo|Indépendance de la République du Congo
+
+# --- Haiti ------------------------------------------------------------------
+event|1697||HT|Saint-Domingue becomes French|Saint-Domingue devient française|Treaty of Ryswick.|Traité de Ryswick.
+event|1804-01-01||HT|Independence of Haiti|Indépendance d'Haïti|The first Black republic, where slavery ended for good.|La première république noire, où l'esclavage prend fin pour de bon.
+event|1825||HT|The independence debt to France|La dette de l'indépendance envers la France|150 million francs, a weight for a century.|150 millions de francs, un fardeau pendant un siècle.
+era|1915|1934|HT|United States occupation|Occupation américaine
+era|1957|1986|HT|Duvalier dictatorship|Dictature des Duvalier|Many Haitians go into exile.|De nombreux Haïtiens partent en exil.
+disaster|2010-01-12||HT|Earthquake of 12 January 2010|Séisme du 12 janvier 2010|More than 200,000 dead.|Plus de 200 000 morts.
+
+# --- Germany, Italy, Spain, Portugal -----------------------------------------
+event|1871-01-18||DE|German Empire proclaimed|Proclamation de l'Empire allemand
+event|1918-11-09||DE|Weimar Republic|République de Weimar
+economy|1923||DE|Hyperinflation|Hyperinflation|Savings wiped out.|L'épargne anéantie.
+era|1933|1945|DE|Nazi Germany|Allemagne nazie
+event|1949|1990|DE|Two German states|Deux États allemands
+event|1961-08-13|1989-11-10|DE,europe|The Berlin Wall|Le mur de Berlin
+event|1990-10-03||DE|Reunification|Réunification
+event|1861-03-17||IT|Kingdom of Italy: unification|Royaume d'Italie : unification
+migration|1880|1915|IT|Great Italian emigration|Grande émigration italienne|To the Americas and France.|Vers les Amériques et la France.
+era|1922|1943|IT|Fascist Italy|Italie fasciste
+event|1946-06-02||IT|Italian Republic|République italienne
+war|1808|1814|ES|Peninsular War|Guerre d'indépendance espagnole
+era|1939|1975|ES|Franco's dictatorship|Dictature de Franco
+event|1978||ES|Democratic constitution|Constitution démocratique
+event|1974-04-25||PT|Carnation Revolution|Révolution des Œillets|The end of the dictatorship and of the colonial wars.|La fin de la dictature et des guerres coloniales.
+
+# --- United Kingdom and Ireland ----------------------------------------------
+epidemic|1665|1666|GB|Great Plague of London|Grande peste de Londres
+event|1666-09-02||GB|Great Fire of London|Grand incendie de Londres
+event|1707-05-01||GB|Union of England and Scotland|Union de l'Angleterre et de l'Écosse
+economy|1760|1840|GB|First Industrial Revolution|Première révolution industrielle
+era|1837|1901|GB|Victorian era|Ère victorienne
+war|1940-07-10|1940-11-01|GB|Battle of Britain|Bataille d'Angleterre
+event|1948-07-05||GB|National Health Service|Service national de santé (NHS)
+event|2020-01-31||GB|Brexit|Brexit
+event|1916-04-24||IE|Easter Rising|Insurrection de Pâques
+event|1922-12-06||IE|Irish Free State|État libre d'Irlande
+war|1922-06-28|1923-05-24|IE|Irish Civil War|Guerre civile irlandaise
+era|1968|1998|IE,GB|The Troubles (Northern Ireland)|Les Troubles (Irlande du Nord)
+
+# --- Russia and Ukraine -------------------------------------------------------
+era|1613|1917|RU|Romanov dynasty|Dynastie Romanov
+war|1812-06-24|1812-12-14|RU,FR|Napoleon's invasion of Russia|Campagne de Russie|The Grande Armée destroyed in the retreat.|La Grande Armée détruite pendant la retraite.
+event|1861-03-03||RU|Serfdom abolished|Abolition du servage
+event|1905||RU|Revolution of 1905|Révolution de 1905
+disaster|1921|1922|RU,UA|Famine of 1921–1922|Famine de 1921-1922
+era|1922-12-30|1991-12-26|RU,UA|Soviet Union|Union soviétique
+disaster|1932|1933|UA|Holodomor|Holodomor|A man-made famine: millions dead.|Une famine provoquée : des millions de morts.
+era|1936|1938|RU|The Great Terror|La Grande Terreur
+war|1941-06-22|1945-05-09|RU,UA|The war against Germany|La guerre contre l'Allemagne|About 27 million Soviet dead.|Environ 27 millions de morts soviétiques.
+disaster|1986-04-26||UA,europe|Chernobyl disaster|Catastrophe de Tchernobyl
+event|1991-08-24||UA|Independence of Ukraine|Indépendance de l'Ukraine
+event|2014||UA|Crimea annexed, war in the Donbas|Annexion de la Crimée, guerre du Donbass
+
+# --- United States -------------------------------------------------------------
+event|1803||US|Louisiana Purchase|Vente de la Louisiane
+event|1865-12-06||US|Slavery abolished|Abolition de l'esclavage
+migration|1892|1954|US|Ellis Island|Ellis Island|About twelve million immigrants pass through.|Environ douze millions d'immigrants y passent.
+event|1920-08-18||US|Women's right to vote|Droit de vote des femmes
+economy|1933|1939|US|The New Deal|Le New Deal
+event|1954|1968|US|Civil rights movement|Mouvement des droits civiques
+event|1963-11-22||US|Assassination of John F. Kennedy|Assassinat de John F. Kennedy
+
+# --- Algeria ---------------------------------------------------------------------
+era|1830|1962-07-05|DZ|French Algeria|Algérie française
+event|1962-07-05||DZ|Independence of Algeria|Indépendance de l'Algérie|Hundreds of thousands leave for France.|Des centaines de milliers de départs vers la France.
+war|1991-12|2002-02|DZ|Algerian Civil War|Guerre civile algérienne

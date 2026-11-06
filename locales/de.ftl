@@ -5384,3 +5384,62 @@ afg-canva-save-first = Wählen Sie zuerst Canva als Bilddienst und speichern Sie
 afg-canva-policy = Eine Verbindung dient der ganzen Familie: Die Retuschen laufen über dieses Canva-Konto, seine Credits und seinen Ordner „ax-genealogy“. Die Nutzungsrichtlinie von Canva sieht vor, dass jede Person ihr eigenes Konto verbindet; wenn Sie Ihres für den AFG verbinden, übernehmen Sie dafür die Verantwortung.
 afg-error-workflow = Der ComfyUI-Workflow fehlt oder ist nicht im API-Format (er braucht mindestens einen LoadImage-Knoten).
 afg-error-canva = Canva ist nicht verbunden: Nutzen Sie „Canva verbinden“.
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = Wirkung
+impact-title = Wirkung
+impact-lede = Das Leben der Familie entlang der Weltgeschichte.
+impact-span-all = Die ganze Geschichte
+impact-span-family = Die Jahrhunderte der Familie
+impact-placed = Eingeordnete Personen: { $n }
+impact-undated = Ohne Datum: { $n }
+impact-hidden = Nicht gezeigt: { $n }
+impact-empty = Noch ist kein Datum bekannt: niemand kann eingeordnet werden.
+impact-col-world = Welt
+impact-col-continents = Kontinente
+impact-col-family = Die Familie
+impact-col-life = Das Leben
+impact-col-country = Das Land
+impact-continent-europe = Europa
+impact-continent-africa = Afrika
+impact-continent-asia = Asien
+impact-continent-americas = Amerika
+impact-continent-oceania = Ozeanien
+impact-kind-era = Zivilisationen und Epochen
+impact-kind-war = Kriege
+impact-kind-epidemic = Seuchen
+impact-kind-migration = Wanderungen
+impact-kind-event = Wegmarken
+impact-kind-economy = Wirtschaft und Gesellschaft
+impact-kind-disaster = Hungersnöte und Katastrophen
+impact-person-title = Die Zeit von { $name }
+impact-back = Die ganze Familie
+impact-record = Eintrag öffnen
+impact-states = Staaten, zu denen die Orte gehörten
+impact-countries-none = In den Orten wurde kein Land gefunden.
+impact-unplaced = Kein Datum bekannt: Diese Person lässt sich nicht einordnen.
+impact-see = Die Wirkung sehen
+impact-year-bc = { $year } v. Chr.
+impact-now = heute
+impact-years = { $n ->
+        [one] { $n } Jahr
+       *[other] { $n } Jahre
+    }
+impact-months = { $n ->
+        [one] { $n } Monat
+       *[other] { $n } Monate
+    }
+impact-days = { $n ->
+        [one] { $n } Tag
+       *[other] { $n } Tage
+    }
+impact-age = { $n ->
+        [one] mit { $n } Jahr
+       *[other] mit { $n } Jahren
+    }
+impact-under-way = bei der Geburt schon im Gang
+impact-milestone-birth = Geburt
+impact-milestone-death = Tod
+impact-milestone-marriage = Heirat
+impact-milestone-child = Geburt von { $name }

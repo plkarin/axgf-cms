@@ -5168,3 +5168,62 @@ afg-canva-save-first = Chagua kwanza Canva kama huduma ya picha, kisha uhifadhi.
 afg-canva-policy = Muunganisho mmoja unahudumia familia nzima: marekebisho yanapitia akaunti hii ya Canva, salio lake na folda yake „ax-genealogy”. Sera ya matumizi ya Canva inataka kila mtu aunganishe akaunti yake mwenyewe; kwa kuunganisha yako kwa ajili ya AFG, unachukua jukumu hilo.
 afg-error-workflow = Mtiririko wa kazi wa ComfyUI haupo, au hauko katika muundo wa API (unahitaji angalau nodi moja ya LoadImage).
 afg-error-canva = Canva haijaunganishwa: tumia „Unganisha Canva”.
+
+## Impact: the Universal Synoptic Timeline (docs/adr/0034)
+
+nav-impact = Athari
+impact-title = Athari
+impact-lede = Maisha ya familia katika historia ya dunia.
+impact-span-all = Historia yote
+impact-span-family = Karne za familia
+impact-placed = Watu waliowekwa: { $n }
+impact-undated = Bila tarehe: { $n }
+impact-hidden = Wasioonyeshwa: { $n }
+impact-empty = Hakuna tarehe inayojulikana bado: hakuna anayeweza kuwekwa.
+impact-col-world = Dunia
+impact-col-continents = Mabara
+impact-col-family = Familia
+impact-col-life = Maisha
+impact-col-country = Nchi
+impact-continent-europe = Ulaya
+impact-continent-africa = Afrika
+impact-continent-asia = Asia
+impact-continent-americas = Amerika
+impact-continent-oceania = Oceania
+impact-kind-era = Ustaarabu na vipindi
+impact-kind-war = Vita
+impact-kind-epidemic = Milipuko ya magonjwa
+impact-kind-migration = Uhamiaji
+impact-kind-event = Matukio muhimu
+impact-kind-economy = Uchumi na jamii
+impact-kind-disaster = Njaa na majanga
+impact-person-title = { $name } katika wakati wake
+impact-back = Familia nzima
+impact-record = Fungua rekodi
+impact-states = Nchi zilizotawala maeneo yake
+impact-countries-none = Hakuna nchi iliyopatikana katika maeneo yake.
+impact-unplaced = Hakuna tarehe inayojulikana: mtu huyu hawezi kuwekwa kwenye mstari wa wakati.
+impact-see = Ona athari
+impact-year-bc = { $year } KK
+impact-now = leo
+impact-years = { $n ->
+        [one] mwaka { $n }
+       *[other] miaka { $n }
+    }
+impact-months = { $n ->
+        [one] mwezi { $n }
+       *[other] miezi { $n }
+    }
+impact-days = { $n ->
+        [one] siku { $n }
+       *[other] siku { $n }
+    }
+impact-age = { $n ->
+        [one] akiwa na mwaka { $n }
+       *[other] akiwa na miaka { $n }
+    }
+impact-under-way = ilikuwa ikiendelea alipozaliwa
+impact-milestone-birth = Kuzaliwa
+impact-milestone-death = Kifo
+impact-milestone-marriage = Ndoa
+impact-milestone-child = Kuzaliwa kwa { $name }

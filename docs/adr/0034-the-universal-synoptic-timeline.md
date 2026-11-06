@@ -1,6 +1,6 @@
 # ADR 0034 — Impact, the Universal Synoptic Timeline
 
-**Status:** accepted (unreleased) · **Builds on:** the lens (docs/adr/0001),
+**Status:** accepted, v1.9.0 (2026-11-06) · **Builds on:** the lens (docs/adr/0001),
 the record's places and their states (`country_history`), the words diet
 (docs/adr/0032) · **Applies to:** `src/impact.rs`, `src/impact_events.txt`,
 `src/routes/impact.rs`, `templates/impact.html`,

@@ -62,7 +62,10 @@ ADR 0001's invariants stand.
 - **`paint(frame, api, atRest)`**: the SVG, at rest and in travel.
 - **`rest(svg, frame, api)`**: the dashboard, at rest.
 - **`named()`**: the people the drawing named. The pointer names the ones it
-  left out, and only those.
+  left out, and only those. *Amended on 6 November 2026, at the operator's
+  request:* the pointer names the one person under it, in full, and every
+  other name steps aside while it is there, the drawing's and the ones the
+  river set beside it; `named()` is still given, and no longer asked.
 
 **Everything else stays `river.js`'s:** travel, the trail, the panel, the
 keyboard, the camera (zoom 1–3 and drag), touch, the range and "Cut".

@@ -21,6 +21,12 @@ The AFG reads a person's photographs (the operator's request of
 - **A model that takes no picture** is asked again without the photographs,
   and told that they could not be given.
 
+### Fixed
+
+- **A name looked at is read alone.** In every theme's drawing of the river,
+  the person under the pointer is named in full and every other name steps
+  aside with its ground, until the pointer leaves.
+
 ## [1.7.0] — 2026-11-06
 
 A Status tab on the record, and fewer words on every page (the operator's

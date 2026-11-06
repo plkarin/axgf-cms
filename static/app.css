@@ -4689,6 +4689,13 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
    person's own shorter word steps aside while they are lit. */
 .rv-svg .rv-hl-box { fill: var(--rv-ink-1); fill-opacity: 0.92; stroke: var(--rv-lit); stroke-opacity: 0.35; stroke-width: 0.8; }
 .rv-svg a.rv-p.rv-looked .k-name { visibility: hidden; }
+/* While a person is looked at, only their full name is read: every other
+   word steps aside with its ground, in every theme's drawing (the
+   operator's request of 6 November 2026). The person looked at keeps their
+   years in the river; the one at the centre, looked at, keeps its name. */
+.rv-svg.rv-naming a.rv-p:not(.rv-keep, .rv-looked) :is(.k-name, .k-centre, .k-data, .tv-panel, .tv-leader, .tv-name, .tv-data, .gx-name, .gx-data, .sm-name, .sm-data, .gn-plate) { visibility: hidden; }
+.rv-svg.rv-naming a.rv-p.rv-looked :is(.k-name, .tv-panel, .tv-leader, .tv-name, .tv-data, .gx-name, .gx-data, .sm-name, .sm-data, .gn-plate) { visibility: hidden; }
+.rv-svg.rv-naming .rv-names { visibility: hidden; }
 .rv-canvas .rv-p:focus-visible circle:first-child { stroke: var(--rv-accent); stroke-width: 1.5; }
 /* A grid of keys in columns of one width, rather than a row that wrapped
    them wherever the line ran out; the title, the long keys and the

@@ -326,9 +326,10 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
 
 /// What river.js asks of a view, each view gives: where everyone stands, how
 /// a line bends (the lit route follows it), how a frame is painted, the
-/// dashboard at rest, and whom the drawing named — so that the pointer names
-/// those it left out, and only those. And each view's scene holds still on
-/// the river's terms.
+/// dashboard at rest, and whom the drawing named. And each view's scene holds
+/// still on the river's terms. The pointer names the one person under it, in
+/// full, and every other name steps aside (the operator's request of
+/// 6 November 2026).
 #[test]
 fn a_view_gives_river_js_everything_it_asks_for() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -362,7 +363,10 @@ fn a_view_gives_river_js_everything_it_asks_for() {
         }
     }
     let river = read("static/river.js");
-    assert!(river.contains("T = view && view.named ? view.named() : tiers(fr);"));
+    assert!(river.contains("var word = target ? s.names[2] : '';"));
+    assert!(river.contains("svg.classList.toggle('rv-naming', !!on);"));
+    let css = read("static/app.css");
+    assert!(css.contains(".rv-svg.rv-naming .rv-names { visibility: hidden; }"));
     // A view's own curve first; else the scene's courses (Canopée's streams
     // and rivers, while they are drawn); else the river's curve.
     assert!(river.contains("var curve = view && view.edge ? view.edge : course || vc;"));

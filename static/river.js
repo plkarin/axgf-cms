@@ -703,7 +703,7 @@
       // Where a word may run before it meets the rail: the window as it is
       // on screen now (widened, zoomed), less the rail's room. A word is
       // scaled back by the zoom (cam.iz), its distance from the dot with it.
-      var vb = svg.viewBox.baseVal, F = frame(fr.meta), u = 1 / (F.k * cam.z), T = view && view.named ? view.named() : tiers(fr);
+      var vb = svg.viewBox.baseVal, F = frame(fr.meta), u = 1 / (F.k * cam.z);
       fr.persons.forEach(function (p) {
         var s = p.s || {};
         if (!on[p.key] || p.role === 'centre' || s.redacted) return;
@@ -713,14 +713,12 @@
         var target = p.key === id;
         labels += '<g class="rv-cs" style="transform-origin:' + f(p.x) + 'px ' + f(p.y) + 'px">';
         labels += '<circle cx="' + f(p.x) + '" cy="' + f(p.y) + '" r="' + (target ? 11 : 8.5) + '" fill="none" class="k-lit" stroke-width="' + (target ? 1.3 : 0.9) + '"' + (target ? '' : ' stroke-opacity="0.7"') + '/>';
-        // The person under the pointer is named in full; a station the
-        // drawing left unnamed, by its shortest name. A theme's view says
-        // itself whom it named (docs/adr/0007). A row is rarely theirs
-        // alone, so the word sits on a ground of its own (sized in place
-        // below) and goes to whichever side the window has room on: it may
-        // cover a neighbour's word for as long as it is lit, and is never
-        // read through one.
-        var word = target ? s.names[2] : T[p.key] ? '' : s.names[0];
+        // The person under the pointer is named in full, and alone: every
+        // other word steps aside while they are looked at (the operator's
+        // request of 6 November 2026), so the stations of the route are
+        // rings without words. The word sits on a ground of its own (sized
+        // in place below) and goes to whichever side the window has room on.
+        var word = target ? s.names[2] : '';
         if (word) {
           var right = p.x + (10.8 + width(word, 12, false)) * cam.iz > vb.x + vb.width - 34 * u;
           labels += '<rect class="rv-hl-box" rx="3"/><text x="' + f(right ? p.x - 10.8 : p.x + 10.8) + '" y="' + f(p.y - 1) + '"' + (right ? ' text-anchor="end"' : '') + ' font-family="\'Iowan Old Style\',Palatino,Georgia,serif" font-size="12" class="k-lit-fill k-halo" paint-order="stroke" stroke-width="4" stroke-linejoin="round">' + esc(word) + '</text>';
@@ -743,9 +741,13 @@
       r.setAttribute('x', f(b.x - 3)); r.setAttribute('y', f(b.y - 1.5));
       r.setAttribute('width', f(b.width + 6)); r.setAttribute('height', f(b.height + 3));
     });
-    // The lit person's own word steps aside for their full name.
-    svg.querySelectorAll('a.rv-p.rv-looked').forEach(function (a) { a.classList.remove('rv-looked'); });
-    if (on) svg.querySelectorAll('a.rv-p').forEach(function (a) { if (a.getAttribute('data-key') === id) a.classList.add('rv-looked'); });
+    // The lit person's own word steps aside for their full name, and so does
+    // everyone else's, the names this script set beside the drawing's
+    // included (app.css, .rv-naming); the person at the centre,
+    // looked at, keeps the full name it already bears.
+    svg.classList.toggle('rv-naming', !!on);
+    svg.querySelectorAll('a.rv-p.rv-looked, a.rv-p.rv-keep').forEach(function (a) { a.classList.remove('rv-looked', 'rv-keep'); });
+    if (on) svg.querySelectorAll('a.rv-p').forEach(function (a) { if (a.getAttribute('data-key') === id) a.classList.add(id === fr.meta.centre ? 'rv-keep' : 'rv-looked'); });
   }
 
   /* ---- travel ---- */

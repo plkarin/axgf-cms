@@ -158,6 +158,18 @@ fn dossier(
     }))
 }
 
+/// One of the person's photographs as the AFG is given it: read from the
+/// bundle and sized once, then kept (`AppState::model_photos`). `None` when
+/// its bytes are not there or are not a picture this build decodes.
+fn model_photo(state: &Shared, photo: &crate::person_chat::Photo) -> Option<Vec<u8>> {
+    state
+        .model_photos()
+        .get_or_insert(&photo.id, &photo.sha256, || {
+            let bytes = state.attachment(&photo.path)?;
+            crate::assistant::model_photo(&bytes)
+        })
+}
+
 /// Begin writing the conversation's next answer in the background. `false`
 /// when it is already being answered, the site answers as many as it may, or
 /// the person can no longer be read.
@@ -194,8 +206,27 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
         notes = d.notes.len(),
         relatives = d.relatives.len(),
         persons = d.persons,
+        photos = d.photos.len(),
         "AFG: a question about a person sent"
     );
+    // The photographs are read and sized on the way, not while the page
+    // waits; a model that takes no picture is asked without them.
+    let prepare = (!d.photos.is_empty()).then(|| {
+        let state = state.clone();
+        let photos = d.photos.clone();
+        let mut instead = prompt.clone();
+        crate::person_chat::photos_refused(&mut instead);
+        super::assistant::Prepare {
+            work: Box::new(move |prompt: &mut crate::afg_chat::ChatPrompt| {
+                let given = photos
+                    .iter()
+                    .filter_map(|p| model_photo(&state, p).map(|data| (p.filename.clone(), data)))
+                    .collect();
+                crate::person_chat::with_photos(prompt, given);
+            }),
+            instead,
+        }
+    });
     super::assistant::run_answer(
         state,
         c.space.clone(),
@@ -203,6 +234,7 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
         project.id.clone(),
         cid.to_string(),
         prompt,
+        prepare,
         live,
         false,
     );
@@ -316,8 +348,8 @@ pub fn tab(
     }
     // What the AFG reads, said before the first question: its size.
     let reads = dossier(state, viewer, person, chrome.lang).map(|d| {
-        json!({"notes": d.notes.len(), "relatives": d.relatives.len(),
-               "persons": d.persons, "tokens": d.tokens()})
+        json!({"photos": d.photos.len(), "notes": d.notes.len(),
+               "relatives": d.relatives.len(), "persons": d.persons, "tokens": d.tokens()})
     });
     let notice = match done {
         Some("saved") => Some(chrome.t("assistant-saved")),

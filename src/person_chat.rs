@@ -9,18 +9,22 @@
 //! 2. the notes about them, their transcriptions and their summary included;
 //! 3. their close relatives (parents, siblings, spouses, children), each with
 //!    its record and the notes about it;
-//! 4. everyone of the family the member may read, one line each.
+//! 4. everyone of the family the member may read, one line each;
+//! 5. the photographs of the person's record (the operator's request of
+//!    6 November 2026, docs/adr/0033), given with the member's message as
+//!    pictures. Films, sound and PDF documents are not given.
 //!
 //! Everything goes through the member's lens: a person the member may not
-//! read is neither in the dossier nor in the index. Each part has a ceiling,
-//! so that the dossier stays within what a model reads in one go.
+//! read is neither in the dossier nor in the index, and a file the member may
+//! not open is not given. Each part has a ceiling, so that the dossier stays
+//! within what a model reads in one go.
 //!
 //! The conversations are kept in the member's assistant space, in a project
 //! of the person's own (`assistant::person_project_id`).
 
 use serde_json::Value;
 
-use crate::afg_chat::ChatPrompt;
+use crate::afg_chat::{ChatPrompt, Part, Speaker, Turn};
 use crate::assistant::{self, Asker, Message, Project, Space};
 
 /// The most of the notes about the person, in characters.
@@ -31,6 +35,35 @@ pub const RELATIVES: usize = 40_000;
 pub const RELATIVE_NOTES: usize = 30_000;
 /// The most of the index of the family, in characters.
 pub const INDEX: usize = 40_000;
+/// The most photographs of the person given with a message.
+pub const PHOTOS: usize = 12;
+/// What a photograph is counted as, in tokens: about what a model reads of
+/// a picture at the size it is given (`assistant::model_photo`).
+pub const PHOTO_TOKENS: usize = 1_600;
+
+/// Whether a file of this type is a picture the AFG is given: the raster
+/// formats this build decodes. A TIFF, an SVG, a film are not.
+pub fn readable_photo(mime: &str) -> bool {
+    matches!(
+        mime,
+        "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "image/bmp"
+    )
+}
+
+/// One of the person's photographs, before its bytes are read: what the
+/// record says of it, and where its bytes are kept.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Photo {
+    pub id: String,
+    pub filename: String,
+    /// The kind of document, in the member's language.
+    pub kind: String,
+    pub caption: Option<String>,
+    pub note: Option<String>,
+    /// Where the bundle keeps its bytes.
+    pub path: String,
+    pub sha256: String,
+}
 
 /// How a close relative is related to the person, as the dossier says it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -70,6 +103,9 @@ pub struct Gathered {
     pub relatives: Vec<(Relation, String, String, Value, Vec<NoteRef>)>,
     /// One line for each person the member may read, by name.
     pub index: Vec<String>,
+    /// The photographs of the person's record the AFG may be given, in the
+    /// record's order.
+    pub photos: Vec<Photo>,
 }
 
 /// A close relative, as the dossier gives it.
@@ -94,6 +130,10 @@ pub struct Dossier {
     /// Everyone the member may read, including those the index had no room
     /// for.
     pub persons: usize,
+    /// The photographs given with each message, [`PHOTOS`] at most.
+    pub photos: Vec<Photo>,
+    /// The photographs of the record left out for want of room.
+    pub photos_left: usize,
 }
 
 /// The record of one person as the dossier gives it: the page's record,
@@ -143,6 +183,7 @@ pub fn gather(
     }
     let (name, record, view) = record_of(flat, lens, person_id, lang, Some(allowed))?;
     let notes = notes_of(flat, lens, person_id);
+    let photos = photos_of(flat, lens, &view, allowed);
 
     // The close relatives, the nearest first, each once.
     let mut near: Vec<(Relation, String)> = Vec::new();
@@ -208,7 +249,54 @@ pub fn gather(
         notes,
         relatives,
         index: index.into_iter().map(|(_, line)| line).collect(),
+        photos,
     })
+}
+
+/// The photographs of the person's record the AFG may be given: the
+/// pictures of the record the member may open, as the page lists them,
+/// without a picture an AI made, and without one that sensitive data refers
+/// to unless the AFG room lets those go (docs/adr/0023).
+fn photos_of(
+    flat: &Value,
+    lens: &crate::access::Lens,
+    view: &crate::person::PersonView,
+    allowed: crate::sensitive::Scopes,
+) -> Vec<Photo> {
+    let sensitive: std::collections::BTreeSet<String> = flat
+        .get("persons")
+        .and_then(Value::as_object)
+        .map(|ps| {
+            ps.values()
+                .flat_map(crate::sensitive::documents_referenced)
+                .filter(|(_, scopes)| !scopes.within(allowed))
+                .map(|(doc, _)| doc)
+                .collect()
+        })
+        .unwrap_or_default();
+    view.documents
+        .iter()
+        .filter(|d| d.known && d.has_payload && !d.ai)
+        .filter(|d| d.mime_type.as_deref().is_some_and(readable_photo))
+        .filter(|d| !sensitive.contains(&d.id))
+        .filter(|d| crate::access::may_read_document(flat, lens, true, &d.id))
+        .filter_map(|d| {
+            let file = flat.get("documents")?.get(&d.id)?.get("file")?;
+            Some(Photo {
+                id: d.id.clone(),
+                filename: d.filename.clone(),
+                kind: d.document_type_label.clone(),
+                caption: d.caption.clone(),
+                note: d.note.clone(),
+                path: file.get("path")?.as_str()?.to_string(),
+                sha256: file
+                    .get("sha256")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default()
+                    .to_string(),
+            })
+        })
+        .collect()
 }
 
 /// A text cut to `n` characters, said to be cut when it is.
@@ -270,6 +358,9 @@ pub fn fill(g: Gathered, read: &dyn Fn(&str) -> Option<String>) -> Dossier {
         room -= size;
         index.push(line);
     }
+    let photos_left = g.photos.len().saturating_sub(PHOTOS);
+    let mut photos = g.photos;
+    photos.truncate(PHOTOS);
     Dossier {
         person_id: g.person_id,
         name: g.name,
@@ -278,6 +369,8 @@ pub fn fill(g: Gathered, read: &dyn Fn(&str) -> Option<String>) -> Dossier {
         relatives,
         index,
         persons,
+        photos,
+        photos_left,
     }
 }
 
@@ -297,6 +390,26 @@ impl Dossier {
             s.push_str(&format!("\n## The notes about {}\n", self.name));
             for (title, body) in &self.notes {
                 s.push_str(&format!("\n### {title}\n\n{body}\n"));
+            }
+        }
+        if !self.photos.is_empty() {
+            s.push_str(&format!(
+                "\n## The photographs of {}\n\nThe pictures of the record, given with \
+                 the member's message in this order:\n\n",
+                self.name
+            ));
+            for (i, p) in self.photos.iter().enumerate() {
+                s.push_str(&format!("{}. \"{}\" ({})", i + 1, p.filename, p.kind));
+                for words in [&p.caption, &p.note].into_iter().flatten() {
+                    s.push_str(&format!(" — {words}"));
+                }
+                s.push('\n');
+            }
+            if self.photos_left > 0 {
+                s.push_str(&format!(
+                    "[{} more photographs of the record are not given, for want of room.]\n",
+                    self.photos_left
+                ));
             }
         }
         if !self.relatives.is_empty() {
@@ -332,9 +445,57 @@ impl Dossier {
     }
 
     /// A rough size, a token for every three characters, as the AFG room
-    /// counts the archive's.
+    /// counts the archive's, and [`PHOTO_TOKENS`] for each photograph.
     pub fn tokens(&self) -> usize {
-        self.text().chars().count() / 3
+        self.text().chars().count() / 3 + self.photos.len() * PHOTO_TOKENS
+    }
+}
+
+/// The member's message being answered: the last of the conversation's
+/// turns, which is theirs.
+fn last_said(prompt: &mut ChatPrompt) -> &mut Turn {
+    if prompt
+        .turns
+        .last()
+        .is_none_or(|t| t.speaker != Speaker::User)
+    {
+        prompt.turns.push(Turn {
+            speaker: Speaker::User,
+            parts: Vec::new(),
+        });
+    }
+    let last = prompt.turns.len() - 1;
+    &mut prompt.turns[last]
+}
+
+/// The question as it goes to a model that took no picture: the AFG is told
+/// that the photographs the dossier lists could not be given, so that it
+/// says so, in the member's language, when the question needs them.
+pub fn photos_refused(prompt: &mut ChatPrompt) {
+    last_said(prompt).parts.push(Part::Text(
+        "[The photographs of the record could not be given: the AFG's model does not \
+         take pictures. If the question needs them, say so.]"
+            .to_string(),
+    ));
+}
+
+/// The person's photographs, read and sized, joined to the member's message
+/// being answered. Each is named by its number and file name, as the
+/// dossier lists them.
+pub fn with_photos(prompt: &mut ChatPrompt, photos: Vec<(String, Vec<u8>)>) {
+    if photos.is_empty() {
+        return;
+    }
+    let turn = last_said(prompt);
+    turn.parts.push(Part::Text(
+        "[The photographs of the record, as the dossier lists them.]".to_string(),
+    ));
+    for (i, (filename, data)) in photos.into_iter().enumerate() {
+        turn.parts.push(Part::Image {
+            mime: "image/jpeg".to_string(),
+            name: format!("{}. {filename}", i + 1),
+            data,
+        });
     }
 }
 
@@ -364,7 +525,12 @@ pub fn system_prompt(asker: &Asker, dossier: &Dossier) -> String {
         "The dossier given with the conversation is what this member may read of the \
          family's archive: the person's record, the notes about them, their close relatives \
          with the notes about them, and every person of the family the member may read, one \
-         line each. It is all you know of this family: there is no other record to look up.\n\
+         line each. The photographs of the person's record, when it has some, come with the \
+         member's message. It is all you know of this family: there is no other record to \
+         look up.\n\
+         - Look at the photographs: what they show (faces, clothes, uniforms and insignia, \
+         places, objects, handwriting) may answer a question. Say which photograph, and how \
+         sure you are of what you see in it.\n\
          - Say what the dossier says, and where it says it: a note's title, an event, a \
          source, a relative's record.\n\
          - When you go beyond it (history, places, military units, customs, registers), say \
@@ -423,6 +589,19 @@ mod tests {
             index: (0..index)
                 .map(|i| format!("- Person {i} — persons/x{i}"))
                 .collect(),
+            photos: Vec::new(),
+        }
+    }
+
+    fn photo(i: usize) -> Photo {
+        Photo {
+            id: format!("d{i}"),
+            filename: format!("photo-{i}.jpg"),
+            kind: "Photographie".into(),
+            caption: (i == 0).then(|| "Jean en uniforme, 1916".to_string()),
+            note: None,
+            path: format!("documents/d{i}.jpg"),
+            sha256: String::new(),
         }
     }
 
@@ -456,6 +635,138 @@ mod tests {
     }
 
     #[test]
+    fn the_photographs_are_listed_within_their_ceiling_and_counted() {
+        let mut g = gathered(0, 1);
+        g.photos = (0..PHOTOS + 3).map(photo).collect();
+        let d = fill(g, &|_| None);
+        assert_eq!(d.photos.len(), PHOTOS);
+        assert_eq!(d.photos_left, 3);
+        let text = d.text();
+        assert!(text.contains("## The photographs of Jean Martin"));
+        assert!(text.contains("1. \"photo-0.jpg\" (Photographie) — Jean en uniforme, 1916\n"));
+        assert!(text.contains(&format!("{PHOTOS}. \"photo-{}.jpg\"", PHOTOS - 1)));
+        assert!(text.contains("[3 more photographs of the record are not given"));
+        assert_eq!(d.tokens(), text.chars().count() / 3 + PHOTOS * PHOTO_TOKENS);
+        // None: no word of them.
+        let d = fill(gathered(0, 1), &|_| None);
+        assert!(!d.text().contains("photographs"));
+    }
+
+    #[test]
+    fn the_photographs_go_with_the_message_being_answered() {
+        let said = |speaker, s: &str| Turn {
+            speaker,
+            parts: vec![Part::Text(s.into())],
+        };
+        let mut p = ChatPrompt {
+            turns: vec![
+                said(Speaker::User, "Qui est-ce ?"),
+                said(Speaker::Assistant, "Jean."),
+                said(Speaker::User, "Et son uniforme ?"),
+            ],
+            ..ChatPrompt::default()
+        };
+        with_photos(
+            &mut p,
+            vec![("a.jpg".into(), vec![1]), ("b.jpg".into(), vec![2])],
+        );
+        assert_eq!(p.turns.len(), 3);
+        assert_eq!(p.turns[0].parts.len(), 1, "not with the earlier ones");
+        let last = &p.turns[2].parts;
+        assert_eq!(last[0], Part::Text("Et son uniforme ?".into()));
+        assert!(matches!(&last[2], Part::Image { name, mime, data }
+            if name == "1. a.jpg" && mime == "image/jpeg" && data == &[1]));
+        assert!(matches!(&last[3], Part::Image { name, .. } if name == "2. b.jpg"));
+        // Nothing to give: nothing changes.
+        let before = p.clone();
+        with_photos(&mut p, Vec::new());
+        assert_eq!(p, before);
+        // Refused: the AFG is told, with the message being answered.
+        let mut refused = before.clone();
+        photos_refused(&mut refused);
+        assert_eq!(refused.turns.len(), 3);
+        assert!(matches!(refused.turns[2].parts.last(), Some(Part::Text(s))
+            if s.contains("could not be given")));
+    }
+
+    /// Jean's record and its files: a photograph, one a health record
+    /// refers to, a film, a PDF and a copy an AI restored.
+    fn jean_with_files() -> Value {
+        let doc = |id: &str, name: &str, mime: &str, tags: &[&str]| {
+            json!({"id": id, "type": "document", "filename": name, "mime_type": mime,
+                   "status": "present", "document_type": "photo", "tags": tags,
+                   "file": {"path": format!("documents/{id}"), "sha256": format!("sha-{id}")}})
+        };
+        let attached: Vec<Value> = ["d1", "d2", "d3", "d4", "d5"]
+            .iter()
+            .map(|d| json!({"document_id": d}))
+            .collect();
+        json!({
+            "persons": {"p1": {
+                "id": "p1", "type": "person",
+                "identity": {"name": {"display": "Jean Martin", "components": []},
+                             "is_living": false, "visibility": "public"},
+                "documents": attached,
+                "medical_scan": {"document_id": "d2"}
+            }},
+            "families": {}, "events": {}, "links": {}, "occupations": {}, "places": {},
+            "sources": {},
+            "documents": {
+                "d1": doc("d1", "uniforme.jpg", "image/jpeg", &[]),
+                "d2": doc("d2", "radio.jpg", "image/jpeg", &[]),
+                "d3": doc("d3", "mariage.mp4", "video/mp4", &[]),
+                "d4": doc("d4", "acte.pdf", "application/pdf", &[]),
+                "d5": doc("d5", "uniforme-restaure.jpg", "image/jpeg",
+                          &[crate::afg_record::RETOUCH_TAG]),
+            }
+        })
+    }
+
+    #[test]
+    fn the_photographs_are_the_records_own_pictures_and_never_its_films() {
+        use crate::sensitive::Scopes;
+        let flat = jean_with_files();
+        let lens = crate::access::Lens::unrestricted();
+        let names = |scopes| -> Vec<String> {
+            gather(&flat, &lens, "p1", "fr", scopes)
+                .unwrap()
+                .photos
+                .into_iter()
+                .map(|p| p.filename)
+                .collect()
+        };
+        // The health record's picture only when the AFG room lets sensitive
+        // data go; never the film, the PDF or the AI's copy.
+        assert_eq!(names(Scopes::NONE), ["uniforme.jpg"]);
+        assert_eq!(names(Scopes::EVERY), ["uniforme.jpg", "radio.jpg"]);
+        let g = gather(&flat, &lens, "p1", "fr", Scopes::NONE).unwrap();
+        assert_eq!(g.photos[0].path, "documents/d1");
+        assert_eq!(g.photos[0].sha256, "sha-d1");
+    }
+
+    #[test]
+    fn only_the_pictures_a_model_reads_are_photographs() {
+        for mime in [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif",
+            "image/bmp",
+        ] {
+            assert!(readable_photo(mime), "{mime}");
+        }
+        for mime in [
+            "video/mp4",
+            "audio/mpeg",
+            "application/pdf",
+            "image/tiff",
+            "image/svg+xml",
+        ] {
+            assert!(!readable_photo(mime), "{mime}");
+        }
+    }
+
+    #[test]
     fn the_instructions_name_the_person_and_the_member() {
         let d = fill(gathered(0, 0), &|_| None);
         let asker = Asker {
@@ -468,6 +779,7 @@ mod tests {
         assert!(s.contains("Véra Martin (persons/p9)"));
         assert!(s.contains("their pages are in French"));
         assert!(s.contains("[their name](/person/<id>)"));
+        assert!(s.contains("Look at the photographs"));
         assert!(d.text().contains("No note about this person."));
     }
 }

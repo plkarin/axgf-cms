@@ -423,6 +423,30 @@ pub fn model_image(mime: &str, bytes: &[u8]) -> (String, Vec<u8>) {
     }
 }
 
+/// A photograph of the archive as a model is given it (docs/adr/0033):
+/// turned upright as its EXIF says, at most `MODEL_IMAGE_EDGE` on its
+/// longest side, as a JPEG. `None` when the bytes are not a picture this
+/// build decodes.
+pub fn model_photo(bytes: &[u8]) -> Option<Vec<u8>> {
+    let img = image::load_from_memory(bytes).ok()?;
+    let img = crate::documents::apply_orientation(img, crate::documents::exif_orientation(bytes));
+    let img = if img.width().max(img.height()) > MODEL_IMAGE_EDGE {
+        img.resize(
+            MODEL_IMAGE_EDGE,
+            MODEL_IMAGE_EDGE,
+            image::imageops::FilterType::Lanczos3,
+        )
+    } else {
+        img
+    };
+    let rgb = image::DynamicImage::ImageRgb8(img.to_rgb8());
+    let mut out = std::io::Cursor::new(Vec::new());
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, 85)
+        .encode_image(&rgb)
+        .ok()?;
+    Some(out.into_inner())
+}
+
 // ---------------------------------------------------------------------------
 // the spaces
 // ---------------------------------------------------------------------------
@@ -1336,6 +1360,18 @@ mod tests {
             model_image("image/png", &small),
             ("image/png".to_string(), small)
         );
+    }
+
+    #[test]
+    fn a_photograph_of_the_archive_is_given_as_a_jpeg_a_model_reads() {
+        let data = model_photo(&png(1000, 3000)).expect("a picture");
+        assert!(data.starts_with(&[0xff, 0xd8]), "a JPEG");
+        let img = image::load_from_memory(&data).unwrap();
+        assert_eq!((img.width(), img.height()), (523, MODEL_IMAGE_EDGE));
+        // Small, it keeps its size, as a JPEG still.
+        let img = image::load_from_memory(&model_photo(&png(40, 30)).unwrap()).unwrap();
+        assert_eq!((img.width(), img.height()), (40, 30));
+        assert_eq!(model_photo(b"not a picture"), None);
     }
 
     #[test]

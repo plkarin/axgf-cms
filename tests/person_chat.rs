@@ -576,3 +576,211 @@ async fn without_the_afgs_computing_nothing_is_sent() {
             .is_none()
     );
 }
+
+/// A picture made here, for the test: never a photograph of the family.
+fn png(w: u32, h: u32) -> Vec<u8> {
+    let img = image::RgbImage::from_fn(w, h, |x, y| {
+        image::Rgb([(x % 256) as u8, (y % 256) as u8, 90])
+    });
+    let mut out = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgb8(img)
+        .write_to(&mut out, image::ImageFormat::Png)
+        .unwrap();
+    out.into_inner()
+}
+
+/// A file attached to a person's record by an administrator, as the
+/// record's editor sends it.
+async fn attach(
+    app: &axum::Router,
+    cookie: &str,
+    person: &str,
+    name: &str,
+    mime: &str,
+    bytes: &[u8],
+    caption: &str,
+) {
+    let b = "----axgfpersonchatfile";
+    let mut body = format!(
+        "--{b}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\n\
+         Content-Type: {mime}\r\n\r\n"
+    )
+    .into_bytes();
+    body.extend_from_slice(bytes);
+    body.extend_from_slice(
+        format!(
+            "\r\n--{b}\r\nContent-Disposition: form-data; name=\"caption\"\r\n\r\n{caption}\r\n--{b}--\r\n"
+        )
+        .as_bytes(),
+    );
+    let req = Request::builder()
+        .uri(format!("/admin/person/{person}/document"))
+        .method("POST")
+        .header(header::COOKIE, cookie)
+        .header(
+            header::CONTENT_TYPE,
+            format!("multipart/form-data; boundary={b}"),
+        )
+        .body(Body::from(body))
+        .unwrap();
+    let resp = app.clone().oneshot(req).await.unwrap();
+    assert!(
+        resp.status().is_success() || resp.status().is_redirection(),
+        "{name} attached: {}",
+        resp.status()
+    );
+}
+
+/// The AFG reads the photographs of the person's record with each message
+/// (the operator's request of 6 November 2026, docs/adr/0033): given as
+/// pictures with the message being answered, sized for a model, named in
+/// the dossier; a film is not given, nor a relative's photograph.
+#[tokio::test]
+async fn the_afg_reads_the_photographs_of_the_record_and_not_its_films() {
+    let (url, seen) = fake_service(ollama);
+    let (app, _dir, c) = family_app("person-chat-photos", Some(&url)).await;
+    let (ana, vera) = (&c[0], &c[1]);
+    attach(
+        &app,
+        ana,
+        JEAN,
+        "uniforme.png",
+        "image/png",
+        &png(2000, 1000),
+        "Jean en uniforme, 1916",
+    )
+    .await;
+    let mut film = vec![0, 0, 0, 0x20];
+    film.extend_from_slice(b"ftypisom");
+    film.extend_from_slice(&[0; 64]);
+    attach(
+        &app,
+        ana,
+        JEAN,
+        "mariage.mp4",
+        "video/mp4",
+        &film,
+        "Le mariage, 1919",
+    )
+    .await;
+    attach(
+        &app,
+        ana,
+        PAUL,
+        "paul.png",
+        "image/png",
+        &png(300, 200),
+        "Paul à Lyon",
+    )
+    .await;
+
+    // The tab says how many go with each message.
+    let (_, tab) = page(&app, &format!("/person/{JEAN}?tab=afg"), vera).await;
+    assert!(
+        tab.contains("la fiche, les photos (1), les notes (1)"),
+        "{tab}"
+    );
+
+    let cid = begin(&app, vera, "Que montre la photo ?").await;
+    answered(&app, vera, &cid).await;
+    let images = |body: &str| -> Vec<Vec<Value>> {
+        let v: Value = serde_json::from_str(body).unwrap();
+        v["messages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|m| m["images"].as_array().cloned().unwrap_or_default())
+            .collect()
+    };
+    let first = seen.lock().unwrap().last().unwrap().clone();
+    let given = images(&first);
+    // [system, the question]: the picture with the question.
+    assert_eq!(given.len(), 2);
+    assert!(given[0].is_empty());
+    assert_eq!(
+        given[1].len(),
+        1,
+        "one photograph: not the film, not Paul's"
+    );
+    use base64::Engine;
+    let jpeg = base64::engine::general_purpose::STANDARD
+        .decode(given[1][0].as_str().unwrap())
+        .unwrap();
+    assert!(jpeg.starts_with(&[0xff, 0xd8]), "a JPEG");
+    let img = image::load_from_memory(&jpeg).unwrap();
+    assert_eq!(
+        (img.width(), img.height()),
+        (1568, 784),
+        "sized for a model"
+    );
+    // Named in the dossier, with its caption; the film is not given.
+    assert!(first.contains("## The photographs of Jean Martin"));
+    assert!(first.contains("1. \\\"uniforme.png\\\""), "{first}");
+    assert!(first.contains("Jean en uniforme, 1916"));
+    assert!(!first.contains("1. \\\"mariage.mp4\\\""));
+
+    // Carried on: the photograph goes with the new message only.
+    let resp = ask(
+        &app,
+        vera,
+        &format!("/person/{JEAN}/afg/{cid}"),
+        "Et l'uniforme ?",
+        true,
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    answered(&app, vera, &cid).await;
+    let second = seen.lock().unwrap().last().unwrap().clone();
+    let given = images(&second);
+    assert_eq!(given.len(), 4, "[system, question, answer, question]");
+    assert!(given[1].is_empty() && given[2].is_empty());
+    assert_eq!(given[3].len(), 1);
+}
+
+/// An Ollama whose model takes no picture: a request with one is refused,
+/// as such a model's is.
+fn ollama_without_pictures(method: &str, path: &str, body: &str) -> (u16, String) {
+    if method == "POST" && body.contains("\"images\"") {
+        return (
+            400,
+            r#"{"error":"this model does not support images"}"#.into(),
+        );
+    }
+    ollama(method, path, body)
+}
+
+/// A model that takes no picture still answers: the question is asked again
+/// without the photographs, and the AFG is told they could not be given.
+#[tokio::test]
+async fn a_model_that_takes_no_picture_is_asked_again_without_them() {
+    let (url, seen) = fake_service(ollama_without_pictures);
+    let (app, _dir, c) = family_app("person-chat-no-pictures", Some(&url)).await;
+    let (ana, vera) = (&c[0], &c[1]);
+    attach(
+        &app,
+        ana,
+        JEAN,
+        "uniforme.png",
+        "image/png",
+        &png(64, 48),
+        "Jean en uniforme",
+    )
+    .await;
+
+    let cid = begin(&app, vera, "Dans quel régiment était-il ?").await;
+    let state = answered(&app, vera, &cid).await;
+    assert_eq!(
+        roles(&state),
+        ["user", "assistant"],
+        "answered all the same"
+    );
+    assert!(state["messages"][1]["html"]
+        .as_str()
+        .unwrap()
+        .contains("152e régiment"));
+    let sent = seen.lock().unwrap().clone();
+    let (refused, again) = (&sent[sent.len() - 2], &sent[sent.len() - 1]);
+    assert!(refused.contains("\"images\""));
+    assert!(!again.contains("\"images\""));
+    assert!(again.contains("The photographs of the record could not be given"));
+}

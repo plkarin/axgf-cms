@@ -64,6 +64,9 @@ pub struct AppState {
     /// Rendered thumbnails, bounded. Decoding a photograph per request is a
     /// cost that only becomes visible once a gallery has a dozen pictures.
     thumbs: crate::documents::ThumbCache,
+    /// A person's photographs as the AFG is given them (docs/adr/0033), each
+    /// sized once rather than at every question, bounded.
+    model_photos: crate::documents::ThumbCache,
     /// Bundle size past which the admin panel warns. Not a limit.
     size_warn: u64,
     /// Binary payloads, held on disk rather than in the flat JSON. The bundle
@@ -692,6 +695,7 @@ impl AppState {
                 conversions: crate::convert::ConversionCache::default(),
                 note_images: crate::notes::PendingImages::default(),
                 thumbs: crate::documents::ThumbCache::default(),
+                model_photos: crate::documents::ThumbCache::with_budget(48 * 1024 * 1024),
                 size_warn: crate::documents::DEFAULT_SIZE_WARN,
                 payloads: cache,
                 acl: RwLock::new(acl),
@@ -835,6 +839,11 @@ impl AppState {
     /// The bounded thumbnail cache.
     pub fn thumbs(&self) -> &crate::documents::ThumbCache {
         &self.thumbs
+    }
+
+    /// The photographs sized for the AFG, bounded.
+    pub fn model_photos(&self) -> &crate::documents::ThumbCache {
+        &self.model_photos
     }
 
     /// Set the size past which the admin panel warns, before the state is

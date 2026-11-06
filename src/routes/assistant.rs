@@ -947,10 +947,20 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         project.id.clone(),
         cid.to_string(),
         prompt,
+        None,
         live,
         true,
     );
     true
+}
+
+/// Work done on a prompt before it is sent, off the page's way, and what to
+/// send instead when a service refuses what the work added: a person's
+/// photographs read and sized, and the question without them, for a model
+/// that takes no picture (docs/adr/0033).
+pub(crate) struct Prepare {
+    pub work: Box<dyn FnOnce(&mut crate::afg_chat::ChatPrompt) + Send>,
+    pub instead: crate::afg_chat::ChatPrompt,
 }
 
 /// Write a conversation's next answer in the background, into `live` as it
@@ -965,6 +975,7 @@ pub(crate) fn run_answer(
     pid: String,
     cid: String,
     prompt: crate::afg_chat::ChatPrompt,
+    prepare: Option<Prepare>,
     live: std::sync::Arc<assistant::Live>,
     remember: bool,
 ) {
@@ -979,7 +990,40 @@ pub(crate) fn run_answer(
                 "the AFG's computing is not set up",
             ))
         } else {
-            crate::afg_chat::chat(cfg, prompt, base, live.partial.clone()).await
+            let (prompt, instead) = match prepare {
+                Some(Prepare { work, instead }) => {
+                    let prepared = tokio::task::spawn_blocking(move || {
+                        let mut prompt = prompt;
+                        work(&mut prompt);
+                        prompt
+                    })
+                    .await;
+                    // Work that failed sends the question as it would be
+                    // sent without it.
+                    match prepared {
+                        Ok(prompt) => (prompt, Some(instead)),
+                        Err(_) => (instead, None),
+                    }
+                }
+                None => (prompt, None),
+            };
+            let first =
+                crate::afg_chat::chat(cfg.clone(), prompt, base.clone(), live.partial.clone())
+                    .await;
+            match (first, instead) {
+                // A service that refuses the request (HTTP 4xx), as one whose
+                // model takes no picture does, is asked once more without
+                // what the work added.
+                (Err(f), Some(instead)) if f.message.starts_with("HTTP 4") => {
+                    tracing::warn!(error = %f.message, "AFG: refused with the files, asked again without them");
+                    live.partial
+                        .lock()
+                        .unwrap_or_else(|e| e.into_inner())
+                        .clear();
+                    crate::afg_chat::chat(cfg, instead, base, live.partial.clone()).await
+                }
+                (outcome, _) => outcome,
+            }
         };
         let seconds = live.since.elapsed().as_secs();
         let msg = match outcome {

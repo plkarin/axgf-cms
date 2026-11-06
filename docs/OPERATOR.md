@@ -615,12 +615,18 @@ With every question the AFG reads a dossier, made from what that account may
 read and nothing more:
 
 - the person's record and the notes about them;
+- the photographs of the record, twelve at most, as pictures sized for a
+  model (docs/adr/0033). Films, sound and PDF documents are not given, nor a
+  picture an AI made, nor one that sensitive data refers to unless the room
+  lets those classes go;
 - their close relatives, with the notes about them;
 - one line for each person of the family.
 
 The tab says how large it is before the first question: at most about
-50,000 tokens. It goes to the AFG's computing as the room sets it. A local
-model with a small window may not take a large family's whole index.
+50,000 tokens of words, and about 1,600 for each photograph. It goes to the
+AFG's computing as the room sets it. A local model with a small window may
+not take a large family's whole index. A model that takes no picture is
+asked again without the photographs, and says so when a question needs them.
 
 The conversations are kept in the account's assistant space, so the nightly
 backup of the AFG's memory takes them (docs/adr/0027). The log says who asked

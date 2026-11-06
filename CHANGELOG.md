@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The AFG reads a person's photographs (the operator's request of
+6 November 2026, docs/adr/0033).
+
+### Added
+
+- **The AFG reads the photographs of the person's record** with each
+  question on the record's AFG tab. Up to twelve go with the message being
+  answered, sized for a model and listed with their captions.
+  - Films, sound and PDF documents are not given, nor a picture an AI made.
+  - A picture that sensitive data refers to is given only when the AFG room
+    lets those classes go.
+  - The tab's line counts them: "the record, photos (2), notes (1)…".
+- **A model that takes no picture** is asked again without the photographs,
+  and told that they could not be given.
+
 ## [1.7.0] — 2026-11-06
 
 A Status tab on the record, and fewer words on every page (the operator's

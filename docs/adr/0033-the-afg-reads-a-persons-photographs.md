@@ -1,6 +1,6 @@
 # ADR 0033 — The AFG reads a person's photographs
 
-**Status:** accepted (unreleased) · **Builds on:** the AFG in conversation on
+**Status:** accepted, v1.8.0 (2026-11-06) · **Builds on:** the AFG in conversation on
 a person's page (docs/adr/0031), the personal assistant's files
 (docs/adr/0026) · **Applies to:** `src/person_chat.rs`,
 `src/routes/person_chat.rs`, `src/routes/assistant.rs`, `src/assistant.rs`,

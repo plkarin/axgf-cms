@@ -6,9 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-The AFG reads a person's photographs (the operator's request of
-6 November 2026, docs/adr/0033), and **Impact**, the Universal Synoptic
-Timeline (the same day, docs/adr/0034).
+**Impact**, the Universal Synoptic Timeline (the operator's request of
+6 November 2026, docs/adr/0034).
 
 ### Added
 
@@ -26,6 +25,13 @@ Timeline (the same day, docs/adr/0034).
   - A record that can be placed offers "See the impact".
   - About 330 landmarks in English and French; the page's words in all
     fourteen languages.
+
+## [1.8.0] — 2026-11-06
+
+The AFG reads a person's photographs (the operator's request of
+6 November 2026, docs/adr/0033).
+
+### Added
 
 - **The AFG reads the photographs of the person's record** with each
   question on the record's AFG tab. Up to twelve go with the message being

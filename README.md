@@ -689,9 +689,14 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.7.0**: a **Status** tab on every record lists
-what is worth checking about the person, and the help on every page is one
-short line where it was a paragraph.
+The latest release is **v1.8.0**: on a person's AFG tab, **the AFG reads
+the photographs of the record** with each question (up to twelve, never the
+films), and a model that takes no picture is asked without them. In every
+theme's river, the name under the pointer is now read alone.
+
+v1.7.0 put a **Status** tab on every record, listing what is worth checking
+about the person, and made the help on every page one short line where it
+was a paragraph.
 
 v1.6.0 put **the AFG in conversation on every person's page**, for the
 members it is open to: ask about the person, and the AFG answers from what
@@ -768,7 +773,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.7.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.8.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -982,7 +987,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.7.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.7.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.8.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.8.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

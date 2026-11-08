@@ -1318,9 +1318,6 @@ label > input, label > select, label > textarea, label > .date-input { margin-to
 }
 @keyframes impact-shine { to { transform: translateX(110%); } }
 @keyframes impact-turn { from { transform: rotate(-120deg) scale(0.7); } to { transform: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .impact-cta:hover, .impact-cta:hover::before, .impact-cta:hover .ico { animation: none; }
-}
 /* A file refused before it is sent: over the site's limit (ui.js). */
 .upload-refused {
   display: block; margin-top: 0.3rem;
@@ -3103,7 +3100,14 @@ li.rel { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   box-shadow: 0 24px 60px -24px rgb(var(--shadow-rgb, 0 0 0) / 0.55);
   z-index: 50;
 }
-.afg-dialog::backdrop { background: rgb(var(--shadow-rgb, 0 0 0) / 0.5); }
+/* A window over the page leaves the page behind it dim and out of focus,
+   so that what it holds is read in comfort (the operator's review of
+   8 November 2026): the notes', the AFG test's and Impact's. */
+:is(.note-dialog, .afg-dialog, .ip-dialog)::backdrop {
+  background: rgb(var(--shadow-rgb, 0 0 0) / 0.62);
+  -webkit-backdrop-filter: blur(5px) saturate(0.85);
+  backdrop-filter: blur(5px) saturate(0.85);
+}
 .afg-dialog-body { max-block-size: calc(100vh - 8rem); overflow: auto; padding: clamp(1rem, 3vw, 1.75rem); }
 .afg-dialog-foot { display: flex; justify-content: flex-end; padding: 0.75rem clamp(1rem, 3vw, 1.75rem); border-block-start: 1px solid var(--border-hairline); }
 .afg-result-title { margin-block: 0 0.25rem; }
@@ -3819,7 +3823,6 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
   color: var(--text-primary);
   box-shadow: 0 24px 60px -24px rgb(var(--shadow-rgb, 0 0 0) / 0.55);
 }
-.note-dialog::backdrop { background: rgb(var(--shadow-rgb, 0 0 0) / 0.5); }
 .note-dialog-body { max-block-size: calc(100vh - 3rem); overflow: auto; }
 .note-frame { padding: clamp(1rem, 3vw, 2rem); }
 .note-page .note-frame { padding: 0; }
@@ -8475,7 +8478,6 @@ a.kpi:hover { border-color: var(--border-strong); }
   background: var(--surface-raised); color: var(--text-primary);
   box-shadow: 0 12px 40px rgba(var(--shadow-rgb), 0.35);
 }
-.ip-dialog::backdrop { background: rgba(var(--shadow-rgb), 0.45); }
 .ip-dialog-close { float: inline-end; margin: 0 0 0.5rem 0.75rem; }
 .ip-more-name { margin: 0 0 0.2rem; font-size: var(--type-sub); }
 .ip-more-when { margin: 0 0 0.6rem; color: var(--text-secondary); font-size: var(--type-small); }

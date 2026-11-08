@@ -1118,9 +1118,17 @@ async fn the_living_ground_is_the_scripts_and_holds_still_when_asked() {
     assert!(js.contains("' s*=1.0-clamp(gt.b*1.6,0.0,0.9);',"));
     assert!(js.contains("' col*=mix(1.0,slope,clamp(gt.b*1.6,0.0,0.8));',"));
     assert!(js.contains("stage.classList.toggle('rv-rivers', rready && waterIn >= 2);"));
-    assert!(js
-        .contains("travel: function () { travelling = true; stage.classList.remove('rv-rivers');"));
+    assert!(js.contains(
+        "travel: function (shift, ms) {\n      travelling = true; stage.classList.remove('rv-rivers');"
+    ));
+    // The ground glides with a travel (the operator's review of 8 November
+    // 2026, docs/adr/0004 §19), unless it holds still.
+    assert!(js.contains("if (shift) glideBy(shift.x, shift.y, ms);"));
+    assert!(js.contains("if (reduce || cut || paused || !running) return;"));
     let river_js = include_str!("../static/river.js");
+    assert!(river_js.contains(
+        "window.axgfRiverScene.travel(travelShift(A, id), view && view.tween ? 900 : 560);"
+    ));
     assert!(river_js.contains(
         "var both = !e.from && e.cp && e.cp.parents.filter(function (k) { return PM[k]; }).length >= 2;"
     ));

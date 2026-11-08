@@ -27,6 +27,10 @@ river refined.
 - **Canopée's herds are smaller and fewer, and walk**: thirteen animals
   where there were thirty-one, at about 0.57 of their height, which gather
   speed, turn on a wandering path, step and trot, and turn round.
+- **A window over the page dims and blurs the page behind it** (a note
+  opened from the family's page or a record, a landmark of Impact, the
+  AFG's test), so that what it holds is read in comfort. Impact's windows
+  had no shade at all: their colour was written in a form browsers refuse.
 
 ### Fixed
 

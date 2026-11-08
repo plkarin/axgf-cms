@@ -252,6 +252,7 @@
    own four colours, exactly as it was drawn. Anything that draws with them
    is written under [data-theme="canopee"]. */
 [data-theme="canopee"] {
+  --sheen: #ffffff66;
   color-scheme: dark;
   --surface-page: #0c1611;
   --surface-raised: #122019;
@@ -332,6 +333,7 @@
    pair is --border-strong on --wash-3, 3.6:1; the accent reads at 5.9:1 on
    the lightest ground, and the dark ink on it at 6.4:1. */
 [data-theme="fusion"] {
+  --sheen: #ffffff66;
   color-scheme: dark;
   --surface-page: #0c0e11;
   --surface-raised: #15181d;
@@ -438,6 +440,7 @@
    tightest pair is --border-strong on --wash-3, 4.0:1; the accent reads at
    5.5:1 on the lightest ground, and the dark ink on it at 6.0:1. */
 [data-theme="galaxy"] {
+  --sheen: #ffffff66;
   color-scheme: dark;
   --surface-page: #070a1a;
   --surface-raised: #0f1430;
@@ -538,6 +541,7 @@
    tightest pair is --border-strong on --wash-3, 3.5:1; the gold reads at
    8.8:1 on a card, and the dark ink on it at 9.5:1. */
 [data-theme="summit"] {
+  --sheen: #ffffff66;
   color-scheme: dark;
   --surface-page: #06111d;
   --surface-raised: #0d1a28;
@@ -643,6 +647,7 @@
    Measured as every theme is (`every_theme_reads`); the tightest pair is a
    control's edge on the page's second wash, 3.7:1. */
 [data-theme="clarity"] {
+  --sheen: #ffffff66;
   color-scheme: light;
   --surface-page: #e6ebf1;
   --surface-raised: #ffffff;
@@ -765,6 +770,7 @@
    The tightest pair of the page is a control's edge on the hover surface,
    4.3:1; of the cards, a control's edge on the sunken surface, 3.7:1. */
 [data-theme="genealogy"] {
+  --sheen: #ffffff66;
   color-scheme: dark;
   --surface-page: #142210;
   --surface-raised: #1b2d18;

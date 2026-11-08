@@ -2832,9 +2832,13 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
         match field.name().unwrap_or_default().to_string().as_str() {
             "file" => {
                 out.filename = field.file_name().unwrap_or("upload").to_string();
-                match field.bytes().await {
-                    Ok(b) => out.bytes = b.to_vec(),
-                    Err(_) => out.too_large = true,
+                match super::uploads::read_capped(field, documents::MAX_UPLOAD).await {
+                    Ok(Some(b)) => out.bytes = b,
+                    Ok(None) => out.too_large = true,
+                    Err(_) => {
+                        out.too_large = true;
+                        break;
+                    }
                 }
             }
             "document_type" => out.document_type = field.text().await.unwrap_or_default(),

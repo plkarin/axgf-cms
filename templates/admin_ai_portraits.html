@@ -33,7 +33,7 @@
   <h2>{{ t("ai-portraits-add", n=slots) }}</h2>
   <div class="field">
     <label>{{ t("ai-portraits-files") }}
-      <input type="file" name="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
+      <input type="file" name="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple data-max-bytes="{{ max_upload_mb * 1048576 }}" data-too-large="{{ t('upload-file-too-large', mb=max_upload_mb) }}"></label>
   </div>
   <div class="field">
     <label>{{ t("ai-portraits-generator") }} <span class="small muted">{{ t("accounts-optional") }}</span>

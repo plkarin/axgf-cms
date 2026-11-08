@@ -752,6 +752,7 @@ error-unknown-kind-detail = «{ $kind }» ليس نوعًا من السجلات.
 error-io-title = تعذّر الحفظ
 error-io-detail = { $error }. ولم يتغيّر شيء على القرص.
 error-upload-too-large = هذا الملف أكبر من حد { $mb } ميغابايت. لم يُحفظ شيء والأرشيف على حاله.
+upload-file-too-large = هذا الملف أكبر من حد { $mb } ميغابايت ولن يُرسل. اختر ملفًا أصغر.
 error-upload-refused = رُفض المستند: { $reason }. والأرشيف على حاله.
 error-back-to-person = العودة إلى السجل
 error-no-such-person-to-attach = لا يوجد هنا شخص بهذا المعرّف، فليس ثمة ما يُرفق به مستند.

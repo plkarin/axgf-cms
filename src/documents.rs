@@ -47,8 +47,15 @@ use std::sync::Mutex;
 
 use sha2::{Digest, Sha256};
 
-/// Largest single upload accepted, in bytes.
-pub const MAX_UPLOAD: usize = 10 * 1024 * 1024;
+/// Largest single upload accepted, in bytes: fifty megabytes, enough for an
+/// archive's scanned PDF (ten until v1.10.1, when the operator's 20 MB PDF
+/// did not fit).
+pub const MAX_UPLOAD: usize = 50 * 1024 * 1024;
+
+/// The most a request carrying a file may be. Larger than one file, so that a
+/// file over [`MAX_UPLOAD`] is read to its end and refused with a page that
+/// says so (`crate::routes::uploads`), and room for the AI portraits' three.
+pub const MAX_REQUEST: usize = 4 * MAX_UPLOAD;
 
 /// The schema's document types, in the order an upload form offers them.
 ///

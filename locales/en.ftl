@@ -545,6 +545,7 @@ error-unknown-kind-detail = “{ $kind }” is not a kind of record. This archiv
 error-io-title = Could not save
 error-io-detail = { $error }. Nothing on disk was changed.
 error-upload-too-large = That file is larger than the { $mb } MB limit. Nothing was stored, and the archive is unchanged.
+upload-file-too-large = This file is larger than the { $mb } MB limit and will not be sent. Choose a smaller one.
 error-upload-refused = The document was refused: { $reason }. The archive is unchanged.
 error-back-to-person = Back to the record
 error-no-such-person-to-attach = There is no person here with that id, so there is nothing to attach a document to.

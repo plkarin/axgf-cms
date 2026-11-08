@@ -20,6 +20,7 @@ mod prefs;
 mod profile;
 mod public;
 mod setup;
+mod uploads;
 
 use std::sync::Arc;
 
@@ -547,9 +548,8 @@ fn routes(state: Shared) -> Router {
         // and the trailing "document" segment win over the parameter forms.
         .route(
             "/admin/person/:id/document",
-            post(admin::upload_document).layer(DefaultBodyLimit::max(
-                crate::documents::MAX_UPLOAD + 64 * 1024,
-            )),
+            post(admin::upload_document)
+                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
         )
         // The portraits an AI reworked (docs/adr/0009): up to three pictures
         // in one save, so the body may be three uploads and the fields
@@ -558,9 +558,7 @@ fn routes(state: Shared) -> Router {
             "/admin/person/:id/ai-portraits",
             get(ai_portraits::page)
                 .post(ai_portraits::save)
-                .layer(DefaultBodyLimit::max(
-                    crate::ai_portrait::MAX * crate::documents::MAX_UPLOAD + 256 * 1024,
-                )),
+                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
         )
         // The AFG on the record (docs/adr/0029): the face restored, one of
         // the photographs restored or a document read, the summary written.
@@ -646,9 +644,8 @@ fn routes(state: Shared) -> Router {
         )
         .route(
             "/admin/family/:id/document",
-            post(admin::family_emblem_upload).layer(DefaultBodyLimit::max(
-                crate::documents::MAX_UPLOAD + 64 * 1024,
-            )),
+            post(admin::family_emblem_upload)
+                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
         )
         .route(
             "/admin/bundle/emblem",
@@ -656,9 +653,8 @@ fn routes(state: Shared) -> Router {
         )
         .route(
             "/admin/bundle/emblem/upload",
-            post(admin::archive_emblem_upload).layer(DefaultBodyLimit::max(
-                crate::documents::MAX_UPLOAD + 64 * 1024,
-            )),
+            post(admin::archive_emblem_upload)
+                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
         )
         // Before `/admin/place/:id`, which takes POST only and otherwise
         // matched "new" as an id: the place list's "New place" answered 405.
@@ -685,9 +681,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/person/:id/edit", get(person_editor::edit))
         .route(
             "/admin/person/:id",
-            post(person_editor::save).layer(DefaultBodyLimit::max(
-                crate::documents::MAX_UPLOAD + 4 * 1024 * 1024,
-            )),
+            post(person_editor::save).layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
         )
         .route("/admin/:kind", get(admin::list).post(admin::create))
         .route("/admin/:kind/new", get(admin::new_form))

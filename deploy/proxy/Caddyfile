@@ -30,11 +30,12 @@ tree.example.org {
 	# make it.
 	header Strict-Transport-Security "max-age=31536000"
 
-	# A document upload is at most 10 MB and the application refuses anything
-	# larger with a page that explains itself. Sitting just above that limit
-	# means the reader gets the explanation rather than a bare 413.
+	# A document upload is at most 50 MB. The application reads a larger one
+	# to its end, up to 200 MB a request, and refuses it with a page that
+	# explains itself. Sitting just above those 200 MB means the reader gets
+	# the explanation rather than a bare 413.
 	request_body {
-		max_size 12MB
+		max_size 210MB
 	}
 
 	reverse_proxy 127.0.0.1:8080 {

@@ -35,7 +35,7 @@
   {%- elif f.kind == "picker" %}
   <input type="text" name="{{ f.name }}" value="{{ f.value }}" list="{{ f.list }}" autocomplete="off" dir="auto">
   {%- elif f.kind == "file" %}
-  <input type="file" name="{{ f.name }}">
+  <input type="file" name="{{ f.name }}"{% if max_upload_mb %} data-max-bytes="{{ max_upload_mb * 1048576 }}" data-too-large="{{ t('upload-file-too-large', mb=max_upload_mb) }}"{% endif %}>
   {%- elif f.qualifier %}
   <span class="date-input">
     {{- m.qualifier(t, f.qualifier, f.qualifier_on, f.label) -}}

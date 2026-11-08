@@ -8,12 +8,19 @@
 //! product refuse an oversized upload in its own words, and the read timeout
 //! without which a long save reaches the reader as a 504.
 //!
+//! Their body limit went from 12 MB to 210 MB in v1.10.1 (docs/adr/0037),
+//! with the product's own limit from 10 MB to 50 MB, without running them
+//! again.
+//!
 //! Where nginx is installed, `nginx -t` runs over the real file.
 
 mod common;
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+/// The proxies' 210 MB hold the largest request the application reads.
+const _: () = assert!(axgf_cms::documents::MAX_REQUEST <= 210 * 1024 * 1024);
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -42,13 +49,14 @@ fn the_nginx_config_forwards_what_the_application_reads() {
     );
     assert!(conf.contains("proxy_set_header Host              $host;"));
 
-    // Above the product's own 10 MB limit, so an oversized upload is refused
-    // by the page that explains itself rather than by a bare 413.
+    // Above the 200 MB a request with a file may be (each file at most 50 MB,
+    // a larger one read to its end), so an oversized upload is refused by the
+    // page that explains itself rather than by a bare 413.
     let limit = conf
         .lines()
         .find_map(|l| l.trim().strip_prefix("client_max_body_size "))
         .expect("a body limit is set");
-    assert_eq!(limit.trim_end_matches(';'), "12m");
+    assert_eq!(limit.trim_end_matches(';'), "210m");
 
     // A save on a 435 MB bundle is seconds; the default 60 s read timeout has
     // no margin over a slow disk. Cutting this to 5 s turns the same save into
@@ -79,7 +87,7 @@ fn the_nginx_config_forwards_what_the_application_reads() {
 fn the_caddyfile_says_the_same_things() {
     let conf = read("deploy/proxy/Caddyfile");
     assert!(conf.contains("reverse_proxy 127.0.0.1:8080"));
-    assert!(conf.contains("max_size 12MB"), "the same 12 MB ceiling");
+    assert!(conf.contains("max_size 210MB"), "the same 210 MB ceiling");
     assert!(
         conf.contains("header Strict-Transport-Security"),
         "HSTS is the proxy's to add"

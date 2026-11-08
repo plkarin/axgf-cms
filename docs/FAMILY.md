@@ -293,9 +293,10 @@ existing data is untouched" means exactly that.
    "scan 4". The caption is what everybody else will see under it.
 4. Press the upload button.
 
-Up to 10 MB per file. Photographs from a phone are usually 2–5 MB and a scan
-can be larger; if the file is refused as too large, the page says so and
-nothing is stored. Photographs, scans and PDFs are all accepted.
+Up to 50 MB per file. Photographs from a phone are usually 2–5 MB and a
+scanned PDF can be much larger; a file over the limit is refused as soon as
+you choose it, with a line beside it that says so, and nothing is sent.
+Photographs, scans and PDFs are all accepted.
 
 The file goes **into the archive itself**, not into a folder somewhere that
 might get lost. When the archive is backed up, your photograph is in the

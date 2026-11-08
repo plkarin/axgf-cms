@@ -102,14 +102,15 @@ async fn read_form(mut multipart: Multipart) -> Form {
         match field.name().unwrap_or_default().to_string().as_str() {
             "file" => {
                 let filename = field.file_name().unwrap_or("upload").to_string();
-                match field.bytes().await {
+                match super::uploads::read_capped(field, crate::documents::MAX_UPLOAD).await {
                     // A slot left empty posts an empty part: not a picture.
-                    Ok(b) if b.is_empty() => {}
-                    Ok(b) => out.files.push(Upload {
-                        filename,
-                        bytes: b.to_vec(),
-                    }),
-                    Err(_) => out.too_large = true,
+                    Ok(Some(b)) if b.is_empty() => {}
+                    Ok(Some(bytes)) => out.files.push(Upload { filename, bytes }),
+                    Ok(None) => out.too_large = true,
+                    Err(_) => {
+                        out.too_large = true;
+                        break;
+                    }
                 }
             }
             "remove" => out.remove.push(field.text().await.unwrap_or_default()),

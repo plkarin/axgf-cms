@@ -7,9 +7,12 @@
 {#- The Universal Synoptic Timeline (docs/adr/0034): the world's history on
     a vertical axis, the end of the last ice age at the top and today at the
     bottom, the family's lives beside it. A life's window runs from its
-    birth to its death; a pin marks the one moment known of a life. Pointing
-    at a life lights the band of its years across the world's landmarks
-    (impact.js); following it opens that person's own view. -#}
+    birth to its death; where a date is missing it is estimated, never more
+    than a hundred years, and its open end fades (docs/adr/0036). The
+    family's column fits the room the page has: its lanes narrow as there
+    are more lives at once. Pointing at a life, or near it, lights the band
+    of its years across the world's landmarks (impact.js); following it
+    opens that person's own view. -#}
 <header class="ip-head">
   <h1>{{ t("impact-title") }}</h1>
   <p class="lede">{{ t("impact-lede") }}</p>
@@ -24,7 +27,7 @@
 </header>
 {% if not tl.placed %}<p class="muted">{{ t("impact-empty") }}</p>{% endif %}
 <div class="ip-scroll" data-content>
-  <div class="ip-grid" style="--ip-a: {{ tl.world.width }}px; --ip-b: {{ tl.continents.width }}px; --ip-c: {{ tl.lives_width }}px">
+  <div class="ip-grid ip-fit" style="--ip-a: {{ tl.world.width }}px; --ip-b: {{ tl.continents.width }}px; --ip-c: {{ tl.lives_width }}px">
     <span class="ip-h ip-h-axis" aria-hidden="true"></span>
     <span class="ip-h">{{ t("impact-col-world") }}</span>
     <span class="ip-h">{{ t("impact-col-continents") }}
@@ -36,9 +39,9 @@
       <div class="ip-band ip-band-ev" hidden></div>
       {{ ip.column(tl.world, "ip-world") }}
       {{ ip.column(tl.continents, "ip-continents") }}
-      <div class="ip-col ip-lives">
+      <div class="ip-col ip-lives" style="--ip-n: {{ tl.lanes }}" data-lanes="{{ tl.lanes }}">
         {%- for l in tl.lives %}
-        <a class="ip-life{{ ' ip-pin' if l.pin }}{{ ' ip-living' if l.living }}{{ ' ip-fuzzy-from' if l.fuzzy_from }}{{ ' ip-fuzzy-to' if l.fuzzy_to }}" href="/impact/{{ l.id }}" style="top: {{ l.top }}px; height: {{ l.height }}px; left: {{ l.x }}px" data-from="{{ l.from }}" data-to="{{ l.to }}" title="{{ l.name }} · {{ l.years }}"><span class="ip-life-name">{{ l.name }}</span></a>
+        <a class="ip-life{{ ' ip-living' if l.living }}{{ ' ip-fuzzy-from' if l.fuzzy_from }}{{ ' ip-fuzzy-to' if l.fuzzy_to }}{{ ' ip-open-from' if l.open_from }}{{ ' ip-open-to' if l.open_to }}" href="/impact/{{ l.id }}" style="top: {{ l.top }}px; height: {{ l.height }}px; --l: {{ l.lane }}" data-lane="{{ l.lane }}" data-from="{{ l.from }}" data-to="{{ l.to }}" title="{{ l.name }} · {{ l.years }}"><span class="ip-life-name">{{ l.name }}</span></a>
         {%- endfor %}
       </div>
       <p class="ip-tip" hidden></p>

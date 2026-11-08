@@ -536,6 +536,7 @@ error-unknown-kind-detail = „{ $kind }” אינו סוג של רשומה. ה�
 error-io-title = לא ניתן היה לשמור
 error-io-detail = { $error }. שום דבר בדיסק לא השתנה.
 error-upload-too-large = הקובץ הזה גדול ממגבלת ה-{ $mb } MB. שום דבר לא נשמר, והארכיון לא השתנה.
+upload-file-too-large = הקובץ הזה גדול ממגבלת ה-{ $mb } MB ולא יישלח. בחרו קובץ קטן יותר.
 error-upload-refused = המסמך נדחה: { $reason }. הארכיון לא השתנה.
 error-back-to-person = חזרה אל הרשומה
 error-no-such-person-to-attach = אין כאן אדם עם המזהה הזה, ולכן אין למה לצרף מסמך.

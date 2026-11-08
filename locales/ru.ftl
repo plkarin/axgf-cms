@@ -622,6 +622,7 @@ error-unknown-kind-detail = «{ $kind }» — не вид записи. Этот
 error-io-title = Не удалось сохранить
 error-io-detail = { $error }. На диске ничего не изменилось.
 error-upload-too-large = Этот файл больше предела в { $mb } МБ. Ничего не сохранено, архив не изменился.
+upload-file-too-large = Этот файл больше предела в { $mb } МБ и не будет отправлен. Выберите файл поменьше.
 error-upload-refused = Документ отклонён: { $reason }. Архив не изменился.
 error-back-to-person = Вернуться к записи
 error-no-such-person-to-attach = Здесь нет человека с таким идентификатором, значит и прикреплять документ не к чему.

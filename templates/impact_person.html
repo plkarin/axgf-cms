@@ -37,7 +37,7 @@
       <div class="ip-band ip-band-ev" hidden></div>
       {{ ip.column(p.wide, "ip-wide") }}
       <div class="ip-col ip-own">
-        <span class="ip-life ip-life-own{{ ' ip-pin' if p.life.pin }}{{ ' ip-living' if p.life.living }}{{ ' ip-fuzzy-from' if p.life.fuzzy_from }}{{ ' ip-fuzzy-to' if p.life.fuzzy_to }}" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" title="{{ p.name }} · {{ p.years }}"></span>
+        <span class="ip-life ip-life-own{{ ' ip-living' if p.life.living }}{{ ' ip-fuzzy-from' if p.life.fuzzy_from }}{{ ' ip-fuzzy-to' if p.life.fuzzy_to }}{{ ' ip-open-from' if p.life.open_from }}{{ ' ip-open-to' if p.life.open_to }}" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" title="{{ p.name }} · {{ p.years }}"></span>
         {%- for s in p.milestones %}
         <span class="ip-stone" style="top: {{ s.top }}px">{{ s.year }} · {% if s.link %}<a href="/impact/{{ s.link }}">{{ s.label }}</a>{% else %}{{ s.label }}{% endif %}</span>
         {%- endfor %}

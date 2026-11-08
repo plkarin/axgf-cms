@@ -469,6 +469,7 @@ error-unknown-kind-detail = 「{ $kind }」は記録の種別ではありませ�
 error-io-title = 保存できませんでした
 error-io-detail = { $error }。ディスク上は何も変更されていません。
 error-upload-too-large = そのファイルは{ $mb } MB の上限を超えています。何も保存されておらず、アーカイブは元のままです。
+upload-file-too-large = このファイルは{ $mb } MB の上限を超えているため、送信されません。もっと小さいファイルを選んでください。
 error-upload-refused = 資料は受け付けられませんでした: { $reason }。アーカイブは元のままです。
 error-back-to-person = 記録に戻る
 error-no-such-person-to-attach = その識別子を持つ人はここにいないため、資料を添付する相手がありません。

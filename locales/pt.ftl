@@ -548,6 +548,7 @@ error-unknown-kind-detail = «{ $kind }» não é uma espécie de ficha. Este ar
 error-io-title = Não foi possível guardar
 error-io-detail = { $error }. No disco nada foi alterado.
 error-upload-too-large = Esse ficheiro passa o limite de { $mb } MB. Nada foi guardado e o arquivo fica igual.
+upload-file-too-large = Este ficheiro passa o limite de { $mb } MB e não será enviado. Escolha um mais pequeno.
 error-upload-refused = O documento foi recusado: { $reason }. O arquivo fica igual.
 error-back-to-person = Voltar à ficha
 error-no-such-person-to-attach = Aqui não há nenhuma pessoa com esse identificador, portanto não há a que anexar um documento.

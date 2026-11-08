@@ -509,6 +509,7 @@ error-unknown-kind-detail = “{ $kind }” si aina ya rekodi. Kumbukumbu hii in
 error-io-title = Haikuweza kuhifadhi
 error-io-detail = { $error }. Hakuna kilichobadilishwa kwenye diski.
 error-upload-too-large = Faili hiyo ni kubwa kuliko kikomo cha MB { $mb }. Hakuna kilichohifadhiwa, na kumbukumbu haijabadilika.
+upload-file-too-large = Faili hii ni kubwa kuliko kikomo cha MB { $mb } na haitatumwa. Chagua iliyo ndogo zaidi.
 error-upload-refused = Hati ilikataliwa: { $reason }. Kumbukumbu haijabadilika.
 error-back-to-person = Rudi kwenye rekodi
 error-no-such-person-to-attach = Hakuna mtu hapa mwenye kitambulisho hicho, kwa hiyo hakuna wa kuambatisha hati kwake.

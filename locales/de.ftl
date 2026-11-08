@@ -540,6 +540,7 @@ error-unknown-kind-detail = „{ $kind }“ ist keine Art von Eintrag. Dieses Ar
 error-io-title = Speichern nicht möglich
 error-io-detail = { $error }. Auf der Festplatte wurde nichts geändert.
 error-upload-too-large = Diese Datei ist größer als die Grenze von { $mb } MB. Nichts wurde gespeichert, und das Archiv ist unverändert.
+upload-file-too-large = Diese Datei ist größer als die Grenze von { $mb } MB und wird nicht gesendet. Wählen Sie eine kleinere.
 error-upload-refused = Das Dokument wurde abgelehnt: { $reason }. Das Archiv ist unverändert.
 error-back-to-person = Zurück zum Eintrag
 error-no-such-person-to-attach = Hier gibt es keine Person mit dieser Kennung, also gibt es auch nichts, woran ein Dokument gehängt werden könnte.

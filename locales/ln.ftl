@@ -517,6 +517,7 @@ error-unknown-kind-detail = “{ $kind }” ezali lolenge ya mokanda te. Ebombel
 error-io-title = Ekokaki kobomba te
 error-io-detail = { $error }. Eloko moko te ebongwani na disiki.
 error-upload-too-large = Fisyé wana eleki ndelo ya MB { $mb }. Eloko moko te ebombami, mpe ebombelo ebongwani te.
+upload-file-too-large = Fisyé oyo eleki ndelo ya MB { $mb } mpe ekotindama te. Pona oyo ya moke.
 error-upload-refused = Mokanda eboyamaki: { $reason }. Ebombelo ebongwani te.
 error-back-to-person = Zonga na mokanda
 error-no-such-person-to-attach = Moto azali awa te na elembo yango, yango wana eloko te ya kokangisa mokanda na yango.

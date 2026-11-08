@@ -543,6 +543,7 @@ error-unknown-kind-detail = «{ $kind }» non è un tipo di scheda. Quest'archiv
 error-io-title = Salvataggio impossibile
 error-io-detail = { $error }. Su disco non è cambiato nulla.
 error-upload-too-large = Quel file supera il limite di { $mb } MB. Non è stato conservato nulla e l'archivio è invariato.
+upload-file-too-large = Questo file supera il limite di { $mb } MB e non verrà inviato. Scegline uno più piccolo.
 error-upload-refused = Il documento è stato rifiutato: { $reason }. L'archivio è invariato.
 error-back-to-person = Torna alla scheda
 error-no-such-person-to-attach = Qui non c'è nessuna persona con quell'identificativo, quindi non c'è nulla a cui allegare un documento.

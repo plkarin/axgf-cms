@@ -25,6 +25,34 @@
     b.hidden = true;
   });
 
+  // `data-max-bytes` — a file over the site's limit is refused here, before
+  // it is sent. The server refuses it too, but only once it has all of it,
+  // and a browser on a slow network can lose that answer: the operator's
+  // 20 MB PDF of 8 November 2026 ended on a blank page. The field is
+  // emptied, so the rest of the form still saves, and the reason is said
+  // beside it.
+  document.addEventListener("change", function (ev) {
+    var input = ev.target;
+    if (!input.matches || !input.matches("input[type=file][data-max-bytes]")) return;
+    var max = parseInt(input.getAttribute("data-max-bytes"), 10) || 0;
+    var note = input.parentNode.querySelector(".upload-refused");
+    var big = max > 0 && Array.prototype.some.call(input.files || [], function (f) {
+      return f.size > max;
+    });
+    if (!big) {
+      if (note) note.remove();
+      return;
+    }
+    input.value = "";
+    if (!note) {
+      note = document.createElement("span");
+      note.className = "upload-refused";
+      note.setAttribute("role", "alert");
+      input.insertAdjacentElement("afterend", note);
+    }
+    note.textContent = input.getAttribute("data-too-large") || "";
+  });
+
   // A tab strip scrolls sideways rather than wrap (B4), so the current tab
   // can start out of view. Bring it to the middle of its strip — the strip
   // only, never the page — on load, and whenever river.js swaps the record

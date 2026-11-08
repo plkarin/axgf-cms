@@ -5,8 +5,10 @@
  * its window: the context, what was at stake, the victims. Pointing at a
  * life (the family's view) lights the band of its years: the landmarks it
  * crossed stand out, the others step back, and the person's name and years
- * show beside the pointer. Countries are named in the reader's language
- * when the browser knows how.
+ * show beside the pointer. A lane of the family's column can be a pixel wide
+ * (docs/adr/0036), so the life pointed at is the one nearest the pointer,
+ * and a click between two lanes follows it. Countries are named in the
+ * reader's language when the browser knows how.
  */
 (function () {
   'use strict';
@@ -92,7 +94,35 @@
   /* ---- a life (the family's view): the band of its years ---- */
   if (time.hasAttribute('data-from')) return;
   var band = time.querySelector('.ip-band:not(.ip-band-ev)'), tip = time.querySelector('.ip-tip');
-  if (!band) return;
+  var col = time.querySelector('.ip-lives');
+  if (!band || !col) return;
+  var lanes = parseInt(col.getAttribute('data-lanes'), 10) || 1;
+  var byLane = [];
+  col.querySelectorAll('.ip-life').forEach(function (l) {
+    var k = parseInt(l.getAttribute('data-lane'), 10) || 0;
+    (byLane[k] = byLane[k] || []).push(l);
+  });
+  // The life in the lane under the pointer at its height, or in the lanes
+  // next to it, out to about six pixels either side.
+  function nearest(e) {
+    var r = col.getBoundingClientRect();
+    var step = Math.min(14, r.width / lanes) || 14;
+    var rtl = getComputedStyle(col).direction === 'rtl';
+    var k = Math.floor((rtl ? r.right - e.clientX : e.clientX - r.left) / step);
+    var y = e.clientY - r.top;
+    var reach = Math.max(1, Math.ceil(6 / step));
+    for (var d = 0; d <= reach; d++) {
+      var tries = d ? [k - d, k + d] : [k];
+      for (var t = 0; t < tries.length; t++) {
+        var lane = byLane[tries[t]] || [];
+        for (var i = 0; i < lane.length; i++) {
+          var l = lane[i];
+          if (y >= l.offsetTop - 3 && y <= l.offsetTop + l.offsetHeight + 3) return l;
+        }
+      }
+    }
+    return null;
+  }
   var lit = null;
   function cross(from, to) {
     marks.forEach(function (m) {
@@ -102,7 +132,9 @@
   }
   function on(life, x) {
     if (lit === life) return;
+    if (lit) lit.classList.remove('ip-lit');
     lit = life;
+    life.classList.add('ip-lit');
     band.style.top = life.style.top;
     band.style.height = life.offsetHeight + 'px';
     band.hidden = false;
@@ -116,6 +148,7 @@
     }
   }
   function off() {
+    if (lit) lit.classList.remove('ip-lit');
     lit = null;
     band.hidden = true;
     if (tip) tip.hidden = true;
@@ -123,13 +156,16 @@
     marks.forEach(function (m) { m.classList.remove('ip-hit'); });
   }
   function xOf(e) { return e.clientX - time.getBoundingClientRect().left + 12; }
-  time.addEventListener('pointerover', function (e) {
-    var life = e.target.closest && e.target.closest('.ip-life');
+  col.addEventListener('pointermove', function (e) {
+    var life = (e.target.closest && e.target.closest('.ip-life')) || nearest(e);
     if (life) on(life, xOf(e));
+    else if (lit) off();
   });
-  time.addEventListener('pointerout', function (e) {
-    var life = e.target.closest && e.target.closest('.ip-life');
-    if (life && !(e.relatedTarget && life.contains(e.relatedTarget))) off();
+  col.addEventListener('pointerleave', function () { if (lit) off(); });
+  col.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.ip-life')) return;
+    var life = nearest(e);
+    if (life) window.location.assign(life.getAttribute('href'));
   });
   time.addEventListener('focusin', function (e) {
     var life = e.target.closest && e.target.closest('.ip-life');

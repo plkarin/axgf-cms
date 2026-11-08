@@ -1236,20 +1236,24 @@ pub fn country_of_place(place: &Value) -> Option<String> {
 // the family's lives
 // ---------------------------------------------------------------------------
 
-/// One person's life, as the timeline lays it.
+/// One person's life, as the timeline lays it: always a window, never more
+/// than [`LONGEST_LIFE`] years where a date is missing (docs/adr/0036).
 #[derive(Debug, Clone, Serialize)]
 pub struct Life {
     pub id: String,
     pub name: String,
-    /// Where the window begins and ends, in years; one moment for a pin.
+    /// Where the window begins and ends, in years.
     pub from: f64,
     pub to: f64,
-    /// Only one moment of their life is known.
-    pub pin: bool,
     pub living: bool,
+    /// An end recorded only approximately ("about 1780").
     pub fuzzy_from: bool,
     pub fuzzy_to: bool,
-    /// "1847–1935", "° 1750", "† 1810", "~ 1780".
+    /// An end no date gives: the window is estimated from the other end, or
+    /// from the moments the person was seen.
+    pub open_from: bool,
+    pub open_to: bool,
+    /// "1847–1935", "1990–", "° 1750", "† 1810", "~ 1780", "~ 1780–1830".
     pub years: String,
     /// Their countries, the commonest first.
     pub countries: Vec<String>,
@@ -1344,59 +1348,97 @@ fn countries_of(flat: &Value, person: &Value, more: Option<&Vec<String>>) -> Vec
 }
 
 /// One person's life, when it can be placed.
+/// The longest a life is drawn without both its dates (the operator's rule
+/// of 8 November 2026, docs/adr/0036): a hundred years from the one end that
+/// is known, or fifty years either side of the moments the person was seen.
+/// Never past today.
+pub const LONGEST_LIFE: f64 = 100.0;
+
+/// A person's window.
+///
+/// - Born and died: from the one to the other, as recorded.
+/// - Born, and living by the record: to today, if the birth is no more than
+///   a hundred years ago. A record that says living of somebody born longer
+///   ago than that never learnt of the death; it is read as born only.
+/// - Born only: a hundred years from the birth.
+/// - Died only: the hundred years before the death.
+/// - Only seen, at events: fifty years either side of the middle of those
+///   moments, and at least from the first to the last.
 fn life_of(flat: &Value, id: &str, p: &Value, idx: &EventIndex, now: f64) -> Option<Life> {
-    let living = p
+    let said_living = p
         .get("identity")
         .and_then(|i| i.get("is_living"))
         .and_then(Value::as_bool)
         .unwrap_or(false);
     let birth = moment_of(p.get("birth"));
+    let living = said_living && birth.is_none_or(|(b, _)| now - b.at() <= LONGEST_LIFE);
     let death = if living {
         None
     } else {
         moment_of(p.get("death"))
     };
-    let window = |from: When, to: f64, ff: bool, ft: bool, years: String| Life {
+    let window = |from: f64, to: f64| Life {
         id: id.to_string(),
         name: crate::view::person_display_name(p),
-        from: from.at(),
+        from,
         to,
-        pin: false,
-        living,
-        fuzzy_from: ff,
-        fuzzy_to: ft,
-        years,
+        living: false,
+        fuzzy_from: false,
+        fuzzy_to: false,
+        open_from: false,
+        open_to: false,
+        years: String::new(),
         countries: Vec::new(),
-        birth: Some(from),
-    };
-    let pin = |at: When, years: String, born: bool| Life {
-        id: id.to_string(),
-        name: crate::view::person_display_name(p),
-        from: at.at(),
-        to: at.at(),
-        pin: true,
-        living,
-        fuzzy_from: true,
-        fuzzy_to: true,
-        years,
-        countries: Vec::new(),
-        birth: born.then_some(at),
+        birth: None,
     };
     let mut life = match (birth, death) {
-        (Some((b, fb)), Some((d, fd))) if d.at() >= b.at() => {
-            window(b, d.at(), fb, fd, format!("{}–{}", b.year, d.year))
-        }
-        (Some((b, fb)), _) if living => window(b, now, fb, false, format!("{}–", b.year)),
-        (Some((b, _)), _) => pin(b, format!("° {}", b.year), true),
-        (None, Some((d, _))) => pin(d, format!("† {}", d.year), false),
+        (Some((b, fb)), Some((d, fd))) if d.at() >= b.at() => Life {
+            fuzzy_from: fb,
+            fuzzy_to: fd,
+            years: format!("{}–{}", b.year, d.year),
+            birth: Some(b),
+            ..window(b.at(), d.at())
+        },
+        (Some((b, fb)), _) if living => Life {
+            living: true,
+            fuzzy_from: fb,
+            years: format!("{}–", b.year),
+            birth: Some(b),
+            ..window(b.at(), now.max(b.at()))
+        },
+        (Some((b, fb)), _) => Life {
+            fuzzy_from: fb,
+            open_to: true,
+            years: format!("° {}", b.year),
+            birth: Some(b),
+            ..window(b.at(), (b.at() + LONGEST_LIFE).min(now).max(b.at()))
+        },
+        (None, Some((d, fd))) => Life {
+            fuzzy_to: fd,
+            open_from: true,
+            years: format!("† {}", d.year),
+            ..window(d.at() - LONGEST_LIFE, d.at())
+        },
         (None, None) => {
-            let seen = idx
-                .years
-                .get(id)?
-                .iter()
-                .copied()
-                .min_by(|a, b| a.at().total_cmp(&b.at()))?;
-            pin(seen, format!("~ {}", seen.year), false)
+            let seen = idx.years.get(id)?;
+            let first = seen.iter().min_by(|a, b| a.at().total_cmp(&b.at()))?;
+            let last = seen.iter().max_by(|a, b| a.at().total_cmp(&b.at()))?;
+            let (a, z) = (first.at(), last.at());
+            let mid = (a + z) / 2.0;
+            let half = LONGEST_LIFE / 2.0;
+            let to = z.max(mid + half).min(now);
+            let living = said_living && to >= now;
+            Life {
+                living,
+                open_from: true,
+                open_to: !living,
+                years: if first.year == last.year {
+                    format!("~ {}", first.year)
+                } else {
+                    format!("~ {}–{}", first.year, last.year)
+                },
+                ..window(a.min(mid - half), to)
+            }
         }
     };
     life.countries = countries_of(flat, p, idx.places.get(id));
@@ -1818,15 +1860,17 @@ pub struct LifeMark {
     pub id: String,
     pub name: String,
     pub years: String,
-    pub pin: bool,
     pub living: bool,
     pub fuzzy_from: bool,
     pub fuzzy_to: bool,
+    pub open_from: bool,
+    pub open_to: bool,
     pub from: f64,
     pub to: f64,
     pub top: i64,
     pub height: i64,
-    pub x: i64,
+    /// Its lane in the family's column; the page sets the lanes' width.
+    pub lane: usize,
 }
 
 /// The family's view.
@@ -1840,6 +1884,10 @@ pub struct Family {
     /// The continents the family lived on, the commonest first.
     pub continent_keys: Vec<&'static str>,
     pub lives: Vec<LifeMark>,
+    /// How many lanes the lives need: as many as there were lives at once.
+    pub lanes: usize,
+    /// The column at fourteen pixels a lane, its widest: the page narrows the
+    /// lanes to the room it has (docs/adr/0036).
     pub lives_width: i64,
     pub placed: usize,
     pub undated: usize,
@@ -1913,13 +1961,8 @@ pub fn family(flat: &Value, lens: &Lens, lang: &str, span: Span, now: f64) -> Fa
         .lives
         .iter()
         .map(|l| {
-            if l.pin {
-                let y = scale.y(l.from);
-                (y - 7.0, y + 7.0)
-            } else {
-                let (a, b) = (scale.y(l.from), scale.y(l.to));
-                (a, b.max(a + 8.0))
-            }
+            let (a, b) = (scale.y(l.from), scale.y(l.to));
+            (a, b.max(a + 8.0))
         })
         .collect();
     let (lane, lanes) = pack(&spans, 3.0);
@@ -1931,15 +1974,16 @@ pub fn family(flat: &Value, lens: &Lens, lang: &str, span: Span, now: f64) -> Fa
             id: l.id.clone(),
             name: l.name.clone(),
             years: l.years.clone(),
-            pin: l.pin,
             living: l.living,
             fuzzy_from: l.fuzzy_from,
             fuzzy_to: l.fuzzy_to,
+            open_from: l.open_from,
+            open_to: l.open_to,
             from: l.from,
             to: l.to,
             top: spans[i].0.round() as i64,
             height: (spans[i].1 - spans[i].0).round() as i64,
-            x: (lane[i] as f64 * LIFE_LANE).round() as i64,
+            lane: lane[i],
         })
         .collect();
     Family {
@@ -1950,6 +1994,7 @@ pub fn family(flat: &Value, lens: &Lens, lang: &str, span: Span, now: f64) -> Fa
         continents: continents_col,
         continent_keys: continents.iter().map(|c| c.slug()).collect(),
         lives: marks,
+        lanes,
         lives_width: ((lanes.max(1) as f64) * LIFE_LANE).max(160.0).round() as i64,
         placed: found.lives.len(),
         undated: found.undated,
@@ -2143,11 +2188,7 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
     let p = flat.get("persons")?.get(id)?;
     let idx = event_index(flat);
     let life = life_of(flat, id, p, &idx, now)?;
-    let (start, end) = if life.pin {
-        (life.from - 40.0, (life.from + 40.0).min(now))
-    } else {
-        (life.from - 20.0, (life.to + 10.0).min(now))
-    };
+    let (start, end) = (life.from - 20.0, (life.to + 10.0).min(now));
     let continents: Vec<Continent> = {
         let mut cs: Vec<Continent> = Vec::new();
         for c in life.countries.iter().filter_map(|c| continent_of(c)) {
@@ -2187,14 +2228,20 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
             Some((l, c.to_string()))
         })
         .collect();
+    // An age needs a birth: a window estimated from a death or from the
+    // moments they were seen says when they lived, not how old they were.
+    let born = life.birth.map(|b| b.at());
     let age = |l: &Landmark| -> String {
         let at = l.start();
-        if life.pin || at > life.to {
+        let Some(born) = born else {
+            return String::new();
+        };
+        if at > life.to {
             String::new()
-        } else if at >= life.from {
-            let n = (at - life.from).floor() as i64;
+        } else if at >= born {
+            let n = (at - born).floor() as i64;
             tr(lang, "impact-age", &[("n", n.into())])
-        } else if l.end(now) > life.from {
+        } else if l.end(now) > born {
             tr(lang, "impact-under-way", &[])
         } else {
             String::new()
@@ -2237,29 +2284,22 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
         id: life.id.clone(),
         name: life.name.clone(),
         years: life.years.clone(),
-        pin: life.pin,
         living: life.living,
         fuzzy_from: life.fuzzy_from,
         fuzzy_to: life.fuzzy_to,
+        open_from: life.open_from,
+        open_to: life.open_to,
         from: life.from,
         to: life.to,
-        top: if life.pin {
-            (a - 7.0).round() as i64
-        } else {
-            a.round() as i64
-        },
-        height: if life.pin {
-            14
-        } else {
-            (b - a).max(8.0).round() as i64
-        },
-        x: 0,
+        top: a.round() as i64,
+        height: (b - a).max(8.0).round() as i64,
+        lane: 0,
     };
     let mut stones: Vec<(When, String, Option<String>)> = Vec::new();
     if let Some(b) = life.birth {
         stones.push((b, tr(lang, "impact-milestone-birth", &[]), None));
     }
-    if !life.pin && !life.living {
+    if !life.living {
         let d = moment_of(p.get("death")).map(|(w, _)| w);
         if let Some(d) = d {
             stones.push((d, tr(lang, "impact-milestone-death", &[]), None));
@@ -2618,5 +2658,139 @@ mod tests {
             2026.0
         )
         .is_none());
+    }
+
+    /// The operator's rule of 8 November 2026 (docs/adr/0036).
+    fn uncertain_flat() -> Value {
+        let person = |id: &str, living: bool, birth: Option<(&str, bool)>, death: Option<&str>| {
+            let mut p = json!({"id": id, "type": "person",
+                "identity": {"name": {"display": format!("Person {id}"), "components": []},
+                             "is_living": living, "visibility": "public"}});
+            if let Some((b, circa)) = birth {
+                p["birth"] = json!({"date": {"value": b, "precision": "year", "circa": circa},
+                                    "place_id": "warsaw"});
+            }
+            if let Some(d) = death {
+                p["death"] = json!({"date": {"value": d, "precision": "year"}});
+            }
+            p
+        };
+        let seen = |id: &str, year: &str, circa: bool, who: &str| {
+            json!({"id": id, "date": {"value": year, "precision": "year", "circa": circa},
+                   "participants": [{"entity_type": "person", "entity_id": who}]})
+        };
+        json!({
+            "persons": {
+                "old": person("old", true, Some(("1700", false)), None),
+                "alive": person("alive", true, Some(("1990", false)), None),
+                "born": person("born", false, Some(("1850", true)), None),
+                "late": person("late", false, Some(("1950", false)), None),
+                "died": person("died", false, None, Some("1810")),
+                "seen": person("seen", false, None, None),
+                "seen2": person("seen2", false, None, None),
+                "both": person("both", false, Some(("1890", false)), Some("1960")),
+            },
+            "places": {"warsaw": {"names": [{"value": "Warszawa"}]}},
+            "events": {
+                "e1": seen("e1", "1780", true, "seen"),
+                "e2": seen("e2", "1800", false, "seen2"),
+                "e3": seen("e3", "1890", false, "seen2"),
+            }
+        })
+    }
+
+    #[test]
+    fn a_life_missing_a_date_is_never_drawn_longer_than_a_hundred_years() {
+        let flat = uncertain_flat();
+        let found = lives(&flat, &Lens::unrestricted(), 2026.0);
+        let get = |id: &str| found.lives.iter().find(|l| l.id == id).unwrap();
+        let span = |id: &str| (get(id).from, get(id).to);
+
+        // Said living, but born more than a hundred years ago: born only.
+        let old = get("old");
+        assert_eq!(span("old"), (1700.0, 1800.0));
+        assert!(!old.living && old.open_to && !old.open_from);
+        assert_eq!(old.years, "° 1700");
+        // Living, and young enough to be: to today.
+        let alive = get("alive");
+        assert_eq!(span("alive"), (1990.0, 2026.0));
+        assert!(alive.living && !alive.open_to);
+        assert_eq!(alive.years, "1990–");
+        // Born about a year, and nothing after: a hundred years from it.
+        let born = get("born");
+        assert_eq!(span("born"), (1850.0, 1950.0));
+        assert!(born.fuzzy_from && born.open_to);
+        // Never past today.
+        assert_eq!(span("late"), (1950.0, 2026.0));
+        assert!(!get("late").living && get("late").open_to);
+        // Died only: the hundred years before.
+        let died = get("died");
+        assert_eq!(span("died"), (1710.0, 1810.0));
+        assert!(died.open_from && !died.open_to && died.birth.is_none());
+        assert_eq!(died.years, "† 1810");
+        // Seen about 1780: fifty years either side.
+        assert_eq!(span("seen"), (1730.0, 1830.0));
+        assert!(get("seen").open_from && get("seen").open_to);
+        assert_eq!(get("seen").years, "~ 1780");
+        // Seen in 1800 and in 1890: around the middle, and both moments in.
+        assert_eq!(span("seen2"), (1795.0, 1895.0));
+        assert_eq!(get("seen2").years, "~ 1800–1890");
+        // Both dates recorded: as recorded.
+        assert_eq!(span("both"), (1890.0, 1960.0));
+        assert!(!get("both").open_from && !get("both").open_to);
+
+        for l in &found.lives {
+            if l.open_from || l.open_to {
+                assert!(l.to - l.from <= LONGEST_LIFE, "{}", l.id);
+            }
+            assert!(l.to <= 2026.0 && l.from <= l.to, "{}", l.id);
+        }
+    }
+
+    #[test]
+    fn an_age_is_said_only_from_a_birth_and_only_within_the_life() {
+        let flat = uncertain_flat();
+        let lens = Lens::unrestricted();
+        // Said living since 1700: nothing after their hundredth year, and
+        // never "aged 322".
+        let p = person(&flat, &lens, "old", "en", 2026.0).unwrap();
+        let marks: Vec<&Mark> = p.wide.marks.iter().chain(&p.near.marks).collect();
+        assert!(!marks.is_empty());
+        for m in &marks {
+            assert!(m.from <= 1810.0, "{}", m.name);
+            if let Some(n) = m.age.strip_prefix("aged ") {
+                assert!(n.parse::<i64>().unwrap() <= 100, "{}: {}", m.name, m.age);
+            }
+        }
+        assert!(p.life.open_to && !p.life.living);
+        // A window estimated from a death says when they lived, not their age.
+        let d = person(&flat, &lens, "died", "en", 2026.0).unwrap();
+        assert!(d
+            .wide
+            .marks
+            .iter()
+            .chain(&d.near.marks)
+            .all(|m| m.age.is_empty()));
+        assert!(d.milestones.iter().any(|m| m.year == 1810));
+    }
+
+    #[test]
+    fn the_family_s_lives_have_a_lane_each_and_the_column_its_widest() {
+        let flat = uncertain_flat();
+        let f = family(&flat, &Lens::unrestricted(), "en", Span::Family, 2026.0);
+        assert_eq!(f.placed, 8);
+        assert!(f.lanes >= 2 && f.lives.iter().all(|l| l.lane < f.lanes));
+        assert_eq!(f.lives_width, ((f.lanes as f64) * 14.0).max(160.0) as i64);
+        // No two lives in a lane overlap.
+        for a in &f.lives {
+            for b in f.lives.iter().filter(|b| b.id != a.id && b.lane == a.lane) {
+                assert!(
+                    a.top + a.height <= b.top || b.top + b.height <= a.top,
+                    "{} {}",
+                    a.id,
+                    b.id
+                );
+            }
+        }
     }
 }

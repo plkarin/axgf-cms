@@ -83,7 +83,7 @@
   <input type="hidden" name="document_type" value="photo">
   <div class="field">
     <label>{{ t('record-file-to-attach') }}
-      <input type="file" name="file" accept="image/*" required></label>
+      <input type="file" name="file" accept="image/*" required data-max-bytes="{{ max_upload_mb * 1048576 }}" data-too-large="{{ t('upload-file-too-large', mb=max_upload_mb) }}"></label>
   </div>
   <div class="field">
     <label>{{ t("record-caption") }} <span class="small muted">{{ t("accounts-optional") }}</span>

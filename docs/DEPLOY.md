@@ -204,8 +204,9 @@ If you write your own instead, four things matter:
 * `X-Forwarded-For`, **set** from the peer rather than appended to. The login
   throttle counts per client, and a client that supplies its own value picks
   its own bucket.
-* a body limit just above the 10 MB upload limit, so an oversized upload is
-  refused by the product's own page rather than by a bare 413.
+* a body limit just above the 200 MB a request with a file may be. A file is
+  at most 50 MB; a larger one is read to its end and refused by the product's
+  own page rather than by a bare 413.
 * a read timeout well past 60 seconds. A save rebuilds the whole archive.
 
 And one thing not to do: **do not set `Content-Security-Policy`,

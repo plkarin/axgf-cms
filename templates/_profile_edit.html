@@ -36,7 +36,7 @@
                 {% endfor %}
               </select></label>
             <label>{{ t("phys-col-confidence") }}
-              <input type="number" min="0" max="1" step="0.05" name="{{ a.prefix }}.{{ r.index }}.confidence"
+              <input type="number" min="0" max="1" step="0.01" name="{{ a.prefix }}.{{ r.index }}.confidence"
                      value="{{ r.confidence }}"></label>
           </div>
           <div class="pf-note ed-grid">

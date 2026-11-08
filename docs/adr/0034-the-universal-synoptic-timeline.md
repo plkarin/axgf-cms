@@ -77,7 +77,9 @@ A person's life comes from their record, through the reader's lens:
   runs to today. A date given as approximate ("circa", "before", "between")
   fades its end;
 - **a pin** where one moment only is known: the birth (°), the death (†),
-  or else the earliest event the person took part in (~);
+  or else the earliest event the person took part in (~). *Amended by
+  docs/adr/0036: every life is now a window, never longer than a hundred
+  years where a date is missing;*
 - **not placed** when nothing is dated. They are counted ("Without a
   date: n").
 
@@ -119,7 +121,8 @@ record has one (§4).
     it to its year;
   - nothing is drawn over anything else (unit test).
 - **Lives** are packed the same way, a narrow lane each, in a column that
-  scrolls with the rest. The axis and the headings stay pinned while the
+  scrolls with the rest. *Amended by docs/adr/0036: the family's column fits
+  the room the page has, its lanes as narrow as there are lives at once.* The axis and the headings stay pinned while the
   timeline scrolls in its own frame.
 
 ### 4. The two views

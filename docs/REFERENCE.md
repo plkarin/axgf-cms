@@ -144,7 +144,7 @@ the textual data: persons, families, document metadata, the manifest, bounded
 by the size of the tree rather than its media; on the operator's 420 MiB
 archive that is under a megabyte, and the peak while loading or saving is
 bounded by the copy buffer rather than by the largest file. Single uploads are
-still capped at 10 MB, and the admin panel warns once the *textual* bundle
+capped at 50 MB, and the admin panel warns once the *textual* bundle
 passes `--size-warn-mb` (default 200 MB).
 
 The cache lives at `<bundle_dir>/.axgf-cms-cache/<bundle-sha>/` by default, or

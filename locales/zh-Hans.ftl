@@ -468,6 +468,7 @@ error-unknown-kind-detail = 「{ $kind }」不是记录的类别。本档案包�
 error-io-title = 无法保存
 error-io-detail = { $error }。磁盘上没有任何改动。
 error-upload-too-large = 该文件超过{ $mb } MB 的上限。没有保存任何内容，档案保持原样。
+upload-file-too-large = 该文件超过{ $mb } MB 的上限，不会发送。请选择较小的文件。
 error-upload-refused = 该文献被拒绝：{ $reason }。档案保持原样。
 error-back-to-person = 返回记录
 error-no-such-person-to-attach = 此处没有使用该标识的人，因此没有可以附加文献的对象。

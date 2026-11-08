@@ -390,8 +390,9 @@ keep if you write your own:
 - `X-Forwarded-For`, **set** from the peer rather than appended to — the login
   rate limit buckets by client, and a client that supplies its own value picks
   its own bucket.
-- a body limit just above the product's 10 MB upload limit, so an oversized
-  upload is refused by a page that explains itself rather than by a bare 413.
+- a body limit just above the 200 MB a request with a file may be. A file is
+  at most 50 MB; a larger one is read to its end and refused by a page that
+  explains itself rather than by a bare 413.
 - a read timeout well past 60 seconds. A save rebuilds the whole archive; at
   five seconds the same save reaches the reader as a 504 while the write
   carries on regardless.

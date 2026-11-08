@@ -29,7 +29,7 @@
           {{ f.label }} — <output id="out-{{ f.path }}">{{ f.value if f.value else t("admin-value-not-set") }}</output>
         </label>
         <input type="range" id="{{ f.path }}" name="{{ f.path }}"
-               min="0" max="1" step="0.05" value="{{ f.value if f.value else '' }}"
+               min="0" max="1" step="0.01" value="{{ f.value if f.value else '' }}"
                data-output="out-{{ f.path }}">
 
       {% elif f.kind == "picker" %}

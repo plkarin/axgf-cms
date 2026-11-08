@@ -615,6 +615,7 @@ error-unknown-kind-detail = „{ $kind }” nie jest rodzajem wpisu. To archiwum
 error-io-title = Nie udało się zapisać
 error-io-detail = { $error }. Nic na dysku nie zostało zmienione.
 error-upload-too-large = Ten plik jest większy niż limit { $mb } MB. Nic nie zostało zapisane, a archiwum jest nietknięte.
+upload-file-too-large = Ten plik jest większy niż limit { $mb } MB i nie zostanie wysłany. Wybierz mniejszy.
 error-upload-refused = Dokument został odrzucony: { $reason }. Archiwum jest nietknięte.
 error-back-to-person = Wróć do wpisu
 error-no-such-person-to-attach = Nie ma tutaj osoby o tym identyfikatorze, więc nie ma do czego dołączyć dokumentu.

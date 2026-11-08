@@ -164,7 +164,9 @@ impl Field {
         Field {
             min: Some("0"),
             max: Some("1"),
-            step: Some("0.05"),
+            // A hundredth: a confidence recorded as 0.88 must not make the
+            // form invalid, which in a hidden tab stops it saving silently.
+            step: Some("0.01"),
             ..Field::new(
                 "number",
                 name,
@@ -569,7 +571,8 @@ pub fn generic_fields(views: &[Value], prefix: &str) -> Vec<Field> {
                     f.kind = "number";
                     f.min = Some("0");
                     f.max = Some("1");
-                    f.step = Some("0.05");
+                    // A hundredth, as for the families' confidences.
+                    f.step = Some("0.01");
                 }
                 "picker" => {
                     f.kind = "picker";
@@ -2167,9 +2170,13 @@ async fn read_body(req: Request) -> (Body, Option<Upload>) {
         let name = field.name().unwrap_or_default().to_string();
         if name == "new.doc.file" {
             upload.filename = field.file_name().unwrap_or("upload").to_string();
-            match field.bytes().await {
-                Ok(b) => upload.bytes = b.to_vec(),
-                Err(_) => upload.too_large = true,
+            match super::uploads::read_capped(field, crate::documents::MAX_UPLOAD).await {
+                Ok(Some(b)) => upload.bytes = b,
+                Ok(None) => upload.too_large = true,
+                Err(_) => {
+                    upload.too_large = true;
+                    break;
+                }
             }
         } else {
             body.insert(name, field.text().await.unwrap_or_default());

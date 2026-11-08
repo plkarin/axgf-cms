@@ -4,6 +4,39 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Impact's lives kept plausible and its family column within the page
+(docs/adr/0036), and a large file attached safely (docs/adr/0037): the
+operator's requests and report of 8 November 2026.
+
+### Fixed
+
+- **A life missing a date is never drawn longer than a hundred years** on
+  Impact, and never past today. A record said living but born more than a
+  hundred years ago no longer runs to today ("aged 322"): it gets a hundred
+  years from its birth.
+  - A birth only: a hundred years from it. A death only: the hundred years
+    before it. Only events: fifty years either side.
+  - An estimated end fades; no age is said without a birth.
+- **A file over the limit no longer ends on a blank page.** It is refused as
+  soon as it is chosen, with a line beside the field, and nothing is sent.
+  One that comes anyway is read to its end, and the page saying so arrives.
+- **A record with a confidence such as 0.88 saves again.** The editor's
+  confidence fields step by a hundredth, where a stored value off the old
+  0.05 step stopped the form silently.
+
+### Changed
+
+- **Files of up to 50 MB** can be attached to a record (10 MB before). The
+  proxy configurations in `deploy/proxy/` allow 210 MB a request.
+- **Impact's family column fits the page.** Its lanes narrow as more lives
+  overlap, down to a pixel, and the life nearest the pointer is the one
+  pointed at and followed on a click. On a 1,470-pixel screen the timeline
+  no longer scrolls sideways.
+- **Every life on Impact is a window**: the pins of a single known moment
+  are gone.
+
 ## [1.10.0] — 2026-11-08
 
 Impact: the years, the windows and the flags (the operator's request of

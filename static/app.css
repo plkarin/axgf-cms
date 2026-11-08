@@ -1278,6 +1278,12 @@ label > input, label > select, label > textarea, label > .date-input { margin-to
   color: var(--text-tertiary);
   margin-top: 0.3rem;
 }
+/* A file refused before it is sent: over the site's limit (ui.js). */
+.upload-refused {
+  display: block; margin-top: 0.3rem;
+  font-family: var(--face); font-size: var(--type-small); text-transform: none; letter-spacing: normal;
+  color: var(--danger);
+}
 fieldset { border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 1rem; margin: 0 0 1.25rem; min-inline-size: 0; }
 legend { font-size: var(--type-small); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); padding: 0 0.4rem; }
 
@@ -8344,19 +8350,34 @@ a.kpi:hover { border-color: var(--border-strong); }
   border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-page);
   font-size: var(--type-small); box-shadow: 0 4px 14px rgba(var(--shadow-rgb), 0.25);
 }
-/* Lives: a window from birth to death, a pin for a single moment; a date
-   only approximate fades the window's end. */
-.ip-life { position: absolute; inline-size: 10px; border-radius: 3px; background: var(--accent); opacity: 0.75; }
-.ip-life:hover { opacity: 1; }
-.ip-life.ip-living { background: var(--hue-2); }
-.ip-life.ip-pin { inline-size: 14px; border-radius: 50%; }
-.ip-life.ip-fuzzy-from { mask-image: linear-gradient(to bottom, transparent, currentColor 14px); }
-.ip-life.ip-fuzzy-to { mask-image: linear-gradient(to top, transparent, currentColor 14px); }
-.ip-life.ip-fuzzy-from.ip-fuzzy-to:not(.ip-pin) {
-  mask-image: linear-gradient(to bottom, transparent, currentColor 14px, currentColor calc(100% - 14px), transparent);
+/* Lives: always a window (docs/adr/0036). An end recorded only about a
+   year fades a little; an end no date gives, estimated, fades over much of
+   the window. */
+.ip-life {
+  --ip-fade-a: 0px; --ip-fade-b: 0px;
+  position: absolute; inline-size: 10px; border-radius: 3px; background: var(--accent); opacity: 0.75;
+  mask-image: linear-gradient(to bottom, transparent, currentColor var(--ip-fade-a), currentColor calc(100% - var(--ip-fade-b)), transparent);
 }
+.ip-life:hover, .ip-life.ip-lit { opacity: 1; }
+.ip-life.ip-living { background: var(--hue-2); }
+.ip-life.ip-fuzzy-from { --ip-fade-a: 14px; }
+.ip-life.ip-fuzzy-to { --ip-fade-b: 14px; }
+.ip-life.ip-open-from { --ip-fade-a: 40%; }
+.ip-life.ip-open-to { --ip-fade-b: 40%; }
 .ip-life-name { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
 .ip-own .ip-life-own { inset-inline-start: 1rem; inline-size: 14px; opacity: 1; }
+/* The family's column fits the room the page has: fourteen pixels a lane
+   where there is room, thinner where there is not, never under a pixel;
+   the life nearest the pointer is the one pointed at (impact.js). */
+.ip-grid.ip-fit {
+  grid-template-columns: 7rem var(--ip-a) var(--ip-b) minmax(min(16rem, var(--ip-c)), var(--ip-c));
+  inline-size: 100%; min-inline-size: min-content;
+}
+.ip-lives .ip-life {
+  inset-inline-start: calc(min(14px, 100% / var(--ip-n, 1)) * var(--l, 0));
+  inline-size: max(1px, calc(min(14px, 100% / var(--ip-n, 1)) * 0.72));
+}
+.ip-lives .ip-life.ip-lit { z-index: 2; inline-size: max(4px, calc(min(14px, 100% / var(--ip-n, 1)) * 0.72)); }
 .ip-stone {
   position: absolute; inset-inline: 2.4rem 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-size: var(--type-micro); line-height: 18px; color: var(--text-secondary);

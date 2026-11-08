@@ -13,7 +13,7 @@
   <p class="small"><a href="/impact">{{ t("impact-back") }}</a></p>
   <h1>{{ t("impact-person-title", name=p.name) }}</h1>
   <p class="lede">{{ p.years }}
-    {%- for c in p.countries %}{{ " · " if loop.first else ", " }}{% if c.flag %}<img class="flag" src="{{ c.flag }}" alt="" width="20" height="15"> {% endif %}<span data-country="{{ c.iso }}">{{ c.name }}</span>{% endfor %}</p>
+    {%- for c in p.countries %}{{ " · " if loop.first else ", " }}{% if c.flag %}<img class="flag" src="{{ c.flag }}" alt="" width="16" height="12"> {% endif %}<span data-country="{{ c.iso }}">{{ c.name }}</span>{% endfor %}</p>
   <p><a class="btn" href="/person/{{ p.id }}">{{ t("impact-record") }}</a></p>
   {%- if p.held %}
   <details class="ip-held">
@@ -30,7 +30,7 @@
     <span class="ip-h">{{ t("impact-col-world") }}
       {%- for c in p.continent_keys %} · {{ t("impact-continent-" ~ c) }}{% endfor %}</span>
     <span class="ip-h">{{ t("impact-col-life") }}</span>
-    <span class="ip-h">{{ t("impact-col-country") }}{% for c in p.countries %}{% if c.flag %} <img class="flag" src="{{ c.flag }}" alt="" width="20" height="15">{% endif %}{% endfor %}</span>
+    <span class="ip-h">{{ t("impact-col-country") }}{% for c in p.countries %}{% if c.flag %} <img class="flag" src="{{ c.flag }}" alt="" width="16" height="12">{% endif %}{% endfor %}</span>
     <div class="ip-time" style="height: {{ p.height }}px" data-impact data-from="{{ p.life.from }}" data-to="{{ p.life.to }}">
       {{ ip.axis(p.ticks, p.grid) }}
       <div class="ip-band ip-band-own" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" aria-hidden="true"></div>

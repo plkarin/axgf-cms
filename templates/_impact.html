@@ -16,7 +16,7 @@
     {%- if m.note %}<span class="ip-ev-note">{{ m.note }}</span>{% endif %}
     <div class="ip-more" hidden>
       <h2 class="ip-more-name">{{ m.name }}</h2>
-      <p class="ip-more-when">{{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}{% if m.tag_label %} · {% if m.tag_flag %}<img class="flag" src="{{ m.tag_flag }}" alt="" width="20" height="15"> {% endif %}{{ m.tag_label }}{% endif %}{% if m.age %} · <strong>{{ m.age }}</strong>{% endif %}</p>
+      <p class="ip-more-when">{{ m.dates }}{% if m.length %} · {{ m.length }}{% endif %}{% if m.tag_label %} · {% if m.tag_flag %}<img class="flag" src="{{ m.tag_flag }}" alt="" width="16" height="12"> {% endif %}{{ m.tag_label }}{% endif %}{% if m.age %} · <strong>{{ m.age }}</strong>{% endif %}</p>
       {%- if m.note %}<p>{{ m.note }}</p>{% endif %}
       {%- if m.context %}<h3>{{ t("impact-context") }}</h3><p>{{ m.context }}</p>{% endif %}
       {%- if m.stakes %}<h3>{{ t("impact-stakes") }}</h3><p>{{ m.stakes }}</p>{% endif %}

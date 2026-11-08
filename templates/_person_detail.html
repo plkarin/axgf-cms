@@ -214,23 +214,25 @@
 <section id="family" class="rec-section">
   {{ m.sec(t, t("record-family"), compact, t("record-family-help")) }}
   {# The family across, in blocks (the operator's review of 22 October
-     2026): the parents and the siblings side by side, each a row of cards;
-     then one block per union — the partner, the union's dates and place,
+     2026): the parents and the siblings side by side, each a framed block
+     like a union's, its name on the trailing side of its head and its
+     people one under the other (her review of 8 November 2026); then one
+     block per union, named by its kind — the partner, the union's dates and place,
      and that union's children as a row of cards of their own — so that a
      person with several partners shows each family apart, and every name is
      a card to click rather than a line to aim at. #}
   {% if p.parents or p.siblings %}
   <div class="fam-band">
     {% if p.parents %}
-    <div class="fam-group">
+    <div class="fam-group fam-block">
       <h3 class="fam-title">{{ t("record-parents") }}</h3>
-      <ul class="fam-cards" data-content>{% for r in p.parents %}{{ m.person_card(r) }}{% endfor %}</ul>
+      <ul class="fam-cards fam-list" data-content>{% for r in p.parents %}{{ m.person_card(r) }}{% endfor %}</ul>
     </div>
     {% endif %}
     {% if p.siblings %}
-    <div class="fam-group">
+    <div class="fam-group fam-block">
       <h3 class="fam-title">{{ t("record-siblings") }}</h3>
-      <ul class="fam-cards" data-content>{% for r in p.siblings %}{{ m.person_card(r) }}{% endfor %}</ul>
+      <ul class="fam-cards fam-list" data-content>{% for r in p.siblings %}{{ m.person_card(r) }}{% endfor %}</ul>
     </div>
     {% endif %}
   </div>
@@ -260,6 +262,7 @@
         a couple's, and naming the other spouses of the person this one is
         married to. -#}
     <div class="union{% if u.polygamous %} is-polygamous{% endif %}">
+      {% if u.kind %}<h3 class="fam-title fam-block-title">{{ u.kind }}</h3>{% endif %}
       <div class="fam-block-head">
         <ul class="fam-cards fam-partner" data-content>
           {%- if u.spouse %}{{ m.person_card(u.spouse) }}{% endif -%}
@@ -268,7 +271,6 @@
           {#- The family's emblem (docs/adr/0022). -#}
           {% if u.emblem %}<img class="union-emblem" src="/document/{{ u.emblem.id }}/thumb" alt="" width="44" height="44" loading="lazy">{% endif %}
           <div class="fam-union-kind">
-            {% if u.kind %}<span class="chip small">{{ u.kind }}</span>{% endif %}
             {% if u.status %}<span class="chip small union-status" data-status="{{ u.status }}">{{ u.status }}</span>{% endif %}
             {% if u.confidence %}{{ m.conf_bar(u.confidence) }}{% endif %}
           </div>
@@ -459,7 +461,7 @@
   <div class="grid cols-3">
     {% for pu in p.places %}
     <div class="card place-card">
-      {% if pu.place.flag %}<img class="flag" src="{{ pu.place.flag }}" alt="" width="20" height="15"> {% endif %}<strong>{{ pu.place.name }}</strong>
+      {% if pu.place.flag %}<img class="flag" src="{{ pu.place.flag }}" alt="" width="16" height="12"> {% endif %}<strong>{{ pu.place.name }}</strong>
       {% if pu.place.place_type %}<span class="small muted">{{ pu.place.place_type }}</span>{% endif %}
       <ul class="plain small">{% for u in pu.uses %}<li>{{ u }}</li>{% endfor %}</ul>
       {% if pu.place.country_history %}

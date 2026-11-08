@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ p.name }} — {{ t("app-name") }}{% endblock %}
 
 {# The record page, in read mode: the whole record, not a summary of it, and
@@ -93,7 +94,7 @@
     {% if p.header.generations_below %}{% set placing = placing + [[none, t("person-generations-below", n=p.header.generations_below)]] %}{% endif %}
     {% if placing %}
     <p class="person-placing small muted">
-      {%- for flag, said in placing %}{% if not loop.first %} · {% endif %}{% if flag %}<img class="flag" src="{{ flag }}" alt="" width="20" height="15"> {% endif %}{{ said }}{% endfor -%}
+      {%- for flag, said in placing %}{% if not loop.first %} · {% endif %}{% if flag %}<img class="flag" src="{{ flag }}" alt="" width="16" height="12"> {% endif %}{{ said }}{% endfor -%}
     </p>
     {% endif %}
   </div>
@@ -153,6 +154,13 @@
     `data-content`. -#}
 {% include "_tabs.html" %}
 
+{#- The way to the person's times (docs/adr/0034), at the head of the record
+    and made to be seen (the operator's request of 8 November 2026). It is
+    there when the person can be placed, so it is content. -#}
+{%- if impact %}
+<p class="record-impact" data-content><a class="impact-cta" href="/impact/{{ p.id }}">{{ ic.icon("impact") }}<span>{{ t("impact-see") }}</span></a></p>
+{%- endif %}
+
 {#- The tab on screen. Inside it, as everywhere in read mode, only what is
     recorded. The person's portrait, relatives, places, sources and files
     are the record's content and are not counted as chrome. -#}
@@ -167,8 +175,7 @@
   {% endif %}
 </div>
 
-<p class="record-foot"><a class="btn" href="/?p={{ p.id }}">{{ t("record-see-in-river") if view == "river" else t("view-" ~ view ~ "-see") }}</a>
-{%- if impact %} <a class="btn" href="/impact/{{ p.id }}">{{ t("impact-see") }}</a>{% endif %}</p>
+<p class="record-foot"><a class="btn" href="/?p={{ p.id }}">{{ t("record-see-in-river") if view == "river" else t("view-" ~ view ~ "-see") }}</a></p>
 
 {% endblock %}
 

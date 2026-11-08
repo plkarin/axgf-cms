@@ -37,6 +37,9 @@
    theme none of these values shows. */
 :root {
   color-scheme: dark;
+  /* Light itself, whatever the theme: the glint that crosses a button made
+     to be seen (the record's way to Impact). */
+  --sheen: #ffffff66;
   --surface-page: #0b110e;
   --surface-raised: #111a16;
   --border-hairline: #22302a;

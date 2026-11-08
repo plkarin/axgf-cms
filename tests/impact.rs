@@ -110,9 +110,18 @@ async fn a_person_is_seen_in_their_times() {
     let (_, record) = page(&app, &format!("/person/{AYMERIC}"), None).await;
     // A place on the record is said with its country's flag.
     assert!(record.contains("<img class=\"flag\" src=\"/static/flags/fr.svg\""));
-    assert!(record.contains(&format!(
-        "<a class=\"btn\" href=\"/impact/{AYMERIC}\">See the impact</a>"
-    )));
+    // At the head of the record, under its tabs (the operator's request of
+    // 8 November 2026), and no longer at its foot.
+    let way = format!("<a class=\"impact-cta\" href=\"/impact/{AYMERIC}\">");
+    assert!(record.contains(&way));
+    assert!(record.contains("<span>See the impact</span></a>"));
+    let (tabs, way_at, foot) = (
+        record.find("person-tabs").unwrap(),
+        record.find(&way).unwrap(),
+        record.find("record-foot").unwrap(),
+    );
+    assert!(tabs < way_at && way_at < foot);
+    assert!(!record[foot..].contains("href=\"/impact/"));
 }
 
 fn person(id: &str, name: &str, born: Option<&str>, living: bool, visibility: &str) -> Value {

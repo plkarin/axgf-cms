@@ -808,6 +808,7 @@ h4 {
 .rec-section .card,
 .card .card,
 .rec-section .union,
+.rec-section .fam-block,
 .rec-section .name-block,
 .rec-section .shot,
 .tree-controls .field-group {
@@ -1277,6 +1278,48 @@ label > input, label > select, label > textarea, label > .date-input { margin-to
   letter-spacing: normal;
   color: var(--text-tertiary);
   margin-top: 0.3rem;
+}
+/* The way from a record to its times (docs/adr/0034), at the record's head
+   and made to be seen (the operator's request of 8 November 2026): the
+   accent's own gradient and, pointed at, a hit. It jumps, a shock wave runs
+   out of it, a light crosses it and its mark turns. */
+.record-impact { margin: 0 0 0.9rem; }
+.impact-cta {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.6rem 1.3rem 0.6rem 0.95rem; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--text-primary));
+  background: linear-gradient(115deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 58%, var(--hue-7)) 100%);
+  color: var(--on-accent); text-decoration: none;
+  font-size: var(--type-body); font-weight: var(--weight-semi); letter-spacing: 0.04em; text-transform: uppercase;
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+.impact-cta .ico { inline-size: 1.3em; block-size: 1.3em; stroke-width: 2; }
+.impact-cta::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, var(--sheen) 50%, transparent 65%);
+  transform: translateX(-110%);
+}
+.impact-cta:hover {
+  color: var(--on-accent); text-decoration: none;
+  animation: impact-hit 460ms var(--ease) both, impact-wave 1.4s var(--ease) 200ms infinite;
+}
+.impact-cta:hover::before { animation: impact-shine 900ms var(--ease) 80ms both; }
+.impact-cta:hover .ico { animation: impact-turn 700ms var(--ease) both; }
+@keyframes impact-hit {
+  0% { transform: none; }
+  35% { transform: translateY(-3px) scale(1.07); }
+  65% { transform: translateY(0) scale(0.98); }
+  100% { transform: translateY(-2px) scale(1.03); }
+}
+@keyframes impact-wave {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 65%, transparent), 0 8px 22px -10px color-mix(in srgb, var(--accent) 80%, transparent); }
+  100% { box-shadow: 0 0 0 18px transparent, 0 8px 22px -10px color-mix(in srgb, var(--accent) 80%, transparent); }
+}
+@keyframes impact-shine { to { transform: translateX(110%); } }
+@keyframes impact-turn { from { transform: rotate(-120deg) scale(0.7); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .impact-cta:hover, .impact-cta:hover::before, .impact-cta:hover .ico { animation: none; }
 }
 /* A file refused before it is sent: over the site's limit (ui.js). */
 .upload-refused {
@@ -3619,6 +3662,16 @@ ol.life { list-style: none; padding: 0; margin: 0.75rem 0 0; }
 .fam-partner { flex: 0 1 17rem; min-inline-size: min(100%, 13.5rem); grid-template-columns: 1fr; }
 .fam-union-facts { flex: 1 1 14rem; display: grid; gap: 0.3rem; min-inline-size: 0; }
 .fam-union-kind { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+/* The parents and the siblings framed like a union (the operator's review
+   of 8 November 2026): each block's name on the trailing side of its head,
+   a union's its kind; the parents and the siblings one under the other. */
+.fam-block { padding: 0.8rem 0.9rem; background: var(--surface-page); border: 1px solid var(--border-hairline); border-radius: var(--radius); }
+.fam-block > .fam-title,
+.union > .fam-block-title {
+  margin: 0 0 0.55rem; text-align: end;
+  font-size: var(--type-label); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.fam-list { grid-template-columns: 1fr; }
 .pcard { min-inline-size: 0; }
 .pcard-in {
   display: flex;
@@ -4302,6 +4355,7 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
 .tree-panel .rec-section { padding: 0.85rem 0.9rem; }
 .tree-panel .rec-section .card,
 .tree-panel .rec-section .union,
+.tree-panel .rec-section .fam-block,
 .tree-panel .rec-section .name-block { padding: 0.6rem 0.7rem; }
 .tree-panel .rec-section > .table-wrap {
   margin-inline: -0.9rem;
@@ -4458,6 +4512,7 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
    inside a first is a photocopy artefact. */
 [data-style="paper"] .rec-section .card,
 [data-style="paper"] .rec-section .union,
+[data-style="paper"] .rec-section .fam-block,
 [data-style="paper"] .rec-section .name-block,
 [data-style="paper"] .rec-section .shot {
   background: transparent;
@@ -6335,10 +6390,10 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .fact-chips .fc:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) .fact-chips dt { color: var(--accent); }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.union, .place-card, .link-card, .life-row, .name-block) {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.union, .fam-block, .place-card, .link-card, .life-row, .name-block) {
   transition: border-color var(--tempo) var(--ease), transform var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
 }
-:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.union, .place-card, .link-card):hover {
+:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(.union, .fam-block, .place-card, .link-card):hover {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
   transform: translateY(-1px);
 }
@@ -6644,7 +6699,7 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 [data-theme="clarity"] .person-tabs { background: var(--surface-raised); box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.08); }
 /* Inside a box, what sat sunk into the page is a pack: the pale blue of a
    field group, not the page's grey showing through a hole in the box. */
-[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section .name-block, .rec-section .union, .rec-section .shot, :is(.rec-section, .card) .card, .tree-controls .field-group, .link-card, .raw-json, .service-card, .fact-chips .fc, .raw-fieldset, .danger-zone) {
+[data-theme="clarity"]:not([data-style="paper"]) :is(.rec-section .name-block, .rec-section .union, .rec-section .fam-block, .rec-section .shot, :is(.rec-section, .card) .card, .tree-controls .field-group, .link-card, .raw-json, .service-card, .fact-chips .fc, .raw-fieldset, .danger-zone) {
   background: var(--cl-pack);
   box-shadow: none;
 }
@@ -8427,7 +8482,13 @@ a.kpi:hover { border-color: var(--border-strong); }
 .ip-dialog-body h3 { margin: 0.8rem 0 0.2rem; font-size: var(--type-label); font-weight: var(--weight-semi); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
 .ip-dialog-body p { margin: 0 0 0.4rem; }
 /* A country's flag beside its name, on the timeline and on a record. */
+/* A country's flag (docs/adr/0035), crisp at every screen scale (the
+   operator's review of 8 November 2026: its edges were jagged). 16 by 12
+   pixels stays whole at 100, 125, 150 and 200 %, where 1.25em fell between
+   pixels; its frame is an outline, which the browser keeps to whole pixels,
+   where a shadow's spread is smoothed unevenly. */
 .flag {
-  display: inline-block; inline-size: 1.25em; block-size: auto; aspect-ratio: 4 / 3;
-  vertical-align: -0.12em; border-radius: 2px; box-shadow: 0 0 0 1px var(--border-hairline);
+  display: inline-block; inline-size: 16px; block-size: 12px; object-fit: cover;
+  vertical-align: -2px; border-radius: 2px;
+  outline: 1px solid color-mix(in srgb, var(--text-primary) 18%, transparent); outline-offset: -1px;
 }

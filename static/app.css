@@ -8483,12 +8483,13 @@ a.kpi:hover { border-color: var(--border-strong); }
 .ip-dialog-body p { margin: 0 0 0.4rem; }
 /* A country's flag beside its name, on the timeline and on a record. */
 /* A country's flag (docs/adr/0035), crisp at every screen scale (the
-   operator's review of 8 November 2026: its edges were jagged). 16 by 12
-   pixels stays whole at 100, 125, 150 and 200 %, where 1.25em fell between
-   pixels; its frame is an outline, which the browser keeps to whole pixels,
-   where a shadow's spread is smoothed unevenly. */
+   operator's review of 8 November 2026: its edges were jagged). The picture
+   is 16 by 12 pixels, whole at 100, 125, 150 and 200 %, where 1.25em fell
+   between pixels. Its frame is a border round it, which the browser keeps
+   to whole pixels and which shows a white band on a light page, where a
+   shadow's spread drew a ring smoothed unevenly; an outline is the focus
+   ring's alone (tests/controls.rs). */
 .flag {
-  display: inline-block; inline-size: 16px; block-size: 12px; object-fit: cover;
-  vertical-align: -2px; border-radius: 2px;
-  outline: 1px solid color-mix(in srgb, var(--text-primary) 18%, transparent); outline-offset: -1px;
+  display: inline-block; box-sizing: content-box; inline-size: 16px; block-size: 12px; object-fit: cover;
+  vertical-align: -3px; border: 1px solid color-mix(in srgb, var(--text-primary) 28%, transparent); border-radius: 3px;
 }

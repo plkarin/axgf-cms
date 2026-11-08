@@ -4,6 +4,35 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The operator's review of 8 November 2026, evening: the record and the
+river refined.
+
+### Changed
+
+- **Beside the river, the selected person's record is never taller than
+  the drawing**, in every theme: it scrolls within itself, and a new
+  person's record starts at its top. At phone width, under the drawing, it
+  is as tall as what it holds.
+- **The way to Impact is at the head of the record**, under its tabs, and
+  made to be seen: the accent's gradient and a mark of its own; pointed
+  at, it jumps, a shock wave runs out of it and a glint crosses it.
+  Reduced motion stills it.
+- **The family section in blocks:** the parents and the siblings are
+  framed like a union, each named on the trailing side of its head, its
+  people one under the other; a union is named there by its kind.
+- **Canopée's ground glides with a travel**, the way the drawing goes and
+  slower, its near parts more than its far ones, then settles back.
+- **Canopée's herds are smaller and fewer, and walk**: thirteen animals
+  where there were thirty-one, at about 0.57 of their height, which gather
+  speed, turn on a wandering path, step and trot, and turn round.
+
+### Fixed
+
+- **Flags no longer have jagged edges**: 16 by 12 pixels, whole at every
+  screen scale, framed by an outline the browser keeps to whole pixels.
+
 ## [1.10.1] — 2026-11-08
 
 Impact's lives kept plausible and its family column within the page

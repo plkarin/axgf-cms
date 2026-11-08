@@ -1,6 +1,6 @@
 # ADR 0037 — A file of up to fifty megabytes, and one over it refused before it is sent
 
-**Status:** accepted (unreleased) · **Applies to:** `src/documents.rs`,
+**Status:** accepted, v1.10.1 (2026-11-08) · **Applies to:** `src/documents.rs`,
 `src/routes/uploads.rs`, `src/routes/person_editor.rs`,
 `src/routes/admin.rs`, `src/routes/ai_portraits.rs`, `src/routes/mod.rs`,
 `static/ui.js`, the upload forms' templates, `deploy/proxy/`

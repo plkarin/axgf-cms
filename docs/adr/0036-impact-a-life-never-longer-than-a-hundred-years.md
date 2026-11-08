@@ -1,6 +1,6 @@
 # ADR 0036 — Impact: a life never longer than a hundred years, and the family's column within the page
 
-**Status:** accepted (unreleased) · **Amends:** docs/adr/0034 §2 and §3 ·
+**Status:** accepted, v1.10.1 (2026-11-08) · **Amends:** docs/adr/0034 §2 and §3 ·
 **Applies to:** `src/impact.rs`, `templates/impact.html`,
 `templates/impact_person.html`, `static/impact.js`, `static/app.css`
 

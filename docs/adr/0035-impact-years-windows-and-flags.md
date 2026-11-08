@@ -1,6 +1,6 @@
 # ADR 0035 — Impact: the years, the windows and the flags
 
-**Status:** accepted (unreleased) · **Builds on:** Impact, the Universal
+**Status:** accepted, v1.10.0 (2026-11-08) · **Builds on:** Impact, the Universal
 Synoptic Timeline (docs/adr/0034) · **Applies to:** `src/impact.rs`,
 `src/impact_details.txt`, `src/impact_places.txt`, `static/flags/`,
 `src/routes/impact.rs`, `src/person.rs`, `templates/_impact.html`,

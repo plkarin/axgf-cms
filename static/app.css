@@ -4771,6 +4771,14 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
 @media (max-width: 860px) {
   .rv-record { flex-basis: 100%; border-inline-start: 0; border-block-start: 1px solid var(--rv-rule-2); }
 }
+/* Beside the drawing, the record is never taller than the stage (the
+   operator's request of 8 November 2026): it takes the stage's height and
+   scrolls within itself. `contain: size` keeps what it holds from
+   stretching the row; under the stage, at phone width, it is as tall as
+   what it holds. */
+@media (min-width: 861px) {
+  .rv-record { contain: size; overflow-y: auto; overscroll-behavior: contain; }
+}
 @media print {
   .rv-controls, .rv-record { display: none; }
 }

@@ -835,6 +835,9 @@
         // new centre.
         panel.innerHTML = html !== null ? html
           : '<div class="panel-inner panel-empty"><p class="muted">' + esc(panel.dataset.privateTitle || '') + '</p></div>';
+        // The panel scrolls within itself beside the drawing: a new
+        // person's record starts at its top.
+        panel.scrollTop = 0;
         if (window.axgfShowCurrentTabs) window.axgfShowCurrentTabs(panel);
       });
   }

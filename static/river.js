@@ -773,7 +773,7 @@
         }
         swapPanel(id); controls(n);
         clearTimeout(waitTimer);
-        if (window.axgfRiverScene) window.axgfRiverScene.travel();
+        if (window.axgfRiverScene) window.axgfRiverScene.travel(travelShift(A, id), view && view.tween ? 900 : 560);
         // Zoomed in, the camera glides to the fixed point with the river, so
         // the person travelled to arrives in view.
         var c0 = { x: cam.x, y: cam.y }, c1 = centreOf(B);
@@ -795,6 +795,17 @@
         })(t0);
       })
       .catch(function () { clearTimeout(waitTimer); busy = false; location.href = url(id, n); });
+  }
+  // How the drawing moves on the screen as it travels to `id`, in CSS
+  // pixels: the travelled-to person comes to where the centre was. The
+  // living ground (river-scene.js) glides the same way, slower.
+  function travelShift(A, id) {
+    var svg = canvas.querySelector('svg'), vb = svg && svg.viewBox && svg.viewBox.baseVal;
+    var find = function (k) { return (A.persons || []).filter(function (q) { return q.key === k || q.id === k; })[0]; };
+    var to = find(id), from = A.meta && find(A.meta.centre);
+    if (!vb || !vb.height || !to || !from) return null;
+    var s = svg.getBoundingClientRect().height / vb.height;
+    return { x: (from.x - to.x) * s, y: (from.y - to.y) * s };
   }
   function waitAt(id) {
     var svg = canvas.querySelector('svg'), p = here.persons.filter(function (q) { return q.id === id; })[0];

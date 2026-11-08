@@ -70,7 +70,7 @@
   // so that leaning and zooming never show its edge. The ground holds no
   // water of its own: the family's streams and rivers are its only water
   // (docs/adr/0004 §15).
-  var PIC = { src: '/static/img/river-ground.jpg?v=7', maps: '/static/img/river-ground-maps.jpg?v=3', aspect: 3840 / 2160, over: 1.1 };
+  var PIC = { src: '/static/img/river-ground.jpg?v=7', maps: '/static/img/river-ground-maps.jpg?v=3', aspect: 3840 / 2160, over: 1.3 };
 
   /* ---- the camera (§17) ----
    * The ground seen as the photograph sees it, from the air, 60° from
@@ -652,23 +652,22 @@
     bird: [[600, 400, 44, 24], [648, 400, 44, 24], [696, 400, 44, 24], [744, 400, 44, 24]]
   };
   // Each kind: its height against the photograph's (at its foot), its
-  // walking pace in its own heights a second, its standing and walking
-  // pictures, its grazing ones, its young and its leader.
+  // walking pace in its own heights a second, its steps a second at that
+  // pace, its standing and walking pictures, its grazing ones, its young and
+  // its leader. Smaller and fewer since the operator's review of 8 November
+  // 2026: they stood too large for the valley, and slid like pawns.
   var KIND = {
-    deer: { h: 0.045, pace: 0.3, walk: [0, 4, 7, 1, 6], graze: [2], young: 5, lead: 3 },
-    ibex: { h: 0.04, pace: 0.26, walk: [0, 4, 5, 1], graze: [2, 6], young: 7, lead: 3 },
-    horse: { h: 0.054, pace: 0.34, walk: [0, 3, 4, 1], graze: [2], young: 5, lead: -1 }
+    deer: { h: 0.026, pace: 0.42, step: 2.1, walk: [0, 4, 7, 1, 6], graze: [2], young: 5, lead: 3 },
+    ibex: { h: 0.023, pace: 0.36, step: 2.5, walk: [0, 4, 5, 1], graze: [2, 6], young: 7, lead: 3 },
+    horse: { h: 0.031, pace: 0.46, step: 1.8, walk: [0, 3, 4, 1], graze: [2], young: 5, lead: -1 }
   };
   // The herds, each on its own ground of the photograph: its centre and
   // reach, in the photograph's own coordinates.
   var HERDS = [
-    { kind: 'deer', u: 0.17, v: 0.5, ru: 0.08, rv: 0.1, n: 6 },
-    { kind: 'horse', u: 0.75, v: 0.45, ru: 0.06, rv: 0.04, n: 5 },
-    { kind: 'ibex', u: 0.36, v: 0.53, ru: 0.03, rv: 0.025, n: 4, rock: true },
-    { kind: 'ibex', u: 0.2, v: 0.86, ru: 0.045, rv: 0.04, n: 3, rock: true },
-    { kind: 'deer', u: 0.91, v: 0.68, ru: 0.05, rv: 0.05, n: 4 },
-    { kind: 'deer', u: 0.44, v: 0.24, ru: 0.06, rv: 0.035, n: 5 },
-    { kind: 'horse', u: 0.45, v: 0.6, ru: 0.06, rv: 0.05, n: 4 }
+    { kind: 'deer', u: 0.17, v: 0.5, ru: 0.08, rv: 0.1, n: 4 },
+    { kind: 'horse', u: 0.75, v: 0.45, ru: 0.06, rv: 0.04, n: 3 },
+    { kind: 'ibex', u: 0.36, v: 0.53, ru: 0.03, rv: 0.025, n: 3, rock: true },
+    { kind: 'deer', u: 0.91, v: 0.68, ru: 0.05, rv: 0.05, n: 3 }
   ];
   var LVERT = [
     'attribute vec2 aP;attribute vec2 aT;attribute vec4 aC;',
@@ -760,27 +759,36 @@
         }
         var lead = i === 0 && K.lead >= 0, young = i === H.n - 1 && H.n > 3;
         var ws = lead ? K.lead : young ? K.young : K.walk[Math.floor(rnd() * K.walk.length)];
+        var face = rnd() < 0.5 ? -1 : 1;
         animals.push({
-          herd: H, kind: H.kind, x: u, y: v, tx: u, ty: v, face: rnd() < 0.5 ? -1 : 1, state: 'graze',
-          until: rnd() * 8, walk: ws, graze: lead || young ? ws : K.graze[Math.floor(rnd() * K.graze.length)],
-          size: young ? 0.72 : lead ? 1.12 : 0.92 + rnd() * 0.16, bob: rnd() * 6.283, rnd: seeded(hi * 131 + i * 17 + 7)
+          herd: H, kind: H.kind, x: u, y: v, tx: u, ty: v, face: face, flip: 1, state: 'graze',
+          until: rnd() * 5, walk: ws, graze: lead || young ? ws : K.graze[Math.floor(rnd() * K.graze.length)],
+          size: young ? 0.72 : lead ? 1.12 : 0.92 + rnd() * 0.16, bob: rnd() * 6.283, rnd: seeded(hi * 131 + i * 17 + 7),
+          hd: face > 0 ? 0 : Math.PI, sp: 0, phase: rnd() * 6.283, leader: i === 0
         });
       }
+      H.lead = animals[animals.length - H.n];
     });
   }
-  // What each animal does next: graze a while, raise its head, or walk a
-  // few steps to fresh grass near its herd.
+  // What each animal does next: graze a while, raise its head, or walk on to
+  // fresh grass, now and then at a trot. The leader goes where the herd's
+  // ground leads; the others keep near the leader, so the herd moves as one.
+  function walking(an) { return an.state === 'walk' || an.state === 'trot'; }
   function think(an, t) {
-    var H = an.herd, r = an.rnd();
-    if (an.state !== 'walk' && r < 0.5) {
+    var H = an.herd, r = an.rnd(), near = !an.leader && H.lead && H.lead !== an;
+    var cu = near ? H.lead.x : H.cu, cv = near ? H.lead.y : H.cv, reach = near ? 0.45 : 1;
+    if (!walking(an) && r < 0.62) {
       for (var k = 0; k < 8; k++) {
-        var a = an.rnd() * 6.283, d = 0.25 + 0.75 * an.rnd();
-        var u = H.cu + Math.cos(a) * H.ru * d, v = H.cv + Math.sin(a) * H.rv * d;
-        if (allowed(H, u, v)) { an.tx = u; an.ty = v; an.state = 'walk'; an.until = t + 40; return; }
+        var a = an.rnd() * 6.283, d = 0.3 + 0.7 * an.rnd();
+        var u = cu + Math.cos(a) * H.ru * reach * d, v = cv + Math.sin(a) * H.rv * reach * d;
+        if (allowed(H, u, v)) {
+          an.tx = u; an.ty = v; an.state = an.rnd() < 0.18 ? 'trot' : 'walk'; an.until = t + 30;
+          return;
+        }
       }
     }
-    an.state = r < 0.82 ? 'graze' : 'look';
-    an.until = t + (an.state === 'graze' ? 4 + 9 * an.rnd() : 1.5 + 2.5 * an.rnd());
+    an.state = r < 0.8 ? 'graze' : 'look';
+    an.until = t + (an.state === 'graze' ? 2 + 4.5 * an.rnd() : 0.8 + 1.6 * an.rnd());
   }
   function live(dt, t) {
     HERDS.forEach(function (H) {
@@ -795,15 +803,34 @@
       }
     });
     animals.forEach(function (an) {
-      if (an.state === 'walk') {
-        var K = KIND[an.kind], dx = an.tx - an.x, dy = an.ty - an.y, dist = Math.hypot(dx, dy);
-        // Its pace in its own heights, so the far ones walk as slowly as
-        // they are small.
-        var sp = K.pace * K.h * an.size * an.y * 1.4 * dt;
-        if (dist <= sp || t > an.until) { an.x = an.tx; an.y = an.ty; an.state = 'graze'; an.until = t; }
-        else { an.x += dx / dist * sp; an.y += dy / dist * sp; if (Math.abs(dx) > dist * 0.2) an.face = dx > 0 ? 1 : -1; }
+      var K = KIND[an.kind], unit = K.h * an.size * an.y * 1.4;
+      // Its pace in its own heights, so the far ones walk as slowly as they
+      // are small; it gathers speed and slows down, never a slide at full
+      // pace from a standstill.
+      var want = walking(an) ? K.pace * unit * (an.state === 'trot' ? 2.3 : 1) : 0;
+      an.sp += (want - an.sp) * Math.min(1, dt * 2.4);
+      if (walking(an)) {
+        var dx = an.tx - an.x, dy = an.ty - an.y, dist = Math.hypot(dx, dy);
+        // It turns toward where it goes a little at a time, its path
+        // wandering as an animal's does.
+        var dh = Math.atan2(dy, dx) - an.hd;
+        dh = Math.atan2(Math.sin(dh), Math.cos(dh));
+        an.hd += Math.max(-1.2, Math.min(1.2, dh)) * Math.min(1, dt * 2.2) + Math.sin(t * 0.9 + an.bob) * 0.12 * dt;
+        if (dist < unit * 0.25 || t > an.until) { an.state = 'graze'; an.until = t + 1 + 3 * an.rnd(); }
       }
-      if (t >= an.until && an.state !== 'walk') think(an, t);
+      if (an.sp > 1e-7) {
+        var nx = an.x + Math.cos(an.hd) * an.sp * dt, ny = an.y + Math.sin(an.hd) * an.sp * dt;
+        if (allowed(an.herd, nx, ny)) { an.x = nx; an.y = ny; }
+        else { an.sp = 0; an.state = 'graze'; an.until = t + 1.5; }
+        // Its steps follow its speed: a walk, faster at a trot.
+        an.phase += dt * 6.283 * K.step * Math.min(2.6, an.sp / (K.pace * unit + 1e-9));
+      }
+      // It faces the way it goes, and turns round through a narrow frame
+      // rather than in one jump.
+      var c = Math.cos(an.hd);
+      if (an.sp > 1e-7 && Math.abs(c) > 0.3 && (c > 0 ? 1 : -1) !== an.face) { an.face = c > 0 ? 1 : -1; an.flip = 0; }
+      if (an.flip < 1) an.flip = Math.min(1, an.flip + dt * 3.5);
+      if (t >= an.until && !walking(an)) think(an, t);
     });
   }
   // Where a fall's spray rises: each meeting of two streams that falls.
@@ -853,12 +880,27 @@
       list.forEach(function (an) {
         var K = KIND[an.kind], p = at(an.x, an.y), h = K.h * an.size * an.y * R.h;
         var r = SPR[an.kind][an.state === 'graze' ? an.graze : an.walk], w = h * r[2] / r[3];
-        var bob = an.state === 'walk' ? Math.abs(Math.sin(clock * 6 + an.bob)) * h * 0.035 : 0;
+        var gait = Math.min(1, an.sp / (K.pace * K.h * an.size * an.y * 1.4 + 1e-9));
+        var sw = Math.sin(an.phase), bob = Math.abs(sw) * h * 0.05 * gait;
+        // Standing, it breathes; grazing, its head works at the grass.
+        var idle = (1 - gait) * Math.sin(clock * (an.state === 'graze' ? 2.6 : 1.3) + an.bob) * h * 0.012;
+        // Turning round, the old side narrows to an edge and the new widens.
+        var side = an.flip < 0.5 ? -an.face : an.face, wide = Math.max(0.12, Math.abs(Math.cos(an.flip * Math.PI)));
         var T = tex(r);
-        if (r[4] !== an.face) { var t0 = T[0]; T[0] = T[2]; T[2] = t0; }
-        var y = p[1] - bob, far = Math.max(0, 0.55 - an.y) * 0.9;
-        quad([p[0] - w / 2, y - h, p[0] + w / 2, y - h, p[0] + w / 2, y, p[0] - w / 2, y], T,
-          [1 - far * 0.25 + far * 0.2, 0.97 - far * 0.24 + far * 0.22, 0.9 - far * 0.22 + far * 0.22], 1);
+        if (r[4] !== side) { var t0 = T[0]; T[0] = T[2]; T[2] = t0; }
+        var far = Math.max(0, 0.55 - an.y) * 0.9;
+        var col = [1 - far * 0.25 + far * 0.2, 0.97 - far * 0.24 + far * 0.22, 0.9 - far * 0.22 + far * 0.22];
+        var x0 = p[0] - w * wide / 2, x1 = p[0] + w * wide / 2, xm = p[0], y = p[1];
+        var top = y - h - bob - idle, mid = y - h * 0.38 - bob * 0.6;
+        // The body, rocking a little on each step.
+        var pitch = Math.sin(an.phase * 2) * h * 0.025 * gait * side;
+        var vk = T[1] + (T[3] - T[1]) * 0.62, um = (T[0] + T[2]) / 2;
+        quad([x0, top + pitch, x1, top - pitch, x1, mid, x0, mid], [T[0], T[1], T[2], vk], col, 1);
+        // The legs: the hind and the fore swing apart and together, a
+        // walk's scissor, their feet on the ground.
+        var swing = sw * w * wide * 0.07 * gait;
+        quad([x0, mid, xm, mid, xm + swing, y, x0 + swing, y], [T[0], vk, um, T[3]], col, 1);
+        quad([xm, mid, x1, mid, x1 - swing, y, xm - swing, y], [um, vk, T[2], T[3]], col, 1);
       });
     }
     // The spray over each fall, rising and drifting with the wind.
@@ -1199,6 +1241,36 @@
   // ground would; the pointer leans it, and while the scene lives it
   // sways a little.
   var lean = [0, 0], leanTo = [0, 0], rest = null;
+  /* The ground follows a travel (the operator's review of 8 November 2026):
+   * as the river carries the reader up or down the valley, the photograph
+   * glides the way the drawing goes, slower, as distant ground would, its
+   * near parts more than its far ones through the relief. Then, over the
+   * next seconds, it settles back, so that it never runs out of picture. */
+  var drift = { x: 0, y: 0 }, glide = null, driftAt = 0;
+  var GLIDE = 0.45, ROOM = 0.12, SETTLE = 6;
+  function driftNow() {
+    var now = performance.now();
+    if (glide) {
+      var t = Math.min(1, (now - glide.t0) / glide.ms), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      drift.x = glide.x0 + (glide.x1 - glide.x0) * e;
+      drift.y = glide.y0 + (glide.y1 - glide.y0) * e;
+      if (t >= 1) glide = null;
+    } else if ((drift.x || drift.y) && running) {
+      var f = Math.pow(0.5, Math.min(0.25, (now - driftAt) / 1000) / SETTLE);
+      drift.x *= f; drift.y *= f;
+      if (Math.abs(drift.x) < 0.3 && Math.abs(drift.y) < 0.3) { drift.x = 0; drift.y = 0; }
+    }
+    driftAt = now;
+    return drift;
+  }
+  function glideBy(dx, dy, ms) {
+    if (reduce || cut || paused || !running) return;
+    var d = driftNow(), lx = cw * ROOM, ly = ch * ROOM;
+    glide = {
+      x0: d.x, y0: d.y, t0: performance.now(), ms: Math.max(300, ms || 560),
+      x1: Math.max(-lx, Math.min(lx, d.x + dx * GLIDE)), y1: Math.max(-ly, Math.min(ly, d.y + dy * GLIDE))
+    };
+  }
   if (!reduce && !cut) {
     stage.addEventListener('pointermove', function (ev) {
       var r = stage.getBoundingClientRect();
@@ -1220,7 +1292,9 @@
     var px = (W - pw) / 2 - (cx - rest.x) * rest.k * dpr * (z - 1) / 3, py = (H - ph) / 2 - (cy - rest.y) * rest.k * dpr * (z - 1) / 3;
     lean[0] += (leanTo[0] - lean[0]) * (moving ? 0.08 : 1); lean[1] += (leanTo[1] - lean[1]) * (moving ? 0.08 : 1);
     var sway = moving ? Math.sin(clock * 0.27) : 0;
-    var camx = (lean[0] * 14 + sway * 5) * dpr, camy = (lean[1] * 9) * dpr;
+    var dr = driftNow(), deep = function (v) { return Math.max(-36, Math.min(36, v * 0.5)); };
+    px += dr.x * dpr; py += dr.y * dpr;
+    var camx = (lean[0] * 14 + sway * 5 + deep(dr.x)) * dpr, camy = (lean[1] * 9 + deep(dr.y)) * dpr;
     gl.viewport(0, 0, W, H);
     gl.useProgram(prog);
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -1376,8 +1450,14 @@
   window.axgfRiverScene = {
     // A new layout at rest: the banks and the glints follow it.
     layout: function (L) { travelling = false; layout(L); if (!running) draw(false); },
-    // A travel begins: the glints wait for the river to come to rest.
-    travel: function () { travelling = true; stage.classList.remove('rv-rivers'); if (!running) draw(false); },
+    // A travel begins: the glints wait for the river to come to rest, and
+    // the ground glides the way the drawing goes (`shift`, in CSS pixels,
+    // over `ms`).
+    travel: function (shift, ms) {
+      travelling = true; stage.classList.remove('rv-rivers');
+      if (shift) glideBy(shift.x, shift.y, ms);
+      if (!running) draw(false);
+    },
     // A line's course, as the scene draws it: the lit route follows it.
     edge: RIVERS ? coursePath : null,
     // The window moved (zoom, pan, resize): draw it now if nothing runs.

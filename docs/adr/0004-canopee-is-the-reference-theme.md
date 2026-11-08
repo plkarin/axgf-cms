@@ -732,3 +732,42 @@ makes room for them and the water that belongs to the valley:
 
 Measured as in §17: about 150 ms a frame with software rendering, the
 costly tests made only where a crown, a clearing or rock can be.
+
+## 19. The ground glides, the herds walk (the operator's review of 8 November 2026)
+
+Three things were wrong in the living valley: the ground stood still while
+the river carried the reader up or down it; the animals stood too large
+for the landscape; and they slid like pawns.
+
+- **The ground follows a travel.** `river.js` tells the scene how the
+  drawing moves on the screen as it travels (`travel(shift, ms)`). The
+  photograph glides the same way:
+  - at 45 % of the drawing's move, as distant ground would;
+  - its near parts more than its far ones, through the depth map, by up to
+    36 pixels more;
+  - eased over the travel's own time.
+
+  It then settles back over the next seconds (half way in 6 s), so that it
+  never runs out of picture. It is drawn 1.3 times the stage, where it was
+  1.1, for that room; a glide goes no further than 12 % of the stage.
+  Nothing glides when the scene holds still (§11).
+- **The herds are smaller and fewer:** about 0.57 of their height (a red
+  deer 2.6 % of the photograph's height at its foot, where it was 4.5 %),
+  and four herds of three or four, thirteen animals where there were
+  thirty-one.
+- **They walk:**
+  - they gather speed and slow down, and turn toward where they go a
+    little at a time, on a wandering path;
+  - their steps follow their speed, now and then a trot;
+  - each is drawn as its body and two halves of its legs. The hind and the
+    fore swing apart and together, the body bobs and rocks on each step,
+    and its feet stay on the ground;
+  - turning round, the old side narrows to an edge and the new one widens;
+  - standing, it breathes; grazing, its head works at the grass;
+  - the herd's others keep near its leader, so that the herd moves as one.
+
+Measured as in §17, in Chromium with software rendering: the corner of the
+stage, where only the photograph is, changes progressively through a
+travel, where it changed once before; such a machine still falls back to a
+still ground after a travel, as it did before.
+

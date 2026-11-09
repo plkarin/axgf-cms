@@ -16,6 +16,10 @@
  * running with its flow, white where it meets and falls, with the sky in it.
  * The light is the reader's hour: dawn, day, dusk, a night under the moon.
  *
+ * One moves in it as on a map — drag the land, the wheel or two fingers to
+ * come closer, the right button to turn — or with the pad in its corner;
+ * the camera flies high over the valley and never into the ground.
+ *
  * Decoration over the river's own data: without WebGL 2, or if the world
  * cannot be read, the river and its photograph stay as they were
  * (river-scene.js). prefers-reduced-motion, "Cut" and the river's pause
@@ -323,7 +327,11 @@
       // aMix: the forest's thickness, the path, the water near, the shelter.
       fs: HEAD + NOISE + LIT + [
         'in vec3 vPos; in vec3 vNor; in vec4 vMix; uniform float uWater; uniform float uSnow;',
-        'uniform sampler2D uLevel; uniform vec2 uOrigin; uniform vec2 uSize; uniform float uN; out vec4 o;',
+        'uniform sampler2D uLevel; uniform vec2 uOrigin; uniform vec2 uSize; uniform float uN; uniform float uTime; out vec4 o;',
+        'float caustic(vec2 p, float time) { vec2 i = p; float c = 1.0;',
+        '  for (int k = 0; k < 4; k++) { float t = time * (1.0 - 3.5 / float(k + 1)); i = p + vec2(cos(t - i.x) + sin(t + i.y), sin(t - i.y) + cos(t + i.x));',
+        '    c += 1.0 / length(vec2(p.x / (sin(i.x + t) / 0.005), p.y / (cos(i.y + t) / 0.005))); }',
+        '  c = 1.17 - pow(c / 4.0, 1.4); return pow(abs(c), 8.0); }',
         'void main() {',
         '  vec3 n0 = normalize(vNor); vec3 n = n0; vec2 p = vPos.xz; float dist = distance(uCam, vPos);',
         '  if (dist < 220.0) {',
@@ -349,13 +357,16 @@
         '  float sub = texture(uLevel, ((p - uOrigin) / uSize * (uN - 1.0) + 0.5) / uN).r - vPos.y, near = smoothstep(0.02, 0.2, vMix.z);',
         '  c = mix(c, c * vec3(0.66, 0.68, 0.60), near * (1.0 - smoothstep(0.0, 0.8, -sub + (g3 - 0.5) * 0.2)) * 0.85);',
         '  vec3 bed = mix(vec3(0.33, 0.31, 0.26), vec3(0.55, 0.51, 0.43), smoothstep(0.3, 0.7, vnoise(p * 4.3) * 0.6 + vnoise(p * 9.7) * 0.4)) * (0.82 + g3 * 0.22);',
-        '  c = mix(c, bed, near * smoothstep(-0.03, 0.12, sub));',
+        '  float under = near * smoothstep(-0.03, 0.12, sub);',
+        '  c = mix(c, bed, under);',
         '  float shore = 1.0 - smoothstep(uWater + 0.1, uWater + 1.6, vPos.y + g3 * 0.4);',
         '  c = mix(c, vec3(0.72, 0.66, 0.52) * (0.85 + g3 * 0.2), shore);',
         '  c = mix(c, vec3(0.32, 0.33, 0.27), 1.0 - smoothstep(uWater - 2.5, uWater - 0.2, vPos.y));',
         '  float snow = smoothstep(uSnow, uSnow + 18.0, vPos.y + (g1 - 0.5) * 22.0) * (1.0 - smoothstep(0.5, 0.8, slope));',
         '  c = mix(c, vec3(0.93, 0.95, 0.98), snow);',
-        '  vec3 col = lit(c, n, shade(vPos, n0), vMix.w * (1.0 - vMix.x * 0.3));',
+        '  float sh = shade(vPos, n0);',
+        '  vec3 col = lit(c, n, sh, vMix.w * (1.0 - vMix.x * 0.3));',
+        '  if (under > 0.01) col += lin(vec3(0.92, 0.96, 0.86)) * uSunCol * caustic(p * 1.3, uTime * 0.5) * 0.45 * under * (1.0 - smoothstep(0.3, 2.2, sub)) * sh * uStrength;',
         '  o = vec4(fogged(finish(col), vPos), 1.0); }'
       ].join('\n')
     },
@@ -365,7 +376,7 @@
       // aFlow: the flow along x and z, the foam.
       fs: HEAD + NOISE + LIT + [
         'in vec3 vPos; in vec4 vFlow; uniform float uTime; uniform vec3 uZenith; uniform vec3 uHorizon; uniform float uNight;',
-        'uniform sampler2D uHeight; uniform vec2 uOrigin; uniform vec2 uSize; uniform float uN; out vec4 o;',
+        'uniform sampler2D uHeight; uniform sampler2D uCover; uniform vec2 uOrigin; uniform vec2 uSize; uniform float uN; out vec4 o;',
         'vec2 slope2(vec2 uv) { float a = vnoise(uv), b = vnoise(uv + vec2(0.07, 0.0)), c = vnoise(uv + vec2(0.0, 0.07)); return vec2(a - b, a - c) / 0.07; }',
         'vec2 waves(vec2 uv) { return slope2(uv) * 0.5 + slope2(uv * 2.3 + 5.1) * 0.3 + slope2(uv * 5.3 + 9.7) * 0.16; }',
         'void main() {',
@@ -379,12 +390,16 @@
         '  float calm = (0.55 + min(speed, 1.5) * 0.3) * (1.0 - smoothstep(120.0, 700.0, dist));',
         '  vec3 n = normalize(vec3(-g.x * 0.16 * calm, 1.0, -g.y * 0.16 * calm));',
         '  vec3 v = normalize(uCam - vPos);',
-        '  float fr = 0.02 + 0.98 * pow(1.0 - max(dot(n, v), 0.0), 5.0);',
+        '  float fr = 0.06 + 0.94 * pow(1.0 - max(dot(n, v), 0.0), 5.0);',
         '  vec3 r = reflect(-v, n);',
         '  vec3 skyc = lin(mix(uHorizon, uZenith, smoothstep(-0.02, 0.6, r.y)));',
-        '  vec3 body = mix(lin(vec3(0.30, 0.35, 0.24)), lin(vec3(0.035, 0.12, 0.13)), smoothstep(0.0, 2.0, depth));',
+        // Low down it mirrors the banks and their trees, not the sky.
+        '  float e = 3.0 / uN, trees = max(max(texture(uCover, uvh + vec2(e, 0.0)).r, texture(uCover, uvh - vec2(e, 0.0)).r), max(texture(uCover, uvh + vec2(0.0, e)).r, texture(uCover, uvh - vec2(0.0, e)).r));',
+        '  vec3 land = lin(mix(vec3(0.32, 0.36, 0.25), vec3(0.09, 0.15, 0.08), trees)) * (uSky + uSunCol * 0.45 * uStrength);',
+        '  vec3 mirror = mix(land, skyc, smoothstep(0.03, 0.3, r.y + (1.0 - trees) * 0.1));',
+        '  vec3 body = mix(lin(vec3(0.30, 0.35, 0.24)), lin(vec3(0.06, 0.17, 0.18)), smoothstep(0.0, 2.0, depth));',
         '  body *= uSky * 1.3 + uSunCol * 0.55 * uStrength;',
-        '  vec3 c = mix(body, skyc * 1.15, fr);',
+        '  vec3 c = mix(body, mirror * 1.1, fr);',
         '  float sh = shade(vPos, vec3(0.0, 1.0, 0.0));',
         '  float hn = max(dot(n, normalize(uDir + v)), 0.0);',
         '  c += uSunCol * (pow(hn, 500.0) * 9.0 + pow(hn, 70.0) * 0.3) * sh * uStrength;',
@@ -400,11 +415,12 @@
     solid: {
       vs: HEAD + [
         'in vec3 aPos; in vec3 aNor; in vec3 aCol; in vec4 aInst; in vec2 aExtra;',
-        'uniform mat4 uVP; uniform float uTime; uniform float uMode; uniform vec3 uCam; uniform vec2 uAt; out vec3 vPos; out vec3 vNor; out vec3 vCol; out float vLeaf;',
+        'uniform mat4 uVP; uniform float uTime; uniform float uMode; uniform vec3 uCam; uniform vec2 uAt;',
+        'out vec3 vPos; out vec3 vNor; out vec3 vCol; out float vLeaf; out float vKind;',
         'float turn(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z) * 6.2831853; }',
         'void main() {',
         '  float s = aInst.w; vec3 p = aPos * s; vec3 nn = aNor; vec3 base = aInst.xyz; float yaw = turn(aInst.xz);',
-        '  vec3 col = aCol; vLeaf = 0.0;',
+        '  vec3 col = aCol; vLeaf = 0.0; vKind = uMode;',
         '  if (uMode > 1.5) {',
         // The herds wander a little and graze.
         '    float ph = aExtra.y, t = uTime * 0.05 + ph;',
@@ -428,17 +444,69 @@
         '  vPos = base + p; vNor = nn; vCol = col; gl_Position = uVP * vec4(vPos, 1.0); }'
       ].join('\n'),
       fs: HEAD + NOISE + LIT + [
-        'in vec3 vPos; in vec3 vNor; in vec3 vCol; in float vLeaf; out vec4 o;',
+        'in vec3 vPos; in vec3 vNor; in vec3 vCol; in float vLeaf; in float vKind; out vec4 o;',
         'void main() {',
-        '  vec3 n = normalize(vNor); float g = vnoise(vPos.xz * 1.7 + vPos.y * 2.3) * 0.18 + 0.91;',
+        '  vec3 n = normalize(vNor), base = vCol; float g = vnoise(vPos.xz * 1.7 + vPos.y * 2.3) * 0.18 + 0.91;',
+        // Stone: its grain and veins, lichen on what faces the sky.
+        '  if (vKind < 0.5) {',
+        '    g = 0.72 + 0.46 * (vnoise(vPos.xz * 2.7 + vPos.y * 4.1) * 0.6 + vnoise(vPos.xz * 7.3 - vPos.y * 9.0) * 0.4);',
+        '    base = mix(base, vec3(0.52, 0.54, 0.30), smoothstep(0.6, 0.78, vnoise(vPos.xz * 5.0 + vPos.y * 3.0)) * smoothstep(0.2, 0.7, n.y) * 0.65);',
+        '    n = normalize(n + (vec3(vnoise(vPos.xz * 4.0), 0.5, vnoise(vPos.zx * 4.0 + 3.0)) - 0.5) * 0.7);',
+        '  }',
         '  if (vLeaf > 0.5) { vec2 q = vPos.xz * 2.4 + vec2(vPos.y * 1.9, -vPos.y * 1.3);',
         '    n = normalize(n + (vec3(vnoise(q), vnoise(q + 5.2), vnoise(q + 9.1)) - 0.5) * 1.1); g *= 0.72 + 0.4 * vnoise(q * 1.8 + 3.3); }',
         '  float sh = shade(vPos, n);',
-        '  vec3 col = lit(vCol * g, n, sh, 0.62 + 0.38 * smoothstep(-0.4, 0.7, n.y));',
+        '  vec3 col = lit(base * g, n, sh, 0.62 + 0.38 * smoothstep(-0.4, 0.7, n.y));',
         // The sun through the leaves, when it is behind them.
         '  vec3 v = normalize(vPos - uCam);',
         '  col += lin(vCol) * uSunCol * pow(max(dot(v, uDir), 0.0), 5.0) * 0.5 * vLeaf * sh * uStrength;',
         '  o = vec4(fogged(finish(col), vPos), 1.0); }'
+      ].join('\n')
+    },
+    leaf: {
+      vs: HEAD + [
+        'in vec3 aPos; in vec3 aCorner; in vec3 aNor; in vec3 aCol; in vec4 aInst; in vec2 aExtra;',
+        'uniform mat4 uVP; uniform float uTime; uniform vec3 uCam; uniform vec2 uAt; uniform vec3 uRight; uniform vec3 uUp;',
+        'out vec3 vPos; out vec3 vNor; out vec3 vCol; out vec2 vUV; out float vSeed;',
+        'float turn(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z) * 6.2831853; }',
+        'void main() {',
+        '  float s = aInst.w; vec3 base = aInst.xyz; float yaw = turn(aInst.xz), c = cos(yaw), si = sin(yaw);',
+        '  vec3 p = aPos * s; p = vec3(c * p.x + si * p.z, p.y, -si * p.x + c * p.z);',
+        '  vNor = vec3(c * aNor.x + si * aNor.z, aNor.y, -si * aNor.x + c * aNor.z);',
+        '  vec2 ab = uAt - uCam.xz; float t = clamp(dot(base.xz - uCam.xz, ab) / max(dot(ab, ab), 1.0), 0.0, 1.0);',
+        '  float keep = smoothstep(3.0, 8.0, distance(base.xz, uCam.xz + ab * t) + (1.0 - step(t, 0.93)) * 99.0);',
+        '  float sway = max(aPos.y - 1.0, 0.0) * s, gust = 0.55 + 0.45 * sin(uTime * 0.31 + base.x * 0.011 + base.z * 0.007);',
+        '  p.x += sin(uTime * 1.3 + base.x * 0.07 + base.z * 0.05) * 0.035 * sway * gust;',
+        '  p.z += cos(uTime * 1.05 + base.z * 0.06) * 0.022 * sway * gust;',
+        '  float seed = fract(sin(dot(aPos, vec3(12.9898, 78.233, 37.719))) * 43758.5453);',
+        '  float roll = seed * 6.2831853 + sin(uTime * 2.3 + seed * 30.0 + base.x) * 0.07 * gust;',
+        '  vec2 k = vec2(cos(roll) * aCorner.x - sin(roll) * aCorner.y, sin(roll) * aCorner.x + cos(roll) * aCorner.y);',
+        '  vPos = base + (p + (uRight * k.x + uUp * k.y) * aCorner.z * s) * keep;',
+        '  vUV = aCorner.xy * 0.5 + 0.5; vSeed = seed;',
+        '  vCol = mix(aCol, aCol * vec3(1.3, 1.12, 0.7), aExtra.y * 0.7) * (0.82 + aExtra.y * 0.36);',
+        '  gl_Position = uVP * vec4(vPos, 1.0); }'
+      ].join('\n'),
+      fs: HEAD + NOISE + LIT + [
+        'in vec3 vPos; in vec3 vNor; in vec3 vCol; in vec2 vUV; in float vSeed; uniform float uLeafKind; out vec4 o;',
+        'void main() {',
+        '  vec2 q = vUV - 0.5; float r = length(q) * 2.0, a = atan(q.y, q.x), w = fwidth(r) + 0.01, edge, hole;',
+        '  if (uLeafKind < 0.5) {',
+        // A fir's spray: needles out from its twig.
+        '    edge = (0.5 + 0.5 * pow(abs(sin(a * 6.0 + vSeed * 20.0)), 0.7)) * (0.8 + 0.2 * vnoise(vUV * 9.0 + vSeed * 31.0));',
+        '    hole = smoothstep(0.2, 0.3, vnoise(vUV * 15.0 + vSeed * 17.0) + (1.0 - r) * 0.7);',
+        '  } else {',
+        // A broadleaf's clump: leaves, and the light between them.
+        '    edge = 0.74 + 0.26 * vnoise(vec2(a * 2.4 + vSeed * 40.0, vSeed * 9.0));',
+        '    hole = smoothstep(0.26, 0.36, vnoise(vUV * 8.5 + vSeed * 23.0) + (1.0 - r) * 0.55);',
+        '  }',
+        '  float m = (1.0 - smoothstep(edge - w, edge + w, r)) * hole;',
+        '  if (m < 0.04) discard;',
+        '  vec3 jit = vec3(vnoise(vUV * 6.0 + vSeed * 9.0), vnoise(vUV * 6.0 + vSeed * 4.0 + 2.0), vnoise(vUV * 6.0 + vSeed * 5.0 + 7.0)) - 0.5;',
+        '  vec3 n0 = normalize(vNor), n = normalize(n0 + jit * 0.9);',
+        '  float sh = shade(vPos, n0);',
+        '  vec3 col = lit(vCol * (0.72 + 0.4 * vnoise(vUV * 11.0 + vSeed * 13.0)), n, sh, 0.6 + 0.4 * r);',
+        '  col += lin(vCol) * uSunCol * pow(max(dot(normalize(vPos - uCam), uDir), 0.0), 4.0) * 0.55 * sh * uStrength;',
+        '  o = vec4(fogged(finish(col), vPos), m); }'
       ].join('\n')
     },
     grass: {
@@ -455,7 +523,7 @@
         '  vec2 g = vec2(texture(uHeight, uv + vec2(e, 0.0)).r - texture(uHeight, uv - vec2(e, 0.0)).r,',
         '                texture(uHeight, uv + vec2(0.0, e)).r - texture(uHeight, uv - vec2(0.0, e)).r) * (uN - 1.0) / (2.0 * uSize);',
         '  vec4 cover = texture(uCover, uv);',
-        '  float k = (1.0 - smoothstep(0.75, 1.0, max(abs(cell.x), abs(cell.y)) / (uSide * 0.5))) * (1.0 - smoothstep(70.0, 130.0, distance(uCam.xz, xz)));',
+        '  float k = (1.0 - smoothstep(0.75, 1.0, max(abs(cell.x), abs(cell.y)) / (uSide * 0.5))) * (1.0 - smoothstep(100.0, 180.0, distance(uCam.xz, xz)));',
         '  k *= (1.0 - smoothstep(0.32, 0.55, length(g))) * (1.0 - smoothstep(0.3, 0.6, cover.r)) * (1.0 - smoothstep(0.15, 0.45, cover.g));',
         '  k *= (1.0 - smoothstep(0.1, 0.45, cover.b)) * step(uWater + 0.5, y) * step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);',
         '  float s = (0.5 + hash(base + 3.7) * 0.75) * k;',
@@ -640,29 +708,79 @@
       tri(m, p.p, q.p, under, [0, y0 + h * 0.5, 0], scaled(col, 0.45), [[p.n[0], -0.6, p.n[2]], [q.n[0], -0.6, q.n[2]], [0, -1, 0]]);
     }
   }
-  var BARK = [0.30, 0.22, 0.15];
-  function conifer(far) {
-    var m = mesh(), g = [0.11, 0.21, 0.13];
-    if (far) { tier(m, 0.9, 6.9, 1.7, 7, g); return m; }
-    trunk(m, 2.0, 0.24, 0.12, 6, BARK);
-    tier(m, 1.0, 3.9, 1.9, 12, g);
-    tier(m, 2.3, 5.0, 1.5, 11, scaled(g, 1.08));
-    tier(m, 3.5, 6.0, 1.12, 10, scaled(g, 1.16));
-    tier(m, 4.6, 7.0, 0.72, 8, scaled(g, 1.24));
+  // A limb: a tapering post from one point to another.
+  function limb(m, a, b, r0, r1, sides, col) {
+    var d = norm([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+    var u = norm(Math.abs(d[1]) < 0.9 ? [d[2], 0, -d[0]] : [1, 0, 0]);
+    var v = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
+    var mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+    function ring(t) { return [Math.cos(t) * u[0] + Math.sin(t) * v[0], Math.cos(t) * u[1] + Math.sin(t) * v[1], Math.cos(t) * u[2] + Math.sin(t) * v[2]]; }
+    for (var i = 0; i < sides; i++) {
+      var n0 = ring(i / sides * Math.PI * 2), n1 = ring((i + 1) / sides * Math.PI * 2);
+      var a0 = [a[0] + n0[0] * r0, a[1] + n0[1] * r0, a[2] + n0[2] * r0], a1 = [a[0] + n1[0] * r0, a[1] + n1[1] * r0, a[2] + n1[2] * r0];
+      var b0 = [b[0] + n0[0] * r1, b[1] + n0[1] * r1, b[2] + n0[2] * r1], b1 = [b[0] + n1[0] * r1, b[1] + n1[1] * r1, b[2] + n1[2] * r1];
+      tri(m, a0, b0, a1, mid, col, [n0, n0, n1]);
+      tri(m, a1, b0, b1, mid, col, [n1, n0, n1]);
+    }
+  }
+  var BARK = [0.30, 0.22, 0.15], FIR = [0.09, 0.17, 0.11], LEAF = [0.20, 0.30, 0.12];
+  function firTrunk() { var m = mesh(); trunk(m, 6.8, 0.26, 0.05, 7, BARK); return m; }
+  function leafTrunk() {
+    var m = mesh();
+    trunk(m, 3.0, 0.34, 0.2, 7, BARK);
+    limb(m, [0, 2.6, 0], [1.0, 4.2, 0.5], 0.16, 0.06, 5, BARK);
+    limb(m, [0, 2.8, 0], [-0.9, 4.5, -0.4], 0.15, 0.06, 5, BARK);
+    limb(m, [0, 2.9, 0], [0.2, 5.1, -0.8], 0.13, 0.05, 5, BARK);
     return m;
   }
-  function broadleaf(far) {
-    var m = mesh(), g = [0.23, 0.33, 0.14];
-    if (far) {
-      trunk(m, 2.4, 0.3, 0.2, 4, BARK);
-      crown(m, [0, 3.9, 0], 2.3, [1.1, 0.9, 1.1], g, 0, 0.2);
-      return m;
+  // Foliage: tufts the camera always sees whole, each a card round its own
+  // centre whose outline — needles or leaves — the shader cuts.
+  function foliage() { return { p: [], k: [], n: [], c: [] }; }
+  function tuftAt(f, at, size, nr, col) {
+    [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]].forEach(function (q) {
+      f.p.push(at[0], at[1], at[2]);
+      f.k.push(q[0], q[1], size);
+      f.n.push(nr[0], nr[1], nr[2]);
+      f.c.push(col[0], col[1], col[2]);
+    });
+  }
+  // A fir: whorls of sprays round the trunk, wide below, narrowing to the
+  // top, darker inside.
+  function firFoliage() {
+    var f = foliage();
+    for (var y = 1.3; y < 7.1; y += 0.5) {
+      var t = (y - 1.0) / 6.4, R = 2.05 * Math.pow(1 - t, 1.05) + 0.12, count = Math.max(3, Math.round(R * 4.2)), a0 = rnd() * 6.283;
+      for (var i = 0; i < count; i++) {
+        var a = a0 + i / count * 6.283 + (rnd() - 0.5) * 0.4, rr = R * (0.68 + rnd() * 0.32);
+        tuftAt(f, [Math.cos(a) * rr, y - 0.12 * rr, Math.sin(a) * rr], 0.42 + R * 0.38, norm([Math.cos(a), 0.55, Math.sin(a)]),
+          scaled(FIR, 0.82 + 0.3 * t + rnd() * 0.12));
+      }
+      tuftAt(f, [(rnd() - 0.5) * R * 0.5, y + 0.1, (rnd() - 0.5) * R * 0.5], 0.4 + R * 0.3, [0, 1, 0], scaled(FIR, 0.62));
     }
-    trunk(m, 2.8, 0.32, 0.16, 6, BARK);
-    crown(m, [0, 3.7, 0], 2.0, [1.15, 0.85, 1.1], g, 1, 0.28);
-    crown(m, [1.1, 4.2, 0.5], 1.35, [1, 0.9, 1], scaled(g, 1.08), 1, 0.3);
-    crown(m, [-0.9, 4.5, -0.4], 1.3, [1, 0.9, 1], scaled(g, 1.04), 1, 0.3);
-    crown(m, [0.2, 5.1, -0.8], 1.1, [1, 0.9, 1], scaled(g, 1.14), 1, 0.3);
+    tuftAt(f, [0, 7.25, 0], 0.5, [0, 1, 0], scaled(FIR, 1.15));
+    return f;
+  }
+  // A broadleaf: clumps of leaves over a few rounded masses, lighter on
+  // top and on the outside.
+  function leafFoliage() {
+    var f = foliage();
+    [[[0, 3.9, 0], [2.1, 1.6, 2.0], 30], [[1.2, 4.5, 0.6], [1.4, 1.2, 1.4], 14], [[-1.0, 4.7, -0.5], [1.35, 1.15, 1.3], 14],
+      [[0.2, 5.4, -0.9], [1.15, 1.0, 1.15], 10], [[-0.4, 3.4, 1.0], [1.2, 1.0, 1.2], 9]].forEach(function (e) {
+      for (var i = 0; i < e[2]; i++) {
+        var d = norm([rnd() * 2 - 1, rnd() * 2 - 0.7, rnd() * 2 - 1]), depth = 0.62 + rnd() * 0.38;
+        var at = [e[0][0] + d[0] * e[1][0] * depth, e[0][1] + d[1] * e[1][1] * depth, e[0][2] + d[2] * e[1][2] * depth];
+        tuftAt(f, at, 0.85 + rnd() * 0.55, norm([d[0] / e[1][0], d[1] / e[1][1], d[2] / e[1][2]]),
+          scaled(LEAF, (0.66 + 0.3 * (d[1] * 0.5 + 0.5)) * (0.72 + 0.28 * depth) * (0.92 + rnd() * 0.16)));
+      }
+    });
+    return f;
+  }
+  // Far away, and for the sun's shadows: a cone, a ball.
+  function farFir() { var m = mesh(); tier(m, 0.9, 6.9, 1.8, 7, FIR); return m; }
+  function farLeaf() {
+    var m = mesh();
+    trunk(m, 2.4, 0.3, 0.2, 4, BARK);
+    crown(m, [0, 4.0, 0], 2.4, [1.1, 0.85, 1.1], LEAF, 0, 0.2);
     return m;
   }
   function boulder() {
@@ -675,26 +793,26 @@
     });
     return m;
   }
-  function box(m, x, y, z, w, h, d, col) {
-    var X = [x - w / 2, x + w / 2], Y = [y, y + h], Z = [z - d / 2, z + d / 2], at = [x, y + h / 2, z];
-    var c = function (i, j, k) { return [X[i], Y[j], Z[k]]; };
-    [[c(0, 0, 1), c(1, 0, 1), c(1, 1, 1), c(0, 1, 1)], [c(1, 0, 0), c(0, 0, 0), c(0, 1, 0), c(1, 1, 0)],
-      [c(0, 0, 0), c(0, 0, 1), c(0, 1, 1), c(0, 1, 0)], [c(1, 0, 1), c(1, 0, 0), c(1, 1, 0), c(1, 1, 1)],
-      [c(0, 1, 1), c(1, 1, 1), c(1, 1, 0), c(0, 1, 0)]].forEach(function (q) {
-      tri(m, q[0], q[1], q[2], at, col);
-      tri(m, q[0], q[2], q[3], at, col);
-    });
+  // A rounded mass, its colour from its back to its belly.
+  function ellipsoid(m, at, r, top, under) {
+    var ico = icosphere(1);
+    var pt = ico.v.map(function (d) { return [at[0] + d[0] * r[0], at[1] + d[1] * r[1], at[2] + d[2] * r[2]]; });
+    var nr = ico.v.map(function (d) { return norm([d[0] / r[0], d[1] / r[1], d[2] / r[2]]); });
+    var cl = nr.map(function (q) { return mix(under, top, smooth(-0.5, 0.3, q[1])); });
+    ico.f.forEach(function (q) { tri(m, pt[q[0]], pt[q[1]], pt[q[2]], at, [cl[q[0]], cl[q[1]], cl[q[2]]], [nr[q[0]], nr[q[1]], nr[q[2]]]); });
   }
+  // A deer: its body, neck and head, ears, tail and four legs.
   function beast() {
-    var m = mesh(), fur = [0.52, 0.38, 0.24], dark = [0.24, 0.18, 0.12], light = [0.82, 0.74, 0.62];
-    box(m, 0, 0.64, 0, 0.38, 0.42, 1.08, fur);
-    box(m, 0, 0.6, -0.1, 0.3, 0.1, 0.72, light);
-    box(m, 0, 0.9, 0.52, 0.17, 0.38, 0.22, fur);
-    box(m, 0, 1.1, 0.72, 0.17, 0.17, 0.34, dark);
-    box(m, -0.06, 1.26, 0.66, 0.03, 0.2, 0.03, dark);
-    box(m, 0.06, 1.26, 0.66, 0.03, 0.2, 0.03, dark);
-    box(m, 0, 0.82, -0.56, 0.06, 0.08, 0.14, light);
-    [[-0.12, -0.4], [0.12, -0.4], [-0.12, 0.4], [0.12, 0.4]].forEach(function (l) { box(m, l[0], 0, l[1], 0.07, 0.66, 0.07, dark); });
+    var m = mesh(), fur = [0.47, 0.33, 0.20], dark = [0.20, 0.15, 0.10], pale = [0.78, 0.70, 0.58];
+    ellipsoid(m, [0, 0.95, -0.02], [0.25, 0.28, 0.6], fur, pale);
+    ellipsoid(m, [0, 1.18, 0.5], [0.12, 0.26, 0.13], fur, fur);
+    ellipsoid(m, [0, 1.38, 0.68], [0.1, 0.11, 0.21], fur, dark);
+    ellipsoid(m, [0.07, 1.52, 0.6], [0.03, 0.08, 0.02], dark, dark);
+    ellipsoid(m, [-0.07, 1.52, 0.6], [0.03, 0.08, 0.02], dark, dark);
+    ellipsoid(m, [0, 1.02, -0.62], [0.05, 0.1, 0.06], pale, pale);
+    [[-0.13, -0.4], [0.13, -0.4], [-0.13, 0.36], [0.13, 0.36]].forEach(function (l) {
+      limb(m, [l[0], 0.88, l[1]], [l[0] * 1.05, 0.02, l[1] + 0.03], 0.065, 0.03, 5, dark);
+    });
     return m;
   }
   function tuft() {
@@ -713,9 +831,11 @@
 
   /* ---- the scene, built once ---- */
   var W, progs = {}, draws = {}, centre = root.getAttribute('data-river-centre');
-  var cam = { tx: 0, ty: 0, tz: 0, yaw: Math.PI, pitch: 0.5, dist: 64 };
-  var MAX_DIST = 320, CH = 8;
-  var fly = null, words = {}, mvp = null, eye = [0, 0, 0], planes = null;
+  // The camera flies high over the valley, looking down at its target.
+  var HOME = { pitch: 0.86, dist: 120 };
+  var cam = { tx: 0, ty: 0, tz: 0, yaw: Math.PI, pitch: HOME.pitch, dist: HOME.dist };
+  var MIN_DIST = 24, MAX_DIST = 420, PITCH_MIN = 0.3, PITCH_MAX = 1.45, CH = 8;
+  var fly = null, words = {}, mvp = null, eye = [0, 0, 0], planes = null, camRight = [1, 0, 0], camUp = [0, 1, 0];
   var shadow = { size: 2048, fb: null, tex: null, vp: null, on: true, planes: null };
   var heightTex = null, levelTex = null, coverTex = null, marksY = [];
 
@@ -753,22 +873,25 @@
       chunks.push(b);
     });
     var ib = buffer(si), eb = buffer(se);
-    // For each kind of shape (near, far) and each pass (seen, shadow).
+    // For each shape (a solid, or foliage) and each pass (seen, shadow).
     var shapes = kinds.map(function (m) {
-      return { m: m, pb: buffer(new Float32Array(m.p)), nb: buffer(new Float32Array(m.n)), cb: buffer(new Float32Array(m.c)), count: m.p.length / 3 };
+      return { leaf: !!m.k, pb: buffer(new Float32Array(m.p)), kb: m.k ? buffer(new Float32Array(m.k)) : null,
+        nb: buffer(new Float32Array(m.n)), cb: buffer(new Float32Array(m.c)), count: m.p.length / 3 };
     });
     chunks.forEach(function (b) {
       b.vao = [];
       b.depth = [];
       shapes.forEach(function (sh) {
-        var v = gl.createVertexArray();
+        var pr = sh.leaf ? progs.leaf : progs.solid, v = gl.createVertexArray();
         gl.bindVertexArray(v);
-        attrib(progs.solid, 'aPos', sh.pb, 3);
-        attrib(progs.solid, 'aNor', sh.nb, 3);
-        attrib(progs.solid, 'aCol', sh.cb, 3);
-        attrib(progs.solid, 'aInst', ib, 4, 1, b.start * 16);
-        attrib(progs.solid, 'aExtra', eb, 2, 1, b.start * 8);
+        attrib(pr, 'aPos', sh.pb, 3);
+        if (sh.leaf) attrib(pr, 'aCorner', sh.kb, 3);
+        attrib(pr, 'aNor', sh.nb, 3);
+        attrib(pr, 'aCol', sh.cb, 3);
+        attrib(pr, 'aInst', ib, 4, 1, b.start * 16);
+        attrib(pr, 'aExtra', eb, 2, 1, b.start * 8);
         b.vao.push(v);
+        if (sh.leaf) { b.depth.push(null); return; }
         var d = gl.createVertexArray();
         gl.bindVertexArray(d);
         attrib(progs.depth, 'aPos', sh.pb, 3);
@@ -1001,8 +1124,9 @@
       if (W.trees[i + 4] < 0.5) { Array.prototype.push.apply(con, inst); conX.push(0, W.trees[i + 5]); }
       else { Array.prototype.push.apply(brd, inst); brdX.push(1, W.trees[i + 5]); }
     }
-    draws.conifers = chunked(new Float32Array(con), new Float32Array(conX), 2.3, 7.4, [conifer(false), conifer(true)]);
-    draws.broadleaves = chunked(new Float32Array(brd), new Float32Array(brdX), 3.0, 6.5, [broadleaf(false), broadleaf(true)]);
+    // Near: the trunk and its foliage; far, and for the shadows: one shape.
+    draws.conifers = chunked(new Float32Array(con), new Float32Array(conX), 2.6, 7.8, [firTrunk(), firFoliage(), farFir()]);
+    draws.broadleaves = chunked(new Float32Array(brd), new Float32Array(brdX), 3.4, 6.8, [leafTrunk(), leafFoliage(), farLeaf()]);
     var rk = [], rx = [];
     for (i = 0; i < W.rocks.length; i += 4) {
       rk.push(W.rocks[i], W.rocks[i + 2] - 0.2 * W.rocks[i + 3], W.rocks[i + 1], W.rocks[i + 3]);
@@ -1172,7 +1296,7 @@
     var j = Math.round((Math.max(W.z0, Math.min(W.z0 + W.sz, z)) - W.z0) / W.sz * (n - 1));
     var h = heightAt(x, z), out = Math.hypot(Math.max(W.x0 - x, 0, x - W.x0 - W.sx), Math.max(W.z0 - z, 0, z - W.z0 - W.sz));
     if (out > 0) h += smooth(W.water + 2, W.water + 30, h) * (out * 0.3 + Math.min(out * 0.45, 170));
-    return Math.max(h + 3 + (out > 0 ? 0 : W.forest[j * n + i] / 255 * 9), W.water + 2.5);
+    return Math.max(h + 6 + (out > 0 ? 0 : W.forest[j * n + i] / 255 * 9), W.water + 4);
   }
   function matrices() {
     // Never in the ground, the trees or the water: the camera rises round
@@ -1182,11 +1306,13 @@
       var cp = Math.cos(pitch), sp = Math.sin(pitch);
       eye = [cam.tx + Math.sin(cam.yaw) * cp * cam.dist, cam.ty + sp * cam.dist, cam.tz + Math.cos(cam.yaw) * cp * cam.dist];
       floor = above(eye[0], eye[2]);
-      if (eye[1] >= floor || pitch >= 1.45) break;
-      pitch = Math.min(1.45, pitch + 0.05);
+      if (eye[1] >= floor || pitch >= PITCH_MAX) break;
+      pitch = Math.min(PITCH_MAX, pitch + 0.05);
     }
     if (eye[1] < floor) eye[1] = floor;
     var view = lookAt(eye, [cam.tx, cam.ty + 1.5, cam.tz], [0, 1, 0]);
+    camRight = [view[0], view[4], view[8]];
+    camUp = [view[1], view[5], view[9]];
     mvp = mul(perspective(0.85, size.w / size.h, 0.6, 6000), view);
     planes = planesOf(mvp);
     // The shadow map follows the camera's target, as large as what it sees.
@@ -1195,11 +1321,22 @@
     shadow.vp = mul(ortho(-reach, reach, -reach, reach, 100, 1400), lookAt(from, c, Math.abs(L[1]) > 0.98 ? [0, 0, 1] : [0, 1, 0]));
     shadow.planes = planesOf(shadow.vp);
   }
-  function focusOn(p, ms) {
-    var y = marksY[p.index];
-    var to = { tx: p.x, ty: y, tz: p.z, dist: Math.min(Math.max(cam.dist, 40), 110) };
-    if (!ms || reduce || cut) { cam.tx = to.tx; cam.ty = to.ty; cam.tz = to.tz; cam.dist = to.dist; dirty = true; wake(); return; }
-    fly = { from: { tx: cam.tx, ty: cam.ty, tz: cam.tz, dist: cam.dist }, to: to, t0: performance.now(), ms: ms };
+  // To a person: the camera keeps its height (within reason), or, coming
+  // home, takes its first one again.
+  function focusOn(p, ms, again) {
+    flyTo({ tx: p.x, ty: marksY[p.index], tz: p.z, dist: again ? HOME.dist : Math.min(Math.max(cam.dist, 70), 220),
+      pitch: again ? HOME.pitch : cam.pitch }, ms);
+  }
+  function flyTo(to, ms) {
+    if (!ms || reduce || cut) {
+      Object.keys(to).forEach(function (k) { cam[k] = to[k]; });
+      dirty = true;
+      wake();
+      return;
+    }
+    var from = {};
+    Object.keys(to).forEach(function (k) { from[k] = cam[k]; });
+    fly = { from: from, to: to, t0: performance.now(), ms: ms };
     wake();
   }
 
@@ -1300,13 +1437,23 @@
     });
     gl.activeTexture(gl.TEXTURE0);
   }
-  // The chunks of a set the eye (or the sun) sees; near or far shape.
+  // The chunks of a set the eye (or the sun) sees. A tree near is its trunk
+  // here and its foliage in the foliage pass; far, and for the sun, its one
+  // simple shape.
   function drawSet(set, pl, lod, pass) {
     set.chunks.forEach(function (b) {
       if (!seen(pl, b)) return;
-      var far = set.counts.length > 1 && (pass === 'shadow' ? quality.tier > 0 : boxDistance(eye, b) > lod) ? 1 : 0;
-      gl.bindVertexArray(pass === 'shadow' ? b.depth[far] : b.vao[far]);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, set.counts[far], b.count);
+      var k = set.counts.length > 1 && (pass === 'shadow' || boxDistance(eye, b) > lod) ? 2 : 0;
+      gl.bindVertexArray(pass === 'shadow' ? b.depth[k] : b.vao[k]);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, set.counts[k], b.count);
+    });
+  }
+  function drawFoliage(set, kind, lod) {
+    gl.uniform1f(progs.leaf.u.uLeafKind, kind);
+    set.chunks.forEach(function (b) {
+      if (!seen(planes, b) || boxDistance(eye, b) > lod) return;
+      gl.bindVertexArray(b.vao[1]);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, set.counts[1], b.count);
     });
   }
   function frame(now) {
@@ -1314,7 +1461,7 @@
     if (!W) return;
     if (fly) {
       var t = Math.min(1, (now - fly.t0) / fly.ms), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      ['tx', 'ty', 'tz', 'dist'].forEach(function (k) { cam[k] = fly.from[k] + (fly.to[k] - fly.from[k]) * e; });
+      Object.keys(fly.to).forEach(function (k) { cam[k] = fly.from[k] + (fly.to[k] - fly.from[k]) * e; });
       if (t >= 1) fly = null;
       dirty = true;
     }
@@ -1382,9 +1529,18 @@
     drawSet(draws.rocks, planes, tier.lod, 'seen');
     gl.uniform1f(progs.solid.u.uMode, 2);
     drawSet(draws.beasts, planes, tier.lod, 'seen');
-    // The grass, thick around what the camera looks at.
+    // The trees' foliage, its outline cut leaf by leaf.
     gl.disable(gl.CULL_FACE);
-    if (tier.grass > 0 && cam.dist < 170) {
+    uniforms(progs.leaf, time, fogRange);
+    gl.uniform2f(progs.leaf.u.uAt, cam.tx, cam.tz);
+    gl.uniform3fv(progs.leaf.u.uRight, camRight);
+    gl.uniform3fv(progs.leaf.u.uUp, camUp);
+    gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+    drawFoliage(draws.conifers, 0, tier.lod);
+    drawFoliage(draws.broadleaves, 1, tier.lod);
+    gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+    // The grass, thick around what the camera looks at.
+    if (tier.grass > 0 && cam.dist < 220) {
       uniforms(progs.grass, time, fogRange);
       gl.uniform2f(progs.grass.u.uAt, cam.tx + (eye[0] - cam.tx) * 0.35, cam.tz + (eye[2] - cam.tz) * 0.35);
       gl.uniform1f(progs.grass.u.uSide, tier.grass);
@@ -1449,75 +1605,192 @@
     if (!raf) raf = requestAnimationFrame(frame);
   }
 
-  /* ---- moving in it ---- */
-  var drag = null;
+  /* ---- moving in it ----
+   * As on a map: drag to move over the land, the wheel (or two fingers
+   * apart) to come closer, the right button, Ctrl or two fingers turning to
+   * turn and to look from higher or lower, a double click to go there; the
+   * arrows walk (with Shift they turn), Home comes back to the person. The
+   * pad in the corner does the same, a click a step, held a journey. */
+  var drag = null, fingers = {}, pinch = null, hold = null;
   function clampTarget() {
     cam.tx = Math.max(W.x0, Math.min(W.x0 + W.sx, cam.tx));
     cam.tz = Math.max(W.z0, Math.min(W.z0 + W.sz, cam.tz));
     cam.ty = Math.max(heightAt(cam.tx, cam.tz), W.water);
   }
-  canvas.addEventListener('pointerdown', function (e) {
-    if (!W) return;
-    drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch, tx: cam.tx, tz: cam.tz, pan: e.button === 2 || e.shiftKey, moved: 0 };
-    canvas.setPointerCapture(e.pointerId);
-  });
-  canvas.addEventListener('pointermove', function (e) {
-    if (!drag) return;
-    var mx = e.clientX - drag.x, my = e.clientY - drag.y;
-    drag.moved = Math.max(drag.moved, Math.abs(mx) + Math.abs(my));
-    if (drag.pan) {
-      var k = cam.dist / size.h * 1.6, s = Math.sin(cam.yaw), c = Math.cos(cam.yaw);
-      cam.tx = drag.tx - (mx * c - my * s) * k;
-      cam.tz = drag.tz + (mx * s + my * c) * k;
-      clampTarget();
-    } else {
-      cam.yaw = drag.yaw - mx * 0.006;
-      cam.pitch = Math.max(0.08, Math.min(1.42, drag.pitch + my * 0.005));
-    }
+  function moved() {
     fly = null;
     dirty = true;
     wake();
+  }
+  // One move of the pad's, the keyboard's: for `dt` seconds of it.
+  function act(go, dt) {
+    var s = Math.sin(cam.yaw), c = Math.cos(cam.yaw), step = cam.dist * 0.9 * dt;
+    if (go === 'forward') { cam.tx -= s * step; cam.tz -= c * step; }
+    else if (go === 'back') { cam.tx += s * step; cam.tz += c * step; }
+    else if (go === 'left') { cam.tx -= c * step; cam.tz += s * step; }
+    else if (go === 'right') { cam.tx += c * step; cam.tz -= s * step; }
+    else if (go === 'turn-left') cam.yaw += 1.1 * dt;
+    else if (go === 'turn-right') cam.yaw -= 1.1 * dt;
+    else if (go === 'higher') cam.pitch = Math.min(PITCH_MAX, cam.pitch + 0.8 * dt);
+    else if (go === 'lower') cam.pitch = Math.max(PITCH_MIN, cam.pitch - 0.8 * dt);
+    else if (go === 'closer') cam.dist = Math.max(MIN_DIST, cam.dist * Math.exp(-1.4 * dt));
+    else if (go === 'farther') cam.dist = Math.min(MAX_DIST, cam.dist * Math.exp(1.4 * dt));
+    clampTarget();
+    moved();
+  }
+  function home() {
+    var p = W.byId[centre] || W.persons[0];
+    if (p) focusOn(p, 1100, true);
+  }
+  // Where a point of the screen meets the ground (or the water).
+  function groundAt(clientX, clientY) {
+    var r = canvas.getBoundingClientRect(), x = (clientX - r.left) / r.width * 2 - 1, y = 1 - (clientY - r.top) / r.height * 2;
+    var inv = invert(mvp);
+    function un(z) {
+      var o = [0, 1, 2, 3].map(function (i) { return inv[i] * x + inv[4 + i] * y + inv[8 + i] * z + inv[12 + i]; });
+      return [o[0] / o[3], o[1] / o[3], o[2] / o[3]];
+    }
+    var a = un(-1), b = un(1), d = norm([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+    for (var t = 0; t < 3000; t += 1.5) {
+      var px = a[0] + d[0] * t, py = a[1] + d[1] * t, pz = a[2] + d[2] * t;
+      if (py <= Math.max(heightAt(px, pz), W.water)) return [px, pz];
+    }
+    return null;
+  }
+  function twoFingers() {
+    var ids = Object.keys(fingers), a = fingers[ids[0]], b = fingers[ids[1]];
+    return { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, ang: Math.atan2(b[1] - a[1], b[0] - a[0]) };
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    if (!W) return;
+    canvas.setPointerCapture(e.pointerId);
+    fingers[e.pointerId] = [e.clientX, e.clientY];
+    if (Object.keys(fingers).length === 2) {
+      var g = twoFingers();
+      pinch = { d: g.d, ang: g.ang, dist: cam.dist, yaw: cam.yaw };
+      drag = null;
+      return;
+    }
+    drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch, tx: cam.tx, tz: cam.tz,
+      turn: e.button === 2 || e.ctrlKey || e.metaKey, moved: 0 };
   });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!fingers[e.pointerId]) return;
+    fingers[e.pointerId] = [e.clientX, e.clientY];
+    if (pinch && Object.keys(fingers).length >= 2) {
+      var g = twoFingers();
+      cam.dist = Math.max(MIN_DIST, Math.min(MAX_DIST, pinch.dist * pinch.d / g.d));
+      cam.yaw = pinch.yaw - (g.ang - pinch.ang);
+    } else if (drag) {
+      var mx = e.clientX - drag.x, my = e.clientY - drag.y;
+      drag.moved = Math.max(drag.moved, Math.abs(mx) + Math.abs(my));
+      if (drag.turn) {
+        cam.yaw = drag.yaw - mx * 0.006;
+        cam.pitch = Math.max(PITCH_MIN, Math.min(PITCH_MAX, drag.pitch + my * 0.005));
+      } else {
+        // The land follows the hand.
+        var k = cam.dist * 0.9 / size.h, ky = k / Math.max(0.35, Math.sin(cam.pitch)), s = Math.sin(cam.yaw), c = Math.cos(cam.yaw);
+        cam.tx = drag.tx - mx * c * k - my * s * ky;
+        cam.tz = drag.tz + mx * s * k - my * c * ky;
+        clampTarget();
+      }
+    } else {
+      return;
+    }
+    moved();
+  });
+  function lift(e) {
+    delete fingers[e.pointerId];
+    if (Object.keys(fingers).length < 2) pinch = null;
+  }
   canvas.addEventListener('pointerup', function (e) {
     var d = drag;
+    lift(e);
     drag = null;
-    if (!d || d.moved > 5) return;
+    if (!d || d.moved > 5 || d.turn) return;
     // A tap on a person's light travels to them, as a tap on the river does.
     var r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, best = null, bd = 26;
     W.persons.forEach(function (p) {
-      var s = project(p.x, marksY[p.index], p.z);
-      if (!s) return;
-      var dd = Math.hypot(s.x - x, s.y - y);
+      var sp = project(p.x, marksY[p.index], p.z);
+      if (!sp) return;
+      var dd = Math.hypot(sp.x - x, sp.y - y);
       if (dd < bd) { bd = dd; best = p; }
     });
     if (best && best.id !== centre && window.axgfRiver) window.axgfRiver.travel(best.id);
   });
+  canvas.addEventListener('pointercancel', function (e) { lift(e); drag = null; });
+  canvas.addEventListener('dblclick', function (e) {
+    if (!W) return;
+    var g = groundAt(e.clientX, e.clientY);
+    if (g) flyTo({ tx: g[0], ty: Math.max(heightAt(g[0], g[1]), W.water), tz: g[1] }, 900);
+  });
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-  canvas.addEventListener('wheel', function (e) {
+  function wheel(e) {
     e.preventDefault();
     if (!W) return;
-    cam.dist = Math.max(12, Math.min(MAX_DIST, cam.dist * Math.exp(e.deltaY * 0.0012)));
-    fly = null;
-    dirty = true;
-    wake();
+    cam.dist = Math.max(MIN_DIST, Math.min(MAX_DIST, cam.dist * Math.exp(e.deltaY * 0.0012)));
+    moved();
+  }
+  // Over the scene, its names and its pad, the wheel is the world's.
+  stage.addEventListener('wheel', function (e) {
+    if (root.classList.contains('rv-world-ready')) wheel(e);
   }, { passive: false });
   canvas.addEventListener('keydown', function (e) {
     if (!W) return;
-    var step = cam.dist * 0.08, s = Math.sin(cam.yaw), c = Math.cos(cam.yaw), moved = true;
-    if (e.key === 'ArrowUp') { cam.tx -= s * step; cam.tz -= c * step; }
-    else if (e.key === 'ArrowDown') { cam.tx += s * step; cam.tz += c * step; }
-    else if (e.key === 'ArrowLeft') { cam.tx -= c * step; cam.tz += s * step; }
-    else if (e.key === 'ArrowRight') { cam.tx += c * step; cam.tz -= s * step; }
-    else if (e.key === '+' || e.key === '=') cam.dist = Math.max(12, cam.dist * 0.85);
-    else if (e.key === '-') cam.dist = Math.min(MAX_DIST, cam.dist * 1.18);
-    else moved = false;
-    if (!moved) return;
+    if (e.key === 'Home') { e.preventDefault(); home(); return; }
+    var go = e.shiftKey
+      ? { ArrowLeft: 'turn-left', ArrowRight: 'turn-right', ArrowUp: 'higher', ArrowDown: 'lower' }[e.key]
+      : { ArrowUp: 'forward', ArrowDown: 'back', ArrowLeft: 'left', ArrowRight: 'right', '+': 'closer', '=': 'closer', '-': 'farther',
+        PageUp: 'higher', PageDown: 'lower' }[e.key];
+    if (!go) return;
     e.preventDefault();
-    clampTarget();
-    fly = null;
-    dirty = true;
-    wake();
+    act(go, 0.12);
   });
+  // The pad: each button a move, a click a step, held as long as it is.
+  var pad = root.querySelector('[data-world-pad]'), hint = root.querySelector('[data-world-hint]');
+  function holding(now) {
+    if (!hold) return;
+    var dt = Math.min(0.05, (now - hold.t) / 1000);
+    hold.t = now;
+    act(hold.go, dt);
+    requestAnimationFrame(holding);
+  }
+  if (pad) {
+    pad.addEventListener('pointerdown', function (e) {
+      var b = e.target.closest('[data-go]');
+      if (!b || !W) return;
+      e.preventDefault();
+      if (b.getAttribute('data-go') === 'home') { home(); return; }
+      b.setPointerCapture(e.pointerId);
+      hold = { go: b.getAttribute('data-go'), t: performance.now() };
+      act(hold.go, 0.1);
+      requestAnimationFrame(holding);
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) {
+      pad.addEventListener(ev, function () { hold = null; });
+    });
+    // Enter or Space on a button: one step.
+    pad.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-go]');
+      if (!b || !W || e.detail !== 0) return;
+      if (b.getAttribute('data-go') === 'home') home();
+      else act(b.getAttribute('data-go'), 0.25);
+    });
+  }
+  // How to move, said once when the world first opens (three visits, then
+  // no more).
+  function showHint() {
+    if (!hint) return;
+    var times = 0;
+    try {
+      times = parseInt(localStorage.getItem('axgf-world-hint') || '0', 10) || 0;
+      localStorage.setItem('axgf-world-hint', String(times + 1));
+    } catch (e) { /* private window */ }
+    if (times >= 3) return;
+    hint.hidden = false;
+    setTimeout(function () { hint.classList.add('is-gone'); }, 7000);
+    setTimeout(function () { hint.hidden = true; }, 8200);
+  }
 
   /* ---- the river's own controls ---- */
   var btn = root.querySelector('[data-rv-still]');
@@ -1539,7 +1812,7 @@
     root.querySelectorAll('[data-rv-zoom-wrap]').forEach(function (w) { w.hidden = false; });
     zoom.addEventListener('input', function () {
       if (!W) return;
-      cam.dist = Math.max(12, Math.min(MAX_DIST, 130 / Math.max(0.2, parseFloat(zoom.value) || 1)));
+      cam.dist = Math.max(MIN_DIST, Math.min(MAX_DIST, 170 / Math.max(0.2, parseFloat(zoom.value) || 1)));
       fly = null;
       dirty = true;
       wake();
@@ -1592,8 +1865,10 @@
     }
     resize();
     var p = W.byId[centre] || W.persons[0];
-    if (p) focusOn(p, 0);
+    if (p) focusOn(p, 0, true);
     root.classList.add('rv-world-ready');
+    if (pad) pad.hidden = false;
+    showHint();
     wake();
   }).catch(function (e) {
     if (window.console) console.warn('Canopée world:', e && e.message ? e.message : e);

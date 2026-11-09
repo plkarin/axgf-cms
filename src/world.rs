@@ -160,15 +160,18 @@ pub struct World {
     pub herds: Vec<[f32; 4]>,
 }
 
-/// Grid points per side of the heightfield.
+/// Grid points per side of the heightfield, at the least; a wide family's
+/// land has more, up to [`GRID_MAX`], so that its streams stay fine.
 pub const GRID: usize = 513;
+/// Grid points per side of the heightfield, at the most.
+pub const GRID_MAX: usize = 769;
 /// Across the valley, between two people of one generation, in the world's
-/// units.
-const SPACING: f32 = 9.0;
+/// units: room enough that their streams run apart before they join.
+const SPACING: f32 = 12.0;
 /// Down the valley, between two generations.
-const GENERATION: f32 = 70.0;
+const GENERATION: f32 = 88.0;
 /// How far the ground falls from one generation to the next.
-const FALL: f32 = 9.0;
+const FALL: f32 = 10.5;
 
 /// A small deterministic random, seeded by the fingerprint.
 struct Rng(u64);
@@ -381,14 +384,14 @@ pub fn build(flat: &Value) -> World {
     // The land around them: mountains beyond the family on either side and
     // above the springs, the lake below the youngest; wide enough that the
     // mist hides the world's edge from wherever the camera may stand.
-    let margin_x = 260.0f32.max(span * 0.45);
+    let margin_x = (span * 0.45).clamp(260.0, 320.0);
     let size_x = span + 2.0 * margin_x;
     let top = -(gens as f32 - 1.0) * GENERATION / 2.0;
     let bottom = (gens as f32 - 1.0) * GENERATION / 2.0;
     let z0 = top - 260.0;
     let size_z = (bottom + 300.0) - z0;
     let x0 = -size_x / 2.0;
-    let n = GRID;
+    let n = ((size_x.max(size_z) / 2.4).ceil() as usize).clamp(GRID, GRID_MAX);
     let cell_x = size_x / (n - 1) as f32;
     let cell_z = size_z / (n - 1) as f32;
     let cell = cell_x.min(cell_z);
@@ -560,9 +563,13 @@ pub fn build(flat: &Value) -> World {
     for (a, b, depth, width) in &valleys {
         carve_valley(&mut heights, *a, *b, *depth, *width, &mut rng);
     }
+    // A hollow where each person stands: a gentle bowl in the ground as it
+    // is there, closed enough below to hold a pool.
     for p in &persons {
-        let floor = base(p.z) - 3.0 - p.class as f32 * 0.4;
-        let r = 4.0 + p.class as f32 * 0.5;
+        let (ci, cj) = at(p.x, p.z);
+        let centre = heights[cj * n + ci];
+        let depth = 2.0 + p.class as f32 * 0.3;
+        let r = 7.0 + p.class as f32 * 0.6;
         let (i0, j0) = at(p.x - r, p.z - r);
         let (i1, j1) = at(p.x + r, p.z + r);
         for j in j0..=j1 {
@@ -570,7 +577,7 @@ pub fn build(flat: &Value) -> World {
                 let d = ((gx(i) - p.x).powi(2) + (gz(j) - p.z).powi(2)).sqrt() / r;
                 if d < 1.0 {
                     let k = j * n + i;
-                    let target = floor + 2.2 * d * d;
+                    let target = centre - depth * (1.0 - d * d).powi(2);
                     if target < heights[k] {
                         heights[k] = target;
                     }
@@ -670,8 +677,14 @@ pub fn build(flat: &Value) -> World {
     for p in &persons {
         let (i, j) = at(p.x, p.z);
         let k = j * n + i;
-        flow[k] += 5.0 + p.class as f32 * 3.0;
-        springs[k] = true;
+        // A line that goes on runs on as a stream; a line that ends (class 1:
+        // no descendant) rests in its pool, and what overflows is the rain's.
+        if p.class > 1 {
+            flow[k] += 5.0 + p.class as f32 * 3.0;
+            springs[k] = true;
+        } else {
+            flow[k] += 1.2;
+        }
     }
     for &k in &order {
         let r = receiver[k as usize];
@@ -812,7 +825,7 @@ pub fn build(flat: &Value) -> World {
     let mut ponds: Vec<Pond> = Vec::new();
     let mut taken = vec![false; n * n];
     for k in 0..n * n {
-        if taken[k] || sink(k) || filled[k] - uncut[k] < 0.35 {
+        if taken[k] || sink(k) || filled[k] - uncut[k] < 0.6 {
             continue;
         }
         let mut stack = vec![k];
@@ -847,6 +860,11 @@ pub fn build(flat: &Value) -> World {
             .map(|c| ((gx(c % n) - cx).powi(2) + (gz(c / n) - cz).powi(2)).sqrt())
             .fold(0.0f32, f32::max)
             + cell;
+        // Too shallow to be a pool (a film over the grass): left dry.
+        let lowest = cells.iter().map(|c| heights[*c]).fold(f32::MAX, f32::min);
+        if level - lowest < 0.7 {
+            continue;
+        }
         for c in &cells {
             wet[*c] = true;
         }
@@ -1238,8 +1256,8 @@ mod tests {
         let b = build(&family());
         assert_eq!(a, b, "seeded by the shape");
         assert_eq!(a.encode(), b.encode());
-        assert_eq!(a.heights.len(), GRID * GRID);
-        assert_eq!(a.forest.len(), GRID * GRID);
+        assert_eq!(a.heights.len(), a.n * a.n);
+        assert_eq!(a.forest.len(), a.n * a.n);
         assert_eq!(a.persons.len(), 7);
         assert!(!a.rivers.is_empty(), "water runs");
         assert!(!a.trees.is_empty() && !a.rocks.is_empty());
@@ -1309,7 +1327,7 @@ mod tests {
         let bytes = w.encode();
         assert_eq!(&bytes[..4], b"AXW2");
         let n = u32::from_le_bytes(bytes[4..8].try_into().unwrap()) as usize;
-        assert_eq!(n, GRID);
+        assert!((GRID..=GRID_MAX).contains(&n));
         // header 8 + 7 floats, then the heights, the forest, the persons' count.
         let at = 8 + 7 * 4 + n * n * 2 + n * n;
         let persons = u32::from_le_bytes(bytes[at..at + 4].try_into().unwrap());

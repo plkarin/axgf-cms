@@ -3909,6 +3909,19 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
 .rv-world-label small { font-family: ui-monospace, Menlo, monospace; font-size: var(--type-micro); opacity: 0.85; }
 .rv-world-label.is-focus { font-size: var(--type-sub); font-weight: var(--weight-strong); }
 .rv-world-meter { position: absolute; inset-block-start: 0.5rem; inset-inline-start: 0.5rem; z-index: 2; padding: 0.2rem 0.45rem; border-radius: var(--radius); background: rgb(0 0 0 / 0.6); color: var(--rv-core); font-family: var(--mono); font-size: var(--type-micro); pointer-events: none; }
+.rv-world-pad { position: absolute; inset-block-end: 0.75rem; inset-inline-end: 0.75rem; z-index: 2; display: grid; grid-template-columns: repeat(3, 2.4rem) 0.35rem 2.4rem; grid-auto-rows: 2.4rem; gap: 0.25rem; }
+.rv-world-pad[hidden] { display: none; }
+.rv-world-btn { display: grid; place-items: center; padding: 0; border: 1px solid rgb(255 255 255 / 0.22); border-radius: var(--radius); background: rgb(0 0 0 / 0.5); color: var(--rv-core); cursor: pointer; touch-action: none; }
+.rv-world-btn:hover { background: rgb(0 0 0 / 0.72); }
+.rv-world-btn svg { inline-size: 1.2rem; block-size: 1.2rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rv-world-btn[data-go="turn-left"] { grid-area: 1 / 1; } .rv-world-btn[data-go="forward"] { grid-area: 1 / 2; } .rv-world-btn[data-go="turn-right"] { grid-area: 1 / 3; }
+.rv-world-btn[data-go="left"] { grid-area: 2 / 1; } .rv-world-btn[data-go="home"] { grid-area: 2 / 2; } .rv-world-btn[data-go="right"] { grid-area: 2 / 3; }
+.rv-world-btn[data-go="higher"] { grid-area: 3 / 1; } .rv-world-btn[data-go="back"] { grid-area: 3 / 2; } .rv-world-btn[data-go="lower"] { grid-area: 3 / 3; }
+.rv-world-btn[data-go="closer"] { grid-area: 1 / 5; } .rv-world-btn[data-go="farther"] { grid-area: 2 / 5; }
+.rv-world-hint { position: absolute; inset-block-end: 0.9rem; inset-inline-start: 50%; transform: translateX(-50%); z-index: 2; margin: 0; max-inline-size: min(34rem, 62%); padding: 0.35rem 0.75rem; border-radius: var(--radius); background: rgb(0 0 0 / 0.6); color: var(--rv-core); font-size: var(--type-small); text-align: center; pointer-events: none; transition: opacity 1s; }
+.rv-world-hint.is-gone { opacity: 0; }
+/* The 2D drawing's own way to zoom (Ctrl + wheel) is not the world's. */
+.river.rv-world-ready .rv-hint { display: none; }
 
 /* The record's films and sounds, played on the page (docs/adr/0041). */
 .clips { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 1rem; margin-block: 0.5rem 1.25rem; }

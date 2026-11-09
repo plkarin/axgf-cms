@@ -56,7 +56,10 @@ The whole family's layout (`tree::layout`: generations, and an order across
 each that keeps families together and crossings few) is laid on the land:
 the oldest generation up in the mountains, where the springs are; each
 younger one further down the valley; the youngest by the lake at its foot.
-A person is a point on the ground.
+A person is a point on the ground, twelve units from the next one across
+the valley and eighty-eight from the next generation down: room enough for
+their streams to run apart before they join (the operator's review of
+9 November 2026: the rivers were too close).
 
 ### 4. The family carves the land; the water does what water does
 
@@ -67,8 +70,9 @@ line (the river's five discharge classes, ADR 0004); a hollow where each
 person stands. Then, as water does: the hollows are filled to their brims
 (a priority flood from the lake and the world's edge), each point gives its
 water to its lowest neighbour, the rain gathers, and each person is a
-spring. A river is what the springs feed, or a large mountain catchment's
-own torrent; it is traced from its source down to where it joins another or
+spring: a line that goes on runs on as a stream, a line that ends (no
+descendant) rests in its pool. A river is what the springs feed, or a
+large mountain catchment's own torrent; it is traced from its source down to where it joins another or
 reaches the lake, smoothed, its surface never climbing downstream, white
 where it meets another or falls. **So the streams join and never cross**,
 and grow on their way down. Their beds are carved under them — at least a
@@ -77,10 +81,12 @@ the water lies in its bed and nowhere else; the hollows the flood filled
 are pools, sent with their own cells, so that a pool fills its hollow and no
 other.
 
-The land: a 513² heightfield, a slope from the springs to the lake,
+The land: a heightfield of 513² points (up to 769² for a wide family, so
+that its streams stay fine), a slope from the springs to the lake,
 mountains on either side with sharp crests, relief from seeded noise; the
 forest thick on the slopes and in clumps, a clearing where each person
-stands; footpaths between partners. Beyond the heightfield the mountains go
+stands, in a gentle bowl that holds the person's pool; footpaths between
+partners. Beyond the heightfield the mountains go
 on and the lake reaches the horizon, so the world has no edge to see.
 
 ### 5. Its look and its life
@@ -94,10 +100,17 @@ lake as one surface), knows how deep it is at every point: clear and brown
 over the shallows, dark where it is deep, its waves carried by its flow,
 the sky and the sun in it, foam where it meets and falls. Grass grows thick
 around what the camera looks at, grown by the graphics card on the meadows
-only and bending in the wind. Firs and broadleaves (simpler far away) sway
-in gusts, with the sun through their leaves; boulders; herds that wander a
-little and graze; flocks of birds along the valley and an eagle circling
-over the person the camera looks at.
+only and bending in the wind. The trees are trunks, limbs and foliage: a
+fir is whorls of needle sprays, narrowing to its top; a broadleaf is clumps
+of leaves over a few rounded masses with the light between them, each tuft
+facing the camera and cut leaf by leaf in the shader (simpler shapes far
+away and for the shadows); they sway in gusts, with the sun through their
+leaves. Boulders have their grain and lichen; deer, rounded, wander a
+little and graze; flocks of birds cross the valley and an eagle circles
+over the person the camera looks at. The water mirrors the sky above and,
+low down, its banks and their trees, and the sun's ripples dance on the
+stones of its bed (the operator's review of 9 November 2026: the shapes
+were to look true).
 
 The light is the reader's hour: the sun rises, crosses and sets, the hours
 around are gold, the night is blue under the moon and its stars; the sun's
@@ -107,12 +120,20 @@ still.
 
 ### 6. Moving in it
 
-Drag to look around, wheel or pinch to come closer, the arrows to walk;
-choosing a person — in the scene, in the itinerary, in the search — flies
-the camera to them and opens their record beside the river, as the river
-does today. The camera rises round its target rather than go into the
-ground, the trees or the water, and a tree between it and that person steps
-aside. Names are drawn by the page over the scene, for the people near the
+The camera flies high over the valley, looking down at its target (the
+operator's review of 9 November 2026: the navigation higher, the controls
+simpler). One moves as on a map: drag the land, the wheel or two fingers
+apart to come closer, the right button, Ctrl or two fingers turning to turn
+and to look from higher or lower, a double click to go to a place; the
+arrows walk (with Shift they turn), Home comes back to the person. A pad in
+the scene's corner does the same with a click, or as long as a button is
+held: forward, back, left, right, turn either way, look from higher or
+lower, closer, farther, and back to the person; the first times, a line
+says how to move. Choosing a person — in the scene, in the itinerary, in
+the search — flies the camera to them and opens their record beside the
+river, as the river does today. The camera rises round its target rather
+than go into the ground, the trees or the water, and a tree between it and
+that person steps aside. Names are drawn by the page over the scene, for the people near the
 camera, none written over another.
 
 ### 7. As fast as the reader's machine allows
@@ -145,10 +166,13 @@ to compare.
   river travels to; a name or a ring chosen travels the river.
   **Stage 2 (9 November 2026)**, after the operator found the water and its
   crossings unnatural: the hydrology of §4 (the water runs where the family
-  carved, joins, never crosses; pools by their cells; 513² ground), the look
-  and life of §5, the camera of §6 and the measured detail of §7. Measured
-  on fictitious families: the world is about 1.2 MB for 213 people and
-  1.3 MB for 492, built once per shape; the script spends about a
+  carved, joins, never crosses; pools by their cells; 513² ground at the least), the look
+  and life of §5, the camera of §6 and the measured detail of §7; then,
+  after the operator's second review the same day, the people spaced, the
+  lines that end resting in their pools, the trees, deer, stones and water
+  made to look true, the camera higher and the pad. Measured on fictitious
+  families: the world is about 1.3 MB for 213 people and 2.5 MB for 492
+  (769² points), built once per shape; the script spends about a
   millisecond a frame, so the frame rate is the graphics card's — in a
   software renderer on two cores, 18 frames a second at full detail and 39
   at the third level; a real card does far better, and `?world=fps` shows it

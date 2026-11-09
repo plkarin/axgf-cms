@@ -15,15 +15,19 @@ and the 1.11 texts reread.
   family itself — the oldest generation up in the mountains where the
   springs are, each younger one further down the valley — in one scene.
   The family carves the valleys and the water finds them: each person is a
-  spring, the streams run down the slope, join and never cross, lie in
-  their beds and grow on their way to the lake; the hollows are pools. The
-  ground has its meadows and flowers, forest floor, scree, rock, snow and
-  footpaths, thick grass bending in the wind around what the camera looks
-  at; firs and broadleaves sway, herds graze, birds cross the valley and an
+  spring, the streams run down the slope, spaced, join and never cross, lie
+  in their beds and grow on their way to the lake; a line that ends rests
+  in its pool. The ground has its meadows and flowers, forest floor, scree,
+  rock, snow and footpaths, thick grass bending in the wind around what the
+  camera looks at; firs of needle sprays and broadleaves of leaf clumps
+  sway, deer graze, stones have their lichen, the water mirrors the sky and
+  its banks with the sun's ripples on its bed, birds cross the valley and an
   eagle circles over the person chosen. The light is the reader's hour —
   dawn, day, dusk, a night under the moon — with the sun's shadows and the
-  mist. The reader turns, comes closer, walks; choosing a person flies there
-  and opens their record, as the river does. The world is built once for
+  mist. The camera flies high; one moves as on a map (drag, wheel or two
+  fingers, a double click to go somewhere) or with the pad in the scene's
+  corner; choosing a person flies there and opens their record, as the
+  river does. The world is built once for
   each shape of the family and kept; a name or a date changed does not
   rebuild it, a person added or removed does. The page lowers its own
   detail when frames come slowly; `?world=fps` shows how fast they come.

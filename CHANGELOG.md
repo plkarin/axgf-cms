@@ -13,12 +13,20 @@ and the 1.11 texts reread.
 
 - **Canopée's river is a world in 3D**: the family's land, built from the
   family itself — the oldest generation up in the mountains where the
-  springs are, each younger one further down the valley, a parent's water
-  running down to each child — with its forests, rocks and herds, its mist
-  and its sky, in one scene. The reader turns, comes closer, walks;
-  choosing a person flies there and opens their record, as the river does.
-  The world is built once for each shape of the family and kept; a name or
-  a date changed does not rebuild it, a person added or removed does.
+  springs are, each younger one further down the valley — in one scene.
+  The family carves the valleys and the water finds them: each person is a
+  spring, the streams run down the slope, join and never cross, lie in
+  their beds and grow on their way to the lake; the hollows are pools. The
+  ground has its meadows and flowers, forest floor, scree, rock, snow and
+  footpaths, thick grass bending in the wind around what the camera looks
+  at; firs and broadleaves sway, herds graze, birds cross the valley and an
+  eagle circles over the person chosen. The light is the reader's hour —
+  dawn, day, dusk, a night under the moon — with the sun's shadows and the
+  mist. The reader turns, comes closer, walks; choosing a person flies there
+  and opens their record, as the river does. The world is built once for
+  each shape of the family and kept; a name or a date changed does not
+  rebuild it, a person added or removed does. The page lowers its own
+  detail when frames come slowly; `?world=fps` shows how fast they come.
   Without WebGL 2 the river and its photograph stay as they were.
 
 ### Changed

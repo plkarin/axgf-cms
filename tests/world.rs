@@ -68,7 +68,7 @@ async fn the_world_is_built_once_for_a_shape_and_again_for_another() {
         .unwrap()
         .contains("no-cache"));
     let bytes = body_bytes(resp).await;
-    assert_eq!(&bytes[..4], b"AXW1");
+    assert_eq!(&bytes[..4], b"AXW2");
 
     // Asked for by its fingerprint: kept a year; unchanged: not sent again.
     let resp = world(&app, &format!("?v={fp}"), None).await;

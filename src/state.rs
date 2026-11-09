@@ -909,7 +909,8 @@ impl AppState {
         tracing::info!(
             fingerprint = %world.fingerprint,
             persons = world.persons.len(),
-            streams = world.streams.len(),
+            rivers = world.rivers.len(),
+            ponds = world.ponds.len(),
             trees = world.trees.len(),
             bytes = bytes.len(),
             "Canopée's world built"

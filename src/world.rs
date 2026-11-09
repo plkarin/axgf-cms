@@ -3,17 +3,21 @@
 //!
 //! The family's **shape** is who is there and who is whose parent and
 //! partner — no name, no date. Its **fingerprint** names it, and the same
-//! shape always builds the same world: the land's relief, its streams, its
-//! trees, rocks and herds are drawn from a random seeded by the fingerprint.
-//! So the world is built once per shape and kept; a person added or removed,
-//! a link made or unmade, makes a new shape and a new world, whole. A name or
-//! a date changed does not.
+//! shape always builds the same world: the land's relief, its water, its
+//! trees, rocks and herds are drawn from a random seeded by the
+//! fingerprint. So the world is built once per shape and kept; a person
+//! added or removed, a link made or unmade, makes a new shape and a new
+//! world, whole. A name or a date changed does not.
 //!
 //! The land: the whole family's layout (`tree::layout`) laid on a valley, the
-//! oldest generation up in the mountains where the springs are, each younger
-//! one further down, the youngest by the lake at its foot. A parent's water
-//! runs down to each child; the beds are carved into the ground, wider and
-//! deeper as they carry more descendants; a pool where each person stands.
+//! oldest generation up in the mountains, each younger one further down, the
+//! youngest by the lake at its foot. The family carves it — a valley from
+//! each parent to the couple's confluence and on to their children, deepest
+//! along the line that carries most descendants, a hollow where each person
+//! stands — and then the water does what water does: each person is a
+//! spring, the rain gathers, every drop runs to its lowest neighbour. So the
+//! streams join and never cross, lie in their beds, and grow on their way
+//! down to the lake (the hollows filled to their brims become pools).
 //!
 //! Served as one binary ([`World::encode`]), read by `static/canopee-world.js`.
 
@@ -106,13 +110,25 @@ pub struct Spot {
     pub generation: u16,
 }
 
-/// A parent's water running down to a child.
+/// Water as it runs: down the land's own slope, from the springs where the
+/// people stand to the lake, joining and never crossing.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Stream {
-    pub from: u16,
-    pub to: u16,
-    /// x, z, the water's height, its width.
-    pub points: Vec<[f32; 4]>,
+pub struct River {
+    /// x, z, the water's surface, half its width, its foam (0 still, 1 a
+    /// confluence or a rapid).
+    pub points: Vec<[f32; 5]>,
+}
+
+/// Still water held in a hollow: the pool where a person stands, or a tarn.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Pond {
+    pub x: f32,
+    pub z: f32,
+    pub level: f32,
+    pub radius: f32,
+    /// The cells it covers, row by row: the row, the first and the last
+    /// column — its own shape, so that it fills its hollow and no other.
+    pub spans: Vec<[u16; 3]>,
 }
 
 /// The world, as the page draws it.
@@ -125,14 +141,19 @@ pub struct World {
     pub z0: f32,
     pub size_x: f32,
     pub size_z: f32,
-    /// n × n, row by row along z.
+    /// n × n, row by row along z: the ground, beds carved.
     pub heights: Vec<f32>,
+    /// n × n: how thick the forest is, 0–255.
+    pub forest: Vec<u8>,
     /// The lake's level.
     pub water: f32,
     pub persons: Vec<Spot>,
-    pub streams: Vec<Stream>,
-    /// x, z, y, scale, kind (0 a conifer, 1 a broadleaf).
-    pub trees: Vec<[f32; 5]>,
+    pub rivers: Vec<River>,
+    pub ponds: Vec<Pond>,
+    /// Footpaths: x, z, half their width.
+    pub paths: Vec<Vec<[f32; 3]>>,
+    /// x, z, y, scale, kind (0 a conifer, 1 a broadleaf), tint (0–1).
+    pub trees: Vec<[f32; 6]>,
     /// x, z, y, scale.
     pub rocks: Vec<[f32; 4]>,
     /// x, z, y, how many animals.
@@ -140,7 +161,7 @@ pub struct World {
 }
 
 /// Grid points per side of the heightfield.
-pub const GRID: usize = 257;
+pub const GRID: usize = 513;
 /// Across the valley, between two people of one generation, in the world's
 /// units.
 const SPACING: f32 = 9.0;
@@ -241,6 +262,81 @@ fn descendants(shape: &Shape) -> BTreeMap<&str, usize> {
     out
 }
 
+/// A height in the priority queue of the flood: ordered, lowest first.
+#[derive(Clone, Copy, PartialEq)]
+struct Low(f32, u32);
+impl Eq for Low {}
+impl PartialOrd for Low {
+    fn partial_cmp(&self, o: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(o))
+    }
+}
+impl Ord for Low {
+    fn cmp(&self, o: &Self) -> std::cmp::Ordering {
+        o.0.total_cmp(&self.0).then(o.1.cmp(&self.1))
+    }
+}
+
+/// A ridged noise: sharp crests, for the mountains.
+fn ridged(seed: u64, x: f32, z: f32) -> f32 {
+    let (mut sum, mut amp, mut freq) = (0.0, 1.0, 1.0);
+    for o in 0..5 {
+        let v = 1.0 - noise(seed.wrapping_add(31 + o * 101), x * freq, z * freq).abs();
+        sum += amp * v * v;
+        amp *= 0.5;
+        freq *= 2.1;
+    }
+    sum
+}
+
+/// Smooth a polyline (Chaikin's corner cutting), its ends kept.
+fn chaikin(points: &[[f32; 5]], rounds: usize) -> Vec<[f32; 5]> {
+    let mut p = points.to_vec();
+    for _ in 0..rounds {
+        if p.len() < 3 {
+            break;
+        }
+        let mut q = Vec::with_capacity(p.len() * 2);
+        q.push(p[0]);
+        for w in p.windows(2) {
+            let (a, b) = (w[0], w[1]);
+            let mut r = [0.0f32; 5];
+            let mut s = [0.0f32; 5];
+            for k in 0..5 {
+                r[k] = a[k] * 0.75 + b[k] * 0.25;
+                s[k] = a[k] * 0.25 + b[k] * 0.75;
+            }
+            q.push(r);
+            q.push(s);
+        }
+        q.push(p[p.len() - 1]);
+        p = q;
+    }
+    p
+}
+
+/// A line thinned to points `gap` apart at least (its ends kept), each kept
+/// point carrying the most foam of those it stands for.
+fn thin(points: &[[f32; 5]], gap: f32) -> Vec<[f32; 5]> {
+    let mut out: Vec<[f32; 5]> = Vec::with_capacity(points.len() / 3 + 2);
+    let mut foam = 0.0f32;
+    for (q, p) in points.iter().enumerate() {
+        foam = foam.max(p[4]);
+        let keep = match out.last() {
+            None => true,
+            Some(o) => {
+                q + 1 == points.len()
+                    || ((p[0] - o[0]).powi(2) + (p[1] - o[1]).powi(2)).sqrt() >= gap
+            }
+        };
+        if keep {
+            out.push([p[0], p[1], p[2], p[3], foam]);
+            foam = 0.0;
+        }
+    }
+    out
+}
+
 /// Build the world of the family in `flat`.
 pub fn build(flat: &Value) -> World {
     let shape = shape_of(flat);
@@ -249,10 +345,10 @@ pub fn build(flat: &Value) -> World {
     let mut rng = Rng::new(&fp);
 
     // The family laid out as the tree lays it: generations, and an order
-    // across each that keeps families together.
+    // across each that keeps families together. The tree draws the
+    // youngest at the top; the valley starts with the oldest, where the
+    // springs are.
     let layout = crate::tree::layout(flat);
-    // The tree draws the youngest at the top; the valley starts with the
-    // oldest, where the springs are.
     let mut placed: Vec<&crate::tree::Band> = layout
         .bands
         .iter()
@@ -282,10 +378,9 @@ pub fn build(flat: &Value) -> World {
         }
     };
 
-    // The land around them: mountains beyond the family on either side, the
-    // springs above the oldest generation, the lake below the youngest.
-    // Wide enough that the mist hides the world's edge from wherever the
-    // camera may stand.
+    // The land around them: mountains beyond the family on either side and
+    // above the springs, the lake below the youngest; wide enough that the
+    // mist hides the world's edge from wherever the camera may stand.
     let margin_x = 260.0f32.max(span * 0.45);
     let size_x = span + 2.0 * margin_x;
     let top = -(gens as f32 - 1.0) * GENERATION / 2.0;
@@ -296,32 +391,41 @@ pub fn build(flat: &Value) -> World {
     let n = GRID;
     let cell_x = size_x / (n - 1) as f32;
     let cell_z = size_z / (n - 1) as f32;
+    let cell = cell_x.min(cell_z);
     // The ground's fall down the valley: 0 at the lake's shore, FALL a
     // generation above it.
     let base = |z: f32| -> f32 { (bottom + 40.0 - z) / GENERATION * FALL };
     let water = base(bottom + 120.0) - 1.5;
+    let gx = |i: usize| x0 + i as f32 * cell_x;
+    let gz = |j: usize| z0 + j as f32 * cell_z;
+    let at = |x: f32, z: f32| -> (usize, usize) {
+        (
+            (((x - x0) / cell_x).round().clamp(0.0, (n - 1) as f32)) as usize,
+            (((z - z0) / cell_z).round().clamp(0.0, (n - 1) as f32)) as usize,
+        )
+    };
 
     let mut heights = vec![0.0f32; n * n];
     for j in 0..n {
-        let z = z0 + j as f32 * cell_z;
+        let z = gz(j);
         for i in 0..n {
-            let x = x0 + i as f32 * cell_x;
+            let x = gx(i);
             let mut h = base(z);
-            // The valley's walls, rising beyond the family.
-            let out = (x.abs() - half - 20.0).max(0.0);
-            h += out * out * 0.0016 + out * 0.15;
-            // Above the springs, the mountains close the valley.
-            let above = (top - 40.0 - z).max(0.0);
-            h += above * above * 0.004;
-            // The relief: gentle on the valley floor, strong in the
-            // mountains.
-            let rough = 3.0 + (out + above) * 0.12;
-            h += fbm(seed, x / 55.0, z / 55.0) * rough;
+            // The valley's walls, rising beyond the family into mountains
+            // with sharp crests.
+            let out = (x.abs() - half - 25.0).max(0.0);
+            let above = (top - 50.0 - z).max(0.0);
+            let rise = out + above * 0.8;
+            h += rise * rise * 0.0014 + rise * 0.12;
+            h += ridged(seed, x / 90.0, z / 90.0) * (rise * 0.22).min(60.0);
+            // The valley floor's own gentle relief.
+            h += fbm(seed, x / 60.0, z / 60.0) * (2.6 + rise * 0.05);
             // The lake's basin, below the youngest generation.
             let lake = (z - (bottom + 70.0)).max(0.0);
             if lake > 0.0 {
-                let shore = (lake / 60.0).min(1.0);
-                h = h * (1.0 - shore) + (water - 4.0) * shore;
+                let shore = (lake / 70.0).min(1.0);
+                let shore = shore * shore * (3.0 - 2.0 * shore);
+                h = h * (1.0 - shore) + (water - 5.0) * shore;
             }
             heights[j * n + i] = h;
         }
@@ -334,7 +438,7 @@ pub fn build(flat: &Value) -> World {
     for (g, band) in placed.iter().enumerate() {
         let z = top + g as f32 * GENERATION;
         for c in &band.cards {
-            if persons.len() >= u16::MAX as usize {
+            if persons.len() >= u16::MAX as usize - 1 {
                 break;
             }
             let x = to_x(c.x + c.w / 2.0);
@@ -351,51 +455,20 @@ pub fn build(flat: &Value) -> World {
         }
     }
 
-    // The family's water. A child's parents' streams meet first, at a
-    // confluence below the couple, and one river runs on from it, dividing
-    // toward each of their children: the parents' water becomes the
-    // children's. A child with one parent recorded is fed by that parent's
-    // stream alone. Each stream is a curve down the valley, meandering a
-    // little, as wide as the descendants it carries.
-    let mut streams: Vec<Stream> = Vec::new();
-    // Half the water's width: a brook for one person, a river for a great
-    // line, always narrower than the space between two people.
-    let half_width = |class: u8| 0.3 + class as f32 * 0.18;
-    let curve = |rng: &mut Rng, a: [f32; 2], b: [f32; 2], w0: f32, w1: f32| -> Vec<[f32; 4]> {
-        let wiggle = rng.range(-1.0, 1.0) * (b[1] - a[1]) * 0.12;
-        let (c1, c2) = (
-            [a[0] + wiggle, a[1] + (b[1] - a[1]) * 0.45],
-            [b[0] - wiggle, b[1] - (b[1] - a[1]) * 0.45],
-        );
-        let steps = 24;
-        (0..=steps)
-            .map(|s| {
-                let t = s as f32 / steps as f32;
-                let u = 1.0 - t;
-                let x = u * u * u * a[0]
-                    + 3.0 * u * u * t * c1[0]
-                    + 3.0 * u * t * t * c2[0]
-                    + t * t * t * b[0];
-                let z = u * u * u * a[1]
-                    + 3.0 * u * u * t * c1[1]
-                    + 3.0 * u * t * t * c2[1]
-                    + t * t * t * b[1];
-                [x, z, 0.0, w0 + (w1 - w0) * t]
-            })
-            .collect()
-    };
-    // Each child's parents, as the world has placed them.
+    // The family carves the land: a valley from each parent down to the
+    // confluence below the couple, and from it down to their children —
+    // deepest toward the child who carries most of the line, so that the
+    // water, which goes where the land is lowest, follows the line; the
+    // other children's valleys are gentler, and their own springs feed
+    // them. A hollow where each person stands.
     let mut parents_of: BTreeMap<u16, Vec<u16>> = BTreeMap::new();
     for (p, c) in &shape.children {
         if let (Some(&a), Some(&b)) = (index.get(p.as_str()), index.get(c.as_str())) {
-            // No water runs uphill: a child laid beside or above a parent (a
-            // contradiction the tree reports) is not fed by them.
             if persons[b as usize].z > persons[a as usize].z {
                 parents_of.entry(b).or_default().push(a);
             }
         }
     }
-    // The children of each pair of parents, and of each lone parent.
     let mut by_parents: BTreeMap<Vec<u16>, Vec<u16>> = BTreeMap::new();
     for (child, mut ps) in parents_of {
         ps.sort_unstable();
@@ -403,162 +476,398 @@ pub fn build(flat: &Value) -> World {
         ps.truncate(2);
         by_parents.entry(ps).or_default().push(child);
     }
+    let mut valleys: Vec<([f32; 2], [f32; 2], f32, f32)> = Vec::new();
     for (ps, kids) in &by_parents {
-        let class = kids
+        let main = kids
             .iter()
-            .map(|k| persons[*k as usize].class)
-            .max()
-            .unwrap_or(1)
-            .min(5)
-            + 1;
-        let class = class.min(5);
-        if ps.len() == 2 {
-            let (a, b) = (&persons[ps[0] as usize], &persons[ps[1] as usize]);
-            let lowest = kids
-                .iter()
-                .map(|k| persons[*k as usize].z)
-                .fold(f32::MAX, f32::min);
-            let top = a.z.max(b.z);
-            let meet = [(a.x + b.x) / 2.0, top + (lowest - top) * 0.38];
-            for parent in [a, b] {
-                let points = curve(
-                    &mut rng,
-                    [parent.x, parent.z],
-                    meet,
-                    half_width(parent.class.min(3)),
-                    half_width(class),
-                );
-                streams.push(Stream {
-                    from: ps[0],
-                    to: u16::MAX,
-                    points,
-                });
-            }
-            for k in kids {
-                let child = &persons[*k as usize];
-                let points = curve(
-                    &mut rng,
-                    meet,
-                    [child.x, child.z],
-                    half_width(class),
-                    half_width(child.class),
-                );
-                streams.push(Stream {
-                    from: u16::MAX,
-                    to: *k,
-                    points,
-                });
-            }
-        } else if let Some(&p) = ps.first() {
-            let parent = &persons[p as usize];
-            for k in kids {
-                let child = &persons[*k as usize];
-                let points = curve(
-                    &mut rng,
-                    [parent.x, parent.z],
-                    [child.x, child.z],
-                    half_width(parent.class.min(3)),
-                    half_width(child.class),
-                );
-                streams.push(Stream {
-                    from: p,
-                    to: *k,
-                    points,
-                });
-            }
+            .copied()
+            .max_by_key(|k| (persons[*k as usize].class, u16::MAX - *k))
+            .unwrap_or(kids[0]);
+        let lowest = kids
+            .iter()
+            .map(|k| persons[*k as usize].z)
+            .fold(f32::MAX, f32::min);
+        let tops: Vec<&Spot> = ps.iter().map(|p| &persons[*p as usize]).collect();
+        let top_z = tops.iter().map(|p| p.z).fold(f32::MIN, f32::max);
+        let meet = if tops.len() == 2 {
+            [
+                (tops[0].x + tops[1].x) / 2.0,
+                top_z + (lowest - top_z) * 0.42,
+            ]
+        } else {
+            [tops[0].x, top_z + (lowest - top_z) * 0.25]
+        };
+        let class = persons[main as usize].class as f32;
+        for p in &tops {
+            valleys.push((
+                [p.x, p.z],
+                meet,
+                2.4 + p.class as f32 * 0.5,
+                7.0 + p.class as f32 * 1.2,
+            ));
+        }
+        for k in kids {
+            let c = &persons[*k as usize];
+            let deep = if *k == main { 3.2 + class * 0.6 } else { 1.3 };
+            let wide = if *k == main { 8.0 + class * 1.4 } else { 5.0 };
+            valleys.push((meet, [c.x, c.z], deep, wide));
         }
     }
-
-    // The beds carved into the ground, and the pools where the people stand.
-    let mut wet = vec![false; n * n];
-    let at = |x: f32, z: f32| -> (usize, usize) {
-        (
-            (((x - x0) / cell_x).round().clamp(0.0, (n - 1) as f32)) as usize,
-            (((z - z0) / cell_z).round().clamp(0.0, (n - 1) as f32)) as usize,
-        )
-    };
-    let carve =
-        |heights: &mut Vec<f32>, wet: &mut Vec<bool>, x: f32, z: f32, radius: f32, level: f32| {
-            let reach = radius * 2.5;
-            let (i0, j0) = at(x - reach, z - reach);
-            let (i1, j1) = at(x + reach, z + reach);
+    let carve_valley = |heights: &mut Vec<f32>,
+                        a: [f32; 2],
+                        b: [f32; 2],
+                        depth: f32,
+                        width: f32,
+                        rng: &mut Rng| {
+        // A gentle curve between the two, meandering a little.
+        let wiggle = rng.range(-1.0, 1.0) * (b[1] - a[1]).abs().max(8.0) * 0.18;
+        let (c1, c2) = (
+            [a[0] + wiggle, a[1] + (b[1] - a[1]) * 0.4],
+            [b[0] - wiggle * 0.6, b[1] - (b[1] - a[1]) * 0.4],
+        );
+        let len = ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2)).sqrt();
+        let steps = ((len / (cell * 0.6)).ceil() as usize).max(4);
+        for s in 0..=steps {
+            let t = s as f32 / steps as f32;
+            let u = 1.0 - t;
+            let x = u * u * u * a[0]
+                + 3.0 * u * u * t * c1[0]
+                + 3.0 * u * t * t * c2[0]
+                + t * t * t * b[0];
+            let z = u * u * u * a[1]
+                + 3.0 * u * u * t * c1[1]
+                + 3.0 * u * t * t * c2[1]
+                + t * t * t * b[1];
+            let floor = base(z) - depth;
+            let (i0, j0) = at(x - width, z - width);
+            let (i1, j1) = at(x + width, z + width);
             for j in j0..=j1 {
                 for i in i0..=i1 {
-                    let (gx, gz) = (x0 + i as f32 * cell_x, z0 + j as f32 * cell_z);
-                    let d = ((gx - x).powi(2) + (gz - z).powi(2)).sqrt();
-                    if d > reach {
+                    let d = ((gx(i) - x).powi(2) + (gz(j) - z).powi(2)).sqrt();
+                    if d >= width {
                         continue;
                     }
-                    // The bed, then its banks rising to the ground around.
-                    let target = if d < radius {
-                        level - 0.9 * (1.0 - (d / radius).powi(2))
-                    } else {
-                        level + (d - radius) / (reach - radius) * 3.0
-                    };
+                    let q = d / width;
+                    let target = floor + depth * q * q * (3.0 - 2.0 * q);
                     let k = j * n + i;
                     if target < heights[k] {
                         heights[k] = target;
                     }
-                    if d < radius {
-                        wet[k] = true;
+                }
+            }
+        }
+    };
+    for (a, b, depth, width) in &valleys {
+        carve_valley(&mut heights, *a, *b, *depth, *width, &mut rng);
+    }
+    for p in &persons {
+        let floor = base(p.z) - 3.0 - p.class as f32 * 0.4;
+        let r = 4.0 + p.class as f32 * 0.5;
+        let (i0, j0) = at(p.x - r, p.z - r);
+        let (i1, j1) = at(p.x + r, p.z + r);
+        for j in j0..=j1 {
+            for i in i0..=i1 {
+                let d = ((gx(i) - p.x).powi(2) + (gz(j) - p.z).powi(2)).sqrt() / r;
+                if d < 1.0 {
+                    let k = j * n + i;
+                    let target = floor + 2.2 * d * d;
+                    if target < heights[k] {
+                        heights[k] = target;
                     }
                 }
             }
-        };
-    for s in &mut streams {
-        let (za, zb) = (s.points[0][1], s.points[s.points.len() - 1][1]);
-        let (la, lb) = (base(za) - 0.6, base(zb) - 0.6);
-        for p in &mut s.points {
-            let t = if zb > za {
-                (p[1] - za) / (zb - za)
-            } else {
-                0.0
-            };
-            p[2] = la + (lb - la) * t.clamp(0.0, 1.0);
         }
-        // Carved between the samples too, so that the bed has no gaps.
-        for w in s.points.windows(2) {
-            let (a, b) = (w[0], w[1]);
-            let len = ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2)).sqrt();
-            let k = (len / (cell_x.min(cell_z) * 0.5)).ceil().max(1.0) as usize;
-            for q in 0..=k {
-                let t = q as f32 / k as f32;
-                carve(
-                    &mut heights,
-                    &mut wet,
-                    a[0] + (b[0] - a[0]) * t,
-                    a[1] + (b[1] - a[1]) * t,
-                    a[3] + (b[3] - a[3]) * t,
-                    a[2] + (b[2] - a[2]) * t,
-                );
+    }
+    // Smoothed, so that no carving leaves a step.
+    for _ in 0..2 {
+        let src = heights.clone();
+        for j in 1..n - 1 {
+            for i in 1..n - 1 {
+                let k = j * n + i;
+                heights[k] =
+                    (src[k] * 4.0 + src[k - 1] + src[k + 1] + src[k - n] + src[k + n]) / 8.0;
             }
         }
     }
-    for p in &persons {
-        carve(
-            &mut heights,
-            &mut wet,
-            p.x,
-            p.z,
-            2.6 + p.class as f32 * 0.4,
-            base(p.z) - 0.9,
-        );
-    }
 
-    // One pass of smoothing, so that the carving's edges are not steps.
-    let mut smooth = heights.clone();
-    for j in 1..n - 1 {
-        for i in 1..n - 1 {
+    // Where the water goes. The hollows are filled to their brims (the
+    // priority flood, from the world's edge and the lake), so that every
+    // drop finds its way down; each cell gives its water to its lowest
+    // neighbour; the rain that falls and the springs where the people
+    // stand gather downstream.
+    let mut filled = heights.clone();
+    let mut seen = vec![false; n * n];
+    let mut queue = std::collections::BinaryHeap::new();
+    for j in 0..n {
+        for i in 0..n {
             let k = j * n + i;
-            let sum = heights[k] * 4.0
-                + heights[k - 1]
-                + heights[k + 1]
-                + heights[k - n]
-                + heights[k + n];
-            smooth[k] = sum / 8.0;
+            if i == 0 || j == 0 || i == n - 1 || j == n - 1 || heights[k] < water {
+                seen[k] = true;
+                queue.push(Low(filled[k], k as u32));
+            }
         }
     }
-    let heights = smooth;
+    let steps8: [(i32, i32, f32); 8] = [
+        (-1, 0, 1.0),
+        (1, 0, 1.0),
+        (0, -1, 1.0),
+        (0, 1, 1.0),
+        (-1, -1, std::f32::consts::SQRT_2),
+        (1, -1, std::f32::consts::SQRT_2),
+        (-1, 1, std::f32::consts::SQRT_2),
+        (1, 1, std::f32::consts::SQRT_2),
+    ];
+    while let Some(Low(h, k)) = queue.pop() {
+        let (i, j) = ((k as usize) % n, (k as usize) / n);
+        for (di, dj, _) in steps8 {
+            let (ni, nj) = (i as i32 + di, j as i32 + dj);
+            if ni < 0 || nj < 0 || ni >= n as i32 || nj >= n as i32 {
+                continue;
+            }
+            let m = nj as usize * n + ni as usize;
+            if seen[m] {
+                continue;
+            }
+            seen[m] = true;
+            // A hollow is filled just above its rim, so that it still runs.
+            filled[m] = filled[m].max(h + 1e-3);
+            queue.push(Low(filled[m], m as u32));
+        }
+    }
+    // The world's edge and the lake, where the water leaves the land.
+    let sinks: Vec<bool> = (0..n * n)
+        .map(|k| {
+            let (i, j) = (k % n, k / n);
+            i == 0 || j == 0 || i == n - 1 || j == n - 1 || heights[k] < water
+        })
+        .collect();
+    let sink = |k: usize| -> bool { sinks[k] };
+    let mut receiver = vec![u32::MAX; n * n];
+    for k in 0..n * n {
+        if sink(k) {
+            continue;
+        }
+        let (i, j) = (k % n, k / n);
+        let (mut best, mut drop) = (u32::MAX, 0.0f32);
+        for (di, dj, dist) in steps8 {
+            let (ni, nj) = (i as i32 + di, j as i32 + dj);
+            if ni < 0 || nj < 0 || ni >= n as i32 || nj >= n as i32 {
+                continue;
+            }
+            let m = nj as usize * n + ni as usize;
+            let d = (filled[k] - filled[m]) / dist;
+            if d > drop {
+                drop = d;
+                best = m as u32;
+            }
+        }
+        receiver[k] = best;
+    }
+    let mut order: Vec<u32> = (0..(n * n) as u32).collect();
+    order.sort_unstable_by(|a, b| filled[*b as usize].total_cmp(&filled[*a as usize]));
+    let mut flow = vec![0.012f32; n * n];
+    let mut springs = vec![false; n * n];
+    for p in &persons {
+        let (i, j) = at(p.x, p.z);
+        let k = j * n + i;
+        flow[k] += 5.0 + p.class as f32 * 3.0;
+        springs[k] = true;
+    }
+    for &k in &order {
+        let r = receiver[k as usize];
+        if r != u32::MAX {
+            let f = flow[k as usize];
+            flow[r as usize] += f;
+        }
+    }
+
+    // The water the people's springs feed, all the way down.
+    let mut spring_fed = springs.clone();
+    for &k in &order {
+        let r = receiver[k as usize];
+        if r != u32::MAX && spring_fed[k as usize] {
+            spring_fed[r as usize] = true;
+        }
+    }
+
+    // The rivers: what the springs feed, and rain gathered enough to make a
+    // stream of its own — the mountains have their torrents, not a comb of
+    // them — traced from their sources down to where they join a river
+    // already traced, or the lake.
+    const ENOUGH: f32 = 3.0;
+    const RAIN: f32 = 30.0;
+    let river = |k: usize| !sink(k) && flow[k] >= if spring_fed[k] { ENOUGH } else { RAIN };
+    let mut fed = vec![0u8; n * n];
+    for (k, &r) in receiver.iter().enumerate() {
+        if river(k) && r != u32::MAX {
+            fed[r as usize] = fed[r as usize].saturating_add(1);
+        }
+    }
+    let mut traced = vec![false; n * n];
+    let mut heads: Vec<usize> = (0..n * n).filter(|&k| river(k) && fed[k] == 0).collect();
+    // The longest first, so that a main river is one line.
+    heads.sort_unstable_by(|a, b| filled[*b].total_cmp(&filled[*a]));
+    let mut rivers: Vec<River> = Vec::new();
+    let half_width = |f: f32| (0.34 * f.sqrt()).clamp(0.45, 5.5);
+    for h in heads {
+        let mut line: Vec<[f32; 5]> = Vec::new();
+        let mut k = h;
+        loop {
+            let (i, j) = (k % n, k / n);
+            let joined = traced[k];
+            let foam = if fed[k] > 1 { 1.0 } else { 0.0 };
+            line.push([gx(i), gz(j), filled[k], half_width(flow[k]), foam]);
+            if joined {
+                break;
+            }
+            traced[k] = true;
+            let r = receiver[k];
+            if r == u32::MAX {
+                break;
+            }
+            let rk = r as usize;
+            if sink(rk) {
+                // Into the lake at its level; over the world's edge at the
+                // edge's own height.
+                let (ri, rj) = (rk % n, rk / n);
+                let end = if heights[rk] < water {
+                    water
+                } else {
+                    filled[rk].min(filled[k])
+                };
+                line.push([gx(ri), gz(rj), end, half_width(flow[k]) * 1.2, 0.3]);
+                break;
+            }
+            k = rk;
+        }
+        if line.len() < 2 {
+            continue;
+        }
+        let mut pts = chaikin(&line, 3);
+        // The surface never climbs downstream, and a rapid foams.
+        for q in 1..pts.len() {
+            if pts[q][2] > pts[q - 1][2] {
+                pts[q][2] = pts[q - 1][2];
+            }
+        }
+        for q in 1..pts.len() {
+            let run = ((pts[q][0] - pts[q - 1][0]).powi(2) + (pts[q][1] - pts[q - 1][1]).powi(2))
+                .sqrt()
+                .max(1e-3);
+            let steep = ((pts[q - 1][2] - pts[q][2]) / run * 2.0).clamp(0.0, 0.45);
+            pts[q][4] = pts[q][4].max(steep);
+        }
+        rivers.push(River {
+            points: thin(&pts, cell * 0.6),
+        });
+    }
+
+    // The beds: the ground under each river lowered, its banks rising to
+    // meet the water's edge, so that the water lies in its bed and nowhere
+    // else.
+    // The land as it was before the rivers cut their beds: the hollows the
+    // flood filled are measured on it, not on the beds.
+    let uncut = heights.clone();
+    let mut wet = vec![false; n * n];
+    for r in &rivers {
+        for w in r.points.windows(2) {
+            let (a, b) = (w[0], w[1]);
+            let len = ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2)).sqrt();
+            let k = (len / (cell * 0.5)).ceil().max(1.0) as usize;
+            for q in 0..=k {
+                let t = q as f32 / k as f32;
+                let (x, z) = (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
+                let surface = a[2] + (b[2] - a[2]) * t;
+                // A bed at least a cell wide, so that the smallest brook shows.
+                let hw = (a[3] + (b[3] - a[3]) * t).max(cell * 0.8);
+                let reach = hw + 2.5 * cell;
+                let (i0, j0) = at(x - reach, z - reach);
+                let (i1, j1) = at(x + reach, z + reach);
+                for j in j0..=j1 {
+                    for i in i0..=i1 {
+                        let d = ((gx(i) - x).powi(2) + (gz(j) - z).powi(2)).sqrt();
+                        if d > reach {
+                            continue;
+                        }
+                        let target = if d < hw {
+                            surface - (0.35 + hw * 0.22) * (1.0 - (d / hw).powi(2)) - 0.05
+                        } else {
+                            surface - 0.05 + (d - hw) / (reach - hw) * 1.6
+                        };
+                        let m = j * n + i;
+                        if target < heights[m] {
+                            heights[m] = target;
+                        }
+                        if d < hw + cell {
+                            wet[m] = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Still water: the hollows the flood filled, the pools where the people
+    // stand first among them.
+    let mut ponds: Vec<Pond> = Vec::new();
+    let mut taken = vec![false; n * n];
+    for k in 0..n * n {
+        if taken[k] || sink(k) || filled[k] - uncut[k] < 0.35 {
+            continue;
+        }
+        let mut stack = vec![k];
+        taken[k] = true;
+        let (mut sx, mut sz, mut count, mut level) = (0.0f32, 0.0f32, 0usize, f32::MIN);
+        let mut cells = Vec::new();
+        while let Some(c) = stack.pop() {
+            let (i, j) = (c % n, c / n);
+            sx += gx(i);
+            sz += gz(j);
+            count += 1;
+            level = level.max(filled[c]);
+            cells.push(c);
+            for (di, dj, _) in steps8.iter().take(4) {
+                let (ni, nj) = (i as i32 + di, j as i32 + dj);
+                if ni < 0 || nj < 0 || ni >= n as i32 || nj >= n as i32 {
+                    continue;
+                }
+                let m = nj as usize * n + ni as usize;
+                if !taken[m] && !sink(m) && filled[m] - uncut[m] >= 0.12 {
+                    taken[m] = true;
+                    stack.push(m);
+                }
+            }
+        }
+        if count < 2 {
+            continue;
+        }
+        let (cx, cz) = (sx / count as f32, sz / count as f32);
+        let radius = cells
+            .iter()
+            .map(|c| ((gx(c % n) - cx).powi(2) + (gz(c / n) - cz).powi(2)).sqrt())
+            .fold(0.0f32, f32::max)
+            + cell;
+        for c in &cells {
+            wet[*c] = true;
+        }
+        cells.sort_unstable_by_key(|c| (c / n, c % n));
+        let mut spans: Vec<[u16; 3]> = Vec::new();
+        for c in &cells {
+            let (i, j) = ((c % n) as u16, (c / n) as u16);
+            match spans.last_mut() {
+                Some(s) if s[0] == j && s[2] + 1 == i => s[2] = i,
+                _ => spans.push([j, i, i]),
+            }
+        }
+        ponds.push(Pond {
+            x: cx,
+            z: cz,
+            level: level - 0.08,
+            radius,
+            spans,
+        });
+    }
+
     let height_at = |x: f32, z: f32| -> f32 {
         let fx = ((x - x0) / cell_x).clamp(0.0, (n - 1) as f32 - 0.001);
         let fz = ((z - z0) / cell_z).clamp(0.0, (n - 1) as f32 - 0.001);
@@ -580,48 +889,120 @@ pub fn build(flat: &Value) -> World {
         (j0..=j1).any(|j| (i0..=i1).any(|i| wet[j * n + i]))
     };
     for p in &mut persons {
-        p.y = height_at(p.x, p.z).max(base(p.z) - 1.4);
+        p.y = height_at(p.x, p.z);
     }
 
-    // Its life: trees where the ground holds them, rocks where it is steep,
-    // herds in the meadows. The same shape, the same places.
-    let treeline = base(top) + 55.0;
+    // Footpaths: between partners, and from each person down to the water
+    // nearest them, worn into the meadow.
+    let mut paths: Vec<Vec<[f32; 3]>> = Vec::new();
+    for (a, b) in &shape.unions {
+        let (Some(&ia), Some(&ib)) = (index.get(a.as_str()), index.get(b.as_str())) else {
+            continue;
+        };
+        let (pa, pb) = (&persons[ia as usize], &persons[ib as usize]);
+        let len = ((pb.x - pa.x).powi(2) + (pb.z - pa.z).powi(2)).sqrt();
+        if !(2.0..=SPACING * 14.0).contains(&len) {
+            continue;
+        }
+        let bow = rng.range(-1.0, 1.0) * len * 0.12 + len * 0.08;
+        let steps = ((len / 2.0).ceil() as usize).max(3);
+        let path: Vec<[f32; 3]> = (0..=steps)
+            .map(|s| {
+                let t = s as f32 / steps as f32;
+                let lift = 4.0 * t * (1.0 - t) * bow;
+                [
+                    pa.x + (pb.x - pa.x) * t,
+                    pa.z + (pb.z - pa.z) * t - lift,
+                    0.55,
+                ]
+            })
+            .collect();
+        paths.push(path);
+    }
+
+    // The forest, thick on the slopes and in clumps, thin on the valley
+    // floor, none in the water, on the paths or above the trees' line.
+    let treeline = base(top) + 70.0;
+    let mut forest = vec![0u8; n * n];
+    for j in 0..n {
+        for i in 0..n {
+            let (x, z) = (gx(i), gz(j));
+            let k = j * n + i;
+            let h = heights[k];
+            if wet[k] || h < water + 0.6 || h > treeline {
+                continue;
+            }
+            let clump = fbm(seed ^ 0x51ed, x / 70.0, z / 70.0) * 0.6
+                + noise(seed ^ 0x77, x / 18.0, z / 18.0) * 0.4;
+            let slope = slope_at(x, z);
+            let rise = ((x.abs() - half).max(0.0) / 120.0).min(1.0);
+            let d = (clump + 0.15 + rise * 0.5 + (slope - 0.15).clamp(0.0, 0.5) * 0.8
+                - (slope - 1.0).max(0.0) * 2.0)
+                .clamp(0.0, 1.0);
+            forest[k] = (d * 255.0) as u8;
+        }
+    }
+    // A clearing where each person stands.
+    for p in &persons {
+        let (i0, j0) = at(p.x - 16.0, p.z - 16.0);
+        let (i1, j1) = at(p.x + 16.0, p.z + 16.0);
+        for j in j0..=j1 {
+            for i in i0..=i1 {
+                let d = ((gx(i) - p.x).powi(2) + (gz(j) - p.z).powi(2)).sqrt();
+                let k = j * n + i;
+                forest[k] = (forest[k] as f32 * ((d - 9.0) / 7.0).clamp(0.0, 1.0)) as u8;
+            }
+        }
+    }
+    let forest_at = |x: f32, z: f32| -> f32 {
+        let (i, j) = at(x, z);
+        forest[j * n + i] as f32 / 255.0
+    };
+    let near_person = |x: f32, z: f32, r: f32| {
+        persons
+            .iter()
+            .any(|p| (p.x - x).powi(2) + (p.z - z).powi(2) < r * r)
+    };
+    let on_path = |x: f32, z: f32, r: f32| {
+        paths.iter().any(|path| {
+            path.iter()
+                .any(|q| (q[0] - x).powi(2) + (q[1] - z).powi(2) < r * r)
+        })
+    };
+
     let mut trees = Vec::new();
-    for _ in 0..14_000 {
+    for _ in 0..60_000 {
+        if trees.len() >= 11_000 {
+            break;
+        }
         let x = rng.range(x0 + 4.0, x0 + size_x - 4.0);
         let z = rng.range(z0 + 4.0, z0 + size_z - 4.0);
+        let f = forest_at(x, z);
+        // Thick forest, and a lone tree now and then in the meadow.
+        if rng.f() > f * f * 1.1 + 0.015 {
+            continue;
+        }
         let h = height_at(x, z);
-        if h < water + 0.5 || h > treeline {
+        if h < water + 0.6 || h > treeline || slope_at(x, z) > 1.25 {
             continue;
         }
-        let s = slope_at(x, z);
-        // Forest gathers on the slopes and in clumps; the flat floor of the
-        // valley is meadow.
-        let clump = noise(seed ^ 0x51ed, x / 30.0, z / 30.0);
-        if s > 1.1 || (s < 0.12 && clump < 0.25) || clump < -0.35 {
+        if wet_near(x, z, 2.0) || near_person(x, z, 8.0) || on_path(x, z, 2.2) {
             continue;
         }
-        if wet_near(x, z, 3.0) {
-            continue;
-        }
-        // A clearing where each person stands, so that their mark and their
-        // name are seen.
-        if persons
-            .iter()
-            .any(|p| (p.x - x).powi(2) + (p.z - z).powi(2) < 49.0)
-        {
-            continue;
-        }
-        let high = (h - base(0.0)) / 60.0;
-        let kind = if high > 0.25 || rng.f() < 0.45 {
+        let high = ((h - base(0.0)) / 70.0).clamp(0.0, 1.0);
+        let kind = if rng.f() < 0.35 + high * 0.6 {
             0.0
         } else {
             1.0
         };
-        trees.push([x, z, h, rng.range(0.75, 1.5), kind]);
+        let scale = rng.range(0.75, 1.35) * (1.15 - high * 0.3);
+        trees.push([x, z, h, scale, kind, rng.f()]);
     }
     let mut rocks = Vec::new();
-    for _ in 0..2_400 {
+    for _ in 0..9_000 {
+        if rocks.len() >= 3_200 {
+            break;
+        }
         let x = rng.range(x0 + 2.0, x0 + size_x - 2.0);
         let z = rng.range(z0 + 2.0, z0 + size_z - 2.0);
         let h = height_at(x, z);
@@ -629,22 +1010,36 @@ pub fn build(flat: &Value) -> World {
             continue;
         }
         let s = slope_at(x, z);
-        if s > 0.55 || (wet_near(x, z, 4.0) && rng.f() < 0.25) {
-            rocks.push([x, z, h, rng.range(0.6, 2.6) * (1.0 + s.min(2.0) * 0.6)]);
+        // Boulders and scree where the ground is steep; stones by the water.
+        if s > 0.7
+            || (s > 0.45 && rng.f() < 0.4)
+            || (wet_near(x, z, 3.0) && !wet_near(x, z, 0.8) && rng.f() < 0.12)
+        {
+            let big = if s > 0.9 {
+                rng.range(0.8, 3.2)
+            } else {
+                rng.range(0.3, 1.4)
+            };
+            rocks.push([x, z, h, big]);
         }
     }
     let mut herds = Vec::new();
-    for _ in 0..600 {
-        if herds.len() >= 24 {
+    for _ in 0..1_200 {
+        if herds.len() >= 18 {
             break;
         }
-        let x = rng.range(-half - 10.0, half + 10.0);
+        let x = rng.range(-half - 30.0, half + 30.0);
         let z = rng.range(top, bottom + 40.0);
         let h = height_at(x, z);
-        if h < water + 0.5 || slope_at(x, z) > 0.14 || wet_near(x, z, 6.0) {
+        if h < water + 0.5
+            || slope_at(x, z) > 0.18
+            || wet_near(x, z, 6.0)
+            || forest_at(x, z) > 0.3
+            || near_person(x, z, 10.0)
+        {
             continue;
         }
-        herds.push([x, z, h, (3.0 + rng.f() * 6.0).floor()]);
+        herds.push([x, z, h, (3.0 + rng.f() * 5.0).floor()]);
     }
 
     World {
@@ -655,9 +1050,12 @@ pub fn build(flat: &Value) -> World {
         size_x,
         size_z,
         heights,
+        forest,
         water,
         persons,
-        streams,
+        rivers,
+        ponds,
+        paths,
         trees,
         rocks,
         herds,
@@ -668,19 +1066,28 @@ impl World {
     /// The world as the page reads it, little-endian:
     ///
     /// ```text
-    /// "AXW1"  u32 n  f32 x0 z0 size_x size_z  f32 water  f32 hmin hmax
+    /// "AXW2"  u32 n  f32 x0 z0 size_x size_z  f32 water  f32 hmin hmax
     /// u16 × n·n           heights, hmin..hmax
+    /// u8 × n·n            the forest's thickness
     /// u32 persons         per person: u8 id length, id, f32 x z y, u8 class, u16 generation
-    /// u32 streams         per stream: u16 from to, u16 points, per point f32 x z y width
-    /// u32 trees           per tree: f32 x z y scale kind
+    /// u32 rivers          per river: u32 points, per point f32 x z y half-width foam
+    /// u32 ponds           per pond: f32 x z level radius, u32 spans,
+    ///                     per span u16 row first last
+    /// u32 paths           per path: u32 points, per point f32 x z half-width
+    /// u32 trees           per tree: f32 x z y scale kind tint
     /// u32 rocks           per rock: f32 x z y scale
     /// u32 herds           per herd: f32 x z y count
     /// ```
     pub fn encode(&self) -> Vec<u8> {
-        let mut out = Vec::with_capacity(self.heights.len() * 2 + self.trees.len() * 20 + 4096);
-        let f = |out: &mut Vec<u8>, v: f32| out.extend_from_slice(&v.to_le_bytes());
-        out.extend_from_slice(b"AXW1");
-        out.extend_from_slice(&(self.n as u32).to_le_bytes());
+        let mut out = Vec::with_capacity(self.heights.len() * 3 + self.trees.len() * 24 + 65_536);
+        fn f(out: &mut Vec<u8>, v: f32) {
+            out.extend_from_slice(&v.to_le_bytes());
+        }
+        fn u(out: &mut Vec<u8>, v: usize) {
+            out.extend_from_slice(&(v as u32).to_le_bytes());
+        }
+        out.extend_from_slice(b"AXW2");
+        u(&mut out, self.n);
         for v in [self.x0, self.z0, self.size_x, self.size_z, self.water] {
             f(&mut out, v);
         }
@@ -695,7 +1102,8 @@ impl World {
             let q = ((h - lo) / (hi - lo) * 65535.0).round().clamp(0.0, 65535.0) as u16;
             out.extend_from_slice(&q.to_le_bytes());
         }
-        out.extend_from_slice(&(self.persons.len() as u32).to_le_bytes());
+        out.extend_from_slice(&self.forest);
+        u(&mut out, self.persons.len());
         for p in &self.persons {
             let id = p.id.as_bytes();
             let len = id.len().min(255);
@@ -707,33 +1115,48 @@ impl World {
             out.push(p.class);
             out.extend_from_slice(&p.generation.to_le_bytes());
         }
-        out.extend_from_slice(&(self.streams.len() as u32).to_le_bytes());
-        for s in &self.streams {
-            out.extend_from_slice(&s.from.to_le_bytes());
-            out.extend_from_slice(&s.to.to_le_bytes());
-            out.extend_from_slice(&(s.points.len() as u16).to_le_bytes());
-            for p in &s.points {
+        u(&mut out, self.rivers.len());
+        for r in &self.rivers {
+            u(&mut out, r.points.len());
+            for p in &r.points {
                 for v in p {
                     f(&mut out, *v);
                 }
             }
         }
-        out.extend_from_slice(&(self.trees.len() as u32).to_le_bytes());
+        u(&mut out, self.ponds.len());
+        for p in &self.ponds {
+            for v in [p.x, p.z, p.level, p.radius] {
+                f(&mut out, v);
+            }
+            u(&mut out, p.spans.len());
+            for s in &p.spans {
+                for v in s {
+                    out.extend_from_slice(&v.to_le_bytes());
+                }
+            }
+        }
+        u(&mut out, self.paths.len());
+        for path in &self.paths {
+            u(&mut out, path.len());
+            for q in path {
+                for v in q {
+                    f(&mut out, *v);
+                }
+            }
+        }
+        u(&mut out, self.trees.len());
         for t in &self.trees {
             for v in t {
                 f(&mut out, *v);
             }
         }
-        out.extend_from_slice(&(self.rocks.len() as u32).to_le_bytes());
-        for r in &self.rocks {
-            for v in r {
-                f(&mut out, *v);
-            }
-        }
-        out.extend_from_slice(&(self.herds.len() as u32).to_le_bytes());
-        for h in &self.herds {
-            for v in h {
-                f(&mut out, *v);
+        for list in [&self.rocks, &self.herds] {
+            u(&mut out, list.len());
+            for r in list.iter() {
+                for v in r {
+                    f(&mut out, *v);
+                }
             }
         }
         out
@@ -816,50 +1239,81 @@ mod tests {
         assert_eq!(a, b, "seeded by the shape");
         assert_eq!(a.encode(), b.encode());
         assert_eq!(a.heights.len(), GRID * GRID);
+        assert_eq!(a.forest.len(), GRID * GRID);
         assert_eq!(a.persons.len(), 7);
-        // Each couple: its two streams to their confluence, and one on to
-        // their child.
-        assert_eq!(
-            a.streams.len(),
-            9,
-            "two tributaries and a river for each couple"
-        );
+        assert!(!a.rivers.is_empty(), "water runs");
         assert!(!a.trees.is_empty() && !a.rocks.is_empty());
+        assert_eq!(a.paths.len(), 3, "a path between each pair of partners");
     }
 
     #[test]
-    fn water_runs_down_from_the_oldest_to_the_youngest() {
+    fn the_people_stand_down_the_valley_generation_by_generation() {
         let w = build(&family());
         let spot = |id: &str| w.persons.iter().find(|p| p.id == id).unwrap().clone();
         let (a, e, g) = (spot("a"), spot("e"), spot("g"));
-        assert!(
-            a.z < e.z && e.z < g.z,
-            "down the valley, generation by generation"
-        );
+        assert!(a.z < e.z && e.z < g.z, "down the valley");
         assert!(a.y > e.y && e.y > g.y, "and down the slope");
-        for s in &w.streams {
-            for p in s.points.windows(2) {
-                assert!(p[1][2] <= p[0][2] + 1e-4, "no water runs uphill");
-            }
-        }
-        // The grandchild carries nobody: the smallest class; the
-        // grandparents carry two.
         assert_eq!(g.class, 1);
         assert_eq!(a.class, crate::river::class_of(3) as u8);
+    }
+
+    #[test]
+    fn water_runs_downhill_joins_and_never_crosses() {
+        let w = build(&family());
+        for r in &w.rivers {
+            for p in r.points.windows(2) {
+                assert!(p[1][2] <= p[0][2] + 1e-4, "no water runs uphill");
+            }
+            assert!(r.points.iter().all(|p| p[3] > 0.0));
+        }
+        // Each river ends on another one, in the lake, or over the world's
+        // edge: a tree of water.
+        let edge = |x: f32, z: f32| {
+            x < w.x0 + 8.0
+                || z < w.z0 + 8.0
+                || x > w.x0 + w.size_x - 8.0
+                || z > w.z0 + w.size_z - 8.0
+        };
+        let ends_somewhere = w.rivers.iter().all(|r| {
+            let end = r.points[r.points.len() - 1];
+            end[2] <= w.water + 1e-3
+                || edge(end[0], end[1])
+                || w.rivers.iter().any(|o| {
+                    !std::ptr::eq(o, r)
+                        && o.points
+                            .iter()
+                            .any(|q| (q[0] - end[0]).abs() < 4.0 && (q[1] - end[1]).abs() < 4.0)
+                })
+        });
+        assert!(
+            ends_somewhere,
+            "every river joins another or reaches the lake"
+        );
+        // A spring where each person stands: water near every one.
+        for p in &w.persons {
+            let near = w.rivers.iter().any(|r| {
+                r.points
+                    .iter()
+                    .any(|q| (q[0] - p.x).powi(2) + (q[1] - p.z).powi(2) < 100.0)
+            }) || w
+                .ponds
+                .iter()
+                .any(|o| (o.x - p.x).powi(2) + (o.z - p.z).powi(2) < (o.radius + 6.0).powi(2));
+            assert!(near, "{} has water by them", p.id);
+        }
     }
 
     #[test]
     fn the_world_reads_back_from_its_bytes() {
         let w = build(&family());
         let bytes = w.encode();
-        assert_eq!(&bytes[..4], b"AXW1");
+        assert_eq!(&bytes[..4], b"AXW2");
         let n = u32::from_le_bytes(bytes[4..8].try_into().unwrap()) as usize;
         assert_eq!(n, GRID);
-        // header 8 + 7 floats, then the heights, then the persons' count.
-        let at = 8 + 7 * 4 + n * n * 2;
+        // header 8 + 7 floats, then the heights, the forest, the persons' count.
+        let at = 8 + 7 * 4 + n * n * 2 + n * n;
         let persons = u32::from_le_bytes(bytes[at..at + 4].try_into().unwrap());
         assert_eq!(persons, 7);
-        let first = bytes[at + 4] as usize;
-        assert_eq!(first, 1, "ids carried whole");
+        assert_eq!(bytes[at + 4], 1, "ids carried whole");
     }
 }

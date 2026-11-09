@@ -214,7 +214,10 @@ pub struct Translated {
 /// One file a language, in `src/impact_i18n/`: under "## <key>", `name|`,
 /// `note|`, `context|`, `stakes|` and `victims|` lines. What a file leaves
 /// out reads in English.
-pub const TRANSLATED: &[(&str, &str)] = &[("pl", include_str!("impact_i18n/pl.txt"))];
+pub const TRANSLATED: &[(&str, &str)] = &[
+    ("pl", include_str!("impact_i18n/pl.txt")),
+    ("de", include_str!("impact_i18n/de.txt")),
+];
 
 /// A language's file, read: each landmark's fields by its key.
 pub fn parsed_translations(text: &str) -> Result<HashMap<String, Translated>, String> {
@@ -2939,31 +2942,33 @@ mod tests {
     }
 
     #[test]
-    fn polish_names_and_explains_every_landmark() {
-        let pl = translations().get("pl").expect("the Polish file");
-        for l in catalogue() {
-            let t = pl
-                .get(&l.key)
-                .unwrap_or_else(|| panic!("no Polish for {}", l.key));
-            assert!(!t.name.is_empty(), "{}: no name", l.key);
-            assert_eq!(
-                t.note.is_empty(),
-                l.notes[0].is_empty(),
-                "{}: the note",
-                l.key
-            );
-            if let Some(d) = details().get(&l.key) {
-                assert!(
-                    !t.context.is_empty() && !t.stakes.is_empty(),
-                    "{}: the window",
-                    l.key
-                );
+    fn each_language_names_and_explains_every_landmark() {
+        for (lang, _) in TRANSLATED {
+            let file = translations().get(lang).expect("the language's file");
+            for l in catalogue() {
+                let t = file
+                    .get(&l.key)
+                    .unwrap_or_else(|| panic!("{lang}: nothing for {}", l.key));
+                assert!(!t.name.is_empty(), "{lang} {}: no name", l.key);
                 assert_eq!(
-                    t.victims.is_empty(),
-                    d.victims[0].is_empty(),
-                    "{}: the victims",
+                    t.note.is_empty(),
+                    l.notes[0].is_empty(),
+                    "{lang} {}: the note",
                     l.key
                 );
+                if let Some(d) = details().get(&l.key) {
+                    assert!(
+                        !t.context.is_empty() && !t.stakes.is_empty(),
+                        "{lang} {}: the window",
+                        l.key
+                    );
+                    assert_eq!(
+                        t.victims.is_empty(),
+                        d.victims[0].is_empty(),
+                        "{lang} {}: the victims",
+                        l.key
+                    );
+                }
             }
         }
     }
@@ -2991,6 +2996,7 @@ mod tests {
         assert!(pl.context.starts_with("Rywalizujące sojusze"));
         assert!(pl.victims.starts_with("Około 20 milionów"));
         assert_eq!(ww1("fr").name, "Première Guerre mondiale");
+        assert_eq!(ww1("de").name, "Erster Weltkrieg");
         // A language with no file yet reads in English.
         assert_eq!(ww1("sw").name, "First World War");
     }

@@ -1,6 +1,6 @@
 # ADR 0043 — Canopée: a world built from the family
 
-**Status:** proposed (in progress) · **Builds on:** docs/adr/0004 (the
+**Status:** accepted, v1.12.0 (2026-11-09) · **Builds on:** docs/adr/0004 (the
 river, §11–§17), docs/adr/0007 (the themes' living scenes) · **Applies to:**
 `src/world.rs`, `src/routes/world.rs`, `src/state.rs`,
 `static/canopee-world.js`, `templates/index.html` (the river), `static/app.css`

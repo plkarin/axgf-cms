@@ -151,13 +151,6 @@
       return reach ? Math.min(0.4, THETA / reach) : 0.4;
     }
     var uD = per(XD), uA = per(XA), oD = C ? XD[C.key] : 0, oA = C ? XA[C.key] : 0;
-    // Room across for every name (the operator's review of 9 November 2026:
-    // more length across, for reading and for walking the family): a level's
-    // neighbours a card's width apart at the front, the tree widening — and
-    // the camera travelling along it (river.js, `meta.wide`) — rather than
-    // its people crowding.
-    G.R = clamp(230 / Math.max(0.02, Math.min(uD, uA)), R, R * 6);
-    var wide = Math.max(1, (2 * G.R * 0.96 + 260) / hw);
     // Whoever neither tree reaches keeps the river's place, round the trunk.
     var reachR = 1;
     fr.persons.forEach(function (p) { reachR = Math.max(reachR, Math.abs(p.x - cx)); });
@@ -217,7 +210,7 @@
       return place(Object.assign({}, t, { th1: s[0], lv1: s[1], th2: s[0], lv2: s[1] + dir * len }), G);
     });
     GEO = G;
-    return { persons: persons, couples: couples, tails: tails, meta: Object.assign({}, m, { gn: G, wide: wide }) };
+    return { persons: persons, couples: couples, tails: tails, meta: Object.assign({}, m, { gn: G }) };
   }
   // A tail's ends, and its count, where the tree puts them.
   function place(t, G) {
@@ -300,11 +293,6 @@
   function paint(fr, api, rest) {
     var f = api.f, esc = api.esc, PM = api.byKey(fr.persons), m = fr.meta;
     var vt = m.view[0], vh = m.view[1], hl = m.hview[0], hw = m.hview[1];
-    // The cards may use the drawing's whole width when it is wider than the
-    // window (shape, `meta.wide`); the levels' numbers keep to the window's
-    // edge, and follow the camera along it.
-    var hl0 = hl, hw0 = hw;
-    if (m.wide > 1) { hl = hl0 + hw0 / 2 - hw0 * m.wide / 2; hw = hw0 * m.wide; }
     if (rest && pending) { world += pending; pending = 0; }
     var G = m.gn || GEO || { x0: hl + hw / 2, y0: vt + vh * 0.57, R: hw / 3, H: vh, PH: vh * 1.7, PW: vh * 1.7 * PIC.aspect, nd: 0, na: 0 };
     GEO = Object.assign({}, G, { world: G.world !== undefined ? G.world : world, e: rest ? 0 : G.e || 0, lc: rest ? 0 : G.lc || 0 });
@@ -317,13 +305,12 @@
       }
       return false;
     }
-    // The generations' numbers at the right, as the river's rail: set at
-    // the window's edge, the camera keeps them there (river.js, rails).
+    // The generations' numbers at the right, as the river's rail.
     var rail = '';
     for (var l = -G.na; l <= G.nd; l++) {
-      var ly = G.y0 - lift(l) * G.H, word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0 ◂', gx = hl0 + hw0 - 10;
-      rail += '<text x="' + f(gx) + '" y="' + f(ly + 3.5) + '" text-anchor="end" font-family="' + api.mono + '" font-size="10" paint-order="stroke" class="gn-gen' + (l === 0 ? ' gn-gen-0' : '') + '">' + word + '</text>';
-      boxes.push([gx - 36, ly - 8, gx + 2, ly + 5]);
+      var ly = G.y0 - lift(l) * G.H, word = l > 0 ? '+' + l : l < 0 ? '−' + (-l) : '0 ◂', gx = hl + hw - 44;
+      rail += '<text x="' + f(gx) + '" y="' + f(ly + 3.5) + '" font-family="' + api.mono + '" font-size="10" paint-order="stroke" class="gn-gen' + (l === 0 ? ' gn-gen-0' : '') + '">' + word + '</text>';
+      boxes.push([gx - 2, ly - 8, gx + 34, ly + 5]);
     }
 
     // The lines: the parchment's light under each, then its ink, as sure as
@@ -525,7 +512,7 @@
     hud.hidden = false;
   }
 
-  window.axgfView = { name: 'scroll', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; }, namesAll: true };
+  window.axgfView = { name: 'scroll', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; } };
   window.axgfView.tween = tween3;
 
   /* ---- the picture in relief, and its life ---- */

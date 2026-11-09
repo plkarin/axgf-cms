@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Genealogy's tree and Clarity's funnel keep within their window again**,
+  at the operator's request: no more sideways overflow, and the near
+  generations named by default as before 1.13.0 ("All names" still names
+  everyone). The softer colours of 1.13.0 stay (docs/adr/0044, amended).
+
 ## [1.13.0] — 2026-11-09
 
 Genealogy and Clarity softer and wider, as the operator asked on

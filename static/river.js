@@ -406,11 +406,8 @@
    *   thread back to its person.
    * The drawing's own names stay where it put them; this only hides the far
    * ones (app.css, `data-far`) and adds the missing ones. */
-  // A view that lays its drawing wide enough to name everyone (Genealogy's
-  // tree, Clarity's funnel: `namesAll`) names everyone until the reader
-  // chooses otherwise; the reader's choice, once made, is kept.
-  var NAMES = 'axgf-river-names', namesAll = !!(view && view.namesAll);
-  try { var namesSaid = localStorage.getItem(NAMES); if (namesSaid) namesAll = namesSaid === 'all'; } catch (e) { /* private window */ }
+  var NAMES = 'axgf-river-names', namesAll = false;
+  try { namesAll = localStorage.getItem(NAMES) === 'all'; } catch (e) { /* private window */ }
   function placeNames() {
     var svg = canvas.querySelector('svg.rv-svg');
     root.classList.toggle('rv-names-all', namesAll);
@@ -488,8 +485,6 @@
    * people and every word keep their size and only the distances between
    * them grow, as a map's symbols do (`rv-cs`, scaled back by app.css). */
   var KMAX = 1.15, ZMAX = 3, cam = { z: 1, x: null, y: null, iz: 1 };
-  // Under a wide drawing, the line that says it can be walked sideways.
-  var wideHint = root.querySelector('[data-rv-wide-hint]');
   // The drawing is replaced, never the stage: the living ground and the
   // water's light (river-scene.js) sit beside it and keep their state.
   function setSvg(markup) {
@@ -502,15 +497,8 @@
   function frame(meta) {
     var hv = meta.hview, v = meta.view, sw = canvas.clientWidth || hv[1];
     var k = Math.min(sw / hv[1], KMAX), w = Math.max(hv[1], sw / k);
-    // A view whose drawing needs more length across than the window
-    // (`meta.wide`, a number of windows: Genealogy's tree and Clarity's
-    // funnel, the operator's review of 9 November 2026) lays it wider, and
-    // the camera travels along it at any zoom: `sx` and `span` are the
-    // drawing's own left and width.
-    var span = Math.max(w, hv[1] * (meta.wide || 1));
-    return { x: hv[0] - (w - hv[1]) / 2, y: v[0], w: w, h: v[1], k: k, hv: hv, sx: hv[0] + hv[1] / 2 - span / 2, span: span };
+    return { x: hv[0] - (w - hv[1]) / 2, y: v[0], w: w, h: v[1], k: k, hv: hv };
   }
-  function wide() { return !!(here && here.meta && here.meta.wide > 1); }
   // Once per drawing: which rects and rules are the ground and the bands
   // (as wide as the server's window), which words are the years and the
   // rail (at its edges), and the point every other word and person keeps
@@ -538,11 +526,11 @@
   }
   function apply(svg, F) {
     var P = svg._rv || prepare(svg, F.hv);
-    P.bands.forEach(function (r) { r.setAttribute('x', F.sx.toFixed(2)); r.setAttribute('width', F.span.toFixed(2)); });
-    P.rules.forEach(function (l) { l.setAttribute('x1', F.sx.toFixed(2)); l.setAttribute('x2', (F.sx + F.span).toFixed(2)); });
+    P.bands.forEach(function (r) { r.setAttribute('x', F.x.toFixed(2)); r.setAttribute('width', F.w.toFixed(2)); });
+    P.rules.forEach(function (l) { l.setAttribute('x1', F.x.toFixed(2)); l.setAttribute('x2', (F.x + F.w).toFixed(2)); });
     var z = cam.z, vw = F.w / z, vh = F.h / z;
     var cx = cam.x === null ? F.x + F.w / 2 : cam.x, cy = cam.y === null ? F.y + F.h / 2 : cam.y;
-    cx = Math.min(Math.max(cx, F.sx + vw / 2), F.sx + F.span - vw / 2);
+    cx = Math.min(Math.max(cx, F.x + vw / 2), F.x + F.w - vw / 2);
     cy = Math.min(Math.max(cy, F.y + vh / 2), F.y + F.h - vh / 2);
     if (cam.x !== null) { cam.x = cx; cam.y = cy; }
     var x = cx - vw / 2, y = cy - vh / 2;
@@ -558,8 +546,6 @@
       r[0].style.transformOrigin = tx + 'px ' + r[0].getAttribute('y') + 'px';
     });
     canvas.classList.toggle('rv-zoomed', z > 1);
-    canvas.classList.toggle('rv-wide', F.span > F.w + 1);
-    if (wideHint) wideHint.hidden = !(F.span > F.w + 1);
     if (zoomInput && Math.abs(+zoomInput.value - z) > 0.01) zoomInput.value = String(Math.round(z * 10) / 10);
     if (window.axgfRiverScene) window.axgfRiverScene.view();
   }
@@ -599,17 +585,14 @@
     var fy = clientY === undefined ? 0.5 : (clientY - box.top) / box.height;
     var ux = vb.x + fx * vb.width, uy = vb.y + fy * vb.height;
     cam.z = z;
-    // Back to the whole window: on a wide drawing the camera keeps where it
-    // is along it, only its height comes back.
-    if (z === 1 && !wide()) { cam.x = null; cam.y = null; }
-    else if (z === 1) { cam.x = ux + (0.5 - fx) * F.w; cam.y = null; }
+    if (z === 1) { cam.x = null; cam.y = null; }
     else { cam.x = ux + (0.5 - fx) * F.w / z; cam.y = uy + (0.5 - fy) * F.h / z; }
     apply(svg, F);
     sizeHits();
   }
   function panBy(dx, dy) {
     var svg = canvas.querySelector('svg.rv-svg');
-    if (!svg || (cam.z <= 1 && !wide())) return;
+    if (!svg || cam.z <= 1) return;
     var vb = svg.viewBox.baseVal, u = vb.width / svg.getBoundingClientRect().width;
     cam.x = vb.x + vb.width / 2 - dx * u; cam.y = vb.y + vb.height / 2 - dy * u;
     apply(svg, frame(here.meta));
@@ -796,7 +779,7 @@
         var c0 = { x: cam.x, y: cam.y }, c1 = centreOf(B);
         var done = function () {
           canvas.querySelectorAll('.rv-wait').forEach(function (w) { w.remove(); });
-          if ((cam.z > 1 || cam.x !== null) && c1) { cam.x = c1.x; cam.y = cam.z > 1 ? c1.y : null; }
+          if (cam.z > 1 && c1) { cam.x = c1.x; cam.y = c1.y; }
           setSvg(view ? view.paint(here, api, true) : body.svg); busy = false; raf = null; decorate(); arrive();
         };
         if (cut || reduce) return done();
@@ -806,7 +789,7 @@
           // turns round its axis), from the river's own blend.
           var t = Math.min(1, (now - t0) / (view && view.tween ? 900 : 560));
           var fr = view && view.tween ? view.tween(A, B, ease(t), tween) : tween(A, B, ease(t));
-          if (c0.x !== null && c1) { cam.x = c0.x + (c1.x - c0.x) * ease(t); if (cam.z > 1) cam.y = c0.y + (c1.y - c0.y) * ease(t); }
+          if (cam.z > 1 && c0.x !== null && c1) { cam.x = c0.x + (c1.x - c0.x) * ease(t); cam.y = c0.y + (c1.y - c0.y) * ease(t); }
           place(setSvg(view ? view.paint(fr, api, false) : paint(fr)), fr.meta);
           if (t < 1) raf = requestAnimationFrame(tick); else done();
         })(t0);
@@ -984,15 +967,7 @@
   // alone still scrolls the page. Zoomed, a drag moves the camera; at rest
   // a finger still scrolls the page (touch-action, app.css).
   canvas.addEventListener('wheel', function (e) {
-    if (!(e.ctrlKey || e.metaKey)) {
-      // Along a wide drawing: a trackpad's sideways swipe, or Shift with the
-      // wheel. The wheel alone still scrolls the page.
-      var dx = e.deltaX || (e.shiftKey ? e.deltaY : 0);
-      if (!wide() || !dx || busy) return;
-      e.preventDefault();
-      panBy(-dx, 0);
-      return;
-    }
+    if (!(e.ctrlKey || e.metaKey)) return;
     e.preventDefault();
     zoomTo(cam.z * Math.exp(-e.deltaY * 0.0025), e.clientX, e.clientY);
   }, { passive: false });
@@ -1018,7 +993,7 @@
       dragged = performance.now();
       return;
     }
-    if (!drag || (cam.z <= 1 && !wide())) return;
+    if (!drag || cam.z <= 1) return;
     if (!drag.moved) {
       if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
       drag.moved = true;

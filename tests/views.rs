@@ -334,19 +334,17 @@ async fn the_views_scripts_and_pictures_are_served_and_name_no_colour() {
 fn a_view_gives_river_js_everything_it_asks_for() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let read = |f: &str| std::fs::read_to_string(root.join(f)).expect(f);
-    // The two views wide enough to name everyone ask for every name by
-    // default (docs/adr/0044).
-    for (file, name, extra) in [
-        ("static/fusion.js", "tree", ""),
-        ("static/galaxy.js", "galaxy", ""),
-        ("static/summit.js", "summit", ""),
-        ("static/clarity.js", "funnel", ", namesAll: true"),
-        ("static/genealogy.js", "scroll", ", namesAll: true"),
+    for (file, name) in [
+        ("static/fusion.js", "tree"),
+        ("static/galaxy.js", "galaxy"),
+        ("static/summit.js", "summit"),
+        ("static/clarity.js", "funnel"),
+        ("static/genealogy.js", "scroll"),
     ] {
         let js = read(file);
         assert!(
             js.contains(&format!(
-                "window.axgfView = {{ name: '{name}', shape: shape, edge: edge, paint: paint, rest: rest, named: function () {{ return named; }}{extra} }};"
+                "window.axgfView = {{ name: '{name}', shape: shape, edge: edge, paint: paint, rest: rest, named: function () {{ return named; }} }};"
             )),
             "{file}"
         );
@@ -420,9 +418,7 @@ fn the_glass_turns_and_the_funnel_draws_its_counts_over_the_glass() {
 
 /// Names (2026-10-23): one button, under every view and the river alike,
 /// asks for every name or only the near generations' (−1, 0, +1), and the
-/// reader's choice is remembered; a view wide enough to name everyone
-/// (docs/adr/0044) names everyone until the reader chooses; Fusion lays its
-/// tree out in tiers.
+/// reader's choice is remembered; Fusion lays its tree out in tiers.
 #[test]
 fn a_reader_asks_for_every_name_or_the_near_ones() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -430,8 +426,7 @@ fn a_reader_asks_for_every_name_or_the_near_ones() {
     let tpl = read("templates/river.html");
     assert!(tpl.contains(r#"data-rv-names hidden>{{ t("river-names-all") }}</button>"#));
     let river = read("static/river.js");
-    assert!(river.contains("var NAMES = 'axgf-river-names', namesAll = !!(view && view.namesAll);"));
-    assert!(river.contains("if (namesSaid) namesAll = namesSaid === 'all';"));
+    assert!(river.contains("namesAll = localStorage.getItem(NAMES) === 'all';"));
     assert!(
         river.contains("var p = PK[a.getAttribute('data-key')], far = p && Math.abs(p.gen) > 1;")
     );

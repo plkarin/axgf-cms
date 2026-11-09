@@ -1,6 +1,6 @@
 # ADR 0044 — Genealogy and Clarity: softer colours, a wider walk
 
-**Status:** accepted, v1.13.0 (2026-11-09) · **Amends:** docs/adr/0013 (Clarity's
+**Status:** accepted, v1.13.0 (2026-11-09); §2 and §3 withdrawn the same evening (see the end) · **Amends:** docs/adr/0013 (Clarity's
 palette and its prism), docs/adr/0016 (Genealogy's palette and its tree) ·
 **Applies to:** `static/css/tokens.css`, `static/app.css`, `static/river.js`
 (`frame`, the camera, `meta.wide`, the names' default), `static/genealogy.js`,
@@ -74,3 +74,13 @@ kept as before (docs/adr/0004's names, 2026-10-23).
   for `meta.wide`, and without it `river.js` frames as it did.
 - A new text, `river-wide-hint`, in the fourteen languages (machine
   translations, to be reread).
+
+## Withdrawn: the wider walk and every name (9 November 2026, evening)
+
+Having seen v1.13.0, the operator found the drawings too wide: "it must be
+able to stay within a max width, not overflow sideways, for both". The two
+drawings keep within their window again, as before v1.13.0 (§2 withdrawn:
+no `meta.wide`, no sideways walk at rest, no line saying so), and with no
+more room than the window, the near generations are named by default again,
+as before (§3 withdrawn; "All names" still names everyone). The softer
+palettes of §1 stay.

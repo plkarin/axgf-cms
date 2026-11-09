@@ -6058,10 +6058,6 @@ html.js-motion:is([data-theme="canopee"], [data-theme="fusion"], [data-theme="ga
 .rv-canvas { touch-action: pan-y; }
 .rv-canvas.rv-zoomed { touch-action: none; cursor: grab; }
 .rv-canvas.rv-grabbing { cursor: grabbing; }
-/* A drawing wider than its window (Genealogy's tree, Clarity's funnel): the
-   hand travels along it at any zoom; a finger still scrolls the page up and
-   down. */
-.rv-canvas.rv-wide:not(.rv-grabbing) { cursor: grab; }
 .rv-zoom { display: inline-flex; align-items: center; gap: 0.5rem; }
 .rv-zoom input[type="range"] { inline-size: 7rem; accent-color: var(--rv-accent); }
 /* The pause: what it does is the same word whatever its state; the state

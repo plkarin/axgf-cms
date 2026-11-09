@@ -3536,7 +3536,6 @@ river-names-all = Все имена
 # A tap on a person in a view, on a touch screen: the drawing moves onto them.
 river-pick-centre = Поставить в центр
 river-zoom-hint = Масштаб: Ctrl + колесо, щипок или + / − · при увеличении перетаскивайте
-river-wide-hint = Перетаскивайте в сторону, чтобы пройти всю ширину семьи
 river-tab-sources = Источники
 river-legend-title = Как читать реку
 view-tree-name = Живое дерево

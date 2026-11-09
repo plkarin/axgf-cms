@@ -3395,7 +3395,6 @@ river-names-all = כל השמות
 # A tap on a person in a view, on a touch screen: the drawing moves onto them.
 river-pick-centre = מרכז כאן
 river-zoom-hint = זום: Ctrl + גלגלת, צביטה, או + / − · כשמוגדל, גררו כדי לזוז
-river-wide-hint = גררו הצידה כדי לעבור על כל רוחב המשפחה
 river-tab-sources = מקורות
 river-legend-title = איך לקרוא את הנהר
 view-tree-name = עץ חי

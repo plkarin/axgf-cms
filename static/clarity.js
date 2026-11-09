@@ -40,8 +40,6 @@
   // People along a ring: never closer than MINSP, never further apart than
   // MAXSP, and never past this share of the ring's half-width.
   var MINSP = 40, MAXSP = 96, SPREAD = 0.86;
-  // A name's width along a ring, when the funnel widens to give each one.
-  var NAMESP = 120;
   // The rings as the last frame drew them, for the edges and the scene.
   var GEO = null;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -108,23 +106,16 @@
     // The rings: each wide enough for its people, each wider than the one
     // below it, and the mouth no wider than the stage allows; the funnel
     // stands a little left of the middle, its stages' figures on the right.
-    // Room along a ring for every name (the operator's review of 9 November
-    // 2026: more length across, for reading and for walking the family): the
-    // funnel as wide as its most crowded ring needs for its people a name's
-    // width apart, the camera travelling along it (river.js, `meta.wide`).
-    var WMAX = hw * 0.42, WMIN = hw * 0.15, widths = {}, needMax = 0;
-    gens.forEach(function (l) { needMax = Math.max(needMax, half[l] * NAMESP / SPREAD + 18); });
-    var wide = Math.min(6, Math.max(1, needMax / WMAX));
-    WMAX *= wide;
+    var WMAX = hw * 0.42, WMIN = hw * 0.15, widths = {};
     for (var l = rlo; l <= rhi; l++) {
-      var need = (l in half) ? half[l] * (wide > 1 ? NAMESP : MINSP) / SPREAD + 18 : 0;
+      var need = (l in half) ? half[l] * MINSP / SPREAD + 18 : 0;
       widths[l] = Math.max(WMIN + (WMAX - WMIN) * (l - rlo + 0.5) / (rhi - rlo + 1), need, l > rlo ? widths[l - 1] + 10 : 0);
     }
     if (widths[rhi] > WMAX) {
       var shrink = WMAX / widths[rhi];
       for (l = rlo; l <= rhi; l++) widths[l] *= shrink;
     }
-    var funnel = { sx: wide > 1 ? hl + hw / 2 : hl + hw * 0.44, top: vt + vh * 0.05, bottom: vt + vh * 0.9, lo: rlo, hi: rhi, glo: lo, ghi: hi, widths: widths };
+    var funnel = { sx: hl + hw * 0.44, top: vt + vh * 0.05, bottom: vt + vh * 0.9, lo: rlo, hi: rhi, glo: lo, ghi: hi, widths: widths };
     var G = geometry({ funnel: funnel });
     var at = {}, pos = {};
     gens.forEach(function (l) {
@@ -198,7 +189,7 @@
         var a = place(t.x1, t.y1), b = place(t.x2, t.y2);
         return Object.assign({}, t, { x1: a[0], y1: a[1], x2: b[0], y2: b[1], count_at: markAt(t.count_at) });
       }),
-      meta: Object.assign({}, m, { funnel: funnel, wide: wide > 1 ? Math.max(1, (2 * WMAX + 320) / hw) : 1 })
+      meta: Object.assign({}, m, { funnel: funnel })
     };
   }
   // A link runs from one ring to the next: an S, as a thread drawn on the
@@ -236,9 +227,6 @@
     // the counts.
     var tails = '', unions = '', marks = '', base = '', beam = '';
     var hl = m.hview[0], hw = m.hview[1], vt = m.view[0], vh = m.view[1];
-    // The names may use the funnel's whole width when it is wider than the
-    // window (shape, `meta.wide`).
-    if (m.wide > 1) { hl = hl + hw / 2 - hw * m.wide / 2; hw = hw * m.wide; }
     var G = geometry(m);
     GEO = G;
     out += '<rect class="cl-bg" x="' + f(hl) + '" y="' + f(vt) + '" width="' + f(hw) + '" height="' + f(vh) + '"/>';
@@ -480,7 +468,7 @@
     hud.hidden = false;
   }
 
-  window.axgfView = { name: 'funnel', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; }, namesAll: true };
+  window.axgfView = { name: 'funnel', shape: shape, edge: edge, paint: paint, rest: rest, named: function () { return named; } };
   // A name the river adds (every name, or one the drawing had no room for)
   // keeps off the rings' outlines too.
   window.axgfView.keepOut = function (b) { return overRim(RINGS, b); };

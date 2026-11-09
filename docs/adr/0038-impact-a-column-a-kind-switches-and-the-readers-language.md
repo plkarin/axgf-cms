@@ -74,21 +74,26 @@ On 8 and 9 November 2026 the operator asked four things of Impact:
   - Under `## <key>`, it gives `name|`, `note|`, `context|`, `stakes|`
     and `victims|`.
   - A landmark or a field it leaves out reads in English.
-- **Polish comes first**, for all 353 landmarks. It is a machine's
-  translation (Claude), not yet proofread by a native speaker, as the
-  file says.
-- **The other eleven languages** follow, file by file. Until then they
-  read in English, as before.
+- **All twelve languages**, for all 353 landmarks: Polish, German,
+  Spanish, Italian, Portuguese, Russian, Chinese, Japanese, Arabic,
+  Hebrew, Swahili and Lingala. They are a machine's translations
+  (Claude), not yet proofread by native speakers, as each file says.
+  Swahili and Lingala are the least sure.
 - **The tests:**
+  - every language the site speaks, French and English aside, has its
+    file;
   - every key of a file names a landmark;
-  - Polish names and explains every landmark, with its note and its
+  - every file names and explains every landmark, with its note and its
     victims where English has them;
-  - a reader reads their own language.
+  - a reader reads their own language, and a language the site does not
+    speak reads English.
 
 ## Consequences
 
 - A person's view says what kind of history each landmark is at a glance,
   and a reader can leave out what does not interest them.
-- A complete language is about 10,900 English words translated, for all
-  353 landmarks; adding a landmark means adding its lines to each file, or
-  leaving it in English there.
+- Each language is about 10,900 English words translated. A landmark
+  added later reads in English in every file that leaves it out, until
+  its lines are written there.
+- A language added to the site needs its file: the test fails without
+  it.

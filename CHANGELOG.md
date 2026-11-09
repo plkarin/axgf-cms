@@ -18,9 +18,10 @@ Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038).
 - **Kinds to switch**: the legend's kinds are switches, and a kind
   switched off is hidden on the timeline, its column too on a person's
   view; the reader's browser keeps the choice.
-- **The landmarks and their windows in Polish**, all 353 of them, not yet
-  proofread by a native speaker. The other languages read in English
-  until theirs is written.
+- **The landmarks and their windows in every language the site speaks**:
+  Polish, German, Spanish, Italian, Portuguese, Russian, Chinese,
+  Japanese, Arabic, Hebrew, Swahili and Lingala, all 353 landmarks in
+  each, machine translations not yet proofread by native speakers.
 
 ### Changed
 

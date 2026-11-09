@@ -63,6 +63,10 @@ pub const PREFIX: &str = "axgf-backup-";
 /// of it for a new one.
 pub const PRE_UPGRADE_PREFIX: &str = "axgf-pre-upgrade-";
 
+/// The name of an archive taken just before an import replaces the family
+/// (docs/adr/0042): a set of its own too, for the same reason.
+pub const PRE_IMPORT_PREFIX: &str = "axgf-pre-import-";
+
 /// Which set an archive belongs to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kind {
@@ -72,6 +76,9 @@ pub enum Kind {
     /// Written by `bootstrap.sh --upgrade` before the binary is replaced:
     /// kept by its own count, [`Retention::pre_upgrade`].
     PreUpgrade,
+    /// Written by the site before an import replaces the family
+    /// (docs/adr/0042): kept by the same count, in a set of its own.
+    PreImport,
 }
 
 impl Kind {
@@ -79,6 +86,7 @@ impl Kind {
         match self {
             Kind::Scheduled => PREFIX,
             Kind::PreUpgrade => PRE_UPGRADE_PREFIX,
+            Kind::PreImport => PRE_IMPORT_PREFIX,
         }
     }
 }
@@ -352,6 +360,7 @@ pub fn run_as(bundle: &Path, dest: &Path, retention: Retention, kind: Kind) -> R
     let pruned = match kind {
         Kind::Scheduled => prune(dest, retention)?,
         Kind::PreUpgrade => prune_pre_upgrade(dest, retention.pre_upgrade)?,
+        Kind::PreImport => prune_set(dest, Kind::PreImport, retention.pre_upgrade)?,
     };
 
     tracing::info!(
@@ -916,14 +925,20 @@ pub fn prune(dir: &Path, retention: Retention) -> Result<Vec<PathBuf>> {
 /// Keep the newest `keep` pre-upgrade archives and delete the rest. Only
 /// that set: a scheduled archive is never touched here.
 pub fn prune_pre_upgrade(dir: &Path, keep: usize) -> Result<Vec<PathBuf>> {
+    prune_set(dir, Kind::PreUpgrade, keep)
+}
+
+/// Keep the newest `keep` archives of one set and delete the rest of that
+/// set only.
+pub fn prune_set(dir: &Path, kind: Kind, keep: usize) -> Result<Vec<PathBuf>> {
     let mut removed = Vec::new();
-    for a in list_kind(dir, Kind::PreUpgrade)?.into_iter().skip(keep) {
+    for a in list_kind(dir, kind)?.into_iter().skip(keep) {
         match fs::remove_file(&a.path) {
             Ok(()) => removed.push(a.path),
             Err(e) => tracing::warn!(
                 path = %a.path.display(),
                 error = %e,
-                "could not remove an expired pre-upgrade backup"
+                "could not remove an expired backup of its own set"
             ),
         }
     }

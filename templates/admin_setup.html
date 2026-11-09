@@ -6,28 +6,50 @@
    family, shown to an administrator while the installation has none. Each
    says what comes across before a file is chosen, and none of them is the
    page's one action — the choice is the reader's. #}
+{#- Over a family that is there (docs/adr/0042): what would be lost, the
+    backup taken first, and the word that confirms it on the archive's door
+    (the GEDCOM's asks for it when its family is kept). -#}
+{% if replacing %}
+<h1>{{ t("setup-replace-title") }}</h1>
+<p class="lede">{{ t("setup-replace-lede") }}</p>
+<div class="notice error" role="alert">
+  <p><strong>{{ t("setup-replace-warning") }}</strong></p>
+  <p>{{ persons }} {{ t("kind-person-plural", n=persons) }} · {{ families }} {{ t("kind-family-plural", n=families) }} · {{ documents }} {{ t("kind-document-plural", n=documents) }}</p>
+  <p>{{ t("setup-replace-backup", dir=backup_dir) }}</p>
+</div>
+{% else %}
 <h1>{{ t("setup-title") }}</h1>
 <p class="lede">{{ t("setup-lede") }}</p>
+{% endif %}
 
 <div class="setup-doors">
   <section class="rec-section setup-door" id="setup-archive-door" aria-labelledby="setup-archive-title">
     <h2 id="setup-archive-title">{{ t("setup-door-archive-title") }}</h2>
     <p>{{ t("setup-door-archive-detail") }}</p>
     <form method="post" action="/admin/setup/archive" enctype="multipart/form-data">
+      {%- if replacing %}
+      {#- Before the file, so that it is read before the archive is. -#}
+      <div class="field">
+        <label for="setup-archive-confirm">{{ t("setup-replace-type", keyword=keyword) }}</label>
+        <input type="text" id="setup-archive-confirm" name="confirm" autocomplete="off" spellcheck="false" required>
+      </div>
+      {%- endif %}
       <div class="field">
         <label for="setup-archive">{{ t("setup-door-archive-file") }}</label>
         <input type="file" id="setup-archive" name="file" accept=".axgf,.zip,application/zip" required>
         <div class="hint">{{ t("setup-limit-gb", n=max_archive_gb) }}</div>
       </div>
-      <button class="btn" type="submit" data-busy="{{ t('busy-working') }}" data-loader="river">{{ t("setup-door-archive-go") }}</button>
+      <button class="btn" type="submit" data-busy="{{ t('busy-working') }}" data-loader="river">{{ t("setup-replace-go") if replacing else t("setup-door-archive-go") }}</button>
     </form>
   </section>
 
+  {%- if not replacing %}
   <section class="rec-section setup-door" id="setup-scratch-door" aria-labelledby="setup-scratch-title">
     <h2 id="setup-scratch-title">{{ t("setup-door-scratch-title") }}</h2>
     <p>{{ t("setup-door-scratch-detail") }}</p>
     <p><a class="btn" href="/admin/person/new">{{ t("setup-door-scratch-go") }}</a></p>
   </section>
+  {%- endif %}
 
   <section class="rec-section setup-door" id="setup-gedcom-door" aria-labelledby="setup-gedcom-title">
     <h2 id="setup-gedcom-title">{{ t("setup-door-gedcom-title") }}</h2>
@@ -54,5 +76,5 @@
   </section>
 </div>
 
-<p class="small muted">{{ t("setup-never-over") }}</p>
+{% if not replacing %}<p class="small muted">{{ t("setup-never-over") }}</p>{% endif %}
 {% endblock %}

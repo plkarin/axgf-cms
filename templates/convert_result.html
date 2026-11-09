@@ -89,7 +89,15 @@
   <h2>{{ t("setup-adopt-title") }}</h2>
   <p>{{ t("setup-adopt-detail", total=total) }}</p>
   <form method="post" action="/admin/setup/gedcom/{{ download_id }}">
-    <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}" data-loader="river">{{ t("setup-adopt-go") }}</button>
+    {%- if replacing %}
+    {#- Over a family that is there (docs/adr/0042). -#}
+    <div class="notice error" role="alert"><p><strong>{{ t("setup-replace-warning") }}</strong></p></div>
+    <div class="field">
+      <label for="setup-gedcom-confirm">{{ t("setup-replace-type", keyword=keyword) }}</label>
+      <input type="text" id="setup-gedcom-confirm" name="confirm" autocomplete="off" spellcheck="false" required>
+    </div>
+    {%- endif %}
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}" data-loader="river">{{ t("setup-replace-go") if replacing else t("setup-adopt-go") }}</button>
   </form>
   </section>
   <p style="margin-top:2rem"><a class="btn" href="/admin/setup">{{ t("setup-adopt-back") }}</a></p>

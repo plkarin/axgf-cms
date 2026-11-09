@@ -178,7 +178,7 @@ login-sign-in-prompt = Kota mpo na kokoma na etando ya bokambi.
 
 admin-title = Bokambi
 setup-title = Bongisa ebombelo oyo
-setup-lede = Bosimbi oyo ezali naino na libota te. Pona ndenge ekobanda. Eloko moko te awa ekomamaka likolo ya libota: lokasa oyo ekangamaka soki libota ezali.
+setup-lede = Bosimbi oyo ezali naino na libota te. Pona ndenge ekobanda.
 setup-door-archive-title = Uta na ebombelo ya AXGF
 setup-door-archive-detail = Fisyé .axgf oyo euti na bosimbi mosusu to na kopi ya libateli. Bato, maziba mpe bafoto na yango eyaka ndenge bazali.
 setup-door-archive-file = Ebombelo (.axgf)
@@ -191,7 +191,7 @@ setup-door-gedcom-title = Uta na fisyé GEDCOM
 setup-door-gedcom-detail = Fisyé oyo programe nyonso ya bankoko ebimisaka: GEDCOM 5.5, 5.5.1, 5.5.5 to 7.0, lokola .ged to .gdz, na lolenge nyonso ya kokoma. Okomona ndenge etangami mpe oyo ekoleka liboso eloko moko ebombama.
 setup-door-gedcom-file = Fisyé GEDCOM (.ged, .gdz)
 setup-door-gedcom-go = Tanga fisyé oyo
-setup-never-over = Mpo na kobongola libota oyo ezali awa, zongisa kopi ya libateli na molongo ya mitindo (axgf-cms restore); lokasa moko te ekomaka likolo na yango.
+setup-never-over = Soki libota ezali kala, lokasa oyo ebongolaka yango kaka sima ya kopi ya libateli oyo etalelami mpe kokoma maloba oyo endimisi yango.
 setup-adopt-title = Kómisa oyo libota ya ebombelo
 setup-adopt-detail = Mikanda oyo ekokoma libota ya bosimbi oyo: { $total }. Eloko moko te ebombami kino okofina buto.
 setup-adopt-go = Bongisa ebombelo na libota oyo
@@ -208,7 +208,7 @@ setup-done-admin = Bokambi
 setup-refused-title = Oyo ekokaki kokoma ebombelo te
 setup-refused-detail = Eloko moko te ekomami. Oyo epekisaki yango:
 setup-closed-title = Ebombelo oyo ebongisami kala
-setup-closed-detail = Ezali na libota, mpe lokasa moko te ekomaka likolo na yango. Mpo na kobongola yango, zongisa kopi ya libateli na molongo ya mitindo (axgf-cms restore).
+setup-closed-detail = Libota eyaki na ntango wana, mpe eloko moko te ekomami. Fungola lisusu lokasa ya kokotisa: soki libota ezali, esengaka kondimisa mpe esalaka liboso kopi ya libateli.
 setup-not-archive = Oyo ezali ebombelo .axgf te.
 setup-archive-too-large = Ebombelo oyo eleki monene oyo bakoki kotinda.
 admin-lede = Kobongola { $path } — mikanda { $total }, { $files ->
@@ -5348,3 +5348,20 @@ uploads-not-saved = Mibeko ekokaki kobombama te: { $error }
 uploads-summary = Bafisyé oyo ekangami na mikanda: kino MB { $document }; mitindo { $accepted } endimami na { $total }.
 uploads-open = Bongisa kotinda
 error-upload-kind-refused = Motindo oyo ya fisyé ({ $kind }) eboyami na site oyo: bakambi bandimaka yango te. Eloko moko te ebombami.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = Bongola libota
+setup-replace-lede = Ebombelo oyo ezali kala na libota. Kokotisa fisyé ebongolaka yango mobimba.
+setup-replace-warning = Nyonso oyo ezali na fisyé oyo ekotisami te ekobunga: mikanda, makomi, bafoto, boyokani.
+setup-replace-backup = Liboso kaka, kopi ya libateli oyo etalelami ya libota ya lelo ekomami na { $dir }; ezongisamaka na axgf-cms restore.
+setup-replace-keyword = bongola ebombelo
+setup-replace-type = Mpo na kondimisa, koma “{ $keyword }”
+setup-replace-go = Bongola libota
+setup-replace-keyword-wrong = Maloba ya kondimisa eyokani te: koma “{ $keyword }”. Eloko moko te ebongwani.
+setup-replace-backup-failed = Kopi ya libateli ya libota ya lelo elongi te, yango wana eloko moko te ebongwani: { $error }
+setup-replace-changed = Libota ebongwanaki ntango kopi ya libateli ezalaki kosalema, yango wana eloko moko te ebongwani. Meka lisusu.
+setup-replace-done = Libota oyo ebongolami ezali na kopi ya libateli, mpe kopi etalelami: { $file }
+setup-replace-room-title = Bongola libota na kokotisa
+setup-replace-room-detail = Ebombelo to GEDCOM na esika ya libota ya lelo, sima ya kopi ya libateli oyo etalelami.
+setup-replace-room-go = Fungola kokotisa

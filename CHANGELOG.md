@@ -8,8 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038),
 a person created with what surrounds them (docs/adr/0039), the AFG
-reading a record's PDF documents (docs/adr/0040), and uploads the
-administration sets, with films that play (docs/adr/0041).
+reading a record's PDF documents (docs/adr/0040), uploads the
+administration sets, with films that play (docs/adr/0041), and an import
+in place of the family, protected (docs/adr/0042).
 
 ### Added
 
@@ -54,6 +55,14 @@ administration sets, with films that play (docs/adr/0041).
   Polish, German, Spanish, Italian, Portuguese, Russian, Chinese,
   Japanese, Arabic, Hebrew, Swahili and Lingala, all 353 landmarks in
   each, machine translations not yet proofread by native speakers.
+
+- **An import in place of the family**, from the archive's room: an
+  archive or a GEDCOM replaces a family that is there, once the page has
+  said what will be lost, the administrator has typed the words that
+  confirm it (« remplacer l'archive » in French), and a backup of the
+  family has been written and verified. A family changed during the backup
+  is not replaced. Until now a family could only be replaced from the
+  command line.
 
 ### Fixed
 

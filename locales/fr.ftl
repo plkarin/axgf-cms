@@ -178,7 +178,7 @@ login-sign-in-prompt = Connectez-vous pour accéder à l'administration.
 
 admin-title = Administration
 setup-title = Mettre en route cette archive
-setup-lede = Cette installation ne contient encore aucune famille. Choisissez comment elle commence. Rien ici n’est jamais écrit par-dessus une famille : cette page se ferme dès qu’il y en a une.
+setup-lede = Cette installation ne contient encore aucune famille. Choisissez comment elle commence.
 setup-door-archive-title = À partir d’une archive AXGF
 setup-door-archive-detail = Un fichier .axgf venu d’une autre installation ou d’une sauvegarde. Ses personnes, ses sources et ses photographies arrivent telles quelles.
 setup-door-archive-file = Archive (.axgf)
@@ -191,7 +191,7 @@ setup-door-gedcom-title = À partir d’un fichier GEDCOM
 setup-door-gedcom-detail = Le fichier que tout logiciel de généalogie exporte : GEDCOM 5.5, 5.5.1, 5.5.5 ou 7.0, en .ged ou en .gdz, quel que soit son encodage. Vous voyez comment il a été lu et ce qui passe avant que rien ne soit gardé.
 setup-door-gedcom-file = Fichier GEDCOM (.ged, .gdz)
 setup-door-gedcom-go = Lire ce fichier
-setup-never-over = Pour remplacer une famille déjà présente, restaurez une sauvegarde en ligne de commande (axgf-cms restore) ; aucune page n’écrit par-dessus.
+setup-never-over = Une fois une famille en place, cette page ne la remplace qu’après une sauvegarde vérifiée et les mots qui le confirment.
 setup-adopt-title = En faire la famille de l’archive
 setup-adopt-detail = Fiches qui deviendraient la famille de cette installation : { $total }. Rien n’est gardé avant que vous n’appuyiez sur le bouton.
 setup-adopt-go = Mettre en route l’archive avec cette famille
@@ -208,7 +208,7 @@ setup-done-admin = Administration
 setup-refused-title = Ceci n’a pas pu devenir l’archive
 setup-refused-detail = Rien n’a été écrit. Ce qui l’a empêché :
 setup-closed-title = Cette archive est déjà en route
-setup-closed-detail = Elle contient une famille, et aucune page n’écrit par-dessus. Pour la remplacer, restaurez une sauvegarde en ligne de commande (axgf-cms restore).
+setup-closed-detail = Une famille est arrivée entre-temps, et rien n’a été écrit. Rouvrez la page d’import : sur une famille, elle demande une confirmation et sauvegarde d’abord la famille.
 setup-not-archive = Ce n’est pas une archive .axgf.
 setup-archive-too-large = Cette archive dépasse la taille d’un envoi.
 admin-lede = Modification de { $path } — { $total } entités, { $files ->
@@ -5604,3 +5604,20 @@ uploads-not-saved = Les réglages n'ont pas pu être enregistrés : { $error }
 uploads-summary = Fichiers joints à une fiche : { $document } Mo au plus ; { $accepted } types acceptés sur { $total }.
 uploads-open = Régler les envois
 error-upload-kind-refused = Ce type de fichier ({ $kind }) est refusé par ce site : l'administration ne l'accepte pas. Rien n'a été enregistré.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = Remplacer la famille
+setup-replace-lede = Cette archive contient déjà une famille. Importer un fichier la remplace entièrement.
+setup-replace-warning = Tout ce qui n'est pas dans le fichier importé sera perdu : fiches, notes, photos, liens.
+setup-replace-backup = Juste avant, une sauvegarde vérifiée de la famille actuelle est écrite dans { $dir } ; elle se restaure avec axgf-cms restore.
+setup-replace-keyword = remplacer l'archive
+setup-replace-type = Pour confirmer, tapez « { $keyword } »
+setup-replace-go = Remplacer la famille
+setup-replace-keyword-wrong = Les mots de confirmation ne correspondent pas : tapez « { $keyword } ». Rien n'a été remplacé.
+setup-replace-backup-failed = La sauvegarde de la famille actuelle a échoué, rien n'a donc été remplacé : { $error }
+setup-replace-changed = La famille a changé pendant sa sauvegarde, rien n'a donc été remplacé. Recommencez.
+setup-replace-done = La famille remplacée est sauvegardée, et la sauvegarde vérifiée : { $file }
+setup-replace-room-title = Remplacer la famille par un import
+setup-replace-room-detail = Une archive ou un GEDCOM à la place de la famille actuelle, après une sauvegarde vérifiée de celle-ci.
+setup-replace-room-go = Ouvrir l'import

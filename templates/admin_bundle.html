@@ -178,6 +178,18 @@
 </section>
 {% endif %}
 
+{#- An import in place of the family (docs/adr/0042): behind a disclosure,
+    and the page it opens asks for a word and backs the family up first. -#}
+{% if not unset %}
+<section class="rec-section" id="replace">
+<details class="danger-zone">
+  <summary>{{ t("setup-replace-room-title") }}</summary>
+  <p>{{ t("setup-replace-room-detail") }}</p>
+  <p><a class="btn danger" href="/admin/setup">{{ t("setup-replace-room-go") }}</a></p>
+</details>
+</section>
+{% endif %}
+
 {#- What a file sent to the site may weigh, and the kinds refused
     (docs/adr/0041): said here, set on a page of its own. -#}
 <section class="rec-section" id="uploads">

@@ -195,7 +195,7 @@ login-sign-in-prompt = Entre para chegar ao painel de administração.
 
 admin-title = Administração
 setup-title = Pôr este arquivo a funcionar
-setup-lede = Esta instalação ainda não contém nenhuma família. Escolha como começa. Aqui nunca se escreve nada por cima de uma família: esta página fecha-se assim que houver uma.
+setup-lede = Esta instalação ainda não contém nenhuma família. Escolha como começa.
 setup-door-archive-title = A partir de um arquivo AXGF
 setup-door-archive-detail = Um ficheiro .axgf de outra instalação ou de uma cópia de segurança. As pessoas, fontes e fotografias chegam tal como são.
 setup-door-archive-file = Arquivo (.axgf)
@@ -208,7 +208,7 @@ setup-door-gedcom-title = A partir de um ficheiro GEDCOM
 setup-door-gedcom-detail = O ficheiro que qualquer programa de genealogia exporta: GEDCOM 5.5, 5.5.1, 5.5.5 ou 7.0, em .ged ou .gdz, em qualquer codificação. Vê como foi lido e o que passa antes de algo ser guardado.
 setup-door-gedcom-file = Ficheiro GEDCOM (.ged, .gdz)
 setup-door-gedcom-go = Ler este ficheiro
-setup-never-over = Para substituir uma família já presente, restaure uma cópia de segurança na linha de comandos (axgf-cms restore); nenhuma página escreve por cima.
+setup-never-over = Quando já há uma família, esta página só a substitui depois de uma cópia de segurança verificada e das palavras que o confirmam.
 setup-adopt-title = Fazer disto a família do arquivo
 setup-adopt-detail = Registos que passariam a ser a família desta instalação: { $total }. Nada é guardado antes de carregar no botão.
 setup-adopt-go = Pôr o arquivo a funcionar com esta família
@@ -225,7 +225,7 @@ setup-done-admin = Administração
 setup-refused-title = Isto não pôde tornar-se o arquivo
 setup-refused-detail = Nada foi escrito. O que o impediu:
 setup-closed-title = Este arquivo já está a funcionar
-setup-closed-detail = Contém uma família, e nenhuma página escreve por cima. Para a substituir, restaure uma cópia de segurança na linha de comandos (axgf-cms restore).
+setup-closed-detail = Entretanto chegou uma família, e nada foi escrito. Abra de novo a página de importação: sobre uma família, pede uma confirmação e faz antes uma cópia de segurança.
 setup-not-archive = Isto não é um arquivo .axgf.
 setup-archive-too-large = Este arquivo é maior do que um envio pode ser.
 admin-lede = A editar { $path } — { $total } elementos, { $files ->
@@ -5618,3 +5618,20 @@ uploads-not-saved = Não foi possível guardar as definições: { $error }
 uploads-summary = Ficheiros anexados às fichas: até { $document } MB; { $accepted } tipos aceites de { $total }.
 uploads-open = Definir os envios
 error-upload-kind-refused = Este tipo de ficheiro ({ $kind }) é recusado por este site: a administração não o aceita. Nada foi guardado.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = Substituir a família
+setup-replace-lede = Este arquivo já contém uma família. Importar um ficheiro substitui-a por inteiro.
+setup-replace-warning = Tudo o que não estiver no ficheiro importado perde-se: fichas, notas, fotos, ligações.
+setup-replace-backup = Mesmo antes, é escrita em { $dir } uma cópia de segurança verificada da família atual; restaura-se com axgf-cms restore.
+setup-replace-keyword = substituir o arquivo
+setup-replace-type = Para confirmar, escreva «{ $keyword }»
+setup-replace-go = Substituir a família
+setup-replace-keyword-wrong = As palavras de confirmação não correspondem: escreva «{ $keyword }». Nada foi substituído.
+setup-replace-backup-failed = A cópia de segurança da família atual falhou, por isso nada foi substituído: { $error }
+setup-replace-changed = A família mudou durante a cópia de segurança, por isso nada foi substituído. Tente de novo.
+setup-replace-done = A família substituída está numa cópia de segurança, e a cópia verificada: { $file }
+setup-replace-room-title = Substituir a família por uma importação
+setup-replace-room-detail = Um arquivo ou um GEDCOM no lugar da família atual, depois de uma cópia de segurança verificada.
+setup-replace-room-go = Abrir a importação

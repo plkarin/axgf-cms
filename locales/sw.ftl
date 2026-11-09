@@ -170,7 +170,7 @@ login-sign-in-prompt = Ingia ili kufikia jopo la usimamizi.
 
 admin-title = Usimamizi
 setup-title = Anzisha kumbukumbu hii
-setup-lede = Usakinishaji huu bado hauna familia. Chagua jinsi itakavyoanza. Hakuna kitu hapa kinachoandikwa juu ya familia: ukurasa huu hufungwa mara moja kunapokuwa na familia.
+setup-lede = Usakinishaji huu bado hauna familia. Chagua jinsi itakavyoanza.
 setup-door-archive-title = Kutoka kumbukumbu ya AXGF
 setup-door-archive-detail = Faili ya .axgf kutoka usakinishaji mwingine au kutoka nakala rudufu. Watu, vyanzo na picha zake huja kama zilivyo.
 setup-door-archive-file = Kumbukumbu (.axgf)
@@ -183,7 +183,7 @@ setup-door-gedcom-title = Kutoka faili ya GEDCOM
 setup-door-gedcom-detail = Faili ambayo kila programu ya nasaba huhamisha: GEDCOM 5.5, 5.5.1, 5.5.5 au 7.0, kama .ged au .gdz, kwa usimbaji wowote ilioandikwa nao. Unaona jinsi ilivyosomwa na kinachopita kabla chochote hakijahifadhiwa.
 setup-door-gedcom-file = Faili ya GEDCOM (.ged, .gdz)
 setup-door-gedcom-go = Soma faili hii
-setup-never-over = Ili kubadilisha familia iliyopo tayari, rejesha nakala rudufu kutoka kwenye mstari wa amri (axgf-cms restore); hakuna ukurasa unaoandika juu yake.
+setup-never-over = Familia ikishakuwepo, ukurasa huu huibadilisha tu baada ya nakala rudufu iliyothibitishwa na kuandika maneno yanayothibitisha.
 setup-adopt-title = Fanya hii kuwa familia ya kumbukumbu
 setup-adopt-detail = Rekodi ambazo zingekuwa familia ya usakinishaji huu: { $total }. Hakuna kinachohifadhiwa hadi ubonyeze kitufe.
 setup-adopt-go = Anzisha kumbukumbu kwa familia hii
@@ -200,7 +200,7 @@ setup-done-admin = Usimamizi
 setup-refused-title = Hii haikuweza kuwa kumbukumbu
 setup-refused-detail = Hakuna kilichoandikwa. Kilichoizuia:
 setup-closed-title = Kumbukumbu hii tayari imeanzishwa
-setup-closed-detail = Ina familia, na hakuna ukurasa unaoandika juu yake. Ili kuibadilisha, rejesha nakala rudufu kutoka kwenye mstari wa amri (axgf-cms restore).
+setup-closed-detail = Familia imefika wakati huo, na hakuna kilichoandikwa. Fungua tena ukurasa wa kuingiza: familia ikiwepo, unaomba uthibitisho na kwanza hutengeneza nakala rudufu.
 setup-not-archive = Hii si kumbukumbu ya .axgf.
 setup-archive-too-large = Kumbukumbu hii ni kubwa kuliko upakiaji unavyoruhusiwa.
 admin-lede = Unahariri { $path } — rekodi { $total }, { $files ->
@@ -5329,3 +5329,20 @@ uploads-not-saved = Mipangilio haikuweza kuhifadhiwa: { $error }
 uploads-summary = Faili zinazoambatishwa kwenye rekodi: hadi MB { $document }; aina { $accepted } zinakubaliwa kati ya { $total }.
 uploads-open = Weka mipangilio ya kupakia
 error-upload-kind-refused = Aina hii ya faili ({ $kind }) inakataliwa na tovuti hii: utawala hauikubali. Hakuna kilichohifadhiwa.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = Badilisha familia
+setup-replace-lede = Kumbukumbu hii tayari ina familia. Kuingiza faili huibadilisha yote.
+setup-replace-warning = Kila kisichokuwa kwenye faili inayoingizwa kitapotea: rekodi, madokezo, picha, viungo.
+setup-replace-backup = Kabla tu ya hapo, nakala rudufu iliyothibitishwa ya familia ya sasa huandikwa katika { $dir }; hurejeshwa kwa axgf-cms restore.
+setup-replace-keyword = badilisha kumbukumbu
+setup-replace-type = Ili kuthibitisha, andika “{ $keyword }”
+setup-replace-go = Badilisha familia
+setup-replace-keyword-wrong = Maneno ya kuthibitisha hayalingani: andika “{ $keyword }”. Hakuna kilichobadilishwa.
+setup-replace-backup-failed = Nakala rudufu ya familia ya sasa imeshindikana, kwa hiyo hakuna kilichobadilishwa: { $error }
+setup-replace-changed = Familia ilibadilika wakati wa kutengeneza nakala rudufu, kwa hiyo hakuna kilichobadilishwa. Jaribu tena.
+setup-replace-done = Familia iliyobadilishwa iko kwenye nakala rudufu, na nakala imethibitishwa: { $file }
+setup-replace-room-title = Badilisha familia kwa kuingiza
+setup-replace-room-detail = Kumbukumbu au GEDCOM mahali pa familia ya sasa, baada ya nakala rudufu iliyothibitishwa.
+setup-replace-room-go = Fungua uingizaji

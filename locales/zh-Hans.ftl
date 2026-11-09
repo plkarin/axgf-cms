@@ -178,7 +178,7 @@ login-sign-in-prompt = 请登录以进入管理面板。
 
 admin-title = 管理
 setup-title = 启用此档案
-setup-lede = 此安装中还没有任何家族。请选择从何开始。这里绝不会覆盖已有的家族：一旦有了家族，此页面即关闭。
+setup-lede = 此安装中还没有任何家族。请选择从何开始。
 setup-door-archive-title = 从 AXGF 档案开始
 setup-door-archive-detail = 来自另一个安装或备份的 .axgf 文件。其中的人物、来源和照片将原样迁入。
 setup-door-archive-file = 档案（.axgf）
@@ -191,7 +191,7 @@ setup-door-gedcom-title = 从 GEDCOM 文件开始
 setup-door-gedcom-detail = 任何家谱软件都能导出的文件：GEDCOM 5.5、5.5.1、5.5.5 或 7.0，.ged 或 .gdz 格式，任何编码均可。在保存任何内容之前，您会看到它是如何读取的、哪些内容会迁入。
 setup-door-gedcom-file = GEDCOM 文件（.ged、.gdz）
 setup-door-gedcom-go = 读取此文件
-setup-never-over = 若要替换已有的家族，请在命令行中恢复备份（axgf-cms restore）；任何页面都不会覆盖它。
+setup-never-over = 已有家族时，此页面只会在完成经过验证的备份并输入确认词之后才替换它。
 setup-adopt-title = 将其作为档案的家族
 setup-adopt-detail = 将成为此安装家族的记录：{ $total }。在您按下按钮之前，不会保存任何内容。
 setup-adopt-go = 用此家族启用档案
@@ -208,7 +208,7 @@ setup-done-admin = 管理
 setup-refused-title = 此内容无法成为档案
 setup-refused-detail = 未写入任何内容。阻止它的原因：
 setup-closed-title = 此档案已启用
-setup-closed-detail = 它已包含一个家族，任何页面都不会覆盖它。若要替换，请在命令行中恢复备份（axgf-cms restore）。
+setup-closed-detail = 其间已有家族到来，未写入任何内容。请重新打开导入页面：已有家族时，它会要求确认并先备份该家族。
 setup-not-archive = 这不是 .axgf 档案。
 setup-archive-too-large = 此档案超出了上传允许的大小。
 admin-lede = 正在编辑 { $path } —— 记录{ $total }条，附件{ $files }个，磁盘占用{ $size }。每次改动都一次性写入；被拒绝的改动不会碰到文件。
@@ -5217,3 +5217,20 @@ uploads-not-saved = 无法保存设置：{ $error }
 uploads-summary = 附在记录上的文件：最大 { $document } MB；接受 { $accepted } 种类型，共 { $total } 种。
 uploads-open = 设置上传
 error-upload-kind-refused = 本站拒绝此类文件（{ $kind }）：管理设置不接受它。未保存任何内容。
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = 替换家族
+setup-replace-lede = 此档案已包含一个家族。导入文件会将其整个替换。
+setup-replace-warning = 导入文件中没有的一切都将丢失：记录、笔记、照片、关系。
+setup-replace-backup = 替换前，会先在 { $dir } 写入当前家族的已验证备份；可用 axgf-cms restore 恢复。
+setup-replace-keyword = 替换档案
+setup-replace-type = 请输入“{ $keyword }”以确认
+setup-replace-go = 替换家族
+setup-replace-keyword-wrong = 确认词不符：请输入“{ $keyword }”。未替换任何内容。
+setup-replace-backup-failed = 当前家族的备份失败，因此未替换任何内容：{ $error }
+setup-replace-changed = 家族在备份期间发生了变化，因此未替换任何内容。请重试。
+setup-replace-done = 被替换的家族已备份，备份已验证：{ $file }
+setup-replace-room-title = 用导入替换家族
+setup-replace-room-detail = 在对当前家族做完经过验证的备份后，用档案或 GEDCOM 取而代之。
+setup-replace-room-go = 打开导入

@@ -177,7 +177,7 @@ login-sign-in-prompt = התחברו כדי להגיע ללוח הניהול.
 
 admin-title = ניהול
 setup-title = הקמת הארכיון הזה
-setup-lede = ההתקנה הזאת עדיין אינה מכילה משפחה. בחרו איך היא תתחיל. שום דבר כאן לא נכתב לעולם מעל משפחה: הדף נסגר ברגע שיש אחת.
+setup-lede = ההתקנה הזאת עדיין אינה מכילה משפחה. בחרו איך היא תתחיל.
 setup-door-archive-title = מארכיון AXGF
 setup-door-archive-detail = קובץ ‎.axgf מהתקנה אחרת או מגיבוי. האנשים, המקורות והתמונות שבו מגיעים כפי שהם.
 setup-door-archive-file = ארכיון (‎.axgf)
@@ -190,7 +190,7 @@ setup-door-gedcom-title = מקובץ GEDCOM
 setup-door-gedcom-detail = הקובץ שכל תוכנת גנאלוגיה מייצאת: GEDCOM 5.5, 5.5.1, 5.5.5 או 7.0, כ-‎.ged או ‎.gdz, בכל קידוד שבו נכתב. תראו איך הוא נקרא ומה עובר לפני שמשהו נשמר.
 setup-door-gedcom-file = קובץ GEDCOM (‎.ged, ‎.gdz)
 setup-door-gedcom-go = קריאת הקובץ הזה
-setup-never-over = כדי להחליף משפחה שכבר נמצאת כאן, שחזרו גיבוי משורת הפקודה (axgf-cms restore); אף דף לא כותב מעליה.
+setup-never-over = כשכבר יש משפחה, הדף הזה מחליף אותה רק אחרי גיבוי מאומת והקלדת המילים שמאשרות זאת.
 setup-adopt-title = הפיכת זו למשפחת הארכיון
 setup-adopt-detail = רשומות שיהפכו למשפחה של ההתקנה הזאת: { $total }. שום דבר לא נשמר עד שתלחצו על הכפתור.
 setup-adopt-go = הקמת הארכיון עם המשפחה הזאת
@@ -207,7 +207,7 @@ setup-done-admin = ניהול
 setup-refused-title = זה לא יכול היה להפוך לארכיון
 setup-refused-detail = שום דבר לא נכתב. מה שעצר את זה:
 setup-closed-title = הארכיון הזה כבר הוקם
-setup-closed-detail = הוא מכיל משפחה, ואף דף לא כותב מעליה. כדי להחליף אותה, שחזרו גיבוי משורת הפקודה (axgf-cms restore).
+setup-closed-detail = בינתיים הגיעה משפחה, ושום דבר לא נכתב. פתחו שוב את דף הייבוא: כשיש משפחה הוא מבקש אישור ומגבה אותה קודם.
 setup-not-archive = זה אינו ארכיון ‎.axgf.
 setup-archive-too-large = הארכיון הזה גדול ממה שהעלאה יכולה להיות.
 admin-lede = עריכת { $path } — { $total } ישויות, { $files ->
@@ -5719,6 +5719,7 @@ person-new-created = { $others ->
         [0] הרשומה נוצרה.
         [one] הרשומה נוצרה, יחד עם רשומה נוספת.
         [two] הרשומה נוצרה, יחד עם שתי רשומות נוספות.
+        [many] הרשומה נוצרה, יחד עם { $others } רשומות נוספות.
        *[other] הרשומה נוצרה, יחד עם { $others } רשומות נוספות.
     }
 pick-error-place-not-found = אין בארכיון הזה מקום בשם הזה. שום דבר לא נשמר.
@@ -5756,3 +5757,20 @@ uploads-not-saved = לא ניתן היה לשמור את ההגדרות: { $erro
 uploads-summary = קבצים המצורפים לרשומות: עד { $document } MB; { $accepted } סוגים מתקבלים מתוך { $total }.
 uploads-open = הגדרת ההעלאות
 error-upload-kind-refused = סוג הקובץ הזה ({ $kind }) נדחה באתר הזה: ההנהלה אינה מקבלת אותו. שום דבר לא נשמר.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = החלפת המשפחה
+setup-replace-lede = הארכיון הזה כבר מכיל משפחה. ייבוא קובץ מחליף אותה כולה.
+setup-replace-warning = כל מה שאינו בקובץ המיובא יאבד: רשומות, הערות, תמונות, קשרים.
+setup-replace-backup = רגע לפני כן נכתב גיבוי מאומת של המשפחה הנוכחית ב־{ $dir }; משחזרים אותו בעזרת axgf-cms restore.
+setup-replace-keyword = החלפת הארכיון
+setup-replace-type = כדי לאשר, הקלידו „{ $keyword }”
+setup-replace-go = החלפת המשפחה
+setup-replace-keyword-wrong = מילות האישור אינן תואמות: הקלידו „{ $keyword }”. שום דבר לא הוחלף.
+setup-replace-backup-failed = הגיבוי של המשפחה הנוכחית נכשל, ולכן שום דבר לא הוחלף: { $error }
+setup-replace-changed = המשפחה השתנתה בזמן הגיבוי, ולכן שום דבר לא הוחלף. נסו שוב.
+setup-replace-done = המשפחה שהוחלפה גובתה, והגיבוי אומת: { $file }
+setup-replace-room-title = החלפת המשפחה בייבוא
+setup-replace-room-detail = ארכיון או GEDCOM במקום המשפחה הנוכחית, אחרי גיבוי מאומת שלה.
+setup-replace-room-go = פתיחת הייבוא

@@ -198,7 +198,7 @@ login-sign-in-prompt = Zaloguj się, aby wejść do panelu administracyjnego.
 
 admin-title = Administracja
 setup-title = Uruchom to archiwum
-setup-lede = Ta instalacja nie zawiera jeszcze żadnej rodziny. Wybierz, jak się zaczyna. Nic tu nie jest nigdy zapisywane na istniejącej rodzinie: ta strona zamyka się, gdy tylko jakaś się pojawi.
+setup-lede = Ta instalacja nie zawiera jeszcze żadnej rodziny. Wybierz, jak się zaczyna.
 setup-door-archive-title = Z archiwum AXGF
 setup-door-archive-detail = Plik .axgf z innej instalacji lub z kopii zapasowej. Osoby, źródła i zdjęcia przechodzą takie, jakie są.
 setup-door-archive-file = Archiwum (.axgf)
@@ -211,7 +211,7 @@ setup-door-gedcom-title = Z pliku GEDCOM
 setup-door-gedcom-detail = Plik, który eksportuje każdy program genealogiczny: GEDCOM 5.5, 5.5.1, 5.5.5 lub 7.0, jako .ged lub .gdz, w dowolnym kodowaniu. Zobaczysz, jak został odczytany i co przechodzi, zanim cokolwiek zostanie zachowane.
 setup-door-gedcom-file = Plik GEDCOM (.ged, .gdz)
 setup-door-gedcom-go = Odczytaj ten plik
-setup-never-over = Aby zastąpić rodzinę, która już tu jest, przywróć kopię zapasową z wiersza poleceń (axgf-cms restore); żadna strona nie zapisuje na niej.
+setup-never-over = Gdy rodzina już tu jest, ta strona zastępuje ją dopiero po sprawdzonej kopii zapasowej i wpisaniu słów, które to potwierdzają.
 setup-adopt-title = Uczyń to rodziną archiwum
 setup-adopt-detail = Rekordy, które stałyby się rodziną tej instalacji: { $total }. Nic nie zostanie zachowane, zanim naciśniesz przycisk.
 setup-adopt-go = Uruchom archiwum z tą rodziną
@@ -228,7 +228,7 @@ setup-done-admin = Administracja
 setup-refused-title = To nie mogło stać się archiwum
 setup-refused-detail = Nic nie zostało zapisane. Co temu przeszkodziło:
 setup-closed-title = To archiwum jest już uruchomione
-setup-closed-detail = Zawiera rodzinę, a żadna strona nie zapisuje na niej. Aby ją zastąpić, przywróć kopię zapasową z wiersza poleceń (axgf-cms restore).
+setup-closed-detail = W międzyczasie pojawiła się rodzina i nic nie zostało zapisane. Otwórz ponownie stronę importu: przy istniejącej rodzinie prosi o potwierdzenie i najpierw robi kopię zapasową.
 setup-not-archive = To nie jest archiwum .axgf.
 setup-archive-too-large = To archiwum jest większe, niż może być przesyłany plik.
 admin-lede = Edytowanie { $path } — { $total } obiektów, { $files ->
@@ -5926,3 +5926,20 @@ uploads-not-saved = Nie udało się zapisać ustawień: { $error }
 uploads-summary = Pliki dołączane do kart: najwyżej { $document } MB; przyjmowane rodzaje: { $accepted } z { $total }.
 uploads-open = Ustaw przesyłanie
 error-upload-kind-refused = Ten rodzaj pliku ({ $kind }) jest odrzucany przez ten serwis: administracja go nie przyjmuje. Nic nie zapisano.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = Zastąp rodzinę
+setup-replace-lede = To archiwum zawiera już rodzinę. Zaimportowanie pliku zastępuje ją w całości.
+setup-replace-warning = Wszystko, czego nie ma w importowanym pliku, przepadnie: karty, notatki, zdjęcia, powiązania.
+setup-replace-backup = Tuż przedtem sprawdzona kopia zapasowa obecnej rodziny zostaje zapisana w { $dir }; przywraca się ją poleceniem axgf-cms restore.
+setup-replace-keyword = zastąp archiwum
+setup-replace-type = Aby potwierdzić, wpisz „{ $keyword }”
+setup-replace-go = Zastąp rodzinę
+setup-replace-keyword-wrong = Słowa potwierdzenia się nie zgadzają: wpisz „{ $keyword }”. Niczego nie zastąpiono.
+setup-replace-backup-failed = Kopia zapasowa obecnej rodziny się nie powiodła, więc niczego nie zastąpiono: { $error }
+setup-replace-changed = Rodzina zmieniła się podczas tworzenia kopii, więc niczego nie zastąpiono. Spróbuj ponownie.
+setup-replace-done = Zastąpiona rodzina jest w kopii zapasowej, a kopia sprawdzona: { $file }
+setup-replace-room-title = Zastąp rodzinę importem
+setup-replace-room-detail = Archiwum lub GEDCOM w miejsce obecnej rodziny, po sprawdzonej kopii zapasowej.
+setup-replace-room-go = Otwórz import

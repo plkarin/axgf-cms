@@ -175,7 +175,7 @@ login-sign-in-prompt = سجّل الدخول للوصول إلى لوحة الإ
 
 admin-title = الإدارة
 setup-title = تهيئة هذا الأرشيف
-setup-lede = لا يحتوي هذا التثبيت على أي عائلة بعد. اختر كيف يبدأ. لا يُكتب هنا أبدًا فوق عائلة: تُغلق هذه الصفحة بمجرد وجود واحدة.
+setup-lede = لا يحتوي هذا التثبيت على أي عائلة بعد. اختر كيف يبدأ.
 setup-door-archive-title = من أرشيف AXGF
 setup-door-archive-detail = ملف .axgf من تثبيت آخر أو من نسخة احتياطية. ينتقل أشخاصه ومصادره وصوره كما هي.
 setup-door-archive-file = أرشيف (.axgf)
@@ -188,7 +188,7 @@ setup-door-gedcom-title = من ملف GEDCOM
 setup-door-gedcom-detail = الملف الذي يصدّره كل برنامج أنساب: GEDCOM 5.5 أو 5.5.1 أو 5.5.5 أو 7.0، بصيغة .ged أو .gdz، بأي ترميز كان. ترى كيف قُرئ وما الذي ينتقل قبل أن يُحفظ أي شيء.
 setup-door-gedcom-file = ملف GEDCOM (.ged، .gdz)
 setup-door-gedcom-go = قراءة هذا الملف
-setup-never-over = لاستبدال عائلة موجودة، استعد نسخة احتياطية من سطر الأوامر (axgf-cms restore)؛ لا تكتب أي صفحة فوقها.
+setup-never-over = حين توجد عائلة، لا تستبدلها هذه الصفحة إلا بعد نسخة احتياطية متحقَّق منها وكتابة الكلمات التي تؤكد ذلك.
 setup-adopt-title = جعل هذه عائلة الأرشيف
 setup-adopt-detail = السجلات التي ستصبح عائلة هذا التثبيت: { $total }. لا يُحفظ شيء قبل أن تضغط الزر.
 setup-adopt-go = تهيئة الأرشيف بهذه العائلة
@@ -205,7 +205,7 @@ setup-done-admin = الإدارة
 setup-refused-title = تعذّر أن يصبح هذا الأرشيف
 setup-refused-detail = لم يُكتب شيء. ما الذي منعه:
 setup-closed-title = هذا الأرشيف مهيأ بالفعل
-setup-closed-detail = يحتوي على عائلة، ولا تكتب أي صفحة فوقها. لاستبدالها، استعد نسخة احتياطية من سطر الأوامر (axgf-cms restore).
+setup-closed-detail = وصلت عائلة في الأثناء، ولم يُكتب شيء. افتح صفحة الاستيراد من جديد: عند وجود عائلة تطلب تأكيدًا وتنسخها احتياطيًا أولًا.
 setup-not-archive = هذا ليس أرشيف .axgf.
 setup-archive-too-large = هذا الأرشيف أكبر مما يُسمح برفعه.
 admin-entities = السجلات
@@ -6154,3 +6154,20 @@ uploads-not-saved = تعذّر حفظ الإعدادات: { $error }
 uploads-summary = الملفات المرفقة بالسجلات: { $document } ميغابايت على الأكثر؛ { $accepted } نوعًا مقبولًا من { $total }.
 uploads-open = اضبط الإرسال
 error-upload-kind-refused = هذا النوع من الملفات ({ $kind }) يرفضه هذا الموقع: الإدارة لا تقبله. لم يُحفظ شيء.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = استبدال العائلة
+setup-replace-lede = يحتوي هذا الأرشيف على عائلة. استيراد ملف يستبدلها بكاملها.
+setup-replace-warning = كل ما ليس في الملف المستورد سيضيع: السجلات والملاحظات والصور والروابط.
+setup-replace-backup = قبل ذلك مباشرة، تُكتب نسخة احتياطية متحقَّق منها للعائلة الحالية في { $dir }؛ وتُستعاد بالأمر axgf-cms restore.
+setup-replace-keyword = استبدال الأرشيف
+setup-replace-type = للتأكيد، اكتب «{ $keyword }»
+setup-replace-go = استبدل العائلة
+setup-replace-keyword-wrong = كلمات التأكيد غير مطابقة: اكتب «{ $keyword }». لم يُستبدل شيء.
+setup-replace-backup-failed = فشل النسخ الاحتياطي للعائلة الحالية، لذا لم يُستبدل شيء: { $error }
+setup-replace-changed = تغيّرت العائلة أثناء نسخها احتياطيًا، لذا لم يُستبدل شيء. أعد المحاولة.
+setup-replace-done = العائلة المستبدَلة محفوظة في نسخة احتياطية متحقَّق منها: { $file }
+setup-replace-room-title = استبدال العائلة باستيراد
+setup-replace-room-detail = أرشيف أو GEDCOM مكان العائلة الحالية، بعد نسخة احتياطية متحقَّق منها.
+setup-replace-room-go = افتح الاستيراد

@@ -19,6 +19,8 @@
   </div>
   {% if photos %}<p>{{ t("setup-done-photos", n=photos) }}</p>{% endif %}
   {% if mismatches %}<div class="notice warn"><p>{{ t("setup-done-mismatches", n=mismatches) }}</p></div>{% endif %}
+  {#- A family replaced (docs/adr/0042): where the one before it is kept. -#}
+  {% if backup %}<div class="notice ok"><p>{{ t("setup-replace-done", file=backup) }}</p></div>{% endif %}
 </section>
 <p class="setup-next">
   <a class="btn primary" href="/">{{ t("setup-done-river") if view == "river" else t("view-" ~ view ~ "-open") }}</a>

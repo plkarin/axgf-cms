@@ -1,6 +1,9 @@
 # ADR 0005 — An installation sets itself up: three doors into a family
 
-Status: accepted, v0.5.0 (2026-10-18).
+Status: accepted, v0.5.0 (2026-10-18). §1, §2 (the page that closes) and §4
+(nothing written over a family) amended by docs/adr/0042: the archive and
+GEDCOM doors replace a family that is there, behind a typed word and a
+verified backup.
 
 ## Context
 

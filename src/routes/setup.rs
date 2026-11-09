@@ -13,9 +13,11 @@
 //!    read by [`crate::gedcom_in`], converted, shown with how it was read
 //!    and what came across, and only then, on a second press, kept.
 //!
-//! Once a family is there every door is closed, and none of them ever
-//! writes over one: replacing a family that exists stays `axgf-cms restore`,
-//! from a backup, on the command line, on purpose.
+//! Once a family is there, the archive and GEDCOM doors replace it, and
+//! only on three conditions (docs/adr/0042, amending docs/adr/0005 §4): the
+//! page says what will be lost, the administrator types the word that
+//! confirms it, and a backup of the family is written and verified first.
+//! A family changed while it was being backed up is not replaced.
 
 use std::io::Write as _;
 
@@ -28,7 +30,7 @@ use serde_json::Value;
 use super::admin::{require, Need};
 use super::convert::{convert_and_show, Purpose};
 use crate::routes::Shared;
-use crate::state::{format_diagnostics, Adoption};
+use crate::state::{format_diagnostics, Adoption, Over};
 use crate::{journal, render};
 
 /// An archive's limit in gigabytes, as the page says it: `4`, or `1,5`.
@@ -40,22 +42,27 @@ fn archive_gb(mb: u32, lang: &str) -> String {
     }
 }
 
-macro_rules! admin_while_unset {
+macro_rules! admin_door {
     ($state:expr, $headers:expr) => {{
-        let (viewer, chrome) = match require(&$state, &$headers, Need::Admin) {
-            Ok(v) => v,
+        match require(&$state, &$headers, Need::Admin) {
+            // Over a family, the doors replace it (docs/adr/0042).
+            Ok((viewer, chrome)) => (viewer, chrome, !$state.is_unset()),
             Err(r) => return r,
-        };
-        if !$state.is_unset() {
-            return closed(&chrome);
         }
-        (viewer, chrome)
     }};
 }
 
 /// `GET /admin/setup` — the three doors.
 pub async fn page(State(state): State<Shared>, headers: HeaderMap) -> Response {
-    let (_viewer, chrome) = admin_while_unset!(state, headers);
+    let (_viewer, chrome, replacing) = admin_door!(state, headers);
+    let count = |c: &str| {
+        state
+            .counts()
+            .iter()
+            .find(|(k, _)| *k == c)
+            .map(|(_, n)| *n)
+            .unwrap_or(0)
+    };
     render::page_with(
         &chrome,
         "admin_setup.html",
@@ -64,8 +71,73 @@ pub async fn page(State(state): State<Shared>, headers: HeaderMap) -> Response {
             max_mb => state.limits().gedcom_mb,
             max_archive_gb => archive_gb(state.limits().archive_mb, chrome.lang),
             lang => chrome.lang,
+            // What a replacement would lose, and where its backup goes.
+            replacing,
+            persons => count("persons"),
+            families => count("families"),
+            documents => count("documents"),
+            keyword => chrome.t("setup-replace-keyword"),
+            backup_dir => backup_dir(&state).display().to_string(),
         },
     )
+}
+
+/// Where the backup taken before a replacement goes: the operator's backup
+/// directory, or `backups` beside the bundle.
+fn backup_dir(state: &Shared) -> std::path::PathBuf {
+    state
+        .backup_dir()
+        .map(std::path::Path::to_path_buf)
+        .unwrap_or_else(|| state.data_dir().join("backups"))
+}
+
+/// Whether `typed` is the word that confirms a replacement, in the page's
+/// language: case, spaces and the apostrophe's shape aside.
+fn confirms(chrome: &render::Chrome, typed: &str) -> bool {
+    let norm = |s: &str| {
+        s.replace(['’', 'ʼ'], "'")
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .to_lowercase()
+    };
+    let want = norm(&chrome.t("setup-replace-keyword"));
+    !want.is_empty() && norm(typed) == want
+}
+
+/// The family about to be replaced, backed up and verified first
+/// (docs/adr/0042): the generation it was at and its archive, or why not.
+async fn backed_up(state: &Shared) -> Result<(u64, std::path::PathBuf), String> {
+    let at = state.generation();
+    let dest = backup_dir(state);
+    let bundle = state.bundle_path().to_path_buf();
+    let run = tokio::task::spawn_blocking(move || {
+        crate::backup::run_as(
+            &bundle,
+            &dest,
+            crate::backup::Retention::default(),
+            crate::backup::Kind::PreImport,
+        )
+    })
+    .await;
+    match run {
+        Ok(Ok(report)) => Ok((at, report.archive)),
+        Ok(Err(e)) => Err(format!("{e:#}")),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+/// A replacement refused before anything was written: the word did not
+/// confirm it, or the backup failed.
+fn replace_refused(chrome: &render::Chrome, key: &str, error: Option<String>) -> Response {
+    let why = match error {
+        Some(e) => chrome.t_args(key, &[("error", e.into())]),
+        None => chrome.t_args(
+            key,
+            &[("keyword", chrome.t("setup-replace-keyword").into())],
+        ),
+    };
+    refused(chrome, StatusCode::BAD_REQUEST, &why, false)
 }
 
 /// `POST /admin/setup/gedcom` — the third door: read, convert, show. Nothing
@@ -75,7 +147,7 @@ pub async fn gedcom(
     headers: HeaderMap,
     multipart: Multipart,
 ) -> Response {
-    let (_viewer, chrome) = admin_while_unset!(state, headers);
+    let (_viewer, chrome, _replacing) = admin_door!(state, headers);
     convert_and_show(&state, &chrome, multipart, Purpose::Setup).await
 }
 
@@ -84,8 +156,13 @@ pub async fn adopt_gedcom(
     State(state): State<Shared>,
     headers: HeaderMap,
     Path(id): Path<String>,
+    form: Option<axum::extract::Form<ConfirmForm>>,
 ) -> Response {
-    let (viewer, chrome) = admin_while_unset!(state, headers);
+    let (viewer, chrome, replacing) = admin_door!(state, headers);
+    let typed = form.map(|f| f.0.confirm).unwrap_or_default();
+    if replacing && !confirms(&chrome, &typed) {
+        return replace_refused(&chrome, "setup-replace-keyword-wrong", None);
+    }
     let Some((name, bytes)) = state.conversions().get(&id) else {
         return render::error_page_in(
             &chrome,
@@ -94,18 +171,35 @@ pub async fn adopt_gedcom(
             "error-download-expired-detail",
         );
     };
+    // Over a family, it is backed up and verified first (docs/adr/0042).
+    let (over, backup) = if replacing {
+        match backed_up(&state).await {
+            Ok((at, archive)) => (Over::Family(at), Some(archive)),
+            Err(e) => return replace_refused(&chrome, "setup-replace-backup-failed", Some(e)),
+        }
+    } else {
+        (Over::Nothing, None)
+    };
     // The conversion was kept as the archive it would download as; reading
     // it back is reading exactly what the page showed.
     let st = state.clone();
     let outcome =
-        tokio::task::spawn_blocking(move || st.adopt(axgf_rs::import_bundle(&bytes))).await;
+        tokio::task::spawn_blocking(move || st.take_in(axgf_rs::import_bundle(&bytes), over)).await;
     finish(
         &state,
         &chrome,
         viewer.name(),
         &format!("GEDCOM · {name}"),
+        backup.as_deref(),
         outcome,
     )
+}
+
+/// The word that confirms a replacement, as the keep button's form sends it.
+#[derive(Debug, Default, serde::Deserialize)]
+pub struct ConfirmForm {
+    #[serde(default)]
+    confirm: String,
 }
 
 /// `POST /admin/setup/archive` — the first door: an `.axgf`, streamed to a
@@ -116,7 +210,7 @@ pub async fn archive(
     headers: HeaderMap,
     mut multipart: Multipart,
 ) -> Response {
-    let (viewer, chrome) = admin_while_unset!(state, headers);
+    let (viewer, chrome, replacing) = admin_door!(state, headers);
     let dir = state
         .bundle_path()
         .parent()
@@ -151,6 +245,7 @@ pub async fn archive(
         uuid::Uuid::new_v4().simple()
     ));
     let mut name = String::new();
+    let mut typed = String::new();
     let mut total = 0usize;
     // What the administration lets an archive weigh (docs/adr/0041); a body
     // cut at that weight is said to be too large, not unreadable.
@@ -165,6 +260,10 @@ pub async fn archive(
     let written: Result<(), String> = async {
         let mut file = std::fs::File::create(&part).map_err(|e| e.to_string())?;
         while let Some(mut field) = multipart.next_field().await.map_err(too_large)? {
+            if field.name() == Some("confirm") {
+                typed = field.text().await.unwrap_or_default();
+                continue;
+            }
             if field.name() != Some("file") {
                 continue;
             }
@@ -199,14 +298,32 @@ pub async fn archive(
             false,
         );
     }
+    // Over a family: the word that confirms it, then a verified backup
+    // (docs/adr/0042).
+    let (over, backup) = if replacing {
+        if !confirms(&chrome, &typed) {
+            let _ = std::fs::remove_file(&part);
+            return replace_refused(&chrome, "setup-replace-keyword-wrong", None);
+        }
+        match backed_up(&state).await {
+            Ok((at, archive)) => (Over::Family(at), Some(archive)),
+            Err(e) => {
+                let _ = std::fs::remove_file(&part);
+                return replace_refused(&chrome, "setup-replace-backup-failed", Some(e));
+            }
+        }
+    } else {
+        (Over::Nothing, None)
+    };
     let (st, path) = (state.clone(), part.clone());
-    let outcome = tokio::task::spawn_blocking(move || st.adopt_archive(&path)).await;
+    let outcome = tokio::task::spawn_blocking(move || st.take_in_archive(&path, over)).await;
     let _ = std::fs::remove_file(&part);
     finish(
         &state,
         &chrome,
         viewer.name(),
         &format!("AXGF · {name}"),
+        backup.as_deref(),
         outcome,
     )
 }
@@ -217,16 +334,25 @@ fn finish(
     chrome: &render::Chrome,
     who: &str,
     how: &str,
+    backup: Option<&std::path::Path>,
     outcome: Result<anyhow::Result<Adoption>, tokio::task::JoinError>,
 ) -> Response {
+    // A replacement names the archive the family it replaced was kept in.
+    let backup_name = backup
+        .and_then(|p| p.file_name())
+        .map(|n| n.to_string_lossy().into_owned());
     match outcome {
         Ok(Ok(Adoption::Done(report))) => {
+            let label = match &backup_name {
+                Some(b) => format!("{how} → {b}"),
+                None => how.to_string(),
+            };
             state.journal_mutation(&journal::entry_for(journal::Record {
                 who,
                 action: "setup",
                 kind: "bundle",
                 entity_id: "",
-                label: Some(how.to_string()),
+                label: Some(label),
                 version_num: None,
                 before: None,
                 after: None,
@@ -249,10 +375,17 @@ fn finish(
                     counts,
                     photos => report.extracted + report.reused,
                     mismatches => report.mismatches,
+                    backup => backup.map(|p| p.display().to_string()),
                 },
             )
         }
         Ok(Ok(Adoption::Occupied)) => closed(chrome),
+        Ok(Ok(Adoption::Changed)) => refused(
+            chrome,
+            StatusCode::CONFLICT,
+            &chrome.t("setup-replace-changed"),
+            false,
+        ),
         Ok(Ok(Adoption::Refused(diags))) => refused(
             chrome,
             StatusCode::UNPROCESSABLE_ENTITY,

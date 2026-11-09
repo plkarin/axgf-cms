@@ -532,8 +532,21 @@ pub enum Adoption {
     /// A family was already there by the time the write lock was held, and
     /// nothing was written.
     Occupied,
+    /// The family being replaced changed after it was backed up
+    /// (docs/adr/0042): nothing was written, so no change is lost.
+    Changed,
     /// The library would not take it, in its own words.
     Refused(Vec<Diagnostic>),
+}
+
+/// What an import may be taken in over (docs/adr/0042).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Over {
+    /// Nothing: an installation with no family (docs/adr/0005).
+    Nothing,
+    /// The family as it was at this generation, backed up: replaced only if
+    /// nothing changed it since.
+    Family(u64),
 }
 
 /// No entity in any collection: a family not set up yet.
@@ -1932,9 +1945,16 @@ impl AppState {
     /// at once cannot both win, and nothing is ever written over a family:
     /// replacing one that exists stays `axgf-cms restore`, on purpose.
     pub fn adopt(&self, env: Envelope) -> Result<Adoption> {
+        self.take_in(env, Over::Nothing)
+    }
+
+    /// The family in `env` taken in over `over`: an installation with none
+    /// ([`AppState::adopt`]), or the family as it was backed up
+    /// (docs/adr/0042).
+    pub fn take_in(&self, env: Envelope, over: Over) -> Result<Adoption> {
         let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
-        if !is_unset(&guard) {
-            return Ok(Adoption::Occupied);
+        if let Some(refusal) = self.over_refused(&guard, over) {
+            return Ok(refusal);
         }
         let out = self.apply_locked(&mut guard, move |_| env, |_, _| {})?;
         if !out.applied {
@@ -1954,9 +1974,15 @@ impl AppState {
     /// whole in memory; then written as every save is, atomically, and taken
     /// in. A file the library will not import changes nothing.
     pub fn adopt_archive(&self, archive: &Path) -> Result<Adoption> {
+        self.take_in_archive(archive, Over::Nothing)
+    }
+
+    /// The family in an `.axgf` archive on disk taken in over `over`
+    /// (docs/adr/0042), as [`AppState::adopt_archive`] takes it.
+    pub fn take_in_archive(&self, archive: &Path, over: Over) -> Result<Adoption> {
         let mut guard = self.inner.write().unwrap_or_else(|e| e.into_inner());
-        if !is_unset(&guard) {
-            return Ok(Adoption::Occupied);
+        if let Some(refusal) = self.over_refused(&guard, over) {
+            return Ok(refusal);
         }
         let file = fs::File::open(archive)
             .with_context(|| format!("opening the uploaded archive {}", archive.display()))?;
@@ -1980,6 +2006,24 @@ impl AppState {
         drop(guard);
         self.rebind_accounts(manifest.as_ref())?;
         Ok(Adoption::Done(report))
+    }
+
+    /// Why an import may not be taken in over what is there, checked under
+    /// the write lock: a family where there should be none, or a family
+    /// changed since it was backed up.
+    fn over_refused(&self, flat: &Value, over: Over) -> Option<Adoption> {
+        match over {
+            Over::Nothing if !is_unset(flat) => Some(Adoption::Occupied),
+            Over::Family(at) if self.generation() != at => Some(Adoption::Changed),
+            _ => None,
+        }
+    }
+
+    /// How many times the bundle has changed since this process started:
+    /// read before a family is backed up, and checked before it is replaced
+    /// (docs/adr/0042).
+    pub fn generation(&self) -> u64 {
+        self.generation.load(std::sync::atomic::Ordering::Acquire)
     }
 
     /// The accounts follow the family they were set up for: the `.acl`'s

@@ -181,7 +181,7 @@ login-sign-in-prompt = Sign in to reach the admin panel.
 
 admin-title = Admin
 setup-title = Set up this archive
-setup-lede = This installation holds no family yet. Choose how it begins. Nothing here is ever written over a family: this page closes as soon as there is one.
+setup-lede = This installation holds no family yet. Choose how it begins.
 setup-door-archive-title = From an AXGF archive
 setup-door-archive-detail = An .axgf file from another installation or from a backup. Its people, sources and photographs come across as they are.
 setup-door-archive-file = Archive (.axgf)
@@ -194,7 +194,7 @@ setup-door-gedcom-title = From a GEDCOM file
 setup-door-gedcom-detail = The file every genealogy program exports: GEDCOM 5.5, 5.5.1, 5.5.5 or 7.0, as .ged or .gdz, in whatever encoding it was written. You see how it was read and what comes across before anything is kept.
 setup-door-gedcom-file = GEDCOM file (.ged, .gdz)
 setup-door-gedcom-go = Read this file
-setup-never-over = To replace a family that is already here, restore a backup from the command line (axgf-cms restore); no page writes over one.
+setup-never-over = Once a family is here, this page replaces it only after a verified backup and the words that confirm it.
 setup-adopt-title = Make this the archive’s family
 setup-adopt-detail = Records that would become this installation’s family: { $total }. Nothing is kept until you press the button.
 setup-adopt-go = Set up the archive with this family
@@ -211,7 +211,7 @@ setup-done-admin = Administration
 setup-refused-title = This could not become the archive
 setup-refused-detail = Nothing was written. What stopped it:
 setup-closed-title = This archive is already set up
-setup-closed-detail = It holds a family, and no page writes over one. To replace it, restore a backup from the command line (axgf-cms restore).
+setup-closed-detail = A family arrived meanwhile, and nothing was written. Open the import page again: over a family, it asks for a confirmation and backs the family up first.
 setup-not-archive = This is not an .axgf archive.
 setup-archive-too-large = This archive is larger than an upload may be.
 admin-lede = Editing { $path } — { $total } entities, { $files ->
@@ -5554,3 +5554,20 @@ uploads-not-saved = The settings could not be saved: { $error }
 uploads-summary = Files attached to a record: { $document } MB at most; { $accepted } kinds accepted out of { $total }.
 uploads-open = Set the uploads
 error-upload-kind-refused = This kind of file ({ $kind }) is refused by this site: the administration does not accept it. Nothing was saved.
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = Replace the family
+setup-replace-lede = This archive already holds a family. Importing a file replaces it whole.
+setup-replace-warning = Everything that is not in the imported file will be lost: records, notes, pictures, links.
+setup-replace-backup = Just before, a verified backup of the present family is written in { $dir }; it is restored with axgf-cms restore.
+setup-replace-keyword = replace the archive
+setup-replace-type = To confirm, type “{ $keyword }”
+setup-replace-go = Replace the family
+setup-replace-keyword-wrong = The confirming words do not match: type “{ $keyword }”. Nothing was replaced.
+setup-replace-backup-failed = The backup of the present family failed, so nothing was replaced: { $error }
+setup-replace-changed = The family changed while it was being backed up, so nothing was replaced. Try again.
+setup-replace-done = The family it replaced is backed up, and the backup verified: { $file }
+setup-replace-room-title = Replace the family with an import
+setup-replace-room-detail = An archive or a GEDCOM in place of the present family, after a verified backup of it.
+setup-replace-room-go = Open the import

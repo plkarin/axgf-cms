@@ -179,7 +179,7 @@ login-sign-in-prompt = 管理画面に入るにはログインしてください
 
 admin-title = 管理
 setup-title = このアーカイブを始める
-setup-lede = このインストールにはまだ家族がありません。どのように始めるかを選んでください。ここで家族の上に書き込むことは決してありません。家族ができた時点でこのページは閉じます。
+setup-lede = このインストールにはまだ家族がありません。どのように始めるかを選んでください。
 setup-door-archive-title = AXGF アーカイブから
 setup-door-archive-detail = 別のインストールやバックアップから取り出した .axgf ファイル。人物・出典・写真がそのまま移ります。
 setup-door-archive-file = アーカイブ（.axgf）
@@ -192,7 +192,7 @@ setup-door-gedcom-title = GEDCOM ファイルから
 setup-door-gedcom-detail = どの系図ソフトでも書き出せるファイル：GEDCOM 5.5・5.5.1・5.5.5・7.0、.ged でも .gdz でも、どの文字コードでも構いません。何かを保存する前に、どう読まれ何が移るかを確認できます。
 setup-door-gedcom-file = GEDCOM ファイル（.ged・.gdz）
 setup-door-gedcom-go = このファイルを読む
-setup-never-over = すでにある家族を置き換えるには、コマンドラインでバックアップを復元してください（axgf-cms restore）。どのページもその上に書き込みません。
+setup-never-over = 家族がすでにある場合、このページは検証済みのバックアップと確認の言葉の入力のあとでのみ置き換えます。
 setup-adopt-title = これをアーカイブの家族にする
 setup-adopt-detail = このインストールの家族になる記録：{ $total }。ボタンを押すまで何も保存されません。
 setup-adopt-go = この家族でアーカイブを始める
@@ -209,7 +209,7 @@ setup-done-admin = 管理
 setup-refused-title = これをアーカイブにできませんでした
 setup-refused-detail = 何も書き込まれていません。妨げになったもの：
 setup-closed-title = このアーカイブはすでに始まっています
-setup-closed-detail = 家族がすでにあり、どのページもその上に書き込みません。置き換えるには、コマンドラインでバックアップを復元してください（axgf-cms restore）。
+setup-closed-detail = その間に家族が入り、何も書き込まれませんでした。取り込みのページを開き直してください。家族がある場合は確認を求め、先にバックアップを取ります。
 setup-not-archive = これは .axgf アーカイブではありません。
 setup-archive-too-large = このアーカイブはアップロードできる大きさを超えています。
 admin-lede = { $path } を編集中 — 記録{ $total }件、添付ファイル{ $files }件、ディスク上{ $size }。変更はすべて一度に書き込まれ、拒否された変更はファイルに触れません。
@@ -5111,3 +5111,20 @@ uploads-not-saved = 設定を保存できませんでした：{ $error }
 uploads-summary = 記録に添付するファイル：最大 { $document } MB。{ $total } 種類のうち { $accepted } 種類を受け付け。
 uploads-open = 送信を設定する
 error-upload-kind-refused = この種類のファイル（{ $kind }）はこのサイトでは受け付けていません（管理者の設定）。何も保存していません。
+
+# An import in place of the family, behind a word and a verified backup
+# (docs/adr/0042).
+setup-replace-title = 家族を置き換える
+setup-replace-lede = この書庫にはすでに家族があります。ファイルを取り込むと、その全体が置き換わります。
+setup-replace-warning = 取り込むファイルにないものはすべて失われます：記録、ノート、写真、つながり。
+setup-replace-backup = 直前に、いまの家族の検証済みバックアップが { $dir } に書き込まれます。axgf-cms restore で復元できます。
+setup-replace-keyword = 書庫を置き換える
+setup-replace-type = 確認のため「{ $keyword }」と入力してください
+setup-replace-go = 家族を置き換える
+setup-replace-keyword-wrong = 確認の言葉が一致しません。「{ $keyword }」と入力してください。何も置き換えていません。
+setup-replace-backup-failed = いまの家族のバックアップに失敗したため、何も置き換えていません：{ $error }
+setup-replace-changed = バックアップ中に家族が変更されたため、何も置き換えていません。もう一度お試しください。
+setup-replace-done = 置き換えられた家族はバックアップ済みで、バックアップは検証済みです：{ $file }
+setup-replace-room-title = 取り込みで家族を置き換える
+setup-replace-room-detail = いまの家族の検証済みバックアップのあと、その代わりに書庫または GEDCOM を取り込みます。
+setup-replace-room-go = 取り込みを開く

@@ -215,6 +215,10 @@ pub(super) async fn convert_and_show(
             nav => if setup { "admin" } else { "convert" },
             ok => true,
             setup,
+            // Over a family that is there (docs/adr/0042): the keep button
+            // asks for the word that confirms it.
+            replacing => setup && !state.is_unset(),
+            keyword => chrome.t("setup-replace-keyword"),
             reading,
             filename => upload.filename,
             download_id => id,

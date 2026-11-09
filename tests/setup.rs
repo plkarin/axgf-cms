@@ -222,13 +222,10 @@ async fn every_gedcom_version_and_encoding_sets_a_family_up_with_its_names_whole
                 "{file}: the shared note reached him"
             );
         }
-        // The doors close behind the family.
-        assert_eq!(
-            get_with_cookie(&app, "/admin/setup", &cookie)
-                .await
-                .status(),
-            StatusCode::CONFLICT
-        );
+        // Behind the family, the doors replace it, and say so
+        // (docs/adr/0042).
+        let page = body_string(get_with_cookie(&app, "/admin/setup", &cookie).await).await;
+        assert!(page.contains("Replace the family"), "{file}");
     }
 }
 
@@ -265,11 +262,10 @@ async fn an_archive_sets_a_family_up_photographs_and_all() {
     let served =
         body_bytes(get_with_cookie(&app, &format!("/document/{id}/raw"), &cookie).await).await;
     assert_eq!(served, original);
-    assert_eq!(
-        get_with_cookie(&app, "/admin/setup", &cookie)
-            .await
-            .status(),
-        StatusCode::CONFLICT
+    let page = body_string(get_with_cookie(&app, "/admin/setup", &cookie).await).await;
+    assert!(
+        page.contains("Replace the family"),
+        "the doors now replace it"
     );
 }
 
@@ -297,35 +293,101 @@ async fn a_file_that_is_not_an_archive_changes_nothing() {
 /// Nothing is ever written over a family: each door, tried again once one is
 /// there, is refused and leaves it as it was. Replacing a family stays
 /// `axgf-cms restore`.
+/// Over a family, the doors replace it only with the words that confirm it,
+/// and after a verified backup of the family (docs/adr/0042, amending
+/// docs/adr/0005 §4).
 #[tokio::test]
-async fn no_door_writes_over_a_family() {
-    let (app, _s) = app_with_empty_bundle("setup-occupied");
+async fn a_family_is_replaced_only_with_the_word_and_after_a_verified_backup() {
+    let (app, dir) = app_with_empty_bundle("setup-occupied");
     let cookie = admin_cookie(&app).await;
     let first = set_up_from_gedcom(&app, &cookie, "g551-utf8.ged").await;
     let before = people(&exported(&app, &cookie).await);
     let at = first.find("action=\"/admin/setup/gedcom/").unwrap();
     let again: String = first[at + 8..].chars().take_while(|c| *c != '"').collect();
-    let gedcom = multipart("g70-utf8.ged", &fixture("gedcom/g70-utf8.ged"), &[]);
-    let archive = multipart("with-photo.axgf", &fixture("with-photo.axgf"), &[]);
+
+    // The page says what would be lost, and asks for the words.
+    let page = expect_status(
+        get_with_cookie(&app, "/admin/setup", &cookie).await,
+        StatusCode::OK,
+        "the page",
+    )
+    .await;
+    assert!(page.contains("Replace the family"), "{page}");
+    assert!(page.contains("will be lost"));
+    assert!(page.contains(r#"name="confirm""#));
+    assert!(
+        !page.contains("setup-scratch-door"),
+        "no empty start over a family"
+    );
+
+    // Without the words, or with others: nothing written.
+    let archive =
+        |fields: &[(&str, &str)]| multipart("with-photo.axgf", &fixture("with-photo.axgf"), fields);
     for (what, resp) in [
         (
-            "the page",
-            get_with_cookie(&app, "/admin/setup", &cookie).await,
-        ),
-        (
-            "the same conversion again",
+            "the same conversion, no words",
             post_form_as(&app, &cookie, &again, "").await,
         ),
         (
-            "another GEDCOM",
-            post_multipart(&app, "/admin/setup/gedcom", &cookie, gedcom).await,
+            "the same conversion, other words",
+            post_form_as(&app, &cookie, &again, "confirm=yes").await,
         ),
         (
-            "an archive",
-            post_multipart(&app, "/admin/setup/archive", &cookie, archive).await,
+            "an archive, no words",
+            post_multipart(&app, "/admin/setup/archive", &cookie, archive(&[])).await,
         ),
     ] {
-        assert_eq!(resp.status(), StatusCode::CONFLICT, "{what}");
+        let status = resp.status();
+        let body = body_string(resp).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{what}");
+        assert!(
+            body.contains("type “replace the archive”"),
+            "{what}: {body}"
+        );
     }
     assert_eq!(people(&exported(&app, &cookie).await), before);
+    let backups = dir.parent().unwrap().join("backups");
+    assert!(
+        axgf_cms::backup::list_kind(&backups, axgf_cms::backup::Kind::PreImport)
+            .unwrap()
+            .is_empty(),
+        "no backup without the words"
+    );
+
+    // Another GEDCOM is read and shown, its keep button asking for the words.
+    let gedcom = multipart("g70-utf8.ged", &fixture("gedcom/g70-utf8.ged"), &[]);
+    let shown = expect_status(
+        post_multipart(&app, "/admin/setup/gedcom", &cookie, gedcom).await,
+        StatusCode::OK,
+        "another GEDCOM",
+    )
+    .await;
+    assert!(
+        shown.contains(r#"name="confirm""#),
+        "the keep button asks for the words"
+    );
+
+    // With the words, case and spaces aside: backed up, verified, replaced.
+    let resp = post_multipart(
+        &app,
+        "/admin/setup/archive",
+        &cookie,
+        archive(&[("confirm", "  Replace   THE archive ")]),
+    )
+    .await;
+    let done = expect_status(resp, StatusCode::OK, "an archive, with the words").await;
+    assert!(done.contains("The archive is set up"), "{done}");
+    assert!(
+        done.contains("axgf-pre-import-"),
+        "the backup named: {done}"
+    );
+    let after = people(&exported(&app, &cookie).await);
+    assert_ne!(after, before, "replaced");
+    let kept = axgf_cms::backup::list_kind(&backups, axgf_cms::backup::Kind::PreImport).unwrap();
+    assert_eq!(kept.len(), 1);
+    let verified = axgf_cms::backup::verify(&kept[0].path).expect("the backup reads back");
+    assert!(
+        verified.manifest.entities.values().sum::<usize>() > 0,
+        "the family it held"
+    );
 }

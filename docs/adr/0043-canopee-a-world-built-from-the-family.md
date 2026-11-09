@@ -1,6 +1,6 @@
 # ADR 0043 — Canopée: a world built from the family
 
-**Status:** accepted, v1.12.0 (2026-11-09) · **Builds on:** docs/adr/0004 (the
+**Status:** withdrawn (9 November 2026; released in v1.12.0) · **Builds on:** docs/adr/0004 (the
 river, §11–§17), docs/adr/0007 (the themes' living scenes) · **Applies to:**
 `src/world.rs`, `src/routes/world.rs`, `src/state.rs`,
 `static/canopee-world.js`, `templates/index.html` (the river), `static/app.css`
@@ -177,3 +177,13 @@ to compare.
   software renderer on two cores, 18 frames a second at full detail and 39
   at the third level; a real card does far better, and `?world=fps` shows it
   on the reader's own machine.
+
+## Withdrawn
+
+The same day, having seen the world on the family's own land, the operator
+judged it ugly and asked for the state before it: the river under Canopée
+is again the family's water drawn by `river.js` over the photograph of a
+valley (`river-scene.js`, docs/adr/0007), as in v1.11.0. The world's code
+(`src/world.rs`, `src/routes/world.rs`, `static/canopee-world.js`,
+`/canopee/world.bin`, `/canopee/words.json`) is removed; this record stays,
+with what was tried and measured, for whoever takes the idea up again.

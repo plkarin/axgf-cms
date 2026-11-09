@@ -773,8 +773,6 @@
         }
         swapPanel(id); controls(n);
         clearTimeout(waitTimer);
-        // Canopée's world in 3D flies to them (docs/adr/0043).
-        if (window.axgfRiverWorld) window.axgfRiverWorld.focus(id);
         if (window.axgfRiverScene) window.axgfRiverScene.travel(travelShift(A, id), view && view.tween ? 900 : 560);
         // Zoomed in, the camera glides to the fixed point with the river, so
         // the person travelled to arrives in view.

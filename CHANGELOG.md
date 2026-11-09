@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- **Canopée's 3D world** (docs/adr/0043), withdrawn at the operator's
+  request of 9 November 2026: under Canopée the river is again the family's
+  water over the photograph of a valley, as it was in 1.11.0. The texts
+  1.12.0 reread stay as reread.
+
 ## [1.12.0] — 2026-11-09
 
 Canopée in 3D, as the operator asked on 9 November 2026 (docs/adr/0043),

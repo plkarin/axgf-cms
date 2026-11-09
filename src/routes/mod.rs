@@ -23,7 +23,6 @@ mod profile;
 mod public;
 mod setup;
 mod uploads;
-mod world;
 
 use std::sync::Arc;
 
@@ -383,10 +382,6 @@ fn routes(state: Shared) -> Router {
         // it, which has no river to draw.
         .route("/", get(public::river))
         .route("/river/data", get(public::river_data))
-        // Canopée's world (docs/adr/0043): its shape, once per shape, and the
-        // words the reader may read.
-        .route("/canopee/world.bin", get(world::bin))
-        .route("/canopee/words.json", get(world::words))
         .route("/about", get(public::home))
         .route("/impact", get(impact::family))
         .route("/impact/:id", get(impact::person))
@@ -879,7 +874,6 @@ fn routes(state: Shared) -> Router {
         .route("/static/editor.js", get(public::editor_js))
         .route("/static/notes.js", get(public::notes_js))
         .route("/static/person_new.js", get(public::person_new_js))
-        .route("/static/canopee-world.js", get(public::canopee_world_js))
         .route("/static/impact.js", get(impact::script))
         .route("/static/flags/:file", get(impact::flag))
         .route("/static/ui.js", get(public::ui_js))

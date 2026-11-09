@@ -1477,18 +1477,6 @@ pub async fn person_new_js() -> Response {
         .into_response()
 }
 
-/// `GET /static/canopee-world.js` — Canopée's world in 3D (docs/adr/0043).
-pub async fn canopee_world_js() -> Response {
-    (
-        [
-            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
-            (header::CACHE_CONTROL, "public, max-age=3600"),
-        ],
-        render::CANOPEE_WORLD_JS,
-    )
-        .into_response()
-}
-
 /// `GET /static/ui.js` — the delegated handlers every page carries.
 pub async fn ui_js() -> Response {
     (
@@ -2135,8 +2123,6 @@ pub async fn river(
             nav => "river",
             still => true,
             motion_cut,
-            // Canopée's world (docs/adr/0043), by the shape it was built for.
-            world_fp => state.world_fingerprint(),
             svg => v.svg,
             payload => script_json(&v.payload),
             centre_q => crate::river::url_component(&v.centre),

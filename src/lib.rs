@@ -96,7 +96,6 @@ pub mod theme;
 pub mod tree;
 pub mod unions;
 pub mod view;
-pub mod world;
 
 use std::path::Path;
 use std::sync::Arc;

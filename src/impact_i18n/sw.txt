@@ -1,0 +1,1685 @@
+# Impact's landmarks in Swahili (docs/adr/0038): under "## <key>" (the
+# landmark's year and English name, as src/impact.rs keys it), one line a
+# field: name|, note|, context|, stakes|, victims|. A landmark or a field
+# left out reads in English. A machine's translation (Claude), not yet
+# proofread by a native speaker.
+## -10000-end-of-the-last-ice-age-and-the-neolithic-revolution
+name|Mwisho wa enzi ya mwisho ya barafu na mapinduzi ya Kineolithi
+context|Barafu ilipopungua, watu wa Hilali yenye Rutuba walianza kulima, kufuga wanyama na kuishi vijijini.
+stakes|Maisha ya kudumu mahali pamoja, ziada ya chakula na ongezeko la watu: msingi wa ustaarabu wote uliofuata.
+## -9500-gobekli-tepe-monumental-site-in-anatolia
+name|Göbekli Tepe, eneo la majengo makubwa huko Anatolia
+context|Wawindaji na wakusanyaji walisimika nguzo za mawe zilizochongwa kwa duara juu ya kilima kusini-mashariki mwa Uturuki.
+stakes|Eneo la kale kabisa la majengo makubwa linalojulikana, huko likiwa la kale kuliko kilimo: huenda imani ilitangulia shamba.
+## -8000-neolithic-migrations-from-the-near-east-to-europe
+name|Uhamiaji wa Kineolithi kutoka Mashariki ya Karibu hadi Ulaya
+context|Wakulima kutoka Anatolia walienea Ulaya kwa maelfu ya miaka, wakichanganyika na wawindaji na wakusanyaji wake.
+stakes|Kilimo, ufinyanzi na vinasaba vipya vilifika Ulaya; Wazungu wengi wametokana kwa sehemu na wakulima hao.
+## -5000-austronesian-expansion-from-south-east-asia-to-the-pacific
+name|Kuenea kwa Waaustronesia, kutoka Asia ya Kusini-Mashariki hadi Pasifiki
+context|Mabaharia kutoka Taiwan na Ufilipino walivuka Bahari ya Pasifiki na Bahari ya Hindi kwa ngalawa.
+stakes|Kuenea kwa upana zaidi kwa familia moja ya lugha kabla ya mwaka 1500, kutoka Madagaska hadi Kisiwa cha Pasaka.
+## -3500-sumerian-civilisation-and-cuneiform-writing
+name|Ustaarabu wa Wasumeri na maandishi ya kikabari
+context|Huko Mesopotamia, miji-dola kama Uruk ilikua kuzunguka mahekalu na mifereji ya umwagiliaji; waandishi walibonyeza alama kwenye udongo.
+stakes|Maandishi yalizaliwa ili kuhesabu bidhaa, yakawa kumbukumbu ya sheria, hadithi za kale na historia.
+## -3100-ancient-egypt-from-unification-to-the-roman-conquest
+name|Misri ya Kale, kutoka kuunganishwa hadi kutekwa na Warumi
+context|Misri ya Juu na Misri ya Chini ziliunganishwa chini ya mafarao, ufalme ulioishi kwa mafuriko ya kila mwaka ya Mto Nile.
+stakes|Miaka elfu tatu ya dola, maandishi, majengo makubwa na dini, iliyokomeshwa na Roma mwaka 30 KK.
+## -2600-the-great-pyramid-of-khufu
+name|Piramidi Kuu ya Khufu
+context|Ilijengwa huko Giza kama kaburi la farao Khufu na makumi ya maelfu ya wafanyakazi waliopangwa vizuri.
+stakes|Nguvu ya dola iliyoweza kuamuru kazi kama hiyo; jengo refu kuliko yote duniani kwa miaka 3,800.
+## -2500-indus-valley-civilisation-harappa
+name|Ustaarabu wa Bonde la Indus (Harappa)
+context|Miji ya matofali iliyopangwa, yenye mifereji ya maji machafu na maghala ya nafaka, kando ya Mto Indus, katika Pakistan na India ya leo.
+stakes|Mmoja wa ustaarabu wa kwanza wa mijini; maandishi yake bado hayajafafanuliwa.
+## -2334-akkadian-empire
+name|Dola ya Akkad
+context|Sargon wa Akkad aliunganisha miji ya Mesopotamia chini ya mtawala mmoja.
+stakes|Mara nyingi huitwa dola kuu ya kwanza: mfalme mmoja juu ya mataifa mengi.
+## -1792-height-of-babylon-code-of-hammurabi
+name|Kilele cha Babeli (Sheria za Hammurabi)
+context|Mfalme Hammurabi aliufanya Babeli kuwa kitovu cha Mesopotamia na akachonga sheria zake kwenye jiwe.
+stakes|Mojawapo ya mikusanyiko ya sheria iliyoandikwa ya kale kabisa, yenye adhabu zilizowekwa.
+## -1600-shang-dynasty-in-china
+name|Nasaba ya Shang nchini China
+context|Wafalme waliojua kufua shaba walitawala uwanda wa Mto wa Njano na kutafuta ubashiri kwa mifupa.
+stakes|Maandishi ya kale kabisa ya Kichina yaliyobaki, babu wa herufi za leo.
+## -1500-olmec-civilisation-mesoamerica
+name|Ustaarabu wa Waolmeki (Amerika ya Kati)
+context|Kwenye pwani ya Ghuba ya Meksiko, Waolmeki walijenga vituo vya ibada na kuchonga vichwa vikubwa sana vya mawe.
+stakes|Utamaduni-mama wa Amerika ya Kati, ambao miungu na kalenda zake zilirithiwa na watu waliofuata.
+## -1200-late-bronze-age-collapse
+name|Kuanguka kwa mwisho wa Enzi ya Shaba
+context|Ndani ya miongo michache, majumba ya kifalme na falme kuzunguka mashariki mwa Bahari ya Mediterania yalianguka, katikati ya ukame, uvamizi na maasi.
+stakes|Mwisho wa Wahiti na Wamikene; enzi ya giza kabla ya kuinuka tena kwa Wagiriki na Wafoinike.
+victims|Haijulikani; miji ilichomwa moto na kuachwa.
+## -1000-nok-culture-west-africa
+name|Utamaduni wa Nok (Afrika Magharibi)
+context|Katika Nigeria ya leo, watu wa Nok waliyeyusha chuma na kutengeneza sanamu za udongo wa kuchomwa za kuvutia.
+stakes|Ufuaji wa chuma wa mapema kusini mwa Sahara na mojawapo ya desturi za kale kabisa za uchongaji barani Afrika.
+## -1000-kingdom-of-kush-and-the-rise-of-aksum
+name|Ufalme wa Kushi na kuinuka kwa Aksum
+context|Kushi, kando ya Mto Nile katika Sudan ya leo, ilitawala Misri kwa karne moja; baadaye Aksum iliinuka katika nyanda za juu za Ethiopia.
+stakes|Falme za Kiafrika zilizofanya biashara kati ya Mediterania, Uarabuni na India; Aksum ikawa ya Kikristo katika karne ya 4.
+## -814-carthage
+name|Karthago
+context|Koloni ya Wafoinike katika Tunisia ya leo iliyokua na kuwa dola ya baharini.
+stakes|Mpinzani mkuu wa Roma juu ya magharibi mwa Mediterania, iliyoangamizwa mwaka 146 KK.
+## -776-first-ancient-olympic-games
+name|Michezo ya kwanza ya Olimpiki ya kale
+context|Miji-dola ya Kigiriki ilifanya michezo huko Olimpia kwa heshima ya Zeu, chini ya mapatano matakatifu ya kusimamisha vita.
+stakes|Utambulisho wa pamoja wa Kigiriki; baadaye Wagiriki walihesabu miaka kwa Olimpiadi.
+## -753-rome-foundation-republic-empire
+name|Roma: kuanzishwa, Jamhuri, Dola
+context|Kwa mujibu wa hadithi ilianzishwa mwaka 753 KK, Roma ikawa jamhuri, kisha dola kuzunguka Mediterania.
+stakes|Sheria zake, barabara zake, Kilatini na baadaye Ukristo viliunda Ulaya; Magharibi ilianguka mwaka 476.
+## -500-birth-of-buddhism-and-confucianism
+name|Kuzaliwa kwa Ubuddha na Ukonfusio
+context|Buddha nchini India na Konfusio nchini China walifundisha karibu karne ya 6 na ya 5 KK.
+stakes|Njia mbili za maisha na fikra ambazo bado zinaongoza mamia ya mamilioni ya watu.
+## -539-achaemenid-empire-persia
+name|Dola ya Akamenidi (Uajemi)
+context|Koreshi Mkuu aliuteka Babeli na kuanzisha dola kutoka Indus hadi Bahari ya Aegea.
+stakes|Dola kubwa kuliko zote wakati wake, iliyojulikana kwa barabara zake na uvumilivu wake kwa desturi za kienyeji.
+## -322-maurya-empire-india
+name|Dola ya Maurya (India)
+context|Chandragupta aliunganisha sehemu kubwa ya India; mjukuu wake Ashoka alikubali Ubuddha baada ya vita vya umwagaji damu.
+stakes|Dola kuu ya kwanza ya India; amri za Ashoka zilieneza Ubuddha kote Asia.
+## -221-qin-dynasty-china-unified-the-great-wall
+name|Nasaba ya Qin: China iliyounganishwa, Ukuta Mkuu
+context|Mfalme wa Qin alishinda Madola Yanayopigana na kuwa mfalme mkuu wa kwanza wa China.
+stakes|Maandishi mamoja, sarafu moja, sheria moja: China iliyounganishwa iliyodumu; kuta za mwanzo ziliunganishwa dhidi ya kaskazini.
+## -202-han-dynasty-and-the-silk-road
+name|Nasaba ya Han na Njia ya Hariri
+context|Wahan walitawala China kwa karne nne na kufungua njia za biashara hadi Asia ya Kati na Roma.
+stakes|Hariri, mawazo na dini zilisafiri kwenye Njia ya Hariri; Wachina bado hujiita Wahan.
+## 100-teotihuacan-and-classic-maya-civilisation
+name|Teotihuacan na ustaarabu wa Wamaya wa kipindi cha kale
+context|Teotihuacan, karibu na Mji wa Meksiko wa leo, ulikuwa mmoja wa miji mikubwa kuliko yote duniani; Wamaya walijenga miji katika misitu ya kusini.
+stakes|Maandishi, elimu ya nyota na kalenda za usahihi mkubwa katika Amerika.
+## 320-gupta-empire-india
+name|Dola ya Gupta (India)
+context|Wafalme wa Gupta walitawala kaskazini mwa India katika kipindi cha amani na elimu.
+stakes|Enzi ya kale ya dhahabu: mfumo wa desimali wenye sifuri, fasihi ya Kisanskriti, mahekalu.
+## 375-migration-period-barbarian-invasions
+name|Kipindi cha Uhamiaji («uvamizi wa washenzi»)
+context|Wakisukumwa na Wahuni, Wagothi, Wafranki, Wavandali na watu wengine waliingia katika Dola ya Kirumi.
+stakes|Dola ya Magharibi ilivunjika kuwa falme zilizokuja kuwa mataifa ya Ulaya.
+## 476-fall-of-the-western-roman-empire
+name|Kuanguka kwa Dola ya Kirumi ya Magharibi
+context|Jemadari wa Kijerumani Odoaka alimwondoa Romulus Augustulus, mfalme mkuu wa mwisho wa Magharibi.
+stakes|Mwisho unaokubalika wa Zama za Kale; Dola ya Mashariki ilidumu hadi 1453.
+## 500-bantu-migrations-central-and-southern-africa
+name|Uhamiaji wa Wabantu (Afrika ya Kati na Kusini)
+context|Wakulima na wahunzi wanaozungumza lugha za Kibantu walienea kwa karne nyingi kutoka magharibi mwa Afrika ya Kati kote kusini mwa bara.
+stakes|Leo sehemu kubwa ya Afrika ya Kati, Mashariki na Kusini huzungumza lugha za Kibantu, zikiwemo Kilingala na Kiswahili.
+## -499-greco-persian-wars
+name|Vita vya Wagiriki na Waajemi
+context|Miji ya Kigiriki, ikiongozwa na Athene na Sparta, ilizuia uvamizi wa Waajemi huko Marathon, Thermopylae na Salamis.
+stakes|Uhuru wa Wagiriki, na kujiamini kwa Athene ya kipindi cha kale.
+victims|Haijulikani; makumi ya maelfu katika mapigano makubwa.
+## -431-peloponnesian-war
+name|Vita vya Peloponesi
+context|Athene na muungano wake wa baharini walipigana na Sparta na washirika wake kuhusu utawala juu ya Ugiriki.
+stakes|Sparta ilishinda; miji ya Kigiriki ilitoka ikiwa imechoka kabisa.
+victims|Tauni ya Athene peke yake iliua labda robo ya watu wake.
+## -334-campaigns-of-alexander-the-great
+name|Kampeni za Aleksanda Mkuu
+context|Aleksanda wa Makedonia aliteka Dola ya Uajemi, Misri na nchi hadi Indus katika miaka kumi na moja.
+stakes|Lugha na utamaduni wa Kigiriki vilienea Mashariki: ulimwengu wa Kihelenisti.
+victims|Haijulikani; mamia ya maelfu katika mapigano na mazingiwa.
+## -264-punic-wars
+name|Vita vya Kipuniki
+context|Vita vitatu kati ya Roma na Karthago, vikiwemo safari ya Hanibali kuvuka Milima ya Alpi.
+stakes|Roma ikawa bwana wa magharibi mwa Mediterania; Karthago iliangamizwa kabisa mwaka 146 KK.
+victims|Mamia ya maelfu; watu 50,000 wa mwisho wa Karthago walifanywa watumwa.
+## -58-gallic-wars
+name|Vita vya Gallia
+context|Julius Kaisari aliiteka Gallia, akimshinda Vercingetorix huko Alesia mwaka 52 KK.
+stakes|Gallia ikawa ya Kirumi na ya Kilatini: chimbuko la Kifaransa.
+victims|Kwa mujibu wa maandishi ya kale, Wagallia milioni moja waliuawa na milioni moja walifanywa watumwa.
+## -49-caesar-s-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Kaisari
+context|Kaisari alivuka Mto Rubikoni na kupigana na Pompei na kundi la Baraza la Seneti.
+stakes|Utawala wa mtu mmoja juu ya Jamhuri; Kaisari aliuawa mwaka 44 KK.
+victims|Makumi ya maelfu ya askari.
+## -32-last-civil-war-of-the-roman-republic
+name|Vita vya mwisho vya wenyewe kwa wenyewe vya Jamhuri ya Kirumi
+context|Oktaviani alipigana na Marko Antonio na Kleopatra na akawashinda huko Actium.
+stakes|Mwisho wa Jamhuri na wa Misri ya Watolemi; Oktaviani akawa Augusto, mfalme mkuu wa kwanza.
+victims|Maelfu, huko Actium na Misri.
+## 66-first-jewish-roman-war
+name|Vita vya kwanza vya Wayahudi na Warumi
+context|Yudea iliasi dhidi ya Roma; vikosi vya jeshi viliizingira Yerusalemu.
+stakes|Hekalu liliharibiwa mwaka 70; maisha ya Kiyahudi yaligeukia sinagogi na ugenini.
+victims|Waandishi wa kale wanazungumzia mamia ya maelfu ya waliokufa.
+## 220-wars-of-the-three-kingdoms-china
+name|Vita vya Falme Tatu (China)
+context|Baada ya kuanguka kwa Wahan, dola za Wei, Shu na Wu zilipigania China.
+stakes|China iliyogawanyika kwa miongo kadhaa, baadaye kiini cha riwaya kubwa.
+victims|Idadi ya watu waliosajiliwa China ilishuka kutoka takriban milioni 56 hadi milioni 16, kwa sehemu kutokana na kuvunjika kwa sensa.
+## 622-the-hijra-beginning-of-islam
+name|Hijra: mwanzo wa Uislamu
+context|Mtume Muhammad aliondoka Makka kwenda Madina, ambako jumuiya ya kwanza ya Waislamu ilianzishwa.
+stakes|Mwaka wa kwanza wa kalenda ya Kiislamu; imani iliyoiunganisha Uarabuni na kuenea katika mabara matatu.
+## 618-tang-dynasty-china
+name|Nasaba ya Tang (China)
+context|Watang waliiunganisha China tena na kuifungua kwa ulimwengu kutoka mji mkuu wao Chang'an.
+stakes|Enzi ya dhahabu ya ushairi, biashara na Ubuddha, na ya uchapishaji.
+## 661-umayyad-caliphate
+name|Ukhalifa wa Umayya
+context|Kutoka Damasko, makhalifa wa Umayya walitawala kutoka Hispania hadi Indus.
+stakes|Kiarabu na Uislamu vilienea katika nchi zilizotekwa.
+## 750-abbasid-caliphate-baghdad
+name|Ukhalifa wa Abbasi (Baghdad)
+context|Waabbasi walichukua mamlaka na kujenga Baghdad, kituo cha sayansi na tafsiri.
+stakes|Elimu ya Wagiriki, Waajemi na Wahindi ilihifadhiwa na kuendelezwa; mji uliporwa na Wamongolia mwaka 1258.
+victims|Uporaji wa Baghdad mwaka 1258 uliua makumi au mamia ya maelfu.
+## 700-swahili-city-states-indian-ocean
+name|Miji-dola ya Waswahili (Bahari ya Hindi)
+context|Miji ya biashara kama Kilwa na Mombasa ilikua kwenye pwani ya Afrika Mashariki, ikiunganishwa na Uarabuni, India na China.
+stakes|Utamaduni na lugha ya Kiswahili, vya Kiafrika na vya Kiislamu, vilivyozaliwa na biashara ya baharini.
+## 793-viking-age
+name|Enzi ya Waviking
+context|Mabaharia wa Skandinavia walivamia, walifanya biashara na kuishi kutoka Ireland hadi Urusi, na wakafika Amerika.
+stakes|Normandi, Uingereza ya Wadeni na dola za kwanza za Kirusi zina alama yao.
+victims|Maelfu, katika mashambulizi dhidi ya monasteri na miji.
+## 800-coronation-of-charlemagne
+name|Kutawazwa kwa Charlemagne
+context|Papa Leo wa Tatu alimtawaza mfalme wa Wafranki Charlemagne kuwa mfalme mkuu huko Roma.
+stakes|Wazo la dola ya Kikristo huko Magharibi, babu wa Ufaransa na Ujerumani.
+## 800-ghana-empire
+name|Dola ya Ghana
+context|Katika Mauritania na Mali ya leo, Ghana ilitajirika kwa biashara ya dhahabu na chumvi kuvuka Sahara.
+stakes|Dola ya kwanza kati ya madola makuu ya Afrika Magharibi.
+## 960-song-dynasty-china
+name|Nasaba ya Song (China)
+context|Wasong walitawala China yenye watu wengi na miji mingi, ya wafanyabiashara na wasomi.
+stakes|Pesa za karatasi, dira, baruti na uchapishaji kwa herufi zinazohamishika.
+## 1000-great-zimbabwe
+name|Zimbabwe Kuu
+context|Wajenzi wa Kishona walisimamisha kuta kubwa za mawe kusini mwa Afrika, kitovu cha biashara ya dhahabu.
+stakes|Ushahidi wa dola yenye nguvu ya Kiafrika, uliokanushwa kwa muda mrefu na waandishi wa kikoloni.
+## 1192-kamakura-shogunate-japan
+name|Ushogun wa Kamakura (Japani)
+context|Shogun, mtawala wa kijeshi, alichukua mamlaka halisi nchini Japani huku mfalme mkuu akitawala kwa jina tu.
+stakes|Karne saba za utawala wa wapiganaji; tabaka la samurai.
+## 1206-mongol-empire-pax-mongolica
+name|Dola ya Wamongolia (Pax Mongolica)
+context|Genghis Khan aliunganisha makabila ya Wamongolia na kuanzisha dola kubwa zaidi ya nchi kavu katika historia.
+stakes|Baada ya kutekwa, Eurasia ilifunguka kwa biashara na safari, zikiwemo za Marco Polo.
+## 1235-mali-empire-mansa-musa
+name|Dola ya Mali (Mansa Musa)
+context|Sundiata aliianzisha Mali; hija ya Mansa Musa kwenda Makka mwaka 1324 iliushangaza ulimwengu kwa dhahabu yake.
+stakes|Timbuktu ikawa kitovu cha elimu ya Kiislamu.
+## 1299-foundation-of-the-ottoman-empire
+name|Kuanzishwa kwa Dola ya Uthmaniyya
+context|Osman, chifu wa Kituruki huko Anatolia, alianzisha dola iliyobeba jina lake.
+stakes|Dola iliyoiteka Konstantinopoli na kudumu hadi 1922.
+## 1346-the-black-death
+name|Kifo Cheusi
+context|Tauni, iliyobebwa na viroboto wa panya kwenye njia za biashara, ilienea kutoka Asia ya Kati hadi Ulaya na Afrika Kaskazini.
+stakes|Nguvu kazi ilipungua na mishahara ikapanda; imani, tiba na jamii vilitikiswa.
+victims|Kati ya theluthi moja na nusu ya watu wa Ulaya; labda milioni 75 hadi 200 duniani kote.
+## 1368-ming-dynasty-china
+name|Nasaba ya Ming (China)
+context|Waming waliwafukuza Wamongolia na kutawala China kwa karne tatu.
+stakes|Mji Uliokatazwa, Ukuta Mkuu kama ulivyo leo, na safari za Zheng He.
+## 1390-kingdom-of-kongo
+name|Ufalme wa Kongo
+context|Ufalme uliozunguka mdomo wa Mto Kongo, uliokuwa wa Kikristo baada ya Wareno kufika mwaka 1483.
+stakes|Dola kubwa ya Kiafrika, iliyodhoofishwa na biashara ya watumwa na kugawanywa na ukoloni.
+## 1400-inca-empire
+name|Dola ya Inka
+context|Kutoka Cuzco, Wainka walitawala Milima ya Andes kwa barabara, matuta ya kilimo na kumbukumbu za kamba zenye mafundo.
+stakes|Dola kubwa kuliko zote za Amerika kabla ya Kolumbo.
+## 1428-aztec-empire
+name|Dola ya Waazteki
+context|Kutoka Tenochtitlan, juu ya ziwa mahali ulipo Mji wa Meksiko leo, Waazteki walitawala Meksiko ya kati.
+stakes|Mji wa watu 200,000, mkubwa kuliko mji wowote wa Hispania.
+## 1453-05-29-fall-of-constantinople
+name|Kuanguka kwa Konstantinopoli
+context|Sultani wa Uthmaniyya Mehmed wa Pili aliiteka Konstantinopoli baada ya mazingiwa ya wiki saba.
+stakes|Mwisho wa Dola ya Bizanti; wasomi wa Kigiriki walipeleka vitabu vyake Italia.
+victims|Maelfu ya walinzi waliuawa; sehemu kubwa ya wakazi walifanywa watumwa.
+## 1464-songhai-empire
+name|Dola ya Songhai
+context|Songhai, yenye kitovu Gao kando ya Mto Niger, ilirithi nafasi ya Mali kama dola kuu ya Afrika Magharibi.
+stakes|Dola kubwa kuliko zote katika historia ya Afrika hadi uvamizi wa Wamoroko mwaka 1591.
+## 1492-10-12-christopher-columbus-reaches-the-americas
+name|Kristofa Kolumbo afika Amerika
+context|Akisafiri magharibi kwa niaba ya Hispania, Kolumbo alitua katika Karibi, akiamini amefika Asia.
+stakes|Kukutana kwa dunia mbili: utekaji, biashara na kubadilishana mimea, wanyama na magonjwa.
+victims|Ndani ya karne moja, magonjwa ya mlipuko na utekaji viliua wengi wa wenyeji asilia wa Amerika.
+## 632-early-muslim-conquests
+name|Utekaji wa mwanzo wa Waislamu
+context|Baada ya kifo cha Muhammad, majeshi ya Waarabu yaliteka Uajemi, Shamu, Misri, Afrika Kaskazini na Hispania.
+stakes|Mojawapo ya upanuzi wa haraka zaidi katika historia; Kiarabu na Uislamu vilishika mizizi katika nchi hizo.
+victims|Haijulikani.
+## 711-the-iberian-reconquista
+name|Reconquista ya Iberia
+context|Falme za Kikristo za kaskazini zilirejesha polepole Rasi ya Iberia kutoka kwa dola za Kiislamu.
+stakes|Hispania na Ureno zilizaliwa kutokana nayo; Granada ilianguka mwaka 1492, mwaka Wayahudi walipofukuzwa.
+victims|Haijulikani, katika karne nane.
+## 1066-09-28-norman-conquest-of-england
+name|Utekaji wa Uingereza na Wanormani
+context|William, mtawala wa Normandi, alitua Uingereza na kumshinda Mfalme Harold huko Hastings.
+stakes|Wasomi wa Kinormani wanaozungumza Kifaransa waliitawala Uingereza; Kiingereza kilichukua maelfu ya maneno ya Kifaransa.
+victims|Maelfu huko Hastings; wengi zaidi katika uharibifu wa Kaskazini.
+## 1096-the-crusades
+name|Vita vya Msalaba
+context|Wakristo wa Magharibi walianzisha hija za kivita ili kuiteka Yerusalemu na Nchi Takatifu.
+stakes|Dola za Wanavita vya Msalaba kwa karne mbili; uhasama wa kudumu kati ya Wakristo, Waislamu na Wabizanti.
+victims|Labda milioni 1 hadi 3 katika karne mbili, zikiwemo mauaji ya Wayahudi huko Ulaya.
+## 1206-mongol-conquests
+name|Utekaji wa Wamongolia
+context|Genghis Khan na warithi wake waliteka China, Asia ya Kati, Uajemi na Urusi.
+stakes|Dola kutoka Pasifiki hadi Ulaya, iliyojengwa kwa vitisho na kudumishwa kwa biashara.
+victims|Labda milioni 30 hadi 40 waliokufa.
+## 1274-mongol-invasions-of-japan-1274-and-1281
+name|Uvamizi wa Wamongolia nchini Japani (1274 na 1281)
+context|Kublai Khan alituma makundi mawili ya meli dhidi ya Japani; yote mawili yaliharibiwa na tufani.
+stakes|Japani ilibaki huru; «upepo wa kimungu», kamikaze, uliingia katika hekaya zake.
+victims|Makumi ya maelfu ya wavamizi walizama.
+## 1337-hundred-years-war
+name|Vita vya Miaka Mia
+context|Wafalme wa Uingereza na Ufaransa walipigania taji la Ufaransa na ardhi zake; Jeanne d'Arc aligeuza mkondo wa vita.
+stakes|Ufaransa ilitoka ikiwa ufalme wenye nguvu zaidi; Uingereza ilipoteza ardhi zake barani.
+victims|Labda milioni 2 hadi 3 waliokufa, pamoja na njaa na tauni.
+## 1455-wars-of-the-roses
+name|Vita vya Waridi
+context|Familia za Lancaster na York zilipigania kiti cha enzi cha Uingereza.
+stakes|Henry Tudor alishinda mwaka 1485 na kuanzisha nasaba ya Tudor.
+victims|Makumi ya maelfu, wakiwemo wakuu wengi.
+## 1500-transatlantic-slave-trade
+name|Biashara ya watumwa kuvuka Atlantiki
+context|Wafanyabiashara wa Ulaya walinunua mateka barani Afrika na kuwasafirisha kufanya kazi katika mashamba makubwa ya Amerika.
+stakes|Utajiri wa Ulaya na Amerika uliojengwa juu ya kazi ya kulazimishwa; Afrika ikamwagwa damu ya watu wake.
+victims|Takriban watu milioni 12.5 walipakiwa melini; karibu milioni 1.8 walikufa baharini.
+## 1526-mughal-empire-india
+name|Dola ya Mughal (India)
+context|Babur, kutoka Asia ya Kati, alianzisha nasaba ya Mughal; Akbar alitawala sehemu kubwa ya India.
+stakes|Dola ya Kiislamu juu ya walio wengi Wahindu; Taj Mahal; baadaye ilimezwa na Uingereza.
+## 1603-tokugawa-era-and-sakoku-japan
+name|Enzi ya Tokugawa na sakoku (Japani)
+context|Mashogun wa Tokugawa walitawala Japani yenye amani iliyokuwa karibu imefungwa kwa wageni.
+stakes|Karne mbili za kujitenga, zilizokomeshwa na meli za kivita za Marekani mwaka 1853.
+## 1644-qing-dynasty-china
+name|Nasaba ya Qing (China)
+context|Wamanchu kutoka kaskazini waliwapindua Waming na kutawala China hadi 1912.
+stakes|Upana mkubwa zaidi wa China; kisha kudhoofika chini ya shinikizo la Magharibi na Japani.
+## 1652-foundation-of-cape-town
+name|Kuanzishwa kwa Cape Town
+context|Kampuni ya Uholanzi ya India Mashariki ilianzisha kituo cha kujaza mahitaji kwenye Rasi ya Tumaini Jema.
+stakes|Mwanzo wa makazi ya Wazungu kusini mwa Afrika, na wa Waafrikana.
+## 1700-ashanti-dahomey-and-oyo-kingdoms
+name|Falme za Ashanti, Dahomey na Oyo
+context|Falme zenye nguvu za Afrika Magharibi ziliinuka, zikifanya biashara ya dhahabu, mafuta ya mawese na mateka na Wazungu.
+stakes|Dola zilizopangwa, zenye majeshi na mahakama za kifalme, kabla ukoloni haujazimeza.
+## 1776-07-04-independence-of-the-united-states
+name|Uhuru wa Marekani
+context|Makoloni kumi na tatu ya Uingereza yalijitangaza kuwa huru na yameungana.
+stakes|Jamhuri ya kwanza ya kisasa, iliyojengwa juu ya haki za binadamu, lakini utumwa ukabaki.
+## 1789-the-french-revolution
+name|Mapinduzi ya Ufaransa
+context|Kufilisika na njaa viliongoza kwenye Baraza la Matabaka, kuvamiwa kwa Bastille na mwisho wa ufalme.
+stakes|Usawa mbele ya sheria, haki za binadamu, taifa; kisha Utawala wa Kitisho na vita.
+victims|Makumi ya maelfu waliuawa kwa hukumu; mamia ya maelfu katika vita vya wenyewe kwa wenyewe.
+## 1519-spanish-conquest-of-the-aztec-empire
+name|Utekaji wa Hispania wa Dola ya Waazteki
+context|Hernán Cortés, pamoja na washirika wenyeji, aliiteka Tenochtitlan baada ya mazingiwa.
+stakes|Hispania Mpya ilizaliwa; watu wa Meksiko walikaa chini ya utawala wa kikoloni kwa karne tatu.
+victims|Mamilioni, hasa kutokana na ndui.
+## 1532-spanish-conquest-of-the-inca-empire
+name|Utekaji wa Hispania wa Dola ya Inka
+context|Francisco Pizarro alimkamata mtawala wa Inka Atahualpa na kuiteka Milima ya Andes.
+stakes|Utawala wa Hispania na fedha ya Potosí, iliyoitajirisha Ulaya.
+victims|Mamilioni, kutokana na magonjwa ya mlipuko, vita na kazi ya kulazimishwa.
+## 1568-eighty-years-war
+name|Vita vya Miaka Themanini
+context|Majimbo ya Uholanzi yaliasi dhidi ya utawala wa Hispania na ukandamizaji wa Kikatoliki.
+stakes|Jamhuri ya Uholanzi ilizaliwa, dola ya biashara na ya uvumilivu.
+victims|Mamia ya maelfu.
+## 1592-imjin-war-korea-japan
+name|Vita vya Imjin (Korea, Japani)
+context|Japani ilivamia Korea mara mbili; Korea na China ya Ming zilijibu, baharini kwa meli za Amiri Yi.
+stakes|Japani iliondoka; Korea ikabaki imeharibiwa.
+victims|Labda Wakorea milioni moja walikufa.
+## 1618-thirty-years-war
+name|Vita vya Miaka Thelathini
+context|Vita vya kidini katika Dola Takatifu ya Kirumi viligeuka kuwa vita vya Ulaya kuwania mamlaka.
+stakes|Amani ya Westfalia iliweka kanuni ya dola huru katika Ulaya.
+victims|Milioni 4.5 hadi 8 waliokufa; sehemu za Ujerumani zilipoteza theluthi moja ya watu wake.
+## 1642-english-civil-wars
+name|Vita vya wenyewe kwa wenyewe vya Uingereza
+context|Mfalme Charles wa Kwanza alipigana na Bunge; alihukumiwa na kukatwa kichwa mwaka 1649.
+stakes|Mamlaka ya Bunge juu ya taji, baada ya jamhuri ya Cromwell.
+victims|Takriban 200,000 waliokufa Uingereza, wengi zaidi Ireland.
+## 1700-great-northern-war
+name|Vita Vikuu vya Kaskazini
+context|Urusi na washirika wake walipigana na Uswidi kuhusu Bahari ya Baltiki.
+stakes|Urusi chini ya Petro Mkuu ikawa dola ya Ulaya; dola ya Uswidi ikafikia mwisho.
+victims|Mamia ya maelfu, pamoja na tauni.
+## 1701-war-of-the-spanish-succession
+name|Vita vya Urithi wa Hispania
+context|Ulaya ilipigana kuhusu nani angerithi kiti cha enzi cha Hispania: Mbourbon wa Ufaransa au Mhabsburg wa Austria.
+stakes|Mbourbon aliibakiza Hispania, lakini Ufaransa na Hispania hazikuruhusiwa kuungana kamwe.
+victims|Takriban askari 400,000 hadi 700,000.
+## 1756-seven-years-war
+name|Vita vya Miaka Saba
+context|Uingereza na Prussia zilipigana na Ufaransa, Austria na Urusi huko Ulaya, Amerika na India.
+stakes|Uingereza ilishinda Kanada na India: dola ya Uingereza ya kidunia.
+victims|Takriban milioni moja waliokufa.
+## 1775-american-war-of-independence
+name|Vita vya Uhuru wa Marekani
+context|Makoloni kumi na tatu yalipigana na Uingereza kwa ajili ya uhuru wao, kwa msaada wa Ufaransa.
+stakes|Marekani ilitambuliwa mwaka 1783; deni la Ufaransa lilichangia kuleta mapinduzi yake.
+victims|Takriban askari 25,000 wa Kimarekani, wengi kutokana na magonjwa.
+## 1791-haitian-revolution
+name|Mapinduzi ya Haiti
+context|Watumwa wa Saint-Domingue, koloni tajiri kuliko zote ya Ufaransa, waliasi, wakiongozwa na Toussaint Louverture kisha Dessalines.
+stakes|Uasi pekee wa watumwa uliofanikiwa katika historia, ulioanzisha jamhuri ya kwanza ya watu weusi mwaka 1804.
+victims|Labda 100,000 hadi 200,000 waliokufa, wakiwemo makumi ya maelfu ya askari wa Kifaransa.
+## 1792-french-revolutionary-wars
+name|Vita vya Mapinduzi ya Ufaransa
+context|Ufaransa ya kimapinduzi ilipigana na falme za Ulaya, ikiunda majeshi makubwa ya raia.
+stakes|Jamhuri ilinusurika na kueneza mawazo yake; Bonaparte aliinuka katika vita hivi.
+victims|Takriban askari na raia milioni moja.
+## 1450-gutenberg-s-printing-press
+name|Mashine ya uchapishaji ya Gutenberg
+context|Huko Mainz, Johannes Gutenberg alichapisha vitabu kwa herufi za chuma zinazohamishika.
+stakes|Vitabu vilikuwa vya bei nafuu na vingi: Matengenezo ya Kanisa, sayansi na kujua kusoma vilienea.
+## 1517-10-31-the-protestant-reformation-begins
+name|Mwanzo wa Matengenezo ya Kiprotestanti
+context|Hoja 95 za Martin Luther dhidi ya uuzaji wa vyeti vya msamaha zilianzisha mgawanyiko katika Ukristo wa Magharibi.
+stakes|Makanisa ya Kiprotestanti, vita vya kidini na uhusiano mpya na Biblia katika lugha ya watu.
+## 1648-10-24-peace-of-westphalia
+name|Amani ya Westfalia
+context|Mikataba iliyosainiwa huko Münster na Osnabrück ilimaliza Vita vya Miaka Thelathini.
+stakes|Dola huru, kila moja ikichagua dini yake: msingi wa mpangilio wa Ulaya.
+## 1830-mass-european-emigration-to-the-americas
+name|Uhamiaji mkubwa wa Wazungu kwenda Amerika
+context|Umaskini, njaa na mateso viliwasukuma Wazungu kuvuka Atlantiki kwa meli za mvuke.
+stakes|Amerika ilijazwa watu upya; familia ziligawanyika kati ya mabara mawili.
+victims|Takriban wahamiaji milioni 50; wengi walikufa safarini.
+## 1840-industrial-revolutions
+name|Mapinduzi ya viwanda
+context|Mvuke, makaa ya mawe, chuma na reli viligeuza kazi, miji na mashambani.
+stakes|Viwanda, vyama vya wafanyakazi, kukua kwa miji; familia ziliacha ardhi.
+victims|Kazi ngumu, ajira ya watoto na magonjwa ya mijini vilileta gharama kubwa.
+## 1845-great-famine-in-ireland
+name|Njaa Kuu nchini Ireland
+context|Ugonjwa wa viazi uliharibu chakula kikuu cha maskini wa Ireland, huku chakula kikiendelea kusafirishwa nje.
+stakes|Taifa lililomwagwa watu kwa vifo na uhamiaji; uchungu wa kudumu dhidi ya Uingereza.
+victims|Takriban milioni moja walikufa; milioni moja hadi mbili walihamia nchi nyingine.
+## 1884-11-15-berlin-conference-africa-partitioned
+name|Mkutano wa Berlin: Afrika yagawanywa
+context|Madola ya Ulaya yalikutana Berlin kuweka kanuni za kuichukua Afrika; hakuna Mwafrika aliyehudhuria.
+stakes|Mipaka iliyochorwa na Wazungu; Kongo ilipewa Mfalme Leopold wa Pili.
+victims|Utekaji wa kikoloni uliofuata uliua mamilioni.
+## 1918-spanish-flu
+name|Mafua ya Kihispania
+context|Janga la mafua lilienea pamoja na majeshi mwishoni mwa Vita vya Kwanza vya Dunia, likiua hasa vijana wazima.
+stakes|Janga lililoua zaidi katika karne ya 20; liligusa karibu kila familia.
+victims|Takriban milioni 50 walikufa (makadirio ni kati ya milioni 17 na 100).
+## 1929-10-24-wall-street-crash
+name|Anguko la Wall Street
+context|Bei za hisa ziliporomoka katika Soko la Hisa la New York baada ya miaka ya uvumi wa kibiashara.
+stakes|Mwanzo wa Mdororo Mkuu wa Uchumi; benki zilifilisika moja baada ya nyingine.
+## 1947-08-15-partition-of-india-and-pakistan
+name|Kugawanywa kwa India na Pakistan
+context|India ya Kiingereza ilipata uhuru kama dola mbili, India na Pakistan, zilizogawanywa kwa dini.
+stakes|Uhuru, na mojawapo ya uhamiaji mkubwa zaidi katika historia.
+victims|Kati ya 200,000 na milioni 2 waliokufa; milioni 10 hadi 20 walilazimika kuhama.
+## 1950-worldwide-decolonisation
+name|Kuondolewa kwa ukoloni duniani
+context|Makoloni ya Afrika na Asia yalipata uhuru, kwa mazungumzo au kwa vita.
+stakes|Dola mpya na mipaka mipya; familia zilihama kati ya makoloni na madola ya zamani ya kikoloni.
+victims|Vita vya uhuru viliua mamia ya maelfu.
+## 1989-fall-of-the-soviet-bloc
+name|Kuanguka kwa kambi ya Kisovieti
+context|Tawala za kikomunisti za Ulaya Mashariki zilianguka, kutoka Poland hadi Ukuta wa Berlin; Muungano wa Kisovieti ulivunjika mwaka 1991.
+stakes|Mwisho wa Vita Baridi; uhuru wa kusafiri na kupiga kura Mashariki.
+victims|Wachache, isipokuwa Romania na baadaye katika vita vya Yugoslavia ya zamani.
+## 1990-digital-age-and-the-internet
+name|Enzi ya kidijitali na intaneti
+context|Mtandao Mpana wa Dunia, kisha simu za mkononi, viliunganisha sehemu kubwa ya wanadamu.
+stakes|Habari, kazi na mahusiano ya familia vilibadilika; hata utafiti wa nasaba ulihamia mtandaoni.
+## 2019-12-covid-19-pandemic
+name|Janga la COVID-19
+context|Virusi vipya vya korona vilienea kutoka Wuhan; marufuku ya kutoka nje ilifunga nchi nzima.
+stakes|Mifumo ya afya iliyozidiwa, maisha ya kufungiwa ndani, chanjo zilizotengenezwa kwa muda mfupi kuliko wakati wowote.
+victims|Takriban vifo milioni 7 vilivyoripotiwa; WHO inakadiria vifo vya ziada milioni 15 katika 2020–2021.
+## 1815-04-10-tambora-erupts-the-year-without-a-summer
+name|Mlipuko wa Tambora: mwaka usio na kiangazi
+context|Mlipuko wa mlima Tambora nchini Indonesia ulijaza anga majivu; mwaka 1816 haukuwa na kiangazi Ulaya na Amerika Kaskazini.
+stakes|Mavuno yaliyoshindwa, njaa na uhamiaji.
+victims|Takriban 70,000 hadi 90,000 waliokufa Indonesia; wengi zaidi kwa njaa mahali pengine.
+## 1817-first-cholera-pandemic
+name|Janga la kwanza la kipindupindu
+context|Kipindupindu kilienea kutoka delta ya Ganges kote Asia hadi ukingoni mwa Ulaya.
+stakes|Janga la kwanza kati ya majanga saba ya kipindupindu, yaliyobebwa na biashara na majeshi.
+victims|Mamia ya maelfu.
+## 1826-second-cholera-pandemic
+name|Janga la pili la kipindupindu
+context|Kipindupindu kilifika Urusi, Poland, Ufaransa na Uingereza, na kikavuka hadi Amerika.
+stakes|Miji ilijifunza kwamba maji machafu huua: kuzaliwa kwa afya ya umma.
+victims|Mamia ya maelfu barani Ulaya; takriban 18,000 Paris mwaka 1832.
+## 1848-revolutions-of-1848-spring-of-nations
+name|Mapinduzi ya 1848 (Machipuko ya Mataifa)
+context|Mapinduzi yalizuka Paris, Vienna, Berlin, Milano, Budapest na Poznań.
+stakes|Mengi yalikandamizwa, lakini utumwa wa kikabaila ulikomeshwa Austria na mawazo ya kitaifa yakaenea.
+victims|Maelfu katika mapigano.
+## 1869-11-17-opening-of-the-suez-canal
+name|Kufunguliwa kwa Mfereji wa Suez
+context|Mfereji kupitia Misri uliunganisha Bahari ya Mediterania na Bahari ya Shamu.
+stakes|Njia ya kwenda India na Asia ilifupika; Misri iliingia madeni na baadaye ikakaliwa na Uingereza.
+victims|Maelfu ya wafanyakazi wa kulazimishwa walikufa wakiuchimba.
+## 1873-long-depression
+name|Mdororo Mrefu
+context|Anguko la kifedha huko Vienna na New York lilifungua miongo miwili ya kushuka kwa bei.
+stakes|Shida vijijini na uhamiaji; ulinzi wa biashara na upanuzi wa kikoloni.
+## 1889-russian-flu-pandemic
+name|Janga la «mafua ya Kirusi»
+context|Janga la mafua lilienea kutoka Urusi kufuata reli mpya.
+stakes|Janga la kwanza la enzi ya reli, lililobebwa kote Ulaya ndani ya wiki chache.
+victims|Takriban milioni moja walikufa.
+## 1917-11-07-october-revolution-in-russia
+name|Mapinduzi ya Oktoba nchini Urusi
+context|Wabolsheviki wakiongozwa na Lenin walichukua mamlaka huko Petrograd.
+stakes|Dola ya kwanza ya kikomunisti; Urusi ilijitoa vitani; vita vya wenyewe kwa wenyewe vikafuata.
+victims|Vita vya wenyewe kwa wenyewe na vitisho vilivyofuata viliua mamilioni.
+## 1929-great-depression
+name|Mdororo Mkuu wa Uchumi
+context|Baada ya anguko, uzalishaji na biashara viliporomoka duniani kote.
+stakes|Ukosefu mkubwa wa ajira, umaskini na kuinuka kwa itikadi kali, ukiwemo Unazi.
+victims|Robo ya wafanyakazi hawakuwa na kazi Marekani, zaidi Ujerumani.
+## 1941-the-holocaust
+name|Maangamizi Makuu (Holocaust)
+context|Ujerumani ya Kinazi na washirika wake walikusudia kuwaua Wayahudi wa Ulaya, kwa kuwapiga risasi, katika magheto na kambi za maangamizi.
+stakes|Mauaji ya kimbari yaliyopangwa na dola; chimbuko la dhana ya uhalifu dhidi ya ubinadamu.
+victims|Wayahudi milioni sita; mamia ya maelfu ya Waroma, na waathiriwa wengine wa mateso ya Kinazi.
+## 1945-08-06-atomic-bombings-of-hiroshima-and-nagasaki
+name|Mabomu ya atomiki ya Hiroshima na Nagasaki
+context|Marekani ilidondosha mabomu ya atomiki kwenye miji miwili ya Japani; Japani ilisalimu amri.
+stakes|Mwisho wa Vita vya Pili vya Dunia na mwanzo wa enzi ya nyuklia.
+victims|110,000 hadi 210,000 waliokufa kufikia mwisho wa 1945.
+## 1945-10-24-founding-of-the-united-nations
+name|Kuanzishwa kwa Umoja wa Mataifa
+context|Dola hamsini na moja zilianzisha Umoja wa Mataifa ili kulinda amani baada ya vita.
+stakes|Jukwaa la dunia, haki za binadamu zilizotangazwa mwaka 1948, na ulinzi wa amani.
+## 1957-asian-flu-pandemic
+name|Janga la mafua ya Kiasia
+context|Virusi vipya vya mafua vilienea kutoka China duniani kote.
+stakes|Kwa mara ya kwanza katika janga, chanjo zilitengenezwa haraka.
+victims|Milioni moja hadi nne walikufa.
+## 1968-hong-kong-flu-pandemic
+name|Janga la mafua ya Hong Kong
+context|Virusi vya mafua kutoka Hong Kong vilienea duniani kwa mawimbi mawili.
+stakes|Janga lililosahaulika kwa kiasi kikubwa, katika dunia iliyoshughulika na matukio mengine.
+victims|Milioni moja hadi nne walikufa.
+## 1969-07-20-first-steps-on-the-moon
+name|Hatua za kwanza Mwezini
+context|Wanaanga Neil Armstrong na Buzz Aldrin walitembea Mwezini, wakitazamwa moja kwa moja na mamia ya mamilioni ya watu.
+stakes|Mashindano ya anga kati ya Marekani na Muungano wa Kisovieti; tukio la pamoja kwa wanadamu.
+## 1973-10-first-oil-shock
+name|Mshtuko wa kwanza wa mafuta
+context|Wazalishaji wa mafuta wa Kiarabu walipunguza usambazaji wakati wa Vita vya Yom Kippur; bei ya mafuta iliongezeka mara nne.
+stakes|Mwisho wa ustawi wa baada ya vita huko Magharibi: mfumuko wa bei na ukosefu wa ajira.
+## 1981-hiv-aids-pandemic
+name|Janga la VVU/UKIMWI
+context|Virusi vipya, VVU, vilitambuliwa kuwa chanzo cha UKIMWI; vilienea duniani, hasa barani Afrika.
+stakes|Unyanyapaa na harakati; tangu 1996 dawa zimeufanya kuwa ugonjwa sugu mahali zinapopatikana.
+victims|Takriban milioni 42 wamekufa tangu mwanzo.
+## 2001-09-11-september-11-attacks
+name|Mashambulizi ya 11 Septemba
+context|Magaidi wa al-Qaeda waliteka ndege nne za abiria na kuzigongesha kwenye Kituo cha Biashara cha Dunia na Pentagon.
+stakes|«Vita dhidi ya ugaidi», vita vya Afghanistan na Iraq, na hatua mpya za usalama kila mahali.
+victims|Watu 2,977 waliuawa.
+## 2004-12-26-indian-ocean-tsunami
+name|Tsunami ya Bahari ya Hindi
+context|Tetemeko la ardhi chini ya bahari karibu na Sumatra lilinyanyua mawimbi yaliyopiga nchi kumi na nne.
+stakes|Mojawapo ya maafa ya asili yaliyoua zaidi katika historia; tangu hapo mifumo ya tahadhari imejengwa.
+victims|Takriban 230,000 walikufa.
+## 2008-global-financial-crisis
+name|Mgogoro wa kifedha wa dunia
+context|Kuporomoka kwa soko la nyumba la Marekani kuliangusha benki kote duniani.
+stakes|Mdororo, ukosefu wa ajira, deni la umma na kutoaminiwa kwa sekta ya fedha.
+## 1803-05-18-napoleonic-wars
+name|Vita vya Napoleoni
+context|Ufaransa ya Napoleoni ilipigana na miungano ya madola ya Ulaya, kutoka Hispania hadi Urusi.
+stakes|Utawala wa Ufaransa juu ya sehemu kubwa ya Ulaya, kuenea kwa Sheria ya Kiraia, kisha kushindwa huko Waterloo mwaka 1815.
+victims|Askari na raia milioni 3.5 hadi 6.5.
+## 1810-spanish-american-wars-of-independence
+name|Vita vya uhuru vya Amerika ya Kihispania
+context|Makoloni ya Hispania, kutoka Meksiko hadi Argentina, yalipigania uhuru chini ya Bolívar, San Martín na wengine.
+stakes|Jamhuri mpya ishirini hivi katika Amerika ya Kilatini.
+victims|Mamia ya maelfu.
+## 1839-09-04-first-opium-war
+name|Vita vya Kwanza vya Afyuni
+context|Uingereza ilianzisha vita China ilipojaribu kusimamisha biashara ya afyuni.
+stakes|China ilipoteza Hong Kong na ikalazimika kufungua bandari zake: «karne ya udhalilishaji» ikaanza.
+victims|Makumi ya maelfu, wengi wao Wachina.
+## 1846-04-25-mexican-american-war
+name|Vita vya Meksiko na Marekani
+context|Marekani ilipigana na Meksiko kuhusu Texas na ardhi za magharibi yake.
+stakes|Meksiko ilipoteza nusu ya eneo lake, kutoka California hadi New Mexico.
+victims|Takriban Wameksiko 25,000 na Wamarekani 13,000 walikufa, wengi kutokana na magonjwa.
+## 1850-taiping-rebellion
+name|Uasi wa Taiping
+context|Vuguvugu la kidini lililoongozwa na Hong Xiuquan liliasi dhidi ya nasaba ya Qing kusini mwa China.
+stakes|Waqing walinusurika wakiwa dhaifu; vita vya wenyewe kwa wenyewe vilivyoua zaidi katika karne ya 19.
+victims|Milioni 20 hadi 30 walikufa.
+## 1853-10-16-crimean-war
+name|Vita vya Krimea
+context|Ufaransa, Uingereza na Waosmani walipigana na Urusi, hasa katika mazingiwa ya Sevastopol.
+stakes|Urusi ilizuiwa katika Bahari Nyeusi; Florence Nightingale na uuguzi wa kisasa.
+victims|Takriban 650,000 walikufa, wengi kutokana na magonjwa.
+## 1856-10-08-second-opium-war
+name|Vita vya Pili vya Afyuni
+context|Uingereza na Ufaransa zilipigana tena na China; majeshi yao yalichoma Kasri la Kiangazi huko Beijing.
+stakes|Bandari zaidi za China zilifunguliwa, afyuni ikahalalishwa, na Urusi ikachukua ardhi kaskazini.
+victims|Makumi ya maelfu.
+## 1861-04-12-american-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Marekani
+context|Majimbo kumi na moja ya kusini yalijitenga ili kudumisha utumwa; Muungano ulipigana kurejesha nchi.
+stakes|Muungano ulishinda; utumwa ulikomeshwa mwaka 1865.
+victims|Takriban askari 620,000 hadi 750,000 walikufa.
+## 1864-paraguayan-war
+name|Vita vya Paraguay
+context|Paraguay ilipigana na Brazili, Argentina na Uruguay kwa pamoja.
+stakes|Paraguay ilishindwa vibaya na kupoteza ardhi.
+victims|Paraguay ilipoteza labda nusu ya watu wake.
+## 1870-07-19-franco-prussian-war
+name|Vita vya Ufaransa na Prussia
+context|Prussia na dola za Kijerumani ziliishinda Ufaransa; Napoleoni wa Tatu alikamatwa huko Sedan.
+stakes|Dola ya Ujerumani ilitangazwa Versailles; Ufaransa ilipoteza Alsace-Moselle; Jamhuri ya Tatu ilizaliwa.
+victims|Takriban askari 180,000 na raia wengi.
+## 1879-04-05-war-of-the-pacific
+name|Vita vya Pasifiki
+context|Chile ilipigana na Bolivia na Peru kuhusu jangwa la Atacama lenye utajiri wa naitrati.
+stakes|Chile ilishinda pwani; Bolivia ilipoteza njia yake ya kufika baharini.
+victims|Takriban 15,000 hadi 20,000 walikufa.
+## 1894-07-25-first-sino-japanese-war
+name|Vita vya Kwanza vya China na Japani
+context|Japani na China zilipigana kuhusu Korea.
+stakes|Japani ilishinda Taiwan na ikainuka kuwa dola kuu; udhaifu wa China ukawa wazi.
+victims|Takriban Wachina 35,000 na Wajapani 13,000, wengi wa hao wa mwisho kutokana na magonjwa.
+## 1899-10-11-second-boer-war
+name|Vita vya Pili vya Maburu
+context|Uingereza ilipigana na jamhuri za Maburu za Afrika Kusini kwa ajili ya dhahabu na ardhi yao.
+stakes|Uingereza ilishinda; kambi za mateso kwa raia ziliushtua ulimwengu.
+victims|Takriban askari 22,000 wa Kiingereza na 7,000 wa Kiburu; raia 26,000 wa Kiburu na 20,000 weusi katika kambi.
+## 1904-02-08-russo-japanese-war
+name|Vita vya Urusi na Japani
+context|Japani na Urusi zilipigana kuhusu Manchuria na Korea; jeshi la majini la Urusi lilizamishwa huko Tsushima.
+stakes|Kushindwa kwa kwanza kwa dola ya Ulaya na dola ya Asia; mapinduzi nchini Urusi mwaka 1905.
+victims|Takriban askari 130,000 hadi 170,000.
+## 1911-10-10-xinhai-revolution
+name|Mapinduzi ya Xinhai
+context|Uasi huko Wuchang ulienea kote China na kumaliza nasaba ya Qing.
+stakes|Mwisho wa miaka elfu mbili ya utawala wa kifalme; Jamhuri ya China.
+victims|Makumi ya maelfu.
+## 1912-10-08-balkan-wars
+name|Vita vya Balkani
+context|Dola za Balkani ziliwafukuza Waosmani kutoka Ulaya, kisha zikapigana zenyewe kugombania nyara.
+stakes|Mipaka mipya na vinyongo vilivyoongoza kwenye 1914.
+victims|Takriban 120,000 hadi 200,000 walikufa.
+## 1914-07-28-first-world-war
+name|Vita vya Kwanza vya Dunia
+context|Miungano hasimu, madola na utaifa viligeuza mauaji ya mtawala mmoja huko Sarajevo kuwa vita vya dunia vya mahandaki.
+stakes|Madola manne yalianguka; dola mpya, ikiwemo Poland; mbegu za vita vilivyofuata.
+victims|Takriban milioni 20 walikufa, nusu yao askari; milioni 21 walijeruhiwa.
+## 1917-11-07-russian-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Urusi
+context|Wabolsheviki Wekundu walipigana na Weupe na majeshi mengine mengi katika dola nzima ya zamani.
+stakes|Wabolsheviki walishinda na kuanzisha Muungano wa Kisovieti mwaka 1922.
+victims|Milioni 7 hadi 12 walikufa, pamoja na njaa na magonjwa ya mlipuko.
+## 1936-07-17-spanish-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Hispania
+context|Majenerali wazalendo wakiongozwa na Franco waliasi dhidi ya Jamhuri ya Hispania.
+stakes|Franco alishinda na kutawala Hispania hadi 1975; mazoezi ya vita vya dunia.
+victims|Takriban 500,000 walikufa; wakimbizi 450,000 walivuka kuingia Ufaransa mwaka 1939.
+## 1937-07-07-second-sino-japanese-war
+name|Vita vya Pili vya China na Japani
+context|Japani ilivamia China baada ya mapigano kwenye Daraja la Marco Polo; mauaji makubwa yalitokea Nanjing mwaka 1937.
+stakes|China ilistahimili hadi Japani iliposalimu amri mwaka 1945; kisha vita vya wenyewe kwa wenyewe viliendelea.
+victims|Wachina milioni 15 hadi 20 walikufa.
+## 1939-09-01-second-world-war
+name|Vita vya Pili vya Dunia
+context|Ujerumani ya Kinazi ilivamia Poland; vita vilienea Ulaya, Afrika, Asia na Pasifiki.
+stakes|Kushindwa kwa Unazi na Japani; Maangamizi Makuu; dunia iliyogawanywa kati ya Marekani na Muungano wa Kisovieti.
+victims|Milioni 70 hadi 85 walikufa, wengi wao raia.
+## 1945-09-23-first-indochina-war
+name|Vita vya Kwanza vya Indochina
+context|Ufaransa ilipigana na Viet Minh ili kubakiza koloni lake la Indochina.
+stakes|Kushindwa kwa Ufaransa huko Dien Bien Phu; Vietnam iligawanywa kwenye latitudo ya 17.
+victims|Mamia kadhaa ya maelfu walikufa, takriban 75,000 wao upande wa Muungano wa Kifaransa.
+## 1946-06-26-chinese-civil-war
+name|Vita vya wenyewe kwa wenyewe vya China
+context|Wakomunisti wa Mao Zedong walipigana na Wazalendo wa Chiang Kai-shek.
+stakes|Jamhuri ya Watu wa China mwaka 1949; Wazalendo walikimbilia Taiwan.
+victims|Mamilioni kadhaa walikufa.
+## 1947-10-22-first-indo-pakistani-war
+name|Vita vya Kwanza vya India na Pakistan
+context|India na Pakistan zilipigana kuhusu Kashmir mara baada ya uhuru.
+stakes|Kashmir iligawanywa kwa mstari wa kusitisha mapigano, unaobishaniwa hadi leo.
+victims|Askari elfu kadhaa.
+## 1947-03-12-the-cold-war
+name|Vita Baridi
+context|Marekani na Muungano wa Kisovieti walishindana kwa silaha, mawazo na ushawishi, bila kupigana moja kwa moja.
+stakes|Ulaya na dunia iliyogawanyika, tishio la nyuklia, vita vya kupitia washirika.
+victims|Hakuna vita kati ya hao wawili; mamilioni walikufa katika vita vilivyopiganwa kwenye kivuli chao.
+## 1948-05-15-first-arab-israeli-war
+name|Vita vya Kwanza vya Waarabu na Israeli
+context|Dola za Kiarabu zilishambulia Dola ya Israeli iliyokuwa imetangazwa punde.
+stakes|Israeli ilinusurika na kupanuka; Wapalestina walipoteza makazi yao katika Nakba.
+victims|Takriban Waisraeli 6,000 na Waarabu 10,000 hadi 15,000 walikufa; Wapalestina 700,000 walihamishwa.
+## 1950-06-25-korean-war
+name|Vita vya Korea
+context|Korea Kaskazini ya kikomunisti ilivamia Kusini; Umoja wa Mataifa na China ziliingia vitani.
+stakes|Makubaliano ya kusitisha mapigano mwaka 1953, bila amani: Korea bado imegawanyika.
+victims|Takriban milioni 3 walikufa, wengi wao raia.
+## 1954-11-01-algerian-war
+name|Vita vya Algeria
+context|FLN ilipigania uhuru wa Algeria kutoka Ufaransa; mateso, mashambulizi na mapigano ya ndani pande zote mbili za bahari.
+stakes|Uhuru mwaka 1962; Jamhuri ya Tano nchini Ufaransa; Wazungu milioni moja waliondoka Algeria.
+victims|Waalgeria 250,000 hadi 400,000 walikufa kwa makadirio ya wanahistoria wengi; takriban askari 25,000 wa Kifaransa.
+## 1955-11-01-vietnam-war
+name|Vita vya Vietnam
+context|Vietnam Kaskazini ya kikomunisti na Viet Cong walipigana na Vietnam Kusini na Marekani.
+stakes|Saigon ilianguka mwaka 1975; Vietnam iliunganishwa chini ya utawala wa kikomunisti.
+victims|Kati ya milioni 1.3 na 3 walikufa.
+## 1961-02-04-portuguese-colonial-war
+name|Vita vya kikoloni vya Ureno
+context|Ureno ilipigana na vuguvugu za uhuru huko Angola, Msumbiji na Guinea-Bissau.
+stakes|Vita hivyo viliangusha udikteta wa Lisbon mwaka 1974; makoloni yakawa huru.
+victims|Makumi ya maelfu ya askari na raia.
+## 1967-06-05-six-day-war
+name|Vita vya Siku Sita
+context|Israeli ilishambulia Misri, Syria na Yordani huku mvutano ukiongezeka.
+stakes|Israeli iliteka Sinai, Gaza, Ukingo wa Magharibi, Yerusalemu Mashariki na Golan.
+victims|Takriban Waarabu 20,000 na Waisraeli 1,000 walikufa.
+## 1973-10-06-yom-kippur-war
+name|Vita vya Yom Kippur
+context|Misri na Syria zilishambulia Israeli katika siku takatifu zaidi ya mwaka wa Kiyahudi.
+stakes|Israeli ilistahimili; mshtuko wa mafuta ukafuata, na baadaye amani kati ya Misri na Israeli.
+victims|Takriban Waisraeli 2,700 na Waarabu 10,000 hadi 20,000 walikufa.
+## 1979-12-24-soviet-afghan-war
+name|Vita vya Kisovieti nchini Afghanistan
+context|Jeshi la Kisovieti liliingia Afghanistan kuiunga mkono serikali ya kikomunisti dhidi ya mujahidina.
+stakes|Wasovieti waliondoka mwaka 1989; vita vya wenyewe kwa wenyewe na Taliban vikafuata.
+victims|Waafghani nusu milioni hadi milioni mbili; takriban askari 15,000 wa Kisovieti.
+## 1980-09-22-iran-iraq-war
+name|Vita vya Iran na Iraq
+context|Iraq ya Saddam Hussein ilivamia Iran ya kimapinduzi.
+stakes|Miaka minane ya vita vya mahandaki na silaha za kemikali, bila faida kwa upande wowote.
+victims|Nusu milioni hadi milioni moja walikufa.
+## 1990-08-02-gulf-war
+name|Vita vya Ghuba
+context|Iraq ilivamia Kuwait; muungano wa Umoja wa Mataifa ukiongozwa na Marekani uliiondoa.
+stakes|Kuwait ilikombolewa; vikwazo dhidi ya Iraq; majeshi ya Marekani katika Ghuba.
+victims|Takriban askari 25,000 wa Iraq na mamia kadhaa ya askari wa muungano; raia maelfu.
+## 1991-03-31-yugoslav-wars
+name|Vita vya Yugoslavia
+context|Yugoslavia ilivunjika katika vita kati ya Waserbia, Wakroatia, Wabosnia na Wakosovo.
+stakes|Dola saba; usafishaji wa kikabila na mauaji ya kimbari huko Srebrenica mwaka 1995.
+victims|Takriban 130,000 hadi 140,000 walikufa; mamilioni walilazimika kuhama.
+## 1994-04-07-genocide-against-the-tutsi-in-rwanda
+name|Mauaji ya kimbari dhidi ya Watutsi nchini Rwanda
+context|Baada ya ndege ya rais kudunguliwa, Wahutu wenye msimamo mkali walipanga mauaji ya Watutsi na Wahutu wenye msimamo wa wastani.
+stakes|Dunia haikuchukua hatua; Rwandan Patriotic Front iliyakomesha; vita vilienea hadi Kongo.
+victims|Takriban watu 800,000 waliuawa katika siku mia moja.
+## 1998-08-02-second-congo-war
+name|Vita vya Pili vya Kongo
+context|Rwanda, Uganda na dola nyingine zilipigania DR Kongo na madini yake, pamoja na wanamgambo wengi wa kienyeji.
+stakes|Vita vilivyoua zaidi tangu 1945; mashariki mwa Kongo bado hakuna utulivu.
+victims|Hadi milioni 5 walikufa, wengi kwa magonjwa na njaa.
+## 2001-10-07-war-in-afghanistan
+name|Vita vya Afghanistan
+context|Baada ya 11 Septemba, Marekani na washirika wake waliiangusha Taliban na kukaa miaka ishirini.
+stakes|Taliban walirudi madarakani mwaka 2021.
+victims|Takriban 175,000 walikufa katika mapigano, karibu 46,000 wao raia.
+## 2003-03-20-iraq-war
+name|Vita vya Iraq
+context|Marekani na Uingereza zilivamia Iraq na kumwangusha Saddam Hussein.
+stakes|Ukaliaji, uasi, mapigano ya ndani na kuinuka kwa Dola ya Kiislamu.
+victims|Makadirio ni kati ya 150,000 na zaidi ya 600,000 vifo vya kikatili.
+## 2011-03-15-syrian-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Syria
+context|Maandamano ya amani yalikandamizwa na utawala wa Bashar al-Assad; vita vilienea kwa kuhusika kwa madola ya kigeni.
+stakes|Mamilioni ya wakimbizi walifika Uturuki, Lebanon na Ulaya; Assad alianguka Desemba 2024.
+victims|Takriban 500,000 hadi 600,000 walikufa; milioni 13 walihamishwa.
+## 2022-02-24-russian-invasion-of-ukraine
+name|Uvamizi wa Urusi nchini Ukraine
+context|Urusi ilianzisha uvamizi kamili wa Ukraine baada ya kukalia Crimea na sehemu ya Donbas mwaka 2014.
+stakes|Uhuru wa Ukraine na usalama wa Ulaya; vita vikubwa zaidi barani Ulaya tangu 1945.
+victims|Mamia ya maelfu ya askari waliuawa au kujeruhiwa; zaidi ya raia 12,000 waliothibitishwa kuuawa; mamilioni ya wakimbizi.
+## 1315-great-famine-in-europe
+name|Njaa Kuu barani Ulaya
+note|Miaka mitatu ya mvua na mavuno yaliyoharibika.
+context|Miaka ya baridi na mvua iliharibu mavuno kote kaskazini mwa Ulaya.
+stakes|Mwisho wa karne mbili za ukuaji; watu waliodhoofika kabla ya Kifo Cheusi.
+victims|Labda sehemu ya kumi hadi robo ya watu katika baadhi ya maeneo.
+## 1683-09-12-battle-of-vienna
+name|Mapigano ya Vienna
+note|Jan wa Tatu Sobieski avunja mazingiwa ya Waosmani.
+context|Jeshi la Waosmani liliuzingira Vienna; jeshi la uokoaji likiongozwa na Mfalme Jan wa Tatu Sobieski wa Poland lilivunja mazingiwa.
+stakes|Mwisho wa kusonga mbele kwa Waosmani barani Ulaya.
+victims|Makumi ya maelfu katika mazingiwa na mapigano.
+## 1806-08-06-end-of-the-holy-roman-empire
+name|Mwisho wa Dola Takatifu ya Kirumi
+context|Akiwa ameshindwa na Napoleoni, Francis wa Pili aliweka chini taji la Dola Takatifu ya Kirumi.
+stakes|Dola ya miaka elfu iliisha; dola za Kijerumani zilipangwa upya.
+## 1814-09-congress-of-vienna
+name|Kongamano la Vienna
+note|Mipaka ya Ulaya ilichorwa upya baada ya Napoleoni.
+context|Walioshinda Napoleoni walichora upya ramani ya Ulaya.
+stakes|Uwiano wa nguvu ulioilinda Ulaya dhidi ya vita vikuu kwa karne moja; Poland iligawanywa tena.
+## 1918-11-fall-of-the-empires-birth-of-new-states
+name|Kuanguka kwa madola, kuzaliwa kwa dola mpya
+note|Poland, Chekoslovakia, Yugoslavia na nchi za Baltiki zatokea.
+context|Madola ya Ujerumani, Austria-Hungaria, Urusi na Uthmaniyya yalianguka mwishoni mwa vita.
+stakes|Poland, Chekoslovakia, Yugoslavia na nchi za Baltiki zilizaliwa, zikiwa na mipaka mipya na makundi madogo.
+## 1945-the-iron-curtain
+name|Pazia la Chuma
+note|Ulaya imegawanywa kati ya Mashariki na Magharibi.
+context|Ulaya iligawanywa kati ya Mashariki iliyotawaliwa na Wasovieti na Magharibi ya kidemokrasia.
+stakes|Familia zilizotenganishwa, mipaka iliyofungwa, uchumi miwili na dunia mbili.
+victims|Mamia walikufa wakijaribu kulivuka.
+## 1957-03-25-treaty-of-rome-european-economic-community
+name|Mkataba wa Roma (Jumuiya ya Kiuchumi ya Ulaya)
+context|Nchi sita zilianzisha Jumuiya ya Kiuchumi ya Ulaya.
+stakes|Soko la pamoja, chimbuko la Umoja wa Ulaya wa leo.
+## 1993-11-01-european-union-maastricht
+name|Umoja wa Ulaya (Maastricht)
+context|Mkataba wa Maastricht uliunda Umoja wa Ulaya.
+stakes|Uraia wa Ulaya, uhuru wa kuishi na kufanya kazi katika nchi nyingine wanachama.
+## 2002-01-01-the-euro-in-everyone-s-pocket
+name|Yuro mfukoni mwa kila mtu
+context|Sarafu na noti za yuro zilichukua nafasi ya faranga, marki, lira na sarafu nyingine.
+stakes|Sarafu moja kwa mamia ya mamilioni ya Wazungu.
+## 1755-11-01-lisbon-earthquake
+name|Tetemeko la ardhi la Lisbon
+note|Mji uliharibiwa na tetemeko, moto na tsunami.
+context|Tetemeko la ardhi, moto na tsunami viliharibu Lisbon Siku ya Watakatifu Wote.
+stakes|Wanafalsafa walihoji maongozi ya Mungu; Lisbon ilijengwa upya kwa mpango wa kisasa.
+victims|Takriban 30,000 hadi 50,000 walikufa.
+## 1881-scramble-for-africa
+name|Kinyang'anyiro cha Afrika
+note|Karibu bara zima chini ya utawala wa Ulaya.
+context|Madola ya Ulaya yaliteka karibu Afrika yote katika miongo michache.
+stakes|Utawala wa kikoloni, mipaka iliyochorwa kutoka nje, uporaji wa rasilimali na kazi ya kulazimishwa.
+victims|Mamilioni walikufa katika utekaji, kazi ya kulazimishwa na njaa.
+## 1957-03-06-independence-of-ghana
+name|Uhuru wa Ghana
+note|Wa kwanza kusini mwa Sahara.
+context|Pwani ya Dhahabu ikawa Ghana, ikiongozwa na Kwame Nkrumah.
+stakes|Uhuru wa kwanza kusini mwa Sahara, ishara kwa bara zima.
+## 1960-year-of-africa-seventeen-independences
+name|«Mwaka wa Afrika»: uhuru wa nchi kumi na saba
+context|Nchi kumi na saba za Kiafrika zilipata uhuru katika mwaka mmoja, zikiwemo Kongo na sehemu kubwa ya Afrika ya Kifaransa.
+stakes|Dola mpya zenye mipaka ya kikoloni; matumaini na mapambano ya uhuru.
+## 1963-05-25-organisation-of-african-unity-founded
+name|Kuanzishwa kwa Umoja wa Nchi Huru za Afrika
+context|Dola huru za Kiafrika zilianzisha OAU huko Addis Ababa.
+stakes|Mshikamano wa Kiafrika, kuunga mkono vuguvugu za ukombozi, kudumisha mipaka ya kikoloni.
+## 1948-apartheid-in-south-africa
+name|Ubaguzi wa rangi (apartheid) nchini Afrika Kusini
+context|Serikali ya Afrika Kusini iliufanya ubaguzi wa rangi kuwa sheria ya nchi.
+stakes|Mfumo wa utawala wa wazungu walio wachache, uliokomeshwa mwaka 1994 kwa kuchaguliwa kwa Nelson Mandela.
+victims|Maelfu waliuawa katika ukandamizaji; watu milioni 3.5 walihamishwa kwa nguvu.
+## 1967-07-06-nigerian-civil-war-biafra
+name|Vita vya wenyewe kwa wenyewe vya Nigeria (Biafra)
+context|Kusini-mashariki mwa Nigeria lilijitenga kwa jina la Biafra; Nigeria ililizingira.
+stakes|Nigeria ilibaki imeungana; picha za watoto wenye njaa ziliigusa dunia.
+victims|Milioni moja hadi tatu walikufa, wengi kwa njaa.
+## 2002-07-09-african-union-founded
+name|Kuanzishwa kwa Umoja wa Afrika
+context|OAU ikawa Umoja wa Afrika.
+stakes|Umoja wenye haki ya kuingilia kati dhidi ya mauaji ya kimbari na mapinduzi ya kijeshi.
+## 2014-ebola-epidemic-in-west-africa
+name|Mlipuko wa Ebola Afrika Magharibi
+context|Ebola ilienea Guinea, Liberia na Sierra Leone, ikifika mijini kwa mara ya kwanza.
+stakes|Udhaifu wa mifumo ya afya ulionekana wazi; chanjo ikafuata.
+victims|Takriban 11,300 walikufa.
+## 1607-jamestown-first-lasting-english-colony
+name|Jamestown, koloni la kwanza la kudumu la Kiingereza
+context|Walowezi wa Kiingereza walianzisha Jamestown huko Virginia.
+stakes|Mwanzo wa Amerika ya Kiingereza, na punde wa utumwa humo.
+victims|Wengi wa walowezi wa kwanza walikufa kwa njaa na magonjwa.
+## 1888-05-13-abolition-of-slavery-in-brazil
+name|Kukomeshwa kwa utumwa nchini Brazili
+note|Wa mwisho katika Amerika.
+context|Sheria ya Dhahabu ya Brazili ilikomesha utumwa; Brazili ilikuwa nchi ya mwisho katika Amerika kufanya hivyo.
+stakes|Uhuru bila ardhi wala fidia kwa waliokuwa watumwa.
+## 1910-mexican-revolution
+name|Mapinduzi ya Meksiko
+context|Uasi dhidi ya dikteta Porfirio Díaz ukawa vita virefu vya wenyewe kwa wenyewe; Zapata na Villa walikuwa miongoni mwa viongozi wake.
+stakes|Mageuzi ya ardhi na katiba mpya mwaka 1917.
+victims|Takriban milioni moja walikufa.
+## 1959-01-01-cuban-revolution
+name|Mapinduzi ya Kuba
+context|Waasi wa Fidel Castro walimwangusha dikteta Batista.
+stakes|Dola ya kikomunisti iliyoshirikiana na Muungano wa Kisovieti, maili tisini kutoka Marekani.
+victims|Maelfu katika vita na katika mauaji ya hukumu yaliyofuata.
+## 1964-military-dictatorships-in-south-america
+name|Udikteta wa kijeshi Amerika Kusini
+context|Mapinduzi ya kijeshi yaliweka tawala za kijeshi madarakani huko Brazili, Chile, Argentina, Uruguay na kwingineko.
+stakes|Ukandamizaji kwa jina la kupinga ukomunisti; demokrasia ilirudi miaka ya 1980.
+victims|Makumi ya maelfu waliuawa au kutoweka, takriban 30,000 huko Argentina.
+## 1868-meiji-restoration-japan
+name|Urejesho wa Meiji (Japani)
+context|Ushogun ulianguka na mfalme mkuu akarejeshwa madarakani.
+stakes|Japani ilijisasa ndani ya kizazi kimoja na kuwa dola ya kiviwanda na kijeshi.
+## 1922-11-01-end-of-the-ottoman-empire
+name|Mwisho wa Dola ya Uthmaniyya
+context|Usultani ulikomeshwa; Jamhuri ya Uturuki ilitangazwa mwaka 1923.
+stakes|Mwisho wa dola ya karne sita; dola mpya katika Mashariki ya Kati.
+victims|Miaka ya mwisho ya dola iliona mauaji ya kimbari ya Waarmenia na mabadilishano makubwa ya watu.
+## 1948-05-14-independence-of-israel-and-the-nakba
+name|Uhuru wa Israeli na Nakba
+context|Israeli ilitangaza uhuru wake; vita na majirani zake wa Kiarabu vikafuata.
+stakes|Dola ya Kiyahudi baada ya Maangamizi Makuu; kwa Wapalestina, Nakba, yaani maafa.
+victims|Takriban Wapalestina 700,000 walikimbia au walifukuzwa.
+## 1949-10-01-people-s-republic-of-china-proclaimed
+name|Kutangazwa kwa Jamhuri ya Watu wa China
+context|Mao Zedong alitangaza Jamhuri ya Watu huko Beijing.
+stakes|Utawala wa kikomunisti juu ya nchi yenye watu wengi kuliko zote.
+## 1966-cultural-revolution-china
+name|Mapinduzi ya Kitamaduni (China)
+context|Mao aliwatuma Walinzi Wekundu dhidi ya watu «wa kibepari» ndani ya chama na jamii.
+stakes|Muongo wa vurugu, mateso na uharibifu wa utamaduni.
+victims|Mamia ya maelfu hadi takriban milioni 2 walikufa.
+## 1975-khmer-rouge-regime-cambodia
+name|Utawala wa Khmer Rouge (Kambodia)
+context|Khmer Rouge waliyamwaga miji na kuwalazimisha watu kufanya kazi katika kambi za vijijini.
+stakes|Mauaji ya kimbari; yalikomeshwa na uvamizi wa Vietnam mwaka 1979.
+victims|Milioni 1.5 hadi 2 walikufa, takriban robo ya watu.
+## 1979-02-11-iranian-revolution
+name|Mapinduzi ya Iran
+context|Shah aliangushwa; Ayatollah Khomeini alianzisha Jamhuri ya Kiislamu.
+stakes|Utawala wa kidini, mgogoro wa mateka na Marekani, vita na Iraq.
+victims|Maelfu katika mapinduzi na ukandamizaji uliofuata.
+## 1788-01-26-first-fleet-british-settlement-of-australia
+name|Msafara wa Kwanza: makazi ya Waingereza nchini Australia
+context|Meli za Kiingereza zilileta wafungwa Sydney Cove kuanzisha koloni la adhabu.
+stakes|Australia ilikaliwa na watu kutoka Uingereza; Waaborijini walinyang'anywa ardhi.
+victims|Waaborijini walikufa kwa wingi kutokana na magonjwa na ukatili.
+## 1840-02-06-treaty-of-waitangi-new-zealand
+name|Mkataba wa Waitangi (New Zealand)
+context|Machifu wa Kimaori na Taji la Uingereza walitia saini mkataba huko Waitangi.
+stakes|Hati ya kuanzishwa kwa New Zealand, ambayo maana yake bado inabishaniwa.
+victims|Vita vya ardhi na Wamaori vilifuata miaka ya 1860.
+## 1562-wars-of-religion
+name|Vita vya kidini (Ufaransa)
+note|Wakatoliki na Waprotestanti vitani, hadi Amri ya Nantes.
+context|Vita vinane kati ya Wakatoliki na Waprotestanti (Wahuguenoti), vikiwemo mauaji ya Siku ya Mtakatifu Bartolomayo mwaka 1572.
+stakes|Henri wa Nne alibadili dini, na Amri ya Nantes iliwapa Waprotestanti uhuru wa kuabudu.
+victims|Labda milioni 2 hadi 4 walikufa, pamoja na njaa na magonjwa; maelfu katika mauaji ya 1572.
+## 1643-reign-of-louis-xiv
+name|Utawala wa Louis wa Kumi na Nne
+note|Ufalme wa kimabavu, Versailles, vita virefu.
+context|«Mfalme Jua» alitawala miaka 72, kama mfalme mwenye mamlaka yote kutoka Versailles.
+stakes|Ufaransa dola ya kwanza ya Ulaya, kwa gharama ya vita, madeni na umaskini wa wakulima.
+victims|Vita vyake na njaa za 1693 na 1709 viliua mamilioni.
+## 1685-10-18-revocation-of-the-edict-of-nantes
+name|Kufutwa kwa Amri ya Nantes
+note|Mamia ya maelfu ya Waprotestanti waondoka Ufaransa.
+context|Louis wa Kumi na Nne alipiga marufuku ibada ya Kiprotestanti na kuamuru makanisa yao yabomolewe; kubadilishwa dini kwa nguvu kukafuata.
+stakes|Ufaransa ilipoteza mafundi na wafanyabiashara kwa Prussia, Uingereza, Uholanzi na Uswisi.
+victims|Takriban Wahuguenoti 200,000 walikimbia; mateso na kazi ya kupiga makasia kwa waliokamatwa.
+## 1693-great-famine-of-1693-1694
+name|Njaa Kuu ya 1693–1694
+note|Takriban milioni 1.3 walikufa.
+context|Baridi, mvua na mavuno mabaya, pamoja na kodi za vita, viliwaletea njaa wakazi wa vijijini wa Ufaransa.
+stakes|Mojawapo ya migogoro mibaya zaidi ya vifo katika Ufaransa ya zama mpya.
+victims|Takriban milioni 1.3 walikufa kati ya wakazi takriban milioni 20.
+## 1709-great-winter-of-1709
+name|Majira Makuu ya Baridi ya 1709
+note|Barafu kali, njaa na magonjwa ya mlipuko.
+context|Baridi kali sana iligandisha mito, mizabibu na mbegu ardhini kote Ufaransa.
+stakes|Njaa na magonjwa ya mlipuko katika ufalme uliokuwa tayari vitani.
+victims|Takriban 600,000 walikufa Ufaransa.
+## 1720-plague-of-marseille
+name|Tauni ya Marseille
+note|Tauni kuu ya mwisho nchini Ufaransa: takriban 100,000 walikufa Provence.
+context|Tauni ilifika kwa meli ya biashara Grand-Saint-Antoine na kuenea kutoka Marseille kote Provence.
+stakes|Ukuta ulijengwa kuizuia; tauni kuu ya mwisho Ulaya Magharibi.
+victims|Takriban 100,000 walikufa Provence, nusu yao Marseille.
+## 1792-09-20-civil-registers-pass-to-the-state
+name|Rejista za kiraia zakabidhiwa kwa dola
+note|Sasa ni ofisi za manispaa, si parokia, zinazosajili vizazi, ndoa na vifo.
+context|Sheria ya Mapinduzi iliondoa usajili wa vizazi, ndoa na vifo mikononi mwa makasisi wa parokia na kuukabidhi kwa ofisi za manispaa.
+stakes|Rejista za kiraia kwa kila Mfaransa, bila kujali dini yake: tangu hapo chanzo kikuu cha mtafiti wa nasaba.
+## 1793-the-terror
+name|Utawala wa Kitisho
+note|Serikali ya kimapinduzi; makumi ya maelfu waliuawa.
+context|Mbele ya vita na maasi, Kamati ya Usalama wa Umma ilitawala kwa hofu; Mahakama ya Kimapinduzi iliwapeleka maelfu kwenye gilotini.
+stakes|Jamhuri iliokolewa kwa nguvu; Robespierre mwenyewe aliuawa mwaka 1794.
+victims|Takriban 17,000 waliuawa baada ya kesi; takriban 40,000 walikufa ukihesabu magereza na mauaji bila kesi.
+## 1793-war-in-the-vendee
+name|Vita vya Vendée
+note|Uasi wa wafuasi wa mfalme huko Magharibi, uliokandamizwa na Jamhuri.
+context|Uandikishaji wa askari na mashambulizi dhidi ya Kanisa viliinua Magharibi ya Kikatoliki na ya wafuasi wa mfalme dhidi ya Jamhuri.
+stakes|Uasi ulikandamizwa kwa ukatili mkubwa, ikiwemo kupitia «misafara ya kuzimu».
+victims|Takriban 170,000 hadi 200,000 walikufa.
+## 1804-first-empire-napoleon-i
+name|Dola ya Kwanza (Napoleoni wa Kwanza)
+note|Sheria ya Kiraia, uandikishaji wa lazima jeshini, vita kote Ulaya.
+context|Napoleoni alijitawaza kuwa mfalme mkuu na kuitawala Ulaya.
+stakes|Sheria ya Kiraia, maliwali, shule za sekondari; vita visivyo na mwisho na uandikishaji wa lazima; kushindwa mwaka 1815.
+victims|Mamia ya maelfu ya askari wa Kifaransa walikufa katika vita vyake.
+## 1815-restoration-and-july-monarchy
+name|Urejesho na Ufalme wa Julai
+note|Wafalme warudi; mapinduzi ya 1830.
+context|Wabourbon walirudi; mapinduzi ya Julai 1830 yalimleta Louis-Philippe, «mfalme wa raia».
+stakes|Ufalme wa kikatiba wa wenye mali; viwanda vyakua; mapinduzi tena mwaka 1848.
+victims|Mamia walikufa katika Siku za Julai za 1830.
+## 1832-cholera-in-paris
+name|Kipindupindu Paris
+note|Takriban 18,000 walikufa katika miezi michache.
+context|Kipindupindu kilifika Paris katika majira ya kuchipua ya 1832, kikipiga kwa nguvu zaidi mitaa maskini iliyosongamana.
+stakes|Hofu, ghasia na shauku mpya kwa mifereji ya maji machafu na maji safi; waziri mkuu alikufa kwacho.
+victims|Takriban 18,000 walikufa Paris, takriban 100,000 Ufaransa.
+## 1848-04-27-slavery-abolished-in-the-french-colonies
+name|Kukomeshwa kwa utumwa katika makoloni ya Ufaransa
+note|Amri ya Victor Schœlcher.
+context|Chini ya Jamhuri ya Pili, amri ya Victor Schœlcher ilikomesha utumwa kabisa katika makoloni ya Ufaransa.
+stakes|Uhuru kwa watu takriban 250,000 katika Antilles, Guiana na Réunion; walilipwa fidia wamiliki, si watumwa.
+## 1852-second-empire-napoleon-iii
+name|Dola ya Pili (Napoleoni wa Tatu)
+note|Reli, Paris ya Haussmann, upanuzi wa kikoloni.
+context|Louis-Napoléon Bonaparte, aliyechaguliwa kuwa rais mwaka 1848, alijifanya mfalme mkuu baada ya mapinduzi.
+stakes|Reli, Paris ya Haussmann na makoloni; ilikomeshwa na kushindwa kwa 1870.
+## 1871-03-18-paris-commune
+name|Komuni ya Paris
+note|Ilikandamizwa katika «Wiki ya Damu».
+context|Baada ya kushindwa, Paris iliasi na kujitawala; serikali ya Versailles iliurejesha mji kwa nguvu.
+stakes|Alama kwa vuguvugu la wafanyakazi; Jamhuri iliyoanzishwa katika ukandamizaji.
+victims|10,000 hadi 20,000 waliuawa katika «Wiki ya Damu»; maelfu walihamishwa.
+## 1871-05-10-alsace-moselle-annexed-by-germany
+name|Alsace-Moselle yanyakuliwa na Ujerumani
+note|Hadi 1918; familia zilichagua kati ya kuondoka na kubaki.
+context|Kwa Mkataba wa Frankfurt, Ufaransa ilikabidhi Alsace na sehemu ya Lorraine kwa Dola ya Ujerumani.
+stakes|Wakazi walilazimika kuchagua: kubaki Wajerumani au kuondoka kwenda Ufaransa; «majimbo yaliyopotea» hadi 1918.
+victims|Takriban watu 130,000 walichagua Ufaransa na kuondoka.
+## 1882-03-28-free-compulsory-secular-school
+name|Shule ya bure, ya lazima na isiyo ya kidini
+note|Sheria za Jules Ferry.
+context|Sheria za Jules Ferry zilifanya shule ya msingi kuwa ya bure, ya lazima na isiyo ya kidini kwa wasichana na wavulana wa miaka 6 hadi 13.
+stakes|Kujua kusoma na kuandika kwa wote kwa Kifaransa; lugha za kimaeneo zikasukumwa pembeni.
+## 1905-12-09-separation-of-church-and-state
+name|Kutenganishwa kwa Kanisa na Dola
+context|Jamhuri iliacha kulipia au kutambua dini yoyote na ikahakikisha uhuru wa dhamiri.
+stakes|Usekula wa Kifaransa, laïcité, unaojadiliwa hadi leo.
+## 1916-02-21-battle-of-verdun
+name|Mapigano ya Verdun
+note|Takriban 300,000 walikufa pande zote mbili.
+context|Ujerumani ilishambulia Verdun ili kulimaliza jeshi la Ufaransa; miezi kumi ya mizinga na mapigano ya mahandaki ikafuata.
+stakes|Ufaransa ilistahimili; Verdun ikawa alama ya uvumilivu wa askari.
+victims|Takriban 300,000 walikufa na 400,000 walijeruhiwa pande zote mbili.
+## 1936-06-20-popular-front-paid-holidays
+name|Front Populaire: likizo yenye malipo
+context|Serikali ya Front Populaire ya Léon Blum iliwapa wafanyakazi wiki mbili za likizo yenye malipo na wiki ya kazi ya saa 40.
+stakes|Burudani kwa familia za wafanyakazi, safari zao za kwanza kwenda baharini.
+## 1940-06-22-occupation-and-the-vichy-regime
+name|Ukaliaji na utawala wa Vichy
+note|Makubaliano ya kusitisha vita, kuhamishwa kwa nguvu, Upinzani, kisha Ukombozi.
+context|Baada ya kushindwa, Ufaransa ilikaliwa; utawala wa Marshal Pétain huko Vichy ulishirikiana na Ujerumani ya Kinazi.
+stakes|Ushirikiano na Upinzani; kuhamishwa kwa Wayahudi wa Ufaransa; Ukombozi mwaka 1944.
+victims|Takriban Wayahudi 76,000 walihamishwa kutoka Ufaransa; makumi ya maelfu ya wapiganaji wa upinzani, mateka na raia waliuawa.
+## 1944-04-21-women-s-right-to-vote
+name|Haki ya wanawake kupiga kura
+note|Ilitumika kwa mara ya kwanza mwaka 1945.
+context|Agizo la serikali ya mpito liliwapa wanawake wa Ufaransa haki ya kupiga kura na kugombea.
+stakes|Wanawake walipiga kura kwa mara ya kwanza mwaka 1945, karne moja baada ya wanaume.
+## 1958-10-04-fifth-republic
+name|Jamhuri ya Tano
+note|Katiba ya Jenerali de Gaulle.
+context|Katika mgogoro wa Vita vya Algeria, de Gaulle alirudi na kuipa Ufaransa katiba mpya.
+stakes|Urais wenye nguvu, unaochaguliwa na wananchi tangu 1962.
+## 1968-05-may-1968
+name|Mei 1968
+note|Uasi wa wanafunzi na mgomo mkuu.
+context|Maandamano ya wanafunzi huko Paris yalienea na kuwa mgomo mkuu wa wafanyakazi milioni kumi.
+stakes|Mishahara ya juu na mabadiliko katika maadili, familia na mamlaka.
+victims|Wachache walikufa katika mapigano.
+## 1981-10-09-death-penalty-abolished
+name|Kukomeshwa kwa adhabu ya kifo
+context|Ikiongozwa na waziri wa sheria Robert Badinter, Bunge lilikomesha adhabu ya kifo.
+stakes|Ufaransa miongoni mwa za mwisho Ulaya Magharibi kufanya hivyo; gilotini ikastaafu.
+## 1569-07-01-polish-lithuanian-commonwealth
+name|Jumuiya ya Poland na Lithuania
+note|Ilizaliwa na Muungano wa Lublin, mojawapo ya dola kubwa zaidi za Ulaya.
+context|Kwa Muungano wa Lublin, Poland na Lithuania zikawa dola moja yenye mfalme anayechaguliwa.
+stakes|Jamhuri ya wakuu, yenye uvumilivu wa kidini, kutoka Baltiki hadi Bahari Nyeusi.
+## 1655-the-deluge-swedish-invasion
+name|Gharika (uvamizi wa Uswidi)
+note|Majeshi ya Uswidi na Urusi yaharibu nchi.
+context|Uswidi ilivamia Jumuiya, huku Urusi na Wakozaki wakishambulia kutoka mashariki.
+stakes|Jumuiya ilinusurika lakini haikurejesha nguvu zake kamwe.
+victims|Poland ilipoteza labda robo ya watu wake au zaidi, kwa vita, tauni na njaa.
+## 1772-08-05-first-partition-of-poland
+name|Mgawanyo wa Kwanza wa Poland
+note|Urusi, Prussia na Austria zachukua theluthi moja.
+context|Urusi, Prussia na Austria zilichukua takriban theluthi moja ya ardhi ya Jumuiya.
+stakes|Dola iliyodhoofika, iliyojaribu kujirekebisha.
+## 1791-05-03-constitution-of-3-may
+name|Katiba ya 3 Mei
+note|Katiba ya kwanza ya kisasa iliyoandikwa barani Ulaya.
+context|Sejm ilipitisha katiba iliyopunguza kura ya turufu ya wakuu na kuiimarisha dola.
+stakes|Tumaini la mageuzi ambalo Urusi ilijibu kwa vita.
+## 1793-01-23-second-partition
+name|Mgawanyo wa Pili
+context|Baada ya vita vilivyoshindwa dhidi ya Urusi, Urusi na Prussia zilichukua ardhi zaidi ya Poland.
+stakes|Kilichobaki cha Poland kilikuwa dola ndogo chini ya udhibiti wa Urusi.
+## 1794-03-24-kosciuszko-uprising
+name|Uasi wa Kościuszko
+note|Ulishindwa; mgawanyo wa tatu wafuata.
+context|Tadeusz Kościuszko aliongoza uasi wa kitaifa dhidi ya Urusi na Prussia, pamoja na wakulima waliojihami kwa mundu.
+stakes|Kushindwa kwake kulileta mwisho wa dola.
+victims|Makumi ya maelfu; mauaji ya Praga huko Warszawa yaliua maelfu ya raia.
+## 1795-10-24-third-partition-poland-disappears
+name|Mgawanyo wa Tatu: Poland yatoweka
+note|Kwa miaka 123, Wapoland waishi chini ya Urusi, Prussia au Austria.
+context|Urusi, Prussia na Austria ziligawana kilichobaki; Poland ilitoweka kwenye ramani.
+stakes|Wapoland waliishi chini ya madola matatu, yenye sheria tatu na lugha tatu za kumbukumbu.
+## 1807-duchy-of-warsaw
+name|Utawala wa Warszawa
+note|Dola ya Kipoland ya Napoleoni; rejista za kiraia tangu 1808.
+context|Napoleoni aliunda dola ya Kipoland kutoka ardhi za Prussia, chini ya Mfalme wa Saxony.
+stakes|Sheria ya Napoleoni na rejista za kiraia tangu 1808; matumaini ya kuzaliwa upya yaliyokatizwa mwaka 1815.
+victims|Askari wengi wa Kipoland walikufa katika kampeni za Napoleoni, huko Hispania na Urusi.
+## 1815-congress-poland-under-russia
+name|Poland ya Kongamano, chini ya Urusi
+note|Rejista kwa Kipoland, kisha kwa Kirusi tangu 1868.
+context|Kongamano la Vienna liliunda Ufalme wa Poland ambao mfalme wake alikuwa Tsar wa Urusi.
+stakes|Kujitawala, kisha ukandamizaji baada ya kila uasi; Kirusi katika rejista tangu 1868.
+## 1830-11-29-november-uprising
+name|Uasi wa Novemba
+note|Kushindwa kwake kwasababisha Uhamiaji Mkuu.
+context|Wanafunzi wa kijeshi huko Warszawa waliasi dhidi ya utawala wa Urusi; mwaka mmoja wa vita ukafuata.
+stakes|Kushindwa, mwisho wa kujitawala, na Uhamiaji Mkuu wa wasomi.
+victims|Takriban Wapoland 40,000 walikufa katika mapigano.
+## 1831-the-great-emigration
+name|Uhamiaji Mkuu
+note|Wasomi wa Kipoland waishi Paris na kote Ulaya.
+context|Baada ya 1831, maelfu ya askari, wanasiasa na wasanii wa Kipoland walikwenda uhamishoni, hasa Ufaransa.
+stakes|Chopin, Mickiewicz na wengine waliudumisha utamaduni wa Kipoland huko Paris.
+## 1863-01-22-january-uprising
+name|Uasi wa Januari
+note|Ukandamizaji, kunyang'anywa mali, kuhamishwa Siberia.
+context|Vita vya msituni dhidi ya Urusi, vilivyochochewa na uandikishaji wa lazima katika jeshi la Urusi.
+stakes|Vilikandamizwa; ufanywaji wa shule na ofisi kuwa za Kirusi ukafuata.
+victims|Takriban waasi 20,000 hadi 30,000 waliuawa; makumi ya maelfu walihamishwa Siberia.
+## 1870-emigration-for-bread
+name|Uhamiaji «kwa ajili ya mkate»
+note|Mamilioni waondoka kwenda Amerika na migodi ya Ufaransa na Ujerumani.
+context|Wakulima wasio na ardhi waliziacha ardhi za Kipoland kwenda kufanya kazi Amerika, Ujerumani na Ufaransa.
+stakes|Jumuiya za Wapoland huko Chicago, Ruhr na Brazili; familia zilizogawanyika kati ya mabara.
+victims|Takriban milioni 3.5 waliondoka kabla ya 1914.
+## 1918-11-11-independence-of-poland
+name|Uhuru wa Poland
+note|Jamhuri ya Pili yazaliwa.
+context|Madola yalipoanguka, Józef Piłsudski alichukua uongozi Warszawa: Poland ilikuwa huru baada ya miaka 123.
+stakes|Dola iliyozaliwa upya iliyopaswa kuunganisha sehemu tatu zenye sheria tofauti na kulinda mipaka yake.
+## 1919-02-14-polish-soviet-war
+name|Vita vya Poland na Wasovieti
+note|«Muujiza wa Vistula», 1920.
+context|Poland na Urusi ya Kisovieti zilipigania maeneo ya mpakani ya mashariki; Jeshi Jekundu lilifika Warszawa mwaka 1920.
+stakes|Poland ilishinda kwenye Vistula na kudumisha uhuru wake; Mkataba wa Riga uliweka mpaka wake wa mashariki.
+victims|Takriban 100,000 walikufa pande zote mbili.
+## 1919-polish-miners-in-northern-france
+name|Wachimba madini wa Kipoland kaskazini mwa Ufaransa
+note|Takriban Wapoland 500,000 waishi Ufaransa.
+context|Ufaransa, iliyokosa wanaume baada ya vita, iliajiri wafanyakazi wa Kipoland kwa migodi ya Nord na Pas-de-Calais.
+stakes|Miji ya Kipoland ndani ya miji ya Kifaransa, yenye makanisa, shule na vyama vyao.
+victims|Wengi walikufa katika ajali za migodini na kwa ugonjwa wa mapafu wa silikosisi.
+## 1939-09-01-german-and-soviet-occupation
+name|Ukaliaji wa Wajerumani na Wasovieti
+note|Takriban raia milioni sita wa Poland waliuawa, nusu yao Wayahudi.
+context|Ujerumani ilivamia Poland kutoka magharibi, Muungano wa Kisovieti kutoka mashariki; nchi iligawanywa na kutishwa.
+stakes|Maangamizi Makuu yalitekelezwa kwa sehemu kubwa katika ardhi ya Poland; wasomi wa Kipoland waliuawa, ikiwemo Katyń.
+victims|Takriban raia milioni sita wa Poland waliuawa, nusu yao Wayahudi.
+## 1944-08-01-warsaw-uprising
+name|Uasi wa Warszawa
+note|Siku 63 za mapigano; kisha mji ulisawazishwa na ardhi.
+context|Jeshi la Nyumbani liliasi dhidi ya Wajerumani huku Jeshi Jekundu likisimama kwenye Vistula.
+stakes|Uasi ulikandamizwa; kisha Wajerumani waliharibu sehemu kubwa ya mji.
+victims|Takriban waasi 16,000 na raia 150,000 hadi 200,000 waliuawa.
+## 1945-people-s-republic-of-poland
+name|Jamhuri ya Watu wa Poland
+note|Utawala wa kikomunisti; mipaka yasogezwa magharibi.
+context|Poland, iliyosogezwa magharibi, iliwekwa chini ya utawala wa kikomunisti uliowekwa na Muungano wa Kisovieti.
+stakes|Ujenzi upya, utaifishaji, udhibiti wa habari; migogoro mwaka 1956, 1970 na 1980.
+victims|Mamilioni walihamishwa kutoka mashariki iliyopotea kwenda magharibi iliyokuwa ya Kijerumani.
+## 1980-08-31-solidarnosc
+name|Solidarność (Mshikamano)
+note|Chama cha kwanza huru cha wafanyakazi katika kambi ya Kisovieti.
+context|Migomo kwenye bandari ya kutengeneza meli ya Gdańsk ilishinda haki ya chama huru cha wafanyakazi, kikiongozwa na Lech Wałęsa.
+stakes|Wanachama milioni kumi; ufa wa kwanza katika kambi ya Kisovieti.
+## 1981-12-13-martial-law
+name|Sheria ya kijeshi
+context|Jenerali Jaruzelski alitangaza sheria ya kijeshi ili kukiponda chama cha Mshikamano.
+stakes|Kamatakamata, amri za kutotoka nje na upungufu wa bidhaa; vuguvugu liliendelea kwa siri.
+victims|Makumi waliuawa; takriban 10,000 walizuiliwa.
+## 1989-06-04-first-partly-free-elections
+name|Uchaguzi wa kwanza ulio huru kwa sehemu
+context|Baada ya mazungumzo ya Meza ya Duara, Mshikamano ulishinda viti vyote vilivyokuwa wazi kwa kura huru.
+stakes|Serikali ya kwanza isiyo ya kikomunisti katika kambi hiyo; kuanguka kwa tawala kukafuata.
+## 2004-05-01-poland-joins-the-european-union
+name|Poland yajiunga na Umoja wa Ulaya
+context|Poland na nchi nyingine tisa zilijiunga na Umoja wa Ulaya.
+stakes|Uhuru wa kuishi na kufanya kazi kote Ulaya; uhamiaji mpya kwenda Uingereza na Ireland.
+## 1830-10-04-independence-of-belgium
+name|Uhuru wa Ubelgiji
+context|Majimbo ya kusini ya Ufalme wa Uholanzi yaliasi na kutangaza uhuru.
+stakes|Ufalme mpya chini ya Leopold wa Kwanza, usioegemea upande wowote, wa Kikatoliki na wenye viwanda haraka.
+victims|Mamia walikufa katika mapigano.
+## 1885-congo-free-state
+name|Dola Huru ya Kongo
+note|Koloni binafsi la Leopold wa Pili: kazi ya kulazimishwa na ukatili kwa ajili ya mpira.
+context|Mfalme Leopold wa Pili wa Ubelgiji aliitawala Kongo kama mali yake binafsi.
+stakes|Mpira na pembe za ndovu vilivyopatikana kwa kazi ya kulazimishwa, mateka na ukataji wa viungo; kashfa ya kimataifa.
+victims|Mamilioni walikufa; idadi ya watu huenda ilipungua kwa mamilioni kadhaa.
+## 1908-belgian-congo
+name|Kongo ya Kibelgiji
+note|Koloni la Ubelgiji.
+context|Chini ya shinikizo la kimataifa, Ubelgiji ilimnyang'anya mfalme wake Kongo na kuifanya koloni.
+stakes|Migodi, misheni na mpangilio wa kikoloni; uhuru mwaka 1960.
+victims|Kazi ya kulazimishwa iliendelea muda mrefu baada ya 1908.
+## 1914-08-04-belgium-occupied
+name|Ubelgiji yakaliwa
+note|Mauaji ya 1914; mstari wa mapigano wa Yser.
+context|Ujerumani ilivamia Ubelgiji isiyoegemea upande wowote ili kufika Ufaransa; mstari wa Yser ulibakiza ukanda mdogo ukiwa huru.
+stakes|Miaka minne ya ukaliaji, unyang'anyi na kuhamishwa kufanya kazi Ujerumani.
+victims|Takriban raia 6,500 waliuawa mwaka 1914; takriban Wabelgiji 40,000 walikufa vitani.
+## 1940-05-10-belgium-occupied-again
+name|Ubelgiji yakaliwa tena
+context|Ujerumani ilivamia Ubelgiji tena; Mfalme Leopold wa Tatu alisalimu amri baada ya siku kumi na nane.
+stakes|Ukaliaji, ushirikiano na upinzani; Ukombozi Septemba 1944.
+victims|Takriban Wayahudi 25,000 walihamishwa; makumi ya maelfu ya wengine walikufa.
+## 1950-the-royal-question
+name|Swali la Kifalme
+note|Leopold wa Tatu ajiuzulu mwaka 1951.
+context|Mwenendo wa Leopold wa Tatu wakati wa vita uligawanya nchi kuhusu kurudi kwake.
+stakes|Migomo na ghasia; alijiuzulu kwa ajili ya mwanawe Baudouin.
+victims|Wagomaji wanne waliuawa.
+## 1482-the-portuguese-reach-the-kongo-kingdom
+name|Wareno wafika katika ufalme wa Kongo
+note|Diogo Cão kwenye mdomo wa mto.
+context|Baharia Diogo Cão alifika kwenye mdomo wa Mto Kongo na kuwasiliana na ufalme wa Kongo.
+stakes|Biashara, Ukristo, kisha biashara ya watumwa kati ya Kongo na Ureno.
+## 1960-06-30-independence-of-the-congo
+name|Uhuru wa Kongo
+note|Patrice Lumumba, Waziri Mkuu.
+context|Kongo ya Kibelgiji ilipata uhuru; Patrice Lumumba alizungumzia udhalilishaji wa utawala wa kikoloni.
+stakes|Nchi kubwa sana yenye watawala wachache waliofunzwa, iliyoingia haraka katika mgogoro.
+## 1960-07-congo-crisis
+name|Mgogoro wa Kongo
+note|Katanga yajitenga; Lumumba auawa mwaka 1961.
+context|Uasi wa jeshi, kujitenga kwa Katanga na Kasai, uingiliaji wa kigeni na kuuawa kwa Lumumba mwaka 1961.
+stakes|Kongo ilibaki imeungana; Mobutu alichukua mamlaka mwaka 1965.
+victims|Takriban 100,000 walikufa.
+## 1965-11-24-mobutu-regime
+name|Utawala wa Mobutu
+note|Nchi inaitwa Zaire tangu 1971.
+context|Joseph-Désiré Mobutu alichukua mamlaka kwa mapinduzi na kutawala miaka thelathini na miwili.
+stakes|Chama kimoja, «uhalisia» (Zaire, Mobutu Sese Seko), kujitajirisha kwa mtawala, kuoza kwa dola.
+victims|Wapinzani waliuawa au kuteswa.
+## 1976-first-known-ebola-outbreak-yambuku
+name|Mlipuko wa kwanza unaojulikana wa Ebola (Yambuku)
+context|Virusi vipya vilitokea kuzunguka misheni ya Yambuku, kaskazini mwa nchi; vilipewa jina la mto wa karibu.
+stakes|Kugunduliwa kwa Ebola na jinsi inavyoambukizwa kupitia uuguzi na mazishi.
+victims|280 walikufa.
+## 1996-10-first-congo-war
+name|Vita vya Kwanza vya Kongo
+note|Mobutu aanguka; Laurent-Désiré Kabila achukua mamlaka.
+context|Rwanda na Uganda ziliwaunga mkono waasi wa Laurent-Désiré Kabila, waliopita nchi nzima.
+stakes|Mobutu alianguka; Zaire ikawa tena Jamhuri ya Kidemokrasia ya Kongo.
+victims|Takriban 200,000 walikufa, wengi wao wakimbizi wa Kihutu.
+## 2006-07-30-first-free-elections-since-independence
+name|Uchaguzi wa kwanza huru tangu uhuru
+context|Baada ya vita, Wakongo walipiga kura katika uchaguzi wa vyama vingi; Joseph Kabila alichaguliwa.
+stakes|Kurudi dhaifu kwa kura; ghasia ziliendelea mashariki.
+## 1880-french-congo
+name|Kongo ya Kifaransa
+note|Kutoka mikataba ya Brazza hadi uhuru.
+context|Pierre Savorgnan de Brazza alitia saini mikataba na Makoko wa Wateke; Ufaransa ilichukua ukingo wa kaskazini wa Mto Kongo.
+stakes|Koloni la makampuni yenye vibali na la kazi ya kulazimishwa, lenye Brazzaville kama makao makuu.
+victims|Kazi ya kulazimishwa kwenye reli ya Kongo-Bahari iliua takriban wafanyakazi 15,000 hadi 20,000.
+## 1960-08-15-independence-of-the-republic-of-the-congo
+name|Uhuru wa Jamhuri ya Kongo
+context|Kongo ya Kifaransa ikawa Jamhuri ya Kongo, yenye Brazzaville kama mji mkuu.
+stakes|Uhuru, kisha jamhuri ya Kimarx-Kilenin tangu 1969.
+## 1697-saint-domingue-becomes-french
+name|Saint-Domingue yawa ya Kifaransa
+note|Mkataba wa Ryswick.
+context|Kwa Mkataba wa Ryswick, Hispania ilikabidhi Ufaransa theluthi ya magharibi ya Hispaniola.
+stakes|Saint-Domingue ikawa koloni tajiri kuliko yote duniani, juu ya migongo ya Waafrika waliofanywa watumwa.
+victims|Mamia ya maelfu ya watumwa walifanyishwa kazi hadi kufa.
+## 1804-01-01-independence-of-haiti
+name|Uhuru wa Haiti
+note|Jamhuri ya kwanza ya watu weusi, ambako utumwa uliisha milele.
+context|Jean-Jacques Dessalines alitangaza uhuru wa Haiti, jina la kisiwa hicho katika lugha ya Kitaino.
+stakes|Jamhuri ya kwanza ya watu weusi na dola huru ya pili katika Amerika.
+## 1825-the-independence-debt-to-france
+name|Deni la uhuru kwa Ufaransa
+note|Faranga milioni 150, mzigo kwa karne nzima.
+context|Chini ya tishio la meli za kivita za Ufaransa, Haiti ilikubali kulipa faranga milioni 150 kuwafidia wamiliki wa zamani wa watumwa.
+stakes|Deni hilo na mikopo yake vililemea uchumi wa Haiti hadi katikati ya karne ya 20.
+## 1915-united-states-occupation
+name|Ukaliaji wa Marekani
+context|Baada ya rais kuuawa, Marekani ilishusha wanajeshi wa majini na kuiendesha Haiti kwa miaka kumi na tisa.
+stakes|Barabara na jeshi jipya, lakini pia kazi ya kulazimishwa na udhibiti wa fedha za Haiti.
+victims|Takriban Wahaiti 3,000 waliuawa wakipinga, katika vita vya Cacos.
+## 1957-duvalier-dictatorship
+name|Udikteta wa Duvalier
+note|Wahaiti wengi waenda uhamishoni.
+context|François «Papa Doc» Duvalier, kisha mwanawe «Baby Doc», walitawala kwa vitisho kupitia wanamgambo wa Tontons Macoutes.
+stakes|Umaskini, uhamisho wa wasomi, na jamii za Wahaiti ughaibuni huko New York, Montreal na Paris.
+victims|Takriban 30,000 hadi 60,000 waliuawa.
+## 2010-01-12-earthquake-of-12-january-2010
+name|Tetemeko la ardhi la 12 Januari 2010
+note|Zaidi ya 200,000 walikufa.
+context|Tetemeko la ukubwa wa 7 lilipiga eneo la Port-au-Prince, likiharibu sehemu kubwa ya mji mkuu.
+stakes|Nchi iliyoharibiwa; msaada mkubwa, kisha mlipuko wa kipindupindu.
+victims|Zaidi ya 200,000 walikufa; milioni 1.5 hawakuwa na makazi.
+## 1871-01-18-german-empire-proclaimed
+name|Kutangazwa kwa Dola ya Ujerumani
+context|Baada ya kuishinda Ufaransa, dola za Kijerumani ziliungana chini ya mfalme wa Prussia, aliyetangazwa mfalme mkuu huko Versailles.
+stakes|Ujerumani iliyoungana, dola ya kwanza ya bara.
+## 1918-11-09-weimar-republic
+name|Jamhuri ya Weimar
+context|Mfalme mkuu alijiuzulu; jamhuri ya kidemokrasia ilianzishwa huko Weimar.
+stakes|Demokrasia dhaifu, iliyolemewa na kushindwa, fidia za vita na migogoro.
+## 1923-hyperinflation
+name|Mfumuko wa bei uliokithiri
+note|Akiba zafutika.
+context|Bei ziliongezeka maradufu kila baada ya siku chache; mkate mmoja uligharimu mabilioni ya marki.
+stakes|Akiba zilifutika; tabaka la kati lilifilisika na kujaa uchungu.
+## 1933-nazi-germany
+name|Ujerumani ya Kinazi
+context|Hitler akawa chansela na kuanzisha udikteta uliojengwa juu ya ubaguzi wa rangi na vitisho.
+stakes|Mateso ya Wayahudi, vita vya utekaji, Maangamizi Makuu.
+victims|Makumi ya mamilioni walikufa katika vita na mauaji ya kimbari iliyosababisha.
+## 1949-two-german-states
+name|Dola mbili za Kijerumani
+context|Ujerumani iligawanywa kuwa Jamhuri ya Shirikisho upande wa magharibi na GDR ya kikomunisti upande wa mashariki.
+stakes|Dola mbili, mifumo miwili, familia zilizotenganishwa kwa miaka arobaini.
+## 1961-08-13-the-berlin-wall
+name|Ukuta wa Berlin
+context|Ujerumani Mashariki iliizungushia Berlin Magharibi ukuta usiku mmoja ili kuzuia watu wake kukimbia.
+stakes|Alama ya Vita Baridi, hadi ulipoanguka tarehe 9 Novemba 1989.
+victims|Watu wasiopungua 140 waliuawa wakijaribu kuuvuka.
+## 1990-10-03-reunification
+name|Kuunganishwa tena kwa Ujerumani
+context|GDR ilijiunga na Jamhuri ya Shirikisho: Ujerumani ikawa nchi moja tena.
+stakes|Kujenga upya mashariki, na Ujerumani katikati ya Ulaya.
+## 1861-03-17-kingdom-of-italy-unification
+name|Ufalme wa Italia: kuunganishwa
+context|Baada ya vita na msafara wa Garibaldi, Victor Emmanuel wa Pili alitangazwa Mfalme wa Italia.
+stakes|Italia iliyoungana; Roma ikawa mji mkuu wake mwaka 1870.
+## 1880-great-italian-emigration
+name|Uhamiaji mkuu wa Waitaliano
+note|Kwenda Amerika na Ufaransa.
+context|Umaskini, hasa kusini, uliwasukuma Waitaliano kwenda Amerika, Ufaransa na mbali zaidi.
+stakes|Jumuiya za Waitaliano huko New York, Buenos Aires, São Paulo na Marseille.
+victims|Takriban wahamiaji milioni 14 kati ya 1876 na 1915.
+## 1922-fascist-italy
+name|Italia ya kifashisti
+context|Baada ya Maandamano ya kwenda Roma, Mussolini alianzisha udikteta wa kwanza wa kifashisti.
+stakes|Chama kimoja, ibada ya kiongozi, vita vya kikoloni, ushirikiano na Hitler.
+victims|Mamia ya maelfu huko Ethiopia na vitani.
+## 1946-06-02-italian-republic
+name|Jamhuri ya Italia
+context|Waitaliano walipiga kura ya maoni kubadilisha ufalme kuwa jamhuri; wanawake walipiga kura kwa mara ya kwanza.
+stakes|Jamhuri ya kidemokrasia na katiba yake ya 1948.
+## 1808-peninsular-war
+name|Vita vya Rasi ya Iberia
+context|Napoleoni alimweka kaka yake kwenye kiti cha enzi cha Hispania; Hispania iliasi, kwa msaada wa Uingereza.
+stakes|Vita vya msituni vilivyomaliza nguvu za majeshi ya Napoleoni.
+victims|Takriban 500,000 walikufa, wengi wao raia.
+## 1939-franco-s-dictatorship
+name|Udikteta wa Franco
+context|Baada ya vita vya wenyewe kwa wenyewe, Jenerali Franco aliitawala Hispania kama dikteta hadi kifo chake mwaka 1975.
+stakes|Ukandamizaji, Kanisa Katoliki madarakani, kutengwa, kisha ukuaji tangu miaka ya 1960.
+victims|Makumi ya maelfu waliuawa kwa hukumu baada ya vita; wengi zaidi walifungwa.
+## 1978-democratic-constitution
+name|Katiba ya kidemokrasia
+context|Wahispania waliidhinisha katiba ya kidemokrasia, chini ya Mfalme Juan Carlos.
+stakes|Demokrasia, kujitawala kwa maeneo na kujiunga na Ulaya mwaka 1986.
+## 1974-04-25-carnation-revolution
+name|Mapinduzi ya Mikarafuu
+note|Mwisho wa udikteta na wa vita vya kikoloni.
+context|Maafisa wa jeshi waliangusha udikteta wa Ureno karibu bila kumwaga damu; watu waliweka maua ya mikarafuu kwenye bunduki zao.
+stakes|Demokrasia nchini Ureno na uhuru kwa makoloni yake ya Kiafrika.
+victims|Wanne waliuawa.
+## 1665-great-plague-of-london
+name|Tauni Kuu ya London
+context|Tauni ya mitoki ilienea London katika kiangazi cha 1665.
+stakes|Tauni kuu ya mwisho nchini Uingereza; mahakama ya kifalme na matajiri walikimbia mji.
+victims|Takriban 100,000 walikufa, karibu robo ya London.
+## 1666-09-02-great-fire-of-london
+name|Moto Mkuu wa London
+context|Moto ulioanzia katika duka la mikate uliwaka kwa siku nne katika City ya London.
+stakes|London ilijengwa upya kwa matofali na mawe; kanisa kuu la St Paul la Christopher Wren.
+victims|Vifo vichache vilivyorekodiwa; watu 70,000 hawakuwa na makazi.
+## 1707-05-01-union-of-england-and-scotland
+name|Muungano wa Uingereza na Uskochi
+context|Sheria za Muungano ziliunganisha Uingereza na Uskochi katika Ufalme wa Britania Kuu.
+stakes|Bunge moja London; Uskochi ilibakiza sheria na kanisa lake.
+## 1760-first-industrial-revolution
+name|Mapinduzi ya Kwanza ya Viwanda
+context|Mashine, makaa ya mawe na mvuke viligeuza nguo, chuma na usafiri, kwanza nchini Uingereza.
+stakes|Mfumo wa viwanda, kukua kwa miji na tabaka jipya la wafanyakazi.
+victims|Ajira ya watoto na umaskini wa mijini; umri wa kuishi ulishuka katika miji ya viwanda.
+## 1837-victorian-era
+name|Enzi ya Victoria
+context|Malkia Victoria alitawala miaka 63 juu ya Uingereza na dola ya kidunia.
+stakes|Viwanda, dola, mageuzi na maadili makali.
+## 1940-07-10-battle-of-britain
+name|Mapigano ya Uingereza
+context|Jeshi la anga la Ujerumani lilijaribu kutawala anga kabla ya uvamizi; RAF ilistahimili.
+stakes|Uingereza ilibaki vitani; mashambulizi ya Blitz yalipiga miji yake hadi 1941.
+victims|Takriban marubani 1,500 waliuawa; takriban raia 40,000 katika Blitz.
+## 1948-07-05-national-health-service
+name|Huduma ya Kitaifa ya Afya (NHS)
+context|Uingereza ilianzisha NHS, huduma ya afya ya bure kwa wote wakati wa kuitumia.
+stakes|Mfano wa dola ya ustawi wa baada ya vita.
+## 2020-01-31-brexit
+name|Brexit
+context|Baada ya kura ya maoni ya 2016, Uingereza ilijitoa katika Umoja wa Ulaya.
+stakes|Mwisho wa uhuru wa kusafiri na EU; mipaka mipya, hati mpya kwa familia.
+## 1916-04-24-easter-rising
+name|Uasi wa Pasaka
+context|Wanajamhuri wa Ireland waliasi huko Dublin wakati wa wiki ya Pasaka; Waingereza waliwaua viongozi wao.
+stakes|Mauaji hayo yaligeuza maoni ya watu kuelekea uhuru.
+victims|Takriban 500 walikufa.
+## 1922-12-06-irish-free-state
+name|Dola Huru ya Ireland
+context|Baada ya vita vya uhuru, mkataba uliunda Dola Huru ya Ireland; kaskazini ilibaki ya Kiingereza.
+stakes|Uhuru, kwa gharama ya kugawanywa na vita vya wenyewe kwa wenyewe.
+## 1922-06-28-irish-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Ireland
+context|Wanaounga mkono na wanaopinga mkataba na Uingereza walipigana wao kwa wao.
+stakes|Dola Huru ilishinda; migawanyiko ya kudumu katika siasa za Ireland.
+victims|Takriban 1,500 hadi 2,000 walikufa.
+## 1968-the-troubles-northern-ireland
+name|Machafuko (Ireland ya Kaskazini)
+context|Ghasia kati ya wazalendo, wengi wao Wakatoliki, na wanaotaka muungano, wengi wao Waprotestanti, pamoja na jeshi la Uingereza.
+stakes|Zilikomeshwa na Makubaliano ya Ijumaa Kuu mwaka 1998.
+victims|Takriban 3,500 walikufa.
+## 1613-romanov-dynasty
+name|Nasaba ya Romanov
+context|Baada ya Wakati wa Matatizo, Mikhail Romanov alichaguliwa kuwa Tsar.
+stakes|Karne tatu za utawala wa kimabavu na upanuzi, hadi mapinduzi ya 1917.
+## 1812-06-24-napoleon-s-invasion-of-russia
+name|Uvamizi wa Napoleoni nchini Urusi
+note|Jeshi Kuu laangamizwa wakati wa kurudi nyuma.
+context|Napoleoni alivamia Urusi akiwa na takriban watu 600,000 kutoka kote Ulaya na kufika Moscow iliyokuwa ikiungua.
+stakes|Kurudi nyuma wakati wa baridi kuliangamiza Jeshi Kuu na kugeuza mkondo wa vita dhidi ya Napoleoni.
+victims|Takriban askari 400,000 hadi 500,000 wa Jeshi Kuu walikufa; hasara za Urusi zilikuwa kubwa vilevile.
+## 1861-03-03-serfdom-abolished
+name|Kukomeshwa kwa ukulima wa kitumwa
+context|Tsar Aleksanda wa Pili aliwaweka huru wakulima wa kitumwa wa Dola ya Urusi.
+stakes|Uhuru, lakini ardhi ilipaswa kulipiwa; wakulima walikwenda mijini.
+## 1905-revolution-of-1905
+name|Mapinduzi ya 1905
+context|Baada ya kushindwa na Japani na mauaji ya «Jumapili ya Damu», migomo na maasi viliitikisa Urusi.
+stakes|Bunge, Duma, lililotolewa na Tsar; mazoezi ya 1917.
+victims|Maelfu waliuawa.
+## 1921-famine-of-1921-1922
+name|Njaa ya 1921–1922
+context|Ukame, vita na unyang'anyi wa nafaka viliwaletea njaa wakazi wa eneo la Volga na Ukraine.
+stakes|Msaada wa kimataifa, na kuachwa kwa ukomunisti wa wakati wa vita.
+victims|Takriban milioni 5 walikufa.
+## 1922-12-30-soviet-union
+name|Muungano wa Kisovieti
+context|Urusi, Ukraine, Belarus na Transkaukasia ziliunda Muungano wa Jamhuri za Kisoshalisti za Kisovieti.
+stakes|Dola ya chama kimoja juu ya sehemu ya sita ya ardhi ya dunia, hadi 1991.
+victims|Makumi ya mamilioni walikufa katika njaa, misako ya kisiasa na Gulag.
+## 1932-holodomor
+name|Holodomor
+note|Njaa iliyosababishwa na binadamu: mamilioni walikufa.
+context|Ukusanyaji wa mashamba kwa nguvu wa Stalin na unyang'anyi wa nafaka vilisababisha njaa nchini Ukraine.
+stakes|Inatambuliwa na nchi nyingi kama mauaji ya kimbari dhidi ya Waukraine.
+victims|Takriban milioni 3.5 hadi 5 walikufa nchini Ukraine.
+## 1936-the-great-terror
+name|Kitisho Kikuu
+context|Misako ya Stalin iliwapiga chama, jeshi na watu wa kawaida, kwa kesi za maonyesho na viwango vya kukamata watu.
+stakes|Hofu katika kila ngazi ya jamii; Gulag ilijaa.
+victims|Takriban 680,000 hadi 750,000 waliuawa kwa hukumu; zaidi ya milioni moja walipelekwa kambini.
+## 1941-06-22-the-war-against-germany
+name|Vita dhidi ya Ujerumani
+note|Takriban Wasovieti milioni 27 walikufa.
+context|Ujerumani ilivamia Muungano wa Kisovieti; vita vya mashariki vilikuwa vikubwa na vilivyoua zaidi kuliko vyote.
+stakes|Jeshi Jekundu lilifika Berlin mwaka 1945; mamlaka ya Kisovieti juu ya Ulaya Mashariki.
+victims|Takriban Wasovieti milioni 27 walikufa.
+## 1986-04-26-chernobyl-disaster
+name|Maafa ya Chernobyl
+context|Kinu cha nyuklia kililipuka huko Chernobyl nchini Ukraine, kikieneza mionzi juu ya Ulaya.
+stakes|Eneo lililozuiliwa, ukweli uliofichwa na mashaka kuhusu nishati ya nyuklia.
+victims|Vifo 31 vya papo hapo; makadirio ya vifo vya saratani vilivyofuata yanafika maelfu.
+## 1991-08-24-independence-of-ukraine
+name|Uhuru wa Ukraine
+context|Baada ya mapinduzi yaliyoshindwa huko Moscow, Ukraine ilitangaza uhuru; 90% waliukubali mwezi Desemba.
+stakes|Ukraine huru, yenye mipaka inayotambulika, ikiwemo Crimea.
+## 2014-crimea-annexed-war-in-the-donbas
+name|Kunyakuliwa kwa Crimea, vita vya Donbas
+context|Baada ya mapinduzi ya Maidan, Urusi iliinyakua Crimea na kuwaunga mkono wanaotaka kujitenga wenye silaha huko Donbas.
+stakes|Mwanzo wa vita vilivyogeuka kuwa uvamizi mwaka 2022.
+victims|Takriban 14,000 walikufa kufikia 2021.
+## 1803-louisiana-purchase
+name|Ununuzi wa Louisiana
+context|Napoleoni aliiuzia Marekani eneo la Kifaransa la Louisiana.
+stakes|Marekani iliongezeka ukubwa mara mbili, ikifungua Magharibi.
+## 1865-12-06-slavery-abolished
+name|Kukomeshwa kwa utumwa
+context|Marekebisho ya 13 ya Katiba yalikomesha utumwa nchini Marekani.
+stakes|Uhuru kwa watu milioni nne, kisha ubaguzi wa rangi Kusini.
+## 1892-ellis-island
+name|Kisiwa cha Ellis
+note|Takriban wahamiaji milioni kumi na mbili wapita hapa.
+context|Kituo cha uhamiaji katika bandari ya New York kilipokea wageni kutoka Ulaya kwa miaka sitini.
+stakes|Rejista zake ni hazina kwa familia za mamilioni ya Wamarekani.
+victims|Takriban milioni kumi na mbili walipita hapo; wachache walirudishwa.
+## 1920-08-18-women-s-right-to-vote
+name|Haki ya wanawake kupiga kura
+context|Marekebisho ya 19 ya Katiba yaliwapa wanawake wa Marekani haki ya kupiga kura.
+stakes|Ushindi wa miongo ya mapambano ya kudai haki ya kupiga kura.
+## 1933-the-new-deal
+name|New Deal
+context|Rais Roosevelt aliujibu Mdororo kwa kazi za umma, misaada na udhibiti.
+stakes|Serikali ya shirikisho ilichukua nafasi mpya katika uchumi na maisha ya jamii.
+## 1954-civil-rights-movement
+name|Vuguvugu la haki za kiraia
+context|Wamarekani Weusi walipambana na ubaguzi, kuanzia kususia mabasi huko Montgomery hadi maandamano ya Martin Luther King.
+stakes|Sheria za haki za kiraia za 1964 na 1965.
+victims|Wanaharakati waliuawa, akiwemo Martin Luther King mwaka 1968.
+## 1963-11-22-assassination-of-john-f-kennedy
+name|Kuuawa kwa John F. Kennedy
+context|Rais Kennedy alipigwa risasi na kufa huko Dallas.
+stakes|Mshtuko wa kitaifa, na maswali yanayodumu.
+## 1830-french-algeria
+name|Algeria ya Kifaransa
+context|Ufaransa iliiteka Algeria kuanzia 1830 na kuifanya majimbo ya Kifaransa yaliyokaliwa na Wazungu.
+stakes|Miaka 132 ya ukoloni, yenye haki zisizo sawa kwa Waislamu na Wazungu.
+victims|Utekaji uliua mamia ya maelfu ya Waalgeria.
+## 1962-07-05-independence-of-algeria
+name|Uhuru wa Algeria
+note|Mamia ya maelfu waondoka kwenda Ufaransa.
+context|Baada ya makubaliano ya Évian na kura ya maoni, Algeria ilipata uhuru.
+stakes|Takriban pieds-noirs 800,000 na makumi ya maelfu ya harkis waliondoka kwenda Ufaransa.
+victims|Maelfu ya harkis waliuawa baada ya uhuru.
+## 1991-12-algerian-civil-war
+name|Vita vya wenyewe kwa wenyewe vya Algeria
+context|Jeshi lilifuta uchaguzi ambao Waislamu wenye msimamo mkali walikuwa wakishinda; makundi yenye silaha na dola vilipigana kwa muongo mzima.
+stakes|«Muongo mweusi»: mauaji, vitisho na uhamisho.
+victims|Takriban 150,000 hadi 200,000 walikufa.
+## -3500-the-wheel
+name|Gurudumu
+context|Huko Mesopotamia linatokea gurudumu la mfinyanzi, kisha mikokoteni yenye magurudumu inayovutwa na ng'ombe, baadaye na farasi.
+stakes|Usafiri, biashara na vita nchi kavu vinabadilika milele; gurudumu litazungusha vinu na mashine kwa miaka elfu tano ijayo.
+## 105-paper-in-china
+name|Karatasi, nchini China
+context|Katika mahakama ya Han, Cai Lun anasifiwa kwa kutengeneza karatasi kutoka magome, katani na matambara.
+stakes|Rahisi kuliko hariri au mianzi, karatasi inabeba maandishi, utawala na baadaye uchapishaji kote Asia, na hadi Ulaya kupitia ulimwengu wa Kiarabu.
+## 1040-movable-type-in-china
+name|Herufi zinazohamishika, nchini China
+context|Bi Sheng anachapisha kwa herufi zinazohamishika za udongo uliochomwa, karne nne kabla ya Gutenberg.
+stakes|Nakala nyingi kutoka vipande vinavyotumika tena: nchini China na Korea, vitabu na nyaraka za serikali vinaenea haraka zaidi.
+## 1608-the-telescope
+name|Darubini
+context|Watengenezaji wa miwani wa Jamhuri ya Uholanzi wanaunganisha lenzi mbili ndani ya bomba ili kuona mbali.
+stakes|Jicho linaona mbali kuliko lenyewe: urambazaji, vita na elimu ya nyota vinabadilika, na anga linakuwa mahali pa kupima.
+## 1712-the-steam-engine
+name|Injini ya mvuke
+context|Injini ya Thomas Newcomen inavuta maji kutoka migodi ya Uingereza; James Watt anaifanya iwe na ufanisi kuanzia 1769.
+stakes|Nguvu haitegemei tena misuli, upepo au maji: injini ya mapinduzi ya viwanda, reli na meli za mvuke.
+## 1796-the-first-vaccine-against-smallpox
+name|Chanjo ya kwanza, dhidi ya ndui
+context|Edward Jenner anamkinga mvulana dhidi ya ndui kwa kitu kilichochukuliwa kutoka kidonda cha ndui ya ng'ombe.
+stakes|Ndui iliua mamia ya mamilioni kwa karne nyingi; chanjo inaenea duniani, na ugonjwa unatangazwa kutokomezwa mwaka 1980.
+## 1800-the-electric-battery
+name|Betri ya umeme
+context|Alessandro Volta anapanga vipande vya zinki na shaba vilivyotenganishwa na maji ya chumvi na kupata mkondo wa umeme usiokatika.
+stakes|Chanzo cha kwanza cha kudumu cha umeme: mwanzo wa kemia ya umeme, wa telegrafu na wa kila kitu cha umeme kilichofuata.
+## 1826-photography
+name|Upigaji picha
+context|Nicéphore Niépce anahifadhi mandhari kutoka dirishani kwake huko Burgundy; njia ya Daguerre inatolewa kwa dunia mwaka 1839.
+stakes|Kwa mara ya kwanza uso au mahali panaweza kuhifadhiwa kama palivyokuwa: picha za familia, magazeti, kumbukumbu ya marehemu.
+## 1837-the-electric-telegraph
+name|Telegrafu ya umeme
+context|Cooke na Wheatstone nchini Uingereza, kisha Morse na msimbo wake nchini Marekani, wanatuma ujumbe kupitia nyaya.
+stakes|Habari zinasafiri haraka kuliko farasi au meli yoyote: masoko, reli, majeshi na diplomasia vinategemea waya; kebo inavuka Atlantiki mwaka 1866.
+## 1876-the-telephone
+name|Simu
+context|Alexander Graham Bell anapata hataza ya simu nchini Marekani.
+stakes|Sauti yenyewe inavuka umbali: familia na biashara zinafikiana, hatua ya kwanza kuelekea mitandao ya leo.
+## 1879-the-electric-light-bulb
+name|Balbu ya umeme
+context|Thomas Edison nchini Marekani na Joseph Swan nchini Uingereza wanatengeneza balbu za umeme zinazodumu.
+stakes|Mwanga kwa kubonyeza swichi: jioni ndefu zaidi, mitaa na viwanda salama zaidi, na mitandao ya umeme iliyojengwa kuzilisha.
+## 1885-the-rabies-vaccine
+name|Chanjo ya kichaa cha mbwa
+context|Louis Pasteur anamtibu Joseph Meister, mvulana aliyeumwa na mbwa mwenye kichaa, kwa chanjo iliyotengenezwa katika maabara yake.
+stakes|Kichaa cha mbwa kilikuwa kinaua kila mara kilipojitokeza; Taasisi ya Pasteur, iliyoanzishwa 1888, inapeleka chanjo na elimu ya vijidudu duniani kote.
+## 1886-the-automobile
+name|Gari
+context|Carl Benz anapata hataza ya gari linaloendeshwa na injini ya petroli nchini Ujerumani.
+stakes|Usafiri wa mtu binafsi unabadilika ukubwa: barabara, mafuta, vitongoji na sekta ya magari vinaunda karne ya ishirini.
+## 1895-cinema
+name|Sinema
+context|Ndugu Lumière wanaonyesha filamu zao za kwanza kwa watazamaji wanaolipa huko Paris.
+stakes|Picha zinazotembea zinakuwa sanaa ya watu wote na kioo cha karne: habari za filamu, propaganda na hadithi zilizotazamwa na mamilioni.
+## 1903-the-aeroplane
+name|Ndege
+context|Huko North Carolina, ndugu Wright wanafanya safari za kwanza za ndege yenye injini inayoongozwa.
+stakes|Ndani ya miaka hamsini ndege zinabeba barua, mabomu na abiria: vita kutoka angani, na dunia kufikika kwa siku moja ya safari.
+## 1946-the-electronic-computer
+name|Kompyuta ya kielektroniki
+context|ENIAC, iliyojengwa kwa ajili ya Jeshi la Marekani, inahesabu kwa maelfu ya vali za ombwe; Turing na wengine walikuwa wameweka nadharia.
+stakes|Hesabu kwa kasi ya kielektroniki: sayansi, misimbo na serikali, kisha kila ofisi na kila nyumba.
+## 1947-the-transistor
+name|Transista
+context|Katika Bell Labs, Bardeen, Brattain na Shockley wanatengeneza transista ya kwanza.
+stakes|Swichi ndogo, rahisi na ya kuaminika: redio, kompyuta na kila chipu iliyofuata.
+## 1955-the-polio-vaccine
+name|Chanjo ya polio
+context|Chanjo ya Jonas Salk inatangazwa kuwa salama na yenye ufanisi; chanjo ya kumeza ya Albert Sabin inafuata miaka ya 1960.
+stakes|Polio ililemaza mamia ya maelfu ya watoto kila mwaka; leo imebaki katika maeneo machache tu duniani.
+## 1989-the-world-wide-web
+name|Mtandao Mpana wa Dunia (Web)
+context|Huko CERN karibu na Geneva, Tim Berners-Lee anapendekeza kurasa zilizounganishwa na kusomwa kupitia intaneti.
+stakes|Maarifa, biashara na mazungumzo mtandaoni kwa mabilioni; historia ya familia nayo inakuwa kitu kinachotafutwa na kushirikiwa.
+## 2007-the-smartphone
+name|Simu janja
+context|iPhone na simu zilizofuata zinaweka kompyuta, kamera na intaneti mfukoni.
+stakes|Ndani ya miaka kumi wanadamu wengi wanabeba moja: picha, ujumbe na ramani kila mahali, na umakini chini ya shinikizo jipya.
+## 2020-messenger-rna-vaccines
+name|Chanjo za RNA mjumbe
+context|Miongo ya utafiti, ukiwemo wa Katalin Karikó, inazaa chanjo dhidi ya COVID-19 ndani ya mwaka mmoja tangu mlipuko.
+stakes|Njia mpya ya kutengeneza chanjo haraka; mabilioni ya dozi katika miaka miwili.
+## 1498-vasco-da-gama-opens-the-sea-route-to-india
+name|Vasco da Gama afungua njia ya bahari kwenda India
+context|Ukizunguka Afrika, msafara wa meli za Ureno unafika Calicut kwenye pwani ya India.
+stakes|Biashara ya viungo kwa bahari: dola ya Ureno katika Bahari ya Hindi, na Ulaya kuifikia Asia moja kwa moja.
+## 1519-magellan-s-expedition-sails-round-the-world
+name|Msafara wa Magellan wazunguka dunia
+context|Meli tano zinaondoka Hispania chini ya Magellan; moja inarudi miaka mitatu baadaye chini ya Elcano, Magellan akiwa ameuawa Ufilipino.
+stakes|Safari ya kwanza kuzunguka dunia: ushahidi wa ukubwa wa Dunia na wa bahari moja inayounganisha nyingine zote.
+victims|Zaidi ya 200 kati ya wanaume takriban 270 walioondoka hawakurudi kamwe.
+## 1543-copernicus-puts-the-sun-at-the-centre
+name|Kopernikus aweka Jua katikati
+context|Nicolaus Copernicus, kasisi wa kanisa kuu la Frombork nchini Poland, anachapisha ulimwengu ambamo Dunia inazunguka Jua.
+stakes|Dunia si kitovu tena: mwanzo wa mapinduzi ya kisayansi yaliyoendelezwa na Kepler, Galileo na Newton.
+## 1610-galileo-turns-his-telescope-to-the-sky
+name|Galileo aelekeza darubini yake angani
+context|Galileo anaona miezi ya Sumbula (Jupita), sura za Zuhura na milima ya Mwezi.
+stakes|Uchunguzi dhidi ya mamlaka: ushahidi kwa Kopernikus, na kesi huko Roma mwaka 1633.
+## 1687-newton-s-laws-of-motion-and-gravitation
+name|Sheria za Newton za mwendo na mvutano
+context|Kitabu cha Principia cha Isaac Newton kinaeleza kwa sheria moja kuanguka kwa tufaha na mizunguko ya sayari.
+stakes|Ulimwengu unaotii hisabati: kielelezo cha sayansi kwa karne mbili, na umakanika wa kila mashine.
+## 1768-cook-s-voyages-in-the-pacific
+name|Safari za Cook katika Pasifiki
+context|James Cook anachora ramani za New Zealand, pwani ya mashariki ya Australia na visiwa vingi vya Pasifiki kwa ajili ya Uingereza.
+stakes|Ramani ya Pasifiki inakamilika; ukoloni wa Australia unafuata kuanzia 1788, kwa gharama kubwa kwa wenyeji wake wa asili.
+## 1859-darwin-s-theory-of-evolution
+name|Nadharia ya mageuko ya Darwin
+context|Charles Darwin anachapisha Asili ya Spishi, baada ya safari ya meli Beagle na miaka ishirini ya kazi.
+stakes|Viumbe hai vinatokana kimoja na kingine kwa uteuzi wa asili: biolojia inaanzishwa upya, na mvutano mrefu na imani unaanza.
+## 1869-mendeleev-s-periodic-table
+name|Jedwali la vipindi la Mendeleev
+context|Dmitri Mendeleev anapanga elementi za kemikali katika jedwali na kuacha nafasi kwa zile ambazo bado hazijulikani.
+stakes|Kemia inapata ramani yake: elementi zilizokosekana zinapatikana pale alipotabiri.
+## 1895-x-rays
+name|Eksirei
+context|Wilhelm Röntgen anagundua miale inayopita mwilini na kupiga picha mifupa ya mkono wa mkewe.
+stakes|Tiba inaona ndani ya mwili ulio hai: eksirei inafika hospitalini ndani ya miaka michache.
+## 1898-radioactivity-marie-and-pierre-curie-discover-radium
+name|Unururishi: Marie na Pierre Curie wagundua radiamu
+context|Huko Paris, Marie Skłodowska-Curie, aliyezaliwa Warszawa, na Pierre Curie wanatenga poloni na radiamu.
+stakes|Atomu ina maisha yake yenyewe: tuzo mbili za Nobel kwa Marie Curie, tiba za saratani, na njia kuelekea fizikia ya nyuklia.
+## 1905-einstein-s-relativity
+name|Nadharia ya uhusianifu ya Einstein
+context|Albert Einstein, karani katika ofisi ya hataza huko Bern, anachapisha uhusianifu maalum na E = mc²; uhusianifu wa jumla unafuata mwaka 1915.
+stakes|Wakati na nafasi vinategemea mtazamaji: fizikia ya nyota, ya urambazaji kwa satelaiti na ya nishati ya atomu.
+## 1911-12-14-amundsen-reaches-the-south-pole
+name|Amundsen afika Ncha ya Kusini
+context|Kundi la Kinorwe la Roald Amundsen linafika ncha mwezi mmoja kabla ya Robert Scott, ambaye anakufa pamoja na wenzake wakirudi.
+stakes|Pengo kubwa la mwisho kwenye ramani linafikiwa: enzi ya uchunguzi wa ncha za dunia inaisha.
+victims|Scott na wenzake wanne.
+## 1928-penicillin
+name|Penisilini
+context|Huko London, Alexander Fleming anaona kuvu inayoua bakteria; penisilini inatengenezwa kwa wingi kuanzia 1943.
+stakes|Antibiotiki ya kwanza: maambukizi yaliyokuwa yakiua yanatibika, mamilioni ya maisha yameokolewa tangu Vita vya Pili vya Dunia.
+## 1953-the-double-helix-of-dna
+name|Helix mbili ya DNA
+context|Huko Cambridge, James Watson na Francis Crick, wakitegemea picha za Rosalind Franklin, wanaeleza muundo wa DNA.
+stakes|Urithi una molekuli yake: jenetiki, tiba, na baadaye vipimo vya DNA vinavyosoma ukoo.
+## 1953-05-29-everest-climbed
+name|Kupandwa kwa Everest
+context|Edmund Hillary na Tenzing Norgay wanafika kilele cha mlima mrefu kuliko yote duniani.
+stakes|Paa la dunia linafikiwa; Himalaya inafunguka kwa wapanda milima.
+## 1957-10-04-sputnik-the-first-artificial-satellite
+name|Sputnik, satelaiti ya kwanza ya kutengenezwa
+context|Muungano wa Kisovieti unaweka katika obiti tufe la sentimita 58; milio yake ya redio inasikika duniani kote.
+stakes|Enzi ya anga inafunguka, na pamoja nayo mashindano ya anga kati ya Muungano wa Kisovieti na Marekani.
+## 1961-04-12-gagarin-the-first-human-in-space
+name|Gagarin, binadamu wa kwanza angani
+context|Yuri Gagarin anazunguka Dunia mara moja ndani ya Vostok 1 na kurudi salama.
+stakes|Binadamu anaiacha Dunia na kurudi: Muungano wa Kisovieti uko mbele, na Marekani inajibu kwa Mwezi.
+## 2003-the-human-genome-sequenced
+name|Jenomu ya binadamu yasomwa
+context|Mradi wa kimataifa unakamilisha kusoma herufi bilioni tatu za DNA ya binadamu.
+stakes|Tiba na utafiti wa asili ya binadamu vinasoma urithi wetu wa pamoja; nasaba ya kijenetiki inakua kutokana nayo.
+## 2012-the-higgs-boson
+name|Bosoni ya Higgs
+context|Huko CERN, Large Hadron Collider inathibitisha chembe iliyotabiriwa mwaka 1964 na Peter Higgs na wengine.
+stakes|Kipande cha mwisho kilichokosekana katika modeli sanifu ya fizikia, kinachoeleza jinsi chembe zinavyopata uzito.

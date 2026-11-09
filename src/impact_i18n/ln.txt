@@ -1,0 +1,1685 @@
+# Impact's landmarks in Lingala (docs/adr/0038): under "## <key>" (the
+# landmark's year and English name, as src/impact.rs keys it), one line a
+# field: name|, note|, context|, stakes|, victims|. A landmark or a field
+# left out reads in English. A machine's translation (Claude), not yet
+# proofread by a native speaker.
+## -10000-end-of-the-last-ice-age-and-the-neolithic-revolution
+name|Nsuka ya ntango ya glasi ya nsuka mpe bobongwani ya Neolitiki
+context|Ntango glasi ezongaki nsima, bato ya Croissant fertile babandaki kolona bilanga, kobokola banyama mpe kofanda na bamboka.
+stakes|Bomoi ya kofanda esika moko, bilei ya kotikala mpe bokoli ya motango ya bato: moboko ya bokolongonu nyonso oyo eyaki nsima.
+## -9500-gobekli-tepe-monumental-site-in-anatolia
+name|Göbekli Tepe, esika ya bitonga minene na Anatolie
+context|Babomi-nyama mpe babuki-mbuma batelemisaki makonzi ya mabanga oyo batobolaki, na lingumba, likolo ya ngomba moko na sudi-ɛsti ya Turquie.
+stakes|Esika ya bitonga minene ya kala koleka oyo eyebani, kuna eleki ata bilanga na bokala: kondima ekoki koleka elanga.
+## -8000-neolithic-migrations-from-the-near-east-to-europe
+name|Bolongwi ya bato ya Neolitiki longwa na Proche-Orient tii na Mpoto
+context|Basali-bilanga ya Anatolie bapalanganaki na Mpoto mibu nkóto na nkóto, basanganaki na babomi-nyama na yango.
+stakes|Bilanga, mbɛki mpe bagène ya sika ekómaki na Mpoto; Bato mingi ya Mpoto bauti ndambo epai ya basali-bilanga yango.
+## -5000-austronesian-expansion-from-south-east-asia-to-the-pacific
+name|Bopalangani ya Baaustronésien, longwa na Azia ya sudi-ɛsti tii na Pasifiki
+context|Batamboli-mai ya Taïwan mpe ya Philippines bakatisaki Mbu Pasifiki mpe Mbu ya Indien na bwato oyo ezali na mabaya na mipanzi.
+stakes|Bopalangani monene koleka ya libota moko ya minoko liboso ya mobu 1500, longwa na Madagascar tii na esanga ya Pâques.
+## -3500-sumerian-civilisation-and-cuneiform-writing
+name|Bokolongonu ya Basumeri mpe makomi ya kunéiforme
+context|Na Mésopotamie, bingumba-mboka lokola Uruk ekolaki zingazinga ya bandako ya Nzambe mpe ya mikɔndɔ ya mai; bakomi bakɔtisaki bilembo na mabele.
+stakes|Makomi ebotamaki mpo na kotánga biloko, mpe ekómaki makanisi ya mibeko, ya masapo mpe ya lisolo ya kala.
+## -3100-ancient-egypt-from-unification-to-the-roman-conquest
+name|Ezipito ya kala, longwa na bosangani tii na bobotoli ya Baroma
+context|Ezipito ya likolo mpe Ezipito ya nse esanganaki na nse ya bafarao, bokonzi oyo ebikaki na mai ya Nil oyo emataka mobu na mobu.
+stakes|Mibu nkóto misato ya ekólo, ya makomi, ya bitonga mpe ya losambo, oyo Roma esukisaki na mobu 30 liboso ya Yesu.
+## -2600-the-great-pyramid-of-khufu
+name|Piramide monene ya Khéops
+context|Batongaki yango na Gizeh lokola lilita ya farao Khéops, na mabɔkɔ ya basali nkóto na nkóto oyo babongisamaki malamu.
+stakes|Nguya ya ekólo oyo ekokaki kotinda mosala ya ndenge wana; ndako ya molai koleka na mokili mibu 3 800.
+## -2500-indus-valley-civilisation-harappa
+name|Bokolongonu ya lobwaku ya Indus (Harappa)
+context|Bingumba ya babriki oyo bakanisaki liboso, na mikɔndɔ ya mai ya bosoto mpe bandako ya kobomba mbuma, pembeni ya Indus, na Pakistan mpe na Inde ya lelo.
+stakes|Moko ya bokolongonu ya liboso ya bingumba; makomi na yango ekoki naino te kotángama.
+## -2334-akkadian-empire
+name|Bokonzi monene ya Akkad
+context|Sargon ya Akkad asangisaki bingumba ya Mésopotamie na nse ya mokonzi moko.
+stakes|Mbala mingi babengaka yango bokonzi monene ya liboso: mokonzi moko likolo ya bikólo mingi.
+## -1792-height-of-babylon-code-of-hammurabi
+name|Nkembo ya Babilone (Mibeko ya Hammurabi)
+context|Mokonzi Hammurabi akómisaki Babilone motema ya Mésopotamie mpe atindaki bakoma mibeko na ye na libanga.
+stakes|Moko ya mibeko ya kokomama ya kala koleka, na bitumbu oyo etyamaki.
+## -1600-shang-dynasty-in-china
+name|Libota ya bakonzi Shang na Chine
+context|Bakonzi oyo bayebaki kosala bronze bayangelaki etando ya Ebale ya Mosaka mpe batunaki makanisi na mikuwa ya bisakweli.
+stakes|Makomi ya kala koleka ya Chine oyo etikali, nkɔkɔ ya bilembo ya makomi ya lelo.
+## -1500-olmec-civilisation-mesoamerica
+name|Bokolongonu ya Baolmèque (Amerika ya katikati)
+context|Na libongo ya Golfe ya Mexique, Baolmèque batongaki bisika ya losambo mpe batobolaki mitó minene mpenza ya mabanga.
+stakes|Bonkɔkɔ ya Amerika ya katikati, oyo banzambe na yango mpe banaláka na yango bikólo oyo eyaki nsima esalelaki.
+## -1200-late-bronze-age-collapse
+name|Bokwei ya nsuka ya ntango ya Bronze
+context|Na bambula mitano-zomi moke, bandako ya bakonzi mpe makonzi zingazinga ya ɛsti ya Mbu Méditerranée ekweaki, na kati ya elanga, ya bobotoli mpe ya botomboki.
+stakes|Nsuka ya Bahittite mpe ya Bamycénien; ntango ya molili liboso ya botɛlɛmi lisusu ya Bagreki mpe ya Baphénicien.
+victims|Eyebani te; bingumba batumbaki mpe batikaki yango.
+## -1000-nok-culture-west-africa
+name|Bonkɔkɔ ya Nok (Afrika ya wɛsti)
+context|Na Nigeria ya lelo, bato ya Nok bazikisaki ebende mpe basalaki bikeko ya mabele ya kotumba ya kokamwa.
+stakes|Mosala ya ebende ya liboso na sudi ya Sahara mpe moko ya bonkɔkɔ ya kotobola bikeko ya kala koleka na Afrika.
+## -1000-kingdom-of-kush-and-the-rise-of-aksum
+name|Bokonzi ya Koushi mpe botɛlɛmi ya Aksoum
+context|Koushi, pembeni ya Nil na Soudan ya lelo, eyangelaki Ezipito ekeke mobimba; nsima, Aksoum etɛlɛmaki na bangomba ya Éthiopie.
+stakes|Makonzi ya Afrika oyo esalaki mombongo kati na Méditerranée, Arabie mpe Inde; Aksoum ekómaki ya boklisto na ekeke ya 4.
+## -814-carthage
+name|Carthage
+context|Esika ya Baphénicien na Tunisie ya lelo oyo ekómaki nguya ya mbu.
+stakes|Monguna monene ya Roma mpo na wɛsti ya Méditerranée, babebisaki yango na mobu 146 liboso ya Yesu.
+## -776-first-ancient-olympic-games
+name|Masano ya liboso ya Olympiques ya kala
+context|Bingumba-mboka ya Bagreki basalaki masano na Olympie mpo na kokumisa Zeus, na nse ya kimya ya bulɛɛ.
+stakes|Bomoto ya Bagreki ya lisanga; nsima Bagreki batángaki bambula na ba-olympiade.
+## -753-rome-foundation-republic-empire
+name|Roma: bobandisami, Repibiliki, Bokonzi monene
+context|Engebene masapo, Roma ebandaki na mobu 753 liboso ya Yesu; ekómaki repibiliki, nsima bokonzi monene zingazinga ya Méditerranée.
+stakes|Mibeko na yango, banzela na yango, Latin mpe nsima boklisto esalaki Mpoto; wɛsti ekweaki na mobu 476.
+## -500-birth-of-buddhism-and-confucianism
+name|Mbotama ya Bouddhisme mpe ya Confucianisme
+context|Bouddha na Inde mpe Confucius na Chine bateyaki pene na ekeke ya 6 mpe ya 5 liboso ya Yesu.
+stakes|Banzela mibale ya bomoi mpe ya makanisi oyo ezali naino kokamba bato bamilio nkámá.
+## -539-achaemenid-empire-persia
+name|Bokonzi monene ya Achéménide (Perse)
+context|Cyrus Monene abotolaki Babilone mpe abandisaki bokonzi monene longwa na Indus tii na Mbu Égée.
+stakes|Bokonzi monene koleka na ntango na yango, eyebanaki mpo na banzela na yango mpe mpo ndenge endimaki bizaleli ya bisika na bisika.
+## -322-maurya-empire-india
+name|Bokonzi monene ya Maurya (Inde)
+context|Chandragupta asangisaki ndambo monene ya Inde; nkɔkɔ na ye Ashoka andimaki Bouddhisme nsima ya etumba ya makila mingi.
+stakes|Bokonzi monene ya liboso ya Inde; mitindo ya Ashoka epalanganisaki Bouddhisme na Azia mobimba.
+## -221-qin-dynasty-china-unified-the-great-wall
+name|Libota ya bakonzi Qin: Chine esangani, Lopango Monene
+context|Mokonzi ya Qin alongaki makonzi oyo ezalaki kobunda mpe akómaki mokonzi monene ya liboso ya Chine.
+stakes|Makomi moko, mbongo moko, mibeko moko: Chine esangani oyo ewumelaki; bamir ya liboso basangisaki yango mpo na kobatela nordi.
+## -202-han-dynasty-and-the-silk-road
+name|Libota ya bakonzi Han mpe Nzela ya Soie
+context|Ba-Han bayangelaki Chine bikeke minei mpe bafungolaki banzela ya mombongo tii na Azia ya katikati mpe tii na Roma.
+stakes|Soie, makanisi mpe mangomba etambolaki na Nzela ya Soie; Bachinois bamibengaka naino Han.
+## 100-teotihuacan-and-classic-maya-civilisation
+name|Teotihuacan mpe bokolongonu ya Bamaya ya kala
+context|Teotihuacan, pene na Mexico ya lelo, ezalaki moko ya bingumba minene koleka na mokili; Bamaya batongaki bingumba na zamba na sudi.
+stakes|Makomi, boyebi ya minzoto mpe banaláka ya bosikisiki makasi na Amerika.
+## 320-gupta-empire-india
+name|Bokonzi monene ya Gupta (Inde)
+context|Bakonzi ya Gupta bayangelaki nordi ya Inde na ntango ya kimya mpe ya boyebi.
+stakes|Ntango ya nkembo: motango ya zomi na zomi na zéro, mikanda ya Sanskrit, bandako ya Nzambe.
+## 375-migration-period-barbarian-invasions
+name|Ntango ya bolongwi ya bato («bobotoli ya ba-barbare»)
+context|Lokola ba-Hun bazalaki kotindika bango, Ba-Goth, Ba-Franc, Ba-Vandale mpe bato mosusu bakɔtaki na bokonzi monene ya Roma.
+stakes|Bokonzi ya wɛsti ekabwanaki na makonzi oyo ekómaki bikólo ya Mpoto.
+## 476-fall-of-the-western-roman-empire
+name|Bokwei ya bokonzi monene ya Roma ya wɛsti
+context|Mokonzi ya basoda ya Allemand Odoacre alongolaki Romulus Augustule, mokonzi monene ya nsuka ya wɛsti.
+stakes|Nsuka oyo bandimaka ya ntango ya kala; bokonzi ya ɛsti ewumelaki tii na 1453.
+## 500-bantu-migrations-central-and-southern-africa
+name|Bolongwi ya Bantu (Afrika ya katikati mpe ya sudi)
+context|Basali-bilanga mpe batuli-ebende oyo balobaka minoko ya Bantu bapalanganaki bikeke mingi longwa na wɛsti ya Afrika ya katikati tii na sudi ya mokili ya Afrika.
+stakes|Lelo ndambo monene ya Afrika ya katikati, ya ɛsti mpe ya sudi elobaka minoko ya Bantu, kati na yango Lingala mpe Swahili.
+## -499-greco-persian-wars
+name|Bitumba ya Bagreki na Baperse
+context|Bingumba ya Bagreki, na bokambi ya Athènes mpe ya Sparte, batɛlɛmɛlaki bobotoli ya Baperse na Marathon, na Thermopyles mpe na Salamine.
+stakes|Lipanda ya Bagreki, mpe elikya ya Athènes ya ntango ya nkembo.
+victims|Eyebani te; bato nkóto na nkóto na bitumba minene.
+## -431-peloponnesian-war
+name|Etumba ya Péloponnèse
+context|Athènes mpe lisanga na yango ya mbu babundaki na Sparte mpe baninga na yango mpo na koyangela Grèce.
+stakes|Sparte elongaki; bingumba ya Bagreki ebimaki na kolɛmba makasi.
+victims|Bokono ya Athènes yango moko ebomaki ntango mosusu ndambo moko na minei ya bato na yango.
+## -334-campaigns-of-alexander-the-great
+name|Mibembo ya bitumba ya Alexandre Monene
+context|Alexandre ya Macédoine abotolaki bokonzi ya Perse, Ezipito mpe mikili tii na Indus na mibu zomi na moko.
+stakes|Monoko mpe bonkɔkɔ ya Bagreki epalanganaki na ɛsti: mokili ya ba-hellénistique.
+victims|Eyebani te; bato nkámá na nkámá ya nkóto na bitumba mpe na bozingi bingumba.
+## -264-punic-wars
+name|Bitumba ya ba-Punique
+context|Bitumba misato kati na Roma mpe Carthage, kati na yango mobembo ya Hannibal na likolo ya bangomba ya Alpes.
+stakes|Roma ekómaki nkolo ya wɛsti ya Méditerranée; babebisaki Carthage mobimba na mobu 146 liboso ya Yesu.
+victims|Bato nkámá na nkámá ya nkóto; bato 50 000 ya nsuka ya Carthage bakómaki baombo.
+## -58-gallic-wars
+name|Bitumba ya Gaule
+context|Jules César abotolaki Gaule, alongaki Vercingétorix na Alésia na mobu 52 liboso ya Yesu.
+stakes|Gaule ekómaki ya Roma mpe elobaki Latin: mosisa ya Lifalansé.
+victims|Engebene makomi ya kala, Ba-Gaulois milio moko babomamaki mpe milio moko bakómaki baombo.
+## -49-caesar-s-civil-war
+name|Etumba ya bandeko ya César
+context|César akatisaki Rubicon mpe abundaki na Pompée mpe na lisanga ya Sénat.
+stakes|Moto moko ayangeli Repibiliki; babomaki César na mobu 44 liboso ya Yesu.
+victims|Basoda nkóto na nkóto.
+## -32-last-civil-war-of-the-roman-republic
+name|Etumba ya bandeko ya nsuka ya Repibiliki ya Roma
+context|Octave abundaki na Marc Antoine mpe Cléopâtre mpe alongaki bango na Actium.
+stakes|Nsuka ya Repibiliki mpe ya Ezipito ya ba-Ptolémée; Octave akómaki Auguste, mokonzi monene ya liboso.
+victims|Bato nkóto, na Actium mpe na Ezipito.
+## 66-first-jewish-roman-war
+name|Etumba ya liboso kati na Bayuda mpe Baroma
+context|Yudea etombokelaki Roma; mampinga ya Roma bazingaki Yelusaleme.
+stakes|Babebisaki Tempelo na mobu 70; bomoi ya Bayuda ebalukaki epai ya sinagɔgi mpe ya bopalangani na mikili.
+victims|Bakomi ya kala balobi ete bato nkámá na nkámá ya nkóto bakufaki.
+## 220-wars-of-the-three-kingdoms-china
+name|Bitumba ya Makonzi Misato (Chine)
+context|Nsima ya bokwei ya ba-Han, makonzi ya Wei, Shu mpe Wu babundaki mpo na Chine.
+stakes|Chine ekabwanaki bambula mitano-zomi mingi, nsima ekómaki lisolo ya buku monene.
+victims|Motango ya bato oyo bakomamaki na Chine ekitaki pene na milio 56 tii na milio 16, ndambo mpo ete botángi bato ebebaki.
+## 622-the-hijra-beginning-of-islam
+name|Hijra: ebandeli ya Islam
+context|Mosakoli Muhammad atikaki Mecque mpe akendaki na Médine, epai lisanga ya liboso ya Bamizulma ebandaki.
+stakes|Mobu ya liboso ya naláka ya Islam; kondima oyo esangisaki Arabie mpe epalanganaki na bikólo misato ya mokili.
+## 618-tang-dynasty-china
+name|Libota ya bakonzi Tang (Chine)
+context|Ba-Tang basangisaki lisusu Chine mpe bafungolaki yango na mokili longwa na mboka-mokonzi na bango Chang'an.
+stakes|Ntango ya wolo ya banzembo ya makomi, ya mombongo, ya Bouddhisme mpe ya kobɛta mikanda.
+## 661-umayyad-caliphate
+name|Bokonzi ya ba-Calife Omeyyade
+context|Longwa na Damas, ba-calife Omeyyade bayangelaki longwa na Espagne tii na Indus.
+stakes|Monoko ya Arabe mpe Islam epalanganaki na mikili oyo babotolaki.
+## 750-abbasid-caliphate-baghdad
+name|Bokonzi ya ba-Calife Abbasside (Bagdad)
+context|Ba-Abbasside bazwaki bokonzi mpe batongaki Bagdad, esika ya boyebi mpe ya kobongola makomi na minoko mosusu.
+stakes|Boyebi ya Bagreki, ya Baperse mpe ya Bahindu ebatelamaki mpe ekolaki; Bamongolo babotolaki engumba yango na 1258.
+victims|Bobotoli ya Bagdad na 1258 ebomaki bato nkóto na nkóto to nkámá na nkámá ya nkóto.
+## 700-swahili-city-states-indian-ocean
+name|Bingumba-mboka ya Baswahili (Mbu ya Indien)
+context|Bingumba ya mombongo lokola Kilwa mpe Mombasa ekolaki na libongo ya Afrika ya ɛsti, na boyokani na Arabie, Inde mpe Chine.
+stakes|Bonkɔkɔ mpe monoko ya Swahili, ya Afrika mpe ya Islam, oyo ebotamaki na mombongo ya mbu.
+## 793-viking-age
+name|Ntango ya ba-Viking
+context|Batamboli-mai ya Scandinavie babotolaki, basalaki mombongo mpe bafandaki longwa na Irlande tii na Russie, mpe bakómaki ata na Amerika.
+stakes|Normandie, Angleterre ya Ba-Danois mpe bikólo ya liboso ya Russie ezali na elembo na bango.
+victims|Bato nkóto, na bobotoli ya bandako ya ba-moine mpe ya bingumba.
+## 800-coronation-of-charlemagne
+name|Bopakolami ya Charlemagne
+context|Papa Léon III apakolaki mokonzi ya Ba-Franc Charlemagne lokola mokonzi monene na Roma.
+stakes|Likanisi ya bokonzi monene ya boklisto na wɛsti, nkɔkɔ ya France mpe ya Allemagne.
+## 800-ghana-empire
+name|Bokonzi monene ya Ghana
+context|Na Mauritanie mpe Mali ya lelo, Ghana ekómaki na bozwi na mombongo ya wolo mpe ya mungwa na kokatisa Sahara.
+stakes|Bokonzi monene ya liboso kati na makonzi minene ya Afrika ya wɛsti.
+## 960-song-dynasty-china
+name|Libota ya bakonzi Song (Chine)
+context|Ba-Song bayangelaki Chine oyo ezalaki na bato mingi mpe bingumba mingi, ya bato ya mombongo mpe ya bato ya mayele.
+stakes|Mbongo ya papie, boussole, mpɔ́tɔ ya mondoki mpe kobɛta mikanda na bilembo oyo ekoki kolongwa.
+## 1000-great-zimbabwe
+name|Zimbabwe Monene
+context|Batongi ya Shona batongaki mapango minene ya mabanga na sudi ya Afrika, esika ya mombongo ya wolo.
+stakes|Elembeteli ya ekólo ya Afrika ya nguya, oyo bakomi ya ntango ya bokolonyi baboyaki kondima ntango molai.
+## 1192-kamakura-shogunate-japan
+name|Bokonzi ya Shogun ya Kamakura (Japon)
+context|Shogun, mokonzi ya basoda, azwaki bokonzi ya solo na Japon, mpe mokonzi monene atikalaki mokonzi na nkombo kaka.
+stakes|Bikeke nsambo ya boyangeli ya basoda; libota ya ba-samouraï.
+## 1206-mongol-empire-pax-mongolica
+name|Bokonzi monene ya Bamongolo (Pax Mongolica)
+context|Gengis Khan asangisaki mabota ya Bamongolo mpe abandisaki bokonzi monene koleka ya mabele na lisolo mobimba.
+stakes|Nsima ya bobotoli, Eurasie efungwamaki mpo na mombongo mpe mibembo, kati na yango mibembo ya Marco Polo.
+## 1235-mali-empire-mansa-musa
+name|Bokonzi monene ya Mali (Mansa Moussa)
+context|Soundiata abandisaki Mali; mobembo ya Mansa Moussa na Mecque na mobu 1324 ekamwisaki mokili na wolo na ye.
+stakes|Tombouctou ekómaki esika ya boyebi ya Islam.
+## 1299-foundation-of-the-ottoman-empire
+name|Bobandisami ya bokonzi monene ya Ottoman
+context|Osman, mokonzi moko ya Baturc na Anatolie, abandisaki ekólo oyo ezwaki nkombo na ye.
+stakes|Bokonzi monene oyo ebotolaki Constantinople mpe ewumelaki tii na 1922.
+## 1346-the-black-death
+name|Liwa ya Moindo (Peste noire)
+context|Peste, oyo bansɛlɛ ya mpuku bamemaki na banzela ya mombongo, epalanganaki longwa na Azia ya katikati tii na Mpoto mpe Afrika ya nordi.
+stakes|Basali ekómaki moke mpe lifuti emataki; kondima, monganga mpe lisanga ya bato eningani.
+victims|Kati na ndambo moko na misato mpe ndambo ya bato ya Mpoto; ntango mosusu milio 75 tii na 200 na mokili mobimba.
+## 1368-ming-dynasty-china
+name|Libota ya bakonzi Ming (Chine)
+context|Ba-Ming babenganaki Bamongolo mpe bayangelaki Chine bikeke misato.
+stakes|Engumba oyo epekisami, Lopango Monene ndenge ezali lelo, mpe mibembo ya Zheng He.
+## 1390-kingdom-of-kongo
+name|Bokonzi ya Kongo
+context|Bokonzi moko zingazinga ya monoko ya ebale Kongo, oyo ekómaki ya boklisto nsima ya boyei ya Bapulutugɛ na mobu 1483.
+stakes|Ekólo monene ya Afrika, oyo mombongo ya baombo elɛmbisaki mpe bokolonyi ekabolaki.
+## 1400-inca-empire
+name|Bokonzi monene ya Inca
+context|Longwa na Cuzco, ba-Inca bayangelaki bangomba ya Andes na banzela, na bilanga ya etando mpe na bansinga oyo bakangaki ba-nœud lokola makomi.
+stakes|Bokonzi monene koleka ya Amerika liboso ya Colomb.
+## 1428-aztec-empire
+name|Bokonzi monene ya Aztèque
+context|Longwa na Tenochtitlan, likolo ya laki esika Mexico ezali lelo, Ba-Aztèque bayangelaki katikati ya Mexique.
+stakes|Engumba ya bato 200 000, monene koleka engumba nyonso ya Espagne.
+## 1453-05-29-fall-of-constantinople
+name|Bokwei ya Constantinople
+context|Sultan ya Ottoman Mehmed II abotolaki Constantinople nsima ya bozingi ya poso nsambo.
+stakes|Nsuka ya bokonzi monene ya Byzance; bato ya mayele ya Bagreki bamemaki mikanda na yango na Italie.
+victims|Babateli nkóto babomamaki; ndambo monene ya bato bakómaki baombo.
+## 1464-songhai-empire
+name|Bokonzi monene ya Songhaï
+context|Songhaï, oyo motema na yango ezalaki Gao pembeni ya ebale Niger, ezwaki esika ya Mali lokola nguya monene ya Afrika ya wɛsti.
+stakes|Bokonzi monene koleka na lisolo ya Afrika tii na bobotoli ya Bamarokɛn na mobu 1591.
+## 1492-10-12-christopher-columbus-reaches-the-americas
+name|Christophe Colomb akómi na Amerika
+context|Wana azalaki kotambola na mbu epai ya wɛsti mpo na Espagne, Colomb akitaki na ba-Caraïbes, akanisaki ete akómi na Azia.
+stakes|Bokutani ya mikili mibale: bobotoli, mombongo mpe bokabolani ya milona, ya banyama mpe ya bokono.
+victims|Na ekeke moko, bokono ya kopalangana mpe bobotoli ebomaki bato mingi ya bonkɔkɔ ya Amerika.
+## 632-early-muslim-conquests
+name|Bobotoli ya liboso ya Bamizulma
+context|Nsima ya liwa ya Muhammad, mampinga ya Baarabe babotolaki Perse, Syrie, Ezipito, Afrika ya nordi mpe Espagne.
+stakes|Moko ya bopalangani ya mbangu koleka na lisolo; monoko ya Arabe mpe Islam ezwaki misisa na mikili wana.
+victims|Eyebani te.
+## 711-the-iberian-reconquista
+name|Reconquista na Péninsule ibérique
+context|Makonzi ya boklisto ya nordi bazongisaki malɛmbɛ Péninsule ibérique uta na mabɔkɔ ya bikólo ya Bamizulma.
+stakes|Espagne mpe Portugal ebotamaki wana; Grenade ekweaki na 1492, mobu oyo babenganaki Bayuda.
+victims|Eyebani te, na bikeke mwambe.
+## 1066-09-28-norman-conquest-of-england
+name|Bobotoli ya Angleterre na Ba-Normand
+context|Guillaume, mokonzi ya Normandie, akitaki na Angleterre mpe alongaki mokonzi Harold na Hastings.
+stakes|Bato minene ya Ba-Normand oyo balobaki Lifalansé bayangelaki Angleterre; Lingɛlɛ́sa ezwaki maloba ya Lifalansé nkóto na nkóto.
+victims|Bato nkóto na Hastings; mingi koleka na bobebisi ya nordi.
+## 1096-the-crusades
+name|Bitumba ya Ekulusu (Croisades)
+context|Baklisto ya wɛsti basalaki mibembo ya losambo na bibundeli mpo na kobotola Yelusaleme mpe Mokili Mosantu.
+stakes|Bikólo ya ba-croisé bikeke mibale; bonguna molai kati na Baklisto, Bamizulma mpe Ba-Byzantin.
+victims|Ntango mosusu milio 1 tii na 3 na bikeke mibale, na kati na yango koboma Bayuda na Mpoto.
+## 1206-mongol-conquests
+name|Bobotoli ya Bamongolo
+context|Gengis Khan mpe bana na ye babotolaki Chine, Azia ya katikati, Perse mpe Russie.
+stakes|Bokonzi monene longwa na Pasifiki tii na Mpoto, oyo batongaki na nsɔ́mɔ mpe babatelaki na mombongo.
+victims|Ntango mosusu milio 30 tii na 40 ya bakufi.
+## 1274-mongol-invasions-of-japan-1274-and-1281
+name|Bobotoli ya Bamongolo na Japon (1274 mpe 1281)
+context|Kubilai Khan atindaki mampinga mibale ya masuwa na Japon; mopɛpɛ makasi ya typhon ebebisaki yango nyonso mibale.
+stakes|Japon etikalaki na lipanda; «mopɛpɛ ya Nzambe», kamikaze, ekɔtaki na masapo na yango.
+victims|Babotoli nkóto na nkóto bazindaki na mai.
+## 1337-hundred-years-war
+name|Etumba ya Mibu Nkámá
+context|Bakonzi ya Angleterre mpe ya France babundaki mpo na motole ya France mpe mabele na yango; Jeanne d'Arc abongolaki nzela ya etumba.
+stakes|France ebimaki bokonzi ya makasi koleka; Angleterre ebungisaki mabele na yango na mokili ya Mpoto.
+victims|Ntango mosusu milio 2 tii na 3 ya bakufi, elongo na nzala mpe peste.
+## 1455-wars-of-the-roses
+name|Bitumba ya Ba-Rose
+context|Mabota ya Lancastre mpe ya York babundaki mpo na kiti ya bokonzi ya Angleterre.
+stakes|Henri Tudor alongaki na 1485 mpe abandisaki libota ya bakonzi Tudor.
+victims|Bato nkóto na nkóto, kati na bango bato minene mingi.
+## 1500-transatlantic-slave-trade
+name|Mombongo ya baombo na Atlantique
+context|Bato ya mombongo ya Mpoto basombaki bakangami na Afrika mpe batindaki bango na masuwa mpo na kosala na bilanga minene ya Amerika.
+stakes|Bozwi ya Mpoto mpe ya Amerika etongamaki na mosala ya makasi; Afrika ebungisaki bana na yango.
+victims|Pene na bato milio 12,5 bamatisamaki na masuwa; pene na milio 1,8 bakufaki na mbu.
+## 1526-mughal-empire-india
+name|Bokonzi monene ya Moghol (Inde)
+context|Babur, oyo autaki na Azia ya katikati, abandisaki libota ya bakonzi Moghol; Akbar ayangelaki ndambo monene ya Inde.
+stakes|Bokonzi monene ya Bamizulma likolo ya bato mingi ya Hindou; Taj Mahal; nsima Angleterre emeli yango.
+## 1603-tokugawa-era-and-sakoku-japan
+name|Ntango ya Tokugawa mpe ya sakoku (Japon)
+context|Ba-shogun ya Tokugawa bayangelaki Japon ya kimya, oyo ezalaki pene na kokangama mpo na bapaya.
+stakes|Bikeke mibale ya komikabola, oyo masuwa ya etumba ya Amerika esukisaki na 1853.
+## 1644-qing-dynasty-china
+name|Libota ya bakonzi Qing (Chine)
+context|Ba-Mandchou ya nordi bakweisaki ba-Ming mpe bayangelaki Chine tii na 1912.
+stakes|Bonene koleka ya Chine; nsima bokiti na nse ya kotindika ya wɛsti mpe ya Japon.
+## 1652-foundation-of-cape-town
+name|Bobandisami ya Le Cap
+context|Compagnie ya Bahollandais ya Indes orientales etongaki esika ya kopesa biloko na Cap ya Elikya Malamu.
+stakes|Ebandeli ya bofandi ya Bato ya Mpoto na sudi ya Afrika, mpe ya Ba-Afrikaner.
+## 1700-ashanti-dahomey-and-oyo-kingdoms
+name|Makonzi ya Ashanti, Dahomey mpe Oyo
+context|Makonzi ya makasi ya Afrika ya wɛsti etɛlɛmaki, esalaki mombongo ya wolo, ya mafuta ya mbila mpe ya bakangami na Bato ya Mpoto.
+stakes|Bikólo oyo ebongisamaki malamu, na mampinga mpe na bandako ya bakonzi, liboso bokolonyi emela yango.
+## 1776-07-04-independence-of-the-united-states
+name|Lipanda ya États-Unis
+context|Bikólo zomi na misato ya bokolonyi ya Angleterre bamitangaki lokola bato ya lipanda mpe basangani.
+stakes|Repibiliki ya liboso ya ntango ya sika, oyo etongamaki na makoki ya moto, kasi ebatelaki bowumbu.
+## 1789-the-french-revolution
+name|Bobongwani monene ya France (Révolution française)
+context|Bobungisi mbongo nyonso mpe nzala ememaki États généraux, bobotoli ya Bastille mpe nsuka ya bokonzi.
+stakes|Bokokani liboso ya mibeko, makoki ya moto, ekólo; nsima Terreur mpe etumba.
+victims|Bato nkóto na nkóto babomamaki na bosambisi; bato nkámá na nkámá ya nkóto na etumba ya bandeko.
+## 1519-spanish-conquest-of-the-aztec-empire
+name|Bobotoli ya bokonzi ya Aztèque na Espagne
+context|Hernán Cortés, elongo na baninga ya bonkɔkɔ ya mboka, abotolaki Tenochtitlan nsima ya bozingi.
+stakes|Espagne ya Sika ebotamaki; bato ya Mexique bikeke misato na nse ya bokolonyi.
+victims|Bamilio, mingi mpo na bokono ya variole.
+## 1532-spanish-conquest-of-the-inca-empire
+name|Bobotoli ya bokonzi ya Inca na Espagne
+context|Francisco Pizarro akangaki mokonzi ya Inca Atahualpa mpe abotolaki bangomba ya Andes.
+stakes|Boyangeli ya Espagne mpe palata ya Potosí, oyo ezwisaki Mpoto bozwi.
+victims|Bamilio, mpo na bokono, etumba mpe mosala ya makasi.
+## 1568-eighty-years-war
+name|Etumba ya Mibu Ntuku Mwambe
+context|Bitúka ya Bahollandais batombokelaki boyangeli ya Espagne mpe minyoko ya Bakatolike.
+stakes|Repibiliki ya Provinces-Unies ebotamaki, nguya ya mombongo mpe ya kondima bato mosusu.
+victims|Bato nkámá na nkámá ya nkóto.
+## 1592-imjin-war-korea-japan
+name|Etumba ya Imjin (Corée, Japon)
+context|Japon ebotolaki Corée mbala mibale; Corée mpe Chine ya ba-Ming bazongisaki etumba, na mbu na masuwa ya amiral Yi.
+stakes|Japon ezongaki; Corée etikalaki ebebisami.
+victims|Ntango mosusu Bakoreya milio moko bakufaki.
+## 1618-thirty-years-war
+name|Etumba ya Mibu Ntuku Misato
+context|Etumba ya losambo na bokonzi monene mosantu ya Roma ekómaki etumba ya Mpoto mpo na nguya.
+stakes|Kimya ya Westphalie etyaki mobeko ya bikólo oyo eyangelaka yango moko na Mpoto.
+victims|Milio 4,5 tii na 8 ya bakufi; bisika mosusu ya Allemagne ebungisaki ndambo moko na misato ya bato na yango.
+## 1642-english-civil-wars
+name|Bitumba ya bandeko na Angleterre
+context|Mokonzi Charles Ier abundaki na Parlement; basambisaki ye mpe bakataki ye motó na 1649.
+stakes|Nguya ya Parlement likolo ya motole, nsima ya repibiliki ya Cromwell.
+victims|Pene na bato 200 000 bakufaki na Angleterre, mingi koleka na Irlande.
+## 1700-great-northern-war
+name|Etumba Monene ya Nordi
+context|Russie mpe baninga na yango babundaki na Suède mpo na Mbu Baltique.
+stakes|Russie na nse ya Pierre Monene ekómaki nguya ya Mpoto; bokonzi monene ya Suède esilaki.
+victims|Bato nkámá na nkámá ya nkóto, elongo na peste.
+## 1701-war-of-the-spanish-succession
+name|Etumba ya bosangoli kiti ya Espagne
+context|Mpoto ebundaki mpo na koyeba nani akozwa kiti ya bokonzi ya Espagne: Bourbon moko ya France to Habsbourg moko ya Autriche.
+stakes|Bourbon moko abatelaki Espagne, kasi France mpe Espagne bakokaki ata mokolo moko te kosangana.
+victims|Pene na basoda 400 000 tii na 700 000.
+## 1756-seven-years-war
+name|Etumba ya Mibu Nsambo
+context|Angleterre mpe Prusse babundaki na France, Autriche mpe Russie na Mpoto, na Amerika mpe na Inde.
+stakes|Angleterre ezwaki Canada mpe Inde: bokonzi monene ya Angleterre na mokili mobimba.
+victims|Pene na bato milio moko bakufaki.
+## 1775-american-war-of-independence
+name|Etumba ya lipanda ya Amerika
+context|Bikólo zomi na misato ya bokolonyi babundaki na Angleterre mpo na lipanda na bango, na lisalisi ya France.
+stakes|Bandimaki États-Unis na 1783; nyongo ya France esalisaki koya ya bobongwani na yango.
+victims|Pene na basoda 25 000 ya Amerika, mingi mpo na bokono.
+## 1791-haitian-revolution
+name|Bobongwani monene ya Haïti
+context|Baombo ya Saint-Domingue, mboka ya bokolonyi ya bozwi koleka ya France, batombokaki na bokambi ya Toussaint Louverture, nsima Dessalines.
+stakes|Botomboki ya baombo bobele moko oyo elongaki na lisolo, oyo ebandisaki na 1804 repibiliki ya liboso ya Bato Bayindo.
+victims|Ntango mosusu bato 100 000 tii na 200 000 bakufaki, kati na bango basoda ya France nkóto na nkóto.
+## 1792-french-revolutionary-wars
+name|Bitumba ya bobongwani ya France
+context|France ya bobongwani ebundaki na makonzi ya Mpoto, ebongisaki mampinga minene ya bana-mboka.
+stakes|Repibiliki ebikaki mpe epalanganisaki makanisi na yango; Bonaparte amataki na bitumba yango.
+victims|Pene na basoda mpe bato ya mboka milio moko.
+## 1450-gutenberg-s-printing-press
+name|Masini ya kobɛta mikanda ya Gutenberg
+context|Na Mayence, Johannes Gutenberg abɛtaki mikanda na bilembo ya ebende oyo ekoki kolongwa.
+stakes|Mikanda ekómaki ya ntalo moke mpe mingi: Reforme, siansi mpe boyebi ya kotánga epalanganaki.
+## 1517-10-31-the-protestant-reformation-begins
+name|Ebandeli ya Reforme ya Baprotestant
+context|Makanisi 95 ya Martin Luther mpo na kotɛmɛla koteka ba-indulgence ebandisaki bokabwani na boklisto ya wɛsti.
+stakes|Mangomba ya Baprotestant, bitumba ya losambo mpe boyokani ya sika na Biblia na monoko ya bato.
+## 1648-10-24-peace-of-westphalia
+name|Kimya ya Westphalie
+context|Boyokani oyo batyaki mikɔ́ndɔ́ na Münster mpe Osnabrück esukisaki Etumba ya Mibu Ntuku Misato.
+stakes|Bikólo oyo eyangelaka yango moko, mokomoko aponaka losambo na ye: moboko ya molɔngɔ́ ya Mpoto.
+## 1830-mass-european-emigration-to-the-americas
+name|Bolongwi monene ya Bato ya Mpoto kokende na Amerika
+context|Bobola, nzala mpe minyoko etindaki Bato ya Mpoto kokatisa Atlantique na masuwa ya mɔ́tɔ.
+stakes|Amerika etondaki lisusu na bato; mabota ekabwanaki kati na bikólo mibale ya mokili.
+victims|Pene na bato milio 50 balongwaki; mingi bakufaki na mobembo.
+## 1840-industrial-revolutions
+name|Bobongwani ya baizini
+context|Molinga ya mɔ́tɔ, makala ya mabanga, ebende mpe nzela ya engbunduka ebongolaki mosala, bingumba mpe bamboka.
+stakes|Baizini, masanga ya basali, bokoli ya bingumba; mabota batikaki mabele.
+victims|Mosala ya makasi, mosala ya bana mpe bokono ya bingumba esalaki mabe mingi.
+## 1845-great-famine-in-ireland
+name|Nzala Monene na Irlande
+context|Bokono ya pomme de terre ebebisaki bilei ya ntina ya babola ya Irlande, nzokande bazalaki kaka kotinda bilei na bamboka mosusu.
+stakes|Ekólo oyo liwa mpe bolongwi esilisaki bato; nkanda molai epai ya Angleterre.
+victims|Pene na bato milio moko bakufaki; milio moko tii na mibale balongwaki na mboka.
+## 1884-11-15-berlin-conference-africa-partitioned
+name|Likita ya Berlin: bokaboli ya Afrika
+context|Bikólo ya nguya ya Mpoto bakutanaki na Berlin mpo na kotya mibeko ya kokabola Afrika; Moafrika ata moko azalaki te.
+stakes|Bandelo oyo Bato ya Mpoto bakataki; bapesaki Kongo na mokonzi Léopold II.
+victims|Bobotoli ya bokolonyi oyo elandaki ebomaki bamilio ya bato.
+## 1918-spanish-flu
+name|Grippe ya Espagne
+context|Bokono ya grippe epalanganaki elongo na basoda na nsuka ya Etumba ya Liboso ya Mokili, mpe ebomaki mingi bilenge minene.
+stakes|Bokono ya kopalangana oyo ebomaki koleka na ekeke ya 20; ekómaki pene na libota nyonso.
+victims|Pene na milio 50 ya bakufi (batángaka kati na milio 17 mpe 100).
+## 1929-10-24-wall-street-crash
+name|Bokwei ya Wall Street
+context|Ntalo ya ba-action ekitaki makasi na Bourse ya New York nsima ya mibu mingi ya bosombi mpe boteki ya lokoso.
+stakes|Ebandeli ya Bobola Monene ya mokili; babanki ekweaki moko nsima ya mosusu.
+## 1947-08-15-partition-of-india-and-pakistan
+name|Bokaboli ya Inde mpe ya Pakistan
+context|Inde ya Angleterre ezwaki lipanda lokola bikólo mibale, Inde mpe Pakistan, oyo ekabwanaki na losambo.
+stakes|Lipanda, mpe moko ya bolongwi ya bato monene koleka na lisolo.
+victims|Kati na 200 000 mpe milio 2 ya bakufi; milio 10 tii na 20 ya bato balongwaki na bisika na bango.
+## 1950-worldwide-decolonisation
+name|Bolongoli bokolonyi na mokili mobimba
+context|Bikólo ya bokolonyi ya Afrika mpe ya Azia ezwaki lipanda, na masolo to na etumba.
+stakes|Bikólo ya sika mpe bandelo ya sika; mabota balongwaki kati na bikólo ya bokolonyi mpe bikólo oyo ezalaki kokolonisa.
+victims|Bitumba ya lipanda ebomaki bato nkámá na nkámá ya nkóto.
+## 1989-fall-of-the-soviet-bloc
+name|Bokwei ya lisanga ya Soviétique
+context|Boyangeli ya ba-communiste ya Mpoto ya ɛsti ekweaki, longwa na Pologne tii na Lopango ya Berlin; Union soviétique ekabwanaki na 1991.
+stakes|Nsuka ya Etumba ya Malili; bonsomi ya kotambola mpe ya kopona na ɛsti.
+victims|Moke, longola na Roumanie mpe nsima na bitumba ya Yougoslavie ya kala.
+## 1990-digital-age-and-the-internet
+name|Ntango ya numérique mpe ya Internet
+context|Web, nsima telefone ya mabɔkɔ, ekangisaki ndambo monene ya bato ya mokili.
+stakes|Nsango, mosala mpe boyokani ya mabota ebongwanaki; ata boluki bankɔkɔ ekɔtaki na Internet.
+## 2019-12-covid-19-pandemic
+name|Bokono ya kopalangana ya COVID-19
+context|Virus ya sika ya corona epalanganaki longwa na Wuhan; mibeko ya kofanda na ndako ekangaki bikólo mobimba.
+stakes|Bisika ya kobɔkɔlɔ bato etondaki koleka, bomoi ya kokangama, mpe bankisi ya mangwele oyo basalaki na ntango mokuse koleka.
+victims|Pene na liwa milio 7 oyo bayebisaki; OMS etángi liwa ya koleka milio 15 na 2020–2021.
+## 1815-04-10-tambora-erupts-the-year-without-a-summer
+name|Bopasuki ya Tambora: mobu oyo ezalaki na eleko ya moi te
+context|Bopasuki ya ngomba ya mɔ́tɔ Tambora na Indonésie etondisaki likolo na putulu; mobu 1816 ezalaki na eleko ya moi te na Mpoto mpe na Amerika ya nordi.
+stakes|Bilanga ebebaki, nzala mpe bolongwi ya bato.
+victims|Pene na bato 70 000 tii na 90 000 bakufaki na Indonésie; mingi koleka mpo na nzala na bisika mosusu.
+## 1817-first-cholera-pandemic
+name|Bokono ya liboso ya kolera
+context|Kolera epalanganaki longwa na delta ya Gange na Azia mobimba tii na ndelo ya Mpoto.
+stakes|Ya liboso kati na bokono nsambo ya kolera, oyo mombongo mpe mampinga bamemaki.
+victims|Bato nkámá na nkámá ya nkóto.
+## 1826-second-cholera-pandemic
+name|Bokono ya mibale ya kolera
+context|Kolera ekómaki na Russie, Pologne, France mpe Angleterre, mpe ekatisaki tii na Amerika.
+stakes|Bingumba eyekolaki ete mai ya bosoto ebomaka: mbotama ya bopeto ya bato nyonso.
+victims|Bato nkámá na nkámá ya nkóto na Mpoto; pene na 18 000 na Paris na 1832.
+## 1848-revolutions-of-1848-spring-of-nations
+name|Bobongwani ya 1848 (Printemps des peuples)
+context|Bobongwani epasukaki na Paris, Vienne, Berlin, Milan, Budapest mpe Poznań.
+stakes|Mingi banyataki yango, kasi bowumbu ya bilanga esilaki na Autriche mpe makanisi ya bikólo epalanganaki.
+victims|Bato nkóto na bitumba.
+## 1869-11-17-opening-of-the-suez-canal
+name|Bofungwami ya Canal ya Suez
+context|Mokɔndɔ moko oyo eleki na Ezipito ekangisaki Mbu Méditerranée na Mbu Motane.
+stakes|Nzela ya Inde mpe ya Azia ekómaki mokuse; Ezipito ezwaki nyongo mpe nsima Angleterre efandaki kuna.
+victims|Basali nkóto oyo batindaki na makasi bakufaki ntango bazalaki kotimola yango.
+## 1873-long-depression
+name|Bobola Molai
+context|Bokwei ya mbongo na Vienne mpe na New York efungolaki mibu ntuku mibale ya bokiti ya ntalo.
+stakes|Pasi na bamboka mpe bolongwi; bobateli ya mombongo ya mboka mpe bopalangani ya bokolonyi.
+## 1889-russian-flu-pandemic
+name|Bokono ya kopalangana ya «grippe ya Russie»
+context|Bokono ya grippe epalanganaki longwa na Russie na kolanda banzela ya sika ya engbunduka.
+stakes|Bokono ya kopalangana ya liboso ya ntango ya engbunduka, oyo ekatisaki Mpoto na baposo moke.
+victims|Pene na bato milio moko bakufaki.
+## 1917-11-07-october-revolution-in-russia
+name|Bobongwani ya Octobre na Russie
+context|Ba-bolchevik na bokambi ya Lénine babotolaki bokonzi na Petrograd.
+stakes|Ekólo ya liboso ya ba-communiste; Russie ebimaki na etumba; etumba ya bandeko elandaki.
+victims|Etumba ya bandeko mpe nsɔ́mɔ oyo elandaki ebomaki bamilio ya bato.
+## 1929-great-depression
+name|Bobola Monene
+context|Nsima ya bokwei, bosali biloko mpe mombongo ekitaki na mokili mobimba.
+stakes|Bato mingi mpenza bazangaki mosala, bobola mpe botɛlɛmi ya makanisi ya makasi, kati na yango Nazisme.
+victims|Ndambo moko na minei ya basali bazangaki mosala na États-Unis, mingi koleka na Allemagne.
+## 1941-the-holocaust
+name|Shoah (Holocauste)
+context|Allemagne ya ba-nazi mpe baninga na yango bazalaki na mokano ya koboma Bayuda ya Mpoto, na kobɛta masasi, na ba-ghetto mpe na bakaa ya kobomela bato.
+stakes|Koboma libota mobimba oyo ekólo moko ebongisaki; ebandeli ya likanisi ya mabe oyo esalemi na bomoto.
+victims|Bayuda milio motoba; ba-Rom nkámá na nkámá ya nkóto mpe bato mosusu oyo ba-nazi banyokolaki.
+## 1945-08-06-atomic-bombings-of-hiroshima-and-nagasaki
+name|Babombe ya atome na Hiroshima mpe Nagasaki
+context|États-Unis ebwakaki babombe ya atome likolo ya bingumba mibale ya Japon; Japon emipesaki.
+stakes|Nsuka ya Etumba ya Mibale ya Mokili mpe ebandeli ya ntango ya nucléaire.
+victims|Bato 110 000 tii na 210 000 bakufaki tii na nsuka ya 1945.
+## 1945-10-24-founding-of-the-united-nations
+name|Bobandisami ya Lisanga ya Bikólo (ONU)
+context|Bikólo ntuku mitano na moko ebandisaki Lisanga ya Bikólo mpo na kobatela kimya nsima ya etumba.
+stakes|Esika ya masolo ya mokili, makoki ya moto oyo bayebisaki na 1948, mpe bobateli kimya.
+## 1957-asian-flu-pandemic
+name|Bokono ya kopalangana ya grippe ya Azia
+context|Virus ya sika ya grippe epalanganaki longwa na Chine na mokili mobimba.
+stakes|Mbala ya liboso na bokono ya kopalangana, basalaki bankisi ya mangwele na mbangu.
+victims|Bato milio moko tii na minei bakufaki.
+## 1968-hong-kong-flu-pandemic
+name|Bokono ya kopalangana ya grippe ya Hong Kong
+context|Virus ya grippe ya Hong Kong epalanganaki na mokili na mbonge mibale.
+stakes|Bokono ya kopalangana oyo bato mingi babosanaki, na mokili oyo ezalaki komitungisa na makambo mosusu.
+victims|Bato milio moko tii na minei bakufaki.
+## 1969-07-20-first-steps-on-the-moon
+name|Matambe ya liboso na Sanza
+context|Batamboli-likolo Neil Armstrong mpe Buzz Aldrin batambolaki na Sanza, bato bamilio nkámá bazalaki kotala yango na mbala moko.
+stakes|Bomekani ya likolo kati na États-Unis mpe Union soviétique; ntango oyo bato nyonso ya mokili bakabolaki.
+## 1973-10-first-oil-shock
+name|Bokakatani ya liboso ya petrole
+context|Bikólo ya Baarabe oyo ebimisaka petrole ekitisaki petrole oyo bazalaki kotinda na ntango ya etumba ya Yom Kippour; ntalo ya petrole ebakisamaki mbala minei.
+stakes|Nsuka ya bozwi ya nsima ya etumba na wɛsti: bomati ya ntalo mpe bozangi mosala.
+## 1981-hiv-aids-pandemic
+name|Bokono ya kopalangana ya VIH/SIDA
+context|Virus ya sika, VIH, eyebanaki lokola ntina ya SIDA; epalanganaki na mokili, mingi na Afrika.
+stakes|Kotyola bato mpe bitumba ya kobatela bango; banda 1996 bankisi ekómisi yango bokono ya ntango molai epai bankisi ezali.
+victims|Pene na bato milio 42 bakufaki banda ebandeli.
+## 2001-09-11-september-11-attacks
+name|Bobɛti ya 11 Septembre
+context|Ba-terroriste ya al-Qaïda babotolaki mpɛpɔ minei ya bato mpe babɛtisaki yango na World Trade Center mpe na Pentagone.
+stakes|«Etumba na terrorisme», bitumba ya Afghanistan mpe ya Irak, mpe mibeko ya sika ya bobateli bisika nyonso.
+victims|Bato 2 977 babomamaki.
+## 2004-12-26-indian-ocean-tsunami
+name|Tsunami ya Mbu ya Indien
+context|Koningana ya mabele na nse ya mbu pene na Sumatra etombolaki mbonge oyo ebɛtaki bikólo zomi na minei.
+stakes|Moko ya makama ya bozalisi oyo ebomaki koleka na lisolo; banda wana batongi ba-système ya kokebisa.
+victims|Pene na bato 230 000 bakufaki.
+## 2008-global-financial-crisis
+name|Bokakatani ya mbongo na mokili mobimba
+context|Bokwei ya zando ya bandako na États-Unis ekweisaki babanki na mokili mobimba.
+stakes|Bokiti ya nkita, bozangi mosala, nyongo ya leta mpe kozanga kondima mosala ya mbongo.
+## 1803-05-18-napoleonic-wars
+name|Bitumba ya Napoléon
+context|France ya Napoléon ebundaki na masanga ya bikólo ya nguya ya Mpoto, longwa na Espagne tii na Russie.
+stakes|Boyangeli ya France likolo ya ndambo monene ya Mpoto, bopalangani ya Code civil, nsima bolongi na Waterloo na 1815.
+victims|Basoda mpe bato ya mboka milio 3,5 tii na 6,5.
+## 1810-spanish-american-wars-of-independence
+name|Bitumba ya lipanda ya Amerika ya Espagne
+context|Bikólo ya bokolonyi ya Espagne, longwa na Mexique tii na Argentine, babundaki mpo na lipanda na bokambi ya Bolívar, San Martín mpe basusu.
+stakes|Pene na repibiliki ntuku mibale ya sika na Amerika latine.
+victims|Bato nkámá na nkámá ya nkóto.
+## 1839-09-04-first-opium-war
+name|Etumba ya liboso ya Opium
+context|Angleterre ebandaki etumba ntango Chine emekaki kopekisa mombongo ya opium.
+stakes|Chine ebungisaki Hong Kong mpe etindamaki kofungola mabongo na yango: «ekeke ya kosɔ́kisama» ebandaki.
+victims|Bato nkóto na nkóto, mingi Bachinois.
+## 1846-04-25-mexican-american-war
+name|Etumba kati na Mexique mpe États-Unis
+context|États-Unis ebundaki na Mexique mpo na Texas mpe mabele ya wɛsti na yango.
+stakes|Mexique ebungisaki ndambo ya mabele na yango, longwa na Californie tii na Nouveau-Mexique.
+victims|Pene na Bamexicain 25 000 mpe Baamerika 13 000 bakufaki, mingi mpo na bokono.
+## 1850-taiping-rebellion
+name|Botomboki ya Taiping
+context|Lisanga moko ya losambo na bokambi ya Hong Xiuquan etombokelaki libota ya bakonzi Qing na sudi ya Chine.
+stakes|Ba-Qing babikaki kasi balɛmbaki; etumba ya bandeko oyo ebomaki koleka na ekeke ya 19.
+victims|Milio 20 tii na 30 ya bakufi.
+## 1853-10-16-crimean-war
+name|Etumba ya Crimée
+context|France, Angleterre mpe Ba-Ottoman babundaki na Russie, mingi na bozingi ya Sébastopol.
+stakes|Russie epekisamaki na Mbu Moindo; Florence Nightingale mpe mosala ya kobɔkɔlɔ bambɛli ya ntango ya sika.
+victims|Pene na bato 650 000 bakufaki, mingi mpo na bokono.
+## 1856-10-08-second-opium-war
+name|Etumba ya mibale ya Opium
+context|Angleterre mpe France babundaki lisusu na Chine; basoda na bango batumbaki Palais d'été na Pékin.
+stakes|Mabongo mosusu ya Chine efungwamaki, opium ekómaki ya kopekisama te, Russie ezwaki mabele na nordi.
+victims|Bato nkóto na nkóto.
+## 1861-04-12-american-civil-war
+name|Etumba ya bandeko na États-Unis
+context|Bituka zomi na moko ya sudi bakabwanaki mpo na kobatela bowumbu; Union ebundaki mpo na kozongisa mboka moko.
+stakes|Union elongaki; bowumbu esilaki na 1865.
+victims|Pene na basoda 620 000 tii na 750 000 bakufaki.
+## 1864-paraguayan-war
+name|Etumba ya Paraguay
+context|Paraguay ebundaki na Brésil, Argentine mpe Uruguay na mbala moko.
+stakes|Bayikitaki Paraguay mpe ebungisaki mabele.
+victims|Paraguay ebungisaki ntango mosusu ndambo ya bato na yango.
+## 1870-07-19-franco-prussian-war
+name|Etumba kati na France mpe Prusse
+context|Prusse mpe bikólo ya Allemand balongaki France; bakangaki Napoléon III na Sedan.
+stakes|Bokonzi monene ya Allemagne bayebisaki yango na Versailles; France ebungisaki Alsace-Moselle; Repibiliki ya misato ebotamaki.
+victims|Pene na basoda 180 000 mpe bato ya mboka mingi.
+## 1879-04-05-war-of-the-pacific
+name|Etumba ya Pacifique
+context|Chili ebundaki na Bolivie mpe Pérou mpo na esobe ya Atacama oyo etondi na nitrate.
+stakes|Chili ezwaki libongo; Bolivie ebungisaki nzela na yango ya mbu.
+victims|Pene na bato 15 000 tii na 20 000 bakufaki.
+## 1894-07-25-first-sino-japanese-war
+name|Etumba ya liboso kati na Chine mpe Japon
+context|Japon mpe Chine babundaki mpo na Corée.
+stakes|Japon ezwaki Taïwan mpe ekómaki nguya; bolɛmbu ya Chine emonanaki polele.
+victims|Pene na Bachinois 35 000 mpe Bajaponais 13 000, mingi ya Bajaponais mpo na bokono.
+## 1899-10-11-second-boer-war
+name|Etumba ya mibale ya Ba-Boer
+context|Angleterre ebundaki na ba-repibiliki ya Ba-Boer ya Afrika ya sudi mpo na wolo mpe mabele na bango.
+stakes|Angleterre elongaki; bakaa ya bokangami mpo na bato ya mboka bakamwisaki mokili.
+victims|Pene na basoda 22 000 ya Angleterre mpe 7 000 ya Ba-Boer; bato ya mboka 26 000 ya Ba-Boer mpe 20 000 Bayindo na bakaa.
+## 1904-02-08-russo-japanese-war
+name|Etumba kati na Russie mpe Japon
+context|Japon mpe Russie babundaki mpo na Mandchourie mpe Corée; bazindisaki masuwa ya etumba ya Russie na Tsushima.
+stakes|Mbala ya liboso ekólo moko ya Azia elongi ekólo ya nguya ya Mpoto; bobongwani na Russie na 1905.
+victims|Pene na basoda 130 000 tii na 170 000.
+## 1911-10-10-xinhai-revolution
+name|Bobongwani ya Xinhai
+context|Botomboki moko na Wuchang epalanganaki na Chine mobimba mpe esukisaki libota ya bakonzi Qing.
+stakes|Nsuka ya mibu nkóto mibale ya bokonzi monene; Repibiliki ya Chine.
+victims|Bato nkóto na nkóto.
+## 1912-10-08-balkan-wars
+name|Bitumba ya Balkans
+context|Bikólo ya Balkans babenganaki Ba-Ottoman na Mpoto, nsima babundaki bango na bango mpo na biloko ya bobotoli.
+stakes|Bandelo ya sika mpe nkanda oyo ememaki na 1914.
+victims|Pene na bato 120 000 tii na 200 000 bakufaki.
+## 1914-07-28-first-world-war
+name|Etumba ya Liboso ya Mokili
+context|Masanga ya bonguna, makonzi minene mpe bolingo ya ekólo ebongolaki koboma moko ya bakonzi na Sarajevo etumba ya mokili mobimba na mabulu ya mabele.
+stakes|Makonzi minene minei ekweaki; bikólo ya sika, kati na yango Pologne; mboto ya etumba oyo ekoya.
+victims|Pene na milio 20 ya bakufi, ndambo basoda; milio 21 ya bazoki.
+## 1917-11-07-russian-civil-war
+name|Etumba ya bandeko na Russie
+context|Ba-bolchevik ya Motane babundaki na ba-Pembe mpe na mampinga mosusu mingi na bokonzi mobimba ya kala.
+stakes|Ba-bolchevik balongaki mpe babandisaki Union soviétique na 1922.
+victims|Milio 7 tii na 12 ya bakufi, elongo na nzala mpe bokono.
+## 1936-07-17-spanish-civil-war
+name|Etumba ya bandeko na Espagne
+context|Ba-jenerale ya ba-nationaliste na bokambi ya Franco batombokelaki Repibiliki ya Espagne.
+stakes|Franco alongaki mpe ayangelaki Espagne tii na 1975; komekama liboso ya etumba ya mokili.
+victims|Pene na 500 000 ya bakufi; bato 450 000 bakimaki na France na 1939.
+## 1937-07-07-second-sino-japanese-war
+name|Etumba ya mibale kati na Chine mpe Japon
+context|Japon ebotolaki Chine nsima ya bobundani na pont ya Marco Polo; babomaki bato mingi na Nankin na 1937.
+stakes|Chine etɛmɛlaki tii Japon emipesaki na 1945; nsima etumba ya bandeko ezongaki.
+victims|Bachinois milio 15 tii na 20 bakufaki.
+## 1939-09-01-second-world-war
+name|Etumba ya Mibale ya Mokili
+context|Allemagne ya ba-nazi ebotolaki Pologne; etumba epalanganaki na Mpoto, Afrika, Azia mpe Pacifique.
+stakes|Bolongi ya Nazisme mpe ya Japon; Shoah; mokili oyo ekabwanaki kati na États-Unis mpe Union soviétique.
+victims|Milio 70 tii na 85 ya bakufi, mingi bato ya mboka.
+## 1945-09-23-first-indochina-war
+name|Etumba ya liboso ya Indochine
+context|France ebundaki na Viêt Minh mpo na kobatela mboka na yango ya bokolonyi ya Indochine.
+stakes|Bolongi ya France na Diên Biên Phu; Vietnam ekabwanaki na ndelo ya 17.
+victims|Bato nkámá na nkámá ya nkóto bakufaki, pene na 75 000 na ngambo ya Union française.
+## 1946-06-26-chinese-civil-war
+name|Etumba ya bandeko na Chine
+context|Ba-communiste ya Mao Zedong babundaki na ba-nationaliste ya Chiang Kai-shek.
+stakes|Repibiliki ya bato ya Chine na 1949; ba-nationaliste bakimaki na Taïwan.
+victims|Bamilio ya bakufi.
+## 1947-10-22-first-indo-pakistani-war
+name|Etumba ya liboso kati na Inde mpe Pakistan
+context|Inde mpe Pakistan babundaki mpo na Cachemire nsima ya lipanda.
+stakes|Cachemire ekabwanaki na molɔngɔ ya kotika etumba, oyo bawelaka naino lelo.
+victims|Basoda nkóto mingi.
+## 1947-03-12-the-cold-war
+name|Etumba ya Malili
+context|États-Unis mpe Union soviétique batɛlɛmɛlanaki na bibundeli, na makanisi mpe na nguya, kasi babundaki mbala moko te.
+stakes|Mpoto mpe mokili oyo ekabwani, nsɔ́mɔ ya nucléaire, bitumba na nzela ya bikólo mosusu.
+victims|Etumba ezalaki te kati na bango mibale; bamilio bakufaki na bitumba oyo esalemaki na elili na bango.
+## 1948-05-15-first-arab-israeli-war
+name|Etumba ya liboso kati na Baarabe mpe Israël
+context|Bikólo ya Baarabe babundisaki ekólo ya Israël oyo babandisaki sika.
+stakes|Israël ebikaki mpe ekolaki; Ba-Palestinien babungisaki bandako na bango na Nakba.
+victims|Pene na Ba-Israélien 6 000 mpe Baarabe 10 000 tii na 15 000 bakufaki; Ba-Palestinien 700 000 babenganamaki.
+## 1950-06-25-korean-war
+name|Etumba ya Corée
+context|Corée ya nordi ya ba-communiste ebotolaki Corée ya sudi; ONU mpe Chine bakɔtaki na etumba.
+stakes|Bokanisi kotika etumba na 1953, kasi kimya te: Corée ekabwani naino.
+victims|Pene na milio 3 ya bakufi, mingi bato ya mboka.
+## 1954-11-01-algerian-war
+name|Etumba ya Algérie
+context|FLN ebundaki mpo na lipanda ya Algérie na France; minyoko, bobɛti ya babombe mpe bitumba ya kati na ngambo mibale ya mbu.
+stakes|Lipanda na 1962; Repibiliki ya mitano na France; Bato ya Mpoto milio moko batikaki Algérie.
+victims|Ba-Algérien 250 000 tii na 400 000 bakufaki engebene batángi lisolo mingi; pene na basoda 25 000 ya France.
+## 1955-11-01-vietnam-war
+name|Etumba ya Vietnam
+context|Vietnam ya nordi ya ba-communiste mpe Viêt-cong babundaki na Vietnam ya sudi mpe na États-Unis.
+stakes|Saïgon ekweaki na 1975; Vietnam esanganaki na nse ya boyangeli ya ba-communiste.
+victims|Kati na milio 1,3 mpe 3 ya bakufi.
+## 1961-02-04-portuguese-colonial-war
+name|Etumba ya bokolonyi ya Portugal
+context|Portugal ebundaki na masanga ya lipanda na Angola, Mozambique mpe Guinée-Bissau.
+stakes|Bitumba yango ekweisaki boyangeli ya makasi na Lisbonne na 1974; bikólo ya bokolonyi ezwaki lipanda.
+victims|Basoda mpe bato ya mboka nkóto na nkóto.
+## 1967-06-05-six-day-war
+name|Etumba ya Mikolo Motoba
+context|Israël ebɛtaki Ezipito, Syrie mpe Jordanie ntango bokɛngi ezalaki komata.
+stakes|Israël ezwaki Sinaï, Gaza, Cisjordanie, Yelusaleme ya ɛsti mpe Golan.
+victims|Pene na Baarabe 20 000 mpe Ba-Israélien 1 000 bakufaki.
+## 1973-10-06-yom-kippur-war
+name|Etumba ya Yom Kippour
+context|Ezipito mpe Syrie babundisaki Israël na mokolo ya bulɛɛ koleka na mobu ya Bayuda.
+stakes|Israël etɛmɛlaki; bokakatani ya petrole elandaki, mpe nsima kimya kati na Ezipito mpe Israël.
+victims|Pene na Ba-Israélien 2 700 mpe Baarabe 10 000 tii na 20 000 bakufaki.
+## 1979-12-24-soviet-afghan-war
+name|Etumba ya Ba-Soviétique na Afghanistan
+context|Mampinga ya Union soviétique ekɔtaki na Afghanistan mpo na kosunga guvernema ya ba-communiste liboso ya ba-moudjahidine.
+stakes|Ba-Soviétique bazongaki na 1989; etumba ya bandeko mpe ba-Taliban elandaki.
+victims|Ba-Afghan ndambo ya milio tii na milio mibale; pene na basoda 15 000 ya Union soviétique.
+## 1980-09-22-iran-iraq-war
+name|Etumba kati na Iran mpe Irak
+context|Irak ya Saddam Hussein ebotolaki Iran ya bobongwani.
+stakes|Mibu mwambe ya etumba ya mabulu mpe ya bibundeli ya chimique, mpe moko te alongaki eloko.
+victims|Ndambo ya milio tii na milio moko ya bakufi.
+## 1990-08-02-gulf-war
+name|Etumba ya Golfe
+context|Irak ebotolaki Koweït; lisanga ya ONU na bokambi ya États-Unis libenganaki yango.
+stakes|Koweït ezwaki bonsomi; bitumbu likolo ya Irak; mampinga ya Amerika na Golfe.
+victims|Pene na basoda 25 000 ya Irak mpe basoda nkámá moke ya lisanga; bato ya mboka nkóto.
+## 1991-03-31-yugoslav-wars
+name|Bitumba ya Yougoslavie
+context|Yougoslavie ekabwanaki na bitumba kati na Ba-Serbe, Ba-Croate, Ba-Bosniaque mpe Ba-Kosovar.
+stakes|Bikólo nsambo; bolongoli bato mpo na ekólo na bango mpe koboma libota mobimba na Srebrenica na 1995.
+victims|Pene na 130 000 tii na 140 000 ya bakufi; bamilio balongwaki na bisika na bango.
+## 1994-04-07-genocide-against-the-tutsi-in-rwanda
+name|Génocide ya Ba-Tutsi na Rwanda
+context|Nsima ya kobɛta mpɛpɔ ya mokonzi ya mboka, ba-Hutu ya makanisi ya makasi babongisaki koboma Ba-Tutsi mpe Ba-Hutu oyo baboyaki.
+stakes|Mokili esalaki eloko te; FPR esukisaki koboma yango; etumba epalanganaki tii na Kongo.
+victims|Pene na bato 800 000 babomamaki na mikolo nkámá.
+## 1998-08-02-second-congo-war
+name|Etumba ya mibale ya Kongo
+context|Rwanda, Ouganda mpe bikólo mosusu babundaki mpo na RD Kongo mpe mabanga na yango ya motuya, elongo na mampinga mingi ya bisika.
+stakes|Etumba oyo ebomaki koleka banda 1945; ɛsti ya Kongo ezali naino na kimya te.
+victims|Tii na milio 5 ya bakufi, mingi mpo na bokono mpe nzala.
+## 2001-10-07-war-in-afghanistan
+name|Etumba ya Afghanistan
+context|Nsima ya 11 Septembre, États-Unis mpe baninga na yango bakweisaki ba-Taliban mpe bafandaki mibu ntuku mibale.
+stakes|Ba-Taliban bazongaki na bokonzi na 2021.
+victims|Pene na bato 175 000 bakufaki na bitumba, pene na 46 000 kati na bango bato ya mboka.
+## 2003-03-20-iraq-war
+name|Etumba ya Irak
+context|États-Unis mpe Angleterre babotolaki Irak mpe bakweisaki Saddam Hussein.
+stakes|Bofandi ya bapaya, botomboki, bitumba ya kati mpe botɛlɛmi ya État islamique.
+victims|Batángaka kati na 150 000 mpe koleka 600 000 ya liwa ya makasi.
+## 2011-03-15-syrian-civil-war
+name|Etumba ya bandeko na Syrie
+context|Boyangeli ya Bachar al-Assad enyataki bitɛlɛmɛli ya kimya; etumba epalanganaki ntango bikólo ya bapaya bakɔtaki.
+stakes|Bamilio ya bakimi bakómaki na Turquie, Liban mpe Mpoto; Assad akweaki na Décembre 2024.
+victims|Pene na 500 000 tii na 600 000 ya bakufi; milio 13 balongwaki na bisika na bango.
+## 2022-02-24-russian-invasion-of-ukraine
+name|Bobotoli ya Ukraine na Russie
+context|Russie ebandaki bobotoli mobimba ya Ukraine nsima ya kofanda na Crimée mpe na ndambo ya Donbass na 2014.
+stakes|Lipanda ya Ukraine mpe bobateli ya Mpoto; etumba monene koleka na Mpoto banda 1945.
+victims|Basoda nkámá na nkámá ya nkóto babomamaki to bazokaki; koleka bato ya mboka 12 000 oyo endimami ete babomamaki; bamilio ya bakimi.
+## 1315-great-famine-in-europe
+name|Nzala Monene na Mpoto
+note|Mibu misato ya mbula mpe bilanga ebebi.
+context|Mibu ya malili mpe ya mbula ebebisaki bilanga na nordi ya Mpoto mobimba.
+stakes|Nsuka ya bikeke mibale ya bokoli; bato balɛmbaki liboso ya Liwa ya Moindo.
+victims|Ntango mosusu ndambo moko na zomi tii na ndambo moko na minei ya bato na bisika mosusu.
+## 1683-09-12-battle-of-vienna
+name|Etumba ya Vienne
+note|Jean III Sobieski abukaki bozingi ya Ba-Ottoman.
+context|Mampinga ya Ottoman ezingaki Vienne; mampinga ya lisalisi na bokambi ya mokonzi ya Pologne Jean III Sobieski ebukaki bozingi.
+stakes|Nsuka ya bokɔti ya Ba-Ottoman na Mpoto.
+victims|Bato nkóto na nkóto na bozingi mpe na etumba.
+## 1806-08-06-end-of-the-holy-roman-empire
+name|Nsuka ya bokonzi monene mosantu ya Roma
+context|Lokola Napoléon alongaki ye, François II atikaki motole ya bokonzi monene mosantu ya Roma.
+stakes|Bokonzi monene ya mibu nkóto esilaki; bikólo ya Allemand ebongisamaki lisusu.
+## 1814-09-congress-of-vienna
+name|Likita ya Vienne
+note|Bandelo ya Mpoto bakataki yango lisusu nsima ya Napoléon.
+context|Balongi ya Napoléon basalaki lisusu karte ya Mpoto.
+stakes|Bokokani ya nguya oyo ebatelaki Mpoto na etumba monene mobimba ekeke mobimba; Pologne ekabolamaki lisusu.
+## 1918-11-fall-of-the-empires-birth-of-new-states
+name|Bokwei ya makonzi minene, mbotama ya bikólo ya sika
+note|Pologne, Tchécoslovaquie, Yougoslavie mpe bikólo ya Baltique ebimi.
+context|Makonzi minene ya Allemagne, ya Autriche-Hongrie, ya Russie mpe ya Ottoman ekweaki na nsuka ya etumba.
+stakes|Pologne, Tchécoslovaquie, Yougoslavie mpe bikólo ya Baltique ebotamaki, na bandelo ya sika mpe na mabota ya moke.
+## 1945-the-iron-curtain
+name|Rido ya Ebende
+note|Mpoto ekabwani kati na ɛsti mpe wɛsti.
+context|Mpoto ekabwanaki kati na ɛsti oyo Ba-Soviétique bazalaki koyangela mpe wɛsti ya demokrasi.
+stakes|Mabota ekabwani, bandelo ekangami, banzela mibale ya nkita mpe mikili mibale.
+victims|Bato nkámá bakufaki ntango bamekaki kokatisa yango.
+## 1957-03-25-treaty-of-rome-european-economic-community
+name|Boyokani ya Roma (Lisanga ya nkita ya Mpoto)
+context|Bikólo motoba ebandisaki Lisanga ya nkita ya Mpoto.
+stakes|Zando ya lisanga, mosisa ya Union européenne ya lelo.
+## 1993-11-01-european-union-maastricht
+name|Union européenne (Maastricht)
+context|Boyokani ya Maastricht ebandisaki Union européenne.
+stakes|Bomoto ya Mpoto, bonsomi ya kofanda mpe kosala na bikólo mosusu ya lisanga.
+## 2002-01-01-the-euro-in-everyone-s-pocket
+name|Euro na libenga ya moto nyonso
+context|Mbongo ya ebende mpe ya papie ya euro ezwaki esika ya franc, mark, lire mpe mbongo mosusu.
+stakes|Mbongo moko mpo na Bato ya Mpoto bamilio nkámá.
+## 1755-11-01-lisbon-earthquake
+name|Koningana ya mabele na Lisbonne
+note|Engumba ebebaki na koningana, na mɔ́tɔ mpe na tsunami.
+context|Koningana ya mabele, mɔ́tɔ mpe tsunami ebebisaki Lisbonne na mokolo ya Basantu nyonso.
+stakes|Ba-filozofe batunaki soki Nzambe azali kobatela; batongaki lisusu Lisbonne na molɔngɔ ya sika.
+victims|Pene na bato 30 000 tii na 50 000 bakufaki.
+## 1881-scramble-for-africa
+name|Bomekani mpo na kozwa Afrika
+note|Pene na mokili mobimba ya Afrika na nse ya boyangeli ya Mpoto.
+context|Bikólo ya nguya ya Mpoto babotolaki pene na Afrika mobimba na bambula mitano-zomi moke.
+stakes|Boyangeli ya bokolonyi, bandelo oyo bakataki uta libanda, bozwi ya biloko ya mabele mpe mosala ya makasi.
+victims|Bamilio bakufaki na bobotoli, na mosala ya makasi mpe na nzala.
+## 1957-03-06-independence-of-ghana
+name|Lipanda ya Ghana
+note|Ya liboso na Afrika na sudi ya Sahara.
+context|Côte-de-l'Or ekómaki Ghana, na bokambi ya Kwame Nkrumah.
+stakes|Lipanda ya liboso na Afrika na sudi ya Sahara, elembo mpo na Afrika mobimba.
+## 1960-year-of-africa-seventeen-independences
+name|«Mobu ya Afrika»: malipanda zomi na nsambo
+context|Bikólo zomi na nsambo ya Afrika ezwaki lipanda na mobu moko, kati na yango Kongo mpe ndambo monene ya Afrika ya France.
+stakes|Bikólo ya sika na bandelo ya bokolonyi; bilikya mpe bitumba ya lipanda.
+## 1963-05-25-organisation-of-african-unity-founded
+name|Bobandisami ya Lisanga ya bomoko ya Afrika (OUA)
+context|Bikólo ya Afrika oyo ezwaki lipanda ebandisaki OUA na Addis-Abeba.
+stakes|Bomoko ya Afrika, lisalisi mpo na masanga ya bosikoli, mpe bobateli bandelo ya bokolonyi.
+## 1948-apartheid-in-south-africa
+name|Apartheid na Afrika ya Sudi
+context|Guvernema ya Afrika ya Sudi ekómisaki bokaboli bato na langi ya nzoto mobeko ya mboka.
+stakes|Boyangeli ya Bato Pembe oyo bazalaki moke, oyo esilaki na 1994 ntango baponaki Nelson Mandela.
+victims|Bato nkóto babomamaki na minyoko; bato milio 3,5 balongolamaki na makasi na bisika na bango.
+## 1967-07-06-nigerian-civil-war-biafra
+name|Etumba ya bandeko na Nigeria (Biafra)
+context|Sudi-ɛsti ya Nigeria ekabwanaki na nkombo Biafra; Nigeria ezingaki yango.
+stakes|Nigeria etikalaki moko; bililingi ya bana oyo bazalaki na nzala esimbaki mitema ya mokili.
+victims|Milio moko tii na misato ya bakufi, mingi mpo na nzala.
+## 2002-07-09-african-union-founded
+name|Bobandisami ya Union africaine
+context|OUA ekómaki Union africaine.
+stakes|Lisanga oyo ekoki kokɔta mpo na kopekisa koboma libota mobimba mpe kokweisa boyangeli na makasi.
+## 2014-ebola-epidemic-in-west-africa
+name|Bokono ya Ebola na Afrika ya wɛsti
+context|Ebola epalanganaki na Guinée, Liberia mpe Sierra Leone, mpe ekómaki mbala ya liboso na bingumba.
+stakes|Bolɛmbu ya bisika ya bokɔnɔ́ emonanaki polele; nsima nkisi ya mangwele eyaki.
+victims|Pene na bato 11 300 bakufaki.
+## 1607-jamestown-first-lasting-english-colony
+name|Jamestown, mboka ya liboso ya bokolonyi ya Angleterre oyo ewumelaki
+context|Bato ya Angleterre babandisaki Jamestown na Virginie.
+stakes|Ebandeli ya Amerika ya Angleterre, mpe mbala moko ebandeli ya bowumbu kuna.
+victims|Mingi kati na bafandi ya liboso bakufaki na nzala mpe na bokono.
+## 1888-05-13-abolition-of-slavery-in-brazil
+name|Bolongoli bowumbu na Brésil
+note|Ya nsuka na Amerika.
+context|«Mobeko ya Wolo» ya Brésil elongolaki bowumbu; Brésil ezalaki mboka ya nsuka na Amerika kosala yango.
+stakes|Bonsomi kasi mabele te mpe lifuti te mpo na baoyo bazalaki baombo.
+## 1910-mexican-revolution
+name|Bobongwani ya Mexique
+context|Botomboki mpo na kotɛmɛla mokonzi ya makasi Porfirio Díaz ekómaki etumba ya bandeko molai; Zapata mpe Villa bazalaki kati na bakambi na yango.
+stakes|Bobongisi ya mabele mpe mibeko ya sika ya mboka na 1917.
+victims|Pene na bato milio moko bakufaki.
+## 1959-01-01-cuban-revolution
+name|Bobongwani ya Cuba
+context|Batomboki ya Fidel Castro bakweisaki mokonzi ya makasi Batista.
+stakes|Ekólo ya ba-communiste, moninga ya Union soviétique, na miles ntuku libwa na États-Unis.
+victims|Bato nkóto na etumba mpe na bobomi oyo elandaki.
+## 1964-military-dictatorships-in-south-america
+name|Boyangeli ya makasi ya basoda na Amerika ya sudi
+context|Bokweisi boyangeli na basoda etyaki ba-junte na bokonzi na Brésil, Chili, Argentine, Uruguay mpe bisika mosusu.
+stakes|Minyoko na nkombo ya kotɛmɛla ba-communiste; demokrasi ezongaki na mibu ya 1980.
+victims|Bato nkóto na nkóto babomamaki to babungaki, pene na 30 000 na Argentine.
+## 1868-meiji-restoration-japan
+name|Bozongisi ya Meiji (Japon)
+context|Bokonzi ya shogun ekweaki mpe mokonzi monene azongaki na bokonzi.
+stakes|Japon ekómaki ya ntango ya sika na libota moko ya bato mpe ekómaki nguya ya baizini mpe ya basoda.
+## 1922-11-01-end-of-the-ottoman-empire
+name|Nsuka ya bokonzi monene ya Ottoman
+context|Bokonzi ya sultan elongolamaki; bayebisaki Repibiliki ya Turquie na 1923.
+stakes|Nsuka ya bokonzi monene ya bikeke motoba; bikólo ya sika na Moyen-Orient.
+victims|Mibu ya nsuka ya bokonzi monene emonaki génocide ya Ba-Arménien mpe bokabolani monene ya bato.
+## 1948-05-14-independence-of-israel-and-the-nakba
+name|Lipanda ya Israël mpe Nakba
+context|Israël eyebisaki lipanda na yango; etumba na bikólo ya Baarabe ya pembeni elandaki.
+stakes|Ekólo ya Bayuda nsima ya Shoah; mpo na Ba-Palestinien, Nakba, elingi koloba likama.
+victims|Pene na Ba-Palestinien 700 000 bakimaki to babenganamaki.
+## 1949-10-01-people-s-republic-of-china-proclaimed
+name|Boyebisi ya Repibiliki ya bato ya Chine
+context|Mao Zedong ayebisaki Repibiliki ya bato na Pékin.
+stakes|Boyangeli ya ba-communiste likolo ya mboka oyo ezali na bato mingi koleka.
+## 1966-cultural-revolution-china
+name|Bobongwani ya bonkɔkɔ (Chine)
+context|Mao atindaki Batɛlɛmi ya Motane kobundisa bato oyo babengaki «ba-bourgeois» na lisanga mpe na mboka.
+stakes|Mibu zomi ya mobulu, ya minyoko mpe ya bobebisi bonkɔkɔ.
+victims|Bato nkámá na nkámá ya nkóto tii na pene na milio 2 bakufaki.
+## 1975-khmer-rouge-regime-cambodia
+name|Boyangeli ya Ba-Khmer rouge (Cambodge)
+context|Ba-Khmer rouge balongolaki bato na bingumba mpe batindaki bango na makasi kosala na bakaa ya mosala na bamboka.
+stakes|Koboma libota mobimba; esilaki ntango Vietnam ebotolaki mboka na 1979.
+victims|Milio 1,5 tii na 2 ya bakufi, pene na ndambo moko na minei ya bato.
+## 1979-02-11-iranian-revolution
+name|Bobongwani ya Iran
+context|Bakweisaki Shah; ayatollah Khomeyni abandisaki Repibiliki ya Islam.
+stakes|Boyangeli ya losambo, likambo ya bakangami ya Amerika, etumba na Irak.
+victims|Bato nkóto na bobongwani mpe na minyoko oyo elandaki.
+## 1788-01-26-first-fleet-british-settlement-of-australia
+name|Masuwa ya liboso: bofandi ya Angleterre na Australie
+context|Masuwa ya Angleterre ememaki bato ya boloko na Sydney Cove mpo na kobandisa mboka ya etumbu.
+stakes|Bato ya Angleterre bafandaki na Australie; babotolaki mabele ya Ba-Aborigène.
+victims|Ba-Aborigène bakufaki mingi mpo na bokono mpe mpo na makambo ya makasi.
+## 1840-02-06-treaty-of-waitangi-new-zealand
+name|Boyokani ya Waitangi (Nouvelle-Zélande)
+context|Bakonzi ya Ba-Maori mpe motole ya Angleterre batyaki mikɔ́ndɔ́ na boyokani moko na Waitangi.
+stakes|Mokanda oyo ebandisaki Nouvelle-Zélande; ntina na yango bazali naino kowela yango.
+victims|Na mibu ya 1860, bitumba mpo na mabele na Ba-Maori elandaki.
+## 1562-wars-of-religion
+name|Bitumba ya losambo (France)
+note|Bakatolike mpe Baprotestant na etumba, tii na Édit ya Nantes.
+context|Bitumba mwambe kati na Bakatolike mpe Baprotestant (ba-Huguenot), na kati na yango bobomi ya mokolo ya Saint-Barthélemy na 1572.
+stakes|Henri IV abongolaki losambo, mpe Édit ya Nantes epesaki Baprotestant bonsomi ya kosambela.
+victims|Ntango mosusu milio 2 tii na 4 ya bakufi, elongo na nzala mpe bokono; bato nkóto na bobomi ya 1572.
+## 1643-reign-of-louis-xiv
+name|Boyangeli ya Louis XIV
+note|Bokonzi ya nguya nyonso, Versailles, bitumba milai.
+context|«Mokonzi Moi» ayangelaki mibu 72, lokola mokonzi ya nguya nyonso longwa na Versailles.
+stakes|France ekómaki nguya ya liboso ya Mpoto, kasi na ntalo ya bitumba, ya nyongo mpe ya bobola ya basali-bilanga.
+victims|Bitumba na ye mpe nzala ya 1693 mpe 1709 ebomaki bamilio.
+## 1685-10-18-revocation-of-the-edict-of-nantes
+name|Bolongoli Édit ya Nantes
+note|Baprotestant nkámá na nkámá ya nkóto batiki France.
+context|Louis XIV apekisaki losambo ya Baprotestant mpe atindaki kobuka bandako na bango ya losambo; babongolaki bato losambo na makasi.
+stakes|France ebungisaki basali ya mabɔkɔ mpe bato ya mombongo oyo bakendaki na Prusse, Angleterre, Hollande mpe Suisse.
+victims|Pene na ba-Huguenot 200 000 bakimaki; minyoko mpe mosala ya kobɛta nkai na masuwa mpo na baoyo bakangamaki.
+## 1693-great-famine-of-1693-1694
+name|Nzala Monene ya 1693–1694
+note|Pene na milio 1,3 ya bakufi.
+context|Malili, mbula mpe bilanga ebebi, elongo na mpako ya etumba, ememaki nzala na bamboka ya France.
+stakes|Moko ya makama ya liwa mabe koleka na France ya ntango wana.
+victims|Pene na milio 1,3 ya bakufi kati na bato pene na milio 20.
+## 1709-great-winter-of-1709
+name|Eleko Monene ya Malili ya 1709
+note|Malili makasi, nzala mpe bokono.
+context|Malili makasi mpenza ekangisaki bibale, bilanga ya vinyo mpe mboto na mabele na France mobimba.
+stakes|Nzala mpe bokono na bokonzi oyo ezalaki kala na etumba.
+victims|Pene na bato 600 000 bakufaki na France.
+## 1720-plague-of-marseille
+name|Peste ya Marseille
+note|Peste monene ya nsuka na France: pene na bato 100 000 bakufaki na Provence.
+context|Peste eyaki na masuwa ya mombongo Grand-Saint-Antoine mpe epalanganaki longwa na Marseille na Provence mobimba.
+stakes|Batongaki lopango mpo na kopekisa yango; peste monene ya nsuka na wɛsti ya Mpoto.
+victims|Pene na bato 100 000 bakufaki na Provence, ndambo na Marseille.
+## 1792-09-20-civil-registers-pass-to-the-state
+name|Bakomi ya bato ekómi ya leta
+note|Sikoyo ba-mairie, kasi bamisió te, nde bakomaka mbotama, libala mpe liwa.
+context|Mobeko moko ya Bobongwani elongolaki na mabɔkɔ ya bapatele mosala ya kokoma mbotama, libala mpe liwa mpe epesaki yango na ba-mairie.
+stakes|Bakomi ya leta mpo na Mofalansé nyonso, ata losambo na ye ezali nini: banda wana esika ya ntina ya moluki bankɔkɔ.
+## 1793-the-terror
+name|Terreur (ntango ya nsɔ́mɔ)
+note|Guvernema ya bobongwani; bato nkóto na nkóto babomamaki.
+context|Liboso ya etumba mpe ya botomboki, Comité de salut public eyangelaki na nsɔ́mɔ; Tribunal révolutionnaire etindaki bato nkóto na guillotine.
+stakes|Babikisaki Repibiliki na makasi; Robespierre ye moko babomaki ye na 1794.
+victims|Pene na bato 17 000 babomamaki nsima ya bosambisi; pene na 40 000 ya bakufi soki totángi mpe boloko mpe bobomi na bosambisi te.
+## 1793-war-in-the-vendee
+name|Etumba ya Vendée
+note|Botomboki ya baoyo balingaki mokonzi na wɛsti, oyo Repibiliki enyataki.
+context|Bokɔtisi bato na basoda mpe bobundisi Lingomba etombolaki wɛsti ya Bakatolike mpe ya balingi mokonzi mpo na kotɛmɛla Repibiliki.
+stakes|Banyataki botomboki na makasi mingi, na kati na yango «mampinga ya lifelo».
+victims|Pene na bato 170 000 tii na 200 000 bakufaki.
+## 1804-first-empire-napoleon-i
+name|Bokonzi monene ya liboso (Napoléon Ier)
+note|Code civil, bokɔtisi na makasi na basoda, bitumba na Mpoto mobimba.
+context|Napoléon amipakolaki ye moko mokonzi monene mpe ayangelaki Mpoto.
+stakes|Code civil, ba-préfet, ba-lycée; bitumba oyo esilaka te mpe bokɔtisi na makasi na basoda; bolongi na 1815.
+victims|Basoda ya France nkámá na nkámá ya nkóto bakufaki na bitumba na ye.
+## 1815-restoration-and-july-monarchy
+name|Bozongisi bokonzi mpe Bokonzi ya Juillet
+note|Bakonzi bazongi; bobongwani ya 1830.
+context|Ba-Bourbon bazongaki; bobongwani ya Juillet 1830 ememaki Louis-Philippe, «mokonzi ya bana-mboka».
+stakes|Bokonzi na mibeko mpo na bazwi; baizini ekoli; bobongwani lisusu na 1848.
+victims|Bato nkámá bakufaki na Mikolo ya Juillet 1830.
+## 1832-cholera-in-paris
+name|Kolera na Paris
+note|Pene na bato 18 000 bakufaki na sanza moke.
+context|Kolera ekómaki na Paris na eleko ya mbula ya 1832 mpe ebɛtaki makasi koleka bisika ya babola oyo bato batondi.
+stakes|Nsɔ́mɔ, mobulu mpe likebi ya sika mpo na mikɔndɔ ya bosoto mpe mai ya peto; mokonzi ya guvernema akufaki na yango.
+victims|Pene na bato 18 000 bakufaki na Paris, pene na 100 000 na France.
+## 1848-04-27-slavery-abolished-in-the-french-colonies
+name|Bolongoli bowumbu na bikólo ya bokolonyi ya France
+note|Mobeko ya Victor Schœlcher.
+context|Na nse ya Repibiliki ya mibale, mobeko ya Victor Schœlcher esukisaki bowumbu libela na bikólo ya bokolonyi ya France.
+stakes|Bonsomi mpo na bato pene na 250 000 na ba-Antilles, Guyane mpe Réunion; bafutaki bankolo ya baombo, kasi baombo te.
+## 1852-second-empire-napoleon-iii
+name|Bokonzi monene ya mibale (Napoléon III)
+note|Banzela ya engbunduka, Paris ya Haussmann, bopalangani ya bokolonyi.
+context|Louis-Napoléon Bonaparte, oyo baponaki prezida na 1848, amikómisaki mokonzi monene nsima ya bokweisi boyangeli.
+stakes|Banzela ya engbunduka, Paris ya Haussmann mpe bikólo ya bokolonyi; esilaki na bolongi ya 1870.
+## 1871-03-18-paris-commune
+name|Commune ya Paris
+note|Banyataki yango na «Poso ya Makila».
+context|Nsima ya bolongi, Paris etombokaki mpe emiyangelaki yango moko; guvernema ya Versailles ezongisaki yango na makasi.
+stakes|Elembo mpo na masanga ya basali; Repibiliki oyo ebandaki na minyoko.
+victims|Bato 10 000 tii na 20 000 babomamaki na «Poso ya Makila»; bato nkóto batindamaki na mboka mosusu.
+## 1871-05-10-alsace-moselle-annexed-by-germany
+name|Allemagne ezwi Alsace-Moselle
+note|Tii na 1918; mabota baponaki kolongwa to kotikala.
+context|Na boyokani ya Francfort, France epesaki Alsace mpe ndambo ya Lorraine na bokonzi monene ya Allemagne.
+stakes|Bafandi basengelaki kopona: kotikala Ba-Allemand to kokende na France; «bitúka oyo ebungaki» tii na 1918.
+victims|Pene na bato 130 000 baponaki France mpe balongwaki.
+## 1882-03-28-free-compulsory-secular-school
+name|Kelasi ya ofele, ya makasi mpe oyo ezali ya losambo te
+note|Mibeko ya Jules Ferry.
+context|Mibeko ya Jules Ferry ekómisaki kelasi ya liboso ya ofele, ya makasi mpe oyo ezali ya losambo te mpo na bana basi mpe mibali ya mibu 6 tii na 13.
+stakes|Boyebi ya kotánga mpe kokoma Lifalansé mpo na bato nyonso; minoko ya bitúka etyamaki pembeni.
+## 1905-12-09-separation-of-church-and-state
+name|Bokaboli kati na Lingomba mpe Leta
+context|Repibiliki etikaki kofuta to kondima losambo moko; ebatelaki bonsomi ya motema.
+stakes|Laïcité ya France, oyo bazali naino kowela yango lelo.
+## 1916-02-21-battle-of-verdun
+name|Etumba ya Verdun
+note|Pene na bato 300 000 bakufaki na ngambo mibale.
+context|Allemagne ebundisaki Verdun mpo na kosilisa makila ya mampinga ya France; sanza zomi ya bitumba ya canon mpe ya mabulu elandaki.
+stakes|France etɛmɛlaki; Verdun ekómaki elembo ya molende ya basoda.
+victims|Pene na bato 300 000 bakufaki mpe 400 000 bazokaki na ngambo mibale.
+## 1936-06-20-popular-front-paid-holidays
+name|Front populaire: bopemi na lifuti
+context|Guvernema ya Front populaire ya Léon Blum epesaki basali baposo mibale ya bopemi na lifuti mpe poso ya mosala ya ngonga 40.
+stakes|Ntango ya kopema mpo na mabota ya basali, mibembo ya liboso na libongo ya mbu.
+## 1940-06-22-occupation-and-the-vichy-regime
+name|Bofandi ya Ba-Allemand mpe boyangeli ya Vichy
+note|Kotika etumba, botindi bato na makasi, Résistance, nsima bosikoli.
+context|Nsima ya bolongi, Ba-Allemand bafandaki na France; boyangeli ya maréchal Pétain na Vichy esalaki elongo na Allemagne ya ba-nazi.
+stakes|Bosaleli elongo na monguna mpe Résistance; botindi Bayuda ya France; bosikoli na 1944.
+victims|Pene na Bayuda 76 000 batindamaki longwa na France; bato ya Résistance, bakangami mpe bato ya mboka nkóto na nkóto babomamaki.
+## 1944-04-21-women-s-right-to-vote
+name|Likoki ya basi ya kopona
+note|Basalelaki yango mbala ya liboso na 1945.
+context|Mobeko moko ya guvernema ya ntango moke epesaki basi ya France likoki ya kopona mpe ya koponama.
+stakes|Basi baponaki mbala ya liboso na 1945, ekeke moko nsima ya mibali.
+## 1958-10-04-fifth-republic
+name|Repibiliki ya mitano
+note|Mibeko ya mboka ya jenerale de Gaulle.
+context|Na ntango ya mpasi ya etumba ya Algérie, de Gaulle azongaki mpe apesaki France mibeko ya sika ya mboka.
+stakes|Bokonzi ya prezida ya makasi, oyo bato ya mboka baponaka banda 1962.
+## 1968-05-may-1968
+name|Mai 1968
+note|Botomboki ya bayekoli mpe grève monene.
+context|Bitɛlɛmɛli ya bayekoli na Paris epalanganaki tii ekómaki grève monene ya basali milio zomi.
+stakes|Lifuti emataki mpe bizaleli, libota mpe bokonzi ebongwanaki.
+victims|Bato moke bakufaki na bobundani.
+## 1981-10-09-death-penalty-abolished
+name|Bolongoli etumbu ya liwa
+context|Na bokambi ya ministre ya bosembo Robert Badinter, Parlement elongolaki etumbu ya liwa.
+stakes|France kati na mboka ya nsuka na wɛsti ya Mpoto kosala yango; guillotine epemaki.
+## 1569-07-01-polish-lithuanian-commonwealth
+name|Lisanga ya Pologne mpe Lituanie
+note|Ebotamaki na Union ya Lublin, moko ya bikólo minene koleka ya Mpoto.
+context|Na Union ya Lublin, Pologne mpe Lituanie ekómaki ekólo moko na mokonzi oyo baponaka.
+stakes|Repibiliki ya bato minene, oyo endimaki mangomba mosusu, longwa na Mbu Baltique tii na Mbu Moindo.
+## 1655-the-deluge-swedish-invasion
+name|Mpela (bobotoli ya Suède)
+note|Mampinga ya Suède mpe ya Russie ebebisi mboka.
+context|Suède ebotolaki Lisanga, mpe Russie mpe ba-Cosaque babundisaki yango longwa na ɛsti.
+stakes|Lisanga ebikaki, kasi ezwaki lisusu ata mokolo moko te makasi na yango.
+victims|Pologne ebungisaki ntango mosusu ndambo moko na minei ya bato na yango to koleka, na etumba, peste mpe nzala.
+## 1772-08-05-first-partition-of-poland
+name|Bokaboli ya liboso ya Pologne
+note|Russie, Prusse mpe Autriche bazwi ndambo moko na misato.
+context|Russie, Prusse mpe Autriche bazwaki pene na ndambo moko na misato ya mabele ya Lisanga.
+stakes|Ekólo oyo elɛmbaki, oyo emekaki komibongisa.
+## 1791-05-03-constitution-of-3-may
+name|Mibeko ya mboka ya 3 Mai
+note|Mibeko ya mboka ya liboso ya ntango ya sika oyo ekomamaki na Mpoto.
+context|Sejm endimaki mibeko ya mboka oyo ekitisaki veto ya bato minene mpe elendisaki ekólo.
+stakes|Elikya ya bobongisi, oyo Russie ezongiselaki na etumba.
+## 1793-01-23-second-partition
+name|Bokaboli ya mibale
+context|Nsima ya etumba oyo babungisaki liboso ya Russie, Russie mpe Prusse bazwaki lisusu mabele ya Pologne.
+stakes|Oyo etikalaki na Pologne ezalaki ekólo moke na nse ya bokonzi ya Russie.
+## 1794-03-24-kosciuszko-uprising
+name|Botomboki ya Kościuszko
+note|Bolongi; bokaboli ya misato elandi.
+context|Tadeusz Kościuszko akambaki botomboki ya ekólo mpo na kotɛmɛla Russie mpe Prusse, elongo na basali-bilanga oyo basimbaki bambeli ya kokata matiti.
+stakes|Bolongi na yango ememaki nsuka ya ekólo.
+victims|Bato nkóto na nkóto; bobomi ya Praga na Varsovie ebomaki bato ya mboka nkóto.
+## 1795-10-24-third-partition-poland-disappears
+name|Bokaboli ya misato: Pologne ebungi
+note|Mibu 123, Ba-Polonais bafandi na nse ya Russie, Prusse to Autriche.
+context|Russie, Prusse mpe Autriche bakabolaki oyo etikalaki; Pologne ebungaki na karte.
+stakes|Ba-Polonais bafandaki na nse ya makonzi minene misato, na mibeko misato mpe minoko misato ya bakomi.
+## 1807-duchy-of-warsaw
+name|Duché ya Varsovie
+note|Ekólo ya Pologne ya Napoléon; bakomi ya leta banda 1808.
+context|Napoléon asalaki ekólo ya Pologne na mabele ya Prusse, na nse ya mokonzi ya Saxe.
+stakes|Code ya Napoléon mpe bakomi ya leta banda 1808; bilikya ya kobotama lisusu oyo esilaki na 1815.
+victims|Basoda mingi ya Pologne bakufaki na mibembo ya bitumba ya Napoléon, na Espagne mpe na Russie.
+## 1815-congress-poland-under-russia
+name|Pologne ya Likita, na nse ya Russie
+note|Bakomi na Lipolonais, nsima na Lirusi banda 1868.
+context|Likita ya Vienne esalaki Bokonzi ya Pologne oyo mokonzi na yango ezalaki tsar ya Russie.
+stakes|Bomiyangeli, nsima minyoko nsima ya botomboki nyonso; Lirusi na bakomi banda 1868.
+## 1830-11-29-november-uprising
+name|Botomboki ya Novembre
+note|Bolongi na yango ememi Bolongwi Monene.
+context|Bayekoli ya basoda na Varsovie batombokelaki boyangeli ya Russie; mobu moko ya etumba elandaki.
+stakes|Bolongi, nsuka ya bomiyangeli mpe Bolongwi Monene ya bato ya mayele.
+victims|Pene na Ba-Polonais 40 000 bakufaki na bitumba.
+## 1831-the-great-emigration
+name|Bolongwi Monene
+note|Bato ya mayele ya Pologne bafandi na Paris mpe na Mpoto mobimba.
+context|Nsima ya 1831, basoda, bato ya politiki mpe ba-artiste ya Pologne nkóto bakendaki na boombo, mingi na France.
+stakes|Chopin, Mickiewicz mpe basusu babatelaki bonkɔkɔ ya Pologne na bomoi na Paris.
+## 1863-01-22-january-uprising
+name|Botomboki ya Janvier
+note|Minyoko, bobotoli biloko, botindi na Sibérie.
+context|Etumba ya kobombama mpo na kotɛmɛla Russie, oyo ebandaki mpo bazalaki kokɔtisa bato na makasi na mampinga ya Russie.
+stakes|Banyataki yango; nsima bakómisaki bakelasi mpe babiro ya Lirusi.
+victims|Pene na batomboki 20 000 tii na 30 000 babomamaki; bato nkóto na nkóto batindamaki na Sibérie.
+## 1870-emigration-for-bread
+name|Bolongwi «mpo na lipa»
+note|Bamilio bakei na Amerika mpe na mabulu ya mabanga ya France mpe ya Allemagne.
+context|Basali-bilanga oyo bazalaki na mabele te batikaki mabele ya Pologne mpo na kosala na Amerika, Allemagne mpe France.
+stakes|Masanga ya Ba-Polonais na Chicago, na Ruhr mpe na Brésil; mabota ekabwanaki kati na bikólo ya mokili.
+victims|Pene na milio 3,5 balongwaki liboso ya 1914.
+## 1918-11-11-independence-of-poland
+name|Lipanda ya Pologne
+note|Repibiliki ya mibale ebotami.
+context|Ntango makonzi minene ekweaki, Józef Piłsudski azwaki bokambi na Varsovie: Pologne ezwaki bonsomi nsima ya mibu 123.
+stakes|Ekólo oyo ebotamaki lisusu, esengelaki kosangisa biteni misato na mibeko ndenge na ndenge mpe kobatela bandelo na yango.
+## 1919-02-14-polish-soviet-war
+name|Etumba kati na Pologne mpe Russie ya ba-Soviétique
+note|«Likamwisi ya Vistule», 1920.
+context|Pologne mpe Russie ya ba-Soviétique babundaki mpo na mabele ya ndelo ya ɛsti; mampinga ya Motane ekómaki na Varsovie na 1920.
+stakes|Pologne elongaki na Vistule mpe ebatelaki lipanda na yango; boyokani ya Riga etyaki ndelo na yango ya ɛsti.
+victims|Pene na bato 100 000 bakufaki na ngambo mibale.
+## 1919-polish-miners-in-northern-france
+name|Batimoli-mabanga ya Pologne na nordi ya France
+note|Pene na Ba-Polonais 500 000 bafandi na France.
+context|France, oyo ezangaki mibali nsima ya etumba, ezwaki basali ya Pologne mpo na mabulu ya mabanga ya Nord mpe Pas-de-Calais.
+stakes|Bingumba ya Ba-Polonais na kati ya bingumba ya France, na mangomba, bakelasi mpe masanga na bango.
+victims|Mingi bakufaki na makama ya mabulu mpe na bokono ya mosɔ́pɔ ya silicose.
+## 1939-09-01-german-and-soviet-occupation
+name|Bofandi ya Ba-Allemand mpe ya Ba-Soviétique
+note|Pene na bana-mboka milio motoba ya Pologne babomamaki, ndambo Bayuda.
+context|Allemagne ebotolaki Pologne longwa na wɛsti, Union soviétique longwa na ɛsti; mboka ekabwanaki mpe nsɔ́mɔ etondaki.
+stakes|Shoah esalemaki mingi na mabele ya Pologne; babomaki bato ya mayele ya Pologne, kati na bisika yango Katyń.
+victims|Pene na bana-mboka milio motoba ya Pologne babomamaki, ndambo Bayuda.
+## 1944-08-01-warsaw-uprising
+name|Botomboki ya Varsovie
+note|Mikolo 63 ya etumba; nsima babebisaki engumba mobimba.
+context|Armée de l'intérieur etombokelaki Ba-Allemand ntango mampinga ya Motane etɛlɛmaki na Vistule.
+stakes|Banyataki botomboki; nsima Ba-Allemand babebisaki ndambo monene ya engumba.
+victims|Pene na batomboki 16 000 mpe bato ya mboka 150 000 tii na 200 000 babomamaki.
+## 1945-people-s-republic-of-poland
+name|Repibiliki ya bato ya Pologne
+note|Boyangeli ya ba-communiste; bandelo etindikami na wɛsti.
+context|Pologne, oyo batindikaki na wɛsti, ekɔtaki na nse ya boyangeli ya ba-communiste oyo Union soviétique etyaki.
+stakes|Botongi lisusu, bozwi biloko na leta, kopekisa makanisi; makama na 1956, 1970 mpe 1980.
+victims|Bamilio balongolamaki na ɛsti oyo ebungaki mpe batindamaki na wɛsti oyo ezalaki ya Allemagne.
+## 1980-08-31-solidarnosc
+name|Solidarność
+note|Lisanga ya liboso ya basali ya bonsomi na lisanga ya Soviétique.
+context|Ba-grève na esika ya kotonga masuwa ya Gdańsk ezwaki likoki ya lisanga ya basali ya bonsomi, na bokambi ya Lech Wałęsa.
+stakes|Bato milio zomi bakɔtaki; lipasuka ya liboso na lisanga ya Soviétique.
+## 1981-12-13-martial-law
+name|Mobeko ya basoda
+context|Jenerale Jaruzelski atyaki mobeko ya basoda mpo na konyata Solidarność.
+stakes|Bokangami, kopekisa kobima na butu mpe bozangi biloko; lisanga ebikaki na kobombama.
+victims|Bato ntuku moke babomamaki; pene na bato 10 000 bakangamaki.
+## 1989-06-04-first-partly-free-elections
+name|Maponi ya liboso ya bonsomi ndambo
+context|Nsima ya masolo ya Mesa ya Lingumba, Solidarność ezwaki bisika nyonso oyo efungwamaki mpo na kopona na bonsomi.
+stakes|Guvernema ya liboso oyo ezalaki ya ba-communiste te na lisanga yango; bokwei ya boyangeli elandaki.
+## 2004-05-01-poland-joins-the-european-union
+name|Pologne ekɔti na Union européenne
+context|Pologne mpe bikólo mosusu libwa bakɔtaki na Union européenne.
+stakes|Bonsomi ya kofanda mpe kosala na Mpoto mobimba; bolongwi ya sika kokende na Angleterre mpe na Irlande.
+## 1830-10-04-independence-of-belgium
+name|Lipanda ya Belezi
+context|Bitúka ya sudi ya Bokonzi ya Pays-Bas batombokaki mpe bayebisaki lipanda.
+stakes|Bokonzi ya sika na nse ya Léopold Ier, oyo ekɔtaka na bitumba te, ya Bakatolike mpe oyo ezwaki baizini mbangu.
+victims|Bato nkámá bakufaki na bitumba.
+## 1885-congo-free-state
+name|État indépendant du Congo
+note|Mboka ya bokolonyi ya Léopold II ye moko: mosala ya makasi mpe makambo ya nsɔ́mɔ mpo na caoutchouc.
+context|Mokonzi Léopold II ya Belezi ayangelaki Kongo lokola eloko na ye moko.
+stakes|Caoutchouc mpe mpembe ya nzoku oyo bazwaki na mosala ya makasi, na kokanga bato mpe na kokata mabɔkɔ; likambo ya nsɔ́ni na mokili mobimba.
+victims|Bamilio bakufaki; motango ya bato ekoki kokita bamilio mingi.
+## 1908-belgian-congo
+name|Kongo ya Belezi
+note|Mboka ya bokolonyi ya Belezi.
+context|Na kotindika ya mokili, Belezi elongolaki Kongo na mabɔkɔ ya mokonzi na yango mpe ekómisaki yango mboka ya bokolonyi.
+stakes|Mabulu ya mabanga ya motuya, ba-misió mpe molɔngɔ́ ya bokolonyi; lipanda na 1960.
+victims|Mosala ya makasi ekobaki ntango molai nsima ya 1908.
+## 1914-08-04-belgium-occupied
+name|Belezi na nse ya bofandi ya monguna
+note|Bobomi ya 1914; esika ya etumba ya Yser.
+context|Allemagne ebotolaki Belezi, oyo ekɔtaka na bitumba te, mpo na kokóma na France; esika ya etumba ya Yser ebatelaki ndambo moke ya mboka.
+stakes|Mibu minei ya bofandi ya monguna, bozwi biloko na makasi mpe botindi bato kosala na Allemagne.
+victims|Pene na bato ya mboka 6 500 babomamaki na 1914; pene na Ba-Belge 40 000 bakufaki na etumba.
+## 1940-05-10-belgium-occupied-again
+name|Belezi na nse ya bofandi ya monguna lisusu
+context|Allemagne ebotolaki lisusu Belezi; mokonzi Léopold III amipesaki nsima ya mikolo zomi na mwambe.
+stakes|Bofandi ya monguna, bosaleli elongo na ye mpe Résistance; bosikoli na Septembre 1944.
+victims|Pene na Bayuda 25 000 batindamaki; bato mosusu nkóto na nkóto bakufaki.
+## 1950-the-royal-question
+name|Likambo ya mokonzi
+note|Léopold III atiki kiti na 1951.
+context|Ndenge Léopold III asalaki na ntango ya etumba ekabolaki mboka na likambo ya bozongi na ye.
+stakes|Ba-grève mpe mobulu; atikaki kiti mpo na mwana na ye Baudouin.
+victims|Basali minei oyo basalaki grève babomamaki.
+## 1482-the-portuguese-reach-the-kongo-kingdom
+name|Bapulutugɛ bakómi na bokonzi ya Kongo
+note|Diogo Cão na monoko ya ebale.
+context|Motamboli-mai Diogo Cão akómaki na monoko ya ebale Kongo mpe akutanaki na bokonzi ya Kongo.
+stakes|Mombongo, boklisto, nsima mombongo ya baombo kati na Kongo mpe Portugal.
+## 1960-06-30-independence-of-the-congo
+name|Lipanda ya Kongo
+note|Patrice Lumumba, Ministre ya liboso.
+context|Kongo ya Belezi ezwaki lipanda; Patrice Lumumba alobaki mpo na bosɔ́kisi ya boyangeli ya bokolonyi.
+stakes|Mboka monene mpenza na bato moke kaka oyo bayekolaki koyangela, mpe mbala moko ekɔtaki na mpasi.
+## 1960-07-congo-crisis
+name|Mpasi ya Kongo
+note|Katanga ekabwani; babomaki Lumumba na 1961.
+context|Botomboki ya basoda, bokabwani ya Katanga mpe ya Kasaï, bokɔti ya bapaya mpe bobomi ya Lumumba na 1961.
+stakes|Kongo etikalaki moko; Mobutu azwaki bokonzi na 1965.
+victims|Pene na bato 100 000 bakufaki.
+## 1965-11-24-mobutu-regime
+name|Boyangeli ya Mobutu
+note|Mboka ebengami Zaïre banda 1971.
+context|Joseph-Désiré Mobutu azwaki bokonzi na kokweisa boyangeli mpe ayangelaki mibu ntuku misato na mibale.
+stakes|Lisanga moko ya politiki, «bozongi na bonkɔkɔ» (Zaïre, Mobutu Sese Seko), bozwi ya mokonzi, bokwei ya leta.
+victims|Babomaki to banyokolaki batɛmɛli.
+## 1976-first-known-ebola-outbreak-yambuku
+name|Bokono ya liboso ya Ebola oyo eyebani (Yambuku)
+context|Virus ya sika ebimaki zingazinga ya misió ya Yambuku, na nordi ya mboka; bapesaki yango nkombo ya ebale moko ya pembeni.
+stakes|Bomoni ya Ebola mpe ndenge epalanganaka na kobɔkɔlɔ bambɛli mpe na bokundi.
+victims|Bato 280 bakufaki.
+## 1996-10-first-congo-war
+name|Etumba ya liboso ya Kongo
+note|Mobutu akwei; Laurent-Désiré Kabila azwi bokonzi.
+context|Rwanda mpe Ouganda basungaki batomboki ya Laurent-Désiré Kabila, oyo bakatisaki mboka mobimba.
+stakes|Mobutu akweaki; Zaïre ezongaki Repibiliki ya demokrasi ya Kongo.
+victims|Pene na bato 200 000 bakufaki, mingi bakimi ya Ba-Hutu.
+## 2006-07-30-first-free-elections-since-independence
+name|Maponi ya liboso ya bonsomi banda lipanda
+context|Nsima ya bitumba, Bakongomani baponaki na maponi ya masanga mingi ya politiki; baponaki Joseph Kabila.
+stakes|Bozongi ya maponi oyo ezali naino makasi te; makambo ya makasi ekobaki na ɛsti.
+## 1880-french-congo
+name|Kongo ya France
+note|Longwa na boyokani ya Brazza tii na lipanda.
+context|Pierre Savorgnan de Brazza atyaki mikɔ́ndɔ́ na boyokani elongo na Makoko ya Ba-Téké; France ezwaki ngambo ya nordi ya ebale Kongo.
+stakes|Mboka ya bokolonyi ya ba-compagnie mpe ya mosala ya makasi, Brazzaville lokola mboka-mokonzi.
+victims|Mosala ya makasi na nzela ya engbunduka Congo-Océan ebomaki pene na basali 15 000 tii na 20 000.
+## 1960-08-15-independence-of-the-republic-of-the-congo
+name|Lipanda ya Repibiliki ya Kongo
+context|Kongo ya France ekómaki Repibiliki ya Kongo, Brazzaville lokola mboka-mokonzi.
+stakes|Lipanda, nsima repibiliki ya marxisme-léninisme banda 1969.
+## 1697-saint-domingue-becomes-french
+name|Saint-Domingue ekómi ya France
+note|Boyokani ya Ryswick.
+context|Na boyokani ya Ryswick, Espagne epesaki France ndambo ya wɛsti ya Hispaniola.
+stakes|Saint-Domingue ekómaki mboka ya bokolonyi ya bozwi koleka na mokili, likolo ya mokɔngɔ ya Baafrika oyo bakómisaki baombo.
+victims|Baombo nkámá na nkámá ya nkóto bakufaki na mosala ya makasi.
+## 1804-01-01-independence-of-haiti
+name|Lipanda ya Haïti
+note|Repibiliki ya liboso ya Bato Bayindo, epai bowumbu esilaki libela.
+context|Jean-Jacques Dessalines ayebisaki lipanda ya Haïti, nkombo ya esanga na monoko ya Ba-Taïno.
+stakes|Repibiliki ya liboso ya Bato Bayindo mpe ekólo ya mibale oyo ezwaki lipanda na Amerika.
+## 1825-the-independence-debt-to-france
+name|Nyongo ya lipanda epai ya France
+note|Franc milio 150, mokumba ya ekeke mobimba.
+context|Na nsɔ́mɔ ya masuwa ya etumba ya France, Haïti endimaki kofuta franc milio 150 mpo na kozongisela bankolo ya baombo ya kala.
+stakes|Nyongo yango mpe banyongo mosusu oyo bazwaki mpo na kofuta yango ezalaki kilo na nkita ya Haïti tii na katikati ya ekeke ya 20.
+## 1915-united-states-occupation
+name|Bofandi ya États-Unis
+context|Nsima ya bobomi ya prezida moko, États-Unis ekitisaki basoda ya mbu mpe eyangelaki Haïti mibu zomi na libwa.
+stakes|Banzela mpe mampinga ya sika, kasi mosala ya makasi mpe bokonzi likolo ya mbongo ya Haïti.
+victims|Pene na Ba-Haïtien 3 000 babomamaki ntango bazalaki kotɛmɛla, na bitumba ya ba-Caco.
+## 1957-duvalier-dictatorship
+name|Boyangeli ya makasi ya Duvalier
+note|Ba-Haïtien mingi bakei na boombo.
+context|François «Papa Doc» Duvalier, nsima mwana na ye «Baby Doc», bayangelaki na nsɔ́mɔ na nzela ya basoda ya Tontons Macoutes.
+stakes|Bobola, bato ya mayele bakimaki mboka, mpe masanga ya Ba-Haïtien na New York, Montréal mpe Paris.
+victims|Pene na bato 30 000 tii na 60 000 babomamaki.
+## 2010-01-12-earthquake-of-12-january-2010
+name|Koningana ya mabele ya 12 Janvier 2010
+note|Koleka bato 200 000 bakufaki.
+context|Koningana ya mabele ya makasi 7 ebɛtaki zingazinga ya Port-au-Prince mpe ebebisaki ndambo monene ya mboka-mokonzi.
+stakes|Mboka ebebi; lisalisi monene, nsima bokono ya kolera.
+victims|Koleka bato 200 000 bakufaki; bato milio 1,5 bazangaki ndako.
+## 1871-01-18-german-empire-proclaimed
+name|Boyebisi ya bokonzi monene ya Allemagne
+context|Nsima ya kolonga France, bikólo ya Allemand esanganaki na nse ya mokonzi ya Prusse, oyo bayebisaki mokonzi monene na Versailles.
+stakes|Allemagne esangani, nguya ya liboso na Mpoto.
+## 1918-11-09-weimar-republic
+name|Repibiliki ya Weimar
+context|Mokonzi monene atikaki kiti; babandisaki repibiliki ya demokrasi na Weimar.
+stakes|Demokrasi ya bolɛmbu, oyo bolongi, banyongo ya etumba mpe makama ezalaki kilo na yango.
+## 1923-hyperinflation
+name|Bomati ya ntalo ya makasi
+note|Mbongo oyo babombaki esili.
+context|Ntalo ezalaki kobakisama mbala mibale nsima ya mikolo moke; lipa moko ezalaki ntalo ya ba-mark bamiliare.
+stakes|Mbongo oyo babombaki esilaki; bato ya katikati bakómaki babola mpe batondaki na nkanda.
+## 1933-nazi-germany
+name|Allemagne ya ba-nazi
+context|Hitler akómaki chancelier mpe atyaki boyangeli ya makasi oyo etɛlɛmaki na koyina bato mosusu mpe na nsɔ́mɔ.
+stakes|Minyoko ya Bayuda, etumba ya bobotoli, Shoah.
+victims|Bato ntuku na ntuku ya milio bakufaki na etumba mpe na koboma libota mobimba oyo ebimisaki.
+## 1949-two-german-states
+name|Bikólo mibale ya Allemagne
+context|Allemagne ekabwanaki na Repibiliki fédérale na wɛsti mpe RDA ya ba-communiste na ɛsti.
+stakes|Bikólo mibale, banzela mibale ya boyangeli, mabota ekabwanaki mibu ntuku minei.
+## 1961-08-13-the-berlin-wall
+name|Lopango ya Berlin
+context|Allemagne ya ɛsti ezingaki Berlin ya wɛsti na lopango na butu moko mpo na kopekisa bato na yango kokima.
+stakes|Elembo ya Etumba ya Malili, tii ekweaki na 9 Novembre 1989.
+victims|Bato 140 to koleka babomamaki ntango bamekaki kokatisa yango.
+## 1990-10-03-reunification
+name|Bosangani lisusu ya Allemagne
+context|RDA ekɔtaki na Repibiliki fédérale: Allemagne ezongaki mboka moko.
+stakes|Botongi lisusu ya ɛsti, mpe Allemagne na katikati ya Mpoto.
+## 1861-03-17-kingdom-of-italy-unification
+name|Bokonzi ya Italie: bosangani
+context|Nsima ya bitumba mpe ya mobembo ya Garibaldi, bayebisaki Victor-Emmanuel II mokonzi ya Italie.
+stakes|Italie esangani; Roma ekómaki mboka-mokonzi na yango na 1870.
+## 1880-great-italian-emigration
+name|Bolongwi monene ya Ba-Italien
+note|Kokende na Amerika mpe na France.
+context|Bobola, mingi na sudi, etindaki Ba-Italien kokende na Amerika, na France mpe mosika koleka.
+stakes|Masanga ya Ba-Italien na New York, Buenos Aires, São Paulo mpe Marseille.
+victims|Pene na bato milio 14 balongwaki kati na 1876 mpe 1915.
+## 1922-fascist-italy
+name|Italie ya ba-fasciste
+context|Nsima ya Bokɛndɛ na Roma, Mussolini atyaki boyangeli ya makasi ya liboso ya ba-fasciste.
+stakes|Lisanga moko ya politiki, kokumisa mokambi, bitumba ya bokolonyi, boyokani na Hitler.
+victims|Bato nkámá na nkámá ya nkóto na Éthiopie mpe na etumba.
+## 1946-06-02-italian-republic
+name|Repibiliki ya Italie
+context|Ba-Italien baponaki na référendum kobongola bokonzi na repibiliki; basi baponaki mbala ya liboso.
+stakes|Repibiliki ya demokrasi mpe mibeko na yango ya mboka ya 1948.
+## 1808-peninsular-war
+name|Etumba ya Péninsule
+context|Napoléon atyaki ndeko na ye likolo ya kiti ya bokonzi ya Espagne; Espagne etombokaki, na lisalisi ya Angleterre.
+stakes|Etumba ya kobombama oyo esilisaki makasi ya mampinga ya Napoléon.
+victims|Pene na bato 500 000 bakufaki, mingi bato ya mboka.
+## 1939-franco-s-dictatorship
+name|Boyangeli ya makasi ya Franco
+context|Nsima ya etumba ya bandeko, jenerale Franco ayangelaki Espagne na makasi tii liwa na ye na 1975.
+stakes|Minyoko, Lingomba ya Bakatolike na bokonzi, bomikaboli, nsima bokoli ya nkita banda mibu ya 1960.
+victims|Bato nkóto na nkóto babomamaki nsima ya etumba; mingi koleka bakɔtaki na boloko.
+## 1978-democratic-constitution
+name|Mibeko ya mboka ya demokrasi
+context|Ba-Espagnol bandimaki mibeko ya mboka ya demokrasi, na nse ya mokonzi Juan Carlos.
+stakes|Demokrasi, bomiyangeli ya bitúka mpe bokɔti na Mpoto na 1986.
+## 1974-04-25-carnation-revolution
+name|Bobongwani ya Bafololo ya Œillet
+note|Nsuka ya boyangeli ya makasi mpe ya bitumba ya bokolonyi.
+context|Bakonzi ya basoda bakweisaki boyangeli ya makasi ya Portugal pene na kosopa makila te; bato batyaki bafololo ya œillet na mondoki na bango.
+stakes|Demokrasi na Portugal mpe lipanda mpo na bikólo na yango ya bokolonyi na Afrika.
+victims|Bato minei bakufaki.
+## 1665-great-plague-of-london
+name|Peste Monene ya Londres
+context|Peste epalanganaki na Londres na eleko ya moi ya 1665.
+stakes|Peste monene ya nsuka na Angleterre; bato ya ndako ya mokonzi mpe bazwi bakimaki engumba.
+victims|Pene na bato 100 000 bakufaki, pene na ndambo moko na minei ya Londres.
+## 1666-09-02-great-fire-of-london
+name|Mɔ́tɔ Monene ya Londres
+context|Mɔ́tɔ oyo ebandaki na esika ya kotumba mampa ezikaki mikolo minei na City ya Londres.
+stakes|Batongaki lisusu Londres na babriki mpe mabanga; Lingomba monene ya St Paul ya Christopher Wren.
+victims|Bakufi moke kaka oyo bakomaki; bato 70 000 bazangaki ndako.
+## 1707-05-01-union-of-england-and-scotland
+name|Bosangani ya Angleterre mpe Écosse
+context|Mibeko ya Bosangani esangisaki Angleterre mpe Écosse na Bokonzi ya Grande-Bretagne.
+stakes|Parlement moko na Londres; Écosse ebatelaki mibeko mpe lingomba na yango.
+## 1760-first-industrial-revolution
+name|Bobongwani ya liboso ya baizini
+context|Masini, makala ya mabanga mpe molinga ya mɔ́tɔ ebongolaki bosali bilamba, ebende mpe mibembo, liboso na Angleterre.
+stakes|Ndenge ya kosala na baizini, bokoli ya bingumba mpe libota ya sika ya basali.
+victims|Mosala ya bana mpe bobola ya bingumba; mibu ya bomoi ekitaki na bingumba ya baizini.
+## 1837-victorian-era
+name|Ntango ya Victoria
+context|Mwasi-mokonzi Victoria ayangelaki mibu 63 Angleterre mpe bokonzi monene ya mokili mobimba.
+stakes|Baizini, bokonzi monene, bobongisi mpe bizaleli ya makasi.
+## 1940-07-10-battle-of-britain
+name|Etumba ya Angleterre
+context|Mampinga ya mpɛpɔ ya Allemagne emekaki kozwa bokonzi ya likolo liboso ya bobotoli; RAF etɛmɛlaki.
+stakes|Angleterre etikalaki na etumba; babombe ya Blitz ebɛtaki bingumba na yango tii na 1941.
+victims|Pene na batamboli-mpɛpɔ 1 500 babomamaki; pene na bato ya mboka 40 000 na Blitz.
+## 1948-07-05-national-health-service
+name|Mosala ya leta ya bokolongonu (NHS)
+context|Angleterre ebandisaki NHS, mosala ya bokolongonu ya ofele mpo na bato nyonso ntango basalelaka yango.
+stakes|Ndakisa ya leta oyo ebatelaka bato nsima ya etumba.
+## 2020-01-31-brexit
+name|Brexit
+context|Nsima ya référendum ya 2016, Royaume-Uni ebimaki na Union européenne.
+stakes|Nsuka ya bonsomi ya kotambola na UE; bandelo ya sika mpe mikanda ya sika mpo na mabota.
+## 1916-04-24-easter-rising
+name|Botomboki ya Pâques
+context|Ba-républicain ya Irlande batombokaki na Dublin na poso ya Pâques; Ba-Anglais babomaki bakambi na bango.
+stakes|Bobomi yango ebongolaki makanisi ya bato mpo na lipanda.
+victims|Pene na bato 500 bakufaki.
+## 1922-12-06-irish-free-state
+name|État libre d'Irlande
+context|Nsima ya etumba ya lipanda, boyokani moko ebandisaki État libre d'Irlande; nordi etikalaki ya Angleterre.
+stakes|Lipanda, na ntalo ya bokaboli mpe ya etumba ya bandeko.
+## 1922-06-28-irish-civil-war
+name|Etumba ya bandeko na Irlande
+context|Baoyo bandimaki boyokani na Angleterre mpe baoyo baboyaki yango babundaki bango na bango.
+stakes|État libre elongaki; bokabwani molai na politiki ya Irlande.
+victims|Pene na bato 1 500 tii na 2 000 bakufaki.
+## 1968-the-troubles-northern-ireland
+name|Mobulu (Irlande ya nordi)
+context|Makambo ya makasi kati na ba-nationaliste, mingi Bakatolike, mpe ba-unioniste, mingi Baprotestant, elongo na mampinga ya Angleterre.
+stakes|Esilaki na boyokani ya Mokolo ya Mitano Mosantu na 1998.
+victims|Pene na bato 3 500 bakufaki.
+## 1613-romanov-dynasty
+name|Libota ya bakonzi Romanov
+context|Nsima ya Ntango ya Mobulu, baponaki Michel Romanov tsar.
+stakes|Bikeke misato ya boyangeli ya nguya nyonso mpe ya bopalangani, tii na bobongwani ya 1917.
+## 1812-06-24-napoleon-s-invasion-of-russia
+name|Bobotoli ya Russie na Napoléon
+note|Grande Armée ebebi ntango ezalaki kozonga nsima.
+context|Napoléon ebotolaki Russie na mibali pene na 600 000 ya Mpoto mobimba mpe akómaki na Moscou oyo ezalaki kozika.
+stakes|Bozongi nsima na eleko ya malili ebebisaki Grande Armée mpe ebongolaki nzela ya etumba mpo na kotɛmɛla Napoléon.
+victims|Pene na basoda 400 000 tii na 500 000 ya Grande Armée bakufaki; Russie mpe ebungisaki bato mingi ndenge moko.
+## 1861-03-03-serfdom-abolished
+name|Bolongoli bowumbu ya basali-bilanga
+context|Tsar Alexandre II asikolaki basali-bilanga ya baombo ya bokonzi monene ya Russie.
+stakes|Bonsomi, kasi basengelaki kofuta mabele; basali-bilanga bakendaki na bingumba.
+## 1905-revolution-of-1905
+name|Bobongwani ya 1905
+context|Nsima ya bolongi na Japon mpe bobomi ya «Lomingo ya Makila», ba-grève mpe botomboki eningisaki Russie.
+stakes|Parlement, Douma, oyo tsar apesaki; komekama liboso ya 1917.
+victims|Bato nkóto babomamaki.
+## 1921-famine-of-1921-1922
+name|Nzala ya 1921–1922
+context|Elanga, etumba mpe bozwi mbuma na makasi ememaki nzala na etúka ya Volga mpe na Ukraine.
+stakes|Lisalisi ya mokili, mpe kotika «communisme ya etumba».
+victims|Pene na bato milio 5 bakufaki.
+## 1922-12-30-soviet-union
+name|Union soviétique
+context|Russie, Ukraine, Biélorussie mpe Transcaucasie basalaki Union ya ba-Repibiliki ya socialiste ya ba-Soviétique.
+stakes|Ekólo ya lisanga moko ya politiki likolo ya ndambo moko na motoba ya mabele ya mokili, tii na 1991.
+victims|Bato ntuku na ntuku ya milio bakufaki na nzala, na bobomi ya politiki mpe na Goulag.
+## 1932-holodomor
+name|Holodomor
+note|Nzala oyo bato basalaki: bamilio ya bakufi.
+context|Bosangisi bilanga na makasi ya Staline mpe bozwi mbuma na makasi ememaki nzala na Ukraine.
+stakes|Bikólo mingi endimaka yango lokola koboma libota mobimba ya Ba-Ukrainien.
+victims|Pene na milio 3,5 tii na 5 ya bakufi na Ukraine.
+## 1936-the-great-terror
+name|Nsɔ́mɔ Monene
+context|Bobomi ya politiki ya Staline ebɛtaki lisanga, mampinga mpe bato ya mpamba, na bosambisi ya lokuta mpe na motango ya bato oyo basengelaki kokanga.
+stakes|Nsɔ́mɔ na biteni nyonso ya lisanga ya bato; Goulag etondaki.
+victims|Pene na bato 680 000 tii na 750 000 babomamaki; koleka milio moko batindamaki na bakaa.
+## 1941-06-22-the-war-against-germany
+name|Etumba na Allemagne
+note|Pene na Ba-Soviétique milio 27 bakufaki.
+context|Allemagne ebotolaki Union soviétique; etumba ya ɛsti ezalaki monene koleka mpe oyo ebomaki koleka.
+stakes|Mampinga ya Motane ekómaki na Berlin na 1945; bokonzi ya Ba-Soviétique likolo ya Mpoto ya ɛsti.
+victims|Pene na Ba-Soviétique milio 27 bakufaki.
+## 1986-04-26-chernobyl-disaster
+name|Likama ya Tchernobyl
+context|Réacteur moko epasukaki na Tchernobyl na Ukraine, mpe putulu ya radioactivité epalanganaki likolo ya Mpoto.
+stakes|Esika oyo bapekisi kokɔta, solo oyo babombaki mpe ntembe mpo na nguya ya nucléaire.
+victims|Bato 31 bakufaki mbala moko; batángi ete liwa ya kanser oyo elandaki ekoki kokóma nkóto.
+## 1991-08-24-independence-of-ukraine
+name|Lipanda ya Ukraine
+context|Nsima ya bomeki ya kokweisa boyangeli na Moscou oyo elongaki te, Ukraine eyebisaki lipanda; 90 % bandimaki yango na Décembre.
+stakes|Ukraine ya lipanda, na bandelo oyo endimami, kati na yango Crimée.
+## 2014-crimea-annexed-war-in-the-donbas
+name|Bozwi Crimée, etumba ya Donbass
+context|Nsima ya bobongwani ya Maïdan, Russie ezwaki Crimée mpe esungaki batomboki oyo basimbi bibundeli na Donbass.
+stakes|Ebandeli ya etumba oyo ekómaki bobotoli na 2022.
+victims|Pene na bato 14 000 bakufaki tii na 2021.
+## 1803-louisiana-purchase
+name|Bosombi ya Louisiane
+context|Napoléon atekaki mabele ya Louisiane ya France na États-Unis.
+stakes|États-Unis ebakisaki bonene na yango mbala mibale mpe efungolaki nzela ya wɛsti.
+## 1865-12-06-slavery-abolished
+name|Bolongoli bowumbu
+context|Bobongisi ya 13 ya Mibeko ya mboka elongolaki bowumbu na États-Unis.
+stakes|Bonsomi mpo na bato milio minei, nsima bokaboli bato na langi ya nzoto na sudi.
+## 1892-ellis-island
+name|Ellis Island
+note|Pene na bato milio zomi na mibale ya bapaya baleki wana.
+context|Esika ya koyamba bapaya na libongo ya New York eyambaki bato ya sika ya Mpoto mibu ntuku motoba.
+stakes|Bakomi na yango ezali bozwi mpo na mabota ya Baamerika bamilio.
+victims|Pene na bato milio zomi na mibale balekaki wana; moke kaka bazongisamaki.
+## 1920-08-18-women-s-right-to-vote
+name|Likoki ya basi ya kopona
+context|Bobongisi ya 19 ya Mibeko ya mboka epesaki basi ya Amerika likoki ya kopona.
+stakes|Bolongi ya bitumba ya mibu mingi ya ba-suffragette.
+## 1933-the-new-deal
+name|New Deal
+context|Prezida Roosevelt azongiselaki Bobola Monene na misala ya leta, na lisalisi mpe na mibeko ya kobatela.
+stakes|Leta fédéral ezwaki mosala ya sika na nkita mpe na bomoi ya bato.
+## 1954-civil-rights-movement
+name|Lisanga ya makoki ya bana-mboka
+context|Baamerika ya Afrika babundaki na bokaboli bato na langi ya nzoto, longwa na boyoki ya kozwa bisi na Montgomery tii na mibembo ya Martin Luther King.
+stakes|Mibeko ya makoki ya bana-mboka ya 1964 mpe 1965.
+victims|Babomaki bato oyo bazalaki kobunda, kati na bango Martin Luther King na 1968.
+## 1963-11-22-assassination-of-john-f-kennedy
+name|Bobomi ya John F. Kennedy
+context|Babɛtaki prezida Kennedy masasi mpe akufaki na Dallas.
+stakes|Likamwisi ya ekólo mobimba mpe mituna oyo ezali naino.
+## 1830-french-algeria
+name|Algérie ya France
+context|France ebotolaki Algérie banda 1830 mpe ekómisaki yango bitúka ya France oyo Bato ya Mpoto bafandaki.
+stakes|Mibu 132 ya bokolonyi, na makoki oyo ekokani te kati na Bamizulma mpe Bato ya Mpoto.
+victims|Bobotoli ebomaki Ba-Algérien nkámá na nkámá ya nkóto.
+## 1962-07-05-independence-of-algeria
+name|Lipanda ya Algérie
+note|Bato nkámá na nkámá ya nkóto bakei na France.
+context|Nsima ya boyokani ya Évian mpe référendum, Algérie ezwaki lipanda.
+stakes|Pene na ba-pied-noir 800 000 mpe ba-harki nkóto na nkóto bakendaki na France.
+victims|Ba-harki nkóto babomamaki nsima ya lipanda.
+## 1991-12-algerian-civil-war
+name|Etumba ya bandeko na Algérie
+context|Basoda balongolaki maponi oyo ba-islamiste bazalaki kolonga; masanga oyo basimbi bibundeli mpe leta babundaki mibu zomi.
+stakes|«Mibu zomi ya moindo»: bobomi bato mingi, nsɔ́mɔ mpe bokimi mboka.
+victims|Pene na bato 150 000 tii na 200 000 bakufaki.
+## -3500-the-wheel
+name|Mwalo (roue)
+context|Na Mésopotamie mwalo ya mosali-mbɛki ebimi, nsima bitumbu ya mwalo oyo bangɔmbɛ, nsima bampunda, babendaka.
+stakes|Mibembo, mombongo mpe etumba na mabele ebongwani libela; mwalo ekobaluka ba-moulin mpe masini mibu nkóto mitano oyo ekoya.
+## 105-paper-in-china
+name|Papie, na Chine
+context|Na ndako ya bakonzi Han, balobaka ete Cai Lun nde asalaki papie na mposo ya nzete, na nsinga ya chanvre mpe na bilamba ya kala.
+stakes|Ntalo moke koleka soie to bambu, papie ememi makomi, boyangeli mpe nsima kobɛta mikanda na Azia mobimba, mpe tii na Mpoto na nzela ya mokili ya Baarabe.
+## 1040-movable-type-in-china
+name|Bilembo oyo ekoki kolongwa, na Chine
+context|Bi Sheng abɛti mikanda na bilembo ya mabele ya kotumba oyo ekoki kolongwa, bikeke minei liboso ya Gutenberg.
+stakes|Bakopi mingi na biteni oyo basalelaka lisusu: na Chine mpe na Corée, mikanda mpe mikanda ya leta epalangani mbangu koleka.
+## 1608-the-telescope
+name|Longɛnɛ ya kotala mosika (télescope)
+context|Basali ya talatala ya miso ya Repibiliki ya Hollande bakɔtisi talatala mibale na mopɛpɛ moko mpo na komona mosika.
+stakes|Liso emoni koleka yango moko: bokambi masuwa, etumba mpe boyebi ya minzoto ebongwani, mpe likolo ekómi esika oyo bamekaka.
+## 1712-the-steam-engine
+name|Masini ya molinga ya mɔ́tɔ
+context|Masini ya Thomas Newcomen elongoli mai na mabulu ya mabanga ya Angleterre; James Watt akómisi yango malamu koleka banda 1769.
+stakes|Makasi etali lisusu misuni, mopɛpɛ to mai te: motema ya bobongwani ya baizini, ya engbunduka mpe ya masuwa ya mɔ́tɔ.
+## 1796-the-first-vaccine-against-smallpox
+name|Mangwele ya liboso, mpo na variole
+context|Edward Jenner abateli elenge mobali na variole na eloko oyo azwaki na mpota ya variole ya ngɔmbɛ.
+stakes|Variole ebomaki bato bamilio nkámá na bikeke mingi; mangwele epalangani na mokili, mpe na 1980 bayebisi ete bokono yango esili.
+## 1800-the-electric-battery
+name|Pile ya kurá
+context|Alessandro Volta atyi bapalaki ya zinc mpe ya cuivre likolo na likolo, oyo mai ya mungwa ekaboli, mpe azwi kurá oyo ekatanaka te.
+stakes|Esika ya liboso ya kurá oyo ewumelaka: ebandeli ya chimie ya kurá, ya télégraphe mpe ya biloko nyonso ya kurá oyo elandaki.
+## 1826-photography
+name|Kobɛta foto
+context|Nicéphore Niépce abombi elili oyo amonaki na lininisa na ye na Bourgogne; na 1839 bapesi mokili mayele ya Daguerre.
+stakes|Mbala ya liboso elongi to esika ekoki kobatelama ndenge ezalaki: bafoto ya libota, bazulunalo, bokundoli bakufi.
+## 1837-the-electric-telegraph
+name|Télégraphe ya kurá
+context|Cooke mpe Wheatstone na Angleterre, nsima Morse mpe bilembo na ye na États-Unis, batindi nsango na nzela ya bansinga ya ebende.
+stakes|Nsango etamboli mbangu koleka mpunda to masuwa nyonso: zando, engbunduka, mampinga mpe diplomatie elandi nsinga; nsinga moko ekatisi Atlantique na 1866.
+## 1876-the-telephone
+name|Telefone
+context|Alexander Graham Bell azwi brevet ya telefone na États-Unis.
+stakes|Mongongo yango moko ekatisi mosika: mabota mpe mombongo bakómi pene na bango na bango, litambe ya liboso ya ba-réseau ya lelo.
+## 1879-the-electric-light-bulb
+name|Mwinda ya kurá (ampoule)
+context|Thomas Edison na États-Unis mpe Joseph Swan na Angleterre basali ba-ampoule oyo ewumelaka.
+stakes|Pole na kopusa bouton: mpokwa milai koleka, banzela mpe baizini ya kobatelama koleka, mpe ba-réseau ya kurá oyo batongi mpo na yango.
+## 1885-the-rabies-vaccine
+name|Mangwele mpo na bokono ya mbwa ya liboma
+context|Louis Pasteur asalisi Joseph Meister, elenge mobali oyo mbwa ya liboma aswaki, na mangwele oyo asalaki na laboratoire na ye.
+stakes|Bokono yango ezalaki koboma ntango nyonso soki ebimi; Institut Pasteur, oyo babandisaki na 1888, ememi mangwele mpe boyebi ya mikrobe na mokili mobimba.
+## 1886-the-automobile
+name|Motuka
+context|Carl Benz azwi brevet ya motuka oyo motɛ́ɛ ya esanzi ya mɔ́tɔ etambwisaka na Allemagne.
+stakes|Mibembo ya moto moko moko ebongwani: banzela, petrole, bisika zingazinga ya bingumba mpe baizini ya mituka esali ekeke ya 20.
+## 1895-cinema
+name|Sinema
+context|Bandeko Lumière balakisi mafilme na bango ya liboso na bato oyo bafutaki na Paris.
+stakes|Bililingi oyo etambolaka ekómi mayele ya bato nyonso mpe talatala ya ekeke: nsango ya mafilme, propagande mpe masolo oyo bamilio batalaki.
+## 1903-the-aeroplane
+name|Mpɛpɔ
+context|Na Caroline du Nord, bandeko Wright basali bopumbwi ya liboso na mpɛpɔ ya motɛ́ɛ oyo bakambaka.
+stakes|Na mibu ntuku mitano mpɛpɔ ememi mikanda, babombe mpe bato: etumba longwa na likolo, mpe mokili na mokolo moko ya mobembo.
+## 1946-the-electronic-computer
+name|Ordinatɛ́ɛ ya électronique
+context|ENIAC, oyo batongaki mpo na mampinga ya États-Unis, etángi na ba-lampe nkóto; Turing mpe basusu basilaki kotya makanisi na yango.
+stakes|Kotánga na mbangu ya électronique: siansi, bilembo ya kobombama mpe boyangeli, nsima biro nyonso mpe ndako nyonso.
+## 1947-the-transistor
+name|Transistor
+context|Na Bell Labs, Bardeen, Brattain mpe Shockley basali transistor ya liboso.
+stakes|Eloko ya kofungola mpe kokanga kurá ya moke, ya ntalo moke mpe ya kondimama: ba-radio, ba-ordinatɛ́ɛ mpe ba-puce nyonso oyo elandaki.
+## 1955-the-polio-vaccine
+name|Mangwele mpo na polio
+context|Bayebisi ete mangwele ya Jonas Salk ezali malamu mpe esalaka; mangwele ya kolya ya Albert Sabin elandi na mibu ya 1960.
+stakes|Polio ezalaki kobebisa makolo ya bana nkámá na nkámá ya nkóto mobu na mobu; lelo etikali kaka na bisika moke ya mokili.
+## 1989-the-world-wide-web
+name|World Wide Web
+context|Na CERN pene na Genève, Tim Berners-Lee apesi likanisi ya bapaje oyo ekangani mpe batángaka na nzela ya Internet.
+stakes|Boyebi, mombongo mpe masolo na Internet mpo na bato bamiliare; lisolo ya libota mpe ekómi eloko oyo bato balukaka mpe bakabolaka.
+## 2007-the-smartphone
+name|Telefone ya mayele (smartphone)
+context|iPhone mpe batelefone oyo elandaki etyi ordinatɛ́ɛ, kamera mpe Internet na libenga.
+stakes|Na mibu zomi, bato mingi ya mokili bazali na yango: bafoto, nsango mpe bakarte bisika nyonso, mpe likebi na nse ya kotindika ya sika.
+## 2020-messenger-rna-vaccines
+name|Mangwele ya ARN messager
+context|Bambula mingi ya bolukiluki, kati na yango ya Katalin Karikó, ebimisi mangwele mpo na COVID-19 liboso mobu moko esila nsima ya bopalangani.
+stakes|Nzela ya sika ya kosala mangwele mbangu; bamiliare ya ba-dose na mibu mibale.
+## 1498-vasco-da-gama-opens-the-sea-route-to-india
+name|Vasco de Gama afungoli nzela ya mbu mpo na Inde
+context|Na kozinga Afrika, masuwa ya Portugal ekómi na Calicut na libongo ya Inde.
+stakes|Mombongo ya bikɛlɛ na mbu: bokonzi ya Portugal na Mbu ya Indien, mpe Mpoto ekómi na Azia na nzela moko.
+## 1519-magellan-s-expedition-sails-round-the-world
+name|Mobembo ya Magellan ezingi mokili
+context|Masuwa mitano elongwe na Espagne na nse ya Magellan; moko ezongi nsima ya mibu misato na nse ya Elcano, nsima ete babomaki Magellan na Philippines.
+stakes|Mobembo ya liboso ya kozinga mokili: elembeteli ya bonene ya mabele mpe ete mbu moko ekangisaka mbu nyonso mosusu.
+victims|Koleka 200 kati na mibali pene na 270 oyo babimaki bazongaki ata mokolo moko te.
+## 1543-copernicus-puts-the-sun-at-the-centre
+name|Copernic atyi Moi na katikati
+context|Nicolas Copernic, chanoine ya Frombork na Pologne, abimisi ndenge ya mokili epai mabele ezingaka Moi.
+stakes|Mabele ezali lisusu katikati te: ebandeli ya bobongwani ya siansi oyo Kepler, Galilée mpe Newton bakobaki.
+## 1610-galileo-turns-his-telescope-to-the-sky
+name|Galilée abaluki longɛnɛ na ye epai ya likolo
+context|Galilée amoni basanza ya Jupiter, bandenge ya Vénus mpe bangomba ya Sanza.
+stakes|Kotala mpe komona liboso ya bokonzi: bilembeteli mpo na Copernic, mpe bosambisi na Roma na 1633.
+## 1687-newton-s-laws-of-motion-and-gravitation
+name|Mibeko ya Newton ya botamboli mpe ya bobendi
+context|Buku Principia ya Isaac Newton elimboli na mobeko moko bokwei ya pome mpe banzela ya minzoto oyo ezingaka Moi.
+stakes|Mokili oyo etosaka matematiki: ndakisa ya siansi bikeke mibale, mpe mibeko ya masini nyonso.
+## 1768-cook-s-voyages-in-the-pacific
+name|Mibembo ya Cook na Pacifique
+context|James Cook asali bakarte ya Nouvelle-Zélande, ya libongo ya ɛsti ya Australie mpe ya bisanga mingi ya Pacifique mpo na Angleterre.
+stakes|Karte ya Pacifique etondi; bokolonyi ya Australie elandi banda 1788, na ntalo makasi mpo na bato ya bonkɔkɔ na yango.
+## 1859-darwin-s-theory-of-evolution
+name|Makanisi ya Darwin ya bobongwani ya bikelamu
+context|Charles Darwin abimisi buku L'Origine des espèces, nsima ya mobembo ya Beagle mpe mibu ntuku mibale ya mosala.
+stakes|Bikelamu ya bomoi ebimaka moko na mosusu na nzela ya boponi ya bozalisi: biologie etongami lisusu, mpe ntembe molai na kondima ebandi.
+## 1869-mendeleev-s-periodic-table
+name|Tablo ya Mendeleïev ya biloko ya chimie
+context|Dmitri Mendeleïev atyi biloko ya chimie na tablo moko mpe atiki bisika mpamba mpo na oyo eyebani naino te.
+stakes|Chimie ezwi karte na yango: bamoni biloko oyo ezangaki esika kaka oyo alobaki.
+## 1895-x-rays
+name|Mwinda ya X (rayons X)
+context|Wilhelm Röntgen amoni mwinda oyo ekatisaka nzoto mpe abɛti foto ya mikuwa ya lobɔkɔ ya mwasi na ye.
+stakes|Monganga amoni na kati ya nzoto ya moto ya bomoi: radiographie ekómi na balopitalo na mibu moke.
+## 1898-radioactivity-marie-and-pierre-curie-discover-radium
+name|Radioactivité: Marie mpe Pierre Curie bamoni radium
+context|Na Paris, Marie Skłodowska-Curie, oyo abotamaki na Varsovie, mpe Pierre Curie bakaboli polonium mpe radium.
+stakes|Atome ezali na bomoi na yango moko: Prix Nobel mibale mpo na Marie Curie, bankisi mpo na kanser, mpe nzela ya physique nucléaire.
+## 1905-einstein-s-relativity
+name|Relativité ya Einstein
+context|Albert Einstein, mosali na biro ya ba-brevet na Berne, abimisi relativité restreinte mpe E = mc²; relativité générale elandi na 1915.
+stakes|Ntango mpe esika etali moto oyo azali kotala: physique ya minzoto, ya bokambi na ba-satellite mpe ya nguya ya atome.
+## 1911-12-14-amundsen-reaches-the-south-pole
+name|Amundsen akómi na Pôle Sud
+context|Lisanga ya Ba-Norvégien ya Roald Amundsen ekómi na pôle sanza moko liboso ya Robert Scott, oyo akufi elongo na baninga na ye na nzela ya bozongi.
+stakes|Esika monene ya nsuka oyo eyebanaki te na karte ekómi eyebani: ntango ya mibembo na ba-pôle esili.
+victims|Scott mpe baninga na ye minei.
+## 1928-penicillin
+name|Pénicilline
+context|Na Londres, Alexander Fleming amoni mokɔ́ngɔ́ moko oyo ebomaka ba-bactérie; basali pénicilline mingi banda 1943.
+stakes|Antibiotique ya liboso: bokono ya mikrobe oyo ezalaki koboma ebikisami, bomoi ya bato bamilio ebikisami banda Etumba ya Mibale ya Mokili.
+## 1953-the-double-helix-of-dna
+name|Spirale mibale ya ADN
+context|Na Cambridge, James Watson mpe Francis Crick, na kotɛlɛma na bililingi ya Rosalind Franklin, balimboli ndenge ADN etongami.
+stakes|Bokitani ezwi molécule na yango: génétique, monganga, mpe nsima ba-test ya ADN oyo etángaka banzela ya mabota.
+## 1953-05-29-everest-climbed
+name|Bomati ya liboso ya Everest
+context|Edmund Hillary mpe Tenzing Norgay bakómi na nsɔ́ngɛ ya ngomba ya molai koleka na mokili.
+stakes|Bakómi na motondo ya mokili; Himalaya efungwami mpo na bamati-bangomba.
+## 1957-10-04-sputnik-the-first-artificial-satellite
+name|Spoutnik, satellite ya liboso oyo bato basali
+context|Union soviétique etyi na nzela na yango likolo lingumba ya santimɛtɛlɛ 58; makɛlɛlɛ na yango ya radio eyokani na mokili mobimba.
+stakes|Ntango ya likolo efungwami, mpe elongo na yango bomekani kati na Union soviétique mpe États-Unis.
+## 1961-04-12-gagarin-the-first-human-in-space
+name|Gagarine, moto ya liboso na likolo
+context|Youri Gagarine azingi mabele mbala moko na Vostok 1 mpe azongi malamu.
+stakes|Moto atiki mabele mpe azongi: Union soviétique liboso, mpe Amerika ezongisi na Sanza.
+## 2003-the-human-genome-sequenced
+name|Génome ya moto etángami mobimba
+context|Mosala moko ya bikólo mingi esilisi kotánga mikoko miliare misato ya ADN ya moto.
+stakes|Monganga mpe boyekoli ebandeli ya bato etángi libula na biso ya lisanga; génétique ya bankɔkɔ ebimi wana.
+## 2012-the-higgs-boson
+name|Boson ya Higgs
+context|Na CERN, Grand collisionneur de hadrons endimisi eteni oyo Peter Higgs mpe basusu basakolaki na 1964.
+stakes|Eteni ya nsuka oyo ezangaki na modèle standard ya physique, oyo elimbolaka ndenge biteni ezwaka kilo.

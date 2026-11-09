@@ -225,6 +225,8 @@ pub const TRANSLATED: &[(&str, &str)] = &[
     ("ja", include_str!("impact_i18n/ja.txt")),
     ("ar", include_str!("impact_i18n/ar.txt")),
     ("he", include_str!("impact_i18n/he.txt")),
+    ("sw", include_str!("impact_i18n/sw.txt")),
+    ("ln", include_str!("impact_i18n/ln.txt")),
 ];
 
 /// A language's file, read: each landmark's fields by its key.
@@ -2950,6 +2952,20 @@ mod tests {
     }
 
     #[test]
+    fn every_language_the_site_speaks_has_its_landmarks() {
+        for l in crate::i18n::LOCALES {
+            if l.tag == "en" || l.tag == "fr" {
+                continue;
+            }
+            assert!(
+                TRANSLATED.iter().any(|(lang, _)| *lang == l.tag),
+                "{}: no file in src/impact_i18n/",
+                l.tag
+            );
+        }
+    }
+
+    #[test]
     fn each_language_names_and_explains_every_landmark() {
         for (lang, _) in TRANSLATED {
             let file = translations().get(lang).expect("the language's file");
@@ -3013,7 +3029,9 @@ mod tests {
         assert_eq!(ww1("ja").name, "第一次世界大戦");
         assert_eq!(ww1("ar").name, "الحرب العالمية الأولى");
         assert_eq!(ww1("he").name, "מלחמת העולם הראשונה");
-        // A language with no file yet reads in English.
-        assert_eq!(ww1("sw").name, "First World War");
+        assert_eq!(ww1("sw").name, "Vita vya Kwanza vya Dunia");
+        assert_eq!(ww1("ln").name, "Etumba ya Liboso ya Mokili");
+        // A language with no file reads in English.
+        assert_eq!(ww1("nl").name, "First World War");
     }
 }

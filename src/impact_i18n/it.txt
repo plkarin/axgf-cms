@@ -1,0 +1,1685 @@
+# Impact's landmarks in Italian (docs/adr/0038): under "## <key>" (the
+# landmark's year and English name, as src/impact.rs keys it), one line a
+# field: name|, note|, context|, stakes|, victims|. A landmark or a field
+# left out reads in English. A machine's translation (Claude), not yet
+# proofread by a native speaker.
+## -10000-end-of-the-last-ice-age-and-the-neolithic-revolution
+name|Fine dell'ultima glaciazione e rivoluzione neolitica
+context|Con il ritiro dei ghiacci, gli abitanti della Mezzaluna fertile cominciarono a coltivare, ad allevare animali e a vivere in villaggi.
+stakes|Vita sedentaria, eccedenze alimentari e popolazioni in crescita: la base di tutte le civiltà successive.
+## -9500-gobekli-tepe-monumental-site-in-anatolia
+name|Göbekli Tepe, sito monumentale in Anatolia
+context|Cacciatori-raccoglitori innalzarono in cerchio pilastri di pietra scolpita su una collina della Turchia sudorientale.
+stakes|Il più antico sito monumentale conosciuto, lì più antico dell'agricoltura: la fede venne forse prima del campo.
+## -8000-neolithic-migrations-from-the-near-east-to-europe
+name|Migrazioni neolitiche dal Vicino Oriente all'Europa
+context|Agricoltori dell'Anatolia si diffusero in Europa nel corso di millenni, mescolandosi ai suoi cacciatori-raccoglitori.
+stakes|Agricoltura, ceramica e nuovi geni raggiunsero l'Europa; la maggior parte degli europei discende in parte da quegli agricoltori.
+## -5000-austronesian-expansion-from-south-east-asia-to-the-pacific
+name|Espansione austronesiana, dal Sud-est asiatico al Pacifico
+context|Navigatori di Taiwan e delle Filippine attraversarono il Pacifico e l'Oceano Indiano su canoe a bilanciere.
+stakes|La più ampia diffusione di una famiglia linguistica prima del 1500, dal Madagascar all'Isola di Pasqua.
+## -3500-sumerian-civilisation-and-cuneiform-writing
+name|Civiltà sumera e scrittura cuneiforme
+context|In Mesopotamia città-stato come Uruk crebbero attorno a templi e canali d'irrigazione; gli scribi imprimevano segni nell'argilla.
+stakes|La scrittura nacque per contare i beni e divenne la memoria di leggi, miti e storia.
+## -3100-ancient-egypt-from-unification-to-the-roman-conquest
+name|Antico Egitto, dall'unificazione alla conquista romana
+context|L'Alto e il Basso Egitto furono uniti sotto i faraoni, un regno che viveva della piena annuale del Nilo.
+stakes|Tremila anni di Stato, scrittura, monumenti e religione, conclusi da Roma nel 30 a.C.
+## -2600-the-great-pyramid-of-khufu
+name|La Grande Piramide di Cheope
+context|Costruita a Giza come tomba del faraone Cheope da decine di migliaia di operai organizzati.
+stakes|La potenza di uno Stato capace di comandare un simile lavoro; l'edificio più alto della Terra per 3800 anni.
+## -2500-indus-valley-civilisation-harappa
+name|Civiltà della valle dell'Indo (Harappa)
+context|Città di mattoni pianificate, con fognature e granai, lungo l'Indo, negli attuali Pakistan e India.
+stakes|Una delle prime civiltà urbane; la sua scrittura non è ancora stata decifrata.
+## -2334-akkadian-empire
+name|Impero accadico
+context|Sargon di Akkad unì le città della Mesopotamia sotto un unico sovrano.
+stakes|Spesso definito il primo impero: un re su molti popoli.
+## -1792-height-of-babylon-code-of-hammurabi
+name|Apogeo di Babilonia (Codice di Hammurabi)
+context|Il re Hammurabi fece di Babilonia il centro della Mesopotamia e fece incidere le sue leggi nella pietra.
+stakes|Uno dei più antichi codici di leggi scritti, con pene stabilite.
+## -1600-shang-dynasty-in-china
+name|Dinastia Shang in Cina
+context|Re che lavoravano il bronzo governarono la pianura del Fiume Giallo e consultavano ossa oracolari.
+stakes|La più antica scrittura cinese conservata, antenata dei caratteri odierni.
+## -1500-olmec-civilisation-mesoamerica
+name|Civiltà olmeca (Mesoamerica)
+context|Sulla costa del Golfo del Messico, gli Olmechi costruirono centri cerimoniali e scolpirono colossali teste di pietra.
+stakes|Una cultura madre della Mesoamerica, di cui i popoli successivi ereditarono dèi e calendari.
+## -1200-late-bronze-age-collapse
+name|Crollo della tarda età del bronzo
+context|In pochi decenni caddero palazzi e regni attorno al Mediterraneo orientale, tra siccità, razzie e rivolte.
+stakes|La fine degli Ittiti e dei Micenei; un'età oscura prima della rinascita greca e fenicia.
+victims|Sconosciute; città incendiate e abbandonate.
+## -1000-nok-culture-west-africa
+name|Cultura Nok (Africa occidentale)
+context|Nell'attuale Nigeria, il popolo Nok fondeva il ferro e realizzava sorprendenti sculture in terracotta.
+stakes|Una precoce lavorazione del ferro a sud del Sahara e una delle più antiche tradizioni scultoree dell'Africa.
+## -1000-kingdom-of-kush-and-the-rise-of-aksum
+name|Regno di Kush e ascesa di Axum
+context|Kush, sul Nilo nell'attuale Sudan, governò l'Egitto per un secolo; più tardi Axum sorse sugli altopiani etiopici.
+stakes|Regni africani che commerciavano tra il Mediterraneo, l'Arabia e l'India; Axum divenne cristiano nel IV secolo.
+## -814-carthage
+name|Cartagine
+context|Una colonia fenicia nell'attuale Tunisia che divenne una potenza marittima.
+stakes|La grande rivale di Roma per il Mediterraneo occidentale, distrutta nel 146 a.C.
+## -776-first-ancient-olympic-games
+name|Primi Giochi olimpici antichi
+context|Le città-stato greche tenevano giochi a Olimpia in onore di Zeus, sotto una tregua sacra.
+stakes|Un'identità greca comune; più tardi i Greci contarono gli anni per Olimpiadi.
+## -753-rome-foundation-republic-empire
+name|Roma: fondazione, Repubblica, Impero
+context|Fondata secondo la leggenda nel 753 a.C., Roma divenne una repubblica, poi un impero attorno al Mediterraneo.
+stakes|Il suo diritto, le sue strade, il latino e poi il cristianesimo plasmarono l'Europa; l'Occidente cadde nel 476.
+## -500-birth-of-buddhism-and-confucianism
+name|Nascita del buddismo e del confucianesimo
+context|Il Buddha in India e Confucio in Cina insegnarono attorno al VI e V secolo a.C.
+stakes|Due modi di vivere e di pensare che guidano ancora centinaia di milioni di persone.
+## -539-achaemenid-empire-persia
+name|Impero achemenide (Persia)
+context|Ciro il Grande prese Babilonia e fondò un impero dall'Indo all'Egeo.
+stakes|Il più grande impero del suo tempo, noto per le sue strade e per la tolleranza delle usanze locali.
+## -322-maurya-empire-india
+name|Impero Maurya (India)
+context|Chandragupta unificò gran parte dell'India; suo nipote Ashoka abbracciò il buddismo dopo una guerra sanguinosa.
+stakes|Il primo grande impero dell'India; gli editti di Ashoka diffusero il buddismo in tutta l'Asia.
+## -221-qin-dynasty-china-unified-the-great-wall
+name|Dinastia Qin: la Cina unificata, la Grande Muraglia
+context|Il re di Qin conquistò i Regni combattenti e divenne il primo imperatore della Cina.
+stakes|Una scrittura, una moneta, una legge: la Cina unificata che durò; prime mura unite contro il nord.
+## -202-han-dynasty-and-the-silk-road
+name|Dinastia Han e Via della Seta
+context|Gli Han governarono la Cina per quattro secoli e aprirono vie commerciali verso l'Asia centrale e Roma.
+stakes|Seta, idee e religioni viaggiarono lungo la Via della Seta; i Cinesi si chiamano ancora Han.
+## 100-teotihuacan-and-classic-maya-civilisation
+name|Teotihuacan e civiltà maya classica
+context|Teotihuacan, vicino all'attuale Città del Messico, fu una delle più grandi città del mondo; i Maya costruirono città nelle foreste a sud.
+stakes|Scrittura, astronomia e calendari di grande precisione nelle Americhe.
+## 320-gupta-empire-india
+name|Impero Gupta (India)
+context|I re Gupta governarono l'India settentrionale in un'epoca di pace e di sapere.
+stakes|Un'età classica: il sistema decimale con lo zero, la letteratura sanscrita, i templi.
+## 375-migration-period-barbarian-invasions
+name|Periodo delle migrazioni («invasioni barbariche»)
+context|Spinti dagli Unni, Goti, Franchi, Vandali e altri popoli entrarono nell'Impero romano.
+stakes|L'Impero d'Occidente si frantumò in regni che divennero le nazioni d'Europa.
+## 476-fall-of-the-western-roman-empire
+name|Caduta dell'Impero romano d'Occidente
+context|Il generale germanico Odoacre depose Romolo Augustolo, l'ultimo imperatore d'Occidente.
+stakes|La fine convenzionale dell'Antichità; l'Impero d'Oriente durò fino al 1453.
+## 500-bantu-migrations-central-and-southern-africa
+name|Migrazioni bantu (Africa centrale e meridionale)
+context|Agricoltori e fabbri di lingua bantu si diffusero nel corso dei secoli dall'Africa centro-occidentale verso il sud del continente.
+stakes|Oggi gran parte dell'Africa centrale, orientale e meridionale parla lingue bantu, tra cui il lingala e lo swahili.
+## -499-greco-persian-wars
+name|Guerre persiane
+context|Le città greche, guidate da Atene e Sparta, resistettero alle invasioni persiane a Maratona, alle Termopili e a Salamina.
+stakes|L'indipendenza greca e la fiducia dell'Atene classica.
+victims|Sconosciute; decine di migliaia nelle grandi battaglie.
+## -431-peloponnesian-war
+name|Guerra del Peloponneso
+context|Atene e la sua lega marittima combatterono Sparta e i suoi alleati per il dominio sulla Grecia.
+stakes|Vinse Sparta; le città greche ne uscirono stremate.
+victims|La sola peste di Atene uccise forse un quarto della sua popolazione.
+## -334-campaigns-of-alexander-the-great
+name|Campagne di Alessandro Magno
+context|Alessandro di Macedonia conquistò in undici anni l'Impero persiano, l'Egitto e le terre fino all'Indo.
+stakes|La lingua e la cultura greche si diffusero in Oriente: il mondo ellenistico.
+victims|Sconosciute; centinaia di migliaia in battaglie e assedi.
+## -264-punic-wars
+name|Guerre puniche
+context|Tre guerre tra Roma e Cartagine, tra cui la marcia di Annibale attraverso le Alpi.
+stakes|Roma divenne padrona del Mediterraneo occidentale; Cartagine fu rasa al suolo nel 146 a.C.
+victims|Centinaia di migliaia; gli ultimi 50 000 abitanti di Cartagine furono ridotti in schiavitù.
+## -58-gallic-wars
+name|Guerre galliche
+context|Giulio Cesare conquistò la Gallia, sconfiggendo Vercingetorige ad Alesia nel 52 a.C.
+stakes|La Gallia divenne romana e di lingua latina: la radice del francese.
+victims|Secondo le fonti antiche, un milione di Galli uccisi e un milione ridotti in schiavitù.
+## -49-caesar-s-civil-war
+name|Guerra civile di Cesare
+context|Cesare varcò il Rubicone e combatté Pompeo e il partito del Senato.
+stakes|Il potere di un solo uomo sulla Repubblica; Cesare fu assassinato nel 44 a.C.
+victims|Decine di migliaia di soldati.
+## -32-last-civil-war-of-the-roman-republic
+name|Ultima guerra civile della Repubblica romana
+context|Ottaviano combatté Marco Antonio e Cleopatra e li sconfisse ad Azio.
+stakes|La fine della Repubblica e dell'Egitto tolemaico; Ottaviano divenne Augusto, il primo imperatore.
+victims|Migliaia, ad Azio e in Egitto.
+## 66-first-jewish-roman-war
+name|Prima guerra giudaica
+context|La Giudea si ribellò a Roma; le legioni assediarono Gerusalemme.
+stakes|Il Tempio fu distrutto nel 70; la vita ebraica si volse alla sinagoga e alla diaspora.
+victims|Gli autori antichi parlano di centinaia di migliaia di morti.
+## 220-wars-of-the-three-kingdoms-china
+name|Guerre dei Tre Regni (Cina)
+context|Dopo la caduta degli Han, gli stati di Wei, Shu e Wu si contesero la Cina.
+stakes|Una Cina divisa per decenni, più tardi materia di un grande romanzo.
+victims|La popolazione registrata della Cina scese da circa 56 a 16 milioni, in parte per il crollo del censimento.
+## 622-the-hijra-beginning-of-islam
+name|L'Egira: inizio dell'islam
+context|Il profeta Maometto lasciò la Mecca per Medina, dove prese forma la prima comunità musulmana.
+stakes|L'anno uno del calendario islamico; una fede che unì l'Arabia e si diffuse su tre continenti.
+## 618-tang-dynasty-china
+name|Dinastia Tang (Cina)
+context|I Tang riunificarono la Cina e la aprirono al mondo dalla loro capitale Chang'an.
+stakes|Un'età d'oro della poesia, del commercio e del buddismo, e della stampa.
+## 661-umayyad-caliphate
+name|Califfato omayyade
+context|Da Damasco, i califfi omayyadi governarono dalla Spagna all'Indo.
+stakes|L'arabo e l'islam si diffusero nelle terre conquistate.
+## 750-abbasid-caliphate-baghdad
+name|Califfato abbaside (Baghdad)
+context|Gli Abbasidi presero il potere e costruirono Baghdad, un centro di scienza e di traduzione.
+stakes|Il sapere greco, persiano e indiano conservato e sviluppato; la città fu saccheggiata dai Mongoli nel 1258.
+victims|Il sacco di Baghdad del 1258 uccise decine o centinaia di migliaia di persone.
+## 700-swahili-city-states-indian-ocean
+name|Città-stato swahili (Oceano Indiano)
+context|Città mercantili come Kilwa e Mombasa crebbero sulla costa dell'Africa orientale, legate all'Arabia, all'India e alla Cina.
+stakes|Una cultura e una lingua swahili, africane e musulmane, nate dal commercio oceanico.
+## 793-viking-age
+name|Età vichinga
+context|Navigatori scandinavi razziarono, commerciarono e si insediarono dall'Irlanda alla Russia e raggiunsero l'America.
+stakes|La Normandia, l'Inghilterra danese e i primi stati russi ne portano il segno.
+victims|Migliaia, nelle incursioni contro monasteri e città.
+## 800-coronation-of-charlemagne
+name|Incoronazione di Carlo Magno
+context|Papa Leone III incoronò imperatore a Roma il re dei Franchi Carlo Magno.
+stakes|L'idea di un impero cristiano in Occidente, antenato della Francia e della Germania.
+## 800-ghana-empire
+name|Impero del Ghana
+context|Negli attuali Mauritania e Mali, il Ghana si arricchì con il commercio dell'oro e del sale attraverso il Sahara.
+stakes|Il primo dei grandi imperi dell'Africa occidentale.
+## 960-song-dynasty-china
+name|Dinastia Song (Cina)
+context|I Song governarono una Cina popolosa e urbana di mercanti e letterati.
+stakes|La cartamoneta, la bussola, la polvere da sparo e la stampa a caratteri mobili.
+## 1000-great-zimbabwe
+name|Grande Zimbabwe
+context|Costruttori shona innalzarono grandi recinti di pietra nell'Africa meridionale, un centro del commercio dell'oro.
+stakes|La prova di un potente Stato africano, a lungo negata dagli autori coloniali.
+## 1192-kamakura-shogunate-japan
+name|Shogunato di Kamakura (Giappone)
+context|Lo shogun, un capo militare, prese il potere reale in Giappone mentre l'imperatore regnava solo di nome.
+stakes|Sette secoli di governo guerriero; la classe dei samurai.
+## 1206-mongol-empire-pax-mongolica
+name|Impero mongolo (Pax Mongolica)
+context|Gengis Khan unì le tribù mongole e fondò il più grande impero terrestre della storia.
+stakes|Una volta conquistata, l'Eurasia fu aperta al commercio e ai viaggi, tra cui quelli di Marco Polo.
+## 1235-mali-empire-mansa-musa
+name|Impero del Mali (Mansa Musa)
+context|Sundiata fondò il Mali; il pellegrinaggio di Mansa Musa alla Mecca nel 1324 abbagliò il mondo con il suo oro.
+stakes|Timbuctù divenne un centro del sapere musulmano.
+## 1299-foundation-of-the-ottoman-empire
+name|Fondazione dell'Impero ottomano
+context|Osman, un capo turco dell'Anatolia, fondò lo Stato che portò il suo nome.
+stakes|Un impero che prese Costantinopoli e durò fino al 1922.
+## 1346-the-black-death
+name|La peste nera
+context|La peste, portata dalle pulci dei ratti lungo le vie commerciali, dilagò dall'Asia centrale all'Europa e al Nordafrica.
+stakes|La manodopera scarseggiò e i salari salirono; fede, medicina e società furono scosse.
+victims|Tra un terzo e la metà della popolazione europea; forse da 75 a 200 milioni nel mondo.
+## 1368-ming-dynasty-china
+name|Dinastia Ming (Cina)
+context|I Ming cacciarono i Mongoli e governarono la Cina per tre secoli.
+stakes|La Città Proibita, la Grande Muraglia come la vediamo oggi e i viaggi di Zheng He.
+## 1390-kingdom-of-kongo
+name|Regno del Kongo
+context|Un regno attorno alla foce del Congo, che divenne cristiano dopo l'arrivo dei Portoghesi nel 1483.
+stakes|Un grande Stato africano, indebolito dalla tratta degli schiavi e diviso dalla colonizzazione.
+## 1400-inca-empire
+name|Impero inca
+context|Da Cuzco, gli Inca governarono le Ande con strade, terrazzamenti e registri di cordicelle annodate.
+stakes|Il più grande impero dell'America precolombiana.
+## 1428-aztec-empire
+name|Impero azteco
+context|Da Tenochtitlan, su un lago dove oggi sorge Città del Messico, gli Aztechi dominarono il Messico centrale.
+stakes|Una città di 200 000 abitanti, più grande di qualsiasi città spagnola.
+## 1453-05-29-fall-of-constantinople
+name|Caduta di Costantinopoli
+context|Il sultano ottomano Maometto II prese Costantinopoli dopo un assedio di sette settimane.
+stakes|La fine dell'Impero bizantino; gli studiosi greci portarono i loro libri in Italia.
+victims|Migliaia di difensori uccisi; gran parte della popolazione ridotta in schiavitù.
+## 1464-songhai-empire
+name|Impero songhai
+context|Il Songhai, con centro a Gao sul Niger, succedette al Mali come grande potenza dell'Africa occidentale.
+stakes|Il più grande impero della storia africana fino a un'invasione marocchina nel 1591.
+## 1492-10-12-christopher-columbus-reaches-the-americas
+name|Cristoforo Colombo raggiunge le Americhe
+context|Navigando verso ovest per la Spagna, Colombo approdò nei Caraibi, convinto di aver raggiunto l'Asia.
+stakes|L'incontro di due mondi: conquista, commercio e scambio di piante, animali e malattie.
+victims|In un secolo, epidemie e conquista uccisero la maggior parte dei popoli nativi delle Americhe.
+## 632-early-muslim-conquests
+name|Prime conquiste musulmane
+context|Dopo la morte di Maometto, gli eserciti arabi presero la Persia, la Siria, l'Egitto, il Nordafrica e la Spagna.
+stakes|Una delle espansioni più rapide della storia; l'arabo e l'islam si radicarono in quelle terre.
+victims|Sconosciute.
+## 711-the-iberian-reconquista
+name|La Reconquista iberica
+context|I regni cristiani del nord ripresero lentamente la penisola iberica agli stati musulmani.
+stakes|Ne nacquero la Spagna e il Portogallo; Granada cadde nel 1492, l'anno dell'espulsione degli ebrei.
+victims|Sconosciute, nell'arco di otto secoli.
+## 1066-09-28-norman-conquest-of-england
+name|Conquista normanna dell'Inghilterra
+context|Guglielmo, duca di Normandia, sbarcò in Inghilterra e sconfisse re Aroldo a Hastings.
+stakes|Un'élite normanna di lingua francese governò l'Inghilterra; l'inglese prese migliaia di parole francesi.
+victims|Migliaia a Hastings; molti di più nella devastazione del Nord.
+## 1096-the-crusades
+name|Le crociate
+context|I cristiani d'Occidente intrapresero pellegrinaggi armati per prendere Gerusalemme e la Terra Santa.
+stakes|Stati crociati per due secoli; un'ostilità duratura tra cristiani, musulmani e bizantini.
+victims|Forse da 1 a 3 milioni in due secoli, compresi i massacri di ebrei in Europa.
+## 1206-mongol-conquests
+name|Conquiste mongole
+context|Gengis Khan e i suoi eredi conquistarono la Cina, l'Asia centrale, la Persia e la Russia.
+stakes|Un impero dal Pacifico all'Europa, costruito con il terrore e tenuto con il commercio.
+victims|Forse da 30 a 40 milioni di morti.
+## 1274-mongol-invasions-of-japan-1274-and-1281
+name|Invasioni mongole del Giappone (1274 e 1281)
+context|Kublai Khan inviò due flotte contro il Giappone; entrambe furono distrutte dai tifoni.
+stakes|Il Giappone rimase libero; il «vento divino», kamikaze, entrò nella sua leggenda.
+victims|Decine di migliaia di invasori annegati.
+## 1337-hundred-years-war
+name|Guerra dei cent'anni
+context|I re d'Inghilterra e di Francia si contesero la corona e le terre di Francia; Giovanna d'Arco capovolse le sorti.
+stakes|La Francia ne uscì monarchia più forte; l'Inghilterra perse le sue terre sul continente.
+victims|Forse da 2 a 3 milioni di morti, con la fame e la peste.
+## 1455-wars-of-the-roses
+name|Guerra delle due rose
+context|Le casate di Lancaster e di York combatterono per il trono inglese.
+stakes|Enrico Tudor vinse nel 1485 e fondò la dinastia Tudor.
+victims|Decine di migliaia, tra cui molti nobili.
+## 1500-transatlantic-slave-trade
+name|Tratta atlantica degli schiavi
+context|Mercanti europei compravano prigionieri in Africa e li spedivano a lavorare nelle piantagioni americane.
+stakes|Fortune in Europa e nelle Americhe costruite sul lavoro forzato; l'Africa dissanguata della sua gente.
+victims|Circa 12,5 milioni di persone imbarcate; circa 1,8 milioni morirono in mare.
+## 1526-mughal-empire-india
+name|Impero moghul (India)
+context|Babur, venuto dall'Asia centrale, fondò la dinastia moghul; Akbar governò gran parte dell'India.
+stakes|Un impero musulmano su una maggioranza indù; il Taj Mahal; più tardi assorbito dalla Gran Bretagna.
+## 1603-tokugawa-era-and-sakoku-japan
+name|Epoca Tokugawa e sakoku (Giappone)
+context|Gli shogun Tokugawa governarono un Giappone in pace e quasi chiuso agli stranieri.
+stakes|Due secoli di isolamento, conclusi dalle navi da guerra americane nel 1853.
+## 1644-qing-dynasty-china
+name|Dinastia Qing (Cina)
+context|I Manciù venuti dal nord rovesciarono i Ming e governarono la Cina fino al 1912.
+stakes|La massima estensione della Cina; poi il declino sotto la pressione occidentale e giapponese.
+## 1652-foundation-of-cape-town
+name|Fondazione di Città del Capo
+context|La Compagnia olandese delle Indie orientali creò una stazione di rifornimento al Capo di Buona Speranza.
+stakes|L'inizio dell'insediamento europeo nell'Africa australe, e degli afrikaner.
+## 1700-ashanti-dahomey-and-oyo-kingdoms
+name|Regni Ashanti, del Dahomey e di Oyo
+context|Sorsero forti regni dell'Africa occidentale, che commerciavano con gli europei oro, olio di palma e prigionieri.
+stakes|Stati organizzati, con eserciti e corti, prima che la colonizzazione li travolgesse.
+## 1776-07-04-independence-of-the-united-states
+name|Indipendenza degli Stati Uniti
+context|Tredici colonie britanniche si dichiararono libere e unite.
+stakes|La prima repubblica moderna, fondata sui diritti dell'uomo, ma che mantenne la schiavitù.
+## 1789-the-french-revolution
+name|La Rivoluzione francese
+context|La bancarotta e la fame portarono agli Stati generali, alla presa della Bastiglia e alla fine della monarchia.
+stakes|L'uguaglianza davanti alla legge, i diritti dell'uomo, la nazione; poi il Terrore e la guerra.
+victims|Decine di migliaia di giustiziati; centinaia di migliaia nella guerra civile.
+## 1519-spanish-conquest-of-the-aztec-empire
+name|Conquista spagnola dell'Impero azteco
+context|Hernán Cortés, con alleati indigeni, prese Tenochtitlan dopo un assedio.
+stakes|Nacque la Nuova Spagna; i popoli del Messico per tre secoli sotto il dominio coloniale.
+victims|Milioni, soprattutto per il vaiolo.
+## 1532-spanish-conquest-of-the-inca-empire
+name|Conquista spagnola dell'Impero inca
+context|Francisco Pizarro catturò il sovrano inca Atahualpa e conquistò le Ande.
+stakes|Il dominio spagnolo e l'argento di Potosí, che arricchì l'Europa.
+victims|Milioni, per epidemie, guerra e lavoro forzato.
+## 1568-eighty-years-war
+name|Guerra degli ottant'anni
+context|Le province olandesi si ribellarono al dominio spagnolo e alla repressione cattolica.
+stakes|Nacque la Repubblica delle Province Unite, una potenza del commercio e della tolleranza.
+victims|Centinaia di migliaia.
+## 1592-imjin-war-korea-japan
+name|Guerra Imjin (Corea, Giappone)
+context|Il Giappone invase due volte la Corea; la Corea e la Cina dei Ming risposero, in mare con le navi dell'ammiraglio Yi.
+stakes|Il Giappone si ritirò; la Corea rimase in rovina.
+victims|Forse un milione di coreani morti.
+## 1618-thirty-years-war
+name|Guerra dei trent'anni
+context|Una guerra di religione nel Sacro Romano Impero divenne una guerra europea per il potere.
+stakes|La pace di Vestfalia stabilì la regola degli stati sovrani in Europa.
+victims|Da 4,5 a 8 milioni di morti; parti della Germania persero un terzo della popolazione.
+## 1642-english-civil-wars
+name|Guerre civili inglesi
+context|Re Carlo I combatté il Parlamento; fu processato e decapitato nel 1649.
+stakes|Il potere del Parlamento sulla corona, dopo la repubblica di Cromwell.
+victims|Circa 200 000 morti in Inghilterra, molti di più in Irlanda.
+## 1700-great-northern-war
+name|Grande guerra del Nord
+context|La Russia e i suoi alleati combatterono la Svezia per il Baltico.
+stakes|La Russia di Pietro il Grande divenne una potenza europea; l'impero svedese finì.
+victims|Centinaia di migliaia, con la peste.
+## 1701-war-of-the-spanish-succession
+name|Guerra di successione spagnola
+context|L'Europa si combatté per decidere chi avrebbe ereditato il trono di Spagna: un Borbone francese o un Asburgo austriaco.
+stakes|Un Borbone conservò la Spagna, ma Francia e Spagna non avrebbero mai potuto unirsi.
+victims|Da 400 000 a 700 000 soldati circa.
+## 1756-seven-years-war
+name|Guerra dei sette anni
+context|La Gran Bretagna e la Prussia combatterono la Francia, l'Austria e la Russia in Europa, in America e in India.
+stakes|La Gran Bretagna conquistò il Canada e l'India: un impero britannico mondiale.
+victims|Circa un milione di morti.
+## 1775-american-war-of-independence
+name|Guerra d'indipendenza americana
+context|Le tredici colonie combatterono la Gran Bretagna per la loro indipendenza, con l'aiuto della Francia.
+stakes|Gli Stati Uniti furono riconosciuti nel 1783; il debito della Francia contribuì alla sua rivoluzione.
+victims|Circa 25 000 soldati americani, per lo più di malattia.
+## 1791-haitian-revolution
+name|Rivoluzione haitiana
+context|Gli schiavi di Saint-Domingue, la colonia più ricca della Francia, insorsero, guidati da Toussaint Louverture e poi da Dessalines.
+stakes|L'unica rivolta di schiavi riuscita della storia, che fondò nel 1804 la prima repubblica nera.
+victims|Forse da 100 000 a 200 000 morti, tra cui decine di migliaia di soldati francesi.
+## 1792-french-revolutionary-wars
+name|Guerre rivoluzionarie francesi
+context|La Francia rivoluzionaria combatté le monarchie d'Europa, levando eserciti di massa di cittadini.
+stakes|La Repubblica sopravvisse e diffuse le sue idee; Bonaparte salì grazie a queste guerre.
+victims|Circa un milione di soldati e civili.
+## 1450-gutenberg-s-printing-press
+name|La stampa di Gutenberg
+context|A Magonza, Johannes Gutenberg stampò libri con caratteri mobili di metallo.
+stakes|I libri divennero economici e numerosi: la Riforma, la scienza e l'alfabetizzazione si diffusero.
+## 1517-10-31-the-protestant-reformation-begins
+name|Inizia la Riforma protestante
+context|Le 95 tesi di Martin Lutero contro la vendita delle indulgenze aprirono una frattura nel cristianesimo occidentale.
+stakes|Chiese protestanti, guerre di religione e un nuovo rapporto con la Bibbia in lingua volgare.
+## 1648-10-24-peace-of-westphalia
+name|Pace di Vestfalia
+context|I trattati firmati a Münster e Osnabrück posero fine alla guerra dei trent'anni.
+stakes|Stati sovrani, ciascuno libero di scegliere la propria religione: la base dell'ordine europeo.
+## 1830-mass-european-emigration-to-the-americas
+name|Emigrazione europea di massa verso le Americhe
+context|Povertà, carestie e persecuzioni spinsero gli europei ad attraversare l'Atlantico su navi a vapore.
+stakes|Le Americhe si popolarono di nuovo; famiglie divise tra due continenti.
+victims|Circa 50 milioni di emigranti; molti morirono durante la traversata.
+## 1840-industrial-revolutions
+name|Rivoluzioni industriali
+context|Vapore, carbone, ferro e ferrovie trasformarono il lavoro, le città e le campagne.
+stakes|Fabbriche, movimenti operai, crescita delle città; le famiglie lasciarono la terra.
+victims|Il lavoro duro, il lavoro minorile e le malattie urbane chiesero un prezzo pesante.
+## 1845-great-famine-in-ireland
+name|Grande carestia in Irlanda
+context|La peronospora della patata distrusse il cibo principale dei poveri d'Irlanda, mentre si continuavano a esportare alimenti.
+stakes|Una nazione svuotata dalla morte e dall'emigrazione; un rancore duraturo verso la Gran Bretagna.
+victims|Circa un milione di morti; da uno a due milioni di emigrati.
+## 1884-11-15-berlin-conference-africa-partitioned
+name|Conferenza di Berlino: la spartizione dell'Africa
+context|Le potenze europee si riunirono a Berlino per fissare le regole della spartizione dell'Africa; nessun africano era presente.
+stakes|Confini tracciati dagli europei; il Congo affidato al re Leopoldo II.
+victims|La conquista coloniale che seguì uccise milioni di persone.
+## 1918-spanish-flu
+name|Influenza spagnola
+context|Una pandemia influenzale si diffuse con le truppe alla fine della Prima guerra mondiale, uccidendo soprattutto giovani adulti.
+stakes|La pandemia più letale del XX secolo; toccò quasi ogni famiglia.
+victims|Circa 50 milioni di morti (le stime vanno da 17 a 100 milioni).
+## 1929-10-24-wall-street-crash
+name|Crollo di Wall Street
+context|Le quotazioni crollarono alla Borsa di New York dopo anni di speculazione.
+stakes|L'inizio della Grande depressione; le banche fallirono a catena.
+## 1947-08-15-partition-of-india-and-pakistan
+name|Spartizione dell'India e del Pakistan
+context|L'India britannica divenne indipendente come due stati, India e Pakistan, divisi per religione.
+stakes|L'indipendenza, e una delle più grandi migrazioni della storia.
+victims|Tra 200 000 e 2 milioni di morti; da 10 a 20 milioni di sfollati.
+## 1950-worldwide-decolonisation
+name|Decolonizzazione mondiale
+context|Le colonie d'Africa e d'Asia ottennero l'indipendenza, con il negoziato o con la guerra.
+stakes|Nuovi stati e nuovi confini; famiglie che si spostarono tra colonie ed ex potenze coloniali.
+victims|Le guerre d'indipendenza uccisero centinaia di migliaia di persone.
+## 1989-fall-of-the-soviet-bloc
+name|Caduta del blocco sovietico
+context|I regimi comunisti dell'Europa orientale caddero, dalla Polonia al Muro di Berlino; l'Unione Sovietica si dissolse nel 1991.
+stakes|La fine della Guerra fredda; libertà di viaggiare e di votare all'Est.
+victims|Poche, tranne in Romania e più tardi nelle guerre dell'ex Jugoslavia.
+## 1990-digital-age-and-the-internet
+name|Era digitale e Internet
+context|Il World Wide Web, poi i telefoni cellulari, collegarono la maggior parte dell'umanità.
+stakes|L'informazione, il lavoro e i legami familiari cambiarono; la stessa genealogia passò online.
+## 2019-12-covid-19-pandemic
+name|Pandemia di COVID-19
+context|Un nuovo coronavirus si diffuse da Wuhan; i lockdown chiusero interi paesi.
+stakes|Sistemi sanitari sotto pressione, vite confinate, vaccini realizzati in tempi record.
+victims|Circa 7 milioni di decessi segnalati; l'OMS stima 15 milioni di morti in eccesso nel 2020–2021.
+## 1815-04-10-tambora-erupts-the-year-without-a-summer
+name|Eruzione del Tambora: l'anno senza estate
+context|L'eruzione del monte Tambora in Indonesia riempì il cielo di cenere; il 1816 non ebbe estate in Europa e in Nord America.
+stakes|Raccolti perduti, carestia ed emigrazione.
+victims|Circa 70 000-90 000 morti in Indonesia; molti di più per fame altrove.
+## 1817-first-cholera-pandemic
+name|Prima pandemia di colera
+context|Il colera si diffuse dal delta del Gange attraverso l'Asia fino ai confini dell'Europa.
+stakes|La prima di sette pandemie di colera, portate dal commercio e dagli eserciti.
+victims|Centinaia di migliaia.
+## 1826-second-cholera-pandemic
+name|Seconda pandemia di colera
+context|Il colera raggiunse la Russia, la Polonia, la Francia e la Gran Bretagna, e passò in America.
+stakes|Le città impararono che l'acqua sporca uccide: la nascita dell'igiene pubblica.
+victims|Centinaia di migliaia in Europa; circa 18 000 a Parigi nel 1832.
+## 1848-revolutions-of-1848-spring-of-nations
+name|Rivoluzioni del 1848 (Primavera dei popoli)
+context|Scoppiarono rivoluzioni a Parigi, Vienna, Berlino, Milano, Budapest e Poznań.
+stakes|La maggior parte fu repressa, ma la servitù della gleba finì in Austria e le idee nazionali si diffusero.
+victims|Migliaia nei combattimenti.
+## 1869-11-17-opening-of-the-suez-canal
+name|Apertura del canale di Suez
+context|Un canale attraverso l'Egitto collegò il Mediterraneo al Mar Rosso.
+stakes|La rotta verso l'India e l'Asia si accorciò; l'Egitto si indebitò e fu poi occupato dalla Gran Bretagna.
+victims|Migliaia di lavoratori forzati morirono scavandolo.
+## 1873-long-depression
+name|Grande depressione del 1873
+context|Un crollo finanziario a Vienna e a New York aprì due decenni di prezzi in calo.
+stakes|Miseria nelle campagne ed emigrazione; protezionismo ed espansione coloniale.
+## 1889-russian-flu-pandemic
+name|Pandemia di «influenza russa»
+context|Una pandemia influenzale si diffuse dalla Russia lungo le nuove ferrovie.
+stakes|La prima pandemia dell'era ferroviaria, portata in poche settimane in tutta Europa.
+victims|Circa un milione di morti.
+## 1917-11-07-october-revolution-in-russia
+name|Rivoluzione d'ottobre in Russia
+context|I bolscevichi guidati da Lenin presero il potere a Pietrogrado.
+stakes|Il primo Stato comunista; la Russia uscì dalla guerra; seguì la guerra civile.
+victims|La guerra civile e il terrore che seguirono uccisero milioni di persone.
+## 1929-great-depression
+name|Grande depressione
+context|Dopo il crollo, la produzione e il commercio crollarono in tutto il mondo.
+stakes|Disoccupazione di massa, povertà e ascesa degli estremismi, tra cui il nazismo.
+victims|Un quarto dei lavoratori disoccupati negli Stati Uniti, di più in Germania.
+## 1941-the-holocaust
+name|L'Olocausto
+context|La Germania nazista e i suoi collaboratori si proposero di sterminare gli ebrei d'Europa, con fucilazioni, ghetti e campi di sterminio.
+stakes|Un genocidio pianificato da uno Stato; l'origine della nozione di crimine contro l'umanità.
+victims|Sei milioni di ebrei; centinaia di migliaia di rom e altre vittime della persecuzione nazista.
+## 1945-08-06-atomic-bombings-of-hiroshima-and-nagasaki
+name|Bombardamenti atomici di Hiroshima e Nagasaki
+context|Gli Stati Uniti sganciarono bombe atomiche su due città giapponesi; il Giappone si arrese.
+stakes|La fine della Seconda guerra mondiale e l'inizio dell'era nucleare.
+victims|Da 110 000 a 210 000 morti entro la fine del 1945.
+## 1945-10-24-founding-of-the-united-nations
+name|Fondazione delle Nazioni Unite
+context|Cinquantuno stati fondarono le Nazioni Unite per mantenere la pace dopo la guerra.
+stakes|Un forum mondiale, i diritti umani proclamati nel 1948 e le missioni di pace.
+## 1957-asian-flu-pandemic
+name|Pandemia di influenza asiatica
+context|Un nuovo virus influenzale si diffuse dalla Cina in tutto il mondo.
+stakes|Per la prima volta in una pandemia si produssero vaccini rapidamente.
+victims|Da uno a quattro milioni di morti.
+## 1968-hong-kong-flu-pandemic
+name|Pandemia di influenza di Hong Kong
+context|Un virus influenzale proveniente da Hong Kong si diffuse nel mondo in due ondate.
+stakes|Una pandemia in gran parte dimenticata, in un mondo occupato da altri eventi.
+victims|Da uno a quattro milioni di morti.
+## 1969-07-20-first-steps-on-the-moon
+name|Primi passi sulla Luna
+context|Gli astronauti Neil Armstrong e Buzz Aldrin camminarono sulla Luna, seguiti in diretta da centinaia di milioni di persone.
+stakes|La corsa allo spazio tra gli Stati Uniti e l'Unione Sovietica; un momento condiviso dall'umanità.
+## 1973-10-first-oil-shock
+name|Primo shock petrolifero
+context|I produttori arabi di petrolio tagliarono le forniture durante la guerra del Kippur; il prezzo del petrolio quadruplicò.
+stakes|La fine del boom del dopoguerra in Occidente: inflazione e disoccupazione.
+## 1981-hiv-aids-pandemic
+name|Pandemia di HIV/AIDS
+context|Un nuovo virus, l'HIV, fu identificato come causa dell'AIDS; si diffuse nel mondo, soprattutto in Africa.
+stakes|Stigma e attivismo; dal 1996 le cure ne fanno una malattia cronica là dove sono disponibili.
+victims|Circa 42 milioni di morti dall'inizio.
+## 2001-09-11-september-11-attacks
+name|Attentati dell'11 settembre
+context|Terroristi di al-Qaida dirottarono quattro aerei di linea e li fecero schiantare contro il World Trade Center e il Pentagono.
+stakes|La «guerra al terrore», le guerre in Afghanistan e in Iraq e nuove misure di sicurezza ovunque.
+victims|2977 persone uccise.
+## 2004-12-26-indian-ocean-tsunami
+name|Tsunami dell'Oceano Indiano
+context|Un terremoto sottomarino al largo di Sumatra sollevò onde che colpirono quattordici paesi.
+stakes|Una delle catastrofi naturali più letali della storia; da allora sono stati creati sistemi di allerta.
+victims|Circa 230 000 morti.
+## 2008-global-financial-crisis
+name|Crisi finanziaria mondiale
+context|Il crollo del mercato immobiliare statunitense travolse banche in tutto il mondo.
+stakes|Recessione, disoccupazione, debito pubblico e sfiducia verso la finanza.
+## 1803-05-18-napoleonic-wars
+name|Guerre napoleoniche
+context|La Francia di Napoleone combatté coalizioni di potenze europee, dalla Spagna alla Russia.
+stakes|Il dominio francese su gran parte dell'Europa, la diffusione del Codice civile, poi la sconfitta di Waterloo nel 1815.
+victims|Da 3,5 a 6,5 milioni di soldati e civili.
+## 1810-spanish-american-wars-of-independence
+name|Guerre d'indipendenza ispanoamericane
+context|Le colonie spagnole, dal Messico all'Argentina, combatterono per l'indipendenza sotto Bolívar, San Martín e altri.
+stakes|Una ventina di nuove repubbliche in America Latina.
+victims|Centinaia di migliaia.
+## 1839-09-04-first-opium-war
+name|Prima guerra dell'oppio
+context|La Gran Bretagna entrò in guerra quando la Cina cercò di fermare il commercio dell'oppio.
+stakes|La Cina perse Hong Kong e dovette aprire i suoi porti: cominciò il «secolo dell'umiliazione».
+victims|Decine di migliaia, per lo più cinesi.
+## 1846-04-25-mexican-american-war
+name|Guerra messicano-statunitense
+context|Gli Stati Uniti entrarono in guerra con il Messico per il Texas e le terre a ovest.
+stakes|Il Messico perse metà del suo territorio, dalla California al Nuovo Messico.
+victims|Circa 25 000 morti messicani e 13 000 statunitensi, per lo più di malattia.
+## 1850-taiping-rebellion
+name|Rivolta dei Taiping
+context|Un movimento religioso guidato da Hong Xiuquan insorse contro la dinastia Qing nella Cina meridionale.
+stakes|I Qing sopravvissero, indeboliti; la guerra civile più letale del XIX secolo.
+victims|Da 20 a 30 milioni di morti.
+## 1853-10-16-crimean-war
+name|Guerra di Crimea
+context|Francia, Gran Bretagna e Ottomani combatterono la Russia, soprattutto all'assedio di Sebastopoli.
+stakes|La Russia fermata nel Mar Nero; Florence Nightingale e l'assistenza infermieristica moderna.
+victims|Circa 650 000 morti, per lo più di malattia.
+## 1856-10-08-second-opium-war
+name|Seconda guerra dell'oppio
+context|Gran Bretagna e Francia combatterono di nuovo la Cina; le loro truppe incendiarono il Palazzo d'Estate di Pechino.
+stakes|Altri porti cinesi aperti, l'oppio legalizzato, la Russia prese terre al nord.
+victims|Decine di migliaia.
+## 1861-04-12-american-civil-war
+name|Guerra di secessione americana
+context|Undici stati del Sud si separarono per mantenere la schiavitù; l'Unione combatté per ricomporre il paese.
+stakes|Vinse l'Unione; la schiavitù fu abolita nel 1865.
+victims|Da 620 000 a 750 000 soldati morti circa.
+## 1864-paraguayan-war
+name|Guerra del Paraguay
+context|Il Paraguay combatté insieme Brasile, Argentina e Uruguay.
+stakes|Il Paraguay fu schiacciato e perse territori.
+victims|Il Paraguay perse forse metà della sua popolazione.
+## 1870-07-19-franco-prussian-war
+name|Guerra franco-prussiana
+context|La Prussia e gli stati tedeschi sconfissero la Francia; Napoleone III fu catturato a Sedan.
+stakes|L'Impero tedesco proclamato a Versailles; la Francia perse l'Alsazia-Mosella; nacque la Terza Repubblica.
+victims|Circa 180 000 soldati e molti civili.
+## 1879-04-05-war-of-the-pacific
+name|Guerra del Pacifico
+context|Il Cile combatté la Bolivia e il Perù per il deserto di Atacama, ricco di nitrati.
+stakes|Il Cile conquistò la costa; la Bolivia perse l'accesso al mare.
+victims|Da 15 000 a 20 000 morti circa.
+## 1894-07-25-first-sino-japanese-war
+name|Prima guerra sino-giapponese
+context|Il Giappone e la Cina combatterono per la Corea.
+stakes|Il Giappone conquistò Taiwan e si affermò come potenza; la debolezza della Cina fu messa a nudo.
+victims|Circa 35 000 cinesi e 13 000 giapponesi, questi ultimi per lo più di malattia.
+## 1899-10-11-second-boer-war
+name|Seconda guerra boera
+context|La Gran Bretagna combatté le repubbliche boere del Sudafrica per il loro oro e le loro terre.
+stakes|Vinse la Gran Bretagna; i campi di concentramento per civili scossero il mondo.
+victims|Circa 22 000 soldati britannici e 7000 boeri; 26 000 civili boeri e 20 000 neri nei campi.
+## 1904-02-08-russo-japanese-war
+name|Guerra russo-giapponese
+context|Il Giappone e la Russia combatterono per la Manciuria e la Corea; la flotta russa fu affondata a Tsushima.
+stakes|La prima sconfitta di una potenza europea da parte di una asiatica; rivoluzione in Russia nel 1905.
+victims|Da 130 000 a 170 000 soldati circa.
+## 1911-10-10-xinhai-revolution
+name|Rivoluzione Xinhai
+context|Un'insurrezione a Wuchang si estese a tutta la Cina e pose fine alla dinastia Qing.
+stakes|La fine di duemila anni di impero; la Repubblica di Cina.
+victims|Decine di migliaia.
+## 1912-10-08-balkan-wars
+name|Guerre balcaniche
+context|Gli stati balcanici cacciarono gli Ottomani dall'Europa, poi si combatterono tra loro per il bottino.
+stakes|Nuovi confini e rancori che portarono al 1914.
+victims|Da 120 000 a 200 000 morti circa.
+## 1914-07-28-first-world-war
+name|Prima guerra mondiale
+context|Alleanze rivali, imperi e nazionalismi trasformarono l'assassinio di un arciduca a Sarajevo in una guerra mondiale di trincea.
+stakes|Caddero quattro imperi; nuovi stati, tra cui la Polonia; i semi della guerra successiva.
+victims|Circa 20 milioni di morti, metà dei quali soldati; 21 milioni di feriti.
+## 1917-11-07-russian-civil-war
+name|Guerra civile russa
+context|I rossi bolscevichi combatterono i bianchi e molte altre forze in tutto l'ex impero.
+stakes|I bolscevichi vinsero e fondarono l'Unione Sovietica nel 1922.
+victims|Da 7 a 12 milioni di morti, con carestie ed epidemie.
+## 1936-07-17-spanish-civil-war
+name|Guerra civile spagnola
+context|Generali nazionalisti guidati da Franco insorsero contro la Repubblica spagnola.
+stakes|Franco vinse e governò la Spagna fino al 1975; una prova generale della guerra mondiale.
+victims|Circa 500 000 morti; 450 000 profughi passarono in Francia nel 1939.
+## 1937-07-07-second-sino-japanese-war
+name|Seconda guerra sino-giapponese
+context|Il Giappone invase la Cina dopo uno scontro al ponte Marco Polo; a Nanchino avvenne un massacro nel 1937.
+stakes|La Cina resistette fino alla resa del Giappone nel 1945; poi riprese la guerra civile.
+victims|Da 15 a 20 milioni di cinesi morti.
+## 1939-09-01-second-world-war
+name|Seconda guerra mondiale
+context|La Germania nazista invase la Polonia; la guerra si estese all'Europa, all'Africa, all'Asia e al Pacifico.
+stakes|La sconfitta del nazismo e del Giappone; l'Olocausto; un mondo diviso tra Stati Uniti e Unione Sovietica.
+victims|Da 70 a 85 milioni di morti, per lo più civili.
+## 1945-09-23-first-indochina-war
+name|Guerra d'Indocina
+context|La Francia combatté il Viet Minh per conservare la sua colonia d'Indocina.
+stakes|La sconfitta della Francia a Dien Bien Phu; il Vietnam diviso al 17° parallelo.
+victims|Diverse centinaia di migliaia di morti, circa 75 000 dei quali dalla parte dell'Unione francese.
+## 1946-06-26-chinese-civil-war
+name|Guerra civile cinese
+context|I comunisti di Mao Zedong combatterono i nazionalisti di Chiang Kai-shek.
+stakes|La Repubblica Popolare Cinese nel 1949; i nazionalisti si ritirarono a Taiwan.
+victims|Diversi milioni di morti.
+## 1947-10-22-first-indo-pakistani-war
+name|Prima guerra indo-pakistana
+context|India e Pakistan combatterono per il Kashmir subito dopo l'indipendenza.
+stakes|Il Kashmir diviso lungo una linea di cessate il fuoco, ancora oggi contesa.
+victims|Diverse migliaia di soldati.
+## 1947-03-12-the-cold-war
+name|La Guerra fredda
+context|Gli Stati Uniti e l'Unione Sovietica si opposero con le armi, le idee e l'influenza, senza combattersi direttamente.
+stakes|Un'Europa e un mondo divisi, la minaccia nucleare, guerre combattute per procura.
+victims|Nessuna guerra tra i due; milioni di morti nelle guerre combattute alla loro ombra.
+## 1948-05-15-first-arab-israeli-war
+name|Prima guerra arabo-israeliana
+context|Gli stati arabi attaccarono lo Stato di Israele appena proclamato.
+stakes|Israele sopravvisse e si ingrandì; i palestinesi persero le loro case nella Nakba.
+victims|Circa 6000 morti israeliani e da 10 000 a 15 000 arabi; 700 000 palestinesi sfollati.
+## 1950-06-25-korean-war
+name|Guerra di Corea
+context|La Corea del Nord comunista invase il Sud; le Nazioni Unite e la Cina entrarono nel conflitto.
+stakes|Un armistizio nel 1953, nessuna pace: la Corea è ancora divisa.
+victims|Circa 3 milioni di morti, per lo più civili.
+## 1954-11-01-algerian-war
+name|Guerra d'Algeria
+context|Il FLN combatté per l'indipendenza dell'Algeria dalla Francia; torture, attentati e lotte interne sulle due sponde.
+stakes|L'indipendenza nel 1962; la Quinta Repubblica in Francia; un milione di europei lasciò l'Algeria.
+victims|Da 250 000 a 400 000 morti algerini secondo la maggior parte degli storici; circa 25 000 soldati francesi.
+## 1955-11-01-vietnam-war
+name|Guerra del Vietnam
+context|Il Vietnam del Nord comunista e i Viet Cong combatterono il Vietnam del Sud e gli Stati Uniti.
+stakes|Saigon cadde nel 1975; il Vietnam fu unificato sotto un regime comunista.
+victims|Tra 1,3 e 3 milioni di morti.
+## 1961-02-04-portuguese-colonial-war
+name|Guerra coloniale portoghese
+context|Il Portogallo combatté i movimenti d'indipendenza in Angola, Mozambico e Guinea-Bissau.
+stakes|Le guerre fecero cadere la dittatura di Lisbona nel 1974; le colonie divennero libere.
+victims|Decine di migliaia di soldati e civili.
+## 1967-06-05-six-day-war
+name|Guerra dei sei giorni
+context|Israele colpì l'Egitto, la Siria e la Giordania mentre la tensione cresceva.
+stakes|Israele prese il Sinai, Gaza, la Cisgiordania, Gerusalemme Est e il Golan.
+victims|Circa 20 000 morti arabi e 1000 israeliani.
+## 1973-10-06-yom-kippur-war
+name|Guerra del Kippur
+context|L'Egitto e la Siria attaccarono Israele nel giorno più sacro dell'anno ebraico.
+stakes|Israele resistette; seguirono lo shock petrolifero e, più tardi, la pace tra Egitto e Israele.
+victims|Circa 2700 morti israeliani e da 10 000 a 20 000 arabi.
+## 1979-12-24-soviet-afghan-war
+name|Guerra sovietico-afghana
+context|L'esercito sovietico entrò in Afghanistan per sostenere un governo comunista contro i mujahidin.
+stakes|I sovietici si ritirarono nel 1989; seguirono la guerra civile e i talebani.
+victims|Da mezzo milione a due milioni di afghani; circa 15 000 soldati sovietici.
+## 1980-09-22-iran-iraq-war
+name|Guerra Iran-Iraq
+context|L'Iraq di Saddam Hussein invase l'Iran rivoluzionario.
+stakes|Otto anni di guerra di trincea e armi chimiche, senza guadagno per nessuno.
+victims|Da mezzo milione a un milione di morti.
+## 1990-08-02-gulf-war
+name|Guerra del Golfo
+context|L'Iraq invase il Kuwait; una coalizione delle Nazioni Unite guidata dagli Stati Uniti lo respinse.
+stakes|Il Kuwait liberato; sanzioni contro l'Iraq; forze americane nel Golfo.
+victims|Circa 25 000 soldati iracheni e qualche centinaio della coalizione; migliaia di civili.
+## 1991-03-31-yugoslav-wars
+name|Guerre jugoslave
+context|La Jugoslavia si frantumò in guerre tra serbi, croati, bosgnacchi e kosovari.
+stakes|Sette stati; pulizia etnica e un genocidio a Srebrenica nel 1995.
+victims|Da 130 000 a 140 000 morti circa; milioni di sfollati.
+## 1994-04-07-genocide-against-the-tutsi-in-rwanda
+name|Genocidio dei tutsi in Ruanda
+context|Dopo l'abbattimento dell'aereo del presidente, estremisti hutu organizzarono l'uccisione dei tutsi e degli hutu moderati.
+stakes|Il mondo non intervenne; il Fronte Patriottico Ruandese vi pose fine; la guerra si estese al Congo.
+victims|Circa 800 000 persone uccise in cento giorni.
+## 1998-08-02-second-congo-war
+name|Seconda guerra del Congo
+context|Ruanda, Uganda e altri stati si combatterono per la RD del Congo e i suoi minerali, con molte milizie locali.
+stakes|La guerra più letale dal 1945; il Congo orientale è ancora instabile.
+victims|Fino a 5 milioni di morti, per lo più di malattia e di fame.
+## 2001-10-07-war-in-afghanistan
+name|Guerra in Afghanistan
+context|Dopo l'11 settembre, gli Stati Uniti e i loro alleati rovesciarono i talebani e rimasero vent'anni.
+stakes|I talebani tornarono al potere nel 2021.
+victims|Circa 175 000 morti nei combattimenti, circa 46 000 dei quali civili.
+## 2003-03-20-iraq-war
+name|Guerra in Iraq
+context|Gli Stati Uniti e la Gran Bretagna invasero l'Iraq e rovesciarono Saddam Hussein.
+stakes|Occupazione, insurrezione, lotte civili e ascesa dello Stato islamico.
+victims|Le stime vanno da 150 000 a oltre 600 000 morti violente.
+## 2011-03-15-syrian-civil-war
+name|Guerra civile siriana
+context|Le proteste pacifiche furono schiacciate dal regime di Bashar al-Assad; la guerra si estese con l'intervento di potenze straniere.
+stakes|Milioni di profughi raggiunsero la Turchia, il Libano e l'Europa; Assad cadde nel dicembre 2024.
+victims|Da 500 000 a 600 000 morti circa; 13 milioni di sfollati.
+## 2022-02-24-russian-invasion-of-ukraine
+name|Invasione russa dell'Ucraina
+context|La Russia lanciò un'invasione su vasta scala dell'Ucraina dopo aver occupato la Crimea e parte del Donbass nel 2014.
+stakes|L'indipendenza dell'Ucraina e la sicurezza dell'Europa; la più grande guerra in Europa dal 1945.
+victims|Centinaia di migliaia di soldati uccisi o feriti; oltre 12 000 civili uccisi accertati; milioni di profughi.
+## 1315-great-famine-in-europe
+name|Grande carestia in Europa
+note|Tre anni di pioggia e raccolti rovinati.
+context|Anni di freddo e di pioggia rovinarono i raccolti in tutta l'Europa settentrionale.
+stakes|La fine di due secoli di crescita; popolazioni indebolite prima della peste nera.
+victims|Forse da un decimo a un quarto della popolazione in alcune regioni.
+## 1683-09-12-battle-of-vienna
+name|Battaglia di Vienna
+note|Giovanni III Sobieski spezza l'assedio ottomano.
+context|Un esercito ottomano assediava Vienna; un esercito di soccorso guidato dal re di Polonia Giovanni III Sobieski spezzò l'assedio.
+stakes|La fine delle avanzate ottomane in Europa.
+victims|Decine di migliaia nell'assedio e nella battaglia.
+## 1806-08-06-end-of-the-holy-roman-empire
+name|Fine del Sacro Romano Impero
+context|Sconfitto da Napoleone, Francesco II depose la corona del Sacro Romano Impero.
+stakes|Finì un impero millenario; gli stati tedeschi furono riorganizzati.
+## 1814-09-congress-of-vienna
+name|Congresso di Vienna
+note|I confini d'Europa ridisegnati dopo Napoleone.
+context|I vincitori di Napoleone ridisegnarono la carta d'Europa.
+stakes|Un equilibrio di potenze che preservò l'Europa da una guerra generale per un secolo; la Polonia di nuovo divisa.
+## 1918-11-fall-of-the-empires-birth-of-new-states
+name|Caduta degli imperi, nascita di nuovi stati
+note|Nascono la Polonia, la Cecoslovacchia, la Jugoslavia e i paesi baltici.
+context|Gli imperi tedesco, austro-ungarico, russo e ottomano crollarono alla fine della guerra.
+stakes|Nacquero la Polonia, la Cecoslovacchia, la Jugoslavia e i paesi baltici, con nuovi confini e minoranze.
+## 1945-the-iron-curtain
+name|La cortina di ferro
+note|L'Europa divisa tra Est e Ovest.
+context|L'Europa fu divisa tra l'Est dominato dai sovietici e l'Ovest democratico.
+stakes|Famiglie separate, confini chiusi, due economie e due mondi.
+victims|Centinaia morirono tentando di attraversarla.
+## 1957-03-25-treaty-of-rome-european-economic-community
+name|Trattati di Roma (Comunità economica europea)
+context|Sei paesi fondarono la Comunità economica europea.
+stakes|Un mercato comune, radice dell'attuale Unione europea.
+## 1993-11-01-european-union-maastricht
+name|Unione europea (Maastricht)
+context|Il trattato di Maastricht creò l'Unione europea.
+stakes|La cittadinanza europea, la libertà di vivere e lavorare negli altri stati membri.
+## 2002-01-01-the-euro-in-everyone-s-pocket
+name|L'euro in tutte le tasche
+context|Monete e banconote in euro sostituirono il franco, il marco, la lira e altre valute.
+stakes|Una sola moneta per centinaia di milioni di europei.
+## 1755-11-01-lisbon-earthquake
+name|Terremoto di Lisbona
+note|La città distrutta dal sisma, dagli incendi e dal maremoto.
+context|Un terremoto, incendi e un maremoto distrussero Lisbona il giorno di Ognissanti.
+stakes|I filosofi misero in dubbio la provvidenza; Lisbona fu ricostruita secondo un piano moderno.
+victims|Da 30 000 a 50 000 morti circa.
+## 1881-scramble-for-africa
+name|Spartizione dell'Africa
+note|Quasi tutto il continente sotto dominio europeo.
+context|Le potenze europee conquistarono quasi tutta l'Africa in pochi decenni.
+stakes|Dominio coloniale, confini tracciati dall'esterno, sfruttamento delle risorse e lavoro forzato.
+victims|Milioni morirono per la conquista, il lavoro forzato e la fame.
+## 1957-03-06-independence-of-ghana
+name|Indipendenza del Ghana
+note|La prima nell'Africa subsahariana.
+context|La Costa d'Oro divenne il Ghana, guidato da Kwame Nkrumah.
+stakes|La prima indipendenza dell'Africa subsahariana, un segnale per tutto il continente.
+## 1960-year-of-africa-seventeen-independences
+name|«Anno dell'Africa»: diciassette indipendenze
+context|Diciassette paesi africani divennero indipendenti in un solo anno, tra cui il Congo e gran parte dell'Africa francese.
+stakes|Nuovi stati con confini coloniali; le speranze e le lotte dell'indipendenza.
+## 1963-05-25-organisation-of-african-unity-founded
+name|Fondazione dell'Organizzazione dell'unità africana
+context|Gli stati africani indipendenti fondarono l'OUA ad Addis Abeba.
+stakes|Solidarietà africana, sostegno ai movimenti di liberazione, mantenimento dei confini coloniali.
+## 1948-apartheid-in-south-africa
+name|Apartheid in Sudafrica
+context|Il governo sudafricano fece della segregazione razziale la legge del paese.
+stakes|Un sistema di dominio di una minoranza bianca, terminato nel 1994 con l'elezione di Nelson Mandela.
+victims|Migliaia di morti nella repressione; 3,5 milioni di persone trasferite con la forza.
+## 1967-07-06-nigerian-civil-war-biafra
+name|Guerra civile nigeriana (Biafra)
+context|Il sud-est della Nigeria si separò con il nome di Biafra; la Nigeria lo pose sotto assedio.
+stakes|La Nigeria rimase unita; le immagini dei bambini affamati commossero il mondo.
+victims|Da uno a tre milioni di morti, per lo più di fame.
+## 2002-07-09-african-union-founded
+name|Fondazione dell'Unione africana
+context|L'OUA divenne l'Unione africana.
+stakes|Un'unione che può intervenire contro genocidi e colpi di Stato.
+## 2014-ebola-epidemic-in-west-africa
+name|Epidemia di Ebola in Africa occidentale
+context|L'Ebola si diffuse in Guinea, Liberia e Sierra Leone, raggiungendo per la prima volta le città.
+stakes|La debolezza dei sistemi sanitari fu messa a nudo; seguì un vaccino.
+victims|Circa 11 300 morti.
+## 1607-jamestown-first-lasting-english-colony
+name|Jamestown, prima colonia inglese duratura
+context|Coloni inglesi fondarono Jamestown in Virginia.
+stakes|L'inizio dell'America inglese e, presto, della schiavitù in essa.
+victims|La maggior parte dei primi coloni morì di fame e di malattie.
+## 1888-05-13-abolition-of-slavery-in-brazil
+name|Abolizione della schiavitù in Brasile
+note|L'ultima nelle Americhe.
+context|La Legge Aurea del Brasile abolì la schiavitù, ultimo paese delle Americhe a farlo.
+stakes|Libertà senza terra né risarcimento per gli ex schiavi.
+## 1910-mexican-revolution
+name|Rivoluzione messicana
+context|Una rivolta contro il dittatore Porfirio Díaz divenne una lunga guerra civile, con Zapata e Villa tra i capi.
+stakes|La riforma agraria e una nuova costituzione nel 1917.
+victims|Circa un milione di morti.
+## 1959-01-01-cuban-revolution
+name|Rivoluzione cubana
+context|I ribelli di Fidel Castro rovesciarono il dittatore Batista.
+stakes|Uno Stato comunista alleato dell'Unione Sovietica, a novanta miglia dagli Stati Uniti.
+victims|Migliaia nella guerra e nelle esecuzioni successive.
+## 1964-military-dictatorships-in-south-america
+name|Dittature militari in Sud America
+context|Colpi di Stato militari portarono al potere giunte in Brasile, Cile, Argentina, Uruguay e altrove.
+stakes|Repressione in nome dell'anticomunismo; la democrazia tornò negli anni Ottanta.
+victims|Decine di migliaia di uccisi o desaparecidos, circa 30 000 in Argentina.
+## 1868-meiji-restoration-japan
+name|Restaurazione Meiji (Giappone)
+context|Lo shogunato cadde e l'imperatore fu restaurato al potere.
+stakes|Il Giappone si modernizzò in una generazione e divenne una potenza industriale e militare.
+## 1922-11-01-end-of-the-ottoman-empire
+name|Fine dell'Impero ottomano
+context|Il sultanato fu abolito; la Repubblica di Turchia fu proclamata nel 1923.
+stakes|La fine di un impero di sei secoli; nuovi stati in Medio Oriente.
+victims|Gli ultimi anni dell'impero videro il genocidio armeno e grandi scambi di popolazione.
+## 1948-05-14-independence-of-israel-and-the-nakba
+name|Indipendenza di Israele e Nakba
+context|Israele dichiarò la propria indipendenza; seguì una guerra con i vicini arabi.
+stakes|Uno Stato ebraico dopo l'Olocausto; per i palestinesi, la Nakba, la catastrofe.
+victims|Circa 700 000 palestinesi fuggirono o furono espulsi.
+## 1949-10-01-people-s-republic-of-china-proclaimed
+name|Proclamazione della Repubblica Popolare Cinese
+context|Mao Zedong proclamò la Repubblica Popolare a Pechino.
+stakes|Il governo comunista sul paese più popoloso.
+## 1966-cultural-revolution-china
+name|Rivoluzione culturale (Cina)
+context|Mao lanciò le Guardie rosse contro gli elementi «borghesi» nel partito e nella società.
+stakes|Un decennio di caos, persecuzioni e distruzione della cultura.
+victims|Da centinaia di migliaia a circa 2 milioni di morti.
+## 1975-khmer-rouge-regime-cambodia
+name|Regime dei Khmer rossi (Cambogia)
+context|I Khmer rossi svuotarono le città e costrinsero la popolazione al lavoro in campi rurali.
+stakes|Un genocidio; terminato con l'invasione vietnamita del 1979.
+victims|Da 1,5 a 2 milioni di morti, circa un quarto della popolazione.
+## 1979-02-11-iranian-revolution
+name|Rivoluzione iraniana
+context|Lo scià fu rovesciato; l'ayatollah Khomeini fondò una Repubblica islamica.
+stakes|Una teocrazia, la crisi degli ostaggi con gli Stati Uniti, la guerra con l'Iraq.
+victims|Migliaia nella rivoluzione e nella repressione che seguì.
+## 1788-01-26-first-fleet-british-settlement-of-australia
+name|Prima Flotta: insediamento britannico in Australia
+context|Navi britanniche portarono detenuti a Sydney Cove per fondare una colonia penale.
+stakes|L'Australia fu colonizzata dalla Gran Bretagna; i popoli aborigeni furono espropriati.
+victims|Gli aborigeni morirono in gran numero per malattie e violenze.
+## 1840-02-06-treaty-of-waitangi-new-zealand
+name|Trattato di Waitangi (Nuova Zelanda)
+context|Capi maori e la Corona britannica firmarono un trattato a Waitangi.
+stakes|Il documento fondativo della Nuova Zelanda, il cui significato è ancora discusso.
+victims|Negli anni Sessanta dell'Ottocento seguirono guerre per la terra con i Maori.
+## 1562-wars-of-religion
+name|Guerre di religione (Francia)
+note|Cattolici e protestanti in guerra, fino all'Editto di Nantes.
+context|Otto guerre tra cattolici e protestanti (ugonotti), con il massacro della notte di San Bartolomeo nel 1572.
+stakes|Enrico IV si convertì, e l'Editto di Nantes concesse ai protestanti la libertà di culto.
+victims|Forse da 2 a 4 milioni di morti, con carestie e malattie; migliaia nel massacro del 1572.
+## 1643-reign-of-louis-xiv
+name|Regno di Luigi XIV
+note|Monarchia assoluta, Versailles, lunghe guerre.
+context|Il «Re Sole» regnò 72 anni, governando come monarca assoluto da Versailles.
+stakes|La Francia prima potenza d'Europa, al prezzo di guerre, debiti e povertà dei contadini.
+victims|Le sue guerre e le carestie del 1693 e del 1709 uccisero milioni di persone.
+## 1685-10-18-revocation-of-the-edict-of-nantes
+name|Revoca dell'Editto di Nantes
+note|Centinaia di migliaia di protestanti lasciano la Francia.
+context|Luigi XIV vietò il culto protestante e fece distruggere i templi; seguirono le conversioni forzate.
+stakes|La Francia perse artigiani e mercanti a vantaggio della Prussia, dell'Inghilterra, dei Paesi Bassi e della Svizzera.
+victims|Circa 200 000 ugonotti fuggirono; persecuzioni e galere per chi veniva preso.
+## 1693-great-famine-of-1693-1694
+name|Grande carestia del 1693–1694
+note|Circa 1,3 milioni di morti.
+context|Freddo, pioggia e cattivi raccolti, insieme alle tasse di guerra, affamarono le campagne francesi.
+stakes|Una delle peggiori crisi di mortalità della Francia moderna.
+victims|Circa 1,3 milioni di morti su circa 20 milioni di abitanti.
+## 1709-great-winter-of-1709
+name|Grande inverno del 1709
+note|Gelo, carestia ed epidemie.
+context|Un gelo estremo ghiacciò fiumi, vigne e sementi nel terreno in tutta la Francia.
+stakes|Carestia ed epidemie in un regno già in guerra.
+victims|Circa 600 000 morti in Francia.
+## 1720-plague-of-marseille
+name|Peste di Marsiglia
+note|L'ultima grande peste in Francia: circa 100 000 morti in Provenza.
+context|La peste arrivò con la nave mercantile Grand-Saint-Antoine e si diffuse da Marsiglia in tutta la Provenza.
+stakes|Fu costruito un muro per contenerla; l'ultima grande peste dell'Europa occidentale.
+victims|Circa 100 000 morti in Provenza, metà dei quali a Marsiglia.
+## 1792-09-20-civil-registers-pass-to-the-state
+name|Lo stato civile passa allo Stato
+note|Da allora sono i municipi, non le parrocchie, a registrare nascite, matrimoni e morti.
+context|Una legge della Rivoluzione tolse ai parroci la tenuta dei registri di nascite, matrimoni e morti e la affidò ai municipi.
+stakes|Uno stato civile per tutti i francesi, qualunque fosse la loro religione: da allora la fonte principale del genealogista.
+## 1793-the-terror
+name|Il Terrore
+note|Governo rivoluzionario; decine di migliaia di giustiziati.
+context|Di fronte alla guerra e alle rivolte, il Comitato di salute pubblica governò con la paura; il Tribunale rivoluzionario mandò migliaia di persone alla ghigliottina.
+stakes|La Repubblica salvata con la forza; lo stesso Robespierre fu giustiziato nel 1794.
+victims|Circa 17 000 giustiziati dopo un processo; circa 40 000 morti con le prigioni e le esecuzioni sommarie.
+## 1793-war-in-the-vendee
+name|Guerra di Vandea
+note|Un'insurrezione realista nell'Ovest, schiacciata dalla Repubblica.
+context|La leva di uomini e gli attacchi alla Chiesa sollevarono l'Ovest cattolico e realista contro la Repubblica.
+stakes|L'insurrezione fu schiacciata con grande brutalità, anche con le «colonne infernali».
+victims|Da 170 000 a 200 000 morti circa.
+## 1804-first-empire-napoleon-i
+name|Primo Impero (Napoleone I)
+note|Codice civile, coscrizione, guerre in tutta Europa.
+context|Napoleone si incoronò imperatore e dominò l'Europa.
+stakes|Il Codice civile, i prefetti, i licei; guerre senza fine e coscrizione; la sconfitta del 1815.
+victims|Centinaia di migliaia di soldati francesi morirono nelle sue guerre.
+## 1815-restoration-and-july-monarchy
+name|Restaurazione e Monarchia di luglio
+note|Tornano i re; rivoluzione del 1830.
+context|I Borbone tornarono; la rivoluzione del luglio 1830 portò sul trono Luigi Filippo, il «re cittadino».
+stakes|Una monarchia costituzionale dei benestanti; cresce l'industria; nuova rivoluzione nel 1848.
+victims|Centinaia morirono nelle giornate di luglio del 1830.
+## 1832-cholera-in-paris
+name|Colera a Parigi
+note|Circa 18 000 morti in pochi mesi.
+context|Il colera raggiunse Parigi nella primavera del 1832, colpendo più duramente i quartieri poveri e sovraffollati.
+stakes|Paura, sommosse e una nuova attenzione per le fogne e l'acqua pulita; il capo del governo ne morì.
+victims|Circa 18 000 morti a Parigi, circa 100 000 in Francia.
+## 1848-04-27-slavery-abolished-in-the-french-colonies
+name|Abolizione della schiavitù nelle colonie francesi
+note|Decreto di Victor Schœlcher.
+context|Sotto la Seconda Repubblica, il decreto di Victor Schœlcher pose fine per sempre alla schiavitù nelle colonie francesi.
+stakes|La libertà per circa 250 000 persone nelle Antille, in Guyana e alla Riunione; furono risarciti i padroni, non gli schiavi.
+## 1852-second-empire-napoleon-iii
+name|Secondo Impero (Napoleone III)
+note|Ferrovie, la Parigi di Haussmann, espansione coloniale.
+context|Luigi Napoleone Bonaparte, eletto presidente nel 1848, si fece imperatore dopo un colpo di Stato.
+stakes|Ferrovie, la Parigi di Haussmann e colonie; finito con la sconfitta del 1870.
+## 1871-03-18-paris-commune
+name|Comune di Parigi
+note|Schiacciata nella «Settimana di sangue».
+context|Dopo la sconfitta, Parigi insorse e si governò da sola; il governo di Versailles la riprese con la forza.
+stakes|Un simbolo per il movimento operaio; la Repubblica fondata nella repressione.
+victims|Da 10 000 a 20 000 uccisi nella «Settimana di sangue»; migliaia di deportati.
+## 1871-05-10-alsace-moselle-annexed-by-germany
+name|Alsazia-Mosella annessa alla Germania
+note|Fino al 1918; le famiglie scelsero tra partire e restare.
+context|Con il trattato di Francoforte, la Francia cedette l'Alsazia e parte della Lorena all'Impero tedesco.
+stakes|Gli abitanti dovettero scegliere: restare tedeschi o partire per la Francia; le «province perdute» fino al 1918.
+victims|Circa 130 000 persone optarono per la Francia e partirono.
+## 1882-03-28-free-compulsory-secular-school
+name|Scuola gratuita, obbligatoria e laica
+note|Le leggi di Jules Ferry.
+context|Le leggi di Jules Ferry resero la scuola elementare gratuita, obbligatoria e laica per bambine e bambini dai 6 ai 13 anni.
+stakes|L'alfabetizzazione universale in francese; le lingue regionali respinte.
+## 1905-12-09-separation-of-church-and-state
+name|Separazione tra Chiesa e Stato
+context|La Repubblica smise di pagare o di riconoscere qualsiasi religione e garantì la libertà di coscienza.
+stakes|La laicità francese, ancora oggi discussa.
+## 1916-02-21-battle-of-verdun
+name|Battaglia di Verdun
+note|Circa 300 000 morti da entrambe le parti.
+context|La Germania attaccò Verdun per dissanguare l'esercito francese; seguirono dieci mesi di artiglieria e di trincea.
+stakes|La Francia resistette; Verdun divenne il simbolo della tenacia dei soldati.
+victims|Circa 300 000 morti e 400 000 feriti da entrambe le parti.
+## 1936-06-20-popular-front-paid-holidays
+name|Fronte popolare: ferie pagate
+context|Il governo del Fronte popolare di Léon Blum diede ai lavoratori due settimane di ferie pagate e la settimana di 40 ore.
+stakes|Il tempo libero per le famiglie operaie, i primi viaggi al mare.
+## 1940-06-22-occupation-and-the-vichy-regime
+name|Occupazione e regime di Vichy
+note|Armistizio, deportazioni, la Resistenza, poi la Liberazione.
+context|Dopo la sconfitta, la Francia fu occupata; il regime del maresciallo Pétain a Vichy collaborò con la Germania nazista.
+stakes|Collaborazione e Resistenza; la deportazione degli ebrei di Francia; la Liberazione nel 1944.
+victims|Circa 76 000 ebrei deportati dalla Francia; decine di migliaia di resistenti, ostaggi e civili uccisi.
+## 1944-04-21-women-s-right-to-vote
+name|Diritto di voto delle donne
+note|Esercitato per la prima volta nel 1945.
+context|Un'ordinanza del governo provvisorio diede alle francesi il diritto di votare e di essere elette.
+stakes|Le donne votarono per la prima volta nel 1945, un secolo dopo gli uomini.
+## 1958-10-04-fifth-republic
+name|Quinta Repubblica
+note|La costituzione del generale de Gaulle.
+context|Nella crisi della guerra d'Algeria, de Gaulle tornò e diede alla Francia una nuova costituzione.
+stakes|Una presidenza forte, eletta dal popolo dal 1962.
+## 1968-05-may-1968
+name|Maggio 1968
+note|Rivolta studentesca e sciopero generale.
+context|Le proteste studentesche di Parigi si estesero a uno sciopero generale di dieci milioni di lavoratori.
+stakes|Salari più alti e un cambiamento nei costumi, nella famiglia e nell'autorità.
+victims|Alcuni morti negli scontri.
+## 1981-10-09-death-penalty-abolished
+name|Abolizione della pena di morte
+context|Sotto la guida del ministro della Giustizia Robert Badinter, il Parlamento abolì la pena di morte.
+stakes|La Francia tra gli ultimi in Europa occidentale a farlo; la ghigliottina messa a riposo.
+## 1569-07-01-polish-lithuanian-commonwealth
+name|Confederazione polacco-lituana
+note|Nata dall'Unione di Lublino, uno dei più grandi stati d'Europa.
+context|Con l'Unione di Lublino, Polonia e Lituania divennero un solo Stato con un re elettivo.
+stakes|Una repubblica di nobili, tollerante in materia di religione, estesa dal Baltico al Mar Nero.
+## 1655-the-deluge-swedish-invasion
+name|Il Diluvio (invasione svedese)
+note|Eserciti svedesi e russi devastano il paese.
+context|La Svezia invase la Confederazione, mentre la Russia e i cosacchi attaccavano da est.
+stakes|La Confederazione sopravvisse, ma non recuperò mai la sua forza.
+victims|La Polonia perse forse un quarto della sua popolazione o più, per guerra, peste e fame.
+## 1772-08-05-first-partition-of-poland
+name|Prima spartizione della Polonia
+note|Russia, Prussia e Austria se ne prendono un terzo.
+context|Russia, Prussia e Austria presero circa un terzo del territorio della Confederazione.
+stakes|Uno Stato indebolito, che cercò di riformarsi.
+## 1791-05-03-constitution-of-3-may
+name|Costituzione del 3 maggio
+note|La prima costituzione scritta moderna d'Europa.
+context|Il Sejm adottò una costituzione che limitava il veto dei nobili e rafforzava lo Stato.
+stakes|Una speranza di riforma alla quale la Russia rispose con la guerra.
+## 1793-01-23-second-partition
+name|Seconda spartizione
+context|Dopo una guerra persa contro la Russia, Russia e Prussia presero altre terre polacche.
+stakes|Ciò che restava della Polonia era un piccolo Stato sotto controllo russo.
+## 1794-03-24-kosciuszko-uprising
+name|Insurrezione di Kościuszko
+note|Sconfitta; segue la terza spartizione.
+context|Tadeusz Kościuszko guidò un'insurrezione nazionale contro la Russia e la Prussia, con contadini armati di falci.
+stakes|La sua sconfitta portò alla fine dello Stato.
+victims|Decine di migliaia; il massacro di Praga, a Varsavia, uccise migliaia di civili.
+## 1795-10-24-third-partition-poland-disappears
+name|Terza spartizione: la Polonia scompare
+note|Per 123 anni i polacchi vivono sotto la Russia, la Prussia o l'Austria.
+context|Russia, Prussia e Austria si divisero ciò che restava; la Polonia scomparve dalla carta.
+stakes|I polacchi vissero sotto tre imperi, con tre leggi e tre lingue nei registri.
+## 1807-duchy-of-warsaw
+name|Ducato di Varsavia
+note|Lo Stato polacco di Napoleone; stato civile dal 1808.
+context|Napoleone creò uno Stato polacco con terre prussiane, sotto il re di Sassonia.
+stakes|Il Codice napoleonico e lo stato civile dal 1808; speranze di rinascita, spente nel 1815.
+victims|Molti soldati polacchi caddero nelle campagne di Napoleone, in Spagna e in Russia.
+## 1815-congress-poland-under-russia
+name|Polonia del Congresso, sotto la Russia
+note|Registri in polacco, poi in russo dal 1868.
+context|Il Congresso di Vienna creò un Regno di Polonia il cui re era lo zar di Russia.
+stakes|Autonomia, poi repressione dopo ogni insurrezione; il russo nei registri dal 1868.
+## 1830-11-29-november-uprising
+name|Insurrezione di novembre
+note|La sua sconfitta provoca la Grande Emigrazione.
+context|I cadetti di Varsavia insorsero contro il dominio russo; seguì un anno di guerra.
+stakes|La sconfitta, la fine dell'autonomia e la Grande Emigrazione delle élite.
+victims|Circa 40 000 polacchi morti nei combattimenti.
+## 1831-the-great-emigration
+name|La Grande Emigrazione
+note|Le élite polacche si stabiliscono a Parigi e in tutta Europa.
+context|Dopo il 1831, migliaia di soldati, politici e artisti polacchi andarono in esilio, soprattutto in Francia.
+stakes|Chopin, Mickiewicz e altri mantennero viva la cultura polacca a Parigi.
+## 1863-01-22-january-uprising
+name|Insurrezione di gennaio
+note|Repressione, confische, esilio in Siberia.
+context|Una guerriglia contro la Russia, scatenata dalla coscrizione forzata nell'esercito russo.
+stakes|Schiacciata; seguì la russificazione delle scuole e degli uffici.
+victims|Da 20 000 a 30 000 insorti uccisi circa; decine di migliaia esiliati in Siberia.
+## 1870-emigration-for-bread
+name|Emigrazione «per il pane»
+note|Milioni partono per l'America e per le miniere di Francia e Germania.
+context|Contadini senza terra lasciarono le terre polacche per lavorare in America, in Germania e in Francia.
+stakes|Comunità polacche a Chicago, nella Ruhr e in Brasile; famiglie divise tra continenti.
+victims|Circa 3,5 milioni partirono prima del 1914.
+## 1918-11-11-independence-of-poland
+name|Indipendenza della Polonia
+note|Nasce la Seconda Repubblica.
+context|Mentre gli imperi cadevano, Józef Piłsudski prese il comando a Varsavia: la Polonia era libera dopo 123 anni.
+stakes|Uno Stato rinato che doveva unire tre parti con leggi diverse e difendere i propri confini.
+## 1919-02-14-polish-soviet-war
+name|Guerra polacco-sovietica
+note|«Miracolo della Vistola», 1920.
+context|La Polonia e la Russia sovietica si combatterono per le terre di confine orientali; l'Armata Rossa giunse a Varsavia nel 1920.
+stakes|La Polonia vinse sulla Vistola e conservò l'indipendenza; il trattato di Riga fissò il suo confine orientale.
+victims|Circa 100 000 morti da entrambe le parti.
+## 1919-polish-miners-in-northern-france
+name|Minatori polacchi nel nord della Francia
+note|Circa 500 000 polacchi si stabiliscono in Francia.
+context|La Francia, a corto di uomini dopo la guerra, reclutò lavoratori polacchi per le miniere del Nord e del Pas-de-Calais.
+stakes|Città polacche dentro città francesi, con chiese, scuole e associazioni proprie.
+victims|Molti morirono in incidenti minerari e di silicosi.
+## 1939-09-01-german-and-soviet-occupation
+name|Occupazione tedesca e sovietica
+note|Circa sei milioni di cittadini polacchi uccisi, metà dei quali ebrei.
+context|La Germania invase la Polonia da ovest, l'Unione Sovietica da est; il paese fu diviso e terrorizzato.
+stakes|L'Olocausto fu compiuto in gran parte sul suolo polacco; le élite polacche furono assassinate, tra l'altro a Katyń.
+victims|Circa sei milioni di cittadini polacchi uccisi, metà dei quali ebrei.
+## 1944-08-01-warsaw-uprising
+name|Insurrezione di Varsavia
+note|63 giorni di combattimenti; poi la città rasa al suolo.
+context|L'Armia Krajowa insorse contro i tedeschi mentre l'Armata Rossa si fermava sulla Vistola.
+stakes|L'insurrezione fu schiacciata; i tedeschi distrussero poi gran parte della città.
+victims|Circa 16 000 insorti e da 150 000 a 200 000 civili uccisi.
+## 1945-people-s-republic-of-poland
+name|Repubblica Popolare di Polonia
+note|Regime comunista; confini spostati a ovest.
+context|La Polonia, spostata verso ovest, passò sotto un regime comunista insediato dall'Unione Sovietica.
+stakes|Ricostruzione, nazionalizzazioni, censura; crisi nel 1956, nel 1970 e nel 1980.
+victims|Milioni furono trasferiti dall'est perduto all'ex ovest tedesco.
+## 1980-08-31-solidarnosc
+name|Solidarność
+note|Il primo sindacato libero del blocco sovietico.
+context|Gli scioperi del cantiere navale di Danzica conquistarono il diritto a un sindacato libero, guidato da Lech Wałęsa.
+stakes|Dieci milioni di iscritti; la prima crepa nel blocco sovietico.
+## 1981-12-13-martial-law
+name|Legge marziale
+context|Il generale Jaruzelski proclamò la legge marziale per schiacciare Solidarność.
+stakes|Arresti, coprifuoco e penuria; il movimento sopravvisse nella clandestinità.
+victims|Decine di morti; circa 10 000 internati.
+## 1989-06-04-first-partly-free-elections
+name|Prime elezioni parzialmente libere
+context|Dopo i negoziati della Tavola rotonda, Solidarność conquistò i seggi aperti al voto libero.
+stakes|Il primo governo non comunista del blocco; seguì la caduta dei regimi.
+## 2004-05-01-poland-joins-the-european-union
+name|La Polonia entra nell'Unione europea
+context|La Polonia e altri nove paesi entrarono nell'Unione europea.
+stakes|La libertà di vivere e lavorare in tutta Europa; una nuova emigrazione verso la Gran Bretagna e l'Irlanda.
+## 1830-10-04-independence-of-belgium
+name|Indipendenza del Belgio
+context|Le province meridionali del Regno dei Paesi Bassi insorsero e dichiararono l'indipendenza.
+stakes|Un nuovo regno sotto Leopoldo I, neutrale, cattolico e presto industriale.
+victims|Centinaia di morti nei combattimenti.
+## 1885-congo-free-state
+name|Stato Libero del Congo
+note|La colonia privata di Leopoldo II: lavoro forzato e atrocità per la gomma.
+context|Il re Leopoldo II del Belgio governò il Congo come sua proprietà personale.
+stakes|Gomma e avorio estratti con il lavoro forzato, gli ostaggi e le mutilazioni; uno scandalo internazionale.
+victims|Morirono milioni di persone; la popolazione calò forse di diversi milioni.
+## 1908-belgian-congo
+name|Congo belga
+note|Una colonia del Belgio.
+context|Sotto la pressione internazionale, il Belgio tolse il Congo al suo re e ne fece una colonia.
+stakes|Miniere, missioni e ordine coloniale; l'indipendenza nel 1960.
+victims|Il lavoro forzato continuò a lungo dopo il 1908.
+## 1914-08-04-belgium-occupied
+name|Il Belgio occupato
+note|Massacri del 1914; il fronte dell'Yser.
+context|La Germania invase il Belgio neutrale per raggiungere la Francia; il fronte dell'Yser ne tenne libera una striscia.
+stakes|Quattro anni di occupazione, requisizioni e deportazioni per il lavoro in Germania.
+victims|Circa 6500 civili massacrati nel 1914; circa 40 000 morti belgi nella guerra.
+## 1940-05-10-belgium-occupied-again
+name|Il Belgio di nuovo occupato
+context|La Germania invase di nuovo il Belgio; il re Leopoldo III capitolò dopo diciotto giorni.
+stakes|Occupazione, collaborazione e resistenza; la Liberazione nel settembre 1944.
+victims|Circa 25 000 ebrei deportati; decine di migliaia di altri morti.
+## 1950-the-royal-question
+name|La Questione reale
+note|Leopoldo III abdica nel 1951.
+context|La condotta di Leopoldo III durante la guerra divise il paese sul suo ritorno.
+stakes|Scioperi e sommosse; abdicò in favore del figlio Baldovino.
+victims|Quattro scioperanti uccisi.
+## 1482-the-portuguese-reach-the-kongo-kingdom
+name|I portoghesi raggiungono il regno del Kongo
+note|Diogo Cão alla foce del fiume.
+context|Il navigatore Diogo Cão raggiunse la foce del fiume Congo ed entrò in contatto con il regno del Kongo.
+stakes|Commercio, cristianesimo, poi la tratta degli schiavi tra il Kongo e il Portogallo.
+## 1960-06-30-independence-of-the-congo
+name|Indipendenza del Congo
+note|Patrice Lumumba, primo ministro.
+context|Il Congo belga divenne indipendente; Patrice Lumumba parlò delle umiliazioni del dominio coloniale.
+stakes|Un paese immenso con pochi amministratori formati, presto in crisi.
+## 1960-07-congo-crisis
+name|Crisi del Congo
+note|Il Katanga si separa; Lumumba assassinato nel 1961.
+context|Ammutinamento, secessione del Katanga e del Kasai, intervento straniero e assassinio di Lumumba nel 1961.
+stakes|Il Congo rimase unito; Mobutu prese il potere nel 1965.
+victims|Circa 100 000 morti.
+## 1965-11-24-mobutu-regime
+name|Regime di Mobutu
+note|Il paese si chiama Zaire dal 1971.
+context|Joseph-Désiré Mobutu prese il potere con un colpo di Stato e governò per trentadue anni.
+stakes|Partito unico, «autenticità» (Zaire, Mobutu Sese Seko), arricchimento del capo, decadimento dello Stato.
+victims|Oppositori uccisi o torturati.
+## 1976-first-known-ebola-outbreak-yambuku
+name|Primo focolaio noto di Ebola (Yambuku)
+context|Un nuovo virus comparve attorno alla missione di Yambuku, nel nord del paese; prese il nome da un fiume vicino.
+stakes|La scoperta dell'Ebola e della sua trasmissione attraverso le cure e le sepolture.
+victims|280 morti.
+## 1996-10-first-congo-war
+name|Prima guerra del Congo
+note|Cade Mobutu; Laurent-Désiré Kabila prende il potere.
+context|Il Ruanda e l'Uganda sostennero i ribelli di Laurent-Désiré Kabila, che attraversarono il paese.
+stakes|Mobutu cadde; lo Zaire tornò a essere la Repubblica Democratica del Congo.
+victims|Circa 200 000 morti, molti dei quali profughi hutu.
+## 2006-07-30-first-free-elections-since-independence
+name|Prime elezioni libere dall'indipendenza
+context|Dopo le guerre, i congolesi votarono in elezioni multipartitiche; fu eletto Joseph Kabila.
+stakes|Un fragile ritorno al voto; la violenza continuò nell'est.
+## 1880-french-congo
+name|Congo francese
+note|Dai trattati di Brazza all'indipendenza.
+context|Pierre Savorgnan de Brazza firmò trattati con il Makoko dei Teke; la Francia prese la riva nord del Congo.
+stakes|Una colonia di compagnie concessionarie e di lavoro forzato, con Brazzaville come capitale.
+victims|Il lavoro forzato sulla ferrovia Congo-Oceano uccise da 15 000 a 20 000 lavoratori circa.
+## 1960-08-15-independence-of-the-republic-of-the-congo
+name|Indipendenza della Repubblica del Congo
+context|Il Congo francese divenne la Repubblica del Congo, con Brazzaville come capitale.
+stakes|L'indipendenza, poi dal 1969 una repubblica marxista-leninista.
+## 1697-saint-domingue-becomes-french
+name|Saint-Domingue diventa francese
+note|Trattato di Rijswijk.
+context|Con il trattato di Rijswijk, la Spagna cedette alla Francia il terzo occidentale di Hispaniola.
+stakes|Saint-Domingue divenne la colonia più ricca del mondo, sulle spalle degli africani ridotti in schiavitù.
+victims|Centinaia di migliaia di schiavi morirono di fatica.
+## 1804-01-01-independence-of-haiti
+name|Indipendenza di Haiti
+note|La prima repubblica nera, dove la schiavitù finì per sempre.
+context|Jean-Jacques Dessalines proclamò l'indipendenza di Haiti, il nome taíno dell'isola.
+stakes|La prima repubblica nera e il secondo Stato indipendente delle Americhe.
+## 1825-the-independence-debt-to-france
+name|Il debito dell'indipendenza verso la Francia
+note|150 milioni di franchi, un peso per un secolo.
+context|Sotto la minaccia delle navi da guerra francesi, Haiti accettò di pagare 150 milioni di franchi per risarcire gli ex padroni di schiavi.
+stakes|Un debito e i suoi prestiti gravarono sull'economia haitiana fino alla metà del XX secolo.
+## 1915-united-states-occupation
+name|Occupazione statunitense
+context|Dopo l'assassinio di un presidente, gli Stati Uniti sbarcarono i marines e amministrarono Haiti per diciannove anni.
+stakes|Strade e un nuovo esercito, ma lavoro forzato e controllo delle finanze haitiane.
+victims|Circa 3000 haitiani uccisi resistendo, nelle guerre dei Cacos.
+## 1957-duvalier-dictatorship
+name|Dittatura dei Duvalier
+note|Molti haitiani vanno in esilio.
+context|François «Papa Doc» Duvalier, poi suo figlio «Baby Doc», governarono con il terrore grazie alla milizia dei Tonton Macoute.
+stakes|Povertà, esilio delle persone istruite e una diaspora a New York, Montréal e Parigi.
+victims|Da 30 000 a 60 000 uccisi circa.
+## 2010-01-12-earthquake-of-12-january-2010
+name|Terremoto del 12 gennaio 2010
+note|Oltre 200 000 morti.
+context|Un terremoto di magnitudo 7 colpì la zona di Port-au-Prince, distruggendo gran parte della capitale.
+stakes|Un paese devastato; aiuti massicci, poi un'epidemia di colera.
+victims|Oltre 200 000 morti; 1,5 milioni di senzatetto.
+## 1871-01-18-german-empire-proclaimed
+name|Proclamazione dell'Impero tedesco
+context|Dopo aver sconfitto la Francia, gli stati tedeschi si unirono sotto il re di Prussia, proclamato imperatore a Versailles.
+stakes|Una Germania unita, la prima potenza del continente.
+## 1918-11-09-weimar-republic
+name|Repubblica di Weimar
+context|L'imperatore abdicò; a Weimar fu fondata una repubblica democratica.
+stakes|Una democrazia fragile, gravata dalla sconfitta, dalle riparazioni e dalle crisi.
+## 1923-hyperinflation
+name|Iperinflazione
+note|Risparmi spazzati via.
+context|I prezzi raddoppiavano ogni pochi giorni; una pagnotta costava miliardi di marchi.
+stakes|Risparmi spazzati via; le classi medie rovinate e amareggiate.
+## 1933-nazi-germany
+name|La Germania nazista
+context|Hitler divenne cancelliere e instaurò una dittatura fondata sul razzismo e sul terrore.
+stakes|Persecuzione degli ebrei, guerra di conquista, l'Olocausto.
+victims|Decine di milioni di morti nella guerra e nel genocidio che provocò.
+## 1949-two-german-states
+name|Due stati tedeschi
+context|La Germania fu divisa nella Repubblica federale a ovest e nella RDT comunista a est.
+stakes|Due stati, due sistemi, famiglie separate per quarant'anni.
+## 1961-08-13-the-berlin-wall
+name|Il Muro di Berlino
+context|La Germania Est chiuse Berlino Ovest con un muro in una notte, per impedire la fuga della sua popolazione.
+stakes|Il simbolo della Guerra fredda, fino alla sua caduta il 9 novembre 1989.
+victims|Almeno 140 persone uccise mentre cercavano di attraversarlo.
+## 1990-10-03-reunification
+name|Riunificazione
+context|La RDT entrò nella Repubblica federale: la Germania tornò a essere un solo paese.
+stakes|La ricostruzione dell'est e una Germania al centro dell'Europa.
+## 1861-03-17-kingdom-of-italy-unification
+name|Regno d'Italia: l'unificazione
+context|Dopo le guerre e la spedizione di Garibaldi, Vittorio Emanuele II fu proclamato re d'Italia.
+stakes|Un'Italia unita; Roma ne divenne la capitale nel 1870.
+## 1880-great-italian-emigration
+name|Grande emigrazione italiana
+note|Verso le Americhe e la Francia.
+context|La povertà, soprattutto nel Sud, spinse gli italiani verso le Americhe, la Francia e oltre.
+stakes|Comunità italiane a New York, Buenos Aires, San Paolo e Marsiglia.
+victims|Circa 14 milioni di emigranti tra il 1876 e il 1915.
+## 1922-fascist-italy
+name|L'Italia fascista
+context|Dopo la marcia su Roma, Mussolini instaurò la prima dittatura fascista.
+stakes|Partito unico, culto del capo, guerre coloniali, alleanza con Hitler.
+victims|Centinaia di migliaia in Etiopia e nella guerra.
+## 1946-06-02-italian-republic
+name|Repubblica Italiana
+context|Gli italiani votarono in un referendum per sostituire la monarchia con una repubblica; le donne votarono per la prima volta.
+stakes|Una repubblica democratica e la sua costituzione del 1948.
+## 1808-peninsular-war
+name|Guerra d'indipendenza spagnola
+context|Napoleone mise suo fratello sul trono di Spagna; la Spagna insorse, con l'aiuto britannico.
+stakes|Una guerriglia che dissanguò gli eserciti di Napoleone.
+victims|Circa 500 000 morti, molti dei quali civili.
+## 1939-franco-s-dictatorship
+name|Dittatura di Franco
+context|Dopo la guerra civile, il generale Franco governò la Spagna come dittatore fino alla sua morte nel 1975.
+stakes|Repressione, la Chiesa cattolica al potere, isolamento, poi crescita dagli anni Sessanta.
+victims|Decine di migliaia di giustiziati dopo la guerra; molti di più imprigionati.
+## 1978-democratic-constitution
+name|Costituzione democratica
+context|Gli spagnoli approvarono una costituzione democratica, sotto il re Juan Carlos.
+stakes|La democrazia, le autonomie regionali e l'ingresso in Europa nel 1986.
+## 1974-04-25-carnation-revolution
+name|Rivoluzione dei garofani
+note|La fine della dittatura e delle guerre coloniali.
+context|Ufficiali dell'esercito rovesciarono la dittatura del Portogallo quasi senza spargimento di sangue; la gente mise garofani nei fucili.
+stakes|La democrazia in Portogallo e l'indipendenza per le sue colonie africane.
+victims|Quattro morti.
+## 1665-great-plague-of-london
+name|Grande peste di Londra
+context|La peste bubbonica si diffuse a Londra nell'estate del 1665.
+stakes|L'ultima grande peste in Inghilterra; la corte e i ricchi fuggirono dalla città.
+victims|Circa 100 000 morti, quasi un quarto di Londra.
+## 1666-09-02-great-fire-of-london
+name|Grande incendio di Londra
+context|Un incendio partito da una panetteria bruciò per quattro giorni la City di Londra.
+stakes|Londra ricostruita in mattoni e pietra; la cattedrale di St Paul di Christopher Wren.
+victims|Pochi morti registrati; 70 000 senzatetto.
+## 1707-05-01-union-of-england-and-scotland
+name|Unione di Inghilterra e Scozia
+context|Gli Atti di Unione unirono l'Inghilterra e la Scozia nel Regno di Gran Bretagna.
+stakes|Un solo parlamento a Londra; la Scozia conservò il proprio diritto e la propria Chiesa.
+## 1760-first-industrial-revolution
+name|Prima rivoluzione industriale
+context|Macchine, carbone e vapore trasformarono prima in Gran Bretagna il tessile, il ferro e i trasporti.
+stakes|Il sistema di fabbrica, la crescita delle città e una nuova classe operaia.
+victims|Lavoro minorile e miseria urbana; nelle città industriali la speranza di vita calò.
+## 1837-victorian-era
+name|Età vittoriana
+context|La regina Vittoria regnò 63 anni sulla Gran Bretagna e su un impero mondiale.
+stakes|Industria, impero, riforme e una morale rigida.
+## 1940-07-10-battle-of-britain
+name|Battaglia d'Inghilterra
+context|L'aviazione tedesca cercò di conquistare il dominio del cielo prima di un'invasione; la RAF resistette.
+stakes|La Gran Bretagna restò in guerra; il Blitz bombardò le sue città fino al 1941.
+victims|Circa 1500 aviatori uccisi; circa 40 000 civili nel Blitz.
+## 1948-07-05-national-health-service
+name|Servizio sanitario nazionale (NHS)
+context|La Gran Bretagna fondò il NHS, un servizio sanitario gratuito per tutti al momento dell'uso.
+stakes|Un modello dello Stato sociale del dopoguerra.
+## 2020-01-31-brexit
+name|Brexit
+context|Dopo il referendum del 2016, il Regno Unito lasciò l'Unione europea.
+stakes|La fine della libera circolazione con l'UE; nuove frontiere, nuovi documenti per le famiglie.
+## 1916-04-24-easter-rising
+name|Rivolta di Pasqua
+context|I repubblicani irlandesi insorsero a Dublino durante la settimana di Pasqua; i britannici ne giustiziarono i capi.
+stakes|Le esecuzioni spostarono l'opinione pubblica verso l'indipendenza.
+victims|Circa 500 morti.
+## 1922-12-06-irish-free-state
+name|Stato libero d'Irlanda
+context|Dopo una guerra d'indipendenza, un trattato creò lo Stato libero d'Irlanda; il nord rimase britannico.
+stakes|L'indipendenza, al prezzo della divisione e della guerra civile.
+## 1922-06-28-irish-civil-war
+name|Guerra civile irlandese
+context|Sostenitori e oppositori del trattato con la Gran Bretagna si combatterono tra loro.
+stakes|Vinse lo Stato libero; divisioni durature nella politica irlandese.
+victims|Da 1500 a 2000 morti circa.
+## 1968-the-troubles-northern-ireland
+name|I Troubles (Irlanda del Nord)
+context|Violenze tra nazionalisti, per lo più cattolici, e unionisti, per lo più protestanti, con l'esercito britannico.
+stakes|Terminati con l'Accordo del Venerdì Santo nel 1998.
+victims|Circa 3500 morti.
+## 1613-romanov-dynasty
+name|Dinastia Romanov
+context|Dopo il Periodo dei torbidi, Michele Romanov fu eletto zar.
+stakes|Tre secoli di autocrazia e di espansione, fino alla rivoluzione del 1917.
+## 1812-06-24-napoleon-s-invasion-of-russia
+name|Campagna di Russia di Napoleone
+note|La Grande Armée distrutta nella ritirata.
+context|Napoleone invase la Russia con circa 600 000 uomini di tutta Europa e raggiunse una Mosca in fiamme.
+stakes|La ritirata d'inverno distrusse la Grande Armée e capovolse le sorti contro Napoleone.
+victims|Morirono da 400 000 a 500 000 soldati della Grande Armée; le perdite russe furono altrettanto pesanti.
+## 1861-03-03-serfdom-abolished
+name|Abolizione della servitù della gleba
+context|Lo zar Alessandro II liberò i servi dell'Impero russo.
+stakes|La libertà, ma con terre da pagare; i contadini partirono per le città.
+## 1905-revolution-of-1905
+name|Rivoluzione del 1905
+context|Dopo la sconfitta contro il Giappone e il massacro della «domenica di sangue», scioperi e ammutinamenti scossero la Russia.
+stakes|Un parlamento, la Duma, concesso dallo zar; una prova generale del 1917.
+victims|Migliaia di morti.
+## 1921-famine-of-1921-1922
+name|Carestia del 1921–1922
+context|Siccità, guerra e requisizioni affamarono la regione del Volga e l'Ucraina.
+stakes|Aiuti internazionali e l'abbandono del comunismo di guerra.
+victims|Circa 5 milioni di morti.
+## 1922-12-30-soviet-union
+name|Unione Sovietica
+context|Russia, Ucraina, Bielorussia e Transcaucasia formarono l'Unione delle Repubbliche Socialiste Sovietiche.
+stakes|Uno Stato a partito unico su un sesto delle terre emerse, fino al 1991.
+victims|Decine di milioni morirono per carestie, purghe e nel Gulag.
+## 1932-holodomor
+name|Holodomor
+note|Una carestia provocata dall'uomo: milioni di morti.
+context|La collettivizzazione forzata di Stalin e le requisizioni di grano provocarono una carestia in Ucraina.
+stakes|Riconosciuto da molti paesi come un genocidio contro gli ucraini.
+victims|Da 3,5 a 5 milioni di morti circa in Ucraina.
+## 1936-the-great-terror
+name|Il Grande Terrore
+context|Le purghe di Stalin colpirono il partito, l'esercito e la gente comune, con processi farsa e quote di arresti.
+stakes|La paura a ogni livello della società; il Gulag si riempì.
+victims|Da 680 000 a 750 000 giustiziati circa; oltre un milione mandati nei campi.
+## 1941-06-22-the-war-against-germany
+name|La guerra contro la Germania
+note|Circa 27 milioni di morti sovietici.
+context|La Germania invase l'Unione Sovietica; la guerra a est fu la più grande e la più letale di tutte.
+stakes|L'Armata Rossa raggiunse Berlino nel 1945; il potere sovietico sull'Europa orientale.
+victims|Circa 27 milioni di morti sovietici.
+## 1986-04-26-chernobyl-disaster
+name|Disastro di Černobyl'
+context|Un reattore esplose a Černobyl', in Ucraina, diffondendo ricadute radioattive sull'Europa.
+stakes|Una zona di esclusione, verità nascoste e dubbi sull'energia nucleare.
+victims|31 morti immediati; le stime dei successivi morti di cancro arrivano alle migliaia.
+## 1991-08-24-independence-of-ukraine
+name|Indipendenza dell'Ucraina
+context|Dopo il fallito colpo di Stato di Mosca, l'Ucraina dichiarò l'indipendenza; il 90 % la approvò a dicembre.
+stakes|Un'Ucraina sovrana, con confini riconosciuti, Crimea compresa.
+## 2014-crimea-annexed-war-in-the-donbas
+name|Annessione della Crimea, guerra nel Donbass
+context|Dopo la rivoluzione di Maidan, la Russia annesse la Crimea e sostenne separatisti armati nel Donbass.
+stakes|L'inizio della guerra che nel 2022 divenne un'invasione.
+victims|Circa 14 000 morti fino al 2021.
+## 1803-louisiana-purchase
+name|Acquisto della Louisiana
+context|Napoleone vendette agli Stati Uniti il territorio francese della Louisiana.
+stakes|Gli Stati Uniti raddoppiarono la loro superficie, aprendo l'Ovest.
+## 1865-12-06-slavery-abolished
+name|Abolizione della schiavitù
+context|Il XIII emendamento abolì la schiavitù negli Stati Uniti.
+stakes|La libertà per quattro milioni di persone, poi la segregazione nel Sud.
+## 1892-ellis-island
+name|Ellis Island
+note|Vi passano circa dodici milioni di immigrati.
+context|La stazione d'immigrazione del porto di New York accolse per sessant'anni i nuovi arrivati dall'Europa.
+stakes|I suoi registri sono un tesoro per le famiglie di milioni di americani.
+victims|Circa dodici milioni vi passarono; pochi furono respinti.
+## 1920-08-18-women-s-right-to-vote
+name|Diritto di voto delle donne
+context|Il XIX emendamento diede alle americane il diritto di voto.
+stakes|La vittoria di decenni di lotte delle suffragette.
+## 1933-the-new-deal
+name|Il New Deal
+context|Il presidente Roosevelt rispose alla Depressione con lavori pubblici, aiuti e regolamentazione.
+stakes|Lo Stato federale assunse un ruolo nuovo nell'economia e nella vita sociale.
+## 1954-civil-rights-movement
+name|Movimento per i diritti civili
+context|Gli afroamericani combatterono la segregazione, dal boicottaggio degli autobus di Montgomery alle marce di Martin Luther King.
+stakes|Le leggi sui diritti civili del 1964 e del 1965.
+victims|Attivisti uccisi, tra cui Martin Luther King nel 1968.
+## 1963-11-22-assassination-of-john-f-kennedy
+name|Assassinio di John F. Kennedy
+context|Il presidente Kennedy fu ucciso a colpi d'arma da fuoco a Dallas.
+stakes|Uno shock nazionale e domande che restano.
+## 1830-french-algeria
+name|Algeria francese
+context|La Francia conquistò l'Algeria dal 1830 e ne fece dipartimenti francesi popolati da europei.
+stakes|132 anni di colonizzazione, con diritti diseguali per musulmani ed europei.
+victims|La conquista uccise centinaia di migliaia di algerini.
+## 1962-07-05-independence-of-algeria
+name|Indipendenza dell'Algeria
+note|Centinaia di migliaia partono per la Francia.
+context|Dopo gli accordi di Évian e un referendum, l'Algeria divenne indipendente.
+stakes|Circa 800 000 pieds-noirs e decine di migliaia di harki partirono per la Francia.
+victims|Migliaia di harki uccisi dopo l'indipendenza.
+## 1991-12-algerian-civil-war
+name|Guerra civile algerina
+context|L'esercito annullò elezioni che gli islamisti stavano vincendo; gruppi armati e Stato si combatterono per un decennio.
+stakes|Il «decennio nero»: massacri, terrore ed esilio.
+victims|Da 150 000 a 200 000 morti circa.
+## -3500-the-wheel
+name|La ruota
+context|In Mesopotamia compare il tornio del vasaio, poi carri su ruote trainati da buoi e più tardi da cavalli.
+stakes|Trasporti, commercio e guerra sulla terraferma cambiano per sempre; la ruota farà girare mulini e macchine per i cinquemila anni successivi.
+## 105-paper-in-china
+name|La carta, in Cina
+context|Alla corte degli Han, si attribuisce a Cai Lun la fabbricazione della carta con corteccia, canapa e stracci.
+stakes|Più economica della seta o del bambù, la carta porta la scrittura, l'amministrazione e poi la stampa in tutta l'Asia, e in Europa attraverso il mondo arabo.
+## 1040-movable-type-in-china
+name|I caratteri mobili, in Cina
+context|Bi Sheng stampa con caratteri mobili di argilla cotta, quattro secoli prima di Gutenberg.
+stakes|Molte copie da pezzi riutilizzabili: in Cina e in Corea libri e documenti ufficiali circolano più in fretta.
+## 1608-the-telescope
+name|Il cannocchiale
+context|Occhialai della Repubblica olandese uniscono due lenti in un tubo per vedere lontano.
+stakes|L'occhio va oltre se stesso: navigazione, guerra e astronomia cambiano, e il cielo diventa un luogo da misurare.
+## 1712-the-steam-engine
+name|La macchina a vapore
+context|La macchina di Thomas Newcomen pompa l'acqua dalle miniere inglesi; James Watt la rende efficiente dal 1769.
+stakes|La forza non dipende più dai muscoli, dal vento o dall'acqua: il motore delle rivoluzioni industriali, delle ferrovie e dei piroscafi.
+## 1796-the-first-vaccine-against-smallpox
+name|Il primo vaccino, contro il vaiolo
+context|Edward Jenner protegge un ragazzo dal vaiolo con materiale prelevato da una pustola di vaiolo bovino.
+stakes|Il vaiolo aveva ucciso centinaia di milioni di persone nei secoli; la vaccinazione si diffonde nel mondo e la malattia è dichiarata eradicata nel 1980.
+## 1800-the-electric-battery
+name|La pila elettrica
+context|Alessandro Volta impila dischi di zinco e di rame separati da acqua salata e ottiene una corrente costante.
+stakes|La prima fonte duratura di corrente: l'inizio dell'elettrochimica, del telegrafo e di tutto l'elettrico che seguì.
+## 1826-photography
+name|La fotografia
+context|Nicéphore Niépce fissa la vista dalla sua finestra in Borgogna; il procedimento di Daguerre è donato al mondo nel 1839.
+stakes|Per la prima volta un volto o un luogo possono essere conservati com'erano: ritratti di famiglia, la stampa, il ricordo dei morti.
+## 1837-the-electric-telegraph
+name|Il telegrafo elettrico
+context|Cooke e Wheatstone in Gran Bretagna, poi Morse e il suo codice negli Stati Uniti, inviano messaggi lungo i fili.
+stakes|Le notizie viaggiano più veloci di qualsiasi cavallo o nave: mercati, ferrovie, eserciti e diplomazia corrono sul filo; un cavo attraversa l'Atlantico nel 1866.
+## 1876-the-telephone
+name|Il telefono
+context|Alexander Graham Bell brevetta il telefono negli Stati Uniti.
+stakes|La voce stessa supera la distanza: famiglie e aziende a portata le une delle altre, il primo passo verso le reti di oggi.
+## 1879-the-electric-light-bulb
+name|La lampadina elettrica
+context|Thomas Edison negli Stati Uniti e Joseph Swan in Gran Bretagna realizzano lampadine a incandescenza durature.
+stakes|La luce con un interruttore: serate più lunghe, strade e fabbriche più sicure, e le reti elettriche costruite per alimentarle.
+## 1885-the-rabies-vaccine
+name|Il vaccino contro la rabbia
+context|Louis Pasteur cura Joseph Meister, un ragazzo morso da un cane rabbioso, con un vaccino preparato nel suo laboratorio.
+stakes|La rabbia, una volta manifesta, era sempre mortale; l'Istituto Pasteur, fondato nel 1888, porta vaccini e microbiologia in tutto il mondo.
+## 1886-the-automobile
+name|L'automobile
+context|Carl Benz brevetta in Germania una vettura a motore spinta da un motore a benzina.
+stakes|Gli spostamenti personali cambiano scala: strade, petrolio, periferie e industria automobilistica plasmano il Novecento.
+## 1895-cinema
+name|Il cinema
+context|I fratelli Lumière mostrano i loro primi film a un pubblico pagante a Parigi.
+stakes|Le immagini in movimento diventano un'arte popolare e uno specchio del secolo: cinegiornali, propaganda e storie viste da milioni di persone.
+## 1903-the-aeroplane
+name|L'aeroplano
+context|In Carolina del Nord, i fratelli Wright compiono i primi voli a motore controllati.
+stakes|In cinquant'anni gli aerei trasportano posta, bombe e passeggeri: la guerra dal cielo e il mondo a un giorno di volo.
+## 1946-the-electronic-computer
+name|Il computer elettronico
+context|L'ENIAC, costruito per l'esercito statunitense, calcola con migliaia di valvole termoioniche; Turing e altri ne avevano posto la teoria.
+stakes|Il calcolo a velocità elettronica: scienza, codici e amministrazione, poi ogni ufficio e ogni casa.
+## 1947-the-transistor
+name|Il transistor
+context|Ai Bell Labs, Bardeen, Brattain e Shockley realizzano il primo transistor.
+stakes|Una commutazione piccola, economica e affidabile: radio, computer e ogni chip che seguì.
+## 1955-the-polio-vaccine
+name|Il vaccino contro la poliomielite
+context|Il vaccino di Jonas Salk è dichiarato sicuro ed efficace; il vaccino orale di Albert Sabin segue negli anni Sessanta.
+stakes|La polio paralizzava ogni anno centinaia di migliaia di bambini; oggi sopravvive solo in poche regioni del mondo.
+## 1989-the-world-wide-web
+name|Il World Wide Web
+context|Al CERN, vicino a Ginevra, Tim Berners-Lee propone pagine collegate tra loro e lette attraverso Internet.
+stakes|Sapere, commercio e conversazione online per miliardi di persone; anche la storia di famiglia diventa qualcosa che si cerca e si condivide.
+## 2007-the-smartphone
+name|Lo smartphone
+context|L'iPhone e i telefoni che seguirono mettono in tasca un computer, una fotocamera e Internet.
+stakes|In dieci anni la maggior parte dell'umanità ne porta uno: foto, messaggi e mappe ovunque, e l'attenzione sotto nuove pressioni.
+## 2020-messenger-rna-vaccines
+name|I vaccini a RNA messaggero
+context|Decenni di ricerca, tra cui quella di Katalin Karikó, producono vaccini contro il COVID-19 entro un anno dall'epidemia.
+stakes|Un nuovo modo di produrre vaccini rapidamente; miliardi di dosi in due anni.
+## 1498-vasco-da-gama-opens-the-sea-route-to-india
+name|Vasco da Gama apre la rotta marittima per l'India
+context|Circumnavigando l'Africa, la flotta portoghese raggiunge Calicut, sulla costa dell'India.
+stakes|Il commercio delle spezie via mare: l'impero del Portogallo nell'Oceano Indiano e l'accesso diretto dell'Europa all'Asia.
+## 1519-magellan-s-expedition-sails-round-the-world
+name|La spedizione di Magellano compie il giro del mondo
+context|Cinque navi lasciano la Spagna sotto Magellano; una torna tre anni dopo con Elcano, dopo che Magellano era stato ucciso nelle Filippine.
+stakes|Il primo giro del mondo: la prova delle dimensioni della Terra e di un oceano che li unisce tutti.
+victims|Più di 200 dei circa 270 uomini partiti non tornarono mai.
+## 1543-copernicus-puts-the-sun-at-the-centre
+name|Copernico mette il Sole al centro
+context|Niccolò Copernico, canonico di Frombork in Polonia, pubblica un cosmo in cui la Terra gira attorno al Sole.
+stakes|La Terra non è più il centro: l'inizio di una rivoluzione scientifica portata avanti da Keplero, Galileo e Newton.
+## 1610-galileo-turns-his-telescope-to-the-sky
+name|Galileo punta il cannocchiale verso il cielo
+context|Galileo vede le lune di Giove, le fasi di Venere e le montagne della Luna.
+stakes|L'osservazione contro l'autorità: prove a favore di Copernico e un processo a Roma nel 1633.
+## 1687-newton-s-laws-of-motion-and-gravitation
+name|Le leggi del moto e della gravitazione di Newton
+context|I Principia di Isaac Newton spiegano con una sola legge la caduta di una mela e le orbite dei pianeti.
+stakes|Un universo che obbedisce alla matematica: il modello della scienza per due secoli e la meccanica di ogni macchina.
+## 1768-cook-s-voyages-in-the-pacific
+name|I viaggi di Cook nel Pacifico
+context|James Cook cartografa per la Gran Bretagna la Nuova Zelanda, la costa orientale dell'Australia e molte isole del Pacifico.
+stakes|La carta del Pacifico si completa; dal 1788 segue la colonizzazione dell'Australia, a caro prezzo per i suoi primi popoli.
+## 1859-darwin-s-theory-of-evolution
+name|La teoria dell'evoluzione di Darwin
+context|Charles Darwin pubblica L'origine delle specie, dopo il viaggio del Beagle e vent'anni di lavoro.
+stakes|Gli esseri viventi discendono gli uni dagli altri per selezione naturale: la biologia rifondata e una lunga disputa con la fede.
+## 1869-mendeleev-s-periodic-table
+name|La tavola periodica di Mendeleev
+context|Dmitrij Mendeleev ordina gli elementi chimici in una tavola e lascia spazi vuoti per quelli ancora sconosciuti.
+stakes|La chimica ha la sua mappa: gli elementi mancanti vengono trovati dove aveva previsto.
+## 1895-x-rays
+name|I raggi X
+context|Wilhelm Röntgen scopre raggi che attraversano il corpo e fotografa le ossa della mano di sua moglie.
+stakes|La medicina vede dentro il corpo vivo: la radiografia arriva negli ospedali in pochi anni.
+## 1898-radioactivity-marie-and-pierre-curie-discover-radium
+name|La radioattività: Marie e Pierre Curie scoprono il radio
+context|A Parigi, Marie Skłodowska-Curie, nata a Varsavia, e Pierre Curie isolano il polonio e il radio.
+stakes|L'atomo ha una vita propria: due premi Nobel per Marie Curie, cure contro il cancro e la strada verso la fisica nucleare.
+## 1905-einstein-s-relativity
+name|La relatività di Einstein
+context|Albert Einstein, impiegato dell'ufficio brevetti di Berna, pubblica la relatività ristretta ed E = mc²; la relatività generale segue nel 1915.
+stakes|Il tempo e lo spazio dipendono dall'osservatore: la fisica delle stelle, della navigazione satellitare e dell'energia dell'atomo.
+## 1911-12-14-amundsen-reaches-the-south-pole
+name|Amundsen raggiunge il Polo Sud
+context|La spedizione norvegese di Roald Amundsen raggiunge il polo un mese prima di Robert Scott, che muore con i compagni durante il ritorno.
+stakes|L'ultimo grande spazio bianco della carta è raggiunto: finisce l'epoca dell'esplorazione polare.
+victims|Scott e i suoi quattro compagni.
+## 1928-penicillin
+name|La penicillina
+context|A Londra, Alexander Fleming nota una muffa che uccide i batteri; la penicillina è prodotta in quantità dal 1943.
+stakes|Il primo antibiotico: infezioni che uccidevano vengono guarite, milioni di vite salvate dalla Seconda guerra mondiale in poi.
+## 1953-the-double-helix-of-dna
+name|La doppia elica del DNA
+context|A Cambridge, James Watson e Francis Crick, basandosi sulle immagini di Rosalind Franklin, descrivono la struttura del DNA.
+stakes|L'ereditarietà ha la sua molecola: la genetica, la medicina e poi i test del DNA che leggono le linee familiari.
+## 1953-05-29-everest-climbed
+name|Prima salita dell'Everest
+context|Edmund Hillary e Tenzing Norgay raggiungono la vetta della montagna più alta del mondo.
+stakes|Il tetto del mondo è raggiunto; l'Himalaya si apre agli alpinisti.
+## 1957-10-04-sputnik-the-first-artificial-satellite
+name|Sputnik, il primo satellite artificiale
+context|L'Unione Sovietica mette in orbita una sfera di 58 centimetri; i suoi segnali radio si sentono in tutto il mondo.
+stakes|Si apre l'era spaziale e, con essa, la corsa allo spazio tra l'Unione Sovietica e gli Stati Uniti.
+## 1961-04-12-gagarin-the-first-human-in-space
+name|Gagarin, il primo uomo nello spazio
+context|Jurij Gagarin compie un giro della Terra a bordo della Vostok 1 e torna sano e salvo.
+stakes|Un essere umano lascia la Terra e ritorna: l'Unione Sovietica in testa, e l'America risponde con la Luna.
+## 2003-the-human-genome-sequenced
+name|Sequenziato il genoma umano
+context|Un progetto internazionale completa la lettura dei tre miliardi di lettere del DNA umano.
+stakes|La medicina e lo studio delle origini umane leggono la nostra eredità comune; ne nasce la genealogia genetica.
+## 2012-the-higgs-boson
+name|Il bosone di Higgs
+context|Al CERN, il Large Hadron Collider conferma la particella prevista nel 1964 da Peter Higgs e altri.
+stakes|L'ultimo pezzo mancante del modello standard della fisica, che spiega come le particelle hanno una massa.

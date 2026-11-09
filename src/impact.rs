@@ -217,6 +217,8 @@ pub struct Translated {
 pub const TRANSLATED: &[(&str, &str)] = &[
     ("pl", include_str!("impact_i18n/pl.txt")),
     ("de", include_str!("impact_i18n/de.txt")),
+    ("es", include_str!("impact_i18n/es.txt")),
+    ("it", include_str!("impact_i18n/it.txt")),
 ];
 
 /// A language's file, read: each landmark's fields by its key.
@@ -2997,6 +2999,8 @@ mod tests {
         assert!(pl.victims.starts_with("Około 20 milionów"));
         assert_eq!(ww1("fr").name, "Première Guerre mondiale");
         assert_eq!(ww1("de").name, "Erster Weltkrieg");
+        assert_eq!(ww1("es").name, "Primera Guerra Mundial");
+        assert_eq!(ww1("it").name, "Prima guerra mondiale");
         // A language with no file yet reads in English.
         assert_eq!(ww1("sw").name, "First World War");
     }

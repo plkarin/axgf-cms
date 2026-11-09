@@ -3609,6 +3609,7 @@ view-summit-direction = ↓ الأسلاف في الوادي · ↑ الأحفا
 river-legend-generation = جيل واحد ≈ 29 سنة
 river-zoom = تكبير
 river-still = إيقاف حركة المنظر
+river-world-label = وادي العائلة بثلاثة أبعاد
 view-tree-still = إيقاف حركة الشجرة
 view-galaxy-still = إيقاف حركة السماء
 view-summit-still = إيقاف حركة الجبل

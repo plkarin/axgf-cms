@@ -70,6 +70,10 @@ pub struct AppState {
     /// How many pages each PDF has, by its SHA-256, counted once
     /// (docs/adr/0040). `None` for one that cannot be read.
     pdf_pages: std::sync::Mutex<std::collections::HashMap<String, Option<usize>>>,
+    /// Canopée's world (docs/adr/0043): the family's shape's fingerprint at a
+    /// generation of the bundle, and the world built for a fingerprint.
+    world_shape: std::sync::Mutex<Option<(u64, String)>>,
+    world: std::sync::Mutex<Option<(String, std::sync::Arc<Vec<u8>>)>>,
     /// Bundle size past which the admin panel warns. Not a limit.
     size_warn: u64,
     /// Binary payloads, held on disk rather than in the flat JSON. The bundle
@@ -713,6 +717,8 @@ impl AppState {
                 thumbs: crate::documents::ThumbCache::default(),
                 model_photos: crate::documents::ThumbCache::with_budget(48 * 1024 * 1024),
                 pdf_pages: Default::default(),
+                world_shape: Default::default(),
+                world: Default::default(),
                 size_warn: crate::documents::DEFAULT_SIZE_WARN,
                 payloads: cache,
                 acl: RwLock::new(acl),
@@ -867,6 +873,49 @@ impl AppState {
     /// The photographs sized for the AFG, bounded.
     pub fn model_photos(&self) -> &crate::documents::ThumbCache {
         &self.model_photos
+    }
+
+    /// The fingerprint of the family's shape (docs/adr/0043), worked out
+    /// again only when the bundle has changed since.
+    pub fn world_fingerprint(&self) -> String {
+        let at = self.generation();
+        if let Some((g, fp)) = &*self.world_shape.lock().unwrap_or_else(|e| e.into_inner()) {
+            if *g == at {
+                return fp.clone();
+            }
+        }
+        let fp = self.read(|flat| crate::world::fingerprint(&crate::world::shape_of(flat)));
+        *self.world_shape.lock().unwrap_or_else(|e| e.into_inner()) = Some((at, fp.clone()));
+        fp
+    }
+
+    /// Canopée's world for the family as it is (docs/adr/0043): built once
+    /// for each shape, and kept until the shape changes. A name or a date
+    /// changed keeps it; a person added or removed, or a link made or
+    /// unmade, builds it again, whole.
+    pub fn world(&self) -> (String, std::sync::Arc<Vec<u8>>) {
+        let fp = self.world_fingerprint();
+        // Held while building, so that two pages asking at once wait for one
+        // build rather than making two.
+        let mut kept = self.world.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some((have, bytes)) = &*kept {
+            if *have == fp {
+                return (fp, bytes.clone());
+            }
+        }
+        let flat = self.read(Value::clone);
+        let world = crate::world::build(&flat);
+        let bytes = std::sync::Arc::new(world.encode());
+        tracing::info!(
+            fingerprint = %world.fingerprint,
+            persons = world.persons.len(),
+            streams = world.streams.len(),
+            trees = world.trees.len(),
+            bytes = bytes.len(),
+            "Canopée's world built"
+        );
+        *kept = Some((world.fingerprint.clone(), bytes.clone()));
+        (world.fingerprint, bytes)
     }
 
     /// The pages of a PDF of the archive, by its SHA-256: counted from its

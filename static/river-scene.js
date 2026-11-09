@@ -37,6 +37,9 @@
   var root = document.querySelector('.river');
   var stage = document.getElementById('rv-canvas');
   if (!root || !stage || !window.WebGLRenderingContext) return;
+  // Canopée's world in 3D draws the land and its water itself
+  // (docs/adr/0043); it loads this scene again if it cannot.
+  if (root.classList.contains('rv-world-on')) return;
 
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cut = root.dataset.riverMotion === 'cut';

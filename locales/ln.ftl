@@ -3229,6 +3229,7 @@ view-summit-direction = ↓ bankoko na lobwaku · ↑ bakitani bazali komata epa
 river-legend-generation = nkola moko ≈ mibu 29
 river-zoom = Zoom
 river-still = Tikala esika moko
+river-world-label = Lobwaku ya libota, na ndenge misato
 view-tree-still = Tika nzete kimya
 view-galaxy-still = Tika likolo kimya
 view-summit-still = Tika ngomba kimya

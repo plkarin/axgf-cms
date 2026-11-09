@@ -3331,6 +3331,7 @@ view-summit-direction = ↓ les ancêtres dans la vallée · ↑ les descendants
 river-legend-generation = une génération ≈ 29 ans
 river-zoom = Zoom
 river-still = Figer le paysage
+river-world-label = La vallée de la famille, en trois dimensions
 view-tree-still = Figer l’arbre
 view-galaxy-still = Figer le ciel
 view-summit-still = Figer la montagne

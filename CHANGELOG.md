@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Canopée in 3D, as the operator asked on 9 November 2026 (docs/adr/0043),
+and the 1.11 texts reread.
+
+### Added
+
+- **Canopée's river is a world in 3D**: the family's land, built from the
+  family itself — the oldest generation up in the mountains where the
+  springs are, each younger one further down the valley, a parent's water
+  running down to each child — with its forests, rocks and herds, its mist
+  and its sky, in one scene. The reader turns, comes closer, walks;
+  choosing a person flies there and opens their record, as the river does.
+  The world is built once for each shape of the family and kept; a name or
+  a date changed does not rebuild it, a person added or removed does.
+  Without WebGL 2 the river and its photograph stay as they were.
+
+### Changed
+
+- **The texts 1.11.0 added, reread** in the twelve languages against each
+  catalogue's own words; still machine translations.
+
 ## [1.11.0] — 2026-11-09
 
 Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038),

@@ -3084,6 +3084,7 @@ view-summit-direction = ↓ 祖先は谷に・↑ 子孫は頂上へ
 river-legend-generation = 1世代 ≈ 29年
 river-zoom = ズーム
 river-still = 風景を止める
+river-world-label = 家族の谷（3D）
 view-tree-still = 木を止める
 view-galaxy-still = 星空を止める
 view-summit-still = 山を止める

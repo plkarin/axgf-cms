@@ -69,6 +69,9 @@ pub const NOTES_JS: &str = include_str!("../static/notes.js");
 /// need, the name as it will read, and what each typed name will become.
 /// Enhancement only.
 pub const PERSON_NEW_JS: &str = include_str!("../static/person_new.js");
+/// Canopée's world in 3D (docs/adr/0043): the family's land, one scene.
+/// Decoration; without WebGL 2 the river and its photograph stay.
+pub const CANOPEE_WORLD_JS: &str = include_str!("../static/canopee-world.js");
 /// The Impact timeline (docs/adr/0034): the band of a life across the
 /// world's history, and the countries in the reader's language.
 /// Enhancement only.

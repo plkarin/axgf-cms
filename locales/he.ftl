@@ -3387,6 +3387,7 @@ view-summit-direction = ↓ אבות בעמק · ↑ צאצאים במעלה א�
 river-legend-generation = דור אחד ≈ 29 שנים
 river-zoom = זום
 river-still = עצירת הנוף
+river-world-label = עמק המשפחה בתלת־ממד
 view-tree-still = עצירת העץ
 view-galaxy-still = עצירת השמיים
 view-summit-still = עצירת ההר

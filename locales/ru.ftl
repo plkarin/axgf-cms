@@ -3528,6 +3528,7 @@ view-summit-direction = ↓ предки — в долине · ↑ потомк
 river-legend-generation = одно поколение ≈ 29 лет
 river-zoom = Масштаб
 river-still = Остановить пейзаж
+river-world-label = Долина семьи в трёх измерениях
 view-tree-still = Остановить дерево
 view-galaxy-still = Остановить небо
 view-summit-still = Остановить гору

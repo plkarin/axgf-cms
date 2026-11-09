@@ -3352,6 +3352,7 @@ view-summit-direction = ↓ ancestors in the valley · ↑ descendants up toward
 river-legend-generation = one generation ≈ 29 years
 river-zoom = Zoom
 river-still = Hold the landscape still
+river-world-label = The family's valley, in three dimensions
 view-tree-still = Hold the tree still
 view-galaxy-still = Hold the sky still
 view-summit-still = Hold the mountain still

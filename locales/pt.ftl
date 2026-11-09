@@ -3340,6 +3340,7 @@ view-summit-direction = ↓ os antepassados no vale · ↑ os descendentes rumo 
 river-legend-generation = uma geração ≈ 29 anos
 river-zoom = Zoom
 river-still = Parar a paisagem
+river-world-label = O vale da família, em três dimensões
 view-tree-still = Parar a árvore
 view-galaxy-still = Parar o céu
 view-summit-still = Parar a montanha

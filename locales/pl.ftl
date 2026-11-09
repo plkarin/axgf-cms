@@ -3523,6 +3523,7 @@ view-summit-direction = ↓ przodkowie w dolinie · ↑ potomkowie ku szczytowi
 river-legend-generation = jedno pokolenie ≈ 29 lat
 river-zoom = Powiększenie
 river-still = Zatrzymaj krajobraz
+river-world-label = Dolina rodziny w trzech wymiarach
 view-tree-still = Zatrzymaj drzewo
 view-galaxy-still = Zatrzymaj niebo
 view-summit-still = Zatrzymaj górę

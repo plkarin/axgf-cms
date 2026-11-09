@@ -3084,6 +3084,7 @@ view-summit-direction = ↓ 祖先在山谷 · ↑ 后代向着顶峰
 river-legend-generation = 一代 ≈ 29 年
 river-zoom = 缩放
 river-still = 暂停风景
+river-world-label = 家族之谷（三维）
 view-tree-still = 让树静止
 view-galaxy-still = 让星空静止
 view-summit-still = 让山峰静止

@@ -3312,6 +3312,7 @@ view-summit-direction = ↓ die Vorfahren im Tal · ↑ die Nachkommen zum Gipfe
 river-legend-generation = eine Generation ≈ 29 Jahre
 river-zoom = Zoom
 river-still = Landschaft anhalten
+river-world-label = Das Tal der Familie, dreidimensional
 view-tree-still = Baum anhalten
 view-galaxy-still = Himmel anhalten
 view-summit-still = Berg anhalten

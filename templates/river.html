@@ -30,7 +30,8 @@
     (docs/adr/0010), Clarity's `funnel` (docs/adr/0013) or Genealogy's `scroll` (docs/adr/0016). The layout, the payload and every control are the same
     under each. -#}
 <div class="river rv-intro" data-base="/" data-river-centre="{{ centre }}" data-n="{{ n }}"
-     data-river-motion="{{ 'cut' if motion_cut else 'travel' }}" data-view="{{ view }}">
+     data-river-motion="{{ 'cut' if motion_cut else 'travel' }}" data-view="{{ view }}"
+     {%- if view == "river" %} data-world="/canopee/world.bin?v={{ world_fp }}" data-world-fallback="/static/river-scene.js?v={{ version }}" data-world-label="{{ t('river-world-label') }}"{% endif %}>
   <section class="rv-stage" aria-label="{{ view_name }}">
     {#- Two rows, always in the same order (the operator's review of
         22 October 2026: the controls had wrapped wherever the width put
@@ -161,4 +162,4 @@
 
 {#- A theme's view registers itself before river.js runs, and brings its own
     living scene; the river's is river-scene.js. -#}
-{% block scripts %}{% if view == "tree" %}<script src="/static/fusion.js?v={{ version }}" defer></script>{% elif view == "galaxy" %}<script src="/static/galaxy.js?v={{ version }}" defer></script>{% elif view == "summit" %}<script src="/static/summit.js?v={{ version }}" defer></script>{% elif view == "funnel" %}<script src="/static/clarity.js?v={{ version }}" defer></script>{% elif view == "scroll" %}<script src="/static/genealogy.js?v={{ version }}" defer></script>{% endif %}<script src="/static/river.js?v={{ version }}" defer></script>{% if view == "river" %}<script src="/static/river-scene.js?v={{ version }}" defer></script>{% endif %}{% endblock %}
+{% block scripts %}{% if view == "tree" %}<script src="/static/fusion.js?v={{ version }}" defer></script>{% elif view == "galaxy" %}<script src="/static/galaxy.js?v={{ version }}" defer></script>{% elif view == "summit" %}<script src="/static/summit.js?v={{ version }}" defer></script>{% elif view == "funnel" %}<script src="/static/clarity.js?v={{ version }}" defer></script>{% elif view == "scroll" %}<script src="/static/genealogy.js?v={{ version }}" defer></script>{% endif %}<script src="/static/river.js?v={{ version }}" defer></script>{% if view == "river" %}<script src="/static/canopee-world.js?v={{ version }}" defer></script><script src="/static/river-scene.js?v={{ version }}" defer></script>{% endif %}{% endblock %}

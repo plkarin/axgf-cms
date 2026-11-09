@@ -3221,6 +3221,7 @@ view-summit-direction = ↓ mababu bondeni · ↑ wazao wakipanda kuelekea kilel
 river-legend-generation = kizazi kimoja ≈ miaka 29
 river-zoom = Kuza
 river-still = Simamisha mandhari
+river-world-label = Bonde la familia, kwa vipimo vitatu
 view-tree-still = Simamisha mti
 view-galaxy-still = Simamisha anga
 view-summit-still = Simamisha mlima

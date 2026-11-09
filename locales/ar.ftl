@@ -3617,6 +3617,7 @@ river-names-all = كل الأسماء
 # A tap on a person in a view, on a touch screen: the drawing moves onto them.
 river-pick-centre = اجعله في المركز
 river-zoom-hint = التكبير: Ctrl مع العجلة، أو القرص بإصبعين، أو + / − · بعد التكبير، اسحب للتنقل
+river-wide-hint = اسحب جانبًا لتجوب عرض العائلة كله
 river-tab-sources = المصادر
 river-legend-title = كيف يُقرأ النهر
 view-tree-name = الشجرة الحيّة

@@ -3360,6 +3360,7 @@ river-names-all = All names
 # A tap on a person in a view, on a touch screen: the drawing moves onto them.
 river-pick-centre = Centre here
 river-zoom-hint = Zoom: Ctrl + wheel, pinch, or + / − · zoomed in, drag to move
+river-wide-hint = Drag sideways to walk the family's whole width
 river-tab-sources = Sources
 river-legend-title = How to read the river
 view-tree-name = Living tree

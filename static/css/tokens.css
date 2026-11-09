@@ -644,23 +644,25 @@
 /* Clarity (v0.5.0, docs/adr/0013): the first light theme, from the
    operator's references — an administration dashboard on white, its orange
    accent and dark teal figures, and a glossy funnel in blue, violet and pink.
-   Measured as every theme is (`every_theme_reads`); the tightest pair is a
-   control's edge on the page's second wash, 3.7:1. */
+   Measured as every theme is (`every_theme_reads`). Softened on the
+   operator's review of 9 November 2026 ("the contrasts are too violent"):
+   no pure white and no near-black, the inks quieter, the words at 11–13:1
+   where they were at 16:1. */
 [data-theme="clarity"] {
   --sheen: #ffffff66;
   color-scheme: light;
-  --surface-page: #e6ebf1;
-  --surface-raised: #ffffff;
-  --border-hairline: #d2dae4;
-  --border-strong: #68798a;
-  --text-primary: #132230;
-  --text-secondary: #36495a;
-  --text-tertiary: #4b5d6d;
-  --surface-sunken: #f0f3f7;
-  --surface-hover: #e9eef4;
-  --focus-ring: #b03a0a;
-  --accent: #b03a0a;
-  --accent-soft: #fdebe1;
+  --surface-page: #edf0f4;
+  --surface-raised: #fbfcfd;
+  --border-hairline: #d6dde5;
+  --border-strong: #6c7b8a;
+  --text-primary: #25323f;
+  --text-secondary: #43515e;
+  --text-tertiary: #55626e;
+  --surface-sunken: #f3f5f8;
+  --surface-hover: #e8ecf1;
+  --focus-ring: #a5532d;
+  --accent: #a5532d;
+  --accent-soft: #f7e8df;
   --on-accent: #ffffff;
 
   --conf-certain: #1f7a4d;
@@ -668,8 +670,8 @@
   --conf-medium: #8a4b00;
   --conf-low: #b42318;
   --conf-track: #e2e8ef;
-  --danger: #ad2217;
-  --warning: #844700;
+  --danger: #a82a20;
+  --warning: #804600;
 
   --sex-a: #e7f0fb;
   --sex-a-line: #3d6fa8;
@@ -677,70 +679,70 @@
   --sex-b-line: #b0566e;
   --sex-u: #eef1f4;
   --sex-u-line: #68798a;
-  --kin-boy: #1f5fc4;
-  --kin-girl: #c8304d;
+  --kin-boy: #3d68a8;
+  --kin-girl: #b04a62;
   --kin-other: #5f6b78;
   /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
      A hue no family line has, never the accent. */
-  --kin-rite: #0c7f6e;
+  --kin-rite: #2a7d70;
 
-  --hue-1: #2563eb;
-  --hue-2: #c2410c;
-  --hue-3: #15803d;
-  --hue-4: #be185d;
-  --hue-5: #7c3aed;
-  --hue-6: #a16207;
-  --hue-7: #0e7490;
-  --hue-8: #b91c1c;
+  --hue-1: #4a6fb5;
+  --hue-2: #b0603a;
+  --hue-3: #3f8058;
+  --hue-4: #a8507a;
+  --hue-5: #7560b0;
+  --hue-6: #93722e;
+  --hue-7: #3b7a88;
+  --hue-8: #a5463e;
 
   --shadow-rgb: 19 34 48;
-  --shadow-a: 0.12;
+  --shadow-a: 0.09;
 
-  --wash-1: #e8ecf2;
-  --wash-2: #e4e9f0;
-  --wash-3: #e9edf3;
+  --wash-1: #eef1f4;
+  --wash-2: #ebeef2;
+  --wash-3: #eff2f5;
   /* No texture: the reference's white is clean. */
   --wash-texture: none;
 
-  --icon-river: #e0f2f5;
-  --icon-tree: #e3f4ea;
-  --icon-search: #fdebe1;
-  --icon-quality: #fbe7e6;
-  --icon-river-ink: #0e7490;
-  --icon-tree-ink: #15803d;
-  --icon-search-ink: #b03a0a;
-  --icon-quality-ink: #b42318;
-  --glow-rgb: 184 60 10;
+  --icon-river: #e4f0f2;
+  --icon-tree: #e6f1ea;
+  --icon-search: #f7e8df;
+  --icon-quality: #f6e6e4;
+  --icon-river-ink: #2e6b74;
+  --icon-tree-ink: #3a7350;
+  --icon-search-ink: #a5532d;
+  --icon-quality-ink: #a33a30;
+  --glow-rgb: 165 83 45;
 
   /* The logo in this theme's light (docs/adr/0006 §2): the same drawing on
      white, its X in the funnel's colours — pink where the sources meet,
      violet, blue toward the descendants — and its laurels blue. Nothing of
      Canopée's green and gold is left. */
   --logo-tile: #ffffff;
-  --logo-deep: #ec4899;
-  --logo-gold: #8b5cf6;
-  --logo-light: #3b82f6;
+  --logo-deep: #d07aa3;
+  --logo-gold: #8e7cc4;
+  --logo-light: #6390d0;
 
   /* The funnel (static/clarity.js): its five glass tones from the mouth
      (blue) to the narrow end (pink), the gloss, the rim, the mesh and the
      light running up it, the beads of the living, the dead and the hidden,
      the person at the fixed point, the stage's ground and its figures. */
-  --cl-slice-1: #dce7ff;
-  --cl-slice-2: #e3defe;
-  --cl-slice-3: #ecdafd;
-  --cl-slice-4: #f8d9f3;
-  --cl-slice-5: #ffd9e6;
+  --cl-slice-1: #e4eaf6;
+  --cl-slice-2: #e8e5f5;
+  --cl-slice-3: #ede4f4;
+  --cl-slice-4: #f2e3ef;
+  --cl-slice-5: #f5e5eb;
   --cl-gloss: #ffffff;
   --cl-rim: #ffffff;
-  --cl-link: #241a6b;
-  --cl-link-hot: #f97316;
+  --cl-link: #353066;
+  --cl-link-hot: #d8793f;
   --cl-bead: #ffffff;
-  --cl-living: #ea580c;
-  --cl-gone: #0f3b47;
+  --cl-living: #c0652f;
+  --cl-gone: #2f4b54;
   --cl-hidden: #8a99a8;
-  --cl-centre: #b03a0a;
-  --cl-stage: #fbfcfe;
-  --cl-figure: #132230;
+  --cl-centre: #a5532d;
+  --cl-stage: #f7f8fb;
+  --cl-figure: #25323f;
 
   /* The frames (v0.5.0, the operator's second look: "we are writing on
      paper"): a blue-grey ground the white boxes stand off, a pale ground
@@ -748,17 +750,17 @@
      funnel's blue, violet and pink, the accent's orange, the dashboard's
      teal — for the strip on top of a box and its icon chip. Each ink reads
      at 5:1 or more on its tint and on white. */
-  --cl-pack: #f5f7fb;
-  --cl-ink-1: #1d4ed8;
-  --cl-tint-1: #e2eafd;
-  --cl-ink-2: #6d28d9;
-  --cl-tint-2: #ede6fc;
-  --cl-ink-3: #be185d;
-  --cl-tint-3: #fce4ef;
-  --cl-ink-4: #b03a0a;
-  --cl-tint-4: #fde8dc;
-  --cl-ink-5: #0e6e7e;
-  --cl-tint-5: #dff2f4;
+  --cl-pack: #f4f6f9;
+  --cl-ink-1: #3e5f97;
+  --cl-tint-1: #e7ecf5;
+  --cl-ink-2: #66579f;
+  --cl-tint-2: #eceaf5;
+  --cl-ink-3: #9b4a6c;
+  --cl-tint-3: #f4e8ee;
+  --cl-ink-4: #a5532d;
+  --cl-tint-4: #f6e9e1;
+  --cl-ink-5: #2e6b74;
+  --cl-tint-5: #e5f0f1;
 }
 /* Genealogy (v0.5.0, docs/adr/0016), from the operator's frame pack: a
    dark green interface with cream cards, oval portraits and antique vines
@@ -767,104 +769,106 @@
    the page's, dark, measured here as every theme is; and the cards', cream
    with a sepia ink, which app.css puts on every card and which
    `genealogy_cards_read` measures the same way (tests/design_tokens.rs).
-   The tightest pair of the page is a control's edge on the hover surface,
-   4.3:1; of the cards, a control's edge on the sunken surface, 3.7:1. */
+   Softened on the operator's review of 9 November 2026 ("the contrasts are
+   too violent"): the page a moss rather than a near-black green, the cards
+   a quieter parchment, the gold an old brass; the words at 8–10:1 where they
+   were at 14:1, and the cards 9.5:1 off the page where they were 14:1. */
 [data-theme="genealogy"] {
   --sheen: #ffffff66;
   color-scheme: dark;
-  --surface-page: #142210;
-  --surface-raised: #1b2d18;
-  --border-hairline: #2e4229;
-  --border-strong: #8a9b7c;
-  --text-primary: #f1e8d2;
-  --text-secondary: #d4c7a6;
-  --text-tertiary: #bcae8b;
-  --surface-sunken: #101c0d;
-  --surface-hover: #23381f;
-  --focus-ring: #e3c070;
-  --accent: #d4aa55;
-  --accent-soft: #2f3317;
-  --on-accent: #142210;
+  --surface-page: #283a2e;
+  --surface-raised: #304436;
+  --border-hairline: #44594a;
+  --border-strong: #9aab9c;
+  --text-primary: #ebe4d0;
+  --text-secondary: #d8ceb5;
+  --text-tertiary: #c9bd9e;
+  --surface-sunken: #22322a;
+  --surface-hover: #384d3e;
+  --focus-ring: #dcc38a;
+  --accent: #cdb075;
+  --accent-soft: #3d4330;
+  --on-accent: #22302a;
 
   --conf-certain: #9ad49f;
   --conf-high: #b7cf86;
   --conf-medium: #e3bb6a;
   --conf-low: #ec9a82;
-  --conf-track: #2c3d27;
-  --danger: #f2977f;
-  --warning: #e8c06c;
+  --conf-track: #3a4d3e;
+  --danger: #f2a690;
+  --warning: #e8c67e;
 
-  --sex-a: #1e2e28;
+  --sex-a: #2c3d36;
   --sex-a-line: #6b8a7c;
-  --sex-b: #30291b;
+  --sex-b: #3b3626;
   --sex-b-line: #94805a;
-  --sex-u: #242a1f;
+  --sex-u: #323a2f;
   --sex-u-line: #7d8270;
-  --kin-boy: #5e9bff;
-  --kin-girl: #ff6b81;
-  --kin-other: #a3aab0;
+  --kin-boy: #8fb2e6;
+  --kin-girl: #e79aa8;
+  --kin-other: #b4bab0;
   /* A tie of rite or custom: a godparent, a milk sibling (docs/adr/0020).
      A hue no family line has, never the accent. */
-  --kin-rite: #3fd4b0;
+  --kin-rite: #86cdb7;
 
-  --hue-1: #7fb8d8;
-  --hue-2: #e3a43c;
-  --hue-3: #7cd0a0;
-  --hue-4: #e9a7c2;
-  --hue-5: #bca6dc;
-  --hue-6: #d8bc62;
-  --hue-7: #82c4c8;
-  --hue-8: #dc9488;
+  --hue-1: #93bcd2;
+  --hue-2: #dcae63;
+  --hue-3: #94c9a8;
+  --hue-4: #ddb0c3;
+  --hue-5: #bfb0d8;
+  --hue-6: #d2bd7c;
+  --hue-7: #97c4c6;
+  --hue-8: #d6a59c;
 
   --shadow-rgb: 4 10 3;
-  --shadow-a: 0.5;
+  --shadow-a: 0.38;
 
-  --wash-1: #16250f;
-  --wash-2: #132110;
-  --wash-3: #17240f;
+  --wash-1: #2a3c30;
+  --wash-2: #273a2d;
+  --wash-3: #2b3d30;
   /* No texture: the vines along the page's edges are its ground (app.css). */
   --wash-texture: none;
 
-  --icon-river: #22433b;
-  --icon-tree: #2c4524;
-  --icon-search: #4a3c1b;
-  --icon-quality: #4b2c22;
+  --icon-river: #2f4a42;
+  --icon-tree: #364b2f;
+  --icon-search: #4a4128;
+  --icon-quality: #4a3329;
   --icon-river-ink: #9ed6c4;
   --icon-tree-ink: #bfdc86;
   --icon-search-ink: #efcc80;
   --icon-quality-ink: #f4ab95;
-  --glow-rgb: 212 170 85;
+  --glow-rgb: 205 176 117;
 
   /* The logo in this theme's light (docs/adr/0006 §2): the forest's green
      for its tile, the gold of the scroll's lines for its own. */
-  --logo-tile: #1d3320;
+  --logo-tile: #2b402f;
   --logo-deep: #8a6420;
-  --logo-gold: #d4aa55;
-  --logo-light: #f1e2b6;
+  --logo-gold: #cdb075;
+  --logo-light: #ece0bc;
 
   /* The cards' palette: cream stock and a sepia ink, the screen's
      cards. app.css sets each colour token to its `--gn-l-` twin on a
      card, so everything inside one reads as it would on a light theme. */
-  --gn-l-surface-page: #ece2cb;
-  --gn-l-surface-raised: #f4ecda;
-  --gn-l-border-hairline: #d6c8a6;
-  --gn-l-border-strong: #7c6d4d;
-  --gn-l-text-primary: #261f13;
-  --gn-l-text-secondary: #463b27;
-  --gn-l-text-tertiary: #5a4d35;
-  --gn-l-surface-sunken: #e7dcc1;
-  --gn-l-surface-hover: #ebe1c8;
-  --gn-l-focus-ring: #7d5a12;
-  --gn-l-accent: #2c4a2f;
-  --gn-l-accent-soft: #dfe3c9;
-  --gn-l-on-accent: #f4ecda;
+  --gn-l-surface-page: #e4dac4;
+  --gn-l-surface-raised: #ebe3d0;
+  --gn-l-border-hairline: #cdbf9f;
+  --gn-l-border-strong: #7b6d52;
+  --gn-l-text-primary: #3a3022;
+  --gn-l-text-secondary: #504430;
+  --gn-l-text-tertiary: #5e523d;
+  --gn-l-surface-sunken: #ddd2ba;
+  --gn-l-surface-hover: #e1d7c0;
+  --gn-l-focus-ring: #7a5a18;
+  --gn-l-accent: #3c5a42;
+  --gn-l-accent-soft: #dde2cb;
+  --gn-l-on-accent: #f1ead8;
   --gn-l-conf-certain: #2c6b3a;
   --gn-l-conf-high: #4f6b1f;
   --gn-l-conf-medium: #8a5300;
   --gn-l-conf-low: #a8331f;
   --gn-l-conf-track: #ddd1b3;
-  --gn-l-danger: #a3261b;
-  --gn-l-warning: #7f4c00;
+  --gn-l-danger: #9e281d;
+  --gn-l-warning: #7a4a05;
   --gn-l-sex-a: #e3e9df;
   --gn-l-sex-a-line: #4d6f61;
   --gn-l-sex-b: #f0e2cc;
@@ -903,26 +907,26 @@
      ground: the lines at 4.5:1 or more on the parchment and 3:1 on the
      leaves, with the parchment's light under them; the initials at 4.5:1
      on the print; the cards' words at 7:1. */
-  --gn-stage: #142519;
-  --gn-stage-lit: #2a3a26;
+  --gn-stage: #26382b;
+  --gn-stage-lit: #344632;
   --gn-wire: #4a2f12;
   --gn-wire-halo: #f6ecd4;
   --gn-lit: #7a4a0c;
   --gn-lit-halo: #fbf1d8;
-  --gn-node: #c9a24d;
+  --gn-node: #bfa262;
   --gn-node-rim: #4a3212;
-  --gn-gold: #c9a24d;
-  --gn-gold-hi: #e8c46a;
-  --gn-glint: #fff1c4;
-  --gn-leaf: #b8862f;
+  --gn-gold: #bfa262;
+  --gn-gold-hi: #d6bd7c;
+  --gn-glint: #f5ead0;
+  --gn-leaf: #ad8a46;
   --gn-dust: #fff4d6;
-  --gn-card: #f7efdc;
-  --gn-card-line: #b89a5c;
+  --gn-card: #efe7d4;
+  --gn-card-line: #b09a68;
   --gn-card-shade: #000000;
   --gn-ink: #2a2114;
   --gn-ink-2: #4f4128;
-  --gn-mount: #f4ecdb;
-  --gn-mount-line: #a8843f;
+  --gn-mount: #ede5d3;
+  --gn-mount-line: #a28a52;
   --gn-print: #a88d64;
   --gn-print-hi: #c4a87e;
   --gn-print-sparse: #c9b28c;
@@ -932,10 +936,10 @@
   --gn-hidden: #6f6a5c;
   --gn-hidden-fill: #e2d8c2;
   --gn-centre: #7a3f12;
-  --gn-gen: #e3d7b8;
-  --gn-gen-0: #e8c46a;
-  --gn-gen-halo: #0f1c13;
-  --gn-bar-root: #a88358;
-  --gn-bar-crown: #79a046;
+  --gn-gen: #dfd5bb;
+  --gn-gen-0: #d6bd7c;
+  --gn-gen-halo: #1d2b20;
+  --gn-bar-root: #a58c66;
+  --gn-bar-crown: #86a35e;
 }
 

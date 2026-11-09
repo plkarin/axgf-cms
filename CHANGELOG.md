@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Genealogy and Clarity softer and wider, as the operator asked on
+9 November 2026 (docs/adr/0044).
+
+### Changed
+
+- **Genealogy and Clarity in softer colours**: Genealogy's page a moss
+  rather than a near-black green, its cards a quieter parchment, its gold an
+  old brass, its vines faded into the page; Clarity without pure white or
+  near-black, its accent a terracotta, its category inks quieter, its prism
+  veiled on the pages and behind the funnel. The words read at 8 to 13:1
+  where they were at 14 to 16:1, every pair still measured.
+- **Genealogy's tree and Clarity's funnel walk sideways**: a crowded
+  generation spreads across as many windows as its names need, and a drag,
+  a sideways swipe or Shift with the wheel walks along it; the camera comes
+  back to each person travelled to. Both name everyone by default, the room
+  being there; the reader's choice of names is kept.
+
 ## [1.12.1] — 2026-11-09
 
 ### Removed

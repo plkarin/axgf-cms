@@ -3229,6 +3229,7 @@ river-names-all = Majina yote
 # A tap on a person in a view, on a touch screen: the drawing moves onto them.
 river-pick-centre = Weka katikati hapa
 river-zoom-hint = Kuza: Ctrl + gurudumu, bana, au + / − · ukiwa umekuza, buruta ili kusogeza
+river-wide-hint = Buruta kando ili kupitia upana wote wa familia
 river-tab-sources = Vyanzo
 river-legend-title = Jinsi ya kusoma mto
 view-tree-name = Mti hai

@@ -5235,3 +5235,69 @@ impact-stakes = Kilichokuwa hatarini
 impact-victims = Waathiriwa
 impact-close = Funga
 impact-hint = Elekeza kwenye tukio kuona miaka yake; bofya kwa muktadha wake.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Mtu mpya
+person-new-lede = Jina ambalo kumbukumbu bado haina linakuwa rekodi mpya, inayohifadhiwa pamoja na hii.
+person-new-section-name = Jina
+person-new-given = Jina la kwanza
+person-new-family = Jina la ukoo
+person-new-nicknames = Majina ya utani
+person-new-nickname-add = Ongeza jina la utani
+person-new-nickname-quoted = “{ $nick }”
+person-new-remove = Ondoa
+person-new-preview = Linaonyeshwa hivi
+person-new-name-hint = Angalau jina la kwanza au jina la ukoo.
+person-new-section-life = Maisha
+person-new-section-texts = Wasifu na dokezo
+person-new-birth-place = Mahali pa kuzaliwa
+person-new-death-place = Mahali pa kifo
+person-new-death-hint = Acha tupu wakati mtu yu hai.
+person-new-place-hint = Mahali ambapo kumbukumbu haina panaundwa.
+person-new-section-portrait = Picha ya uso
+person-new-portrait-hint = PNG, JPEG, GIF au WebP, hadi MB { $mb }.
+person-new-bio-hint = Mpangilio huru, kama dokezo.
+person-new-section-note = Dokezo
+person-new-note-hint = Dokezo la pekee kuhusu mtu huyu, pamoja na picha. Bila kichwa, linachukua jina la mtu.
+person-new-section-parents = Wazazi na ndugu
+person-new-father = Baba
+person-new-mother = Mama
+person-new-siblings = Kaka na dada
+person-new-sibling-add = Ongeza kaka au dada
+person-new-who-hint = Chagua kutoka orodha au andika jina: jina ambalo hakuna mtu analo linakuwa rekodi mpya.
+person-new-section-unions = Miungano na watoto
+person-new-union-n = Muungano { $n }
+person-new-partner = Mwenzi au mshirika
+person-new-union-type = Aina ya muungano
+person-new-children = Watoto
+person-new-child-add = Ongeza mtoto
+person-new-union-add = Ongeza muungano
+person-new-save = Unda rekodi
+person-new-hint-existing = Iko kwenye kumbukumbu
+person-new-hint-new = Rekodi mpya
+person-new-hint-ambiguous = Rekodi kadhaa zina jina hili: chagua moja kutoka orodha.
+person-new-hint-place-existing = Mahali palipo kwenye kumbukumbu
+person-new-hint-place-new = Mahali papya
+person-new-field-error = “{ $typed }”: { $message }
+person-new-error-name = Jina la kwanza au jina la ukoo linahitajika. Hakuna kilichohifadhiwa.
+person-new-error-date = Tarehe huandikwa 1890, 1890-06 au 1890-06-14. Hakuna kilichohifadhiwa.
+person-new-error-same-parents = Baba na mama ni mtu mmoja. Hakuna kilichohifadhiwa.
+person-new-error-siblings-need-parent = Ndugu huunda familia kupitia mzazi tu: taja mzazi, au kaka au dada ambaye tayari yuko katika familia. Hakuna kilichohifadhiwa.
+person-new-error-siblings-two-families = Ndugu hawa ni wa familia tofauti: taja wazazi. Hakuna kilichohifadhiwa.
+person-new-error-portrait = Picha ya uso si picha ambayo tovuti hii inaweza kuonyesha: PNG, JPEG, GIF au WebP. Hakuna kilichohifadhiwa.
+person-new-error-conflict = Kumbukumbu ilibadilika ulipokuwa ukiandika. Hakuna kilichohifadhiwa; hifadhi tena.
+person-new-error-refused = Kumbukumbu ilikataa kuhifadhi. Hakuna kilichohifadhiwa.
+person-new-created = { $others ->
+        [0] Rekodi imeundwa.
+        [one] Rekodi imeundwa, pamoja na rekodi nyingine moja.
+       *[other] Rekodi imeundwa, pamoja na rekodi nyingine { $others }.
+    }
+pick-error-place-not-found = Hakuna mahali pa jina hilo katika kumbukumbu hii. Hakuna kilichohifadhiwa.
+pick-error-place-ambiguous = Zaidi ya mahali pamoja panalingana na hilo. Chagua pamoja kutoka orodha. Hakuna kilichohifadhiwa.
+pick-error-source-not-found = Hakuna chanzo cha jina hilo katika kumbukumbu hii. Hakuna kilichohifadhiwa.
+pick-error-source-ambiguous = Zaidi ya chanzo kimoja kinalingana na hilo. Chagua kimoja kutoka orodha. Hakuna kilichohifadhiwa.
+pick-error-thing-empty = Hakuna kilichotajwa. Hakuna kilichohifadhiwa.
+pick-error-thing-not-found = Hakuna kitu cha jina hilo katika kumbukumbu hii. Hakuna kilichohifadhiwa.
+pick-error-thing-ambiguous = Zaidi ya rekodi moja inalingana na hilo. Chagua moja kutoka orodha. Hakuna kilichohifadhiwa.
+search-create = Unda “{ $name }”

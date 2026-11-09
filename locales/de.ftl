@@ -5451,3 +5451,69 @@ impact-stakes = Was auf dem Spiel stand
 impact-victims = Opfer
 impact-close = Schließen
 impact-hint = Zeigen Sie auf ein Ereignis, um seine Jahre zu sehen; klicken Sie für den Kontext.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Neue Person
+person-new-lede = Ein Name, den das Archiv noch nicht kennt, wird ein neuer Datensatz und mit diesem gespeichert.
+person-new-section-name = Name
+person-new-given = Vorname
+person-new-family = Familienname
+person-new-nicknames = Beinamen
+person-new-nickname-add = Beinamen hinzufügen
+person-new-nickname-quoted = „{ $nick }“
+person-new-remove = Entfernen
+person-new-preview = Angezeigt als
+person-new-name-hint = Mindestens ein Vorname oder ein Familienname.
+person-new-section-life = Leben
+person-new-section-texts = Lebenslauf und Notiz
+person-new-birth-place = Geburtsort
+person-new-death-place = Sterbeort
+person-new-death-hint = Leer, solange die Person lebt.
+person-new-place-hint = Ein Ort, den das Archiv nicht kennt, wird angelegt.
+person-new-section-portrait = Porträt
+person-new-portrait-hint = PNG, JPEG, GIF oder WebP, höchstens { $mb } MB.
+person-new-bio-hint = Frei gestaltet, wie eine Notiz.
+person-new-section-note = Notiz
+person-new-note-hint = Eine eigene Notiz zu dieser Person, mit Bildern. Ohne Titel trägt sie den Namen der Person.
+person-new-section-parents = Eltern und Geschwister
+person-new-father = Vater
+person-new-mother = Mutter
+person-new-siblings = Geschwister
+person-new-sibling-add = Bruder oder Schwester hinzufügen
+person-new-who-hint = Aus der Liste wählen oder einen Namen tippen: ein Name, den niemand trägt, wird ein neuer Datensatz.
+person-new-section-unions = Verbindungen und Kinder
+person-new-union-n = Verbindung { $n }
+person-new-partner = Ehegatte oder Partner
+person-new-union-type = Art der Verbindung
+person-new-children = Kinder
+person-new-child-add = Kind hinzufügen
+person-new-union-add = Verbindung hinzufügen
+person-new-save = Datensatz anlegen
+person-new-hint-existing = Im Archiv
+person-new-hint-new = Neuer Datensatz
+person-new-hint-ambiguous = Mehrere Datensätze tragen diesen Namen: wählen Sie einen aus der Liste.
+person-new-hint-place-existing = Ort im Archiv
+person-new-hint-place-new = Neuer Ort
+person-new-field-error = „{ $typed }“: { $message }
+person-new-error-name = Ein Vorname oder ein Familienname ist nötig. Nichts wurde gespeichert.
+person-new-error-date = Ein Datum lautet 1890, 1890-06 oder 1890-06-14. Nichts wurde gespeichert.
+person-new-error-same-parents = Vater und Mutter sind dieselbe Person. Nichts wurde gespeichert.
+person-new-error-siblings-need-parent = Geschwister bilden nur über einen Elternteil eine Familie: Nennen Sie einen Elternteil oder einen Bruder oder eine Schwester, die schon zu einer Familie gehören. Nichts wurde gespeichert.
+person-new-error-siblings-two-families = Diese Geschwister gehören zu verschiedenen Familien: Nennen Sie die Eltern. Nichts wurde gespeichert.
+person-new-error-portrait = Das Porträt ist kein Bild, das diese Website zeigen kann: PNG, JPEG, GIF oder WebP. Nichts wurde gespeichert.
+person-new-error-conflict = Das Archiv hat sich geändert, während Sie geschrieben haben. Nichts wurde gespeichert; speichern Sie erneut.
+person-new-error-refused = Das Archiv hat das Speichern abgelehnt. Nichts wurde gespeichert.
+person-new-created = { $others ->
+        [0] Datensatz angelegt.
+        [one] Datensatz angelegt, mit einem weiteren Datensatz.
+       *[other] Datensatz angelegt, mit { $others } weiteren Datensätzen.
+    }
+pick-error-place-not-found = In diesem Archiv gibt es keinen Ort dieses Namens. Nichts wurde gespeichert.
+pick-error-place-ambiguous = Darauf passt mehr als ein Ort. Wählen Sie einen aus der Liste. Nichts wurde gespeichert.
+pick-error-source-not-found = In diesem Archiv gibt es keine Quelle dieses Namens. Nichts wurde gespeichert.
+pick-error-source-ambiguous = Darauf passt mehr als eine Quelle. Wählen Sie eine aus der Liste. Nichts wurde gespeichert.
+pick-error-thing-empty = Nichts wurde genannt. Nichts wurde gespeichert.
+pick-error-thing-not-found = In diesem Archiv gibt es nichts dieses Namens. Nichts wurde gespeichert.
+pick-error-thing-ambiguous = Darauf passt mehr als ein Datensatz. Wählen Sie einen aus der Liste. Nichts wurde gespeichert.
+search-create = „{ $name }“ anlegen

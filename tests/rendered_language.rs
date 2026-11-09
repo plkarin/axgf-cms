@@ -55,6 +55,9 @@ const UNIVERSAL: &[&str] = &[
     "OCR",
     "PNG",
     "JPEG",
+    // The other two picture formats a portrait may come in (docs/adr/0039).
+    "GIF",
+    "WebP",
     "ZIP",
     "CSV",
     "URL",

@@ -829,6 +829,10 @@ pub struct PersonQuery {
     /// On the AFG tab: what was just done, to be said.
     #[serde(default)]
     done: Option<String>,
+    /// Just created on the new-person page (docs/adr/0039): how many records
+    /// that save wrote, the person's own among them.
+    #[serde(default)]
+    created: Option<usize>,
 }
 
 /// `GET /person/:id` — everything known about one person.
@@ -938,6 +942,8 @@ pub async fn person(
                 context! {
                     nav => "tree",
                     p,
+                    // Created a moment ago, and with how many other records.
+                    created_others => q.created.map(|n| n.saturating_sub(1)),
                     // Read mode: every filled section and every filled
                     // profile group, under the tabs that hold them, and no
                     // edit history — that is an editing concern.
@@ -1385,6 +1391,18 @@ pub async fn notes_js() -> Response {
             (header::CACHE_CONTROL, "public, max-age=3600"),
         ],
         render::NOTES_JS,
+    )
+        .into_response()
+}
+
+/// `GET /static/person_new.js` — the new-person page (docs/adr/0039).
+pub async fn person_new_js() -> Response {
+    (
+        [
+            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+            (header::CACHE_CONTROL, "public, max-age=3600"),
+        ],
+        render::PERSON_NEW_JS,
     )
         .into_response()
 }
@@ -2264,6 +2282,7 @@ pub async fn search(
     let hits = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::search::people(flat, lens, &q.q, SEARCH_PAGE)
     });
+    let create = create_offer(&viewer, &chrome, &q.q, &hits);
     render::page_with(
         &chrome,
         "search.html",
@@ -2271,8 +2290,45 @@ pub async fn search(
             nav => "search",
             q => q.q.trim(),
             hits,
+            create,
         },
     )
+}
+
+/// The offer to create the person searched for (docs/adr/0039): to an
+/// account that may write, when nobody found bears that very name. The page
+/// it opens starts from the name, split into a first name and a family name.
+fn create_offer(
+    viewer: &crate::access::Viewer,
+    chrome: &render::Chrome,
+    q: &str,
+    hits: &[crate::search::Hit],
+) -> Option<Value> {
+    let q = q.split_whitespace().collect::<Vec<_>>().join(" ");
+    if !viewer.may_write() || q.is_empty() || q.chars().count() > 120 {
+        return None;
+    }
+    let typed = crate::text::fold(&q);
+    if hits.iter().any(|h| crate::text::fold(&h.name) == typed) {
+        return None;
+    }
+    let mut encoded = String::with_capacity(q.len());
+    for b in q.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(b as char)
+            }
+            _ => encoded.push_str(&format!("%{b:02X}")),
+        }
+    }
+    Some(json!({
+        "label": chrome.t_args("search-create", &[("name", q.into())]),
+        "href": format!("/admin/person/new?name={encoded}"),
+        // The name alone, encoded, for the page's own link: a whole path
+        // through the template's escaping comes out with its slashes as
+        // entities.
+        "query": encoded,
+    }))
 }
 
 /// `GET /search.json?q=` — the masthead's suggestions: `{hits, total,
@@ -2289,9 +2345,10 @@ pub async fn search_json(
     // The suggestions' footer (B3): how many matched, and the two keys.
     let chrome = render::Chrome::resolve(&viewer, &headers, "/").with_archive(&state);
     let summary = chrome.t_args("search-summary", &[("n", (total as i64).into())]);
+    let create = create_offer(&viewer, &chrome, &q.q, &hits);
     (
         [(header::CACHE_CONTROL, "no-store")],
-        Json(json!({"hits": hits, "total": total, "summary": summary})),
+        Json(json!({"hits": hits, "total": total, "summary": summary, "create": create})),
     )
         .into_response()
 }

@@ -64,6 +64,7 @@ Admin (requires a signed-in account; `Accounts` and the operations marked
 | `GET /static/avatars/:name.webp` | An avatar of the pack (docs/adr/0026 §8) — *anyone* |
 | `GET /admin/:kind` | Paginated, filterable listing |
 | `GET /admin/:kind/new`, `POST /admin/:kind` | Create |
+| `GET/POST /admin/person/new` | A person created with what surrounds them (docs/adr/0039): four tabs over one form, one save. `?name=` starts from a name, its last word the family name. The POST (multipart: `given`, `family`, `nick` repeated, `gender`, `living=on`, `birth_date`/`death_date` with `birth_circa`/`death_circa=on`, `birth_place`/`death_place`, `portrait` a picture, `bio` in Markdown, `note_title` and `note`, `father`, `mother`, `sibling` repeated, and per union `u.N.partner`, `u.N.type`, `u.N.child` repeated) reuses a person or a place named by its list label or its very name, creates one nobody bears, refuses a name several bear, and commits everything at once; redirects to `/person/:id?created=N`, `N` the records written. The biography is marked `extensions["axgf-cms:bio/v1"]` = `{"format": "markdown"}` and read as Markdown on the record |
 | `GET /admin/:kind/:id/edit`, `POST /admin/:kind/:id` | Update |
 | `POST /admin/:kind/:id/delete` | Delete, with a referential-integrity policy — *admin* |
 | `POST /admin/person/:id/document` | Attach a file to a person — multipart upload, stored inside the bundle |

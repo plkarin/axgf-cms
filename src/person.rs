@@ -388,6 +388,9 @@ pub struct NoteView {
     /// True when this is text a converter could not interpret and kept
     /// verbatim rather than dropping.
     pub verbatim: bool,
+    /// The text as HTML, when it was written in Markdown with the notes'
+    /// editor (docs/adr/0039); otherwise the text is shown as it is.
+    pub html: Option<String>,
 }
 
 /// Everything the identity page shows.
@@ -1036,10 +1039,13 @@ fn collect_notes(
 ) -> Vec<NoteView> {
     let mut out = Vec::new();
     if let Some(bio) = str_field(person, "bio") {
+        let html = crate::person_new::bio_is_markdown(person)
+            .then(|| crate::notes::to_html_keeping_lines(&bio));
         out.push(NoteView {
             label: ctx.tr("record-note-biography", &[]),
             text: bio,
             verbatim: false,
+            html,
         });
     }
     if let Some(n) = str_field(person, "notes") {
@@ -1047,6 +1053,7 @@ fn collect_notes(
             label: ctx.tr("record-notes", &[]),
             text: n,
             verbatim: false,
+            html: None,
         });
     }
     // A date the converter could not interpret is kept as text on the date
@@ -1061,6 +1068,7 @@ fn collect_notes(
                 label: ctx.tr(key, &[]),
                 text: note,
                 verbatim: true,
+                html: None,
             });
         }
     }
@@ -1074,6 +1082,7 @@ fn collect_notes(
                     ),
                     text: note,
                     verbatim: true,
+                    html: None,
                 });
             }
         }

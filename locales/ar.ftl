@@ -6057,3 +6057,72 @@ impact-stakes = ما كان على المحك
 impact-victims = الضحايا
 impact-close = إغلاق
 impact-hint = مرّر المؤشر على حدث لترى سنواته، وانقر لمعرفة سياقه.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = شخص جديد
+person-new-lede = الاسم الذي لا يعرفه الأرشيف بعد يصبح سجلًا جديدًا يُحفظ مع هذا السجل.
+person-new-section-name = الاسم
+person-new-given = الاسم الأول
+person-new-family = اسم العائلة
+person-new-nicknames = الألقاب
+person-new-nickname-add = أضف لقبًا
+person-new-nickname-quoted = «{ $nick }»
+person-new-remove = أزل
+person-new-preview = يظهر هكذا
+person-new-name-hint = اسم أول أو اسم عائلة على الأقل.
+person-new-section-life = الحياة
+person-new-section-texts = السيرة والملاحظة
+person-new-birth-place = مكان الولادة
+person-new-death-place = مكان الوفاة
+person-new-death-hint = فارغ ما دام الشخص حيًّا.
+person-new-place-hint = المكان الذي لا يعرفه الأرشيف يُنشأ.
+person-new-section-portrait = الصورة الشخصية
+person-new-portrait-hint = PNG أو JPEG أو GIF أو WebP، حتى { $mb } ميغابايت.
+person-new-bio-hint = تنسيق حر، كما في الملاحظة.
+person-new-section-note = ملاحظة
+person-new-note-hint = ملاحظة مستقلة عن هذا الشخص، بالصور أيضًا. إن لم يكن لها عنوان حملت اسم الشخص.
+person-new-section-parents = الوالدان والإخوة
+person-new-father = الأب
+person-new-mother = الأم
+person-new-siblings = الإخوة والأخوات
+person-new-sibling-add = أضف أخًا أو أختًا
+person-new-who-hint = اختر من القائمة أو اكتب اسمًا: الاسم الذي لا يحمله أحد يصبح سجلًا جديدًا.
+person-new-section-unions = الارتباطات والأبناء
+person-new-union-n = الارتباط { $n }
+person-new-partner = الزوج أو الشريك
+person-new-union-type = نوع الارتباط
+person-new-children = الأبناء
+person-new-child-add = أضف ابنًا أو ابنة
+person-new-union-add = أضف ارتباطًا
+person-new-save = أنشئ السجل
+person-new-hint-existing = في الأرشيف
+person-new-hint-new = سجل جديد
+person-new-hint-ambiguous = عدة سجلات تحمل هذا الاسم: اختر واحدًا من القائمة.
+person-new-hint-place-existing = مكان في الأرشيف
+person-new-hint-place-new = مكان جديد
+person-new-field-error = «{ $typed }»: { $message }
+person-new-error-name = يلزم اسم أول أو اسم عائلة. لم يُحفظ شيء.
+person-new-error-date = يُكتب التاريخ هكذا: 1890 أو 1890-06 أو 1890-06-14. لم يُحفظ شيء.
+person-new-error-same-parents = الأب والأم شخص واحد. لم يُحفظ شيء.
+person-new-error-siblings-need-parent = لا يكوّن الإخوة عائلة إلا عبر أحد الوالدين: اذكر أحد الوالدين، أو أخًا أو أختًا ينتمي إلى عائلة. لم يُحفظ شيء.
+person-new-error-siblings-two-families = هؤلاء الإخوة ينتمون إلى عائلات مختلفة: اذكر الوالدين. لم يُحفظ شيء.
+person-new-error-portrait = الصورة الشخصية ليست صورة يستطيع هذا الموقع عرضها: PNG أو JPEG أو GIF أو WebP. لم يُحفظ شيء.
+person-new-error-conflict = تغيّر الأرشيف بينما كنت تكتب. لم يُحفظ شيء؛ احفظ مرة أخرى.
+person-new-error-refused = رفض الأرشيف الحفظ. لم يُحفظ شيء.
+person-new-created = { $others ->
+        [0] أُنشئ السجل.
+        [one] أُنشئ السجل ومعه سجل آخر.
+        [two] أُنشئ السجل ومعه سجلان آخران.
+        [few] أُنشئ السجل ومعه { $others } سجلات أخرى.
+        [many] أُنشئ السجل ومعه { $others } سجلًا آخر.
+       *[other] أُنشئ السجل ومعه { $others } سجل آخر.
+    }
+pick-error-place-not-found = لا مكان بهذا الاسم في هذا الأرشيف. لم يُحفظ شيء.
+pick-error-place-ambiguous = أكثر من مكان ينطبق عليه ذلك. اختر واحدًا من القائمة. لم يُحفظ شيء.
+pick-error-source-not-found = لا مصدر بهذا الاسم في هذا الأرشيف. لم يُحفظ شيء.
+pick-error-source-ambiguous = أكثر من مصدر ينطبق عليه ذلك. اختر واحدًا من القائمة. لم يُحفظ شيء.
+pick-error-thing-empty = لم يُذكر شيء. لم يُحفظ شيء.
+pick-error-thing-not-found = لا شيء بهذا الاسم في هذا الأرشيف. لم يُحفظ شيء.
+pick-error-thing-ambiguous = أكثر من سجل ينطبق عليه ذلك. اختر واحدًا من القائمة. لم يُحفظ شيء.
+search-create = أنشئ «{ $name }»

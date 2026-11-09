@@ -5460,3 +5460,69 @@ impact-stakes = What was at stake
 impact-victims = Victims
 impact-close = Close
 impact-hint = Point at a landmark to see its years; click it for its context.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = New person
+person-new-lede = A name the archive does not hold yet becomes a new record, saved with this one.
+person-new-section-name = Name
+person-new-given = First name
+person-new-family = Family name
+person-new-nicknames = Nicknames
+person-new-nickname-add = Add a nickname
+person-new-nickname-quoted = “{ $nick }”
+person-new-remove = Remove
+person-new-preview = Shown as
+person-new-name-hint = A first name or a family name at least.
+person-new-section-life = Life
+person-new-section-texts = Biography and note
+person-new-birth-place = Place of birth
+person-new-death-place = Place of death
+person-new-death-hint = Empty while the person is alive.
+person-new-place-hint = A place the archive does not hold is created.
+person-new-section-portrait = Portrait
+person-new-portrait-hint = PNG, JPEG, GIF or WebP, up to { $mb } MB.
+person-new-bio-hint = Formatted freely, like a note.
+person-new-section-note = Note
+person-new-note-hint = A note of its own about this person, pictures included. Without a title, it bears the person's name.
+person-new-section-parents = Parents, brothers and sisters
+person-new-father = Father
+person-new-mother = Mother
+person-new-siblings = Brothers and sisters
+person-new-sibling-add = Add a brother or sister
+person-new-who-hint = Pick from the list, or type a name: a name nobody bears becomes a new record.
+person-new-section-unions = Unions and children
+person-new-union-n = Union { $n }
+person-new-partner = Spouse or partner
+person-new-union-type = Type of union
+person-new-children = Children
+person-new-child-add = Add a child
+person-new-union-add = Add a union
+person-new-save = Create the record
+person-new-hint-existing = In the archive
+person-new-hint-new = New record
+person-new-hint-ambiguous = Several records bear this name: pick one from the list.
+person-new-hint-place-existing = Place in the archive
+person-new-hint-place-new = New place
+person-new-field-error = “{ $typed }”: { $message }
+person-new-error-name = A first name or a family name is needed. Nothing was saved.
+person-new-error-date = A date reads 1890, 1890-06 or 1890-06-14. Nothing was saved.
+person-new-error-same-parents = The father and the mother are the same person. Nothing was saved.
+person-new-error-siblings-need-parent = Brothers and sisters make a family only through a parent: name a parent, or a brother or sister already in a family. Nothing was saved.
+person-new-error-siblings-two-families = These brothers and sisters belong to different families: name the parents. Nothing was saved.
+person-new-error-portrait = The portrait is not a picture this site can show: PNG, JPEG, GIF or WebP. Nothing was saved.
+person-new-error-conflict = The archive changed while you were writing. Nothing was saved; save again.
+person-new-error-refused = The archive refused the save. Nothing was saved.
+person-new-created = { $others ->
+        [0] Record created.
+        [one] Record created, with one other record.
+       *[other] Record created, with { $others } other records.
+    }
+pick-error-place-not-found = No place of that name is in this archive. Nothing was saved.
+pick-error-place-ambiguous = More than one place answers to that. Pick one from the list. Nothing was saved.
+pick-error-source-not-found = No source of that name is in this archive. Nothing was saved.
+pick-error-source-ambiguous = More than one source answers to that. Pick one from the list. Nothing was saved.
+pick-error-thing-empty = Nothing was named. Nothing was saved.
+pick-error-thing-not-found = Nothing of that name is in this archive. Nothing was saved.
+pick-error-thing-ambiguous = More than one record answers to that. Pick one from the list. Nothing was saved.
+search-create = Create “{ $name }”

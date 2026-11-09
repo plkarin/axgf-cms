@@ -9,6 +9,7 @@
    _profile_read.html. Editing is a separate mode, entered by "Modifier". #}
 
 {% block content %}
+{% if created_others is not none %}<div class="notice ok" role="status"><p>{{ t("person-new-created", others=created_others) }}</p></div>{% endif %}
 
 {# The masthead. Everything in it is a fact the bundle states or arithmetic on
    two of them; nothing here is prose about the software. #}

@@ -16,6 +16,7 @@ mod merge;
 mod notes;
 mod person_chat;
 mod person_editor;
+mod person_new;
 mod prefs;
 mod profile;
 mod public;
@@ -665,7 +666,14 @@ fn routes(state: Shared) -> Router {
         // The record's editor (v0.4.2): six tabs over one form, one save —
         // which may carry a file from the Médias tab, so its body may be as
         // large as an upload and the fields around it.
-        .route("/admin/person/new", get(person_editor::new_form))
+        // A person created with what surrounds them (docs/adr/0039): one
+        // page, one save, a portrait among the fields.
+        .route(
+            "/admin/person/new",
+            get(person_new::form)
+                .post(person_new::create)
+                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+        )
         .route("/admin/person/bulk", post(person_editor::bulk))
         // Before `/admin/person/:id` and `/admin/place/:id` take "merge" for
         // an id, as they would "bulk".
@@ -811,6 +819,7 @@ fn routes(state: Shared) -> Router {
         .route("/static/profile.js", get(public::profile_js))
         .route("/static/editor.js", get(public::editor_js))
         .route("/static/notes.js", get(public::notes_js))
+        .route("/static/person_new.js", get(public::person_new_js))
         .route("/static/impact.js", get(impact::script))
         .route("/static/flags/:file", get(impact::flag))
         .route("/static/ui.js", get(public::ui_js))

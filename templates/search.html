@@ -23,4 +23,7 @@
 {% else %}
 <p>{{ t("search-none") }}</p>
 {% endif %}
+{#- To a writer, when nobody found bears that very name: the person, made
+    from the name (docs/adr/0039). -#}
+{% if create %}<p class="search-create"><a class="btn" href="/admin/person/new?name={{ create.query }}">{{ create.label }}</a></p>{% endif %}
 {% endblock %}

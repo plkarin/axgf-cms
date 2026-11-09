@@ -314,16 +314,16 @@ pub async fn edit_form(
 /// Documents of their own, named in the text by their new ids; those the
 /// note already had and the text still shows are kept. The ones it no longer
 /// shows are `pictures_dropped`.
-struct Pictures {
-    markdown: String,
-    ops: Vec<Op>,
-    ids: Vec<String>,
+pub(super) struct Pictures {
+    pub(super) markdown: String,
+    pub(super) ops: Vec<Op>,
+    pub(super) ids: Vec<String>,
     /// The waiting pictures this save uses: released only once it is
     /// committed, so a save that fails loses none of them.
-    tokens: Vec<String>,
+    pub(super) tokens: Vec<String>,
 }
 
-fn pictures(
+pub(super) fn pictures(
     state: &Shared,
     viewer: &crate::access::Viewer,
     note_id: &str,
@@ -772,6 +772,11 @@ pub async fn pending(
 pub struct PreviewForm {
     #[serde(default)]
     markdown: String,
+    /// A text written with the notes' editor that is not a note — a
+    /// biography (docs/adr/0039) — keeps its line breaks and holds no
+    /// pictures.
+    #[serde(default)]
+    lines: Option<String>,
 }
 
 /// `POST /admin/notes/preview` — the text as it will read.
@@ -785,7 +790,11 @@ pub async fn preview(
     }
     (
         [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
-        notes::to_html(&form.markdown, &notes::resolve_for_page),
+        if form.lines.is_some() {
+            notes::to_html_keeping_lines(&form.markdown)
+        } else {
+            notes::to_html(&form.markdown, &notes::resolve_for_page)
+        },
     )
         .into_response()
 }

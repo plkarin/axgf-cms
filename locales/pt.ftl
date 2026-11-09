@@ -5524,3 +5524,69 @@ impact-stakes = O que estava em jogo
 impact-victims = Vítimas
 impact-close = Fechar
 impact-hint = Passe o ponteiro sobre um marco para ver os seus anos; clique para o contexto.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Nova pessoa
+person-new-lede = Um nome que o arquivo ainda não tem torna-se uma nova ficha, guardada com esta.
+person-new-section-name = Nome
+person-new-given = Nome próprio
+person-new-family = Apelido
+person-new-nicknames = Alcunhas
+person-new-nickname-add = Adicionar uma alcunha
+person-new-nickname-quoted = «{ $nick }»
+person-new-remove = Retirar
+person-new-preview = Mostrado como
+person-new-name-hint = Pelo menos um nome próprio ou um apelido.
+person-new-section-life = Vida
+person-new-section-texts = Biografia e nota
+person-new-birth-place = Local de nascimento
+person-new-death-place = Local de falecimento
+person-new-death-hint = Vazio enquanto a pessoa for viva.
+person-new-place-hint = Um lugar que o arquivo não tem é criado.
+person-new-section-portrait = Retrato
+person-new-portrait-hint = PNG, JPEG, GIF ou WebP, até { $mb } MB.
+person-new-bio-hint = Formatação livre, como uma nota.
+person-new-section-note = Nota
+person-new-note-hint = Uma nota à parte sobre esta pessoa, com imagens. Sem título, leva o nome da pessoa.
+person-new-section-parents = Pais e irmãos
+person-new-father = Pai
+person-new-mother = Mãe
+person-new-siblings = Irmãos e irmãs
+person-new-sibling-add = Adicionar um irmão ou uma irmã
+person-new-who-hint = Escolha na lista ou escreva um nome: um nome que ninguém tem torna-se uma nova ficha.
+person-new-section-unions = Uniões e filhos
+person-new-union-n = União { $n }
+person-new-partner = Cônjuge ou companheiro
+person-new-union-type = Tipo de união
+person-new-children = Filhos
+person-new-child-add = Adicionar um filho
+person-new-union-add = Adicionar uma união
+person-new-save = Criar a ficha
+person-new-hint-existing = No arquivo
+person-new-hint-new = Nova ficha
+person-new-hint-ambiguous = Várias fichas têm este nome: escolha uma da lista.
+person-new-hint-place-existing = Lugar do arquivo
+person-new-hint-place-new = Novo lugar
+person-new-field-error = «{ $typed }»: { $message }
+person-new-error-name = É preciso um nome próprio ou um apelido. Nada foi guardado.
+person-new-error-date = Uma data escreve-se 1890, 1890-06 ou 1890-06-14. Nada foi guardado.
+person-new-error-same-parents = O pai e a mãe são a mesma pessoa. Nada foi guardado.
+person-new-error-siblings-need-parent = Irmãos só formam uma família através de um dos pais: indique o pai ou a mãe, ou um irmão ou uma irmã que já esteja numa família. Nada foi guardado.
+person-new-error-siblings-two-families = Estes irmãos pertencem a famílias diferentes: indique os pais. Nada foi guardado.
+person-new-error-portrait = O retrato não é uma imagem que este site saiba mostrar: PNG, JPEG, GIF ou WebP. Nada foi guardado.
+person-new-error-conflict = O arquivo mudou enquanto escrevia. Nada foi guardado; guarde de novo.
+person-new-error-refused = O arquivo recusou a gravação. Nada foi guardado.
+person-new-created = { $others ->
+        [0] Ficha criada.
+        [one] Ficha criada, com mais uma ficha.
+       *[other] Ficha criada, com mais { $others } fichas.
+    }
+pick-error-place-not-found = Não há nenhum lugar com esse nome neste arquivo. Nada foi guardado.
+pick-error-place-ambiguous = Mais do que um lugar corresponde. Escolha um da lista. Nada foi guardado.
+pick-error-source-not-found = Não há nenhuma fonte com esse nome neste arquivo. Nada foi guardado.
+pick-error-source-ambiguous = Mais do que uma fonte corresponde. Escolha uma da lista. Nada foi guardado.
+pick-error-thing-empty = Nada foi indicado. Nada foi guardado.
+pick-error-thing-not-found = Não há nada com esse nome neste arquivo. Nada foi guardado.
+pick-error-thing-ambiguous = Mais do que uma ficha corresponde. Escolha uma da lista. Nada foi guardado.
+search-create = Criar «{ $name }»

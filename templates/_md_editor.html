@@ -1,0 +1,22 @@
+{% import "_icons.html" as ic %}
+{#- The notes' editor (docs/adr/0014): a toolbar over a Markdown box and a
+    preview the server renders. A note uses it, and so does any text written
+    the same way, such as a biography (docs/adr/0039). `images` offers the
+    picture button: a note holds pictures, a biography does not. The script
+    (notes.js) binds every `[data-md-editor]` that holds one. -#}
+{% macro toolbar(t, label, images) %}
+<div class="note-toolbar" role="toolbar" aria-label="{{ label }}" data-note-toolbar hidden>
+  <button type="button" class="btn small" data-md="bold" aria-label="{{ t('notes-tool-bold') }}" title="{{ t('notes-tool-bold') }}"><b>B</b></button>
+  <button type="button" class="btn small" data-md="italic" aria-label="{{ t('notes-tool-italic') }}" title="{{ t('notes-tool-italic') }}"><i>I</i></button>
+  <button type="button" class="btn small" data-md="heading" aria-label="{{ t('notes-tool-heading') }}" title="{{ t('notes-tool-heading') }}">H</button>
+  <button type="button" class="btn small" data-md="list" aria-label="{{ t('notes-tool-list') }}" title="{{ t('notes-tool-list') }}">•</button>
+  <button type="button" class="btn small" data-md="quote" aria-label="{{ t('notes-tool-quote') }}" title="{{ t('notes-tool-quote') }}">❝</button>
+  <button type="button" class="btn small" data-md="link" aria-label="{{ t('notes-tool-link') }}" title="{{ t('notes-tool-link') }}">{{ ic.icon("link") }}</button>
+  {%- if images %}
+  <button type="button" class="btn small" data-md="image">{{ t("notes-tool-image") }}</button>
+  {%- endif %}
+  <span class="note-toolbar-end">
+    <button type="button" class="btn small" data-note-mode aria-pressed="false" data-write="{{ t('notes-tool-write') }}" data-preview="{{ t('notes-tool-preview') }}">{{ t("notes-tool-preview") }}</button>
+  </span>
+</div>
+{% endmacro %}

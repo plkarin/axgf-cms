@@ -5514,3 +5514,69 @@ impact-stakes = La posta in gioco
 impact-victims = Vittime
 impact-close = Chiudi
 impact-hint = Passa sopra un evento per vederne gli anni; fai clic per il contesto.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Nuova persona
+person-new-lede = Un nome che l'archivio non ha ancora diventa una nuova scheda, salvata con questa.
+person-new-section-name = Nome e cognome
+person-new-given = Nome
+person-new-family = Cognome
+person-new-nicknames = Soprannomi
+person-new-nickname-add = Aggiungi un soprannome
+person-new-nickname-quoted = «{ $nick }»
+person-new-remove = Togli
+person-new-preview = Mostrato come
+person-new-name-hint = Almeno un nome o un cognome.
+person-new-section-life = Vita
+person-new-section-texts = Biografia e nota
+person-new-birth-place = Luogo di nascita
+person-new-death-place = Luogo di morte
+person-new-death-hint = Vuoto finché la persona è in vita.
+person-new-place-hint = Un luogo che l'archivio non ha viene creato.
+person-new-section-portrait = Ritratto
+person-new-portrait-hint = PNG, JPEG, GIF o WebP, al massimo { $mb } MB.
+person-new-bio-hint = Formattazione libera, come una nota.
+person-new-section-note = Nota
+person-new-note-hint = Una nota a parte su questa persona, immagini comprese. Senza titolo porta il nome della persona.
+person-new-section-parents = Genitori, fratelli e sorelle
+person-new-father = Padre
+person-new-mother = Madre
+person-new-siblings = Fratelli e sorelle
+person-new-sibling-add = Aggiungi un fratello o una sorella
+person-new-who-hint = Scegli dall'elenco o scrivi un nome: un nome che nessuno porta diventa una nuova scheda.
+person-new-section-unions = Unioni e figli
+person-new-union-n = Unione { $n }
+person-new-partner = Coniuge o partner
+person-new-union-type = Tipo di unione
+person-new-children = Figli
+person-new-child-add = Aggiungi un figlio
+person-new-union-add = Aggiungi un'unione
+person-new-save = Crea la scheda
+person-new-hint-existing = Nell'archivio
+person-new-hint-new = Nuova scheda
+person-new-hint-ambiguous = Più schede portano questo nome: scegline una dall'elenco.
+person-new-hint-place-existing = Luogo dell'archivio
+person-new-hint-place-new = Nuovo luogo
+person-new-field-error = «{ $typed }»: { $message }
+person-new-error-name = Serve un nome o un cognome. Non è stato salvato nulla.
+person-new-error-date = Una data si scrive 1890, 1890-06 o 1890-06-14. Non è stato salvato nulla.
+person-new-error-same-parents = Il padre e la madre sono la stessa persona. Non è stato salvato nulla.
+person-new-error-siblings-need-parent = Fratelli e sorelle formano una famiglia solo tramite un genitore: indica un genitore, o un fratello o una sorella già in una famiglia. Non è stato salvato nulla.
+person-new-error-siblings-two-families = Questi fratelli e sorelle sono in famiglie diverse: indica i genitori. Non è stato salvato nulla.
+person-new-error-portrait = Il ritratto non è un'immagine che questo sito sa mostrare: PNG, JPEG, GIF o WebP. Non è stato salvato nulla.
+person-new-error-conflict = L'archivio è cambiato mentre scrivevi. Non è stato salvato nulla; salva di nuovo.
+person-new-error-refused = L'archivio ha rifiutato il salvataggio. Non è stato salvato nulla.
+person-new-created = { $others ->
+        [0] Scheda creata.
+        [one] Scheda creata, con un'altra scheda.
+       *[other] Scheda creata, con altre { $others } schede.
+    }
+pick-error-place-not-found = In questo archivio non c'è nessun luogo con quel nome. Non è stato salvato nulla.
+pick-error-place-ambiguous = Più di un luogo corrisponde. Scegline uno dall'elenco. Non è stato salvato nulla.
+pick-error-source-not-found = In questo archivio non c'è nessuna fonte con quel nome. Non è stato salvato nulla.
+pick-error-source-ambiguous = Più di una fonte corrisponde. Scegline una dall'elenco. Non è stato salvato nulla.
+pick-error-thing-empty = Non è stato indicato nulla. Non è stato salvato nulla.
+pick-error-thing-not-found = In questo archivio non c'è nulla con quel nome. Non è stato salvato nulla.
+pick-error-thing-ambiguous = Più di una scheda corrisponde. Scegline una dall'elenco. Non è stato salvato nulla.
+search-create = Crea «{ $name }»

@@ -1066,8 +1066,9 @@ fn build_link(
     let other = form
         .get("to")
         .map(String::as_str)
-        .ok_or("pick-error-empty")?;
-    let (kind, other_id) = forms::resolve_linkable(other, flat).map_err(|e| e.key())?;
+        .ok_or("pick-error-thing-empty")?;
+    let (kind, other_id) =
+        forms::resolve_linkable(other, flat).map_err(|e| e.key_for("linkable"))?;
 
     let mut out = if stored.get("id").is_some() {
         stored.clone()
@@ -1733,7 +1734,7 @@ fn build_event(form: &Body, stored: &Value, flat: &Value) -> Result<Value, &'sta
         let Some(raw) = forms::field(&r, "entity") else {
             continue;
         };
-        let (kind, eid) = forms::resolve_linkable(raw, flat).map_err(|e| e.key())?;
+        let (kind, eid) = forms::resolve_linkable(raw, flat).map_err(|e| e.key_for("linkable"))?;
         let mut p = Map::new();
         p.insert("entity_type".into(), json!(kind));
         p.insert("entity_id".into(), json!(eid));

@@ -5872,3 +5872,71 @@ impact-stakes = Что было на кону
 impact-victims = Жертвы
 impact-close = Закрыть
 impact-hint = Наведите на событие, чтобы увидеть его годы; нажмите, чтобы узнать контекст.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Новый человек
+person-new-lede = Имя, которого ещё нет в архиве, становится новой карточкой и сохраняется вместе с этой.
+person-new-section-name = Имя и фамилия
+person-new-given = Имя
+person-new-family = Фамилия
+person-new-nicknames = Прозвища
+person-new-nickname-add = Добавить прозвище
+person-new-nickname-quoted = «{ $nick }»
+person-new-remove = Убрать
+person-new-preview = Показывается как
+person-new-name-hint = Хотя бы имя или фамилия.
+person-new-section-life = Жизнь
+person-new-section-texts = Биография и заметка
+person-new-birth-place = Место рождения
+person-new-death-place = Место смерти
+person-new-death-hint = Пусто, пока человек жив.
+person-new-place-hint = Место, которого нет в архиве, будет создано.
+person-new-section-portrait = Портрет
+person-new-portrait-hint = PNG, JPEG, GIF или WebP, не больше { $mb } МБ.
+person-new-bio-hint = Свободное оформление, как в заметке.
+person-new-section-note = Заметка
+person-new-note-hint = Отдельная заметка об этом человеке, с изображениями. Без заголовка она носит имя человека.
+person-new-section-parents = Родители, братья и сёстры
+person-new-father = Отец
+person-new-mother = Мать
+person-new-siblings = Братья и сёстры
+person-new-sibling-add = Добавить брата или сестру
+person-new-who-hint = Выберите из списка или введите имя: имя, которого никто не носит, становится новой карточкой.
+person-new-section-unions = Союзы и дети
+person-new-union-n = Союз { $n }
+person-new-partner = Супруг или партнёр
+person-new-union-type = Вид союза
+person-new-children = Дети
+person-new-child-add = Добавить ребёнка
+person-new-union-add = Добавить союз
+person-new-save = Создать карточку
+person-new-hint-existing = Есть в архиве
+person-new-hint-new = Новая карточка
+person-new-hint-ambiguous = Это имя носят несколько карточек: выберите одну из списка.
+person-new-hint-place-existing = Место из архива
+person-new-hint-place-new = Новое место
+person-new-field-error = «{ $typed }»: { $message }
+person-new-error-name = Нужно имя или фамилия. Ничего не сохранено.
+person-new-error-date = Дата пишется как 1890, 1890-06 или 1890-06-14. Ничего не сохранено.
+person-new-error-same-parents = Отец и мать — один и тот же человек. Ничего не сохранено.
+person-new-error-siblings-need-parent = Братья и сёстры образуют семью только через родителя: укажите родителя или брата либо сестру, которые уже есть в семье. Ничего не сохранено.
+person-new-error-siblings-two-families = Эти братья и сёстры из разных семей: укажите родителей. Ничего не сохранено.
+person-new-error-portrait = Портрет — не изображение, которое этот сайт умеет показывать: PNG, JPEG, GIF или WebP. Ничего не сохранено.
+person-new-error-conflict = Архив изменился, пока вы писали. Ничего не сохранено; сохраните ещё раз.
+person-new-error-refused = Архив отклонил сохранение. Ничего не сохранено.
+person-new-created = { $others ->
+        [0] Карточка создана.
+        [one] Карточка создана вместе с { $others } другой карточкой.
+        [few] Карточка создана вместе с { $others } другими карточками.
+        [many] Карточка создана вместе с { $others } другими карточками.
+       *[other] Карточка создана вместе с { $others } другими карточками.
+    }
+pick-error-place-not-found = В этом архиве нет места с таким названием. Ничего не сохранено.
+pick-error-place-ambiguous = Этому соответствует несколько мест. Выберите одно из списка. Ничего не сохранено.
+pick-error-source-not-found = В этом архиве нет источника с таким названием. Ничего не сохранено.
+pick-error-source-ambiguous = Этому соответствует несколько источников. Выберите один из списка. Ничего не сохранено.
+pick-error-thing-empty = Ничего не указано. Ничего не сохранено.
+pick-error-thing-not-found = В этом архиве нет ничего с таким названием. Ничего не сохранено.
+pick-error-thing-ambiguous = Этому соответствует несколько записей. Выберите одну из списка. Ничего не сохранено.
+search-create = Создать «{ $name }»

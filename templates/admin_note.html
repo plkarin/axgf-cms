@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "_icons.html" as ic %}
+{% import "_md_editor.html" as md %}
 {% block title %}{{ t("notes-edit-title") if id else t("notes-new-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 {#- Opened from a person's record (docs/adr/0029): saving, cancelling and
@@ -41,20 +41,9 @@
     </fieldset>
   </section>
 
-  <section class="rec-section" id="note-text">
+  <section class="rec-section" id="note-text" data-md-editor>
     <h2>{{ t("notes-field-text") }}</h2>
-    <div class="note-toolbar" role="toolbar" aria-label="{{ t('notes-field-text') }}" data-note-toolbar hidden>
-      <button type="button" class="btn small" data-md="bold" aria-label="{{ t('notes-tool-bold') }}" title="{{ t('notes-tool-bold') }}"><b>B</b></button>
-      <button type="button" class="btn small" data-md="italic" aria-label="{{ t('notes-tool-italic') }}" title="{{ t('notes-tool-italic') }}"><i>I</i></button>
-      <button type="button" class="btn small" data-md="heading" aria-label="{{ t('notes-tool-heading') }}" title="{{ t('notes-tool-heading') }}">H</button>
-      <button type="button" class="btn small" data-md="list" aria-label="{{ t('notes-tool-list') }}" title="{{ t('notes-tool-list') }}">•</button>
-      <button type="button" class="btn small" data-md="quote" aria-label="{{ t('notes-tool-quote') }}" title="{{ t('notes-tool-quote') }}">❝</button>
-      <button type="button" class="btn small" data-md="link" aria-label="{{ t('notes-tool-link') }}" title="{{ t('notes-tool-link') }}">{{ ic.icon("link") }}</button>
-      <button type="button" class="btn small" data-md="image">{{ t("notes-tool-image") }}</button>
-      <span class="note-toolbar-end">
-        <button type="button" class="btn small" data-note-mode aria-pressed="false" data-write="{{ t('notes-tool-write') }}" data-preview="{{ t('notes-tool-preview') }}">{{ t("notes-tool-preview") }}</button>
-      </span>
-    </div>
+    {{ md.toolbar(t, t("notes-field-text"), true) }}
     <textarea name="markdown" rows="18" class="note-source" dir="auto" data-note-text data-uploading="{{ t('notes-uploading') }}" data-upload-failed="{{ t('notes-error-image') }}">{{ markdown }}</textarea>
     <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple data-note-file hidden>
     <div class="note-preview note-text" data-note-preview hidden>{{ preview|safe }}</div>

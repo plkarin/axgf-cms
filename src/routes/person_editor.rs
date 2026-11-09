@@ -2534,14 +2534,8 @@ fn avatar_wanted(
     Ok((wanted != now).then_some(wanted))
 }
 
-/// `GET /admin/person/new`. The editor's `/admin/person/:id` would otherwise
-/// take the literal `new` for an id; it is the generic form's, as for every
-/// kind.
-pub async fn new_form(state: State<Shared>, headers: HeaderMap) -> Response {
-    super::admin::new_form(state, headers, Path("person".to_string())).await
-}
-
-/// `POST /admin/person/bulk`, for the same reason: the listing's bulk bar.
+/// `POST /admin/person/bulk`: the editor's `/admin/person/:id` would
+/// otherwise take the literal `bulk` for an id. The listing's bulk bar.
 pub async fn bulk(
     state: State<Shared>,
     headers: HeaderMap,

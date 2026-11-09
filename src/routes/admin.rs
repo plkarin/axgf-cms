@@ -2435,7 +2435,7 @@ pub(super) fn resolve_pickers(
                 form.insert(f.path.to_string(), id);
             }
             Err(e) => {
-                return Err(format!("{} — {}", t(f.label), t(e.key())));
+                return Err(format!("{} — {}", t(f.label), t(e.key_for(f.picks))));
             }
         }
     }

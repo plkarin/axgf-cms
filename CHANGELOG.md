@@ -6,9 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038).
+Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038),
+and a person created with what surrounds them (docs/adr/0039).
 
 ### Added
+
+- **A search that finds nobody offers to create the person**, in the
+  masthead's suggestions and on the search page, to an account that may
+  write.
+- **A page for a new person** (`/admin/person/new`), four tabs over one
+  save: the name in its parts (first name, nicknames, family name), gender,
+  birth and death with their places, a portrait, a biography and a note
+  written with the notes' editor, and the family — father, mother,
+  brothers and sisters, unions with their children. Every person or place
+  named is the archive's own when it bears that very name, a new record
+  when nobody does, and a question when several do; the page says which
+  under each field before the save, and the save writes everything at
+  once or nothing.
+- **A biography written in Markdown reads formatted on the record**, line
+  breaks kept.
 
 - **Two kinds of landmark: the great inventions and the great
   discoveries**, forty landmarks with their windows, from the wheel and
@@ -22,6 +38,12 @@ Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038).
   Polish, German, Spanish, Italian, Portuguese, Russian, Chinese,
   Japanese, Arabic, Hebrew, Swahili and Lingala, all 353 landmarks in
   each, machine translations not yet proofread by native speakers.
+
+### Fixed
+
+- **A place, a source or a linked record the archive does not hold is
+  called what it is**: the pickers said "No person of that name" for all
+  of them.
 
 ### Changed
 

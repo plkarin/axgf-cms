@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% import "_md_editor.html" as md %}
+{#- A person created with what surrounds them (docs/adr/0039). Four tabs over
+    one form, one save, as in the record's editor: the tab on screen is the
+    URL's fragment without scripting, and editor.js switches them in place
+    with it. A name the archive holds is reused, a name it does not hold is a
+    new record made in the same save; with scripting on, each field says
+    which before anything is sent (person_new.js). Without it, the rows below
+    are the rows there are, and the save says the same things after the
+    fact. -#}
+{% macro who(t, name, value, label, error_field) %}
+<label class="field pn-who"><span class="field-label">{{ label }}</span>
+  <input type="text" name="{{ name }}" value="{{ value }}" list="pick-persons" autocomplete="off" dir="auto"
+         data-who="person"{% if error_field == name %} aria-invalid="true"{% endif %}>
+  <span class="hint pn-said" data-said aria-live="polite"></span></label>
+{% endmacro %}
+{#- One row of a list that grows: named by its list's legend. -#}
+{% macro row(t, name, value, labelledby, list, remove) %}
+<li class="pn-row" data-row>
+  <input type="text" name="{{ name }}" value="{{ value }}" aria-labelledby="{{ labelledby }}"{% if list %} list="{{ list }}" autocomplete="off" data-who="person"{% endif %} dir="auto">
+  <button type="button" class="btn small pn-remove" data-row-remove aria-label="{{ remove }}" hidden>×</button>
+  {%- if list %}
+  <span class="hint pn-said" data-said aria-live="polite"></span>
+  {%- endif %}
+</li>
+{% endmacro %}
+{% block title %}{{ t("person-new-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+<h1>{{ t("person-new-title") }}</h1>
+<p class="lede">{{ t("person-new-lede") }}</p>
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+<form method="post" action="/admin/person/new#{{ tab }}" enctype="multipart/form-data"
+      class="person-editor pn-form" data-person-new data-tab="{{ tab }}"{% if error %} data-unsaved{% endif %}
+      data-hint-existing="{{ t('person-new-hint-existing') }}" data-hint-new="{{ t('person-new-hint-new') }}"
+      data-hint-ambiguous="{{ t('person-new-hint-ambiguous') }}" data-hint-place-existing="{{ t('person-new-hint-place-existing') }}"
+      data-hint-place-new="{{ t('person-new-hint-place-new') }}" data-quote="{{ t('person-new-nickname-quoted', nick='%S') }}">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  <nav class="person-tabs ed-tabs" aria-label="{{ t('person-sections-label') }}">
+    {%- for tb in tabs %}
+    <a class="person-tab{% if tb.key == tab %} is-current{% endif %}" href="#{{ tb.key }}" data-edit-tab="{{ tb.key }}"{% if tb.key == tab %} aria-current="true"{% endif %}><span class="ed-tab-name">{{ tb.label }}</span>
+      <span class="ed-mark" aria-hidden="true"></span><span class="sr-only ed-mark-text" hidden>{{ t("edit-tab-changed") }}</span></a>
+    {%- endfor %}
+  </nav>
+
+  <div class="ed-panels">
+  <section class="ed-panel{% if tab == 'pn-name' %} is-current{% endif %}" id="pn-name" aria-label="{{ t('person-new-section-name') }}">
+    <div class="note-form-grid">
+      <label class="field"><span class="field-label">{{ t("person-new-given") }}</span>
+        <input type="text" name="given" value="{{ s.given }}" dir="auto" autocomplete="off" data-name-part{% if error_field == "given" %} aria-invalid="true"{% endif %}></label>
+      <label class="field"><span class="field-label">{{ t("person-new-family") }}</span>
+        <input type="text" name="family" value="{{ s.family }}" dir="auto" autocomplete="off" data-name-part{% if error_field == "given" %} aria-invalid="true"{% endif %}></label>
+    </div>
+    <fieldset class="pn-set" data-rows>
+      <legend id="pn-nicks">{{ t("person-new-nicknames") }}</legend>
+      <ul class="pn-rows" data-row-list>
+        {%- for n in nicks %}{{ row(t, "nick", n, "pn-nicks", none, t("person-new-remove")) }}{% endfor %}
+      </ul>
+      <button type="button" class="btn small" data-row-add hidden>{{ t("person-new-nickname-add") }}</button>
+    </fieldset>
+    <p class="pn-preview" data-name-preview hidden><span class="field-label">{{ t("person-new-preview") }}</span> <bdi data-name-out></bdi></p>
+    <p class="hint">{{ t("person-new-name-hint") }}</p>
+    <div class="note-form-grid">
+      <label class="field"><span class="field-label">{{ t("field-person-gender") }}</span>
+        <select name="gender">
+          {%- for g in genders %}<option value="{{ g.value }}"{% if g.value == s.gender %} selected{% endif %}>{{ g.label }}</option>{% endfor %}
+        </select></label>
+      <div class="field pn-living">
+        <label class="inline"><input type="checkbox" name="living" value="on"{% if s.living %} checked{% endif %} data-living> {{ t("field-person-living") }}</label>
+      </div>
+    </div>
+    <label class="field"><span class="field-label">{{ t("person-new-section-portrait") }}</span>
+      <input type="file" name="portrait" accept="image/png,image/jpeg,image/gif,image/webp" data-max-bytes="{{ max_upload_bytes }}"
+             data-too-large="{{ t('error-upload-too-large', mb=max_upload_mb) }}"{% if error_field == "portrait" %} aria-invalid="true"{% endif %}></label>
+    <p class="hint">{{ t("person-new-portrait-hint", mb=max_upload_mb) }}</p>
+  </section>
+
+  <section class="ed-panel{% if tab == 'pn-life' %} is-current{% endif %}" id="pn-life" aria-label="{{ t('person-new-section-life') }}">
+    <div class="note-form-grid">
+      <div class="field">
+        <div class="date-field">
+          <span class="field-label" aria-hidden="true">{{ t("field-person-birth-date") }}</span>
+          <span class="date-input">
+            {{ m.qualifier(t, "birth_circa", s.birth_circa, t("field-person-birth-date")) }}
+            <input type="text" name="birth_date" value="{{ s.birth_date }}" size="12" inputmode="numeric" aria-label="{{ t('field-person-birth-date') }}"{% if error_field == "birth_date" %} aria-invalid="true"{% endif %}>
+          </span>
+        </div>
+        <span class="hint">{{ t("notes-field-date-hint") }}</span>
+      </div>
+      <label class="field"><span class="field-label">{{ t("person-new-birth-place") }}</span>
+        <input type="text" name="birth_place" value="{{ s.birth_place }}" list="pick-places" autocomplete="off" dir="auto" data-who="place"{% if error_field == "birth_place" %} aria-invalid="true"{% endif %}>
+        <span class="hint pn-said" data-said aria-live="polite"></span></label>
+    </div>
+    <div class="note-form-grid">
+      <div class="field">
+        <div class="date-field">
+          <span class="field-label" aria-hidden="true">{{ t("field-person-death-date") }}</span>
+          <span class="date-input">
+            {{ m.qualifier(t, "death_circa", s.death_circa, t("field-person-death-date")) }}
+            <input type="text" name="death_date" value="{{ s.death_date }}" size="12" inputmode="numeric" aria-label="{{ t('field-person-death-date') }}" data-death-date{% if error_field == "death_date" %} aria-invalid="true"{% endif %}>
+          </span>
+        </div>
+        <span class="hint">{{ t("person-new-death-hint") }}</span>
+      </div>
+      <label class="field"><span class="field-label">{{ t("person-new-death-place") }}</span>
+        <input type="text" name="death_place" value="{{ s.death_place }}" list="pick-places" autocomplete="off" dir="auto" data-who="place"{% if error_field == "death_place" %} aria-invalid="true"{% endif %}>
+        <span class="hint pn-said" data-said aria-live="polite"></span></label>
+    </div>
+    <p class="hint">{{ t("person-new-place-hint") }}</p>
+  </section>
+
+  <section class="ed-panel{% if tab == 'pn-texts' %} is-current{% endif %}" id="pn-texts" aria-label="{{ t('person-new-section-texts') }}">
+    <div class="pn-editor" data-md-editor>
+      <h2 id="pn-bio">{{ t("field-person-bio") }}</h2>
+      {{ md.toolbar(t, t("field-person-bio"), false) }}
+      <textarea name="bio" rows="8" class="note-source pn-text" dir="auto" data-note-text aria-labelledby="pn-bio">{{ s.bio }}</textarea>
+      <div class="note-preview note-text" data-note-preview hidden></div>
+      <p class="hint">{{ t("person-new-bio-hint") }}</p>
+    </div>
+    <div class="pn-editor" data-md-editor>
+      <h2 id="pn-note">{{ t("person-new-section-note") }}</h2>
+      <label class="field"><span class="field-label">{{ t("notes-field-title") }}</span>
+        <input type="text" name="note_title" value="{{ note_title }}" maxlength="200" dir="auto"></label>
+      {{ md.toolbar(t, t("person-new-section-note"), true) }}
+      <textarea name="note" rows="8" class="note-source pn-text" dir="auto" data-note-text aria-labelledby="pn-note"
+                data-uploading="{{ t('notes-uploading') }}" data-upload-failed="{{ t('notes-error-image') }}"{% if error_field == "note" %} aria-invalid="true"{% endif %}>{{ note }}</textarea>
+      <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple data-note-file aria-labelledby="pn-note" hidden>
+      <div class="note-preview note-text" data-note-preview hidden></div>
+      <p class="hint">{{ t("person-new-note-hint") }}</p>
+    </div>
+  </section>
+
+  <section class="ed-panel{% if tab == 'pn-family' %} is-current{% endif %}" id="pn-family" aria-label="{{ t('record-family') }}">
+    <h2>{{ t("person-new-section-parents") }}</h2>
+    <div class="note-form-grid">
+      {{ who(t, "father", s.father, t("person-new-father"), error_field) }}
+      {{ who(t, "mother", s.mother, t("person-new-mother"), error_field) }}
+    </div>
+    <fieldset class="pn-set" data-rows>
+      <legend id="pn-siblings">{{ t("person-new-siblings") }}</legend>
+      <ul class="pn-rows" data-row-list>
+        {%- for n in siblings %}{{ row(t, "sibling", n, "pn-siblings", "pick-persons", t("person-new-remove")) }}{% endfor %}
+      </ul>
+      <button type="button" class="btn small" data-row-add hidden>{{ t("person-new-sibling-add") }}</button>
+    </fieldset>
+
+    <h2>{{ t("person-new-section-unions") }}</h2>
+    <div class="pn-unions" data-unions data-legend="{{ t('person-new-union-n', n='%N') }}">
+      {%- for u in unions %}
+      {%- set n = loop.index0 %}
+      <fieldset class="pn-union" data-union>
+        <legend data-union-legend>{{ t("person-new-union-n", n=loop.index) }}</legend>
+        <div class="note-form-grid">
+          {{ who(t, "u." ~ n ~ ".partner", u.partner, t("person-new-partner"), error_field) }}
+          <label class="field"><span class="field-label">{{ t("person-new-union-type") }}</span>
+            <select name="u.{{ n }}.type">
+              {%- for ut in union_types %}<option value="{{ ut.value }}"{% if ut.value == u.kind %} selected{% endif %}>{{ ut.label }}</option>{% endfor %}
+            </select></label>
+        </div>
+        <fieldset class="pn-set" data-rows>
+          <legend id="pn-u{{ n }}-children">{{ t("person-new-children") }}</legend>
+          <ul class="pn-rows" data-row-list>
+            {%- for c in u.children %}{{ row(t, "u." ~ n ~ ".child", c, "pn-u" ~ n ~ "-children", "pick-persons", t("person-new-remove")) }}{% endfor %}
+          </ul>
+          <button type="button" class="btn small" data-row-add hidden>{{ t("person-new-child-add") }}</button>
+        </fieldset>
+      </fieldset>
+      {%- endfor %}
+    </div>
+    <button type="button" class="btn small" data-union-add hidden>{{ t("person-new-union-add") }}</button>
+    <p class="hint">{{ t("person-new-who-hint") }}</p>
+  </section>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("person-new-save") }}</button>
+    <a class="btn" href="/admin/person">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+
+<datalist id="pick-persons">{% for o in persons %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+<datalist id="pick-places">{% for o in places %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
+<script src="/static/editor.js?v={{ version }}" defer></script>
+<script src="/static/notes.js?v={{ version }}" defer></script>
+<script src="/static/person_new.js?v={{ version }}" defer></script>
+{% endblock %}

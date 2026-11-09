@@ -420,6 +420,7 @@
     };
     var go = function (hit, record) {
       close();
+      if (hit.create) { location.href = hit.create; return; }
       if (record) { location.href = "/person/" + encodeURIComponent(hit.id); return; }
       if (window.axgfRiver && window.axgfRiver.travel) { window.axgfRiver.travel(hit.id); input.blur(); return; }
       location.href = "/?p=" + encodeURIComponent(hit.id);
@@ -433,7 +434,7 @@
     };
     var show = function (reply) {
       var found = reply.hits || [];
-      hits = found; at = -1; list.innerHTML = "";
+      hits = found.slice(); at = -1; list.innerHTML = "";
       found.forEach(function (h, i) {
         var li = document.createElement("li");
         li.id = "masthead-q-" + i;
@@ -456,6 +457,21 @@
         li.addEventListener("mousedown", function (e) { e.preventDefault(); go(h, e.shiftKey); });
         list.appendChild(li);
       });
+      // To a writer, when nobody found bears that very name: the person,
+      // made from it (docs/adr/0039). Chosen like a person, never by a bare
+      // Enter.
+      if (reply.create && reply.create.href) {
+        var offer = { create: reply.create.href };
+        var li = document.createElement("li");
+        li.id = "masthead-q-" + hits.length;
+        li.className = "search-create";
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", "false");
+        li.textContent = reply.create.label;
+        li.addEventListener("mousedown", function (e) { e.preventDefault(); go(offer, false); });
+        hits.push(offer);
+        list.appendChild(li);
+      }
       if (found.length && reply.summary) {
         var foot = document.createElement("li");
         foot.className = "search-foot";
@@ -463,8 +479,8 @@
         foot.textContent = reply.summary;
         list.appendChild(foot);
       }
-      list.hidden = found.length === 0;
-      input.setAttribute("aria-expanded", String(found.length > 0));
+      list.hidden = hits.length === 0;
+      input.setAttribute("aria-expanded", String(hits.length > 0));
     };
     input.addEventListener("input", function () {
       clearTimeout(timer);
@@ -487,9 +503,12 @@
       else if (e.key === "ArrowUp" && hits.length) { e.preventDefault(); at = (at - 1 + hits.length) % hits.length; mark(); }
       else if (e.key === "Escape") { close(); }
       else if (e.key === "Enter" && hits.length) {
-        // The highlighted person, or the first when none is highlighted.
+        // The highlighted person, or the first when none is highlighted;
+        // with only the offer to create, Enter searches like a plain form.
+        var chosen = at >= 0 ? hits[at] : (hits[0].create ? null : hits[0]);
+        if (!chosen) return;
         e.preventDefault();
-        go(hits[at >= 0 ? at : 0], e.shiftKey);
+        go(chosen, e.shiftKey);
       }
     });
     input.addEventListener("blur", function () { setTimeout(close, 150); });

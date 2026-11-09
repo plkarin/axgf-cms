@@ -660,7 +660,8 @@
   {% for n in p.notes %}
   <div class="note-block{% if n.verbatim %} verbatim{% endif %}">
     <h3>{{ n.label }}</h3>
-    <div class="prose{% if n.verbatim %} muted-prose{% endif %}">{{ n.text }}</div>
+    {% if n.html %}<div class="note-text" dir="auto">{{ n.html | safe }}</div>
+    {% else %}<div class="prose{% if n.verbatim %} muted-prose{% endif %}">{{ n.text }}</div>{% endif %}
     {% if n.verbatim %}
     <p class="small muted">{{ t("record-verbatim-note") }}</p>
     {% endif %}

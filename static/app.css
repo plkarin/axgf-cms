@@ -3889,6 +3889,27 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
 .note-preview { min-block-size: 22rem; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius); }
 .note-delete { margin-block-start: 1.5rem; }
 
+/* A person created with what surrounds them (docs/adr/0039): rows that
+   grow at need, and under each typed name what the save will make of it. */
+.pn-set { margin: 0.4rem 0 1rem; padding: 0; border: 0; min-inline-size: 0; }
+.pn-set > legend {
+  padding: 0; margin-block-end: 0.3rem;
+  font-family: var(--mono); font-size: var(--type-label); letter-spacing: var(--label-track);
+  text-transform: uppercase; color: var(--text-secondary);
+}
+.pn-rows { display: grid; gap: 0.4rem; margin: 0 0 0.5rem; padding: 0; list-style: none; }
+.pn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; }
+.pn-row > input { flex: 1 1 16rem; max-inline-size: 30rem; }
+.pn-row > .pn-said { flex-basis: 100%; margin: 0; }
+.pn-said:empty { display: none; }
+.pn-said-warn { color: var(--warning); }
+.pn-preview { margin: 0.2rem 0 0.5rem; }
+.pn-preview .field-label { display: inline; margin: 0; }
+.pn-living { align-self: end; }
+.pn-union { margin: 0 0 1rem; padding: 0.8rem 1rem 0.2rem; border: 1px solid var(--border-hairline); border-radius: var(--radius); min-inline-size: 0; }
+.pn-union > legend { padding: 0 0.35rem; color: var(--text-secondary); }
+.pn-text { min-block-size: 10rem; }
+
 .place-card ul.plain > li { border-bottom: none; padding: 0.1rem 0; }
 
 .note-block.verbatim {
@@ -4899,6 +4920,10 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
   color: var(--text-tertiary);
 }
 .search-suggest li.search-foot:hover { background: none; }
+/* The offer to create the person searched for (docs/adr/0039). */
+.search-suggest li.search-create { color: var(--accent); font-weight: var(--weight-semi); }
+.search-suggest li.search-create:not(:first-child) { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border-hairline); }
+.search-create { margin-block-start: 1rem; }
 .search-results { list-style: none; padding: 0; }
 .search-results li { padding: 6px 0; border-block-end: 1px solid var(--border-hairline); }
 

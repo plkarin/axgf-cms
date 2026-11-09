@@ -16,9 +16,8 @@ const MOST_INFLATED: u64 = 64 * 1024 * 1024;
 
 /// The number of pages of a PDF, or `None` when it cannot be read.
 pub fn pages(bytes: &[u8]) -> Option<usize> {
-    if find(&bytes[..bytes.len().min(1024)], b"%PDF-").is_none() {
-        return None;
-    }
+    // A PDF says so in its first kilobyte.
+    find(&bytes[..bytes.len().min(1024)], b"%PDF-")?;
     count_in(bytes)
         .or_else(|| {
             object_streams(bytes)

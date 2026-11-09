@@ -5254,3 +5254,69 @@ impact-stakes = Oyo ezalaki na likama
 impact-victims = Bakufi
 impact-close = Kanga
 impact-hint = Tia kiti likolo ya likambo mpo na komona bambula na yango; finá mpo na koyeba lisolo na yango.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Moto ya sika
+person-new-lede = Nkombo oyo ebombelo ezali na yango naino te ekoma mokanda ya sika, ebombami elongo na oyo.
+person-new-section-name = Nkombo
+person-new-given = Nkombo ya liboso
+person-new-family = Nkombo ya libota
+person-new-nicknames = Bankombo ya kosakana
+person-new-nickname-add = Bakisa nkombo ya kosakana
+person-new-nickname-quoted = “{ $nick }”
+person-new-remove = Longola
+person-new-preview = Emonisami boye
+person-new-name-hint = Ata nkombo ya liboso to nkombo ya libota.
+person-new-section-life = Bomoi
+person-new-section-texts = Lisolo ya bomoi mpe likomi
+person-new-birth-place = Esika ya kobotama
+person-new-death-place = Esika ya kokufa
+person-new-death-hint = Tika mpamba soki moto azali na bomoi.
+person-new-place-hint = Esika oyo ebombelo ezali na yango te ekelami.
+person-new-section-portrait = Elilingi ya moto
+person-new-portrait-hint = PNG, JPEG, GIF to WebP, kino MB { $mb }.
+person-new-bio-hint = Kokoma ndenge olingi, lokola na likomi.
+person-new-section-note = Likomi
+person-new-note-hint = Likomi ya moto oyo, ya ye moko, elongo na bililingi. Soki motó ezali te, ezwi nkombo ya moto.
+person-new-section-parents = Baboti mpe bandeko
+person-new-father = Tata
+person-new-mother = Mama
+person-new-siblings = Bandeko
+person-new-sibling-add = Bakisa ndeko
+person-new-who-hint = Pona na molongo to koma nkombo: nkombo oyo moto moko te azali na yango ekoma mokanda ya sika.
+person-new-section-unions = Bokangami mpe bana
+person-new-union-n = Bokangami { $n }
+person-new-partner = Molongani to moninga
+person-new-union-type = Lolenge ya bokangami
+person-new-children = Bana
+person-new-child-add = Bakisa mwana
+person-new-union-add = Bakisa bokangami
+person-new-save = Sala mokanda
+person-new-hint-existing = Ezali na ebombelo
+person-new-hint-new = Mokanda ya sika
+person-new-hint-ambiguous = Mikanda mingi ezali na nkombo oyo: pona moko na molongo.
+person-new-hint-place-existing = Esika ya ebombelo
+person-new-hint-place-new = Esika ya sika
+person-new-field-error = “{ $typed }”: { $message }
+person-new-error-name = Nkombo ya liboso to nkombo ya libota esengeli. Eloko moko te ebombami.
+person-new-error-date = Mokolo ekomamaka 1890, 1890-06 to 1890-06-14. Eloko moko te ebombami.
+person-new-error-same-parents = Tata mpe mama bazali moto moko. Eloko moko te ebombami.
+person-new-error-siblings-need-parent = Bandeko basalaka libota kaka na nzela ya moboti: pesa nkombo ya moboti, to ya ndeko oyo azali kala na libota. Eloko moko te ebombami.
+person-new-error-siblings-two-families = Bandeko oyo bazali na mabota ekeseni: pesa nkombo ya baboti. Eloko moko te ebombami.
+person-new-error-portrait = Elilingi ya moto ezali elilingi oyo site oyo eyebi komonisa te: PNG, JPEG, GIF to WebP. Eloko moko te ebombami.
+person-new-error-conflict = Ebombelo ebongwanaki ntango ozalaki kokoma. Eloko moko te ebombami; bomba lisusu.
+person-new-error-refused = Ebombelo eboyaki kobomba. Eloko moko te ebombami.
+person-new-created = { $others ->
+        [0] Mokanda esalami.
+        [one] Mokanda esalami, elongo na mokanda mosusu moko.
+       *[other] Mokanda esalami, elongo na mikanda mosusu { $others }.
+    }
+pick-error-place-not-found = Esika ya nkombo wana ezali na ebombelo oyo te. Eloko moko te ebombami.
+pick-error-place-ambiguous = Bisika koleka moko eyokani na yango. Pona moko na molongo. Eloko moko te ebombami.
+pick-error-source-not-found = Liziba ya nkombo wana ezali na ebombelo oyo te. Eloko moko te ebombami.
+pick-error-source-ambiguous = Maziba koleka moko eyokani na yango. Pona moko na molongo. Eloko moko te ebombami.
+pick-error-thing-empty = Eloko moko te etangami. Eloko moko te ebombami.
+pick-error-thing-not-found = Eloko ya nkombo wana ezali na ebombelo oyo te. Eloko moko te ebombami.
+pick-error-thing-ambiguous = Mikanda koleka moko eyokani na yango. Pona moko na molongo. Eloko moko te ebombami.
+search-create = Sala “{ $name }”

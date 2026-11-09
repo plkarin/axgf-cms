@@ -5830,3 +5830,71 @@ impact-stakes = Stawka
 impact-victims = Ofiary
 impact-close = Zamknij
 impact-hint = Wskaż wydarzenie, by zobaczyć jego lata; kliknij, by poznać kontekst.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Nowa osoba
+person-new-lede = Imię, którego archiwum jeszcze nie zna, staje się nową kartą, zapisaną razem z tą.
+person-new-section-name = Imię i nazwisko
+person-new-given = Imię
+person-new-family = Nazwisko
+person-new-nicknames = Przydomki
+person-new-nickname-add = Dodaj przydomek
+person-new-nickname-quoted = „{ $nick }”
+person-new-remove = Usuń
+person-new-preview = Wyświetlane jako
+person-new-name-hint = Co najmniej imię albo nazwisko.
+person-new-section-life = Życie
+person-new-section-texts = Biografia i notatka
+person-new-birth-place = Miejsce urodzenia
+person-new-death-place = Miejsce śmierci
+person-new-death-hint = Puste, dopóki osoba żyje.
+person-new-place-hint = Miejsce, którego archiwum nie zna, zostaje utworzone.
+person-new-section-portrait = Portret
+person-new-portrait-hint = PNG, JPEG, GIF lub WebP, najwyżej { $mb } MB.
+person-new-bio-hint = Dowolne formatowanie, jak w notatce.
+person-new-section-note = Notatka
+person-new-note-hint = Osobna notatka o tej osobie, także z obrazami. Bez tytułu nosi imię i nazwisko osoby.
+person-new-section-parents = Rodzice i rodzeństwo
+person-new-father = Ojciec
+person-new-mother = Matka
+person-new-siblings = Rodzeństwo
+person-new-sibling-add = Dodaj brata lub siostrę
+person-new-who-hint = Wybierz z listy albo wpisz imię i nazwisko: takie, którego nikt nie nosi, staje się nową kartą.
+person-new-section-unions = Związki i dzieci
+person-new-union-n = Związek { $n }
+person-new-partner = Małżonek lub partner
+person-new-union-type = Rodzaj związku
+person-new-children = Dzieci
+person-new-child-add = Dodaj dziecko
+person-new-union-add = Dodaj związek
+person-new-save = Utwórz kartę
+person-new-hint-existing = W archiwum
+person-new-hint-new = Nowa karta
+person-new-hint-ambiguous = Kilka kart nosi to imię: wybierz jedną z listy.
+person-new-hint-place-existing = Miejsce z archiwum
+person-new-hint-place-new = Nowe miejsce
+person-new-field-error = „{ $typed }”: { $message }
+person-new-error-name = Potrzebne jest imię albo nazwisko. Nic nie zapisano.
+person-new-error-date = Datę zapisuje się jako 1890, 1890-06 lub 1890-06-14. Nic nie zapisano.
+person-new-error-same-parents = Ojciec i matka to ta sama osoba. Nic nie zapisano.
+person-new-error-siblings-need-parent = Rodzeństwo tworzy rodzinę tylko przez rodzica: wskaż rodzica albo brata lub siostrę, którzy już należą do rodziny. Nic nie zapisano.
+person-new-error-siblings-two-families = To rodzeństwo należy do różnych rodzin: wskaż rodziców. Nic nie zapisano.
+person-new-error-portrait = Portret nie jest obrazem, który ta strona potrafi pokazać: PNG, JPEG, GIF lub WebP. Nic nie zapisano.
+person-new-error-conflict = Archiwum zmieniło się w trakcie Twojej pracy. Nic nie zapisano; zapisz ponownie.
+person-new-error-refused = Archiwum odrzuciło zapis. Nic nie zapisano.
+person-new-created = { $others ->
+        [0] Karta utworzona.
+        [one] Karta utworzona, razem z jedną inną kartą.
+        [few] Karta utworzona, razem z { $others } innymi kartami.
+        [many] Karta utworzona, razem z { $others } innymi kartami.
+       *[other] Karta utworzona, razem z { $others } innymi kartami.
+    }
+pick-error-place-not-found = W tym archiwum nie ma miejsca o tej nazwie. Nic nie zapisano.
+pick-error-place-ambiguous = Odpowiada temu więcej niż jedno miejsce. Wybierz jedno z listy. Nic nie zapisano.
+pick-error-source-not-found = W tym archiwum nie ma źródła o tej nazwie. Nic nie zapisano.
+pick-error-source-ambiguous = Odpowiada temu więcej niż jedno źródło. Wybierz jedno z listy. Nic nie zapisano.
+pick-error-thing-empty = Nic nie wskazano. Nic nie zapisano.
+pick-error-thing-not-found = W tym archiwum nie ma niczego o tej nazwie. Nic nie zapisano.
+pick-error-thing-ambiguous = Odpowiada temu więcej niż jedna karta. Wybierz jedną z listy. Nic nie zapisano.
+search-create = Utwórz „{ $name }”

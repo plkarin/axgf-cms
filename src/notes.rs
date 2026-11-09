@@ -639,6 +639,21 @@ fn safe_link(dest: &str) -> bool {
 /// the note's own (`axgf:document/…`), or, while writing, the ones pasted
 /// (`axgf:pending/…`). A picture from elsewhere is its description.
 pub fn to_html(markdown: &str, resolve: &dyn Fn(&str) -> Option<String>) -> String {
+    render_html(markdown, resolve, false)
+}
+
+/// A text written with the notes' editor somewhere else than in a note — a
+/// biography (docs/adr/0039) — as HTML: the same Markdown, no pictures, and
+/// every line break kept, because a text typed in a box is read line by line.
+pub fn to_html_keeping_lines(markdown: &str) -> String {
+    render_html(markdown, &|_| None, true)
+}
+
+fn render_html(
+    markdown: &str,
+    resolve: &dyn Fn(&str) -> Option<String>,
+    keep_lines: bool,
+) -> String {
     use pulldown_cmark::{CowStr, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
     let parser = Parser::new_ext(
         markdown,
@@ -710,6 +725,7 @@ pub fn to_html(markdown: &str, resolve: &dyn Fn(&str) -> Option<String>) -> Stri
                 Some(Event::End(TagEnd::Image))
             }
         }
+        Event::SoftBreak if keep_lines => Some(Event::HardBreak),
         other => Some(other),
     });
     let mut out = String::new();

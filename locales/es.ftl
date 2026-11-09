@@ -5548,3 +5548,69 @@ impact-stakes = Lo que estaba en juego
 impact-victims = Víctimas
 impact-close = Cerrar
 impact-hint = Pase el puntero por un hito para ver sus años; haga clic para su contexto.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Nueva persona
+person-new-lede = Un nombre que el archivo aún no tiene se convierte en una nueva ficha, guardada con esta.
+person-new-section-name = Nombre y apellidos
+person-new-given = Nombre
+person-new-family = Apellidos
+person-new-nicknames = Apodos
+person-new-nickname-add = Añadir un apodo
+person-new-nickname-quoted = «{ $nick }»
+person-new-remove = Quitar
+person-new-preview = Se muestra como
+person-new-name-hint = Al menos un nombre o un apellido.
+person-new-section-life = Vida
+person-new-section-texts = Biografía y nota
+person-new-birth-place = Lugar de nacimiento
+person-new-death-place = Lugar de fallecimiento
+person-new-death-hint = Vacío mientras la persona vive.
+person-new-place-hint = Un lugar que el archivo no tiene se crea.
+person-new-section-portrait = Retrato
+person-new-portrait-hint = PNG, JPEG, GIF o WebP, como mucho { $mb } MB.
+person-new-bio-hint = Formato libre, como una nota.
+person-new-section-note = Nota
+person-new-note-hint = Una nota aparte sobre esta persona, con imágenes. Sin título, lleva el nombre de la persona.
+person-new-section-parents = Padres y hermanos
+person-new-father = Padre
+person-new-mother = Madre
+person-new-siblings = Hermanos y hermanas
+person-new-sibling-add = Añadir un hermano o una hermana
+person-new-who-hint = Elija en la lista o escriba un nombre: un nombre que nadie lleva se convierte en una nueva ficha.
+person-new-section-unions = Uniones e hijos
+person-new-union-n = Unión { $n }
+person-new-partner = Cónyuge o pareja
+person-new-union-type = Tipo de unión
+person-new-children = Hijos
+person-new-child-add = Añadir un hijo
+person-new-union-add = Añadir una unión
+person-new-save = Crear la ficha
+person-new-hint-existing = En el archivo
+person-new-hint-new = Nueva ficha
+person-new-hint-ambiguous = Varias fichas llevan este nombre: elija una de la lista.
+person-new-hint-place-existing = Lugar del archivo
+person-new-hint-place-new = Nuevo lugar
+person-new-field-error = «{ $typed }»: { $message }
+person-new-error-name = Hace falta un nombre o un apellido. No se guardó nada.
+person-new-error-date = Una fecha se escribe 1890, 1890-06 o 1890-06-14. No se guardó nada.
+person-new-error-same-parents = El padre y la madre son la misma persona. No se guardó nada.
+person-new-error-siblings-need-parent = Los hermanos forman una familia solo a través del padre o de la madre: indique uno de ellos, o un hermano o una hermana que ya esté en una familia. No se guardó nada.
+person-new-error-siblings-two-families = Estos hermanos pertenecen a familias distintas: indique los padres. No se guardó nada.
+person-new-error-portrait = El retrato no es una imagen que este sitio sepa mostrar: PNG, JPEG, GIF o WebP. No se guardó nada.
+person-new-error-conflict = El archivo cambió mientras usted escribía. No se guardó nada; guarde de nuevo.
+person-new-error-refused = El archivo rechazó el guardado. No se guardó nada.
+person-new-created = { $others ->
+        [0] Ficha creada.
+        [one] Ficha creada, con otra ficha más.
+       *[other] Ficha creada, con otras { $others } fichas.
+    }
+pick-error-place-not-found = No hay ningún lugar con ese nombre en este archivo. No se guardó nada.
+pick-error-place-ambiguous = Más de un lugar responde a eso. Elija uno de la lista. No se guardó nada.
+pick-error-source-not-found = No hay ninguna fuente con ese nombre en este archivo. No se guardó nada.
+pick-error-source-ambiguous = Más de una fuente responde a eso. Elija una de la lista. No se guardó nada.
+pick-error-thing-empty = No se indicó nada. No se guardó nada.
+pick-error-thing-not-found = No hay nada con ese nombre en este archivo. No se guardó nada.
+pick-error-thing-ambiguous = Más de una ficha responde a eso. Elija una de la lista. No se guardó nada.
+search-create = Crear «{ $name }»

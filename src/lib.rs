@@ -68,6 +68,7 @@ pub mod payloads;
 pub mod pdf;
 pub mod person;
 pub mod person_chat;
+pub mod person_new;
 pub mod physical;
 pub mod place;
 pub mod profile;

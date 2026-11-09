@@ -65,6 +65,10 @@ pub const EDITOR_JS: &str = include_str!("../static/editor.js");
 /// pictures, the preview) and reading them (the filter, the letters, the
 /// window). Enhancement only.
 pub const NOTES_JS: &str = include_str!("../static/notes.js");
+/// A person created with what surrounds them (docs/adr/0039): rows added at
+/// need, the name as it will read, and what each typed name will become.
+/// Enhancement only.
+pub const PERSON_NEW_JS: &str = include_str!("../static/person_new.js");
 /// The Impact timeline (docs/adr/0034): the band of a life across the
 /// world's history, and the countries in the reader's language.
 /// Enhancement only.
@@ -228,6 +232,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_place.html",
     "admin_profile.html",
     "admin_person.html",
+    "admin_person_new.html",
     "_profile_edit.html",
     "admin_identity.html",
     "admin_family.html",
@@ -248,6 +253,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_ai_portraits.html",
     "admin_result.html",
     "_macros.html",
+    "_md_editor.html",
     "_impact.html",
     "_icons.html",
     "_admin_nav.html",

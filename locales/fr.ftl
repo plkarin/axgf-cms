@@ -5510,3 +5510,69 @@ impact-stakes = Enjeux
 impact-victims = Victimes
 impact-close = Fermer
 impact-hint = Survolez un repère pour voir sa durée ; cliquez pour son contexte.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = Nouvelle personne
+person-new-lede = Un nom que l'archive n'a pas encore devient une nouvelle fiche, enregistrée avec celle-ci.
+person-new-section-name = Nom
+person-new-given = Prénom
+person-new-family = Nom de famille
+person-new-nicknames = Surnoms
+person-new-nickname-add = Ajouter un surnom
+person-new-nickname-quoted = « { $nick } »
+person-new-remove = Retirer
+person-new-preview = Affiché
+person-new-name-hint = Un prénom ou un nom de famille au moins.
+person-new-section-life = Vie
+person-new-section-texts = Biographie et note
+person-new-birth-place = Lieu de naissance
+person-new-death-place = Lieu de décès
+person-new-death-hint = Vide tant que la personne est en vie.
+person-new-place-hint = Un lieu que l'archive n'a pas est créé.
+person-new-section-portrait = Portrait
+person-new-portrait-hint = PNG, JPEG, GIF ou WebP, { $mb } Mo au plus.
+person-new-bio-hint = Mise en forme libre, comme une note.
+person-new-section-note = Note
+person-new-note-hint = Une note à part sur cette personne, images comprises. Sans titre, elle prend le nom de la personne.
+person-new-section-parents = Parents, frères et sœurs
+person-new-father = Père
+person-new-mother = Mère
+person-new-siblings = Frères et sœurs
+person-new-sibling-add = Ajouter un frère ou une sœur
+person-new-who-hint = Choisissez dans la liste ou tapez un nom : un nom que personne ne porte devient une nouvelle fiche.
+person-new-section-unions = Unions et enfants
+person-new-union-n = Union { $n }
+person-new-partner = Conjoint ou partenaire
+person-new-union-type = Type d'union
+person-new-children = Enfants
+person-new-child-add = Ajouter un enfant
+person-new-union-add = Ajouter une union
+person-new-save = Créer la fiche
+person-new-hint-existing = Dans l'archive
+person-new-hint-new = Nouvelle fiche
+person-new-hint-ambiguous = Plusieurs fiches portent ce nom : choisissez-en une dans la liste.
+person-new-hint-place-existing = Lieu de l'archive
+person-new-hint-place-new = Nouveau lieu
+person-new-field-error = « { $typed } » : { $message }
+person-new-error-name = Il faut un prénom ou un nom de famille. Rien n'a été enregistré.
+person-new-error-date = Une date s'écrit 1890, 1890-06 ou 1890-06-14. Rien n'a été enregistré.
+person-new-error-same-parents = Le père et la mère sont la même personne. Rien n'a été enregistré.
+person-new-error-siblings-need-parent = Des frères et sœurs ne forment une famille que par un parent : nommez un parent, ou un frère ou une sœur déjà dans une famille. Rien n'a été enregistré.
+person-new-error-siblings-two-families = Ces frères et sœurs sont dans des familles différentes : nommez les parents. Rien n'a été enregistré.
+person-new-error-portrait = Le portrait n'est pas une image que ce site sait montrer : PNG, JPEG, GIF ou WebP. Rien n'a été enregistré.
+person-new-error-conflict = L'archive a changé pendant que vous écriviez. Rien n'a été enregistré ; enregistrez à nouveau.
+person-new-error-refused = L'archive a refusé l'enregistrement. Rien n'a été enregistré.
+person-new-created = { $others ->
+        [0] Fiche créée.
+        [one] Fiche créée, avec une autre fiche.
+       *[other] Fiche créée, avec { $others } autres fiches.
+    }
+pick-error-place-not-found = Aucun lieu de ce nom dans cette archive. Rien n'a été enregistré.
+pick-error-place-ambiguous = Plusieurs lieux répondent à cela. Choisissez-en un dans la liste. Rien n'a été enregistré.
+pick-error-source-not-found = Aucune source de ce nom dans cette archive. Rien n'a été enregistré.
+pick-error-source-ambiguous = Plusieurs sources répondent à cela. Choisissez-en une dans la liste. Rien n'a été enregistré.
+pick-error-thing-empty = Rien n'a été nommé. Rien n'a été enregistré.
+pick-error-thing-not-found = Rien de ce nom dans cette archive. Rien n'a été enregistré.
+pick-error-thing-ambiguous = Plusieurs fiches répondent à cela. Choisissez-en une dans la liste. Rien n'a été enregistré.
+search-create = Créer « { $name } »

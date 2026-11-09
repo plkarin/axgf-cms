@@ -81,102 +81,116 @@
   });
 
   // ---- writing -----------------------------------------------------------
+  // Every text written with this editor: a note's, and any other written the
+  // same way, such as a biography (docs/adr/0039). An editor without a file
+  // input holds no pictures, and a picture pasted into it is left to the
+  // browser.
+  function editor(root) {
+    var text = root.querySelector('[data-note-text]');
+    var toolbar = root.querySelector('[data-note-toolbar]');
+    var preview = root.querySelector('[data-note-preview]');
+    var mode = root.querySelector('[data-note-mode]');
+    var file = root.querySelector('[data-note-file]');
+    if (!text) return;
+    if (toolbar) toolbar.hidden = false;
+
+    function insert(before, after, placeholder) {
+      var s = text.selectionStart, e = text.selectionEnd, v = text.value;
+      var inner = v.slice(s, e) || placeholder || '';
+      text.value = v.slice(0, s) + before + inner + after + v.slice(e);
+      text.focus();
+      text.selectionStart = s + before.length;
+      text.selectionEnd = s + before.length + inner.length;
+      text.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    function linePrefix(prefix) {
+      var s = text.selectionStart, v = text.value;
+      var start = v.lastIndexOf('\n', s - 1) + 1;
+      text.value = v.slice(0, start) + prefix + v.slice(start);
+      text.focus();
+      text.selectionStart = text.selectionEnd = s + prefix.length;
+    }
+    if (toolbar) toolbar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-md]');
+      if (!b) return;
+      switch (b.getAttribute('data-md')) {
+        case 'bold': insert('**', '**'); break;
+        case 'italic': insert('_', '_'); break;
+        case 'heading': linePrefix('## '); break;
+        case 'list': linePrefix('- '); break;
+        case 'quote': linePrefix('> '); break;
+        case 'link': insert('[', '](https://)'); break;
+        case 'image': if (file) file.click(); break;
+      }
+    });
+
+    // Pictures: pasted, dropped or chosen, sent to the server, which holds
+    // them until the note is saved; the text names each by what it answers.
+    function upload(files) {
+      if (!file) return false;
+      var images = Array.prototype.filter.call(files, function (f) { return /^image\//.test(f.type); });
+      if (!images.length) return false;
+      var data = new FormData();
+      images.forEach(function (f, i) { data.append('image', f, f.name || ('image-' + (i + 1) + '.png')); });
+      var mark = '\n' + (text.dataset.uploading || '…') + '\n';
+      var at = text.selectionStart;
+      text.value = text.value.slice(0, at) + mark + text.value.slice(at);
+      fetch('/admin/notes/images', { method: 'POST', body: data, credentials: 'same-origin' })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); })
+        .then(function (list) {
+          var md = list.map(function (img) {
+            var alt = (img.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[\[\]]/g, '');
+            return '![' + alt + '](' + img.ref + ')';
+          }).join('\n\n');
+          text.value = text.value.replace(mark, '\n' + md + '\n');
+        })
+        .catch(function (err) {
+          text.value = text.value.replace(mark, '\n');
+          window.alert(err && err.message ? err.message : (text.dataset.uploadFailed || ''));
+        });
+      return true;
+    }
+    text.addEventListener('paste', function (e) {
+      var files = e.clipboardData && e.clipboardData.files;
+      if (files && files.length && upload(files)) e.preventDefault();
+    });
+    if (file) {
+      text.addEventListener('dragover', function (e) { e.preventDefault(); });
+      text.addEventListener('drop', function (e) {
+        var files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length && upload(files)) e.preventDefault();
+      });
+      file.addEventListener('change', function () { upload(file.files); file.value = ''; });
+    }
+
+    // The preview: the text as the family will read it, rendered by the
+    // server. A text that is not a note keeps its line breaks.
+    if (mode && preview) mode.addEventListener('click', function () {
+      var showing = mode.getAttribute('aria-pressed') === 'true';
+      if (showing) {
+        preview.hidden = true; text.hidden = false;
+        mode.setAttribute('aria-pressed', 'false');
+        mode.textContent = mode.dataset.preview;
+        text.focus();
+        return;
+      }
+      var body = new URLSearchParams();
+      body.set('markdown', text.value);
+      if (!file) body.set('lines', '1');
+      fetch('/admin/notes/preview', { method: 'POST', body: body, credentials: 'same-origin' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          preview.innerHTML = html;
+          preview.hidden = false; text.hidden = true;
+          mode.setAttribute('aria-pressed', 'true');
+          mode.textContent = mode.dataset.write;
+        });
+    });
+  }
+  document.querySelectorAll('[data-md-editor]').forEach(editor);
+
   var form = document.querySelector('[data-note-form]');
   if (!form) return;
-  var text = form.querySelector('[data-note-text]');
-  var toolbar = form.querySelector('[data-note-toolbar]');
-  var preview = form.querySelector('[data-note-preview]');
-  var mode = form.querySelector('[data-note-mode]');
-  var file = form.querySelector('[data-note-file]');
-  if (toolbar) toolbar.hidden = false;
-
-  function insert(before, after, placeholder) {
-    var s = text.selectionStart, e = text.selectionEnd, v = text.value;
-    var inner = v.slice(s, e) || placeholder || '';
-    text.value = v.slice(0, s) + before + inner + after + v.slice(e);
-    text.focus();
-    text.selectionStart = s + before.length;
-    text.selectionEnd = s + before.length + inner.length;
-    text.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-  function linePrefix(prefix) {
-    var s = text.selectionStart, v = text.value;
-    var start = v.lastIndexOf('\n', s - 1) + 1;
-    text.value = v.slice(0, start) + prefix + v.slice(start);
-    text.focus();
-    text.selectionStart = text.selectionEnd = s + prefix.length;
-  }
-  if (toolbar) toolbar.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-md]');
-    if (!b) return;
-    switch (b.getAttribute('data-md')) {
-      case 'bold': insert('**', '**'); break;
-      case 'italic': insert('_', '_'); break;
-      case 'heading': linePrefix('## '); break;
-      case 'list': linePrefix('- '); break;
-      case 'quote': linePrefix('> '); break;
-      case 'link': insert('[', '](https://)'); break;
-      case 'image': if (file) file.click(); break;
-    }
-  });
-
-  // Pictures: pasted, dropped or chosen, sent to the server, which holds them
-  // until the note is saved; the text names each by what it answers.
-  function upload(files) {
-    var images = Array.prototype.filter.call(files, function (f) { return /^image\//.test(f.type); });
-    if (!images.length) return false;
-    var data = new FormData();
-    images.forEach(function (f, i) { data.append('image', f, f.name || ('image-' + (i + 1) + '.png')); });
-    var mark = '\n' + (text.dataset.uploading || '…') + '\n';
-    var at = text.selectionStart;
-    text.value = text.value.slice(0, at) + mark + text.value.slice(at);
-    fetch('/admin/notes/images', { method: 'POST', body: data, credentials: 'same-origin' })
-      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); })
-      .then(function (list) {
-        var md = list.map(function (img) {
-          var alt = (img.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[\[\]]/g, '');
-          return '![' + alt + '](' + img.ref + ')';
-        }).join('\n\n');
-        text.value = text.value.replace(mark, '\n' + md + '\n');
-      })
-      .catch(function (err) {
-        text.value = text.value.replace(mark, '\n');
-        window.alert(err && err.message ? err.message : (text.dataset.uploadFailed || ''));
-      });
-    return true;
-  }
-  text.addEventListener('paste', function (e) {
-    var files = e.clipboardData && e.clipboardData.files;
-    if (files && files.length && upload(files)) e.preventDefault();
-  });
-  text.addEventListener('dragover', function (e) { e.preventDefault(); });
-  text.addEventListener('drop', function (e) {
-    var files = e.dataTransfer && e.dataTransfer.files;
-    if (files && files.length && upload(files)) e.preventDefault();
-  });
-  if (file) file.addEventListener('change', function () { upload(file.files); file.value = ''; });
-
-  // The preview: the text as the family will read it, rendered by the server.
-  if (mode && preview) mode.addEventListener('click', function () {
-    var showing = mode.getAttribute('aria-pressed') === 'true';
-    if (showing) {
-      preview.hidden = true; text.hidden = false;
-      mode.setAttribute('aria-pressed', 'false');
-      mode.textContent = mode.dataset.preview;
-      text.focus();
-      return;
-    }
-    var body = new URLSearchParams();
-    body.set('markdown', text.value);
-    fetch('/admin/notes/preview', { method: 'POST', body: body, credentials: 'same-origin' })
-      .then(function (r) { return r.text(); })
-      .then(function (html) {
-        preview.innerHTML = html;
-        preview.hidden = false; text.hidden = true;
-        mode.setAttribute('aria-pressed', 'true');
-        mode.textContent = mode.dataset.write;
-      });
-  });
 
   // The people a note is about, as chips.
   var people = form.querySelector('[data-note-people]');

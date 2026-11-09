@@ -234,6 +234,22 @@ impl PickError {
             PickError::Ambiguous => "pick-error-ambiguous",
         }
     }
+
+    /// The same, for a picker over `group` — `person`, `place`, `source`, or
+    /// anything a link may point at — so that a place the archive does not
+    /// hold is not reported as a person it does not hold.
+    pub fn key_for(self, group: &str) -> &'static str {
+        match (group, self) {
+            ("person", _) => self.key(),
+            ("place", PickError::NotFound) => "pick-error-place-not-found",
+            ("place", PickError::Ambiguous) => "pick-error-place-ambiguous",
+            ("source", PickError::NotFound) => "pick-error-source-not-found",
+            ("source", PickError::Ambiguous) => "pick-error-source-ambiguous",
+            (_, PickError::Empty) => "pick-error-thing-empty",
+            (_, PickError::NotFound) => "pick-error-thing-not-found",
+            (_, PickError::Ambiguous) => "pick-error-thing-ambiguous",
+        }
+    }
 }
 
 /// Every entity a Link may point at, as picker options.

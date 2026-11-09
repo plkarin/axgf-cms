@@ -5661,3 +5661,70 @@ impact-stakes = מה עמד על הכף
 impact-victims = קורבנות
 impact-close = סגירה
 impact-hint = הצביעו על אירוע כדי לראות את שנותיו; לחצו להקשר.
+
+# A person created with what surrounds them (docs/adr/0039), and the
+# pickers' refusals by what they pick.
+person-new-title = אדם חדש
+person-new-lede = שם שאין עדיין בארכיון הופך לרשומה חדשה ונשמר יחד עם זו.
+person-new-section-name = שם
+person-new-given = שם פרטי
+person-new-family = שם משפחה
+person-new-nicknames = כינויים
+person-new-nickname-add = הוספת כינוי
+person-new-nickname-quoted = „{ $nick }”
+person-new-remove = הסרה
+person-new-preview = מוצג כך
+person-new-name-hint = לפחות שם פרטי או שם משפחה.
+person-new-section-life = חיים
+person-new-section-texts = ביוגרפיה והערה
+person-new-birth-place = מקום לידה
+person-new-death-place = מקום פטירה
+person-new-death-hint = ריק כל עוד האדם בחיים.
+person-new-place-hint = מקום שאין בארכיון נוצר.
+person-new-section-portrait = דיוקן
+person-new-portrait-hint = PNG, JPEG, GIF או WebP, עד { $mb } MB.
+person-new-bio-hint = עיצוב חופשי, כמו בהערה.
+person-new-section-note = הערה
+person-new-note-hint = הערה נפרדת על האדם הזה, כולל תמונות. בלי כותרת היא נושאת את שם האדם.
+person-new-section-parents = הורים ואחים
+person-new-father = אב
+person-new-mother = אם
+person-new-siblings = אחים ואחיות
+person-new-sibling-add = הוספת אח או אחות
+person-new-who-hint = בחרו מהרשימה או הקלידו שם: שם שאיש אינו נושא הופך לרשומה חדשה.
+person-new-section-unions = קשרים וילדים
+person-new-union-n = קשר { $n }
+person-new-partner = בן או בת זוג
+person-new-union-type = סוג הקשר
+person-new-children = ילדים
+person-new-child-add = הוספת ילד
+person-new-union-add = הוספת קשר
+person-new-save = יצירת הרשומה
+person-new-hint-existing = בארכיון
+person-new-hint-new = רשומה חדשה
+person-new-hint-ambiguous = כמה רשומות נושאות את השם הזה: בחרו אחת מהרשימה.
+person-new-hint-place-existing = מקום מהארכיון
+person-new-hint-place-new = מקום חדש
+person-new-field-error = „{ $typed }”: { $message }
+person-new-error-name = נדרש שם פרטי או שם משפחה. שום דבר לא נשמר.
+person-new-error-date = תאריך נכתב כך: 1890, 1890-06 או 1890-06-14. שום דבר לא נשמר.
+person-new-error-same-parents = האב והאם הם אותו אדם. שום דבר לא נשמר.
+person-new-error-siblings-need-parent = אחים יוצרים משפחה רק דרך הורה: ציינו הורה, או אח או אחות שכבר שייכים למשפחה. שום דבר לא נשמר.
+person-new-error-siblings-two-families = האחים האלה שייכים למשפחות שונות: ציינו את ההורים. שום דבר לא נשמר.
+person-new-error-portrait = הדיוקן אינו תמונה שהאתר הזה יודע להציג: PNG, JPEG, GIF או WebP. שום דבר לא נשמר.
+person-new-error-conflict = הארכיון השתנה בזמן שכתבתם. שום דבר לא נשמר; שמרו שוב.
+person-new-error-refused = הארכיון דחה את השמירה. שום דבר לא נשמר.
+person-new-created = { $others ->
+        [0] הרשומה נוצרה.
+        [one] הרשומה נוצרה, יחד עם רשומה נוספת.
+        [two] הרשומה נוצרה, יחד עם שתי רשומות נוספות.
+       *[other] הרשומה נוצרה, יחד עם { $others } רשומות נוספות.
+    }
+pick-error-place-not-found = אין בארכיון הזה מקום בשם הזה. שום דבר לא נשמר.
+pick-error-place-ambiguous = יותר ממקום אחד עונה לזה. בחרו אחד מהרשימה. שום דבר לא נשמר.
+pick-error-source-not-found = אין בארכיון הזה מקור בשם הזה. שום דבר לא נשמר.
+pick-error-source-ambiguous = יותר ממקור אחד עונה לזה. בחרו אחד מהרשימה. שום דבר לא נשמר.
+pick-error-thing-empty = שום דבר לא צוין. שום דבר לא נשמר.
+pick-error-thing-not-found = אין בארכיון הזה דבר בשם הזה. שום דבר לא נשמר.
+pick-error-thing-ambiguous = יותר מרשומה אחת עונה לזה. בחרו אחת מהרשימה. שום דבר לא נשמר.
+search-create = יצירת „{ $name }”

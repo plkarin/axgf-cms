@@ -5619,7 +5619,7 @@ search-create = Crear «{ $name }»
 # What a file sent to the site may weigh, and the kinds refused
 # (docs/adr/0041).
 uploads-title = Envío de archivos
-uploads-lede = Cuánto puede pesar un archivo enviado al sitio, y qué tipos de archivo acepta el archivo familiar.
+uploads-lede = Cuánto puede pesar un fichero enviado al sitio, y qué tipos de fichero acepta el archivo.
 uploads-sizes = Tamaños máximos
 uploads-limit-document = Fichero adjunto a una ficha (MB)
 uploads-limit-note-image = Imagen pegada en una nota (MB)

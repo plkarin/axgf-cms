@@ -5835,12 +5835,12 @@ impact-hint = Wskaż wydarzenie, by zobaczyć jego lata; kliknij, by poznać kon
 # A person created with what surrounds them (docs/adr/0039), and the
 # pickers' refusals by what they pick.
 person-new-title = Nowa osoba
-person-new-lede = Imię, którego archiwum jeszcze nie zna, staje się nową kartą, zapisaną razem z tą.
+person-new-lede = Wszystko, czego archiwum jeszcze nie zna, staje się nową kartą, zapisaną razem z tą.
 person-new-section-name = Imię i nazwisko
 person-new-given = Imię
 person-new-family = Nazwisko
-person-new-nicknames = Przydomki
-person-new-nickname-add = Dodaj przydomek
+person-new-nicknames = Przezwiska
+person-new-nickname-add = Dodaj przezwisko
 person-new-nickname-quoted = „{ $nick }”
 person-new-remove = Usuń
 person-new-preview = Wyświetlane jako
@@ -5872,7 +5872,7 @@ person-new-union-add = Dodaj związek
 person-new-save = Utwórz kartę
 person-new-hint-existing = W archiwum
 person-new-hint-new = Nowa karta
-person-new-hint-ambiguous = Kilka kart nosi to imię: wybierz jedną z listy.
+person-new-hint-ambiguous = Kilka kart ma to imię i nazwisko: wybierz jedną z listy.
 person-new-hint-place-existing = Miejsce z archiwum
 person-new-hint-place-new = Nowe miejsce
 person-new-field-error = „{ $typed }”: { $message }

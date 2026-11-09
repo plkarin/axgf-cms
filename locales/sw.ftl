@@ -5328,7 +5328,7 @@ uploads-error-range = { $field }: namba kamili kutoka { $min } hadi { $max }. Ha
 uploads-not-saved = Mipangilio haikuweza kuhifadhiwa: { $error }
 uploads-summary = Faili zinazoambatishwa kwenye rekodi: hadi MB { $document }; aina { $accepted } zinakubaliwa kati ya { $total }.
 uploads-open = Weka mipangilio ya kupakia
-error-upload-kind-refused = Aina hii ya faili ({ $kind }) inakataliwa na tovuti hii: utawala hauikubali. Hakuna kilichohifadhiwa.
+error-upload-kind-refused = Aina hii ya faili ({ $kind }) inakataliwa na tovuti hii: wasimamizi wa tovuti hawaikubali. Hakuna kilichohifadhiwa.
 
 # An import in place of the family, behind a word and a verified backup
 # (docs/adr/0042).

@@ -5470,7 +5470,7 @@ person-new-section-life = Leben
 person-new-section-texts = Lebenslauf und Notiz
 person-new-birth-place = Geburtsort
 person-new-death-place = Sterbeort
-person-new-death-hint = Leer, solange die Person lebt.
+person-new-death-hint = Leer lassen, solange die Person lebt.
 person-new-place-hint = Ein Ort, den das Archiv nicht kennt, wird angelegt.
 person-new-section-portrait = Porträt
 person-new-portrait-hint = PNG, JPEG, GIF oder WebP, höchstens { $mb } MB.
@@ -5523,7 +5523,7 @@ search-create = „{ $name }“ anlegen
 # (docs/adr/0041).
 uploads-title = Datei-Uploads
 uploads-lede = Wie groß eine an die Website gesendete Datei sein darf und welche Dateiarten das Archiv annimmt.
-uploads-sizes = Größte Umfänge
+uploads-sizes = Höchstgrößen
 uploads-limit-document = Datei an einem Datensatz (MB)
 uploads-limit-note-image = In eine Notiz eingefügtes Bild (MB)
 uploads-limit-assistant-file = An den Assistenten gesendete Datei (MB)

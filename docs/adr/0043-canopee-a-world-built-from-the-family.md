@@ -1,6 +1,6 @@
 # ADR 0043 — Canopée: a world built from the family
 
-**Status:** withdrawn (9 November 2026; released in v1.12.0) · **Builds on:** docs/adr/0004 (the
+**Status:** withdrawn, v1.12.1 (2026-11-09; released in v1.12.0) · **Builds on:** docs/adr/0004 (the
 river, §11–§17), docs/adr/0007 (the themes' living scenes) · **Applies to:**
 `src/world.rs`, `src/routes/world.rs`, `src/state.rs`,
 `static/canopee-world.js`, `templates/index.html` (the river), `static/app.css`
